@@ -18,6 +18,7 @@ export * from './finance-drive-upload';
 export * from './platform-access/constants';
 export * from './platform-access/project-team-management';
 export * from './platform-access/product-slot-bindings';
+export * from './platform-ownership';
 export * from './credentials/parse-env-bundle';
 export * from './credentials/credential-type-change-lanes';
 export * from './credentials/credential-create-defaults';

@@ -915,6 +915,8 @@ function resolveKnownNotificationEventTypes(): string[] {
     'finance.overdue',
     'mail.health_degraded',
     'mail.send_failed',
+    'ops.scheduler_run_failed',
+    'ops.bullmq_job_failed',
     'document.access_changed',
     'credentials.high_risk_action',
   ];

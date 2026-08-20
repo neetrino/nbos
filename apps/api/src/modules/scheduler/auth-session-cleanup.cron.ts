@@ -1,14 +1,15 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import {
+  AUTH_SESSION_CLEANUP_CRON_ENABLED_ENV,
+  AUTH_SESSION_CLEANUP_CRON_ENV,
+  AUTH_SESSION_CLEANUP_DEFAULT_CRON,
+} from './auth-session-cleanup-cron.constants';
 import { SchedulerService } from './scheduler.service';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
 import { startSchedulerCronJob, stopSchedulerCronJob } from './scheduler-cron-bind';
 import { SCHEDULER_JOB_NAMES } from './scheduler-lease.constants';
-
-export const AUTH_SESSION_CLEANUP_CRON_ENABLED_ENV = 'SCHEDULER_AUTH_SESSION_CLEANUP_ENABLED';
-export const AUTH_SESSION_CLEANUP_CRON_ENV = 'SCHEDULER_AUTH_SESSION_CLEANUP_CRON';
-export const AUTH_SESSION_CLEANUP_DEFAULT_CRON = '15 * * * *';
 
 @Injectable()
 export class AuthSessionCleanupCron implements OnModuleInit, OnModuleDestroy {

@@ -1,5 +1,6 @@
 ---
-description: 
+description: Core project rules for AI. Always applied. Domain rules load by globs. CONTEXT/token economy lives in User Rules only — do not duplicate here.
+globs: ["**/*"]
 alwaysApply: true
 ---
 
@@ -11,8 +12,11 @@ Other `.mdc` files apply by **globs** and task. If a rule seems missing, check t
 
 `Size: C — large, layout: monorepo (apps/* + packages/*)`
 
-## Desigen
-Modern Creative minimalist design UI/UX Stnadart
+## Design
+
+Modern Creative minimalist design UI/UX Standard
+
+NBOS is already initialized. For greenfield setup only, use [`project-onboarding`](../../.agents/skills/project-onboarding/SKILL.md). Do not rerun onboarding during ordinary development.
 
 ## Start of work
 
@@ -66,6 +70,8 @@ Understand the ask → inspect existing code → align with `docs/NBOS` + roadma
 
 **Hard (apply without asking):** security baseline (argon2 for passwords, validate input, helmet/CORS where applicable), TS strict, named exports, error handling, `pnpm` + Prisma per TECH_CARD.
 
+**Technology precedence:** explicit approved task → `docs/NBOS` canon + roadmap → approved `docs/TECH_CARD.md` → existing project implementation → template recommendation → generic fallback.
+
 **Adaptive (ask before picking values):** timeouts, pool limits, rate limits, cache TTL — explain options and tradeoffs; never silently use a generic default like `statement_timeout=30s` without team alignment.
 
 **Autonomous:** naming, internal file layout, small refactors (&lt;50 lines), obvious bugfixes, formatting.
@@ -82,12 +88,12 @@ Do not invent accounts or keys. Ask the developer when `DATABASE_URL`, OAuth, R2
 
 ## Human checklists
 
-Full DoD/PR/release checklists: [`docs/reference/Check/Quality/project-quality-checklist.md`](docs/reference/Check/Quality/project-quality-checklist.md) (not loaded as Cursor rules — open when needed).
+Full DoD/PR/release checklists: [`docs/reference/Check/Quality/project-quality-checklist.md`](../../docs/reference/Check/Quality/project-quality-checklist.md) (not loaded as Cursor rules — open when needed). Release audit: [`release-audit-checklist.md`](../../docs/reference/Check/Quality/release-audit-checklist.md).
 
 ## Rules index (by domain)
 
 | Area | File |
-|---|---|
+|------|------|
 | Architecture | `01-architecture.mdc` |
 | TypeScript | `03-typescript.mdc` |
 | React / Next | `04-react-nextjs.mdc` |
@@ -107,7 +113,8 @@ Full DoD/PR/release checklists: [`docs/reference/Check/Quality/project-quality-c
 | i18n | `20-i18n.mdc` |
 | Onboarding | `21-project-onboarding.mdc` |
 | Project size | `99-project-size.mdc` |
+| Frontend safety | `front.mdc` |
 
-Platform how-tos: `docs/reference/platforms/`.
+Workflows: [`.agents/skills/`](../../.agents/skills/). Platform how-tos: `docs/reference/platforms/`.
 
-**Version:** 3.1 · **Date:** 2026-04-29
+**Version:** 3.2 · **Date:** 2026-08-20

@@ -23,64 +23,76 @@ export function applyCredentialTabFilter(
 
   const andParts: Prisma.CredentialWhereInput[] = [];
   if (searchOr) andParts.push({ OR: searchOr });
-
-  switch (tab) {
-    case 'personal':
-      andParts.push({ accessLevel: 'PERSONAL', ownerId: employeeId });
-      break;
-    case 'department': {
-      const deptBranch = visibilityCtx
-        ? buildCredentialVisibilityOr(visibilityCtx).find(
-            (b) => 'accessLevel' in b && b.accessLevel === 'DEPARTMENT',
-          )
-        : undefined;
-      if (!rbacBypass && deptBranch) andParts.push(deptBranch);
-      else {
-        andParts.push({ accessLevel: 'DEPARTMENT' });
-        if (visibilityCtx && visibilityCtx.departmentIds.length > 0) {
-          andParts.push({ departmentId: { in: visibilityCtx.departmentIds } });
-        }
-      }
-      break;
-    }
-    case 'secret': {
-      const secretBranch = visibilityCtx
-        ? buildCredentialVisibilityOr(visibilityCtx).find(
-            (b) => 'accessLevel' in b && b.accessLevel === 'SECRET',
-          )
-        : undefined;
-      if (!rbacBypass && secretBranch) andParts.push(secretBranch);
-      else andParts.push({ accessLevel: 'SECRET' });
-      break;
-    }
-    case 'project': {
-      const projectBranch = visibilityCtx
-        ? buildCredentialVisibilityOr(visibilityCtx).find(
-            (b) => 'accessLevel' in b && b.accessLevel === 'PROJECT_TEAM',
-          )
-        : undefined;
-      if (!rbacBypass && projectBranch) andParts.push(projectBranch);
-      else andParts.push({ accessLevel: 'PROJECT_TEAM' });
-      break;
-    }
-    case 'company': {
-      const allBranch = visibilityCtx
-        ? buildCredentialVisibilityOr(visibilityCtx).find(
-            (b) => 'accessLevel' in b && b.accessLevel === 'ALL',
-          )
-        : undefined;
-      if (!rbacBypass && allBranch) andParts.push(allBranch);
-      else andParts.push({ accessLevel: 'ALL' });
-      break;
-    }
-    case 'all':
-    default:
-      if (!rbacBypass && visibilityCtx) {
-        andParts.push({ OR: buildCredentialVisibilityOr(visibilityCtx) });
-      }
-      break;
-  }
+  andParts.push(tabWhere(tab, employeeId, visibilityCtx, rbacBypass));
 
   if (andParts.length === 1) Object.assign(where, andParts[0]);
-  else if (andParts.length > 1) where.AND = andParts;
+  else where.AND = andParts;
+}
+
+function tabWhere(
+  tab: CredentialTab,
+  employeeId: string,
+  ctx: CredentialVisibilityContext | undefined,
+  bypass: boolean,
+): Prisma.CredentialWhereInput {
+  if (tab === 'personal') {
+    return { accessLevel: 'PERSONAL', ownerId: employeeId };
+  }
+  if (bypass) return bypassTabWhere(tab);
+  if (!ctx) return { id: { in: [] } };
+  if (tab === 'all') return { OR: buildCredentialVisibilityOr(ctx) };
+  return scopedTabWhere(tab, ctx);
+}
+
+function bypassTabWhere(tab: CredentialTab): Prisma.CredentialWhereInput {
+  if (tab === 'department') return { accessLevel: 'DEPARTMENT' };
+  if (tab === 'secret') return { accessLevel: 'SECRET' };
+  if (tab === 'project') return { accessLevel: 'PROJECT_TEAM' };
+  if (tab === 'company') return { accessLevel: 'ALL' };
+  return {};
+}
+
+function scopedTabWhere(
+  tab: CredentialTab,
+  ctx: CredentialVisibilityContext,
+): Prisma.CredentialWhereInput {
+  const branches = buildCredentialVisibilityOr(ctx);
+  if (tab === 'department') return firstMatching(branches, 'DEPARTMENT') ?? { id: { in: [] } };
+  if (tab === 'project') return firstMatching(branches, 'PROJECT_TEAM') ?? { id: { in: [] } };
+  if (tab === 'company') return firstMatching(branches, 'ALL') ?? { id: { in: [] } };
+  if (tab === 'secret') return grantAndSecretWhere(ctx);
+  return { OR: branches };
+}
+
+function firstMatching(
+  branches: Prisma.CredentialWhereInput[],
+  accessLevel: string,
+): Prisma.CredentialWhereInput | undefined {
+  return branches.find((branch) => branchContainsAccessLevel(branch, accessLevel));
+}
+
+function branchContainsAccessLevel(
+  branch: Prisma.CredentialWhereInput,
+  accessLevel: string,
+): boolean {
+  if (branch.accessLevel === accessLevel) return true;
+  const andParts = branch.AND;
+  if (!Array.isArray(andParts)) return false;
+  return andParts.some(
+    (part) =>
+      typeof part === 'object' &&
+      part !== null &&
+      'accessLevel' in part &&
+      part.accessLevel === accessLevel,
+  );
+}
+
+function grantAndSecretWhere(ctx: CredentialVisibilityContext): Prisma.CredentialWhereInput {
+  const granted: Prisma.CredentialWhereInput[] = [{ allowedEmployees: { has: ctx.employeeId } }];
+  if (ctx.manualGrantCredentialIds.length > 0) {
+    granted.push({ id: { in: ctx.manualGrantCredentialIds } });
+  }
+  return {
+    AND: [{ accessLevel: 'SECRET' }, { confidentiality: { not: 'OWNER_ONLY' } }, { OR: granted }],
+  };
 }

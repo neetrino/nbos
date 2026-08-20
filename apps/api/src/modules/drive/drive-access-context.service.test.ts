@@ -21,17 +21,34 @@ describe('DriveAccessContextService', () => {
     });
   });
 
-  it('keeps ALL drive scope for owner when RBAC ceiling is ALL', async () => {
+  it('keeps ALL drive scope for CEO or Founder when RBAC ceiling is ALL', async () => {
     const platformAccess = {
       resolveScopeModeForFamily: vi.fn().mockResolvedValue('ASSIGNED'),
     };
     const service = new DriveAccessContextService(platformAccess as never);
 
-    const access = await service.fromRequest(
-      { id: 'emp-1', departmentIds: [], role: 'owner', permissions: {} },
+    const ceo = await service.fromRequest(
+      { id: 'emp-1', departmentIds: [], role: 'ceo', permissions: {} },
       'ALL',
     );
+    expect(ceo.driveScope).toBe('ALL');
 
-    expect(access.driveScope).toBe('ALL');
+    const founder = await service.fromRequest(
+      {
+        id: 'emp-2',
+        departmentIds: [],
+        role: 'pm',
+        isPlatformOwner: true,
+        permissions: {},
+      },
+      'ALL',
+    );
+    expect(founder.driveScope).toBe('ALL');
+
+    const legacyOwnerSlug = await service.fromRequest(
+      { id: 'emp-3', departmentIds: [], role: 'owner', permissions: {} },
+      'ALL',
+    );
+    expect(legacyOwnerSlug.driveScope).toBe('OWN');
   });
 });

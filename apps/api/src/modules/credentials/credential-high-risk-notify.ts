@@ -1,6 +1,9 @@
 import type { PrismaClient } from '@nbos/database';
+import { CEO_ROLE_SLUG, PLATFORM_OWNERSHIP_SINGLETON_ID } from '@nbos/shared';
 import type { NotificationService } from '../notifications/notification.service';
 import type { SensitiveField } from './credential-domain.types';
+
+const ACTIVE_STATUSES = ['ACTIVE', 'PROBATION'] as const;
 
 export async function notifyCredentialHighRiskRecipients(
   prisma: InstanceType<typeof PrismaClient>,
@@ -14,17 +17,7 @@ export async function notifyCredentialHighRiskRecipients(
     dedupeSuffix: string;
   },
 ): Promise<void> {
-  const recipients = new Set<string>();
-  if (params.ownerId) recipients.add(params.ownerId);
-
-  const admins = await prisma.employee.findMany({
-    where: { role: { slug: { in: ['ceo', 'admin'] } } },
-    select: { id: true },
-  });
-  for (const admin of admins) recipients.add(admin.id);
-  recipients.delete(params.actorId);
-
-  const recipientIds = [...recipients];
+  const recipientIds = await loadHighRiskRecipientIds(prisma, params.actorId, params.ownerId);
   if (recipientIds.length === 0) return;
 
   await notifications.createMany({
@@ -58,4 +51,28 @@ export async function notifyHighRiskCredentialAction(
     ownerId: row.ownerId ?? null,
     dedupeSuffix: `${action}:${field}:${row.id}:${actorId}`,
   });
+}
+
+async function loadHighRiskRecipientIds(
+  prisma: InstanceType<typeof PrismaClient>,
+  actorId: string,
+  ownerId?: string | null,
+): Promise<string[]> {
+  const recipients = new Set<string>();
+  if (ownerId) recipients.add(ownerId);
+  const ownership = await prisma.platformOwnership.findUnique({
+    where: { id: PLATFORM_OWNERSHIP_SINGLETON_ID },
+    select: { ownerEmployeeId: true },
+  });
+  if (ownership?.ownerEmployeeId) recipients.add(ownership.ownerEmployeeId);
+  const ceos = await prisma.employee.findMany({
+    where: {
+      status: { in: [...ACTIVE_STATUSES] },
+      role: { slug: CEO_ROLE_SLUG },
+    },
+    select: { id: true },
+  });
+  for (const ceo of ceos) recipients.add(ceo.id);
+  recipients.delete(actorId);
+  return [...recipients];
 }

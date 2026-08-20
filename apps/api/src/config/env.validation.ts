@@ -7,6 +7,9 @@
 import { assertAuthSessionV2Config } from '../modules/auth/auth-session.flags';
 
 const MIN_SECRET_LENGTH = 32;
+const FOUNDER_EMPLOYEE_ID_KEY = 'NBOS_FOUNDER_EMPLOYEE_ID';
+const FOUNDER_EMPLOYEE_ID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /** Values that clearly came from `.env.example` and must never reach production. */
 const PLACEHOLDER_PATTERNS: readonly RegExp[] = [
@@ -71,6 +74,17 @@ export function validateEnv(config: Record<string, unknown>): Record<string, unk
     const schedulerKey = config['SCHEDULER_API_KEY'];
     if (typeof schedulerKey === 'string' && looksLikePlaceholder(schedulerKey)) {
       errors.push('SCHEDULER_API_KEY looks like a placeholder; set a real secret in production');
+    }
+
+    if (isBlank(config[FOUNDER_EMPLOYEE_ID_KEY])) {
+      errors.push(`${FOUNDER_EMPLOYEE_ID_KEY} is required in production`);
+    }
+  }
+
+  const founderId = config[FOUNDER_EMPLOYEE_ID_KEY];
+  if (typeof founderId === 'string' && founderId.trim().length > 0) {
+    if (!FOUNDER_EMPLOYEE_ID_RE.test(founderId.trim())) {
+      errors.push(`${FOUNDER_EMPLOYEE_ID_KEY} must be a UUID`);
     }
   }
 

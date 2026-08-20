@@ -42,9 +42,10 @@ Permission Role
 
 ### Permission Role
 
-Техническая роль:
+Техническая роль (операционный RBAC). **Platform Owner / Founder is not a permission role** — see `03-Platform-Owner-Security-Architecture.md`. Legacy slug `owner` is `assignable=false` and must never grant vault bypass.
 
-- Owner;
+- Owner (legacy, not assignable);
+- CEO;
 - Admin;
 - Finance Admin;
 - Sales Manager;

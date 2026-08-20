@@ -1,5 +1,7 @@
 # Project quality checklists (reference)
 
+> **Role:** template-rules compliance checklist (DoD/PR) — verifies the project follows `.cursor/rules/`. For a full pre-release audit (P0/P1, how-to-check, Release Readiness Summary) use [release-audit-checklist.md](release-audit-checklist.md).
+
 > Human-readable checklists. Moved from `.cursor/rules/19-checklists.mdc` (not loaded as AI rules — saves tokens). For coding limits use `00-core.mdc` and `03-typescript.mdc` (replaces removed `02-coding-standards.mdc`). Ops/reliability: `14-ops.mdc` (replaces `14-observability` + `18-reliability`).
 
 # ՈՐԱԿԻ ՍՏՈՒԳԱՑՈՒՑԱԿՆԵՐ

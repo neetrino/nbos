@@ -31,4 +31,5 @@ export interface MeResponse {
     };
   }>;
   permissions: PermissionMap;
+  isPlatformOwner?: boolean;
 }

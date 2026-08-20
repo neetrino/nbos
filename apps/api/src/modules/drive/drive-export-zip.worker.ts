@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit, Optional } from '@nestjs/common';
 import { Worker } from 'bullmq';
 import type Redis from 'ioredis';
 import { resolveBullmqConcurrency } from '../../runtime/bullmq-concurrency';
@@ -7,6 +7,7 @@ import { logBullmqJob } from '../../runtime/bullmq-job-log';
 import { BullmqWorkerRegistry } from '../../runtime/bullmq-worker-registry';
 import { shouldRegisterBullmqWorkers } from '../../runtime/process-role';
 import { createQueueWorkerConnection, getRedisQueueUrl } from '../../runtime/queue-redis';
+import { OpsJobFailureAlertService } from '../ops-alerts/ops-job-failure-alert.service';
 import {
   DRIVE_ZIP_EXPORT_JOB_NAME,
   DRIVE_ZIP_EXPORT_QUEUE_NAME,
@@ -23,6 +24,7 @@ export class DriveExportZipWorker implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly driveZipExports: DriveZipExportService,
     private readonly registry: BullmqWorkerRegistry,
+    @Optional() private readonly opsAlerts?: OpsJobFailureAlertService,
   ) {}
 
   onModuleInit() {
@@ -69,6 +71,7 @@ export class DriveExportZipWorker implements OnModuleInit, OnModuleDestroy {
         `Drive ZIP export worker failed for BullMQ job ${job?.id ?? 'unknown'}.`,
         error,
       );
+      void this.opsAlerts?.notifyIfBullmqFinallyFailed(DRIVE_ZIP_EXPORT_QUEUE_NAME, job, error);
     });
   }
 

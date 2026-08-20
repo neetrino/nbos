@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Security
 
-**Operational checklist (panels, WAF, MFA, backups):** read when auditing — [`docs/reference/Check/Security/0 Security List.md`](docs/reference/Check/Security/0 Security List.md).
+**Operational checklist (panels, WAF, MFA, backups):** read when auditing — [`docs/reference/Check/Security/0 Security List.md`](../../docs/reference/Check/Security/0%20Security%20List.md). For a dedicated security audit of auth, payments, tenants, or integrations use the [`security-review`](../../.agents/skills/security-review/SKILL.md) skill.
 
 ## Never
 
@@ -22,6 +22,7 @@ alwaysApply: false
 - Passwords: **argon2id** (or project standard from TECH_CARD); never MD5/SHA256 without salt.
 - Cookies: `httpOnly`, `secure`, `sameSite` appropriate for your flow.
 - **Authorization** on every protected route handler / Server Action / Nest guard — never trust UI-only hiding.
+- **Object-level authorization (IDOR/BOLA):** verify the requested resource belongs to the current user/tenant on every read and mutation — a role check alone is not enough.
 
 ## API / input
 
@@ -30,6 +31,8 @@ alwaysApply: false
 - **CORS** allowlist for prod/staging; no `*` with credentials.
 - **Webhooks**: verify HMAC/signature; idempotency + replay protection for payments.
 - **Rate limit** auth and sensitive endpoints (app or edge/WAF per `docs/reference/Check/Security/`).
+- **SSRF:** never fetch user-supplied URLs directly; use a destination allowlist and block private/internal addresses.
+- **File uploads:** validate type by content (not extension), enforce size limits, generate storage names server-side — never trust the client filename/path.
 
 ## Responses
 

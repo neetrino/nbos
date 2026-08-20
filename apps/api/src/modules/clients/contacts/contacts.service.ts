@@ -243,7 +243,7 @@ export class ContactsService {
   async mergeContacts(
     survivorId: string,
     body: { absorbedId: string; fieldChoices?: ContactMergeFieldChoices },
-    actor: { id: string; roleSlug: string },
+    actor: { id: string; roleSlug: string; isPlatformOwner?: boolean },
   ) {
     await runContactMerge(this.prisma, this.auditService, {
       survivorId,
@@ -251,6 +251,7 @@ export class ContactsService {
       fieldChoices: body.fieldChoices ?? {},
       actorId: actor.id,
       actorRoleSlug: actor.roleSlug,
+      isPlatformOwner: actor.isPlatformOwner === true,
     });
     return this.findById(survivorId);
   }

@@ -5,9 +5,10 @@ import {
   type PlatformAccessActionEnum,
   type AccessScopeModeEnum,
 } from '@nbos/database';
-import type { PlatformResourceFamily } from '@nbos/shared';
+import { isCredentialsAllScopeMode, type PlatformResourceFamily } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import { PlatformOwnershipService } from '../platform-ownership/platform-ownership.service';
 
 export interface EmployeeAccessOverrideDto {
   resourceFamily: PlatformResourceFamily;
@@ -23,6 +24,7 @@ export class EmployeeAccessOverrideService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly audit: AuditService,
+    private readonly ownership: PlatformOwnershipService,
   ) {}
 
   async listByEmployee(employeeId: string) {
@@ -35,6 +37,9 @@ export class EmployeeAccessOverrideService {
 
   async upsert(employeeId: string, dto: EmployeeAccessOverrideDto, actorId: string) {
     await this.assertEmployeeExists(employeeId);
+    if (isCredentialsAllScopeMode(dto.resourceFamily, dto.scopeMode)) {
+      await this.ownership.assertPlatformOwner(actorId);
+    }
     const row = await this.prisma.employeeAccessOverride.upsert({
       where: {
         employeeId_resourceFamily: {

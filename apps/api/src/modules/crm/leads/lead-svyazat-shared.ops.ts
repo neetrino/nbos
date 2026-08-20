@@ -68,6 +68,7 @@ export type SvyazatContactRow = {
 export interface SvyazatActor {
   actorId: string;
   actorRoleSlug: string;
+  isPlatformOwner?: boolean;
 }
 
 export function svyazatBlocked(code: string, message: string): BadRequestException {
@@ -98,6 +99,7 @@ export function assertSvyazatPermission(actor: SvyazatActor, lead: SvyazatLeadRo
       roleSlug: actor.actorRoleSlug,
       actorId: actor.actorId,
       assignedTo: lead.assignedTo,
+      isPlatformOwner: actor.isPlatformOwner === true,
     })
   ) {
     return;

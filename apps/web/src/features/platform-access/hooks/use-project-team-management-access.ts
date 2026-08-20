@@ -19,6 +19,7 @@ export function useProjectTeamManagementAccess(members: ProjectTeamMemberRow[]) 
 
     const actor = {
       roleSlug: me.role.slug,
+      isPlatformOwner: me.isPlatformOwner === true,
       projectTeamRole: resolveActorProjectTeamRole(members, me.id),
     };
 

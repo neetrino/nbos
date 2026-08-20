@@ -1,4 +1,3 @@
-import type { PrismaClient } from '@nbos/database';
 import { buildScopeWhere } from '../../../common/lifecycle/entity-lifecycle-scope';
 import { buildCredentialListWhere } from '../../credentials/credential-list-where';
 import type { CredentialsAccessContext } from '../../credentials/credentials-access';
@@ -17,6 +16,7 @@ export async function searchCredentials(
     employeeId: access.employeeId,
     departmentIds: access.departmentIds,
     bypassRowVisibility: access.bypassRowVisibility,
+    executiveProjectAccess: access.executiveProjectAccess,
     scope: 'active',
   });
 

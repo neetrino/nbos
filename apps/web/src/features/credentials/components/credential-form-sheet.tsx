@@ -15,7 +15,7 @@ import {
   type CredentialFormSheetTab,
 } from '@/features/credentials/constants/credential-form-sheet-tabs';
 import { buildCredentialVaultHref } from '@/features/credentials/constants/credential-vault-deep-link';
-import { canUseCredentialEmergencyAccess } from '@/features/credentials/constants/credential-emergency-access';
+import { canRequestCredentialEmergencyAccess } from '@/features/credentials/constants/credential-emergency-access';
 import { CredentialEmergencyAccessPanel } from './credential-emergency-access-panel';
 import { CredentialFormSheetBody } from './credential-form-sheet-body';
 import { CredentialFormSheetHeader } from './credential-form-sheet-header';
@@ -86,7 +86,8 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
   } = form;
 
   const showEmergency =
-    accessDenied && credentialId && canUseCredentialEmergencyAccess(me?.role.slug);
+    Boolean(credentialId) &&
+    canRequestCredentialEmergencyAccess(accessDenied, me?.isPlatformOwner === true);
 
   const headerResetKey = `${open}|${credentialId ?? 'create'}`;
   const sourcePageHref = credentialId ? buildCredentialVaultHref(credentialId) : '/credentials';
@@ -150,7 +151,7 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
               {showEmergency ? (
                 <CredentialEmergencyAccessPanel
                   credentialId={credentialId!}
-                  onGranted={() => void loadDetail()}
+                  onRequested={() => void loadDetail()}
                 />
               ) : (
                 <p className="text-muted-foreground px-6 py-8 text-sm">

@@ -45,7 +45,11 @@ export class LeadConversionService {
     private readonly leadsService: LeadsService,
   ) {}
 
-  async convertToDeal(leadId: string, data: ConvertLeadDto, opts?: { actorRoleLevel?: number }) {
+  async convertToDeal(
+    leadId: string,
+    data: ConvertLeadDto,
+    opts?: { canOverridePausedPartner?: boolean },
+  ) {
     const lead = await this.leadsService.findById(leadId);
     assertEntityIsActive(lead, 'trashedAt', 'Lead');
 
@@ -60,10 +64,10 @@ export class LeadConversionService {
       throw new BadRequestException('Lead already has an associated deal');
     }
 
-    return this.createDealFromLead(lead, data, false, opts?.actorRoleLevel);
+    return this.createDealFromLead(lead, data, false, opts?.canOverridePausedPartner === true);
   }
 
-  async qualifyLeadAsSql(leadId: string, opts?: { actorRoleLevel?: number }) {
+  async qualifyLeadAsSql(leadId: string, opts?: { canOverridePausedPartner?: boolean }) {
     const lead = await this.leadsService.findById(leadId);
     assertEntityIsActive(lead, 'trashedAt', 'Lead');
 
@@ -83,7 +87,7 @@ export class LeadConversionService {
       lead,
       { sellerId: lead.assignedTo ?? undefined },
       true,
-      opts?.actorRoleLevel,
+      opts?.canOverridePausedPartner === true,
     );
   }
 
@@ -91,7 +95,7 @@ export class LeadConversionService {
     lead: LeadForConversion,
     data: ConvertLeadDto,
     markLeadAsSql: boolean,
-    actorRoleLevel?: number,
+    canOverridePausedPartner = false,
   ) {
     const sellerId = data.sellerId ?? lead.assignedTo ?? undefined;
     const errors = getLeadConversionErrors(lead, sellerId);
@@ -133,7 +137,7 @@ export class LeadConversionService {
       this.prisma,
       lead.source ?? null,
       lead.sourcePartnerId,
-      actorRoleLevel,
+      canOverridePausedPartner,
     );
 
     const deal = await this.prisma.deal.create({

@@ -49,7 +49,14 @@ Template-ի կանոնները թարմացվում են։ Գոյություն 
 
 - Вход: [docs/README.md](docs/README.md)
 - Центральный указатель: [docs/NBOS/00-Documentation-Hub.md](docs/NBOS/00-Documentation-Hub.md)
-- План шагов (код + доки): [docs/NBOS/00-NEXT-STEPS-ROADMAP.md](docs/NBOS/00-NEXT-STEPS-ROADMAP.md)
+- План шагов (код + доки): [docs/NBOS/00-Implementation-Roadmap.md](docs/NBOS/00-Implementation-Roadmap.md)
+
+## Rules и Skills
+
+- `.cursor/rules/` — постоянные стандарты кода.
+- [`.agents/`](.agents/README.md) — portable Skills, catalog и governance.
+- [`AGENTS.md`](AGENTS.md) — приоритет канона NBOS и границы работы агента.
+- Проверка конфигурации: `node scripts/validate-agent-config.mjs`
 
 ---
 

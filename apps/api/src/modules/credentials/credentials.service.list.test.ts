@@ -109,9 +109,6 @@ describe('CredentialsService findAll', () => {
                 { login: { contains: 'aws', mode: 'insensitive' } },
               ]),
             },
-            {
-              OR: expect.arrayContaining([{ accessLevel: 'ALL' }]),
-            },
           ]),
         }),
       }),
@@ -310,6 +307,7 @@ describe('CredentialsService findById', () => {
         viewScope: 'ALL',
         editScope: 'OWN',
         bypassRowVisibility: false,
+        executiveProjectAccess: false,
       }),
     ).rejects.toThrow(NotFoundException);
     const call = prisma.credential.findFirst.mock.calls[0]?.[0] as { where: { OR?: unknown } };

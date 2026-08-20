@@ -42,6 +42,8 @@ model Role {
   description String?
   level       Int
   isSystem    Boolean  @default(false) @map("is_system")
+  /// Legacy `owner` role is not assignable; Founder is PlatformOwnership identity.
+  assignable  Boolean  @default(true)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 

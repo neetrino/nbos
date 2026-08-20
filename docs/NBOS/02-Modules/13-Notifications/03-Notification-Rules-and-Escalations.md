@@ -92,6 +92,15 @@ Scheduler: `POST /api/scheduler/invoice-card-reminders` (Yerevan `asOf`).
 
 Task chat messages are Messenger events. Notifications only alerts unread/mentions/replies.
 
+### Ops / runtime
+
+| Event                      | Условия                                      | Действие                                                     |
+| -------------------------- | -------------------------------------------- | ------------------------------------------------------------ |
+| `ops.scheduler_run_failed` | Scheduler run `FAILED` or `TIMED_OUT`        | In-app Owner and CEO (distinct roles); hourly dedupe per job |
+| `ops.bullmq_job_failed`    | BullMQ job exhausted retries (final attempt) | In-app Owner and CEO; hourly dedupe per queue+job            |
+
+Link: Settings → Scheduler for cron runs; Mail / Reports / Drive / Settings for known queues.
+
 ### Support
 
 | Event                   | Условия            | Действие          |

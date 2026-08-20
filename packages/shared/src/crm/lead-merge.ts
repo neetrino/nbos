@@ -1,5 +1,5 @@
-/** Role slugs that may merge any Lead pair (canon §9 + Owner as CEO-equivalent). */
-export const LEAD_MERGE_UNRESTRICTED_ROLE_SLUGS = ['owner', 'ceo', 'head-sales'] as const;
+/** Role slugs that may merge any Lead pair. Founder uses `isPlatformOwner`, not slug `owner`. */
+export const LEAD_MERGE_UNRESTRICTED_ROLE_SLUGS = ['ceo', 'head-sales'] as const;
 
 /** Seller may merge only when both Leads are assigned to them. */
 export const LEAD_MERGE_SELLER_ROLE_SLUG = 'seller';
@@ -58,7 +58,8 @@ export const LEAD_MERGE_ALLOWED_STATUS_OVERRIDES = [
 
 export const AUTO_ATTACH_EXCLUDED_LEAD_STATUSES = ['SQL', 'SPAM'] as const;
 
-export function isLeadMergeUnrestrictedRole(roleSlug: string): boolean {
+export function isLeadMergeUnrestrictedRole(roleSlug: string, isPlatformOwner = false): boolean {
+  if (isPlatformOwner) return true;
   return (LEAD_MERGE_UNRESTRICTED_ROLE_SLUGS as readonly string[]).includes(roleSlug);
 }
 
@@ -75,16 +76,21 @@ export function canMergeLeads(params: {
   actorId: string;
   survivorAssignedTo: string | null;
   absorbedAssignedTo: string | null;
+  isPlatformOwner?: boolean;
 }): boolean {
   if (isLeadMergeBlockedRole(params.roleSlug)) return false;
-  if (isLeadMergeUnrestrictedRole(params.roleSlug)) return true;
+  if (isLeadMergeUnrestrictedRole(params.roleSlug, params.isPlatformOwner === true)) return true;
   if (params.roleSlug !== LEAD_MERGE_SELLER_ROLE_SLUG) return false;
   return (
     params.survivorAssignedTo === params.actorId && params.absorbedAssignedTo === params.actorId
   );
 }
 
-export function canOfferLeadMerge(roleSlug: string | null | undefined): boolean {
+export function canOfferLeadMerge(
+  roleSlug: string | null | undefined,
+  isPlatformOwner = false,
+): boolean {
+  if (isPlatformOwner) return true;
   if (!roleSlug) return false;
   if (isLeadMergeBlockedRole(roleSlug)) return false;
   return isLeadMergeUnrestrictedRole(roleSlug) || roleSlug === LEAD_MERGE_SELLER_ROLE_SLUG;
@@ -98,15 +104,19 @@ export function canAttachLeadToContact(params: {
   roleSlug: string;
   actorId: string;
   assignedTo: string | null;
+  isPlatformOwner?: boolean;
 }): boolean {
   if (isLeadMergeBlockedRole(params.roleSlug)) return false;
-  if (isLeadMergeUnrestrictedRole(params.roleSlug)) return true;
+  if (isLeadMergeUnrestrictedRole(params.roleSlug, params.isPlatformOwner === true)) return true;
   if (params.roleSlug !== LEAD_MERGE_SELLER_ROLE_SLUG) return false;
   return params.assignedTo === params.actorId;
 }
 
-export function canOfferLeadAttach(roleSlug: string | null | undefined): boolean {
-  return canOfferLeadMerge(roleSlug);
+export function canOfferLeadAttach(
+  roleSlug: string | null | undefined,
+  isPlatformOwner = false,
+): boolean {
+  return canOfferLeadMerge(roleSlug, isPlatformOwner);
 }
 
 export function isEmptyMergeField(value: string | null | undefined): boolean {

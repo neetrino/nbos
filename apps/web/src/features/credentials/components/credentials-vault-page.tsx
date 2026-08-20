@@ -22,6 +22,7 @@ import { CredentialVaultSessionProvider } from '@/features/credentials/hooks/use
 import { useVaultPasswordCopy } from '@/features/credentials/hooks/use-vault-password-copy';
 import { useCredentialsVaultPage } from '@/features/credentials/hooks/use-credentials-vault-page';
 import { CredentialsPageSettingsSheet } from '@/features/credentials/components/credentials-page-settings-sheet';
+import { CredentialEmergencyRequestsPanel } from '@/features/credentials/components/credential-emergency-requests-panel';
 import { PermissionGate } from '@/lib/permissions';
 
 export function CredentialsVaultPage() {
@@ -100,6 +101,8 @@ function CredentialsVaultPageContent() {
           </>
         }
       />
+
+      <CredentialEmergencyRequestsPanel />
 
       {vault.vaultListScope === 'trash' ? (
         <CredentialVaultTrashBanner onBackToVault={() => vault.setVaultListScope('active')} />

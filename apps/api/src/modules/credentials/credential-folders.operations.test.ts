@@ -11,6 +11,7 @@ const access = {
   employeeId: 'emp-1',
   departmentIds: [] as string[],
   bypassRowVisibility: false,
+  executiveProjectAccess: false,
 };
 
 function createRuntime(prisma: MockPrisma): CredentialsRuntime {

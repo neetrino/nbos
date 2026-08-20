@@ -283,7 +283,7 @@ transferPlatformOwnership()
 Requirements:
 
 - current Founder authentication;
-- MFA/step-up;
+- step-up (account password);
 - confirmation;
 - active target employee;
 - audit event;
@@ -379,7 +379,7 @@ Must verify:
 9. CEO cannot access OWNER_ONLY secrets.
 10. Ownership mismatch fails closed.
 11. Emergency access is audited.
-12. Ownership transfer requires MFA.
+12. Ownership transfer requires step-up (account password; product has no TOTP).
 13. Old Founder loses sovereign access after transfer.
 
 ---

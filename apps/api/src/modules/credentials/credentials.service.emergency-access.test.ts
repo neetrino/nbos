@@ -1,7 +1,11 @@
 import './credentials.service.fixture';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import { accessUser1, createCredentialsServiceTestContext } from './credentials.service.fixture';
+import {
+  accessOwnerAll,
+  accessUser1,
+  createCredentialsServiceTestContext,
+} from './credentials.service.fixture';
 
 describe('CredentialsService emergency access', () => {
   let service: ReturnType<typeof createCredentialsServiceTestContext>['service'];
@@ -15,66 +19,111 @@ describe('CredentialsService emergency access', () => {
     auditService = ctx.auditService;
   });
 
-  it('rejects non-executive roles', async () => {
-    prisma.employee.findUnique.mockResolvedValue({ role: { slug: 'developer' } });
-    await expect(
-      service.grantEmergencyAccess(
-        'cred-1',
-        { reason: 'Project incident recovery', stepUpPassword: 'pwd' },
-        accessUser1,
-      ),
-    ).rejects.toBeInstanceOf(ForbiddenException);
-  });
-
-  it('grants temporary VIEW and logs audit for executives without row access', async () => {
-    prisma.employee.findUnique
-      .mockResolvedValueOnce({ role: { slug: 'ceo' } })
-      .mockResolvedValueOnce({ passwordHash: 'hash' });
+  it('creates a pending request and audits instead of self-granting', async () => {
+    prisma.employee.findUnique.mockResolvedValue({ passwordHash: 'hash' });
     prisma.credential.findFirst
       .mockResolvedValueOnce({
         id: 'cred-1',
         name: 'Prod DB',
         ownerId: 'owner-1',
-        criticality: 'CRITICAL',
         projectId: 'p1',
+        confidentiality: 'NORMAL',
       })
       .mockResolvedValueOnce(null);
-    prisma.resourceAccessGrant.upsert.mockResolvedValue({});
+    prisma.credentialEmergencyAccessRequest.findFirst.mockResolvedValue(null);
+    prisma.credentialEmergencyAccessRequest.create.mockResolvedValue({
+      id: 'req-1',
+      status: 'PENDING',
+    });
+    prisma.platformOwnership.findUnique.mockResolvedValue({ ownerEmployeeId: 'founder-1' });
 
-    const result = await service.grantEmergencyAccess(
+    const result = await service.requestEmergencyAccess(
       'cred-1',
       { reason: 'Production outage recovery', stepUpPassword: 'pwd' },
       accessUser1,
     );
 
-    expect(result.credentialId).toBe('cred-1');
-    expect(result.level).toBe('VIEW');
-    expect(prisma.resourceAccessGrant.upsert).toHaveBeenCalled();
+    expect(result).toEqual({ requestId: 'req-1', status: 'PENDING' });
+    expect(prisma.resourceAccessGrant.upsert).not.toHaveBeenCalled();
     expect(auditService.log).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'credential.emergency_access_used', entityId: 'cred-1' }),
+      expect.objectContaining({
+        action: 'credential.emergency_access_requested',
+        entityId: 'cred-1',
+      }),
     );
   });
 
+  it('rejects OWNER_ONLY requests', async () => {
+    prisma.employee.findUnique.mockResolvedValue({ passwordHash: 'hash' });
+    prisma.credential.findFirst.mockResolvedValue({
+      id: 'cred-1',
+      name: 'Root',
+      ownerId: null,
+      projectId: null,
+      confidentiality: 'OWNER_ONLY',
+    });
+
+    await expect(
+      service.requestEmergencyAccess(
+        'cred-1',
+        { reason: 'Need the master secret', stepUpPassword: 'pwd' },
+        accessUser1,
+      ),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
   it('rejects when caller already has visibility', async () => {
-    prisma.employee.findUnique
-      .mockResolvedValueOnce({ role: { slug: 'admin' } })
-      .mockResolvedValueOnce({ passwordHash: 'hash' });
+    prisma.employee.findUnique.mockResolvedValue({ passwordHash: 'hash' });
     prisma.credential.findFirst
       .mockResolvedValueOnce({
         id: 'cred-1',
         name: 'Prod DB',
         ownerId: null,
-        criticality: 'HIGH',
         projectId: null,
+        confidentiality: 'NORMAL',
       })
       .mockResolvedValueOnce({ id: 'cred-1' });
 
     await expect(
-      service.grantEmergencyAccess(
+      service.requestEmergencyAccess(
         'cred-1',
         { reason: 'Should not apply', stepUpPassword: 'pwd' },
         accessUser1,
       ),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('approves a pending request, grants VIEW, and audits', async () => {
+    prisma.employee.findUnique.mockResolvedValue({ passwordHash: 'hash' });
+    prisma.credentialEmergencyAccessRequest.findFirst.mockResolvedValue({
+      id: 'req-1',
+      credentialId: 'cred-1',
+      requesterId: 'user-1',
+      reason: 'Outage',
+      ttlMs: 86_400_000,
+      status: 'PENDING',
+      credential: {
+        id: 'cred-1',
+        name: 'Prod DB',
+        ownerId: 'owner-1',
+        projectId: 'p1',
+        confidentiality: 'NORMAL',
+      },
+    });
+    prisma.resourceAccessGrant.upsert.mockResolvedValue({ id: 'grant-1' });
+
+    const result = await service.decideEmergencyAccess('req-1', 'APPROVED', accessOwnerAll, 'pwd');
+
+    expect(result.status).toBe('APPROVED');
+    expect(prisma.resourceAccessGrant.upsert).toHaveBeenCalled();
+    expect(auditService.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'credential.emergency_access_approved' }),
+    );
+  });
+
+  it('forbids non-founders from listing pending requests', async () => {
+    await expect(service.listEmergencyAccessRequests(accessUser1)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
   });
 });

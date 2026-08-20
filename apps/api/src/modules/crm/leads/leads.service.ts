@@ -184,14 +184,17 @@ export class LeadsService {
     };
   }
 
-  async create(data: CreateLeadDto, meta: { actorId?: string; actorRoleLevel?: number } = {}) {
+  async create(
+    data: CreateLeadDto,
+    meta: { actorId?: string; canOverridePausedPartner?: boolean } = {},
+  ) {
     const resolved = resolveLeadCreateDefaults(data, meta);
     if (resolved.source === 'PARTNER' || resolved.sourcePartnerId) {
       await assertPartnerAssignableForInboundCrm(
         this.prisma,
         resolved.source ?? null,
         resolved.sourcePartnerId,
-        meta.actorRoleLevel,
+        meta.canOverridePausedPartner === true,
       );
     }
     if (resolved.contactId) {
@@ -236,7 +239,7 @@ export class LeadsService {
     });
   }
 
-  async update(id: string, data: UpdateLeadDto, meta: { actorRoleLevel?: number } = {}) {
+  async update(id: string, data: UpdateLeadDto, meta: { canOverridePausedPartner?: boolean } = {}) {
     const existing = await this.findById(id);
     assertEntityIsActive(existing, 'trashedAt', 'Lead');
     const nextSource = data.source !== undefined ? data.source : existing.source;
@@ -247,7 +250,7 @@ export class LeadsService {
         this.prisma,
         nextSource,
         nextPartnerId,
-        meta.actorRoleLevel,
+        meta.canOverridePausedPartner === true,
       );
     }
     const nextStatus = data.status ?? existing.status;
@@ -350,7 +353,7 @@ export class LeadsService {
   async mergeLeads(
     survivorId: string,
     body: { absorbedId: string; fieldChoices?: LeadMergeFieldChoices; status?: string },
-    actor: { id: string; roleSlug: string },
+    actor: { id: string; roleSlug: string; isPlatformOwner?: boolean },
   ) {
     await mergeLeads(this.prisma, this.auditService, {
       survivorId,
@@ -359,6 +362,7 @@ export class LeadsService {
       status: body.status,
       actorId: actor.id,
       actorRoleSlug: actor.roleSlug,
+      isPlatformOwner: actor.isPlatformOwner === true,
     });
     return this.findById(survivorId);
   }
@@ -366,7 +370,7 @@ export class LeadsService {
   async attachContact(
     leadId: string,
     body: { contactId: string; aboutDealId?: string },
-    actor: { id: string; roleSlug: string },
+    actor: { id: string; roleSlug: string; isPlatformOwner?: boolean },
   ) {
     await attachLeadToContact(this.prisma, this.auditService, {
       leadId,
@@ -374,6 +378,7 @@ export class LeadsService {
       aboutDealId: body.aboutDealId,
       actorId: actor.id,
       actorRoleSlug: actor.roleSlug,
+      isPlatformOwner: actor.isPlatformOwner === true,
     });
     return this.findById(leadId);
   }
@@ -381,13 +386,14 @@ export class LeadsService {
   async pourIntoContact(
     leadId: string,
     contactId: string,
-    actor: { id: string; roleSlug: string },
+    actor: { id: string; roleSlug: string; isPlatformOwner?: boolean },
   ) {
     await pourLeadIntoContact(this.prisma, this.auditService, {
       leadId,
       contactId,
       actorId: actor.id,
       actorRoleSlug: actor.roleSlug,
+      isPlatformOwner: actor.isPlatformOwner === true,
     });
     return this.findById(leadId);
   }
@@ -395,13 +401,14 @@ export class LeadsService {
   async createContactFromLead(
     leadId: string,
     body: { attach?: { type: 'deal' | 'project' | 'lead'; id: string } },
-    actor: { id: string; roleSlug: string },
+    actor: { id: string; roleSlug: string; isPlatformOwner?: boolean },
   ) {
     await createContactFromLead(this.prisma, this.auditService, {
       leadId,
       attach: body.attach,
       actorId: actor.id,
       actorRoleSlug: actor.roleSlug,
+      isPlatformOwner: actor.isPlatformOwner === true,
     });
     return this.findById(leadId);
   }

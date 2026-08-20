@@ -60,6 +60,9 @@ export function buildCredentialUpdateData(
     ...(data.accessLevel && {
       accessLevel: data.accessLevel as Prisma.CredentialUpdateInput['accessLevel'],
     }),
+    ...(data.confidentiality && {
+      confidentiality: data.confidentiality as Prisma.CredentialUpdateInput['confidentiality'],
+    }),
     ...(data.allowedEmployees && { allowedEmployees: data.allowedEmployees }),
   };
 }

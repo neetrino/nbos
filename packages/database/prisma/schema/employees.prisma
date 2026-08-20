@@ -138,6 +138,10 @@ model Employee {
   resourceAccessGrantsGranted        ResourceAccessGrant[]               @relation("ResourceAccessGrantGrantedBy")
   whatsappGroupOperationsRequested   WhatsAppGroupOperation[]            @relation("WhatsAppGroupOperationRequestedBy")
   whatsappParticipantSyncs           ProductWhatsAppParticipantSync[]    @relation("ProductWhatsAppParticipantSyncEmployee")
+  platformOwnership                  PlatformOwnership[]                 @relation("PlatformOwnerEmployee")
+  platformOwnershipTransfers         PlatformOwnership[]                 @relation("PlatformOwnershipTransferredBy")
+  emergencyAccessRequestsMade        CredentialEmergencyAccessRequest[]  @relation("EmergencyAccessRequester")
+  emergencyAccessRequestsDecided     CredentialEmergencyAccessRequest[]  @relation("EmergencyAccessDecider")
 
   @@map("employees")
 }

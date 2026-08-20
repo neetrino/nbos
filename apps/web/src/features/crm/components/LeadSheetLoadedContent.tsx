@@ -91,7 +91,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
       }),
     [canCreateTask, props],
   );
-  const canMerge = canOfferLeadMerge(me?.role.slug);
+  const canMerge = canOfferLeadMerge(me?.role.slug, me?.isPlatformOwner === true);
   const currentStage = LEAD_STAGES.find((s) => s.key === renderLead.status);
   const isTerminal = currentStage ? 'terminal' in currentStage : false;
   const leadVisual = LEAD_ENTITY_VISUAL;

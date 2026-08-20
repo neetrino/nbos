@@ -42,17 +42,17 @@ import {
   AUTH_SESSION_CLEANUP_CRON_ENABLED_ENV,
   AUTH_SESSION_CLEANUP_CRON_ENV,
   AUTH_SESSION_CLEANUP_DEFAULT_CRON,
-} from './auth-session-cleanup.cron';
+} from './auth-session-cleanup-cron.constants';
 import {
   NOTIFICATION_INBOX_RECONCILE_CRON_ENABLED_ENV,
   NOTIFICATION_INBOX_RECONCILE_CRON_ENV,
   NOTIFICATION_INBOX_RECONCILE_DEFAULT_CRON,
-} from './notification-inbox-reconcile.cron';
+} from './notification-inbox-reconcile-cron.constants';
 import {
   NOTIFICATION_ENQUEUE_RECONCILE_CRON_ENABLED_ENV,
   NOTIFICATION_ENQUEUE_RECONCILE_CRON_ENV,
   NOTIFICATION_ENQUEUE_RECONCILE_DEFAULT_CRON,
-} from './notification-enqueue-reconcile.cron';
+} from './notification-enqueue-reconcile-cron.constants';
 import {
   PLATFORM_TRASH_PURGE_CRON_ENV,
   PLATFORM_TRASH_PURGE_DEFAULT_CRON,

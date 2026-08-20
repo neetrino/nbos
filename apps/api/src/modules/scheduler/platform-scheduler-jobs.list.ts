@@ -12,7 +12,7 @@ import type {
 } from './platform-scheduler-jobs.status';
 
 export const PLATFORM_SCHEDULER_JOBS_LIST_NOTE =
-  'Enable/disable and Run now use SchedulerJobPolicy. Schedule (cron) changes only in code/deploy. SCHEDULER_ENABLED is the kill switch. Failure alerts stay on the ops monitoring backlog.';
+  'Enable/disable and Run now use SchedulerJobPolicy. Schedule (cron) changes only in code/deploy. SCHEDULER_ENABLED is the kill switch. Failed scheduler runs and final queue job failures notify Owner and CEO in-app (System health).';
 
 export type PlatformSchedulerJobsResponse = {
   generatedAt: string;

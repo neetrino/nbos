@@ -27,7 +27,11 @@ import {
   listCredentialSheetAudit,
   replaceCredentialManualAccess,
 } from './credentials-manual-access.operations';
-import { grantCredentialEmergencyAccess } from './credentials-emergency-access.operations';
+import {
+  decideEmergencyAccessRequest,
+  listPendingEmergencyAccessRequests,
+} from './credentials-emergency-decide.operations';
+import { requestCredentialEmergencyAccess } from './credentials-emergency-request.operations';
 import {
   listCredentialSecretVersions,
   revealCredentialSecretVersion,
@@ -178,12 +182,25 @@ export class CredentialsService {
     return listCredentialSheetAudit(this.runtime, id, access, page);
   }
 
-  grantEmergencyAccess(
+  requestEmergencyAccess(
     id: string,
     input: { reason: string; stepUpPassword?: string },
     access: CredentialsAccessContext,
   ) {
-    return grantCredentialEmergencyAccess(this.runtime, id, input, access);
+    return requestCredentialEmergencyAccess(this.runtime, id, input, access);
+  }
+
+  listEmergencyAccessRequests(access: CredentialsAccessContext) {
+    return listPendingEmergencyAccessRequests(this.runtime, access);
+  }
+
+  decideEmergencyAccess(
+    requestId: string,
+    decision: 'APPROVED' | 'DENIED',
+    access: CredentialsAccessContext,
+    stepUpPassword?: string,
+  ) {
+    return decideEmergencyAccessRequest(this.runtime, requestId, decision, access, stepUpPassword);
   }
 
   listSecretVersions(id: string, access: CredentialsAccessContext) {
@@ -248,8 +265,8 @@ export class CredentialsService {
     return replaceCredentialFolderMemberships(this.runtime, id, folderIds, access);
   }
 
-  create(data: CreateCredentialDto, userId: string) {
-    return createCredential(this.runtime, data, userId);
+  create(data: CreateCredentialDto, access: CredentialsAccessContext) {
+    return createCredential(this.runtime, data, access);
   }
 
   update(id: string, data: UpdateCredentialDto, access: CredentialsAccessContext) {

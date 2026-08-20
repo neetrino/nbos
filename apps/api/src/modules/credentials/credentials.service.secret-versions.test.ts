@@ -1,6 +1,6 @@
 import './credentials.service.fixture';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ForbiddenException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { accessUser1, createCredentialsServiceTestContext } from './credentials.service.fixture';
 
 describe('CredentialsService secret versions', () => {
@@ -32,12 +32,11 @@ describe('CredentialsService secret versions', () => {
     expect(result.items[0]?.field).toBe('password');
   });
 
-  it('rejects version reveal for non-executive without ALL scope', async () => {
-    prisma.credential.findFirst.mockResolvedValue({ id: 'cred-1', projectId: null });
-    prisma.employee.findUnique.mockResolvedValue({ role: { slug: 'developer' } });
+  it('rejects version reveal when the credential is not visible', async () => {
+    prisma.credential.findFirst.mockResolvedValue(null);
 
     await expect(
       service.revealSecretVersion('cred-1', 'v1', 'pwd', accessUser1),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 });

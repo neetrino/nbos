@@ -4,6 +4,8 @@ tags: [checklist, quality, project, review]
 
 # Проектный Quality Checklist
 
+> **Перенесено.** Каноническая копия для релизного аудита: [`../Quality/release-audit-checklist.md`](../Quality/release-audit-checklist.md). Этот файл оставлен как редирект, чтобы не ломать старые ссылки.
+
 > [!tip] Как пользоваться
 > Проходите разделы по порядку (**A → O** → инструменты → анти-паттерны). Отмечайте пункты `[ ]` → `[x]`. Перед релизом убедитесь, что выполнен **Minimum Acceptable Quality Gate** и заполнен **Release Readiness Summary**.
 

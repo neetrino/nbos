@@ -10,6 +10,7 @@ describe('applyCredentialTabFilter', () => {
     projectIds: [],
     productIds: [],
     manualGrantCredentialIds: [],
+    executiveProjectAccess: false,
   };
 
   it('filters company tab to ALL access level when row bypass is enabled', () => {
@@ -18,9 +19,11 @@ describe('applyCredentialTabFilter', () => {
     expect(where).toEqual({ accessLevel: 'ALL' });
   });
 
-  it('applies visibility ALL branch on company tab when row bypass is off', () => {
+  it('applies operational company visibility on company tab when row bypass is off', () => {
     const where: Prisma.CredentialWhereInput = {};
     applyCredentialTabFilter(where, 'company', 'emp-1', visibilityCtx, false);
-    expect(where).toEqual({ accessLevel: 'ALL' });
+    expect(where).toEqual({
+      AND: [{ accessLevel: 'ALL' }, { confidentiality: { notIn: ['RESTRICTED', 'OWNER_ONLY'] } }],
+    });
   });
 });

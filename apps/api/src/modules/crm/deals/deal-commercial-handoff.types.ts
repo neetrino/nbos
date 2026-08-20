@@ -2,7 +2,8 @@ export type DealExceptionType = 'FREE' | 'POSTPAID';
 
 export interface DealCommercialActor {
   actorId?: string;
-  actorRoleLevel?: number;
+  isPlatformOwner?: boolean;
+  roleSlug?: string;
 }
 
 export interface CreateExceptionOrderBody {
@@ -22,5 +23,4 @@ export interface CreateDepositOrderBody {
 }
 
 export const DEPOSIT_COMMERCIAL_DEAL_TYPES = new Set(['PRODUCT', 'EXTENSION', 'OUTSOURCE']);
-export const PRIVILEGED_COMMERCIAL_ROLE_LEVEL = 2;
 export const EXCEPTION_REASON_MIN_LEN = 10;

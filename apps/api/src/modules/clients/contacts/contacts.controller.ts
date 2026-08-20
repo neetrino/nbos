@@ -73,7 +73,7 @@ export class ContactsController {
     return this.contactsService.mergeContacts(
       id,
       { absorbedId: body.absorbedId, fieldChoices: body.fieldChoices },
-      { id: user.id, roleSlug: user.role },
+      { id: user.id, roleSlug: user.role, isPlatformOwner: user.isPlatformOwner === true },
     );
   }
 

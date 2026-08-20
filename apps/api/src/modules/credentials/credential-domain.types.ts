@@ -45,8 +45,10 @@ export interface CredentialQueryParams {
   folderId?: string;
   withoutFolder?: boolean;
   viewScope?: string;
-  /** Owner/CEO vault-wide row bypass; independent of viewScope. */
+  /** Founder vault-wide row bypass; independent of viewScope. */
   bypassRowVisibility?: boolean;
+  /** CEO operational project/team/company NORMAL rows. */
+  executiveProjectAccess?: boolean;
   /** @deprecated Prefer `scope`. Transitional alias for trash list. */
   includeArchived?: boolean;
   scope?: 'active' | 'trash';
@@ -93,6 +95,7 @@ export interface CreateCredentialDto {
   nextRotationAt?: string;
   rotationOwnerId?: string;
   accessLevel?: string;
+  confidentiality?: string;
   allowedEmployees?: string[];
   manualGrants?: CredentialManualGrantDto[];
   folderIds?: string[];
@@ -126,6 +129,7 @@ export interface UpdateCredentialDto {
   nextRotationAt?: string | null;
   rotationOwnerId?: string | null;
   accessLevel?: string;
+  confidentiality?: string;
   allowedEmployees?: string[];
   manualGrants?: CredentialManualGrantDto[];
   folderIds?: string[];

@@ -30,6 +30,11 @@ import {
   type RoleItem,
 } from '@/lib/api/employees';
 import { toast } from 'sonner';
+import { usePermission } from '@/lib/permissions';
+import {
+  assignmentPickerActor,
+  filterRolesForAssignmentPicker,
+} from '@/features/hr/utils/role-assignment-picker';
 
 export interface CreateEmployeeSheetProps {
   open: boolean;
@@ -38,6 +43,7 @@ export interface CreateEmployeeSheetProps {
 }
 
 export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmployeeSheetProps) {
+  const { me } = usePermission();
   const [saving, setSaving] = useState(false);
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
@@ -192,11 +198,13 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
-                      {roles.map((role) => (
-                        <SelectItem key={role.id} value={role.id}>
-                          {role.name}
-                        </SelectItem>
-                      ))}
+                      {filterRolesForAssignmentPicker(roles, assignmentPickerActor(me)).map(
+                        (role) => (
+                          <SelectItem key={role.id} value={role.id}>
+                            {role.name}
+                          </SelectItem>
+                        ),
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

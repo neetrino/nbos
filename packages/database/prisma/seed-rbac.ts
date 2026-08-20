@@ -4,7 +4,7 @@ import type { PlatformResourceFamilyEnum } from '@nbos/database';
 import dotenv from 'dotenv';
 import path from 'path';
 
-const GLOBAL_OWNER_ROLE_IDS = ['role-owner', 'role-ceo'] as const;
+const GLOBAL_OPERATIONAL_ROLE_IDS = ['role-owner', 'role-ceo'] as const;
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 
@@ -410,11 +410,6 @@ async function main() {
     module: 'CHECKLIST_TEMPLATES',
     action: 'ARCHIVE',
   });
-  permissionRecords.push({
-    id: 'perm-credentials-bypass-row-visibility',
-    module: 'CREDENTIALS',
-    action: 'BYPASS_ROW_VISIBILITY',
-  });
 
   await prisma.permission.createMany({
     data: permissionRecords,
@@ -509,14 +504,6 @@ async function main() {
     }
   }
 
-  for (const roleId of GLOBAL_OWNER_ROLE_IDS) {
-    rolePermissionData.push({
-      roleId,
-      permissionId: 'perm-credentials-bypass-row-visibility',
-      scope: 'ALL',
-    });
-  }
-
   await prisma.rolePermission.deleteMany({});
   await prisma.rolePermission.createMany({
     data: rolePermissionData,
@@ -524,8 +511,20 @@ async function main() {
   });
   console.log(`  ✓ RolePermissions (${rolePermissionData.length})`);
 
-  for (const roleId of GLOBAL_OWNER_ROLE_IDS) {
+  await prisma.rolePermission.deleteMany({
+    where: { permissionId: 'perm-credentials-bypass-row-visibility' },
+  });
+  await prisma.permission.deleteMany({
+    where: { id: 'perm-credentials-bypass-row-visibility' },
+  });
+  await prisma.role.updateMany({
+    where: { OR: [{ slug: 'owner' }, { id: 'role-owner' }] },
+    data: { assignable: false },
+  });
+
+  for (const roleId of GLOBAL_OPERATIONAL_ROLE_IDS) {
     for (const family of PLATFORM_RESOURCE_FAMILIES) {
+      const scopeMode = family === 'CREDENTIALS' ? 'ASSIGNED' : 'ALL';
       await prisma.roleAccessPolicy.upsert({
         where: {
           roleId_resourceFamily: {
@@ -537,15 +536,17 @@ async function main() {
           roleId,
           resourceFamily: family as PlatformResourceFamilyEnum,
           defaultLevel: 'VIEW',
-          scopeMode: 'ALL',
+          scopeMode,
         },
         update: {
-          scopeMode: 'ALL',
+          scopeMode,
         },
       });
     }
   }
-  console.log(`  ✓ RoleAccessPolicy (owner/ceo × ${PLATFORM_RESOURCE_FAMILIES.length} families)`);
+  console.log(
+    `  ✓ RoleAccessPolicy (ceo/legacy-owner operational ALL, credentials ASSIGNED × ${PLATFORM_RESOURCE_FAMILIES.length} families)`,
+  );
 
   console.log('\n✅ RBAC seed completed!');
   await prisma.$disconnect();

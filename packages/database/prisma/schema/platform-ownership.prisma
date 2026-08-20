@@ -1,0 +1,44 @@
+model PlatformOwnership {
+  id                      String    @id
+  ownerEmployeeId         String    @map("owner_employee_id")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  transferredAt           DateTime? @map("transferred_at")
+  transferredByEmployeeId String?   @map("transferred_by_employee_id")
+
+  owner         Employee  @relation("PlatformOwnerEmployee", fields: [ownerEmployeeId], references: [id], onDelete: Restrict)
+  transferredBy Employee? @relation("PlatformOwnershipTransferredBy", fields: [transferredByEmployeeId], references: [id], onDelete: SetNull)
+
+  @@map("platform_ownership")
+}
+
+enum CredentialEmergencyRequestStatusEnum {
+  PENDING
+  APPROVED
+  DENIED
+  EXPIRED
+  CANCELLED
+}
+
+model CredentialEmergencyAccessRequest {
+  id           String                               @id @default(uuid())
+  credentialId String                               @map("credential_id")
+  requesterId  String                               @map("requester_id")
+  reason       String
+  ttlMs        Int                                  @map("ttl_ms")
+  status       CredentialEmergencyRequestStatusEnum @default(PENDING)
+  decidedById  String?                              @map("decided_by_id")
+  decidedAt    DateTime?                            @map("decided_at")
+  grantId      String?                              @map("grant_id")
+  expiresAt    DateTime?                            @map("expires_at")
+  createdAt    DateTime                             @default(now()) @map("created_at")
+  updatedAt    DateTime                             @updatedAt @map("updated_at")
+
+  credential Credential @relation(fields: [credentialId], references: [id], onDelete: Cascade)
+  requester  Employee   @relation("EmergencyAccessRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  decidedBy  Employee?  @relation("EmergencyAccessDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([credentialId])
+  @@index([requesterId])
+  @@map("credential_emergency_access_requests")
+}

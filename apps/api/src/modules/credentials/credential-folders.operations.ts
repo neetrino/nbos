@@ -294,17 +294,20 @@ export async function replaceCredentialFolderMemberships(
   credentialId: string,
   folderIds: string[],
   access: CredentialsAccessContext,
+  options?: { skipRowVisibility?: boolean },
 ) {
   const visible = await runtime.prisma.credential.findFirst({
     where: {
       id: credentialId,
       trashedAt: null,
-      ...(await buildCredentialRowVisibilityWhere(
-        runtime.prisma,
-        runtime.platformAccessResolver,
-        access,
-        'edit',
-      )),
+      ...(options?.skipRowVisibility
+        ? {}
+        : await buildCredentialRowVisibilityWhere(
+            runtime.prisma,
+            runtime.platformAccessResolver,
+            access,
+            'edit',
+          )),
     },
     select: { id: true, projectId: true, accessLevel: true },
   });

@@ -36,13 +36,12 @@ export function assertContactMergeEligible(
   }
 }
 
-export function assertCanMergeContacts(roleSlug: string): void {
-  if (canMergeContacts(roleSlug)) return;
+export function assertCanMergeContacts(roleSlug: string, isPlatformOwner = false): void {
+  if (canMergeContacts(roleSlug, isPlatformOwner)) return;
   throw new ForbiddenException({
     statusCode: 403,
     code: CONTACT_MERGE_ERROR.FORBIDDEN,
-    message:
-      'You cannot merge Contacts. Only CEO, PM, and Owner can merge. Seller and Marketing cannot.',
+    message: 'You cannot merge Contacts. Only CEO, PM, or the platform owner can merge.',
   });
 }
 

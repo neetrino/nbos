@@ -20,12 +20,23 @@ describe('canMergeLeads', () => {
     ).toBe(true);
     expect(
       canMergeLeads({
-        roleSlug: 'ceo',
-        actorId: 'c1',
-        survivorAssignedTo: null,
-        absorbedAssignedTo: null,
+        roleSlug: 'owner',
+        actorId: 'o1',
+        survivorAssignedTo: 'other',
+        absorbedAssignedTo: 'else',
+      }),
+    ).toBe(false);
+    expect(
+      canMergeLeads({
+        roleSlug: 'pm',
+        actorId: 'o1',
+        survivorAssignedTo: 'other',
+        absorbedAssignedTo: 'else',
+        isPlatformOwner: true,
       }),
     ).toBe(true);
+    expect(canOfferLeadMerge('owner')).toBe(false);
+    expect(canOfferLeadMerge('pm', true)).toBe(true);
   });
 
   it('allows Seller only when both Leads are assigned to them', () => {

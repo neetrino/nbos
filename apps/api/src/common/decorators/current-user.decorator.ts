@@ -19,6 +19,8 @@ export interface CurrentUserPayload {
   /** 1 = legacy long-lived JWT; 2 = AuthSession V2. */
   tokenVersion?: 1 | 2;
   authVersion?: number;
+  /** Set by EmployeeGuard from PlatformOwnership + env anchor. */
+  isPlatformOwner?: boolean;
   meProfile?: {
     id: string;
     firstName: string;
@@ -28,6 +30,7 @@ export interface CurrentUserPayload {
     telegram: string | null;
     avatar: string | null;
     position: string | null;
+    isPlatformOwner: boolean;
     role: {
       id: string;
       name: string;

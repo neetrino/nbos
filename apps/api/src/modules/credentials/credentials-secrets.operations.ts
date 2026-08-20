@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '@nbos/database';
 import type { CredentialsAccessContext } from './credentials-access';
 import {
@@ -113,6 +113,9 @@ export async function exportCredentialsBundle(
   const requestedFields = input.fields?.length ? input.fields : [...SENSITIVE_FIELDS];
   const fields = requestedFields.map((f) => parseSecretField(f));
 
+  if (!input.credentialIds?.length && !access.bypassRowVisibility) {
+    throw new ForbiddenException('Full vault export is limited to the platform owner.');
+  }
   const where: Prisma.CredentialWhereInput = {
     trashedAt: null,
     ...(await buildCredentialRowVisibilityWhere(

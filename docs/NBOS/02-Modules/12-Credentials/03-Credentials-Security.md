@@ -193,9 +193,9 @@ Selective export может быть нужен для:
 | Edit secret              | owner/custodian/admin или approved editor                                                         |
 | Grant access             | owner/custodian/PM/CEO по policy                                                                  |
 | Export selected          | admin policy                                                                                      |
-| Full export              | CEO/Admin + step-up                                                                               |
-| Emergency access         | CEO/Owner policy                                                                                  |
-| Bypass row visibility    | Owner/CEO only via `CREDENTIALS_BYPASS_ROW_VISIBILITY` (not `CREDENTIALS_VIEW=ALL`)               |
+| Full export              | Platform Owner + step-up (account password)                                                       |
+| Emergency access         | Request → Founder approve → TTL grant; CEO/Admin cannot self-grant                                |
+| Bypass row visibility    | Platform Owner identity only (`isPlatformOwner`); not a transferable permission                   |
 | Permanent delete         | CEO/Admin + step-up                                                                               |
 
 ---

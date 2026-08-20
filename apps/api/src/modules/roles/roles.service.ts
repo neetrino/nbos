@@ -1,5 +1,6 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
+import { PLATFORM_OWNER_ROLE_SLUG } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 
@@ -38,6 +39,9 @@ export class RolesService {
     data: { name: string; slug: string; description?: string; level: number },
     actorId: string,
   ) {
+    if (data.slug.trim().toLowerCase() === PLATFORM_OWNER_ROLE_SLUG) {
+      throw new BadRequestException('Platform Owner is not a creatable role.');
+    }
     const role = await this.prisma.role.create({
       data: {
         ...data,
@@ -61,6 +65,9 @@ export class RolesService {
     }
     if (role.isSystem) {
       throw new BadRequestException('Cannot update system role');
+    }
+    if (data.slug?.trim().toLowerCase() === PLATFORM_OWNER_ROLE_SLUG) {
+      throw new BadRequestException('Platform Owner is not a creatable role.');
     }
     const updated = await this.prisma.role.update({
       where: { id },

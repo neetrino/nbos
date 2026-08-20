@@ -30,6 +30,7 @@ export async function buildCredentialListWhere(
     folderId,
     withoutFolder = false,
     bypassRowVisibility = false,
+    executiveProjectAccess = false,
     includeArchived = false,
     scope,
   } = params;
@@ -80,6 +81,7 @@ export async function buildCredentialListWhere(
       ? await loadCredentialVisibilityContext(runtime.prisma, runtime.platformAccessResolver, {
           employeeId,
           departmentIds,
+          executiveProjectAccess,
         })
       : undefined;
 

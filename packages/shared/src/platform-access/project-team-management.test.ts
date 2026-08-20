@@ -7,8 +7,9 @@ import {
 } from './project-team-management';
 
 describe('project-team-management', () => {
-  it('recognizes global managers', () => {
-    expect(isGlobalProjectTeamManager('owner')).toBe(true);
+  it('recognizes CEO and Founder as global managers, not the legacy owner slug', () => {
+    expect(isGlobalProjectTeamManager('owner')).toBe(false);
+    expect(isGlobalProjectTeamManager('owner', true)).toBe(true);
     expect(isGlobalProjectTeamManager('CEO')).toBe(true);
     expect(isGlobalProjectTeamManager('pm')).toBe(false);
   });

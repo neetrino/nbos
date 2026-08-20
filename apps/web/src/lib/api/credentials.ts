@@ -350,14 +350,36 @@ export const credentialsApi = {
     const resp = await api.post<CredentialsExportFileResult>('/api/credentials/export/file', body);
     return resp.data;
   },
-  async grantEmergencyAccess(
+  async requestEmergencyAccess(
     id: string,
     body: { reason: string; stepUpPassword: string },
-  ): Promise<{ credentialId: string; expiresAt: string; level: 'VIEW' }> {
-    const resp = await api.post<{ credentialId: string; expiresAt: string; level: 'VIEW' }>(
+  ): Promise<{ requestId: string; status: 'PENDING' }> {
+    const resp = await api.post<{ requestId: string; status: 'PENDING' }>(
       `/api/credentials/${id}/emergency-access`,
       body,
     );
+    return resp.data;
+  },
+  async listEmergencyAccessRequests(): Promise<{
+    items: Array<{
+      id: string;
+      reason: string;
+      createdAt: string;
+      credential: { id: string; name: string | null };
+      requester: { id: string; firstName: string; lastName: string };
+    }>;
+  }> {
+    const resp = await api.get('/api/credentials/emergency-requests');
+    return resp.data;
+  },
+  async decideEmergencyAccess(
+    requestId: string,
+    decision: 'approve' | 'deny',
+    stepUpPassword: string,
+  ): Promise<{ requestId: string; status: 'APPROVED' | 'DENIED' }> {
+    const resp = await api.post(`/api/credentials/emergency-requests/${requestId}/${decision}`, {
+      stepUpPassword,
+    });
     return resp.data;
   },
   async getSecretVersions(id: string): Promise<{ items: CredentialSecretVersion[] }> {

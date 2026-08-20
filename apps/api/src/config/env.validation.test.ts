@@ -11,6 +11,7 @@ const validProd = {
   BACKEND_URL: 'https://api.example.com',
   CORS_ORIGIN: 'https://app.example.com',
   SCHEDULER_API_KEY: STRONG,
+  NBOS_FOUNDER_EMPLOYEE_ID: '14b22deb-5998-4bb5-aabe-f3ad5a0a6ff6',
 };
 
 describe('validateEnv', () => {
@@ -49,6 +50,15 @@ describe('validateEnv', () => {
         SCHEDULER_API_KEY: 'change-this-scheduler-key',
       }),
     ).toThrow(/placeholder/i);
+  });
+
+  it('requires NBOS_FOUNDER_EMPLOYEE_ID UUID in production', () => {
+    const { NBOS_FOUNDER_EMPLOYEE_ID, ...rest } = validProd;
+    void NBOS_FOUNDER_EMPLOYEE_ID;
+    expect(() => validateEnv(rest)).toThrow(/NBOS_FOUNDER_EMPLOYEE_ID is required in production/);
+    expect(() => validateEnv({ ...validProd, NBOS_FOUNDER_EMPLOYEE_ID: 'not-a-uuid' })).toThrow(
+      /must be a UUID/,
+    );
   });
 
   it('does not enforce strength/placeholder outside production', () => {

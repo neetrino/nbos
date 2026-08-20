@@ -1,18 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
 import type { PrismaClient } from '@nbos/database';
 
-/** Same privilege floor as Deal Won override (Owner / CEO style roles). */
-const PARTNER_SOURCE_OVERRIDE_ROLE_LEVEL = 2;
-
 /**
  * Blocks selecting Paused/Terminated partners for new inbound CRM attribution
- * unless the actor has sufficient role level (NBOS Partner Directory §4).
+ * unless the actor is CEO or Platform Owner.
  */
 export async function assertPartnerAssignableForInboundCrm(
   prisma: InstanceType<typeof PrismaClient>,
   source: string | null | undefined,
   partnerId: string | null | undefined,
-  actorRoleLevel: number | undefined,
+  canOverridePausedPartner: boolean,
 ): Promise<void> {
   if (source !== 'PARTNER' || !partnerId?.trim()) return;
 
@@ -30,10 +27,7 @@ export async function assertPartnerAssignableForInboundCrm(
   }
 
   if (partner.status === 'ACTIVE') return;
-
-  const privileged =
-    actorRoleLevel !== undefined && actorRoleLevel <= PARTNER_SOURCE_OVERRIDE_ROLE_LEVEL;
-  if (privileged) return;
+  if (canOverridePausedPartner) return;
 
   throw new BadRequestException({
     statusCode: 400,
@@ -43,7 +37,7 @@ export async function assertPartnerAssignableForInboundCrm(
       {
         field: 'sourcePartnerId',
         message:
-          'Partner must be Active, or retry with an Owner/CEO-level account to override Paused/Terminated partners.',
+          'Partner must be Active, or retry with a CEO or platform-owner account to override Paused/Terminated partners.',
       },
     ],
   });

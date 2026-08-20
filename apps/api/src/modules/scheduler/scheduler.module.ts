@@ -9,6 +9,7 @@ import { SupportModule } from '../support/support.module';
 import { CredentialsModule } from '../credentials/credentials.module';
 import { PlatformLifecycleModule } from '../platform-lifecycle/platform-lifecycle.module';
 import { NotificationModule } from '../notifications/notification.module';
+import { OpsAlertsModule } from '../ops-alerts/ops-alerts.module';
 import { RealtimeModule } from '../realtime/realtime.module';
 import { AuthModule } from '../auth/auth.module';
 import { TasksModule } from '../tasks/tasks.module';
@@ -51,6 +52,7 @@ const SCHEDULER_IMPORTS = [
   CredentialsModule,
   PlatformLifecycleModule,
   NotificationModule,
+  OpsAlertsModule,
   RealtimeModule,
   AuthModule,
   TasksModule,

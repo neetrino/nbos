@@ -109,6 +109,7 @@ export class CredentialsController {
         departmentIds: access.departmentIds,
         viewScope: access.viewScope,
         bypassRowVisibility: access.bypassRowVisibility,
+        executiveProjectAccess: access.executiveProjectAccess,
         scope: listScope,
         includeArchived: listScope === 'trash',
         sort: normalizeCredentialListSort(sort, listScope === 'trash'),
@@ -142,6 +143,47 @@ export class CredentialsController {
   @ApiOperation({ summary: 'Virtual project folders with credential counts (Project tab)' })
   async listProjectShells(@CurrentUser() user: CurrentUserPayload) {
     return this.credentialsService.listProjectShells(credentialsAccessFromUser(user));
+  }
+
+  @Get('emergency-requests')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @ApiOperation({ summary: 'List pending emergency access requests (platform owner)' })
+  async listEmergencyRequests(@CurrentUser() user: CurrentUserPayload) {
+    return this.credentialsService.listEmergencyAccessRequests(credentialsAccessFromUser(user));
+  }
+
+  @Post('emergency-requests/:requestId/approve')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Approve emergency access (platform owner, step-up required)' })
+  async approveEmergencyRequest(
+    @Param('requestId') requestId: string,
+    @Body() body: { stepUpPassword?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.decideEmergencyAccess(
+      requestId,
+      'APPROVED',
+      credentialsAccessFromUser(user),
+      body.stepUpPassword,
+    );
+  }
+
+  @Post('emergency-requests/:requestId/deny')
+  @RequirePermission('CREDENTIALS', 'VIEW')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Deny emergency access (platform owner, step-up required)' })
+  async denyEmergencyRequest(
+    @Param('requestId') requestId: string,
+    @Body() body: { stepUpPassword?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.credentialsService.decideEmergencyAccess(
+      requestId,
+      'DENIED',
+      credentialsAccessFromUser(user),
+      body.stepUpPassword,
+    );
   }
 
   @Post('folders')
@@ -349,14 +391,14 @@ export class CredentialsController {
   @RequirePermission('CREDENTIALS', 'VIEW')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Grant temporary VIEW access via break-glass (executive roles, step-up required)',
+    summary: 'Request temporary VIEW access; platform owner must approve',
   })
-  async grantEmergencyAccess(
+  async requestEmergencyAccess(
     @Param('id') id: string,
     @Body() body: { reason?: string; stepUpPassword?: string },
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.grantEmergencyAccess(
+    return this.credentialsService.requestEmergencyAccess(
       id,
       { reason: body.reason ?? '', stepUpPassword: body.stepUpPassword },
       credentialsAccessFromUser(user),
@@ -539,7 +581,10 @@ export class CredentialsController {
     },
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.create({ ...body, ownerId: user.id }, user.id);
+    return this.credentialsService.create(
+      { ...body, ownerId: user.id },
+      credentialsAccessFromUser(user),
+    );
   }
 
   @Put(':id')

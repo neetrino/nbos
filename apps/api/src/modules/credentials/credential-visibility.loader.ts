@@ -14,7 +14,7 @@ import type { PlatformAccessResolverService } from '../platform-access/platform-
 export async function loadCredentialVisibilityContext(
   prisma: InstanceType<typeof PrismaClient>,
   platformAccessResolver: PlatformAccessResolverService,
-  access: Pick<CredentialsAccessContext, 'employeeId' | 'departmentIds'>,
+  access: Pick<CredentialsAccessContext, 'employeeId' | 'departmentIds' | 'executiveProjectAccess'>,
 ): Promise<CredentialVisibilityContext> {
   const [team, manualGrantCredentialIds] = await Promise.all([
     platformAccessResolver.loadTeamContext(access.employeeId),
@@ -25,6 +25,7 @@ export async function loadCredentialVisibilityContext(
     access.departmentIds,
     team,
     manualGrantCredentialIds,
+    access.executiveProjectAccess === true,
   );
 }
 

@@ -15,7 +15,7 @@ describe('EmployeeReactivationService', () => {
     prisma.employeeDepartment.findMany.mockResolvedValue([]);
   });
 
-  it('rejects actors without owner, ceo, or hr access', async () => {
+  it('rejects actors without CEO, Founder, or HR access', async () => {
     await expect(service.execute('e1', 'actor', 'developer', { status: 'ACTIVE' })).rejects.toThrow(
       ForbiddenException,
     );

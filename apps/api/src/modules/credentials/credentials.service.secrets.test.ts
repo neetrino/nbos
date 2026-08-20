@@ -1,7 +1,11 @@
 import './credentials.service.fixture';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { BadRequestException } from '@nestjs/common';
-import { accessUser1, createCredentialsServiceTestContext } from './credentials.service.fixture';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  accessOwnerAll,
+  accessUser1,
+  createCredentialsServiceTestContext,
+} from './credentials.service.fixture';
 
 describe('CredentialsService secrets', () => {
   let service: ReturnType<typeof createCredentialsServiceTestContext>['service'];
@@ -116,7 +120,14 @@ describe('CredentialsService secrets', () => {
     );
   });
 
-  it('should export visible credentials after fresh step-up', async () => {
+  it('rejects full vault export without Founder identity', async () => {
+    prisma.employee.findUnique.mockResolvedValue({ passwordHash: 'enc:tag:hash' });
+    await expect(
+      service.exportCredentials({ stepUpPassword: 'step-up' }, accessUser1),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('should export visible credentials after fresh step-up for Founder', async () => {
     prisma.employee.findUnique.mockResolvedValue({ passwordHash: 'enc:tag:hash' });
     prisma.credential.findMany.mockResolvedValue([
       {
@@ -137,7 +148,7 @@ describe('CredentialsService secrets', () => {
       },
     ]);
     prisma.employee.findMany.mockResolvedValue([{ id: 'admin-1' }]);
-    const result = await service.exportCredentials({ stepUpPassword: 'step-up' }, accessUser1);
+    const result = await service.exportCredentials({ stepUpPassword: 'step-up' }, accessOwnerAll);
     expect(result.count).toBe(1);
     expect(result.items[0]?.secrets.password).toBe('db-pass');
     expect(notifications.createMany).toHaveBeenCalled();

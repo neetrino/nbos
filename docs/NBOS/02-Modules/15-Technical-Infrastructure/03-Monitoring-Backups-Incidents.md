@@ -135,6 +135,8 @@ Product Technical Profile должен показывать health summary:
 
 ## Notifications
 
+Platform runtime (MVP): failed Scheduler runs and exhausted BullMQ jobs create in-app `system_health` notifications for active Owner and CEO seats (separate directory roles). Deduped per job per UTC hour. Sentry remains the baseline for HTTP/process errors.
+
 Notification Engine должен отправлять уведомления по событиям:
 
 - monitoring check failed;

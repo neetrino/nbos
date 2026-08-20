@@ -12,6 +12,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { hasCompanyExecutiveOpsFromUser } from '@nbos/shared';
 import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 import { DealsService } from './deals.service';
 import type { PatchPartnerReferralTermsBody } from './partner-referral-terms.ops';
@@ -118,7 +119,10 @@ export class DealsController {
       outsourceGoesToDelivery?: boolean;
     },
   ) {
-    return this.dealsService.create(body, { actorId: user?.id, actorRoleLevel: user?.roleLevel });
+    return this.dealsService.create(body, {
+      actorId: user?.id,
+      canOverridePausedPartner: hasCompanyExecutiveOpsFromUser(user),
+    });
   }
 
   @Patch(':id/partner-referral-terms')
@@ -169,7 +173,9 @@ export class DealsController {
       contactIds?: string[];
     },
   ) {
-    return this.dealsService.update(id, body, { actorRoleLevel: user?.roleLevel });
+    return this.dealsService.update(id, body, {
+      canOverridePausedPartner: hasCompanyExecutiveOpsFromUser(user),
+    });
   }
 
   @Patch(':id/status')
@@ -204,7 +210,8 @@ export class DealsController {
   ) {
     await this.dealCommercialHandoff.startEarlyDelivery(id, body, {
       actorId: user?.id,
-      actorRoleLevel: user?.roleLevel,
+      isPlatformOwner: user?.isPlatformOwner,
+      roleSlug: user?.role,
     });
     return this.dealsService.findById(id);
   }
@@ -220,7 +227,8 @@ export class DealsController {
   ) {
     await this.dealCommercialHandoff.createExceptionOrder(id, body, {
       actorId: user?.id,
-      actorRoleLevel: user?.roleLevel,
+      isPlatformOwner: user?.isPlatformOwner,
+      roleSlug: user?.role,
     });
     return this.dealsService.findById(id);
   }

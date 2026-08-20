@@ -1,4 +1,4 @@
-import type { AccessScopeMode } from '@nbos/shared';
+import { hasCompanyExecutiveOpsFromUser, type AccessScopeMode } from '@nbos/shared';
 
 type RbacDriveScope = 'OWN' | 'DEPARTMENT' | 'ALL';
 
@@ -14,13 +14,12 @@ function normalizeRbacDriveScope(scope: string | undefined): RbacDriveScope {
   return 'OWN';
 }
 
-const GLOBAL_DRIVE_OWNER_ROLE_SLUGS = ['owner', 'ceo'] as const;
-
-/** Owner / CEO seats: RBAC `DRIVE_VIEW:ALL` is not narrowed by default ASSIGNED policy. */
-export function isGlobalDriveOwnerRole(roleSlug: string | undefined): boolean {
-  const key = roleSlug?.trim().toLowerCase();
-  if (!key) return false;
-  return (GLOBAL_DRIVE_OWNER_ROLE_SLUGS as readonly string[]).includes(key);
+/** CEO seats and Founder identity: RBAC `DRIVE_VIEW:ALL` is not narrowed by default ASSIGNED policy. */
+export function isGlobalDriveOwnerRole(
+  roleSlug: string | undefined,
+  isPlatformOwner = false,
+): boolean {
+  return hasCompanyExecutiveOpsFromUser({ isPlatformOwner, role: roleSlug });
 }
 
 export type MergeDriveEffectiveScopeOptions = {
