@@ -32,7 +32,12 @@ import {
   usePersistedSearchFilters,
   type SearchFilterRecord,
 } from '@/lib/persisted-client-state';
-import { buildReportsViewPath, parseReportsPathname, type ReportsViewId } from '../reports-routing';
+import {
+  buildReportsViewPath,
+  isReportDataView,
+  parseReportsPathname,
+  type ReportsViewId,
+} from '../reports-routing';
 import {
   useFinanceReportsTabData,
   useMarketingReportsTabData,
@@ -286,12 +291,3 @@ async function loadReportShellData() {
   };
 }
 
-function isReportDataView(view: ReportsViewId): boolean {
-  return (
-    view === 'FINANCE' ||
-    view === 'SALES' ||
-    view === 'MARKETING' ||
-    view === 'PROJECTS' ||
-    view === 'SPECIALISTS'
-  );
-}

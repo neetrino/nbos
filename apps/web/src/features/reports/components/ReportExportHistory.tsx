@@ -6,6 +6,12 @@ import { Button } from '@/components/ui/button';
 import { driveApi } from '@/lib/api/drive';
 import type { ReportExportJob } from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import {
+  canCancelReportExport,
+  canDownloadReportExport,
+  canRetryReportExport,
+  isActiveReportExport,
+} from '../report-export-job-actions';
 import { formatReportFilters } from '../report-filters';
 
 interface ReportExportHistoryProps {
@@ -70,10 +76,10 @@ function ReportExportRow({
   onRetry: (jobId: string) => void;
   onCancel: (jobId: string) => void;
 }) {
-  const canRetry = job.status === 'FAILED' || job.status === 'CANCELLED';
-  const canCancel = job.status === 'QUEUED' || job.status === 'PROCESSING';
-  const canDownload = job.status === 'COMPLETED' && Boolean(job.fileAsset?.id);
-  const isActive = job.status === 'QUEUED' || job.status === 'PROCESSING';
+  const canRetry = canRetryReportExport(job);
+  const canCancel = canCancelReportExport(job);
+  const canDownload = canDownloadReportExport(job);
+  const isActive = isActiveReportExport(job);
 
   return (
     <div className="rounded-xl border p-4">

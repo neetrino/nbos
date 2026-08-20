@@ -5,7 +5,9 @@ import { CalendarClock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { buildReportsViewPath } from '../reports-routing';
 
-/** Automatic report cron is off. Manual files live under Exports. */
+export const REPORTS_SCHEDULE_FILES_HREF = buildReportsViewPath('EXPORTS');
+
+/** Automatic report cron is off. Manual files live under Report files. */
 export function ReportsSchedulePanel() {
   return (
     <div className="border-border bg-card rounded-2xl border p-5 shadow-sm">
@@ -18,7 +20,7 @@ export function ReportsSchedulePanel() {
             make CSV, XLSX or PDF. Download the file from Exports.
           </p>
           <Button asChild className="mt-4">
-            <Link href={buildReportsViewPath('EXPORTS')}>Open report files</Link>
+            <Link href={REPORTS_SCHEDULE_FILES_HREF}>Open report files</Link>
           </Button>
         </div>
       </div>

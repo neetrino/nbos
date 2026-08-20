@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { ReportExportJob } from '@/lib/api/reports';
-import { hasActiveReportExportJob } from './use-report-export-jobs-poll';
+import {
+  REPORT_EXPORT_JOBS_POLL_ACTIVE_MS,
+  REPORT_EXPORT_JOBS_POLL_IDLE_MS,
+  hasActiveReportExportJob,
+  reportExportJobsPollDelayMs,
+} from './use-report-export-jobs-poll';
 
 function job(status: ReportExportJob['status']): ReportExportJob {
   return {
@@ -35,5 +40,11 @@ describe('hasActiveReportExportJob', () => {
       false,
     );
     expect(hasActiveReportExportJob([])).toBe(false);
+  });
+
+  it('polls faster while a job is in flight', () => {
+    expect(reportExportJobsPollDelayMs([job('QUEUED')])).toBe(REPORT_EXPORT_JOBS_POLL_ACTIVE_MS);
+    expect(reportExportJobsPollDelayMs([job('COMPLETED')])).toBe(REPORT_EXPORT_JOBS_POLL_IDLE_MS);
+    expect(reportExportJobsPollDelayMs([])).toBe(REPORT_EXPORT_JOBS_POLL_IDLE_MS);
   });
 });
