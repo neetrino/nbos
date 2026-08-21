@@ -38,10 +38,7 @@ jobs:
         run: pnpm db:generate
 
       - name: Format check
-        run: |
-          pnpm exec prettier --write docs/NBOS/02-Modules/21-AI-Platform/90-Future-Capabilities/00-Future-Capabilities-Index.md
-          git diff -- docs/NBOS/02-Modules/21-AI-Platform/90-Future-Capabilities/00-Future-Capabilities-Index.md
-          git diff --exit-code -- docs/NBOS/02-Modules/21-AI-Platform/90-Future-Capabilities/00-Future-Capabilities-Index.md
+        run: pnpm format:check
 
       - name: Lint
         run: pnpm lint
