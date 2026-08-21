@@ -5,40 +5,23 @@ import { recordAuthMetric } from './auth-session.metrics';
 
 type Prisma = InstanceType<typeof PrismaClient>;
 
-type TokenDenylist = {
-  revokeUntil: (jti: string, untilMs: number) => Promise<void>;
-};
-
 type VaultSession = {
   lock: (employeeId: string) => Promise<void>;
 };
 
 /**
  * Verifies current password, stores argon2id hash, bumps authVersion,
- * revokes all sessions, locks vault, and optionally denylists legacy jti.
+ * revokes all AuthSessions, and locks the vault.
  */
 export async function changeEmployeePassword(params: {
   prisma: Prisma;
-  tokenDenylist: TokenDenylist;
   vaultSession: VaultSession;
   logger: Logger;
   employeeId: string;
   currentPassword: string;
   newPassword: string;
-  jti?: string;
-  tokenExp?: number;
 }): Promise<{ success: true; requiresReauth: true }> {
-  const {
-    prisma,
-    tokenDenylist,
-    vaultSession,
-    logger,
-    employeeId,
-    currentPassword,
-    newPassword,
-    jti,
-    tokenExp,
-  } = params;
+  const { prisma, vaultSession, logger, employeeId, currentPassword, newPassword } = params;
 
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
@@ -82,10 +65,6 @@ export async function changeEmployeePassword(params: {
   });
 
   await vaultSession.lock(employeeId);
-
-  if (jti && typeof tokenExp === 'number') {
-    await tokenDenylist.revokeUntil(jti, tokenExp * 1_000);
-  }
 
   logger.log(
     JSON.stringify({

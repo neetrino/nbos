@@ -32,7 +32,7 @@ describe('auth-session.tokens', () => {
 });
 
 describe('auth-session.flags', () => {
-  it('defaults V2 issue off', () => {
+  it('defaults V2 issue off until env is set', () => {
     expect(isAuthSessionV2IssueEnabled({})).toBe(false);
   });
 
@@ -43,16 +43,20 @@ describe('auth-session.flags', () => {
     );
   });
 
-  it('fail-fast when V2 issue enabled without pepper', () => {
+  it('requires pepper and cookie name for V2 boot', () => {
     expect(() =>
       assertAuthSessionV2Config({
-        AUTH_SESSION_V2_ISSUE_ENABLED: 'true',
         AUTH_REFRESH_COOKIE_NAME: 'nbos_refresh',
       }),
     ).toThrow(/PEPPER/);
+    expect(() =>
+      assertAuthSessionV2Config({
+        AUTH_REFRESH_TOKEN_PEPPER: 'x'.repeat(32),
+      }),
+    ).toThrow(/COOKIE_NAME/);
   });
 
-  it('canary allowlist gates issue', () => {
+  it('canary allowlist gates issue when the flag is still used', () => {
     const env = {
       AUTH_SESSION_V2_ISSUE_ENABLED: 'true',
       AUTH_SESSION_V2_CANARY_USER_IDS: 'a,b',

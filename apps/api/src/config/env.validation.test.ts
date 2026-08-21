@@ -12,6 +12,8 @@ const validProd = {
   CORS_ORIGIN: 'https://app.example.com',
   SCHEDULER_API_KEY: STRONG,
   NBOS_FOUNDER_EMPLOYEE_ID: '14b22deb-5998-4bb5-aabe-f3ad5a0a6ff6',
+  AUTH_REFRESH_TOKEN_PEPPER: STRONG,
+  AUTH_REFRESH_COOKIE_NAME: 'nbos_refresh',
 };
 
 describe('validateEnv', () => {
@@ -69,6 +71,8 @@ describe('validateEnv', () => {
         JWT_SECRET: 'dev-weak',
         CREDENTIALS_ENCRYPTION_KEY: 'dev-weak',
         BACKEND_URL: 'http://localhost:4000',
+        AUTH_REFRESH_TOKEN_PEPPER: STRONG,
+        AUTH_REFRESH_COOKIE_NAME: 'nbos_refresh',
       }),
     ).not.toThrow();
   });
