@@ -1,0 +1,138 @@
+// ─── AI PLATFORM ──────────────────────────────────────────
+// External Agent identity, credentials, capability grants and resource scopes.
+// Machine principals live here and are never inserted into employee-only
+// access tables such as `ResourceAccessGrant`.
+
+enum ExternalAgentStatusEnum {
+  ACTIVE
+  DISABLED
+  REVOKED
+  EXPIRED
+}
+
+enum AgentScopeTypeEnum {
+  ORGANIZATION
+  PROJECT
+  PRODUCT
+  WORKSPACE
+  RESOURCE
+}
+
+/// Trusted machine client (Cursor, Codex, Claude Code, custom integration).
+/// Identity is stable across credential rotation.
+model ExternalAgent {
+  id              String                  @id @default(uuid())
+  name            String
+  description     String?
+  status          ExternalAgentStatusEnum @default(ACTIVE)
+  ownerId         String                  @map("owner_id")
+  createdById     String                  @map("created_by_id")
+  expiresAt       DateTime?               @map("expires_at")
+  disabledAt      DateTime?               @map("disabled_at")
+  revokedAt       DateTime?               @map("revoked_at")
+  lastUsedAt      DateTime?               @map("last_used_at")
+  /// Safe client metadata only. Never a token or hash.
+  lastUsedIp      String?                 @map("last_used_ip")
+  lastUsedChannel String?                 @map("last_used_channel")
+  createdAt       DateTime                @default(now()) @map("created_at")
+  updatedAt       DateTime                @updatedAt @map("updated_at")
+
+  owner            Employee                       @relation("ExternalAgentOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  createdBy        Employee                       @relation("ExternalAgentCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  credentials      ExternalAgentCredential[]
+  capabilityGrants ExternalAgentCapabilityGrant[]
+  resourceScopes   ExternalAgentResourceScope[]
+
+  @@index([status])
+  @@index([ownerId])
+  @@index([createdById])
+  @@map("external_agents")
+}
+
+/// Opaque bearer credential. Only the argon2id verifier is persisted.
+model ExternalAgentCredential {
+  id            String    @id @default(uuid())
+  agentId       String    @map("agent_id")
+  /// Public lookup id embedded in the token. Safe to display and log.
+  keyId         String    @unique @map("key_id")
+  /// Display-only leading fragment of the token. Never the secret.
+  tokenPrefix   String    @map("token_prefix")
+  /// argon2id verifier for the token secret. Never returned by any API or UI.
+  secretHash    String    @map("secret_hash")
+  label         String?
+  createdById   String    @map("created_by_id")
+  /// Predecessor credential when this one was issued by rotation.
+  rotatedFromId String?   @unique @map("rotated_from_id")
+  expiresAt     DateTime? @map("expires_at")
+  revokedAt     DateTime? @map("revoked_at")
+  revokedById   String?   @map("revoked_by_id")
+  lastUsedAt    DateTime? @map("last_used_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  agent       ExternalAgent            @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  createdBy   Employee                 @relation("ExternalAgentCredentialCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  revokedBy   Employee?                @relation("ExternalAgentCredentialRevokedBy", fields: [revokedById], references: [id], onDelete: SetNull)
+  rotatedFrom ExternalAgentCredential? @relation("ExternalAgentCredentialRotation", fields: [rotatedFromId], references: [id], onDelete: SetNull)
+  rotatedTo   ExternalAgentCredential? @relation("ExternalAgentCredentialRotation")
+
+  @@index([agentId])
+  @@index([expiresAt])
+  @@index([createdById])
+  @@index([revokedById])
+  @@map("external_agent_credentials")
+}
+
+/// `what may this actor do?` — capability key validated against the code registry.
+model ExternalAgentCapabilityGrant {
+  id            String    @id @default(uuid())
+  agentId       String    @map("agent_id")
+  /// Stable capability key, e.g. `tasks.read`.
+  capabilityKey String    @map("capability_key")
+  grantedById   String    @map("granted_by_id")
+  reason        String?
+  expiresAt     DateTime? @map("expires_at")
+  revokedAt     DateTime? @map("revoked_at")
+  revokedById   String?   @map("revoked_by_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  agent     ExternalAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  grantedBy Employee      @relation("ExternalAgentCapabilityGrantGrantedBy", fields: [grantedById], references: [id], onDelete: Restrict)
+  revokedBy Employee?     @relation("ExternalAgentCapabilityGrantRevokedBy", fields: [revokedById], references: [id], onDelete: SetNull)
+
+  @@unique([agentId, capabilityKey])
+  @@index([grantedById])
+  @@index([revokedById])
+  @@map("external_agent_capability_grants")
+}
+
+/// `where may this actor do it?` — a capability grant never implies all resources.
+/// ORGANIZATION scope uses the platform scope sentinel id so `scopeId` stays NOT NULL
+/// and uniqueness cannot be defeated by Postgres NULL-distinct semantics.
+model ExternalAgentResourceScope {
+  id           String             @id @default(uuid())
+  agentId      String             @map("agent_id")
+  scopeType    AgentScopeTypeEnum @map("scope_type")
+  scopeId      String             @map("scope_id")
+  /// Required for RESOURCE scope, empty string otherwise. Part of the uniqueness
+  /// key so `TASK:123` and `FILE:123` are distinct grants rather than an upsert
+  /// that silently replaces the other.
+  resourceType String             @default("") @map("resource_type")
+  grantedById  String             @map("granted_by_id")
+  reason       String?
+  expiresAt    DateTime?          @map("expires_at")
+  revokedAt    DateTime?          @map("revoked_at")
+  revokedById  String?            @map("revoked_by_id")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+
+  agent     ExternalAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  grantedBy Employee      @relation("ExternalAgentResourceScopeGrantedBy", fields: [grantedById], references: [id], onDelete: Restrict)
+  revokedBy Employee?     @relation("ExternalAgentResourceScopeRevokedBy", fields: [revokedById], references: [id], onDelete: SetNull)
+
+  @@unique([agentId, scopeType, scopeId, resourceType], map: "external_agent_resource_scopes_agent_scope_resource_key")
+  @@index([grantedById])
+  @@index([revokedById])
+  @@map("external_agent_resource_scopes")
+}

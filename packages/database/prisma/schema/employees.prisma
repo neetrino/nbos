@@ -142,6 +142,14 @@ model Employee {
   platformOwnershipTransfers         PlatformOwnership[]                 @relation("PlatformOwnershipTransferredBy")
   emergencyAccessRequestsMade        CredentialEmergencyAccessRequest[]  @relation("EmergencyAccessRequester")
   emergencyAccessRequestsDecided     CredentialEmergencyAccessRequest[]  @relation("EmergencyAccessDecider")
+  externalAgentsOwned                ExternalAgent[]                     @relation("ExternalAgentOwner")
+  externalAgentsCreated              ExternalAgent[]                     @relation("ExternalAgentCreatedBy")
+  externalAgentCredentialsCreated    ExternalAgentCredential[]           @relation("ExternalAgentCredentialCreatedBy")
+  externalAgentCredentialsRevoked    ExternalAgentCredential[]           @relation("ExternalAgentCredentialRevokedBy")
+  externalAgentCapabilityGrantsMade  ExternalAgentCapabilityGrant[]      @relation("ExternalAgentCapabilityGrantGrantedBy")
+  externalAgentCapabilityGrantsRevoked ExternalAgentCapabilityGrant[]    @relation("ExternalAgentCapabilityGrantRevokedBy")
+  externalAgentResourceScopesMade    ExternalAgentResourceScope[]        @relation("ExternalAgentResourceScopeGrantedBy")
+  externalAgentResourceScopesRevoked ExternalAgentResourceScope[]        @relation("ExternalAgentResourceScopeRevokedBy")
 
   @@map("employees")
 }
