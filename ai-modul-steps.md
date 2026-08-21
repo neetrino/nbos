@@ -27,9 +27,9 @@
 | Chat | Содержание                   | Исполнитель                    | Проверка           | Статус                      |
 | ---- | ---------------------------- | ------------------------------ | ------------------ | --------------------------- |
 | 1    | Foundation + Audit           | Cursor Grok 4.6                | Claude Opus 5 High | сделан, проверен 2026-08-21 |
-| 2    | Credentials + Auth + Policy  | Claude Opus 5 High             | GPT-5.6 Sol High   | следующий                   |
-| 3    | Capabilities + Tasks         | Cursor Grok 4.6                | GPT-5.6 Sol High   | —                           |
-| 4    | REST + MCP                   | Claude Opus 5 High             | Cursor Grok 4.6    | —                           |
+| 2    | Credentials + Auth + Policy  | Claude Opus 5 High             | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-21 |
+| 3    | Capabilities + Tasks         | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-21 |
+| 4    | REST + MCP                   | Claude Opus 5 High             | Cursor Grok 4.6    | следующий                   |
 | 5    | Providers + Models           | Cursor Grok 4.6                | GPT-5.6 Sol High   | —                           |
 | 6    | Admin UI                     | Cursor Grok 4.6 + Composer 2.5 | Cursor Grok 4.6    | —                           |
 | 7    | Security + regression        | Claude Opus 5 High             | GPT-5.6 Sol High   | —                           |
@@ -50,12 +50,13 @@
 
 ## Состояние на 2026-08-21
 
-Chat 1 сделан и проверен независимо.
+Chat 1 сделан и проверен независимо. Handoff: `17-Phase-1-Chat-1-Handoff.md`.
 
-- Ветка **`sipan`**, коммит `66ebd5e3 feat(ai): add actor-aware Audit and shared ActorContext`. Не запушена — запушить до продолжения.
-- Подтверждено: `vitest` 6 файлов / 34 теста passed; typecheck чистый в `@nbos/shared`, `@nbos/database`, `api`, `web`.
-- Чеклист отмечен честно: 88 `[x]`, 9 `[~]`, 1 `[!]`.
-- Handoff: `17-Phase-1-Chat-1-Handoff.md`.
+Chat 2 закрыт **PASS WITH DEBTS**. Handoff: `18-Phase-1-Chat-2-Handoff.md`.
+
+Chat 3 закрыт **PASS WITH DEBTS** после пяти кругов проверки. Handoff: `19-Phase-1-Chat-3-Handoff.md`. Ветка **`sipan`**, последний коммит `c2bbe1c0`. Следующий — Chat 4.
+
+Долги, которые Chat 4 берёт как entry conditions: G 140 `[~]` (`@Public()` + global `AgentAuthGuard`), T 314–315 `[~]` (HTTP `Idempotency-Key` / MCP `clientOperationId`), K 197–198 `[~]` (Prisma-free REST/MCP adapters), `ActorContext.correlationId` на протоколе. Не закрывать здесь: J 186 (section U), K 205, K 209.
 
 ### Правила БД (критично)
 
@@ -65,15 +66,6 @@ Chat 1 сделан и проверен независимо.
 - Единственный разрешённый способ применения — `prisma migrate deploy` с `DIRECT_URL`.
 - Новые индексы на больших таблицах — `CREATE INDEX CONCURRENTLY` отдельной миграцией.
 - Продовые миграции выполняет только разработчик, не агент.
-
-### Долги Chat 1 (закрыть в Chat 2)
-
-- `ActorChannel.source: ActorChannelSource | string` — юнион со `string` обнуляет типизацию каналов (`packages/shared/src/actor/actor-context.ts`).
-- `isMachineActorType` реализован как `type !== 'USER'`, объявленный рядом `MACHINE_ACTOR_TYPES` не используется.
-- `params.userId as string` в `resolveAuditWriteContext` (`apps/api/src/modules/audit/audit-log-write.mapper.ts`).
-- `AuditService` никогда не передаёт `AuditActorLookups` в `attachActorsToAuditLogs` — имена агентов в аудите не появятся.
-- Там же машинные имена резолвятся `await` внутри `map` → N+1 запросов на страницу.
-- Два `CREATE INDEX` в миграции Chat 1 без `CONCURRENTLY`.
 
 ## Мастер-промт Phase 1 (общая преамбула всех милстоунов)
 
@@ -108,68 +100,78 @@ Definition of Done Phase 1: все применимые пункты checklist �
 по REST/MCP и безопасно работать с разрешёнными Workspace/Tasks.
 ```
 
-## Промт исполнителя — Chat 2
+## Промт исполнителя — Chat 4
+
+Модель: **Claude Opus 5 High**. В новый чат вставляй два блока: мастер-промт Phase 1, затем этот. Проверка после — Cursor Grok 4.6.
 
 ```text
-Продолжи Phase 1 AI Platform. Это Chat 2 — Credentials + Auth + Policy.
+Продолжи Phase 1 AI Platform. Это Chat 4 — External Protocols: REST and MCP.
 
-ВЕТКА. Работай в sipan. Chat 1 = коммит 66ebd5e3. Перед любыми изменениями проверь наличие
-packages/shared/src/actor/*, packages/database/prisma/migrations/20260821150000_audit_actor_aware/
-и apps/api/src/modules/audit/audit-log-write.mapper.ts. Если их нет — ты не на той ветке,
-остановись и сообщи.
+ВЕТКА. Работай в sipan. Chat 3 закрыт PASS WITH DEBTS (последний коммит c2bbe1c0,
+handoff 19-Phase-1-Chat-3-Handoff.md). Перед изменениями проверь наличие
+apps/api/src/modules/ai-platform/gateway/,
+apps/api/src/modules/ai-platform/auth/agent-auth.guard.ts и
+packages/database/prisma/migrations/20260821190000_ai_domain_capabilities/.
+Если их нет — ты не на той ветке, остановись и сообщи.
 
 ЧИТАЙ И СВЕРЯЙ С РЕПОЗИТОРИЕМ:
-- docs/NBOS/02-Modules/21-AI-Platform/17-Phase-1-Chat-1-Handoff.md
-- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md (E–J)
-- docs/NBOS/02-Modules/21-AI-Platform/01-AI-Actors-Identity-and-Access.md
-- docs/NBOS/02-Modules/21-AI-Platform/03-External-Agent-Access.md
-- docs/NBOS/02-Modules/21-AI-Platform/05-AI-Data-Security-and-Audit.md
-Handoff Chat 1 не является доказательством: сам прогони vitest и typecheck до начала работы.
+- docs/NBOS/02-Modules/21-AI-Platform/19-Phase-1-Chat-3-Handoff.md (секция Chat 4 entry point)
+- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md (V–W, плюс X как setup docs)
+- docs/NBOS/02-Modules/21-AI-Platform/08-External-Agent-Protocols-REST-and-MCP.md
+- docs/NBOS/02-Modules/21-AI-Platform/09-External-Agent-API-and-MCP-Contract.md
+Handoff не является доказательством: сам прогони vitest и typecheck до начала работы.
 
-SCOPE CHAT 2:
-- External Agent persistence;
-- credential generation + hashing (argon2, существующий security baseline), rotation, revoke;
-- identity агента стабильна при rotation;
-- отдельный machine auth guard — НЕ EmployeeGuard, токены агентов через него не проходят;
-- capability registry;
-- capability grants + resource scopes (agent grants, НЕ ResourceAccessGrant.employeeId);
-- deny-by-default Policy Evaluator;
-- isolation и negative тесты (cross-workspace, revoked credential, disabled agent, unknown capability).
-
-ДОЛГИ CHAT 1 — закрыть здесь:
-- сузить ActorChannel.source до ActorChannelSource (убрать | string);
-- задействовать MACHINE_ACTOR_TYPES в isMachineActorType;
-- убрать `params.userId as string` в resolveAuditWriteContext;
-- передать AuditActorLookups из AuditService (resolveExternalAgentDisplayName) и сделать
-  батч-резолв машинных имён вместо await внутри map;
-- индексы новых таблиц — CREATE INDEX CONCURRENTLY отдельной миграцией.
-
-БАЗА ДАННЫХ (уже подготовлена, накатывать Chat 1 не нужно):
-- .env.local указывает на dev Neon-ветку ep-late-frost-ag5aixzw; прод ep-sweet-dew-ag7259wn
-  в разработке не используется, перед любой миграцией сверь хост;
-- миграция Chat 1 (20260821150000_audit_actor_aware) уже применена на dev,
-  prisma migrate status → "Database schema is up to date!";
-- prisma migrate dev запрещён: в истории миграций дрейф, при нём Prisma предложит reset
-  и уничтожит данные dev-ветки;
-- свои миграции применяй только через prisma migrate deploy с DIRECT_URL;
-- продовые миграции не выполняй, это делает разработчик.
+SCOPE CHAT 4 (чеклист V–W, X):
+- Versioned REST `/api/v1/agent`: me, workspaces, tasks list/read/create/allowlisted update,
+  start, comment, submit-review, discussion, artifacts list/read/attach.
+- MCP adapter/server с теми же tools: nbos_get_identity, nbos_list_workspaces,
+  nbos_get_workspace, nbos_list_tasks, nbos_get_task, nbos_create_task, nbos_update_task,
+  nbos_start_task, nbos_get_task_discussion, nbos_add_task_comment, nbos_list_task_artifacts,
+  nbos_get_task_artifact, nbos_attach_task_artifact, nbos_submit_task_review.
+- REST и MCP — тонкие адаптеры. Оба вызывают ТОЛЬКО AgentCapabilityGateway.invoke.
+  Один Actor → Policy → Capability → Domain Action → Audit. Никакого второго policy,
+  никакого Prisma, никаких прямых Tasks/Drive writes из контроллеров/MCP handlers.
+- Auth: AgentAuthGuard + @Public() на agent routes, чтобы employee JWT chain не шёл рядом.
+  Тот же credential, тот же ActorContext. Это закрывает G 140: integration test реального
+  @Public() + AgentAuthGuard + global employee guards.
+- Identity GET /agent/me и nbos_get_identity не выдают capabilities.
+- Envelope ошибок и коды — из 09 contract. Missing vs unauthorized resource — одинаковый
+  безопасный код (AGENT_RESOURCE_NOT_AVAILABLE), без leakage существования.
+- Idempotency: HTTP Idempotency-Key и MCP clientOperationId → invoke({ idempotencyKey }).
+  Binary attach bytes в invocation.payload, не в JSON. Это закрывает T 314–315.
+- ActorContext.correlationId обязан выставляться на протоколе (долг Chat 3).
+- Паритет REST vs MCP: capabilities, auth, deny codes, idempotency. Negative/security tests.
+- Setup docs (section X): REST + Cursor/Codex/Claude Code MCP. Только NBOS URL + agent token.
+  Никогда: DB credentials, SSH, Employee JWT, OpenAI/Anthropic keys.
+- OpenAPI для REST namespace.
 
 ЗАПРЕЩЕНО:
-- REST/MCP контроллеры (это Chat 4);
-- прямые Prisma-записи в Tasks/Drive из AI-кода;
-- вставка AI-акторов в ResourceAccessGrant.employeeId;
-- второй crypto-стек (используй существующий AES-256-GCM / CREDENTIALS_ENCRYPTION_KEY);
-- сырой секрет в БД, в логах и в audit clientMetadata;
+- Settings / Admin UI (Chat 6);
+- OpenAI/Anthropic providers, model catalog (Chat 5);
+- tasks.delete, force-complete, generic set_status, любой delete tool;
+- доступ к модулю Credentials / vault / паролям / сырым секретам;
+- query-string token;
+- прямые Prisma-записи в Tasks/Drive из REST/MCP;
 - any, default exports, console.log, магические числа;
-- удаление тестов и обход lint ради прохождения проверок.
+- удаление тестов и обход lint.
 
-AUDIT: пиши через AuditService.log({ actor }). Машинный актор не пишет userId.
+НЕ ЗАКРЫВАТЬ ЗДЕСЬ: J 186 (rate-limit counters — section U), K 205 (output schema validator),
+K 209 (domain commit + idempotency complete не в одной транзакции).
+
+AUDIT: контроллер не пишет Audit сам — это делает gateway после domain commit.
+Машинный актор не пишет userId. Authorization header никогда не логируется.
+
+БАЗА ДАННЫХ:
+- .env.local = dev Neon ep-late-frost-ag5aixzw; прод ep-sweet-dew-ag7259wn не трогать;
+- prisma migrate dev запрещён (дрейф истории → reset);
+- свои миграции только prisma migrate deploy с DIRECT_URL;
+- продовые миграции не выполняй.
 
 НА ВЫХОДЕ:
 - обнови чеклист [x]/[~]/[!] честно;
-- напиши docs/NBOS/02-Modules/21-AI-Platform/18-Phase-1-Chat-2-Handoff.md по формату Chat 1
-  (milestone, чеклист, изменённые файлы, миграции, прогнанные тесты с реальными числами,
-  архитектурные решения, конфликты canon/runtime, риски, долги, entry point Chat 3);
+- напиши docs/NBOS/02-Modules/21-AI-Platform/20-Phase-1-Chat-4-Handoff.md по формату Chat 3
+  (milestone, чеклист, файлы, миграции, реальные числа тестов, решения, конфликты,
+  риски, долги, entry point Chat 5);
 - коммит не делай — его сделаем после чата проверки.
 ```
 
