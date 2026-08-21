@@ -192,6 +192,6 @@ Add undeveloped ideas here first. Promote them to dedicated numbered documents a
 
 ## Capability register
 
-| ID | Capability | File | Status | Target | Priority | Canon summary |
-| --- | --- | --- | --- | --- | --- | --- |
-| 01 | Project Knowledge and Customer Memory | `01-Project-Knowledge-and-Customer-Memory.md` | APPROVED | V2 / Phase 2 candidate | HIGH | Give each project controlled AI knowledge plus isolated customer/conversation memory and live NBOS context so customer-facing agents answer with current, project-specific information. |
+| ID  | Capability                            | File                                          | Status   | Target                 | Priority | Canon summary                                                                                                                                                                           |
+| --- | ------------------------------------- | --------------------------------------------- | -------- | ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 01  | Project Knowledge and Customer Memory | `01-Project-Knowledge-and-Customer-Memory.md` | APPROVED | V2 / Phase 2 candidate | HIGH     | Give each project controlled AI knowledge plus isolated customer/conversation memory and live NBOS context so customer-facing agents answer with current, project-specific information. |
