@@ -17,15 +17,33 @@ import { AgentTaskAccess } from './gateway/agent-task-access';
 import { AgentTaskReadHandler } from './gateway/agent-task-read.handler';
 import { AgentTaskWriteHandler } from './gateway/agent-task-write.handler';
 import { AgentWorkspaceHandler } from './gateway/agent-workspace.handler';
+import { AgentMcpController } from './mcp/agent-mcp.controller';
+import { AgentMcpServer } from './mcp/agent-mcp.server';
 import { AgentPolicyService } from './policy/agent-policy.service';
+import { AgentCorrelationInterceptor } from './protocol/agent-correlation.interceptor';
+import { AgentProtocolExceptionFilter } from './protocol/agent-protocol.filter';
+import { AgentProtocolInvoker } from './protocol/agent-protocol.invoker';
+import { AgentArtifactsController } from './rest/agent-artifacts.controller';
+import { AgentIdentityController } from './rest/agent-identity.controller';
+import { AgentTasksController } from './rest/agent-tasks.controller';
 
 /**
- * AI Platform foundation: External Agent identity, credentials, policy and the
- * Domain Action Gateway. REST and MCP adapters (Chat 4) must call the gateway
- * rather than Tasks/Drive Prisma or a second permission system.
+ * AI Platform foundation: External Agent identity, credentials, policy, the
+ * Domain Action Gateway and the two protocol adapters.
+ *
+ * The REST controllers and the MCP server are thin: they resolve a transport
+ * request to an operation and call `AgentCapabilityGateway` through
+ * `AgentProtocolInvoker`. They never reach Prisma, Tasks or Drive directly and
+ * never evaluate policy themselves.
  */
 @Module({
   imports: [AuditModule, TasksModule, DriveModule],
+  controllers: [
+    AgentIdentityController,
+    AgentTasksController,
+    AgentArtifactsController,
+    AgentMcpController,
+  ],
   providers: [
     AiPlatformAuditService,
     ExternalAgentService,
@@ -41,6 +59,10 @@ import { AgentPolicyService } from './policy/agent-policy.service';
     AgentTaskWriteHandler,
     AgentDriveHandler,
     AgentCapabilityGateway,
+    AgentProtocolInvoker,
+    AgentProtocolExceptionFilter,
+    AgentCorrelationInterceptor,
+    AgentMcpServer,
   ],
   exports: [
     ExternalAgentService,

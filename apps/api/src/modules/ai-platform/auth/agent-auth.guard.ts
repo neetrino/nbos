@@ -1,13 +1,17 @@
 import { Injectable, type CanActivate, type ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { isActorChannelSource, toAgentExternalError, type ActorChannelSource } from '@nbos/shared';
+import {
+  AGENT_CORRELATION_HEADER,
+  AGENT_REQUEST_ID_HEADER,
+  resolveAgentCorrelationId,
+  sanitizeCorrelationId,
+} from '../protocol/agent-correlation';
 import { AgentAuthenticatorService, type AuthenticatedAgent } from './agent-authenticator.service';
 import { AgentAccessException } from './agent-auth.errors';
 import { AGENT_CHANNEL_METADATA } from './agent-channel.decorator';
 
 const BEARER_PREFIX = 'Bearer ';
-const CORRELATION_HEADER = 'x-correlation-id';
-const REQUEST_ID_HEADER = 'x-request-id';
 const DEFAULT_CHANNEL: ActorChannelSource = 'rest';
 
 /** Request shape the guard reads and augments. Never touches `request.user`. */
@@ -16,6 +20,7 @@ export interface AgentAuthenticatedRequest {
   ip?: string;
   path?: string;
   agent?: AuthenticatedAgent;
+  agentCorrelationId?: string;
   user?: unknown;
 }
 
@@ -52,6 +57,13 @@ export class AgentAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AgentAuthenticatedRequest>();
+    // Set before any rejection so a failed authentication still answers with a
+    // correlation id the caller can quote.
+    const correlationId = resolveAgentCorrelationId(
+      headerValue(request.headers, AGENT_CORRELATION_HEADER),
+    );
+    request.agentCorrelationId = correlationId;
+
     const token = this.extractBearerToken(request);
     if (!token) {
       throw new AgentAccessException(toAgentExternalError('CREDENTIAL_INVALID'));
@@ -61,8 +73,10 @@ export class AgentAuthGuard implements CanActivate {
       channel: this.resolveChannel(context),
       ipAddress: request.ip ?? null,
       userAgent: headerValue(request.headers, 'user-agent') ?? null,
-      correlationId: headerValue(request.headers, CORRELATION_HEADER) ?? null,
-      requestId: headerValue(request.headers, REQUEST_ID_HEADER) ?? null,
+      correlationId,
+      requestId:
+        sanitizeCorrelationId(headerValue(request.headers, AGENT_REQUEST_ID_HEADER)) ??
+        correlationId,
     });
     return true;
   }

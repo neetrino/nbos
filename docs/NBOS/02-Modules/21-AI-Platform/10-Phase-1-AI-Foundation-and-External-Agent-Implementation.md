@@ -176,13 +176,13 @@ Overlap (118) may only ever shorten the predecessor: the requested window must b
 137. [x] Do not require query-string token.
 138. [x] Redact Authorization values from logs/errors.
 139. [x] Add auth observability without secrets.
-140. [~] Add Employee-vs-Agent boundary tests.
+140. [x] Add Employee-vs-Agent boundary tests.
 
 Runtime: `apps/api/src/modules/ai-platform/auth/*`. `AgentAuthGuard` writes `request.agent` and never `request.user`, so an agent can never enter an employee RBAC guard as a user; an employee JWT fails the canonical token parse before any database lookup. An unknown key id runs the _same_ `argon2.verify` call against a per-process decoy verifier (primed at module init), so "no such key" and "wrong secret" share both the code path and the cost. Channel provenance comes from `@AgentChannel()` route metadata, never from a client header or a request path, so a REST caller cannot label itself as MCP in ActorContext or Audit.
 
 Auth observability (139) is a structured secret-free warning log per rejected attempt — reason, public key id, channel, correlation id — and deliberately not an AuditLog row: unauthenticated traffic is attacker-controlled and unbounded, so a row per attempt would be a write amplifier. Refusals of a known credential remain traceable through the agent's own lifecycle trail.
 
-Item 140 stays `[~]`: the boundary is proven by unit tests, but the real `@Public()` + `AgentAuthGuard` + global employee guard wiring can only be integration-tested once the controllers exist in Chat 4. Tests: `agent-auth.guard.test.ts`, `agent-authenticator.service.test.ts`.
+Item 140 is closed by Chat 4. `protocol/agent-protocol.http.int.test.ts` boots a Nest application with the production guard chain (`ThrottlerGuard → OriginGuard → AuthGuard → EmployeeGuard → PermissionGuard → RequireActiveSessionGuard`), the production `ValidationPipe`, `TransformInterceptor` and `GlobalExceptionFilter`, mounts the real agent controllers next to an employee route, and drives it over real HTTP. It proves an agent token serves an agent route with no employee session, that the same token never reaches an employee permission check, that an employee route still rejects it, that a query-string token is refused, and that the presented credential never appears in a response body. Tests: `agent-auth.guard.test.ts`, `agent-authenticator.service.test.ts`, `agent-protocol.http.int.test.ts`.
 
 # H. Capability registry
 
@@ -259,8 +259,8 @@ The agent id is not an input: `AgentPolicyQuery` derives it from `actor`, so a c
 # K. Domain Action Gateway
 
 196. [x] Create shared AI/agent capability invocation boundary.
-197. [~] Prohibit direct Prisma domain writes from REST agent controllers.
-198. [~] Prohibit direct Prisma domain writes from MCP tool adapters.
+197. [x] Prohibit direct Prisma domain writes from REST agent controllers.
+198. [x] Prohibit direct Prisma domain writes from MCP tool adapters.
 199. [x] Prohibit direct Prisma domain writes from future Internal AI tool adapters.
 200. [x] Route Task actions through Tasks application/domain services.
 201. [x] Route Drive operations through Drive services.
@@ -274,7 +274,7 @@ The agent id is not an input: `AgentPolicyQuery` derives it from `actor`, so a c
 209. [~] Preserve transaction boundaries.
 210. [x] Add gateway integration tests.
 
-Runtime: `apps/api/src/modules/ai-platform/gateway/agent-capability.gateway.ts`. REST and MCP adapters do not exist yet (Chat 4); both must call `invoke` and must not write Tasks/Drive via Prisma — 197–198 stay `[~]` until those controllers exist. Item 204 validates catalog field names plus enum/date/sort at the gateway (`agent-capability.validators.ts`). Item 205 is partial: handlers emit purpose-built projections rather than running a second output-schema validator. Item 207 audits after domain commit even if idempotency `complete()` fails. Item 209 is partial: domain commit and idempotency `complete()` are not one transaction; stale `IN_PROGRESS` is never reclaimed (conflict instead of a second domain write). List `workspaces.read` denials (except the empty authorized set) go through `assertAllowed`. Evidence: `19-Phase-1-Chat-3-Handoff.md`.
+Runtime: `apps/api/src/modules/ai-platform/gateway/agent-capability.gateway.ts`. Items 197–198 are closed by Chat 4: the REST controllers and the MCP server hold no Prisma client and no Tasks/Drive dependency — their only collaborator is `AgentProtocolInvoker`, which calls `AgentCapabilityGateway.invoke`. Item 203 is closed by Chat 4: `AgentAuthGuard` resolves or mints the correlation id before authentication, so every invocation carries one. Item 204 validates catalog field names plus enum/date/sort at the gateway (`agent-capability.validators.ts`). Item 205 is partial: handlers emit purpose-built projections rather than running a second output-schema validator. Item 207 audits after domain commit even if idempotency `complete()` fails. Item 209 is partial: domain commit and idempotency `complete()` are not one transaction; stale `IN_PROGRESS` is never reclaimed (conflict instead of a second domain write). List `workspaces.read` denials (except the empty authorized set) go through `assertAllowed`. Evidence: `19-Phase-1-Chat-3-Handoff.md`.
 
 # L. Work Space discovery and isolation
 
@@ -411,8 +411,8 @@ Runtime: `tasks.start` is `UPDATE … WHERE status IN (OPEN, ON_HOLD)`. `tasks.s
 # T. Idempotency
 
 313. [x] Define common External Agent idempotency contract.
-314. [~] Support `Idempotency-Key` for REST mutations.
-315. [~] Support equivalent `clientOperationId` for MCP tools.
+314. [x] Support `Idempotency-Key` for REST mutations.
+315. [x] Support equivalent `clientOperationId` for MCP tools.
 316. [x] Scope idempotency to actor/capability appropriately.
 317. [x] Store operation identity/result safely.
 318. [x] Return original compatible result for safe duplicate retry.
@@ -422,7 +422,7 @@ Runtime: `tasks.start` is `UPDATE … WHERE status IN (OPEN, ON_HOLD)`. `tasks.s
 322. [x] Prevent duplicate semantic transitions.
 323. [x] Add duplicate/retry tests.
 
-Runtime: `AgentIdempotencyService` stores `(agentId, capabilityKey, operationKey)` with a SHA-256 fingerprint. `invoke()` accepts REST `Idempotency-Key` or MCP `clientOperationId` as `invocation.idempotencyKey` or stripped protocol input fields. Binding those names to HTTP headers / MCP tool args is Chat 4 (314–315). `abort()` runs only when `dispatch` fails. After domain commit, `complete()` failure leaves `IN_PROGRESS`; retries (including after 60s) return conflict and do not re-enter Tasks/Drive. A crash between reserve and dispatch can pin the key until operational cleanup (K 209).
+Runtime: `AgentIdempotencyService` stores `(agentId, capabilityKey, operationKey)` with a SHA-256 fingerprint. Chat 4 closed 314–315: the REST `Idempotency-Key` header and the MCP `clientOperationId` tool argument are both bound to `invocation.idempotencyKey` by `AgentProtocolInvoker`, and a parity test asserts the two transports produce the same key for the same operation. Artifact bytes travel in `invocation.payload`, so the fingerprint covers the real content and never a JSON field. `abort()` runs only when `dispatch` fails. After domain commit, `complete()` failure leaves `IN_PROGRESS`; retries (including after 60s) return conflict and do not re-enter Tasks/Drive. A crash between reserve and dispatch can pin the key until operational cleanup (K 209).
 
 # U. Rate limits and abuse controls
 
@@ -436,64 +436,70 @@ Runtime: `AgentIdempotencyService` stores `(agentId, capabilityKey, operationKey
 
 # V. REST machine API
 
-331. [ ] Implement dedicated `/api/v1/agent` namespace.
-332. [ ] Implement `GET /agent/me` or equivalent identity endpoint.
-333. [ ] Implement Work Space discovery endpoints.
-334. [ ] Implement Task read/list endpoints.
-335. [ ] Implement Task create endpoint.
-336. [ ] Implement Task allowlisted update endpoint.
-337. [ ] Implement semantic start endpoint.
-338. [ ] Implement comment endpoint.
-339. [ ] Implement submit-review endpoint.
-340. [ ] Implement discussion read endpoint.
-341. [ ] Implement artifact list/read endpoint.
-342. [ ] Implement artifact attach/upload endpoint.
-343. [ ] Do not expose Task delete endpoint for Agent Phase 1.
-344. [ ] Use consistent JSON error envelope.
-345. [ ] Use stable error codes from `09` contract.
-346. [ ] Add pagination contract.
-347. [ ] Add idempotency documentation.
-348. [ ] Generate/update OpenAPI contracts.
-349. [ ] Add REST contract tests.
+331. [x] Implement dedicated `/api/v1/agent` namespace.
+332. [x] Implement `GET /agent/me` or equivalent identity endpoint.
+333. [x] Implement Work Space discovery endpoints.
+334. [x] Implement Task read/list endpoints.
+335. [x] Implement Task create endpoint.
+336. [x] Implement Task allowlisted update endpoint.
+337. [x] Implement semantic start endpoint.
+338. [x] Implement comment endpoint.
+339. [x] Implement submit-review endpoint.
+340. [x] Implement discussion read endpoint.
+341. [x] Implement artifact list/read endpoint.
+342. [x] Implement artifact attach/upload endpoint.
+343. [x] Do not expose Task delete endpoint for Agent Phase 1.
+344. [x] Use consistent JSON error envelope.
+345. [x] Use stable error codes from `09` contract.
+346. [x] Add pagination contract.
+347. [x] Add idempotency documentation.
+348. [x] Generate/update OpenAPI contracts.
+349. [x] Add REST contract tests.
+
+Runtime: `apps/api/src/modules/ai-platform/rest/*` — three controllers on `v1/agent` behind the global `api` prefix. Every handler resolves a registry operation and calls `AgentProtocolInvoker`; none of them holds Prisma, Tasks or Drive. 341 is addressed through the owning task (`GET /tasks/:taskId/artifacts[/:fileAssetId]`) rather than the bare `/artifacts/:id/download` sketched in `09` §2, so the Task/Work Space link that authorizes the file is part of the request; `09` §2 permits adapting route mechanics. 342 takes base64 `contentBase64` capped at 512 KiB and hands the decoded bytes to the gateway as a binary payload. 343 has no route and no capability to reach. 344–345 come from `AgentProtocolExceptionFilter` + `toAgentErrorResponse`; `@SkipTransform()` keeps the employee `{ data, timestamp }` wrapper off agent responses. 346 reuses the gateway page meta. 348 is asserted against the generated document in `rest/agent-openapi.test.ts`. Not exposed in Phase 1: `tasks.read_links` has no REST route, because `09` §2 does not define one.
 
 # W. MCP server/adapter
 
-350. [ ] Implement remote MCP endpoint/server supported by stack.
-351. [ ] Authenticate MCP through the same External Agent credential system.
-352. [ ] Build same ActorContext as REST.
-353. [ ] Implement `nbos_get_identity`.
-354. [ ] Implement `nbos_list_workspaces`.
-355. [ ] Implement `nbos_get_workspace`.
-356. [ ] Implement `nbos_list_tasks`.
-357. [ ] Implement `nbos_get_task`.
-358. [ ] Implement `nbos_create_task`.
-359. [ ] Implement `nbos_update_task`.
-360. [ ] Implement `nbos_start_task`.
-361. [ ] Implement `nbos_get_task_discussion`.
-362. [ ] Implement `nbos_add_task_comment`.
-363. [ ] Implement `nbos_list_task_artifacts`.
-364. [ ] Implement `nbos_get_task_artifact`.
-365. [ ] Implement `nbos_attach_task_artifact`.
-366. [ ] Implement `nbos_submit_task_review`.
-367. [ ] Do not expose delete tool in Phase 1.
-368. [ ] Use structured input/output schemas.
-369. [ ] Ensure MCP tools invoke same capabilities/domain services as REST.
-370. [ ] Ensure MCP authorization decisions match REST.
-371. [ ] Propagate correlation id/protocol metadata.
-372. [ ] Add MCP contract tests.
-373. [ ] Add REST-vs-MCP parity tests.
+350. [x] Implement remote MCP endpoint/server supported by stack.
+351. [x] Authenticate MCP through the same External Agent credential system.
+352. [x] Build same ActorContext as REST.
+353. [x] Implement `nbos_get_identity`.
+354. [x] Implement `nbos_list_workspaces`.
+355. [x] Implement `nbos_get_workspace`.
+356. [x] Implement `nbos_list_tasks`.
+357. [x] Implement `nbos_get_task`.
+358. [x] Implement `nbos_create_task`.
+359. [x] Implement `nbos_update_task`.
+360. [x] Implement `nbos_start_task`.
+361. [x] Implement `nbos_get_task_discussion`.
+362. [x] Implement `nbos_add_task_comment`.
+363. [x] Implement `nbos_list_task_artifacts`.
+364. [x] Implement `nbos_get_task_artifact`.
+365. [x] Implement `nbos_attach_task_artifact`.
+366. [x] Implement `nbos_submit_task_review`.
+367. [x] Do not expose delete tool in Phase 1.
+368. [~] Use structured input/output schemas.
+369. [x] Ensure MCP tools invoke same capabilities/domain services as REST.
+370. [x] Ensure MCP authorization decisions match REST.
+371. [x] Propagate correlation id/protocol metadata.
+372. [x] Add MCP contract tests.
+373. [x] Add REST-vs-MCP parity tests.
+
+Runtime: `apps/api/src/modules/ai-platform/mcp/*`. Stateless Streamable HTTP JSON-RPC 2.0 at `POST /api/v1/agent/mcp` (`initialize`, `notifications/initialized`, `ping`, `tools/list`, `tools/call`); `GET`/`DELETE` answer 405 because Phase 1 offers no server-initiated stream. Implemented directly rather than on the MCP SDK: the Phase 1 surface is tools-only, and a hand-written adapter avoids two new production dependencies while keeping error/idempotency behaviour byte-identical to REST. 351–352 reuse `AgentAuthGuard` with `@AgentChannel('mcp')`, so the same credential yields the same `ActorContext` with `channel.source = 'mcp'`. 368 is `[~]`: input schemas are published and generated from the capability catalog, but no `outputSchema` is advertised — that depends on the catalog output validator still open as K 205. Denials are returned as `isError: true` tool results carrying the same stable code REST returns, which is what 370 is tested on. Not exposed: `tasks.read_links`, absent from the `09` §12 tool list.
 
 # X. External client setup and acceptance
 
-374. [ ] Document generic REST setup.
-375. [ ] Document Cursor MCP setup pattern.
-376. [ ] Document Codex MCP/API setup pattern where supported.
-377. [ ] Document Claude Code MCP/API setup pattern where supported.
-378. [ ] Ensure setup requires only NBOS URL + External Agent token.
-379. [ ] Ensure setup never requires DB credentials.
-380. [ ] Ensure setup never requires SSH.
-381. [ ] Ensure setup never requires Employee admin JWT/session.
-382. [ ] Ensure setup never requires OpenAI/Anthropic provider keys.
+374. [x] Document generic REST setup.
+375. [x] Document Cursor MCP setup pattern.
+376. [x] Document Codex MCP/API setup pattern where supported.
+377. [x] Document Claude Code MCP/API setup pattern where supported.
+378. [x] Ensure setup requires only NBOS URL + External Agent token.
+379. [x] Ensure setup never requires DB credentials.
+380. [x] Ensure setup never requires SSH.
+381. [x] Ensure setup never requires Employee admin JWT/session.
+382. [x] Ensure setup never requires OpenAI/Anthropic provider keys.
+
+Runtime: [`21-External-Agent-Client-Setup.md`](21-External-Agent-Client-Setup.md). 378–382 are not only documentation: the protocol accepts exactly one credential form (`Authorization: Bearer` — query-string tokens are rejected), agent routes are `@Public()` so no employee session participates, and no capability reaches Credentials, the vault or a provider key. 376 notes the REST fallback for Codex builds without remote MCP support. The setup guides were written against the implemented endpoints but have not been walked end-to-end against a deployed host with a live token.
 
 # Y. AI Provider connection foundation
 

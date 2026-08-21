@@ -1,6 +1,12 @@
 import type { AiPolicyDenyReason } from './policy-decision';
 
-/** Stable machine-readable classes from `09-External-Agent-API-and-MCP-Contract.md`. */
+/**
+ * Stable machine-readable classes from `09-External-Agent-API-and-MCP-Contract.md`.
+ *
+ * That document defines a *minimum* set. `AGENT_INTERNAL_ERROR` is the one
+ * addition: a protocol adapter must still answer an unexpected server fault
+ * with a deterministic code instead of an unmapped stack trace.
+ */
 export const AI_AGENT_ERROR_CODES = [
   'AGENT_AUTH_INVALID',
   'AGENT_CREDENTIAL_REVOKED',
@@ -15,6 +21,7 @@ export const AI_AGENT_ERROR_CODES = [
   'AGENT_IDEMPOTENCY_CONFLICT',
   'AGENT_RATE_LIMITED',
   'AGENT_PROVIDER_UNAVAILABLE',
+  'AGENT_INTERNAL_ERROR',
 ] as const;
 
 export type AiAgentErrorCode = (typeof AI_AGENT_ERROR_CODES)[number];

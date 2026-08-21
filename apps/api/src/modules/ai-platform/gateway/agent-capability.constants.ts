@@ -20,3 +20,14 @@ export const TASK_AGENT_PERMITTED_LINK_ENTITY_TYPES = [
 ] as const;
 
 export const AGENT_TASK_SORT_FIELDS = ['updatedAt', 'createdAt', 'dueDate', 'priority'] as const;
+
+/** Task enums an agent may send. Shared by the runtime validators and the published MCP schemas. */
+export const AGENT_TASK_STATUSES = [
+  'OPEN',
+  'IN_PROGRESS',
+  'REVIEW',
+  'ON_HOLD',
+  'COMPLETED',
+] as const;
+
+export const AGENT_TASK_PRIORITIES = ['CRITICAL', 'HIGH', 'NORMAL', 'LOW'] as const;

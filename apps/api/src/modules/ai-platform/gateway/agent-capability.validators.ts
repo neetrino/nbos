@@ -1,9 +1,13 @@
 import { AgentAccessException } from '../auth/agent-auth.errors';
-import { AGENT_TASK_SORT_FIELDS } from './agent-capability.constants';
+import {
+  AGENT_TASK_PRIORITIES,
+  AGENT_TASK_SORT_FIELDS,
+  AGENT_TASK_STATUSES,
+} from './agent-capability.constants';
 import { readOptionalString, readRequiredString } from './agent-capability.input';
 
-const TASK_STATUSES = new Set(['OPEN', 'IN_PROGRESS', 'REVIEW', 'ON_HOLD', 'COMPLETED']);
-const TASK_PRIORITIES = new Set(['CRITICAL', 'HIGH', 'NORMAL', 'LOW']);
+const TASK_STATUSES: ReadonlySet<string> = new Set(AGENT_TASK_STATUSES);
+const TASK_PRIORITIES: ReadonlySet<string> = new Set(AGENT_TASK_PRIORITIES);
 
 export function readOptionalTaskStatus(
   input: Record<string, unknown>,
