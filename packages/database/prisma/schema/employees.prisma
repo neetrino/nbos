@@ -150,6 +150,15 @@ model Employee {
   externalAgentCapabilityGrantsRevoked ExternalAgentCapabilityGrant[]    @relation("ExternalAgentCapabilityGrantRevokedBy")
   externalAgentResourceScopesMade    ExternalAgentResourceScope[]        @relation("ExternalAgentResourceScopeGrantedBy")
   externalAgentResourceScopesRevoked ExternalAgentResourceScope[]        @relation("ExternalAgentResourceScopeRevokedBy")
+  aiProviderConnectionsCreated       AiProviderConnection[]              @relation("AiProviderConnectionCreatedBy")
+  aiModelsActivated                  AiModel[]                           @relation("AiModelActivatedBy")
+  aiModelPoliciesCreated             AiModelPolicy[]                     @relation("AiModelPolicyCreatedBy")
+  internalAiAgentsOwned              InternalAiAgent[]                   @relation("InternalAiAgentOwner")
+  internalAiAgentsCreated            InternalAiAgent[]                   @relation("InternalAiAgentCreatedBy")
+  internalAiAgentCapabilityGrantsMade InternalAiAgentCapabilityGrant[]   @relation("InternalAiAgentCapabilityGrantGrantedBy")
+  internalAiAgentCapabilityGrantsRevoked InternalAiAgentCapabilityGrant[] @relation("InternalAiAgentCapabilityGrantRevokedBy")
+  internalAiAgentResourceScopesMade  InternalAiAgentResourceScope[]      @relation("InternalAiAgentResourceScopeGrantedBy")
+  internalAiAgentResourceScopesRevoked InternalAiAgentResourceScope[]    @relation("InternalAiAgentResourceScopeRevokedBy")
 
   @@map("employees")
 }

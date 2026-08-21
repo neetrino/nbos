@@ -5,6 +5,12 @@ export const AI_AUDIT_ENTITY = {
   capabilityGrant: 'EXTERNAL_AGENT_CAPABILITY_GRANT',
   resourceScope: 'EXTERNAL_AGENT_RESOURCE_SCOPE',
   capability: 'AGENT_CAPABILITY',
+  providerConnection: 'AI_PROVIDER_CONNECTION',
+  model: 'AI_MODEL',
+  modelPolicy: 'AI_MODEL_POLICY',
+  internalAgent: 'INTERNAL_AI_AGENT',
+  internalCapabilityGrant: 'INTERNAL_AI_AGENT_CAPABILITY_GRANT',
+  internalResourceScope: 'INTERNAL_AI_AGENT_RESOURCE_SCOPE',
 } as const;
 
 /** Audit actions for External Agent lifecycle and authorization outcomes. */
@@ -23,6 +29,27 @@ export const AI_AUDIT_ACTION = {
   scopeRevoked: 'SCOPE_REVOKED',
   policyDenied: 'AGENT_POLICY_DENIED',
   capabilityInvoked: 'AGENT_CAPABILITY_INVOKED',
+  providerCreated: 'PROVIDER_CONNECTION_CREATED',
+  providerUpdated: 'PROVIDER_CONNECTION_UPDATED',
+  providerValidated: 'PROVIDER_CONNECTION_VALIDATED',
+  providerKeyRotated: 'PROVIDER_KEY_ROTATED',
+  providerDisabled: 'PROVIDER_CONNECTION_DISABLED',
+  providerEnabled: 'PROVIDER_CONNECTION_ENABLED',
+  providerRevoked: 'PROVIDER_CONNECTION_REVOKED',
+  modelsSynced: 'MODEL_CATALOG_SYNCED',
+  modelActivated: 'MODEL_ACTIVATED',
+  modelDisabled: 'MODEL_DISABLED',
+  modelUpdated: 'MODEL_UPDATED',
+  modelPolicyCreated: 'MODEL_POLICY_CREATED',
+  modelPolicyUpdated: 'MODEL_POLICY_UPDATED',
+  modelPolicyActivated: 'MODEL_POLICY_ACTIVATED',
+  modelPolicyDisabled: 'MODEL_POLICY_DISABLED',
+  internalAgentCreated: 'INTERNAL_AGENT_CREATED',
+  internalAgentUpdated: 'INTERNAL_AGENT_UPDATED',
+  internalAgentActivated: 'INTERNAL_AGENT_ACTIVATED',
+  internalAgentPaused: 'INTERNAL_AGENT_PAUSED',
+  internalAgentDisabled: 'INTERNAL_AGENT_DISABLED',
+  internalAgentArchived: 'INTERNAL_AGENT_ARCHIVED',
 } as const;
 
 /** Maximum agent name / description lengths accepted at the boundary. */

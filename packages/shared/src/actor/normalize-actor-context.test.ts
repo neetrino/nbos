@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   actorContextFromEmployee,
+  actorContextFromInternalAgent,
   actorContextFromMachine,
   actorContextFromUserId,
   ActorContextError,
@@ -102,5 +103,19 @@ describe('actor helpers', () => {
     const ctx = actorContextFromUserId('emp-3', { channel: { source: 'web' } });
     expect(legacyUserIdFromActor(ctx)).toBe('emp-3');
     expect(ctx.channel?.source).toBe('web');
+  });
+
+  it('builds INTERNAL_AI from an agent identity without a userId', () => {
+    const ctx = actorContextFromInternalAgent(
+      { id: 'ia-1', name: 'Delivery Assistant' },
+      { onBehalfOf: { id: 'emp-9', type: 'USER' }, channel: { source: 'messenger' } },
+    );
+    expect(ctx.actor).toEqual({
+      id: 'ia-1',
+      type: 'INTERNAL_AI',
+      displayName: 'Delivery Assistant',
+    });
+    expect(ctx.channel?.source).toBe('messenger');
+    expect(legacyUserIdFromActor(ctx)).toBeNull();
   });
 });

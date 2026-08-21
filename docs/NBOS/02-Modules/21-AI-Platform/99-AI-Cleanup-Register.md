@@ -46,9 +46,9 @@ Retain as simplified terminology only. Replace as authorization model with resou
 
 Direction is correct. Reference `21-AI-Platform` rather than inventing a Documents-local assistant architecture.
 
-### B4. Roadmap lacks AI Foundation phase — MISSING
+### B4. Roadmap lacks AI Foundation phase — PARTIAL
 
-Add a dedicated phase/slice before broad internal AI features.
+`00-Implementation-Roadmap.md` now points at the AI Platform Phase 1 checklist and Chat 5 completion. Full roadmap phase numbering vs the eight-chat split remains a docs cleanup, not a runtime gap.
 
 ## C. Runtime gaps
 
@@ -82,7 +82,7 @@ Chat 2: `AgentAuthGuard` / `AgentAuthenticatorService`. Protocol wiring is Chat 
 
 ### C7. No AI execution record/correlation model — MISSING
 
-Required for async execution, status, failure, approval and observability. Chat 4/5.
+Required for async execution, status, failure, approval and observability. Chat 5 added Internal Agent execution _context_ (actor/channel/onBehalfOf) but not an execution record table. Usage/evaluation entities remain AH/AI.
 
 ### C8. No idempotency contract for agent mutations — PARTIAL
 
@@ -91,6 +91,10 @@ Capability metadata declares `REQUIRED`. Chat 3 stores replay rows in `external_
 ### C9. No external-agent rate-limit policy — MISSING
 
 Add actor/capability scoped limits. Section U; evaluator already consumes a verdict (J 186).
+
+### C10. Provider/model/Internal Agent foundation — OK
+
+Chat 5: OpenAI/Anthropic adapters, AES-256-GCM provider secrets, model catalog sync without auto-activate, FIXED/PRIMARY_FALLBACK policies, Internal Agent lifecycle. Admin UI is Chat 6. Scheduled catalog sync is `AiModelSyncService.runScheduledCatalogSync` (SYSTEM actor, continue-on-error); Nest scheduler catalog registration is still deferred.
 
 ## D. Tasks alignment issues to verify before implementation
 
@@ -145,6 +149,14 @@ Canonical Phase 1 sources (`03`, `08`, `09`, `10` item 43, `16`) require both RE
 ## F3. Chat 3 evidence
 
 2026-08-21: Domain Action Gateway, Workspace/Tasks/Drive capabilities, Tasks-owned discussion, Drive classification mapping, idempotency store. See `19-Phase-1-Chat-3-Handoff.md`.
+
+## F4. Chat 4 evidence
+
+2026-08-21: External Agent REST and MCP. See `20-Phase-1-Chat-4-Handoff.md`.
+
+## F5. Chat 5 evidence
+
+2026-08-22: Providers, model catalog, Model Policy, Internal Agent foundation. See `22-Phase-1-Chat-5-Handoff.md`.
 
 ## G. Implementation rule
 

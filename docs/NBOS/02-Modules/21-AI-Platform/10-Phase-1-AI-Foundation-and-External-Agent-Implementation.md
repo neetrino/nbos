@@ -103,10 +103,10 @@ Runtime: `packages/shared/src/actor/*`. Tests: `normalize-actor-context.test.ts`
 83. [x] Prevent provider API keys from audit.
 84. [x] Prevent full sensitive prompt/context persistence by default.
 85. [x] Audit External Agent lifecycle changes.
-86. [~] Audit provider connection lifecycle changes.
-87. [~] Audit model activation/deactivation.
-88. [~] Audit model policy changes.
-89. [~] Audit Internal Agent lifecycle changes.
+86. [x] Audit provider connection lifecycle changes.
+87. [x] Audit model activation/deactivation.
+88. [x] Audit model policy changes.
+89. [x] Audit Internal Agent lifecycle changes.
 90. [x] Audit capability/scope changes.
 91. [~] Audit approval lifecycle.
 92. [x] Add migration tests using representative historical AuditLog rows.
@@ -114,7 +114,7 @@ Runtime: `packages/shared/src/actor/*`. Tests: `normalize-actor-context.test.ts`
 94. [x] Add External Agent audit tests.
 95. [x] Add Internal AI audit contract tests.
 
-Write path and display contract exist in `AuditService.log({ actor })`. Chat 2 closed 85 and 90 through `AiPlatformAuditService`; the remaining emitters (86–89, 91) land with the owning entities in Chats 5/7. Every lifecycle, credential, grant and scope mutation passes its own transaction client to `AuditService.log`, so the state change and its audit row commit together and an un-audited active grant or credential is unreachable. Machine display names resolve through the batched `AuditActorLookups` registered by `AiPlatformModule` (`audit-actor.resolver.test.ts`).
+Write path and display contract exist in `AuditService.log({ actor })`. Chat 2 closed 85 and 90 through `AiPlatformAuditService`. Chat 5 closed 86–89 with the provider/model/Internal Agent services; item 91 remains Chat 7 (approval lifecycle). Every lifecycle, credential, grant, scope, provider, model and Internal Agent mutation passes its own transaction client to `AuditService.log`. Machine display names resolve through the batched `AuditActorLookups` registered by `AiPlatformModule` — External Agents and Internal Agents both register (`audit-actor.resolver.test.ts`). INTERNAL_AI writes never set `userId`.
 
 # E. External Agent persistence
 
@@ -503,105 +503,115 @@ Runtime: [`21-External-Agent-Client-Setup.md`](21-External-Agent-Client-Setup.md
 
 # Y. AI Provider connection foundation
 
-383. [ ] Create generic AI Provider Connection abstraction/model.
-384. [ ] Support provider type OPENAI.
-385. [ ] Support provider type ANTHROPIC.
-386. [ ] Allow multiple connections per provider structurally.
-387. [ ] Add connection name/status.
-388. [ ] Add createdBy/audit metadata.
-389. [ ] Add optional provider organization/project metadata where applicable.
-390. [ ] Add lastValidatedAt.
-391. [ ] Add lastModelSyncAt.
-392. [ ] Add enable/disable semantics.
-393. [ ] Add provider adapter interface.
-394. [ ] Keep business modules provider-independent.
-395. [ ] Add provider connection persistence tests.
+383. [x] Create generic AI Provider Connection abstraction/model.
+384. [x] Support provider type OPENAI.
+385. [x] Support provider type ANTHROPIC.
+386. [x] Allow multiple connections per provider structurally.
+387. [x] Add connection name/status.
+388. [x] Add createdBy/audit metadata.
+389. [x] Add optional provider organization/project metadata where applicable.
+390. [x] Add lastValidatedAt.
+391. [x] Add lastModelSyncAt.
+392. [x] Add enable/disable semantics.
+393. [x] Add provider adapter interface.
+394. [x] Keep business modules provider-independent.
+395. [x] Add provider connection persistence tests.
+
+Runtime: `packages/database/prisma/schema/ai-providers.prisma`, `apps/api/src/modules/ai-platform/providers/*`. `AiProviderAdapter` is the only provider surface; OpenAI and Anthropic implement it. Multiple connections per provider are allowed (no unique on provider type). Optional `baseUrl` is HTTPS-only, no userinfo, default port, and host-allowlisted (`api.openai.com` / `api.anthropic.com`); localhost, private and link-local hosts are rejected at save and at request time. Provider HTTP uses `redirect: 'manual'` and refuses 3xx. Tests: `ai-provider-connection.service.test.ts`, `ai-provider-url.test.ts`, `openai.adapter.test.ts`, `anthropic.adapter.test.ts`.
 
 # Z. Provider credential security
 
-396. [ ] Store provider credentials through approved encrypted secret mechanism.
-397. [ ] Never expose provider key to AI actor.
-398. [ ] Never expose provider key after save.
-399. [ ] Never log provider key.
-400. [ ] Never store provider key in Audit changes.
-401. [ ] Support key rotation/replacement.
-402. [ ] Support connection disable/revoke behavior.
-403. [ ] Validate provider connection without exposing secret.
-404. [ ] Audit provider connection lifecycle.
-405. [ ] Add secret-redaction tests.
+396. [x] Store provider credentials through approved encrypted secret mechanism.
+397. [x] Never expose provider key to AI actor.
+398. [x] Never expose provider key after save.
+399. [x] Never log provider key.
+400. [x] Never store provider key in Audit changes.
+401. [x] Support key rotation/replacement.
+402. [x] Support connection disable/revoke behavior.
+403. [x] Validate provider connection without exposing secret.
+404. [x] Audit provider connection lifecycle.
+405. [x] Add secret-redaction tests.
+
+Runtime: `AiProviderSecretStore` encrypts with AES-256-GCM v2 via `apps/api/src/common/utils/crypto.ts` and `CREDENTIALS_ENCRYPTION_KEY`. The ciphertext lives in `ai_provider_secrets`, not on the connection view. Create/rotate/validate responses and audit `changes` carry only `keyPrefix`. Revoke deletes the secret row. No External Agent capability reaches this store (`ai-provider-isolation.test.ts`). Tests: `ai-provider-key.test.ts`, `ai-provider-connection.service.test.ts`.
 
 # AA. Model catalog
 
-406. [ ] Create AI Model catalog entity.
-407. [ ] Store provider/model external id.
-408. [ ] Store stable internal NBOS model id.
-409. [ ] Store display name.
-410. [ ] Store discoveredAt.
-411. [ ] Store lastSeenAt.
-412. [ ] Support DISCOVERED status.
-413. [ ] Support ACTIVE status.
-414. [ ] Support DISABLED status.
-415. [ ] Support DEPRECATED status.
-416. [ ] Support UNAVAILABLE status.
-417. [ ] Implement OpenAI model-list synchronization.
-418. [ ] Implement Anthropic model-list synchronization.
-419. [ ] Implement manual Sync Models action.
-420. [ ] Implement scheduled synchronization path/contract.
-421. [ ] Do not auto-activate newly discovered models.
-422. [ ] Preserve historical model records when provider stops listing them.
-423. [ ] Record provider metadata/capabilities where reliable.
-424. [ ] Allow internal suitability tags/notes.
-425. [ ] Distinguish provider metadata from internal suitability judgment.
-426. [ ] Support alias/snapshot metadata where provider exposes it.
-427. [ ] Add model-sync tests.
-428. [ ] Add new-model-discovery tests.
-429. [ ] Add disappeared/unavailable-model tests.
+406. [x] Create AI Model catalog entity.
+407. [x] Store provider/model external id.
+408. [x] Store stable internal NBOS model id.
+409. [x] Store display name.
+410. [x] Store discoveredAt.
+411. [x] Store lastSeenAt.
+412. [x] Support DISCOVERED status.
+413. [x] Support ACTIVE status.
+414. [x] Support DISABLED status.
+415. [x] Support DEPRECATED status.
+416. [x] Support UNAVAILABLE status.
+417. [x] Implement OpenAI model-list synchronization.
+418. [x] Implement Anthropic model-list synchronization.
+419. [x] Implement manual Sync Models action.
+420. [x] Implement scheduled synchronization path/contract.
+421. [x] Do not auto-activate newly discovered models.
+422. [x] Preserve historical model records when provider stops listing them.
+423. [x] Record provider metadata/capabilities where reliable.
+424. [x] Allow internal suitability tags/notes.
+425. [x] Distinguish provider metadata from internal suitability judgment.
+426. [x] Support alias/snapshot metadata where provider exposes it.
+427. [x] Add model-sync tests.
+428. [x] Add new-model-discovery tests.
+429. [x] Add disappeared/unavailable-model tests.
+
+Runtime: `AiModel` has a stable UUID plus `providerModelId`. Sync (`AiModelSyncService`) inserts new rows as `DISCOVERED`, refreshes metadata/`lastSeenAt` without promoting status, returns `UNAVAILABLE` models to `DISCOVERED` (not `ACTIVE`), and marks disappeared `DISCOVERED`/`ACTIVE` as `UNAVAILABLE` without deleting `DISABLED`/`DEPRECATED`. Manual sync uses an employee actor. Scheduled sync is `runScheduledCatalogSync` with a SYSTEM `ActorContext` and machine audit; one connection failure does not stop the rest. Nest catalog registration is still deferred — `SchedulerService` is already over the file-size limit; `AI_MODEL_CATALOG_SYNC_CONTRACT.runnerMethod` is the bindable method. Provider metadata and suitability tags are separate columns. Tests: `ai-model-sync.rules.test.ts`, `ai-model-sync.service.test.ts`, `ai-model-catalog.service.test.ts`.
 
 # AB. Model Policy / routing foundation
 
-430. [ ] Create AI Model Policy entity.
-431. [ ] Create model-policy candidate relation.
-432. [ ] Support policy name/purpose/status.
-433. [ ] Support FIXED mode.
-434. [ ] Support PRIMARY_FALLBACK mode.
-435. [ ] Support ordered fallback candidates.
-436. [ ] Allow candidates from the same provider.
-437. [ ] Allow candidates from different providers.
-438. [ ] Validate candidates are enabled/available for production assignment.
-439. [ ] Do not silently auto-promote DISCOVERED model.
-440. [ ] Record routing policy version/config identity where practical.
-441. [ ] Define fallback reasons (provider error/rate limit/timeout/unavailable/etc.).
-442. [ ] Preserve idempotency across retries/fallback for mutating workflows.
-443. [ ] Keep TIERED/ADAPTIVE structurally possible.
-444. [ ] Do not implement learned/adaptive router in Phase 1.
-445. [ ] Add FIXED policy tests.
-446. [ ] Add PRIMARY_FALLBACK configuration tests.
-447. [ ] Add cross-provider fallback configuration tests.
+430. [x] Create AI Model Policy entity.
+431. [x] Create model-policy candidate relation.
+432. [x] Support policy name/purpose/status.
+433. [x] Support FIXED mode.
+434. [x] Support PRIMARY_FALLBACK mode.
+435. [x] Support ordered fallback candidates.
+436. [x] Allow candidates from the same provider.
+437. [x] Allow candidates from different providers.
+438. [x] Validate candidates are enabled/available for production assignment.
+439. [x] Do not silently auto-promote DISCOVERED model.
+440. [x] Record routing policy version/config identity where practical.
+441. [x] Define fallback reasons (provider error/rate limit/timeout/unavailable/etc.).
+442. [x] Preserve idempotency across retries/fallback for mutating workflows.
+443. [x] Keep TIERED/ADAPTIVE structurally possible.
+444. [x] Do not implement learned/adaptive router in Phase 1.
+445. [x] Add FIXED policy tests.
+446. [x] Add PRIMARY_FALLBACK configuration tests.
+447. [x] Add cross-provider fallback configuration tests.
+
+Runtime: `AiModelPolicy` + `AiModelPolicyCandidate`. Phase 1 modes are `FIXED` and `PRIMARY_FALLBACK`; `TIERED`/`ADAPTIVE` exist on the enum and are rejected at the service boundary. `PRIMARY_FALLBACK` requires exactly one enabled PRIMARY with the lowest enabled priority. Admin write still rejects DISCOVERED enabled candidates. Runtime resolve reads one active snapshot and skips temporarily unavailable fallbacks so they cannot block a healthy primary. Assignment (`requireAssignableForProduction`) re-checks only the enabled PRIMARY. Candidate replacement increments `version`. `resolveRoute` passes `operationKey` through unchanged. Tests: `ai-model-policy.rules.test.ts`, `ai-model-policy.service.test.ts`, `ai-model-policy.resolver.test.ts`.
 
 # AC. Internal Agent foundation
 
-448. [ ] Create Internal AI Agent model/entity.
-449. [ ] Add stable id/name/purpose.
-450. [ ] Add owner Employee.
-451. [ ] Support DRAFT status.
-452. [ ] Support ACTIVE status.
-453. [ ] Support PAUSED status.
-454. [ ] Support DISABLED status.
-455. [ ] Support ARCHIVED status.
-456. [ ] Link Internal Agent to capability grants/scopes architecture.
-457. [ ] Link Internal Agent to Model Policy.
-458. [ ] Add prompt-policy linkage contract.
-459. [ ] Add approval-policy linkage contract.
-460. [ ] Add surface/channel assignment model.
-461. [ ] Preserve channel/source in execution context.
-462. [ ] Add `onBehalfOf` support for employee-initiated future actions.
-463. [ ] Ensure Internal Agent is not provider/model identity.
-464. [ ] Ensure model changes do not alter Agent permissions.
-465. [ ] Validate required dependencies before Agent activation.
-466. [ ] Pause/disable blocks new executions.
-467. [ ] Preserve attribution after archive.
-468. [ ] Audit Internal Agent lifecycle/config changes.
-469. [ ] Add Internal Agent persistence/lifecycle tests.
+448. [x] Create Internal AI Agent model/entity.
+449. [x] Add stable id/name/purpose.
+450. [x] Add owner Employee.
+451. [x] Support DRAFT status.
+452. [x] Support ACTIVE status.
+453. [x] Support PAUSED status.
+454. [x] Support DISABLED status.
+455. [x] Support ARCHIVED status.
+456. [x] Link Internal Agent to capability grants/scopes architecture.
+457. [x] Link Internal Agent to Model Policy.
+458. [x] Add prompt-policy linkage contract.
+459. [x] Add approval-policy linkage contract.
+460. [x] Add surface/channel assignment model.
+461. [x] Preserve channel/source in execution context.
+462. [x] Add `onBehalfOf` support for employee-initiated future actions.
+463. [x] Ensure Internal Agent is not provider/model identity.
+464. [x] Ensure model changes do not alter Agent permissions.
+465. [x] Validate required dependencies before Agent activation.
+466. [x] Pause/disable blocks new executions.
+467. [x] Preserve attribution after archive.
+468. [x] Audit Internal Agent lifecycle/config changes.
+469. [x] Add Internal Agent persistence/lifecycle tests.
+
+Runtime: `packages/database/prisma/schema/ai-internal-agents.prisma`, `apps/api/src/modules/ai-platform/internal-agents/*`. Identity is the Internal Agent row, not a model name. Grants/scopes reuse the External Agent capability registry and scope types on Internal-specific tables (`grantCapability` / `revokeCapability` / `grantScope` / `revokeScope` / list). A model-policy change cannot rewrite permissions. After the row lock, `ACTIVE + modelPolicyId=null` is rejected; policy replace and activation revalidate a production-eligible PRIMARY. `promptPolicyId` and `approvalPolicyId` are opaque linkage contracts (AD/AF runtime is later). Surfaces map to ActorContext channels, including `messenger`. Pause/disable/archive fail `assertInternalAgentCanExecute`. Archive keeps the row for Audit display names. `actorContextFromInternalAgent` never writes `userId`. Tests: `internal-agent.service.test.ts`, `internal-agent-grant.service.test.ts`, `internal-agent-execution.test.ts`.
 
 # AD. Prompt policy/version foundation
 

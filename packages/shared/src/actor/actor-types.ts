@@ -16,7 +16,15 @@ export const ACTOR_TYPE_DISPLAY_NAME: Record<ActorType, string> = {
   AUTOMATION: 'Automation',
 };
 
-export const ACTOR_CHANNELS = ['web', 'rest', 'mcp', 'worker', 'scheduler', 'system'] as const;
+export const ACTOR_CHANNELS = [
+  'web',
+  'rest',
+  'mcp',
+  'worker',
+  'scheduler',
+  'system',
+  'messenger',
+] as const;
 
 export type ActorChannelSource = (typeof ACTOR_CHANNELS)[number];
 

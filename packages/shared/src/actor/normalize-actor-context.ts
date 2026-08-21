@@ -118,6 +118,17 @@ export function actorContextFromUserId(
   });
 }
 
+/** Internal Agent actor. Never a USER and never a model/provider identity. */
+export function actorContextFromInternalAgent(
+  agent: { id: string; name: string },
+  extras: Omit<ActorContextInput, 'actor'> = {},
+): ActorContext {
+  return actorContextFromMachine(
+    { id: agent.id, type: 'INTERNAL_AI', displayName: agent.name },
+    extras,
+  );
+}
+
 /** Legacy AuditLog.userId is set only for real employees. */
 export function legacyUserIdFromActor(context: ActorContext): string | null {
   return isEmployeeActorType(context.actor.type) ? context.actor.id : null;

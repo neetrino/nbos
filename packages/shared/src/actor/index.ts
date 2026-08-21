@@ -20,6 +20,7 @@ export type {
 } from './actor-context';
 export {
   actorContextFromEmployee,
+  actorContextFromInternalAgent,
   actorContextFromMachine,
   actorContextFromUserId,
   ActorContextError,

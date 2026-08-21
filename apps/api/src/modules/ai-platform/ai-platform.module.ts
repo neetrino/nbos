@@ -17,24 +17,32 @@ import { AgentTaskAccess } from './gateway/agent-task-access';
 import { AgentTaskReadHandler } from './gateway/agent-task-read.handler';
 import { AgentTaskWriteHandler } from './gateway/agent-task-write.handler';
 import { AgentWorkspaceHandler } from './gateway/agent-workspace.handler';
+import { InternalAgentGrantService } from './internal-agents/internal-agent-grant.service';
+import { InternalAgentService } from './internal-agents/internal-agent.service';
 import { AgentMcpController } from './mcp/agent-mcp.controller';
 import { AgentMcpServer } from './mcp/agent-mcp.server';
+import { AiModelCatalogService } from './models/ai-model-catalog.service';
+import { AiModelSyncService } from './models/ai-model-sync.service';
+import { AiModelPolicyResolver } from './policies/ai-model-policy.resolver';
+import { AiModelPolicyService } from './policies/ai-model-policy.service';
 import { AgentPolicyService } from './policy/agent-policy.service';
 import { AgentCorrelationInterceptor } from './protocol/agent-correlation.interceptor';
 import { AgentProtocolExceptionFilter } from './protocol/agent-protocol.filter';
 import { AgentProtocolInvoker } from './protocol/agent-protocol.invoker';
+import { AnthropicAdapter } from './providers/anthropic.adapter';
+import { AiProviderAdapterRegistry } from './providers/ai-provider-adapter.registry';
+import { AiProviderConnectionService } from './providers/ai-provider-connection.service';
+import { AiProviderSecretStore } from './providers/ai-provider-secret.store';
+import { AI_PROVIDER_FETCH } from './providers/ai-provider.types';
+import { OpenAiAdapter } from './providers/openai.adapter';
 import { AgentArtifactsController } from './rest/agent-artifacts.controller';
 import { AgentIdentityController } from './rest/agent-identity.controller';
 import { AgentTasksController } from './rest/agent-tasks.controller';
 
 /**
- * AI Platform foundation: External Agent identity, credentials, policy, the
- * Domain Action Gateway and the two protocol adapters.
- *
- * The REST controllers and the MCP server are thin: they resolve a transport
- * request to an operation and call `AgentCapabilityGateway` through
- * `AgentProtocolInvoker`. They never reach Prisma, Tasks or Drive directly and
- * never evaluate policy themselves.
+ * AI Platform foundation: External Agent protocols plus provider/model/Internal
+ * Agent configuration. REST/MCP stay thin adapters over the capability gateway.
+ * Provider keys never become a capability input.
  */
 @Module({
   imports: [AuditModule, TasksModule, DriveModule],
@@ -63,6 +71,18 @@ import { AgentTasksController } from './rest/agent-tasks.controller';
     AgentProtocolExceptionFilter,
     AgentCorrelationInterceptor,
     AgentMcpServer,
+    { provide: AI_PROVIDER_FETCH, useValue: globalThis.fetch.bind(globalThis) },
+    OpenAiAdapter,
+    AnthropicAdapter,
+    AiProviderAdapterRegistry,
+    AiProviderSecretStore,
+    AiProviderConnectionService,
+    AiModelCatalogService,
+    AiModelSyncService,
+    AiModelPolicyService,
+    AiModelPolicyResolver,
+    InternalAgentService,
+    InternalAgentGrantService,
   ],
   exports: [
     ExternalAgentService,
@@ -72,18 +92,26 @@ import { AgentTasksController } from './rest/agent-tasks.controller';
     AgentAuthGuard,
     AgentPolicyService,
     AgentCapabilityGateway,
+    AiProviderConnectionService,
+    AiModelCatalogService,
+    AiModelSyncService,
+    AiModelPolicyService,
+    InternalAgentService,
+    InternalAgentGrantService,
   ],
 })
 export class AiPlatformModule implements OnModuleInit {
   constructor(
     private readonly audit: AuditService,
     private readonly agents: ExternalAgentService,
+    private readonly internalAgents: InternalAgentService,
   ) {}
 
-  /** Lets Audit render External Agent names without importing this module. */
+  /** Lets Audit render External and Internal Agent names without importing this module. */
   async onModuleInit(): Promise<void> {
     this.audit.registerActorLookups({
       resolveExternalAgentDisplayNames: (ids) => this.agents.resolveDisplayNames(ids),
+      resolveInternalAiDisplayNames: (ids) => this.internalAgents.resolveDisplayNames(ids),
     });
     await primeAgentSecretVerifier();
   }

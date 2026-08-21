@@ -62,3 +62,40 @@ export {
   type AiAgentErrorCode,
   type AiAgentExternalError,
 } from './policy-error-mapping';
+export {
+  AI_MODEL_PRODUCTION_STATUSES,
+  AI_MODEL_STATUSES,
+  AI_PROVIDER_CONNECTION_STATUSES,
+  AI_PROVIDER_TYPES,
+  isAiModelStatus,
+  isAiProviderType,
+  isProductionAssignableModelStatus,
+  type AiModelProductionStatus,
+  type AiModelStatus,
+  type AiProviderConnectionStatus,
+  type AiProviderType,
+} from './provider-types';
+export {
+  AI_MODEL_FALLBACK_REASONS,
+  AI_MODEL_POLICY_CANDIDATE_ROLES,
+  AI_MODEL_POLICY_MODES,
+  AI_MODEL_POLICY_PHASE1_MODES,
+  AI_MODEL_POLICY_STATUSES,
+  isAiModelPolicyMode,
+  isPhase1ModelPolicyMode,
+  type AiModelFallbackReason,
+  type AiModelPolicyCandidateRole,
+  type AiModelPolicyMode,
+  type AiModelPolicyPhase1Mode,
+  type AiModelPolicyStatus,
+} from './model-policy-types';
+export {
+  canStartInternalAgentExecution,
+  INTERNAL_AI_AGENT_STATUSES,
+  INTERNAL_AI_AGENT_SURFACES,
+  INTERNAL_AI_SURFACE_CHANNEL,
+  isInternalAiAgentStatus,
+  isInternalAiAgentSurface,
+  type InternalAiAgentStatus,
+  type InternalAiAgentSurface,
+} from './internal-agent-types';
