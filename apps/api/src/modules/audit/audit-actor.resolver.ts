@@ -1,6 +1,9 @@
 import { ACTOR_TYPE_DISPLAY_NAME, isEmployeeActorType, type ActorType } from '@nbos/shared';
 import type { PrismaClient, Prisma } from '@nbos/database';
-import { resolveHistoricalAuditActor } from './audit-historical-actor';
+import {
+  resolveHistoricalAuditActor,
+  type HistoricalAuditActorRef,
+} from './audit-historical-actor';
 
 type AuditLogRow = Prisma.AuditLogModel;
 
@@ -14,11 +17,12 @@ export interface AuditActorSummary {
 
 export type AuditLogWithActor = AuditLogRow & { actor: AuditActorSummary | null };
 
-export type MachineActorDisplayLookup = (id: string) => Promise<string | null>;
+/** Batch display-name lookup. Resolves many ids in one query, never one per row. */
+export type MachineActorDisplayLookup = (ids: string[]) => Promise<Map<string, string>>;
 
 export interface AuditActorLookups {
-  resolveExternalAgentDisplayName?: MachineActorDisplayLookup;
-  resolveInternalAiDisplayName?: MachineActorDisplayLookup;
+  resolveExternalAgentDisplayNames?: MachineActorDisplayLookup;
+  resolveInternalAiDisplayNames?: MachineActorDisplayLookup;
 }
 
 interface EmployeeNameRow {
@@ -42,18 +46,38 @@ function machineSummary(type: ActorType, id: string, displayName: string): Audit
   return { id, type, displayName, firstName: displayName, lastName: '' };
 }
 
-async function resolveMachineDisplayName(
-  type: ActorType,
-  id: string,
+function machineNameKey(type: ActorType, id: string): string {
+  return `${type}:${id}`;
+}
+
+function collectIdsByType(refs: Array<HistoricalAuditActorRef | null>, type: ActorType): string[] {
+  return [...new Set(refs.flatMap((ref) => (ref?.type === type ? [ref.id] : [])))];
+}
+
+async function loadMachineDisplayNames(
+  refs: Array<HistoricalAuditActorRef | null>,
   lookups: AuditActorLookups,
-): Promise<string> {
-  if (type === 'EXTERNAL_AGENT') {
-    return (await lookups.resolveExternalAgentDisplayName?.(id)) ?? ACTOR_TYPE_DISPLAY_NAME[type];
-  }
-  if (type === 'INTERNAL_AI') {
-    return (await lookups.resolveInternalAiDisplayName?.(id)) ?? ACTOR_TYPE_DISPLAY_NAME[type];
-  }
-  return ACTOR_TYPE_DISPLAY_NAME[type];
+): Promise<Map<string, string>> {
+  const resolvers: Array<[ActorType, MachineActorDisplayLookup | undefined]> = [
+    ['EXTERNAL_AGENT', lookups.resolveExternalAgentDisplayNames],
+    ['INTERNAL_AI', lookups.resolveInternalAiDisplayNames],
+  ];
+  const resolved = new Map<string, string>();
+  await Promise.all(
+    resolvers.map(async ([type, resolve]) => {
+      if (!resolve) return;
+      const ids = collectIdsByType(refs, type);
+      if (ids.length === 0) return;
+      const names = await resolve(ids);
+      for (const [id, name] of names) {
+        const trimmed = name.trim();
+        if (trimmed) {
+          resolved.set(machineNameKey(type, id), trimmed);
+        }
+      }
+    }),
+  );
+  return resolved;
 }
 
 async function loadEmployeesById(
@@ -79,20 +103,22 @@ export async function attachActorsToAuditLogs(
   const userIds = [
     ...new Set(refs.flatMap((ref) => (ref && isEmployeeActorType(ref.type) ? [ref.id] : []))),
   ];
-  const employees = await loadEmployeesById(prisma, userIds);
+  const [employees, machineNames] = await Promise.all([
+    loadEmployeesById(prisma, userIds),
+    loadMachineDisplayNames(refs, lookups),
+  ]);
 
-  return Promise.all(
-    rows.map(async (row, index) => {
-      const ref = refs[index];
-      if (!ref) {
-        return { ...row, actor: null };
-      }
-      if (isEmployeeActorType(ref.type)) {
-        const employee = employees.get(ref.id);
-        return { ...row, actor: employee ? employeeSummary(employee) : null };
-      }
-      const displayName = await resolveMachineDisplayName(ref.type, ref.id, lookups);
-      return { ...row, actor: machineSummary(ref.type, ref.id, displayName) };
-    }),
-  );
+  return rows.map((row, index) => {
+    const ref = refs[index];
+    if (!ref) {
+      return { ...row, actor: null };
+    }
+    if (isEmployeeActorType(ref.type)) {
+      const employee = employees.get(ref.id);
+      return { ...row, actor: employee ? employeeSummary(employee) : null };
+    }
+    const displayName =
+      machineNames.get(machineNameKey(ref.type, ref.id)) ?? ACTOR_TYPE_DISPLAY_NAME[ref.type];
+    return { ...row, actor: machineSummary(ref.type, ref.id, displayName) };
+  });
 }

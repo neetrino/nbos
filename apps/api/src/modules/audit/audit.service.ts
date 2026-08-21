@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import { attachActorsToAuditLogs } from './audit-actor.resolver';
+import { attachActorsToAuditLogs, type AuditActorLookups } from './audit-actor.resolver';
 import { toAuditLogCreateData } from './audit-log-write.mapper';
 import {
   AUDIT_DEFAULT_PAGE,
@@ -13,12 +13,30 @@ import {
 export type { AuditActorSummary, AuditLogWithActor } from './audit-actor.resolver';
 export type { AuditLogParams } from './audit-log.params';
 
+/**
+ * Minimal write surface so a caller can persist its audit row inside its own
+ * transaction, keeping a security-relevant mutation and its trail atomic.
+ */
+export type AuditWriteClient = Pick<InstanceType<typeof PrismaClient>, 'auditLog'>;
+
 @Injectable()
 export class AuditService {
+  private actorLookups: AuditActorLookups = {};
+
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async log(params: AuditLogParams) {
-    return this.prisma.auditLog.create({
+  /**
+   * Registers batch display-name resolvers for machine actors.
+   *
+   * Owning modules register themselves at boot, so Audit never has to depend on
+   * (and import) the AI Platform module.
+   */
+  registerActorLookups(lookups: AuditActorLookups): void {
+    this.actorLookups = { ...this.actorLookups, ...lookups };
+  }
+
+  async log(params: AuditLogParams, client: AuditWriteClient = this.prisma) {
+    return client.auditLog.create({
       data: toAuditLogCreateData(params),
     });
   }
@@ -36,7 +54,7 @@ export class AuditService {
       this.prisma.auditLog.count({ where }),
     ]);
     return {
-      items: await attachActorsToAuditLogs(this.prisma, items),
+      items: await attachActorsToAuditLogs(this.prisma, items, this.actorLookups),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -54,7 +72,7 @@ export class AuditService {
       this.prisma.auditLog.count({ where }),
     ]);
     return {
-      items: await attachActorsToAuditLogs(this.prisma, items),
+      items: await attachActorsToAuditLogs(this.prisma, items, this.actorLookups),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }

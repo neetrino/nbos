@@ -22,7 +22,7 @@ export interface ActorClientMetadata {
 }
 
 export interface ActorChannel {
-  source: ActorChannelSource | string;
+  source: ActorChannelSource;
   protocol?: string | null;
 }
 

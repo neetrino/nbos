@@ -1,6 +1,7 @@
-import type { ActorContext, ActorContextInput, ActorIdentity } from './actor-context';
+import type { ActorChannel, ActorContext, ActorContextInput, ActorIdentity } from './actor-context';
 import {
   ACTOR_TYPE_DISPLAY_NAME,
+  isActorChannelSource,
   isActorType,
   isEmployeeActorType,
   isMachineActorType,
@@ -53,6 +54,17 @@ function normalizeOptionalText(value: string | null | undefined): string | null 
   return trimmed ? trimmed : null;
 }
 
+function normalizeChannel(channel: ActorContextInput['channel']): ActorChannel | null {
+  if (!channel) {
+    return null;
+  }
+  const source = requiredId(channel.source, 'channel.source');
+  if (!isActorChannelSource(source)) {
+    throw new ActorContextError('channel.source is not a supported ActorChannelSource');
+  }
+  return { source, protocol: normalizeOptionalText(channel.protocol) };
+}
+
 /**
  * Produce a policy/audit-safe ActorContext. Rejects unknown types and empty ids.
  */
@@ -62,12 +74,7 @@ export function normalizeActorContext(input: ActorContextInput): ActorContext {
     actor,
     organizationId: normalizeOptionalText(input.organizationId),
     onBehalfOf: normalizeOnBehalfOf(input.onBehalfOf),
-    channel: input.channel
-      ? {
-          source: requiredId(input.channel.source, 'channel.source'),
-          protocol: normalizeOptionalText(input.channel.protocol),
-        }
-      : null,
+    channel: normalizeChannel(input.channel),
     correlationId: normalizeOptionalText(input.correlationId),
     requestId: normalizeOptionalText(input.requestId),
     client: input.client ?? null,

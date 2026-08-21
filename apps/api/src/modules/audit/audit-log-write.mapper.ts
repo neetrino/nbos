@@ -29,18 +29,15 @@ export interface AuditLogCreateData {
 }
 
 export function resolveAuditWriteContext(params: AuditLogParams): ActorContext {
-  if (!params.actor && !params.userId) {
-    throw new ActorContextError('Audit log requires actor or userId');
+  const { actor, userId } = params;
+  if (!actor) {
+    if (!userId) {
+      throw new ActorContextError('Audit log requires actor or userId');
+    }
+    return actorContextFromUserId(userId);
   }
-  const context = params.actor
-    ? normalizeActorContext(params.actor)
-    : actorContextFromUserId(params.userId as string);
-  if (
-    params.actor &&
-    params.userId &&
-    context.actor.type === 'USER' &&
-    params.userId !== context.actor.id
-  ) {
+  const context = normalizeActorContext(actor);
+  if (userId && context.actor.type === 'USER' && userId !== context.actor.id) {
     throw new ActorContextError('userId does not match USER actor id');
   }
   return context;

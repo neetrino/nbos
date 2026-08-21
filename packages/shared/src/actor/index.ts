@@ -2,6 +2,7 @@ export {
   ACTOR_CHANNELS,
   ACTOR_TYPE_DISPLAY_NAME,
   ACTOR_TYPES,
+  isActorChannelSource,
   isActorType,
   isEmployeeActorType,
   isMachineActorType,

@@ -31,8 +31,12 @@ export function isActorType(value: string): value is ActorType {
   return (ACTOR_TYPES as readonly string[]).includes(value);
 }
 
+export function isActorChannelSource(value: string): value is ActorChannelSource {
+  return (ACTOR_CHANNELS as readonly string[]).includes(value);
+}
+
 export function isMachineActorType(type: ActorType): boolean {
-  return type !== 'USER';
+  return (MACHINE_ACTOR_TYPES as readonly ActorType[]).includes(type);
 }
 
 export function isEmployeeActorType(type: ActorType): boolean {
