@@ -10,6 +10,27 @@ It exists so future functionality is discussed, designed and recorded without mi
 
 **Future capability design backlog.**
 
+## Mandatory instruction for AI agents
+
+When a user introduces a new future AI feature, capability, behavior or product idea, do not immediately mix it into current production canon and do not start implementation unless explicitly requested.
+
+Use this workflow by default:
+
+1. understand and discuss what the user actually wants;
+2. identify why it is needed and how it should fit the existing AI Platform architecture;
+3. decide whether it is still a raw idea or a substantial/approved future capability;
+4. record/update it in this Index;
+5. if substantial or approved, create/update its dedicated numbered file in this directory;
+6. assign `Status`, `Target`, `Priority` and a one-sentence `Canon summary`;
+7. record architecture, functional requirements, security/data boundaries, dependencies, open decisions and future acceptance criteria;
+8. do not add it to the active implementation checklist until it is explicitly promoted to a planned phase;
+9. when implementation begins, create/extend an executable checklist/milestone;
+10. after implementation, move the final behavior into normal active canon and mark the future capability `DONE`.
+
+If the user only says something like "we may want X later" and the idea is not yet designed, keep it in `Idea Inbox` rather than creating a large speculative document.
+
+If the user discusses the idea in enough detail that future implementation should preserve the decision, create a dedicated capability document even if its exact implementation phase is not yet scheduled.
+
 ## Required workflow for every new AI idea
 
 ```text
@@ -171,6 +192,6 @@ Add undeveloped ideas here first. Promote them to dedicated numbered documents a
 
 ## Capability register
 
-| ID | Capability | Status | Target | Priority | Canon summary |
-| --- | --- | --- | --- | --- | --- |
-| 01 | Project Knowledge and Customer Memory | APPROVED | V2 / Phase 2 candidate | HIGH | Give each project controlled AI knowledge plus isolated customer/conversation memory and live NBOS context so customer-facing agents answer with current, project-specific information. |
+| ID | Capability | File | Status | Target | Priority | Canon summary |
+| --- | --- | --- | --- | --- | --- | --- |
+| 01 | Project Knowledge and Customer Memory | `01-Project-Knowledge-and-Customer-Memory.md` | APPROVED | V2 / Phase 2 candidate | HIGH | Give each project controlled AI knowledge plus isolated customer/conversation memory and live NBOS context so customer-facing agents answer with current, project-specific information. |
