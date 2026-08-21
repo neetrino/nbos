@@ -29,8 +29,8 @@
 | 1    | Foundation + Audit           | Cursor Grok 4.6                | Claude Opus 5 High | сделан, проверен 2026-08-21 |
 | 2    | Credentials + Auth + Policy  | Claude Opus 5 High             | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-21 |
 | 3    | Capabilities + Tasks         | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-21 |
-| 4    | REST + MCP                   | Claude Opus 5 High             | Cursor Grok 4.6    | следующий                   |
-| 5    | Providers + Models           | Cursor Grok 4.6                | GPT-5.6 Sol High   | —                           |
+| 4    | REST + MCP                   | Claude Opus 5 High             | Cursor Grok 4.6    | PASS WITH DEBTS, 2026-08-21 |
+| 5    | Providers + Models           | Cursor Grok 4.6                | GPT-5.6 Sol High   | следующий                   |
 | 6    | Admin UI                     | Cursor Grok 4.6 + Composer 2.5 | Cursor Grok 4.6    | —                           |
 | 7    | Security + regression        | Claude Opus 5 High             | GPT-5.6 Sol High   | —                           |
 | 8    | Final 700-point verification | Claude Opus 5 High             | —                  | —                           |
@@ -54,9 +54,11 @@ Chat 1 сделан и проверен независимо. Handoff: `17-Phase
 
 Chat 2 закрыт **PASS WITH DEBTS**. Handoff: `18-Phase-1-Chat-2-Handoff.md`.
 
-Chat 3 закрыт **PASS WITH DEBTS** после пяти кругов проверки. Handoff: `19-Phase-1-Chat-3-Handoff.md`. Ветка **`sipan`**, последний коммит `c2bbe1c0`. Следующий — Chat 4.
+Chat 3 закрыт **PASS WITH DEBTS**. Handoff: `19-Phase-1-Chat-3-Handoff.md`.
 
-Долги, которые Chat 4 берёт как entry conditions: G 140 `[~]` (`@Public()` + global `AgentAuthGuard`), T 314–315 `[~]` (HTTP `Idempotency-Key` / MCP `clientOperationId`), K 197–198 `[~]` (Prisma-free REST/MCP adapters), `ActorContext.correlationId` на протоколе. Не закрывать здесь: J 186 (section U), K 205, K 209.
+Chat 4 закрыт **PASS WITH DEBTS**. Handoff: `20-Phase-1-Chat-4-Handoff.md`. Ветка **`sipan`**, последний коммит `7eebbe41`. Следующий — Chat 5.
+
+Долги, которые Chat 5 **не** закрывает: J 186 `[~]` (section U), K 205 `[~]` / W 368 `[~]`, K 209 `[~]` (теперь достижим с провода), live handshake Cursor/Codex/Claude Code. Протокол `/api/v1/agent` — контракт: не ломать routes/tools/error codes.
 
 ### Правила БД (критично)
 
@@ -100,66 +102,63 @@ Definition of Done Phase 1: все применимые пункты checklist �
 по REST/MCP и безопасно работать с разрешёнными Workspace/Tasks.
 ```
 
-## Промт исполнителя — Chat 4
+## Промт исполнителя — Chat 5
 
-Модель: **Claude Opus 5 High**. В новый чат вставляй два блока: мастер-промт Phase 1, затем этот. Проверка после — Cursor Grok 4.6.
+Модель: **Cursor Grok 4.6**. В новый чат вставляй два блока: мастер-промт Phase 1, затем этот. Проверка после — GPT-5.6 Sol High.
 
 ```text
-Продолжи Phase 1 AI Platform. Это Chat 4 — External Protocols: REST and MCP.
+Продолжи Phase 1 AI Platform. Это Chat 5 — Providers, Models and Internal-Agent Foundation.
 
-ВЕТКА. Работай в sipan. Chat 3 закрыт PASS WITH DEBTS (последний коммит c2bbe1c0,
-handoff 19-Phase-1-Chat-3-Handoff.md). Перед изменениями проверь наличие
-apps/api/src/modules/ai-platform/gateway/,
-apps/api/src/modules/ai-platform/auth/agent-auth.guard.ts и
-packages/database/prisma/migrations/20260821190000_ai_domain_capabilities/.
+ВЕТКА. Работай в sipan. Chat 4 закрыт PASS WITH DEBTS (последний коммит 7eebbe41,
+handoff 20-Phase-1-Chat-4-Handoff.md). Перед изменениями проверь наличие
+apps/api/src/modules/ai-platform/protocol/agent-operation.registry.ts,
+apps/api/src/modules/ai-platform/rest/,
+apps/api/src/modules/ai-platform/mcp/ и
+apps/api/src/common/utils/crypto.ts.
 Если их нет — ты не на той ветке, остановись и сообщи.
 
 ЧИТАЙ И СВЕРЯЙ С РЕПОЗИТОРИЕМ:
-- docs/NBOS/02-Modules/21-AI-Platform/19-Phase-1-Chat-3-Handoff.md (секция Chat 4 entry point)
-- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md (V–W, плюс X как setup docs)
-- docs/NBOS/02-Modules/21-AI-Platform/08-External-Agent-Protocols-REST-and-MCP.md
-- docs/NBOS/02-Modules/21-AI-Platform/09-External-Agent-API-and-MCP-Contract.md
+- docs/NBOS/02-Modules/21-AI-Platform/20-Phase-1-Chat-4-Handoff.md (секция Chat 5 entry point)
+- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md (Y–AC)
+- docs/NBOS/02-Modules/21-AI-Platform/06-AI-Providers-Models-and-Routing.md
+- docs/NBOS/02-Modules/21-AI-Platform/11-Internal-Agent-Lifecycle-and-Assignments.md
+- docs/NBOS/02-Modules/21-AI-Platform/05-AI-Data-Security-and-Audit.md
 Handoff не является доказательством: сам прогони vitest и typecheck до начала работы.
 
-SCOPE CHAT 4 (чеклист V–W, X):
-- Versioned REST `/api/v1/agent`: me, workspaces, tasks list/read/create/allowlisted update,
-  start, comment, submit-review, discussion, artifacts list/read/attach.
-- MCP adapter/server с теми же tools: nbos_get_identity, nbos_list_workspaces,
-  nbos_get_workspace, nbos_list_tasks, nbos_get_task, nbos_create_task, nbos_update_task,
-  nbos_start_task, nbos_get_task_discussion, nbos_add_task_comment, nbos_list_task_artifacts,
-  nbos_get_task_artifact, nbos_attach_task_artifact, nbos_submit_task_review.
-- REST и MCP — тонкие адаптеры. Оба вызывают ТОЛЬКО AgentCapabilityGateway.invoke.
-  Один Actor → Policy → Capability → Domain Action → Audit. Никакого второго policy,
-  никакого Prisma, никаких прямых Tasks/Drive writes из контроллеров/MCP handlers.
-- Auth: AgentAuthGuard + @Public() на agent routes, чтобы employee JWT chain не шёл рядом.
-  Тот же credential, тот же ActorContext. Это закрывает G 140: integration test реального
-  @Public() + AgentAuthGuard + global employee guards.
-- Identity GET /agent/me и nbos_get_identity не выдают capabilities.
-- Envelope ошибок и коды — из 09 contract. Missing vs unauthorized resource — одинаковый
-  безопасный код (AGENT_RESOURCE_NOT_AVAILABLE), без leakage существования.
-- Idempotency: HTTP Idempotency-Key и MCP clientOperationId → invoke({ idempotencyKey }).
-  Binary attach bytes в invocation.payload, не в JSON. Это закрывает T 314–315.
-- ActorContext.correlationId обязан выставляться на протоколе (долг Chat 3).
-- Паритет REST vs MCP: capabilities, auth, deny codes, idempotency. Negative/security tests.
-- Setup docs (section X): REST + Cursor/Codex/Claude Code MCP. Только NBOS URL + agent token.
-  Никогда: DB credentials, SSH, Employee JWT, OpenAI/Anthropic keys.
-- OpenAPI для REST namespace.
+SCOPE CHAT 5 (чеклист Y–AC):
+- Provider connection foundation: OPENAI и ANTHROPIC за одним adapter interface.
+  Несколько connections на провайдера структурно возможны. Enable/disable,
+  lastValidatedAt, lastModelSyncAt, createdBy/audit. Бизнес-модули не зависят от провайдера.
+- Provider keys: существующий AES-256-GCM (apps/api/src/common/utils/crypto.ts,
+  CREDENTIALS_ENCRYPTION_KEY). Не второй crypto-стек. Ключ виден один раз при save/rotate,
+  после save не возвращается, не логируется, не пишется в Audit changes, не попадает
+  в AI-контекст и не становится input любой External Agent capability.
+- Validate connection without exposing secret. Rotate/replace и disable/revoke.
+- Model catalog: stable internal id + provider external id, DISCOVERED/ACTIVE/DISABLED/
+  DEPRECATED/UNAVAILABLE. Sync OpenAI и Anthropic. Manual Sync + scheduled path/contract.
+  Новые модели остаются DISCOVERED — auto-activate запрещён. Исчезнувшие не удалять,
+  помечать UNAVAILABLE/DEPRECATED. Provider metadata отдельно от internal suitability.
+- Model Policy: FIXED и PRIMARY_FALLBACK, ordered candidates, same- и cross-provider.
+  Кандидат в production assignment только enabled/available. Не silent-promote DISCOVERED.
+  TIERED/ADAPTIVE держать структурно возможным, learned/adaptive router НЕ реализовывать.
+- Internal Agent foundation: стабильная identity (не имя модели). DRAFT/ACTIVE/PAUSED/
+  DISABLED/ARCHIVED. Owner employee, linkage на capability grants/scopes, Model Policy,
+  prompt-policy и approval-policy contracts. Model change не меняет permissions агента.
+  Pause/disable блокирует новые execution. Archive сохраняет attribution. Audit lifecycle.
+- Audit через AuditService.log({ actor }). INTERNAL_AI не пишет userId.
 
 ЗАПРЕЩЕНО:
 - Settings / Admin UI (Chat 6);
-- OpenAI/Anthropic providers, model catalog (Chat 5);
-- tasks.delete, force-complete, generic set_status, любой delete tool;
-- доступ к модулю Credentials / vault / паролям / сырым секретам;
-- query-string token;
-- прямые Prisma-записи в Tasks/Drive из REST/MCP;
+- ломать REST/MCP контракт Chat 4 (routes, tool names, error codes, envelope) —
+  только extend через agent-operation.registry.ts, если capability должна быть внешней;
+- adaptive/learned routing, полный internal employee chat, RAG/vector store,
+  Messenger auto-reply, production customer-facing execution;
+- полный Prompt Version runtime (AD) и Context Assembler (AE) — только linkage contracts;
+- rate-limit counters (J 186 / section U), output schema validator (K 205),
+  слияние domain commit + idempotency complete (K 209);
+- доступ AI к модулю Credentials / vault / паролям / сырым provider keys;
 - any, default exports, console.log, магические числа;
 - удаление тестов и обход lint.
-
-НЕ ЗАКРЫВАТЬ ЗДЕСЬ: J 186 (rate-limit counters — section U), K 205 (output schema validator),
-K 209 (domain commit + idempotency complete не в одной транзакции).
-
-AUDIT: контроллер не пишет Audit сам — это делает gateway после domain commit.
-Машинный актор не пишет userId. Authorization header никогда не логируется.
 
 БАЗА ДАННЫХ:
 - .env.local = dev Neon ep-late-frost-ag5aixzw; прод ep-sweet-dew-ag7259wn не трогать;
@@ -169,9 +168,10 @@ AUDIT: контроллер не пишет Audit сам — это делает
 
 НА ВЫХОДЕ:
 - обнови чеклист [x]/[~]/[!] честно;
-- напиши docs/NBOS/02-Modules/21-AI-Platform/20-Phase-1-Chat-4-Handoff.md по формату Chat 3
+- напиши docs/NBOS/02-Modules/21-AI-Platform/22-Phase-1-Chat-5-Handoff.md по формату Chat 4
   (milestone, чеклист, файлы, миграции, реальные числа тестов, решения, конфликты,
-  риски, долги, entry point Chat 5);
+  риски, долги, entry point Chat 6);
+  номер 21 занят setup-доком Chat 4 — не перезаписывай 21-External-Agent-Client-Setup.md;
 - коммит не делай — его сделаем после чата проверки.
 ```
 
