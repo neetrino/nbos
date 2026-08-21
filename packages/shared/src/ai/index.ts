@@ -1,0 +1,64 @@
+export {
+  AI_ACCESS_KINDS,
+  AI_APPROVAL_REQUIREMENTS,
+  AI_AUDIT_BEHAVIORS,
+  AI_DATA_CLASSIFICATIONS,
+  AI_IDEMPOTENCY_REQUIREMENTS,
+  AI_RATE_LIMIT_CLASSES,
+  AI_RISK_CLASSES,
+  AI_SCOPE_TYPES,
+  isDataClassificationWithin,
+  isValidCapabilityKeyFormat,
+  type AiAccessKind,
+  type AiApprovalRequirement,
+  type AiAuditBehavior,
+  type AiCapabilityDefinition,
+  type AiCapabilitySchemaDescriptor,
+  type AiDataClassification,
+  type AiIdempotencyRequirement,
+  type AiRateLimitClass,
+  type AiRiskClass,
+  type AiScopeType,
+} from './capability-types';
+export {
+  AI_CAPABILITIES_FORBIDDEN_PHASE_1,
+  findInvalidCapabilityKeys,
+  getAiCapability,
+  isAiCapabilityKey,
+  isScopeTypeAllowedForCapability,
+  listAiCapabilities,
+} from './capability-registry';
+export {
+  findMatchingScope,
+  matchesGrantedScope,
+  PLATFORM_ORGANIZATION_SCOPE_ID,
+  type AgentGrantedScope,
+  type AiResourceTarget,
+} from './agent-scope';
+export {
+  AI_AGENT_STATES,
+  AI_CREDENTIAL_STATES,
+  AI_POLICY_DENY_REASONS,
+  AI_POLICY_OUTCOMES,
+  isAllowDecision,
+  type AiAgentState,
+  type AiCapabilityGrantState,
+  type AiCredentialState,
+  type AiPolicyAllowDecision,
+  type AiPolicyApprovalDecision,
+  type AiPolicyDecision,
+  type AiPolicyDenyDecision,
+  type AiPolicyDenyReason,
+  type AiPolicyOutcome,
+  type AiPolicyRequest,
+} from './policy-decision';
+export { evaluateAiPolicy } from './policy-evaluator';
+export { agentStateDenyReason, credentialStateDenyReason } from './policy-state-reasons';
+export {
+  AI_AGENT_APPROVAL_REQUIRED_ERROR,
+  AI_AGENT_ERROR_CODES,
+  AI_AGENT_RESOURCE_NOT_AVAILABLE_ERROR,
+  toAgentExternalError,
+  type AiAgentErrorCode,
+  type AiAgentExternalError,
+} from './policy-error-mapping';
