@@ -144,11 +144,15 @@ SCOPE CHAT 2:
   батч-резолв машинных имён вместо await внутри map;
 - индексы новых таблиц — CREATE INDEX CONCURRENTLY отдельной миграцией.
 
-БАЗА ДАННЫХ:
-- работай только на dev Neon-ветке, URL даст разработчик;
-- prisma migrate dev на продовом URL запрещён (дрейф истории → reset → потеря данных);
-- применение только через prisma migrate deploy с DIRECT_URL;
-- продовые миграции не выполняй.
+БАЗА ДАННЫХ (уже подготовлена, накатывать Chat 1 не нужно):
+- .env.local указывает на dev Neon-ветку ep-late-frost-ag5aixzw; прод ep-sweet-dew-ag7259wn
+  в разработке не используется, перед любой миграцией сверь хост;
+- миграция Chat 1 (20260821150000_audit_actor_aware) уже применена на dev,
+  prisma migrate status → "Database schema is up to date!";
+- prisma migrate dev запрещён: в истории миграций дрейф, при нём Prisma предложит reset
+  и уничтожит данные dev-ветки;
+- свои миграции применяй только через prisma migrate deploy с DIRECT_URL;
+- продовые миграции не выполняй, это делает разработчик.
 
 ЗАПРЕЩЕНО:
 - REST/MCP контроллеры (это Chat 4);
