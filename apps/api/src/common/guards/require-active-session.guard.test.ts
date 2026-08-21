@@ -32,10 +32,11 @@ describe('RequireActiveSessionGuard', () => {
     expect(authSessions.assertSessionActive).not.toHaveBeenCalled();
   });
 
-  it('allows legacy v1 during dual-run', async () => {
+  it('rejects a request without a V2 session', async () => {
     vi.mocked(reflector.getAllAndOverride).mockReturnValue(true);
-    process.env.AUTH_LEGACY_TOKEN_ACCEPT_ENABLED = 'true';
-    await expect(guard.canActivate(ctx({ id: 'e1', tokenVersion: 1 }))).resolves.toBe(true);
+    await expect(guard.canActivate(ctx({ id: 'e1', tokenVersion: 1 }))).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
     expect(authSessions.assertSessionActive).not.toHaveBeenCalled();
   });
 

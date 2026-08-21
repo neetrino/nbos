@@ -6,12 +6,11 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthSessionService } from '../../modules/auth/auth-session.service';
-import { isAuthLegacyTokenAcceptEnabled } from '../../modules/auth/auth-session.flags';
 import { REQUIRE_ACTIVE_SESSION_KEY } from '../decorators/require-active-session.decorator';
 
 /**
  * High-risk routes only (via `@RequireActiveSession`).
- * V2: require ACTIVE AuthSession. Legacy v1: allow while dual-run accept is on.
+ * Requires an ACTIVE AuthSession V2 row.
  */
 @Injectable()
 export class RequireActiveSessionGuard implements CanActivate {
@@ -36,10 +35,6 @@ export class RequireActiveSessionGuard implements CanActivate {
 
     if (user?.tokenVersion === 2 && employeeId && sessionId) {
       await this.authSessions.assertSessionActive(sessionId, employeeId);
-      return true;
-    }
-
-    if (user?.tokenVersion !== 2 && isAuthLegacyTokenAcceptEnabled()) {
       return true;
     }
 

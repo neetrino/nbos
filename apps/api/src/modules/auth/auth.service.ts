@@ -11,21 +11,15 @@ import * as argon2 from 'argon2';
 import * as jwt from 'jsonwebtoken';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import { TokenDenylistService } from '../../common/security/token-denylist.service';
 import { CredentialVaultSessionService } from '../credentials/credential-vault-session.service';
 import { AuthSessionService } from './auth-session.service';
 import type { AuthSessionClientKindApi } from '@nbos/shared';
-import { resolveAuthAccessTokenTtlSeconds, shouldIssueAuthSessionV2 } from './auth-session.flags';
+import { resolveAuthAccessTokenTtlSeconds } from './auth-session.flags';
 import { recordAuthMetric } from './auth-session.metrics';
 import { changeEmployeePassword } from './auth-change-password';
 import { assertInvitationRoleStillAssignable } from './auth-invite-role';
 import type { V2AccessTokenClaims } from './auth-session.tokens';
 import { NBOS_FOUNDER_EMPLOYEE_ID_ENV } from '@nbos/shared';
-
-interface LegacyJwtPayload {
-  sub: string;
-  email: string;
-}
 
 /**
  * Internal login/refresh result. Controllers map through `toAuthPublicResponse`
@@ -50,17 +44,14 @@ export interface LoginResult {
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   private readonly jwtSecret: string;
-  private readonly jwtExpiresIn: string;
 
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly config: ConfigService,
-    private readonly tokenDenylist: TokenDenylistService,
     private readonly vaultSession: CredentialVaultSessionService,
     private readonly authSessions: AuthSessionService,
   ) {
     this.jwtSecret = this.config.getOrThrow<string>('JWT_SECRET');
-    this.jwtExpiresIn = this.config.get<string>('JWT_EXPIRES_IN') ?? '7d';
   }
 
   async login(
@@ -109,43 +100,29 @@ export class AuthService {
       lastName: employee.lastName,
     };
 
-    if (shouldIssueAuthSessionV2(employee.id)) {
-      const clientKind = meta?.clientKind ?? 'web';
-      const session = await this.authSessions.createSession({
-        employeeId: employee.id,
-        ip: meta?.ip,
-        userAgent: meta?.userAgent,
-        deviceLabel: meta?.deviceLabel,
-        clientKind,
-      });
-      const accessToken = this.signV2AccessToken({
-        sub: employee.id,
-        email: employee.email,
-        sid: session.sessionId,
-        typ: 'access',
-        ver: 2,
-        authVersion: employee.authVersion,
-      });
-      return {
-        accessToken,
-        refreshToken: session.refreshToken,
-        sessionId: session.sessionId,
-        tokenVersion: 2,
-        clientKind,
-        user,
-      };
-    }
-
-    const payload: LegacyJwtPayload = { sub: employee.id, email: employee.email };
-    const accessToken = jwt.sign(payload, this.jwtSecret, {
-      expiresIn: this.jwtExpiresIn as jwt.SignOptions['expiresIn'],
-      jwtid: randomUUID(),
+    const clientKind = meta?.clientKind ?? 'web';
+    const session = await this.authSessions.createSession({
+      employeeId: employee.id,
+      ip: meta?.ip,
+      userAgent: meta?.userAgent,
+      deviceLabel: meta?.deviceLabel,
+      clientKind,
+    });
+    const accessToken = this.signV2AccessToken({
+      sub: employee.id,
+      email: employee.email,
+      sid: session.sessionId,
+      typ: 'access',
+      ver: 2,
+      authVersion: employee.authVersion,
     });
     recordAuthMetric('auth_login_success_total');
-
     return {
       accessToken,
-      tokenVersion: 1,
+      refreshToken: session.refreshToken,
+      sessionId: session.sessionId,
+      tokenVersion: 2,
+      clientKind,
       user,
     };
   }
@@ -184,18 +161,13 @@ export class AuthService {
     };
   }
 
-  /**
-   * Revokes the caller's current access token (legacy denylist) and/or V2 session.
-   */
+  /** Revokes the caller's V2 session and locks the vault. */
   async logout(
-    jti: string | undefined,
-    tokenExp: number | undefined,
+    _jti: string | undefined,
+    _tokenExp: number | undefined,
     employeeId?: string,
     sessionId?: string,
   ): Promise<{ success: true }> {
-    if (jti && typeof tokenExp === 'number') {
-      await this.tokenDenylist.revokeUntil(jti, tokenExp * 1_000);
-    }
     if (employeeId && sessionId) {
       await this.authSessions.revokeSession(sessionId, employeeId, 'logout');
     }
@@ -299,25 +271,21 @@ export class AuthService {
 
   /**
    * Changes the caller's account password after verifying the current one.
-   * Bumps authVersion, revokes all AuthSessions, locks the vault, and optionally
-   * denylists the current legacy access jti. Caller must re-authenticate.
+   * Bumps authVersion, revokes all AuthSessions, and locks the vault.
+   * Caller must re-authenticate.
    */
   async changePassword(
     employeeId: string,
     currentPassword: string,
     newPassword: string,
-    opts?: { jti?: string; tokenExp?: number },
   ): Promise<{ success: true; requiresReauth: true }> {
     return changeEmployeePassword({
       prisma: this.prisma,
-      tokenDenylist: this.tokenDenylist,
       vaultSession: this.vaultSession,
       logger: this.logger,
       employeeId,
       currentPassword,
       newPassword,
-      jti: opts?.jti,
-      tokenExp: opts?.tokenExp,
     });
   }
 

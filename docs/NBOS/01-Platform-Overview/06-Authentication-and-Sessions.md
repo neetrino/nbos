@@ -297,30 +297,19 @@ Login failures stay metrics + generic 401 (no “user exists” audit line).
 
 `authSessionExpiryCleanup` — marks expired `ACTIVE` rows `EXPIRED`.
 
-**Enable only when V2 sessions are being issued** (`AUTH_SESSION_V2_ISSUE_ENABLED=true` or native issue on). While everyone is on legacy JWT the job is idle and must stay **off**.
+Job 14 must stay **on** while V2 sessions exist.
 
 ---
 
-## 18. Legacy JWT (v1) — dual-run, then delete
+## 18. Legacy JWT (v1) — retired
 
-Today production login is still long-lived JWT + Redis denylist. **Do not delete v1 until V2 is the only live login.**
-
-| Phase             | Rule                                                                                                                           |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Dual-run          | Flags default: issue/accept V2 **off**; legacy accept + denylist **on**                                                        |
-| Canary            | `AUTH_SESSION_V2_CANARY_USER_IDS`                                                                                              |
-| All new logins V2 | Set `AUTH_LEGACY_ISSUANCE_DISABLED_AT`                                                                                         |
-| Wait              | `JWT_EXPIRES_IN` (default 7d)                                                                                                  |
-| Then              | `AUTH_LEGACY_TOKEN_ACCEPT_ENABLED=false` → `AUTH_LEGACY_DENYLIST_READ_ENABLED=false` → delete v1 issue path and denylist reads |
-
-Check: `pnpm auth:legacy-retirement-check`.  
-Ops steps: [`docs/architecture/auth-session-v2-rollout.md`](../../architecture/auth-session-v2-rollout.md) stages A–H.
+Login and `AuthGuard` are V2-only. Long-lived JWT is not issued or accepted. Redis denylist is not read on the request path. Remaining `TokenDenylistService` code is unused leftover and can be deleted in a cleanup PR.
 
 ---
 
 ## 19. What already exists vs remaining
 
-### Already in code (flags off — not live)
+### Already in code (live login)
 
 - `AuthSession` + `PasswordResetToken` models;
 - V2 login/refresh/logout/logout-all;
@@ -330,19 +319,19 @@ Ops steps: [`docs/architecture/auth-session-v2-rollout.md`](../../architecture/a
 - password change/reset revoke sessions;
 - offboarding revokes sessions + bumps `authVersion`;
 - `RequireActiveSessionGuard` as `APP_GUARD` (no-op without `@RequireActiveSession`); applied on role change, terminate, credential reveal/copy/export;
-- job 14 catalogued, `rosterIntent: off`;
-- dual-path `AuthGuard` (v1 denylist / v2 claims).
+- job 14 catalogued;
+- V2-only `AuthGuard` (claims + expiry; no denylist).
 
 ### Remaining (this canon)
 
-Shipped in code (flags still off — not live login):
+Shipped:
 
 1. `clientKind` on `AuthSession` + login DTO;
 2. Native JSON refresh (browser Origin / BFF never get refresh in JSON);
 3. `deviceLabel` from client or User-Agent;
 4. My Account → Security → Active Sessions;
-5. `@RequireActiveSession` on role change, terminate, credential reveal/copy/export (legacy v1 still allowed);
-6. V2 flags documented in `.env.example`.
+5. `@RequireActiveSession` on role change, terminate, credential reveal/copy/export;
+6. V2 env documented in `.env.example`.
 
 Ops (do not do until V2 is the live login):
 

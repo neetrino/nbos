@@ -82,14 +82,14 @@
 
 ## 5. Аутентификация
 
-| #   | Параметр              | Решение                              | Статус | Примечание                                                                                               |
-| --- | --------------------- | ------------------------------------ | ------ | -------------------------------------------------------------------------------------------------------- |
-| 5.1 | Решение               | NextAuth.js v5 + Auth Session V2     | ✅     | Web BFF + короткий access JWT. Канон: `docs/NBOS/01-Platform-Overview/06-Authentication-and-Sessions.md` |
-| 5.2 | Провайдеры            | Email + Password (собственный)       | ✅     | argon2id хеширование, только по инвайту                                                                  |
-| 5.3 | Сессии                | AuthSession + короткий JWT + refresh | 🔄     | Live today: legacy JWT 7d. V2 flags default off. Native: refresh in JSON → Keychain                      |
-| 5.4 | RBAC                  | Кастомный в NestJS                   | ✅     | 12 ролей, 3 уровня                                                                                       |
-| 5.5 | Регистрация           | Только по инвайту (токен)            | ✅     | POST /api/v1/auth/accept-invite                                                                          |
-| 5.6 | Восстановление пароля | Email reset token (60 мин)           | ✅     | POST /api/v1/auth/forgot-password + reset-password                                                       |
+| #   | Параметр              | Решение                              | Статус | Примечание                                                                                                             |
+| --- | --------------------- | ------------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------- |
+| 5.1 | Решение               | NextAuth.js v5 + Auth Session V2     | ✅     | Web BFF + короткий access JWT. Канон: `docs/NBOS/01-Platform-Overview/06-Authentication-and-Sessions.md`               |
+| 5.2 | Провайдеры            | Email + Password (собственный)       | ✅     | argon2id хеширование, только по инвайту                                                                                |
+| 5.3 | Сессии                | AuthSession + короткий JWT + refresh | ✅     | V2 only: 10m access JWT + rotating refresh. Legacy 7d JWT is not issued or accepted. Native refresh in JSON → Keychain |
+| 5.4 | RBAC                  | Кастомный в NestJS                   | ✅     | 12 ролей, 3 уровня                                                                                                     |
+| 5.5 | Регистрация           | Только по инвайту (токен)            | ✅     | POST /api/v1/auth/accept-invite                                                                                        |
+| 5.6 | Восстановление пароля | Email reset token (60 мин)           | ✅     | POST /api/v1/auth/forgot-password + reset-password                                                                     |
 
 ---
 

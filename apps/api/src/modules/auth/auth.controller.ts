@@ -183,7 +183,6 @@ export class AuthController {
       user.id,
       dto.currentPassword,
       dto.newPassword,
-      { jti: user.jti, tokenExp: user.tokenExp },
     );
     res.setHeader('Set-Cookie', serializeRefreshCookie(buildClearRefreshCookieOptions()));
     return result;

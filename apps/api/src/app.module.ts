@@ -50,7 +50,6 @@ import { PlatformAccessModule } from './modules/platform-access/platform-access.
 import { PlatformOwnershipModule } from './modules/platform-ownership/platform-ownership.module';
 import { PlatformLifecycleModule } from './modules/platform-lifecycle/platform-lifecycle.module';
 import { SearchModule } from './modules/search/search.module';
-import { TokenDenylistModule } from './common/security/token-denylist.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { OriginGuard } from './common/guards/origin.guard';
@@ -72,7 +71,6 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60_000, limit: 100 }],
     }),
-    TokenDenylistModule,
     DatabaseModule,
     AuthModule,
     PlatformOwnershipModule,

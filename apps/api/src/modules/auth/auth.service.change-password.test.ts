@@ -11,7 +11,6 @@ vi.mock('argon2', () => ({
 
 vi.mock('./auth-session.flags', () => ({
   resolveAuthAccessTokenTtlSeconds: () => 600,
-  shouldIssueAuthSessionV2: () => false,
 }));
 
 vi.mock('./auth-session.metrics', () => ({
@@ -37,7 +36,6 @@ describe('AuthService.changePassword', () => {
     ),
   };
 
-  const tokenDenylist = { revokeUntil: vi.fn() };
   const vaultSession = { lock: vi.fn() };
   const authSessions = {};
   const config = {
@@ -52,7 +50,6 @@ describe('AuthService.changePassword', () => {
     service = new AuthService(
       prisma as never,
       config as never,
-      tokenDenylist as never,
       vaultSession as never,
       authSessions as never,
     );
@@ -95,10 +92,7 @@ describe('AuthService.changePassword', () => {
     vi.mocked(argon2.verify).mockResolvedValueOnce(true).mockResolvedValueOnce(false);
     vi.mocked(argon2.hash).mockResolvedValue('new-hash');
 
-    const result = await service.changePassword('e1', 'OldPass1!', 'NewPass2!', {
-      jti: 'jti-1',
-      tokenExp: 1_700_000_000,
-    });
+    const result = await service.changePassword('e1', 'OldPass1!', 'NewPass2!');
 
     expect(result).toEqual({ success: true, requiresReauth: true });
     expect(employeeUpdate).toHaveBeenCalledWith({
@@ -118,6 +112,5 @@ describe('AuthService.changePassword', () => {
       }),
     );
     expect(vaultSession.lock).toHaveBeenCalledWith('e1');
-    expect(tokenDenylist.revokeUntil).toHaveBeenCalledWith('jti-1', 1_700_000_000_000);
   });
 });
