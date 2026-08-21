@@ -5,3 +5,4 @@
 Дальше:
 
 - [ ] [ai-modul-steps.md](http://ai-modul-steps.md)
+- [ ] ATS full coling sisitem and integration
