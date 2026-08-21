@@ -10,6 +10,8 @@ import { WorkSpacesController } from './work-spaces.controller';
 import { WorkSpacesService } from './work-spaces.service';
 import { WorkSpaceSprintsController } from './work-space-sprints.controller';
 import { WorkSpaceSprintsService } from './work-space-sprints.service';
+import { TaskDiscussionController } from './task-discussion.controller';
+import { TaskDiscussionService } from './task-discussion.service';
 
 @Module({
   imports: [NotificationModule],
@@ -18,6 +20,7 @@ import { WorkSpaceSprintsService } from './work-space-sprints.service';
     // GET /tasks/:id on TasksController captures the literal segment "work-spaces"
     // and GET /api/tasks/work-spaces never reaches WorkSpacesController.
     WorkSpaceSprintsController,
+    TaskDiscussionController,
     WorkSpacesController,
     TasksController,
     TaskBoardsController,
@@ -29,6 +32,7 @@ import { WorkSpaceSprintsService } from './work-space-sprints.service';
     RecurringTasksService,
     WorkSpacesService,
     WorkSpaceSprintsService,
+    TaskDiscussionService,
   ],
   exports: [
     TasksService,
@@ -36,6 +40,7 @@ import { WorkSpaceSprintsService } from './work-space-sprints.service';
     RecurringTasksService,
     WorkSpacesService,
     WorkSpaceSprintsService,
+    TaskDiscussionService,
   ],
 })
 export class TasksModule {}

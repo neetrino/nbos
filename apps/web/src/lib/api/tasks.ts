@@ -203,6 +203,21 @@ export interface TaskStats {
   byPriority: Array<{ priority: string; _count: number }>;
 }
 
+export interface TaskDiscussionEntry {
+  id: string;
+  body: string;
+  authorActorType: string;
+  authorActorId: string;
+  authorDisplayName: string;
+  channelSource: string | null;
+  createdAt: string;
+}
+
+export interface TaskDiscussionList {
+  items: TaskDiscussionEntry[];
+  meta: { total: number; page: number; pageSize: number; totalPages: number };
+}
+
 export const tasksApi = {
   async getAll(params?: TaskQueryParams): Promise<ListData<Task>> {
     const resp = await api.get<ListData<Task>>('/api/tasks', { params });
@@ -272,6 +287,17 @@ export const tasksApi = {
   },
   async restore(id: string): Promise<Task> {
     const resp = await api.post<Task>(`/api/tasks/${id}/restore`);
+    return resp.data;
+  },
+  async listDiscussion(
+    id: string,
+    params?: { page?: number; pageSize?: number },
+  ): Promise<TaskDiscussionList> {
+    const resp = await api.get<TaskDiscussionList>(`/api/tasks/${id}/discussion`, { params });
+    return resp.data;
+  },
+  async addDiscussion(id: string, body: string): Promise<TaskDiscussionEntry> {
+    const resp = await api.post<TaskDiscussionEntry>(`/api/tasks/${id}/discussion`, { body });
     return resp.data;
   },
   async reorder(taskIds: string[], scope: 'workspace' | 'my-plan'): Promise<{ success: true }> {

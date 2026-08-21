@@ -1,0 +1,138 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { PrismaClient, type InputJsonValue } from '@nbos/database';
+import { PRISMA_TOKEN } from '../../../database.module';
+import { AgentAccessException } from '../auth/agent-auth.errors';
+import { AGENT_IDEMPOTENCY_TTL_MS } from './agent-capability.constants';
+import type { AgentCapabilityResult } from './agent-capability.types';
+
+export interface IdempotencyReserveInput {
+  agentId: string;
+  capabilityKey: string;
+  operationKey: string;
+  requestFingerprint: string;
+}
+
+interface IdempotencyRow {
+  id: string;
+  requestFingerprint: string;
+  status: 'IN_PROGRESS' | 'COMPLETED';
+  responseJson: unknown;
+  createdAt: Date;
+  expiresAt: Date;
+}
+
+/**
+ * Reserves an (agent, capability, key) slot, then stores the successful result.
+ * A duplicate retry with the same fingerprint returns the original result.
+ */
+@Injectable()
+export class AgentIdempotencyService {
+  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+
+  async reserve(input: IdempotencyReserveInput): Promise<AgentCapabilityResult | null> {
+    const existing = await this.loadLive(input);
+    if (existing) {
+      return this.replayOrConflict(existing, input.requestFingerprint);
+    }
+    if ((await this.tryInsert(input)) === 'created') {
+      return null;
+    }
+    const raced = await this.loadLive(input);
+    if (!raced) {
+      throw AgentAccessException.conflict('Idempotency reservation failed');
+    }
+    return this.replayOrConflict(raced, input.requestFingerprint);
+  }
+
+  async abort(input: IdempotencyReserveInput | null): Promise<void> {
+    if (!input) return;
+    await this.prisma.externalAgentIdempotencyRecord.deleteMany({
+      where: {
+        agentId: input.agentId,
+        capabilityKey: input.capabilityKey,
+        operationKey: input.operationKey,
+        status: 'IN_PROGRESS',
+      },
+    });
+  }
+
+  async complete(input: IdempotencyReserveInput, result: AgentCapabilityResult): Promise<void> {
+    await this.prisma.externalAgentIdempotencyRecord.update({
+      where: {
+        agentId_capabilityKey_operationKey: {
+          agentId: input.agentId,
+          capabilityKey: input.capabilityKey,
+          operationKey: input.operationKey,
+        },
+      },
+      data: {
+        status: 'COMPLETED',
+        responseJson: result as unknown as InputJsonValue,
+        completedAt: new Date(),
+      },
+    });
+  }
+
+  private async loadLive(input: IdempotencyReserveInput): Promise<IdempotencyRow | null> {
+    const row = await this.findRow(input);
+    if (!row) return null;
+    if (row.status === 'IN_PROGRESS') {
+      return row;
+    }
+    if (row.expiresAt.getTime() <= Date.now()) {
+      await this.prisma.externalAgentIdempotencyRecord
+        .delete({ where: { id: row.id } })
+        .catch(() => undefined);
+      return null;
+    }
+    return row;
+  }
+
+  private async findRow(input: IdempotencyReserveInput): Promise<IdempotencyRow | null> {
+    return this.prisma.externalAgentIdempotencyRecord.findUnique({
+      where: {
+        agentId_capabilityKey_operationKey: {
+          agentId: input.agentId,
+          capabilityKey: input.capabilityKey,
+          operationKey: input.operationKey,
+        },
+      },
+      select: {
+        id: true,
+        requestFingerprint: true,
+        status: true,
+        responseJson: true,
+        createdAt: true,
+        expiresAt: true,
+      },
+    });
+  }
+
+  private async tryInsert(input: IdempotencyReserveInput): Promise<'created' | 'conflict'> {
+    try {
+      await this.prisma.externalAgentIdempotencyRecord.create({
+        data: {
+          agentId: input.agentId,
+          capabilityKey: input.capabilityKey,
+          operationKey: input.operationKey,
+          requestFingerprint: input.requestFingerprint,
+          status: 'IN_PROGRESS',
+          expiresAt: new Date(Date.now() + AGENT_IDEMPOTENCY_TTL_MS),
+        },
+      });
+      return 'created';
+    } catch {
+      return 'conflict';
+    }
+  }
+
+  private replayOrConflict(row: IdempotencyRow, fingerprint: string): AgentCapabilityResult | null {
+    if (row.requestFingerprint !== fingerprint) {
+      throw AgentAccessException.idempotencyConflict();
+    }
+    if (row.status === 'COMPLETED') {
+      return row.responseJson as AgentCapabilityResult;
+    }
+    throw AgentAccessException.idempotencyInProgress();
+  }
+}

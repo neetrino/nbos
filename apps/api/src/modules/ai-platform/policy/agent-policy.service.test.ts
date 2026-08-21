@@ -221,5 +221,35 @@ describe('AgentPolicyService', () => {
       expect(allowed.outcome).toBe('ALLOW');
       expect(denied).toEqual({ outcome: 'DENY', reason: 'RESOURCE_OUT_OF_SCOPE' });
     });
+
+    it('resolves an Extension WORKSPACE grant to the Product Work Space before matching', async () => {
+      grantExists();
+      scopesFor([{ scopeType: 'WORKSPACE', scopeId: 'ws-ext', resourceType: '', expiresAt: null }]);
+      prisma.workSpace.findUnique.mockResolvedValue({
+        id: 'ws-ext',
+        name: 'Ext',
+        type: 'EXTENSION_DELIVERY',
+        projectId: 'proj-1',
+        productId: null,
+        extensionId: 'ext-1',
+        scrumEnabled: false,
+      });
+      prisma.extension.findUnique.mockResolvedValue({ productId: 'prod-1' });
+      prisma.workSpace.findFirst.mockResolvedValue({
+        id: 'ws-product',
+        name: 'Product',
+        type: 'PRODUCT_DELIVERY',
+        projectId: 'proj-1',
+        productId: 'prod-1',
+        extensionId: null,
+        scrumEnabled: true,
+      });
+
+      const decision = await service.evaluate(
+        query({ target: { workspaceId: 'ws-product', productId: 'prod-1' } }),
+      );
+
+      expect(decision.outcome).toBe('ALLOW');
+    });
   });
 });

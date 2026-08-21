@@ -21,7 +21,10 @@ export const AI_WRITE_CAPABILITIES: readonly AiCapabilityDefinition[] = [
       id: 'tasks.create.input.v1',
       fields: ['workspaceId', 'title', 'description', 'priority', 'dueDate'],
     },
-    output: { id: 'tasks.create.output.v1', fields: ['id', 'code', 'title', 'status'] },
+    output: {
+      id: 'tasks.create.output.v1',
+      fields: ['id', 'code', 'title', 'status', 'updatedAt'],
+    },
     idempotency: 'REQUIRED',
     audit: 'ALWAYS',
     approval: 'NONE',
@@ -41,9 +44,12 @@ export const AI_WRITE_CAPABILITIES: readonly AiCapabilityDefinition[] = [
     allowedScopeTypes: TASK_SCOPES,
     input: {
       id: 'tasks.update.input.v1',
-      fields: ['taskId', 'title', 'description', 'priority', 'dueDate'],
+      fields: ['taskId', 'title', 'description', 'priority', 'dueDate', 'expectedUpdatedAt'],
     },
-    output: { id: 'tasks.update.output.v1', fields: ['id', 'code', 'title', 'status'] },
+    output: {
+      id: 'tasks.update.output.v1',
+      fields: ['id', 'code', 'title', 'status', 'updatedAt'],
+    },
     idempotency: 'REQUIRED',
     audit: 'ALWAYS',
     approval: 'NONE',
@@ -61,7 +67,7 @@ export const AI_WRITE_CAPABILITIES: readonly AiCapabilityDefinition[] = [
     risk: 'LOW',
     allowedScopeTypes: TASK_SCOPES,
     input: { id: 'tasks.start.input.v1', fields: ['taskId'] },
-    output: { id: 'tasks.start.output.v1', fields: ['id', 'status'] },
+    output: { id: 'tasks.start.output.v1', fields: ['id', 'status', 'updatedAt'] },
     // Retry-sensitive: a replayed start must not re-open a task that has since
     // moved on, so the caller has to supply an idempotency key.
     idempotency: 'REQUIRED',
@@ -99,7 +105,10 @@ export const AI_WRITE_CAPABILITIES: readonly AiCapabilityDefinition[] = [
     risk: 'MEDIUM',
     allowedScopeTypes: TASK_SCOPES,
     input: { id: 'tasks.submit_review.input.v1', fields: ['taskId'] },
-    output: { id: 'tasks.submit_review.output.v1', fields: ['id', 'status', 'reviewRequestedAt'] },
+    output: {
+      id: 'tasks.submit_review.output.v1',
+      fields: ['id', 'status', 'reviewRequestedAt', 'updatedAt'],
+    },
     idempotency: 'REQUIRED',
     audit: 'ALWAYS',
     approval: 'NONE',

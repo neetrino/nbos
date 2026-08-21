@@ -39,9 +39,10 @@ model ExternalAgent {
 
   owner            Employee                       @relation("ExternalAgentOwner", fields: [ownerId], references: [id], onDelete: Restrict)
   createdBy        Employee                       @relation("ExternalAgentCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
-  credentials      ExternalAgentCredential[]
-  capabilityGrants ExternalAgentCapabilityGrant[]
-  resourceScopes   ExternalAgentResourceScope[]
+  credentials          ExternalAgentCredential[]
+  capabilityGrants     ExternalAgentCapabilityGrant[]
+  resourceScopes       ExternalAgentResourceScope[]
+  idempotencyRecords   ExternalAgentIdempotencyRecord[]
 
   @@index([status])
   @@index([ownerId])
@@ -135,4 +136,31 @@ model ExternalAgentResourceScope {
   @@index([grantedById])
   @@index([revokedById])
   @@map("external_agent_resource_scopes")
+}
+
+enum AgentIdempotencyStatusEnum {
+  IN_PROGRESS
+  COMPLETED
+}
+
+/// Replay protection for External Agent mutations whose capability metadata
+/// declares idempotency REQUIRED. Scoped to (agent, capability, operation key).
+model ExternalAgentIdempotencyRecord {
+  id                 String                       @id @default(uuid())
+  agentId            String                       @map("agent_id")
+  capabilityKey      String                       @map("capability_key")
+  operationKey       String                       @map("operation_key")
+  requestFingerprint String                       @map("request_fingerprint")
+  status             AgentIdempotencyStatusEnum
+  responseJson       Json?                        @map("response_json")
+  createdAt          DateTime                     @default(now()) @map("created_at")
+  updatedAt          DateTime                     @updatedAt @map("updated_at")
+  completedAt        DateTime?                    @map("completed_at")
+  expiresAt          DateTime                     @map("expires_at")
+
+  agent ExternalAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, capabilityKey, operationKey], map: "external_agent_idempotency_agent_cap_op_key")
+  @@index([expiresAt])
+  @@map("external_agent_idempotency_records")
 }

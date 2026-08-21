@@ -27,7 +27,7 @@ export const AI_READ_CAPABILITIES: readonly AiCapabilityDefinition[] = [
     access: 'READ',
     risk: 'LOW',
     allowedScopeTypes: WORKSPACE_SCOPES,
-    input: { id: 'workspaces.read.input.v1', fields: [] },
+    input: { id: 'workspaces.read.input.v1', fields: ['workspaceId', 'page', 'pageSize'] },
     output: {
       id: 'workspaces.read.output.v1',
       fields: ['id', 'name', 'type', 'projectId', 'productId', 'scrumEnabled'],
@@ -48,10 +48,13 @@ export const AI_READ_CAPABILITIES: readonly AiCapabilityDefinition[] = [
     access: 'READ',
     risk: 'LOW',
     allowedScopeTypes: TASK_SCOPES,
-    input: { id: 'tasks.list.input.v1', fields: ['workspaceId', 'status', 'page', 'pageSize'] },
+    input: {
+      id: 'tasks.list.input.v1',
+      fields: ['workspaceId', 'status', 'page', 'pageSize', 'sortBy'],
+    },
     output: {
       id: 'tasks.list.output.v1',
-      fields: ['id', 'code', 'title', 'status', 'priority', 'dueDate', 'workspaceId'],
+      fields: ['id', 'code', 'title', 'status', 'priority', 'dueDate', 'workspaceId', 'updatedAt'],
     },
     idempotency: 'NOT_REQUIRED',
     audit: 'ON_DENY',
@@ -82,6 +85,7 @@ export const AI_READ_CAPABILITIES: readonly AiCapabilityDefinition[] = [
         'dueDate',
         'workspaceId',
         'sprintId',
+        'updatedAt',
       ],
     },
     idempotency: 'NOT_REQUIRED',

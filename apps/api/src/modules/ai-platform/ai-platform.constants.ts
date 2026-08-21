@@ -4,6 +4,7 @@ export const AI_AUDIT_ENTITY = {
   credential: 'EXTERNAL_AGENT_CREDENTIAL',
   capabilityGrant: 'EXTERNAL_AGENT_CAPABILITY_GRANT',
   resourceScope: 'EXTERNAL_AGENT_RESOURCE_SCOPE',
+  capability: 'AGENT_CAPABILITY',
 } as const;
 
 /** Audit actions for External Agent lifecycle and authorization outcomes. */
@@ -21,6 +22,7 @@ export const AI_AUDIT_ACTION = {
   scopeGranted: 'SCOPE_GRANTED',
   scopeRevoked: 'SCOPE_REVOKED',
   policyDenied: 'AGENT_POLICY_DENIED',
+  capabilityInvoked: 'AGENT_CAPABILITY_INVOKED',
 } as const;
 
 /** Maximum agent name / description lengths accepted at the boundary. */

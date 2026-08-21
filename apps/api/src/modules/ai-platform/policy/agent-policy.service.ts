@@ -16,6 +16,7 @@ import {
 } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { isTimestampPast, resolveGrantState } from '../agents/external-agent-state';
+import { canonicalWorkspaceScopeId } from '../../tasks/work-space-canonical.op';
 import { AiPlatformAuditService } from '../ai-platform-audit.service';
 import { AI_AUDIT_ACTION, AI_AUDIT_ENTITY } from '../ai-platform.constants';
 import { AgentAccessException } from '../auth/agent-auth.errors';
@@ -125,14 +126,20 @@ export class AgentPolicyService {
       where: { agentId, revokedAt: null },
       select: { scopeType: true, scopeId: true, resourceType: true, expiresAt: true },
     });
-    return scopes
-      .filter((scope) => !isTimestampPast(scope.expiresAt, now))
-      .map((scope) => ({
-        scopeType: scope.scopeType,
-        scopeId: scope.scopeId,
-        // Non-resource scopes store an empty string; scope matching wants null.
-        resourceType: scope.resourceType || null,
-      }));
+    const live = scopes.filter((scope) => !isTimestampPast(scope.expiresAt, now));
+    return Promise.all(live.map((scope) => this.toGrantedScope(scope)));
+  }
+
+  private async toGrantedScope(scope: {
+    scopeType: AgentGrantedScope['scopeType'];
+    scopeId: string;
+    resourceType: string;
+  }): Promise<AgentGrantedScope> {
+    return {
+      scopeType: scope.scopeType,
+      scopeId: await canonicalWorkspaceScopeId(this.prisma, scope.scopeType, scope.scopeId),
+      resourceType: scope.resourceType || null,
+    };
   }
 
   /**

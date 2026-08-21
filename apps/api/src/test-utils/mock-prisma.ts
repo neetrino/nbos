@@ -129,6 +129,8 @@ export function createMockPrisma() {
     externalAgentCredential: createModelMock(),
     externalAgentCapabilityGrant: createModelMock(),
     externalAgentResourceScope: createModelMock(),
+    taskDiscussionEntry: createModelMock(),
+    externalAgentIdempotencyRecord: createModelMock(),
     $disconnect: vi.fn(),
     $queryRaw: vi.fn().mockResolvedValue([]),
     $transaction: vi.fn(),

@@ -60,23 +60,9 @@ Evidence: `17-Phase-1-Chat-1-Handoff.md`.
 36. [x] Lock Phase 1 as shared AI foundation + External Workspace Agent + provider/model/internal-agent foundation.
 37. [x] Confirm External Agent may receive `tasks.create` only via explicit grant.
 38. [x] Confirm External Agent may receive `tasks.update` only via explicit grant.
-39. [~] Define exact allowlisted fields for `tasks.update` from current Tasks domain rules.
-40. [x] Confirm External Agent has no `tasks.delete` capability in Phase 1.
-41. [x] Confirm External Agent has no unrestricted arbitrary status mutation capability.
-42. [x] Confirm External Agent cannot force final task completion when human review is required.
-43. [x] Confirm REST and MCP are both Phase 1 deliverables.
-44. [x] Confirm OpenAI provider connection foundation is Phase 1.
-45. [x] Confirm Anthropic provider connection foundation is Phase 1.
-46. [x] Confirm model-catalog synchronization is Phase 1.
-47. [x] Confirm FIXED model policy is Phase 1.
-48. [x] Confirm PRIMARY_FALLBACK model policy is Phase 1.
-49. [x] Confirm Internal Agent entity/lifecycle foundation is Phase 1.
-50. [x] Confirm full internal employee AI chat runtime is NOT Phase 1.
-51. [x] Confirm production Messenger auto-reply runtime is NOT Phase 1.
-52. [x] Confirm production RAG/vector infrastructure is NOT Phase 1.
-53. [x] Confirm adaptive/learned model routing is NOT Phase 1.
-54. [x] Confirm automatic activation of newly discovered models is forbidden.
-55. [x] Confirm customer-facing autonomous high-risk actions are NOT Phase 1.
+39. [x] Define exact allowlisted fields for `tasks.update` from current Tasks domain rules.
+
+Runtime: `apps/api/src/modules/tasks/task-agent-update.allowlist.ts`. Allowed: `title`, `description`, `priority`, `dueDate`. Forbidden: `status`, `workspaceId`, assignment, personal-board, `completionRules`, and the rest of `UpdateTaskDto`. Derived from `TasksService.update` rules, not from an agent DTO. 40. [x] Confirm External Agent has no `tasks.delete` capability in Phase 1. 41. [x] Confirm External Agent has no unrestricted arbitrary status mutation capability. 42. [x] Confirm External Agent cannot force final task completion when human review is required. 43. [x] Confirm REST and MCP are both Phase 1 deliverables. 44. [x] Confirm OpenAI provider connection foundation is Phase 1. 45. [x] Confirm Anthropic provider connection foundation is Phase 1. 46. [x] Confirm model-catalog synchronization is Phase 1. 47. [x] Confirm FIXED model policy is Phase 1. 48. [x] Confirm PRIMARY_FALLBACK model policy is Phase 1. 49. [x] Confirm Internal Agent entity/lifecycle foundation is Phase 1. 50. [x] Confirm full internal employee AI chat runtime is NOT Phase 1. 51. [x] Confirm production Messenger auto-reply runtime is NOT Phase 1. 52. [x] Confirm production RAG/vector infrastructure is NOT Phase 1. 53. [x] Confirm adaptive/learned model routing is NOT Phase 1. 54. [x] Confirm automatic activation of newly discovered models is forbidden. 55. [x] Confirm customer-facing autonomous high-risk actions are NOT Phase 1.
 
 Item 39 is locked as Chat 3 work: derive the allowlist from `TasksService` update DTO / domain rules, not from agent controllers.
 
@@ -144,11 +130,11 @@ Write path and display contract exist in `AuditService.log({ actor })`. Chat 2 c
 105.  [x] Add createdAt/updatedAt.
 106.  [x] Add appropriate indexes.
 107.  [x] Ensure agent identity remains stable through credential rotation.
-108.  [~] Add persistence tests.
+108.  [x] Add persistence tests.
 
-Runtime: `packages/database/prisma/schema/ai-platform.prisma`, `apps/api/src/modules/ai-platform/agents/*`. `EXPIRED` is derived from `expiresAt` at read time rather than stored, so a lapsed agent cannot appear active through a stale status column. `REVOKED` is terminal through one mechanism used by every writer: `agent-row-lock.ts` takes `SELECT ... FOR UPDATE` on the agent row inside the transaction and only then reads state, and `resolveAgentState` reads `revokedAt` as well as the status column. Lifecycle transitions, credential issuance and grant/scope writes all go through that lock, so a concurrent revoke can neither be overtaken nor walked back. Each of those mutations also writes its audit row through the same transaction client, so no lifecycle change can commit without its trail. Indexes cover status, owner and every employee foreign key (migration `20260821170000`, a single transactional migration after the squash), so offboarding an employee does not scan the agent tables.
+Runtime: `packages/database/prisma/schema/ai-platform.prisma`, `apps/api/src/modules/ai-platform/agents/*`. `EXPIRED` is derived from `expiresAt` at read time rather than stored, so a lapsed agent cannot appear active through a stale status column. `REVOKED` is terminal through one mechanism used by every writer: `agent-row-lock.ts` takes `SELECT ... FOR UPDATE` on the agent row inside the transaction and only then reads state, and `resolveAgentState` reads `revokedAt` as well as the status column. Lifecycle transitions, credential issuance and grant/scope writes all go through that lock, so a concurrent revoke can neither be overtaken nor walked back. Each of those mutations also writes its audit row through the same transaction client, so no lifecycle change can commit without its trail. Indexes cover status, owner and every employee foreign key (migration `20260821170000`, a single transactional migration after the squash), so offboarding an employee does not scan the agent tables. Chat 3 added a real-database smoke (`agent-foundation.int.test.ts`): issue → authenticate → grant → scope, plus grant/scope versus revoke, which is what lifts item 108 out of `[~]`.
 
-Item 108 stays `[~]`: persistence behaviour is covered by unit tests against a mocked Prisma client, so migration, uniqueness and foreign-key behaviour is verified by `migrate deploy` + `migrate diff` on the dev branch rather than by an integration test. The one real-database test that exists is narrow on purpose — `agent-credential.concurrency.int.test.ts` proves the lock order, not the persistence contract. Tests: `external-agent.service.test.ts`, `external-agent-state.test.ts`.
+Item 108 is `[x]` after Chat 3: `agent-foundation.int.test.ts` exercises issue → authenticate → grant → scope against the real dev database, and the grant/scope-versus-revoke race sits in the same opt-in suite as `agent-credential.concurrency.int.test.ts`. Unit tests against the mocked Prisma client remain: `external-agent.service.test.ts`, `external-agent-state.test.ts`.
 
 # F. External Agent credentials
 
@@ -272,161 +258,171 @@ The agent id is not an input: `AgentPolicyQuery` derives it from `actor`, so a c
 
 # K. Domain Action Gateway
 
-196. [ ] Create shared AI/agent capability invocation boundary.
-197. [ ] Prohibit direct Prisma domain writes from REST agent controllers.
-198. [ ] Prohibit direct Prisma domain writes from MCP tool adapters.
-199. [ ] Prohibit direct Prisma domain writes from future Internal AI tool adapters.
-200. [ ] Route Task actions through Tasks application/domain services.
-201. [ ] Route Drive operations through Drive services.
-202. [ ] Preserve ActorContext through invocation.
-203. [ ] Preserve correlation id through invocation.
-204. [ ] Validate capability input schemas.
-205. [ ] Validate output projection schemas.
-206. [ ] Re-check target scope server-side.
-207. [ ] Audit successful material mutations after domain commit.
-208. [ ] Audit failures/denials where policy requires.
-209. [ ] Preserve transaction boundaries.
-210. [ ] Add gateway integration tests.
+196. [x] Create shared AI/agent capability invocation boundary.
+197. [~] Prohibit direct Prisma domain writes from REST agent controllers.
+198. [~] Prohibit direct Prisma domain writes from MCP tool adapters.
+199. [x] Prohibit direct Prisma domain writes from future Internal AI tool adapters.
+200. [x] Route Task actions through Tasks application/domain services.
+201. [x] Route Drive operations through Drive services.
+202. [x] Preserve ActorContext through invocation.
+203. [x] Preserve correlation id through invocation.
+204. [x] Validate capability input schemas.
+205. [~] Validate output projection schemas.
+206. [x] Re-check target scope server-side.
+207. [x] Audit successful material mutations after domain commit.
+208. [x] Audit failures/denials where policy requires.
+209. [~] Preserve transaction boundaries.
+210. [x] Add gateway integration tests.
+
+Runtime: `apps/api/src/modules/ai-platform/gateway/agent-capability.gateway.ts`. REST and MCP adapters do not exist yet (Chat 4); both must call `invoke` and must not write Tasks/Drive via Prisma — 197–198 stay `[~]` until those controllers exist. Item 204 validates catalog field names plus enum/date/sort at the gateway (`agent-capability.validators.ts`). Item 205 is partial: handlers emit purpose-built projections rather than running a second output-schema validator. Item 207 audits after domain commit even if idempotency `complete()` fails. Item 209 is partial: domain commit and idempotency `complete()` are not one transaction; stale `IN_PROGRESS` is never reclaimed (conflict instead of a second domain write). List `workspaces.read` denials (except the empty authorized set) go through `assertAllowed`. Evidence: `19-Phase-1-Chat-3-Handoff.md`.
 
 # L. Work Space discovery and isolation
 
-211. [ ] Implement authorized Work Space list/discovery.
-212. [ ] Implement authorized Work Space detail projection.
-213. [ ] Return only granted/derived authorized Work Spaces.
-214. [ ] Hide unauthorized names/counts.
-215. [ ] Resolve Product/Extension Work Space semantics canonically.
-216. [ ] Never trust client-provided Project/Product relationships as authority.
-217. [ ] Re-resolve scope server-side on every action.
-218. [ ] Test agent Work Space A cannot discover Work Space B.
-219. [ ] Test guessed Work Space B id fails safely.
-220. [ ] Test shared Project does not automatically widen Work Space scope.
-221. [ ] Test disabled agent loses discovery.
+211. [x] Implement authorized Work Space list/discovery.
+212. [x] Implement authorized Work Space detail projection.
+213. [x] Return only granted/derived authorized Work Spaces.
+214. [x] Hide unauthorized names/counts.
+215. [x] Resolve Product/Extension Work Space semantics canonically.
+216. [x] Never trust client-provided Project/Product relationships as authority.
+217. [x] Re-resolve scope server-side on every action.
+218. [x] Test agent Work Space A cannot discover Work Space B.
+219. [x] Test guessed Work Space B id fails safely.
+220. [x] Test shared Project does not automatically widen Work Space scope.
+221. [x] Test disabled agent loses discovery.
+
+Runtime: Extension delivery resolves `extensionId → Extension.productId → Product Work Space`. `WorkSpace.productId` is unique, so an Extension row cannot share it with the Product Work Space.
 
 # M. Task read capabilities
 
-222. [ ] Implement `tasks.list`.
-223. [ ] Scope `tasks.list` to authorized Work Space.
-224. [ ] Implement `tasks.read`.
-225. [ ] Use purpose-built Task projection.
-226. [ ] Include id/code/title.
-227. [ ] Include description safely.
-228. [ ] Include status.
-229. [ ] Include priority.
-230. [ ] Include due date.
-231. [ ] Include permitted Work Space/Sprint context.
-232. [ ] Include permitted checklist state where needed.
-233. [ ] Include permitted links only.
-234. [ ] Exclude unrelated Finance data.
-235. [ ] Exclude Credentials/secrets.
-236. [ ] Exclude unrelated customer/private data.
-237. [ ] Add bounded pagination.
-238. [ ] Add stable agent-useful filters/sorting.
-239. [ ] Add unauthorized task read tests.
-240. [ ] Add payload-minimization tests.
+222. [x] Implement `tasks.list`.
+223. [x] Scope `tasks.list` to authorized Work Space.
+224. [x] Implement `tasks.read`.
+225. [x] Use purpose-built Task projection.
+226. [x] Include id/code/title.
+227. [x] Include description safely.
+228. [x] Include status.
+229. [x] Include priority.
+230. [x] Include due date.
+231. [x] Include permitted Work Space/Sprint context.
+232. [x] Include permitted checklist state where needed.
+233. [x] Include permitted links only.
+234. [x] Exclude unrelated Finance data.
+235. [x] Exclude Credentials/secrets.
+236. [x] Exclude unrelated customer/private data.
+237. [x] Add bounded pagination.
+238. [x] Add stable agent-useful filters/sorting.
+239. [x] Add unauthorized task read tests.
+240. [x] Add payload-minimization tests.
+
+Runtime: `tasks.read_links` returns a link only when `evaluate('tasks.read_links')` ALLOWs that target. `RESOURCE(Task A)` does not reveal Task B in the same Work Space. Missing and out-of-scope ids are omitted. Task projections include `updatedAt` for the `tasks.update` optimistic lock.
 
 # N. Task discussion/context read
 
-241. [ ] Confirm canonical discussion source.
-242. [ ] Implement `tasks.read_discussion`.
-243. [ ] Apply Task/Work Space access check first.
-244. [ ] Limit discussion history/page size.
-245. [ ] Preserve author/source metadata.
-246. [ ] Preserve AI/human provenance.
-247. [ ] Treat discussion text as untrusted content.
-248. [ ] Exclude hidden/private content according to Tasks rules.
-249. [ ] Add discussion access tests.
+241. [x] Confirm canonical discussion source.
+242. [x] Implement `tasks.read_discussion`.
+243. [x] Apply Task/Work Space access check first.
+244. [x] Limit discussion history/page size.
+245. [x] Preserve author/source metadata.
+246. [x] Preserve AI/human provenance.
+247. [x] Treat discussion text as untrusted content.
+248. [x] Exclude hidden/private content according to Tasks rules.
+249. [x] Add discussion access tests.
 
 # O. Drive artifact reads
 
-250. [ ] Implement linked Task artifact metadata read.
-251. [ ] Verify Task/Work Space link before artifact access.
-252. [ ] Apply Drive policy in addition to Agent scope.
-253. [ ] Block forbidden secret artifacts.
-254. [ ] Avoid exposing arbitrary bucket paths.
-255. [ ] Use safe/short-lived download mechanism.
-256. [ ] Apply read size/type constraints where relevant.
-257. [ ] Add cross-Task artifact isolation tests.
-258. [ ] Add cross-Work Space artifact isolation tests.
+250. [x] Implement linked Task artifact metadata read.
+251. [x] Verify Task/Work Space link before artifact access.
+252. [x] Apply Drive policy in addition to Agent scope.
+253. [x] Block forbidden secret artifacts.
+254. [x] Avoid exposing arbitrary bucket paths.
+255. [x] Use safe/short-lived download mechanism.
+256. [x] Apply read size/type constraints where relevant.
+257. [x] Add cross-Task artifact isolation tests.
+258. [x] Add cross-Work Space artifact isolation tests.
 
 # P. Task create capability
 
-259. [ ] Implement `tasks.create` as separately grantable capability.
-260. [ ] Require authorized target Work Space.
-261. [ ] Define strict Task create input DTO/schema.
-262. [ ] Apply normal Tasks defaults/business validation.
-263. [ ] Prevent unrelated Project/Product/entity guessed-id linking.
-264. [ ] Apply assignment/reviewer rules from Tasks domain.
-265. [ ] Apply priority/due-date validation.
-266. [ ] Apply idempotency to create.
-267. [ ] Preserve External Agent as creator/source provenance without fake Employee impersonation.
-268. [ ] Audit Task creation.
-269. [ ] Test create allowed when capability granted.
-270. [ ] Test create denied without capability.
-271. [ ] Test create denied outside Work Space scope.
-272. [ ] Test duplicate retry does not duplicate Task.
+259. [x] Implement `tasks.create` as separately grantable capability.
+260. [x] Require authorized target Work Space.
+261. [x] Define strict Task create input DTO/schema.
+262. [x] Apply normal Tasks defaults/business validation.
+263. [x] Prevent unrelated Project/Product/entity guessed-id linking.
+264. [x] Apply assignment/reviewer rules from Tasks domain.
+265. [x] Apply priority/due-date validation.
+266. [x] Apply idempotency to create.
+267. [x] Preserve External Agent as creator/source provenance without fake Employee impersonation.
+268. [x] Audit Task creation.
+269. [x] Test create allowed when capability granted.
+270. [x] Test create denied without capability.
+271. [x] Test create denied outside Work Space scope.
+272. [x] Test duplicate retry does not duplicate Task.
 
 # Q. Task update capability
 
-273. [ ] Implement separately grantable `tasks.update`.
-274. [ ] Define explicit editable-field allowlist.
-275. [ ] Reject unknown/non-allowlisted fields.
-276. [ ] Reject deletion through update.
-277. [ ] Reject arbitrary status assignment through update.
-278. [ ] Reject direct final-completion bypass.
-279. [ ] Reject unauthorized Work Space reassignment.
-280. [ ] Reject audit/system/security-field mutation.
-281. [ ] Use Tasks domain services/commands.
-282. [ ] Add optimistic precondition/version/updatedAt check where needed.
-283. [ ] Avoid silently overwriting materially newer human changes.
-284. [ ] Audit material Task updates.
-285. [ ] Test allowed-field updates.
-286. [ ] Test denied-field updates.
-287. [ ] Test stale update conflict.
-288. [ ] Test update denied without capability.
+273. [x] Implement separately grantable `tasks.update`.
+274. [x] Define explicit editable-field allowlist.
+275. [x] Reject unknown/non-allowlisted fields.
+276. [x] Reject deletion through update.
+277. [x] Reject arbitrary status assignment through update.
+278. [x] Reject direct final-completion bypass.
+279. [x] Reject unauthorized Work Space reassignment.
+280. [x] Reject audit/system/security-field mutation.
+281. [x] Use Tasks domain services/commands.
+282. [x] Add optimistic precondition/version/updatedAt check where needed.
+283. [x] Avoid silently overwriting materially newer human changes. (`expectedUpdatedAt` is required on `tasks.update` and applied as `UPDATE … WHERE id AND updatedAt`.)
+284. [x] Audit material Task updates.
+285. [x] Test allowed-field updates.
+286. [x] Test denied-field updates.
+287. [x] Test stale update conflict.
+288. [x] Test update denied without capability.
 
 # R. Semantic Task workflow actions
 
-289. [ ] Implement `tasks.start`.
-290. [ ] Map `tasks.start` to current Tasks lifecycle.
-291. [ ] Reject invalid Start transition deterministically.
-292. [ ] Implement `tasks.comment`.
-293. [ ] Preserve External Agent authorship/source on comment.
-294. [ ] Implement `tasks.submit_review`.
-295. [ ] Map submit-review to current Tasks lifecycle.
-296. [ ] Reject invalid submit-review transition.
-297. [ ] Ensure External Agent cannot force Completed.
-298. [ ] Ensure External Agent cannot delete Task.
-299. [ ] Ensure returned-from-review Task can be read/reworked normally.
-300. [ ] Audit semantic Task actions.
-301. [ ] Add valid-transition tests.
-302. [ ] Add invalid-transition tests.
+289. [x] Implement `tasks.start`.
+290. [x] Map `tasks.start` to current Tasks lifecycle.
+291. [x] Reject invalid Start transition deterministically.
+292. [x] Implement `tasks.comment`.
+293. [x] Preserve External Agent authorship/source on comment.
+294. [x] Implement `tasks.submit_review`.
+295. [x] Map submit-review to current Tasks lifecycle.
+296. [x] Reject invalid submit-review transition.
+297. [x] Ensure External Agent cannot force Completed.
+298. [x] Ensure External Agent cannot delete Task.
+299. [x] Ensure returned-from-review Task can be read/reworked normally.
+300. [x] Audit semantic Task actions.
+301. [x] Add valid-transition tests.
+302. [x] Add invalid-transition tests.
+
+Runtime: `tasks.start` is `UPDATE … WHERE status IN (OPEN, ON_HOLD)`. `tasks.submit_review` is `OPEN|IN_PROGRESS|ON_HOLD`. Concurrent complete yields count 0 instead of a silent overwrite.
 
 # S. Artifact writes
 
-303. [ ] Implement generated artifact upload through Drive.
-304. [ ] Create Drive File Asset using existing ownership rules.
-305. [ ] Link artifact to authorized Task/Work Space.
-306. [ ] Store agent/source provenance.
-307. [ ] Validate file size.
-308. [ ] Validate file type.
-309. [ ] Apply established unsafe/executable-file policy.
-310. [ ] Prevent arbitrary unrelated entity links.
-311. [ ] Apply idempotency to artifact link creation where necessary.
-312. [ ] Add upload/link tests.
+303. [x] Implement generated artifact upload through Drive.
+304. [x] Create Drive File Asset using existing ownership rules.
+305. [x] Link artifact to authorized Task/Work Space.
+306. [x] Store agent/source provenance.
+307. [x] Validate file size.
+308. [x] Validate file type.
+309. [x] Apply established unsafe/executable-file policy.
+310. [x] Prevent arbitrary unrelated entity links.
+311. [x] Apply idempotency to artifact link creation where necessary.
+312. [x] Add upload/link tests.
 
 # T. Idempotency
 
-313. [ ] Define common External Agent idempotency contract.
-314. [ ] Support `Idempotency-Key` for REST mutations.
-315. [ ] Support equivalent `clientOperationId` for MCP tools.
-316. [ ] Scope idempotency to actor/capability appropriately.
-317. [ ] Store operation identity/result safely.
-318. [ ] Return original compatible result for safe duplicate retry.
-319. [ ] Prevent duplicate Task create.
-320. [ ] Prevent duplicate comments.
-321. [ ] Prevent duplicate artifact links.
-322. [ ] Prevent duplicate semantic transitions.
-323. [ ] Add duplicate/retry tests.
+313. [x] Define common External Agent idempotency contract.
+314. [~] Support `Idempotency-Key` for REST mutations.
+315. [~] Support equivalent `clientOperationId` for MCP tools.
+316. [x] Scope idempotency to actor/capability appropriately.
+317. [x] Store operation identity/result safely.
+318. [x] Return original compatible result for safe duplicate retry.
+319. [x] Prevent duplicate Task create.
+320. [x] Prevent duplicate comments.
+321. [x] Prevent duplicate artifact links.
+322. [x] Prevent duplicate semantic transitions.
+323. [x] Add duplicate/retry tests.
+
+Runtime: `AgentIdempotencyService` stores `(agentId, capabilityKey, operationKey)` with a SHA-256 fingerprint. `invoke()` accepts REST `Idempotency-Key` or MCP `clientOperationId` as `invocation.idempotencyKey` or stripped protocol input fields. Binding those names to HTTP headers / MCP tool args is Chat 4 (314–315). `abort()` runs only when `dispatch` fails. After domain commit, `complete()` failure leaves `IN_PROGRESS`; retries (including after 60s) return conflict and do not re-enter Tasks/Drive. A crash between reserve and dispatch can pin the key until operational cleanup (K 209).
 
 # U. Rate limits and abuse controls
 

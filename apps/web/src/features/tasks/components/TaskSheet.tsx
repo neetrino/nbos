@@ -30,6 +30,7 @@ import { TaskSheetHeader } from './TaskSheetHeader';
 import { TaskSheetStickyFooter } from './TaskSheetStickyFooter';
 import type { Task } from '@/lib/api/tasks';
 import { useTaskSheetState } from './use-task-sheet-state';
+import { useTaskDiscussion } from './use-task-discussion';
 import { canDeleteTaskDraft, canMoveTaskToTrash, isTaskInTrash } from '../utils/task-draft-delete';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
@@ -67,6 +68,7 @@ export function TaskSheet({
     onDelete,
     onRestore,
   });
+  const discussion = useTaskDiscussion(sheetId, open);
   const [extrasOpen, setExtrasOpen] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -229,8 +231,10 @@ export function TaskSheet({
               chat={
                 <TaskSheetChatPanel
                   task={state.task}
-                  messages={state.taskMessages}
-                  onSend={state.handleSendMessage}
+                  messages={discussion.messages}
+                  onSend={(body) => {
+                    void discussion.send(body);
+                  }}
                 />
               }
             />

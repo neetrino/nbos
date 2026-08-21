@@ -1,11 +1,15 @@
 import { HttpException } from '@nestjs/common';
 import {
   AI_AGENT_APPROVAL_REQUIRED_ERROR,
+  AI_AGENT_RESOURCE_NOT_AVAILABLE_ERROR,
   toAgentExternalError,
   type AiAgentErrorCode,
   type AiAgentExternalError,
   type AiPolicyDenyReason,
 } from '@nbos/shared';
+
+const HTTP_BAD_REQUEST = 400;
+const HTTP_CONFLICT = 409;
 
 /**
  * Machine-readable agent failure. Carries a stable `code` from
@@ -26,5 +30,43 @@ export class AgentAccessException extends HttpException {
 
   static approvalRequired(): AgentAccessException {
     return new AgentAccessException(AI_AGENT_APPROVAL_REQUIRED_ERROR);
+  }
+
+  static resourceNotAvailable(): AgentAccessException {
+    return new AgentAccessException(AI_AGENT_RESOURCE_NOT_AVAILABLE_ERROR);
+  }
+
+  static validationFailed(message = 'The request is invalid.'): AgentAccessException {
+    return new AgentAccessException({
+      code: 'AGENT_VALIDATION_FAILED',
+      status: HTTP_BAD_REQUEST,
+      message,
+    });
+  }
+
+  static conflict(
+    message = 'The request conflicts with the current resource state.',
+  ): AgentAccessException {
+    return new AgentAccessException({
+      code: 'AGENT_CONFLICT',
+      status: HTTP_CONFLICT,
+      message,
+    });
+  }
+
+  static idempotencyConflict(): AgentAccessException {
+    return new AgentAccessException({
+      code: 'AGENT_IDEMPOTENCY_CONFLICT',
+      status: HTTP_CONFLICT,
+      message: 'The idempotency key was reused with a different payload.',
+    });
+  }
+
+  static idempotencyInProgress(): AgentAccessException {
+    return new AgentAccessException({
+      code: 'AGENT_CONFLICT',
+      status: HTTP_CONFLICT,
+      message: 'An identical request is already in progress.',
+    });
   }
 }

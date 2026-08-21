@@ -60,41 +60,37 @@ Historical rows are backfilled as `USER` + `actorId = userId`. Human `AuditServi
 
 Migration: `20260821150000_audit_actor_aware`.
 
-### C2. Audit actor attachment resolves only Employee — PARTIAL
+### C2. Audit actor attachment resolves only Employee — OK
 
-Employees still resolve by id. Machine actors resolve to stable type labels (`External Agent`, `Internal AI`, `System`, `Automation`) without fake Employees.
+Employees still resolve by id. Machine actors resolve through `AuditActorLookups` (`ExternalAgentService.resolveDisplayNames`). Unresolved ids fall back to the type label.
 
-Chat 2 must wire `resolveExternalAgentDisplayName`. Chat 5 must wire `resolveInternalAiDisplayName`.
+### C3. ResourceAccessGrant requires `employeeId` — OK
 
-### C3. ResourceAccessGrant requires `employeeId` — PARTIAL
+Agent access lives in `external_agent_*` tables only. Nothing inserts an AI principal into `ResourceAccessGrant.employeeId`.
 
-Do not insert fake employees for external/internal AI.
+### C4. No External Agent entity/credential registry — OK
 
-Implement agent-specific grants or a safe generic principal grant evolution.
+Chat 2: `ExternalAgent` + `ExternalAgentCredential`, argon2id issue/rotate/revoke.
 
-### C4. No External Agent entity/credential registry — MISSING
+### C5. No capability registry/policy evaluator — OK
 
-Add agent identity, credential hash/rotation/revoke and status model.
+Shared registry + `evaluateAiPolicy`. Domain execution is Chat 3 (`AgentCapabilityGateway`).
 
-### C5. No capability registry/policy evaluator — MISSING
+### C6. No agent-specific machine auth guard — OK
 
-Existing endpoint guards alone are insufficient for reusable external/internal AI capabilities.
-
-### C6. No agent-specific machine auth guard — MISSING
-
-Add dedicated external-agent authentication path.
+Chat 2: `AgentAuthGuard` / `AgentAuthenticatorService`. Protocol wiring is Chat 4.
 
 ### C7. No AI execution record/correlation model — MISSING
 
-Required for async execution, status, failure, approval and observability.
+Required for async execution, status, failure, approval and observability. Chat 4/5.
 
-### C8. No idempotency contract for agent mutations — MISSING
+### C8. No idempotency contract for agent mutations — PARTIAL
 
-Add for retry-safe external writes.
+Capability metadata declares `REQUIRED`. Chat 3 stores replay rows in `external_agent_idempotency_records` and enforces them in the gateway. `abort()` runs only when the domain call fails; after a successful Tasks/Drive write the `IN_PROGRESS` row is left in place if `complete()` fails, and stale `IN_PROGRESS` is never reclaimed. REST `Idempotency-Key` / MCP `clientOperationId` header/tool binding is Chat 4. Domain commit and `complete()` are still not one transaction (K 209).
 
 ### C9. No external-agent rate-limit policy — MISSING
 
-Add actor/capability scoped limits.
+Add actor/capability scoped limits. Section U; evaluator already consumes a verdict (J 186).
 
 ## D. Tasks alignment issues to verify before implementation
 
@@ -104,11 +100,11 @@ Tasks documentation, cleanup register and current Prisma must be reconciled befo
 
 ### D2. Extension Work Space legacy/runtime shape — PARTIAL
 
-Canon says Extension uses parent Product Work Space, while historical/runtime fields may still contain Extension workspace compatibility. Agent scoping should use resolved canonical Work Space semantics, not raw legacy foreign keys.
+Canon says Extension uses parent Product Work Space. Chat 3 resolves Extension delivery ids to the Product Work Space before policy (`resolveCanonicalWorkSpace` / `canonicalWorkspaceScopeId`) and never scopes against `extensionId`. Legacy columns still exist on `WorkSpace`.
 
-### D3. Task discussion author identity — MISSING/PARTIAL
+### D3. Task discussion author identity — OK
 
-Ensure agent-authored comments can record an AI actor rather than fake Employee authorship.
+`TaskDiscussionEntry` is Tasks-owned. Authorship is `ActorContext` (`actorType` / `actorId` / `actorDisplayName`). External Agents are not forged as Employees. Messenger is not involved.
 
 ### D4. Review/completion behavior — PARTIAL
 
@@ -141,6 +137,14 @@ Canonical Phase 1 sources (`03`, `08`, `09`, `10` item 43, `16`) require both RE
 ## F. Chat 1 evidence
 
 2026-08-21: ActorContext + actor-aware Audit shipped. See `17-Phase-1-Chat-1-Handoff.md`.
+
+## F2. Chat 2 evidence
+
+2026-08-21: External Agent identity, credentials, grants, scopes, Policy Evaluator. See `18-Phase-1-Chat-2-Handoff.md`.
+
+## F3. Chat 3 evidence
+
+2026-08-21: Domain Action Gateway, Workspace/Tasks/Drive capabilities, Tasks-owned discussion, Drive classification mapping, idempotency store. See `19-Phase-1-Chat-3-Handoff.md`.
 
 ## G. Implementation rule
 
