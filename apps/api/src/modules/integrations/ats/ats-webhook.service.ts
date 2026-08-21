@@ -13,6 +13,7 @@ import { AtsProviderConfig } from './ats-provider.config';
 import { parseAtsWebhookBody } from './ats-webhook-body.parse';
 import { ATS_WEBHOOK_SUCCESS } from './ats.constants';
 import type { AtsWebhookPayload, AtsWebhookSuccessResponse } from './ats.types';
+import type { AtsCallIngestMeta } from './ats-call-realtime.publisher';
 
 @Injectable()
 export class AtsWebhookService {
@@ -32,8 +33,8 @@ export class AtsWebhookService {
   ): Promise<AtsWebhookSuccessResponse> {
     this.assertApiKey(key);
     const payload = this.parseBody(body);
-    await this.callService.ingestCallEvent(payload);
-    await this.publishIncomingSafely(payload);
+    const ingest = await this.callService.ingestCallEvent(payload);
+    await this.publishLifecycleSafely(payload, ingest);
     await this.enqueueRecordingSafely(payload);
     const redirectCall = await this.callRedirectService.resolveRedirectCall(payload);
     if (!redirectCall) {
@@ -42,12 +43,15 @@ export class AtsWebhookService {
     return { status: 'success', redirect_call: redirectCall };
   }
 
-  private async publishIncomingSafely(payload: AtsWebhookPayload): Promise<void> {
+  private async publishLifecycleSafely(
+    payload: AtsWebhookPayload,
+    ingest: AtsCallIngestMeta,
+  ): Promise<void> {
     try {
-      await this.callRealtimePublisher.publishIncomingStart(payload);
+      await this.callRealtimePublisher.publishAfterWebhook(payload, ingest);
     } catch (err) {
       this.logger.error({
-        event: 'ats_incoming_call_sse_failed',
+        event: 'ats_call_sse_failed',
         uid: payload.uid,
         error: String(err),
       });

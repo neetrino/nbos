@@ -245,23 +245,24 @@ Instagram OAuth connection uses dedicated Instagram app credentials. Instagram w
 
 Продукт: `../02-Modules/01-CRM/08-Calls-and-Telephony.md`. Контракт: `09-ATS-AM-Integration.md`.
 
-### Runtime сегодня (Call core + recording + click-to-call)
+### Runtime сегодня (Call core + Active Call Screen + recording + click-to-call)
 
-| Capability      | Behavior                                                                        |
-| --------------- | ------------------------------------------------------------------------------- |
-| Webhook         | `POST {BACKEND_URL}/api/integrations/ats/webhook?key=…`                         |
-| Auth            | Query `key` = env `ATS_API_KEY`                                                 |
-| Call            | One `AtsCallEvent` per `uid`; inbound and outbound follow CRM resolution        |
-| Lead            | New number → Lead (`source=MARKETING`, `sourceDetail=ATS`); Contact не создаём  |
-| Context         | Attach existing Contact / open Lead / open Deal when found                      |
-| `redirect_call` | Inbound `start` + известный Contact/Lead с `Employee.sipId`                     |
-| Idempotency     | `AtsCallEvent.uid` unique; repeat webhook updates the same row                  |
-| Read API        | `GET /api/crm/calls`, `GET /api/crm/calls/:id`                                  |
-| Recording       | Worker queue `ats-call-recording` downloads `call-record` into Drive FileAsset  |
-| Playback        | `GET /api/crm/calls/:id/recording` — authenticated stream, no public URL        |
-| Click-to-call   | `POST /api/crm/calls/click-to-call` → ATS `callback`; webhook updates same Call |
-| Incoming popup  | Employee SSE `GET /api/realtime/calls` + app-shell modal                        |
-| CRM activity    | CALL items on Lead History, Deal History/Calls, Contact Communication           |
+| Capability      | Behavior                                                                                              |
+| --------------- | ----------------------------------------------------------------------------------------------------- |
+| Webhook         | `POST {BACKEND_URL}/api/integrations/ats/webhook?key=…`                                               |
+| Auth            | Query `key` = env `ATS_API_KEY`                                                                       |
+| Call            | One `AtsCallEvent` per `uid`; inbound and outbound follow CRM resolution                              |
+| Lead            | New number → Lead (`source=MARKETING`, `sourceDetail=ATS`); Contact не создаём                        |
+| Context         | Attach existing Contact / open Lead / open Deal when found                                            |
+| `redirect_call` | Inbound `start` + известный Contact/Lead с `Employee.sipId`                                           |
+| Idempotency     | `AtsCallEvent.uid` unique; repeat webhook updates the same row                                        |
+| Read API        | `GET /api/crm/calls`, `GET /api/crm/calls/:id`, `GET /api/crm/calls/:id/screen`                       |
+| Recording       | Worker queue `ats-call-recording` downloads `call-record` into Drive FileAsset                        |
+| Playback        | `GET /api/crm/calls/:id/recording` — authenticated stream, no public URL                              |
+| Note            | `PATCH /api/crm/calls/:id/note` after the call ends                                                   |
+| Click-to-call   | `POST /api/crm/calls/click-to-call` → ATS `callback`; webhook updates same Call                       |
+| Active Call     | Employee SSE `GET /api/realtime/calls` (`call.started` / `answered` / `finished`) + fullscreen screen |
+| CRM activity    | CALL items on Lead History, Deal History/Calls, Contact Communication                                 |
 
 ### Канон полного среза (после MVP)
 

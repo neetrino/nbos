@@ -5,20 +5,20 @@ import {
   CALL_SSE_RECONNECT_MAX_MS,
 } from './call-realtime.constants';
 import {
-  parseIncomingCallPayload,
-  type IncomingCallPayload,
-} from '@/features/crm/calls/incoming-call.types';
+  parseActiveCallSsePayload,
+  type ActiveCallSsePayload,
+} from '@/features/crm/calls/active-call.types';
 
 export type CallSseStatus = 'connecting' | 'connected' | 'disconnected';
 
 type CallSseHandlers = {
   onStatus?: (status: CallSseStatus) => void;
-  onIncomingCall: (payload: IncomingCallPayload) => void;
+  onCallEvent: (payload: ActiveCallSsePayload) => void;
 };
 
 /**
- * Browser EventSource client for incoming-call SSE (same-origin BFF path).
- * Live events only — reconnect does not replay missed popups.
+ * Browser EventSource client for active-call SSE (same-origin BFF path).
+ * Live events only — reconnect does not replay missed screens.
  */
 export function connectCallSse(handlers: CallSseHandlers): { close: () => void } {
   let closed = false;
@@ -47,6 +47,11 @@ export function connectCallSse(handlers: CallSseHandlers): { close: () => void }
     }, delay);
   };
 
+  const onFrame = (event: Event) => {
+    const payload = parseActiveCallSsePayload((event as MessageEvent).data);
+    if (payload) handlers.onCallEvent(payload);
+  };
+
   const connect = () => {
     if (closed) return;
     handlers.onStatus?.('connecting');
@@ -57,11 +62,9 @@ export function connectCallSse(handlers: CallSseHandlers): { close: () => void }
       reconnectAttempt = 0;
       handlers.onStatus?.('connected');
     });
-
-    source.addEventListener(CALL_SSE_EVENTS.INCOMING_CALL, (event) => {
-      const payload = parseIncomingCallPayload((event as MessageEvent).data);
-      if (payload) handlers.onIncomingCall(payload);
-    });
+    source.addEventListener(CALL_SSE_EVENTS.STARTED, onFrame);
+    source.addEventListener(CALL_SSE_EVENTS.ANSWERED, onFrame);
+    source.addEventListener(CALL_SSE_EVENTS.FINISHED, onFrame);
 
     source.onerror = () => {
       if (closed) return;

@@ -1,9 +1,25 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { Response } from 'express';
 import { CallRealtimeEventBus } from './call-realtime-event-bus';
 import { CALL_SSE_EVENT } from './call-realtime.constants';
 import { CallSseHub } from './call-sse.hub';
-import type { IncomingCallBusMessage } from './call-realtime.types';
-import type { Response } from 'express';
+import type { ActiveCallBusMessage } from './call-realtime.types';
+
+function startedMessage(employeeId: string): ActiveCallBusMessage {
+  return {
+    event: CALL_SSE_EVENT.STARTED,
+    payload: {
+      employeeId,
+      type: CALL_SSE_EVENT.STARTED,
+      callId: 'call-1',
+      uid: 'uid-1',
+      direction: 'INBOUND',
+      phase: 'ringing',
+      phone: '+37499111111',
+      displayName: 'John Smith',
+    },
+  };
+}
 
 function mockRes() {
   const chunks: string[] = [];
@@ -20,28 +36,8 @@ function mockRes() {
   return { res: res as unknown as Response, chunks };
 }
 
-function incomingMessage(employeeId: string): IncomingCallBusMessage {
-  return {
-    event: CALL_SSE_EVENT.INCOMING_CALL,
-    payload: {
-      employeeId,
-      type: 'incoming_call',
-      callId: 'call-1',
-      direction: 'INBOUND',
-      phone: '+37499111111',
-      contactName: 'John Smith',
-      leadName: 'Website project',
-      dealName: 'Corporate website',
-      responsibleEmployeeName: 'Edgar',
-      leadId: 'lead-1',
-      contactId: 'contact-1',
-      dealId: 'deal-1',
-    },
-  };
-}
-
 describe('CallSseHub', () => {
-  it('delivers incoming_call only to the matching employee', () => {
+  it('delivers call.started only to the matching employee', () => {
     const bus = new CallRealtimeEventBus();
     const hub = new CallSseHub(bus);
     hub.onModuleInit();
@@ -51,14 +47,14 @@ describe('CallSseHub', () => {
     hub.attach('emp-a', a.res);
     hub.attach('emp-b', b.res);
 
-    hub.deliverForTest(incomingMessage('emp-a'));
+    hub.deliverForTest(startedMessage('emp-a'));
 
     const aJoined = a.chunks.join('');
     const bJoined = b.chunks.join('');
-    expect(aJoined).toContain('incoming_call');
+    expect(aJoined).toContain('call.started');
     expect(aJoined).toContain('"callId":"call-1"');
     expect(aJoined).not.toContain('emp-a');
-    expect(bJoined).not.toContain('incoming_call');
+    expect(bJoined).not.toContain('call.started');
 
     hub.onModuleDestroy();
   });
@@ -73,10 +69,10 @@ describe('CallRealtimeEventBus (local)', () => {
 
     const bus = new CallRealtimeEventBus();
     bus.onModuleInit();
-    const received: IncomingCallBusMessage[] = [];
+    const received: ActiveCallBusMessage[] = [];
     bus.subscribe((msg) => received.push(msg));
 
-    await bus.publish(incomingMessage('e1'));
+    await bus.publish(startedMessage('e1'));
 
     expect(received).toHaveLength(1);
     expect(received[0]?.payload.employeeId).toBe('e1');

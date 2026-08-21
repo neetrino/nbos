@@ -1,7 +1,9 @@
 export const CALL_SSE_PATH = '/api/realtime/calls';
 
 export const CALL_SSE_EVENTS = {
-  INCOMING_CALL: 'incoming_call',
+  STARTED: 'call.started',
+  ANSWERED: 'call.answered',
+  FINISHED: 'call.finished',
 } as const;
 
 const RECONNECT_BASE_MS = 1_000;

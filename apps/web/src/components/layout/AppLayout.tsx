@@ -17,7 +17,7 @@ import { SIDEBAR_WIDTH_COLLAPSED_PX, SIDEBAR_WIDTH_EXPANDED_PX } from './sidebar
 import { AppEntityRelationProvider } from '@/components/shared/relation-picker/AppEntityRelationProvider';
 import { UnsortedTaskCreateProvider } from '@/features/tasks/components/UnsortedTaskCreateProvider';
 import { GlobalSearchProvider } from '@/features/global-search/GlobalSearchProvider';
-import { IncomingCallProvider } from '@/features/crm/calls/IncomingCallProvider';
+import { ActiveCallProvider } from '@/features/crm/calls/ActiveCallProvider';
 import { EmployeeDirectoryWarmup } from '@/lib/employees';
 
 interface AppLayoutProps {
@@ -81,7 +81,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             <AppEntityRelationProvider>
               <GlobalSearchProvider>
                 <UnsortedTaskCreateProvider>
-                  <IncomingCallProvider>
+                  <ActiveCallProvider>
                     <EmployeeDirectoryWarmup />
                     <div
                       className="bg-background grid h-screen overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
@@ -113,7 +113,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                         </main>
                       </div>
                     </div>
-                  </IncomingCallProvider>
+                  </ActiveCallProvider>
                 </UnsortedTaskCreateProvider>
               </GlobalSearchProvider>
             </AppEntityRelationProvider>

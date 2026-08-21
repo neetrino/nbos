@@ -1,17 +1,17 @@
 import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import type Redis from 'ioredis';
-import { CALL_REALTIME_CHANNEL, CALL_SSE_EVENT } from './call-realtime.constants';
-import type { IncomingCallBusMessage } from './call-realtime.types';
+import { CALL_REALTIME_CHANNEL, isCallLifecycleSseEvent } from './call-realtime.constants';
+import type { ActiveCallBusMessage } from './call-realtime.types';
 import {
   createRedisEventsPublisherConnection,
   createRedisEventsSubscriberConnection,
   getRedisEventsUrl,
 } from './redis-events-connection';
 
-export type CallRealtimeHandler = (message: IncomingCallBusMessage) => void;
+export type CallRealtimeHandler = (message: ActiveCallBusMessage) => void;
 
 /**
- * Fan-out bus for incoming-call SSE.
+ * Fan-out bus for active-call SSE.
  * Redis Pub/Sub across API replicas; in-process only when Redis is unset.
  */
 @Injectable()
@@ -70,8 +70,8 @@ export class CallRealtimeEventBus implements OnModuleInit, OnModuleDestroy {
     };
   }
 
-  async publish(message: IncomingCallBusMessage): Promise<void> {
-    if (message.event !== CALL_SSE_EVENT.INCOMING_CALL) return;
+  async publish(message: ActiveCallBusMessage): Promise<void> {
+    if (!isCallLifecycleSseEvent(message.event)) return;
 
     if (!this.publisher) {
       this.dispatchLocal(message);
@@ -90,7 +90,7 @@ export class CallRealtimeEventBus implements OnModuleInit, OnModuleDestroy {
     return this.localHandlers.size;
   }
 
-  private dispatchLocal(message: IncomingCallBusMessage | null): void {
+  private dispatchLocal(message: ActiveCallBusMessage | null): void {
     if (!message) return;
     for (const handler of this.localHandlers) {
       try {
@@ -101,10 +101,10 @@ export class CallRealtimeEventBus implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private parseMessage(raw: string): IncomingCallBusMessage | null {
+  private parseMessage(raw: string): ActiveCallBusMessage | null {
     try {
-      const parsed = JSON.parse(raw) as IncomingCallBusMessage;
-      if (parsed?.event !== CALL_SSE_EVENT.INCOMING_CALL) return null;
+      const parsed = JSON.parse(raw) as ActiveCallBusMessage;
+      if (!parsed?.event || !isCallLifecycleSseEvent(parsed.event)) return null;
       if (!parsed.payload?.employeeId || !parsed.payload.callId) return null;
       return parsed;
     } catch {

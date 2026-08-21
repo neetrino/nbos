@@ -1,9 +1,16 @@
-import { BadGatewayException, BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import type { CurrentUserPayload } from '../../../common/decorators';
 import { AuditService } from '../../audit/audit.service';
 import { AtsCallbackClient } from '../../integrations/ats/ats-callback.client';
+import { AtsCallRealtimePublisher } from '../../integrations/ats/ats-call-realtime.publisher';
 import { mapCallResponse, type CallResponse } from './call-response.map';
 import { assertCanCreateCall } from './click-to-call-access';
 import {
@@ -18,11 +25,14 @@ import type { StartClickToCallDto } from './dto/start-click-to-call.dto';
 
 @Injectable()
 export class ClickToCallService {
+  private readonly logger = new Logger(ClickToCallService.name);
+
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly targets: ClickToCallTargetLoader,
     private readonly callback: AtsCallbackClient,
     private readonly audit: AuditService,
+    private readonly realtime: AtsCallRealtimePublisher,
   ) {}
 
   async start(dto: StartClickToCallDto, user: CurrentUserPayload): Promise<CallResponse> {
@@ -34,14 +44,27 @@ export class ClickToCallService {
     const from = await this.loadSipExtension(user.id);
     await this.startAtsCallback(from, target.to);
     const row = await persistClickToCallEvent(this.prisma, target, user.id);
+    await this.afterStart(row.id, dto, user.id);
+    return mapCallResponse(row);
+  }
+
+  private async afterStart(
+    callId: string,
+    dto: StartClickToCallDto,
+    userId: string,
+  ): Promise<void> {
+    try {
+      await this.realtime.publishStartedToEmployee(callId, userId);
+    } catch (err) {
+      this.logger.error({ event: 'click_to_call_sse_failed', callId, error: String(err) });
+    }
     await this.audit.log({
       entityType: CALL_AUDIT_ENTITY_TYPE,
-      entityId: row.id,
+      entityId: callId,
       action: CALL_INITIATED_AUDIT_ACTION,
-      userId: user.id,
-      changes: { targetType: dto.targetType, targetId: dto.targetId, userId: user.id },
+      userId,
+      changes: { targetType: dto.targetType, targetId: dto.targetId, userId },
     });
-    return mapCallResponse(row);
   }
 
   private async loadSipExtension(employeeId: string): Promise<string> {

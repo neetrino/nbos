@@ -35,6 +35,7 @@ import { AtsWebhookService } from './ats-webhook.service';
     AtsCallbackClient,
     AtsCallRecordingQueueService,
     AtsCallRecordingDownloadService,
+    AtsCallRealtimePublisher,
   ],
 })
 export class AtsModule {}

@@ -18,7 +18,7 @@ Tracks **shipped runtime** vs canon in `01-CRM-Overview.md`, pipelines, and stag
 
 - **Kanban trash column** — list-only trash view today; board trash tab optional later.
 - Stage-gate / Won / Offers gaps — see Cleanup Register §B–C.
-- **Calls / telephony (Phase 5 click-to-call):** `08-Calls-and-Telephony.md`. Runtime: ATS webhook → CRM Call + employee SSE popup + CALL activities + worker download into Drive `CALL_RECORDING` + authenticated playback + `POST /crm/calls/click-to-call`. Not shipped: history reconcile.
+- **Calls / telephony (Phase 6 Active Call Screen):** `08-Calls-and-Telephony.md`. Runtime: ATS webhook → CRM Call + SSE `call.started`/`answered`/`finished` + fullscreen Active Call Screen + CALL activities + Drive recording playback + click-to-call. Not shipped: history reconcile.
 
 ## Shipped — Lead intake attach and Lead merge
 
@@ -57,7 +57,9 @@ Runtime notes (canon silent → safer):
 - `GET /crm/calls`, `GET /crm/calls/:id` — Call activities by `leadId` / `contactId` / `dealId`; Call by id. List requires exactly one parent id. Visibility follows CRM_LEADS / CRM_DEALS VIEW.
 - `POST /crm/calls/click-to-call` — `{ targetType: LEAD|CONTACT|DEAL, targetId }`. Requires CALL_CREATE (CRM EDIT on the parent) + access to the CRM object. Empty SIP → 4xx. Browser never calls ATS.
 - `GET /crm/calls/:id/recording` — authenticated stream of the Drive recording when the viewer can see the Call. No public storage URL.
-- `GET /realtime/calls` — employee SSE for incoming-call popup.
+- `GET /crm/calls/:id/screen` — Active Call Screen snapshot (Contact / Deal / Project / Product / recent calls / note).
+- `PATCH /crm/calls/:id/note` — save the employee note after the call.
+- `GET /realtime/calls` — employee SSE `call.started` / `call.answered` / `call.finished` for the Active Call Screen.
 - `GET /crm/leads/duplicates` — intake / phone-add / merge / identify candidates (Leads, Contacts, open Deals).
 - `POST /crm/leads/:id/merge` — survivor path id; body `{ absorbedId, fieldChoices?, status? }`.
 - `POST /crm/leads/:id/attach-contact` — body `{ contactId, aboutDealId? }`. Not a merge.

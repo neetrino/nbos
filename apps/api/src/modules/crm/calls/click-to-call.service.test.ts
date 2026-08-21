@@ -2,7 +2,7 @@ import { BadGatewayException, ForbiddenException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { createMockPrisma } from '../../../test-utils/mock-prisma';
 import type { CurrentUserPayload } from '../../../common/decorators';
-import type { AtsCallbackClient } from '../../integrations/ats/ats-callback.client';
+import type { AtsCallRealtimePublisher } from '../../integrations/ats/ats-call-realtime.publisher';
 import type { AuditService } from '../../audit/audit.service';
 import { CALL_LIST_SELECT } from './call-list.select';
 import { ClickToCallService } from './click-to-call.service';
@@ -69,11 +69,15 @@ function createService(options?: {
     startCallbackCall: options?.startCallback ?? vi.fn().mockResolvedValue({ success: true }),
   } as unknown as AtsCallbackClient;
   const audit = { log: vi.fn().mockResolvedValue({}) } as unknown as AuditService;
+  const realtime = {
+    publishStartedToEmployee: vi.fn().mockResolvedValue(undefined),
+  } as unknown as AtsCallRealtimePublisher;
   const service = new ClickToCallService(
     prisma as never,
     new ClickToCallTargetLoader(prisma as never),
     callback,
     audit,
+    realtime,
   );
   const user = { ...USER, permissions: options?.permissions ?? USER.permissions };
   return { service, prisma, callback, audit, user };

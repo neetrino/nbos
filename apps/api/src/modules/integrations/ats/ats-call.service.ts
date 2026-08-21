@@ -7,6 +7,7 @@ import { AtsCallContextResolver, type AtsCallContext } from './ats-call-context.
 import { findEmployeeIdBySip, findResponsibleEmployeeId } from './ats-call-employee.ops';
 import { createAtsLead } from './ats-call-lead.ops';
 import { normalizeAtsCallerPhone } from './ats-phone.util';
+import type { AtsCallIngestMeta } from './ats-call-realtime.publisher';
 import type { AtsWebhookPayload } from './ats.types';
 
 const CALL_ROW_SELECT = {
@@ -38,10 +39,11 @@ export class AtsCallService {
     private readonly contextResolver: AtsCallContextResolver,
   ) {}
 
-  async ingestCallEvent(payload: AtsWebhookPayload): Promise<void> {
+  async ingestCallEvent(payload: AtsWebhookPayload): Promise<AtsCallIngestMeta> {
     const existing = await this.findExistingCall(payload);
     const event = await this.upsertCallEvent(payload, existing);
     await this.applyCrmContext(payload, event, existing == null);
+    return { callId: event.id, isFirstSeen: existing == null };
   }
 
   private async findExistingCall(payload: AtsWebhookPayload): Promise<AtsCallRow | null> {

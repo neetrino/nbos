@@ -11,7 +11,7 @@ function createService(options: {
   apiKey?: string;
   ingest?: AtsCallService['ingestCallEvent'];
   resolveRedirect?: AtsCallRedirectService['resolveRedirectCall'];
-  publish?: AtsCallRealtimePublisher['publishIncomingStart'];
+  publish?: AtsCallRealtimePublisher['publishAfterWebhook'];
   enqueueRecording?: AtsCallRecordingEnqueueService['enqueueAfterWebhook'];
 }): AtsWebhookService {
   const config = {
@@ -20,7 +20,8 @@ function createService(options: {
   } as AtsProviderConfig;
 
   const callService = {
-    ingestCallEvent: options.ingest ?? vi.fn().mockResolvedValue(undefined),
+    ingestCallEvent:
+      options.ingest ?? vi.fn().mockResolvedValue({ callId: 'call-1', isFirstSeen: true }),
   } as unknown as AtsCallService;
 
   const callRedirect = {
@@ -28,7 +29,7 @@ function createService(options: {
   } as unknown as AtsCallRedirectService;
 
   const publisher = {
-    publishIncomingStart: options.publish ?? vi.fn().mockResolvedValue(undefined),
+    publishAfterWebhook: options.publish ?? vi.fn().mockResolvedValue(undefined),
   } as unknown as AtsCallRealtimePublisher;
 
   const recordingEnqueue = {
@@ -93,19 +94,22 @@ describe('AtsWebhookService', () => {
     });
   });
 
-  it('publishes incoming-call SSE after ingest', async () => {
-    const ingest = vi.fn().mockResolvedValue(undefined);
+  it('publishes call lifecycle SSE after ingest', async () => {
+    const ingest = vi.fn().mockResolvedValue({ callId: 'evt-1', isFirstSeen: true });
     const publish = vi.fn().mockResolvedValue(undefined);
     const service = createService({ ingest, publish });
 
     await service.handleWebhook('test-ats-key', startBody);
     expect(ingest).toHaveBeenCalled();
-    expect(publish).toHaveBeenCalled();
+    expect(publish).toHaveBeenCalledWith(expect.objectContaining({ uid: 'call-1' }), {
+      callId: 'evt-1',
+      isFirstSeen: true,
+    });
     expect(ingest).toHaveBeenCalledBefore(publish);
   });
 
   it('still returns success when SSE publish throws', async () => {
-    const ingest = vi.fn().mockResolvedValue(undefined);
+    const ingest = vi.fn().mockResolvedValue({ callId: 'evt-1', isFirstSeen: true });
     const publish = vi.fn().mockRejectedValue(new Error('sse down'));
     const service = createService({ ingest, publish });
 

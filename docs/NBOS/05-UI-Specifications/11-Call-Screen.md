@@ -2,7 +2,7 @@
 
 > Полноэкранное окно текущего звонка. Не sheet и не toast.
 >
-> **Runtime (Phase 2):** app-shell incoming-call modal (SSE). This document remains the target for the full Call Screen (answered / finished / player / note).
+> **Runtime:** app-shell fullscreen Active Call Screen. SSE `call.started` / `call.answered` / `call.finished`; snapshot via `GET /crm/calls/:id/screen`. Note after end (`PATCH /crm/calls/:id/note`). Popup is not the source of call state.
 >
 > Продукт: [`../02-Modules/01-CRM/08-Calls-and-Telephony.md`](../02-Modules/01-CRM/08-Calls-and-Telephony.md).  
 > Visual model шитов: [`10-Entity-Detail-Sheet-Standard.md`](10-Entity-Detail-Sheet-Standard.md) — к этому окну не применять.

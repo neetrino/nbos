@@ -1,20 +1,20 @@
-import type { CallSseEventName } from './call-realtime.constants';
+import type { CallLifecycleSseEventName, CallSseEventName } from './call-realtime.constants';
 
-export interface IncomingCallSsePayload {
-  type: 'incoming_call';
+export type ActiveCallPhase = 'ringing' | 'answered' | 'ended';
+export type ActiveCallDirection = 'INBOUND' | 'OUTBOUND';
+
+/** Lean SSE body. Full CRM context is loaded via GET /crm/calls/:id/screen. */
+export interface ActiveCallSsePayload {
+  type: CallLifecycleSseEventName;
   callId: string;
-  direction: 'INBOUND';
+  uid: string;
+  direction: ActiveCallDirection;
+  phase: ActiveCallPhase;
   phone: string | null;
-  contactName: string | null;
-  leadName: string | null;
-  dealName: string | null;
-  responsibleEmployeeName: string | null;
-  leadId: string | null;
-  contactId: string | null;
-  dealId: string | null;
+  displayName: string | null;
 }
 
-export interface IncomingCallBusMessage {
+export interface ActiveCallBusMessage {
   event: CallSseEventName;
-  payload: IncomingCallSsePayload & { employeeId: string };
+  payload: ActiveCallSsePayload & { employeeId: string };
 }

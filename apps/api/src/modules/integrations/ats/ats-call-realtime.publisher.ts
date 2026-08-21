@@ -1,48 +1,56 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import { CALL_SSE_EVENT } from '../../realtime/call-realtime.constants';
+import { mapCallDirection } from '../../crm/calls/call-response.map';
+import {
+  CALL_SSE_EVENT,
+  type CallLifecycleSseEventName,
+} from '../../realtime/call-realtime.constants';
 import { CallRealtimeEventBus } from '../../realtime/call-realtime-event-bus';
-import type { IncomingCallSsePayload } from '../../realtime/call-realtime.types';
-import { ATS_CALLDIRECT_INBOUND, ATS_STATE_START } from './ats.constants';
+import type { ActiveCallSsePayload } from '../../realtime/call-realtime.types';
+import { mapAtsStateToPhase, resolveCallLifecycleEvent } from './ats-call-realtime.phase';
+import { formatPersonName, resolveLifecycleTarget } from './ats-call-realtime.target';
 import type { AtsWebhookPayload } from './ats.types';
 
-const CALL_SNAPSHOT_SELECT = {
+const LIFECYCLE_SELECT = {
   id: true,
+  uid: true,
   phone: true,
   clid: true,
-  answeredEmployeeId: true,
+  state: true,
+  calldirect: true,
+  initiatedByEmployeeId: true,
   responsibleEmployeeId: true,
-  leadId: true,
-  contactId: true,
-  dealId: true,
+  answeredEmployeeId: true,
   lead: { select: { name: true, contactName: true } },
   contact: { select: { firstName: true, lastName: true } },
-  deal: { select: { name: true, code: true } },
+  initiatedByEmployee: { select: { firstName: true, lastName: true } },
   responsibleEmployee: { select: { firstName: true, lastName: true } },
   answeredEmployee: { select: { firstName: true, lastName: true } },
 } as const;
 
-type CallSnapshot = {
+export type AtsCallIngestMeta = {
+  callId: string;
+  isFirstSeen: boolean;
+};
+
+type LifecycleCallRow = {
   id: string;
+  uid: string;
   phone: string | null;
   clid: string | null;
-  answeredEmployeeId: string | null;
+  state: string | null;
+  calldirect: string | null;
+  initiatedByEmployeeId: string | null;
   responsibleEmployeeId: string | null;
-  leadId: string | null;
-  contactId: string | null;
-  dealId: string | null;
+  answeredEmployeeId: string | null;
   lead: { name: string | null; contactName: string } | null;
   contact: { firstName: string; lastName: string } | null;
-  deal: { name: string | null; code: string } | null;
+  initiatedByEmployee: { firstName: string; lastName: string } | null;
   responsibleEmployee: { firstName: string; lastName: string } | null;
   answeredEmployee: { firstName: string; lastName: string } | null;
 };
 
-/**
- * Publishes incoming-call SSE after Phase 1 ingest has committed.
- * Failures are logged and never thrown.
- */
 @Injectable()
 export class AtsCallRealtimePublisher {
   private readonly logger = new Logger(AtsCallRealtimePublisher.name);
@@ -52,82 +60,78 @@ export class AtsCallRealtimePublisher {
     private readonly eventBus: CallRealtimeEventBus,
   ) {}
 
-  async publishIncomingStart(payload: AtsWebhookPayload): Promise<void> {
-    if (!isInboundStart(payload)) return;
+  async publishAfterWebhook(payload: AtsWebhookPayload, ingest: AtsCallIngestMeta): Promise<void> {
     try {
-      const call = await this.prisma.atsCallEvent.findUnique({
-        where: { uid: payload.uid },
-        select: CALL_SNAPSHOT_SELECT,
-      });
-      if (!call) return;
-
-      const target = resolveIncomingCallTarget(call);
-      if (!target) {
-        this.logger.debug({ event: 'ats_incoming_call_sse_skipped', uid: payload.uid });
-        return;
-      }
-
-      await this.eventBus.publish({
-        event: CALL_SSE_EVENT.INCOMING_CALL,
-        payload: { employeeId: target.employeeId, ...toIncomingCallPayload(call, target.name) },
-      });
+      const eventName = resolveCallLifecycleEvent(payload, ingest.isFirstSeen);
+      if (!eventName) return;
+      await this.publishNamed(ingest.callId, eventName, payload);
     } catch (err) {
       this.logger.error({
-        event: 'ats_incoming_call_sse_failed',
+        event: 'ats_call_sse_failed',
         uid: payload.uid,
         error: String(err),
       });
     }
   }
-}
 
-export function isInboundStart(payload: AtsWebhookPayload): boolean {
-  const state = payload.state?.toLowerCase() ?? '';
-  return payload.calldirect === ATS_CALLDIRECT_INBOUND && state === ATS_STATE_START;
-}
-
-export function resolveIncomingCallTarget(call: {
-  answeredEmployeeId: string | null;
-  responsibleEmployeeId: string | null;
-  answeredEmployee: { firstName: string; lastName: string } | null;
-  responsibleEmployee: { firstName: string; lastName: string } | null;
-}): { employeeId: string; name: string | null } | null {
-  if (call.answeredEmployeeId) {
-    return {
-      employeeId: call.answeredEmployeeId,
-      name: formatPersonName(call.answeredEmployee),
-    };
+  async publishStartedToEmployee(callId: string, employeeId: string): Promise<void> {
+    try {
+      const call = await this.loadCall(callId);
+      if (!call) return;
+      await this.eventBus.publish({
+        event: CALL_SSE_EVENT.STARTED,
+        payload: { employeeId, ...toSsePayload(call, CALL_SSE_EVENT.STARTED) },
+      });
+    } catch (err) {
+      this.logger.error({ event: 'ats_call_sse_failed', callId, error: String(err) });
+    }
   }
-  if (call.responsibleEmployeeId) {
-    return {
-      employeeId: call.responsibleEmployeeId,
-      name: formatPersonName(call.responsibleEmployee),
-    };
+
+  private async publishNamed(
+    callId: string,
+    eventName: CallLifecycleSseEventName,
+    payload: AtsWebhookPayload,
+  ): Promise<void> {
+    const call = await this.loadCall(callId);
+    if (!call) return;
+    const target = resolveLifecycleTarget(payload, call);
+    if (!target) {
+      this.logger.debug({ event: 'ats_call_sse_skipped', uid: payload.uid, sse: eventName });
+      return;
+    }
+    await this.eventBus.publish({
+      event: eventName,
+      payload: { employeeId: target.employeeId, ...toSsePayload(call, eventName) },
+    });
   }
-  return null;
+
+  private loadCall(callId: string): Promise<LifecycleCallRow | null> {
+    return this.prisma.atsCallEvent.findUnique({
+      where: { id: callId },
+      select: LIFECYCLE_SELECT,
+    });
+  }
 }
 
-export function toIncomingCallPayload(
-  call: CallSnapshot,
-  responsibleEmployeeName: string | null,
-): IncomingCallSsePayload {
+export function toSsePayload(
+  call: Pick<
+    LifecycleCallRow,
+    'id' | 'uid' | 'phone' | 'clid' | 'state' | 'calldirect' | 'contact' | 'lead'
+  >,
+  eventName: CallLifecycleSseEventName,
+): ActiveCallSsePayload {
+  const direction = mapCallDirection(call.calldirect) ?? 'INBOUND';
   return {
-    type: 'incoming_call',
+    type: eventName,
     callId: call.id,
-    direction: 'INBOUND',
+    uid: call.uid,
+    direction,
+    phase: mapAtsStateToPhase(call.state),
     phone: call.phone ?? call.clid,
-    contactName: formatPersonName(call.contact),
-    leadName: call.lead?.name?.trim() || call.lead?.contactName?.trim() || null,
-    dealName: call.deal?.name?.trim() || call.deal?.code?.trim() || null,
-    responsibleEmployeeName,
-    leadId: call.leadId,
-    contactId: call.contactId,
-    dealId: call.dealId,
+    displayName:
+      formatPersonName(call.contact) ||
+      call.lead?.name?.trim() ||
+      call.lead?.contactName?.trim() ||
+      null,
   };
-}
-
-function formatPersonName(person: { firstName: string; lastName: string } | null): string | null {
-  if (!person) return null;
-  const name = `${person.firstName} ${person.lastName}`.trim();
-  return name.length > 0 ? name : null;
 }

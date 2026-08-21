@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -15,8 +16,10 @@ import { CurrentUser, type CurrentUserPayload, SkipTransform } from '../../../co
 import { CallsRecordingService } from './calls-recording.service';
 import { CallsService } from './calls.service';
 import { ClickToCallService } from './click-to-call.service';
+import { ActiveCallScreenService } from './active-call-screen.service';
 import { ListCallsQueryDto } from './dto/list-calls-query.dto';
 import { StartClickToCallDto } from './dto/start-click-to-call.dto';
+import { UpdateCallNoteDto } from './dto/update-call-note.dto';
 
 @ApiTags('CRM / Calls')
 @ApiBearerAuth()
@@ -26,6 +29,7 @@ export class CallsController {
     private readonly callsService: CallsService,
     private readonly recordingService: CallsRecordingService,
     private readonly clickToCall: ClickToCallService,
+    private readonly activeCallScreen: ActiveCallScreenService,
   ) {}
 
   @Get()
@@ -44,6 +48,22 @@ export class CallsController {
   @ApiOperation({ summary: 'Start an outbound ATS click-to-call from a CRM object' })
   startClickToCall(@CurrentUser() user: CurrentUserPayload, @Body() body: StartClickToCallDto) {
     return this.clickToCall.start(body, user);
+  }
+
+  @Get(':id/screen')
+  @ApiOperation({ summary: 'Active Call Screen snapshot for one AtsCallEvent' })
+  getScreen(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.activeCallScreen.getScreen(id, user.permissions ?? {});
+  }
+
+  @Patch(':id/note')
+  @ApiOperation({ summary: 'Save a note on a Call after it ends' })
+  updateNote(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: UpdateCallNoteDto,
+  ) {
+    return this.activeCallScreen.updateNote(id, body.note?.trim() || null, user.permissions ?? {});
   }
 
   @Get(':id/recording')

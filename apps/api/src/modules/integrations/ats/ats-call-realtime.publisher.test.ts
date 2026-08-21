@@ -1,136 +1,115 @@
 import { describe, expect, it, vi } from 'vitest';
 import { CALL_SSE_EVENT } from '../../realtime/call-realtime.constants';
-import {
-  AtsCallRealtimePublisher,
-  isInboundStart,
-  resolveIncomingCallTarget,
-} from './ats-call-realtime.publisher';
+import { AtsCallRealtimePublisher } from './ats-call-realtime.publisher';
 import { inboundStart } from './ats-call.test-harness';
 
-describe('isInboundStart', () => {
-  it('is true only for inbound start', () => {
-    expect(isInboundStart(inboundStart())).toBe(true);
-    expect(isInboundStart(inboundStart({ calldirect: '1' }))).toBe(false);
-    expect(isInboundStart(inboundStart({ state: 'finish' }))).toBe(false);
-  });
-});
+const CALL_ROW = {
+  id: 'call-1',
+  uid: 'uid-1',
+  phone: '+37499123456',
+  clid: '+37499123456',
+  state: 'start',
+  calldirect: '0',
+  initiatedByEmployeeId: null,
+  responsibleEmployeeId: 'emp-edgar',
+  answeredEmployeeId: null,
+  lead: { name: 'Website project', contactName: 'Incoming call +37499123456' },
+  contact: null,
+  initiatedByEmployee: null,
+  responsibleEmployee: { firstName: 'Edgar', lastName: 'Sargsyan' },
+  answeredEmployee: null,
+};
 
-describe('resolveIncomingCallTarget', () => {
-  it('prefers answeredEmployeeId over responsibleEmployeeId', () => {
-    expect(
-      resolveIncomingCallTarget({
-        answeredEmployeeId: 'emp-answered',
-        responsibleEmployeeId: 'emp-responsible',
-        answeredEmployee: { firstName: 'Edgar', lastName: 'Sargsyan' },
-        responsibleEmployee: { firstName: 'Ivan', lastName: 'Petrosyan' },
-      }),
-    ).toEqual({ employeeId: 'emp-answered', name: 'Edgar Sargsyan' });
-  });
-
-  it('falls back to responsibleEmployeeId', () => {
-    expect(
-      resolveIncomingCallTarget({
-        answeredEmployeeId: null,
-        responsibleEmployeeId: 'emp-responsible',
-        answeredEmployee: null,
-        responsibleEmployee: { firstName: 'Edgar', lastName: 'Sargsyan' },
-      }),
-    ).toEqual({ employeeId: 'emp-responsible', name: 'Edgar Sargsyan' });
-  });
-
-  it('returns null when no employee is linked', () => {
-    expect(
-      resolveIncomingCallTarget({
-        answeredEmployeeId: null,
-        responsibleEmployeeId: null,
-        answeredEmployee: null,
-        responsibleEmployee: null,
-      }),
-    ).toBeNull();
-  });
-});
+function createPublisher() {
+  const publish = vi.fn().mockResolvedValue(undefined);
+  const prisma = {
+    atsCallEvent: { findUnique: vi.fn().mockResolvedValue(CALL_ROW) },
+  };
+  const publisher = new AtsCallRealtimePublisher(prisma as never, { publish } as never);
+  return { publisher, publish, prisma };
+}
 
 describe('AtsCallRealtimePublisher', () => {
-  it('publishes incoming_call to the resolved employee after ingest', async () => {
-    const publish = vi.fn().mockResolvedValue(undefined);
-    const prisma = {
-      atsCallEvent: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: 'call-1',
-          phone: '+37499123456',
-          clid: '+37499123456',
-          answeredEmployeeId: null,
-          responsibleEmployeeId: 'emp-edgar',
-          leadId: 'lead-1',
-          contactId: null,
-          dealId: null,
-          lead: { name: 'Website project', contactName: 'Incoming call +37499123456' },
-          contact: null,
-          deal: null,
-          responsibleEmployee: { firstName: 'Edgar', lastName: 'Sargsyan' },
-          answeredEmployee: null,
-        }),
-      },
-    };
-    const publisher = new AtsCallRealtimePublisher(prisma as never, { publish } as never);
+  it('publishes call.started to the responsible on inbound start', async () => {
+    const { publisher, publish } = createPublisher();
 
-    await publisher.publishIncomingStart(inboundStart({ uid: 'uid-1' }));
+    await publisher.publishAfterWebhook(inboundStart({ uid: 'uid-1' }), {
+      callId: 'call-1',
+      isFirstSeen: true,
+    });
 
     expect(publish).toHaveBeenCalledWith({
-      event: CALL_SSE_EVENT.INCOMING_CALL,
+      event: CALL_SSE_EVENT.STARTED,
       payload: expect.objectContaining({
         employeeId: 'emp-edgar',
-        type: 'incoming_call',
+        type: CALL_SSE_EVENT.STARTED,
         callId: 'call-1',
         direction: 'INBOUND',
+        phase: 'ringing',
         phone: '+37499123456',
-        leadName: 'Website project',
-        responsibleEmployeeName: 'Edgar Sargsyan',
       }),
     });
   });
 
-  it('does not publish when the Call has no employee', async () => {
-    const publish = vi.fn();
-    const prisma = {
-      atsCallEvent: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: 'call-2',
-          phone: '+37499123456',
-          clid: '+37499123456',
-          answeredEmployeeId: null,
-          responsibleEmployeeId: null,
-          leadId: 'lead-1',
-          contactId: null,
-          dealId: null,
-          lead: null,
-          contact: null,
-          deal: null,
-          responsibleEmployee: null,
-          answeredEmployee: null,
-        }),
-      },
-    };
-    const publisher = new AtsCallRealtimePublisher(prisma as never, { publish } as never);
+  it('does not publish inbound start without an employee', async () => {
+    const { publisher, publish, prisma } = createPublisher();
+    prisma.atsCallEvent.findUnique.mockResolvedValue({
+      ...CALL_ROW,
+      responsibleEmployeeId: null,
+      responsibleEmployee: null,
+    });
 
-    await publisher.publishIncomingStart(inboundStart({ uid: 'uid-unknown' }));
+    await publisher.publishAfterWebhook(inboundStart(), {
+      callId: 'call-1',
+      isFirstSeen: true,
+    });
 
     expect(publish).not.toHaveBeenCalled();
   });
 
-  it('swallows bus failures so ingest stays successful', async () => {
-    const prisma = {
-      atsCallEvent: {
-        findUnique: vi.fn().mockRejectedValue(new Error('redis down')),
-      },
-    };
-    const publisher = new AtsCallRealtimePublisher(
-      prisma as never,
-      {
-        publish: vi.fn(),
-      } as never,
-    );
+  it('publishes call.answered to the op employee', async () => {
+    const { publisher, publish, prisma } = createPublisher();
+    prisma.atsCallEvent.findUnique.mockResolvedValue({
+      ...CALL_ROW,
+      state: 'status',
+      answeredEmployeeId: 'emp-ans',
+      answeredEmployee: { firstName: 'Ans', lastName: 'Op' },
+    });
 
-    await expect(publisher.publishIncomingStart(inboundStart())).resolves.toBeUndefined();
+    await publisher.publishAfterWebhook(inboundStart({ state: 'status' }), {
+      callId: 'call-1',
+      isFirstSeen: false,
+    });
+
+    expect(publish).toHaveBeenCalledWith({
+      event: CALL_SSE_EVENT.ANSWERED,
+      payload: expect.objectContaining({
+        employeeId: 'emp-ans',
+        type: CALL_SSE_EVENT.ANSWERED,
+        phase: 'answered',
+      }),
+    });
+  });
+
+  it('does not publish first-seen finish', async () => {
+    const { publisher, publish } = createPublisher();
+
+    await publisher.publishAfterWebhook(inboundStart({ state: 'finish' }), {
+      callId: 'call-1',
+      isFirstSeen: true,
+    });
+
+    expect(publish).not.toHaveBeenCalled();
+  });
+
+  it('swallows lookup failures so ingest stays successful', async () => {
+    const prisma = {
+      atsCallEvent: { findUnique: vi.fn().mockRejectedValue(new Error('redis down')) },
+    };
+    const publisher = new AtsCallRealtimePublisher(prisma as never, { publish: vi.fn() } as never);
+
+    await expect(
+      publisher.publishAfterWebhook(inboundStart(), { callId: 'call-1', isFirstSeen: true }),
+    ).resolves.toBeUndefined();
   });
 });

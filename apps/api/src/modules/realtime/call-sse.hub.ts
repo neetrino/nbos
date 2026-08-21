@@ -1,9 +1,9 @@
 import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import type { Response } from 'express';
 import { randomUUID } from 'node:crypto';
-import { CALL_SSE_EVENT, CALL_SSE_HEARTBEAT_MS } from './call-realtime.constants';
+import { CALL_SSE_HEARTBEAT_MS } from './call-realtime.constants';
 import { CallRealtimeEventBus, type CallRealtimeHandler } from './call-realtime-event-bus';
-import type { IncomingCallBusMessage, IncomingCallSsePayload } from './call-realtime.types';
+import type { ActiveCallBusMessage, ActiveCallSsePayload } from './call-realtime.types';
 import { applySseResponseHeaders, writeSseComment, writeSseFrame } from './notification-sse.util';
 
 type SseConnection = {
@@ -67,21 +67,21 @@ export class CallSseHub implements OnModuleInit, OnModuleDestroy {
     return this.connections.size;
   }
 
-  deliverForTest(message: IncomingCallBusMessage): void {
+  deliverForTest(message: ActiveCallBusMessage): void {
     this.deliverToEmployee(message);
   }
 
-  private deliverToEmployee(message: IncomingCallBusMessage): void {
+  private deliverToEmployee(message: ActiveCallBusMessage): void {
     const employeeId = message.payload.employeeId;
     const ids = this.byEmployee.get(employeeId);
     if (!ids || ids.size === 0) return;
 
-    const clientPayload: IncomingCallSsePayload = toClientPayload(message.payload);
+    const clientPayload: ActiveCallSsePayload = toClientPayload(message.payload);
     for (const connectionId of [...ids]) {
       const connection = this.connections.get(connectionId);
       if (!connection) continue;
       writeSseFrame(connection.res, {
-        event: CALL_SSE_EVENT.INCOMING_CALL,
+        event: message.event,
         id: String(this.nextFrameId++),
         data: JSON.stringify(clientPayload),
       });
@@ -102,18 +102,14 @@ export class CallSseHub implements OnModuleInit, OnModuleDestroy {
   }
 }
 
-function toClientPayload(payload: IncomingCallBusMessage['payload']): IncomingCallSsePayload {
+function toClientPayload(payload: ActiveCallBusMessage['payload']): ActiveCallSsePayload {
   return {
-    type: 'incoming_call',
+    type: payload.type,
     callId: payload.callId,
+    uid: payload.uid,
     direction: payload.direction,
+    phase: payload.phase,
     phone: payload.phone,
-    contactName: payload.contactName,
-    leadName: payload.leadName,
-    dealName: payload.dealName,
-    responsibleEmployeeName: payload.responsibleEmployeeName,
-    leadId: payload.leadId,
-    contactId: payload.contactId,
-    dealId: payload.dealId,
+    displayName: payload.displayName,
   };
 }

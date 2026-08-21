@@ -4,6 +4,43 @@ export const CRM_ACTIVITY_TYPE_CALL = 'CALL' as const;
 
 export type CallDirection = 'INBOUND' | 'OUTBOUND';
 export type CallRecordingStatus = 'PENDING' | 'DOWNLOADING' | 'READY' | 'FAILED';
+export type ActiveCallPhase = 'ringing' | 'answered' | 'ended';
+
+export interface ActiveCallScreenSnapshot {
+  callId: string;
+  uid: string;
+  direction: CallDirection | null;
+  phase: ActiveCallPhase;
+  phone: string | null;
+  displayName: string | null;
+  contact: {
+    id: string | null;
+    name: string | null;
+    companyName: string | null;
+    phones: string[];
+  };
+  deal: {
+    id: string | null;
+    name: string | null;
+    stage: string | null;
+    amount: string | null;
+  };
+  projectName: string | null;
+  productName: string | null;
+  leadId: string | null;
+  leadName: string | null;
+  durationSec: number | null;
+  disposition: string | null;
+  note: string | null;
+  recordingStatus: CallRecordingStatus | null;
+  recentCalls: Array<{
+    id: string;
+    direction: CallDirection | null;
+    phase: ActiveCallPhase;
+    createdAt: string;
+    durationSec: number | null;
+  }>;
+}
 
 export interface CallActivity {
   type: typeof CRM_ACTIVITY_TYPE_CALL;
@@ -60,6 +97,14 @@ export const callsApi = {
     targetId: string;
   }): Promise<CallActivity> {
     const resp = await api.post<CallActivity>('/api/crm/calls/click-to-call', body);
+    return resp.data;
+  },
+  async getScreen(id: string): Promise<ActiveCallScreenSnapshot> {
+    const resp = await api.get<ActiveCallScreenSnapshot>(`/api/crm/calls/${id}/screen`);
+    return resp.data;
+  },
+  async updateNote(id: string, note: string | null): Promise<ActiveCallScreenSnapshot> {
+    const resp = await api.patch<ActiveCallScreenSnapshot>(`/api/crm/calls/${id}/note`, { note });
     return resp.data;
   },
 };

@@ -7,11 +7,18 @@ import { CallsRecordingService } from './calls-recording.service';
 import { CallsService } from './calls.service';
 import { ClickToCallService } from './click-to-call.service';
 import { ClickToCallTargetLoader } from './click-to-call-target';
+import { ActiveCallScreenService } from './active-call-screen.service';
 
 @Module({
   imports: [AuditModule, AtsModule, DriveModule],
   controllers: [CallsController],
-  providers: [CallsService, CallsRecordingService, ClickToCallService, ClickToCallTargetLoader],
+  providers: [
+    CallsService,
+    CallsRecordingService,
+    ClickToCallService,
+    ClickToCallTargetLoader,
+    ActiveCallScreenService,
+  ],
   exports: [CallsService],
 })
 export class CallsModule {}

@@ -190,6 +190,8 @@ model AtsCallEvent {
   /// CLICK_TO_CALL when NBOS started the outbound callback; null = ATS webhook ingest.
   source                  String?
   initiatedByEmployeeId   String?                      @map("initiated_by_employee_id")
+  /// Employee note after the call ends. Not an ATS field.
+  note                    String?                      @db.Text
   recordingStatus         AtsCallRecordingStatusEnum?  @map("recording_status")
   recordingFileAssetId    String?                      @map("recording_file_asset_id")
   createdAt               DateTime                     @default(now()) @map("created_at")
