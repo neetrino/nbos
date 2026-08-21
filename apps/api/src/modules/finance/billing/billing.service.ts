@@ -23,7 +23,7 @@ export interface BillingRunResult {
 }
 
 const subscriptionBillingInclude = {
-  project: { select: { id: true, code: true, name: true } },
+  project: { select: { id: true, code: true, name: true, companyId: true } },
   product: {
     select: {
       deadline: true,
@@ -202,6 +202,7 @@ export class BillingService {
         code,
         subscriptionId: sub.id,
         projectId: sub.projectId,
+        companyId: sub.project.companyId,
         amount: charge.amount,
         taxStatus: sub.taxStatus,
         type: 'SUBSCRIPTION' as Prisma.InvoiceCreateInput['type'],

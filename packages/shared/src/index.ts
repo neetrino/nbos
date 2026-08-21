@@ -15,6 +15,7 @@ export * from './projects/product-stage-gate';
 export * from './projects/extension-stage-gate';
 export * from './projects/order-payment-gate';
 export * from './finance/subscription-term';
+export * from './finance/invoice-tax-readiness';
 export * from './finance-drive-upload';
 export * from './platform-access/constants';
 export * from './platform-access/project-team-management';

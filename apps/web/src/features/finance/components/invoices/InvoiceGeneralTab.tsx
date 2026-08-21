@@ -55,9 +55,13 @@ export function InvoiceGeneralTab({
         </DetailSheetSection>
       ) : null}
 
-      <InvoiceOfficialSection invoice={invoice} onInvoiceUpdated={onInvoiceUpdated} />
+      <InvoiceOfficialSection
+        invoice={invoice}
+        onInvoiceUpdated={onInvoiceUpdated}
+        gateRequiredFields={gateRequiredFields}
+      />
 
-      <InvoiceLinkedEntitiesSection invoice={invoice} />
+      <InvoiceLinkedEntitiesSection invoice={invoice} gateRequiredFields={gateRequiredFields} />
 
       <InvoiceDescriptionSection description={invoice.description} />
 

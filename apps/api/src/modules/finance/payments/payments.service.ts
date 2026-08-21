@@ -6,6 +6,7 @@ import { SalesBonusAccrualService } from '../../bonus/sales-bonus-accrual.servic
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { getLatestPaymentDate, resolveOrderStatus, sumAmounts } from '../finance-status.utils';
 import { syncInvoiceMoneyStatusFromPayments } from '../invoices/invoice-money-status';
+import { assertInvoiceTaxMoneyStatusGate } from '../invoices/invoice-tax-readiness-assert';
 import { OperationalJournalService } from '../journal/operational-journal.service';
 import { assertPostingPeriodOpenForBookedAt } from '../journal/posting-period-guard';
 import { PartnerAccrualClassicService } from '../partner-accrual/partner-accrual-classic.service';
@@ -168,8 +169,11 @@ export class PaymentsService {
         companyId: true,
         amount: true,
         moneyStatus: true,
+        taxStatus: true,
+        officialInvoiceRequestSent: true,
         dueDate: true,
         payments: { select: { amount: true } },
+        company: { select: { name: true, taxId: true } },
         order: { select: { productId: true } },
       },
     });
@@ -194,6 +198,20 @@ export class PaymentsService {
     }
 
     const paymentDate = new Date(data.paymentDate);
+    assertInvoiceTaxMoneyStatusGate({
+      taxStatus: invoice.taxStatus,
+      currentMoneyStatus: invoice.moneyStatus,
+      targetMoneyStatus: syncInvoiceMoneyStatusFromPayments({
+        currentMoneyStatus: invoice.moneyStatus,
+        amount: invoiceAmount,
+        paid: nextPaid,
+        dueDate: invoice.dueDate,
+        now: paymentDate,
+      }),
+      companyId: invoice.companyId,
+      company: invoice.company,
+      officialInvoiceRequestSent: invoice.officialInvoiceRequestSent,
+    });
     await assertPostingPeriodOpenForBookedAt(this.prisma, paymentDate);
     const created = await this.prisma.payment.create({
       data: {
