@@ -159,14 +159,21 @@ model MetaMessage {
   @@map("meta_messages")
 }
 
+enum AtsCallRecordingStatusEnum {
+  PENDING
+  DOWNLOADING
+  READY
+  FAILED
+}
+
 /// ATS.am Active Call webhook idempotency + CRM Call snapshot (one row per call uid).
 model AtsCallEvent {
-  id                      String   @id @default(uuid())
-  uid                     String   @unique
+  id                      String                       @id @default(uuid())
+  uid                     String                       @unique
   state                   String?
   disposition             String?
   billsec                 String?
-  recordLink              String?  @map("record_link") @db.Text
+  recordLink              String?                      @map("record_link") @db.Text
   clid                    String?
   /// Normalized E.164 of `clid` when parse succeeds.
   phone                   String?
@@ -175,19 +182,26 @@ model AtsCallEvent {
   op                      String?
   channel                 String?
   rate                    String?
-  leadId                  String?  @map("lead_id")
-  contactId               String?  @map("contact_id")
-  dealId                  String?  @map("deal_id")
-  responsibleEmployeeId   String?  @map("responsible_employee_id")
-  answeredEmployeeId      String?  @map("answered_employee_id")
-  createdAt               DateTime @default(now()) @map("created_at")
-  updatedAt               DateTime @updatedAt @map("updated_at")
+  leadId                  String?                      @map("lead_id")
+  contactId               String?                      @map("contact_id")
+  dealId                  String?                      @map("deal_id")
+  responsibleEmployeeId   String?                      @map("responsible_employee_id")
+  answeredEmployeeId      String?                      @map("answered_employee_id")
+  /// CLICK_TO_CALL when NBOS started the outbound callback; null = ATS webhook ingest.
+  source                  String?
+  initiatedByEmployeeId   String?                      @map("initiated_by_employee_id")
+  recordingStatus         AtsCallRecordingStatusEnum?  @map("recording_status")
+  recordingFileAssetId    String?                      @map("recording_file_asset_id")
+  createdAt               DateTime                     @default(now()) @map("created_at")
+  updatedAt               DateTime                     @updatedAt @map("updated_at")
 
-  lead                  Lead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
-  contact               Contact?  @relation("AtsCallContact", fields: [contactId], references: [id], onDelete: SetNull)
-  deal                  Deal?     @relation("AtsCallDeal", fields: [dealId], references: [id], onDelete: SetNull)
-  responsibleEmployee   Employee? @relation("AtsCallResponsible", fields: [responsibleEmployeeId], references: [id], onDelete: SetNull)
-  answeredEmployee      Employee? @relation("AtsCallAnswered", fields: [answeredEmployeeId], references: [id], onDelete: SetNull)
+  lead                  Lead?      @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  contact               Contact?   @relation("AtsCallContact", fields: [contactId], references: [id], onDelete: SetNull)
+  deal                  Deal?      @relation("AtsCallDeal", fields: [dealId], references: [id], onDelete: SetNull)
+  responsibleEmployee   Employee?  @relation("AtsCallResponsible", fields: [responsibleEmployeeId], references: [id], onDelete: SetNull)
+  answeredEmployee      Employee?  @relation("AtsCallAnswered", fields: [answeredEmployeeId], references: [id], onDelete: SetNull)
+  initiatedByEmployee   Employee?  @relation("AtsCallInitiated", fields: [initiatedByEmployeeId], references: [id], onDelete: SetNull)
+  recordingFileAsset    FileAsset? @relation("AtsCallRecording", fields: [recordingFileAssetId], references: [id], onDelete: SetNull)
 
   @@index([leadId])
   @@index([contactId])
@@ -195,5 +209,9 @@ model AtsCallEvent {
   @@index([clid])
   @@index([phone])
   @@index([createdAt])
+  @@index([recordingFileAssetId])
+  @@index([recordingStatus])
+  @@index([initiatedByEmployeeId])
+  @@index([source, phone, createdAt])
   @@map("ats_call_events")
 }

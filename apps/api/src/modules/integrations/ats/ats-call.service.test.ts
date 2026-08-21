@@ -203,6 +203,61 @@ describe('AtsCallService', () => {
 
     expect(state.events.get('uid-op')?.answeredEmployeeId).toBe('emp-op');
   });
+
+  it('updates a pending click-to-call instead of creating a duplicate uid', async () => {
+    state.employees.push({ id: 'emp-1', sipId: '3126107' });
+    state.events.set('ctc:pending', {
+      id: 'evt-pending',
+      uid: 'ctc:pending',
+      leadId: 'lead-click',
+      contactId: null,
+      dealId: null,
+      phone: '+37499123456',
+      calldirect: '1',
+      state: 'initiated',
+      clid: '+37499123456',
+      billsec: null,
+      source: 'CLICK_TO_CALL',
+      initiatedByEmployeeId: 'emp-1',
+      createdAt: new Date(),
+      responsibleEmployeeId: 'emp-1',
+      answeredEmployeeId: null,
+    });
+
+    await service.ingestCallEvent(
+      inboundStart({
+        uid: 'ats-uid-9',
+        calldirect: '1',
+        state: 'start',
+        op: '3126107',
+        clid: '+37499123456',
+      }),
+    );
+
+    expect(state.events.size).toBe(1);
+    expect(state.events.has('ctc:pending')).toBe(false);
+    expect(state.events.get('ats-uid-9')?.id).toBe('evt-pending');
+    expect(state.events.get('ats-uid-9')?.leadId).toBe('lead-click');
+    expect(state.events.get('ats-uid-9')?.state).toBe('start');
+  });
+
+  it('does not create a second row when the same outbound webhook repeats', async () => {
+    await service.ingestCallEvent(
+      inboundStart({ uid: 'out-dup', calldirect: '1', state: 'start' }),
+    );
+    await service.ingestCallEvent(
+      inboundStart({
+        uid: 'out-dup',
+        calldirect: '1',
+        state: 'finish',
+        disposition: 'ANSWERED',
+        billsec: '12',
+      }),
+    );
+
+    expect(state.events.size).toBe(1);
+    expect(state.events.get('out-dup')?.billsec).toBe('12');
+  });
 });
 
 function openLeadRow(id: string, code: string) {

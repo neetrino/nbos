@@ -3,6 +3,7 @@ import { api } from '../api';
 export const CRM_ACTIVITY_TYPE_CALL = 'CALL' as const;
 
 export type CallDirection = 'INBOUND' | 'OUTBOUND';
+export type CallRecordingStatus = 'PENDING' | 'DOWNLOADING' | 'READY' | 'FAILED';
 
 export interface CallActivity {
   type: typeof CRM_ACTIVITY_TYPE_CALL;
@@ -23,6 +24,7 @@ export interface CallActivity {
   leadName: string | null;
   dealName: string | null;
   employeeName: string | null;
+  recordingStatus: CallRecordingStatus | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -42,6 +44,8 @@ export type CallActivityListQuery =
   | { contactId: string; leadId?: never; dealId?: never; page?: number; pageSize?: number }
   | { dealId: string; leadId?: never; contactId?: never; page?: number; pageSize?: number };
 
+export type ClickToCallTargetType = 'LEAD' | 'CONTACT' | 'DEAL';
+
 export const callsApi = {
   async list(query: CallActivityListQuery): Promise<CallActivityListData> {
     const resp = await api.get<CallActivityListData>('/api/crm/calls', { params: query });
@@ -51,4 +55,15 @@ export const callsApi = {
     const resp = await api.get<CallActivity>(`/api/crm/calls/${id}`);
     return resp.data;
   },
+  async startClickToCall(body: {
+    targetType: ClickToCallTargetType;
+    targetId: string;
+  }): Promise<CallActivity> {
+    const resp = await api.post<CallActivity>('/api/crm/calls/click-to-call', body);
+    return resp.data;
+  },
 };
+
+export function callRecordingSrc(callId: string): string {
+  return `/api/crm/calls/${callId}/recording`;
+}

@@ -26,6 +26,20 @@ describe('resolveStorageHomeContextPath', () => {
     expect(path).toBe('projects/project-P2024-001-main-site/_project');
   });
 
+  it('maps LEAD to crm/leads path', async () => {
+    const prisma = mockPrisma({
+      lead: {
+        findUnique: async () => ({
+          code: 'L-2026-0001',
+          name: 'Website project',
+          contactName: 'Incoming call +374',
+        }),
+      },
+    });
+    const path = await resolveStorageHomeContextPath(prisma, 'LEAD', 'lead-id');
+    expect(path).toBe('crm/leads/lead-L-2026-0001-website-project');
+  });
+
   it('falls back for unknown entity', async () => {
     const prisma = mockPrisma({});
     const path = await resolveStorageHomeContextPath(prisma, 'CUSTOM', 'abcdef12-3456');

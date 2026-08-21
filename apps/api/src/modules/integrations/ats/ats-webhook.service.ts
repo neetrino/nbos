@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AtsCallRealtimePublisher } from './ats-call-realtime.publisher';
+import { AtsCallRecordingEnqueueService } from './ats-call-recording-enqueue.service';
 import { AtsCallRedirectService } from './ats-call-redirect.service';
 import { AtsCallService } from './ats-call.service';
 import { AtsProviderConfig } from './ats-provider.config';
@@ -22,6 +23,7 @@ export class AtsWebhookService {
     private readonly callService: AtsCallService,
     private readonly callRedirectService: AtsCallRedirectService,
     private readonly callRealtimePublisher: AtsCallRealtimePublisher,
+    private readonly recordingEnqueue: AtsCallRecordingEnqueueService,
   ) {}
 
   async handleWebhook(
@@ -32,6 +34,7 @@ export class AtsWebhookService {
     const payload = this.parseBody(body);
     await this.callService.ingestCallEvent(payload);
     await this.publishIncomingSafely(payload);
+    await this.enqueueRecordingSafely(payload);
     const redirectCall = await this.callRedirectService.resolveRedirectCall(payload);
     if (!redirectCall) {
       return ATS_WEBHOOK_SUCCESS;
@@ -45,6 +48,18 @@ export class AtsWebhookService {
     } catch (err) {
       this.logger.error({
         event: 'ats_incoming_call_sse_failed',
+        uid: payload.uid,
+        error: String(err),
+      });
+    }
+  }
+
+  private async enqueueRecordingSafely(payload: AtsWebhookPayload): Promise<void> {
+    try {
+      await this.recordingEnqueue.enqueueAfterWebhook(payload);
+    } catch (err) {
+      this.logger.error({
+        event: 'ats_recording_enqueue_failed',
         uid: payload.uid,
         error: String(err),
       });

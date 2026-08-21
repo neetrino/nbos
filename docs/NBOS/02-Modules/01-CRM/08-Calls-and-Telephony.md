@@ -2,7 +2,7 @@
 
 > NBOS Platform — звонки как активность CRM, не отдельная воронка.
 >
-> **Статус:** канон Accepted (2026-08-20). Runtime: Call core + incoming-call SSE + CALL activities on Lead/Deal History and Contact Communication. Запись, исходящий callback и сверка history — следующий срез.
+> **Статус:** канон Accepted (2026-08-20). Runtime: Call core + incoming-call SSE + CALL activities + recording FileAsset/playback + click-to-call. Сверка history — следующий срез.
 >
 > Провайдер: ATS.am. Контракт API: [`../../06-Integrations/09-ATS-AM-Integration.md`](../../06-Integrations/09-ATS-AM-Integration.md).  
 > Окно звонка (UI): [`../../05-UI-Specifications/11-Call-Screen.md`](../../05-UI-Specifications/11-Call-Screen.md).  
@@ -33,6 +33,7 @@
 | `note`                               | Заметка сотрудника после звонка                                          |
 | `rate`                               | Оценка 0–5 с ATS, если пришла                                            |
 | `recordingFileAssetId`               | Файл в Drive, не вечная ссылка ATS                                       |
+| `recordingStatus`                    | `PENDING` → `DOWNLOADING` → `READY` \| `FAILED`; `null` = нет записи     |
 
 **Contact на звонке не создаём.** Contact появляется позже (SQL / Clients), как у Meta DM.
 

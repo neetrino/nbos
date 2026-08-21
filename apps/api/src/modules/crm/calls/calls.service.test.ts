@@ -29,6 +29,7 @@ const CALL_ROW = {
   deal: { name: 'Corporate website', code: 'D-1' },
   responsibleEmployee: { firstName: 'Edgar', lastName: 'Sargsyan' },
   answeredEmployee: { firstName: 'Edgar', lastName: 'Sargsyan' },
+  recordingStatus: null,
 };
 
 const CALL_WITHOUT_CONTACT = {
@@ -68,6 +69,7 @@ describe('CallsService', () => {
       contactName: 'John Smith',
       leadName: 'Website project',
       employeeName: 'Edgar Sargsyan',
+      recordingStatus: null,
     });
   });
 

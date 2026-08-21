@@ -23,6 +23,9 @@ export interface AtsIngestEventRow {
   state: string | null;
   clid: string | null;
   billsec: string | null;
+  source: string | null;
+  initiatedByEmployeeId: string | null;
+  createdAt: Date;
   responsibleEmployeeId: string | null;
   answeredEmployeeId: string | null;
 }
@@ -101,6 +104,9 @@ function createEventMocks(state: AtsIngestTestState) {
             state: data.state ?? null,
             clid: data.clid ?? null,
             billsec: data.billsec ?? null,
+            source: data.source ?? null,
+            initiatedByEmployeeId: data.initiatedByEmployeeId ?? null,
+            createdAt: data.createdAt ?? new Date(),
             responsibleEmployeeId: data.responsibleEmployeeId ?? null,
             answeredEmployeeId: data.answeredEmployeeId ?? null,
           };
@@ -114,10 +120,22 @@ function createEventMocks(state: AtsIngestTestState) {
         async ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
           const row = [...state.events.values()].find((item) => item.id === where.id);
           if (!row) throw new Error('missing event');
+          const previousUid = row.uid;
           Object.assign(row, data);
+          if (row.uid !== previousUid) {
+            state.events.delete(previousUid);
+            state.events.set(row.uid, row);
+          }
           return row;
         },
       ),
+    findFirst: vi.fn().mockImplementation(async ({ where }: { where: EventFindWhere }) => {
+      const matches = [...state.events.values()].filter((row) => matchesEventWhere(row, where));
+      return (
+        matches.sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())[0] ??
+        null
+      );
+    }),
     findMany: vi.fn(),
     count: vi.fn(),
   };
@@ -276,4 +294,25 @@ interface DealFindWhere {
   contactId?: string;
   leadId?: string;
   status?: { notIn?: string[] };
+}
+
+interface EventFindWhere {
+  source?: string;
+  state?: string;
+  phone?: string;
+  calldirect?: string;
+  initiatedByEmployeeId?: string;
+  createdAt?: { gte?: Date };
+}
+
+function matchesEventWhere(row: AtsIngestEventRow, where: EventFindWhere): boolean {
+  if (where.source && row.source !== where.source) return false;
+  if (where.state && row.state !== where.state) return false;
+  if (where.phone && row.phone !== where.phone) return false;
+  if (where.calldirect && row.calldirect !== where.calldirect) return false;
+  if (where.initiatedByEmployeeId && row.initiatedByEmployeeId !== where.initiatedByEmployeeId) {
+    return false;
+  }
+  if (where.createdAt?.gte && row.createdAt < where.createdAt.gte) return false;
+  return true;
 }

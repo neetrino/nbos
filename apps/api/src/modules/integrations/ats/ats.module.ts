@@ -1,6 +1,12 @@
 import { Module } from '@nestjs/common';
+import { DriveModule } from '../../drive/drive.module';
 import { AtsCallContextResolver } from './ats-call-context.resolver';
 import { AtsCallRealtimePublisher } from './ats-call-realtime.publisher';
+import { AtsCallbackClient } from './ats-callback.client';
+import { AtsCallRecordClient } from './ats-call-record.client';
+import { AtsCallRecordingDownloadService } from './ats-call-recording-download.service';
+import { AtsCallRecordingEnqueueService } from './ats-call-recording-enqueue.service';
+import { AtsCallRecordingQueueService } from './ats-call-recording-queue.service';
 import { AtsCallRedirectService } from './ats-call-redirect.service';
 import { AtsCallService } from './ats-call.service';
 import { AtsController } from './ats.controller';
@@ -8,6 +14,7 @@ import { AtsProviderConfig } from './ats-provider.config';
 import { AtsWebhookService } from './ats-webhook.service';
 
 @Module({
+  imports: [DriveModule],
   controllers: [AtsController],
   providers: [
     AtsProviderConfig,
@@ -16,6 +23,18 @@ import { AtsWebhookService } from './ats-webhook.service';
     AtsCallContextResolver,
     AtsCallRedirectService,
     AtsCallRealtimePublisher,
+    AtsCallRecordClient,
+    AtsCallbackClient,
+    AtsCallRecordingQueueService,
+    AtsCallRecordingEnqueueService,
+    AtsCallRecordingDownloadService,
+  ],
+  exports: [
+    AtsProviderConfig,
+    AtsCallRecordClient,
+    AtsCallbackClient,
+    AtsCallRecordingQueueService,
+    AtsCallRecordingDownloadService,
   ],
 })
 export class AtsModule {}

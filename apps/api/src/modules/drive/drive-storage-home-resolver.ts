@@ -6,6 +6,7 @@ import { purposeSubfolder } from './drive-storage-home-purpose';
 type PrismaLike = Pick<
   InstanceType<typeof PrismaClient>,
   | 'deal'
+  | 'lead'
   | 'project'
   | 'product'
   | 'extension'
@@ -34,6 +35,16 @@ async function resolveDealPath(prisma: PrismaLike, entityId: string): Promise<st
   if (!deal) return entityFallback('DEAL', entityId);
   const slug = slugifySegment(deal.name?.trim() || deal.code);
   return `crm/deals/deal-${deal.code}-${slug}`;
+}
+
+async function resolveLeadPath(prisma: PrismaLike, entityId: string): Promise<string> {
+  const lead = await prisma.lead.findUnique({
+    where: { id: entityId },
+    select: { code: true, name: true, contactName: true },
+  });
+  if (!lead) return entityFallback('LEAD', entityId);
+  const slug = slugifySegment(lead.name?.trim() || lead.contactName || lead.code);
+  return `crm/leads/lead-${lead.code}-${slug}`;
 }
 
 async function resolveProjectPath(prisma: PrismaLike, entityId: string): Promise<string> {
@@ -148,6 +159,8 @@ export async function resolveStorageHomeContextPath(
   switch (type) {
     case 'DEAL':
       return resolveDealPath(prisma, entityId);
+    case 'LEAD':
+      return resolveLeadPath(prisma, entityId);
     case 'PROJECT':
       return resolveProjectPath(prisma, entityId);
     case 'PRODUCT':

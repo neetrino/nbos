@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { ATS_CALLDIRECT_OUTBOUND, ATS_STATE_START, ATS_TERMINAL_STATES } from './ats.constants';
+import { findPendingClickToCallEvent } from './ats-call-click-to-call.reconcile';
 import { AtsCallContextResolver, type AtsCallContext } from './ats-call-context.resolver';
 import { findEmployeeIdBySip, findResponsibleEmployeeId } from './ats-call-employee.ops';
 import { createAtsLead } from './ats-call-lead.ops';
@@ -38,12 +39,18 @@ export class AtsCallService {
   ) {}
 
   async ingestCallEvent(payload: AtsWebhookPayload): Promise<void> {
-    const existing = await this.prisma.atsCallEvent.findUnique({
+    const existing = await this.findExistingCall(payload);
+    const event = await this.upsertCallEvent(payload, existing);
+    await this.applyCrmContext(payload, event, existing == null);
+  }
+
+  private async findExistingCall(payload: AtsWebhookPayload): Promise<AtsCallRow | null> {
+    const byUid = await this.prisma.atsCallEvent.findUnique({
       where: { uid: payload.uid },
       select: CALL_ROW_SELECT,
     });
-    const event = await this.upsertCallEvent(payload, existing);
-    await this.applyCrmContext(payload, event, existing == null);
+    if (byUid) return byUid;
+    return findPendingClickToCallEvent(this.prisma, payload);
   }
 
   private async upsertCallEvent(
@@ -67,7 +74,7 @@ export class AtsCallService {
     if (existing) {
       return this.prisma.atsCallEvent.update({
         where: { id: existing.id },
-        data,
+        data: { ...data, uid: payload.uid },
         select: CALL_ROW_SELECT,
       });
     }

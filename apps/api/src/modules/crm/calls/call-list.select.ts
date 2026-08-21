@@ -13,6 +13,7 @@ export const CALL_LIST_SELECT = {
   dealId: true,
   responsibleEmployeeId: true,
   answeredEmployeeId: true,
+  recordingStatus: true,
   createdAt: true,
   updatedAt: true,
   lead: { select: { name: true, contactName: true } },

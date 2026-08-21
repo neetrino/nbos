@@ -160,13 +160,15 @@ Click-to-call. Браузер **не** вызывает ATS.
 
 ## 7. Runtime сегодня vs канон
 
-| Есть в коде                                                              | Ещё нет                                                  |
-| ------------------------------------------------------------------------ | -------------------------------------------------------- |
-| Webhook, ключ, inbound/outbound CRM Call, дедуп `uid`, логика redirect   | Голый JSON ответа (сейчас может быть обёртка `{ data }`) |
-| `AtsCallEvent` = Call: `leadId`, `contactId`, `dealId`, employee context | `projectId` / `productId`, note, recording FileAsset     |
-| `GET /crm/calls`, `GET /crm/calls/:id`                                   | Callback, history reconcile, download job                |
-| Incoming-call SSE (`GET /realtime/calls`) + app-shell popup              | `call.answered` / `call.finished` windows                |
-| CALL activities on Lead/Deal History and Contact Communication           | Recording player, click-to-call                          |
+| Есть в коде                                                                                      | Ещё нет                                                  |
+| ------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+| Webhook, ключ, inbound/outbound CRM Call, дедуп `uid`, логика redirect                           | Голый JSON ответа (сейчас может быть обёртка `{ data }`) |
+| `AtsCallEvent` = Call: `leadId`, `contactId`, `dealId`, employee context, `recordingFileAssetId` | `projectId` / `productId`, note                          |
+| `GET /crm/calls`, `GET /crm/calls/:id`, `GET /crm/calls/:id/recording`                           | History reconcile                                        |
+| Incoming-call SSE (`GET /realtime/calls`) + app-shell popup                                      | `call.answered` / `call.finished` windows                |
+| CALL activities on Lead/Deal History and Contact Communication                                   |                                                          |
+| Worker `ats-call-recording-download` → Drive FileAsset                                           |                                                          |
+| `POST /crm/calls/click-to-call` → ATS `callback`; webhook reconciles pending `CLICK_TO_CALL`     |                                                          |
 
 ---
 

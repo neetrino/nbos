@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DetailSheetSettingsMenu } from '@/components/shared';
 import type { Lead } from '@/lib/api/leads';
+import { ClickToCallButton } from '@/features/crm/calls/ClickToCallButton';
 import { LeadSvyazatMenu } from './LeadSvyazatMenu';
 
 export interface LeadSheetHeaderActionsProps {
@@ -25,6 +26,7 @@ export function LeadSheetHeaderActions(props: LeadSheetHeaderActionsProps) {
   const { renderLead, isTrashView } = props;
   return (
     <>
+      <ClickToCallButton targetType="LEAD" targetId={renderLead.id} hidden={isTrashView} />
       {!isTrashView && props.onMerged ? (
         <LeadSvyazatMenu
           lead={renderLead}

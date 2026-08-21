@@ -34,6 +34,7 @@ import { DealHistoryTab } from './DealHistoryTab';
 import { DealInvoiceTab } from './DealInvoiceTab';
 import { DealCallsTab } from './DealCallsTab';
 import { DealTasksTab } from './DealTasksTab';
+import { ClickToCallButton } from '@/features/crm/calls/ClickToCallButton';
 import type { Deal } from '@/lib/api/deals';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import {
@@ -470,6 +471,7 @@ function DealSheetBody({
         onStartEditing={startEditing}
         actions={
           <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+            <ClickToCallButton targetType="DEAL" targetId={renderDeal.id} hidden={isTrashView} />
             {!isTrashView ? (
               <DealSheetQuickActions
                 deal={renderDeal}

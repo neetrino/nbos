@@ -1,6 +1,7 @@
 import type { CallActivity } from '@/lib/api/calls';
 import { formatCallDuration } from './format-call-duration';
 import { CallDetailField } from './CallDetailField';
+import { CallRecordingSection } from './CallRecordingSection';
 import { callActivityTitle } from './group-call-activities';
 
 export function CallActivityDetails({ call }: { call: CallActivity }) {
@@ -24,6 +25,7 @@ export function CallActivityDetails({ call }: { call: CallActivity }) {
       <CallDetailField label="Contact" value={call.contactName} empty="New caller" />
       <CallDetailField label="Lead" value={call.leadName} />
       <CallDetailField label="Deal" value={call.dealName} empty="No open deal" />
+      <CallRecordingSection call={call} />
     </dl>
   );
 }

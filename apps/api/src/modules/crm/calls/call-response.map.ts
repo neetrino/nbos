@@ -5,6 +5,7 @@ import {
 import { CRM_ACTIVITY_TYPE_CALL } from './calls.constants';
 
 export type CallDirection = 'INBOUND' | 'OUTBOUND';
+export type CallRecordingStatus = 'PENDING' | 'DOWNLOADING' | 'READY' | 'FAILED';
 
 type PersonName = { firstName: string; lastName: string };
 
@@ -27,6 +28,7 @@ export interface CallResponse {
   leadName: string | null;
   dealName: string | null;
   employeeName: string | null;
+  recordingStatus: CallRecordingStatus | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,6 +48,7 @@ export interface CallRecord {
   dealId: string | null;
   responsibleEmployeeId: string | null;
   answeredEmployeeId: string | null;
+  recordingStatus: CallRecordingStatus | null;
   createdAt: Date;
   updatedAt: Date;
   lead?: { name: string | null; contactName: string } | null;
@@ -76,6 +79,7 @@ export function mapCallResponse(row: CallRecord): CallResponse {
     dealName: row.deal?.name?.trim() || row.deal?.code?.trim() || null,
     employeeName:
       formatPersonName(row.answeredEmployee) ?? formatPersonName(row.responsibleEmployee),
+    recordingStatus: row.recordingStatus,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
