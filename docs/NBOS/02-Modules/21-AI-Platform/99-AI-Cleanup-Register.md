@@ -52,15 +52,19 @@ Add a dedicated phase/slice before broad internal AI features.
 
 ## C. Runtime gaps
 
-### C1. AuditLog requires `userId` — MISSING
+### C1. AuditLog requires `userId` — OK
 
-Current Prisma `AuditLog.userId` and AuditService assume every actor is an Employee.
+Chat 1 made `userId` optional and added `actorType` / `actorId` / `onBehalfOf*` / channel / protocol / `correlationId` / safe `clientMetadata`.
 
-Target: actor-aware audit while preserving old rows and human audit APIs.
+Historical rows are backfilled as `USER` + `actorId = userId`. Human `AuditService.log({ userId })` still works and also writes actor fields. Machine actors write `userId = null`.
 
-### C2. Audit actor attachment resolves only Employee — MISSING
+Migration: `20260821150000_audit_actor_aware`.
 
-Need normalized actor display resolution.
+### C2. Audit actor attachment resolves only Employee — PARTIAL
+
+Employees still resolve by id. Machine actors resolve to stable type labels (`External Agent`, `Internal AI`, `System`, `Automation`) without fake Employees.
+
+Chat 2 must wire `resolveExternalAgentDisplayName`. Chat 5 must wire `resolveInternalAiDisplayName`.
 
 ### C3. ResourceAccessGrant requires `employeeId` — PARTIAL
 
@@ -128,11 +132,17 @@ Not included.
 
 Not included.
 
-### E5. MCP in Phase 1 — DECIDED
+### E5. MCP in Phase 1 — STALE
 
-Optional later adapter, not required foundation.
+Cleanup previously said MCP was optional. That is stale.
 
-## F. Implementation rule
+Canonical Phase 1 sources (`03`, `08`, `09`, `10` item 43, `16`) require both REST and MCP as protocol adapters over one Actor → Policy → Capability → Domain Action → Audit path. Chat 4 implements both.
+
+## F. Chat 1 evidence
+
+2026-08-21: ActorContext + actor-aware Audit shipped. See `17-Phase-1-Chat-1-Handoff.md`.
+
+## G. Implementation rule
 
 Before closing any cleanup item, verify all three layers:
 

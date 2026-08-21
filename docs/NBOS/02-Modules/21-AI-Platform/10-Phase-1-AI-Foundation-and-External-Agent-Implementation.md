@@ -17,110 +17,118 @@ A point is complete only when implementation, negative paths, tests and document
 
 # A. Canon and runtime reconciliation
 
-1. [ ] Read `00-AI-Platform-Overview.md`.
-2. [ ] Read `01-AI-Actors-Identity-and-Access.md`.
-3. [ ] Read `02-AI-Capability-and-Action-Layer.md`.
-4. [ ] Read `03-External-Agent-Access.md`.
-5. [ ] Read `04-Internal-AI-Runtime.md`.
-6. [ ] Read `05-AI-Data-Security-and-Audit.md`.
-7. [ ] Read `06-AI-Providers-Models-and-Routing.md`.
-8. [ ] Read `07-AI-Admin-and-Connections-UX.md`.
-9. [ ] Read `08-External-Agent-Protocols-REST-and-MCP.md`.
-10. [ ] Read `09-External-Agent-API-and-MCP-Contract.md`.
-11. [ ] Read `11-Internal-Agent-Lifecycle-and-Assignments.md`.
-12. [ ] Read `12-AI-Prompts-Context-Memory-and-Knowledge.md`.
-13. [ ] Read `13-AI-Risk-and-Approval-Policy.md`.
-14. [ ] Read `14-AI-Evaluation-Usage-Cost-and-Observability.md`.
-15. [ ] Read `15-Customer-Facing-AI-Policy.md`.
-16. [ ] Read `99-AI-Cleanup-Register.md`.
-17. [ ] Read `00-Technical-Decisions-By-Module.md` global technical rules.
-18. [ ] Read Platform Access Foundation canon/runtime.
-19. [ ] Read Tasks canon and Task cleanup register.
-20. [ ] Read Drive canon relevant to Task artifacts.
-21. [ ] Read Audit runtime and schema.
-22. [ ] Read existing authentication/RBAC runtime.
-23. [ ] Read current integration/provider patterns without conflating them with AI Agent identities.
-24. [ ] Compare current `TaskStatusEnum` runtime with current Tasks canon.
-25. [ ] Confirm runtime semantics for Start Task.
-26. [ ] Confirm runtime semantics for Submit Review.
-27. [ ] Confirm canonical task discussion/comment storage.
-28. [ ] Confirm canonical task attachment/Drive linking flow.
-29. [ ] Confirm Work Space Product/Extension/Project relationship semantics.
-30. [ ] Confirm current API response/error/pagination conventions.
-31. [ ] Confirm current secret storage/encryption mechanisms usable for provider credentials.
-32. [ ] Confirm current BullMQ/worker propagation patterns for ActorContext/correlation data.
-33. [ ] Document all canon/runtime conflicts found before implementing around them.
-34. [ ] Classify each conflict as OK/PARTIAL/MISSING/STALE/BUSINESS DECISION.
-35. [ ] Produce a touched-module map for Phase 1.
+1. [x] Read `00-AI-Platform-Overview.md`.
+2. [x] Read `01-AI-Actors-Identity-and-Access.md`.
+3. [x] Read `02-AI-Capability-and-Action-Layer.md`.
+4. [x] Read `03-External-Agent-Access.md`.
+5. [x] Read `04-Internal-AI-Runtime.md`.
+6. [x] Read `05-AI-Data-Security-and-Audit.md`.
+7. [x] Read `06-AI-Providers-Models-and-Routing.md`.
+8. [x] Read `07-AI-Admin-and-Connections-UX.md`.
+9. [x] Read `08-External-Agent-Protocols-REST-and-MCP.md`.
+10. [x] Read `09-External-Agent-API-and-MCP-Contract.md`.
+11. [x] Read `11-Internal-Agent-Lifecycle-and-Assignments.md`.
+12. [x] Read `12-AI-Prompts-Context-Memory-and-Knowledge.md`.
+13. [x] Read `13-AI-Risk-and-Approval-Policy.md`.
+14. [x] Read `14-AI-Evaluation-Usage-Cost-and-Observability.md`.
+15. [x] Read `15-Customer-Facing-AI-Policy.md`.
+16. [x] Read `99-AI-Cleanup-Register.md`.
+17. [x] Read `00-Technical-Decisions-By-Module.md` global technical rules.
+18. [x] Read Platform Access Foundation canon/runtime.
+19. [x] Read Tasks canon and Task cleanup register.
+20. [x] Read Drive canon relevant to Task artifacts.
+21. [x] Read Audit runtime and schema.
+22. [x] Read existing authentication/RBAC runtime.
+23. [x] Read current integration/provider patterns without conflating them with AI Agent identities.
+24. [x] Compare current `TaskStatusEnum` runtime with current Tasks canon.
+25. [x] Confirm runtime semantics for Start Task.
+26. [x] Confirm runtime semantics for Submit Review.
+27. [x] Confirm canonical task discussion/comment storage.
+28. [x] Confirm canonical task attachment/Drive linking flow.
+29. [x] Confirm Work Space Product/Extension/Project relationship semantics.
+30. [x] Confirm current API response/error/pagination conventions.
+31. [x] Confirm current secret storage/encryption mechanisms usable for provider credentials.
+32. [x] Confirm current BullMQ/worker propagation patterns for ActorContext/correlation data.
+33. [x] Document all canon/runtime conflicts found before implementing around them.
+34. [x] Classify each conflict as OK/PARTIAL/MISSING/STALE/BUSINESS DECISION.
+35. [x] Produce a touched-module map for Phase 1.
+
+Evidence: `17-Phase-1-Chat-1-Handoff.md`.
 
 # B. Phase 1 scope lock
 
-36. [ ] Lock Phase 1 as shared AI foundation + External Workspace Agent + provider/model/internal-agent foundation.
-37. [ ] Confirm External Agent may receive `tasks.create` only via explicit grant.
-38. [ ] Confirm External Agent may receive `tasks.update` only via explicit grant.
-39. [ ] Define exact allowlisted fields for `tasks.update` from current Tasks domain rules.
-40. [ ] Confirm External Agent has no `tasks.delete` capability in Phase 1.
-41. [ ] Confirm External Agent has no unrestricted arbitrary status mutation capability.
-42. [ ] Confirm External Agent cannot force final task completion when human review is required.
-43. [ ] Confirm REST and MCP are both Phase 1 deliverables.
-44. [ ] Confirm OpenAI provider connection foundation is Phase 1.
-45. [ ] Confirm Anthropic provider connection foundation is Phase 1.
-46. [ ] Confirm model-catalog synchronization is Phase 1.
-47. [ ] Confirm FIXED model policy is Phase 1.
-48. [ ] Confirm PRIMARY_FALLBACK model policy is Phase 1.
-49. [ ] Confirm Internal Agent entity/lifecycle foundation is Phase 1.
-50. [ ] Confirm full internal employee AI chat runtime is NOT Phase 1.
-51. [ ] Confirm production Messenger auto-reply runtime is NOT Phase 1.
-52. [ ] Confirm production RAG/vector infrastructure is NOT Phase 1.
-53. [ ] Confirm adaptive/learned model routing is NOT Phase 1.
-54. [ ] Confirm automatic activation of newly discovered models is forbidden.
-55. [ ] Confirm customer-facing autonomous high-risk actions are NOT Phase 1.
+36. [x] Lock Phase 1 as shared AI foundation + External Workspace Agent + provider/model/internal-agent foundation.
+37. [x] Confirm External Agent may receive `tasks.create` only via explicit grant.
+38. [x] Confirm External Agent may receive `tasks.update` only via explicit grant.
+39. [~] Define exact allowlisted fields for `tasks.update` from current Tasks domain rules.
+40. [x] Confirm External Agent has no `tasks.delete` capability in Phase 1.
+41. [x] Confirm External Agent has no unrestricted arbitrary status mutation capability.
+42. [x] Confirm External Agent cannot force final task completion when human review is required.
+43. [x] Confirm REST and MCP are both Phase 1 deliverables.
+44. [x] Confirm OpenAI provider connection foundation is Phase 1.
+45. [x] Confirm Anthropic provider connection foundation is Phase 1.
+46. [x] Confirm model-catalog synchronization is Phase 1.
+47. [x] Confirm FIXED model policy is Phase 1.
+48. [x] Confirm PRIMARY_FALLBACK model policy is Phase 1.
+49. [x] Confirm Internal Agent entity/lifecycle foundation is Phase 1.
+50. [x] Confirm full internal employee AI chat runtime is NOT Phase 1.
+51. [x] Confirm production Messenger auto-reply runtime is NOT Phase 1.
+52. [x] Confirm production RAG/vector infrastructure is NOT Phase 1.
+53. [x] Confirm adaptive/learned model routing is NOT Phase 1.
+54. [x] Confirm automatic activation of newly discovered models is forbidden.
+55. [x] Confirm customer-facing autonomous high-risk actions are NOT Phase 1.
+
+Item 39 is locked as Chat 3 work: derive the allowlist from `TasksService` update DTO / domain rules, not from agent controllers.
 
 # C. Actor foundation
 
-56. [ ] Define normalized `ActorType` contract.
-57. [ ] Support `USER` actor.
-58. [ ] Support `EXTERNAL_AGENT` actor.
-59. [ ] Support `INTERNAL_AI` actor.
-60. [ ] Support `SYSTEM` actor where appropriate.
-61. [ ] Support `AUTOMATION` actor where appropriate.
-62. [ ] Define normalized `ActorContext` shared by policy/audit/capabilities.
-63. [ ] Include stable actor id/type/display identity.
-64. [ ] Include organization/tenant context where applicable.
-65. [ ] Add `onBehalfOf` support.
-66. [ ] Add channel/source metadata support.
-67. [ ] Add correlation/request id support.
-68. [ ] Ensure machine actors are never represented as fake Employees.
-69. [ ] Preserve employee actor behavior without widening existing access.
-70. [ ] Add actor normalization unit tests.
+56. [x] Define normalized `ActorType` contract.
+57. [x] Support `USER` actor.
+58. [x] Support `EXTERNAL_AGENT` actor.
+59. [x] Support `INTERNAL_AI` actor.
+60. [x] Support `SYSTEM` actor where appropriate.
+61. [x] Support `AUTOMATION` actor where appropriate.
+62. [x] Define normalized `ActorContext` shared by policy/audit/capabilities.
+63. [x] Include stable actor id/type/display identity.
+64. [x] Include organization/tenant context where applicable.
+65. [x] Add `onBehalfOf` support.
+66. [x] Add channel/source metadata support.
+67. [x] Add correlation/request id support.
+68. [x] Ensure machine actors are never represented as fake Employees.
+69. [x] Preserve employee actor behavior without widening existing access.
+70. [x] Add actor normalization unit tests.
+
+Runtime: `packages/shared/src/actor/*`. Tests: `normalize-actor-context.test.ts`.
 
 # D. Audit actor migration
 
-71. [ ] Design backward-compatible AuditLog evolution.
-72. [ ] Preserve all existing audit history.
-73. [ ] Add actor type/id fields or equivalent normalized structure.
-74. [ ] Keep legacy `userId` compatibility where required.
-75. [ ] Allow AuditLog creation for non-Employee actors.
-76. [ ] Update AuditService logging interface to accept ActorContext.
-77. [ ] Update actor display resolution for Employee and AI actors.
-78. [ ] Add `onBehalfOf` audit fields/context.
-79. [ ] Add channel/protocol/source audit metadata where useful.
-80. [ ] Add correlation/execution id fields/context.
-81. [ ] Add safe credential/client metadata only where useful.
-82. [ ] Prevent raw bearer tokens from audit.
-83. [ ] Prevent provider API keys from audit.
-84. [ ] Prevent full sensitive prompt/context persistence by default.
-85. [ ] Audit External Agent lifecycle changes.
-86. [ ] Audit provider connection lifecycle changes.
-87. [ ] Audit model activation/deactivation.
-88. [ ] Audit model policy changes.
-89. [ ] Audit Internal Agent lifecycle changes.
-90. [ ] Audit capability/scope changes.
-91. [ ] Audit approval lifecycle.
-92. [ ] Add migration tests using representative historical AuditLog rows.
-93. [ ] Add human audit regression tests.
-94. [ ] Add External Agent audit tests.
-95. [ ] Add Internal AI audit contract tests.
+71. [x] Design backward-compatible AuditLog evolution.
+72. [x] Preserve all existing audit history.
+73. [x] Add actor type/id fields or equivalent normalized structure.
+74. [x] Keep legacy `userId` compatibility where required.
+75. [x] Allow AuditLog creation for non-Employee actors.
+76. [x] Update AuditService logging interface to accept ActorContext.
+77. [x] Update actor display resolution for Employee and AI actors.
+78. [x] Add `onBehalfOf` audit fields/context.
+79. [x] Add channel/protocol/source audit metadata where useful.
+80. [x] Add correlation/execution id fields/context.
+81. [x] Add safe credential/client metadata only where useful.
+82. [x] Prevent raw bearer tokens from audit.
+83. [x] Prevent provider API keys from audit.
+84. [x] Prevent full sensitive prompt/context persistence by default.
+85. [~] Audit External Agent lifecycle changes.
+86. [~] Audit provider connection lifecycle changes.
+87. [~] Audit model activation/deactivation.
+88. [~] Audit model policy changes.
+89. [~] Audit Internal Agent lifecycle changes.
+90. [~] Audit capability/scope changes.
+91. [~] Audit approval lifecycle.
+92. [x] Add migration tests using representative historical AuditLog rows.
+93. [x] Add human audit regression tests.
+94. [x] Add External Agent audit tests.
+95. [x] Add Internal AI audit contract tests.
+
+Write path and display contract exist in `AuditService.log({ actor })`. Lifecycle emitters (85–91) land with the owning entities in Chats 2–5/7.
 
 # E. External Agent persistence
 

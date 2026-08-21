@@ -41,6 +41,8 @@ Focus:
 
 Do not continue to external-agent APIs until this foundation is stable and tested.
 
+Handoff: `17-Phase-1-Chat-1-Handoff.md`.
+
 ### Chat 2 — External Identity, Credentials and Policy
 
 Focus:
