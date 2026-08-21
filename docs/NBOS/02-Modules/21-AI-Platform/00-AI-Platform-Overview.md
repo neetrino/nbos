@@ -59,6 +59,37 @@ Baseline capabilities:
 - receive deterministic policy errors;
 - support idempotent writes.
 
+## Future capability workflow
+
+Future AI functionality must not be mixed casually into current production canon.
+
+Canonical rule:
+
+```text
+new/raw idea
+  -> record briefly in `90-Future-Capabilities/00-Future-Capabilities-Index.md`
+  -> discuss/design it
+  -> if substantial or approved, create a dedicated numbered file in `90-Future-Capabilities/`
+  -> assign Status / Target / Priority / one-sentence Canon summary
+  -> when scheduled, promote it into an executable implementation checklist/milestone
+  -> after implementation, move final rules into normal active canon and mark the future document DONE
+```
+
+For every new AI idea, another AI/engineer should be able to understand from the Future Capabilities Index in a few seconds:
+
+- what the capability is;
+- its current status;
+- target phase/release;
+- priority;
+- one-sentence design/canon summary;
+- which dedicated file contains the full design when one exists.
+
+Use `90-Future-Capabilities/00-Future-Capabilities-Index.md` as the canonical workflow/routing document for future AI ideas.
+
+Do not create a separate file for every undeveloped sentence. Raw ideas belong in the Index `Idea Inbox`; substantial/approved capabilities receive their own numbered design file.
+
+`90-Future-Capabilities` is a controlled future-design backlog, not a second production canon. Once functionality is implemented, the active module canon is the source of truth.
+
 ## Boundaries
 
 The AI Platform must not:
@@ -77,7 +108,9 @@ The AI Platform must not:
 - AI actor/grant/execution data: AI Platform;
 - human roles/access: existing RBAC and Platform Access Foundation;
 - files: Drive;
-- audit: shared Audit foundation.
+- audit: shared Audit foundation;
+- future AI capability design backlog: `90-Future-Capabilities/`;
+- implemented behavior: normal active AI Platform and owning-module canon, not Future Capabilities documents.
 
 ## Canon references
 
@@ -86,3 +119,4 @@ The AI Platform must not:
 - `02-Modules/07-My-Company/09-Platform-Access-Foundation.md`
 - `02-Modules/05-Tasks/*`
 - `02-Modules/11-Drive/*`
+- `90-Future-Capabilities/00-Future-Capabilities-Index.md`
