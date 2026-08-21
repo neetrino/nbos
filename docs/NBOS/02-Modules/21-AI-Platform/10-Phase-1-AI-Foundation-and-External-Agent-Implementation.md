@@ -116,137 +116,159 @@ Runtime: `packages/shared/src/actor/*`. Tests: `normalize-actor-context.test.ts`
 82. [x] Prevent raw bearer tokens from audit.
 83. [x] Prevent provider API keys from audit.
 84. [x] Prevent full sensitive prompt/context persistence by default.
-85. [~] Audit External Agent lifecycle changes.
+85. [x] Audit External Agent lifecycle changes.
 86. [~] Audit provider connection lifecycle changes.
 87. [~] Audit model activation/deactivation.
 88. [~] Audit model policy changes.
 89. [~] Audit Internal Agent lifecycle changes.
-90. [~] Audit capability/scope changes.
+90. [x] Audit capability/scope changes.
 91. [~] Audit approval lifecycle.
 92. [x] Add migration tests using representative historical AuditLog rows.
 93. [x] Add human audit regression tests.
 94. [x] Add External Agent audit tests.
 95. [x] Add Internal AI audit contract tests.
 
-Write path and display contract exist in `AuditService.log({ actor })`. Lifecycle emitters (85–91) land with the owning entities in Chats 2–5/7.
+Write path and display contract exist in `AuditService.log({ actor })`. Chat 2 closed 85 and 90 through `AiPlatformAuditService`; the remaining emitters (86–89, 91) land with the owning entities in Chats 5/7. Every lifecycle, credential, grant and scope mutation passes its own transaction client to `AuditService.log`, so the state change and its audit row commit together and an un-audited active grant or credential is unreachable. Machine display names resolve through the batched `AuditActorLookups` registered by `AiPlatformModule` (`audit-actor.resolver.test.ts`).
 
 # E. External Agent persistence
 
-96. [ ] Add External Agent model/entity.
-97. [ ] Add stable id.
-98. [ ] Add human-readable name.
-99. [ ] Add description/purpose.
-100.  [ ] Add owner/creator Employee relation.
-101.  [ ] Add ACTIVE/DISABLED/REVOKED/EXPIRED semantics.
-102.  [ ] Add optional agent expiry.
-103.  [ ] Add lastUsedAt.
-104.  [ ] Add safe last-client/IP metadata only if useful.
-105.  [ ] Add createdAt/updatedAt.
-106.  [ ] Add appropriate indexes.
-107.  [ ] Ensure agent identity remains stable through credential rotation.
-108.  [ ] Add persistence tests.
+96. [x] Add External Agent model/entity.
+97. [x] Add stable id.
+98. [x] Add human-readable name.
+99. [x] Add description/purpose.
+100.  [x] Add owner/creator Employee relation.
+101.  [x] Add ACTIVE/DISABLED/REVOKED/EXPIRED semantics.
+102.  [x] Add optional agent expiry.
+103.  [x] Add lastUsedAt.
+104.  [x] Add safe last-client/IP metadata only if useful.
+105.  [x] Add createdAt/updatedAt.
+106.  [x] Add appropriate indexes.
+107.  [x] Ensure agent identity remains stable through credential rotation.
+108.  [~] Add persistence tests.
+
+Runtime: `packages/database/prisma/schema/ai-platform.prisma`, `apps/api/src/modules/ai-platform/agents/*`. `EXPIRED` is derived from `expiresAt` at read time rather than stored, so a lapsed agent cannot appear active through a stale status column. `REVOKED` is terminal through one mechanism used by every writer: `agent-row-lock.ts` takes `SELECT ... FOR UPDATE` on the agent row inside the transaction and only then reads state, and `resolveAgentState` reads `revokedAt` as well as the status column. Lifecycle transitions, credential issuance and grant/scope writes all go through that lock, so a concurrent revoke can neither be overtaken nor walked back. Each of those mutations also writes its audit row through the same transaction client, so no lifecycle change can commit without its trail. Indexes cover status, owner and every employee foreign key (migration `20260821170000`, a single transactional migration after the squash), so offboarding an employee does not scan the agent tables.
+
+Item 108 stays `[~]`: persistence behaviour is covered by unit tests against a mocked Prisma client, so migration, uniqueness and foreign-key behaviour is verified by `migrate deploy` + `migrate diff` on the dev branch rather than by an integration test. The one real-database test that exists is narrow on purpose — `agent-credential.concurrency.int.test.ts` proves the lock order, not the persistence contract. Tests: `external-agent.service.test.ts`, `external-agent-state.test.ts`.
 
 # F. External Agent credentials
 
-109. [ ] Create separate External Agent Credential model.
-110. [ ] Generate cryptographically strong opaque tokens.
-111. [ ] Store only secure token hash/derived verifier.
-112. [ ] Store safe prefix/key id for lookup/display.
-113. [ ] Show raw token only once on issuance.
-114. [ ] Show raw token only once on rotation.
-115. [ ] Support credential expiry.
-116. [ ] Support immediate credential revoke.
-117. [ ] Support credential rotation.
-118. [ ] Support temporary overlap during controlled rotation if implemented.
-119. [ ] Agent disable/revoke invalidates all credentials immediately.
-120. [ ] Never log Authorization token.
-121. [ ] Never expose token hash in API/UI.
-122. [ ] Implement safe token verification.
-123. [ ] Add invalid token tests.
-124. [ ] Add revoked token tests.
-125. [ ] Add expired token tests.
-126. [ ] Add rotation tests.
+109. [x] Create separate External Agent Credential model.
+110. [x] Generate cryptographically strong opaque tokens.
+111. [x] Store only secure token hash/derived verifier.
+112. [x] Store safe prefix/key id for lookup/display.
+113. [x] Show raw token only once on issuance.
+114. [x] Show raw token only once on rotation.
+115. [x] Support credential expiry.
+116. [x] Support immediate credential revoke.
+117. [x] Support credential rotation.
+118. [x] Support temporary overlap during controlled rotation if implemented.
+119. [x] Agent disable/revoke invalidates all credentials immediately.
+120. [x] Never log Authorization token.
+121. [x] Never expose token hash in API/UI.
+122. [x] Implement safe token verification.
+123. [x] Add invalid token tests.
+124. [x] Add revoked token tests.
+125. [x] Add expired token tests.
+126. [x] Add rotation tests.
+
+Runtime: `apps/api/src/modules/ai-platform/credentials/*`. Token layout `nbos_agt_<keyId>_<secret>`, hex encoded so the separator can never occur inside a segment; only the argon2id verifier is persisted. Parsing is canonical (18 hex chars of key id, 64 of secret), so malformed and oversized input is refused before any database work. Rotation issues a new credential row against the same `agentId`, so agent identity, grants and audit history survive rotation.
+
+Overlap (118) may only ever shorten the predecessor: the requested window must be in the future, must not exceed the existing expiry and must fit inside `AGENT_CREDENTIAL_MAX_OVERLAP_MS`. The maximum window is **24 hours**, approved by the developer on 2026-08-21; that value decides how long a leaked predecessor secret stays usable after rotation, so it is recorded with its date on `AGENT_CREDENTIAL_MAX_OVERLAP_MS` and read by the boundary tests rather than duplicated as a literal. A predecessor can be rotated exactly once — the row is locked `FOR UPDATE` and an existing successor produces a deterministic conflict instead of a raw unique-constraint error. Invalidation (119) holds under concurrency because every writer takes the agent row lock first: the module-wide order is **agent row → credential row**, so rotation and agent revoke can never deadlock against each other. That order is proven against a real PostgreSQL database by the opt-in `agent-credential.concurrency.int.test.ts` (0 deadlocks in 25 concurrent rounds; 19 of 25 with the order inverted) and guarded at unit level by an acquisition-order assertion. Tests: `agent-token.test.ts`, `agent-secret-hash.test.ts`, `agent-credential.service.test.ts`, `agent-credential.rotation.test.ts`, `agent-credential.concurrency.int.test.ts` (opt-in, real database).
 
 # G. External Agent authentication boundary
 
-127. [ ] Implement dedicated External Agent authentication guard/middleware.
-128. [ ] Keep employee JWT/session authentication separate.
-129. [ ] Build ActorContext from authenticated External Agent.
-130. [ ] Reject disabled agent.
-131. [ ] Reject revoked agent.
-132. [ ] Reject expired agent/credential.
-133. [ ] Use stable machine-readable auth errors.
-134. [ ] Avoid record existence leakage through auth errors.
-135. [ ] Require TLS production assumption.
-136. [ ] Accept token in Authorization header.
-137. [ ] Do not require query-string token.
-138. [ ] Redact Authorization values from logs/errors.
-139. [ ] Add auth observability without secrets.
-140. [ ] Add Employee-vs-Agent boundary tests.
+127. [x] Implement dedicated External Agent authentication guard/middleware.
+128. [x] Keep employee JWT/session authentication separate.
+129. [x] Build ActorContext from authenticated External Agent.
+130. [x] Reject disabled agent.
+131. [x] Reject revoked agent.
+132. [x] Reject expired agent/credential.
+133. [x] Use stable machine-readable auth errors.
+134. [x] Avoid record existence leakage through auth errors.
+135. [x] Require TLS production assumption.
+136. [x] Accept token in Authorization header.
+137. [x] Do not require query-string token.
+138. [x] Redact Authorization values from logs/errors.
+139. [x] Add auth observability without secrets.
+140. [~] Add Employee-vs-Agent boundary tests.
+
+Runtime: `apps/api/src/modules/ai-platform/auth/*`. `AgentAuthGuard` writes `request.agent` and never `request.user`, so an agent can never enter an employee RBAC guard as a user; an employee JWT fails the canonical token parse before any database lookup. An unknown key id runs the _same_ `argon2.verify` call against a per-process decoy verifier (primed at module init), so "no such key" and "wrong secret" share both the code path and the cost. Channel provenance comes from `@AgentChannel()` route metadata, never from a client header or a request path, so a REST caller cannot label itself as MCP in ActorContext or Audit.
+
+Auth observability (139) is a structured secret-free warning log per rejected attempt — reason, public key id, channel, correlation id — and deliberately not an AuditLog row: unauthenticated traffic is attacker-controlled and unbounded, so a row per attempt would be a write amplifier. Refusals of a known credential remain traceable through the agent's own lifecycle trail.
+
+Item 140 stays `[~]`: the boundary is proven by unit tests, but the real `@Public()` + `AgentAuthGuard` + global employee guard wiring can only be integration-tested once the controllers exist in Chat 4. Tests: `agent-auth.guard.test.ts`, `agent-authenticator.service.test.ts`.
 
 # H. Capability registry
 
-141. [ ] Define stable capability key format.
-142. [ ] Define capability version strategy.
-143. [ ] Define owning module.
-144. [ ] Define read/write classification.
-145. [ ] Define risk class.
-146. [ ] Define allowed scope types.
-147. [ ] Define input schema metadata.
-148. [ ] Define output/projection schema metadata.
-149. [ ] Define idempotency requirement metadata.
-150. [ ] Define audit behavior metadata.
-151. [ ] Define approval requirement metadata.
-152. [ ] Define rate-limit class metadata.
-153. [ ] Prevent unknown capability grants.
-154. [ ] Register Phase 1 Work Space/Task/Drive capabilities deterministically.
-155. [ ] Register `tasks.create` separately.
-156. [ ] Register `tasks.update` separately.
-157. [ ] Do not register `tasks.delete` for External Agent Phase 1.
-158. [ ] Do not register generic `tasks.set_status(anyStatus)`.
-159. [ ] Add capability-registry tests.
+141. [x] Define stable capability key format.
+142. [x] Define capability version strategy.
+143. [x] Define owning module.
+144. [x] Define read/write classification.
+145. [x] Define risk class.
+146. [x] Define allowed scope types.
+147. [x] Define input schema metadata.
+148. [x] Define output/projection schema metadata.
+149. [x] Define idempotency requirement metadata.
+150. [x] Define audit behavior metadata.
+151. [x] Define approval requirement metadata.
+152. [x] Define rate-limit class metadata.
+153. [x] Prevent unknown capability grants.
+154. [x] Register Phase 1 Work Space/Task/Drive capabilities deterministically.
+155. [x] Register `tasks.create` separately.
+156. [x] Register `tasks.update` separately.
+157. [x] Do not register `tasks.delete` for External Agent Phase 1.
+158. [x] Do not register generic `tasks.set_status(anyStatus)`.
+159. [x] Add capability-registry tests.
+
+Runtime: `packages/shared/src/ai/capability-*.ts`. Risk and idempotency follow `02-AI-Capability-and-Action-Layer.md`: `tasks.submit_review` is `MEDIUM` + `REQUIRED` per the canonical example, and `tasks.start` is also `REQUIRED` because a replayed start is a semantic state mutation. Each definition additionally declares `requiresTargetDataClassification`, which is what lets the evaluator fail closed instead of assuming a classification. The registry is shared, so REST, MCP and future internal tool adapters cannot define their own vocabulary. Schema metadata is a descriptor (id + field allowlist); the concrete validators and projections bind to those descriptors in Chats 3–4. `AI_CAPABILITIES_FORBIDDEN_PHASE_1` keeps `tasks.delete`, `tasks.set_status` and `tasks.force_complete` unregisterable, and `AgentGrantService` rejects any key absent from the registry. Tests: `capability-registry.test.ts`, `agent-grant.service.test.ts`.
 
 # I. Capability grants and resource scopes
 
-160. [ ] Add External Agent capability grant persistence.
-161. [ ] Add resource scope persistence.
-162. [ ] Support Work Space scope.
-163. [ ] Keep Project scope structurally possible.
-164. [ ] Keep Product scope structurally possible.
-165. [ ] Keep explicit resource scope structurally possible.
-166. [ ] Keep organization scope structurally possible but do not grant broadly by default.
-167. [ ] Support grant revoke.
-168. [ ] Support optional grant expiry if useful.
-169. [ ] Capability grant must not imply all resources.
-170. [ ] Resource scope must not imply all actions.
-171. [ ] Add indexes for actor/capability/scope evaluation.
-172. [ ] Audit grant create/change/revoke.
-173. [ ] Add grant-evaluation tests.
-174. [ ] Add cross-Workspace denial tests.
-175. [ ] Add revoked-grant denial tests.
+160. [x] Add External Agent capability grant persistence.
+161. [x] Add resource scope persistence.
+162. [x] Support Work Space scope.
+163. [x] Keep Project scope structurally possible.
+164. [x] Keep Product scope structurally possible.
+165. [x] Keep explicit resource scope structurally possible.
+166. [x] Keep organization scope structurally possible but do not grant broadly by default.
+167. [x] Support grant revoke.
+168. [x] Support optional grant expiry if useful.
+169. [x] Capability grant must not imply all resources.
+170. [x] Resource scope must not imply all actions.
+171. [x] Add indexes for actor/capability/scope evaluation.
+172. [x] Audit grant create/change/revoke.
+173. [x] Add grant-evaluation tests.
+174. [x] Add cross-Workspace denial tests.
+175. [x] Add revoked-grant denial tests.
+
+Runtime: `packages/database/prisma/schema/ai-platform.prisma`, `apps/api/src/modules/ai-platform/grants/agent-grant.service.ts`. Capability grants ("what") and resource scopes ("where") are separate tables evaluated together, so neither implies the other. AI principals are never written into `ResourceAccessGrant`, which stays employee-only. ORGANIZATION scope stores the `PLATFORM_ORGANIZATION_SCOPE_ID` sentinel so the uniqueness index holds without a nullable scope column, and it is never granted implicitly. RESOURCE scopes are unique on `(agent, scopeType, scopeId, resourceType)` with a normalized empty string for non-resource rows, so granting `FILE:123` cannot upsert over an existing `TASK:123`. Grant and scope mutations take the shared agent row lock (`agent-row-lock.ts`) _inside_ their transaction and read terminal state only after the lock, so a revoke committing concurrently cannot be overtaken by a grant that checked first. Each mutation writes its AuditLog row through the same transaction client, so a failed audit rolls the grant back rather than leaving it active and untraceable. Tests: `agent-grant.service.test.ts`, `agent-grant.scope.test.ts`, `agent-scope.test.ts`, `agent-policy.service.test.ts`.
 
 # J. Policy evaluator
 
-176. [ ] Implement one reusable Policy Evaluator.
-177. [ ] Default to DENY.
-178. [ ] Evaluate actor state.
-179. [ ] Evaluate credential state where applicable.
-180. [ ] Evaluate capability grant.
-181. [ ] Evaluate resource scope.
-182. [ ] Evaluate module-specific restrictions.
-183. [ ] Evaluate data classification/restrictions.
-184. [ ] Evaluate action risk.
-185. [ ] Evaluate approval requirement.
-186. [ ] Evaluate usage/rate limits.
-187. [ ] Support ALLOW.
-188. [ ] Support DENY.
-189. [ ] Support REQUIRE_APPROVAL.
-190. [ ] Return structured internal denial reasons.
-191. [ ] Map safe external errors without existence leakage.
-192. [ ] Make prompt/document/message content unable to alter policy result.
-193. [ ] Add policy unit tests.
-194. [ ] Add deny-by-default tests.
-195. [ ] Add scope traversal/isolation tests.
+176. [x] Implement one reusable Policy Evaluator.
+177. [x] Default to DENY.
+178. [x] Evaluate actor state.
+179. [x] Evaluate credential state where applicable.
+180. [x] Evaluate capability grant.
+181. [x] Evaluate resource scope.
+182. [x] Evaluate module-specific restrictions.
+183. [x] Evaluate data classification/restrictions.
+184. [x] Evaluate action risk.
+185. [x] Evaluate approval requirement.
+186. [~] Evaluate usage/rate limits.
+187. [x] Support ALLOW.
+188. [x] Support DENY.
+189. [x] Support REQUIRE_APPROVAL.
+190. [x] Return structured internal denial reasons.
+191. [x] Map safe external errors without existence leakage.
+192. [x] Make prompt/document/message content unable to alter policy result.
+193. [x] Add policy unit tests.
+194. [x] Add deny-by-default tests.
+195. [x] Add scope traversal/isolation tests.
+
+Runtime: `packages/shared/src/ai/policy-evaluator.ts` (pure decision) and `apps/api/src/modules/ai-platform/policy/agent-policy.service.ts` (state loading, denial audit, safe error).
+
+The agent id is not an input: `AgentPolicyQuery` derives it from `actor`, so a caller cannot ask for a decision about one principal while presenting another (178). Classification is fail-closed (183) — a capability that declares `requiresTargetDataClassification` is denied with `DATA_CLASSIFICATION_UNKNOWN` when the caller cannot state the target's classification, rather than passing an unenforceable ceiling. Evaluation order is deliberate: everything independent of the concrete resource, _including_ the rate limit, is decided before the scope match, so a throttled agent receives the same `429` whether or not the target is in scope and the status code is not a scope oracle (191). Item 192 holds structurally: `AiPolicyRequest` accepts no free-text content, so task text, documents and messages are not inputs to the decision. Item 186 is partial — the evaluator consumes a `rateLimitExceeded` verdict but the counters and windows themselves are section U work. Out-of-scope and non-existent resources both surface as `AGENT_RESOURCE_NOT_AVAILABLE` with an identical message, and a failed denial audit keeps the safe deterministic error instead of degrading into an internal error. Tests: `policy-evaluator.test.ts`, `policy-error-mapping.test.ts`, `agent-policy.service.test.ts`, `agent-policy.assert.test.ts`.
 
 # K. Domain Action Gateway
 
