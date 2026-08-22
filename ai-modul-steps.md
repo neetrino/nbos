@@ -28,20 +28,20 @@
 
 ## Милстоуны и модели
 
-| Chat | Содержание | Исполнитель | Проверка | Статус |
-| --- | --- | --- | --- | --- |
-| 1 | Foundation + Audit | Cursor Grok 4.6 | Claude Opus 5 High | DONE |
-| 2 | Credentials + Auth + Policy | Claude Opus 5 High | GPT-5.6 Sol High | PASS WITH DEBTS |
-| 3 | Capabilities + Tasks | Cursor Grok 4.6 | GPT-5.6 Sol High | PASS WITH DEBTS |
-| 4 | REST + MCP | Claude Opus 5 High | Cursor Grok 4.6 | PASS WITH DEBTS |
-| 5 | Providers + Models | Cursor Grok 4.6 | GPT-5.6 Sol High | PASS WITH DEBTS |
-| 6 | AI Admin UI | Cursor Grok 4.6 + Composer 2.5 | GPT-5.6 Sol High | PASS WITH DEBTS |
-| 7 | Security + regression | Claude Opus 5 High | GPT-5.6 Sol High | PASS WITH DEBTS |
-| 8 | Intermediate acceptance | Claude Opus 5 High | GPT-5.6 Sol High | DONE — found missing AD–AI slice |
-| 9 | Prompt + Context/Memory/Knowledge | Cursor Grok 4.6 | GPT-5.6 Sol High | NEXT |
-| 10 | Approvals + Customer-facing safety | Claude Opus 5 High | GPT-5.6 Sol High | PLANNED |
-| 11 | Usage/Cost/Evaluation + actionable debts | Cursor Grok 4.6 | GPT-5.6 Sol High | PLANNED |
-| 12 | Final Phase 1 re-acceptance | Claude Opus 5 High | GPT-5.6 Sol High | PLANNED |
+| Chat | Содержание                               | Исполнитель                    | Проверка           | Статус                           |
+| ---- | ---------------------------------------- | ------------------------------ | ------------------ | -------------------------------- |
+| 1    | Foundation + Audit                       | Cursor Grok 4.6                | Claude Opus 5 High | DONE                             |
+| 2    | Credentials + Auth + Policy              | Claude Opus 5 High             | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
+| 3    | Capabilities + Tasks                     | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
+| 4    | REST + MCP                               | Claude Opus 5 High             | Cursor Grok 4.6    | PASS WITH DEBTS                  |
+| 5    | Providers + Models                       | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
+| 6    | AI Admin UI                              | Cursor Grok 4.6 + Composer 2.5 | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
+| 7    | Security + regression                    | Claude Opus 5 High             | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
+| 8    | Intermediate acceptance                  | Claude Opus 5 High             | GPT-5.6 Sol High   | DONE — found missing AD–AI slice |
+| 9    | Prompt + Context/Memory/Knowledge        | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
+| 10   | Approvals + Customer-facing safety       | Claude Opus 5 High             | GPT-5.6 Sol High   | PLANNED                          |
+| 11   | Usage/Cost/Evaluation + actionable debts | Cursor Grok 4.6                | GPT-5.6 Sol High   | PLANNED                          |
+| 12   | Final Phase 1 re-acceptance              | Claude Opus 5 High             | GPT-5.6 Sol High   | PLANNED                          |
 
 ## Текущее состояние
 
@@ -58,7 +58,7 @@ Chat 8 подтвердил:
 - Internal Agent foundation работает;
 - human NBOS regression зелёный.
 
-Но canonical Phase 1 exit criterion 9 не выполнен: AD–AI не получили implementation milestone. Решение принято: **не переносить их в новую Phase 2, а закончить текущую Phase 1 через Chats 9–12**.
+Но canonical Phase 1 exit criterion 9 не выполнен полностью: Chat 9 закрыл AD/AE (prompt + context/memory/knowledge foundation). Остаются AF–AI через Chats 10–12. Решение принято: **не переносить их в новую Phase 2, а закончить текущую Phase 1 через Chats 9–12**.
 
 ## Правила БД — критично
 

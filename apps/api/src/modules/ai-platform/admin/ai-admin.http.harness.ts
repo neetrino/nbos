@@ -31,6 +31,8 @@ import { AiAdminOverviewController } from './ai-admin-overview.controller';
 import { AiAdminProvidersController } from './ai-admin-providers.controller';
 import { AiAdminQueryService } from './ai-admin-query.service';
 import { AiAdminWorkspaceAccessController } from './ai-admin-workspace-access.controller';
+import { AiAdminPromptPoliciesController } from './ai-admin-prompt-policies.controller';
+import { AiPromptPolicyService } from '../prompts/ai-prompt-policy.service';
 import { AGENT_TOKEN } from '../protocol/agent-protocol.http.harness';
 
 export const AI_ADMIN_JWT_SECRET = 'test-jwt-secret';
@@ -134,6 +136,16 @@ function createServiceMocks() {
     policies: { listAll: vi.fn(), create: vi.fn(), findById: vi.fn() },
     internalAgents: { listAll: vi.fn(), create: vi.fn(), findById: vi.fn(), activate: vi.fn() },
     internalGrants: { listCapabilities: vi.fn(), listScopes: vi.fn() },
+    prompts: {
+      listAll: vi.fn(),
+      create: vi.fn(),
+      findById: vi.fn(),
+      createVersion: vi.fn(),
+      updateDraft: vi.fn(),
+      markTesting: vi.fn(),
+      publish: vi.fn(),
+      rollback: vi.fn(),
+    },
     audit: {
       findRecentByEntityTypes: vi.fn(),
       findByEntity: vi.fn(),
@@ -158,6 +170,7 @@ function harnessProviders(
     { provide: AiModelPolicyService, useValue: services.policies },
     { provide: InternalAgentService, useValue: services.internalAgents },
     { provide: InternalAgentGrantService, useValue: services.internalGrants },
+    { provide: AiPromptPolicyService, useValue: services.prompts },
     { provide: AuditService, useValue: services.audit },
     { provide: ConfigService, useValue: { getOrThrow: () => AI_ADMIN_JWT_SECRET } },
     {
@@ -190,6 +203,7 @@ export async function startAiAdminHarness(): Promise<AiAdminHarness> {
       AiAdminExternalAgentAccessController,
       AiAdminProvidersController,
       AiAdminWorkspaceAccessController,
+      AiAdminPromptPoliciesController,
     ],
     providers: harnessProviders(services, employeeFindUnique),
   }).compile();

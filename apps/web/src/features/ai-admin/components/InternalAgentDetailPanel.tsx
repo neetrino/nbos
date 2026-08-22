@@ -108,7 +108,8 @@ export function InternalAgentDetailPanel({ agentId }: { agentId: string }) {
             </Select>
           </div>
           <p className="text-muted-foreground text-xs">
-            Prompt and approval policy IDs are foundation placeholders. Runtime is not enabled.
+            Prompt policy must be a published Prompt Policy id. Approval policy remains a foundation
+            placeholder until Chat 10.
           </p>
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-1.5">

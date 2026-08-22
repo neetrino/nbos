@@ -28,8 +28,12 @@ import { AgentRateLimitService } from './limits/agent-rate-limit.service';
 import { AgentMcpServer } from './mcp/agent-mcp.server';
 import { AiModelCatalogService } from './models/ai-model-catalog.service';
 import { AiModelSyncService } from './models/ai-model-sync.service';
+import { AiContextAssemblerService } from './context/ai-context-assembler.service';
+import { AiKnowledgeService } from './context/ai-knowledge.service';
+import { AiPersistentMemoryService } from './context/ai-persistent-memory.service';
 import { AiModelPolicyResolver } from './policies/ai-model-policy.resolver';
 import { AiModelPolicyService } from './policies/ai-model-policy.service';
+import { AiPromptPolicyService } from './prompts/ai-prompt-policy.service';
 import { AgentPolicyService } from './policy/agent-policy.service';
 import { AgentCorrelationInterceptor } from './protocol/agent-correlation.interceptor';
 import { AgentProtocolExceptionFilter } from './protocol/agent-protocol.filter';
@@ -87,6 +91,10 @@ import { AiAdminQueryService } from './admin/ai-admin-query.service';
     AiModelSyncService,
     AiModelPolicyService,
     AiModelPolicyResolver,
+    AiPromptPolicyService,
+    AiContextAssemblerService,
+    AiPersistentMemoryService,
+    AiKnowledgeService,
     InternalAgentService,
     InternalAgentGrantService,
     AiAdminQueryService,
@@ -113,6 +121,10 @@ import { AiAdminQueryService } from './admin/ai-admin-query.service';
     AiModelCatalogService,
     AiModelSyncService,
     AiModelPolicyService,
+    AiPromptPolicyService,
+    AiContextAssemblerService,
+    AiPersistentMemoryService,
+    AiKnowledgeService,
     InternalAgentService,
     InternalAgentGrantService,
     AiAdminQueryService,

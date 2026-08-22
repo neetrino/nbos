@@ -4,6 +4,7 @@ import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-pris
 import { AiPlatformAuditService } from '../ai-platform-audit.service';
 import { AI_AUDIT_ACTION, AI_AUDIT_ENTITY } from '../ai-platform.constants';
 import { AiModelPolicyService } from '../policies/ai-model-policy.service';
+import { AiPromptPolicyService } from '../prompts/ai-prompt-policy.service';
 import { InternalAgentService } from './internal-agent.service';
 
 const OWNER_ID = 'emp-owner';
@@ -41,6 +42,7 @@ describe('InternalAgentService', () => {
   let prisma: MockPrisma;
   let audit: AiPlatformAuditService;
   let policies: AiModelPolicyService;
+  let prompts: AiPromptPolicyService;
   let service: InternalAgentService;
 
   beforeEach(() => {
@@ -55,7 +57,16 @@ describe('InternalAgentService', () => {
         .fn()
         .mockResolvedValue({ id: 'policy-1', status: 'ACTIVE' }),
     } as unknown as AiModelPolicyService;
-    service = new InternalAgentService(prisma as never, audit, policies);
+    prompts = {
+      requireAssignablePublished: vi.fn().mockResolvedValue({
+        promptPolicyId: 'prompt-1',
+        promptVersionId: 'ver-1',
+        version: 1,
+        contentDigest: 'abc',
+        status: 'PUBLISHED',
+      }),
+    } as unknown as AiPromptPolicyService;
+    service = new InternalAgentService(prisma as never, audit, policies, prompts);
     prisma.employee.findUnique.mockResolvedValue({ id: OWNER_ID });
   });
 
@@ -136,6 +147,28 @@ describe('InternalAgentService', () => {
     const validateOrder = vi.mocked(policies.requireAssignableForProduction).mock
       .invocationCallOrder[0];
     expect(lockOrder).toBeLessThan(validateOrder);
+  });
+
+  it('assigns only a published prompt policy and does not write grants', async () => {
+    lockRow(prisma, agentRow());
+    prisma.internalAiAgent.findUniqueOrThrow.mockResolvedValue(
+      agentRow({ promptPolicyId: 'prompt-1' }),
+    );
+    await service.update('ia-1', { promptPolicyId: 'prompt-1' }, ACTOR_ID);
+    expect(prompts.requireAssignablePublished).toHaveBeenCalledWith('prompt-1', prisma);
+    expect(prisma.internalAiAgentCapabilityGrant.create).not.toHaveBeenCalled();
+    expect(prisma.internalAiAgentResourceScope.create).not.toHaveBeenCalled();
+  });
+
+  it('refuses an unpublished prompt policy assignment', async () => {
+    lockRow(prisma, agentRow());
+    vi.mocked(prompts.requireAssignablePublished).mockRejectedValueOnce(
+      new BadRequestException('Prompt policy has no PUBLISHED version'),
+    );
+    await expect(
+      service.update('ia-1', { promptPolicyId: 'prompt-draft' }, ACTOR_ID),
+    ).rejects.toThrow(/PUBLISHED/);
+    expect(prisma.internalAiAgent.update).not.toHaveBeenCalled();
   });
 
   it('archives without deleting the identity used for attribution', async () => {

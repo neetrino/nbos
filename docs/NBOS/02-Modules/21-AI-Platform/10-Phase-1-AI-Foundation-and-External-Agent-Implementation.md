@@ -634,53 +634,65 @@ Runtime: `packages/database/prisma/schema/ai-internal-agents.prisma`, `apps/api/
 
 # AD. Prompt policy/version foundation
 
-470. [ ] Create Prompt Policy entity or equivalent configuration domain.
-471. [ ] Create Prompt Version entity.
-472. [ ] Support DRAFT prompt version.
-473. [ ] Support TESTING prompt version.
-474. [ ] Support PUBLISHED prompt version.
-475. [ ] Support RETIRED prompt version.
-476. [~] Allow Internal Agent to reference published prompt policy/version.
-477. [ ] Preserve prompt version identity in execution metadata contract.
-478. [ ] Support future rollback semantics.
-479. [~] Audit publish/rollback/config changes.
+470. [x] Create Prompt Policy entity or equivalent configuration domain.
+471. [x] Create Prompt Version entity.
+472. [x] Support DRAFT prompt version.
+473. [x] Support TESTING prompt version.
+474. [x] Support PUBLISHED prompt version.
+475. [x] Support RETIRED prompt version.
+476. [x] Allow Internal Agent to reference published prompt policy/version.
+477. [x] Preserve prompt version identity in execution metadata contract.
+478. [x] Support future rollback semantics.
+479. [x] Audit publish/rollback/config changes.
 480. [x] Do not let prompt grant capabilities/resources.
-481. [ ] Add prompt-version lifecycle tests.
+481. [x] Add prompt-version lifecycle tests.
 
-Chat 8 verdict: the section is **deferred, not silently dropped**. What exists is the linkage only —
-`InternalAiAgent.promptPolicyId` (`ai-internal-agents.prisma`), settable through
-`UpdateInternalAgentDto` and asserted live in AP 701. 476 is `[~]` because an Internal Agent can
-hold the reference but there is no Prompt Policy/Version row to point at. 479 is `[~]` because a
-change to `promptPolicyId` is audited (`promptPolicyChanged` in `internal-agent.service.ts`) while
-publish/rollback events do not exist. 480 is `[x]` and was re-verified in AQ 712: no policy,
-capability or scope path reads `promptPolicyId`, so prompt text cannot widen access.
+Runtime: `packages/database/prisma/schema/ai-prompts.prisma`,
+`apps/api/src/modules/ai-platform/prompts/*`. `AiPromptPolicy` + `AiPromptVersion` with
+DRAFT / TESTING / PUBLISHED / RETIRED. Only DRAFT content is editable. Publish retires the
+previous PUBLISHED row (partial unique index: one published version per policy). Rollback clones a
+previously published version into a new identity (`predecessorVersionId`) and publishes it.
+`InternalAiAgent.promptPolicyId` is now a real FK; assignment and activation revalidate a
+PUBLISHED version. Execution records `{ promptPolicyId, promptVersionId, version, contentDigest }`
+and never puts instruction text on `ActorContext`. Audit stores ids, version numbers and digest —
+not `platformSafety` / `agentRole` text. Prompt services never write grant/scope tables (480).
+Tests: `prompt-version-lifecycle.test.ts`, `ai-prompt-policy.service.test.ts`,
+`internal-agent.service.test.ts`, `prompt-context-isolation.security.test.ts`,
+`ai-admin.prompt-policies.http.int.test.ts`.
 
 # AE. Context / memory / knowledge contracts
 
-482. [ ] Define Context Assembler interface/contract.
-483. [ ] Require authorization before context retrieval.
-484. [ ] Use purpose-built module projections.
-485. [ ] Define source/provenance metadata contract.
-486. [ ] Define freshness metadata contract.
-487. [~] Define redaction/classification contract.
-488. [ ] Define context size/token budget contract.
-489. [~] Mark user/task/document/message/file content as untrusted data.
-490. [ ] Define session context contract.
-491. [ ] Define persistent-memory interface but keep disabled/unimplemented by default.
-492. [ ] Require memory owner/scope/purpose/retention/provenance.
-493. [ ] Forbid secrets in AI memory.
-494. [ ] Define future Knowledge/RAG source interface.
-495. [ ] Ensure future retrieval cannot bypass authorization.
+482. [x] Define Context Assembler interface/contract.
+483. [x] Require authorization before context retrieval.
+484. [x] Use purpose-built module projections.
+485. [x] Define source/provenance metadata contract.
+486. [x] Define freshness metadata contract.
+487. [x] Define redaction/classification contract.
+488. [x] Define context size/token budget contract.
+489. [x] Mark user/task/document/message/file content as untrusted data.
+490. [x] Define session context contract.
+491. [x] Define persistent-memory interface but keep disabled/unimplemented by default.
+492. [x] Require memory owner/scope/purpose/retention/provenance.
+493. [x] Forbid secrets in AI memory.
+494. [x] Define future Knowledge/RAG source interface.
+495. [x] Ensure future retrieval cannot bypass authorization.
 496. [x] Do not build unrestricted global vector store in Phase 1.
 
-Chat 8 verdict: **deferred**. No Context Assembler, session-context, memory or knowledge interface
-exists, so 482–486, 488, 490–495 stay unchecked and are carried in the Cleanup Register. Two items
-are partly satisfied by the access layer that does exist: 487 `[~]` — `AiDataClassification` with
-`maxDataClassification` per capability is enforced in `policy-evaluator.ts`, but there is no
-redaction contract; 489 `[~]` — the policy request deliberately carries no content and
-`policy-decision.ts` states that content can never alter a decision, which is the enforcement half
-of "untrusted", without a declared data contract that labels each source. 496 `[x]` verified by
-search: no embedding, vector-store or pgvector code exists in the repository.
+Runtime: `packages/shared/src/ai/context-*.ts`, `session-context.ts`, `persistent-memory.ts`,
+`knowledge-source.ts` and thin Nest wrappers in `apps/api/src/modules/ai-platform/context/`.
+`assembleAuthorizedContext` refuses DENY / REQUIRE_APPROVAL and a replayed ALLOW for another actor
+before any fragment is kept. Each source must match the decision capability **and**
+`matchedScope` (missing scope never widens). Classification uses the tighter of the request ceiling
+and `capability.maxDataClassification`. Sources are purpose-built projections (no Prisma domain
+load). Each kept fragment carries provenance, freshness (`stale` vs `maxAgeMs`), classification,
+redaction and TRUSTED_CONFIG vs UNTRUSTED_CONTENT. SECRET classification and secret-shaped fields
+(including nested objects/arrays) are omitted. Budget keeps trusted config first, then records
+truncation. Session context is `SESSION_ONLY` and cannot become org-wide memory. Persistent memory
+is disabled by default; writes still reject incomplete contracts and nested secrets. Knowledge
+retrieve requires a bound ALLOW (actor + capability + source scope + classification), then returns
+`KNOWLEDGE_RETRIEVAL_DISABLED`. No embedding / vector-store / pgvector code. Tests:
+`context-assembler.test.ts`, `session-memory-knowledge.test.ts`, `ai-context-foundation.test.ts`,
+`prompt-context-isolation.security.test.ts`.
 
 # AF. Risk / approval foundation
 

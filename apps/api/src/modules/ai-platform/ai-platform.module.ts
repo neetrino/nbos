@@ -8,6 +8,7 @@ import { AiAdminInternalAgentsController } from './admin/ai-admin-internal-agent
 import { AiAdminModelsController } from './admin/ai-admin-models.controller';
 import { AiAdminOverviewController } from './admin/ai-admin-overview.controller';
 import { AiAdminPoliciesController } from './admin/ai-admin-policies.controller';
+import { AiAdminPromptPoliciesController } from './admin/ai-admin-prompt-policies.controller';
 import { AiAdminProvidersController } from './admin/ai-admin-providers.controller';
 import { AiAdminWorkspaceAccessController } from './admin/ai-admin-workspace-access.controller';
 import { AgentMcpController } from './mcp/agent-mcp.controller';
@@ -33,6 +34,7 @@ import { AgentTasksController } from './rest/agent-tasks.controller';
     AiAdminProvidersController,
     AiAdminModelsController,
     AiAdminPoliciesController,
+    AiAdminPromptPoliciesController,
     AiAdminInternalAgentsController,
     AiAdminInternalAgentAccessController,
     AiAdminWorkspaceAccessController,

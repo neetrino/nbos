@@ -5,6 +5,7 @@ import {
   INTERNAL_AI_SURFACE_CHANNEL,
   isInternalAiAgentSurface,
   type ActorContext,
+  type AiPromptVersionAttribution,
   type InternalAiAgentStatus,
   type InternalAiAgentSurface,
 } from '@nbos/shared';
@@ -49,4 +50,21 @@ export function buildInternalAgentExecutionContext(
         : undefined,
     },
   );
+}
+
+export interface InternalAgentExecutionRecord {
+  actor: ActorContext;
+  prompt: AiPromptVersionAttribution | null;
+}
+
+/** Actor plus prompt-version identity. Prompt text never enters ActorContext. */
+export function buildInternalAgentExecutionRecord(
+  agent: InternalAgentExecutionSource,
+  input: InternalAgentExecutionInput,
+  prompt: AiPromptVersionAttribution | null,
+): InternalAgentExecutionRecord {
+  return {
+    actor: buildInternalAgentExecutionContext(agent, input),
+    prompt,
+  };
 }

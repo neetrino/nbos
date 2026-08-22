@@ -28,7 +28,12 @@ function readRequest(overrides: Partial<AiPolicyRequest> = {}): AiPolicyRequest 
 describe('evaluateAiPolicy deny-by-default', () => {
   it('allows only when actor, credential, grant and scope all line up', () => {
     const decision = evaluateAiPolicy(readRequest());
-    expect(decision.outcome).toBe('ALLOW');
+    expect(decision).toMatchObject({
+      outcome: 'ALLOW',
+      actorId: AGENT_ACTOR.actor.id,
+      actorType: AGENT_ACTOR.actor.type,
+      matchedScope: { scopeType: 'WORKSPACE', scopeId: 'ws-1' },
+    });
   });
 
   it('denies an employee actor on the machine policy path', () => {

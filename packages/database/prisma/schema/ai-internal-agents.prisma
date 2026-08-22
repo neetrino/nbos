@@ -28,7 +28,7 @@ model InternalAiAgent {
   ownerId          String                    @map("owner_id")
   createdById      String                    @map("created_by_id")
   modelPolicyId    String?                   @map("model_policy_id")
-  /// Opaque prompt-policy contract id. Prompt Version runtime is Chat AD.
+  /// Published Prompt Policy. Runtime resolves the current PUBLISHED version.
   promptPolicyId   String?                   @map("prompt_policy_id")
   /// Opaque approval-policy contract id. Approval runtime is Chat AF.
   approvalPolicyId String?                   @map("approval_policy_id")
@@ -43,6 +43,7 @@ model InternalAiAgent {
   owner            Employee                         @relation("InternalAiAgentOwner", fields: [ownerId], references: [id], onDelete: Restrict)
   createdBy        Employee                         @relation("InternalAiAgentCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
   modelPolicy      AiModelPolicy?                   @relation(fields: [modelPolicyId], references: [id], onDelete: SetNull)
+  promptPolicy     AiPromptPolicy?                  @relation(fields: [promptPolicyId], references: [id], onDelete: SetNull)
   surfaces         InternalAiAgentSurfaceAssignment[]
   capabilityGrants InternalAiAgentCapabilityGrant[]
   resourceScopes   InternalAiAgentResourceScope[]
@@ -51,6 +52,7 @@ model InternalAiAgent {
   @@index([ownerId])
   @@index([createdById])
   @@index([modelPolicyId])
+  @@index([promptPolicyId])
   @@map("internal_ai_agents")
 }
 

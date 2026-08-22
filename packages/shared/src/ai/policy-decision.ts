@@ -1,4 +1,4 @@
-import type { ActorContext } from '../actor';
+import type { ActorContext, ActorType } from '../actor';
 import type { AgentGrantedScope, AiResourceTarget } from './agent-scope';
 import type { AiCapabilityDefinition, AiDataClassification } from './capability-types';
 
@@ -74,6 +74,8 @@ export interface AiPolicyRequest {
 
 export interface AiPolicyAllowDecision {
   outcome: 'ALLOW';
+  actorId: string;
+  actorType: ActorType;
   capability: AiCapabilityDefinition;
   matchedScope: AgentGrantedScope;
 }
@@ -85,6 +87,8 @@ export interface AiPolicyDenyDecision {
 
 export interface AiPolicyApprovalDecision {
   outcome: 'REQUIRE_APPROVAL';
+  actorId: string;
+  actorType: ActorType;
   capability: AiCapabilityDefinition;
   matchedScope: AgentGrantedScope;
 }

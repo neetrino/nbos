@@ -1,11 +1,13 @@
 import { isMachineActorType } from '../actor';
-import { findMatchingScope } from './agent-scope';
+import { findMatchingScope, type AgentGrantedScope } from './agent-scope';
 import {
   isDataClassificationWithin,
   type AiCapabilityDefinition,
   type AiRiskClass,
 } from './capability-types';
 import {
+  type AiPolicyAllowDecision,
+  type AiPolicyApprovalDecision,
   type AiPolicyDecision,
   type AiPolicyDenyReason,
   type AiPolicyRequest,
@@ -132,8 +134,35 @@ export function evaluateAiPolicy(request: AiPolicyRequest): AiPolicyDecision {
   }
 
   if (capability.approval === 'REQUIRED' && !request.approvalGranted) {
-    return { outcome: 'REQUIRE_APPROVAL', capability, matchedScope };
+    return bindActorToDecision('REQUIRE_APPROVAL', request, capability, matchedScope);
   }
 
-  return { outcome: 'ALLOW', capability, matchedScope };
+  return bindActorToDecision('ALLOW', request, capability, matchedScope);
+}
+
+function bindActorToDecision(
+  outcome: 'ALLOW',
+  request: AiPolicyRequest,
+  capability: AiCapabilityDefinition,
+  matchedScope: AgentGrantedScope,
+): AiPolicyAllowDecision;
+function bindActorToDecision(
+  outcome: 'REQUIRE_APPROVAL',
+  request: AiPolicyRequest,
+  capability: AiCapabilityDefinition,
+  matchedScope: AgentGrantedScope,
+): AiPolicyApprovalDecision;
+function bindActorToDecision(
+  outcome: 'ALLOW' | 'REQUIRE_APPROVAL',
+  request: AiPolicyRequest,
+  capability: AiCapabilityDefinition,
+  matchedScope: AgentGrantedScope,
+): AiPolicyAllowDecision | AiPolicyApprovalDecision {
+  return {
+    outcome,
+    actorId: request.actor.actor.id,
+    actorType: request.actor.actor.type,
+    capability,
+    matchedScope,
+  };
 }

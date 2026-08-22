@@ -18,6 +18,8 @@ export const AI_ADMIN_AUDIT_ENTITY_TYPES = [
   AI_AUDIT_ENTITY.providerConnection,
   AI_AUDIT_ENTITY.model,
   AI_AUDIT_ENTITY.modelPolicy,
+  AI_AUDIT_ENTITY.promptPolicy,
+  AI_AUDIT_ENTITY.promptVersion,
   AI_AUDIT_ENTITY.internalAgent,
   AI_AUDIT_ENTITY.internalCapabilityGrant,
   AI_AUDIT_ENTITY.internalResourceScope,

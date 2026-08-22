@@ -114,13 +114,13 @@ Chat 7 added `PROVIDER_KEY_PREFLIGHT_VALIDATED`. Replacement-key validation and 
 
 `20260821150000_audit_actor_aware` performs a full-table `UPDATE` on `audit_logs` and builds two indexes without `CONCURRENTLY`. Validated on dev data (339 rows, 0 rows left without `actor_type`). Per `docs/deployment/AUTOMATED-PRODUCTION-DATABASE-MIGRATIONS-STANDARD.md` §9 this class of change needs explicit approval and a maintenance window on a large production `audit_logs`; the migration itself must not be edited after being applied.
 
-### C15. Prompt policy/version domain (AD 470–475, 477, 478, 481) — MISSING
+### C15. Prompt policy/version domain (AD 470–481) — OK
 
-`InternalAiAgent.promptPolicyId` is an opaque column and nothing else exists: no Prompt Policy row, no Prompt Version, no DRAFT/TESTING/PUBLISHED/RETIRED lifecycle, no rollback, no lifecycle tests. Chat 8 confirmed by search and by the AP 701 live assignment, which persisted a free-form id that no read path resolves. The safety half is real: no policy, capability or scope path reads the column (AQ 712), so a prompt cannot widen access.
+Chat 9 added `AiPromptPolicy` / `AiPromptVersion` with DRAFT / TESTING / PUBLISHED / RETIRED, publish/rollback, digest-only audit, and a real FK from `InternalAiAgent.promptPolicyId`. Assignment and activation accept only a policy that currently has a PUBLISHED version. Prompt text cannot grant capabilities or scopes. Migration `20260822180000_ai_prompt_policy_context_foundation` is additive; invalid Chat 8 free-form ids are nulled before the FK. The migration is **not** applied to production.
 
-### C16. Context / memory / knowledge contracts (AE 482–486, 488, 490–495) — MISSING
+### C16. Context / memory / knowledge contracts (AE 482–496) — OK
 
-No Context Assembler interface, no session-context or persistent-memory contract, no knowledge/RAG source interface. Two adjacent guarantees do exist: `AiDataClassification` with a per-capability `maxDataClassification` ceiling, and a policy request that carries no content at all. Chat 8 verified that no embedding, vector-store or pgvector code exists, so AE 496 holds.
+Chat 9 added the Context Assembler, session-context, disabled persistent-memory and authorization-first Knowledge/RAG contracts in `@nbos/shared`, with thin Nest wrappers. Assembly requires an ALLOW bound to the same actor, capability, matched scope and classification ceiling, and only purpose-built projections. Secret-shaped fields are rejected recursively (nested objects/arrays). Persistent memory and knowledge retrieval stay disabled. No vector store. Chat N9 closed **PASS WITH DEBTS**; see `28-Phase-1-Chat-9-Handoff.md`.
 
 ### C17. Approval request persistence (AF 499–516) — MISSING
 
@@ -142,9 +142,9 @@ Chat 8 ran the AP walk with a real OpenAI key supplied by the developer: connect
 
 Chat 8 promoted it to a first-class sidebar module at `/ai-agents` (`SIDEBAR_MODULE_KEYS`, `NAV_MODULE_DEFINITIONS` with the nine section children, module visual). `/settings/ai-agents/*` now issues a temporary redirect so existing links and the runbooks keep working. RBAC is unchanged: `COMPANY:EDIT`, the same permission the `ai-admin` controllers require.
 
-### C22. Phase 1 exit criterion 9 — BUSINESS DECISION
+### C22. Phase 1 exit criterion 9 — BUSINESS DECISION / PARTIAL
 
-Exit criterion 9 asks for prompt, approval, customer-facing safety and usage/evaluation foundations "in runtime contracts where required by this checklist". C15–C19 are 72 unchecked checklist items across AD, AE, AF, AG, AH and AI. This is not a technical conflict — the work is additive and the identities it needs already exist — so it is not a defect to fix during acceptance. **Decision required:** either these six sections ship inside Phase 1 (a further implementation slice), or Phase 1 closes on the External Agent + provider/model + Internal Agent foundation and AD–AI move to an explicit follow-up phase. Everything else in the exit criterion is met.
+`27-Phase-1-Continuation-After-Chat-8.md` decided AD–AI stay in the current Phase 1 (Chats 9–12). Chat 9 closed the product-code gap for AD/AE (C15, C16). Remaining exit-criterion-9 product work is AF (C17), AG (C18) and AH/AI (C19 / C7). Chat 12 is still the only milestone that may declare Phase 1 complete.
 
 ## D. Tasks alignment issues to verify before implementation
 
@@ -219,6 +219,10 @@ Canonical Phase 1 sources (`03`, `08`, `09`, `10` item 43, `16`) require both RE
 ## F8. Chat 8 evidence
 
 2026-08-22: final verification and acceptance. AO 657–685 live, 29/29 PASS over REST and MCP; AP 686–705 live on OpenAI with Anthropic and usage attribution `[~]`; AQ 706–721 architecture review, 15/16 `[x]`. AM 627/631/636 closed with a browser walk and a `ready:true` worker. `pnpm test` 844 files / 4291 tests, `pnpm lint` 0, `pnpm typecheck` 0. See `26-Phase-1-Chat-8-Acceptance.md`.
+
+## F9. Chat 9 evidence
+
+2026-08-22: Prompt Policy / Prompt Version persistence and lifecycle; Internal Agent published-only linkage; Context Assembler + session/memory/knowledge contracts. Independent Chat N9 first pass **FAIL**; remediations closed actor/scope binding, recursive secrets and Prompt Policy HTTP coverage. Re-verification: **PASS WITH DEBTS** (16/100 targeted+HTTP, 12/138 regression/security, shared/API typecheck and ESLint 0). Migration written, not applied to production, still pending on a drifted non-designated Neon. See `28-Phase-1-Chat-9-Handoff.md`.
 
 ## G. Implementation rule
 

@@ -53,6 +53,14 @@ export {
   type AiPolicyRequest,
 } from './policy-decision';
 export { evaluateAiPolicy } from './policy-evaluator';
+export {
+  accessBasisToResourceTarget,
+  assertBoundAllowDecision,
+  effectiveClassificationCeiling,
+  isSourceCoveredByMatchedScope,
+  type AiAccessBasisScope,
+  type AiAuthorizationGateFailure,
+} from './authorization-binding';
 export { agentStateDenyReason, credentialStateDenyReason } from './policy-state-reasons';
 export {
   AI_AGENT_APPROVAL_REQUIRED_ERROR,
@@ -99,3 +107,113 @@ export {
   type InternalAiAgentStatus,
   type InternalAiAgentSurface,
 } from './internal-agent-types';
+export {
+  AI_PROMPT_EDITABLE_VERSION_STATUSES,
+  AI_PROMPT_POLICY_STATUSES,
+  AI_PROMPT_VERSION_STATUSES,
+  isAiPromptPolicyStatus,
+  isAiPromptVersionStatus,
+  isEditablePromptVersionStatus,
+  isProductionPromptVersionStatus,
+  PROMPT_LAYER_MAX_CHARS,
+  PROMPT_LAYERS_MAX_TOTAL_CHARS,
+  type AiPromptLayers,
+  type AiPromptPolicyStatus,
+  type AiPromptVersionAttribution,
+  type AiPromptVersionStatus,
+} from './prompt-policy-types';
+export {
+  canonicalizePromptLayers,
+  normalizePromptLayers,
+  PROMPT_LAYER_KEYS,
+  validatePromptLayers,
+  type PromptLayerIssue,
+  type PromptLayerKey,
+} from './prompt-layers';
+export {
+  assertPromptVersionTransition,
+  canEditPromptVersion,
+  canMarkPromptVersionTesting,
+  canPublishPromptVersion,
+  canRetirePromptVersion,
+  canRollbackFromPromptVersion,
+  type PromptVersionLifecycleDenial,
+  type PromptVersionTransition,
+} from './prompt-version-lifecycle';
+export {
+  AI_CONTEXT_DEFAULT_MAX_AGE_MS,
+  AI_CONTEXT_DEFAULT_MAX_CHARS,
+  AI_CONTEXT_DEFAULT_MAX_FRAGMENTS,
+  AI_CONTEXT_OMIT_REASONS,
+  AI_CONTEXT_SOURCE_TYPES,
+  AI_CONTEXT_TRUST_LEVELS,
+  AI_UNTRUSTED_CONTEXT_SOURCE_TYPES,
+  type AiAssembledContext,
+  type AiAuthorizedContextSource,
+  type AiContextAccessBasis,
+  type AiContextAssembleRequest,
+  type AiContextBudget,
+  type AiContextClassificationMeta,
+  type AiContextFragment,
+  type AiContextFreshness,
+  type AiContextOmitReason,
+  type AiContextProvenance,
+  type AiContextSourceType,
+  type AiContextTrustLevel,
+  type AiUntrustedContextSourceType,
+} from './context-types';
+export {
+  AI_CONTEXT_SECRET_FIELD_KEYS,
+  contextTrustForSource,
+  isClassificationAllowed,
+  isSecretShapedFieldKey,
+  isUntrustedContextSource,
+  jsonContainsSecretShapedFields,
+  projectionContainsSecretFields,
+  redactSecretShapedFields,
+} from './context-classification';
+export { applyContextBudget, measureProjectionChars, resolveContextBudget } from './context-budget';
+export {
+  assembleAuthorizedContext,
+  assertAssemblyAuthorized,
+  type AiContextAssembleFailure,
+  type AiContextAssembleResult,
+} from './context-assembler';
+export {
+  AI_SESSION_DEFAULT_TTL_MS,
+  AI_SESSION_SUBJECT_TYPES,
+  buildSessionContext,
+  isAiSessionSubjectType,
+  isSessionExpired,
+  type AiSessionContext,
+  type AiSessionContextInput,
+  type AiSessionContextResult,
+  type AiSessionSubjectType,
+} from './session-context';
+export {
+  AI_MEMORY_OWNER_TYPES,
+  AI_MEMORY_SCOPE_TYPES,
+  AI_PERSISTENT_MEMORY_DEFAULT_ENABLED,
+  createDisabledPersistentMemoryStore,
+  evaluatePersistentMemoryWrite,
+  isAiMemoryOwnerType,
+  isAiMemoryScopeType,
+  type AiMemoryOwnerType,
+  type AiMemoryScopeType,
+  type AiMemoryWriteDenial,
+  type AiMemoryWriteResult,
+  type AiPersistentMemoryRecord,
+  type AiPersistentMemoryStore,
+  type AiPersistentMemoryWriteInput,
+} from './persistent-memory';
+export {
+  AI_KNOWLEDGE_SOURCE_KINDS,
+  assertKnowledgeRetrievalAllowed,
+  isAiKnowledgeSourceKind,
+  retrieveKnowledgeDisabled,
+  type AiKnowledgeDenial,
+  type AiKnowledgeRetrieveRequest,
+  type AiKnowledgeRetrieveResult,
+  type AiKnowledgeSource,
+  type AiKnowledgeSourceKind,
+} from './knowledge-source';

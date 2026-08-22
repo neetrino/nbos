@@ -1,12 +1,13 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue, type InternalAiAgentStatusEnum } from '@nbos/database';
-import { isInternalAiAgentSurface, type InternalAiAgentSurface } from '@nbos/shared';
+import { isInternalAiAgentSurface } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AiPlatformAuditService } from '../ai-platform-audit.service';
 import { AI_AUDIT_ACTION, AI_AUDIT_ENTITY } from '../ai-platform.constants';
 import type { PrismaTransaction } from '../agents/agent-row-lock';
 import { normalizeAgentDescription, requireAgentName } from '../agents/external-agent.rules';
 import { AiModelPolicyService } from '../policies/ai-model-policy.service';
+import { AiPromptPolicyService } from '../prompts/ai-prompt-policy.service';
 import {
   assertActiveAgentKeepsPolicy,
   nextInternalAgentPolicyId,
@@ -16,7 +17,12 @@ import {
   lockInternalAgentRow,
   lockLiveInternalAgent,
 } from './internal-agent-row-lock';
-import { toInternalAgentView, type InternalAiAgentView } from './internal-agent.mapper';
+import {
+  toInternalAgentUpdateData,
+  toInternalAgentView,
+  toSurfaceViews,
+  type InternalAiAgentView,
+} from './internal-agent.mapper';
 
 const ARCHIVED_AGENT_IS_IMMUTABLE = 'An archived Internal Agent cannot change state';
 
@@ -43,6 +49,7 @@ export class InternalAgentService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly audit: AiPlatformAuditService,
     private readonly policies: AiModelPolicyService,
+    private readonly prompts: AiPromptPolicyService,
   ) {}
 
   async create(
@@ -84,6 +91,9 @@ export class InternalAgentService {
       assertActiveAgentKeepsPolicy(locked.status, nextPolicyId);
       if (input.modelPolicyId) {
         await this.policies.requireAssignableForProduction(input.modelPolicyId, tx);
+      }
+      if (input.promptPolicyId) {
+        await this.prompts.requireAssignablePublished(input.promptPolicyId, tx);
       }
       await tx.internalAiAgent.update({
         where: { id: agentId },
@@ -133,6 +143,9 @@ export class InternalAgentService {
         );
       }
       await this.policies.requireAssignableForProduction(agent.modelPolicyId, tx);
+      if (agent.promptPolicyId) {
+        await this.prompts.requireAssignablePublished(agent.promptPolicyId, tx);
+      }
       await tx.internalAiAgent.update({
         where: { id: agentId },
         data: { status: 'ACTIVE', activatedAt: new Date(), pausedAt: null, disabledAt: null },
@@ -268,26 +281,4 @@ export class InternalAgentService {
       tx,
     );
   }
-}
-
-function toInternalAgentUpdateData(input: UpdateInternalAgentInput) {
-  return {
-    ...(input.name === undefined ? {} : { name: requireAgentName(input.name) }),
-    ...(input.description === undefined
-      ? {}
-      : { description: normalizeAgentDescription(input.description) }),
-    ...(input.ownerId === undefined ? {} : { ownerId: input.ownerId }),
-    ...(input.environment === undefined
-      ? {}
-      : { environment: normalizeAgentDescription(input.environment) }),
-    ...(input.modelPolicyId === undefined ? {} : { modelPolicyId: input.modelPolicyId }),
-    ...(input.promptPolicyId === undefined ? {} : { promptPolicyId: input.promptPolicyId }),
-    ...(input.approvalPolicyId === undefined ? {} : { approvalPolicyId: input.approvalPolicyId }),
-  };
-}
-
-function toSurfaceViews(
-  surfaces: Array<{ surface: InternalAiAgentSurface; enabled: boolean }>,
-): Array<{ surface: InternalAiAgentSurface; enabled: boolean }> {
-  return surfaces.map((item) => ({ surface: item.surface, enabled: item.enabled }));
 }
