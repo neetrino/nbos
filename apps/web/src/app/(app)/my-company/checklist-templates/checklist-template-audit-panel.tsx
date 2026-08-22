@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { auditApi, type AuditLogEntry } from '@/lib/api/audit';
+import { auditApi, formatAuditActorLabel, type AuditLogEntry } from '@/lib/api/audit';
 import { cn } from '@/lib/utils';
 
 const CHECKLIST_TEMPLATE_ENTITY_TYPE = 'ChecklistTemplate';
@@ -21,10 +21,7 @@ function formatAction(action: string): string {
 }
 
 function formatActor(entry: AuditLogEntry): string {
-  if (entry.actor) {
-    return `${entry.actor.firstName} ${entry.actor.lastName}`.trim();
-  }
-  return entry.userId.slice(0, 8);
+  return formatAuditActorLabel(entry);
 }
 
 type Props = {

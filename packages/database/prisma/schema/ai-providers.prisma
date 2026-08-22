@@ -1,0 +1,174 @@
+// ─── AI PROVIDERS, MODELS AND ROUTING ─────────────────────
+// Provider connections, encrypted secrets, model catalog and Model Policy.
+// Business modules depend on these records, never on a provider SDK.
+
+enum AiProviderTypeEnum {
+  OPENAI
+  ANTHROPIC
+}
+
+enum AiProviderConnectionStatusEnum {
+  ACTIVE
+  DISABLED
+  REVOKED
+}
+
+enum AiModelStatusEnum {
+  DISCOVERED
+  ACTIVE
+  DISABLED
+  DEPRECATED
+  UNAVAILABLE
+}
+
+/// Admin-owned evaluation judgment. Sync and LLM-judge scores never set this.
+enum AiModelEvaluationStatusEnum {
+  NOT_EVALUATED
+  PENDING
+  EVALUATED
+  UNSUITABLE
+}
+
+enum AiModelPolicyModeEnum {
+  FIXED
+  PRIMARY_FALLBACK
+  TIERED
+  ADAPTIVE
+}
+
+enum AiModelPolicyStatusEnum {
+  DRAFT
+  ACTIVE
+  DISABLED
+  ARCHIVED
+}
+
+enum AiModelPolicyCandidateRoleEnum {
+  PRIMARY
+  FALLBACK
+  TIER_FAST
+  TIER_STANDARD
+  TIER_DEEP
+}
+
+/// One configured connection to a provider account/project.
+/// Multiple rows per provider remain structurally possible.
+model AiProviderConnection {
+  id                     String                         @id @default(uuid())
+  provider               AiProviderTypeEnum
+  name                   String
+  status                 AiProviderConnectionStatusEnum @default(ACTIVE)
+  /// Display-only fragment. Never the API key.
+  keyPrefix              String                         @map("key_prefix")
+  providerOrganizationId String?                        @map("provider_organization_id")
+  providerProjectId      String?                        @map("provider_project_id")
+  /// Optional adapter base URL. Used only when explicitly set.
+  baseUrl                String?                        @map("base_url")
+  lastValidatedAt        DateTime?                      @map("last_validated_at")
+  lastModelSyncAt        DateTime?                      @map("last_model_sync_at")
+  createdById            String                         @map("created_by_id")
+  disabledAt             DateTime?                      @map("disabled_at")
+  revokedAt              DateTime?                      @map("revoked_at")
+  createdAt              DateTime                       @default(now()) @map("created_at")
+  updatedAt              DateTime                       @updatedAt @map("updated_at")
+
+  createdBy Employee         @relation("AiProviderConnectionCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  secret    AiProviderSecret?
+  models    AiModel[]
+
+  @@index([provider])
+  @@index([status])
+  @@index([createdById])
+  @@map("ai_provider_connections")
+}
+
+/// AES-256-GCM ciphertext for the provider API key.
+/// Never selected by connection views, never audited, never granted as a capability.
+model AiProviderSecret {
+  id              String   @id @default(uuid())
+  connectionId    String   @unique @map("connection_id")
+  encryptedApiKey String   @map("encrypted_api_key")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  connection AiProviderConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@map("ai_provider_secrets")
+}
+
+/// Catalog row for one provider-listed model. Historical rows are never deleted.
+model AiModel {
+  id               String            @id @default(uuid())
+  connectionId     String            @map("connection_id")
+  provider         AiProviderTypeEnum
+  providerModelId  String            @map("provider_model_id")
+  displayName      String            @map("display_name")
+  status           AiModelStatusEnum @default(DISCOVERED)
+  discoveredAt     DateTime          @map("discovered_at")
+  lastSeenAt       DateTime          @map("last_seen_at")
+  /// Provider-reported facts. Not suitability.
+  providerMetadata Json              @map("provider_metadata")
+  /// Internal admin judgment, independent of providerMetadata.
+  suitabilityTags  String[]          @map("suitability_tags")
+  /// Admin-owned. Never inferred from discovery or a judge score.
+  evaluationStatus AiModelEvaluationStatusEnum @default(NOT_EVALUATED) @map("evaluation_status")
+  notes            String?
+  aliasOf          String?           @map("alias_of")
+  snapshotId       String?           @map("snapshot_id")
+  activatedAt      DateTime?         @map("activated_at")
+  activatedById    String?           @map("activated_by_id")
+  disabledAt       DateTime?         @map("disabled_at")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  connection       AiProviderConnection     @relation(fields: [connectionId], references: [id], onDelete: Restrict)
+  activatedBy      Employee?                @relation("AiModelActivatedBy", fields: [activatedById], references: [id], onDelete: SetNull)
+  policyCandidates AiModelPolicyCandidate[]
+
+  @@unique([connectionId, providerModelId])
+  @@index([provider, status])
+  @@index([status])
+  @@index([activatedById])
+  @@map("ai_models")
+}
+
+/// Reusable routing profile. Agents reference this, never a raw model string.
+model AiModelPolicy {
+  id          String                  @id @default(uuid())
+  name        String
+  purpose     String?
+  mode        AiModelPolicyModeEnum
+  status      AiModelPolicyStatusEnum @default(DRAFT)
+  version     Int                     @default(1)
+  createdById String                  @map("created_by_id")
+  createdAt   DateTime                @default(now()) @map("created_at")
+  updatedAt   DateTime                @updatedAt @map("updated_at")
+
+  createdBy      Employee                 @relation("AiModelPolicyCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  candidates     AiModelPolicyCandidate[]
+  internalAgents InternalAiAgent[]
+
+  @@index([status])
+  @@index([createdById])
+  @@map("ai_model_policies")
+}
+
+model AiModelPolicyCandidate {
+  id          String                         @id @default(uuid())
+  policyId    String                         @map("policy_id")
+  modelId     String                         @map("model_id")
+  role        AiModelPolicyCandidateRoleEnum
+  priority    Int
+  enabled     Boolean                        @default(true)
+  constraints Json?
+  createdAt   DateTime                       @default(now()) @map("created_at")
+  updatedAt   DateTime                       @updatedAt @map("updated_at")
+
+  policy AiModelPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  model  AiModel       @relation(fields: [modelId], references: [id], onDelete: Restrict)
+
+  @@unique([policyId, modelId])
+  @@unique([policyId, priority])
+  @@index([modelId])
+  @@map("ai_model_policy_candidates")
+}

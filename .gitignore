@@ -21,6 +21,9 @@ coverage/
 packages/database/prisma/*.db
 packages/database/src/generated/prisma/
 
+# Local acceptance walks (AO/AP drivers, transcripts, live artifacts — never ship)
+.chat8/
+
 # Logs and temp
 *.log
 npm-debug.log*

@@ -423,6 +423,30 @@ describe('PaymentsService', () => {
       ).not.toHaveBeenCalled();
     });
 
+    it('rejects Tax payment that would mark Paid before official request', async () => {
+      prisma.invoice.findUnique.mockResolvedValueOnce({
+        id: 'inv1',
+        orderId: 'ord1',
+        amount: 100000,
+        moneyStatus: 'AWAITING_PAYMENT',
+        taxStatus: 'TAX',
+        officialInvoiceRequestSent: false,
+        dueDate: new Date('2026-03-20'),
+        payments: [],
+        companyId: 'c1',
+        company: { name: 'InvestOn LLC', taxId: '01234567' },
+      });
+
+      await expect(
+        service.create({
+          invoiceId: 'inv1',
+          amount: 100000,
+          paymentDate: '2026-03-12',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.payment.create).not.toHaveBeenCalled();
+    });
+
     it('rejects payment that exceeds remaining invoice balance', async () => {
       prisma.invoice.findUnique.mockResolvedValueOnce({
         id: 'inv1',

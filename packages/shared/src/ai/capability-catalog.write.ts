@@ -1,0 +1,141 @@
+import { CAPABILITY_VERSION_1, TASK_SCOPES, WORKSPACE_SCOPES } from './capability-catalog.read';
+import type { AiCapabilityDefinition } from './capability-types';
+
+/**
+ * Phase 1 write capabilities from `02-AI-Capability-and-Action-Layer.md`.
+ *
+ * `tasks.create` and `tasks.update` are separate optional grants.
+ * Deliberately absent: `tasks.delete`, generic `tasks.set_status`, and any
+ * force-completion path.
+ */
+export const AI_WRITE_CAPABILITIES: readonly AiCapabilityDefinition[] = [
+  {
+    key: 'tasks.create',
+    version: CAPABILITY_VERSION_1,
+    module: 'Tasks',
+    description: 'Create a task in an authorized Work Space. Separately granted.',
+    access: 'WRITE',
+    risk: 'MEDIUM',
+    allowedScopeTypes: WORKSPACE_SCOPES,
+    input: {
+      id: 'tasks.create.input.v1',
+      fields: ['workspaceId', 'title', 'description', 'priority', 'dueDate'],
+    },
+    output: {
+      id: 'tasks.create.output.v1',
+      fields: ['id', 'code', 'title', 'status', 'updatedAt'],
+    },
+    idempotency: 'REQUIRED',
+    audit: 'ALWAYS',
+    approval: 'NONE',
+    rateLimitClass: 'WRITE_SENSITIVE',
+    maxDataClassification: 'INTERNAL',
+    requiresTargetDataClassification: false,
+    deprecated: false,
+  },
+  {
+    key: 'tasks.update',
+    version: CAPABILITY_VERSION_1,
+    module: 'Tasks',
+    description:
+      'Allowlisted semantic task update. Never status bypass, deletion or Work Space reassignment.',
+    access: 'WRITE',
+    risk: 'MEDIUM',
+    allowedScopeTypes: TASK_SCOPES,
+    input: {
+      id: 'tasks.update.input.v1',
+      fields: ['taskId', 'title', 'description', 'priority', 'dueDate', 'expectedUpdatedAt'],
+    },
+    output: {
+      id: 'tasks.update.output.v1',
+      fields: ['id', 'code', 'title', 'status', 'updatedAt'],
+    },
+    idempotency: 'REQUIRED',
+    audit: 'ALWAYS',
+    approval: 'NONE',
+    rateLimitClass: 'WRITE_STANDARD',
+    maxDataClassification: 'INTERNAL',
+    requiresTargetDataClassification: false,
+    deprecated: false,
+  },
+  {
+    key: 'tasks.start',
+    version: CAPABILITY_VERSION_1,
+    module: 'Tasks',
+    description: 'Semantic Start Task action.',
+    access: 'WRITE',
+    risk: 'LOW',
+    allowedScopeTypes: TASK_SCOPES,
+    input: { id: 'tasks.start.input.v1', fields: ['taskId'] },
+    output: { id: 'tasks.start.output.v1', fields: ['id', 'status', 'updatedAt'] },
+    // Retry-sensitive: a replayed start must not re-open a task that has since
+    // moved on, so the caller has to supply an idempotency key.
+    idempotency: 'REQUIRED',
+    audit: 'ALWAYS',
+    approval: 'NONE',
+    rateLimitClass: 'WRITE_STANDARD',
+    maxDataClassification: 'INTERNAL',
+    requiresTargetDataClassification: false,
+    deprecated: false,
+  },
+  {
+    key: 'tasks.comment',
+    version: CAPABILITY_VERSION_1,
+    module: 'Tasks',
+    description: 'Add a progress note attributed to the agent, never to an employee.',
+    access: 'WRITE',
+    risk: 'MEDIUM',
+    allowedScopeTypes: TASK_SCOPES,
+    input: { id: 'tasks.comment.input.v1', fields: ['taskId', 'body'] },
+    output: { id: 'tasks.comment.output.v1', fields: ['id', 'createdAt'] },
+    idempotency: 'REQUIRED',
+    audit: 'ALWAYS',
+    approval: 'NONE',
+    rateLimitClass: 'WRITE_STANDARD',
+    maxDataClassification: 'INTERNAL',
+    requiresTargetDataClassification: false,
+    deprecated: false,
+  },
+  {
+    key: 'tasks.submit_review',
+    version: CAPABILITY_VERSION_1,
+    module: 'Tasks',
+    description: 'Submit work for human review. Never final completion.',
+    access: 'WRITE',
+    risk: 'MEDIUM',
+    allowedScopeTypes: TASK_SCOPES,
+    input: { id: 'tasks.submit_review.input.v1', fields: ['taskId'] },
+    output: {
+      id: 'tasks.submit_review.output.v1',
+      fields: ['id', 'status', 'reviewRequestedAt', 'updatedAt'],
+    },
+    idempotency: 'REQUIRED',
+    audit: 'ALWAYS',
+    approval: 'NONE',
+    rateLimitClass: 'WRITE_STANDARD',
+    maxDataClassification: 'INTERNAL',
+    requiresTargetDataClassification: false,
+    deprecated: false,
+  },
+  {
+    key: 'tasks.attach_artifact',
+    version: CAPABILITY_VERSION_1,
+    module: 'Drive',
+    description: 'Link a generated artifact to a task using Drive contracts.',
+    access: 'WRITE',
+    risk: 'MEDIUM',
+    allowedScopeTypes: TASK_SCOPES,
+    input: {
+      id: 'tasks.attach_artifact.input.v1',
+      fields: ['taskId', 'fileName', 'mimeType', 'sizeBytes'],
+    },
+    output: { id: 'tasks.attach_artifact.output.v1', fields: ['fileAssetId', 'linkId'] },
+    idempotency: 'REQUIRED',
+    audit: 'ALWAYS',
+    approval: 'NONE',
+    rateLimitClass: 'WRITE_SENSITIVE',
+    maxDataClassification: 'INTERNAL',
+    requiresTargetDataClassification: true,
+    deprecated: false,
+  },
+];

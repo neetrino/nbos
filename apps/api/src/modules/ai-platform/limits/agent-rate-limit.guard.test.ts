@@ -1,0 +1,82 @@
+import type { ExecutionContext } from '@nestjs/common';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { authenticatedAgentFixture } from '../../../test-utils/authenticated-agent';
+import { AgentAccessException } from '../auth/agent-auth.errors';
+import {
+  AGENT_MAX_REQUEST_BYTES,
+  AGENT_RATE_LIMIT_HEADERS,
+  AGENT_REQUEST_LIMIT_PER_WINDOW,
+} from './agent-rate-limit.constants';
+import { AgentRateLimitGuard } from './agent-rate-limit.guard';
+import { AgentRateLimitService } from './agent-rate-limit.service';
+
+interface HarnessContext {
+  context: ExecutionContext;
+  setHeader: ReturnType<typeof vi.fn>;
+}
+
+function contextFor(
+  headers: Record<string, string | undefined>,
+  authenticated = true,
+): HarnessContext {
+  const setHeader = vi.fn();
+  const request = { headers, agent: authenticated ? authenticatedAgentFixture() : undefined };
+  const context = {
+    switchToHttp: () => ({
+      getRequest: () => request,
+      getResponse: () => ({ headersSent: false, setHeader }),
+    }),
+  } as unknown as ExecutionContext;
+  return { context, setHeader };
+}
+
+describe('AgentRateLimitGuard', () => {
+  let guard: AgentRateLimitGuard;
+
+  beforeEach(() => {
+    guard = new AgentRateLimitGuard(new AgentRateLimitService());
+  });
+
+  it('allows a normal request and publishes the remaining budget', async () => {
+    const { context, setHeader } = contextFor({});
+
+    expect(await guard.canActivate(context)).toBe(true);
+    expect(setHeader).toHaveBeenCalledWith(
+      AGENT_RATE_LIMIT_HEADERS.limit,
+      String(AGENT_REQUEST_LIMIT_PER_WINDOW),
+    );
+    expect(setHeader).toHaveBeenCalledWith(
+      AGENT_RATE_LIMIT_HEADERS.remaining,
+      String(AGENT_REQUEST_LIMIT_PER_WINDOW - 1),
+    );
+  });
+
+  it('refuses an over-budget agent with a retry hint', async () => {
+    for (let call = 0; call < AGENT_REQUEST_LIMIT_PER_WINDOW; call += 1) {
+      await guard.canActivate(contextFor({}).context);
+    }
+
+    await expect(guard.canActivate(contextFor({}).context)).rejects.toMatchObject({
+      code: 'AGENT_RATE_LIMITED',
+    });
+    try {
+      await guard.canActivate(contextFor({}).context);
+    } catch (error) {
+      expect(error).toBeInstanceOf(AgentAccessException);
+      expect((error as AgentAccessException).retryAfterSeconds).toBeGreaterThan(0);
+    }
+  });
+
+  it('leaves the payload ceiling to the transport instead of trusting a header', async () => {
+    const understated = contextFor({ 'content-length': String(AGENT_MAX_REQUEST_BYTES + 1) });
+
+    expect(await guard.canActivate(understated.context)).toBe(true);
+  });
+
+  it('ignores a request the authentication guard already rejected', async () => {
+    const anonymous = contextFor({}, false);
+
+    expect(await guard.canActivate(anonymous.context)).toBe(true);
+    expect(anonymous.setHeader).not.toHaveBeenCalled();
+  });
+});

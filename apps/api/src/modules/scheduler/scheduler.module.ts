@@ -15,6 +15,9 @@ import { AuthModule } from '../auth/auth.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { ClientServicesModule } from '../client-services/client-services.module';
 import { MailModule } from '../mail/mail.module';
+import { AiPlatformCoreModule } from '../ai-platform/ai-platform-core.module';
+import { AiModelCatalogSyncCron } from './ai-model-catalog-sync.cron';
+import { SchedulerAiService } from './scheduler-ai.service';
 import { MailGmailWatchRenewCron } from './mail-gmail-watch-renew.cron';
 import { MailOutboundReconcileCron } from './mail-outbound-reconcile.cron';
 import { MailSyncReconcileCron } from './mail-sync-reconcile.cron';
@@ -59,6 +62,7 @@ const SCHEDULER_IMPORTS = [
   ClientServicesModule,
   MailModule,
   AuditModule,
+  AiPlatformCoreModule,
 ] as const;
 
 const CRON_PROVIDERS = [
@@ -73,6 +77,7 @@ const CRON_PROVIDERS = [
   MailOutboundReconcileCron,
   MailGmailWatchRenewCron,
   MailSyncReconcileCron,
+  AiModelCatalogSyncCron,
   ...INTERNAL_SCHEDULER_CRON_PROVIDERS,
 ] as const;
 
@@ -102,6 +107,7 @@ export class SchedulerModule {
       ],
       providers: [
         SchedulerService,
+        SchedulerAiService,
         SchedulerLeaseService,
         SchedulerRunService,
         ScheduledJobRegistry,
@@ -112,6 +118,7 @@ export class SchedulerModule {
       ],
       exports: [
         SchedulerService,
+        SchedulerAiService,
         SchedulerLeaseService,
         ScheduledJobRegistry,
         SchedulerRunService,

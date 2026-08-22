@@ -34,25 +34,17 @@ import {
 } from '../../common/lifecycle/entity-lifecycle-guards';
 import { isTaskDraftDeletable } from '../../common/lifecycle/task-lifecycle-guards';
 import { buildScopeWhere } from '../../common/lifecycle/entity-lifecycle-scope';
-
-interface CreateTaskDto {
-  title: string;
-  creatorId: string;
-  description?: string;
-  assigneeId?: string;
-  coAssignees?: string[];
-  observers?: string[];
-  priority?: string;
-  workspaceId?: string;
-  sprintId?: string | null;
-  planningStatus?: string;
-  completionRules?: unknown;
-  dueDate?: string;
-  parentId?: string;
-  links?: Array<{ entityType: string; entityId: string }>;
-  isRecurring?: boolean;
-  templateTaskId?: string;
-}
+import { commitTaskUpdate } from './commit-task-update.op';
+import {
+  actorProvenanceFields,
+  type CreateTaskInput,
+  type TaskCreatedByActor,
+} from './task-create.input';
+import {
+  applyTaskStatusTransition,
+  TASK_START_FROM_STATUSES,
+  TASK_SUBMIT_REVIEW_FROM_STATUSES,
+} from './task-status-transition.op';
 
 interface UpdateTaskDto {
   title?: string;
@@ -143,7 +135,7 @@ export class TasksService {
     return items;
   }
 
-  async create(data: CreateTaskDto) {
+  async create(data: CreateTaskInput, createdByActor?: TaskCreatedByActor) {
     const title = data.title?.trim();
     if (!title) throw new BadRequestException('title is required');
     const creatorId = data.creatorId?.trim();
@@ -160,6 +152,7 @@ export class TasksService {
     });
     const dueDate = this.parseOptionalIsoDate('dueDate', data.dueDate);
     const linkRows = this.dedupeTaskLinks(data.links);
+    const actorProvenance = actorProvenanceFields(createdByActor);
 
     const code = await this.generateCode();
     const task = await this.prisma.task.create({
@@ -182,6 +175,7 @@ export class TasksService {
         parentId,
         isRecurring: data.isRecurring ?? false,
         templateTaskId: data.templateTaskId?.trim() || undefined,
+        ...actorProvenance,
         ...(linkRows?.length && {
           links: {
             createMany: {
@@ -199,7 +193,12 @@ export class TasksService {
     return task;
   }
 
-  async update(id: string, data: UpdateTaskDto, access?: TasksAccessContext) {
+  async update(
+    id: string,
+    data: UpdateTaskDto,
+    access?: TasksAccessContext,
+    expectedUpdatedAt?: Date,
+  ) {
     const existing = await this.findById(id, access);
     this.assertTaskMutable(existing);
     if (data.creatorId !== undefined) {
@@ -217,8 +216,10 @@ export class TasksService {
           })
         : null;
 
-    const task = await this.prisma.task.update({
-      where: { id },
+    const task = await commitTaskUpdate(this.prisma, {
+      id,
+      expectedUpdatedAt,
+      include: TASK_DETAIL_INCLUDE,
       data: {
         ...(data.title && { title: data.title }),
         ...(data.description !== undefined && { description: data.description }),
@@ -255,7 +256,6 @@ export class TasksService {
         }),
         ...(data.reviewerId !== undefined && { reviewerId: data.reviewerId }),
       },
-      include: TASK_DETAIL_INCLUDE,
     });
     await attachTaskLinkDisplayNames(this.prisma, [task]);
     return task;
@@ -265,20 +265,18 @@ export class TasksService {
   async submitForReview(id: string, reviewerId?: string, access?: TasksAccessContext) {
     const task = await this.findById(id, access);
     this.assertTaskMutable(task);
-    if (task.status === 'COMPLETED') {
-      throw new BadRequestException('Completed tasks cannot be submitted for review.');
-    }
-    const updated = await this.prisma.task.update({
-      where: { id },
+    await applyTaskStatusTransition(this.prisma, {
+      id,
+      from: TASK_SUBMIT_REVIEW_FROM_STATUSES,
       data: {
         status: 'REVIEW',
         reviewRequestedAt: new Date(),
         reviewApprovedAt: null,
         ...(reviewerId !== undefined && { reviewerId: reviewerId || null }),
       },
-      include: TASK_DETAIL_INCLUDE,
+      invalidMessage: 'Completed tasks cannot be submitted for review.',
     });
-    await attachTaskLinkDisplayNames(this.prisma, [updated]);
+    const updated = await this.findById(id, access);
     await notifyTaskReviewRequested(this.notifications, {
       taskId: updated.id,
       taskCode: updated.code,
@@ -329,16 +327,13 @@ export class TasksService {
   async start(id: string, access?: TasksAccessContext) {
     const task = await this.findById(id, access);
     this.assertTaskMutable(task);
-    if (task.status === 'COMPLETED') {
-      throw new NotFoundException('Cannot start a completed task');
-    }
-    const updated = await this.prisma.task.update({
-      where: { id },
-      data: { status: 'IN_PROGRESS' as TaskStatusEnum },
-      include: TASK_DETAIL_INCLUDE,
+    await applyTaskStatusTransition(this.prisma, {
+      id,
+      from: TASK_START_FROM_STATUSES,
+      data: { status: 'IN_PROGRESS' },
+      invalidMessage: 'Cannot start a completed task',
     });
-    await attachTaskLinkDisplayNames(this.prisma, [updated]);
-    return updated;
+    return this.findById(id, access);
   }
 
   /** Завершить задачу */
@@ -520,7 +515,7 @@ export class TasksService {
   }
 
   private dedupeTaskLinks(
-    links: CreateTaskDto['links'] | undefined,
+    links: CreateTaskInput['links'] | undefined,
   ): Array<{ entityType: string; entityId: string }> | undefined {
     if (!links?.length) return undefined;
     const map = new Map<string, { entityType: string; entityId: string }>();

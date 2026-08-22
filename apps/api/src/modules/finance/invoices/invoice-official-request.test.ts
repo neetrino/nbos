@@ -7,6 +7,20 @@ import {
   updateOfficialInvoiceGovId,
 } from './invoice-official-request';
 
+function officialRow(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'inv-1',
+    taxStatus: 'TAX',
+    companyId: 'c1',
+    officialInvoiceRequestSent: false,
+    officialInvoiceSentAt: null,
+    officialInvoiceCancelledAt: null,
+    govInvoiceId: null,
+    company: { name: 'InvestOn LLC', taxId: '01234567' },
+    ...overrides,
+  };
+}
+
 describe('isOfficialRequestBlockingTaxReminders', () => {
   it('blocks when Tax and request not sent', () => {
     expect(
@@ -37,14 +51,7 @@ describe('sendOfficialInvoiceRequest', () => {
   it('rejects tax-free invoices', async () => {
     const prisma = {
       invoice: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: 'inv-1',
-          taxStatus: 'FREE',
-          officialInvoiceRequestSent: false,
-          officialInvoiceSentAt: null,
-          officialInvoiceCancelledAt: null,
-          govInvoiceId: null,
-        }),
+        findUnique: vi.fn().mockResolvedValue(officialRow({ taxStatus: 'FREE' })),
         update: vi.fn(),
       },
     };
@@ -56,22 +63,16 @@ describe('sendOfficialInvoiceRequest', () => {
   it('marks request sent and clears cancel timestamp', async () => {
     const prisma = {
       invoice: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: 'inv-1',
-          taxStatus: 'TAX',
-          officialInvoiceRequestSent: false,
-          officialInvoiceSentAt: null,
-          officialInvoiceCancelledAt: new Date('2026-01-01'),
-          govInvoiceId: null,
-        }),
-        update: vi.fn().mockResolvedValue({
-          id: 'inv-1',
-          taxStatus: 'TAX',
-          officialInvoiceRequestSent: true,
-          officialInvoiceSentAt: new Date('2026-05-20'),
-          officialInvoiceCancelledAt: null,
-          govInvoiceId: null,
-        }),
+        findUnique: vi
+          .fn()
+          .mockResolvedValue(officialRow({ officialInvoiceCancelledAt: new Date('2026-01-01') })),
+        update: vi.fn().mockResolvedValue(
+          officialRow({
+            officialInvoiceRequestSent: true,
+            officialInvoiceSentAt: new Date('2026-05-20'),
+            officialInvoiceCancelledAt: null,
+          }),
+        ),
       },
     };
     const result = await sendOfficialInvoiceRequest(prisma as never, 'inv-1');
@@ -85,20 +86,28 @@ describe('sendOfficialInvoiceRequest', () => {
       }),
     );
   });
+
+  it('rejects Tax invoices without company tax id', async () => {
+    const prisma = {
+      invoice: {
+        findUnique: vi
+          .fn()
+          .mockResolvedValue(officialRow({ company: { name: 'InvestOn LLC', taxId: null } })),
+        update: vi.fn(),
+      },
+    };
+    await expect(sendOfficialInvoiceRequest(prisma as never, 'inv-1')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(prisma.invoice.update).not.toHaveBeenCalled();
+  });
 });
 
 describe('cancelOfficialInvoiceRequest', () => {
   it('rejects when no active request', async () => {
     const prisma = {
       invoice: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: 'inv-1',
-          taxStatus: 'TAX',
-          officialInvoiceRequestSent: false,
-          officialInvoiceSentAt: null,
-          officialInvoiceCancelledAt: null,
-          govInvoiceId: null,
-        }),
+        findUnique: vi.fn().mockResolvedValue(officialRow()),
         update: vi.fn(),
       },
     };
@@ -112,22 +121,18 @@ describe('updateOfficialInvoiceGovId', () => {
   it('trims and stores gov id', async () => {
     const prisma = {
       invoice: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: 'inv-1',
-          taxStatus: 'TAX',
-          officialInvoiceRequestSent: true,
-          officialInvoiceSentAt: new Date(),
-          officialInvoiceCancelledAt: null,
-          govInvoiceId: null,
-        }),
-        update: vi.fn().mockResolvedValue({
-          id: 'inv-1',
-          taxStatus: 'TAX',
-          officialInvoiceRequestSent: true,
-          officialInvoiceSentAt: new Date(),
-          officialInvoiceCancelledAt: null,
-          govInvoiceId: 'ARM-99',
-        }),
+        findUnique: vi
+          .fn()
+          .mockResolvedValue(
+            officialRow({ officialInvoiceRequestSent: true, officialInvoiceSentAt: new Date() }),
+          ),
+        update: vi.fn().mockResolvedValue(
+          officialRow({
+            officialInvoiceRequestSent: true,
+            officialInvoiceSentAt: new Date(),
+            govInvoiceId: 'ARM-99',
+          }),
+        ),
       },
     };
     await updateOfficialInvoiceGovId(prisma as never, 'inv-1', '  ARM-99  ');

@@ -25,6 +25,7 @@ import { BonusPoliciesModule } from './modules/bonus-policies/bonus-policies.mod
 import { DomainsModule } from './modules/domains/domains.module';
 import { ClientServicesModule } from './modules/client-services/client-services.module';
 import { AuditModule } from './modules/audit/audit.module';
+import { AiPlatformModule } from './modules/ai-platform/ai-platform.module';
 import { CredentialsModule } from './modules/credentials/credentials.module';
 import { DriveModule } from './modules/drive/drive.module';
 import { DocumentsModule } from './modules/documents/documents.module';
@@ -91,6 +92,7 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     DomainsModule,
     ClientServicesModule,
     AuditModule,
+    AiPlatformModule,
     CredentialsModule,
     DriveModule,
     DocumentsModule,

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
 import type { InvoiceSheetStageGateHighlight } from '@/features/finance/constants/invoice-stage-gate-highlight';
+import { getLocalInvoiceMoneyStatusGateErrors } from '@/features/finance/constants/invoice-money-status-gate-client';
 import { getApiErrorMessage, isStageGateApiError } from '@/lib/api-errors';
 import { invoicesApi, paymentsApi, type Invoice } from '@/lib/api/finance';
 
@@ -77,6 +78,13 @@ export function SubscriptionPageInvoiceSheetHost({
 
   const handleMoneyStatusChange = useCallback(
     async (id: string, moneyStatus: string) => {
+      if (invoice) {
+        const localErrors = getLocalInvoiceMoneyStatusGateErrors(invoice, moneyStatus);
+        if (localErrors.length > 0) {
+          setStageGateHighlight({ errors: localErrors });
+          return;
+        }
+      }
       try {
         const updated = await invoicesApi.updateMoneyStatus(id, moneyStatus);
         setInvoice(updated);
