@@ -1,6 +1,10 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
+import {
+  CurrentUser,
+  RequirePermission,
+  type CurrentUserPayload,
+} from '../../../common/decorators';
 import { PortfolioService } from './portfolio.service';
 
 @ApiTags('Clients / Portfolio')
@@ -10,6 +14,7 @@ export class PortfolioController {
   constructor(private readonly portfolioService: PortfolioService) {}
 
   @Get('contact/:contactId')
+  @RequirePermission('CLIENTS', 'VIEW')
   @ApiOperation({ summary: 'Computed client portfolio for a contact' })
   async contactPortfolio(
     @Param('contactId') contactId: string,
@@ -19,6 +24,7 @@ export class PortfolioController {
   }
 
   @Get('company/:companyId')
+  @RequirePermission('CLIENTS', 'VIEW')
   @ApiOperation({ summary: 'Computed client portfolio for a company' })
   async companyPortfolio(
     @Param('companyId') companyId: string,

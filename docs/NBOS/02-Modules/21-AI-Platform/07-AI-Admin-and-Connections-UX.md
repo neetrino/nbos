@@ -28,10 +28,10 @@ An external client connection is not the same thing as an internal model provide
 Recommended top-level administrative route:
 
 ```text
-Settings -> AI & Agents
+AI & Agents (sidebar module at /ai-agents)
 ```
 
-If product navigation later promotes AI to a top-level module, the same information architecture should remain valid.
+Legacy `Settings -> AI & Agents` redirects to the sidebar module. If product navigation later changes again, the same information architecture should remain valid.
 
 Recommended sections:
 

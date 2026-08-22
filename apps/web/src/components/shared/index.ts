@@ -77,6 +77,7 @@ export {
   type ActionTileTone,
 } from './action-tile-button-classes';
 export { EmptyState } from './EmptyState';
+export { AccessDeniedScreen } from './AccessDeniedScreen';
 export { EntityNavPillLink } from './EntityNavPillLink';
 export { DetailSheetEntityLinkCard } from './DetailSheetEntityLinkCard';
 export { DetailSheetEntityLinkGrid } from './DetailSheetEntityLinkGrid';

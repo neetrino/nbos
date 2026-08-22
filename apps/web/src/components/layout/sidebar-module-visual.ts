@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   BarChart3,
+  Bot,
   Building2,
   CalendarDays,
   Cloud,
@@ -168,6 +169,13 @@ export const SIDEBAR_MODULE_VISUALS: Record<SidebarModuleKey, SidebarModuleVisua
     tileClass: 'bg-violet-500/10',
     tileActiveClass: 'bg-violet-500/16 ring-violet-500/25 ring-1',
     markerClass: 'bg-violet-700 dark:bg-violet-300',
+  },
+  'ai-agents': {
+    Icon: Bot,
+    iconClass: 'text-teal-600 dark:text-teal-400',
+    tileClass: 'bg-teal-500/10',
+    tileActiveClass: 'bg-teal-500/16 ring-teal-500/25 ring-1',
+    markerClass: 'bg-teal-600 dark:bg-teal-400',
   },
   settings: {
     Icon: Settings,
