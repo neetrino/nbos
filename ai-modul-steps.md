@@ -1,222 +1,332 @@
 # AI Platform Phase 1 — план исполнения
 
-Рабочий файл: как ведём Phase 1 модуля `docs/NBOS/02-Modules/21-AI-Platform/`, какие модели на каком милстоуне и какими промтами запускаем чаты.
+Рабочий файл: как ведём текущую Phase 1 модуля `docs/NBOS/02-Modules/21-AI-Platform/`, какие модели используем и какими промтами запускаем новые чаты.
 
-Канон задачи — `10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md` (executable checklist, ~724 пункта). Стратегия разбиения — `16-Phase-1-Execution-Strategy.md`.
+Канон задачи:
+
+- `docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md` — executable checklist;
+- `docs/NBOS/02-Modules/21-AI-Platform/16-Phase-1-Execution-Strategy.md` — стратегия исполнения;
+- `docs/NBOS/02-Modules/21-AI-Platform/26-Phase-1-Chat-8-Acceptance.md` — фактический acceptance Chat 8;
+- `docs/NBOS/02-Modules/21-AI-Platform/27-Phase-1-Continuation-After-Chat-8.md` — решение продолжить текущую Phase 1 до полного exit criterion.
 
 ## Метод работы
 
-Один милстоун = три шага и два промта. Эстафета между чатами передаётся **файлом в репозитории**, а не копированием текста из чата в чат.
+Один implementation milestone = исполнитель → независимая проверка → исправление найденного → повторная проверка → commit.
 
-1. **Новый чат, промт исполнителя.** Делает милстоун целиком. В конце пишет `docs/NBOS/02-Modules/21-AI-Platform/1X-Phase-1-Chat-N-Handoff.md` по формату Chat 1.
-2. **Новый чат, промт проверки.** Handoff читает, но не верит: проверяет ветку/коммит, `prisma migrate status`, гоняет тесты и typecheck, читает diff. Дописывает в тот же handoff секцию проверки. Код не пишет.
-3. Проверка прошла → commit → милстоун N+1 стартует с чтения этого handoff.
+Эстафета между чатами передаётся handoff-файлом в репозитории, а не памятью старого чата.
 
-Правила, которые держат схему рабочей:
+Правила:
 
-- Милстоун не режем между дешёвыми субагентами: швы возникают там, где живут инварианты безопасности.
-- Чат проверки **всегда новый** и **другой модели**, чем исполнитель. Долгоживущий проверяющий начинает сверяться со своей памятью вместо репозитория.
-- Перепроверка после правок — в том же чате проверки (он уже знает, что искать). Закрывается вместе с милстоуном.
-- Знание накапливаем в handoff-файлах, а не в контексте чата.
-- Где секция проверки противоречит самоотчёту исполнителя — **верна проверка**.
+- новый milestone всегда начинается в свежем чате;
+- verifier всегда новый и другого семейства моделей, чем исполнитель;
+- verifier читает handoff, но не принимает его как доказательство;
+- FAIL возвращается в тот же executor chat для исправления, после чего тот же verifier перепроверяет;
+- `[x]` допустим только при реальном code/test/live evidence;
+- не создавать второй AI architecture/runtime рядом с существующим Actor → Policy → Capability → Domain Action → Audit;
+- foundation реализуется минимально, но реально: не превращать future contract в ненужную enterprise-подсистему;
+- production-only credentials/windows не подделывать моками как live acceptance.
 
 ## Милстоуны и модели
 
-Доступные в Cursor модели: Cursor Grok 4.6, Composer 2.5 Fast, Cursor Grok 4.5 High Fast, Claude Opus 5 High, GPT-5.6 Sol High, Claude Sonnet 4.6 Medium, Codex 5.3 Medium, GPT-5.4 Medium.
+| Chat | Содержание | Исполнитель | Проверка | Статус |
+| --- | --- | --- | --- | --- |
+| 1 | Foundation + Audit | Cursor Grok 4.6 | Claude Opus 5 High | DONE |
+| 2 | Credentials + Auth + Policy | Claude Opus 5 High | GPT-5.6 Sol High | PASS WITH DEBTS |
+| 3 | Capabilities + Tasks | Cursor Grok 4.6 | GPT-5.6 Sol High | PASS WITH DEBTS |
+| 4 | REST + MCP | Claude Opus 5 High | Cursor Grok 4.6 | PASS WITH DEBTS |
+| 5 | Providers + Models | Cursor Grok 4.6 | GPT-5.6 Sol High | PASS WITH DEBTS |
+| 6 | AI Admin UI | Cursor Grok 4.6 + Composer 2.5 | GPT-5.6 Sol High | PASS WITH DEBTS |
+| 7 | Security + regression | Claude Opus 5 High | GPT-5.6 Sol High | PASS WITH DEBTS |
+| 8 | Intermediate acceptance | Claude Opus 5 High | GPT-5.6 Sol High | DONE — found missing AD–AI slice |
+| 9 | Prompt + Context/Memory/Knowledge | Cursor Grok 4.6 | GPT-5.6 Sol High | NEXT |
+| 10 | Approvals + Customer-facing safety | Claude Opus 5 High | GPT-5.6 Sol High | PLANNED |
+| 11 | Usage/Cost/Evaluation + actionable debts | Cursor Grok 4.6 | GPT-5.6 Sol High | PLANNED |
+| 12 | Final Phase 1 re-acceptance | Claude Opus 5 High | GPT-5.6 Sol High | PLANNED |
 
-| Chat | Содержание                   | Исполнитель                    | Проверка           | Статус                      |
-| ---- | ---------------------------- | ------------------------------ | ------------------ | --------------------------- |
-| 1    | Foundation + Audit           | Cursor Grok 4.6                | Claude Opus 5 High | сделан, проверен 2026-08-21 |
-| 2    | Credentials + Auth + Policy  | Claude Opus 5 High             | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-21 |
-| 3    | Capabilities + Tasks         | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-21 |
-| 4    | REST + MCP                   | Claude Opus 5 High             | Cursor Grok 4.6    | PASS WITH DEBTS, 2026-08-21 |
-| 5    | Providers + Models           | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-22 |
-| 6    | Admin UI                     | Cursor Grok 4.6 + Composer 2.5 | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-22 |
-| 7    | Security + regression        | Claude Opus 5 High             | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-22 |
-| 8    | Final 700-point verification | Claude Opus 5 High             | GPT-5.6 Sol High   | следующий                   |
+## Текущее состояние
 
-Критерий выбора: **функционал дороже стоимости модели**. Сильная модель ставится туда, где отказ **тихий** — зелёные тесты при реально незакрытой проверке доступа. Где отказ громкий (сломанный экран, упавший провайдер, красный тест), достаточно Grok. Экономия на исполнителе не является аргументом.
+Chat 8 подтвердил:
 
-Логика распределения:
+- External Agent реально работает по REST и MCP;
+- Workspace/Task/Drive isolation работает;
+- create/update выдаются отдельными grants;
+- delete/force-complete отсутствуют;
+- revoke credential и disable Agent блокируют доступ;
+- OpenAI connect/validate/sync работает;
+- новые модели остаются `DISCOVERED`;
+- FIXED и PRIMARY_FALLBACK foundation работают;
+- Internal Agent foundation работает;
+- human NBOS regression зелёный.
 
-- **Claude Opus 5 High** — там, где ошибка означает тихую дыру в авторизации или потерю данных: credentials/auth/policy (2), authorization parity REST и MCP (4), изоляция и security-регрессия (7), финальная приёмка 724 пунктов (8).
-- **Cursor Grok 4.6** — там, где он уже дал результат на Chat 1: domain capabilities (3), провайдеры и каталог моделей (5), Admin UI (6).
-- **Composer 2.5 Fast** — рутина внутри Chat 6: независимые экраны, формы, адаптив. Admin API, token issue и provider keys остаются на Grok.
-- **Проверка всегда другого семейства, чем исполнитель.** Работу Anthropic проверяет OpenAI-модель, работу Grok — OpenAI, работу OpenAI — Grok. Одинаковая модель повторяет собственную слепую зону, а родственная — склонна к тем же архитектурным привычкам. Ротация трёх семейств даёт настоящую независимость гейта.
-- **GPT-5.6 Sol High** как основной проверяющий: сильная модель, но дешевле держать её на коротком read-only гейте, чем на реализации.
-- **Claude Sonnet 4.6 Medium, GPT-5.4 Medium, Codex 5.3 Medium, Grok 4.5 High Fast** — резерв под мелкие правки после проверки, когда запускать сильную модель незачем.
+Но canonical Phase 1 exit criterion 9 не выполнен: AD–AI не получили implementation milestone. Решение принято: **не переносить их в новую Phase 2, а закончить текущую Phase 1 через Chats 9–12**.
 
-`16-Phase-1-Execution-Strategy.md` прямо требует независимого ревью сильной моделью для миграций, credentials/auth, Policy Evaluator, cross-workspace изоляции и REST/MCP authorization parity — это и есть Chat 2, 4, 7.
+## Правила БД — критично
 
-## Состояние на 2026-08-21
+- Разработка ведётся только на designated non-production Neon branch; перед любым DB действием сверяй фактический host из `.env.local`.
+- Production DB не использовать для implementation/acceptance.
+- `prisma migrate dev` запрещён на унаследованной dev/prod-like базе из-за migration-history drift и риска reset.
+- Разрешённый deployment path для dev migrations — repository-approved `prisma migrate deploy` с `DIRECT_URL` после проверки target DB.
+- Production migrations выполняет только разработчик.
+- Не применять production actor-aware Audit migration без согласованного окна.
+- Большие production indexes должны соответствовать migration/rollout standard репозитория.
 
-Chat 1 сделан и проверен независимо. Handoff: `17-Phase-1-Chat-1-Handoff.md`.
+## Мастер-промт Phase 1
 
-Chat 2 закрыт **PASS WITH DEBTS**. Handoff: `18-Phase-1-Chat-2-Handoff.md`.
-
-Chat 3 закрыт **PASS WITH DEBTS**. Handoff: `19-Phase-1-Chat-3-Handoff.md`.
-
-Chat 4 закрыт **PASS WITH DEBTS**. Handoff: `20-Phase-1-Chat-4-Handoff.md`.
-
-Chat 5 закрыт **PASS WITH DEBTS**. Handoff: `22-Phase-1-Chat-5-Handoff.md`.
-
-Chat 6 закрыт **PASS WITH DEBTS**. Handoff: `23-Phase-1-Chat-6-Handoff.md`.
-
-Chat 7 закрыт **PASS WITH DEBTS**. Handoff: `24-Phase-1-Chat-7-Handoff.md`. Ветка **`sipan`**, последний коммит `d0df312e`. Следующий — Chat 8.
-
-Chat 8 — приёмка, не новый слой. Walk A–AQ, live AO REST/MCP, AP только с ключами от разработчика, remaining-gap report. Не ломать REST/MCP. Не применять продовый `audit_actor_aware` без окна.
-
-### Правила БД (критично)
-
-- `.env.local` переключён на **dev Neon-ветку** `ep-late-frost-ag5aixzw` (прод — `ep-sweet-dew-ag7259wn`, в разработке не используем). Перед миграциями всегда сверяй хост.
-- Миграция `20260821150000_audit_actor_aware` **применена на dev** 2026-08-21, `Database schema is up to date!`. На проде ещё нет — до её применения там любой `AuditService.log()` из кода `sipan` упадёт с ошибкой 42703, потому что Prisma-клиент содержит `actor_type`/`actor_id`, а колонок в БД нет. Ломаться будут бизнес-операции, а не только аудит.
-- **`prisma migrate dev` запрещён на обеих ветках.** В истории миграций дрейф: в БД записаны `20260331180000_add_product_category_cascade`, `20260331180000_restore_products_extensions`, `20260430132500_mail_p0_provider_attachments`, локально их нет (аналоги переименованы). При таком дрейфе `migrate dev` предлагает **reset**, то есть удаление данных. Dev-ветка унаследовала копию продовых данных — её тоже терять не надо.
-- Единственный разрешённый способ применения — `prisma migrate deploy` с `DIRECT_URL`.
-- Новые индексы на больших таблицах — `CREATE INDEX CONCURRENTLY` отдельной миграцией.
-- Продовые миграции выполняет только разработчик, не агент.
-
-## Мастер-промт Phase 1 (общая преамбула всех милстоунов)
+Этот блок вставляется в начало каждого нового executor chat.
 
 ```text
-Изучи новую каноническую документацию модуля: docs/NBOS/02-Modules/21-AI-Platform/
-Мы спроектировали новый AI Platform для NBOS с нуля: External Agents, REST + MCP, безопасные
-capabilities/scopes, actor-aware Audit, Workspace/Tasks access, OpenAI/Anthropic providers,
-model catalog/routing, Internal Agent foundation, approvals, prompts/context/memory boundaries,
-usage/evaluation и AI administration UI.
+Продолжай текущую Phase 1 AI Platform NBOS.
 
-Твоя задача — реализовать Phase 1 по документации, используя как основной executable checklist:
-docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md
+Сначала изучи:
+- docs/NBOS/02-Modules/21-AI-Platform/00-AI-Platform-Overview.md
+- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md
+- docs/NBOS/02-Modules/21-AI-Platform/16-Phase-1-Execution-Strategy.md
+- docs/NBOS/02-Modules/21-AI-Platform/26-Phase-1-Chat-8-Acceptance.md
+- docs/NBOS/02-Modules/21-AI-Platform/27-Phase-1-Continuation-After-Chat-8.md
+- docs/NBOS/02-Modules/21-AI-Platform/99-AI-Cleanup-Register.md
+- handoff предыдущего milestone
+- связанный canon/runtime затронутых NBOS modules.
 
-Правила работы:
-- Сначала внимательно изучи документы 21-AI-Platform, связанные NBOS docs и реальный runtime/code.
-- Не считай старую реализацию автоматически правильной: при расхождении docs/runtime сначала
-  проведи reconciliation согласно checklist.
-- Выполняй пункты checklist последовательно и отмечай статус каждого: [x], [~], [!].
-- Не создавай параллельную архитектуру и не обходи domain services прямыми Prisma writes.
-- External REST и MCP используют один Actor → Policy → Capability → Domain Action → Audit foundation.
-- Сохраняй полную обратную совместимость human RBAC, Tasks, Drive, Audit, API/worker/scheduler.
-- Не упрощай security/isolation/idempotency/negative tests.
-- tasks.create и ограниченный tasks.update управляются отдельными permissions; tasks.delete и
-  force-complete в Phase 1 запрещены.
-- Не останавливайся после структуры/DTO/API: доводи слайс до tests, UI, migrations и docs sync.
-- Реальное противоречие, которое нельзя безопасно решить по canon/runtime, фиксируй как
-  [!] BUSINESS DECISION с объяснением, что именно требуется решить. В остальных случаях принимай
-  senior-level техническое решение самостоятельно.
+Handoff и старые [x] — это claims, а не доказательство. Проверяй реальный runtime/code/tests.
 
-Definition of Done Phase 1: все применимые пункты checklist реализованы, протестированы и
-подтверждены evidence; существующий NBOS не сломан; External Agent реально может подключиться
-по REST/MCP и безопасно работать с разрешёнными Workspace/Tasks.
+Архитектурные правила:
+- не создавай параллельную AI architecture;
+- используй существующий Actor → Policy → Capability → Domain Action → Audit foundation;
+- не обходи module-owned domain services прямыми Prisma domain writes;
+- сохраняй human RBAC и существующие Tasks/Drive/Audit/API/worker/scheduler flows;
+- не расширяй prompt/context/memory в capability/authorization source;
+- secrets никогда не должны попадать в AI context, API reads, logs или Audit;
+- не ослабляй isolation/idempotency/negative tests;
+- foundation делай минимально достаточным и расширяемым, не строй заранее полноценную enterprise-подсистему, которой canon пока не требует.
+
+Checklist:
+- применимые пункты отмечай [x] только после implementation + tests/evidence;
+- [~] оставляй честно, если есть реальная неполнота;
+- [!] BUSINESS DECISION только если canon/runtime не дают безопасного решения;
+- не объявляй Phase 1 complete до Chat 12 final re-acceptance.
+
+DB safety:
+- убедись, что работаешь не с production DB;
+- prisma migrate dev не использовать;
+- production migrations не применять;
+- не выдумывать provider keys или production environment evidence.
 ```
 
-## Промт исполнителя — Chat 8
+## Chat 9 — executor prompt
 
-Модель: **Claude Opus 5 High**. В новый чат вставляй два блока: мастер-промт Phase 1, затем этот. Проверка remaining-gap report — GPT-5.6 Sol High (Chat 8 сам гейт, но отчёт не должен ревьюить сам себя).
+Рекомендуемая модель: **Cursor Grok 4.6 Extra High Fast**.
+
+В новый чат вставить мастер-промт выше, затем этот блок.
 
 ```text
-Продолжи Phase 1 AI Platform. Это Chat 8 — Final Verification and Acceptance.
+Это Chat 9 — Prompt Policy + Context/Memory/Knowledge Foundation.
+Работай в текущей ветке `sipan` поверх фактического результата Chat 8.
 
-Ты ПРИНИМАЕШЬ Phase 1, а не проектируешь новый слой. Новую архитектуру не изобретай.
-Дыры закрывай минимальным фиксом только если без него AO/AQ лгут. Иначе честно [~] или [!].
+PRIMARY SCOPE:
+- AD 470–481
+- AE 482–496
+из `10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md`.
 
-ВЕТКА. Работай в sipan. Chat 7 закрыт PASS WITH DEBTS (последний коммит d0df312e,
-handoff 24-Phase-1-Chat-7-Handoff.md). Перед работой проверь наличие
-apps/api/src/modules/ai-platform/limits/,
-apps/api/src/modules/ai-platform/security/,
-docs/NBOS/02-Modules/21-AI-Platform/25-AI-Platform-Operations-Runbooks.md и
-docs/NBOS/02-Modules/21-AI-Platform/21-External-Agent-Client-Setup.md.
-Если их нет — ты не на той ветке, остановись и сообщи.
+ОБЯЗАТЕЛЬНО ПРОЧИТАЙ:
+- 12-AI-Prompts-Context-Memory-and-Knowledge.md
+- 04-Internal-AI-Runtime.md
+- 11-Internal-Agent-Lifecycle-and-Assignments.md
+- 05-AI-Data-Security-and-Audit.md
+- 26-Phase-1-Chat-8-Acceptance.md
+- 27-Phase-1-Continuation-After-Chat-8.md
+и реальный runtime Internal Agent/provider/model/policy foundation.
 
-ЧИТАЙ И СВЕРЯЙ С РЕПОЗИТОРИЕМ:
-- docs/NBOS/02-Modules/21-AI-Platform/24-Phase-1-Chat-7-Handoff.md (Chat 8 entry point)
-- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md
-  целиком, с пункта 1
-- docs/NBOS/02-Modules/21-AI-Platform/99-AI-Cleanup-Register.md
-- docs/NBOS/02-Modules/21-AI-Platform/00-AI-Platform-Overview.md
-Handoff Chat 7 не является доказательством: сам прогони pnpm test, pnpm lint, pnpm typecheck
-и API boot до AO.
+ЦЕЛЬ CHAT 9:
+1. Реализовать Prompt Policy persistence/config foundation.
+2. Реализовать Prompt Version lifecycle: DRAFT / TESTING / PUBLISHED / RETIRED.
+3. Internal Agent должен ссылаться только на допустимую опубликованную prompt policy/version согласно canon.
+4. Сохранять prompt-version identity для будущего execution attribution.
+5. Реализовать publish/rollback/config audit там, где это уже требуется canon.
+6. Prompt никогда не должен давать capabilities/scopes или изменять authorization.
+7. Реализовать Context Assembler contract/interface поверх существующей authorization foundation.
+8. Context retrieval всегда после authorization и через purpose-built projections.
+9. Зафиксировать source/provenance, freshness, classification/redaction и token/size budget contracts.
+10. Реализовать session-context contract.
+11. Реализовать persistent-memory interface/contract с обязательными owner/scope/purpose/retention/provenance, но persistent memory по умолчанию не запускать как полноценный runtime.
+12. Реализовать future Knowledge/RAG source contract так, чтобы retrieval физически не мог обходить authorization.
+13. Secrets в AI memory/context запрещены.
+14. Добавить migrations/tests/admin wiring только там, где это реально нужно AD/AE.
+15. Обновить checklist и Cleanup Register честно.
 
-SCOPE CHAT 8:
-1. Walk всего чеклиста A–AQ. Каждый [x] — код + тест или live evidence. Не поднимай [~]
-   до [x] без нового доказательства. Не оставляй [x] там, где handoff врёт.
-2. AO 657–685 live на non-production Work Space: один test External Agent, REST и MCP,
-   isolation, create/update отдельно, delete отсутствует, start/comment/artifact/submit-review,
-   human completion остаётся у человека, idempotent retry, revoke credential блокирует
-   следующий REST и MCP, disable блокирует все credentials, audit без raw token.
-   Админ-действия — по 25-AI-Platform-Operations-Runbooks.md.
-3. AP 686–705: OpenAI/Anthropic connect/validate/sync, DISCOVERED не ACTIVE, key не
-   читается после save, FIXED + PRIMARY_FALLBACK (в т.ч. cross-provider), Internal Agent
-   DRAFT → activate с зависимостями. Ключи НЕ выдумывай: попроси test keys у разработчика.
-   Нет ключей — AP [~] с этой причиной, не мокай live как done.
-4. AQ 706–721 architecture review: нет Prisma в REST/MCP adapters, один Actor→Policy→
-   Capability→Domain→Audit, Agent ≠ Model, secrets out of AI context, human RBAC intact,
-   Phase 1 non-goals отсутствуют, foundation reusable for future employee chat / Messenger /
-   Documents / CRM / Analytics без второй identity-системы.
-5. Exit criterion в конце 10-Phase-1-… — 11 пунктов. Скажи честно, какие выполнены.
-6. Обнови 99-AI-Cleanup-Register.md: каждый remaining gap с evidence.
-7. Remaining-gap report в handoff: J 186 (verdict не доходит до evaluator), K 205/W 368,
-   K 209, D 91, AL 626 (нет queued execution), shared Redis rate-limit store,
-   AM 638 production audit-migration window, 584/585 candidate editor, multi-instance limiter,
-   TLS Redis worker, browser E2E если не закрыл AO.
+НЕ ДЕЛАТЬ:
+- production RAG/vector store;
+- embeddings platform;
+- unrestricted persistent memory;
+- full internal employee chat;
+- Messenger auto-reply;
+- новый authorization engine;
+- абстракции “на всякий случай”, которых AD/AE не требуют.
 
-Можно закрыть [~] evidence, не кодом: AM 627/631 — browser walk login + Tasks UI;
-worker /ready уже зелёный на local Redis в Chat 7 — подтверди сам.
-
-ЗАПРЕЩЕНО:
-- новая архитектура, adaptive routing, RAG, Messenger auto-reply, полный internal chat;
-- ломать REST/MCP контракт;
-- Credentials vault / пароли клиентов / invent API keys;
-- prisma migrate dev; продовые миграции; audit_actor_aware на прод без окна разработчика;
-- удаление тестов, обход lint, any в новом коде.
-
-БАЗА ДАННЫХ:
-- .env.local = dev Neon ep-late-frost-ag5aixzw; прод ep-sweet-dew-ag7259wn не трогать.
-- Test agent и test tasks — только non-prod Workspace. После сценария задокументируй
-  что создал; destructive cleanup только своих test rows.
+Перед завершением:
+- targeted tests для нового prompt/context foundation;
+- relevant integration/security tests;
+- typecheck;
+- Prisma validate/status без production migration;
+- regression по Internal Agent/model policy linkage.
 
 НА ВЫХОДЕ:
-- чеклист [x]/[~]/[!] честный по всему Phase 1;
-- docs/NBOS/02-Modules/21-AI-Platform/26-Phase-1-Chat-8-Acceptance.md
-  (walk summary, AO/AP/AQ evidence, exit criterion, remaining gaps, cleanup register delta);
-  не перезаписывай 21–25 setup/handoff/runbook файлы;
-- коммит не делай — его сделаем после проверки remaining-gap report.
+создай `docs/NBOS/02-Modules/21-AI-Platform/28-Phase-1-Chat-9-Handoff.md`.
+В нём: completed checklist items, files/migrations, tests с фактическими результатами,
+remaining [~]/[!], security decisions, exact entry point для Chat 10.
+Не объявляй Phase 1 complete.
 ```
 
-## Промт проверки (универсальный)
+## Chat 10 — executor prompt
 
-Меняется только номер милстоуна и путь к handoff.
+Рекомендуемая модель: **Claude Opus 5 High**.
 
 ```text
-Ты чат проверки милстоуна Chat N модуля AI Platform Phase 1. Ты НЕ реализуешь и НЕ правишь код.
-Твоя задача — независимо подтвердить или опровергнуть работу исполнителя.
+Это Chat 10 — Approval + Customer-Facing Safety Foundation.
+Продолжай только после независимого PASS/PASS WITH DEBTS Chat 9.
 
-Прочитай docs/NBOS/02-Modules/21-AI-Platform/1X-Phase-1-Chat-N-Handoff.md, но НЕ считай его
-доказательством. Самоотчёт исполнителя проверяется, а не принимается.
+PRIMARY SCOPE:
+- AF 497–517
+- AG 518–531
+
+Прочитай 13-AI-Risk-and-Approval-Policy.md, 15-Customer-Facing-AI-Policy.md,
+28-Phase-1-Chat-9-Handoff.md и реальный policy/capability/audit runtime.
+
+Реализуй:
+- capability risk integration;
+- ALLOW / DENY / REQUIRE_APPROVAL runtime contract;
+- Approval Request persistence;
+- actor/capability/resource attribution;
+- safe payload summary + canonical payload digest;
+- PENDING / APPROVED / REJECTED / EXPIRED / CANCELLED / CONSUMED lifecycle;
+- one-time approval + expiry;
+- AI self-approval prohibition;
+- material payload change invalidates approval;
+- actor/grant/domain-state revalidation immediately before approved commit;
+- approval lifecycle Audit;
+- customer/conversation scope classification;
+- DRAFT_ONLY / APPROVAL_REQUIRED / AUTO_SEND_ALLOWED contracts;
+- draft и send как разные permissions/capabilities;
+- escalation contract;
+- internal-only vs customer-visible data boundary;
+- customer isolation / prompt-injection negative tests.
+
+НЕ СТРОЙ production Messenger auto-reply и не добавляй широкие autonomous customer actions.
+
+Handoff: `29-Phase-1-Chat-10-Handoff.md`.
+```
+
+## Chat 11 — executor prompt
+
+Рекомендуемая модель: **Cursor Grok 4.6 Extra High Fast**.
+
+```text
+Это Chat 11 — Usage/Cost/Evaluation Foundation + actionable Phase 1 debts.
+Продолжай после независимого review Chat 10.
+
+PRIMARY SCOPE:
+- AH 532–548
+- AI 549–557
+- actionable debts из 26-Phase-1-Chat-8-Acceptance.md и последних handoff.
+
+Реализуй минимальный production-usable foundation:
+- AI execution/usage record;
+- actor/Internal Agent/provider/model/Model Policy/capability/channel attribution;
+- correlation/status/latency/retry/fallback attribution;
+- provider usage/tokens и historical cost metadata где возможно;
+- basic budget/usage-limit contracts;
+- Evaluation Suite/Run foundation;
+- model/model-policy/prompt-version/dataset attribution;
+- aggregate quality/latency/cost results;
+- deterministic/human/model-based grading должны оставаться раздельными.
+
+Также закрой применимые product-code debts:
+- shared Redis-backed rate-limit state для multi-instance API;
+- K209 idempotency crash/recovery gap;
+- K205/W368 declared output/projection validation, если checklist всё ещё требует это после reconciliation;
+- AJ 584/585 Model Policy candidate ordering/edit UI, если остаётся partial;
+- critical AI Admin browser E2E, если текущий test stack позволяет сделать это чисто и стабильно.
+
+Не подделывай environment evidence:
+- Anthropic live требует настоящий key;
+- live cross-provider fallback требует два реальных provider credentials;
+- production rediss:// evidence требует соответствующий endpoint;
+- production audit migration требует developer-controlled rollout window.
+
+Handoff: `30-Phase-1-Chat-11-Handoff.md`.
+```
+
+## Chat 12 — final acceptance prompt
+
+Рекомендуемая модель: **Claude Opus 5 High**. После отчёта — независимый review GPT-5.6 Sol High.
+
+```text
+Это Chat 12 — Final Phase 1 Re-Acceptance.
+Ты прежде всего verifier, а не архитектор нового функционала.
+
+Прочитай весь canonical Phase 1 checklist, Chats 8–11 handoffs/reviews и Cleanup Register,
+но не доверяй им без проверки.
+
+ПРОВЕРЬ:
+1. A–AQ по фактическому runtime/code/tests.
+2. AD–AI first-hand, особенно prompt authorization boundary, context isolation,
+   approval digest/revalidation, customer isolation, usage attribution и eval persistence.
+3. AO External Agent live REST+MCP acceptance повторно.
+4. AP provider/model/Internal Agent live acceptance со всеми реальными keys, которые дал разработчик.
+5. AQ architecture review повторно.
+6. Все 11 Phase 1 exit criteria.
+7. Full tests, lint, typecheck, build, Prisma validate/status, relevant browser/integration checks.
+8. Regression human RBAC/Tasks/Drive/Audit/API/worker/scheduler.
+9. Нет ли product-code gap, спрятанного под словом environment/debt.
+
+Допустимый [~] после финала — только если implementation complete, а отсутствующее доказательство
+реально требует unavailable provider credential, production-like external environment или
+developer-controlled production maintenance window.
+
+Создай `31-Phase-1-Final-Acceptance.md` с honest PASS / PASS WITH OPERATIONAL CONDITIONS / FAIL.
+Phase 1 можно объявить complete только если нет unresolved product-code requirement.
+```
+
+## Универсальный промт независимой проверки Chats 9–11
+
+Рекомендуемая модель: **GPT-5.6 Sol High**.
+
+```text
+Ты независимый verifier Chat N текущей Phase 1 AI Platform. Ты НЕ реализуешь и НЕ правишь product code.
+
+Прочитай handoff Chat N, canonical docs и checklist scope milestone, но handoff не считай доказательством.
 
 ПРОВЕРЬ ФАКТИЧЕСКИ:
-1. git: текущая ветка, коммит, чистота дерева. Все ли заявленные файлы реально существуют.
-2. prisma migrate status — только чтение. Миграции НЕ применяй.
-3. Прогони тесты затронутых пакетов и сравни числа с заявленными в handoff.
-4. Прогони typecheck затронутых пакетов.
-5. Прочитай diff милстоуна целиком. Ищи то, о чём handoff молчит.
-6. Проверь запреты: any, default exports, console.log в prod-путях, магические числа, файлы > 300
-   строк, функции > 50 строк, вложенность > 3, прямые Prisma-записи в Tasks/Drive из AI-кода,
-   сырые секреты в БД/логах/audit, ослабленные security-контроли, удалённые тесты.
-7. Проверь честность отметок чеклиста: [x] должен иметь код и тест, а не только DTO.
-8. Проверь, не сделано ли лишнего вне scope милстоуна.
-9. Проверь миграции: destructive-операции, DROP, индексы без CONCURRENTLY, обратная совместимость.
+1. git branch/HEAD/diff и заявленные файлы;
+2. Prisma schema/migrations/status — только read/validate, production migration не применять;
+3. targeted tests и typecheck;
+4. relevant integration/security tests;
+5. diff milestone целиком;
+6. каждый новый [x] против реального code/test evidence;
+7. authorization/data isolation/secret handling;
+8. отсутствие прямых domain Prisma writes в обход module services;
+9. migration safety и backward compatibility;
+10. отсутствие лишней enterprise-подсистемы вне canon milestone;
+11. regression существующего External Agent/provider/model/Internal Agent foundation.
 
-НА ВЫХОДЕ допиши в тот же handoff секцию:
+Если нашёл дефект — VERDICT FAIL и точный список исправлений file/path/behavior/test.
+Код не правь. Исправляет исходный executor chat. После исправления перепроверь в этом же verifier chat.
 
+В handoff добавь:
 ## Verification (Chat N)
-
-- Проверял: <модель>, дата.
-- Вердикт: PASS / PASS WITH DEBTS / FAIL.
-- Запущено: <команды и реальный вывод: сколько файлов/тестов, статус typecheck, migrate status>.
-- Расхождения с самоотчётом: <список или «нет»>.
-- Найденные дефекты: <файл:строка — описание — критичность>.
-- Долги для следующего милстоуна: <список>.
-- Не проверено: <что и почему>.
-
-ЗАПРЕЩЕНО: править код, коммитить, пушить, применять миграции, писать в продовую БД.
-Если вердикт FAIL — сформулируй точный список правок для исполнителя и остановись.
+- model/date;
+- PASS / PASS WITH DEBTS / FAIL;
+- команды и реальные результаты;
+- discrepancies;
+- defects;
+- remaining debts;
+- not verified и почему.
 ```
+
+## Следующее действие
+
+Открыть **новый Cursor chat** с моделью **Cursor Grok 4.6 Extra High Fast** и вставить:
+
+1. `Мастер-промт Phase 1`;
+2. `Chat 9 — executor prompt`.
+
+Не продолжать реализацию AD/AE внутри старого Chat 8: acceptance-chat уже насыщен контекстом и должен остаться историческим verifier evidence.
