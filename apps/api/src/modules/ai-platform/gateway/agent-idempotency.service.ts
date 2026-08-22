@@ -32,7 +32,7 @@ export class AgentIdempotencyService {
   async reserve(input: IdempotencyReserveInput): Promise<AgentCapabilityResult | null> {
     const existing = await this.loadLive(input);
     if (existing) {
-      return this.replayOrConflict(existing, input.requestFingerprint);
+      return this.replayOrRecover(existing, input);
     }
     if ((await this.tryInsert(input)) === 'created') {
       return null;
@@ -41,7 +41,7 @@ export class AgentIdempotencyService {
     if (!raced) {
       throw AgentAccessException.conflict('Idempotency reservation failed');
     }
-    return this.replayOrConflict(raced, input.requestFingerprint);
+    return this.replayOrRecover(raced, input);
   }
 
   async abort(input: IdempotencyReserveInput | null): Promise<void> {
@@ -69,6 +69,27 @@ export class AgentIdempotencyService {
         status: 'COMPLETED',
         responseJson: result as unknown as InputJsonValue,
         completedAt: new Date(),
+      },
+    });
+  }
+
+  /**
+   * Persists the domain result while the row is still IN_PROGRESS so a crash
+   * after Tasks/Drive commit can replay instead of conflicting forever.
+   */
+  async checkpointCommittedResult(
+    input: IdempotencyReserveInput,
+    result: AgentCapabilityResult,
+  ): Promise<void> {
+    await this.prisma.externalAgentIdempotencyRecord.updateMany({
+      where: {
+        agentId: input.agentId,
+        capabilityKey: input.capabilityKey,
+        operationKey: input.operationKey,
+        status: 'IN_PROGRESS',
+      },
+      data: {
+        responseJson: result as unknown as InputJsonValue,
       },
     });
   }
@@ -126,13 +147,21 @@ export class AgentIdempotencyService {
     }
   }
 
-  private replayOrConflict(row: IdempotencyRow, fingerprint: string): AgentCapabilityResult | null {
-    if (row.requestFingerprint !== fingerprint) {
+  private async replayOrRecover(
+    row: IdempotencyRow,
+    input: IdempotencyReserveInput,
+  ): Promise<AgentCapabilityResult | null> {
+    if (row.requestFingerprint !== input.requestFingerprint) {
       throw AgentAccessException.idempotencyConflict();
     }
     if (row.status === 'COMPLETED') {
       return row.responseJson as AgentCapabilityResult;
     }
-    throw AgentAccessException.idempotencyInProgress();
+    if (!row.responseJson) {
+      throw AgentAccessException.idempotencyInProgress();
+    }
+    const result = row.responseJson as AgentCapabilityResult;
+    await this.complete(input, result).catch(() => undefined);
+    return result;
   }
 }

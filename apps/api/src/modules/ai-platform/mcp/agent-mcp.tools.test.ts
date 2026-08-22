@@ -98,4 +98,31 @@ describe('MCP tool catalog', () => {
       expect(definition.title.length).toBeGreaterThan(0);
     }
   });
+
+  it('publishes a closed output schema on capability tools only', () => {
+    for (const operation of listAgentOperations()) {
+      const definition = tool(operation.mcpTool);
+      if (!operation.capabilityKey) {
+        expect(definition.outputSchema).toBeUndefined();
+        continue;
+      }
+      expect(definition.outputSchema?.additionalProperties).toBe(false);
+      expect(definition.outputSchema?.type).toBe('object');
+    }
+  });
+
+  it('describes { items, meta } only on live list-envelope tools', () => {
+    const listTools = ['nbos_list_workspaces', 'nbos_list_tasks', 'nbos_get_task_discussion'];
+    for (const name of listTools) {
+      const properties = tool(name).outputSchema?.properties ?? {};
+      expect(properties).toHaveProperty('items');
+      expect(properties).toHaveProperty('meta');
+      expect(properties).not.toHaveProperty('page');
+    }
+    for (const definition of listAgentMcpTools()) {
+      if (listTools.includes(definition.name) || !definition.outputSchema) continue;
+      expect(definition.outputSchema.properties).not.toHaveProperty('items');
+      expect(definition.outputSchema.properties).not.toHaveProperty('meta');
+    }
+  });
 });

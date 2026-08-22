@@ -15,6 +15,7 @@ function model(status: AiModelView['status'], id: string): AiModelView {
     lastSeenAt: '',
     providerMetadata: {},
     suitabilityTags: [],
+    evaluationStatus: 'NOT_EVALUATED',
     notes: null,
     aliasOf: null,
     snapshotId: null,

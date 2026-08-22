@@ -12,9 +12,13 @@ const NOW = 1_700_000_000_000;
 const AGENT = 'agent-a';
 const OTHER_AGENT = 'agent-b';
 
-function drainRequests(service: AgentRateLimitService, agentId: string, now: number): void {
+async function drainRequests(
+  service: AgentRateLimitService,
+  agentId: string,
+  now: number,
+): Promise<void> {
   for (let call = 0; call < AGENT_REQUEST_LIMIT_PER_WINDOW; call += 1) {
-    service.consumeRequest(agentId, now);
+    await service.consumeRequest(agentId, now);
   }
 }
 
@@ -26,110 +30,110 @@ describe('AgentRateLimitService', () => {
   });
 
   describe('per-agent request budget', () => {
-    it('refuses the request after the configured ceiling', () => {
-      drainRequests(service, AGENT, NOW);
+    it('refuses the request after the configured ceiling', async () => {
+      await drainRequests(service, AGENT, NOW);
 
-      expect(service.consumeRequest(AGENT, NOW).allowed).toBe(false);
+      expect((await service.consumeRequest(AGENT, NOW)).allowed).toBe(false);
     });
 
-    it('meters each agent separately', () => {
-      drainRequests(service, AGENT, NOW);
+    it('meters each agent separately', async () => {
+      await drainRequests(service, AGENT, NOW);
 
-      expect(service.consumeRequest(OTHER_AGENT, NOW).allowed).toBe(true);
+      expect((await service.consumeRequest(OTHER_AGENT, NOW)).allowed).toBe(true);
     });
 
-    it('recovers in the next window', () => {
-      drainRequests(service, AGENT, NOW);
+    it('recovers in the next window', async () => {
+      await drainRequests(service, AGENT, NOW);
 
-      expect(service.consumeRequest(AGENT, NOW + AGENT_RATE_LIMIT_WINDOW_MS).allowed).toBe(true);
+      expect((await service.consumeRequest(AGENT, NOW + AGENT_RATE_LIMIT_WINDOW_MS)).allowed).toBe(
+        true,
+      );
     });
   });
 
   describe('per-capability budget', () => {
-    it('applies the tighter sensitive-write ceiling before the request ceiling', () => {
+    it('applies the tighter sensitive-write ceiling before the request ceiling', async () => {
       for (let call = 0; call < AGENT_CAPABILITY_LIMIT_PER_WINDOW.WRITE_SENSITIVE; call += 1) {
-        expect(service.consumeCapability(AGENT, 'WRITE_SENSITIVE', NOW).allowed).toBe(true);
+        expect((await service.consumeCapability(AGENT, 'WRITE_SENSITIVE', NOW)).allowed).toBe(true);
       }
 
-      expect(service.consumeCapability(AGENT, 'WRITE_SENSITIVE', NOW).allowed).toBe(false);
-      expect(service.consumeRequest(AGENT, NOW).allowed).toBe(true);
+      expect((await service.consumeCapability(AGENT, 'WRITE_SENSITIVE', NOW)).allowed).toBe(false);
+      expect((await service.consumeRequest(AGENT, NOW)).allowed).toBe(true);
     });
 
-    it('keeps read and write classes in separate buckets', () => {
+    it('keeps read and write classes in separate buckets', async () => {
       for (let call = 0; call < AGENT_CAPABILITY_LIMIT_PER_WINDOW.WRITE_SENSITIVE; call += 1) {
-        service.consumeCapability(AGENT, 'WRITE_SENSITIVE', NOW);
+        await service.consumeCapability(AGENT, 'WRITE_SENSITIVE', NOW);
       }
 
-      expect(service.consumeCapability(AGENT, 'READ_STANDARD', NOW).allowed).toBe(true);
+      expect((await service.consumeCapability(AGENT, 'READ_STANDARD', NOW)).allowed).toBe(true);
     });
 
-    it('gives a denied caller a positive retry hint', () => {
+    it('gives a denied caller a positive retry hint', async () => {
       for (let call = 0; call < AGENT_CAPABILITY_LIMIT_PER_WINDOW.WRITE_SENSITIVE; call += 1) {
-        service.consumeCapability(AGENT, 'WRITE_SENSITIVE', NOW);
+        await service.consumeCapability(AGENT, 'WRITE_SENSITIVE', NOW);
       }
 
-      const denied = service.consumeCapability(AGENT, 'WRITE_SENSITIVE', NOW);
+      const denied = await service.consumeCapability(AGENT, 'WRITE_SENSITIVE', NOW);
 
       expect(denied.retryAfterSeconds).toBeGreaterThan(0);
     });
   });
 
   describe('concurrency', () => {
-    it('refuses a slot beyond the in-flight ceiling', () => {
+    it('refuses a slot beyond the in-flight ceiling', async () => {
       for (let slot = 0; slot < AGENT_CONCURRENCY_LIMIT; slot += 1) {
-        expect(service.acquireSlot(AGENT, NOW).allowed).toBe(true);
+        expect((await service.acquireSlot(AGENT, NOW)).allowed).toBe(true);
       }
 
-      expect(service.acquireSlot(AGENT, NOW).allowed).toBe(false);
+      expect((await service.acquireSlot(AGENT, NOW)).allowed).toBe(false);
     });
 
-    it('frees capacity when a slot is released', () => {
+    it('frees capacity when a slot is released', async () => {
       for (let slot = 0; slot < AGENT_CONCURRENCY_LIMIT; slot += 1) {
-        service.acquireSlot(AGENT, NOW);
+        await service.acquireSlot(AGENT, NOW);
       }
-      service.releaseSlot(AGENT);
+      await service.releaseSlot(AGENT);
 
-      expect(service.acquireSlot(AGENT, NOW).allowed).toBe(true);
+      expect((await service.acquireSlot(AGENT, NOW)).allowed).toBe(true);
     });
 
-    it('does not let one agent occupy another agent slots', () => {
+    it('does not let one agent occupy another agent slots', async () => {
       for (let slot = 0; slot < AGENT_CONCURRENCY_LIMIT; slot += 1) {
-        service.acquireSlot(AGENT, NOW);
+        await service.acquireSlot(AGENT, NOW);
       }
 
-      expect(service.acquireSlot(OTHER_AGENT, NOW).allowed).toBe(true);
+      expect((await service.acquireSlot(OTHER_AGENT, NOW)).allowed).toBe(true);
     });
 
-    it('ignores a release for an agent that holds nothing', () => {
-      service.releaseSlot(AGENT);
+    it('ignores a release for an agent that holds nothing', async () => {
+      await service.releaseSlot(AGENT);
 
-      expect(service.acquireSlot(AGENT, NOW).remaining).toBe(AGENT_CONCURRENCY_LIMIT - 1);
+      expect((await service.acquireSlot(AGENT, NOW)).remaining).toBe(AGENT_CONCURRENCY_LIMIT - 1);
     });
   });
 
   describe('retention', () => {
-    it('forgets an idle agent so the map cannot grow without bound', () => {
-      drainRequests(service, AGENT, NOW);
+    it('forgets an idle agent so the map cannot grow without bound', async () => {
+      await drainRequests(service, AGENT, NOW);
       const later = NOW + AGENT_RATE_LIMIT_RETENTION_MS * 2;
 
-      service.consumeRequest(OTHER_AGENT, later);
+      await service.consumeRequest(OTHER_AGENT, later);
 
-      expect(service.consumeRequest(AGENT, later).remaining).toBe(
+      expect((await service.consumeRequest(AGENT, later)).remaining).toBe(
         AGENT_REQUEST_LIMIT_PER_WINDOW - 1,
       );
     });
 
-    it('does not forget an agent that still has work in flight', () => {
+    it('does not forget an agent that still has work in flight', async () => {
       for (let slot = 0; slot < AGENT_CONCURRENCY_LIMIT; slot += 1) {
-        service.acquireSlot(AGENT, NOW);
+        await service.acquireSlot(AGENT, NOW);
       }
       const later = NOW + AGENT_RATE_LIMIT_RETENTION_MS * 2;
 
-      service.consumeRequest(OTHER_AGENT, later);
+      await service.consumeRequest(OTHER_AGENT, later);
 
-      // A swept budget would reset `inFlight` to zero and hand out a slot the
-      // agent is not entitled to while its earlier calls are still running.
-      expect(service.acquireSlot(AGENT, later).allowed).toBe(false);
+      expect((await service.acquireSlot(AGENT, later)).allowed).toBe(false);
     });
   });
 });

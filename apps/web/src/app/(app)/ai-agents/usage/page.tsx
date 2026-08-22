@@ -1,14 +1,7 @@
 'use client';
 
-import { Sparkles } from 'lucide-react';
-import { AiAdminFoundationShell } from '@/features/ai-admin/components/AiAdminFoundationShell';
+import { UsagePanel } from '@/features/ai-admin/components/UsagePanel';
 
 export default function AiUsagePage() {
-  return (
-    <AiAdminFoundationShell
-      icon={Sparkles}
-      title="Usage is a foundation shell"
-      description="Token, cost, and evaluation dashboards ship with the usage/evaluation slice. This page does not invent counters."
-    />
-  );
+  return <UsagePanel />;
 }

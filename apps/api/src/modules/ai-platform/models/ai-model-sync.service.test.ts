@@ -14,6 +14,7 @@ function modelRow(overrides: Record<string, unknown> = {}) {
     providerModelId: 'gpt-4o',
     displayName: 'gpt-4o',
     status: 'DISCOVERED',
+    evaluationStatus: 'NOT_EVALUATED',
     discoveredAt: new Date('2026-08-01T00:00:00.000Z'),
     lastSeenAt: new Date('2026-08-01T00:00:00.000Z'),
     providerMetadata: { owned_by: 'openai' },

@@ -164,6 +164,11 @@ model Employee {
   internalAiAgentResourceScopesMade  InternalAiAgentResourceScope[]      @relation("InternalAiAgentResourceScopeGrantedBy")
   internalAiAgentResourceScopesRevoked InternalAiAgentResourceScope[]    @relation("InternalAiAgentResourceScopeRevokedBy")
   aiApprovalRequestsDecided          AiApprovalRequest[]                 @relation("AiApprovalRequestDecidedBy")
+  aiBudgetLimitsCreated              AiBudgetLimit[]                     @relation("AiBudgetLimitCreatedBy")
+  aiEvaluationSuitesCreated          AiEvaluationSuite[]                 @relation("AiEvaluationSuiteCreatedBy")
+  aiEvaluationDatasetsCreated        AiEvaluationDataset[]               @relation("AiEvaluationDatasetCreatedBy")
+  aiEvaluationRunsCreated            AiEvaluationRun[]                   @relation("AiEvaluationRunCreatedBy")
+  aiEvaluationRunsReviewed           AiEvaluationRun[]                   @relation("AiEvaluationRunReviewer")
 
   @@map("employees")
 }

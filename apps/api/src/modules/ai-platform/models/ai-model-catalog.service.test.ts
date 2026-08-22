@@ -17,6 +17,7 @@ function modelRow(overrides: Record<string, unknown> = {}) {
     lastSeenAt: new Date('2026-08-01T00:00:00.000Z'),
     providerMetadata: { owned_by: 'openai' },
     suitabilityTags: [],
+    evaluationStatus: 'NOT_EVALUATED',
     notes: null,
     aliasOf: null,
     snapshotId: null,
@@ -74,5 +75,22 @@ describe('AiModelCatalogService', () => {
     );
     expect(view.suitabilityTags).toEqual(['CLIENT_SUPPORT']);
     expect(view.providerMetadata).toEqual({ owned_by: 'openai' });
+  });
+
+  it('lets an admin set evaluation status without changing catalog status', async () => {
+    prisma.aiModel.findUnique.mockResolvedValue(modelRow());
+    prisma.aiModel.update.mockResolvedValue(modelRow({ evaluationStatus: 'EVALUATED' }));
+    const view = await service.updateSuitability(
+      'model-1',
+      { evaluationStatus: 'EVALUATED' },
+      'emp-admin',
+    );
+    expect(view.evaluationStatus).toBe('EVALUATED');
+    expect(view.status).toBe('DISCOVERED');
+    expect(prisma.aiModel.update).toHaveBeenCalledWith({
+      where: { id: 'model-1' },
+      data: expect.objectContaining({ evaluationStatus: 'EVALUATED' }),
+    });
+    expect(prisma.aiModel.update.mock.calls[0][0].data).not.toHaveProperty('status');
   });
 });

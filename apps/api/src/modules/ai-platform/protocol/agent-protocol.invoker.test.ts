@@ -130,4 +130,63 @@ describe('AgentProtocolInvoker', () => {
       }),
     ).rejects.toMatchObject({ code: 'AGENT_CAPABILITY_DENIED' });
   });
+
+  it('feeds a live rate-limit verdict into policy before refusing', async () => {
+    const evaluate = vi.fn().mockResolvedValue({ outcome: 'DENY', reason: 'RATE_LIMITED' });
+    const record = vi.fn().mockResolvedValue(null);
+    const limited = new AgentProtocolInvoker(
+      { invoke } as unknown as AgentCapabilityGateway,
+      {
+        consumeCapability: vi.fn().mockResolvedValue({
+          allowed: false,
+          retryAfterSeconds: 12,
+        }),
+        acquireSlot: vi.fn(),
+        releaseSlot: vi.fn(),
+      } as never,
+      { evaluate } as never,
+      { record } as never,
+    );
+
+    await expect(
+      limited.invoke({
+        agent: authenticatedAgentFixture(),
+        operationId: 'tasks.get',
+        input: { taskId: 'task-1' },
+      }),
+    ).rejects.toMatchObject({ code: 'AGENT_RATE_LIMITED', retryAfterSeconds: 12 });
+    expect(evaluate).toHaveBeenCalledWith(
+      expect.objectContaining({ rateLimitExceeded: true, target: {} }),
+    );
+    expect(invoke).not.toHaveBeenCalled();
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'RATE_LIMITED', capabilityKey: 'tasks.read' }),
+    );
+  });
+
+  it('records a successful capability invocation without prompt bodies', async () => {
+    const record = vi.fn().mockResolvedValue(null);
+    const recording = new AgentProtocolInvoker(
+      { invoke } as unknown as AgentCapabilityGateway,
+      new AgentRateLimitService(),
+      undefined,
+      { record } as never,
+    );
+
+    await recording.invoke({
+      agent: authenticatedAgentFixture(),
+      operationId: 'tasks.get',
+      input: { taskId: 'task-1' },
+    });
+
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'CAPABILITY',
+        status: 'SUCCEEDED',
+        capabilityKey: 'tasks.read',
+        externalAgentId: 'agent-1',
+      }),
+    );
+    expect(JSON.stringify(record.mock.calls[0][0])).not.toMatch(/prompt|sk-live/i);
+  });
 });

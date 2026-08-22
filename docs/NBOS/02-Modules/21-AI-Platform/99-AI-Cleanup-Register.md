@@ -80,19 +80,17 @@ Shared registry + `evaluateAiPolicy`. Domain execution is Chat 3 (`AgentCapabili
 
 Chat 2: `AgentAuthGuard` / `AgentAuthenticatorService`. Protocol wiring is Chat 4.
 
-### C7. No AI execution record/correlation model — MISSING
+### C7. No AI execution record/correlation model — OK
 
-Required for async execution, status, failure, approval and observability. Chat 5 added Internal Agent execution _context_ (actor/channel/onBehalfOf) but not an execution record table. Usage/evaluation entities remain AH/AI.
+Chat 11: `AiExecution` stores actor, External/Internal Agent, provider, model, Model Policy, capability, channel, correlation, status, latency, retry, fallback and optional token/cost/pricing metadata. No prompt/completion/secret columns. External Agent protocol writes capability rows best-effort. See C19.
 
 ### C8. No idempotency contract for agent mutations — PARTIAL
 
-Capability metadata declares `REQUIRED`. Chat 3 stores replay rows in `external_agent_idempotency_records` and enforces them in the gateway. `abort()` runs only when the domain call fails; after a successful Tasks/Drive write the `IN_PROGRESS` row is left in place if `complete()` fails, and stale `IN_PROGRESS` is never reclaimed. REST `Idempotency-Key` / MCP `clientOperationId` header/tool binding is Chat 4. Domain commit and `complete()` are still not one transaction (K 209).
+Capability metadata declares `REQUIRED`. Chat 3 stores replay rows in `external_agent_idempotency_records` and enforces them in the gateway. Chat 11 checkpoints `responseJson` while the row is still `IN_PROGRESS` after Tasks/Drive commit, then marks `COMPLETED`. Retry of `IN_PROGRESS` + json replays and tries to complete. Stale `IN_PROGRESS` without a checkpoint still conflicts (no second domain write). Remaining unrecoverable window: crash after domain commit and before checkpoint. Domain commit and `complete()` are still not one transaction (K 209).
 
-### C9. No external-agent rate-limit policy — PARTIAL
+### C9. No external-agent rate-limit policy — OK
 
-Chat 7 shipped section U: `AgentPreAuthGuard` bounds requests and failed authentications per source address before any credential lookup or Argon2 verification, then `AgentRateLimitGuard` + `AgentRateLimitService` charge per-agent request, per-capability-class and concurrency budgets, before the `lastUsedAt` write, on both REST and MCP, with `AGENT_RATE_LIMITED` + `Retry-After` + `X-RateLimit-*`. The payload ceiling is enforced by the agent body parser on real socket bytes ahead of the global parsers. The agent namespace carries `@SkipThrottle()`, so agent traffic cannot draw down employee `ThrottlerGuard` capacity (U 329).
-
-Remaining gaps: counters live in process memory, so with more than one API instance the effective ceiling is multiplied by the instance count and a restart clears the windows. Moving the window store to Redis is the follow-up; the guard/service boundary is already the only place that would change. Until then the limiter, not the policy evaluator, owns the refusal, so J 186 stays `[~]`: `AgentPolicyService` never receives a live `rateLimitExceeded` verdict because enforcement deliberately happens before policy touches the database.
+Chat 7 shipped section U. Chat 11 moved counters to `AgentRateLimitStore`: Redis when `REDIS_STATE_URL`/`REDIS_URL` is set (shared multi-instance ceiling, fail-closed on errors), otherwise process memory. Vitest uses memory unless `AI_RATE_LIMIT_REDIS_IN_TEST=1`. `AgentProtocolInvoker` now passes a live `rateLimitExceeded` verdict into `AgentPolicyService.evaluate` before throwing `AGENT_RATE_LIMITED` with `Retry-After` (J 186). Production `rediss://` TLS evidence is still an operational gap, not a missing store.
 
 ### C10. Provider/model/Internal Agent foundation — OK
 
@@ -130,9 +128,9 @@ Chat 10 added `AiApprovalRequest` with PENDING / APPROVED / REJECTED / EXPIRED /
 
 Chat 10 added DRAFT_ONLY / APPROVAL_REQUIRED / AUTO_SEND_ALLOWED, distinct `messenger.reply_draft` vs `messenger.reply_send`, conversation/customer isolation, escalation reasons, and INTERNAL_ONLY vs CUSTOMER_VISIBLE. Customer text remains untrusted and cannot widen capabilities. AUTO_SEND_ALLOWED with an empty category list still requires approval. Production Messenger auto-reply was not built. Negative tests cover cross-customer isolation and prompt-injection shaped fields.
 
-### C19. Usage, cost and evaluation entities (AH 532–546, 548; AI 549–554) — MISSING
+### C19. Usage, cost and evaluation entities (AH 532–546, 548; AI 549–554) — OK
 
-Extends C7. There is no execution/usage record and no evaluation suite/run entity, which is why AP 705 is `[~]`. Everything such a record must reference — actor, Internal Agent, provider connection, model, model policy, capability, channel, correlation id — already exists, so this is additive. The negative guarantees were proven live: a first catalog sync produced 124 `DISCOVERED` / 0 `ACTIVE` models (AI 555) and no judge-driven promotion path exists (AI 556). `AiModel.notes` and `AiModel.suitabilityTags` cover the admin-judgment half of AI 557; an evaluation-status field is missing.
+Chat 11 added `AiExecution`, `AiBudgetLimit`, `AiEvaluationSuite` / `Dataset` / `Run`, and `AiModel.evaluationStatus`. Execution rows never store prompts or secrets. A run has exactly one grading kind. Evaluation scores cannot auto-activate a model. Migration `20260822220000_ai_usage_evaluation_foundation` is additive and **not** applied to production. See `30-Phase-1-Chat-11-Handoff.md`.
 
 ### C20. Anthropic provider never exercised live — PARTIAL
 
@@ -144,7 +142,7 @@ Chat 8 promoted it to a first-class sidebar module at `/ai-agents` (`SIDEBAR_MOD
 
 ### C22. Phase 1 exit criterion 9 — BUSINESS DECISION / PARTIAL
 
-`27-Phase-1-Continuation-After-Chat-8.md` decided AD–AI stay in the current Phase 1 (Chats 9–12). Chat 9 closed AD/AE (C15, C16). Chat 10 closed AF/AG (C17, C18). Remaining exit-criterion-9 product work is AH/AI (C19 / C7). Chat 12 is still the only milestone that may declare Phase 1 complete.
+`27-Phase-1-Continuation-After-Chat-8.md` decided AD–AI stay in the current Phase 1 (Chats 9–12). Chat 9 closed AD/AE (C15, C16). Chat 10 closed AF/AG (C17, C18). Chat 11 closed AH/AI (C19 / C7) and the actionable Chat 8 product-code debts listed in `30-Phase-1-Chat-11-Handoff.md`. Chat 12 is still the only milestone that may declare Phase 1 complete.
 
 ## D. Tasks alignment issues to verify before implementation
 
@@ -227,6 +225,10 @@ Canonical Phase 1 sources (`03`, `08`, `09`, `10` item 43, `16`) require both RE
 ## F10. Chat 10 evidence
 
 2026-08-22: Approval Request persistence/lifecycle and customer-facing safety contracts. Independent Chat N10 verdict **PASS WITH DEBTS** (16/131 targeted, 10/88 regression+MCP with 1 file / 2 tests skipped, shared/API/web typecheck and ESLint 0). Migrations written, not applied to production, still pending on a drifted non-designated Neon. See `29-Phase-1-Chat-10-Handoff.md` § Verification.
+
+## F11. Chat 11 evidence
+
+2026-08-22: Usage/cost/evaluation foundation (`AiExecution`, budgets, evaluation suite/run, `AiModel.evaluationStatus`), Redis-backed rate-limit store, idempotency checkpoint/recovery, catalog output projection + MCP `outputSchema`, Model Policy candidate editor, usage admin UI. Independent Chat N11 first pass **FAIL** (K 205 dropped live `{ items, meta }`); remediation restored the `09` envelope. Re-verification: **PASS WITH DEBTS** (5/56 FAIL-set, 110/2 files and 843/4 on ai-platform + shared/ai). Migration `20260822220000_ai_usage_evaluation_foundation` written, not applied. See `30-Phase-1-Chat-11-Handoff.md` § Re-verification.
 
 ## G. Implementation rule
 

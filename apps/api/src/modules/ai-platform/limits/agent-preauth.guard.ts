@@ -24,10 +24,10 @@ interface PreAuthRequest {
 export class AgentPreAuthGuard implements CanActivate {
   constructor(private readonly preAuth: AgentPreAuthThrottleService) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const http = context.switchToHttp();
     const request = http.getRequest<PreAuthRequest>();
-    const decision = this.preAuth.consumeAttempt(agentPreAuthSourceKey(request.ip));
+    const decision = await this.preAuth.consumeAttempt(agentPreAuthSourceKey(request.ip));
     if (decision.allowed) {
       return true;
     }

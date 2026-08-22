@@ -25,6 +25,11 @@ import { AgentPreAuthThrottleService } from './limits/agent-preauth-throttle.ser
 import { AgentPreAuthGuard } from './limits/agent-preauth.guard';
 import { AgentRateLimitGuard } from './limits/agent-rate-limit.guard';
 import { AgentRateLimitService } from './limits/agent-rate-limit.service';
+import { AGENT_RATE_LIMIT_STORE } from './limits/agent-rate-limit.store';
+import { createAgentRateLimitStore } from './limits/agent-rate-limit.store.factory';
+import { AiExecutionService } from './observability/ai-execution.service';
+import { AiBudgetLimitService } from './observability/ai-budget-limit.service';
+import { AiEvaluationService } from './evaluation/ai-evaluation.service';
 import { AgentMcpServer } from './mcp/agent-mcp.server';
 import { AiModelCatalogService } from './models/ai-model-catalog.service';
 import { AiModelSyncService } from './models/ai-model-sync.service';
@@ -67,6 +72,7 @@ import { AiAdminQueryService } from './admin/ai-admin-query.service';
     AgentUsageInterceptor,
     AgentPreAuthThrottleService,
     AgentPreAuthGuard,
+    { provide: AGENT_RATE_LIMIT_STORE, useFactory: createAgentRateLimitStore },
     AgentRateLimitService,
     AgentRateLimitGuard,
     AgentPolicyService,
@@ -94,6 +100,9 @@ import { AiAdminQueryService } from './admin/ai-admin-query.service';
     AiModelPolicyResolver,
     AiPromptPolicyService,
     AiApprovalRequestService,
+    AiExecutionService,
+    AiBudgetLimitService,
+    AiEvaluationService,
     AiContextAssemblerService,
     AiPersistentMemoryService,
     AiKnowledgeService,
@@ -125,6 +134,9 @@ import { AiAdminQueryService } from './admin/ai-admin-query.service';
     AiModelPolicyService,
     AiPromptPolicyService,
     AiApprovalRequestService,
+    AiExecutionService,
+    AiBudgetLimitService,
+    AiEvaluationService,
     AiContextAssemblerService,
     AiPersistentMemoryService,
     AiKnowledgeService,

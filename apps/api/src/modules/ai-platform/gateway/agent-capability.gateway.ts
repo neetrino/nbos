@@ -8,6 +8,7 @@ import {
 import {
   AI_CAPABILITIES_FORBIDDEN_PHASE_1,
   getAiCapability,
+  projectCapabilityOutput,
   type AiCapabilityDefinition,
 } from '@nbos/shared';
 import { AiPlatformAuditService } from '../ai-platform-audit.service';
@@ -71,13 +72,11 @@ export class AgentCapabilityGateway {
   ): Promise<AgentCapabilityResult> {
     let domainCommitted = false;
     try {
-      const result = await this.dispatch(
-        invocation.agent,
-        capability.key,
-        input,
-        invocation.payload,
-      );
+      const result = await this.dispatch(invocation.agent, capability, input, invocation.payload);
       domainCommitted = true;
+      if (reservationKey) {
+        await this.idempotency.checkpointCommittedResult(reservationKey, result);
+      }
       await this.auditSuccess(invocation.agent, capability, result);
       await this.finishReservation(reservationKey, result);
       return result;
@@ -107,13 +106,13 @@ export class AgentCapabilityGateway {
 
   private async dispatch(
     agent: AuthenticatedAgent,
-    key: string,
+    capability: AiCapabilityDefinition,
     input: Record<string, unknown>,
     payload: AgentCapabilityInvocation['payload'],
   ): Promise<AgentCapabilityResult> {
     try {
-      const data = await this.dispatchDomain(agent, key, input, payload);
-      return { capabilityKey: key, data };
+      const data = await this.dispatchDomain(agent, capability.key, input, payload);
+      return { capabilityKey: capability.key, data: projectCapabilityOutput(capability, data) };
     } catch (error) {
       throw mapDomainError(error);
     }

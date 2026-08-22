@@ -1,6 +1,5 @@
 import type { ExecutionContext } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AgentAccessException } from '../auth/agent-auth.errors';
 import {
   agentPreAuthSourceKey,
   AgentPreAuthThrottleService,
@@ -33,42 +32,44 @@ describe('AgentPreAuthThrottleService (U 329)', () => {
     service = new AgentPreAuthThrottleService();
   });
 
-  it('locks a source out after a burst of rejected authentications', () => {
+  it('locks a source out after a burst of rejected authentications', async () => {
     for (let attempt = 0; attempt < AGENT_PREAUTH_FAILURE_LIMIT_PER_WINDOW; attempt += 1) {
-      expect(service.consumeAttempt(SOURCE, NOW).allowed).toBe(true);
-      service.recordFailure(SOURCE, NOW);
+      expect((await service.consumeAttempt(SOURCE, NOW)).allowed).toBe(true);
+      await service.recordFailure(SOURCE, NOW);
     }
 
-    const denied = service.consumeAttempt(SOURCE, NOW);
+    const denied = await service.consumeAttempt(SOURCE, NOW);
 
     expect(denied.allowed).toBe(false);
     expect(denied.retryAfterSeconds).toBeGreaterThan(0);
   });
 
-  it('keeps the lockout local to the source that produced the failures', () => {
+  it('keeps the lockout local to the source that produced the failures', async () => {
     for (let attempt = 0; attempt < AGENT_PREAUTH_FAILURE_LIMIT_PER_WINDOW; attempt += 1) {
-      service.recordFailure(SOURCE, NOW);
+      await service.recordFailure(SOURCE, NOW);
     }
 
-    expect(service.consumeAttempt(SOURCE, NOW).allowed).toBe(false);
-    expect(service.consumeAttempt(OTHER_SOURCE, NOW).allowed).toBe(true);
+    expect((await service.consumeAttempt(SOURCE, NOW)).allowed).toBe(false);
+    expect((await service.consumeAttempt(OTHER_SOURCE, NOW)).allowed).toBe(true);
   });
 
-  it('releases the lockout in the next window', () => {
+  it('releases the lockout in the next window', async () => {
     for (let attempt = 0; attempt < AGENT_PREAUTH_FAILURE_LIMIT_PER_WINDOW; attempt += 1) {
-      service.recordFailure(SOURCE, NOW);
+      await service.recordFailure(SOURCE, NOW);
     }
 
-    expect(service.consumeAttempt(SOURCE, NOW).allowed).toBe(false);
-    expect(service.consumeAttempt(SOURCE, NOW + AGENT_RATE_LIMIT_WINDOW_MS).allowed).toBe(true);
+    expect((await service.consumeAttempt(SOURCE, NOW)).allowed).toBe(false);
+    expect((await service.consumeAttempt(SOURCE, NOW + AGENT_RATE_LIMIT_WINDOW_MS)).allowed).toBe(
+      true,
+    );
   });
 
-  it('caps a flood that never fails authentication', () => {
+  it('caps a flood that never fails authentication', async () => {
     for (let attempt = 0; attempt < AGENT_PREAUTH_REQUEST_LIMIT_PER_WINDOW; attempt += 1) {
-      expect(service.consumeAttempt(SOURCE, NOW).allowed).toBe(true);
+      expect((await service.consumeAttempt(SOURCE, NOW)).allowed).toBe(true);
     }
 
-    expect(service.consumeAttempt(SOURCE, NOW).allowed).toBe(false);
+    expect((await service.consumeAttempt(SOURCE, NOW)).allowed).toBe(false);
   });
 
   it('accounts requests with no source address in one shared bucket', () => {
@@ -87,21 +88,17 @@ describe('AgentPreAuthGuard', () => {
     guard = new AgentPreAuthGuard(service);
   });
 
-  it('admits a request within the source budget', () => {
-    expect(guard.canActivate(contextFor(SOURCE))).toBe(true);
+  it('admits a request within the source budget', async () => {
+    expect(await guard.canActivate(contextFor(SOURCE))).toBe(true);
   });
 
-  it('refuses a locked-out source with the contract rate-limit error', () => {
+  it('refuses a locked-out source with the contract rate-limit error', async () => {
     for (let attempt = 0; attempt < AGENT_PREAUTH_FAILURE_LIMIT_PER_WINDOW; attempt += 1) {
-      service.recordFailure(SOURCE);
+      await service.recordFailure(SOURCE);
     }
 
-    try {
-      guard.canActivate(contextFor(SOURCE));
-      expect.unreachable('the guard must refuse a locked-out source');
-    } catch (error) {
-      expect(error).toBeInstanceOf(AgentAccessException);
-      expect((error as AgentAccessException).code).toBe('AGENT_RATE_LIMITED');
-    }
+    await expect(guard.canActivate(contextFor(SOURCE))).rejects.toMatchObject({
+      code: 'AGENT_RATE_LIMITED',
+    });
   });
 });

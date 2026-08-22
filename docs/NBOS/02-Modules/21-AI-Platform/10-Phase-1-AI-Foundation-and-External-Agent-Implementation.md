@@ -241,7 +241,7 @@ Runtime: `packages/database/prisma/schema/ai-platform.prisma`, `apps/api/src/mod
 183. [x] Evaluate data classification/restrictions.
 184. [x] Evaluate action risk.
 185. [x] Evaluate approval requirement.
-186. [~] Evaluate usage/rate limits. The evaluator accepts a `rateLimitExceeded` verdict and denies with `RATE_LIMITED`, and section U ships the counters, but production enforcement refuses at the limiter (`AgentPreAuthGuard`, `AgentRateLimitGuard`, `AgentProtocolInvoker`) before policy runs, so no production caller passes the live verdict into the evaluator. Closing this item requires the verdict to reach `AgentPolicyService`, which belongs with the shared counter store planned for horizontal scale.
+186. [x] Evaluate usage/rate limits.
 187. [x] Support ALLOW.
 188. [x] Support DENY.
 189. [x] Support REQUIRE_APPROVAL.
@@ -254,7 +254,7 @@ Runtime: `packages/database/prisma/schema/ai-platform.prisma`, `apps/api/src/mod
 
 Runtime: `packages/shared/src/ai/policy-evaluator.ts` (pure decision) and `apps/api/src/modules/ai-platform/policy/agent-policy.service.ts` (state loading, denial audit, safe error).
 
-The agent id is not an input: `AgentPolicyQuery` derives it from `actor`, so a caller cannot ask for a decision about one principal while presenting another (178). Classification is fail-closed (183) — a capability that declares `requiresTargetDataClassification` is denied with `DATA_CLASSIFICATION_UNKNOWN` when the caller cannot state the target's classification, rather than passing an unenforceable ceiling. Evaluation order is deliberate: everything independent of the concrete resource, _including_ the rate limit, is decided before the scope match, so a throttled agent receives the same `429` whether or not the target is in scope and the status code is not a scope oracle (191). Item 192 holds structurally: `AiPolicyRequest` accepts no free-text content, so task text, documents and messages are not inputs to the decision. Item 186 closed in Chat 7: the evaluator still consumes a `rateLimitExceeded` verdict, and the counters and windows that produce it now live in section U (`AgentRateLimitService`). Out-of-scope and non-existent resources both surface as `AGENT_RESOURCE_NOT_AVAILABLE` with an identical message, and a failed denial audit keeps the safe deterministic error instead of degrading into an internal error. Tests: `policy-evaluator.test.ts`, `policy-error-mapping.test.ts`, `agent-policy.service.test.ts`, `agent-policy.assert.test.ts`.
+The agent id is not an input: `AgentPolicyQuery` derives it from `actor`, so a caller cannot ask for a decision about one principal while presenting another (178). Classification is fail-closed (183) — a capability that declares `requiresTargetDataClassification` is denied with `DATA_CLASSIFICATION_UNKNOWN` when the caller cannot state the target's classification, rather than passing an unenforceable ceiling. Evaluation order is deliberate: everything independent of the concrete resource, _including_ the rate limit, is decided before the scope match, so a throttled agent receives the same `429` whether or not the target is in scope and the status code is not a scope oracle (191). Item 192 holds structurally: `AiPolicyRequest` accepts no free-text content, so task text, documents and messages are not inputs to the decision. Item 186: `AgentProtocolInvoker` passes a live `rateLimitExceeded: true` verdict into `AgentPolicyService.evaluate` with an empty target before throwing `AGENT_RATE_LIMITED` with `Retry-After`, so a capability-budget refusal is not a scope oracle. Request/pre-auth ceilings still refuse at their guards. Tests: `policy-evaluator.test.ts`, `policy-error-mapping.test.ts`, `agent-policy.service.test.ts`, `agent-policy.assert.test.ts`, `agent-protocol.invoker.test.ts`.
 
 # K. Domain Action Gateway
 
@@ -267,14 +267,14 @@ The agent id is not an input: `AgentPolicyQuery` derives it from `actor`, so a c
 202. [x] Preserve ActorContext through invocation.
 203. [x] Preserve correlation id through invocation.
 204. [x] Validate capability input schemas.
-205. [~] Validate output projection schemas.
+205. [x] Validate output projection schemas.
 206. [x] Re-check target scope server-side.
 207. [x] Audit successful material mutations after domain commit.
 208. [x] Audit failures/denials where policy requires.
 209. [~] Preserve transaction boundaries.
 210. [x] Add gateway integration tests.
 
-Runtime: `apps/api/src/modules/ai-platform/gateway/agent-capability.gateway.ts`. Items 197–198 are closed by Chat 4: the REST controllers and the MCP server hold no Prisma client and no Tasks/Drive dependency — their only collaborator is `AgentProtocolInvoker`, which calls `AgentCapabilityGateway.invoke`. Item 203 is closed by Chat 4: `AgentAuthGuard` resolves or mints the correlation id before authentication, so every invocation carries one. Item 204 validates catalog field names plus enum/date/sort at the gateway (`agent-capability.validators.ts`). Item 205 is partial: handlers emit purpose-built projections rather than running a second output-schema validator. Item 207 audits after domain commit even if idempotency `complete()` fails. Item 209 is partial: domain commit and idempotency `complete()` are not one transaction; stale `IN_PROGRESS` is never reclaimed (conflict instead of a second domain write). List `workspaces.read` denials (except the empty authorized set) go through `assertAllowed`. Evidence: `19-Phase-1-Chat-3-Handoff.md`.
+Runtime: `apps/api/src/modules/ai-platform/gateway/agent-capability.gateway.ts`. Items 197–198 are closed by Chat 4: the REST controllers and the MCP server hold no Prisma client and no Tasks/Drive dependency — their only collaborator is `AgentProtocolInvoker`, which calls `AgentCapabilityGateway.invoke`. Item 203 is closed by Chat 4: `AgentAuthGuard` resolves or mints the correlation id before authentication, so every invocation carries one. Item 204 validates catalog field names plus enum/date/sort at the gateway (`agent-capability.validators.ts`). Item 205: `projectCapabilityOutput` strips undeclared fields at the gateway; list envelopes keep `items` / `meta` (the live `{ items, meta }` handler shape that `toAgentResponseBody` turns into `09` `{ data, meta }`). A top-level `page` key is not the list envelope. Item 207 audits after domain commit even if idempotency `complete()` fails. Item 209 remains `[~]`: domain commit and idempotency `complete()` are not one transaction. Chat 11 checkpoints `responseJson` while the row is still `IN_PROGRESS`, so a crash after checkpoint replays instead of conflicting; a crash after Tasks/Drive commit and before checkpoint still leaves unreclaimable `IN_PROGRESS` without a second domain write. List `workspaces.read` denials (except the empty authorized set) go through `assertAllowed`. Evidence: `19-Phase-1-Chat-3-Handoff.md`, `30-Phase-1-Chat-11-Handoff.md`.
 
 # L. Work Space discovery and isolation
 
@@ -434,7 +434,7 @@ Runtime: `AgentIdempotencyService` stores `(agentId, capabilityKey, operationKey
 329. [x] Ensure abusive Agent cannot consume employee API capacity globally.
 330. [x] Add rate-limit tests.
 
-Runtime: `apps/api/src/modules/ai-platform/limits/`. The chain on every `/api/v1/agent` route (REST and MCP) is `AgentPreAuthGuard` → `AgentAuthGuard` → `AgentRateLimitGuard` → `AgentUsageInterceptor`. `AgentPreAuthThrottleService` bounds requests and failed authentications per source address before any credential lookup or Argon2 verification, so unauthenticated traffic cannot buy verification work; `AgentRateLimitGuard` then charges the authenticated agent, never an IP, and runs before the `lastUsedAt` write, so an exhausted credential stops buying usage writes. `AgentRateLimitService` keeps fixed windows in process memory; `AgentProtocolInvoker` charges the per-capability class and holds the concurrency slot around the gateway call, so REST and MCP share one counter for the same capability. The body ceiling is enforced by `createAgentJsonBodyParser`, mounted on the agent prefix ahead of the global parsers, on the bytes actually read from the socket rather than on a declared `Content-Length`.
+Runtime: `apps/api/src/modules/ai-platform/limits/`. The chain on every `/api/v1/agent` route (REST and MCP) is `AgentPreAuthGuard` → `AgentAuthGuard` → `AgentRateLimitGuard` → `AgentUsageInterceptor`. `AgentPreAuthThrottleService` bounds requests and failed authentications per source address before any credential lookup or Argon2 verification, so unauthenticated traffic cannot buy verification work; `AgentRateLimitGuard` then charges the authenticated agent, never an IP, and runs before the `lastUsedAt` write, so an exhausted credential stops buying usage writes. `AgentRateLimitService` delegates to `AgentRateLimitStore`: Redis when `REDIS_STATE_URL`/`REDIS_URL` is set (shared ceiling, fail-closed on Redis errors), otherwise process memory. Vitest uses memory unless `AI_RATE_LIMIT_REDIS_IN_TEST=1`. `AgentProtocolInvoker` charges the per-capability class, feeds a live `rateLimitExceeded` verdict into policy, and holds the concurrency slot around the gateway call, so REST and MCP share one counter for the same capability. The body ceiling is enforced by `createAgentJsonBodyParser`, mounted on the agent prefix ahead of the global parsers, on the bytes actually read from the socket rather than on a declared `Content-Length`.
 
 Chosen values (`agent-rate-limit.constants.ts`, all named constants):
 
@@ -451,7 +451,7 @@ Chosen values (`agent-rate-limit.constants.ts`, all named constants):
 | Request body                   | `AGENT_MAX_REQUEST_BYTES`                | 768 KiB      |
 | JSON-RPC batch                 | `AGENT_MCP_MAX_BATCH_MESSAGES`           | 20 messages  |
 
-329 is structural, not tuning: the agent namespace carries `@SkipThrottle()` and never draws from the employee `ThrottlerGuard` default, an exhausted agent budget cannot reduce the employee allowance, and the pre-auth ceiling keeps unauthenticated agent traffic from consuming shared database and hashing capacity. An HTTP integration test asserts the employee probe still answers **200** during an agent flood, not merely "not 429". 328 returns `AGENT_RATE_LIMITED` (HTTP 429) with `Retry-After` plus `X-RateLimit-Limit` / `-Remaining` / `-Reset`. MCP returns the same code inside the JSON-RPC error envelope with `retryAfterSeconds`, because a per-message refusal cannot set a status on an HTTP response that also carries admitted messages. Oversized bodies are refused with `AGENT_VALIDATION_FAILED` (413) in the `09` envelope before parsing and before the domain is reached, whether the size was declared, understated, or sent chunked. Counters are per process: a multi-instance API multiplies the effective ceiling until the store is shared (see Cleanup Register).
+329 is structural, not tuning: the agent namespace carries `@SkipThrottle()` and never draws from the employee `ThrottlerGuard` default, an exhausted agent budget cannot reduce the employee allowance, and the pre-auth ceiling keeps unauthenticated agent traffic from consuming shared database and hashing capacity. An HTTP integration test asserts the employee probe still answers **200** during an agent flood, not merely "not 429". 328 returns `AGENT_RATE_LIMITED` (HTTP 429) with `Retry-After` plus `X-RateLimit-Limit` / `-Remaining` / `-Reset`. MCP returns the same code inside the JSON-RPC error envelope with `retryAfterSeconds`, because a per-message refusal cannot set a status on an HTTP response that also carries admitted messages. Oversized bodies are refused with `AGENT_VALIDATION_FAILED` (413) in the `09` envelope before parsing and before the domain is reached, whether the size was declared, understated, or sent chunked. Counters share Redis when a state URL is configured so multiple API instances cannot multiply the ceiling; without Redis they remain per process. An HTTP integration test asserts the employee probe still answers **200** during an agent flood, not merely "not 429".
 
 # V. REST machine API
 
@@ -497,14 +497,14 @@ Runtime: `apps/api/src/modules/ai-platform/rest/*` — three controllers on `v1/
 365. [x] Implement `nbos_attach_task_artifact`.
 366. [x] Implement `nbos_submit_task_review`.
 367. [x] Do not expose delete tool in Phase 1.
-368. [~] Use structured input/output schemas.
+368. [x] Use structured input/output schemas.
 369. [x] Ensure MCP tools invoke same capabilities/domain services as REST.
 370. [x] Ensure MCP authorization decisions match REST.
 371. [x] Propagate correlation id/protocol metadata.
 372. [x] Add MCP contract tests.
 373. [x] Add REST-vs-MCP parity tests.
 
-Runtime: `apps/api/src/modules/ai-platform/mcp/*`. Stateless Streamable HTTP JSON-RPC 2.0 at `POST /api/v1/agent/mcp` (`initialize`, `notifications/initialized`, `ping`, `tools/list`, `tools/call`); `GET`/`DELETE` answer 405 because Phase 1 offers no server-initiated stream. Implemented directly rather than on the MCP SDK: the Phase 1 surface is tools-only, and a hand-written adapter avoids two new production dependencies while keeping error/idempotency behaviour byte-identical to REST. 351–352 reuse `AgentAuthGuard` with `@AgentChannel('mcp')`, so the same credential yields the same `ActorContext` with `channel.source = 'mcp'`. 368 is `[~]`: input schemas are published and generated from the capability catalog, but no `outputSchema` is advertised — that depends on the catalog output validator still open as K 205. Denials are returned as `isError: true` tool results carrying the same stable code REST returns, which is what 370 is tested on. Not exposed: `tasks.read_links`, absent from the `09` §12 tool list.
+Runtime: `apps/api/src/modules/ai-platform/mcp/*`. Stateless Streamable HTTP JSON-RPC 2.0 at `POST /api/v1/agent/mcp` (`initialize`, `notifications/initialized`, `ping`, `tools/list`, `tools/call`); `GET`/`DELETE` answer 405 because Phase 1 offers no server-initiated stream. Implemented directly rather than on the MCP SDK: the Phase 1 surface is tools-only, and a hand-written adapter avoids two new production dependencies while keeping error/idempotency behaviour byte-identical to REST. 351–352 reuse `AgentAuthGuard` with `@AgentChannel('mcp')`, so the same credential yields the same `ActorContext` with `channel.source = 'mcp'`. 368: list-envelope tools (`workspaces.list`, `tasks.list`, `tasks.discussion`) publish a closed `outputSchema` with catalog item fields plus `items`/`meta`; other capability tools publish item fields only; identity has no output schema. The gateway still projects undeclared fields away (K 205). Denials are returned as `isError: true` tool results carrying the same stable code REST returns, which is what 370 is tested on. Not exposed: `tasks.read_links`, absent from the `09` §12 tool list.
 
 # X. External client setup and acceptance
 
@@ -761,50 +761,39 @@ Tests: `customer-facing-policy.test.ts`, `customer-isolation.test.ts`,
 
 # AH. Usage, cost and observability foundation
 
-532. [ ] Create/extend AI execution record contract.
-533. [ ] Attribute execution to actor/agent.
-534. [ ] Attribute provider connection.
-535. [ ] Attribute model.
-536. [ ] Attribute Model Policy/routing config.
-537. [ ] Attribute capability/domain/channel.
-538. [ ] Store correlation id.
-539. [ ] Track status/success/failure.
-540. [ ] Track latency.
-541. [ ] Track retry count.
-542. [ ] Track fallback occurrence/reason.
-543. [ ] Track provider usage units/tokens where available.
-544. [ ] Track estimated/provider-reported cost where available.
-545. [ ] Keep pricing-version/effective-date concept for historical cost integrity.
-546. [ ] Define basic budget/usage limit schema/contracts.
+532. [x] Create/extend AI execution record contract.
+533. [x] Attribute execution to actor/agent.
+534. [x] Attribute provider connection.
+535. [x] Attribute model.
+536. [x] Attribute Model Policy/routing config.
+537. [x] Attribute capability/domain/channel.
+538. [x] Store correlation id.
+539. [x] Track status/success/failure.
+540. [x] Track latency.
+541. [x] Track retry count.
+542. [x] Track fallback occurrence/reason.
+543. [x] Track provider usage units/tokens where available.
+544. [x] Track estimated/provider-reported cost where available.
+545. [x] Keep pricing-version/effective-date concept for historical cost integrity.
+546. [x] Define basic budget/usage limit schema/contracts.
 547. [x] Avoid storing full sensitive prompts solely for metrics.
-548. [ ] Add execution/usage attribution tests.
+548. [x] Add execution/usage attribution tests.
 
-Chat 8 verdict: **not implemented** and the largest remaining Phase 1 gap. There is no AI execution
-or usage entity, so 532–546 and 548 are unchecked; this is also why AP 705 is `[~]`. 547 `[x]` is
-true by construction — no table in `ai-platform.prisma`, `ai-providers.prisma` or
-`ai-internal-agents.prisma` stores prompt or completion content. The identities such a record needs
-(actor, Internal Agent, provider connection, model, model policy, capability, channel) all exist
-already, so this is additive work, not a redesign.
+Chat 11: `AiExecution` is an attribution/metrics row (capability invocations and future model calls). Opaque ids, no FKs, no prompt/completion/secret columns. External Agent protocol records capability rows best-effort after domain commit (`AgentProtocolInvoker`); a metrics failure must not fail Tasks/Drive. Provider/model/policy/token/cost fields exist on the row and are filled when a model invocation records them — Phase 1 has no Internal Agent model-call loop, so live External Agent rows typically have those nullable. Budgets are `AiBudgetLimit` + pure `evaluateAiBudget` / `shouldHardStopAiBudget`; HARD_STOP is defined as blocking a _new_ model invocation, never wrapping an in-flight Tasks/Drive commit. External Agent abuse controls remain section U rate limits. Tests: `execution-evaluation.test.ts`, `ai-execution.service.test.ts`, `agent-protocol.invoker.test.ts`.
 
 # AI. Evaluation foundation
 
-549. [ ] Create evaluation suite/run contracts or entities sufficient for future use.
-550. [ ] Support model/model-policy evaluation target.
-551. [ ] Support prompt-version attribution.
-552. [ ] Support dataset/version identity.
-553. [ ] Support aggregate quality/latency/cost results.
-554. [ ] Keep deterministic/human/model-based grading separable.
+549. [x] Create evaluation suite/run contracts or entities sufficient for future use.
+550. [x] Support model/model-policy evaluation target.
+551. [x] Support prompt-version attribution.
+552. [x] Support dataset/version identity.
+553. [x] Support aggregate quality/latency/cost results.
+554. [x] Keep deterministic/human/model-based grading separable.
 555. [x] Do not automatically activate/promote model based only on provider release.
 556. [x] Do not automatically promote based only on LLM-judge score.
-557. [~] Add admin notes/suitability/evaluation status to model management.
+557. [x] Add admin notes/suitability/evaluation status to model management.
 
-Chat 8 verdict: the two **negative** guarantees hold and were proven live; the evaluation entities
-were not built. 555 `[x]`: AP 692 — a first OpenAI sync created 124 models, 124 `DISCOVERED`, 0
-`ACTIVE`, and activation is an explicit admin action (`activatedById` / `activatedAt`). 556 `[x]`:
-no judge or auto-promotion path exists anywhere. 557 `[~]`: `AiModel.notes` and
-`AiModel.suitabilityTags` are admin-owned fields, exposed through `UpdateModelDto` and
-`ModelCatalogPanel`, and are deliberately separate from `providerMetadata`; an evaluation-status
-field is missing because section AI has no runtime.
+Chat 8 live negatives still hold (555/556). Chat 11 added `AiEvaluationSuite` / `AiEvaluationDataset` / `AiEvaluationRun` with exactly one `gradingKind` per run. `evaluationScoreMayAutoActivateModel()` is hardcoded `false`; completing a run does not write `AiModel.status`. `AiModel.evaluationStatus` is admin-owned (`NOT_EVALUATED` / `PENDING` / `EVALUATED` / `UNSUITABLE`); catalog sync does not set it (DB default `NOT_EVALUATED`). Tests: `execution-evaluation.test.ts`, `ai-evaluation.service.test.ts`, `ai-model-catalog.service.test.ts`.
 
 # AJ. Central AI administration UI
 
@@ -834,8 +823,8 @@ field is missing because section AI has no runtime.
 581. [x] Add model Activate/Disable actions.
 582. [x] Show provider/model metadata and internal notes/tags.
 583. [x] Add Model Policies page.
-584. [~] Add FIXED policy create/edit UI.
-585. [~] Add PRIMARY_FALLBACK policy create/edit UI.
+584. [x] Add FIXED policy create/edit UI.
+585. [x] Add PRIMARY_FALLBACK policy create/edit UI.
 586. [x] Allow cross-provider candidates.
 587. [x] Add Internal Agents page/shell.
 588. [x] Add Internal Agent create/configure UI foundation.
@@ -847,7 +836,7 @@ field is missing because section AI has no runtime.
 594. [x] Add AI Audit/Activity view.
 595. [x] Add admin authorization tests.
 
-Runtime: Employee admin HTTP is `/api/ai-admin` with existing `COMPANY` + `EDIT` (not `AgentAuthGuard`). Controllers wrap Chat 2/5 services; composition reads go through `AiAdminQueryService`. Settings → AI & Agents uses `ModuleHeroSlotProvider` + `PageHeroNavLinks`. Raw External Agent tokens and provider keys appear once in a modal / password field and never on later list/detail. REVOKED is terminal in UI (no enable/issue/grant). Sync does not auto-activate. Model Policies expose only `FIXED` and `PRIMARY_FALLBACK`; TIERED/ADAPTIVE are not in the UI. Internal Agents create as DRAFT and activate only via `InternalAgentService.activate`. Usage and Approvals are foundation shells. 584/585: create + activate/disable shipped; in-place candidate-replace editor is API-only (`replacePolicyCandidates`) in this chat.
+Runtime: Employee admin HTTP is `/api/ai-admin` with existing `COMPANY` + `EDIT` (not `AgentAuthGuard`). Controllers wrap Chat 2/5 services; composition reads go through `AiAdminQueryService`. Settings → AI & Agents uses `ModuleHeroSlotProvider` + `PageHeroNavLinks`. Raw External Agent tokens and provider keys appear once in a modal / password field and never on later list/detail. REVOKED is terminal in UI (no enable/issue/grant). Sync does not auto-activate. Model Policies expose only `FIXED` and `PRIMARY_FALLBACK`; TIERED/ADAPTIVE are not in the UI. Internal Agents create as DRAFT and activate only via `InternalAgentService.activate`. Usage lists recent `AiExecution` rows and enabled budgets; Approvals remain the Chat 10 queue. 584/585: `PolicyCandidateEditor` replaces FIXED primary and ordered PRIMARY_FALLBACK candidates through `replacePolicyCandidates`.
 
 # AK. Contextual module access UI
 
@@ -1018,7 +1007,7 @@ matching delete/force/set_status) and no capability key; completion stayed with 
 702. [x] Activate Internal Agent only when required dependencies validate.
 703. [x] Pause/disable blocks new execution contract/path.
 704. [x] Audit records provider/model/Internal Agent configuration changes.
-705. [~] Usage/execution records can attribute agent/provider/model/policy.
+705. [x] Usage/execution records can attribute agent/provider/model/policy.
 
 Evidence: live walk on 2026-08-22 with a real OpenAI key supplied by the developer; driver in
 `apps/api/.chat8/ap/`, records in `.chat8/ap-artifacts.json`. A first sync created 124 models, all
@@ -1026,9 +1015,11 @@ Evidence: live walk on 2026-08-22 with a real OpenAI key supplied by the develop
 not appear in any audit row. 689–691 and 697 are `[~]` for one reason only: **no Anthropic test key
 was supplied**, so the Anthropic adapter, its secret storage and cross-provider fallback are covered
 by unit tests (`anthropic.adapter.test.ts`, `ai-model-sync.service.test.ts`,
-`ai-model-policy.rules.test.ts`) but not by a live provider call. 705 is `[~]` because section AH
-(usage/execution records) is unimplemented in Phase 1, so there is no runtime row to attribute — the
-Internal Agent, provider, model and policy identities that such a record needs all exist.
+`ai-model-policy.rules.test.ts`) but not by a live provider call. 705 is `[x]` for the Chat 11
+`AiExecution` contract: the row can attribute actor, External/Internal Agent, provider connection,
+model, Model Policy, capability, channel and correlation. Live External Agent protocol rows fill
+actor/agent/capability/channel/correlation; provider/model/policy stay null until a model
+invocation records them. No Internal Agent model-call loop exists in Phase 1.
 
 # AQ. Final architecture review
 

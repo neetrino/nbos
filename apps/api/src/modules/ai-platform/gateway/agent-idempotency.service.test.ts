@@ -90,4 +90,26 @@ describe('AgentIdempotencyService', () => {
     expect(prisma.externalAgentIdempotencyRecord.create).not.toHaveBeenCalled();
     expect(prisma.externalAgentIdempotencyRecord.delete).not.toHaveBeenCalled();
   });
+
+  it('replays an IN_PROGRESS row that already checkpointed the domain result', async () => {
+    prisma.externalAgentIdempotencyRecord.findUnique.mockResolvedValue({
+      id: 'row-1',
+      requestFingerprint: KEY.requestFingerprint,
+      status: 'IN_PROGRESS',
+      responseJson: { capabilityKey: 'tasks.create', data: { id: 'task-1' } },
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + AGENT_IDEMPOTENCY_TTL_MS),
+    });
+    prisma.externalAgentIdempotencyRecord.update.mockResolvedValue({});
+
+    await expect(service.reserve(KEY)).resolves.toEqual({
+      capabilityKey: 'tasks.create',
+      data: { id: 'task-1' },
+    });
+    expect(prisma.externalAgentIdempotencyRecord.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: 'COMPLETED' }),
+      }),
+    );
+  });
 });

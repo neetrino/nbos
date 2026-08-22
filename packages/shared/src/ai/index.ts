@@ -84,6 +84,61 @@ export {
   type AiProviderType,
 } from './provider-types';
 export {
+  AI_EXECUTION_KINDS,
+  AI_EXECUTION_STATUSES,
+  isAiExecutionKind,
+  isAiExecutionStatus,
+  type AiExecutionActorRef,
+  type AiExecutionAttribution,
+  type AiExecutionKind,
+  type AiExecutionRecord,
+  type AiExecutionStatus,
+  type AiExecutionUsageSnapshot,
+} from './execution-types';
+export {
+  assertExecutionRecordSafe,
+  findExecutionRecordSafetyIssues,
+  type AiExecutionSafetyIssue,
+} from './execution-record';
+export {
+  AI_BUDGET_BEHAVIORS,
+  AI_BUDGET_METRICS,
+  AI_BUDGET_PERIODS,
+  AI_BUDGET_SCOPE_TYPES,
+  AI_BUDGET_VERDICTS,
+  isAiBudgetBehavior,
+  isAiBudgetScopeType,
+  type AiBudgetBehavior,
+  type AiBudgetEvaluation,
+  type AiBudgetLimitRecord,
+  type AiBudgetMetric,
+  type AiBudgetPeriod,
+  type AiBudgetScopeType,
+  type AiBudgetVerdict,
+} from './budget-types';
+export { evaluateAiBudget, shouldHardStopAiBudget } from './budget-evaluate';
+export {
+  AI_EVALUATION_GRADING_KINDS,
+  AI_EVALUATION_RUN_STATUSES,
+  AI_EVALUATION_SUITE_STATUSES,
+  AI_MODEL_EVALUATION_STATUSES,
+  isAiEvaluationGradingKind,
+  isAiModelEvaluationStatus,
+  type AiEvaluationDatasetRef,
+  type AiEvaluationGradingKind,
+  type AiEvaluationRunRecord,
+  type AiEvaluationRunStatus,
+  type AiEvaluationSuiteRecord,
+  type AiEvaluationSuiteStatus,
+  type AiModelEvaluationStatus,
+} from './evaluation-types';
+export {
+  AI_EVALUATION_RUN_TRANSITIONS,
+  canTransitionEvaluationRun,
+  evaluationScoreMayAutoActivateModel,
+} from './evaluation-lifecycle';
+export { AI_OUTPUT_ENVELOPE_FIELDS, projectCapabilityOutput } from './capability-output';
+export {
   AI_MODEL_FALLBACK_REASONS,
   AI_MODEL_POLICY_CANDIDATE_ROLES,
   AI_MODEL_POLICY_MODES,

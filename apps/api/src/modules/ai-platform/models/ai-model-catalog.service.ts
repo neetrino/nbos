@@ -1,6 +1,11 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
-import { isProductionAssignableModelStatus, type AiModelStatus } from '@nbos/shared';
+import {
+  isAiModelEvaluationStatus,
+  isProductionAssignableModelStatus,
+  type AiModelEvaluationStatus,
+  type AiModelStatus,
+} from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AiPlatformAuditService } from '../ai-platform-audit.service';
 import { AI_AUDIT_ACTION, AI_AUDIT_ENTITY } from '../ai-platform.constants';
@@ -13,6 +18,7 @@ const SUITABILITY_TAG_MAX_COUNT = 20;
 
 export interface UpdateModelSuitabilityInput {
   suitabilityTags?: string[];
+  evaluationStatus?: string;
   notes?: string | null;
 }
 
@@ -65,6 +71,7 @@ export class AiModelCatalogService {
   ): Promise<AiModelView> {
     const suitabilityTags =
       input.suitabilityTags === undefined ? undefined : normalizeTags(input.suitabilityTags);
+    const evaluationStatus = normalizeEvaluationStatus(input.evaluationStatus);
     const notes = input.notes === undefined ? undefined : normalizeNotes(input.notes);
     const updated = await this.prisma.$transaction(async (tx) => {
       await this.requireModel(tx, modelId);
@@ -72,6 +79,7 @@ export class AiModelCatalogService {
         where: { id: modelId },
         data: {
           ...(suitabilityTags === undefined ? {} : { suitabilityTags }),
+          ...(evaluationStatus === undefined ? {} : { evaluationStatus }),
           ...(notes === undefined ? {} : { notes }),
         },
       });
@@ -83,6 +91,7 @@ export class AiModelCatalogService {
           actingEmployeeId,
           changes: {
             suitabilityChanged: suitabilityTags !== undefined,
+            evaluationStatusChanged: evaluationStatus !== undefined,
             notesChanged: notes !== undefined,
           },
         },
@@ -168,4 +177,12 @@ function normalizeNotes(value: string | null): string | null {
     throw new BadRequestException(`notes exceed ${AGENT_DESCRIPTION_MAX_LENGTH} characters`);
   }
   return trimmed.length > 0 ? trimmed : null;
+}
+
+function normalizeEvaluationStatus(value: string | undefined): AiModelEvaluationStatus | undefined {
+  if (value === undefined) return undefined;
+  if (!isAiModelEvaluationStatus(value)) {
+    throw new BadRequestException('evaluationStatus is invalid');
+  }
+  return value;
 }

@@ -12,6 +12,7 @@ import {
   AGENT_TASK_SORT_FIELDS,
   AGENT_TASK_STATUSES,
 } from '../gateway/agent-capability.constants';
+import { buildOutputSchema } from './agent-mcp.output-schema';
 
 export const MCP_CONTENT_FIELD = 'contentBase64';
 export const MCP_OPERATION_ID_FIELD = 'clientOperationId';
@@ -36,6 +37,7 @@ export interface McpToolDefinition {
   title: string;
   description: string;
   inputSchema: McpJsonSchema;
+  outputSchema?: McpJsonSchema;
 }
 
 /**
@@ -128,6 +130,7 @@ function toToolDefinition(operation: AgentOperationDefinition): McpToolDefinitio
     title: TOOL_TITLES[operation.mcpTool] ?? operation.mcpTool,
     description: describe(operation),
     inputSchema: buildInputSchema(operation),
+    outputSchema: buildOutputSchema(operation),
   };
 }
 

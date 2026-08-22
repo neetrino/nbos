@@ -97,6 +97,7 @@ export interface AiModelView {
   providerModelId: string;
   displayName: string;
   status: 'DISCOVERED' | 'ACTIVE' | 'DISABLED' | 'DEPRECATED' | 'UNAVAILABLE';
+  evaluationStatus: 'NOT_EVALUATED' | 'PENDING' | 'EVALUATED' | 'UNSUITABLE';
   discoveredAt: string;
   lastSeenAt: string;
   providerMetadata: Record<string, unknown>;
@@ -273,8 +274,14 @@ export const aiAdminApi = {
     get<AiModelView[]>('/api/ai-admin/models', params),
   activateModel: (id: string) => post<AiModelView>(`/api/ai-admin/models/${id}/activate`),
   disableModel: (id: string) => post<AiModelView>(`/api/ai-admin/models/${id}/disable`),
-  updateModel: (id: string, body: { suitabilityTags?: string[]; notes?: string | null }) =>
-    patch<AiModelView>(`/api/ai-admin/models/${id}`, body),
+  updateModel: (
+    id: string,
+    body: {
+      suitabilityTags?: string[];
+      evaluationStatus?: 'NOT_EVALUATED' | 'PENDING' | 'EVALUATED' | 'UNSUITABLE';
+      notes?: string | null;
+    },
+  ) => patch<AiModelView>(`/api/ai-admin/models/${id}`, body),
   listPolicies: () => get<AiModelPolicyView[]>('/api/ai-admin/model-policies'),
   createPolicy: (body: {
     name: string;

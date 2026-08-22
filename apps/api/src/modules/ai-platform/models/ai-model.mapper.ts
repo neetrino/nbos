@@ -1,4 +1,4 @@
-import type { AiModelStatus, AiProviderType } from '@nbos/shared';
+import type { AiModelEvaluationStatus, AiModelStatus, AiProviderType } from '@nbos/shared';
 
 export interface AiModelView {
   id: string;
@@ -7,6 +7,7 @@ export interface AiModelView {
   providerModelId: string;
   displayName: string;
   status: AiModelStatus;
+  evaluationStatus: AiModelEvaluationStatus;
   discoveredAt: Date;
   lastSeenAt: Date;
   providerMetadata: Record<string, unknown>;
@@ -31,6 +32,7 @@ export function toAiModelView(row: ModelRow): AiModelView {
     providerModelId: row.providerModelId,
     displayName: row.displayName,
     status: row.status,
+    evaluationStatus: row.evaluationStatus,
     discoveredAt: row.discoveredAt,
     lastSeenAt: row.lastSeenAt,
     providerMetadata: asMetadata(row.providerMetadata),

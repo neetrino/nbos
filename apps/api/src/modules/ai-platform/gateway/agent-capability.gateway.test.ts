@@ -9,6 +9,7 @@ import { pickCapabilityInput, requireCapability } from './agent-capability.input
 import type { AgentCapabilityInvocation } from './agent-capability.types';
 import { fingerprintCapabilityRequest } from './agent-idempotency.rules';
 import { AgentIdempotencyService } from './agent-idempotency.service';
+import { toAgentResponseBody } from '../protocol/agent-response.envelope';
 
 function agent(): AuthenticatedAgent {
   return {
@@ -43,6 +44,7 @@ describe('AgentCapabilityGateway', () => {
     reserve: ReturnType<typeof vi.fn>;
     complete: ReturnType<typeof vi.fn>;
     abort: ReturnType<typeof vi.fn>;
+    checkpointCommittedResult: ReturnType<typeof vi.fn>;
   };
   let audit: { logMachineAction: ReturnType<typeof vi.fn> };
   let replayAuthorization: { assertStillAuthorized: ReturnType<typeof vi.fn> };
@@ -71,6 +73,7 @@ describe('AgentCapabilityGateway', () => {
       reserve: vi.fn().mockResolvedValue(null),
       complete: vi.fn(),
       abort: vi.fn(),
+      checkpointCommittedResult: vi.fn().mockResolvedValue(undefined),
     };
     audit = { logMachineAction: vi.fn().mockResolvedValue(undefined) };
     replayAuthorization = { assertStillAuthorized: vi.fn().mockResolvedValue(undefined) };
@@ -88,6 +91,43 @@ describe('AgentCapabilityGateway', () => {
   it('routes workspaces.read through the workspace handler, not Prisma', async () => {
     await gateway.invoke(invocation('workspaces.read', {}));
     expect(workspaces.read).toHaveBeenCalled();
+  });
+
+  it('strips undeclared fields from a capability projection', async () => {
+    taskReads.read.mockResolvedValue({
+      id: 'task-1',
+      code: 'T-1',
+      title: 'A',
+      description: null,
+      status: 'OPEN',
+      priority: 'NORMAL',
+      dueDate: null,
+      workspaceId: 'ws-1',
+      sprintId: null,
+      updatedAt: '2026-08-22T00:00:00.000Z',
+      secretNotes: 'nope',
+    });
+    const result = await gateway.invoke(invocation('tasks.read', { taskId: 'task-1' }));
+    expect(result.data).toMatchObject({ id: 'task-1', code: 'T-1' });
+    expect(result.data).not.toHaveProperty('secretNotes');
+  });
+
+  it('keeps list meta so the 09 envelope stays { data, meta }', async () => {
+    taskReads.list.mockResolvedValue({
+      items: [{ id: 't1', code: 'T-1', title: 'A', extra: true }],
+      meta: { page: 1, pageSize: 20, total: 1 },
+    });
+    const result = await gateway.invoke(invocation('tasks.list', { workspaceId: 'ws-1' }));
+    const data = result.data as { items: Array<Record<string, unknown>>; meta: unknown };
+    expect(data.meta).toEqual({ page: 1, pageSize: 20, total: 1 });
+    expect(data).not.toHaveProperty('page');
+    const first = data.items[0];
+    expect(first).toBeDefined();
+    expect(first).not.toHaveProperty('extra');
+    expect(toAgentResponseBody(result.data)).toEqual({
+      data: [expect.objectContaining({ id: 't1', code: 'T-1' })],
+      meta: { page: 1, pageSize: 20, total: 1 },
+    });
   });
 
   it('rejects unregistered delete and force-complete capabilities', async () => {
@@ -179,6 +219,7 @@ describe('AgentCapabilityGateway', () => {
       invocation('tasks.create', { workspaceId: 'ws-1', title: 'Fix' }, { idempotencyKey: 'op-1' }),
     );
     expect(taskWrites.create).toHaveBeenCalled();
+    expect(idempotency.checkpointCommittedResult).toHaveBeenCalled();
     expect(idempotency.complete).toHaveBeenCalled();
     expect(audit.logMachineAction).toHaveBeenCalledWith(
       expect.objectContaining({

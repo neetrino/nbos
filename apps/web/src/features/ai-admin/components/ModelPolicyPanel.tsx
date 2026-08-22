@@ -25,6 +25,8 @@ import { productionEligibleModels } from '../model-catalog-groups';
 import { applySelectValue } from '../select-value';
 import { agentStateVariant } from '../status-badge-map';
 import { DisableImpactConfirm } from './DisableImpactConfirm';
+import { PolicyCandidateEditor } from './PolicyCandidateEditor';
+import { ModelSelect } from './PolicyModelSelect';
 
 export function ModelPolicyPanel() {
   const [policies, setPolicies] = useState<AiModelPolicyView[]>([]);
@@ -94,6 +96,11 @@ export function ModelPolicyPanel() {
                 </li>
               ))}
             </ul>
+            <PolicyCandidateEditor
+              policy={policy}
+              eligible={eligible}
+              onChanged={() => void load()}
+            />
             <div className="mt-3 flex gap-2">
               {policy.status !== 'ACTIVE' ? (
                 <Button
@@ -230,34 +237,6 @@ function PolicyCreateForm(props: { eligible: AiModelView[]; onCreated: () => voi
         Create
       </Button>
     </section>
-  );
-}
-
-function ModelSelect(props: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  models: AiModelView[];
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label>{props.label}</Label>
-      <Select
-        value={props.value}
-        onValueChange={(value) => applySelectValue(value, props.onChange)}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="ACTIVE models only" />
-        </SelectTrigger>
-        <SelectContent>
-          {props.models.map((model) => (
-            <SelectItem key={model.id} value={model.id}>
-              {model.provider} / {model.displayName}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
   );
 }
 

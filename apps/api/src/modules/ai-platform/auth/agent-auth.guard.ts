@@ -77,7 +77,7 @@ export class AgentAuthGuard implements CanActivate {
 
     const token = this.extractBearerToken(request);
     if (!token) {
-      this.preAuth.recordFailure(sourceKey);
+      await this.preAuth.recordFailure(sourceKey);
       throw new AgentAccessException(toAgentExternalError('CREDENTIAL_INVALID'));
     }
 
@@ -95,7 +95,7 @@ export class AgentAuthGuard implements CanActivate {
     try {
       request.agent = await this.authenticator.authenticate(token, authContext);
     } catch (error) {
-      this.preAuth.recordFailure(sourceKey);
+      await this.preAuth.recordFailure(sourceKey);
       throw error;
     }
     request.agentAuthContext = authContext;

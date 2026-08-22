@@ -21,6 +21,14 @@ enum AiModelStatusEnum {
   UNAVAILABLE
 }
 
+/// Admin-owned evaluation judgment. Sync and LLM-judge scores never set this.
+enum AiModelEvaluationStatusEnum {
+  NOT_EVALUATED
+  PENDING
+  EVALUATED
+  UNSUITABLE
+}
+
 enum AiModelPolicyModeEnum {
   FIXED
   PRIMARY_FALLBACK
@@ -102,6 +110,8 @@ model AiModel {
   providerMetadata Json              @map("provider_metadata")
   /// Internal admin judgment, independent of providerMetadata.
   suitabilityTags  String[]          @map("suitability_tags")
+  /// Admin-owned. Never inferred from discovery or a judge score.
+  evaluationStatus AiModelEvaluationStatusEnum @default(NOT_EVALUATED) @map("evaluation_status")
   notes            String?
   aliasOf          String?           @map("alias_of")
   snapshotId       String?           @map("snapshot_id")

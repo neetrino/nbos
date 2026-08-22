@@ -22,15 +22,13 @@ const MS_PER_SECOND = 1_000;
 export class AgentRateLimitGuard implements CanActivate {
   constructor(private readonly limits: AgentRateLimitService) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const http = context.switchToHttp();
     const request = http.getRequest<AgentProtocolRequest>();
     const agentId = request.agent?.agentId;
-    // No authenticated agent means `AgentAuthGuard` already rejected the call;
-    // charging an unknown principal would let an anonymous caller evict budgets.
     if (!agentId) return true;
 
-    const decision = this.limits.consumeRequest(agentId);
+    const decision = await this.limits.consumeRequest(agentId);
     this.writeHeaders(http.getResponse<Response>(), decision);
     if (!decision.allowed) {
       throw AgentAccessException.rateLimited(decision.retryAfterSeconds);

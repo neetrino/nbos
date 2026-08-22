@@ -1,27 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional, type OnModuleDestroy } from '@nestjs/common';
 import type { AiRateLimitClass } from '@nbos/shared';
 import {
   AGENT_CAPABILITY_LIMIT_PER_WINDOW,
   AGENT_CONCURRENCY_LIMIT,
-  AGENT_CONCURRENCY_RETRY_HINT_MS,
-  AGENT_RATE_LIMIT_RETENTION_MS,
   AGENT_RATE_LIMIT_WINDOW_MS,
   AGENT_REQUEST_LIMIT_PER_WINDOW,
 } from './agent-rate-limit.constants';
-import {
-  consumeFixedWindow,
-  createCounter,
-  retryAfterSecondsUntil,
-  type AgentRateLimitCounter,
-  type AgentRateLimitDecision,
-} from './agent-rate-limit.window';
-
-interface AgentBudget {
-  requests: AgentRateLimitCounter;
-  capabilities: Map<AiRateLimitClass, AgentRateLimitCounter>;
-  inFlight: number;
-  lastSeenAt: number;
-}
+import { MemoryAgentRateLimitStore } from './agent-rate-limit.memory-store';
+import { AGENT_RATE_LIMIT_STORE, type AgentRateLimitStore } from './agent-rate-limit.store';
+import type { AgentRateLimitDecision } from './agent-rate-limit.window';
 
 /**
  * Per-agent abuse controls for the External Agent protocols (checklist U).
@@ -30,105 +17,51 @@ interface AgentBudget {
  * routes skip the global throttler entirely, so a runaway agent exhausts only
  * its own ceiling and never the capacity employees share (checklist U 329).
  *
- * State is per API process and in memory. Phase 1 runs no shared counter store,
- * so with N API instances an agent can reach at most N times these ceilings —
- * bounded and recorded, but not exact. A shared store is the upgrade path when
- * the API is scaled horizontally.
+ * Counters live in `AgentRateLimitStore`. Redis is used when a state URL is
+ * configured so multiple API instances share one ceiling; otherwise the
+ * process-local memory store is used.
  */
 @Injectable()
-export class AgentRateLimitService {
-  private readonly budgets = new Map<string, AgentBudget>();
+export class AgentRateLimitService implements OnModuleDestroy {
+  constructor(@Optional() @Inject(AGENT_RATE_LIMIT_STORE) store?: AgentRateLimitStore) {
+    this.store = store ?? new MemoryAgentRateLimitStore();
+  }
 
-  /** One HTTP request against the agent namespace, REST or MCP. */
-  consumeRequest(agentId: string, now = Date.now()): AgentRateLimitDecision {
-    const budget = this.budgetFor(agentId, now);
-    return consumeFixedWindow(
-      budget.requests,
+  private readonly store: AgentRateLimitStore;
+
+  async onModuleDestroy(): Promise<void> {
+    await this.store.close?.();
+  }
+
+  async consumeRequest(agentId: string, now = Date.now()): Promise<AgentRateLimitDecision> {
+    return this.store.consumeWindow(
+      'req',
+      agentId,
       AGENT_REQUEST_LIMIT_PER_WINDOW,
       AGENT_RATE_LIMIT_WINDOW_MS,
       now,
     );
   }
 
-  /** One capability invocation, charged to the class the catalog assigned it. */
-  consumeCapability(
+  async consumeCapability(
     agentId: string,
     rateLimitClass: AiRateLimitClass,
     now = Date.now(),
-  ): AgentRateLimitDecision {
-    const budget = this.budgetFor(agentId, now);
-    let counter = budget.capabilities.get(rateLimitClass);
-    if (!counter) {
-      counter = createCounter(now);
-      budget.capabilities.set(rateLimitClass, counter);
-    }
-    return consumeFixedWindow(
-      counter,
+  ): Promise<AgentRateLimitDecision> {
+    return this.store.consumeWindow(
+      'cap',
+      `${agentId}:${rateLimitClass}`,
       AGENT_CAPABILITY_LIMIT_PER_WINDOW[rateLimitClass],
       AGENT_RATE_LIMIT_WINDOW_MS,
       now,
     );
   }
 
-  /**
-   * Reserves one in-flight slot. The caller must `releaseSlot` in a `finally`,
-   * otherwise a failed invocation would leak capacity for the process lifetime.
-   */
-  acquireSlot(agentId: string, now = Date.now()): AgentRateLimitDecision {
-    const budget = this.budgetFor(agentId, now);
-    const resetAt = now + AGENT_RATE_LIMIT_WINDOW_MS;
-    if (budget.inFlight >= AGENT_CONCURRENCY_LIMIT) {
-      return {
-        allowed: false,
-        limit: AGENT_CONCURRENCY_LIMIT,
-        remaining: 0,
-        resetAt,
-        retryAfterSeconds: retryAfterSecondsUntil(now + AGENT_CONCURRENCY_RETRY_HINT_MS, now),
-      };
-    }
-    budget.inFlight += 1;
-    return {
-      allowed: true,
-      limit: AGENT_CONCURRENCY_LIMIT,
-      remaining: AGENT_CONCURRENCY_LIMIT - budget.inFlight,
-      resetAt,
-      retryAfterSeconds: 0,
-    };
+  async acquireSlot(agentId: string, now = Date.now()): Promise<AgentRateLimitDecision> {
+    return this.store.acquireSlot(agentId, AGENT_CONCURRENCY_LIMIT, now);
   }
 
-  releaseSlot(agentId: string): void {
-    const budget = this.budgets.get(agentId);
-    if (!budget || budget.inFlight === 0) return;
-    budget.inFlight -= 1;
-  }
-
-  private budgetFor(agentId: string, now: number): AgentBudget {
-    this.sweep(now);
-    const existing = this.budgets.get(agentId);
-    if (existing) {
-      existing.lastSeenAt = now;
-      return existing;
-    }
-    const created: AgentBudget = {
-      requests: createCounter(now),
-      capabilities: new Map(),
-      inFlight: 0,
-      lastSeenAt: now,
-    };
-    this.budgets.set(agentId, created);
-    return created;
-  }
-
-  /**
-   * Drops idle agents so the map cannot grow with every credential ever seen.
-   * An agent with work in flight is never dropped, because releasing its slot
-   * afterwards would then underflow a fresh budget.
-   */
-  private sweep(now: number): void {
-    for (const [agentId, budget] of this.budgets) {
-      if (budget.inFlight === 0 && now - budget.lastSeenAt > AGENT_RATE_LIMIT_RETENTION_MS) {
-        this.budgets.delete(agentId);
-      }
-    }
+  async releaseSlot(agentId: string): Promise<void> {
+    await this.store.releaseSlot(agentId);
   }
 }

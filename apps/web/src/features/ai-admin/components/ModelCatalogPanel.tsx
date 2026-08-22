@@ -10,8 +10,16 @@ import { EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/
 import { aiAdminApi, type AiModelView, type AiProviderConnectionView } from '@/lib/api/ai-admin';
 import { groupModelsForAdmin } from '../model-catalog-groups';
 import { formatTimestamp } from '../format';
+import { applySelectValue } from '../select-value';
 import { agentStateVariant } from '../status-badge-map';
 import { DisableImpactConfirm } from './DisableImpactConfirm';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export function ModelCatalogPanel() {
   const [models, setModels] = useState<AiModelView[]>([]);
@@ -180,6 +188,33 @@ function ModelCard(props: {
       {model.suitabilityTags.length > 0 ? (
         <p className="mt-2 text-xs">Tags: {model.suitabilityTags.join(', ')}</p>
       ) : null}
+      <div className="mt-2 space-y-1.5">
+        <Label>Evaluation status</Label>
+        <Select
+          value={model.evaluationStatus}
+          onValueChange={(value) =>
+            applySelectValue(value, (next) => {
+              if (next === model.evaluationStatus) return;
+              void aiAdminApi
+                .updateModel(model.id, {
+                  evaluationStatus: next as AiModelView['evaluationStatus'],
+                })
+                .then(props.onChanged)
+                .catch(() => toast.error('Evaluation status could not be saved.'));
+            })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="NOT_EVALUATED">NOT_EVALUATED</SelectItem>
+            <SelectItem value="PENDING">PENDING</SelectItem>
+            <SelectItem value="EVALUATED">EVALUATED</SelectItem>
+            <SelectItem value="UNSUITABLE">UNSUITABLE</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <div className="mt-2 space-y-1.5">
         <Label htmlFor={`model-notes-${model.id}`}>Internal notes</Label>
         <Input

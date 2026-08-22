@@ -10,6 +10,8 @@ import { AiAdminOverviewController } from './admin/ai-admin-overview.controller'
 import { AiAdminPoliciesController } from './admin/ai-admin-policies.controller';
 import { AiAdminPromptPoliciesController } from './admin/ai-admin-prompt-policies.controller';
 import { AiAdminApprovalsController } from './admin/ai-admin-approvals.controller';
+import { AiAdminUsageController } from './admin/ai-admin-usage.controller';
+import { AiAdminEvaluationController } from './admin/ai-admin-evaluation.controller';
 import { AiAdminProvidersController } from './admin/ai-admin-providers.controller';
 import { AiAdminWorkspaceAccessController } from './admin/ai-admin-workspace-access.controller';
 import { AgentMcpController } from './mcp/agent-mcp.controller';
@@ -37,6 +39,8 @@ import { AgentTasksController } from './rest/agent-tasks.controller';
     AiAdminPoliciesController,
     AiAdminPromptPoliciesController,
     AiAdminApprovalsController,
+    AiAdminUsageController,
+    AiAdminEvaluationController,
     AiAdminInternalAgentsController,
     AiAdminInternalAgentAccessController,
     AiAdminWorkspaceAccessController,

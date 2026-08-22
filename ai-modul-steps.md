@@ -40,7 +40,7 @@
 | 8    | Intermediate acceptance                  | Claude Opus 5 High             | GPT-5.6 Sol High   | DONE — found missing AD–AI slice |
 | 9    | Prompt + Context/Memory/Knowledge        | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
 | 10   | Approvals + Customer-facing safety       | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
-| 11   | Usage/Cost/Evaluation + actionable debts | Cursor Grok 4.6                | GPT-5.6 Sol High   | PLANNED                          |
+| 11   | Usage/Cost/Evaluation + actionable debts | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
 | 12   | Final Phase 1 re-acceptance              | Claude Opus 5 High             | GPT-5.6 Sol High   | PLANNED                          |
 
 ## Текущее состояние
@@ -58,7 +58,7 @@ Chat 8 подтвердил:
 - Internal Agent foundation работает;
 - human NBOS regression зелёный.
 
-Но canonical Phase 1 exit criterion 9 не выполнен полностью: Chat 9 закрыл AD/AE (prompt + context/memory/knowledge foundation). Остаются AF–AI через Chats 10–12. Решение принято: **не переносить их в новую Phase 2, а закончить текущую Phase 1 через Chats 9–12**.
+Но canonical Phase 1 exit criterion 9 не выполнен полностью до Chat 12. Chat 9 закрыл AD/AE; Chat 10 закрыл AF/AG; Chat 11 закрыл AH/AI и actionable Chat 8 product-code debts. Решение принято: **не переносить их в новую Phase 2, а закончить текущую Phase 1 через Chats 9–12**.
 
 ## Правила БД — критично
 
@@ -324,8 +324,8 @@ Phase 1 можно объявить complete только если нет unreso
 
 ## Следующее действие
 
-Chat 10 independently reviewed: **PASS WITH DEBTS**. See `docs/NBOS/02-Modules/21-AI-Platform/29-Phase-1-Chat-10-Handoff.md` § Verification.
+Chat 11 independently re-verified: **PASS WITH DEBTS**. First-pass FAIL remains on record. See `docs/NBOS/02-Modules/21-AI-Platform/30-Phase-1-Chat-11-Handoff.md` § Re-verification.
 
-Открыть **новый Cursor chat** с моделью **Cursor Grok 4.6 Extra High Fast** и вставить мастер-промпт + Chat 11 block.
+Открыть **новый Cursor chat** с моделью **Claude Opus 5 High** и вставить мастер-промпт + Chat 12 block (`31-Phase-1-Final-Acceptance.md`). После отчёта — независимый review GPT-5.6 Sol High.
 
-Не объявлять Phase 1 complete.
+Не объявлять Phase 1 complete до Chat 12 final re-acceptance.

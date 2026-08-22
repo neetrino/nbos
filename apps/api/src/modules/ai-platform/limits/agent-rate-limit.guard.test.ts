@@ -37,10 +37,10 @@ describe('AgentRateLimitGuard', () => {
     guard = new AgentRateLimitGuard(new AgentRateLimitService());
   });
 
-  it('allows a normal request and publishes the remaining budget', () => {
+  it('allows a normal request and publishes the remaining budget', async () => {
     const { context, setHeader } = contextFor({});
 
-    expect(guard.canActivate(context)).toBe(true);
+    expect(await guard.canActivate(context)).toBe(true);
     expect(setHeader).toHaveBeenCalledWith(
       AGENT_RATE_LIMIT_HEADERS.limit,
       String(AGENT_REQUEST_LIMIT_PER_WINDOW),
@@ -51,36 +51,32 @@ describe('AgentRateLimitGuard', () => {
     );
   });
 
-  it('refuses an over-budget agent with a retry hint', () => {
+  it('refuses an over-budget agent with a retry hint', async () => {
     for (let call = 0; call < AGENT_REQUEST_LIMIT_PER_WINDOW; call += 1) {
-      guard.canActivate(contextFor({}).context);
+      await guard.canActivate(contextFor({}).context);
     }
 
+    await expect(guard.canActivate(contextFor({}).context)).rejects.toMatchObject({
+      code: 'AGENT_RATE_LIMITED',
+    });
     try {
-      guard.canActivate(contextFor({}).context);
-      expect.unreachable('the guard must refuse an over-budget agent');
+      await guard.canActivate(contextFor({}).context);
     } catch (error) {
       expect(error).toBeInstanceOf(AgentAccessException);
-      expect((error as AgentAccessException).code).toBe('AGENT_RATE_LIMITED');
       expect((error as AgentAccessException).retryAfterSeconds).toBeGreaterThan(0);
     }
   });
 
-  /**
-   * The payload ceiling belongs to the agent body parser, which sees the real
-   * bytes. A guard reading `Content-Length` would trust a header the client
-   * writes, so it deliberately no longer looks at one.
-   */
-  it('leaves the payload ceiling to the transport instead of trusting a header', () => {
+  it('leaves the payload ceiling to the transport instead of trusting a header', async () => {
     const understated = contextFor({ 'content-length': String(AGENT_MAX_REQUEST_BYTES + 1) });
 
-    expect(guard.canActivate(understated.context)).toBe(true);
+    expect(await guard.canActivate(understated.context)).toBe(true);
   });
 
-  it('ignores a request the authentication guard already rejected', () => {
+  it('ignores a request the authentication guard already rejected', async () => {
     const anonymous = contextFor({}, false);
 
-    expect(guard.canActivate(anonymous.context)).toBe(true);
+    expect(await guard.canActivate(anonymous.context)).toBe(true);
     expect(anonymous.setHeader).not.toHaveBeenCalled();
   });
 });
