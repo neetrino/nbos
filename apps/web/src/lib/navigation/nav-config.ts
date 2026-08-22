@@ -44,7 +44,12 @@ export interface NavModuleDefinition {
 }
 
 export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
-  { key: 'dashboard', label: 'Dashboard', href: '/dashboard' },
+  {
+    key: 'dashboard',
+    label: 'Dashboard',
+    href: '/dashboard',
+    permission: { module: 'DASHBOARDS', action: 'VIEW' },
+  },
   {
     key: 'crm',
     label: 'CRM',
@@ -98,6 +103,7 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     key: 'clients',
     label: 'Clients',
     href: '/clients',
+    permission: { module: 'CLIENTS', action: 'VIEW' },
   },
   {
     key: 'partners',
@@ -179,7 +185,7 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     key: 'ai-agents',
     label: 'AI & Agents',
     href: '/ai-agents',
-    permission: { module: 'COMPANY', action: 'EDIT' },
+    permission: { module: 'AI_PLATFORM', action: 'VIEW' },
     children: [
       { label: 'Overview', href: '/ai-agents' },
       { label: 'External Agents', href: '/ai-agents/external-agents' },
