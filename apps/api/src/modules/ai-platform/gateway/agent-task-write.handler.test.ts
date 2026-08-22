@@ -105,6 +105,7 @@ describe('AgentTaskWriteHandler', () => {
         creatorId: 'owner-1',
       }),
       { type: 'EXTERNAL_AGENT', id: 'agent-1' },
+      undefined,
     );
     expect(tasks.create.mock.calls[0]?.[0]).not.toHaveProperty('createdByActorType');
     expect(prisma.task.create).not.toHaveBeenCalled();
@@ -133,6 +134,7 @@ describe('AgentTaskWriteHandler', () => {
       { title: 'Renamed' },
       undefined,
       TASK.updatedAt,
+      undefined,
     );
   });
 
@@ -155,7 +157,13 @@ describe('AgentTaskWriteHandler', () => {
         expectedUpdatedAt: stale.toISOString(),
       }),
     ).rejects.toBeInstanceOf(ConflictException);
-    expect(tasks.update).toHaveBeenCalledWith('task-1', { title: 'Renamed' }, undefined, stale);
+    expect(tasks.update).toHaveBeenCalledWith(
+      'task-1',
+      { title: 'Renamed' },
+      undefined,
+      stale,
+      undefined,
+    );
   });
 
   it('rejects starting a completed task without calling complete', async () => {
@@ -167,7 +175,7 @@ describe('AgentTaskWriteHandler', () => {
     await expect(handler.start(agent(), { taskId: 'task-1' })).rejects.toBeInstanceOf(
       BadRequestException,
     );
-    expect(tasks.start).toHaveBeenCalledWith('task-1');
+    expect(tasks.start).toHaveBeenCalledWith('task-1', undefined, undefined);
     expect(tasks.complete).not.toHaveBeenCalled();
   });
 
@@ -177,12 +185,14 @@ describe('AgentTaskWriteHandler', () => {
       'task-1',
       expect.objectContaining({ actor: expect.objectContaining({ type: 'EXTERNAL_AGENT' }) }),
       'Working',
+      undefined,
+      undefined,
     );
   });
 
   it('maps submit_review to TasksService.submitForReview', async () => {
     const result = await handler.submitReview(agent(), { taskId: 'task-1' });
-    expect(tasks.submitForReview).toHaveBeenCalledWith('task-1');
+    expect(tasks.submitForReview).toHaveBeenCalledWith('task-1', undefined, undefined, undefined);
     expect(result.status).toBe('REVIEW');
     expect(tasks.complete).not.toHaveBeenCalled();
     expect(tasks.delete).not.toHaveBeenCalled();
@@ -199,7 +209,7 @@ describe('AgentTaskWriteHandler', () => {
     await expect(handler.submitReview(agent(), { taskId: 'task-1' })).rejects.toBeInstanceOf(
       BadRequestException,
     );
-    expect(tasks.submitForReview).toHaveBeenCalledWith('task-1');
+    expect(tasks.submitForReview).toHaveBeenCalledWith('task-1', undefined, undefined, undefined);
     expect(tasks.complete).not.toHaveBeenCalled();
   });
 
@@ -217,6 +227,7 @@ describe('AgentTaskWriteHandler', () => {
         assigneeId: expect.anything(),
       }),
       expect.anything(),
+      undefined,
     );
   });
 

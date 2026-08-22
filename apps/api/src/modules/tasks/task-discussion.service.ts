@@ -3,6 +3,7 @@ import { PrismaClient } from '@nbos/database';
 import type { ActorContext } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import { assertTaskAccessible } from './task-access.op';
+import type { TasksDbClient } from './tasks-db-client';
 import {
   clampDiscussionPageSize,
   discussionActorFields,
@@ -35,16 +36,19 @@ export interface TaskDiscussionListResult {
 export class TaskDiscussionService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
+  /** `tx` lets the agent gateway commit the entry and its idempotency checkpoint together. */
   async addEntry(
     taskId: string,
     actor: ActorContext,
     rawBody: unknown,
     access?: TasksAccessContext,
+    tx?: TasksDbClient,
   ): Promise<TaskDiscussionEntryView> {
-    await this.assertTaskOpen(taskId, access);
+    const db = tx ?? this.prisma;
+    await this.assertTaskOpen(taskId, access, db);
     const body = requireDiscussionBody(rawBody);
     const actorFields = discussionActorFields(actor);
-    const created = await this.prisma.taskDiscussionEntry.create({
+    const created = await db.taskDiscussionEntry.create({
       data: { taskId, body, visibility: 'STANDARD', ...actorFields },
     });
     return toDiscussionView(created);
@@ -73,9 +77,13 @@ export class TaskDiscussionService {
     };
   }
 
-  private async assertTaskReadable(taskId: string, access?: TasksAccessContext): Promise<void> {
-    await assertTaskAccessible(this.prisma, taskId, access);
-    const task = await this.prisma.task.findUnique({
+  private async assertTaskReadable(
+    taskId: string,
+    access?: TasksAccessContext,
+    db: TasksDbClient = this.prisma,
+  ): Promise<void> {
+    await assertTaskAccessible(db, taskId, access);
+    const task = await db.task.findUnique({
       where: { id: taskId },
       select: { id: true, trashedAt: true },
     });
@@ -84,9 +92,13 @@ export class TaskDiscussionService {
     }
   }
 
-  private async assertTaskOpen(taskId: string, access?: TasksAccessContext): Promise<void> {
-    await this.assertTaskReadable(taskId, access);
-    const task = await this.prisma.task.findUniqueOrThrow({
+  private async assertTaskOpen(
+    taskId: string,
+    access?: TasksAccessContext,
+    db: TasksDbClient = this.prisma,
+  ): Promise<void> {
+    await this.assertTaskReadable(taskId, access, db);
+    const task = await db.task.findUniqueOrThrow({
       where: { id: taskId },
       select: { trashedAt: true },
     });

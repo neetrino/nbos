@@ -48,6 +48,7 @@ describe('AgentCapabilityGateway', () => {
   };
   let audit: { logMachineAction: ReturnType<typeof vi.fn> };
   let replayAuthorization: { assertStillAuthorized: ReturnType<typeof vi.fn> };
+  let gatewayPrisma: ReturnType<typeof createMockPrisma>;
   let gateway: AgentCapabilityGateway;
 
   beforeEach(() => {
@@ -77,7 +78,9 @@ describe('AgentCapabilityGateway', () => {
     };
     audit = { logMachineAction: vi.fn().mockResolvedValue(undefined) };
     replayAuthorization = { assertStillAuthorized: vi.fn().mockResolvedValue(undefined) };
+    gatewayPrisma = createMockPrisma();
     gateway = new AgentCapabilityGateway(
+      gatewayPrisma as never,
       workspaces as never,
       taskReads as never,
       taskWrites as never,
@@ -260,6 +263,57 @@ describe('AgentCapabilityGateway', () => {
     );
   });
 
+  it('hands Tasks and its idempotency checkpoint the same transaction', async () => {
+    await gateway.invoke(
+      invocation(
+        'tasks.create',
+        { workspaceId: 'ws-1', title: 'Fix' },
+        { idempotencyKey: 'op-tx' },
+      ),
+    );
+
+    // The mock runs the callback with itself, so both calls receiving that same
+    // object is what proves they share one transaction rather than two writes.
+    const dispatched = taskWrites.create.mock.calls[0]?.[2];
+    const checkpointed = idempotency.checkpointCommittedResult.mock.calls[0]?.[2];
+    expect(gatewayPrisma.$transaction).toHaveBeenCalled();
+    expect(dispatched).toBe(gatewayPrisma);
+    expect(checkpointed).toBe(gatewayPrisma);
+  });
+
+  it('leaves the operation key reusable when the checkpoint fails on a Tasks write', async () => {
+    // Standing in for a crash between the task commit and its checkpoint. The
+    // shared transaction turns that into a rollback, so nothing committed and
+    // the reservation is released instead of pinned at 409 forever.
+    idempotency.checkpointCommittedResult.mockRejectedValue(new Error('checkpoint failed'));
+
+    await expect(
+      gateway.invoke(
+        invocation(
+          'tasks.create',
+          { workspaceId: 'ws-1', title: 'Fix' },
+          { idempotencyKey: 'op-checkpoint-fail' },
+        ),
+      ),
+    ).rejects.toThrow('checkpoint failed');
+
+    expect(idempotency.abort).toHaveBeenCalled();
+    expect(idempotency.complete).not.toHaveBeenCalled();
+  });
+
+  it('does not open a transaction for Drive, whose object write cannot join one', async () => {
+    await gateway.invoke(
+      invocation(
+        'tasks.attach_artifact',
+        { taskId: 'task-1', fileName: 'a.png', mimeType: 'image/png', sizeBytes: 3 },
+        { idempotencyKey: 'op-drive', payload: { bytes: new Uint8Array([1, 2, 3]) } },
+      ),
+    );
+
+    expect(gatewayPrisma.$transaction).not.toHaveBeenCalled();
+    expect(idempotency.checkpointCommittedResult).toHaveBeenCalled();
+  });
+
   it('releases an in-progress reservation when the domain call fails', async () => {
     taskWrites.create.mockRejectedValue(new Error('domain failed'));
     await expect(
@@ -286,6 +340,7 @@ describe('AgentCapabilityGateway', () => {
     prisma.externalAgentIdempotencyRecord.update.mockRejectedValue(new Error('complete failed'));
 
     const retryGateway = new AgentCapabilityGateway(
+      prisma as never,
       workspaces as never,
       taskReads as never,
       taskWrites as never,

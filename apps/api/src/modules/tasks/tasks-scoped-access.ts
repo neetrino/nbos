@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@nbos/database';
+import type { TasksDbClient } from './tasks-db-client';
 import type { CurrentUserPayload } from '../../common/decorators';
 
 const SCOPE_DEPARTMENT = 'DEPARTMENT';
@@ -24,7 +24,7 @@ export function tasksAccessFromUser(user: CurrentUserPayload): TasksAccessContex
 }
 
 export async function loadTasksScopedEmployeeIds(
-  prisma: InstanceType<typeof PrismaClient>,
+  prisma: TasksDbClient,
   access: TasksAccessContext,
 ): Promise<string[]> {
   const ids = new Set<string>([access.employeeId]);

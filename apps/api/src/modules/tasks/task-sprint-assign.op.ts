@@ -1,9 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
-import { PrismaClient, SprintStatusEnum, TaskPlanningStatusEnum } from '@nbos/database';
+import { SprintStatusEnum, TaskPlanningStatusEnum } from '@nbos/database';
 import { derivePlanningStatusFromSprint } from './task-sprint-planning-sync';
+import type { TasksDbClient } from './tasks-db-client';
 
 export async function resolveTaskSprintAssignment(
-  prisma: InstanceType<typeof PrismaClient>,
+  prisma: TasksDbClient,
   params: {
     workspaceId: string | null | undefined;
     sprintId?: string | null;

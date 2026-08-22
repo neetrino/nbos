@@ -86,7 +86,7 @@ Chat 11: `AiExecution` stores actor, External/Internal Agent, provider, model, M
 
 ### C8. No idempotency contract for agent mutations — PARTIAL
 
-Capability metadata declares `REQUIRED`. Chat 3 stores replay rows in `external_agent_idempotency_records` and enforces them in the gateway. Chat 11 checkpoints `responseJson` while the row is still `IN_PROGRESS` after Tasks/Drive commit, then marks `COMPLETED`. Retry of `IN_PROGRESS` + json replays and tries to complete. Stale `IN_PROGRESS` without a checkpoint still conflicts (no second domain write). Remaining unrecoverable window: crash after domain commit and before checkpoint. Domain commit and `complete()` are still not one transaction (K 209).
+Capability metadata declares `REQUIRED`. Chat 3 stores replay rows in `external_agent_idempotency_records` and enforces them in the gateway. Chat 11 checkpoints `responseJson` while the row is still `IN_PROGRESS` after Tasks/Drive commit, then marks `COMPLETED`. Retry of `IN_PROGRESS` + json replays and tries to complete. Stale `IN_PROGRESS` without a checkpoint still conflicts (no second domain write). Chat 12 closed the crash window for the five Tasks write capabilities by committing the domain change and the checkpoint in one transaction; `tasks.attach_artifact` keeps the window because its object-store write cannot join a database transaction. See C24.
 
 ### C9. No external-agent rate-limit policy — OK
 
@@ -166,13 +166,19 @@ Scope correction: the Task writers in Support and Automation were originally lis
 
 These are lower risk today because no machine actor drives them concurrently — human users rarely create two invoices in the same millisecond. They are one adoption away from being safe: `entity_code_counters` already carries a `scope` column, so each module needs a new `ENTITY_CODE_SCOPE` entry, a seed for its scope and a two-line service change, with no further migration to the table itself.
 
-### C24. Gateway idempotency slot is never reclaimed (checklist 209) — PARTIAL
+### C24. Gateway idempotency slot is never reclaimed (checklist 209) — FIXED for Tasks, PARTIAL for Drive
 
-Chat 12 reproduced all three crash windows directly against `AgentIdempotencyService`. Chat 11's `responseJson` checkpoint works: a crash after the checkpoint replays the stored result and self-heals the row to `COMPLETED`. The residue is real — `loadLive` returns `IN_PROGRESS` rows _before_ it evaluates expiry, so a reservation that crashed between the domain commit and the checkpoint stays `409 An identical request is already in progress` permanently, even after its TTL elapses.
+Chat 12 reproduced all three crash windows directly against `AgentIdempotencyService`. Chat 11's `responseJson` checkpoint works: a crash after the checkpoint replays the stored result and self-heals the row to `COMPLETED`. The residue was real — `loadLive` returns `IN_PROGRESS` rows _before_ it evaluates expiry, so a reservation that crashed between the domain commit and the checkpoint stayed `409 An identical request is already in progress` permanently, even after its TTL elapsed.
 
-This is fail-closed and safe: no duplicate domain write is possible, and reclaiming the row automatically would trade that safety for liveness. The honest resolution is a shared transaction or an outbox across the Tasks/Drive boundary.
+Moving the expiry check above that branch would have been the wrong fix: it frees the key after the TTL, but the retry then re-executes the domain action and creates a second task. The stuck key was fail-closed on purpose. The resolution has to remove the window, not reopen the key.
 
-**Accepted by the developer in Chat 12** as a documented fail-closed limitation carried into Phase 2, rather than closed by weakening the idempotency guarantee. Checklist item 209 stays `[~]` and must not be marked `[x]` until the shared-transaction or outbox work lands. The observable cost is bounded: one operation key becomes unusable for one agent after a process crash inside a single-statement window, and no data is lost or duplicated.
+**Fixed for Tasks in Chat 12** by committing the domain change and the idempotency checkpoint in one transaction, on the developer's decision. `AgentCapabilityGateway.commitDomainWithCheckpoint` opens a transaction for the five capabilities whose domain change is nothing but database writes (`tasks.create`, `tasks.update`, `tasks.start`, `tasks.comment`, `tasks.submit_review`) and hands the same client to the domain service and to `checkpointCommittedResult`. There is no longer a state where the task is committed and the checkpoint is not: either both are durable, or the transaction rolls back and the reservation is released for a clean retry.
+
+The Tasks write paths and their helper operations now accept that client (`TasksDbClient`, a narrow `Pick` rather than a `PrismaClient | TransactionClient` union, which exceeds the TypeScript instantiation depth). Callers that pass nothing keep the previous autocommit behaviour, so human RBAC paths are unchanged.
+
+Evidence: `agent-write-atomicity.int.test.ts` (opt-in, real database) fails the surrounding transaction after `TasksService.create` and asserts no task survives — a mock could only show which client was passed, not that the write joined that transaction, and a single leftover `this.prisma` would have escaped it. `agent-capability.gateway.test.ts` asserts that the domain call and the checkpoint receive the same transaction, that a failing checkpoint releases the reservation instead of pinning it, and that Drive does not open a transaction.
+
+**Still PARTIAL for `tasks.attach_artifact`.** Its domain change includes an object-store write, which cannot join a database transaction, so it keeps the sequential path and the narrow window remains there. Closing it needs an outbox or a domain operation record and is Phase 2 work. Checklist item 209 is `[x]` for the Tasks capabilities and `[~]` for Drive.
 
 ## D. Tasks alignment issues to verify before implementation
 

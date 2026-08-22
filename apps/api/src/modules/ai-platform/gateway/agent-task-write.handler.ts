@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
+import type { TasksDbClient } from '../../tasks/tasks-db-client';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { ExternalAgentService } from '../agents/external-agent.service';
 import { TaskDiscussionService } from '../../tasks/task-discussion.service';
@@ -33,7 +34,7 @@ export class AgentTaskWriteHandler {
     private readonly access: AgentTaskAccess,
   ) {}
 
-  async create(agent: AuthenticatedAgent, input: Record<string, unknown>) {
+  async create(agent: AuthenticatedAgent, input: Record<string, unknown>, tx?: TasksDbClient) {
     const workspaceId = readRequiredString(input, 'workspaceId');
     const workspace = await resolveCanonicalWorkSpace(this.prisma, workspaceId);
     await this.policy.assertAllowed({
@@ -60,30 +61,31 @@ export class AgentTaskWriteHandler {
         creatorId: owner.ownerId,
       },
       { type: agent.actor.actor.type, id: agent.actor.actor.id },
+      tx,
     );
     return toAgentTaskProjection(created);
   }
 
-  async update(agent: AuthenticatedAgent, input: Record<string, unknown>) {
+  async update(agent: AuthenticatedAgent, input: Record<string, unknown>, tx?: TasksDbClient) {
     const taskId = readRequiredString(input, 'taskId');
     const { task } = await this.access.requireAuthorizedTask(agent, 'tasks.update', taskId);
     const expectedUpdatedAt = readRequiredIsoDateTime(input, 'expectedUpdatedAt');
     const patch = pickAllowedUpdate(input);
-    const updated = await this.tasks.update(task.id, patch, undefined, expectedUpdatedAt);
+    const updated = await this.tasks.update(task.id, patch, undefined, expectedUpdatedAt, tx);
     return toAgentTaskProjection(updated);
   }
 
-  async start(agent: AuthenticatedAgent, input: Record<string, unknown>) {
+  async start(agent: AuthenticatedAgent, input: Record<string, unknown>, tx?: TasksDbClient) {
     const { task } = await this.access.requireAuthorizedTask(
       agent,
       'tasks.start',
       readRequiredString(input, 'taskId'),
     );
-    const updated = await this.tasks.start(task.id);
+    const updated = await this.tasks.start(task.id, undefined, tx);
     return toAgentTaskProjection(updated);
   }
 
-  async comment(agent: AuthenticatedAgent, input: Record<string, unknown>) {
+  async comment(agent: AuthenticatedAgent, input: Record<string, unknown>, tx?: TasksDbClient) {
     const { task } = await this.access.requireAuthorizedTask(
       agent,
       'tasks.comment',
@@ -93,17 +95,23 @@ export class AgentTaskWriteHandler {
       task.id,
       agent.actor,
       readRequiredString(input, 'body'),
+      undefined,
+      tx,
     );
     return { id: entry.id, createdAt: entry.createdAt.toISOString() };
   }
 
-  async submitReview(agent: AuthenticatedAgent, input: Record<string, unknown>) {
+  async submitReview(
+    agent: AuthenticatedAgent,
+    input: Record<string, unknown>,
+    tx?: TasksDbClient,
+  ) {
     const { task } = await this.access.requireAuthorizedTask(
       agent,
       'tasks.submit_review',
       readRequiredString(input, 'taskId'),
     );
-    const updated = await this.tasks.submitForReview(task.id);
+    const updated = await this.tasks.submitForReview(task.id, undefined, undefined, tx);
     return toAgentTaskProjection(updated);
   }
 }

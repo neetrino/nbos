@@ -1,5 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
+
+/**
+ * Narrow surface so a client and a transaction client are interchangeable
+ * without TypeScript comparing the two full Prisma types.
+ */
+export type IdempotencyDbClient = Pick<
+  InstanceType<typeof PrismaClient>,
+  'externalAgentIdempotencyRecord'
+>;
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AgentAccessException } from '../auth/agent-auth.errors';
 import { AGENT_IDEMPOTENCY_TTL_MS } from './agent-capability.constants';
@@ -76,12 +85,19 @@ export class AgentIdempotencyService {
   /**
    * Persists the domain result while the row is still IN_PROGRESS so a crash
    * after Tasks/Drive commit can replay instead of conflicting forever.
+   *
+   * Pass `tx` to write this in the same transaction as the domain change. That
+   * closes the window entirely: without it there is a moment where the domain
+   * has committed and the checkpoint has not, and a crash there pins the
+   * operation key permanently. Callers that cannot share a transaction — Drive,
+   * whose object write is not transactional — still get the narrower guarantee.
    */
   async checkpointCommittedResult(
     input: IdempotencyReserveInput,
     result: AgentCapabilityResult,
+    tx?: IdempotencyDbClient,
   ): Promise<void> {
-    await this.prisma.externalAgentIdempotencyRecord.updateMany({
+    await (tx ?? this.prisma).externalAgentIdempotencyRecord.updateMany({
       where: {
         agentId: input.agentId,
         capabilityKey: input.capabilityKey,

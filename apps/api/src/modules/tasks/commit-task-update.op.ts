@@ -1,12 +1,13 @@
 import { ConflictException } from '@nestjs/common';
-import { PrismaClient, type Prisma } from '@nbos/database';
+import { type Prisma } from '@nbos/database';
+import type { TasksDbClient } from './tasks-db-client';
 
 /**
  * Optional optimistic lock: UPDATE … WHERE id AND updatedAt.
  * Human callers omit expectedUpdatedAt and keep the unconditional update.
  */
 export async function commitTaskUpdate<TInclude extends Prisma.TaskInclude>(
-  prisma: InstanceType<typeof PrismaClient>,
+  prisma: TasksDbClient,
   params: {
     id: string;
     data: Prisma.TaskUpdateInput;

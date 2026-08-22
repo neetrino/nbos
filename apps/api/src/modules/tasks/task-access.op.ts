@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
-import type { PrismaClient } from '@nbos/database';
 import { buildTasksParticipationWhere } from './task-involves-employee-where.op';
+import type { TasksDbClient } from './tasks-db-client';
 import {
   loadTasksScopedEmployeeIds,
   tasksViewBypassesRowFilter,
@@ -9,7 +9,7 @@ import {
 
 /** Ensures the viewer may read or mutate a task (404 when denied). */
 export async function assertTaskAccessible(
-  prisma: InstanceType<typeof PrismaClient>,
+  prisma: TasksDbClient,
   taskId: string,
   access: TasksAccessContext | undefined,
 ): Promise<void> {

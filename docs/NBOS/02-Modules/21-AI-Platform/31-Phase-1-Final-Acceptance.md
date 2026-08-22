@@ -609,8 +609,12 @@ Chat drivers and probes live in `apps/api/.chat12/` and are not product code.
 ## Response to independent verification
 
 Date 2026-08-23, on branch `sipan` after `origin/development` was merged in (`b485ab7b`). Each item
-below is answered in the reviewer's numbering. **The FAIL verdict still stands**, because blocking
-defect 3 is a scope decision that belongs to the developer, not to this chat.
+below is answered in the reviewer's numbering. **All three blocking defects are now addressed**, the
+third by implementing the shared transaction on the developer's decision rather than by changing the
+canonical scope. What remains under item 209 is `tasks.attach_artifact`, whose object-store write
+cannot join a database transaction; it is carried into Phase 2 as `[~]` with a named mechanism rather
+than as an unexplained gap. A re-run of the full Phase 1 acceptance is required before this document's
+top-level verdict can be revised — this section records the fixes, not a new verdict.
 
 ### Blocking 1 — TASK counter had competing writers: FIXED
 
@@ -648,12 +652,44 @@ marking that sentence superseded and naming itself the source of truth for rollo
 comment properly requires either a follow-up migration or an agreed reconciliation across every
 database that has applied this one.
 
-### Blocking 3 — K 209 / C24: NOT FIXED, developer decision required
+### Blocking 3 — K 209 / C24: FIXED for Tasks, still open for Drive
 
-Unchanged and honestly outstanding. The reviewer is right that a developer's acceptance note does not
-override the canonical exit rule, so Phase 1 cannot be declared complete while this is `[~]`. The
-choice is to implement the shared transaction or outbox, or to change the canonical Phase 1 scope
-explicitly. This chat has done neither.
+The reviewer was right that a developer's acceptance note does not override the canonical exit rule.
+On the developer's decision the shared transaction was implemented rather than the scope changed.
+
+The tempting small fix was to move the expiry check above the `IN_PROGRESS` branch in `loadLive`, so
+a stuck key frees itself after its TTL. That is the wrong trade: the retry would then re-execute the
+domain action and create a second task. The stuck key was fail-closed on purpose, so the fix has to
+remove the window rather than reopen the key.
+
+`AgentCapabilityGateway.commitDomainWithCheckpoint` now opens one transaction for the five
+capabilities whose domain change is nothing but database writes — `tasks.create`, `tasks.update`,
+`tasks.start`, `tasks.comment`, `tasks.submit_review` — and hands the same client to the domain
+service and to `checkpointCommittedResult`. The state the defect depended on, domain committed with
+checkpoint missing, no longer exists: either both are durable or the transaction rolls back and the
+reservation is released for a clean retry.
+
+Threading that client through `TasksService`, `TaskDiscussionService` and the Task helper operations
+required a client type both a `PrismaClient` and a transaction client satisfy. A
+`PrismaClient | TransactionClient` union exceeds the TypeScript instantiation depth and produces
+"excessive stack depth" errors that cannot be fixed at the call site, so `TasksDbClient` is a narrow
+`Pick` off the client — which also documents the models these paths may touch. Every added parameter
+is optional, so human RBAC paths keep their previous autocommit behaviour.
+
+Evidence:
+
+- `agent-write-atomicity.int.test.ts` (opt-in, real database) fails the surrounding transaction after
+  `TasksService.create` and asserts no task survives. This is the case mocks cannot cover: a mock
+  records which client was passed but not that the write joined that transaction, and one leftover
+  `this.prisma` inside the service would have escaped it silently.
+- `agent-capability.gateway.test.ts` asserts the domain call and the checkpoint receive the same
+  transaction, that a failing checkpoint releases the reservation instead of pinning it, and that
+  Drive does not open a transaction.
+
+`tasks.attach_artifact` is deliberately excluded and remains `[~]`: its domain change includes an
+object-store write, which cannot join a database transaction. Closing that needs an outbox or a
+domain operation record and is Phase 2 work. Checklist item 209 is therefore `[x]` for the Tasks
+capabilities and `[~]` for Drive.
 
 ### Required test correction 4: DONE
 
