@@ -32,7 +32,7 @@
 | 4    | REST + MCP                   | Claude Opus 5 High             | Cursor Grok 4.6    | PASS WITH DEBTS, 2026-08-21 |
 | 5    | Providers + Models           | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-22 |
 | 6    | Admin UI                     | Cursor Grok 4.6 + Composer 2.5 | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-22 |
-| 7    | Security + regression        | Claude Opus 5 High             | GPT-5.6 Sol High   | —                           |
+| 7    | Security + regression        | Claude Opus 5 High             | GPT-5.6 Sol High   | следующий                   |
 | 8    | Final 700-point verification | Claude Opus 5 High             | —                  | —                           |
 
 Критерий выбора: **функционал дороже стоимости модели**. Сильная модель ставится туда, где отказ **тихий** — зелёные тесты при реально незакрытой проверке доступа. Где отказ громкий (сломанный экран, упавший провайдер, красный тест), достаточно Grok. Экономия на исполнителе не является аргументом.
@@ -60,7 +60,9 @@ Chat 4 закрыт **PASS WITH DEBTS**. Handoff: `20-Phase-1-Chat-4-Handoff.md`
 
 Chat 5 закрыт **PASS WITH DEBTS**. Handoff: `22-Phase-1-Chat-5-Handoff.md`.
 
-Chat 6 закрыт **PASS WITH DEBTS**. Handoff: `23-Phase-1-Chat-6-Handoff.md`. Ветка **`sipan`**. Следующий — Chat 7. Не закрывать этим коммитом: J 186, K 205 / W 368, K 209, D 91, Nest scheduler bind. REST/MCP не ломали. Второго secret store / grant table нет.
+Chat 6 закрыт **PASS WITH DEBTS**. Handoff: `23-Phase-1-Chat-6-Handoff.md`. Ветка **`sipan`**, последний коммит `5fe73e50`. Следующий — Chat 7.
+
+Chat 7 закрывает AL–AM–AN, section U (J 186), Nest catalog bind AA 420 и leftover security-долги Chat 6. Не Chat 8: не финальный walk 724 пунктов и не live Cursor handshake как acceptance.
 
 ### Правила БД (критично)
 
@@ -104,77 +106,83 @@ Definition of Done Phase 1: все применимые пункты checklist �
 по REST/MCP и безопасно работать с разрешёнными Workspace/Tasks.
 ```
 
-## Промт исполнителя — Chat 6
+## Промт исполнителя — Chat 7
 
-Модель: **Cursor Grok 4.6**. В новый чат вставляй два блока: мастер-промт Phase 1, затем этот. Проверка после — GPT-5.6 Sol High. Composer 2.5 — только если режешь независимые экраны, не для admin API и не для secret/token flows.
+Модель: **Claude Opus 5 High**. В новый чат вставляй два блока: мастер-промт Phase 1, затем этот. Проверка после — GPT-5.6 Sol High.
 
 ```text
-Продолжи Phase 1 AI Platform. Это Chat 6 — AI Administration UI.
+Продолжи Phase 1 AI Platform. Это Chat 7 — Security, Regression and Operational Hardening.
 
-ВЕТКА. Работай в sipan. Chat 5 закрыт PASS WITH DEBTS (последний коммит e62d745b,
-handoff 22-Phase-1-Chat-5-Handoff.md). Перед изменениями проверь наличие
-apps/api/src/modules/ai-platform/providers/ai-provider-connection.service.ts,
-apps/api/src/modules/ai-platform/internal-agents/internal-agent.service.ts,
-apps/api/src/modules/ai-platform/grants/ и
-packages/database/prisma/migrations/20260822010000_ai_provider_model_internal_agent/.
+ВЕТКА. Работай в sipan. Chat 6 закрыт PASS WITH DEBTS (последний коммит 5fe73e50,
+handoff 23-Phase-1-Chat-6-Handoff.md). Перед изменениями проверь наличие
+apps/api/src/modules/ai-platform/admin/,
+apps/web/src/features/ai-admin/,
+apps/api/src/modules/ai-platform/protocol/ и
+apps/api/src/modules/scheduler/scheduler-job-catalog.entries.ts.
 Если их нет — ты не на той ветке, остановись и сообщи.
 
 ЧИТАЙ И СВЕРЯЙ С РЕПОЗИТОРИЕМ:
-- docs/NBOS/02-Modules/21-AI-Platform/22-Phase-1-Chat-5-Handoff.md (секция Chat 6 entry point
-  и Remediation after FAIL)
-- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md (AJ–AK)
-- docs/NBOS/02-Modules/21-AI-Platform/07-AI-Admin-and-Connections-UX.md
-- существующий Settings hub: apps/web/src/app/(app)/settings/, nav-config.ts
+- docs/NBOS/02-Modules/21-AI-Platform/23-Phase-1-Chat-6-Handoff.md (Chat 7 entry point
+  и Reverification after fifth remediation)
+- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md
+  (U, AL, AM, AN)
+- docs/NBOS/02-Modules/21-AI-Platform/05-AI-Data-Security-and-Audit.md
+- docs/NBOS/02-Modules/21-AI-Platform/99-AI-Cleanup-Register.md
 Handoff не является доказательством: сам прогони vitest и typecheck до начала работы.
 
-SCOPE CHAT 6 (чеклист AJ–AK):
-- Employee admin HTTP API над сервисами Chat 2/5. Сейчас есть только Agent REST/MCP,
-  человеческих admin-контроллеров нет. Добавь Employee JWT + существующий RBAC
-  (Settings-паттерн COMPANY EDIT / эквивалент). Не AgentAuthGuard. Не второй secret store,
-  не вторая grant table, не ResourceAccessGrant.employeeId.
-- Settings → AI & Agents: Overview, External Agents, Providers, Models, Model Policies,
-  Internal Agents foundation, Usage shell, Approvals shell, Audit/Activity.
-- External Agents: list/create/detail, capability grants, Work Space scopes, one-time
-  token issue/rotate/revoke, disable/re-enable, last-used, audit link.
-  REVOKED терминален — UI не предлагает enable/issue после revoke (инвариант Chat 2).
-- Providers: OpenAI и Anthropic connect, Validate, Rotate/Replace key, Disable.
-- Models: Sync, DISCOVERED отдельно от ACTIVE, Activate/Disable, metadata vs internal tags.
-  Sync не auto-activate.
-- Model Policies: FIXED и PRIMARY_FALLBACK, cross-provider candidates, только
-  production-eligible. Не silent-promote DISCOVERED. Не открывать TIERED/ADAPTIVE в UI.
-- Internal Agents: create в DRAFT; activate только через InternalAgentService.activate.
-  Assign Model Policy; prompt/approval — placeholder/foundation. Pause/disable/archive.
-  Переиспользовать revokeScope и ACTIVE-policy lock.
-- Contextual Workspace → Settings → AI Access: те же grants, что central UI.
-  Не создавать вторую permission DB.
-- Никогда не показывать raw External Agent token или provider key после save.
-  One-time secret — один модал, потом только prefix/status.
-- Admin authorization tests: без permission — 403; агентский токен на admin routes — отказ.
-- UI: существующие компоненты/токены Settings (PageHero, nav-config). Без inline styles.
-  Различай External Agent Connections и Internal Provider Connections.
+SCOPE CHAT 7:
+- AL 603–626 security hardening с тестами, не чеклистом: Credentials/vault недоступны агенту;
+  agent token не проходит Employee API; isolation Projects/Products/Workspaces/Tasks;
+  REST=MCP isolation; Authorization redacted; hashes и provider keys не API-visible after save;
+  revoke/disable блокирует следующий REST и MCP; malformed/oversized rejected;
+  prompt/task/comment/file не меняют policy; Drive link не выходит из scope;
+  нет raw SQL capability, нет tasks.delete, нет force-complete, нет Finance mutation,
+  нет client-message send; DISCOVERED не auto-activate; provider key не в AI context;
+  queued sensitive actions revalidate revoked actor/grant before commit (AL 626).
+- AM 627–640 regression: employee login/RBAC/Platform Access/Audit historical rows/
+  Tasks UI+workflow/Drive/Integrations не сломаны. API, worker и scheduler boot.
+  Phase 1 migrations production-safe / forward-fixable; lint/typecheck/full test suite.
+- AN 641–656 docs + runbooks: Hub, Technical Decisions, Roadmap, Architecture Layers
+  (AI не «просто Automation Layer»), Audit/Tasks/Drive если runtime изменился,
+  cleanup register, token rotation/revoke runbook, leaked-token incident,
+  provider-key rotation, policy-denial troubleshooting, model-sync troubleshooting.
+  REST/MCP setup docs уже есть (21-External-Agent-Client-Setup.md) — обнови, не дублируй.
+- U / J 186: per-agent и per-capability rate limits, payload size, optional concurrency.
+  Abusive agent не съедает employee API capacity (не шарить глобальный ThrottlerGuard
+  employee-default). Ошибка AGENT_RATE_LIMITED + retry metadata. Именованные константы,
+  выбранные окна записать в handoff. Не молча 30s/generic.
+- AA 420: bind AI_MODEL_CATALOG_SYNC_CONTRACT.runnerMethod на SchedulerService,
+  rosterIntent=off. Не раздувать scheduler.service.ts сверх лимита — split, если надо.
+- Leftover security Chat 6: HTTP enable на DISABLED+elapsed expiresAt не должен
+  оставлять «потом enable без второго enable»; lastValidatedAt не штамповать после
+  concurrent disable; replacement-key preflight failures аудировать.
 
 ЗАПРЕЩЕНО:
-- ломать REST/MCP контракт Chat 4;
-- adaptive routing, RAG, Messenger auto-reply, полный internal chat;
-- rate-limit counters (J 186), output schema validator (K 205), K 209, D 91,
-  Nest scheduler catalog bind (Chat 7);
-- доступ UI/API к модулю Credentials vault / паролям клиентов;
-- redisplay сырого секрета; логировать Authorization / apiKey;
+- ломать REST/MCP контракт (routes, tool names, error codes, envelope) —
+  rate-limit headers/AGENT_RATE_LIMITED уже в 09 contract, это extend, не reshape;
+- Settings UI-редизайн, in-place policy candidate editor, Overview FAILED chip —
+  не polish-чат;
+- AO–AQ live acceptance и полный walk 724 пунктов (это Chat 8);
+- AH/AI usage/evaluation runtime, adaptive routing, RAG, Messenger auto-reply;
+- K 205 output schema validator и K 209 merge domain+idempotency complete —
+  не открывать, если не требуется для AL 626;
+- D 91 approval emitters, полный approval workflow;
+- доступ к Credentials vault / паролям клиентов;
+- invent accounts/API keys; live OpenAI/Anthropic только если разработчик дал test keys;
+- prisma migrate dev; продовые миграции;
 - any, default exports в новом feature-коде, console.log, магические числа;
 - удаление тестов и обход lint.
 
 БАЗА ДАННЫХ:
 - .env.local = dev Neon ep-late-frost-ag5aixzw; прод ep-sweet-dew-ag7259wn не трогать;
-- prisma migrate dev запрещён;
-- свои миграции только prisma migrate deploy с DIRECT_URL;
-- продовые миграции не выполняй.
+- свои миграции только prisma migrate deploy с DIRECT_URL.
 
 НА ВЫХОДЕ:
 - обнови чеклист [x]/[~]/[!] честно;
-- напиши docs/NBOS/02-Modules/21-AI-Platform/23-Phase-1-Chat-6-Handoff.md по формату Chat 5
+- напиши docs/NBOS/02-Modules/21-AI-Platform/24-Phase-1-Chat-7-Handoff.md по формату Chat 6
   (milestone, чеклист, файлы, миграции, реальные числа тестов, решения, конфликты,
-  риски, долги, entry point Chat 7);
-  не перезаписывай 21-External-Agent-Client-Setup.md и 22-Phase-1-Chat-5-Handoff.md;
+  риски, долги, entry point Chat 8);
+  не перезаписывай 21–23 handoff/setup файлы;
 - коммит не делай — его сделаем после чата проверки.
 ```
 
