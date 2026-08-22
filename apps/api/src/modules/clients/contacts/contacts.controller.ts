@@ -12,7 +12,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import type { InputJsonValue } from '@nbos/database';
-import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
+import {
+  CurrentUser,
+  RequirePermission,
+  type CurrentUserPayload,
+} from '../../../common/decorators';
 import { ContactsService } from './contacts.service';
 import { FindContactMergeCandidatesDto, MergeContactDto } from './dto/merge-contact.dto';
 
@@ -23,6 +27,7 @@ export class ContactsController {
   constructor(private readonly contactsService: ContactsService) {}
 
   @Get()
+  @RequirePermission('CLIENTS', 'VIEW')
   @ApiOperation({ summary: 'Get all contacts' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
@@ -49,6 +54,7 @@ export class ContactsController {
   }
 
   @Get('duplicates')
+  @RequirePermission('CLIENTS', 'VIEW')
   @ApiOperation({ summary: 'Search other contacts for merge' })
   async findDuplicates(@Query() query: FindContactMergeCandidatesDto) {
     return this.contactsService.findMergeCandidates({
@@ -58,12 +64,14 @@ export class ContactsController {
   }
 
   @Get(':id')
+  @RequirePermission('CLIENTS', 'VIEW')
   @ApiOperation({ summary: 'Get contact by ID' })
   async findOne(@Param('id') id: string) {
     return this.contactsService.findById(id);
   }
 
   @Post(':id/merge')
+  @RequirePermission('CLIENTS', 'EDIT')
   @ApiOperation({ summary: 'Merge another Contact into this survivor Contact' })
   async merge(
     @Param('id') id: string,
@@ -78,6 +86,7 @@ export class ContactsController {
   }
 
   @Post()
+  @RequirePermission('CLIENTS', 'ADD')
   @ApiOperation({ summary: 'Create contact' })
   async create(
     @Body()
@@ -95,6 +104,7 @@ export class ContactsController {
   }
 
   @Put(':id')
+  @RequirePermission('CLIENTS', 'EDIT')
   @ApiOperation({ summary: 'Update contact' })
   async update(
     @Param('id') id: string,
@@ -113,24 +123,28 @@ export class ContactsController {
   }
 
   @Post(':id/phones')
+  @RequirePermission('CLIENTS', 'EDIT')
   @ApiOperation({ summary: 'Add an extra phone to a Contact' })
   async addExtraPhone(@Param('id') id: string, @Body() body: { phone?: string }) {
     return this.contactsService.addExtraPhone(id, body.phone);
   }
 
   @Delete(':id/phones/:phoneId')
+  @RequirePermission('CLIENTS', 'EDIT')
   @ApiOperation({ summary: 'Remove an extra phone from a Contact' })
   async removeExtraPhone(@Param('id') id: string, @Param('phoneId') phoneId: string) {
     return this.contactsService.removeExtraPhone(id, phoneId);
   }
 
   @Post(':id/restore')
+  @RequirePermission('CLIENTS', 'EDIT')
   @ApiOperation({ summary: 'Restore contact from Trash' })
   async restore(@Param('id') id: string) {
     return this.contactsService.restoreFromTrash(id);
   }
 
   @Delete(':id/permanent')
+  @RequirePermission('CLIENTS', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Permanently delete trashed contact (cannot be undone)' })
   async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
@@ -138,6 +152,7 @@ export class ContactsController {
   }
 
   @Delete(':id')
+  @RequirePermission('CLIENTS', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Move contact to Trash' })
   async remove(@Param('id') id: string) {

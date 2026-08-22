@@ -32,6 +32,8 @@ const MODULES = [
   'PARTNERS',
   'DASHBOARDS',
   'AUDIT_LOGS',
+  'CLIENTS',
+  'AI_PLATFORM',
 ] as const;
 
 const ACTIONS = ['VIEW', 'EDIT', 'ADD', 'DELETE'] as const;
@@ -52,6 +54,8 @@ const R: [Scope, Scope, Scope, Scope] = ['ALL', 'NONE', 'NONE', 'NONE'];
 const L: [Scope, Scope, Scope, Scope] = ['OWN', 'OWN', 'NONE', 'NONE'];
 const D: [Scope, Scope, Scope, Scope] = ['DEPARTMENT', 'DEPARTMENT', 'DEPARTMENT', 'NONE'];
 const N: [Scope, Scope, Scope, Scope] = ['NONE', 'NONE', 'NONE', 'NONE'];
+/** View all + create, no edit/delete — Seller / Head of Sales on Clients. */
+const VA: [Scope, Scope, Scope, Scope] = ['ALL', 'NONE', 'ALL', 'NONE'];
 
 const DEVELOPER_ROLE_MATRIX: MatrixEntry = {
   CRM_LEADS: N,
@@ -76,6 +80,8 @@ const DEVELOPER_ROLE_MATRIX: MatrixEntry = {
   PARTNERS: N,
   DASHBOARDS: L,
   AUDIT_LOGS: N,
+  CLIENTS: N,
+  AI_PLATFORM: N,
 };
 
 const ROLE_MATRIX: Record<string, MatrixEntry> = {
@@ -104,6 +110,8 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: L,
     DASHBOARDS: L,
     AUDIT_LOGS: N,
+    CLIENTS: VA,
+    AI_PLATFORM: N,
   },
   'role-pm': {
     CRM_LEADS: N,
@@ -128,6 +136,8 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: D,
     AUDIT_LOGS: N,
+    CLIENTS: R,
+    AI_PLATFORM: N,
   },
   'role-developer': DEVELOPER_ROLE_MATRIX,
   'role-developer-frontend': DEVELOPER_ROLE_MATRIX,
@@ -154,6 +164,8 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: L,
     AUDIT_LOGS: N,
+    CLIENTS: N,
+    AI_PLATFORM: N,
   },
   'role-designer': {
     CRM_LEADS: N,
@@ -178,6 +190,8 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: L,
     AUDIT_LOGS: N,
+    CLIENTS: N,
+    AI_PLATFORM: N,
   },
   'role-qa': {
     CRM_LEADS: N,
@@ -202,6 +216,8 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: L,
     AUDIT_LOGS: N,
+    CLIENTS: N,
+    AI_PLATFORM: N,
   },
   'role-tech-specialist': {
     CRM_LEADS: N,
@@ -250,6 +266,8 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: F,
     DASHBOARDS: F,
     AUDIT_LOGS: R,
+    CLIENTS: R,
+    AI_PLATFORM: N,
   },
   'role-marketing': {
     CRM_LEADS: R,
@@ -274,6 +292,8 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: D,
     AUDIT_LOGS: N,
+    CLIENTS: R,
+    AI_PLATFORM: N,
   },
   'role-head-sales': {
     CRM_LEADS: F,
@@ -298,6 +318,8 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: F,
     DASHBOARDS: D,
     AUDIT_LOGS: N,
+    CLIENTS: VA,
+    AI_PLATFORM: N,
   },
   'role-head-delivery': {
     CRM_LEADS: N,
@@ -322,6 +344,8 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: D,
     AUDIT_LOGS: N,
+    CLIENTS: R,
+    AI_PLATFORM: N,
   },
   'role-head-marketing': {
     CRM_LEADS: F,
@@ -346,6 +370,8 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: D,
     AUDIT_LOGS: N,
+    CLIENTS: R,
+    AI_PLATFORM: N,
   },
   'role-observer': {
     CRM_LEADS: N,
@@ -368,8 +394,10 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     CALENDAR: N,
     COMPANY: N,
     PARTNERS: N,
-    DASHBOARDS: N,
+    DASHBOARDS: L,
     AUDIT_LOGS: N,
+    CLIENTS: N,
+    AI_PLATFORM: N,
   },
 };
 

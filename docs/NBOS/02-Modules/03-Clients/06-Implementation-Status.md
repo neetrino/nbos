@@ -4,6 +4,7 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 
 ## Shipped (web + API)
 
+- **RBAC:** module key `CLIENTS` (`VIEW` / `ADD` / `EDIT` / `DELETE`) gates sidebar, page shell, and Nest controllers. Seed matrix in `packages/database/prisma/seed-rbac.ts`; additive dev upsert: `packages/database/scripts/upsert-clients-ai-platform-permissions.ts`.
 - **Contacts / Companies lists** under `/clients/contacts` and `/clients/companies` with search, basic filters, row sheets, deep link `?openId=`, **Profile A Trash** (`scope=active|trash` via page settings): Move to Trash, Restore, **Delete permanently** (name-match confirm) in trash sheets.
 - **Company / Contact row sheets** use the same detail-sheet pattern as CRM (75vw panel, floating close + rail, inline fields with draft + Save/Cancel footer). **Portfolio** opens as a nested right sheet over the row sheet (permalink + list deep link still available inside portfolio).
 - **Contact create/update** persists `messengerLinks` (WhatsApp, Telegram, preferred channel, language) via API.
