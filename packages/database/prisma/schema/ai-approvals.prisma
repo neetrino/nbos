@@ -1,0 +1,50 @@
+// ─── AI APPROVAL REQUESTS ─────────────────────────────────
+// Human approval for a single proposed AI action. Not a capability grant.
+
+enum AiApprovalRequestStatusEnum {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+  CANCELLED
+  CONSUMED
+}
+
+/// One-time request bound to a canonical payload digest.
+model AiApprovalRequest {
+  id                   String                       @id @default(uuid())
+  requesterActorType   String                       @map("requester_actor_type")
+  requesterActorId     String                       @map("requester_actor_id")
+  onBehalfOfActorType  String?                      @map("on_behalf_of_actor_type")
+  onBehalfOfActorId    String?                      @map("on_behalf_of_actor_id")
+  capabilityKey        String                       @map("capability_key")
+  resourceType         String                       @map("resource_type")
+  resourceId           String                       @map("resource_id")
+  scopeType            String?                      @map("scope_type")
+  scopeId              String?                      @map("scope_id")
+  /// SHA-256 of canonical payload JSON. Material change invalidates the row.
+  payloadDigest        String                       @map("payload_digest")
+  /// Approver-visible projection. Never secrets or full prompt/provider keys.
+  safePayloadSummary   String                       @map("safe_payload_summary")
+  riskClass            String                       @map("risk_class")
+  status               AiApprovalRequestStatusEnum  @default(PENDING)
+  requestedAt          DateTime                     @default(now()) @map("requested_at")
+  expiresAt            DateTime                     @map("expires_at")
+  decidedByEmployeeId  String?                      @map("decided_by_employee_id")
+  decidedAt            DateTime?                    @map("decided_at")
+  decisionReason       String?                      @map("decision_reason")
+  consumedAt           DateTime?                    @map("consumed_at")
+  correlationId        String?                      @map("correlation_id")
+  createdAt            DateTime                     @default(now()) @map("created_at")
+  updatedAt            DateTime                     @updatedAt @map("updated_at")
+
+  decidedBy Employee? @relation("AiApprovalRequestDecidedBy", fields: [decidedByEmployeeId], references: [id], onDelete: SetNull)
+
+  @@index([status, requestedAt])
+  @@index([requesterActorType, requesterActorId])
+  @@index([capabilityKey, resourceId])
+  @@index([expiresAt])
+  @@index([decidedByEmployeeId])
+  @@index([correlationId])
+  @@map("ai_approval_requests")
+}

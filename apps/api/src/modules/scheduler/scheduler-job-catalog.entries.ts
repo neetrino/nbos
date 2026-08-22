@@ -71,6 +71,7 @@ import {
   MAIL_SYNC_RECONCILE_DEFAULT_CRON,
   MAIL_SYNC_RECONCILE_ENABLED_ENV,
 } from '../mail/mail-sync-runtime.constants';
+import { SCHEDULER_AI_CRON_CATALOG } from './scheduler-job-catalog.ai.entries';
 import { SCHEDULER_JOB_NAMES } from './scheduler-lease.constants';
 import {
   platformCronEntry,
@@ -287,4 +288,5 @@ export const SCHEDULER_PLATFORM_CRON_CATALOG: readonly SchedulerJobCatalogEntry[
     risk: SCHEDULER_JOB_RISK.medium,
     rosterIntent: SCHEDULER_ROSTER_INTENT.off,
   }),
+  ...SCHEDULER_AI_CRON_CATALOG,
 ];

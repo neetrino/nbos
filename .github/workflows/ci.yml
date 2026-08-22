@@ -13,6 +13,8 @@ env:
   NODE_VERSION: '22'
   # Prisma 7 config requires DIRECT_URL; generate does not connect to the DB.
   DIRECT_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
+  # AI Platform grew API typecheck past the default ~4 GiB heap on ubuntu-latest.
+  NODE_OPTIONS: --max-old-space-size=6144
 
 jobs:
   quality:

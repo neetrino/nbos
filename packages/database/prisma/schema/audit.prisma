@@ -1,20 +1,40 @@
 // ─── AUDIT ────────────────────────────────────────────────
 
+enum AuditActorTypeEnum {
+  USER
+  EXTERNAL_AGENT
+  INTERNAL_AI
+  SYSTEM
+  AUTOMATION
+}
+
 model AuditLog {
-  id         String   @id @default(uuid())
-  projectId  String?  @map("project_id")
-  entityType String   @map("entity_type")
-  entityId   String   @map("entity_id")
-  action     String
-  userId     String   @map("user_id")
-  changes    Json?
-  ipAddress  String?  @map("ip_address")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id               String              @id @default(uuid())
+  projectId        String?             @map("project_id")
+  entityType       String              @map("entity_type")
+  entityId         String              @map("entity_id")
+  action           String
+  /// Legacy employee id. Required historically; optional for machine actors.
+  userId           String?             @map("user_id")
+  actorType        AuditActorTypeEnum? @map("actor_type")
+  actorId          String?             @map("actor_id")
+  onBehalfOfType   AuditActorTypeEnum? @map("on_behalf_of_type")
+  onBehalfOfId     String?             @map("on_behalf_of_id")
+  channel          String?             @map("channel")
+  protocol         String?             @map("protocol")
+  correlationId    String?             @map("correlation_id")
+  /// Safe client metadata only (credential prefix, user agent). Never tokens/secrets.
+  clientMetadata   Json?               @map("client_metadata")
+  changes          Json?
+  ipAddress        String?             @map("ip_address")
+  createdAt        DateTime            @default(now()) @map("created_at")
 
   project Project? @relation(fields: [projectId], references: [id])
 
   @@index([entityType, entityId])
   @@index([userId])
+  @@index([actorType, actorId])
+  @@index([correlationId])
   @@index([createdAt])
   @@map("audit_logs")
 }

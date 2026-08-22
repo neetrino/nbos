@@ -239,6 +239,37 @@ describe('TasksService', () => {
         }),
       );
     });
+
+    it('ignores forged actor provenance on the create payload', async () => {
+      prisma.task.findMany.mockResolvedValue([]);
+      prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
+      await service.create({
+        title: 'Test',
+        creatorId: 'c1',
+        createdByActorType: 'EXTERNAL_AGENT',
+        createdByActorId: 'forged-agent',
+      } as never);
+      const data = prisma.task.create.mock.calls[0]?.[0].data as Record<string, unknown>;
+      expect(data.createdByActorType).toBeUndefined();
+      expect(data.createdByActorId).toBeUndefined();
+    });
+
+    it('records trusted actor provenance from the separate argument', async () => {
+      prisma.task.findMany.mockResolvedValue([]);
+      prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
+      await service.create(
+        { title: 'Test', creatorId: 'c1' },
+        { type: 'EXTERNAL_AGENT', id: 'agent-1' },
+      );
+      expect(prisma.task.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            createdByActorType: 'EXTERNAL_AGENT',
+            createdByActorId: 'agent-1',
+          }),
+        }),
+      );
+    });
   });
 
   describe('update', () => {
@@ -267,11 +298,62 @@ describe('TasksService', () => {
   });
 
   describe('start', () => {
-    it('starts a task', async () => {
-      prisma.task.findUnique.mockResolvedValue({ id: '1', status: 'OPEN' });
-      prisma.task.update.mockResolvedValue({ id: '1', status: 'IN_PROGRESS' });
+    it('starts a task with an atomic source-status predicate', async () => {
+      prisma.task.findUnique
+        .mockResolvedValueOnce({ id: '1', status: 'OPEN', trashedAt: null })
+        .mockResolvedValueOnce({ id: '1', status: 'IN_PROGRESS', trashedAt: null });
+      prisma.task.updateMany.mockResolvedValue({ count: 1 });
       const result = await service.start('1');
       expect(result.status).toBe('IN_PROGRESS');
+      expect(prisma.task.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: '1', status: { in: ['OPEN', 'ON_HOLD'] }, trashedAt: null },
+        }),
+      );
+      expect(prisma.task.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects start from REVIEW or IN_PROGRESS', async () => {
+      prisma.task.findUnique.mockResolvedValue({ id: '1', status: 'REVIEW', trashedAt: null });
+      prisma.task.updateMany.mockResolvedValue({ count: 0 });
+      await expect(service.start('1')).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.task.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('submitForReview', () => {
+    it('submits from allowed source statuses with an atomic predicate', async () => {
+      prisma.task.findUnique
+        .mockResolvedValueOnce({ id: '1', status: 'IN_PROGRESS', trashedAt: null })
+        .mockResolvedValueOnce({
+          id: '1',
+          code: 'T-2026-0001',
+          title: 'Review me',
+          status: 'REVIEW',
+          trashedAt: null,
+          reviewerId: null,
+          assigneeId: null,
+        });
+      prisma.task.updateMany.mockResolvedValue({ count: 1 });
+      const result = await service.submitForReview('1');
+      expect(result.status).toBe('REVIEW');
+      expect(prisma.task.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            id: '1',
+            status: { in: ['OPEN', 'IN_PROGRESS', 'ON_HOLD'] },
+            trashedAt: null,
+          },
+        }),
+      );
+      expect(prisma.task.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects submit from REVIEW or COMPLETED', async () => {
+      prisma.task.findUnique.mockResolvedValue({ id: '1', status: 'COMPLETED', trashedAt: null });
+      prisma.task.updateMany.mockResolvedValue({ count: 0 });
+      await expect(service.submitForReview('1')).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.task.update).not.toHaveBeenCalled();
     });
   });
 

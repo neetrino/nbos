@@ -206,7 +206,7 @@ Build enough foundation now to represent and administer Internal Agents even if 
 - status lifecycle;
 - capability/scope linkage;
 - model policy linkage;
-- prompt policy linkage placeholder/contract;
+- prompt policy linkage to a published Prompt Policy/Version;
 - approval policy linkage placeholder/contract;
 - surface assignment model;
 - admin UI shell;

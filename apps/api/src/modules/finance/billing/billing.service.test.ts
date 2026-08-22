@@ -23,7 +23,7 @@ type MockBillableSubscription = {
   status: string;
   termMonths: number | null;
   endDate: Date | null;
-  project: { id: string; code: string; name: string };
+  project: { id: string; code: string; name: string; companyId: string | null };
   product: typeof idleProduct;
 };
 
@@ -50,7 +50,7 @@ function mockBillableSubscription(
     status: 'ACTIVE',
     termMonths: null,
     endDate: null,
-    project: { id: 'proj-1', code: 'P-2026-0001', name: 'Test' },
+    project: { id: 'proj-1', code: 'P-2026-0001', name: 'Test', companyId: null },
     product: idleProduct,
     ...overrides,
   };

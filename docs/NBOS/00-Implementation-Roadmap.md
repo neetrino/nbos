@@ -412,6 +412,14 @@ Tests
 Docs updated
 ```
 
+## AI Platform Phase 1 (in progress)
+
+Cross-cutting actor/capability layer, not an Automation Layer feature. Execution chats: foundation/Audit → External identity/policy → domain gateway → REST/MCP → providers/models/Internal Agent → admin UI → **security/regression hardening (Chat 7 done)** → acceptance.
+
+Chat 7 closed the operational gaps that the earlier slices left open: per-agent and per-capability rate limits isolated from employee API capacity, the AL security suite as executable tests, replay re-authorization for revoked grants, and the scheduled model-catalog sync as a Nest cron with `rosterIntent: 'off'`. Remaining Phase 1 work is live acceptance (checklist AO–AQ).
+
+Canon: `02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md`. Operations: `02-Modules/21-AI-Platform/25-AI-Platform-Operations-Runbooks.md`.
+
 ## Final rule
 
 ```text

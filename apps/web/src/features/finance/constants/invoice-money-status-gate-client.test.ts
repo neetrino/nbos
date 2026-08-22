@@ -16,6 +16,8 @@ function baseInvoice(overrides: Partial<Invoice> = {}): Invoice {
     taxStatus: 'TAX',
     projectId: 'p1',
     companyId: 'c1',
+    officialInvoiceRequestSent: true,
+    company: { id: 'c1', name: 'InvestOn LLC', taxId: '01234567' },
     paymentCoverage: {
       paidAmount: 0,
       outstandingAmount: 1000,
@@ -37,7 +39,9 @@ describe('invoice-money-status-gate-client', () => {
     const errors = getLocalInvoiceMoneyStatusGateErrors(
       baseInvoice({
         type: 'MANUAL',
+        taxStatus: 'FREE',
         companyId: null,
+        company: null,
         projectId: null,
         moneyStatus: 'NEW',
       }),
@@ -76,6 +80,26 @@ describe('invoice-money-status-gate-client', () => {
       'AWAITING_PAYMENT',
     );
     expect(errors[0]?.field).toBe('moneyStatus');
+  });
+
+  it('blocks Tax Awaiting Payment without company tax id', () => {
+    const errors = getLocalInvoiceMoneyStatusGateErrors(
+      baseInvoice({
+        moneyStatus: 'NEW',
+        officialInvoiceRequestSent: false,
+        company: { id: 'c1', name: 'InvestOn LLC', taxId: null },
+      }),
+      'AWAITING_PAYMENT',
+    );
+    expect(errors.map((error) => error.field)).toEqual(['companyTaxId']);
+  });
+
+  it('blocks Tax Paid when official request is not sent', () => {
+    const errors = getLocalInvoiceMoneyStatusGateErrors(
+      baseInvoice({ officialInvoiceRequestSent: false }),
+      'PAID',
+    );
+    expect(errors[0]?.field).toBe('officialInvoice');
   });
 
   it('maps API guard copy to field highlights', () => {

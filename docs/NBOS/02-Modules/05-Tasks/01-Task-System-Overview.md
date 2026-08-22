@@ -276,6 +276,8 @@ Reusable checklist templates живут в My Company / SOP & Templates: `../07-
 - уточнения
 - mentions
 
+Discussion принадлежит модулю `Tasks` (`task_discussion_entries`), а не `Messenger`. Каждая запись хранит actor provenance (`actorType` / `actorId` / `actorDisplayName`), поэтому комментарий External Agent или Internal AI виден как машинный и не выдаётся за сотрудника. Тело записи неизменяемо.
+
 ### 12.2. Activity Feed
 
 Системная история:
@@ -304,14 +306,28 @@ Task Chat будет развиваться вместе с модулем `Mess
 
 ## 14. Интеграция с другими модулями
 
-| Модуль         | Как связан                                              |
-| -------------- | ------------------------------------------------------- |
-| `Projects Hub` | Work Space продукта/доработки, delivery tasks           |
-| `Support`      | тикет может создавать и связывать задачи                |
-| `Finance`      | recurring и automation tasks, контроль оплат и сервисов |
-| `CRM`          | подготовительные и handoff tasks                        |
-| `Messenger`    | task chat и создание задач из сообщений                 |
-| `Calendar`     | due dates, sprint dates, reminders                      |
+| Модуль         | Как связан                                                                                         |
+| -------------- | -------------------------------------------------------------------------------------------------- |
+| `Projects Hub` | Work Space продукта/доработки, delivery tasks                                                      |
+| `Support`      | тикет может создавать и связывать задачи                                                           |
+| `Finance`      | recurring и automation tasks, контроль оплат и сервисов                                            |
+| `CRM`          | подготовительные и handoff tasks                                                                   |
+| `Messenger`    | task chat и создание задач из сообщений                                                            |
+| `Calendar`     | due dates, sprint dates, reminders                                                                 |
+| `AI Platform`  | External / Internal Agents работают с задачами только через capabilities и разрешённые Work Spaces |
+
+### 14.1. Границы AI-актора в задачах (Phase 1)
+
+| Действие                                          | Доступно агенту                          |
+| ------------------------------------------------- | ---------------------------------------- |
+| Чтение задачи, обсуждения, привязанных артефактов | Да, в пределах выданного scope           |
+| Создание задачи                                   | Только с capability `tasks.create`       |
+| Изменение задачи                                  | Только разрешённые поля (`tasks.update`) |
+| Старт, комментарий, вложение, submit for review   | Да, отдельными capabilities              |
+| Удаление задачи                                   | Нет                                      |
+| Force-complete                                    | Нет                                      |
+
+Финальное завершение задачи остаётся человеческим решением: агент может довести задачу до review, но не закрыть её. `Task.createdByActorType` / `createdByActorId` фиксируют машинного создателя, при этом ответственным сотрудником остаётся `creatorId`. Канон: `02-Modules/21-AI-Platform/02-AI-Capability-and-Action-Layer.md`.
 
 ## 15. Канонические правила
 

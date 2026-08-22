@@ -18,6 +18,9 @@ import { FinanceProofAttachments } from '@/features/finance/components/FinancePr
 import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
 import { getInvoiceDealTitle, getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import { RecordPaymentForm } from './RecordPaymentForm';
+import { InvoiceTaxReadinessBanner } from './InvoiceTaxReadinessBanner';
+import { invoiceStageGateSectionClass } from '@/features/finance/constants/invoice-stage-gate-highlight';
+import { INVOICE_GATE_FIELD_COMPANY } from '@/features/finance/constants/invoice-money-status-gate-client';
 
 export type InvoiceSheetInvoice = Invoice;
 
@@ -30,12 +33,18 @@ export function InvoiceSheetBadge({ invoice }: { invoice: InvoiceSheetInvoice })
 export function InvoiceOfficialSection({
   invoice,
   onInvoiceUpdated,
+  gateRequiredFields = new Set<string>(),
 }: {
   invoice: InvoiceSheetInvoice;
   onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
+  gateRequiredFields?: ReadonlySet<string>;
 }) {
   return (
-    <DetailSheetSection title="Official invoice">
+    <DetailSheetSection
+      title="Official invoice"
+      className={invoiceStageGateSectionClass(gateRequiredFields, 'officialInvoice')}
+    >
+      <InvoiceTaxReadinessBanner invoice={invoice} />
       {onInvoiceUpdated ? (
         <InvoiceOfficialRequestPanel invoice={invoice} onUpdated={onInvoiceUpdated} />
       ) : (
@@ -45,7 +54,13 @@ export function InvoiceOfficialSection({
   );
 }
 
-export function InvoiceLinkedEntitiesSection({ invoice }: { invoice: InvoiceSheetInvoice }) {
+export function InvoiceLinkedEntitiesSection({
+  invoice,
+  gateRequiredFields = new Set<string>(),
+}: {
+  invoice: InvoiceSheetInvoice;
+  gateRequiredFields?: ReadonlySet<string>;
+}) {
   const relations = useEntityRelations();
   const [dealSheetOpen, setDealSheetOpen] = useState(false);
   const deal = invoice.order?.deal ?? null;
@@ -118,12 +133,19 @@ export function InvoiceLinkedEntitiesSection({ invoice }: { invoice: InvoiceShee
             />
           ))}
           {invoice.company ? (
-            <DetailSheetEntityLinkCard
-              icon={Building2}
-              label="Company"
-              title={invoice.company.name}
-              onOpen={() => relations.openEntity('company', invoice.company!.id)}
-            />
+            <div
+              className={invoiceStageGateSectionClass(
+                companyGateFields(gateRequiredFields),
+                INVOICE_GATE_FIELD_COMPANY,
+              )}
+            >
+              <DetailSheetEntityLinkCard
+                icon={Building2}
+                label="Company"
+                title={invoice.company.name}
+                onOpen={() => relations.openEntity('company', invoice.company!.id)}
+              />
+            </div>
           ) : null}
           {invoice.contact ? (
             <DetailSheetEntityLinkCard
@@ -197,6 +219,17 @@ export function InvoicePaymentsSection({
       ) : null}
     </div>
   );
+}
+
+function companyGateFields(required: ReadonlySet<string>): ReadonlySet<string> {
+  if (
+    required.has(INVOICE_GATE_FIELD_COMPANY) ||
+    required.has('companyName') ||
+    required.has('companyTaxId')
+  ) {
+    return new Set([INVOICE_GATE_FIELD_COMPANY]);
+  }
+  return new Set();
 }
 
 function OfficialInvoiceReadOnly({ invoice }: { invoice: InvoiceSheetInvoice }) {

@@ -10,7 +10,7 @@
 │   Dashboards · KPI · Scorecard · Audit · P&L    │
 ├─────────────────────────────────────────────────┤
 │            AUTOMATION LAYER                      │
-│   Billing · Notifications · AI · Integrations   │
+│   Billing · Notifications · Integrations         │
 ├─────────────────────────────────────────────────┤
 │            EXECUTION LAYER                       │
 │   Projects · Tasks · Orders · Tickets · Chat    │
@@ -22,6 +22,20 @@
 │   V/TO · OKR · Pricing · Taxonomy · RBAC Rules  │
 └─────────────────────────────────────────────────┘
 ```
+
+AI не является отдельным слоем и не является функцией Automation Layer. AI Platform — сквозной слой актора и capability: он даёт External и Internal Agents ту же идентичность, policy, capability и Audit, которыми пользуются сотрудники, и проходит через все пять слоёв.
+
+```text
+AI Platform (cross-cutting) → Actor → Policy → Capability → Domain Action → Audit
+```
+
+Практические следствия:
+
+- AI-актор не получает прав в обход RBAC и Platform Access — он проходит собственную policy на той же доменной границе;
+- AI-действия видны в Control Layer как actor-aware Audit, а не как «системные» записи;
+- AI-сценарии в Automation Layer (auto-reply, triage, summarizer) — это потребители AI Platform, а не её определение.
+
+Канон: `docs/NBOS/01-Platform-Overview/05-AI-Platform-Architecture.md` и `docs/NBOS/02-Modules/21-AI-Platform/`.
 
 ---
 
@@ -148,7 +162,9 @@ CEO + Heads of Departments (Sales, Delivery, Support, Finance).
 - Автоматическое создание стандартных задач по шаблону продукта
 - Автоматическое создание задач-напоминаний для финдиректора
 
-#### AI Layer (Phase 3+)
+#### AI-сценарии автоматизации (Phase 3+)
+
+Это сценарии, которые используют AI Platform, а не описание самой AI Platform (сквозной слой, см. «Обзор»).
 
 - Auto-reply клиентам в нерабочие часы
 - Message → Ticket/Task (из WhatsApp/Telegram создание тикета)
