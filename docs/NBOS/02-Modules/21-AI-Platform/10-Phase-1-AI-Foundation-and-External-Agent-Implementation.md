@@ -640,12 +640,20 @@ Runtime: `packages/database/prisma/schema/ai-internal-agents.prisma`, `apps/api/
 473. [ ] Support TESTING prompt version.
 474. [ ] Support PUBLISHED prompt version.
 475. [ ] Support RETIRED prompt version.
-476. [ ] Allow Internal Agent to reference published prompt policy/version.
+476. [~] Allow Internal Agent to reference published prompt policy/version.
 477. [ ] Preserve prompt version identity in execution metadata contract.
 478. [ ] Support future rollback semantics.
-479. [ ] Audit publish/rollback/config changes.
-480. [ ] Do not let prompt grant capabilities/resources.
+479. [~] Audit publish/rollback/config changes.
+480. [x] Do not let prompt grant capabilities/resources.
 481. [ ] Add prompt-version lifecycle tests.
+
+Chat 8 verdict: the section is **deferred, not silently dropped**. What exists is the linkage only —
+`InternalAiAgent.promptPolicyId` (`ai-internal-agents.prisma`), settable through
+`UpdateInternalAgentDto` and asserted live in AP 701. 476 is `[~]` because an Internal Agent can
+hold the reference but there is no Prompt Policy/Version row to point at. 479 is `[~]` because a
+change to `promptPolicyId` is audited (`promptPolicyChanged` in `internal-agent.service.ts`) while
+publish/rollback events do not exist. 480 is `[x]` and was re-verified in AQ 712: no policy,
+capability or scope path reads `promptPolicyId`, so prompt text cannot widen access.
 
 # AE. Context / memory / knowledge contracts
 
@@ -654,21 +662,30 @@ Runtime: `packages/database/prisma/schema/ai-internal-agents.prisma`, `apps/api/
 484. [ ] Use purpose-built module projections.
 485. [ ] Define source/provenance metadata contract.
 486. [ ] Define freshness metadata contract.
-487. [ ] Define redaction/classification contract.
+487. [~] Define redaction/classification contract.
 488. [ ] Define context size/token budget contract.
-489. [ ] Mark user/task/document/message/file content as untrusted data.
+489. [~] Mark user/task/document/message/file content as untrusted data.
 490. [ ] Define session context contract.
 491. [ ] Define persistent-memory interface but keep disabled/unimplemented by default.
 492. [ ] Require memory owner/scope/purpose/retention/provenance.
 493. [ ] Forbid secrets in AI memory.
 494. [ ] Define future Knowledge/RAG source interface.
 495. [ ] Ensure future retrieval cannot bypass authorization.
-496. [ ] Do not build unrestricted global vector store in Phase 1.
+496. [x] Do not build unrestricted global vector store in Phase 1.
+
+Chat 8 verdict: **deferred**. No Context Assembler, session-context, memory or knowledge interface
+exists, so 482–486, 488, 490–495 stay unchecked and are carried in the Cleanup Register. Two items
+are partly satisfied by the access layer that does exist: 487 `[~]` — `AiDataClassification` with
+`maxDataClassification` per capability is enforced in `policy-evaluator.ts`, but there is no
+redaction contract; 489 `[~]` — the policy request deliberately carries no content and
+`policy-decision.ts` states that content can never alter a decision, which is the enforcement half
+of "untrusted", without a declared data contract that labels each source. 496 `[x]` verified by
+search: no embedding, vector-store or pgvector code exists in the repository.
 
 # AF. Risk / approval foundation
 
-497. [ ] Add capability risk metadata.
-498. [ ] Implement `ALLOW/DENY/REQUIRE_APPROVAL` policy contract.
+497. [x] Add capability risk metadata.
+498. [x] Implement `ALLOW/DENY/REQUIRE_APPROVAL` policy contract.
 499. [ ] Create approval request persistence/entity.
 500. [ ] Store requesting actor/capability/resource.
 501. [ ] Store safe payload summary.
@@ -687,7 +704,15 @@ Runtime: `packages/database/prisma/schema/ai-internal-agents.prisma`, `apps/api/
 514. [ ] Add approval expiration.
 515. [ ] Revalidate actor/grants/domain state before approved commit.
 516. [ ] Audit approval lifecycle.
-517. [ ] Add approval-policy tests.
+517. [~] Add approval-policy tests.
+
+Chat 8 verdict: the **decision** contract shipped, the **persistence** did not. 497 `[x]`:
+`AiRiskClass` (`LOW/MEDIUM/HIGH/CRITICAL`) is per-capability metadata with a `maxRiskClass` ceiling
+per actor. 498 `[x]`: `AI_POLICY_OUTCOMES = ['ALLOW','DENY','REQUIRE_APPROVAL']`, and
+`AgentPolicyService.assertAllowed` audits `APPROVAL_REQUIRED` and refuses the call. 517 `[~]`:
+`policy-evaluator.test.ts` covers both approval branches, but there are no lifecycle tests because
+there is no approval entity. 499–516 need an `AiApprovalRequest` table (payload digest, states,
+approver, expiry, revalidation) that Phase 1 did not build — carried in the Cleanup Register.
 
 # AG. Customer-facing AI policy foundation
 
@@ -701,10 +726,18 @@ Runtime: `packages/database/prisma/schema/ai-internal-agents.prisma`, `apps/api/
 525. [ ] Define escalation contract/reason.
 526. [ ] Define internal-only vs customer-visible content requirement/contract.
 527. [ ] Ensure customer messages are untrusted input.
-528. [ ] Ensure customer text cannot widen tools/capabilities.
-529. [ ] Ensure no Credentials/secrets in customer-facing context.
-530. [ ] Do not implement production Messenger auto-send runtime in Phase 1.
+528. [x] Ensure customer text cannot widen tools/capabilities.
+529. [~] Ensure no Credentials/secrets in customer-facing context.
+530. [x] Do not implement production Messenger auto-send runtime in Phase 1.
 531. [ ] Add customer-isolation policy tests/contracts where possible.
+
+Chat 8 verdict: **deferred**, with the two safety invariants that are structural already true. 528
+`[x]`: the capability set is a static registry and `AiPolicyRequest` carries no message content, so
+no text a customer sends can add a tool or widen a grant. 530 `[x]`: verified by search — no
+auto-send, auto-reply or Messenger AI runtime exists. 529 `[~]`: no secret can reach an AI context
+today because Credentials are never projected into one (AQ 714), but that is an absence rather than
+a declared customer-facing contract. 518–527 and 531 require the channel/risk classification and
+DRAFT_ONLY / APPROVAL_REQUIRED / AUTO_SEND_ALLOWED modes, which Phase 1 did not build.
 
 # AH. Usage, cost and observability foundation
 
@@ -723,8 +756,15 @@ Runtime: `packages/database/prisma/schema/ai-internal-agents.prisma`, `apps/api/
 544. [ ] Track estimated/provider-reported cost where available.
 545. [ ] Keep pricing-version/effective-date concept for historical cost integrity.
 546. [ ] Define basic budget/usage limit schema/contracts.
-547. [ ] Avoid storing full sensitive prompts solely for metrics.
+547. [x] Avoid storing full sensitive prompts solely for metrics.
 548. [ ] Add execution/usage attribution tests.
+
+Chat 8 verdict: **not implemented** and the largest remaining Phase 1 gap. There is no AI execution
+or usage entity, so 532–546 and 548 are unchecked; this is also why AP 705 is `[~]`. 547 `[x]` is
+true by construction — no table in `ai-platform.prisma`, `ai-providers.prisma` or
+`ai-internal-agents.prisma` stores prompt or completion content. The identities such a record needs
+(actor, Internal Agent, provider connection, model, model policy, capability, channel) all exist
+already, so this is additive work, not a redesign.
 
 # AI. Evaluation foundation
 
@@ -734,9 +774,17 @@ Runtime: `packages/database/prisma/schema/ai-internal-agents.prisma`, `apps/api/
 552. [ ] Support dataset/version identity.
 553. [ ] Support aggregate quality/latency/cost results.
 554. [ ] Keep deterministic/human/model-based grading separable.
-555. [ ] Do not automatically activate/promote model based only on provider release.
-556. [ ] Do not automatically promote based only on LLM-judge score.
-557. [ ] Add admin notes/suitability/evaluation status to model management.
+555. [x] Do not automatically activate/promote model based only on provider release.
+556. [x] Do not automatically promote based only on LLM-judge score.
+557. [~] Add admin notes/suitability/evaluation status to model management.
+
+Chat 8 verdict: the two **negative** guarantees hold and were proven live; the evaluation entities
+were not built. 555 `[x]`: AP 692 — a first OpenAI sync created 124 models, 124 `DISCOVERED`, 0
+`ACTIVE`, and activation is an explicit admin action (`activatedById` / `activatedAt`). 556 `[x]`:
+no judge or auto-promotion path exists anywhere. 557 `[~]`: `AiModel.notes` and
+`AiModel.suitabilityTags` are admin-owned fields, exposed through `UpdateModelDto` and
+`ModelCatalogPanel`, and are deliberately separate from `providerMetadata`; an evaluation-status
+field is missing because section AI has no runtime.
 
 # AJ. Central AI administration UI
 
@@ -834,16 +882,16 @@ Replay re-authorization is separate hardening and is **not** 626. `AgentReplayAu
 
 # AM. Regression and compatibility
 
-627. [~] Existing Employee login works.
+627. [x] Existing Employee login works.
 628. [x] Existing Employee RBAC behavior remains unchanged.
 629. [x] Existing Platform Access human grants remain valid.
 630. [x] Existing Audit pages/APIs still display historical human rows.
-631. [~] Existing Tasks UI behavior remains intact.
+631. [x] Existing Tasks UI behavior remains intact.
 632. [x] Existing Tasks workflow remains intact.
 633. [x] Existing Drive access remains intact and not widened.
 634. [x] Existing Integrations behavior remains intact.
 635. [x] Existing API application boots.
-636. [~] Existing worker boots.
+636. [x] Existing worker boots.
 637. [x] Existing scheduler boots.
 638. [~] Prisma migrations are production-safe/forward-fixable according to project standards.
 639. [x] Validate migrations on representative existing data.
@@ -861,7 +909,13 @@ Evidence (dev Neon `ep-late-frost-ag5aixzw`; production was not contacted):
 | 638–639 | `prisma migrate status` → 213 migrations, schema up to date; Phase 1 migrations are additive                                                                                        |
 | 640     | `pnpm test` 838 files / 4245 tests passed (+2/4 skipped), `pnpm test:regression` 22/284, `pnpm lint` 0 errors, `pnpm typecheck` exit 0                                              |
 
-627 and 631 are `[~]` because the evidence is the API/web suites plus a clean API boot, not a browser walk — live acceptance is section AO. 636 is `[~]` for the same honesty: the process and its four workers start, but full readiness needs a Redis instance that this environment does not provide. 638 is `[~]` for one reason: `20260821150000_audit_actor_aware` backfills `audit_logs` and builds two non-`CONCURRENTLY` indexes, which the project migration standard classifies as needing explicit approval and a window on a large production table. Everything else is additive DDL on new tables.
+Chat 8 closed 627, 631 and 636. 627/631: a browser walk on 2026-08-22 signed in as an Employee,
+loaded `/dashboard`, `/tasks` (46 of 109 tasks, Open/In Progress/Review/On hold columns, including
+the Agent-created acceptance tasks appearing as ordinary human-visible Tasks) and the AI & Agents
+module. 636: with local Redis reachable, `GET :4102/ready` returned
+`{"ready":true,"workers":["drive.zip-export-jobs","mail","reports.export-jobs","whatsapp.product-groups"]}`.
+A pre-existing dev-only React hydration warning on `/tasks` was observed and is unrelated to the AI
+Platform. 638 is still `[~]` for one reason: `20260821150000_audit_actor_aware` backfills `audit_logs` and builds two non-`CONCURRENTLY` indexes, which the project migration standard classifies as needing explicit approval and a window on a large production table. Everything else is additive DDL on new tables.
 
 # AN. Documentation synchronization
 
@@ -886,77 +940,107 @@ Runtime: 650/651 stay in `21-External-Agent-Client-Setup.md` (extended with the 
 
 # AO. Final External Agent acceptance
 
-657. [ ] Create one test External Agent scoped to one non-production/test Work Space.
-658. [ ] Agent REST lists only authorized Work Space.
-659. [ ] Agent MCP lists only authorized Work Space.
-660. [ ] Agent REST lists only authorized tasks.
-661. [ ] Agent MCP lists only authorized tasks.
-662. [ ] Agent cannot read known task from another Work Space via REST.
-663. [ ] Agent cannot read known task from another Work Space via MCP.
-664. [ ] Agent reads permitted linked artifact.
-665. [ ] Agent cannot read unrelated Drive artifact.
-666. [ ] Agent with `tasks.create` creates a Task.
-667. [ ] Agent without `tasks.create` cannot create a Task.
-668. [ ] Agent with `tasks.update` updates an allowed field.
-669. [ ] Agent cannot update a forbidden field.
-670. [ ] Agent cannot delete a Task.
-671. [ ] Agent starts allowed Task.
-672. [ ] Agent posts progress/comment with visible AI provenance.
-673. [ ] Agent attaches generated artifact.
-674. [ ] Agent submits Task for review.
-675. [ ] Human review/completion still controls final completion.
-676. [ ] Duplicate create retry does not duplicate Task.
-677. [ ] Duplicate comment retry does not duplicate comment.
-678. [ ] Duplicate transition retry does not duplicate effects.
-679. [ ] Revoking credential blocks next REST request.
-680. [ ] Revoking credential blocks next MCP invocation.
-681. [ ] Disabling Agent blocks all credentials.
-682. [ ] Audit identifies External Agent + protocol + capability + resource + result.
-683. [ ] No audit/log contains raw Agent token.
-684. [ ] Cross-Work Space negative suite passes.
-685. [ ] REST/MCP parity suite passes.
+657. [x] Create one test External Agent scoped to one non-production/test Work Space.
+658. [x] Agent REST lists only authorized Work Space.
+659. [x] Agent MCP lists only authorized Work Space.
+660. [x] Agent REST lists only authorized tasks.
+661. [x] Agent MCP lists only authorized tasks.
+662. [x] Agent cannot read known task from another Work Space via REST.
+663. [x] Agent cannot read known task from another Work Space via MCP.
+664. [x] Agent reads permitted linked artifact.
+665. [x] Agent cannot read unrelated Drive artifact.
+666. [x] Agent with `tasks.create` creates a Task.
+667. [x] Agent without `tasks.create` cannot create a Task.
+668. [x] Agent with `tasks.update` updates an allowed field.
+669. [x] Agent cannot update a forbidden field.
+670. [x] Agent cannot delete a Task.
+671. [x] Agent starts allowed Task.
+672. [x] Agent posts progress/comment with visible AI provenance.
+673. [x] Agent attaches generated artifact.
+674. [x] Agent submits Task for review.
+675. [x] Human review/completion still controls final completion.
+676. [x] Duplicate create retry does not duplicate Task.
+677. [x] Duplicate comment retry does not duplicate comment.
+678. [x] Duplicate transition retry does not duplicate effects.
+679. [x] Revoking credential blocks next REST request.
+680. [x] Revoking credential blocks next MCP invocation.
+681. [x] Disabling Agent blocks all credentials.
+682. [x] Audit identifies External Agent + protocol + capability + resource + result.
+683. [x] No audit/log contains raw Agent token.
+684. [x] Cross-Work Space negative suite passes.
+685. [x] REST/MCP parity suite passes.
+
+Evidence: live walk against the running API (`localhost:4100`, dev Neon `ep-late-frost-ag5aixzw`) on
+2026-08-22, 29/29 PASS, driver in `apps/api/.chat8/ao/`, full transcript in `.chat8/ao-run.log`,
+created rows in `.chat8/ao-artifacts.json`. Every item was exercised over both protocols where the
+checklist names both. `tasks.delete` has no REST route, no published MCP tool (14 tools, none
+matching delete/force/set_status) and no capability key; completion stayed with the Employee. See
+`26-Phase-1-Chat-8-Acceptance.md` for the per-item evidence table.
 
 # AP. Final Provider/Model/Internal foundation acceptance
 
-686. [ ] Connect a test OpenAI provider connection securely.
-687. [ ] Validate OpenAI connection.
-688. [ ] Sync OpenAI model catalog.
-689. [ ] Connect a test Anthropic provider connection securely.
-690. [ ] Validate Anthropic connection.
-691. [ ] Sync Anthropic model catalog.
-692. [ ] Newly discovered model appears as DISCOVERED, not ACTIVE.
-693. [ ] Admin can explicitly activate/disable model.
-694. [ ] Provider key cannot be retrieved after save.
-695. [ ] Create FIXED Model Policy with one active model.
-696. [ ] Create PRIMARY_FALLBACK policy with ordered models.
-697. [ ] PRIMARY_FALLBACK can include models from different providers.
-698. [ ] Create Internal Agent in DRAFT.
-699. [ ] Assign capabilities/scopes contract to Internal Agent.
-700. [ ] Assign Model Policy to Internal Agent.
-701. [ ] Assign prompt-policy foundation/config.
-702. [ ] Activate Internal Agent only when required dependencies validate.
-703. [ ] Pause/disable blocks new execution contract/path.
-704. [ ] Audit records provider/model/Internal Agent configuration changes.
-705. [ ] Usage/execution records can attribute agent/provider/model/policy.
+686. [x] Connect a test OpenAI provider connection securely.
+687. [x] Validate OpenAI connection.
+688. [x] Sync OpenAI model catalog.
+689. [~] Connect a test Anthropic provider connection securely.
+690. [~] Validate Anthropic connection.
+691. [~] Sync Anthropic model catalog.
+692. [x] Newly discovered model appears as DISCOVERED, not ACTIVE.
+693. [x] Admin can explicitly activate/disable model.
+694. [x] Provider key cannot be retrieved after save.
+695. [x] Create FIXED Model Policy with one active model.
+696. [x] Create PRIMARY_FALLBACK policy with ordered models.
+697. [~] PRIMARY_FALLBACK can include models from different providers.
+698. [x] Create Internal Agent in DRAFT.
+699. [x] Assign capabilities/scopes contract to Internal Agent.
+700. [x] Assign Model Policy to Internal Agent.
+701. [x] Assign prompt-policy foundation/config.
+702. [x] Activate Internal Agent only when required dependencies validate.
+703. [x] Pause/disable blocks new execution contract/path.
+704. [x] Audit records provider/model/Internal Agent configuration changes.
+705. [~] Usage/execution records can attribute agent/provider/model/policy.
+
+Evidence: live walk on 2026-08-22 with a real OpenAI key supplied by the developer; driver in
+`apps/api/.chat8/ap/`, records in `.chat8/ap-artifacts.json`. A first sync created 124 models, all
+`DISCOVERED`, none `ACTIVE`. The stored key was not retrievable from any admin read path and does
+not appear in any audit row. 689–691 and 697 are `[~]` for one reason only: **no Anthropic test key
+was supplied**, so the Anthropic adapter, its secret storage and cross-provider fallback are covered
+by unit tests (`anthropic.adapter.test.ts`, `ai-model-sync.service.test.ts`,
+`ai-model-policy.rules.test.ts`) but not by a live provider call. 705 is `[~]` because section AH
+(usage/execution records) is unimplemented in Phase 1, so there is no runtime row to attribute — the
+Internal Agent, provider, model and policy identities that such a record needs all exist.
 
 # AQ. Final architecture review
 
-706. [ ] No External Agent controller contains direct domain Prisma writes.
-707. [ ] No MCP tool adapter contains direct domain Prisma writes.
-708. [ ] REST and MCP share the same authentication/policy/capability/domain path.
-709. [ ] External Agent and Internal Agent use the same normalized Actor/Policy/Capability concepts.
-710. [ ] Provider/Model selection is separated from Agent identity and permissions.
-711. [ ] Model changes do not alter domain grants.
-712. [ ] Prompt configuration does not grant permissions.
-713. [ ] Customer-facing safety is enforceable outside prompt text.
-714. [ ] Secrets remain excluded from AI context and audit.
-715. [ ] Existing human authorization is not replaced/broken.
-716. [ ] Cleanup Register reflects every remaining known gap.
-717. [ ] Phase 1 non-goals remain absent.
-718. [ ] Final security review confirms deny-by-default behavior.
-719. [ ] Final architecture review confirms future employee AI chat can reuse the foundation without redesign.
-720. [ ] Final architecture review confirms future Messenger AI can reuse the foundation without redesign.
-721. [ ] Final architecture review confirms future Documents/CRM/Analytics AI can reuse the foundation without redesign.
+706. [x] No External Agent controller contains direct domain Prisma writes.
+707. [x] No MCP tool adapter contains direct domain Prisma writes.
+708. [x] REST and MCP share the same authentication/policy/capability/domain path.
+709. [x] External Agent and Internal Agent use the same normalized Actor/Policy/Capability concepts.
+710. [x] Provider/Model selection is separated from Agent identity and permissions.
+711. [x] Model changes do not alter domain grants.
+712. [x] Prompt configuration does not grant permissions.
+713. [~] Customer-facing safety is enforceable outside prompt text.
+714. [x] Secrets remain excluded from AI context and audit.
+715. [x] Existing human authorization is not replaced/broken.
+716. [x] Cleanup Register reflects every remaining known gap.
+717. [x] Phase 1 non-goals remain absent.
+718. [x] Final security review confirms deny-by-default behavior.
+719. [x] Final architecture review confirms future employee AI chat can reuse the foundation without redesign.
+720. [x] Final architecture review confirms future Messenger AI can reuse the foundation without redesign.
+721. [x] Final architecture review confirms future Documents/CRM/Analytics AI can reuse the foundation without redesign.
+
+Review evidence: `rest/` and `mcp/` contain no `PrismaService` import and no `prisma.` call; both
+enter `AgentProtocolInvoker` → `AgentCapabilityGateway`, and the gateway's only Prisma writes are to
+`ExternalAgentIdempotencyRecord` (an AI-platform-owned table) while every domain mutation goes
+through `TasksService` / `TaskDiscussionService` / the Drive handler. `ACTOR_TYPES` and
+`ACTOR_CHANNELS` in `packages/shared/src/actor/` are the single actor vocabulary for `USER`,
+`EXTERNAL_AGENT`, `INTERNAL_AI`, `SYSTEM` and `AUTOMATION`, with `messenger` already a channel and
+`onBehalfOf` already modelled — that, plus one capability registry shared by both agent kinds, is
+what makes 719–721 answerable without a second identity system. `promptPolicyId` is an opaque
+column that no policy path reads. 713 is `[~]`: safety **is** enforced outside prompt text (risk
+class, data classification, `REQUIRE_APPROVAL`, capability grants), but the customer-facing
+classification of section AG is not implemented, so the customer-specific modes have no runtime
+contract yet.
 
 ---
 

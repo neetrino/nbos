@@ -114,6 +114,38 @@ Chat 7 added `PROVIDER_KEY_PREFLIGHT_VALIDATED`. Replacement-key validation and 
 
 `20260821150000_audit_actor_aware` performs a full-table `UPDATE` on `audit_logs` and builds two indexes without `CONCURRENTLY`. Validated on dev data (339 rows, 0 rows left without `actor_type`). Per `docs/deployment/AUTOMATED-PRODUCTION-DATABASE-MIGRATIONS-STANDARD.md` §9 this class of change needs explicit approval and a maintenance window on a large production `audit_logs`; the migration itself must not be edited after being applied.
 
+### C15. Prompt policy/version domain (AD 470–475, 477, 478, 481) — MISSING
+
+`InternalAiAgent.promptPolicyId` is an opaque column and nothing else exists: no Prompt Policy row, no Prompt Version, no DRAFT/TESTING/PUBLISHED/RETIRED lifecycle, no rollback, no lifecycle tests. Chat 8 confirmed by search and by the AP 701 live assignment, which persisted a free-form id that no read path resolves. The safety half is real: no policy, capability or scope path reads the column (AQ 712), so a prompt cannot widen access.
+
+### C16. Context / memory / knowledge contracts (AE 482–486, 488, 490–495) — MISSING
+
+No Context Assembler interface, no session-context or persistent-memory contract, no knowledge/RAG source interface. Two adjacent guarantees do exist: `AiDataClassification` with a per-capability `maxDataClassification` ceiling, and a policy request that carries no content at all. Chat 8 verified that no embedding, vector-store or pgvector code exists, so AE 496 holds.
+
+### C17. Approval request persistence (AF 499–516) — MISSING
+
+The decision contract shipped (`AI_POLICY_OUTCOMES` includes `REQUIRE_APPROVAL`; `assertAllowed` audits `APPROVAL_REQUIRED` and refuses), but there is no `AiApprovalRequest` entity, so there is no payload digest, no PENDING/APPROVED/REJECTED/EXPIRED/CANCELLED/CONSUMED lifecycle, no one-time binding, no employee approver, no expiry and no pre-commit revalidation. The admin UI already shows an honest "Approval queue is not enabled yet" placeholder.
+
+### C18. Customer-facing AI policy contracts (AG 518–527, 531) — MISSING
+
+No channel/risk classification, no conversation scope, no DRAFT_ONLY / APPROVAL_REQUIRED / AUTO_SEND_ALLOWED modes, no escalation contract. Chat 8 verified the two structural guarantees hold: customer text cannot widen capabilities (the registry is static and the policy request carries no content) and no Messenger auto-send runtime exists.
+
+### C19. Usage, cost and evaluation entities (AH 532–546, 548; AI 549–554) — MISSING
+
+Extends C7. There is no execution/usage record and no evaluation suite/run entity, which is why AP 705 is `[~]`. Everything such a record must reference — actor, Internal Agent, provider connection, model, model policy, capability, channel, correlation id — already exists, so this is additive. The negative guarantees were proven live: a first catalog sync produced 124 `DISCOVERED` / 0 `ACTIVE` models (AI 555) and no judge-driven promotion path exists (AI 556). `AiModel.notes` and `AiModel.suitabilityTags` cover the admin-judgment half of AI 557; an evaluation-status field is missing.
+
+### C20. Anthropic provider never exercised live — PARTIAL
+
+Chat 8 ran the AP walk with a real OpenAI key supplied by the developer: connect, validate, sync (124 models), activate/disable, FIXED and PRIMARY_FALLBACK policies, Internal Agent DRAFT → ACTIVE. No Anthropic test key was supplied, so AP 689–691 and the cross-provider fallback case AP 697 rest on `anthropic.adapter.test.ts`, `ai-model-sync.service.test.ts` and `ai-model-policy.rules.test.ts` rather than a live provider call. Closing this needs nothing but a key.
+
+### C21. AI & Agents was a Settings sub-page — OK
+
+Chat 8 promoted it to a first-class sidebar module at `/ai-agents` (`SIDEBAR_MODULE_KEYS`, `NAV_MODULE_DEFINITIONS` with the nine section children, module visual). `/settings/ai-agents/*` now issues a temporary redirect so existing links and the runbooks keep working. RBAC is unchanged: `COMPANY:EDIT`, the same permission the `ai-admin` controllers require.
+
+### C22. Phase 1 exit criterion 9 — BUSINESS DECISION
+
+Exit criterion 9 asks for prompt, approval, customer-facing safety and usage/evaluation foundations "in runtime contracts where required by this checklist". C15–C19 are 72 unchecked checklist items across AD, AE, AF, AG, AH and AI. This is not a technical conflict — the work is additive and the identities it needs already exist — so it is not a defect to fix during acceptance. **Decision required:** either these six sections ship inside Phase 1 (a further implementation slice), or Phase 1 closes on the External Agent + provider/model + Internal Agent foundation and AD–AI move to an explicit follow-up phase. Everything else in the exit criterion is met.
+
 ## D. Tasks alignment issues to verify before implementation
 
 ### D1. Canon/runtime status vocabulary — PARTIAL
@@ -183,6 +215,10 @@ Canonical Phase 1 sources (`03`, `08`, `09`, `10` item 43, `16`) require both RE
 ## F7. Chat 7 evidence
 
 2026-08-22: Rate limits and abuse controls (U), the AL security suite as executable tests, replay re-authorization, scheduler catalog bind, regression evidence and operations runbooks. See `24-Phase-1-Chat-7-Handoff.md` and `25-AI-Platform-Operations-Runbooks.md`.
+
+## F8. Chat 8 evidence
+
+2026-08-22: final verification and acceptance. AO 657–685 live, 29/29 PASS over REST and MCP; AP 686–705 live on OpenAI with Anthropic and usage attribution `[~]`; AQ 706–721 architecture review, 15/16 `[x]`. AM 627/631/636 closed with a browser walk and a `ready:true` worker. `pnpm test` 844 files / 4291 tests, `pnpm lint` 0, `pnpm typecheck` 0. See `26-Phase-1-Chat-8-Acceptance.md`.
 
 ## G. Implementation rule
 

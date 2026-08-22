@@ -6,7 +6,8 @@ this file is what an operator follows during a rotation, an incident or a suppor
 
 Audience: CEO / Admin / Security and whoever holds `COMPANY` + `EDIT`.
 
-Entry point in the product: `Settings → AI & Agents` (`/settings/ai-agents`). Every action below is
+Entry point in the product: the `AI & Agents` sidebar module (`/ai-agents`; the former
+`/settings/ai-agents` path still redirects). Every action below is
 also an `/api/ai-admin` endpoint, so it can be executed without the UI if needed.
 
 Ground rules for every procedure here:
