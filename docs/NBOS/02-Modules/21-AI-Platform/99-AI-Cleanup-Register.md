@@ -140,9 +140,35 @@ Chat 8 ran the AP walk with a real OpenAI key supplied by the developer: connect
 
 Chat 8 promoted it to a first-class sidebar module at `/ai-agents` (`SIDEBAR_MODULE_KEYS`, `NAV_MODULE_DEFINITIONS` with the nine section children, module visual). `/settings/ai-agents/*` now issues a temporary redirect so existing links and the runbooks keep working. RBAC is unchanged: `COMPANY:EDIT`, the same permission the `ai-admin` controllers require.
 
-### C22. Phase 1 exit criterion 9 — BUSINESS DECISION / PARTIAL
+### C22. Phase 1 exit criterion 9 — RESOLVED
 
-`27-Phase-1-Continuation-After-Chat-8.md` decided AD–AI stay in the current Phase 1 (Chats 9–12). Chat 9 closed AD/AE (C15, C16). Chat 10 closed AF/AG (C17, C18). Chat 11 closed AH/AI (C19 / C7) and the actionable Chat 8 product-code debts listed in `30-Phase-1-Chat-11-Handoff.md`. Chat 12 is still the only milestone that may declare Phase 1 complete.
+`27-Phase-1-Continuation-After-Chat-8.md` decided AD–AI stay in the current Phase 1 (Chats 9–12). Chat 9 closed AD/AE (C15, C16). Chat 10 closed AF/AG (C17, C18). Chat 11 closed AH/AI (C19 / C7) and the actionable Chat 8 product-code debts listed in `30-Phase-1-Chat-11-Handoff.md`. Chat 12 walked AD–AI first-hand against the live admin surface and found exit criterion 9 **met**, so the business decision recorded here is resolved. Chat 12 did not declare Phase 1 complete for an unrelated reason — see C23.
+
+### C23. Concurrent Task creation returned HTTP 500 — FIXED
+
+Found first-hand in Chat 12 and present in no earlier handoff. `TasksService.generateCode()` (`apps/api/src/modules/tasks/tasks.service.ts`) reads the highest existing `T-<year>-NNNN` code and then inserts, outside any lock or transaction, so two concurrent creates compute the same code and the second loses on the unique `Task.code` constraint. Six concurrent `POST /api/v1/agent/workspaces/{id}/tasks` calls with six distinct idempotency keys returned `201,500,500,500,500,500`; a 26-request burst returned 6 accepted, 2 rate-limited and 18 × 500.
+
+The defect is Tasks-owned and pre-existing — it predates the AI Platform work and no AI Platform checklist item is falsified by it. It blocks Phase 1 anyway, because the External Agent surface is the first caller that makes it routine: Phase 1 exists for parallel coding agents and `AGENT_CONCURRENCY_LIMIT` explicitly permits eight in-flight invocations per agent. Exit criteria 1 and 2 therefore fail on reliability while passing on authorization.
+
+The error boundary was not at fault: the agent received `AGENT_INTERNAL_ERROR` with a request id, and no Prisma text, table name or file path leaked.
+
+**Fixed in Chat 12** with a server-side allocator, on the developer's decision. Migration `20260823000000_entity_code_counters` adds `entity_code_counters (scope, year, next_value)` and seeds the `TASK` scope from existing codes, comparing suffixes numerically. `allocateEntityCodeNumber` (`apps/api/src/common/utils/entity-code-counter.ts`) reserves a number with one `INSERT … ON CONFLICT DO UPDATE … RETURNING`, so PostgreSQL serializes concurrent callers on the counter row instead of letting them compute the same value. `TasksService.generateCode` no longer reads the tasks table at all, which also removes a full prefix scan from every create. Numbers are reserved rather than reissued, so a failed insert leaves a gap; gaps are acceptable in a human-readable code, duplicates are not.
+
+Verified: the exact reproduction that returned `201,500,500,500,500,500` now returns `201,201,201,201,201,201`; at the `AGENT_CONCURRENCY_LIMIT` ceiling, 24 creates over 3 rounds of 8 produced 24 unique codes and zero server errors. Regression: `entity-code-counter.int.test.ts` (opt-in, real database) allocates 40 numbers concurrently and asserts they form exactly `1..40`. Evidence: `31-Phase-1-Final-Acceptance.md`.
+
+### C25. The same read-then-insert race exists in seven sibling modules — OPEN
+
+Found while fixing C23 and **not** fixed, because it is outside the Phase 1 External Agent surface. `generateCode()` in Invoices, Support tickets, Deals, Leads, Orders, Subscriptions, Projects and auto-tasks still reads the highest existing code and then inserts. Most of them also order by `code` descending as text, which is the lexicographic bug Tasks had already fixed (`INV-2026-9999` sorts above `INV-2026-10000`).
+
+These are lower risk today because no machine actor drives them concurrently — human users rarely create two invoices in the same millisecond. They are one adoption away from being safe: `entity_code_counters` already carries a `scope` column, so each module needs a new `ENTITY_CODE_SCOPE` entry, a seed for its scope and a two-line service change, with no further migration to the table itself.
+
+### C24. Gateway idempotency slot is never reclaimed (checklist 209) — PARTIAL
+
+Chat 12 reproduced all three crash windows directly against `AgentIdempotencyService`. Chat 11's `responseJson` checkpoint works: a crash after the checkpoint replays the stored result and self-heals the row to `COMPLETED`. The residue is real — `loadLive` returns `IN_PROGRESS` rows _before_ it evaluates expiry, so a reservation that crashed between the domain commit and the checkpoint stays `409 An identical request is already in progress` permanently, even after its TTL elapses.
+
+This is fail-closed and safe: no duplicate domain write is possible, and reclaiming the row automatically would trade that safety for liveness. The honest resolution is a shared transaction or an outbox across the Tasks/Drive boundary.
+
+**Accepted by the developer in Chat 12** as a documented fail-closed limitation carried into Phase 2, rather than closed by weakening the idempotency guarantee. Checklist item 209 stays `[~]` and must not be marked `[x]` until the shared-transaction or outbox work lands. The observable cost is bounded: one operation key becomes unusable for one agent after a process crash inside a single-statement window, and no data is lost or duplicated.
 
 ## D. Tasks alignment issues to verify before implementation
 
