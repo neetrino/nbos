@@ -193,8 +193,12 @@ describe('TasksService', () => {
   });
 
   describe('create', () => {
+    // The code number comes from the entity_code_counters upsert, not from reading tasks.
+    beforeEach(() => {
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
+    });
+
     it('generates code T-YYYY-NNNN', async () => {
-      prisma.task.findMany.mockResolvedValue([]);
       prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
       const result = await service.create({ title: 'Test', creatorId: 'c1' });
       expect(result.code).toMatch(/^T-\d{4}-\d{4}$/);
@@ -204,7 +208,6 @@ describe('TasksService', () => {
     });
 
     it('creates task inside a Work Space planning layer', async () => {
-      prisma.task.findMany.mockResolvedValue([]);
       await service.create({
         title: 'Backlog task',
         creatorId: 'c1',
@@ -224,7 +227,6 @@ describe('TasksService', () => {
     });
 
     it('normalizes completion rules on create', async () => {
-      prisma.task.findMany.mockResolvedValue([]);
       await service.create({
         title: 'Controlled task',
         creatorId: 'c1',
@@ -241,7 +243,6 @@ describe('TasksService', () => {
     });
 
     it('ignores forged actor provenance on the create payload', async () => {
-      prisma.task.findMany.mockResolvedValue([]);
       prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
       await service.create({
         title: 'Test',
@@ -255,7 +256,6 @@ describe('TasksService', () => {
     });
 
     it('records trusted actor provenance from the separate argument', async () => {
-      prisma.task.findMany.mockResolvedValue([]);
       prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
       await service.create(
         { title: 'Test', creatorId: 'c1' },
