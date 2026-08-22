@@ -34,9 +34,9 @@ Useful for resource resolution, but current grants are employee-centric.
 
 ## B. Documentation cleanup
 
-### B1. AI described only as Automation Layer feature — STALE
+### B1. AI described only as Automation Layer feature — OK
 
-`01-Platform-Overview/02-Platform-Architecture-Layers.md` currently lists AI under automation examples. Keep examples, but reference the new AI Platform architecture and clarify AI is a cross-platform actor/capability layer.
+Chat 7 rewrote `01-Platform-Overview/02-Platform-Architecture-Layers.md`: AI left the Automation Layer stack diagram, the overview now states that AI Platform is a cross-cutting actor/capability layer running through all five layers, and the automation examples are explicitly labelled as consumers of that layer.
 
 ### B2. Old AI Governance `Forbidden / Masked / Allowed` — STALE/PARTIAL
 
@@ -88,13 +88,31 @@ Required for async execution, status, failure, approval and observability. Chat 
 
 Capability metadata declares `REQUIRED`. Chat 3 stores replay rows in `external_agent_idempotency_records` and enforces them in the gateway. `abort()` runs only when the domain call fails; after a successful Tasks/Drive write the `IN_PROGRESS` row is left in place if `complete()` fails, and stale `IN_PROGRESS` is never reclaimed. REST `Idempotency-Key` / MCP `clientOperationId` header/tool binding is Chat 4. Domain commit and `complete()` are still not one transaction (K 209).
 
-### C9. No external-agent rate-limit policy — MISSING
+### C9. No external-agent rate-limit policy — PARTIAL
 
-Add actor/capability scoped limits. Section U; evaluator already consumes a verdict (J 186).
+Chat 7 shipped section U: `AgentPreAuthGuard` bounds requests and failed authentications per source address before any credential lookup or Argon2 verification, then `AgentRateLimitGuard` + `AgentRateLimitService` charge per-agent request, per-capability-class and concurrency budgets, before the `lastUsedAt` write, on both REST and MCP, with `AGENT_RATE_LIMITED` + `Retry-After` + `X-RateLimit-*`. The payload ceiling is enforced by the agent body parser on real socket bytes ahead of the global parsers. The agent namespace carries `@SkipThrottle()`, so agent traffic cannot draw down employee `ThrottlerGuard` capacity (U 329).
+
+Remaining gaps: counters live in process memory, so with more than one API instance the effective ceiling is multiplied by the instance count and a restart clears the windows. Moving the window store to Redis is the follow-up; the guard/service boundary is already the only place that would change. Until then the limiter, not the policy evaluator, owns the refusal, so J 186 stays `[~]`: `AgentPolicyService` never receives a live `rateLimitExceeded` verdict because enforcement deliberately happens before policy touches the database.
 
 ### C10. Provider/model/Internal Agent foundation — OK
 
-Chat 5: OpenAI/Anthropic adapters, AES-256-GCM provider secrets, model catalog sync without auto-activate, FIXED/PRIMARY_FALLBACK policies, Internal Agent lifecycle. Chat 6: Settings → AI & Agents employee admin UI and Work Space AI Access over the same services. Scheduled catalog sync is `AiModelSyncService.runScheduledCatalogSync` (SYSTEM actor, continue-on-error); Nest scheduler catalog registration is still deferred (Chat 7).
+Chat 5: OpenAI/Anthropic adapters, AES-256-GCM provider secrets, model catalog sync without auto-activate, FIXED/PRIMARY_FALLBACK policies, Internal Agent lifecycle. Chat 6: Settings → AI & Agents employee admin UI and Work Space AI Access over the same services. Chat 7 closed the scheduler gap: `ai-model-catalog-sync` is a Nest cron on the scheduler process (`SchedulerAiService` → `runScheduledCatalogSync`, shared lease, `rosterIntent: 'off'`), reached through the new `AiPlatformCoreModule` so the scheduler gets AI services without mounting the External Agent or admin HTTP surface. Lease ownership is fenced in the database: the sync locks its `scheduler_leases` row for the running owner and fencing token as the first statement of the write transaction (`isSchedulerLeaseHeld`), so a lease lost mid-transaction commits nothing and a successor cannot write in parallel. The same job is dispatchable from the Settings manual runner under that lease.
+
+### C11. Idempotent replay ignored later revocation — OK
+
+Chat 7 added `AgentReplayAuthorization`. Before `AgentCapabilityGateway` returns a stored result, the policy is re-evaluated for the original target, so a capability grant or resource scope revoked after the first success is not honoured by a retry. This is not AL 626: it re-authorizes after the first domain commit, while 626 asks for revalidation of a queued action immediately before its own commit, which Phase 1 has no deferred execution path for.
+
+### C12. Expired agent could be re-enabled without extending expiry — OK
+
+Chat 7: `ExternalAgentService.enable` refuses an agent whose `expiresAt` has elapsed, including a `DISABLED` agent. The expiry must be extended first, so a disabled agent cannot become live later as a side effect of an unrelated edit. An agent that only timed out (`EXPIRED`, or `ACTIVE` past its expiry) returns to service when the expiry is extended — it was never disabled by a human decision — and the runbook states the difference explicitly.
+
+### C13. Provider key preflight failures were not audited — OK
+
+Chat 7 added `PROVIDER_KEY_PREFLIGHT_VALIDATED`. Replacement-key validation and rotation now audit both success and failure with the acting employee, and `lastValidatedAt` is only stamped while the connection is still `ACTIVE`, so a concurrent disable cannot leave a stale "validated" timestamp.
+
+### C14. Audit backfill migration needs a production window — PARTIAL
+
+`20260821150000_audit_actor_aware` performs a full-table `UPDATE` on `audit_logs` and builds two indexes without `CONCURRENTLY`. Validated on dev data (339 rows, 0 rows left without `actor_type`). Per `docs/deployment/AUTOMATED-PRODUCTION-DATABASE-MIGRATIONS-STANDARD.md` §9 this class of change needs explicit approval and a maintenance window on a large production `audit_logs`; the migration itself must not be edited after being applied.
 
 ## D. Tasks alignment issues to verify before implementation
 
@@ -157,6 +175,14 @@ Canonical Phase 1 sources (`03`, `08`, `09`, `10` item 43, `16`) require both RE
 ## F5. Chat 5 evidence
 
 2026-08-22: Providers, model catalog, Model Policy, Internal Agent foundation. See `22-Phase-1-Chat-5-Handoff.md`.
+
+## F6. Chat 6 evidence
+
+2026-08-22: Employee AI administration UI and contextual Work Space AI Access. See `23-Phase-1-Chat-6-Handoff.md`.
+
+## F7. Chat 7 evidence
+
+2026-08-22: Rate limits and abuse controls (U), the AL security suite as executable tests, replay re-authorization, scheduler catalog bind, regression evidence and operations runbooks. See `24-Phase-1-Chat-7-Handoff.md` and `25-AI-Platform-Operations-Runbooks.md`.
 
 ## G. Implementation rule
 

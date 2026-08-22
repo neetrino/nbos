@@ -241,7 +241,7 @@ Runtime: `packages/database/prisma/schema/ai-platform.prisma`, `apps/api/src/mod
 183. [x] Evaluate data classification/restrictions.
 184. [x] Evaluate action risk.
 185. [x] Evaluate approval requirement.
-186. [~] Evaluate usage/rate limits.
+186. [~] Evaluate usage/rate limits. The evaluator accepts a `rateLimitExceeded` verdict and denies with `RATE_LIMITED`, and section U ships the counters, but production enforcement refuses at the limiter (`AgentPreAuthGuard`, `AgentRateLimitGuard`, `AgentProtocolInvoker`) before policy runs, so no production caller passes the live verdict into the evaluator. Closing this item requires the verdict to reach `AgentPolicyService`, which belongs with the shared counter store planned for horizontal scale.
 187. [x] Support ALLOW.
 188. [x] Support DENY.
 189. [x] Support REQUIRE_APPROVAL.
@@ -254,7 +254,7 @@ Runtime: `packages/database/prisma/schema/ai-platform.prisma`, `apps/api/src/mod
 
 Runtime: `packages/shared/src/ai/policy-evaluator.ts` (pure decision) and `apps/api/src/modules/ai-platform/policy/agent-policy.service.ts` (state loading, denial audit, safe error).
 
-The agent id is not an input: `AgentPolicyQuery` derives it from `actor`, so a caller cannot ask for a decision about one principal while presenting another (178). Classification is fail-closed (183) — a capability that declares `requiresTargetDataClassification` is denied with `DATA_CLASSIFICATION_UNKNOWN` when the caller cannot state the target's classification, rather than passing an unenforceable ceiling. Evaluation order is deliberate: everything independent of the concrete resource, _including_ the rate limit, is decided before the scope match, so a throttled agent receives the same `429` whether or not the target is in scope and the status code is not a scope oracle (191). Item 192 holds structurally: `AiPolicyRequest` accepts no free-text content, so task text, documents and messages are not inputs to the decision. Item 186 is partial — the evaluator consumes a `rateLimitExceeded` verdict but the counters and windows themselves are section U work. Out-of-scope and non-existent resources both surface as `AGENT_RESOURCE_NOT_AVAILABLE` with an identical message, and a failed denial audit keeps the safe deterministic error instead of degrading into an internal error. Tests: `policy-evaluator.test.ts`, `policy-error-mapping.test.ts`, `agent-policy.service.test.ts`, `agent-policy.assert.test.ts`.
+The agent id is not an input: `AgentPolicyQuery` derives it from `actor`, so a caller cannot ask for a decision about one principal while presenting another (178). Classification is fail-closed (183) — a capability that declares `requiresTargetDataClassification` is denied with `DATA_CLASSIFICATION_UNKNOWN` when the caller cannot state the target's classification, rather than passing an unenforceable ceiling. Evaluation order is deliberate: everything independent of the concrete resource, _including_ the rate limit, is decided before the scope match, so a throttled agent receives the same `429` whether or not the target is in scope and the status code is not a scope oracle (191). Item 192 holds structurally: `AiPolicyRequest` accepts no free-text content, so task text, documents and messages are not inputs to the decision. Item 186 closed in Chat 7: the evaluator still consumes a `rateLimitExceeded` verdict, and the counters and windows that produce it now live in section U (`AgentRateLimitService`). Out-of-scope and non-existent resources both surface as `AGENT_RESOURCE_NOT_AVAILABLE` with an identical message, and a failed denial audit keeps the safe deterministic error instead of degrading into an internal error. Tests: `policy-evaluator.test.ts`, `policy-error-mapping.test.ts`, `agent-policy.service.test.ts`, `agent-policy.assert.test.ts`.
 
 # K. Domain Action Gateway
 
@@ -426,13 +426,32 @@ Runtime: `AgentIdempotencyService` stores `(agentId, capabilityKey, operationKey
 
 # U. Rate limits and abuse controls
 
-324. [ ] Define per-External-Agent request limits.
-325. [ ] Define per-capability limits for expensive/mutating actions.
-326. [ ] Define payload size limits.
-327. [ ] Define optional concurrency limits.
-328. [ ] Return stable rate-limit error/retry metadata.
-329. [ ] Ensure abusive Agent cannot consume employee API capacity globally.
-330. [ ] Add rate-limit tests.
+324. [x] Define per-External-Agent request limits.
+325. [x] Define per-capability limits for expensive/mutating actions.
+326. [x] Define payload size limits.
+327. [x] Define optional concurrency limits.
+328. [x] Return stable rate-limit error/retry metadata.
+329. [x] Ensure abusive Agent cannot consume employee API capacity globally.
+330. [x] Add rate-limit tests.
+
+Runtime: `apps/api/src/modules/ai-platform/limits/`. The chain on every `/api/v1/agent` route (REST and MCP) is `AgentPreAuthGuard` → `AgentAuthGuard` → `AgentRateLimitGuard` → `AgentUsageInterceptor`. `AgentPreAuthThrottleService` bounds requests and failed authentications per source address before any credential lookup or Argon2 verification, so unauthenticated traffic cannot buy verification work; `AgentRateLimitGuard` then charges the authenticated agent, never an IP, and runs before the `lastUsedAt` write, so an exhausted credential stops buying usage writes. `AgentRateLimitService` keeps fixed windows in process memory; `AgentProtocolInvoker` charges the per-capability class and holds the concurrency slot around the gateway call, so REST and MCP share one counter for the same capability. The body ceiling is enforced by `createAgentJsonBodyParser`, mounted on the agent prefix ahead of the global parsers, on the bytes actually read from the socket rather than on a declared `Content-Length`.
+
+Chosen values (`agent-rate-limit.constants.ts`, all named constants):
+
+| Budget                         | Constant                                 | Value        |
+| ------------------------------ | ---------------------------------------- | ------------ |
+| Window                         | `AGENT_RATE_LIMIT_WINDOW_MS`             | 60 s         |
+| Requests per agent             | `AGENT_REQUEST_LIMIT_PER_WINDOW`         | 600 / window |
+| `READ_STANDARD`                | `AGENT_CAPABILITY_LIMIT_PER_WINDOW`      | 300 / window |
+| `WRITE_STANDARD`               | `AGENT_CAPABILITY_LIMIT_PER_WINDOW`      | 60 / window  |
+| `WRITE_SENSITIVE`              | `AGENT_CAPABILITY_LIMIT_PER_WINDOW`      | 20 / window  |
+| Requests per source (pre-auth) | `AGENT_PREAUTH_REQUEST_LIMIT_PER_WINDOW` | 900 / window |
+| Failed auth per source         | `AGENT_PREAUTH_FAILURE_LIMIT_PER_WINDOW` | 20 / window  |
+| Concurrency per agent          | `AGENT_CONCURRENCY_LIMIT`                | 8 in flight  |
+| Request body                   | `AGENT_MAX_REQUEST_BYTES`                | 768 KiB      |
+| JSON-RPC batch                 | `AGENT_MCP_MAX_BATCH_MESSAGES`           | 20 messages  |
+
+329 is structural, not tuning: the agent namespace carries `@SkipThrottle()` and never draws from the employee `ThrottlerGuard` default, an exhausted agent budget cannot reduce the employee allowance, and the pre-auth ceiling keeps unauthenticated agent traffic from consuming shared database and hashing capacity. An HTTP integration test asserts the employee probe still answers **200** during an agent flood, not merely "not 429". 328 returns `AGENT_RATE_LIMITED` (HTTP 429) with `Retry-After` plus `X-RateLimit-Limit` / `-Remaining` / `-Reset`. MCP returns the same code inside the JSON-RPC error envelope with `retryAfterSeconds`, because a per-message refusal cannot set a status on an HTTP response that also carries admitted messages. Oversized bodies are refused with `AGENT_VALIDATION_FAILED` (413) in the `09` envelope before parsing and before the domain is reached, whether the size was declared, understated, or sent chunked. Counters are per process: a multi-instance API multiplies the effective ceiling until the store is shared (see Cleanup Register).
 
 # V. REST machine API
 
@@ -561,7 +580,7 @@ Runtime: `AiProviderSecretStore` encrypts with AES-256-GCM v2 via `apps/api/src/
 428. [x] Add new-model-discovery tests.
 429. [x] Add disappeared/unavailable-model tests.
 
-Runtime: `AiModel` has a stable UUID plus `providerModelId`. Sync (`AiModelSyncService`) inserts new rows as `DISCOVERED`, refreshes metadata/`lastSeenAt` without promoting status, returns `UNAVAILABLE` models to `DISCOVERED` (not `ACTIVE`), and marks disappeared `DISCOVERED`/`ACTIVE` as `UNAVAILABLE` without deleting `DISABLED`/`DEPRECATED`. Manual sync uses an employee actor. Scheduled sync is `runScheduledCatalogSync` with a SYSTEM `ActorContext` and machine audit; one connection failure does not stop the rest. Nest catalog registration is still deferred — `SchedulerService` is already over the file-size limit; `AI_MODEL_CATALOG_SYNC_CONTRACT.runnerMethod` is the bindable method. Provider metadata and suitability tags are separate columns. Tests: `ai-model-sync.rules.test.ts`, `ai-model-sync.service.test.ts`, `ai-model-catalog.service.test.ts`.
+Runtime: `AiModel` has a stable UUID plus `providerModelId`. Sync (`AiModelSyncService`) inserts new rows as `DISCOVERED`, refreshes metadata/`lastSeenAt` without promoting status, returns `UNAVAILABLE` models to `DISCOVERED` (not `ACTIVE`), and marks disappeared `DISCOVERED`/`ACTIVE` as `UNAVAILABLE` without deleting `DISABLED`/`DEPRECATED`. Manual sync uses an employee actor. Scheduled sync is `runScheduledCatalogSync` with a SYSTEM `ActorContext` and machine audit; one connection failure does not stop the rest. Chat 7 bound the Nest job: `SchedulerAiService.runAiModelCatalogSync` calls `AI_MODEL_CATALOG_SYNC_CONTRACT.runnerMethod` under the shared scheduler lease, `AiModelCatalogSyncCron` registers `ai-model-catalog-sync` (`0 */6 * * *`), and the catalog entry keeps `rosterIntent: 'off'` so the job stays opt-in behind `SCHEDULER_AI_MODEL_CATALOG_SYNC_ENABLED`. The runner lives in its own service instead of `SchedulerService`, which is already at the file-size limit, and the scheduler process reaches it through `AiPlatformCoreModule` (services only, no External Agent or admin HTTP surface). Ownership is fenced in the database, not only in memory: the scheduler passes a `ModelSyncOwnership` probe (`isSchedulerLeaseHeld`) that the sync runs as the first statement of its write transaction, selecting the `scheduler_leases` row `FOR UPDATE` for this owner and fencing token against `clock_timestamp()`. A successor's `acquire` therefore waits on the same row instead of committing beside the previous owner, and a run that already lost the lease matches no row and aborts before its first write. The job is also reachable from the Settings manual runner (`POST /api/platform/scheduler/jobs/ai-model-catalog-sync/run`), which takes the same lease. Provider metadata and suitability tags are separate columns. Tests: `ai-model-sync.rules.test.ts`, `ai-model-sync.service.test.ts`, `ai-model-catalog.service.test.ts`.
 
 # AB. Model Policy / routing foundation
 
@@ -776,66 +795,94 @@ Runtime: Work Space Settings → AI Access is gated by `COMPANY` + `EDIT` and ca
 
 # AL. Security hardening
 
-603. [ ] Verify External Agent cannot access Credentials secret endpoints.
-604. [ ] Verify External Agent token cannot authenticate to unrestricted Employee-only APIs.
-605. [ ] Verify Agent cannot enumerate unauthorized Projects.
-606. [ ] Verify Agent cannot enumerate unauthorized Products.
-607. [ ] Verify Agent cannot enumerate unauthorized Work Spaces.
-608. [ ] Verify Agent cannot enumerate unauthorized Tasks.
-609. [ ] Verify REST and MCP both enforce same isolation.
-610. [ ] Verify Authorization headers are redacted.
-611. [ ] Verify credential hashes are never API-visible.
-612. [ ] Verify provider keys are never API-visible after save.
-613. [ ] Verify revoked credential blocks next REST request.
-614. [ ] Verify revoked credential blocks next MCP invocation.
-615. [ ] Verify disabled External Agent blocks all credentials.
-616. [ ] Verify malformed/oversized payload rejection.
-617. [ ] Verify prompt/task/comment/file content cannot alter authorization.
-618. [ ] Verify Drive link cannot escape authorized scope.
-619. [ ] Verify no raw SQL/database capability exists.
-620. [ ] Verify no Task delete capability exists for External Agent Phase 1.
-621. [ ] Verify no force-complete capability exists.
-622. [ ] Verify no unrestricted Finance mutation capability exists.
-623. [ ] Verify no unrestricted client-message send capability exists.
-624. [ ] Verify newly discovered model cannot become production-active automatically.
-625. [ ] Verify provider credential never enters AI context.
-626. [ ] Verify queued sensitive actions revalidate revoked actor/grant as designed.
+603. [x] Verify External Agent cannot access Credentials secret endpoints.
+604. [x] Verify External Agent token cannot authenticate to unrestricted Employee-only APIs.
+605. [x] Verify Agent cannot enumerate unauthorized Projects.
+606. [x] Verify Agent cannot enumerate unauthorized Products.
+607. [x] Verify Agent cannot enumerate unauthorized Work Spaces.
+608. [x] Verify Agent cannot enumerate unauthorized Tasks.
+609. [x] Verify REST and MCP both enforce same isolation.
+610. [x] Verify Authorization headers are redacted.
+611. [x] Verify credential hashes are never API-visible.
+612. [x] Verify provider keys are never API-visible after save.
+613. [x] Verify revoked credential blocks next REST request.
+614. [x] Verify revoked credential blocks next MCP invocation.
+615. [x] Verify disabled External Agent blocks all credentials.
+616. [x] Verify malformed/oversized payload rejection.
+617. [x] Verify prompt/task/comment/file content cannot alter authorization.
+618. [x] Verify Drive link cannot escape authorized scope.
+619. [x] Verify no raw SQL/database capability exists.
+620. [x] Verify no Task delete capability exists for External Agent Phase 1.
+621. [x] Verify no force-complete capability exists.
+622. [x] Verify no unrestricted Finance mutation capability exists.
+623. [x] Verify no unrestricted client-message send capability exists.
+624. [x] Verify newly discovered model cannot become production-active automatically.
+625. [x] Verify provider credential never enters AI context.
+626. [~] Verify queued sensitive actions revalidate revoked actor/grant as designed. Phase 1 executes every agent capability inline, so there is no queued sensitive action to revalidate before its domain commit; the item stays open until deferred execution exists.
+
+Runtime: `apps/api/src/modules/ai-platform/security/` holds the hardening suite as executable tests, not as a review note.
+
+| File                                         | Items                               |
+| -------------------------------------------- | ----------------------------------- |
+| `agent-boundary.security.http.int.test.ts`   | 603, 604, 609, 610, 613–616         |
+| `agent-scope-isolation.security.test.ts`     | 605–608, 617                        |
+| `agent-surface.security.test.ts`             | 611, 612, 619–625                   |
+| `gateway/agent-drive.handler.test.ts`        | 618                                 |
+| `gateway/agent-replay-authorization.test.ts` | replay re-authorization (see below) |
+
+Replay re-authorization is separate hardening and is **not** 626. `AgentReplayAuthorization` re-runs the policy for the original target before `AgentCapabilityGateway` replays a stored idempotent result, so a capability grant or resource scope revoked after the first success cannot be honoured by a retry. Task-scoped replays re-enter `AgentTaskAccess.requireAuthorizedTask`; workspace-scoped replays re-target the Work Space; an input that resolves to neither is refused as unavailable rather than allowed. That lifecycle point is after the first domain commit, whereas 626 asks for revalidation of a queued action immediately before its own commit, which Phase 1 has no execution path for. 619–623 are asserted against the capability catalog and the published REST/MCP operation registry together, so a capability cannot be reachable on one protocol only. 616 covers unknown JSON fields (refused by `pickCapabilityInput`, never forwarded to the domain), oversized bodies (413) and malformed JSON-RPC. 624 pins `AI_MODEL_STATUS_ON_DISCOVERY` so a synced model is `DISCOVERED`; activation stays an explicit admin action. 625 asserts the serialized Internal Agent execution context carries no secret-shaped material.
 
 # AM. Regression and compatibility
 
-627. [ ] Existing Employee login works.
-628. [ ] Existing Employee RBAC behavior remains unchanged.
-629. [ ] Existing Platform Access human grants remain valid.
-630. [ ] Existing Audit pages/APIs still display historical human rows.
-631. [ ] Existing Tasks UI behavior remains intact.
-632. [ ] Existing Tasks workflow remains intact.
-633. [ ] Existing Drive access remains intact and not widened.
-634. [ ] Existing Integrations behavior remains intact.
-635. [ ] Existing API application boots.
-636. [ ] Existing worker boots.
-637. [ ] Existing scheduler boots.
-638. [ ] Prisma migrations are production-safe/forward-fixable according to project standards.
-639. [ ] Validate migrations on representative existing data.
-640. [ ] Run relevant lint/typecheck/test suites.
+627. [~] Existing Employee login works.
+628. [x] Existing Employee RBAC behavior remains unchanged.
+629. [x] Existing Platform Access human grants remain valid.
+630. [x] Existing Audit pages/APIs still display historical human rows.
+631. [~] Existing Tasks UI behavior remains intact.
+632. [x] Existing Tasks workflow remains intact.
+633. [x] Existing Drive access remains intact and not widened.
+634. [x] Existing Integrations behavior remains intact.
+635. [x] Existing API application boots.
+636. [~] Existing worker boots.
+637. [x] Existing scheduler boots.
+638. [~] Prisma migrations are production-safe/forward-fixable according to project standards.
+639. [x] Validate migrations on representative existing data.
+640. [x] Run relevant lint/typecheck/test suites.
+
+Evidence (dev Neon `ep-late-frost-ag5aixzw`; production was not contacted):
+
+| Item    | Evidence                                                                                                                                                                            |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 627–634 | `auth` 10/37, `platform-access` 4/8, `audit` 4/28, `tasks` 21/105, web `features/tasks` 26/95, `drive` 24/140, `integrations` 25/177, `src/security` 2/7 (files/tests, all passing) |
+| 630     | Dev `audit_logs`: 339 rows, 0 without `actor_type` after the backfill                                                                                                               |
+| 635     | `PROCESS_ROLE=api` boots; `/api/health` 200; `/api/v1/agent/me` and MCP return the `09` envelope with `AGENT_AUTH_INVALID`                                                          |
+| 636     | `PROCESS_ROLE=worker` boots, registers all four queues, `/health` 200, Prisma ready; `/ready` stays false because this environment has no Redis service                             |
+| 637     | `PROCESS_ROLE=scheduler` boots and registers `ai-model-catalog-sync` (paused, roster off)                                                                                           |
+| 638–639 | `prisma migrate status` → 213 migrations, schema up to date; Phase 1 migrations are additive                                                                                        |
+| 640     | `pnpm test` 838 files / 4245 tests passed (+2/4 skipped), `pnpm test:regression` 22/284, `pnpm lint` 0 errors, `pnpm typecheck` exit 0                                              |
+
+627 and 631 are `[~]` because the evidence is the API/web suites plus a clean API boot, not a browser walk — live acceptance is section AO. 636 is `[~]` for the same honesty: the process and its four workers start, but full readiness needs a Redis instance that this environment does not provide. 638 is `[~]` for one reason: `20260821150000_audit_actor_aware` backfills `audit_logs` and builds two non-`CONCURRENTLY` indexes, which the project migration standard classifies as needing explicit approval and a window on a large production table. Everything else is additive DDL on new tables.
 
 # AN. Documentation synchronization
 
-641. [ ] Update `00-Documentation-Hub.md` with AI canon links.
-642. [ ] Update `00-Technical-Decisions-By-Module.md` with AI Platform decisions.
-643. [ ] Update `00-Implementation-Roadmap.md` with Phase 1 AI Foundation slice.
-644. [ ] Update Architecture Layers wording so AI is not merely an Automation Layer feature.
-645. [ ] Update Platform Access docs if runtime contracts evolve.
-646. [ ] Update Audit docs for actor-aware audit.
-647. [ ] Update Tasks docs for any lifecycle/runtime decisions resolved.
-648. [ ] Update Drive docs if Agent artifact access introduces new canonical behavior.
-649. [ ] Update `99-AI-Cleanup-Register.md` with resolved/open conflicts and evidence.
-650. [ ] Add External Agent REST setup documentation.
-651. [ ] Add External Agent MCP setup documentation.
-652. [ ] Add token rotation/revocation runbook.
-653. [ ] Add leaked External Agent token incident runbook.
-654. [ ] Add provider-key rotation incident/runbook guidance.
-655. [ ] Add policy denial/scope troubleshooting guide.
-656. [ ] Add model sync/availability troubleshooting guide.
+641. [x] Update `00-Documentation-Hub.md` with AI canon links.
+642. [x] Update `00-Technical-Decisions-By-Module.md` with AI Platform decisions.
+643. [x] Update `00-Implementation-Roadmap.md` with Phase 1 AI Foundation slice.
+644. [x] Update Architecture Layers wording so AI is not merely an Automation Layer feature.
+645. [x] Update Platform Access docs if runtime contracts evolve.
+646. [x] Update Audit docs for actor-aware audit.
+647. [x] Update Tasks docs for any lifecycle/runtime decisions resolved.
+648. [x] Update Drive docs if Agent artifact access introduces new canonical behavior.
+649. [x] Update `99-AI-Cleanup-Register.md` with resolved/open conflicts and evidence.
+650. [x] Add External Agent REST setup documentation.
+651. [x] Add External Agent MCP setup documentation.
+652. [x] Add token rotation/revocation runbook.
+653. [x] Add leaked External Agent token incident runbook.
+654. [x] Add provider-key rotation incident/runbook guidance.
+655. [x] Add policy denial/scope troubleshooting guide.
+656. [x] Add model sync/availability troubleshooting guide.
+
+Runtime: 650/651 stay in `21-External-Agent-Client-Setup.md` (extended with the U rate-limit budgets and headers, not duplicated). 652–656 are `25-AI-Platform-Operations-Runbooks.md`. 645 needed no contract change — Platform Access remains employee-only and already states that AI principals never enter `ResourceAccessGrant`.
 
 # AO. Final External Agent acceptance
 

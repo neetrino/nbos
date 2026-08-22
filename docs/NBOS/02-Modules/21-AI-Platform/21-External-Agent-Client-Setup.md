@@ -273,10 +273,46 @@ not an error in your configuration.
 | `400 AGENT_VALIDATION_FAILED`             | Unknown field, bad enum, bad date, or a missing idempotency key.              |
 | `409 AGENT_CONFLICT`                      | Stale `expectedUpdatedAt`, or the same operation is already running.          |
 | `409 AGENT_IDEMPOTENCY_CONFLICT`          | The key was reused with a different payload. Use a new key.                   |
-| `429 AGENT_RATE_LIMITED`                  | Slow down and retry later.                                                    |
+| `413 AGENT_VALIDATION_FAILED`             | Request body is larger than the agent payload limit (see section 5.1).        |
+| `429 AGENT_RATE_LIMITED`                  | Budget exhausted. Wait for `Retry-After` seconds (see section 5.1).           |
 
 Quote the `requestId` from the error body when reporting a problem — it matches the correlation id
 recorded in NBOS audit.
+
+### 5.1. Rate limits and payload size
+
+Budgets are charged to your agent identity, not to your IP address, and REST and MCP share the same
+counters — moving the same traffic to the other protocol does not buy more capacity.
+
+| Budget                            | Value per 60 s window |
+| --------------------------------- | --------------------- |
+| Requests per agent                | 600                   |
+| Read capabilities                 | 300                   |
+| Ordinary write capabilities       | 60                    |
+| Sensitive writes (create, attach) | 20                    |
+| Concurrent invocations            | 8 in flight           |
+| Request body                      | 768 KiB               |
+| JSON-RPC messages per MCP request | 20                    |
+
+Every response carries the per-agent request budget:
+
+```text
+X-RateLimit-Limit: 600
+X-RateLimit-Remaining: 597
+X-RateLimit-Reset: 1766142000
+```
+
+A `429` additionally carries `Retry-After` in seconds. Treat it as authoritative: retry after that
+delay with the same `Idempotency-Key`, and do not retry in a tight loop. An oversized body is
+rejected with `413` before any domain action runs, so split large artifacts instead of retrying.
+
+**MCP clients read the back-off from the body, not from the header.** Only a refusal decided before
+the JSON-RPC message runs — the pre-auth throttle and the per-agent request budget — reaches you as
+HTTP `429` with `Retry-After`. A capability-class budget or a concurrency limit is charged per
+`tools/call`, so one HTTP request can carry both admitted and refused messages; those refusals come
+back as a JSON-RPC tool error inside HTTP `200`, carrying `AGENT_RATE_LIMITED` and
+`retryAfterSeconds` in the error object. Read `retryAfterSeconds` from every tool error and treat it
+exactly as you would treat `Retry-After`.
 
 ---
 

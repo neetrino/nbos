@@ -127,7 +127,10 @@ Existing historical rows stay readable. Machine actors must not be written as fa
 - payroll policy changes;
 - finance approval settings;
 - export sensitive data;
-- failed admin access attempt.
+- failed admin access attempt;
+- AI provider key preflight validation, including failed attempts, before rotation replaces a stored key;
+- External Agent token issue/rotate/revoke, capability grant/revoke and scope grant/revoke;
+- External Agent policy denials.
 
 ## Audit UX
 

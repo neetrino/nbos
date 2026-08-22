@@ -65,6 +65,7 @@ Rules:
 - `level` = `VIEW` | `EDIT` only at platform layer; module-specific actions (EXPORT, SHARE, …) stored in Drive `reason` or legacy grant tables until unified.
 - Revoke sets `revoked_at`; expired grants ignored in `activeResourceAccessGrantWhere`.
 - Audit: grant create/update/revoke per module (Credentials shipped; Drive via grant APIs).
+- `employee_id` — **только сотрудник**. AI-акторы (External Agent, Internal AI) не пишутся в `ResourceAccessGrant` и не получают fake Employee: у них своя таблица scopes (`external_agent_resource_scopes`) в AI Platform. Phase 1 контракт Platform Access не менялся; канон разделения — `02-Modules/21-AI-Platform/01-AI-Actors-Identity-and-Access.md`.
 
 ---
 
