@@ -3,6 +3,7 @@ import { PrismaClient, type ExternalAgentStatusEnum, type InputJsonValue } from 
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AiPlatformAuditService } from '../ai-platform-audit.service';
 import { AI_AUDIT_ACTION, AI_AUDIT_ENTITY } from '../ai-platform.constants';
+import { assertAgentNotExpired, EXPIRED_AGENT_CANNOT_BE_ENABLED } from './agent-issuable';
 import {
   isAgentRevoked,
   lockAgentRow,
@@ -115,8 +116,16 @@ export class ExternalAgentService {
     return this.transition(agentId, 'DISABLED', AI_AUDIT_ACTION.agentDisabled, actingEmployeeId);
   }
 
+  /**
+   * Enable only restores an agent whose expiry is still in the future. Writing
+   * `ACTIVE` onto an elapsed expiry would leave a row that is displayed as
+   * `EXPIRED` today but silently becomes authorized the moment expiry is
+   * extended, without a second enable decision.
+   */
   async enable(agentId: string, actingEmployeeId: string): Promise<ExternalAgentView> {
-    return this.transition(agentId, 'ACTIVE', AI_AUDIT_ACTION.agentEnabled, actingEmployeeId);
+    return this.transition(agentId, 'ACTIVE', AI_AUDIT_ACTION.agentEnabled, actingEmployeeId, {
+      rejectExpired: true,
+    });
   }
 
   /** Terminal state. Revokes every credential in the same transaction. */
@@ -173,10 +182,14 @@ export class ExternalAgentService {
     status: ExternalAgentStatusEnum,
     action: string,
     actingEmployeeId: string,
+    options: { rejectExpired?: boolean } = {},
   ): Promise<ExternalAgentView> {
     const now = new Date();
     const agent = await this.prisma.$transaction(async (tx) => {
-      await lockLiveAgent(tx, agentId, REVOKED_AGENT_IS_IMMUTABLE);
+      const locked = await lockLiveAgent(tx, agentId, REVOKED_AGENT_IS_IMMUTABLE);
+      if (options.rejectExpired) {
+        assertAgentNotExpired(locked, EXPIRED_AGENT_CANNOT_BE_ENABLED);
+      }
       const updated = await tx.externalAgent.update({
         where: { id: agentId },
         data: { status, disabledAt: status === 'DISABLED' ? now : null },

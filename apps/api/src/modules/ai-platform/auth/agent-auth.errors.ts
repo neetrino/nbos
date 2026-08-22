@@ -10,6 +10,7 @@ import {
 
 const HTTP_BAD_REQUEST = 400;
 const HTTP_CONFLICT = 409;
+const HTTP_PAYLOAD_TOO_LARGE = 413;
 
 /**
  * Machine-readable agent failure. Carries a stable `code` from
@@ -19,9 +20,13 @@ const HTTP_CONFLICT = 409;
 export class AgentAccessException extends HttpException {
   readonly code: AiAgentErrorCode;
 
-  constructor(error: AiAgentExternalError) {
+  /** Present only on `AGENT_RATE_LIMITED`, so a client can back off exactly. */
+  readonly retryAfterSeconds: number | null;
+
+  constructor(error: AiAgentExternalError, retryAfterSeconds: number | null = null) {
     super({ statusCode: error.status, message: error.message, code: error.code }, error.status);
     this.code = error.code;
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 
   static fromDenyReason(reason: AiPolicyDenyReason): AgentAccessException {
@@ -59,6 +64,27 @@ export class AgentAccessException extends HttpException {
       code: 'AGENT_IDEMPOTENCY_CONFLICT',
       status: HTTP_CONFLICT,
       message: 'The idempotency key was reused with a different payload.',
+    });
+  }
+
+  /**
+   * Abuse-control refusal. `retryAfterSeconds` is the contractual back-off hint
+   * echoed both in the body and in the `Retry-After` header.
+   */
+  static rateLimited(retryAfterSeconds: number): AgentAccessException {
+    return new AgentAccessException(toAgentExternalError('RATE_LIMITED'), retryAfterSeconds);
+  }
+
+  /**
+   * Oversized request. Reported as a validation failure because the `09`
+   * contract has no dedicated payload code, while the HTTP status stays 413 so
+   * ordinary transport tooling still behaves correctly.
+   */
+  static payloadTooLarge(message: string): AgentAccessException {
+    return new AgentAccessException({
+      code: 'AGENT_VALIDATION_FAILED',
+      status: HTTP_PAYLOAD_TOO_LARGE,
+      message,
     });
   }
 

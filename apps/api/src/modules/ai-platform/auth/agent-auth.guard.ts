@@ -7,7 +7,15 @@ import {
   resolveAgentCorrelationId,
   sanitizeCorrelationId,
 } from '../protocol/agent-correlation';
-import { AgentAuthenticatorService, type AuthenticatedAgent } from './agent-authenticator.service';
+import {
+  agentPreAuthSourceKey,
+  AgentPreAuthThrottleService,
+} from '../limits/agent-preauth-throttle.service';
+import {
+  AgentAuthenticatorService,
+  type AgentAuthRequestContext,
+  type AuthenticatedAgent,
+} from './agent-authenticator.service';
 import { AgentAccessException } from './agent-auth.errors';
 import { AGENT_CHANNEL_METADATA } from './agent-channel.decorator';
 
@@ -20,6 +28,7 @@ export interface AgentAuthenticatedRequest {
   ip?: string;
   path?: string;
   agent?: AuthenticatedAgent;
+  agentAuthContext?: AgentAuthRequestContext;
   agentCorrelationId?: string;
   user?: unknown;
 }
@@ -53,6 +62,7 @@ export class AgentAuthGuard implements CanActivate {
   constructor(
     private readonly authenticator: AgentAuthenticatorService,
     private readonly reflector: Reflector,
+    private readonly preAuth: AgentPreAuthThrottleService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -63,13 +73,15 @@ export class AgentAuthGuard implements CanActivate {
       headerValue(request.headers, AGENT_CORRELATION_HEADER),
     );
     request.agentCorrelationId = correlationId;
+    const sourceKey = agentPreAuthSourceKey(request.ip);
 
     const token = this.extractBearerToken(request);
     if (!token) {
+      this.preAuth.recordFailure(sourceKey);
       throw new AgentAccessException(toAgentExternalError('CREDENTIAL_INVALID'));
     }
 
-    request.agent = await this.authenticator.authenticate(token, {
+    const authContext: AgentAuthRequestContext = {
       channel: this.resolveChannel(context),
       ipAddress: request.ip ?? null,
       userAgent: headerValue(request.headers, 'user-agent') ?? null,
@@ -77,7 +89,16 @@ export class AgentAuthGuard implements CanActivate {
       requestId:
         sanitizeCorrelationId(headerValue(request.headers, AGENT_REQUEST_ID_HEADER)) ??
         correlationId,
-    });
+    };
+    // Every refusal feeds the source lockout, so repeated probing stops paying
+    // for a credential lookup and an Argon2 verification.
+    try {
+      request.agent = await this.authenticator.authenticate(token, authContext);
+    } catch (error) {
+      this.preAuth.recordFailure(sourceKey);
+      throw error;
+    }
+    request.agentAuthContext = authContext;
     return true;
   }
 

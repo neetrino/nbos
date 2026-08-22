@@ -21,6 +21,11 @@ import { REPORT_EXPORT_QUEUE_NAME } from './modules/reports/reports-queue.consta
 import { DRIVE_ZIP_EXPORT_QUEUE_NAME } from './modules/drive/drive-export-zip-queue.constants';
 import { WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME } from './modules/integrations/whatsapp-gateway/whatsapp-gateway.constants';
 import { ScheduledJobRegistry } from './modules/scheduler/scheduled-job-registry';
+import {
+  AGENT_HTTP_PATH_PREFIX,
+  createAgentBodyLimitErrorHandler,
+  createAgentJsonBodyParser,
+} from './modules/ai-platform/limits/agent-body-limit.middleware';
 
 /** Request body caps (defense against memory-exhaustion / DoS). Uploads go straight to R2 (presigned). */
 const JSON_BODY_LIMIT = '1mb';
@@ -46,6 +51,10 @@ async function bootstrap() {
 
   app.useLogger(app.get(Logger));
 
+  // The agent namespace parses first with its own, smaller ceiling, so an
+  // oversized machine request is refused on real bytes and answered in the `09`
+  // envelope instead of reaching the employee transport cap.
+  app.use(AGENT_HTTP_PATH_PREFIX, createAgentJsonBodyParser());
   app.use(
     json({
       limit: JSON_BODY_LIMIT,
@@ -59,6 +68,7 @@ async function bootstrap() {
     }),
   );
   app.use(urlencoded({ extended: true, limit: URLENCODED_BODY_LIMIT }));
+  app.use(createAgentBodyLimitErrorHandler());
 
   app.useWebSocketAdapter(new SocketIoCorsAdapter(app));
 

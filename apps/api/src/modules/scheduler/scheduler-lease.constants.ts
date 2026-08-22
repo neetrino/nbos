@@ -38,6 +38,7 @@ export const SCHEDULER_JOB_NAMES = {
   mailOutboundReconcile: 'mail-outbound-reconcile',
   mailGmailWatchRenew: 'mail-gmail-watch-renew',
   mailSyncReconcile: 'mail-sync-reconcile',
+  aiModelCatalogSync: 'ai-model-catalog-sync',
 } as const;
 
 export type SchedulerJobName = (typeof SCHEDULER_JOB_NAMES)[keyof typeof SCHEDULER_JOB_NAMES];

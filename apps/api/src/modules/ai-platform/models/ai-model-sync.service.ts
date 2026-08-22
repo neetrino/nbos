@@ -10,15 +10,27 @@ import { AiProviderConnectionService } from '../providers/ai-provider-connection
 import type { DiscoveredProviderModel } from '../providers/ai-provider.types';
 import { catalogSyncSystemActor } from './ai-model-catalog.contract';
 import { toAiModelView } from './ai-model.mapper';
-import { planModelSync, statusAfterDisappear, statusAfterRefresh } from './ai-model-sync.rules';
 import {
+  AI_MODEL_STATUS_ON_DISCOVERY,
+  planModelSync,
+  statusAfterDisappear,
+  statusAfterRefresh,
+} from './ai-model-sync.rules';
+import {
+  assertSyncOwnership,
+  assertSyncOwnershipInTransaction,
   toModelSyncErrorCode,
   type ModelSyncActor,
   type ModelSyncConnectionOutcome,
+  type ModelSyncOwnership,
   type ModelSyncResult,
 } from './ai-model-sync.types';
 
-export type { ModelSyncConnectionOutcome, ModelSyncResult } from './ai-model-sync.types';
+export type {
+  ModelSyncConnectionOutcome,
+  ModelSyncOwnership,
+  ModelSyncResult,
+} from './ai-model-sync.types';
 
 @Injectable()
 export class AiModelSyncService {
@@ -36,9 +48,16 @@ export class AiModelSyncService {
   /**
    * SYSTEM scheduled runner. Continues after a single connection failure and
    * writes machine audit without a synthetic Employee.
+   *
+   * `ownership` is the scheduler lease. Its signal is checked before every
+   * connection and again after the provider call, and its `stillOwned` probe
+   * runs inside the write transaction, so a run that lost the lease cannot
+   * commit beside its successor even if the loss happened mid-transaction.
    */
-  async runScheduledCatalogSync(): Promise<ModelSyncConnectionOutcome[]> {
-    return this.syncEnabledConnections({ kind: 'system' });
+  async runScheduledCatalogSync(
+    ownership?: ModelSyncOwnership,
+  ): Promise<ModelSyncConnectionOutcome[]> {
+    return this.syncEnabledConnections({ kind: 'system' }, ownership);
   }
 
   async syncAllEnabledConnections(actingEmployeeId: string): Promise<ModelSyncConnectionOutcome[]> {
@@ -47,14 +66,16 @@ export class AiModelSyncService {
 
   private async syncEnabledConnections(
     actor: ModelSyncActor,
+    ownership?: ModelSyncOwnership,
   ): Promise<ModelSyncConnectionOutcome[]> {
     const connections = await this.connections.listAll();
     const outcomes: ModelSyncConnectionOutcome[] = [];
     for (const connection of connections) {
+      if (ownership?.signal?.aborted) break;
       if (connection.status !== 'ACTIVE') {
         continue;
       }
-      outcomes.push(await this.syncOneEnabled(connection.id, actor));
+      outcomes.push(await this.syncOneEnabled(connection.id, actor, ownership));
     }
     return outcomes;
   }
@@ -62,9 +83,10 @@ export class AiModelSyncService {
   private async syncOneEnabled(
     connectionId: string,
     actor: ModelSyncActor,
+    ownership?: ModelSyncOwnership,
   ): Promise<ModelSyncConnectionOutcome> {
     try {
-      const result = await this.syncConnectionAs(connectionId, actor);
+      const result = await this.syncConnectionAs(connectionId, actor, ownership);
       return { connectionId, ok: true, result };
     } catch (error: unknown) {
       return { connectionId, ok: false, errorCode: toModelSyncErrorCode(error) };
@@ -74,10 +96,12 @@ export class AiModelSyncService {
   private async syncConnectionAs(
     connectionId: string,
     actor: ModelSyncActor,
+    ownership?: ModelSyncOwnership,
   ): Promise<ModelSyncResult> {
     const { connection, credentials } = await this.connections.credentialsForActive(connectionId);
     const discovered = await this.adapters.get(connection.provider).listModels(credentials);
-    return this.applySync(connectionId, connection.provider, discovered, actor);
+    assertSyncOwnership(ownership?.signal);
+    return this.applySync(connectionId, connection.provider, discovered, actor, ownership);
   }
 
   private async applySync(
@@ -85,9 +109,13 @@ export class AiModelSyncService {
     provider: AiProviderType,
     discovered: DiscoveredProviderModel[],
     actor: ModelSyncActor,
+    ownership?: ModelSyncOwnership,
   ): Promise<ModelSyncResult> {
     const now = new Date();
     return this.prisma.$transaction(async (tx) => {
+      // First statement of the transaction: it locks the lease row, so the run
+      // either owns the job for the whole commit or writes nothing at all.
+      await assertSyncOwnershipInTransaction(tx, ownership);
       const existing = await tx.aiModel.findMany({
         where: { connectionId },
         select: { id: true, providerModelId: true, status: true },
@@ -161,7 +189,7 @@ export class AiModelSyncService {
           provider,
           providerModelId: model.providerModelId,
           displayName: model.displayName,
-          status: 'DISCOVERED',
+          status: AI_MODEL_STATUS_ON_DISCOVERY,
           discoveredAt: now,
           lastSeenAt: now,
           providerMetadata: model.providerMetadata as InputJsonValue,

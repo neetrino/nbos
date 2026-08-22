@@ -19,6 +19,7 @@ import type { AgentCapabilityInvocation, AgentCapabilityResult } from './agent-c
 import { AgentDriveHandler } from './agent-drive.handler';
 import { AgentIdempotencyService } from './agent-idempotency.service';
 import { fingerprintCapabilityRequest, requireIdempotencyKey } from './agent-idempotency.rules';
+import { AgentReplayAuthorization } from './agent-replay-authorization';
 import { AgentTaskReadHandler } from './agent-task-read.handler';
 import { AgentTaskWriteHandler } from './agent-task-write.handler';
 import { AgentWorkspaceHandler } from './agent-workspace.handler';
@@ -37,6 +38,7 @@ export class AgentCapabilityGateway {
     private readonly taskWrites: AgentTaskWriteHandler,
     private readonly drive: AgentDriveHandler,
     private readonly idempotency: AgentIdempotencyService,
+    private readonly replayAuthorization: AgentReplayAuthorization,
     private readonly audit: AiPlatformAuditService,
   ) {}
 
@@ -46,6 +48,7 @@ export class AgentCapabilityGateway {
     const input = pickCapabilityInput(capability, invocation.input);
     const reservation = await this.reserveIfRequired(invocation, capability, input);
     if (reservation.replay) {
+      await this.replayAuthorization.assertStillAuthorized(invocation.agent, capability, input);
       return reservation.replay;
     }
     return this.dispatchAndFinish(invocation, capability, input, reservation.key);

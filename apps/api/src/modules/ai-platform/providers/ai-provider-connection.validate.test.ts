@@ -39,11 +39,13 @@ describe('AiProviderConnectionService validation snapshot', () => {
   let service: AiProviderConnectionService;
   let adapters: AiProviderAdapterRegistry;
   let validateFn: ReturnType<typeof vi.fn>;
+  let logAdminAction: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     prisma = createMockPrisma();
+    logAdminAction = vi.fn();
     const audit = {
-      logAdminAction: vi.fn(),
+      logAdminAction,
       logMachineAction: vi.fn(),
     } as unknown as AiPlatformAuditService;
     const secrets = new AiProviderSecretStore(
@@ -170,7 +172,7 @@ describe('AiProviderConnectionService validation snapshot', () => {
       }),
     );
 
-    const result = await service.validateReplacementKey('conn-1', NEXT_KEY);
+    const result = await service.validateReplacementKey('conn-1', NEXT_KEY, ACTOR_ID);
 
     expect(result.ok).toBe(true);
     expect(validateFn).toHaveBeenCalledWith({
@@ -179,6 +181,63 @@ describe('AiProviderConnectionService validation snapshot', () => {
       organizationId: 'org-stored',
       projectId: 'proj-stored',
     });
+  });
+
+  it('does not stamp lastValidatedAt when the connection is disabled mid-flight', async () => {
+    let lockCalls = 0;
+    prisma.aiProviderConnection.findUniqueOrThrow.mockImplementation(async () => {
+      lockCalls += 1;
+      return lockCalls === 1 ? connectionRow() : connectionRow({ status: 'DISABLED' });
+    });
+    prisma.aiProviderConnection.update.mockResolvedValue(connectionRow({ status: 'DISABLED' }));
+
+    const outcome = await service.validate('conn-1', ACTOR_ID);
+
+    expect(outcome.result.ok).toBe(true);
+    expect(prisma.aiProviderConnection.update).toHaveBeenCalledWith({
+      where: { id: 'conn-1' },
+      data: {},
+    });
+    expect(logAdminAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'PROVIDER_CONNECTION_VALIDATED',
+        changes: expect.objectContaining({ ok: true, statusAtCommit: 'DISABLED' }),
+      }),
+      expect.anything(),
+    );
+  });
+
+  it('audits a failed replacement-key preflight without storing the key', async () => {
+    validateFn.mockResolvedValue({ ok: false, errorCode: 'INVALID_KEY' });
+    prisma.aiProviderConnection.findUniqueOrThrow.mockResolvedValue(connectionRow());
+
+    const result = await service.validateReplacementKey('conn-1', NEXT_KEY, ACTOR_ID);
+
+    expect(result.ok).toBe(false);
+    expect(prisma.aiProviderSecret.upsert).not.toHaveBeenCalled();
+    expect(logAdminAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'PROVIDER_KEY_PREFLIGHT_VALIDATED',
+        actingEmployeeId: ACTOR_ID,
+        changes: { ok: false, errorCode: 'INVALID_KEY' },
+      }),
+      expect.anything(),
+    );
+    expect(JSON.stringify(logAdminAction.mock.calls)).not.toContain(NEXT_KEY);
+  });
+
+  it('audits a rotate preflight failure before rejecting the rotation', async () => {
+    validateFn.mockResolvedValue({ ok: false, errorCode: 'INVALID_KEY' });
+    prisma.aiProviderConnection.findUniqueOrThrow.mockResolvedValue(connectionRow());
+
+    await expect(service.rotateKey('conn-1', NEXT_KEY, ACTOR_ID)).rejects.toThrow(
+      BadRequestException,
+    );
+
+    expect(logAdminAction).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'PROVIDER_KEY_PREFLIGHT_VALIDATED' }),
+      expect.anything(),
+    );
   });
 
   it('does not store a replacement key that fails validation', async () => {
@@ -214,5 +273,28 @@ describe('AiProviderConnectionService validation snapshot', () => {
       where: { id: 'conn-1' },
       data: expect.objectContaining({ lastValidatedAt: expect.any(Date) }),
     });
+  });
+
+  it('rotates the key but stamps no validation time when the connection was disabled mid-flight', async () => {
+    let lockCalls = 0;
+    prisma.aiProviderConnection.findUniqueOrThrow.mockImplementation(async () => {
+      lockCalls += 1;
+      return lockCalls === 1 ? connectionRow() : connectionRow({ status: 'DISABLED' });
+    });
+    prisma.aiProviderConnection.update.mockResolvedValue(connectionRow({ status: 'DISABLED' }));
+
+    await service.rotateKey('conn-1', NEXT_KEY, ACTOR_ID);
+
+    expect(prisma.aiProviderConnection.update).toHaveBeenCalledWith({
+      where: { id: 'conn-1' },
+      data: { keyPrefix: expect.any(String) },
+    });
+    expect(logAdminAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'PROVIDER_KEY_ROTATED',
+        changes: expect.objectContaining({ statusAtCommit: 'DISABLED' }),
+      }),
+      expect.anything(),
+    );
   });
 });

@@ -94,6 +94,7 @@ describe('AI admin provider draft validate HTTP', () => {
     expect(harness.services.connections.validateReplacementKey).toHaveBeenCalledWith(
       'conn-1',
       'sk-test-provider-secret-value-99999',
+      expect.any(String),
     );
   });
 

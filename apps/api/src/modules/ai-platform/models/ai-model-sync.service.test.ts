@@ -123,4 +123,103 @@ describe('AiModelSyncService', () => {
     );
     expect(audit.logAdminAction).not.toHaveBeenCalled();
   });
+
+  describe('scheduler lease ownership', () => {
+    beforeEach(() => {
+      vi.mocked(connections.listAll).mockResolvedValue([
+        { id: 'conn-1', status: 'ACTIVE' },
+        { id: 'conn-2', status: 'ACTIVE' },
+      ] as never);
+    });
+
+    function expectNoCatalogWrites(): void {
+      expect(prisma.aiModel.create).not.toHaveBeenCalled();
+      expect(prisma.aiModel.update).not.toHaveBeenCalled();
+      expect(connections.markModelSync).not.toHaveBeenCalled();
+      expect(audit.logMachineAction).not.toHaveBeenCalled();
+      expect(audit.logAdminAction).not.toHaveBeenCalled();
+    }
+
+    it('writes nothing once the lease is lost before the next connection', async () => {
+      const stillOwned = vi.fn().mockResolvedValue(true);
+
+      const outcomes = await service.runScheduledCatalogSync({
+        signal: AbortSignal.abort(),
+        stillOwned,
+      });
+
+      expect(outcomes).toEqual([]);
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expect(connections.credentialsForActive).not.toHaveBeenCalled();
+      expectNoCatalogWrites();
+    });
+
+    it('stops before the commit when the lease is lost during the provider call', async () => {
+      const controller = new AbortController();
+      const adapters = {
+        get: vi.fn(() => ({
+          listModels: vi.fn().mockImplementation(async () => {
+            controller.abort();
+            return [];
+          }),
+        })),
+      } as unknown as AiProviderAdapterRegistry;
+      service = new AiModelSyncService(prisma as never, connections, adapters, audit);
+
+      const outcomes = await service.runScheduledCatalogSync({
+        signal: controller.signal,
+        stillOwned: vi.fn().mockResolvedValue(true),
+      });
+
+      expect(outcomes).toEqual([{ connectionId: 'conn-1', ok: false, errorCode: 'LEASE_LOST' }]);
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expectNoCatalogWrites();
+    });
+
+    it('abandons the transaction when ownership is lost after it opened', async () => {
+      // The signal still reports the lease as held: only the transaction-scoped
+      // probe sees the takeover, which is the race a live heartbeat cannot cover.
+      const stillOwned = vi.fn().mockResolvedValue(false);
+
+      const outcomes = await service.runScheduledCatalogSync({
+        signal: new AbortController().signal,
+        stillOwned,
+      });
+
+      expect(prisma.$transaction).toHaveBeenCalled();
+      expect(stillOwned).toHaveBeenCalledWith(prisma);
+      expect(prisma.aiModel.findMany).not.toHaveBeenCalled();
+      expectNoCatalogWrites();
+      expect(outcomes).toEqual([
+        { connectionId: 'conn-1', ok: false, errorCode: 'LEASE_LOST' },
+        { connectionId: 'conn-2', ok: false, errorCode: 'LEASE_LOST' },
+      ]);
+    });
+
+    it('proves ownership before it reads or writes anything in the transaction', async () => {
+      const stillOwned = vi.fn().mockResolvedValue(true);
+      prisma.aiModel.findMany.mockResolvedValue([]);
+
+      await service.runScheduledCatalogSync({
+        signal: new AbortController().signal,
+        stillOwned,
+      });
+
+      expect(stillOwned.mock.invocationCallOrder[0]).toBeLessThan(
+        prisma.aiModel.findMany.mock.invocationCallOrder[0],
+      );
+      expect(stillOwned.mock.invocationCallOrder[0]).toBeLessThan(
+        prisma.aiModel.create.mock.invocationCallOrder[0],
+      );
+    });
+
+    it('does not fence an employee-triggered sync, which the request authorizes', async () => {
+      prisma.aiModel.findMany.mockResolvedValue([]);
+
+      const outcomes = await service.syncAllEnabledConnections('emp-admin');
+
+      expect(outcomes.every((outcome) => outcome.ok)).toBe(true);
+      expect(audit.logAdminAction).toHaveBeenCalled();
+    });
+  });
 });

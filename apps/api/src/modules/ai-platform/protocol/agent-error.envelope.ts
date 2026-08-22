@@ -7,6 +7,11 @@ export interface AgentErrorBody {
     code: AiAgentErrorCode;
     message: string;
     requestId: string;
+    /**
+     * Additive field, present only on `AGENT_RATE_LIMITED`. Every other code
+     * keeps the exact `09` §7 shape.
+     */
+    retryAfterSeconds?: number;
   };
 }
 
@@ -71,7 +76,16 @@ export function toAgentErrorResponse(error: unknown, requestId: string): AgentEr
   if (error instanceof AgentAccessException) {
     return {
       status: error.getStatus(),
-      body: { error: { code: error.code, message: error.message, requestId } },
+      body: {
+        error: {
+          code: error.code,
+          message: error.message,
+          requestId,
+          ...(error.retryAfterSeconds === null
+            ? {}
+            : { retryAfterSeconds: error.retryAfterSeconds }),
+        },
+      },
     };
   }
   if (error instanceof HttpException) {

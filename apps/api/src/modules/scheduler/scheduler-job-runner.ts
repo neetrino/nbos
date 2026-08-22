@@ -1,7 +1,17 @@
 import { BadRequestException } from '@nestjs/common';
+import { SchedulerAiService } from './scheduler-ai.service';
 import { SchedulerService } from './scheduler.service';
 import { SALES_KPI_BACKFILL_ALL_JOB_NAME } from './scheduler-job-catalog';
 import { SCHEDULER_JOB_NAMES, type SchedulerTrigger } from './scheduler-lease.constants';
+
+/**
+ * Services a manual run may dispatch to. AI jobs live on their own service, so
+ * the runner takes the set rather than a single `SchedulerService`.
+ */
+export interface SchedulerJobRunners {
+  scheduler: SchedulerService;
+  ai: SchedulerAiService;
+}
 
 const RUNNABLE_JOB_NAMES = [
   SCHEDULER_JOB_NAMES.billing,
@@ -21,6 +31,7 @@ const RUNNABLE_JOB_NAMES = [
   SCHEDULER_JOB_NAMES.mailOutboundReconcile,
   SCHEDULER_JOB_NAMES.mailGmailWatchRenew,
   SCHEDULER_JOB_NAMES.mailSyncReconcile,
+  SCHEDULER_JOB_NAMES.aiModelCatalogSync,
   SALES_KPI_BACKFILL_ALL_JOB_NAME,
 ] as const;
 
@@ -35,22 +46,25 @@ export function canRunSchedulerJobNow(jobName: string): boolean {
  * an arbitrary SchedulerService method.
  */
 export async function runSchedulerJobByName(
-  service: SchedulerService,
+  runners: SchedulerJobRunners,
   jobName: string,
   trigger: SchedulerTrigger,
 ): Promise<unknown> {
   if (!canRunSchedulerJobNow(jobName)) {
     throw new BadRequestException(`No runner for scheduler job: ${jobName}`);
   }
-  return dispatchRunnableJob(service, jobName as RunnableJobName, trigger);
+  return dispatchRunnableJob(runners, jobName as RunnableJobName, trigger);
 }
 
 async function dispatchRunnableJob(
-  service: SchedulerService,
+  runners: SchedulerJobRunners,
   jobName: RunnableJobName,
   trigger: SchedulerTrigger,
 ): Promise<unknown> {
+  const service = runners.scheduler;
   switch (jobName) {
+    case SCHEDULER_JOB_NAMES.aiModelCatalogSync:
+      return runners.ai.runAiModelCatalogSync(trigger);
     case SCHEDULER_JOB_NAMES.billing:
       return service.runBilling(trigger);
     case SCHEDULER_JOB_NAMES.overdueInvoices:

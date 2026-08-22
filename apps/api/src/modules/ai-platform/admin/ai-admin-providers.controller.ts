@@ -73,8 +73,12 @@ export class AiAdminProvidersController {
 
   @Post(':id/validate-replacement')
   @ApiOperation({ summary: 'Validate a replacement key against stored provider config' })
-  validateReplacement(@Param('id') id: string, @Body() body: RotateProviderKeyDto) {
-    return this.connections.validateReplacementKey(id, body.apiKey);
+  validateReplacement(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: RotateProviderKeyDto,
+  ) {
+    return this.connections.validateReplacementKey(id, body.apiKey, user.id);
   }
 
   @Post(':id/rotate')

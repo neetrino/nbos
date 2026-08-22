@@ -1,11 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { NotFoundException } from '@nestjs/common';
+import type { AuditService } from '../audit/audit.service';
 import { SCHEDULER_JOB_KIND, SCHEDULER_ROSTER_INTENT } from './scheduler-job-catalog';
 import {
   computeNextRunAt,
   deriveCatalogStatus,
+  PlatformSchedulerJobsService,
   SCHEDULER_CATALOG_STATUS,
 } from './platform-scheduler-jobs.service';
-import { SCHEDULER_RUN_STATUS } from './scheduler-lease.constants';
+import type { SchedulerAiService } from './scheduler-ai.service';
+import type { SchedulerJobPolicyService } from './scheduler-job-policy.service';
+import type { SchedulerService } from './scheduler.service';
+import { SCHEDULER_JOB_NAMES, SCHEDULER_RUN_STATUS } from './scheduler-lease.constants';
 
 const baseEntry = {
   jobName: 'billing' as const,
@@ -149,6 +155,68 @@ describe('deriveCatalogStatus', () => {
         now,
       }),
     ).toBe(SCHEDULER_CATALOG_STATUS.active);
+  });
+});
+
+describe('runJobNow', () => {
+  const ACTOR_ID = 'emp-admin';
+
+  function serviceWithMocks() {
+    const runAiModelCatalogSync = vi
+      .fn()
+      .mockResolvedValue({ status: SCHEDULER_RUN_STATUS.SUCCEEDED, runId: 'run-1' });
+    const log = vi.fn();
+    const service = new PlatformSchedulerJobsService(
+      {} as never,
+      {} as unknown as SchedulerJobPolicyService,
+      { log } as unknown as AuditService,
+      {} as unknown as SchedulerService,
+      { runAiModelCatalogSync } as unknown as SchedulerAiService,
+    );
+    return { service, runAiModelCatalogSync, log };
+  }
+
+  it('runs the AI catalog sync through its own scheduler service', async () => {
+    const { service, runAiModelCatalogSync } = serviceWithMocks();
+
+    const response = await service.runJobNow({
+      jobName: SCHEDULER_JOB_NAMES.aiModelCatalogSync,
+      actorId: ACTOR_ID,
+    });
+
+    expect(runAiModelCatalogSync).toHaveBeenCalledWith('manual_admin');
+    expect(response).toEqual({
+      jobName: SCHEDULER_JOB_NAMES.aiModelCatalogSync,
+      trigger: 'manual_admin',
+      result: { status: SCHEDULER_RUN_STATUS.SUCCEEDED, runId: 'run-1' },
+    });
+  });
+
+  it('audits the manual run with the acting employee', async () => {
+    const { service, log } = serviceWithMocks();
+
+    await service.runJobNow({
+      jobName: SCHEDULER_JOB_NAMES.aiModelCatalogSync,
+      actorId: ACTOR_ID,
+    });
+
+    expect(log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entityId: SCHEDULER_JOB_NAMES.aiModelCatalogSync,
+        userId: ACTOR_ID,
+        changes: expect.objectContaining({ trigger: 'manual_admin' }),
+      }),
+    );
+  });
+
+  it('refuses a job name that is not in the catalog, before any dispatch or audit', async () => {
+    const { service, runAiModelCatalogSync, log } = serviceWithMocks();
+
+    await expect(service.runJobNow({ jobName: 'not-a-job', actorId: ACTOR_ID })).rejects.toThrow(
+      NotFoundException,
+    );
+    expect(runAiModelCatalogSync).not.toHaveBeenCalled();
+    expect(log).not.toHaveBeenCalled();
   });
 });
 

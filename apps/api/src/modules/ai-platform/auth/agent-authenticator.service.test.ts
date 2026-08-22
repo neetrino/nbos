@@ -175,11 +175,22 @@ describe('AgentAuthenticatorService', () => {
     });
   });
 
-  it('still authenticates when usage telemetry fails', async () => {
+  it('writes no usage telemetry while authenticating', async () => {
     await stubCredential();
+
+    await service.authenticate(token.token, { channel: 'rest' });
+
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('records usage only when asked, and survives a telemetry failure', async () => {
+    await stubCredential();
+    const authenticated = await service.authenticate(token.token, { channel: 'rest' });
     prisma.$transaction.mockRejectedValueOnce(new Error('db unavailable'));
 
-    const authenticated = await service.authenticate(token.token, { channel: 'rest' });
-    expect(authenticated.agentId).toBe('agent-1');
+    await expect(
+      service.recordUsage(authenticated, { channel: 'rest', ipAddress: '203.0.113.4' }),
+    ).resolves.toBeUndefined();
+    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
   });
 });

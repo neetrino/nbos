@@ -127,7 +127,7 @@ describe('AiProviderConnectionService', () => {
     expect(JSON.stringify(view)).not.toContain(nextKey);
     const changes = (audit.logAdminAction as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].changes;
     assertNoProviderSecretFields(changes);
-    expect(changes).toEqual({ keyPrefix: expect.any(String) });
+    expect(changes).toEqual({ keyPrefix: expect.any(String), statusAtCommit: 'ACTIVE' });
   });
 
   it('clears lastValidatedAt when validation-relevant config changes', async () => {

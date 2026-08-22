@@ -1,6 +1,7 @@
 import { Catch, Logger, type ArgumentsHost, type ExceptionFilter } from '@nestjs/common';
 import type { Response } from 'express';
 import { AgentAccessException } from '../auth/agent-auth.errors';
+import { AGENT_RATE_LIMIT_HEADERS } from '../limits/agent-rate-limit.constants';
 import { AGENT_CORRELATION_HEADER, resolveAgentCorrelationId } from './agent-correlation';
 import { toAgentErrorResponse } from './agent-error.envelope';
 import type { AgentProtocolRequest } from './agent-protocol.request';
@@ -33,6 +34,10 @@ export class AgentProtocolExceptionFilter implements ExceptionFilter {
       return;
     }
     response.setHeader(AGENT_CORRELATION_HEADER, requestId);
+    const retryAfterSeconds = body.error.retryAfterSeconds;
+    if (retryAfterSeconds !== undefined) {
+      response.setHeader(AGENT_RATE_LIMIT_HEADERS.retryAfter, String(retryAfterSeconds));
+    }
     response.status(status).json(body);
   }
 

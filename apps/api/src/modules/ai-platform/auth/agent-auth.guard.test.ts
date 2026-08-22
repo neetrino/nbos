@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { AgentPreAuthThrottleService } from '../limits/agent-preauth-throttle.service';
 import { AgentAuthGuard, type AgentAuthenticatedRequest } from './agent-auth.guard';
 import { AgentAccessException } from './agent-auth.errors';
 import type { AgentAuthenticatorService } from './agent-authenticator.service';
@@ -28,6 +29,7 @@ function executionContext(request: AgentAuthenticatedRequest): ExecutionContext 
 describe('AgentAuthGuard', () => {
   let authenticator: AgentAuthenticatorService;
   let reflector: Reflector;
+  let preAuth: AgentPreAuthThrottleService;
   let guard: AgentAuthGuard;
 
   function withDeclaredChannel(channel: string | undefined): void {
@@ -39,7 +41,36 @@ describe('AgentAuthGuard', () => {
       authenticate: vi.fn().mockResolvedValue(AUTHENTICATED_AGENT),
     } as unknown as AgentAuthenticatorService;
     reflector = new Reflector();
-    guard = new AgentAuthGuard(authenticator, reflector);
+    preAuth = new AgentPreAuthThrottleService();
+    guard = new AgentAuthGuard(authenticator, reflector, preAuth);
+  });
+
+  it('charges the source lockout for every rejected authentication', async () => {
+    const failure = vi.spyOn(preAuth, 'recordFailure');
+    vi.mocked(authenticator.authenticate).mockRejectedValueOnce(
+      AgentAccessException.fromDenyReason('CREDENTIAL_INVALID'),
+    );
+    const request: AgentAuthenticatedRequest = {
+      headers: { authorization: 'Bearer nbos_agt_key_secret' },
+      ip: '203.0.113.9',
+    };
+
+    await expect(guard.canActivate(executionContext(request))).rejects.toThrow(
+      AgentAccessException,
+    );
+
+    expect(failure).toHaveBeenCalledWith('203.0.113.9');
+  });
+
+  it('exposes the authentication context so usage is recorded after the budget', async () => {
+    const request: AgentAuthenticatedRequest = {
+      headers: { authorization: 'Bearer nbos_agt_key_secret' },
+      ip: '203.0.113.4',
+    };
+
+    await guard.canActivate(executionContext(request));
+
+    expect(request.agentAuthContext).toMatchObject({ ipAddress: '203.0.113.4', channel: 'rest' });
   });
 
   it('attaches the agent to request.agent and never to request.user', async () => {

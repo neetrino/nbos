@@ -7,6 +7,7 @@ import type { AgentCapabilityGateway } from '../gateway/agent-capability.gateway
 import { AgentMcpController } from '../mcp/agent-mcp.controller';
 import { AgentMcpServer } from '../mcp/agent-mcp.server';
 import type { JsonRpcRequest } from '../mcp/agent-mcp.jsonrpc';
+import { AgentRateLimitService } from '../limits/agent-rate-limit.service';
 import { AgentArtifactsController } from '../rest/agent-artifacts.controller';
 import { AgentIdentityController } from '../rest/agent-identity.controller';
 import { AgentTasksController } from '../rest/agent-tasks.controller';
@@ -170,9 +171,10 @@ describe('REST and MCP protocol parity', () => {
 
   beforeEach(() => {
     gatewayInvoke = vi.fn().mockResolvedValue({ capabilityKey: 'x', data: { id: 'result-1' } });
-    const invoker = new AgentProtocolInvoker({
-      invoke: gatewayInvoke,
-    } as unknown as AgentCapabilityGateway);
+    const invoker = new AgentProtocolInvoker(
+      { invoke: gatewayInvoke } as unknown as AgentCapabilityGateway,
+      new AgentRateLimitService(),
+    );
     controllers = {
       identity: new AgentIdentityController(invoker),
       tasks: new AgentTasksController(invoker),

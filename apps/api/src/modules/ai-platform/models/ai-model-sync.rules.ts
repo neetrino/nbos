@@ -37,9 +37,16 @@ export function planModelSync(
   };
 }
 
+/**
+ * The only status a sync may write for a model an admin has not reviewed.
+ * Production eligibility is an explicit human decision, never a side effect of
+ * a provider catalog listing a new model.
+ */
+export const AI_MODEL_STATUS_ON_DISCOVERY: AiModelStatus = 'DISCOVERED';
+
 /** New and returning models stay DISCOVERED. Never auto-activate. */
 export function statusAfterRefresh(current: AiModelStatus): AiModelStatus {
-  return current === 'UNAVAILABLE' ? 'DISCOVERED' : current;
+  return current === 'UNAVAILABLE' ? AI_MODEL_STATUS_ON_DISCOVERY : current;
 }
 
 /** Disappeared models are marked unavailable unless an admin already retired them. */

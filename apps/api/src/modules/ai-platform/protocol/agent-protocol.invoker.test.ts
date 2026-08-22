@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { authenticatedAgentFixture } from '../../../test-utils/authenticated-agent';
 import { AgentAccessException } from '../auth/agent-auth.errors';
 import type { AgentCapabilityGateway } from '../gateway/agent-capability.gateway';
+import { AgentRateLimitService } from '../limits/agent-rate-limit.service';
 import { AgentProtocolInvoker } from './agent-protocol.invoker';
 
 describe('AgentProtocolInvoker', () => {
@@ -10,7 +11,10 @@ describe('AgentProtocolInvoker', () => {
 
   beforeEach(() => {
     invoke = vi.fn().mockResolvedValue({ capabilityKey: 'tasks.read', data: { id: 'task-1' } });
-    invoker = new AgentProtocolInvoker({ invoke } as unknown as AgentCapabilityGateway);
+    invoker = new AgentProtocolInvoker(
+      { invoke } as unknown as AgentCapabilityGateway,
+      new AgentRateLimitService(),
+    );
   });
 
   it('routes an operation to its catalog capability', async () => {

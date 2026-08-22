@@ -7,10 +7,14 @@ import {
 } from '@nestjs/common';
 import type { ExecutionContext } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { Public } from '../../../common/decorators';
 import { SkipTransform } from '../../../common/decorators/skip-transform.decorator';
 import type { AuthenticatedAgent } from '../auth/agent-authenticator.service';
 import { AgentAuthGuard } from '../auth/agent-auth.guard';
+import { AgentUsageInterceptor } from '../auth/agent-usage.interceptor';
+import { AgentPreAuthGuard } from '../limits/agent-preauth.guard';
+import { AgentRateLimitGuard } from '../limits/agent-rate-limit.guard';
 import { AgentCorrelationInterceptor } from './agent-correlation.interceptor';
 import { AgentProtocolExceptionFilter } from './agent-protocol.filter';
 import { requireAuthenticatedAgent, type AgentProtocolRequest } from './agent-protocol.request';
@@ -29,15 +33,25 @@ export const AGENT_OPENAPI_TAG = 'External Agent';
  * capability. `@SkipTransform()` and the filter replace the employee
  * `{ data, timestamp }` / `{ statusCode, message }` bodies with the machine
  * envelope from the `09` contract.
+ *
+ * `@SkipThrottle()` is the other half of that boundary: agent traffic is
+ * metered by its own budgets instead of consuming the employee-default
+ * `ThrottlerGuard` capacity, so one abusive credential cannot throttle the
+ * human API (checklist U 329). Those budgets are what replaces it, in order:
+ * `AgentPreAuthGuard` meters the source address before any credential work,
+ * `AgentAuthGuard` resolves the principal, `AgentRateLimitGuard` charges the
+ * per-agent budget, and only then does `AgentUsageInterceptor` write usage
+ * telemetry for the admitted request.
  */
 export function AgentProtocolEndpoints(): ClassDecorator {
   return applyDecorators(
     ApiTags(AGENT_OPENAPI_TAG),
     ApiBearerAuth(),
     Public(),
-    UseGuards(AgentAuthGuard),
+    SkipThrottle(),
+    UseGuards(AgentPreAuthGuard, AgentAuthGuard, AgentRateLimitGuard),
     UseFilters(AgentProtocolExceptionFilter),
-    UseInterceptors(AgentCorrelationInterceptor),
+    UseInterceptors(AgentCorrelationInterceptor, AgentUsageInterceptor),
     SkipTransform(),
   );
 }

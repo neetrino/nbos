@@ -1,4 +1,4 @@
-import { SCHEDULER_JOB_NAMES, type SchedulerJobName } from './scheduler-lease.constants';
+import type { SchedulerJobName } from './scheduler-lease.constants';
 
 export const SCHEDULER_JOB_RISK = {
   low: 'low',
@@ -41,6 +41,7 @@ export const SCHEDULER_JOB_GROUP = {
   sessions: 'Sessions',
   mail: 'Mail',
   reports: 'Reports',
+  ai: 'AI',
 } as const;
 
 export type SchedulerJobGroup = (typeof SCHEDULER_JOB_GROUP)[keyof typeof SCHEDULER_JOB_GROUP];

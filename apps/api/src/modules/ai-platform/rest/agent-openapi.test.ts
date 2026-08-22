@@ -6,6 +6,11 @@ import type { INestApplication } from '@nestjs/common';
 import { AgentAuthGuard } from '../auth/agent-auth.guard';
 import { AgentAuthenticatorService } from '../auth/agent-authenticator.service';
 import { AgentCapabilityGateway } from '../gateway/agent-capability.gateway';
+import { AgentUsageInterceptor } from '../auth/agent-usage.interceptor';
+import { AgentPreAuthThrottleService } from '../limits/agent-preauth-throttle.service';
+import { AgentPreAuthGuard } from '../limits/agent-preauth.guard';
+import { AgentRateLimitGuard } from '../limits/agent-rate-limit.guard';
+import { AgentRateLimitService } from '../limits/agent-rate-limit.service';
 import { AgentMcpController } from '../mcp/agent-mcp.controller';
 import { AgentMcpServer } from '../mcp/agent-mcp.server';
 import { AgentCorrelationInterceptor } from '../protocol/agent-correlation.interceptor';
@@ -43,11 +48,21 @@ describe('agent REST OpenAPI contract', () => {
       ],
       providers: [
         Reflector,
+        AgentRateLimitService,
         AgentProtocolInvoker,
         AgentMcpServer,
         AgentProtocolExceptionFilter,
         AgentCorrelationInterceptor,
+        AgentPreAuthThrottleService,
+        { provide: AgentPreAuthGuard, useValue: { canActivate: () => true } },
         { provide: AgentAuthGuard, useValue: { canActivate: () => true } },
+        { provide: AgentRateLimitGuard, useValue: { canActivate: () => true } },
+        {
+          provide: AgentUsageInterceptor,
+          useValue: {
+            intercept: (_context: unknown, next: { handle: () => unknown }) => next.handle(),
+          },
+        },
         { provide: AgentAuthenticatorService, useValue: { authenticate: async () => undefined } },
         { provide: AgentCapabilityGateway, useValue: { invoke: async () => ({ data: null }) } },
       ],

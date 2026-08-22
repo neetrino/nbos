@@ -2,7 +2,9 @@ import { Body, Controller, Delete, Get, HttpCode, Post, Res } from '@nestjs/comm
 import { ApiExcludeEndpoint, ApiOperation } from '@nestjs/swagger';
 import type { Response } from 'express';
 import type { AuthenticatedAgent } from '../auth/agent-authenticator.service';
+import { AgentAccessException } from '../auth/agent-auth.errors';
 import { AgentChannel } from '../auth/agent-channel.decorator';
+import { AGENT_MCP_MAX_BATCH_MESSAGES } from '../limits/agent-rate-limit.constants';
 import { AGENT_CORRELATION_HEADER } from '../protocol/agent-correlation';
 import {
   AgentProtocolEndpoints,
@@ -70,8 +72,18 @@ export class AgentMcpController {
     // Stateless server: there is no session to terminate.
   }
 
+  /**
+   * The per-agent request budget is charged once per HTTP request, so an
+   * unbounded batch would amortise it to nothing. Capping the batch keeps one
+   * request worth one request (checklist U 324, U 326).
+   */
   private async handleBatch(agent: AuthenticatedAgent, body: unknown): Promise<JsonRpcResponse[]> {
     const messages = Array.isArray(body) ? body : [body];
+    if (messages.length > AGENT_MCP_MAX_BATCH_MESSAGES) {
+      throw AgentAccessException.payloadTooLarge(
+        `A JSON-RPC batch may contain at most ${AGENT_MCP_MAX_BATCH_MESSAGES} messages`,
+      );
+    }
     const responses: JsonRpcResponse[] = [];
     for (const message of messages) {
       const response = await this.handleOne(agent, message);

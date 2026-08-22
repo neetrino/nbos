@@ -53,6 +53,14 @@ export class AgentAuthenticatorService {
 
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
+  /**
+   * Resolves a presented token to an authenticated principal.
+   *
+   * Deliberately writes nothing: usage telemetry is recorded by
+   * `recordUsage` once the request has also passed the abuse controls, so a
+   * caller past its budget cannot keep buying database writes (checklist
+   * U 329).
+   */
   async authenticate(
     rawToken: string,
     context: AgentAuthRequestContext,
@@ -63,7 +71,6 @@ export class AgentAuthenticatorService {
     const credentialState = resolveCredentialState(credential, now);
     this.assertUsable(credential, agentState, credentialState, context);
 
-    await this.recordUsage(credential.id, credential.agentId, context, now);
     return {
       agentId: credential.agent.id,
       agentName: credential.agent.name,
@@ -183,13 +190,17 @@ export class AgentAuthenticatorService {
     );
   }
 
-  /** Best-effort telemetry. A failure here must never break an authorized call. */
-  private async recordUsage(
-    credentialId: string,
-    agentId: string,
+  /**
+   * Best-effort telemetry for an admitted request. A failure here must never
+   * break an authorized call, and it is only ever called once the request has
+   * passed the per-agent budget.
+   */
+  async recordUsage(
+    agent: AuthenticatedAgent,
     context: AgentAuthRequestContext,
-    now: Date,
+    now = new Date(),
   ): Promise<void> {
+    const { agentId, credentialId } = agent;
     try {
       await this.prisma.$transaction([
         this.prisma.externalAgentCredential.update({

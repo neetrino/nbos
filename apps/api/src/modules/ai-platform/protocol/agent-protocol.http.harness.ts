@@ -1,11 +1,10 @@
-import { Controller, Get, INestApplication, Provider, ValidationPipe } from '@nestjs/common';
+import { INestApplication, Provider, ValidationPipe } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { Test } from '@nestjs/testing';
-import * as jwt from 'jsonwebtoken';
+import { json } from 'express';
 import { vi, type Mock } from 'vitest';
-import { RequirePermission } from '../../../common/decorators';
 import { GlobalExceptionFilter } from '../../../common/filters/http-exception.filter';
 import { AuthGuard } from '../../../common/guards/auth.guard';
 import { EmployeeGuard } from '../../../common/guards/employee.guard';
@@ -20,59 +19,56 @@ import { PlatformOwnershipService } from '../../platform-ownership/platform-owne
 import { AgentAuthGuard } from '../auth/agent-auth.guard';
 import { AgentAuthenticatorService } from '../auth/agent-authenticator.service';
 import { AgentAccessException } from '../auth/agent-auth.errors';
+import { AgentUsageInterceptor } from '../auth/agent-usage.interceptor';
 import { parseAgentToken } from '../credentials/agent-token';
 import { AgentCapabilityGateway } from '../gateway/agent-capability.gateway';
+import {
+  AGENT_HTTP_PATH_PREFIX,
+  createAgentBodyLimitErrorHandler,
+  createAgentJsonBodyParser,
+} from '../limits/agent-body-limit.middleware';
+import { AgentPreAuthThrottleService } from '../limits/agent-preauth-throttle.service';
+import { AgentPreAuthGuard } from '../limits/agent-preauth.guard';
+import { AgentRateLimitGuard } from '../limits/agent-rate-limit.guard';
+import { AgentRateLimitService } from '../limits/agent-rate-limit.service';
 import { AgentMcpController } from '../mcp/agent-mcp.controller';
 import { AgentMcpServer } from '../mcp/agent-mcp.server';
 import { AgentArtifactsController } from '../rest/agent-artifacts.controller';
 import { AgentIdentityController } from '../rest/agent-identity.controller';
 import { AgentTasksController } from '../rest/agent-tasks.controller';
 import { AgentCorrelationInterceptor } from './agent-correlation.interceptor';
+import {
+  createEmployeeProbePrisma,
+  CredentialsSecretProbeController,
+  EmployeeProbeController,
+  HARNESS_JWT_SECRET,
+} from './agent-protocol.harness.employee';
 import { AgentProtocolExceptionFilter } from './agent-protocol.filter';
 import { AgentProtocolInvoker } from './agent-protocol.invoker';
+
+export { signEmployeeAccessToken } from './agent-protocol.harness.employee';
 
 /** Well-formed for `parseAgentToken`: `nbos_agt_<18 hex>_<64 hex>`. */
 export const AGENT_TOKEN = `nbos_agt_${'aabbccddeeff001122'}_${'a1'.repeat(32)}`;
 export const AGENT_TOKEN_SECRET = 'a1'.repeat(32);
 
-const JWT_SECRET = 'test-jwt-secret';
+/** Same value as `main.ts`, so payload behaviour under test is production behaviour. */
+const JSON_BODY_LIMIT = '1mb';
 const THROTTLE_LIMIT = 500;
 const THROTTLE_TTL_MS = 60_000;
-const EMPLOYEE_TOKEN_TTL = '5m';
 
-/** Stands in for any employee route: RBAC must keep working next to the agent namespace. */
-@Controller('tasks')
-class EmployeeProbeController {
-  @Get('probe')
-  @RequirePermission('TASKS', 'VIEW')
-  probe(): { ok: boolean } {
-    return { ok: true };
-  }
-}
-
-/**
- * A genuine v2 access token that `AuthGuard` accepts. Used to prove that a
- * real employee session is still refused on the agent namespace — a token the
- * guard chain would honour elsewhere.
- */
-export function signEmployeeAccessToken(): string {
-  return jwt.sign(
-    {
-      sub: 'employee-1',
-      sid: 'session-1',
-      typ: 'access',
-      ver: 2,
-      authVersion: 1,
-      email: 'employee@nbos.test',
-    },
-    JWT_SECRET,
-    { expiresIn: EMPLOYEE_TOKEN_TTL },
-  );
+export interface AgentProtocolHarnessOptions {
+  /**
+   * Employee-default `ThrottlerGuard` ceiling. A small value makes the
+   * employee-capacity isolation of checklist U 329 observable in a test.
+   */
+  employeeThrottleLimit?: number;
 }
 
 export interface AgentProtocolHarness {
   baseUrl: string;
   authenticate: Mock;
+  recordUsage: Mock;
   gatewayInvoke: Mock;
   /** Request against the agent namespace with a valid agent bearer token. */
   agentFetch(path: string, init?: RequestInit): Promise<Response>;
@@ -87,18 +83,30 @@ export interface AgentProtocolHarness {
  * authenticator and the capability gateway are substituted; every guard, pipe,
  * interceptor and filter is the real class.
  */
-function harnessProviders(authenticate: Mock, gatewayInvoke: Mock): Provider[] {
+function harnessProviders(mocks: {
+  authenticate: Mock;
+  recordUsage: Mock;
+  gatewayInvoke: Mock;
+}): Provider[] {
   return [
     Reflector,
+    AgentPreAuthThrottleService,
+    AgentPreAuthGuard,
     AgentAuthGuard,
+    AgentUsageInterceptor,
+    AgentRateLimitService,
+    AgentRateLimitGuard,
     AgentProtocolInvoker,
     AgentMcpServer,
     AgentProtocolExceptionFilter,
     AgentCorrelationInterceptor,
-    { provide: AgentAuthenticatorService, useValue: { authenticate } },
-    { provide: AgentCapabilityGateway, useValue: { invoke: gatewayInvoke } },
-    { provide: ConfigService, useValue: { getOrThrow: () => JWT_SECRET } },
-    { provide: PRISMA_TOKEN, useValue: {} },
+    {
+      provide: AgentAuthenticatorService,
+      useValue: { authenticate: mocks.authenticate, recordUsage: mocks.recordUsage },
+    },
+    { provide: AgentCapabilityGateway, useValue: { invoke: mocks.gatewayInvoke } },
+    { provide: ConfigService, useValue: { getOrThrow: () => HARNESS_JWT_SECRET } },
+    { provide: PRISMA_TOKEN, useValue: createEmployeeProbePrisma() },
     { provide: PlatformOwnershipService, useValue: { isPlatformOwner: async () => false } },
     { provide: AuthSessionService, useValue: { assertSessionActive: async () => undefined } },
     { provide: APP_FILTER, useClass: GlobalExceptionFilter },
@@ -113,12 +121,14 @@ function harnessProviders(authenticate: Mock, gatewayInvoke: Mock): Provider[] {
 }
 
 async function listenOnEphemeralPort(
-  authenticate: Mock,
-  gatewayInvoke: Mock,
+  mocks: { authenticate: Mock; recordUsage: Mock; gatewayInvoke: Mock },
+  employeeThrottleLimit: number,
 ): Promise<INestApplication> {
   const moduleRef = await Test.createTestingModule({
     imports: [
-      ThrottlerModule.forRoot({ throttlers: [{ ttl: THROTTLE_TTL_MS, limit: THROTTLE_LIMIT }] }),
+      ThrottlerModule.forRoot({
+        throttlers: [{ ttl: THROTTLE_TTL_MS, limit: employeeThrottleLimit }],
+      }),
     ],
     controllers: [
       AgentIdentityController,
@@ -126,11 +136,18 @@ async function listenOnEphemeralPort(
       AgentArtifactsController,
       AgentMcpController,
       EmployeeProbeController,
+      CredentialsSecretProbeController,
     ],
-    providers: harnessProviders(authenticate, gatewayInvoke),
+    providers: harnessProviders(mocks),
   }).compile();
 
-  const app = moduleRef.createNestApplication();
+  // Mirrors `main.ts`: the agent-scoped parser, then the employee transport cap,
+  // then the error handler that renders transport refusals in the `09`
+  // envelope. Anything else would test a payload path production does not have.
+  const app = moduleRef.createNestApplication({ bodyParser: false });
+  app.use(AGENT_HTTP_PATH_PREFIX, createAgentJsonBodyParser());
+  app.use(json({ limit: JSON_BODY_LIMIT }));
+  app.use(createAgentBodyLimitErrorHandler());
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
   );
@@ -144,16 +161,22 @@ async function listenOnEphemeralPort(
  * canonical token parse, so a non-agent bearer token is refused here for the
  * same reason it is refused in production.
  */
-function applyDefaultMockBehaviour(authenticate: Mock, gatewayInvoke: Mock): void {
-  authenticate.mockReset();
-  gatewayInvoke.mockReset();
-  authenticate.mockImplementation(async (rawToken: string) => {
+function applyDefaultMockBehaviour(mocks: {
+  authenticate: Mock;
+  recordUsage: Mock;
+  gatewayInvoke: Mock;
+}): void {
+  mocks.authenticate.mockReset();
+  mocks.recordUsage.mockReset();
+  mocks.gatewayInvoke.mockReset();
+  mocks.authenticate.mockImplementation(async (rawToken: string) => {
     if (!parseAgentToken(rawToken)) {
       throw AgentAccessException.fromDenyReason('CREDENTIAL_INVALID');
     }
     return authenticatedAgentFixture();
   });
-  gatewayInvoke.mockResolvedValue({ capabilityKey: 'tasks.read', data: { id: 'task-1' } });
+  mocks.recordUsage.mockResolvedValue(undefined);
+  mocks.gatewayInvoke.mockResolvedValue({ capabilityKey: 'tasks.read', data: { id: 'task-1' } });
 }
 
 /**
@@ -166,19 +189,21 @@ function applyDefaultMockBehaviour(authenticate: Mock, gatewayInvoke: Mock): voi
  * `TransformInterceptor` and the same `GlobalExceptionFilter` as production, so
  * routing, guard order and envelope behaviour under test are the real thing.
  */
-export async function startAgentProtocolHarness(): Promise<AgentProtocolHarness> {
-  const authenticate = vi.fn();
-  const gatewayInvoke = vi.fn();
-  const app = await listenOnEphemeralPort(authenticate, gatewayInvoke);
+export async function startAgentProtocolHarness(
+  options: AgentProtocolHarnessOptions = {},
+): Promise<AgentProtocolHarness> {
+  const mocks = { authenticate: vi.fn(), recordUsage: vi.fn(), gatewayInvoke: vi.fn() };
+  const app = await listenOnEphemeralPort(mocks, options.employeeThrottleLimit ?? THROTTLE_LIMIT);
   const baseUrl = `${await app.getUrl()}/api`;
-  const resetMocks = (): void => applyDefaultMockBehaviour(authenticate, gatewayInvoke);
+  const resetMocks = (): void => applyDefaultMockBehaviour(mocks);
 
   resetMocks();
 
   return {
     baseUrl,
-    authenticate,
-    gatewayInvoke,
+    authenticate: mocks.authenticate,
+    recordUsage: mocks.recordUsage,
+    gatewayInvoke: mocks.gatewayInvoke,
     agentFetch: (path, init = {}) =>
       fetch(`${baseUrl}${path}`, {
         ...init,

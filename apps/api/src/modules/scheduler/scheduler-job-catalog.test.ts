@@ -21,6 +21,7 @@ import {
   MAIL_GMAIL_WATCH_RENEW_ENABLED_ENV,
   MAIL_SYNC_RECONCILE_ENABLED_ENV,
 } from '../mail/mail-sync-runtime.constants';
+import { AI_MODEL_CATALOG_SYNC_ENABLED_ENV } from '../ai-platform/providers/ai-provider.constants';
 import {
   OVERDUE_INVOICES_CRON_ENABLED_ENV,
   INVOICE_CARD_REMINDERS_CRON_ENABLED_ENV,
@@ -48,6 +49,7 @@ const START_CRON_ENABLED_ENV_KEYS = [
   MAIL_OUTBOUND_RECONCILE_ENABLED_ENV,
   MAIL_GMAIL_WATCH_RENEW_ENABLED_ENV,
   MAIL_SYNC_RECONCILE_ENABLED_ENV,
+  AI_MODEL_CATALOG_SYNC_ENABLED_ENV,
 ] as const;
 
 describe('scheduler-job-catalog', () => {
@@ -87,6 +89,12 @@ describe('scheduler-job-catalog', () => {
       'report-schedules-due',
       'sales-kpi-month-close',
     ]);
+  });
+
+  it('keeps the AI model catalog sync out of the roster-on set', () => {
+    expect(listRosterOnPlatformCronJobNames()).not.toContain(
+      SCHEDULER_JOB_NAMES.aiModelCatalogSync,
+    );
   });
 
   it('lists only visibility=list entries for Settings', () => {

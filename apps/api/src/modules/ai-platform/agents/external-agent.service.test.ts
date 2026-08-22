@@ -3,36 +3,8 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { AiPlatformAuditService } from '../ai-platform-audit.service';
 import { AI_AUDIT_ACTION, AI_AUDIT_ENTITY } from '../ai-platform.constants';
+import { ACTOR_ID, agentRow, lockRow, OWNER_ID } from './external-agent.fixtures';
 import { ExternalAgentService } from './external-agent.service';
-
-const OWNER_ID = 'emp-owner';
-const ACTOR_ID = 'emp-admin';
-
-function agentRow(overrides: Record<string, unknown> = {}) {
-  return {
-    id: 'agent-1',
-    name: 'Cursor Agent',
-    description: null,
-    status: 'ACTIVE',
-    ownerId: OWNER_ID,
-    createdById: ACTOR_ID,
-    expiresAt: null,
-    disabledAt: null,
-    revokedAt: null,
-    lastUsedAt: null,
-    lastUsedIp: null,
-    lastUsedChannel: null,
-    createdAt: new Date('2026-08-01T00:00:00.000Z'),
-    updatedAt: new Date('2026-08-01T00:00:00.000Z'),
-    ...overrides,
-  };
-}
-
-/** Mirrors `SELECT ... FOR UPDATE` followed by the locked read. */
-function lockRow(prisma: MockPrisma, row: ReturnType<typeof agentRow>) {
-  prisma.$queryRaw.mockResolvedValue([{ id: row.id }]);
-  prisma.externalAgent.findUniqueOrThrow.mockResolvedValue(row);
-}
 
 describe('ExternalAgentService', () => {
   let prisma: MockPrisma;
@@ -150,36 +122,6 @@ describe('ExternalAgentService', () => {
     });
   });
 
-  describe('disable and enable', () => {
-    beforeEach(() => {
-      lockRow(prisma, agentRow());
-    });
-
-    it('disables an agent and records disabledAt', async () => {
-      prisma.externalAgent.update.mockResolvedValue(agentRow({ status: 'DISABLED' }));
-
-      const agent = await service.disable('agent-1', ACTOR_ID);
-
-      expect(prisma.externalAgent.update).toHaveBeenCalledWith({
-        where: { id: 'agent-1' },
-        data: expect.objectContaining({ status: 'DISABLED' }),
-      });
-      expect(agent.state).toBe('DISABLED');
-    });
-
-    it('locks the agent row before it reads lifecycle state', async () => {
-      prisma.externalAgent.update.mockResolvedValue(agentRow());
-
-      await service.enable('agent-1', ACTOR_ID);
-
-      expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
-      const lockedBeforeRead =
-        prisma.$queryRaw.mock.invocationCallOrder[0] <
-        prisma.externalAgent.findUniqueOrThrow.mock.invocationCallOrder[0];
-      expect(lockedBeforeRead).toBe(true);
-    });
-  });
-
   describe('lifecycle mutations and their audit rows commit together', () => {
     beforeEach(() => {
       lockRow(prisma, agentRow());
@@ -222,42 +164,6 @@ describe('ExternalAgentService', () => {
       vi.mocked(audit.logAdminAction).mockRejectedValueOnce(new Error('audit unavailable'));
 
       await expect(act(service)).rejects.toThrow('audit unavailable');
-    });
-  });
-
-  describe('revocation is terminal', () => {
-    beforeEach(() => {
-      lockRow(prisma, agentRow({ status: 'REVOKED', revokedAt: new Date('2026-08-10T00:00:00Z') }));
-    });
-
-    it.each([
-      ['disable', (target: ExternalAgentService) => target.disable('agent-1', ACTOR_ID)],
-      ['enable', (target: ExternalAgentService) => target.enable('agent-1', ACTOR_ID)],
-      [
-        'update',
-        (target: ExternalAgentService) => target.update('agent-1', { name: 'Renamed' }, ACTOR_ID),
-      ],
-    ])('refuses to %s a revoked agent', async (_label, act) => {
-      await expect(act(service)).rejects.toThrow(BadRequestException);
-      expect(prisma.externalAgent.update).not.toHaveBeenCalled();
-      expect(audit.logAdminAction).not.toHaveBeenCalled();
-    });
-
-    it('refuses a transition for an agent revoked behind an ACTIVE status column', async () => {
-      lockRow(prisma, agentRow({ status: 'ACTIVE', revokedAt: new Date('2026-08-10T00:00:00Z') }));
-
-      await expect(service.enable('agent-1', ACTOR_ID)).rejects.toThrow(BadRequestException);
-      expect(prisma.externalAgent.update).not.toHaveBeenCalled();
-    });
-
-    it('reports REVOKED even if the status column was walked back', async () => {
-      prisma.externalAgent.findUnique.mockResolvedValue(
-        agentRow({ status: 'ACTIVE', revokedAt: new Date('2026-08-10T00:00:00.000Z') }),
-      );
-
-      const agent = await service.findById('agent-1');
-
-      expect(agent?.state).toBe('REVOKED');
     });
   });
 

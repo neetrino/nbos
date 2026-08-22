@@ -9,7 +9,6 @@ import {
   lockLiveProviderConnection,
   lockProviderConnection,
   isProviderConnectionRevoked,
-  validationRelevantFieldsChanged,
 } from './ai-provider-connection.lock';
 import {
   rotateValidatedProviderKey,
@@ -25,6 +24,7 @@ import {
   normalizeOptionalMetadata,
   requireProviderName,
   requireProviderType,
+  resolveProviderConnectionUpdate,
 } from './ai-provider-connection.rules';
 import { requireProviderApiKey, toProviderKeyPrefix } from './ai-provider-key';
 import { AiProviderSecretStore } from './ai-provider-secret.store';
@@ -112,35 +112,9 @@ export class AiProviderConnectionService {
         connectionId,
         REVOKED_CONNECTION_IS_IMMUTABLE,
       );
-      const nextOrganizationId =
-        input.providerOrganizationId === undefined
-          ? locked.providerOrganizationId
-          : (normalizeOptionalMetadata(input.providerOrganizationId) ?? null);
-      const nextProjectId =
-        input.providerProjectId === undefined
-          ? locked.providerProjectId
-          : (normalizeOptionalMetadata(input.providerProjectId) ?? null);
-      const nextBaseUrl =
-        input.baseUrl === undefined
-          ? locked.baseUrl
-          : (normalizeOptionalBaseUrl(input.baseUrl, locked.provider) ?? null);
       const row = await tx.aiProviderConnection.update({
         where: { id: connectionId },
-        data: {
-          ...(name === undefined ? {} : { name }),
-          ...(input.providerOrganizationId === undefined
-            ? {}
-            : { providerOrganizationId: nextOrganizationId }),
-          ...(input.providerProjectId === undefined ? {} : { providerProjectId: nextProjectId }),
-          ...(input.baseUrl === undefined ? {} : { baseUrl: nextBaseUrl }),
-          ...(validationRelevantFieldsChanged(locked, {
-            baseUrl: nextBaseUrl,
-            providerOrganizationId: nextOrganizationId,
-            providerProjectId: nextProjectId,
-          })
-            ? { lastValidatedAt: null }
-            : {}),
-        },
+        data: resolveProviderConnectionUpdate(locked, { ...input, name }),
       });
       await logProviderConnection(
         this.audit,
@@ -184,8 +158,16 @@ export class AiProviderConnectionService {
   async validateReplacementKey(
     connectionId: string,
     apiKey: string,
+    actingEmployeeId: string,
   ): Promise<AiProviderValidationResult> {
-    return validateReplacementProviderKey(this.prisma, this.adapters, connectionId, apiKey);
+    return validateReplacementProviderKey(
+      this.prisma,
+      this.adapters,
+      this.audit,
+      connectionId,
+      apiKey,
+      actingEmployeeId,
+    );
   }
 
   async validate(

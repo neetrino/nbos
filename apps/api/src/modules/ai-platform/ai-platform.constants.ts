@@ -33,6 +33,7 @@ export const AI_AUDIT_ACTION = {
   providerUpdated: 'PROVIDER_CONNECTION_UPDATED',
   providerValidated: 'PROVIDER_CONNECTION_VALIDATED',
   providerKeyRotated: 'PROVIDER_KEY_ROTATED',
+  providerKeyPreflight: 'PROVIDER_KEY_PREFLIGHT_VALIDATED',
   providerDisabled: 'PROVIDER_CONNECTION_DISABLED',
   providerEnabled: 'PROVIDER_CONNECTION_ENABLED',
   providerRevoked: 'PROVIDER_CONNECTION_REVOKED',

@@ -45,6 +45,7 @@ describe('AgentCapabilityGateway', () => {
     abort: ReturnType<typeof vi.fn>;
   };
   let audit: { logMachineAction: ReturnType<typeof vi.fn> };
+  let replayAuthorization: { assertStillAuthorized: ReturnType<typeof vi.fn> };
   let gateway: AgentCapabilityGateway;
 
   beforeEach(() => {
@@ -72,12 +73,14 @@ describe('AgentCapabilityGateway', () => {
       abort: vi.fn(),
     };
     audit = { logMachineAction: vi.fn().mockResolvedValue(undefined) };
+    replayAuthorization = { assertStillAuthorized: vi.fn().mockResolvedValue(undefined) };
     gateway = new AgentCapabilityGateway(
       workspaces as never,
       taskReads as never,
       taskWrites as never,
       drive as never,
       idempotency as never,
+      replayAuthorization as never,
       audit as never,
     );
   });
@@ -128,6 +131,47 @@ describe('AgentCapabilityGateway', () => {
     expect(result).toEqual(stored);
     expect(taskWrites.create).not.toHaveBeenCalled();
     expect(idempotency.complete).not.toHaveBeenCalled();
+  });
+
+  it('revalidates the actor and grant before answering from a stored replay', async () => {
+    idempotency.reserve.mockResolvedValue({
+      capabilityKey: 'tasks.create',
+      data: { id: 'task-1' },
+    });
+
+    await gateway.invoke(
+      invocation(
+        'tasks.create',
+        { workspaceId: 'ws-1', title: 'Fix' },
+        { idempotencyKey: 'retry-1' },
+      ),
+    );
+
+    expect(replayAuthorization.assertStillAuthorized).toHaveBeenCalledWith(
+      expect.objectContaining({ agentId: 'agent-1' }),
+      expect.objectContaining({ key: 'tasks.create' }),
+      { workspaceId: 'ws-1', title: 'Fix' },
+    );
+  });
+
+  it('refuses a replay once the capability grant is revoked', async () => {
+    idempotency.reserve.mockResolvedValue({
+      capabilityKey: 'tasks.create',
+      data: { id: 'task-1' },
+    });
+    replayAuthorization.assertStillAuthorized.mockRejectedValue(
+      AgentAccessException.fromDenyReason('CAPABILITY_NOT_GRANTED'),
+    );
+
+    await expect(
+      gateway.invoke(
+        invocation(
+          'tasks.create',
+          { workspaceId: 'ws-1', title: 'Fix' },
+          { idempotencyKey: 'retry-1' },
+        ),
+      ),
+    ).rejects.toBeInstanceOf(AgentAccessException);
   });
 
   it('audits a successful write after the domain call', async () => {
@@ -206,6 +250,7 @@ describe('AgentCapabilityGateway', () => {
       taskWrites as never,
       drive as never,
       realIdempotency,
+      replayAuthorization as never,
       audit as never,
     );
 
