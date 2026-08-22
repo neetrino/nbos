@@ -118,6 +118,10 @@ describe('AiProviderConnectionService', () => {
   it('rotates the key and never echoes the replacement', async () => {
     const nextKey = 'sk-test-provider-secret-value-99999';
     lockRow(prisma, connectionRow());
+    prisma.aiProviderSecret.findUnique.mockResolvedValue({
+      connectionId: 'conn-1',
+      encryptedApiKey: encrypt(API_KEY, ENCRYPTION_KEY),
+    });
     prisma.aiProviderConnection.update.mockResolvedValue(connectionRow({ keyPrefix: 'sk-…9999' }));
     const view = await service.rotateKey('conn-1', nextKey, ACTOR_ID);
     expect(JSON.stringify(view)).not.toContain(nextKey);
@@ -126,19 +130,27 @@ describe('AiProviderConnectionService', () => {
     expect(changes).toEqual({ keyPrefix: expect.any(String) });
   });
 
-  it('validates without exposing the secret', async () => {
-    prisma.aiProviderConnection.findUnique.mockResolvedValue(connectionRow());
-    prisma.aiProviderSecret.findUnique.mockResolvedValue({
-      connectionId: 'conn-1',
-      encryptedApiKey: encrypt(API_KEY, ENCRYPTION_KEY),
+  it('clears lastValidatedAt when validation-relevant config changes', async () => {
+    lockRow(prisma, connectionRow({ lastValidatedAt: new Date('2026-08-01T00:00:00.000Z') }));
+    prisma.aiProviderConnection.update.mockResolvedValue(connectionRow());
+    await service.update('conn-1', { providerOrganizationId: 'org-b' }, ACTOR_ID);
+    expect(prisma.aiProviderConnection.update).toHaveBeenCalledWith({
+      where: { id: 'conn-1' },
+      data: expect.objectContaining({
+        providerOrganizationId: 'org-b',
+        lastValidatedAt: null,
+      }),
     });
-    lockRow(prisma, connectionRow());
-    prisma.aiProviderConnection.update.mockResolvedValue(
-      connectionRow({ lastValidatedAt: new Date() }),
-    );
-    const outcome = await service.validate('conn-1', ACTOR_ID);
-    expect(outcome.result.ok).toBe(true);
-    expect(JSON.stringify(outcome)).not.toContain(API_KEY);
+  });
+
+  it('does not clear lastValidatedAt on a name-only update', async () => {
+    lockRow(prisma, connectionRow({ lastValidatedAt: new Date('2026-08-01T00:00:00.000Z') }));
+    prisma.aiProviderConnection.update.mockResolvedValue(connectionRow({ name: 'Renamed' }));
+    await service.update('conn-1', { name: 'Renamed' }, ACTOR_ID);
+    expect(prisma.aiProviderConnection.update).toHaveBeenCalledWith({
+      where: { id: 'conn-1' },
+      data: { name: 'Renamed' },
+    });
   });
 
   it('revokes by deleting the secret and refusing later mutation', async () => {

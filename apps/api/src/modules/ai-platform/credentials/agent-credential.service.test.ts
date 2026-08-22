@@ -47,6 +47,7 @@ describe('AgentCredentialService', () => {
     prisma.externalAgent.findUniqueOrThrow.mockResolvedValue({
       status: 'ACTIVE',
       revokedAt: null,
+      expiresAt: null,
     });
   });
 
@@ -97,10 +98,65 @@ describe('AgentCredentialService', () => {
       );
     });
 
+    it('rejects when successor expiry elapses after the preliminary check', async () => {
+      const expiresAt = new Date(Date.now() + 60_000);
+      prisma.$transaction.mockImplementation(async (fn: (tx: MockPrisma) => Promise<unknown>) => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(expiresAt.getTime() + 1));
+        try {
+          return await fn(prisma);
+        } finally {
+          vi.useRealTimers();
+        }
+      });
+
+      await expect(service.issue({ agentId: AGENT_ID, expiresAt }, ACTOR_ID)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.externalAgentCredential.create).not.toHaveBeenCalled();
+    });
+
+    it('refuses a past successor expiry before the transaction starts', async () => {
+      await expect(
+        service.issue(
+          { agentId: AGENT_ID, expiresAt: new Date('2020-01-01T00:00:00.000Z') },
+          ACTOR_ID,
+        ),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('refuses to issue for a DISABLED agent whose expiry has elapsed', async () => {
+      prisma.externalAgent.findUniqueOrThrow.mockResolvedValue({
+        status: 'DISABLED',
+        revokedAt: null,
+        expiresAt: new Date('2020-01-01T00:00:00.000Z'),
+      });
+
+      await expect(service.issue({ agentId: AGENT_ID }, ACTOR_ID)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.externalAgentCredential.create).not.toHaveBeenCalled();
+    });
+
+    it('refuses to issue for an expired agent', async () => {
+      prisma.externalAgent.findUniqueOrThrow.mockResolvedValue({
+        status: 'ACTIVE',
+        revokedAt: null,
+        expiresAt: new Date('2020-01-01T00:00:00.000Z'),
+      });
+
+      await expect(service.issue({ agentId: AGENT_ID }, ACTOR_ID)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.externalAgentCredential.create).not.toHaveBeenCalled();
+    });
+
     it('refuses to issue for a revoked agent', async () => {
       prisma.externalAgent.findUniqueOrThrow.mockResolvedValue({
         status: 'REVOKED',
         revokedAt: new Date('2026-08-10T00:00:00.000Z'),
+        expiresAt: null,
       });
 
       await expect(service.issue({ agentId: AGENT_ID }, ACTOR_ID)).rejects.toThrow(
@@ -113,6 +169,7 @@ describe('AgentCredentialService', () => {
       prisma.externalAgent.findUniqueOrThrow.mockResolvedValue({
         status: 'ACTIVE',
         revokedAt: new Date('2026-08-10T00:00:00.000Z'),
+        expiresAt: null,
       });
 
       await expect(service.issue({ agentId: AGENT_ID }, ACTOR_ID)).rejects.toThrow(

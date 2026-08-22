@@ -183,6 +183,14 @@ export class InternalAgentService {
     return agent ? toInternalAgentView(agent, toSurfaceViews(agent.surfaces)) : null;
   }
 
+  async listAll(): Promise<InternalAiAgentView[]> {
+    const agents = await this.prisma.internalAiAgent.findMany({
+      include: { surfaces: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return agents.map((agent) => toInternalAgentView(agent, toSurfaceViews(agent.surfaces)));
+  }
+
   async requireById(agentId: string): Promise<InternalAiAgentView> {
     const agent = await this.findById(agentId);
     if (!agent) {

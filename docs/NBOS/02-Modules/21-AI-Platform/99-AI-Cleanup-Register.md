@@ -94,7 +94,7 @@ Add actor/capability scoped limits. Section U; evaluator already consumes a verd
 
 ### C10. Provider/model/Internal Agent foundation — OK
 
-Chat 5: OpenAI/Anthropic adapters, AES-256-GCM provider secrets, model catalog sync without auto-activate, FIXED/PRIMARY_FALLBACK policies, Internal Agent lifecycle. Admin UI is Chat 6. Scheduled catalog sync is `AiModelSyncService.runScheduledCatalogSync` (SYSTEM actor, continue-on-error); Nest scheduler catalog registration is still deferred.
+Chat 5: OpenAI/Anthropic adapters, AES-256-GCM provider secrets, model catalog sync without auto-activate, FIXED/PRIMARY_FALLBACK policies, Internal Agent lifecycle. Chat 6: Settings → AI & Agents employee admin UI and Work Space AI Access over the same services. Scheduled catalog sync is `AiModelSyncService.runScheduledCatalogSync` (SYSTEM actor, continue-on-error); Nest scheduler catalog registration is still deferred (Chat 7).
 
 ## D. Tasks alignment issues to verify before implementation
 

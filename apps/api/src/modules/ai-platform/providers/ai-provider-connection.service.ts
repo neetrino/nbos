@@ -1,19 +1,21 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import {
-  PrismaClient,
-  type AiProviderConnectionStatusEnum,
-  type InputJsonValue,
-} from '@nbos/database';
+import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AiPlatformAuditService } from '../ai-platform-audit.service';
-import { AI_AUDIT_ACTION, AI_AUDIT_ENTITY } from '../ai-platform.constants';
+import { AI_AUDIT_ACTION } from '../ai-platform.constants';
 import type { PrismaTransaction } from '../agents/agent-row-lock';
 import { AiProviderAdapterRegistry } from './ai-provider-adapter.registry';
 import {
   lockLiveProviderConnection,
   lockProviderConnection,
   isProviderConnectionRevoked,
+  validationRelevantFieldsChanged,
 } from './ai-provider-connection.lock';
+import {
+  rotateValidatedProviderKey,
+  validateReplacementProviderKey,
+  validateStoredProviderConnection,
+} from './ai-provider-connection.validate-ops';
 import {
   toProviderConnectionView,
   type AiProviderConnectionView,
@@ -24,12 +26,14 @@ import {
   requireProviderName,
   requireProviderType,
 } from './ai-provider-connection.rules';
-import {
-  assertNoProviderSecretFields,
-  requireProviderApiKey,
-  toProviderKeyPrefix,
-} from './ai-provider-key';
+import { requireProviderApiKey, toProviderKeyPrefix } from './ai-provider-key';
 import { AiProviderSecretStore } from './ai-provider-secret.store';
+import {
+  logProviderConnection,
+  readProviderCredentials,
+  transitionProviderConnection,
+} from './ai-provider-connection.persist';
+import { validateUnsavedProviderKey } from './ai-provider-draft-validate';
 import type { AiProviderCredentials, AiProviderValidationResult } from './ai-provider.types';
 
 const REVOKED_CONNECTION_IS_IMMUTABLE = 'A revoked provider connection cannot change state';
@@ -79,11 +83,18 @@ export class AiProviderConnectionService {
     const created = await this.prisma.$transaction(async (tx) => {
       const row = await tx.aiProviderConnection.create({ data });
       await this.secrets.write(row.id, apiKey, tx);
-      await this.log(tx, row.id, AI_AUDIT_ACTION.providerCreated, actingEmployeeId, {
-        provider,
-        name,
-        keyPrefix,
-      });
+      await logProviderConnection(
+        this.audit,
+        tx,
+        row.id,
+        AI_AUDIT_ACTION.providerCreated,
+        actingEmployeeId,
+        {
+          provider,
+          name,
+          keyPrefix,
+        },
+      );
       return row;
     });
     return toProviderConnectionView(created);
@@ -101,24 +112,46 @@ export class AiProviderConnectionService {
         connectionId,
         REVOKED_CONNECTION_IS_IMMUTABLE,
       );
+      const nextOrganizationId =
+        input.providerOrganizationId === undefined
+          ? locked.providerOrganizationId
+          : (normalizeOptionalMetadata(input.providerOrganizationId) ?? null);
+      const nextProjectId =
+        input.providerProjectId === undefined
+          ? locked.providerProjectId
+          : (normalizeOptionalMetadata(input.providerProjectId) ?? null);
+      const nextBaseUrl =
+        input.baseUrl === undefined
+          ? locked.baseUrl
+          : (normalizeOptionalBaseUrl(input.baseUrl, locked.provider) ?? null);
       const row = await tx.aiProviderConnection.update({
         where: { id: connectionId },
         data: {
           ...(name === undefined ? {} : { name }),
           ...(input.providerOrganizationId === undefined
             ? {}
-            : { providerOrganizationId: normalizeOptionalMetadata(input.providerOrganizationId) }),
-          ...(input.providerProjectId === undefined
-            ? {}
-            : { providerProjectId: normalizeOptionalMetadata(input.providerProjectId) }),
-          ...(input.baseUrl === undefined
-            ? {}
-            : { baseUrl: normalizeOptionalBaseUrl(input.baseUrl, locked.provider) }),
+            : { providerOrganizationId: nextOrganizationId }),
+          ...(input.providerProjectId === undefined ? {} : { providerProjectId: nextProjectId }),
+          ...(input.baseUrl === undefined ? {} : { baseUrl: nextBaseUrl }),
+          ...(validationRelevantFieldsChanged(locked, {
+            baseUrl: nextBaseUrl,
+            providerOrganizationId: nextOrganizationId,
+            providerProjectId: nextProjectId,
+          })
+            ? { lastValidatedAt: null }
+            : {}),
         },
       });
-      await this.log(tx, connectionId, AI_AUDIT_ACTION.providerUpdated, actingEmployeeId, {
-        nameChanged: name !== undefined,
-      });
+      await logProviderConnection(
+        this.audit,
+        tx,
+        connectionId,
+        AI_AUDIT_ACTION.providerUpdated,
+        actingEmployeeId,
+        {
+          nameChanged: name !== undefined,
+        },
+      );
       return row;
     });
     return toProviderConnectionView(updated);
@@ -129,51 +162,50 @@ export class AiProviderConnectionService {
     apiKey: string,
     actingEmployeeId: string,
   ): Promise<AiProviderConnectionView> {
-    const nextKey = requireProviderApiKey(apiKey);
-    const keyPrefix = toProviderKeyPrefix(nextKey);
-    const updated = await this.prisma.$transaction(async (tx) => {
-      await lockLiveProviderConnection(tx, connectionId, REVOKED_CONNECTION_IS_IMMUTABLE);
-      await this.secrets.write(connectionId, nextKey, tx);
-      const row = await tx.aiProviderConnection.update({
-        where: { id: connectionId },
-        data: { keyPrefix, lastValidatedAt: null },
-      });
-      await this.log(tx, connectionId, AI_AUDIT_ACTION.providerKeyRotated, actingEmployeeId, {
-        keyPrefix,
-      });
-      return row;
-    });
-    return toProviderConnectionView(updated);
+    return rotateValidatedProviderKey(
+      this.prisma,
+      this.secrets,
+      this.adapters,
+      this.audit,
+      connectionId,
+      apiKey,
+      actingEmployeeId,
+    );
+  }
+
+  async validateDraft(input: {
+    provider: string;
+    apiKey: string;
+    baseUrl?: string | null;
+  }): Promise<AiProviderValidationResult> {
+    return validateUnsavedProviderKey(this.adapters, input);
+  }
+
+  async validateReplacementKey(
+    connectionId: string,
+    apiKey: string,
+  ): Promise<AiProviderValidationResult> {
+    return validateReplacementProviderKey(this.prisma, this.adapters, connectionId, apiKey);
   }
 
   async validate(
     connectionId: string,
     actingEmployeeId: string,
   ): Promise<{ connection: AiProviderConnectionView; result: AiProviderValidationResult }> {
-    const connection = await this.requireConnection(connectionId);
-    if (connection.status !== 'ACTIVE') {
-      throw new BadRequestException('Only an active connection can be validated');
-    }
-    const credentials = await this.credentials(connection);
-    const result = await this.adapters.get(connection.provider).validate(credentials);
-    const now = new Date();
-    const updated = await this.prisma.$transaction(async (tx) => {
-      await lockLiveProviderConnection(tx, connectionId, REVOKED_CONNECTION_IS_IMMUTABLE);
-      const row = await tx.aiProviderConnection.update({
-        where: { id: connectionId },
-        data: result.ok ? { lastValidatedAt: now } : {},
-      });
-      await this.log(tx, connectionId, AI_AUDIT_ACTION.providerValidated, actingEmployeeId, {
-        ok: result.ok,
-        errorCode: result.errorCode,
-      });
-      return row;
-    });
-    return { connection: toProviderConnectionView(updated), result };
+    return validateStoredProviderConnection(
+      this.prisma,
+      this.secrets,
+      this.adapters,
+      this.audit,
+      connectionId,
+      actingEmployeeId,
+    );
   }
 
   async disable(connectionId: string, actingEmployeeId: string): Promise<AiProviderConnectionView> {
-    return this.transition(
+    return transitionProviderConnection(
+      this.prisma,
+      this.audit,
       connectionId,
       'DISABLED',
       AI_AUDIT_ACTION.providerDisabled,
@@ -182,7 +214,9 @@ export class AiProviderConnectionService {
   }
 
   async enable(connectionId: string, actingEmployeeId: string): Promise<AiProviderConnectionView> {
-    return this.transition(
+    return transitionProviderConnection(
+      this.prisma,
+      this.audit,
       connectionId,
       'ACTIVE',
       AI_AUDIT_ACTION.providerEnabled,
@@ -202,9 +236,16 @@ export class AiProviderConnectionService {
         where: { id: connectionId },
         data: { status: 'REVOKED', revokedAt: now },
       });
-      await this.log(tx, connectionId, AI_AUDIT_ACTION.providerRevoked, actingEmployeeId, {
-        revokedAt: now.toISOString(),
-      });
+      await logProviderConnection(
+        this.audit,
+        tx,
+        connectionId,
+        AI_AUDIT_ACTION.providerRevoked,
+        actingEmployeeId,
+        {
+          revokedAt: now.toISOString(),
+        },
+      );
       return row;
     });
     return toProviderConnectionView(revoked);
@@ -230,7 +271,7 @@ export class AiProviderConnectionService {
     if (connection.status !== 'ACTIVE') {
       throw new BadRequestException('Provider connection is not active');
     }
-    return { connection, credentials: await this.credentials(connection) };
+    return { connection, credentials: await readProviderCredentials(this.secrets, connection) };
   }
 
   async markModelSync(connectionId: string, at: Date, client: PrismaTransaction): Promise<void> {
@@ -246,53 +287,5 @@ export class AiProviderConnectionService {
       throw new NotFoundException('Provider connection not found');
     }
     return connection;
-  }
-
-  private async credentials(connection: AiProviderConnectionView): Promise<AiProviderCredentials> {
-    return {
-      apiKey: await this.secrets.read(connection.id),
-      baseUrl: connection.baseUrl,
-      organizationId: connection.providerOrganizationId,
-      projectId: connection.providerProjectId,
-    };
-  }
-
-  private async transition(
-    connectionId: string,
-    status: AiProviderConnectionStatusEnum,
-    action: string,
-    actingEmployeeId: string,
-  ): Promise<AiProviderConnectionView> {
-    const now = new Date();
-    const updated = await this.prisma.$transaction(async (tx) => {
-      await lockLiveProviderConnection(tx, connectionId, REVOKED_CONNECTION_IS_IMMUTABLE);
-      const row = await tx.aiProviderConnection.update({
-        where: { id: connectionId },
-        data: { status, disabledAt: status === 'DISABLED' ? now : null },
-      });
-      await this.log(tx, connectionId, action, actingEmployeeId, { status });
-      return row;
-    });
-    return toProviderConnectionView(updated);
-  }
-
-  private async log(
-    tx: PrismaTransaction,
-    entityId: string,
-    action: string,
-    actingEmployeeId: string,
-    changes: InputJsonValue,
-  ): Promise<void> {
-    assertNoProviderSecretFields(changes);
-    await this.audit.logAdminAction(
-      {
-        entityType: AI_AUDIT_ENTITY.providerConnection,
-        entityId,
-        action,
-        actingEmployeeId,
-        changes,
-      },
-      tx,
-    );
   }
 }

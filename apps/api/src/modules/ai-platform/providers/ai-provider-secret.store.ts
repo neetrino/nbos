@@ -37,12 +37,16 @@ export class AiProviderSecretStore {
     });
   }
 
+  decryptCipher(encryptedApiKey: string): string {
+    return decrypt(encryptedApiKey, this.encryptionKey);
+  }
+
   async read(connectionId: string, client: SecretClient = this.prisma): Promise<string> {
     const row = await client.aiProviderSecret.findUnique({ where: { connectionId } });
     if (!row) {
       throw new NotFoundException('Provider secret not found');
     }
-    return decrypt(row.encryptedApiKey, this.encryptionKey);
+    return this.decryptCipher(row.encryptedApiKey);
   }
 
   async delete(connectionId: string, client: SecretClient = this.prisma): Promise<void> {

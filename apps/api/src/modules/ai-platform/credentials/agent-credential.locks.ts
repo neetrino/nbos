@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { lockLiveAgent, type PrismaTransaction } from '../agents/agent-row-lock';
+import { EXPIRED_AGENT_HAS_NO_CREDENTIALS, assertAgentNotExpired } from '../agents/agent-issuable';
 
 const REVOKED_AGENT_HAS_NO_CREDENTIALS = 'A revoked agent cannot receive credentials';
 
@@ -12,7 +13,8 @@ const REVOKED_AGENT_HAS_NO_CREDENTIALS = 'A revoked agent cannot receive credent
  * that by aborting one transaction instead of returning a domain error.
  */
 export async function lockIssuableAgent(tx: PrismaTransaction, agentId: string): Promise<void> {
-  await lockLiveAgent(tx, agentId, REVOKED_AGENT_HAS_NO_CREDENTIALS);
+  const agent = await lockLiveAgent(tx, agentId, REVOKED_AGENT_HAS_NO_CREDENTIALS);
+  assertAgentNotExpired(agent, EXPIRED_AGENT_HAS_NO_CREDENTIALS);
 }
 
 export async function lockCredentialRow(

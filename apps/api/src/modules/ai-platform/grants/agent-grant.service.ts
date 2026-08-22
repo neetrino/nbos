@@ -6,6 +6,11 @@ import { AiPlatformAuditService } from '../ai-platform-audit.service';
 import { AI_AUDIT_ACTION, AI_AUDIT_ENTITY } from '../ai-platform.constants';
 import { lockLiveAgent, type PrismaTransaction } from '../agents/agent-row-lock';
 import {
+  EXPIRED_AGENT_HAS_NO_GRANTS,
+  assertAgentNotExpired,
+  assertFutureExpiry,
+} from '../agents/agent-issuable';
+import {
   toAgentCapabilityGrantView,
   toAgentResourceScopeView,
   type AgentCapabilityGrantView,
@@ -16,6 +21,7 @@ import {
   resolveScopeId,
   resolveScopeResourceType,
 } from './agent-grant.rules';
+import { currentGrantWhere } from './grant-current';
 
 const REVOKED_AGENT_HAS_NO_GRANTS = 'A revoked agent cannot receive grants';
 
@@ -58,11 +64,14 @@ export class AgentGrantService {
     if (!isAiCapabilityKey(input.capabilityKey)) {
       throw new BadRequestException('Unknown capability');
     }
+    assertFutureExpiry(input.expiresAt);
     const reason = normalizeGrantReason(input.reason);
     const expiresAt = input.expiresAt ?? null;
 
     const grant = await this.prisma.$transaction(async (tx) => {
-      await lockLiveAgent(tx, input.agentId, REVOKED_AGENT_HAS_NO_GRANTS);
+      const locked = await lockLiveAgent(tx, input.agentId, REVOKED_AGENT_HAS_NO_GRANTS);
+      assertAgentNotExpired(locked, EXPIRED_AGENT_HAS_NO_GRANTS);
+      assertFutureExpiry(input.expiresAt);
       const upserted = await tx.externalAgentCapabilityGrant.upsert({
         where: {
           agentId_capabilityKey: { agentId: input.agentId, capabilityKey: input.capabilityKey },
@@ -136,6 +145,7 @@ export class AgentGrantService {
     input: GrantScopeInput,
     actingEmployeeId: string,
   ): Promise<AgentResourceScopeView> {
+    assertFutureExpiry(input.expiresAt);
     const key = {
       agentId: input.agentId,
       scopeType: input.scopeType as AgentScopeTypeEnum,
@@ -146,7 +156,9 @@ export class AgentGrantService {
     const expiresAt = input.expiresAt ?? null;
 
     const scope = await this.prisma.$transaction(async (tx) => {
-      await lockLiveAgent(tx, input.agentId, REVOKED_AGENT_HAS_NO_GRANTS);
+      const locked = await lockLiveAgent(tx, input.agentId, REVOKED_AGENT_HAS_NO_GRANTS);
+      assertAgentNotExpired(locked, EXPIRED_AGENT_HAS_NO_GRANTS);
+      assertFutureExpiry(input.expiresAt);
       const upserted = await tx.externalAgentResourceScope.upsert({
         where: { agentId_scopeType_scopeId_resourceType: key },
         create: { ...key, grantedById: actingEmployeeId, reason, expiresAt },
@@ -221,6 +233,46 @@ export class AgentGrantService {
       orderBy: { createdAt: 'asc' },
     });
     return scopes.map((scope) => toAgentResourceScopeView(scope));
+  }
+
+  /**
+   * Active Work Space grants for one workspace. Same table as central admin —
+   * this is a projection, not a second permission store.
+   */
+  async listActiveWorkspaceScopes(workspaceId: string): Promise<AgentResourceScopeView[]> {
+    const now = new Date();
+    const scopes = await this.prisma.externalAgentResourceScope.findMany({
+      where: {
+        scopeType: 'WORKSPACE',
+        scopeId: workspaceId,
+        ...currentGrantWhere(now),
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+    return scopes.map((scope) => toAgentResourceScopeView(scope));
+  }
+
+  async requireScopeOnAgent(agentId: string, scopeId: string): Promise<AgentResourceScopeView> {
+    const scope = await this.prisma.externalAgentResourceScope.findUnique({
+      where: { id: scopeId },
+    });
+    if (!scope || scope.agentId !== agentId) {
+      throw new NotFoundException('Resource scope not found');
+    }
+    return toAgentResourceScopeView(scope);
+  }
+
+  async requireScopeOnWorkspace(
+    workspaceId: string,
+    scopeId: string,
+  ): Promise<AgentResourceScopeView> {
+    const scope = await this.prisma.externalAgentResourceScope.findUnique({
+      where: { id: scopeId },
+    });
+    if (!scope || scope.scopeType !== 'WORKSPACE' || scope.scopeId !== workspaceId) {
+      throw new NotFoundException('Resource scope not found');
+    }
+    return toAgentResourceScopeView(scope);
   }
 
   private async auditGrant(

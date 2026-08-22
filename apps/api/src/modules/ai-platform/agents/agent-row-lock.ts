@@ -9,6 +9,7 @@ export interface LockedAgent {
   id: string;
   status: string;
   revokedAt: Date | null;
+  expiresAt: Date | null;
 }
 
 /**
@@ -35,7 +36,7 @@ export async function lockAgentRow(tx: PrismaTransaction, agentId: string): Prom
   }
   return tx.externalAgent.findUniqueOrThrow({
     where: { id: agentId },
-    select: { id: true, status: true, revokedAt: true },
+    select: { id: true, status: true, revokedAt: true, expiresAt: true },
   });
 }
 

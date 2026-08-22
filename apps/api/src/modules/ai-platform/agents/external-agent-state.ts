@@ -30,18 +30,19 @@ const isPast = isTimestampPast;
  * Effective agent state. Revocation wins over every other signal and is derived
  * from `revokedAt` as well as the status column, so a revoked agent can never be
  * walked back to ACTIVE by writing the status alone. Time-based expiry is then
- * applied, so an ACTIVE agent past `expiresAt` is EXPIRED without waiting for a
- * sweeper job.
+ * applied, including when the stored status is still DISABLED, so a lapsed
+ * actor cannot appear merely paused. An ACTIVE or DISABLED row past `expiresAt`
+ * is EXPIRED without waiting for a sweeper job.
  */
 export function resolveAgentState(agent: AgentStateSource, now: Date): AiAgentState {
   if (agent.status === 'REVOKED' || agent.revokedAt !== null) {
     return 'REVOKED';
   }
-  if (agent.status === 'DISABLED') {
-    return 'DISABLED';
-  }
   if (agent.status === 'EXPIRED' || isPast(agent.expiresAt, now)) {
     return 'EXPIRED';
+  }
+  if (agent.status === 'DISABLED') {
+    return 'DISABLED';
   }
   return 'ACTIVE';
 }

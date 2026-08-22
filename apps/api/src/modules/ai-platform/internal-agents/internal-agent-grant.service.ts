@@ -202,6 +202,16 @@ export class InternalAgentGrantService {
     return toAgentResourceScopeView(scope);
   }
 
+  async requireScopeOnAgent(agentId: string, scopeId: string): Promise<AgentResourceScopeView> {
+    const scope = await this.prisma.internalAiAgentResourceScope.findUnique({
+      where: { id: scopeId },
+    });
+    if (!scope || scope.agentId !== agentId) {
+      throw new NotFoundException('Resource scope not found');
+    }
+    return toAgentResourceScopeView(scope);
+  }
+
   async listCapabilities(agentId: string): Promise<AgentCapabilityGrantView[]> {
     const grants = await this.prisma.internalAiAgentCapabilityGrant.findMany({
       where: { agentId },

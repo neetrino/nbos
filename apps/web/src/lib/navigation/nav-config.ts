@@ -202,6 +202,11 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         permission: { module: 'COMPANY', action: 'EDIT' },
       },
       {
+        label: 'AI & Agents',
+        href: '/settings/ai-agents',
+        permission: { module: 'COMPANY', action: 'EDIT' },
+      },
+      {
         label: 'Security',
         href: '/settings/security',
         permission: { module: 'COMPANY', action: 'EDIT' },

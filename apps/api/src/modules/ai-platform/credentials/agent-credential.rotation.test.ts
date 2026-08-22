@@ -47,6 +47,7 @@ describe('AgentCredentialService rotation', () => {
     prisma.externalAgent.findUniqueOrThrow.mockResolvedValue({
       status: 'ACTIVE',
       revokedAt: null,
+      expiresAt: null,
     });
   });
 
@@ -177,10 +178,60 @@ describe('AgentCredentialService rotation', () => {
       );
     });
 
+    it('rotates an expired credential owned by a live agent', async () => {
+      prisma.externalAgentCredential.findUniqueOrThrow.mockResolvedValue(
+        credentialRow({ expiresAt: new Date('2020-01-01T00:00:00.000Z') }),
+      );
+      const issued = await service.rotate({ credentialId: 'cred-1' }, ACTOR_ID);
+      expect(issued.token).toMatch(/^nbos_agt_/);
+    });
+
+    it('rejects when successor expiry elapses after locks and before predecessor revoke', async () => {
+      const expiresAt = new Date(Date.now() + 60_000);
+      prisma.$transaction.mockImplementation(async (fn: (tx: MockPrisma) => Promise<unknown>) => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(expiresAt.getTime() + 1));
+        try {
+          return await fn(prisma);
+        } finally {
+          vi.useRealTimers();
+        }
+      });
+
+      await expect(service.rotate({ credentialId: 'cred-1', expiresAt }, ACTOR_ID)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.externalAgentCredential.update).not.toHaveBeenCalled();
+      expect(prisma.externalAgentCredential.create).not.toHaveBeenCalled();
+    });
+
+    it('refuses a past successor expiry before revoking the predecessor', async () => {
+      await expect(
+        service.rotate(
+          { credentialId: 'cred-1', expiresAt: new Date('2020-01-01T00:00:00.000Z') },
+          ACTOR_ID,
+        ),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('refuses to rotate into an expired agent', async () => {
+      prisma.externalAgent.findUniqueOrThrow.mockResolvedValue({
+        status: 'ACTIVE',
+        revokedAt: null,
+        expiresAt: new Date('2020-01-01T00:00:00.000Z'),
+      });
+      await expect(service.rotate({ credentialId: 'cred-1' }, ACTOR_ID)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.externalAgentCredential.create).not.toHaveBeenCalled();
+    });
+
     it('refuses to rotate into a revoked agent', async () => {
       prisma.externalAgent.findUniqueOrThrow.mockResolvedValue({
         status: 'REVOKED',
         revokedAt: new Date('2026-08-10T00:00:00.000Z'),
+        expiresAt: null,
       });
 
       await expect(service.rotate({ credentialId: 'cred-1' }, ACTOR_ID)).rejects.toThrow(

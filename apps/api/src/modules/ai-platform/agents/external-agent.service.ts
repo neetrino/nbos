@@ -81,13 +81,18 @@ export class ExternalAgentService {
     const description = normalizeAgentDescription(input.description);
 
     const agent = await this.prisma.$transaction(async (tx) => {
-      await lockLiveAgent(tx, agentId, REVOKED_AGENT_IS_IMMUTABLE);
+      const locked = await lockLiveAgent(tx, agentId, REVOKED_AGENT_IS_IMMUTABLE);
+      const restoreExpired =
+        input.expiresAt instanceof Date &&
+        input.expiresAt.getTime() > Date.now() &&
+        locked.status === 'EXPIRED';
       const updated = await tx.externalAgent.update({
         where: { id: agentId },
         data: {
           ...(name === undefined ? {} : { name }),
           ...(description === undefined ? {} : { description }),
           ...(input.expiresAt === undefined ? {} : { expiresAt: input.expiresAt }),
+          ...(restoreExpired ? { status: 'ACTIVE' } : {}),
         },
       });
       await this.logLifecycle(tx, agentId, AI_AUDIT_ACTION.agentUpdated, actingEmployeeId, {

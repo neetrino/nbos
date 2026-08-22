@@ -36,6 +36,20 @@ export class AiModelCatalogService {
     return rows.map((row) => toAiModelView(row));
   }
 
+  async listAll(filter?: {
+    connectionId?: string;
+    status?: AiModelStatus;
+  }): Promise<AiModelView[]> {
+    const rows = await this.prisma.aiModel.findMany({
+      where: {
+        ...(filter?.connectionId ? { connectionId: filter.connectionId } : {}),
+        ...(filter?.status ? { status: filter.status } : {}),
+      },
+      orderBy: [{ status: 'asc' }, { providerModelId: 'asc' }],
+    });
+    return rows.map((row) => toAiModelView(row));
+  }
+
   async activate(modelId: string, actingEmployeeId: string): Promise<AiModelView> {
     return this.setStatus(modelId, 'ACTIVE', actingEmployeeId, AI_AUDIT_ACTION.modelActivated);
   }

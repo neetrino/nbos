@@ -91,6 +91,27 @@ describe('ExternalAgentService', () => {
     });
   });
 
+  describe('update', () => {
+    it('reactivates a stored EXPIRED agent when expiry is extended', async () => {
+      const nextExpiry = new Date('2026-12-01T00:00:00.000Z');
+      lockRow(
+        prisma,
+        agentRow({ status: 'EXPIRED', expiresAt: new Date('2020-01-01T00:00:00.000Z') }),
+      );
+      prisma.externalAgent.update.mockResolvedValue(
+        agentRow({ status: 'ACTIVE', expiresAt: nextExpiry }),
+      );
+
+      const agent = await service.update('agent-1', { expiresAt: nextExpiry }, ACTOR_ID);
+
+      expect(prisma.externalAgent.update).toHaveBeenCalledWith({
+        where: { id: 'agent-1' },
+        data: expect.objectContaining({ expiresAt: nextExpiry, status: 'ACTIVE' }),
+      });
+      expect(agent.state).toBe('ACTIVE');
+    });
+  });
+
   describe('revoke', () => {
     beforeEach(() => {
       lockRow(prisma, agentRow());

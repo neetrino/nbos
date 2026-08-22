@@ -721,54 +721,58 @@ Runtime: `packages/database/prisma/schema/ai-internal-agents.prisma`, `apps/api/
 
 # AJ. Central AI administration UI
 
-558. [ ] Add central `Settings -> AI & Agents` area (or accepted equivalent).
-559. [ ] Add Overview page/summary.
-560. [ ] Add External Agents list.
-561. [ ] Add External Agent create flow.
-562. [ ] Add External Agent detail/edit flow.
-563. [ ] Add capability grant UI.
-564. [ ] Add Work Space scope grant UI.
-565. [ ] Add one-time token issuance display.
-566. [ ] Add token rotate flow.
-567. [ ] Add token revoke flow.
-568. [ ] Add External Agent disable/re-enable flow.
-569. [ ] Add last-used metadata.
-570. [ ] Add External Agent audit/activity view/link.
-571. [ ] Never redisplay raw token/hash after issuance.
-572. [ ] Add Providers page.
-573. [ ] Add OpenAI provider connection flow.
-574. [ ] Add Anthropic provider connection flow.
-575. [ ] Add Validate Connection action.
-576. [ ] Add Rotate/Replace Provider Key flow.
-577. [ ] Add Disable Provider flow.
-578. [ ] Add Models page.
-579. [ ] Add Sync Models action.
-580. [ ] Show DISCOVERED models separately.
-581. [ ] Add model Activate/Disable actions.
-582. [ ] Show provider/model metadata and internal notes/tags.
-583. [ ] Add Model Policies page.
-584. [ ] Add FIXED policy create/edit UI.
-585. [ ] Add PRIMARY_FALLBACK policy create/edit UI.
-586. [ ] Allow cross-provider candidates.
-587. [ ] Add Internal Agents page/shell.
-588. [ ] Add Internal Agent create/configure UI foundation.
-589. [ ] Add Model Policy assignment.
-590. [ ] Add prompt-policy assignment placeholder/foundation.
-591. [ ] Add approval-policy assignment placeholder/foundation.
-592. [ ] Add Usage page/shell.
-593. [ ] Add Approvals page/queue shell.
-594. [ ] Add AI Audit/Activity view.
-595. [ ] Add admin authorization tests.
+558. [x] Add central `Settings -> AI & Agents` area (or accepted equivalent).
+559. [x] Add Overview page/summary.
+560. [x] Add External Agents list.
+561. [x] Add External Agent create flow.
+562. [x] Add External Agent detail/edit flow.
+563. [x] Add capability grant UI.
+564. [x] Add Work Space scope grant UI.
+565. [x] Add one-time token issuance display.
+566. [x] Add token rotate flow.
+567. [x] Add token revoke flow.
+568. [x] Add External Agent disable/re-enable flow.
+569. [x] Add last-used metadata.
+570. [x] Add External Agent audit/activity view/link.
+571. [x] Never redisplay raw token/hash after issuance.
+572. [x] Add Providers page.
+573. [x] Add OpenAI provider connection flow.
+574. [x] Add Anthropic provider connection flow.
+575. [x] Add Validate Connection action.
+576. [x] Add Rotate/Replace Provider Key flow.
+577. [x] Add Disable Provider flow.
+578. [x] Add Models page.
+579. [x] Add Sync Models action.
+580. [x] Show DISCOVERED models separately.
+581. [x] Add model Activate/Disable actions.
+582. [x] Show provider/model metadata and internal notes/tags.
+583. [x] Add Model Policies page.
+584. [~] Add FIXED policy create/edit UI.
+585. [~] Add PRIMARY_FALLBACK policy create/edit UI.
+586. [x] Allow cross-provider candidates.
+587. [x] Add Internal Agents page/shell.
+588. [x] Add Internal Agent create/configure UI foundation.
+589. [x] Add Model Policy assignment.
+590. [x] Add prompt-policy assignment placeholder/foundation.
+591. [x] Add approval-policy assignment placeholder/foundation.
+592. [x] Add Usage page/shell.
+593. [x] Add Approvals page/queue shell.
+594. [x] Add AI Audit/Activity view.
+595. [x] Add admin authorization tests.
+
+Runtime: Employee admin HTTP is `/api/ai-admin` with existing `COMPANY` + `EDIT` (not `AgentAuthGuard`). Controllers wrap Chat 2/5 services; composition reads go through `AiAdminQueryService`. Settings → AI & Agents uses `ModuleHeroSlotProvider` + `PageHeroNavLinks`. Raw External Agent tokens and provider keys appear once in a modal / password field and never on later list/detail. REVOKED is terminal in UI (no enable/issue/grant). Sync does not auto-activate. Model Policies expose only `FIXED` and `PRIMARY_FALLBACK`; TIERED/ADAPTIVE are not in the UI. Internal Agents create as DRAFT and activate only via `InternalAgentService.activate`. Usage and Approvals are foundation shells. 584/585: create + activate/disable shipped; in-place candidate-replace editor is API-only (`replacePolicyCandidates`) in this chat.
 
 # AK. Contextual module access UI
 
-596. [ ] Add Work Space `Settings -> AI Access` contextual view.
-597. [ ] Show External Agents currently scoped to that Work Space.
-598. [ ] Allow authorized admin to grant existing Agent access from Work Space context.
-599. [ ] Allow authorized admin to revoke Work Space access contextually.
-600. [ ] Link to canonical central External Agent detail.
-601. [ ] Ensure contextual UI uses the same grants as central AI administration.
-602. [ ] Do not create a second Work Space-specific permission database.
+596. [x] Add Work Space `Settings -> AI Access` contextual view.
+597. [x] Show External Agents currently scoped to that Work Space.
+598. [x] Allow authorized admin to grant existing Agent access from Work Space context.
+599. [x] Allow authorized admin to revoke Work Space access contextually.
+600. [x] Link to canonical central External Agent detail.
+601. [x] Ensure contextual UI uses the same grants as central AI administration.
+602. [x] Do not create a second Work Space-specific permission database.
+
+Runtime: Work Space Settings → AI Access is gated by `COMPANY` + `EDIT` and calls `GET/POST/DELETE /api/ai-admin/workspaces/:workspaceId/access`. Grants write `external_agent_resource_scope` through `AgentGrantService.grantScope` / `revokeScope` with `scopeType: 'WORKSPACE'`. Token rotation is not offered in the contextual sheet. REVOKED agents cannot be granted.
 
 # AL. Security hardening
 

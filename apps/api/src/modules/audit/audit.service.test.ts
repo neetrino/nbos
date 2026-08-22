@@ -225,6 +225,66 @@ describe('AuditService', () => {
       expect(result.meta.total).toBe(5);
     });
   });
+
+  describe('findRecentByEntityTypes', () => {
+    it('queries the requested entity types', async () => {
+      prisma.auditLog.findMany.mockResolvedValue([]);
+      prisma.auditLog.count.mockResolvedValue(0);
+
+      await service.findRecentByEntityTypes(['EXTERNAL_AGENT', 'AI_MODEL'], {
+        page: 1,
+        pageSize: 8,
+      });
+
+      expect(prisma.auditLog.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { entityType: { in: ['EXTERNAL_AGENT', 'AI_MODEL'] } },
+          take: 8,
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        }),
+      );
+    });
+
+    it('returns an empty page when no entity types are requested', async () => {
+      const result = await service.findRecentByEntityTypes([]);
+      expect(result.items).toEqual([]);
+      expect(prisma.auditLog.findMany).not.toHaveBeenCalled();
+    });
+
+    it('clamps oversized pageSize', async () => {
+      prisma.auditLog.findMany.mockResolvedValue([]);
+      prisma.auditLog.count.mockResolvedValue(0);
+
+      await service.findRecentByEntityTypes(['EXTERNAL_AGENT'], { page: 0, pageSize: 10_000 });
+
+      expect(prisma.auditLog.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ take: 100, skip: 0 }),
+      );
+    });
+  });
+
+  describe('findRecentByEntityRefs', () => {
+    it('queries the exact entity type and id pairs', async () => {
+      prisma.auditLog.findMany.mockResolvedValue([]);
+      prisma.auditLog.count.mockResolvedValue(0);
+
+      await service.findRecentByEntityRefs([
+        { entityType: 'EXTERNAL_AGENT', entityId: 'agent-1' },
+        { entityType: 'EXTERNAL_AGENT_CREDENTIAL', entityId: 'cred-1' },
+      ]);
+
+      expect(prisma.auditLog.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            OR: [
+              { entityType: 'EXTERNAL_AGENT', entityId: 'agent-1' },
+              { entityType: 'EXTERNAL_AGENT_CREDENTIAL', entityId: 'cred-1' },
+            ],
+          },
+        }),
+      );
+    });
+  });
 });
 
 describe('attachActorsToAuditLogs machine display', () => {

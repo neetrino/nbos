@@ -124,6 +124,7 @@ export function WorkSpaceDetailPage() {
             ) : null}
             <EntityDriveNavAction onClick={() => setDriveOpen(true)} />
             <WorkSpaceDetailSettingsSheet
+              workspaceId={workspace.id}
               workspaceName={workspace.name}
               tasks={tasks}
               onEditWorkSpace={() => setEditOpen(true)}

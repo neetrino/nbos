@@ -414,7 +414,7 @@ Docs updated
 
 ## AI Platform Phase 1 (in progress)
 
-Cross-cutting actor/capability layer, not an Automation Layer feature. Execution chats: foundation/Audit → External identity/policy → domain gateway → REST/MCP → **providers/models/Internal Agent (Chat 5 done)** → admin UI → hardening → acceptance.
+Cross-cutting actor/capability layer, not an Automation Layer feature. Execution chats: foundation/Audit → External identity/policy → domain gateway → REST/MCP → providers/models/Internal Agent → **admin UI (Chat 6 done)** → hardening → acceptance.
 
 Canon: `02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md`.
 

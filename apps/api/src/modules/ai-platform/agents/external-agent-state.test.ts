@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { toExternalAgentView } from './external-agent.mapper';
 import {
   isAgentUsable,
   isGrantActive,
@@ -27,11 +28,14 @@ describe('resolveAgentState', () => {
     expect(isAgentUsable({ status: 'ACTIVE', expiresAt: PAST, revokedAt: null }, NOW)).toBe(false);
   });
 
-  it('keeps revoked and disabled states ahead of expiry', () => {
+  it('keeps revoke ahead of expiry and treats disabled-but-elapsed as EXPIRED', () => {
     expect(resolveAgentState({ status: 'REVOKED', expiresAt: PAST, revokedAt: PAST }, NOW)).toBe(
       'REVOKED',
     );
     expect(resolveAgentState({ status: 'DISABLED', expiresAt: PAST, revokedAt: null }, NOW)).toBe(
+      'EXPIRED',
+    );
+    expect(resolveAgentState({ status: 'DISABLED', expiresAt: FUTURE, revokedAt: null }, NOW)).toBe(
       'DISABLED',
     );
     expect(resolveAgentState({ status: 'EXPIRED', expiresAt: null, revokedAt: null }, NOW)).toBe(
@@ -49,6 +53,29 @@ describe('resolveAgentState', () => {
     expect(isAgentUsable({ status: 'ACTIVE', expiresAt: FUTURE, revokedAt: PAST }, NOW)).toBe(
       false,
     );
+  });
+
+  it('projects a DISABLED admin row with elapsed expiry as EXPIRED', () => {
+    expect(
+      toExternalAgentView(
+        {
+          id: 'a1',
+          name: 'Off',
+          description: null,
+          status: 'DISABLED',
+          ownerId: 'owner',
+          createdById: 'owner',
+          expiresAt: PAST,
+          revokedAt: null,
+          lastUsedAt: null,
+          lastUsedIp: null,
+          lastUsedChannel: null,
+          createdAt: NOW,
+          updatedAt: NOW,
+        },
+        NOW,
+      ).state,
+    ).toBe('EXPIRED');
   });
 
   it('treats an expiry exactly at now as elapsed', () => {

@@ -12,9 +12,16 @@ const ACTOR_ID = 'emp-admin';
  * Mirrors the `SELECT ... FOR UPDATE` on the agent row plus the locked read that
  * every grant transaction performs before it writes.
  */
-function lockAgent(prisma: MockPrisma, state: { status: string; revokedAt: Date | null }) {
+function lockAgent(
+  prisma: MockPrisma,
+  state: { status: string; revokedAt: Date | null; expiresAt?: Date | null },
+) {
   prisma.$queryRaw.mockResolvedValue([{ id: AGENT_ID }]);
-  prisma.externalAgent.findUniqueOrThrow.mockResolvedValue({ id: AGENT_ID, ...state });
+  prisma.externalAgent.findUniqueOrThrow.mockResolvedValue({
+    id: AGENT_ID,
+    expiresAt: null,
+    ...state,
+  });
 }
 
 describe('AgentGrantService capability grants', () => {
@@ -101,6 +108,65 @@ describe('AgentGrantService capability grants', () => {
       expect.objectContaining({ action: AI_AUDIT_ACTION.capabilityRevoked }),
       expect.anything(),
     );
+  });
+
+  it('rejects when grant expiry elapses after the agent lock', async () => {
+    const expiresAt = new Date(Date.now() + 60_000);
+    prisma.$transaction.mockImplementation(async (fn: (tx: MockPrisma) => Promise<unknown>) => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(expiresAt.getTime() + 1));
+      try {
+        return await fn(prisma);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    await expect(
+      service.grantCapability(
+        { agentId: AGENT_ID, capabilityKey: 'tasks.read', expiresAt },
+        ACTOR_ID,
+      ),
+    ).rejects.toThrow(BadRequestException);
+    expect(prisma.externalAgentCapabilityGrant.upsert).not.toHaveBeenCalled();
+  });
+
+  it('refuses a past grant expiry before writing', async () => {
+    await expect(
+      service.grantCapability(
+        {
+          agentId: AGENT_ID,
+          capabilityKey: 'tasks.read',
+          expiresAt: new Date('2020-01-01T00:00:00.000Z'),
+        },
+        ACTOR_ID,
+      ),
+    ).rejects.toThrow(BadRequestException);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('refuses to grant to a DISABLED agent whose expiry has elapsed', async () => {
+    lockAgent(prisma, {
+      status: 'DISABLED',
+      revokedAt: null,
+      expiresAt: new Date('2020-01-01T00:00:00.000Z'),
+    });
+    await expect(
+      service.grantCapability({ agentId: AGENT_ID, capabilityKey: 'tasks.read' }, ACTOR_ID),
+    ).rejects.toThrow(BadRequestException);
+    expect(prisma.externalAgentCapabilityGrant.upsert).not.toHaveBeenCalled();
+  });
+
+  it('refuses to grant to an expired agent', async () => {
+    lockAgent(prisma, {
+      status: 'ACTIVE',
+      revokedAt: null,
+      expiresAt: new Date('2020-01-01T00:00:00.000Z'),
+    });
+    await expect(
+      service.grantCapability({ agentId: AGENT_ID, capabilityKey: 'tasks.read' }, ACTOR_ID),
+    ).rejects.toThrow(BadRequestException);
+    expect(prisma.externalAgentCapabilityGrant.upsert).not.toHaveBeenCalled();
   });
 
   it('is idempotent when revoking twice', async () => {

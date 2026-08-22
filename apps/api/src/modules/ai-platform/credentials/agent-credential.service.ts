@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AiPlatformAuditService } from '../ai-platform-audit.service';
@@ -18,6 +18,7 @@ import {
 import { normalizeCredentialLabel, resolveOverlapWindow } from './agent-credential.rules';
 import { hashAgentSecret } from './agent-secret-hash';
 import { generateAgentToken, type GeneratedAgentToken } from './agent-token';
+import { assertFutureExpiry } from '../agents/agent-issuable';
 
 export interface IssueCredentialInput {
   agentId: string;
@@ -55,6 +56,7 @@ export class AgentCredentialService {
     input: IssueCredentialInput,
     actingEmployeeId: string,
   ): Promise<IssuedAgentCredential> {
+    assertFutureExpiry(input.expiresAt);
     const label = normalizeCredentialLabel(input.label);
     const generated = generateAgentToken();
     const secretHash = await hashAgentSecret(generated.secret);
@@ -62,6 +64,8 @@ export class AgentCredentialService {
 
     const credential = await this.prisma.$transaction(async (tx) => {
       await lockIssuableAgent(tx, input.agentId);
+      const writeAt = new Date();
+      assertFutureExpiry(input.expiresAt, writeAt);
       const created = await tx.externalAgentCredential.create({
         data: {
           agentId: input.agentId,
@@ -101,9 +105,9 @@ export class AgentCredentialService {
     input: RotateCredentialInput,
     actingEmployeeId: string,
   ): Promise<IssuedAgentCredential> {
+    assertFutureExpiry(input.expiresAt);
     const generated = generateAgentToken();
     const secretHash = await hashAgentSecret(generated.secret);
-    const now = new Date();
 
     const credential = await this.prisma.$transaction(async (tx) => {
       // Lock order is agent row first, credential row second — the same order
@@ -114,6 +118,8 @@ export class AgentCredentialService {
       const agentId = await resolveCredentialAgent(tx, input.credentialId);
       await lockIssuableAgent(tx, agentId);
       const previous = await claimRotationPredecessor(tx, input.credentialId, agentId);
+      const now = new Date();
+      assertFutureExpiry(input.expiresAt, now);
       const overlapUntil = resolveOverlapWindow({
         requested: input.previousValidUntil,
         currentExpiresAt: previous.expiresAt,
@@ -151,7 +157,7 @@ export class AgentCredentialService {
       return created;
     });
 
-    return { credential: toAgentCredentialView(credential, now), token: generated.token };
+    return { credential: toAgentCredentialView(credential, new Date()), token: generated.token };
   }
 
   async revoke(credentialId: string, actingEmployeeId: string): Promise<AgentCredentialView> {
@@ -178,6 +184,17 @@ export class AgentCredentialService {
       return revoked;
     });
 
+    return toAgentCredentialView(credential, now);
+  }
+
+  async requireOnAgent(agentId: string, credentialId: string): Promise<AgentCredentialView> {
+    const now = new Date();
+    const credential = await this.prisma.externalAgentCredential.findUnique({
+      where: { id: credentialId },
+    });
+    if (!credential || credential.agentId !== agentId) {
+      throw new NotFoundException('Credential not found');
+    }
     return toAgentCredentialView(credential, now);
   }
 

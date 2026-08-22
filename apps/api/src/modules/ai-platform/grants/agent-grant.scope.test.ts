@@ -13,9 +13,16 @@ const ACTOR_ID = 'emp-admin';
  * Mirrors the `SELECT ... FOR UPDATE` on the agent row plus the locked read that
  * every grant transaction performs before it writes.
  */
-function lockAgent(prisma: MockPrisma, state: { status: string; revokedAt: Date | null }) {
+function lockAgent(
+  prisma: MockPrisma,
+  state: { status: string; revokedAt: Date | null; expiresAt?: Date | null },
+) {
   prisma.$queryRaw.mockResolvedValue([{ id: AGENT_ID }]);
-  prisma.externalAgent.findUniqueOrThrow.mockResolvedValue({ id: AGENT_ID, ...state });
+  prisma.externalAgent.findUniqueOrThrow.mockResolvedValue({
+    id: AGENT_ID,
+    expiresAt: null,
+    ...state,
+  });
 }
 
 describe('AgentGrantService resource scopes', () => {
@@ -31,6 +38,26 @@ describe('AgentGrantService resource scopes', () => {
     } as unknown as AiPlatformAuditService;
     service = new AgentGrantService(prisma as never, audit);
     lockAgent(prisma, { status: 'ACTIVE', revokedAt: null });
+  });
+
+  it('rejects when scope expiry elapses after the agent lock', async () => {
+    const expiresAt = new Date(Date.now() + 60_000);
+    prisma.$transaction.mockImplementation(async (fn: (tx: MockPrisma) => Promise<unknown>) => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(expiresAt.getTime() + 1));
+      try {
+        return await fn(prisma);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+    await expect(
+      service.grantScope(
+        { agentId: AGENT_ID, scopeType: 'WORKSPACE', scopeId: 'ws-1', expiresAt },
+        ACTOR_ID,
+      ),
+    ).rejects.toThrow(BadRequestException);
+    expect(prisma.externalAgentResourceScope.upsert).not.toHaveBeenCalled();
   });
 
   it('grants a workspace scope', async () => {
@@ -157,6 +184,7 @@ describe('AgentGrantService resource scopes', () => {
         id: AGENT_ID,
         status: 'REVOKED',
         revokedAt: new Date('2026-08-21T10:00:00.000Z'),
+        expiresAt: null,
       });
       return [{ id: AGENT_ID }];
     });
@@ -217,5 +245,51 @@ describe('AgentGrantService resource scopes', () => {
     expect(prisma.resourceAccessGrant.create).not.toHaveBeenCalled();
     expect(prisma.resourceAccessGrant.upsert).not.toHaveBeenCalled();
     expect(prisma.resourceAccessGrant.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('lists active Work Space scopes from the same grant table', async () => {
+    prisma.externalAgentResourceScope.findMany.mockResolvedValue([
+      {
+        id: 'scope-1',
+        agentId: AGENT_ID,
+        scopeType: 'WORKSPACE',
+        scopeId: 'ws-1',
+        resourceType: null,
+        reason: null,
+        expiresAt: null,
+        revokedAt: null,
+        createdAt: new Date(),
+      },
+    ]);
+
+    const scopes = await service.listActiveWorkspaceScopes('ws-1');
+
+    expect(prisma.externalAgentResourceScope.findMany).toHaveBeenCalledWith({
+      where: {
+        scopeType: 'WORKSPACE',
+        scopeId: 'ws-1',
+        revokedAt: null,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }],
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+    expect(scopes).toHaveLength(1);
+    expect(scopes[0]?.scopeId).toBe('ws-1');
+  });
+
+  it('rejects a scope that belongs to another agent or workspace', async () => {
+    prisma.externalAgentResourceScope.findUnique.mockResolvedValue({
+      id: 'scope-1',
+      agentId: 'other-agent',
+      scopeType: 'WORKSPACE',
+      scopeId: 'ws-2',
+    });
+
+    await expect(service.requireScopeOnAgent(AGENT_ID, 'scope-1')).rejects.toThrow(
+      'Resource scope not found',
+    );
+    await expect(service.requireScopeOnWorkspace('ws-1', 'scope-1')).rejects.toThrow(
+      'Resource scope not found',
+    );
   });
 });

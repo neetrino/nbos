@@ -30,8 +30,8 @@
 | 2    | Credentials + Auth + Policy  | Claude Opus 5 High             | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-21 |
 | 3    | Capabilities + Tasks         | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-21 |
 | 4    | REST + MCP                   | Claude Opus 5 High             | Cursor Grok 4.6    | PASS WITH DEBTS, 2026-08-21 |
-| 5    | Providers + Models           | Cursor Grok 4.6                | GPT-5.6 Sol High   | следующий                   |
-| 6    | Admin UI                     | Cursor Grok 4.6 + Composer 2.5 | Cursor Grok 4.6    | —                           |
+| 5    | Providers + Models           | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-22 |
+| 6    | Admin UI                     | Cursor Grok 4.6 + Composer 2.5 | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-22 |
 | 7    | Security + regression        | Claude Opus 5 High             | GPT-5.6 Sol High   | —                           |
 | 8    | Final 700-point verification | Claude Opus 5 High             | —                  | —                           |
 
@@ -41,7 +41,7 @@
 
 - **Claude Opus 5 High** — там, где ошибка означает тихую дыру в авторизации или потерю данных: credentials/auth/policy (2), authorization parity REST и MCP (4), изоляция и security-регрессия (7), финальная приёмка 724 пунктов (8).
 - **Cursor Grok 4.6** — там, где он уже дал результат на Chat 1: domain capabilities (3), провайдеры и каталог моделей (5), Admin UI (6).
-- **Composer 2.5 Fast** — рутина внутри Chat 6: независимые экраны, формы, адаптив.
+- **Composer 2.5 Fast** — рутина внутри Chat 6: независимые экраны, формы, адаптив. Admin API, token issue и provider keys остаются на Grok.
 - **Проверка всегда другого семейства, чем исполнитель.** Работу Anthropic проверяет OpenAI-модель, работу Grok — OpenAI, работу OpenAI — Grok. Одинаковая модель повторяет собственную слепую зону, а родственная — склонна к тем же архитектурным привычкам. Ротация трёх семейств даёт настоящую независимость гейта.
 - **GPT-5.6 Sol High** как основной проверяющий: сильная модель, но дешевле держать её на коротком read-only гейте, чем на реализации.
 - **Claude Sonnet 4.6 Medium, GPT-5.4 Medium, Codex 5.3 Medium, Grok 4.5 High Fast** — резерв под мелкие правки после проверки, когда запускать сильную модель незачем.
@@ -56,9 +56,11 @@ Chat 2 закрыт **PASS WITH DEBTS**. Handoff: `18-Phase-1-Chat-2-Handoff.md`
 
 Chat 3 закрыт **PASS WITH DEBTS**. Handoff: `19-Phase-1-Chat-3-Handoff.md`.
 
-Chat 4 закрыт **PASS WITH DEBTS**. Handoff: `20-Phase-1-Chat-4-Handoff.md`. Ветка **`sipan`**, последний коммит `7eebbe41`. Следующий — Chat 5.
+Chat 4 закрыт **PASS WITH DEBTS**. Handoff: `20-Phase-1-Chat-4-Handoff.md`.
 
-Долги, которые Chat 5 **не** закрывает: J 186 `[~]` (section U), K 205 `[~]` / W 368 `[~]`, K 209 `[~]` (теперь достижим с провода), live handshake Cursor/Codex/Claude Code. Протокол `/api/v1/agent` — контракт: не ломать routes/tools/error codes.
+Chat 5 закрыт **PASS WITH DEBTS**. Handoff: `22-Phase-1-Chat-5-Handoff.md`.
+
+Chat 6 закрыт **PASS WITH DEBTS**. Handoff: `23-Phase-1-Chat-6-Handoff.md`. Ветка **`sipan`**. Следующий — Chat 7. Не закрывать этим коммитом: J 186, K 205 / W 368, K 209, D 91, Nest scheduler bind. REST/MCP не ломали. Второго secret store / grant table нет.
 
 ### Правила БД (критично)
 
@@ -102,76 +104,77 @@ Definition of Done Phase 1: все применимые пункты checklist �
 по REST/MCP и безопасно работать с разрешёнными Workspace/Tasks.
 ```
 
-## Промт исполнителя — Chat 5
+## Промт исполнителя — Chat 6
 
-Модель: **Cursor Grok 4.6**. В новый чат вставляй два блока: мастер-промт Phase 1, затем этот. Проверка после — GPT-5.6 Sol High.
+Модель: **Cursor Grok 4.6**. В новый чат вставляй два блока: мастер-промт Phase 1, затем этот. Проверка после — GPT-5.6 Sol High. Composer 2.5 — только если режешь независимые экраны, не для admin API и не для secret/token flows.
 
 ```text
-Продолжи Phase 1 AI Platform. Это Chat 5 — Providers, Models and Internal-Agent Foundation.
+Продолжи Phase 1 AI Platform. Это Chat 6 — AI Administration UI.
 
-ВЕТКА. Работай в sipan. Chat 4 закрыт PASS WITH DEBTS (последний коммит 7eebbe41,
-handoff 20-Phase-1-Chat-4-Handoff.md). Перед изменениями проверь наличие
-apps/api/src/modules/ai-platform/protocol/agent-operation.registry.ts,
-apps/api/src/modules/ai-platform/rest/,
-apps/api/src/modules/ai-platform/mcp/ и
-apps/api/src/common/utils/crypto.ts.
+ВЕТКА. Работай в sipan. Chat 5 закрыт PASS WITH DEBTS (последний коммит e62d745b,
+handoff 22-Phase-1-Chat-5-Handoff.md). Перед изменениями проверь наличие
+apps/api/src/modules/ai-platform/providers/ai-provider-connection.service.ts,
+apps/api/src/modules/ai-platform/internal-agents/internal-agent.service.ts,
+apps/api/src/modules/ai-platform/grants/ и
+packages/database/prisma/migrations/20260822010000_ai_provider_model_internal_agent/.
 Если их нет — ты не на той ветке, остановись и сообщи.
 
 ЧИТАЙ И СВЕРЯЙ С РЕПОЗИТОРИЕМ:
-- docs/NBOS/02-Modules/21-AI-Platform/20-Phase-1-Chat-4-Handoff.md (секция Chat 5 entry point)
-- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md (Y–AC)
-- docs/NBOS/02-Modules/21-AI-Platform/06-AI-Providers-Models-and-Routing.md
-- docs/NBOS/02-Modules/21-AI-Platform/11-Internal-Agent-Lifecycle-and-Assignments.md
-- docs/NBOS/02-Modules/21-AI-Platform/05-AI-Data-Security-and-Audit.md
+- docs/NBOS/02-Modules/21-AI-Platform/22-Phase-1-Chat-5-Handoff.md (секция Chat 6 entry point
+  и Remediation after FAIL)
+- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md (AJ–AK)
+- docs/NBOS/02-Modules/21-AI-Platform/07-AI-Admin-and-Connections-UX.md
+- существующий Settings hub: apps/web/src/app/(app)/settings/, nav-config.ts
 Handoff не является доказательством: сам прогони vitest и typecheck до начала работы.
 
-SCOPE CHAT 5 (чеклист Y–AC):
-- Provider connection foundation: OPENAI и ANTHROPIC за одним adapter interface.
-  Несколько connections на провайдера структурно возможны. Enable/disable,
-  lastValidatedAt, lastModelSyncAt, createdBy/audit. Бизнес-модули не зависят от провайдера.
-- Provider keys: существующий AES-256-GCM (apps/api/src/common/utils/crypto.ts,
-  CREDENTIALS_ENCRYPTION_KEY). Не второй crypto-стек. Ключ виден один раз при save/rotate,
-  после save не возвращается, не логируется, не пишется в Audit changes, не попадает
-  в AI-контекст и не становится input любой External Agent capability.
-- Validate connection without exposing secret. Rotate/replace и disable/revoke.
-- Model catalog: stable internal id + provider external id, DISCOVERED/ACTIVE/DISABLED/
-  DEPRECATED/UNAVAILABLE. Sync OpenAI и Anthropic. Manual Sync + scheduled path/contract.
-  Новые модели остаются DISCOVERED — auto-activate запрещён. Исчезнувшие не удалять,
-  помечать UNAVAILABLE/DEPRECATED. Provider metadata отдельно от internal suitability.
-- Model Policy: FIXED и PRIMARY_FALLBACK, ordered candidates, same- и cross-provider.
-  Кандидат в production assignment только enabled/available. Не silent-promote DISCOVERED.
-  TIERED/ADAPTIVE держать структурно возможным, learned/adaptive router НЕ реализовывать.
-- Internal Agent foundation: стабильная identity (не имя модели). DRAFT/ACTIVE/PAUSED/
-  DISABLED/ARCHIVED. Owner employee, linkage на capability grants/scopes, Model Policy,
-  prompt-policy и approval-policy contracts. Model change не меняет permissions агента.
-  Pause/disable блокирует новые execution. Archive сохраняет attribution. Audit lifecycle.
-- Audit через AuditService.log({ actor }). INTERNAL_AI не пишет userId.
+SCOPE CHAT 6 (чеклист AJ–AK):
+- Employee admin HTTP API над сервисами Chat 2/5. Сейчас есть только Agent REST/MCP,
+  человеческих admin-контроллеров нет. Добавь Employee JWT + существующий RBAC
+  (Settings-паттерн COMPANY EDIT / эквивалент). Не AgentAuthGuard. Не второй secret store,
+  не вторая grant table, не ResourceAccessGrant.employeeId.
+- Settings → AI & Agents: Overview, External Agents, Providers, Models, Model Policies,
+  Internal Agents foundation, Usage shell, Approvals shell, Audit/Activity.
+- External Agents: list/create/detail, capability grants, Work Space scopes, one-time
+  token issue/rotate/revoke, disable/re-enable, last-used, audit link.
+  REVOKED терминален — UI не предлагает enable/issue после revoke (инвариант Chat 2).
+- Providers: OpenAI и Anthropic connect, Validate, Rotate/Replace key, Disable.
+- Models: Sync, DISCOVERED отдельно от ACTIVE, Activate/Disable, metadata vs internal tags.
+  Sync не auto-activate.
+- Model Policies: FIXED и PRIMARY_FALLBACK, cross-provider candidates, только
+  production-eligible. Не silent-promote DISCOVERED. Не открывать TIERED/ADAPTIVE в UI.
+- Internal Agents: create в DRAFT; activate только через InternalAgentService.activate.
+  Assign Model Policy; prompt/approval — placeholder/foundation. Pause/disable/archive.
+  Переиспользовать revokeScope и ACTIVE-policy lock.
+- Contextual Workspace → Settings → AI Access: те же grants, что central UI.
+  Не создавать вторую permission DB.
+- Никогда не показывать raw External Agent token или provider key после save.
+  One-time secret — один модал, потом только prefix/status.
+- Admin authorization tests: без permission — 403; агентский токен на admin routes — отказ.
+- UI: существующие компоненты/токены Settings (PageHero, nav-config). Без inline styles.
+  Различай External Agent Connections и Internal Provider Connections.
 
 ЗАПРЕЩЕНО:
-- Settings / Admin UI (Chat 6);
-- ломать REST/MCP контракт Chat 4 (routes, tool names, error codes, envelope) —
-  только extend через agent-operation.registry.ts, если capability должна быть внешней;
-- adaptive/learned routing, полный internal employee chat, RAG/vector store,
-  Messenger auto-reply, production customer-facing execution;
-- полный Prompt Version runtime (AD) и Context Assembler (AE) — только linkage contracts;
-- rate-limit counters (J 186 / section U), output schema validator (K 205),
-  слияние domain commit + idempotency complete (K 209);
-- доступ AI к модулю Credentials / vault / паролям / сырым provider keys;
-- any, default exports, console.log, магические числа;
+- ломать REST/MCP контракт Chat 4;
+- adaptive routing, RAG, Messenger auto-reply, полный internal chat;
+- rate-limit counters (J 186), output schema validator (K 205), K 209, D 91,
+  Nest scheduler catalog bind (Chat 7);
+- доступ UI/API к модулю Credentials vault / паролям клиентов;
+- redisplay сырого секрета; логировать Authorization / apiKey;
+- any, default exports в новом feature-коде, console.log, магические числа;
 - удаление тестов и обход lint.
 
 БАЗА ДАННЫХ:
 - .env.local = dev Neon ep-late-frost-ag5aixzw; прод ep-sweet-dew-ag7259wn не трогать;
-- prisma migrate dev запрещён (дрейф истории → reset);
+- prisma migrate dev запрещён;
 - свои миграции только prisma migrate deploy с DIRECT_URL;
 - продовые миграции не выполняй.
 
 НА ВЫХОДЕ:
 - обнови чеклист [x]/[~]/[!] честно;
-- напиши docs/NBOS/02-Modules/21-AI-Platform/22-Phase-1-Chat-5-Handoff.md по формату Chat 4
+- напиши docs/NBOS/02-Modules/21-AI-Platform/23-Phase-1-Chat-6-Handoff.md по формату Chat 5
   (milestone, чеклист, файлы, миграции, реальные числа тестов, решения, конфликты,
-  риски, долги, entry point Chat 6);
-  номер 21 занят setup-доком Chat 4 — не перезаписывай 21-External-Agent-Client-Setup.md;
+  риски, долги, entry point Chat 7);
+  не перезаписывай 21-External-Agent-Client-Setup.md и 22-Phase-1-Chat-5-Handoff.md;
 - коммит не делай — его сделаем после чата проверки.
 ```
 

@@ -110,6 +110,8 @@ Do not build adaptive routing, full internal chat, RAG or Messenger AI execution
 
 ### Chat 6 — AI Administration UI
 
+Status: FAIL remediations applied in working tree; evidence `23-Phase-1-Chat-6-Handoff.md`. Not committed.
+
 Focus:
 
 - `Settings -> AI & Agents`;

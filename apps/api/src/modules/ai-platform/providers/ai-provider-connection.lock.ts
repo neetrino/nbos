@@ -7,6 +7,66 @@ export interface LockedProviderConnection {
   status: AiProviderConnectionStatusEnum;
   revokedAt: Date | null;
   provider: AiProviderTypeEnum;
+  keyPrefix: string;
+  baseUrl: string | null;
+  providerOrganizationId: string | null;
+  providerProjectId: string | null;
+  updatedAt: Date;
+}
+
+export interface ProviderConfigRevision {
+  secretFingerprint: string;
+  provider: AiProviderTypeEnum;
+  baseUrl: string | null;
+  providerOrganizationId: string | null;
+  providerProjectId: string | null;
+}
+
+export function toProviderConfigRevision(
+  connection: Pick<
+    LockedProviderConnection,
+    'provider' | 'baseUrl' | 'providerOrganizationId' | 'providerProjectId'
+  >,
+  encryptedApiKey: string | null,
+): ProviderConfigRevision {
+  return {
+    secretFingerprint: encryptedApiKey ?? '',
+    provider: connection.provider,
+    baseUrl: connection.baseUrl,
+    providerOrganizationId: connection.providerOrganizationId,
+    providerProjectId: connection.providerProjectId,
+  };
+}
+
+export function providerConfigChanged(
+  left: ProviderConfigRevision,
+  right: ProviderConfigRevision,
+): boolean {
+  return (
+    left.secretFingerprint !== right.secretFingerprint ||
+    left.provider !== right.provider ||
+    left.baseUrl !== right.baseUrl ||
+    left.providerOrganizationId !== right.providerOrganizationId ||
+    left.providerProjectId !== right.providerProjectId
+  );
+}
+
+export function validationRelevantFieldsChanged(
+  current: Pick<
+    LockedProviderConnection,
+    'baseUrl' | 'providerOrganizationId' | 'providerProjectId'
+  >,
+  next: {
+    baseUrl: string | null;
+    providerOrganizationId: string | null;
+    providerProjectId: string | null;
+  },
+): boolean {
+  return (
+    current.baseUrl !== next.baseUrl ||
+    current.providerOrganizationId !== next.providerOrganizationId ||
+    current.providerProjectId !== next.providerProjectId
+  );
 }
 
 export async function lockProviderConnection(
@@ -21,7 +81,17 @@ export async function lockProviderConnection(
   }
   return tx.aiProviderConnection.findUniqueOrThrow({
     where: { id: connectionId },
-    select: { id: true, status: true, revokedAt: true, provider: true },
+    select: {
+      id: true,
+      status: true,
+      revokedAt: true,
+      provider: true,
+      keyPrefix: true,
+      baseUrl: true,
+      providerOrganizationId: true,
+      providerProjectId: true,
+      updatedAt: true,
+    },
   });
 }
 

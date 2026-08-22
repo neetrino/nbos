@@ -79,6 +79,7 @@ Any proposal to replace a core NBOS module with an open-source or SaaS product r
 | Providers    | One `AiProviderAdapter` for OPENAI and ANTHROPIC. Multiple connections per provider are allowed. Optional `baseUrl` is HTTPS + official host allowlist only; redirects are not followed. Business modules never import a provider SDK.                                                                                                               |
 | Models       | Catalog rows are never deleted. New/returning models stay `DISCOVERED`. Production assignment requires `ACTIVE` model + `ACTIVE` connection. `PRIMARY_FALLBACK` keeps enabled PRIMARY first; an unavailable fallback must not hide a healthy primary. `TIERED`/`ADAPTIVE` exist on the enum; Phase 1 implements `FIXED` and `PRIMARY_FALLBACK` only. |
 | Internal AI  | Stable agent identity, not a model name. Same capability/scope architecture as External Agents on Internal-specific tables, including `revokeScope`. An ACTIVE agent cannot drop its Model Policy. Pause/disable/archive block new execution. `INTERNAL_AI` Audit writes never set `userId`.                                                         |
+| Admin UI     | Employee JWT + existing `COMPANY` + `EDIT`. HTTP prefix `/api/ai-admin`. Not `AgentAuthGuard`. No second secret store, grant table, or `ResourceAccessGrant.employeeId`. Contextual Work Space AI Access uses the same `AgentGrantService` scopes. Raw tokens/keys are one-time only. TIERED/ADAPTIVE stay out of the Phase 1 UI.                    |
 
 ### CRM And Marketing
 

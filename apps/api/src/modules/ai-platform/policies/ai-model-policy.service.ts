@@ -105,6 +105,14 @@ export class AiModelPolicyService {
     return policy ? toModelPolicyView(policy, policy.candidates) : null;
   }
 
+  async listAll(): Promise<AiModelPolicyView[]> {
+    const policies = await this.prisma.aiModelPolicy.findMany({
+      include: { candidates: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return policies.map((policy) => toModelPolicyView(policy, policy.candidates));
+  }
+
   async requireActive(policyId: string): Promise<AiModelPolicyView> {
     const policy = await this.findById(policyId);
     if (!policy) {

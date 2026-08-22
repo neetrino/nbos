@@ -35,6 +35,16 @@ import { AiProviderConnectionService } from './providers/ai-provider-connection.
 import { AiProviderSecretStore } from './providers/ai-provider-secret.store';
 import { AI_PROVIDER_FETCH } from './providers/ai-provider.types';
 import { OpenAiAdapter } from './providers/openai.adapter';
+import { AiAdminExternalAgentAccessController } from './admin/ai-admin-external-agent-access.controller';
+import { AiAdminExternalAgentsController } from './admin/ai-admin-external-agents.controller';
+import { AiAdminInternalAgentAccessController } from './admin/ai-admin-internal-agent-access.controller';
+import { AiAdminInternalAgentsController } from './admin/ai-admin-internal-agents.controller';
+import { AiAdminModelsController } from './admin/ai-admin-models.controller';
+import { AiAdminOverviewController } from './admin/ai-admin-overview.controller';
+import { AiAdminPoliciesController } from './admin/ai-admin-policies.controller';
+import { AiAdminProvidersController } from './admin/ai-admin-providers.controller';
+import { AiAdminQueryService } from './admin/ai-admin-query.service';
+import { AiAdminWorkspaceAccessController } from './admin/ai-admin-workspace-access.controller';
 import { AgentArtifactsController } from './rest/agent-artifacts.controller';
 import { AgentIdentityController } from './rest/agent-identity.controller';
 import { AgentTasksController } from './rest/agent-tasks.controller';
@@ -51,6 +61,15 @@ import { AgentTasksController } from './rest/agent-tasks.controller';
     AgentTasksController,
     AgentArtifactsController,
     AgentMcpController,
+    AiAdminOverviewController,
+    AiAdminExternalAgentsController,
+    AiAdminExternalAgentAccessController,
+    AiAdminProvidersController,
+    AiAdminModelsController,
+    AiAdminPoliciesController,
+    AiAdminInternalAgentsController,
+    AiAdminInternalAgentAccessController,
+    AiAdminWorkspaceAccessController,
   ],
   providers: [
     AiPlatformAuditService,
@@ -83,6 +102,7 @@ import { AgentTasksController } from './rest/agent-tasks.controller';
     AiModelPolicyResolver,
     InternalAgentService,
     InternalAgentGrantService,
+    AiAdminQueryService,
   ],
   exports: [
     ExternalAgentService,
