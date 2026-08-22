@@ -10,7 +10,8 @@ export const ENTITY_CODE_SCOPE = {
 
 export type EntityCodeScope = (typeof ENTITY_CODE_SCOPE)[keyof typeof ENTITY_CODE_SCOPE];
 
-type PrismaLike = Pick<InstanceType<typeof PrismaClient>, '$queryRaw'>;
+/** Narrow surface an allocator needs, so callers can pass a client or a transaction. */
+export type EntityCodePrismaClient = Pick<InstanceType<typeof PrismaClient>, '$queryRaw'>;
 
 /**
  * Atomically reserves the next number for a scope and year.
@@ -24,7 +25,7 @@ type PrismaLike = Pick<InstanceType<typeof PrismaClient>, '$queryRaw'>;
  * are not.
  */
 export async function allocateEntityCodeNumber(
-  prisma: PrismaLike,
+  prisma: EntityCodePrismaClient,
   scope: EntityCodeScope,
   year: number,
 ): Promise<number> {

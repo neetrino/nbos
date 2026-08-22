@@ -198,13 +198,28 @@ describe('TasksService', () => {
       prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
     });
 
-    it('generates code T-YYYY-NNNN', async () => {
-      prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
-      const result = await service.create({ title: 'Test', creatorId: 'c1' });
-      expect(result.code).toMatch(/^T-\d{4}-\d{4}$/);
+    it('writes the number reserved by the counter, without reading existing tasks', async () => {
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 4242 }]);
+      prisma.task.create.mockResolvedValue({ id: '1', code: 'unused-by-this-assertion' });
+
+      await service.create({ title: 'Test', creatorId: 'c1' });
+
+      expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
+      expect(prisma.task.findFirst).not.toHaveBeenCalled();
+      const data = prisma.task.create.mock.calls[0]?.[0].data as Record<string, unknown>;
+      expect(data.code).toBe(`T-${new Date().getFullYear()}-4242`);
       expect(prisma.task.create).toHaveBeenCalledWith(
         expect.objectContaining({ include: TASK_INCLUDE }),
       );
+    });
+
+    it('fails the create instead of inventing a code when the counter returns nothing', async () => {
+      prisma.$queryRaw.mockResolvedValue([]);
+
+      await expect(service.create({ title: 'Test', creatorId: 'c1' })).rejects.toThrow(
+        /counter for TASK/i,
+      );
+      expect(prisma.task.create).not.toHaveBeenCalled();
     });
 
     it('creates task inside a Work Space planning layer', async () => {

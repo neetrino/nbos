@@ -9,11 +9,7 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { buildTaskCompletionBlockers, normalizeTaskCompletionRules } from './task-completion-rules';
-import { formatTaskCode } from './task-code-generation';
-import {
-  allocateEntityCodeNumber,
-  ENTITY_CODE_SCOPE,
-} from '../../common/utils/entity-code-counter';
+import { allocateTaskCode } from './task-code-generation';
 import { taskFindAllPaginated } from './task-find-all-paginated.op';
 import { assertTaskAccessible } from './task-access.op';
 import {
@@ -574,8 +570,6 @@ export class TasksService {
   }
 
   private async generateCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const next = await allocateEntityCodeNumber(this.prisma, ENTITY_CODE_SCOPE.task, year);
-    return formatTaskCode(year, next);
+    return allocateTaskCode(this.prisma);
   }
 }

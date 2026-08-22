@@ -15,7 +15,10 @@ it found, on the developer's explicit decision. Nothing else in the repository w
 
 ## Verdict
 
-**PASS WITH OPERATIONAL CONDITIONS.**
+**PASS WITH OPERATIONAL CONDITIONS — superseded by the independent verification below, which
+returned FAIL.** The sections between here and `## Independent verification` are this chat's original
+report, left unedited so the two readings can be compared. See `## Response to independent
+verification` at the end for what has since been fixed and what still stands.
 
 Verification initially returned FAIL: this chat found a blocking product-code defect that no earlier
 milestone had seen — concurrent `tasks.create` through the External Agent gateway returned HTTP 500.
@@ -468,3 +471,226 @@ residue. Rate-limit and concurrency probe agents were revoked at the end of each
 evaluation and budget probe rows were deleted by their own drivers.
 
 Chat drivers and probes live in `apps/api/.chat12/` and are not product code.
+
+## Independent verification
+
+- **Model/date:** GPT-5.6 Sol, 2026-08-23.
+- **Verdict:** **FAIL**.
+- **Reason:** the executor fix is not a complete fix for the shared `Task.code` series, its
+  rolling-deploy claim is false, and canonical item K 209 / C24 remains an unresolved product-code
+  requirement. `27-Phase-1-Continuation-After-Chat-8.md` permits final partials only when missing
+  evidence depends on an unavailable credential/environment or a developer-controlled production
+  window. A developer acceptance note inside this report does not override that exit rule.
+
+### Commands and actual results
+
+- `git status --short --branch`, `git log -8 --oneline --decorate`, `git diff --check`:
+  `sipan`, clean and equal to `origin/sipan` at verification start. Current HEAD is
+  `b09487b1` (acceptance documentation); the executor fix is the preceding commit
+  `2e226dfd`. The fix changes eight files, +200/-40. Both committed diffs pass `diff --check`.
+- `pnpm exec prisma validate --config prisma.config.ts` from `packages/database`: exit 0,
+  multi-file schema valid.
+- `pnpm exec prisma migrate status --config prisma.config.ts`: exit 0; configured non-production
+  Neon `ep-restless-tooth-agz3assx`, 217 migrations, schema up to date. No migration was applied.
+- Read-only PostgreSQL probe of the migration expressions: synthetic
+  `T-2026-9999` + `T-2026-10000` yields numeric max `10000`; non-matching rows are ignored.
+  Live TASK counter/max pairs were `2024: 40/40`, `2025: 15/15`, `2026: 361/361`.
+- `pnpm test`: exit 0; **865 files passed / 4 skipped, 4403 tests passed / 8 skipped**,
+  duration 149.92 s. `AI_PLATFORM_DB_TEST_URL` was unset, so the real-DB suites did not execute in
+  this command.
+- Explicit opt-in run against the configured non-production `DIRECT_URL`: **4 files / 8 tests
+  passed**, including `entity-code-counter.int.test.ts` 2/2. Probe rows were scoped and cleaned.
+- `pnpm test:regression`: **22 files / 284 tests passed**.
+- `pnpm exec vitest run apps/api/src/modules/ai-platform packages/shared/src/ai`:
+  **110 files / 843 tests passed, 2 files / 4 tests skipped**. Authentication boundaries,
+  deny-by-default isolation, secret redaction/provider isolation, REST/MCP parity, provider/model
+  rules and Internal Agent foundations are green.
+- `agent-abuse-controls.http.int.test.ts` repeated three times in isolation: **7/7** each;
+  file durations 2.46–2.88 s, the 600-request test body 289–296 ms. The full suite also passed it.
+  The earlier timeout was not reproduced. The test has no explicit timeout, so load sensitivity is
+  a test-infrastructure debt, not evidence of a product failure.
+- `pnpm lint` and forced uncached `turbo lint --force`: exit 0, but **0 errors / 12 warnings**
+  (1 API, 11 web), not “Clean”.
+- Plain `pnpm typecheck`: exit 137 from API Node heap OOM near 4 GiB. Forced uncached
+  `NODE_OPTIONS='--max-old-space-size=8192' turbo typecheck --force`: exit 0, 5/5 tasks.
+- Forced uncached `NODE_OPTIONS='--max-old-space-size=8192' turbo build --force`: exit 0;
+  API compiled 1861 files, web compiled and generated 99 pages.
+
+### Discrepancies with the Chat 12 report
+
+1. **`PASS WITH OPERATIONAL CONDITIONS` is incompatible with the canon.** K 209 / C24 is explicitly
+   `[~]`, reproducible and not environment-bound. The direct canonical answer is **FAIL** until the
+   domain commit and idempotency result are made atomic/recoverable, or the canonical Phase 1 scope
+   is explicitly changed.
+2. **“Rolling-deploy safe in both directions” is false.** After the seed at max `M`, an old instance
+   and a new instance can both choose `M+1`. An old writer that commits after the seed also leaves
+   the counter stale; a later new writer can collide without concurrent requests. Rolling back to
+   the old path and later rolling forward has the same stale-counter problem.
+3. **C25 is not seven independent, out-of-surface series.** Its own list names eight areas, and the
+   repository contains at least 17 legacy read-then-insert allocators. Crucially,
+   `AutoTasksService` and `SupportService.createExecutionTask` still write the same `Task.code`
+   series as `TasksService`. They can invalidate the new TASK counter after full rollout.
+4. **C23's regression test is narrower than claimed.** It proves concurrent upserts on a generated
+   probe scope, but does not create Tasks, exercise `TasksService`, assert absence of `P2002`, or
+   contend with the legacy Task writers. It is also skipped by the default suite when
+   `AI_PLATFORM_DB_TEST_URL` is absent.
+5. **`tasks.service.test.ts` no longer proves code allocation.** The test mocks `$queryRaw` to `1`,
+   then asserts the code returned by a mocked `task.create`; it does not assert that `$queryRaw` was
+   called or that `next_value` becomes the code passed to `task.create`.
+6. **The reported full-suite and lint wording is not reproducible as written.** The default full
+   suite skipped 4 files / 8 tests; the opt-in files passed only in a separate explicit DB run.
+   Lint exits 0 but emits 12 warnings.
+7. The report says Chat 12 drivers remain in `apps/api/.chat12/`; that directory is absent from the
+   current worktree, so the claimed live AO/AP and adversarial transcripts cannot be re-inspected.
+
+### Defects and required fixes
+
+1. **Blocking — TASK counter has competing writers.**
+   - Paths: `apps/api/src/modules/automation/auto-tasks.service.ts` (`generateCode` +
+     direct `task.create`) and `apps/api/src/modules/support/support.service.ts`
+     (`generateTaskCode` + direct `task.create`).
+   - Behavior: these paths derive `max(tasks)+1` without advancing `entity_code_counters`. The next
+     `TasksService.create` can reserve the already inserted number and fail on `tasks.code`.
+   - Fix: make every Task creation path use one Tasks-owned allocator/service; remove all legacy
+     `Task.code` generators and direct Task writes that bypass that ownership boundary.
+   - Tests: real-DB concurrent and sequential mixed-writer tests over the public service paths,
+     asserting all Task creates succeed, codes are unique, and no `P2002` occurs.
+2. **Blocking — unsafe rollout contract.**
+   - Path: `packages/database/prisma/migrations/20260823000000_entity_code_counters/migration.sql`.
+   - Behavior: the comment promises bidirectional rolling safety that the SQL/code cannot provide.
+   - Fix: do not overlap old and new Task writers. Document a stop-writes/scale-to-zero sequence:
+     stop API/workers that create Tasks, apply/verify the seed, deploy every counter-based writer,
+     then resume. Rollback/re-forward requires the same stop-writes and counter reconciliation.
+     Because this migration is already applied on dev, do not silently edit its checksum; use an
+     approved migration-history reconciliation or an explicit erratum/runbook.
+   - Tests: a deployment compatibility test/probe must demonstrate the chosen no-overlap sequence;
+     do not claim rolling safety.
+3. **Blocking — K 209 / C24 remains product code.**
+   - Paths: `agent-capability.gateway.ts`, `agent-idempotency.service.ts`, and Tasks/Drive commit
+     boundaries.
+   - Behavior: a crash after domain commit and before checkpoint permanently pins the operation key.
+   - Fix: use a shared transaction where ownership permits, or a transactional outbox/domain
+     operation record that makes committed-result recovery deterministic.
+   - Tests: injected crashes before/after domain commit and checkpoint, including replay after TTL;
+     no duplicate domain write and no permanently unusable key.
+4. **Required test correction.**
+   - Paths: `entity-code-counter.int.test.ts`, `tasks.service.test.ts`, plus automation/support tests.
+   - Fix: make the acceptance DB job fail when its DB URL is missing; assert counter invocation and
+     the exact code passed to `task.create`; add end-to-end concurrent Task creation and mixed-writer
+     coverage.
+5. **Migration robustness before production.**
+   - The regex is correct for canonical values and numeric comparison, and a year without matches
+     correctly receives no seed. However `\d+` is unbounded while the cast/column is `INTEGER`; an
+     oversized digit-only legacy suffix would abort the migration. Add a production preflight or a
+     bounded numeric predicate before the approved window.
+
+### Remaining debts
+
+- Legitimate external conditions: AP 689–691 and 697 need an Anthropic/second-provider credential;
+  AM 638 needs an approved production maintenance window; worker TLS needs a production-like
+  `rediss://` endpoint.
+- AL 626 is not environment-bound. With no deferred action in Phase 1 it is structurally
+  inapplicable, but it cannot remain `[~]` under the current final-exit wording. Reconcile it
+  canonically as not applicable/currently verified, or defer the requirement explicitly.
+- The non-Task portions of C25 remain real races. They may be carried only after C25 is split from
+  the blocking shared TASK-series defect and their exclusion from Phase 1 is made explicit.
+- Root typecheck requires the documented 8 GiB Node heap; lint has 12 existing warnings.
+
+### Not verified and why
+
+- No production database or production deployment was contacted; no migration was applied.
+- Live Anthropic and cross-provider fallback were not run because no credential was available.
+- Production-like TLS Redis was not available.
+- Live AO/AP/browser acceptance was not repeated: the Chat 12 drivers/transcripts and raw one-time
+  Agent/provider credentials are absent. The committed HTTP/security/foundation suites were rerun.
+- Production data was not available for the oversized-suffix preflight or audit-table lock/window
+  estimation.
+
+## Response to independent verification
+
+Date 2026-08-23, on branch `sipan` after `origin/development` was merged in (`b485ab7b`). Each item
+below is answered in the reviewer's numbering. **The FAIL verdict still stands**, because blocking
+defect 3 is a scope decision that belongs to the developer, not to this chat.
+
+### Blocking 1 — TASK counter had competing writers: FIXED
+
+Confirmed independently before fixing: `SupportService.createExecutionTask` and `AutoTasksService`
+each carried a private `max(tasks)+1` generator and wrote `Task` through Prisma directly. The
+reviewer understated the consequence — no concurrency is needed at all. Counter and table were both
+at 361; one `max`-derived insert writes 362 and leaves the counter at 361, so the next ordinary
+create reserves 362 and collides. Converting one of three writers made the defect easier to hit than
+it was before.
+
+`allocateTaskCode` in `apps/api/src/modules/tasks/task-code-generation.ts` is now the only supported
+way to obtain a Task code, and all three services call it. Both private generators are deleted; a
+repository-wide search finds no remaining derivation from `max(tasks)` and exactly three
+`prisma.task.create` call sites, all of which allocate through it.
+
+Not fixed, and recorded as C9 in `../05-Tasks/04-Tasks-Cleanup-Register.md`: Support and Automation
+still write `Task` directly rather than through `TasksService`. The shared allocator removes the
+correctness defect but does not restore the ownership boundary, which is a Tasks refactor with its
+own regression surface and does not belong in an acceptance fix.
+
+### Blocking 2 — unsafe rollout contract: FIXED
+
+The claim of bidirectional rolling safety was false. The correction is the stop-writes sequence in
+C9 of `../05-Tasks/04-Tasks-Cleanup-Register.md` (preflight, stop every Task writer, apply and verify
+the seed, deploy all writers, resume). Rollback carries the same requirement, because a reverted
+instance resumes deriving from `max` and strands the counter again.
+
+**The migration file itself is unchanged, deliberately.** It was first edited in place, which was
+wrong: the migration is already applied to the non-production database, and its checksum is recorded
+in `_prisma_migrations`. Editing even a comment changes that checksum — measured at `1a70c2…` against
+the recorded `65e422…` — and `prisma migrate status` does not verify checksums, so the drift would
+have surfaced later as a `migrate deploy` failure. The file was restored byte-for-byte and verified
+back at `65e422…`. Its header therefore still carries the false rolling-safety sentence; C9 opens by
+marking that sentence superseded and naming itself the source of truth for rollout. Correcting the
+comment properly requires either a follow-up migration or an agreed reconciliation across every
+database that has applied this one.
+
+### Blocking 3 — K 209 / C24: NOT FIXED, developer decision required
+
+Unchanged and honestly outstanding. The reviewer is right that a developer's acceptance note does not
+override the canonical exit rule, so Phase 1 cannot be declared complete while this is `[~]`. The
+choice is to implement the shared transaction or outbox, or to change the canonical Phase 1 scope
+explicitly. This chat has done neither.
+
+### Required test correction 4: DONE
+
+- `tasks.service.test.ts` previously asserted the code on a mocked `task.create` return value, which
+  proved nothing. It now stubs the counter at a distinctive value and asserts the exact code passed
+  into `task.create`, that the counter was called once, and that the tasks table was never read. A
+  second case asserts the create fails rather than inventing a code when the counter returns nothing.
+- `auto-tasks.service.test.ts` had a case that asserted the old `max`-derived behavior; it now
+  asserts codes are reserved sequentially from the counter and that `task.findFirst` is never called.
+- `support.service.test.ts` asserts the same for `createExecutionTask`.
+- `task-code-allocation.int.test.ts` is new: against a real database it runs 12 concurrent
+  `TasksService.create` calls together with 3 `AutoTasksService` batches and asserts 27 distinct
+  codes with no `P2002`. The allocator-level test remains for pure contention. Coverage caveat,
+  stated in the file: the third writer, `SupportService.createExecutionTask`, is not in this test
+  because it needs a ticket/product/workspace fixture chain. Its unit test asserts the same two
+  properties, so what is missing is depth under real concurrency, not verification of the writer.
+
+The reviewer's point that the acceptance DB job should fail rather than skip when its URL is missing
+is a CI change and has not been made.
+
+### Migration robustness 5: MOVED TO PREFLIGHT
+
+The concern is real: the seed matches `\d+` while `next_value` is `INTEGER`, so a Task code with a
+suffix of ten or more digits would abort the migration. A bounded predicate and an in-migration guard
+were written and then reverted with the rest of the file, for the checksum reason above. The check is
+now step 1 of the C9 rollout — a single `SELECT` for `^T-\d{4}-\d{10,}$` that must return no rows
+before the migration is applied. Narrowing the seed instead of aborting was rejected: skipping such a
+row would seed the counter below an existing code and hand out a duplicate on the first allocation,
+so the fail-closed reading is the correct one whether it is enforced in SQL or in the runbook.
+
+### Checks after the fix
+
+- `vitest run` over `modules/tasks`, `modules/automation`, `modules/support`, `common/utils`:
+  29 files / 165 tests passed, with `AI_PLATFORM_DB_TEST_URL` set so both real-database suites ran.
+- `pnpm lint`: 0 errors, 12 pre-existing warnings, none in the changed files.
+- `NODE_OPTIONS='--max-old-space-size=8192' turbo typecheck --force`: 5/5 tasks, exit 0.
+- Counter/table reconciliation on the non-production database: `2024 max=40 counter=40`,
+  `2025 max=15 counter=15`, `2026 max=361 counter=388`. The 2026 gap is the 27 probe tasks the
+  integration test reserved and deleted, which is the intended reserve-not-reissue behavior. No probe
+  rows remain.
