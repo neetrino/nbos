@@ -32,8 +32,8 @@
 | 4    | REST + MCP                   | Claude Opus 5 High             | Cursor Grok 4.6    | PASS WITH DEBTS, 2026-08-21 |
 | 5    | Providers + Models           | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-22 |
 | 6    | Admin UI                     | Cursor Grok 4.6 + Composer 2.5 | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-22 |
-| 7    | Security + regression        | Claude Opus 5 High             | GPT-5.6 Sol High   | следующий                   |
-| 8    | Final 700-point verification | Claude Opus 5 High             | —                  | —                           |
+| 7    | Security + regression        | Claude Opus 5 High             | GPT-5.6 Sol High   | PASS WITH DEBTS, 2026-08-22 |
+| 8    | Final 700-point verification | Claude Opus 5 High             | GPT-5.6 Sol High   | следующий                   |
 
 Критерий выбора: **функционал дороже стоимости модели**. Сильная модель ставится туда, где отказ **тихий** — зелёные тесты при реально незакрытой проверке доступа. Где отказ громкий (сломанный экран, упавший провайдер, красный тест), достаточно Grok. Экономия на исполнителе не является аргументом.
 
@@ -60,9 +60,11 @@ Chat 4 закрыт **PASS WITH DEBTS**. Handoff: `20-Phase-1-Chat-4-Handoff.md`
 
 Chat 5 закрыт **PASS WITH DEBTS**. Handoff: `22-Phase-1-Chat-5-Handoff.md`.
 
-Chat 6 закрыт **PASS WITH DEBTS**. Handoff: `23-Phase-1-Chat-6-Handoff.md`. Ветка **`sipan`**, последний коммит `5fe73e50`. Следующий — Chat 7.
+Chat 6 закрыт **PASS WITH DEBTS**. Handoff: `23-Phase-1-Chat-6-Handoff.md`.
 
-Chat 7 закрывает AL–AM–AN, section U (J 186), Nest catalog bind AA 420 и leftover security-долги Chat 6. Не Chat 8: не финальный walk 724 пунктов и не live Cursor handshake как acceptance.
+Chat 7 закрыт **PASS WITH DEBTS**. Handoff: `24-Phase-1-Chat-7-Handoff.md`. Ветка **`sipan`**, последний коммит `d0df312e`. Следующий — Chat 8.
+
+Chat 8 — приёмка, не новый слой. Walk A–AQ, live AO REST/MCP, AP только с ключами от разработчика, remaining-gap report. Не ломать REST/MCP. Не применять продовый `audit_actor_aware` без окна.
 
 ### Правила БД (критично)
 
@@ -106,84 +108,77 @@ Definition of Done Phase 1: все применимые пункты checklist �
 по REST/MCP и безопасно работать с разрешёнными Workspace/Tasks.
 ```
 
-## Промт исполнителя — Chat 7
+## Промт исполнителя — Chat 8
 
-Модель: **Claude Opus 5 High**. В новый чат вставляй два блока: мастер-промт Phase 1, затем этот. Проверка после — GPT-5.6 Sol High.
+Модель: **Claude Opus 5 High**. В новый чат вставляй два блока: мастер-промт Phase 1, затем этот. Проверка remaining-gap report — GPT-5.6 Sol High (Chat 8 сам гейт, но отчёт не должен ревьюить сам себя).
 
 ```text
-Продолжи Phase 1 AI Platform. Это Chat 7 — Security, Regression and Operational Hardening.
+Продолжи Phase 1 AI Platform. Это Chat 8 — Final Verification and Acceptance.
 
-ВЕТКА. Работай в sipan. Chat 6 закрыт PASS WITH DEBTS (последний коммит 5fe73e50,
-handoff 23-Phase-1-Chat-6-Handoff.md). Перед изменениями проверь наличие
-apps/api/src/modules/ai-platform/admin/,
-apps/web/src/features/ai-admin/,
-apps/api/src/modules/ai-platform/protocol/ и
-apps/api/src/modules/scheduler/scheduler-job-catalog.entries.ts.
+Ты ПРИНИМАЕШЬ Phase 1, а не проектируешь новый слой. Новую архитектуру не изобретай.
+Дыры закрывай минимальным фиксом только если без него AO/AQ лгут. Иначе честно [~] или [!].
+
+ВЕТКА. Работай в sipan. Chat 7 закрыт PASS WITH DEBTS (последний коммит d0df312e,
+handoff 24-Phase-1-Chat-7-Handoff.md). Перед работой проверь наличие
+apps/api/src/modules/ai-platform/limits/,
+apps/api/src/modules/ai-platform/security/,
+docs/NBOS/02-Modules/21-AI-Platform/25-AI-Platform-Operations-Runbooks.md и
+docs/NBOS/02-Modules/21-AI-Platform/21-External-Agent-Client-Setup.md.
 Если их нет — ты не на той ветке, остановись и сообщи.
 
 ЧИТАЙ И СВЕРЯЙ С РЕПОЗИТОРИЕМ:
-- docs/NBOS/02-Modules/21-AI-Platform/23-Phase-1-Chat-6-Handoff.md (Chat 7 entry point
-  и Reverification after fifth remediation)
+- docs/NBOS/02-Modules/21-AI-Platform/24-Phase-1-Chat-7-Handoff.md (Chat 8 entry point)
 - docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md
-  (U, AL, AM, AN)
-- docs/NBOS/02-Modules/21-AI-Platform/05-AI-Data-Security-and-Audit.md
+  целиком, с пункта 1
 - docs/NBOS/02-Modules/21-AI-Platform/99-AI-Cleanup-Register.md
-Handoff не является доказательством: сам прогони vitest и typecheck до начала работы.
+- docs/NBOS/02-Modules/21-AI-Platform/00-AI-Platform-Overview.md
+Handoff Chat 7 не является доказательством: сам прогони pnpm test, pnpm lint, pnpm typecheck
+и API boot до AO.
 
-SCOPE CHAT 7:
-- AL 603–626 security hardening с тестами, не чеклистом: Credentials/vault недоступны агенту;
-  agent token не проходит Employee API; isolation Projects/Products/Workspaces/Tasks;
-  REST=MCP isolation; Authorization redacted; hashes и provider keys не API-visible after save;
-  revoke/disable блокирует следующий REST и MCP; malformed/oversized rejected;
-  prompt/task/comment/file не меняют policy; Drive link не выходит из scope;
-  нет raw SQL capability, нет tasks.delete, нет force-complete, нет Finance mutation,
-  нет client-message send; DISCOVERED не auto-activate; provider key не в AI context;
-  queued sensitive actions revalidate revoked actor/grant before commit (AL 626).
-- AM 627–640 regression: employee login/RBAC/Platform Access/Audit historical rows/
-  Tasks UI+workflow/Drive/Integrations не сломаны. API, worker и scheduler boot.
-  Phase 1 migrations production-safe / forward-fixable; lint/typecheck/full test suite.
-- AN 641–656 docs + runbooks: Hub, Technical Decisions, Roadmap, Architecture Layers
-  (AI не «просто Automation Layer»), Audit/Tasks/Drive если runtime изменился,
-  cleanup register, token rotation/revoke runbook, leaked-token incident,
-  provider-key rotation, policy-denial troubleshooting, model-sync troubleshooting.
-  REST/MCP setup docs уже есть (21-External-Agent-Client-Setup.md) — обнови, не дублируй.
-- U / J 186: per-agent и per-capability rate limits, payload size, optional concurrency.
-  Abusive agent не съедает employee API capacity (не шарить глобальный ThrottlerGuard
-  employee-default). Ошибка AGENT_RATE_LIMITED + retry metadata. Именованные константы,
-  выбранные окна записать в handoff. Не молча 30s/generic.
-- AA 420: bind AI_MODEL_CATALOG_SYNC_CONTRACT.runnerMethod на SchedulerService,
-  rosterIntent=off. Не раздувать scheduler.service.ts сверх лимита — split, если надо.
-- Leftover security Chat 6: HTTP enable на DISABLED+elapsed expiresAt не должен
-  оставлять «потом enable без второго enable»; lastValidatedAt не штамповать после
-  concurrent disable; replacement-key preflight failures аудировать.
+SCOPE CHAT 8:
+1. Walk всего чеклиста A–AQ. Каждый [x] — код + тест или live evidence. Не поднимай [~]
+   до [x] без нового доказательства. Не оставляй [x] там, где handoff врёт.
+2. AO 657–685 live на non-production Work Space: один test External Agent, REST и MCP,
+   isolation, create/update отдельно, delete отсутствует, start/comment/artifact/submit-review,
+   human completion остаётся у человека, idempotent retry, revoke credential блокирует
+   следующий REST и MCP, disable блокирует все credentials, audit без raw token.
+   Админ-действия — по 25-AI-Platform-Operations-Runbooks.md.
+3. AP 686–705: OpenAI/Anthropic connect/validate/sync, DISCOVERED не ACTIVE, key не
+   читается после save, FIXED + PRIMARY_FALLBACK (в т.ч. cross-provider), Internal Agent
+   DRAFT → activate с зависимостями. Ключи НЕ выдумывай: попроси test keys у разработчика.
+   Нет ключей — AP [~] с этой причиной, не мокай live как done.
+4. AQ 706–721 architecture review: нет Prisma в REST/MCP adapters, один Actor→Policy→
+   Capability→Domain→Audit, Agent ≠ Model, secrets out of AI context, human RBAC intact,
+   Phase 1 non-goals отсутствуют, foundation reusable for future employee chat / Messenger /
+   Documents / CRM / Analytics без второй identity-системы.
+5. Exit criterion в конце 10-Phase-1-… — 11 пунктов. Скажи честно, какие выполнены.
+6. Обнови 99-AI-Cleanup-Register.md: каждый remaining gap с evidence.
+7. Remaining-gap report в handoff: J 186 (verdict не доходит до evaluator), K 205/W 368,
+   K 209, D 91, AL 626 (нет queued execution), shared Redis rate-limit store,
+   AM 638 production audit-migration window, 584/585 candidate editor, multi-instance limiter,
+   TLS Redis worker, browser E2E если не закрыл AO.
+
+Можно закрыть [~] evidence, не кодом: AM 627/631 — browser walk login + Tasks UI;
+worker /ready уже зелёный на local Redis в Chat 7 — подтверди сам.
 
 ЗАПРЕЩЕНО:
-- ломать REST/MCP контракт (routes, tool names, error codes, envelope) —
-  rate-limit headers/AGENT_RATE_LIMITED уже в 09 contract, это extend, не reshape;
-- Settings UI-редизайн, in-place policy candidate editor, Overview FAILED chip —
-  не polish-чат;
-- AO–AQ live acceptance и полный walk 724 пунктов (это Chat 8);
-- AH/AI usage/evaluation runtime, adaptive routing, RAG, Messenger auto-reply;
-- K 205 output schema validator и K 209 merge domain+idempotency complete —
-  не открывать, если не требуется для AL 626;
-- D 91 approval emitters, полный approval workflow;
-- доступ к Credentials vault / паролям клиентов;
-- invent accounts/API keys; live OpenAI/Anthropic только если разработчик дал test keys;
-- prisma migrate dev; продовые миграции;
-- any, default exports в новом feature-коде, console.log, магические числа;
-- удаление тестов и обход lint.
+- новая архитектура, adaptive routing, RAG, Messenger auto-reply, полный internal chat;
+- ломать REST/MCP контракт;
+- Credentials vault / пароли клиентов / invent API keys;
+- prisma migrate dev; продовые миграции; audit_actor_aware на прод без окна разработчика;
+- удаление тестов, обход lint, any в новом коде.
 
 БАЗА ДАННЫХ:
-- .env.local = dev Neon ep-late-frost-ag5aixzw; прод ep-sweet-dew-ag7259wn не трогать;
-- свои миграции только prisma migrate deploy с DIRECT_URL.
+- .env.local = dev Neon ep-late-frost-ag5aixzw; прод ep-sweet-dew-ag7259wn не трогать.
+- Test agent и test tasks — только non-prod Workspace. После сценария задокументируй
+  что создал; destructive cleanup только своих test rows.
 
 НА ВЫХОДЕ:
-- обнови чеклист [x]/[~]/[!] честно;
-- напиши docs/NBOS/02-Modules/21-AI-Platform/24-Phase-1-Chat-7-Handoff.md по формату Chat 6
-  (milestone, чеклист, файлы, миграции, реальные числа тестов, решения, конфликты,
-  риски, долги, entry point Chat 8);
-  не перезаписывай 21–23 handoff/setup файлы;
-- коммит не делай — его сделаем после чата проверки.
+- чеклист [x]/[~]/[!] честный по всему Phase 1;
+- docs/NBOS/02-Modules/21-AI-Platform/26-Phase-1-Chat-8-Acceptance.md
+  (walk summary, AO/AP/AQ evidence, exit criterion, remaining gaps, cleanup register delta);
+  не перезаписывай 21–25 setup/handoff/runbook файлы;
+- коммит не делай — его сделаем после проверки remaining-gap report.
 ```
 
 ## Промт проверки (универсальный)
