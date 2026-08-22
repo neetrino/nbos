@@ -30,7 +30,7 @@ model InternalAiAgent {
   modelPolicyId    String?                   @map("model_policy_id")
   /// Published Prompt Policy. Runtime resolves the current PUBLISHED version.
   promptPolicyId   String?                   @map("prompt_policy_id")
-  /// Opaque approval-policy contract id. Approval runtime is Chat AF.
+  /// Opaque approval-policy assignment id. Requests persist on AiApprovalRequest.
   approvalPolicyId String?                   @map("approval_policy_id")
   environment      String?
   activatedAt      DateTime?                 @map("activated_at")

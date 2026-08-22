@@ -230,6 +230,21 @@ describe('evaluateAiPolicy approval', () => {
     expect(decision.outcome).toBe('REQUIRE_APPROVAL');
   });
 
+  it('requires approval for messenger send even after the send grant', () => {
+    const decision = evaluateAiPolicy(
+      readRequest({
+        capabilityKey: 'messenger.reply_send',
+        capability: getAiCapability('messenger.reply_send'),
+        grant: { capabilityKey: 'messenger.reply_send', revoked: false, expired: false },
+        scopes: [{ scopeType: 'RESOURCE', scopeId: 'conv-1', resourceType: 'CONVERSATION' }],
+        target: { resourceType: 'CONVERSATION', resourceId: 'conv-1' },
+        targetDataClassification: 'INTERNAL',
+        maxRiskClass: 'HIGH',
+      }),
+    );
+    expect(decision.outcome).toBe('REQUIRE_APPROVAL');
+  });
+
   it('allows once approval has been granted', () => {
     const gated: AiCapabilityDefinition = {
       ...getAiCapability('tasks.create')!,

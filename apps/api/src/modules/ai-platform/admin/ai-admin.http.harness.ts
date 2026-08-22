@@ -32,7 +32,9 @@ import { AiAdminProvidersController } from './ai-admin-providers.controller';
 import { AiAdminQueryService } from './ai-admin-query.service';
 import { AiAdminWorkspaceAccessController } from './ai-admin-workspace-access.controller';
 import { AiAdminPromptPoliciesController } from './ai-admin-prompt-policies.controller';
+import { AiAdminApprovalsController } from './ai-admin-approvals.controller';
 import { AiPromptPolicyService } from '../prompts/ai-prompt-policy.service';
+import { AiApprovalRequestService } from '../approvals/ai-approval-request.service';
 import { AGENT_TOKEN } from '../protocol/agent-protocol.http.harness';
 
 export const AI_ADMIN_JWT_SECRET = 'test-jwt-secret';
@@ -146,6 +148,13 @@ function createServiceMocks() {
       publish: vi.fn(),
       rollback: vi.fn(),
     },
+    approvals: {
+      listPending: vi.fn(),
+      findById: vi.fn(),
+      approve: vi.fn(),
+      reject: vi.fn(),
+      cancel: vi.fn(),
+    },
     audit: {
       findRecentByEntityTypes: vi.fn(),
       findByEntity: vi.fn(),
@@ -171,6 +180,7 @@ function harnessProviders(
     { provide: InternalAgentService, useValue: services.internalAgents },
     { provide: InternalAgentGrantService, useValue: services.internalGrants },
     { provide: AiPromptPolicyService, useValue: services.prompts },
+    { provide: AiApprovalRequestService, useValue: services.approvals },
     { provide: AuditService, useValue: services.audit },
     { provide: ConfigService, useValue: { getOrThrow: () => AI_ADMIN_JWT_SECRET } },
     {
@@ -204,6 +214,7 @@ export async function startAiAdminHarness(): Promise<AiAdminHarness> {
       AiAdminProvidersController,
       AiAdminWorkspaceAccessController,
       AiAdminPromptPoliciesController,
+      AiAdminApprovalsController,
     ],
     providers: harnessProviders(services, employeeFindUnique),
   }).compile();

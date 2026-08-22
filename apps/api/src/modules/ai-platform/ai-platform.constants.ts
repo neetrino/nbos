@@ -13,6 +13,7 @@ export const AI_AUDIT_ENTITY = {
   internalAgent: 'INTERNAL_AI_AGENT',
   internalCapabilityGrant: 'INTERNAL_AI_AGENT_CAPABILITY_GRANT',
   internalResourceScope: 'INTERNAL_AI_AGENT_RESOURCE_SCOPE',
+  approvalRequest: 'AI_APPROVAL_REQUEST',
 } as const;
 
 /** Audit actions for External Agent lifecycle and authorization outcomes. */
@@ -53,6 +54,11 @@ export const AI_AUDIT_ACTION = {
   promptVersionPublished: 'PROMPT_VERSION_PUBLISHED',
   promptVersionRolledBack: 'PROMPT_VERSION_ROLLED_BACK',
   promptVersionRetired: 'PROMPT_VERSION_RETIRED',
+  approvalRequested: 'APPROVAL_REQUESTED',
+  approvalDecided: 'APPROVAL_DECIDED',
+  approvalCancelled: 'APPROVAL_CANCELLED',
+  approvalExpired: 'APPROVAL_EXPIRED',
+  approvalConsumed: 'APPROVAL_CONSUMED',
   internalAgentCreated: 'INTERNAL_AGENT_CREATED',
   internalAgentUpdated: 'INTERNAL_AGENT_UPDATED',
   internalAgentActivated: 'INTERNAL_AGENT_ACTIVATED',

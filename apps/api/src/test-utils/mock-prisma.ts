@@ -138,6 +138,7 @@ export function createMockPrisma() {
     aiModelPolicyCandidate: createModelMock(),
     aiPromptPolicy: createModelMock(),
     aiPromptVersion: createModelMock(),
+    aiApprovalRequest: createModelMock(),
     internalAiAgent: createModelMock(),
     internalAiAgentSurfaceAssignment: createModelMock(),
     internalAiAgentCapabilityGrant: createModelMock(),

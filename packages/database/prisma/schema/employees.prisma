@@ -163,6 +163,7 @@ model Employee {
   internalAiAgentCapabilityGrantsRevoked InternalAiAgentCapabilityGrant[] @relation("InternalAiAgentCapabilityGrantRevokedBy")
   internalAiAgentResourceScopesMade  InternalAiAgentResourceScope[]      @relation("InternalAiAgentResourceScopeGrantedBy")
   internalAiAgentResourceScopesRevoked InternalAiAgentResourceScope[]    @relation("InternalAiAgentResourceScopeRevokedBy")
+  aiApprovalRequestsDecided          AiApprovalRequest[]                 @relation("AiApprovalRequestDecidedBy")
 
   @@map("employees")
 }

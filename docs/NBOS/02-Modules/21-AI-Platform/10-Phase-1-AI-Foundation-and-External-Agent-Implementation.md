@@ -108,13 +108,13 @@ Runtime: `packages/shared/src/actor/*`. Tests: `normalize-actor-context.test.ts`
 88. [x] Audit model policy changes.
 89. [x] Audit Internal Agent lifecycle changes.
 90. [x] Audit capability/scope changes.
-91. [~] Audit approval lifecycle.
+91. [x] Audit approval lifecycle.
 92. [x] Add migration tests using representative historical AuditLog rows.
 93. [x] Add human audit regression tests.
 94. [x] Add External Agent audit tests.
 95. [x] Add Internal AI audit contract tests.
 
-Write path and display contract exist in `AuditService.log({ actor })`. Chat 2 closed 85 and 90 through `AiPlatformAuditService`. Chat 5 closed 86–89 with the provider/model/Internal Agent services; item 91 remains Chat 7 (approval lifecycle). Every lifecycle, credential, grant, scope, provider, model and Internal Agent mutation passes its own transaction client to `AuditService.log`. Machine display names resolve through the batched `AuditActorLookups` registered by `AiPlatformModule` — External Agents and Internal Agents both register (`audit-actor.resolver.test.ts`). INTERNAL_AI writes never set `userId`.
+Write path and display contract exist in `AuditService.log({ actor })`. Chat 2 closed 85 and 90 through `AiPlatformAuditService`. Chat 5 closed 86–89 with the provider/model/Internal Agent services. Chat 10 closed 91 with `APPROVAL_REQUESTED` / `APPROVAL_DECIDED` / `APPROVAL_CANCELLED` / `APPROVAL_EXPIRED` / `APPROVAL_CONSUMED` on `AI_APPROVAL_REQUEST`. Every lifecycle, credential, grant, scope, provider, model and Internal Agent mutation passes its own transaction client to `AuditService.log`. Machine display names resolve through the batched `AuditActorLookups` registered by `AiPlatformModule` — External Agents and Internal Agents both register (`audit-actor.resolver.test.ts`). INTERNAL_AI writes never set `userId`.
 
 # E. External Agent persistence
 
@@ -698,58 +698,66 @@ retrieve requires a bound ALLOW (actor + capability + source scope + classificat
 
 497. [x] Add capability risk metadata.
 498. [x] Implement `ALLOW/DENY/REQUIRE_APPROVAL` policy contract.
-499. [ ] Create approval request persistence/entity.
-500. [ ] Store requesting actor/capability/resource.
-501. [ ] Store safe payload summary.
-502. [ ] Store canonical payload digest.
-503. [ ] Support PENDING.
-504. [ ] Support APPROVED.
-505. [ ] Support REJECTED.
-506. [ ] Support EXPIRED.
-507. [ ] Support CANCELLED.
-508. [ ] Support CONSUMED.
-509. [ ] Bind approval to exact/material payload.
-510. [ ] Material payload change invalidates approval.
-511. [ ] Default approval to one-time.
-512. [ ] Require authorized Employee approver.
-513. [ ] Prevent AI self-approval.
-514. [ ] Add approval expiration.
-515. [ ] Revalidate actor/grants/domain state before approved commit.
-516. [ ] Audit approval lifecycle.
-517. [~] Add approval-policy tests.
+499. [x] Create approval request persistence/entity.
+500. [x] Store requesting actor/capability/resource.
+501. [x] Store safe payload summary.
+502. [x] Store canonical payload digest.
+503. [x] Support PENDING.
+504. [x] Support APPROVED.
+505. [x] Support REJECTED.
+506. [x] Support EXPIRED.
+507. [x] Support CANCELLED.
+508. [x] Support CONSUMED.
+509. [x] Bind approval to exact/material payload.
+510. [x] Material payload change invalidates approval.
+511. [x] Default approval to one-time.
+512. [x] Require authorized Employee approver.
+513. [x] Prevent AI self-approval.
+514. [x] Add approval expiration.
+515. [x] Revalidate actor/grants/domain state before approved commit.
+516. [x] Audit approval lifecycle.
+517. [x] Add approval-policy tests.
 
-Chat 8 verdict: the **decision** contract shipped, the **persistence** did not. 497 `[x]`:
-`AiRiskClass` (`LOW/MEDIUM/HIGH/CRITICAL`) is per-capability metadata with a `maxRiskClass` ceiling
-per actor. 498 `[x]`: `AI_POLICY_OUTCOMES = ['ALLOW','DENY','REQUIRE_APPROVAL']`, and
-`AgentPolicyService.assertAllowed` audits `APPROVAL_REQUIRED` and refuses the call. 517 `[~]`:
-`policy-evaluator.test.ts` covers both approval branches, but there are no lifecycle tests because
-there is no approval entity. 499–516 need an `AiApprovalRequest` table (payload digest, states,
-approver, expiry, revalidation) that Phase 1 did not build — carried in the Cleanup Register.
+Runtime: `packages/database/prisma/schema/ai-approvals.prisma`,
+`packages/shared/src/ai/approval-*.ts`, `apps/api/src/modules/ai-platform/approvals/*`.
+`AiApprovalRequest` stores requester actor, capability, resource, SHA-256 payload digest and a
+secret-stripped summary. Lifecycle is PENDING → APPROVED/REJECTED/CANCELLED/EXPIRED → CONSUMED
+(one-time). Employee JWT + `COMPANY:EDIT` decides; machine actors cannot approve. Consume
+revalidates actor identity, capability, digest, a fresh ALLOW decision and domain state before
+marking CONSUMED. Audit: `APPROVAL_REQUESTED` / `APPROVAL_DECIDED` / `APPROVAL_CANCELLED` /
+`APPROVAL_EXPIRED` / `APPROVAL_CONSUMED` with ids/digest only. Admin queue:
+`GET/POST /api/ai-admin/approvals`. Tests: `approval-lifecycle.test.ts`,
+`approval-payload.test.ts`, `approval-revalidation.test.ts`,
+`ai-approval-request.service.test.ts`, `ai-admin.approvals.http.int.test.ts`.
 
 # AG. Customer-facing AI policy foundation
 
-518. [ ] Add customer-facing channel/risk classification contract.
-519. [ ] Define conversation/customer scope context.
-520. [ ] Keep customer context isolated from other customers.
-521. [ ] Define DRAFT_ONLY mode.
-522. [ ] Define APPROVAL_REQUIRED mode.
-523. [ ] Define AUTO_SEND_ALLOWED mode contract for future narrow policies.
-524. [ ] Separate draft capability from send capability.
-525. [ ] Define escalation contract/reason.
-526. [ ] Define internal-only vs customer-visible content requirement/contract.
-527. [ ] Ensure customer messages are untrusted input.
+518. [x] Add customer-facing channel/risk classification contract.
+519. [x] Define conversation/customer scope context.
+520. [x] Keep customer context isolated from other customers.
+521. [x] Define DRAFT_ONLY mode.
+522. [x] Define APPROVAL_REQUIRED mode.
+523. [x] Define AUTO_SEND_ALLOWED mode contract for future narrow policies.
+524. [x] Separate draft capability from send capability.
+525. [x] Define escalation contract/reason.
+526. [x] Define internal-only vs customer-visible content requirement/contract.
+527. [x] Ensure customer messages are untrusted input.
 528. [x] Ensure customer text cannot widen tools/capabilities.
-529. [~] Ensure no Credentials/secrets in customer-facing context.
+529. [x] Ensure no Credentials/secrets in customer-facing context.
 530. [x] Do not implement production Messenger auto-send runtime in Phase 1.
-531. [ ] Add customer-isolation policy tests/contracts where possible.
+531. [x] Add customer-isolation policy tests/contracts where possible.
 
-Chat 8 verdict: **deferred**, with the two safety invariants that are structural already true. 528
-`[x]`: the capability set is a static registry and `AiPolicyRequest` carries no message content, so
-no text a customer sends can add a tool or widen a grant. 530 `[x]`: verified by search — no
-auto-send, auto-reply or Messenger AI runtime exists. 529 `[~]`: no secret can reach an AI context
-today because Credentials are never projected into one (AQ 714), but that is an absence rather than
-a declared customer-facing contract. 518–527 and 531 require the channel/risk classification and
-DRAFT_ONLY / APPROVAL_REQUIRED / AUTO_SEND_ALLOWED modes, which Phase 1 did not build.
+Runtime: `packages/shared/src/ai/customer-facing-*.ts`, `customer-isolation.ts`,
+`capability-catalog.customer.ts`. Modes are DRAFT_ONLY / APPROVAL_REQUIRED / AUTO_SEND_ALLOWED.
+`messenger.reply_draft` and `messenger.reply_send` are distinct registry keys (canon
+`messenger.reply.draft` / `messenger.reply.send`); send is HIGH + `approval: REQUIRED`. Granting
+draft does not grant send. AUTO_SEND_ALLOWED with an empty category allowlist still requires
+approval — nothing auto-sends by default. Customer messages are `UNTRUSTED_CONTENT` and are not
+policy inputs. Conversation scope matches channel + conversationId + customerId deny-by-default.
+INTERNAL_ONLY content cannot be disclosed. Secrets are refused in approval payloads and by the
+existing context assembler. REST/MCP and the Domain Action Gateway have no Messenger send handler.
+Tests: `customer-facing-policy.test.ts`, `customer-isolation.test.ts`,
+`approval-customer-isolation.security.test.ts`, `capability-registry.test.ts`.
 
 # AH. Usage, cost and observability foundation
 
@@ -1031,7 +1039,7 @@ Internal Agent, provider, model and policy identities that such a record needs a
 710. [x] Provider/Model selection is separated from Agent identity and permissions.
 711. [x] Model changes do not alter domain grants.
 712. [x] Prompt configuration does not grant permissions.
-713. [~] Customer-facing safety is enforceable outside prompt text.
+713. [x] Customer-facing safety is enforceable outside prompt text.
 714. [x] Secrets remain excluded from AI context and audit.
 715. [x] Existing human authorization is not replaced/broken.
 716. [x] Cleanup Register reflects every remaining known gap.
@@ -1049,10 +1057,10 @@ through `TasksService` / `TaskDiscussionService` / the Drive handler. `ACTOR_TYP
 `EXTERNAL_AGENT`, `INTERNAL_AI`, `SYSTEM` and `AUTOMATION`, with `messenger` already a channel and
 `onBehalfOf` already modelled — that, plus one capability registry shared by both agent kinds, is
 what makes 719–721 answerable without a second identity system. `promptPolicyId` is an opaque
-column that no policy path reads. 713 is `[~]`: safety **is** enforced outside prompt text (risk
-class, data classification, `REQUIRE_APPROVAL`, capability grants), but the customer-facing
-classification of section AG is not implemented, so the customer-specific modes have no runtime
-contract yet.
+column that no policy path reads. 713 is `[x]`: safety is enforced outside prompt text (risk class,
+data classification, `REQUIRE_APPROVAL`, distinct draft/send grants, DRAFT_ONLY /
+APPROVAL_REQUIRED / AUTO_SEND_ALLOWED, conversation/customer isolation). Production Messenger
+auto-send remains absent (530).
 
 ---
 

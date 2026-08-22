@@ -6,6 +6,7 @@ import type { AuthenticatedAgent } from '../auth/agent-authenticator.service';
 import type { AgentPolicyService } from '../policy/agent-policy.service';
 import { AgentReplayAuthorization } from './agent-replay-authorization';
 import type { AgentTaskAccess } from './agent-task-access';
+import { AGENT_OPERATIONS } from '../protocol/agent-operation.registry';
 
 function agent(): AuthenticatedAgent {
   return {
@@ -103,9 +104,14 @@ describe('AgentReplayAuthorization (AL 626)', () => {
     expect(assertAllowed).toHaveBeenCalled();
   });
 
-  it('covers every idempotent write capability with a resolvable target field', () => {
+  it('covers every idempotent External Agent write with a resolvable target field', () => {
+    const protocolKeys = new Set(
+      Object.values(AGENT_OPERATIONS)
+        .map((operation) => operation.capabilityKey)
+        .filter((key): key is string => Boolean(key)),
+    );
     const idempotent = listAiCapabilities().filter(
-      (definition) => definition.idempotency === 'REQUIRED',
+      (definition) => definition.idempotency === 'REQUIRED' && protocolKeys.has(definition.key),
     );
 
     expect(idempotent.length).toBeGreaterThan(0);

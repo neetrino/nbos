@@ -76,11 +76,21 @@ describe('External Agent surface: forbidden capabilities (AL 619-623)', () => {
     );
   });
 
-  it('registers only Tasks and Drive modules, so no Finance or client messaging', () => {
-    const modules = new Set(listAiCapabilities().map((capability) => capability.module));
-    expect([...modules].sort()).toEqual(['Drive', 'Tasks']);
+  it('keeps External Agent REST/MCP on Tasks and Drive only', () => {
+    const publishedModules = new Set(
+      listAgentOperations()
+        .map((operation) => operation.capabilityKey)
+        .filter((key): key is string => Boolean(key))
+        .map((key) => getAiCapability(key)?.module)
+        .filter((module): module is string => Boolean(module)),
+    );
+    expect([...publishedModules].sort()).toEqual(['Drive', 'Tasks']);
     for (const forbidden of FORBIDDEN_MODULES) {
-      expect(modules.has(forbidden)).toBe(false);
+      expect(publishedModules.has(forbidden)).toBe(false);
+    }
+    const registryModules = new Set(listAiCapabilities().map((capability) => capability.module));
+    for (const forbidden of ['Finance', 'Credentials', 'Clients', 'HR'] as const) {
+      expect(registryModules.has(forbidden)).toBe(false);
     }
   });
 

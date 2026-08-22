@@ -34,6 +34,7 @@ import { AiPersistentMemoryService } from './context/ai-persistent-memory.servic
 import { AiModelPolicyResolver } from './policies/ai-model-policy.resolver';
 import { AiModelPolicyService } from './policies/ai-model-policy.service';
 import { AiPromptPolicyService } from './prompts/ai-prompt-policy.service';
+import { AiApprovalRequestService } from './approvals/ai-approval-request.service';
 import { AgentPolicyService } from './policy/agent-policy.service';
 import { AgentCorrelationInterceptor } from './protocol/agent-correlation.interceptor';
 import { AgentProtocolExceptionFilter } from './protocol/agent-protocol.filter';
@@ -92,6 +93,7 @@ import { AiAdminQueryService } from './admin/ai-admin-query.service';
     AiModelPolicyService,
     AiModelPolicyResolver,
     AiPromptPolicyService,
+    AiApprovalRequestService,
     AiContextAssemblerService,
     AiPersistentMemoryService,
     AiKnowledgeService,
@@ -122,6 +124,7 @@ import { AiAdminQueryService } from './admin/ai-admin-query.service';
     AiModelSyncService,
     AiModelPolicyService,
     AiPromptPolicyService,
+    AiApprovalRequestService,
     AiContextAssemblerService,
     AiPersistentMemoryService,
     AiKnowledgeService,

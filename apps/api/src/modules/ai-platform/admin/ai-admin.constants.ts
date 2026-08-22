@@ -23,4 +23,5 @@ export const AI_ADMIN_AUDIT_ENTITY_TYPES = [
   AI_AUDIT_ENTITY.internalAgent,
   AI_AUDIT_ENTITY.internalCapabilityGrant,
   AI_AUDIT_ENTITY.internalResourceScope,
+  AI_AUDIT_ENTITY.approvalRequest,
 ] as const;

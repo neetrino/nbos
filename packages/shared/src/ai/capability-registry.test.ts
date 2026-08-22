@@ -53,6 +53,17 @@ describe('AI capability registry', () => {
     expect(update?.idempotency).toBe('REQUIRED');
   });
 
+  it('registers messenger draft and send as distinct grantable capabilities', () => {
+    const draft = getAiCapability('messenger.reply_draft');
+    const send = getAiCapability('messenger.reply_send');
+    expect(draft?.access).toBe('WRITE');
+    expect(send?.access).toBe('WRITE');
+    expect(draft?.approval).toBe('NONE');
+    expect(send?.approval).toBe('REQUIRED');
+    expect(send?.risk).toBe('HIGH');
+    expect(draft?.key).not.toBe(send?.key);
+  });
+
   it('never registers Phase 1 forbidden capabilities', () => {
     for (const key of AI_CAPABILITIES_FORBIDDEN_PHASE_1) {
       expect(isAiCapabilityKey(key)).toBe(false);

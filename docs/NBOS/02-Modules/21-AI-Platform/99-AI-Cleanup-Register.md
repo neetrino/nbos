@@ -122,13 +122,13 @@ Chat 9 added `AiPromptPolicy` / `AiPromptVersion` with DRAFT / TESTING / PUBLISH
 
 Chat 9 added the Context Assembler, session-context, disabled persistent-memory and authorization-first Knowledge/RAG contracts in `@nbos/shared`, with thin Nest wrappers. Assembly requires an ALLOW bound to the same actor, capability, matched scope and classification ceiling, and only purpose-built projections. Secret-shaped fields are rejected recursively (nested objects/arrays). Persistent memory and knowledge retrieval stay disabled. No vector store. Chat N9 closed **PASS WITH DEBTS**; see `28-Phase-1-Chat-9-Handoff.md`.
 
-### C17. Approval request persistence (AF 499–516) — MISSING
+### C17. Approval request persistence (AF 499–516) — OK
 
-The decision contract shipped (`AI_POLICY_OUTCOMES` includes `REQUIRE_APPROVAL`; `assertAllowed` audits `APPROVAL_REQUIRED` and refuses), but there is no `AiApprovalRequest` entity, so there is no payload digest, no PENDING/APPROVED/REJECTED/EXPIRED/CANCELLED/CONSUMED lifecycle, no one-time binding, no employee approver, no expiry and no pre-commit revalidation. The admin UI already shows an honest "Approval queue is not enabled yet" placeholder.
+Chat 10 added `AiApprovalRequest` with PENDING / APPROVED / REJECTED / EXPIRED / CANCELLED / CONSUMED, payload digest binding, employee-only decisions, AI self-approval prohibition, expiry by risk TTL, and consume-time revalidation of actor/grant/domain state. Audit emits request/decision/cancel/expiry/consumption. Admin queue HTTP + UI list exist. Migration `20260822210000_ai_approval_request_foundation` is additive and **not** applied to production. See `29-Phase-1-Chat-10-Handoff.md`.
 
-### C18. Customer-facing AI policy contracts (AG 518–527, 531) — MISSING
+### C18. Customer-facing AI policy contracts (AG 518–527, 531) — OK
 
-No channel/risk classification, no conversation scope, no DRAFT_ONLY / APPROVAL_REQUIRED / AUTO_SEND_ALLOWED modes, no escalation contract. Chat 8 verified the two structural guarantees hold: customer text cannot widen capabilities (the registry is static and the policy request carries no content) and no Messenger auto-send runtime exists.
+Chat 10 added DRAFT_ONLY / APPROVAL_REQUIRED / AUTO_SEND_ALLOWED, distinct `messenger.reply_draft` vs `messenger.reply_send`, conversation/customer isolation, escalation reasons, and INTERNAL_ONLY vs CUSTOMER_VISIBLE. Customer text remains untrusted and cannot widen capabilities. AUTO_SEND_ALLOWED with an empty category list still requires approval. Production Messenger auto-reply was not built. Negative tests cover cross-customer isolation and prompt-injection shaped fields.
 
 ### C19. Usage, cost and evaluation entities (AH 532–546, 548; AI 549–554) — MISSING
 
@@ -144,7 +144,7 @@ Chat 8 promoted it to a first-class sidebar module at `/ai-agents` (`SIDEBAR_MOD
 
 ### C22. Phase 1 exit criterion 9 — BUSINESS DECISION / PARTIAL
 
-`27-Phase-1-Continuation-After-Chat-8.md` decided AD–AI stay in the current Phase 1 (Chats 9–12). Chat 9 closed the product-code gap for AD/AE (C15, C16). Remaining exit-criterion-9 product work is AF (C17), AG (C18) and AH/AI (C19 / C7). Chat 12 is still the only milestone that may declare Phase 1 complete.
+`27-Phase-1-Continuation-After-Chat-8.md` decided AD–AI stay in the current Phase 1 (Chats 9–12). Chat 9 closed AD/AE (C15, C16). Chat 10 closed AF/AG (C17, C18). Remaining exit-criterion-9 product work is AH/AI (C19 / C7). Chat 12 is still the only milestone that may declare Phase 1 complete.
 
 ## D. Tasks alignment issues to verify before implementation
 
@@ -223,6 +223,10 @@ Canonical Phase 1 sources (`03`, `08`, `09`, `10` item 43, `16`) require both RE
 ## F9. Chat 9 evidence
 
 2026-08-22: Prompt Policy / Prompt Version persistence and lifecycle; Internal Agent published-only linkage; Context Assembler + session/memory/knowledge contracts. Independent Chat N9 first pass **FAIL**; remediations closed actor/scope binding, recursive secrets and Prompt Policy HTTP coverage. Re-verification: **PASS WITH DEBTS** (16/100 targeted+HTTP, 12/138 regression/security, shared/API typecheck and ESLint 0). Migration written, not applied to production, still pending on a drifted non-designated Neon. See `28-Phase-1-Chat-9-Handoff.md`.
+
+## F10. Chat 10 evidence
+
+2026-08-22: Approval Request persistence/lifecycle and customer-facing safety contracts. Independent Chat N10 verdict **PASS WITH DEBTS** (16/131 targeted, 10/88 regression+MCP with 1 file / 2 tests skipped, shared/API/web typecheck and ESLint 0). Migrations written, not applied to production, still pending on a drifted non-designated Neon. See `29-Phase-1-Chat-10-Handoff.md` § Verification.
 
 ## G. Implementation rule
 

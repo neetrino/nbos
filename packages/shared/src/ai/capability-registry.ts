@@ -1,3 +1,4 @@
+import { AI_CUSTOMER_FACING_CAPABILITIES } from './capability-catalog.customer';
 import { AI_READ_CAPABILITIES } from './capability-catalog.read';
 import { AI_WRITE_CAPABILITIES } from './capability-catalog.write';
 import {
@@ -9,6 +10,7 @@ import {
 const PHASE_1_CAPABILITIES: readonly AiCapabilityDefinition[] = [
   ...AI_READ_CAPABILITIES,
   ...AI_WRITE_CAPABILITIES,
+  ...AI_CUSTOMER_FACING_CAPABILITIES,
 ];
 
 /**

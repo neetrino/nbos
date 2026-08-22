@@ -39,7 +39,7 @@
 | 7    | Security + regression                    | Claude Opus 5 High             | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
 | 8    | Intermediate acceptance                  | Claude Opus 5 High             | GPT-5.6 Sol High   | DONE — found missing AD–AI slice |
 | 9    | Prompt + Context/Memory/Knowledge        | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
-| 10   | Approvals + Customer-facing safety       | Claude Opus 5 High             | GPT-5.6 Sol High   | PLANNED                          |
+| 10   | Approvals + Customer-facing safety       | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
 | 11   | Usage/Cost/Evaluation + actionable debts | Cursor Grok 4.6                | GPT-5.6 Sol High   | PLANNED                          |
 | 12   | Final Phase 1 re-acceptance              | Claude Opus 5 High             | GPT-5.6 Sol High   | PLANNED                          |
 
@@ -324,9 +324,8 @@ Phase 1 можно объявить complete только если нет unreso
 
 ## Следующее действие
 
-Открыть **новый Cursor chat** с моделью **Cursor Grok 4.6 Extra High Fast** и вставить:
+Chat 10 independently reviewed: **PASS WITH DEBTS**. See `docs/NBOS/02-Modules/21-AI-Platform/29-Phase-1-Chat-10-Handoff.md` § Verification.
 
-1. `Мастер-промт Phase 1`;
-2. `Chat 9 — executor prompt`.
+Открыть **новый Cursor chat** с моделью **Cursor Grok 4.6 Extra High Fast** и вставить мастер-промпт + Chat 11 block.
 
-Не продолжать реализацию AD/AE внутри старого Chat 8: acceptance-chat уже насыщен контекстом и должен остаться историческим verifier evidence.
+Не объявлять Phase 1 complete.

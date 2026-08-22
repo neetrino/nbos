@@ -217,3 +217,70 @@ export {
   type AiKnowledgeSource,
   type AiKnowledgeSourceKind,
 } from './knowledge-source';
+export {
+  AI_APPROVAL_DECISION_ACTIONS,
+  AI_APPROVAL_REASON_MAX_CHARS,
+  AI_APPROVAL_RESOURCE_TYPES,
+  AI_APPROVAL_STATUSES,
+  AI_APPROVAL_SUMMARY_MAX_CHARS,
+  AI_APPROVAL_TTL_MS,
+  isAiApprovalStatus,
+  type AiApprovalActorRef,
+  type AiApprovalDecisionAction,
+  type AiApprovalRequestRecord,
+  type AiApprovalResourceRef,
+  type AiApprovalResourceType,
+  type AiApprovalStatus,
+} from './approval-types';
+export {
+  assertApprovalConsumableStatus,
+  assertApprovalDecision,
+  assertEmployeeApprover,
+  effectiveApprovalStatus,
+  isApprovalExpired,
+  isTerminalApprovalStatus,
+  nextStatusForDecision,
+  type AiApprovalLifecycleDenial,
+} from './approval-lifecycle';
+export {
+  assertApprovalPayload,
+  buildSafeApprovalSummary,
+  canonicalizeApprovalPayload,
+  isMaterialPayloadChange,
+  type AiApprovalPayloadIssue,
+} from './approval-payload';
+export {
+  assertApprovedCommit,
+  type AiApprovalCommitDenial,
+  type AiApprovalCommitEvidence,
+} from './approval-revalidation';
+export {
+  AI_CONVERSATION_RESOURCE_TYPE,
+  AI_CUSTOMER_CONTENT_VISIBILITY,
+  AI_CUSTOMER_ESCALATION_REASONS,
+  AI_CUSTOMER_FACING_ACTIONS,
+  AI_CUSTOMER_FACING_MODES,
+  AI_CUSTOMER_MESSAGE_TRUST,
+  AI_MESSENGER_DRAFT_CAPABILITY_KEY,
+  AI_MESSENGER_SEND_CAPABILITY_KEY,
+  isAiCustomerFacingAction,
+  isAiCustomerFacingMode,
+  type AiCustomerContentVisibility,
+  type AiCustomerConversationScope,
+  type AiCustomerEscalationReason,
+  type AiCustomerFacingAction,
+  type AiCustomerFacingMode,
+} from './customer-facing-types';
+export {
+  assertCustomerDisclosable,
+  draftDoesNotGrantSend,
+  evaluateCustomerFacingAction,
+  type AiCustomerFacingDecision,
+  type AiCustomerFacingDenial,
+  type AiCustomerFacingRequest,
+} from './customer-facing-policy';
+export {
+  assertCustomerConversationScope,
+  isCompleteCustomerScope,
+  type AiCustomerIsolationDenial,
+} from './customer-isolation';
