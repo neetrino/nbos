@@ -123,6 +123,7 @@ export function createMockPrisma() {
     messengerChannel: createModelMock(),
     messengerDirectThread: createModelMock(),
     atsCallEvent: createModelMock(),
+    atsCallIntent: createModelMock(),
     metaConversation: createModelMock(),
     $disconnect: vi.fn(),
     $queryRaw: vi.fn().mockResolvedValue([]),

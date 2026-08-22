@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Header,
+  Headers,
   HttpCode,
   HttpStatus,
   Param,
@@ -49,8 +50,12 @@ export class CallsController {
   @Post('click-to-call')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Start an outbound ATS click-to-call from a CRM object' })
-  startClickToCall(@CurrentUser() user: CurrentUserPayload, @Body() body: StartClickToCallDto) {
-    return this.clickToCall.start(body, user);
+  startClickToCall(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: StartClickToCallDto,
+    @Headers('idempotency-key') idempotencyKey: string | undefined,
+  ) {
+    return this.clickToCall.start(body, user, idempotencyKey);
   }
 
   @Get(':id/screen')

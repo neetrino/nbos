@@ -29,6 +29,17 @@ export function mapAtsStateToPhase(state: string | null | undefined): ActiveCall
   return 'ringing';
 }
 
+export function storedStateMatchesLifecycleEvent(
+  state: string | null | undefined,
+  eventName: CallLifecycleSseEventName,
+): boolean {
+  const phase = mapAtsStateToPhase(state);
+  if (eventName === CALL_SSE_EVENT.STARTED) return phase === 'ringing';
+  if (eventName === CALL_SSE_EVENT.ANSWERED) return phase === 'answered';
+  if (eventName === CALL_SSE_EVENT.FINISHED) return phase === 'ended';
+  return false;
+}
+
 /**
  * Finish-only first sight must not open a start window (Calls canon §3).
  */

@@ -49,6 +49,34 @@ describe('applyActiveCallEvent', () => {
     ).toBeNull();
   });
 
+  it('does not restore ringing or answered after the same call has ended', () => {
+    const ended = applyActiveCallEvent(null, STARTED);
+    const finished = applyActiveCallEvent(ended, {
+      ...STARTED,
+      type: 'call.finished',
+      phase: 'ended',
+    });
+    const lateStart = applyActiveCallEvent(finished, STARTED);
+    const lateAnswered = applyActiveCallEvent(finished, {
+      ...STARTED,
+      type: 'call.answered',
+      phase: 'answered',
+    });
+    expect(lateStart?.phase).toBe('ended');
+    expect(lateAnswered?.phase).toBe('ended');
+  });
+
+  it('does not regress answered back to ringing for the same call', () => {
+    const ringing = applyActiveCallEvent(null, STARTED);
+    const answered = applyActiveCallEvent(ringing, {
+      ...STARTED,
+      type: 'call.answered',
+      phase: 'answered',
+    });
+    const lateStart = applyActiveCallEvent(answered, STARTED);
+    expect(lateStart?.phase).toBe('answered');
+  });
+
   it('does not restore a session after a simulated refresh', () => {
     let current = applyActiveCallEvent(null, STARTED);
     current = null;

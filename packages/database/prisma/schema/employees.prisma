@@ -145,6 +145,7 @@ model Employee {
   atsCallsResponsible                AtsCallEvent[]                      @relation("AtsCallResponsible")
   atsCallsAnswered                   AtsCallEvent[]                      @relation("AtsCallAnswered")
   atsCallsInitiated                  AtsCallEvent[]                      @relation("AtsCallInitiated")
+  atsCallIntents                     AtsCallIntent[]                     @relation("AtsCallIntentActor")
 
   @@map("employees")
 }

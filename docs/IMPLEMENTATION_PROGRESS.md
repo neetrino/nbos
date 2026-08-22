@@ -62,7 +62,7 @@
 Не держать эти строки в активной ежедневной очереди. Возвращать в работу, когда есть токены, доступы, тестовые аккаунты или подтверждённая инфраструктура. **Лента звонков в UI** — канон: `[08-Calls-and-Telephony.md](NBOS/02-Modules/01-CRM/08-Calls-and-Telephony.md)`, окно `[11-Call-Screen.md](NBOS/05-UI-Specifications/11-Call-Screen.md)`, Delivery projection `[07-Professional-Delivery-Card.md](NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md)` §5.
 
 - Telegram: internal notification channel по канону + явные env/токены — M
-- **Телефония / ATS (звонки):** Call core + Active Call Screen + CRM CALL activity + recording FileAsset/playback + click-to-call в runtime. Осталось по `08-Calls`: голый JSON webhook, history reconcile. DID / транскрипт / импорт Bitrix — later. — **L**
+- **Телефония / ATS (звонки):** Call core + Active Call Screen + CRM CALL activity + recording FileAsset/playback + click-to-call с `Idempotency-Key` / `AtsCallIntent` (at-most-once) + atomic webhook uid/sparse/monotonic state в runtime. Осталось по `08-Calls`: history reconcile. DID / транскрипт / импорт Bitrix — later. — **L**
 - WhatsApp Gateway + WAHA (VPS): контракт Gateway↔NBOS, health/send/webhook на Gateway, вложения Gateway→NBOS Drive — L
 - Support: связь с external messenger conversation — M
 - Technical: webhooks GitHub / репозиторий links как интеграция — M

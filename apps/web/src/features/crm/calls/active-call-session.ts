@@ -9,11 +9,25 @@ export type ActiveCallSession = {
   displayName: string | null;
 };
 
+const ACTIVE_CALL_PHASE_RANK: Readonly<Record<ActiveCallSession['phase'], number>> = {
+  ringing: 1,
+  answered: 2,
+  ended: 3,
+};
+
+export function canAdvanceActiveCallPhase(
+  from: ActiveCallSession['phase'],
+  to: ActiveCallSession['phase'],
+): boolean {
+  return ACTIVE_CALL_PHASE_RANK[to] >= ACTIVE_CALL_PHASE_RANK[from];
+}
+
 export function applyActiveCallEvent(
   current: ActiveCallSession | null,
   event: ActiveCallSsePayload,
 ): ActiveCallSession | null {
   if (current?.callId === event.callId) {
+    if (!canAdvanceActiveCallPhase(current.phase, event.phase)) return current;
     return {
       callId: event.callId,
       uid: event.uid,

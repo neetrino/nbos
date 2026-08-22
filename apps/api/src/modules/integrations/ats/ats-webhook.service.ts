@@ -5,15 +5,15 @@ import {
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AtsCallRealtimePublisher } from './ats-call-realtime.publisher';
+import { AtsCallRealtimePublisher, type AtsCallIngestMeta } from './ats-call-realtime.publisher';
 import { AtsCallRecordingEnqueueService } from './ats-call-recording-enqueue.service';
 import { AtsCallRedirectService } from './ats-call-redirect.service';
 import { AtsCallService } from './ats-call.service';
 import { AtsProviderConfig } from './ats-provider.config';
 import { parseAtsWebhookBody } from './ats-webhook-body.parse';
+import { shouldEnqueueCallRecording } from './ats-call-recording-should-enqueue';
 import { ATS_WEBHOOK_SUCCESS } from './ats.constants';
 import type { AtsWebhookPayload, AtsWebhookSuccessResponse } from './ats.types';
-import type { AtsCallIngestMeta } from './ats-call-realtime.publisher';
 
 @Injectable()
 export class AtsWebhookService {
@@ -35,7 +35,7 @@ export class AtsWebhookService {
     const payload = this.parseBody(body);
     const ingest = await this.callService.ingestCallEvent(payload);
     await this.publishLifecycleSafely(payload, ingest);
-    await this.enqueueRecordingSafely(payload);
+    await this.enqueueRecordingSafely(payload, ingest);
     const redirectCall = await this.callRedirectService.resolveRedirectCall(payload);
     if (!redirectCall) {
       return ATS_WEBHOOK_SUCCESS;
@@ -58,7 +58,11 @@ export class AtsWebhookService {
     }
   }
 
-  private async enqueueRecordingSafely(payload: AtsWebhookPayload): Promise<void> {
+  private async enqueueRecordingSafely(
+    payload: AtsWebhookPayload,
+    ingest: AtsCallIngestMeta,
+  ): Promise<void> {
+    if (!shouldEnqueueRecordingSideEffect(payload, ingest)) return;
     try {
       await this.recordingEnqueue.enqueueAfterWebhook(payload);
     } catch (err) {
@@ -87,4 +91,12 @@ export class AtsWebhookService {
       throw new BadRequestException('uid is required');
     }
   }
+}
+
+export function shouldEnqueueRecordingSideEffect(
+  payload: AtsWebhookPayload,
+  ingest: AtsCallIngestMeta,
+): boolean {
+  if (!shouldEnqueueCallRecording(payload)) return false;
+  return ingest.stateTransitionApplied || ingest.isFirstSeen;
 }

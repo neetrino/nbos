@@ -36,6 +36,7 @@ describe('AtsCallRealtimePublisher', () => {
     await publisher.publishAfterWebhook(inboundStart({ uid: 'uid-1' }), {
       callId: 'call-1',
       isFirstSeen: true,
+      stateTransitionApplied: true,
     });
 
     expect(publish).toHaveBeenCalledWith({
@@ -62,6 +63,7 @@ describe('AtsCallRealtimePublisher', () => {
     await publisher.publishAfterWebhook(inboundStart(), {
       callId: 'call-1',
       isFirstSeen: true,
+      stateTransitionApplied: true,
     });
 
     expect(publish).not.toHaveBeenCalled();
@@ -79,6 +81,7 @@ describe('AtsCallRealtimePublisher', () => {
     await publisher.publishAfterWebhook(inboundStart({ state: 'status' }), {
       callId: 'call-1',
       isFirstSeen: false,
+      stateTransitionApplied: true,
     });
 
     expect(publish).toHaveBeenCalledWith({
@@ -97,6 +100,7 @@ describe('AtsCallRealtimePublisher', () => {
     await publisher.publishAfterWebhook(inboundStart({ state: 'finish' }), {
       callId: 'call-1',
       isFirstSeen: true,
+      stateTransitionApplied: true,
     });
 
     expect(publish).not.toHaveBeenCalled();
@@ -109,7 +113,59 @@ describe('AtsCallRealtimePublisher', () => {
     const publisher = new AtsCallRealtimePublisher(prisma as never, { publish: vi.fn() } as never);
 
     await expect(
-      publisher.publishAfterWebhook(inboundStart(), { callId: 'call-1', isFirstSeen: true }),
+      publisher.publishAfterWebhook(inboundStart(), {
+        callId: 'call-1',
+        isFirstSeen: true,
+        stateTransitionApplied: true,
+      }),
     ).resolves.toBeUndefined();
+  });
+
+  it('does not publish when the state transition was not applied', async () => {
+    const { publisher, publish } = createPublisher();
+
+    await publisher.publishAfterWebhook(inboundStart({ state: 'start' }), {
+      callId: 'call-1',
+      isFirstSeen: false,
+      stateTransitionApplied: false,
+    });
+
+    expect(publish).not.toHaveBeenCalled();
+  });
+
+  it('does not publish start after the stored state has already finished', async () => {
+    const { publisher, publish, prisma } = createPublisher();
+    prisma.atsCallEvent.findUnique.mockResolvedValue({ ...CALL_ROW, state: 'finish' });
+
+    await publisher.publishAfterWebhook(inboundStart({ state: 'start' }), {
+      callId: 'call-1',
+      isFirstSeen: false,
+      stateTransitionApplied: true,
+    });
+
+    expect(publish).not.toHaveBeenCalled();
+  });
+
+  it('does not emit call.started after call.finished when publishes are reordered', async () => {
+    const { publisher, publish, prisma } = createPublisher();
+    prisma.atsCallEvent.findUnique
+      .mockResolvedValueOnce({ ...CALL_ROW, state: 'finish' })
+      .mockResolvedValueOnce({ ...CALL_ROW, state: 'finish' });
+
+    await publisher.publishAfterWebhook(inboundStart({ state: 'finish' }), {
+      callId: 'call-1',
+      isFirstSeen: false,
+      stateTransitionApplied: true,
+    });
+    await publisher.publishAfterWebhook(inboundStart({ state: 'start' }), {
+      callId: 'call-1',
+      isFirstSeen: false,
+      stateTransitionApplied: true,
+    });
+
+    expect(publish).toHaveBeenCalledOnce();
+    expect(publish.mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({ event: CALL_SSE_EVENT.FINISHED }),
+    );
   });
 });

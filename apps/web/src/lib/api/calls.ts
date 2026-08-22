@@ -1,4 +1,5 @@
 import { api } from '../api';
+import { ApiError } from '../api-errors';
 
 export const CRM_ACTIVITY_TYPE_CALL = 'CALL' as const;
 
@@ -93,11 +94,23 @@ export const callsApi = {
     const resp = await api.get<CallActivity>(`/api/crm/calls/${id}`);
     return resp.data;
   },
-  async startClickToCall(body: {
-    targetType: ClickToCallTargetType;
-    targetId: string;
-  }): Promise<CallActivity> {
-    const resp = await api.post<CallActivity>('/api/crm/calls/click-to-call', body);
+  async startClickToCall(
+    body: {
+      targetType: ClickToCallTargetType;
+      targetId: string;
+    },
+    idempotencyKey: string,
+  ): Promise<CallActivity> {
+    const resp = await api.post<CallActivity>('/api/crm/calls/click-to-call', body, {
+      headers: { 'Idempotency-Key': idempotencyKey },
+    });
+    if (resp.status === 202) {
+      const payload = resp.data as { message?: string; code?: string };
+      throw new ApiError(payload.message ?? 'This click-to-call is already in progress', {
+        statusCode: 202,
+        code: payload.code ?? 'CLICK_TO_CALL_IN_PROGRESS',
+      });
+    }
     return resp.data;
   },
   async getScreen(id: string): Promise<ActiveCallScreenSnapshot> {

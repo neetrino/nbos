@@ -10,6 +10,8 @@ export function clickToCallButtonLabel(state: ClickToCallUiState): string {
   return 'Позвонить';
 }
 
+export const CLICK_TO_CALL_NEW_CALL_LABEL = 'Новый звонок';
+
 export function hasClickToCallPermission(
   can: (action: string, module: string) => boolean,
   targetType: ClickToCallTargetType,

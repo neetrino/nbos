@@ -4,6 +4,10 @@ import { AtsCallContextResolver } from './ats-call-context.resolver';
 import { AtsCallRealtimePublisher } from './ats-call-realtime.publisher';
 import { AtsCallbackClient } from './ats-callback.client';
 import { AtsCallRecordClient } from './ats-call-record.client';
+import { NodeAtsRecordingDnsResolver } from './ats-recording-dns';
+import { AtsRecordingHttpTransport } from './ats-recording-http.transport';
+import { AtsRecordingSafeDownloadService } from './ats-recording-safe-download.service';
+import { AtsRecordingUrlPolicy } from './ats-recording-url-policy.service';
 import { AtsCallRecordingDownloadService } from './ats-call-recording-download.service';
 import { AtsCallRecordingEnqueueService } from './ats-call-recording-enqueue.service';
 import { AtsCallRecordingQueueService } from './ats-call-recording-queue.service';
@@ -23,6 +27,10 @@ import { AtsWebhookService } from './ats-webhook.service';
     AtsCallContextResolver,
     AtsCallRedirectService,
     AtsCallRealtimePublisher,
+    NodeAtsRecordingDnsResolver,
+    AtsRecordingUrlPolicy,
+    AtsRecordingHttpTransport,
+    AtsRecordingSafeDownloadService,
     AtsCallRecordClient,
     AtsCallbackClient,
     AtsCallRecordingQueueService,

@@ -1,15 +1,9 @@
-import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ATS_CALLBACK_ENDPOINT, ATS_CALLBACK_TIMEOUT_MS } from './ats.constants';
 import { AtsProviderConfig } from './ats-provider.config';
+import type { AtsCallbackCallInput, AtsCallbackCallResult } from './ats-callback.types';
 
-export interface AtsCallbackCallInput {
-  from: string;
-  to: string;
-}
-
-export interface AtsCallbackCallResult {
-  success: boolean;
-}
+export type { AtsCallbackCallInput, AtsCallbackCallResult } from './ats-callback.types';
 
 @Injectable()
 export class AtsCallbackClient {
@@ -19,7 +13,7 @@ export class AtsCallbackClient {
 
   async startCallbackCall(input: AtsCallbackCallInput): Promise<AtsCallbackCallResult> {
     if (!this.config.isConfigured()) {
-      throw new ServiceUnavailableException('ATS integration is not configured');
+      return { kind: 'unconfigured' };
     }
     const url = this.buildCallbackUrl(input.from, input.to);
     try {
@@ -33,15 +27,16 @@ export class AtsCallbackClient {
           event: 'ats_callback_http_error',
           status: response.status,
         });
-        return { success: false };
+        return { kind: 'rejected' };
       }
-      return { success: await isAtsCallbackSuccessBody(response) };
+      const accepted = await isAtsCallbackSuccessBody(response);
+      return { kind: accepted ? 'accepted' : 'rejected' };
     } catch (error) {
       this.logger.warn({
         event: 'ats_callback_network_error',
         error: String(error),
       });
-      return { success: false };
+      return { kind: 'unknown' };
     }
   }
 

@@ -41,6 +41,19 @@ export function recordingExtensionForMime(mimeType: string): string {
   return EXT_BY_MIME[normalized] ?? ATS_CALL_RECORDING_DEFAULT_EXT;
 }
 
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+
+export function isAtsRecordingRedirectStatus(status: number): boolean {
+  return REDIRECT_STATUSES.has(status);
+}
+
+export function parseAtsRecordingContentLength(value: string | null): number | null {
+  if (!value) return null;
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed < 0) return null;
+  return parsed;
+}
+
 export function isLikelyAudioContentType(contentType: string | null): boolean {
   if (!contentType) return true;
   const normalized = contentType.split(';')[0]?.trim().toLowerCase() ?? '';

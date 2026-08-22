@@ -5,6 +5,7 @@ import {
   isAtsTerminalState,
   mapAtsStateToPhase,
   resolveCallLifecycleEvent,
+  storedStateMatchesLifecycleEvent,
 } from './ats-call-realtime.phase';
 import { resolveLifecycleTarget } from './ats-call-realtime.target';
 
@@ -27,6 +28,16 @@ describe('resolveCallLifecycleEvent', () => {
     expect(resolveCallLifecycleEvent(inboundStart({ state: 'finish' }), false)).toBe(
       CALL_SSE_EVENT.FINISHED,
     );
+  });
+});
+
+describe('storedStateMatchesLifecycleEvent', () => {
+  it('rejects a late start after finish and a late ringing after answered', () => {
+    expect(storedStateMatchesLifecycleEvent('finish', CALL_SSE_EVENT.STARTED)).toBe(false);
+    expect(storedStateMatchesLifecycleEvent('status', CALL_SSE_EVENT.STARTED)).toBe(false);
+    expect(storedStateMatchesLifecycleEvent('start', CALL_SSE_EVENT.STARTED)).toBe(true);
+    expect(storedStateMatchesLifecycleEvent('status', CALL_SSE_EVENT.ANSWERED)).toBe(true);
+    expect(storedStateMatchesLifecycleEvent('finish', CALL_SSE_EVENT.FINISHED)).toBe(true);
   });
 });
 

@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Controller, Get, HttpStatus, type INestApplication } from '@nestjs/common';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR, Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TransformInterceptor } from '../../../common/interceptors/transform.interceptor';
@@ -26,6 +26,7 @@ async function bootAtsWebhookHttpApp(
   const moduleRef = await Test.createTestingModule({
     controllers: [AtsController, TransformProbeController],
     providers: [
+      Reflector,
       { provide: AtsWebhookService, useValue: { handleWebhook } },
       { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
     ],

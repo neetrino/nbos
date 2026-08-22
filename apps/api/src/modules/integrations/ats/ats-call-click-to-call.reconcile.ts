@@ -51,7 +51,7 @@ export async function findPendingClickToCallEvent(
     calldirect: ATS_CALLDIRECT_OUTBOUND,
     createdAt: { gte: windowStart },
   };
-  const initiatedByEmployeeId = await findEmployeeIdBySip(db, payload.op);
+  const initiatedByEmployeeId = await findEmployeeIdBySip(db, payload.op ?? null);
   if (initiatedByEmployeeId) {
     const byInitiator = await db.atsCallEvent.findFirst({
       where: { ...baseWhere, initiatedByEmployeeId },

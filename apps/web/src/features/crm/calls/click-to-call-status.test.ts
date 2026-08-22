@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   canShowClickToCallButton,
+  CLICK_TO_CALL_NEW_CALL_LABEL,
   clickToCallButtonLabel,
   hasClickToCallPermission,
 } from './click-to-call-status';
@@ -17,6 +18,7 @@ describe('click-to-call button', () => {
     expect(clickToCallButtonLabel('loading')).toBe('Инициируем звонок...');
     expect(clickToCallButtonLabel('success')).toBe('Звонок начат');
     expect(clickToCallButtonLabel('error')).toBe('Ошибка запуска звонка');
+    expect(CLICK_TO_CALL_NEW_CALL_LABEL).toBe('Новый звонок');
   });
 
   it('maps CALL_CREATE to CRM EDIT on the parent', () => {

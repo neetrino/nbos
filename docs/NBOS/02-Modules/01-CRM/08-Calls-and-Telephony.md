@@ -89,7 +89,7 @@ ATS даёт `record_link` и `GET call-record?uid`. Ссылка ATS может
 
 Канон хранения:
 
-1. Worker скачивает файл (`call-record`, fallback `record_link`).
+1. Worker скачивает файл (`call-record`, fallback `record_link`) только после HTTPS exact-host allowlist + public DNS/IP pin (см. `09-ATS-AM-Integration.md` §5.1). Невалидный URL → существующий `FAILED` / retry, без чтения body и без записи в R2.
 2. Один `FileAsset`: `purpose=CALL_RECORDING`, `sourceModule=ats`, `fileType=AUDIO`, `confidentiality=CONFIDENTIAL`.
 3. `FileLink` на `LEAD` и на `CONTACT` (если Contact есть).
 4. `recordingFileAssetId` на Call.
@@ -103,10 +103,13 @@ ATS даёт `record_link` и `GET call-record?uid`. Ссылка ATS может
 
 Кнопка «Позвонить» на Lead / Contact / Deal.
 
-1. Браузер зовёт **внутренний** NBOS API (не `account.ats.am` из клиента).
-2. API вызывает ATS `callback` (`from` = SIP текущего employee, `to` = номер).
-3. Call создаётся сразу; окно — инициатору.
-4. Нет `sipId` у звонящего → 4xx, не тихий fail.
+1. Браузер зовёт **внутренний** NBOS API (не `account.ats.am` из клиента) с заголовком `Idempotency-Key` (UUID, один на user action; retry того же action повторяет тот же key; новый click — новый key).
+2. API: object-level CRM EDIT → проверка ключа/fingerprint (actor + target) → durable `AtsCallIntent` → только владелец execution вызывает ATS `callback` (`from` = SIP текущего employee, `to` = номер).
+3. ATS accepted → Call создаётся сразу; окно — инициатору. Повтор того же key возвращает существующий результат без второго callback и без второго Audit.
+4. Нет `sipId` у звонящего → 4xx, не тихий fail. Нет intent и нет ATS.
+5. Crash window: documented ATS `callback` принимает только `key`/`from`/`to` (нет provider idempotency token). Intent в `PROCESSING` **не** ретраится автоматически (at-most-once: возможен пропущенный звонок в NBOS, не двойной ATS на тот же key). `ATS_NOT_CONFIGURED` — детерминированный `FAILED`, не `PROCESSING`. Frontend сохраняет `Idempotency-Key` на 202 и неоднозначных 5xx. Явный UI **«Новый звонок»** очищает ключ после предупреждения о возможном повторном звонке.
+
+Same key + другой target → 409. Same key другого employee не раскрывает чужой результат (unique `(employeeId, idempotencyKey)`). In-progress / ambiguous → HTTP 202 `CLICK_TO_CALL_IN_PROGRESS`.
 
 ## 8. Realtime
 

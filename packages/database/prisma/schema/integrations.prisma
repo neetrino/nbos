@@ -206,6 +206,7 @@ model AtsCallEvent {
   answeredEmployee      Employee?  @relation("AtsCallAnswered", fields: [answeredEmployeeId], references: [id], onDelete: SetNull)
   initiatedByEmployee   Employee?  @relation("AtsCallInitiated", fields: [initiatedByEmployeeId], references: [id], onDelete: SetNull)
   recordingFileAsset    FileAsset? @relation("AtsCallRecording", fields: [recordingFileAssetId], references: [id], onDelete: SetNull)
+  clickToCallIntents    AtsCallIntent[]
 
   @@index([leadId])
   @@index([contactId])
@@ -218,4 +219,37 @@ model AtsCallEvent {
   @@index([initiatedByEmployeeId])
   @@index([source, phone, createdAt])
   @@map("ats_call_events")
+}
+
+enum AtsCallIntentStatusEnum {
+  PENDING
+  PROCESSING
+  ACCEPTED
+  FAILED
+}
+
+/// Durable click-to-call intent. Unique per actor + Idempotency-Key.
+model AtsCallIntent {
+  id              String                   @id @default(uuid())
+  employeeId      String                   @map("employee_id")
+  idempotencyKey  String                   @map("idempotency_key")
+  fingerprint     String
+  targetType      String                   @map("target_type")
+  targetId        String                   @map("target_id")
+  status          AtsCallIntentStatusEnum
+  callId          String?                  @map("call_id")
+  atsUid          String?                  @map("ats_uid")
+  errorCode       String?                  @map("error_code")
+  claimedAt       DateTime?                @map("claimed_at")
+  completedAt     DateTime?                @map("completed_at")
+  createdAt       DateTime                 @default(now()) @map("created_at")
+  updatedAt       DateTime                 @updatedAt @map("updated_at")
+
+  employee Employee      @relation("AtsCallIntentActor", fields: [employeeId], references: [id], onDelete: Cascade)
+  call     AtsCallEvent? @relation(fields: [callId], references: [id], onDelete: SetNull)
+
+  @@unique([employeeId, idempotencyKey])
+  @@index([callId])
+  @@index([status, updatedAt])
+  @@map("ats_call_intents")
 }

@@ -101,7 +101,8 @@ export class AtsCallRecordingDownloadService {
     this.logger.error({
       event: 'ats_recording_download_failed',
       callId,
-      error: String(error),
+      errorName: error instanceof Error ? error.name : 'Error',
+      errorCode: error instanceof Error ? error.message : 'unknown',
     });
     if (isAtsRecordingPermanentError(error) || isLastRecordingAttempt(attemptsMade, maxAttempts)) {
       await this.markFailed(callId);

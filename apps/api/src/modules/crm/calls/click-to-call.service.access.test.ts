@@ -65,7 +65,17 @@ function createHarness() {
   prisma.employee.findUnique.mockResolvedValue({ sipId: SIP });
   prisma.atsCallEvent.findFirst.mockResolvedValue(null);
   prisma.atsCallEvent.create.mockResolvedValue(CREATED_CALL);
-  const callback = { startCallbackCall: vi.fn().mockResolvedValue({ success: true }) };
+  prisma.atsCallIntent.create.mockImplementation(({ data }: { data: Record<string, unknown> }) =>
+    Promise.resolve({
+      id: 'intent-1',
+      callId: null,
+      atsUid: null,
+      errorCode: null,
+      ...data,
+    }),
+  );
+  prisma.atsCallIntent.updateMany.mockResolvedValue({ count: 1 });
+  const callback = { startCallbackCall: vi.fn().mockResolvedValue({ kind: 'accepted' }) };
   const audit = { log: vi.fn().mockResolvedValue({}) };
   const realtime = { publishStartedToEmployee: vi.fn().mockResolvedValue(undefined) };
   const service = new ClickToCallService(
@@ -84,12 +94,17 @@ function createHarness() {
 function expectNoSideEffects(h: ReturnType<typeof createHarness>): void {
   expect(h.callback.startCallbackCall).not.toHaveBeenCalled();
   expect(h.prisma.atsCallEvent.create).not.toHaveBeenCalled();
+  expect(h.prisma.atsCallIntent.create).not.toHaveBeenCalled();
   expect(h.realtime.publishStartedToEmployee).not.toHaveBeenCalled();
   expect(h.audit.log).not.toHaveBeenCalled();
 }
 
 async function startContact(service: ClickToCallService, actor: CurrentUserPayload) {
-  return service.start({ targetType: 'CONTACT', targetId: CONTACT_ID }, actor);
+  return service.start(
+    { targetType: 'CONTACT', targetId: CONTACT_ID },
+    actor,
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  );
 }
 
 describe('ClickToCallService Contact object-level access', () => {
@@ -129,6 +144,7 @@ describe('ClickToCallService Contact object-level access', () => {
         h.service.start(
           { targetType: 'CONTACT', targetId },
           user({ CRM_LEADS_EDIT: 'OWN', CRM_DEALS_EDIT: 'OWN' }),
+          'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
         ),
       ).rejects.toBeInstanceOf(ForbiddenException);
       expectNoSideEffects(h);
@@ -264,6 +280,7 @@ describe('ClickToCallService Lead/Deal object-level access', () => {
     await h.service.start(
       { targetType: 'LEAD', targetId: 'lead-1' },
       user({ CRM_LEADS_EDIT: 'DEPARTMENT' }),
+      'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
     );
     expect(h.prisma.lead.findFirst.mock.calls[0]?.[0]?.where).toEqual({
       id: 'lead-1',
@@ -281,6 +298,7 @@ describe('ClickToCallService Lead/Deal object-level access', () => {
       h.service.start(
         { targetType: 'DEAL', targetId: 'deal-1' },
         user({ CRM_DEALS_EDIT: 'DEPARTMENT' }),
+        'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
       ),
     ).rejects.toBeInstanceOf(ForbiddenException);
     expect(h.prisma.deal.findFirst.mock.calls[0]?.[0]?.where).toEqual({

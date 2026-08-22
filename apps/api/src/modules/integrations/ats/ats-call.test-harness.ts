@@ -86,13 +86,22 @@ export function createAtsIngestPrismaMock() {
 
 function createEventMocks(state: AtsIngestTestState) {
   return {
-    findUnique: vi.fn().mockImplementation(async ({ where }: { where: { uid: string } }) => {
-      return state.events.get(where.uid) ?? null;
-    }),
+    findUnique: vi
+      .fn()
+      .mockImplementation(async ({ where }: { where: { uid?: string; id?: string } }) => {
+        if (where.uid) return state.events.get(where.uid) ?? null;
+        if (where.id) {
+          return [...state.events.values()].find((row) => row.id === where.id) ?? null;
+        }
+        return null;
+      }),
     create: vi
       .fn()
       .mockImplementation(
         async ({ data }: { data: Partial<AtsIngestEventRow> & { uid: string } }) => {
+          if (state.events.has(data.uid)) {
+            throw prismaUniqueUidError();
+          }
           const row: AtsIngestEventRow = {
             id: `evt-${state.events.size + 1}`,
             uid: data.uid,
@@ -114,18 +123,22 @@ function createEventMocks(state: AtsIngestTestState) {
           return row;
         },
       ),
+    updateMany: vi.fn().mockImplementation(async ({ where, data }: EventUpdateManyArgs) => {
+      const matches = [...state.events.values()].filter((row) =>
+        matchesUpdateManyWhere(row, where),
+      );
+      for (const row of matches) {
+        applyEventPatch(state, row, data);
+      }
+      return { count: matches.length };
+    }),
     update: vi
       .fn()
       .mockImplementation(
         async ({ where, data }: { where: { id: string }; data: Record<string, unknown> }) => {
           const row = [...state.events.values()].find((item) => item.id === where.id);
           if (!row) throw new Error('missing event');
-          const previousUid = row.uid;
-          Object.assign(row, data);
-          if (row.uid !== previousUid) {
-            state.events.delete(previousUid);
-            state.events.set(row.uid, row);
-          }
+          applyEventPatch(state, row, data);
           return row;
         },
       ),
@@ -303,6 +316,52 @@ interface EventFindWhere {
   calldirect?: string;
   initiatedByEmployeeId?: string;
   createdAt?: { gte?: Date };
+}
+
+interface EventUpdateManyArgs {
+  where: {
+    id?: string;
+    uid?: string;
+    OR?: Array<{ state?: { in?: string[] } | null; NOT?: { state?: { in?: string[] } } }>;
+  };
+  data: Record<string, unknown>;
+}
+
+function prismaUniqueUidError(): { code: string; meta: { target: string[] } } {
+  return { code: 'P2002', meta: { target: ['uid'] } };
+}
+
+function applyEventPatch(
+  state: AtsIngestTestState,
+  row: AtsIngestEventRow,
+  data: Record<string, unknown>,
+): void {
+  const previousUid = row.uid;
+  Object.assign(row, data);
+  if (row.uid !== previousUid) {
+    state.events.delete(previousUid);
+    state.events.set(row.uid, row);
+  }
+}
+
+function matchesUpdateManyWhere(
+  row: AtsIngestEventRow,
+  where: EventUpdateManyArgs['where'],
+): boolean {
+  if (where.id && row.id !== where.id) return false;
+  if (where.uid && row.uid !== where.uid) return false;
+  if (!where.OR?.length) return true;
+  return where.OR.some((clause) => matchesStateClause(row.state, clause));
+}
+
+function matchesStateClause(
+  state: string | null,
+  clause: { state?: { in?: string[] } | null; NOT?: { state?: { in?: string[] } } },
+): boolean {
+  if (clause.state === null) return state == null;
+  if (clause.state?.in) return state != null && clause.state.in.includes(state);
+  if (clause.NOT?.state?.in) return state == null || !clause.NOT.state.in.includes(state);
+  return false;
 }
 
 function matchesEventWhere(row: AtsIngestEventRow, where: EventFindWhere): boolean {

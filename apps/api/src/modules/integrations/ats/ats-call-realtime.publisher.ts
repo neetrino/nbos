@@ -8,7 +8,11 @@ import {
 } from '../../realtime/call-realtime.constants';
 import { CallRealtimeEventBus } from '../../realtime/call-realtime-event-bus';
 import type { ActiveCallSsePayload } from '../../realtime/call-realtime.types';
-import { mapAtsStateToPhase, resolveCallLifecycleEvent } from './ats-call-realtime.phase';
+import {
+  mapAtsStateToPhase,
+  resolveCallLifecycleEvent,
+  storedStateMatchesLifecycleEvent,
+} from './ats-call-realtime.phase';
 import { formatPersonName, resolveLifecycleTarget } from './ats-call-realtime.target';
 import type { AtsWebhookPayload } from './ats.types';
 
@@ -32,6 +36,7 @@ const LIFECYCLE_SELECT = {
 export type AtsCallIngestMeta = {
   callId: string;
   isFirstSeen: boolean;
+  stateTransitionApplied: boolean;
 };
 
 type LifecycleCallRow = {
@@ -62,6 +67,7 @@ export class AtsCallRealtimePublisher {
 
   async publishAfterWebhook(payload: AtsWebhookPayload, ingest: AtsCallIngestMeta): Promise<void> {
     try {
+      if (!ingest.stateTransitionApplied) return;
       const eventName = resolveCallLifecycleEvent(payload, ingest.isFirstSeen);
       if (!eventName) return;
       await this.publishNamed(ingest.callId, eventName, payload);
@@ -78,6 +84,7 @@ export class AtsCallRealtimePublisher {
     try {
       const call = await this.loadCall(callId);
       if (!call) return;
+      if (!storedStateMatchesLifecycleEvent(call.state, CALL_SSE_EVENT.STARTED)) return;
       await this.eventBus.publish({
         event: CALL_SSE_EVENT.STARTED,
         payload: { employeeId, ...toSsePayload(call, CALL_SSE_EVENT.STARTED) },
@@ -94,6 +101,14 @@ export class AtsCallRealtimePublisher {
   ): Promise<void> {
     const call = await this.loadCall(callId);
     if (!call) return;
+    if (!storedStateMatchesLifecycleEvent(call.state, eventName)) {
+      this.logger.debug({
+        event: 'ats_call_sse_skipped_stale',
+        uid: payload.uid,
+        sse: eventName,
+      });
+      return;
+    }
     const target = resolveLifecycleTarget(payload, call);
     if (!target) {
       this.logger.debug({ event: 'ats_call_sse_skipped', uid: payload.uid, sse: eventName });

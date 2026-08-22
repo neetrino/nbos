@@ -14,7 +14,7 @@ import {
   ATS_CALL_RECORDING_SOURCE_MODULE,
 } from './ats-call-recording.constants';
 import { recordingExtensionForMime } from './ats-call-recording-http';
-import type { AtsRecordingDownloadResult } from './ats-call-record.client';
+import type { AtsRecordingDownloadResult } from './ats-call-record.types';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 

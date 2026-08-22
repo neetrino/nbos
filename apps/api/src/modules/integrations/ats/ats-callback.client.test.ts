@@ -38,7 +38,7 @@ describe('isAtsCallbackSuccessBody', () => {
 });
 
 describe('AtsCallbackClient.startCallbackCall', () => {
-  it('returns success on HTTP 2xx', async () => {
+  it('returns accepted on HTTP 2xx', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { status: 'success' }));
     vi.stubGlobal('fetch', fetchMock);
     const client = new AtsCallbackClient({
@@ -47,7 +47,7 @@ describe('AtsCallbackClient.startCallbackCall', () => {
     } as AtsProviderConfig);
 
     await expect(client.startCallbackCall({ from: '3126107', to: '37499123456' })).resolves.toEqual(
-      { success: true },
+      { kind: 'accepted' },
     );
     const calledUrl = String(fetchMock.mock.calls[0]?.[0]);
     expect(calledUrl).toContain('from=3126107');
@@ -56,7 +56,7 @@ describe('AtsCallbackClient.startCallbackCall', () => {
     vi.unstubAllGlobals();
   });
 
-  it('returns success false on ATS HTTP error', async () => {
+  it('returns rejected on ATS HTTP error', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(500, { status: 'error' })));
     const client = new AtsCallbackClient({
       apiKey: 'test-key',
@@ -64,8 +64,42 @@ describe('AtsCallbackClient.startCallbackCall', () => {
     } as AtsProviderConfig);
 
     await expect(client.startCallbackCall({ from: '3126107', to: '37499123456' })).resolves.toEqual(
-      { success: false },
+      {
+        kind: 'rejected',
+      },
     );
+    vi.unstubAllGlobals();
+  });
+
+  it('returns unknown on network errors so callers do not mark FAILED', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('timeout')));
+    const client = new AtsCallbackClient({
+      apiKey: 'test-key',
+      isConfigured: () => true,
+    } as AtsProviderConfig);
+
+    await expect(client.startCallbackCall({ from: '3126107', to: '37499123456' })).resolves.toEqual(
+      {
+        kind: 'unknown',
+      },
+    );
+    vi.unstubAllGlobals();
+  });
+
+  it('returns unconfigured without calling ATS when the API key is missing', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const client = new AtsCallbackClient({
+      apiKey: '',
+      isConfigured: () => false,
+    } as AtsProviderConfig);
+
+    await expect(client.startCallbackCall({ from: '3126107', to: '37499123456' })).resolves.toEqual(
+      {
+        kind: 'unconfigured',
+      },
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
   });
 });

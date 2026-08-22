@@ -139,6 +139,40 @@ describe('AtsCallRecordingDownloadService', () => {
     });
   });
 
+  it('marks FAILED on a URL policy denial without storing to Drive/R2', async () => {
+    const { storeAtsCallRecording } = await import('./ats-call-recording-store');
+    vi.mocked(storeAtsCallRecording).mockClear();
+    const prisma = {
+      atsCallEvent: {
+        findUnique: vi.fn().mockResolvedValue({
+          ...CALL,
+          recordLink: 'https://127.0.0.1/r.wav',
+        }),
+        update: vi.fn().mockResolvedValue({}),
+        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      },
+    };
+    const client = {
+      downloadRecording: vi
+        .fn()
+        .mockRejectedValue(new AtsRecordingPermanentError('recording url rejected (ip_literal)')),
+    };
+    const service = new AtsCallRecordingDownloadService(
+      prisma as never,
+      client as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+
+    await expect(service.processJob({ callId: 'call-1', uid: 'uid-1' })).resolves.toBeUndefined();
+    expect(storeAtsCallRecording).not.toHaveBeenCalled();
+    expect(prisma.atsCallEvent.updateMany).toHaveBeenCalledWith({
+      where: { id: 'call-1', recordingStatus: { not: 'READY' } },
+      data: { recordingStatus: 'FAILED' },
+    });
+  });
+
   it('does not download again when the Call already has a READY FileAsset', async () => {
     const prisma = {
       atsCallEvent: {

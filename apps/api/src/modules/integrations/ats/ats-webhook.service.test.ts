@@ -1,6 +1,6 @@
 import { ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
-import { AtsWebhookService } from './ats-webhook.service';
+import { AtsWebhookService, shouldEnqueueRecordingSideEffect } from './ats-webhook.service';
 import type { AtsCallRecordingEnqueueService } from './ats-call-recording-enqueue.service';
 import type { AtsCallRedirectService } from './ats-call-redirect.service';
 import type { AtsCallRealtimePublisher } from './ats-call-realtime.publisher';
@@ -21,7 +21,12 @@ function createService(options: {
 
   const callService = {
     ingestCallEvent:
-      options.ingest ?? vi.fn().mockResolvedValue({ callId: 'call-1', isFirstSeen: true }),
+      options.ingest ??
+      vi.fn().mockResolvedValue({
+        callId: 'call-1',
+        isFirstSeen: true,
+        stateTransitionApplied: true,
+      }),
   } as unknown as AtsCallService;
 
   const callRedirect = {
@@ -68,7 +73,11 @@ describe('AtsWebhookService', () => {
   });
 
   it('returns success and ingests on valid key', async () => {
-    const ingest = vi.fn().mockResolvedValue(undefined);
+    const ingest = vi.fn().mockResolvedValue({
+      callId: 'call-1',
+      isFirstSeen: true,
+      stateTransitionApplied: true,
+    });
     const service = createService({ ingest });
 
     await expect(service.handleWebhook('test-ats-key', startBody)).resolves.toEqual({
@@ -95,7 +104,11 @@ describe('AtsWebhookService', () => {
   });
 
   it('publishes call lifecycle SSE after ingest', async () => {
-    const ingest = vi.fn().mockResolvedValue({ callId: 'evt-1', isFirstSeen: true });
+    const ingest = vi.fn().mockResolvedValue({
+      callId: 'evt-1',
+      isFirstSeen: true,
+      stateTransitionApplied: true,
+    });
     const publish = vi.fn().mockResolvedValue(undefined);
     const service = createService({ ingest, publish });
 
@@ -104,12 +117,17 @@ describe('AtsWebhookService', () => {
     expect(publish).toHaveBeenCalledWith(expect.objectContaining({ uid: 'call-1' }), {
       callId: 'evt-1',
       isFirstSeen: true,
+      stateTransitionApplied: true,
     });
     expect(ingest).toHaveBeenCalledBefore(publish);
   });
 
   it('still returns success when SSE publish throws', async () => {
-    const ingest = vi.fn().mockResolvedValue({ callId: 'evt-1', isFirstSeen: true });
+    const ingest = vi.fn().mockResolvedValue({
+      callId: 'evt-1',
+      isFirstSeen: true,
+      stateTransitionApplied: true,
+    });
     const publish = vi.fn().mockRejectedValue(new Error('sse down'));
     const service = createService({ ingest, publish });
 
@@ -120,7 +138,11 @@ describe('AtsWebhookService', () => {
   });
 
   it('enqueues recording after ingest on a terminal call', async () => {
-    const ingest = vi.fn().mockResolvedValue(undefined);
+    const ingest = vi.fn().mockResolvedValue({
+      callId: 'evt-1',
+      isFirstSeen: false,
+      stateTransitionApplied: true,
+    });
     const enqueueRecording = vi.fn().mockResolvedValue(undefined);
     const finishBody = { uid: 'call-1', state: 'finish', disposition: 'ANSWERED' };
     const service = createService({ ingest, enqueueRecording });
@@ -132,8 +154,36 @@ describe('AtsWebhookService', () => {
     expect(enqueueRecording).toHaveBeenCalledWith(expect.objectContaining({ uid: 'call-1' }));
   });
 
+  it('does not republish SSE or enqueue recording on a stale duplicate', async () => {
+    const ingest = vi.fn().mockResolvedValue({
+      callId: 'evt-1',
+      isFirstSeen: false,
+      stateTransitionApplied: false,
+    });
+    const publish = vi.fn();
+    const enqueueRecording = vi.fn();
+    const service = createService({ ingest, publish, enqueueRecording });
+
+    await service.handleWebhook('test-ats-key', {
+      uid: 'call-1',
+      state: 'finish',
+      disposition: 'ANSWERED',
+    });
+    expect(publish).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        stateTransitionApplied: false,
+      }),
+    );
+    expect(enqueueRecording).not.toHaveBeenCalled();
+  });
+
   it('still returns success when recording enqueue throws', async () => {
-    const ingest = vi.fn().mockResolvedValue(undefined);
+    const ingest = vi.fn().mockResolvedValue({
+      callId: 'evt-1',
+      isFirstSeen: true,
+      stateTransitionApplied: true,
+    });
     const enqueueRecording = vi.fn().mockRejectedValue(new Error('redis down'));
     const service = createService({ ingest, enqueueRecording });
 
@@ -141,5 +191,33 @@ describe('AtsWebhookService', () => {
       status: 'success',
     });
     expect(ingest).toHaveBeenCalled();
+  });
+});
+
+describe('shouldEnqueueRecordingSideEffect', () => {
+  const finish = { uid: 'call-1', state: 'finish', disposition: 'ANSWERED' };
+
+  it('enqueues only when recording is eligible and the transition was applied or first seen', () => {
+    expect(
+      shouldEnqueueRecordingSideEffect(finish, {
+        callId: 'c1',
+        isFirstSeen: false,
+        stateTransitionApplied: true,
+      }),
+    ).toBe(true);
+    expect(
+      shouldEnqueueRecordingSideEffect(finish, {
+        callId: 'c1',
+        isFirstSeen: true,
+        stateTransitionApplied: false,
+      }),
+    ).toBe(true);
+    expect(
+      shouldEnqueueRecordingSideEffect(finish, {
+        callId: 'c1',
+        isFirstSeen: false,
+        stateTransitionApplied: false,
+      }),
+    ).toBe(false);
   });
 });
