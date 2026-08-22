@@ -28,6 +28,7 @@ export type ActiveCallScreenSnapshot = {
   durationSec: number | null;
   disposition: string | null;
   note: string | null;
+  noteVersion: number;
   recordingStatus: 'PENDING' | 'DOWNLOADING' | 'READY' | 'FAILED' | null;
   recentCalls: Array<{
     id: string;
@@ -48,6 +49,7 @@ type ScreenRow = {
   billsec: string | null;
   disposition: string | null;
   note: string | null;
+  noteVersion: number;
   recordingStatus: 'PENDING' | 'DOWNLOADING' | 'READY' | 'FAILED' | null;
   leadId: string | null;
   contactId: string | null;
@@ -112,6 +114,7 @@ export function mapActiveCallScreen(
     durationSec: parseDurationSec(row.billsec),
     disposition: row.disposition,
     note: row.note,
+    noteVersion: row.noteVersion,
     recordingStatus: row.recordingStatus,
     recentCalls: extras.recentCalls,
   };

@@ -192,6 +192,8 @@ model AtsCallEvent {
   initiatedByEmployeeId   String?                      @map("initiated_by_employee_id")
   /// Employee note after the call ends. Not an ATS field.
   note                    String?                      @db.Text
+  /// Optimistic version of `note` only. Independent of webhook/recording `updatedAt`.
+  noteVersion             Int                          @default(0) @map("note_version")
   recordingStatus         AtsCallRecordingStatusEnum?  @map("recording_status")
   recordingFileAssetId    String?                      @map("recording_file_asset_id")
   createdAt               DateTime                     @default(now()) @map("created_at")

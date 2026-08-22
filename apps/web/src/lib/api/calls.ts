@@ -32,6 +32,7 @@ export interface ActiveCallScreenSnapshot {
   durationSec: number | null;
   disposition: string | null;
   note: string | null;
+  noteVersion: number;
   recordingStatus: CallRecordingStatus | null;
   recentCalls: Array<{
     id: string;
@@ -103,8 +104,11 @@ export const callsApi = {
     const resp = await api.get<ActiveCallScreenSnapshot>(`/api/crm/calls/${id}/screen`);
     return resp.data;
   },
-  async updateNote(id: string, note: string | null): Promise<ActiveCallScreenSnapshot> {
-    const resp = await api.patch<ActiveCallScreenSnapshot>(`/api/crm/calls/${id}/note`, { note });
+  async updateNote(
+    id: string,
+    body: { note: string | null; expectedNoteVersion: number },
+  ): Promise<ActiveCallScreenSnapshot> {
+    const resp = await api.patch<ActiveCallScreenSnapshot>(`/api/crm/calls/${id}/note`, body);
     return resp.data;
   },
 };

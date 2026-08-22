@@ -55,10 +55,10 @@ Runtime notes (canon silent → safer):
 
 - `crm/leads`, `crm/deals` — list + `scope`; `DELETE` → Trash; `POST :id/restore`; `DELETE :id/permanent`.
 - `GET /crm/calls`, `GET /crm/calls/:id` — Call activities by `leadId` / `contactId` / `dealId`; Call by id. List requires exactly one parent id. Visibility follows CRM_LEADS / CRM_DEALS VIEW.
-- `POST /crm/calls/click-to-call` — `{ targetType: LEAD|CONTACT|DEAL, targetId }`. Requires CALL_CREATE (CRM EDIT on the parent) + access to the CRM object. Empty SIP → 4xx. Browser never calls ATS.
+- `POST /crm/calls/click-to-call` — `{ targetType: LEAD|CONTACT|DEAL, targetId }`. Requires CALL_CREATE (CRM EDIT on the parent) + object-level CRM access. Contact uses Lead/Deal primary and additional relations (`OWN` / `DEPARTMENT`); unowned Contact only with `ALL`. Authorization finishes before ATS callback. Empty SIP → 4xx. Browser never calls ATS.
 - `GET /crm/calls/:id/recording` — authenticated stream of the Drive recording when the viewer can see the Call. No public storage URL.
-- `GET /crm/calls/:id/screen` — Active Call Screen snapshot (Contact / Deal / Project / Product / recent calls / note).
-- `PATCH /crm/calls/:id/note` — save the employee note after the call.
+- `GET /crm/calls/:id/screen` — Active Call Screen snapshot (Contact / Deal / Project / Product / recent calls / note / `noteVersion`).
+- `PATCH /crm/calls/:id/note` — `{ note, expectedNoteVersion }` (`note` required; `null` clears). After terminal Call only (`finish` / `end`). Requires object-level Call VIEW + CRM EDIT (`OWN` / `DEPARTMENT` / `ALL`), not VIEW. Read current + terminal/version checks + conditional update + Audit `CALL_NOTE_UPDATED` in one transaction (Audit old values from that row); conflict → 409 without Audit. Snapshot includes `noteVersion`. Audit trail read requires `AUDIT_LOGS.VIEW`.
 - `GET /realtime/calls` — employee SSE `call.started` / `call.answered` / `call.finished` for the Active Call Screen.
 - `GET /crm/leads/duplicates` — intake / phone-add / merge / identify candidates (Leads, Contacts, open Deals).
 - `POST /crm/leads/:id/merge` — survivor path id; body `{ absorbedId, fieldChoices?, status? }`.

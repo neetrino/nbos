@@ -1,6 +1,14 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { PrismaClient, type Prisma, type InputJsonValue } from '@nbos/database';
+import {
+  PrismaClient,
+  type Prisma,
+  type InputJsonValue,
+  type TransactionClient,
+} from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+
+/** Write client for `auditLog.create` — Prisma root or an interactive transaction. */
+export type AuditWriteClient = Pick<TransactionClient, 'auditLog'>;
 
 export interface AuditActorSummary {
   id: string;
@@ -31,8 +39,8 @@ interface PaginationParams {
 export class AuditService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async log(params: AuditLogParams) {
-    return this.prisma.auditLog.create({
+  async log(params: AuditLogParams, client: AuditWriteClient = this.prisma) {
+    return client.auditLog.create({
       data: {
         entityType: params.entityType,
         entityId: params.entityId,

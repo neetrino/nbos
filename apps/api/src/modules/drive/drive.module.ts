@@ -45,6 +45,7 @@ import { DriveLibraryEntitiesService } from './drive-library-entities.service';
     DriveR2Client,
     DriveZipExportService,
     DriveExportZipQueueService,
+    DriveAccessContextService,
   ],
 })
 export class DriveModule {}

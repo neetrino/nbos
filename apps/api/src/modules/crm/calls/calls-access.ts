@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { CALL_LIST_FORBIDDEN_MESSAGE } from './calls.constants';
 
 export type CallListParent = 'lead' | 'contact' | 'deal';
 
@@ -6,12 +7,6 @@ export type CallListQueryIds = {
   leadId?: string;
   contactId?: string;
   dealId?: string;
-};
-
-export type CallParentRefs = {
-  leadId: string | null;
-  contactId: string | null;
-  dealId: string | null;
 };
 
 export function hasCrmModuleView(
@@ -58,18 +53,5 @@ export function assertCanListCalls(
   if (parent === 'lead' && canViewLeadCalls(permissions)) return;
   if (parent === 'deal' && canViewDealCalls(permissions)) return;
   if (parent === 'contact' && canViewContactCalls(permissions)) return;
-  throw new ForbiddenException('No permission to view these calls');
-}
-
-export function assertCanViewCall(
-  permissions: Record<string, string | undefined>,
-  call: CallParentRefs,
-): void {
-  if (call.leadId && canViewLeadCalls(permissions)) return;
-  if (call.dealId && canViewDealCalls(permissions)) return;
-  if (call.contactId && canViewContactCalls(permissions)) return;
-  if (!call.leadId && !call.dealId && !call.contactId && canViewContactCalls(permissions)) {
-    return;
-  }
-  throw new ForbiddenException('No permission to view this call');
+  throw new ForbiddenException(CALL_LIST_FORBIDDEN_MESSAGE);
 }

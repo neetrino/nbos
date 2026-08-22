@@ -14,6 +14,7 @@ describe('mapActiveCallScreen', () => {
         billsec: null,
         disposition: null,
         note: null,
+        noteVersion: 0,
         recordingStatus: null,
         leadId: 'lead-1',
         contactId: null,

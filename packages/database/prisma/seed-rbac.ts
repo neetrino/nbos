@@ -1,5 +1,12 @@
 import { createPrismaClient } from '../src/client';
-import { PLATFORM_RESOURCE_FAMILIES } from '@nbos/shared';
+import {
+  CRM_CALL_RECORDINGS_MODULE,
+  CRM_CALL_RECORDINGS_PLAY_ACTION,
+  CRM_CALL_RECORDINGS_PLAY_DEFAULT_ROLE_IDS,
+  CRM_CALL_RECORDINGS_PLAY_DEFAULT_SCOPE,
+  CRM_CALL_RECORDINGS_PLAY_PERMISSION_ID,
+  PLATFORM_RESOURCE_FAMILIES,
+} from '@nbos/shared';
 import type { PlatformResourceFamilyEnum } from '@nbos/database';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -410,6 +417,11 @@ async function main() {
     module: 'CHECKLIST_TEMPLATES',
     action: 'ARCHIVE',
   });
+  permissionRecords.push({
+    id: CRM_CALL_RECORDINGS_PLAY_PERMISSION_ID,
+    module: CRM_CALL_RECORDINGS_MODULE,
+    action: CRM_CALL_RECORDINGS_PLAY_ACTION,
+  });
 
   await prisma.permission.createMany({
     data: permissionRecords,
@@ -502,6 +514,14 @@ async function main() {
         scope: writeScope,
       });
     }
+  }
+
+  for (const roleId of CRM_CALL_RECORDINGS_PLAY_DEFAULT_ROLE_IDS) {
+    rolePermissionData.push({
+      roleId,
+      permissionId: CRM_CALL_RECORDINGS_PLAY_PERMISSION_ID,
+      scope: CRM_CALL_RECORDINGS_PLAY_DEFAULT_SCOPE,
+    });
   }
 
   await prisma.rolePermission.deleteMany({});

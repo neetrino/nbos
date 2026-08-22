@@ -18,10 +18,14 @@ export function normalizeAtsState(state: string | null | undefined): string {
   return state?.trim().toLowerCase() ?? '';
 }
 
+export function isAtsTerminalState(state: string | null | undefined): boolean {
+  return ATS_TERMINAL_STATES.has(normalizeAtsState(state));
+}
+
 export function mapAtsStateToPhase(state: string | null | undefined): ActiveCallPhase {
   const normalized = normalizeAtsState(state);
   if (normalized === ATS_STATE_STATUS) return 'answered';
-  if (ATS_TERMINAL_STATES.has(normalized) || normalized === ATS_STATE_END) return 'ended';
+  if (isAtsTerminalState(normalized)) return 'ended';
   return 'ringing';
 }
 

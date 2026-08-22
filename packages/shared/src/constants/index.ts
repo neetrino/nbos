@@ -251,6 +251,7 @@ export const SLA_DEADLINES = {
 
 export * from './sidebar-navigation';
 export * from './crm-attribution';
+export * from './crm-call-recordings-play';
 export * from './messenger-ws';
 export * from './checklist-template-item-evidence';
 export * from './checklist-evidence-file-ids';

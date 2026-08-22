@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { CALL_SSE_EVENT } from '../../realtime/call-realtime.constants';
 import { inboundStart } from './ats-call.test-harness';
-import { mapAtsStateToPhase, resolveCallLifecycleEvent } from './ats-call-realtime.phase';
+import {
+  isAtsTerminalState,
+  mapAtsStateToPhase,
+  resolveCallLifecycleEvent,
+} from './ats-call-realtime.phase';
 import { resolveLifecycleTarget } from './ats-call-realtime.target';
 
 describe('resolveCallLifecycleEvent', () => {
@@ -33,6 +37,16 @@ describe('mapAtsStateToPhase', () => {
     expect(mapAtsStateToPhase('status')).toBe('answered');
     expect(mapAtsStateToPhase('finish')).toBe('ended');
     expect(mapAtsStateToPhase('end')).toBe('ended');
+  });
+});
+
+describe('isAtsTerminalState', () => {
+  it('treats finish and end as terminal after ATS normalization', () => {
+    expect(isAtsTerminalState('finish')).toBe(true);
+    expect(isAtsTerminalState('END')).toBe(true);
+    expect(isAtsTerminalState('start')).toBe(false);
+    expect(isAtsTerminalState('status')).toBe(false);
+    expect(isAtsTerminalState('initiated')).toBe(false);
   });
 });
 

@@ -1,8 +1,9 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
+import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { mapCallDirection, parseDurationSec } from './call-response.map';
-import { assertCanViewCall } from './calls-access';
+import { CallAccessPolicyService } from './call-access-policy.service';
+import type { CallAccessActor } from './call-access.types';
 import { CALL_SCREEN_RECENT_LIMIT } from './calls.constants';
 import { mapActiveCallScreen, type ActiveCallScreenSnapshot } from './active-call-screen.map';
 import { mapAtsStateToPhase } from '../../integrations/ats/ats-call-realtime.phase';
@@ -17,6 +18,7 @@ const SCREEN_SELECT = {
   billsec: true,
   disposition: true,
   note: true,
+  noteVersion: true,
   recordingStatus: true,
   leadId: true,
   contactId: true,
@@ -45,42 +47,24 @@ const SCREEN_SELECT = {
 
 @Injectable()
 export class ActiveCallScreenService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly access: CallAccessPolicyService,
+  ) {}
 
-  async getScreen(
-    callId: string,
-    permissions: Record<string, string>,
-  ): Promise<ActiveCallScreenSnapshot> {
+  async getScreen(callId: string, actor: CallAccessActor): Promise<ActiveCallScreenSnapshot> {
+    const accessWhere = await this.access.assertCanAccessCall(actor, callId);
     const row = await this.prisma.atsCallEvent.findUnique({
       where: { id: callId },
       select: SCREEN_SELECT,
     });
     if (!row) throw new NotFoundException(`Call ${callId} not found`);
-    assertCanViewCall(permissions, row);
     const [projectName, productName, recentCalls] = await Promise.all([
       this.resolveProjectName(row.deal?.projectId ?? null),
       Promise.resolve(row.deal?.existingProduct?.name ?? null),
-      this.findRecentCalls(row.phone ?? row.clid, row.id),
+      this.findRecentCalls(row.phone ?? row.clid, row.id, accessWhere),
     ]);
     return mapActiveCallScreen(row, { projectName, productName, recentCalls });
-  }
-
-  async updateNote(
-    callId: string,
-    note: string | null,
-    permissions: Record<string, string>,
-  ): Promise<ActiveCallScreenSnapshot> {
-    const existing = await this.prisma.atsCallEvent.findUnique({
-      where: { id: callId },
-      select: { id: true, leadId: true, contactId: true, dealId: true },
-    });
-    if (!existing) throw new NotFoundException(`Call ${callId} not found`);
-    assertCanViewCall(permissions, existing);
-    await this.prisma.atsCallEvent.update({
-      where: { id: callId },
-      data: { note },
-    });
-    return this.getScreen(callId, permissions);
   }
 
   private async resolveProjectName(projectId: string | null): Promise<string | null> {
@@ -92,10 +76,14 @@ export class ActiveCallScreenService {
     return project?.name ?? null;
   }
 
-  private async findRecentCalls(phone: string | null, callId: string) {
+  private async findRecentCalls(
+    phone: string | null,
+    callId: string,
+    accessWhere: Prisma.AtsCallEventWhereInput,
+  ) {
     if (!phone) return [];
     const rows = await this.prisma.atsCallEvent.findMany({
-      where: { phone, id: { not: callId } },
+      where: { AND: [{ phone, id: { not: callId } }, accessWhere] },
       orderBy: { createdAt: 'desc' },
       take: CALL_SCREEN_RECENT_LIMIT,
       select: { id: true, calldirect: true, state: true, createdAt: true, billsec: true },

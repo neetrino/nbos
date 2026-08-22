@@ -12,7 +12,7 @@ import { AuditService } from '../../audit/audit.service';
 import { AtsCallbackClient } from '../../integrations/ats/ats-callback.client';
 import { AtsCallRealtimePublisher } from '../../integrations/ats/ats-call-realtime.publisher';
 import { mapCallResponse, type CallResponse } from './call-response.map';
-import { assertCanCreateCall } from './click-to-call-access';
+import { callAccessActorFromUser } from './call-access.types';
 import {
   CALL_AUDIT_ENTITY_TYPE,
   CALL_INITIATED_AUDIT_ACTION,
@@ -36,10 +36,10 @@ export class ClickToCallService {
   ) {}
 
   async start(dto: StartClickToCallDto, user: CurrentUserPayload): Promise<CallResponse> {
-    const target = await this.targets.load(dto.targetType, dto.targetId);
-    assertCanCreateCall(
-      { id: user.id, permissions: user.permissions ?? {} },
-      { parent: target.parent, assignedEmployeeIds: target.assignedEmployeeIds },
+    const target = await this.targets.load(
+      dto.targetType,
+      dto.targetId,
+      callAccessActorFromUser(user),
     );
     const from = await this.loadSipExtension(user.id);
     await this.startAtsCallback(from, target.to);

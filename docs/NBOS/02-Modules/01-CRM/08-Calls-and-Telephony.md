@@ -2,7 +2,7 @@
 
 > NBOS Platform — звонки как активность CRM, не отдельная воронка.
 >
-> **Статус:** канон Accepted (2026-08-20). Runtime: Call core + Active Call Screen (SSE `call.started` / `call.answered` / `call.finished`) + CALL activities + recording FileAsset/playback + click-to-call. Сверка history — следующий срез.
+> **Статус:** канон Accepted (2026-08-20). Runtime: Call core + Active Call Screen (SSE `call.started` / `call.answered` / `call.finished`) + CALL activities + recording FileAsset/playback + click-to-call. Playback записи отделён от Call VIEW: `CRM_CALL_RECORDINGS_PLAY` + object-level Call access + Drive `CONFIDENTIAL` FileAsset. Сверка history — следующий срез.
 >
 > Провайдер: ATS.am. Контракт API: [`../../06-Integrations/09-ATS-AM-Integration.md`](../../06-Integrations/09-ATS-AM-Integration.md).  
 > Окно звонка (UI): [`../../05-UI-Specifications/11-Call-Screen.md`](../../05-UI-Specifications/11-Call-Screen.md).  
@@ -30,7 +30,8 @@
 | `dealId` / `projectId` / `productId` | Контекст на момент звонка, не копия воронки                              |
 | `responsibleEmployeeId`              | Кому `redirect_call` или кто начал исходящий                             |
 | `answeredEmployeeId`                 | Кто взял трубку (`op` → `Employee.sipId`)                                |
-| `note`                               | Заметка сотрудника после звонка                                          |
+| `note`                               | Заметка сотрудника **после** terminal Call (`finish` / `end`)            |
+| `noteVersion`                        | Optimistic version только для Note; не `updatedAt`                       |
 | `rate`                               | Оценка 0–5 с ATS, если пришла                                            |
 | `recordingFileAssetId`               | Файл в Drive, не вечная ссылка ATS                                       |
 | `recordingStatus`                    | `PENDING` → `DOWNLOADING` → `READY` \| `FAILED`; `null` = нет записи     |
@@ -122,12 +123,17 @@ ATS даёт `record_link` и `GET call-record?uid`. Ссылка ATS может
 
 ## 9. Права
 
-Как CRM:
+Как CRM. **Факт звонка и playback записи — разные права.**
 
-- Seller — свои / назначенные Lead и Deal, свои звонки;
-- Head of Sales / CEO / Owner — все;
-- Marketing — без прослушивания записей;
-- записи `CONFIDENTIAL`.
+- Seller — свои / назначенные Lead и Deal, свои звонки; playback только своего Call при `CRM_CALL_RECORDINGS_PLAY` + object-level Call access + Drive FileAsset policy;
+- Head of Sales / CEO / Owner — все звонки; `CRM_CALL_RECORDINGS_PLAY` по умолчанию, playback всё равно проходит object-level Call access и Drive policy;
+- Marketing (включая Head of Marketing) — без `CRM_CALL_RECORDINGS_PLAY`, прослушивание запрещено даже если CRM VIEW позволяет видеть Call;
+- Custom role с `CRM_CALL_RECORDINGS_PLAY` работает по effective permissions, без проверки имени роли;
+- записи: `purpose=CALL_RECORDING`, `visibility=RESTRICTED`, `confidentiality=CONFIDENTIAL`; playback стримит через API, signed/public URL не выдаётся.
+- **Note** (`PATCH /crm/calls/:id/note`) — не VIEW. Нужны одновременно: object-level Call VIEW, object-level CRM EDIT (`CRM_LEADS_EDIT` / `CRM_DEALS_EDIT`), terminal ATS state (`finish` / `end`), and current `expectedNoteVersion`. VIEW-only → deny до записи и до Audit.
+- Object-level EDIT совпадает с Call VIEW predicates, но по EDIT scope: `NONE` deny; `ALL` — Calls соответствующего CRM-модуля (contact-only без Lead/Deal — только при `ALL`); `OWN` — `Lead.assignedTo`, `Deal.sellerId` / `sellerAssistantId`, `Call.responsibleEmployeeId` / `initiatedByEmployeeId` / `answeredEmployeeId`; `DEPARTMENT` — те же relations для actor и коллег из `EmployeeDepartment` (строка `DEPARTMENT` ≠ ALL). Contact UUID сам по себе EDIT не даёт.
+- `noteVersion` (default 0) — dedicated optimistic lock. Webhook/recording/`updatedAt` его не двигают. Успех: `note` + `noteVersion + 1` в одном conditional `UPDATE`. Несовпадение версии или смена state → 409, Note не считать сохранённой. Snapshot возвращает новую `noteVersion`.
+- Audit `CALL_NOTE_UPDATED` на entity `CALL` в той же Prisma transaction, что и чтение current, terminal/version checks и conditional update: actor, call id, old/new note, old/new version с реально заменённой строки. Note text не писать в application logs. Чтение — существующие `GET /audit` и `GET /audit/user/:userId` с `AUDIT_LOGS.VIEW`; без нового публичного endpoint.
 
 Settings → Integrations: карточка **ATS.am** (ключ настроен / нет), не «Applicant tracking coming soon». Секрет не показывать.
 

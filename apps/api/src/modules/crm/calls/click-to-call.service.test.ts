@@ -4,7 +4,9 @@ import { createMockPrisma } from '../../../test-utils/mock-prisma';
 import type { CurrentUserPayload } from '../../../common/decorators';
 import type { AtsCallRealtimePublisher } from '../../integrations/ats/ats-call-realtime.publisher';
 import type { AuditService } from '../../audit/audit.service';
+import type { AtsCallbackClient } from '../../integrations/ats/ats-callback.client';
 import { CALL_LIST_SELECT } from './call-list.select';
+import { ClickToCallAccessPolicyService } from './click-to-call-access-policy.service';
 import { ClickToCallService } from './click-to-call.service';
 import { ClickToCallTargetLoader } from './click-to-call-target';
 import { CLICK_TO_CALL_MISSING_SIP_MESSAGE } from './click-to-call.constants';
@@ -60,6 +62,7 @@ function createService(options?: {
 }) {
   const prisma = createMockPrisma();
   prisma.lead.findUnique.mockResolvedValue(LEAD);
+  prisma.lead.findFirst.mockResolvedValue(LEAD);
   prisma.employee.findUnique.mockResolvedValue({
     sipId: options && 'sipId' in options ? options.sipId : '3126107',
   });
@@ -74,7 +77,10 @@ function createService(options?: {
   } as unknown as AtsCallRealtimePublisher;
   const service = new ClickToCallService(
     prisma as never,
-    new ClickToCallTargetLoader(prisma as never),
+    new ClickToCallTargetLoader(
+      prisma as never,
+      new ClickToCallAccessPolicyService(prisma as never),
+    ),
     callback,
     audit,
     realtime,
@@ -119,6 +125,22 @@ describe('ClickToCallService', () => {
     );
     expect(JSON.stringify(vi.mocked(audit.log).mock.calls[0])).not.toContain('37499123456');
     expect(result).toMatchObject({ type: 'CALL', direction: 'OUTBOUND', status: 'initiated' });
+    expect(prisma.lead.findFirst.mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(callback.startCallbackCall).mock.invocationCallOrder[0],
+    );
+  });
+
+  it('forbids OWN access to someone else Lead before ATS', async () => {
+    const { service, prisma, callback, user } = createService({
+      permissions: { CRM_LEADS_EDIT: 'OWN', CRM_LEADS_VIEW: 'OWN' },
+    });
+    prisma.lead.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.start({ targetType: 'LEAD', targetId: 'lead-1' }, user),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(callback.startCallbackCall).not.toHaveBeenCalled();
+    expect(prisma.atsCallEvent.create).not.toHaveBeenCalled();
   });
 
   it('forbids a user without CALL_CREATE', async () => {
