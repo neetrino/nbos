@@ -176,6 +176,23 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     permission: { module: 'DASHBOARDS', action: 'VIEW' },
   },
   {
+    key: 'ai-agents',
+    label: 'AI & Agents',
+    href: '/ai-agents',
+    permission: { module: 'COMPANY', action: 'EDIT' },
+    children: [
+      { label: 'Overview', href: '/ai-agents' },
+      { label: 'External Agents', href: '/ai-agents/external-agents' },
+      { label: 'Providers', href: '/ai-agents/providers' },
+      { label: 'Models', href: '/ai-agents/models' },
+      { label: 'Model Policies', href: '/ai-agents/policies' },
+      { label: 'Internal Agents', href: '/ai-agents/internal-agents' },
+      { label: 'Usage', href: '/ai-agents/usage' },
+      { label: 'Approvals', href: '/ai-agents/approvals' },
+      { label: 'Audit', href: '/ai-agents/audit' },
+    ],
+  },
+  {
     key: 'settings',
     label: 'Platform Admin',
     href: '/settings',
@@ -199,11 +216,6 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
       {
         label: 'Integrations',
         href: '/settings/integrations',
-        permission: { module: 'COMPANY', action: 'EDIT' },
-      },
-      {
-        label: 'AI & Agents',
-        href: '/settings/ai-agents',
         permission: { module: 'COMPANY', action: 'EDIT' },
       },
       {

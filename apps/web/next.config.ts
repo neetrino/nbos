@@ -88,6 +88,13 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      // AI & Agents graduated from a Settings sub-page to a top-level module.
+      { source: '/settings/ai-agents', destination: '/ai-agents', permanent: false },
+      { source: '/settings/ai-agents/:path*', destination: '/ai-agents/:path*', permanent: false },
+    ];
+  },
   async rewrites() {
     return {
       beforeFiles: [],

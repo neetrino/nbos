@@ -7,7 +7,6 @@ import {
   ListChecks,
   ShieldCheck,
   SlidersHorizontal,
-  Sparkles,
   Timer,
   ToggleLeft,
   Trash2,
@@ -44,12 +43,6 @@ const SETTINGS_SECTIONS = [
     href: '/settings/integrations',
     description: 'Provider registry, status, and secret references.',
     icon: Cable,
-  },
-  {
-    title: 'AI & Agents',
-    href: '/settings/ai-agents',
-    description: 'External Agent connections, internal providers, models, and policies.',
-    icon: Sparkles,
   },
   {
     title: 'Security',

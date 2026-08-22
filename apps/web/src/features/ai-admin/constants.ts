@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import type { PageHeroNavLinkItem } from '@/components/shared/page-hero/PageHeroNavLinks';
 
-export const AI_ADMIN_BASE_PATH = '/settings/ai-agents';
+export const AI_ADMIN_BASE_PATH = '/ai-agents';
 
 export const AI_ADMIN_NAV: PageHeroNavLinkItem[] = [
   { href: AI_ADMIN_BASE_PATH, label: 'Overview', icon: LayoutDashboard, exactMatch: true },
