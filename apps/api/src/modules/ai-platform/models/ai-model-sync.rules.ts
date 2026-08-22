@@ -5,6 +5,10 @@ export interface CatalogModelState {
   id: string;
   providerModelId: string;
   status: AiModelStatus;
+  displayName: string;
+  providerMetadata: unknown;
+  aliasOf: string | null;
+  snapshotId: string | null;
 }
 
 export interface ModelSyncPlan {
@@ -47,6 +51,25 @@ export const AI_MODEL_STATUS_ON_DISCOVERY: AiModelStatus = 'DISCOVERED';
 /** New and returning models stay DISCOVERED. Never auto-activate. */
 export function statusAfterRefresh(current: AiModelStatus): AiModelStatus {
   return current === 'UNAVAILABLE' ? AI_MODEL_STATUS_ON_DISCOVERY : current;
+}
+
+/**
+ * True when a re-sync would only touch `lastSeenAt`. Those rows are refreshed by
+ * a single batched statement, which keeps a full catalog re-sync inside the
+ * interactive transaction window instead of issuing one round-trip per model.
+ */
+export function isUnchangedOnRefresh(
+  existing: CatalogModelState,
+  discovered: DiscoveredProviderModel,
+): boolean {
+  return (
+    existing.displayName === discovered.displayName &&
+    existing.aliasOf === discovered.aliasOf &&
+    existing.snapshotId === discovered.snapshotId &&
+    existing.status === statusAfterRefresh(existing.status) &&
+    JSON.stringify(existing.providerMetadata ?? null) ===
+      JSON.stringify(discovered.providerMetadata ?? null)
+  );
 }
 
 /** Disappeared models are marked unavailable unless an admin already retired them. */

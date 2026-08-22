@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
-import type { AiProviderType } from '@nbos/shared';
+import type { AiModelStatus, AiProviderType } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AiPlatformAuditService } from '../ai-platform-audit.service';
 import { AI_AUDIT_ACTION, AI_AUDIT_ENTITY } from '../ai-platform.constants';
@@ -12,6 +12,7 @@ import { catalogSyncSystemActor } from './ai-model-catalog.contract';
 import { toAiModelView } from './ai-model.mapper';
 import {
   AI_MODEL_STATUS_ON_DISCOVERY,
+  isUnchangedOnRefresh,
   planModelSync,
   statusAfterDisappear,
   statusAfterRefresh,
@@ -118,7 +119,15 @@ export class AiModelSyncService {
       await assertSyncOwnershipInTransaction(tx, ownership);
       const existing = await tx.aiModel.findMany({
         where: { connectionId },
-        select: { id: true, providerModelId: true, status: true },
+        select: {
+          id: true,
+          providerModelId: true,
+          status: true,
+          displayName: true,
+          providerMetadata: true,
+          aliasOf: true,
+          snapshotId: true,
+        },
       });
       const plan = planModelSync(existing, discovered);
       await this.insertDiscovered(tx, connectionId, provider, plan.create, now);
@@ -182,23 +191,24 @@ export class AiModelSyncService {
     created: DiscoveredProviderModel[],
     now: Date,
   ): Promise<void> {
-    for (const model of created) {
-      await tx.aiModel.create({
-        data: {
-          connectionId,
-          provider,
-          providerModelId: model.providerModelId,
-          displayName: model.displayName,
-          status: AI_MODEL_STATUS_ON_DISCOVERY,
-          discoveredAt: now,
-          lastSeenAt: now,
-          providerMetadata: model.providerMetadata as InputJsonValue,
-          suitabilityTags: [],
-          aliasOf: model.aliasOf,
-          snapshotId: model.snapshotId,
-        },
-      });
+    if (created.length === 0) {
+      return;
     }
+    await tx.aiModel.createMany({
+      data: created.map((model) => ({
+        connectionId,
+        provider,
+        providerModelId: model.providerModelId,
+        displayName: model.displayName,
+        status: AI_MODEL_STATUS_ON_DISCOVERY,
+        discoveredAt: now,
+        lastSeenAt: now,
+        providerMetadata: model.providerMetadata as InputJsonValue,
+        suitabilityTags: [],
+        aliasOf: model.aliasOf,
+        snapshotId: model.snapshotId,
+      })),
+    });
   }
 
   private async refreshSeen(
@@ -206,7 +216,18 @@ export class AiModelSyncService {
     refresh: ReturnType<typeof planModelSync>['refresh'],
     now: Date,
   ): Promise<void> {
-    for (const item of refresh) {
+    const unchanged = refresh.filter((item) =>
+      isUnchangedOnRefresh(item.existing, item.discovered),
+    );
+    const changed = refresh.filter((item) => !isUnchangedOnRefresh(item.existing, item.discovered));
+
+    if (unchanged.length > 0) {
+      await tx.aiModel.updateMany({
+        where: { id: { in: unchanged.map((item) => item.existing.id) } },
+        data: { lastSeenAt: now },
+      });
+    }
+    for (const item of changed) {
       await tx.aiModel.update({
         where: { id: item.existing.id },
         data: {
@@ -225,12 +246,16 @@ export class AiModelSyncService {
     tx: PrismaTransaction,
     disappeared: ReturnType<typeof planModelSync>['disappear'],
   ): Promise<void> {
+    const byNextStatus = new Map<AiModelStatus, string[]>();
     for (const item of disappeared) {
       const next = statusAfterDisappear(item.status);
       if (next === item.status) {
         continue;
       }
-      await tx.aiModel.update({ where: { id: item.id }, data: { status: next } });
+      byNextStatus.set(next, [...(byNextStatus.get(next) ?? []), item.id]);
+    }
+    for (const [status, ids] of byNextStatus) {
+      await tx.aiModel.updateMany({ where: { id: { in: ids } }, data: { status } });
     }
   }
 }

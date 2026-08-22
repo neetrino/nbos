@@ -78,9 +78,12 @@ describe('AiModelSyncService', () => {
 
     const result = await service.syncConnection('conn-1', 'emp-admin');
 
-    expect(prisma.aiModel.create).toHaveBeenCalledTimes(2);
-    expect(prisma.aiModel.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ providerModelId: 'gpt-5', status: 'DISCOVERED' }),
+    expect(prisma.aiModel.createMany).toHaveBeenCalledTimes(1);
+    expect(prisma.aiModel.createMany).toHaveBeenCalledWith({
+      data: [
+        expect.objectContaining({ providerModelId: 'gpt-4o', status: 'DISCOVERED' }),
+        expect.objectContaining({ providerModelId: 'gpt-5', status: 'DISCOVERED' }),
+      ],
     });
     expect(result.created).toBe(2);
     expect(
@@ -88,6 +91,108 @@ describe('AiModelSyncService', () => {
         (model) => model.status !== 'ACTIVE' || model.providerModelId === 'never',
       ),
     ).toBe(true);
+  });
+
+  describe('write batching', () => {
+    const CATALOG_SIZE = 90;
+
+    function largeCatalog() {
+      return Array.from({ length: CATALOG_SIZE }, (_unused, index) => ({
+        providerModelId: `model-${index}`,
+        displayName: `model-${index}`,
+        providerMetadata: { owned_by: 'openai' },
+        aliasOf: null,
+        snapshotId: null,
+      }));
+    }
+
+    function serviceForCatalog() {
+      const adapters = {
+        get: vi.fn(() => ({ listModels: vi.fn().mockResolvedValue(largeCatalog()) })),
+      } as unknown as AiProviderAdapterRegistry;
+      return new AiModelSyncService(prisma as never, connections, adapters, audit);
+    }
+
+    // A provider catalog is ~90 models. One statement per model overran the
+    // interactive transaction window against a remote database and failed the
+    // whole sync, so the write count must stay flat as the catalog grows.
+    it('inserts a whole discovered catalog with a single statement', async () => {
+      prisma.aiModel.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
+
+      await serviceForCatalog().syncConnection('conn-1', 'emp-admin');
+
+      expect(prisma.aiModel.createMany).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(prisma.aiModel.createMany).mock.calls[0][0].data).toHaveLength(CATALOG_SIZE);
+      expect(prisma.aiModel.create).not.toHaveBeenCalled();
+      expect(prisma.aiModel.update).not.toHaveBeenCalled();
+    });
+
+    it('refreshes an unchanged catalog with a single statement', async () => {
+      const existing = largeCatalog().map((model, index) => ({
+        id: `row-${index}`,
+        providerModelId: model.providerModelId,
+        status: 'DISCOVERED',
+        displayName: model.displayName,
+        providerMetadata: model.providerMetadata,
+        aliasOf: null,
+        snapshotId: null,
+      }));
+      prisma.aiModel.findMany.mockResolvedValueOnce(existing).mockResolvedValueOnce([]);
+
+      const result = await serviceForCatalog().syncConnection('conn-1', 'emp-admin');
+
+      expect(result.refreshed).toBe(CATALOG_SIZE);
+      expect(prisma.aiModel.updateMany).toHaveBeenCalledTimes(1);
+      expect(prisma.aiModel.update).not.toHaveBeenCalled();
+      expect(prisma.aiModel.createMany).not.toHaveBeenCalled();
+    });
+
+    it('still writes per-row when a model actually changed', async () => {
+      const existing = largeCatalog().map((model, index) => ({
+        id: `row-${index}`,
+        providerModelId: model.providerModelId,
+        status: index === 0 ? 'UNAVAILABLE' : 'DISCOVERED',
+        displayName: index === 1 ? 'stale name' : model.displayName,
+        providerMetadata: model.providerMetadata,
+        aliasOf: null,
+        snapshotId: null,
+      }));
+      prisma.aiModel.findMany.mockResolvedValueOnce(existing).mockResolvedValueOnce([]);
+
+      await serviceForCatalog().syncConnection('conn-1', 'emp-admin');
+
+      // The returning model goes back to DISCOVERED, the renamed one is rewritten.
+      expect(prisma.aiModel.update).toHaveBeenCalledTimes(2);
+      expect(prisma.aiModel.update).toHaveBeenCalledWith({
+        where: { id: 'row-0' },
+        data: expect.objectContaining({ status: 'DISCOVERED' }),
+      });
+      expect(prisma.aiModel.updateMany).toHaveBeenCalledTimes(1);
+    });
+
+    it('marks disappeared models with one statement per target status', async () => {
+      prisma.aiModel.findMany
+        .mockResolvedValueOnce([
+          modelRow({ id: 'gone-1', providerModelId: 'retired-1', status: 'DISCOVERED' }),
+          modelRow({ id: 'gone-2', providerModelId: 'retired-2', status: 'ACTIVE' }),
+          modelRow({ id: 'kept', providerModelId: 'retired-3', status: 'DEPRECATED' }),
+        ])
+        .mockResolvedValueOnce([]);
+      const adapters = {
+        get: vi.fn(() => ({ listModels: vi.fn().mockResolvedValue([]) })),
+      } as unknown as AiProviderAdapterRegistry;
+
+      await new AiModelSyncService(prisma as never, connections, adapters, audit).syncConnection(
+        'conn-1',
+        'emp-admin',
+      );
+
+      expect(prisma.aiModel.updateMany).toHaveBeenCalledTimes(1);
+      expect(prisma.aiModel.updateMany).toHaveBeenCalledWith({
+        where: { id: { in: ['gone-1', 'gone-2'] } },
+        data: { status: 'UNAVAILABLE' },
+      });
+    });
   });
 
   it('exposes a typed SYSTEM scheduled runner', () => {
@@ -134,7 +239,9 @@ describe('AiModelSyncService', () => {
 
     function expectNoCatalogWrites(): void {
       expect(prisma.aiModel.create).not.toHaveBeenCalled();
+      expect(prisma.aiModel.createMany).not.toHaveBeenCalled();
       expect(prisma.aiModel.update).not.toHaveBeenCalled();
+      expect(prisma.aiModel.updateMany).not.toHaveBeenCalled();
       expect(connections.markModelSync).not.toHaveBeenCalled();
       expect(audit.logMachineAction).not.toHaveBeenCalled();
       expect(audit.logAdminAction).not.toHaveBeenCalled();
@@ -209,7 +316,7 @@ describe('AiModelSyncService', () => {
         prisma.aiModel.findMany.mock.invocationCallOrder[0],
       );
       expect(stillOwned.mock.invocationCallOrder[0]).toBeLessThan(
-        prisma.aiModel.create.mock.invocationCallOrder[0],
+        prisma.aiModel.createMany.mock.invocationCallOrder[0],
       );
     });
 
