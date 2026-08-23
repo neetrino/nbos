@@ -1,16 +1,13 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import Link from 'next/link';
 import { FileText, FolderKanban, LifeBuoy, Repeat } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { DetailSheetEntityLinkCard, DetailSheetEntityLinkGrid } from '@/components/shared';
-import { cn } from '@/lib/utils';
 import type {
   CompanyPortfolioResponse,
   ContactPortfolioResponse,
 } from '@/lib/api/client-portfolio';
-import { PORTFOLIO_MESSENGER_HREF } from '../../constants/client-portfolio-deep-links';
 import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
 import { EntityDriveFilesPanel } from '@/features/drive/EntityDriveFilesPanel';
 import {
@@ -22,6 +19,7 @@ import { getInvoiceMoneyStage } from '@/features/finance/constants/finance';
 import { subscriptionsListWithOpenSubscriptionHref } from '@/features/finance/constants/subscription-deep-link';
 import { SUPPORT_TICKET_OPEN_QUERY } from '@/features/support/constants/support-ticket-open-query';
 import type { ClientPortfolioTabId } from './client-portfolio-tabs';
+import { ClientPortfolioCommunicationPanel } from './ClientPortfolioCommunicationPanel';
 
 export type { ClientPortfolioTabId } from './client-portfolio-tabs';
 
@@ -264,21 +262,10 @@ export function ClientPortfolioTabPanels({
 
     if (tab === 'communication') {
       return (
-        <div className="space-y-4">
-          <p className="text-muted-foreground text-sm">
-            A unified timeline (Messenger, calls, notes) will appear here when the aggregation API
-            is available.
-          </p>
-          <Link
-            href={PORTFOLIO_MESSENGER_HREF}
-            className={cn(
-              buttonVariants({ variant: 'outline', size: 'sm' }),
-              'inline-flex w-fit gap-2',
-            )}
-          >
-            Open Messenger
-          </Link>
-        </div>
+        <ClientPortfolioCommunicationPanel
+          data={data}
+          contactId={data.scope === 'contact' ? scopeId : null}
+        />
       );
     }
 

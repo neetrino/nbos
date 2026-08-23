@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
+import { PrismaClient, type TransactionClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { attachActorsToAuditLogs, type AuditActorLookups } from './audit-actor.resolver';
 import { toAuditLogCreateData } from './audit-log-write.mapper';
@@ -10,14 +10,11 @@ import {
   type PaginationParams,
 } from './audit-log.params';
 
+/** Write client for `auditLog.create` — Prisma root or an interactive transaction. */
+export type AuditWriteClient = Pick<TransactionClient, 'auditLog'>;
+
 export type { AuditActorSummary, AuditLogWithActor } from './audit-actor.resolver';
 export type { AuditLogParams } from './audit-log.params';
-
-/**
- * Minimal write surface so a caller can persist its audit row inside its own
- * transaction, keeping a security-relevant mutation and its trail atomic.
- */
-export type AuditWriteClient = Pick<InstanceType<typeof PrismaClient>, 'auditLog'>;
 
 @Injectable()
 export class AuditService {

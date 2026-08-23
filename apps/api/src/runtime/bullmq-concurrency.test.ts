@@ -14,6 +14,7 @@ describe('bullmq-concurrency', () => {
     expect(resolveBullmqConcurrency('whatsapp')).toBe(3);
     expect(resolveBullmqConcurrency('reports')).toBe(1);
     expect(resolveBullmqConcurrency('driveZip')).toBe(1);
+    expect(resolveBullmqConcurrency('atsCallRecording')).toBe(2);
   });
 
   it('rejects NaN and out-of-range (no silent unlimited)', () => {

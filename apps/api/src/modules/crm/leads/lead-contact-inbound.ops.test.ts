@@ -9,7 +9,12 @@ describe('resolveContactPhoneInbound', () => {
       deal: { findFirst: vi.fn().mockResolvedValue({ id: 'd-1', leadId: 'sql-1' }) },
     };
     const result = await resolveContactPhoneInbound(db as never, '+37499123456');
-    expect(result).toEqual({ existingLeadId: 'sql-1', contactId: 'c-1', hasOpenDeal: true });
+    expect(result).toEqual({
+      existingLeadId: 'sql-1',
+      contactId: 'c-1',
+      hasOpenDeal: true,
+      dealId: 'd-1',
+    });
   });
 
   it('prefers an open non-SQL Lead of the Contact over the Deal thread', async () => {
@@ -19,8 +24,13 @@ describe('resolveContactPhoneInbound', () => {
       deal: { findFirst: vi.fn() },
     };
     const result = await resolveContactPhoneInbound(db as never, '+37499123456');
-    expect(result).toEqual({ existingLeadId: 'open-1', contactId: 'c-1', hasOpenDeal: false });
-    expect(db.deal.findFirst).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      existingLeadId: 'open-1',
+      contactId: 'c-1',
+      hasOpenDeal: false,
+      dealId: null,
+    });
+    expect(db.deal.findFirst).toHaveBeenCalled();
   });
 
   it('returns contactId only when there is no open Deal', async () => {
@@ -30,7 +40,12 @@ describe('resolveContactPhoneInbound', () => {
       deal: { findFirst: vi.fn().mockResolvedValue(null) },
     };
     const result = await resolveContactPhoneInbound(db as never, '+37499123456');
-    expect(result).toEqual({ existingLeadId: null, contactId: 'c-1', hasOpenDeal: false });
+    expect(result).toEqual({
+      existingLeadId: null,
+      contactId: 'c-1',
+      hasOpenDeal: false,
+      dealId: null,
+    });
   });
 
   it('looks up Contact by primary or extra phone', async () => {
@@ -59,6 +74,11 @@ describe('resolveContactPhoneInbound', () => {
       deal: { findFirst: vi.fn().mockResolvedValue({ id: 'd-1', leadId: null }) },
     };
     const result = await resolveContactPhoneInbound(db as never, '+37499123456');
-    expect(result).toEqual({ existingLeadId: null, contactId: 'c-1', hasOpenDeal: true });
+    expect(result).toEqual({
+      existingLeadId: null,
+      contactId: 'c-1',
+      hasOpenDeal: true,
+      dealId: 'd-1',
+    });
   });
 });

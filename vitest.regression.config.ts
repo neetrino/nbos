@@ -38,6 +38,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'apps/web/src'),
     },
   },
+  oxc: {
+    decorator: {
+      legacy: true,
+      emitDecoratorMetadata: true,
+    },
+  },
   test: {
     globals: true,
     environment: 'node',

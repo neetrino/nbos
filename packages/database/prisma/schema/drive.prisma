@@ -133,6 +133,7 @@ model FileAsset {
   driveZipExportOutputs       DriveZipExportJob[]                @relation("DriveZipExportOutputFile")
   partnerAgreementDocuments   Partner[]                  @relation("PartnerAgreementDocument")
   assetGrants                 FileAssetGrant[]
+  atsCallRecordings           AtsCallEvent[]             @relation("AtsCallRecording")
 
   @@index([status])
   @@index([purpose])

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { actorContextFromMachine } from '@nbos/shared';
 import { AuditService } from './audit.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
@@ -77,6 +77,23 @@ describe('AuditService', () => {
           ipAddress: undefined,
         }),
       });
+    });
+
+    it('should write through an injected transaction client', async () => {
+      const tx = { auditLog: { create: vi.fn().mockResolvedValue({ id: 'log-tx' }) } };
+
+      await service.log(
+        {
+          entityType: 'CALL',
+          entityId: 'call-1',
+          action: 'CALL_NOTE_UPDATED',
+          userId: 'user-1',
+        },
+        tx,
+      );
+
+      expect(tx.auditLog.create).toHaveBeenCalled();
+      expect(prisma.auditLog.create).not.toHaveBeenCalled();
     });
 
     it('should pass changes as JSON after redaction', async () => {

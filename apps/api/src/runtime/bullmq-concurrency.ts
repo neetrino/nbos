@@ -3,6 +3,7 @@ const DEFAULT_CONCURRENCY = {
   whatsapp: 3,
   reports: 1,
   driveZip: 1,
+  atsCallRecording: 2,
 } as const;
 
 const MIN_CONCURRENCY = 1;
@@ -35,6 +36,7 @@ export function resolveBullmqConcurrency(
     whatsapp: 'BULLMQ_WHATSAPP_CONCURRENCY',
     reports: 'BULLMQ_REPORTS_CONCURRENCY',
     driveZip: 'BULLMQ_DRIVE_ZIP_CONCURRENCY',
+    atsCallRecording: 'BULLMQ_ATS_CALL_RECORDING_CONCURRENCY',
   }[key];
   const raw = env[envKey];
   if (raw === undefined || raw.trim() === '') {
@@ -48,11 +50,13 @@ export function resolveAllBullmqConcurrency(env: NodeJS.ProcessEnv = process.env
   whatsapp: number;
   reports: number;
   driveZip: number;
+  atsCallRecording: number;
 } {
   return {
     mail: resolveBullmqConcurrency('mail', env),
     whatsapp: resolveBullmqConcurrency('whatsapp', env),
     reports: resolveBullmqConcurrency('reports', env),
     driveZip: resolveBullmqConcurrency('driveZip', env),
+    atsCallRecording: resolveBullmqConcurrency('atsCallRecording', env),
   };
 }

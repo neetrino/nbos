@@ -33,7 +33,10 @@ export function buildPortfolioAccessMask(permissions: Record<string, string>): P
   const subscriptions = hasModuleView(permissions, 'FINANCE_SUBSCRIPTIONS');
   const support = hasModuleView(permissions, 'SUPPORT_TICKETS');
   const communication =
-    hasModuleView(permissions, 'MESSENGER') || hasModuleView(permissions, 'MAIL');
+    hasModuleView(permissions, 'MESSENGER') ||
+    hasModuleView(permissions, 'MAIL') ||
+    hasModuleView(permissions, 'CRM_LEADS') ||
+    hasModuleView(permissions, 'CRM_DEALS');
   const files = hasModuleView(permissions, 'DRIVE');
   const financeAmounts = canViewInvoiceMonetaryAmounts(permissions);
 

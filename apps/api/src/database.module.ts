@@ -78,7 +78,11 @@ export class DatabaseModule implements OnModuleInit, OnModuleDestroy {
     if (role === 'worker' || role === 'all') {
       const concurrency = resolveAllBullmqConcurrency();
       const totalJobs =
-        concurrency.mail + concurrency.whatsapp + concurrency.reports + concurrency.driveZip;
+        concurrency.mail +
+        concurrency.whatsapp +
+        concurrency.reports +
+        concurrency.driveZip +
+        concurrency.atsCallRecording;
       const poolMax = diag?.poolMax ?? resolvePoolMaxForRole('worker');
       this.logger.log(
         formatWorkerDbCapacityDiagnostic({
