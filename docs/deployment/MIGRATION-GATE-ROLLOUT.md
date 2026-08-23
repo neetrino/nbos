@@ -1,6 +1,6 @@
 # NBOS Production Migration Gate — rollout
 
-Статус: **Phase 1 done (2026-08-23)**  
+Статус: **Phase 2 blocked — нужен DIRECT_URL в `nbos-migrate` (2026-08-23)**  
 Канон: один release → один `nbos-migrate` → потом 4 сервиса.  
 Старый промпт `Implement NBOS Production Migration Gate + Coolify Orchestration.md` **не выполнять**.
 
@@ -162,14 +162,16 @@ PR → main
 
 ### Чеклист
 
-- [ ] `nbos-migrate` существует
-- [ ] Нет public domain
-- [ ] Auto Deploy migrator = OFF
+- [x] `nbos-migrate` существует
+- [x] Нет public domain
+- [x] Auto Deploy migrator = OFF
 - [ ] `DIRECT_URL` только там (факт, не значение)
-- [ ] 4 app не изменены
+- [x] 4 app не изменены
 - [ ] One-shot: exit 0 = success в Coolify, нет restart loop
 - [ ] Сделан `migrate status` на prod (без вывода секретов)
 - [ ] Если был pending — решение человека записано (deploy / не deploy)
+
+**Phase 2 progress (2026-08-23):** Coolify `nbos-migrate` создан в проекте NBOS / production. Ветка **`development`** (не `main`: параллельная работа, в main только после development). Dockerfile `/Dockerfile.migrator`, Auto Deploy OFF, domain нет, healthcheck OFF, `--restart=no`, деплоев 0. GitHub webhooks по-прежнему 3 (migrator не подписан). `PRISMA_MIGRATE_MODE=status`. `DIRECT_URL` на migrator **нет** (на `nbos-api` ключ есть, значение через API не читается). 4 app snapshot неизменён. `prisma migrate deploy` на prod не запускался.
 
 ### Стоп
 
