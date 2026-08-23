@@ -220,7 +220,7 @@ Module create operation
 **PASS WITH DEBTS** — independent verifier recorded in
 `docs/NBOS/02-Modules/21-AI-Platform/34-Post-Phase-1-Chat-2-Code-Allocator-Handoff.md`.
 
-C25 is closed. Sibling series use `entity_code_counters` with real-DB concurrency / `9999` → `10000` / numeric seed evidence. Remaining debts (K209/C24 / NEW CHAT 3, Tasks C8, Recurring machine actor, seed fixtures, production write-pause apply) are out of this workstream. Tasks `T-` was already closed in Chat 12 / C23 and was not reopened. Do not start NEW CHAT 3 until this slice is committed.
+C25 is closed. Sibling series use `entity_code_counters` with real-DB concurrency / `9999` → `10000` / numeric seed evidence. Remaining debts (Tasks C8, Recurring machine actor, seed fixtures, production write-pause apply) are out of this workstream. Tasks `T-` was already closed in Chat 12 / C23 and was not reopened. Chat 2 seed was later applied on Neon **dev** during Chat 3 live attach; production is still unapplied. K209/C24 / NEW CHAT 3 is closed separately. Cross-regression after all three chats: `36-Post-Phase-1-Cross-Regression.md`.
 
 ## Definition of Done
 
@@ -324,3 +324,7 @@ The exact executor and verifier prompts are maintained in root `ai-modul-steps.m
 This plan must not retroactively mark any partial item `[x]`.
 
 When a workstream is completed, update its real source-of-truth cleanup/canon entry with implementation evidence, then mark this plan's corresponding workstream completed.
+
+All three workstreams are independently **PASS WITH DEBTS**. Post-close cross-regression:
+`36-Post-Phase-1-Cross-Regression.md`. Do not start Messenger AI, employee AI chat,
+production RAG, or Phase 2 from this plan.

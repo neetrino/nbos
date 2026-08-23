@@ -33,11 +33,11 @@ fresh executor chat
 → следующий этап
 ```
 
-| Этап | Работа | Executor | Verifier |
-| --- | --- | --- | --- |
-| NEW CHAT 1 | Tasks Domain Ownership | Cursor Grok 4.6 Extra High Fast | GPT-5.6 Sol High |
-| NEW CHAT 2 | Atomic Human-Readable Codes | Cursor Grok 4.6 Extra High Fast | GPT-5.6 Sol High |
-| NEW CHAT 3 | Unified Durable Drive Artifact Lifecycle | Claude Opus 5 High | GPT-5.6 Sol High |
+| Этап       | Работа                                   | Executor                        | Verifier         |
+| ---------- | ---------------------------------------- | ------------------------------- | ---------------- |
+| NEW CHAT 1 | Tasks Domain Ownership                   | Cursor Grok 4.6 Extra High Fast | GPT-5.6 Sol High |
+| NEW CHAT 2 | Atomic Human-Readable Codes              | Cursor Grok 4.6 Extra High Fast | GPT-5.6 Sol High |
+| NEW CHAT 3 | Unified Durable Drive Artifact Lifecycle | Claude Opus 5 High              | GPT-5.6 Sol High |
 
 Не объединять этапы в один чат.
 
@@ -525,3 +525,8 @@ EVIDENCE:
 1. проверить, что Tasks C9, AI C25 и K209/C24 честно обновлены в source cleanup registers;
 2. выполнить короткий cross-regression Tasks + Drive + Support + Automation + External Agent REST/MCP;
 3. после этого начинать следующий функциональный этап AI Platform.
+
+**2026-08-23:** пункты 1–2 выполнены. Evidence:
+`docs/NBOS/02-Modules/21-AI-Platform/36-Post-Phase-1-Cross-Regression.md`.
+Пункт 3 ещё не начат. Messenger AI / employee AI chat / production RAG / Phase 2
+не стартовать из этого файла.

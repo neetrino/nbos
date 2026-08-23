@@ -168,7 +168,9 @@ Scope correction: the Task writers in Support and Automation belonged to C23 and
 
 Rollout is **not** rolling-deploy safe: mixed old `MAX(table)` writers and new counter writers leave the counter behind the table. Write pause + seed + cutover is required. Sequence and writer inventory: `34-Post-Phase-1-Chat-2-Code-Allocator-Handoff.md`.
 
-**Independent verifier (NEW CHAT 2) closed this item.** Disposable local Postgres (`AI_PLATFORM_DB_TEST_URL`): concurrent named allocators, invoice `9999` → `10000`, numeric seed `VALUES` + SQL replay (`2026=10000`, malformed ignored), parallel Lead + Support creates. Designated non-prod Neon was inspected read-only (sibling counters absent; no 10+ digit suffixes; seed **not** applied). Tasks ownership and Drive lifecycle were not changed. Production apply of the seed remains an operations step under the write-pause sequence.
+**Independent verifier (NEW CHAT 2) closed this item.** Disposable local Postgres (`AI_PLATFORM_DB_TEST_URL`): concurrent named allocators, invoice `9999` → `10000`, numeric seed `VALUES` + SQL replay (`2026=10000`, malformed ignored), parallel Lead + Support creates. At that verifier pass, designated non-prod Neon was inspected read-only (sibling counters absent; no 10+ digit suffixes; seed **not** applied). Tasks ownership and Drive lifecycle were not changed.
+
+**Later (2026-08-23, Chat 3 live attach):** seed `20260823120000_seed_sibling_entity_code_counters` **was** applied on Neon **dev** (`ep-restless-tooth-agz3assx`) together with `20260823140000_file_artifact_operations`. Production apply of the seed remains an operations step under the write-pause sequence.
 
 ### C24. Gateway idempotency slot is never reclaimed (checklist 209) — FIXED
 
@@ -294,6 +296,10 @@ Canonical Phase 1 sources (`03`, `08`, `09`, `10` item 43, `16`) require both RE
 ## F12. Final closure gate
 
 2026-08-23: independent final A–AQ re-walk on committed product HEAD `5ed6c5ea`. C26 live `201 × 6` unique Task codes. AO REST+MCP, AD–AI, full suite 874/4432, regression 22/284, lint 0 errors, typecheck, build, Prisma validate/status all green on non-production Neon. Verdict **PHASE 1 CLOSEABLE**. Item 209 stays `[~]`. See `31-Phase-1-Final-Acceptance.md` § Final closure gate. Post-Phase-1 workstreams: `32-Post-Phase-1-Technical-Debt-Plan.md`.
+
+## F13. Post-Phase-1 three-chat close
+
+2026-08-23: Chats 1–3 independently **PASS WITH DEBTS**. C9 / C25 / C24 (item 209 `[x]`) closed in product code. Chat 2 seed + Chat 3 artifact-operation migration applied on Neon **dev** only. Cross-regression: `36-Post-Phase-1-Cross-Regression.md`. Production write-pause apply remains operations.
 
 ## G. Implementation rule
 
