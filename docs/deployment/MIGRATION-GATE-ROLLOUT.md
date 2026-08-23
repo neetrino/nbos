@@ -1,6 +1,6 @@
 # NBOS Production Migration Gate — rollout
 
-Статус: **Phase 2 blocked — нужен DIRECT_URL в `nbos-migrate` (2026-08-23)**  
+Статус: **Phase 2 open — one-shot/status не закрыты (2026-08-23)**  
 Канон: один release → один `nbos-migrate` → потом 4 сервиса.  
 Старый промпт `Implement NBOS Production Migration Gate + Coolify Orchestration.md` **не выполнять**.
 
@@ -166,12 +166,22 @@ PR → main
 - [x] Нет public domain
 - [x] Auto Deploy migrator = OFF
 - [ ] `DIRECT_URL` только там (факт, не значение)
-- [x] 4 app не изменены
+- [ ] 4 app не изменены
 - [ ] One-shot: exit 0 = success в Coolify, нет restart loop
-- [ ] Сделан `migrate status` на prod (без вывода секретов)
-- [ ] Если был pending — решение человека записано (deploy / не deploy)
+- [x] Сделан `migrate status` на prod (без вывода секретов)
+- [x] Если был pending — решение человека записано (deploy / не deploy)
 
-**Phase 2 progress (2026-08-23):** Coolify `nbos-migrate` создан в проекте NBOS / production. Ветка **`development`** (не `main`: параллельная работа, в main только после development). Dockerfile `/Dockerfile.migrator`, Auto Deploy OFF, domain нет, healthcheck OFF, `--restart=no`, деплоев 0. GitHub webhooks по-прежнему 3 (migrator не подписан). `PRISMA_MIGRATE_MODE=status`. `DIRECT_URL` на migrator **нет** (на `nbos-api` ключ есть, значение через API не читается). 4 app snapshot неизменён. `prisma migrate deploy` на prod не запускался.
+**Phase 2 progress (2026-08-23, вечер):**
+
+- `DIRECT_URL` на `nbos-migrate` есть (ключ верный). Тот же ключ всё ещё на `nbos-api` — не снимал (4 app не трогаем env).
+- По явной просьбе: Auto Deploy **OFF** у `nbos-api` / `nbos-web` / `nbos-worker` / `nbos-scheduler`. Domains и ветка `main` у них не менялись. GitHub webhooks = 3, не удалял.
+- Один rebuild `nbos-migrate` SHA `bf54ab4` (`development`), `force`, `PRISMA_MIGRATE_MODE=status`. Coolify deployment = `finished` в момент **start контейнера**, не по exit Prisma. После exit контейнер ушёл в restart loop (`restart_count=7`); остановлен. Runtime-логи `migrate status` Coolify API не отдал (app already not running).
+- `prisma migrate deploy` на prod: сначала не запускался; вечером после reconcile — **применён** (см. ниже).
+- PR #209 `development` → `main` **влит** человеком (2026-08-23 11:32 UTC, SHA `da27ead`). Четыре app **не** пересобрались: всё ещё `running:healthy` на старом SHA `03b93f1` (19 авг). GitHub webhooks = 3, деплой не пошёл (Auto Deploy OFF).
+- `nbos-migrate` переведён на ветку **`main`**. Второй прогон `PRISMA_MIGRATE_MODE=status`, SHA `da27ead`. Coolify deployment `finished` при start; runtime-логи `migrate status` сняты; контейнер остановлен (`exited:unhealthy`, restart_count=0). `migrate deploy` не запускался.
+- Prod DB **не чистая**: last common `20260820233000_auth_session_client_kind`; 17 pending в Git; 3 имени в `_prisma_migrations` нет в репо (`20260331180000_add_product_category_cascade`, `20260331180000_restore_products_extensions`, `20260430132500_mail_p0_provider_attachments` — старые имена, в Git переименованы). `migrate deploy` без resolve истории, скорее всего, упадёт. Решение человека не записано.
+- Человек подтвердил reconcile+deploy. Coolify `start_command` у Dockerfile app не работает. В `sipan` добавлен `PRISMA_MIGRATE_MODE=reconcile` (`c7183dee`). Три orphan-строки удалены из `_prisma_migrations`. Затем `migrate deploy` применил 17 pending. Повторный `status`: **Database schema is up to date.** `nbos-migrate` снова на `main`, mode `status`, B64 удалён.
+- Ручной Deploy `da27ead`: `nbos-api` / `nbos-web` / `nbos-scheduler` — rolling update **healthy**. `nbos-worker` откатился: Nest не резолвит `CallRealtimeEventBus` у `AtsCallRealtimePublisher` (модуль есть в API/scheduler, в worker graph не был). Фикс: `AtsModule` импортирует `RealtimeModule`. Пока worker на старом контейнере, `running:healthy`. One-shot success в Coolify по-прежнему не закрыт.
 
 ### Стоп
 
