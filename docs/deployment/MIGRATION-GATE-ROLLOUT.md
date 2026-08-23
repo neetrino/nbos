@@ -1,6 +1,6 @@
 # NBOS Production Migration Gate — rollout
 
-Статус: **Phase 2 open — one-shot/status не закрыты (2026-08-23)**  
+Статус: **Phase 2 done (2026-08-23) — leftover: `DIRECT_URL` ещё на `nbos-api`**  
 Канон: один release → один `nbos-migrate` → потом 4 сервиса.  
 Старый промпт `Implement NBOS Production Migration Gate + Coolify Orchestration.md` **не выполнять**.
 
@@ -33,7 +33,7 @@ PR → main
   → health / Coolify deployment status
 ```
 
-Пока Phase 5 не закрыта, прод как сейчас: Auto Deploy ON, ручной контроль.
+Пока Phase 5 не закрыта: Auto Deploy у 4 app уже **OFF**; релиз = ручной `nbos-migrate` (status → deploy по подтверждению) → ручной Deploy 4 сервисов. Coolify `finished` ≠ Prisma. Success = лог `NBOS_MIGRATE_DONE exit=0`, потом Stop.
 
 ---
 
@@ -165,9 +165,9 @@ PR → main
 - [x] `nbos-migrate` существует
 - [x] Нет public domain
 - [x] Auto Deploy migrator = OFF
-- [ ] `DIRECT_URL` только там (факт, не значение)
-- [ ] 4 app не изменены
-- [ ] One-shot: exit 0 = success в Coolify, нет restart loop
+- [ ] `DIRECT_URL` только там (факт, не значение) — ключ есть на migrator **и** на `nbos-api`; с api в этом чате не снимали
+- [x] 4 app не изменены в этом срезе (domains/`main` те же; Auto Deploy уже был OFF раньше Phase 4)
+- [x] One-shot: Prisma не крутится по кругу; success/fail = `NBOS_MIGRATE_DONE`, не Coolify `finished`
 - [x] Сделан `migrate status` на prod (без вывода секретов)
 - [x] Если был pending — решение человека записано (deploy / не deploy)
 
@@ -181,11 +181,14 @@ PR → main
 - `nbos-migrate` переведён на ветку **`main`**. Второй прогон `PRISMA_MIGRATE_MODE=status`, SHA `da27ead`. Coolify deployment `finished` при start; runtime-логи `migrate status` сняты; контейнер остановлен (`exited:unhealthy`, restart_count=0). `migrate deploy` не запускался.
 - Prod DB **не чистая**: last common `20260820233000_auth_session_client_kind`; 17 pending в Git; 3 имени в `_prisma_migrations` нет в репо (`20260331180000_add_product_category_cascade`, `20260331180000_restore_products_extensions`, `20260430132500_mail_p0_provider_attachments` — старые имена, в Git переименованы). `migrate deploy` без resolve истории, скорее всего, упадёт. Решение человека не записано.
 - Человек подтвердил reconcile+deploy. Coolify `start_command` у Dockerfile app не работает. В `sipan` добавлен `PRISMA_MIGRATE_MODE=reconcile` (`c7183dee`). Три orphan-строки удалены из `_prisma_migrations`. Затем `migrate deploy` применил 17 pending. Повторный `status`: **Database schema is up to date.** `nbos-migrate` снова на `main`, mode `status`, B64 удалён.
-- Ручной Deploy `da27ead`: `nbos-api` / `nbos-web` / `nbos-scheduler` — rolling update **healthy**. `nbos-worker` откатился: Nest не резолвит `CallRealtimeEventBus` у `AtsCallRealtimePublisher` (модуль есть в API/scheduler, в worker graph не был). Фикс: `AtsModule` импортирует `RealtimeModule`. Пока worker на старом контейнере, `running:healthy`. One-shot success в Coolify по-прежнему не закрыт.
+- Ручной Deploy `da27ead`: `nbos-api` / `nbos-web` / `nbos-scheduler` — rolling update **healthy**. `nbos-worker` сначала откатился (нет `CallRealtimeEventBus` в worker graph). Фикс влит в `main` (#211, SHA `698c6ba9`); повторный Deploy worker — **new container healthy**.
+- One-shot (вечер, SHA `54338cbe` на `sipan`, `PRISMA_MIGRATE_MODE=status`, **без** `migrate deploy`): Coolify Dockerfile app **игнорирует** `--restart=no` (hardcode `unless-stopped`). Entrypoint после Prisma **держит процесс** (`NBOS_MIGRATE_HOLD=1`). Логи: `NBOS_MIGRATE_START mode=status` → schema up to date → `NBOS_MIGRATE_DONE exit=0`. Контейнер `running:unknown`, `restart_count=0`, START/DONE по одному разу (~1 мин). Stop через Coolify API (очередь, ~40 с) → `exited:unhealthy`. Ветка Coolify вернула на `main` (hold-скрипт на `main` появится после merge). `NBOS_MIGRATE_HOLD=0` — только локальный/CI выход с кодом Prisma.
+
+**Как читать success (для Phase 3):** не ждать Coolify `finished` как конец migrate. `finished` = контейнер стартанул. Poll runtime logs на `NBOS_MIGRATE_DONE exit=N`. `exit=0` → success; иначе fail и 4 app не деплоить. Затем Stop. Не включать healthcheck: unhealthy на hold-контейнере снова даст restart.
 
 ### Стоп
 
-Нельзя Phase 3, пока one-shot статус в Coolify понятен (success/fail не путается с «container exited»).
+Phase 2 закрыта по one-shot. Phase 3 можно начинать **новым чатом**. Не снимать `DIRECT_URL` с `nbos-api` в Phase 3. Не включать Auto Deploy. Hold-entrypoint должен попасть в `main` до первого CD-прогона.
 
 ### Промпт нового чата — Phase 2
 
@@ -219,7 +222,7 @@ PR → main
 
 - `.github/workflows/cd.yml`: только `workflow_dispatch`
 - Секреты GitHub: Coolify URL / token / UUID сервисов. Не DB URL
-- Порядок: дождаться завершения `nbos-migrate` через Coolify API (poll + timeout), потом 4 deploy
+- Порядок: дождаться `NBOS_MIGRATE_DONE exit=0` в runtime-логах (не Coolify `finished`), потом Stop migrator, потом 4 deploy
 - Не trigger сразу 4 webhook после старта migrate
 - Worker/scheduler health: Coolify deployment status, не публичный HTTP из GitHub
 - `concurrency: nbos-production`, `cancel-in-progress: false`
@@ -234,7 +237,7 @@ PR → main
 - [ ] Fail migrate → 4 app не деплоятся
 - [ ] Ручной dispatch прогнан
 - [ ] SHA limitation записана, если API не пинит commit
-- [ ] Auto Deploy 4 app всё ещё ON (так и должно быть)
+- [ ] Auto Deploy 4 app всё ещё OFF (уже выключен раньше Phase 4; не включать)
 
 ### Стоп
 
@@ -248,15 +251,16 @@ PR → main
 Сейчас только Phase 3.
 Добавь GitHub Actions CD только на workflow_dispatch.
 Не вешай CD на push/merge main.
-Не выключай Auto Deploy у 4 production apps.
+Не включай Auto Deploy у 4 production apps (уже OFF).
+Hold-entrypoint (`NBOS_MIGRATE_DONE`) должен быть на ветке, с которой Coolify собирает nbos-migrate (после merge в main).
 Не клади DIRECT_URL / DATABASE_URL в GitHub Secrets.
 Не ломай .github/workflows/ci.yml.
 
 CD должен:
 1) задеплоить/собрать nbos-migrate на нужном SHA;
-2) poll Coolify до реального конца migrate;
-3) при failure — стоп;
-4) при success — deploy api, worker, scheduler, web;
+2) poll runtime logs до `NBOS_MIGRATE_DONE exit=N` (Coolify finished = старт контейнера, не Prisma);
+3) при exit!=0 или timeout — стоп, 4 app не деплоить;
+4) при exit=0 — Stop migrator, затем deploy api, worker, scheduler, web;
 5) ждать Coolify status, а не публичный health worker/scheduler.
 
 После кода нужен один ручной прогон, если секреты Coolify в GitHub уже есть.
