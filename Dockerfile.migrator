@@ -33,10 +33,12 @@ RUN --mount=type=cache,id=pnpm-migrator,target=/pnpm/store \
 COPY packages/database/prisma.config.ts packages/database/prisma.config.ts
 COPY packages/database/prisma/schema packages/database/prisma/schema
 COPY packages/database/prisma/migrations packages/database/prisma/migrations
+COPY packages/database/scripts/coolify-migrate.sh packages/database/scripts/coolify-migrate.sh
 
 ENV NODE_ENV=production
 
 # Prisma CLI reads DIRECT_URL from env (prisma.config.ts). Exit code is Prisma's.
-# PRISMA_MIGRATE_MODE=status|deploy (default deploy). Status first — Coolify
-# Dockerfile apps do not reliably override CMD.
-CMD ["sh", "-c", "case \"${PRISMA_MIGRATE_MODE:-deploy}\" in status) exec pnpm --filter @nbos/database exec prisma migrate status ;; deploy) exec pnpm --filter @nbos/database migrate:deploy ;; *) echo \"Invalid PRISMA_MIGRATE_MODE=$PRISMA_MIGRATE_MODE (expected status|deploy)\" >&2; exit 1 ;; esac"]
+# PRISMA_MIGRATE_MODE=status|reconcile|deploy (default deploy).
+# Coolify Dockerfile apps do not reliably override CMD — keep logic in-image.
+RUN chmod +x packages/database/scripts/coolify-migrate.sh
+CMD ["sh", "packages/database/scripts/coolify-migrate.sh"]
