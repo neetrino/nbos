@@ -264,7 +264,7 @@ CD: best-effort PATCH, затем force rebuild ветки приложения 
 ### Phase 3 progress (2026-08-23)
 
 - Добавлены `.github/workflows/cd.yml` (`workflow_dispatch` only, `concurrency: nbos-production`, `cancel-in-progress: false`) и `scripts/coolify-production-cd.py`.
-- Порядок: force rebuild `nbos-migrate` → poll `NBOS_MIGRATE_DONE exit=N` (timeout) → Stop → при `exit=0` deploy api, worker, scheduler, web и ждать Coolify deployment status. `exit!=0` / timeout / SHA mismatch → 4 app не трогать.
+- Порядок: force rebuild `nbos-migrate` → poll `NBOS_MIGRATE_DONE exit=N` (timeout) → Stop → при `exit=0` deploy api, worker, scheduler, web **по очереди** (каждый `finished` до следующего start). `exit!=0` / timeout / SHA mismatch → 4 app не трогать.
 - Sentinel снимается **до** Stop (после Stop runtime-логи пропадают). Coolify `finished` = старт контейнера, не Prisma.
 - `ci.yml` не менялся. Auto Deploy не включался. Четвёртый GitHub webhook не добавлялся. `PRISMA_MIGRATE_MODE` не переключался (на Coolify остаётся `status`). `DIRECT_URL` с `nbos-api` не снимался.
 - Ручной dispatch **прогнан** (2026-08-23): [CD run](https://github.com/neetrino/nbos/actions/runs/32645992730) на `main` `b60a51f0`. `NBOS_MIGRATE_DONE exit=0` → Stop → api / worker / scheduler / web `running:healthy` на том же SHA. Hold (#212 / #213) и CD (#214 / #215) в `main`. GitHub Secrets заполнены (URL / token / UUID, не DB URL). `PATCH git_commit_sha` на этом прогоне **persisted=True**; сверка всё равно идёт по `deployment.commit`.
@@ -377,6 +377,7 @@ nbos-api, nbos-worker, nbos-scheduler, nbos-web, nbos-migrate.
 - `concurrency: nbos-production`, `cancel-in-progress: false` — второй merge в очередь, migrate не параллельно.
 - Coolify Auto Deploy не включался.
 - No-migration proof: [auto CD](https://github.com/neetrino/nbos/actions/runs/32652466735) `workflow_run` SHA `c2df8f09`. `NBOS_MIGRATE_DONE exit=0` → Stop migrator → api / worker / scheduler / web `running:healthy` / Coolify `finished` на том же SHA. Первый авто-CD на `11d72401` упал гонкой с merge #220 (`nbos-api` failed); повтор после зелёного CI #220 — успех.
+- Docs-merge auto-CD [32655230302](https://github.com/neetrino/nbos/actions/runs/32655230302) SHA `c18dd0c7`: migrator `exit=0` + Stop OK, затем **`nbos-api` Coolify `failed`** (`kc65a4ddx6mqwufs1gmm3hxn`) при параллельном force rebuild четырёх apps. Живые контейнеры остались на `c2df8f09`. CD ждёт каждое приложение до `finished` перед стартом следующего.
 
 ### Стоп
 
