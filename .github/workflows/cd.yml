@@ -1,8 +1,12 @@
-# Production CD — manual only. Do not add push/merge/workflow_run here until Phase 5.
+# Production CD. Auto: green CI on push to main. Break-glass: workflow_dispatch.
+# Do not add push: or pull_request. Coolify Auto Deploy stays OFF.
 name: CD
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
 
 concurrency:
   group: nbos-production
@@ -10,20 +14,36 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   production:
     name: Production migration gate
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main'
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      RELEASE_SHA: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_SHA }}
 
-      - name: Require main
+      - name: Require production SHA
         run: |
-          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
-            echo "CD is production-only. Dispatch from main after NBOS_MIGRATE_HOLD is on main."
+          if [ -z "${RELEASE_SHA}" ]; then
+            echo "RELEASE_SHA is empty"
+            exit 1
+          fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "Manual CD is production-only. Dispatch from main."
             exit 1
           fi
 
@@ -36,5 +56,4 @@ jobs:
           COOLIFY_UUID_WORKER: ${{ secrets.COOLIFY_UUID_WORKER }}
           COOLIFY_UUID_SCHEDULER: ${{ secrets.COOLIFY_UUID_SCHEDULER }}
           COOLIFY_UUID_WEB: ${{ secrets.COOLIFY_UUID_WEB }}
-          RELEASE_SHA: ${{ github.sha }}
         run: python3 scripts/coolify-production-cd.py

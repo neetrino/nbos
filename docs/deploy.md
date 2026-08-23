@@ -255,7 +255,7 @@ NEXT_PUBLIC_BACKEND_URL=https://api.example.com
 
 ## 5. Порядок деплоя
 
-Нормальный прод-релиз: merge в `main` → зелёный CI → ручной GitHub Actions workflow **CD** (`workflow_dispatch`). Он собирает `nbos-migrate` этого SHA, ждёт `NBOS_MIGRATE_DONE exit=0`, Stop migrator, затем Coolify deploy `nbos-api` / `nbos-worker` / `nbos-scheduler` / `nbos-web`. Coolify Auto Deploy у этих пяти приложений **OFF**.
+Нормальный прод-релиз: merge в `main` → зелёный CI → GitHub Actions **CD** (`workflow_run`). `workflow_dispatch` — hotfix. CD собирает `nbos-migrate` этого SHA (`prisma migrate deploy`), ждёт `NBOS_MIGRATE_DONE exit=0`, Stop migrator, затем Coolify deploy `nbos-api` / `nbos-worker` / `nbos-scheduler` / `nbos-web`. Coolify Auto Deploy у этих пяти приложений **OFF**. Два merge не гоняют migrate параллельно (`concurrency: nbos-production`).
 
 1. Cloudflare DNS + SSL Full (strict) (§2).
 2. Миграции Neon **один раз на SHA**, через `nbos-migrate`, не с каждой реплики API. Не `prisma migrate deploy` с ноутбука как штатный путь.
