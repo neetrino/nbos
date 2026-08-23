@@ -1,6 +1,6 @@
 # NBOS Production Migration Gate — rollout
 
-Статус: **Phase 2 done (2026-08-23) — leftover: `DIRECT_URL` ещё на `nbos-api`**  
+Статус: **Phase 3 blocked (2026-08-23) — CD workflow in repo; GitHub secrets empty; hold (#212) not on main**  
 Канон: один release → один `nbos-migrate` → потом 4 сервиса.  
 Старый промпт `Implement NBOS Production Migration Gate + Coolify Orchestration.md` **не выполнять**.
 
@@ -231,13 +231,43 @@ Phase 2 закрыта по one-shot. Phase 3 можно начинать **но
 
 ### Чеклист
 
-- [ ] CD есть и не срабатывает на push
-- [ ] CI не сломан
-- [ ] Poll migrate до конца, timeout задан
-- [ ] Fail migrate → 4 app не деплоятся
+- [x] CD есть и не срабатывает на push
+- [x] CI не сломан
+- [x] Poll migrate до конца, timeout задан
+- [x] Fail migrate → 4 app не деплоятся
 - [ ] Ручной dispatch прогнан
-- [ ] SHA limitation записана, если API не пинит commit
-- [ ] Auto Deploy 4 app всё ещё OFF (уже выключен раньше Phase 4; не включать)
+- [x] SHA limitation записана, если API не пинит commit
+- [x] Auto Deploy 4 app всё ещё OFF (уже выключен раньше Phase 4; не включать)
+
+### GitHub Secrets (имена, не значения)
+
+Repo `neetrino/nbos` → Settings → Secrets and variables → Actions. **Не** класть `DIRECT_URL` / `DATABASE_URL`.
+
+| Secret                   | Что положить                     |
+| ------------------------ | -------------------------------- |
+| `COOLIFY_API_URL`        | Coolify API v1 base (`…/api/v1`) |
+| `COOLIFY_TOKEN`          | Coolify API token                |
+| `COOLIFY_UUID_MIGRATE`   | UUID `nbos-migrate`              |
+| `COOLIFY_UUID_API`       | UUID `nbos-api`                  |
+| `COOLIFY_UUID_WORKER`    | UUID `nbos-worker`               |
+| `COOLIFY_UUID_SCHEDULER` | UUID `nbos-scheduler`            |
+| `COOLIFY_UUID_WEB`       | UUID `nbos-web`                  |
+
+На 2026-08-23 `gh secret list` пуст. Пока секретов нет — `workflow_dispatch` не запускать.
+
+### SHA pin limitation
+
+Coolify `GET/POST /applications/{uuid}/start` и `GET /deploy` **не принимают commit**. `PATCH /applications/{uuid}` принимает `git_commit_sha`, но этот инстанс **не обновляет** `application.git_commit_sha` (поле остаётся пустым/HEAD). Живой SHA — `GET /deployments/{uuid}` → `commit`.
+
+CD: best-effort PATCH, затем force rebuild ветки приложения (`main`); после Coolify `finished` сверяет `deployment.commit` с `github.sha` (prefix). Mismatch → fail, 4 app не деплоятся. Dispatch только с `main` на том SHA, который Coolify клонирует как HEAD `main`.
+
+### Phase 3 progress (2026-08-23)
+
+- Добавлены `.github/workflows/cd.yml` (`workflow_dispatch` only, `concurrency: nbos-production`, `cancel-in-progress: false`) и `scripts/coolify-production-cd.py`.
+- Порядок: force rebuild `nbos-migrate` → poll `NBOS_MIGRATE_DONE exit=N` (timeout) → Stop → при `exit=0` deploy api, worker, scheduler, web и ждать Coolify deployment status. `exit!=0` / timeout / SHA mismatch → 4 app не трогать.
+- Sentinel снимается **до** Stop (после Stop runtime-логи пропадают). Coolify `finished` = старт контейнера, не Prisma.
+- `ci.yml` не менялся. Auto Deploy не включался. Четвёртый GitHub webhook не добавлялся. `PRISMA_MIGRATE_MODE` не переключался (на Coolify остаётся `status`). `DIRECT_URL` с `nbos-api` не снимался.
+- Ручной dispatch **не** запускался: hold (`NBOS_MIGRATE_HOLD` / PR #212) влит в `development`, **не** в `main`; GitHub Actions secrets пустые. Живой CD до merge hold в `main` и заполнения секретов запрещён.
 
 ### Стоп
 

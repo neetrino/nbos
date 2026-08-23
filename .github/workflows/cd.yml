@@ -1,0 +1,40 @@
+# Production CD — manual only. Do not add push/merge/workflow_run here until Phase 5.
+name: CD
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: nbos-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  production:
+    name: Production migration gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require main
+        run: |
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "CD is production-only. Dispatch from main after NBOS_MIGRATE_HOLD is on main."
+            exit 1
+          fi
+
+      - name: Coolify migrate gate then four apps
+        env:
+          COOLIFY_API_URL: ${{ secrets.COOLIFY_API_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          COOLIFY_UUID_MIGRATE: ${{ secrets.COOLIFY_UUID_MIGRATE }}
+          COOLIFY_UUID_API: ${{ secrets.COOLIFY_UUID_API }}
+          COOLIFY_UUID_WORKER: ${{ secrets.COOLIFY_UUID_WORKER }}
+          COOLIFY_UUID_SCHEDULER: ${{ secrets.COOLIFY_UUID_SCHEDULER }}
+          COOLIFY_UUID_WEB: ${{ secrets.COOLIFY_UUID_WEB }}
+          RELEASE_SHA: ${{ github.sha }}
+        run: python3 scripts/coolify-production-cd.py
