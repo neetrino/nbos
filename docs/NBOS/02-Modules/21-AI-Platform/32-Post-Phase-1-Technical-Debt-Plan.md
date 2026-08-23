@@ -256,6 +256,13 @@ Trusted Support/Automation/system flows do **not** go through External Agent RES
 - avoid circular module dependencies through a narrow exported Tasks application service/port if needed;
 - existing human/API Task behavior remains unchanged.
 
+## Status (2026-08-23)
+
+**PASS WITH DEBTS** — independent verifier recorded in
+`docs/NBOS/02-Modules/21-AI-Platform/33-Post-Phase-1-Chat-1-Tasks-Ownership-Handoff.md`.
+
+C9 domain ownership is closed. Remaining debts (C8, C25 / NEW CHAT 2, K209/C24 / NEW CHAT 3, Recurring machine actor, seed fixture) are out of this workstream. Do not start NEW CHAT 2 until this slice is committed.
+
 ## Definition of Done
 
 - all applicable production Task creation writers use the Tasks-owned operation;

@@ -21,8 +21,8 @@ export function formatTaskCode(year: number, numericSuffix: number): string {
  * instead races with concurrent creates, and — once any writer allocates from
  * the counter — a single `max`-derived insert is enough to leave the counter
  * behind the table, so the next allocation collides with no concurrency at all.
- * That is why Support and Automation call this rather than keeping their own
- * generators.
+ * Production creates go through `TaskCreationService`, which is the only
+ * supported caller besides pre-transaction reserve on the External Agent path.
  *
  * The client must commit this statement on its own. Passing an open
  * interactive transaction that still writes the task and an idempotency
