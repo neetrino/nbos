@@ -2,9 +2,15 @@
 
 ## Status
 
-**APPROVED EXECUTION DECISION**
+**APPROVED EXECUTION DECISION — Phase 1 complete**
 
-This document resolves the phase-level decision raised by `26-Phase-1-Chat-8-Acceptance.md`.
+This document resolved the phase-level decision raised by `26-Phase-1-Chat-8-Acceptance.md`.
+Chats 9–12 implemented AD–AI and closed the remaining Phase 1 product-code blockers. The
+independent final closure gate on product baseline `5ed6c5ea` recorded **PHASE 1 CLOSEABLE** in
+`31-Phase-1-Final-Acceptance.md`. Phase 1 is officially complete.
+
+Post-Phase-1 technical-debt workstreams are tracked in
+`32-Post-Phase-1-Technical-Debt-Plan.md`. They are not a continuation of Phase 1 implementation.
 
 ## Decision
 
@@ -87,14 +93,35 @@ Chat 12 is the only milestone after Chat 8 that may declare Phase 1 complete.
 
 A product-code gap must not be hidden as an operational dependency.
 
-However, the following may honestly remain `[~]` at final acceptance if the implementation itself is complete and the missing evidence truly requires an external environment/credential or developer-controlled production window:
+The following may honestly remain `[~]` at final acceptance if the implementation itself is complete and the missing evidence truly requires an external environment/credential or developer-controlled production window:
 
 - live Anthropic validation/sync when no real Anthropic key is supplied;
 - live cross-provider fallback when only one real provider credential is available;
 - production `rediss://` connectivity evidence when no production-like TLS Redis endpoint is available;
-- production application of the actor-aware Audit migration until an approved maintenance/deployment window exists.
+- production application of the actor-aware Audit migration until an approved maintenance/deployment window exists;
+- queued revalidation of a sensitive action (AL 626) while Phase 1 has no queued execution path.
 
-The final acceptance report must distinguish these from missing code.
+### Explicit accepted product partial — K209 / `tasks.attach_artifact`
+
+One product-code `[~]` is officially accepted as **deferred post-Phase-1 debt** and is not an
+environment limitation:
+
+- **K209 / C24 / `tasks.attach_artifact`.** Domain commit and the idempotency checkpoint are not
+  one transaction, because the Drive object-store write cannot join a database transaction. A
+  crash in that window permanently consumes one operation key. This is fail-closed: no second
+  artifact or Task link is written. The five DB-only Task mutations (`tasks.create`,
+  `tasks.update`, `tasks.start`, `tasks.comment`, `tasks.submit_review`) commit the domain change
+  and the checkpoint atomically. Do not reclaim a stale `IN_PROGRESS` row to “close” this.
+- Checklist item 209 stays `[~]`. It must not be marked `[x]` until Workstream 1 in
+  `32-Post-Phase-1-Technical-Debt-Plan.md` lands (outbox or domain-operation record).
+- Do not build that outbox as part of Phase 1 close.
+
+C25 sibling entity-code races and Tasks C9 ownership (Support/Automation still write `Task`
+directly) are separate non-AI module debts. They are not Phase 1 implementation and are tracked
+in `32-Post-Phase-1-Technical-Debt-Plan.md` Workstreams 2 and 3.
+
+The final acceptance report must distinguish environment evidence, this accepted attach
+fail-closed residual, and unrelated module debts from missing Phase 1 product code.
 
 ## Existing Chat 8 acceptance
 
@@ -141,10 +168,15 @@ Existing development database rules remain in force:
 
 ## Exit rule
 
-Phase 1 is complete only when Chat 12 verifies that:
+Phase 1 is complete when the final closure gate verifies that:
 
 1. all applicable product-code requirements in the canonical Phase 1 checklist are implemented;
 2. all 11 exit criteria are met;
 3. no missing product implementation is mislabeled as an environment-only limitation;
-4. remaining partial items, if any, are explicitly tied to unavailable real credentials/environments or a developer-controlled production maintenance window;
+4. remaining partial items are either (a) explicitly tied to unavailable real credentials,
+   environments or a developer-controlled production maintenance window, or (b) the single
+   accepted fail-closed product residual K209 / `tasks.attach_artifact`, which stays `[~]` and
+   is deferred to post-Phase-1 Workstream 1;
 5. current External Agent, provider/model and human NBOS behavior remains intact.
+
+The 2026-08-23 closure gate on `5ed6c5ea` verified all five. Phase 1 is complete.

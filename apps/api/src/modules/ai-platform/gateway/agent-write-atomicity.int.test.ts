@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@nbos/database';
+import { TaskCreationService } from '../../tasks/task-creation.service';
 import { TasksService } from '../../tasks/tasks.service';
 
 /**
@@ -37,7 +38,11 @@ describe.skipIf(!DATABASE_URL)('Agent Tasks write atomicity (real database)', ()
     creatorId = employee.id;
 
     const notifications = { create: () => Promise.resolve({ id: 'unused' }) };
-    tasks = new TasksService(prisma as never, notifications as never);
+    tasks = new TasksService(
+      prisma as never,
+      notifications as never,
+      new TaskCreationService(prisma as never),
+    );
   });
 
   afterAll(async () => {

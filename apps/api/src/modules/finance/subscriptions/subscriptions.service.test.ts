@@ -220,7 +220,7 @@ describe('SubscriptionsService', () => {
 
   describe('create', () => {
     it('generates code SUB-YYYY-NNNN', async () => {
-      prisma.subscription.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.product.findUnique.mockResolvedValue({ id: 'prod-1', projectId: 'p1' });
       prisma.subscription.create.mockResolvedValue({ id: '1', code: 'SUB-2026-0001' });
       prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
@@ -284,7 +284,7 @@ describe('SubscriptionsService', () => {
     });
 
     it('trims and persists commercial name on create', async () => {
-      prisma.subscription.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.product.findUnique.mockResolvedValue({ id: 'prod-1', projectId: 'p1' });
       prisma.subscription.create.mockResolvedValue({ id: '1', code: 'SUB-2026-0001' });
       prisma.subscription.findUnique.mockResolvedValue(

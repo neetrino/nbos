@@ -193,6 +193,7 @@ describe('DealsService', () => {
 
   describe('create', () => {
     beforeEach(() => {
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.employee.findUnique.mockImplementation(({ where }: { where: { id: string } }) =>
         Promise.resolve({ id: where.id }),
       );

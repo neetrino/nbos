@@ -188,7 +188,7 @@ describe('OrdersService', () => {
 
   describe('create', () => {
     it('generates code ORD-YYYY-NNNN', async () => {
-      prisma.order.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.order.create.mockResolvedValue({ id: 'new-ord', code: 'ORD-2026-0001' });
       prisma.order.findUnique.mockResolvedValue(mockOrderFindByIdRow('new-ord'));
       const result = await service.create({

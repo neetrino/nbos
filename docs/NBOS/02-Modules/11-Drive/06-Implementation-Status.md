@@ -11,6 +11,14 @@ Tracks **Trash / Purge** vs `04-Upload-Versioning-and-Lifecycle.md` and `07-Driv
 - **Admin:** Drive Insights cleanup dashboard — review + confirmed apply (`Phase 6.5`).
 - **Platform inventory:** `drive_file` category in `GET /platform/lifecycle/trash-inventory`.
 
+## Durable artifact operation (2026-08-23)
+
+Human upload sessions, version staging, `createGeneratedFileAsset`, External Agent
+`tasks.attach_artifact`, and the Internal AI attach contract now persist a Drive
+`FileArtifactOperation` before irreversible R2 upload. See
+`04-Upload-Versioning-and-Lifecycle.md` §2.1 and
+`../../21-AI-Platform/35-Post-Phase-1-Chat-3-Drive-Artifact-Lifecycle-Handoff.md`.
+
 ## Intentional placeholders / next slices
 
 - Per-file `allowed-actions` in list menu — partial (detail sheet wired).

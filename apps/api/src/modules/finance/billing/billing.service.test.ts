@@ -69,7 +69,7 @@ function mockCoverageInvoiceRow(
 }
 
 function setupInvoiceCodeGeneration(prisma: MockPrisma): void {
-  prisma.invoice.findFirst.mockResolvedValue(null);
+  prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
   prisma.invoice.create.mockResolvedValue({ id: 'inv-1', code: 'INV-2026-0001' });
 }
 
@@ -130,7 +130,7 @@ describe('BillingService', () => {
       expect(result.errors).toEqual([]);
       expect(result.skippedLateDelivery).toEqual([]);
       expect(result.completedTerm).toEqual([]);
-      expect(prisma.invoice.findFirst).not.toHaveBeenCalled();
+      expect(prisma.$queryRaw).not.toHaveBeenCalled();
       expect(prisma.invoice.create).not.toHaveBeenCalled();
     });
 
@@ -164,7 +164,7 @@ describe('BillingService', () => {
         }),
       ]);
       prisma.invoice.findMany.mockResolvedValue([]);
-      prisma.invoice.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.invoice.create
         .mockRejectedValueOnce(new Error('DB error'))
         .mockResolvedValueOnce({ id: 'inv-2', code: 'INV-2' });
@@ -189,15 +189,17 @@ describe('BillingService', () => {
         }),
       ]);
       prisma.invoice.findMany.mockResolvedValue([]);
-      prisma.invoice.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.invoice.create.mockResolvedValue({ id: 'inv-legacy', code: 'INV-2025-0001' });
 
       await service.runMonthlyBilling(targetDate);
 
-      expect(prisma.invoice.findFirst).toHaveBeenLastCalledWith({
-        where: { code: { startsWith: 'INV-2025-' } },
-        orderBy: { code: 'desc' },
-      });
+      expect(prisma.invoice.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ code: 'INV-2025-0001' }),
+        }),
+      );
+      expect(prisma.invoice.findFirst).not.toHaveBeenCalled();
     });
 
     it('skips DEV_ONLY invoice when linked product is past deadline and undelivered', async () => {

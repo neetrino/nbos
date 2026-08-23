@@ -1,6 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AutoTasksService } from './auto-tasks.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
+import { TaskCreationService } from '../tasks/task-creation.service';
+import { TASK_INCLUDE } from '../tasks/task-response-includes';
 
 describe('AutoTasksService', () => {
   let service: AutoTasksService;
@@ -13,7 +15,7 @@ describe('AutoTasksService', () => {
     let reserved = 0;
     prisma.$queryRaw.mockImplementation(() => Promise.resolve([{ next_value: ++reserved }]));
     prisma.task.create.mockResolvedValue({ id: '1', code: `T-${year}-0001` });
-    service = new AutoTasksService(prisma as never);
+    service = new AutoTasksService(new TaskCreationService(prisma as never));
   });
 
   describe('generateTasksForDeal', () => {
@@ -68,6 +70,69 @@ describe('AutoTasksService', () => {
       expect(codes).toEqual([1, 2, 3, 4, 5, 6, 7, 8].map((n) => `T-${year}-000${n}`));
       expect(prisma.$queryRaw).toHaveBeenCalledTimes(8);
       expect(prisma.task.findFirst).not.toHaveBeenCalled();
+    });
+
+    it('creates through the Tasks-owned path with automation provenance', async () => {
+      await service.generateTasksForDeal('deal-1', 'LOGO', 'user-1');
+
+      expect(prisma.task.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            creatorId: 'user-1',
+            priority: 'NORMAL',
+            createdByActorType: 'AUTOMATION',
+            createdByActorId: 'auto-tasks:DEAL:deal-1',
+            links: {
+              createMany: {
+                data: [{ entityType: 'DEAL', entityId: 'deal-1' }],
+              },
+            },
+          }),
+          include: TASK_INCLUDE,
+        }),
+      );
+    });
+
+    it('does not insert Task rows itself — it calls the Tasks-owned create port', async () => {
+      const taskCreation = { create: vi.fn().mockResolvedValue({ id: '1' }) };
+      service = new AutoTasksService(taskCreation as never);
+
+      await service.generateTasksForDeal('deal-1', 'LOGO', 'user-1');
+
+      expect(prisma.task.create).not.toHaveBeenCalled();
+      expect(taskCreation.create).toHaveBeenCalledTimes(5);
+      expect(taskCreation.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          creatorId: 'user-1',
+          priority: 'NORMAL',
+          links: [{ entityType: 'DEAL', entityId: 'deal-1' }],
+        }),
+        expect.objectContaining({
+          actor: { type: 'AUTOMATION', id: 'auto-tasks:DEAL:deal-1' },
+        }),
+      );
+    });
+  });
+
+  describe('generateTasksForProduct', () => {
+    it('preserves the product FK and PRODUCT link through the Tasks-owned path', async () => {
+      const result = await service.generateTasksForProduct('product-1', 'LOGO', 'user-1');
+
+      expect(result.created).toBe(5);
+      expect(prisma.task.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            productId: 'product-1',
+            createdByActorType: 'AUTOMATION',
+            createdByActorId: 'auto-tasks:PRODUCT:product-1',
+            links: {
+              createMany: {
+                data: [{ entityType: 'PRODUCT', entityId: 'product-1' }],
+              },
+            },
+          }),
+        }),
+      );
     });
   });
 });

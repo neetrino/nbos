@@ -84,9 +84,9 @@ Chat 2: `AgentAuthGuard` / `AgentAuthenticatorService`. Protocol wiring is Chat 
 
 Chat 11: `AiExecution` stores actor, External/Internal Agent, provider, model, Model Policy, capability, channel, correlation, status, latency, retry, fallback and optional token/cost/pricing metadata. No prompt/completion/secret columns. External Agent protocol writes capability rows best-effort. See C19.
 
-### C8. No idempotency contract for agent mutations — PARTIAL
+### C8. No idempotency contract for agent mutations — OK
 
-Capability metadata declares `REQUIRED`. Chat 3 stores replay rows in `external_agent_idempotency_records` and enforces them in the gateway. Chat 11 checkpoints `responseJson` while the row is still `IN_PROGRESS` after Tasks/Drive commit, then marks `COMPLETED`. Retry of `IN_PROGRESS` + json replays and tries to complete. Stale `IN_PROGRESS` without a checkpoint still conflicts (no second domain write). Chat 12 closed the crash window for the five Tasks write capabilities by committing the domain change and the checkpoint in one transaction; `tasks.attach_artifact` keeps the window because its object-store write cannot join a database transaction. See C24.
+Capability metadata declares `REQUIRED`. Chat 3 stores replay rows in `external_agent_idempotency_records` and enforces them in the gateway. Chat 11 checkpoints `responseJson` while the row is still `IN_PROGRESS` after Tasks/Drive commit, then marks `COMPLETED`. Retry of `IN_PROGRESS` + json replays and tries to complete. Stale `IN_PROGRESS` without a checkpoint still conflicts for Tasks writes (no second domain write). Chat 12 closed the crash window for the five Tasks write capabilities by committing the domain change and the checkpoint in one transaction. Post-Phase-1 Chat 3 closed `tasks.attach_artifact` (C24 / item 209): Drive persists the artifact operation before upload; resume is live attach + Drive `prepare`. Changed fingerprints still conflict.
 
 ### C9. No external-agent rate-limit policy — OK
 
@@ -142,7 +142,7 @@ Chat 8 promoted it to a first-class sidebar module at `/ai-agents` (`SIDEBAR_MOD
 
 ### C22. Phase 1 exit criterion 9 — RESOLVED
 
-`27-Phase-1-Continuation-After-Chat-8.md` decided AD–AI stay in the current Phase 1 (Chats 9–12). Chat 9 closed AD/AE (C15, C16). Chat 10 closed AF/AG (C17, C18). Chat 11 closed AH/AI (C19 / C7) and the actionable Chat 8 product-code debts listed in `30-Phase-1-Chat-11-Handoff.md`. Chat 12 walked AD–AI first-hand against the live admin surface and found exit criterion 9 **met**, so the business decision recorded here is resolved. Chat 12 did not declare Phase 1 complete for an unrelated reason — see C23.
+`27-Phase-1-Continuation-After-Chat-8.md` decided AD–AI stay in the current Phase 1 (Chats 9–12). Chat 9 closed AD/AE (C15, C16). Chat 10 closed AF/AG (C17, C18). Chat 11 closed AH/AI (C19 / C7) and the actionable Chat 8 product-code debts listed in `30-Phase-1-Chat-11-Handoff.md`. The 2026-08-23 final closure gate walked AD–AI first-hand and recorded **PHASE 1 CLOSEABLE**. Exit criterion 9 is met. Phase 1 is officially complete. Post-Phase-1 debts are `32-Post-Phase-1-Technical-Debt-Plan.md`, not a continuation of this phase.
 
 ### C23. Concurrent Task creation returned HTTP 500 — FIXED
 
@@ -158,15 +158,21 @@ Verified: the exact reproduction that returned `201,500,500,500,500,500` now ret
 
 **That first fix was incomplete**, as the independent review found. Three services write the `T-<year>` series, not one: `SupportService.createExecutionTask` and `AutoTasksService` each carried their own `max(tasks)+1` generator and inserted through Prisma directly. Converting only `TasksService` left two sources of truth for one series and made the failure _easier_ to reach — a single `max`-derived insert leaves the counter behind the table, and the next ordinary create then collides with no concurrency at all. Completed by routing every writer through `allocateTaskCode` (`apps/api/src/modules/tasks/task-code-generation.ts`), the one supported entry point; the private generators are gone. Regression: `task-code-allocation.int.test.ts` drives Tasks and Automation concurrently against a real database and asserts distinct codes, and each service's unit tests assert that the tasks table is never read for a code. Because the counter and `max(tasks)` cannot both be authoritative, the rollout requires a write pause rather than a rolling deploy — sequence in C9 of `../05-Tasks/04-Tasks-Cleanup-Register.md`.
 
-### C25. The same read-then-insert race exists in sibling code series — OPEN
+### C25. The same read-then-insert race exists in sibling code series — FIXED
 
-Found while fixing C23 and **not** fixed, because these are separate code series outside the Phase 1 External Agent surface. `generateCode()` in Invoices, Support tickets (`TKT-`), Deals, Leads, Orders, Subscriptions and Projects still reads the highest existing code and then inserts. Most of them also order by `code` descending as text, which is the lexicographic bug Tasks had already fixed (`INV-2026-9999` sorts above `INV-2026-10000`).
+Found while fixing C23 and originally deferred because these are independent series outside the Phase 1 External Agent surface. Inventory (post-Phase-1 Chat 2) confirmed seven affected production series besides Tasks `T-`: Invoice `INV-`, Support Ticket `TKT-`, Deal `D-`, Lead `L-`, Order `ORD-`, Subscription `SUB-`, Project `P-`. Every one used `findFirst(orderBy code desc)` + parse + 1, including the lexicographic `9999` > `10000` trap.
 
-Scope correction: the Task writers in Support and Automation were originally listed here. They belong to C23 instead and are fixed — they shared the `T-` series with `TasksService`, so leaving them out was not a deferral but an unfinished fix. What remains under C25 is genuinely independent: a race inside `INV-` cannot corrupt `T-`.
+Scope correction: the Task writers in Support and Automation belonged to C23 and were already fixed. A race inside `INV-` cannot corrupt `T-`.
 
-These are lower risk today because no machine actor drives them concurrently — human users rarely create two invoices in the same millisecond. They are one adoption away from being safe: `entity_code_counters` already carries a `scope` column, so each module needs a new `ENTITY_CODE_SCOPE` entry, a seed for its scope and a two-line service change, with no further migration to the table itself.
+**Implemented in post-Phase-1 Chat 2.** Each series has a named `ENTITY_CODE_SCOPE` and a single allocate entry point over `allocateEntityCodeNumber`. All writers of a series moved together. Seed migration `20260823120000_seed_sibling_entity_code_counters` computes the numeric max per year and ignores malformed historical codes. Gaps after a failed reservation remain acceptable; duplicates are not.
 
-### C24. Gateway idempotency slot is never reclaimed (checklist 209) — FIXED for Tasks, PARTIAL for Drive
+Rollout is **not** rolling-deploy safe: mixed old `MAX(table)` writers and new counter writers leave the counter behind the table. Write pause + seed + cutover is required. Sequence and writer inventory: `34-Post-Phase-1-Chat-2-Code-Allocator-Handoff.md`.
+
+**Independent verifier (NEW CHAT 2) closed this item.** Disposable local Postgres (`AI_PLATFORM_DB_TEST_URL`): concurrent named allocators, invoice `9999` → `10000`, numeric seed `VALUES` + SQL replay (`2026=10000`, malformed ignored), parallel Lead + Support creates. At that verifier pass, designated non-prod Neon was inspected read-only (sibling counters absent; no 10+ digit suffixes; seed **not** applied). Tasks ownership and Drive lifecycle were not changed.
+
+**Later (2026-08-23, Chat 3 live attach):** seed `20260823120000_seed_sibling_entity_code_counters` **was** applied on Neon **dev** (`ep-restless-tooth-agz3assx`) together with `20260823140000_file_artifact_operations`. Production apply of the seed remains an operations step under the write-pause sequence.
+
+### C24. Gateway idempotency slot is never reclaimed (checklist 209) — FIXED
 
 Chat 12 reproduced all three crash windows directly against `AgentIdempotencyService`. Chat 11's `responseJson` checkpoint works: a crash after the checkpoint replays the stored result and self-heals the row to `COMPLETED`. The residue was real — `loadLive` returns `IN_PROGRESS` rows _before_ it evaluates expiry, so a reservation that crashed between the domain commit and the checkpoint stayed `409 An identical request is already in progress` permanently, even after its TTL elapsed.
 
@@ -180,7 +186,9 @@ Evidence: `agent-write-atomicity.int.test.ts` (opt-in, real database) fails the 
 
 The counter reservation must stay outside this transaction (C26). Putting `allocateTaskCode` on the interactive client reintroduced a 500 on concurrent `tasks.create` after the two remediations landed together.
 
-**Still PARTIAL for `tasks.attach_artifact`.** Its domain change includes an object-store write, which cannot join a database transaction, so it keeps the sequential path and the narrow window remains there. Closing it needs an outbox or a domain operation record and is Phase 2 work. Checklist item 209 is `[x]` for the Tasks capabilities and `[~]` for Drive.
+**Closed for `tasks.attach_artifact` in post-Phase-1 Chat 3.** The object-store write still cannot join a database transaction. Recovery is `file_artifact_operations`: identity and storage key persist before PutObject; FileAsset/FileLink and operation `COMPLETED` share one PostgreSQL transaction with `FOR UPDATE`. Exact retry and concurrent finalize reuse that row. Resume is live attach + Drive `prepare` (the first gateway short-circuit was rejected as verifier F1 and removed). Authorization is revalidated on resume. Checklist item 209 is `[x]`.
+
+Independent verifier (2026-08-23) reproduced: Human complete/version go through `finalizeAfterObjectPresent`; `createGeneratedFileAsset` always `prepare`s; disposable Postgres int 3/3 (same TX, rollback, concurrent one FileAsset); Neon **dev** live REST `201` `fileAssetId=3a08eb27-…` exact retry same ids, MCP distinct `13de1d40-…`, two `EXTERNAL_AI` / `MACHINE_PUT` / `COMPLETED` / `TASK` rows, partial unique index present. Production apply of `20260823140000_file_artifact_operations` remains an operations step under the write-pause. Evidence: `35-Post-Phase-1-Chat-3-Drive-Artifact-Lifecycle-Handoff.md`.
 
 ### C26. Shared K209 transaction holds the Task-code counter lock — FIXED
 
@@ -195,9 +203,9 @@ PostgreSQL serializes those upserts on the single row. Six concurrent `POST /api
 
 The `$transaction` timeout was not raised. A failed create may skip a number; that is the existing reserve-not-reissue contract.
 
-Evidence: `agent-capability.gateway.test.ts` asserts prepare → reserve → `BEGIN`. `agent-create-concurrency.int.test.ts` drives six concurrent `invoke('tasks.create')` on a real database. Live REST after a fresh SWC `dist` on `:4000`: six parallel `POST /api/v1/agent/workspaces/{id}/tasks` returned `201 × 6`, codes `T-2026-0697`–`T-2026-0702`, 3882 ms, no 500, no `P2002`.
+Evidence: `agent-capability.gateway.test.ts` asserts prepare → reserve → `BEGIN`. `agent-create-concurrency.int.test.ts` drives six concurrent `invoke('tasks.create')` on a real database. Live REST after the committed fix `5ed6c5ea`, fresh SWC `dist` on `:4110`: six parallel `POST /api/v1/agent/workspaces/{id}/tasks` returned `201 × 6`, codes `T-2026-0823`–`T-2026-0828`, no 500, no `P2002`.
 
-**Still open after this close:** item 209 / `tasks.attach_artifact` remains `[~]` (C24).
+**Closed after Phase 1:** item 209 / `tasks.attach_artifact` is `[x]` (C24) as of post-Phase-1 Chat 3 independent verification. See `35-Post-Phase-1-Chat-3-Drive-Artifact-Lifecycle-Handoff.md`.
 
 ## D. Tasks alignment issues to verify before implementation
 
@@ -284,6 +292,14 @@ Canonical Phase 1 sources (`03`, `08`, `09`, `10` item 43, `16`) require both RE
 ## F11. Chat 11 evidence
 
 2026-08-22: Usage/cost/evaluation foundation (`AiExecution`, budgets, evaluation suite/run, `AiModel.evaluationStatus`), Redis-backed rate-limit store, idempotency checkpoint/recovery, catalog output projection + MCP `outputSchema`, Model Policy candidate editor, usage admin UI. Independent Chat N11 first pass **FAIL** (K 205 dropped live `{ items, meta }`); remediation restored the `09` envelope. Re-verification: **PASS WITH DEBTS** (5/56 FAIL-set, 110/2 files and 843/4 on ai-platform + shared/ai). Migration `20260822220000_ai_usage_evaluation_foundation` written, not applied. See `30-Phase-1-Chat-11-Handoff.md` § Re-verification.
+
+## F12. Final closure gate
+
+2026-08-23: independent final A–AQ re-walk on committed product HEAD `5ed6c5ea`. C26 live `201 × 6` unique Task codes. AO REST+MCP, AD–AI, full suite 874/4432, regression 22/284, lint 0 errors, typecheck, build, Prisma validate/status all green on non-production Neon. Verdict **PHASE 1 CLOSEABLE**. Item 209 stays `[~]`. See `31-Phase-1-Final-Acceptance.md` § Final closure gate. Post-Phase-1 workstreams: `32-Post-Phase-1-Technical-Debt-Plan.md`.
+
+## F13. Post-Phase-1 three-chat close
+
+2026-08-23: Chats 1–3 independently **PASS WITH DEBTS**. C9 / C25 / C24 (item 209 `[x]`) closed in product code. Chat 2 seed + Chat 3 artifact-operation migration applied on Neon **dev** only. Cross-regression: `36-Post-Phase-1-Cross-Regression.md`. Production write-pause apply remains operations.
 
 ## G. Implementation rule
 

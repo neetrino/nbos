@@ -39,6 +39,34 @@ User selects file
 
 Если upload не завершился, запись должна стать `Failed Upload Session`, а не мусором в активной библиотеке.
 
+### 2.1. Durable Artifact Operation (implemented 2026-08-23)
+
+R2 and PostgreSQL are not one ACID transaction. Drive owns one durable
+`FileArtifactOperation` used by Human UI, Internal AI, External AI, and trusted
+SYSTEM producers (reports / mail / zip). Ingress differs; finalization and
+recovery do not.
+
+```text
+prepare (persist operation id + storage key)
+  -> upload pending (presigned browser PUT, or machine PutObject)
+  -> object uploaded / verified (HeadObject + size/MIME)
+  -> DB finalization (FileAsset + FileVersion + FileLink + operation COMPLETED
+       in one PostgreSQL transaction, with FOR UPDATE on the operation row)
+```
+
+Recovery reads the operation row plus live R2/DB state. Exact retry must not
+create a second object, FileAsset, FileVersion, or FileLink. Object existence
+is never an authorization bypass: deferred finalize re-checks Human Drive
+permissions, External Agent grants, or Internal Agent ACTIVE status.
+
+Human upload sessions still return a presigned URL. `FileUploadSession` remains
+a compatibility row with the same id. Machine `createGeneratedFileAsset` no
+longer PutObject-then-insert without a durable identity.
+
+Orphan object delete is conservative: only a terminal FAILED / CANCELLED /
+EXPIRED operation that still owns the key, with no FileAsset or FileVersion
+reference, may delete the object.
+
 ---
 
 ## 3. Context Defaults

@@ -407,11 +407,25 @@ Remaining depth:
 из счётчика даёт дубликат уже без всякой конкурентности. Откат назад требует той же паузы
 записи и сверки счётчика.
 
-Остаточный долг:
+Domain ownership (закрыто **2026-08-23**, post-Phase-1 Chat 1):
 
-- `SupportService` и `AutoTasksService` по-прежнему пишут `Task` напрямую через Prisma мимо
-  `TasksService`, то есть в обход владельца домена. Аллокатор общий, но границу владения
-  это не восстанавливает — выносить в отдельный срез вместе с C8.
+- единственный production insert — `createTask` / `TaskCreationService`;
+- `TasksService.create` делегирует в тот же port (human/API, External Agent, Recurring);
+- `SupportService.createExecutionTask` и `AutoTasksService` больше не вызывают
+  `prisma.task.create` и не выделяют код сами;
+- Support пишет actor `SYSTEM` / `support:{ticketId}`; Automation пишет
+  `AUTOMATION` / `auto-tasks:{linkType}:{linkId}`; `creatorId` остаётся
+  ответственным сотрудником, не поддельным Employee;
+- seed `prisma.task.upsert` остаётся fixture-only.
+
+Подтверждение:
+
+- [apps/api/src/modules/tasks/task-creation.service.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/tasks/task-creation.service.ts)
+- [apps/api/src/modules/support/support.service.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/support/support.service.ts)
+- [apps/api/src/modules/automation/auto-tasks.service.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/automation/auto-tasks.service.ts)
+- handoff: `docs/NBOS/02-Modules/21-AI-Platform/33-Post-Phase-1-Chat-1-Tasks-Ownership-Handoff.md`
+
+C8 (blueprints vs automation rules) этим срезом не закрывается.
 
 ---
 

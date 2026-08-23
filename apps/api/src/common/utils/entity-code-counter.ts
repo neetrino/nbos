@@ -6,6 +6,13 @@ import { sql, type PrismaClient } from '@nbos/database';
  */
 export const ENTITY_CODE_SCOPE = {
   task: 'TASK',
+  invoice: 'INVOICE',
+  supportTicket: 'SUPPORT_TICKET',
+  deal: 'DEAL',
+  lead: 'LEAD',
+  order: 'ORDER',
+  subscription: 'SUBSCRIPTION',
+  project: 'PROJECT',
 } as const;
 
 export type EntityCodeScope = (typeof ENTITY_CODE_SCOPE)[keyof typeof ENTITY_CODE_SCOPE];

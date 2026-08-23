@@ -36,11 +36,13 @@ export class AgentDriveHandler {
     agent: AuthenticatedAgent,
     input: Record<string, unknown>,
     bytes: Uint8Array,
+    operation?: { operationKey: string; fingerprint: string },
   ) {
+    const taskId = readRequiredString(input, 'taskId');
     const { task } = await this.access.requireAuthorizedTask(
       agent,
       'tasks.attach_artifact',
-      readRequiredString(input, 'taskId'),
+      taskId,
       'INTERNAL',
     );
     return this.artifacts.createAndLinkTaskArtifact({
@@ -49,6 +51,36 @@ export class AgentDriveHandler {
       mimeType: readRequiredString(input, 'mimeType'),
       sizeBytes: readSizeBytes(input),
       content: bytes,
+      source: 'EXTERNAL_AI',
+      actorType: 'EXTERNAL_AI',
+      actorId: agent.agentId,
+      agentId: agent.agentId,
+      idempotencyKey: operation?.operationKey,
+      payloadFingerprint: operation?.fingerprint,
+      auth: {
+        assertCanPrepare: async (context) => {
+          if (context.entityId !== task.id) {
+            throw AgentAccessException.resourceNotAvailable();
+          }
+          await this.access.requireAuthorizedTask(
+            agent,
+            'tasks.attach_artifact',
+            context.entityId,
+            'INTERNAL',
+          );
+        },
+        assertCanFinalize: async (context) => {
+          if (context.entityId !== task.id) {
+            throw AgentAccessException.resourceNotAvailable();
+          }
+          await this.access.requireAuthorizedTask(
+            agent,
+            'tasks.attach_artifact',
+            context.entityId,
+            'INTERNAL',
+          );
+        },
+      },
     });
   }
 

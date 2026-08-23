@@ -2,7 +2,15 @@ import { randomUUID } from 'node:crypto';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@nbos/database';
+import type { AiDataClassification } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
+import { allowArtifactAuth } from './artifact-operation/drive-artifact-auth.ports';
+import { DriveArtifactOperationService } from './artifact-operation/drive-artifact-operation.service';
+import type {
+  ArtifactAuthorizationPort,
+  ArtifactOperationResult,
+  ArtifactOperationSource,
+} from './artifact-operation/drive-artifact-operation.types';
 import {
   isDriveConfidentialityForbiddenToAgents,
   mapDriveConfidentialityToAi,
@@ -16,7 +24,6 @@ import {
   assertUploadFileNameAllowed,
   assertUploadSizeWithinLimit,
 } from './drive-upload-validation';
-import type { AiDataClassification } from '@nbos/shared';
 
 export const DRIVE_AGENT_SOURCE_MODULE = 'AI_PLATFORM';
 
@@ -37,6 +44,15 @@ export interface CreateAgentTaskArtifactInput {
   mimeType: string;
   sizeBytes: number;
   content: Uint8Array;
+  source?: ArtifactOperationSource;
+  actorType?: string;
+  actorId?: string;
+  agentId?: string;
+  createdByEmployeeId?: string;
+  idempotencyKey?: string;
+  correlationId?: string;
+  payloadFingerprint?: string;
+  auth?: ArtifactAuthorizationPort;
 }
 
 /**
@@ -48,6 +64,7 @@ export class DriveTaskArtifactService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly drive: DriveService,
+    private readonly artifacts: DriveArtifactOperationService,
     private readonly config: ConfigService,
   ) {}
 
@@ -76,39 +93,50 @@ export class DriveTaskArtifactService {
   async createAndLinkTaskArtifact(
     input: CreateAgentTaskArtifactInput,
   ): Promise<{ fileAssetId: string; linkId: string }> {
-    const fileName = sanitizeUploadBaseName(input.fileName);
-    assertUploadFileNameAllowed(fileName);
-    assertUploadSizeWithinLimit(input.content.byteLength);
-    assertUploadSizeWithinLimit(input.sizeBytes);
-    if (input.sizeBytes !== input.content.byteLength) {
-      throw new BadRequestException('sizeBytes does not match the uploaded content.');
-    }
-    const mimeType = requireMimeType(input.mimeType);
-    const orgId = readTenantOrganizationId(this.config);
-    const storageKey = buildStorageHomeKey(
-      orgId,
-      `tasks/${input.taskId}/${purposeSubfolder('TASK_ATTACHMENT')}`,
-      `${randomUUID()}-${fileName}`,
-    );
-    const created = await this.drive.createGeneratedFileAsset({
-      displayName: fileName,
-      originalName: fileName,
+    const prepared = validateAgentArtifactInput(input);
+    const source = input.source ?? 'EXTERNAL_AI';
+    const actorId = input.actorId ?? input.agentId ?? 'external-agent';
+    const fingerprint = input.payloadFingerprint ?? this.artifacts.fingerprintBytes(input.content);
+    const operation = await this.artifacts.prepare({
+      source,
+      ingress: 'MACHINE_PUT',
+      kind: 'CREATE_ASSET',
+      storageKey: this.buildTaskStorageKey(input.taskId, prepared.fileName),
+      entityType: 'TASK',
+      entityId: input.taskId,
+      displayName: prepared.fileName,
+      originalName: prepared.fileName,
+      mimeType: prepared.mimeType,
       purpose: 'TASK_ATTACHMENT',
       sourceModule: DRIVE_AGENT_SOURCE_MODULE,
       confidentiality: 'CONFIDENTIAL',
       visibility: 'INTERNAL',
-      storageKey,
-      content: input.content,
-      contentType: mimeType,
-      mimeType,
-      link: {
-        entityType: 'TASK',
-        entityId: input.taskId,
-        linkType: 'TASK_ATTACHMENT',
-      },
+      linkType: 'TASK_ATTACHMENT',
+      expectedSizeBytes: prepared.sizeBytes,
+      checksum: fingerprint,
+      payloadFingerprint: fingerprint,
+      actorType: input.actorType ?? source,
+      actorId,
+      agentId: input.agentId ?? undefined,
+      createdByEmployeeId: input.createdByEmployeeId,
+      idempotencyKey: input.idempotencyKey,
+      correlationId: input.correlationId,
     });
-    const linkId = readCreatedLinkId(created);
-    return { fileAssetId: String(created.id), linkId };
+    const result = await this.artifacts.executeMachineUpload(
+      operation.id,
+      input.content,
+      input.auth ?? allowArtifactAuth(),
+    );
+    return toAttachResult(result);
+  }
+
+  private buildTaskStorageKey(taskId: string, fileName: string): string {
+    const orgId = readTenantOrganizationId(this.config);
+    return buildStorageHomeKey(
+      orgId,
+      `tasks/${taskId}/${purposeSubfolder('TASK_ATTACHMENT')}`,
+      `${randomUUID()}-${fileName}`,
+    );
   }
 
   private async loadActiveTaskLinks(taskId: string) {
@@ -175,10 +203,21 @@ function requireMimeType(value: string): string {
   return mimeType;
 }
 
-function readCreatedLinkId(created: { id: unknown; links?: Array<{ id?: unknown }> }): string {
-  const linkId = created.links?.[0]?.id;
-  if (typeof linkId === 'string' && linkId.length > 0) {
-    return linkId;
+function validateAgentArtifactInput(input: CreateAgentTaskArtifactInput): {
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+} {
+  const fileName = sanitizeUploadBaseName(input.fileName);
+  assertUploadFileNameAllowed(fileName);
+  assertUploadSizeWithinLimit(input.content.byteLength);
+  assertUploadSizeWithinLimit(input.sizeBytes);
+  if (input.sizeBytes !== input.content.byteLength) {
+    throw new BadRequestException('sizeBytes does not match the uploaded content.');
   }
-  return String(created.id);
+  return { fileName, mimeType: requireMimeType(input.mimeType), sizeBytes: input.sizeBytes };
+}
+
+function toAttachResult(result: ArtifactOperationResult): { fileAssetId: string; linkId: string } {
+  return { fileAssetId: result.fileAssetId, linkId: result.fileLinkId ?? result.fileAssetId };
 }

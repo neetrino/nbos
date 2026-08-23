@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { Decimal } from '@nbos/database';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
+import { stubEntityCodeAllocation } from '../../test-utils/stub-entity-code-allocation';
 import {
   createFinanceFromPartnerServiceTerm,
   createPartnerServiceTerm,
@@ -159,7 +160,7 @@ describe('partner service terms ops', () => {
       createdAt: new Date('2026-05-05T00:00:00.000Z'),
       updatedAt: new Date('2026-05-05T00:00:00.000Z'),
     });
-    prisma.invoice.findFirst.mockResolvedValue({ code: 'INV-2026-0007' });
+    stubEntityCodeAllocation(prisma, 8);
     prisma.company.findUnique.mockResolvedValue({ taxStatus: 'TAX' });
     prisma.invoice.create.mockResolvedValue({ id: 'inv-new' });
     prisma.partnerServiceTerm.update.mockResolvedValue({
@@ -218,7 +219,7 @@ describe('partner service terms ops', () => {
       projectId: 'pr-2',
       name: 'Campaign Hub',
     });
-    prisma.subscription.findFirst.mockResolvedValue({ code: 'SUB-2026-0010' });
+    stubEntityCodeAllocation(prisma, 11);
     prisma.subscription.create.mockResolvedValue({ id: 'sub-new' });
     prisma.partnerServiceTerm.update.mockResolvedValue({
       id: 'pst-3',

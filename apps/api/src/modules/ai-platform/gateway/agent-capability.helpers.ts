@@ -5,7 +5,8 @@ import type { AgentCapabilityInvocation } from './agent-capability.types';
 /**
  * Capabilities whose domain change is nothing but database writes, so it can
  * share a transaction with the idempotency checkpoint. `tasks.attach_artifact`
- * is deliberately absent: it writes to object storage as well.
+ * stays sequential: R2 cannot join the transaction. Recovery is the Drive
+ * Artifact Operation, not a shared R2+SQL transaction.
  */
 export const TRANSACTIONAL_CAPABILITIES: ReadonlySet<string> = new Set([
   'tasks.create',

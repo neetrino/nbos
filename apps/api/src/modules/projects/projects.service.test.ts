@@ -104,6 +104,7 @@ describe('ProjectsService', () => {
 
   describe('create', () => {
     it('generates code P-YYYY-NNNN', async () => {
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.project.create.mockResolvedValue({ id: '1', code: 'P-2026-0001' });
       const result = await service.create({ name: 'Test', contactId: 'c1' });
       expect(result.code).toMatch(/^P-\d{4}-\d{4}$/);
@@ -152,7 +153,7 @@ describe('ProjectsService', () => {
 
   describe('create (branch coverage)', () => {
     it('creates project with name and contact', async () => {
-      prisma.project.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.project.create.mockResolvedValue({ id: '1', code: 'P-2026-0001' });
 
       await service.create({ name: 'Test', contactId: 'c1' });
@@ -164,11 +165,12 @@ describe('ProjectsService', () => {
     });
 
     it('increments code from existing', async () => {
-      prisma.project.findFirst.mockResolvedValue({ code: 'P-2026-0010' });
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 11 }]);
       prisma.project.create.mockImplementation(({ data }) => Promise.resolve({ id: '1', ...data }));
 
       const result = await service.create({ name: 'Test', contactId: 'c1' });
       expect(result.code).toBe('P-2026-0011');
+      expect(prisma.project.findFirst).not.toHaveBeenCalled();
     });
   });
 

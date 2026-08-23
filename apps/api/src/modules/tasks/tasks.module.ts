@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { NotificationModule } from '../notifications/notification.module';
 import { TasksController } from './tasks.controller';
+import { TaskCreationService } from './task-creation.service';
 import { TasksService } from './tasks.service';
 import { TaskBoardsController } from './task-boards.controller';
 import { TaskBoardsService } from './task-boards.service';
@@ -27,6 +28,7 @@ import { TaskDiscussionService } from './task-discussion.service';
     RecurringTasksController,
   ],
   providers: [
+    TaskCreationService,
     TasksService,
     TaskBoardsService,
     RecurringTasksService,
@@ -35,6 +37,7 @@ import { TaskDiscussionService } from './task-discussion.service';
     TaskDiscussionService,
   ],
   exports: [
+    TaskCreationService,
     TasksService,
     TaskBoardsService,
     RecurringTasksService,

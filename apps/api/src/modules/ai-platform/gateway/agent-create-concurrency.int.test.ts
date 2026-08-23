@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@nbos/database';
 import { actorContextFromMachine } from '@nbos/shared';
+import { TaskCreationService } from '../../tasks/task-creation.service';
 import { TasksService } from '../../tasks/tasks.service';
 import { AgentCapabilityGateway } from './agent-capability.gateway';
 import type { AuthenticatedAgent } from '../auth/agent-authenticator.service';
@@ -121,6 +122,7 @@ describe.skipIf(!DATABASE_URL)(
         {
           create: () => Promise.resolve({ id: 'unused' }),
         } as never,
+        new TaskCreationService(prisma as never),
       );
       gateway = gatewayForConcurrentCreate(prisma, tasks, creatorId, runId);
     });

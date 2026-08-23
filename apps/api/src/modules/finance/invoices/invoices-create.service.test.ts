@@ -13,6 +13,7 @@ describe('InvoicesService create', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
+    prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
     prisma.financePostingPeriod.findUnique.mockResolvedValue(null);
     operationalJournal.appendInvoiceCardAccrualLine.mockClear();
     service = new InvoicesService(

@@ -3,6 +3,8 @@ import { SupportService } from './support.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { AuditService } from '../audit/audit.service';
+import { TaskCreationService } from '../tasks/task-creation.service';
+import { TASK_INCLUDE } from '../tasks/task-response-includes';
 
 describe('SupportService', () => {
   let service: SupportService;
@@ -21,6 +23,7 @@ describe('SupportService', () => {
       prisma as never,
       auditService as never,
       notificationService as never,
+      new TaskCreationService(prisma as never),
     );
   });
 
@@ -94,7 +97,7 @@ describe('SupportService', () => {
 
   describe('create', () => {
     it('generates code and calculates SLA', async () => {
-      prisma.supportTicket.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.supportTicket.create.mockResolvedValue({
         id: '1',
         code: 'TKT-2026-0001',
@@ -117,7 +120,7 @@ describe('SupportService', () => {
     });
 
     it('uses P3 as default priority', async () => {
-      prisma.supportTicket.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.supportTicket.create.mockResolvedValue({ id: '1', code: 'TKT-2026-0001' });
       await service.create({ title: 'Request', projectId: 'p1', category: 'SERVICE_REQUEST' });
       expect(prisma.supportTicket.create).toHaveBeenCalledWith(
@@ -126,7 +129,7 @@ describe('SupportService', () => {
     });
 
     it('creates ticket with title only for intake', async () => {
-      prisma.supportTicket.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 2 }]);
       prisma.supportTicket.create.mockResolvedValue({
         id: '1',
         code: 'TKT-2026-0002',
@@ -154,7 +157,7 @@ describe('SupportService', () => {
     });
 
     it('defaults category to UNCLASSIFIED when omitted', async () => {
-      prisma.supportTicket.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.supportTicket.create.mockResolvedValue({
         id: '1',
         code: 'TKT-2026-0001',
@@ -175,7 +178,7 @@ describe('SupportService', () => {
     });
 
     it('stores product context when provided', async () => {
-      prisma.supportTicket.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       await service.create({
         title: 'Product bug',
         projectId: 'p1',
@@ -445,6 +448,8 @@ describe('SupportService', () => {
             priority: 'CRITICAL',
             workspaceId: 'ws-1',
             planningStatus: 'BACKLOG',
+            createdByActorType: 'SYSTEM',
+            createdByActorId: 'support:ticket-1',
             links: {
               createMany: {
                 data: expect.arrayContaining([
@@ -455,11 +460,54 @@ describe('SupportService', () => {
               },
             },
           }),
+          include: TASK_INCLUDE,
         }),
       );
       // Support shares the Task code series, so it must reserve from the counter rather
       // than derive a number from max(tasks) and strand the counter behind the table.
       expect(prisma.task.findFirst).not.toHaveBeenCalled();
+    });
+
+    it('does not insert Task rows itself — it calls the Tasks-owned create port', async () => {
+      const taskCreation = {
+        create: vi.fn().mockResolvedValue({ id: 'task-1', code: 'T-2026-0077' }),
+      };
+      service = new SupportService(
+        prisma as never,
+        auditService as never,
+        notificationService as never,
+        taskCreation as never,
+      );
+      prisma.supportTicket.findUnique.mockResolvedValue({
+        id: 'ticket-1',
+        code: 'TKT-2026-0001',
+        title: 'Broken form',
+        description: 'Form does not submit',
+        projectId: 'project-1',
+        productId: 'product-1',
+        priority: 'P1',
+        status: 'IN_PROGRESS',
+        assignedTo: 'employee-2',
+        slaResolveDeadline: new Date('2026-05-01T00:00:00Z'),
+      });
+      prisma.workSpace.findUnique.mockResolvedValue({ id: 'ws-1' });
+
+      await service.createExecutionTask('ticket-1', { creatorId: 'employee-1' });
+
+      expect(prisma.task.create).not.toHaveBeenCalled();
+      expect(taskCreation.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: '[TKT-2026-0001] Broken form',
+          creatorId: 'employee-1',
+          assigneeId: 'employee-2',
+          priority: 'CRITICAL',
+          workspaceId: 'ws-1',
+          planningStatus: 'BACKLOG',
+        }),
+        expect.objectContaining({
+          actor: { type: 'SYSTEM', id: 'support:ticket-1' },
+        }),
+      );
     });
 
     it('blocks execution task creation for closed ticket', async () => {
@@ -495,7 +543,7 @@ describe('SupportService', () => {
         status: 'TRIAGED',
         extensionDealId: null,
       });
-      prisma.deal.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.deal.create.mockResolvedValue({ id: 'deal-1', code: 'D-2026-0001' });
 
       const result = await service.createExtensionDeal('ticket-1', { sellerId: 'seller-1' });

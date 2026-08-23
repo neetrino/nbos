@@ -11,6 +11,7 @@ import { normalizeAtsCallerPhone } from './ats-phone.util';
 import { findOpenLeadByPhone } from '../../crm/leads/lead-duplicate-lookup.ops';
 import { resolveContactPhoneInbound } from '../../crm/leads/lead-contact-inbound.ops';
 import type { AtsWebhookPayload } from './ats.types';
+import { allocateLeadCode } from '../../../common/utils/entity-code-series';
 
 interface AtsCallEventRow {
   id: string;
@@ -115,8 +116,9 @@ export class AtsLeadIngestService {
       return null;
     }
 
+    const code = await allocateLeadCode(this.prisma);
     return this.prisma.$transaction(async (tx) =>
-      this.createInboundLead(tx, phone.e164, byContact.contactId),
+      this.createInboundLead(tx, phone.e164, byContact.contactId, code),
     );
   }
 
@@ -124,12 +126,13 @@ export class AtsLeadIngestService {
     tx: TransactionClient,
     e164: string,
     contactId: string | null,
+    code: string,
   ): Promise<string> {
     // TODO: map MarketingAccount by DID (`input`) when call-tracking accounts exist.
     const contactName = `Incoming call ${e164}`;
     const lead = await tx.lead.create({
       data: {
-        code: await this.generateLeadCode(tx),
+        code,
         name: contactName,
         contactName,
         phone: e164,
@@ -140,16 +143,5 @@ export class AtsLeadIngestService {
       select: { id: true },
     });
     return lead.id;
-  }
-
-  private async generateLeadCode(tx: TransactionClient): Promise<string> {
-    const year = new Date().getFullYear();
-    const lastLead = await tx.lead.findFirst({
-      where: { code: { startsWith: `L-${year}-` } },
-      orderBy: { code: 'desc' },
-      select: { code: true },
-    });
-    const nextNum = lastLead ? parseInt(lastLead.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `L-${year}-${String(nextNum).padStart(4, '0')}`;
   }
 }

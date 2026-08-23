@@ -8,6 +8,7 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { assertSubscriptionStatus, attachSubscriptionCoverage } from './subscription-coverage';
+import { allocateSubscriptionCode } from '../../../common/utils/entity-code-series';
 import { buildSubscriptionGridPayload } from './subscription-grid';
 import { parseSubscriptionStatusQuery } from './subscription-status-query';
 import { assertSubscriptionStatusTransition } from './subscription-status-transitions';
@@ -272,12 +273,12 @@ export class SubscriptionsService {
       productId: data.productId,
       projectId: data.projectId,
     });
-    const code = await this.generateCode();
     const billing = resolveSubscriptionBillingInput(data);
     const termMonths = parseOptionalTermMonths(data.termMonths);
     if (termMonths != null) {
       assertTermMonthsAlignWithCoverage(termMonths, billing.coverageMonthCount);
     }
+    const code = await allocateSubscriptionCode(this.prisma);
     const created = await this.prisma.subscription.create({
       data: {
         code,
@@ -434,17 +435,6 @@ export class SubscriptionsService {
       ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
       ...(dateTo ? { lte: new Date(dateTo) } : {}),
     };
-  }
-
-  private async generateCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const prefix = `SUB-${year}-`;
-    const last = await this.prisma.subscription.findFirst({
-      where: { code: { startsWith: prefix } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `${prefix}${String(nextNum).padStart(4, '0')}`;
   }
 }
 
