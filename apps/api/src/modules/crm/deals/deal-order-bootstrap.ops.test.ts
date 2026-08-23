@@ -35,6 +35,7 @@ describe('resolveDealOrderTotalAmount', () => {
 
 describe('createOrderForDeal', () => {
   const prisma = {
+    $queryRaw: vi.fn(),
     order: {
       findFirst: vi.fn(),
       create: vi.fn(),
@@ -43,6 +44,7 @@ describe('createOrderForDeal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
     prisma.order.findFirst.mockResolvedValue(null);
     prisma.order.create.mockResolvedValue({
       id: 'ord-1',

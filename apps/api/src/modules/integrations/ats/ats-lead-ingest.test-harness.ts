@@ -63,6 +63,7 @@ export function createAtsIngestPrismaMock() {
     lead: createLeadMocks(state),
     contact: createContactMocks(state),
     deal: createDealMocks(state),
+    $queryRaw: vi.fn().mockResolvedValue([{ next_value: 1 }]),
     $transaction: vi
       .fn()
       .mockImplementation(async (callback: (tx: unknown) => Promise<string>) => callback(prisma)),

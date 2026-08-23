@@ -97,7 +97,7 @@ describe('SupportService', () => {
 
   describe('create', () => {
     it('generates code and calculates SLA', async () => {
-      prisma.supportTicket.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.supportTicket.create.mockResolvedValue({
         id: '1',
         code: 'TKT-2026-0001',
@@ -120,7 +120,7 @@ describe('SupportService', () => {
     });
 
     it('uses P3 as default priority', async () => {
-      prisma.supportTicket.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.supportTicket.create.mockResolvedValue({ id: '1', code: 'TKT-2026-0001' });
       await service.create({ title: 'Request', projectId: 'p1', category: 'SERVICE_REQUEST' });
       expect(prisma.supportTicket.create).toHaveBeenCalledWith(
@@ -129,7 +129,7 @@ describe('SupportService', () => {
     });
 
     it('creates ticket with title only for intake', async () => {
-      prisma.supportTicket.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 2 }]);
       prisma.supportTicket.create.mockResolvedValue({
         id: '1',
         code: 'TKT-2026-0002',
@@ -157,7 +157,7 @@ describe('SupportService', () => {
     });
 
     it('defaults category to UNCLASSIFIED when omitted', async () => {
-      prisma.supportTicket.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.supportTicket.create.mockResolvedValue({
         id: '1',
         code: 'TKT-2026-0001',
@@ -178,7 +178,7 @@ describe('SupportService', () => {
     });
 
     it('stores product context when provided', async () => {
-      prisma.supportTicket.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       await service.create({
         title: 'Product bug',
         projectId: 'p1',
@@ -543,7 +543,7 @@ describe('SupportService', () => {
         status: 'TRIAGED',
         extensionDealId: null,
       });
-      prisma.deal.findFirst.mockResolvedValue(null);
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
       prisma.deal.create.mockResolvedValue({ id: 'deal-1', code: 'D-2026-0001' });
 
       const result = await service.createExtensionDeal('ticket-1', { sellerId: 'seller-1' });

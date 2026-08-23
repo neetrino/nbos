@@ -22,6 +22,7 @@ import { employeePersonSelect } from '../../common/employee-person.select';
 import { PRISMA_TOKEN } from '../../database.module';
 import { supportTaskCreationActor } from '../tasks/task-creation-actors';
 import { TaskCreationService } from '../tasks/task-creation.service';
+import { allocateDealCode, allocateSupportTicketCode } from '../../common/utils/entity-code-series';
 import { buildSupportSlaProjection } from './support-sla';
 import {
   buildPauseFieldsAfterWaitingChange,
@@ -256,7 +257,7 @@ export class SupportService {
       }
     }
 
-    const code = await this.generateCode();
+    const code = await allocateSupportTicketCode(this.prisma);
     const priority = (data.priority as TicketPriorityEnum) ?? 'P3';
     const sla = this.calculateSlaDeadlines(priority);
     const category = (data.category as TicketCategoryEnum | undefined) ?? 'UNCLASSIFIED';
@@ -442,7 +443,7 @@ export class SupportService {
 
     const deal = await this.prisma.deal.create({
       data: {
-        code: await this.generateDealCode(),
+        code: await allocateDealCode(this.prisma),
         name: this.buildExtensionDealName(ticket, data.name),
         contactId,
         projectId: ticket.projectId,
@@ -849,16 +850,6 @@ export class SupportService {
     return { ...ticket, slaState: buildSupportSlaProjection(ticket) };
   }
 
-  private async generateCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const last = await this.prisma.supportTicket.findFirst({
-      where: { code: { startsWith: `TKT-${year}-` } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `TKT-${year}-${String(nextNum).padStart(4, '0')}`;
-  }
-
   private async findExecutionTasks(ticketId: string) {
     return this.prisma.task.findMany({
       where: { links: { some: { entityType: SUPPORT_TICKET_ENTITY_TYPE, entityId: ticketId } } },
@@ -947,16 +938,6 @@ export class SupportService {
     const explicit = dueDate?.trim();
     if (explicit) return explicit;
     return slaResolveDeadline?.toISOString();
-  }
-
-  private async generateDealCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const last = await this.prisma.deal.findFirst({
-      where: { code: { startsWith: `D-${year}-` } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `D-${year}-${String(nextNum).padStart(4, '0')}`;
   }
 
   private buildExtensionDealName(

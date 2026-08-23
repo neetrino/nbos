@@ -53,6 +53,7 @@ import {
   parseLifecycleScopeFromQuery,
 } from '../../../common/lifecycle/entity-lifecycle-scope';
 import { buildDealSearchOr } from './deal-search.where';
+import { allocateDealCode } from '../../../common/utils/entity-code-series';
 
 const DEAL_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'name', 'code', 'status', 'amount']);
 
@@ -197,7 +198,7 @@ export class DealsService {
         meta.canOverridePausedPartner === true,
       );
     }
-    const code = await this.generateCode();
+    const code = await allocateDealCode(this.prisma);
     const deal = await this.prisma.deal.create({
       data: {
         code,
@@ -551,18 +552,6 @@ export class DealsService {
     ]);
 
     return { total, byStatus, byType };
-  }
-
-  private async generateCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const lastDeal = await this.prisma.deal.findFirst({
-      where: { code: { startsWith: `D-${year}-` } },
-      orderBy: { code: 'desc' },
-    });
-
-    const nextNum = lastDeal ? parseInt(lastDeal.code.split('-')[2] ?? '0', 10) + 1 : 1;
-
-    return `D-${year}-${String(nextNum).padStart(4, '0')}`;
   }
 
   private partnerTermsSnapshot(deal: {

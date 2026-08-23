@@ -616,6 +616,10 @@ Current deprecation rule:
 - если `productId` не обязателен в runtime, поднять это до обязательного правила;
 - проверить CRM -> Projects handoff и support -> extension flows.
 
+### C6. Project codes used MAX+1 — FIXED (2026-08-23)
+
+`P-{year}-{NNNN}` now allocates from `entity_code_counters` (`PROJECT`). Writers moved together: `ProjectsService`, `DealWonHandler.ensureProject`, `deal-order-bootstrap.ensureProjectForDeal`. Seed + write-pause rollout is in AI C25 / Chat 2 handoff. Project ownership unchanged.
+
 ---
 
 ## Очерёдность зачистки

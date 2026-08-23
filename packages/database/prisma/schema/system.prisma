@@ -20,8 +20,9 @@ model SystemListOption {
 /// Reading the highest existing code and then inserting races: two concurrent
 /// creates compute the same number and the second violates the unique code
 /// column. One atomic upsert per allocation removes that window. `scope`
-/// (`TASK`, `INVOICE`, …) keeps one table serving every numbered entity, and
-/// `year` gives each one an independent series that restarts in January.
+/// (`TASK`, `INVOICE`, `SUPPORT_TICKET`, `DEAL`, `LEAD`, `ORDER`,
+/// `SUBSCRIPTION`, `PROJECT`) keeps one table serving every numbered entity,
+/// and `year` gives each one an independent series that restarts in January.
 model EntityCodeCounter {
   scope     String
   year      Int

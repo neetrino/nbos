@@ -1,6 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import type { Prisma, PrismaClient } from '@nbos/database';
 import { resolvePartnerServiceSubscriptionName } from '../finance/subscriptions/subscription-commercial-name';
+import {
+  allocateInvoiceCode,
+  allocateSubscriptionCode,
+} from '../../common/utils/entity-code-series';
 
 const PARTNER_SERVICE_TYPES = ['SEO', 'SMM', 'ADS', 'OTHER'] as const;
 const PARTNER_SERVICE_PAYMENT_MODELS = ['ONE_TIME', 'MONTHLY', 'CUSTOM'] as const;
@@ -228,7 +232,7 @@ export async function createFinanceFromPartnerServiceTerm(
 
     const startDate = term.billingStartDate ?? new Date();
     const billingDay = startDate.getUTCDate();
-    const code = await generateSubscriptionCode(prisma);
+    const code = await allocateSubscriptionCode(prisma);
 
     const subscription = await prisma.subscription.create({
       data: {
@@ -266,7 +270,7 @@ export async function createFinanceFromPartnerServiceTerm(
   }
 
   const dueDate = input.dueDate ? parseDate(input.dueDate, 'dueDate') : term.billingStartDate;
-  const code = await generateInvoiceCode(prisma);
+  const code = await allocateInvoiceCode(prisma);
   const taxStatus = await resolveTaxStatusForPartnerServiceTerm(prisma, term.clientCompanyId);
 
   const invoice = await prisma.invoice.create({
@@ -365,31 +369,6 @@ function normalizeNullableId(value: string | null | undefined): string | null {
 function normalizeNotes(value: string | undefined): string | null {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
-}
-
-async function generateInvoiceCode(prisma: InstanceType<typeof PrismaClient>): Promise<string> {
-  const year = new Date().getFullYear();
-  const last = await prisma.invoice.findFirst({
-    where: { code: { startsWith: `INV-${year}-` } },
-    orderBy: { code: 'desc' },
-    select: { code: true },
-  });
-  const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-  return `INV-${year}-${String(nextNum).padStart(4, '0')}`;
-}
-
-async function generateSubscriptionCode(
-  prisma: InstanceType<typeof PrismaClient>,
-): Promise<string> {
-  const year = new Date().getFullYear();
-  const prefix = `SUB-${year}-`;
-  const last = await prisma.subscription.findFirst({
-    where: { code: { startsWith: prefix } },
-    orderBy: { code: 'desc' },
-    select: { code: true },
-  });
-  const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-  return `${prefix}${String(nextNum).padStart(4, '0')}`;
 }
 
 async function resolveTaxStatusForPartnerServiceTerm(

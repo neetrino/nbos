@@ -8,18 +8,18 @@
 
 ### Runtime matrix (актуальный снимок)
 
-| Area                      | Status  | Notes                                                                                                              |
-| ------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
-| Partner model             | PARTIAL | `level`/`direction`/contacts; agreements metadata / Partner Account v2 — позже                                     |
-| CRM source + terms        | OK      | Referral terms snapshot на Deal; WON-gate; UI Marketing block + `patchPartnerReferralTerms`                        |
-| Order / subscription link | OK      | Accrual от Payment; subscription accrual по инвойсу; balance, payout batch                                         |
-| Partner CRUD API + DTO    | OK      | Wire `level`, ISO dates, фильтры; create/update совместимы с каноном (см. IMPLEMENTATION_PROGRESS Partners)        |
-| Partner UI                | PARTIAL | Карточка: commission policy, referral, accruals, balance, batches, outbound services; analytics/agreements — позже |
-| Partner Accrual           | OK      | Classic + subscription; идемпотентность; journal line                                                              |
-| Partner Balance           | OK      | `GET …/balance` + web summary                                                                                      |
-| Payout Batch              | OK      | create/approve/cancel; Expense `PARTNER_PAYOUT`; web UI                                                            |
-| Partner Service Terms     | OK      | Outbound terms + `Create finance` (invoice/subscription)                                                           |
-| Partner Account v2        | MISSING | Портал партнёра read-only — позже                                                                                  |
+| Area                      | Status  | Notes                                                                                                                                                |
+| ------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Partner model             | PARTIAL | `level`/`direction`/contacts; agreements metadata / Partner Account v2 — позже                                                                       |
+| CRM source + terms        | OK      | Referral terms snapshot на Deal; WON-gate; UI Marketing block + `patchPartnerReferralTerms`                                                          |
+| Order / subscription link | OK      | Accrual от Payment; subscription accrual по инвойсу; balance, payout batch                                                                           |
+| Partner CRUD API + DTO    | OK      | Wire `level`, ISO dates, фильтры; create/update совместимы с каноном (см. IMPLEMENTATION_PROGRESS Partners)                                          |
+| Partner UI                | PARTIAL | Карточка: commission policy, referral, accruals, balance, batches, outbound services; analytics/agreements — позже                                   |
+| Partner Accrual           | OK      | Classic + subscription; идемпотентность; journal line                                                                                                |
+| Partner Balance           | OK      | `GET …/balance` + web summary                                                                                                                        |
+| Payout Batch              | OK      | create/approve/cancel; Expense `PARTNER_PAYOUT`; web UI                                                                                              |
+| Partner Service Terms     | OK      | Outbound terms + `Create finance` (invoice/subscription). **2026-08-23:** INV/SUB codes use shared `entity_code_counters` (AI C25), not local MAX+1. |
+| Partner Account v2        | MISSING | Портал партнёра read-only — позже                                                                                                                    |
 
 ---
 

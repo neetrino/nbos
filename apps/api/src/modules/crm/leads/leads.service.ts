@@ -28,6 +28,7 @@ import {
   type LeadDuplicateLookupQuery,
 } from './lead-duplicate-lookup.ops';
 import { mergeLeads } from './lead-merge.ops';
+import { allocateLeadCode } from '../../../common/utils/entity-code-series';
 import { attachLeadToContact } from './lead-attach-contact.ops';
 import { pourLeadIntoContact } from './lead-pour-into-contact.ops';
 import { createContactFromLead } from './lead-create-contact.ops';
@@ -207,7 +208,7 @@ export class LeadsService {
         throw new NotFoundException(`Contact ${resolved.contactId} not found`);
       }
     }
-    const code = await this.generateCode();
+    const code = await allocateLeadCode(this.prisma);
     const createData: Prisma.LeadUncheckedCreateInput = {
       code,
       name: resolved.name,
@@ -446,18 +447,6 @@ export class LeadsService {
     ]);
 
     return { total, byStatus, bySource };
-  }
-
-  private async generateCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const lastLead = await this.prisma.lead.findFirst({
-      where: { code: { startsWith: `L-${year}-` } },
-      orderBy: { code: 'desc' },
-    });
-
-    const nextNum = lastLead ? parseInt(lastLead.code.split('-')[2] ?? '0', 10) + 1 : 1;
-
-    return `L-${year}-${String(nextNum).padStart(4, '0')}`;
   }
 
   private requiresAttribution(status: string): boolean {

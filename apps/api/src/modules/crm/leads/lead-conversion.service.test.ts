@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LeadConversionService } from './lead-conversion.service';
 import { LeadsService } from './leads.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
+import { stubEntityCodeAllocation } from '../../../test-utils/stub-entity-code-allocation';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('LeadConversionService', () => {
@@ -11,6 +12,7 @@ describe('LeadConversionService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
+    stubEntityCodeAllocation(prisma);
     leadsService = new LeadsService(prisma as never, { log: vi.fn() } as never);
     service = new LeadConversionService(prisma as never, leadsService);
   });
@@ -112,7 +114,7 @@ describe('LeadConversionService', () => {
 
   it('increments deal code when existing deals exist', async () => {
     prisma.lead.findUnique.mockResolvedValue({ ...baseLead, contactId: 'c1' });
-    prisma.deal.findFirst.mockResolvedValue({ code: 'D-2026-0042' });
+    stubEntityCodeAllocation(prisma, 43);
     prisma.deal.create.mockImplementation(({ data }) => Promise.resolve({ id: 'd-1', ...data }));
 
     await service.convertToDeal('lead-1', convertDto);
@@ -121,6 +123,7 @@ describe('LeadConversionService', () => {
         data: expect.objectContaining({ code: 'D-2026-0043' }),
       }),
     );
+    expect(prisma.deal.findFirst).not.toHaveBeenCalled();
   });
 
   it('copies lead additional contacts to deal on conversion', async () => {

@@ -204,6 +204,13 @@ Module create operation
 - concurrency correctness requires real-DB evidence;
 - rollout must account for mixed old/new writers and require a write pause if necessary.
 
+## Status (2026-08-23)
+
+**PASS WITH DEBTS** — independent verifier recorded in
+`docs/NBOS/02-Modules/21-AI-Platform/34-Post-Phase-1-Chat-2-Code-Allocator-Handoff.md`.
+
+C25 is closed. Sibling series use `entity_code_counters` with real-DB concurrency / `9999` → `10000` / numeric seed evidence. Remaining debts (K209/C24 / NEW CHAT 3, Tasks C8, Recurring machine actor, seed fixtures, production write-pause apply) are out of this workstream. Tasks `T-` was already closed in Chat 12 / C23 and was not reopened. Do not start NEW CHAT 3 until this slice is committed.
+
 ## Definition of Done
 
 - repository-wide inventory completed;

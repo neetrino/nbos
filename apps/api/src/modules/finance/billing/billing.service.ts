@@ -11,6 +11,7 @@ import {
   isBillingMonthCoveredByInvoices,
   type SubscriptionCoverageInvoiceRow,
 } from '../subscriptions/subscription-coverage-window';
+import { allocateInvoiceCode } from '../../../common/utils/entity-code-series';
 
 export interface BillingRunResult {
   generatedInvoices: number;
@@ -193,7 +194,7 @@ export class BillingService {
     day: number,
     coverageStartMonth: string,
   ): Promise<number> {
-    const code = await this.generateInvoiceCode(now);
+    const code = await allocateInvoiceCode(this.prisma, now.getFullYear());
     const dueDate = new Date(now.getFullYear(), now.getMonth(), day + 14);
     const charge = subscriptionChargeAmount(Number(sub.amount), sub.coverageMonthCount);
 
@@ -215,16 +216,5 @@ export class BillingService {
 
     this.logger.log(`Generated invoice ${code} for subscription ${sub.code}`);
     return charge.amount;
-  }
-
-  private async generateInvoiceCode(targetDate: Date): Promise<string> {
-    const year = targetDate.getFullYear();
-    const prefix = `INV-${year}-`;
-    const last = await this.prisma.invoice.findFirst({
-      where: { code: { startsWith: prefix } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `${prefix}${String(nextNum).padStart(4, '0')}`;
   }
 }
