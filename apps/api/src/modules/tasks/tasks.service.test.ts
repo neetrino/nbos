@@ -193,18 +193,61 @@ describe('TasksService', () => {
   });
 
   describe('create', () => {
-    it('generates code T-YYYY-NNNN', async () => {
-      prisma.task.findMany.mockResolvedValue([]);
-      prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
-      const result = await service.create({ title: 'Test', creatorId: 'c1' });
-      expect(result.code).toMatch(/^T-\d{4}-\d{4}$/);
+    // The code number comes from the entity_code_counters upsert, not from reading tasks.
+    beforeEach(() => {
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
+    });
+
+    it('writes the number reserved by the counter, without reading existing tasks', async () => {
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 4242 }]);
+      prisma.task.create.mockResolvedValue({ id: '1', code: 'unused-by-this-assertion' });
+
+      await service.create({ title: 'Test', creatorId: 'c1' });
+
+      expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
+      expect(prisma.task.findFirst).not.toHaveBeenCalled();
+      const data = prisma.task.create.mock.calls[0]?.[0].data as Record<string, unknown>;
+      expect(data.code).toBe(`T-${new Date().getFullYear()}-4242`);
       expect(prisma.task.create).toHaveBeenCalledWith(
         expect.objectContaining({ include: TASK_INCLUDE }),
       );
     });
 
+    it('writes a pre-reserved code without touching the counter again', async () => {
+      const tx = createMockPrisma();
+      tx.task.create.mockResolvedValue({ id: '1', code: 'unused' });
+
+      await service.create({ title: 'Test', creatorId: 'c1' }, undefined, tx, 'T-2026-0007');
+
+      expect(prisma.$queryRaw).not.toHaveBeenCalled();
+      const data = tx.task.create.mock.calls[0]?.[0].data as Record<string, unknown>;
+      expect(data.code).toBe('T-2026-0007');
+    });
+
+    it('reserves the code on the committed client when create runs inside a transaction', async () => {
+      const tx = createMockPrisma();
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 7 }]);
+      tx.task.create.mockResolvedValue({ id: '1', code: 'unused' });
+
+      await service.create({ title: 'Test', creatorId: 'c1' }, undefined, tx);
+
+      expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
+      expect(tx.$queryRaw).not.toHaveBeenCalled();
+      const data = tx.task.create.mock.calls[0]?.[0].data as Record<string, unknown>;
+      expect(data.code).toBe(`T-${new Date().getFullYear()}-0007`);
+      expect(prisma.task.create).not.toHaveBeenCalled();
+    });
+
+    it('fails the create instead of inventing a code when the counter returns nothing', async () => {
+      prisma.$queryRaw.mockResolvedValue([]);
+
+      await expect(service.create({ title: 'Test', creatorId: 'c1' })).rejects.toThrow(
+        /counter for TASK/i,
+      );
+      expect(prisma.task.create).not.toHaveBeenCalled();
+    });
+
     it('creates task inside a Work Space planning layer', async () => {
-      prisma.task.findMany.mockResolvedValue([]);
       await service.create({
         title: 'Backlog task',
         creatorId: 'c1',
@@ -224,7 +267,6 @@ describe('TasksService', () => {
     });
 
     it('normalizes completion rules on create', async () => {
-      prisma.task.findMany.mockResolvedValue([]);
       await service.create({
         title: 'Controlled task',
         creatorId: 'c1',
@@ -241,7 +283,6 @@ describe('TasksService', () => {
     });
 
     it('ignores forged actor provenance on the create payload', async () => {
-      prisma.task.findMany.mockResolvedValue([]);
       prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
       await service.create({
         title: 'Test',
@@ -255,7 +296,6 @@ describe('TasksService', () => {
     });
 
     it('records trusted actor provenance from the separate argument', async () => {
-      prisma.task.findMany.mockResolvedValue([]);
       prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
       await service.create(
         { title: 'Test', creatorId: 'c1' },

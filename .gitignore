@@ -23,6 +23,7 @@ packages/database/src/generated/prisma/
 
 # Local acceptance walks (AO/AP drivers, transcripts, live artifacts — never ship)
 .chat8/
+.chat12/
 
 # Logs and temp
 *.log

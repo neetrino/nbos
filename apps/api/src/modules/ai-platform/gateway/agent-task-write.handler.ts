@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
+import type { TasksDbClient } from '../../tasks/tasks-db-client';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { ExternalAgentService } from '../agents/external-agent.service';
 import { TaskDiscussionService } from '../../tasks/task-discussion.service';
@@ -22,6 +23,16 @@ import { workspacePolicyTarget } from './agent-scope-target';
 import { AgentTaskAccess } from './agent-task-access';
 import { toAgentTaskProjection } from './agent-task-projection';
 
+export interface PreparedAgentTaskCreate {
+  title: string;
+  description?: string;
+  priority?: string;
+  dueDate?: string;
+  workspaceId: string;
+  creatorId: string;
+  actor: { type: string; id: string };
+}
+
 @Injectable()
 export class AgentTaskWriteHandler {
   constructor(
@@ -33,7 +44,20 @@ export class AgentTaskWriteHandler {
     private readonly access: AgentTaskAccess,
   ) {}
 
-  async create(agent: AuthenticatedAgent, input: Record<string, unknown>) {
+  /** Short committed statement. Must run before the task+checkpoint transaction. */
+  async reserveCreateCode(): Promise<string> {
+    return this.tasks.reserveCode();
+  }
+
+  /**
+   * Policy and owner lookup. Must run before `BEGIN` so the interactive
+   * transaction does not hold a pool connection while it waits for another
+   * (`poolMax` is 5; six concurrent creates otherwise deadlock).
+   */
+  async prepareCreate(
+    agent: AuthenticatedAgent,
+    input: Record<string, unknown>,
+  ): Promise<PreparedAgentTaskCreate> {
     const workspaceId = readRequiredString(input, 'workspaceId');
     const workspace = await resolveCanonicalWorkSpace(this.prisma, workspaceId);
     await this.policy.assertAllowed({
@@ -50,40 +74,63 @@ export class AgentTaskWriteHandler {
     if (!owner) {
       throw AgentAccessException.fromDenyReason('ACTOR_NOT_SUPPORTED');
     }
+    return {
+      title: readRequiredString(input, 'title'),
+      description: readOptionalString(input, 'description'),
+      priority: readOptionalTaskPriority(input),
+      dueDate: readOptionalIsoDate(input, 'dueDate'),
+      workspaceId: workspace.id,
+      creatorId: owner.ownerId,
+      actor: { type: agent.actor.actor.type, id: agent.actor.actor.id },
+    };
+  }
+
+  async commitPreparedCreate(
+    prepared: PreparedAgentTaskCreate,
+    reservedCode: string | undefined,
+    tx?: TasksDbClient,
+  ) {
     const created = await this.tasks.create(
       {
-        title: readRequiredString(input, 'title'),
-        description: readOptionalString(input, 'description'),
-        priority: readOptionalTaskPriority(input),
-        dueDate: readOptionalIsoDate(input, 'dueDate'),
-        workspaceId: workspace.id,
-        creatorId: owner.ownerId,
+        title: prepared.title,
+        description: prepared.description,
+        priority: prepared.priority,
+        dueDate: prepared.dueDate,
+        workspaceId: prepared.workspaceId,
+        creatorId: prepared.creatorId,
       },
-      { type: agent.actor.actor.type, id: agent.actor.actor.id },
+      prepared.actor,
+      tx,
+      reservedCode,
     );
     return toAgentTaskProjection(created);
   }
 
-  async update(agent: AuthenticatedAgent, input: Record<string, unknown>) {
+  async create(agent: AuthenticatedAgent, input: Record<string, unknown>, tx?: TasksDbClient) {
+    const prepared = await this.prepareCreate(agent, input);
+    return this.commitPreparedCreate(prepared, readOptionalReservedCode(input), tx);
+  }
+
+  async update(agent: AuthenticatedAgent, input: Record<string, unknown>, tx?: TasksDbClient) {
     const taskId = readRequiredString(input, 'taskId');
     const { task } = await this.access.requireAuthorizedTask(agent, 'tasks.update', taskId);
     const expectedUpdatedAt = readRequiredIsoDateTime(input, 'expectedUpdatedAt');
     const patch = pickAllowedUpdate(input);
-    const updated = await this.tasks.update(task.id, patch, undefined, expectedUpdatedAt);
+    const updated = await this.tasks.update(task.id, patch, undefined, expectedUpdatedAt, tx);
     return toAgentTaskProjection(updated);
   }
 
-  async start(agent: AuthenticatedAgent, input: Record<string, unknown>) {
+  async start(agent: AuthenticatedAgent, input: Record<string, unknown>, tx?: TasksDbClient) {
     const { task } = await this.access.requireAuthorizedTask(
       agent,
       'tasks.start',
       readRequiredString(input, 'taskId'),
     );
-    const updated = await this.tasks.start(task.id);
+    const updated = await this.tasks.start(task.id, undefined, tx);
     return toAgentTaskProjection(updated);
   }
 
-  async comment(agent: AuthenticatedAgent, input: Record<string, unknown>) {
+  async comment(agent: AuthenticatedAgent, input: Record<string, unknown>, tx?: TasksDbClient) {
     const { task } = await this.access.requireAuthorizedTask(
       agent,
       'tasks.comment',
@@ -93,17 +140,23 @@ export class AgentTaskWriteHandler {
       task.id,
       agent.actor,
       readRequiredString(input, 'body'),
+      undefined,
+      tx,
     );
     return { id: entry.id, createdAt: entry.createdAt.toISOString() };
   }
 
-  async submitReview(agent: AuthenticatedAgent, input: Record<string, unknown>) {
+  async submitReview(
+    agent: AuthenticatedAgent,
+    input: Record<string, unknown>,
+    tx?: TasksDbClient,
+  ) {
     const { task } = await this.access.requireAuthorizedTask(
       agent,
       'tasks.submit_review',
       readRequiredString(input, 'taskId'),
     );
-    const updated = await this.tasks.submitForReview(task.id);
+    const updated = await this.tasks.submitForReview(task.id, undefined, undefined, tx);
     return toAgentTaskProjection(updated);
   }
 }
@@ -149,4 +202,10 @@ function pickAllowedUpdate(input: Record<string, unknown>): {
     );
   }
   return patch;
+}
+
+/** Set by the gateway after a committed reserve — never an agent-supplied field. */
+function readOptionalReservedCode(input: Record<string, unknown>): string | undefined {
+  const value = input.reservedTaskCode;
+  return typeof value === 'string' && value.trim() ? value : undefined;
 }

@@ -430,14 +430,15 @@ describe('SupportService', () => {
         slaResolveDeadline: new Date('2026-05-01T00:00:00Z'),
       });
       prisma.workSpace.findUnique.mockResolvedValue({ id: 'ws-1' });
-      prisma.task.findFirst.mockResolvedValue(null);
-      prisma.task.create.mockResolvedValue({ id: 'task-1', code: 'T-2026-0001' });
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 77 }]);
+      prisma.task.create.mockResolvedValue({ id: 'task-1', code: 'T-2026-0077' });
 
       await service.createExecutionTask('ticket-1', { creatorId: 'employee-1' });
 
       expect(prisma.task.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
+            code: `T-${new Date().getFullYear()}-0077`,
             title: '[TKT-2026-0001] Broken form',
             creatorId: 'employee-1',
             assigneeId: 'employee-2',
@@ -456,6 +457,9 @@ describe('SupportService', () => {
           }),
         }),
       );
+      // Support shares the Task code series, so it must reserve from the counter rather
+      // than derive a number from max(tasks) and strand the counter behind the table.
+      expect(prisma.task.findFirst).not.toHaveBeenCalled();
     });
 
     it('blocks execution task creation for closed ticket', async () => {

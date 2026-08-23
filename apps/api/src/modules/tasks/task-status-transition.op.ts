@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
-import { PrismaClient, type TaskStatusEnum } from '@nbos/database';
+import { type TaskStatusEnum } from '@nbos/database';
+import type { TasksDbClient } from './tasks-db-client';
 
 export const TASK_START_FROM_STATUSES: readonly TaskStatusEnum[] = ['OPEN', 'ON_HOLD'];
 
@@ -14,7 +15,7 @@ export const TASK_SUBMIT_REVIEW_FROM_STATUSES: readonly TaskStatusEnum[] = [
  * A concurrent complete/other transition yields count 0 instead of a silent overwrite.
  */
 export async function applyTaskStatusTransition(
-  prisma: InstanceType<typeof PrismaClient>,
+  prisma: TasksDbClient,
   params: {
     id: string;
     from: readonly TaskStatusEnum[];

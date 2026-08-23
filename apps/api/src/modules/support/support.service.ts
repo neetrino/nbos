@@ -20,6 +20,7 @@ import {
 } from '@nbos/database';
 import { employeePersonSelect } from '../../common/employee-person.select';
 import { PRISMA_TOKEN } from '../../database.module';
+import { allocateTaskCode } from '../tasks/task-code-generation';
 import { buildSupportSlaProjection } from './support-sla';
 import {
   buildPauseFieldsAfterWaitingChange,
@@ -412,7 +413,7 @@ export class SupportService {
     const workspaceId = await this.findProductWorkspaceId(ticket.productId);
     return this.prisma.task.create({
       data: {
-        code: await this.generateTaskCode(),
+        code: await allocateTaskCode(this.prisma),
         title: this.buildExecutionTaskTitle(ticket, data.title),
         creatorId: data.creatorId,
         description: data.description ?? this.buildExecutionTaskDescription(ticket),
@@ -855,16 +856,6 @@ export class SupportService {
     });
     const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
     return `TKT-${year}-${String(nextNum).padStart(4, '0')}`;
-  }
-
-  private async generateTaskCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const last = await this.prisma.task.findFirst({
-      where: { code: { startsWith: `T-${year}-` } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `T-${year}-${String(nextNum).padStart(4, '0')}`;
   }
 
   private async findExecutionTasks(ticketId: string) {

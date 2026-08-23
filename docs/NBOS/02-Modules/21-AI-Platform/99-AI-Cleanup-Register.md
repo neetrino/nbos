@@ -86,7 +86,7 @@ Chat 11: `AiExecution` stores actor, External/Internal Agent, provider, model, M
 
 ### C8. No idempotency contract for agent mutations — PARTIAL
 
-Capability metadata declares `REQUIRED`. Chat 3 stores replay rows in `external_agent_idempotency_records` and enforces them in the gateway. Chat 11 checkpoints `responseJson` while the row is still `IN_PROGRESS` after Tasks/Drive commit, then marks `COMPLETED`. Retry of `IN_PROGRESS` + json replays and tries to complete. Stale `IN_PROGRESS` without a checkpoint still conflicts (no second domain write). Remaining unrecoverable window: crash after domain commit and before checkpoint. Domain commit and `complete()` are still not one transaction (K 209).
+Capability metadata declares `REQUIRED`. Chat 3 stores replay rows in `external_agent_idempotency_records` and enforces them in the gateway. Chat 11 checkpoints `responseJson` while the row is still `IN_PROGRESS` after Tasks/Drive commit, then marks `COMPLETED`. Retry of `IN_PROGRESS` + json replays and tries to complete. Stale `IN_PROGRESS` without a checkpoint still conflicts (no second domain write). Chat 12 closed the crash window for the five Tasks write capabilities by committing the domain change and the checkpoint in one transaction; `tasks.attach_artifact` keeps the window because its object-store write cannot join a database transaction. See C24.
 
 ### C9. No external-agent rate-limit policy — OK
 
@@ -140,9 +140,64 @@ Chat 8 ran the AP walk with a real OpenAI key supplied by the developer: connect
 
 Chat 8 promoted it to a first-class sidebar module at `/ai-agents` (`SIDEBAR_MODULE_KEYS`, `NAV_MODULE_DEFINITIONS` with the nine section children, module visual). `/settings/ai-agents/*` now issues a temporary redirect so existing links and the runbooks keep working. RBAC is unchanged: `COMPANY:EDIT`, the same permission the `ai-admin` controllers require.
 
-### C22. Phase 1 exit criterion 9 — BUSINESS DECISION / PARTIAL
+### C22. Phase 1 exit criterion 9 — RESOLVED
 
-`27-Phase-1-Continuation-After-Chat-8.md` decided AD–AI stay in the current Phase 1 (Chats 9–12). Chat 9 closed AD/AE (C15, C16). Chat 10 closed AF/AG (C17, C18). Chat 11 closed AH/AI (C19 / C7) and the actionable Chat 8 product-code debts listed in `30-Phase-1-Chat-11-Handoff.md`. Chat 12 is still the only milestone that may declare Phase 1 complete.
+`27-Phase-1-Continuation-After-Chat-8.md` decided AD–AI stay in the current Phase 1 (Chats 9–12). Chat 9 closed AD/AE (C15, C16). Chat 10 closed AF/AG (C17, C18). Chat 11 closed AH/AI (C19 / C7) and the actionable Chat 8 product-code debts listed in `30-Phase-1-Chat-11-Handoff.md`. Chat 12 walked AD–AI first-hand against the live admin surface and found exit criterion 9 **met**, so the business decision recorded here is resolved. Chat 12 did not declare Phase 1 complete for an unrelated reason — see C23.
+
+### C23. Concurrent Task creation returned HTTP 500 — FIXED
+
+Found first-hand in Chat 12 and present in no earlier handoff. `TasksService.generateCode()` (`apps/api/src/modules/tasks/tasks.service.ts`) reads the highest existing `T-<year>-NNNN` code and then inserts, outside any lock or transaction, so two concurrent creates compute the same code and the second loses on the unique `Task.code` constraint. Six concurrent `POST /api/v1/agent/workspaces/{id}/tasks` calls with six distinct idempotency keys returned `201,500,500,500,500,500`; a 26-request burst returned 6 accepted, 2 rate-limited and 18 × 500.
+
+The defect is Tasks-owned and pre-existing — it predates the AI Platform work and no AI Platform checklist item is falsified by it. It blocks Phase 1 anyway, because the External Agent surface is the first caller that makes it routine: Phase 1 exists for parallel coding agents and `AGENT_CONCURRENCY_LIMIT` explicitly permits eight in-flight invocations per agent. Exit criteria 1 and 2 therefore fail on reliability while passing on authorization.
+
+The error boundary was not at fault: the agent received `AGENT_INTERNAL_ERROR` with a request id, and no Prisma text, table name or file path leaked.
+
+**Fixed in Chat 12** with a server-side allocator, on the developer's decision. Migration `20260823000000_entity_code_counters` adds `entity_code_counters (scope, year, next_value)` and seeds the `TASK` scope from existing codes, comparing suffixes numerically. `allocateEntityCodeNumber` (`apps/api/src/common/utils/entity-code-counter.ts`) reserves a number with one `INSERT … ON CONFLICT DO UPDATE … RETURNING`, so PostgreSQL serializes concurrent callers on the counter row instead of letting them compute the same value. `TasksService.generateCode` no longer reads the tasks table at all, which also removes a full prefix scan from every create. Numbers are reserved rather than reissued, so a failed insert leaves a gap; gaps are acceptable in a human-readable code, duplicates are not.
+
+Verified: the exact reproduction that returned `201,500,500,500,500,500` now returns `201,201,201,201,201,201`; at the `AGENT_CONCURRENCY_LIMIT` ceiling, 24 creates over 3 rounds of 8 produced 24 unique codes and zero server errors. Regression: `entity-code-counter.int.test.ts` (opt-in, real database) allocates 40 numbers concurrently and asserts they form exactly `1..40`. Evidence: `31-Phase-1-Final-Acceptance.md`.
+
+**That first fix was incomplete**, as the independent review found. Three services write the `T-<year>` series, not one: `SupportService.createExecutionTask` and `AutoTasksService` each carried their own `max(tasks)+1` generator and inserted through Prisma directly. Converting only `TasksService` left two sources of truth for one series and made the failure _easier_ to reach — a single `max`-derived insert leaves the counter behind the table, and the next ordinary create then collides with no concurrency at all. Completed by routing every writer through `allocateTaskCode` (`apps/api/src/modules/tasks/task-code-generation.ts`), the one supported entry point; the private generators are gone. Regression: `task-code-allocation.int.test.ts` drives Tasks and Automation concurrently against a real database and asserts distinct codes, and each service's unit tests assert that the tasks table is never read for a code. Because the counter and `max(tasks)` cannot both be authoritative, the rollout requires a write pause rather than a rolling deploy — sequence in C9 of `../05-Tasks/04-Tasks-Cleanup-Register.md`.
+
+### C25. The same read-then-insert race exists in sibling code series — OPEN
+
+Found while fixing C23 and **not** fixed, because these are separate code series outside the Phase 1 External Agent surface. `generateCode()` in Invoices, Support tickets (`TKT-`), Deals, Leads, Orders, Subscriptions and Projects still reads the highest existing code and then inserts. Most of them also order by `code` descending as text, which is the lexicographic bug Tasks had already fixed (`INV-2026-9999` sorts above `INV-2026-10000`).
+
+Scope correction: the Task writers in Support and Automation were originally listed here. They belong to C23 instead and are fixed — they shared the `T-` series with `TasksService`, so leaving them out was not a deferral but an unfinished fix. What remains under C25 is genuinely independent: a race inside `INV-` cannot corrupt `T-`.
+
+These are lower risk today because no machine actor drives them concurrently — human users rarely create two invoices in the same millisecond. They are one adoption away from being safe: `entity_code_counters` already carries a `scope` column, so each module needs a new `ENTITY_CODE_SCOPE` entry, a seed for its scope and a two-line service change, with no further migration to the table itself.
+
+### C24. Gateway idempotency slot is never reclaimed (checklist 209) — FIXED for Tasks, PARTIAL for Drive
+
+Chat 12 reproduced all three crash windows directly against `AgentIdempotencyService`. Chat 11's `responseJson` checkpoint works: a crash after the checkpoint replays the stored result and self-heals the row to `COMPLETED`. The residue was real — `loadLive` returns `IN_PROGRESS` rows _before_ it evaluates expiry, so a reservation that crashed between the domain commit and the checkpoint stayed `409 An identical request is already in progress` permanently, even after its TTL elapsed.
+
+Moving the expiry check above that branch would have been the wrong fix: it frees the key after the TTL, but the retry then re-executes the domain action and creates a second task. The stuck key was fail-closed on purpose. The resolution has to remove the window, not reopen the key.
+
+**Fixed for Tasks in Chat 12** by committing the domain change and the idempotency checkpoint in one transaction, on the developer's decision. `AgentCapabilityGateway.commitDomainWithCheckpoint` opens a transaction for the five capabilities whose domain change is nothing but database writes (`tasks.create`, `tasks.update`, `tasks.start`, `tasks.comment`, `tasks.submit_review`) and hands the same client to the domain service and to `checkpointCommittedResult`. There is no longer a state where the task is committed and the checkpoint is not: either both are durable, or the transaction rolls back and the reservation is released for a clean retry.
+
+The Tasks write paths and their helper operations now accept that client (`TasksDbClient`, a narrow `Pick` rather than a `PrismaClient | TransactionClient` union, which exceeds the TypeScript instantiation depth). Callers that pass nothing keep the previous autocommit behaviour, so human RBAC paths are unchanged.
+
+Evidence: `agent-write-atomicity.int.test.ts` (opt-in, real database) fails the surrounding transaction after `TasksService.create` and asserts no task survives — a mock could only show which client was passed, not that the write joined that transaction, and a single leftover `this.prisma` would have escaped it. `agent-capability.gateway.test.ts` asserts that the domain call and the checkpoint receive the same transaction, that a failing checkpoint releases the reservation instead of pinning it, and that Drive does not open a transaction.
+
+The counter reservation must stay outside this transaction (C26). Putting `allocateTaskCode` on the interactive client reintroduced a 500 on concurrent `tasks.create` after the two remediations landed together.
+
+**Still PARTIAL for `tasks.attach_artifact`.** Its domain change includes an object-store write, which cannot join a database transaction, so it keeps the sequential path and the narrow window remains there. Closing it needs an outbox or a domain operation record and is Phase 2 work. Checklist item 209 is `[x]` for the Tasks capabilities and `[~]` for Drive.
+
+### C26. Shared K209 transaction holds the Task-code counter lock — FIXED
+
+Found first-hand in the independent re-acceptance after `6be85612` + `dde78e46`. The five Tasks write capabilities open one Prisma interactive transaction for the domain write and the idempotency checkpoint. The first fix ran `allocateTaskCode` on that same client, so the counter upsert held `(TASK, year)` until the whole task+checkpoint committed.
+
+PostgreSQL serializes those upserts on the single row. Six concurrent `POST /api/v1/agent/workspaces/{id}/tasks` calls queued behind the first in-flight create and expired Prisma's 5000 ms interactive-transaction timeout (~5.7–5.9 s) inside `allocateEntityCodeNumber`. The agent saw HTTP 500 `AGENT_INTERNAL_ERROR`. No `P2002` — this is not the original C23 collision.
+
+**Fixed in Chat 12.** Two nested mechanisms, both required:
+
+1. Reserve the number in a short committed statement _before_ `BEGIN`, then pass the code into the task+checkpoint transaction. Doing the upsert on `this.prisma` _inside_ the interactive callback still opened six transactions first.
+2. Run policy and owner lookup before `BEGIN` as well. api `poolMax` is 5. Six interactive transactions that then called `this.prisma` for policy held every connection and deadlocked (`Unable to start a transaction in the given time` / expired transaction at ~5.7 s). The interactive transaction now only writes the task and the checkpoint.
+
+The `$transaction` timeout was not raised. A failed create may skip a number; that is the existing reserve-not-reissue contract.
+
+Evidence: `agent-capability.gateway.test.ts` asserts prepare → reserve → `BEGIN`. `agent-create-concurrency.int.test.ts` drives six concurrent `invoke('tasks.create')` on a real database. Live REST after a fresh SWC `dist` on `:4000`: six parallel `POST /api/v1/agent/workspaces/{id}/tasks` returned `201 × 6`, codes `T-2026-0697`–`T-2026-0702`, 3882 ms, no 500, no `P2002`.
+
+**Still open after this close:** item 209 / `tasks.attach_artifact` remains `[~]` (C24).
 
 ## D. Tasks alignment issues to verify before implementation
 

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@nbos/database';
+import type { TasksDbClient } from './tasks-db-client';
 
 type TaskLinkRow = { entityType: string; entityId: string };
 
@@ -66,7 +66,7 @@ function mergeTypedIdSets(into: TypedIdSets, from: TypedIdSets): void {
   from.leadIds.forEach((id) => into.leadIds.add(id));
 }
 
-async function loadLinkEntities(prisma: InstanceType<typeof PrismaClient>, sets: TypedIdSets) {
+async function loadLinkEntities(prisma: TasksDbClient, sets: TypedIdSets) {
   const { projectIds, productIds, extensionIds, orderIds, dealIds, leadIds } = sets;
   const [projects, products, extensions, orders, deals, leads] = await Promise.all([
     projectIds.size > 0
@@ -109,7 +109,7 @@ async function loadLinkEntities(prisma: InstanceType<typeof PrismaClient>, sets:
   return { projects, products, extensions, orders, deals, leads };
 }
 
-async function loadLabelMaps(prisma: InstanceType<typeof PrismaClient>, sets: TypedIdSets) {
+async function loadLabelMaps(prisma: TasksDbClient, sets: TypedIdSets) {
   const rows = await loadLinkEntities(prisma, sets);
   return {
     PROJECT: new Map(rows.projects.map((p) => [p.id, p.name] as const)),
@@ -134,7 +134,7 @@ function labelForLink(
  * Adds `entityLabel` to each task link for API responses (project/product names, etc.).
  */
 export async function attachTaskLinkDisplayNames(
-  prisma: InstanceType<typeof PrismaClient>,
+  prisma: TasksDbClient,
   tasks: Array<{ links?: TaskLinkRow[] | null }>,
 ): Promise<void> {
   if (tasks.length === 0) return;
