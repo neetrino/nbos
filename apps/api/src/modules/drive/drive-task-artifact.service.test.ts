@@ -9,22 +9,36 @@ const TENANT_ID = '00000000-0000-4000-8000-000000000001';
 describe('DriveTaskArtifactService', () => {
   let prisma: MockPrisma;
   let drive: {
-    createGeneratedFileAsset: ReturnType<typeof vi.fn>;
     getAssetViewUrl: ReturnType<typeof vi.fn>;
+  };
+  let artifacts: {
+    prepare: ReturnType<typeof vi.fn>;
+    executeMachineUpload: ReturnType<typeof vi.fn>;
+    fingerprintBytes: ReturnType<typeof vi.fn>;
   };
   let service: DriveTaskArtifactService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
     drive = {
-      createGeneratedFileAsset: vi.fn().mockResolvedValue({
-        id: 'file-1',
-        links: [{ id: 'link-1' }],
-      }),
       getAssetViewUrl: vi.fn().mockResolvedValue({ url: 'https://signed.example/file' }),
     };
+    artifacts = {
+      prepare: vi.fn().mockResolvedValue({ id: 'op-1' }),
+      executeMachineUpload: vi.fn().mockResolvedValue({
+        fileAssetId: 'file-1',
+        fileVersionId: 'ver-1',
+        fileLinkId: 'link-1',
+      }),
+      fingerprintBytes: vi.fn().mockReturnValue('fp'),
+    };
     const config = { get: vi.fn().mockReturnValue(TENANT_ID) };
-    service = new DriveTaskArtifactService(prisma as never, drive as never, config as never);
+    service = new DriveTaskArtifactService(
+      prisma as never,
+      drive as never,
+      artifacts as never,
+      config as never,
+    );
   });
 
   it('creates the file through Drive with AI provenance and a task link', async () => {
@@ -37,14 +51,17 @@ describe('DriveTaskArtifactService', () => {
       content: bytes,
     });
     expect(created).toEqual({ fileAssetId: 'file-1', linkId: 'link-1' });
-    expect(drive.createGeneratedFileAsset).toHaveBeenCalledWith(
+    expect(artifacts.prepare).toHaveBeenCalledWith(
       expect.objectContaining({
+        source: 'EXTERNAL_AI',
+        ingress: 'MACHINE_PUT',
         sourceModule: DRIVE_AGENT_SOURCE_MODULE,
         purpose: 'TASK_ATTACHMENT',
-        confidentiality: 'CONFIDENTIAL',
-        link: expect.objectContaining({ entityType: 'TASK', entityId: 'task-1' }),
+        entityType: 'TASK',
+        entityId: 'task-1',
       }),
     );
+    expect(artifacts.executeMachineUpload).toHaveBeenCalled();
     expect(prisma.fileAsset.create).not.toHaveBeenCalled();
     expect(prisma.fileLink.create).not.toHaveBeenCalled();
   });
@@ -59,7 +76,7 @@ describe('DriveTaskArtifactService', () => {
         content: new Uint8Array([1, 2, 3, 4]),
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
-    expect(drive.createGeneratedFileAsset).not.toHaveBeenCalled();
+    expect(artifacts.prepare).not.toHaveBeenCalled();
   });
 
   it('rejects a sizeBytes mismatch and oversized uploads', async () => {
@@ -82,7 +99,7 @@ describe('DriveTaskArtifactService', () => {
         content: new Uint8Array([1, 2, 3, 4]),
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
-    expect(drive.createGeneratedFileAsset).not.toHaveBeenCalled();
+    expect(artifacts.prepare).not.toHaveBeenCalled();
   });
 
   it('does not return a file linked to a different task', async () => {

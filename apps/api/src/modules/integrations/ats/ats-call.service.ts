@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { allocateLeadCode } from '../../../common/utils/entity-code-series';
 import { ATS_CALLDIRECT_OUTBOUND, ATS_STATE_START, ATS_TERMINAL_STATES } from './ats.constants';
 import { findPendingClickToCallEvent } from './ats-call-click-to-call.reconcile';
 import { AtsCallContextResolver, type AtsCallContext } from './ats-call-context.resolver';
@@ -77,7 +78,8 @@ export class AtsCallService {
     const e164 = context.phone;
     if (!context.shouldCreateLead || !e164) return null;
     if (!this.shouldCreateLeadForState(payload, isFirstSeen)) return null;
-    return this.prisma.$transaction(async (tx) => createAtsLead(tx, e164, context.contactId));
+    const code = await allocateLeadCode(this.prisma);
+    return this.prisma.$transaction(async (tx) => createAtsLead(tx, e164, context.contactId, code));
   }
 
   private shouldCreateLeadForState(payload: AtsWebhookPayload, isFirstSeen: boolean): boolean {

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LeadsService } from './leads.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
+import { stubEntityCodeAllocation } from '../../../test-utils/stub-entity-code-allocation';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { AuditService } from '../../audit/audit.service';
 
@@ -78,7 +79,7 @@ describe('LeadsService', () => {
 
   describe('create', () => {
     it('generates code and creates lead', async () => {
-      prisma.lead.findFirst.mockResolvedValue(null);
+      stubEntityCodeAllocation(prisma);
       prisma.lead.create.mockResolvedValue({
         id: '1',
         code: 'L-2026-0001',
@@ -104,17 +105,18 @@ describe('LeadsService', () => {
     });
 
     it('increments code number', async () => {
-      prisma.lead.findFirst.mockResolvedValue({ code: 'L-2026-0005' });
+      stubEntityCodeAllocation(prisma, 6);
       prisma.lead.create.mockImplementation(({ data }) => Promise.resolve({ id: '2', ...data }));
 
       await service.create({ name: 'Jane lead' });
 
       const createCall = prisma.lead.create.mock.calls[0][0];
       expect(createCall.data.code).toBe('L-2026-0006');
+      expect(prisma.lead.findFirst).not.toHaveBeenCalled();
     });
 
     it('defaults assignedTo to creator when actorId is provided', async () => {
-      prisma.lead.findFirst.mockResolvedValue(null);
+      stubEntityCodeAllocation(prisma);
       prisma.lead.create.mockImplementation(({ data }) => Promise.resolve({ id: '1', ...data }));
 
       await service.create({ name: 'Quick lead' }, { actorId: 'emp-1' });

@@ -36,6 +36,8 @@ import {
   assertUploadFileNameAllowed,
   assertUploadSizeWithinLimit,
 } from './drive-upload-validation';
+import { DriveArtifactOperationService } from './artifact-operation/drive-artifact-operation.service';
+import { humanArtifactAuth } from './artifact-operation/drive-artifact-auth.ports';
 
 @Injectable()
 export class DriveUploadSessionService {
@@ -46,6 +48,7 @@ export class DriveUploadSessionService {
     private readonly r2: DriveR2Client,
     private readonly folders: DriveFolderService,
     private readonly config: ConfigService,
+    private readonly artifacts: DriveArtifactOperationService,
   ) {}
 
   async listDriveLibrary(
@@ -127,11 +130,34 @@ export class DriveUploadSessionService {
     });
     const expiresAt = new Date(Date.now() + UPLOAD_SESSION_TTL_MS);
 
+    const operation = await this.artifacts.prepare({
+      id: sessionId,
+      source: 'HUMAN',
+      ingress: 'PRESIGNED',
+      kind: 'CREATE_ASSET',
+      storageKey,
+      entityType,
+      entityId,
+      displayName,
+      originalName: fileName,
+      mimeType: contentType,
+      purpose,
+      sourceModule: uploadFields.sourceModule,
+      visibility: uploadFields.visibility,
+      confidentiality: uploadFields.confidentiality,
+      linkType: uploadFields.linkType,
+      actorType: 'EMPLOYEE',
+      actorId: userId,
+      createdByEmployeeId: userId,
+      folderId: dto.folderId?.trim(),
+      fileAssetId,
+      expiresAt,
+    });
     const session = await this.prisma.fileUploadSession.create({
       data: {
-        id: sessionId,
+        id: operation.id,
         fileAssetId,
-        storageKey,
+        storageKey: operation.storageKey,
         entityType,
         entityId,
         folderId: dto.folderId?.trim(),
@@ -178,15 +204,11 @@ export class DriveUploadSessionService {
     if (session.createdById !== userId) {
       throw new ForbiddenException('This upload session belongs to another user.');
     }
+    if (session.status === 'COMPLETED' && session.fileAssetId) {
+      return this.artifacts.loadCompletedFile(session.fileAssetId);
+    }
     if (session.status !== 'PENDING') {
       throw new BadRequestException(`Upload session is ${session.status}, expected PENDING.`);
-    }
-    if (session.expiresAt < new Date()) {
-      await this.prisma.fileUploadSession.update({
-        where: { id: sessionId },
-        data: { status: 'EXPIRED', failedReason: 'session_expired' },
-      });
-      throw new BadRequestException('Upload session has expired.');
     }
 
     const contextAccess = access
@@ -194,17 +216,52 @@ export class DriveUploadSessionService {
         ? { ...access, documentsAccess }
         : access
       : undefined;
-    if (session.folderId && contextAccess) {
-      await this.folders.assertCanUseFolder(session.folderId, userId, contextAccess);
-    } else if (!session.folderId && contextAccess) {
-      await assertDriveEntityContextAccessible(
-        this.prisma,
-        session.entityType,
-        session.entityId,
-        contextAccess,
-      );
+    const auth = humanArtifactAuth({
+      employeeId: userId,
+      assertContext: async () => {
+        if (session.folderId && contextAccess) {
+          await this.folders.assertCanUseFolder(session.folderId, userId, contextAccess);
+          return;
+        }
+        if (!session.folderId && contextAccess) {
+          await assertDriveEntityContextAccessible(
+            this.prisma,
+            session.entityType,
+            session.entityId,
+            contextAccess,
+          );
+        }
+      },
+    });
+    await auth.assertCanFinalize({
+      source: 'HUMAN',
+      actorType: 'EMPLOYEE',
+      actorId: userId,
+      createdByEmployeeId: userId,
+      entityType: session.entityType,
+      entityId: session.entityId,
+      folderId: session.folderId,
+    });
+
+    const operation = await this.artifacts.findById(sessionId);
+    if (operation) {
+      const result = await this.artifacts.finalizeAfterObjectPresent(operation.id, dto, auth);
+      await this.prisma.fileUploadSession.update({
+        where: { id: sessionId },
+        data: { status: 'COMPLETED', fileAssetId: result.fileAssetId },
+      });
+      return this.artifacts.loadCompletedFile(result.fileAssetId);
     }
 
+    return this.completeLegacySession(sessionId, userId, dto, session);
+  }
+
+  private async completeLegacySession(
+    sessionId: string,
+    userId: string,
+    dto: CompleteUploadSessionDto,
+    session: { storageKey: string; folderId: string | null },
+  ) {
     let head;
     try {
       head = await this.r2
@@ -221,7 +278,6 @@ export class DriveUploadSessionService {
       );
     }
 
-    // Authoritative size enforcement from the stored object (client size cannot be trusted).
     try {
       assertUploadSizeWithinLimit(head.ContentLength);
     } catch (err) {

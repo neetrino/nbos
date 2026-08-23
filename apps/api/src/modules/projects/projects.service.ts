@@ -3,6 +3,7 @@ import { PrismaClient, type Prisma } from '@nbos/database';
 import type { EntityLifecycleScope } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import { allocateProjectCode } from '../../common/utils/entity-code-series';
 import { permanentlyDeleteProfileATrashedEntity } from '../../common/lifecycle/profile-a-permanent-delete.ops';
 import { projectDetailInclude } from './project.includes';
 import { buildProjectIntake } from './project-intake';
@@ -116,7 +117,7 @@ export class ProjectsService {
   }
 
   async create(data: CreateProjectDto) {
-    const code = await this.generateCode();
+    const code = await allocateProjectCode(this.prisma);
     return this.prisma.project.create({
       data: {
         code,
@@ -209,16 +210,6 @@ export class ProjectsService {
     const activeWhere = mergeProfileAListScope({}, 'active');
     const total = await this.prisma.project.count({ where: activeWhere });
     return { total };
-  }
-
-  private async generateCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const last = await this.prisma.project.findFirst({
-      where: { code: { startsWith: `P-${year}-` } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `P-${year}-${String(nextNum).padStart(4, '0')}`;
   }
 }
 

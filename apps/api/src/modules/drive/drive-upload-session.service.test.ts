@@ -44,13 +44,28 @@ function makeFolderMock() {
   };
 }
 
+function makeArtifactsMock() {
+  return {
+    prepare: vi.fn().mockImplementation(async (input: { id?: string; storageKey: string }) => ({
+      id: input.id ?? 'op-1',
+      storageKey: input.storageKey,
+      status: 'UPLOAD_PENDING',
+    })),
+    findById: vi.fn().mockResolvedValue(null),
+    finalizeAfterObjectPresent: vi.fn(),
+    loadCompletedFile: vi.fn(),
+  };
+}
+
 describe('DriveUploadSessionService', () => {
   let service: DriveUploadSessionService;
   let prisma: MockPrisma;
+  let artifacts: ReturnType<typeof makeArtifactsMock>;
 
   beforeEach(() => {
     vi.clearAllMocks();
     prisma = createMockPrisma();
+    artifacts = makeArtifactsMock();
     prisma.project.findUnique.mockResolvedValue({
       code: 'P1',
       name: 'Site',
@@ -81,6 +96,7 @@ describe('DriveUploadSessionService', () => {
       makeR2Mock() as never,
       makeFolderMock() as never,
       makeConfigMock() as never,
+      artifacts as never,
     );
   });
 
@@ -162,6 +178,48 @@ describe('DriveUploadSessionService', () => {
         }),
       }),
     );
+  });
+
+  it('completes upload session through the durable operation when it exists', async () => {
+    const future = new Date(Date.now() + 3_600_000);
+    prisma.fileUploadSession.findUnique.mockResolvedValue({
+      id: 'sess-1',
+      status: 'PENDING',
+      storageKey: `nbos/tenants/${TEST_ORG_ID}/files/tasks/task-T1/attachments/x.pdf`,
+      fileAssetId: 'fa-pre',
+      entityType: 'TASK',
+      entityId: 't1',
+      folderId: null,
+      displayName: 'doc.pdf',
+      originalName: 'doc.pdf',
+      mimeType: 'application/pdf',
+      createdById: 'user-1',
+      expiresAt: future,
+    });
+    prisma.task.findUnique.mockResolvedValue({
+      creatorId: 'user-1',
+      assigneeId: null,
+      coAssignees: [],
+      observers: [],
+    });
+    artifacts.findById.mockResolvedValue({ id: 'sess-1', entityId: 't1', entityType: 'TASK' });
+    artifacts.finalizeAfterObjectPresent.mockResolvedValue({ fileAssetId: 'fa-new' });
+    artifacts.loadCompletedFile.mockResolvedValue({ id: 'fa-new' });
+
+    const out = await service.completeUploadSession(
+      'sess-1',
+      'user-1',
+      { sizeBytes: 12 },
+      { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+    );
+
+    expect(out).toEqual({ id: 'fa-new' });
+    expect(artifacts.finalizeAfterObjectPresent).toHaveBeenCalledWith(
+      'sess-1',
+      { sizeBytes: 12 },
+      expect.anything(),
+    );
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 
   it('completes upload session after HeadObject succeeds', async () => {

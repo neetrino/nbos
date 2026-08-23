@@ -7,6 +7,7 @@ import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm
 import { mergeEntityContactIds } from '@nbos/shared';
 import { syncEntityContactLinks } from '../shared/sync-entity-contact-links.ops';
 import { assertEntityIsActive } from '../../../common/lifecycle/entity-lifecycle-guards';
+import { allocateDealCode } from '../../../common/utils/entity-code-series';
 
 interface ConvertLeadDto {
   dealType?: string;
@@ -109,13 +110,7 @@ export class LeadConversionService {
     }
     const confirmedSellerId = sellerId as string;
 
-    const year = new Date().getFullYear();
-    const lastDeal = await this.prisma.deal.findFirst({
-      where: { code: { startsWith: `D-${year}-` } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = lastDeal ? parseInt(lastDeal.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    const dealCode = `D-${year}-${String(nextNum).padStart(4, '0')}`;
+    const dealCode = await allocateDealCode(this.prisma);
 
     let contactId = lead.contactId;
     if (!contactId) {

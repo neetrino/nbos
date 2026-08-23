@@ -56,6 +56,7 @@ import {
   resolveInvoiceParticipationWhere,
 } from './finance-invoice-participation.where';
 import { buildInvoiceSearchOr } from './invoice-search.where';
+import { allocateInvoiceCode } from '../../../common/utils/entity-code-series';
 import {
   assertInvoiceCancellable,
   assertInvoiceDraftDeletable,
@@ -219,7 +220,7 @@ export class InvoicesService {
       subscriptionId: data.subscriptionId,
       amount: data.amount,
     });
-    const code = await this.generateCode();
+    const code = await allocateInvoiceCode(this.prisma);
     const taxStatus = await resolveInvoiceTaxStatus(this.prisma, data);
     const type = await resolveCreateInvoiceType(this.prisma, data);
     const due = resolveInvoiceDueDate(data.dueDate);
@@ -447,15 +448,5 @@ export class InvoicesService {
 
   async getStats(params: InvoiceStatsParams = {}) {
     return getInvoiceStats(this.prisma, params);
-  }
-
-  private async generateCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const last = await this.prisma.invoice.findFirst({
-      where: { code: { startsWith: `INV-${year}-` } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `INV-${year}-${String(nextNum).padStart(4, '0')}`;
   }
 }

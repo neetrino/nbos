@@ -101,9 +101,11 @@ export class AgentCapabilityGateway {
    * transaction, so no crash can leave the domain committed with the operation
    * key unresolvable — the window that made checklist item 209 fail closed.
    *
-   * Drive keeps the sequential path: its object-store write cannot join a
-   * database transaction, so the checkpoint stays a separate statement and the
-   * narrow window remains there.
+   * Drive still cannot share an R2 PutObject with this transaction. Recovery
+   * is the Drive Artifact Operation: attach persists identity before upload
+   * and resumes through the live attach path, which re-checks fingerprint,
+   * original target, and authorization. Do not short-circuit a completed Drive
+   * row from reserve — that skipped those checks.
    */
   private async commitDomainWithCheckpoint(
     invocation: AgentCapabilityInvocation,
@@ -120,14 +122,14 @@ export class AgentCapabilityGateway {
     }
     if (key && TRANSACTIONAL_CAPABILITIES.has(capability.key)) {
       const result = await this.prisma.$transaction(async (tx) => {
-        const committed = await this.dispatch(agent, capability, input, payload, tx);
+        const committed = await this.dispatch(agent, capability, input, payload, tx, key);
         await this.idempotency.checkpointCommittedResult(key, committed, tx);
         return committed;
       });
       state.domainCommitted = true;
       return result;
     }
-    const result = await this.dispatch(agent, capability, input, payload);
+    const result = await this.dispatch(agent, capability, input, payload, undefined, key);
     state.domainCommitted = true;
     if (key) await this.idempotency.checkpointCommittedResult(key, result);
     return result;
@@ -186,9 +188,17 @@ export class AgentCapabilityGateway {
     input: Record<string, unknown>,
     payload: AgentCapabilityInvocation['payload'],
     tx?: TasksDbClient,
+    reservation?: IdempotencyKey | null,
   ): Promise<AgentCapabilityResult> {
     try {
-      const data = await this.dispatchDomain(agent, capability.key, input, payload, tx);
+      const data = await this.dispatchDomain(
+        agent,
+        capability.key,
+        input,
+        payload,
+        tx,
+        reservation,
+      );
       return { capabilityKey: capability.key, data: projectCapabilityOutput(capability, data) };
     } catch (error) {
       throw mapDomainError(error);
@@ -201,6 +211,7 @@ export class AgentCapabilityGateway {
     input: Record<string, unknown>,
     payload: AgentCapabilityInvocation['payload'],
     tx?: TasksDbClient,
+    reservation?: IdempotencyKey | null,
   ): Promise<unknown> {
     switch (key) {
       case 'workspaces.read':
@@ -226,7 +237,17 @@ export class AgentCapabilityGateway {
       case 'tasks.submit_review':
         return this.taskWrites.submitReview(agent, input, tx);
       case 'tasks.attach_artifact':
-        return this.drive.attachArtifact(agent, input, requirePayload(payload));
+        return this.drive.attachArtifact(
+          agent,
+          input,
+          requirePayload(payload),
+          reservation
+            ? {
+                operationKey: reservation.operationKey,
+                fingerprint: reservation.requestFingerprint,
+              }
+            : undefined,
+        );
       default:
         throw AgentAccessException.fromDenyReason('CAPABILITY_UNKNOWN');
     }
@@ -247,6 +268,10 @@ export class AgentCapabilityGateway {
       operationKey,
       requestFingerprint: fingerprintCapabilityRequest(input, invocation.payload?.bytes),
     };
+    if (capability.key === 'tasks.attach_artifact') {
+      const replay = await this.idempotency.reserve(key, { allowInProgressResume: true });
+      return { key, replay };
+    }
     const replay = await this.idempotency.reserve(key);
     return { key, replay };
   }

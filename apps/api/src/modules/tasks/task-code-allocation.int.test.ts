@@ -2,12 +2,14 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@nbos/database';
+import { TaskCreationService } from './task-creation.service';
 import { TasksService } from './tasks.service';
 import { AutoTasksService } from '../automation/auto-tasks.service';
 
 /**
- * Concurrent Task creation driven through two independent writers of the
- * `T-{year}` code series: `TasksService` and `AutoTasksService`.
+ * Concurrent Task creation driven through two independent producers of the
+ * `T-{year}` code series: human `TasksService` and `AutoTasksService`.
+ * Both now insert through `TaskCreationService`.
  *
  * The allocator's own contention is covered by `entity-code-counter.int.test.ts`.
  * What this adds is the property that actually broke: these are separate services
@@ -48,8 +50,9 @@ describe.skipIf(!DATABASE_URL)('Task code allocation across writers (real databa
     creatorId = employee.id;
 
     const notifications = { create: () => Promise.resolve({ id: 'unused' }) };
-    tasks = new TasksService(prisma as never, notifications as never);
-    automation = new AutoTasksService(prisma as never);
+    const taskCreation = new TaskCreationService(prisma as never);
+    tasks = new TasksService(prisma as never, notifications as never, taskCreation);
+    automation = new AutoTasksService(taskCreation);
   });
 
   afterAll(async () => {

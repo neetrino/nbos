@@ -289,6 +289,10 @@ Instagram + звонок без общего телефона по-прежне�
 
 **Сознательно later:** транскрипт, DID → MarketingAccount, импорт Bitrix, popup всем.
 
+### C6. Lead / Deal codes used MAX+1 — FIXED (2026-08-23)
+
+`L-` and `D-` now allocate from `entity_code_counters` (`LEAD`, `DEAL`). Writers moved together: `LeadsService`, ATS/Meta ingest (reserve on the committed client, C26), `DealsService`, `LeadConversionService`, `SupportService.createExtensionDeal`, `DealWonHandler` maintenance Deal. Seed + write-pause rollout is in AI C25 / Chat 2 handoff. CRM ownership/stage gates unchanged.
+
 ---
 
 ## Очерёдность зачистки

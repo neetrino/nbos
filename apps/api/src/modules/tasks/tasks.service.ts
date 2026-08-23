@@ -4,13 +4,12 @@ import {
   type Prisma,
   type InputJsonValue,
   type TaskStatusEnum,
-  TaskPlanningStatusEnum,
   TaskPriorityEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { buildTaskCompletionBlockers, normalizeTaskCompletionRules } from './task-completion-rules';
-import { allocateTaskCode } from './task-code-generation';
 import type { TasksDbClient } from './tasks-db-client';
+import { TaskCreationService } from './task-creation.service';
 import { taskFindAllPaginated } from './task-find-all-paginated.op';
 import { assertTaskAccessible } from './task-access.op';
 import {
@@ -36,11 +35,7 @@ import {
 import { isTaskDraftDeletable } from '../../common/lifecycle/task-lifecycle-guards';
 import { buildScopeWhere } from '../../common/lifecycle/entity-lifecycle-scope';
 import { commitTaskUpdate } from './commit-task-update.op';
-import {
-  actorProvenanceFields,
-  type CreateTaskInput,
-  type TaskCreatedByActor,
-} from './task-create.input';
+import type { CreateTaskInput, TaskCreatedByActor } from './task-create.input';
 import {
   applyTaskStatusTransition,
   TASK_START_FROM_STATUSES,
@@ -98,6 +93,7 @@ export class TasksService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
+    private readonly taskCreation: TaskCreationService,
   ) {}
 
   /**
@@ -153,7 +149,7 @@ export class TasksService {
    * Call this before opening a longer transaction that writes the task.
    */
   async reserveCode(): Promise<string> {
-    return allocateTaskCode(this.prisma);
+    return this.taskCreation.reserveCode();
   }
 
   async create(
@@ -162,62 +158,11 @@ export class TasksService {
     tx?: TasksDbClient,
     reservedCode?: string,
   ) {
-    const db = this.db(tx);
-    const title = data.title?.trim();
-    if (!title) throw new BadRequestException('title is required');
-    const creatorId = data.creatorId?.trim();
-    if (!creatorId) throw new BadRequestException('creatorId is required');
-
-    const workspaceId = data.workspaceId?.trim() || undefined;
-    const assigneeId = data.assigneeId?.trim() || undefined;
-    const parentId = data.parentId?.trim() || undefined;
-    const priority = this.normalizeCreatePriority(data.priority);
-    const sprintAssignment = await resolveTaskSprintAssignment(db, {
-      workspaceId,
-      sprintId: data.sprintId,
-      planningStatus: data.planningStatus,
+    return this.taskCreation.create(data, {
+      actor: createdByActor,
+      tx,
+      reservedCode,
     });
-    const dueDate = this.parseOptionalIsoDate('dueDate', data.dueDate);
-    const linkRows = this.dedupeTaskLinks(data.links);
-    const actorProvenance = actorProvenanceFields(createdByActor);
-
-    const code = reservedCode ?? (await this.reserveCode());
-    const task = await db.task.create({
-      data: {
-        code,
-        title,
-        creatorId,
-        description: data.description?.trim() || undefined,
-        assigneeId,
-        coAssignees: data.coAssignees ?? [],
-        observers: data.observers ?? [],
-        priority,
-        workspaceId,
-        sprintId: sprintAssignment.sprintId,
-        planningStatus: sprintAssignment.planningStatus,
-        ...(data.completionRules !== undefined && {
-          completionRules: this.parseCompletionRules(data.completionRules),
-        }),
-        dueDate,
-        parentId,
-        isRecurring: data.isRecurring ?? false,
-        templateTaskId: data.templateTaskId?.trim() || undefined,
-        ...actorProvenance,
-        ...(linkRows?.length && {
-          links: {
-            createMany: {
-              data: linkRows.map((l) => ({
-                entityType: l.entityType,
-                entityId: l.entityId,
-              })),
-            },
-          },
-        }),
-      },
-      include: TASK_INCLUDE,
-    });
-    await attachTaskLinkDisplayNames(db, [task]);
-    return task;
   }
 
   async update(
@@ -512,55 +457,6 @@ export class TasksService {
 
   async deleteChecklist(checklistId: string) {
     return this.prisma.taskChecklist.delete({ where: { id: checklistId } });
-  }
-
-  private normalizeCreatePriority(
-    raw: string | undefined,
-  ): (typeof TaskPriorityEnum)[keyof typeof TaskPriorityEnum] {
-    const v = raw?.trim();
-    const allowed = Object.values(TaskPriorityEnum);
-    if (v && allowed.includes(v as (typeof TaskPriorityEnum)[keyof typeof TaskPriorityEnum])) {
-      return v as (typeof TaskPriorityEnum)[keyof typeof TaskPriorityEnum];
-    }
-    return TaskPriorityEnum.NORMAL;
-  }
-
-  private normalizeCreatePlanningStatus(
-    raw: string | undefined,
-  ): Prisma.TaskCreateInput['planningStatus'] | undefined {
-    if (raw === undefined || raw === null || !String(raw).trim()) return undefined;
-    const v = String(raw).trim();
-    const allowed = Object.values(TaskPlanningStatusEnum);
-    if (
-      !allowed.includes(v as (typeof TaskPlanningStatusEnum)[keyof typeof TaskPlanningStatusEnum])
-    ) {
-      throw new BadRequestException(`Invalid planningStatus: ${v}`);
-    }
-    return v as Prisma.TaskCreateInput['planningStatus'];
-  }
-
-  private parseOptionalIsoDate(field: 'dueDate', value: string | undefined): Date | undefined {
-    if (value === undefined || value === null || !String(value).trim()) return undefined;
-    const d = new Date(String(value).trim());
-    if (Number.isNaN(d.getTime())) {
-      throw new BadRequestException(`Invalid ${field}`);
-    }
-    return d;
-  }
-
-  private dedupeTaskLinks(
-    links: CreateTaskInput['links'] | undefined,
-  ): Array<{ entityType: string; entityId: string }> | undefined {
-    if (!links?.length) return undefined;
-    const map = new Map<string, { entityType: string; entityId: string }>();
-    for (const l of links) {
-      const entityType = l.entityType?.trim();
-      const entityId = l.entityId?.trim();
-      if (!entityType || !entityId) continue;
-      map.set(`${entityType}:${entityId}`, { entityType, entityId });
-    }
-    const out = [...map.values()];
-    return out.length ? out : undefined;
   }
 
   private parseCompletionRules(input: unknown): InputJsonValue | undefined {

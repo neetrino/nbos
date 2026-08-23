@@ -77,6 +77,19 @@ describe('AgentIdempotencyService', () => {
     await expect(service.reserve(KEY)).rejects.toBeInstanceOf(AgentAccessException);
   });
 
+  it('allows evidence-based resume of IN_PROGRESS attach without a checkpoint', async () => {
+    prisma.externalAgentIdempotencyRecord.findUnique.mockResolvedValue({
+      id: 'row-1',
+      requestFingerprint: KEY.requestFingerprint,
+      status: 'IN_PROGRESS',
+      responseJson: null,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + AGENT_IDEMPOTENCY_TTL_MS),
+    });
+    await expect(service.reserve(KEY, { allowInProgressResume: true })).resolves.toBeNull();
+    expect(prisma.externalAgentIdempotencyRecord.create).not.toHaveBeenCalled();
+  });
+
   it('does not reclaim a stale IN_PROGRESS row as a new reservation', async () => {
     prisma.externalAgentIdempotencyRecord.findUnique.mockResolvedValue({
       id: 'row-1',

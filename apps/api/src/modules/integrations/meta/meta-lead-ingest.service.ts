@@ -19,6 +19,7 @@ import { MetaProfileService } from './meta-profile.service';
 import type { MetaMessagingUserProfile } from './meta-messaging-profile.types';
 import type { ParsedMetaInboundMessage } from './meta.types';
 import { resolveMetaIngestLeadId } from './meta-lead-attach.ops';
+import { allocateLeadCode } from '../../../common/utils/entity-code-series';
 
 const LEAD_SOURCE = 'MARKETING' as const;
 const LEAD_SOURCE_DETAIL = 'SMM' as const;
@@ -219,7 +220,7 @@ export class MetaLeadIngestService {
       const leadNames = buildMetaLeadNames(params.platform, params.profile);
       const lead = await tx.lead.create({
         data: {
-          code: await this.generateLeadCode(tx),
+          code: await allocateLeadCode(this.prisma),
           name: leadNames.name,
           contactName: leadNames.contactName,
           source: LEAD_SOURCE,
@@ -258,17 +259,6 @@ export class MetaLeadIngestService {
       return;
     }
     await tx.lead.update({ where: { id: leadId }, data });
-  }
-
-  private async generateLeadCode(tx: TransactionClient): Promise<string> {
-    const year = new Date().getFullYear();
-    const lastLead = await tx.lead.findFirst({
-      where: { code: { startsWith: `L-${year}-` } },
-      orderBy: { code: 'desc' },
-      select: { code: true },
-    });
-    const nextNum = lastLead ? parseInt(lastLead.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `L-${year}-${String(nextNum).padStart(4, '0')}`;
   }
 
   private async resolveConnectedAccount(

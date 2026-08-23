@@ -13,6 +13,7 @@ import { ORDER_LIST_INCLUDE, type OrderListRow } from './orders-list-include';
 import { queryOrderIdsPageForReconciliationGap } from './orders-reconciliation-gap-query';
 import { queryOrderStatsForReconciliationGap } from './orders-reconciliation-gap-stats-query';
 import { buildOrderSearchOr } from './order-search.where';
+import { allocateOrderCode } from '../../../common/utils/entity-code-series';
 import {
   assertOrderClosable,
   assertOrderDraftDeletable,
@@ -218,7 +219,7 @@ export class OrdersService {
       throw new BadRequestException('Order totalAmount must be greater than zero');
     }
 
-    const code = await this.generateCode();
+    const code = await allocateOrderCode(this.prisma);
     const created = await this.prisma.order.create({
       data: {
         code,
@@ -359,15 +360,5 @@ export class OrdersService {
       ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
       ...(dateTo ? { lte: new Date(dateTo) } : {}),
     };
-  }
-
-  private async generateCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const last = await this.prisma.order.findFirst({
-      where: { code: { startsWith: `ORD-${year}-` } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `ORD-${year}-${String(nextNum).padStart(4, '0')}`;
   }
 }

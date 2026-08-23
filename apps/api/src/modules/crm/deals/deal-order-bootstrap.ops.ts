@@ -10,6 +10,7 @@ import type {
   TaxStatus,
 } from '@nbos/database';
 import { deriveSubscriptionContractTotal } from './deal-subscription-contract-total';
+import { allocateOrderCode, allocateProjectCode } from '../../../common/utils/entity-code-series';
 
 interface DealOrderBootstrapInput {
   id: string;
@@ -43,7 +44,7 @@ export async function ensureProjectForDeal(
     throw new BadRequestException('Deal must have a contact before a project can be created');
   }
 
-  const projectCode = await generateProjectCode(prisma);
+  const projectCode = await allocateProjectCode(prisma);
   const project = await prisma.project.create({
     data: {
       code: projectCode,
@@ -67,7 +68,7 @@ export async function createOrderForDeal(
 ): Promise<{ id: string; code: string; projectId: string }> {
   const projectId = await ensureProjectForDeal(prisma, input.deal);
   const orderType = mapDealTypeToOrderType(input.deal.type);
-  const code = await generateOrderCode(prisma);
+  const code = await allocateOrderCode(prisma);
 
   const order = await prisma.order.create({
     data: {
@@ -117,26 +118,4 @@ export function resolveDealOrderTotalAmount(
     return deriveSubscriptionContractTotal(periodAmount, deal.subscriptionTermMonths);
   }
   return periodAmount;
-}
-
-async function generateProjectCode(prisma: InstanceType<typeof PrismaClient>): Promise<string> {
-  const year = new Date().getFullYear();
-  const prefix = `P-${year}-`;
-  const last = await prisma.project.findFirst({
-    where: { code: { startsWith: prefix } },
-    orderBy: { code: 'desc' },
-  });
-  const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-  return `${prefix}${String(nextNum).padStart(4, '0')}`;
-}
-
-async function generateOrderCode(prisma: InstanceType<typeof PrismaClient>): Promise<string> {
-  const year = new Date().getFullYear();
-  const prefix = `ORD-${year}-`;
-  const last = await prisma.order.findFirst({
-    where: { code: { startsWith: prefix } },
-    orderBy: { code: 'desc' },
-  });
-  const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-  return `${prefix}${String(nextNum).padStart(4, '0')}`;
 }

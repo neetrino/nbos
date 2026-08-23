@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TasksService } from './tasks.service';
+import { TaskCreationService } from './task-creation.service';
 import { TASK_INCLUDE } from './task-response-includes';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
@@ -11,7 +12,11 @@ describe('TasksService', () => {
   beforeEach(() => {
     prisma = createMockPrisma();
     const notifications = { create: vi.fn().mockResolvedValue({ id: 'n1' }) };
-    service = new TasksService(prisma as never, notifications as never);
+    service = new TasksService(
+      prisma as never,
+      notifications as never,
+      new TaskCreationService(prisma as never),
+    );
   });
 
   describe('findAll', () => {

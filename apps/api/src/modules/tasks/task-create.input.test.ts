@@ -14,6 +14,20 @@ describe('createTaskInputFromHttpBody', () => {
     expect(input.creatorId).toBe('emp-1');
     expect(input).not.toHaveProperty('createdByActorType');
     expect(input).not.toHaveProperty('createdByActorId');
+    expect(input).not.toHaveProperty('productId');
+    expect(input).not.toHaveProperty('extensionId');
+  });
+
+  it('does not copy delivery FKs from a client body', () => {
+    const body = {
+      title: 'Fix',
+      creatorId: 'emp-1',
+      productId: 'forged-product',
+      extensionId: 'forged-extension',
+    };
+    const input = createTaskInputFromHttpBody(body as never);
+    expect(input).not.toHaveProperty('productId');
+    expect(input).not.toHaveProperty('extensionId');
   });
 });
 

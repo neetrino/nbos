@@ -21,6 +21,11 @@ export interface IdempotencyReserveInput {
   requestFingerprint: string;
 }
 
+export interface IdempotencyReserveOptions {
+  /** Evidence-based resume: same fingerprint, no checkpoint, Drive owns recovery. */
+  allowInProgressResume?: boolean;
+}
+
 interface IdempotencyRow {
   id: string;
   requestFingerprint: string;
@@ -38,10 +43,13 @@ interface IdempotencyRow {
 export class AgentIdempotencyService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async reserve(input: IdempotencyReserveInput): Promise<AgentCapabilityResult | null> {
+  async reserve(
+    input: IdempotencyReserveInput,
+    options: IdempotencyReserveOptions = {},
+  ): Promise<AgentCapabilityResult | null> {
     const existing = await this.loadLive(input);
     if (existing) {
-      return this.replayOrRecover(existing, input);
+      return this.replayOrRecover(existing, input, options);
     }
     if ((await this.tryInsert(input)) === 'created') {
       return null;
@@ -50,7 +58,7 @@ export class AgentIdempotencyService {
     if (!raced) {
       throw AgentAccessException.conflict('Idempotency reservation failed');
     }
-    return this.replayOrRecover(raced, input);
+    return this.replayOrRecover(raced, input, options);
   }
 
   async abort(input: IdempotencyReserveInput | null): Promise<void> {
@@ -166,6 +174,7 @@ export class AgentIdempotencyService {
   private async replayOrRecover(
     row: IdempotencyRow,
     input: IdempotencyReserveInput,
+    options: IdempotencyReserveOptions = {},
   ): Promise<AgentCapabilityResult | null> {
     if (row.requestFingerprint !== input.requestFingerprint) {
       throw AgentAccessException.idempotencyConflict();
@@ -174,6 +183,7 @@ export class AgentIdempotencyService {
       return row.responseJson as AgentCapabilityResult;
     }
     if (!row.responseJson) {
+      if (options.allowInProgressResume) return null;
       throw AgentAccessException.idempotencyInProgress();
     }
     const result = row.responseJson as AgentCapabilityResult;

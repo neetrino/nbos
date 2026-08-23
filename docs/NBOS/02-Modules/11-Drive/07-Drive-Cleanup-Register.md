@@ -80,7 +80,8 @@
 | `FolderPlacement` model     | `DONE`    | `DriveFolderItem` for file/folder placement (Company/Personal + scoped trees) |
 | `FileAssetGrant` model      | `DONE`    | Per-employee grants on `FileAsset`                                            |
 | `DriveZipExportJob` model   | `PARTIAL` | Selection ZIP + manifest; not full export catalog from doc 06 §5              |
-| `FileUploadSession` model   | `DONE`    | Presign → complete → `FileAsset`                                              |
+| `FileUploadSession` model   | `DONE`    | Presign → complete → `FileAsset`; compatibility row for Human ingress         |
+| `FileArtifactOperation`     | `DONE`    | 2026-08-23 durable Human / Internal AI / External AI / SYSTEM lifecycle       |
 | `FileAuditEvent` model      | `PARTIAL` | File-specific creation/archive audit events exist                             |
 | `ExportJob` model           | `MISSING` | ZIP/backup/export lifecycle                                                   |
 | `CleanupCandidate` model    | `MISSING` | Cleanup review queue                                                          |

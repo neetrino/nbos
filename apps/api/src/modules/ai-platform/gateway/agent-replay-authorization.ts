@@ -35,7 +35,12 @@ export class AgentReplayAuthorization {
   ): Promise<void> {
     const taskId = readOptionalString(input, 'taskId');
     if (taskId) {
-      await this.access.requireAuthorizedTask(agent, capability.key, taskId);
+      await this.access.requireAuthorizedTask(
+        agent,
+        capability.key,
+        taskId,
+        replayTargetClassification(capability),
+      );
       return;
     }
     await this.assertWorkspaceStillAuthorized(agent, capability.key, input);
@@ -59,4 +64,16 @@ export class AgentReplayAuthorization {
       throw AgentAccessException.resourceNotAvailable();
     }
   }
+}
+
+/**
+ * Replay must supply the same target class the live write used. Attach always
+ * writes INTERNAL artifacts; omitting the class denies
+ * `DATA_CLASSIFICATION_UNKNOWN` even when the grant is still valid.
+ */
+function replayTargetClassification(
+  capability: AiCapabilityDefinition,
+): AiCapabilityDefinition['maxDataClassification'] | undefined {
+  if (!capability.requiresTargetDataClassification) return undefined;
+  return capability.maxDataClassification;
 }

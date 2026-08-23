@@ -1,5 +1,6 @@
 /**
- * HTTP/create payload. Actor provenance is never accepted from the client body.
+ * HTTP/create payload. Actor provenance and delivery FKs are never accepted
+ * from the client body — trusted producers pass them on the internal input.
  */
 export interface CreateTaskInput {
   title: string;
@@ -18,6 +19,10 @@ export interface CreateTaskInput {
   links?: Array<{ entityType: string; entityId: string }>;
   isRecurring?: boolean;
   templateTaskId?: string;
+  /** Trusted Automation/product producers only. HTTP mapper drops this. */
+  productId?: string;
+  /** Trusted delivery producers only. HTTP mapper drops this. */
+  extensionId?: string;
 }
 
 /** Trusted actor recorded on create. Only the gateway (or tests) may pass this. */
@@ -36,7 +41,7 @@ export function actorProvenanceFields(actor: TaskCreatedByActor | undefined): {
   return { createdByActorType: actorType, createdByActorId: actorId };
 }
 
-/** Copies known create fields and drops forged actor provenance keys. */
+/** Copies known create fields and drops forged actor/delivery-FK keys. */
 export function createTaskInputFromHttpBody(body: CreateTaskInput): CreateTaskInput {
   return {
     title: body.title,
