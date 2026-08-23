@@ -142,7 +142,7 @@ Chat 8 promoted it to a first-class sidebar module at `/ai-agents` (`SIDEBAR_MOD
 
 ### C22. Phase 1 exit criterion 9 — RESOLVED
 
-`27-Phase-1-Continuation-After-Chat-8.md` decided AD–AI stay in the current Phase 1 (Chats 9–12). Chat 9 closed AD/AE (C15, C16). Chat 10 closed AF/AG (C17, C18). Chat 11 closed AH/AI (C19 / C7) and the actionable Chat 8 product-code debts listed in `30-Phase-1-Chat-11-Handoff.md`. Chat 12 walked AD–AI first-hand against the live admin surface and found exit criterion 9 **met**, so the business decision recorded here is resolved. Chat 12 did not declare Phase 1 complete for an unrelated reason — see C23.
+`27-Phase-1-Continuation-After-Chat-8.md` decided AD–AI stay in the current Phase 1 (Chats 9–12). Chat 9 closed AD/AE (C15, C16). Chat 10 closed AF/AG (C17, C18). Chat 11 closed AH/AI (C19 / C7) and the actionable Chat 8 product-code debts listed in `30-Phase-1-Chat-11-Handoff.md`. The 2026-08-23 final closure gate walked AD–AI first-hand and recorded **PHASE 1 CLOSEABLE**. Exit criterion 9 is met. Phase 1 is officially complete. Post-Phase-1 debts are `32-Post-Phase-1-Technical-Debt-Plan.md`, not a continuation of this phase.
 
 ### C23. Concurrent Task creation returned HTTP 500 — FIXED
 
@@ -180,7 +180,7 @@ Evidence: `agent-write-atomicity.int.test.ts` (opt-in, real database) fails the 
 
 The counter reservation must stay outside this transaction (C26). Putting `allocateTaskCode` on the interactive client reintroduced a 500 on concurrent `tasks.create` after the two remediations landed together.
 
-**Still PARTIAL for `tasks.attach_artifact`.** Its domain change includes an object-store write, which cannot join a database transaction, so it keeps the sequential path and the narrow window remains there. Closing it needs an outbox or a domain operation record and is Phase 2 work. Checklist item 209 is `[x]` for the Tasks capabilities and `[~]` for Drive.
+**Still PARTIAL for `tasks.attach_artifact` — accepted post-Phase-1 debt.** Its domain change includes an object-store write, which cannot join a database transaction, so it keeps the sequential path and the narrow window remains there. The window is fail-closed: no second artifact or Task link is written. Closing it needs an outbox or a domain operation record (Workstream 1 in `32-Post-Phase-1-Technical-Debt-Plan.md`). The overall checklist item 209 stays `[~]` and must not be marked `[x]`. `27-Phase-1-Continuation-After-Chat-8.md` officially accepts this residual so Phase 1 can close without pretending the Drive path is atomic.
 
 ### C26. Shared K209 transaction holds the Task-code counter lock — FIXED
 
@@ -195,9 +195,9 @@ PostgreSQL serializes those upserts on the single row. Six concurrent `POST /api
 
 The `$transaction` timeout was not raised. A failed create may skip a number; that is the existing reserve-not-reissue contract.
 
-Evidence: `agent-capability.gateway.test.ts` asserts prepare → reserve → `BEGIN`. `agent-create-concurrency.int.test.ts` drives six concurrent `invoke('tasks.create')` on a real database. Live REST after a fresh SWC `dist` on `:4000`: six parallel `POST /api/v1/agent/workspaces/{id}/tasks` returned `201 × 6`, codes `T-2026-0697`–`T-2026-0702`, 3882 ms, no 500, no `P2002`.
+Evidence: `agent-capability.gateway.test.ts` asserts prepare → reserve → `BEGIN`. `agent-create-concurrency.int.test.ts` drives six concurrent `invoke('tasks.create')` on a real database. Live REST after the committed fix `5ed6c5ea`, fresh SWC `dist` on `:4110`: six parallel `POST /api/v1/agent/workspaces/{id}/tasks` returned `201 × 6`, codes `T-2026-0823`–`T-2026-0828`, no 500, no `P2002`.
 
-**Still open after this close:** item 209 / `tasks.attach_artifact` remains `[~]` (C24).
+**Not reopened by Phase 1 close:** item 209 / `tasks.attach_artifact` remains `[~]` (C24) as accepted post-Phase-1 Workstream 1.
 
 ## D. Tasks alignment issues to verify before implementation
 
@@ -284,6 +284,10 @@ Canonical Phase 1 sources (`03`, `08`, `09`, `10` item 43, `16`) require both RE
 ## F11. Chat 11 evidence
 
 2026-08-22: Usage/cost/evaluation foundation (`AiExecution`, budgets, evaluation suite/run, `AiModel.evaluationStatus`), Redis-backed rate-limit store, idempotency checkpoint/recovery, catalog output projection + MCP `outputSchema`, Model Policy candidate editor, usage admin UI. Independent Chat N11 first pass **FAIL** (K 205 dropped live `{ items, meta }`); remediation restored the `09` envelope. Re-verification: **PASS WITH DEBTS** (5/56 FAIL-set, 110/2 files and 843/4 on ai-platform + shared/ai). Migration `20260822220000_ai_usage_evaluation_foundation` written, not applied. See `30-Phase-1-Chat-11-Handoff.md` § Re-verification.
+
+## F12. Final closure gate
+
+2026-08-23: independent final A–AQ re-walk on committed product HEAD `5ed6c5ea`. C26 live `201 × 6` unique Task codes. AO REST+MCP, AD–AI, full suite 874/4432, regression 22/284, lint 0 errors, typecheck, build, Prisma validate/status all green on non-production Neon. Verdict **PHASE 1 CLOSEABLE**. Item 209 stays `[~]`. See `31-Phase-1-Final-Acceptance.md` § Final closure gate. Post-Phase-1 workstreams: `32-Post-Phase-1-Technical-Debt-Plan.md`.
 
 ## G. Implementation rule
 

@@ -274,7 +274,15 @@ The agent id is not an input: `AgentPolicyQuery` derives it from `actor`, so a c
 209. [~] Preserve transaction boundaries.
 210. [x] Add gateway integration tests.
 
-Runtime: `apps/api/src/modules/ai-platform/gateway/agent-capability.gateway.ts`. Items 197–198 are closed by Chat 4: the REST controllers and the MCP server hold no Prisma client and no Tasks/Drive dependency — their only collaborator is `AgentProtocolInvoker`, which calls `AgentCapabilityGateway.invoke`. Item 203 is closed by Chat 4: `AgentAuthGuard` resolves or mints the correlation id before authentication, so every invocation carries one. Item 204 validates catalog field names plus enum/date/sort at the gateway (`agent-capability.validators.ts`). Item 205: `projectCapabilityOutput` strips undeclared fields at the gateway; list envelopes keep `items` / `meta` (the live `{ items, meta }` handler shape that `toAgentResponseBody` turns into `09` `{ data, meta }`). A top-level `page` key is not the list envelope. Item 207 audits after domain commit even if idempotency `complete()` fails. Item 209 remains `[~]`: domain commit and idempotency `complete()` are not one transaction. Chat 11 checkpoints `responseJson` while the row is still `IN_PROGRESS`, so a crash after checkpoint replays instead of conflicting; a crash after Tasks/Drive commit and before checkpoint still leaves unreclaimable `IN_PROGRESS` without a second domain write. List `workspaces.read` denials (except the empty authorized set) go through `assertAllowed`. Evidence: `19-Phase-1-Chat-3-Handoff.md`, `30-Phase-1-Chat-11-Handoff.md`.
+Runtime: `apps/api/src/modules/ai-platform/gateway/agent-capability.gateway.ts`. Items 197–198 are closed by Chat 4: the REST controllers and the MCP server hold no Prisma client and no Tasks/Drive dependency — their only collaborator is `AgentProtocolInvoker`, which calls `AgentCapabilityGateway.invoke`. Item 203 is closed by Chat 4: `AgentAuthGuard` resolves or mints the correlation id before authentication, so every invocation carries one. Item 204 validates catalog field names plus enum/date/sort at the gateway (`agent-capability.validators.ts`). Item 205: `projectCapabilityOutput` strips undeclared fields at the gateway; list envelopes keep `items` / `meta` (the live `{ items, meta }` handler shape that `toAgentResponseBody` turns into `09` `{ data, meta }`). A top-level `page` key is not the list envelope. Item 207 audits after domain commit even if idempotency `complete()` fails. Item 209 remains `[~]`
+and must not be marked `[x]`. Chat 12 commits the five DB-only Task writes and their idempotency
+checkpoint in one transaction. The residual is `tasks.attach_artifact` only: its object-store write
+cannot join a database transaction, so a crash between object/domain commit and checkpoint can
+permanently consume one operation key. That window is fail-closed (no second artifact or link).
+`27-Phase-1-Continuation-After-Chat-8.md` officially accepts this as deferred post-Phase-1
+Workstream 1. List `workspaces.read` denials (except the empty authorized set) go through
+`assertAllowed`. Evidence: `19-Phase-1-Chat-3-Handoff.md`, `30-Phase-1-Chat-11-Handoff.md`,
+`31-Phase-1-Final-Acceptance.md`.
 
 # L. Work Space discovery and isolation
 

@@ -15,33 +15,27 @@ it found, on the developer's explicit decision. Nothing else in the repository w
 
 ## Verdict
 
-**PASS WITH OPERATIONAL CONDITIONS — superseded by the independent verification below, which
-returned FAIL.** The sections between here and `## Independent verification` are this chat's original
-report, left unedited so the two readings can be compared. See `## Response to independent
-verification` at the end for what has since been fixed and what still stands.
+**PHASE 1 CLOSEABLE — official final verdict.** Independent final closure gate on 2026-08-23,
+product baseline `5ed6c5ea3fcbb40f5ae82f0236dafdd8d7c9afe0`, branch `sipan`. Docs-only follow-up
+`14835a43` (`32-Post-Phase-1-Technical-Debt-Plan.md`) does not change product code.
 
-Verification initially returned FAIL: this chat found a blocking product-code defect that no earlier
-milestone had seen — concurrent `tasks.create` through the External Agent gateway returned HTTP 500.
-On the developer's decision it was fixed in this chat and re-verified live, so the blocker is closed.
-The record of the defect is kept below rather than rewritten out, because a final acceptance report
-that hides how close the phase came to failing is not an honest one.
+All 11 exit criteria pass. No new blocking product defect. The only consciously deferred
+product-code partial is checklist item 209 / `tasks.attach_artifact` (C24): fail-closed, no
+duplicate write, officially accepted as post-Phase-1 Workstream 1 in
+`27-Phase-1-Continuation-After-Chat-8.md` and `32-Post-Phase-1-Technical-Debt-Plan.md`. Item 209
+stays `[~]` and must not be marked `[x]`. C26 concurrent `tasks.create` holds live
+(`201 × 6` unique codes). Remaining `[~]` items are environment-only or separate non-AI module
+debts (C25, Tasks C9 ownership).
 
-Standing after the fix:
+Phase 1 is officially complete. Do not start new AI product functionality until the three
+post-Phase-1 technical-debt workstreams in `32-Post-Phase-1-Technical-Debt-Plan.md` are decided
+and executed separately.
 
-- **718 checklist items across A–AQ verify.** The full suite, lint, typecheck, build, Prisma validate
-  and migrate status are all green. AO passes 29/29 live over REST **and** MCP. AD–AI were re-walked
-  first-hand, not inherited. Context and customer isolation were re-proven against adversarial inputs
-  written in this chat rather than the repository's own fixtures.
-- **All 11 exit criteria are met**, including criterion 9, which is what Chat 8 could not close.
-- **One condition is not environment-bound: checklist item 209.** The developer accepted it as a
-  documented fail-closed limitation carried into Phase 2 rather than closing it by weakening the
-  idempotency guarantee. It stays `[~]` and must not be marked `[x]` until the shared-transaction or
-  outbox work lands. This is a deliberate, recorded decision, not an oversight.
-- Every other remaining `[~]` is genuinely environment-bound — see
-  [Legitimate operational conditions](#legitimate-operational-conditions).
-
-Phase 1 may be declared complete on the strength of this report, provided the item 209 decision is
-read as part of it.
+The sections below this verdict are historical Chat 12 investigation (original PASS WITH
+OPERATIONAL CONDITIONS, later independent FAIL, C23–C26 remediations). They are left unedited so
+the path to this close remains auditable. They do **not** override this verdict. See
+[Final closure gate](#final-closure-gate) for the commands and live evidence that closed the
+gate.
 
 ## Method
 
@@ -863,3 +857,58 @@ unchanged `[~]`. The top-level FAIL above is not revised here — that needs a f
 - **Not “всё”.** Item 209 / `tasks.attach_artifact` is still `[~]`. The top-level Phase 1 verdict
   stays **FAIL** until a full A–AQ re-run on a committed tree. C25, C9 ownership, and the
   environment `[~]` items are unchanged.
+
+## Final closure gate
+
+- **Model/date:** Cursor Grok 4.6, 2026-08-23.
+- **Role:** independent final closure gate, not an implementation chat.
+- **Product HEAD verified:** `5ed6c5ea3fcbb40f5ae82f0236dafdd8d7c9afe0` on `sipan`.
+- **Docs-only overlay present at close:** `14835a43` added
+  `32-Post-Phase-1-Technical-Debt-Plan.md` and did not change product code.
+- **Verdict:** **PHASE 1 CLOSEABLE.** This is the official final verdict. Earlier FAIL / PASS
+  WITH OPERATIONAL CONDITIONS sections above remain historical.
+
+### Commands and actual results
+
+| Check                                                     | Result                                                                       |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `git rev-parse HEAD` at verification                      | `5ed6c5ea3fcbb40f5ae82f0236dafdd8d7c9afe0`                                   |
+| `prisma validate`                                         | schemas valid                                                                |
+| `prisma migrate status`                                   | 217 migrations; schema up to date on non-production `ep-restless-tooth`      |
+| targeted C26 / K209 / AD–AI / parity / isolation          | 14 files / 158 tests passed (opt-in real DB)                                 |
+| `pnpm test` with `AI_PLATFORM_DB_TEST_URL=DIRECT_URL`     | **874 files / 4432 tests passed**                                            |
+| `pnpm test:regression`                                    | **22 files / 284 tests passed**                                              |
+| `pnpm lint`                                               | 0 errors, 12 pre-existing warnings (11 web, 1 API)                           |
+| `NODE_OPTIONS='--max-old-space-size=8192' pnpm typecheck` | 5/5 tasks, exit 0                                                            |
+| `pnpm build`                                              | API SWC 1866 files; web build complete; exit 0                               |
+| Live API                                                  | fresh `dist` on `:4110` after the C26 commit; Redis-backed agent rate limits |
+
+`prisma migrate dev` was not used. Production was not contacted. No Anthropic credential was
+invented.
+
+### Live AO / C26 / AD–AI
+
+- AO REST **and** MCP: authorized workspace-only discovery; foreign task
+  `AGENT_RESOURCE_NOT_AVAILABLE`; create without grant `403`; create `201 T-2026-0822`;
+  duplicate create same id; allowlisted update; forbidden `status` `400`; no delete route or
+  MCP tool (14 tools); start `IN_PROGRESS`; comment provenance `EXTERNAL_AGENT`; submit-review
+  `REVIEW` (not `COMPLETED`); revoke `401` REST+MCP; disable `403 AGENT_DISABLED`.
+- C26 live burst: six concurrent REST creates → **`201 × 6`**, codes `T-2026-0823`–
+  `T-2026-0828`, all unique, no 500, no `P2002`.
+- Attach first-path REST+MCP `201`, list `n=1`. Same-key attach retry is fail-closed (no second
+  file). Item 209 stays `[~]`.
+- AD–AI live: prompt DRAFT → PUBLISHED; rollback clones a new id with the same `contentDigest`;
+  machine/unauthenticated approve `401`; `MODEL_BASED` score `0.99` leaves the model
+  `DISCOVERED` and `evaluationStatus=NOT_EVALUATED`.
+
+### Accepted residual
+
+Checklist item 209 / C24 / `tasks.attach_artifact` is the only deferred **product-code**
+partial. It is fail-closed (no duplicate artifact/link). Other Task mutations commit the domain
+write and the idempotency checkpoint in one transaction. Officially accepted as post-Phase-1
+Workstream 1. Do not mark 209 `[x]`.
+
+C25 sibling code series and Tasks C9 ownership (Support/Automation still write `Task` directly)
+are separate non-AI module debts. Environment `[~]`: Anthropic live, live cross-provider
+fallback, production `rediss://`, production audit-migration window, queued revalidation (AL 626)
+while Phase 1 has no queued execution.
