@@ -62,8 +62,71 @@ describe('DriveTaskArtifactService', () => {
       }),
     );
     expect(artifacts.executeMachineUpload).toHaveBeenCalled();
+    expect(artifacts.fingerprintBytes).toHaveBeenCalledWith(bytes);
+    expect(artifacts.prepare).toHaveBeenCalledWith(
+      expect.objectContaining({ checksum: 'fp', payloadFingerprint: 'fp' }),
+    );
     expect(prisma.fileAsset.create).not.toHaveBeenCalled();
     expect(prisma.fileLink.create).not.toHaveBeenCalled();
+  });
+
+  it('stores a content SHA-256 checksum, not the gateway request fingerprint', async () => {
+    artifacts.fingerprintBytes.mockReturnValue('content-sha-256');
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    await service.createAndLinkTaskArtifact({
+      taskId: 'task-1',
+      fileName: 'notes.md',
+      mimeType: 'text/markdown',
+      sizeBytes: bytes.byteLength,
+      content: bytes,
+      payloadFingerprint: 'gateway-request-fp',
+    });
+    expect(artifacts.prepare).toHaveBeenCalledWith(
+      expect.objectContaining({
+        checksum: 'content-sha-256',
+        payloadFingerprint: 'gateway-request-fp',
+      }),
+    );
+    expect(artifacts.fingerprintBytes).toHaveBeenCalledWith(bytes);
+    const prepared = artifacts.prepare.mock.calls[0]?.[0] as {
+      checksum: string;
+      payloadFingerprint: string;
+    };
+    expect(prepared.checksum).not.toBe(prepared.payloadFingerprint);
+  });
+
+  it('keeps the same content checksum when filename and request fingerprint differ', async () => {
+    artifacts.fingerprintBytes.mockReturnValue('content-sha-256');
+    const bytes = new Uint8Array([9, 8, 7, 6]);
+    await service.createAndLinkTaskArtifact({
+      taskId: 'task-1',
+      fileName: 'alpha.md',
+      mimeType: 'text/markdown',
+      sizeBytes: bytes.byteLength,
+      content: bytes,
+      payloadFingerprint: 'request-fp-alpha',
+    });
+    await service.createAndLinkTaskArtifact({
+      taskId: 'task-1',
+      fileName: 'beta.md',
+      mimeType: 'text/plain',
+      sizeBytes: bytes.byteLength,
+      content: bytes,
+      payloadFingerprint: 'request-fp-beta',
+    });
+    const first = artifacts.prepare.mock.calls[0]?.[0] as {
+      checksum: string;
+      payloadFingerprint: string;
+    };
+    const second = artifacts.prepare.mock.calls[1]?.[0] as {
+      checksum: string;
+      payloadFingerprint: string;
+    };
+    expect(first.checksum).toBe('content-sha-256');
+    expect(second.checksum).toBe('content-sha-256');
+    expect(first.payloadFingerprint).toBe('request-fp-alpha');
+    expect(second.payloadFingerprint).toBe('request-fp-beta');
+    expect(first.payloadFingerprint).not.toBe(second.payloadFingerprint);
   });
 
   it('rejects executable file types using Drive upload policy', async () => {

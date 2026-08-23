@@ -86,6 +86,7 @@ describe('DriveService artifact ingress', () => {
         storageKey: `nbos/tenants/${TENANT_ID}/files/tasks/task-1/notes.md`,
         entityType: 'TASK',
         entityId: 'task-1',
+        checksum: 'fp-body',
         payloadFingerprint: 'fp-body',
       }),
     );

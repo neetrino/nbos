@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { fingerprintCapabilityRequest, requireIdempotencyKey } from './agent-idempotency.rules';
 import { AgentAccessException } from '../auth/agent-auth.errors';
@@ -24,5 +25,33 @@ describe('idempotency rules', () => {
     const one = fingerprintCapabilityRequest(input, new Uint8Array([1]));
     const two = fingerprintCapabilityRequest(input, new Uint8Array([2]));
     expect(one).not.toBe(two);
+  });
+
+  it('changes fingerprint when filename or MIME differ even if bytes are equal', () => {
+    const bytes = new Uint8Array([1, 2, 3]);
+    const one = fingerprintCapabilityRequest(
+      { taskId: 't1', fileName: 'a.zip', mimeType: 'application/zip', sizeBytes: 3 },
+      bytes,
+    );
+    const two = fingerprintCapabilityRequest(
+      { taskId: 't1', fileName: 'b.zip', mimeType: 'application/zip', sizeBytes: 3 },
+      bytes,
+    );
+    const three = fingerprintCapabilityRequest(
+      { taskId: 't1', fileName: 'a.zip', mimeType: 'application/octet-stream', sizeBytes: 3 },
+      bytes,
+    );
+    expect(one).not.toBe(two);
+    expect(one).not.toBe(three);
+  });
+
+  it('is not a content-only SHA-256 of the uploaded bytes', () => {
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    const requestFingerprint = fingerprintCapabilityRequest(
+      { taskId: 't1', fileName: 'a.zip', mimeType: 'application/zip', sizeBytes: 4 },
+      bytes,
+    );
+    const contentChecksum = createHash('sha256').update(Buffer.from(bytes)).digest('hex');
+    expect(requestFingerprint).not.toBe(contentChecksum);
   });
 });

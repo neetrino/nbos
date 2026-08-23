@@ -30,13 +30,14 @@ function attachInvocation(
   taskId: string,
   bytes: Uint8Array,
   operationKey = 'op-attach',
+  fileName = 'a.png',
 ): AgentCapabilityInvocation {
   return {
     agent: agent(),
     capabilityKey: 'tasks.attach_artifact',
     input: {
       taskId,
-      fileName: 'a.png',
+      fileName,
       mimeType: 'image/png',
       sizeBytes: bytes.byteLength,
     },
@@ -111,6 +112,21 @@ describe('AgentCapabilityGateway attach recovery (F1)', () => {
       code: 'AGENT_IDEMPOTENCY_CONFLICT',
     });
     expect(drive.attachArtifact).not.toHaveBeenCalled();
+  });
+
+  it('conflicts when the same key is reused with a different filename', async () => {
+    await expect(
+      gateway.invoke(attachInvocation('task-1', originalBytes, 'op-attach', 'b.png')),
+    ).rejects.toMatchObject({ code: 'AGENT_IDEMPOTENCY_CONFLICT' });
+    expect(drive.attachArtifact).not.toHaveBeenCalled();
+  });
+
+  it('returns the same FileAsset and link ids on an exact retry', async () => {
+    const first = await gateway.invoke(attachInvocation('task-1', originalBytes));
+    const second = await gateway.invoke(attachInvocation('task-1', originalBytes));
+    expect(first.data).toEqual({ fileAssetId: 'file-1', linkId: 'link-1' });
+    expect(second.data).toEqual(first.data);
+    expect(drive.attachArtifact).toHaveBeenCalledTimes(2);
   });
 
   it('denies exact resume when the original task grant is revoked', async () => {

@@ -96,7 +96,8 @@ export class DriveTaskArtifactService {
     const prepared = validateAgentArtifactInput(input);
     const source = input.source ?? 'EXTERNAL_AI';
     const actorId = input.actorId ?? input.agentId ?? 'external-agent';
-    const fingerprint = input.payloadFingerprint ?? this.artifacts.fingerprintBytes(input.content);
+    const contentChecksum = this.artifacts.fingerprintBytes(input.content);
+    const payloadFingerprint = input.payloadFingerprint ?? contentChecksum;
     const operation = await this.artifacts.prepare({
       source,
       ingress: 'MACHINE_PUT',
@@ -113,8 +114,8 @@ export class DriveTaskArtifactService {
       visibility: 'INTERNAL',
       linkType: 'TASK_ATTACHMENT',
       expectedSizeBytes: prepared.sizeBytes,
-      checksum: fingerprint,
-      payloadFingerprint: fingerprint,
+      checksum: contentChecksum,
+      payloadFingerprint,
       actorType: input.actorType ?? source,
       actorId,
       agentId: input.agentId ?? undefined,
