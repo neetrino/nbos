@@ -5,4 +5,4 @@
 Дальше:
 
 - [ ] [ai-modul-steps.md](http://ai-modul-steps.md)
-- [ ] После того как новый вход (Auth Session V2) полностью заменит старый JWT и все зайдут по-новому — удалить legacy-логин (v1) и denylist. Сейчас не трогать: иначе никто не войдёт. Джоба 14 включать только вместе с V2.
+- [ ] ATS full coling sisitem and integration

@@ -82,14 +82,14 @@
 
 ## 5. Аутентификация
 
-| #   | Параметр              | Решение                          | Статус | Примечание                                         |
-| --- | --------------------- | -------------------------------- | ------ | -------------------------------------------------- |
-| 5.1 | Решение               | NextAuth.js v5 + собственный JWT | ✅     | Credentials provider, сессии через JWT             |
-| 5.2 | Провайдеры            | Email + Password (собственный)   | ✅     | argon2id хеширование, только по инвайту            |
-| 5.3 | Сессии                | NextAuth JWT (7d) + backend JWT  | ✅     | AUTH_SECRET (сессии) + JWT_SECRET (API-токен)      |
-| 5.4 | RBAC                  | Кастомный в NestJS               | ✅     | 12 ролей, 3 уровня                                 |
-| 5.5 | Регистрация           | Только по инвайту (токен)        | ✅     | POST /api/v1/auth/accept-invite                    |
-| 5.6 | Восстановление пароля | Email reset token (60 мин)       | ✅     | POST /api/v1/auth/forgot-password + reset-password |
+| #   | Параметр              | Решение                              | Статус | Примечание                                                                                                             |
+| --- | --------------------- | ------------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------- |
+| 5.1 | Решение               | NextAuth.js v5 + Auth Session V2     | ✅     | Web BFF + короткий access JWT. Канон: `docs/NBOS/01-Platform-Overview/06-Authentication-and-Sessions.md`               |
+| 5.2 | Провайдеры            | Email + Password (собственный)       | ✅     | argon2id хеширование, только по инвайту                                                                                |
+| 5.3 | Сессии                | AuthSession + короткий JWT + refresh | ✅     | V2 only: 10m access JWT + rotating refresh. Legacy 7d JWT is not issued or accepted. Native refresh in JSON → Keychain |
+| 5.4 | RBAC                  | Кастомный в NestJS                   | ✅     | 12 ролей, 3 уровня                                                                                                     |
+| 5.5 | Регистрация           | Только по инвайту (токен)            | ✅     | POST /api/v1/auth/accept-invite                                                                                        |
+| 5.6 | Восстановление пароля | Email reset token (60 мин)           | ✅     | POST /api/v1/auth/forgot-password + reset-password                                                                     |
 
 ---
 
@@ -105,19 +105,19 @@
 
 ## 7. Внешние сервисы
 
-| #    | Параметр            | Решение                    | Статус | Примечание                                 |
-| ---- | ------------------- | -------------------------- | ------ | ------------------------------------------ |
-| 7.1  | Email               | Resend                     | ✅     | React Email для шаблонов                   |
-| 7.2  | Платежи             | IDBank (ARCA) + Idram      | ✅     | клиент оплачивает по ссылке (payment link) |
-| 7.3  | Аналитика           | PostHog                    | ✅     | опционально                                |
-| 7.4  | Отслеживание ошибок | Sentry                     | ✅     |                                            |
-| 7.5  | Поиск               | PostgreSQL FTS             | ✅     | см. 4.11                                   |
-| 7.6  | WebSocket           | Socket.io (в NestJS)       | ✅     | не внешний сервис                          |
-| 7.7  | SMS                 | не требуется               | ➖     | WhatsApp через агрегатор                   |
-| 7.11 | Mobile SDK (auth)   | NextAuth / собственный JWT | ⬜     | React Native, Phase 2+                     |
-| 7.8  | AI                  | OpenAI + Vercel AI SDK     | ⬜     | Phase 3+                                   |
-| 7.9  | CMS                 | не требуется               | ➖     |                                            |
-| 7.10 | Карты               | не требуется               | ➖     |                                            |
+| #    | Параметр            | Решение                           | Статус | Примечание                                       |
+| ---- | ------------------- | --------------------------------- | ------ | ------------------------------------------------ |
+| 7.1  | Email               | Resend                            | ✅     | React Email для шаблонов                         |
+| 7.2  | Платежи             | IDBank (ARCA) + Idram             | ✅     | клиент оплачивает по ссылке (payment link)       |
+| 7.3  | Аналитика           | PostHog                           | ✅     | опционально                                      |
+| 7.4  | Отслеживание ошибок | Sentry                            | ✅     |                                                  |
+| 7.5  | Поиск               | PostgreSQL FTS                    | ✅     | см. 4.11                                         |
+| 7.6  | WebSocket           | Socket.io (в NestJS)              | ✅     | не внешний сервис                                |
+| 7.7  | SMS                 | не требуется                      | ➖     | WhatsApp через агрегатор                         |
+| 7.11 | Mobile SDK (auth)   | Auth Session V2 (тот же Employee) | 🔄     | `clientKind` + refresh in JSON; не отдельный IdP |
+| 7.8  | AI                  | OpenAI + Vercel AI SDK            | ⬜     | Phase 3+                                         |
+| 7.9  | CMS                 | не требуется                      | ➖     |                                                  |
+| 7.10 | Карты               | не требуется                      | ➖     |                                                  |
 
 ---
 

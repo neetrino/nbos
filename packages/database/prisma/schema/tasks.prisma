@@ -108,20 +108,24 @@ model Task {
   isRecurring        Boolean                @default(false) @map("is_recurring")
   templateTaskId     String?                @map("template_task_id")
   trashedAt          DateTime?              @map("trashed_at")
+  /// Actor provenance. Null on historical human rows; never a fake Employee id.
+  createdByActorType String?                @map("created_by_actor_type")
+  createdByActorId   String?                @map("created_by_actor_id")
   createdAt          DateTime               @default(now()) @map("created_at")
   updatedAt          DateTime               @updatedAt @map("updated_at")
 
-  product    Product?        @relation(fields: [productId], references: [id])
-  extension  Extension?      @relation(fields: [extensionId], references: [id])
-  workspace  WorkSpace?      @relation(fields: [workspaceId], references: [id])
-  sprint     Sprint?         @relation(fields: [sprintId], references: [id], onDelete: SetNull)
-  creator    Employee        @relation("TaskCreator", fields: [creatorId], references: [id])
-  assignee   Employee?       @relation("TaskAssignee", fields: [assigneeId], references: [id])
-  reviewer   Employee?       @relation("TaskReviewer", fields: [reviewerId], references: [id])
-  parent     Task?           @relation("TaskSubtasks", fields: [parentId], references: [id])
-  subtasks   Task[]          @relation("TaskSubtasks")
-  links      TaskLink[]
-  checklists TaskChecklist[]
+  product            Product?               @relation(fields: [productId], references: [id])
+  extension          Extension?             @relation(fields: [extensionId], references: [id])
+  workspace          WorkSpace?             @relation(fields: [workspaceId], references: [id])
+  sprint             Sprint?                @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  creator            Employee               @relation("TaskCreator", fields: [creatorId], references: [id])
+  assignee           Employee?              @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  reviewer           Employee?              @relation("TaskReviewer", fields: [reviewerId], references: [id])
+  parent             Task?                  @relation("TaskSubtasks", fields: [parentId], references: [id])
+  subtasks           Task[]                 @relation("TaskSubtasks")
+  links              TaskLink[]
+  checklists         TaskChecklist[]
+  discussionEntries  TaskDiscussionEntry[]
 
   @@index([workspaceId])
   @@index([sprintId])
@@ -131,6 +135,32 @@ model Task {
   @@index([creatorId])
   @@index([trashedAt])
   @@map("tasks")
+}
+
+enum TaskDiscussionVisibilityEnum {
+  STANDARD
+  HIDDEN
+}
+
+/// Tasks-owned discussion. Agent and human notes share this table; authorship is
+/// ActorContext, never a forged Employee row. Messenger is not involved.
+model TaskDiscussionEntry {
+  id               String                         @id @default(uuid())
+  taskId           String                         @map("task_id")
+  body             String
+  actorType        String                         @map("actor_type")
+  actorId          String                         @map("actor_id")
+  actorDisplayName String                         @map("actor_display_name")
+  channelSource    String?                        @map("channel_source")
+  correlationId    String?                        @map("correlation_id")
+  visibility       TaskDiscussionVisibilityEnum   @default(STANDARD)
+  createdAt        DateTime                       @default(now()) @map("created_at")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId, createdAt])
+  @@index([actorType, actorId])
+  @@map("task_discussion_entries")
 }
 
 model TaskLink {

@@ -1,6 +1,6 @@
 /**
- * AuthSession V2 feature flags and numeric config (strict parsing).
- * Defaults keep legacy auth until explicit rollout.
+ * AuthSession V2 numeric config and leftover dual-run flag parsers.
+ * Login and AuthGuard are V2-only; pepper + cookie name are required at boot.
  */
 
 const TRUE = new Set(['1', 'true', 'yes', 'on']);
@@ -159,19 +159,14 @@ export function shouldIssueAuthSessionV2(
  * Fail-fast checks when V2 issue is enabled (call from env validation / boot).
  */
 export function assertAuthSessionV2Config(env: NodeJS.ProcessEnv = process.env): void {
-  const issue = isAuthSessionV2IssueEnabled(env);
-  if (!issue) return;
-
   const pepper = resolveAuthRefreshTokenPepper(env);
   if (!pepper || pepper.length < 32) {
-    throw new Error(
-      'AUTH_REFRESH_TOKEN_PEPPER is required (≥32 chars) when AUTH_SESSION_V2_ISSUE_ENABLED=true',
-    );
+    throw new Error('AUTH_REFRESH_TOKEN_PEPPER is required (≥32 chars)');
   }
 
   const cookieName = env.AUTH_REFRESH_COOKIE_NAME?.trim();
   if (!cookieName) {
-    throw new Error('AUTH_REFRESH_COOKIE_NAME is required when AUTH_SESSION_V2_ISSUE_ENABLED=true');
+    throw new Error('AUTH_REFRESH_COOKIE_NAME is required');
   }
 
   const accessTtl = resolveAuthAccessTokenTtlSeconds(env);

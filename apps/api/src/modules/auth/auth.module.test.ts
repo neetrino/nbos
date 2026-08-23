@@ -1,11 +1,10 @@
 import { MODULE_METADATA } from '@nestjs/common/constants';
-import { TokenDenylistModule } from '../../common/security/token-denylist.module';
+import { CredentialVaultSessionModule } from '../credentials/credential-vault-session.module';
 import { AuthModule } from './auth.module';
 
 describe('AuthModule', () => {
-  it('declares its token denylist dependency explicitly', () => {
+  it('imports the credential vault session module', () => {
     const imports = Reflect.getMetadata(MODULE_METADATA.IMPORTS, AuthModule) as unknown[];
-
-    expect(imports).toContain(TokenDenylistModule);
+    expect(imports).toContain(CredentialVaultSessionModule);
   });
 });

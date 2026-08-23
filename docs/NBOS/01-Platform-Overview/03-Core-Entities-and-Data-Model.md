@@ -314,8 +314,9 @@ Contact (человек)
 1. `Tax = Free` — официальный счёт не нужен.
 2. `Tax = Tax` — может потребоваться запрос в бухгалтерскую WhatsApp-группу.
 3. Пока `official_request_sent = false`, клиентские напоминания не должны отправляться для `Tax`.
-4. Статус карточки отражает именно состояние денег, а не состояние уведомлений.
-5. **Display title в UI** не хранится на `Invoice`: при наличии `order` — `Deal.name` через `order.deal`, иначе `Order.code`; иначе при `subscription` — `Subscription.name`; иначе — `code`. Переименование источника обновляет заголовок всех связанных счетов.
+4. Для Tax: `Awaiting Payment` требует Company name + tax_id; `Paid` требует актуальный official request; отмена карточки с отправленным запросом сразу отменяет запрос бухгалтеру.
+5. Статус карточки отражает именно состояние денег, а не состояние уведомлений.
+6. **Display title в UI** не хранится на `Invoice`: при наличии `order` — `Deal.name` через `order.deal`, иначе `Order.code`; иначе при `subscription` — `Subscription.name`; иначе — `code`. Переименование источника обновляет заголовок всех связанных счетов.
 
 **Связи:**
 
@@ -741,21 +742,21 @@ Contact (человек)
 
 Активность телефонии. **Не воронка.** Один `uid` провайдера (ATS.am) = одна запись. Канон: `../02-Modules/01-CRM/08-Calls-and-Telephony.md`.
 
-| Поле | Тип | Описание |
-| --- | --- | --- |
-| id | UUID | Идентификатор |
-| uid | String unique | Id звонка у ATS |
-| direction | inbound / outbound | Входящий / исходящий |
-| phone | String | Нормализованный номер собеседника |
-| lead_id | FK → Lead? | Обращение, если есть |
-| contact_id | FK → Contact? | Человек, если Contact уже есть (на звонке Contact не создаём) |
-| deal_id | FK → Deal? | Контекст открытой сделки |
-| project_id | FK → Project? | Контекст |
-| product_id | FK → Product? | Контекст |
-| responsible_employee_id | FK → Employee? | Кому redirect / кто начал исходящий |
-| answered_employee_id | FK → Employee? | Кто взял трубку |
-| note | Text? | Заметка после звонка |
-| recording_file_asset_id | FK → FileAsset? | Запись в Drive (`CALL_RECORDING`) |
+| Поле                    | Тип                | Описание                                                      |
+| ----------------------- | ------------------ | ------------------------------------------------------------- |
+| id                      | UUID               | Идентификатор                                                 |
+| uid                     | String unique      | Id звонка у ATS                                               |
+| direction               | inbound / outbound | Входящий / исходящий                                          |
+| phone                   | String             | Нормализованный номер собеседника                             |
+| lead_id                 | FK → Lead?         | Обращение, если есть                                          |
+| contact_id              | FK → Contact?      | Человек, если Contact уже есть (на звонке Contact не создаём) |
+| deal_id                 | FK → Deal?         | Контекст открытой сделки                                      |
+| project_id              | FK → Project?      | Контекст                                                      |
+| product_id              | FK → Product?      | Контекст                                                      |
+| responsible_employee_id | FK → Employee?     | Кому redirect / кто начал исходящий                           |
+| answered_employee_id    | FK → Employee?     | Кто взял трубку                                               |
+| note                    | Text?              | Заметка после звонка                                          |
+| recording_file_asset_id | FK → FileAsset?    | Запись в Drive (`CALL_RECORDING`)                             |
 
 **Связи:** Call → optional Lead, Contact, Deal, Project, Product, FileAsset. Виден на Lead и Contact; Deal/Project/Product — проекция контекста.
 
@@ -906,6 +907,7 @@ Contact (человек)
 | work_schedule         | JSON            | Рабочий график                                             |
 | status                | Enum            | Active, Probation, On Leave, Fired                         |
 | hire_date             | Date            | Дата найма                                                 |
+| auth_version          | Int             | Бампается при смене/сбросе пароля, terminate, logout-all   |
 
 `role` и `department` не должны быть простыми scalar fields источника истины. Бизнес-функции сотрудника задаются через `Seat Assignment`.
 
@@ -918,6 +920,13 @@ Contact (человек)
 - Employee → many Compensation Profiles
 - Employee → many Payroll Runs / Salary Lines
 - Employee → many Credentials (доступ)
+- Employee → many AuthSession (вход; канон `06-Authentication-and-Sessions.md`)
+
+### 2.17.0. AuthSession (вход)
+
+Серверная сессия Authentication V2. Один логин = одна строка. Сырой refresh не хранится.
+
+Поля и статусы — в `06-Authentication-and-Sessions.md`. Не путать с Credentials vault unlock.
 
 ---
 

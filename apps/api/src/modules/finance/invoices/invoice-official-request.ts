@@ -1,13 +1,16 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { Prisma, PrismaClient } from '@nbos/database';
+import { assertOfficialInvoiceRequestSend } from './invoice-tax-readiness-assert';
 
 export interface InvoiceOfficialRequestRow {
   id: string;
   taxStatus: string;
+  companyId: string | null;
   officialInvoiceRequestSent: boolean;
   officialInvoiceSentAt: Date | null;
   officialInvoiceCancelledAt: Date | null;
   govInvoiceId: string | null;
+  company: { name: string; taxId: string | null } | null;
 }
 
 export function isOfficialRequestBlockingTaxReminders(invoice: {
@@ -25,6 +28,7 @@ export async function sendOfficialInvoiceRequest(
   if (invoice.taxStatus !== 'TAX') {
     throw new BadRequestException('Official invoice request applies only to Tax invoices');
   }
+  assertOfficialInvoiceRequestSend(invoice);
 
   const now = new Date();
   return prisma.invoice.update({
@@ -89,8 +93,10 @@ async function loadInvoice(
 const officialRequestSelect = {
   id: true,
   taxStatus: true,
+  companyId: true,
   officialInvoiceRequestSent: true,
   officialInvoiceSentAt: true,
   officialInvoiceCancelledAt: true,
   govInvoiceId: true,
+  company: { select: { name: true, taxId: true } },
 } satisfies Prisma.InvoiceSelect;

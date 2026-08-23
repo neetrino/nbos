@@ -1,5 +1,7 @@
 # AuthSession V2 rollout & rollback
 
+**Product canon:** [`docs/NBOS/01-Platform-Overview/06-Authentication-and-Sessions.md`](../NBOS/01-Platform-Overview/06-Authentication-and-Sessions.md). This file is **ops flags only**.
+
 **InboxState READ stays off:** do not set `NOTIFICATION_INBOX_STATE_READ_ENABLED=true` as part of this rollout.
 
 ## Flags (defaults)

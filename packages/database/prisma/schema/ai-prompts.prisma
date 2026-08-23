@@ -1,0 +1,73 @@
+// ─── AI PROMPT POLICY / VERSIONS ──────────────────────────
+// Versioned instruction configuration. Never a capability or grant source.
+
+enum AiPromptPolicyStatusEnum {
+  DRAFT
+  ACTIVE
+  DISABLED
+  ARCHIVED
+}
+
+enum AiPromptVersionStatusEnum {
+  DRAFT
+  TESTING
+  PUBLISHED
+  RETIRED
+}
+
+/// Named prompt configuration. Internal Agents reference this, not a raw blob.
+model AiPromptPolicy {
+  id          String                   @id @default(uuid())
+  name        String
+  purpose     String?
+  status      AiPromptPolicyStatusEnum @default(DRAFT)
+  ownerId     String                   @map("owner_id")
+  createdById String                   @map("created_by_id")
+  createdAt   DateTime                 @default(now()) @map("created_at")
+  updatedAt   DateTime                 @updatedAt @map("updated_at")
+
+  owner          Employee          @relation("AiPromptPolicyOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  createdBy      Employee          @relation("AiPromptPolicyCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  versions       AiPromptVersion[]
+  internalAgents InternalAiAgent[]
+
+  @@index([status])
+  @@index([ownerId])
+  @@index([createdById])
+  @@map("ai_prompt_policies")
+}
+
+/// Immutable after leaving DRAFT. Production uses the single PUBLISHED row.
+model AiPromptVersion {
+  id                   String                   @id @default(uuid())
+  policyId             String                   @map("policy_id")
+  version              Int
+  status               AiPromptVersionStatusEnum @default(DRAFT)
+  platformSafety       String                   @map("platform_safety")
+  agentRole            String                   @map("agent_role")
+  domainRules          String?                  @map("domain_rules")
+  channelBehavior      String?                  @map("channel_behavior")
+  /// SHA-256 of canonical layers. Audit and execution attribution use this,
+  /// not the full instruction text.
+  contentDigest        String                   @map("content_digest")
+  createdById          String                   @map("created_by_id")
+  publishedAt          DateTime?                @map("published_at")
+  publishedById        String?                  @map("published_by_id")
+  retiredAt            DateTime?                @map("retired_at")
+  predecessorVersionId String?                  @map("predecessor_version_id")
+  createdAt            DateTime                 @default(now()) @map("created_at")
+  updatedAt            DateTime                 @updatedAt @map("updated_at")
+
+  policy      AiPromptPolicy   @relation(fields: [policyId], references: [id], onDelete: Restrict)
+  createdBy   Employee         @relation("AiPromptVersionCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  publishedBy Employee?        @relation("AiPromptVersionPublishedBy", fields: [publishedById], references: [id], onDelete: SetNull)
+  predecessor AiPromptVersion? @relation("AiPromptVersionPredecessor", fields: [predecessorVersionId], references: [id], onDelete: SetNull)
+  successors  AiPromptVersion[] @relation("AiPromptVersionPredecessor")
+
+  @@unique([policyId, version])
+  @@index([policyId, status])
+  @@index([createdById])
+  @@index([publishedById])
+  @@index([predecessorVersionId])
+  @@map("ai_prompt_versions")
+}

@@ -364,6 +364,7 @@ Anchor: `Invoice.dueDate` (не Billing Day). Timezone for day math: **Asia/Yere
 - Placeholders: `{productName}` = `Product.name`; `{month}` = localized `coverageStartMonth`.
 - No catch-up: if the invoice is created after the D-10 day, D-10 is skipped; D-2 still fires on its day.
 - Tax + official request not sent → block client payment reminders (accountant path separate).
+- Tax billing cards are created in `New`. They cannot enter `Awaiting Payment` or `Paid` until company requisites / official request gates pass (see Invoices canon).
 - Target: Product WhatsApp Group via `subscription.productId`.
 
 ### Типы уведомлений (смежные)

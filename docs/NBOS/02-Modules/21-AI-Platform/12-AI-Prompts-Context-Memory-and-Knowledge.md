@@ -246,13 +246,14 @@ Provider-specific retention/privacy settings should be tracked operationally whe
 
 ## 16. First implementation scope
 
-Foundation now:
+Foundation now (Chat 9):
 
 - prompt policy/version data model;
-- draft/published/retired lifecycle;
-- Internal Agent -> Prompt Policy linkage;
-- context assembler contract/interface;
-- source/provenance contract;
+- draft/testing/published/retired lifecycle;
+- Internal Agent -> published Prompt Policy linkage;
+- context assembler contract/interface bound to actor, capability, matched scope and classification;
+- source/provenance, freshness, classification/redaction (including nested secret-shaped fields) and budget contracts;
+- session-context contract;
 - explicit memory/knowledge interfaces and deny-by-default rules.
 
 Not required now:

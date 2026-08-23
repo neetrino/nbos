@@ -5,7 +5,6 @@ import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { UnauthorizedException } from '@nestjs/common';
 import type { ExecutionContext } from '@nestjs/common';
-import { TokenDenylistService } from '../security/token-denylist.service';
 
 function createMockContext(headers: Record<string, string> = {}): {
   context: ExecutionContext;
@@ -24,20 +23,34 @@ function createMockContext(headers: Record<string, string> = {}): {
   };
 }
 
+function signV2(secret: string, extra: Record<string, unknown> = {}): string {
+  return jwt.sign(
+    {
+      sub: 'emp_123',
+      email: 'test@example.com',
+      sid: 'sess_1',
+      typ: 'access',
+      ver: 2,
+      authVersion: 1,
+      ...extra,
+    },
+    secret,
+    { expiresIn: 600, jwtid: 'jti-1' },
+  );
+}
+
 describe('AuthGuard', () => {
   const testSecret = 'test-secret';
   let guard: AuthGuard;
   let reflector: Reflector;
-  let denylist: TokenDenylistService;
 
   beforeEach(() => {
     vi.clearAllMocks();
     reflector = new Reflector();
-    denylist = new TokenDenylistService();
     const configService = {
       getOrThrow: vi.fn().mockReturnValue(testSecret),
     } as unknown as ConfigService;
-    guard = new AuthGuard(reflector, configService, denylist);
+    guard = new AuthGuard(reflector, configService);
   });
 
   it('allows access to public routes', async () => {
@@ -64,36 +77,36 @@ describe('AuthGuard', () => {
     await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
   });
 
-  it('sets user on request for valid token', async () => {
+  it('sets user on request for a V2 access token', async () => {
     vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
-    const token = jwt.sign({ sub: 'emp_123', email: 'test@example.com' }, testSecret);
+    const token = signV2(testSecret);
     const { context, request } = createMockContext({ authorization: `Bearer ${token}` });
 
     await expect(guard.canActivate(context)).resolves.toBe(true);
-    expect(request.user).toEqual({
+    expect(request.user).toMatchObject({
       employeeId: 'emp_123',
       email: 'test@example.com',
-      tokenVersion: 1,
+      sessionId: 'sess_1',
+      tokenVersion: 2,
+      authVersion: 1,
+      jti: 'jti-1',
     });
   });
 
-  it('throws when the token jti has been revoked', async () => {
+  it('rejects a legacy long-lived JWT', async () => {
     vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
     const token = jwt.sign({ sub: 'emp_123', email: 'test@example.com' }, testSecret, {
-      jwtid: 'jti-revoked',
-      expiresIn: '1h',
+      jwtid: 'jti-legacy',
+      expiresIn: '7d',
     });
-    await denylist.revokeUntil('jti-revoked', Date.now() + 3_600_000);
     const { context } = createMockContext({ authorization: `Bearer ${token}` });
-
     await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
   });
 
   it('throws when token is signed with a different secret', async () => {
     vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
-    const token = jwt.sign({ sub: 'emp_123', email: 'test@example.com' }, 'wrong-secret');
+    const token = signV2('wrong-secret');
     const { context } = createMockContext({ authorization: `Bearer ${token}` });
-
     await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
   });
 });

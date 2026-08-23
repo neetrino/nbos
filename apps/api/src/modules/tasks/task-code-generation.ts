@@ -1,22 +1,35 @@
+import {
+  allocateEntityCodeNumber,
+  ENTITY_CODE_SCOPE,
+  type EntityCodePrismaClient,
+} from '../../common/utils/entity-code-counter';
+
 /**
  * Task codes look like `T-{year}-{NNNN}` (zero-padded decimal suffix).
- * Lexicographic string sort does not match numeric order (e.g. `T-2026-9999` > `T-2026-10000`),
- * which can produce duplicate codes and DB unique violations.
+ *
+ * The padding is a minimum rather than a width — once a year passes 9999 the
+ * code simply grows, which is why the suffix must never be compared as text.
  */
-export function nextTaskCodeNumericSuffix(year: number, existingCodes: readonly string[]): number {
-  const prefix = `T-${year}-`;
-  const escapedPrefix = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const suffixRe = new RegExp(`^${escapedPrefix}(\\d+)$`);
-  let max = 0;
-  for (const code of existingCodes) {
-    const m = code.match(suffixRe);
-    if (!m) continue;
-    const n = parseInt(m[1], 10);
-    if (!Number.isNaN(n)) max = Math.max(max, n);
-  }
-  return max + 1;
-}
-
 export function formatTaskCode(year: number, numericSuffix: number): string {
   return `T-${year}-${String(numericSuffix).padStart(4, '0')}`;
+}
+
+/**
+ * The only supported way to obtain a Task code.
+ *
+ * Every writer must come through here. Deriving a code from `max(tasks)`
+ * instead races with concurrent creates, and — once any writer allocates from
+ * the counter — a single `max`-derived insert is enough to leave the counter
+ * behind the table, so the next allocation collides with no concurrency at all.
+ * That is why Support and Automation call this rather than keeping their own
+ * generators.
+ *
+ * The client must commit this statement on its own. Passing an open
+ * interactive transaction that still writes the task and an idempotency
+ * checkpoint holds the counter lock for the whole transaction (C26).
+ */
+export async function allocateTaskCode(prisma: EntityCodePrismaClient): Promise<string> {
+  const year = new Date().getFullYear();
+  const numericSuffix = await allocateEntityCodeNumber(prisma, ENTITY_CODE_SCOPE.task, year);
+  return formatTaskCode(year, numericSuffix);
 }

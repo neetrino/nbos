@@ -14,3 +14,21 @@ model SystemListOption {
   @@index([listKey])
   @@map("system_list_options")
 }
+
+/// Server-side allocator for per-year human-readable entity codes such as `T-2026-0007`.
+///
+/// Reading the highest existing code and then inserting races: two concurrent
+/// creates compute the same number and the second violates the unique code
+/// column. One atomic upsert per allocation removes that window. `scope`
+/// (`TASK`, `INVOICE`, …) keeps one table serving every numbered entity, and
+/// `year` gives each one an independent series that restarts in January.
+model EntityCodeCounter {
+  scope     String
+  year      Int
+  /// Last number handed out for this scope and year. The next allocation returns this + 1.
+  nextValue Int      @map("next_value")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@id([scope, year])
+  @@map("entity_code_counters")
+}

@@ -9,7 +9,8 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { buildTaskCompletionBlockers, normalizeTaskCompletionRules } from './task-completion-rules';
-import { formatTaskCode, nextTaskCodeNumericSuffix } from './task-code-generation';
+import { allocateTaskCode } from './task-code-generation';
+import type { TasksDbClient } from './tasks-db-client';
 import { taskFindAllPaginated } from './task-find-all-paginated.op';
 import { assertTaskAccessible } from './task-access.op';
 import {
@@ -34,25 +35,17 @@ import {
 } from '../../common/lifecycle/entity-lifecycle-guards';
 import { isTaskDraftDeletable } from '../../common/lifecycle/task-lifecycle-guards';
 import { buildScopeWhere } from '../../common/lifecycle/entity-lifecycle-scope';
-
-interface CreateTaskDto {
-  title: string;
-  creatorId: string;
-  description?: string;
-  assigneeId?: string;
-  coAssignees?: string[];
-  observers?: string[];
-  priority?: string;
-  workspaceId?: string;
-  sprintId?: string | null;
-  planningStatus?: string;
-  completionRules?: unknown;
-  dueDate?: string;
-  parentId?: string;
-  links?: Array<{ entityType: string; entityId: string }>;
-  isRecurring?: boolean;
-  templateTaskId?: string;
-}
+import { commitTaskUpdate } from './commit-task-update.op';
+import {
+  actorProvenanceFields,
+  type CreateTaskInput,
+  type TaskCreatedByActor,
+} from './task-create.input';
+import {
+  applyTaskStatusTransition,
+  TASK_START_FROM_STATUSES,
+  TASK_SUBMIT_REVIEW_FROM_STATUSES,
+} from './task-status-transition.op';
 
 interface UpdateTaskDto {
   title?: string;
@@ -107,6 +100,17 @@ export class TasksService {
     private readonly notifications: NotificationService,
   ) {}
 
+  /**
+   * Write paths accept an optional transaction so a caller can commit the task
+   * and its own bookkeeping atomically. The External Agent gateway needs this:
+   * a crash between the task commit and its idempotency checkpoint would
+   * otherwise pin the operation key forever. Callers that pass nothing keep the
+   * previous autocommit behavior.
+   */
+  private db(tx?: TasksDbClient): TasksDbClient {
+    return tx ?? this.prisma;
+  }
+
   async findAll(params: TaskQueryParams) {
     const result = await taskFindAllPaginated(this.prisma, params, {
       base: TASK_INCLUDE,
@@ -116,9 +120,10 @@ export class TasksService {
     return result;
   }
 
-  async findById(id: string, access?: TasksAccessContext) {
-    await assertTaskAccessible(this.prisma, id, access);
-    const task = await this.prisma.task.findUnique({
+  async findById(id: string, access?: TasksAccessContext, tx?: TasksDbClient) {
+    const db = this.db(tx);
+    await assertTaskAccessible(db, id, access);
+    const task = await db.task.findUnique({
       where: { id },
       include: {
         ...TASK_DETAIL_INCLUDE,
@@ -126,7 +131,7 @@ export class TasksService {
       },
     });
     if (!task) throw new NotFoundException(`Task ${id} not found`);
-    await attachTaskLinkDisplayNames(this.prisma, [task]);
+    await attachTaskLinkDisplayNames(db, [task]);
     return task;
   }
 
@@ -143,7 +148,21 @@ export class TasksService {
     return items;
   }
 
-  async create(data: CreateTaskDto) {
+  /**
+   * Reserves the next `T-{year}` code on the committed client.
+   * Call this before opening a longer transaction that writes the task.
+   */
+  async reserveCode(): Promise<string> {
+    return allocateTaskCode(this.prisma);
+  }
+
+  async create(
+    data: CreateTaskInput,
+    createdByActor?: TaskCreatedByActor,
+    tx?: TasksDbClient,
+    reservedCode?: string,
+  ) {
+    const db = this.db(tx);
     const title = data.title?.trim();
     if (!title) throw new BadRequestException('title is required');
     const creatorId = data.creatorId?.trim();
@@ -153,16 +172,17 @@ export class TasksService {
     const assigneeId = data.assigneeId?.trim() || undefined;
     const parentId = data.parentId?.trim() || undefined;
     const priority = this.normalizeCreatePriority(data.priority);
-    const sprintAssignment = await resolveTaskSprintAssignment(this.prisma, {
+    const sprintAssignment = await resolveTaskSprintAssignment(db, {
       workspaceId,
       sprintId: data.sprintId,
       planningStatus: data.planningStatus,
     });
     const dueDate = this.parseOptionalIsoDate('dueDate', data.dueDate);
     const linkRows = this.dedupeTaskLinks(data.links);
+    const actorProvenance = actorProvenanceFields(createdByActor);
 
-    const code = await this.generateCode();
-    const task = await this.prisma.task.create({
+    const code = reservedCode ?? (await this.reserveCode());
+    const task = await db.task.create({
       data: {
         code,
         title,
@@ -182,6 +202,7 @@ export class TasksService {
         parentId,
         isRecurring: data.isRecurring ?? false,
         templateTaskId: data.templateTaskId?.trim() || undefined,
+        ...actorProvenance,
         ...(linkRows?.length && {
           links: {
             createMany: {
@@ -195,30 +216,39 @@ export class TasksService {
       },
       include: TASK_INCLUDE,
     });
-    await attachTaskLinkDisplayNames(this.prisma, [task]);
+    await attachTaskLinkDisplayNames(db, [task]);
     return task;
   }
 
-  async update(id: string, data: UpdateTaskDto, access?: TasksAccessContext) {
-    const existing = await this.findById(id, access);
+  async update(
+    id: string,
+    data: UpdateTaskDto,
+    access?: TasksAccessContext,
+    expectedUpdatedAt?: Date,
+    tx?: TasksDbClient,
+  ) {
+    const db = this.db(tx);
+    const existing = await this.findById(id, access, tx);
     this.assertTaskMutable(existing);
     if (data.creatorId !== undefined) {
       const creatorId = data.creatorId.trim();
       if (!creatorId) throw new BadRequestException('creatorId is required');
-      const found = await this.prisma.employee.count({ where: { id: creatorId } });
+      const found = await db.employee.count({ where: { id: creatorId } });
       if (found !== 1) throw new BadRequestException('Creator employee was not found.');
     }
     const sprintAssignment =
       data.sprintId !== undefined || data.planningStatus !== undefined
-        ? await resolveTaskSprintAssignment(this.prisma, {
+        ? await resolveTaskSprintAssignment(db, {
             workspaceId: data.workspaceId ?? existing.workspaceId,
             sprintId: data.sprintId,
             planningStatus: data.planningStatus,
           })
         : null;
 
-    const task = await this.prisma.task.update({
-      where: { id },
+    const task = await commitTaskUpdate(db, {
+      id,
+      expectedUpdatedAt,
+      include: TASK_DETAIL_INCLUDE,
       data: {
         ...(data.title && { title: data.title }),
         ...(data.description !== undefined && { description: data.description }),
@@ -255,30 +285,32 @@ export class TasksService {
         }),
         ...(data.reviewerId !== undefined && { reviewerId: data.reviewerId }),
       },
-      include: TASK_DETAIL_INCLUDE,
     });
-    await attachTaskLinkDisplayNames(this.prisma, [task]);
+    await attachTaskLinkDisplayNames(db, [task]);
     return task;
   }
 
   /** Move task to Review (work done, awaiting approval). */
-  async submitForReview(id: string, reviewerId?: string, access?: TasksAccessContext) {
-    const task = await this.findById(id, access);
+  async submitForReview(
+    id: string,
+    reviewerId?: string,
+    access?: TasksAccessContext,
+    tx?: TasksDbClient,
+  ) {
+    const task = await this.findById(id, access, tx);
     this.assertTaskMutable(task);
-    if (task.status === 'COMPLETED') {
-      throw new BadRequestException('Completed tasks cannot be submitted for review.');
-    }
-    const updated = await this.prisma.task.update({
-      where: { id },
+    await applyTaskStatusTransition(this.db(tx), {
+      id,
+      from: TASK_SUBMIT_REVIEW_FROM_STATUSES,
       data: {
         status: 'REVIEW',
         reviewRequestedAt: new Date(),
         reviewApprovedAt: null,
         ...(reviewerId !== undefined && { reviewerId: reviewerId || null }),
       },
-      include: TASK_DETAIL_INCLUDE,
+      invalidMessage: 'Completed tasks cannot be submitted for review.',
     });
-    await attachTaskLinkDisplayNames(this.prisma, [updated]);
+    const updated = await this.findById(id, access, tx);
     await notifyTaskReviewRequested(this.notifications, {
       taskId: updated.id,
       taskCode: updated.code,
@@ -326,19 +358,16 @@ export class TasksService {
   }
 
   /** Начать задачу */
-  async start(id: string, access?: TasksAccessContext) {
-    const task = await this.findById(id, access);
+  async start(id: string, access?: TasksAccessContext, tx?: TasksDbClient) {
+    const task = await this.findById(id, access, tx);
     this.assertTaskMutable(task);
-    if (task.status === 'COMPLETED') {
-      throw new NotFoundException('Cannot start a completed task');
-    }
-    const updated = await this.prisma.task.update({
-      where: { id },
-      data: { status: 'IN_PROGRESS' as TaskStatusEnum },
-      include: TASK_DETAIL_INCLUDE,
+    await applyTaskStatusTransition(this.db(tx), {
+      id,
+      from: TASK_START_FROM_STATUSES,
+      data: { status: 'IN_PROGRESS' },
+      invalidMessage: 'Cannot start a completed task',
     });
-    await attachTaskLinkDisplayNames(this.prisma, [updated]);
-    return updated;
+    return this.findById(id, access, tx);
   }
 
   /** Завершить задачу */
@@ -520,7 +549,7 @@ export class TasksService {
   }
 
   private dedupeTaskLinks(
-    links: CreateTaskDto['links'] | undefined,
+    links: CreateTaskInput['links'] | undefined,
   ): Array<{ entityType: string; entityId: string }> | undefined {
     if (!links?.length) return undefined;
     const map = new Map<string, { entityType: string; entityId: string }>();
@@ -572,19 +601,5 @@ export class TasksService {
 
   private assertTaskMutable(task: { trashedAt?: Date | null }): void {
     assertEntityIsActive(task, 'trashedAt', 'Task');
-  }
-
-  private async generateCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const prefix = `T-${year}-`;
-    const rows = await this.prisma.task.findMany({
-      where: { code: { startsWith: prefix } },
-      select: { code: true },
-    });
-    const next = nextTaskCodeNumericSuffix(
-      year,
-      rows.map((r) => r.code),
-    );
-    return formatTaskCode(year, next);
   }
 }

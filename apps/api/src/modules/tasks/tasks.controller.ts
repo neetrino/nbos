@@ -15,6 +15,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { parseLifecycleScopeFromQuery } from '../../common/lifecycle/entity-lifecycle-scope';
 import { tasksAccessFromUser } from './tasks-scoped-access';
+import { createTaskInputFromHttpBody } from './task-create.input';
 import { TasksService } from './tasks.service';
 
 @ApiTags('Tasks')
@@ -141,7 +142,7 @@ export class TasksController {
       links?: Array<{ entityType: string; entityId: string }>;
     },
   ) {
-    return this.tasksService.create(body);
+    return this.tasksService.create(createTaskInputFromHttpBody(body));
   }
 
   @Put(':id')

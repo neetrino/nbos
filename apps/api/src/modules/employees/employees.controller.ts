@@ -13,7 +13,12 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import { RequirePermission, CurrentUser, type CurrentUserPayload } from '../../common/decorators';
+import {
+  RequirePermission,
+  RequireActiveSession,
+  CurrentUser,
+  type CurrentUserPayload,
+} from '../../common/decorators';
 import { EmployeesService } from './employees.service';
 import { EmployeeOffboardingService } from './employee-offboarding.service';
 import { EmployeeReactivationService } from './employee-reactivation.service';
@@ -166,6 +171,7 @@ export class EmployeesController {
 
   @Patch(':id/status')
   @RequirePermission('COMPANY', 'EDIT')
+  @RequireActiveSession()
   @ApiOperation({ summary: 'Change employee status' })
   async changeStatus(
     @Param('id') id: string,
@@ -188,6 +194,7 @@ export class EmployeesController {
 
   @Patch(':id/role')
   @RequirePermission('COMPANY', 'EDIT')
+  @RequireActiveSession()
   @ApiOperation({ summary: 'Change employee role' })
   async changeRole(
     @Param('id') id: string,

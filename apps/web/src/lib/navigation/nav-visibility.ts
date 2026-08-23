@@ -1,6 +1,7 @@
 import {
   isNavChildGroup,
   isNavChildLink,
+  type NavChildDefinition,
   type NavModuleDefinition,
   type PermissionRequirement,
 } from './nav-config';
@@ -14,16 +15,35 @@ export function hasNavPermission(
   return can(permission.action, permission.module);
 }
 
+function resolveChildPermission(
+  child: NavChildDefinition,
+  parentPermission: PermissionRequirement | undefined,
+): PermissionRequirement | undefined {
+  if (isNavChildGroup(child)) return undefined;
+  return child.permission ?? parentPermission;
+}
+
+function isChildVisible(
+  child: NavChildDefinition,
+  parentPermission: PermissionRequirement | undefined,
+  can: (action: string, module: string) => boolean,
+): boolean {
+  if (isNavChildGroup(child)) return true;
+  return hasNavPermission(resolveChildPermission(child, parentPermission), can);
+}
+
 export function getVisibleNavModules(
   can: (action: string, module: string) => boolean,
   isLoading: boolean,
   definitions: NavModuleDefinition[],
 ): NavModuleDefinition[] {
-  if (isLoading) return definitions;
+  if (isLoading) {
+    return definitions.filter((item) => item.permission === undefined);
+  }
 
   return definitions.reduce<NavModuleDefinition[]>((items, item) => {
-    const visibleChildren = item.children?.filter(
-      (child) => isNavChildGroup(child) || hasNavPermission(child.permission, can),
+    const visibleChildren = item.children?.filter((child) =>
+      isChildVisible(child, item.permission, can),
     );
     const prunedChildren =
       visibleChildren && visibleChildren.length > 0

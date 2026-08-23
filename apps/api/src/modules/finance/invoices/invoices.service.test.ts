@@ -364,6 +364,46 @@ describe('InvoicesService', () => {
       expect(prisma.deal.update).not.toHaveBeenCalled();
     });
 
+    it('rejects Tax Awaiting Payment when company requisites are missing', async () => {
+      prisma.invoice.findUnique.mockResolvedValueOnce({
+        id: 'inv-tax',
+        orderId: null,
+        amount: 100000,
+        dueDate: new Date('2026-04-20'),
+        taxStatus: 'TAX',
+        moneyStatus: 'NEW',
+        companyId: null,
+        officialInvoiceRequestSent: false,
+        company: null,
+        payments: [],
+      });
+
+      await expect(service.updateMoneyStatus('inv-tax', 'AWAITING_PAYMENT')).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(prisma.invoice.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects Tax Paid when official invoice request is not sent', async () => {
+      prisma.invoice.findUnique.mockResolvedValueOnce({
+        id: 'inv-tax-paid',
+        orderId: null,
+        amount: 100000,
+        dueDate: new Date('2026-04-20'),
+        taxStatus: 'TAX',
+        moneyStatus: 'AWAITING_PAYMENT',
+        companyId: 'c1',
+        officialInvoiceRequestSent: false,
+        company: { name: 'InvestOn LLC', taxId: '01234567' },
+        payments: [{ amount: 100000, paymentDate: new Date('2026-04-12T00:00:00.000Z') }],
+      });
+
+      await expect(service.updateMoneyStatus('inv-tax-paid', 'PAID')).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(paymentsService.create).not.toHaveBeenCalled();
+    });
+
     it('does not promote the linked deal when paid invoices do not cover deal amount', async () => {
       prisma.invoice.findUnique
         .mockResolvedValueOnce({

@@ -24,22 +24,31 @@ export async function loadPayrollRunAuditTrail(
     return [];
   }
 
-  const userIds = [...new Set(rows.map((r) => r.userId))];
+  const userIds = [
+    ...new Set(
+      rows
+        .map((row) => row.userId)
+        .filter((id): id is string => typeof id === 'string' && id.length > 0),
+    ),
+  ];
   const employees = await db.employee.findMany({
     where: { id: { in: userIds } },
     select: { id: true, firstName: true, lastName: true },
   });
   const byId = new Map(employees.map((e) => [e.id, e] as const));
 
-  return rows.map((row) => ({
-    id: row.id,
-    action: row.action,
-    createdAt: row.createdAt.toISOString(),
-    changes: row.changes ?? null,
-    actor: byId.get(row.userId) ?? {
-      id: row.userId,
-      firstName: '',
-      lastName: 'Unknown user',
-    },
-  }));
+  return rows.map((row) => {
+    const actorKey = row.userId ?? row.actorId ?? 'unknown';
+    return {
+      id: row.id,
+      action: row.action,
+      createdAt: row.createdAt.toISOString(),
+      changes: row.changes ?? null,
+      actor: byId.get(actorKey) ?? {
+        id: actorKey,
+        firstName: '',
+        lastName: 'Unknown user',
+      },
+    };
+  });
 }

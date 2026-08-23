@@ -29,6 +29,34 @@ describe('toAuthPublicResponse', () => {
     expect(JSON.stringify(publicResponse)).not.toContain('secret-value');
   });
 
+  it('includes refreshToken only when explicitly allowed', () => {
+    const result: LoginResult = {
+      accessToken: 'access-1',
+      refreshToken: 'session.secret-value',
+      sessionId: 'session-1',
+      tokenVersion: 2,
+      clientKind: 'mobile_work',
+      user: {
+        id: 'emp-1',
+        email: 'a@example.com',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+      },
+    };
+
+    expect(toAuthPublicResponse(result, { includeRefreshToken: true })).toEqual({
+      accessToken: 'access-1',
+      sessionId: 'session-1',
+      tokenVersion: 2,
+      clientKind: 'mobile_work',
+      refreshToken: 'session.secret-value',
+      user: result.user,
+    });
+    expect(toAuthPublicResponse(result, { includeRefreshToken: false })).not.toHaveProperty(
+      'refreshToken',
+    );
+  });
+
   it('preserves legacy V1 shape without sessionId', () => {
     const result: LoginResult = {
       accessToken: 'legacy-access',

@@ -285,7 +285,7 @@ Instagram + звонок без общего телефона по-прежне�
 
 **Shipped (Call core + Active Call Screen + CRM activity + recording + click-to-call):** `AtsCallEvent` = Call; inbound/outbound CRM attach; uid atomic idempotency (P2002 recovery, sparse patch, monotonic start→status→finish/end); `redirect_call`; `GET /crm/calls` as CALL activity feed; employee SSE `call.started` / `call.answered` / `call.finished` + fullscreen Active Call Screen; `GET /crm/calls/:id/screen`; `PATCH /crm/calls/:id/note`; Lead History, Deal History/Calls, Contact Communication timelines; worker `ats-call-recording-download` → FileAsset `CALL_RECORDING` + FileLink LEAD/CONTACT/CALL; `GET /crm/calls/:id/recording` (playback = object-level Call access + `CRM_CALL_RECORDINGS_PLAY` + Drive CONFIDENTIAL FileAsset, before R2); `POST /crm/calls/click-to-call` + `Idempotency-Key` → `AtsCallIntent` then ATS `callback` (at-most-once per actor-scoped key). Contact on call не создаём.
 
-**Runtime gaps vs canon:** обёртка `{ data }` на webhook JSON; нет persisted `projectId` / `productId` on Call (screen reads from Deal); Settings ATS card = «Applicant tracking»; history reconcile.
+**Runtime gaps vs canon:** нет persisted `projectId` / `productId` on Call (screen reads from Deal); Settings ATS card = «Applicant tracking»; history reconcile.
 
 **Сознательно later:** транскрипт, DID → MarketingAccount, импорт Bitrix, popup всем.
 

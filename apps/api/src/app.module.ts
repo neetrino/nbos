@@ -25,6 +25,7 @@ import { BonusPoliciesModule } from './modules/bonus-policies/bonus-policies.mod
 import { DomainsModule } from './modules/domains/domains.module';
 import { ClientServicesModule } from './modules/client-services/client-services.module';
 import { AuditModule } from './modules/audit/audit.module';
+import { AiPlatformModule } from './modules/ai-platform/ai-platform.module';
 import { CredentialsModule } from './modules/credentials/credentials.module';
 import { DriveModule } from './modules/drive/drive.module';
 import { DocumentsModule } from './modules/documents/documents.module';
@@ -50,13 +51,13 @@ import { PlatformAccessModule } from './modules/platform-access/platform-access.
 import { PlatformOwnershipModule } from './modules/platform-ownership/platform-ownership.module';
 import { PlatformLifecycleModule } from './modules/platform-lifecycle/platform-lifecycle.module';
 import { SearchModule } from './modules/search/search.module';
-import { TokenDenylistModule } from './common/security/token-denylist.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { OriginGuard } from './common/guards/origin.guard';
 import { AuthGuard } from './common/guards/auth.guard';
 import { EmployeeGuard } from './common/guards/employee.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
+import { RequireActiveSessionGuard } from './common/guards/require-active-session.guard';
 import { QueueWorkersModule } from './runtime/queue-workers.module';
 
 /** Public HTTP API (+ workers only when PROCESS_ROLE=all for local/dev). */
@@ -71,7 +72,6 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60_000, limit: 100 }],
     }),
-    TokenDenylistModule,
     DatabaseModule,
     AuthModule,
     PlatformOwnershipModule,
@@ -92,6 +92,7 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     DomainsModule,
     ClientServicesModule,
     AuditModule,
+    AiPlatformModule,
     CredentialsModule,
     DriveModule,
     DocumentsModule,
@@ -143,6 +144,10 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     {
       provide: APP_GUARD,
       useClass: PermissionGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RequireActiveSessionGuard,
     },
     {
       provide: APP_INTERCEPTOR,

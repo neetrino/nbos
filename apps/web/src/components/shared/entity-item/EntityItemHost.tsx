@@ -6,7 +6,9 @@ import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
 import { ExpenseDetailSheet } from '@/features/finance/components/expenses/ExpenseDetailSheet';
 import { BonusEntryReleasesSheet } from '@/features/finance/components/bonus/bonus-entry-releases-sheet';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { getLocalInvoiceMoneyStatusGateErrors } from '@/features/finance/constants/invoice-money-status-gate-client';
+import type { InvoiceSheetStageGateHighlight } from '@/features/finance/constants/invoice-stage-gate-highlight';
+import { getApiErrorMessage, isStageGateApiError } from '@/lib/api-errors';
 import { invoicesApi, paymentsApi, type Expense, type Invoice } from '@/lib/api/finance';
 import { bonusesApi, type BonusEntryListRow } from '@/lib/api/bonus';
 import type { Task } from '@/lib/api/tasks';
@@ -27,6 +29,8 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [invoiceLoadId, setInvoiceLoadId] = useState<string | null>(null);
   const [invoiceSheetOpen, setInvoiceSheetOpen] = useState(false);
+  const [invoiceStageGateHighlight, setInvoiceStageGateHighlight] =
+    useState<InvoiceSheetStageGateHighlight | null>(null);
   const [bonusEntry, setBonusEntry] = useState<BonusEntryListRow | null>(null);
   const [bonusEntryLoadId, setBonusEntryLoadId] = useState<string | null>(null);
   const [bonusEntrySheetOpen, setBonusEntrySheetOpen] = useState(false);
@@ -171,15 +175,27 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
 
   const handleMoneyStatusChange = useCallback(
     async (id: string, moneyStatus: string) => {
+      if (invoice) {
+        const localErrors = getLocalInvoiceMoneyStatusGateErrors(invoice, moneyStatus);
+        if (localErrors.length > 0) {
+          setInvoiceStageGateHighlight({ errors: localErrors });
+          return;
+        }
+      }
       try {
         const updated = await invoicesApi.updateMoneyStatus(id, moneyStatus);
         setInvoice((current) => (current?.id === id ? updated : current));
+        setInvoiceStageGateHighlight(null);
         onEntityChanged?.();
       } catch (caught) {
+        if (isStageGateApiError(caught) && invoice) {
+          setInvoiceStageGateHighlight({ errors: caught.errors });
+          return;
+        }
         toast.error(getApiErrorMessage(caught, 'Could not update invoice money status.'));
       }
     },
-    [onEntityChanged],
+    [invoice, onEntityChanged],
   );
 
   const invoiceLoading = invoiceSheetOpen && !invoice && invoiceLoadId != null;
@@ -207,6 +223,7 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
         onInvoiceDeleted={handleInvoiceDeleted}
         onMoneyStatusChange={handleMoneyStatusChange}
         onPaymentRecorded={handlePaymentRecorded}
+        stageGateHighlight={invoiceStageGateHighlight}
         forceNestedBackdrop={nested}
       />
 

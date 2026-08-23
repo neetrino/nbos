@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { InlineField, StatusBadge } from '@/components/shared';
 import { DETAIL_SHEET_SECTION_BODY_CLASS } from '@/components/shared/detail-sheet-classes';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { getOfficialInvoiceRequestSendErrors } from '@nbos/shared';
 import { invoicesApi, type Invoice } from '@/lib/api/finance';
 
 interface InvoiceOfficialRequestPanelProps {
@@ -47,6 +48,12 @@ export function InvoiceOfficialRequestPanel({
   }
 
   const status = officialRequestStatus(invoice);
+  const sendBlocked = getOfficialInvoiceRequestSendErrors({
+    taxStatus: invoice.taxStatus,
+    companyId: invoice.companyId,
+    company: invoice.company,
+  });
+  const canSend = sendBlocked.length === 0;
 
   return (
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
@@ -69,7 +76,7 @@ export function InvoiceOfficialRequestPanel({
           <Button
             type="button"
             size="sm"
-            disabled={busy}
+            disabled={busy || !canSend}
             onClick={() =>
               void runAction(
                 () => invoicesApi.sendOfficialInvoiceRequest(invoice.id),
@@ -100,7 +107,7 @@ export function InvoiceOfficialRequestPanel({
               type="button"
               size="sm"
               variant="secondary"
-              disabled={busy}
+              disabled={busy || !canSend}
               onClick={() =>
                 void runAction(
                   () => invoicesApi.sendOfficialInvoiceRequest(invoice.id),

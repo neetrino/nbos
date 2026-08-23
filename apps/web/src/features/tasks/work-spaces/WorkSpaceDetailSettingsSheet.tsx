@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { Download, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
+import { WorkspaceAiAccessPanel } from '@/features/ai-admin/components/WorkspaceAiAccessPanel';
 import type { Task } from '@/lib/api/tasks';
+import { PermissionGate } from '@/lib/permissions';
 import { buildWorkspaceTasksCsvRows } from './work-spaces-csv-rows';
 import { downloadCsvString, rowsToCsvString } from '@/lib/download-tabular-csv';
 
@@ -18,12 +20,14 @@ function slugForFilename(name: string): string {
 }
 
 export type WorkSpaceDetailSettingsSheetProps = {
+  workspaceId: string;
   workspaceName: string;
   tasks: Task[];
   onEditWorkSpace: () => void;
 };
 
 export function WorkSpaceDetailSettingsSheet({
+  workspaceId,
   workspaceName,
   tasks,
   onEditWorkSpace,
@@ -40,7 +44,7 @@ export function WorkSpaceDetailSettingsSheet({
   return (
     <PageSettingsSheet
       title="Work space — settings"
-      description="Edit this space or export the tasks currently loaded on this page as CSV."
+      description="Edit this space, manage AI Access, or export the tasks currently loaded on this page as CSV."
       triggerAriaLabel="Work space settings"
       open={open}
       onOpenChange={setOpen}
@@ -67,6 +71,9 @@ export function WorkSpaceDetailSettingsSheet({
         <Download className="size-4 shrink-0" aria-hidden />
         Export tasks (CSV)
       </Button>
+      <PermissionGate module="COMPANY" action="EDIT">
+        <WorkspaceAiAccessPanel workspaceId={workspaceId} />
+      </PermissionGate>
     </PageSettingsSheet>
   );
 }

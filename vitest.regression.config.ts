@@ -24,6 +24,15 @@ const REGRESSION_TEST_PATHS = [
 ] as const;
 
 export default defineConfig({
+  // Same decorator handling as the full suite: Nest services in this subset use
+  // experimentalDecorators, and Oxc must not depend on tsconfig discovery
+  // (breaks when the repo path contains `{}`).
+  oxc: {
+    decorator: {
+      legacy: true,
+      emitDecoratorMetadata: true,
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'apps/web/src'),

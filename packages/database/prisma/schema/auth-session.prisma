@@ -8,6 +8,13 @@ enum AuthSessionStatus {
   COMPROMISED
 }
 
+enum AuthSessionClientKind {
+  WEB
+  MOBILE_WORK
+  MOBILE_MESSENGER
+  MOBILE_VAULT
+}
+
 /// Server-side refresh session. Raw refresh secrets are never stored.
 model AuthSession {
   id                   String            @id @default(cuid())
@@ -28,8 +35,9 @@ model AuthSession {
 
   createdIpHash String? @map("created_ip_hash")
   lastIpHash    String? @map("last_ip_hash")
-  userAgentHash String? @map("user_agent_hash")
-  deviceLabel   String? @map("device_label")
+  userAgentHash String?               @map("user_agent_hash")
+  deviceLabel   String?               @map("device_label")
+  clientKind    AuthSessionClientKind @default(WEB) @map("client_kind")
 
   version Int @default(1)
 

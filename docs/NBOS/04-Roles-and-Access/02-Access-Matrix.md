@@ -105,6 +105,8 @@ Credentials rows below are a high-level role reference. Exact access is resolved
 | Dashboards (own)     | ✅  | ✅     | ✅  | ✅  | ✅     | ✅       | ✅  | ✅       | ✅      | ✅        | ✅         | ✅            |
 | Dashboards (dept)    | ✅  | ❌     | 🔶  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | 🔶        | ✅         | ✅            |
 | Dashboards (company) | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | ❌        | ❌         | ❌            |
+| Clients (directory)  | ✅  | 🔶     | 👁  | ❌  | ❌     | ❌       | ❌  | ❌       | 👁      | 👁        | 🔶         | 👁            |
+| AI & Agents (admin)  | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ❌      | ❌        | ❌         | ❌            |
 | Audit Logs           | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | 👁      | ❌        | ❌         | ❌            |
 
 ---
