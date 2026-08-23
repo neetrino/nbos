@@ -73,7 +73,7 @@ export interface Invoice {
   createdAt: string;
   order: InvoiceOrderSummary | null;
   subscription?: InvoiceSubscriptionSummary | null;
-  company: { id: string; name: string } | null;
+  company: { id: string; name: string; taxId?: string | null } | null;
   project: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string } | null;
   payments: Payment[];

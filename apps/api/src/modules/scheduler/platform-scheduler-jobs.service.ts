@@ -24,6 +24,7 @@ import {
 } from './platform-scheduler-jobs.list';
 import type { PlatformSchedulerJobRow } from './platform-scheduler-jobs.mapper';
 import { canRunSchedulerJobNow, runSchedulerJobByName } from './scheduler-job-runner';
+import { SchedulerAiService } from './scheduler-ai.service';
 import { SchedulerService } from './scheduler.service';
 
 export {
@@ -48,6 +49,7 @@ export class PlatformSchedulerJobsService {
     private readonly policyService: SchedulerJobPolicyService,
     private readonly auditService: AuditService,
     private readonly schedulerService: SchedulerService,
+    private readonly schedulerAiService: SchedulerAiService,
   ) {}
 
   async listJobs(): Promise<PlatformSchedulerJobsResponse> {
@@ -115,7 +117,7 @@ export class PlatformSchedulerJobsService {
       throw new BadRequestException(`Job ${input.jobName} cannot be run from Settings`);
     }
     const result = await runSchedulerJobByName(
-      this.schedulerService,
+      { scheduler: this.schedulerService, ai: this.schedulerAiService },
       input.jobName,
       SCHEDULER_TRIGGER.manualAdmin,
     );

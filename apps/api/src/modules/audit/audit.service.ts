@@ -1,109 +1,123 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { PrismaClient, type Prisma, type InputJsonValue } from '@nbos/database';
+import { PrismaClient, type TransactionClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { attachActorsToAuditLogs, type AuditActorLookups } from './audit-actor.resolver';
+import { toAuditLogCreateData } from './audit-log-write.mapper';
+import {
+  AUDIT_LOG_PAGE_ORDER,
+  normalizeAuditPagination,
+  type AuditLogParams,
+  type PaginationParams,
+} from './audit-log.params';
 
-export interface AuditActorSummary {
-  id: string;
-  firstName: string;
-  lastName: string;
-}
+/** Write client for `auditLog.create` — Prisma root or an interactive transaction. */
+export type AuditWriteClient = Pick<TransactionClient, 'auditLog'>;
 
-type AuditLogRow = Prisma.AuditLogModel;
-
-export type AuditLogWithActor = AuditLogRow & { actor: AuditActorSummary | null };
-
-interface AuditLogParams {
-  entityType: string;
-  entityId: string;
-  action: string;
-  userId: string;
-  projectId?: string;
-  changes?: InputJsonValue;
-  ipAddress?: string;
-}
-
-interface PaginationParams {
-  page?: number;
-  pageSize?: number;
-}
+export type { AuditActorSummary, AuditLogWithActor } from './audit-actor.resolver';
+export type { AuditLogParams } from './audit-log.params';
 
 @Injectable()
 export class AuditService {
+  private actorLookups: AuditActorLookups = {};
+
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async log(params: AuditLogParams) {
-    return this.prisma.auditLog.create({
-      data: {
-        entityType: params.entityType,
-        entityId: params.entityId,
-        action: params.action,
-        userId: params.userId,
-        projectId: params.projectId,
-        changes: params.changes ?? undefined,
-        ipAddress: params.ipAddress,
-      },
+  /**
+   * Registers batch display-name resolvers for machine actors.
+   *
+   * Owning modules register themselves at boot, so Audit never has to depend on
+   * (and import) the AI Platform module.
+   */
+  registerActorLookups(lookups: AuditActorLookups): void {
+    this.actorLookups = { ...this.actorLookups, ...lookups };
+  }
+
+  async log(params: AuditLogParams, client: AuditWriteClient = this.prisma) {
+    return client.auditLog.create({
+      data: toAuditLogCreateData(params),
     });
   }
 
   async findByEntity(entityType: string, entityId: string, pagination: PaginationParams = {}) {
-    const { page = 1, pageSize = 20 } = pagination;
-    const where: Prisma.AuditLogWhereInput = { entityType, entityId };
-
+    const { page, pageSize } = normalizeAuditPagination(pagination);
+    const where = { entityType, entityId };
     const [items, total] = await Promise.all([
       this.prisma.auditLog.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: AUDIT_LOG_PAGE_ORDER,
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
       this.prisma.auditLog.count({ where }),
     ]);
-
-    const itemsWithActors = await this.attachActorsToLogs(items);
-
     return {
-      items: itemsWithActors,
+      items: await attachActorsToAuditLogs(this.prisma, items, this.actorLookups),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
 
   async findByUser(userId: string, pagination: PaginationParams = {}) {
-    const { page = 1, pageSize = 20 } = pagination;
-    const where: Prisma.AuditLogWhereInput = { userId };
-
+    const { page, pageSize } = normalizeAuditPagination(pagination);
+    const where = { userId };
     const [items, total] = await Promise.all([
       this.prisma.auditLog.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: AUDIT_LOG_PAGE_ORDER,
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
       this.prisma.auditLog.count({ where }),
     ]);
-
-    const itemsWithActors = await this.attachActorsToLogs(items);
-
     return {
-      items: itemsWithActors,
+      items: await attachActorsToAuditLogs(this.prisma, items, this.actorLookups),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
 
-  private async attachActorsToLogs(rows: AuditLogRow[]): Promise<AuditLogWithActor[]> {
-    const ids = [...new Set(rows.map((row) => row.userId))];
-    if (ids.length === 0) {
-      return rows.map((row) => ({ ...row, actor: null }));
+  async findRecentByEntityTypes(entityTypes: string[], pagination: PaginationParams = {}) {
+    const { page, pageSize } = normalizeAuditPagination(pagination);
+    if (entityTypes.length === 0) {
+      return { items: [], meta: { total: 0, page, pageSize, totalPages: 0 } };
     }
+    const where = { entityType: { in: entityTypes } };
+    const [items, total] = await Promise.all([
+      this.prisma.auditLog.findMany({
+        where,
+        orderBy: AUDIT_LOG_PAGE_ORDER,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.auditLog.count({ where }),
+    ]);
+    return {
+      items: await attachActorsToAuditLogs(this.prisma, items, this.actorLookups),
+      meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+    };
+  }
 
-    const employees = await this.prisma.employee.findMany({
-      where: { id: { in: ids } },
-      select: { id: true, firstName: true, lastName: true },
-    });
-    const byId = new Map(employees.map((e) => [e.id, e]));
-
-    return rows.map((row) => ({
-      ...row,
-      actor: byId.get(row.userId) ?? null,
-    }));
+  async findRecentByEntityRefs(
+    refs: Array<{ entityType: string; entityId: string }>,
+    pagination: PaginationParams = {},
+  ) {
+    const { page, pageSize } = normalizeAuditPagination(pagination);
+    if (refs.length === 0) {
+      return { items: [], meta: { total: 0, page, pageSize, totalPages: 0 } };
+    }
+    const where = {
+      OR: refs.map((ref) => ({ entityType: ref.entityType, entityId: ref.entityId })),
+    };
+    const [items, total] = await Promise.all([
+      this.prisma.auditLog.findMany({
+        where,
+        orderBy: AUDIT_LOG_PAGE_ORDER,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.auditLog.count({ where }),
+    ]);
+    return {
+      items: await attachActorsToAuditLogs(this.prisma, items, this.actorLookups),
+      meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+    };
   }
 }

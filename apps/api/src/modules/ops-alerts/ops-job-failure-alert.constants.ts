@@ -19,4 +19,5 @@ export const BULLMQ_FAILURE_LINK_BY_QUEUE: Readonly<Record<string, string>> = {
   'reports.export-jobs': '/reports',
   'drive.zip-export-jobs': '/drive',
   'whatsapp.product-groups': '/settings',
+  'ats-call-recording': '/crm',
 };

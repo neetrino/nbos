@@ -1,16 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { auditApi, type AuditLogEntry } from '@/lib/api/audit';
+import { auditApi, formatAuditActorLabel, type AuditLogEntry } from '@/lib/api/audit';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
 const HISTORY_PAGE_SIZE = 50;
 
 function formatActor(entry: AuditLogEntry): string {
-  if (entry.actor) {
-    return `${entry.actor.firstName} ${entry.actor.lastName}`.trim();
-  }
-  return `User ${entry.userId.slice(0, 8)}…`;
+  return formatAuditActorLabel(entry);
 }
 
 function formatChanges(changes: unknown): string | null {

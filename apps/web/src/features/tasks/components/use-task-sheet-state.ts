@@ -19,7 +19,6 @@ import {
   parseTaskCompletionBlockers,
   type TaskCompletionBlocker,
 } from '../utils/task-completion-readiness';
-import type { TaskLocalMessage } from './TaskSheetChatPanel';
 import {
   applyOptimisticTaskWorkflowAction,
   type TaskWorkflowFooterAction,
@@ -58,7 +57,6 @@ export function useTaskSheetState({
   const [newChecklistTitle, setNewChecklistTitle] = useState('');
   const [newItemTexts, setNewItemTexts] = useState<Record<string, string>>({});
   const [completionBlockers, setCompletionBlockers] = useState<TaskCompletionBlocker[]>([]);
-  const [messagesByTask, setMessagesByTask] = useState<Record<string, TaskLocalMessage[]>>({});
   /** Instant footer workflow mode — not affected by slow draft enrich. */
   const [workflowFooterStatus, setWorkflowFooterStatus] = useState<string | null>(null);
   const generalDirtyRef = useRef(false);
@@ -534,25 +532,6 @@ export function useTaskSheetState({
     }
   }, [onRestore, task]);
 
-  const handleSendMessage = useCallback(
-    (body: string) => {
-      if (!task) return;
-      setMessagesByTask((prev) => ({
-        ...prev,
-        [task.id]: [
-          ...(prev[task.id] ?? []),
-          {
-            id: `${task.id}-${Date.now()}`,
-            body,
-            createdAt: new Date().toISOString(),
-            authorLabel: 'You',
-          },
-        ],
-      }));
-    },
-    [task],
-  );
-
   const searchEmployees = useCallback(async (query: string) => searchEmployeesForPicker(query), []);
 
   return {
@@ -566,7 +545,6 @@ export function useTaskSheetState({
     completionBlockers,
     newChecklistTitle,
     newItemTexts,
-    taskMessages: task ? (messagesByTask[task.id] ?? []) : [],
     setNewChecklistTitle,
     setNewItemTexts,
     patchGeneralDraft,
@@ -584,7 +562,6 @@ export function useTaskSheetState({
     handleTaskChange,
     handleDeleteTask,
     handleRestoreTask,
-    handleSendMessage,
     searchEmployees,
   };
 }

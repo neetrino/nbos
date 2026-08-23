@@ -110,6 +110,7 @@ export function ProductTasksTab({
               Work Space <ArrowUpRight size={14} aria-hidden />
             </Link>
             <WorkSpaceDetailSettingsSheet
+              workspaceId={workspace.id}
               workspaceName={workspace.name}
               tasks={tasks}
               onEditWorkSpace={() => setEditOpen(true)}

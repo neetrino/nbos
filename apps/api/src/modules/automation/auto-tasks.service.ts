@@ -1,6 +1,6 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
-import { PRISMA_TOKEN } from '../../database.module';
+import { Injectable, Logger } from '@nestjs/common';
+import { automationTaskCreationActor } from '../tasks/task-creation-actors';
+import { TaskCreationService } from '../tasks/task-creation.service';
 import { TASK_BLUEPRINTS_BY_PRODUCT_TYPE } from './task-blueprints.constants';
 
 /** Event-triggered task generation (blueprint packs live in `task-blueprints.constants.ts`). */
@@ -8,10 +8,7 @@ import { TASK_BLUEPRINTS_BY_PRODUCT_TYPE } from './task-blueprints.constants';
 export class AutoTasksService {
   private readonly logger = new Logger(AutoTasksService.name);
 
-  constructor(
-    @Inject(PRISMA_TOKEN)
-    private readonly prisma: InstanceType<typeof PrismaClient>,
-  ) {}
+  constructor(private readonly taskCreation: TaskCreationService) {}
 
   /**
    * Генерирует задачи для Deal на основе productType.
@@ -62,19 +59,16 @@ export class AutoTasksService {
 
     let created = 0;
     for (const title of titles) {
-      const code = await this.generateCode();
-      await this.prisma.task.create({
-        data: {
-          code,
+      await this.taskCreation.create(
+        {
           title,
           creatorId: params.creatorId,
           priority: 'NORMAL',
           productId: params.productId,
-          links: {
-            create: { entityType: params.linkType, entityId: params.linkId },
-          },
+          links: [{ entityType: params.linkType, entityId: params.linkId }],
         },
-      });
+        { actor: automationTaskCreationActor(params.linkType, params.linkId) },
+      );
       created++;
     }
 
@@ -84,16 +78,5 @@ export class AutoTasksService {
 
   private getTemplateByProductType(type: string): string[] {
     return TASK_BLUEPRINTS_BY_PRODUCT_TYPE[type] ?? TASK_BLUEPRINTS_BY_PRODUCT_TYPE.OTHER;
-  }
-
-  private async generateCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const prefix = `T-${year}-`;
-    const last = await this.prisma.task.findFirst({
-      where: { code: { startsWith: prefix } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `${prefix}${String(nextNum).padStart(4, '0')}`;
   }
 }

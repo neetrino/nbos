@@ -177,9 +177,11 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 - `InvoiceCardRemindersService` — idempotent `NotificationEvent` / `NotificationJob` для правил Invoice Card;
   пропуск `ON_HOLD`, `notificationsEnabled = false`, Tax без маркера official invoice.
 
+**Сделано (срез 2026-08):** Tax readiness gates — create всегда можно; `Awaiting Payment` требует Company name + tax_id; `Paid` требует актуальный official request; cancel карточки с отправленным запросом вызывает `Cancel Previous Request`. Shared + API + invoice UI.
+
 **Остаётся:**
 
-- углубить поля official invoice request и шаблоны каналов;
+- углубить поля official invoice request и шаблоны каналов (реальная доставка в бухгалтерский WhatsApp / EHDM);
 - добить scheduler/reminder логику после полноты official-invoice блока в runtime;
 - summary/order rollup — по мере появления полей (см. C8).
 
@@ -405,6 +407,10 @@ Remaining refactor:
 - finish expected incoming from official invoice/payment request fields;
 - ~~expose expense `due now` separately (`DUE_NOW` workflow status bucket on dashboard summary)~~ — done in runtime;
 - replace subscription statuses and coverage fields.
+
+### C9. Invoice / Order / Subscription codes used MAX+1 — FIXED (2026-08-23)
+
+`INV-`, `ORD-` and `SUB-` now allocate from `entity_code_counters` (`INVOICE`, `ORDER`, `SUBSCRIPTION`). Writers moved together: `InvoicesService`, `BillingService`, `deal-deposit-invoice.ops`, `partner-service-terms.ops`, `OrdersService`, `deal-order-bootstrap.ops`, `SubscriptionsService`, `DealWonHandler`. Seed + write-pause rollout is in AI C25 / Chat 2 handoff. Business semantics unchanged.
 
 ---
 

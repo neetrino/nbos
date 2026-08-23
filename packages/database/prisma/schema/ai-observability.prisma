@@ -1,0 +1,218 @@
+// ─── AI USAGE, COST AND EVALUATION ────────────────────────
+// Execution attribution and evaluation records. Never store prompt/completion
+// text, provider keys or agent tokens.
+
+enum AiExecutionKindEnum {
+  CAPABILITY
+  MODEL_INVOCATION
+}
+
+enum AiExecutionStatusEnum {
+  STARTED
+  SUCCEEDED
+  FAILED
+  RATE_LIMITED
+  CANCELLED
+}
+
+enum AiBudgetScopeTypeEnum {
+  ORGANIZATION
+  PROVIDER
+  INTERNAL_AGENT
+  MODEL_POLICY
+  DOMAIN
+}
+
+enum AiBudgetPeriodEnum {
+  DAILY
+  MONTHLY
+}
+
+enum AiBudgetMetricEnum {
+  EXECUTION_COUNT
+  ESTIMATED_COST
+  INPUT_UNITS
+}
+
+enum AiBudgetBehaviorEnum {
+  ALERT_ONLY
+  THROTTLE
+  DISABLE_EXPENSIVE_TIER
+  REQUIRE_APPROVAL
+  HARD_STOP
+}
+
+enum AiEvaluationSuiteStatusEnum {
+  DRAFT
+  ACTIVE
+  RETIRED
+}
+
+enum AiEvaluationRunStatusEnum {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum AiEvaluationGradingKindEnum {
+  DETERMINISTIC
+  HUMAN
+  MODEL_BASED
+}
+
+/// One capability invocation or model call. IDs, counts and cost metadata only.
+model AiExecution {
+  id                     String               @id @default(uuid())
+  kind                   AiExecutionKindEnum
+  status                 AiExecutionStatusEnum
+  actorType              String               @map("actor_type")
+  actorId                String               @map("actor_id")
+  onBehalfOfActorType    String?              @map("on_behalf_of_actor_type")
+  onBehalfOfActorId      String?              @map("on_behalf_of_actor_id")
+  externalAgentId        String?              @map("external_agent_id")
+  internalAgentId        String?              @map("internal_agent_id")
+  providerConnectionId   String?              @map("provider_connection_id")
+  modelId                String?              @map("model_id")
+  modelPolicyId          String?              @map("model_policy_id")
+  modelPolicyVersion     Int?                 @map("model_policy_version")
+  promptPolicyId         String?              @map("prompt_policy_id")
+  promptVersionId        String?              @map("prompt_version_id")
+  capabilityKey          String?              @map("capability_key")
+  domainModule           String?              @map("domain_module")
+  channel                String?
+  correlationId          String?              @map("correlation_id")
+  retryCount             Int                  @default(0) @map("retry_count")
+  fallbackOccurred       Boolean              @default(false) @map("fallback_occurred")
+  fallbackReason         String?              @map("fallback_reason")
+  selectedPrimaryModelId String?              @map("selected_primary_model_id")
+  selectedFallbackModelId String?             @map("selected_fallback_model_id")
+  latencyMs              Int?                 @map("latency_ms")
+  errorCode              String?              @map("error_code")
+  inputUnits             Int?                 @map("input_units")
+  outputUnits            Int?                 @map("output_units")
+  cachedUnits            Int?                 @map("cached_units")
+  reasoningUnits         Int?                 @map("reasoning_units")
+  otherUnits             Int?                 @map("other_units")
+  providerReportedCost   Decimal?             @map("provider_reported_cost") @db.Decimal(18, 6)
+  estimatedCost          Decimal?             @map("estimated_cost") @db.Decimal(18, 6)
+  currency               String?
+  pricingVersion         String?              @map("pricing_version")
+  pricingEffectiveOn     DateTime?            @map("pricing_effective_on")
+  startedAt              DateTime             @map("started_at")
+  completedAt            DateTime?            @map("completed_at")
+  createdAt              DateTime             @default(now()) @map("created_at")
+  updatedAt              DateTime             @updatedAt @map("updated_at")
+
+  @@index([actorType, actorId, startedAt])
+  @@index([internalAgentId, startedAt])
+  @@index([providerConnectionId, startedAt])
+  @@index([modelId, startedAt])
+  @@index([modelPolicyId, startedAt])
+  @@index([capabilityKey, startedAt])
+  @@index([correlationId])
+  @@index([status, startedAt])
+  @@map("ai_executions")
+}
+
+/// Configurable usage/cost ceiling. Enforcement of HARD_STOP is before a new
+/// model invocation, never around an in-flight Tasks/Drive transaction.
+model AiBudgetLimit {
+  id          String                 @id @default(uuid())
+  name        String
+  scopeType   AiBudgetScopeTypeEnum  @map("scope_type")
+  scopeId     String                 @map("scope_id")
+  metric      AiBudgetMetricEnum
+  period      AiBudgetPeriodEnum
+  ceiling     Decimal                @db.Decimal(18, 6)
+  currency    String?
+  behavior    AiBudgetBehaviorEnum
+  enabled     Boolean                @default(true)
+  createdById String                 @map("created_by_id")
+  createdAt   DateTime               @default(now()) @map("created_at")
+  updatedAt   DateTime               @updatedAt @map("updated_at")
+
+  createdBy Employee @relation("AiBudgetLimitCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@unique([scopeType, scopeId, metric, period])
+  @@index([createdById])
+  @@map("ai_budget_limits")
+}
+
+model AiEvaluationSuite {
+  id            String                        @id @default(uuid())
+  name          String
+  purpose       String?
+  status        AiEvaluationSuiteStatusEnum   @default(DRAFT)
+  domainModule  String?                       @map("domain_module")
+  gradingKinds  AiEvaluationGradingKindEnum[] @map("grading_kinds")
+  createdById   String                        @map("created_by_id")
+  createdAt     DateTime                      @default(now()) @map("created_at")
+  updatedAt     DateTime                      @updatedAt @map("updated_at")
+
+  createdBy Employee               @relation("AiEvaluationSuiteCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  datasets  AiEvaluationDataset[]
+  runs      AiEvaluationRun[]
+
+  @@index([status])
+  @@index([createdById])
+  @@map("ai_evaluation_suites")
+}
+
+model AiEvaluationDataset {
+  id          String   @id @default(uuid())
+  suiteId     String   @map("suite_id")
+  name        String
+  version     Int
+  identityKey String   @map("identity_key")
+  createdById String   @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  suite     AiEvaluationSuite @relation(fields: [suiteId], references: [id], onDelete: Restrict)
+  createdBy Employee          @relation("AiEvaluationDatasetCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  runs      AiEvaluationRun[]
+
+  @@unique([suiteId, identityKey, version])
+  @@index([createdById])
+  @@map("ai_evaluation_datasets")
+}
+
+/// One run uses exactly one grading kind so scores stay comparable and an
+/// LLM judge cannot be the sole promotion authority.
+model AiEvaluationRun {
+  id                 String                      @id @default(uuid())
+  suiteId            String                      @map("suite_id")
+  datasetId          String                      @map("dataset_id")
+  modelId            String?                     @map("model_id")
+  modelPolicyId      String?                     @map("model_policy_id")
+  promptVersionId    String?                     @map("prompt_version_id")
+  status             AiEvaluationRunStatusEnum   @default(PENDING)
+  gradingKind        AiEvaluationGradingKindEnum @map("grading_kind")
+  qualityScore       Decimal?                    @map("quality_score") @db.Decimal(8, 4)
+  latencyMsAvg       Int?                        @map("latency_ms_avg")
+  estimatedCost      Decimal?                    @map("estimated_cost") @db.Decimal(18, 6)
+  currency           String?
+  sampleCount        Int?                        @map("sample_count")
+  reviewerEmployeeId String?                     @map("reviewer_employee_id")
+  notes              String?
+  startedAt          DateTime?                   @map("started_at")
+  completedAt        DateTime?                   @map("completed_at")
+  createdById        String                      @map("created_by_id")
+  createdAt          DateTime                    @default(now()) @map("created_at")
+  updatedAt          DateTime                    @updatedAt @map("updated_at")
+
+  suite     AiEvaluationSuite    @relation(fields: [suiteId], references: [id], onDelete: Restrict)
+  dataset   AiEvaluationDataset  @relation(fields: [datasetId], references: [id], onDelete: Restrict)
+  createdBy Employee             @relation("AiEvaluationRunCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  reviewer  Employee?            @relation("AiEvaluationRunReviewer", fields: [reviewerEmployeeId], references: [id], onDelete: SetNull)
+
+  @@index([suiteId, status])
+  @@index([modelId])
+  @@index([modelPolicyId])
+  @@index([promptVersionId])
+  @@index([createdById])
+  @@index([reviewerEmployeeId])
+  @@map("ai_evaluation_runs")
+}

@@ -43,6 +43,35 @@ RUN pnpm build:api
 # Production slice only (~460 packages vs full monorepo ~1570) — avoids OOM on COPY to runner.
 RUN pnpm --filter @nbos/api deploy --prod /prod/api
 
+# One-shot production migrator. Keep this stage BEFORE runner so Coolify apps
+# that omit dockerfile_target_build still boot the API/worker/scheduler image.
+FROM base AS migrator
+
+ENV NODE_ENV=development
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json apps/api/package.json
+COPY apps/web/package.json apps/web/package.json
+COPY packages/database/package.json packages/database/package.json
+COPY packages/shared/package.json packages/shared/package.json
+COPY packages/tsconfig/package.json packages/tsconfig/package.json
+COPY packages/eslint-config/package.json packages/eslint-config/package.json
+
+RUN --mount=type=cache,id=pnpm-migrator,target=/pnpm/store \
+  pnpm install --frozen-lockfile --prod=false --filter @nbos/database...
+
+COPY packages/database/prisma.config.ts packages/database/prisma.config.ts
+COPY packages/database/prisma/schema packages/database/prisma/schema
+COPY packages/database/prisma/migrations packages/database/prisma/migrations
+
+ENV NODE_ENV=production
+
+# Prisma CLI reads DIRECT_URL from env (prisma.config.ts). Exit code is Prisma's.
+# PRISMA_MIGRATE_MODE=status|deploy (default deploy). Status first — Coolify
+# Dockerfile apps do not reliably override CMD.
+CMD ["sh", "-c", "case \"${PRISMA_MIGRATE_MODE:-deploy}\" in status) exec pnpm --filter @nbos/database exec prisma migrate status ;; deploy) exec pnpm --filter @nbos/database migrate:deploy ;; *) echo \"Invalid PRISMA_MIGRATE_MODE=$PRISMA_MIGRATE_MODE (expected status|deploy)\" >&2; exit 1 ;; esac"]
+
 FROM base AS runner
 
 ENV NODE_ENV=production

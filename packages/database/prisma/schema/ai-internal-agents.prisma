@@ -1,0 +1,119 @@
+// ─── INTERNAL AI AGENTS ───────────────────────────────────
+// Stable functional identity. Not a model name and not a provider connection.
+// Grants/scopes reuse the External Agent architecture (same keys and scope types).
+
+enum InternalAiAgentStatusEnum {
+  DRAFT
+  ACTIVE
+  PAUSED
+  DISABLED
+  ARCHIVED
+}
+
+enum InternalAiAgentSurfaceEnum {
+  EMPLOYEE_CHAT
+  MESSENGER
+  TASK
+  DOCUMENT
+  SCHEDULED
+  SYSTEM_EVENT
+  ADMIN_TEST
+}
+
+model InternalAiAgent {
+  id               String                    @id @default(uuid())
+  name             String
+  description      String?
+  status           InternalAiAgentStatusEnum @default(DRAFT)
+  ownerId          String                    @map("owner_id")
+  createdById      String                    @map("created_by_id")
+  modelPolicyId    String?                   @map("model_policy_id")
+  /// Published Prompt Policy. Runtime resolves the current PUBLISHED version.
+  promptPolicyId   String?                   @map("prompt_policy_id")
+  /// Opaque approval-policy assignment id. Requests persist on AiApprovalRequest.
+  approvalPolicyId String?                   @map("approval_policy_id")
+  environment      String?
+  activatedAt      DateTime?                 @map("activated_at")
+  pausedAt         DateTime?                 @map("paused_at")
+  disabledAt       DateTime?                 @map("disabled_at")
+  archivedAt       DateTime?                 @map("archived_at")
+  createdAt        DateTime                  @default(now()) @map("created_at")
+  updatedAt        DateTime                  @updatedAt @map("updated_at")
+
+  owner            Employee                         @relation("InternalAiAgentOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  createdBy        Employee                         @relation("InternalAiAgentCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  modelPolicy      AiModelPolicy?                   @relation(fields: [modelPolicyId], references: [id], onDelete: SetNull)
+  promptPolicy     AiPromptPolicy?                  @relation(fields: [promptPolicyId], references: [id], onDelete: SetNull)
+  surfaces         InternalAiAgentSurfaceAssignment[]
+  capabilityGrants InternalAiAgentCapabilityGrant[]
+  resourceScopes   InternalAiAgentResourceScope[]
+
+  @@index([status])
+  @@index([ownerId])
+  @@index([createdById])
+  @@index([modelPolicyId])
+  @@index([promptPolicyId])
+  @@map("internal_ai_agents")
+}
+
+model InternalAiAgentSurfaceAssignment {
+  id        String                     @id @default(uuid())
+  agentId   String                     @map("agent_id")
+  surface   InternalAiAgentSurfaceEnum
+  enabled   Boolean                    @default(true)
+  createdAt DateTime                   @default(now()) @map("created_at")
+  updatedAt DateTime                   @updatedAt @map("updated_at")
+
+  agent InternalAiAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, surface])
+  @@map("internal_ai_agent_surfaces")
+}
+
+/// Same "what" model as ExternalAgentCapabilityGrant, bound to InternalAiAgent.
+model InternalAiAgentCapabilityGrant {
+  id            String    @id @default(uuid())
+  agentId       String    @map("agent_id")
+  capabilityKey String    @map("capability_key")
+  grantedById   String    @map("granted_by_id")
+  reason        String?
+  expiresAt     DateTime? @map("expires_at")
+  revokedAt     DateTime? @map("revoked_at")
+  revokedById   String?   @map("revoked_by_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  agent     InternalAiAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  grantedBy Employee        @relation("InternalAiAgentCapabilityGrantGrantedBy", fields: [grantedById], references: [id], onDelete: Restrict)
+  revokedBy Employee?       @relation("InternalAiAgentCapabilityGrantRevokedBy", fields: [revokedById], references: [id], onDelete: SetNull)
+
+  @@unique([agentId, capabilityKey])
+  @@index([grantedById])
+  @@index([revokedById])
+  @@map("internal_ai_agent_capability_grants")
+}
+
+/// Same "where" model as ExternalAgentResourceScope, bound to InternalAiAgent.
+model InternalAiAgentResourceScope {
+  id           String             @id @default(uuid())
+  agentId      String             @map("agent_id")
+  scopeType    AgentScopeTypeEnum @map("scope_type")
+  scopeId      String             @map("scope_id")
+  resourceType String             @default("") @map("resource_type")
+  grantedById  String             @map("granted_by_id")
+  reason       String?
+  expiresAt    DateTime?          @map("expires_at")
+  revokedAt    DateTime?          @map("revoked_at")
+  revokedById  String?            @map("revoked_by_id")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+
+  agent     InternalAiAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  grantedBy Employee        @relation("InternalAiAgentResourceScopeGrantedBy", fields: [grantedById], references: [id], onDelete: Restrict)
+  revokedBy Employee?       @relation("InternalAiAgentResourceScopeRevokedBy", fields: [revokedById], references: [id], onDelete: SetNull)
+
+  @@unique([agentId, scopeType, scopeId, resourceType], map: "internal_ai_agent_resource_scopes_agent_scope_resource_key")
+  @@index([grantedById])
+  @@index([revokedById])
+  @@map("internal_ai_agent_resource_scopes")
+}

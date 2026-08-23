@@ -82,6 +82,25 @@ function makeConfigMock() {
   };
 }
 
+function makeArtifactsMock() {
+  return {
+    prepare: vi.fn().mockImplementation(async (input: { storageKey: string }) => ({
+      id: 'op-1',
+      storageKey: input.storageKey,
+      status: 'UPLOAD_PENDING',
+    })),
+    findByStorageKey: vi.fn().mockResolvedValue(null),
+    executeMachineUpload: vi.fn().mockResolvedValue({
+      fileAssetId: 'file-1',
+      fileVersionId: 'ver-1',
+      fileLinkId: 'link-1',
+    }),
+    finalizeAfterObjectPresent: vi.fn(),
+    loadCompletedFile: vi.fn().mockResolvedValue({ id: 'file-1' }),
+    fingerprintBytes: vi.fn().mockReturnValue('fp'),
+  };
+}
+
 describe('DriveService', () => {
   describe('with R2 configured', () => {
     let service: DriveService;
@@ -96,6 +115,7 @@ describe('DriveService', () => {
         makeNotificationsMock() as never,
         makeProjectHubMock() as never,
         makeConfigMock() as never,
+        makeArtifactsMock() as never,
       );
     });
 
@@ -712,6 +732,7 @@ describe('DriveService', () => {
         makeNotificationsMock() as never,
         makeProjectHubMock() as never,
         makeConfigMock() as never,
+        makeArtifactsMock() as never,
       );
       await expect(service.listFiles('p1')).rejects.toThrow(NotFoundException);
     });

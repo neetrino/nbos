@@ -7,6 +7,7 @@ import { DetailSheetSettingsMenu } from '@/components/shared';
 import type { Contact } from '@/lib/api/clients';
 import type { ContactPortfolioResponse } from '@/lib/api/client-portfolio';
 import { ClientPortfolioQuickActionsHeader } from './client-portfolio/ClientPortfolioQuickActions';
+import { ClickToCallButton } from '@/features/crm/calls/ClickToCallButton';
 import { ContactSheetMergeControls } from './ContactSheetMergeControls';
 import { isContactRestoreBlocked } from './contact-merge-wizard';
 
@@ -41,6 +42,7 @@ export function ContactSheetHeaderActions({
 }: ContactSheetHeaderActionsProps) {
   return (
     <div className="flex h-9 shrink-0 items-center gap-1.5">
+      <ClickToCallButton targetType="CONTACT" targetId={contact.id} hidden={isTrashView} />
       {onRemoveParticipant ? (
         <Button
           type="button"

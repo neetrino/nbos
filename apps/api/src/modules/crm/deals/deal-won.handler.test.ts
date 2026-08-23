@@ -31,6 +31,7 @@ describe('DealWonHandler', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
+    prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
     driveDealWonLinks = makeDriveDealWonLinksMock();
     productTeamSync = makeProductTeamSyncMock();
     productWhatsApp = makeProductWhatsAppMock();

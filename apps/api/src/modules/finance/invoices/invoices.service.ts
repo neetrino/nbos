@@ -7,7 +7,11 @@ import {
   type InvoiceMoneyStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import { getLatestPaymentDate, sumAmounts } from '../finance-status.utils';
+import {
+  getLatestPaymentDate,
+  sumAmounts,
+  type FinanceAmountCarrier,
+} from '../finance-status.utils';
 import { attachInvoicePaymentCoverage } from './invoice-payment-coverage';
 import {
   buildDateRange,
@@ -32,6 +36,10 @@ import {
   sendOfficialInvoiceRequest,
   updateOfficialInvoiceGovId,
 } from './invoice-official-request';
+import {
+  INVOICE_MONEY_STATUS_TRANSITION_SELECT,
+  prepareInvoiceMoneyStatusTransition,
+} from './invoice-money-status-transition';
 import { OperationalJournalService } from '../journal/operational-journal.service';
 import { assertPostingPeriodOpenForBookedAt } from '../journal/posting-period-guard';
 import {
@@ -48,6 +56,7 @@ import {
   resolveInvoiceParticipationWhere,
 } from './finance-invoice-participation.where';
 import { buildInvoiceSearchOr } from './invoice-search.where';
+import { allocateInvoiceCode } from '../../../common/utils/entity-code-series';
 import {
   assertInvoiceCancellable,
   assertInvoiceDraftDeletable,
@@ -164,7 +173,7 @@ export class InvoicesService {
               project: { select: { id: true, name: true } },
             },
           },
-          company: { select: { id: true, name: true } },
+          company: { select: { id: true, name: true, taxId: true } },
           payments: { select: { id: true, amount: true, paymentDate: true } },
           _count: { select: { payments: true } },
         },
@@ -211,7 +220,7 @@ export class InvoicesService {
       subscriptionId: data.subscriptionId,
       amount: data.amount,
     });
-    const code = await this.generateCode();
+    const code = await allocateInvoiceCode(this.prisma);
     const taxStatus = await resolveInvoiceTaxStatus(this.prisma, data);
     const type = await resolveCreateInvoiceType(this.prisma, data);
     const due = resolveInvoiceDueDate(data.dueDate);
@@ -278,20 +287,11 @@ export class InvoicesService {
 
     const invoice = await this.prisma.invoice.findUnique({
       where: { id },
-      select: {
-        id: true,
-        orderId: true,
-        amount: true,
-        dueDate: true,
-        payments: {
-          select: {
-            amount: true,
-            paymentDate: true,
-          },
-        },
-      },
+      select: INVOICE_MONEY_STATUS_TRANSITION_SELECT,
     });
     if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
+
+    await prepareInvoiceMoneyStatusTransition(this.prisma, invoice, moneyStatus);
 
     const amount = Number(invoice.amount);
     const paid = sumAmounts(invoice.payments);
@@ -312,37 +312,41 @@ export class InvoicesService {
       return this.findById(id);
     }
 
+    await this.writeManualMoneyStatus(invoice, moneyStatus, amount, paid, now);
+    return this.findById(id);
+  }
+
+  private async writeManualMoneyStatus(
+    invoice: {
+      id: string;
+      orderId: string | null;
+      dueDate: Date | null;
+      payments: Array<FinanceAmountCarrier & { paymentDate: Date }>;
+    },
+    moneyStatus: InvoiceMoneyStatusEnum,
+    amount: number,
+    paid: number,
+    now: Date,
+  ) {
     const derivedBase = deriveBaseInvoiceMoneyStatus({
       amount,
       paid,
       dueDate: invoice.dueDate,
       now,
     });
-
     this.assertManualMoneyStatusAllowed(moneyStatus, derivedBase);
-
-    const updateData: Prisma.InvoiceUpdateInput = {
-      moneyStatus,
-    };
-    if (moneyStatus === 'PAID') {
-      updateData.paidDate = getLatestPaymentDate(invoice.payments) ?? now;
-    } else {
-      updateData.paidDate = null;
-    }
     await this.prisma.invoice.update({
-      where: { id },
-      data: updateData,
+      where: { id: invoice.id },
+      data: {
+        moneyStatus,
+        paidDate: moneyStatus === 'PAID' ? (getLatestPaymentDate(invoice.payments) ?? now) : null,
+      },
     });
-
-    if (invoice.orderId) {
-      await syncInvoiceOrderStatus(this.prisma, invoice.orderId);
-    }
-
-    if (moneyStatus === 'PAID' && invoice.orderId) {
+    if (!invoice.orderId) return;
+    await syncInvoiceOrderStatus(this.prisma, invoice.orderId);
+    if (moneyStatus === 'PAID') {
       await this.checkAndPromoteDeal(invoice.orderId);
     }
-
-    return this.findById(id);
   }
 
   private async checkAndPromoteDeal(orderId: string) {
@@ -444,15 +448,5 @@ export class InvoicesService {
 
   async getStats(params: InvoiceStatsParams = {}) {
     return getInvoiceStats(this.prisma, params);
-  }
-
-  private async generateCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const last = await this.prisma.invoice.findFirst({
-      where: { code: { startsWith: `INV-${year}-` } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `INV-${year}-${String(nextNum).padStart(4, '0')}`;
   }
 }

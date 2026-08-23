@@ -78,6 +78,11 @@ import {
   listDriveFileAllowedActionsForActor,
 } from './drive-file-action-guard.op';
 import type { DriveFileAction } from './drive-file-action-policy';
+import { DriveArtifactOperationService } from './artifact-operation/drive-artifact-operation.service';
+import {
+  humanArtifactAuth,
+  systemArtifactAuth,
+} from './artifact-operation/drive-artifact-auth.ports';
 
 const PRESIGNED_URL_EXPIRY_SECONDS = 3600;
 const SENSITIVE_GRANT_LOCKED_CONFIDENTIALITIES = new Set<string>([
@@ -96,6 +101,7 @@ export class DriveService {
     private readonly notifications: NotificationService,
     private readonly projectHub: DriveProjectHubService,
     private readonly config: ConfigService,
+    private readonly artifacts: DriveArtifactOperationService,
   ) {}
 
   async listFiles(projectId: string, prefix?: string): Promise<FileEntry[]> {
@@ -320,30 +326,36 @@ export class DriveService {
   async createGeneratedFileAsset(data: CreateGeneratedFileAssetDto) {
     const body =
       typeof data.content === 'string' ? Buffer.from(data.content, 'utf8') : data.content;
-    await this.r2.ensureS3().send(
-      new PutObjectCommand({
-        Bucket: this.r2.bucket,
-        Key: data.storageKey,
-        Body: body,
-        ContentType: data.contentType,
-      }),
-    );
-    return this.createFileAsset({
+    const actorId = data.createdById ?? data.ownerId ?? 'system';
+    const contentChecksum = this.artifacts.fingerprintBytes(body);
+    const operation = await this.artifacts.prepare({
+      source: 'SYSTEM',
+      ingress: 'MACHINE_PUT',
+      kind: 'CREATE_ASSET',
+      storageKey: data.storageKey,
+      entityType: data.link?.entityType ?? 'SYSTEM',
+      entityId: data.link?.entityId ?? data.storageKey,
       displayName: data.displayName,
       originalName: data.originalName,
-      fileType: data.fileType,
+      mimeType: data.mimeType ?? data.contentType,
       purpose: data.purpose,
       sourceModule: data.sourceModule,
-      ownerId: data.ownerId,
-      createdById: data.createdById,
       visibility: data.visibility,
       confidentiality: data.confidentiality,
-      storageKey: data.storageKey,
-      mimeType: data.mimeType ?? data.contentType,
-      checksum: data.checksum,
-      link: data.link,
-      sizeBytes: body.byteLength,
+      linkType: data.link?.linkType,
+      expectedSizeBytes: body.byteLength,
+      checksum: data.checksum ?? contentChecksum,
+      payloadFingerprint: contentChecksum,
+      actorType: 'SYSTEM',
+      actorId,
+      createdByEmployeeId: data.createdById,
     });
+    const result = await this.artifacts.executeMachineUpload(
+      operation.id,
+      body,
+      systemArtifactAuth(actorId),
+    );
+    return this.artifacts.loadCompletedFile(result.fileAssetId);
   }
 
   async linkFileAsset(id: string, data: CreateFileLinkDto, access?: DriveEntityContextAccess) {
@@ -369,6 +381,21 @@ export class DriveService {
     const orgId = readTenantOrganizationId(this.config);
     const uploadId = randomUUID();
     const storageKey = buildVersionStagingKey(orgId, id, uploadId, fileName);
+    const actorId = access?.employeeId ?? file.createdById ?? file.ownerId ?? 'human';
+    await this.artifacts.prepare({
+      source: 'HUMAN',
+      ingress: 'PRESIGNED',
+      kind: 'CREATE_VERSION',
+      storageKey,
+      entityType: 'FILE_ASSET',
+      entityId: id,
+      targetFileAssetId: id,
+      displayName: fileName,
+      mimeType: contentType,
+      actorType: 'EMPLOYEE',
+      actorId,
+      createdByEmployeeId: access?.employeeId ?? undefined,
+    });
     const command = new PutObjectCommand({
       Bucket: this.r2.bucket,
       Key: storageKey,
@@ -393,6 +420,33 @@ export class DriveService {
       throw new BadRequestException('storageKey does not belong to this file version upload.');
     }
     await this.getFileAsset(id, access, ['UPLOAD_VERSION']);
+    const operation = await this.artifacts.findByStorageKey(storageKey);
+    if (operation) {
+      if (operation.entityId !== id || operation.targetFileAssetId !== id) {
+        throw new BadRequestException('storageKey does not belong to this file version upload.');
+      }
+      const result = await this.artifacts.finalizeAfterObjectPresent(
+        operation.id,
+        { sizeBytes: data.sizeBytes, checksum: data.checksum, changeNote: data.changeNote },
+        humanArtifactAuth({
+          employeeId: actorId,
+          assertContext: async () => {
+            await this.getFileAsset(id, access, ['UPLOAD_VERSION']);
+          },
+        }),
+      );
+      return this.artifacts.loadCompletedFile(result.fileAssetId);
+    }
+
+    return this.completeLegacyFileVersion(id, actorId, data, storageKey);
+  }
+
+  private async completeLegacyFileVersion(
+    id: string,
+    actorId: string,
+    data: CompleteFileVersionDto,
+    storageKey: string,
+  ) {
     try {
       await this.r2
         .ensureS3()

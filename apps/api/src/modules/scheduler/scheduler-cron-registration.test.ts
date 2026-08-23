@@ -4,7 +4,9 @@ import { ConfigService } from '@nestjs/config';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { AiModelCatalogSyncCron } from './ai-model-catalog-sync.cron';
 import { AuthSessionCleanupCron } from './auth-session-cleanup.cron';
+import { SchedulerAiService } from './scheduler-ai.service';
 import { MailGmailWatchRenewCron } from './mail-gmail-watch-renew.cron';
 import { MailOutboundReconcileCron } from './mail-outbound-reconcile.cron';
 import { MailSyncReconcileCron } from './mail-sync-reconcile.cron';
@@ -36,6 +38,7 @@ const CRON_PROVIDERS = [
   MailOutboundReconcileCron,
   MailGmailWatchRenewCron,
   MailSyncReconcileCron,
+  AiModelCatalogSyncCron,
   ...INTERNAL_SCHEDULER_CRON_PROVIDERS,
 ] as const;
 
@@ -82,6 +85,10 @@ async function bootSchedulerCronModule(): Promise<INestApplication> {
       ScheduledJobRegistry,
       { provide: ConfigService, useValue: { get: () => undefined } },
       { provide: SchedulerService, useValue: createSchedulerServiceMock() },
+      {
+        provide: SchedulerAiService,
+        useValue: { runAiModelCatalogSync: vi.fn().mockResolvedValue({}) },
+      },
       ...CRON_PROVIDERS,
     ],
   }).compile();

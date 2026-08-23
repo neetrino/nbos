@@ -25,18 +25,21 @@
 
 ### CRM и продажи
 
-| Модуль      | CEO | Seller | PM  | Dev | Jr Dev | Designer | QA  | Tech Ops | Finance | Marketing | Head Sales | Head Delivery |
-| ----------- | --- | ------ | --- | --- | ------ | -------- | --- | -------- | ------- | --------- | ---------- | ------------- |
-| CRM (Leads) | ✅  | ✅     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ❌      | 👁        | ✅         | ❌            |
-| CRM (Deals) | ✅  | ✅     | 🔶  | ❌  | ❌     | ❌       | ❌  | ❌       | ❌      | 🔶        | ✅         | 🔶            |
-| Products    | ✅  | 👁     | ✅  | 🔶  | 🔶     | 🔶       | 🔶  | ❌       | 👁      | ❌        | 👁         | ✅            |
-| Orders      | ✅  | 👁     | 🔶  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | ❌        | 👁         | 🔶            |
+| Модуль                 | CEO | Seller | PM  | Dev | Jr Dev | Designer | QA  | Tech Ops | Finance | Marketing | Head Sales | Head Delivery |
+| ---------------------- | --- | ------ | --- | --- | ------ | -------- | --- | -------- | ------- | --------- | ---------- | ------------- |
+| CRM (Leads)            | ✅  | ✅     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ❌      | 👁        | ✅         | ❌            |
+| CRM (Deals)            | ✅  | ✅     | 🔶  | ❌  | ❌     | ❌       | ❌  | ❌       | ❌      | 🔶        | ✅         | 🔶            |
+| Call recordings (play) | ✅  | 🔶     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ❌      | ❌        | ✅         | ❌            |
+| Products               | ✅  | 👁     | ✅  | 🔶  | 🔶     | 🔶       | 🔶  | ❌       | 👁      | ❌        | 👁         | ✅            |
+| Orders                 | ✅  | 👁     | 🔶  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | ❌        | 👁         | 🔶            |
 
 **Пояснения:**
 
 - **Seller** — полный доступ к CRM, чтение по Orders (видит суммы и статусы оплаты для контроля своих сделок)
 - **PM** — ограниченный доступ к Deals только по привязанным к его проектам сделкам
 - **Marketing** — чтение Leads (для аналитики источников), ограниченный доступ к Deals (только статус и сумма для расчёта ROI)
+- **Call recordings (play)** — capability `CRM_CALL_RECORDINGS_PLAY`. Факт звонка (Call VIEW) не даёт playback. Seller 🔶 = свой Call (object-level) + Drive `CONFIDENTIAL` FileAsset. Marketing — deny. Head of Sales / CEO / Owner — capability по умолчанию; запись остаётся `CONFIDENTIAL`.
+- **Call note** — `CRM_LEADS_EDIT` / `CRM_DEALS_EDIT` (не VIEW): object-level как у Call VIEW; только после `finish`/`end`; optimistic `noteVersion`. Чтение old/new note через Audit API — `AUDIT_LOGS.VIEW`.
 
 ### Финансы
 

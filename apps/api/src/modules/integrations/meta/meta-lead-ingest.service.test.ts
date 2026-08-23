@@ -112,6 +112,7 @@ function createPrismaMock() {
       update: vi.fn(),
       findFirst: vi.fn().mockResolvedValue(null),
     },
+    $queryRaw: vi.fn().mockResolvedValue([{ next_value: 1 }]),
     $transaction: vi
       .fn()
       .mockImplementation(async (callback: (tx: typeof prisma) => Promise<string>) =>

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TasksService } from './tasks.service';
+import { TaskCreationService } from './task-creation.service';
 import { TASK_INCLUDE } from './task-response-includes';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
@@ -11,7 +12,11 @@ describe('TasksService', () => {
   beforeEach(() => {
     prisma = createMockPrisma();
     const notifications = { create: vi.fn().mockResolvedValue({ id: 'n1' }) };
-    service = new TasksService(prisma as never, notifications as never);
+    service = new TasksService(
+      prisma as never,
+      notifications as never,
+      new TaskCreationService(prisma as never),
+    );
   });
 
   describe('findAll', () => {
@@ -193,18 +198,61 @@ describe('TasksService', () => {
   });
 
   describe('create', () => {
-    it('generates code T-YYYY-NNNN', async () => {
-      prisma.task.findMany.mockResolvedValue([]);
-      prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
-      const result = await service.create({ title: 'Test', creatorId: 'c1' });
-      expect(result.code).toMatch(/^T-\d{4}-\d{4}$/);
+    // The code number comes from the entity_code_counters upsert, not from reading tasks.
+    beforeEach(() => {
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 1 }]);
+    });
+
+    it('writes the number reserved by the counter, without reading existing tasks', async () => {
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 4242 }]);
+      prisma.task.create.mockResolvedValue({ id: '1', code: 'unused-by-this-assertion' });
+
+      await service.create({ title: 'Test', creatorId: 'c1' });
+
+      expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
+      expect(prisma.task.findFirst).not.toHaveBeenCalled();
+      const data = prisma.task.create.mock.calls[0]?.[0].data as Record<string, unknown>;
+      expect(data.code).toBe(`T-${new Date().getFullYear()}-4242`);
       expect(prisma.task.create).toHaveBeenCalledWith(
         expect.objectContaining({ include: TASK_INCLUDE }),
       );
     });
 
+    it('writes a pre-reserved code without touching the counter again', async () => {
+      const tx = createMockPrisma();
+      tx.task.create.mockResolvedValue({ id: '1', code: 'unused' });
+
+      await service.create({ title: 'Test', creatorId: 'c1' }, undefined, tx, 'T-2026-0007');
+
+      expect(prisma.$queryRaw).not.toHaveBeenCalled();
+      const data = tx.task.create.mock.calls[0]?.[0].data as Record<string, unknown>;
+      expect(data.code).toBe('T-2026-0007');
+    });
+
+    it('reserves the code on the committed client when create runs inside a transaction', async () => {
+      const tx = createMockPrisma();
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 7 }]);
+      tx.task.create.mockResolvedValue({ id: '1', code: 'unused' });
+
+      await service.create({ title: 'Test', creatorId: 'c1' }, undefined, tx);
+
+      expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
+      expect(tx.$queryRaw).not.toHaveBeenCalled();
+      const data = tx.task.create.mock.calls[0]?.[0].data as Record<string, unknown>;
+      expect(data.code).toBe(`T-${new Date().getFullYear()}-0007`);
+      expect(prisma.task.create).not.toHaveBeenCalled();
+    });
+
+    it('fails the create instead of inventing a code when the counter returns nothing', async () => {
+      prisma.$queryRaw.mockResolvedValue([]);
+
+      await expect(service.create({ title: 'Test', creatorId: 'c1' })).rejects.toThrow(
+        /counter for TASK/i,
+      );
+      expect(prisma.task.create).not.toHaveBeenCalled();
+    });
+
     it('creates task inside a Work Space planning layer', async () => {
-      prisma.task.findMany.mockResolvedValue([]);
       await service.create({
         title: 'Backlog task',
         creatorId: 'c1',
@@ -224,7 +272,6 @@ describe('TasksService', () => {
     });
 
     it('normalizes completion rules on create', async () => {
-      prisma.task.findMany.mockResolvedValue([]);
       await service.create({
         title: 'Controlled task',
         creatorId: 'c1',
@@ -235,6 +282,35 @@ describe('TasksService', () => {
         expect.objectContaining({
           data: expect.objectContaining({
             completionRules: [{ type: 'requires_checklist_complete', enabled: true }],
+          }),
+        }),
+      );
+    });
+
+    it('ignores forged actor provenance on the create payload', async () => {
+      prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
+      await service.create({
+        title: 'Test',
+        creatorId: 'c1',
+        createdByActorType: 'EXTERNAL_AGENT',
+        createdByActorId: 'forged-agent',
+      } as never);
+      const data = prisma.task.create.mock.calls[0]?.[0].data as Record<string, unknown>;
+      expect(data.createdByActorType).toBeUndefined();
+      expect(data.createdByActorId).toBeUndefined();
+    });
+
+    it('records trusted actor provenance from the separate argument', async () => {
+      prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
+      await service.create(
+        { title: 'Test', creatorId: 'c1' },
+        { type: 'EXTERNAL_AGENT', id: 'agent-1' },
+      );
+      expect(prisma.task.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            createdByActorType: 'EXTERNAL_AGENT',
+            createdByActorId: 'agent-1',
           }),
         }),
       );
@@ -267,11 +343,62 @@ describe('TasksService', () => {
   });
 
   describe('start', () => {
-    it('starts a task', async () => {
-      prisma.task.findUnique.mockResolvedValue({ id: '1', status: 'OPEN' });
-      prisma.task.update.mockResolvedValue({ id: '1', status: 'IN_PROGRESS' });
+    it('starts a task with an atomic source-status predicate', async () => {
+      prisma.task.findUnique
+        .mockResolvedValueOnce({ id: '1', status: 'OPEN', trashedAt: null })
+        .mockResolvedValueOnce({ id: '1', status: 'IN_PROGRESS', trashedAt: null });
+      prisma.task.updateMany.mockResolvedValue({ count: 1 });
       const result = await service.start('1');
       expect(result.status).toBe('IN_PROGRESS');
+      expect(prisma.task.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: '1', status: { in: ['OPEN', 'ON_HOLD'] }, trashedAt: null },
+        }),
+      );
+      expect(prisma.task.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects start from REVIEW or IN_PROGRESS', async () => {
+      prisma.task.findUnique.mockResolvedValue({ id: '1', status: 'REVIEW', trashedAt: null });
+      prisma.task.updateMany.mockResolvedValue({ count: 0 });
+      await expect(service.start('1')).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.task.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('submitForReview', () => {
+    it('submits from allowed source statuses with an atomic predicate', async () => {
+      prisma.task.findUnique
+        .mockResolvedValueOnce({ id: '1', status: 'IN_PROGRESS', trashedAt: null })
+        .mockResolvedValueOnce({
+          id: '1',
+          code: 'T-2026-0001',
+          title: 'Review me',
+          status: 'REVIEW',
+          trashedAt: null,
+          reviewerId: null,
+          assigneeId: null,
+        });
+      prisma.task.updateMany.mockResolvedValue({ count: 1 });
+      const result = await service.submitForReview('1');
+      expect(result.status).toBe('REVIEW');
+      expect(prisma.task.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            id: '1',
+            status: { in: ['OPEN', 'IN_PROGRESS', 'ON_HOLD'] },
+            trashedAt: null,
+          },
+        }),
+      );
+      expect(prisma.task.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects submit from REVIEW or COMPLETED', async () => {
+      prisma.task.findUnique.mockResolvedValue({ id: '1', status: 'COMPLETED', trashedAt: null });
+      prisma.task.updateMany.mockResolvedValue({ count: 0 });
+      await expect(service.submitForReview('1')).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.task.update).not.toHaveBeenCalled();
     });
   });
 

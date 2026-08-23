@@ -17,6 +17,10 @@ import { AuditModule } from '../audit/audit.module';
 import { PlatformAccessModule } from '../platform-access/platform-access.module';
 import { DriveAccessContextService } from './drive-access-context.service';
 import { DriveLibraryEntitiesService } from './drive-library-entities.service';
+import { DriveTaskArtifactService } from './drive-task-artifact.service';
+import { DriveArtifactStorageAdapter } from './artifact-operation/drive-artifact-storage.adapter';
+import { DriveArtifactOperationService } from './artifact-operation/drive-artifact-operation.service';
+import { DriveInternalArtifactService } from './artifact-operation/drive-internal-artifact.service';
 
 /** Producers + HTTP. BullMQ Worker lives in QueueWorkersModule. */
 @Module({
@@ -37,6 +41,10 @@ import { DriveLibraryEntitiesService } from './drive-library-entities.service';
     DriveCleanupApplyService,
     DriveAccessContextService,
     DriveLibraryEntitiesService,
+    DriveTaskArtifactService,
+    DriveArtifactStorageAdapter,
+    DriveArtifactOperationService,
+    DriveInternalArtifactService,
   ],
   exports: [
     DriveService,
@@ -45,6 +53,10 @@ import { DriveLibraryEntitiesService } from './drive-library-entities.service';
     DriveR2Client,
     DriveZipExportService,
     DriveExportZipQueueService,
+    DriveAccessContextService,
+    DriveTaskArtifactService,
+    DriveArtifactOperationService,
+    DriveInternalArtifactService,
   ],
 })
 export class DriveModule {}

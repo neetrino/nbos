@@ -344,6 +344,89 @@ Remaining depth:
 - разделить event-triggered tasks и launch task packs;
 - сохранить совместимость с уже существующей генерацией задач по `productType`.
 
+### C9. Task code выделяется одним аллокатором
+
+Статус: `SHIPPED` (**2026-08-23**)
+
+Подтверждение в коде:
+
+- [apps/api/src/modules/tasks/task-code-generation.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/tasks/task-code-generation.ts:1)
+- [apps/api/src/common/utils/entity-code-counter.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/common/utils/entity-code-counter.ts:1)
+
+Проблема, которую это закрывает:
+
+- код задачи выдавался чтением `max(tasks)` с последующей вставкой; при параллельном создании
+  два запроса получали один номер, и проигравший падал на `tasks.code UNIQUE` с HTTP 500;
+- в серию `T-{год}-` писали три места: `TasksService`, `SupportService.createExecutionTask`
+  и `AutoTasksService`, поэтому починка одного из них не устраняла дефект.
+
+Что сделано:
+
+- номер выдаёт `allocateEntityCodeNumber` одним upsert по `entity_code_counters`, то есть
+  PostgreSQL сериализует конкурентных вызывающих на строке счётчика;
+- `allocateTaskCode` — единственная поддерживаемая точка получения кода; все три писателя
+  вызывают её, собственных генераторов больше нет;
+- номер резервируется коротким закоммиченным statement на `PrismaClient`, а не внутри
+  интерактивной транзакции шлюза (C26): upsert держит `(TASK, year)` только на время
+  одной выдачи, уже готовый код уходит в `task.create`.
+
+> **Заголовок миграции `20260823000000_entity_code_counters` содержит ошибку.** Там написано
+> «Rolling-deploy safe in both directions» — это неверно, см. ниже. Файл не исправлен намеренно:
+> миграция уже применена, её чексумма записана в `_prisma_migrations`, и правка комментария
+> сломала бы сверку на всех базах, где она применена. Этот раздел — источник истины для порядка
+> выкатки; комментарий в SQL считать устаревшим.
+
+Порядок выкатки (обязателен, rolling deploy недопустим):
+
+1. **Preflight.** Убедиться, что нет кода задачи с числовым суффиксом длиннее 9 цифр:
+
+   ```sql
+   SELECT "code" FROM "tasks" WHERE "code" ~ '^T-\d{4}-\d{10,}$' LIMIT 1;
+   ```
+
+   Столбец `next_value` имеет тип `INTEGER`, а посев в миграции матчит `\d+` без верхней границы.
+   Пустой результат — можно продолжать. Непустой — миграцию не применять: посев либо упадёт на
+   переполнении, либо (при сужении шаблона) засеет счётчик ниже существующего кода и выдаст
+   дубликат на первой же выдаче. Сначала согласовать реконсиляцию такой строки.
+
+2. Остановить все процессы, создающие задачи (API, worker, scheduler).
+3. Применить миграцию и проверить, что счётчик засеян не ниже максимума по каждому году:
+
+   ```sql
+   SELECT c."year", c."next_value", MAX(CAST(SUBSTRING(t."code" FROM '^T-\d{4}-(\d+)$') AS INTEGER))
+   FROM "entity_code_counters" c
+   JOIN "tasks" t ON t."code" LIKE 'T-' || c."year" || '-%'
+   WHERE c."scope" = 'TASK' GROUP BY 1, 2;
+   ```
+
+4. Выкатить код на все инстансы разом.
+5. Возобновить запись.
+
+Причина запрета rolling deploy: счётчик и `max(tasks)` — два источника истины для одной серии.
+Одна вставка старым путём оставляет счётчик позади таблицы, после чего следующая выдача
+из счётчика даёт дубликат уже без всякой конкурентности. Откат назад требует той же паузы
+записи и сверки счётчика.
+
+Domain ownership (закрыто **2026-08-23**, post-Phase-1 Chat 1):
+
+- единственный production insert — `createTask` / `TaskCreationService`;
+- `TasksService.create` делегирует в тот же port (human/API, External Agent, Recurring);
+- `SupportService.createExecutionTask` и `AutoTasksService` больше не вызывают
+  `prisma.task.create` и не выделяют код сами;
+- Support пишет actor `SYSTEM` / `support:{ticketId}`; Automation пишет
+  `AUTOMATION` / `auto-tasks:{linkType}:{linkId}`; `creatorId` остаётся
+  ответственным сотрудником, не поддельным Employee;
+- seed `prisma.task.upsert` остаётся fixture-only.
+
+Подтверждение:
+
+- [apps/api/src/modules/tasks/task-creation.service.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/tasks/task-creation.service.ts)
+- [apps/api/src/modules/support/support.service.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/support/support.service.ts)
+- [apps/api/src/modules/automation/auto-tasks.service.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/automation/auto-tasks.service.ts)
+- handoff: `docs/NBOS/02-Modules/21-AI-Platform/33-Post-Phase-1-Chat-1-Tasks-Ownership-Handoff.md`
+
+C8 (blueprints vs automation rules) этим срезом не закрывается.
+
 ---
 
 ## Очерёдность зачистки

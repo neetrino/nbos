@@ -13,6 +13,11 @@ import { resolveDealOrderTotalAmount } from './deal-order-bootstrap.ops';
 import { resolveDealSubscriptionName } from '../../finance/subscriptions/subscription-commercial-name';
 import { ROUTE_A_PERIOD_COVERAGE_MONTH_COUNT } from './deal-subscription-deposit-coverage';
 import { linkDealDepositInvoiceToSubscription } from './link-deal-deposit-invoice';
+import {
+  allocateDealCode,
+  allocateProjectCode,
+  allocateSubscriptionCode,
+} from '../../../common/utils/entity-code-series';
 
 interface WonDealData {
   id: string;
@@ -271,7 +276,7 @@ export class DealWonHandler {
       );
     }
 
-    const projectCode = await this.generateProjectCode();
+    const projectCode = await allocateProjectCode(this.prisma);
     const contactId = deal.contactId;
     const project = await this.prisma.project.create({
       data: {
@@ -399,7 +404,7 @@ export class DealWonHandler {
     const amount = Number(deal.amount ?? firstPaidInvoice.amount);
     const created = await this.prisma.subscription.create({
       data: {
-        code: await this.generateSubscriptionCode(),
+        code: await allocateSubscriptionCode(this.prisma),
         name: resolveDealSubscriptionName(deal),
         projectId,
         productId,
@@ -440,7 +445,7 @@ export class DealWonHandler {
 
     await this.prisma.deal.create({
       data: {
-        code: await this.generateDealCode(),
+        code: await allocateDealCode(this.prisma),
         name: `Maintenance for ${deal.name ?? deal.code}`,
         contactId: deal.contactId,
         companyId: deal.companyId,
@@ -494,7 +499,7 @@ export class DealWonHandler {
     const billingStartDate = deal.maintenanceStartAt ?? new Date();
     await this.prisma.subscription.create({
       data: {
-        code: await this.generateSubscriptionCode(),
+        code: await allocateSubscriptionCode(this.prisma),
         name: resolveDealSubscriptionName(deal),
         projectId: deal.projectId,
         productId: product.id,
@@ -557,39 +562,6 @@ export class DealWonHandler {
       `Auto-created extension ${extension.id} for product ${product.id} from deal ${deal.code}`,
     );
     return extension.id;
-  }
-
-  private async generateProjectCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const prefix = `P-${year}-`;
-    const last = await this.prisma.project.findFirst({
-      where: { code: { startsWith: prefix } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `${prefix}${String(nextNum).padStart(4, '0')}`;
-  }
-
-  private async generateDealCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const prefix = `D-${year}-`;
-    const last = await this.prisma.deal.findFirst({
-      where: { code: { startsWith: prefix } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `${prefix}${String(nextNum).padStart(4, '0')}`;
-  }
-
-  private async generateSubscriptionCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const prefix = `SUB-${year}-`;
-    const last = await this.prisma.subscription.findFirst({
-      where: { code: { startsWith: prefix } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `${prefix}${String(nextNum).padStart(4, '0')}`;
   }
 
   private getFirstPaidInvoice(deal: WonDealData) {

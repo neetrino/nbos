@@ -99,15 +99,20 @@ Audit log - обязательный слой для всех критичных
 
 Пишем:
 
-- user;
+- actor type + actor id (Employee / External Agent / Internal AI / System / Automation);
+- optional legacy `userId` for human rows;
+- optional `onBehalfOf` when a human started an AI action;
+- channel / protocol / correlation id when present;
 - action;
 - entity type;
 - entity id;
 - old value;
 - new value;
 - reason;
-- ip/device/session, если доступно;
+- ip/device/session, если доступно (без raw tokens);
 - created at.
+
+Existing historical rows stay readable. Machine actors must not be written as fake Employees. Secrets, bearer tokens and full prompts are not stored in `changes`. Canon: `02-Modules/21-AI-Platform/05-AI-Data-Security-and-Audit.md`.
 
 ## Что обязательно аудировать
 
@@ -122,7 +127,10 @@ Audit log - обязательный слой для всех критичных
 - payroll policy changes;
 - finance approval settings;
 - export sensitive data;
-- failed admin access attempt.
+- failed admin access attempt;
+- AI provider key preflight validation, including failed attempts, before rotation replaces a stored key;
+- External Agent token issue/rotate/revoke, capability grant/revoke and scope grant/revoke;
+- External Agent policy denials.
 
 ## Audit UX
 

@@ -20,6 +20,9 @@ import {
 } from '@nbos/database';
 import { employeePersonSelect } from '../../common/employee-person.select';
 import { PRISMA_TOKEN } from '../../database.module';
+import { supportTaskCreationActor } from '../tasks/task-creation-actors';
+import { TaskCreationService } from '../tasks/task-creation.service';
+import { allocateDealCode, allocateSupportTicketCode } from '../../common/utils/entity-code-series';
 import { buildSupportSlaProjection } from './support-sla';
 import {
   buildPauseFieldsAfterWaitingChange,
@@ -169,6 +172,7 @@ export class SupportService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly auditService: AuditService,
     private readonly notificationService: NotificationService,
+    private readonly taskCreation: TaskCreationService,
   ) {}
 
   async findAll(params: TicketQueryParams) {
@@ -253,7 +257,7 @@ export class SupportService {
       }
     }
 
-    const code = await this.generateCode();
+    const code = await allocateSupportTicketCode(this.prisma);
     const priority = (data.priority as TicketPriorityEnum) ?? 'P3';
     const sla = this.calculateSlaDeadlines(priority);
     const category = (data.category as TicketCategoryEnum | undefined) ?? 'UNCLASSIFIED';
@@ -410,21 +414,20 @@ export class SupportService {
     }
 
     const workspaceId = await this.findProductWorkspaceId(ticket.productId);
-    return this.prisma.task.create({
-      data: {
-        code: await this.generateTaskCode(),
+    return this.taskCreation.create(
+      {
         title: this.buildExecutionTaskTitle(ticket, data.title),
         creatorId: data.creatorId,
         description: data.description ?? this.buildExecutionTaskDescription(ticket),
-        assigneeId: ticket.assignedTo,
+        assigneeId: ticket.assignedTo ?? undefined,
         priority: TICKET_PRIORITY_TO_TASK_PRIORITY[ticket.priority],
-        dueDate: data.dueDate ? new Date(data.dueDate) : ticket.slaResolveDeadline,
+        dueDate: this.resolveExecutionTaskDueDate(ticket.slaResolveDeadline, data.dueDate),
         workspaceId,
-        ...(workspaceId && { planningStatus: 'BACKLOG' }),
-        links: { createMany: { data: this.buildTaskLinks(ticket) } },
+        planningStatus: workspaceId ? 'BACKLOG' : undefined,
+        links: this.buildTaskLinks(ticket),
       },
-      include: SUPPORT_TASK_INCLUDE,
-    });
+      { actor: supportTaskCreationActor(ticket.id) },
+    );
   }
 
   async createExtensionDeal(id: string, data: CreateExtensionDealDto) {
@@ -440,7 +443,7 @@ export class SupportService {
 
     const deal = await this.prisma.deal.create({
       data: {
-        code: await this.generateDealCode(),
+        code: await allocateDealCode(this.prisma),
         name: this.buildExtensionDealName(ticket, data.name),
         contactId,
         projectId: ticket.projectId,
@@ -847,26 +850,6 @@ export class SupportService {
     return { ...ticket, slaState: buildSupportSlaProjection(ticket) };
   }
 
-  private async generateCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const last = await this.prisma.supportTicket.findFirst({
-      where: { code: { startsWith: `TKT-${year}-` } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `TKT-${year}-${String(nextNum).padStart(4, '0')}`;
-  }
-
-  private async generateTaskCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const last = await this.prisma.task.findFirst({
-      where: { code: { startsWith: `T-${year}-` } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `T-${year}-${String(nextNum).padStart(4, '0')}`;
-  }
-
   private async findExecutionTasks(ticketId: string) {
     return this.prisma.task.findMany({
       where: { links: { some: { entityType: SUPPORT_TICKET_ENTITY_TYPE, entityId: ticketId } } },
@@ -948,14 +931,13 @@ export class SupportService {
     return `Support ticket: ${ticket.code}\n${ticket.description ?? ''}`.trim();
   }
 
-  private async generateDealCode(): Promise<string> {
-    const year = new Date().getFullYear();
-    const last = await this.prisma.deal.findFirst({
-      where: { code: { startsWith: `D-${year}-` } },
-      orderBy: { code: 'desc' },
-    });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `D-${year}-${String(nextNum).padStart(4, '0')}`;
+  private resolveExecutionTaskDueDate(
+    slaResolveDeadline: Date | null,
+    dueDate?: string | null,
+  ): string | undefined {
+    const explicit = dueDate?.trim();
+    if (explicit) return explicit;
+    return slaResolveDeadline?.toISOString();
   }
 
   private buildExtensionDealName(
