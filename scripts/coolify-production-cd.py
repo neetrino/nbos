@@ -240,11 +240,10 @@ def require_commit(payload: Mapping[str, object], sha: str, label: str) -> None:
 
 
 def deploy_runtime(client: Coolify, env: Mapping[str, str], sha: str) -> None:
-    queued: list[tuple[str, str]] = []
+    # Sequential: Coolify force-rebuild of four apps at once has failed nbos-api.
     for name in RUNTIME_ENV:
         try_pin_sha(client, env[name], sha)
-        queued.append((name, start_force(client, env[name])))
-    for name, dep in queued:
+        dep = start_force(client, env[name])
         payload = wait_deployment(client, dep, APP_DEPLOY_TIMEOUT_SEC)
         require_commit(payload, sha, name)
 
