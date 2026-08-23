@@ -57,12 +57,12 @@ PR → main
 
 Имена в Git. UUID — только в чате Phase 0.
 
-| App | Branch | Auto Deploy | Build |
-| --- | --- | --- | --- |
-| `nbos-web` | `main` | **ON** | Dockerfile, `/Dockerfile.web` |
-| `nbos-api` | `main` | **ON** | Dockerfile, `/Dockerfile.api` |
-| `nbos-worker` | `main` | **ON** | Dockerfile, `/Dockerfile.api` |
-| `nbos-scheduler` | `main` | **ON** | Dockerfile, `/Dockerfile.api` |
+| App              | Branch | Auto Deploy | Build                         |
+| ---------------- | ------ | ----------- | ----------------------------- |
+| `nbos-web`       | `main` | **ON**      | Dockerfile, `/Dockerfile.web` |
+| `nbos-api`       | `main` | **ON**      | Dockerfile, `/Dockerfile.api` |
+| `nbos-worker`    | `main` | **ON**      | Dockerfile, `/Dockerfile.api` |
+| `nbos-scheduler` | `main` | **ON**      | Dockerfile, `/Dockerfile.api` |
 
 - `nbos-migrate` **нет**.
 - Coolify `dockerfile_target_build` у API-образа: пусто (нет migrator target).
