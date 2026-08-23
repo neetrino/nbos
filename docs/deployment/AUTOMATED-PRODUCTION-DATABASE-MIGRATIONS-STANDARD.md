@@ -97,7 +97,9 @@ Workflow разработчика:
 5. пройти tests/review;
 6. deployment автоматически применит migration к нужному environment.
 
-Production URLs не хранятся в локальном `.env`. Ручной запуск production migration с ноутбука разрешён только как аварийная процедура или одноразовый baseline с явным подтверждением.
+Production URLs не хранятся в Git. Ручной `prisma migrate deploy` с ноутбука **не** штатный путь.
+
+**NBOS (факт):** merge `main` → GitHub Actions CI → CD (`workflow_run`, `workflow_dispatch` как hotfix) → Coolify `nbos-migrate` (`prisma migrate deploy`, sentinel `NBOS_MIGRATE_DONE`) → Stop migrator → `nbos-api` / `nbos-worker` / `nbos-scheduler` / `nbos-web`. Coolify Auto Deploy OFF. Один SHA — один migrate job. Break-glass без GitHub: Coolify UI, тот же порядок (`docs/deploy.md` §5.1).
 
 ## 6. Порядок deployment
 
