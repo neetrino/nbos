@@ -1,6 +1,6 @@
 # NBOS Production Migration Gate — rollout
 
-Статус: **Phase 3 blocked (2026-08-23) — CD workflow in repo; GitHub secrets empty; hold (#212) not on main**  
+Статус: **Phase 4 done (2026-08-23) — Auto Deploy OFF; break-glass in docs/deploy.md; hotfix CD green**  
 Канон: один release → один `nbos-migrate` → потом 4 сервиса.  
 Старый промпт `Implement NBOS Production Migration Gate + Coolify Orchestration.md` **не выполнять**.
 
@@ -235,7 +235,7 @@ Phase 2 закрыта по one-shot. Phase 3 можно начинать **но
 - [x] CI не сломан
 - [x] Poll migrate до конца, timeout задан
 - [x] Fail migrate → 4 app не деплоятся
-- [ ] Ручной dispatch прогнан
+- [x] Ручной dispatch прогнан
 - [x] SHA limitation записана, если API не пинит commit
 - [x] Auto Deploy 4 app всё ещё OFF (уже выключен раньше Phase 4; не включать)
 
@@ -267,7 +267,7 @@ CD: best-effort PATCH, затем force rebuild ветки приложения 
 - Порядок: force rebuild `nbos-migrate` → poll `NBOS_MIGRATE_DONE exit=N` (timeout) → Stop → при `exit=0` deploy api, worker, scheduler, web и ждать Coolify deployment status. `exit!=0` / timeout / SHA mismatch → 4 app не трогать.
 - Sentinel снимается **до** Stop (после Stop runtime-логи пропадают). Coolify `finished` = старт контейнера, не Prisma.
 - `ci.yml` не менялся. Auto Deploy не включался. Четвёртый GitHub webhook не добавлялся. `PRISMA_MIGRATE_MODE` не переключался (на Coolify остаётся `status`). `DIRECT_URL` с `nbos-api` не снимался.
-- Ручной dispatch **не** запускался: hold (`NBOS_MIGRATE_HOLD` / PR #212) влит в `development`, **не** в `main`; GitHub Actions secrets пустые. Живой CD до merge hold в `main` и заполнения секретов запрещён.
+- Ручной dispatch **прогнан** (2026-08-23): [CD run](https://github.com/neetrino/nbos/actions/runs/32645992730) на `main` `b60a51f0`. `NBOS_MIGRATE_DONE exit=0` → Stop → api / worker / scheduler / web `running:healthy` на том же SHA. Hold (#212 / #213) и CD (#214 / #215) в `main`. GitHub Secrets заполнены (URL / token / UUID, не DB URL). `PATCH git_commit_sha` на этом прогоне **persisted=True**; сверка всё равно идёт по `deployment.commit`.
 
 ### Стоп
 
@@ -314,10 +314,17 @@ CD должен:
 
 ### Чеклист
 
-- [ ] Auto Deploy 4 app = OFF
-- [ ] migrator Auto Deploy = OFF
-- [ ] Ручной CD после выключения прошёл
-- [ ] Break-glass записан в канонический deploy doc
+- [x] Auto Deploy 4 app = OFF
+- [x] migrator Auto Deploy = OFF
+- [x] Ручной CD после выключения прошёл
+- [x] Break-glass записан в канонический deploy doc
+
+### Phase 4 progress (2026-08-23)
+
+- `PATCH /applications/{uuid}` `{ "is_auto_deploy_enabled": false }` на `nbos-api` / `nbos-web` / `nbos-worker` / `nbos-scheduler` / `nbos-migrate`: HTTP 200. Ветка `main` и domains не менялись. GET по-прежнему **не отдаёт** `is_auto_deploy_enabled` (как env values) — факт OFF = PATCH + отсутствие автодеплоя с webhook.
+- Четвёртый GitHub webhook не добавлялся. Авто-CD на `push`/`merge` `main` не включался.
+- Break-glass: `docs/deploy.md` §5.1.
+- Повторный `workflow_dispatch` CD **зелёный**: [run](https://github.com/neetrino/nbos/actions/runs/32647347099) SHA `b60a51f0`. `NBOS_MIGRATE_DONE exit=0` → api / worker / scheduler / web `running:healthy`. Auto Deploy остаётся OFF; авто-CD на `main` не включался.
 
 ### Стоп
 
