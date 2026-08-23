@@ -301,3 +301,16 @@ Yes. The residual C9 note (“Support/Automation still write Task via Prisma pas
 ### Findings for executor chat
 
 None that require a code fix. C9 may stay closed. Do not start NEW CHAT 2 until this work is committed after this PASS WITH DEBTS.
+
+## Independent re-verification — GPT-5.6 Sol (2026-08-23)
+
+**Verdict: PASS WITH DEBTS.** Commit `2aae557d` was re-reviewed independently at repository `HEAD` `0bc07ed5`. The only current worktree item was an unrelated untracked deployment document and was excluded from scope.
+
+- Repository-wide production writer search again found exactly one Task insert: `apps/api/src/modules/tasks/create-task.op.ts`.
+- Support and Automation use the exported `TaskCreationService`; Recurring, Client Services and External Agent remain on Tasks-owned facades. No parallel create implementation, direct Prisma bypass, service locator, or circular Tasks ↔ caller module dependency was found.
+- Human/API mapping still rejects caller-controlled actor provenance and delivery FKs. Support/Automation preserve accountable `creatorId` while recording explicit non-Employee producer provenance.
+- Targeted current-tree regression: **7 files / 88 tests passed** (`task-creation`, actors, HTTP input, TasksService, Support, Automation, Recurring).
+- The first `pnpm exec vitest` attempt did not execute because Corepack refused an unverifiable pnpm registry signature; the already-installed `node_modules/.bin/vitest` binary was used successfully instead.
+- Real-DB suites were not rerun because Chat 1 did not change the pre-existing allocator/transaction boundary and no disposable DB URL was established in this verification.
+
+No new actionable finding was identified. C9 remains honestly closed; the previously listed out-of-scope debts remain non-blocking for this milestone.

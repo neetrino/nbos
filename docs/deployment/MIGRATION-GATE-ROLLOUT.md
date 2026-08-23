@@ -1,6 +1,6 @@
 # NBOS Production Migration Gate — rollout
 
-Статус: **Phase 0 не начата**  
+Статус: **Phase 0 done (2026-08-23)**  
 Канон: один release → один `nbos-migrate` → потом 4 сервиса.  
 Старый промпт `Implement NBOS Production Migration Gate + Coolify Orchestration.md` **не выполнять**.
 
@@ -43,15 +43,34 @@ PR → main
 
 ### Чеклист
 
-- [ ] Найдены 4 production app: web / api / worker / scheduler
-- [ ] Записаны UUID/имена **без секретов** (в чате можно, в Git — только имена)
-- [ ] Известна production branch (`main`?)
-- [ ] Зафиксирован Auto Deploy: ON/OFF по каждому app
-- [ ] Понятно, чем собираются (Dockerfile.api / Dockerfile.web / Nixpacks)
-- [ ] Есть ли уже `DIRECT_URL` в Coolify (да/нет, **не значение**)
-- [ ] Есть ли Coolify API token в среде агента (да/нет, **не значение**)
-- [ ] Подтверждено: в API image нет отдельного migrator target
-- [ ] Подтверждено: CI есть, CD нет
+- [x] Найдены 4 production app: web / api / worker / scheduler
+- [x] Записаны UUID/имена **без секретов** (в чате можно, в Git — только имена)
+- [x] Известна production branch (`main`?)
+- [x] Зафиксирован Auto Deploy: ON/OFF по каждому app
+- [x] Понятно, чем собираются (Dockerfile.api / Dockerfile.web / Nixpacks)
+- [x] Есть ли уже `DIRECT_URL` в Coolify (да/нет, **не значение**)
+- [x] Есть ли Coolify API token в среде агента (да/нет, **не значение**)
+- [x] Подтверждено: в API image нет отдельного migrator target
+- [x] Подтверждено: CI есть, CD нет
+
+### Инвентарь (2026-08-23, без секретов)
+
+Имена в Git. UUID — только в чате Phase 0.
+
+| App | Branch | Auto Deploy | Build |
+| --- | --- | --- | --- |
+| `nbos-web` | `main` | **ON** | Dockerfile, `/Dockerfile.web` |
+| `nbos-api` | `main` | **ON** | Dockerfile, `/Dockerfile.api` |
+| `nbos-worker` | `main` | **ON** | Dockerfile, `/Dockerfile.api` |
+| `nbos-scheduler` | `main` | **ON** | Dockerfile, `/Dockerfile.api` |
+
+- `nbos-migrate` **нет**.
+- Coolify `dockerfile_target_build` у API-образа: пусто (нет migrator target).
+- `DIRECT_URL` в Coolify: **неизвестно** (live env не сняты).
+- Coolify API token в среде этого агента: **нет**.
+- GitHub Actions: есть `.github/workflows/ci.yml` (PR + `push` `main`). CD workflow **нет**. GitHub Actions secrets: пусто.
+- Три активных GitHub `push` webhook → Coolify manual webhook (web/api + worker + scheduler). Auto Deploy не выключали.
+- Не-prod: preview `kovkasyanplennica:*` собирается Nixpacks; к production gate не относится.
 
 ### Стоп
 

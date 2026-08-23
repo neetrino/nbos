@@ -290,3 +290,17 @@ Yes. Inventory is complete, writers moved together, seed is numeric and fail-clo
 ### Findings for executor chat
 
 None that require a product-code fix. C25 may be closed. Do not start NEW CHAT 3 until this work is committed after this PASS WITH DEBTS. Deploy still needs the write-pause sequence; do not rolling-deploy.
+
+## Independent re-verification — GPT-5.6 Sol (2026-08-23)
+
+**Verdict: PASS WITH DEBTS.** Commit `95382be3` was re-reviewed independently at repository `HEAD` `0bc07ed5`; the unrelated untracked deployment document was excluded.
+
+- Independent before/after searches confirmed that the seven affected year-scoped series (`INV`, `TKT`, `D`, `L`, `ORD`, `SUB`, `P`) have one named scope/allocator each and no production `MAX/latest/count + 1` generator remains. All discovered writers of each series use the same allocator.
+- Seed SQL uses numeric suffix maxima and ignores malformed rows. Padding remains minimum-width, so `9999 → 10000` is valid. Billing continues to allocate against the target date year; ATS/Meta reserve through the committed Prisma client.
+- Targeted current-tree unit/regression suite: **16 files / 238 tests passed**.
+- Non-production Neon dev (`ep-restless-tooth`, never production) real-DB suite: **1 file / 5 tests passed**, including concurrent named allocation, `9999 → 10000`, numeric seed behavior, and parallel Lead/Support production-path creates. The initial sandboxed attempt could not reach Neon; the identical rerun with approved network access passed.
+- That integration suite deletes its probe Lead/Support rows but intentionally does not reclaim allocated numbers. Running it on the shared dev branch therefore advanced the 2026 `LEAD` and `SUPPORT_TICKET` counters by eight and left safe, contractually allowed gaps. Counters were not decremented because unrelated concurrent work was active.
+- Read-only DB verification found migration `20260823120000_seed_sibling_entity_code_counters` finished. For every conforming populated series/year, `entity_code_counters.next_value >= numeric MAX(table suffix)`; no counter lag was found. Support has a counter but no remaining conforming fixture row, which is safe and represents an allowed gap.
+- The documented write-pause → seed → deploy-all → resume order remains necessary; rolling mixed old/new writers are unsafe and are not claimed safe.
+
+No new actionable finding was identified. C25 remains honestly closed; production migration execution remains an operations step outside this milestone.
