@@ -730,3 +730,136 @@ so the fail-closed reading is the correct one whether it is enforced in SQL or i
   `2025 max=15 counter=15`, `2026 max=361 counter=388`. The 2026 gap is the 27 probe tasks the
   integration test reserved and deleted, which is the intended reserve-not-reissue behavior. No probe
   rows remain.
+
+## Independent re-acceptance after `6be85612` + `dde78e46`
+
+- **Model/date:** Cursor Grok 4.6, 2026-08-23.
+- **HEAD:** `dde78e46` on `sipan`. Tree clean. Product code was not modified in this pass.
+- **Verdict:** **FAIL**. The three earlier blockers are not enough to pass, and a new product-code
+  defect appeared on the live External Agent create path.
+
+### Why FAIL
+
+`27-Phase-1-Continuation-After-Chat-8.md` still requires every applicable product-code requirement
+to be implemented. This pass found a live failure on exit criteria 1 and 2: six concurrent
+`tasks.create` calls through the External Agent REST surface returned HTTP 500. That is the same
+class of blocker as C23, with a different mechanism.
+
+Putting `allocateTaskCode` inside `AgentCapabilityGateway.commitDomainWithCheckpoint`'s interactive
+transaction holds the `entity_code_counters` row lock until the whole domain write and checkpoint
+commit. Concurrent creators serialize on that row and expire Prisma's default 5000 ms transaction
+timeout (~5755–5903 ms observed) while still in `allocateEntityCodeNumber`. The agent body is
+`AGENT_INTERNAL_ERROR` with a request id; no Prisma text leaked.
+
+This is not the original `P2002` collision. It is a lock-duration defect created by combining the
+two remediations. Raising the timeout is not a fix: it only lengthens the queue. Recorded as
+**C26** in `99-AI-Cleanup-Register.md`.
+
+Item 209 remains `[~]` in `10-*.md` for `tasks.attach_artifact`. That residual is still
+product-code, not environment. It is no longer the only reason for FAIL.
+
+### Commands and actual results
+
+| Check                                                     | Result                                                                                                                                |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `git status` / HEAD                                       | clean, `dde78e46`                                                                                                                     |
+| migration SHA-256 `20260823000000_entity_code_counters`   | `65e422dc1d3b466f3cf59800f8269c28f65d057ce7f0ae0a24b8cd23b5e3376c`                                                                    |
+| `prisma validate` + `migrate status`                      | valid; 217 migrations; schema up to date on `ep-restless-tooth`                                                                       |
+| `pnpm test` with `AI_PLATFORM_DB_TEST_URL=DIRECT_URL`     | **873 files / 4428 tests passed**                                                                                                     |
+| `pnpm test:regression`                                    | **22 files / 284 tests passed**                                                                                                       |
+| `pnpm lint`                                               | 0 errors, 12 pre-existing warnings (11 web, 1 API)                                                                                    |
+| `NODE_OPTIONS='--max-old-space-size=8192' pnpm typecheck` | 5/5 tasks, exit 0                                                                                                                     |
+| API artifact                                              | `nest build --builder swc` → 1864 files; `pnpm start:api` on `:4000` after `pnpm dev` hung on restart                                 |
+| Live sequential REST                                      | workspaces 200 (1 authorized); create 201 `T-2026-0637`; update 200; start 201 `IN_PROGRESS`; comment 201; submit-review 201 `REVIEW` |
+| Live concurrent REST                                      | **6/6 HTTP 500** (`reaccept-2026-08-22225217-burst-0..5`)                                                                             |
+| Live MCP                                                  | `tools/list` 14 tools, no delete/force/set_status; create and update succeeded; isolation deny `AGENT_RESOURCE_NOT_AVAILABLE`         |
+| Live AP OpenAI                                            | existing connection validated; bogus draft 400; 124 models, 122 `DISCOVERED`; key prefix only; 1 Internal Agent; 2 policies           |
+| Anthropic / cross-provider                                | not run — no second provider credential                                                                                               |
+
+`pnpm dev` was left hung on `Restarting 'dist/main.js'` / `Waiting for graceful termination` after
+the SWC rebuild. Live results are from a separate `PROCESS_ROLE=api` process started onto that
+`dist`. Database host was the designated non-production Neon. No migration was applied.
+
+### Blocker closures from the previous independent review
+
+1. **Competing `T-` writers — still closed.** Three `task.create` sites, all through
+   `allocateTaskCode`. Sequential live create issued `T-2026-0637`. Recurring goes through
+   `TasksService.create`. Support `generateCode` remains the `TKT-` series (C25).
+2. **Rollout contract — still closed as C9 erratum.** Migration file still claims rolling-deploy
+   safety; checksum unchanged.
+3. **K 209 — still partial.** Shared transaction holds for the five DB-only Task writes on the
+   sequential path. `tasks.attach_artifact` is still outside it. The new C26 defect is a
+   consequence of that shared transaction, not a close of 209.
+
+### Defects (do not mark Phase 1 complete until these land)
+
+1. **Blocking — C26 counter lock inside the K209 transaction.**
+   - Paths: `apps/api/src/modules/ai-platform/gateway/agent-capability.gateway.ts`
+     (`commitDomainWithCheckpoint`), `apps/api/src/modules/tasks/task-code-generation.ts`,
+     `apps/api/src/common/utils/entity-code-counter.ts`.
+   - Behavior: concurrent `tasks.create` through the gateway time out at 5 s and return 500.
+   - Fix: reserve the number in a short committed statement, then pass that code into the
+     transaction that writes the task and the checkpoint. Do not hold the counter row for
+     display-name lookups or the checkpoint. Do not "fix" this only by raising
+     `$transaction` timeout.
+   - Tests: live 6-way `POST /api/v1/agent/workspaces/{id}/tasks` with distinct idempotency
+     keys must return 201 × 6 unique codes and no 500 / no `P2002`. Add a real-DB case that
+     drives the **gateway** transaction, not only `TasksService.create`.
+2. **Still open — K 209 / `tasks.attach_artifact`.** Outbox or domain operation record; Phase 2
+   only if the canonical checklist is explicitly scoped that way.
+
+### Remaining debts (not this FAIL)
+
+- AP 689–691, 697: no Anthropic / second-provider credential.
+- AM 638: production audit-migration window.
+- Worker TLS Redis: no `rediss://`.
+- AL 626: no queued sensitive action in Phase 1.
+- C25: sibling code series.
+- C9 residual: Support/Automation still write `Task` directly.
+- Lint: 12 existing warnings.
+
+### Not verified and why
+
+- Full browser walk of the nine AI admin pages was not repeated. `localhost:3000` returned 200;
+  `/tasks` 307 to login. Sequential human-RBAC Task writes were not re-clicked in a browser.
+- Chat 8/12 AO drivers are not in the repository (`.chat8/`, `.chat12/` absent). This pass used a
+  disposable driver under `/tmp/nbos-reaccept/`.
+- Production database and production deploy were not contacted.
+
+## Response to C26
+
+Date 2026-08-23, on branch `sipan` after the independent re-acceptance at `dde78e46`. Product code
+was changed in this follow-up. **This section records the fix, not a new top-level verdict.** A
+live 6-way REST burst against a fresh `dist` is still required before the FAIL above can be
+revisited.
+
+The reviewer's mechanism was correct: `TasksService.generateCode` called `allocateTaskCode` on the
+optional transaction client, so the counter upsert joined `commitDomainWithCheckpoint`'s interactive
+transaction and held `(TASK, year)` through display-name lookups and the checkpoint. Six concurrent
+creates serialized on that row and expired the 5000 ms Prisma timeout.
+
+Two attempts were needed. Reserving on `this.prisma` from _inside_ the interactive callback still
+opened six transactions first. Live then failed with `Unable to start a transaction in the given
+time`: api `poolMax` is 5, and policy lookups on `this.prisma` inside those transactions held every
+connection. The gateway now runs `prepareCreate` and `reserveCreateCode` before `BEGIN`; the
+interactive transaction only writes the task and the checkpoint. The timeout was not raised.
+
+Live REST after a fresh SWC `dist` on `:4000`: six parallel creates returned `201 × 6`, unique codes
+`T-2026-0697`–`T-2026-0702`, 3882 ms, no 500, no `P2002`. Item 209 / `tasks.attach_artifact` is
+unchanged `[~]`. The top-level FAIL above is not revised here — that needs a full A–AQ re-run.
+
+## Independent C26 recheck
+
+- **Model/date:** Cursor Grok 4.6, 2026-08-23, same verifier as the FAIL above.
+- **Tree:** uncommitted working tree on `dde78e46` (12 modified, 2 untracked). Not a commit.
+- **C26 product claim:** **holds.** The counter is reserved on the committed client before `BEGIN`;
+  the interactive transaction only writes the task and the checkpoint. `$queryRaw` is no longer on
+  `TasksDbClient`, so a leftover `allocateTaskCode(tx)` would not type-check.
+- **Tests this chat ran:** 5 files / 57 tests passed, including
+  `agent-create-concurrency.int.test.ts` against the real non-production database.
+- **Live this chat ran** (after a fresh SWC rebuild, `localhost:4000` still 200): six parallel
+  `POST /api/v1/agent/workspaces/{id}/tasks` with distinct keys → **201 × 6**, codes
+  `T-2026-0738`–`T-2026-0743`, 3876 ms, no 500, no `P2002`. Probe agent revoked.
+- **Not “всё”.** Item 209 / `tasks.attach_artifact` is still `[~]`. The top-level Phase 1 verdict
+  stays **FAIL** until a full A–AQ re-run on a committed tree. C25, C9 ownership, and the
+  environment `[~]` items are unchanged.

@@ -213,6 +213,31 @@ describe('TasksService', () => {
       );
     });
 
+    it('writes a pre-reserved code without touching the counter again', async () => {
+      const tx = createMockPrisma();
+      tx.task.create.mockResolvedValue({ id: '1', code: 'unused' });
+
+      await service.create({ title: 'Test', creatorId: 'c1' }, undefined, tx, 'T-2026-0007');
+
+      expect(prisma.$queryRaw).not.toHaveBeenCalled();
+      const data = tx.task.create.mock.calls[0]?.[0].data as Record<string, unknown>;
+      expect(data.code).toBe('T-2026-0007');
+    });
+
+    it('reserves the code on the committed client when create runs inside a transaction', async () => {
+      const tx = createMockPrisma();
+      prisma.$queryRaw.mockResolvedValue([{ next_value: 7 }]);
+      tx.task.create.mockResolvedValue({ id: '1', code: 'unused' });
+
+      await service.create({ title: 'Test', creatorId: 'c1' }, undefined, tx);
+
+      expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
+      expect(tx.$queryRaw).not.toHaveBeenCalled();
+      const data = tx.task.create.mock.calls[0]?.[0].data as Record<string, unknown>;
+      expect(data.code).toBe(`T-${new Date().getFullYear()}-0007`);
+      expect(prisma.task.create).not.toHaveBeenCalled();
+    });
+
     it('fails the create instead of inventing a code when the counter returns nothing', async () => {
       prisma.$queryRaw.mockResolvedValue([]);
 

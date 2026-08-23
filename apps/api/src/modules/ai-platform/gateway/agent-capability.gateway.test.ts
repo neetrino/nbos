@@ -61,10 +61,18 @@ describe('AgentCapabilityGateway', () => {
     };
     taskWrites = {
       create: vi.fn().mockResolvedValue({ id: 'task-1', code: 'T-2026-1' }),
+      prepareCreate: vi.fn().mockResolvedValue({
+        title: 'Fix',
+        workspaceId: 'ws-1',
+        creatorId: 'owner-1',
+        actor: { type: 'EXTERNAL_AGENT', id: 'agent-1' },
+      }),
+      commitPreparedCreate: vi.fn().mockResolvedValue({ id: 'task-1', code: 'T-2026-1' }),
       update: vi.fn(),
       start: vi.fn(),
       comment: vi.fn(),
       submitReview: vi.fn(),
+      reserveCreateCode: vi.fn().mockResolvedValue('T-2026-0001'),
     };
     drive = {
       readTaskArtifact: vi.fn(),
@@ -172,7 +180,8 @@ describe('AgentCapabilityGateway', () => {
     );
 
     expect(result).toEqual(stored);
-    expect(taskWrites.create).not.toHaveBeenCalled();
+    expect(taskWrites.prepareCreate).not.toHaveBeenCalled();
+    expect(taskWrites.commitPreparedCreate).not.toHaveBeenCalled();
     expect(idempotency.complete).not.toHaveBeenCalled();
   });
 
@@ -221,7 +230,7 @@ describe('AgentCapabilityGateway', () => {
     await gateway.invoke(
       invocation('tasks.create', { workspaceId: 'ws-1', title: 'Fix' }, { idempotencyKey: 'op-1' }),
     );
-    expect(taskWrites.create).toHaveBeenCalled();
+    expect(taskWrites.commitPreparedCreate).toHaveBeenCalled();
     expect(idempotency.checkpointCommittedResult).toHaveBeenCalled();
     expect(idempotency.complete).toHaveBeenCalled();
     expect(audit.logMachineAction).toHaveBeenCalledWith(
@@ -263,6 +272,45 @@ describe('AgentCapabilityGateway', () => {
     );
   });
 
+  it('authorizes and reserves a Task code before opening the task+checkpoint transaction', async () => {
+    const order: string[] = [];
+    taskWrites.prepareCreate.mockImplementation(async () => {
+      order.push('prepare');
+      return {
+        title: 'Fix',
+        workspaceId: 'ws-1',
+        creatorId: 'owner-1',
+        actor: { type: 'EXTERNAL_AGENT', id: 'agent-1' },
+      };
+    });
+    taskWrites.reserveCreateCode.mockImplementation(async () => {
+      order.push('reserve');
+      return 'T-2026-0001';
+    });
+    gatewayPrisma.$transaction.mockImplementation(async (arg: unknown) => {
+      order.push('tx');
+      if (typeof arg === 'function') {
+        return (arg as (tx: typeof gatewayPrisma) => Promise<unknown>)(gatewayPrisma);
+      }
+      return undefined;
+    });
+
+    await gateway.invoke(
+      invocation(
+        'tasks.create',
+        { workspaceId: 'ws-1', title: 'Fix' },
+        { idempotencyKey: 'op-reserve' },
+      ),
+    );
+
+    expect(order).toEqual(['prepare', 'reserve', 'tx']);
+    expect(taskWrites.commitPreparedCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Fix' }),
+      'T-2026-0001',
+      gatewayPrisma,
+    );
+  });
+
   it('hands Tasks and its idempotency checkpoint the same transaction', async () => {
     await gateway.invoke(
       invocation(
@@ -274,7 +322,7 @@ describe('AgentCapabilityGateway', () => {
 
     // The mock runs the callback with itself, so both calls receiving that same
     // object is what proves they share one transaction rather than two writes.
-    const dispatched = taskWrites.create.mock.calls[0]?.[2];
+    const dispatched = taskWrites.commitPreparedCreate.mock.calls[0]?.[2];
     const checkpointed = idempotency.checkpointCommittedResult.mock.calls[0]?.[2];
     expect(gatewayPrisma.$transaction).toHaveBeenCalled();
     expect(dispatched).toBe(gatewayPrisma);
@@ -315,7 +363,7 @@ describe('AgentCapabilityGateway', () => {
   });
 
   it('releases an in-progress reservation when the domain call fails', async () => {
-    taskWrites.create.mockRejectedValue(new Error('domain failed'));
+    taskWrites.commitPreparedCreate.mockRejectedValue(new Error('domain failed'));
     await expect(
       gateway.invoke(
         invocation(
@@ -356,7 +404,7 @@ describe('AgentCapabilityGateway', () => {
       ),
     ).rejects.toThrow('complete failed');
     expect(prisma.externalAgentIdempotencyRecord.deleteMany).not.toHaveBeenCalled();
-    expect(taskWrites.create).toHaveBeenCalledTimes(1);
+    expect(taskWrites.commitPreparedCreate).toHaveBeenCalledTimes(1);
     expect(audit.logMachineAction).toHaveBeenCalled();
 
     prisma.externalAgentIdempotencyRecord.findUnique.mockResolvedValue({
@@ -373,6 +421,6 @@ describe('AgentCapabilityGateway', () => {
         invocation('tasks.create', input, { idempotencyKey: 'op-complete-fail' }),
       ),
     ).rejects.toBeInstanceOf(AgentAccessException);
-    expect(taskWrites.create).toHaveBeenCalledTimes(1);
+    expect(taskWrites.commitPreparedCreate).toHaveBeenCalledTimes(1);
   });
 });

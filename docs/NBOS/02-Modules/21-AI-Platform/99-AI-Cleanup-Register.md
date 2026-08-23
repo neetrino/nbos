@@ -178,7 +178,26 @@ The Tasks write paths and their helper operations now accept that client (`Tasks
 
 Evidence: `agent-write-atomicity.int.test.ts` (opt-in, real database) fails the surrounding transaction after `TasksService.create` and asserts no task survives — a mock could only show which client was passed, not that the write joined that transaction, and a single leftover `this.prisma` would have escaped it. `agent-capability.gateway.test.ts` asserts that the domain call and the checkpoint receive the same transaction, that a failing checkpoint releases the reservation instead of pinning it, and that Drive does not open a transaction.
 
+The counter reservation must stay outside this transaction (C26). Putting `allocateTaskCode` on the interactive client reintroduced a 500 on concurrent `tasks.create` after the two remediations landed together.
+
 **Still PARTIAL for `tasks.attach_artifact`.** Its domain change includes an object-store write, which cannot join a database transaction, so it keeps the sequential path and the narrow window remains there. Closing it needs an outbox or a domain operation record and is Phase 2 work. Checklist item 209 is `[x]` for the Tasks capabilities and `[~]` for Drive.
+
+### C26. Shared K209 transaction holds the Task-code counter lock — FIXED
+
+Found first-hand in the independent re-acceptance after `6be85612` + `dde78e46`. The five Tasks write capabilities open one Prisma interactive transaction for the domain write and the idempotency checkpoint. The first fix ran `allocateTaskCode` on that same client, so the counter upsert held `(TASK, year)` until the whole task+checkpoint committed.
+
+PostgreSQL serializes those upserts on the single row. Six concurrent `POST /api/v1/agent/workspaces/{id}/tasks` calls queued behind the first in-flight create and expired Prisma's 5000 ms interactive-transaction timeout (~5.7–5.9 s) inside `allocateEntityCodeNumber`. The agent saw HTTP 500 `AGENT_INTERNAL_ERROR`. No `P2002` — this is not the original C23 collision.
+
+**Fixed in Chat 12.** Two nested mechanisms, both required:
+
+1. Reserve the number in a short committed statement _before_ `BEGIN`, then pass the code into the task+checkpoint transaction. Doing the upsert on `this.prisma` _inside_ the interactive callback still opened six transactions first.
+2. Run policy and owner lookup before `BEGIN` as well. api `poolMax` is 5. Six interactive transactions that then called `this.prisma` for policy held every connection and deadlocked (`Unable to start a transaction in the given time` / expired transaction at ~5.7 s). The interactive transaction now only writes the task and the checkpoint.
+
+The `$transaction` timeout was not raised. A failed create may skip a number; that is the existing reserve-not-reissue contract.
+
+Evidence: `agent-capability.gateway.test.ts` asserts prepare → reserve → `BEGIN`. `agent-create-concurrency.int.test.ts` drives six concurrent `invoke('tasks.create')` on a real database. Live REST after a fresh SWC `dist` on `:4000`: six parallel `POST /api/v1/agent/workspaces/{id}/tasks` returned `201 × 6`, codes `T-2026-0697`–`T-2026-0702`, 3882 ms, no 500, no `P2002`.
+
+**Still open after this close:** item 209 / `tasks.attach_artifact` remains `[~]` (C24).
 
 ## D. Tasks alignment issues to verify before implementation
 

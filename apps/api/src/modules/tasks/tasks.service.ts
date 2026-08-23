@@ -148,7 +148,20 @@ export class TasksService {
     return items;
   }
 
-  async create(data: CreateTaskInput, createdByActor?: TaskCreatedByActor, tx?: TasksDbClient) {
+  /**
+   * Reserves the next `T-{year}` code on the committed client.
+   * Call this before opening a longer transaction that writes the task.
+   */
+  async reserveCode(): Promise<string> {
+    return allocateTaskCode(this.prisma);
+  }
+
+  async create(
+    data: CreateTaskInput,
+    createdByActor?: TaskCreatedByActor,
+    tx?: TasksDbClient,
+    reservedCode?: string,
+  ) {
     const db = this.db(tx);
     const title = data.title?.trim();
     if (!title) throw new BadRequestException('title is required');
@@ -168,7 +181,7 @@ export class TasksService {
     const linkRows = this.dedupeTaskLinks(data.links);
     const actorProvenance = actorProvenanceFields(createdByActor);
 
-    const code = await this.generateCode(tx);
+    const code = reservedCode ?? (await this.reserveCode());
     const task = await db.task.create({
       data: {
         code,
@@ -588,9 +601,5 @@ export class TasksService {
 
   private assertTaskMutable(task: { trashedAt?: Date | null }): void {
     assertEntityIsActive(task, 'trashedAt', 'Task');
-  }
-
-  private async generateCode(tx?: TasksDbClient): Promise<string> {
-    return allocateTaskCode(this.db(tx));
   }
 }

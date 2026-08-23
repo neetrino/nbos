@@ -25,5 +25,4 @@ export type TasksDbClient = Pick<
   | 'order'
   | 'deal'
   | 'lead'
-  | '$queryRaw'
 >;

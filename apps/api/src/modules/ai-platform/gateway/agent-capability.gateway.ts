@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import {
   AI_CAPABILITIES_FORBIDDEN_PHASE_1,
@@ -19,6 +12,14 @@ import { AiPlatformAuditService } from '../ai-platform-audit.service';
 import { AI_AUDIT_ACTION, AI_AUDIT_ENTITY } from '../ai-platform.constants';
 import type { AuthenticatedAgent } from '../auth/agent-authenticator.service';
 import { AgentAccessException } from '../auth/agent-auth.errors';
+import {
+  mapDomainError,
+  readResultEntityId,
+  requirePayload,
+  resolveIdempotencyKey,
+  TRANSACTIONAL_CAPABILITIES,
+  type IdempotencyKey,
+} from './agent-capability.helpers';
 import { pickCapabilityInput, requireCapability } from './agent-capability.input';
 import type { AgentCapabilityInvocation, AgentCapabilityResult } from './agent-capability.types';
 import { AgentDriveHandler } from './agent-drive.handler';
@@ -28,19 +29,6 @@ import { AgentReplayAuthorization } from './agent-replay-authorization';
 import { AgentTaskReadHandler } from './agent-task-read.handler';
 import { AgentTaskWriteHandler } from './agent-task-write.handler';
 import { AgentWorkspaceHandler } from './agent-workspace.handler';
-
-/**
- * Capabilities whose domain change is nothing but database writes, so it can
- * share a transaction with the idempotency checkpoint. `tasks.attach_artifact`
- * is deliberately absent: it writes to object storage as well.
- */
-const TRANSACTIONAL_CAPABILITIES: ReadonlySet<string> = new Set([
-  'tasks.create',
-  'tasks.update',
-  'tasks.start',
-  'tasks.comment',
-  'tasks.submit_review',
-]);
 
 /**
  * Domain Action Gateway: capability key → policy → Tasks/Drive services → audit.
@@ -125,6 +113,11 @@ export class AgentCapabilityGateway {
     state: { domainCommitted: boolean },
   ): Promise<AgentCapabilityResult> {
     const { agent, payload } = invocation;
+    if (key && capability.key === 'tasks.create') {
+      const result = await this.commitCreateOutsideLongLock(agent, capability, input, key);
+      state.domainCommitted = true;
+      return result;
+    }
     if (key && TRANSACTIONAL_CAPABILITIES.has(capability.key)) {
       const result = await this.prisma.$transaction(async (tx) => {
         const committed = await this.dispatch(agent, capability, input, payload, tx);
@@ -138,6 +131,35 @@ export class AgentCapabilityGateway {
     state.domainCommitted = true;
     if (key) await this.idempotency.checkpointCommittedResult(key, result);
     return result;
+  }
+
+  /**
+   * Policy, owner lookup and the counter upsert all commit on their own
+   * before `BEGIN`. The interactive transaction then only writes the task
+   * and the checkpoint, so it does not hold a pool connection while
+   * waiting for another (api `poolMax` is 5).
+   */
+  private async commitCreateOutsideLongLock(
+    agent: AuthenticatedAgent,
+    capability: AiCapabilityDefinition,
+    input: Record<string, unknown>,
+    key: IdempotencyKey,
+  ): Promise<AgentCapabilityResult> {
+    try {
+      const prepared = await this.taskWrites.prepareCreate(agent, input);
+      const reservedTaskCode = await this.taskWrites.reserveCreateCode();
+      return await this.prisma.$transaction(async (tx) => {
+        const data = await this.taskWrites.commitPreparedCreate(prepared, reservedTaskCode, tx);
+        const committed = {
+          capabilityKey: capability.key,
+          data: projectCapabilityOutput(capability, data),
+        };
+        await this.idempotency.checkpointCommittedResult(key, committed, tx);
+        return committed;
+      });
+    } catch (error) {
+      throw mapDomainError(error);
+    }
   }
 
   /**
@@ -262,47 +284,4 @@ export class AgentCapabilityGateway {
       );
     }
   }
-}
-
-type IdempotencyKey = {
-  agentId: string;
-  capabilityKey: string;
-  operationKey: string;
-  requestFingerprint: string;
-};
-
-function resolveIdempotencyKey(invocation: AgentCapabilityInvocation): string | null {
-  if (invocation.idempotencyKey) return invocation.idempotencyKey;
-  const fromInput = invocation.input.clientOperationId ?? invocation.input.idempotencyKey;
-  return typeof fromInput === 'string' ? fromInput : null;
-}
-
-function requirePayload(payload: AgentCapabilityInvocation['payload']): Uint8Array {
-  if (!payload?.bytes || payload.bytes.byteLength === 0) {
-    throw AgentAccessException.validationFailed('Artifact content is required');
-  }
-  return payload.bytes;
-}
-
-function readResultEntityId(data: unknown): string | null {
-  if (!data || typeof data !== 'object') return null;
-  const record = data as Record<string, unknown>;
-  if (typeof record.id === 'string') return record.id;
-  if (typeof record.fileAssetId === 'string') return record.fileAssetId;
-  return null;
-}
-
-function mapDomainError(error: unknown): unknown {
-  if (error instanceof AgentAccessException) return error;
-  if (error instanceof NotFoundException) {
-    return AgentAccessException.resourceNotAvailable();
-  }
-  if (error instanceof ConflictException) {
-    return AgentAccessException.conflict();
-  }
-  if (error instanceof BadRequestException) {
-    const message = typeof error.message === 'string' ? error.message : 'The request is invalid.';
-    return AgentAccessException.validationFailed(message);
-  }
-  return error;
 }

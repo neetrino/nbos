@@ -23,6 +23,10 @@ export type EntityCodePrismaClient = Pick<InstanceType<typeof PrismaClient>, '$q
  * Numbers are reserved, not reissued: if the caller's insert later fails the
  * number is skipped. Gaps are acceptable in a human-readable code; duplicates
  * are not.
+ *
+ * Call this as a short committed statement. Passing an open interactive
+ * transaction that still has other work to do holds the counter row until
+ * that transaction commits, and concurrent allocators then time out (C26).
  */
 export async function allocateEntityCodeNumber(
   prisma: EntityCodePrismaClient,

@@ -23,6 +23,10 @@ export function formatTaskCode(year: number, numericSuffix: number): string {
  * behind the table, so the next allocation collides with no concurrency at all.
  * That is why Support and Automation call this rather than keeping their own
  * generators.
+ *
+ * The client must commit this statement on its own. Passing an open
+ * interactive transaction that still writes the task and an idempotency
+ * checkpoint holds the counter lock for the whole transaction (C26).
  */
 export async function allocateTaskCode(prisma: EntityCodePrismaClient): Promise<string> {
   const year = new Date().getFullYear();

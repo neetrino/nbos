@@ -106,6 +106,7 @@ describe('AgentTaskWriteHandler', () => {
       }),
       { type: 'EXTERNAL_AGENT', id: 'agent-1' },
       undefined,
+      undefined,
     );
     expect(tasks.create.mock.calls[0]?.[0]).not.toHaveProperty('createdByActorType');
     expect(prisma.task.create).not.toHaveBeenCalled();
@@ -227,6 +228,7 @@ describe('AgentTaskWriteHandler', () => {
         assigneeId: expect.anything(),
       }),
       expect.anything(),
+      undefined,
       undefined,
     );
   });
