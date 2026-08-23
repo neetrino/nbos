@@ -1,6 +1,6 @@
 # NBOS Production Migration Gate — rollout
 
-Статус: **Phase 4 done (2026-08-23) — Auto Deploy OFF; break-glass in docs/deploy.md; hotfix CD green**  
+Статус: **Phase 5 in progress (2026-08-23) — auto-CD after green CI on main; Auto Deploy stays OFF**  
 Канон: один release → один `nbos-migrate` → потом 4 сервиса.  
 Старый промпт `Implement NBOS Production Migration Gate + Coolify Orchestration.md` **не выполнять**.
 
@@ -33,7 +33,7 @@ PR → main
   → health / Coolify deployment status
 ```
 
-Пока Phase 5 не закрыта: Auto Deploy у 4 app уже **OFF**; релиз = ручной `nbos-migrate` (status → deploy по подтверждению) → ручной Deploy 4 сервисов. Coolify `finished` ≠ Prisma. Success = лог `NBOS_MIGRATE_DONE exit=0`, потом Stop.
+Пока Phase 5 не закрыта: Auto Deploy у 4 app **OFF**; штатный релиз после влива Phase 5 = CI на `main` → CD. Coolify `finished` ≠ Prisma. Success = лог `NBOS_MIGRATE_DONE exit=0`, потом Stop.
 
 ---
 
@@ -366,10 +366,17 @@ nbos-api, nbos-worker, nbos-scheduler, nbos-web, nbos-migrate.
 
 ### Чеклист
 
-- [ ] Авто-CD только после зелёного CI
-- [ ] Два merge не стартуют migrate параллельно
-- [ ] Auto Deploy 4 app остаётся OFF
+- [x] Авто-CD только после зелёного CI
+- [x] Два merge не стартуют migrate параллельно
+- [x] Auto Deploy 4 app остаётся OFF
 - [ ] Проверен no-migration release
+
+### Phase 5 progress (2026-08-23)
+
+- `.github/workflows/cd.yml`: `workflow_run` на workflow `CI` `completed`, job только если `conclusion == success` и `event == push` и `head_branch == main`. PR CI не деплоит. `workflow_dispatch` оставлен. `RELEASE_SHA` = `workflow_run.head_sha` (не HEAD main в момент старта CD).
+- `concurrency: nbos-production`, `cancel-in-progress: false` — второй merge в очередь, migrate не параллельно.
+- Coolify Auto Deploy не включался. `PRISMA_MIGRATE_MODE` на `nbos-migrate` переключён на `deploy` (значение не печатаем).
+- No-migration proof — после merge этого workflow в `main` (CI push → auto CD).
 
 ### Стоп
 
