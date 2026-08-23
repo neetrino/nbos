@@ -37,8 +37,10 @@ COPY packages/database/scripts/coolify-migrate.sh packages/database/scripts/cool
 
 ENV NODE_ENV=production
 
-# Prisma CLI reads DIRECT_URL from env (prisma.config.ts). Exit code is Prisma's.
+# Prisma CLI reads DIRECT_URL from env (prisma.config.ts).
 # PRISMA_MIGRATE_MODE=status|reconcile|deploy (default deploy).
-# Coolify Dockerfile apps do not reliably override CMD — keep logic in-image.
+# Coolify Dockerfile apps ignore start_command and force unless-stopped.
+# Default hold after Prisma so Coolify cannot restart-loop migrate (NBOS_MIGRATE_HOLD=0 to exit).
+ENV NBOS_MIGRATE_HOLD=1
 RUN chmod +x packages/database/scripts/coolify-migrate.sh
 CMD ["sh", "packages/database/scripts/coolify-migrate.sh"]
