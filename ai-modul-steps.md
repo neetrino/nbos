@@ -1,331 +1,480 @@
-# AI Platform Phase 1 — план исполнения
+# NBOS — следующие технические этапы после AI Platform Phase 1
 
-Рабочий файл: как ведём текущую Phase 1 модуля `docs/NBOS/02-Modules/21-AI-Platform/`, какие модели используем и какими промтами запускаем новые чаты.
+Этот файл теперь используется только как рабочий orchestration-файл для трёх согласованных post-Phase-1 исправлений.
 
-Канон задачи:
+Старые промпты Chat 1–12 удалены: их работа завершена и хранится в handoff/acceptance документах `docs/NBOS/02-Modules/21-AI-Platform/`.
 
-- `docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md` — executable checklist;
-- `docs/NBOS/02-Modules/21-AI-Platform/16-Phase-1-Execution-Strategy.md` — стратегия исполнения;
-- `docs/NBOS/02-Modules/21-AI-Platform/26-Phase-1-Chat-8-Acceptance.md` — фактический acceptance Chat 8;
-- `docs/NBOS/02-Modules/21-AI-Platform/27-Phase-1-Continuation-After-Chat-8.md` — решение продолжить текущую Phase 1 до полного exit criterion.
+Главный план долгов:
 
-## Метод работы
+- `docs/NBOS/02-Modules/21-AI-Platform/32-Post-Phase-1-Technical-Debt-Plan.md`
 
-Один implementation milestone = исполнитель → независимая проверка → исправление найденного → повторная проверка → commit.
+Связанные source-of-truth реестры:
 
-Эстафета между чатами передаётся handoff-файлом в репозитории, а не памятью старого чата.
+- AI Platform K209 / C24 — `docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md` и `99-AI-Cleanup-Register.md`;
+- code allocation C25 — `99-AI-Cleanup-Register.md`;
+- Tasks ownership C9 — `docs/NBOS/02-Modules/05-Tasks/04-Tasks-Cleanup-Register.md`.
 
-Правила:
+---
 
-- новый milestone всегда начинается в свежем чате;
-- verifier всегда новый и другого семейства моделей, чем исполнитель;
-- verifier читает handoff, но не принимает его как доказательство;
-- FAIL возвращается в тот же executor chat для исправления, после чего тот же verifier перепроверяет;
-- `[x]` допустим только при реальном code/test/live evidence;
-- не создавать второй AI architecture/runtime рядом с существующим Actor → Policy → Capability → Domain Action → Audit;
-- foundation реализуется минимально, но реально: не превращать future contract в ненужную enterprise-подсистему;
-- production-only credentials/windows не подделывать моками как live acceptance.
+# Порядок исполнения
 
-## Милстоуны и модели
+Исполнять строго отдельными свежими чатами:
 
-| Chat | Содержание                               | Исполнитель                    | Проверка           | Статус                           |
-| ---- | ---------------------------------------- | ------------------------------ | ------------------ | -------------------------------- |
-| 1    | Foundation + Audit                       | Cursor Grok 4.6                | Claude Opus 5 High | DONE                             |
-| 2    | Credentials + Auth + Policy              | Claude Opus 5 High             | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
-| 3    | Capabilities + Tasks                     | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
-| 4    | REST + MCP                               | Claude Opus 5 High             | Cursor Grok 4.6    | PASS WITH DEBTS                  |
-| 5    | Providers + Models                       | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
-| 6    | AI Admin UI                              | Cursor Grok 4.6 + Composer 2.5 | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
-| 7    | Security + regression                    | Claude Opus 5 High             | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
-| 8    | Intermediate acceptance                  | Claude Opus 5 High             | GPT-5.6 Sol High   | DONE — found missing AD–AI slice |
-| 9    | Prompt + Context/Memory/Knowledge        | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
-| 10   | Approvals + Customer-facing safety       | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
-| 11   | Usage/Cost/Evaluation + actionable debts | Cursor Grok 4.6                | GPT-5.6 Sol High   | PASS WITH DEBTS                  |
-| 12   | Final Phase 1 re-acceptance              | Claude Opus 5 High             | GPT-5.6 Sol High   | PLANNED                          |
+| Новый чат | Работа | Рекомендуемый исполнитель | Независимая проверка |
+| --- | --- | --- | --- |
+| 1 | Tasks domain ownership — Support/Automation через Tasks-owned create operation | Cursor Grok 4.6 Extra High Fast | GPT-5.6 Sol High |
+| 2 | Atomic human-readable codes — все оставшиеся серии через `entity_code_counters` | Cursor Grok 4.6 Extra High Fast | GPT-5.6 Sol High |
+| 3 | Unified Durable Drive Artifact Lifecycle — Human + Internal AI + External AI | Claude Opus 5 High | GPT-5.6 Sol High |
 
-## Текущее состояние
-
-Chat 8 подтвердил:
-
-- External Agent реально работает по REST и MCP;
-- Workspace/Task/Drive isolation работает;
-- create/update выдаются отдельными grants;
-- delete/force-complete отсутствуют;
-- revoke credential и disable Agent блокируют доступ;
-- OpenAI connect/validate/sync работает;
-- новые модели остаются `DISCOVERED`;
-- FIXED и PRIMARY_FALLBACK foundation работают;
-- Internal Agent foundation работает;
-- human NBOS regression зелёный.
-
-Но canonical Phase 1 exit criterion 9 не выполнен полностью до Chat 12. Chat 9 закрыл AD/AE; Chat 10 закрыл AF/AG; Chat 11 закрыл AH/AI и actionable Chat 8 product-code debts. Решение принято: **не переносить их в новую Phase 2, а закончить текущую Phase 1 через Chats 9–12**.
-
-## Правила БД — критично
-
-- Разработка ведётся только на designated non-production Neon branch; перед любым DB действием сверяй фактический host из `.env.local`.
-- Production DB не использовать для implementation/acceptance.
-- `prisma migrate dev` запрещён на унаследованной dev/prod-like базе из-за migration-history drift и риска reset.
-- Разрешённый deployment path для dev migrations — repository-approved `prisma migrate deploy` с `DIRECT_URL` после проверки target DB.
-- Production migrations выполняет только разработчик.
-- Не применять production actor-aware Audit migration без согласованного окна.
-- Большие production indexes должны соответствовать migration/rollout standard репозитория.
-
-## Мастер-промт Phase 1
-
-Этот блок вставляется в начало каждого нового executor chat.
+Каждый этап:
 
 ```text
-Продолжай текущую Phase 1 AI Platform NBOS.
-
-Сначала изучи:
-- docs/NBOS/02-Modules/21-AI-Platform/00-AI-Platform-Overview.md
-- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md
-- docs/NBOS/02-Modules/21-AI-Platform/16-Phase-1-Execution-Strategy.md
-- docs/NBOS/02-Modules/21-AI-Platform/26-Phase-1-Chat-8-Acceptance.md
-- docs/NBOS/02-Modules/21-AI-Platform/27-Phase-1-Continuation-After-Chat-8.md
-- docs/NBOS/02-Modules/21-AI-Platform/99-AI-Cleanup-Register.md
-- handoff предыдущего milestone
-- связанный canon/runtime затронутых NBOS modules.
-
-Handoff и старые [x] — это claims, а не доказательство. Проверяй реальный runtime/code/tests.
-
-Архитектурные правила:
-- не создавай параллельную AI architecture;
-- используй существующий Actor → Policy → Capability → Domain Action → Audit foundation;
-- не обходи module-owned domain services прямыми Prisma domain writes;
-- сохраняй human RBAC и существующие Tasks/Drive/Audit/API/worker/scheduler flows;
-- не расширяй prompt/context/memory в capability/authorization source;
-- secrets никогда не должны попадать в AI context, API reads, logs или Audit;
-- не ослабляй isolation/idempotency/negative tests;
-- foundation делай минимально достаточным и расширяемым, не строй заранее полноценную enterprise-подсистему, которой canon пока не требует.
-
-Checklist:
-- применимые пункты отмечай [x] только после implementation + tests/evidence;
-- [~] оставляй честно, если есть реальная неполнота;
-- [!] BUSINESS DECISION только если canon/runtime не дают безопасного решения;
-- не объявляй Phase 1 complete до Chat 12 final re-acceptance.
-
-DB safety:
-- убедись, что работаешь не с production DB;
-- prisma migrate dev не использовать;
-- production migrations не применять;
-- не выдумывать provider keys или production environment evidence.
+fresh executor chat
+→ implementation
+→ handoff
+→ fresh independent verifier chat
+→ FAIL: исправление в том же executor chat
+→ re-verification тем же verifier
+→ PASS / PASS WITH DEBTS
+→ commit
+→ следующий этап
 ```
 
-## Chat 9 — executor prompt
+Не объединять эти три работы в один большой implementation-chat.
 
-Рекомендуемая модель: **Cursor Grok 4.6 Extra High Fast**.
+---
 
-В новый чат вставить мастер-промт выше, затем этот блок.
+# Общие правила для всех трёх новых чатов
+
+- Работай в текущей рабочей ветке и сначала проверь `git status`, HEAD и фактический runtime.
+- Handoff/docs — claims, а не evidence. Проверяй код, DB schema, tests и реальные call paths.
+- Не делать drive-by refactor вне scope этапа.
+- Не ломать existing human RBAC, Tasks, Drive, Support, Automation, External Agent REST/MCP.
+- Module ownership сохраняется: Tasks владеет Task invariants; Drive владеет FileAsset/FileVersion/FileLink/storage lifecycle.
+- Не добавлять прямые Prisma domain writes из protocol/controller adapters.
+- Не использовать `prisma migrate dev` на inherited dev/prod-like DB.
+- Production DB и production migrations не трогать.
+- Для новых migrations: validate, rollout analysis, backward/forward compatibility и real non-production evidence где возможно.
+- Concurrency/crash/idempotency проблемы нельзя закрывать только unit-моками: где риск связан с PostgreSQL locks/transactions, нужен opt-in real-DB integration test.
+- Security-sensitive behavior проверять negative tests: unauthorized actor, revoked grant, duplicate retry, changed payload, cross-resource isolation.
+- Не объявлять долг закрытым, пока source cleanup register и tests не подтверждают реальное закрытие.
+
+---
+
+# NEW CHAT 1 — Tasks Domain Ownership
+
+## Цель
+
+Закрыть Tasks Cleanup C9: Tasks должен быть единственным владельцем правил создания Task.
+
+Сегодня некоторые internal flows, прежде всего Support и Automation, всё ещё создают `Task` напрямую через Prisma. Общий allocator `T-...` уже используется, поэтому code race закрыт, но domain ownership всё ещё нарушен.
+
+Целевая схема:
 
 ```text
-Это Chat 9 — Prompt Policy + Context/Memory/Knowledge Foundation.
-Работай в текущей ветке `sipan` поверх фактического результата Chat 8.
+Human/API ───────┐
+Support ─────────┤
+Automation ──────┼──> Tasks-owned application/domain create operation ──> Task
+System producers ┘
+```
 
-PRIMARY SCOPE:
-- AD 470–481
-- AE 482–496
-из `10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md`.
+Trusted internal/system callers не должны проходить через External Agent REST/MCP authorization. Но они должны использовать Tasks-owned operation и одни и те же Task invariants.
+
+## Executor prompt
+
+```text
+Реализуй NEW CHAT 1 — Tasks Domain Ownership.
+
+Это post-Phase-1 remediation. Не начинай другие workstreams.
 
 ОБЯЗАТЕЛЬНО ПРОЧИТАЙ:
-- 12-AI-Prompts-Context-Memory-and-Knowledge.md
-- 04-Internal-AI-Runtime.md
-- 11-Internal-Agent-Lifecycle-and-Assignments.md
-- 05-AI-Data-Security-and-Audit.md
-- 26-Phase-1-Chat-8-Acceptance.md
-- 27-Phase-1-Continuation-After-Chat-8.md
-и реальный runtime Internal Agent/provider/model/policy foundation.
+- ai-modul-steps.md
+- docs/NBOS/02-Modules/21-AI-Platform/32-Post-Phase-1-Technical-Debt-Plan.md
+- docs/NBOS/02-Modules/05-Tasks/01-Task-System-Overview.md
+- docs/NBOS/02-Modules/05-Tasks/04-Tasks-Cleanup-Register.md, особенно C8/C9
+- apps/api/src/modules/tasks/**
+- Support paths, которые создают Task
+- Automation/AutoTasks paths, которые создают Task
+- apps/api/src/modules/tasks/task-code-generation.ts
+- apps/api/src/common/utils/entity-code-counter.ts
 
-ЦЕЛЬ CHAT 9:
-1. Реализовать Prompt Policy persistence/config foundation.
-2. Реализовать Prompt Version lifecycle: DRAFT / TESTING / PUBLISHED / RETIRED.
-3. Internal Agent должен ссылаться только на допустимую опубликованную prompt policy/version согласно canon.
-4. Сохранять prompt-version identity для будущего execution attribution.
-5. Реализовать publish/rollback/config audit там, где это уже требуется canon.
-6. Prompt никогда не должен давать capabilities/scopes или изменять authorization.
-7. Реализовать Context Assembler contract/interface поверх существующей authorization foundation.
-8. Context retrieval всегда после authorization и через purpose-built projections.
-9. Зафиксировать source/provenance, freshness, classification/redaction и token/size budget contracts.
-10. Реализовать session-context contract.
-11. Реализовать persistent-memory interface/contract с обязательными owner/scope/purpose/retention/provenance, но persistent memory по умолчанию не запускать как полноценный runtime.
-12. Реализовать future Knowledge/RAG source contract так, чтобы retrieval физически не мог обходить authorization.
-13. Secrets в AI memory/context запрещены.
-14. Добавить migrations/tests/admin wiring только там, где это реально нужно AD/AE.
-15. Обновить checklist и Cleanup Register честно.
+Сначала сделай repository-wide inventory всех прямых записей создания Task вне Tasks-owned слоя:
+- `prisma.task.create`;
+- transaction-client `.task.create`;
+- createMany/upsert или эквивалентные обходные writers.
 
-НЕ ДЕЛАТЬ:
-- production RAG/vector store;
-- embeddings platform;
-- unrestricted persistent memory;
-- full internal employee chat;
-- Messenger auto-reply;
-- новый authorization engine;
-- абстракции “на всякий случай”, которых AD/AE не требуют.
+Для каждого writer определи: это действительно Task creation, migration/test fixture или допустимый низкоуровневый Tasks-owned helper.
 
-Перед завершением:
-- targeted tests для нового prompt/context foundation;
-- relevant integration/security tests;
-- typecheck;
-- Prisma validate/status без production migration;
-- regression по Internal Agent/model policy linkage.
+ЦЕЛЬ:
+создать один узкий Tasks-owned application/domain creation contract для human/internal/system producers и перевести Support/Automation и все применимые production writers на него.
 
-НА ВЫХОДЕ:
-создай `docs/NBOS/02-Modules/21-AI-Platform/28-Phase-1-Chat-9-Handoff.md`.
-В нём: completed checklist items, files/migrations, tests с фактическими результатами,
-remaining [~]/[!], security decisions, exact entry point для Chat 10.
-Не объявляй Phase 1 complete.
+ОБЯЗАТЕЛЬНЫЕ ТРЕБОВАНИЯ:
+1. Tasks остаётся владельцем Task invariants.
+2. Support/Automation после refactor не вставляют Task rows напрямую.
+3. Не создавай второй параллельный Tasks service только для system callers.
+4. Сохрани существующие:
+   - source/provenance;
+   - creator/assignee semantics;
+   - links;
+   - Work Space resolution;
+   - priority/status/defaults;
+   - Task code allocation;
+   - audit/events;
+   - transaction behavior.
+5. Trusted internal/system caller не должен проходить External Agent token/grant path.
+6. Actor/source context должен быть явным, а не поддельным Employee.
+7. Избеги circular Nest module dependency. При необходимости экспортируй узкий Tasks application service/port.
+8. Existing human Tasks/API behavior не ломать.
+9. Не меняй Task lifecycle/status semantics вне необходимости этого refactor.
+10. Не делай Workstream code-series cleanup и Drive artifact lifecycle в этом чате.
+
+TESTS / EVIDENCE:
+- unit/regression для Tasks-owned create operation;
+- Support create flow;
+- Automation create flow;
+- provenance/source сохранены;
+- code allocator по-прежнему общий;
+- repository search доказывает отсутствие применимых direct Task create writers вне Tasks-owned boundary;
+- typecheck/lint;
+- relevant full/regression tests;
+- если затронуты transaction semantics — real-DB integration evidence.
+
+DOCS:
+- обнови `docs/NBOS/02-Modules/05-Tasks/04-Tasks-Cleanup-Register.md` C9 только если gap реально закрыт;
+- обнови `32-Post-Phase-1-Technical-Debt-Plan.md` status/evidence для соответствующего workstream;
+- создай handoff `docs/NBOS/02-Modules/21-AI-Platform/33-Post-Phase-1-Chat-1-Tasks-Ownership-Handoff.md`.
+
+В handoff укажи inventory writers, architecture decision, files, migrations, tests, remaining debts и точный verifier scope.
+Не начинай NEW CHAT 2.
+Не коммить без отдельного указания разработчика.
 ```
 
-## Chat 10 — executor prompt
+---
 
-Рекомендуемая модель: **Claude Opus 5 High**.
+# NEW CHAT 2 — Atomic Human-Readable Codes
+
+## Цель
+
+Закрыть C25: убрать старый `read MAX/sort → +1 → INSERT` из всех оставшихся production code series и перевести их на общий atomic allocator `entity_code_counters`.
+
+Task `T-...` уже исправлен. Здесь речь о независимых сериях других модулей.
+
+Known candidates не являются окончательным списком:
+
+- Invoice;
+- Support Ticket (`TKT-`, не Task `T-`);
+- Deal;
+- Lead;
+- Order;
+- Subscription;
+- Project;
+- любые другие series, найденные repository-wide audit.
+
+## Executor prompt
 
 ```text
-Это Chat 10 — Approval + Customer-Facing Safety Foundation.
-Продолжай только после независимого PASS/PASS WITH DEBTS Chat 9.
+Реализуй NEW CHAT 2 — Atomic Human-Readable Codes.
 
-PRIMARY SCOPE:
-- AF 497–517
-- AG 518–531
+Начинай только после committed + independently verified NEW CHAT 1.
+Не начинай Unified Drive Artifact Lifecycle.
 
-Прочитай 13-AI-Risk-and-Approval-Policy.md, 15-Customer-Facing-AI-Policy.md,
-28-Phase-1-Chat-9-Handoff.md и реальный policy/capability/audit runtime.
+ОБЯЗАТЕЛЬНО ПРОЧИТАЙ:
+- ai-modul-steps.md
+- docs/NBOS/02-Modules/21-AI-Platform/32-Post-Phase-1-Technical-Debt-Plan.md
+- docs/NBOS/02-Modules/21-AI-Platform/99-AI-Cleanup-Register.md, C23/C25/C26
+- docs/NBOS/02-Modules/05-Tasks/04-Tasks-Cleanup-Register.md, Task allocator history
+- apps/api/src/common/utils/entity-code-counter.ts
+- apps/api/src/modules/tasks/task-code-generation.ts
+- packages/database/prisma/migrations/20260823000000_entity_code_counters/migration.sql
 
-Реализуй:
-- capability risk integration;
-- ALLOW / DENY / REQUIRE_APPROVAL runtime contract;
-- Approval Request persistence;
-- actor/capability/resource attribution;
-- safe payload summary + canonical payload digest;
-- PENDING / APPROVED / REJECTED / EXPIRED / CANCELLED / CONSUMED lifecycle;
-- one-time approval + expiry;
-- AI self-approval prohibition;
-- material payload change invalidates approval;
-- actor/grant/domain-state revalidation immediately before approved commit;
-- approval lifecycle Audit;
-- customer/conversation scope classification;
-- DRAFT_ONLY / APPROVAL_REQUIRED / AUTO_SEND_ALLOWED contracts;
-- draft и send как разные permissions/capabilities;
-- escalation contract;
-- internal-only vs customer-visible data boundary;
-- customer isolation / prompt-injection negative tests.
+СНАЧАЛА INVENTORY:
+repository-wide найди каждый production generator human-readable business code, который делает:
+- MAX/read latest + 1;
+- orderBy code desc + parse + 1;
+- count + 1;
+- любой эквивалентный non-atomic next-number calculation.
 
-НЕ СТРОЙ production Messenger auto-reply и не добавляй широкие autonomous customer actions.
+Не ограничивайся заранее известными модулями. Для каждого результата укажи series format, reset rule (year/global), unique constraint и все writers этой серии.
 
-Handoff: `29-Phase-1-Chat-10-Handoff.md`.
+ЦЕЛЬ:
+каждая подтверждённая affected series получает один authoritative PostgreSQL atomic counter через `entity_code_counters`.
+
+ТРЕБОВАНИЯ:
+1. Один named `ENTITY_CODE_SCOPE` на независимую серию.
+2. DB — единственный authoritative allocator следующего номера.
+3. Seed из существующих данных вычисляется NUMERICALLY, не lexicographically.
+4. Malformed historical codes не угадывать: явно report/handle безопасным правилом.
+5. Year reset сохранить только для серий, где он реально существует.
+6. Все writers одной серии должны одновременно перейти на один allocator.
+7. Нельзя оставлять mixed authority `counter + MAX(table)`.
+8. Gaps после зарезервированного, но не использованного номера допустимы; duplicate codes недопустимы.
+9. Проанализируй rollout: если old/new writers нельзя безопасно смешивать, документируй write pause/deploy order.
+10. Не менять entity ownership или бизнес-правила модулей.
+11. Не рефактори Tasks ownership — NEW CHAT 1 уже должен быть закрыт.
+12. Не трогай Drive artifact lifecycle.
+
+TESTS / EVIDENCE:
+- targeted unit tests для parsing/format;
+- real-DB concurrent allocation tests для каждой критичной series или table-driven reusable suite, которая реально вызывает production allocator paths;
+- несколько API/service parallel creates для representative high-risk modules;
+- доказательство unique codes under concurrency;
+- boundary test вокруг 9999 → 10000, чтобы исключить lexicographic bug;
+- migration seed validation на representative non-production data;
+- lint/typecheck/relevant regression.
+
+DOCS:
+- обнови `99-AI-Cleanup-Register.md` C25 только после полного inventory + evidence;
+- обнови связанные module cleanup registers, если в них есть соответствующие debts;
+- обнови `32-Post-Phase-1-Technical-Debt-Plan.md` status/evidence;
+- создай handoff `docs/NBOS/02-Modules/21-AI-Platform/34-Post-Phase-1-Chat-2-Code-Allocator-Handoff.md`.
+
+Не начинай NEW CHAT 3.
+Не коммить без отдельного указания разработчика.
 ```
 
-## Chat 11 — executor prompt
+---
 
-Рекомендуемая модель: **Cursor Grok 4.6 Extra High Fast**.
+# NEW CHAT 3 — Unified Durable Drive Artifact Lifecycle
+
+## Цель
+
+Построить один профессиональный Drive-owned durable artifact lifecycle для всех трёх источников:
 
 ```text
-Это Chat 11 — Usage/Cost/Evaluation Foundation + actionable Phase 1 debts.
-Продолжай после независимого review Chat 10.
-
-PRIMARY SCOPE:
-- AH 532–548
-- AI 549–557
-- actionable debts из 26-Phase-1-Chat-8-Acceptance.md и последних handoff.
-
-Реализуй минимальный production-usable foundation:
-- AI execution/usage record;
-- actor/Internal Agent/provider/model/Model Policy/capability/channel attribution;
-- correlation/status/latency/retry/fallback attribution;
-- provider usage/tokens и historical cost metadata где возможно;
-- basic budget/usage-limit contracts;
-- Evaluation Suite/Run foundation;
-- model/model-policy/prompt-version/dataset attribution;
-- aggregate quality/latency/cost results;
-- deterministic/human/model-based grading должны оставаться раздельными.
-
-Также закрой применимые product-code debts:
-- shared Redis-backed rate-limit state для multi-instance API;
-- K209 idempotency crash/recovery gap;
-- K205/W368 declared output/projection validation, если checklist всё ещё требует это после reconciliation;
-- AJ 584/585 Model Policy candidate ordering/edit UI, если остаётся partial;
-- critical AI Admin browser E2E, если текущий test stack позволяет сделать это чисто и стабильно.
-
-Не подделывай environment evidence:
-- Anthropic live требует настоящий key;
-- live cross-provider fallback требует два реальных provider credentials;
-- production rediss:// evidence требует соответствующий endpoint;
-- production audit migration требует developer-controlled rollout window.
-
-Handoff: `30-Phase-1-Chat-11-Handoff.md`.
+Human UI ────────────┐
+Internal AI ─────────┼──> Drive Artifact Operation / Finalization / Recovery
+External AI ─────────┘                      │
+                                           ├─ R2/object storage
+                                           └─ PostgreSQL FileAsset/FileVersion/FileLink
 ```
 
-## Chat 12 — final acceptance prompt
+Это расширяет исходный K209/C24 fix. Мы не строим отдельный AI-only upload subsystem.
 
-Рекомендуемая модель: **Claude Opus 5 High**. После отчёта — независимый review GPT-5.6 Sol High.
+Принцип:
+
+- **один общий lifecycle/finalization/recovery engine принадлежит Drive**;
+- ingress различается по источнику;
+- Human browser сохраняет эффективный direct-to-R2 presigned upload;
+- Internal AI использует trusted server/worker machine ingress;
+- External AI использует authorized REST/MCP ingress;
+- все три сходятся в одной durable operation state machine и одном Drive domain finalization path.
+
+## Архитектурная цель
+
+Не навязывай exact enum names до reconciliation с runtime, но operation должна уметь однозначно различать как минимум:
 
 ```text
-Это Chat 12 — Final Phase 1 Re-Acceptance.
-Ты прежде всего verifier, а не архитектор нового функционала.
+prepared
+→ upload/object pending
+→ object uploaded/verified
+→ DB finalization/link pending
+→ completed
 
-Прочитай весь canonical Phase 1 checklist, Chats 8–11 handoffs/reviews и Cleanup Register,
-но не доверяй им без проверки.
++ failed/retryable/cancelled/recovery semantics где реально нужны
+```
+
+Критично: operation/storage key должен быть durable и повторно используемым при retry. Нельзя на каждом retry генерировать новый случайный object key и надеяться на cleanup.
+
+## Executor prompt
+
+```text
+Реализуй NEW CHAT 3 — Unified Durable Drive Artifact Lifecycle.
+
+Начинай только после committed + independently verified NEW CHAT 1 и NEW CHAT 2.
+Это самый глубокий из трёх remediation этапов. Сначала сделай architecture/runtime reconciliation, затем implementation.
+
+ОБЯЗАТЕЛЬНО ПРОЧИТАЙ:
+- ai-modul-steps.md
+- docs/NBOS/02-Modules/21-AI-Platform/32-Post-Phase-1-Technical-Debt-Plan.md
+- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md, K209
+- docs/NBOS/02-Modules/21-AI-Platform/99-AI-Cleanup-Register.md, C8/C24
+- Drive canon/cleanup docs
+- apps/api/src/modules/drive/**, особенно upload/version/FileAsset/FileLink paths
+- DriveTaskArtifactService
+- AgentCapabilityGateway / AgentIdempotencyService / replay authorization
+- External Agent REST/MCP artifact contracts
+- current human UI upload/presigned URL flow
+- current worker/queue infrastructure that may be reused for recovery
+
+BUSINESS/ARCHITECTURE DECISION ALREADY MADE:
+не создавай Human upload system отдельно от AI upload system.
+Нужен ONE Drive-owned durable Artifact Operation lifecycle + source-specific ingress adapters.
+
+TARGET:
+
+A. HUMAN UI
+- Browser получает prepare/upload contract от Drive.
+- Для больших/обычных user files browser грузит напрямую в R2 по presigned URL; bytes не должны зря проксироваться через API.
+- После upload вызывается общий verify/finalize operation.
+
+B. INTERNAL AI
+- Internal AI/tool runtime создаёт ту же Drive Artifact Operation.
+- Generated bytes/content загружаются backend/worker machine adapter либо другим оптимальным machine ingress.
+- Internal AI не создаёт отдельные FileAsset/FileLink правила.
+
+C. EXTERNAL AI
+- REST/MCP сохраняют Actor → Policy → Capability → Domain Action path.
+- `tasks.attach_artifact` должен использовать тот же Drive Artifact Operation.
+- Сохрани protocol parity и существующий безопасный contract; если для больших machine files нужен prepare/presigned path, добавляй его только как adapter над общей operation, не как второй lifecycle.
+
+COMMON CORE ДОЛЖЕН ВЛАДЕТЬ:
+- durable operation identity;
+- target entity/link intent;
+- persisted storage key/staging key;
+- file metadata, size, MIME, checksum where available;
+- source/actor/provenance;
+- status/state transitions;
+- retry/recovery state;
+- FileAsset/FileVersion/FileLink finalization;
+- audit/correlation;
+- orphan/reconciliation rules;
+- cancellation/expiry cleanup where safe;
+- idempotency semantics.
+
+CORRECTNESS REQUIREMENTS:
+1. Object storage + PostgreSQL не притворяются одной ACID transaction.
+2. Crash после object upload до DB finalization должен быть recoverable.
+3. Crash после DB linkage до final operation completion должен быть recoverable/idempotent.
+4. Retry не создаёт второй object, FileAsset, FileVersion или FileLink.
+5. Нельзя просто reclaim stale `IN_PROGRESS` и повторить domain mutation вслепую.
+6. Persist operation/storage identity BEFORE irreversible upload where necessary.
+7. Recovery worker/process должен принимать решение из durable state + фактического R2/DB state.
+8. Human/Internal/External используют один finalization engine.
+9. Authorization semantics не смешивать:
+   - Human — existing employee/Drive permissions;
+   - Internal AI — Internal Agent/onBehalfOf policy/grants;
+   - External AI — External Agent grants/scopes REST/MCP.
+10. Revalidate authorization на lifecycle point, где deferred/resumed operation собирается сделать чувствительный final commit/link. Revoked actor/grant не должен получить новую чувствительную mutation после resume.
+11. Recovery system не должен превращать storage object existence в authorization bypass.
+12. Drive остаётся owner FileAsset/FileVersion/FileLink и storage lifecycle.
+13. Не создавай generic distributed transaction framework для всего NBOS. Решение должно быть reusable внутри Drive/artifact operations, но не enterprise abstraction без необходимости.
+14. Existing human upload/version flows должны либо использовать новый common core, либо быть явно reconciled в него без regression.
+15. Object cleanup должен быть conservative: не удаляй объект, если ownership/state нельзя доказать.
+
+ОТДЕЛЬНО ПРОВЕРЬ:
+- current `createGeneratedFileAsset` делает R2 PutObject до DB create — этот path должен быть reconciled в durable operation;
+- current human presigned upload/version staging path — сохранить direct upload efficiency и свести finalization к common core;
+- External Agent `tasks.attach_artifact` K209/C24 — после implementation crash window должен быть реально закрыт, не только переименован.
+
+TEST MATRIX — ОБЯЗАТЕЛЬНО:
+- crash before upload;
+- crash during/failed upload;
+- object uploaded, crash before DB finalization;
+- DB finalization succeeds, crash before operation completion;
+- exact retry at every boundary;
+- changed payload / reused operation key;
+- two concurrent retries;
+- duplicate finalize request;
+- missing object at finalize;
+- mismatched size/checksum/MIME where enforced;
+- orphan object reconciliation;
+- revoked External Agent before resumed finalization;
+- disabled/paused Internal Agent before resumed sensitive action where applicable;
+- Human permission revoked before deferred finalization where policy requires recheck;
+- cross-Task/cross-Workspace target substitution attempt;
+- REST/MCP parity;
+- no secret/internal storage key leakage;
+- no duplicate FileAsset/FileLink/object.
+
+REAL EVIDENCE:
+- unit/state-machine tests;
+- integration tests with Prisma;
+- R2/storage adapter tests or controlled non-production storage integration;
+- crash/recovery simulation;
+- live External Agent REST+MCP artifact attach;
+- human UI upload regression;
+- Internal AI adapter contract test even if full production Internal AI chat is not yet enabled;
+- worker/recovery boot and retry behavior if queue is introduced/reused;
+- lint/typecheck/build/relevant full regression.
+
+MIGRATIONS:
+- additive where possible;
+- no production migration;
+- document rollout order and compatibility with old upload writers;
+- if mixed old/new writers are unsafe, require explicit deployment/write-pause strategy rather than claiming rolling safety.
+
+DOCS:
+- update Drive canon only for behavior that is actually implemented;
+- update AI Platform K209/C24 only if `tasks.attach_artifact` gap is genuinely closed;
+- update `32-Post-Phase-1-Technical-Debt-Plan.md` with final architecture/evidence;
+- create handoff `docs/NBOS/02-Modules/21-AI-Platform/35-Post-Phase-1-Chat-3-Drive-Artifact-Lifecycle-Handoff.md`.
+
+Do not start unrelated Phase 2 AI product features such as Messenger AI, employee chat or production RAG.
+Не коммить без отдельного указания разработчика.
+```
+
+---
+
+# Универсальный независимый verifier prompt
+
+Для каждого из трёх этапов открывай свежий verifier-chat другой модели.
+
+```text
+Ты независимый verifier post-Phase-1 remediation milestone NBOS.
+Ты НЕ реализуешь и НЕ исправляешь product code.
+
+Сначала прочитай:
+- ai-modul-steps.md
+- docs/NBOS/02-Modules/21-AI-Platform/32-Post-Phase-1-Technical-Debt-Plan.md
+- handoff проверяемого NEW CHAT
+- source cleanup register соответствующего долга
+- реальный diff/runtime.
+
+Handoff — claim, не evidence.
 
 ПРОВЕРЬ:
-1. A–AQ по фактическому runtime/code/tests.
-2. AD–AI first-hand, особенно prompt authorization boundary, context isolation,
-   approval digest/revalidation, customer isolation, usage attribution и eval persistence.
-3. AO External Agent live REST+MCP acceptance повторно.
-4. AP provider/model/Internal Agent live acceptance со всеми реальными keys, которые дал разработчик.
-5. AQ architecture review повторно.
-6. Все 11 Phase 1 exit criteria.
-7. Full tests, lint, typecheck, build, Prisma validate/status, relevant browser/integration checks.
-8. Regression human RBAC/Tasks/Drive/Audit/API/worker/scheduler.
-9. Нет ли product-code gap, спрятанного под словом environment/debt.
+1. branch/HEAD/worktree и полный diff;
+2. scope: нет ли лишнего redesign;
+3. source-of-truth module ownership;
+4. migrations: safety, rollout, mixed-version behavior, no destructive surprises;
+5. targeted tests;
+6. relevant regression tests;
+7. lint/typecheck/build where affected;
+8. real-DB concurrency/transaction tests, если milestone про concurrency/atomicity;
+9. negative/security tests;
+10. заявленный cleanup item действительно закрыт, а не переименован.
 
-Допустимый [~] после финала — только если implementation complete, а отсутствующее доказательство
-реально требует unavailable provider credential, production-like external environment или
-developer-controlled production maintenance window.
+Для NEW CHAT 1 дополнительно:
+- repository-wide direct Task writer inventory;
+- Support/Automation действительно используют Tasks-owned operation;
+- нет circular dependency/parallel task-creation logic.
 
-Создай `31-Phase-1-Final-Acceptance.md` с honest PASS / PASS WITH OPERATIONAL CONDITIONS / FAIL.
-Phase 1 можно объявить complete только если нет unresolved product-code requirement.
+Для NEW CHAT 2 дополнительно:
+- repository-wide code-generator inventory;
+- все writers каждой series имеют один allocator;
+- numeric 9999→10000 и concurrency;
+- seed/rollout safety.
+
+Для NEW CHAT 3 дополнительно:
+- Human/Internal AI/External AI реально сходятся в ONE Drive finalization/recovery engine;
+- ingress может отличаться, lifecycle не дублируется;
+- все crash boundaries воспроизводимы;
+- retries не создают duplicate object/FileAsset/FileLink;
+- recovery после object-upload-before-DB работает;
+- authorization revalidation на resumed/deferred sensitive commit;
+- K209/C24 действительно закрыт для `tasks.attach_artifact`;
+- human presigned upload efficiency не ухудшена без причины.
+
+Вердикт только:
+- PASS
+- PASS WITH DEBTS — если milestone закрыт, а оставшиеся долги реально вне его scope
+- FAIL — если основной correctness/ownership/reliability gap остаётся.
+
+Если FAIL:
+- дай точный список defects: path/behavior/impact/required fix;
+- ничего не исправляй;
+- верни работу executor chat.
+
+В конце допиши verification section в handoff.
+Не коммить, не пушить, не применять production migrations.
 ```
 
-## Универсальный промт независимой проверки Chats 9–11
+---
 
-Рекомендуемая модель: **GPT-5.6 Sol High**.
+# После трёх этапов
 
-```text
-Ты независимый verifier Chat N текущей Phase 1 AI Platform. Ты НЕ реализуешь и НЕ правишь product code.
+После independent PASS всех трёх:
 
-Прочитай handoff Chat N, canonical docs и checklist scope milestone, но handoff не считай доказательством.
-
-ПРОВЕРЬ ФАКТИЧЕСКИ:
-1. git branch/HEAD/diff и заявленные файлы;
-2. Prisma schema/migrations/status — только read/validate, production migration не применять;
-3. targeted tests и typecheck;
-4. relevant integration/security tests;
-5. diff milestone целиком;
-6. каждый новый [x] против реального code/test evidence;
-7. authorization/data isolation/secret handling;
-8. отсутствие прямых domain Prisma writes в обход module services;
-9. migration safety и backward compatibility;
-10. отсутствие лишней enterprise-подсистемы вне canon milestone;
-11. regression существующего External Agent/provider/model/Internal Agent foundation.
-
-Если нашёл дефект — VERDICT FAIL и точный список исправлений file/path/behavior/test.
-Код не правь. Исправляет исходный executor chat. После исправления перепроверь в этом же verifier chat.
-
-В handoff добавь:
-## Verification (Chat N)
-- model/date;
-- PASS / PASS WITH DEBTS / FAIL;
-- команды и реальные результаты;
-- discrepancies;
-- defects;
-- remaining debts;
-- not verified и почему.
-```
-
-## Следующее действие
-
-Chat 11 independently re-verified: **PASS WITH DEBTS**. First-pass FAIL remains on record. See `docs/NBOS/02-Modules/21-AI-Platform/30-Phase-1-Chat-11-Handoff.md` § Re-verification.
-
-Открыть **новый Cursor chat** с моделью **Claude Opus 5 High** и вставить мастер-промпт + Chat 12 block (`31-Phase-1-Final-Acceptance.md`). После отчёта — независимый review GPT-5.6 Sol High.
-
-Не объявлять Phase 1 complete до Chat 12 final re-acceptance.
+1. проверить, что C9, C25 и K209/C24 обновлены в source cleanup registers честно;
+2. сделать один короткий cross-regression по Tasks + Drive + Support + Automation + External Agent REST/MCP;
+3. только после этого начинать следующий функциональный AI Platform этап.
