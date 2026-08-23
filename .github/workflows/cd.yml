@@ -31,10 +31,13 @@ jobs:
     env:
       RELEASE_SHA: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
     steps:
+      # workflow_run is privileged. Do not checkout the triggering SHA
+      # (CodeQL actions/untrusted-checkout). Workspace is default branch;
+      # Coolify still pins RELEASE_SHA from the green CI run.
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.RELEASE_SHA }}
+          persist-credentials: false
 
       - name: Require production SHA
         run: |
