@@ -53,6 +53,7 @@ import { DriveInternalArtifactService } from './artifact-operation/drive-interna
     DriveR2Client,
     DriveZipExportService,
     DriveExportZipQueueService,
+    DriveAccessContextService,
     DriveTaskArtifactService,
     DriveArtifactOperationService,
     DriveInternalArtifactService,

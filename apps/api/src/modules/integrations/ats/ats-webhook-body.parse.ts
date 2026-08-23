@@ -14,9 +14,19 @@ function readFormString(value: unknown): string | null {
   return null;
 }
 
+function readOptionalFormField(
+  body: Record<string, unknown>,
+  key: string,
+): string | null | undefined {
+  if (!Object.prototype.hasOwnProperty.call(body, key)) {
+    return undefined;
+  }
+  return readFormString(body[key]);
+}
+
 /**
  * Parse ATS Active Call form fields from urlencoded or multipart body.
- * Unknown keys are ignored (ATS may add fields without breaking ingestion).
+ * Unknown keys are ignored. Absent optional keys stay `undefined`.
  */
 export function parseAtsWebhookBody(body: Record<string, unknown>): AtsWebhookPayload {
   const uid = readFormString(body['uid']);
@@ -26,15 +36,15 @@ export function parseAtsWebhookBody(body: Record<string, unknown>): AtsWebhookPa
 
   return {
     uid,
-    state: readFormString(body['state']),
-    input: readFormString(body['input']),
-    clid: readFormString(body['clid']),
-    op: readFormString(body['op']),
-    rate: readFormString(body['rate']),
-    billsec: readFormString(body['billsec']),
-    calldirect: readFormString(body['calldirect']),
-    disposition: readFormString(body['disposition']),
-    channel: readFormString(body['channel']),
-    recordLink: readFormString(body['record_link']),
+    state: readOptionalFormField(body, 'state'),
+    input: readOptionalFormField(body, 'input'),
+    clid: readOptionalFormField(body, 'clid'),
+    op: readOptionalFormField(body, 'op'),
+    rate: readOptionalFormField(body, 'rate'),
+    billsec: readOptionalFormField(body, 'billsec'),
+    calldirect: readOptionalFormField(body, 'calldirect'),
+    disposition: readOptionalFormField(body, 'disposition'),
+    channel: readOptionalFormField(body, 'channel'),
+    recordLink: readOptionalFormField(body, 'record_link'),
   };
 }

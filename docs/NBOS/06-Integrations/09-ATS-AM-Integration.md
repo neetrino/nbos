@@ -21,11 +21,12 @@ ATS отдаёт **четыре** возможности. Транскрипта
 
 ## 1. Environment
 
-| Variable      | Где                                                                     | Notes                                                                                |
-| ------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `ATS_API_KEY` | `nbos-api` обязательно для webhook; `nbos-worker` для download/callback | Optional at API boot. Unset → webhook `503`. Wrong/missing `key` → `401`.            |
-| `ATS_API_KEY` | `nbos-scheduler`                                                        | Не нужен. Сверка history идёт через API/worker с ключом процесса, который зовёт ATS. |
-| `ATS_API_KEY` | `nbos-web`                                                              | Не нужен. Браузер не зовёт ATS напрямую.                                             |
+| Variable                      | Где                                                                     | Notes                                                                                |
+| ----------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `ATS_API_KEY`                 | `nbos-api` обязательно для webhook; `nbos-worker` для download/callback | Optional at API boot. Unset → webhook `503`. Wrong/missing `key` → `401`.            |
+| `ATS_API_KEY`                 | `nbos-scheduler`                                                        | Не нужен. Сверка history идёт через API/worker с ключом процесса, который зовёт ATS. |
+| `ATS_API_KEY`                 | `nbos-web`                                                              | Не нужен. Браузер не зовёт ATS напрямую.                                             |
+| `ATS_RECORDING_ALLOWED_HOSTS` | `nbos-api` + `nbos-worker`                                              | Optional. Extra **exact** HTTPS hostnames for `record_link` / redirects.             |
 
 Ключ = код из кабинета ATS, раздел «Зарегистрированные данные». Не коммитить. Тот же ключ в URL webhook кабинета: `?key=`.
 
@@ -81,16 +82,17 @@ SIP из `Employee.sipId`, не хардкод. Пример: `"3126107"`.
 
 Продуктовые правила attach — `08-Calls` + `07-Lead-and-Deal-Merge`. Здесь только граница провайдера:
 
-| Case                                                         | NBOS                                                    |
-| ------------------------------------------------------------ | ------------------------------------------------------- |
-| Неверный / пустой `key`                                      | `401`, ничего не писать                                 |
-| Ключ не задан                                                | `503`                                                   |
-| Нет `uid`                                                    | `400`                                                   |
-| Тот же `uid`                                                 | Update той же строки Call                               |
-| Inbound `start` (или первое не-терминальное появление `uid`) | Нормализация `clid` → attach или Lead                   |
-| Outbound                                                     | Строка Call; Lead если номер новый (продукт `08-Calls`) |
-| `finish` / `end`                                             | Update; **без** `redirect_call`                         |
-| Inbound `start` + SIP                                        | `redirect_call` в голом JSON                            |
+| Case                                                         | NBOS                                                                                            |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| Неверный / пустой `key`                                      | `401`, ничего не писать                                                                         |
+| Ключ не задан                                                | `503`                                                                                           |
+| Нет `uid`                                                    | `400`                                                                                           |
+| Тот же `uid`                                                 | Atomic persist той же строки Call; absent fields не затирают; terminal `finish`/`end` absorbing |
+| Concurrent webhook на один `uid`                             | Unique `uid` + P2002 recovery; ATS 200, не 500                                                  |
+| Inbound `start` (или первое не-терминальное появление `uid`) | Нормализация `clid` → attach или Lead                                                           |
+| Outbound                                                     | Строка Call; Lead если номер новый (продукт `08-Calls`)                                         |
+| `finish` / `end`                                             | Update; **без** `redirect_call`                                                                 |
+| Inbound `start` + SIP                                        | `redirect_call` в голом JSON                                                                    |
 
 ### 2.4 Резолв `redirect_call` (inbound `start` only)
 
@@ -114,6 +116,22 @@ SIP из `Employee.sipId`, не хардкод. Пример: `"3126107"`.
 
 Contact на webhook не создаём.
 
+### 2.6 Monotonic state
+
+Canonical order from §2.2 (not inferred from live traffic):
+
+| From \ To          | start     | status    | finish    | end                   |
+| ------------------ | --------- | --------- | --------- | --------------------- |
+| (new/null/unknown) | yes       | yes       | yes       | yes                   |
+| start              | duplicate | yes       | yes       | yes                   |
+| status             | no        | duplicate | yes       | yes                   |
+| finish             | no        | no        | duplicate | no (already terminal) |
+| end                | no        | no        | no        | duplicate             |
+
+`initiated` is NBOS-local (click-to-call) and may advance to any provider state. Terminal `finish`/`end` are absorbing. Duplicate same state is idempotent. Unknown incoming states do not lower a known state. Conditional `updateMany` uses predecessor states in WHERE. SSE and recording enqueue run only when the corresponding transition is applied (or first-seen terminal recording).
+
+Sparse patch: absent form key = do not change. Explicit empty is preserved at parse (`null`) and is not written unless a future ATS contract documents a clear. Do not use `payload.field ?? null`.
+
 ---
 
 ## 3. Callback (NBOS → ATS)
@@ -128,7 +146,11 @@ Click-to-call. Браузер **не** вызывает ATS.
 | `from` | SIP / номер вызывающего (наш сотрудник) |
 | `to`   | Номер клиента                           |
 
-Внутренний NBOS `POST` (авторизованный employee) → сервер собирает `from`/`to` → ATS. Пустой SIP инициатора → 4xx.
+Внутренний NBOS `POST /crm/calls/click-to-call` (авторизованный employee, обязательный header `Idempotency-Key`) → сервер собирает `from`/`to` → ATS. Пустой SIP инициатора → 4xx.
+
+Documented callback query is only `key`, `from`, `to`. There is no provider idempotency token, request id, or callback status lookup in this contract. NBOS therefore uses **at-most-once** per actor-scoped key: durable `AtsCallIntent` is created **before** ATS; only one request claims `PROCESSING` and may call ATS; `PROCESSING` after an unknown transport outcome is not auto-retried (possible missed NBOS Call, never a double callback for that key). `ACCEPTED` / `FAILED` replays return the stored result.
+
+Callback JSON is not documented to return `uid`. Intent links to the Call row NBOS persists after ATS accept (`callId`). Webhook later may replace synthetic `ctc:` uid on that same Call. Matching a webhook to a pending click-to-call **only by phone/time** remains an existing unverified limitation — not a new correlation heuristic.
 
 ---
 
@@ -148,6 +170,23 @@ Click-to-call. Браузер **не** вызывает ATS.
 
 `uid` = File ID / id звонка. Worker качает байты → Drive. Fallback: webhook `record_link`, если `call-record` недоступен. Канон файла: `08-Calls` §6.
 
+### 5.1 Recording URL policy (SSRF)
+
+`call-record` and every `record_link` / `Location` hop use the same fail-closed policy before any body is read or written to R2:
+
+- HTTPS only, no URL credentials, port empty or `443`.
+- Hostname must match an **exact** allowlist after lowercasing and stripping trailing dots. No suffix match (`evilats.am` is not `account.ats.am`).
+- IP literals are denied. DNS resolves all A/AAAA addresses; the hop is denied if DNS fails, returns empty, or any address is not public global-unicast (including loopback, private, link-local, CGNAT, multicast, reserved/documentation, IPv4-mapped IPv6, cloud metadata).
+- Connection uses the already-validated addresses (pinned lookup). TLS SNI / certificate checks stay on the allowlisted hostname.
+- Redirects are followed manually, up to `ATS_CALL_RECORDING_MAX_REDIRECTS` (3). Each `Location` (including relative) is re-validated. Missing Location, loops, and over-limit are denied. Authorization headers are not set and are not forwarded.
+
+**Allowlist contract**
+
+- Built-in (canon): `account.ats.am`.
+- Extra hosts: `ATS_RECORDING_ALLOWED_HOSTS` — comma-separated exact hostnames only (no wildcards, no IPs, no URLs). Invalid entries are ignored (narrower allowlist).
+- If production `record_link` or an ATS redirect uses another hostname, that exact name must be added to `ATS_RECORDING_ALLOWED_HOSTS`. Do not guess CDN names. Until it is set, download of that URL fails closed (`FAILED` / retry per existing recording errors).
+- Do not log the full recording URL or query (it may contain a token / `ATS_API_KEY`).
+
 ---
 
 ## 6. Employee SIP
@@ -160,11 +199,16 @@ Click-to-call. Браузер **не** вызывает ATS.
 
 ## 7. Runtime сегодня vs канон
 
-| Есть в коде                                               | Ещё нет                                                       |
-| --------------------------------------------------------- | ------------------------------------------------------------- |
-| Webhook, ключ, inbound Lead, дедуп `uid`, логика redirect | Голый JSON ответа (сейчас может быть обёртка `{ data }`)      |
-| `AtsCallEvent` + `leadId`                                 | `contactId`, контекст Deal/Project, note, recording FileAsset |
-| —                                                         | Окно, list API, callback, history reconcile, download job     |
+| Есть в коде                                                                                                                      | Ещё нет                                                                   |
+| -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Webhook, ключ, inbound/outbound CRM Call, `redirect_call`, голый JSON (`@SkipTransform`)                                         | History reconcile                                                         |
+| Atomic `uid` persist, P2002 recovery, sparse patch, monotonic start→status→finish/end                                            | `projectId` / `productId` persisted on Call (screen reads them from Deal) |
+| `AtsCallEvent` = Call: `leadId`, `contactId`, `dealId`, employee context, `note`, `recordingFileAssetId`                         | Provider callback idempotency (ATS documents only `key`/`from`/`to`)      |
+| `GET /crm/calls`, `GET /crm/calls/:id`, `GET /crm/calls/:id/recording`, `GET /crm/calls/:id/screen`, `PATCH /crm/calls/:id/note` |                                                                           |
+| Active-call SSE (`GET /realtime/calls`): `call.started` / `call.answered` / `call.finished` + fullscreen screen                  |                                                                           |
+| CALL activities on Lead/Deal History and Contact Communication                                                                   |                                                                           |
+| Worker `ats-call-recording-download` → Drive FileAsset                                                                           |                                                                           |
+| `POST /crm/calls/click-to-call` + `Idempotency-Key` → `AtsCallIntent` at-most-once ATS `callback`                                |                                                                           |
 
 ---
 

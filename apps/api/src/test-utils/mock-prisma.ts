@@ -125,6 +125,7 @@ export function createMockPrisma() {
     messengerChannel: createModelMock(),
     messengerDirectThread: createModelMock(),
     atsCallEvent: createModelMock(),
+    atsCallIntent: createModelMock(),
     metaConversation: createModelMock(),
     externalAgent: createModelMock(),
     externalAgentCredential: createModelMock(),
