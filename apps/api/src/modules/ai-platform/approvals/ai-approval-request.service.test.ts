@@ -19,9 +19,10 @@ const AGENT = actorContextFromMachine({
 const EMPLOYEE_ID = 'emp-approver';
 const PAYLOAD = { conversationId: 'conv-1', customerId: 'cust-1', body: 'Thanks' };
 const DIGEST = digestApprovalPayload(PAYLOAD);
+const PENDING_TTL_MS = 60 * 60 * 1000;
 
 function row(overrides: Record<string, unknown> = {}) {
-  const now = new Date('2026-08-22T12:00:00.000Z');
+  const now = new Date();
   return {
     id: 'apr-1',
     requesterActorType: 'INTERNAL_AI',
@@ -38,7 +39,7 @@ function row(overrides: Record<string, unknown> = {}) {
     riskClass: 'HIGH',
     status: 'PENDING',
     requestedAt: now,
-    expiresAt: new Date('2026-08-23T12:00:00.000Z'),
+    expiresAt: new Date(now.getTime() + PENDING_TTL_MS),
     decidedByEmployeeId: null,
     decidedAt: null,
     decisionReason: null,
