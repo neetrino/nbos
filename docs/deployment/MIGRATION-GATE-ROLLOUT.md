@@ -1,6 +1,6 @@
 # NBOS Production Migration Gate — rollout
 
-Статус: **Phase 5 in progress (2026-08-23) — auto-CD after green CI on main; Auto Deploy stays OFF**  
+Статус: **DONE (2026-08-23) — CI → nbos-migrate → 4 Coolify apps; Auto Deploy OFF**  
 Канон: один release → один `nbos-migrate` → потом 4 сервиса.  
 Старый промпт `Implement NBOS Production Migration Gate + Coolify Orchestration.md` **не выполнять**.
 
@@ -369,14 +369,14 @@ nbos-api, nbos-worker, nbos-scheduler, nbos-web, nbos-migrate.
 - [x] Авто-CD только после зелёного CI
 - [x] Два merge не стартуют migrate параллельно
 - [x] Auto Deploy 4 app остаётся OFF
-- [ ] Проверен no-migration release
+- [x] Проверен no-migration release
 
 ### Phase 5 progress (2026-08-23)
 
-- `.github/workflows/cd.yml`: `workflow_run` на workflow `CI` `completed`, job только если `conclusion == success` и `event == push` и `head_branch == main`. PR CI не деплоит. `workflow_dispatch` оставлен. `RELEASE_SHA` = `workflow_run.head_sha` (не HEAD main в момент старта CD).
+- `.github/workflows/cd.yml`: `workflow_run` на workflow `CI` `completed`, job только если `conclusion == success` и `event == push` и `head_branch == main`. PR CI не деплоит. `workflow_dispatch` оставлен. `RELEASE_SHA` = `workflow_run.head_sha`. Workspace CD не checkout'ит этот SHA (CodeQL `untrusted-checkout`, #220).
 - `concurrency: nbos-production`, `cancel-in-progress: false` — второй merge в очередь, migrate не параллельно.
-- Coolify Auto Deploy не включался. `PRISMA_MIGRATE_MODE` на `nbos-migrate` переключён на `deploy` (значение не печатаем).
-- No-migration proof — после merge этого workflow в `main` (CI push → auto CD).
+- Coolify Auto Deploy не включался.
+- No-migration proof: [auto CD](https://github.com/neetrino/nbos/actions/runs/32652466735) `workflow_run` SHA `c2df8f09`. `NBOS_MIGRATE_DONE exit=0` → Stop migrator → api / worker / scheduler / web `running:healthy` / Coolify `finished` на том же SHA. Первый авто-CD на `11d72401` упал гонкой с merge #220 (`nbos-api` failed); повтор после зелёного CI #220 — успех.
 
 ### Стоп
 
@@ -422,10 +422,14 @@ workflow_dispatch оставь для ручного hotfix.
 
 ### Чеклист
 
-- [ ] Канон описывает CI → nbos-migrate → 4 deploy
-- [ ] Нет «миграции с ноутбука» как нормального пути
-- [ ] Нет «Auto Deploy с main сразу на 4 app»
-- [ ] security.todo 4.5 / 13.3 обновлены по факту
+- [x] Канон описывает CI → nbos-migrate → 4 deploy
+- [x] Нет «миграции с ноутбука» как нормального пути
+- [x] Нет «Auto Deploy с main сразу на 4 app»
+- [x] security.todo 4.5 / 13.3 обновлены по факту
+
+### Phase 6 progress (2026-08-23)
+
+Живые docs обновлены под факт. Progress Archive / AI handoff не трогались. Coolify Auto Deploy не включался.
 
 ### Промпт нового чата — Phase 6
 
