@@ -1,6 +1,6 @@
 # NBOS Production Migration Gate — rollout
 
-Статус: **Phase 0 done (2026-08-23)**  
+Статус: **Phase 1 done (2026-08-23)**  
 Канон: один release → один `nbos-migrate` → потом 4 сервиса.  
 Старый промпт `Implement NBOS Production Migration Gate + Coolify Orchestration.md` **не выполнять**.
 
@@ -108,12 +108,14 @@ PR → main
 
 ### Чеклист
 
-- [ ] Есть `db:migrate:deploy`
-- [ ] Есть Docker target/file для migrator с Prisma CLI
-- [ ] Runtime API image по-прежнему без migrate на старте
-- [ ] Web без DB credentials в Dockerfile
-- [ ] Локально/CI: migrator image собирается (или эквивалентная проверка)
-- [ ] Auto Deploy не тронут
+- [x] Есть `db:migrate:deploy`
+- [x] Есть Docker target/file для migrator с Prisma CLI
+- [x] Runtime API image по-прежнему без migrate на старте
+- [x] Web без DB credentials в Dockerfile
+- [x] Локально/CI: migrator image собирается (или эквивалентная проверка)
+- [x] Auto Deploy не тронут
+
+Локальная проверка (2026-08-23): `docker build --target migrator` успешен. CMD migrator = `pnpm --filter @nbos/database migrate:deploy`. Без `DIRECT_URL` и с unreachable dummy URL — exit 1. Last stage `Dockerfile.api` = `runner` (PROCESS_ROLE only). CD не добавлялся. Coolify / Auto Deploy не менялись.
 
 ### Стоп
 
