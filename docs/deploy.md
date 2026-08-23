@@ -255,16 +255,25 @@ NEXT_PUBLIC_BACKEND_URL=https://api.example.com
 
 ## 5. Порядок деплоя
 
+Нормальный прод-релиз: merge в `main` → зелёный CI → ручной GitHub Actions workflow **CD** (`workflow_dispatch`). Он собирает `nbos-migrate` этого SHA, ждёт `NBOS_MIGRATE_DONE exit=0`, Stop migrator, затем Coolify deploy `nbos-api` / `nbos-worker` / `nbos-scheduler` / `nbos-web`. Coolify Auto Deploy у этих пяти приложений **OFF**.
+
 1. Cloudflare DNS + SSL Full (strict) (§2).
-2. Миграции Neon **один раз** (не с каждой реплики API):
-
-   ```bash
-   pnpm --filter @nbos/database migrate:deploy
-   ```
-
+2. Миграции Neon **один раз на SHA**, через `nbos-migrate`, не с каждой реплики API. Не `prisma migrate deploy` с ноутбука как штатный путь.
 3. Деплой **API** → `https://api.example.com/api/health` → 200.
 4. Деплой **Web** → smoke sign-in на `https://app.example.com`.
 5. Правила Cloudflare WAF (§2.4).
+
+### 5.1 Break-glass: GitHub недоступен
+
+Если Actions лежит, релиз из Coolify UI (не включать Auto Deploy обратно).
+
+1. Coolify → `nbos-migrate` → **Deploy** (force rebuild ветки `main`, тот же SHA). Healthcheck migrator не включать.
+2. Coolify `finished` = контейнер **стартанул**, не Prisma. Runtime logs: `NBOS_MIGRATE_START` → Prisma → `NBOS_MIGRATE_DONE exit=N`. Снять sentinel **до** Stop: после Stop логи пропадают.
+3. `exit=0` → **Stop** `nbos-migrate`. `exit!=0` или нет sentinel → **стоп**, api / worker / scheduler / web не деплоить.
+4. Coolify **Deploy** (force rebuild того же SHA): `nbos-api`, `nbos-worker`, `nbos-scheduler`, `nbos-web`.
+5. Worker / scheduler без публичного HTTP: ждать Coolify deployment `finished` и `running:healthy`, не внешний health из браузера.
+
+Rollback: Coolify → Deployments → предыдущий зелёный билд (§9). DB: Neon PITR, не `migrate reset`.
 
 ---
 
