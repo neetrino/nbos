@@ -1,158 +1,171 @@
 # AI Platform — Post-Phase-1 Technical Debt Plan
 
-## Purpose
+## Status
 
-This file records the three known product-code debts that are intentionally kept separate from the Phase 1 closure gate.
+**APPROVED POST-PHASE-1 REMEDIATION PLAN**
 
-They are not one problem and should not be implemented in one large chat. Each workstream has a different owner, failure mode and correct architectural solution.
+This document records three product-code debts discovered during AI Platform Phase 1 acceptance and the agreed target architecture for resolving them.
 
-Current source evidence:
+Execution prompts live only in root `ai-modul-steps.md` so this file does not become a second orchestration source.
 
-- AI Platform checklist item K 209 and Cleanup Register C24;
-- AI Platform Cleanup Register C25;
-- Tasks Cleanup Register C9.
+Source debts:
 
-Phase 1 closure must continue to report these honestly. This file does not change an existing `[~]` to `[x]` and does not make any product claim by itself.
+- Workstream 1 — AI Platform K209 / Cleanup C24;
+- Workstream 2 — AI Platform Cleanup C25;
+- Workstream 3 — Tasks Cleanup C9.
+
+These are three different problems and must be implemented/reviewed as separate milestones.
 
 ---
 
-# Workstream 1 — `tasks.attach_artifact` atomicity / K209
+# Workstream 1 — Unified Durable Drive Artifact Lifecycle
 
-## Status
+## Source gap
 
-**KNOWN PARTIAL — POST-PHASE-1**
+K209 / C24 is currently partial only for `tasks.attach_artifact`.
 
-## Human summary
+The current machine-generated artifact path crosses two systems:
 
-When an AI agent attaches a file to a Task, the operation crosses two different storage systems:
+1. object storage (R2);
+2. PostgreSQL (`FileAsset`, `FileVersion`, `FileLink`, idempotency/audit state).
 
-1. the file/object storage;
-2. PostgreSQL, where the Task/Drive link and the idempotency state live.
+A PostgreSQL transaction cannot atomically commit an R2 `PutObject` and database writes.
 
-A normal database transaction cannot make the object-storage write and the PostgreSQL write commit atomically as one unit.
+The current External Agent implementation is deliberately fail-closed. In the narrow crash window after the object/domain side has progressed but before the idempotency checkpoint is durable, the operation key can remain unusable rather than risking a duplicate mutation.
 
-Today the implementation fails closed: in a very small process-crash window, the requested attachment is not duplicated, but the specific idempotency operation key can remain permanently unusable. The system prefers "do not execute twice" over "automatically retry and risk duplicating the write".
+That behavior is safer than blind retry, but it is not the final Drive architecture.
 
-This is safer than reclaiming the key blindly, but it is not the final architecture.
+## Agreed architecture
 
-## Desired end state
+Do **not** build a separate AI-only upload subsystem.
 
-Use a durable cross-boundary operation pattern, preferably an outbox / domain-operation record, so that:
-
-- the request has one durable operation identity;
-- object-store and database progress can be reconciled after a crash;
-- retries never duplicate the artifact or Task link;
-- a crash cannot permanently strand an operation key;
-- actor/scope/capability authorization is revalidated at the correct lifecycle point;
-- audit/provenance remains correct;
-- REST and MCP retain identical semantics.
-
-Do not solve this by simply expiring/reclaiming an `IN_PROGRESS` idempotency row, because that can replay the domain mutation after it already committed.
-
-## Definition of Done
-
-- `tasks.attach_artifact` no longer has the post-domain/pre-checkpoint unrecoverable window;
-- crash/restart tests cover every lifecycle boundary;
-- duplicate object/file/link creation is impossible under retry;
-- revocation/re-authorization semantics are explicit;
-- checklist K209/C24 can honestly become closed for Drive as well as Tasks;
-- no second Drive ownership path is created.
-
-## Cursor task prompt
+Build one Drive-owned durable Artifact Operation lifecycle used by all three sources:
 
 ```text
-Implement post-Phase-1 Workstream 1: close AI Platform K209/C24 for `tasks.attach_artifact`.
-
-Read first:
-- docs/NBOS/02-Modules/21-AI-Platform/32-Post-Phase-1-Technical-Debt-Plan.md
-- docs/NBOS/02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md (K209)
-- docs/NBOS/02-Modules/21-AI-Platform/99-AI-Cleanup-Register.md (C8/C24)
-- Drive canon and the current Drive artifact services
-- current AgentCapabilityGateway / AgentIdempotencyService / replay authorization code
-
-Goal:
-remove the unrecoverable crash window for `tasks.attach_artifact` without weakening at-most-once safety.
-
-Constraints:
-- do not reclaim stale IN_PROGRESS blindly;
-- do not duplicate object-store uploads, FileAssets or Task links;
-- keep Drive as owner of files;
-- keep REST and MCP on the same capability/domain path;
-- preserve ActorContext, scope checks, audit and correlation;
-- use a durable outbox/domain-operation design if required by the cross-storage boundary;
-- revalidate authorization at the correct execution/commit point;
-- do not redesign unrelated Tasks/Drive functionality.
-
-Prove with tests:
-- crash before object write;
-- crash after object write but before DB linkage/checkpoint;
-- crash after DB linkage but before final idempotency completion;
-- exact retry;
-- changed-payload retry;
-- revoked actor/grant before resumed execution;
-- no duplicate artifact/link.
-
-Update K209/C24 only if evidence genuinely closes the gap.
-Do not start Workstream 2 or 3.
+Human UI ────────────┐
+Internal AI ─────────┼──> Drive Artifact Operation
+External AI ─────────┘          │
+                                ├─ durable state / recovery
+                                ├─ verification / finalization
+                                ├─ FileAsset / FileVersion / FileLink
+                                ├─ audit / provenance
+                                └─ R2/object storage
 ```
 
----
+The ingress differs by source, but the lifecycle/finalization/recovery engine is one.
 
-# Workstream 2 — atomic human-readable codes in sibling modules / C25
+### Human UI ingress
 
-## Status
+Keep browser-direct upload efficiency:
 
-**KNOWN CROSS-MODULE RELIABILITY DEBT — POST-PHASE-1**
+```text
+Browser
+→ Drive prepare operation
+→ presigned URL / staging key
+→ Browser uploads directly to R2
+→ Drive verify/finalize operation
+```
 
-## Human summary
+Large user files should not be unnecessarily proxied through the API.
 
-Tasks used to generate numbers approximately like this:
+### Internal AI ingress
 
-`find the largest current number -> add 1 -> insert`.
+Internal AI/tool runtime creates the same Drive Artifact Operation and uses a trusted server/worker machine upload adapter for generated content.
 
-Two requests arriving together could both see the same largest number and both choose the same next code. One then failed on the unique constraint.
+Internal AI must not own separate `FileAsset` / `FileLink` creation logic.
 
-Tasks were fixed by introducing the shared server-side `entity_code_counters` allocator.
+### External AI ingress
 
-Several other modules still use the old pattern for their own independent code series, for example invoices, deals, leads, orders, subscriptions, projects and support-ticket codes.
+External Agent REST/MCP stays on the existing:
 
-This does not corrupt the Task `T-...` series anymore; each of these is a separate series. That is why it is not an AI Phase 1 blocker. But the same concurrency bug still exists inside those modules.
+```text
+Actor → Policy → Capability → Domain Action → Audit
+```
 
-Some of the old generators also sort codes as text, which breaks after digit widths change (`9999` vs `10000`).
+`tasks.attach_artifact` becomes an adapter into the same Drive Artifact Operation.
 
-## Desired end state
+REST and MCP must retain equivalent behavior and authorization semantics.
 
-Adopt the already-created shared `entity_code_counters` mechanism for every affected code series.
+For large machine uploads, a prepare/presigned pattern may be added if justified, but it must remain an ingress adapter over the same durable operation rather than a second lifecycle.
 
-Each module remains owner of its business entity; only the number-allocation primitive is shared.
+## Common durable operation responsibilities
+
+The Drive-owned operation must persist enough state to recover safely, including as applicable:
+
+- stable operation identity;
+- source/actor/provenance;
+- intended target entity/link;
+- stable storage/staging key;
+- filename/MIME/size/checksum metadata;
+- lifecycle state;
+- retry/recovery state;
+- final `FileAsset` / version / link identity;
+- audit/correlation metadata;
+- cleanup/reconciliation state.
+
+Exact enum names should be chosen after reconciliation with existing Drive runtime, but the lifecycle must distinguish at least:
+
+```text
+prepared
+→ upload/object pending
+→ object uploaded/verified
+→ DB finalization/link pending
+→ completed
+```
+
+with explicit failed/retryable/cancelled/recovery semantics where required.
+
+## Correctness requirements
+
+- Never pretend R2 + PostgreSQL form one ACID transaction.
+- Persist the durable operation/storage identity before irreversible upload where needed.
+- Retry must not generate a new random object identity and create duplicates.
+- Crash after object upload but before DB finalization must be recoverable.
+- Crash after DB linkage but before operation completion must be recoverable/idempotent.
+- Exact retry must never create a duplicate object, `FileAsset`, `FileVersion` or `FileLink`.
+- Do not blindly expire/reclaim an `IN_PROGRESS` request and rerun the mutation.
+- Recovery decides from durable operation state plus actual R2/DB state.
+- Deferred/resumed sensitive finalization revalidates the appropriate authorization at the correct lifecycle point.
+- Human, Internal AI and External AI keep their own authentication/authorization models; only the Drive operation lifecycle is shared.
+- Storage object existence must never become an authorization bypass.
+- Cleanup is conservative: never delete an object unless ownership/state is proven.
+- Drive remains the only owner of file/storage lifecycle rules.
 
 ## Definition of Done
 
-- inventory every remaining read-max-then-insert generator;
-- add an explicit counter scope for each affected series;
-- safely seed each scope from existing data using numeric suffix parsing;
-- replace old generators with atomic allocation;
-- add concurrency regression tests for each important series or a reusable representative test strategy;
-- document rollout requirements where old and new allocators cannot safely write simultaneously;
-- no unrelated business behavior changes.
+- Human UI upload path uses/reconciles into the common Drive operation while preserving direct-to-R2 efficiency.
+- Internal AI has a machine-ingress contract over the same operation.
+- External Agent `tasks.attach_artifact` uses the same operation over REST and MCP.
+- K209/C24 crash window is removed rather than hidden.
+- Recovery works after every meaningful crash boundary.
+- Duplicate object/FileAsset/FileLink creation is impossible under exact retry/concurrency.
+- Authorization revocation/revalidation behavior is explicit and tested.
+- orphan/reconciliation behavior is defined and tested.
+- existing Drive uploads/versions remain compatible.
+- source docs are updated only after implementation evidence exists.
 
-## Cursor task prompt
+---
+
+# Workstream 2 — Atomic Human-Readable Codes in Sibling Modules
+
+## Source gap
+
+Tasks previously generated codes using a pattern equivalent to:
 
 ```text
-Implement post-Phase-1 Workstream 2: close AI Platform Cleanup C25 — unsafe human-readable code generation in sibling modules.
+read current maximum
+→ add 1 in application code
+→ insert
+```
 
-Read first:
-- docs/NBOS/02-Modules/21-AI-Platform/32-Post-Phase-1-Technical-Debt-Plan.md
-- docs/NBOS/02-Modules/21-AI-Platform/99-AI-Cleanup-Register.md (C23/C25/C26)
-- docs/NBOS/02-Modules/05-Tasks/04-Tasks-Cleanup-Register.md (C9 and Task code allocator history)
-- apps/api/src/common/utils/entity-code-counter.ts
-- apps/api/src/modules/tasks/task-code-generation.ts
-- migration 20260823000000_entity_code_counters
+Under concurrency, two callers could choose the same next code. Some implementations also sorted the full code string lexicographically, which becomes wrong at digit-width boundaries such as `9999` → `10000`.
 
-First perform a repository-wide inventory of every business code generator that uses max/read/sort + 1 or equivalent.
-Confirm the exact remaining independent series before editing.
+Tasks fixed this by introducing the server-side PostgreSQL `entity_code_counters` allocator.
+
+Other independent business-code series still contain variants of the old pattern.
 
 Known candidates include:
+
 - invoices;
 - support tickets (`TKT-`, not Task `T-`);
 - deals;
@@ -161,118 +174,128 @@ Known candidates include:
 - subscriptions;
 - projects.
 
-Goal:
-move every confirmed affected independent code series to the shared atomic `entity_code_counters` allocator without changing entity ownership or business behavior.
+This list is not authoritative until a repository-wide inventory is performed.
 
-Requirements:
-- one named ENTITY_CODE_SCOPE per series;
-- safe numeric seeding from real existing codes;
-- malformed/nonconforming historical codes handled explicitly, never guessed;
-- concurrency-safe allocation;
-- year-scoped behavior preserved where the series resets yearly;
-- gaps after failed reservations are acceptable; duplicates are not;
-- no lexicographic max/sort bug;
-- migration/rollout plan must account for old/new writers and avoid an unsafe rolling mixed-writer period if applicable;
-- targeted + real-DB concurrency tests.
+## Agreed architecture
 
-Do not refactor Support/Automation Task ownership in this workstream except where necessary to preserve the already-fixed `T-` allocator. That is Workstream 3.
-Do not start Workstream 1 or 3.
+Every independent business-code series has exactly one authoritative allocator backed by PostgreSQL `entity_code_counters`.
+
+Each business module remains owner of the entity and its formatting/business rules. Only the next-number primitive is shared.
+
+```text
+Module create operation
+→ atomic DB counter reservation
+→ format business code
+→ entity insert
 ```
 
----
+## Correctness requirements
 
-# Workstream 3 — Support/Automation bypass Tasks domain owner / Tasks C9
-
-## Status
-
-**KNOWN DOMAIN-OWNERSHIP DEBT — POST-PHASE-1**
-
-## Human summary
-
-A Task should normally be created through the Tasks module, because that module owns Task business rules.
-
-Today some Support and Automation flows still create `Task` rows directly through Prisma.
-
-The important code-number race has already been fixed: those writers now use the same Task code allocator, so they no longer corrupt the `T-...` series.
-
-But the architectural problem remains: if Tasks later adds another mandatory rule — provenance, validation, defaults, events, completion metadata, audit behavior, or another invariant — a direct Prisma writer can silently skip it.
-
-So this is not mainly a current data-corruption bug. It is a maintainability and future-correctness problem: multiple modules can partially implement "how to create a Task" themselves.
-
-## Desired end state
-
-Tasks owns one explicit application/domain creation contract that human UI, Support, Automation and future system producers can call with the appropriate actor/source context.
-
-Support and Automation should request Task creation through that contract rather than writing the Task table directly.
-
-This must not force those modules through External Agent authorization. They are trusted internal/system callers, but they should still use the Tasks-owned domain operation.
+- inventory every production next-number generator first;
+- identify every writer for each series;
+- one named counter scope per independent series;
+- numeric seed from actual historical values;
+- malformed historical codes handled explicitly, never guessed;
+- preserve year/global reset semantics per real series;
+- all writers of one series move together;
+- never leave `counter` and `MAX(table)` as competing authorities;
+- gaps after failed reservations are acceptable; duplicate codes are not;
+- prove the `9999` → `10000` boundary;
+- concurrency correctness requires real-DB evidence;
+- rollout must account for mixed old/new writers and require a write pause if necessary.
 
 ## Definition of Done
 
-- repository inventory confirms all direct Task creation writers;
-- Support and Automation stop direct Task Prisma inserts;
-- one Tasks-owned creation operation supports the required caller/source variants;
-- existing Support/Automation behavior and provenance are preserved;
-- transaction boundaries remain correct;
-- no circular module dependency is introduced;
-- tests prove Task invariants cannot be bypassed by these flows;
-- Tasks Cleanup C9 can be closed.
-
-## Cursor task prompt
-
-```text
-Implement post-Phase-1 Workstream 3: close Tasks Cleanup C9 — Support/Automation direct Task writes bypass the Tasks domain owner.
-
-Read first:
-- docs/NBOS/02-Modules/21-AI-Platform/32-Post-Phase-1-Technical-Debt-Plan.md
-- docs/NBOS/02-Modules/05-Tasks/01-Task-System-Overview.md
-- docs/NBOS/02-Modules/05-Tasks/04-Tasks-Cleanup-Register.md (C8/C9 and related ownership notes)
-- current TasksService / Tasks module application operations
-- SupportService task-creation paths
-- AutoTasksService task-creation paths
-- task-code-generation.ts and entity-code-counter.ts
-
-Goal:
-make Tasks the single owner of Task creation invariants while preserving Support and Automation behavior.
-
-First inventory every direct `prisma.task.create` / equivalent writer outside the Tasks-owned layer and classify it. Do not assume only two callers exist.
-
-Design one Tasks-owned application/domain operation for trusted internal/system callers. Reuse existing creation logic rather than creating a second parallel Tasks API.
-
-Requirements:
-- Support/Automation do not write Task rows directly after the refactor;
-- preserve source/provenance, links, assignee/creator semantics, workspace resolution, code allocation and current defaults;
-- do not route trusted internal modules through External Agent REST/MCP authorization;
-- preserve transactional behavior;
-- avoid circular Nest module dependencies; use a narrow exported Tasks application service/port if necessary;
-- add regression tests proving these callers go through the Tasks-owned invariant path;
-- search for and report any remaining direct Task writers that are intentionally different.
-
-Do not redesign the whole automation subsystem.
-Do not change unrelated task lifecycle semantics.
-Do not start Workstream 1 or 2.
-```
+- repository-wide inventory completed;
+- all confirmed unsafe production code generators migrated;
+- each series has one authoritative counter scope;
+- seed/rollout is safe on representative existing data;
+- concurrent creates produce unique codes;
+- lexicographic max bugs are eliminated;
+- no unrelated domain ownership/business behavior is changed;
+- C25 and any module-specific cleanup entries are updated with evidence.
 
 ---
 
-# Recommended execution order
+# Workstream 3 — Tasks Domain Ownership
 
-These workstreams are independent enough to use separate fresh chats.
+## Source gap
 
-Recommended order after Phase 1 closure:
+Some Support and Automation production flows still create `Task` rows directly through Prisma instead of going through a Tasks-owned application/domain creation operation.
 
-1. **Workstream 3 — Tasks ownership**: establishes the clean domain boundary before more producers are added.
-2. **Workstream 2 — sibling code allocators**: mechanical but cross-module reliability cleanup.
-3. **Workstream 1 — artifact outbox/atomicity**: deepest architectural change; do it as a focused AI+Drive reliability slice with independent review.
+The shared `T-...` allocator is already fixed, so these writers no longer corrupt the Task code series.
 
-Workstream 1 may also be done first if reliable agent artifact production becomes immediately business-critical.
+The remaining issue is domain ownership.
 
-Each workstream should have its own independent verification chat before merge.
+If Tasks adds or changes a required invariant — validation, provenance, defaults, workspace resolution, events, audit behavior, lifecycle metadata — a direct Prisma writer can silently bypass it.
 
-## Relation to Phase 1
+## Agreed architecture
 
-- Workstream 1 corresponds to the deliberately partial K209/C24 for `tasks.attach_artifact`.
-- Workstream 2 is C25 and is outside the External Agent Phase 1 surface.
-- Workstream 3 is Tasks Cleanup C9 and is a Tasks domain-ownership cleanup, not an AI authorization requirement.
+Tasks owns one explicit application/domain creation contract used by every applicable producer:
 
-The Phase 1 closure gate should verify that these are accurately documented and do not invalidate current Phase 1 exit behavior; it should not implement them merely to make every repository debt disappear.
+```text
+Human/API ───────┐
+Support ─────────┤
+Automation ──────┼──> Tasks-owned create operation ──> Task
+System producer ─┘
+```
+
+Trusted Support/Automation/system flows do **not** go through External Agent REST/MCP authorization. They use their appropriate internal actor/source context while still calling the Tasks-owned invariant path.
+
+## Correctness requirements
+
+- repository-wide inventory of direct production Task writers;
+- classify fixtures/migrations/tests separately from production bypasses;
+- Support/Automation stop direct Task inserts;
+- reuse one Tasks-owned creation path rather than introducing a parallel service;
+- preserve source/provenance;
+- preserve creator/assignee/link/workspace/default/status/priority semantics;
+- preserve the common Task-code allocator;
+- preserve transaction behavior;
+- no fake Employee identity for non-human system actors;
+- avoid circular module dependencies through a narrow exported Tasks application service/port if needed;
+- existing human/API Task behavior remains unchanged.
+
+## Definition of Done
+
+- all applicable production Task creation writers use the Tasks-owned operation;
+- Support and Automation no longer own partial Task-creation logic;
+- regression tests prove caller-specific behavior is preserved;
+- repository search confirms no unexplained direct production Task writer remains;
+- Tasks Cleanup C9 can be honestly closed.
+
+---
+
+# Execution order
+
+The workstream numbers above identify the debts; they are **not** the recommended implementation order.
+
+Execute as follows:
+
+```text
+NEW CHAT 1 → Workstream 3 — Tasks Domain Ownership
+NEW CHAT 2 → Workstream 2 — Atomic Human-Readable Codes
+NEW CHAT 3 → Workstream 1 — Unified Durable Drive Artifact Lifecycle
+```
+
+Reasoning:
+
+1. establish clean Tasks ownership before adding more producers/refactors;
+2. perform the cross-module allocator cleanup as a focused reliability slice;
+3. then implement the deepest cross-storage lifecycle work as its own Drive-focused milestone.
+
+Each implementation chat requires a fresh independent verifier before commit/next stage.
+
+The exact executor and verifier prompts are maintained in root `ai-modul-steps.md`.
+
+---
+
+# Relation to AI Platform Phase 1
+
+- K209/C24 remains the explicit accepted fail-closed Drive partial until Workstream 1 is implemented and verified.
+- C25 is a cross-module reliability debt discovered during acceptance, not an External Agent Phase 1 requirement.
+- Tasks C9 is a Tasks domain-ownership debt, not an AI authorization requirement.
+
+This plan must not retroactively mark any partial item `[x]`.
+
+When a workstream is completed, update its real source-of-truth cleanup/canon entry with implementation evidence, then mark this plan's corresponding workstream completed.
