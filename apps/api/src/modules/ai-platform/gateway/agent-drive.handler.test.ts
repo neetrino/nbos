@@ -132,10 +132,17 @@ describe('AgentDriveHandler', () => {
       agent(),
       { taskId: 'task-1', fileName: 'out.zip', mimeType: 'application/zip', sizeBytes: 4 },
       new Uint8Array([1, 2, 3, 4]),
+      { operationKey: 'op-1', fingerprint: 'request-fp' },
     );
     expect(artifacts.createAndLinkTaskArtifact).toHaveBeenCalledWith(
-      expect.objectContaining({ taskId: 'task-1', fileName: 'out.zip' }),
+      expect.objectContaining({
+        taskId: 'task-1',
+        fileName: 'out.zip',
+        payloadFingerprint: 'request-fp',
+        idempotencyKey: 'op-1',
+      }),
     );
+    expect(artifacts.createAndLinkTaskArtifact.mock.calls[0]?.[0]).not.toHaveProperty('checksum');
   });
 
   it('re-evaluates policy with the resolved file classification', async () => {

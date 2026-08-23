@@ -327,6 +327,7 @@ export class DriveService {
     const body =
       typeof data.content === 'string' ? Buffer.from(data.content, 'utf8') : data.content;
     const actorId = data.createdById ?? data.ownerId ?? 'system';
+    const contentChecksum = this.artifacts.fingerprintBytes(body);
     const operation = await this.artifacts.prepare({
       source: 'SYSTEM',
       ingress: 'MACHINE_PUT',
@@ -343,8 +344,8 @@ export class DriveService {
       confidentiality: data.confidentiality,
       linkType: data.link?.linkType,
       expectedSizeBytes: body.byteLength,
-      checksum: data.checksum,
-      payloadFingerprint: this.artifacts.fingerprintBytes(body),
+      checksum: data.checksum ?? contentChecksum,
+      payloadFingerprint: contentChecksum,
       actorType: 'SYSTEM',
       actorId,
       createdByEmployeeId: data.createdById,

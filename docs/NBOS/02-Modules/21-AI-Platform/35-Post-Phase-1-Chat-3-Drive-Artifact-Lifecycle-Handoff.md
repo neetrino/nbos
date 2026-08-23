@@ -593,3 +593,77 @@ Required fix: keep the gateway request fingerprint only in `payloadFingerprint`;
 - Production migrations remain unapplied and require the documented write pause. The live smoke created a temporary Task and two Drive artifacts on Neon dev; they were not deleted because repository policy forbids data deletion during this verifier pass.
 
 Item 209 may stay `[x]`; C24 may stay FIXED. Return the checksum finding to a Drive executor as a scoped follow-up rather than reopening the crash-window milestone.
+
+---
+
+## Executor follow-up — External Agent content checksum (2026-08-23)
+
+Scoped fix for the GPT-5.6 Sol metadata defect. Product code **was** modified. This chat did **not** commit. K209 / C24 stay closed. Remaining Chat 3 debts below stay open.
+
+### Semantics
+
+| Field                | Meaning after this fix                                                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `payloadFingerprint` | Gateway request fingerprint (normalized input + bytes). Unchanged. Still binds the idempotency key to bytes, filename, MIME, `sizeBytes`, and `taskId`. |
+| `checksum`           | SHA-256 of uploaded bytes only (`fingerprintBytes(content)`). Same bytes with different filename/request metadata share the same content checksum.      |
+
+No second Drive lifecycle. No change to operation key, gateway fingerprint, or replay authorization. No Human checksum expansion. No production migration: the columns already exist; only the value written for machine attach is corrected. Historical External Agent rows are not backfilled and may keep `checksum === payload_fingerprint`; an exact retry returns the already completed artifact, while new attach operations use the corrected content checksum.
+
+### Changed files
+
+- `apps/api/src/modules/drive/drive-task-artifact.service.ts` — External/Internal attach: `checksum` is always content SHA-256; `payloadFingerprint` stays the caller/gateway fingerprint when provided.
+- `apps/api/src/modules/drive/drive.service.ts` — SYSTEM generate: if the caller omits `checksum` and bytes are present, persist `fingerprintBytes(body)` instead of null. Callers that already pass a content digest are unchanged.
+- Tests: `drive-task-artifact.service.test.ts`, `drive-artifact-ingress.service.test.ts`, `agent-idempotency.rules.test.ts`, `agent-capability.gateway.attach-recovery.test.ts`, `agent-drive.handler.test.ts`.
+- This handoff.
+
+Not touched: `Dockerfile.api`, `package.json`, `docs/deployment/MIGRATION-GATE-ROLLOUT.md`, Tasks ownership, code allocators, Artifact Operation architecture.
+
+### Tests / evidence
+
+| Check                                                                                                        | Result                                                                                   |
+| ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| Drive task-artifact checksum split + SYSTEM generate fallback                                                | passed (`drive-task-artifact.service.test.ts`, `drive-artifact-ingress.service.test.ts`) |
+| Gateway fingerprint still changes on filename/MIME/bytes; request fingerprint ≠ content SHA-256              | passed (`agent-idempotency.rules.test.ts`)                                               |
+| Same idempotency key + changed filename/bytes/taskId → conflict; exact retry returns same FileAsset/link ids | passed (`agent-capability.gateway.attach-recovery.test.ts`)                              |
+| Handler still forwards gateway fingerprint as `payloadFingerprint` only                                      | passed (`agent-drive.handler.test.ts`)                                                   |
+| REST/MCP parity                                                                                              | passed (`agent-protocol.parity.test.ts`)                                                 |
+| Targeted Drive + gateway regression (17 files)                                                               | **177 passed**                                                                           |
+| eslint on changed API files                                                                                  | passed                                                                                   |
+| `@nbos/api` `tsc --noEmit` (`NODE_OPTIONS=--max-old-space-size=8192`)                                        | passed                                                                                   |
+| `@nbos/api` SWC production build                                                                             | passed                                                                                   |
+
+Not run: live External Agent REST/MCP attach, production migrate, full monorepo test.
+
+### Remaining debts (still open)
+
+- Internal AI still does not validate Task / onBehalfOf employee Drive grants. Required before a product entrypoint.
+- `createAndLinkTaskArtifact` still defaults to `allowArtifactAuth()` when an internal caller omits an auth port.
+- `failUploadSession` does not cancel its matching artifact operation; conservative orphan object deletion remains unwired.
+- Production migrations remain unapplied and still require the documented write pause.
+
+---
+
+## Independent re-verification — Codex (2026-08-23)
+
+**Verdict: PASS WITH DEBTS.** The scoped checksum defect is closed. No actionable correctness or security findings were found in the follow-up diff. K209 / C24 remain closed, and the executor's explicitly listed lower-priority debts remain open.
+
+Independent source tracing confirmed:
+
+- External Agent attach still sends the gateway request fingerprint only as `payloadFingerprint`; Drive computes `checksum` separately from the uploaded bytes.
+- Artifact-operation replay and conflict checks still compare `payloadFingerprint`, so changed filename, MIME, task or bytes cannot reuse the External Agent operation key.
+- Finalization propagates the operation content checksum into `FileArtifactOperation`, `FileAsset`, and the initial `FileVersion` without replacing it with the request fingerprint.
+- SYSTEM generate computes a content checksum when the caller omits one and preserves an explicitly supplied checksum.
+- No schema, migration, public REST/MCP contract, Human upload flow, or authorization boundary changed.
+
+Checks rerun independently on the current worktree:
+
+| Check                                                  | Result                               |
+| ------------------------------------------------------ | ------------------------------------ |
+| Targeted Drive artifact / gateway / protocol suite     | **12 files / 92 tests passed**       |
+| Cross-regression suite (`vitest.regression.config.ts`) | **22 files / 285 tests passed**      |
+| Scoped eslint on all changed API files                 | passed                               |
+| `@nbos/api` TypeScript (`tsc --noEmit`, 8 GB heap)     | passed                               |
+| `@nbos/api` SWC production build                       | passed (**1901 files**)              |
+| Prettier check on the scoped diff                      | passed after formatting this handoff |
+
+Not rerun in this verification: live External Agent REST/MCP attach, real-Postgres artifact integration, full monorepo tests, production migration/deployment. They are not required to establish this no-schema metadata correction; the prior Chat 3 verification already covered the durable operation against Neon dev and live REST/MCP routing.
