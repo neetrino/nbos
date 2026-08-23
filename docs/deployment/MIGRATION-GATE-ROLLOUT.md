@@ -1,6 +1,6 @@
 # NBOS Production Migration Gate — rollout
 
-Статус: **Phase 4 in progress (2026-08-23) — Auto Deploy PATCH false; break-glass in docs/deploy.md**  
+Статус: **Phase 4 done (2026-08-23) — Auto Deploy OFF; break-glass in docs/deploy.md; hotfix CD green**  
 Канон: один release → один `nbos-migrate` → потом 4 сервиса.  
 Старый промпт `Implement NBOS Production Migration Gate + Coolify Orchestration.md` **не выполнять**.
 
@@ -316,7 +316,7 @@ CD должен:
 
 - [x] Auto Deploy 4 app = OFF
 - [x] migrator Auto Deploy = OFF
-- [ ] Ручной CD после выключения прошёл
+- [x] Ручной CD после выключения прошёл
 - [x] Break-glass записан в канонический deploy doc
 
 ### Phase 4 progress (2026-08-23)
@@ -324,7 +324,7 @@ CD должен:
 - `PATCH /applications/{uuid}` `{ "is_auto_deploy_enabled": false }` на `nbos-api` / `nbos-web` / `nbos-worker` / `nbos-scheduler` / `nbos-migrate`: HTTP 200. Ветка `main` и domains не менялись. GET по-прежнему **не отдаёт** `is_auto_deploy_enabled` (как env values) — факт OFF = PATCH + отсутствие автодеплоя с webhook.
 - Четвёртый GitHub webhook не добавлялся. Авто-CD на `push`/`merge` `main` не включался.
 - Break-glass: `docs/deploy.md` §5.1.
-- Повторный `workflow_dispatch` CD — в этом чате после PATCH.
+- Повторный `workflow_dispatch` CD **зелёный**: [run](https://github.com/neetrino/nbos/actions/runs/32647347099) SHA `b60a51f0`. `NBOS_MIGRATE_DONE exit=0` → api / worker / scheduler / web `running:healthy`. Auto Deploy остаётся OFF; авто-CD на `main` не включался.
 
 ### Стоп
 
