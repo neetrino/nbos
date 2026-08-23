@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DriveModule } from '../../drive/drive.module';
+import { RealtimeModule } from '../../realtime/realtime.module';
 import { AtsCallContextResolver } from './ats-call-context.resolver';
 import { AtsCallRealtimePublisher } from './ats-call-realtime.publisher';
 import { AtsCallbackClient } from './ats-callback.client';
@@ -18,7 +19,7 @@ import { AtsProviderConfig } from './ats-provider.config';
 import { AtsWebhookService } from './ats-webhook.service';
 
 @Module({
-  imports: [DriveModule],
+  imports: [DriveModule, RealtimeModule],
   controllers: [AtsController],
   providers: [
     AtsProviderConfig,
