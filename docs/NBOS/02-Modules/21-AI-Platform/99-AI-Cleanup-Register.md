@@ -84,9 +84,9 @@ Chat 2: `AgentAuthGuard` / `AgentAuthenticatorService`. Protocol wiring is Chat 
 
 Chat 11: `AiExecution` stores actor, External/Internal Agent, provider, model, Model Policy, capability, channel, correlation, status, latency, retry, fallback and optional token/cost/pricing metadata. No prompt/completion/secret columns. External Agent protocol writes capability rows best-effort. See C19.
 
-### C8. No idempotency contract for agent mutations — PARTIAL
+### C8. No idempotency contract for agent mutations — OK
 
-Capability metadata declares `REQUIRED`. Chat 3 stores replay rows in `external_agent_idempotency_records` and enforces them in the gateway. Chat 11 checkpoints `responseJson` while the row is still `IN_PROGRESS` after Tasks/Drive commit, then marks `COMPLETED`. Retry of `IN_PROGRESS` + json replays and tries to complete. Stale `IN_PROGRESS` without a checkpoint still conflicts (no second domain write). Chat 12 closed the crash window for the five Tasks write capabilities by committing the domain change and the checkpoint in one transaction; `tasks.attach_artifact` keeps the window because its object-store write cannot join a database transaction. See C24.
+Capability metadata declares `REQUIRED`. Chat 3 stores replay rows in `external_agent_idempotency_records` and enforces them in the gateway. Chat 11 checkpoints `responseJson` while the row is still `IN_PROGRESS` after Tasks/Drive commit, then marks `COMPLETED`. Retry of `IN_PROGRESS` + json replays and tries to complete. Stale `IN_PROGRESS` without a checkpoint still conflicts for Tasks writes (no second domain write). Chat 12 closed the crash window for the five Tasks write capabilities by committing the domain change and the checkpoint in one transaction. Post-Phase-1 Chat 3 closed `tasks.attach_artifact` (C24 / item 209): Drive persists the artifact operation before upload; resume is live attach + Drive `prepare`. Changed fingerprints still conflict.
 
 ### C9. No external-agent rate-limit policy — OK
 
@@ -170,7 +170,7 @@ Rollout is **not** rolling-deploy safe: mixed old `MAX(table)` writers and new c
 
 **Independent verifier (NEW CHAT 2) closed this item.** Disposable local Postgres (`AI_PLATFORM_DB_TEST_URL`): concurrent named allocators, invoice `9999` → `10000`, numeric seed `VALUES` + SQL replay (`2026=10000`, malformed ignored), parallel Lead + Support creates. Designated non-prod Neon was inspected read-only (sibling counters absent; no 10+ digit suffixes; seed **not** applied). Tasks ownership and Drive lifecycle were not changed. Production apply of the seed remains an operations step under the write-pause sequence.
 
-### C24. Gateway idempotency slot is never reclaimed (checklist 209) — FIXED for Tasks, PARTIAL for Drive
+### C24. Gateway idempotency slot is never reclaimed (checklist 209) — FIXED
 
 Chat 12 reproduced all three crash windows directly against `AgentIdempotencyService`. Chat 11's `responseJson` checkpoint works: a crash after the checkpoint replays the stored result and self-heals the row to `COMPLETED`. The residue was real — `loadLive` returns `IN_PROGRESS` rows _before_ it evaluates expiry, so a reservation that crashed between the domain commit and the checkpoint stayed `409 An identical request is already in progress` permanently, even after its TTL elapsed.
 
@@ -184,7 +184,9 @@ Evidence: `agent-write-atomicity.int.test.ts` (opt-in, real database) fails the 
 
 The counter reservation must stay outside this transaction (C26). Putting `allocateTaskCode` on the interactive client reintroduced a 500 on concurrent `tasks.create` after the two remediations landed together.
 
-**Still PARTIAL for `tasks.attach_artifact` — accepted post-Phase-1 debt.** Its domain change includes an object-store write, which cannot join a database transaction, so it keeps the sequential path and the narrow window remains there. The window is fail-closed: no second artifact or Task link is written. Closing it needs an outbox or a domain operation record (Workstream 1 in `32-Post-Phase-1-Technical-Debt-Plan.md`). The overall checklist item 209 stays `[~]` and must not be marked `[x]`. `27-Phase-1-Continuation-After-Chat-8.md` officially accepts this residual so Phase 1 can close without pretending the Drive path is atomic.
+**Closed for `tasks.attach_artifact` in post-Phase-1 Chat 3.** The object-store write still cannot join a database transaction. Recovery is `file_artifact_operations`: identity and storage key persist before PutObject; FileAsset/FileLink and operation `COMPLETED` share one PostgreSQL transaction with `FOR UPDATE`. Exact retry and concurrent finalize reuse that row. Resume is live attach + Drive `prepare` (the first gateway short-circuit was rejected as verifier F1 and removed). Authorization is revalidated on resume. Checklist item 209 is `[x]`.
+
+Independent verifier (2026-08-23) reproduced: Human complete/version go through `finalizeAfterObjectPresent`; `createGeneratedFileAsset` always `prepare`s; disposable Postgres int 3/3 (same TX, rollback, concurrent one FileAsset); Neon **dev** live REST `201` `fileAssetId=3a08eb27-…` exact retry same ids, MCP distinct `13de1d40-…`, two `EXTERNAL_AI` / `MACHINE_PUT` / `COMPLETED` / `TASK` rows, partial unique index present. Production apply of `20260823140000_file_artifact_operations` remains an operations step under the write-pause. Evidence: `35-Post-Phase-1-Chat-3-Drive-Artifact-Lifecycle-Handoff.md`.
 
 ### C26. Shared K209 transaction holds the Task-code counter lock — FIXED
 
@@ -201,7 +203,7 @@ The `$transaction` timeout was not raised. A failed create may skip a number; th
 
 Evidence: `agent-capability.gateway.test.ts` asserts prepare → reserve → `BEGIN`. `agent-create-concurrency.int.test.ts` drives six concurrent `invoke('tasks.create')` on a real database. Live REST after the committed fix `5ed6c5ea`, fresh SWC `dist` on `:4110`: six parallel `POST /api/v1/agent/workspaces/{id}/tasks` returned `201 × 6`, codes `T-2026-0823`–`T-2026-0828`, no 500, no `P2002`.
 
-**Not reopened by Phase 1 close:** item 209 / `tasks.attach_artifact` remains `[~]` (C24) as accepted post-Phase-1 Workstream 1.
+**Closed after Phase 1:** item 209 / `tasks.attach_artifact` is `[x]` (C24) as of post-Phase-1 Chat 3 independent verification. See `35-Post-Phase-1-Chat-3-Drive-Artifact-Lifecycle-Handoff.md`.
 
 ## D. Tasks alignment issues to verify before implementation
 

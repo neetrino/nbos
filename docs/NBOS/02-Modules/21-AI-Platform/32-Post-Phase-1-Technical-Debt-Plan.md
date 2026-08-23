@@ -131,6 +131,17 @@ with explicit failed/retryable/cancelled/recovery semantics where required.
 - Cleanup is conservative: never delete an object unless ownership/state is proven.
 - Drive remains the only owner of file/storage lifecycle rules.
 
+## Status (2026-08-23)
+
+**PASS WITH DEBTS** — independent verifier closed K209 / C24 in
+`docs/NBOS/02-Modules/21-AI-Platform/35-Post-Phase-1-Chat-3-Drive-Artifact-Lifecycle-Handoff.md`.
+
+The attach crash window is closed in product code: one Drive-owned
+`FileArtifactOperation`, live resume (F1 removed), Human/Internal/External/SYSTEM
+share one finalization engine. Remaining debts (production write-pause apply,
+`FileUploadSession` dual-write, no scheduled recovery worker, full monorepo
+build) are outside this close. Production migration is not applied.
+
 ## Definition of Done
 
 - Human UI upload path uses/reconciles into the common Drive operation while preserving direct-to-R2 efficiency.
@@ -306,7 +317,7 @@ The exact executor and verifier prompts are maintained in root `ai-modul-steps.m
 
 # Relation to AI Platform Phase 1
 
-- K209/C24 remains the explicit accepted fail-closed Drive partial until Workstream 1 is implemented and verified.
+- K209/C24 is closed in Workstream 1 / NEW CHAT 3 (independent verifier PASS WITH DEBTS).
 - C25 is a cross-module reliability debt discovered during acceptance, not an External Agent Phase 1 requirement.
 - Tasks C9 is a Tasks domain-ownership debt, not an AI authorization requirement.
 

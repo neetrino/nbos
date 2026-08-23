@@ -360,6 +360,38 @@ describe('AgentCapabilityGateway', () => {
 
     expect(gatewayPrisma.$transaction).not.toHaveBeenCalled();
     expect(idempotency.checkpointCommittedResult).toHaveBeenCalled();
+    expect(idempotency.reserve).toHaveBeenCalledWith(
+      expect.objectContaining({ operationKey: 'op-drive' }),
+      { allowInProgressResume: true },
+    );
+    expect(drive.attachArtifact).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.any(Uint8Array),
+      expect.objectContaining({ operationKey: 'op-drive' }),
+    );
+  });
+
+  it('resumes a completed Drive attach through the live attach path', async () => {
+    const result = await gateway.invoke(
+      invocation(
+        'tasks.attach_artifact',
+        { taskId: 'task-1', fileName: 'a.png', mimeType: 'image/png', sizeBytes: 3 },
+        { idempotencyKey: 'op-healed', payload: { bytes: new Uint8Array([1, 2, 3]) } },
+      ),
+    );
+    expect(result.data).toEqual({ fileAssetId: 'file-1', linkId: 'link-1' });
+    expect(drive.attachArtifact).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ taskId: 'task-1' }),
+      expect.any(Uint8Array),
+      expect.objectContaining({ operationKey: 'op-healed' }),
+    );
+    expect(idempotency.reserve).toHaveBeenCalledWith(
+      expect.objectContaining({ operationKey: 'op-healed' }),
+      { allowInProgressResume: true },
+    );
+    expect(replayAuthorization.assertStillAuthorized).not.toHaveBeenCalled();
   });
 
   it('releases an in-progress reservation when the domain call fails', async () => {

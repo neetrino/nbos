@@ -57,6 +57,23 @@ describe('AgentReplayAuthorization (AL 626)', () => {
       expect.objectContaining({ agentId: 'agent-1' }),
       'tasks.update',
       'task-1',
+      undefined,
+    );
+  });
+
+  it('re-asserts attach replay with INTERNAL classification', async () => {
+    await authorization.assertStillAuthorized(agent(), capability('tasks.attach_artifact'), {
+      taskId: 'task-1',
+      fileName: 'note.txt',
+      mimeType: 'text/plain',
+      sizeBytes: 4,
+    });
+
+    expect(requireAuthorizedTask).toHaveBeenCalledWith(
+      expect.objectContaining({ agentId: 'agent-1' }),
+      'tasks.attach_artifact',
+      'task-1',
+      'INTERNAL',
     );
   });
 

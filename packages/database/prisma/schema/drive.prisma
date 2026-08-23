@@ -324,3 +324,86 @@ model FileUploadSession {
   @@index([folderId])
   @@map("file_upload_sessions")
 }
+
+enum FileArtifactOperationSourceEnum {
+  HUMAN
+  INTERNAL_AI
+  EXTERNAL_AI
+  SYSTEM
+}
+
+enum FileArtifactOperationKindEnum {
+  CREATE_ASSET
+  CREATE_VERSION
+}
+
+enum FileArtifactOperationIngressEnum {
+  PRESIGNED
+  MACHINE_PUT
+}
+
+enum FileArtifactOperationStatusEnum {
+  PREPARED
+  UPLOAD_PENDING
+  OBJECT_UPLOADED
+  OBJECT_VERIFIED
+  COMPLETED
+  FAILED_RETRYABLE
+  FAILED
+  CANCELLED
+  EXPIRED
+}
+
+/// Drive-owned durable artifact operation. R2 and PostgreSQL are not one ACID
+/// transaction; this row is the recovery source of truth for Human / Internal AI /
+/// External AI / trusted SYSTEM ingress over one finalization engine.
+model FileArtifactOperation {
+  id                   String                            @id @default(uuid())
+  status               FileArtifactOperationStatusEnum   @default(PREPARED)
+  source               FileArtifactOperationSourceEnum
+  ingress              FileArtifactOperationIngressEnum
+  kind                 FileArtifactOperationKindEnum     @default(CREATE_ASSET)
+  storageKey           String                            @unique @map("storage_key")
+  entityType           String                            @map("entity_type")
+  entityId             String                            @map("entity_id")
+  targetFileAssetId    String?                           @map("target_file_asset_id")
+  displayName          String                            @map("display_name")
+  originalName         String?                           @map("original_name")
+  mimeType             String?                           @map("mime_type")
+  purpose              FilePurposeEnum?
+  sourceModule         String?                           @map("source_module")
+  visibility           FileVisibilityEnum                @default(INTERNAL)
+  confidentiality      FileConfidentialityEnum           @default(CONFIDENTIAL)
+  linkType             FileLinkTypeEnum                  @default(ATTACHMENT) @map("link_type")
+  expectedSizeBytes    BigInt?                           @map("expected_size_bytes")
+  checksum             String?
+  payloadFingerprint   String?                           @map("payload_fingerprint")
+  createdByEmployeeId  String?                           @map("created_by_employee_id")
+  actorType            String                            @map("actor_type")
+  actorId              String                            @map("actor_id")
+  agentId              String?                           @map("agent_id")
+  correlationId        String?                           @map("correlation_id")
+  idempotencyKey       String?                           @map("idempotency_key")
+  folderId             String?                           @map("folder_id")
+  fileAssetId          String?                           @map("file_asset_id")
+  fileVersionId        String?                           @map("file_version_id")
+  fileLinkId           String?                           @map("file_link_id")
+  objectVerifiedAt     DateTime?                         @map("object_verified_at")
+  expiresAt            DateTime                          @map("expires_at")
+  failedReason         String?                           @map("failed_reason")
+  recoveryAttemptCount Int                               @default(0) @map("recovery_attempt_count")
+  lastRecoveryAt       DateTime?                         @map("last_recovery_at")
+  createdAt            DateTime                          @default(now()) @map("created_at")
+  updatedAt            DateTime                          @updatedAt @map("updated_at")
+
+  @@index([status, expiresAt])
+  @@index([status, updatedAt])
+  /// Partial unique `(source, actor_id, idempotency_key) WHERE idempotency_key IS NOT NULL`
+  /// lives in `20260823140000_file_artifact_operations` as
+  /// `file_artifact_operations_source_actor_idempotency_uidx`. Prisma cannot
+  /// express the WHERE clause — do not drop that index on migrate dev.
+  @@index([source, actorId, idempotencyKey])
+  @@index([agentId, idempotencyKey])
+  @@index([entityType, entityId])
+  @@map("file_artifact_operations")
+}
