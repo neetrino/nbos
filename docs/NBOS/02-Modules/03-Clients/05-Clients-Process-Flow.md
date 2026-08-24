@@ -112,12 +112,12 @@ Company обязательна до:
 
 | Поле                                  | Правило                                           |
 | ------------------------------------- | ------------------------------------------------- |
-| name                                  | Обязательно                                       |
+| name                                  | Обязательно — рабочее имя                         |
 | type                                  | Legal / Sole Proprietor / Individual              |
 | tax_status                            | Tax / Tax-Free                                    |
-| primary_contact                       | Основной контакт компании                         |
+| primary_contact                       | Опционально                                       |
 | billing_contact                       | Необязательно, если отличается от primary_contact |
-| tax_id / legal_address / bank_details | По правилам Company и Finance                     |
+| legal_name / tax_id / legal_address / bank_details | По правилам Company и Finance                     |
 
 ---
 

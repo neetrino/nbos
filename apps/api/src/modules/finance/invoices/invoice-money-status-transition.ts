@@ -9,7 +9,7 @@ export interface InvoiceMoneyStatusTransitionRow {
   moneyStatus: InvoiceMoneyStatusEnum;
   companyId: string | null;
   officialInvoiceRequestSent: boolean;
-  company: { name: string; taxId: string | null } | null;
+  company: { name: string; legalName: string | null; taxId: string | null } | null;
 }
 
 export const INVOICE_MONEY_STATUS_TRANSITION_SELECT = {
@@ -21,7 +21,7 @@ export const INVOICE_MONEY_STATUS_TRANSITION_SELECT = {
   moneyStatus: true,
   companyId: true,
   officialInvoiceRequestSent: true,
-  company: { select: { name: true, taxId: true } },
+  company: { select: { name: true, legalName: true, taxId: true } },
   payments: {
     select: {
       amount: true,

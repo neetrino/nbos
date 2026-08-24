@@ -160,7 +160,7 @@ Payment confirmed
 | `Overdue`          | нельзя зайти из `New` / `On Hold`       | только из `Awaiting Payment`                                                 |
 | `Paid`             | нельзя (запрос без реквизитов не уйдёт) | **нельзя**                                                                   |
 
-Реквизиты для Tax (минимум): выбранная Company + **legal name** + **tax_id (VOEN)**.
+Реквизиты для Tax (минимум): выбранная Company + **legal name** (`Company.legalName`, если пусто — `name`) + **tax_id (VOEN)**.
 
 До EHDM «официальный счёт выставлен» = актуален `official_invoice_request_sent` (письмо бухгалтеру в WhatsApp). Это команда выставить счёт, не факт EHDM. Тот же маркер нужен для `Send Official Invoice Request`.
 

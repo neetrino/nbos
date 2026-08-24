@@ -276,6 +276,7 @@ async function main() {
     create: {
       id: '00000000-0000-0000-0000-000000000010',
       name: 'ACME Solutions LLC',
+      legalName: 'ACME Solutions LLC',
       type: 'LEGAL',
       taxStatus: 'TAX',
       contactId: contact1.id,
@@ -300,6 +301,7 @@ async function main() {
     create: {
       id: '00000000-0000-0000-0000-000000000012',
       name: 'MedTech Solutions',
+      legalName: 'MedTech Solutions',
       type: 'LEGAL',
       taxStatus: 'TAX',
       contactId: contact5.id,

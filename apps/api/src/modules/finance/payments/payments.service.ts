@@ -173,7 +173,7 @@ export class PaymentsService {
         officialInvoiceRequestSent: true,
         dueDate: true,
         payments: { select: { amount: true } },
-        company: { select: { name: true, taxId: true } },
+        company: { select: { name: true, legalName: true, taxId: true } },
         order: { select: { productId: true } },
       },
     });

@@ -89,7 +89,8 @@ Contact (человек)
 | Поле          | Тип          | Описание                                  |
 | ------------- | ------------ | ----------------------------------------- |
 | id            | UUID         | Уникальный идентификатор                  |
-| name          | String       | Название компании                         |
+| name          | String       | Рабочее название (списки, поиск)          |
+| legal_name    | String       | Официальное юр. название для счетов       |
 | type          | Enum         | Legal Entity, Individual, Sole Proprietor |
 | tax_id        | String       | ИНН / VOEN / Tax ID                       |
 | legal_address | String       | Юридический адрес                         |

@@ -10,7 +10,7 @@ export interface InvoiceOfficialRequestRow {
   officialInvoiceSentAt: Date | null;
   officialInvoiceCancelledAt: Date | null;
   govInvoiceId: string | null;
-  company: { name: string; taxId: string | null } | null;
+  company: { name: string; legalName: string | null; taxId: string | null } | null;
 }
 
 export function isOfficialRequestBlockingTaxReminders(invoice: {
@@ -98,5 +98,5 @@ const officialRequestSelect = {
   officialInvoiceSentAt: true,
   officialInvoiceCancelledAt: true,
   govInvoiceId: true,
-  company: { select: { name: true, taxId: true } },
+  company: { select: { name: true, legalName: true, taxId: true } },
 } satisfies Prisma.InvoiceSelect;

@@ -70,6 +70,7 @@ export class CompaniesController {
       billingContactId?: string | null;
       type?: string;
       taxId?: string;
+      legalName?: string | null;
       legalAddress?: string;
       taxStatus?: string;
       notes?: string;
@@ -95,6 +96,7 @@ export class CompaniesController {
       billingContactId?: string | null;
       type?: string;
       taxId?: string;
+      legalName?: string | null;
       legalAddress?: string;
       taxStatus?: string;
       notes?: string;

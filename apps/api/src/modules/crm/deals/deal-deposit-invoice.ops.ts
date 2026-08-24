@@ -20,7 +20,7 @@ export async function createDealDepositInvoice(
   const company = input.companyId
     ? await prisma.company.findUnique({
         where: { id: input.companyId },
-        select: { name: true, taxId: true },
+        select: { name: true, legalName: true, taxId: true },
       })
     : null;
   const moneyStatus = resolveDepositInvoiceMoneyStatus({

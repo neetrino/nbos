@@ -13,7 +13,15 @@ const COLLECTION_MONEY_STATUSES = new Set(['AWAITING_PAYMENT', 'OVERDUE']);
 
 export interface InvoiceTaxCompanyRequisites {
   name?: string | null;
+  legalName?: string | null;
   taxId?: string | null;
+}
+
+/** Official name for Tax invoices; falls back to display `name` until legalName is filled. */
+export function resolveCompanyInvoiceLegalName(
+  company: InvoiceTaxCompanyRequisites | null | undefined,
+): string {
+  return company?.legalName?.trim() || company?.name?.trim() || '';
 }
 
 export interface InvoiceTaxReadinessInput {
@@ -36,7 +44,7 @@ export function isOfficialInvoiceIssued(invoice: { officialInvoiceRequestSent: b
 export function companyHasInvoiceRequisites(
   company: InvoiceTaxCompanyRequisites | null | undefined,
 ): boolean {
-  return Boolean(company?.name?.trim() && company?.taxId?.trim());
+  return Boolean(resolveCompanyInvoiceLegalName(company) && company?.taxId?.trim());
 }
 
 export function needsInvoiceTaxMoneyStatusGate(
@@ -64,7 +72,7 @@ export function getCompanyInvoiceRequisiteErrors(
     ];
   }
   const errors: StageGateError[] = [];
-  if (!company?.name?.trim()) {
+  if (!resolveCompanyInvoiceLegalName(company)) {
     errors.push({
       field: INVOICE_TAX_GATE_FIELD.COMPANY_NAME,
       message: 'Fill the company legal name before issuing a Tax invoice.',

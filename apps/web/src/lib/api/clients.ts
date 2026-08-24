@@ -28,6 +28,7 @@ export interface Contact {
 export interface Company {
   id: string;
   name: string;
+  legalName: string | null;
   type: string;
   taxId: string | null;
   taxStatus: string;

@@ -36,6 +36,7 @@ interface CreateCompanyDto {
   billingContactId?: string | null;
   type?: string;
   taxId?: string;
+  legalName?: string | null;
   legalAddress?: string;
   bankDetails?: Record<string, unknown> | null;
   taxStatus?: string;
@@ -75,6 +76,7 @@ export class CompaniesService {
       };
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
+        { legalName: { contains: search, mode: 'insensitive' } },
         { taxId: { contains: search, mode: 'insensitive' } },
         { contact: personName },
         { additionalContacts: { some: { contact: personName } } },
@@ -157,6 +159,7 @@ export class CompaniesService {
         billingContactId: billingId,
         type: (data.type as CompanyType) ?? 'LEGAL',
         taxId: data.taxId,
+        legalName: data.legalName,
         legalAddress: data.legalAddress,
         bankDetails: data.bankDetails ? JSON.parse(JSON.stringify(data.bankDetails)) : undefined,
         taxStatus: (data.taxStatus as TaxStatus) ?? 'TAX',
@@ -213,6 +216,7 @@ export class CompaniesService {
         ...(resolvedContactId !== undefined && { contactId: resolvedContactId }),
         ...(data.type && { type: data.type as CompanyType }),
         ...(data.taxId !== undefined && { taxId: data.taxId }),
+        ...(data.legalName !== undefined && { legalName: data.legalName }),
         ...(data.legalAddress !== undefined && { legalAddress: data.legalAddress }),
         ...(data.notes !== undefined && { notes: data.notes }),
         ...(data.phone !== undefined && { phone: data.phone }),

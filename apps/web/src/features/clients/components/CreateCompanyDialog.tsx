@@ -44,6 +44,7 @@ const EMPTY_FORM = {
   type: 'LEGAL',
   taxStatus: 'TAX',
   taxId: '',
+  legalName: '',
   legalAddress: '',
   contactIds: [] as string[],
   contactLabels: {} as Record<string, string>,
@@ -94,6 +95,7 @@ export function CreateCompanyDialog({
         type: form.type,
         taxStatus: form.taxStatus,
         taxId: form.taxId || undefined,
+        legalName: form.legalName || undefined,
         legalAddress: form.legalAddress || undefined,
         contactIds: form.contactIds,
         billingContactId:
@@ -132,7 +134,7 @@ export function CreateCompanyDialog({
             <Input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Company LLC or Individual Name"
+              placeholder="Short name for lists and search"
               autoFocus
             />
           </div>
@@ -167,6 +169,14 @@ export function CreateCompanyDialog({
 
           <div className="grid grid-cols-2 gap-2.5">
             <div className="space-y-1.5">
+              <Label>Legal name</Label>
+              <Input
+                value={form.legalName}
+                onChange={(e) => setForm({ ...form, legalName: e.target.value })}
+                placeholder="Official name (LLC / OOO / IE)"
+              />
+            </div>
+            <div className="space-y-1.5">
               <Label>Tax ID</Label>
               <Input
                 value={form.taxId}
@@ -174,14 +184,15 @@ export function CreateCompanyDialog({
                 placeholder="Tax ID / VOEN"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label>Country</Label>
-              <Input
-                value={form.country}
-                onChange={(e) => setForm({ ...form, country: e.target.value })}
-                placeholder="Armenia"
-              />
-            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Country</Label>
+            <Input
+              value={form.country}
+              onChange={(e) => setForm({ ...form, country: e.target.value })}
+              placeholder="Armenia"
+            />
           </div>
 
           <div className="space-y-1.5">

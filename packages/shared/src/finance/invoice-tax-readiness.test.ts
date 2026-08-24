@@ -7,13 +7,23 @@ import {
   shouldCancelOfficialRequestOnCardCancel,
 } from './invoice-tax-readiness';
 
-const readyCompany = { name: 'InvestOn LLC', taxId: '01234567' };
+const readyCompany = { name: 'InvestOn', legalName: 'InvestOn LLC', taxId: '01234567' };
 
 describe('companyHasInvoiceRequisites', () => {
   it('requires both legal name and tax id', () => {
     expect(companyHasInvoiceRequisites(readyCompany)).toBe(true);
     expect(companyHasInvoiceRequisites({ name: 'LLC', taxId: '  ' })).toBe(false);
     expect(companyHasInvoiceRequisites(null)).toBe(false);
+  });
+
+  it('prefers legalName and falls back to display name', () => {
+    expect(companyHasInvoiceRequisites({ legalName: 'ООО Сарибекян', taxId: '01234567' })).toBe(
+      true,
+    );
+    expect(companyHasInvoiceRequisites({ name: 'Saribekyan', taxId: '01234567' })).toBe(true);
+    expect(companyHasInvoiceRequisites({ name: '  ', legalName: '  ', taxId: '01234567' })).toBe(
+      false,
+    );
   });
 });
 

@@ -94,6 +94,16 @@ export function CompanySheetScrollBody({
             />
             <InlineField
               variant="controlled"
+              label="Legal name"
+              type="text"
+              value={draft.legalName}
+              placeholder="Official name (LLC / OOO / IE)"
+              icon={<FileText size={12} />}
+              disabled={fieldDisabled}
+              onValueChange={(v) => patchDraft({ legalName: v })}
+            />
+            <InlineField
+              variant="controlled"
               label={companyTypeNumberLabel(draft.type)}
               type="text"
               value={draft.taxId}
