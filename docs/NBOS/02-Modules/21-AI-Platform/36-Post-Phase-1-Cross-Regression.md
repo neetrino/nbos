@@ -1,11 +1,12 @@
 # Post-Phase-1 Cross-Regression — after Chats 1–3
 
 > Claims here are executor evidence from 2026-08-23. They are not a new independent
-> verifier pass. Production migrations were not applied.
+> verifier pass. Production migrations were not applied during this regression run;
+> they were applied later by the migration-gate rollout described below.
 
 ## Why this file exists
 
-Root `ai-modul-steps.md` § «После трёх этапов» requires, after all three
+The now-archived root `ai-modul-steps.md` § «После трёх этапов» required, after all three
 independent PASS / PASS WITH DEBTS verdicts:
 
 1. confirm Tasks C9, AI C25, and K209/C24 are honestly updated in source registers;
@@ -18,13 +19,13 @@ Do **not** start Messenger AI, employee AI chat, production RAG, or Phase 2 from
 
 ## Register honesty
 
-| Item                      | Source register                                                 | Status            | Note                                                                                                                                                                                                                                                          |
-| ------------------------- | --------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tasks C9 domain ownership | `docs/NBOS/02-Modules/05-Tasks/04-Tasks-Cleanup-Register.md`    | closed 2026-08-23 | Production insert is `createTask` / `TaskCreationService`. Support and Automation no longer call `prisma.task.create`. Client Services goes through `TasksService.create`. Seed `upsert` remains fixture-only. Header C9 (allocator) is separately `SHIPPED`. |
-| Tasks C9 allocator        | same file § C9                                                  | `SHIPPED`         | One allocator for `T-`. Unrelated to domain-ownership subsection.                                                                                                                                                                                             |
-| AI C25                    | `docs/NBOS/02-Modules/21-AI-Platform/99-AI-Cleanup-Register.md` | FIXED             | Chat 2 verifier snapshot said designated Neon seed was **not** applied. That sentence is now historical. Chat 3 later applied `20260823120000_seed_sibling_entity_code_counters` on Neon **dev** (`ep-restless-tooth-agz3assx`). Production still unapplied.  |
-| K209 / C24                | same AI register + item 209 in `10-Phase-1-…Implementation.md`  | FIXED / `[x]`     | Drive-owned `FileArtifactOperation`. First gateway short-circuit was verifier F1 and was removed.                                                                                                                                                             |
-| Drive artifact row        | `docs/NBOS/02-Modules/11-Drive/07-Drive-Cleanup-Register.md`    | `DONE`            | `FileArtifactOperation` Human / Internal AI / External AI / SYSTEM.                                                                                                                                                                                           |
+| Item                      | Source register                                                 | Status            | Note                                                                                                                                                                                                                                                                            |
+| ------------------------- | --------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tasks C9 domain ownership | `docs/NBOS/02-Modules/05-Tasks/04-Tasks-Cleanup-Register.md`    | closed 2026-08-23 | Production insert is `createTask` / `TaskCreationService`. Support and Automation no longer call `prisma.task.create`. Client Services goes through `TasksService.create`. Seed `upsert` remains fixture-only. Header C9 (allocator) is separately `SHIPPED`.                   |
+| Tasks C9 allocator        | same file § C9                                                  | `SHIPPED`         | One allocator for `T-`. Unrelated to domain-ownership subsection.                                                                                                                                                                                                               |
+| AI C25                    | `docs/NBOS/02-Modules/21-AI-Platform/99-AI-Cleanup-Register.md` | FIXED             | Chat 2 verifier snapshot said designated Neon seed was **not** applied. Chat 3 later applied it on Neon **dev**. The production migration gate subsequently applied it, but its record does not evidence the required old-writer pause; reconciliation remains operations work. |
+| K209 / C24                | same AI register + item 209 in `10-Phase-1-…Implementation.md`  | FIXED / `[x]`     | Drive-owned `FileArtifactOperation`. First gateway short-circuit was verifier F1 and was removed.                                                                                                                                                                               |
+| Drive artifact row        | `docs/NBOS/02-Modules/11-Drive/07-Drive-Cleanup-Register.md`    | `DONE`            | `FileArtifactOperation` Human / Internal AI / External AI / SYSTEM.                                                                                                                                                                                                             |
 
 Plan workstreams 1–3 remain **PASS WITH DEBTS** in
 `32-Post-Phase-1-Technical-Debt-Plan.md`.
@@ -71,9 +72,11 @@ This pass did not restart the API and did not create more Neon rows.
 - Browser UI
 - New live External Agent smoke
 
-## Remaining operations debts (unchanged)
+## Remaining operations debts
 
-- Production write-pause apply: Chat 2 sibling seed + Chat 3 `file_artifact_operations`
+- Production post-cutover reconciliation: the sibling seed and
+  `file_artifact_operations` were applied later, but the rollout record does not
+  evidence the required old-writer pause
 - `FileUploadSession` dual-write
 - No scheduled Drive artifact recovery worker (intentional)
 - Tasks C8 (blueprints vs automation rules) still open
@@ -81,5 +84,7 @@ This pass did not restart the API and did not create more Neon rows.
 ## Next
 
 Registers are honest. Short cross-regression is green on the listed surfaces.
-The next AI Platform **functional** stage may start in a new chat. Do not fold
-it into the three remediation chats.
+A later current-state audit found production cutover and Internal AI entrypoint
+residuals. Complete `37-AI-Product-Entry-Gate.md` before starting the next AI
+Platform **functional** stage. Do not fold that gate into the three completed
+remediation chats.
