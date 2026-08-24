@@ -374,12 +374,13 @@ Project + Product
 
 **Calls ≠ History.** History — аудит / смена стадий. Calls — телефония (канон `../02-Modules/01-CRM/08-Calls-and-Telephony.md`, окно `11-Call-Screen.md`).
 
-| Sheet | Tabs                                           |
-| ----- | ---------------------------------------------- |
-| Lead  | General · **Calls** · History · Task           |
-| Deal  | General · History · Invoice · Task · **Calls** |
+| Sheet   | Tabs                                                                  |
+| ------- | --------------------------------------------------------------------- |
+| Lead    | General · **Calls** · History · Task                                  |
+| Deal    | General · History · Invoice · Task · **Calls**                        |
+| Contact | General · Projects · … · **Calls** · Files. Нет вкладки Communication |
 
-На обеих: кнопка «Позвонить» (внутренний click-to-call, `Idempotency-Key` на один user action). При незавершённом/неоднозначном результате — «Новый звонок» с предупреждением. Окно звонка — центрированная модальная карточка (не sheet), см. `11-Call-Screen.md`.
+На Lead / Deal / Contact: кнопка «Позвонить» (внутренний click-to-call, `Idempotency-Key` на один user action). При незавершённом/неоднозначном результате — «Новый звонок» с предупреждением. Окно звонка — центрированная модальная карточка (не sheet), см. `11-Call-Screen.md`. Messenger у Contact — полное приложение (шапка **Open Messenger**), не лента в sheet.
 
 ### 8.1. Вкладка General — черновик и сохранение
 

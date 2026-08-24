@@ -206,7 +206,7 @@ Callback JSON is not documented to return `uid`. Intent links to the Call row NB
 | `AtsCallEvent` = Call: `leadId`, `contactId`, `dealId`, employee context, `note`, `recordingFileAssetId`                         | Provider callback idempotency (ATS documents only `key`/`from`/`to`)      |
 | `GET /crm/calls`, `GET /crm/calls/:id`, `GET /crm/calls/:id/recording`, `GET /crm/calls/:id/screen`, `PATCH /crm/calls/:id/note` |                                                                           |
 | Active-call SSE (`GET /realtime/calls`): `call.started` / `call.answered` / `call.finished` + fullscreen screen                  |                                                                           |
-| CALL activities on Lead/Deal History and Contact Communication                                                                   |                                                                           |
+| CALL activities on Lead / Deal / Contact **Calls** tabs                                                                          |                                                                           |
 | Worker `ats-call-recording-download` → Drive FileAsset                                                                           |                                                                           |
 | `POST /crm/calls/click-to-call` + `Idempotency-Key` → `AtsCallIntent` at-most-once ATS `callback`                                |                                                                           |
 

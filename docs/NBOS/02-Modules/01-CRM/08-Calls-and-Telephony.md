@@ -76,10 +76,10 @@ Merge / Связать: Call переезжает вместе с ATS-событ
 | ------------- | ------------------------------------------------------------------------------- |
 | Lead          | Вкладка **Calls** (рядом с History, не вместо)                                  |
 | Deal          | Вкладка **Calls** (уже в sheet; не мешать с History)                            |
-| Contact       | Лента в **Communication** (Messenger + calls + notes). Files остаётся Drive     |
+| Contact       | Вкладка **Calls** (как Lead/Deal). Messenger — полное приложение, не история    |
 | Delivery Card | Проекция той же ленты по Contact/Lead после даты карточки. Своего хранилища нет |
 
-Строка ленты: направление, номер, кто, когда, статус, длительность, плеер, заметка. Files tab Contact **не** заменяет ленту (нет `uid` / disposition).
+Строка ленты: направление, номер, кто, когда, статус, длительность, плеер, заметка. Files tab Contact **не** заменяет ленту (нет `uid` / disposition). Messenger **не** история звонков: из sheet — quick action **Open Messenger** в полный чат.
 
 Нужен list API Call (`leadId` \| `contactId` \| `dealId`), не список Drive-файлов.
 
@@ -162,6 +162,6 @@ Ops (не код): Cloudflare skip Bot Fight на `POST /api/integrations/ats/we
 
 - CRM overview: `01-CRM-Overview.md`
 - Lead pipeline: `02-Lead-Pipeline.md`
-- Clients Communication: `../03-Clients/03-Client-Portfolio.md`
+- Clients Portfolio / Messenger entry: `../03-Clients/03-Client-Portfolio.md`
 - Drive `CALL_RECORDING`: `../11-Drive/01-File-Assets-and-Metadata.md`
 - Scheduler catalog: `../16-Settings-Admin/05-Scheduler-Catalog.md`

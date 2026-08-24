@@ -262,14 +262,14 @@ Instagram OAuth connection uses dedicated Instagram app credentials. Instagram w
 | Note            | `PATCH /api/crm/calls/:id/note` after the call ends                                                             |
 | Click-to-call   | `POST /api/crm/calls/click-to-call` + `Idempotency-Key` → `AtsCallIntent` then ATS `callback` (at-most-once)    |
 | Active Call     | Employee SSE `GET /api/realtime/calls` (`call.started` / `answered` / `finished`) + fullscreen screen           |
-| CRM activity    | CALL items on Lead History, Deal History/Calls, Contact Communication                                           |
+| CRM activity    | CALL items on Lead/Deal/Contact **Calls** tabs                                                                  |
 
 ### Канон полного среза (после MVP)
 
 | Capability             | Canon                                                              |
 | ---------------------- | ------------------------------------------------------------------ |
 | Окно ответственного    | App-shell realtime, не Messenger                                   |
-| История                | Вкладка Calls на Lead/Deal; Communication у Contact                |
+| История                | Вкладка Calls на Lead / Deal / Contact                             |
 | Запись                 | Runtime: worker → R2 `CALL_RECORDING` + FileLink LEAD/CONTACT/CALL |
 | Исходящий              | Runtime: `POST /crm/calls/click-to-call` → ATS `callback`          |
 | Сверка                 | Scheduler `ats-call-history-reconcile`                             |

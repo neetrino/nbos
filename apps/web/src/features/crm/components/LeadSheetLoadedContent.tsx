@@ -2,7 +2,7 @@
 
 import type { KeyboardEvent, RefObject } from 'react';
 import { useMemo } from 'react';
-import { CheckSquare, History, LayoutGrid } from 'lucide-react';
+import { CheckSquare, History, LayoutGrid, Phone } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   DetailSheetFormFooter,
@@ -31,10 +31,12 @@ import { DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS } from '@/components/shared/deta
 import { cn } from '@/lib/utils';
 import { LeadSheetHeaderActions } from './LeadSheetHeaderActions';
 import { LeadHistoryTab } from './LeadHistoryTab';
+import { LeadCallsTab } from './LeadCallsTab';
 import { LeadTasksTab } from './LeadTasksTab';
 
 export const LEAD_SHEET_TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
+  { value: 'calls', label: 'Calls', icon: Phone },
   { value: 'history', label: 'History', icon: History },
   { value: 'task', label: 'Task', icon: CheckSquare },
 ] as const;
@@ -188,7 +190,8 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
                 }}
               />
             ) : null}
-            {props.activeTab === 'history' && <LeadHistoryTab leadId={renderLead.id} />}
+            {props.activeTab === 'calls' && <LeadCallsTab leadId={renderLead.id} />}
+            {props.activeTab === 'history' && <LeadHistoryTab />}
             {props.activeTab === 'task' ? (
               <LeadTasksTab
                 lead={renderLead}
