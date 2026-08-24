@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
-import { unlink } from 'node:fs/promises';
+import { open, unlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Transform, type TransformCallback, type Readable } from 'node:stream';
@@ -8,10 +8,10 @@ import { pipeline } from 'node:stream/promises';
 import { Injectable } from '@nestjs/common';
 import type { AtsRecordingDownloadResult } from './ats-call-record.types';
 import {
-  ATS_CALL_RECORDING_DEFAULT_MIME,
   ATS_CALL_RECORDING_MAX_BYTES,
   ATS_CALL_RECORD_TIMEOUT_MS,
 } from './ats-call-recording.constants';
+import { ATS_RECORDING_MIME_SNIFF_BYTES, resolveAtsRecordingMime } from './ats-recording-mime';
 import {
   AtsRecordingPermanentError,
   AtsRecordingTransientError,
@@ -98,7 +98,12 @@ async function readRecordingSuccessBody(
   if (!response.body) {
     throw new AtsRecordingTransientError(`${source} empty body`);
   }
-  return writeRecordingTempFile(response.body, contentType, source);
+  return writeRecordingTempFile(
+    response.body,
+    contentType,
+    response.header('content-disposition'),
+    source,
+  );
 }
 
 function assertRecordingContentLength(response: AtsRecordingTransportResponse): void {
@@ -117,6 +122,7 @@ function assertRecordingContentLength(response: AtsRecordingTransportResponse): 
 async function writeRecordingTempFile(
   body: Readable,
   contentType: string | null,
+  contentDisposition: string | null,
   source: string,
 ): Promise<AtsRecordingDownloadResult> {
   const tmpPath = join(tmpdir(), `nbos-ats-rec-${randomBytes(8).toString('hex')}`);
@@ -126,15 +132,27 @@ async function writeRecordingTempFile(
     if (tap.sizeBytes <= 0) {
       throw new AtsRecordingTransientError(`${source} zero-byte body`);
     }
+    const prefix = await readRecordingMimePrefix(tmpPath);
     return {
       tmpPath,
-      mimeType: contentType?.split(';')[0]?.trim() || ATS_CALL_RECORDING_DEFAULT_MIME,
+      mimeType: resolveAtsRecordingMime({ contentType, contentDisposition, prefix }),
       sizeBytes: tap.sizeBytes,
       checksum: tap.checksum,
     };
   } catch (error) {
     await unlink(tmpPath).catch(() => undefined);
     throw error;
+  }
+}
+
+async function readRecordingMimePrefix(tmpPath: string): Promise<Uint8Array> {
+  const handle = await open(tmpPath, 'r');
+  try {
+    const prefix = Buffer.alloc(ATS_RECORDING_MIME_SNIFF_BYTES);
+    const { bytesRead } = await handle.read(prefix, 0, ATS_RECORDING_MIME_SNIFF_BYTES, 0);
+    return prefix.subarray(0, bytesRead);
+  } finally {
+    await handle.close();
   }
 }
 

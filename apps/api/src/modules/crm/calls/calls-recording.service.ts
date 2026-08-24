@@ -7,7 +7,7 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import { findAccessibleFileAssetStorage } from '../../drive/drive-accessible-file.op';
 import { DriveAccessContextService } from '../../drive/drive-access-context.service';
 import { DriveR2Client } from '../../drive/drive-r2.client';
-import { ATS_CALL_RECORDING_DEFAULT_MIME } from '../../integrations/ats/ats-call-recording.constants';
+import { recordingPlaybackMime } from '../../integrations/ats/ats-recording-mime';
 import { CallAccessPolicyService } from './call-access-policy.service';
 import { callAccessActorFromUser } from './call-access.types';
 import { assertCanPlayCallRecording } from './calls-recording-play';
@@ -62,7 +62,7 @@ export class CallsRecordingService {
   }
 
   private async streamFromR2(storageKey: string, mimeType: string | null): Promise<StreamableFile> {
-    const mime = mimeType ?? ATS_CALL_RECORDING_DEFAULT_MIME;
+    const mime = recordingPlaybackMime(mimeType);
     const object = await this.r2.ensureS3().send(
       new GetObjectCommand({
         Bucket: this.r2.bucket,

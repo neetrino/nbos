@@ -115,6 +115,17 @@ describe('CallsRecordingService', () => {
     expect(send.mock.calls[0]?.[0]).toBeInstanceOf(GetObjectCommand);
   });
 
+  it('serves stored octet-stream recordings as audio/mpeg so the player can read duration', async () => {
+    allowView();
+    findAccessible.mockResolvedValue({
+      storageKey: 'calls/rec.wav',
+      mimeType: 'application/octet-stream',
+    });
+    await service.streamRecording('call-1', playbackUser(SELLER_PERMS));
+    const command = send.mock.calls[0]?.[0] as GetObjectCommand;
+    expect(command.input.ResponseContentType).toBe('audio/mpeg');
+  });
+
   it('denies when the actor can see the Call but PLAY is missing', async () => {
     allowView();
     await expect(

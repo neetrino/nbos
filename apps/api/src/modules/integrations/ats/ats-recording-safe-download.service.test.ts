@@ -218,6 +218,27 @@ describe('AtsRecordingSafeDownloadService', () => {
     );
     expect(unread.wasRead()).toBe(false);
   });
+
+  it('stores ATS octet-stream recordings as audio/mpeg from Content-Disposition', async () => {
+    const transport = createScriptedTransport([
+      {
+        status: 200,
+        headers: {
+          'content-type': 'application/octet-stream',
+          'content-disposition': 'attachment; filename=1787580255.177871.mp3',
+        },
+        body: Readable.from([Buffer.from('not-a-sniffable-prefix')]),
+      },
+    ]);
+    const service = new AtsRecordingSafeDownloadService(
+      createRecordingPolicy(),
+      transport as never,
+    );
+
+    const result = await service.download('https://account.ats.am/call-record', 'ats-call-record');
+    tmpPaths.push(result.tmpPath);
+    expect(result.mimeType).toBe('audio/mpeg');
+  });
 });
 
 function unreadGuard(): { body: Readable; wasRead: () => boolean } {

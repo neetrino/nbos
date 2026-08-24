@@ -1,23 +1,15 @@
-import { ATS_CALL_RECORDING_DEFAULT_EXT } from './ats-call-recording.constants';
 import {
   AtsRecordingPermanentError,
   AtsRecordingTransientError,
 } from './ats-call-recording.errors';
+import {
+  ATS_RECORDING_AUDIO_MIME_PREFIX,
+  ATS_RECORDING_OCTET_STREAM,
+  normalizeMediaType,
+  recordingExtensionForMime,
+} from './ats-recording-mime';
 
-const AUDIO_MIME_PREFIX = 'audio/';
-const OCTET_STREAM = 'application/octet-stream';
-
-const EXT_BY_MIME: Record<string, string> = {
-  'audio/wav': '.wav',
-  'audio/x-wav': '.wav',
-  'audio/wave': '.wav',
-  'audio/mpeg': '.mp3',
-  'audio/mp3': '.mp3',
-  'audio/ogg': '.ogg',
-  'audio/webm': '.webm',
-  'audio/mp4': '.m4a',
-  'audio/aac': '.aac',
-};
+export { recordingExtensionForMime };
 
 export function classifyAtsRecordingHttpStatus(status: number): 'ok' | 'transient' | 'permanent' {
   if (status >= 200 && status < 300) return 'ok';
@@ -36,11 +28,6 @@ export function throwForAtsRecordingHttpStatus(status: number, source: string): 
   throw new AtsRecordingTransientError(message);
 }
 
-export function recordingExtensionForMime(mimeType: string): string {
-  const normalized = mimeType.split(';')[0]?.trim().toLowerCase() ?? '';
-  return EXT_BY_MIME[normalized] ?? ATS_CALL_RECORDING_DEFAULT_EXT;
-}
-
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 
 export function isAtsRecordingRedirectStatus(status: number): boolean {
@@ -56,9 +43,8 @@ export function parseAtsRecordingContentLength(value: string | null): number | n
 
 export function isLikelyAudioContentType(contentType: string | null): boolean {
   if (!contentType) return true;
-  const normalized = contentType.split(';')[0]?.trim().toLowerCase() ?? '';
+  const normalized = normalizeMediaType(contentType);
   if (!normalized) return true;
-  if (normalized.startsWith(AUDIO_MIME_PREFIX)) return true;
-  if (normalized === OCTET_STREAM) return true;
-  return false;
+  if (normalized.startsWith(ATS_RECORDING_AUDIO_MIME_PREFIX)) return true;
+  return normalized === ATS_RECORDING_OCTET_STREAM;
 }
