@@ -2,7 +2,16 @@
 
 ## Status
 
-The full Internal AI execution runtime is a future phase, but selected foundation pieces are implemented in Phase 1 so future Messenger, Documents, CRM, Tasks and Analytics AI do not require architectural redesign.
+The Phase 1 configuration/security foundation is complete. The full Internal AI
+execution runtime is planned for Phase 2 and remains blocked by
+`37-AI-Product-Entry-Gate.md` until the final gate acceptance exists.
+
+The Phase 2 scope and execution contract are defined in:
+
+- `42-Phase-2-Project-Intelligence-and-Draft-Assistant-Architecture.md`;
+- `43-Phase-2-Implementation-Checklist.md`;
+- `44-Phase-2-Execution-Strategy.md`;
+- `45-Phase-2-Acceptance-Migration-Rollout-and-Operations.md`.
 
 ## Principle
 
@@ -10,9 +19,9 @@ Internal AI is another AI actor using the same capability/policy/domain-action l
 
 Running inside NBOS does not grant implicit superuser access.
 
-## Phase 1 foundation now
+## Phase 1 foundation delivered
 
-Phase 1 should establish:
+Phase 1 established:
 
 - Internal Agent identity/lifecycle foundation;
 - provider connection abstraction;
@@ -32,9 +41,9 @@ Phase 1 should establish:
 
 These foundations do not imply that employee AI chat, Messenger AI or RAG are production-enabled in Phase 1.
 
-## Full runtime responsibilities later
+## Phase 2 planned runtime responsibilities
 
-The execution runtime may own:
+The execution runtime owns or coordinates:
 
 - provider/model invocation adapters;
 - runtime model routing;
@@ -48,7 +57,7 @@ The execution runtime may own:
 - fallback execution;
 - structured output validation;
 - retry/error handling;
-- optional memory/knowledge retrieval.
+- Project/Product knowledge retrieval and isolated customer/conversation memory.
 
 ## Internal Agents
 

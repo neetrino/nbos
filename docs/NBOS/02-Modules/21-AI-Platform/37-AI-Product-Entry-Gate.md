@@ -2,7 +2,7 @@
 
 ## Status
 
-**PROPOSED — NOT STARTED**
+**IN PROGRESS — WORKSTREAM 1 PASS WITH DEBTS; WORKSTREAMS 2–3 NOT STARTED**
 
 This is a short mandatory gate between the completed Phase 1 remediation work
 and the next functional AI phase. It does not reopen Phase 1, Tasks C9, AI C25,
@@ -22,6 +22,19 @@ residuals:
 Do not start Messenger AI, employee AI chat, Project Knowledge, Customer
 Memory, production RAG, or another functional AI entrypoint until this gate is
 closed.
+
+Current evidence:
+
+- Workstream 1 is recorded in
+  `38-AI-Product-Entry-Gate-Production-Reconciliation.md` with verdict
+  `PASS WITH DEBTS`;
+- Workstream 2 handoff `39-AI-Product-Entry-Gate-Internal-Authorization-Handoff.md`,
+  Workstream 3 handoff `40-AI-Product-Entry-Gate-Drive-Consistency-Handoff.md`
+  and final acceptance `41-AI-Product-Entry-Gate-Final-Acceptance.md` do not yet
+  exist;
+- Phase 2 planning in documents `42`–`45` is allowed, but Phase 2 product-code
+  implementation remains blocked until document `41` records an acceptable
+  verdict with no authorization, isolation or lifecycle-consistency blocker.
 
 ## Working model
 
@@ -157,10 +170,12 @@ After all three workstreams:
 2. confirm active docs reflect code-complete, dev-migrated, production-migrated,
    and remaining operations debt separately;
 3. create `41-AI-Product-Entry-Gate-Final-Acceptance.md`;
-4. choose the next functional AI milestone. The preferred candidate remains
-   Project Knowledge + Customer Memory / Context Assembler unless current
-   product priorities select Messenger AI or another approved capability.
+4. start the planned Phase 2 sequence in documents `42`–`45`: Internal AI
+   Runtime -> Project Knowledge/Customer Memory/Context -> Project Assistant ->
+   Messenger-owned `DRAFT_ONLY` customer reply.
 
-The gate is `READY` only when production reconciliation has no unresolved
-integrity mismatch and the Internal AI path is fail-closed. A scheduled recovery
-worker is not automatically required.
+Document `41` verdict is either `READY` or `NOT READY`; `PASS` variants belong
+to individual workstreams/verifiers. The gate is `READY` only when production
+reconciliation has no unresolved integrity mismatch and the Internal AI path
+is fail-closed, with no authorization, isolation or lifecycle-consistency
+blocker. A scheduled recovery worker is not automatically required.

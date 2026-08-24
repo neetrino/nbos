@@ -6,6 +6,12 @@ Define additional safety, privacy and approval requirements for AI that communic
 
 Customer-facing AI has a higher risk profile than an internal employee assistant because mistakes may disclose data, create commitments or send incorrect information externally.
 
+Phase 1 delivered policy/contracts only. Phase 2 plans the first customer-facing
+runtime as an Employee-initiated, Messenger-owned `DRAFT_ONLY` Product WhatsApp
+reply. AI-owned send, approval-bound machine send and auto-send remain future
+scope. Detailed authority:
+`42-Phase-2-Project-Intelligence-and-Draft-Assistant-Architecture.md`.
+
 ## Core principles
 
 - deny by default;
@@ -24,9 +30,13 @@ An execution must identify its customer-facing scope, for example:
 
 ```text
 channel = MESSENGER
+projectId = ...
+productId = ... // optional exact overlay
+channelAccountId = ...
 conversationId = ...
-customer/contactId = ...
-organizationId = ...
+senderParticipantId = ...
+contactId = ... // only when identity mapping is unambiguous
+organizationScopeId = PLATFORM // current single-company sentinel
 ```
 
 The agent may only receive data explicitly authorized for that interaction.
@@ -76,7 +86,8 @@ AI proposes a response/action and creates an approval request before send.
 
 AI may send only within explicitly approved low-risk categories/policies.
 
-Initial production deployment should prefer DRAFT_ONLY or narrow AUTO_SEND_ALLOWED policies until quality/safety is proven.
+Phase 2 production use is `DRAFT_ONLY` only. `APPROVAL_REQUIRED` machine send
+and `AUTO_SEND_ALLOWED` require separate implementation and acceptance.
 
 ## Message send capability
 
@@ -85,8 +96,8 @@ Sending is separate from drafting.
 Examples:
 
 ```text
-messenger.reply.draft
-messenger.reply.send
+messenger.reply_draft
+messenger.reply_send
 ```
 
 Granting read or draft rights does not grant send rights.
@@ -205,7 +216,7 @@ If provider/model/tooling fails:
 
 ## Customer isolation tests
 
-Mandatory future acceptance tests include:
+Mandatory Phase 2 acceptance tests include:
 
 - Customer A cannot retrieve Customer B conversation/data;
 - conversation ID guessing does not bypass scope;
@@ -214,11 +225,16 @@ Mandatory future acceptance tests include:
 - secret endpoints are unreachable;
 - malicious prompt text cannot widen capabilities;
 - send capability is separate from draft capability;
-- approval-required response cannot send without valid approval.
+- draft generation creates no external send/queue operation;
+- only an authorized Employee can execute the separate Messenger send action.
 
-## First implementation scope
+Any later approval-bound send must additionally prove that a changed
+draft/recipient/channel cannot reuse approval and that approval consumption is
+atomic with the Messenger outbound operation/outbox.
 
-Foundation now:
+## Delivery status and Phase 2 plan
+
+Phase 1 foundation delivered:
 
 - customer-facing channel/risk classification;
 - explicit draft vs send capability distinction;
@@ -228,8 +244,20 @@ Foundation now:
 - admin configuration placeholders/contracts;
 - audit/provenance requirements.
 
-Not required now:
+Not implemented in Phase 1:
 
 - actual Messenger AI auto-reply runtime;
 - autonomous client negotiations;
 - unrestricted customer action automation.
+
+Planned Phase 2:
+
+- canonical external Conversation/Message/provider identity and exact
+  Project/Product/channel/participant/Contact resolution;
+- generation only after an authorized Employee request;
+- context assembled only from explicitly `CUSTOMER_VISIBLE` sources and
+  customer-safe live projections;
+- Messenger-owned draft revision with AI execution/source provenance;
+- Employee review/edit and separate Employee-owned Messenger send;
+- stale/takeover/escalation and kill-switch behavior;
+- no Internal Agent send handler and no direct WhatsApp Gateway/WAHA call.

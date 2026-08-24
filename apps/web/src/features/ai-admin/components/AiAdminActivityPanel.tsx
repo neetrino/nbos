@@ -1,12 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Activity } from 'lucide-react';
+import { History } from 'lucide-react';
 import { EmptyState, ErrorState, ListPagination, LoadingState } from '@/components/shared';
 import { aiAdminApi } from '@/lib/api/ai-admin';
+import { AI_ADMIN_PAGE_STACK_CLASS } from '../ai-admin-ui.constants';
 import { EMPTY_ACTIVITY_META, type AiAdminActivityPageMeta } from '../activity';
 import { AI_ADMIN_ACTIVITY_PAGE_SIZE } from '../constants';
 import { AiAdminActivityList } from './AiAdminActivityList';
+import { AiAdminSection } from './AiAdminSection';
 
 export function AiAdminActivityPanel() {
   const [items, setItems] = useState<unknown[]>([]);
@@ -46,17 +48,18 @@ export function AiAdminActivityPanel() {
   if (items.length === 0) {
     return (
       <EmptyState
-        icon={Activity}
+        icon={History}
         title="No AI activity"
         description="Lifecycle, grant, credential, and provider events will appear here."
       />
     );
   }
   return (
-    <section className="border-border bg-card rounded-xl border p-4">
-      <h2 className="mb-3 text-sm font-semibold">Recent AI Platform activity</h2>
-      <AiAdminActivityList items={items} />
-      <ListPagination meta={meta} onPageChange={setPage} />
-    </section>
+    <div className={AI_ADMIN_PAGE_STACK_CLASS}>
+      <AiAdminSection icon={History} title="Recent AI Platform activity">
+        <AiAdminActivityList items={items} />
+        <ListPagination meta={meta} onPageChange={setPage} />
+      </AiAdminSection>
+    </div>
   );
 }

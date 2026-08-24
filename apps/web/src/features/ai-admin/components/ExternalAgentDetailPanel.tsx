@@ -1,15 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { toast } from 'sonner';
+import { BotMessageSquare, Clock, KeyRound, Radio, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { ErrorState, LoadingState } from '@/components/shared';
+import type { ExternalAgentState } from '@/lib/api/ai-admin';
 import { aiAdminApi, type ExternalAgentBundle } from '@/lib/api/ai-admin';
-import { AI_ADMIN_BASE_PATH, AI_ADMIN_ID_PREFIX_LENGTH } from '../constants';
+import { AI_ADMIN_DETAIL_MAIN_CLASS, AI_ADMIN_PAGE_STACK_CLASS } from '../ai-admin-ui.constants';
 import {
   canEnableExternalAgent,
   canExtendExternalAgentExpiry,
@@ -17,11 +16,16 @@ import {
   canIssueExternalAgentToken,
   isExternalAgentRevoked,
 } from '../external-agent-actions';
-import { formatTimestamp } from '../format';
+import { formatTimestamp, shortId } from '../format';
 import { agentStateVariant } from '../status-badge-map';
-import { ExternalAgentActivitySection } from './ExternalAgentActivitySection';
 import { AiAdminConfirmDialog } from './AiAdminConfirmDialog';
-import { ExternalAgentAccessSection } from './ExternalAgentAccessSection';
+import { AiAdminDetailHeader } from './AiAdminDetailHeader';
+import { AiAdminMetaStrip } from './AiAdminMetaStrip';
+import {
+  ExternalAgentCapabilitiesSection,
+  ExternalAgentWorkspacesSection,
+} from './ExternalAgentAccessSection';
+import { ExternalAgentActivitySection } from './ExternalAgentActivitySection';
 import { ExternalAgentCredentialsSection } from './ExternalAgentCredentialsSection';
 
 export function ExternalAgentDetailPanel({ agentId }: { agentId: string }) {
@@ -47,159 +51,84 @@ export function ExternalAgentDetailPanel({ agentId }: { agentId: string }) {
   }, [load]);
 
   if (loading && !bundle) return <LoadingState />;
-  if (error || !bundle)
+  if (error || !bundle) {
     return <ErrorState description={error ?? 'Not found'} onRetry={() => void load()} />;
+  }
 
   const { agent } = bundle;
   const revoked = isExternalAgentRevoked(agent.state);
-
-  const runLifecycle = async () => {
-    setBusy(true);
-    try {
-      if (confirm === 'disable') await aiAdminApi.disableExternalAgent(agent.id);
-      if (confirm === 'enable') await aiAdminApi.enableExternalAgent(agent.id);
-      if (confirm === 'revoke') await aiAdminApi.revokeExternalAgent(agent.id);
-      setConfirm(null);
-      await load();
-    } catch {
-      toast.error('Lifecycle change failed.');
-    } finally {
-      setBusy(false);
-    }
+  const latestCred = bundle.credentials[0];
+  const accessProps = {
+    bundle,
+    canGrant: canGrantExternalAgentAccess(agent.state),
+    onChanged: () => void load(),
   };
 
   return (
-    <div className="space-y-6">
-      <div className="border-border bg-card rounded-xl border p-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 flex-1 space-y-3">
-            {revoked ? (
-              <>
-                <h2 className="text-lg font-semibold">{agent.name}</h2>
-                <p className="text-muted-foreground text-sm">
-                  {agent.description || 'No purpose recorded'}
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="space-y-1.5">
-                  <Label htmlFor="agent-edit-name">Name</Label>
-                  <Input
-                    id="agent-edit-name"
-                    defaultValue={agent.name}
-                    onBlur={(event) => {
-                      const name = event.target.value.trim();
-                      if (!name || name === agent.name) return;
-                      void aiAdminApi
-                        .updateExternalAgent(agent.id, { name })
-                        .then(load)
-                        .catch(() => toast.error('Name could not be saved.'));
-                    }}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="agent-edit-purpose">Purpose</Label>
-                  <Textarea
-                    id="agent-edit-purpose"
-                    defaultValue={agent.description ?? ''}
-                    onBlur={(event) => {
-                      const description = event.target.value.trim();
-                      if (description === (agent.description ?? '')) return;
-                      void aiAdminApi
-                        .updateExternalAgent(agent.id, { description })
-                        .then(load)
-                        .catch(() => toast.error('Purpose could not be saved.'));
-                    }}
-                  />
-                </div>
-              </>
-            )}
-          </div>
-          <StatusBadge label={agent.state} variant={agentStateVariant(agent.state)} />
+    <div className={AI_ADMIN_PAGE_STACK_CLASS}>
+      <div className={AI_ADMIN_DETAIL_MAIN_CLASS}>
+        <div className="space-y-4">
+          <AiAdminDetailHeader
+            compact
+            icon={BotMessageSquare}
+            name={agent.name}
+            purpose={agent.description ?? ''}
+            statusLabel={agent.state}
+            statusVariant={agentStateVariant(agent.state)}
+            readOnly={revoked}
+            onNameCommit={(name) => {
+              void aiAdminApi
+                .updateExternalAgent(agent.id, { name })
+                .then(load)
+                .catch(() => toast.error('Name could not be saved.'));
+            }}
+            onPurposeCommit={(description) => {
+              void aiAdminApi
+                .updateExternalAgent(agent.id, { description })
+                .then(load)
+                .catch(() => toast.error('Purpose could not be saved.'));
+            }}
+            meta={
+              <AiAdminMetaStrip
+                items={[
+                  { icon: Clock, label: 'Last used', value: lastUsedLabel(agent) },
+                  { icon: Radio, label: 'Expires', value: formatTimestamp(agent.expiresAt) },
+                  {
+                    icon: UserRound,
+                    label: 'Owner',
+                    value: shortId(agent.ownerId),
+                  },
+                  {
+                    icon: KeyRound,
+                    label: 'Credential',
+                    value: latestCred ? latestCred.state : 'None issued',
+                  },
+                ]}
+              />
+            }
+            actions={
+              <ExternalAgentLifecycleActions
+                agentId={agent.id}
+                state={agent.state}
+                revoked={revoked}
+                canExtend={canExtendExternalAgentExpiry(agent.state)}
+                onConfirm={setConfirm}
+                onReload={load}
+              />
+            }
+          />
+          <ExternalAgentCapabilitiesSection {...accessProps} />
+          <ExternalAgentActivitySection agentId={agent.id} />
         </div>
-        <dl className="text-muted-foreground mt-4 grid gap-2 text-xs sm:grid-cols-3">
-          <div>
-            <dt className="font-medium">Last used</dt>
-            <dd>
-              {formatTimestamp(agent.lastUsedAt)}
-              {agent.lastUsedChannel ? ` · ${agent.lastUsedChannel}` : ''}
-            </dd>
-          </div>
-          <div>
-            <dt className="font-medium">Expires</dt>
-            <dd>{formatTimestamp(agent.expiresAt)}</dd>
-          </div>
-          <div>
-            <dt className="font-medium">Owner</dt>
-            <dd className="font-mono">{agent.ownerId.slice(0, AI_ADMIN_ID_PREFIX_LENGTH)}</dd>
-          </div>
-        </dl>
-        {canExtendExternalAgentExpiry(agent.state) ? (
-          <div className="mt-4 space-y-1.5">
-            <Label htmlFor="agent-extend-expiry">Extend expiry to restore tokens and grants</Label>
-            <Input
-              id="agent-extend-expiry"
-              type="datetime-local"
-              onBlur={(event) => {
-                if (!event.target.value) return;
-                const expiresAt = new Date(event.target.value);
-                if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
-                  toast.error('Pick a future expiry.');
-                  return;
-                }
-                void aiAdminApi
-                  .updateExternalAgent(agent.id, { expiresAt: expiresAt.toISOString() })
-                  .then(load)
-                  .catch(() => toast.error('Expiry could not be extended.'));
-              }}
-            />
-          </div>
-        ) : null}
-        <div className="mt-4 flex flex-wrap gap-2">
-          {agent.state === 'ACTIVE' ? (
-            <Button type="button" size="sm" variant="outline" onClick={() => setConfirm('disable')}>
-              Disable
-            </Button>
-          ) : null}
-          {canEnableExternalAgent(agent.state) ? (
-            <Button type="button" size="sm" variant="outline" onClick={() => setConfirm('enable')}>
-              Re-enable
-            </Button>
-          ) : null}
-          {!revoked ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="destructive"
-              onClick={() => setConfirm('revoke')}
-            >
-              Revoke
-            </Button>
-          ) : (
-            <p className="text-muted-foreground text-xs">
-              REVOKED is terminal. Tokens cannot be issued and the agent cannot be re-enabled.
-            </p>
-          )}
-          <Link
-            href={`${AI_ADMIN_BASE_PATH}/audit`}
-            className="text-muted-foreground hover:text-foreground text-xs underline"
-          >
-            Open AI Audit
-          </Link>
+        <div className="space-y-4">
+          <ExternalAgentCredentialsSection
+            bundle={bundle}
+            canIssue={canIssueExternalAgentToken(agent.state)}
+            onChanged={() => void load()}
+          />
+          <ExternalAgentWorkspacesSection {...accessProps} />
         </div>
       </div>
-
-      <ExternalAgentCredentialsSection
-        bundle={bundle}
-        canIssue={canIssueExternalAgentToken(agent.state)}
-        onChanged={() => void load()}
-      />
-      <ExternalAgentAccessSection
-        bundle={bundle}
-        canGrant={canGrantExternalAgentAccess(agent.state)}
-        onChanged={() => void load()}
-      />
-      <ExternalAgentActivitySection agentId={agent.id} />
 
       <AiAdminConfirmDialog
         open={confirm !== null}
@@ -211,10 +140,102 @@ export function ExternalAgentDetailPanel({ agentId }: { agentId: string }) {
         onOpenChange={(open) => {
           if (!open) setConfirm(null);
         }}
-        onConfirm={() => void runLifecycle()}
+        onConfirm={() => void runLifecycle(confirm, agent.id, setBusy, setConfirm, load)}
       />
     </div>
   );
+}
+
+function lastUsedLabel(agent: ExternalAgentBundle['agent']): string {
+  const when = formatTimestamp(agent.lastUsedAt);
+  return agent.lastUsedChannel ? `${when} · ${agent.lastUsedChannel}` : when;
+}
+
+function ExternalAgentLifecycleActions(props: {
+  agentId: string;
+  state: ExternalAgentState;
+  revoked: boolean;
+  canExtend: boolean;
+  onConfirm: (action: 'disable' | 'enable' | 'revoke') => void;
+  onReload: () => Promise<void>;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {props.canExtend ? (
+        <ExpiryExtendInput agentId={props.agentId} onReload={props.onReload} />
+      ) : null}
+      {props.state === 'ACTIVE' ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => props.onConfirm('disable')}
+        >
+          Disable
+        </Button>
+      ) : null}
+      {canEnableExternalAgent(props.state) ? (
+        <Button type="button" size="sm" variant="outline" onClick={() => props.onConfirm('enable')}>
+          Re-enable
+        </Button>
+      ) : null}
+      {!props.revoked ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="destructive"
+          onClick={() => props.onConfirm('revoke')}
+        >
+          Revoke agent
+        </Button>
+      ) : (
+        <span className="text-muted-foreground text-xs">Revoked permanently</span>
+      )}
+    </div>
+  );
+}
+
+function ExpiryExtendInput(props: { agentId: string; onReload: () => Promise<void> }) {
+  return (
+    <Input
+      aria-label="Extend expiry"
+      type="datetime-local"
+      className="h-8 max-w-48"
+      onBlur={(event) => {
+        if (!event.target.value) return;
+        const expiresAt = new Date(event.target.value);
+        if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
+          toast.error('Pick a future expiry.');
+          return;
+        }
+        void aiAdminApi
+          .updateExternalAgent(props.agentId, { expiresAt: expiresAt.toISOString() })
+          .then(props.onReload)
+          .catch(() => toast.error('Expiry could not be extended.'));
+      }}
+    />
+  );
+}
+
+async function runLifecycle(
+  confirm: 'disable' | 'enable' | 'revoke' | null,
+  agentId: string,
+  setBusy: (value: boolean) => void,
+  setConfirm: (value: 'disable' | 'enable' | 'revoke' | null) => void,
+  load: () => Promise<void>,
+): Promise<void> {
+  setBusy(true);
+  try {
+    if (confirm === 'disable') await aiAdminApi.disableExternalAgent(agentId);
+    if (confirm === 'enable') await aiAdminApi.enableExternalAgent(agentId);
+    if (confirm === 'revoke') await aiAdminApi.revokeExternalAgent(agentId);
+    setConfirm(null);
+    await load();
+  } catch {
+    toast.error('Lifecycle change failed.');
+  } finally {
+    setBusy(false);
+  }
 }
 
 function confirmTitle(action: 'disable' | 'enable' | 'revoke' | null): string {

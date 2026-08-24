@@ -46,7 +46,7 @@ CRM Inbox используется для:
 
 Для WhatsApp 1:1 в NBOS используется тот же `WhatsAppWebAdapter`, что и для групп. 1:1 chats являются вторичным сценарием: в основном Seller может отвечать клиенту напрямую из CRM Inbox.
 
-## Project WhatsApp Groups
+## Product WhatsApp Groups
 
 После Deal Won может существовать клиентская WhatsApp group.
 
@@ -60,10 +60,17 @@ CRM Inbox используется для:
 
 Канон:
 
-- WhatsApp group связана с Project и обычно с одним или несколькими Products;
+- одна WhatsApp group принадлежит ровно одному Product; Project выводится через
+  Product, а один Project может иметь много Product groups;
+- исторический термин `Project WhatsApp Group` не означает Project-level
+  ownership и не разрешает связывать одну группу с несколькими Products;
 - она не заменяет internal Product Chat;
 - она может жить после завершения разработки и использоваться годами для Maintenance;
 - системные сообщения по Maintenance, Support и Finance могут попадать сюда, если клиенту включены такие уведомления.
+
+Полный ownership/создание: `../../06-Integrations/08-Product-WhatsApp-Groups.md`.
+До миграции/проверки legacy conversation с отсутствующим или неоднозначным
+Product binding не допускается в AI context/draft.
 
 ## Support Conversations
 

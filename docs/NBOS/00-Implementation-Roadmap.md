@@ -412,13 +412,39 @@ Tests
 Docs updated
 ```
 
-## AI Platform Phase 1 (in progress)
+## AI Platform Phase 1 (complete)
 
-Cross-cutting actor/capability layer, not an Automation Layer feature. Execution chats: foundation/Audit → External identity/policy → domain gateway → REST/MCP → providers/models/Internal Agent → admin UI → **security/regression hardening (Chat 7 done)** → acceptance.
+The cross-cutting actor/capability, External Agent REST/MCP,
+provider/model/Internal Agent configuration, prompt/context contract,
+approval, usage/evaluation and administration foundations are complete.
 
-Chat 7 closed the operational gaps that the earlier slices left open: per-agent and per-capability rate limits isolated from employee API capacity, the AL security suite as executable tests, replay re-authorization for revoked grants, and the scheduled model-catalog sync as a Nest cron with `rosterIntent: 'off'`. Remaining Phase 1 work is live acceptance (checklist AO–AQ).
+Canonical evidence:
 
-Canon: `02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md`. Operations: `02-Modules/21-AI-Platform/25-AI-Platform-Operations-Runbooks.md`.
+- checklist: `02-Modules/21-AI-Platform/10-Phase-1-AI-Foundation-and-External-Agent-Implementation.md`;
+- final acceptance: `02-Modules/21-AI-Platform/31-Phase-1-Final-Acceptance.md`;
+- post-Phase-1 cross-regression: `02-Modules/21-AI-Platform/36-Post-Phase-1-Cross-Regression.md`;
+- operations: `02-Modules/21-AI-Platform/25-AI-Platform-Operations-Runbooks.md`.
+
+## AI Platform Phase 2 (planned; entry-gated)
+
+Scope: durable Internal AI runtime -> Project AI Profile/rules -> Project
+Knowledge with Product overlays -> isolated customer memory -> multi-source
+context/live projections -> grounded Project Assistant -> Messenger-owned
+`DRAFT_ONLY` Product WhatsApp reply.
+
+Implementation remains blocked until
+`02-Modules/21-AI-Platform/41-AI-Product-Entry-Gate-Final-Acceptance.md`
+closes the gate without authorization/isolation/lifecycle blockers.
+
+Planning package:
+
+- architecture: `02-Modules/21-AI-Platform/42-Phase-2-Project-Intelligence-and-Draft-Assistant-Architecture.md`;
+- checklist: `02-Modules/21-AI-Platform/43-Phase-2-Implementation-Checklist.md`;
+- execution: `02-Modules/21-AI-Platform/44-Phase-2-Execution-Strategy.md`;
+- acceptance/rollout: `02-Modules/21-AI-Platform/45-Phase-2-Acceptance-Migration-Rollout-and-Operations.md`.
+
+AI-owned send, approval-bound machine send, auto-send, broad company search,
+vector infrastructure and arbitrary domain writes are outside Phase 2.
 
 ## Final rule
 

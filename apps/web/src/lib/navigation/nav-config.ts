@@ -176,12 +176,6 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     permission: { module: 'CREDENTIALS', action: 'VIEW' },
   },
   {
-    key: 'reports',
-    label: 'Analytics',
-    href: '/reports',
-    permission: { module: 'DASHBOARDS', action: 'VIEW' },
-  },
-  {
     key: 'ai-agents',
     label: 'AI & Agents',
     href: '/ai-agents',
@@ -197,6 +191,12 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
       { label: 'Approvals', href: '/ai-agents/approvals' },
       { label: 'Audit', href: '/ai-agents/audit' },
     ],
+  },
+  {
+    key: 'reports',
+    label: 'Analytics',
+    href: '/reports',
+    permission: { module: 'DASHBOARDS', action: 'VIEW' },
   },
   {
     key: 'settings',

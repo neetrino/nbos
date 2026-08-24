@@ -1,14 +1,18 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Cable, Plus } from 'lucide-react';
+import { Cable, Plus, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { aiAdminApi, type AiProviderConnectionView } from '@/lib/api/ai-admin';
+import { AI_ADMIN_CARD_GRID_CLASS, AI_ADMIN_PAGE_STACK_CLASS } from '../ai-admin-ui.constants';
+import { iconForProvider } from '../ai-admin-icons';
 import { formatTimestamp } from '../format';
 import { agentStateVariant } from '../status-badge-map';
 import { AiAdminConfirmDialog } from './AiAdminConfirmDialog';
+import { AiAdminEntityRow } from './AiAdminEntityRow';
+import { AiAdminPageToolbar } from './AiAdminPageToolbar';
 import { DisableImpactConfirm } from './DisableImpactConfirm';
 import { ProviderConnectDialog } from './ProviderConnectDialog';
 
@@ -63,16 +67,17 @@ export function ProviderListPanel() {
   if (error) return <ErrorState description={error} onRetry={() => void load()} />;
 
   return (
-    <div className="space-y-4">
-      <p className="text-muted-foreground text-sm">
-        Internal AI provider connections. These are not External Agent credentials.
-      </p>
-      <div className="flex justify-end">
-        <Button type="button" size="sm" onClick={() => setConnectOpen(true)}>
-          <Plus className="size-4" aria-hidden />
-          Connect provider
-        </Button>
-      </div>
+    <div className={AI_ADMIN_PAGE_STACK_CLASS}>
+      <AiAdminPageToolbar
+        icon={Cable}
+        description="Internal AI provider connections. These are not External Agent credentials."
+        actions={
+          <Button type="button" size="sm" onClick={() => setConnectOpen(true)}>
+            <Plus className="size-4" aria-hidden />
+            Connect provider
+          </Button>
+        }
+      />
       {rows.length === 0 ? (
         <EmptyState
           icon={Cable}
@@ -80,7 +85,7 @@ export function ProviderListPanel() {
           description="Connect OpenAI or Anthropic. The API key is stored encrypted and never shown again."
         />
       ) : (
-        <div className="space-y-3">
+        <div className={AI_ADMIN_CARD_GRID_CLASS}>
           {rows.map((row) => (
             <ProviderRow
               key={row.id}
@@ -143,77 +148,99 @@ function ProviderRow(props: {
 }) {
   const { row } = props;
   return (
-    <section className="border-border bg-card rounded-xl border p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-semibold">{row.name}</h2>
-          <p className="text-muted-foreground font-mono text-xs">
-            {row.provider} · {row.keyPrefix}
-          </p>
-        </div>
-        <StatusBadge label={row.status} variant={agentStateVariant(row.status)} />
-      </div>
-      <p className="text-muted-foreground mt-2 text-xs">
-        Validated {formatTimestamp(row.lastValidatedAt)} · Synced{' '}
-        {formatTimestamp(row.lastModelSyncAt)}
+    <AiAdminEntityRow
+      icon={iconForProvider(row.provider)}
+      title={row.name}
+      description={`${row.provider} · ${row.keyPrefix}`}
+      statusLabel={row.status}
+      statusVariant={agentStateVariant(row.status)}
+      pills={[
+        { icon: RefreshCw, text: `Validated ${formatTimestamp(row.lastValidatedAt)}` },
+        { icon: Cable, text: `Synced ${formatTimestamp(row.lastModelSyncAt)}` },
+      ]}
+      footer={
+        <ProviderRowActions
+          row={row}
+          busy={props.busy}
+          onValidate={props.onValidate}
+          onEnable={props.onEnable}
+          onDisable={props.onDisable}
+          onRevoke={props.onRevoke}
+          onRotate={props.onRotate}
+        />
+      }
+    />
+  );
+}
+
+function ProviderRowActions(props: {
+  row: AiProviderConnectionView;
+  busy: boolean;
+  onValidate: () => void;
+  onEnable: () => void;
+  onDisable: () => void;
+  onRevoke: () => void;
+  onRotate: () => void;
+}) {
+  const { row } = props;
+  if (row.status === 'REVOKED') {
+    return (
+      <p className="text-muted-foreground w-full text-xs leading-relaxed">
+        Revoked connections cannot be re-enabled.
       </p>
-      {row.status !== 'REVOKED' ? (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {row.status === 'ACTIVE' ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={props.busy}
-              onClick={props.onValidate}
-            >
-              Validate
-            </Button>
-          ) : null}
-          <ProviderRotateButton
-            connectionId={row.id}
-            provider={row.provider}
-            baseUrl={row.baseUrl}
-            disabled={props.busy}
-            onRotated={props.onRotate}
-          />
-          {row.status === 'ACTIVE' ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={props.busy}
-              onClick={props.onDisable}
-            >
-              Disable
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={props.busy}
-              onClick={props.onEnable}
-            >
-              Enable
-            </Button>
-          )}
-          <Button
-            type="button"
-            size="sm"
-            variant="destructive"
-            disabled={props.busy}
-            onClick={props.onRevoke}
-          >
-            Revoke
-          </Button>
-        </div>
+    );
+  }
+  return (
+    <div className="flex w-full flex-wrap items-center justify-end gap-2">
+      {row.status === 'ACTIVE' ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={props.busy}
+          onClick={props.onValidate}
+        >
+          Validate
+        </Button>
+      ) : null}
+      <ProviderRotateButton
+        connectionId={row.id}
+        provider={row.provider}
+        baseUrl={row.baseUrl}
+        disabled={props.busy}
+        onRotated={props.onRotate}
+      />
+      {row.status === 'ACTIVE' ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={props.busy}
+          onClick={props.onDisable}
+        >
+          Disable
+        </Button>
       ) : (
-        <p className="text-muted-foreground mt-2 text-xs">
-          Revoked connections cannot be re-enabled.
-        </p>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={props.busy}
+          onClick={props.onEnable}
+        >
+          Enable
+        </Button>
       )}
-    </section>
+      <Button
+        type="button"
+        size="sm"
+        variant="destructive"
+        disabled={props.busy}
+        onClick={props.onRevoke}
+      >
+        Revoke
+      </Button>
+    </div>
   );
 }
 

@@ -1,12 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useReducer, useState } from 'react';
-import Link from 'next/link';
-import { Bot, Plus } from 'lucide-react';
+import { BotMessageSquare, Clock, KeyRound, Layers, Plus, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { aiAdminApi, type ExternalAgentBundle } from '@/lib/api/ai-admin';
+import { AI_ADMIN_CARD_GRID_CLASS, AI_ADMIN_PAGE_STACK_CLASS } from '../ai-admin-ui.constants';
 import { AI_ADMIN_BASE_PATH } from '../constants';
+import { AiAdminPageToolbar } from './AiAdminPageToolbar';
 import { isCurrentGrant } from '../grant-current';
 import { formatTimestamp } from '../format';
 import {
@@ -15,6 +16,7 @@ import {
   reduceSecretHost,
 } from '../one-time-secret-host';
 import { agentStateVariant } from '../status-badge-map';
+import { AiAdminEntityRow } from './AiAdminEntityRow';
 import { ExternalAgentCreateDialog } from './ExternalAgentCreateDialog';
 
 export function ExternalAgentListPanel() {
@@ -44,18 +46,22 @@ export function ExternalAgentListPanel() {
   const showInitialLoad = loading && rows.length === 0 && !keepHost;
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button type="button" size="sm" onClick={() => dispatch({ type: 'OPEN_CREATE' })}>
-          <Plus className="size-4" aria-hidden />
-          Create External Agent
-        </Button>
-      </div>
+    <div className={AI_ADMIN_PAGE_STACK_CLASS}>
+      <AiAdminPageToolbar
+        icon={BotMessageSquare}
+        description="Machine clients with scoped capabilities and Work Space access. Issue tokens from the agent detail page."
+        actions={
+          <Button type="button" size="sm" onClick={() => dispatch({ type: 'OPEN_CREATE' })}>
+            <Plus className="size-4" aria-hidden />
+            Create External Agent
+          </Button>
+        }
+      />
       {showInitialLoad ? <LoadingState /> : null}
       {error && !keepHost ? <ErrorState description={error} onRetry={() => void load()} /> : null}
       {!showInitialLoad && !error && rows.length === 0 ? (
         <EmptyState
-          icon={Bot}
+          icon={BotMessageSquare}
           title="No External Agents"
           description="Create a machine client, grant Work Space scopes, then issue a one-time token."
           action={
@@ -66,7 +72,7 @@ export function ExternalAgentListPanel() {
         />
       ) : null}
       {!showInitialLoad && rows.length > 0 ? (
-        <div className="space-y-3">
+        <div className={AI_ADMIN_CARD_GRID_CLASS}>
           {rows.map((row) => (
             <AgentRow key={row.agent.id} row={row} />
           ))}
@@ -88,41 +94,33 @@ export function ExternalAgentListPanel() {
 
 function AgentRow({ row }: { row: ExternalAgentBundle }) {
   const activeCaps = row.capabilities.filter((item) => isCurrentGrant(item));
-  const activeScopes = row.scopes.filter((item) => isCurrentGrant(item));
+  const workspaceCount = row.scopes.filter(
+    (item) => isCurrentGrant(item) && item.scopeType === 'WORKSPACE',
+  ).length;
   const latestCred = row.credentials[0];
   return (
-    <Link
+    <AiAdminEntityRow
       href={`${AI_ADMIN_BASE_PATH}/external-agents/${row.agent.id}`}
-      className="border-border bg-card hover:bg-muted/40 block rounded-xl border p-4 transition-colors"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-semibold">{row.agent.name}</h2>
-          <p className="text-muted-foreground mt-1 text-xs">
-            {row.agent.description || 'No purpose recorded'}
-          </p>
-        </div>
-        <StatusBadge label={row.agent.state} variant={agentStateVariant(row.agent.state)} />
-      </div>
-      <dl className="text-muted-foreground mt-3 grid gap-2 text-xs sm:grid-cols-3">
-        <div>
-          <dt className="font-medium">Capabilities</dt>
-          <dd>{activeCaps.length} granted</dd>
-        </div>
-        <div>
-          <dt className="font-medium">Work Spaces</dt>
-          <dd>{activeScopes.filter((item) => item.scopeType === 'WORKSPACE').length} scoped</dd>
-        </div>
-        <div>
-          <dt className="font-medium">Last used</dt>
-          <dd>{formatTimestamp(row.agent.lastUsedAt)}</dd>
-        </div>
-      </dl>
-      {latestCred ? (
-        <p className="text-muted-foreground mt-2 font-mono text-xs">
-          {latestCred.tokenPrefix} · {latestCred.state}
-        </p>
-      ) : null}
-    </Link>
+      icon={BotMessageSquare}
+      title={row.agent.name}
+      description={row.agent.description}
+      statusLabel={row.agent.state}
+      statusVariant={agentStateVariant(row.agent.state)}
+      pills={[
+        {
+          icon: Sparkles,
+          text: `${activeCaps.length} ${activeCaps.length === 1 ? 'capability' : 'capabilities'}`,
+        },
+        {
+          icon: Layers,
+          text: `${workspaceCount} ${workspaceCount === 1 ? 'work space' : 'work spaces'}`,
+        },
+        { icon: Clock, text: formatTimestamp(row.agent.lastUsedAt) },
+        {
+          icon: KeyRound,
+          text: latestCred ? `Token ${latestCred.state}` : 'No token',
+        },
+      ]}
+    />
   );
 }

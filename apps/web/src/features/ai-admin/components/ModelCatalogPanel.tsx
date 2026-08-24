@@ -4,15 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Cpu } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
-import { aiAdminApi, type AiModelView, type AiProviderConnectionView } from '@/lib/api/ai-admin';
-import { groupModelsForAdmin } from '../model-catalog-groups';
-import { formatTimestamp } from '../format';
-import { applySelectValue } from '../select-value';
-import { agentStateVariant } from '../status-badge-map';
-import { DisableImpactConfirm } from './DisableImpactConfirm';
+import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import {
   Select,
   SelectContent,
@@ -20,6 +12,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { aiAdminApi, type AiModelView, type AiProviderConnectionView } from '@/lib/api/ai-admin';
+import { AI_ADMIN_CARD_GRID_CLASS, AI_ADMIN_PAGE_STACK_CLASS } from '../ai-admin-ui.constants';
+import { AI_ADMIN_MODEL_SORTS, type AiAdminModelSort } from '../constants';
+import { groupModelsForAdmin } from '../model-catalog-groups';
+import { applySelectValue } from '../select-value';
+import { DisableImpactConfirm } from './DisableImpactConfirm';
+import { AiAdminPageToolbar } from './AiAdminPageToolbar';
+import { ModelCatalogCard } from './ModelCatalogCard';
 
 export function ModelCatalogPanel() {
   const [models, setModels] = useState<AiModelView[]>([]);
@@ -27,6 +27,7 @@ export function ModelCatalogPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [sort, setSort] = useState<AiAdminModelSort>('newest');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -65,16 +66,36 @@ export function ModelCatalogPanel() {
   if (loading) return <LoadingState />;
   if (error) return <ErrorState description={error} onRetry={() => void load()} />;
 
-  const groups = groupModelsForAdmin(models);
+  const groups = groupModelsForAdmin(models, sort);
+  const activeConnections = connections.filter((item) => item.status === 'ACTIVE');
   return (
-    <div className="space-y-6">
-      <p className="text-muted-foreground text-sm">
-        Sync never auto-activates. Only ACTIVE models can be production routing candidates.
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {connections
-          .filter((item) => item.status === 'ACTIVE')
-          .map((connection) => (
+    <div className={AI_ADMIN_PAGE_STACK_CLASS}>
+      <AiAdminPageToolbar
+        icon={Cpu}
+        description="Sync never auto-activates. Only ACTIVE models can be production routing candidates."
+        actions={
+          <Select
+            value={sort}
+            onValueChange={(value) =>
+              applySelectValue(value, (next) => setSort(next as AiAdminModelSort))
+            }
+          >
+            <SelectTrigger size="sm" className="w-40" aria-label="Sort models">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {AI_ADMIN_MODEL_SORTS.map((value) => (
+                <SelectItem key={value} value={value}>
+                  {modelSortLabel(value)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        }
+      />
+      {activeConnections.length > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          {activeConnections.map((connection) => (
             <Button
               key={connection.id}
               type="button"
@@ -86,7 +107,8 @@ export function ModelCatalogPanel() {
               Sync {connection.name}
             </Button>
           ))}
-      </div>
+        </div>
+      ) : null}
       {models.length === 0 ? (
         <EmptyState
           icon={Cpu}
@@ -121,16 +143,21 @@ function ModelGroup(props: {
   const [busy, setBusy] = useState(false);
   if (props.models.length === 0) return null;
   return (
-    <section className="space-y-3">
-      <h2 className="text-sm font-semibold">{props.title}</h2>
-      {props.models.map((model) => (
-        <ModelCard
-          key={model.id}
-          model={model}
-          onChanged={props.onChanged}
-          onDisable={() => setPendingDisable(model)}
-        />
-      ))}
+    <section className="space-y-4">
+      <h2 className="text-sm font-semibold tracking-tight">
+        {props.title}
+        <span className="text-muted-foreground ml-2 font-normal">{props.models.length}</span>
+      </h2>
+      <div className={AI_ADMIN_CARD_GRID_CLASS}>
+        {props.models.map((model) => (
+          <ModelCatalogCard
+            key={model.id}
+            model={model}
+            onChanged={props.onChanged}
+            onDisable={() => setPendingDisable(model)}
+          />
+        ))}
+      </div>
       <DisableImpactConfirm
         open={pendingDisable !== null}
         kind="model"
@@ -158,100 +185,8 @@ function ModelGroup(props: {
   );
 }
 
-function ModelCard(props: {
-  model: AiModelView;
-  onChanged: () => Promise<void>;
-  onDisable: () => void;
-}) {
-  const { model } = props;
-  const metadataKeys = Object.keys(model.providerMetadata);
-  return (
-    <article className="border-border bg-card rounded-xl border p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h3 className="text-sm font-semibold">{model.displayName}</h3>
-          <p className="text-muted-foreground font-mono text-xs">
-            {model.provider} · {model.providerModelId}
-          </p>
-        </div>
-        <StatusBadge label={model.status} variant={agentStateVariant(model.status)} />
-      </div>
-      <p className="text-muted-foreground mt-2 text-xs">
-        Discovered {formatTimestamp(model.discoveredAt)} · Last seen{' '}
-        {formatTimestamp(model.lastSeenAt)}
-      </p>
-      {metadataKeys.length > 0 ? (
-        <p className="text-muted-foreground mt-2 text-xs">
-          Provider metadata: {metadataKeys.join(', ')}
-        </p>
-      ) : null}
-      {model.suitabilityTags.length > 0 ? (
-        <p className="mt-2 text-xs">Tags: {model.suitabilityTags.join(', ')}</p>
-      ) : null}
-      <div className="mt-2 space-y-1.5">
-        <Label>Evaluation status</Label>
-        <Select
-          value={model.evaluationStatus}
-          onValueChange={(value) =>
-            applySelectValue(value, (next) => {
-              if (next === model.evaluationStatus) return;
-              void aiAdminApi
-                .updateModel(model.id, {
-                  evaluationStatus: next as AiModelView['evaluationStatus'],
-                })
-                .then(props.onChanged)
-                .catch(() => toast.error('Evaluation status could not be saved.'));
-            })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="NOT_EVALUATED">NOT_EVALUATED</SelectItem>
-            <SelectItem value="PENDING">PENDING</SelectItem>
-            <SelectItem value="EVALUATED">EVALUATED</SelectItem>
-            <SelectItem value="UNSUITABLE">UNSUITABLE</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="mt-2 space-y-1.5">
-        <Label htmlFor={`model-notes-${model.id}`}>Internal notes</Label>
-        <Input
-          id={`model-notes-${model.id}`}
-          defaultValue={model.notes ?? ''}
-          onBlur={(event) => {
-            const notes = event.target.value.trim() || null;
-            if (notes === (model.notes ?? null)) return;
-            void aiAdminApi
-              .updateModel(model.id, { notes })
-              .then(props.onChanged)
-              .catch(() => toast.error('Notes could not be saved.'));
-          }}
-        />
-      </div>
-      <div className="mt-3 flex gap-2">
-        {model.status !== 'ACTIVE' && model.status !== 'UNAVAILABLE' ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() =>
-              void aiAdminApi
-                .activateModel(model.id)
-                .then(props.onChanged)
-                .catch(() => toast.error('Activate failed.'))
-            }
-          >
-            Activate
-          </Button>
-        ) : null}
-        {model.status === 'ACTIVE' ? (
-          <Button type="button" size="sm" variant="outline" onClick={props.onDisable}>
-            Disable
-          </Button>
-        ) : null}
-      </div>
-    </article>
-  );
+function modelSortLabel(sort: AiAdminModelSort): string {
+  if (sort === 'oldest') return 'Oldest first';
+  if (sort === 'name') return 'Name A–Z';
+  return 'Newest first';
 }

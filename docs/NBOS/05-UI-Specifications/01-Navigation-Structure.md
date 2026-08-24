@@ -76,6 +76,7 @@ Calendar
 Drive
 Credentials
 My Company
+AI & Agents
 Reports / Analytics
 Settings / Admin
 ```

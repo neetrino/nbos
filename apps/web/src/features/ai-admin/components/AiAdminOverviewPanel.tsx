@@ -2,12 +2,20 @@
 
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { Bot, Cable, Route } from 'lucide-react';
-import { EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { AlertTriangle, BotMessageSquare, Cable, History, Route, ShieldCheck } from 'lucide-react';
+import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { aiAdminApi } from '@/lib/api/ai-admin';
+import { asActivityItems } from '../activity';
+import {
+  AI_ADMIN_KPI_GRID_CLASS,
+  AI_ADMIN_OVERVIEW_SECONDARY_CLASS,
+  AI_ADMIN_PAGE_STACK_CLASS,
+} from '../ai-admin-ui.constants';
 import { AI_ADMIN_BASE_PATH } from '../constants';
 import { agentStateVariant } from '../status-badge-map';
 import { AiAdminActivityList } from './AiAdminActivityList';
+import { AiAdminKpiTile } from './AiAdminKpiTile';
+import { AiAdminSection } from './AiAdminSection';
 
 export function AiAdminOverviewPanel() {
   const query = useQuery({
@@ -25,25 +33,26 @@ export function AiAdminOverviewPanel() {
     );
   }
   const data = query.data;
+  const activityItems = asActivityItems(data.recentActivity);
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-3">
-        <OverviewCard
+    <div className={AI_ADMIN_PAGE_STACK_CLASS}>
+      <div className={AI_ADMIN_KPI_GRID_CLASS}>
+        <AiAdminKpiTile
           href={`${AI_ADMIN_BASE_PATH}/external-agents`}
-          icon={Bot}
+          icon={BotMessageSquare}
           title="External Agents"
           value={`${data.externalAgents.active} active`}
           detail={`${data.externalAgents.total} total · ${data.externalAgents.revoked} revoked`}
         />
-        <OverviewCard
+        <AiAdminKpiTile
           href={`${AI_ADMIN_BASE_PATH}/providers`}
           icon={Cable}
           title="Internal providers"
           value={`${data.providers.active} connected`}
           detail={`${data.providers.disabled} disabled · ${data.providers.revoked} revoked`}
         />
-        <OverviewCard
+        <AiAdminKpiTile
           href={`${AI_ADMIN_BASE_PATH}/policies`}
           icon={Route}
           title="Model policies"
@@ -52,74 +61,66 @@ export function AiAdminOverviewPanel() {
         />
       </div>
 
-      <section className="border-border bg-card rounded-xl border p-4">
-        <h2 className="text-sm font-semibold">Needs attention</h2>
-        {data.attention.length === 0 ? (
-          <p className="text-muted-foreground mt-2 text-sm">
-            No disabled, revoked, or expired agents or connections.
+      <div className={AI_ADMIN_OVERVIEW_SECONDARY_CLASS}>
+        <AiAdminSection
+          icon={AlertTriangle}
+          title="Needs attention"
+          summary={data.attention.length === 0 ? 'All clear' : `${data.attention.length}`}
+          collapsible
+          defaultOpen={data.attention.length > 0}
+        >
+          {data.attention.length === 0 ? (
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              No disabled, revoked, or expired agents or connections.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {data.attention.map((item) => (
+                <li
+                  key={`${item.kind}-${item.id}`}
+                  className="bg-muted/40 flex items-center justify-between gap-3 rounded-lg px-3 py-2"
+                >
+                  <span className="flex min-w-0 items-center gap-2 text-sm">
+                    <AlertTriangle className="size-3.5 shrink-0 text-amber-600" aria-hidden />
+                    <span className="truncate font-medium">{item.name}</span>
+                  </span>
+                  <StatusBadge label={item.reason} variant={agentStateVariant(item.reason)} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </AiAdminSection>
+
+        <AiAdminSection
+          icon={ShieldCheck}
+          title="Approvals"
+          summary="Foundation"
+          collapsible
+          defaultOpen={false}
+        >
+          <p className="text-muted-foreground text-sm leading-relaxed">
+            Pending approvals will appear here when the approval runtime ships.
           </p>
-        ) : (
-          <ul className="mt-3 space-y-2">
-            {data.attention.map((item) => (
-              <li
-                key={`${item.kind}-${item.id}`}
-                className="flex items-center justify-between gap-3"
-              >
-                <span className="text-sm">{item.name}</span>
-                <StatusBadge label={item.reason} variant={agentStateVariant(item.reason)} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+        </AiAdminSection>
+      </div>
 
-      <section className="border-border bg-card rounded-xl border p-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Approvals</h2>
-          <span className="text-muted-foreground text-xs">Foundation</span>
-        </div>
-        <EmptyState
-          icon={Route}
-          title="Approval queue is not enabled yet"
-          description="Pending approvals will appear here when the approval runtime ships."
-        />
-      </section>
-
-      <section className="border-border bg-card rounded-xl border p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Recent activity</h2>
+      <AiAdminSection
+        icon={History}
+        title="Recent activity"
+        summary={`${activityItems.length} events`}
+        collapsible
+        defaultOpen={activityItems.length > 0}
+        actions={
           <Link
             href={`${AI_ADMIN_BASE_PATH}/audit`}
-            className="text-muted-foreground text-xs underline"
+            className="text-muted-foreground hover:text-foreground text-xs font-medium underline-offset-4 hover:underline"
           >
             Open AI Audit
           </Link>
-        </div>
+        }
+      >
         <AiAdminActivityList items={data.recentActivity} />
-      </section>
+      </AiAdminSection>
     </div>
-  );
-}
-
-function OverviewCard(props: {
-  href: string;
-  icon: typeof Bot;
-  title: string;
-  value: string;
-  detail: string;
-}) {
-  const Icon = props.icon;
-  return (
-    <Link
-      href={props.href}
-      className="border-border bg-card hover:bg-muted/40 rounded-xl border p-4 transition-colors"
-    >
-      <div className="mb-3 flex items-center gap-2">
-        <Icon className="text-muted-foreground size-4" aria-hidden />
-        <h2 className="text-sm font-semibold">{props.title}</h2>
-      </div>
-      <p className="text-foreground text-lg font-semibold">{props.value}</p>
-      <p className="text-muted-foreground mt-1 text-xs">{props.detail}</p>
-    </Link>
   );
 }

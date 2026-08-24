@@ -86,4 +86,22 @@ describe('model catalog grouping', () => {
   it('does not expose TIERED or ADAPTIVE in the admin policy UI', () => {
     expect(AI_ADMIN_POLICY_MODES).toEqual(['FIXED', 'PRIMARY_FALLBACK']);
   });
+
+  it('sorts DISCOVERED models newest first by default', () => {
+    const older = { ...model('DISCOVERED', 'old'), discoveredAt: '2026-01-01T00:00:00.000Z' };
+    const newer = { ...model('DISCOVERED', 'new'), discoveredAt: '2026-08-01T00:00:00.000Z' };
+    expect(groupModelsForAdmin([older, newer]).discovered.map((item) => item.id)).toEqual([
+      'new',
+      'old',
+    ]);
+  });
+
+  it('sorts models by name when requested', () => {
+    const zebra = { ...model('DISCOVERED', 'z'), displayName: 'zebra' };
+    const alpha = { ...model('DISCOVERED', 'a'), displayName: 'alpha' };
+    expect(groupModelsForAdmin([zebra, alpha], 'name').discovered.map((item) => item.id)).toEqual([
+      'a',
+      'z',
+    ]);
+  });
 });

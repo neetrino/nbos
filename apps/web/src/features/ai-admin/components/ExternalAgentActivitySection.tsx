@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { History } from 'lucide-react';
 import { ErrorState, ListPagination, LoadingState } from '@/components/shared';
 import { aiAdminApi } from '@/lib/api/ai-admin';
 import { EMPTY_ACTIVITY_META } from '../activity';
 import { AI_ADMIN_ACTIVITY_PAGE_SIZE } from '../constants';
 import { AiAdminActivityList } from './AiAdminActivityList';
+import { AiAdminSection } from './AiAdminSection';
 
 export function ExternalAgentActivitySection({ agentId }: { agentId: string }) {
   const [page, setPage] = useState(1);
@@ -22,8 +24,13 @@ export function ExternalAgentActivitySection({ agentId }: { agentId: string }) {
   const meta = activity.data?.meta ?? { ...EMPTY_ACTIVITY_META, page };
 
   return (
-    <section className="border-border bg-card rounded-xl border p-4">
-      <h2 className="mb-3 text-sm font-semibold">Activity</h2>
+    <AiAdminSection
+      icon={History}
+      title="Activity"
+      summary={activity.isLoading ? undefined : `${meta.total} events`}
+      collapsible
+      defaultOpen={false}
+    >
       {activity.isLoading && items.length === 0 ? (
         <LoadingState count={3} />
       ) : activity.isError ? (
@@ -37,6 +44,6 @@ export function ExternalAgentActivitySection({ agentId }: { agentId: string }) {
           <ListPagination meta={meta} onPageChange={setPage} />
         </>
       )}
-    </section>
+    </AiAdminSection>
   );
 }
