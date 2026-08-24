@@ -2,7 +2,7 @@
 
 > Модальное окно текущего звонка: карточка по центру, затемнённый blur-оверлей как у sheet. Не entity sheet и не toast.
 >
-> **Runtime:** app-shell Active Call Screen (centered modal). SSE `call.started` / `call.answered` / `call.finished`; snapshot via `GET /crm/calls/:id/screen` (includes `noteVersion`). Note after end (`PATCH /crm/calls/:id/note` with `expectedNoteVersion`; 409 keeps the local draft). Popup is not the source of call state.
+> **Runtime:** app-shell Active Call Screen (centered modal). SSE `call.started` / `call.answered` / `call.finished`; snapshot via `GET /crm/calls/:id/screen` (includes `noteVersion`; while ringing/answered the client re-fetches so hangup is visible without SSE). Note after end (`PATCH /crm/calls/:id/note` with `expectedNoteVersion`; 409 keeps the local draft). Popup is not the source of call state.
 >
 > Продукт: [`../02-Modules/01-CRM/08-Calls-and-Telephony.md`](../02-Modules/01-CRM/08-Calls-and-Telephony.md).  
 > Visual model шитов: [`10-Entity-Detail-Sheet-Standard.md`](10-Entity-Detail-Sheet-Standard.md) — к этому окну не применять.

@@ -18,7 +18,7 @@ Tracks **shipped runtime** vs canon in `01-CRM-Overview.md`, pipelines, and stag
 
 - **Kanban trash column** — list-only trash view today; board trash tab optional later.
 - Stage-gate / Won / Offers gaps — see Cleanup Register §B–C.
-- **Calls / telephony (Phase 6 Active Call Screen):** `08-Calls-and-Telephony.md`. Runtime: ATS webhook → CRM Call + SSE `call.started`/`answered`/`finished` + centered modal Active Call Screen + CALL activities + Drive recording playback + click-to-call. Not shipped: history reconcile.
+- **Calls / telephony (Phase 6 Active Call Screen):** `08-Calls-and-Telephony.md`. Runtime: ATS webhook → CRM Call + SSE `call.started`/`answered`/`finished` + centered modal Active Call Screen + CALL activities + Drive recording playback + click-to-call. Pending click-to-call may close from ATS `history` while the screen is open. Not shipped: scheduler history reconcile.
 
 ## Shipped — Lead intake attach and Lead merge
 

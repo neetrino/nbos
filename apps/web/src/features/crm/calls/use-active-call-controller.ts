@@ -5,9 +5,11 @@ import { connectCallSse } from '@/lib/realtime/connect-call-sse';
 import { callsApi, type ActiveCallScreenSnapshot } from '@/lib/api/calls';
 import {
   applyActiveCallEvent,
+  applySnapshotToSession,
   sessionFromCallId,
   type ActiveCallSession,
 } from './active-call-session';
+import { ACTIVE_CALL_SCREEN_POLL_MS } from './active-call.constants';
 
 type OpenCallInput = Parameters<typeof sessionFromCallId>[0];
 
@@ -40,16 +42,28 @@ export function useActiveCallController(enabled: boolean) {
   useEffect(() => {
     if (!callId) return;
     let cancelled = false;
-    void callsApi
-      .getScreen(callId)
-      .then((next) => {
-        if (!cancelled) setSnapshot(next);
-      })
-      .catch(() => {
-        if (!cancelled) setSnapshot(null);
-      });
+
+    const load = () => {
+      void callsApi
+        .getScreen(callId)
+        .then((next) => {
+          if (cancelled) return;
+          setSnapshot(next);
+          setSession((current) => applySnapshotToSession(current, next));
+        })
+        .catch(() => undefined);
+    };
+
+    load();
+    if (phase === 'ended') {
+      return () => {
+        cancelled = true;
+      };
+    }
+    const timer = window.setInterval(load, ACTIVE_CALL_SCREEN_POLL_MS);
     return () => {
       cancelled = true;
+      window.clearInterval(timer);
     };
   }, [callId, phase]);
 

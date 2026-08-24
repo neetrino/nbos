@@ -144,11 +144,13 @@ Settings → Integrations: карточка **ATS.am** (ключ настрое�
 
 Приём звонка — только `nbos-api` webhook. Scheduler **не** участвует в старте звонка.
 
+Пока открыт Active Call Screen, `GET /crm/calls/:id/screen` может сверить pending click-to-call с ATS `history` (после короткой паузы, с cooldown). Это не джоба планировщика.
+
 Планируемая джоба `ats-call-history-reconcile` (каталог Scheduler, выкл по умолчанию): добрать `uid` из ATS `history`, не плодить Lead, докачать записи. Вкл в Settings → Scheduler после кода.
 
 Ops (не код): Cloudflare skip Bot Fight на `POST /api/integrations/ats/webhook`; в кабинете ATS тот же `?key=`; ATS знают исходящий IP API/worker (их требование); у ответственных заполнен SIP.
 
-`ATS_API_KEY`: webhook — только **api**; download/callback — **api + worker**. На scheduler ключ не нужен.
+`ATS_API_KEY`: webhook — только **api**; download/callback/history peek — **api + worker**. На scheduler ключ не нужен.
 
 ## 11. Later (не этот срез)
 

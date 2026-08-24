@@ -241,6 +241,44 @@ describe('AtsCallService', () => {
     expect(state.events.get('ats-uid-9')?.state).toBe('start');
   });
 
+  it('attaches an inbound-looking callback webhook to the pending click-to-call', async () => {
+    state.employees.push({ id: 'emp-1', sipId: '21' });
+    state.events.set('ctc:pending-in', {
+      id: 'evt-pending-in',
+      uid: 'ctc:pending-in',
+      leadId: 'lead-click',
+      contactId: null,
+      dealId: null,
+      phone: '+37443729201',
+      calldirect: '1',
+      state: 'initiated',
+      clid: '+37443729201',
+      billsec: null,
+      source: 'CLICK_TO_CALL',
+      initiatedByEmployeeId: 'emp-1',
+      createdAt: new Date(),
+      responsibleEmployeeId: 'emp-1',
+      answeredEmployeeId: null,
+    });
+
+    await service.ingestCallEvent(
+      inboundStart({
+        uid: '1787582737.181871',
+        calldirect: '0',
+        state: 'end',
+        op: '21',
+        clid: '37443729201',
+        disposition: 'ANSWERED',
+        billsec: '20',
+      }),
+    );
+
+    expect(state.events.size).toBe(1);
+    expect(state.events.get('1787582737.181871')?.id).toBe('evt-pending-in');
+    expect(state.events.get('1787582737.181871')?.state).toBe('end');
+    expect(state.events.get('1787582737.181871')?.billsec).toBe('20');
+  });
+
   it('does not create a second row when the same outbound webhook repeats', async () => {
     await service.ingestCallEvent(
       inboundStart({ uid: 'out-dup', calldirect: '1', state: 'start' }),

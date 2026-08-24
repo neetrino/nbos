@@ -150,7 +150,7 @@ Click-to-call. Браузер **не** вызывает ATS.
 
 Documented callback query is only `key`, `from`, `to`. There is no provider idempotency token, request id, or callback status lookup in this contract. NBOS therefore uses **at-most-once** per actor-scoped key: durable `AtsCallIntent` is created **before** ATS; only one request claims `PROCESSING` and may call ATS; `PROCESSING` after an unknown transport outcome is not auto-retried (possible missed NBOS Call, never a double callback for that key). `ACCEPTED` / `FAILED` replays return the stored result.
 
-Callback JSON is not documented to return `uid`. Intent links to the Call row NBOS persists after ATS accept (`callId`). Webhook later may replace synthetic `ctc:` uid on that same Call. Matching a webhook to a pending click-to-call **only by phone/time** remains an existing unverified limitation — not a new correlation heuristic.
+Callback JSON is not documented to return `uid`. Intent links to the Call row NBOS persists after ATS accept (`callId`). Webhook later may replace synthetic `ctc:` uid on that same Call. Matching a webhook to a pending click-to-call is by phone + 10-minute window + optional initiator SIP (`op`). ATS callback often arrives as inbound (`calldirect=0`); NBOS still attaches it to the outbound click-to-call row. While the Active Call Screen is open, `GET /crm/calls/:id/screen` may peek ATS `history` for a pending click-to-call that never received `finish`/`end`.
 
 ---
 
@@ -158,9 +158,9 @@ Callback JSON is not documented to return `uid`. Intent links to the Call row NB
 
 `GET https://account.ats.am/docs/api/v1/history?key=…&dateStart=Y-M-D&dateEnd=Y-M-D&rows=…&start=…`
 
-Для сверки `uid`, не для UI-ленты вживую. Джоба планировщика — продукт `08-Calls` §10. Те же правила attach, без второго Lead.
+Для сверки `uid` и для live peek открытого click-to-call (не лента UI). Джоба планировщика `ats-call-history-reconcile` — продукт `08-Calls` §10, ещё не shipped. Те же правила attach, без второго Lead. Live peek не заменяет webhook: он только закрывает pending `CLICK_TO_CALL`, пока сотрудник смотрит окно.
 
-Поля ответа ATS (пример): `uniqueid`, `linkedid`, `start`, `endz`, `duration`, `disposition`, `status`, `destination`, `extension`, `in_num` / `ext_num`.
+Ответ Solr-style: `{ numFound, start, docs: [...] }`. Поля строки: `uniqueid`, `linkedid`, `start`, `endz`, `duration`, `disposition`, `status` (`Out Call` / `Incoming Call` / `Local Call`), `destination`, `extension`, `in_num` / `ext_num`. Timestamps — Asia/Yerevan, даже с суффиксом `Z`; live peek сдвигает «будущий» start на UTC+4, если ATS записал ереванские часы как UTC. Номера часто с ведущим минусом (`-043729201`). Live peek берёт до 200 строк и последнюю страницу дня, если `numFound` больше. Click-to-call матчится с `Out Call` по телефону и окну старта.
 
 ---
 
@@ -199,16 +199,16 @@ Callback JSON is not documented to return `uid`. Intent links to the Call row NB
 
 ## 7. Runtime сегодня vs канон
 
-| Есть в коде                                                                                                                      | Ещё нет                                                                   |
-| -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Webhook, ключ, inbound/outbound CRM Call, `redirect_call`, голый JSON (`@SkipTransform`)                                         | History reconcile                                                         |
-| Atomic `uid` persist, P2002 recovery, sparse patch, monotonic start→status→finish/end                                            | `projectId` / `productId` persisted on Call (screen reads them from Deal) |
-| `AtsCallEvent` = Call: `leadId`, `contactId`, `dealId`, employee context, `note`, `recordingFileAssetId`                         | Provider callback idempotency (ATS documents only `key`/`from`/`to`)      |
-| `GET /crm/calls`, `GET /crm/calls/:id`, `GET /crm/calls/:id/recording`, `GET /crm/calls/:id/screen`, `PATCH /crm/calls/:id/note` |                                                                           |
-| Active-call SSE (`GET /realtime/calls`): `call.started` / `call.answered` / `call.finished` + fullscreen screen                  |                                                                           |
-| CALL activities on Lead / Deal / Contact **Calls** tabs                                                                          |                                                                           |
-| Worker `ats-call-recording-download` → Drive FileAsset                                                                           |                                                                           |
-| `POST /crm/calls/click-to-call` + `Idempotency-Key` → `AtsCallIntent` at-most-once ATS `callback`                                |                                                                           |
+| Есть в коде                                                                                                                                                                     | Ещё нет                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Webhook, ключ, inbound/outbound CRM Call, `redirect_call`, голый JSON (`@SkipTransform`)                                                                                        | Scheduler `ats-call-history-reconcile`                                    |
+| Atomic `uid` persist, P2002 recovery, sparse patch, monotonic start→status→finish/end                                                                                           | `projectId` / `productId` persisted on Call (screen reads them from Deal) |
+| `AtsCallEvent` = Call: `leadId`, `contactId`, `dealId`, employee context, `note`, `recordingFileAssetId`                                                                        | Provider callback idempotency (ATS documents only `key`/`from`/`to`)      |
+| `GET /crm/calls`, `GET /crm/calls/:id`, `GET /crm/calls/:id/recording`, `GET /crm/calls/:id/screen` (pending click-to-call may peek ATS `history`), `PATCH /crm/calls/:id/note` |                                                                           |
+| Active-call SSE (`GET /realtime/calls`): `call.started` / `call.answered` / `call.finished` + fullscreen screen                                                                 |                                                                           |
+| CALL activities on Lead / Deal / Contact **Calls** tabs                                                                                                                         |                                                                           |
+| Worker `ats-call-recording-download` → Drive FileAsset                                                                                                                          |                                                                           |
+| `POST /crm/calls/click-to-call` + `Idempotency-Key` → `AtsCallIntent` at-most-once ATS `callback`                                                                               |                                                                           |
 
 ---
 

@@ -37,3 +37,6 @@ export const ACTIVE_CALL_PHASE_BADGE_CLASS = {
   answered: 'bg-success/15 text-success',
   ended: 'bg-muted text-muted-foreground',
 } as const;
+
+/** While the window is ringing/answered, re-read snapshot so hangup is visible without SSE. */
+export const ACTIVE_CALL_SCREEN_POLL_MS = 4_000;
