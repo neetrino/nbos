@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { Logger as PinoLogger } from 'nestjs-pino';
 import { PrismaClient } from '@nbos/database';
 import { WorkerAppModule } from './worker-app.module';
 import { PRISMA_TOKEN } from './database.module';
@@ -43,6 +44,7 @@ async function bootstrap() {
   const app = await NestFactory.createApplicationContext(WorkerAppModule, {
     bufferLogs: true,
   });
+  app.useLogger(app.get(PinoLogger));
   const registry = app.get(BullmqWorkerRegistry);
   registry.assertWorkerHasConsumers(EXPECTED_QUEUES);
 
