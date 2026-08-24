@@ -28,15 +28,16 @@ describe('ats-recording-mime', () => {
     ).toBe('audio/mpeg');
   });
 
-  it('sniffs ID3 as mp3 when content-type is octet-stream', () => {
-    expect(sniffAudioMime(Buffer.from([0x49, 0x44, 0x33, 0x03]))).toBe('audio/mpeg');
+  it('sniffs MPEG frame sync including MPEG-2.5 (0xff 0xe3) as mp3', () => {
+    expect(sniffAudioMime(Buffer.from([0xff, 0xe3, 0x48, 0x64]))).toBe('audio/mpeg');
     expect(
       resolveAtsRecordingMime({
         contentType: 'application/octet-stream',
-        contentDisposition: null,
-        prefix: Buffer.from('ID3\u0003'),
+        contentDisposition: 'attachment; filename=1787592154.875687.wav',
+        prefix: Buffer.from([0xff, 0xe3, 0x48, 0x64]),
       }),
     ).toBe('audio/mpeg');
+    expect(recordingExtensionForMime('audio/mpeg')).toBe('.mp3');
   });
 
   it('maps stored octet-stream to audio/mpeg for browser playback', () => {

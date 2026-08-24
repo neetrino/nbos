@@ -11,9 +11,10 @@ import {
 import {
   ATS_CALL_RECORDING_DOWNLOAD_JOB_NAME,
   ATS_CALL_RECORDING_QUEUE_NAME,
+  ATS_CALL_RECORDING_REPROCESS_JOB_NAME,
   type AtsCallRecordingJobPayload,
 } from './ats-call-recording.constants';
-import { atsCallRecordingJobId } from './ats-call-recording-job-id';
+import { atsCallRecordingJobId, atsCallRecordingReprocessJobId } from './ats-call-recording-job-id';
 
 const IN_FLIGHT_STATES = new Set([
   'waiting',
@@ -63,6 +64,22 @@ export class AtsCallRecordingQueueService implements OnModuleInit, OnModuleDestr
       if (isDuplicateJobError(caught)) return true;
       const detail = caught instanceof Error ? caught.message : String(caught);
       this.logger.error(`Failed to enqueue ATS recording job: ${detail}`);
+      return false;
+    }
+  }
+
+  async enqueueReprocess(payload: AtsCallRecordingJobPayload): Promise<boolean> {
+    if (!this.queue) return false;
+    try {
+      const jobId = atsCallRecordingReprocessJobId(payload.callId);
+      const prepared = await prepareRecordingJobId(this.queue, jobId);
+      if (prepared === 'in_flight') return true;
+      await this.queue.add(ATS_CALL_RECORDING_REPROCESS_JOB_NAME, payload, { jobId });
+      return true;
+    } catch (caught) {
+      if (isDuplicateJobError(caught)) return true;
+      const detail = caught instanceof Error ? caught.message : String(caught);
+      this.logger.error(`Failed to enqueue ATS recording reprocess job: ${detail}`);
       return false;
     }
   }

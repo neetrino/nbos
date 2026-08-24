@@ -1,13 +1,13 @@
 import { GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import type { Readable } from 'node:stream';
 import type { CurrentUserPayload } from '../../../common/decorators';
 import { PRISMA_TOKEN } from '../../../database.module';
-import { findAccessibleFileAssetStorage } from '../../drive/drive-accessible-file.op';
 import { DriveAccessContextService } from '../../drive/drive-access-context.service';
 import { DriveR2Client } from '../../drive/drive-r2.client';
 import { recordingPlaybackMime } from '../../integrations/ats/ats-recording-mime';
+import { findCallRecordingStorage, hasDriveViewPermission } from './call-recording-storage.op';
 import { CallAccessPolicyService } from './call-access-policy.service';
 import { callAccessActorFromUser } from './call-access.types';
 import { assertCanPlayCallRecording } from './calls-recording-play';
@@ -76,8 +76,11 @@ export class CallsRecordingService {
     user: CurrentUserPayload,
     rangeHeader: string | undefined,
   ): Promise<RecordingPlaybackResult> {
-    const driveAccess = await this.driveAccess.fromRequest(user, user.permissions.DRIVE_VIEW);
-    const file = await findAccessibleFileAssetStorage(this.prisma, fileAssetId, driveAccess);
+    if (!hasDriveViewPermission(user.permissions)) {
+      throw new ForbiddenException('No permission: DRIVE.VIEW');
+    }
+    await this.driveAccess.fromRequest(user, user.permissions.DRIVE_VIEW);
+    const file = await findCallRecordingStorage(this.prisma, fileAssetId);
     if (!file?.storageKey) {
       throw new NotFoundException(CALL_RECORDING_UNAVAILABLE_MESSAGE);
     }

@@ -5,17 +5,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CRM_CALL_RECORDINGS_PLAY_PERMISSION } from '@nbos/shared';
 import type { CurrentUserPayload } from '../../../common/decorators';
 import { createMockPrisma } from '../../../test-utils/mock-prisma';
-import { findAccessibleFileAssetStorage } from '../../drive/drive-accessible-file.op';
 import { CallAccessPolicyService } from './call-access-policy.service';
 import { ACTOR_ID, OWN_ACTOR } from './call-access.test-support';
 import type { RecordingPlaybackResult } from './calls-recording-range';
 import { CallsRecordingService } from './calls-recording.service';
-
-vi.mock('../../drive/drive-accessible-file.op', () => ({
-  findAccessibleFileAssetStorage: vi.fn(),
-}));
-
-const findAccessible = vi.mocked(findAccessibleFileAssetStorage);
 const READY_CALL = {
   id: 'call-1',
   recordingStatus: 'READY',
@@ -79,7 +72,7 @@ describe('CallsRecordingService byte-range streaming', () => {
       departmentIds: OWN_ACTOR.departmentIds,
       driveScope: 'OWN',
     });
-    findAccessible.mockResolvedValue(FILE);
+    prisma.fileAsset.findFirst.mockResolvedValue(FILE);
     send.mockResolvedValue({ Body: Readable.from(['audio']), ContentLength: TOTAL });
     service = new CallsRecordingService(
       prisma as never,
@@ -149,7 +142,7 @@ describe('CallsRecordingService byte-range streaming', () => {
   });
 
   it('heads R2 when FileAsset.sizeBytes is missing', async () => {
-    findAccessible.mockResolvedValue({ ...FILE, sizeBytes: null });
+    prisma.fileAsset.findFirst.mockResolvedValue({ ...FILE, sizeBytes: null });
     send.mockImplementation((command: object) => {
       if (command instanceof HeadObjectCommand) {
         return Promise.resolve({ ContentLength: TOTAL });
@@ -178,7 +171,7 @@ describe('CallsRecordingService byte-range streaming', () => {
   });
 
   it('does not stream when size cannot be resolved', async () => {
-    findAccessible.mockResolvedValue({ ...FILE, sizeBytes: 0n });
+    prisma.fileAsset.findFirst.mockResolvedValue({ ...FILE, sizeBytes: 0n });
     send.mockImplementation((command: object) => {
       if (command instanceof HeadObjectCommand) {
         return Promise.resolve({ ContentLength: 0 });
