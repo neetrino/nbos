@@ -40,7 +40,7 @@ export class AtsWebhookService {
     if (!redirectCall) {
       return ATS_WEBHOOK_SUCCESS;
     }
-    return { status: 'success', redirect_call: redirectCall };
+    return { redirect_call: redirectCall };
   }
 
   private async publishLifecycleSafely(

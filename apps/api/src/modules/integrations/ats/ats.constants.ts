@@ -1,6 +1,7 @@
 /** ATS.am Active Call webhook constants (NBOS MVP). */
 
-export const ATS_WEBHOOK_SUCCESS = { status: 'success' } as const;
+/** HTTP 200 body when ATS should keep default routing (no `redirect_call` key). */
+export const ATS_WEBHOOK_SUCCESS = {} as const;
 
 export const ATS_CALLDIRECT_INBOUND = '0';
 export const ATS_CALLDIRECT_OUTBOUND = '1';

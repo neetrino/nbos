@@ -50,14 +50,14 @@ Ops: Cloudflare не должен резать server-to-server POST (Bot Fight 
 
 ### 2.1 Response
 
-`redirect_call` — поле **нашего** JSON. Отдельный запрос на `account.ats.am` не делаем. ATS ждёт этот JSON для маршрута.
+`redirect_call` — поле **нашего** JSON. Отдельный запрос на `account.ats.am` не делаем. ATS ждёт этот JSON для маршрута. Поле `status` **не** отправлять — ATS его не использует.
 
-| Case                                                     | Body                                                |
-| -------------------------------------------------------- | --------------------------------------------------- |
-| Нет маршрута / finish·end / outbound                     | `{ "status": "success" }`                           |
-| Inbound `state=start` + известный Contact или Lead с SIP | `{ "status": "success", "redirect_call": "<sip>" }` |
+| Case                                                     | Body                           |
+| -------------------------------------------------------- | ------------------------------ |
+| Нет маршрута / finish·end / outbound                     | `{}`                           |
+| Inbound `state=start` + известный Contact или Lead с SIP | `{ "redirect_call": "<sip>" }` |
 
-SIP из `Employee.sipId`, не хардкод. Пример: `"3126107"`.
+SIP из `Employee.sipId`, не хардкод. Пример: `{"redirect_call":"15"}`.
 
 ### 2.2 Payload
 
@@ -102,7 +102,7 @@ SIP из `Employee.sipId`, не хардкод. Пример: `"3126107"`.
    - Lead: `assignedTo` → `Employee.sipId`;
    - Contact: последний не-Trash Deal (`contactId` или additional) → `sellerId` → `sipId`; fallback — последний не-Trash Lead этого Contact с `assignedTo`.
 4. Нет assignee / пустой SIP → без `redirect_call`, лог `ats_redirect_skipped`.
-5. Новый номер → `{ "status": "success" }` без redirect; Lead по правилам продукта.
+5. Новый номер → `{}` без `redirect_call`; Lead по правилам продукта.
 
 ### 2.5 Lead при создании с ATS
 

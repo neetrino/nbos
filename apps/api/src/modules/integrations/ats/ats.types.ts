@@ -23,8 +23,12 @@ export interface AtsWebhookPayload {
   recordLink?: string | null;
 }
 
+/**
+ * Bare JSON ATS reads on webhook 200.
+ * With SIP: `{ redirect_call: "<sip>" }` only. Without: `{}` (omit the key).
+ * Do not send `status` — ATS does not use it for routing.
+ */
 export interface AtsWebhookSuccessResponse {
-  status: 'success';
-  /** ATS.am SIP ID — only when inbound start matched a known Contact/Lead assignee. */
+  /** ATS.am SIP / internal number — inbound `start` only, when assignee has sipId. */
   redirect_call?: string;
 }

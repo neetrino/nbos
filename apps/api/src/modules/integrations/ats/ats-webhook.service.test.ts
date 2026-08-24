@@ -80,9 +80,7 @@ describe('AtsWebhookService', () => {
     });
     const service = createService({ ingest });
 
-    await expect(service.handleWebhook('test-ats-key', startBody)).resolves.toEqual({
-      status: 'success',
-    });
+    await expect(service.handleWebhook('test-ats-key', startBody)).resolves.toEqual({});
     expect(ingest).toHaveBeenCalledWith(
       expect.objectContaining({
         uid: 'call-1',
@@ -98,7 +96,6 @@ describe('AtsWebhookService', () => {
     const service = createService({ resolveRedirect });
 
     await expect(service.handleWebhook('test-ats-key', startBody)).resolves.toEqual({
-      status: 'success',
       redirect_call: '3126107',
     });
   });
@@ -131,9 +128,7 @@ describe('AtsWebhookService', () => {
     const publish = vi.fn().mockRejectedValue(new Error('sse down'));
     const service = createService({ ingest, publish });
 
-    await expect(service.handleWebhook('test-ats-key', startBody)).resolves.toEqual({
-      status: 'success',
-    });
+    await expect(service.handleWebhook('test-ats-key', startBody)).resolves.toEqual({});
     expect(ingest).toHaveBeenCalled();
   });
 
@@ -147,9 +142,7 @@ describe('AtsWebhookService', () => {
     const finishBody = { uid: 'call-1', state: 'finish', disposition: 'ANSWERED' };
     const service = createService({ ingest, enqueueRecording });
 
-    await expect(service.handleWebhook('test-ats-key', finishBody)).resolves.toEqual({
-      status: 'success',
-    });
+    await expect(service.handleWebhook('test-ats-key', finishBody)).resolves.toEqual({});
     expect(ingest).toHaveBeenCalled();
     expect(enqueueRecording).toHaveBeenCalledWith(expect.objectContaining({ uid: 'call-1' }));
   });
@@ -187,9 +180,7 @@ describe('AtsWebhookService', () => {
     const enqueueRecording = vi.fn().mockRejectedValue(new Error('redis down'));
     const service = createService({ ingest, enqueueRecording });
 
-    await expect(service.handleWebhook('test-ats-key', startBody)).resolves.toEqual({
-      status: 'success',
-    });
+    await expect(service.handleWebhook('test-ats-key', startBody)).resolves.toEqual({});
     expect(ingest).toHaveBeenCalled();
   });
 });
