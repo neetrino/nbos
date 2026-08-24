@@ -105,19 +105,19 @@
 
 ## 7. Внешние сервисы
 
-| #    | Параметр            | Решение                           | Статус | Примечание                                       |
-| ---- | ------------------- | --------------------------------- | ------ | ------------------------------------------------ |
-| 7.1  | Email               | Resend                            | ✅     | React Email для шаблонов                         |
-| 7.2  | Платежи             | IDBank (ARCA) + Idram             | ✅     | клиент оплачивает по ссылке (payment link)       |
-| 7.3  | Аналитика           | PostHog                           | ✅     | опционально                                      |
-| 7.4  | Отслеживание ошибок | Sentry                            | ✅     |                                                  |
-| 7.5  | Поиск               | PostgreSQL FTS                    | ✅     | см. 4.11                                         |
-| 7.6  | WebSocket           | Socket.io (в NestJS)              | ✅     | не внешний сервис                                |
-| 7.7  | SMS                 | не требуется                      | ➖     | WhatsApp через агрегатор                         |
-| 7.11 | Mobile SDK (auth)   | Auth Session V2 (тот же Employee) | 🔄     | `clientKind` + refresh in JSON; не отдельный IdP |
-| 7.8  | AI                  | OpenAI + Vercel AI SDK            | ⬜     | Phase 3+                                         |
-| 7.9  | CMS                 | не требуется                      | ➖     |                                                  |
-| 7.10 | Карты               | не требуется                      | ➖     |                                                  |
+| #    | Параметр            | Решение                                                                              | Статус | Примечание                                                           |
+| ---- | ------------------- | ------------------------------------------------------------------------------------ | ------ | -------------------------------------------------------------------- |
+| 7.1  | Email               | Resend                                                                               | ✅     | React Email для шаблонов                                             |
+| 7.2  | Платежи             | IDBank (ARCA) + Idram                                                                | ✅     | клиент оплачивает по ссылке (payment link)                           |
+| 7.3  | Аналитика           | PostHog                                                                              | ✅     | опционально                                                          |
+| 7.4  | Отслеживание ошибок | Sentry                                                                               | ✅     |                                                                      |
+| 7.5  | Поиск               | PostgreSQL FTS                                                                       | ✅     | см. 4.11                                                             |
+| 7.6  | WebSocket           | Socket.io (в NestJS)                                                                 | ✅     | не внешний сервис                                                    |
+| 7.7  | SMS                 | не требуется                                                                         | ➖     | WhatsApp через агрегатор                                             |
+| 7.11 | Mobile SDK (auth)   | Auth Session V2 (тот же Employee)                                                    | 🔄     | `clientKind` + refresh in JSON; не отдельный IdP                     |
+| 7.8  | AI                  | OpenAI + Anthropic behind `AiProviderAdapter`; Vercel AI SDK optional behind adapter | 🔄     | Phase 1 foundation complete; Phase 2 runtime planned and entry-gated |
+| 7.9  | CMS                 | не требуется                                                                         | ➖     |                                                                      |
+| 7.10 | Карты               | не требуется                                                                         | ➖     |                                                                      |
 
 ---
 

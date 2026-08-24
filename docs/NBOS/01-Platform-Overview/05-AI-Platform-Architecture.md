@@ -371,6 +371,8 @@ Worker must re-check execution authorization for sensitive or delayed actions be
 
 ### Phase 1 — AI Foundation + External Workspace Agent
 
+Status: **COMPLETE** (`02-Modules/21-AI-Platform/31-Phase-1-Final-Acceptance.md`).
+
 Build:
 
 - actor identity foundation;
@@ -388,14 +390,24 @@ Build:
 
 ### Phase 2 — Internal AI Runtime
 
+Status: **PLANNED — BLOCKED BY AI PRODUCT ENTRY GATE**.
+
 Add:
 
-- NBOS Assistant runtime;
-- model/provider abstraction;
-- context assembler;
-- internal tool invocation;
-- approvals;
-- usage/cost tracking.
+- durable provider-independent Internal Agent execution;
+- OpenAI/Anthropic invocation behind the existing adapter and Model Policy;
+- Project AI Profile and versioned Project/Product AI Rules;
+- Project base knowledge with exact Product overlays and PostgreSQL FTS;
+- isolated Project/Contact/Conversation memory with human-reviewed model candidates;
+- a multi-source Context Plan and purpose-built live module projections;
+- grounded employee Project Assistant answers with citations/freshness;
+- Messenger-owned, Employee-reviewed `DRAFT_ONLY` Product WhatsApp replies;
+- evaluation, usage/cost, audit, budgets, feature flags and kill switches.
+
+Detailed plan: `02-Modules/21-AI-Platform/42-Phase-2-Project-Intelligence-and-Draft-Assistant-Architecture.md`.
+
+AI-owned external send, approval-bound machine send and auto-send are not part
+of Phase 2.
 
 ### Phase 3 — Specialized Agents
 
@@ -407,6 +419,10 @@ Examples:
 - analytics agent;
 - marketing agent;
 - delivery/project agent.
+
+Approval-bound customer send and any narrow auto-send may be considered only
+as separately designed/accepted future capabilities; Phase 3 does not grant
+them implicitly.
 
 ## 22. Non-goals for Phase 1
 

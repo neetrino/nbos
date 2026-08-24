@@ -1,13 +1,42 @@
 # Project Knowledge and Customer Memory
 
-Status: APPROVED
-Target: V2 / Phase 2 candidate
+Status: PLANNED
+Target: Phase 2
 Priority: HIGH
 Canon summary: Give each project controlled AI knowledge plus isolated customer/conversation memory and live NBOS context so customer-facing agents answer with current, project-specific information.
 
+## Promotion to Phase 2
+
+This capability has been promoted into the executable Phase 2 planning package:
+
+- `../42-Phase-2-Project-Intelligence-and-Draft-Assistant-Architecture.md`;
+- `../43-Phase-2-Implementation-Checklist.md`;
+- `../44-Phase-2-Execution-Strategy.md`;
+- `../45-Phase-2-Acceptance-Migration-Rollout-and-Operations.md`.
+
+Those documents are the planned implementation authority when this design is
+more general or ambiguous. Product code remains blocked by the AI Product
+Entry Gate.
+
+Planning resolved the main scope choices:
+
+- Project is the required knowledge root; Product is an optional exact overlay;
+- Work Space is an internal/live source, not the knowledge owner;
+- customer memory is Project + Contact scoped and narrows by Product,
+  Conversation, channel account and participant where applicable;
+- retrieval v1 uses PostgreSQL FTS with relational authorization filtering;
+- model-derived memory requires human review in Phase 2;
+- customer generation receives only explicitly `CUSTOMER_VISIBLE` context;
+- the customer-facing outcome is a Messenger-owned `DRAFT_ONLY` reply that an
+  Employee reviews/edits/sends;
+- approval-bound AI send and auto-send remain future scope.
+
 ## Goal
 
-Enable future customer-facing Internal AI Agents, especially Messenger agents, to answer with accurate project-specific information, remember relevant prior communication with each customer and combine that memory with current authoritative NBOS data.
+Enable the planned employee Project Assistant and customer-facing draft
+assistant to answer with accurate project-specific information, remember
+relevant prior communication under policy and combine that memory with current
+authoritative NBOS data.
 
 The capability must fit the existing AI Platform architecture rather than create a separate chatbot-specific memory system.
 
@@ -30,10 +59,10 @@ This information changes over time, so the system must support controlled refres
 ## Core architecture
 
 ```text
-Incoming customer message
+Employee request over persisted customer message
         |
         v
-Client Messenger Agent
+Product Draft Assistant
         |
         v
 Actor / Policy / Customer Scope
@@ -51,17 +80,17 @@ Context Assembler
 Model Policy
         |
         v
-Draft / Approval / Send Policy
+Output / customer-egress policy
         |
         v
-Customer response
+Messenger-owned draft -> Employee review/send
 ```
 
 The model is replaceable. Knowledge and memory belong to NBOS, not to GPT, Claude or another provider.
 
 ## Core separation
 
-The future runtime must keep these layers separate.
+The planned runtime must keep these layers separate.
 
 ### 1. Project Knowledge
 
@@ -172,9 +201,9 @@ If required live information cannot be retrieved, the agent must not invent a de
 
 ## Project Knowledge update flow
 
-Project knowledge should support controlled updates from approved sources.
+Project knowledge must support controlled updates from approved sources.
 
-Possible future sources:
+Initial planned sources:
 
 - manually curated knowledge entries;
 - Documents;
@@ -224,7 +253,7 @@ Prefer structured facts and/or bounded summaries that remain useful in later con
 
 ## Memory record requirements
 
-Future persistent customer memory should preserve at minimum:
+Phase 2 persistent customer memory must preserve at minimum:
 
 - stable memory id;
 - organization/project scope;
@@ -284,9 +313,11 @@ Authorization/scope filtering must happen outside model instructions.
 
 ## Context assembly behavior
 
-For each incoming customer message, Context Assembler should retrieve only the minimum relevant allowed context.
+For each authorized Employee draft request over a persisted customer message,
+or Employee Project Assistant question, Context Assembler should retrieve only
+the minimum relevant allowed context.
 
-A likely future order is:
+The planned order is:
 
 1. identify organization/project/channel/conversation/customer;
 2. authenticate/resolve Internal Agent and initiating context;
@@ -303,7 +334,8 @@ A likely future order is:
 
 ## Retrieval / RAG
 
-This capability may later use semantic/vector retrieval, but RAG is only a retrieval technique.
+Phase 2 retrieval v1 uses PostgreSQL FTS. Semantic/vector retrieval may be
+considered later, but RAG is only a retrieval technique.
 
 It must not become the authorization boundary.
 
@@ -319,7 +351,7 @@ Do not create one unrestricted vector store and rely on prompts to prevent cross
 
 ## Interaction with existing AI Platform
 
-This future capability reuses existing concepts:
+This planned capability reuses existing concepts:
 
 - `InternalAIAgent` for the Client Messenger Agent;
 - ActorContext and `onBehalfOf` where applicable;
@@ -340,15 +372,15 @@ Relevant current canon:
 - `../13-AI-Risk-and-Approval-Policy.md`
 - `../15-Customer-Facing-AI-Policy.md`
 
-## Initial future functional requirements
+## Planned Phase 2 functional requirements
 
-When promoted to implementation, the capability should at minimum support:
+Phase 2 must at minimum support:
 
 - one or more Project Knowledge namespaces/sources;
 - project-specific AI rules/configuration;
 - isolated persistent customer/conversation memory;
 - recent conversation context;
-- controlled automatic memory extraction/update;
+- controlled memory-candidate extraction and human review;
 - human-visible memory inspection where appropriate;
 - memory correction/delete controls;
 - live NBOS context retrieval for time-sensitive facts;
@@ -357,27 +389,28 @@ When promoted to implementation, the capability should at minimum support:
 - bounded context assembly;
 - explicit customer-visible/internal-only data controls;
 - audit of material memory/knowledge configuration changes;
-- integration with draft/approval/auto-send policy.
+- integration with Messenger-owned `DRAFT_ONLY` customer replies.
 
 ## Admin/product UX direction
 
-A future UI may expose project-level AI configuration such as:
+Phase 2 UI should expose project-level AI configuration such as:
 
 ```text
-Project / Work Space -> AI
+Project / Product -> AI
   |-- Knowledge
   |-- Rules
   |-- Customer Memory policy
   |-- Sources
   |-- Agent assignment
   |-- Model Policy
-  |-- Response/approval mode
+  |-- Enabled surfaces / DRAFT_ONLY mode
   `-- Activity / diagnostics
 ```
 
 Customer memory should also be inspectable from the relevant Contact/Conversation context when permissions allow.
 
-The exact navigation remains a future product decision.
+Exact UI composition may adapt during implementation, but Project/Product is
+the canonical ownership surface.
 
 ## Security requirements
 
@@ -408,34 +441,36 @@ This design does not mean:
 
 ## Dependencies
 
-Before full implementation, expect dependencies on:
+Before full implementation, dependencies are:
 
 - Internal AI execution runtime;
-- Messenger AI integration;
+- canonical External Messenger Conversation/Message/Draft persistence and
+  Product/Project/participant mapping;
 - Context Assembler implementation;
 - Prompt Policy/runtime;
-- memory persistence design;
-- knowledge/indexing design if semantic retrieval is required;
+- memory persistence/lifecycle implementation;
+- knowledge persistence and PostgreSQL FTS indexing;
 - Messenger/CRM customer identity mapping;
 - module capabilities for required live data;
-- customer-facing approval/send controls.
+- Employee-owned Messenger send authorization and lifecycle.
 
-## Open decisions
+## Remaining adaptive decisions
 
-Decide during planning, based on actual Messenger/CRM runtime:
+The architecture is fixed; these operational/product values still require
+named approval before production activation:
 
-- exact project scope entity: Work Space, Product, Project or explicit AI Knowledge Space;
-- memory schema categories;
-- memory retention defaults;
-- automatic vs approval-based memory write categories;
-- when memory is conversation-specific vs Contact-wide;
-- knowledge ingestion/index technology;
-- customer-visible vs internal-only classification model;
-- exact live module capabilities required by the first customer-facing use case.
+- exact retention durations and purge service levels;
+- context/tool/output/provider limits and retry values;
+- pilot Projects/Products/Employees, budgets and rollout duration;
+- multilingual evaluation thresholds and minimum evidence sample;
+- authorized knowledge/rules publishers and memory stewards;
+- customer-visible AI disclosure wording;
+- the exact first-slice customer-safe live projections.
 
-These are implementation-planning decisions, not reasons to change the current Actor/Policy/Capability/Context architecture.
+These decisions cannot widen source ownership, scope isolation or the
+`DRAFT_ONLY` boundary.
 
-## Future acceptance criteria
+## Phase 2 acceptance criteria
 
 Before this capability can be considered production-ready:
 
@@ -450,11 +485,14 @@ Before this capability can be considered production-ready:
 - no secret source can enter customer-facing context;
 - memory/knowledge provenance is diagnosable;
 - prompt injection cannot widen retrieval/action capabilities;
-- response send remains controlled by customer-facing risk/approval policy.
+- draft generation never sends; only an authorized Employee can perform the
+  separate Messenger send action.
 
 ## Canonization plan after implementation
 
-When implementation begins, change this document to `PLANNED` or `IN_IMPLEMENTATION` and create an executable checklist/milestone.
+This document is now `PLANNED` and the executable architecture/checklist are
+documents `42`–`45`. Change it to `IN_IMPLEMENTATION` only after the Product
+Entry Gate closes and the first product-code milestone begins.
 
 After implementation, move final rules into the active canon, expected primarily in:
 
