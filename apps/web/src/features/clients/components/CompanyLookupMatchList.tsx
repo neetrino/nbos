@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, FileInput, Hash, Loader2, MapPin, Scale } from 'lucide-react';
+import { Building2, CalendarDays, FileInput, Hash, Loader2, MapPin, Scale, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
@@ -110,7 +110,9 @@ function CompanyLookupMatchMeta({ item }: { item: ArmeniaCompanyLookupItem }) {
 }
 
 function CompanyLookupMatchSecondary({ item }: { item: ArmeniaCompanyLookupItem }) {
-  if (!item.legalForm && !item.registeredAddress) return null;
+  const hasFacts = Boolean(item.legalForm || item.registeredAddress);
+  const hasExtras = Boolean(item.registrationDate || item.activityCode);
+  if (!hasFacts && !hasExtras) return null;
 
   return (
     <div className="text-muted-foreground/80 space-y-0.5 text-[11px] leading-snug">
@@ -126,6 +128,26 @@ function CompanyLookupMatchSecondary({ item }: { item: ArmeniaCompanyLookupItem 
           <span className="line-clamp-2">{item.registeredAddress}</span>
         </p>
       ) : null}
+      {hasExtras ? <CompanyLookupMatchExtras item={item} /> : null}
     </div>
+  );
+}
+
+function CompanyLookupMatchExtras({ item }: { item: ArmeniaCompanyLookupItem }) {
+  return (
+    <p className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
+      {item.registrationDate ? (
+        <span className="inline-flex min-w-0 items-center gap-1.5 tabular-nums">
+          <CalendarDays size={MATCH_META_ICON_SIZE} className="shrink-0" aria-hidden />
+          <span className="truncate">{item.registrationDate}</span>
+        </span>
+      ) : null}
+      {item.activityCode ? (
+        <span className="inline-flex min-w-0 items-center gap-1.5">
+          <Tag size={MATCH_META_ICON_SIZE} className="shrink-0" aria-hidden />
+          <span className="truncate">{item.activityCode}</span>
+        </span>
+      ) : null}
+    </p>
   );
 }
