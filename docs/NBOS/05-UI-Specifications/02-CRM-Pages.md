@@ -379,7 +379,7 @@ Project + Product
 | Lead  | General · **Calls** · History · Task           |
 | Deal  | General · History · Invoice · Task · **Calls** |
 
-На обеих: кнопка «Позвонить» (внутренний click-to-call, `Idempotency-Key` на один user action). При незавершённом/неоднозначном результате — «Новый звонок» с предупреждением. Полноэкранное окно звонка — не sheet, см. `11-Call-Screen.md`.
+На обеих: кнопка «Позвонить» (внутренний click-to-call, `Idempotency-Key` на один user action). При незавершённом/неоднозначном результате — «Новый звонок» с предупреждением. Окно звонка — центрированная модальная карточка (не sheet), см. `11-Call-Screen.md`.
 
 ### 8.1. Вкладка General — черновик и сохранение
 

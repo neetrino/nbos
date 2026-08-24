@@ -1,81 +1,82 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { LayoutGrid, Phone, Banknote } from 'lucide-react';
 import type { ActiveCallScreenSnapshot } from '@/lib/api/calls';
 import { getDealStage } from '@/features/crm/constants/dealPipeline';
+import {
+  ACTIVE_CALL_CONTACT_ACCENT_CLASS,
+  ACTIVE_CALL_CONTACT_META_ICON_CLASS,
+  ACTIVE_CALL_DEAL_ACCENT_CLASS,
+  ACTIVE_CALL_DEAL_META_ICON_CLASS,
+  ACTIVE_CALL_EMPTY_ACCENT_CLASS,
+  ACTIVE_CALL_EMPTY_META_ICON_CLASS,
+} from './active-call.constants';
+import { ActiveCallEntityMiniCard, type ActiveCallMiniCardLine } from './ActiveCallEntityMiniCard';
+import { ActiveCallRecentCalls } from './ActiveCallRecentCalls';
 
 export function ActiveCallContextGrid({ snapshot }: { snapshot: ActiveCallScreenSnapshot | null }) {
-  const contactName = snapshot?.contact.name ?? null;
-  const dealName = snapshot?.deal.name ?? null;
-  const projectName = snapshot?.projectName ?? null;
-  const productName = snapshot?.productName ?? null;
-  const dealStage = snapshot?.deal.stage
-    ? (getDealStage(snapshot.deal.stage)?.label ?? null)
-    : null;
-
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <ContextCard title="Contact">
-        <ContextLine label="Name" value={contactName} empty="New caller" />
-        <ContextLine label="Company" value={snapshot?.contact.companyName ?? null} />
-        <ContextLine
-          label="Phones"
-          value={snapshot?.contact.phones.length ? snapshot.contact.phones.join(', ') : null}
-        />
-      </ContextCard>
-      <ContextCard title="Deal">
-        <ContextLine label="Name" value={dealName} empty="No open deal" />
-        <ContextLine label="Stage" value={dealStage} />
-        <ContextLine label="Amount" value={snapshot?.deal.amount ?? null} />
-      </ContextCard>
-      <ContextCard title="Project / Product">
-        <ContextLine label="Project" value={projectName} empty="Not linked" />
-        <ContextLine label="Product" value={productName} empty="Not linked" />
-      </ContextCard>
-      <ContextCard title="Recent calls">
-        <RecentCalls snapshot={snapshot} />
-      </ContextCard>
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-2 sm:grid-cols-2">
+        <ActiveCallEntityMiniCard {...contactMiniCard(snapshot)} />
+        <ActiveCallEntityMiniCard {...dealMiniCard(snapshot)} />
+      </div>
+      <ProjectProductLine snapshot={snapshot} />
+      <ActiveCallRecentCalls snapshot={snapshot} />
     </div>
   );
 }
 
-function ContextCard(props: { title: string; children: ReactNode }) {
-  return (
-    <section className="border-border bg-card rounded-xl border p-4">
-      <h2 className="text-foreground mb-3 text-sm font-semibold">{props.title}</h2>
-      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">{props.children}</dl>
-    </section>
-  );
+function contactMiniCard(snapshot: ActiveCallScreenSnapshot | null) {
+  const company = snapshot?.contact.companyName ?? null;
+  const leadName = snapshot?.leadName ?? null;
+  const phones = snapshot?.contact.phones ?? [];
+  const lines: ActiveCallMiniCardLine[] = [];
+  if (phones.length > 0) lines.push({ icon: Phone, label: phones.join(', ') });
+  if (company && leadName) lines.push({ icon: LayoutGrid, label: leadName });
+
+  return {
+    title: snapshot?.contact.name ?? 'New caller',
+    subtitle: company ?? leadName,
+    accentClassName: ACTIVE_CALL_CONTACT_ACCENT_CLASS,
+    metaIconClassName: ACTIVE_CALL_CONTACT_META_ICON_CLASS,
+    lines,
+  };
 }
 
-function ContextLine(props: { label: string; value: string | null; empty?: string }) {
-  return (
-    <>
-      <dt className="text-muted-foreground">{props.label}</dt>
-      <dd className="text-foreground font-medium">{props.value ?? props.empty ?? '—'}</dd>
-    </>
-  );
+function dealMiniCard(snapshot: ActiveCallScreenSnapshot | null) {
+  const dealName = snapshot?.deal.name ?? null;
+  const stage = snapshot?.deal.stage
+    ? (getDealStage(snapshot.deal.stage)?.label ?? snapshot.deal.stage)
+    : null;
+  const amount = snapshot?.deal.amount ?? null;
+  const hasDeal = Boolean(dealName);
+  const lines: ActiveCallMiniCardLine[] = [];
+  if (amount) lines.push({ icon: Banknote, label: amount });
+
+  return {
+    title: dealName ?? 'No open deal',
+    subtitle: stage,
+    accentClassName: hasDeal ? ACTIVE_CALL_DEAL_ACCENT_CLASS : ACTIVE_CALL_EMPTY_ACCENT_CLASS,
+    metaIconClassName: hasDeal
+      ? ACTIVE_CALL_DEAL_META_ICON_CLASS
+      : ACTIVE_CALL_EMPTY_META_ICON_CLASS,
+    lines,
+  };
 }
 
-function RecentCalls({ snapshot }: { snapshot: ActiveCallScreenSnapshot | null }) {
-  const items = snapshot?.recentCalls ?? [];
-  if (items.length === 0) {
-    return (
-      <>
-        <dt className="text-muted-foreground">History</dt>
-        <dd className="text-foreground font-medium">—</dd>
-      </>
-    );
-  }
+function ProjectProductLine({ snapshot }: { snapshot: ActiveCallScreenSnapshot | null }) {
   return (
-    <>
-      {items.map((item) => (
-        <ContextLine
-          key={item.id}
-          label={item.direction === 'OUTBOUND' ? 'OUT' : 'IN'}
-          value={item.phase}
-        />
-      ))}
-    </>
+    <p className="text-muted-foreground flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center text-xs">
+      <span>
+        Project{' '}
+        <span className="text-foreground font-medium">{snapshot?.projectName ?? 'Not linked'}</span>
+      </span>
+      <span className="bg-border hidden h-3 w-px sm:inline-block" aria-hidden />
+      <span>
+        Product{' '}
+        <span className="text-foreground font-medium">{snapshot?.productName ?? 'Not linked'}</span>
+      </span>
+    </p>
   );
 }
