@@ -13,6 +13,7 @@ import { companyTypeNumberLabel } from '../constants/company-type-field-copy';
 import type { Company } from '@/lib/api/clients';
 import type { CompanyPortfolioResponse } from '@/lib/api/client-portfolio';
 import type { CompanyGeneralDraft } from './company-general-form-state';
+import { CompanyArmeniaLookup } from './CompanyArmeniaLookup';
 import { ClientPortfolioAnalytics } from './client-portfolio/ClientPortfolioEmbedded';
 
 function formatShortDate(iso: string) {
@@ -69,6 +70,13 @@ export function CompanySheetScrollBody({
       <div className="flex w-full min-w-0 flex-col gap-6">
         <DetailSheetSection title="Company details" icon={<Tag size={12} />}>
           <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+            <div className="col-span-2">
+              <CompanyArmeniaLookup
+                disabled={fieldDisabled}
+                current={draft}
+                onApply={(next) => patchDraft(next)}
+              />
+            </div>
             <InlineField
               variant="controlled"
               label="Legal type"
