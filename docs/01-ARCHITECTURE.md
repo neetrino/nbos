@@ -290,20 +290,20 @@ nbos/
 
 ### Окружения
 
-| Окружение   | URL                                            | Назначение           |
-| ----------- | ---------------------------------------------- | -------------------- |
-| Development | localhost:3000 (web), localhost:4000 (api)     | Локальная разработка |
-| Staging     | staging-\*.vercel.app, api на Render (staging) | Приёмка, тесты       |
-| Production  | кастомный домен (nbos.\*)                      | Боевой режим         |
+| Окружение   | URL / hosting                                    | Назначение           |
+| ----------- | ------------------------------------------------ | -------------------- |
+| Development | localhost:3000 (web), localhost:4000 (api)       | Локальная разработка |
+| Staging     | отдельные Coolify apps + отдельная Neon branch   | Приёмка, тесты       |
+| Production  | `app.<domain>` / `api.<domain>` через Cloudflare | Боевой режим         |
 
 ### Инфраструктура
 
-- **Frontend:** Vercel (Next.js), автодеплой из main / веток.
-- **Backend:** Render (Docker), WebSocket и фоновые workers в том же сервисе (или отдельный worker при росте).
+- **Frontend:** Hetzner + Coolify `nbos-web` (Next.js Docker image), Cloudflare edge.
+- **Backend:** Hetzner + Coolify `nbos-api`, `nbos-worker`, `nbos-scheduler` из общего API image.
 - **БД:** Neon PostgreSQL (branch для staging при необходимости).
 - **Redis:** Upstash.
 - **Файлы:** Cloudflare R2.
-- **CI/CD:** GitHub Actions (lint, test, build; деплой web на Vercel, api на Render).
+- **CI/CD:** GitHub Actions выполняет CI; production migration и выборочный Coolify deploy выполняются вручную после зелёного CI.
 
 ---
 

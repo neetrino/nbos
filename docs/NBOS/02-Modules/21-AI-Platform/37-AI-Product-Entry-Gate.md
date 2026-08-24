@@ -72,7 +72,7 @@ read-only. It does not repair anything.
    references, and FileAssets created during the mixed-version window without
    a matching operation where database evidence can establish that fact.
 6. Inspect production migration/deployment evidence to bound the mixed-version
-   window. Do not infer that a migration-gate success proves a write pause.
+   window. Do not infer that a successful migration proves a write pause.
 7. Record limitations honestly when R2 or deployment evidence is unavailable.
 
 ### Output

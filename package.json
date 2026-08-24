@@ -38,6 +38,7 @@
     "clean": "turbo clean && rm -rf node_modules",
     "db:generate": "pnpm --filter @nbos/database generate",
     "db:migrate": "pnpm --filter @nbos/database migrate:dev",
+    "db:migrate:status": "pnpm --filter @nbos/database migrate:status",
     "db:migrate:deploy": "pnpm --filter @nbos/database migrate:deploy",
     "db:push": "pnpm --filter @nbos/database push",
     "db:seed": "pnpm --filter @nbos/database seed",

@@ -25,10 +25,6 @@ packages/database/src/generated/prisma/
 .chat8/
 .chat12/
 
-# Python
-__pycache__/
-*.py[cod]
-
 # Logs and temp
 *.log
 npm-debug.log*

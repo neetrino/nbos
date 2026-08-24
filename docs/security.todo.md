@@ -129,14 +129,14 @@
 
 ## 4. Data / DB — Security `4`, Quality **D**
 
-| #   | P   | Статус | Задача                                                          | Проверка                        |
-| --- | --- | ------ | --------------------------------------------------------------- | ------------------------------- |
-| 4.1 | P0  | ⬜     | 👤 TLS `sslmode=require`                                        | Neon                            |
-| 4.2 | P0  | ✅     | 🤖 Pool + timeouts (TECH_CARD)                                  | —                               |
-| 4.3 | P0  | ⬜     | 👤 Least privilege + отдельная роль миграций (SQL checklist §6) | Нет DROP                        |
-| 4.4 | P0  | ⬜     | 👤 PITR + **тест restore** (Quality **D.13**)                   | Restore branch                  |
-| 4.5 | P0  | ✅     | 🤖 Миграции: один job, не из каждого инстанса (Quality **L.4**) | Coolify `nbos-migrate` + GHA CD |
-| 4.6 | P1  | ⬜     | 🤖 Транзакции на критичных money ops (Quality **D.9**)          | Review                          |
+| #   | P   | Статус | Задача                                                           | Проверка            |
+| --- | --- | ------ | ---------------------------------------------------------------- | ------------------- |
+| 4.1 | P0  | ⬜     | 👤 TLS `sslmode=require`                                         | Neon                |
+| 4.2 | P0  | ✅     | 🤖 Pool + timeouts (TECH_CARD)                                   | —                   |
+| 4.3 | P0  | ⬜     | 👤 Least privilege + отдельная роль миграций (SQL checklist §6)  | Нет DROP            |
+| 4.4 | P0  | ⬜     | 👤 PITR + **тест restore** (Quality **D.13**)                    | Restore branch      |
+| 4.5 | P0  | ✅     | 👤 Миграции: один ручной запуск, не из runtime (Quality **L.4**) | `docs/deploy.md` §5 |
+| 4.6 | P1  | ⬜     | 🤖 Транзакции на критичных money ops (Quality **D.9**)           | Review              |
 
 ---
 
@@ -250,15 +250,15 @@
 
 ## 13. CI/CD — Quality **L**, anti-pattern #9
 
-| #    | P   | Статус | Задача                                                                 | Проверка                        |
-| ---- | --- | ------ | ---------------------------------------------------------------------- | ------------------------------- |
-| 13.1 | P0  | ✅     | 🤖 GHA: lint + typecheck + test + build + audit + gitleaks (L.3)       | Branch protection               |
-| 13.2 | P0  | ⬜     | 👤 Protected main; no force push                                       | GitHub                          |
-| 13.3 | P0  | ✅     | 👤 Single migration job (L.4)                                          | `NBOS_MIGRATE_DONE` then 4 apps |
-| 13.4 | P1  | ⬜     | 👤 Preview ≠ prod DB (L.2)                                             | Env scopes                      |
-| 13.5 | P1  | ⬜     | 🤖 Dockerfile non-root (L + §13)                                       | Image scan                      |
-| 13.6 | P1  | ⬜     | 👤 Rollback runbook (L.5)                                              | Doc                             |
-| 13.7 | P1  | ⬜     | 👤 Coolify health check `GET /api/health` on nbos-api (L.10, anti #17) | Coolify UI                      |
+| #    | P   | Статус | Задача                                                                 | Проверка                |
+| ---- | --- | ------ | ---------------------------------------------------------------------- | ----------------------- |
+| 13.1 | P0  | ✅     | 🤖 GHA: lint + typecheck + test + build + audit + gitleaks (L.3)       | Branch protection       |
+| 13.2 | P0  | ⬜     | 👤 Protected main; no force push                                       | GitHub                  |
+| 13.3 | P0  | ✅     | 👤 Single operator migration run (L.4)                                 | Dev proof → prod deploy |
+| 13.4 | P1  | ⬜     | 👤 Preview ≠ prod DB (L.2)                                             | Env scopes              |
+| 13.5 | P1  | ⬜     | 🤖 Dockerfile non-root (L + §13)                                       | Image scan              |
+| 13.6 | P1  | ⬜     | 👤 Rollback runbook (L.5)                                              | Doc                     |
+| 13.7 | P1  | ⬜     | 👤 Coolify health check `GET /api/health` on nbos-api (L.10, anti #17) | Coolify UI              |
 
 ---
 
@@ -398,18 +398,18 @@
 
 ### 20.1 Anti-patterns (красные флаги) — NBOS
 
-| #   | Anti-pattern                | NBOS                                     |
-| --- | --------------------------- | ---------------------------------------- |
-| 1   | Секреты в репо              | ✅ .gitignore                            |
-| 2   | `NEXT_PUBLIC_` для секретов | ✅ только BACKEND_URL                    |
-| 3   | Нет AuthZ на API            | ✅ guards                                |
-| 4   | Нет rate limit login        | ✅ §1.4 (auth throttle)                  |
-| 5   | Нет security headers        | ✅ §1.5 (next headers + CSP baseline)    |
-| 6   | Параллельные миграции       | ✅ §13.3 `nbos-migrate` + CD concurrency |
-| 7   | Логи с токенами             | ⬜ §6.3                                  |
-| 8   | Нет schema validation       | ✅ ValidationPipe                        |
-| 9   | Хостинг без health          | 🔄 Coolify health на `nbos-api`          |
-| 10  | Игнор npm audit             | ✅ §8.1 (blocking CI audit)              |
+| #   | Anti-pattern                | NBOS                                  |
+| --- | --------------------------- | ------------------------------------- |
+| 1   | Секреты в репо              | ✅ .gitignore                         |
+| 2   | `NEXT_PUBLIC_` для секретов | ✅ только BACKEND_URL                 |
+| 3   | Нет AuthZ на API            | ✅ guards                             |
+| 4   | Нет rate limit login        | ✅ §1.4 (auth throttle)               |
+| 5   | Нет security headers        | ✅ §1.5 (next headers + CSP baseline) |
+| 6   | Параллельные миграции       | ✅ §13.3 operator lock + Prisma lock  |
+| 7   | Логи с токенами             | ⬜ §6.3                               |
+| 8   | Нет schema validation       | ✅ ValidationPipe                     |
+| 9   | Хостинг без health          | 🔄 Coolify health на `nbos-api`       |
+| 10  | Игнор npm audit             | ✅ §8.1 (blocking CI audit)           |
 
 ---
 

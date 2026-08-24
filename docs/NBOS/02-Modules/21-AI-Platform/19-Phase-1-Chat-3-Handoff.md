@@ -254,7 +254,7 @@ Re-run after remediations (this chat, no commit): `pnpm vitest run` → 763 file
 - Git:
   - ветка `sipan`, `HEAD 1636cf51834851d18835b4984e768f6e3a51685d`; Chat 3 по-прежнему не закоммичен;
   - дерево грязное: 19 modified tracked Chat 3/pre-existing файлов и 40 untracked на момент проверки; удалённых файлов/тестов нет; `git diff --check HEAD` чист;
-  - `docs/deployment/AUTOMATED-PRODUCTION-DATABASE-MIGRATIONS-STANDARD.md` появился как отдельный untracked-файл во время проверки и не относится к заявленному Chat 3 scope.
+  - появившаяся параллельно deployment-документация не относилась к заявленному Chat 3 scope.
 - Запущено:
   - `pnpm --filter @nbos/database exec prisma migrate status` → dev Neon `ep-late-frost-ag5aixzw`, **212 migrations**, `Database schema is up to date!`; migration apply не запускался;
   - read-only SQL transaction на том же dev host → 3 `PRODUCT_DELIVERY`, 3 `STANDALONE_OPERATIONAL`, **0** `EXTENSION_DELIVERY`;
@@ -321,7 +321,7 @@ Re-run after remediations (this chat, no commit): `pnpm vitest run` → 767 file
 - Git:
   - ветка `sipan`, `HEAD 1636cf51834851d18835b4984e768f6e3a51685d`; коммита Chat 3 нет;
   - 21 modified tracked файла и 49 untracked files; удалённых файлов/тестов нет; `git diff --check HEAD` чист;
-  - `ai-modul-steps.md` и `docs/deployment/AUTOMATED-PRODUCTION-DATABASE-MIGRATIONS-STANDARD.md` не относятся к Chat 3.
+  - `ai-modul-steps.md` и параллельная deployment-документация не относятся к Chat 3.
 - Запущено:
   - targeted AI + Tasks/Drive, включая `tasks.service.test.ts` и новые OCC/provenance suites → **35 passed | 2 skipped files**, **339 passed | 4 skipped tests**;
   - `pnpm vitest run` → **767 passed | 2 skipped files**, **3789 passed | 4 skipped tests**;

@@ -43,37 +43,6 @@ RUN pnpm build:api
 # Production slice only (~460 packages vs full monorepo ~1570) — avoids OOM on COPY to runner.
 RUN pnpm --filter @nbos/api deploy --prod /prod/api
 
-# One-shot production migrator. Keep this stage BEFORE runner so Coolify apps
-# that omit dockerfile_target_build still boot the API/worker/scheduler image.
-FROM base AS migrator
-
-ENV NODE_ENV=development
-WORKDIR /app
-
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/api/package.json apps/api/package.json
-COPY apps/web/package.json apps/web/package.json
-COPY packages/database/package.json packages/database/package.json
-COPY packages/shared/package.json packages/shared/package.json
-COPY packages/tsconfig/package.json packages/tsconfig/package.json
-COPY packages/eslint-config/package.json packages/eslint-config/package.json
-
-RUN --mount=type=cache,id=pnpm-migrator,target=/pnpm/store \
-  pnpm install --frozen-lockfile --prod=false --filter @nbos/database...
-
-COPY packages/database/prisma.config.ts packages/database/prisma.config.ts
-COPY packages/database/prisma/schema packages/database/prisma/schema
-COPY packages/database/prisma/migrations packages/database/prisma/migrations
-
-ENV NODE_ENV=production
-
-COPY packages/database/scripts/coolify-migrate.sh packages/database/scripts/coolify-migrate.sh
-
-# Same entrypoint as Dockerfile.migrator. Coolify production uses Dockerfile.migrator.
-ENV NBOS_MIGRATE_HOLD=1
-RUN chmod +x packages/database/scripts/coolify-migrate.sh
-CMD ["sh", "packages/database/scripts/coolify-migrate.sh"]
-
 FROM base AS runner
 
 ENV NODE_ENV=production
