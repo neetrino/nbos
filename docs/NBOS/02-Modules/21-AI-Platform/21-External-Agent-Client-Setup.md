@@ -16,10 +16,17 @@ agent may do over REST it may do over MCP, and nothing more.
 
 Exactly two things:
 
-| Item                 | Example                   |
-| -------------------- | ------------------------- |
-| NBOS base URL        | `https://app.example.com` |
-| External Agent token | `nbosa_<keyId>_<secret>`  |
+| Item                 | Example                                       |
+| -------------------- | --------------------------------------------- |
+| NBOS API origin      | `https://api.example.com` (not the dashboard) |
+| External Agent token | `nbosa_<keyId>_<secret>`                      |
+
+In the product:
+
+- **Copy .env** appears only in the one-time token dialog (Issue / Rotate) — two lines, URL then token: `NBOS_AGENT_API_URL` (`…/api/v1/agent`) and `NBOS_AGENT_TOKEN`;
+- **Copy MCP config** is in that dialog and on **Credentials → Connect client**. The page copy reads `NBOS_AGENT_TOKEN` from env; the dialog copy embeds the just-issued token.
+
+Do not put the employee dashboard URL (`/dashboard`) in env or MCP. The web BFF strips `Authorization`.
 
 Nothing else is ever required, and nothing else may be requested:
 

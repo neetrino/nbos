@@ -5,9 +5,11 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import { aiAdminApi, type ExternalAgentBundle } from '@/lib/api/ai-admin';
+import { resolvePublicAgentApiOrigin } from '../agent-client-setup';
 import { canRotateAgentCredential } from '../external-agent-actions';
 import { formatTimestamp } from '../format';
 import { agentStateVariant } from '../status-badge-map';
+import { AgentClientSetupSection } from './AgentClientSetupSection';
 import { AiAdminConfirmDialog } from './AiAdminConfirmDialog';
 import { OneTimeSecretModal } from './OneTimeSecretModal';
 
@@ -22,6 +24,8 @@ export function ExternalAgentCredentialsSection(props: {
     id?: string;
   } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [secretOpen, setSecretOpen] = useState(false);
+  const apiOrigin = resolvePublicAgentApiOrigin(process.env.NEXT_PUBLIC_BACKEND_URL);
 
   const run = async () => {
     if (!pending) return;
@@ -31,12 +35,14 @@ export function ExternalAgentCredentialsSection(props: {
         const issued = await aiAdminApi.issueCredential(props.bundle.agent.id);
         setPending(null);
         setToken(issued.token);
+        setSecretOpen(true);
         return;
       }
       if (pending.type === 'rotate' && pending.id) {
         const issued = await aiAdminApi.rotateCredential(props.bundle.agent.id, pending.id);
         setPending(null);
         setToken(issued.token);
+        setSecretOpen(true);
         return;
       }
       if (pending.type === 'revoke' && pending.id) {
@@ -96,6 +102,7 @@ export function ExternalAgentCredentialsSection(props: {
           </li>
         ))}
       </ul>
+      <AgentClientSetupSection token={token} apiOrigin={apiOrigin} />
       <AiAdminConfirmDialog
         open={pending !== null}
         title={
@@ -105,7 +112,7 @@ export function ExternalAgentCredentialsSection(props: {
               ? 'Revoke token?'
               : 'Issue token?'
         }
-        description="The raw secret is shown once. After close, only the prefix remains."
+        description="The raw secret is shown once. Copy .env or MCP from the next dialog. NBOS keeps only the prefix."
         confirmLabel="Continue"
         destructive={pending?.type === 'revoke'}
         isSubmitting={busy}
@@ -115,11 +122,12 @@ export function ExternalAgentCredentialsSection(props: {
         onConfirm={() => void run()}
       />
       <OneTimeSecretModal
-        open={token !== null}
+        open={secretOpen}
         title="One-time External Agent token"
         secret={token}
-        setupHint="Use Authorization: Bearer. REST and MCP share this credential."
+        apiOrigin={apiOrigin}
         onClose={() => {
+          setSecretOpen(false);
           setToken(null);
           props.onChanged();
         }}
