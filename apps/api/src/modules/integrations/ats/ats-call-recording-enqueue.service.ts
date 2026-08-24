@@ -42,7 +42,10 @@ export class AtsCallRecordingEnqueueService {
     }
 
     const queued = await this.queue.enqueueDownload({ callId: call.id, uid: call.uid });
-    if (queued) return;
+    if (queued) {
+      this.logger.log({ event: 'ats_recording_enqueued', uid: payload.uid, callId: call.id });
+      return;
+    }
 
     this.logger.error({
       event: 'ats_recording_enqueue_skipped',
