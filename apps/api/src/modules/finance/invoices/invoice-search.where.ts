@@ -11,6 +11,7 @@ export function buildInvoiceSearchOr(
       { code: ic },
       { govInvoiceId: ic },
       { company: { name: ic } },
+      { company: { legalName: ic } },
       {
         order: {
           OR: [

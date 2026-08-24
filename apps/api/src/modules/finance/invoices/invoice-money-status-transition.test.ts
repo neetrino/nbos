@@ -8,7 +8,7 @@ const readyTaxInvoice = {
   moneyStatus: 'AWAITING_PAYMENT' as const,
   companyId: 'c1',
   officialInvoiceRequestSent: true,
-  company: { name: 'InvestOn LLC', taxId: '01234567' },
+  company: { name: 'InvestOn LLC', legalName: 'InvestOn LLC', taxId: '01234567' },
 };
 
 describe('prepareInvoiceMoneyStatusTransition', () => {

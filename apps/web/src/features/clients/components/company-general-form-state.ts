@@ -7,6 +7,7 @@ export interface CompanyGeneralDraft {
   name: string;
   type: string;
   taxId: string;
+  legalName: string;
   legalAddress: string;
   notes: string;
   phone: string;
@@ -27,6 +28,7 @@ export function createCompanyGeneralDraft(company: Company): CompanyGeneralDraft
     name: company.name,
     type: company.type,
     taxId: company.taxId ?? '',
+    legalName: company.legalName ?? '',
     legalAddress: company.legalAddress ?? '',
     notes: company.notes ?? '',
     phone: company.phone ?? '',
@@ -54,6 +56,9 @@ export function buildCompanyGeneralPatch(
   if (draft.name !== snap.name) out.name = draft.name;
   if (draft.type !== snap.type) out.type = draft.type;
   if (strOrNull(draft.taxId) !== strOrNull(snap.taxId)) out.taxId = strOrNull(draft.taxId);
+  if (strOrNull(draft.legalName) !== strOrNull(snap.legalName)) {
+    out.legalName = strOrNull(draft.legalName);
+  }
   if (strOrNull(draft.legalAddress) !== strOrNull(snap.legalAddress)) {
     out.legalAddress = strOrNull(draft.legalAddress);
   }

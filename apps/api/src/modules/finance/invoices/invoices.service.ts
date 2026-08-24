@@ -173,7 +173,7 @@ export class InvoicesService {
               project: { select: { id: true, name: true } },
             },
           },
-          company: { select: { id: true, name: true, taxId: true } },
+          company: { select: { id: true, name: true, legalName: true, taxId: true } },
           payments: { select: { id: true, amount: true, paymentDate: true } },
           _count: { select: { payments: true } },
         },

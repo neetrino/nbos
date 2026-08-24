@@ -225,7 +225,7 @@ function CompaniesPageContent() {
         <IntegratedSearchFilters
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search by name, tax ID…"
+          searchPlaceholder="Search by name, legal name, tax ID…"
           filters={filterConfigs}
           filterValues={filters}
           onFilterChange={(key: string, value: string) =>

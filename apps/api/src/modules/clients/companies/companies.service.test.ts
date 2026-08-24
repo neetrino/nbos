@@ -80,6 +80,26 @@ describe('CompaniesService', () => {
       );
     });
 
+    it('creates company with legalName', async () => {
+      prisma.company.findUnique.mockResolvedValue({
+        id: 'test-id',
+        name: 'Saribekyan',
+        legalName: 'ООО Сарибекян',
+        contactId: null,
+        additionalContacts: [],
+      });
+      await service.create({ name: 'Saribekyan', legalName: 'ООО Сарибекян' });
+      expect(prisma.company.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            name: 'Saribekyan',
+            legalName: 'ООО Сарибекян',
+            contactId: null,
+          }),
+        }),
+      );
+    });
+
     it('creates company without primary contact', async () => {
       prisma.company.findUnique.mockResolvedValue({
         id: 'test-id',
@@ -188,13 +208,18 @@ describe('CompaniesService', () => {
         contactId: 'c2',
         type: 'INDIVIDUAL',
         taxId: '123',
+        legalName: 'Updated LLC',
         legalAddress: 'Address',
         notes: 'note',
       });
       expect(result.name).toBe('Updated');
       expect(prisma.company.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ contactId: 'c2', name: 'Updated' }),
+          data: expect.objectContaining({
+            contactId: 'c2',
+            name: 'Updated',
+            legalName: 'Updated LLC',
+          }),
         }),
       );
     });

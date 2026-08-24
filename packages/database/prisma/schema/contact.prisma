@@ -78,6 +78,7 @@ enum TaxStatus {
 model Company {
   id           String      @id @default(uuid())
   name         String
+  legalName    String?     @map("legal_name")
   type         CompanyType @default(LEGAL)
   taxId        String?     @map("tax_id")
   legalAddress String?     @map("legal_address")
