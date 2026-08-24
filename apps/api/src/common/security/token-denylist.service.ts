@@ -1,6 +1,10 @@
 import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import type Redis from 'ioredis';
-import { createStateRedisConnection, getRedisStateUrl } from '../../runtime/queue-redis';
+import {
+  closeRedisConnection,
+  createStateRedisConnection,
+  getRedisStateUrl,
+} from '../../runtime/queue-redis';
 import { jwtDenylistRedisKey, ttlSecondsUntil } from './jwt-denylist-redis';
 
 /** Sweep expired in-memory entries at most once per this interval. */
@@ -45,10 +49,9 @@ export class TokenDenylistService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleDestroy(): Promise<void> {
-    if (this.redis) {
-      await this.redis.quit();
-      this.redis = null;
-    }
+    const redis = this.redis;
+    this.redis = null;
+    await closeRedisConnection(redis);
   }
 
   /** Revoke a token by its `jti` until the given expiry (epoch ms). */

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  closeRedisConnection,
   createQueueProducerConnection,
   createQueueWorkerConnection,
   getRedisQueueUrl,
@@ -40,5 +41,32 @@ describe('queue-redis', () => {
     expect(worker.options.enableReadyCheck).toBe(false);
     void producer.disconnect();
     void worker.disconnect();
+  });
+
+  it('closes an owned connection only once', async () => {
+    let quits = 0;
+    const connection = {
+      status: 'ready',
+      quit: async () => {
+        quits += 1;
+        return 'OK';
+      },
+      disconnect: () => undefined,
+    };
+
+    await Promise.all([closeRedisConnection(connection), closeRedisConnection(connection)]);
+    expect(quits).toBe(1);
+  });
+
+  it('treats an already-closed ioredis connection as a successful shutdown', async () => {
+    const connection = {
+      status: 'close',
+      quit: async () => {
+        throw new Error('Connection is closed.');
+      },
+      disconnect: () => undefined,
+    };
+
+    await expect(closeRedisConnection(connection)).resolves.toBeUndefined();
   });
 });

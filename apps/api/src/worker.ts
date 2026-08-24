@@ -13,6 +13,7 @@ import { assertProcessRoleForEntrypoint } from './runtime/process-role';
 import { logProcessStartup } from './runtime/process-startup-log';
 import {
   createQueueProducerConnection,
+  closeRedisConnection,
   getRedisQueueUrl,
   logRedisTopology,
 } from './runtime/queue-redis';
@@ -42,8 +43,6 @@ async function bootstrap() {
   const app = await NestFactory.createApplicationContext(WorkerAppModule, {
     bufferLogs: true,
   });
-  app.enableShutdownHooks();
-
   const registry = app.get(BullmqWorkerRegistry);
   registry.assertWorkerHasConsumers(EXPECTED_QUEUES);
 
@@ -90,7 +89,7 @@ async function bootstrap() {
         {
           name: 'readiness-redis',
           run: async () => {
-            await readinessRedis.quit().catch(() => undefined);
+            await closeRedisConnection(readinessRedis);
           },
         },
         {
@@ -112,11 +111,17 @@ async function bootstrap() {
     process.exitCode = ok ? 0 : 1;
   };
 
-  process.on('SIGTERM', () => {
-    void shutdown('SIGTERM');
+  process.once('SIGTERM', () => {
+    void shutdown('SIGTERM').catch((error) => {
+      logger.error(`Graceful shutdown failed: ${String(error)}`);
+      process.exitCode = 1;
+    });
   });
-  process.on('SIGINT', () => {
-    void shutdown('SIGINT');
+  process.once('SIGINT', () => {
+    void shutdown('SIGINT').catch((error) => {
+      logger.error(`Graceful shutdown failed: ${String(error)}`);
+      process.exitCode = 1;
+    });
   });
 }
 

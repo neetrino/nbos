@@ -4,7 +4,11 @@ import { ImapFlow } from 'imapflow';
 import { MailSyncLogKind, PrismaClient } from '@nbos/database';
 import type Redis from 'ioredis';
 import { shouldRegisterBullmqWorkers } from '../../runtime/process-role';
-import { createStateRedisConnection, getRedisQueueUrl } from '../../runtime/queue-redis';
+import {
+  closeRedisConnection,
+  createStateRedisConnection,
+  getRedisQueueUrl,
+} from '../../runtime/queue-redis';
 import { PRISMA_TOKEN } from '../../database.module';
 import { nextIdleBackoffMs } from './mail-imap-idle.backoff';
 import {
@@ -21,6 +25,11 @@ import {
 } from './mail-sync-runtime.constants';
 import { isSecureModeTls } from './providers/mail-provider-adapter.factory';
 import { MailProviderSecretStore } from './providers/mail-provider-secret.store';
+import {
+  attachImapClientErrorBoundary,
+  formatImapClientError,
+  type ImapClientErrorBoundary,
+} from './providers/imap-client-error-boundary';
 
 const IDLE_STOP_STATUSES = new Set(['DISABLED', 'PAUSED', 'NEEDS_RECONNECT']);
 
@@ -58,16 +67,17 @@ export class MailImapIdleService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy(): Promise<void> {
     this.destroyed = true;
+    const redis = this.redis;
+    this.redis = null;
     for (const [accountId, client] of this.clients) {
       await client.logout().catch(() => undefined);
       const holderId = this.holders.get(accountId);
-      if (this.redis && holderId) {
-        await releaseMailIdleLock(this.redis, accountId, holderId);
+      if (redis && holderId) {
+        await releaseMailIdleLock(redis, accountId, holderId).catch(() => undefined);
       }
     }
     this.clients.clear();
-    await this.redis?.quit();
-    this.redis = null;
+    await closeRedisConnection(redis);
   }
 
   /** Side-effect after a successful corporate sync. No dedicated idle job. */
@@ -100,7 +110,11 @@ export class MailImapIdleService implements OnModuleInit, OnModuleDestroy {
       return;
     }
     this.stopped.delete(mailAccountId);
-    void this.runLoop(mailAccountId);
+    void this.runLoop(mailAccountId).catch((error) => {
+      this.logger.error(
+        `IMAP IDLE loop stopped unexpectedly for ${mailAccountId}: ${formatImapClientError(error)}`,
+      );
+    });
   }
 
   private async runLoop(mailAccountId: string): Promise<void> {
@@ -117,8 +131,9 @@ export class MailImapIdleService implements OnModuleInit, OnModuleDestroy {
           attempt = 0;
         }
       } catch (error) {
-        this.logger.warn(`IMAP IDLE error for ${mailAccountId}: ${String(error)}`);
-        await this.log(mailAccountId, MailSyncLogKind.IDLE_RECONNECT, String(error));
+        const detail = formatImapClientError(error);
+        this.logger.warn(`IMAP IDLE error for ${mailAccountId}: ${detail}`);
+        await this.log(mailAccountId, MailSyncLogKind.IDLE_RECONNECT, detail);
         await delay(nextIdleBackoffMs(attempt));
         attempt += 1;
       }
@@ -137,19 +152,20 @@ export class MailImapIdleService implements OnModuleInit, OnModuleDestroy {
       return false;
     }
     this.holders.set(mailAccountId, holderId);
-    const client = await this.buildClient(mailAccountId);
-    if (!client) {
+    const guarded = await this.buildClient(mailAccountId);
+    if (!guarded) {
       this.stopped.add(mailAccountId);
       await releaseMailIdleLock(this.redis, mailAccountId, holderId);
       return false;
     }
-    return this.holdIdle(mailAccountId, holderId, client);
+    return this.holdIdle(mailAccountId, holderId, guarded.client, guarded.boundary);
   }
 
   private async holdIdle(
     mailAccountId: string,
     holderId: string,
     client: ImapFlow,
+    boundary: ImapClientErrorBoundary,
   ): Promise<boolean> {
     this.clients.set(mailAccountId, client);
     let lastActivityAt = Date.now();
@@ -157,11 +173,17 @@ export class MailImapIdleService implements OnModuleInit, OnModuleDestroy {
       lastActivityAt = Date.now();
       void this.onNewMail(mailAccountId);
     });
-    await client.connect();
-    await client.mailboxOpen('INBOX');
+    await boundary.run(client.connect());
+    await boundary.run(client.mailboxOpen('INBOX'));
     await this.log(mailAccountId, MailSyncLogKind.IDLE_STARTED);
     const heartbeat = setInterval(() => {
-      void this.heartbeat(mailAccountId, holderId);
+      void this.heartbeat(mailAccountId, holderId).catch((error) => {
+        if (!this.destroyed) {
+          this.logger.warn(
+            `IMAP IDLE heartbeat failed for ${mailAccountId}: ${formatImapClientError(error)}`,
+          );
+        }
+      });
     }, MAIL_IDLE_HEARTBEAT_MS);
     try {
       while (!this.destroyed && !this.stopped.has(mailAccountId) && client.usable) {
@@ -174,7 +196,7 @@ export class MailImapIdleService implements OnModuleInit, OnModuleDestroy {
           await this.log(mailAccountId, MailSyncLogKind.IDLE_RECONNECT, 'watchdog silence');
           break;
         }
-        await client.idle();
+        await boundary.run(client.idle());
       }
     } finally {
       clearInterval(heartbeat);
@@ -207,7 +229,9 @@ export class MailImapIdleService implements OnModuleInit, OnModuleDestroy {
     return !account || IDLE_STOP_STATUSES.has(account.status);
   }
 
-  private async buildClient(mailAccountId: string): Promise<ImapFlow | null> {
+  private async buildClient(
+    mailAccountId: string,
+  ): Promise<{ client: ImapFlow; boundary: ImapClientErrorBoundary } | null> {
     const connection = await this.prisma.mailProviderConnection.findUnique({
       where: { mailAccountId },
       select: { username: true, imapHost: true, imapPort: true, secureMode: true },
@@ -216,13 +240,19 @@ export class MailImapIdleService implements OnModuleInit, OnModuleDestroy {
     if (!connection?.imapHost || !connection.imapPort || !secret || secret.kind !== 'corporate') {
       return null;
     }
-    return new ImapFlow({
+    const client = new ImapFlow({
       host: connection.imapHost,
       port: connection.imapPort,
       secure: isSecureModeTls(connection.secureMode),
       auth: { user: connection.username ?? '', pass: secret.password },
       logger: false,
     });
+    const boundary = attachImapClientErrorBoundary(client, {
+      sensitiveValues: [secret.password],
+      onError: (detail) =>
+        this.logger.warn(`Corporate IMAP event for account ${mailAccountId}: ${detail}`),
+    });
+    return { client, boundary };
   }
 
   private async onNewMail(mailAccountId: string): Promise<void> {

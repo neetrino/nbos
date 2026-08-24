@@ -6,7 +6,11 @@ import { resolveBullmqWorkerRuntimeOptions } from '../../runtime/bullmq-worker-r
 import { logBullmqJob } from '../../runtime/bullmq-job-log';
 import { BullmqWorkerRegistry } from '../../runtime/bullmq-worker-registry';
 import { shouldRegisterBullmqWorkers } from '../../runtime/process-role';
-import { createQueueWorkerConnection, getRedisQueueUrl } from '../../runtime/queue-redis';
+import {
+  closeRedisConnection,
+  createQueueWorkerConnection,
+  getRedisQueueUrl,
+} from '../../runtime/queue-redis';
 import { OpsJobFailureAlertService } from '../ops-alerts/ops-job-failure-alert.service';
 import {
   REPORT_EXPORT_JOB_NAME,
@@ -78,7 +82,7 @@ export class ReportsExportWorker implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {
     await this.worker?.close();
     this.worker = null;
-    await this.connection?.quit();
+    await closeRedisConnection(this.connection);
     this.connection = null;
   }
 }

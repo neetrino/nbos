@@ -3,7 +3,11 @@ import { Queue } from 'bullmq';
 import type Redis from 'ioredis';
 import { BULLMQ_EXPORT_JOB_OPTIONS } from '../../runtime/bullmq-job-options';
 import { shouldRegisterQueueProducers } from '../../runtime/process-role';
-import { createQueueProducerConnection, getRedisQueueUrl } from '../../runtime/queue-redis';
+import {
+  closeRedisConnection,
+  createQueueProducerConnection,
+  getRedisQueueUrl,
+} from '../../runtime/queue-redis';
 import {
   DRIVE_ZIP_EXPORT_JOB_NAME,
   DRIVE_ZIP_EXPORT_QUEUE_NAME,
@@ -32,7 +36,7 @@ export class DriveExportZipQueueService implements OnModuleInit, OnModuleDestroy
   async onModuleDestroy() {
     await this.queue?.close();
     this.queue = null;
-    await this.connection?.quit();
+    await closeRedisConnection(this.connection);
     this.connection = null;
   }
 

@@ -1,5 +1,9 @@
+import { Logger } from '@nestjs/common';
 import Redis from 'ioredis';
 import { getRedisUrl } from '../common/redis/redis-connection';
+
+const redisLogger = new Logger('RedisConnection');
+const redisClosePromises = new WeakMap<object, Promise<void>>();
 
 function assertTlsInProduction(url: string, label: string): void {
   if (process.env.NODE_ENV === 'production' && !url.startsWith('rediss://')) {
@@ -61,20 +65,26 @@ const SKIP_READY_CHECK = { enableReadyCheck: false } as const;
 /** BullMQ producer / Queue client — non-blocking. */
 export function createQueueProducerConnection(url: string): Redis {
   assertTlsInProduction(url, 'REDIS_QUEUE_URL / REDIS_URL');
-  return new Redis(url, {
-    ...SKIP_READY_CHECK,
-    maxRetriesPerRequest: 1,
-    enableOfflineQueue: false,
-  });
+  return guardRedisConnection(
+    new Redis(url, {
+      ...SKIP_READY_CHECK,
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false,
+    }),
+    'queue-producer',
+  );
 }
 
 /** BullMQ Worker blocking connection. */
 export function createQueueWorkerConnection(url: string): Redis {
   assertTlsInProduction(url, 'REDIS_QUEUE_URL / REDIS_URL');
-  return new Redis(url, {
-    ...SKIP_READY_CHECK,
-    maxRetriesPerRequest: null,
-  });
+  return guardRedisConnection(
+    new Redis(url, {
+      ...SKIP_READY_CHECK,
+      maxRetriesPerRequest: null,
+    }),
+    'queue-worker',
+  );
 }
 
 /** Optional QueueEvents connection (same options as producer). */
@@ -85,28 +95,89 @@ export function createQueueEventsConnection(url: string): Redis {
 /** State cache (denylist, vault) — non-blocking. */
 export function createStateRedisConnection(url: string): Redis {
   assertTlsInProduction(url, 'REDIS_STATE_URL / REDIS_URL');
-  return new Redis(url, {
-    ...SKIP_READY_CHECK,
-    maxRetriesPerRequest: 1,
-    enableOfflineQueue: false,
-  });
+  return guardRedisConnection(
+    new Redis(url, {
+      ...SKIP_READY_CHECK,
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false,
+    }),
+    'state',
+  );
 }
 
 /** Realtime Pub/Sub publisher. */
 export function createEventsPublisherConnection(url: string): Redis {
   assertTlsInProduction(url, 'REDIS_EVENTS_URL / REDIS_URL');
-  return new Redis(url, {
-    ...SKIP_READY_CHECK,
-    maxRetriesPerRequest: 1,
-    enableOfflineQueue: false,
-  });
+  return guardRedisConnection(
+    new Redis(url, {
+      ...SKIP_READY_CHECK,
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false,
+    }),
+    'events-publisher',
+  );
 }
 
 /** Realtime Pub/Sub subscriber (blocking-friendly). */
 export function createEventsSubscriberConnection(url: string): Redis {
   assertTlsInProduction(url, 'REDIS_EVENTS_URL / REDIS_URL');
-  return new Redis(url, {
-    ...SKIP_READY_CHECK,
-    maxRetriesPerRequest: null,
+  return guardRedisConnection(
+    new Redis(url, {
+      ...SKIP_READY_CHECK,
+      maxRetriesPerRequest: null,
+    }),
+    'events-subscriber',
+  );
+}
+
+/** Idempotent shutdown for owned ioredis clients, including already-closed sockets. */
+export function closeRedisConnection(
+  connection: Pick<Redis, 'quit' | 'disconnect' | 'status'> | null | undefined,
+): Promise<void> {
+  if (!connection) return Promise.resolve();
+  const key = connection as object;
+  const existing = redisClosePromises.get(key);
+  if (existing) return existing;
+
+  const closing = (async () => {
+    if (connection.status === 'end') return;
+    try {
+      await connection.quit();
+    } catch (error) {
+      if (isRedisConnectionClosedError(error)) return;
+      connection.disconnect(false);
+      throw error;
+    }
+  })();
+  redisClosePromises.set(key, closing);
+  return closing;
+}
+
+export function isRedisConnectionClosedError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /connection is closed|connection already closed|stream isn't writeable/i.test(message);
+}
+
+function guardRedisConnection(connection: Redis, label: string): Redis {
+  connection.on('error', (error) => {
+    const code = readRedisErrorCode(error);
+    const message = redactRedisError(error instanceof Error ? error.message : String(error));
+    const detail = `${label} error code=${code ?? 'UNKNOWN'} message=${message}`;
+    if (isRedisConnectionClosedError(error)) {
+      redisLogger.debug(detail);
+    } else {
+      redisLogger.warn(detail);
+    }
   });
+  return connection;
+}
+
+function readRedisErrorCode(error: unknown): string | undefined {
+  if (typeof error !== 'object' || error === null || !('code' in error)) return undefined;
+  const code = (error as { code?: unknown }).code;
+  return code === undefined || code === null ? undefined : String(code);
+}
+
+function redactRedisError(message: string): string {
+  return message.replace(/\bredis(?:s)?:\/\/\S+/gi, '[redacted-url]');
 }

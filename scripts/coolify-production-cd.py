@@ -45,12 +45,20 @@ RUNTIME_ENV = (
 )
 SUCCESS_STATUSES = frozenset({"finished"})
 FAIL_STATUSES = frozenset({"failed", "error", "cancelled", "cancelled-by-user"})
+TRANSIENT_DEPLOY_RETRIES = 1
 
 
 @dataclass(frozen=True)
 class Coolify:
     base_url: str
     token: str
+
+
+@dataclass(frozen=True)
+class DeploymentFailure:
+    kind: str
+    retryable: bool
+    summary: str
 
 
 def log(message: str) -> None:
@@ -147,7 +155,7 @@ def wait_deployment(client: Coolify, deployment_uuid: str, timeout_sec: int) -> 
         if status in SUCCESS_STATUSES:
             return payload
         if status in FAIL_STATUSES:
-            fail(f"Coolify deployment {deployment_uuid} ended status={status}")
+            return payload
         time.sleep(POLL_INTERVAL_SEC)
     fail(f"Timeout waiting for Coolify deployment {deployment_uuid}")
     raise AssertionError("unreachable")
@@ -239,13 +247,124 @@ def require_commit(payload: Mapping[str, object], sha: str, label: str) -> None:
         fail(f"{label}: deployment.commit does not match RELEASE_SHA; refusing to continue")
 
 
+def deployment_logs(client: Coolify, app_uuid: str, deployment_uuid: str) -> str:
+    payload = request(
+        client,
+        "GET",
+        f"/deployments/applications/{app_uuid}",
+        allow_error=True,
+    )
+    if not isinstance(payload, dict) or payload.get("error"):
+        return ""
+    deployments = payload.get("deployments")
+    if not isinstance(deployments, list):
+        return ""
+    for deployment in deployments:
+        if not isinstance(deployment, dict):
+            continue
+        if str(deployment.get("deployment_uuid") or "") != deployment_uuid:
+            continue
+        raw_logs = deployment.get("logs")
+        if isinstance(raw_logs, str):
+            return raw_logs
+    return ""
+
+
+def classify_deployment_failure(raw_logs: str) -> DeploymentFailure:
+    text = deployment_log_text(raw_logs)
+    lowered = text.lower()
+    if "healthcheck" in lowered and any(
+        marker in lowered for marker in ("unhealthy", "timed out", "timeout", "failed")
+    ):
+        return DeploymentFailure(
+            kind="healthcheck",
+            retryable=False,
+            summary="new container did not pass the configured Coolify healthcheck",
+        )
+    if any(
+        marker in lowered
+        for marker in (
+            "failed to compile",
+            "type error",
+            "error: failed to solve",
+            "elifecycle",
+            "err_pnpm",
+            "command failed with exit code 1",
+        )
+    ):
+        return DeploymentFailure(
+            kind="application-build",
+            retryable=False,
+            summary="application build returned a deterministic error",
+        )
+    if re.search(r"command execution failed \(exit code 255\)", lowered):
+        return DeploymentFailure(
+            kind="remote-command-transport",
+            retryable=True,
+            summary="Coolify remote build command ended exit=255 before an application error",
+        )
+    return DeploymentFailure(
+        kind="unknown",
+        retryable=False,
+        summary="Coolify reported failure without a recognized safe-to-retry signature",
+    )
+
+
+def deployment_log_text(raw_logs: str) -> str:
+    if not raw_logs.strip():
+        return ""
+    try:
+        parsed = json.loads(raw_logs)
+    except json.JSONDecodeError:
+        return raw_logs
+    if not isinstance(parsed, list):
+        return raw_logs
+    outputs: list[str] = []
+    for entry in parsed:
+        if isinstance(entry, dict) and isinstance(entry.get("output"), str):
+            outputs.append(entry["output"])
+    return "\n".join(outputs)
+
+
+def log_failed_deployment_state(
+    client: Coolify,
+    app_uuid: str,
+    deployment_uuid: str,
+    payload: Mapping[str, object],
+) -> DeploymentFailure:
+    failure = classify_deployment_failure(deployment_logs(client, app_uuid, deployment_uuid))
+    app = request(client, "GET", f"/applications/{app_uuid}", allow_error=True)
+    app_status = deployment_status(app) if isinstance(app, dict) else "unknown"
+    log(
+        f"deployment {deployment_uuid} failed kind={failure.kind} "
+        f"attempt_status={deployment_status(payload)} current_app_status={app_status}; "
+        f"{failure.summary}"
+    )
+    return failure
+
+
+def deploy_runtime_application(client: Coolify, app_uuid: str, label: str, sha: str) -> None:
+    try_pin_sha(client, app_uuid, sha)
+    for attempt in range(TRANSIENT_DEPLOY_RETRIES + 1):
+        dep = start_force(client, app_uuid)
+        payload = wait_deployment(client, dep, APP_DEPLOY_TIMEOUT_SEC)
+        status = deployment_status(payload)
+        if status in SUCCESS_STATUSES:
+            require_commit(payload, sha, label)
+            if attempt:
+                log(f"{label} recovered after one verified transient Coolify transport failure")
+            return
+        failure = log_failed_deployment_state(client, app_uuid, dep, payload)
+        if failure.retryable and attempt < TRANSIENT_DEPLOY_RETRIES:
+            log(f"{label}: retrying once after verified {failure.kind} failure")
+            continue
+        fail(f"{label}: Coolify deployment {dep} ended status={status} kind={failure.kind}")
+
+
 def deploy_runtime(client: Coolify, env: Mapping[str, str], sha: str) -> None:
     # Sequential: Coolify force-rebuild of four apps at once has failed nbos-api.
     for name in RUNTIME_ENV:
-        try_pin_sha(client, env[name], sha)
-        dep = start_force(client, env[name])
-        payload = wait_deployment(client, dep, APP_DEPLOY_TIMEOUT_SEC)
-        require_commit(payload, sha, name)
+        deploy_runtime_application(client, env[name], name, sha)
 
 
 def main() -> None:
@@ -257,6 +376,12 @@ def main() -> None:
     try_pin_sha(client, migrate_uuid, sha)
     dep = start_force(client, migrate_uuid)
     finished = wait_deployment(client, dep, MIGRATE_BUILD_TIMEOUT_SEC)
+    if deployment_status(finished) not in SUCCESS_STATUSES:
+        failure = log_failed_deployment_state(client, migrate_uuid, dep, finished)
+        fail(
+            f"nbos-migrate deployment {dep} ended status={deployment_status(finished)} "
+            f"kind={failure.kind}; runtime apps were not started"
+        )
     require_commit(finished, sha, "nbos-migrate")
     log("Coolify finished means container start, not Prisma; polling sentinel")
     try:

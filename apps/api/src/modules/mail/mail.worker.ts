@@ -6,7 +6,11 @@ import { resolveBullmqWorkerRuntimeOptions } from '../../runtime/bullmq-worker-r
 import { logBullmqJob, type JobLogFields } from '../../runtime/bullmq-job-log';
 import { BullmqWorkerRegistry } from '../../runtime/bullmq-worker-registry';
 import { shouldRegisterBullmqWorkers } from '../../runtime/process-role';
-import { createQueueWorkerConnection, getRedisQueueUrl } from '../../runtime/queue-redis';
+import {
+  closeRedisConnection,
+  createQueueWorkerConnection,
+  getRedisQueueUrl,
+} from '../../runtime/queue-redis';
 import { OpsJobFailureAlertService } from '../ops-alerts/ops-job-failure-alert.service';
 import { MailAttachmentDownloadService } from './mail-attachment-download.service';
 import {
@@ -120,7 +124,7 @@ export class MailWorker implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {
     await this.worker?.close();
     this.worker = null;
-    await this.connection?.quit();
+    await closeRedisConnection(this.connection);
     this.connection = null;
   }
 }

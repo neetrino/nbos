@@ -27,7 +27,6 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(SchedulerAppModule, {
     bufferLogs: true,
   });
-  app.enableShutdownHooks();
   app.setGlobalPrefix('api');
   app.flushLogs();
 
@@ -80,11 +79,17 @@ async function bootstrap() {
     process.exitCode = ok ? 0 : 1;
   };
 
-  process.on('SIGTERM', () => {
-    void shutdown('SIGTERM');
+  process.once('SIGTERM', () => {
+    void shutdown('SIGTERM').catch((error) => {
+      logger.error(`Graceful scheduler shutdown failed: ${String(error)}`);
+      process.exitCode = 1;
+    });
   });
-  process.on('SIGINT', () => {
-    void shutdown('SIGINT');
+  process.once('SIGINT', () => {
+    void shutdown('SIGINT').catch((error) => {
+      logger.error(`Graceful scheduler shutdown failed: ${String(error)}`);
+      process.exitCode = 1;
+    });
   });
 }
 
