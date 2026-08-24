@@ -58,10 +58,11 @@ async function postAtsWebhook(
 
 function expectBareAtsSuccess(body: Record<string, unknown>, redirectCall?: string): void {
   if (redirectCall) {
-    expect(body).toEqual({ status: 'success', redirect_call: redirectCall });
+    expect(body).toEqual({ redirect_call: redirectCall });
   } else {
-    expect(body).toEqual({ status: 'success' });
+    expect(body).toEqual({});
   }
+  expect(body).not.toHaveProperty('status');
   expect(body).not.toHaveProperty('data');
   expect(body).not.toHaveProperty('timestamp');
 }
@@ -78,7 +79,7 @@ describe('ATS webhook HTTP response contract', () => {
 
   beforeEach(() => {
     handleWebhook.mockReset();
-    handleWebhook.mockResolvedValue({ status: 'success' });
+    handleWebhook.mockResolvedValue({});
   });
 
   afterAll(async () => {
@@ -99,7 +100,6 @@ describe('ATS webhook HTTP response contract', () => {
 
   it('returns redirect_call on the top-level JSON object', async () => {
     handleWebhook.mockResolvedValue({
-      status: 'success',
       redirect_call: REDIRECT_CALL_SIP,
     });
 
