@@ -33,10 +33,9 @@ export function CompanyArmeniaLookup({ disabled, current, onApply }: CompanyArme
           query={lookup.query}
           loading={lookup.loading}
           disabled={disabled}
-          canDismiss={lookup.matches.length > 0}
           onQueryChange={lookup.setQuery}
           onSearch={() => void lookup.runSearch()}
-          onDismiss={lookup.dismissMatches}
+          onClear={lookup.clearQuery}
         />
         {lookup.loading ? <CompanyLookupLoadingPanel /> : null}
         {lookup.matches.length > 0 ? (
@@ -61,20 +60,19 @@ function ArmeniaLookupSearchField({
   query,
   loading,
   disabled,
-  canDismiss,
   onQueryChange,
   onSearch,
-  onDismiss,
+  onClear,
 }: {
   query: string;
   loading: boolean;
   disabled?: boolean;
-  canDismiss: boolean;
   onQueryChange: (value: string) => void;
   onSearch: () => void;
-  onDismiss: () => void;
+  onClear: () => void;
 }) {
   const canSearch = !disabled && query.trim().length >= ARMENIA_LOOKUP_QUERY_MIN_LENGTH;
+  const canClear = query.length > 0 && !disabled;
 
   return (
     <div className={DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS}>
@@ -92,7 +90,7 @@ function ArmeniaLookupSearchField({
           onSearch();
         }}
       />
-      {canDismiss ? <ArmeniaLookupDismissButton onDismiss={onDismiss} /> : null}
+      {canClear ? <ArmeniaLookupClearButton onClear={onClear} /> : null}
       <ArmeniaLookupSearchButton loading={loading} disabled={!canSearch} onSearch={onSearch} />
     </div>
   );
@@ -101,13 +99,13 @@ function ArmeniaLookupSearchField({
 const LOOKUP_FIELD_ICON_BTN_CLASS =
   'text-muted-foreground hover:text-foreground flex size-7 shrink-0 items-center justify-center rounded-md';
 
-function ArmeniaLookupDismissButton({ onDismiss }: { onDismiss: () => void }) {
+function ArmeniaLookupClearButton({ onClear }: { onClear: () => void }) {
   return (
     <button
       type="button"
-      aria-label="Dismiss registry matches"
+      aria-label="Clear Armenian registry search"
       className={LOOKUP_FIELD_ICON_BTN_CLASS}
-      onClick={onDismiss}
+      onClick={onClear}
     >
       <X size={14} />
     </button>

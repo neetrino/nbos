@@ -25,6 +25,7 @@ export function useCompanyArmeniaLookup(
   const currentRef = useRef(current);
   currentRef.current = current;
   const inFlightRef = useRef(false);
+  const searchGenerationRef = useRef(0);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
