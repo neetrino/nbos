@@ -6,6 +6,8 @@ import { applyCompanyLookupFill, type CompanyLookupFillTarget } from './apply-co
 const LOOKUP_NOT_FOUND = 'No company found in the Armenian registry.';
 const LOOKUP_FOUND_ONE = 'Found in the registry. Review, then fill empty fields.';
 const LOOKUP_FOUND_MANY = 'Several matches. Choose one, then fill empty fields.';
+export const LOOKUP_FIELDS_OCCUPIED =
+  'Matching fields already have values. Clear a field if you want the registry value.';
 
 export function presentArmeniaLookupResults(items: ArmeniaCompanyLookupItem[]): {
   matches: ArmeniaCompanyLookupItem[];
@@ -39,7 +41,7 @@ export function useCompanyArmeniaLookup(
     setNotice(
       result.filled.length > 0
         ? 'Filled empty fields from the registry. Review before saving.'
-        : 'Matching fields already have values. Clear a field if you want the registry value.',
+        : LOOKUP_FIELDS_OCCUPIED,
     );
   };
 

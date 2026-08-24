@@ -11,7 +11,10 @@ import {
 import { cn } from '@/lib/utils';
 import type { CompanyLookupFillTarget } from './apply-company-lookup-fill';
 import { CompanyLookupLoadingPanel, CompanyLookupMatchList } from './CompanyLookupMatchList';
-import { useCompanyArmeniaLookup } from './use-company-armenia-lookup';
+import {
+  LOOKUP_FIELDS_OCCUPIED,
+  useCompanyArmeniaLookup,
+} from './use-company-armenia-lookup';
 
 const ARMENIA_LOOKUP_QUERY_MIN_LENGTH = 2;
 
@@ -51,7 +54,19 @@ export function CompanyArmeniaLookup({ disabled, current, onApply }: CompanyArme
           {lookup.error}
         </p>
       ) : null}
-      {showNotice ? <p className="text-muted-foreground mt-1 text-xs">{lookup.notice}</p> : null}
+      {showNotice ? (
+        <p
+          className={cn(
+            'mt-1 text-xs',
+            lookup.notice === LOOKUP_FIELDS_OCCUPIED
+              ? 'text-destructive'
+              : 'text-muted-foreground',
+          )}
+          role={lookup.notice === LOOKUP_FIELDS_OCCUPIED ? 'alert' : undefined}
+        >
+          {lookup.notice}
+        </p>
+      ) : null}
     </div>
   );
 }
