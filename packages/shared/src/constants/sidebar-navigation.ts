@@ -18,8 +18,8 @@ export const SIDEBAR_MODULE_KEYS = [
   'documents',
   'mail',
   'credentials',
-  'reports',
   'ai-agents',
+  'reports',
   'settings',
 ] as const;
 

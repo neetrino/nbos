@@ -2,23 +2,20 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { KeyRound, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ErrorState, LoadingState } from '@/components/shared';
-import type { AgentCapabilityGrantView, AgentResourceScopeView } from '@/lib/api/ai-admin';
+import { cn } from '@/lib/utils';
+import type { AgentResourceScopeView } from '@/lib/api/ai-admin';
 import { aiAdminInternalApi } from '@/lib/api/ai-admin-internal';
-import { AI_ADMIN_ID_PREFIX_LENGTH } from '../constants';
+import { AI_ADMIN_ACCESS_LAYOUT_CLASS, AI_ADMIN_DENSE_ROW_CLASS } from '../ai-admin-ui.constants';
 import { isCurrentGrant } from '../grant-current';
-import { applySelectValue } from '../select-value';
+import { workspaceLabel } from '../format';
 import { useAccessCatalog } from '../use-access-catalog';
+import { AiAdminCapabilityGrantList } from './AiAdminCapabilityGrantList';
+import { AiAdminSection } from './AiAdminSection';
+import { AiAdminWorkspaceGrantControls } from './AiAdminWorkspaceGrantControls';
 
 export function InternalAgentAccessSection(props: { agentId: string; canGrant: boolean }) {
   const catalog = useAccessCatalog();
@@ -34,8 +31,8 @@ export function InternalAgentAccessSection(props: { agentId: string; canGrant: b
     },
   });
 
-  const capabilities: AgentCapabilityGrantView[] = grants.data?.capabilities ?? [];
-  const scopes: AgentResourceScopeView[] = grants.data?.scopes ?? [];
+  const capabilities = grants.data?.capabilities ?? [];
+  const scopes = grants.data?.scopes ?? [];
   const activeCaps = new Set(
     capabilities.filter((item) => isCurrentGrant(item)).map((item) => item.capabilityKey),
   );
@@ -64,42 +61,70 @@ export function InternalAgentAccessSection(props: { agentId: string; canGrant: b
   if (error) return <ErrorState description={error} onRetry={reload} />;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <section className="border-border bg-card rounded-xl border p-4">
-        <h2 className="text-sm font-semibold">WHAT — capabilities</h2>
-        <ul className="mt-3 space-y-2">
-          {catalog.catalog.map((item) => (
-            <li key={item.key} className="flex items-start gap-2">
-              <Checkbox
-                checked={activeCaps.has(item.key)}
-                disabled={!props.canGrant || !ready}
-                onCheckedChange={(value) => void toggleCapability(item.key, value === true)}
-              />
-              <p className="font-mono text-xs">{item.key}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
-      <section className="border-border bg-card rounded-xl border p-4">
-        <h2 className="text-sm font-semibold">WHERE — Work Space scopes</h2>
-        <ul className="mt-3 mb-3 space-y-2">
-          {activeScopes.map((scope) => (
-            <li key={scope.id} className="flex items-center justify-between gap-2">
-              <span className="text-xs">
-                {scope.scopeType} ·{' '}
-                {catalog.workspaces.find((item) => item.id === scope.scopeId)?.name ??
-                  scope.scopeId.slice(0, AI_ADMIN_ID_PREFIX_LENGTH)}
+    <div className={AI_ADMIN_ACCESS_LAYOUT_CLASS}>
+      <AiAdminSection
+        icon={KeyRound}
+        title="WHAT — capabilities"
+        summary={`${activeCaps.size} of ${catalog.catalog.length}`}
+      >
+        <AiAdminCapabilityGrantList
+          catalog={catalog.catalog}
+          activeKeys={activeCaps}
+          disabled={!props.canGrant || !ready}
+          onToggle={(key, enabled) => void toggleCapability(key, enabled)}
+        />
+      </AiAdminSection>
+      <AiAdminSection
+        icon={Layers}
+        title="WHERE — Work Spaces"
+        summary={`${activeScopes.length} granted`}
+      >
+        <InternalWorkspaceScopeList
+          agentId={props.agentId}
+          canGrant={props.canGrant}
+          ready={ready}
+          workspaceId={workspaceId}
+          workspaces={catalog.workspaces}
+          scopes={activeScopes}
+          onWorkspaceId={setWorkspaceId}
+          onReload={() => void grants.refetch()}
+        />
+      </AiAdminSection>
+    </div>
+  );
+}
+
+function InternalWorkspaceScopeList(props: {
+  agentId: string;
+  canGrant: boolean;
+  ready: boolean;
+  workspaceId: string;
+  workspaces: Array<{ id: string; name: string }>;
+  scopes: AgentResourceScopeView[];
+  onWorkspaceId: (value: string) => void;
+  onReload: () => void;
+}) {
+  return (
+    <div className="space-y-2">
+      {props.scopes.length === 0 ? (
+        <p className="text-muted-foreground text-xs">No Work Space scopes yet.</p>
+      ) : (
+        <ul className="space-y-1.5">
+          {props.scopes.map((scope) => (
+            <li key={scope.id} className={cn(AI_ADMIN_DENSE_ROW_CLASS, 'justify-between')}>
+              <span className="truncate text-xs">
+                {workspaceLabel(props.workspaces, scope.scopeId)}
               </span>
               {props.canGrant ? (
                 <Button
                   type="button"
                   size="sm"
                   variant="outline"
-                  disabled={!ready}
+                  disabled={!props.ready}
                   onClick={() =>
                     void aiAdminInternalApi
                       .revokeScope(props.agentId, scope.id)
-                      .then(() => grants.refetch())
+                      .then(props.onReload)
                       .catch(() => toast.error('Scope revoke failed.'))
                   }
                 >
@@ -109,42 +134,24 @@ export function InternalAgentAccessSection(props: { agentId: string; canGrant: b
             </li>
           ))}
         </ul>
-        {props.canGrant ? (
-          <div className="flex gap-2">
-            <Select
-              value={workspaceId}
-              onValueChange={(value) => applySelectValue(value, setWorkspaceId)}
-            >
-              <SelectTrigger size="sm" className="min-w-[12rem]">
-                <SelectValue placeholder="Select Work Space" />
-              </SelectTrigger>
-              <SelectContent>
-                {catalog.workspaces.map((workspace) => (
-                  <SelectItem key={workspace.id} value={workspace.id}>
-                    {workspace.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              type="button"
-              size="sm"
-              disabled={!workspaceId || !ready}
-              onClick={() =>
-                void aiAdminInternalApi
-                  .grantWorkspaceScope(props.agentId, workspaceId)
-                  .then(() => {
-                    setWorkspaceId('');
-                    return grants.refetch();
-                  })
-                  .catch(() => toast.error('Work Space grant failed.'))
-              }
-            >
-              Grant
-            </Button>
-          </div>
-        ) : null}
-      </section>
+      )}
+      {props.canGrant ? (
+        <AiAdminWorkspaceGrantControls
+          workspaceId={props.workspaceId}
+          workspaces={props.workspaces}
+          grantDisabled={!props.workspaceId || !props.ready}
+          onWorkspaceId={props.onWorkspaceId}
+          onGrant={() =>
+            void aiAdminInternalApi
+              .grantWorkspaceScope(props.agentId, props.workspaceId)
+              .then(() => {
+                props.onWorkspaceId('');
+                props.onReload();
+              })
+              .catch(() => toast.error('Work Space grant failed.'))
+          }
+        />
+      ) : null}
     </div>
   );
 }

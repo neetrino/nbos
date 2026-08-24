@@ -1,13 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Plus, Users } from 'lucide-react';
+import { BrainCircuit, Plus, Route } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { aiAdminApi, type InternalAiAgentView } from '@/lib/api/ai-admin';
+import { AI_ADMIN_CARD_GRID_CLASS, AI_ADMIN_PAGE_STACK_CLASS } from '../ai-admin-ui.constants';
 import { AI_ADMIN_BASE_PATH } from '../constants';
 import { agentStateVariant } from '../status-badge-map';
+import { AiAdminEntityRow } from './AiAdminEntityRow';
+import { AiAdminPageToolbar } from './AiAdminPageToolbar';
 import { InternalAgentCreateDialog } from './InternalAgentCreateDialog';
 
 export function InternalAgentListPanel() {
@@ -37,40 +39,36 @@ export function InternalAgentListPanel() {
   if (error && !createOpen) return <ErrorState description={error} onRetry={() => void load()} />;
 
   return (
-    <div className="space-y-4">
-      <p className="text-muted-foreground text-sm">
-        Internal Agents are NBOS-owned identities, not provider connections. Create starts in DRAFT.
-      </p>
-      <div className="flex justify-end">
-        <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
-          <Plus className="size-4" aria-hidden />
-          Create Internal Agent
-        </Button>
-      </div>
+    <div className={AI_ADMIN_PAGE_STACK_CLASS}>
+      <AiAdminPageToolbar
+        icon={BrainCircuit}
+        description="Internal Agents are NBOS-owned identities, not provider connections. Create starts in DRAFT."
+        actions={
+          <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" aria-hidden />
+            Create Internal Agent
+          </Button>
+        }
+      />
       {rows.length === 0 ? (
         <EmptyState
-          icon={Users}
+          icon={BrainCircuit}
           title="No Internal Agents"
           description="Create a DRAFT agent, assign an ACTIVE Model Policy, then activate."
         />
       ) : (
-        <div className="space-y-3">
+        <div className={AI_ADMIN_CARD_GRID_CLASS}>
           {rows.map((agent) => (
-            <Link
+            <AiAdminEntityRow
               key={agent.id}
               href={`${AI_ADMIN_BASE_PATH}/internal-agents/${agent.id}`}
-              className="border-border bg-card hover:bg-muted/40 block rounded-xl border p-4 transition-colors"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-sm font-semibold">{agent.name}</h2>
-                  <p className="text-muted-foreground mt-1 text-xs">
-                    {agent.description || 'No purpose recorded'}
-                  </p>
-                </div>
-                <StatusBadge label={agent.status} variant={agentStateVariant(agent.status)} />
-              </div>
-            </Link>
+              icon={BrainCircuit}
+              title={agent.name}
+              description={agent.description}
+              statusLabel={agent.status}
+              statusVariant={agentStateVariant(agent.status)}
+              pills={[{ icon: Route, text: agent.modelPolicyId ? 'Policy assigned' : 'No policy' }]}
+            />
           ))}
         </div>
       )}

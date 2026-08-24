@@ -1,12 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { Clock, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { aiAdminApprovalsApi, type AiApprovalRequestView } from '@/lib/api/ai-admin-approvals';
+import { iconForCapabilityKey } from '../ai-admin-icons';
 import { agentStateVariant } from '../status-badge-map';
 import { AiAdminConfirmDialog } from './AiAdminConfirmDialog';
+import { AiAdminEntityRow } from './AiAdminEntityRow';
+import { AI_ADMIN_PAGE_STACK_CLASS } from '../ai-admin-ui.constants';
+import { AiAdminPageToolbar } from './AiAdminPageToolbar';
 
 type QueueAction = 'approve' | 'reject';
 
@@ -37,11 +41,11 @@ export function ApprovalQueuePanel() {
   if (error) return <ErrorState description={error} onRetry={() => void load()} />;
 
   return (
-    <div className="space-y-4">
-      <p className="text-muted-foreground text-sm">
-        One-time approvals for AI actions. Secrets never appear here. Messenger auto-send is not
-        enabled.
-      </p>
+    <div className={AI_ADMIN_PAGE_STACK_CLASS}>
+      <AiAdminPageToolbar
+        icon={ShieldCheck}
+        description="One-time approvals for AI actions. Secrets never appear here. Messenger auto-send is not enabled."
+      />
       {rows.length === 0 ? (
         <EmptyState
           icon={ShieldCheck}
@@ -91,32 +95,31 @@ function ApprovalQueueRow(props: {
   onReject: () => void;
 }) {
   const { item } = props;
+  const Icon = iconForCapabilityKey(item.capabilityKey);
   return (
-    <article className="border-border bg-card rounded-xl border p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-semibold">{item.capabilityKey}</h2>
-          <p className="text-muted-foreground mt-1 text-xs">
-            {item.requester.actorType} · {item.resource.resourceType}:{item.resource.resourceId}
+    <AiAdminEntityRow
+      icon={Icon}
+      title={item.capabilityKey}
+      description={`${item.requester.actorType} · ${item.resource.resourceType}:${item.resource.resourceId}`}
+      statusLabel={item.riskClass}
+      statusVariant={agentStateVariant(item.riskClass)}
+      pills={[{ icon: Clock, text: `Expires ${new Date(item.expiresAt).toLocaleString()}` }]}
+      footer={
+        <div className="space-y-3">
+          <p className="text-muted-foreground w-full font-mono text-xs leading-relaxed break-all">
+            {item.safePayloadSummary}
           </p>
+          <div className="flex w-full flex-wrap justify-end gap-2">
+            <Button type="button" size="sm" onClick={props.onApprove}>
+              Approve
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={props.onReject}>
+              Reject
+            </Button>
+          </div>
         </div>
-        <StatusBadge label={item.riskClass} variant={agentStateVariant(item.riskClass)} />
-      </div>
-      <p className="text-muted-foreground mt-3 font-mono text-xs break-all">
-        {item.safePayloadSummary}
-      </p>
-      <p className="text-muted-foreground mt-2 text-xs">
-        Expires {new Date(item.expiresAt).toLocaleString()}
-      </p>
-      <div className="mt-3 flex gap-2">
-        <Button type="button" size="sm" onClick={props.onApprove}>
-          Approve
-        </Button>
-        <Button type="button" size="sm" variant="outline" onClick={props.onReject}>
-          Reject
-        </Button>
-      </div>
-    </article>
+      }
+    />
   );
 }
 
