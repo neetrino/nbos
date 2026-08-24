@@ -3,7 +3,11 @@ import { Queue } from 'bullmq';
 import { buildProductWhatsAppCreateDedupeKey, toBullMqSafeJobId } from '@nbos/shared';
 import { BULLMQ_CRITICAL_JOB_OPTIONS } from '../../../runtime/bullmq-job-options';
 import { shouldRegisterQueueProducers } from '../../../runtime/process-role';
-import { createQueueProducerConnection, getRedisQueueUrl } from '../../../runtime/queue-redis';
+import {
+  closeRedisConnection,
+  createQueueProducerConnection,
+  getRedisQueueUrl,
+} from '../../../runtime/queue-redis';
 import {
   WHATSAPP_PRODUCT_GROUP_JOB_NAME,
   WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
@@ -38,7 +42,7 @@ export class WhatsAppProductGroupsQueueService implements OnModuleInit, OnModule
   async onModuleDestroy() {
     await this.queue?.close();
     this.queue = null;
-    await this.connection?.quit();
+    await closeRedisConnection(this.connection);
     this.connection = null;
   }
 

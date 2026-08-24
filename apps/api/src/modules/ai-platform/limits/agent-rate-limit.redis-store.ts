@@ -11,6 +11,7 @@ import {
 } from './agent-rate-limit.redis-keys';
 import type { AgentRateLimitStore, AgentRateLimitWindowKind } from './agent-rate-limit.store';
 import type { AgentRateLimitDecision } from './agent-rate-limit.window';
+import { isRedisConnectionClosedError } from '../../../runtime/queue-redis';
 
 export interface AgentRateLimitRedisClient {
   eval(script: string, numKeys: number, ...args: (string | number)[]): Promise<unknown>;
@@ -100,7 +101,11 @@ export class RedisAgentRateLimitStore implements AgentRateLimitStore {
   }
 
   async close(): Promise<void> {
-    await this.redis.quit?.();
+    try {
+      await this.redis.quit?.();
+    } catch (error) {
+      if (!isRedisConnectionClosedError(error)) throw error;
+    }
   }
 
   private async evalNumber(script: string, key: string, ...args: number[]): Promise<number> {

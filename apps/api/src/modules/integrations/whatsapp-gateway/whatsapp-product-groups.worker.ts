@@ -20,7 +20,11 @@ import { resolveBullmqWorkerRuntimeOptions } from '../../../runtime/bullmq-worke
 import { logBullmqJob } from '../../../runtime/bullmq-job-log';
 import { BullmqWorkerRegistry } from '../../../runtime/bullmq-worker-registry';
 import { shouldRegisterBullmqWorkers } from '../../../runtime/process-role';
-import { createQueueWorkerConnection, getRedisQueueUrl } from '../../../runtime/queue-redis';
+import {
+  closeRedisConnection,
+  createQueueWorkerConnection,
+  getRedisQueueUrl,
+} from '../../../runtime/queue-redis';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
 import { OpsJobFailureAlertService } from '../../ops-alerts/ops-job-failure-alert.service';
@@ -125,7 +129,7 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
   async onModuleDestroy() {
     await this.worker?.close();
     this.worker = null;
-    await this.connection?.quit();
+    await closeRedisConnection(this.connection);
     this.connection = null;
   }
 

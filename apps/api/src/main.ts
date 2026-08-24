@@ -21,6 +21,7 @@ import { REPORT_EXPORT_QUEUE_NAME } from './modules/reports/reports-queue.consta
 import { DRIVE_ZIP_EXPORT_QUEUE_NAME } from './modules/drive/drive-export-zip-queue.constants';
 import { WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME } from './modules/integrations/whatsapp-gateway/whatsapp-gateway.constants';
 import { ScheduledJobRegistry } from './modules/scheduler/scheduled-job-registry';
+import { DEFAULT_SHUTDOWN_TIMEOUT_MS, runGracefulShutdown } from './runtime/worker-shutdown';
 import {
   AGENT_HTTP_PATH_PREFIX,
   createAgentBodyLimitErrorHandler,
@@ -106,10 +107,6 @@ async function bootstrap() {
     SwaggerModule.setup('api/docs', app, document);
   }
 
-  // Allows NestJS to close the HTTP server (release the port) before the
-  // process exits on SIGTERM — prevents EADDRINUSE during hot-reload restarts.
-  app.enableShutdownHooks();
-
   const registry = app.get(BullmqWorkerRegistry);
   const scheduledJobs = app.get(ScheduledJobRegistry);
   if (role === 'api') {
@@ -132,6 +129,31 @@ async function bootstrap() {
   if (swaggerEnabled) {
     logger.log(`Swagger docs: http://localhost:${port}/api/docs`);
   }
+
+  let shuttingDown = false;
+  const shutdown = async (signal: string) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    logger.log(`Received ${signal}; starting graceful API shutdown`);
+    const ok = await runGracefulShutdown([{ name: 'nest-close', run: () => app.close() }], {
+      timeoutMs: Number(process.env.API_SHUTDOWN_TIMEOUT_MS ?? DEFAULT_SHUTDOWN_TIMEOUT_MS),
+      log: (message) => logger.log(message),
+    });
+    process.exitCode = ok ? 0 : 1;
+  };
+
+  process.once('SIGTERM', () => {
+    void shutdown('SIGTERM').catch((error) => {
+      logger.error(`Graceful API shutdown failed: ${String(error)}`);
+      process.exitCode = 1;
+    });
+  });
+  process.once('SIGINT', () => {
+    void shutdown('SIGINT').catch((error) => {
+      logger.error(`Graceful API shutdown failed: ${String(error)}`);
+      process.exitCode = 1;
+    });
+  });
 }
 
 bootstrap();

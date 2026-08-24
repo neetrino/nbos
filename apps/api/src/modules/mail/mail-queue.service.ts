@@ -4,7 +4,11 @@ import { Queue } from 'bullmq';
 import type Redis from 'ioredis';
 import { BULLMQ_CRITICAL_JOB_OPTIONS } from '../../runtime/bullmq-job-options';
 import { shouldRegisterQueueProducers } from '../../runtime/process-role';
-import { createQueueProducerConnection, getRedisQueueUrl } from '../../runtime/queue-redis';
+import {
+  closeRedisConnection,
+  createQueueProducerConnection,
+  getRedisQueueUrl,
+} from '../../runtime/queue-redis';
 import {
   MAIL_ATTACHMENT_DOWNLOAD_JOB_NAME,
   MAIL_QUEUE_NAME,
@@ -41,7 +45,7 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {
     await this.queue?.close();
     this.queue = null;
-    await this.connection?.quit();
+    await closeRedisConnection(this.connection);
     this.connection = null;
   }
 

@@ -170,7 +170,7 @@ Rollout is **not** rolling-deploy safe: mixed old `MAX(table)` writers and new c
 
 **Independent verifier (NEW CHAT 2) closed this item.** Disposable local Postgres (`AI_PLATFORM_DB_TEST_URL`): concurrent named allocators, invoice `9999` → `10000`, numeric seed `VALUES` + SQL replay (`2026=10000`, malformed ignored), parallel Lead + Support creates. At that verifier pass, designated non-prod Neon was inspected read-only (sibling counters absent; no 10+ digit suffixes; seed **not** applied). Tasks ownership and Drive lifecycle were not changed.
 
-**Later (2026-08-23, Chat 3 live attach):** seed `20260823120000_seed_sibling_entity_code_counters` **was** applied on Neon **dev** (`ep-restless-tooth-agz3assx`) together with `20260823140000_file_artifact_operations`. Production apply of the seed remains an operations step under the write-pause sequence.
+**Later (2026-08-23, Chat 3 live attach):** seed `20260823120000_seed_sibling_entity_code_counters` **was** applied on Neon **dev** (`ep-restless-tooth-agz3assx`) together with `20260823140000_file_artifact_operations`. The migration-gate rollout later applied the seed on production (`docs/deployment/MIGRATION-GATE-ROLLOUT.md` § Phase 2), but does not record the required old-writer pause. Counter-vs-table reconciliation after that mixed-version window remains an operations check.
 
 ### C24. Gateway idempotency slot is never reclaimed (checklist 209) — FIXED
 
@@ -188,7 +188,7 @@ The counter reservation must stay outside this transaction (C26). Putting `alloc
 
 **Closed for `tasks.attach_artifact` in post-Phase-1 Chat 3.** The object-store write still cannot join a database transaction. Recovery is `file_artifact_operations`: identity and storage key persist before PutObject; FileAsset/FileLink and operation `COMPLETED` share one PostgreSQL transaction with `FOR UPDATE`. Exact retry and concurrent finalize reuse that row. Resume is live attach + Drive `prepare` (the first gateway short-circuit was rejected as verifier F1 and removed). Authorization is revalidated on resume. Checklist item 209 is `[x]`.
 
-Independent verifier (2026-08-23) reproduced: Human complete/version go through `finalizeAfterObjectPresent`; `createGeneratedFileAsset` always `prepare`s; disposable Postgres int 3/3 (same TX, rollback, concurrent one FileAsset); Neon **dev** live REST `201` `fileAssetId=3a08eb27-…` exact retry same ids, MCP distinct `13de1d40-…`, two `EXTERNAL_AI` / `MACHINE_PUT` / `COMPLETED` / `TASK` rows, partial unique index present. Production apply of `20260823140000_file_artifact_operations` remains an operations step under the write-pause. Evidence: `35-Post-Phase-1-Chat-3-Drive-Artifact-Lifecycle-Handoff.md`.
+Independent verifier (2026-08-23) reproduced: Human complete/version go through `finalizeAfterObjectPresent`; `createGeneratedFileAsset` always `prepare`s; disposable Postgres int 3/3 (same TX, rollback, concurrent one FileAsset); Neon **dev** live REST `201` `fileAssetId=3a08eb27-…` exact retry same ids, MCP distinct `13de1d40-…`, two `EXTERNAL_AI` / `MACHINE_PUT` / `COMPLETED` / `TASK` rows, partial unique index present. The migration-gate rollout later applied `20260823140000_file_artifact_operations` on production (`docs/deployment/MIGRATION-GATE-ROLLOUT.md` § Phase 2), but does not record the required old-writer pause; the mixed-version crash window remains an operations reconciliation risk. Evidence: `35-Post-Phase-1-Chat-3-Drive-Artifact-Lifecycle-Handoff.md`.
 
 ### C26. Shared K209 transaction holds the Task-code counter lock — FIXED
 
@@ -299,7 +299,7 @@ Canonical Phase 1 sources (`03`, `08`, `09`, `10` item 43, `16`) require both RE
 
 ## F13. Post-Phase-1 three-chat close
 
-2026-08-23: Chats 1–3 independently **PASS WITH DEBTS**. C9 / C25 / C24 (item 209 `[x]`) closed in product code. Chat 2 seed + Chat 3 artifact-operation migration applied on Neon **dev** only. Cross-regression: `36-Post-Phase-1-Cross-Regression.md`. Production write-pause apply remains operations.
+2026-08-23: Chats 1–3 independently **PASS WITH DEBTS**. C9 / C25 / C24 (item 209 `[x]`) closed in product code. Chat 2 seed + Chat 3 artifact-operation migration were first applied on Neon **dev** and later applied on production by the migration-gate rollout. Cross-regression: `36-Post-Phase-1-Cross-Regression.md`. The rollout record does not evidence the required old-writer pause, so production counter reconciliation and mixed-version artifact review remain operations debts.
 
 ## G. Implementation rule
 

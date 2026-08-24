@@ -1,5 +1,6 @@
 import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import type Redis from 'ioredis';
+import { closeRedisConnection } from '../../runtime/queue-redis';
 import { CALL_REALTIME_CHANNEL, isCallLifecycleSseEvent } from './call-realtime.constants';
 import type { ActiveCallBusMessage } from './call-realtime.types';
 import {
@@ -46,21 +47,23 @@ export class CallRealtimeEventBus implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy(): Promise<void> {
     this.localHandlers.clear();
-    if (this.subscriber) {
+    const subscriber = this.subscriber;
+    const publisher = this.publisher;
+    const subscribed = this.subscribed;
+    this.subscriber = null;
+    this.publisher = null;
+    this.subscribed = false;
+    if (subscriber) {
       try {
-        if (this.subscribed) {
-          await this.subscriber.unsubscribe(CALL_REALTIME_CHANNEL);
+        if (subscribed) {
+          await subscriber.unsubscribe(CALL_REALTIME_CHANNEL);
         }
       } catch {
         /* ignore */
       }
-      await this.subscriber.quit();
-      this.subscriber = null;
     }
-    if (this.publisher) {
-      await this.publisher.quit();
-      this.publisher = null;
-    }
+    await closeRedisConnection(subscriber);
+    await closeRedisConnection(publisher);
   }
 
   subscribe(handler: CallRealtimeHandler): () => void {

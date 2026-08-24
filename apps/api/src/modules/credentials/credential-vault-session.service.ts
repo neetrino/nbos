@@ -1,6 +1,10 @@
 import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import type Redis from 'ioredis';
-import { createStateRedisConnection, getRedisStateUrl } from '../../runtime/queue-redis';
+import {
+  closeRedisConnection,
+  createStateRedisConnection,
+  getRedisStateUrl,
+} from '../../runtime/queue-redis';
 import {
   CREDENTIAL_VAULT_UNLOCK_TTL_MS,
   credentialVaultUnlockRedisKey,
@@ -31,10 +35,9 @@ export class CredentialVaultSessionService implements OnModuleInit, OnModuleDest
   }
 
   async onModuleDestroy(): Promise<void> {
-    if (this.redis) {
-      await this.redis.quit();
-      this.redis = null;
-    }
+    const redis = this.redis;
+    this.redis = null;
+    await closeRedisConnection(redis);
   }
 
   async getSession(employeeId: string): Promise<CredentialVaultSessionState> {

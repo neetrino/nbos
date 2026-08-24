@@ -24,6 +24,11 @@ import type {
   WatchOrIdleResult,
 } from './mail-provider-adapter';
 import { MAIL_IMAP_SMTP_CONNECT_TIMEOUT_MS } from './imap-smtp-timeouts';
+import {
+  attachImapClientErrorBoundary,
+  type ImapClientErrorBoundary,
+} from './imap-client-error-boundary';
+import { Logger } from '@nestjs/common';
 
 const IMAP_MESSAGE_FETCH_QUERY = { uid: true, source: true, bodyStructure: true } as const;
 
@@ -47,10 +52,12 @@ export interface ImapSmtpProviderConfig {
 
 /** Corporate mailbox adapter: IMAP for receive/sync, SMTP for send. No app-password concept. */
 export class ImapSmtpProviderAdapter implements MailProviderAdapter {
+  private readonly logger = new Logger(ImapSmtpProviderAdapter.name);
+
   constructor(private readonly config: ImapSmtpProviderConfig) {}
 
-  private createImapClient(): ImapFlow {
-    return new ImapFlow({
+  private createImapClient(): { client: ImapFlow; boundary: ImapClientErrorBoundary } {
+    const client = new ImapFlow({
       host: this.config.imapHost,
       port: this.config.imapPort,
       secure: this.config.imapSecure,
@@ -60,6 +67,26 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
       greetingTimeout: MAIL_IMAP_SMTP_CONNECT_TIMEOUT_MS,
       socketTimeout: MAIL_IMAP_SMTP_CONNECT_TIMEOUT_MS,
     });
+    const boundary = attachImapClientErrorBoundary(client, {
+      sensitiveValues: [this.config.password],
+      onError: (detail) => this.logger.warn(`Corporate IMAP client error: ${detail}`),
+    });
+    return { client, boundary };
+  }
+
+  private async withImapClient<T>(operation: (client: ImapFlow) => Promise<T>): Promise<T> {
+    const { client, boundary } = this.createImapClient();
+    try {
+      return await boundary.run(
+        (async () => {
+          await client.connect();
+          return operation(client);
+        })(),
+      );
+    } finally {
+      await client.logout().catch(() => undefined);
+      client.close();
+    }
   }
 
   private createSmtpTransport() {
@@ -83,10 +110,8 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
   }
 
   private async validateImap(): Promise<ValidateConnectionResult> {
-    const client = this.createImapClient();
     try {
-      await client.connect();
-      await client.logout();
+      await this.withImapClient(async () => undefined);
       return { ok: true, providerAccountId: this.config.login };
     } catch (error) {
       return { ok: false, error: `IMAP validation failed: ${describeError(error)}` };
@@ -110,15 +135,14 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
   }
 
   async fetchDelta(cursor: ProviderSyncCursor): Promise<FetchDeltaResult> {
-    const client = this.createImapClient();
-    await client.connect();
-    const lock = await client.getMailboxLock('INBOX');
-    try {
-      return await this.fetchDeltaLocked(client, cursor);
-    } finally {
-      lock.release();
-      await client.logout();
-    }
+    return this.withImapClient(async (client) => {
+      const lock = await client.getMailboxLock('INBOX');
+      try {
+        return await this.fetchDeltaLocked(client, cursor);
+      } finally {
+        lock.release();
+      }
+    });
   }
 
   private async fetchDeltaLocked(
@@ -166,22 +190,21 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
   }
 
   private async fetchParsedByUid(uid: number): Promise<ParsedImapSource | null> {
-    const client = this.createImapClient();
-    await client.connect();
-    const lock = await client.getMailboxLock('INBOX');
-    try {
-      const item = await client.fetchOne(String(uid), IMAP_MESSAGE_FETCH_QUERY, { uid: true });
-      if (!item || !item.source) {
-        return null;
+    return this.withImapClient(async (client) => {
+      const lock = await client.getMailboxLock('INBOX');
+      try {
+        const item = await client.fetchOne(String(uid), IMAP_MESSAGE_FETCH_QUERY, { uid: true });
+        if (!item || !item.source) {
+          return null;
+        }
+        return {
+          parsed: await simpleParser(item.source),
+          bodyStructure: item.bodyStructure,
+        };
+      } finally {
+        lock.release();
       }
-      return {
-        parsed: await simpleParser(item.source),
-        bodyStructure: item.bodyStructure,
-      };
-    } finally {
-      lock.release();
-      await client.logout();
-    }
+    });
   }
 
   async fetchMessage(providerMessageId: string): Promise<NormalizedMessage | null> {
@@ -213,15 +236,14 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
   }
 
   private async downloadByImapSection(uid: number, section: string): Promise<DownloadedAttachment> {
-    const client = this.createImapClient();
-    await client.connect();
-    const lock = await client.getMailboxLock('INBOX');
-    try {
-      return await downloadImapBodyPart(client, uid, section);
-    } finally {
-      lock.release();
-      await client.logout();
-    }
+    return this.withImapClient(async (client) => {
+      const lock = await client.getMailboxLock('INBOX');
+      try {
+        return await downloadImapBodyPart(client, uid, section);
+      } finally {
+        lock.release();
+      }
+    });
   }
 
   async sendMessage(input: SendMessageInput): Promise<SendMessageResult> {
@@ -262,15 +284,14 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
     if (uids.length === 0) {
       return;
     }
-    const client = this.createImapClient();
-    await client.connect();
-    const lock = await client.getMailboxLock('INBOX');
-    try {
-      await client.messageFlagsAdd(uids, ['\\Seen'], { uid: true });
-    } finally {
-      lock.release();
-      await client.logout();
-    }
+    await this.withImapClient(async (client) => {
+      const lock = await client.getMailboxLock('INBOX');
+      try {
+        await client.messageFlagsAdd(uids, ['\\Seen'], { uid: true });
+      } finally {
+        lock.release();
+      }
+    });
   }
 
   async getHealth(): Promise<ProviderHealth> {
