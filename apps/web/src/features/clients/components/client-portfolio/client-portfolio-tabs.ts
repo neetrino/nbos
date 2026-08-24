@@ -7,6 +7,7 @@ import {
   Headphones,
   LayoutGrid,
   MessageCircle,
+  Phone,
   Receipt,
   Repeat,
   type LucideIcon,
@@ -23,7 +24,8 @@ export type ClientPortfolioTabId =
   | 'files';
 
 export type ClientEmbeddedPortfolioTabId = Exclude<ClientPortfolioTabId, 'overview'>;
-export type ClientDetailTabId = 'general' | ClientEmbeddedPortfolioTabId;
+export type ClientDetailTabId = 'general' | 'calls' | ClientEmbeddedPortfolioTabId;
+export type ClientSheetPanelTabId = Exclude<ClientDetailTabId, 'general'>;
 
 export interface ClientPortfolioTabDefinition {
   id: ClientPortfolioTabId;
@@ -53,11 +55,20 @@ export const CLIENT_DETAIL_GENERAL_TAB: ClientDetailTabDefinition = {
   icon: BriefcaseBusiness,
 };
 
-export const CLIENT_DETAIL_PORTFOLIO_TABS: ReadonlyArray<ClientDetailTabDefinition> =
-  CLIENT_PORTFOLIO_TABS.filter(
-    (tab): tab is ClientPortfolioTabDefinition & { id: ClientEmbeddedPortfolioTabId } =>
-      tab.id !== 'overview',
-  );
+export const CONTACT_DETAIL_CALLS_TAB: ClientDetailTabDefinition = {
+  id: 'calls',
+  label: 'Calls',
+  icon: Phone,
+};
+
+export const DETAIL_TABS_LOADING_MASK: PortfolioAccessMask = {
+  finance: true,
+  subscriptions: true,
+  support: true,
+  communication: true,
+  files: true,
+  financeAmounts: true,
+};
 
 export function portfolioTabsForMask(
   mask: PortfolioAccessMask,
@@ -75,15 +86,32 @@ export function portfolioTabsForMask(
   });
 }
 
+function withContactCallsTab(
+  tabs: ReadonlyArray<ClientDetailTabDefinition>,
+): ClientDetailTabDefinition[] {
+  const withoutMessengerHistory = tabs.filter((tab) => tab.id !== 'communication');
+  const filesIndex = withoutMessengerHistory.findIndex((tab) => tab.id === 'files');
+  if (filesIndex === -1) return [...withoutMessengerHistory, CONTACT_DETAIL_CALLS_TAB];
+  return [
+    ...withoutMessengerHistory.slice(0, filesIndex),
+    CONTACT_DETAIL_CALLS_TAB,
+    ...withoutMessengerHistory.slice(filesIndex),
+  ];
+}
+
 export function detailTabsForMask(
   mask: PortfolioAccessMask,
+  variant: 'contact' | 'company',
 ): ReadonlyArray<ClientDetailTabDefinition> {
-  return [
-    CLIENT_DETAIL_GENERAL_TAB,
-    ...portfolioTabsForMask(mask, false).map((tab) => ({
+  const portfolioTabs: ClientDetailTabDefinition[] = portfolioTabsForMask(mask, false).map(
+    (tab) => ({
       id: tab.id as ClientEmbeddedPortfolioTabId,
       label: tab.label,
       icon: tab.icon,
-    })),
-  ];
+    }),
+  );
+  if (variant === 'contact') {
+    return [CLIENT_DETAIL_GENERAL_TAB, ...withContactCallsTab(portfolioTabs)];
+  }
+  return [CLIENT_DETAIL_GENERAL_TAB, ...portfolioTabs];
 }

@@ -9,6 +9,7 @@ import {
   canShowClickToCallButton,
   CLICK_TO_CALL_NEW_CALL_LABEL,
   clickToCallButtonLabel,
+  clickToCallButtonVariant,
   hasClickToCallPermission,
 } from './click-to-call-status';
 import {
@@ -50,13 +51,19 @@ export function ClickToCallButton({
       <Button
         type="button"
         size="sm"
-        variant={state === 'error' ? 'destructive' : 'outline'}
+        className="rounded-full shadow-sm"
+        variant={clickToCallButtonVariant(state)}
         disabled={state === 'loading'}
         aria-busy={state === 'loading'}
         aria-label={clickToCallButtonLabel(state)}
         onClick={() => void start({ targetType, targetId })}
       >
-        <Phone size={14} className="mr-1" />
+        <Phone
+          size={14}
+          className={
+            state === 'success' || state === 'loading' ? 'nbos-animate-pulse-soft' : undefined
+          }
+        />
         {clickToCallButtonLabel(state)}
       </Button>
       {hasPendingKey ? (

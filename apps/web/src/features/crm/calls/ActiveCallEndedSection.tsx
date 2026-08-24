@@ -1,15 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import { NotebookPen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { callRecordingSrc, callsApi, type ActiveCallScreenSnapshot } from '@/lib/api/calls';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { CallDetailField } from './CallDetailField';
 import { callRecordingLabel, canPlayCallRecording } from './call-recording-status';
-import { CALL_NOTE_MAX_LENGTH } from './active-call.constants';
+import { ACTIVE_CALL_CONTEXT_CARD_CLASS, CALL_NOTE_MAX_LENGTH } from './active-call.constants';
+import { ActiveCallSectionHeading } from './ActiveCallSectionHeading';
 import {
   CALL_NOTE_CONFLICT_MESSAGE,
   canSaveCallNote,
@@ -23,8 +26,8 @@ export function ActiveCallEndedSection(props: {
 }) {
   const { snapshot, onSnapshot } = props;
   return (
-    <section className="border-border bg-card rounded-xl border p-4">
-      <h2 className="text-foreground mb-3 text-sm font-semibold">After the call</h2>
+    <section className={cn(ACTIVE_CALL_CONTEXT_CARD_CLASS, 'mt-3')}>
+      <ActiveCallSectionHeading title="After the call" icon={NotebookPen} />
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
         <CallDetailField label="Duration" value={formatCallDuration(snapshot.durationSec)} />
         <CallDetailField label="Disposition" value={snapshot.disposition} />

@@ -261,12 +261,7 @@ export function ClientPortfolioTabPanels({
         : buildDriveHrefWithCompany(scopeId);
 
     if (tab === 'communication') {
-      return (
-        <ClientPortfolioCommunicationPanel
-          data={data}
-          contactId={data.scope === 'contact' ? scopeId : null}
-        />
-      );
+      return <ClientPortfolioCommunicationPanel />;
     }
 
     return (

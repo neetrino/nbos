@@ -1,16 +1,14 @@
 'use client';
 
-import { CrmCallActivityGate } from '@/features/crm/calls/CrmCallActivityGate';
-import { CallActivityTimeline } from '@/features/crm/calls/CallActivityTimeline';
+import { History } from 'lucide-react';
+import { DetailSheetPlaceholderTab } from '@/components/shared';
 
-export function DealHistoryTab({ dealId }: { dealId: string }) {
+export function DealHistoryTab() {
   return (
-    <CrmCallActivityGate parent="deal">
-      <CallActivityTimeline
-        key={dealId}
-        scope={{ parent: 'deal', id: dealId }}
-        emptyDescription="Calls related to this deal will appear here alongside other activities."
-      />
-    </CrmCallActivityGate>
+    <DetailSheetPlaceholderTab
+      icon={History}
+      title="History coming soon"
+      description="Stage changes and other audit events for this deal will be listed here."
+    />
   );
 }

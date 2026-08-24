@@ -30,5 +30,17 @@ export const ATS_CALL_SOURCE_CLICK_TO_CALL = 'CLICK_TO_CALL';
 export const ATS_CALLBACK_ENDPOINT = 'https://account.ats.am/docs/api/v1/callback';
 export const ATS_CALLBACK_TIMEOUT_MS = 15_000;
 
+export const ATS_HISTORY_ENDPOINT = 'https://account.ats.am/docs/api/v1/history';
+export const ATS_HISTORY_TIMEOUT_MS = 8_000;
+export const ATS_HISTORY_PAGE_ROWS = 200;
+/** ATS.am history timestamps are Asia/Yerevan even when the payload suffixes `Z`. */
+export const ATS_HISTORY_LOCAL_OFFSET = '+04:00';
+export const ATS_YEREVAN_OFFSET_MS = 4 * 60 * 60 * 1000;
+
+/** Wait before the first history peek so ATS can close the CDR. */
+export const ATS_CLICK_TO_CALL_HISTORY_SYNC_MIN_AGE_MS = 8_000;
+export const ATS_CLICK_TO_CALL_HISTORY_SYNC_COOLDOWN_MS = 5_000;
+export const ATS_CLICK_TO_CALL_HISTORY_START_SKEW_MS = 2 * 60 * 1000;
+
 export const ATS_CLICK_TO_CALL_UID_PREFIX = 'ctc:';
 export const ATS_CLICK_TO_CALL_RECONCILE_WINDOW_MS = 10 * 60 * 1000;

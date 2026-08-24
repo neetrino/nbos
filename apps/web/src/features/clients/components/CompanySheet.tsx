@@ -37,7 +37,7 @@ import {
 import { ClientPortfolioQuickActionsHeader } from './client-portfolio/ClientPortfolioQuickActions';
 import type {
   ClientDetailTabId,
-  ClientEmbeddedPortfolioTabId,
+  ClientSheetPanelTabId,
 } from './client-portfolio/client-portfolio-tabs';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
@@ -345,7 +345,8 @@ export function CompanySheet({
                   />
                 ) : (
                   <ClientPortfolioPanel
-                    tab={activeTab as ClientEmbeddedPortfolioTabId}
+                    tab={activeTab as ClientSheetPanelTabId}
+                    entityId={renderCompany.id}
                     data={portfolio.data}
                     loading={portfolio.loading}
                     error={portfolio.error}

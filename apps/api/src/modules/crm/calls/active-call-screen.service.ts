@@ -7,6 +7,7 @@ import type { CallAccessActor } from './call-access.types';
 import { CALL_SCREEN_RECENT_LIMIT } from './calls.constants';
 import { mapActiveCallScreen, type ActiveCallScreenSnapshot } from './active-call-screen.map';
 import { mapAtsStateToPhase } from '../../integrations/ats/ats-call-realtime.phase';
+import { AtsClickToCallLiveReconcileService } from '../../integrations/ats/ats-click-to-call-live-reconcile.service';
 
 const SCREEN_SELECT = {
   id: true,
@@ -50,10 +51,12 @@ export class ActiveCallScreenService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly access: CallAccessPolicyService,
+    private readonly liveReconcile: AtsClickToCallLiveReconcileService,
   ) {}
 
   async getScreen(callId: string, actor: CallAccessActor): Promise<ActiveCallScreenSnapshot> {
     const accessWhere = await this.access.assertCanAccessCall(actor, callId);
+    await this.liveReconcile.syncIfPending(callId);
     const row = await this.prisma.atsCallEvent.findUnique({
       where: { id: callId },
       select: SCREEN_SELECT,
