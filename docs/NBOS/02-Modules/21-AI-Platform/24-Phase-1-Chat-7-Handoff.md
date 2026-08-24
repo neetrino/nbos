@@ -119,8 +119,7 @@ was extended (section 5.1), not rewritten. Handoffs `17`–`23` were not touched
 - Production Neon `ep-sweet-dew-ag7259wn` was not contacted.
 - `prisma migrate status` against dev Neon `ep-late-frost-ag5aixzw`: 213 migrations, schema up to date.
 
-Existing Phase 1 migrations were reviewed against
-`docs/deployment/AUTOMATED-PRODUCTION-DATABASE-MIGRATIONS-STANDARD.md`:
+Existing Phase 1 migrations were reviewed against the production migration safety rules:
 
 | Migration                                         | Verdict                                                                                                                                                                         |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

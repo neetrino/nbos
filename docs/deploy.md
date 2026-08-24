@@ -54,22 +54,22 @@ Neon Postgres / R2 / Resend — внешние SaaS
 
 ## 1. Security preflight (до первого деплоя)
 
-| Шаг                                                                                              | Где                      | Проверка                                          |
-| ------------------------------------------------------------------------------------------------ | ------------------------ | ------------------------------------------------- |
-| Сильные секреты (`AUTH_SECRET`, `JWT_SECRET`, `CREDENTIALS_ENCRYPTION_KEY`, `SCHEDULER_API_KEY`) | Coolify env (web + api)  | ≥32 символов; `openssl rand -base64 32`           |
-| Backup `CREDENTIALS_ENCRYPTION_KEY` (отдельно от БД)                                             | Owner / password manager | Потеря ключа = Mail + Credentials secrets мёртвые |
-| `NODE_ENV=production` на API                                                                     | Coolify `nbos-api`       | Логи старта, без Swagger                          |
-| `CORS_ORIGIN` = точный origin web                                                                | Coolify `nbos-api`       | `https://app.example.com`                         |
-| `BACKEND_URL` доступен из web-контейнера                                                         | Coolify `nbos-web`       | `http://nbos-api:4000` или публичный API URL      |
-| `NEXT_PUBLIC_BACKEND_URL` = публичный API URL                                                    | Coolify `nbos-web`       | `https://api.example.com`                         |
-| `DATABASE_URL` с `sslmode=require`                                                               | Neon → api               | TLS включён                                       |
-| DB role с минимальными правами                                                                   | Neon                     | Миграции — отдельной job, не owner в runtime      |
-| Redis `rediss://` в prod                                                                         | Coolify / Upstash → api  | Лог: `JWT denylist backed by Redis`               |
-| R2 bucket private                                                                                | Cloudflare R2            | Ключи только на api service                       |
-| `REPORT_EXPORT_SYNC_FALLBACK` unset/false                                                        | Coolify api              | Экспорт только через worker                       |
-| Cloudflare `app` + `api` proxied, SSL Full (strict)                                              | Cloudflare → Hetzner     | §2 ниже; заголовок `cf-ray` в ответах             |
-| Firewall Hetzner                                                                                 | VPS                      | 80/443 (+22 SSH); без публичных 3000/4000         |
-| Branch protection + зелёный CI на release commit                                                 | GitHub                   | lint, typecheck, test, audit, gitleaks            |
+| Шаг                                                                                              | Где                      | Проверка                                                |
+| ------------------------------------------------------------------------------------------------ | ------------------------ | ------------------------------------------------------- |
+| Сильные секреты (`AUTH_SECRET`, `JWT_SECRET`, `CREDENTIALS_ENCRYPTION_KEY`, `SCHEDULER_API_KEY`) | Coolify env (web + api)  | ≥32 символов; `openssl rand -base64 32`                 |
+| Backup `CREDENTIALS_ENCRYPTION_KEY` (отдельно от БД)                                             | Owner / password manager | Потеря ключа = Mail + Credentials secrets мёртвые       |
+| `NODE_ENV=production` на API                                                                     | Coolify `nbos-api`       | Логи старта, без Swagger                                |
+| `CORS_ORIGIN` = точный origin web                                                                | Coolify `nbos-api`       | `https://app.example.com`                               |
+| `BACKEND_URL` доступен из web-контейнера                                                         | Coolify `nbos-web`       | `http://nbos-api:4000` или публичный API URL            |
+| `NEXT_PUBLIC_BACKEND_URL` = публичный API URL                                                    | Coolify `nbos-web`       | `https://api.example.com`                               |
+| `DATABASE_URL` с `sslmode=require`                                                               | Neon → api               | TLS включён                                             |
+| DB role с минимальными правами                                                                   | Neon                     | Отдельный manual migration credential; runtime не owner |
+| Redis `rediss://` в prod                                                                         | Coolify / Upstash → api  | Лог: `JWT denylist backed by Redis`                     |
+| R2 bucket private                                                                                | Cloudflare R2            | Ключи только на api service                             |
+| `REPORT_EXPORT_SYNC_FALLBACK` unset/false                                                        | Coolify api              | Экспорт только через worker                             |
+| Cloudflare `app` + `api` proxied, SSL Full (strict)                                              | Cloudflare → Hetzner     | §2 ниже; заголовок `cf-ray` в ответах                   |
+| Firewall Hetzner                                                                                 | VPS                      | 80/443 (+22 SSH); без публичных 3000/4000               |
+| Branch protection + зелёный CI на release commit                                                 | GitHub                   | lint, typecheck, test, audit, gitleaks                  |
 
 Полный чеклист: [`security.todo.md` §0](../security.todo.md).
 
@@ -255,25 +255,46 @@ NEXT_PUBLIC_BACKEND_URL=https://api.example.com
 
 ## 5. Порядок деплоя
 
-Нормальный прод-релиз: merge в `main` → зелёный CI → GitHub Actions **CD** (`workflow_run`). `workflow_dispatch` — hotfix. CD собирает `nbos-migrate` этого SHA (`prisma migrate deploy`), ждёт `NBOS_MIGRATE_DONE exit=0`, Stop migrator, затем Coolify deploy **по очереди** `nbos-api` → `nbos-worker` → `nbos-scheduler` → `nbos-web` (не параллельный force rebuild). Coolify Auto Deploy у этих пяти приложений **OFF**. Два merge не гоняют migrate параллельно (`concurrency: nbos-production`).
+Production release выполняется вручную. Merge в `main` запускает только CI и сам по себе не меняет production. Coolify Auto Deploy у `nbos-api`, `nbos-worker`, `nbos-scheduler`, `nbos-web` остаётся **OFF**.
 
 1. Cloudflare DNS + SSL Full (strict) (§2).
-2. Миграции Neon **один раз на SHA**, через `nbos-migrate`, не с каждой реплики API. Не `prisma migrate deploy` с ноутбука как штатный путь.
-3. Деплой **API** → `https://api.example.com/api/health` → 200.
-4. Деплой **Web** → smoke sign-in на `https://app.example.com`.
-5. Правила Cloudflare WAF (§2.4).
+2. Выбрать точный SHA с зелёным CI и проверить migration diff/совместимость.
+3. Если migrations менялись: вручную доказать их на Neon dev, затем один раз выполнить `prisma migrate deploy` на production direct connection.
+4. Вручную deploy только затронутую группу Coolify apps на том же SHA; backend group (`api` → `worker` → `scheduler`) держать синхронным.
+5. После каждого app дождаться health/readiness; затем выполнить API/Web smoke tests.
 
-### 5.1 Break-glass: GitHub недоступен
+### 5.1 Ограничения ручного release
 
-Если Actions лежит, релиз из Coolify UI (не включать Auto Deploy обратно).
+- В production не использовать `prisma migrate dev`, `db push` или `migrate reset`.
+- Production `DIRECT_URL` не хранить в репозитории, `.env.local` или Coolify runtime apps.
+- Обычный порядок migration-first допустим только для backward-compatible schema changes; breaking changes требуют expand/contract rollout.
+- Не запускать два ручных release/migration одновременно.
+- При неуспешном healthcheck остановиться и вернуть уже обновлённые apps на предыдущий зелёный SHA.
 
-1. Coolify → `nbos-migrate` → **Deploy** (force rebuild ветки `main`, тот же SHA). Healthcheck migrator не включать.
-2. Coolify `finished` = контейнер **стартанул**, не Prisma. Runtime logs: `NBOS_MIGRATE_START` → Prisma → `NBOS_MIGRATE_DONE exit=N`. Снять sentinel **до** Stop: после Stop логи пропадают.
-3. `exit=0` → **Stop** `nbos-migrate`. `exit!=0` или нет sentinel → **стоп**, api / worker / scheduler / web не деплоить.
-4. Coolify **Deploy** (force rebuild того же SHA): `nbos-api`, `nbos-worker`, `nbos-scheduler`, `nbos-web`.
-5. Worker / scheduler без публичного HTTP: ждать Coolify deployment `finished` и `running:healthy`, не внешний health из браузера.
+Rollback: Coolify → Deployments → предыдущий зелёный SHA (§9). DB: forward-fix migration или Neon PITR по отдельному аварийному решению, никогда не `migrate reset`.
 
-Rollback: Coolify → Deployments → предыдущий зелёный билд (§9). DB: Neon PITR, не `migrate reset`.
+### 5.2 Ручной запуск migration
+
+Сначала выполнить migration на Neon dev и проверить затронутое поведение. Только после успешной проверки повторить те же команды для production, находясь на точном release SHA. Direct connection string брать из password manager и не вводить прямо в команду или файл:
+
+```bash
+read -rsp "Neon DIRECT_URL: " NBOS_RELEASE_DIRECT_URL; printf '\n'
+DIRECT_URL="$NBOS_RELEASE_DIRECT_URL" pnpm db:migrate:status
+DIRECT_URL="$NBOS_RELEASE_DIRECT_URL" pnpm db:migrate:deploy
+DIRECT_URL="$NBOS_RELEASE_DIRECT_URL" pnpm db:migrate:status
+unset NBOS_RELEASE_DIRECT_URL
+```
+
+Если migration history не менялась, migration-команды для release не нужны. Pending migration должна точно совпадать с проверенным release diff; divergence, failed migration или неизвестное имя останавливают release. После production migration вручную deploy только затронутую группу на том же SHA:
+
+| Изменение                                                | Coolify deploy                                |
+| -------------------------------------------------------- | --------------------------------------------- |
+| Только web                                               | `nbos-web`                                    |
+| API или database package                                 | `nbos-api` → `nbos-worker` → `nbos-scheduler` |
+| Shared/root dependencies или одновременно web + backend  | backend group → `nbos-web`                    |
+| Только документация/CI без влияния на production runtime | ничего                                        |
+
+После каждого сервиса дождаться health/readiness. Если проверка не прошла, следующий сервис не запускать.
 
 ---
 
@@ -335,14 +356,14 @@ CMD ["node", "--import", "tsx", "dist/main.js"]
 4. `curl -I https://app.example.com` → CSP, security headers, **`cf-ray`** (путь через Cloudflare)
 5. RBAC: одно действие CRM/Finance под разрешённой ролью
 6. Drive upload: заблокированное расширение отклоняется
-7. Coolify UI: оба приложения healthy; в логах API — Redis denylist при заданном `REDIS_URL`
+7. Coolify UI: web/api/worker/scheduler healthy и на ожидаемом SHA; в логах API — Redis denylist при заданном `REDIS_URL`
 
 ---
 
 ## 9. Rollback
 
-1. Coolify → **Deployments** → redeploy предыдущего зелёного билда (web и/или api).
-2. DB: Neon PITR restore если миграция упала (`security.todo` §4.4).
+1. Coolify → **Deployments** → redeploy предыдущего зелёного SHA для всех уже обновлённых apps.
+2. DB: forward-fix migration; Neon PITR только по отдельному аварийному решению (`security.todo` §4.4).
 3. Запись деплоя в Technical module deployment record.
 
 ---
