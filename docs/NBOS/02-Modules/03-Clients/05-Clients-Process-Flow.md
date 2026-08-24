@@ -110,13 +110,13 @@ Company обязательна до:
 
 ### Минимальные поля Company
 
-| Поле                                  | Правило                                           |
-| ------------------------------------- | ------------------------------------------------- |
-| name                                  | Обязательно — рабочее имя                         |
-| type                                  | Legal / Sole Proprietor / Individual              |
-| tax_status                            | Tax / Tax-Free                                    |
-| primary_contact                       | Опционально                                       |
-| billing_contact                       | Необязательно, если отличается от primary_contact |
+| Поле                                               | Правило                                           |
+| -------------------------------------------------- | ------------------------------------------------- |
+| name                                               | Обязательно — рабочее имя                         |
+| type                                               | Legal / Sole Proprietor / Individual              |
+| tax_status                                         | Tax / Tax-Free                                    |
+| primary_contact                                    | Опционально                                       |
+| billing_contact                                    | Необязательно, если отличается от primary_contact |
 | legal_name / tax_id / legal_address / bank_details | По правилам Company и Finance                     |
 
 ---

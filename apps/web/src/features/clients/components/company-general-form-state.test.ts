@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  buildCompanyGeneralPatch,
-  type CompanyGeneralDraft,
-} from './company-general-form-state';
+import { buildCompanyGeneralPatch, type CompanyGeneralDraft } from './company-general-form-state';
 
 function draft(overrides: Partial<CompanyGeneralDraft> = {}): CompanyGeneralDraft {
   return {
