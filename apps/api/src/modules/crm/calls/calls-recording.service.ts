@@ -1,5 +1,5 @@
-import { GetObjectCommand } from '@aws-sdk/client-s3';
-import { Injectable, Inject, NotFoundException, StreamableFile } from '@nestjs/common';
+import { GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import type { Readable } from 'node:stream';
 import type { CurrentUserPayload } from '../../../common/decorators';
@@ -11,6 +11,18 @@ import { recordingPlaybackMime } from '../../integrations/ats/ats-recording-mime
 import { CallAccessPolicyService } from './call-access-policy.service';
 import { callAccessActorFromUser } from './call-access.types';
 import { assertCanPlayCallRecording } from './calls-recording-play';
+import {
+  fullRecordingHeaders,
+  partialRecordingHeaders,
+  recordingStreamFile,
+} from './calls-recording-playback';
+import {
+  parseSingleByteRange,
+  r2ByteRangeHeader,
+  toSafeByteLength,
+  type RecordingPlaybackResult,
+} from './calls-recording-range';
+import { isS3RangeNotSatisfiable } from './calls-recording-s3-error';
 import { CALL_RECORDING_UNAVAILABLE_MESSAGE } from './calls.constants';
 
 const PLAYBACK_SELECT = {
@@ -21,6 +33,12 @@ const PLAYBACK_SELECT = {
 
 type ReadyRecording = { recordingFileAssetId: string };
 
+type RecordingObject = {
+  storageKey: string;
+  mimeType: string | null;
+  sizeBytes: bigint | number | null;
+};
+
 @Injectable()
 export class CallsRecordingService {
   constructor(
@@ -30,12 +48,16 @@ export class CallsRecordingService {
     private readonly driveAccess: DriveAccessContextService,
   ) {}
 
-  async streamRecording(callId: string, user: CurrentUserPayload): Promise<StreamableFile> {
+  async streamRecording(
+    callId: string,
+    user: CurrentUserPayload,
+    rangeHeader?: string,
+  ): Promise<RecordingPlaybackResult> {
     const actor = callAccessActorFromUser(user);
     await this.access.assertCanAccessCall(actor, callId);
     assertCanPlayCallRecording(user.permissions);
     const recording = await this.loadReadyRecording(callId);
-    return this.streamAuthorizedRecording(recording.recordingFileAssetId, user);
+    return this.streamAuthorizedRecording(recording.recordingFileAssetId, user, rangeHeader);
   }
 
   private async loadReadyRecording(callId: string): Promise<ReadyRecording> {
@@ -52,31 +74,107 @@ export class CallsRecordingService {
   private async streamAuthorizedRecording(
     fileAssetId: string,
     user: CurrentUserPayload,
-  ): Promise<StreamableFile> {
+    rangeHeader: string | undefined,
+  ): Promise<RecordingPlaybackResult> {
     const driveAccess = await this.driveAccess.fromRequest(user, user.permissions.DRIVE_VIEW);
     const file = await findAccessibleFileAssetStorage(this.prisma, fileAssetId, driveAccess);
     if (!file?.storageKey) {
       throw new NotFoundException(CALL_RECORDING_UNAVAILABLE_MESSAGE);
     }
-    return this.streamFromR2(file.storageKey, file.mimeType);
+    return this.streamFromR2(
+      { storageKey: file.storageKey, mimeType: file.mimeType, sizeBytes: file.sizeBytes },
+      rangeHeader,
+    );
   }
 
-  private async streamFromR2(storageKey: string, mimeType: string | null): Promise<StreamableFile> {
-    const mime = recordingPlaybackMime(mimeType);
+  private async streamFromR2(
+    file: RecordingObject,
+    rangeHeader: string | undefined,
+  ): Promise<RecordingPlaybackResult> {
+    const mime = recordingPlaybackMime(file.mimeType);
+    const totalSize = await this.resolveObjectSize(file);
+    if (totalSize == null || totalSize <= 0) {
+      throw new NotFoundException(CALL_RECORDING_UNAVAILABLE_MESSAGE);
+    }
+    const parsed = parseSingleByteRange(rangeHeader, totalSize);
+    if (parsed.kind === 'unsatisfiable') {
+      return { kind: 'unsatisfiable', totalSize };
+    }
+    if (parsed.kind === 'range') {
+      return this.streamR2Range(file.storageKey, mime, totalSize, parsed.start, parsed.end);
+    }
+    return this.streamR2Full(file.storageKey, mime, totalSize);
+  }
+
+  private async resolveObjectSize(file: RecordingObject): Promise<number | null> {
+    const stored = toSafeByteLength(file.sizeBytes);
+    if (stored != null && stored > 0) return stored;
+    const head = await this.r2
+      .ensureS3()
+      .send(new HeadObjectCommand({ Bucket: this.r2.bucket, Key: file.storageKey }));
+    const headed = toSafeByteLength(head.ContentLength);
+    return headed != null && headed > 0 ? headed : null;
+  }
+
+  private async streamR2Full(
+    storageKey: string,
+    mime: string,
+    totalSize: number,
+  ): Promise<RecordingPlaybackResult> {
+    const object = await this.getR2Object({ Key: storageKey });
+    const size = toSafeByteLength(object.contentLength) ?? totalSize;
+    if (size <= 0) {
+      throw new NotFoundException(CALL_RECORDING_UNAVAILABLE_MESSAGE);
+    }
+    return {
+      kind: 'stream',
+      status: 200,
+      headers: fullRecordingHeaders(mime, size),
+      file: recordingStreamFile(object.body, mime, size),
+    };
+  }
+
+  private async streamR2Range(
+    storageKey: string,
+    mime: string,
+    totalSize: number,
+    start: number,
+    end: number,
+  ): Promise<RecordingPlaybackResult> {
+    try {
+      const object = await this.getR2Object({
+        Key: storageKey,
+        Range: r2ByteRangeHeader({ start, end }),
+      });
+      const length = end - start + 1;
+      return {
+        kind: 'stream',
+        status: 206,
+        headers: partialRecordingHeaders(mime, start, end, totalSize),
+        file: recordingStreamFile(object.body, mime, length),
+      };
+    } catch (error) {
+      if (isS3RangeNotSatisfiable(error)) {
+        return { kind: 'unsatisfiable', totalSize };
+      }
+      throw error;
+    }
+  }
+
+  private async getR2Object(input: {
+    Key: string;
+    Range?: string;
+  }): Promise<{ body: Readable; contentLength: number | undefined }> {
     const object = await this.r2.ensureS3().send(
       new GetObjectCommand({
         Bucket: this.r2.bucket,
-        Key: storageKey,
-        ResponseContentType: mime,
-        ResponseContentDisposition: 'inline',
+        Key: input.Key,
+        Range: input.Range,
       }),
     );
     if (!object.Body) {
       throw new NotFoundException(CALL_RECORDING_UNAVAILABLE_MESSAGE);
     }
-    return new StreamableFile(object.Body as Readable, {
-      type: mime,
-      disposition: 'inline',
-    });
+    return { body: object.Body as Readable, contentLength: object.ContentLength };
   }
 }

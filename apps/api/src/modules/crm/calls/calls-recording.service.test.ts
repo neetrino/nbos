@@ -75,8 +75,12 @@ describe('CallsRecordingService', () => {
       departmentIds: OWN_ACTOR.departmentIds,
       driveScope: 'OWN',
     });
-    findAccessible.mockResolvedValue({ storageKey: 'calls/rec.ogg', mimeType: 'audio/ogg' });
-    send.mockResolvedValue({ Body: Readable.from(['audio']) });
+    findAccessible.mockResolvedValue({
+      storageKey: 'calls/rec.ogg',
+      mimeType: 'audio/ogg',
+      sizeBytes: 5n,
+    });
+    send.mockResolvedValue({ Body: Readable.from(['audio']), ContentLength: 5 });
     service = new CallsRecordingService(
       prisma as never,
       r2 as never,
@@ -105,7 +109,8 @@ describe('CallsRecordingService', () => {
   it('allows playback when Call view, PLAY, and confidential file access pass', async () => {
     allowView();
     const result = await service.streamRecording('call-1', playbackUser(SELLER_PERMS));
-    expect(result).toBeInstanceOf(StreamableFile);
+    expect(result.kind).toBe('stream');
+    expect(result.kind === 'stream' && result.file instanceof StreamableFile).toBe(true);
     expect(findAccessible).toHaveBeenCalledWith(
       prisma,
       'file-1',
@@ -120,10 +125,14 @@ describe('CallsRecordingService', () => {
     findAccessible.mockResolvedValue({
       storageKey: 'calls/rec.wav',
       mimeType: 'application/octet-stream',
+      sizeBytes: 5n,
     });
-    await service.streamRecording('call-1', playbackUser(SELLER_PERMS));
-    const command = send.mock.calls[0]?.[0] as GetObjectCommand;
-    expect(command.input.ResponseContentType).toBe('audio/mpeg');
+    const result = await service.streamRecording('call-1', playbackUser(SELLER_PERMS));
+    expect(result.kind).toBe('stream');
+    if (result.kind !== 'stream') return;
+    expect(result.headers['Content-Type']).toBe('audio/mpeg');
+    expect(send.mock.calls[0]?.[0]).toBeInstanceOf(GetObjectCommand);
+    expect((send.mock.calls[0]?.[0] as GetObjectCommand).input.Range).toBeUndefined();
   });
 
   it('denies when the actor can see the Call but PLAY is missing', async () => {
@@ -182,7 +191,8 @@ describe('CallsRecordingService', () => {
       'call-1',
       playbackUser(SELLER_PERMS, { role: 'ops-custom' }),
     );
-    expect(result).toBeInstanceOf(StreamableFile);
+    expect(result.kind).toBe('stream');
+    expect(result.kind === 'stream' && result.file instanceof StreamableFile).toBe(true);
     expect(r2.ensureS3).toHaveBeenCalledTimes(1);
   });
 
@@ -190,7 +200,7 @@ describe('CallsRecordingService', () => {
     allowView();
     await expect(
       service.streamRecording('call-1', playbackUser(SELLER_PERMS, { role: 'seller' })),
-    ).resolves.toBeInstanceOf(StreamableFile);
+    ).resolves.toMatchObject({ kind: 'stream' });
   });
 
   it('denies a Seller with PLAY on another employee Call', async () => {
@@ -207,7 +217,7 @@ describe('CallsRecordingService', () => {
       allowView();
       await expect(
         service.streamRecording('call-1', playbackUser(LEADER_PERMS, { role })),
-      ).resolves.toBeInstanceOf(StreamableFile);
+      ).resolves.toMatchObject({ kind: 'stream' });
       expect(r2.ensureS3).toHaveBeenCalledTimes(1);
     },
   );

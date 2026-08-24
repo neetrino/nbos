@@ -1,4 +1,5 @@
-import { callRecordingSrc, type CallActivity } from '@/lib/api/calls';
+import type { CallActivity } from '@/lib/api/calls';
+import { CallRecordingPlayer } from './CallRecordingPlayer';
 import { CallDetailField } from './CallDetailField';
 import { callRecordingLabel, canPlayCallRecording } from './call-recording-status';
 
@@ -11,9 +12,7 @@ export function CallRecordingSection({ call }: { call: CallActivity }) {
     <>
       <dt className="text-muted-foreground">Recording</dt>
       <dd>
-        <audio className="w-full" controls preload="metadata" src={callRecordingSrc(call.id)}>
-          Play
-        </audio>
+        <CallRecordingPlayer callId={call.id} />
       </dd>
     </>
   );

@@ -5,6 +5,7 @@ import type { DriveEntityAccess } from './drive-access.types';
 export type AccessibleFileAssetStorage = {
   storageKey: string | null;
   mimeType: string | null;
+  sizeBytes: bigint | null;
 };
 
 /**
@@ -19,6 +20,6 @@ export async function findAccessibleFileAssetStorage(
   const accessWhere = await buildDriveAssetAccessWhere(prisma, access);
   return prisma.fileAsset.findFirst({
     where: { id: fileAssetId, deletedAt: null, ...accessWhere },
-    select: { storageKey: true, mimeType: true },
+    select: { storageKey: true, mimeType: true, sizeBytes: true },
   });
 }
