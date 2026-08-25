@@ -22,7 +22,7 @@ export function ItBrandMarkIcon({ mark, className }: ItBrandMarkIconProps) {
         className,
       )}
     >
-      <path d={mark.path} />
+      <path d={mark.path} fillRule={mark.fillRule} />
     </svg>
   );
 }

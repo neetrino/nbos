@@ -14,7 +14,7 @@ describe('resolveCredentialBrandMark', () => {
     ).toBe('hetzner');
   });
 
-  it('does not fall back to Gmail when the domain provider has no mark', () => {
+  it('matches Name.am from the domain provider and ignores a Gmail login', () => {
     expect(
       resolveCredentialBrandMark({
         provider: 'Name.am',
@@ -22,8 +22,8 @@ describe('resolveCredentialBrandMark', () => {
         login: 'babajanyan1994s@gmail.com',
         category: 'DOMAIN',
         credentialType: 'DOMAIN_REGISTRAR',
-      }),
-    ).toBeNull();
+      })?.slug,
+    ).toBe('nameam');
   });
 
   it('matches Beget from the hosting provider and ignores a Gmail login', () => {

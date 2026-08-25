@@ -58,6 +58,22 @@ describe('resolveItBrandMark', () => {
     expect(resolveItBrandMark('', 'Selectel')?.slug).toBe('selectel');
   });
 
+  it('uses the short Yandex Y for Yandex Mail and Yandex Cloud', () => {
+    expect(resolveItBrandMark('', 'Yandex')?.slug).toBe('yandex');
+    expect(resolveItBrandMark('', 'Yandex Mail')?.slug).toBe('yandex');
+    expect(resolveItBrandMark('https://mail.yandex.ru', 'Inbox')?.slug).toBe('yandex');
+    expect(resolveItBrandMark('https://yandex.cloud', 'Cloud')?.slug).toBe('yandex');
+  });
+
+  it('matches remaining regional registrar and mail marks', () => {
+    expect(resolveItBrandMark('', 'Name.am')?.slug).toBe('nameam');
+    expect(resolveItBrandMark('', 'HayHost')?.slug).toBe('hayhost');
+    expect(resolveItBrandMark('', 'REG.AM')?.slug).toBe('regam');
+    expect(resolveItBrandMark('https://www.reg.ru', 'domains')?.slug).toBe('regru');
+    expect(resolveItBrandMark('', 'Mail.ru')?.slug).toBe('mailru');
+    expect(resolveItBrandMark('', 'SendGrid')?.slug).toBe('sendgrid');
+  });
+
   it('matches a provider-style name by a later token', () => {
     expect(resolveItBrandMark('', 'Google Workspace')?.slug).toBe('google');
   });

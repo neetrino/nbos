@@ -4,4 +4,5 @@ export interface BrandMark {
   slug: string;
   path: string;
   hex: string;
+  fillRule?: 'evenodd';
 }
