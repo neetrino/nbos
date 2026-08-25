@@ -110,7 +110,9 @@ export function SubscriptionCoverageGrid({
     return [...payload.rows].sort((a, b) => {
       const byAmount = a.amountMonthly - b.amountMonthly;
       if (byAmount !== 0) return byAmount;
-      return a.subscriptionName.localeCompare(b.subscriptionName, undefined, { sensitivity: 'base' });
+      return a.subscriptionName.localeCompare(b.subscriptionName, undefined, {
+        sensitivity: 'base',
+      });
     });
   }, [payload]);
 

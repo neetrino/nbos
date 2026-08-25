@@ -70,8 +70,7 @@ export function resolveKanbanPointerInsert(
     const list = findKanbanColumnList(dropZone);
     if (!list) continue;
 
-    const excludeId =
-      columnKey === options.sourceColumnKey ? options.excludeItemId : undefined;
+    const excludeId = columnKey === options.sourceColumnKey ? options.excludeItemId : undefined;
     const index = resolveKanbanInsertIndex(list, clientY, excludeId);
     return { columnKey, index };
   }

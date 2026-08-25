@@ -1,10 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  resolveKanbanPointerInsert,
-  type KanbanPointerInsert,
-} from './kanban-insert-index';
+import { resolveKanbanPointerInsert, type KanbanPointerInsert } from './kanban-insert-index';
 
 export type { KanbanPointerInsert };
 

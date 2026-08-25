@@ -28,7 +28,7 @@ export function FinanceCalendarYearControl({
   return (
     <div
       className={cn(
-        'border-border bg-muted/30 flex w-full min-w-0 max-w-full items-center gap-0.5 rounded-full border p-0.5',
+        'border-border bg-muted/30 flex w-full max-w-full min-w-0 items-center gap-0.5 rounded-full border p-0.5',
         className,
       )}
       role="group"

@@ -476,7 +476,11 @@ function KanbanDraggableCard({
   fromStage: DeliveryActiveStage;
   isDragging: boolean;
   disabled: boolean;
-  onDragStart: (itemKey: string, fromStage: DeliveryActiveStage, event: DragEvent<HTMLDivElement>) => void;
+  onDragStart: (
+    itemKey: string,
+    fromStage: DeliveryActiveStage,
+    event: DragEvent<HTMLDivElement>,
+  ) => void;
   onDragEnd: () => void;
   children: ReactNode;
 }) {
