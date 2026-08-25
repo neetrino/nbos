@@ -49,7 +49,11 @@ function RecordingRow({ snapshot }: { snapshot: ActiveCallScreenSnapshot }) {
     <>
       <dt className="text-muted-foreground">Recording</dt>
       <dd>
-        <CallRecordingPlayer callId={snapshot.callId} />
+        <CallRecordingPlayer
+          callId={snapshot.callId}
+          durationSec={snapshot.durationSec}
+          preload="metadata"
+        />
       </dd>
     </>
   );

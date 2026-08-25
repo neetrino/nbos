@@ -1,9 +1,6 @@
 'use client';
 
-import { useState } from 'react';
 import { Phone } from 'lucide-react';
-import type { CallActivity } from '@/lib/api/calls';
-import { CallActivityDetailsDialog } from './CallActivityDetailsDialog';
 import { CallActivityItem } from './CallActivityItem';
 import { groupCallActivitiesByDay } from './group-call-activities';
 import { useCallActivities, type CallActivityScope } from './use-call-activities';
@@ -14,7 +11,6 @@ export function CallActivityTimeline(props: {
   emptyDescription: string;
 }) {
   const { items, loading, error } = useCallActivities(props.scope);
-  const [selected, setSelected] = useState<CallActivity | null>(null);
 
   if (loading) {
     return <p className="text-muted-foreground py-8 text-center text-sm">Loading activities…</p>;
@@ -45,20 +41,19 @@ export function CallActivityTimeline(props: {
   return (
     <div className="space-y-6">
       {groups.map((group) => (
-        <section key={group.day} className="space-y-2">
+        <section key={group.day} className="space-y-3">
           <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
             {group.day}
           </h3>
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {group.items.map((call) => (
               <li key={call.id}>
-                <CallActivityItem call={call} onOpen={setSelected} />
+                <CallActivityItem call={call} />
               </li>
             ))}
           </ul>
         </section>
       ))}
-      <CallActivityDetailsDialog call={selected} onClose={() => setSelected(null)} />
     </div>
   );
 }
