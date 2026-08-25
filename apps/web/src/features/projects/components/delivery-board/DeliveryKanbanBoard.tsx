@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  Fragment,
-  useCallback,
-  useMemo,
-  useState,
-  type DragEvent,
-  type ReactNode,
-} from 'react';
+import { Fragment, useCallback, useMemo, useState, type DragEvent, type ReactNode } from 'react';
 import {
   KanbanColumnInsertPlaceholder,
   KanbanInsertPlaceholderAfterList,
