@@ -67,6 +67,32 @@ describe('resolveCredentialBrandMark', () => {
     ).toBeNull();
   });
 
+  it('matches Amnic, Ucom and Viva from the provider and ignores a Gmail login', () => {
+    expect(
+      resolveCredentialBrandMark({
+        provider: 'Amnic',
+        name: '.am registry',
+        login: 'ops@gmail.com',
+        category: 'DOMAIN',
+        credentialType: 'DOMAIN_REGISTRAR',
+      })?.slug,
+    ).toBe('amnic');
+    expect(
+      resolveCredentialBrandMark({
+        provider: 'Ucom',
+        login: 'ops@gmail.com',
+        category: 'SERVICE',
+      })?.slug,
+    ).toBe('ucom');
+    expect(
+      resolveCredentialBrandMark({
+        provider: 'Viva',
+        login: 'ops@gmail.com',
+        category: 'SERVICE',
+      })?.slug,
+    ).toBe('viva');
+  });
+
   it('matches Hostinger from the provider name', () => {
     expect(
       resolveCredentialBrandMark({

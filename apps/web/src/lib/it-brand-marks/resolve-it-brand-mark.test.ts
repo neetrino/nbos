@@ -72,6 +72,13 @@ describe('resolveItBrandMark', () => {
     expect(resolveItBrandMark('https://www.reg.ru', 'domains')?.slug).toBe('regru');
     expect(resolveItBrandMark('', 'Mail.ru')?.slug).toBe('mailru');
     expect(resolveItBrandMark('', 'SendGrid')?.slug).toBe('sendgrid');
+    expect(resolveItBrandMark('', 'Amnic')?.slug).toBe('amnic');
+    expect(resolveItBrandMark('https://www.amnic.net', 'registry')?.slug).toBe('amnic');
+    expect(resolveItBrandMark('', 'Ucom')?.slug).toBe('ucom');
+    expect(resolveItBrandMark('https://www.ucom.am', 'cabinet')?.slug).toBe('ucom');
+    expect(resolveItBrandMark('', 'Viva')?.slug).toBe('viva');
+    expect(resolveItBrandMark('', 'Viva Armenia')?.slug).toBe('viva');
+    expect(resolveItBrandMark('https://www.viva.am', 'mobile')?.slug).toBe('viva');
   });
 
   it('matches a provider-style name by a later token', () => {
