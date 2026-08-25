@@ -198,7 +198,9 @@ Runtime now includes this sidebar structure and safe routes/placeholders. Full M
 
 Реализовано в sidebar customize sheet + рендер секции **My Links** (модель `PersonalLink` уже была).
 
-Остаток: icon/color picker, admin policy для external links.
+Остаток: color picker, admin policy для external links.
+
+Сделано (2026-08-25): brand mark для personal links резолвится из URL/label (Simple Icons + локальные IT-логотипы). Custom upload по-прежнему non-goal.
 
 ### C4. Dashboard and sidebar do not share personal links
 

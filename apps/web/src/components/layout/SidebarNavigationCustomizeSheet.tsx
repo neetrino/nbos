@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronRight, Eye, Link2, Trash2 } from 'lucide-react';
+import { PersonalLinkMark } from '@/components/shared/it-brand-mark/PersonalLinkMark';
 import type { SidebarModuleKey } from '@nbos/shared/constants';
 import type { NavModuleDefinition } from '@/lib/navigation/nav-config';
 import type { DashboardPersonalLink } from '@/lib/api/dashboard';
@@ -199,7 +200,10 @@ function MyLinksPanel({
               key={link.id}
               className="bg-muted/20 flex items-center justify-between gap-2 rounded-md px-2 py-1.5"
             >
-              <span className="truncate text-sm">{link.label}</span>
+              <span className="flex min-w-0 items-center gap-2">
+                <PersonalLinkMark url={link.url} label={link.label} className="size-3.5 shrink-0" />
+                <span className="truncate text-sm">{link.label}</span>
+              </span>
               <Button
                 type="button"
                 variant="ghost"

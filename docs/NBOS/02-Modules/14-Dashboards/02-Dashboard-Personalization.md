@@ -66,6 +66,8 @@ Personal link может вести на:
 
 Для external links Dashboard должен показывать external badge и по умолчанию открывать ссылку в новой вкладке.
 
+IT-бренд (GitHub, Slack, Figma и т.д.) подбирается по URL или названию ссылки. Неизвестный сайт остаётся с generic link icon.
+
 ## Default by role
 
 Система может дать стартовый layout:

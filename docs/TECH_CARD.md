@@ -29,20 +29,21 @@
 
 ## 2. Frontend
 
-| #    | Параметр         | Решение                     | Статус | Примечание                          |
-| ---- | ---------------- | --------------------------- | ------ | ----------------------------------- |
-| 2.1  | Фреймворк        | Next.js 16.x (App Router)   | ✅     | Turbopack, React Compiler, proxy.ts |
-| 2.2  | Стили            | Tailwind CSS 4.x            | ✅     |                                     |
-| 2.3  | UI Kit           | shadcn/ui                   | ✅     | Kanban, таблицы, модалки            |
-| 2.4  | State management | Zustand + TanStack Query 5  | ✅     | клиент + серверный кеш              |
-| 2.5  | Формы            | React Hook Form + Zod       | ✅     | Zod shared с backend                |
-| 2.6  | Data fetching    | TanStack Query + REST       | ✅     |                                     |
-| 2.7  | i18n             | не требуется (v1)           | ➖     | интерфейс English                   |
-| 2.8  | SEO              | не требуется                | ➖     | внутренняя система                  |
-| 2.9  | Тёмная тема      | next-themes + CSS variables | ✅     | Phase 2+                            |
-| 2.10 | Анимации         | Framer Motion               | ✅     | Kanban, переходы                    |
-| 2.11 | Drag & Drop      | @dnd-kit                    | ✅     | Kanban-доски                        |
-| 2.12 | PWA              | не требуется (v1)           | ➖     | при необходимости позже             |
+| #    | Параметр         | Решение                     | Статус | Примечание                                                        |
+| ---- | ---------------- | --------------------------- | ------ | ----------------------------------------------------------------- |
+| 2.1  | Фреймворк        | Next.js 16.x (App Router)   | ✅     | Turbopack, React Compiler, proxy.ts                               |
+| 2.2  | Стили            | Tailwind CSS 4.x            | ✅     |                                                                   |
+| 2.3  | UI Kit           | shadcn/ui                   | ✅     | Kanban, таблицы, модалки                                          |
+| 2.4  | State management | Zustand + TanStack Query 5  | ✅     | клиент + серверный кеш                                            |
+| 2.5  | Формы            | React Hook Form + Zod       | ✅     | Zod shared с backend                                              |
+| 2.6  | Data fetching    | TanStack Query + REST       | ✅     |                                                                   |
+| 2.7  | i18n             | не требуется (v1)           | ➖     | интерфейс English                                                 |
+| 2.8  | SEO              | не требуется                | ➖     | внутренняя система                                                |
+| 2.9  | Тёмная тема      | next-themes + CSS variables | ✅     | Phase 2+                                                          |
+| 2.10 | Анимации         | Framer Motion               | ✅     | Kanban, переходы                                                  |
+| 2.11 | Drag & Drop      | @dnd-kit                    | ✅     | Kanban-доски                                                      |
+| 2.12 | PWA              | не требуется (v1)           | ➖     | при необходимости позже                                           |
+| 2.13 | Icons            | lucide-react + Simple Icons | ✅     | Lucide — UI chrome; Simple Icons — brand marks for personal links |
 
 ---
 

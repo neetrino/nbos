@@ -1,8 +1,9 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { ExternalLink, Eye, Link2, Trash2 } from 'lucide-react';
+import { ExternalLink, Eye, Trash2 } from 'lucide-react';
 import { ActionTileButton } from '@/components/shared';
+import { PersonalLinkMark } from '@/components/shared/it-brand-mark/PersonalLinkMark';
 import { Button } from '@/components/ui/button';
 import {
   DASHBOARD_PINNED_TILE_MIN_HEIGHT_CLASS,
@@ -62,7 +63,7 @@ export function PersonalLinkCard({ editMode, link, onDelete }: PersonalLinkCardP
     <DashboardPinnedTileShell className="items-stretch gap-2">
       <ActionTileButton
         label={link.label}
-        icon={<Link2 aria-hidden />}
+        icon={<PersonalLinkMark url={link.url} label={link.label} />}
         trailing={
           link.isExternal ? (
             <ExternalLink className="text-muted-foreground size-3.5 shrink-0" aria-hidden />
