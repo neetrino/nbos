@@ -98,11 +98,16 @@ Ownership rule (required):
 Anchor date: `Invoice.dueDate` (pay-by). Offsets: **10** and **2** calendar days before due (Yerevan calendar). Each offset fires **once** per invoice (idempotent; no catch-up if the invoice appears after the D-10 day).
 
 - Target: **Product WhatsApp Group** via `subscription.productId`.
-- Copy uses `Product.name` and localized month from `Invoice.coverageStartMonth` in `reminder_language`.
+- Copy uses `Product.name`, localized month from `Invoice.coverageStartMonth`, **amount**, and `tax_status` in `reminder_language`.
+- **Tax:** amount + purpose + pay-by-official-invoice line; **no** bank/card details.
+- **Tax-Free:** same + personal pay-to block (Hasmik card/account; constants in API code).
 - Tax gate: if `taxStatus = TAX` and official invoice request not sent → **no** client payment reminder (accountant official-request path is separate).
 - `notifications_enabled = false` (invoice / subscription / client-service as applicable) → no send.
 - Paid / cancelled / on hold → no send.
 - Missing WhatsApp `groupChatId` → skip + log (no crash).
+- Templates stay in code (no DB editor in v1).
+
+Sends go through the paced WhatsApp outbound queue (concurrency 1, 2s gap).
 
 ### Сумма подписки: `amount`, `coverage_month_count`, `monthly_equivalent_amount`
 
@@ -468,7 +473,7 @@ Inbox по умолчанию (список и grid) показывает тол
 - **По проекту**: выбор конкретного проекта
 - **По клиенту (компании)**: все подписки одного клиента
 - **По году**: переключение между годами
-- **По Tax статусу**: Tax / Tax-Free
+- **По Tax статусу**: Tax / Free
 
 ### Альтернативные виды
 

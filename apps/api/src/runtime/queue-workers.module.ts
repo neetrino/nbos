@@ -7,9 +7,12 @@ import { ReportsExportWorker } from '../modules/reports/reports-export.worker';
 import { DriveModule } from '../modules/drive/drive.module';
 import { DriveExportZipWorker } from '../modules/drive/drive-export-zip.worker';
 import { WhatsAppGatewayModule } from '../modules/integrations/whatsapp-gateway/whatsapp-gateway.module';
+import { GoogleContactsModule } from '../modules/integrations/google-contacts/google-contacts.module';
 import { AtsModule } from '../modules/integrations/ats/ats.module';
 import { AtsCallRecordingWorker } from '../modules/integrations/ats/ats-call-recording.worker';
 import { WhatsAppProductGroupsWorker } from '../modules/integrations/whatsapp-gateway/whatsapp-product-groups.worker';
+import { WhatsAppOutboundMessagesWorker } from '../modules/integrations/whatsapp-gateway/whatsapp-outbound-messages.worker';
+import { GoogleContactsWorker } from '../modules/integrations/google-contacts/google-contacts.worker';
 import { OpsAlertsModule } from '../modules/ops-alerts/ops-alerts.module';
 import { BullmqWorkerRegistry } from './bullmq-worker-registry';
 import { shouldRegisterBullmqWorkers } from './process-role';
@@ -41,6 +44,7 @@ export class QueueWorkersModule {
         ReportsModule,
         DriveModule,
         WhatsAppGatewayModule,
+        GoogleContactsModule,
         AtsModule,
         OpsAlertsModule,
       ],
@@ -50,7 +54,9 @@ export class QueueWorkersModule {
         ReportsExportWorker,
         DriveExportZipWorker,
         WhatsAppProductGroupsWorker,
+        WhatsAppOutboundMessagesWorker,
         AtsCallRecordingWorker,
+        GoogleContactsWorker,
       ],
       exports: [BullmqWorkerRegistry],
     };

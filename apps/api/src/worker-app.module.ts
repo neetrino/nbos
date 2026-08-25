@@ -10,6 +10,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { DriveModule } from './modules/drive/drive.module';
 import { WhatsAppGatewayModule } from './modules/integrations/whatsapp-gateway/whatsapp-gateway.module';
+import { GoogleContactsModule } from './modules/integrations/google-contacts/google-contacts.module';
 import { PlatformAccessModule } from './modules/platform-access/platform-access.module';
 import { QueueWorkersModule } from './runtime/queue-workers.module';
 
@@ -34,6 +35,7 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     ReportsModule,
     DriveModule,
     WhatsAppGatewayModule,
+    GoogleContactsModule,
     QueueWorkersModule.forWorker(),
   ],
 })

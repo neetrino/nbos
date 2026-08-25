@@ -14,6 +14,14 @@ import {
   Wallet,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
@@ -33,7 +41,10 @@ import {
   CLIENT_SERVICE_STATUSES,
   CLIENT_SERVICE_TYPES,
 } from '@/features/finance/constants/client-services';
-import { INVOICE_TAX_STATUS_OPTIONS } from '@/features/finance/constants/finance';
+import {
+  INVOICE_TAX_STATUS_OPTIONS,
+  SUBSCRIPTION_REMINDER_LANGUAGES,
+} from '@/features/finance/constants/finance';
 import {
   EXPENSE_SHEET_FIELD_CELL_CLASS,
   EXPENSE_SHEET_FIELD_ROW_3_CLASS,
@@ -261,6 +272,25 @@ export function ClientServiceGeneralTab({
               />
               Renewal notifications
             </label>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="cs-reminder-language">Payment reminder language</Label>
+            <Select
+              value={draft.reminderLanguage}
+              disabled={formDisabled}
+              onValueChange={(value) => value && patchDraft({ reminderLanguage: value })}
+            >
+              <SelectTrigger id="cs-reminder-language">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SUBSCRIPTION_REMINDER_LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </DetailSheetCollapsibleSection>

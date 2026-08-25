@@ -1,6 +1,7 @@
-import { Injectable, Inject, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException, Optional } from '@nestjs/common';
 import { PrismaClient, DealTypeEnum, PaymentTypeEnum, LeadSourceEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { GoogleContactsQueueService } from '../../integrations/google-contacts/google-contacts-queue.service';
 import { LeadsService } from './leads.service';
 import { validateAttributionGate } from '../attribution-gate';
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
@@ -44,6 +45,7 @@ export class LeadConversionService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly leadsService: LeadsService,
+    @Optional() private readonly googleContactsQueue?: GoogleContactsQueueService,
   ) {}
 
   async convertToDeal(
@@ -113,6 +115,7 @@ export class LeadConversionService {
     const dealCode = await allocateDealCode(this.prisma);
 
     let contactId = lead.contactId;
+    let createdContactId: string | null = null;
     if (!contactId) {
       const nameParts = lead.contactName.split(' ');
       const contact = await this.prisma.contact.create({
@@ -124,6 +127,7 @@ export class LeadConversionService {
         },
       });
       contactId = contact.id;
+      createdContactId = contact.id;
     }
 
     const inquiryTitle = lead.name?.trim() ?? '';
@@ -178,6 +182,10 @@ export class LeadConversionService {
         deal.id,
         mergeEntityContactIds(contactId, additionalIds),
       );
+    }
+
+    if (createdContactId) {
+      await this.googleContactsQueue?.enqueueContact(createdContactId);
     }
 
     return deal;

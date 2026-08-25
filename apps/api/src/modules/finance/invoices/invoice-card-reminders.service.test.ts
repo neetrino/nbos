@@ -100,7 +100,7 @@ describe('InvoiceCardRemindersService', () => {
             offsetDays: 10,
             language: 'HY',
             productName: 'Acme Site',
-            messageText: expect.stringContaining('բաժանորդագրության'),
+            messageText: expect.stringContaining('Հարկավոր է'),
           }),
         }),
       }),
@@ -134,7 +134,41 @@ describe('InvoiceCardRemindersService', () => {
           payload: expect.objectContaining({
             offsetDays: 2,
             language: 'EN',
-            messageText: expect.stringContaining('Kindly make the monthly payment'),
+            messageText: expect.stringContaining('Kindly make the monthly subscription payment'),
+          }),
+        }),
+      }),
+    );
+  });
+
+  it('creates D-2 payment reminder for client service invoice', async () => {
+    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      clientServicePaymentCandidate({
+        id: 'inv-cs',
+        dueDate: new Date('2026-05-15T00:00:00+04:00'),
+        reminderLanguage: 'RU',
+      }),
+    ]);
+
+    const result = await service.runDueInvoiceCardReminders({
+      asOf: new Date('2026-05-13T12:00:00+04:00'),
+    });
+
+    expect(result.created).toEqual([
+      {
+        created: true,
+        type: SUBSCRIPTION_PAYMENT_REMINDER_EVENT_TYPES.D2,
+        invoiceId: 'inv-cs',
+      },
+    ]);
+    expect(prisma.notificationEvent.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          payload: expect.objectContaining({
+            offsetDays: 2,
+            language: 'RU',
+            productName: 'example.com',
+            messageText: expect.stringContaining('Просим оплатить'),
           }),
         }),
       }),
@@ -211,6 +245,24 @@ function paymentCandidate(
   };
 }
 
+function clientServicePaymentCandidate(
+  overrides: Partial<ReturnType<typeof baseClientServicePayment>> & {
+    reminderLanguage?: string;
+  } = {},
+) {
+  const { reminderLanguage, ...rest } = overrides;
+  const base = baseClientServicePayment();
+  return {
+    ...base,
+    ...rest,
+    clientServiceRecord: {
+      ...base.clientServiceRecord,
+      ...(reminderLanguage ? { reminderLanguage } : {}),
+    },
+    subscription: null,
+  };
+}
+
 function baseOfficial() {
   return {
     id: 'inv-1',
@@ -238,12 +290,35 @@ function basePayment() {
     officialInvoiceRequestSent: false,
     notificationsEnabled: true,
     company: { name: 'ACME' },
-    clientServiceRecord: { notificationsEnabled: true },
+    clientServiceRecord: null,
     subscription: {
       productId: 'prod-1',
       notificationsEnabled: true,
       reminderLanguage: 'HY' as const,
       product: { id: 'prod-1', name: 'Acme Site' },
+    },
+  };
+}
+
+function baseClientServicePayment() {
+  return {
+    id: 'inv-cs-pay',
+    code: 'INV-CS',
+    amount: 45000,
+    dueDate: new Date('2026-05-15T00:00:00+04:00'),
+    coverageStartMonth: null,
+    taxStatus: 'TAX',
+    moneyStatus: 'AWAITING_PAYMENT',
+    officialInvoiceRequestSent: true,
+    notificationsEnabled: true,
+    company: { name: 'ACME' },
+    subscription: null,
+    clientServiceRecord: {
+      notificationsEnabled: true,
+      reminderLanguage: 'RU' as const,
+      productId: 'prod-1',
+      name: 'example.com',
+      product: { id: 'prod-1', name: 'Example Product' },
     },
   };
 }

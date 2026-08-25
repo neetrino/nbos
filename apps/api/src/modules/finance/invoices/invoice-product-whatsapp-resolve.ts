@@ -13,11 +13,16 @@ export async function resolveInvoiceProductWhatsAppGroup(
     select: {
       subscription: { select: { productId: true } },
       order: { select: { productId: true } },
+      clientServiceRecord: { select: { productId: true } },
     },
   });
   if (!invoice) return null;
 
-  const productId = invoice.subscription?.productId ?? invoice.order?.productId ?? null;
+  const productId =
+    invoice.subscription?.productId ??
+    invoice.clientServiceRecord?.productId ??
+    invoice.order?.productId ??
+    null;
   if (!productId) return null;
 
   const binding = await prisma.productWhatsAppGroupBinding.findUnique({

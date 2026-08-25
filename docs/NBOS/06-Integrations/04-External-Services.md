@@ -12,6 +12,10 @@
 
 **NBOS Mail** (подключённые ящики, inbox, переписка и ответы из Mail UI) — отдельный модуль: `../02-Modules/17-Mail/00-Mail-Overview.md` (не путать с transactional Email канала Notifications).
 
+## Google Contacts
+
+Односторонняя выгрузка активных NBOS Contact в один org-аккаунт Google (People API) для телефонной книги / ATS `#`-CID. Канон: `10-Google-Contacts-Sync.md`. Не путать с Gmail OAuth модуля Mail.
+
 ---
 
 ## Google Drive

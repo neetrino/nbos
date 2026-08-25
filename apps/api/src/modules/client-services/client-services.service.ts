@@ -13,6 +13,7 @@ import {
   type Prisma,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { parseReminderLanguage } from '../finance/subscriptions/subscription-reminder-language';
 import {
   requireClientServiceType,
   resolveClientServiceBillingModel,
@@ -289,6 +290,7 @@ export class ClientServicesService {
       clientCharge: toOptionalMoneyDecimal(body.clientCharge, 'clientCharge') ?? null,
       taxStatus: resolveClientServiceTaxStatus(body.taxStatus),
       notificationsEnabled: body.notificationsEnabled ?? true,
+      reminderLanguage: parseReminderLanguage(body.reminderLanguage),
       startDate: parseOptionalDate(body.startDate, 'startDate'),
       renewalDate: parseOptionalDate(body.renewalDate, 'renewalDate'),
       notes: body.notes?.trim() || null,
@@ -333,6 +335,9 @@ export class ClientServicesService {
     }
     if (body.notificationsEnabled !== undefined) {
       data.notificationsEnabled = body.notificationsEnabled;
+    }
+    if (body.reminderLanguage !== undefined) {
+      data.reminderLanguage = parseReminderLanguage(body.reminderLanguage);
     }
     if (body.startDate !== undefined) {
       data.startDate = parseOptionalDate(body.startDate, 'startDate');

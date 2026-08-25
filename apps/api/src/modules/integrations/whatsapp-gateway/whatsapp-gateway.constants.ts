@@ -1,6 +1,12 @@
 export const WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME = 'whatsapp.product-groups';
 export const WHATSAPP_PRODUCT_GROUP_JOB_NAME = 'whatsapp.product-group.operation';
 
+export const WHATSAPP_OUTBOUND_QUEUE_NAME = 'whatsapp.outbound-messages';
+export const WHATSAPP_OUTBOUND_JOB_NAME = 'whatsapp.outbound.send';
+/** Pause after each outbound WhatsApp send so WAHA is not treated as a burst bot. */
+export const WHATSAPP_OUTBOUND_GAP_MS = 2000;
+export const WHATSAPP_OUTBOUND_WAIT_TIMEOUT_MS = 60_000;
+
 export const WHATSAPP_GATEWAY_REQUEST_TIMEOUT_MS = 30_000;
 export const WHATSAPP_GATEWAY_CONNECT_TIMEOUT_MS = 10_000;
 export const WHATSAPP_GROUP_NAME_MAX_LENGTH = 100;
@@ -43,6 +49,8 @@ export const WHATSAPP_ERROR = {
   CLIENT_INVITE_FAILED: 'WHATSAPP_CLIENT_INVITE_FAILED',
   CLIENT_INVITE_OUTCOME_UNKNOWN: 'WHATSAPP_CLIENT_INVITE_OUTCOME_UNKNOWN',
   DEAL_PRODUCT_NOT_READY: 'DEAL_PRODUCT_NOT_READY',
+  ACCOUNTING_GROUP_NOT_SET: 'WHATSAPP_ACCOUNTING_GROUP_NOT_SET',
+  OUTBOUND_QUEUE_UNAVAILABLE: 'WHATSAPP_OUTBOUND_QUEUE_UNAVAILABLE',
 } as const;
 
 export type WhatsAppErrorCode = (typeof WHATSAPP_ERROR)[keyof typeof WHATSAPP_ERROR];

@@ -3,7 +3,7 @@ import { computePartnerDealFinancePreview } from '@nbos/shared';
 
 export const TAX_STATUS_OPTIONS = [
   { value: 'TAX', label: 'Tax' },
-  { value: 'TAX_FREE', label: 'Tax Free' },
+  { value: 'TAX_FREE', label: 'Free' },
 ] as const;
 
 export function formatDate(value: string | null) {

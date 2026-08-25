@@ -73,7 +73,7 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
               ) : null}
               {invoice.taxStatus === 'TAX' ? (
                 <StatusBadge
-                  label="TAX"
+                  label="Tax"
                   variant="green"
                   className="rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
                 />
