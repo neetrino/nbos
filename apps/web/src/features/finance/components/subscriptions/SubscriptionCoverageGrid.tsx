@@ -146,6 +146,14 @@ export function SubscriptionCoverageGrid({
   const totalColClass = financeCalendarTotalColClass(preferFullTotal);
   const subscriptionsById = useMemo(() => buildSubscriptionsById(subscriptions), [subscriptions]);
   const months = monthLabelsForYear(year);
+  const sortedRows = useMemo(() => {
+    if (!payload) return [];
+    return [...payload.rows].sort((a, b) => {
+      const byAmount = a.amountMonthly - b.amountMonthly;
+      if (byAmount !== 0) return byAmount;
+      return a.subscriptionName.localeCompare(b.subscriptionName, undefined, { sensitivity: 'base' });
+    });
+  }, [payload]);
 
   if (error) {
     return (
@@ -211,7 +219,7 @@ export function SubscriptionCoverageGrid({
           </tr>
         </thead>
         <tbody>
-          {payload.rows.map((row) => {
+          {sortedRows.map((row, rowIndex) => {
             const subscription = subscriptionsById.get(row.subscriptionId);
             return (
               <tr key={row.subscriptionId} className="hover:bg-muted/15">
@@ -220,6 +228,7 @@ export function SubscriptionCoverageGrid({
                   onClick={() => onOpenSubscription(row.subscriptionId)}
                 >
                   <SubscriptionGridRowLabel
+                    rowNumber={rowIndex + 1}
                     subscriptionName={row.subscriptionName}
                     projectName={row.projectName}
                     subscription={subscription}

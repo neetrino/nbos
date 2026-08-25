@@ -1,29 +1,41 @@
 'use client';
 
-import { StatusBadge } from '@/components/shared';
-import { FINANCE_LIST_BADGE_CLASS } from '@/components/shared/entity-list-table';
+import type { StatusVariant } from '@/components/shared';
 import { getSubscriptionStatus } from '@/features/finance/constants/finance';
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import { formatSubscriptionTermGridBadge } from '@/features/finance/utils/subscription-term-display';
 import type { Subscription } from '@/lib/api/finance';
+import { cn } from '@/lib/utils';
 
 interface SubscriptionGridRowLabelProps {
+  rowNumber: number;
   subscriptionName: string;
   projectName: string;
   subscription: Subscription | undefined;
   fallbackStatus: string;
 }
 
-function projectInitials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  const first = parts[0];
-  if (!first) return '?';
-  const second = parts[1];
-  if (!second) return first.slice(0, 2).toUpperCase();
-  return `${first[0] ?? ''}${second[0] ?? ''}`.toUpperCase();
-}
+const SUBSCRIPTION_STATUS_DOT_CLASS: Record<StatusVariant, string> = {
+  default: 'bg-muted-foreground',
+  blue: 'bg-blue-500',
+  indigo: 'bg-indigo-500',
+  zinc: 'bg-zinc-500',
+  purple: 'bg-purple-500',
+  emerald: 'bg-emerald-500',
+  amber: 'bg-amber-500',
+  orange: 'bg-orange-500',
+  red: 'bg-red-500',
+  cyan: 'bg-cyan-500',
+  pink: 'bg-pink-500',
+  teal: 'bg-teal-500',
+  green: 'bg-green-500',
+  gray: 'bg-gray-400',
+  violet: 'bg-violet-500',
+  fuchsia: 'bg-fuchsia-500',
+};
 
 export function SubscriptionGridRowLabel({
+  rowNumber,
   subscriptionName,
   projectName,
   subscription,
@@ -42,10 +54,10 @@ export function SubscriptionGridRowLabel({
   return (
     <div className="flex items-center gap-2.5">
       <span
-        className="bg-muted/50 text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+        className="bg-muted/50 text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums"
         aria-hidden
       >
-        {projectInitials(projectName)}
+        {rowNumber}
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-1.5">
@@ -60,18 +72,21 @@ export function SubscriptionGridRowLabel({
               {termBadge}
             </span>
           ) : null}
-          {statusMeta ? (
-            <StatusBadge
-              label={statusMeta.label}
-              variant={statusMeta.variant}
-              className={`shrink-0 ${FINANCE_LIST_BADGE_CLASS}`}
-            />
-          ) : null}
         </div>
         <div className="text-muted-foreground truncate text-xs" title={projectName}>
           {projectName}
         </div>
       </div>
+      {statusMeta ? (
+        <span
+          className={cn(
+            'size-2 shrink-0 rounded-full',
+            SUBSCRIPTION_STATUS_DOT_CLASS[statusMeta.variant],
+          )}
+          title={statusMeta.label}
+          aria-label={statusMeta.label}
+        />
+      ) : null}
     </div>
   );
 }
