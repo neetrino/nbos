@@ -109,9 +109,7 @@ export function CredentialVaultTableRowCells({
             category={cred.category}
             credentialType={cred.credentialType}
             className="size-3.5 shrink-0"
-            fallback={
-              <KeyRound size={14} className="text-muted-foreground shrink-0" aria-hidden />
-            }
+            fallback={<KeyRound size={14} className="text-muted-foreground shrink-0" aria-hidden />}
           />
           <div className="min-w-0 flex-1">
             <p className={CREDENTIAL_LIST_TITLE_CLASS} title={cred.name}>

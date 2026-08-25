@@ -104,8 +104,8 @@ describe('resolveItBrandMarkFromHints', () => {
   });
 
   it('uses a Gmail login when the credential name is generic', () => {
-    expect(
-      resolveItBrandMarkFromHints(null, null, 'NBOS', 'neetrinoagency@gmail.com')?.slug,
-    ).toBe('gmail');
+    expect(resolveItBrandMarkFromHints(null, null, 'NBOS', 'neetrinoagency@gmail.com')?.slug).toBe(
+      'gmail',
+    );
   });
 });
