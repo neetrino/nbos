@@ -3,7 +3,6 @@
 import {
   Fragment,
   useCallback,
-  useEffect,
   useMemo,
   useState,
   type DragEvent,
@@ -96,27 +95,14 @@ export function DeliveryKanbanBoard({
   const displayItems = useMemo(() => {
     if (Object.keys(optimisticStageByKey).length === 0) return items;
     return items.map((item) => {
-      const stage = optimisticStageByKey[getItemKey(item)];
-      return stage ? withOptimisticDeliveryStage(item, stage) : item;
+      const key = getItemKey(item);
+      const optimisticStage = optimisticStageByKey[key];
+      if (!optimisticStage) return item;
+      const serverStage = getItemLifecycle(item)?.stage;
+      if (serverStage === optimisticStage) return item;
+      return withOptimisticDeliveryStage(item, optimisticStage);
     });
   }, [items, optimisticStageByKey]);
-
-  useEffect(() => {
-    setOptimisticStageByKey((current) => {
-      if (Object.keys(current).length === 0) return current;
-      const next: Partial<Record<string, DeliveryActiveStage>> = { ...current };
-      let changed = false;
-      for (const key of Object.keys(next)) {
-        const item = items.find((entry) => getItemKey(entry) === key);
-        const serverStage = item ? getItemLifecycle(item)?.stage : null;
-        if (!item || serverStage === next[key]) {
-          delete next[key];
-          changed = true;
-        }
-      }
-      return changed ? next : current;
-    });
-  }, [items]);
 
   const columns = useMemo(() => {
     return ACTIVE_DELIVERY_STAGES.map((stage) => ({
