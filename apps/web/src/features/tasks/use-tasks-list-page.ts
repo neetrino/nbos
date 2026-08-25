@@ -284,6 +284,7 @@ export function useTasksListPage() {
       tasks: displayTasks,
       myPlanStages,
       onTaskAction: handleAction,
+      onTaskDueDateChange: boardMutations.handleDueDateChange,
       onTaskClick: handleTaskClick,
       onKanbanMove: boardMutations.handleKanbanMove,
       onKanbanReorder: boardMutations.handleKanbanReorder,

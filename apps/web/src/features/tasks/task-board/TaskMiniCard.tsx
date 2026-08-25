@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import type { Task } from '@/lib/api/tasks';
 import { TASK_CARD_COMPLETE_FLASH_CLASS } from './task-card-complete-flash';
 import { getDeadlineColumn } from './task-board-constants';
+import { TaskCardDueDatePicker } from './TaskCardDueDatePicker';
 import {
   formatTaskCardDate,
   pickTaskCardContextChips,
@@ -27,12 +28,14 @@ export function TaskMiniCard({
   task,
   onAction,
   onClick,
+  onDueDateChange,
   /** When true, omit Work Space chip (page already is that work space). */
   hideWorkspaceContext = false,
 }: {
   task: Task;
   onAction: (taskId: string, action: TaskBoardAction) => void | Promise<void>;
   onClick: (task: Task) => void;
+  onDueDateChange?: (taskId: string, dueDate: string) => void | Promise<void>;
   hideWorkspaceContext?: boolean;
 }) {
   const contextChips = pickTaskCardContextChips(task, {
@@ -81,17 +84,25 @@ export function TaskMiniCard({
       </div>
 
       {task.dueDate ? (
-        <span
-          className={cn(
-            TASK_CARD_DUE_BADGE_CLASS,
-            'mt-2',
-            isOverdue
-              ? TASK_CARD_DUE_BADGE_TONE_CLASS.overdue
-              : TASK_CARD_DUE_BADGE_TONE_CLASS.default,
-          )}
-        >
-          {formatTaskCardDate(task.dueDate)}
-        </span>
+        onDueDateChange ? (
+          <TaskCardDueDatePicker
+            dueDate={task.dueDate}
+            isOverdue={isOverdue}
+            onChange={(dueDate) => onDueDateChange(task.id, dueDate)}
+          />
+        ) : (
+          <span
+            className={cn(
+              TASK_CARD_DUE_BADGE_CLASS,
+              'mt-2',
+              isOverdue
+                ? TASK_CARD_DUE_BADGE_TONE_CLASS.overdue
+                : TASK_CARD_DUE_BADGE_TONE_CLASS.default,
+            )}
+          >
+            {formatTaskCardDate(task.dueDate)}
+          </span>
+        )
       ) : null}
 
       {contextChips.length > 0 ? (

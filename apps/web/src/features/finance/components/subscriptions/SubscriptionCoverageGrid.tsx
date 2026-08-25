@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { Subscription, SubscriptionGridPayload } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
@@ -25,6 +24,10 @@ import {
   formatSubscriptionGridAmount,
 } from './subscription-coverage-grid-cells';
 import { SubscriptionGridRowLabel } from './SubscriptionGridRowLabel';
+import {
+  FINANCE_CALENDAR_LABEL_HEADER_INNER_CLASS,
+  FinanceCalendarYearControl,
+} from '../finance-calendar-year-control';
 
 interface SubscriptionCoverageGridProps {
   year: number;
@@ -47,7 +50,7 @@ const STICKY_SURFACE_CLASS = FINANCE_CALENDAR_STICKY_SURFACE_CLASS;
 const TOTAL_STICKY_SURFACE_CLASS = FINANCE_CALENDAR_TOTAL_STICKY_SURFACE_CLASS;
 
 const STICKY_LABEL_HEADER_CLASS = cn(
-  'border-border text-muted-foreground sticky top-0 left-0 z-40 border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold tracking-wide uppercase',
+  'border-border text-muted-foreground sticky top-0 left-0 z-40 overflow-hidden border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold tracking-wide uppercase',
   STICKY_SURFACE_CLASS,
   SUB_LABEL_COL_CLASS,
 );
@@ -86,50 +89,6 @@ function monthLabelsForYear(year: number): { key: number; label: string }[] {
   });
 }
 
-function SubscriptionCalendarYearControl({
-  year,
-  onYearChange,
-}: {
-  year: number;
-  onYearChange: (year: number) => void;
-}) {
-  const maxYear = new Date().getFullYear() + MAX_SUBSCRIPTION_BOARD_YEAR_OFFSET;
-
-  return (
-    <div
-      className="border-border bg-muted/30 inline-flex items-center gap-1 rounded-full border p-1"
-      role="group"
-      aria-label="Calendar year"
-    >
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="size-7 rounded-full"
-        aria-label="Previous year"
-        disabled={year <= MIN_SUBSCRIPTION_BOARD_YEAR}
-        onClick={() => onYearChange(year - 1)}
-      >
-        <ChevronLeft className="size-4" aria-hidden />
-      </Button>
-      <span className="text-foreground min-w-[3rem] px-1 text-center text-sm font-semibold tabular-nums">
-        {year}
-      </span>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="size-7 rounded-full"
-        aria-label="Next year"
-        disabled={year >= maxYear}
-        onClick={() => onYearChange(year + 1)}
-      >
-        <ChevronRight className="size-4" aria-hidden />
-      </Button>
-    </div>
-  );
-}
-
 export function SubscriptionCoverageGrid({
   year,
   onYearChange,
@@ -146,6 +105,16 @@ export function SubscriptionCoverageGrid({
   const totalColClass = financeCalendarTotalColClass(preferFullTotal);
   const subscriptionsById = useMemo(() => buildSubscriptionsById(subscriptions), [subscriptions]);
   const months = monthLabelsForYear(year);
+  const sortedRows = useMemo(() => {
+    if (!payload) return [];
+    return [...payload.rows].sort((a, b) => {
+      const byAmount = a.amountMonthly - b.amountMonthly;
+      if (byAmount !== 0) return byAmount;
+      return a.subscriptionName.localeCompare(b.subscriptionName, undefined, {
+        sensitivity: 'base',
+      });
+    });
+  }, [payload]);
 
   if (error) {
     return (
@@ -186,18 +155,13 @@ export function SubscriptionCoverageGrid({
         <thead>
           <tr className={STICKY_SURFACE_CLASS}>
             <th className={cn(STICKY_LABEL_HEADER_CLASS, 'py-2 normal-case')}>
-              <div
-                className={cn(
-                  'flex w-full gap-1',
-                  sidebarCollapsed
-                    ? 'flex-row items-center justify-between'
-                    : 'flex-col items-start gap-1.5',
-                )}
-              >
-                <span className="text-[10px] font-semibold tracking-wide uppercase">
-                  Subscription
-                </span>
-                <SubscriptionCalendarYearControl year={year} onYearChange={onYearChange} />
+              <div className={FINANCE_CALENDAR_LABEL_HEADER_INNER_CLASS}>
+                <FinanceCalendarYearControl
+                  year={year}
+                  onYearChange={onYearChange}
+                  minYear={MIN_SUBSCRIPTION_BOARD_YEAR}
+                  maxYearOffset={MAX_SUBSCRIPTION_BOARD_YEAR_OFFSET}
+                />
               </div>
             </th>
             {months.map((month) => (
@@ -211,7 +175,7 @@ export function SubscriptionCoverageGrid({
           </tr>
         </thead>
         <tbody>
-          {payload.rows.map((row) => {
+          {sortedRows.map((row, rowIndex) => {
             const subscription = subscriptionsById.get(row.subscriptionId);
             return (
               <tr key={row.subscriptionId} className="hover:bg-muted/15">
@@ -220,8 +184,8 @@ export function SubscriptionCoverageGrid({
                   onClick={() => onOpenSubscription(row.subscriptionId)}
                 >
                   <SubscriptionGridRowLabel
+                    rowNumber={rowIndex + 1}
                     subscriptionName={row.subscriptionName}
-                    projectName={row.projectName}
                     subscription={subscription}
                     fallbackStatus={row.subscriptionStatus}
                   />

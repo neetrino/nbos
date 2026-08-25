@@ -12,6 +12,7 @@ import {
   taskMatchesMyPlanColumn,
 } from '@/features/tasks/task-board';
 import type { TaskBoardAction } from '@/features/tasks/task-board';
+import { formatTaskDueDatePickerValue } from '@/features/tasks/task-general-form-state';
 import { tasksApi, type Task, type TaskBoardStage } from '@/lib/api/tasks';
 import { TASK_CARD_COMPLETE_FLASH_MS, waitAtLeast } from './task-card-complete-flash';
 
@@ -270,8 +271,33 @@ export function useTaskBoardMutations({
     [myPlanStages, setMyPlanStages],
   );
 
+  const handleDueDateChange = useCallback(
+    async (taskId: string, dueDate: string) => {
+      const task = tasks.find((item) => item.id === taskId);
+      if (!task) return;
+
+      const nextDueDate = dueDate || null;
+      const currentPickerValue = formatTaskDueDatePickerValue(task.dueDate);
+      if (dueDate === currentPickerValue) return;
+
+      const previousTasks = tasks;
+      setTasks((prev) =>
+        prev.map((item) => (item.id === taskId ? { ...item, dueDate: nextDueDate } : item)),
+      );
+
+      try {
+        const updated = await tasksApi.update(taskId, { dueDate: nextDueDate });
+        setTasks((prev) => prev.map((item) => (item.id === taskId ? updated : item)));
+      } catch {
+        setTasks(previousTasks);
+      }
+    },
+    [tasks, setTasks],
+  );
+
   return {
     handleAction,
+    handleDueDateChange,
     handleKanbanMove,
     handleKanbanReorder,
     handleMyPlanMove,

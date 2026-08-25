@@ -169,6 +169,7 @@ export function useWorkspaceRuntimeBoard(
     handleMyPlanReorder: boardMutations.handleMyPlanReorder,
     handleDeadlineMove: boardMutations.handleDeadlineMove,
     handleDeadlineReorder: boardMutations.handleDeadlineReorder,
+    handleDueDateChange: boardMutations.handleDueDateChange,
     handleAddTaskInColumn: boardMutations.handleAddTaskInColumn,
     handleAddMyPlanStage: boardMutations.handleAddMyPlanStage,
     handleRenameMyPlanStage: boardMutations.handleRenameMyPlanStage,
