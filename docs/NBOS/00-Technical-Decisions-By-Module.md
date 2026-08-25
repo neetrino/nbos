@@ -50,6 +50,7 @@ Integrate or embed through adapters:
 - WhatsApp, Telegram and other external message channels.
 - Gmail, IMAP/SMTP and external mail sync/send providers.
 - Google Calendar / Google Drive / Google Workspace sync when explicitly approved.
+- Google Contacts: one-way NBOS → one org account (Founder-only). Canon: `06-Integrations/10-Google-Contacts-Sync.md`.
 - Payment, bank statement, government invoice and accounting-system bridges.
 - Heavy BI, collaborative office editing or other commodity capabilities when native NBOS depth is not the current product value.
 

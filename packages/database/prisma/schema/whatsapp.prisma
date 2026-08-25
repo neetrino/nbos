@@ -74,9 +74,10 @@ model WhatsAppGatewayConnection {
   status             WhatsAppGatewayConnectionStatusEnum @default(NOT_CONFIGURED)
   lastHealthCheckAt  DateTime?                          @map("last_health_check_at")
   lastConnectedAt    DateTime?                          @map("last_connected_at")
-  lastErrorCode      String?                            @map("last_error_code")
-  lastErrorMessage   String?                            @map("last_error_message") @db.Text
-  createdAt          DateTime                           @default(now()) @map("created_at")
+  lastErrorCode           String?                            @map("last_error_code")
+  lastErrorMessage        String?                            @map("last_error_message") @db.Text
+  accountingGroupChatId  String?                            @map("accounting_group_chat_id")
+  createdAt              DateTime                           @default(now()) @map("created_at")
   updatedAt          DateTime                           @updatedAt @map("updated_at")
 
   @@map("whatsapp_gateway_connections")

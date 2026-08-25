@@ -151,7 +151,7 @@ Lead получает статус SQL (Quality Lead)
 | ------------------- | ------------------------------------------- |
 | Название            | Название компании / ФИО                     |
 | Тип                 | Legal Entity / Sole Proprietor / Individual |
-| Tax Status          | Tax / Tax-Free                              |
+| Tax Status          | Tax / Free                                  |
 | Количество проектов | Сколько проектов привязано к этой Company   |
 
 ### 5.4. История сделок
@@ -209,7 +209,7 @@ Lead получает статус SQL (Quality Lead)
 Арам Петросян (Contact)
   ├── ООО "АрамОбувь" (Legal Entity, Tax)
   ├── ИП Петросян (Sole Proprietor, Tax)
-  └── Aram Transport LLC (Legal Entity, Tax-Free)
+  └── Aram Transport LLC (Legal Entity, Free)
 ```
 
 ### Contact → Deals (1:N)
@@ -359,3 +359,9 @@ Contact с типом `Partner` связан с Partner-сущностью. Че
 | Формат телефона       | Международный формат (+374..., +7..., +1...)                                                                      |
 | Формат email          | Валидация email-адреса                                                                                            |
 | Не удаляется          | Contact с привязанными проектами, сделками или компаниями не удаляется, только архивируется                       |
+
+---
+
+## 13. Google Contacts
+
+Активные контакты зеркалируются в один org Google-аккаунт (телефонная книга + `#` для ATS). Источник правды — NBOS. Trash/merge не удаляют карточку в Google. Подключает только Founder: Settings → Integrations. Канон: `06-Integrations/10-Google-Contacts-Sync.md`.

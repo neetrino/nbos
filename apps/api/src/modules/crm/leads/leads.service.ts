@@ -1,10 +1,17 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  Optional,
+} from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
 import { permanentlyDeleteProfileATrashedEntity } from '../../../common/lifecycle/profile-a-permanent-delete.ops';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
+import { GoogleContactsQueueService } from '../../integrations/google-contacts/google-contacts-queue.service';
 import { validateLeadStageGate } from './lead-stage-gate';
 import { resolveLeadCreateDefaults } from './lead-create-defaults.op';
 import { employeePersonSelect } from '../../../common/employee-person.select';
@@ -98,6 +105,7 @@ export class LeadsService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly auditService: AuditService,
+    @Optional() private readonly googleContactsQueue?: GoogleContactsQueueService,
   ) {}
 
   async findAll(params: LeadQueryParams) {
@@ -374,7 +382,7 @@ export class LeadsService {
     body: { contactId: string; aboutDealId?: string },
     actor: { id: string; roleSlug: string; isPlatformOwner?: boolean },
   ) {
-    await attachLeadToContact(this.prisma, this.auditService, {
+    const result = await attachLeadToContact(this.prisma, this.auditService, {
       leadId,
       contactId: body.contactId,
       aboutDealId: body.aboutDealId,
@@ -382,6 +390,7 @@ export class LeadsService {
       actorRoleSlug: actor.roleSlug,
       isPlatformOwner: actor.isPlatformOwner === true,
     });
+    await this.enqueueGoogleContactsSync(result.contactId);
     return this.findById(leadId);
   }
 
@@ -390,13 +399,14 @@ export class LeadsService {
     contactId: string,
     actor: { id: string; roleSlug: string; isPlatformOwner?: boolean },
   ) {
-    await pourLeadIntoContact(this.prisma, this.auditService, {
+    const result = await pourLeadIntoContact(this.prisma, this.auditService, {
       leadId,
       contactId,
       actorId: actor.id,
       actorRoleSlug: actor.roleSlug,
       isPlatformOwner: actor.isPlatformOwner === true,
     });
+    await this.enqueueGoogleContactsSync(result.contactId);
     return this.findById(leadId);
   }
 
@@ -405,13 +415,14 @@ export class LeadsService {
     body: { attach?: { type: LeadCreateContactAttachType; id: string } },
     actor: { id: string; roleSlug: string; isPlatformOwner?: boolean },
   ) {
-    await createContactFromLead(this.prisma, this.auditService, {
+    const result = await createContactFromLead(this.prisma, this.auditService, {
       leadId,
       attach: body.attach,
       actorId: actor.id,
       actorRoleSlug: actor.roleSlug,
       isPlatformOwner: actor.isPlatformOwner === true,
     });
+    await this.enqueueGoogleContactsSync(result.contactId);
     return this.findById(leadId);
   }
 
@@ -482,6 +493,10 @@ export class LeadsService {
         errors: [{ field: 'status', message: 'Choose a valid Lead stage.' }],
       });
     }
+  }
+
+  private async enqueueGoogleContactsSync(contactId: string): Promise<void> {
+    await this.googleContactsQueue?.enqueueContact(contactId);
   }
 }
 

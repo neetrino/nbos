@@ -1,0 +1,53 @@
+enum GoogleContactsConnectionStatus {
+  DISCONNECTED
+  CONNECTED
+  ERROR
+}
+
+/// Singleton org Google Contacts destination (one row, fixed id).
+model GoogleContactsConnection {
+  id                 String                           @id
+  googleEmail        String?                          @map("google_email")
+  status             GoogleContactsConnectionStatus    @default(DISCONNECTED)
+  lastSyncedAt       DateTime?                        @map("last_synced_at")
+  lastErrorCode      String?                          @map("last_error_code")
+  lastErrorMessage   String?                          @map("last_error_message") @db.Text
+  connectedByUserId String?                          @map("connected_by_user_id")
+  createdAt          DateTime                          @default(now()) @map("created_at")
+  updatedAt          DateTime                         @updatedAt @map("updated_at")
+
+  connectedBy Employee?             @relation("GoogleContactsConnectedBy", fields: [connectedByUserId], references: [id], onDelete: SetNull)
+  secret      GoogleContactsSecret?
+
+  @@index([connectedByUserId])
+  @@map("google_contacts_connections")
+}
+
+model GoogleContactsSecret {
+  id               String   @id @default(uuid())
+  connectionId     String   @unique @map("connection_id")
+  encryptedSecret  String   @map("encrypted_secret") @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  connection GoogleContactsConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@map("google_contacts_secrets")
+}
+
+model GoogleContactMapping {
+  id               String    @id @default(uuid())
+  contactId        String    @unique @map("contact_id")
+  resourceName     String    @map("resource_name")
+  etag             String?
+  lastSyncedAt     DateTime? @map("last_synced_at")
+  lastErrorCode    String?   @map("last_error_code")
+  lastErrorMessage String?   @map("last_error_message") @db.Text
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@index([resourceName])
+  @@map("google_contact_mappings")
+}

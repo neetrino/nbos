@@ -37,7 +37,7 @@ export const COMPANY_TYPES = [
 ] as const;
 
 export const TAX_STATUSES = [
-  { value: 'TAX', label: 'Tax Payer', variant: 'green' as StatusVariant },
+  { value: 'TAX', label: 'Tax', variant: 'green' as StatusVariant },
   { value: 'TAX_FREE', label: 'Free', variant: 'gray' as StatusVariant },
 ] as const;
 

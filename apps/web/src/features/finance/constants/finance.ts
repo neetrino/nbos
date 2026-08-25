@@ -79,7 +79,7 @@ export const SUBSCRIPTION_BILLING_FREQUENCIES = [
 export const CUSTOM_PREPAID_MONTH_MIN = 2;
 export const CUSTOM_PREPAID_MONTH_MAX = 60;
 
-/** Client WhatsApp payment reminder language (Subscription.reminderLanguage). */
+/** Client WhatsApp payment reminder language (Subscription.reminderLanguage, ClientServiceRecord.reminderLanguage). */
 export const SUBSCRIPTION_REMINDER_LANGUAGES = [
   { value: 'HY', label: 'Armenian' },
   { value: 'RU', label: 'Russian' },

@@ -1,5 +1,12 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  Optional,
+} from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
+import { shouldCancelOfficialRequestOnCardCancel } from '@nbos/shared';
 import {
   PrismaClient,
   type Prisma,
@@ -36,6 +43,7 @@ import {
   sendOfficialInvoiceRequest,
   updateOfficialInvoiceGovId,
 } from './invoice-official-request';
+import { InvoiceOfficialWhatsAppService } from './invoice-official-whatsapp.service';
 import {
   INVOICE_MONEY_STATUS_TRANSITION_SELECT,
   prepareInvoiceMoneyStatusTransition,
@@ -102,6 +110,7 @@ export class InvoicesService {
     private readonly dealWonHandler: DealWonHandler,
     private readonly operationalJournal: OperationalJournalService,
     private readonly moduleRef: ModuleRef,
+    @Optional() private readonly officialWhatsApp?: InvoiceOfficialWhatsAppService,
   ) {}
 
   private resolvePaymentsService(): MarkPaidPaymentsPort {
@@ -291,6 +300,10 @@ export class InvoicesService {
     });
     if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
 
+    if (moneyStatus === 'CANCELLED' && shouldCancelOfficialRequestOnCardCancel(invoice)) {
+      await this.officialWhatsApp?.enqueueCancelBestEffort(id);
+    }
+
     await prepareInvoiceMoneyStatusTransition(this.prisma, invoice, moneyStatus);
 
     const amount = Number(invoice.amount);
@@ -417,12 +430,20 @@ export class InvoicesService {
   }
 
   async sendOfficialInvoiceRequest(id: string) {
-    await sendOfficialInvoiceRequest(this.prisma, id);
+    if (this.officialWhatsApp) {
+      await this.officialWhatsApp.sendAndWait(id);
+    } else {
+      await sendOfficialInvoiceRequest(this.prisma, id);
+    }
     return this.findById(id);
   }
 
   async cancelOfficialInvoiceRequest(id: string) {
-    await cancelOfficialInvoiceRequest(this.prisma, id);
+    if (this.officialWhatsApp) {
+      await this.officialWhatsApp.cancelAndWait(id);
+    } else {
+      await cancelOfficialInvoiceRequest(this.prisma, id);
+    }
     return this.findById(id);
   }
 

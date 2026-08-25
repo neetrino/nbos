@@ -9,6 +9,7 @@ export interface WhatsAppGatewayConnectionView {
   lastConnectedAt: string | null;
   lastErrorCode: string | null;
   lastErrorMessage: string | null;
+  accountingGroupChatId: string | null;
   healthOk?: boolean;
 }
 
@@ -66,6 +67,7 @@ export const whatsappGatewayApi = {
   async upsert(body: {
     baseUrl?: string;
     apiToken?: string;
+    accountingGroupChatId?: string | null;
   }): Promise<WhatsAppGatewayConnectionView> {
     const resp = await api.put<WhatsAppGatewayConnectionView>(
       '/api/integrations/whatsapp-gateway',
