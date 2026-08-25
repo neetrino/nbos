@@ -4,6 +4,7 @@
  * @see https://nextjs.org/docs/app/api-reference/file-conventions/proxy
  */
 import { auth } from '@/auth';
+import { getAuthenticatedRootRedirect } from '@/lib/auth/authenticated-root-redirect';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -26,6 +27,11 @@ function isPublicPath(pathname: string): boolean {
 /** Auth-aware proxy: named export `proxy` is the convention expected by Next.js. */
 export const proxy = auth((req: NextRequest & { auth: unknown }) => {
   const { pathname } = req.nextUrl;
+
+  const authenticatedRootRedirect = getAuthenticatedRootRedirect(pathname, Boolean(req.auth));
+  if (authenticatedRootRedirect) {
+    return NextResponse.redirect(new URL(authenticatedRootRedirect, req.nextUrl.origin));
+  }
 
   if (isPublicPath(pathname)) {
     return NextResponse.next();

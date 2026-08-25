@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
+import { AUTHENTICATED_APP_HOME_PATH } from '@/lib/auth/authenticated-root-redirect';
 import { PublicSiteFooterLinks } from '@/components/legal/public-site-footer-links';
 import {
   LayoutDashboard,
@@ -64,7 +66,9 @@ const CTA_ROW =
 
 export default async function LandingPage() {
   const session = await auth();
-  const user = session?.user ?? null;
+  if (session?.user) {
+    redirect(AUTHENTICATED_APP_HOME_PATH);
+  }
 
   return (
     <div className="bg-background text-foreground min-h-dvh overflow-x-hidden">
@@ -82,32 +86,19 @@ export default async function LandingPage() {
             />
           </div>
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-            {user ? (
-              <Link
-                href="/dashboard"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-10 items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors sm:min-h-0 sm:gap-2 sm:px-5 sm:py-2.5"
-              >
-                <LayoutDashboard size={16} className="hidden sm:block" aria-hidden />
-                <span className="sm:hidden">Dashboard</span>
-                <span className="hidden sm:inline">Go to Dashboard</span>
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/sign-in"
-                  className="text-muted-foreground hover:text-foreground inline-flex min-h-10 items-center rounded-xl px-2.5 py-2 text-sm font-medium transition-colors sm:min-h-0 sm:px-4"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/sign-up"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-10 items-center rounded-xl px-3 py-2 text-sm font-medium transition-colors sm:min-h-0 sm:px-5 sm:py-2.5"
-                >
-                  <span className="sm:hidden">Join</span>
-                  <span className="hidden sm:inline">Join with invite</span>
-                </Link>
-              </>
-            )}
+            <Link
+              href="/sign-in"
+              className="text-muted-foreground hover:text-foreground inline-flex min-h-10 items-center rounded-xl px-2.5 py-2 text-sm font-medium transition-colors sm:min-h-0 sm:px-4"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/sign-up"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-10 items-center rounded-xl px-3 py-2 text-sm font-medium transition-colors sm:min-h-0 sm:px-5 sm:py-2.5"
+            >
+              <span className="sm:hidden">Join</span>
+              <span className="hidden sm:inline">Join with invite</span>
+            </Link>
           </div>
         </div>
       </nav>
@@ -129,22 +120,13 @@ export default async function LandingPage() {
         </p>
 
         <div className={CTA_ROW}>
-          {user ? (
-            <Link href="/dashboard" className={PRIMARY_BTN}>
-              Open Dashboard
-              <ArrowRight size={16} aria-hidden />
-            </Link>
-          ) : (
-            <>
-              <Link href="/sign-up" className={PRIMARY_BTN}>
-                Join with invite
-                <ArrowRight size={16} aria-hidden />
-              </Link>
-              <Link href="/sign-in" className={SECONDARY_BTN}>
-                Sign In
-              </Link>
-            </>
-          )}
+          <Link href="/sign-up" className={PRIMARY_BTN}>
+            Join with invite
+            <ArrowRight size={16} aria-hidden />
+          </Link>
+          <Link href="/sign-in" className={SECONDARY_BTN}>
+            Sign In
+          </Link>
         </div>
 
         <ul className="mt-12 flex list-none flex-col items-stretch gap-3 p-0 sm:mt-16 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-8 sm:gap-y-4">
@@ -198,27 +180,17 @@ export default async function LandingPage() {
             Ready to get started?
           </h2>
           <p className="text-muted-foreground mt-3 text-base sm:mt-4 sm:text-lg">
-            {user
-              ? 'Your workspace is ready. Jump into the dashboard.'
-              : 'Access is by invitation. Use your invite link to activate your account, or sign in if you already have one.'}
+            Access is by invitation. Use your invite link to activate your account, or sign in if
+            you already have one.
           </p>
           <div className={`${CTA_ROW} mx-auto`}>
-            {user ? (
-              <Link href="/dashboard" className={PRIMARY_BTN}>
-                Go to Dashboard
-                <ArrowRight size={16} aria-hidden />
-              </Link>
-            ) : (
-              <>
-                <Link href="/sign-up" className={PRIMARY_BTN}>
-                  How to join
-                  <ArrowRight size={16} aria-hidden />
-                </Link>
-                <Link href="/sign-in" className={SECONDARY_BTN}>
-                  Sign In
-                </Link>
-              </>
-            )}
+            <Link href="/sign-up" className={PRIMARY_BTN}>
+              How to join
+              <ArrowRight size={16} aria-hidden />
+            </Link>
+            <Link href="/sign-in" className={SECONDARY_BTN}>
+              Sign In
+            </Link>
           </div>
         </div>
       </section>
