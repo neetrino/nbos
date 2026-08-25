@@ -24,6 +24,7 @@ describe('resolveItBrandMark', () => {
 
   it('uses the Slack local mark for slack.com', () => {
     expect(resolveItBrandMark('https://app.slack.com/client', 'slack')?.slug).toBe('slack');
+    expect(resolveItBrandMark('https://app.slack.com/client', 'slack')?.hex).toBe('4A154B');
   });
 
   it('returns null for internal NBOS paths', () => {

@@ -3,4 +3,5 @@ export interface BrandMark {
   title: string;
   slug: string;
   path: string;
+  hex: string;
 }

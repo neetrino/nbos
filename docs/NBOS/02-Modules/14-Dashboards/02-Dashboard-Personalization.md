@@ -66,7 +66,7 @@ Personal link может вести на:
 
 Для external links Dashboard должен показывать external badge и по умолчанию открывать ссылку в новой вкладке.
 
-IT-бренд (GitHub, Slack, Figma и т.д.) подбирается по URL или названию ссылки. Неизвестный сайт остаётся с generic link icon.
+IT-бренд (GitHub, Slack, Figma и т.д.) подбирается по URL или названию ссылки и рисуется фирменным цветом. Неизвестный сайт остаётся с generic link icon. Почти чёрные логотипы в dark mode слегка светлеют.
 
 ## Default by role
 
