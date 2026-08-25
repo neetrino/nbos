@@ -1,9 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient, type TransactionClient } from '@nbos/database';
+import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { decrypt, encrypt } from '../../../common/utils/crypto';
 import { GOOGLE_CONTACTS_CONNECTION_ID } from './google-contacts.constants';
+
+/**
+ * Narrow client for optional transactional writes. A full
+ * `PrismaClient | TransactionClient` union exhausts TS instantiation depth.
+ */
+type GoogleContactsSecretDb = Pick<InstanceType<typeof PrismaClient>, 'googleContactsSecret'>;
 
 @Injectable()
 export class GoogleContactsSecretStore {
@@ -16,9 +22,9 @@ export class GoogleContactsSecretStore {
     this.encryptionKey = configService.getOrThrow<string>('CREDENTIALS_ENCRYPTION_KEY');
   }
 
-  async store(refreshToken: string, tx?: TransactionClient): Promise<void> {
+  async store(refreshToken: string, tx?: GoogleContactsSecretDb): Promise<void> {
     const encryptedSecret = encrypt(refreshToken, this.encryptionKey);
-    const client = tx ?? this.prisma;
+    const client: GoogleContactsSecretDb = tx ?? this.prisma;
     await client.googleContactsSecret.upsert({
       where: { connectionId: GOOGLE_CONTACTS_CONNECTION_ID },
       create: { connectionId: GOOGLE_CONTACTS_CONNECTION_ID, encryptedSecret },
