@@ -236,7 +236,7 @@ function OfficialInvoiceReadOnly({ invoice }: { invoice: InvoiceSheetInvoice }) 
   if (invoice.taxStatus !== 'TAX') {
     return (
       <p className="text-muted-foreground text-sm">
-        Tax-free invoice — accountant request is not required.
+        Free invoice — accountant request is not required.
       </p>
     );
   }

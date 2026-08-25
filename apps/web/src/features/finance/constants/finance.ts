@@ -22,7 +22,7 @@ export const INVOICE_MONEY_STAGES = [
 
 export const INVOICE_TAX_STATUS_OPTIONS = [
   { value: 'TAX', label: 'Tax' },
-  { value: 'TAX_FREE', label: 'Tax Free' },
+  { value: 'TAX_FREE', label: 'Free' },
 ] as const;
 
 export const INVOICE_PAYMENT_METHOD_OPTIONS = [

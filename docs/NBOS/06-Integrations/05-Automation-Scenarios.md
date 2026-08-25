@@ -88,12 +88,12 @@
 | **Действия**   | Notification Engine отправляет request в бухгалтерскую WhatsApp-группу |
 | **Получатели** | Бухгалтер                                                              |
 
-### INV-03: Tax-Free → пропуск госсистемы
+### INV-03: Free → пропуск госсистемы
 
 | Параметр       | Значение                                                      |
 | -------------- | ------------------------------------------------------------- |
 | **Триггер**    | Invoice создан (через ~1 час)                                 |
-| **Условия**    | Invoice.tax_status = «Tax-Free»                               |
+| **Условия**    | Invoice.tax_status = «Free»                                   |
 | **Действия**   | Official Invoice request не нужен, Invoice может ждать оплату |
 | **Получатели** | —                                                             |
 
@@ -407,7 +407,7 @@
 | CRM-05 | CRM      | Extension Deal Won                             | Создание расширения в проекте                                       |
 | INV-01 | Invoices | Billing Day — N дней                           | Автосоздание подписочного счёта                                     |
 | INV-02 | Invoices | Invoice создан (Tax)                           | Переход на стадию госсистемы                                        |
-| INV-03 | Invoices | Invoice создан (Tax-Free)                      | Пропуск стадии госсистемы                                           |
+| INV-03 | Invoices | Invoice создан (Free)                          | Пропуск стадии госсистемы                                           |
 | INV-04 | Invoices | Invoice → Send Message                         | WhatsApp group через Notification Engine                            |
 | INV-05 | Invoices | Overdue Day 1                                  | 1-е напоминание о просрочке                                         |
 | INV-06 | Invoices | Overdue Day 3                                  | 2-е напоминание о просрочке                                         |

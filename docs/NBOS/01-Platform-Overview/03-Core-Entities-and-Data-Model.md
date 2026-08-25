@@ -95,7 +95,7 @@ Contact (человек)
 | tax_id        | String       | ИНН / VOEN / Tax ID                       |
 | legal_address | String       | Юридический адрес                         |
 | bank_details  | JSON         | Банковские реквизиты                      |
-| tax_status    | Enum         | Tax (налогооблагаемый), Tax-Free          |
+| tax_status    | Enum         | Tax (налогооблагаемый), Free              |
 | contact_id    | FK → Contact | Основной контакт                          |
 | notes         | Text         | Заметки                                   |
 
@@ -260,7 +260,7 @@ Contact (человек)
 | total_amount             | Decimal                    | Общая сумма заказа. Для срочной `SUBSCRIPTION`: `Deal.amount × subscription_term_months` (не вводится вручную)                                                                                                                                                                                                |
 | subscription_term_months | Integer?                   | Срок в покрытых месяцах (копия с Deal); `null` = бессрочный заказ                                                                                                                                                                                                                                             |
 | currency                 | Enum                       | AMD (default), USD, EUR                                                                                                                                                                                                                                                                                       |
-| tax_status               | Enum                       | Tax, Tax-Free                                                                                                                                                                                                                                                                                                 |
+| tax_status               | Enum                       | Tax, Free                                                                                                                                                                                                                                                                                                     |
 | status                   | Enum                       | Pending Payment, Active, Partially Paid, Fully Paid, Closed. Для срочной подписки `FULLY_PAID` только когда сумма платежей по **order-linked** invoice ≥ `total_amount`; иначе `PARTIALLY_PAID` / `PENDING_PAYMENT` / `ACTIVE`. Classic и бессрочная подписка: все существующие invoice `PAID` → `FULLY_PAID` |
 | partner_id               | FK → Partner               | Партнёр-реферал (если есть)                                                                                                                                                                                                                                                                                   |
 | partner_percent          | Decimal                    | % партнёра (обычно 30%)                                                                                                                                                                                                                                                                                       |
@@ -1217,7 +1217,7 @@ Contact ──1:N──► Call
 1. **Каждый Invoice обязательно привязан к Order ИЛИ Subscription.** Нет "свободных" счетов.
 2. **Каждый Bonus Entry обязательно привязан к Order.** Даже micro-extension создаёт Order.
 3. **Payment триггерит события:** смена статуса Order, создание Bonus Entry, создание Partner Payout.
-4. **Tax-Free / Tax статус наследуется:** Order/Subscription → Invoice. Определяется один раз и не меняется.
+4. **Tax / Free статус наследуется:** Order/Subscription → Invoice. Определяется один раз и не меняется.
 5. **Credential encryption:** логин, пароль, API key, env_data шифруются на уровне поля (AES-256).
 6. **Audit обязателен для:** Credentials (view + edit), Invoices, Payments, Bonus Entries, Access changes.
 7. **Project статус вычисляется**, а не устанавливается вручную.

@@ -151,7 +151,7 @@ Lead получает статус SQL (Quality Lead)
 | ------------------- | ------------------------------------------- |
 | Название            | Название компании / ФИО                     |
 | Тип                 | Legal Entity / Sole Proprietor / Individual |
-| Tax Status          | Tax / Tax-Free                              |
+| Tax Status          | Tax / Free                                  |
 | Количество проектов | Сколько проектов привязано к этой Company   |
 
 ### 5.4. История сделок
@@ -209,7 +209,7 @@ Lead получает статус SQL (Quality Lead)
 Арам Петросян (Contact)
   ├── ООО "АрамОбувь" (Legal Entity, Tax)
   ├── ИП Петросян (Sole Proprietor, Tax)
-  └── Aram Transport LLC (Legal Entity, Tax-Free)
+  └── Aram Transport LLC (Legal Entity, Free)
 ```
 
 ### Contact → Deals (1:N)

@@ -183,7 +183,7 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 
 **Остаётся (срез 2 — клиентские письма):**
 
-- клиентские WhatsApp для Subscription + Client Service (не Deal/Order); HY/RU/EN; `reminderLanguage` на Client Service; copy с суммой/назначением/реквизитами; Tax vs Tax-Free варианты; та же outbound-очередь; шаблоны в коде;
+- клиентские WhatsApp для Subscription + Client Service (не Deal/Order); HY/RU/EN; `reminderLanguage` на Client Service; copy с суммой/назначением/реквизитами; Tax vs Free варианты; та же outbound-очередь; шаблоны в коде;
 - EHDM / Government invoice ID в UI — позже;
 - summary/order rollup — по мере появления полей (см. C8).
 
