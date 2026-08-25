@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { ExpensePlanGridPayload } from '@/lib/api/expense-plans';
@@ -141,6 +142,14 @@ export function ExpensePlanCoverageGrid({
   const preferFullTotal = useFinanceCalendarPreferFullTotal(sidebarCollapsed);
   const totalColClass = financeCalendarTotalColClass(preferFullTotal);
   const months = monthLabelsForYear(year);
+  const sortedRows = useMemo(() => {
+    if (!payload) return [];
+    return [...payload.rows].sort((a, b) => {
+      const byAmount = a.amount - b.amount;
+      if (byAmount !== 0) return byAmount;
+      return a.planName.localeCompare(b.planName, undefined, { sensitivity: 'base' });
+    });
+  }, [payload]);
 
   if (error) {
     return (
@@ -204,10 +213,11 @@ export function ExpensePlanCoverageGrid({
           </tr>
         </thead>
         <tbody>
-          {payload.rows.map((row) => (
+          {sortedRows.map((row, rowIndex) => (
             <tr key={row.planId} className="hover:bg-muted/15">
               <td className={STICKY_PLAN_CELL_CLASS} onClick={() => onOpenPlan(row.planId)}>
                 <ExpensePlanGridRowLabel
+                  rowNumber={rowIndex + 1}
                   planName={row.planName}
                   frequency={row.frequency}
                   projectLabel={row.projectLabel}

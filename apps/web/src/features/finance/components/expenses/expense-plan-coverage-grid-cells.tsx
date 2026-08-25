@@ -145,9 +145,6 @@ export function ExpensePlanGridMonthCell({
         onOpen();
       }}
     >
-      <span className="max-w-full truncate text-[9px] font-semibold tracking-wide uppercase opacity-90">
-        {statusLabel}
-      </span>
       <span className="max-w-full truncate text-sm leading-tight font-bold tabular-nums">
         {amountLabel}
       </span>
