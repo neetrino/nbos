@@ -38,7 +38,7 @@ export const COMPANY_TYPES = [
 
 export const TAX_STATUSES = [
   { value: 'TAX', label: 'Tax Payer', variant: 'green' as StatusVariant },
-  { value: 'TAX_FREE', label: 'Tax Free', variant: 'gray' as StatusVariant },
+  { value: 'TAX_FREE', label: 'Free', variant: 'gray' as StatusVariant },
 ] as const;
 
 export function getContactRole(value: string) {
