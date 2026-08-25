@@ -105,9 +105,7 @@ describe('AtsCallRecordingReprocessService', () => {
       | undefined;
     expect(copy?.input.ContentType).toBe('audio/mpeg');
     expect(copy?.input.MetadataDirective).toBe('REPLACE');
-    expect(copy?.input.CopySource).toBe(
-      `recordings/${encodeURIComponent(WAV_ASSET.storageKey)}`,
-    );
+    expect(copy?.input.CopySource).toBe(`recordings/${encodeURIComponent(WAV_ASSET.storageKey)}`);
     expect(prisma.fileAsset.update).toHaveBeenCalledWith({
       where: { id: 'file-1' },
       data: {
@@ -116,7 +114,9 @@ describe('AtsCallRecordingReprocessService', () => {
         originalName: 'call-uid-recording.mp3',
       },
     });
-    const copyIndex = send.mock.calls.findIndex(([command]) => command instanceof CopyObjectCommand);
+    const copyIndex = send.mock.calls.findIndex(
+      ([command]) => command instanceof CopyObjectCommand,
+    );
     const copyOrder = send.mock.invocationCallOrder[copyIndex];
     const updateOrder = prisma.fileAsset.update.mock.invocationCallOrder[0];
     expect(copyOrder).toBeDefined();
