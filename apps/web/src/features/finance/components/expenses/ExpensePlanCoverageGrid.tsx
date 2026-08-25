@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { ExpensePlanGridPayload } from '@/lib/api/expense-plans';
 import { cn } from '@/lib/utils';
@@ -24,6 +23,10 @@ import {
   formatExpensePlanGridAmount,
 } from './expense-plan-coverage-grid-cells';
 import { ExpensePlanGridRowLabel } from './ExpensePlanGridRowLabel';
+import {
+  FINANCE_CALENDAR_LABEL_HEADER_INNER_CLASS,
+  FinanceCalendarYearControl,
+} from '../finance-calendar-year-control';
 
 interface ExpensePlanCoverageGridProps {
   year: number;
@@ -45,7 +48,7 @@ const STICKY_SURFACE_CLASS = FINANCE_CALENDAR_STICKY_SURFACE_CLASS;
 const TOTAL_STICKY_SURFACE_CLASS = FINANCE_CALENDAR_TOTAL_STICKY_SURFACE_CLASS;
 
 const STICKY_PLAN_HEADER_CLASS = cn(
-  'border-border text-muted-foreground sticky top-0 left-0 z-40 border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold tracking-wide uppercase',
+  'border-border text-muted-foreground sticky top-0 left-0 z-40 overflow-hidden border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold tracking-wide uppercase',
   STICKY_SURFACE_CLASS,
   PLAN_LABEL_COL_CLASS,
 );
@@ -82,50 +85,6 @@ function monthLabelsForYear(year: number): { key: number; label: string }[] {
       label: date.toLocaleString('en-US', { month: 'short' }),
     };
   });
-}
-
-function PlanCalendarYearControl({
-  year,
-  onYearChange,
-}: {
-  year: number;
-  onYearChange: (year: number) => void;
-}) {
-  const maxYear = new Date().getFullYear() + MAX_PLAN_BOARD_YEAR_OFFSET;
-
-  return (
-    <div
-      className="border-border bg-muted/30 inline-flex items-center gap-1 rounded-full border p-1"
-      role="group"
-      aria-label="Calendar year"
-    >
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="size-7 rounded-full"
-        aria-label="Previous year"
-        disabled={year <= MIN_PLAN_BOARD_YEAR}
-        onClick={() => onYearChange(year - 1)}
-      >
-        <ChevronLeft className="size-4" aria-hidden />
-      </Button>
-      <span className="text-foreground min-w-[3rem] px-1 text-center text-sm font-semibold tabular-nums">
-        {year}
-      </span>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="size-7 rounded-full"
-        aria-label="Next year"
-        disabled={year >= maxYear}
-        onClick={() => onYearChange(year + 1)}
-      >
-        <ChevronRight className="size-4" aria-hidden />
-      </Button>
-    </div>
-  );
 }
 
 export function ExpensePlanCoverageGrid({
@@ -190,16 +149,13 @@ export function ExpensePlanCoverageGrid({
         <thead>
           <tr className={STICKY_SURFACE_CLASS}>
             <th className={cn(STICKY_PLAN_HEADER_CLASS, 'py-2 normal-case')}>
-              <div
-                className={cn(
-                  'flex w-full gap-1',
-                  sidebarCollapsed
-                    ? 'flex-row items-center justify-between'
-                    : 'flex-col items-start gap-1.5',
-                )}
-              >
-                <span className="text-[10px] font-semibold tracking-wide uppercase">Plan</span>
-                <PlanCalendarYearControl year={year} onYearChange={onYearChange} />
+              <div className={FINANCE_CALENDAR_LABEL_HEADER_INNER_CLASS}>
+                <FinanceCalendarYearControl
+                  year={year}
+                  onYearChange={onYearChange}
+                  minYear={MIN_PLAN_BOARD_YEAR}
+                  maxYearOffset={MAX_PLAN_BOARD_YEAR_OFFSET}
+                />
               </div>
             </th>
             {months.map((month) => (

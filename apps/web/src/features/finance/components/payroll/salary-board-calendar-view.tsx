@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AmdCurrencyIcon } from '@/components/shared/AmdCurrencyIcon';
 import { formatAmount, formatAmountAbbreviated } from '@/features/finance/constants/finance';
@@ -26,6 +25,10 @@ import type {
 } from '@/lib/api/payroll-runs';
 import { cn } from '@/lib/utils';
 import {
+  FINANCE_CALENDAR_LABEL_HEADER_INNER_CLASS,
+  FinanceCalendarYearControl,
+} from '@/features/finance/components/finance-calendar-year-control';
+import {
   FINANCE_CALENDAR_CELL_EMPTY,
   FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS,
   FINANCE_CALENDAR_SCROLL_SHELL_CLASS,
@@ -46,7 +49,7 @@ const STICKY_SURFACE_CLASS = FINANCE_CALENDAR_STICKY_SURFACE_CLASS;
 
 /** Sticky only on the top header row (months scroll vertically under it). */
 const STICKY_EMPLOYEE_HEADER_CLASS = cn(
-  'border-border text-muted-foreground sticky top-0 z-40 border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold tracking-wide uppercase',
+  'border-border text-muted-foreground sticky top-0 z-40 overflow-hidden border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold tracking-wide uppercase',
   STICKY_SURFACE_CLASS,
   SALARY_CALENDAR_EMPLOYEE_COL_CLASS,
 );
@@ -161,18 +164,13 @@ export function SalaryBoardCalendarView({
         <thead>
           <tr className={STICKY_SURFACE_CLASS}>
             <th className={cn(STICKY_EMPLOYEE_HEADER_CLASS, 'py-2 normal-case')}>
-              <div
-                className={cn(
-                  'flex w-full gap-1',
-                  sidebarCollapsed
-                    ? 'flex-row items-center justify-between'
-                    : 'flex-col items-start gap-1.5',
-                )}
-              >
+              <div className={FINANCE_CALENDAR_LABEL_HEADER_INNER_CLASS}>
                 <span className="text-[10px] font-semibold tracking-wide uppercase">Employee</span>
-                <SalaryBoardCalendarYearControl
+                <FinanceCalendarYearControl
                   year={calendarYear}
                   onYearChange={onCalendarYearChange}
+                  minYear={MIN_SALARY_BOARD_YEAR}
+                  maxYearOffset={MAX_SALARY_BOARD_YEAR_OFFSET}
                 />
               </div>
             </th>
@@ -287,50 +285,6 @@ export function SalaryBoardCalendarView({
           </tr>
         </tfoot>
       </table>
-    </div>
-  );
-}
-
-function SalaryBoardCalendarYearControl({
-  year,
-  onYearChange,
-}: {
-  year: number;
-  onYearChange: (year: number) => void;
-}) {
-  const maxYear = new Date().getFullYear() + MAX_SALARY_BOARD_YEAR_OFFSET;
-
-  return (
-    <div
-      className="border-border bg-muted/30 inline-flex items-center gap-1 rounded-full border p-1"
-      role="group"
-      aria-label="Calendar year"
-    >
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="size-7 rounded-full"
-        aria-label="Previous year"
-        disabled={year <= MIN_SALARY_BOARD_YEAR}
-        onClick={() => onYearChange(year - 1)}
-      >
-        <ChevronLeft className="size-4" aria-hidden />
-      </Button>
-      <span className="text-foreground min-w-[3rem] px-1 text-center text-sm font-semibold tabular-nums">
-        {year}
-      </span>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="size-7 rounded-full"
-        aria-label="Next year"
-        disabled={year >= maxYear}
-        onClick={() => onYearChange(year + 1)}
-      >
-        <ChevronRight className="size-4" aria-hidden />
-      </Button>
     </div>
   );
 }
