@@ -11,6 +11,7 @@ import {
   WHATSAPP_OUTBOUND_QUEUE_NAME,
   WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
 } from './modules/integrations/whatsapp-gateway/whatsapp-gateway.constants';
+import { GOOGLE_CONTACTS_QUEUE_NAME } from './modules/integrations/google-contacts/google-contacts.constants';
 import { ATS_CALL_RECORDING_QUEUE_NAME } from './modules/integrations/ats/ats-call-recording.constants';
 import { BullmqWorkerRegistry } from './runtime/bullmq-worker-registry';
 import { assertProcessRoleForEntrypoint } from './runtime/process-role';
@@ -32,6 +33,7 @@ const EXPECTED_QUEUES = [
   WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
   WHATSAPP_OUTBOUND_QUEUE_NAME,
   ATS_CALL_RECORDING_QUEUE_NAME,
+  GOOGLE_CONTACTS_QUEUE_NAME,
 ] as const;
 
 async function bootstrap() {

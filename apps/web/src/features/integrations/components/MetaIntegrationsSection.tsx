@@ -9,6 +9,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { MetaAccountList } from '@/features/integrations/components/MetaAccountList';
 import { MetaConnectSheet } from '@/features/integrations/components/MetaConnectSheet';
 import { WhatsAppGatewayIntegrationsCard } from '@/features/integrations/components/WhatsAppGatewayIntegrationsCard';
+import { GoogleContactsIntegrationsCard } from '@/features/integrations/components/GoogleContactsIntegrationsCard';
 import { resolveMetaOAuthErrorPresentation } from '@/features/integrations/meta-oauth-error-messages';
 import { marketingApi, type MarketingAccount } from '@/lib/api/marketing';
 import { metaIntegrationApi, type MetaConnectedAccount } from '@/lib/api/meta-integration';
@@ -127,6 +128,7 @@ export function MetaIntegrationsSection() {
           description="Applicant tracking integrations — coming soon."
         />
         <WhatsAppGatewayIntegrationsCard />
+        <GoogleContactsIntegrationsCard />
       </div>
 
       <section className="border-border bg-card rounded-xl border p-4">
