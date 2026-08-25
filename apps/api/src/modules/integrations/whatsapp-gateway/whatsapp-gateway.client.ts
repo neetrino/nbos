@@ -101,8 +101,9 @@ export class WhatsAppGatewayClient {
   async sendTextMessage(
     config: WhatsAppGatewayClientConfig,
     body: { chatId: string; text: string },
+    idempotencyKey?: string,
   ): Promise<WhatsAppGatewaySendMessageResult> {
-    return this.request(config, 'POST', '/api/messages/send', { body });
+    return this.request(config, 'POST', '/api/messages/send', { body, idempotencyKey });
   }
 
   private async request<T>(

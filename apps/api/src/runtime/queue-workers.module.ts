@@ -10,6 +10,7 @@ import { WhatsAppGatewayModule } from '../modules/integrations/whatsapp-gateway/
 import { AtsModule } from '../modules/integrations/ats/ats.module';
 import { AtsCallRecordingWorker } from '../modules/integrations/ats/ats-call-recording.worker';
 import { WhatsAppProductGroupsWorker } from '../modules/integrations/whatsapp-gateway/whatsapp-product-groups.worker';
+import { WhatsAppOutboundMessagesWorker } from '../modules/integrations/whatsapp-gateway/whatsapp-outbound-messages.worker';
 import { OpsAlertsModule } from '../modules/ops-alerts/ops-alerts.module';
 import { BullmqWorkerRegistry } from './bullmq-worker-registry';
 import { shouldRegisterBullmqWorkers } from './process-role';
@@ -50,6 +51,7 @@ export class QueueWorkersModule {
         ReportsExportWorker,
         DriveExportZipWorker,
         WhatsAppProductGroupsWorker,
+        WhatsAppOutboundMessagesWorker,
         AtsCallRecordingWorker,
       ],
       exports: [BullmqWorkerRegistry],

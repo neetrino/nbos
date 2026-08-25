@@ -7,7 +7,10 @@ import { PRISMA_TOKEN } from './database.module';
 import { MAIL_QUEUE_NAME } from './modules/mail/mail-queue.constants';
 import { REPORT_EXPORT_QUEUE_NAME } from './modules/reports/reports-queue.constants';
 import { DRIVE_ZIP_EXPORT_QUEUE_NAME } from './modules/drive/drive-export-zip-queue.constants';
-import { WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME } from './modules/integrations/whatsapp-gateway/whatsapp-gateway.constants';
+import {
+  WHATSAPP_OUTBOUND_QUEUE_NAME,
+  WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
+} from './modules/integrations/whatsapp-gateway/whatsapp-gateway.constants';
 import { ATS_CALL_RECORDING_QUEUE_NAME } from './modules/integrations/ats/ats-call-recording.constants';
 import { BullmqWorkerRegistry } from './runtime/bullmq-worker-registry';
 import { assertProcessRoleForEntrypoint } from './runtime/process-role';
@@ -27,6 +30,7 @@ const EXPECTED_QUEUES = [
   REPORT_EXPORT_QUEUE_NAME,
   DRIVE_ZIP_EXPORT_QUEUE_NAME,
   WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
+  WHATSAPP_OUTBOUND_QUEUE_NAME,
   ATS_CALL_RECORDING_QUEUE_NAME,
 ] as const;
 

@@ -103,6 +103,9 @@ Anchor date: `Invoice.dueDate` (pay-by). Offsets: **10** and **2** calendar days
 - `notifications_enabled = false` (invoice / subscription / client-service as applicable) → no send.
 - Paid / cancelled / on hold → no send.
 - Missing WhatsApp `groupChatId` → skip + log (no crash).
+- v1 copy is short (product + month, HY/RU/EN). **Slice 2:** richer client copy (amount, purpose, payment details); templates stay in code.
+
+Sends go through the paced WhatsApp outbound queue (concurrency 1, 2s gap).
 
 ### Сумма подписки: `amount`, `coverage_month_count`, `monthly_equivalent_amount`
 

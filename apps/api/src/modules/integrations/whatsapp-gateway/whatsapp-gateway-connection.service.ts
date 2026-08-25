@@ -13,6 +13,7 @@ import {
 } from './whatsapp-gateway.constants';
 import { throwWhatsAppDomainError, WhatsAppGatewayHttpError } from './whatsapp-gateway.errors';
 import { WhatsAppGatewaySecretStore } from './whatsapp-gateway-secret.store';
+import { isWhatsAppGroupChatId, normalizeWhatsAppGroupChatId } from '@nbos/shared';
 import type { WhatsAppConnectionPublicView } from './whatsapp-gateway.types';
 
 const SINGLETON_ID = 'whatsapp-gateway-default';
@@ -35,7 +36,7 @@ export class WhatsAppGatewayConnectionService {
   }
 
   async upsertConnection(
-    input: { baseUrl?: string; apiToken?: string },
+    input: { baseUrl?: string; apiToken?: string; accountingGroupChatId?: string | null },
     actorId: string,
   ): Promise<WhatsAppConnectionPublicView> {
     const row = await this.getOrCreateRow();
@@ -43,6 +44,7 @@ export class WhatsAppGatewayConnectionService {
     let nextBaseUrl = row.baseUrl;
     let nextEncrypted = row.encryptedApiToken;
     let tokenChanged = false;
+    let nextAccountingGroupChatId = row.accountingGroupChatId;
 
     if (input.baseUrl !== undefined) {
       nextBaseUrl = assertHttpsBaseUrl(input.baseUrl, allowHttp);
@@ -51,8 +53,12 @@ export class WhatsAppGatewayConnectionService {
       nextEncrypted = this.secrets.encryptToken(input.apiToken.trim());
       tokenChanged = true;
     }
+    if (input.accountingGroupChatId !== undefined) {
+      nextAccountingGroupChatId = parseAccountingGroupChatId(input.accountingGroupChatId);
+    }
 
-    if (!nextBaseUrl || !nextEncrypted) {
+    const configuringGateway = input.baseUrl !== undefined || Boolean(input.apiToken?.trim());
+    if (configuringGateway && (!nextBaseUrl || !nextEncrypted)) {
       throwWhatsAppDomainError(
         400,
         WHATSAPP_ERROR.GATEWAY_NOT_CONFIGURED,
@@ -63,11 +69,16 @@ export class WhatsAppGatewayConnectionService {
     const updated = await this.prisma.whatsAppGatewayConnection.update({
       where: { id: row.id },
       data: {
-        baseUrl: nextBaseUrl,
-        encryptedApiToken: nextEncrypted,
-        status: 'CONNECTED',
-        lastErrorCode: null,
-        lastErrorMessage: null,
+        ...(configuringGateway
+          ? {
+              baseUrl: nextBaseUrl,
+              encryptedApiToken: nextEncrypted,
+              status: 'CONNECTED' as const,
+              lastErrorCode: null,
+              lastErrorMessage: null,
+            }
+          : {}),
+        accountingGroupChatId: nextAccountingGroupChatId,
       },
     });
 
@@ -185,6 +196,7 @@ export class WhatsAppGatewayConnectionService {
       lastConnectedAt: row.lastConnectedAt?.toISOString() ?? null,
       lastErrorCode: row.lastErrorCode,
       lastErrorMessage: row.lastErrorMessage,
+      accountingGroupChatId: row.accountingGroupChatId,
     };
   }
 
@@ -229,4 +241,18 @@ export class WhatsAppGatewayConnectionService {
       httpStatus: 503,
     };
   }
+}
+
+function parseAccountingGroupChatId(raw: string | null): string | null {
+  const trimmed = raw?.trim() ?? '';
+  if (!trimmed) return null;
+  const normalized = normalizeWhatsAppGroupChatId(trimmed);
+  if (!isWhatsAppGroupChatId(normalized)) {
+    throwWhatsAppDomainError(
+      400,
+      WHATSAPP_ERROR.INVALID_GROUP_ID,
+      'Accountant WhatsApp group ID must be a group JID (@g.us)',
+    );
+  }
+  return normalized;
 }

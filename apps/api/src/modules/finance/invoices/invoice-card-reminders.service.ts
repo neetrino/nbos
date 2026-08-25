@@ -1,9 +1,9 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaClient, type SubscriptionReminderLanguage } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import { WhatsAppGatewayClient } from '../../integrations/whatsapp-gateway/whatsapp-gateway.client';
-import { WhatsAppGatewayConnectionService } from '../../integrations/whatsapp-gateway/whatsapp-gateway-connection.service';
+import { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
 import { isOfficialRequestBlockingTaxReminders } from './invoice-official-request';
+import { InvoiceOfficialWhatsAppService } from './invoice-official-whatsapp.service';
 import { tryDeliverPaymentReminderWhatsApp } from './invoice-payment-reminder-whatsapp';
 import { resolveInvoiceProductWhatsAppGroup } from './invoice-product-whatsapp-resolve';
 import { createInvoiceReminderNotificationJob } from './invoice-reminder-job-create';
@@ -71,8 +71,8 @@ export class InvoiceCardRemindersService {
 
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
-    @Optional() private readonly whatsappConnection?: WhatsAppGatewayConnectionService,
-    @Optional() private readonly whatsappClient?: WhatsAppGatewayClient,
+    @Optional() private readonly officialWhatsApp?: InvoiceOfficialWhatsAppService,
+    @Optional() private readonly outbound?: WhatsAppOutboundQueueService,
   ) {}
 
   async runDueInvoiceCardReminders(params: InvoiceReminderRunParams = {}) {
@@ -170,27 +170,35 @@ export class InvoiceCardRemindersService {
     const type = INVOICE_CARD_REMINDER_TYPES.OFFICIAL_REQUEST_DUE;
     const dedupeKey = `invoice_card:${type}:${invoice.id}:${asOfKey}`;
     const existing = await this.prisma.notificationJob.findUnique({ where: { dedupeKey } });
-    if (existing) return { created: false as const, type, invoiceId: invoice.id };
-
-    const productWhatsApp = await resolveInvoiceProductWhatsAppGroup(this.prisma, invoice.id);
-    await createInvoiceReminderNotificationJob(this.prisma, {
-      type,
-      invoiceId: invoice.id,
-      dedupeKey,
-      idempotencyKey: `invoice-card-reminder:${type}:${invoice.id}:${asOfKey}`,
-      scheduledFor: asOf,
-      payload: {
-        invoiceCode: invoice.code,
-        amount: String(invoice.amount),
-        dueDate: invoice.dueDate?.toISOString() ?? null,
-        companyName: invoice.company?.name ?? null,
-        asOf: asOf.toISOString(),
-        asOfYerevan: asOfKey,
-        productId: productWhatsApp?.productId ?? null,
-        whatsappGroupChatId: productWhatsApp?.groupChatId ?? null,
-      },
-    });
-    return { created: true as const, type, invoiceId: invoice.id };
+    if (!existing) {
+      const productWhatsApp = await resolveInvoiceProductWhatsAppGroup(this.prisma, invoice.id);
+      await createInvoiceReminderNotificationJob(this.prisma, {
+        type,
+        invoiceId: invoice.id,
+        dedupeKey,
+        idempotencyKey: `invoice-card-reminder:${type}:${invoice.id}:${asOfKey}`,
+        scheduledFor: asOf,
+        payload: {
+          invoiceCode: invoice.code,
+          amount: String(invoice.amount),
+          dueDate: invoice.dueDate?.toISOString() ?? null,
+          companyName: invoice.company?.name ?? null,
+          asOf: asOf.toISOString(),
+          asOfYerevan: asOfKey,
+          productId: productWhatsApp?.productId ?? null,
+          whatsappGroupChatId: productWhatsApp?.groupChatId ?? null,
+        },
+      });
+    }
+    try {
+      await this.officialWhatsApp?.enqueueDueSend(invoice.id, asOfKey);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `Official request WhatsApp enqueue failed invoice=${invoice.code}: ${message}`,
+      );
+    }
+    return { created: !existing as const, type, invoiceId: invoice.id };
   }
 
   private async createPaymentReminderJob(
@@ -264,8 +272,7 @@ export class InvoiceCardRemindersService {
     });
     await tryDeliverPaymentReminderWhatsApp({
       prisma: this.prisma,
-      connection: this.whatsappConnection,
-      client: this.whatsappClient,
+      outbound: this.outbound,
       jobId: job.jobId,
       chatId: productWhatsApp.groupChatId,
       text: messageText,

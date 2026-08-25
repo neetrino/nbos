@@ -51,6 +51,8 @@ Notification rule отвечает на вопрос: что делать, ко�
 
 Scheduler: `POST /api/scheduler/invoice-card-reminders` (Yerevan `asOf`).
 
+Outbound WhatsApp text (accountant official request, client payment reminders, client invites) goes through one paced queue (`whatsapp.outbound-messages`, concurrency 1, 2s gap). Client copy upgrade (amount / requisites / Client Service language) is slice 2.
+
 ### Subscriptions
 
 | Event                           | Условия                         | Действие                                                 |

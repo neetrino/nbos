@@ -59,26 +59,27 @@ Expense for our side
 
 ### Базовые поля карточки
 
-| Поле                    | Описание                                                           |
-| ----------------------- | ------------------------------------------------------------------ |
-| `service_id`            | Уникальный идентификатор                                           |
-| `project`               | Проект                                                             |
-| `product`               | Продукт, если сервис относится к конкретному продукту              |
-| `type`                  | Domain / Hosting / Service / Account / License                     |
-| `name`                  | Название сервиса                                                   |
-| `provider`              | Поставщик                                                          |
-| `provider_account`      | Ссылка на Credentials                                              |
-| `status`                | Active / Pending / Suspended / Expiring Soon / Expired / Cancelled |
-| `billing_model`         | We Pay / Reminder Only                                             |
-| `pricing_model`         | Fixed / Usage-based                                                |
-| `frequency`             | Monthly / Yearly / One-time                                        |
-| `our_cost`              | Наша фактическая себестоимость                                     |
-| `client_charge`         | Сколько должен платить клиент, если сервис клиентский              |
-| `tax_status`            | Tax / Free                                                         |
-| `notifications_enabled` | Разрешены ли уведомления по связанным Invoice Cards                |
-| `start_date`            | Дата начала                                                        |
-| `renewal_date`          | Дата продления / следующей оплаты                                  |
-| `notes`                 | Заметки                                                            |
+| Поле                    | Описание                                                                          |
+| ----------------------- | --------------------------------------------------------------------------------- |
+| `service_id`            | Уникальный идентификатор                                                          |
+| `project`               | Проект                                                                            |
+| `product`               | Продукт, если сервис относится к конкретному продукту                             |
+| `type`                  | Domain / Hosting / Service / Account / License                                    |
+| `name`                  | Название сервиса                                                                  |
+| `provider`              | Поставщик                                                                         |
+| `provider_account`      | Ссылка на Credentials                                                             |
+| `status`                | Active / Pending / Suspended / Expiring Soon / Expired / Cancelled                |
+| `billing_model`         | We Pay / Reminder Only                                                            |
+| `pricing_model`         | Fixed / Usage-based                                                               |
+| `frequency`             | Monthly / Yearly / One-time                                                       |
+| `our_cost`              | Наша фактическая себестоимость                                                    |
+| `client_charge`         | Сколько должен платить клиент, если сервис клиентский                             |
+| `tax_status`            | Tax / Free                                                                        |
+| `notifications_enabled` | Разрешены ли уведомления по связанным Invoice Cards                               |
+| `reminder_language`     | **Slice 2:** HY / RU / EN for client WhatsApp (same as Subscription). Default HY. |
+| `start_date`            | Дата начала                                                                       |
+| `renewal_date`          | Дата продления / следующей оплаты                                                 |
+| `notes`                 | Заметки                                                                           |
 
 ---
 

@@ -19,7 +19,10 @@ import { logRedisTopology } from './runtime/queue-redis';
 import { MAIL_QUEUE_NAME } from './modules/mail/mail-queue.constants';
 import { REPORT_EXPORT_QUEUE_NAME } from './modules/reports/reports-queue.constants';
 import { DRIVE_ZIP_EXPORT_QUEUE_NAME } from './modules/drive/drive-export-zip-queue.constants';
-import { WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME } from './modules/integrations/whatsapp-gateway/whatsapp-gateway.constants';
+import {
+  WHATSAPP_OUTBOUND_QUEUE_NAME,
+  WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
+} from './modules/integrations/whatsapp-gateway/whatsapp-gateway.constants';
 import { ScheduledJobRegistry } from './modules/scheduler/scheduled-job-registry';
 import { DEFAULT_SHUTDOWN_TIMEOUT_MS, runGracefulShutdown } from './runtime/worker-shutdown';
 import {
@@ -37,6 +40,7 @@ const QUEUE_PRODUCER_NAMES = [
   REPORT_EXPORT_QUEUE_NAME,
   DRIVE_ZIP_EXPORT_QUEUE_NAME,
   WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
+  WHATSAPP_OUTBOUND_QUEUE_NAME,
 ];
 
 async function bootstrap() {

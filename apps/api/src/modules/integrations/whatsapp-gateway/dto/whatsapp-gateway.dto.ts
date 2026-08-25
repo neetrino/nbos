@@ -12,6 +12,12 @@ export class UpsertWhatsAppGatewayConnectionDto {
   @MinLength(8)
   @MaxLength(500)
   apiToken?: string;
+
+  /** Accountant WhatsApp group JID; empty string clears. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(128)
+  accountingGroupChatId?: string | null;
 }
 
 export class BindProductWhatsAppGroupDto {
