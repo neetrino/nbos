@@ -42,3 +42,39 @@ export function isPointerInsideRect(
 export function findKanbanColumnList(dropZone: HTMLElement): HTMLElement | null {
   return dropZone.querySelector<HTMLElement>(`[${KANBAN_COLUMN_LIST_DATA_ATTR}]`);
 }
+
+export type KanbanPointerInsert = {
+  columnKey: string;
+  index: number;
+};
+
+/** Resolve which column and insert index the pointer is over. */
+export function resolveKanbanPointerInsert(
+  clientX: number,
+  clientY: number,
+  options: {
+    columnKeys: readonly string[];
+    sourceColumnKey: string | null;
+    excludeItemId?: string;
+  },
+): KanbanPointerInsert | null {
+  for (const columnKey of options.columnKeys) {
+    const dropZone = document.querySelector<HTMLElement>(
+      `[${KANBAN_COLUMN_DROP_ZONE_DATA_ATTR}="${columnKey}"]`,
+    );
+    if (!dropZone) continue;
+
+    const zoneRect = dropZone.getBoundingClientRect();
+    if (!isPointerInsideRect(clientX, clientY, zoneRect)) continue;
+
+    const list = findKanbanColumnList(dropZone);
+    if (!list) continue;
+
+    const excludeId =
+      columnKey === options.sourceColumnKey ? options.excludeItemId : undefined;
+    const index = resolveKanbanInsertIndex(list, clientY, excludeId);
+    return { columnKey, index };
+  }
+
+  return null;
+}

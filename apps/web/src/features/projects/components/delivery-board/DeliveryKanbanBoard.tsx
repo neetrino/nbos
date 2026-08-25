@@ -1,37 +1,32 @@
 'use client';
 
-import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
 import {
-  DndContext,
-  DragOverlay,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  closestCorners,
-  useDraggable,
-  useDroppable,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import { Fragment, useCallback, useMemo, useState, type ReactNode } from 'react';
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type DragEvent,
+  type ReactNode,
+} from 'react';
 import {
   KanbanColumnInsertPlaceholder,
   KanbanInsertPlaceholderAfterList,
   KanbanInsertPlaceholderBeforeItem,
 } from '@/components/shared/kanban/KanbanColumnInsertPlaceholder';
 import {
+  findKanbanColumnList,
   KANBAN_CARD_ROW_DATA_ATTR,
   KANBAN_COLUMN_DROP_ZONE_DATA_ATTR,
   KANBAN_COLUMN_LIST_DATA_ATTR,
+  resolveKanbanInsertIndex,
+  type KanbanPointerInsert,
 } from '@/components/shared/kanban/kanban-insert-index';
 import { KANBAN_COLUMN_LEFT_RULE_CLASS } from '@/components/shared/kanban/kanban-column-surface';
-import {
-  findKanbanCardRowByItemId,
-  measureKanbanCardRowHeight,
-} from '@/components/shared/kanban/kanban-drag-metrics';
+import { measureKanbanCardRowHeight } from '@/components/shared/kanban/kanban-drag-metrics';
 import { KanbanScrollEdgeControls } from '@/components/shared/kanban/KanbanScrollEdgeControls';
+import { KanbanTerminalDropBar } from '@/components/shared/kanban/KanbanTerminalDropBar';
 import { useKanbanHorizontalScroll } from '@/components/shared/kanban/use-kanban-horizontal-scroll';
-import { useKanbanPointerInsert } from '@/components/shared/kanban/use-kanban-pointer-insert';
 import { cn } from '@/lib/utils';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
@@ -40,24 +35,7 @@ import {
   DELIVERY_BOARD_TASK_LINK_PROJECT_ENTITY,
   DELIVERY_STAGE_HEX_COLORS,
 } from './delivery-kanban-board.constants';
-import {
-  deliveryKanbanCardId,
-  deliveryKanbanColId,
-  deliveryKanbanTerminalId,
-  parseDeliveryKanbanCardItemKey,
-  parseDeliveryKanbanColId,
-  parseDeliveryKanbanTerminalKey,
-} from './delivery-kanban-ids';
-import {
-  DELIVERY_KANBAN_BOARD_ROW_CLASS,
-  DELIVERY_KANBAN_BOARD_SCROLL_CLASS,
-  DELIVERY_KANBAN_COLUMN_GAP_PX,
-  DELIVERY_KANBAN_COLUMN_SHELL_CLASS,
-  DELIVERY_KANBAN_COLUMN_WIDTH_PX,
-  deliveryKanbanBoardMinWidthPx,
-} from './delivery-kanban-layout';
 import { DELIVERY_TERMINAL_DROP_ZONES } from './delivery-terminal-drop-zones';
-import { DeliveryKanbanTerminalDropBar } from './DeliveryKanbanTerminalDropBar';
 import type { BoardAction, DeliveryActiveStage } from './project-delivery-board-actions';
 import {
   ACTIVE_DELIVERY_STAGES,
@@ -68,12 +46,19 @@ import {
   type DeliveryBoardItem,
 } from './project-delivery-board-model';
 import type { ProductBoardTab } from './ProjectDeliveryBoardContextLinks';
+import {
+  DELIVERY_KANBAN_BOARD_ROW_CLASS,
+  DELIVERY_KANBAN_BOARD_SCROLL_CLASS,
+  DELIVERY_KANBAN_COLUMN_GAP_PX,
+  DELIVERY_KANBAN_COLUMN_SHELL_CLASS,
+  DELIVERY_KANBAN_COLUMN_WIDTH_PX,
+  deliveryKanbanBoardMinWidthPx,
+} from './delivery-kanban-layout';
 
-/** Click vs drag: small mouse movement starts a stage move; pure click still works. */
-const MOUSE_ACTIVATION_DISTANCE_PX = 8;
-/** Touch: delay lets the board scroll before a card drag starts (CRM trackpad / mobile). */
-const TOUCH_ACTIVATION_DELAY_MS = 220;
-const TOUCH_ACTIVATION_TOLERANCE_PX = 8;
+interface DeliveryDragItem {
+  id: string;
+  fromColumn: DeliveryActiveStage;
+}
 
 interface DeliveryKanbanBoardProps {
   items: DeliveryBoardItem[];
@@ -96,30 +81,50 @@ export function DeliveryKanbanBoard({
   onOpenDetails,
   onMoveToStage,
 }: DeliveryKanbanBoardProps) {
-  const [activeItem, setActiveItem] = useState<DeliveryBoardItem | null>(null);
+  const [dragItem, setDragItem] = useState<DeliveryDragItem | null>(null);
   const [dragCardHeightPx, setDragCardHeightPx] = useState<number | null>(null);
+  const [dropTarget, setDropTarget] = useState<DeliveryActiveStage | null>(null);
+  const [dropInsert, setDropInsert] = useState<KanbanPointerInsert | null>(null);
   const [terminalDropTarget, setTerminalDropTarget] = useState<string | null>(null);
   const [quickCreateProjectId, setQuickCreateProjectId] = useState<string | null>(null);
+  const [optimisticStageByKey, setOptimisticStageByKey] = useState<
+    Partial<Record<string, DeliveryActiveStage>>
+  >({});
   const { creatorId, creatorReady } = useTaskCreatorId();
   const quickTaskDisabled = creatorReady && !creatorId;
-  const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: MOUSE_ACTIVATION_DISTANCE_PX } }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: TOUCH_ACTIVATION_DELAY_MS,
-        tolerance: TOUCH_ACTIVATION_TOLERANCE_PX,
-      },
-    }),
-    useSensor(KeyboardSensor),
-  );
+
+  const displayItems = useMemo(() => {
+    if (Object.keys(optimisticStageByKey).length === 0) return items;
+    return items.map((item) => {
+      const stage = optimisticStageByKey[getItemKey(item)];
+      return stage ? withOptimisticDeliveryStage(item, stage) : item;
+    });
+  }, [items, optimisticStageByKey]);
+
+  useEffect(() => {
+    setOptimisticStageByKey((current) => {
+      if (Object.keys(current).length === 0) return current;
+      const next: Partial<Record<string, DeliveryActiveStage>> = { ...current };
+      let changed = false;
+      for (const key of Object.keys(next)) {
+        const item = items.find((entry) => getItemKey(entry) === key);
+        const serverStage = item ? getItemLifecycle(item)?.stage : null;
+        if (!item || serverStage === next[key]) {
+          delete next[key];
+          changed = true;
+        }
+      }
+      return changed ? next : current;
+    });
+  }, [items]);
 
   const columns = useMemo(() => {
     return ACTIVE_DELIVERY_STAGES.map((stage) => ({
       stage,
       label: DELIVERY_STAGE_LABELS[stage],
-      items: items.filter((item) => getItemLifecycle(item)?.stage === stage),
+      items: displayItems.filter((item) => getItemLifecycle(item)?.stage === stage),
     }));
-  }, [items]);
+  }, [displayItems]);
 
   const {
     scrollRef,
@@ -136,14 +141,6 @@ export function DeliveryKanbanBoard({
     mobileFullWidthColumns: false,
   });
 
-  const dragSourceStage = activeItem ? (getItemLifecycle(activeItem)?.stage ?? null) : null;
-  const dropInsert = useKanbanPointerInsert({
-    active: activeItem !== null,
-    sourceColumnKey: dragSourceStage,
-    columnKeys: ACTIVE_DELIVERY_STAGES,
-    excludeItemId: activeItem ? getItemKey(activeItem) : undefined,
-  });
-
   const itemByKey = useMemo(() => {
     const map = new Map<string, DeliveryBoardItem>();
     for (const item of items) {
@@ -152,128 +149,169 @@ export function DeliveryKanbanBoard({
     return map;
   }, [items]);
 
+  const clearDragState = useCallback(() => {
+    setDragItem(null);
+    setDragCardHeightPx(null);
+    setDropTarget(null);
+    setDropInsert(null);
+    setTerminalDropTarget(null);
+  }, []);
+
   const handleDragStart = useCallback(
-    (event: DragStartEvent) => {
-      const key = parseDeliveryKanbanCardItemKey(String(event.active.id));
-      if (!key) return;
-      const item = itemByKey.get(key);
-      if (item) setActiveItem(item);
-      const row = findKanbanCardRowByItemId(key);
-      setDragCardHeightPx(row ? measureKanbanCardRowHeight(row) : null);
+    (itemKey: string, fromColumn: DeliveryActiveStage, event: DragEvent<HTMLDivElement>) => {
+      const item = itemByKey.get(itemKey);
+      if (!item || getItemLifecycle(item)?.workStatus === 'ON_HOLD') {
+        event.preventDefault();
+        return;
+      }
+
+      setDragCardHeightPx(measureKanbanCardRowHeight(event.currentTarget));
+      setDragItem({ id: itemKey, fromColumn });
+      setTerminalDropTarget(null);
+      setDropTarget(null);
+      setDropInsert(null);
     },
     [itemByKey],
   );
 
-  const handleDragOver = useCallback((event: DragOverEvent) => {
-    const overId = event.over?.id != null ? String(event.over.id) : null;
-    const terminalKey = overId ? parseDeliveryKanbanTerminalKey(overId) : null;
-    setTerminalDropTarget(terminalKey ? deliveryKanbanTerminalId(terminalKey) : null);
-  }, []);
-
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      setActiveItem(null);
-      setDragCardHeightPx(null);
-      setTerminalDropTarget(null);
-      const { active, over } = event;
-      if (!over) return;
-      const itemKey = parseDeliveryKanbanCardItemKey(String(active.id));
-      if (!itemKey) return;
-      const item = itemByKey.get(itemKey);
-      if (!item) return;
-      if (getItemLifecycle(item)?.workStatus === 'ON_HOLD') return;
-
-      const terminalKey = parseDeliveryKanbanTerminalKey(String(over.id));
-      if (terminalKey === 'DONE') {
-        void onBoardAction(item, 'COMPLETE');
-        return;
-      }
-      if (terminalKey === 'CANCELLED') {
-        onCancel(item);
+  const handleColumnDragOver = useCallback(
+    (event: DragEvent<HTMLDivElement>, stage: DeliveryActiveStage) => {
+      event.preventDefault();
+      if (!dragItem) {
+        setDropTarget(null);
+        setDropInsert(null);
         return;
       }
 
-      const targetStage = resolveDropTargetStage(String(over.id), itemByKey);
-      if (!targetStage) return;
-      const current = getItemLifecycle(item)?.stage;
-      if (!current) return;
-      const curIdx = ACTIVE_DELIVERY_STAGES.indexOf(current);
-      const targetIdx = ACTIVE_DELIVERY_STAGES.indexOf(targetStage);
-      if (targetIdx <= curIdx) return;
-      onMoveToStage(item, targetStage);
+      const list = findKanbanColumnList(event.currentTarget);
+      if (!list) return;
+
+      setDropTarget(stage);
+      const excludeId = dragItem.fromColumn === stage ? dragItem.id : undefined;
+      const index = resolveKanbanInsertIndex(list, event.clientY, excludeId);
+      setDropInsert({ columnKey: stage, index });
     },
-    [itemByKey, onBoardAction, onCancel, onMoveToStage],
+    [dragItem],
   );
 
-  const handleDragCancel = useCallback(() => {
-    setActiveItem(null);
-    setDragCardHeightPx(null);
-    setTerminalDropTarget(null);
-  }, []);
+  const handleColumnDrop = useCallback(
+    (stage: DeliveryActiveStage) => {
+      if (!dragItem) {
+        clearDragState();
+        return;
+      }
+
+      const item = itemByKey.get(dragItem.id);
+      if (!item || getItemLifecycle(item)?.workStatus === 'ON_HOLD') {
+        clearDragState();
+        return;
+      }
+
+      const sourceIdx = ACTIVE_DELIVERY_STAGES.indexOf(dragItem.fromColumn);
+      const targetIdx = ACTIVE_DELIVERY_STAGES.indexOf(stage);
+      if (targetIdx > sourceIdx) {
+        setOptimisticStageByKey((current) => ({ ...current, [dragItem.id]: stage }));
+        onMoveToStage(item, stage);
+      }
+
+      clearDragState();
+    },
+    [clearDragState, dragItem, itemByKey, onMoveToStage],
+  );
+
+  const handleTerminalDrop = useCallback(
+    (zoneKey: string) => {
+      if (!dragItem) {
+        clearDragState();
+        return;
+      }
+
+      const item = itemByKey.get(dragItem.id);
+      if (!item || getItemLifecycle(item)?.workStatus === 'ON_HOLD') {
+        clearDragState();
+        return;
+      }
+
+      if (zoneKey === 'DONE') {
+        void onBoardAction(item, 'COMPLETE');
+      } else if (zoneKey === 'CANCELLED') {
+        onCancel(item);
+      }
+
+      clearDragState();
+    },
+    [clearDragState, dragItem, itemByKey, onBoardAction, onCancel],
+  );
+
+  const isForwardDropColumn = useCallback(
+    (stage: DeliveryActiveStage) => {
+      if (!dragItem || dropTarget !== stage) return false;
+      const sourceIdx = ACTIVE_DELIVERY_STAGES.indexOf(dragItem.fromColumn);
+      const targetIdx = ACTIVE_DELIVERY_STAGES.indexOf(stage);
+      return sourceIdx >= 0 && targetIdx > sourceIdx;
+    },
+    [dragItem, dropTarget],
+  );
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
-      <div className="relative flex min-h-0 w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden">
-        <KanbanScrollEdgeControls
-          canScrollLeft={canScrollLeft}
-          canScrollRight={canScrollRight}
-          isMobile={isMobileViewport}
-          onStep={scrollByOneColumn}
-          onHoverStart={startAutoScroll}
-          onHoverEnd={stopAutoScroll}
-        />
+    <div className="relative flex min-h-0 w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden">
+      <KanbanScrollEdgeControls
+        canScrollLeft={canScrollLeft}
+        canScrollRight={canScrollRight}
+        isMobile={isMobileViewport}
+        onStep={scrollByOneColumn}
+        onHoverStart={startAutoScroll}
+        onHoverEnd={stopAutoScroll}
+      />
+      <div
+        ref={scrollRef}
+        className={cn(
+          DELIVERY_KANBAN_BOARD_SCROLL_CLASS,
+          isMobileViewport && 'snap-x snap-mandatory',
+          dragItem && 'pb-28',
+        )}
+      >
         <div
-          ref={scrollRef}
-          className={cn(
-            DELIVERY_KANBAN_BOARD_SCROLL_CLASS,
-            isMobileViewport && 'snap-x snap-mandatory',
-            activeItem && 'pb-28',
-          )}
+          className={DELIVERY_KANBAN_BOARD_ROW_CLASS}
+          style={{ minWidth: `${deliveryKanbanBoardMinWidthPx(columns.length)}px` }}
         >
-          <div
-            className={DELIVERY_KANBAN_BOARD_ROW_CLASS}
-            style={{ minWidth: `${deliveryKanbanBoardMinWidthPx(columns.length)}px` }}
-          >
-            {columns.map((col, colIdx) => (
-              <div
-                key={col.stage}
-                className={cn(DELIVERY_KANBAN_COLUMN_SHELL_CLASS, isMobileViewport && 'snap-start')}
+          {columns.map((col, colIdx) => (
+            <div
+              key={col.stage}
+              className={cn(DELIVERY_KANBAN_COLUMN_SHELL_CLASS, isMobileViewport && 'snap-start')}
+            >
+              <KanbanStageColumn
+                stage={col.stage}
+                title={col.label}
+                count={col.items.length}
+                showLeftRule={colIdx > 0}
+                dragCardHeightPx={dragCardHeightPx}
+                dropInsertIndex={dropInsert?.columnKey === col.stage ? dropInsert.index : null}
+                isDropTarget={isForwardDropColumn(col.stage)}
+                onDragOver={(event) => handleColumnDragOver(event, col.stage)}
+                onDrop={() => handleColumnDrop(col.stage)}
               >
-                <KanbanStageColumn
-                  stage={col.stage}
-                  title={col.label}
-                  count={col.items.length}
-                  showLeftRule={colIdx > 0}
-                  dragCardHeightPx={dragCardHeightPx}
-                  dropInsertIndex={dropInsert?.columnKey === col.stage ? dropInsert.index : null}
-                  isDropTarget={
-                    dropInsert?.columnKey === col.stage && dragSourceStage !== col.stage
-                  }
-                >
-                  {col.items.map((item, itemIdx) => (
-                    <Fragment key={getItemKey(item)}>
+                {col.items.map((item, itemIdx) => {
+                  const itemKey = getItemKey(item);
+                  const cardDisabled =
+                    busyItemId === getItemId(item) ||
+                    getItemLifecycle(item)?.workStatus === 'ON_HOLD';
+
+                  return (
+                    <Fragment key={itemKey}>
                       <KanbanInsertPlaceholderBeforeItem
                         insertIndex={dropInsert?.columnKey === col.stage ? dropInsert.index : null}
                         itemIdx={itemIdx}
-                        isDropTarget={
-                          dropInsert?.columnKey === col.stage && dragSourceStage !== col.stage
-                        }
+                        isDropTarget={isForwardDropColumn(col.stage)}
                         heightPx={dragCardHeightPx}
                       />
                       <KanbanDraggableCard
-                        id={deliveryKanbanCardId(getItemKey(item))}
-                        itemKey={getItemKey(item)}
-                        disabled={
-                          busyItemId === getItemId(item) ||
-                          getItemLifecycle(item)?.workStatus === 'ON_HOLD'
-                        }
+                        itemKey={itemKey}
+                        fromStage={col.stage}
+                        isDragging={dragItem?.id === itemKey}
+                        disabled={cardDisabled}
+                        onDragStart={handleDragStart}
+                        onDragEnd={clearDragState}
                       >
                         <ProjectDeliveryBoardCard
                           item={item}
@@ -292,38 +330,22 @@ export function DeliveryKanbanBoard({
                         />
                       </KanbanDraggableCard>
                     </Fragment>
-                  ))}
-                </KanbanStageColumn>
-              </div>
-            ))}
-          </div>
+                  );
+                })}
+              </KanbanStageColumn>
+            </div>
+          ))}
         </div>
-        {activeItem ? (
-          <DeliveryKanbanTerminalDropBar
-            zones={DELIVERY_TERMINAL_DROP_ZONES}
-            activeZoneKey={terminalDropTarget}
-          />
-        ) : null}
       </div>
-      <DragOverlay dropAnimation={null}>
-        {activeItem ? (
-          <div className="shadow-lg">
-            <ProjectDeliveryBoardCard
-              item={activeItem}
-              isActionBusy={false}
-              onOpenProduct={onOpenProduct}
-              onOpenProductTab={onOpenProductTab}
-              onOpenDetails={undefined}
-              onMoveNext={() => {}}
-              onResume={() => {}}
-              onComplete={() => {}}
-              onCancel={() => {}}
-              kanbanMinimal
-              suppressKanbanHoverInteractions
-            />
-          </div>
-        ) : null}
-      </DragOverlay>
+      {dragItem ? (
+        <KanbanTerminalDropBar
+          zones={DELIVERY_TERMINAL_DROP_ZONES}
+          activeZoneKey={terminalDropTarget}
+          onDragOver={setTerminalDropTarget}
+          onDragLeave={() => setTerminalDropTarget(null)}
+          onDrop={handleTerminalDrop}
+        />
+      ) : null}
       <QuickCreateTaskDialog
         open={quickCreateProjectId !== null}
         onOpenChange={(open) => {
@@ -340,8 +362,21 @@ export function DeliveryKanbanBoard({
             : undefined
         }
       />
-    </DndContext>
+    </div>
   );
+}
+
+function withOptimisticDeliveryStage(
+  item: DeliveryBoardItem,
+  stage: DeliveryActiveStage,
+): DeliveryBoardItem {
+  const lifecycle = getItemLifecycle(item);
+  if (!lifecycle || lifecycle.stage === stage) return item;
+  const nextLifecycle = { ...lifecycle, stage };
+  if (item.kind === 'PRODUCT') {
+    return { ...item, product: { ...item.product, deliveryLifecycle: nextLifecycle } };
+  }
+  return { ...item, extension: { ...item.extension, deliveryLifecycle: nextLifecycle } };
 }
 
 function KanbanStageColumn({
@@ -352,6 +387,8 @@ function KanbanStageColumn({
   dragCardHeightPx,
   dropInsertIndex,
   isDropTarget,
+  onDragOver,
+  onDrop,
   children,
 }: {
   stage: DeliveryActiveStage;
@@ -361,9 +398,10 @@ function KanbanStageColumn({
   dragCardHeightPx: number | null;
   dropInsertIndex: number | null;
   isDropTarget: boolean;
+  onDragOver: (event: DragEvent<HTMLDivElement>) => void;
+  onDrop: () => void;
   children: ReactNode;
 }) {
-  const { setNodeRef } = useDroppable({ id: deliveryKanbanColId(stage) });
   const hex = DELIVERY_STAGE_HEX_COLORS[stage];
 
   const raw = hex.replace('#', '');
@@ -373,9 +411,8 @@ function KanbanStageColumn({
   const textColor = (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? '#000' : '#fff';
 
   return (
-    <div ref={setNodeRef} className={cn('relative flex h-full min-h-0 min-w-0 flex-1 flex-col')}>
+    <div className={cn('relative flex h-full min-h-0 min-w-0 flex-1 flex-col')}>
       {showLeftRule ? <div className={KANBAN_COLUMN_LEFT_RULE_CLASS} aria-hidden /> : null}
-      {/* Colored header pill — same pattern as KanbanColumnHeader */}
       <div
         className="mb-3 flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5"
         style={{ backgroundColor: hex }}
@@ -394,9 +431,14 @@ function KanbanStageColumn({
       <div
         className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         {...{ [KANBAN_COLUMN_DROP_ZONE_DATA_ATTR]: stage }}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
       >
         <div
-          className="flex min-h-full min-w-0 flex-col space-y-3 pb-3"
+          className={cn(
+            'flex min-w-0 flex-col space-y-3 pb-3',
+            isDropTarget ? 'min-h-[3rem]' : 'min-h-full',
+          )}
           {...{ [KANBAN_COLUMN_LIST_DATA_ATTR]: stage }}
         >
           <KanbanColumnInsertPlaceholder
@@ -415,7 +457,6 @@ function KanbanStageColumn({
           {count === 0 && !isDropTarget ? (
             <p className="text-muted-foreground py-8 text-center text-xs">No cards</p>
           ) : null}
-          {isDropTarget ? <div className="min-h-[3rem] flex-1 shrink-0" aria-hidden /> : null}
         </div>
       </div>
     </div>
@@ -423,30 +464,31 @@ function KanbanStageColumn({
 }
 
 function KanbanDraggableCard({
-  id,
   itemKey,
+  fromStage,
+  isDragging,
   disabled,
+  onDragStart,
+  onDragEnd,
   children,
 }: {
-  id: string;
   itemKey: string;
+  fromStage: DeliveryActiveStage;
+  isDragging: boolean;
   disabled: boolean;
+  onDragStart: (itemKey: string, fromStage: DeliveryActiveStage, event: DragEvent<HTMLDivElement>) => void;
+  onDragEnd: () => void;
   children: ReactNode;
 }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id,
-    disabled,
-  });
-
   return (
     <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
+      draggable={!disabled}
+      onDragStart={(event) => onDragStart(itemKey, fromStage, event)}
+      onDragEnd={onDragEnd}
       {...{ [KANBAN_CARD_ROW_DATA_ATTR]: true }}
       data-item-id={itemKey}
       className={cn(
-        'rounded-xl transition-transform duration-200 outline-none',
+        'rounded-xl transition-opacity duration-150 outline-none select-none',
         disabled ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing',
         isDragging && 'scale-[0.98] opacity-45',
       )}
@@ -454,18 +496,4 @@ function KanbanDraggableCard({
       <div className="min-w-0">{children}</div>
     </div>
   );
-}
-
-function resolveDropTargetStage(
-  overId: string,
-  itemByKey: Map<string, DeliveryBoardItem>,
-): DeliveryActiveStage | null {
-  const columnStage = parseDeliveryKanbanColId(overId);
-  if (columnStage) return columnStage;
-  const overKey = parseDeliveryKanbanCardItemKey(overId);
-  if (!overKey) return null;
-  const overItem = itemByKey.get(overKey);
-  if (!overItem) return null;
-  const stage = getItemLifecycle(overItem)?.stage;
-  return stage ?? null;
 }
