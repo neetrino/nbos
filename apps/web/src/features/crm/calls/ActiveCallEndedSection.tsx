@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { NotebookPen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { callRecordingSrc, callsApi, type ActiveCallScreenSnapshot } from '@/lib/api/calls';
+import { callsApi, type ActiveCallScreenSnapshot } from '@/lib/api/calls';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { CallRecordingPlayer } from './CallRecordingPlayer';
 import { CallDetailField } from './CallDetailField';
 import { callRecordingLabel, canPlayCallRecording } from './call-recording-status';
 import { ACTIVE_CALL_CONTEXT_CARD_CLASS, CALL_NOTE_MAX_LENGTH } from './active-call.constants';
@@ -48,14 +49,7 @@ function RecordingRow({ snapshot }: { snapshot: ActiveCallScreenSnapshot }) {
     <>
       <dt className="text-muted-foreground">Recording</dt>
       <dd>
-        <audio
-          className="w-full"
-          controls
-          preload="metadata"
-          src={callRecordingSrc(snapshot.callId)}
-        >
-          Play
-        </audio>
+        <CallRecordingPlayer callId={snapshot.callId} />
       </dd>
     </>
   );

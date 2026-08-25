@@ -53,4 +53,16 @@ export class AtsCallRecordingEnqueueService {
       callId: call.id,
     });
   }
+
+  /** READY recordings skip download; MIME repair must use a distinct job id. */
+  async enqueueReprocessForReadyCall(callId: string): Promise<boolean> {
+    const call = await this.prisma.atsCallEvent.findUnique({
+      where: { id: callId },
+      select: ENQUEUE_SELECT,
+    });
+    if (!call || call.recordingStatus !== 'READY' || !call.recordingFileAssetId) {
+      return false;
+    }
+    return this.queue.enqueueReprocess({ callId: call.id, uid: call.uid });
+  }
 }

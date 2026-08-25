@@ -13,9 +13,11 @@ import {
 } from '../../../runtime/queue-redis';
 import { OpsJobFailureAlertService } from '../../ops-alerts/ops-job-failure-alert.service';
 import { AtsCallRecordingDownloadService } from './ats-call-recording-download.service';
+import { AtsCallRecordingReprocessService } from './ats-call-recording-reprocess.service';
 import {
   ATS_CALL_RECORDING_DOWNLOAD_JOB_NAME,
   ATS_CALL_RECORDING_QUEUE_NAME,
+  ATS_CALL_RECORDING_REPROCESS_JOB_NAME,
   type AtsCallRecordingJobPayload,
 } from './ats-call-recording.constants';
 
@@ -27,6 +29,7 @@ export class AtsCallRecordingWorker implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly downloadService: AtsCallRecordingDownloadService,
+    private readonly reprocessService: AtsCallRecordingReprocessService,
     private readonly registry: BullmqWorkerRegistry,
     @Optional() private readonly opsAlerts?: OpsJobFailureAlertService,
   ) {}
@@ -58,8 +61,13 @@ export class AtsCallRecordingWorker implements OnModuleInit, OnModuleDestroy {
   }): Promise<void> {
     const started = Date.now();
     try {
-      if (job.name !== ATS_CALL_RECORDING_DOWNLOAD_JOB_NAME) return;
-      await this.downloadService.processJob(job.data, job.attemptsMade, job.opts.attempts);
+      if (job.name === ATS_CALL_RECORDING_REPROCESS_JOB_NAME) {
+        await this.reprocessService.repairStoredRecording(job.data.callId);
+      } else if (job.name === ATS_CALL_RECORDING_DOWNLOAD_JOB_NAME) {
+        await this.downloadService.processJob(job.data, job.attemptsMade, job.opts.attempts);
+      } else {
+        return;
+      }
       logBullmqJob(this.logger, {
         queue: ATS_CALL_RECORDING_QUEUE_NAME,
         jobName: job.name,

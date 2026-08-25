@@ -3,24 +3,12 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { refreshBackendSession } from './auth/refresh-backend-session';
 import { runSingleFlightRefresh } from './auth/refresh-registry';
+import {
+  copyBackendResponseHeaders,
+  shouldForwardRequestHeaderToBackend,
+} from './bff-backend-headers';
 
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:4000';
-
-/** Headers that must not be forwarded between hop and client. */
-const HOP_BY_HOP_HEADERS = new Set([
-  'connection',
-  'keep-alive',
-  'proxy-authenticate',
-  'proxy-authorization',
-  'te',
-  'trailers',
-  'transfer-encoding',
-  'upgrade',
-  'host',
-  // fetch decodes the body, so the backend's length and encoding no longer describe it.
-  'content-length',
-  'content-encoding',
-]);
 
 /**
  * Proxies a browser API request to Nest, injecting the backend JWT from the
@@ -78,8 +66,7 @@ async function forwardOnce(
 
   const headers = new Headers();
   req.headers.forEach((value, key) => {
-    const lower = key.toLowerCase();
-    if (HOP_BY_HOP_HEADERS.has(lower) || lower === 'authorization') {
+    if (!shouldForwardRequestHeaderToBackend(key)) {
       return;
     }
     headers.set(key, value);
@@ -117,19 +104,9 @@ async function forwardOnce(
 }
 
 function toNextResponse(backendResponse: Response, setCookie?: string): NextResponse {
-  const responseHeaders = new Headers();
-  backendResponse.headers.forEach((value, key) => {
-    if (HOP_BY_HOP_HEADERS.has(key.toLowerCase())) {
-      return;
-    }
-    responseHeaders.set(key, value);
-  });
-  if (setCookie) {
-    responseHeaders.append('Set-Cookie', setCookie);
-  }
   return new NextResponse(backendResponse.body, {
     status: backendResponse.status,
-    headers: responseHeaders,
+    headers: copyBackendResponseHeaders(backendResponse, setCookie),
   });
 }
 

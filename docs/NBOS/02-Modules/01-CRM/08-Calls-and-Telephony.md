@@ -2,7 +2,7 @@
 
 > NBOS Platform — звонки как активность CRM, не отдельная воронка.
 >
-> **Статус:** канон Accepted (2026-08-20). Runtime: Call core + Active Call Screen (SSE `call.started` / `call.answered` / `call.finished`) + CALL activities + recording FileAsset/playback + click-to-call. Playback записи отделён от Call VIEW: `CRM_CALL_RECORDINGS_PLAY` + object-level Call access + Drive `CONFIDENTIAL` FileAsset. Сверка history — следующий срез.
+> **Статус:** канон Accepted (2026-08-20). Runtime: Call core + Active Call Screen (SSE `call.started` / `call.answered` / `call.finished`) + CALL activities + recording FileAsset/playback + click-to-call. Playback записи отделён от Call VIEW: `CRM_CALL_RECORDINGS_PLAY` + object-level Call access + Drive `DRIVE_VIEW` (не Drive listing / RESTRICTED owner filter). Сверка history — следующий срез.
 >
 > Провайдер: ATS.am. Контракт API: [`../../06-Integrations/09-ATS-AM-Integration.md`](../../06-Integrations/09-ATS-AM-Integration.md).  
 > Окно звонка (UI): [`../../05-UI-Specifications/11-Call-Screen.md`](../../05-UI-Specifications/11-Call-Screen.md).  
@@ -128,8 +128,8 @@ Same key + другой target → 409. Same key другого employee не р
 
 Как CRM. **Факт звонка и playback записи — разные права.**
 
-- Seller — свои / назначенные Lead и Deal, свои звонки; playback только своего Call при `CRM_CALL_RECORDINGS_PLAY` + object-level Call access + Drive FileAsset policy;
-- Head of Sales / CEO / Owner — все звонки; `CRM_CALL_RECORDINGS_PLAY` по умолчанию, playback всё равно проходит object-level Call access и Drive policy;
+- Seller — свои / назначенные Lead и Deal, свои звонки; playback только своего Call при `CRM_CALL_RECORDINGS_PLAY` + object-level Call access + `DRIVE_VIEW`;
+- Head of Sales / CEO / Owner — все звонки; `CRM_CALL_RECORDINGS_PLAY` по умолчанию, playback проходит object-level Call access и `DRIVE_VIEW`, без Drive listing filter (RESTRICTED owner-only иначе даёт 404 на чужой CALL_RECORDING);
 - Marketing (включая Head of Marketing) — без `CRM_CALL_RECORDINGS_PLAY`, прослушивание запрещено даже если CRM VIEW позволяет видеть Call;
 - Custom role с `CRM_CALL_RECORDINGS_PLAY` работает по effective permissions, без проверки имени роли;
 - записи: `purpose=CALL_RECORDING`, `visibility=RESTRICTED`, `confidentiality=CONFIDENTIAL`; playback стримит через API, signed/public URL не выдаётся.

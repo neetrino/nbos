@@ -8,6 +8,7 @@ describe('findAccessibleFileAssetStorage', () => {
     prisma.fileAsset.findFirst.mockResolvedValue({
       storageKey: 'org/recordings/a.ogg',
       mimeType: 'audio/ogg',
+      sizeBytes: 12n,
     });
 
     const result = await findAccessibleFileAssetStorage(prisma as never, 'file-1', {
@@ -16,11 +17,15 @@ describe('findAccessibleFileAssetStorage', () => {
       driveScope: 'OWN',
     });
 
-    expect(result).toEqual({ storageKey: 'org/recordings/a.ogg', mimeType: 'audio/ogg' });
+    expect(result).toEqual({
+      storageKey: 'org/recordings/a.ogg',
+      mimeType: 'audio/ogg',
+      sizeBytes: 12n,
+    });
     expect(prisma.fileAsset.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ id: 'file-1', deletedAt: null }),
-        select: { storageKey: true, mimeType: true },
+        select: { storageKey: true, mimeType: true, sizeBytes: true },
       }),
     );
   });

@@ -23,6 +23,7 @@ function buildContentSecurityPolicy(): string {
     `script-src ${scriptSrc.join(' ')}`,
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob: https:`,
+    `media-src 'self'`,
     `font-src 'self' data:`,
     `connect-src ${connectSrc.join(' ')}`,
     `frame-ancestors 'none'`,

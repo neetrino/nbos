@@ -72,4 +72,25 @@ describe('AtsCallRecordingEnqueueService', () => {
     expect(prisma.atsCallEvent.updateMany).not.toHaveBeenCalled();
     expect(enqueueDownload).not.toHaveBeenCalled();
   });
+
+  it('enqueues a reprocess job for an already READY recording', async () => {
+    const prisma = {
+      atsCallEvent: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'call-1',
+          uid: 'uid-1',
+          recordingStatus: 'READY',
+          recordingFileAssetId: 'file-1',
+        }),
+      },
+    };
+    const enqueueReprocess = vi.fn().mockResolvedValue(true);
+    const service = new AtsCallRecordingEnqueueService(
+      prisma as never,
+      { enqueueReprocess } as unknown as AtsCallRecordingQueueService,
+    );
+
+    await expect(service.enqueueReprocessForReadyCall('call-1')).resolves.toBe(true);
+    expect(enqueueReprocess).toHaveBeenCalledWith({ callId: 'call-1', uid: 'uid-1' });
+  });
 });

@@ -12,6 +12,7 @@ import { AtsRecordingHttpTransport } from './ats-recording-http.transport';
 import { AtsRecordingSafeDownloadService } from './ats-recording-safe-download.service';
 import { AtsRecordingUrlPolicy } from './ats-recording-url-policy.service';
 import { AtsCallRecordingDownloadService } from './ats-call-recording-download.service';
+import { AtsCallRecordingReprocessService } from './ats-call-recording-reprocess.service';
 import { AtsCallRecordingEnqueueService } from './ats-call-recording-enqueue.service';
 import { AtsCallRecordingQueueService } from './ats-call-recording-queue.service';
 import { AtsCallRedirectService } from './ats-call-redirect.service';
@@ -41,6 +42,7 @@ import { AtsWebhookService } from './ats-webhook.service';
     AtsCallRecordingQueueService,
     AtsCallRecordingEnqueueService,
     AtsCallRecordingDownloadService,
+    AtsCallRecordingReprocessService,
   ],
   exports: [
     AtsProviderConfig,
@@ -48,6 +50,7 @@ import { AtsWebhookService } from './ats-webhook.service';
     AtsCallbackClient,
     AtsCallRecordingQueueService,
     AtsCallRecordingDownloadService,
+    AtsCallRecordingReprocessService,
     AtsCallRealtimePublisher,
     AtsClickToCallLiveReconcileService,
   ],

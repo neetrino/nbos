@@ -11,10 +11,13 @@ import {
   Patch,
   Post,
   Query,
+  Res,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { CurrentUser, type CurrentUserPayload, SkipTransform } from '../../../common/decorators';
 import { callAccessActorFromUser } from './call-access.types';
+import { sendRecordingPlayback } from './calls-recording-playback';
 import { CallsRecordingService } from './calls-recording.service';
 import { CallsService } from './calls.service';
 import { ClickToCallService } from './click-to-call.service';
@@ -83,8 +86,14 @@ export class CallsController {
   @SkipTransform()
   @Header('Cache-Control', 'private, no-store')
   @ApiOperation({ summary: 'Stream a call recording when Call view, PLAY, and Drive access pass' })
-  streamRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
-    return this.recordingService.streamRecording(id, user);
+  async streamRecording(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Headers('range') range: string | undefined,
+    @Res() res: Response,
+  ): Promise<void> {
+    const result = await this.recordingService.streamRecording(id, user, range);
+    sendRecordingPlayback(res, result);
   }
 
   @Get(':id')
