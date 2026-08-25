@@ -25,6 +25,7 @@ import { CredentialVaultMetaBadge } from '@/features/credentials/components/cred
 import { getCredentialCategoryMeta } from '@/features/credentials/constants/credential-category-meta';
 import { CredentialVaultPreviewStrip } from '@/features/credentials/components/credential-vault-preview-strip';
 import { buildCredentialVaultPreview } from '@/features/credentials/utils/credential-vault-preview';
+import { CredentialBrandMark } from '@/features/credentials/components/credential-brand-mark';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { credentialHealthBadge } from '@/features/credentials/utils/credential-health-badge';
 import { formatCredentialTypeLabel } from '@/features/credentials/utils/credential-type-display';
@@ -100,7 +101,18 @@ export function CredentialVaultTableRowCells({
     <>
       <TableCell className={`${ENTITY_LIST_CELL_CLASS} align-middle`}>
         <div className="flex items-center gap-2">
-          <KeyRound size={14} className="text-muted-foreground shrink-0 self-center" aria-hidden />
+          <CredentialBrandMark
+            url={cred.url}
+            provider={cred.provider}
+            name={cred.name}
+            login={cred.login}
+            category={cred.category}
+            credentialType={cred.credentialType}
+            className="size-3.5 shrink-0"
+            fallback={
+              <KeyRound size={14} className="text-muted-foreground shrink-0" aria-hidden />
+            }
+          />
           <div className="min-w-0 flex-1">
             <p className={CREDENTIAL_LIST_TITLE_CLASS} title={cred.name}>
               {cred.name}

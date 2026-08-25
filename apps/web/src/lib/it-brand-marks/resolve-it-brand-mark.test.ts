@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveItBrandMark } from './resolve-it-brand-mark';
+import { resolveItBrandMark, resolveItBrandMarkFromHints } from './resolve-it-brand-mark';
 
 describe('resolveItBrandMark', () => {
   it('matches GitHub from hostname even when the label is generic', () => {
@@ -29,5 +29,60 @@ describe('resolveItBrandMark', () => {
 
   it('returns null for internal NBOS paths', () => {
     expect(resolveItBrandMark('/tasks', 'My tasks')).toBeNull();
+  });
+
+  it('matches AWS, Adobe and OpenAI from credential-style names', () => {
+    expect(resolveItBrandMark('', 'AWS')?.slug).toBe('amazonaws');
+    expect(resolveItBrandMark('', 'Adobe')?.slug).toBe('adobe');
+    expect(resolveItBrandMark('', 'OPENAI')?.slug).toBe('openai');
+    expect(resolveItBrandMark('', 'ChatGPT')?.slug).toBe('openai');
+    expect(resolveItBrandMark('', 'ANTHROPIC')?.slug).toBe('anthropic');
+  });
+
+  it('matches a Gmail token in the name even when the first word is unrelated', () => {
+    expect(resolveItBrandMark('', 'Busines Gmail')?.slug).toBe('gmail');
+  });
+
+  it('matches Gmail from an email login host', () => {
+    expect(resolveItBrandMark('edgarneet1@gmail.com', 'Android App testing')?.slug).toBe('gmail');
+  });
+
+  it('matches Hetzner from a bare host-style name', () => {
+    expect(resolveItBrandMark('', 'hetzner.com')?.slug).toBe('hetzner');
+  });
+
+  it('matches Beget, Timeweb and Selectel from provider names', () => {
+    expect(resolveItBrandMark('', 'Beget')?.slug).toBe('beget');
+    expect(resolveItBrandMark('https://beget.com', 'panel')?.slug).toBe('beget');
+    expect(resolveItBrandMark('', 'Timeweb')?.slug).toBe('timeweb');
+    expect(resolveItBrandMark('', 'Selectel')?.slug).toBe('selectel');
+  });
+
+  it('matches a provider-style name by a later token', () => {
+    expect(resolveItBrandMark('', 'Google Workspace')?.slug).toBe('google');
+  });
+});
+
+describe('resolveItBrandMarkFromHints', () => {
+  it('uses the provider name when the URL is unknown', () => {
+    const mark = resolveItBrandMarkFromHints('https://login.internal', 'Slack', 'Work chat');
+    expect(mark?.slug).toBe('slack');
+  });
+
+  it('matches OpenAI from ChatGPT and Anthropic from Claude hosts', () => {
+    expect(resolveItBrandMarkFromHints('https://chatgpt.com', 'Chat')?.slug).toBe('openai');
+    expect(resolveItBrandMarkFromHints('claude.ai', 'Assistant')?.slug).toBe('claude');
+  });
+
+  it('uses a Gmail name before a corporate login domain', () => {
+    expect(
+      resolveItBrandMarkFromHints(null, null, 'Busines Gmail', 'info@qtm-group.com')?.slug,
+    ).toBe('gmail');
+  });
+
+  it('uses a Gmail login when the credential name is generic', () => {
+    expect(
+      resolveItBrandMarkFromHints(null, null, 'NBOS', 'neetrinoagency@gmail.com')?.slug,
+    ).toBe('gmail');
   });
 });

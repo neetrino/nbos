@@ -43,7 +43,7 @@
 | 2.10 | Анимации         | Framer Motion               | ✅     | Kanban, переходы                                                  |
 | 2.11 | Drag & Drop      | @dnd-kit                    | ✅     | Kanban-доски                                                      |
 | 2.12 | PWA              | не требуется (v1)           | ➖     | при необходимости позже                                           |
-| 2.13 | Icons            | lucide-react + Simple Icons | ✅     | Lucide — UI chrome; Simple Icons — brand marks for personal links |
+| 2.13 | Icons            | lucide-react + Simple Icons | ✅     | Lucide — UI chrome; Simple Icons — brand marks (links, credentials, AI providers) |
 
 ---
 

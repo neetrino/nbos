@@ -33,6 +33,7 @@ import {
   startRequestGeneration,
 } from '../provider-request-generation';
 import { draftValidateRequest } from '../select-provider';
+import { AiAdminProviderBrand } from './AiAdminProviderBrand';
 
 export function ProviderConnectDialog(props: {
   open: boolean;
@@ -175,11 +176,24 @@ export function ProviderConnectDialog(props: {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <span className="flex min-w-0 items-center gap-2">
+                      <AiAdminProviderBrand provider={provider} className="size-3.5" />
+                      <SelectValue />
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="OPENAI">OpenAI</SelectItem>
-                    <SelectItem value="ANTHROPIC">Anthropic</SelectItem>
+                    <SelectItem value="OPENAI">
+                      <span className="flex items-center gap-2">
+                        <AiAdminProviderBrand provider="OPENAI" className="size-3.5" />
+                        OpenAI
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="ANTHROPIC">
+                      <span className="flex items-center gap-2">
+                        <AiAdminProviderBrand provider="ANTHROPIC" className="size-3.5" />
+                        Anthropic
+                      </span>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

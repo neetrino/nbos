@@ -19,6 +19,7 @@ import { AI_ADMIN_FOOTER_BAR_CLASS, AI_ADMIN_ICON_ACCENT_CLASS } from '../ai-adm
 import { formatTimestamp } from '../format';
 import { applySelectValue } from '../select-value';
 import { agentStateVariant } from '../status-badge-map';
+import { aiAdminProviderGlyph } from './AiAdminProviderBrand';
 import { AiAdminSection } from './AiAdminSection';
 
 export function ModelCatalogCard(props: {
@@ -30,6 +31,7 @@ export function ModelCatalogCard(props: {
   return (
     <AiAdminSection
       icon={Cpu}
+      glyph={aiAdminProviderGlyph(model.provider, 'size-4')}
       title={model.displayName}
       description={`${model.provider} · ${model.providerModelId}`}
       summary={model.evaluationStatus}

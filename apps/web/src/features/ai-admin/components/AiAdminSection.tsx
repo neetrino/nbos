@@ -14,6 +14,7 @@ import { AiAdminIconTile } from './AiAdminIconTile';
 
 export function AiAdminSection(props: {
   icon: LucideIcon;
+  glyph?: ReactNode;
   title: string;
   description?: string;
   summary?: string;
@@ -44,6 +45,7 @@ export function AiAdminSection(props: {
 
 function AiAdminSectionHeader(props: {
   icon: LucideIcon;
+  glyph?: ReactNode;
   title: string;
   description?: string;
   summary?: string;
@@ -53,7 +55,7 @@ function AiAdminSectionHeader(props: {
 }) {
   const identity = (
     <div className="flex min-w-0 flex-1 items-start gap-3">
-      <AiAdminIconTile icon={props.icon} size="sm" />
+      <AiAdminIconTile icon={props.icon} glyph={props.glyph} size="sm" />
       <div className="min-w-0">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           <h2 className="text-sm font-semibold tracking-tight">{props.title}</h2>

@@ -419,7 +419,7 @@ PersonalLink
   show_in_dashboard
 ```
 
-`icon` в v1 не хранится и не выбирается вручную. UI подбирает бренд по hostname URL (IT-каталог: Simple Icons + несколько локальных логотипов), затем по названию (`git` → Git). Неизвестный хост остаётся с generic link glyph. Custom icon upload — non-goal.
+`icon` в v1 не хранится и не выбирается вручную. UI подбирает бренд по hostname URL (IT-каталог: Simple Icons + несколько локальных логотипов), затем по названию (`git` → Git, `OPENAI`/`ChatGPT` → OpenAI). В Credentials порядок другой: provider → URL → name; login используется только для категории Mail. Неизвестный хост остаётся без бренд-марки (generic glyph). Custom icon upload — non-goal.
 
 ### 4. Security for external links
 
