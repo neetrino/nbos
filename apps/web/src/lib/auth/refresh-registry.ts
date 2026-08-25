@@ -1,13 +1,20 @@
 /**
  * Single-flight refresh registry for Next.js BFF.
- * All concurrent 401s await the same Promise; max one retry of the original request.
+ * Concurrent 401s share one Nest refresh and the same rotated tokens.
  */
 
-type RefreshFn = () => Promise<boolean>;
+export type SharedBackendRefresh = {
+  accessToken: string;
+  setCookie?: string;
+};
 
-let inflight: Promise<boolean> | null = null;
+type RefreshFn = () => Promise<SharedBackendRefresh | null>;
 
-export async function runSingleFlightRefresh(refresh: RefreshFn): Promise<boolean> {
+let inflight: Promise<SharedBackendRefresh | null> | null = null;
+
+export async function runSingleFlightRefresh(
+  refresh: RefreshFn,
+): Promise<SharedBackendRefresh | null> {
   if (inflight) {
     return inflight;
   }

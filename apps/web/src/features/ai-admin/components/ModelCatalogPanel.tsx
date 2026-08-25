@@ -19,6 +19,7 @@ import { groupModelsForAdmin } from '../model-catalog-groups';
 import { applySelectValue } from '../select-value';
 import { DisableImpactConfirm } from './DisableImpactConfirm';
 import { AiAdminPageToolbar } from './AiAdminPageToolbar';
+import { AiAdminProviderBrand } from './AiAdminProviderBrand';
 import { ModelCatalogCard } from './ModelCatalogCard';
 
 export function ModelCatalogPanel() {
@@ -104,6 +105,7 @@ export function ModelCatalogPanel() {
               disabled={syncing === connection.id}
               onClick={() => void sync(connection.id)}
             >
+              <AiAdminProviderBrand provider={connection.provider} className="size-3.5" />
               Sync {connection.name}
             </Button>
           ))}

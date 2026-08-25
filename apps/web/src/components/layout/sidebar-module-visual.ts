@@ -1,26 +1,26 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   BarChart3,
-  BotMessageSquare,
+  Boxes,
   Building2,
   CalendarDays,
   Cloud,
+  ContactRound,
   FileText,
+  Filter,
   FolderKanban,
   Handshake,
-  KanbanSquare,
-  Layers,
   LayoutDashboard,
   LifeBuoy,
   ListTodo,
   Mail,
   Megaphone,
-  MessageSquare,
-  Network,
+  MessagesSquare,
   Settings,
   ShieldCheck,
-  Users,
+  Sparkles,
   Wallet,
+  Workflow,
 } from 'lucide-react';
 import type { SidebarModuleKey } from '@nbos/shared/constants';
 
@@ -45,7 +45,7 @@ export const SIDEBAR_MODULE_VISUALS: Record<SidebarModuleKey, SidebarModuleVisua
     markerClass: 'bg-primary',
   },
   crm: {
-    Icon: Users,
+    Icon: Filter,
     iconClass: 'text-blue-600 dark:text-blue-400',
     tileClass: 'bg-blue-500/10',
     tileActiveClass: 'bg-blue-500/16 ring-blue-500/25 ring-1',
@@ -66,7 +66,7 @@ export const SIDEBAR_MODULE_VISUALS: Record<SidebarModuleKey, SidebarModuleVisua
     markerClass: 'bg-violet-600 dark:bg-violet-400',
   },
   'delivery-board': {
-    Icon: KanbanSquare,
+    Icon: Workflow,
     iconClass: 'text-cyan-600 dark:text-cyan-400',
     tileClass: 'bg-cyan-500/10',
     tileActiveClass: 'bg-cyan-500/16 ring-cyan-500/25 ring-1',
@@ -80,7 +80,7 @@ export const SIDEBAR_MODULE_VISUALS: Record<SidebarModuleKey, SidebarModuleVisua
     markerClass: 'bg-blue-700 dark:bg-blue-300',
   },
   'work-spaces': {
-    Icon: Layers,
+    Icon: Boxes,
     iconClass: 'text-indigo-500 dark:text-indigo-300',
     tileClass: 'bg-indigo-400/10',
     tileActiveClass: 'bg-indigo-400/16 ring-indigo-400/25 ring-1',
@@ -101,11 +101,11 @@ export const SIDEBAR_MODULE_VISUALS: Record<SidebarModuleKey, SidebarModuleVisua
     markerClass: 'bg-orange-600 dark:bg-orange-400',
   },
   clients: {
-    Icon: Building2,
-    iconClass: 'text-slate-600 dark:text-slate-300',
-    tileClass: 'bg-slate-500/10',
-    tileActiveClass: 'bg-slate-500/16 ring-slate-500/25 ring-1',
-    markerClass: 'bg-slate-600 dark:bg-slate-400',
+    Icon: ContactRound,
+    iconClass: 'text-amber-600 dark:text-amber-400',
+    tileClass: 'bg-amber-500/10',
+    tileActiveClass: 'bg-amber-500/16 ring-amber-500/25 ring-1',
+    markerClass: 'bg-amber-600 dark:bg-amber-400',
   },
   partners: {
     Icon: Handshake,
@@ -115,14 +115,14 @@ export const SIDEBAR_MODULE_VISUALS: Record<SidebarModuleKey, SidebarModuleVisua
     markerClass: 'bg-fuchsia-600 dark:bg-fuchsia-400',
   },
   'my-company': {
-    Icon: Network,
+    Icon: Building2,
     iconClass: 'text-indigo-600 dark:text-indigo-400',
     tileClass: 'bg-indigo-500/10',
     tileActiveClass: 'bg-indigo-500/16 ring-indigo-500/25 ring-1',
     markerClass: 'bg-indigo-600 dark:bg-indigo-400',
   },
   messenger: {
-    Icon: MessageSquare,
+    Icon: MessagesSquare,
     iconClass: 'text-purple-600 dark:text-purple-400',
     tileClass: 'bg-purple-500/10',
     tileActiveClass: 'bg-purple-500/16 ring-purple-500/25 ring-1',
@@ -171,7 +171,7 @@ export const SIDEBAR_MODULE_VISUALS: Record<SidebarModuleKey, SidebarModuleVisua
     markerClass: 'bg-violet-700 dark:bg-violet-300',
   },
   'ai-agents': {
-    Icon: BotMessageSquare,
+    Icon: Sparkles,
     iconClass: 'text-teal-600 dark:text-teal-400',
     tileClass: 'bg-teal-500/10',
     tileActiveClass: 'bg-teal-500/16 ring-teal-500/25 ring-1',

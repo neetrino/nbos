@@ -31,22 +31,13 @@ export async function proxyToBackend(
     return toNextResponse(first.response, first.setCookie);
   }
 
-  let refreshedAccess: string | null = null;
-  let setCookie: string | undefined;
-  const ok = await runSingleFlightRefresh(async () => {
-    const refreshed = await refreshBackendSession(req);
-    if (!refreshed) return false;
-    refreshedAccess = refreshed.accessToken;
-    setCookie = refreshed.setCookie;
-    return true;
-  });
-
-  if (!ok || !refreshedAccess) {
+  const refreshed = await runSingleFlightRefresh(() => refreshBackendSession(req));
+  if (!refreshed) {
     return toNextResponse(first.response);
   }
 
-  const second = await forwardOnce(req, targetUrl, refreshedAccess, bodyBuffer);
-  return toNextResponse(second.response, setCookie);
+  const second = await forwardOnce(req, targetUrl, refreshed.accessToken, bodyBuffer);
+  return toNextResponse(second.response, refreshed.setCookie);
 }
 
 async function forwardOnce(

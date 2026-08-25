@@ -16,6 +16,7 @@ import {
   credentialCriticalityAccentBarClass,
 } from '@/features/credentials/utils/credential-vault-card-meta';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
+import { CredentialBrandMark } from '@/features/credentials/components/credential-brand-mark';
 import type { CredentialSecretField } from '@/lib/api/credentials';
 import {
   attachCredentialVaultDragCount,
@@ -166,7 +167,18 @@ export function CredentialVaultCard({
         ) : null}
         <div className={VAULT_CARD_BODY_CLASS}>
           <div className="flex min-h-0 flex-1 flex-col gap-1.5">
-            <p className={VAULT_CARD_TITLE_CLASS}>{credential.name}</p>
+            <div className="flex items-start gap-2">
+              <CredentialBrandMark
+                url={credential.url}
+                provider={credential.provider}
+                name={credential.name}
+                login={credential.login}
+                category={credential.category}
+                credentialType={credential.credentialType}
+                className="mt-0.5 size-4 shrink-0"
+              />
+              <p className={VAULT_CARD_TITLE_CLASS}>{credential.name}</p>
+            </div>
             <CredentialVaultPreviewStrip
               className="min-h-0 flex-1"
               credential={credential}

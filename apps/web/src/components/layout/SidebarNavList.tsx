@@ -4,6 +4,7 @@ import { useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronLeft, ExternalLink, Link2 } from 'lucide-react';
+import { PersonalLinkMark } from '@/components/shared/it-brand-mark/PersonalLinkMark';
 import { cn } from '@/lib/utils';
 import {
   isNavChildLink,
@@ -177,6 +178,7 @@ function PersonalLinkRow({ link }: { link: DashboardPersonalLink }) {
           rel={link.openInNewTab ? 'noopener noreferrer' : undefined}
           className={className}
         >
+          <PersonalLinkMark url={link.url} label={link.label} className="size-3.5 shrink-0" />
           <span className="truncate">{link.label}</span>
           <ExternalLink size={14} className="shrink-0 opacity-70" />
         </a>
@@ -187,6 +189,7 @@ function PersonalLinkRow({ link }: { link: DashboardPersonalLink }) {
   return (
     <li>
       <Link href={link.url} className={className}>
+        <PersonalLinkMark url={link.url} label={link.label} className="size-3.5 shrink-0" />
         <span className="truncate">{link.label}</span>
       </Link>
     </li>

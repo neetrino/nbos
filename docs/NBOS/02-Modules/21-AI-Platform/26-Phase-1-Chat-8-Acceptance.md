@@ -227,7 +227,7 @@ AI & Agents was a sub-page of Platform Admin; it is now a first-class sidebar mo
 - `packages/shared/src/constants/sidebar-navigation.ts` — new `ai-agents` module key.
 - `apps/web/src/lib/navigation/nav-config.ts` — top-level module at `/ai-agents` with the nine
   section children; removed from the Platform Admin submenu.
-- `apps/web/src/components/layout/sidebar-module-visual.ts` — `Bot` icon, teal hue.
+- `apps/web/src/components/layout/sidebar-module-visual.ts` — `Sparkles` icon, teal hue.
 - `apps/web/src/app/(app)/settings/ai-agents/` → `apps/web/src/app/(app)/ai-agents/`;
   `AI_ADMIN_BASE_PATH` updated.
 - `apps/web/next.config.ts` — `/settings/ai-agents/:path*` redirects to the new path, so existing

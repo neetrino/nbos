@@ -124,6 +124,7 @@ export {
   type NbosTimePickerProps,
 } from './date-picker';
 export { SearchField, type SearchFieldProps } from './SearchField';
+export { type SearchOption } from './search-field-option';
 export {
   RelationPickerField,
   EntityRelationHost,
