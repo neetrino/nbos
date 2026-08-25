@@ -1,5 +1,7 @@
 import type { ClientServiceRecord, ClientServiceRecordPayload } from '@/lib/api/client-services';
 
+import { DEFAULT_SUBSCRIPTION_REMINDER_LANGUAGE } from '@/features/finance/constants/finance';
+
 export interface ClientServiceFormState {
   projectId: string;
   type: string;
@@ -13,6 +15,7 @@ export interface ClientServiceFormState {
   clientCharge: string;
   taxStatus: string;
   notificationsEnabled: boolean;
+  reminderLanguage: string;
   startDate: string;
   renewalDate: string;
   notes: string;
@@ -31,6 +34,7 @@ export const EMPTY_CLIENT_SERVICE_FORM: ClientServiceFormState = {
   clientCharge: '',
   taxStatus: 'TAX',
   notificationsEnabled: true,
+  reminderLanguage: DEFAULT_SUBSCRIPTION_REMINDER_LANGUAGE,
   startDate: '',
   renewalDate: '',
   notes: '',
@@ -54,6 +58,7 @@ export function clientServiceToFormState(row: ClientServiceRecord): ClientServic
     clientCharge: row.clientCharge ?? '',
     taxStatus: row.taxStatus,
     notificationsEnabled: row.notificationsEnabled,
+    reminderLanguage: row.reminderLanguage ?? DEFAULT_SUBSCRIPTION_REMINDER_LANGUAGE,
     startDate: toDateInputValue(row.startDate),
     renewalDate: toDateInputValue(row.renewalDate),
     notes: row.notes ?? '',
@@ -76,6 +81,7 @@ export function clientServiceFormToPayload(
     clientCharge: parseOptionalAmount(form.clientCharge),
     taxStatus: form.taxStatus,
     notificationsEnabled: form.notificationsEnabled,
+    reminderLanguage: form.reminderLanguage,
     startDate: form.startDate || null,
     renewalDate: form.renewalDate || null,
     notes: form.notes.trim() || null,

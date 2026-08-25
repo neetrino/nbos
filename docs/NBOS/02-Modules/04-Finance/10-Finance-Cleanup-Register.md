@@ -181,9 +181,10 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 
 **Сделано (срез 2026-08, official WhatsApp v1):** paced outbound queue (`whatsapp.outbound-messages`, concurrency 1, 2s gap); accountant group JID on `WhatsAppGatewayConnection`; Send/Cancel реально шлют HY-шаблон в группу; `officialInvoiceRequestSent` после успеха; `govInvoiceId` скрыт в UI до EHDM.
 
-**Остаётся (срез 2 — клиентские письма):**
+**Сделано (срез 2026-08, client WhatsApp v2):** Subscription + Client Service D-10/D-2; HY/RU/EN; `reminderLanguage` on Client Service; richer copy (amount, purpose); Tax without pay-to; Tax-Free with Hasmik personal requisites; same outbound queue; templates in code.
 
-- клиентские WhatsApp для Subscription + Client Service (не Deal/Order); HY/RU/EN; `reminderLanguage` на Client Service; copy с суммой/назначением/реквизитами; Tax vs Free варианты; та же outbound-очередь; шаблоны в коде;
+**Остаётся:**
+
 - EHDM / Government invoice ID в UI — позже;
 - summary/order rollup — по мере появления полей (см. C8).
 

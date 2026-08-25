@@ -14,7 +14,10 @@ import {
   SUBSCRIPTION_PAYMENT_REMINDER_DAYS_BEFORE_DUE,
   type SubscriptionPaymentReminderOffsetDays,
 } from './subscription-payment-reminder.constants';
-import { renderSubscriptionPaymentReminderMessage } from './subscription-payment-reminder-templates';
+import {
+  renderPaymentReminderMessage,
+  resolvePaymentReminderRenderInput,
+} from './invoice-payment-reminder-render';
 import {
   isYerevanDueOffsetDay,
   yerevanCalendarDateKey,
@@ -56,7 +59,13 @@ interface PaymentReminderCandidate {
   officialInvoiceRequestSent: boolean;
   notificationsEnabled: boolean;
   company: { name: string } | null;
-  clientServiceRecord: { notificationsEnabled: boolean } | null;
+  clientServiceRecord: {
+    notificationsEnabled: boolean;
+    reminderLanguage: SubscriptionReminderLanguage;
+    productId: string | null;
+    name: string;
+    product: { id: string; name: string } | null;
+  } | null;
   subscription: {
     productId: string;
     notificationsEnabled: boolean;
@@ -111,7 +120,8 @@ export class InvoiceCardRemindersService {
     let skippedNoWhatsApp = 0;
     for (const invoice of candidates) {
       const dueDate = invoice.dueDate;
-      if (dueDate == null || invoice.subscription == null) continue;
+      if (dueDate == null) continue;
+      if (invoice.subscription == null && invoice.clientServiceRecord == null) continue;
       if (!isPaymentReminderEligible(invoice)) continue;
       for (const offsetDays of SUBSCRIPTION_PAYMENT_REMINDER_DAYS_BEFORE_DUE) {
         if (!isYerevanDueOffsetDay(asOf, dueDate, offsetDays)) continue;
@@ -148,15 +158,19 @@ export class InvoiceCardRemindersService {
     const window = yerevanDueDateWindowForOffsets(asOf, maxOffset);
     return this.prisma.invoice.findMany({
       where: {
-        subscriptionId: { not: null },
+        OR: [
+          {
+            subscriptionId: { not: null },
+            subscription: { is: { notificationsEnabled: true } },
+          },
+          {
+            clientServiceRecordId: { not: null },
+            clientServiceRecord: { is: { notificationsEnabled: true } },
+          },
+        ],
         moneyStatus: { in: [...REMINDER_ELIGIBLE_MONEY_STATUSES] },
         dueDate: { gte: window.gte, lte: window.lte },
         notificationsEnabled: true,
-        OR: [
-          { clientServiceRecordId: null },
-          { clientServiceRecord: { is: { notificationsEnabled: true } } },
-        ],
-        subscription: { is: { notificationsEnabled: true } },
       },
       select: paymentReminderSelect,
     });
@@ -198,7 +212,7 @@ export class InvoiceCardRemindersService {
         `Official request WhatsApp enqueue failed invoice=${invoice.code}: ${message}`,
       );
     }
-    return { created: !existing as const, type, invoiceId: invoice.id };
+    return { created: existing ? (false as const) : (true as const), type, invoiceId: invoice.id };
   }
 
   private async createPaymentReminderJob(
@@ -208,8 +222,25 @@ export class InvoiceCardRemindersService {
     asOfKey: string,
   ) {
     const dueDate = invoice.dueDate;
-    const subscription = invoice.subscription;
-    if (dueDate == null || subscription == null) {
+    if (dueDate == null) {
+      return {
+        created: false as const,
+        type: paymentReminderEventTypeForOffset(offsetDays),
+        invoiceId: invoice.id,
+        reason: 'existing' as const,
+      };
+    }
+
+    const resolved = resolvePaymentReminderRenderInput({
+      amount: invoice.amount,
+      taxStatus: invoice.taxStatus,
+      coverageStartMonth: invoice.coverageStartMonth,
+      dueDate,
+      offsetDays,
+      subscription: invoice.subscription,
+      clientServiceRecord: invoice.clientServiceRecord,
+    });
+    if (resolved == null) {
       return {
         created: false as const,
         type: paymentReminderEventTypeForOffset(offsetDays),
@@ -238,14 +269,8 @@ export class InvoiceCardRemindersService {
       };
     }
 
-    const language = subscription.reminderLanguage;
-    const productName = subscription.product.name;
-    const messageText = renderSubscriptionPaymentReminderMessage({
-      offsetDays,
-      language,
-      productName,
-      coverageStartMonth: invoice.coverageStartMonth,
-    });
+    const { language, productName } = resolved;
+    const messageText = renderPaymentReminderMessage(resolved);
     const job = await createInvoiceReminderNotificationJob(this.prisma, {
       type,
       invoiceId: invoice.id,
@@ -285,8 +310,11 @@ export class InvoiceCardRemindersService {
 function isPaymentReminderEligible(invoice: PaymentReminderCandidate): boolean {
   if (invoice.moneyStatus === 'ON_HOLD') return false;
   if (!invoice.notificationsEnabled) return false;
-  if (!invoice.subscription?.notificationsEnabled) return false;
-  if (invoice.clientServiceRecord && !invoice.clientServiceRecord.notificationsEnabled) {
+  if (invoice.subscription != null) {
+    if (!invoice.subscription.notificationsEnabled) return false;
+  } else if (invoice.clientServiceRecord != null) {
+    if (!invoice.clientServiceRecord.notificationsEnabled) return false;
+  } else {
     return false;
   }
   if (isOfficialRequestBlockingTaxReminders(invoice)) return false;

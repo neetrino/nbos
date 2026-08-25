@@ -50,6 +50,7 @@ export interface ClientServiceRecord {
   clientCharge: string | null;
   taxStatus: string;
   notificationsEnabled: boolean;
+  reminderLanguage: string;
   startDate: string | null;
   renewalDate: string | null;
   notes: string | null;
@@ -81,6 +82,7 @@ export interface ClientServiceRecordPayload {
   clientCharge?: number | null;
   taxStatus?: string;
   notificationsEnabled?: boolean;
+  reminderLanguage?: string;
   startDate?: string | null;
   renewalDate?: string | null;
   notes?: string | null;

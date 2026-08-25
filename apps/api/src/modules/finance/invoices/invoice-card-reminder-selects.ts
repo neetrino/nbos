@@ -22,7 +22,15 @@ export const paymentReminderSelect = {
   officialInvoiceRequestSent: true,
   notificationsEnabled: true,
   company: { select: { name: true } },
-  clientServiceRecord: { select: { notificationsEnabled: true } },
+  clientServiceRecord: {
+    select: {
+      notificationsEnabled: true,
+      reminderLanguage: true,
+      productId: true,
+      name: true,
+      product: { select: { id: true, name: true } },
+    },
+  },
   subscription: {
     select: {
       productId: true,
