@@ -17,12 +17,17 @@ import {
   type CurrentUserPayload,
 } from '../../../common/decorators';
 import { CompaniesService } from './companies.service';
+import { ArmeniaCompanyLookupService } from './armenia-lookup/armenia-company-lookup.service';
+import { LookupCompanyQueryDto } from './dto/lookup-company-query.dto';
 
 @ApiTags('Clients / Companies')
 @ApiBearerAuth()
 @Controller('clients/companies')
 export class CompaniesController {
-  constructor(private readonly companiesService: CompaniesService) {}
+  constructor(
+    private readonly companiesService: CompaniesService,
+    private readonly armeniaCompanyLookup: ArmeniaCompanyLookupService,
+  ) {}
 
   @Get()
   @RequirePermission('CLIENTS', 'VIEW')
@@ -49,6 +54,14 @@ export class CompaniesController {
       type,
       scope,
     });
+  }
+
+  @Get('lookup')
+  @RequirePermission('CLIENTS', 'VIEW')
+  @ApiOperation({ summary: 'Look up Armenian company requisites by TIN or name' })
+  @ApiQuery({ name: 'q', required: true })
+  async lookup(@Query() query: LookupCompanyQueryDto) {
+    return this.armeniaCompanyLookup.search(query.q);
   }
 
   @Get(':id')

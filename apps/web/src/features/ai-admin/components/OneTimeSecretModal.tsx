@@ -1,8 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { Copy, EyeOff } from 'lucide-react';
-import { toast } from 'sonner';
+import { EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -12,55 +10,44 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { buildAgentEnvSnippet } from '../agent-client-setup';
+import { useAgentClientSetupCopy } from '../use-agent-client-setup-copy';
+import { AgentClientSetupActions } from './AgentClientSetupSection';
+import { AgentEnvSnippetCard } from './AgentEnvSnippetCard';
 
 export function OneTimeSecretModal(props: {
   open: boolean;
   title: string;
   secret: string | null;
-  setupHint: string;
+  apiOrigin: string;
   onClose: () => void;
 }) {
-  const [copied, setCopied] = useState(false);
-
-  const dismiss = () => {
-    setCopied(false);
-    props.onClose();
-  };
-
-  const copy = async () => {
-    if (!props.secret) return;
-    await navigator.clipboard.writeText(props.secret);
-    setCopied(true);
-    toast.success('Copied. Store it now — it will not be shown again.');
-  };
+  const setup = useAgentClientSetupCopy(props.secret, props.apiOrigin);
+  const snippet = props.secret ? buildAgentEnvSnippet(props.secret, props.apiOrigin) : '';
 
   return (
     <Dialog
       open={props.open}
       onOpenChange={(open) => {
-        if (!open) dismiss();
+        if (!open) props.onClose();
       }}
     >
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <EyeOff className="size-4" aria-hidden />
             {props.title}
           </DialogTitle>
           <DialogDescription>
-            This value is shown once. After you close this dialog, NBOS only keeps a prefix.
+            Shown once. Paste the two .env lines, or copy MCP for Cursor / Claude / Codex.
           </DialogDescription>
         </DialogHeader>
-        <pre className="bg-muted overflow-x-auto rounded-lg p-3 text-xs break-all whitespace-pre-wrap">
-          {props.secret ?? ''}
-        </pre>
-        <p className="text-muted-foreground text-xs">{props.setupHint}</p>
+        {snippet && setup.copyEnv ? (
+          <AgentEnvSnippetCard snippet={snippet} onCopy={setup.copyEnv} />
+        ) : null}
+        <AgentClientSetupActions token={props.secret} apiOrigin={props.apiOrigin} />
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => void copy()}>
-            <Copy className="size-3.5" aria-hidden />
-            {copied ? 'Copied' : 'Copy'}
-          </Button>
-          <Button type="button" onClick={dismiss}>
+          <Button type="button" onClick={props.onClose}>
             I have stored it
           </Button>
         </DialogFooter>

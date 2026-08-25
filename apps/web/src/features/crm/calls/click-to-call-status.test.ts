@@ -3,6 +3,7 @@ import {
   canShowClickToCallButton,
   CLICK_TO_CALL_NEW_CALL_LABEL,
   clickToCallButtonLabel,
+  clickToCallButtonVariant,
   hasClickToCallPermission,
 } from './click-to-call-status';
 
@@ -14,11 +15,18 @@ describe('click-to-call button', () => {
   });
 
   it('uses the idle, loading, success, and error labels', () => {
-    expect(clickToCallButtonLabel('idle')).toBe('Позвонить');
-    expect(clickToCallButtonLabel('loading')).toBe('Инициируем звонок...');
-    expect(clickToCallButtonLabel('success')).toBe('Звонок начат');
-    expect(clickToCallButtonLabel('error')).toBe('Ошибка запуска звонка');
-    expect(CLICK_TO_CALL_NEW_CALL_LABEL).toBe('Новый звонок');
+    expect(clickToCallButtonLabel('idle')).toBe('Call');
+    expect(clickToCallButtonLabel('loading')).toBe('Calling...');
+    expect(clickToCallButtonLabel('success')).toBe('Call started');
+    expect(clickToCallButtonLabel('error')).toBe('Could not start call');
+    expect(CLICK_TO_CALL_NEW_CALL_LABEL).toBe('New call');
+  });
+
+  it('uses filled color variants so the action stays visible', () => {
+    expect(clickToCallButtonVariant('idle')).toBe('default');
+    expect(clickToCallButtonVariant('loading')).toBe('default');
+    expect(clickToCallButtonVariant('success')).toBe('success');
+    expect(clickToCallButtonVariant('error')).toBe('destructive');
   });
 
   it('maps CALL_CREATE to CRM EDIT on the parent', () => {

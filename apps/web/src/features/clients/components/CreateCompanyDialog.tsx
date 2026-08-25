@@ -1,7 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,25 +9,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { RelationPickerField } from '@/components/shared/relation-picker/RelationPickerField';
-import { DetailSheetFieldSegmented } from '@/components/shared';
-import type { RelationCreatedEvent } from '@/components/shared/relation-picker/relation-created-event';
-import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
-import { useRelationPickerActions } from '@/components/shared/relation-picker/use-relation-picker-actions';
-import { useContactRelationSearch } from '@/components/shared/relation-picker';
+import { DetailSheetFieldSegmented, InlineField } from '@/components/shared';
 import { COMPANY_TYPES, TAX_STATUSES } from '../constants/clients';
 import { companiesApi, type Company } from '@/lib/api/clients';
-import { applyCompanyRelationCreated } from './apply-company-relation-created';
 
 interface CreateCompanyDialogProps {
   open: boolean;
@@ -43,18 +26,10 @@ const EMPTY_FORM = {
   name: '',
   type: 'LEGAL',
   taxStatus: 'TAX',
-  taxId: '',
-  legalName: '',
-  legalAddress: '',
-  contactIds: [] as string[],
-  contactLabels: {} as Record<string, string>,
-  billingContactId: '',
-  billingContactLabel: '',
-  phone: '',
-  email: '',
-  country: '',
-  notes: '',
 };
+
+const COMPANY_TYPE_OPTIONS = COMPANY_TYPES.map((t) => ({ value: t.value, label: t.label }));
+const TAX_STATUS_OPTIONS = TAX_STATUSES.map((s) => ({ value: s.value, label: s.label }));
 
 export function CreateCompanyDialog({
   open,
@@ -64,9 +39,6 @@ export function CreateCompanyDialog({
   forceNestedBackdrop = false,
 }: CreateCompanyDialogProps) {
   const [loading, setLoading] = useState(false);
-  const contactRelationSearch = useContactRelationSearch();
-  const contactsPicker = useRelationPickerActions('contact', 'company-create-contacts');
-  const billingContactPicker = useRelationPickerActions('contact', 'company-create-billing');
   const [form, setForm] = useState(EMPTY_FORM);
 
   useEffect(() => {
@@ -77,11 +49,7 @@ export function CreateCompanyDialog({
   const canSubmit = Boolean(form.name) && Boolean(form.type) && Boolean(form.taxStatus);
 
   const reset = () => {
-    setForm({
-      ...EMPTY_FORM,
-      contactIds: [],
-      contactLabels: {},
-    });
+    setForm(EMPTY_FORM);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,23 +57,10 @@ export function CreateCompanyDialog({
     if (!canSubmit) return;
     setLoading(true);
     try {
-      const primaryId = form.contactIds[0] ?? '';
       const created = await companiesApi.create({
         name: form.name,
         type: form.type,
         taxStatus: form.taxStatus,
-        taxId: form.taxId || undefined,
-        legalName: form.legalName || undefined,
-        legalAddress: form.legalAddress || undefined,
-        contactIds: form.contactIds,
-        billingContactId:
-          form.billingContactId && form.billingContactId !== primaryId
-            ? form.billingContactId
-            : undefined,
-        phone: form.phone || undefined,
-        email: form.email || undefined,
-        country: form.country || undefined,
-        notes: form.notes || undefined,
       });
       onCreated?.(created);
       onOpenChange(false);
@@ -115,167 +70,43 @@ export function CreateCompanyDialog({
     }
   };
 
-  const handleRelationCreated = useCallback((event: RelationCreatedEvent) => {
-    setForm((prev) => ({ ...prev, ...applyCompanyRelationCreated(prev, event) }));
-  }, []);
-
-  useRegisterRelationCreated(open ? handleRelationCreated : null);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[540px]" forceNestedBackdrop={forceNestedBackdrop}>
+      <DialogContent className="bg-card sm:max-w-[540px]" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>New Company</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5">
-          <div className="space-y-1.5">
-            <Label>Company Name *</Label>
-            <Input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Short name for lists and search"
-              autoFocus
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <InlineField
+            variant="controlled"
+            label="Name"
+            type="text"
+            value={form.name}
+            placeholder="Short name for lists and search"
+            disabled={loading}
+            onValueChange={(name) => setForm((prev) => ({ ...prev, name }))}
+          />
 
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="space-y-1.5">
-              <Label>Type *</Label>
-              <Select
-                value={form.type}
-                onValueChange={(v) => setForm({ ...form, type: v as string })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {COMPANY_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="grid grid-cols-2 gap-4">
+            <InlineField
+              variant="controlled"
+              label="Type"
+              type="select"
+              value={form.type}
+              options={COMPANY_TYPE_OPTIONS}
+              disabled={loading}
+              onValueChange={(type) => {
+                if (type) setForm((prev) => ({ ...prev, type }));
+              }}
+            />
             <DetailSheetFieldSegmented
-              label="Tax Status *"
+              label="Tax status"
               value={form.taxStatus}
-              options={TAX_STATUSES.map((s) => ({ value: s.value, label: s.label }))}
-              onValueChange={(taxStatus) => setForm({ ...form, taxStatus })}
+              options={TAX_STATUS_OPTIONS}
+              onValueChange={(taxStatus) => setForm((prev) => ({ ...prev, taxStatus }))}
+              disabled={loading}
               ariaLabel="Tax status"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="space-y-1.5">
-              <Label>Legal name</Label>
-              <Input
-                value={form.legalName}
-                onChange={(e) => setForm({ ...form, legalName: e.target.value })}
-                placeholder="Official name (LLC / OOO / IE)"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Tax ID</Label>
-              <Input
-                value={form.taxId}
-                onChange={(e) => setForm({ ...form, taxId: e.target.value })}
-                placeholder="Tax ID / VOEN"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Country</Label>
-            <Input
-              value={form.country}
-              onChange={(e) => setForm({ ...form, country: e.target.value })}
-              placeholder="Armenia"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Legal Address</Label>
-            <Input
-              value={form.legalAddress}
-              onChange={(e) => setForm({ ...form, legalAddress: e.target.value })}
-              placeholder="Legal address..."
-            />
-          </div>
-
-          <RelationPickerField
-            label="Contacts"
-            entityKind="contact"
-            multiple
-            value={form.contactIds}
-            selectionLabels={form.contactLabels}
-            placeholder="Optional — search or create contact…"
-            icon={<User size={12} />}
-            maxResults={25}
-            onSearch={contactRelationSearch}
-            onChange={(ids, labels) =>
-              setForm((prev) => ({
-                ...prev,
-                contactIds: ids,
-                contactLabels: labels,
-              }))
-            }
-            {...contactsPicker}
-          />
-
-          <RelationPickerField
-            label="Billing Contact"
-            entityKind="contact"
-            value={form.billingContactId || null}
-            selectionLabel={form.billingContactLabel || null}
-            placeholder="Optional — defaults to primary when empty"
-            icon={<User size={12} />}
-            maxResults={25}
-            onSearch={contactRelationSearch}
-            onSelect={(id, label) =>
-              setForm((prev) => ({
-                ...prev,
-                billingContactId: id,
-                billingContactLabel: label,
-              }))
-            }
-            onClear={() =>
-              setForm((prev) => ({
-                ...prev,
-                billingContactId: '',
-                billingContactLabel: '',
-              }))
-            }
-            {...billingContactPicker}
-          />
-
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="space-y-1.5">
-              <Label>Company Phone</Label>
-              <Input
-                type="tel"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Company Email</Label>
-              <Input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Notes</Label>
-            <Textarea
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              rows={2}
-              placeholder="Special conditions, bank details..."
             />
           </div>
 

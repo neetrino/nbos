@@ -34,12 +34,14 @@ const RECONCILE_SELECT = {
 /**
  * Match an ATS active-call webhook to a pending click-to-call row
  * when the callback has not yet received an ATS uid.
+ *
+ * ATS callback often arrives as inbound (`calldirect=0`). Do not require the
+ * payload direction — the stored click-to-call row is always outbound.
  */
 export async function findPendingClickToCallEvent(
   db: CallLookupDb,
   payload: AtsWebhookPayload,
 ): Promise<ClickToCallReconcileRow | null> {
-  if (payload.calldirect !== ATS_CALLDIRECT_OUTBOUND) return null;
   const phone = normalizeAtsCallerPhone(payload.clid);
   if (!phone.success) return null;
 

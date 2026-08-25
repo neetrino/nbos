@@ -1,3 +1,5 @@
+import { AI_ADMIN_ID_PREFIX_LENGTH } from './constants';
+
 export function formatTimestamp(value: string | null | undefined): string {
   if (!value) {
     return 'Never';
@@ -9,10 +11,13 @@ export function formatTimestamp(value: string | null | undefined): string {
   return date.toLocaleString();
 }
 
-export function employeeLabel(
-  employees: Array<{ id: string; firstName: string; lastName: string }>,
-  employeeId: string,
+export function shortId(id: string): string {
+  return id.slice(0, AI_ADMIN_ID_PREFIX_LENGTH);
+}
+
+export function workspaceLabel(
+  workspaces: Array<{ id: string; name: string }>,
+  id: string,
 ): string {
-  const match = employees.find((item) => item.id === employeeId);
-  return match ? `${match.firstName} ${match.lastName}`.trim() : employeeId.slice(0, 8);
+  return workspaces.find((item) => item.id === id)?.name ?? shortId(id);
 }

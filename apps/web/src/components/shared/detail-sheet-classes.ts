@@ -326,7 +326,7 @@ export const DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS = 'relative w-full min-w-0 p
 
 /** Top-right border notch anchor for outlined field captions. */
 export const DETAIL_SHEET_OUTLINED_LABEL_CLUSTER_CLASS =
-  'absolute top-2 right-3 z-10 -translate-y-1/2';
+  'absolute top-2 right-4 z-10 max-w-[calc(100%-1.25rem)] -translate-y-1/2 truncate';
 
 /** Field name on the top-right border; capsule fill breaks the line on any canvas. */
 export const DETAIL_SHEET_OUTLINED_LABEL_CLASS = [

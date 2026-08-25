@@ -60,7 +60,7 @@ export function subscribeClickToCallKeyChanges(listener: () => void): () => void
 }
 
 export const CLICK_TO_CALL_NEW_CALL_WARNING =
-  'Предыдущий звонок может быть ещё в процессе. Новый звонок может позвонить повторно. Продолжить?';
+  'The previous call may still be in progress. A new call may dial again. Continue?';
 
 /** Clears the stored key after the user confirms a new conscious click. */
 export function requestNewClickToCallKey(

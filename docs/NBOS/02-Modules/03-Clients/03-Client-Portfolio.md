@@ -69,15 +69,15 @@ Client Portfolio открывается как полноценная стран
 
 ### 2.1.1. Tabs
 
-| Tab           | Назначение                                                                                                                             |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Overview      | Краткая сводка: финансы, активные проекты, риски, последние события                                                                    |
-| Projects      | Все Projects / Products / Extensions в выбранном контексте                                                                             |
-| Finance       | Invoices, payments, orders, outstanding balance, LTV                                                                                   |
-| Subscriptions | Активные, pending, on hold, cancelled, completed subscriptions                                                                         |
-| Support       | Open tickets, recent tickets, SLA risks                                                                                                |
-| Communication | Messenger + **лента звонков** (тот же Call, что на Lead) + заметки / reminders. Не Files. Канон: `../01-CRM/08-Calls-and-Telephony.md` |
-| Files         | Drive Client Library: документы Contact / Company / проектов клиента                                                                   |
+| Tab           | Назначение                                                                                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Overview      | Краткая сводка: финансы, активные проекты, риски, последние события                                                                                          |
+| Projects      | Все Projects / Products / Extensions в выбранном контексте                                                                                                   |
+| Finance       | Invoices, payments, orders, outstanding balance, LTV                                                                                                         |
+| Subscriptions | Активные, pending, on hold, cancelled, completed subscriptions                                                                                               |
+| Support       | Open tickets, recent tickets, SLA risks                                                                                                                      |
+| Communication | Вход в **полный Messenger** (читать и писать). Не история звонков. Звонки — вкладка **Calls** на Contact sheet. Канон: `../01-CRM/08-Calls-and-Telephony.md` |
+| Files         | Drive Client Library: документы Contact / Company / проектов клиента                                                                                         |
 
 Default tab = Overview. Система запоминает последний открытый tab пользователя.
 

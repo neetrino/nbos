@@ -94,8 +94,11 @@
 
 - ~~реализовать External zone~~ done as an honest not-connected shell (2026-04-30); provider runtime remains deferred;
 - CRM Inbox;
-- Project WhatsApp Groups;
+- Product WhatsApp Groups (one Product -> one group; Project is derived);
 - Support/Finance Conversations;
+- canonical external Conversation/Message/participant/provider identities;
+- Messenger-owned draft aggregate/revisions separate from outbound Message;
+- durable outbound operation/outbox with idempotency and `OUTCOME_UNKNOWN` reconciliation;
 - `External Channel Adapter` interface;
 - `WhatsAppWebAdapter` как контракт; реализация транспорта — **WhatsApp Gateway** + WAHA;
 - QR session management;

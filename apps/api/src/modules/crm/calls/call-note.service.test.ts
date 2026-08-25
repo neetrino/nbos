@@ -44,7 +44,8 @@ function createService() {
   const prisma = createMockPrisma();
   const audit = { log: vi.fn().mockResolvedValue({}) } as unknown as AuditService;
   const access = new CallAccessPolicyService(prisma as never);
-  const screen = new ActiveCallScreenService(prisma as never, access);
+  const liveReconcile = { syncIfPending: vi.fn().mockResolvedValue(undefined) };
+  const screen = new ActiveCallScreenService(prisma as never, access, liveReconcile as never);
   const service = new CallNoteService(prisma as never, access, audit, screen);
   return { prisma, audit, service };
 }

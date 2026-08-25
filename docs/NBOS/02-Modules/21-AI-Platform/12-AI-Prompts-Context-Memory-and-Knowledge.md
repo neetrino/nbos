@@ -4,6 +4,13 @@
 
 Define how NBOS manages AI instructions, runtime context, memory and knowledge sources without mixing them with authorization or allowing uncontrolled data access.
 
+Phase 1 delivered the contracts and deny-by-default disabled interfaces. Phase
+2 plans the first persistent/runtime implementation: Project base knowledge,
+Product overlays, isolated Project/Contact/Conversation memory and a
+multi-source Context Plan. Planning authority is
+`42-Phase-2-Project-Intelligence-and-Draft-Assistant-Architecture.md`; product
+code remains blocked by the AI Product Entry Gate.
+
 ## 1. Core separation
 
 These are separate concerns:
@@ -244,9 +251,9 @@ Provider connection/model choice does not widen NBOS authorization.
 
 Provider-specific retention/privacy settings should be tracked operationally where applicable.
 
-## 16. First implementation scope
+## 16. Delivery status and Phase 2 plan
 
-Foundation now (Chat 9):
+Phase 1 foundation delivered (Chat 9):
 
 - prompt policy/version data model;
 - draft/testing/published/retired lifecycle;
@@ -256,13 +263,25 @@ Foundation now (Chat 9):
 - session-context contract;
 - explicit memory/knowledge interfaces and deny-by-default rules.
 
-Not required now:
+Not implemented in Phase 1:
 
 - production RAG pipeline;
 - vector DB/index;
 - unrestricted persistent memory;
 - automatic memory extraction;
 - advanced prompt experimentation platform.
+
+Planned Phase 2 implementation:
+
+- versioned Project rules with optional exact Product overlays;
+- curated manual, selected Document and eligible selected Drive text sources;
+- PostgreSQL FTS with exact relational authorization filters and immediate
+  revoke tombstones;
+- typed Project + Contact memory with optional Product/Conversation narrowing;
+- human review for model-derived memory candidates;
+- one fresh bound authorization decision per context source/projection;
+- citations, freshness, omission and customer-egress metadata;
+- no vector/search dependency and no unrestricted company memory/search.
 
 ## 17. Acceptance principle
 

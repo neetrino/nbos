@@ -561,7 +561,7 @@ Item 209 is `[x]`. C24 is FIXED. Do not commit from this verifier chat.
 
 ## Independent re-verification — GPT-5.6 Sol (2026-08-23)
 
-Product code was not modified. Commit `b7761a88` was reviewed against current runtime at `HEAD` `7de964f6`; unrelated concurrent Docker/migration-gate work was excluded.
+Product code was not modified. Commit `b7761a88` was reviewed against current runtime at `HEAD` `7de964f6`; unrelated concurrent deployment work was excluded.
 
 **Verdict: PASS WITH DEBTS.** K209 / C24 remain closed: no crash window, duplicate mutation, authorization bypass, hidden parallel AI lifecycle, or Human upload regression was reproduced. One concrete metadata defect and several inactive/operational debts remain outside the K209 attach-recovery closure.
 
@@ -616,7 +616,7 @@ No second Drive lifecycle. No change to operation key, gateway fingerprint, or r
 - Tests: `drive-task-artifact.service.test.ts`, `drive-artifact-ingress.service.test.ts`, `agent-idempotency.rules.test.ts`, `agent-capability.gateway.attach-recovery.test.ts`, `agent-drive.handler.test.ts`.
 - This handoff.
 
-Not touched: `Dockerfile.api`, `package.json`, `docs/deployment/MIGRATION-GATE-ROLLOUT.md`, Tasks ownership, code allocators, Artifact Operation architecture.
+Not touched: `Dockerfile.api`, `package.json`, deployment configuration, Tasks ownership, code allocators, Artifact Operation architecture.
 
 ### Tests / evidence
 

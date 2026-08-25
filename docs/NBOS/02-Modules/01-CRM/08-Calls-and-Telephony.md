@@ -76,10 +76,10 @@ Merge / Связать: Call переезжает вместе с ATS-событ
 | ------------- | ------------------------------------------------------------------------------- |
 | Lead          | Вкладка **Calls** (рядом с History, не вместо)                                  |
 | Deal          | Вкладка **Calls** (уже в sheet; не мешать с History)                            |
-| Contact       | Лента в **Communication** (Messenger + calls + notes). Files остаётся Drive     |
+| Contact       | Вкладка **Calls** (как Lead/Deal). Messenger — полное приложение, не история    |
 | Delivery Card | Проекция той же ленты по Contact/Lead после даты карточки. Своего хранилища нет |
 
-Строка ленты: направление, номер, кто, когда, статус, длительность, плеер, заметка. Files tab Contact **не** заменяет ленту (нет `uid` / disposition).
+Строка ленты: направление, номер, кто, когда, статус, длительность, плеер, заметка. Files tab Contact **не** заменяет ленту (нет `uid` / disposition). Messenger **не** история звонков: из sheet — quick action **Open Messenger** в полный чат.
 
 Нужен list API Call (`leadId` \| `contactId` \| `dealId`), не список Drive-файлов.
 
@@ -144,11 +144,13 @@ Settings → Integrations: карточка **ATS.am** (ключ настрое�
 
 Приём звонка — только `nbos-api` webhook. Scheduler **не** участвует в старте звонка.
 
+Пока открыт Active Call Screen, `GET /crm/calls/:id/screen` может сверить pending click-to-call с ATS `history` (после короткой паузы, с cooldown). Это не джоба планировщика.
+
 Планируемая джоба `ats-call-history-reconcile` (каталог Scheduler, выкл по умолчанию): добрать `uid` из ATS `history`, не плодить Lead, докачать записи. Вкл в Settings → Scheduler после кода.
 
 Ops (не код): Cloudflare skip Bot Fight на `POST /api/integrations/ats/webhook`; в кабинете ATS тот же `?key=`; ATS знают исходящий IP API/worker (их требование); у ответственных заполнен SIP.
 
-`ATS_API_KEY`: webhook — только **api**; download/callback — **api + worker**. На scheduler ключ не нужен.
+`ATS_API_KEY`: webhook — только **api**; download/callback/history peek — **api + worker**. На scheduler ключ не нужен.
 
 ## 11. Later (не этот срез)
 
@@ -162,6 +164,6 @@ Ops (не код): Cloudflare skip Bot Fight на `POST /api/integrations/ats/we
 
 - CRM overview: `01-CRM-Overview.md`
 - Lead pipeline: `02-Lead-Pipeline.md`
-- Clients Communication: `../03-Clients/03-Client-Portfolio.md`
+- Clients Portfolio / Messenger entry: `../03-Clients/03-Client-Portfolio.md`
 - Drive `CALL_RECORDING`: `../11-Drive/01-File-Assets-and-Metadata.md`
 - Scheduler catalog: `../16-Settings-Admin/05-Scheduler-Catalog.md`

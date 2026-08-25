@@ -4,6 +4,8 @@ import { RealtimeModule } from '../../realtime/realtime.module';
 import { AtsCallContextResolver } from './ats-call-context.resolver';
 import { AtsCallRealtimePublisher } from './ats-call-realtime.publisher';
 import { AtsCallbackClient } from './ats-callback.client';
+import { AtsHistoryClient } from './ats-history.client';
+import { AtsClickToCallLiveReconcileService } from './ats-click-to-call-live-reconcile.service';
 import { AtsCallRecordClient } from './ats-call-record.client';
 import { NodeAtsRecordingDnsResolver } from './ats-recording-dns';
 import { AtsRecordingHttpTransport } from './ats-recording-http.transport';
@@ -35,6 +37,8 @@ import { AtsWebhookService } from './ats-webhook.service';
     AtsRecordingSafeDownloadService,
     AtsCallRecordClient,
     AtsCallbackClient,
+    AtsHistoryClient,
+    AtsClickToCallLiveReconcileService,
     AtsCallRecordingQueueService,
     AtsCallRecordingEnqueueService,
     AtsCallRecordingDownloadService,
@@ -48,6 +52,7 @@ import { AtsWebhookService } from './ats-webhook.service';
     AtsCallRecordingDownloadService,
     AtsCallRecordingReprocessService,
     AtsCallRealtimePublisher,
+    AtsClickToCallLiveReconcileService,
   ],
 })
 export class AtsModule {}

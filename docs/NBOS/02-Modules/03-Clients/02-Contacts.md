@@ -105,6 +105,15 @@ Lead получает статус SQL (Quality Lead)
 - Контакт автоматически привязывается к Deal
 - Уведомление Seller о новом контакте
 
+### Обязательные поля при создании:
+
+- Имя
+- Фамилия
+- Телефон
+- Тип контакта (Client / Partner / Contractor / Other) — default `Client`, если создан из CRM / Deal / Project / Company
+
+Диалог создания спрашивает только эти поля. Email, мессенджеры, канал связи, язык и заметки заполняются в карточке Contact.
+
 ### Кто может создавать:
 
 - **Seller** — основной создатель контактов (из лидов и сделок)
@@ -223,7 +232,7 @@ Lead получает статус SQL (Quality Lead)
 
 Contact создаётся из Lead. Если один человек обращался несколько раз через разные каналы — множественные Lead привязываются к одному Contact. Lead merge и intake attach — отдельный канон (`../01-CRM/07-Lead-and-Deal-Merge.md`); Deal↔Deal merge не делаем. Merge Contact не заменяет merge Lead (Contact = кто, Lead = обращение на доске).
 
-Звонок известного Contact **не** создаёт второй Contact и не создаёт Lead, если есть открытый Deal. История звонков — Communication / Calls, канон `../01-CRM/08-Calls-and-Telephony.md`.
+Звонок известного Contact **не** создаёт второй Contact и не создаёт Lead, если есть открытый Deal. История звонков — вкладка **Calls** на Contact sheet, канон `../01-CRM/08-Calls-and-Telephony.md`. Messenger — отдельное приложение (Open Messenger), не история в sheet.
 
 ---
 

@@ -31,7 +31,7 @@ import {
 import { ContactSheetHeaderActions } from './ContactSheetHeaderActions';
 import type {
   ClientDetailTabId,
-  ClientEmbeddedPortfolioTabId,
+  ClientSheetPanelTabId,
 } from './client-portfolio/client-portfolio-tabs';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
@@ -256,7 +256,8 @@ export function ContactSheet({
                     />
                   ) : (
                     <ClientPortfolioPanel
-                      tab={activeTab as ClientEmbeddedPortfolioTabId}
+                      tab={activeTab as ClientSheetPanelTabId}
+                      entityId={renderContact.id}
                       data={portfolio.data}
                       loading={portfolio.loading}
                       error={portfolio.error}

@@ -262,14 +262,14 @@ Instagram OAuth connection uses dedicated Instagram app credentials. Instagram w
 | Note            | `PATCH /api/crm/calls/:id/note` after the call ends                                                             |
 | Click-to-call   | `POST /api/crm/calls/click-to-call` + `Idempotency-Key` → `AtsCallIntent` then ATS `callback` (at-most-once)    |
 | Active Call     | Employee SSE `GET /api/realtime/calls` (`call.started` / `answered` / `finished`) + fullscreen screen           |
-| CRM activity    | CALL items on Lead History, Deal History/Calls, Contact Communication                                           |
+| CRM activity    | CALL items on Lead/Deal/Contact **Calls** tabs                                                                  |
 
 ### Канон полного среза (после MVP)
 
 | Capability             | Canon                                                              |
 | ---------------------- | ------------------------------------------------------------------ |
 | Окно ответственного    | App-shell realtime, не Messenger                                   |
-| История                | Вкладка Calls на Lead/Deal; Communication у Contact                |
+| История                | Вкладка Calls на Lead / Deal / Contact                             |
 | Запись                 | Runtime: worker → R2 `CALL_RECORDING` + FileLink LEAD/CONTACT/CALL |
 | Исходящий              | Runtime: `POST /crm/calls/click-to-call` → ATS `callback`          |
 | Сверка                 | Scheduler `ats-call-history-reconcile`                             |
@@ -373,3 +373,19 @@ Instagram / Facebook Messenger
   → GitHub (виджеты, webhooks)
   → Госсистема (API, если доступно)
 ```
+
+---
+
+## Armenia company lookup (V1)
+
+Публичный поиск налогоплательщиков ПЕК, тот же JSON, что использует страница [Taxpayer search system](https://www.src.am/am/taxpayerSearchSystemPage/112).
+
+| Аспект             | Детали                                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- |
+| **Источник**       | `POST https://www.src.am/am/taxpayerSearchData` после CSRF-сессии на странице поиска                          |
+| **Запрос**         | 8-значный TIN / ՀՎՀՀ или название компании                                                                    |
+| **NBOS endpoint**  | `GET /api/clients/companies/lookup?q=` (только backend; `CLIENTS` VIEW)                                       |
+| **Env**            | `ARMENIA_COMPANY_LOOKUP_ENABLED` (default on), optional `ARMENIA_SRC_BASE_URL` (`www.src.am` / `src.am` only) |
+| **Не входит в V1** | ADEL/X-Road, scraping e-register HTML, учредители, автосинхронизация, смена `tax_status`                      |
+
+UI lookup живёт в карточке Company (не в диалоге создания). Капча на сайте ПЕК — только UI-гейт; JSON-поиск требует Laravel CSRF cookie. Timeout 8s. Ошибка lookup не блокирует ручное создание Company. Поиск по имени надежнее на армянском написании из реестра.

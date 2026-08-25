@@ -6,6 +6,16 @@
 
 It does not own CRM, Tasks, Finance, Documents, Drive, Messenger or other business data. Those modules remain owners of their entities and business rules.
 
+## Delivery status
+
+- Phase 1 is complete; canonical final acceptance is
+  `31-Phase-1-Final-Acceptance.md`.
+- Post-Phase-1 technical remediation is complete; cross-regression is
+  `36-Post-Phase-1-Cross-Regression.md`.
+- The Product Entry Gate is in progress in `37-AI-Product-Entry-Gate.md`.
+- Phase 2 is planned in documents `42`–`45` and remains blocked until
+  `41-AI-Product-Entry-Gate-Final-Acceptance.md` closes that gate.
+
 ## Core responsibilities
 
 - register internal and external AI actors;
@@ -40,11 +50,11 @@ AI actors are not Employees.
 7. AI Execution Tracking
 8. Audit & Security
 9. Usage / Rate Limits
-10. Internal AI Runtime (later)
+10. Internal AI Runtime (Phase 2 planned)
 
-## Phase 1 target
+## Phase 1 delivered
 
-Phase 1 delivers an external Work Space agent capable of safely operating approved Tasks and linked artifacts inside a narrow Work Space scope.
+Phase 1 delivered an external Work Space agent capable of safely operating approved Tasks and linked artifacts inside a narrow Work Space scope.
 
 Baseline capabilities:
 
@@ -58,6 +68,21 @@ Baseline capabilities:
 - attach generated artifacts through Drive;
 - receive deterministic policy errors;
 - support idempotent writes.
+
+## Phase 2 plan
+
+Phase 2 turns the foundation into a governed Internal AI runtime with Project
+base knowledge, optional Product overlays, isolated customer/conversation
+memory, live module projections, grounded Project Assistant answers and a
+Messenger-owned `DRAFT_ONLY` customer reply. AI-owned send and auto-send are
+not part of this phase.
+
+Canonical planning package:
+
+- `42-Phase-2-Project-Intelligence-and-Draft-Assistant-Architecture.md`;
+- `43-Phase-2-Implementation-Checklist.md`;
+- `44-Phase-2-Execution-Strategy.md`;
+- `45-Phase-2-Acceptance-Migration-Rollout-and-Operations.md`.
 
 ## Future capability workflow
 
@@ -119,4 +144,8 @@ The AI Platform must not:
 - `02-Modules/07-My-Company/09-Platform-Access-Foundation.md`
 - `02-Modules/05-Tasks/*`
 - `02-Modules/11-Drive/*`
+- `42-Phase-2-Project-Intelligence-and-Draft-Assistant-Architecture.md`
+- `43-Phase-2-Implementation-Checklist.md`
+- `44-Phase-2-Execution-Strategy.md`
+- `45-Phase-2-Acceptance-Migration-Rollout-and-Operations.md`
 - `90-Future-Capabilities/00-Future-Capabilities-Index.md`

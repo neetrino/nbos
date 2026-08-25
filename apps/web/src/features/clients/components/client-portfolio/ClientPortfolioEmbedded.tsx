@@ -13,13 +13,14 @@ import {
 } from '@/lib/api/client-portfolio';
 import { ClientPortfolioTabPanels } from './ClientPortfolioTabPanels';
 import { CONTACT_SHEET_TAB_BAR_SCROLL_CLASS } from '../contact-sheet-layout';
+import { ContactCallsTab } from '@/features/crm/components/ContactCallsTab';
 import {
-  CLIENT_DETAIL_GENERAL_TAB,
-  CLIENT_DETAIL_PORTFOLIO_TABS,
+  DETAIL_TABS_LOADING_MASK,
   detailTabsForMask,
   type ClientDetailTabDefinition,
   type ClientDetailTabId,
   type ClientEmbeddedPortfolioTabId,
+  type ClientSheetPanelTabId,
 } from './client-portfolio-tabs';
 
 type PortfolioData = ContactPortfolioResponse | CompanyPortfolioResponse;
@@ -66,11 +67,8 @@ export function useClientPortfolioData<T extends PortfolioVariant>({
   }, [load]);
 
   const tabs = useMemo<ReadonlyArray<ClientDetailTabDefinition>>(
-    () =>
-      data
-        ? detailTabsForMask(data.accessMask)
-        : [CLIENT_DETAIL_GENERAL_TAB, ...CLIENT_DETAIL_PORTFOLIO_TABS],
-    [data],
+    () => detailTabsForMask(data?.accessMask ?? DETAIL_TABS_LOADING_MASK, variant),
+    [data, variant],
   );
 
   return { data, loading, error, tabs, reload: load };
@@ -94,7 +92,8 @@ export function ClientDetailTabBar({ activeTab, tabs, onSelect }: ClientDetailTa
 }
 
 interface ClientPortfolioPanelProps {
-  tab: ClientEmbeddedPortfolioTabId;
+  tab: ClientSheetPanelTabId;
+  entityId: string;
   data: PortfolioData | null;
   loading: boolean;
   error: string | null;
@@ -104,12 +103,27 @@ interface ClientPortfolioPanelProps {
 
 export function ClientPortfolioPanel({
   tab,
+  entityId,
   data,
   loading,
   error,
   variant,
   onRetry,
 }: ClientPortfolioPanelProps) {
+  if (tab === 'calls') {
+    if (variant !== 'contact') {
+      return (
+        <p className="text-muted-foreground px-7 py-5 text-sm">
+          Call history lives on the contact.
+        </p>
+      );
+    }
+    return (
+      <div className="px-7 py-5">
+        <ContactCallsTab contactId={entityId} />
+      </div>
+    );
+  }
   if (loading) {
     return (
       <div className="space-y-3 px-7 py-5">
@@ -122,7 +136,12 @@ export function ClientPortfolioPanel({
   if (!data) return <p className="text-muted-foreground px-7 py-5 text-sm">No portfolio data.</p>;
   return (
     <div className="space-y-6 px-7 py-5">
-      <ClientPortfolioTabPanels tab={tab} data={data} variant={variant} onRetry={onRetry} />
+      <ClientPortfolioTabPanels
+        tab={tab as ClientEmbeddedPortfolioTabId}
+        data={data}
+        variant={variant}
+        onRetry={onRetry}
+      />
     </div>
   );
 }

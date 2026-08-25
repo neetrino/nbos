@@ -54,7 +54,7 @@ Messenger
 
   External
     CRM Inbox
-    Project WhatsApp Groups
+    Product WhatsApp Groups
     Support Conversations
     Finance Conversations
     All External
@@ -71,7 +71,7 @@ Messenger
 4. Development, Maintenance и Extension не создают отдельные чаты по умолчанию, чтобы не дробить обсуждение.
 5. Task chat чаще открывается из Task card, а Messenger нужен в основном для ответа на непрочитанные task messages.
 6. CRM client chat и internal Deal chat - разные сущности.
-7. WhatsApp group после Deal Won - отдельная внешняя коммуникация, не CRM Inbox и не internal Product Chat.
+7. Product WhatsApp group после Deal Won - отдельная внешняя коммуникация, не CRM Inbox и не internal Product Chat; одна group принадлежит одному Product, Project выводится через Product.
 8. Все вложения идут через `Drive File Asset`.
 9. WebSocket нужен для live-обновления, но source of truth всегда база данных.
 10. Провайдер WhatsApp/QR должен быть адаптером, а не частью ядра Messenger.
