@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import {
   AI_ADMIN_CARD_CLASS,
   AI_ADMIN_SECTION_BODY_CLASS,
+  AI_ADMIN_SECTION_CHEVRON_CLASS,
   AI_ADMIN_SECTION_HEADER_CLASS,
 } from '../ai-admin-ui.constants';
 import { AiAdminIconTile } from './AiAdminIconTile';
@@ -76,10 +77,7 @@ function AiAdminSectionHeader(props: {
         <CollapsibleTrigger className="-mx-1 flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-left outline-none select-none">
           {identity}
           <ChevronDown
-            className={cn(
-              'text-muted-foreground size-4 shrink-0 transition-transform',
-              props.open && 'rotate-180',
-            )}
+            className={cn(AI_ADMIN_SECTION_CHEVRON_CLASS, props.open && 'rotate-180')}
             aria-hidden
           />
         </CollapsibleTrigger>

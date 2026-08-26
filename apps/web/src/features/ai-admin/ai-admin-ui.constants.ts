@@ -49,5 +49,8 @@ export const AI_ADMIN_ICON_TILE_CLASS =
 export const AI_ADMIN_ICON_TILE_LG_CLASS =
   'flex size-12 shrink-0 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300';
 
+export const AI_ADMIN_SECTION_CHEVRON_CLASS =
+  'text-muted-foreground size-4 shrink-0 -translate-x-[5px] transition-transform';
+
 export const AI_ADMIN_PILL_CLASS =
   'inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground';
