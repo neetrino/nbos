@@ -1,130 +1,226 @@
 # Messenger Cleanup Register
 
-Этот файл фиксирует, что нужно убрать или переписать в реализации и старых документах, чтобы Messenger соответствовал новому канону.
+> Purpose: reconcile current runtime/legacy docs with the approved Messenger canon.
+>
+> Source of product truth: `00-Messenger-Overview.md` + `08-Messenger-Decision-Register.md`.
+>
+> This file is **not** an implementation completion claim. Runtime state must be verified independently before items are marked complete.
 
-## A. Что принято как новый канон
+## Status legend
 
-- Messenger делится на `Internal` и `External`.
-- CRM client conversations живут в `External -> CRM Inbox`.
-- Internal Deal Chat и CRM Inbox - разные conversations.
-- `1 Product = 1 main internal Product Chat`.
-- Development, Maintenance и Extension не создают отдельные чаты по умолчанию.
-- Task Chats визуально отдельные, чаще используются для ответа на сообщения из задач.
-- WhatsApp Groups живут во External Messenger и связаны с Project/Product.
-- WhatsApp primary integration: логический `WhatsAppWebAdapter` → **WhatsApp Gateway** → WAHA → QR-connected WhatsApp account (см. `../../06-Integrations/06-WhatsApp-Gateway-NBOS-Boundary.md`).
-- `WhatsAppOfficialAdapter / Meta Cloud API` не является MVP и не является планом на ближайшие годы.
-- WhatsApp/QR/provider logic должна быть adapter layer.
-- WebSocket - только live transport, база данных - source of truth.
-- Все attachments идут через Drive File Assets.
+- `KEEP` — existing behavior/concept is compatible with target canon.
+- `CHANGE` — existing behavior exists but semantics/design must change.
+- `REMOVE` — legacy concept must not survive as target product behavior.
+- `ADD` — missing target capability.
+- `VERIFY` — current runtime/docs conflict or implementation status must be checked first-hand.
 
-## B. Текущая реализация не соответствует канону
+---
 
-Текущий код:
+## A. Approved target canon
 
-- `apps/api/src/modules/messenger/messenger.service.ts`
-- `apps/api/src/modules/messenger/messenger.controller.ts`
-- `apps/web/src/app/(app)/messenger/page.tsx`
-- `apps/web/src/features/messenger/*` (client wired to `/api/messenger/*`)
-- `packages/database/prisma/schema.prisma`
+### Product surfaces
 
-Проблемы:
+- `KEEP/LOCK`: one Messaging Core.
+- `CHANGE`: expose **separate Internal Messenger and Client Messenger product surfaces**, not one shared screen with a casual zone switch.
+- `ADD`: separate surface-specific Collections; no mixed Internal/Client Collection.
 
-- ~~backend использует in-memory `Map`~~ **Done (2026-04-30):** internal channels + channel messages + DM threads/messages в PostgreSQL через Prisma;
-- нет `Conversation`, `Message`, `Participant`, `Delivery`, `ReadState` моделей;
-- ~~нет WebSocket gateway~~ **Partial (2026-04-30):** Socket.IO `/messenger`, JWT, channel subscribe, push on send; **typing** (channel + DM) via `messenger.*typing*`; **presence** (per-employee socket ref-count, `messenger.presence` + `messenger.presence.snapshot`); **unread** (per-user `last_read_at` cursors + REST mark-read; list payloads include `unreadCount`; WS `messenger.read.updated` `scope: lists` for same-user multi-tab); **DM read receipts MVP** (`peerLastReadAt` on DM history GET; WS `messenger.dm.peer_read` to peer after mark-read; web “Read” under latest own message peer has seen); **channel read receipt MVP (2026-04-29)** — anchor = viewer’s latest own message; “seen by others” if at least one other member’s channel read cursor is `>=` that message `created_at`; REST fields on channel messages page + WS `messenger.channel.peer_read` for room refetch; not per-message receipts for all participants / no canonical `ReadState` model yet).
-- нет очереди для внешних каналов;
-- нет External Channel Adapter;
-- web page: channels/DM/history/send call API (names for DM peers via `employees` list when `COMPANY` VIEW allows);
-- ~~нет разделения Internal/External~~ **Done (2026-04-30):** web Messenger now has explicit Internal / External zones; External is an honest placeholder for future adapter-backed conversations, not a fake provider.
-- нет CRM Inbox;
-- нет Product Chat / Task Chat / WhatsApp Group модели;
-- ~~нет Drive attachments~~ **Done (2026-04-30):** internal channel and DM messages can reference Drive `FileAsset` ids through attachment tables with DB foreign keys.
-- нет permission model и audit log.
+### Internal Messenger
 
-**Partial (2026-04-29):** MVP HTTP routes use `RequirePermission` (`MESSENGER` VIEW / ADD / EDIT); channel and DM send use the authenticated employee id and display name (no client-supplied `senderId`).
+- `CHANGE`: primary navigation becomes `All / Products / Tasks / Deals / Work Spaces / Groups / Direct / Collections`.
+- `CHANGE`: `All` becomes recent-activity attention inbox, not hierarchy tree.
+- `CHANGE`: Project General becomes optional/lazy contextual discussion, not mandatory eager conversation.
+- `CHANGE`: Product + Connected Work Space use the same internal Conversation.
+- `ADD`: standalone Work Space conversation support.
+- `CHANGE`: Task Discussion uses Messaging Core; remove separate canonical task comments/discussion storage as product model.
+- `ADD`: Collections with built-in Favorites, PERSONAL/SHARED semantics.
+- `ADD`: universal message actions/references and multi-message source selection.
+- `ADD`: optional threads/replies without forcing thread creation.
 
-**Partial (2026-04-30):** `AuditService` on channel create, channel message send, and DM message send (`messenger.channel_created`, `messenger.channel_message_sent`, `messenger.dm_message_sent`); no message body in `changes`.
+### Client Messenger
 
-## C. Старый Messenger doc заменён
+- `REMOVE`: separate top-level `Support Conversations` and `Finance Conversations` message stores.
+- `CHANGE`: primary navigation becomes `Inbox / Sales / Clients / Collections`.
+- `ADD`: locked Client composer / explicit `Reply to client` activation.
+- `ADD`: separate external READ vs SEND permission semantics.
+- `ADD`: attention routing independent from access (`Delivery -> PM`, `Maintenance -> Support Intake`, `FINANCE -> Finance/authorized`).
+- `ADD`: Client Collections separate from Internal Collections.
 
-Старый `01-Messenger-Overview.md` описывал:
+### WhatsApp/Product communication
 
-- один общий Messenger;
-- project chats with topics;
-- General/Sales/Development/Task Chats внутри project structure;
-- клиентский omnichannel в том же общем описании;
-- WhatsApp через агрегатор без ясной границы adapter layer;
-- task chats как часть общей project chat логики.
+- `REMOVE`: canonical rule `1 Product = exactly 1 physical WhatsApp group`.
+- `ADD`: purpose-based Product communication binding (`WORK`, `FINANCE`).
+- `ADD`: one external conversation may serve multiple Products.
+- `ADD`: deterministic Product destination rules: one WORK, optional FINANCE, FINANCE fallback to WORK.
+- `CHANGE`: Deal Won creates/binds Product WORK destination; separate FINANCE remains optional/configurable later.
+- `CHANGE`: Finance/Subscription/Client Services use central destination resolver, not raw Product group id.
+- `KEEP`: WhatsApp Gateway remains transport boundary around WAHA.
+- `ADD`: full bidirectional Gateway/NBOS receive/ack/status path.
 
-Это заменено новым набором документов:
+### Support
 
-- `00-Messenger-Overview.md`
-- `01-Internal-Messenger.md`
-- `02-External-Messenger-and-CRM-Inbox.md`
-- `03-Messenger-Architecture.md`
-- `04-Messenger-Integrations.md`
-- `05-Messenger-Permissions-and-UX.md`
-- `06-Messenger-Cleanup-Register.md`
+- `CHANGE`: Ticket is internal case management only.
+- `REMOVE`: public/internal dual-mode Ticket composer as target product behavior.
+- `ADD`: stable references from Ticket to canonical Client messages.
 
-## D. Implementation backlog
+### Telegram
 
-### Phase 1 - Data foundation
+- `REMOVE`: permanent Telegram project-chat <-> NBOS Messenger synchronization as target architecture.
+- `ADD`: controlled one-time historical import/migration path where needed.
+- `KEEP`: Telegram employee notifications may remain under Notifications.
 
-- добавить Prisma models для conversations/messages/participants/read states;
-- добавить `ConversationLink` для связи с Deal/Project/Product/Task/Ticket/Invoice/etc.;
-- добавить seed только для нового канона;
-- ~~убрать in-memory source of truth~~ done for internal MVP HTTP paths (Prisma + Socket.IO MVP).
+---
 
-### Phase 2 - Internal Messenger
+## B. Current runtime baseline to verify
 
-- ~~реализовать Internal zone~~ done for the current web Messenger shell (2026-04-30);
-- реализовать tabs: All, Project General, Deal Chats, Product Chats, Task Chats, Favorites;
-- Product page должен открывать один Product Chat;
-- Task card должен иметь task discussion panel;
-- Messenger Task Chats tab должен показывать task unread/reply flow.
+The authoritative reset report is `docs/NBOS_MESSENGER_CLEAN_CORE_RESET.md` (2026-08-11).
 
-### Phase 3 - Real-time
+Its recorded baseline says:
 
-- добавить WebSocket gateway;
-- message.created / read.updated / typing / delivery.updated events;
-- fallback REST history pagination;
-- unread counters.
+- active runtime = legacy Channels + DM shell;
+- channel/DM PostgreSQL persistence exists;
+- Socket.IO channel/DM realtime exists;
+- ACL-hardened channel/DM API exists;
+- unified Conversation schema/data was preserved but runtime/API/UI using it was removed;
+- L1/L2 Topic UI/runtime was removed;
+- Project General lifecycle coupling was removed;
+- External Messenger provider runtime was not implemented.
 
-### Phase 4 - External Messenger
+Treat these as the starting claim for the rebuild, but the first implementation slice must re-check code/schema/tests rather than trusting this document alone.
 
-- ~~реализовать External zone~~ done as an honest not-connected shell (2026-04-30); provider runtime remains deferred;
-- CRM Inbox;
-- Product WhatsApp Groups (one Product -> one group; Project is derived);
-- Support/Finance Conversations;
-- canonical external Conversation/Message/participant/provider identities;
-- Messenger-owned draft aggregate/revisions separate from outbound Message;
-- durable outbound operation/outbox with idempotency and `OUTCOME_UNKNOWN` reconciliation;
-- `External Channel Adapter` interface;
-- `WhatsAppWebAdapter` как контракт; реализация транспорта — **WhatsApp Gateway** + WAHA;
-- QR session management;
-- fallback strategy: Whapi/Wazzup/Wappi или Evolution API, если WAHA не подойдёт.
+---
 
-### Phase 5 - Drive, Search, Audit
+## C. Legacy concepts that must not return accidentally
 
-- ~~attachments through Drive File Asset~~ **Done (2026-04-30):** internal channel/DM message references use Drive `FileAsset` attachment tables;
-- ~~search~~ **Done (2026-04-30):** basic internal message search across channel and DM messages with current-user DM scoping.
-- audit log;
-- archive/lock/mute;
-- export and cleanup support.
+### C1. L1/L2 Topics architecture
 
-## E.1. Documentation: Mail module boundary
+`REMOVE` as product architecture:
 
-| Область            | Статус | Примечание                                                                                                                  |
-| ------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------- |
-| Cross-link to Mail | `OK`   | **2026-04-30:** `00-Messenger-Overview.md` (таблица + секция **Граница с Mail**), `04-Messenger-Integrations.md` — **Mail** |
+- L1 entities navigation;
+- L2 Topic hierarchy;
+- mandatory `PROJECT_GENERAL` lifecycle;
+- ensure-on-selection topic model;
+- Product/Task mapped as Topics under a Project tree.
 
-## E. Migration note
+Reason: approved navigation is flat/contextual and entity conversations are canonical directly.
 
-Так как текущий Messenger выглядит как MVP/mock и in-memory сервис, исторических production messages в этой реализации нет. Старые mock channels/messages можно удалить или заменить seed-данными нового канона.
+### C2. Separate Task comments engine
 
-Если к моменту реализации появятся реальные сообщения, нужна отдельная миграция:
+`REMOVE/RECONCILE` any documentation/runtime assumption that human Task Discussion is canonically stored outside Messaging Core.
 
-- direct messages -> Internal conversations;
-- project channels -> Project General или Product Chat после ручного mapping;
-- task-related messages -> Task Chat;
-- external messages -> External conversations после определения channel/source.
+System Task Activity remains separate.
+
+### C3. One Product -> one WhatsApp group
+
+`REMOVE/REPLACE` in Messenger, WhatsApp integration, Finance reminders and AI planning documents.
+
+Target = Product communication bindings with shared External Conversation support.
+
+### C4. Support/Finance as duplicate chat categories
+
+`REMOVE/REPLACE` top-level external chat types that duplicate the Product/client conversation.
+
+Support = Ticket workflow; Finance = message purpose/destination + Finance workflow.
+
+### C5. Mixed Internal/Client UI
+
+`REMOVE` any product design that renders both zones as one ordinary list/composer mode.
+
+Shared backend/search primitives are allowed; product surface must remain explicit.
+
+---
+
+## D. Data/schema reconciliation questions for Slice 1
+
+Before migrations, inspect current Prisma/runtime and classify each target concept as `REUSE / EXTEND / MIGRATE / NEW / DELETE-LATER`:
+
+- Conversation;
+- Message;
+- participant/membership;
+- read state;
+- reply/reaction;
+- ConversationLink;
+- MessageReference;
+- Collections/items/settings;
+- ExternalChannelAccount;
+- ExternalConversationMapping;
+- MessageExternalRef / provider events;
+- outbound delivery/outbox;
+- ProductCommunicationBinding;
+- attention assignment/routing state;
+- legacy MessengerChannel / MessengerDirect models;
+- preserved unused unified MessengerConversation models.
+
+No destructive migration should be designed before this reconciliation is complete.
+
+---
+
+## E. Cross-module documentation cleanup
+
+The Messenger canon changes require explicit updates in:
+
+### Tasks
+
+- `01-Task-System-Overview.md`: human Discussion no longer belongs to `task_discussion_entries`; Messaging Core owns it.
+- `05-Task-Card-UX-Plan.md`: wire real Messaging Core discussion instead of placeholder/local notes.
+
+### Work Spaces
+
+- `02-Work-Spaces-and-Views.md`: Connected Product Work Space shares Product work Conversation; standalone Work Space may own one.
+
+### Support
+
+- Support overview/workflow: client communication stays in Client Messenger; Ticket public/internal composer split removed; external messages are references.
+
+### Projects Hub
+
+- Product/Extension docs: Product work conversation shared with Connected Work Space; client communication through bindings rather than one owned group.
+
+### Finance
+
+- Subscription/Client Services: WhatsApp reminders resolve Product `FINANCE` purpose with WORK fallback.
+
+### WhatsApp integration
+
+- `08-Product-WhatsApp-Groups.md`: replace one-Product ownership with flexible communication bindings and shared-group rules.
+- Gateway boundary: extend receive/ack/status contract as needed without moving business ownership into Gateway.
+
+### Roles/RBAC
+
+- replace coarse `Messenger (project/client)` assumptions with surface permission + participation + explicit Client READ/SEND semantics.
+
+### Telegram
+
+- remove future permanent two-way project chat sync as canonical direction; document one-time migration separately from notifications.
+
+### AI Platform
+
+- Phase 2 Product WhatsApp draft assumptions must resolve exact External Conversation/Product binding instead of assuming one canonical group owned by exactly one Product.
+- shared conversation may have multiple Products; AI execution must use explicit selected/authorized Product scope where Product-specific knowledge is required.
+
+---
+
+## F. Implementation planning cleanup
+
+Do not reuse the old phased backlog in this file as an executable plan.
+
+After Canon + runtime reconciliation, create dedicated documents:
+
+- `10-Messenger-Rebuild-Implementation-Checklist.md`;
+- `11-Messenger-Rebuild-Execution-Strategy.md`;
+- per-slice implementation/review evidence files;
+- final independent acceptance report.
+
+Each implementation slice must reference decision ids from `08-Messenger-Decision-Register.md` and must include negative/security tests where relevant.
+
+---
+
+## G. Migration principles
+
+- preserve real production message history;
+- do not fabricate empty Task/Product conversations during bulk migration unless required by business behavior;
+- map legacy channels/DM to canonical conversations explicitly;
+- preserve provider ids and source provenance;
+- avoid destructive deletion until parity/rollback evidence exists;
+- use manual mapping for ambiguous legacy Project/Product/client groups rather than guessing;
+- existing physical WhatsApp group may be bound to multiple Products in the new model;
+- Collection migration must preserve surface zone and never create cross-zone items.
