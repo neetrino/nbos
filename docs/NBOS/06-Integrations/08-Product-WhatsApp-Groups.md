@@ -103,5 +103,6 @@ Create only from an explicit Deal / Product Settings action or the Deal Won moda
 
 ## Product Settings
 
-Product page → Settings gear → WhatsApp Group section: status, create/retry, bind/replace, sync, invite, history.  
+Product page → Settings gear → WhatsApp Group section: status, create/retry, bind/replace, paste group ID (persists when Gateway is unreachable), sync, invite, history.  
+Stored `groupChatId` is shown from DB even when Gateway is not configured; Create / Sync / Invite / search stay disabled until Gateway is configured.  
 While create is in-flight the button shows **Creating group…**; `FAILED` unlocks retry. Status updates on open and after the click, not via live poll. Missing and `FAILED` states are shown as a clear badge; retry/create never blocks other work.
