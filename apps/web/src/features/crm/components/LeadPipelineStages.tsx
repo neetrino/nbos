@@ -8,6 +8,8 @@ const STAGE_HEX: Record<string, string> = Object.fromEntries(
   LEAD_STAGES.map((stage) => [stage.key, stage.hexColor]),
 );
 
+const LEAD_PIPELINE_SEGMENT_GAP_PX = 3;
+
 const SHEET_STAGES = toSheetPipelineStages(LEAD_STAGES);
 
 interface LeadPipelineStagesProps {
@@ -22,6 +24,7 @@ export function LeadPipelineStages({ currentStatus, onStageClick }: LeadPipeline
       stageColors={STAGE_HEX}
       currentStatus={currentStatus}
       fillToEndStatuses={['SQL']}
+      segmentGapPx={LEAD_PIPELINE_SEGMENT_GAP_PX}
       onStageClick={onStageClick}
     />
   );
