@@ -53,22 +53,24 @@ export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
         onClick={() => onOpen(service)}
         onKeyDown={(event) => handleCardKeyDown(event, service, onOpen)}
       >
-        <div className="min-w-0">
-          <p className="text-foreground truncate text-sm leading-snug font-bold">{service.name}</p>
+        <div className="flex min-w-0 items-start justify-between gap-2">
+          <p className="text-foreground min-w-0 truncate text-sm leading-snug font-bold">
+            {service.name}
+          </p>
+          {service.overdue ? (
+            <ClientServiceStageBadge service={service} className="shrink-0" />
+          ) : null}
         </div>
 
         <div className="flex items-center justify-between gap-2">
           <p className="text-foreground min-w-0 truncate text-xl leading-none font-bold tabular-nums">
             {amountLabel}
           </p>
-          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-            <StatusBadge
-              label={billingLabel}
-              variant="blue"
-              className="rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
-            />
-            {service.overdue ? <ClientServiceStageBadge service={service} /> : null}
-          </div>
+          <StatusBadge
+            label={billingLabel}
+            variant="blue"
+            className="shrink-0 rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
+          />
         </div>
 
         <div className="border-border flex flex-col gap-2.5 border-t pt-3">
