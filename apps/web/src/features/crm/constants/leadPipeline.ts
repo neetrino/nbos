@@ -1,45 +1,61 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 
-export const LEAD_STAGES = [
+export interface LeadStage {
+  key: string;
+  label: string;
+  shortLabel: string;
+  variant: StatusVariant;
+  color: string;
+  hexColor: string;
+  terminal?: true;
+}
+
+export const LEAD_STAGES: LeadStage[] = [
   {
     key: 'NEW',
     label: 'New',
-    variant: 'blue' as StatusVariant,
+    shortLabel: 'New',
+    variant: 'blue',
     color: 'bg-blue-500',
     hexColor: '#3B82F6',
   },
   {
     key: 'DIDNT_GET_THROUGH',
     label: "Didn't Get Through",
-    variant: 'gray' as StatusVariant,
+    shortLabel: "Didn't…",
+    variant: 'gray',
     color: 'bg-gray-400',
     hexColor: '#9CA3AF',
   },
   {
     key: 'CONTACT_ESTABLISHED',
     label: 'Contact Established',
-    variant: 'indigo' as StatusVariant,
+    shortLabel: 'Contact',
+    variant: 'indigo',
     color: 'bg-indigo-500',
     hexColor: '#6366F1',
   },
   {
     key: 'MQL',
     label: 'Qualification (MQL)',
-    variant: 'purple' as StatusVariant,
+    shortLabel: 'MQL',
+    variant: 'purple',
     color: 'bg-purple-500',
     hexColor: '#A855F7',
   },
   {
     key: 'ON_HOLD',
     label: 'On Hold',
-    variant: 'gray' as StatusVariant,
+    shortLabel: 'On Hold',
+    variant: 'gray',
     color: 'bg-stone-900',
     hexColor: '#171717',
   },
   {
     key: 'SPAM',
     label: 'Spam',
-    variant: 'red' as StatusVariant,
+    shortLabel: 'Spam',
+    variant: 'red',
     color: 'bg-red-400',
     hexColor: '#F87171',
     terminal: true,
@@ -47,12 +63,13 @@ export const LEAD_STAGES = [
   {
     key: 'SQL',
     label: 'Lead Won',
-    variant: 'emerald' as StatusVariant,
+    shortLabel: 'Lead Won',
+    variant: 'emerald',
     color: 'bg-emerald-500',
     hexColor: '#10B981',
     terminal: true,
   },
-] as const;
+];
 
 export const LEAD_NEW_STAGE_KEY = 'NEW';
 
