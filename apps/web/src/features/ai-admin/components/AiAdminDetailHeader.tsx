@@ -51,9 +51,9 @@ function CompactAiAdminDetailHeader(props: {
     <section className={cn(AI_ADMIN_CARD_CLASS, 'p-4')}>
       <div className="grid items-stretch gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(11rem,34%)]">
         <div className="flex min-w-0 flex-col gap-3">
-          <div className="flex items-start gap-3">
+          <div className="flex items-center gap-3">
             <AiAdminIconTile icon={props.icon} />
-            <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
               {props.readOnly || !props.onNameCommit ? (
                 <h1 className="truncate text-lg font-semibold tracking-tight">{props.name}</h1>
               ) : (
@@ -67,7 +67,7 @@ function CompactAiAdminDetailHeader(props: {
                 label={props.statusLabel}
                 variant={props.statusVariant}
                 dot
-                className="mt-1.5 rounded-full"
+                className="shrink-0 self-center rounded-full"
               />
             </div>
           </div>
@@ -126,7 +126,7 @@ function StandardAiAdminDetailHeader(props: {
               label={props.statusLabel}
               variant={props.statusVariant}
               dot
-              className="shrink-0 rounded-full"
+              className="shrink-0 self-center rounded-full"
             />
           </div>
         </div>
@@ -213,7 +213,7 @@ function EditableName(props: {
   return (
     <button
       type="button"
-      className="group inline-flex max-w-full min-w-0 items-center gap-1.5 text-left"
+      className="group inline-flex max-w-full min-w-0 items-center gap-2 text-left"
       onClick={() => {
         setDraft(props.name);
         setEditing(true);
