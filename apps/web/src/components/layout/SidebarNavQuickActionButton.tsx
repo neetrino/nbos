@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react';
 export const SIDEBAR_CREATE_TASK_ARIA_LABEL = 'Create task';
 
 /** Sidebar-scale plus glyph — larger than module icons for quick-add affordance. */
-export const SIDEBAR_NAV_QUICK_ACTION_ICON_SIZE_PX = 20;
+export const SIDEBAR_NAV_QUICK_ACTION_ICON_SIZE_PX = 22;
 
 /**
  * Transparent 32px hit target (`size-8`) with `mr-1` inset from the row edge.

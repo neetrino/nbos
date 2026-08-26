@@ -27,7 +27,7 @@ describe('SidebarNavQuickActionButton helpers', () => {
   });
 
   it('uses a larger glyph, 32px hit target, and inset from the row edge', () => {
-    expect(SIDEBAR_NAV_QUICK_ACTION_ICON_SIZE_PX).toBe(20);
+    expect(SIDEBAR_NAV_QUICK_ACTION_ICON_SIZE_PX).toBe(22);
     expect(SIDEBAR_NAV_QUICK_ACTION_BUTTON_CLASS).toContain('size-8');
     expect(SIDEBAR_NAV_QUICK_ACTION_BUTTON_CLASS).toContain('mr-1');
   });
