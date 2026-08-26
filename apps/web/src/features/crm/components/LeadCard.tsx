@@ -119,7 +119,7 @@ function LeadCardHeader({
   entityLabel: string;
 }) {
   return (
-    <div className="flex items-start gap-2.5">
+    <div className={cn('flex gap-2.5', metaLabel ? 'items-start' : 'items-center')}>
       <span
         className={cn(TYPE_TINTED_BOARD_CARD_ACCENT_BAR_CLASS, LEAD_CARD_ACCENT_FILL_CLASS)}
         aria-hidden

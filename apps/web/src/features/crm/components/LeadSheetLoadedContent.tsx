@@ -19,7 +19,6 @@ import { CRM_OPEN_LEAD_QUERY } from '@/features/crm/constants/crm-list-sheet-url
 import {
   LEAD_DETAIL_SHEET_RAIL_ANCHOR_CLASS,
   LEAD_DETAIL_SHEET_WIDTH_CLASS,
-  LEAD_SHEET_PIPELINE_SCROLL_CLASS,
 } from '@/features/crm/constants/lead-sheet-layout';
 import { LEAD_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 import { LeadGeneralTab } from './LeadGeneralTab';
@@ -157,7 +156,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
         }
       />
 
-      <div className={`shrink-0 px-5 pb-3 ${LEAD_SHEET_PIPELINE_SCROLL_CLASS}`}>
+      <div className="shrink-0 pb-3">
         <LeadPipelineStages
           currentStatus={renderLead.status}
           onStageClick={isTrashView ? () => {} : (key) => props.onStatusChange(renderLead.id, key)}
@@ -173,7 +172,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
       />
 
       <ScrollArea className="min-h-0 min-w-0 flex-1">
-        <div className="px-5 py-4">
+        <div className="px-7 py-5">
           <DetailSheetTabPanel tabKey={props.activeTab}>
             {props.activeTab === 'general' && generalDraft ? (
               <LeadGeneralTab

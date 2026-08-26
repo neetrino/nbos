@@ -22,10 +22,6 @@ describe('getVisibleNavModules', () => {
     label: 'AI & Agents',
     href: '/ai-agents',
     permission: { module: 'AI_PLATFORM', action: 'VIEW' },
-    children: [
-      { label: 'Overview', href: '/ai-agents' },
-      { label: 'Audit', href: '/ai-agents/audit' },
-    ],
   };
 
   it('hides permissioned modules while permissions are loading', () => {
@@ -51,7 +47,7 @@ describe('getVisibleNavModules', () => {
   it('shows AI parent when AI_PLATFORM VIEW is granted', () => {
     const visible = getVisibleNavModules(canAll, false, [aiModule]);
     expect(visible).toHaveLength(1);
-    expect(visible[0]?.children).toHaveLength(2);
+    expect(visible[0]?.children).toBeUndefined();
   });
 
   it('hides clients without CLIENTS VIEW', () => {

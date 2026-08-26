@@ -79,40 +79,35 @@ export function TaskSheetHeader({
 
   return (
     <header>
-      <div
-        className={cn(
-          QUICK_CREATE_TASK_TITLE_ROW_CLASS,
-          moreActions && '-mr-7 pr-[6.5rem] sm:-mr-7 sm:pr-[7rem]',
-        )}
-      >
-        {editing && !disabled ? (
-          <input
-            ref={inputRef}
-            value={titleValue}
-            onChange={(e) => setTitleValue(e.target.value)}
-            onBlur={commitTitle}
-            onKeyDown={handleTitleKeyDown}
-            placeholder="Task title…"
-            aria-label="Task title"
-            className="border-primary text-foreground placeholder:text-muted-foreground/55 w-full border-0 border-b-2 bg-transparent py-0 text-2xl leading-snug font-bold tracking-tight outline-none sm:text-[1.65rem]"
-          />
-        ) : (
-          <h2
-            onClick={startEditing}
-            className={cn(
-              'text-foreground -mx-1 min-w-0 truncate rounded px-1 text-2xl leading-snug font-bold tracking-tight sm:text-[1.65rem]',
-              disabled
-                ? 'cursor-default opacity-60'
-                : 'cursor-text transition-colors hover:bg-stone-100 dark:hover:bg-stone-800',
-            )}
-            title={disabled ? displayTitle : 'Click to edit task title'}
-          >
-            {displayTitle}
-          </h2>
-        )}
-        <div
-          className={cn(QUICK_CREATE_TASK_HEADER_ICONS_CLASS, moreActions && 'right-0 sm:right-0')}
-        >
+      <div className={QUICK_CREATE_TASK_TITLE_ROW_CLASS}>
+        <div className="min-w-0 flex-1">
+          {editing && !disabled ? (
+            <input
+              ref={inputRef}
+              value={titleValue}
+              onChange={(e) => setTitleValue(e.target.value)}
+              onBlur={commitTitle}
+              onKeyDown={handleTitleKeyDown}
+              placeholder="Task title…"
+              aria-label="Task title"
+              className="border-primary text-foreground placeholder:text-muted-foreground/55 w-full min-w-0 border-0 border-b-2 bg-transparent py-0 text-2xl leading-snug font-bold tracking-tight outline-none sm:text-[1.65rem]"
+            />
+          ) : (
+            <h2
+              onClick={startEditing}
+              className={cn(
+                'text-foreground -mx-1 min-w-0 truncate rounded px-1 text-2xl leading-snug font-bold tracking-tight sm:text-[1.65rem]',
+                disabled
+                  ? 'cursor-default opacity-60'
+                  : 'cursor-text transition-colors hover:bg-stone-100 dark:hover:bg-stone-800',
+              )}
+              title={disabled ? displayTitle : 'Click to edit task title'}
+            >
+              {displayTitle}
+            </h2>
+          )}
+        </div>
+        <div className={QUICK_CREATE_TASK_HEADER_ICONS_CLASS}>
           <button
             type="button"
             className={cn(

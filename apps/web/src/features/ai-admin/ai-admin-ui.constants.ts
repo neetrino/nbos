@@ -26,7 +26,7 @@ export const AI_ADMIN_DENSE_ROW_CLASS =
 export const AI_ADMIN_KPI_GRID_CLASS = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3';
 
 export const AI_ADMIN_SECTION_HEADER_CLASS =
-  'flex items-start justify-between gap-3 border-b border-border/60 px-4 pt-4 pb-3';
+  'flex items-center justify-between gap-3 border-b border-border/60 px-4 pt-4 pb-3';
 
 export const AI_ADMIN_SECTION_BODY_CLASS = 'px-4 pt-4 pb-4';
 
@@ -48,6 +48,9 @@ export const AI_ADMIN_ICON_TILE_CLASS =
 
 export const AI_ADMIN_ICON_TILE_LG_CLASS =
   'flex size-12 shrink-0 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300';
+
+export const AI_ADMIN_SECTION_CHEVRON_CLASS =
+  'text-muted-foreground size-4 shrink-0 -translate-x-[5px] transition-transform';
 
 export const AI_ADMIN_PILL_CLASS =
   'inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground';

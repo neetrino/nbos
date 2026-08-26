@@ -129,7 +129,7 @@ function ParentModuleNavRow({
       <div
         data-sidebar-nav-active={isActive ? 'true' : undefined}
         className={cn(
-          'group relative flex w-full items-stretch overflow-hidden rounded-md transition-colors',
+          'group relative flex w-full items-center overflow-hidden rounded-md transition-colors',
           isActive ? 'text-sidebar-foreground' : 'text-sidebar-muted',
         )}
       >
@@ -206,7 +206,7 @@ function LeafModuleNavRow({
       <div
         data-sidebar-nav-active={isActive ? 'true' : undefined}
         className={cn(
-          'group relative flex w-full items-stretch overflow-hidden rounded-md transition-colors',
+          'group relative flex w-full items-center overflow-hidden rounded-md transition-colors',
           isActive
             ? 'text-sidebar-foreground'
             : 'text-sidebar-muted hover:bg-secondary/50 hover:text-sidebar-foreground',
