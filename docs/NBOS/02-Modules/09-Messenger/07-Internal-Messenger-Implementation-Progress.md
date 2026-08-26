@@ -1,54 +1,78 @@
-# Internal Messenger Implementation Progress
+# Messenger Runtime Status / Implementation Progress
 
-## Current Phase
+> Status document only. **Not product canon.**
+>
+> Product canon: `00-Messenger-Overview.md` + `08-Messenger-Decision-Register.md`.
+>
+> Runtime reset evidence: `docs/NBOS_MESSENGER_CLEAN_CORE_RESET.md`.
 
-Phase 6+ — Unified API cutover + L1/L2 Internal Messenger UI (complete for Internal zone)
+## Current recorded baseline
 
-## Completed
+The previous contents of this file were stale: they claimed the Unified API + L1/L2 Internal Messenger UI were the active completed runtime.
 
-### Phase 3 — Unified schema foundation
+That architecture was intentionally removed by the 2026-08-11 Clean Core Reset.
 
-- Unified Prisma models and additive migration
+Recorded post-reset state:
 
-### Phase 4 — Live security hardening
+```text
+Active runtime:
+  legacy Channels + Direct Messages shell
+  PostgreSQL persistence
+  ACL-hardened REST
+  Socket.IO realtime
+  read/unread / typing / presence
+  Drive attachment references
+  basic internal search
 
-- Legacy channel/DM ACL, WS permission checks, Drive LINK attach validation
+Removed from active runtime:
+  L1/L2 navigation
+  Topics architecture
+  Unified Conversation REST/service runtime
+  Project General lifecycle hooks
+  ensure-on-selection
+  legacy -> unified dual-write/backfill tooling
 
-### Phase 5 — Backfill + parity verification
+Preserved but unused:
+  Unified Messenger Prisma schema/data
+```
 
-- Mapping, idempotent backfill, parity verifier, CLI (`pnpm messenger:backfill:*`)
+External provider-backed Client Messenger was not implemented by that reset.
 
-### Phase 6 — Unified conversation cutover (this slice)
+## Important rule
 
-- Entity ACL via project/product/deal/task participation graphs
-- Canonical `ensure` for PROJECT_GENERAL / PRODUCT / DEAL / TASK / DIRECT
-- REST:
-  - `GET /messenger/internal/entities?tab=`
-  - `GET /messenger/internal/conversations`
-  - `POST /messenger/conversations/ensure`
-  - `GET|POST /messenger/conversations/:id/...`
-  - `GET /messenger/internal/search`
-- WS: subscribe/typing/message/peer_read on conversation rooms
-- Legacy channel/DM dual-write into unified when ids match backfill
-- Web `/messenger`: Internal tabs All | Deal | Project | Dev | Tasks + L1 entities + L2 topics + active chat
+This document records historical/current implementation claims only. It must not be used to derive the target Messenger architecture.
 
-## Explicitly Not Completed
+The rebuild target is now defined by:
 
-- removal of legacy channel/DM tables (`READY_FOR_LATER_DELETION` after freeze soak)
-- External Messenger (CRM Inbox / WhatsApp) — placeholder zone only
-- Favorites / Collections
-- production apply of freeze flag on deployed environments (tooling ready; operator step)
-- Task card / Product page embedded chat panels (API ready via ensure)
-- dedicated L1 entry for INTERNAL_GROUP org chats
+- `00-Messenger-Overview.md`;
+- `01-Internal-Messenger.md`;
+- `02-External-Messenger-and-CRM-Inbox.md`;
+- `03-Messenger-Architecture.md`;
+- `04-Messenger-Integrations.md`;
+- `05-Messenger-Permissions-and-UX.md`;
+- `08-Messenger-Decision-Register.md`.
 
-## Stabilization notes (2026-08-10)
+## Next required step before code changes
 
-- Eager `PROJECT_GENERAL` on Project create + gap-fill CLI
-- Topics race/stale/loading fixes; General pinned; INTERNAL_GROUP excluded from Project Topics
-- Backfill reconciles into existing canonical conversations
-- See `docs/NBOS_INTERNAL_MESSENGER_IMPLEMENTATION_AND_CUTOVER_REPORT.md`
+Perform a fresh runtime reconciliation against the current branch and classify existing Messenger schema/code as:
 
-## Migration Safety
+```text
+REUSE
+EXTEND
+MIGRATE
+NEW
+DELETE-LATER
+```
 
-- Legacy tables remain for dual-compat; live Internal UI reads/writes unified tables
-- Ensure is lazy (no bulk invent of Product/Deal/Task chats)
+At minimum verify:
+
+- active channel/DM REST routes;
+- current Socket.IO handlers;
+- current Prisma legacy + preserved unified models;
+- existing message/attachment/read-state data;
+- current Messenger RBAC/access helpers;
+- Product/Task/Work Space integration hooks;
+- current WhatsApp Gateway/NBOS integration code;
+- any production data that appeared after the 2026-08-11 reset.
+
+Do not reintroduce the old L1/L2/Topics implementation merely because historical migration/schema artifacts remain in the repository.
