@@ -26,7 +26,7 @@ export const AI_ADMIN_DENSE_ROW_CLASS =
 export const AI_ADMIN_KPI_GRID_CLASS = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3';
 
 export const AI_ADMIN_SECTION_HEADER_CLASS =
-  'flex items-start justify-between gap-3 border-b border-border/60 px-4 pt-4 pb-3';
+  'flex items-center justify-between gap-3 border-b border-border/60 px-4 pt-4 pb-3';
 
 export const AI_ADMIN_SECTION_BODY_CLASS = 'px-4 pt-4 pb-4';
 

@@ -54,7 +54,7 @@ function AiAdminSectionHeader(props: {
   open?: boolean;
 }) {
   const identity = (
-    <div className="flex min-w-0 flex-1 items-start gap-3">
+    <div className="flex min-w-0 flex-1 items-center gap-3">
       <AiAdminIconTile icon={props.icon} glyph={props.glyph} size="sm" />
       <div className="min-w-0">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
@@ -73,11 +73,11 @@ function AiAdminSectionHeader(props: {
   return (
     <header className={AI_ADMIN_SECTION_HEADER_CLASS}>
       {props.collapsible ? (
-        <CollapsibleTrigger className="hover:bg-muted/40 -mx-1 flex min-w-0 flex-1 items-start gap-2 rounded-lg px-1 text-left outline-none select-none">
+        <CollapsibleTrigger className="-mx-1 flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-left outline-none select-none">
           {identity}
           <ChevronDown
             className={cn(
-              'text-muted-foreground mt-1 size-4 shrink-0 transition-transform',
+              'text-muted-foreground size-4 shrink-0 transition-transform',
               props.open && 'rotate-180',
             )}
             aria-hidden
