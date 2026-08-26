@@ -1,200 +1,455 @@
 # Messenger Architecture
 
-Messenger должен работать быстро, но не должен хранить истину в WebSocket.
+> Canon status: **approved target architecture**.
+>
+> Product rationale: `08-Messenger-Decision-Register.md`.
 
-Канон:
+Messenger is implemented as one shared Messaging Core inside NBOS, exposed through two separate product surfaces: Internal Messenger and Client Messenger.
+
+The target remains a modular monolith inside NBOS. Messenger does **not** need a new microservice merely because it integrates with external providers.
+
+```text
+modules/
+  messaging/
+    core/
+    internal/
+    client/
+    connectors/
+      whatsapp/
+      meta/
+```
+
+---
+
+## 1. Runtime flow
+
+Canonical command flow:
 
 ```text
 Client UI
-  -> REST command / GraphQL mutation
+  -> REST command
+  -> authorization / domain validation
   -> DB transaction
-  -> MessageCreated event
+  -> durable Message / state / reference
+  -> event/outbox
   -> WebSocket broadcast
   -> Queue jobs
        -> external provider send
-       -> notification fanout
-       -> search indexing
+       -> notifications
+       -> indexing
        -> file processing
 ```
 
-## Source of truth
+Database is the only source of truth.
 
-База данных является единственным source of truth.
+WebSocket/Socket.IO is used only for:
 
-WebSocket нужен только для:
-
-- live delivery в открытые окна;
+- live message delivery;
 - unread counter updates;
-- typing indicators;
+- read updates;
+- typing;
 - presence;
+- delivery-status refresh;
 - optimistic UI confirmation.
 
-Если WebSocket потерялся, пользователь должен открыть историю через REST pagination и увидеть корректную картину.
+If realtime is unavailable, REST history/pagination must reconstruct the correct state.
 
-## REST API
+---
 
-REST/API слой нужен для:
+## 2. Shared core vs product surfaces
 
-- загрузки списка conversations;
-- загрузки истории сообщений;
-- отправки команды `send message`;
-- редактирования/удаления сообщения, если разрешено;
-- управления участниками;
-- управления collections/favorites;
-- поиска.
+Shared core may provide:
 
-## WebSocket
+- Conversation persistence;
+- Message persistence;
+- participants;
+- references/replies/reactions;
+- read state;
+- attachments links;
+- search;
+- realtime;
+- collections infrastructure;
+- audit primitives;
+- external provider mapping.
 
-WebSocket события:
+Surface-specific modules own behavior such as:
 
-| Event                  | Назначение                                  |
-| ---------------------- | ------------------------------------------- |
-| `message.created`      | Новое сообщение                             |
-| `message.updated`      | Изменение/редактирование                    |
-| `message.deleted`      | Soft delete / redaction                     |
-| `conversation.updated` | Изменился title, link, participants, unread |
-| `read.updated`         | Прочитано пользователем                     |
-| `typing.started`       | Пользователь печатает                       |
-| `delivery.updated`     | Внешний канал обновил delivery status       |
+### Internal Messenger
 
-## Queue
+- Internal navigation;
+- Product/Work Space/Task/Deal/Group/Direct views;
+- Internal Collections;
+- internal composer/actions.
 
-Queue обязательна для внешних каналов.
+### Client Messenger
 
-Она нужна, потому что WhatsApp/Instagram/provider:
+- Inbox/Sales/Clients navigation;
+- external channel context;
+- locked composer;
+- external read/send permissions;
+- delivery status;
+- Product communication bindings;
+- attention routing;
+- client AI controls;
+- Client Collections.
 
-- может ответить с задержкой;
-- может временно упасть;
-- может иметь rate limits;
-- может прислать delivery status позже;
-- может требовать retry.
+A shared React component library is encouraged, but the UI must not collapse the two surfaces into one zone switch.
 
-## External Channel Adapter
+---
 
-Все внешние каналы подключаются через `External Channel Adapter`.
+## 3. Domain model direction
 
-NBOS core не должен знать, какой конкретный сервис отправляет сообщение. Для Messenger и Notifications важен единый контракт:
-
-| Method               | Назначение                                                                |
-| -------------------- | ------------------------------------------------------------------------- |
-| `sendMessage`        | Отправить сообщение во внешний канал                                      |
-| `receiveWebhook`     | Принять входящее событие от провайдера                                    |
-| `syncConversation`   | Синхронизировать чат/группу/participants/history, если канал поддерживает |
-| `getDeliveryStatus`  | Получить или обработать статус доставки                                   |
-| `downloadAttachment` | Скачать вложение и передать его в Drive                                   |
-| `reconnectChannel`   | Переподключить канал или обновить QR session                              |
-| `healthCheck`        | Проверить состояние канала                                                |
-
-### WhatsApp adapter decision
-
-Для WhatsApp primary adapter (логический контракт — `WhatsAppWebAdapter`):
+Exact Prisma names may be adjusted during runtime reconciliation, but the target concepts are:
 
 ```text
-WhatsAppWebAdapter (контракт)
-  -> WhatsApp Gateway (NestJS, отдельный сервис)
-    -> WAHA (internal Docker, например http://waha:3000)
-      -> QR-connected WhatsApp account
+Conversation
+  id
+  zone                 INTERNAL | CLIENT
+  kind                 DIRECT | GROUP | ENTITY | EXTERNAL
+  title
+  status
+  createdAt
+
+ConversationParticipant
+  conversationId
+  employeeId? / participant identity
+  role
+  read/send capabilities where applicable
+  lastReadMessageId / cursor
+  mutedUntil
+
+ConversationLink
+  conversationId
+  entityType           PROJECT | PRODUCT | WORKSPACE | DEAL | TASK | TICKET | CLIENT | ...
+  entityId
+
+Message
+  id
+  conversationId
+  sender identity
+  direction            INTERNAL | INBOUND | OUTBOUND
+  body
+  state
+  replyToMessageId?
+  createdAt
+
+MessageReference
+  sourceConversationId
+  sourceMessageId
+  targetMessageId? / target entity relation
+  purpose               FORWARD | TASK_SOURCE | TICKET_SOURCE | DEAL_SOURCE | ...
+
+ExternalChannelAccount
+  id
+  provider              WHATSAPP | INSTAGRAM | FACEBOOK | ...
+  externalAccountId
+  status
+
+ExternalConversationMapping
+  conversationId
+  channelAccountId
+  externalConversationId
+
+MessageExternalRef
+  messageId
+  provider
+  externalMessageId
+
+ProductCommunicationBinding
+  productId
+  purpose               WORK | FINANCE
+  conversationId
+  status
+
+ConversationCollection
+ConversationCollectionItem
+UserConversationSetting
+Attachment / Drive references
+Reaction
+ProviderEvent
+AuditEvent / audit references
 ```
 
-Этот путь покрывает и `WhatsApp Groups`, и редкие `WhatsApp 1:1 chats`. Детали границы NBOS ↔ Gateway: `../../06-Integrations/06-WhatsApp-Gateway-NBOS-Boundary.md`.
+The implementation may reuse existing schema if it satisfies these contracts. The canon does not require renaming working tables purely for naming consistency.
 
-`WhatsAppOfficialAdapter / Meta Cloud API` не входит в MVP и не планируется на ближайшие годы. Его нельзя закладывать как обязательную зависимость для Messenger или Notifications.
+---
 
-Если WAHA не подойдёт по стабильности, fallback:
+## 4. Core invariants
 
-- managed provider: `Whapi`, `Wazzup`, `Wappi`;
-- second self-hosted candidate: `Evolution API`.
+### Zone invariant
 
-Контракт адаптера должен позволить заменить WAHA без переписывания Messenger/Notifications.
+A `Conversation.zone` never changes between INTERNAL and CLIENT after creation.
 
-## Message statuses
+Internal send APIs cannot target an External provider mapping.
 
-### External draft boundary (Phase 2 planned)
+### Collection invariant
 
-Customer reply draft is a Messenger-owned aggregate/revision, not an outbound
-Message with a delivery status. It keeps Conversation, current revision, body,
-author/editor, optional AI execution/provenance and stale/cancelled state.
+A collection belongs to one Messenger surface/zone and may contain only conversations from that zone.
 
-An authorized Employee send command atomically creates one durable outbound
-Message/operation + outbox from the current draft revision. Draft creation,
-editing, retry or AI generation never queues delivery. A new inbound/human
-message or target change may make the draft stale.
+### Product/Work Space invariant
 
-This target contract is part of AI Platform Phase 2 planning in
-`../21-AI-Platform/42-Phase-2-Project-Intelligence-and-Draft-Assistant-Architecture.md`.
-External Messenger remains a placeholder until its own schema/services/queue
-implement and verify this boundary.
+Product and its mandatory Connected Work Space point to the same internal work Conversation.
 
-### Internal
+### Task invariant
 
-| Status      | Значение                                                       |
-| ----------- | -------------------------------------------------------------- |
-| `created`   | Сообщение записано в DB                                        |
-| `delivered` | Доставлено активным участникам через WebSocket или push/in-app |
-| `read`      | Конкретный участник прочитал                                   |
+Task Discussion uses a Messaging Core Conversation. There is no second canonical human comments store.
 
-### External
+### Product communication invariant
 
-| Status            | Значение                                                               |
-| ----------------- | ---------------------------------------------------------------------- |
-| `queued`          | Поставлено в очередь отправки                                          |
-| `sending`         | Worker начал provider attempt                                          |
-| `sent`            | Provider принял сообщение                                              |
-| `delivered`       | Внешний канал подтвердил доставку                                      |
-| `read`            | Внешний канал подтвердил прочтение, если поддерживается                |
-| `failed`          | Provider/adapter вернул ошибку                                         |
-| `outcome_unknown` | Provider outcome не подтверждён после submission; blind retry запрещён |
-| `cancelled`       | Отправка отменена до provider send                                     |
+For v1:
 
-## Files and attachments
+- one Product has exactly one active canonical `WORK` external destination;
+- zero or one explicit `FINANCE` destination;
+- one External Conversation may serve multiple Products;
+- missing FINANCE binding resolves to WORK.
 
-Messenger не хранит файлы напрямую.
+### Support invariant
 
-Процесс:
+Support Ticket never becomes the canonical client conversation. It links to source Client messages and may have internal work/discussion only.
 
-1. Пользователь прикрепляет файл.
-2. Drive создаёт `File Asset`.
-3. Messenger message получает ссылку на `File Asset`.
-4. Drive решает права, versioning, preview, cleanup, export.
+---
 
-Файлы из внешних каналов также должны попадать в Drive как File Asset с source `external_message`.
+## 5. REST command boundary
 
-## Search
+REST/API commands handle durable mutations, including:
 
-Поиск должен поддерживать:
+- list/open conversations;
+- load history;
+- send message;
+- mark read;
+- react/reply;
+- manage participants;
+- manage collections;
+- forward/reference message(s);
+- create/link business actions from message context;
+- Client composer unlock/session authorization where implemented;
+- manage Product communication bindings;
+- manage attention assignment/routing override;
+- search.
 
-- message text;
+External send must re-check authorization at command execution time even if the UI is currently unlocked.
+
+---
+
+## 6. Realtime events
+
+Expected event families:
+
+| Event | Purpose |
+| --- | --- |
+| `message.created` | New durable message |
+| `message.updated` | Edit/redaction update |
+| `message.deleted` | Soft delete/redaction |
+| `conversation.updated` | Title/state/link/participant changes |
+| `read.updated` | Read cursor/state |
+| `typing.started/stopped` | Typing indicator |
+| `presence.updated` | Employee presence |
+| `delivery.updated` | External delivery/read result |
+| `attention.updated` | Client routing/assignment changed |
+| `binding.updated` | Product communication destination changed |
+
+Event names are implementation details; semantics are canonical.
+
+---
+
+## 7. Durable external send
+
+External channels must not use fire-and-forget HTTP send directly from the UI/API request.
+
+Target flow:
+
+```text
+send command
+  -> validate Client conversation + external SEND permission
+  -> persist outbound Message + delivery operation/outbox atomically
+  -> enqueue/reconcile durable operation
+  -> worker revalidates target/channel state where required
+  -> adapter/Gateway submission
+  -> provider result/event reconciliation
+```
+
+Required external states include at least:
+
+```text
+queued
+sending
+sent
+delivered
+read
+failed
+outcome_unknown
+cancelled
+```
+
+`outcome_unknown` prevents unsafe blind retry after provider submission when the outcome cannot be proven.
+
+---
+
+## 8. External Channel Adapter
+
+Business modules do not call WAHA/Meta/provider SDKs directly.
+
+Logical adapter capabilities may include:
+
+- send message/media;
+- receive/normalize webhook events;
+- map/sync conversation and participants;
+- process delivery/ack/read events;
+- fetch/download attachment;
+- session/health operations where appropriate.
+
+Provider-specific behavior remains behind connector/Gateway boundaries.
+
+---
+
+## 9. WhatsApp boundary
+
+Canonical WhatsApp path:
+
+```text
+Messaging Core
+  -> WhatsApp connector/adapter
+    -> WhatsApp Gateway
+      -> WAHA
+        -> WhatsApp
+```
+
+Gateway remains a standalone transport service.
+
+### Inbound
+
+```text
+WhatsApp
+  -> WAHA
+  -> Gateway normalizes/authenticates provider event
+  -> authenticated NBOS webhook
+  -> idempotent ProviderEvent
+  -> resolve ExternalConversationMapping
+  -> persist inbound Message
+  -> update routing/unread
+  -> realtime broadcast
+```
+
+### Outbound
+
+```text
+Employee/System
+  -> Messaging Core permission/purpose resolution
+  -> durable outbound Message/outbox
+  -> queue worker
+  -> Gateway
+  -> WAHA
+  -> WhatsApp
+```
+
+NBOS owns business context and message truth. Gateway owns WhatsApp session/provider transport.
+
+---
+
+## 10. Product Communication Binding resolver
+
+Business modules request a purpose, not a provider group id.
+
+```text
+resolveClientDestination(productId, purpose)
+```
+
+Example FINANCE resolution:
+
+```text
+explicit active FINANCE binding
+  -> use it
+else
+  -> canonical WORK binding
+```
+
+The resolved External Conversation is then mapped to its provider channel/account.
+
+This resolver is the only normal path for Subscription/Invoice/Client Service automatic client messages.
+
+---
+
+## 11. Message references
+
+When a Client message is shared internally or used to create Task/Ticket/Deal context, preserve a stable reference to the canonical source message.
+
+Do not make copied text the authoritative source.
+
+Reference metadata may include:
+
+- source conversation/message;
+- source channel;
+- client/Product context;
+- selected message bundle;
+- attachment references;
+- reason/purpose;
+- actor/time.
+
+Permissions are checked when opening the source. A reference does not grant source-conversation access.
+
+---
+
+## 12. Files
+
+Messenger does not own physical files.
+
+```text
+upload/external media
+  -> Drive File Asset
+  -> Message attachment reference
+```
+
+Drive owns storage, access, preview, versioning, retention, cleanup and export.
+
+External attachment processing must preserve provider/source metadata and fail safely if download/storage is unavailable.
+
+---
+
+## 13. Search
+
+Search must respect the Internal/Client surface boundary and effective permissions.
+
+Useful filters:
+
+- text;
 - participant;
 - linked entity;
-- date range;
+- Product/Project;
+- date;
 - file name;
-- external channel;
-- unread / mentions;
-- internal/external zone.
+- channel/provider;
+- unread/mentions;
+- Collection;
+- Internal or Client surface.
 
-Для MVP можно начать с DB search, но архитектурно заложить отдельный search index.
+A unified backend search service may exist, but results are rendered in the correct surface and never create an unsafe mixed composer context.
 
-## Permissions
+---
 
-Перед выдачей conversation и перед отправкой message система проверяет:
+## 14. Draft and AI boundary
 
-- доступ пользователя к conversation;
-- доступ к linked entity;
-- роль в conversation;
-- external send permission;
-- restricted finance/support/project data.
+Customer reply Draft is separate from an outbound Message.
 
-## Audit
+Generating/editing a draft does not enqueue delivery. An authorized send command converts the chosen draft revision into one durable outbound Message operation.
 
-Audit нужен особенно для External Messenger.
+AI Platform may create drafts or operate under future approved policies, but AI permission does not imply external SEND permission.
 
-Логируются:
+Internal Messenger has no customer-facing operator mode.
 
-- кто отправил сообщение;
-- из какого channel account;
-- в какой external conversation;
-- какой provider обработал;
-- delivery status;
-- ошибки отправки;
-- кто добавил/удалил участника;
-- кто изменил link conversation к бизнес-сущности.
+---
+
+## 15. Audit
+
+At minimum audit high-risk Client Messenger events:
+
+- external send actor and target;
+- channel/account/provider;
+- delivery failures/outcome unknown;
+- Product communication binding create/change/replace;
+- participant/access changes;
+- external SEND grants/revokes;
+- locked-composer activation if product/security policy chooses to audit it;
+- routing/attention reassignment;
+- AI enable/disable/takeover and AI-origin external actions where applicable.
+
+Message bodies should not be duplicated into broad audit logs unless a specific legal/security requirement requires it; audit should reference canonical records.
