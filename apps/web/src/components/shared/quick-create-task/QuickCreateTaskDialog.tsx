@@ -154,8 +154,19 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
           </div>
         </form>
 
-        <div className="border-border/70 flex flex-wrap items-center justify-between gap-3 border-t px-3 py-3 sm:px-4">
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="border-border/70 flex flex-wrap items-center gap-3 border-t px-3 py-3 sm:px-4">
+          {onOpenFull ? (
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              className="text-muted-foreground mr-auto h-9 px-0 text-sm font-normal"
+              onClick={onOpenFull}
+            >
+              Full form
+            </Button>
+          ) : null}
+          <div className="ml-auto flex flex-wrap items-center gap-3">
             <Button
               type="button"
               size="sm"
@@ -176,17 +187,6 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
               Cancel
             </Button>
           </div>
-          {onOpenFull ? (
-            <Button
-              type="button"
-              variant="link"
-              size="sm"
-              className="text-muted-foreground h-9 px-0 text-sm font-normal"
-              onClick={onOpenFull}
-            >
-              Full form
-            </Button>
-          ) : null}
         </div>
       </DialogContent>
     </Dialog>
