@@ -69,7 +69,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
               autoFocus
               disabled={form.saving || form.creatorBlocked}
               minHeightPx={QUICK_CREATE_TASK_TITLE_MIN_HEIGHT_PX}
-              className={QUICK_CREATE_TASK_TITLE_INPUT_CLASS}
+              className={cn(QUICK_CREATE_TASK_TITLE_INPUT_CLASS, 'min-w-0 flex-1')}
               onSubmitShortcut={() => void form.handleCreate()}
             />
             <div className={QUICK_CREATE_TASK_HEADER_ICONS_CLASS}>
