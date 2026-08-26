@@ -73,7 +73,7 @@ function CompactAiAdminDetailHeader(props: {
           </div>
           {props.meta}
           {props.actions ? (
-            <div className="border-border/60 mt-auto flex flex-wrap items-center gap-2 border-t pt-3">
+            <div className="border-border/60 mt-auto flex w-full flex-wrap items-center gap-2 border-t pt-3">
               {props.actions}
             </div>
           ) : null}
