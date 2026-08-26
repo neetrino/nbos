@@ -1,6 +1,8 @@
 # Work Spaces and Views
 
 > `Work Space` — рабочая среда, в которой задачи организуются, планируются и показываются в нужной форме. Это центральная planning-сущность внутри модуля `Tasks`.
+>
+> Messenger boundary: `../09-Messenger/08-Messenger-Decision-Register.md` (`M-WORK-01`, `M-WORK-02`).
 
 ## 1. Что такое Work Space
 
@@ -82,6 +84,40 @@
 
 `/projects/:projectId/products/:productId/work-space`
 
+### 4.1. Product / Connected Work Space Discussion
+
+Product и его обязательный Connected Work Space используют **один и тот же internal Conversation** из Messaging Core.
+
+```text
+Product
+  ↕
+Connected Work Space
+  ↕
+ONE work Conversation
+```
+
+UI может называть один и тот же conversation по-разному в зависимости от entry point:
+
+- Product page → `Chat`;
+- Work Space → `Discussion`;
+- Internal Messenger → Product/work conversation.
+
+Все entry points открывают один `conversationId` и одну историю.
+
+**Почему:** Product и его Connected Work Space являются одним delivery-контекстом. Отдельные Product Chat и Work Space Chat создавали бы два параллельных места для одних и тех же решений.
+
+### 4.2. Standalone Work Space Discussion
+
+Standalone Work Space может иметь собственный internal Conversation, потому что у него нет Product conversation для reuse.
+
+Примеры:
+
+- Marketing strategy discussion;
+- Finance operations discussion;
+- CEO planning discussion.
+
+Это conversation виден во вкладке Internal Messenger `Work Spaces` и из самого Work Space.
+
 ## 5. Workflow Status vs Planning
 
 ### 5.1. Workflow Status
@@ -147,13 +183,13 @@
 
 `Sprint` — отдельная запись внутри scrum-enabled `Work Space`, а не только enum на задаче.
 
-| Поле / правило           | Смысл                                |
-| ------------------------ | ------------------------------------ |
-| `workspace_id`           | Спринт принадлежит одному Work Space |
-| `name`, `goal`           | Название и цель спринта              |
-| `status`                 | `Planning` → `Active` → `Closed`     |
-| `start_date`, `end_date` | Плановые даты итерации               |
-| `closed_at`              | Фактическое закрытие                 |
+| Поле / правило | Смысл |
+| --- | --- |
+| `workspace_id` | Спринт принадлежит одному Work Space |
+| `name`, `goal` | Название и цель спринта |
+| `status` | `Planning` → `Active` → `Closed` |
+| `start_date`, `end_date` | Плановые даты итерации |
+| `closed_at` | Фактическое закрытие |
 
 Инварианты:
 
@@ -169,11 +205,11 @@
 
 При закрытии active sprint пользователь выбирает политику для незавершённых задач (`status != Completed`):
 
-| Действие                       | Поведение                                             |
-| ------------------------------ | ----------------------------------------------------- |
-| `Move to backlog`              | `sprint_id = null`, planning = backlog                |
+| Действие | Поведение |
+| --- | --- |
+| `Move to backlog` | `sprint_id = null`, planning = backlog |
 | `Move to next planning sprint` | перенос в выбранный или автосозданный planning sprint |
-| `Keep on closed sprint`        | задача остаётся на closed sprint record (история)     |
+| `Keep on closed sprint` | задача остаётся на closed sprint record (история) |
 
 ### 6.5. Scrum Planning surface (layout)
 
@@ -225,9 +261,9 @@ Kanban-enabled workspace подходит для:
 
 **Layout (Bitrix-like):**
 
-| Зона       | Содержимое                                                                                                                        |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Left ~40%  | Backlog: счётчик задач, `+ Task`, список, DnD source                                                                              |
+| Зона | Содержимое |
+| --- | --- |
+| Left ~40% | Backlog: счётчик задач, `+ Task`, список, DnD source |
 | Right ~60% | Sprint blocks: active sprint header (progress, dates, goal, Finish), planning sprints, create sprint, completed sprints accordion |
 
 **Не входит в v1:** story points, burndown, velocity, epics, capacity — только структурно корректный sprint lifecycle.
@@ -256,15 +292,15 @@ PM-oriented вид по срокам, зависимостям и critical path.
 
 ## 9. Контексты отображения
 
-| Контекст          | Что открывается                                                                         |
-| ----------------- | --------------------------------------------------------------------------------------- |
-| `Product`         | connected `Work Space` продукта                                                         |
-| `Extension`       | `Product Work Space` родительского продукта                                             |
-| `Project`         | compact task counters and links only; no full task execution block on main Project page |
-| top-level `Tasks` | глобальные списки и personal views                                                      |
+| Контекст | Что открывается |
+| --- | --- |
+| `Product` | connected `Work Space` продукта + тот же Product work Discussion |
+| `Extension` | `Product Work Space` родительского продукта |
+| `Project` | compact task counters and links only; no full task execution block on main Project page |
+| top-level `Tasks` | глобальные списки и personal views |
+| standalone workspace | самостоятельное operational пространство + собственный Discussion при необходимости |
 
 Project-level task aggregation может существовать только как отдельный lazy-loaded filtered view, если это понадобится позже. Основная Project page не должна дублировать Product Work Space.
-| standalone workspace | самостоятельное operational пространство |
 
 ## 10. Базовые правила отображения
 
@@ -273,6 +309,7 @@ Project-level task aggregation может существовать только 
 3. Разные workspace types могут иметь разный UI и набор доступных блоков.
 4. Source of truth остаются `Task + Work Space + Sprint`, а не отдельные несвязанные доски.
 5. Work Space files являются Drive File Assets. Backlog/task attachments не должны попадать в Product Library как финальные документы, пока их не отметили как final artifact / delivery file.
+6. Product/Connected Work Space discussion source of truth — Messaging Core Conversation, а не локальное workspace comments storage.
 
 ## 10.1. Work Space Library
 
