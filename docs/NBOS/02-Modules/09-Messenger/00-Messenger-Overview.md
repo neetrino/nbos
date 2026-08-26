@@ -1,109 +1,262 @@
-# Messenger - overview
+# Messenger — Overview
 
-`Messenger` - это коммуникационный слой NBOS. Его задача не просто хранить переписку, а дать сотруднику быстрый доступ к правильному разговору в правильном бизнес-контексте: Deal, Project, Product, Task, Support, Finance или клиентская коммуникация.
+> Canon status: **approved product architecture**.
+>
+> Decision rationale: `08-Messenger-Decision-Register.md`.
 
-Главное решение: в NBOS должны быть две строго разные зоны коммуникации.
+`Messaging Core` is the shared communication engine of NBOS. It stores conversations, messages, participants, references, read state, realtime state and external-channel mappings.
 
-| Зона                 | Русское название      | Для чего нужна                                                                            |
-| -------------------- | --------------------- | ----------------------------------------------------------------------------------------- |
-| `Internal Messenger` | Внутренний мессенджер | Переписка команды Neetrino по Deal, Project, Product, Task и внутренним вопросам          |
-| `External Messenger` | Внешний мессенджер    | Реальные клиентские чаты: CRM omnichannel, WhatsApp groups, support/finance conversations |
-
-Эти зоны нельзя смешивать визуально и технически. Внутреннее сообщение никогда не должно случайно уйти клиенту.
-
-## Что Messenger не заменяет
-
-| Не заменяет     | Почему                                                                                                  |
-| --------------- | ------------------------------------------------------------------------------------------------------- |
-| `Tasks`         | Сообщение может создать Task, но не является задачей                                                    |
-| `Notifications` | Messenger хранит диалог, Notifications доставляет системные напоминания                                 |
-| `Drive`         | Файлы в чате хранятся как `File Asset`, Messenger только показывает их в контексте                      |
-| `CRM`           | CRM управляет Lead/Deal, Messenger показывает коммуникацию                                              |
-| `Support`       | Support Ticket остаётся рабочей сущностью обращения, Messenger только канал общения                     |
-| `Mail`          | Подключённые ящики, `EmailThread` / `EmailMessage`, IMAP/SMTP sync — модуль **`17-Mail`**, не Messenger |
-
-## Граница с Mail (NBOS Mail)
-
-**NBOS Mail** (`docs/NBOS/02-Modules/17-Mail/*`) — это **email**: threads по `Message-ID`/subject, inbox UI `/mail`, вложения через Drive, секреты через Credentials.
-
-**Messenger** — чаты (internal/external), WhatsApp groups, CRM Inbox как **чат**, а не почтовый протокол.
-
-Нельзя:
-
-- показывать `EmailThread` в общем списке Messenger как «ещё один чат» без явного UX-разделения;
-- смешивать модели `Conversation`/`Message` (Messenger) с `EmailThread`/`EmailMessage` (Mail) в одной таблице.
-
-Можно:
-
-- ссылаться из Deal/Project на **и** связанный Mail thread, **и** связанные Messenger conversations как разные entry points;
-- дублировать краткий контекст (например «есть непрочитанное письмо») в карточке сущности, если продуктово нужно — через ссылки, не через общий message store.
-
-Подробнее: `../17-Mail/04-Mail-Integrations.md` (секция **Messenger**), обзор Mail — `../17-Mail/00-Mail-Overview.md`.
-
-## Каноническая структура
+The product UI is intentionally split into **two separate messenger surfaces**:
 
 ```text
-Messenger
-  Internal
-    All
-    Project General
-    Deal Chats
-    Product Chats
-    Task Chats
-    Favorites / Collections
-
-  External
-    CRM Inbox
-    Product WhatsApp Groups
-    Support Conversations
-    Finance Conversations
-    All External
-    Favorites / Collections
+Messaging Core
+  ├── Internal Messenger
+  └── Client Messenger
 ```
 
-`All` может показывать иерархию для понимания контекста, но ежедневная работа должна идти через плоские вкладки. Пользователь не должен каждый раз открывать Project -> Product -> Chat, если он пишет туда десятки раз в день.
+This is not a cosmetic tab split. Internal Messenger and Client Messenger have separate entry points, navigation, visual identity, collections, composer behavior, permissions and product actions.
 
-## Основные принципы
+**Why:** internal team discussion and client-visible communication carry different business risk. A shared backend avoids duplicated infrastructure, while separate product surfaces reduce accidental external sends and allow stronger client-facing guardrails. See `M-BOUNDARY-01`.
 
-1. `Internal` и `External` разделяются жёстко.
-2. Рабочие вкладки должны быть плоскими и быстрыми.
-3. `1 Product = 1 main internal Product Chat`.
-4. Development, Maintenance и Extension не создают отдельные чаты по умолчанию, чтобы не дробить обсуждение.
-5. Task chat чаще открывается из Task card, а Messenger нужен в основном для ответа на непрочитанные task messages.
-6. CRM client chat и internal Deal chat - разные сущности.
-7. Product WhatsApp group после Deal Won - отдельная внешняя коммуникация, не CRM Inbox и не internal Product Chat; одна group принадлежит одному Product, Project выводится через Product.
-8. Все вложения идут через `Drive File Asset`.
-9. WebSocket нужен для live-обновления, но source of truth всегда база данных.
-10. Провайдер WhatsApp/QR должен быть адаптером, а не частью ядра Messenger.
+---
 
-## Ключевые сущности
+## 1. Product boundaries
 
-| Entity                        | Назначение                                                        |
-| ----------------------------- | ----------------------------------------------------------------- |
-| `Conversation`                | Чат или thread                                                    |
-| `ConversationParticipant`     | Участник и его роль в конкретном чате                             |
-| `Message`                     | Сообщение                                                         |
-| `MessageDelivery`             | Статусы отправки во внешние каналы                                |
-| `MessageReadState`            | Кто и когда прочитал                                              |
-| `ConversationLink`            | Связь чата с Deal, Project, Product, Task, Ticket, Invoice и т.д. |
-| `ExternalChannelAccount`      | Подключённый WhatsApp/Instagram/Facebook/Telegram/email account   |
-| `ExternalConversationMapping` | Связь NBOS conversation с реальным внешним thread/group/chat      |
-| `UserConversationSetting`     | Последняя вкладка, pin/mute, notification preference              |
-| `ConversationCollection`      | Пользовательская коллекция быстрых чатов                          |
+| Surface | Purpose | Example conversations |
+| --- | --- | --- |
+| `Internal Messenger` | Neetrino team communication only | Product/Work Space discussion, Task discussion, Deal discussion, internal groups, direct messages |
+| `Client Messenger` | Real communication with clients/external people | WhatsApp product groups, WhatsApp/Meta sales conversations, existing-client conversations |
 
-## Почему не делать всё одним списком
+Rules:
 
-Один общий список выглядит проще технически, но опасен для бизнеса:
+- an Internal conversation can never send through an external provider;
+- a Client conversation is always visually client-facing and protected by external-send permission;
+- Internal and Client conversation lists are never merged into one daily working list;
+- Collections are separate per surface and cannot mix Internal and Client conversations;
+- both surfaces may reuse shared UI primitives, but the user must always know which surface is open.
 
-- можно случайно написать внутренний комментарий клиенту;
-- Seller, Developer и PM работают в разных типах чатов;
-- task messages имеют другую логику поведения;
-- WhatsApp group может жить годами после разработки, а Deal chat нужен в продажах;
-- слишком глубокая структура заставит людей вернуться в Telegram/WhatsApp.
+---
 
-Поэтому правильная модель: единое ядро сообщений, но разные рабочие поверхности.
+## 2. What Messenger does not replace
 
-## Связанные документы
+| Module | Boundary |
+| --- | --- |
+| `Tasks` | Message(s) may create or reference a Task; Task remains the work entity. Human Task Discussion uses Messaging Core. |
+| `Notifications` | Notifications decides when/how to notify; Messenger stores conversation history. |
+| `Drive` | Messenger attachments are Drive File Assets. |
+| `CRM` | CRM owns Lead/Deal lifecycle; Client Messenger owns client chat history. |
+| `Support` | Support owns Ticket/SLA/case workflow; client communication remains in Client Messenger. |
+| `Finance` | Finance owns Invoice/Subscription/Payment/Client Service state; Messenger is only a communication destination. |
+| `Mail` | `EmailThread/EmailMessage` stay in NBOS Mail and are not merged into chat persistence. |
+
+---
+
+## 3. Internal Messenger canon
+
+Primary navigation:
+
+```text
+Internal Messenger
+  All
+  Products
+  Tasks
+  Deals
+  Work Spaces
+  Groups
+  Direct
+  Collections
+```
+
+Key rules:
+
+- `All` is a recent-activity inbox, not a Project hierarchy tree;
+- Product and its mandatory Connected Work Space resolve to the **same internal Conversation**;
+- standalone Work Spaces may have their own conversation;
+- Task Discussion uses the same Messaging Core and is embedded in Task Card;
+- Project is primarily aggregate/context navigation; Project General is optional/lazy rather than mandatory for every Project;
+- `Favorites` is a built-in personal Collection;
+- user-created Collections may be personal or shared, but never grant conversation access.
+
+Detailed behavior: `01-Internal-Messenger.md`.
+
+---
+
+## 4. Client Messenger canon
+
+Primary navigation:
+
+```text
+Client Messenger
+  Inbox
+  Sales
+  Clients
+  Collections
+```
+
+`Support` and `Finance` are not separate message universes. They are workflows/purposes around canonical client conversations.
+
+Key rules:
+
+- Product client WORK conversation may live from Development through Maintenance;
+- a physical WhatsApp group is an External Conversation, not a field owned directly by one Product;
+- Product communication is resolved through purpose-based bindings, initially `WORK` and `FINANCE`;
+- one physical WhatsApp group may serve multiple Products;
+- each Product has one canonical WORK destination and optionally one explicit FINANCE destination;
+- if no FINANCE destination is configured, finance messages fall back to WORK;
+- opening a Client conversation does not immediately enable sending: the composer is locked until an authorized Employee explicitly activates `Reply to client` for that conversation session;
+- external read and external send are separate permissions.
+
+Detailed behavior: `02-External-Messenger-and-CRM-Inbox.md`.
+
+---
+
+## 5. Message-to-work behavior
+
+Messages are first-class sources of work context.
+
+Where permissions allow, one or multiple selected messages may be used to:
+
+- reply;
+- share/forward as references into an Internal conversation;
+- create a Task;
+- create/link a Support Ticket from Client Messenger;
+- create/link a Deal from Client Messenger;
+- open/copy source context.
+
+The system references canonical source messages instead of copying the same message into multiple independent stores.
+
+Threads/replies may exist, but forwarding or `Discuss internally` does **not** automatically create a new thread or Conversation.
+
+---
+
+## 6. Canonical communication graph
+
+```text
+Project
+  ├── Product A
+  │    ├── Connected Work Space
+  │    │    └── ONE Internal Work Conversation
+  │    ├── Tasks
+  │    │    └── lazy Task Discussions
+  │    └── Client Communication Bindings
+  │         ├── WORK    -> External Conversation X
+  │         └── FINANCE -> External Conversation Y (optional)
+  │
+  └── Product B
+       └── WORK -> External Conversation X   # shared group is allowed
+```
+
+A standalone Work Space can have its own Internal conversation.
+
+A Support Ticket links to the relevant Client messages and Tasks; it does not create a duplicate public client chat.
+
+---
+
+## 7. Core runtime architecture
+
+```text
+UI command
+  -> authorization
+  -> DB transaction
+  -> durable Message / reference / participant state
+  -> domain event / outbox
+  -> realtime broadcast
+  -> queue jobs
+       -> external provider send
+       -> notifications
+       -> indexing
+       -> file processing
+```
+
+Rules:
+
+- database is the only source of truth;
+- WebSocket/Socket.IO is live transport only;
+- external sends use durable outbox/queue behavior;
+- provider-specific logic stays behind adapters;
+- attachments are Drive File Assets;
+- audit is stronger for Client Messenger and external sends.
+
+Detailed runtime: `03-Messenger-Architecture.md`.
+
+---
+
+## 8. WhatsApp boundary
+
+Canonical transport:
+
+```text
+NBOS Messaging Core
+  -> WhatsApp adapter
+    -> WhatsApp Gateway
+      -> WAHA
+        -> WhatsApp
+```
+
+Inbound:
+
+```text
+WhatsApp -> WAHA -> Gateway -> authenticated NBOS webhook -> Messaging Core
+```
+
+Outbound:
+
+```text
+Employee/System -> Messaging Core -> durable queue -> Gateway -> WAHA -> WhatsApp
+```
+
+NBOS owns business context, permissions, CRM/Support/Finance links, routing, AI and message history. Gateway owns WhatsApp transport/session/provider concerns.
+
+---
+
+## 9. Attention routing
+
+Conversation access and response ownership are separate concepts.
+
+Default Client WORK attention policy:
+
+```text
+Delivery     -> Product PM
+Maintenance  -> Support Intake queue
+FINANCE      -> Finance/authorized queue
+```
+
+The canonical conversation remains the same when lifecycle or assignee changes.
+
+---
+
+## 10. Telegram target state
+
+Telegram may remain a notification delivery option, but Internal Messenger does not target a permanent Telegram ↔ NBOS chat bridge.
+
+If historical internal chats are migrated, migration is a controlled one-time import into NBOS. The target state is NBOS Web + Mobile as the primary internal messenger.
+
+---
+
+## 11. Canonical entities
+
+The exact Prisma model names may be finalized during runtime reconciliation, but the domain requires the following concepts:
+
+| Concept | Purpose |
+| --- | --- |
+| `Conversation` | Canonical internal or client conversation |
+| `ConversationParticipant` | User/participant membership and conversation role |
+| `Message` | Canonical message |
+| `MessageReadState` | Read cursor/state |
+| `ConversationLink` | Links conversation to Product, Work Space, Task, Deal, Project, Ticket, Client etc. |
+| `MessageReference` | Stable reference from Task/Ticket/forwarded context to source message(s) |
+| `ExternalChannelAccount` | Connected WhatsApp/Meta/etc account |
+| `ExternalConversationMapping` | Maps NBOS conversation to provider chat/group/thread |
+| `ProductCommunicationBinding` or equivalent | Resolves Product + purpose (`WORK`/`FINANCE`) to an External Conversation |
+| `ConversationCollection` | Internal- or Client-surface collection |
+| `UserConversationSetting` | Pin/mute/archive/default/personal preferences |
+| `ProviderEvent` / delivery state | Idempotent provider webhook and external delivery tracking |
+
+The implementation may reuse existing models if they satisfy these contracts; documentation does not require unnecessary renames.
+
+---
+
+## 12. Related canon
 
 - `01-Internal-Messenger.md`
 - `02-External-Messenger-and-CRM-Inbox.md`
@@ -111,3 +264,4 @@ Messenger
 - `04-Messenger-Integrations.md`
 - `05-Messenger-Permissions-and-UX.md`
 - `06-Messenger-Cleanup-Register.md`
+- `08-Messenger-Decision-Register.md`
