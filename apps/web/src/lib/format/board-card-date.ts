@@ -1,19 +1,19 @@
 const BOARD_CARD_MONTH_LABELS = [
-  'JAN',
-  'FEB',
-  'MAR',
-  'APR',
-  'MAY',
-  'JUN',
-  'JUL',
-  'AUG',
-  'SEP',
-  'OCT',
-  'NOV',
-  'DEC',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ] as const;
 
-/** Kanban board card dates — e.g. `MAY 12, 2026`. */
+/** Kanban board card dates — e.g. `May 12, 2026`. */
 export function formatBoardCardDate(iso: string): string {
   const dateOnly = iso.slice(0, 10);
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateOnly);
