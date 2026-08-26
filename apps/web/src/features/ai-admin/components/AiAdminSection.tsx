@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { ChevronDown } from 'lucide-react';
+import { StatusBadge, type StatusVariant } from '@/components/shared';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import {
@@ -19,6 +20,7 @@ export function AiAdminSection(props: {
   title: string;
   description?: string;
   summary?: string;
+  summaryVariant?: StatusVariant;
   actions?: ReactNode;
   children: ReactNode;
   collapsible?: boolean;
@@ -50,6 +52,7 @@ function AiAdminSectionHeader(props: {
   title: string;
   description?: string;
   summary?: string;
+  summaryVariant?: StatusVariant;
   actions?: ReactNode;
   collapsible?: boolean;
   open?: boolean;
@@ -58,12 +61,7 @@ function AiAdminSectionHeader(props: {
     <div className="flex min-w-0 flex-1 items-center gap-3">
       <AiAdminIconTile icon={props.icon} glyph={props.glyph} size="sm" />
       <div className="min-w-0">
-        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <h2 className="text-sm font-semibold tracking-tight">{props.title}</h2>
-          {props.summary ? (
-            <span className="text-muted-foreground text-xs">{props.summary}</span>
-          ) : null}
-        </div>
+        <h2 className="text-sm font-semibold tracking-tight">{props.title}</h2>
         {props.description && (!props.collapsible || props.open) ? (
           <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{props.description}</p>
         ) : null}
@@ -71,18 +69,35 @@ function AiAdminSectionHeader(props: {
     </div>
   );
 
+  const summaryBadge =
+    props.summary ? (
+      <StatusBadge
+        label={props.summary}
+        variant={props.summaryVariant ?? 'default'}
+        className="shrink-0"
+      />
+    ) : null;
+
   return (
     <header className={AI_ADMIN_SECTION_HEADER_CLASS}>
       {props.collapsible ? (
-        <CollapsibleTrigger className="-mx-1 flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-left outline-none select-none">
+        <CollapsibleTrigger
+          className="-mx-1 flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-left outline-none select-none"
+        >
           {identity}
-          <ChevronDown
-            className={cn(AI_ADMIN_SECTION_CHEVRON_CLASS, props.open && 'rotate-180')}
-            aria-hidden
-          />
+          <span className="ml-auto flex shrink-0 items-center gap-2">
+            {summaryBadge}
+            <ChevronDown
+              className={cn(AI_ADMIN_SECTION_CHEVRON_CLASS, props.open && 'rotate-180')}
+              aria-hidden
+            />
+          </span>
         </CollapsibleTrigger>
       ) : (
-        identity
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          {identity}
+          {summaryBadge ? <div className="ml-auto shrink-0">{summaryBadge}</div> : null}
+        </div>
       )}
       {props.actions ? (
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
