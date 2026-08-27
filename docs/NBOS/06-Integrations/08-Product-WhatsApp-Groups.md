@@ -45,11 +45,13 @@ Most Products still use one normal working group, but enterprise clients sometim
 
 For v1:
 
-- every Product has exactly one active canonical `WORK` destination;
+- every Product has exactly one active canonical `WORK` destination once client communication has been configured;
 - Product may have zero or one explicit `FINANCE` destination;
 - if explicit FINANCE destination does not exist, `FINANCE` resolves to the Product WORK destination;
 - one External Conversation may be bound to many Products;
 - one Product must not have multiple competing active WORK destinations.
+
+A Product row does **not** automatically create a WhatsApp group. During initial setup, failed provisioning or migration there may temporarily be no active WORK binding; that is an operational state to resolve, not permission for multiple competing WORK destinations.
 
 Example:
 
@@ -103,13 +105,16 @@ A separate `FINANCE` destination is **not required** to complete normal Deal Won
 
 ### Existing operational behavior to preserve where compatible
 
+- current create uses the existing ensure queue/worker path until Slice 9 replaces/adapts the legacy Product-only model;
 - if WAHA/Gateway create fails, Deal Won remains allowed after the create attempt is recorded; retry later;
-- binding an existing external group must validate provider identity/format when Gateway is available;
+- binding/pasting an existing provider group id may be persisted while Gateway is unavailable, with provider identity/format validation performed when Gateway is available;
 - failed/pending communication setup remains visible and does not roll back Product/Deal state;
 - `MAINTENANCE` / `EXTENSION` do not automatically create a second WhatsApp group;
-- Extension of an existing Product normally continues to use the Product's existing WORK destination.
+- Extension of an existing Product normally continues to use the Product's existing WORK destination;
+- replacing a Product binding never deletes the old physical WhatsApp group;
+- `OUTCOME_UNKNOWN` is reconciled rather than blindly retried.
 
-The exact DTO names (`whatsappAction`, legacy `groupChatId`, etc.) are runtime details to reconcile during implementation. New code should target purpose-based bindings rather than extending raw Product group fields.
+Current legacy DTO/endpoint details such as `whatsappAction`, `whatsappGroupChatId`, `ensureGroupForProduct`, `CREATE_PRODUCT_GROUP`, or a raw `binding.groupChatId` are migration/runtime details, not the target domain contract. Preserve their useful business/error behavior while moving new code to purpose-based bindings.
 
 ---
 
@@ -128,6 +133,8 @@ WORK destination:
 This does not merge Product entities. It only means both Products use the same client conversation for the selected purpose.
 
 Binding a Product to a shared group does not automatically grant every Product employee access to that Client conversation or external SEND permission.
+
+When Gateway is available, search/select should be constrained to safe candidates and provider identity should be validated. A paste/bind fallback may remain available for operational recovery, including persisting the provider id while Gateway is temporarily unavailable; the migration must then reconcile that legacy provider identity into `ExternalConversationMapping` without creating a duplicate physical group.
 
 ---
 
@@ -183,11 +190,11 @@ explicit FINANCE binding?
 
 All approved automatic payment/money reminders use `FINANCE` purpose, including invoice/payment, subscription, hosting/domain, maintenance/client-service and similar payment reminders.
 
-The Finance module must not directly depend on a raw Product WhatsApp `groupChatId`.
+The Finance module must not directly depend on a raw Product WhatsApp `groupChatId` after cutover.
 
-Existing billing semantics such as reminder language, due-date offsets, tax gates and notification enable/disable rules stay owned by Finance documentation.
+Existing billing semantics such as reminder language, due-date offsets, tax gates and notification enable/disable rules stay owned by Finance documentation. Existing Product resolution rules based on the billing entity's actual `productId` must be preserved where they remain correct; do not fall back to arbitrary Project products.
 
-Messenger/Gateway only receives the resolved destination and outbound message operation.
+Messenger/Gateway receives the resolved business destination and outbound message operation.
 
 ### Automatic reminder is not manual chat
 
@@ -218,7 +225,7 @@ Do not equate:
 
 They may overlap but are different security layers.
 
-Suggested WORK participants/access may derive from PM/Product team/Sales according to business policy.
+Suggested WORK participants/access may derive from PM/Product team/Sales according to business policy. Existing participant-sync behavior and role resolution should be inventoried in Slice 0 and reused where compatible rather than silently discarded.
 
 Dedicated FINANCE defaults are Owner, CEO, Finance Director, relevant Seller and relevant Product PM, with explicit/manual exceptions when needed.
 
@@ -266,6 +273,8 @@ NBOS owns:
 - attention routing;
 - AI/customer policy;
 - message history/audit.
+
+Gateway connection configuration remains infrastructure/settings behavior. Existing configured Gateway URL/token handling should be reused; it does not change Product communication ownership.
 
 ---
 
@@ -326,6 +335,22 @@ FINANCE
 ```
 
 The default experience remains simple for the common one-group case, while the backend supports shared and finance-specific groups.
+
+### Current Product Settings UX to preserve/adapt
+
+The latest `main` Product WhatsApp Settings work is useful runtime and should be **REUSE/EXTEND**, not discarded:
+
+- status, create/retry, bind/replace, sync, invitation and operation history remain visible operational tools;
+- existing-group search/select remains available when Gateway is configured;
+- paste/bind provider group id remains an operational fallback and may persist while Gateway is unavailable;
+- a stored legacy `groupChatId` remains visible from DB even when Gateway is not configured, until migration/cutover replaces that field with canonical mapping display;
+- Create / Sync / Invite / provider search stay disabled when Gateway is not configured;
+- replacing a binding requires an explicit confirmation and must not delete the previous physical WhatsApp group;
+- while create is in flight, the UI shows a clear creating state; `FAILED` unlocks retry;
+- missing, failed, pending and outcome-unknown states remain visible and never block unrelated Product work;
+- status refresh on open/explicit actions is sufficient for the current UI; permanent polling is not required merely for this settings panel.
+
+When the purpose-based model lands, this same UX is presented independently for WORK and optional FINANCE destinations rather than retaining one raw Product WhatsApp field.
 
 ---
 
