@@ -18,10 +18,7 @@ export function AiAdminMetaStrip(props: {
               <Icon className={cn('size-4 shrink-0', AI_ADMIN_ICON_ACCENT_CLASS)} aria-hidden />
               <span className="truncate">{item.label}</span>
             </dt>
-            <dd
-              className="text-foreground mt-1.5 truncate text-sm font-medium"
-              title={item.value}
-            >
+            <dd className="text-foreground mt-1.5 truncate text-sm font-medium" title={item.value}>
               {item.value}
             </dd>
           </div>

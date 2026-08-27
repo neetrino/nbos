@@ -4,6 +4,8 @@ import { DollarSign, ListChecks, Puzzle, Ticket } from 'lucide-react';
 import type { FullProduct } from '@/lib/api/products';
 import { ProductInfoPanel } from '@/features/projects/components/ProductInfoPanel';
 import { ProductContactsSection } from '@/features/projects/components/ProductContactsSection';
+import { ProductParticipantsSection } from '@/features/platform-access/components/ProductParticipantsSection';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 
 interface ProductOverviewTabProps {
@@ -27,10 +29,17 @@ export function ProductOverviewTab({ product, onProductUpdated }: ProductOvervie
           gateRequiredFields={gateRequiredFields}
           className="w-full min-w-0"
         />
-        <div className="w-full min-w-0">
+        <div className="flex w-full min-w-0 flex-col gap-4">
           <div className="bg-card border-border rounded-xl border p-4">
-            <p className="mb-3 text-sm font-semibold">Contacts</p>
-            <ProductContactsSection product={product} onProductUpdated={onProductUpdated} />
+            <ProductContactsSection
+              product={product}
+              onProductUpdated={onProductUpdated}
+              headerTitle="Contacts"
+            />
+          </div>
+          <div className="bg-card border-border rounded-xl border p-4">
+            <p className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3 text-xs')}>Product team</p>
+            <ProductParticipantsSection productId={product.id} embedded />
           </div>
         </div>
       </div>

@@ -14,8 +14,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PAGE_TAB_BAR_WRAPPER_CLASS } from '@/components/shared/detail-sheet-classes';
-import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
-import { ProductSettingsSheet } from '@/features/projects/components/ProductSettingsSheet';
+import { ProductPageSettingsSheet } from '@/features/projects/components/ProductPageSettingsSheet';
 import { productsApi, type Product, type FullProduct } from '@/lib/api/products';
 import { projectsApi } from '@/lib/api/projects';
 import { EntityDetailSheetsHost } from '@/features/projects/components/EntityDetailSheetsHost';
@@ -31,7 +30,6 @@ import { useProductCredentialsTab } from '@/features/projects/hooks/use-product-
 import { useProductSupportTab } from '@/features/projects/hooks/use-product-support-tab';
 import { useProductWorkSpaceTab } from '@/features/projects/hooks/use-product-work-space-tab';
 import { useProductTechnicalTab } from '@/features/projects/hooks/use-product-technical-tab';
-import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
 import {
   parseProductDetailTab,
   PRODUCT_DETAIL_TAB_DEFAULT,
@@ -68,9 +66,6 @@ function ProductDetailPageContent() {
     expenses: unknown[];
     domains: unknown[];
   } | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(
-    () => searchParams.get('settings') === 'whatsapp',
-  );
 
   useProductDetailHeader({
     product,
@@ -174,8 +169,6 @@ function ProductDetailPageContent() {
 
   if (!product) return null;
 
-  const driveHref = buildDriveHrefWithProduct(product.id);
-
   return (
     <div className="flex h-full flex-col gap-5">
       <Tabs
@@ -191,13 +184,8 @@ function ProductDetailPageContent() {
                 <span className="hidden sm:inline">{tab.label}</span>
               </TabsTrigger>
             ))}
-            <EntityDriveNavAction href={driveHref} variant="tab" hideLabelOnMobile />
           </TabsList>
-          <ProductSettingsSheet
-            productId={product.id}
-            open={settingsOpen}
-            onOpenChange={setSettingsOpen}
-          />
+          <ProductPageSettingsSheet />
         </div>
 
         <TabsContent value="overview" className="mt-5">

@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
+import { WhatsAppBrandIcon } from '@/components/shared/WhatsAppBrandIcon';
 import { PermissionGate } from '@/lib/permissions/PermissionGate';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
@@ -11,25 +11,34 @@ import {
   type ProductWhatsAppState,
   type WhatsAppAvailableGroup,
 } from '@/lib/api/whatsapp';
-import { WhatsAppGroupMissingBadge } from '@/features/crm/components/WhatsAppGroupMissingBadge';
-import { isMissingActiveWhatsAppGroup } from '@/features/crm/deal-won-whatsapp-gate';
+import { isWhatsAppCreateInFlight } from '@/features/crm/whatsapp-create-status';
+import { cn } from '@/lib/utils';
 import {
-  isWhatsAppCreateInFlight,
-  whatsappCreateButtonLabel,
-} from '@/features/crm/whatsapp-create-status';
+  loadProductWhatsAppSettings,
+  nextProductWhatsAppSettingsState,
+} from '../product-whatsapp-settings';
+import { ProductWhatsAppActionGrid } from './ProductWhatsAppActionGrid';
 import { ProductWhatsAppBindControls } from './ProductWhatsAppBindControls';
+import { ProductWhatsAppNavTrigger } from './ProductWhatsAppNavTrigger';
 import { ProductWhatsAppOperationHistory } from './ProductWhatsAppOperationHistory';
+import { ProductWhatsAppStatusCard } from './ProductWhatsAppStatusCard';
+import { WA_HEADER_ICON_WRAP } from './product-whatsapp-settings-ui';
 
 interface ProductSettingsSheetProps {
   productId: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Open control style. Default is the page settings gear. */
+  triggerVariant?: 'default' | 'tab' | 'inline';
+  className?: string;
 }
 
 export function ProductSettingsSheet({
   productId,
   open: openProp,
   onOpenChange,
+  triggerVariant = 'default',
+  className,
 }: ProductSettingsSheetProps) {
   const [localOpen, setLocalOpen] = useState(false);
   const [state, setState] = useState<ProductWhatsAppState | null>(null);
@@ -38,6 +47,8 @@ export function ProductSettingsSheet({
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState('');
+  const [gatewayConfigured, setGatewayConfigured] = useState(false);
+  const [gatewayNotice, setGatewayNotice] = useState<string | null>(null);
   const sheetOpen = openProp ?? localOpen;
 
   const handleOpenChange = useCallback(
@@ -51,13 +62,15 @@ export function ProductSettingsSheet({
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const [nextState, available] = await Promise.all([
-        productWhatsAppApi.getState(productId),
-        productWhatsAppApi.availableGroups(productId, search || undefined),
-      ]);
-      setState(nextState);
-      setGroups(available.groups);
-      setSelectedGroupId(available.currentGroupChatId ?? '');
+      const snapshot = await loadProductWhatsAppSettings(productId, search || undefined);
+      setState((previous) => nextProductWhatsAppSettingsState(previous, snapshot.state));
+      setGroups(snapshot.groups);
+      setSelectedGroupId((previous) => snapshot.selectedGroupId || previous);
+      setGatewayConfigured(snapshot.gatewayConfigured);
+      setGatewayNotice(snapshot.gatewayNotice);
+      if (snapshot.stateError && !snapshot.state) {
+        toast.error(getApiErrorMessage(snapshot.stateError, 'Could not load WhatsApp settings.'));
+      }
     } catch (error) {
       toast.error(getApiErrorMessage(error, 'Could not load WhatsApp settings.'));
     } finally {
@@ -85,142 +98,75 @@ export function ProductSettingsSheet({
 
   const binding = state?.binding;
   const status = binding?.status ?? 'NOT_STARTED';
+  const createInFlight =
+    isWhatsAppCreateInFlight(status) || isWhatsAppCreateInFlight(state?.latestOperation?.status);
 
   return (
     <PermissionGate module="PROJECTS" action="EDIT">
       <PageSettingsSheet
         title="Product settings"
         description="WhatsApp group for this product only."
-        triggerAriaLabel="Product settings"
+        titleLeading={
+          <span className={WA_HEADER_ICON_WRAP} aria-hidden>
+            <WhatsAppBrandIcon className="size-7" />
+          </span>
+        }
+        triggerAriaLabel="WhatsApp"
+        renderTrigger={
+          triggerVariant === 'default'
+            ? undefined
+            : (props) => (
+                <ProductWhatsAppNavTrigger
+                  {...props}
+                  variant={triggerVariant}
+                  className={cn(props.className, className)}
+                />
+              )
+        }
         open={openProp}
         onOpenChange={handleOpenChange}
       >
-        <section className="space-y-4">
-          <div>
-            <h3 className="text-foreground mb-2 text-sm font-semibold tracking-tight">
-              WhatsApp group
-            </h3>
-            {loading && !state ? (
-              <p className="text-muted-foreground text-sm">Loading…</p>
-            ) : (
-              <dl className="text-muted-foreground space-y-1.5 text-sm">
-                <div className="flex justify-between gap-3">
-                  <dt>Status</dt>
-                  <dd className="text-foreground flex flex-wrap items-center justify-end gap-1.5 font-medium">
-                    {isMissingActiveWhatsAppGroup({
-                      bindingStatus: status === 'NOT_STARTED' ? null : status,
-                      groupChatId: binding?.groupChatId,
-                    }) ? (
-                      <WhatsAppGroupMissingBadge
-                        bindingStatus={status === 'NOT_STARTED' ? null : status}
-                        groupChatId={binding?.groupChatId}
-                      />
-                    ) : (
-                      status
-                    )}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt>Group name</dt>
-                  <dd className="text-foreground min-w-0 truncate text-right font-medium">
-                    {binding?.groupName ?? '—'}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt>Group ID</dt>
-                  <dd className="text-foreground min-w-0 truncate text-right font-medium">
-                    {binding?.groupChatId ?? '—'}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt>Last sync</dt>
-                  <dd className="text-foreground text-right font-medium">
-                    {binding?.lastSuccessfulSyncAt ?? '—'}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt>Invitation</dt>
-                  <dd className="text-foreground font-medium">
-                    {state?.invitation?.status ?? '—'}
-                  </dd>
-                </div>
-                {binding?.lastErrorMessage ? (
-                  <p className="text-destructive pt-1">{binding.lastErrorMessage}</p>
-                ) : null}
-              </dl>
-            )}
-          </div>
+        <section className="space-y-3">
+          <ProductWhatsAppStatusCard
+            loading={loading && !state}
+            gatewayNotice={gatewayNotice}
+            status={status}
+            groupName={binding?.groupName}
+            groupChatId={binding?.groupChatId}
+            lastSuccessfulSyncAt={binding?.lastSuccessfulSyncAt}
+            invitationStatus={state?.invitation?.status}
+            lastErrorMessage={binding?.lastErrorMessage}
+          />
 
-          <div className="flex flex-col gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="justify-start"
-              disabled={
-                busy ||
-                status === 'ACTIVE' ||
-                isWhatsAppCreateInFlight(status) ||
-                isWhatsAppCreateInFlight(state?.latestOperation?.status)
-              }
-              onClick={() =>
-                void run(() => productWhatsAppApi.ensure(productId), 'Group creation started')
-              }
-            >
-              {whatsappCreateButtonLabel({
-                inFlight:
-                  isWhatsAppCreateInFlight(status) ||
-                  isWhatsAppCreateInFlight(state?.latestOperation?.status),
-                failed: status === 'FAILED',
-                idleLabel: 'Create group',
-              })}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="justify-start"
-              disabled={busy || status !== 'ACTIVE'}
-              onClick={() =>
-                void run(() => productWhatsAppApi.sync(productId), 'Participant sync queued')
-              }
-            >
-              Sync participants
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="justify-start"
-              disabled={busy || status !== 'ACTIVE'}
-              onClick={() =>
-                void run(
-                  () => productWhatsAppApi.clientInvite(productId),
-                  'Client invitation queued',
+          <ProductWhatsAppActionGrid
+            busy={busy}
+            gatewayConfigured={gatewayConfigured}
+            status={status}
+            createInFlight={createInFlight}
+            createFailed={status === 'FAILED'}
+            onCreateGroup={() =>
+              void run(() => productWhatsAppApi.ensure(productId), 'Group creation started')
+            }
+            onSyncParticipants={() =>
+              void run(() => productWhatsAppApi.sync(productId), 'Participant sync queued')
+            }
+            onSendClientInvitation={() =>
+              void run(() => productWhatsAppApi.clientInvite(productId), 'Client invitation queued')
+            }
+            onResendInvitation={() => {
+              if (
+                !window.confirm(
+                  'Resend client invitation? Only confirm if the previous send is safe to retry.',
                 )
+              ) {
+                return;
               }
-            >
-              Send client invitation
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="justify-start"
-              disabled={busy || status !== 'ACTIVE'}
-              onClick={() => {
-                if (
-                  !window.confirm(
-                    'Resend client invitation? Only confirm if the previous send is safe to retry.',
-                  )
-                ) {
-                  return;
-                }
-                void run(
-                  () => productWhatsAppApi.clientInvite(productId, { forceResend: true }),
-                  'Client invitation resend queued',
-                );
-              }}
-            >
-              Resend invitation
-            </Button>
-          </div>
+              void run(
+                () => productWhatsAppApi.clientInvite(productId, { forceResend: true }),
+                'Client invitation resend queued',
+              );
+            }}
+          />
 
           <ProductWhatsAppBindControls
             productId={productId}
@@ -232,17 +178,15 @@ export function ProductSettingsSheet({
             onSelectedGroupIdChange={setSelectedGroupId}
             currentGroupChatId={binding?.groupChatId}
             busy={busy}
+            gatewayConfigured={gatewayConfigured}
             run={run}
           />
 
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium">Recent operations</h4>
-            <ProductWhatsAppOperationHistory
-              productId={productId}
-              open={sheetOpen}
-              revision={state?.latestOperation?.id ?? state?.latestOperation?.status ?? ''}
-            />
-          </div>
+          <ProductWhatsAppOperationHistory
+            productId={productId}
+            open={sheetOpen}
+            revision={state?.latestOperation?.id ?? state?.latestOperation?.status ?? ''}
+          />
         </section>
       </PageSettingsSheet>
     </PermissionGate>

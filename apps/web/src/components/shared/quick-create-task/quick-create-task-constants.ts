@@ -6,8 +6,7 @@ export const QUICK_CREATE_TASK_DIALOG_CLASS =
 export const QUICK_CREATE_TASK_BODY_CLASS = 'min-w-0 w-full px-3 pb-4 pt-1 sm:px-4 sm:pt-1';
 
 /** Title row — flex keeps long titles from overlapping header actions. */
-export const QUICK_CREATE_TASK_TITLE_ROW_CLASS =
-  'flex min-w-0 w-full items-start gap-3 sm:gap-4';
+export const QUICK_CREATE_TASK_TITLE_ROW_CLASS = 'flex min-w-0 w-full items-start gap-3 sm:gap-4';
 
 /** Header actions sit at the right edge with a slight inset from the dialog padding. */
 export const QUICK_CREATE_TASK_HEADER_ICONS_CLASS =

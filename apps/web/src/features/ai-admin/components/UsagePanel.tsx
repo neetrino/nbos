@@ -102,7 +102,7 @@ function BudgetRow({ budget }: { budget: AiBudgetLimitView }) {
           {budget.currency ? ` ${budget.currency}` : ''}
         </p>
       </div>
-      <StatusBadge label={budget.behavior} variant="blue" className="self-center shrink-0" />
+      <StatusBadge label={budget.behavior} variant="blue" className="shrink-0 self-center" />
     </li>
   );
 }
@@ -125,7 +125,7 @@ function ExecutionRow({ execution }: { execution: AiExecutionView }) {
       <StatusBadge
         label={execution.status}
         variant={executionStatusVariant(execution.status)}
-        className="self-center shrink-0"
+        className="shrink-0 self-center"
       />
     </li>
   );
