@@ -256,12 +256,25 @@ The implementation may reuse existing models if they satisfy these contracts; do
 
 ---
 
-## 12. Related canon
+## 12. Documentation map
+
+### Product canon
 
 - `01-Internal-Messenger.md`
 - `02-External-Messenger-and-CRM-Inbox.md`
 - `03-Messenger-Architecture.md`
 - `04-Messenger-Integrations.md`
 - `05-Messenger-Permissions-and-UX.md`
-- `06-Messenger-Cleanup-Register.md`
-- `08-Messenger-Decision-Register.md`
+- `08-Messenger-Decision-Register.md` — decisions + Why
+- `09-Messenger-Cross-Module-Canon.md`
+
+### Runtime/migration and implementation process
+
+- `06-Messenger-Cleanup-Register.md` — legacy/cleanup register
+- `07-Internal-Messenger-Implementation-Progress.md` — runtime/status only
+- `10-Messenger-Runtime-Reconciliation.md` — migration-safe current-runtime reconciliation
+- `11-Messenger-Rebuild-Implementation-Checklist.md` — executable Slices 0–11
+- `12-Messenger-Rebuild-Execution-Strategy.md` — Implementer → independent Reviewer rules
+- `90-Messenger-Final-Acceptance.md` — fresh final release gate
+
+Product code must not start from the checklist alone: Canon + Runtime Reconciliation + Execution Strategy are mandatory inputs.
