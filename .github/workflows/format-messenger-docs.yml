@@ -1,0 +1,72 @@
+name: Format Messenger Docs
+
+on:
+  push:
+    branches:
+      - docs/messenger-rebuild-canon
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: docs/messenger-rebuild-canon
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Format affected docs
+        run: |
+          pnpm exec prettier --write \
+            docs/NBOS/02-Modules/05-Tasks/02-Work-Spaces-and-Views.md \
+            docs/NBOS/02-Modules/09-Messenger/00-Messenger-Master-Canon.md \
+            docs/NBOS/02-Modules/09-Messenger/00-Messenger-Overview.md \
+            docs/NBOS/02-Modules/09-Messenger/01-Internal-Messenger.md \
+            docs/NBOS/02-Modules/09-Messenger/02-External-Messenger-and-CRM-Inbox.md \
+            docs/NBOS/02-Modules/09-Messenger/03-Messenger-Architecture.md \
+            docs/NBOS/02-Modules/09-Messenger/04-Messenger-Integrations.md \
+            docs/NBOS/02-Modules/09-Messenger/05-Messenger-Permissions-and-UX.md \
+            docs/NBOS/02-Modules/09-Messenger/07-Internal-Messenger-Implementation-Progress.md \
+            docs/NBOS/02-Modules/09-Messenger/10-Messenger-Runtime-Reconciliation.md \
+            docs/NBOS/02-Modules/09-Messenger/11-Messenger-Rebuild-Implementation-Checklist.md \
+            docs/NBOS/02-Modules/09-Messenger/12-Messenger-Rebuild-Execution-Strategy.md \
+            docs/NBOS/02-Modules/09-Messenger/90-Messenger-Final-Acceptance.md
+
+      - name: Remove one-off formatter workflow
+        run: rm .github/workflows/format-messenger-docs.yml
+
+      - name: Commit formatted docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/NBOS/02-Modules/05-Tasks/02-Work-Spaces-and-Views.md \
+            docs/NBOS/02-Modules/09-Messenger/00-Messenger-Master-Canon.md \
+            docs/NBOS/02-Modules/09-Messenger/00-Messenger-Overview.md \
+            docs/NBOS/02-Modules/09-Messenger/01-Internal-Messenger.md \
+            docs/NBOS/02-Modules/09-Messenger/02-External-Messenger-and-CRM-Inbox.md \
+            docs/NBOS/02-Modules/09-Messenger/03-Messenger-Architecture.md \
+            docs/NBOS/02-Modules/09-Messenger/04-Messenger-Integrations.md \
+            docs/NBOS/02-Modules/09-Messenger/05-Messenger-Permissions-and-UX.md \
+            docs/NBOS/02-Modules/09-Messenger/07-Internal-Messenger-Implementation-Progress.md \
+            docs/NBOS/02-Modules/09-Messenger/10-Messenger-Runtime-Reconciliation.md \
+            docs/NBOS/02-Modules/09-Messenger/11-Messenger-Rebuild-Implementation-Checklist.md \
+            docs/NBOS/02-Modules/09-Messenger/12-Messenger-Rebuild-Execution-Strategy.md \
+            docs/NBOS/02-Modules/09-Messenger/90-Messenger-Final-Acceptance.md \
+            .github/workflows/format-messenger-docs.yml
+          git commit -m "docs: format messenger canon"
+          git push origin HEAD:docs/messenger-rebuild-canon
