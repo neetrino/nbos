@@ -3,6 +3,8 @@
 > Canon status: **approved Product communication binding model**.
 >
 > Messenger decisions: `../02-Modules/09-Messenger/08-Messenger-Decision-Register.md` (`M-WA-*`, `M-WHATSAPP-01`).
+>
+> Migration safety: `../02-Modules/09-Messenger/10-Messenger-Runtime-Reconciliation.md`.
 
 ## 1. Ownership model
 
@@ -133,7 +135,17 @@ Binding a Product to a shared group does not automatically grant every Product e
 
 A Product may use a separate finance group when the client wants financial communication isolated from operational employees.
 
-Typical participants may include company management, Finance, PM/Seller where authorized, and the client's finance/management contacts. Developer/product-team access is not automatic.
+Default Neetrino-side participant/access template for a dedicated FINANCE conversation:
+
+- Owner;
+- CEO;
+- Finance Director;
+- relevant Seller;
+- relevant Product PM.
+
+Seller and PM are resolved from the Product/business context rather than hard-coded as one global person. Developers and other Product employees are not automatically included. Manual access changes remain possible.
+
+Physical WhatsApp membership and NBOS Client Messenger `READ`/`SEND` authorization remain separate security layers.
 
 If no explicit FINANCE destination exists:
 
@@ -144,6 +156,10 @@ FINANCE -> WORK
 Therefore the common single-group client requires no second WhatsApp group.
 
 A single Finance group may be bound as FINANCE for several Products.
+
+### Why
+
+A separate FINANCE group exists primarily for larger clients who intentionally keep financial discussion away from operational employees. The default membership reflects that reason instead of copying the WORK team automatically.
 
 ---
 
@@ -165,11 +181,31 @@ explicit FINANCE binding?
   NO  -> Product WORK External Conversation
 ```
 
+All approved automatic payment/money reminders use `FINANCE` purpose, including invoice/payment, subscription, hosting/domain, maintenance/client-service and similar payment reminders.
+
 The Finance module must not directly depend on a raw Product WhatsApp `groupChatId`.
 
 Existing billing semantics such as reminder language, due-date offsets, tax gates and notification enable/disable rules stay owned by Finance documentation.
 
 Messenger/Gateway only receives the resolved destination and outbound message operation.
+
+### Automatic reminder is not manual chat
+
+Automatic reminder generation and ordinary employee conversation are different operations:
+
+```text
+Finance scheduler/business rule
+  -> system outbound FINANCE message
+
+Employee opens FINANCE conversation
+  -> Client Messenger locked composer
+  -> READ/SEND authorization
+  -> manual message
+```
+
+A dedicated FINANCE group is a full Client conversation, not only a notification endpoint.
+
+Client replies remain in the same physical conversation that received the reminder. If FINANCE fell back to WORK, the reply remains in WORK; no synthetic second Finance conversation is created.
 
 ---
 
@@ -184,7 +220,7 @@ They may overlap but are different security layers.
 
 Suggested WORK participants/access may derive from PM/Product team/Sales according to business policy.
 
-Suggested FINANCE access may derive from Finance/management/explicit invites.
+Dedicated FINANCE defaults are Owner, CEO, Finance Director, relevant Seller and relevant Product PM, with explicit/manual exceptions when needed.
 
 Client Messenger enforces separate external `READ` and `SEND` semantics.
 
@@ -290,3 +326,28 @@ FINANCE
 ```
 
 The default experience remains simple for the common one-group case, while the backend supports shared and finance-specific groups.
+
+---
+
+## 14. Migration from the existing hard Product/group relationship
+
+The target flexible model is **not** implemented by simply removing old unique constraints first.
+
+Required migration order:
+
+1. add canonical External Conversation/provider mapping and Product purpose-binding structures side-by-side with legacy storage;
+2. map every existing physical WhatsApp group to exactly one External Conversation while preserving provider/account/chat identity;
+3. backfill every existing Product/group relation as `purpose=WORK`;
+4. do not auto-create FINANCE bindings — current behavior remains FINANCE fallback to WORK;
+5. preserve existing create/bind status, failure/outcome state, invitation/settings/history where available;
+6. adapt Deal Won and Product settings to write WORK/FINANCE bindings;
+7. switch all business send paths to `resolveClientDestination(productId, purpose)`;
+8. verify every existing Product still resolves to its original physical group;
+9. verify one External Conversation can be reused by several Products;
+10. only then remove the legacy one-to-one Product/group constraints/fields as a separately verified cleanup step.
+
+Do not recreate WhatsApp groups to make database migration easier.
+
+### Why
+
+The existing physical WhatsApp group is an external business resource with real participants/history. The safest migration preserves that resource identity and changes only how NBOS relates Products to it.
