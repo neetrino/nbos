@@ -325,12 +325,12 @@ This separation is required for the target one-time Telegram migration strategy 
 
 ## 15. Conversation lifecycle
 
-| State | Meaning |
-| --- | --- |
-| `active` | Normal working list |
-| `muted` | Reduced notifications according to user preference |
+| State      | Meaning                                                |
+| ---------- | ------------------------------------------------------ |
+| `active`   | Normal working list                                    |
+| `muted`    | Reduced notifications according to user preference     |
 | `archived` | Hidden from active list; accessible from entity/search |
-| `locked` | History readable; new messages forbidden |
+| `locked`   | History readable; new messages forbidden               |
 
 Entity closure does not delete conversation history.
 

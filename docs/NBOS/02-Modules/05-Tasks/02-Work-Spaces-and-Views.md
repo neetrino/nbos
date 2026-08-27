@@ -183,13 +183,13 @@ Standalone Work Space может иметь собственный internal Conv
 
 `Sprint` — отдельная запись внутри scrum-enabled `Work Space`, а не только enum на задаче.
 
-| Поле / правило | Смысл |
-| --- | --- |
-| `workspace_id` | Спринт принадлежит одному Work Space |
-| `name`, `goal` | Название и цель спринта |
-| `status` | `Planning` → `Active` → `Closed` |
-| `start_date`, `end_date` | Плановые даты итерации |
-| `closed_at` | Фактическое закрытие |
+| Поле / правило           | Смысл                                |
+| ------------------------ | ------------------------------------ |
+| `workspace_id`           | Спринт принадлежит одному Work Space |
+| `name`, `goal`           | Название и цель спринта              |
+| `status`                 | `Planning` → `Active` → `Closed`     |
+| `start_date`, `end_date` | Плановые даты итерации               |
+| `closed_at`              | Фактическое закрытие                 |
 
 Инварианты:
 
@@ -205,11 +205,11 @@ Standalone Work Space может иметь собственный internal Conv
 
 При закрытии active sprint пользователь выбирает политику для незавершённых задач (`status != Completed`):
 
-| Действие | Поведение |
-| --- | --- |
-| `Move to backlog` | `sprint_id = null`, planning = backlog |
+| Действие                       | Поведение                                             |
+| ------------------------------ | ----------------------------------------------------- |
+| `Move to backlog`              | `sprint_id = null`, planning = backlog                |
 | `Move to next planning sprint` | перенос в выбранный или автосозданный planning sprint |
-| `Keep on closed sprint` | задача остаётся на closed sprint record (история) |
+| `Keep on closed sprint`        | задача остаётся на closed sprint record (история)     |
 
 ### 6.5. Scrum Planning surface (layout)
 
@@ -261,9 +261,9 @@ Kanban-enabled workspace подходит для:
 
 **Layout (Bitrix-like):**
 
-| Зона | Содержимое |
-| --- | --- |
-| Left ~40% | Backlog: счётчик задач, `+ Task`, список, DnD source |
+| Зона       | Содержимое                                                                                                                        |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Left ~40%  | Backlog: счётчик задач, `+ Task`, список, DnD source                                                                              |
 | Right ~60% | Sprint blocks: active sprint header (progress, dates, goal, Finish), planning sprints, create sprint, completed sprints accordion |
 
 **Не входит в v1:** story points, burndown, velocity, epics, capacity — только структурно корректный sprint lifecycle.
@@ -292,13 +292,13 @@ PM-oriented вид по срокам, зависимостям и critical path.
 
 ## 9. Контексты отображения
 
-| Контекст | Что открывается |
-| --- | --- |
-| `Product` | connected `Work Space` продукта + тот же Product work Discussion |
-| `Extension` | `Product Work Space` родительского продукта |
-| `Project` | compact task counters and links only; no full task execution block on main Project page |
-| top-level `Tasks` | глобальные списки и personal views |
-| standalone workspace | самостоятельное operational пространство + собственный Discussion при необходимости |
+| Контекст             | Что открывается                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------- |
+| `Product`            | connected `Work Space` продукта + тот же Product work Discussion                        |
+| `Extension`          | `Product Work Space` родительского продукта                                             |
+| `Project`            | compact task counters and links only; no full task execution block on main Project page |
+| top-level `Tasks`    | глобальные списки и personal views                                                      |
+| standalone workspace | самостоятельное operational пространство + собственный Discussion при необходимости     |
 
 Project-level task aggregation может существовать только как отдельный lazy-loaded filtered view, если это понадобится позже. Основная Project page не должна дублировать Product Work Space.
 

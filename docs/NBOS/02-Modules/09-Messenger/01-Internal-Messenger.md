@@ -287,12 +287,12 @@ Thread/reply support is allowed, but threads are optional. A forwarded client me
 
 Possible conversation state concepts:
 
-| State | Meaning |
-| --- | --- |
-| `active` | Appears in normal working lists |
-| `muted` | Notifications reduced according to user setting |
+| State      | Meaning                                                |
+| ---------- | ------------------------------------------------------ |
+| `active`   | Appears in normal working lists                        |
+| `muted`    | Notifications reduced according to user setting        |
 | `archived` | Hidden from active lists, reachable from entity/search |
-| `locked` | History readable, new messages forbidden |
+| `locked`   | History readable, new messages forbidden               |
 
 Entity closure does not physically delete conversation history.
 

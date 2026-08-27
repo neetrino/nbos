@@ -163,30 +163,38 @@ Template:
 Status: IMPLEMENTING
 
 ## Canonical decisions
+
 - M-...
 
 ## Scope
+
 ...
 
 ## Existing runtime / migration notes
+
 ...
 
 ## Implementation requirements
+
 ...
 
 ## Data migration / rollback
+
 ...
 
 ## Tests / negative tests
+
 ...
 
 ## Implementation result
+
 - files changed
 - migration result
 - commands/tests executed
 - known limitations
 
 ## Independent review
+
 - reviewer scope
 - code/schema evidence
 - tests executed/rechecked
@@ -194,9 +202,11 @@ Status: IMPLEMENTING
 - findings
 
 ## Remaining debt
+
 ...
 
 ## Final status
+
 VERIFIED / CHANGES_REQUIRED / BLOCKED
 ```
 

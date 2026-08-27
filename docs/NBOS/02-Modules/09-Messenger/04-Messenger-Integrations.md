@@ -173,12 +173,12 @@ A message reference to an attachment does not bypass Drive authorization.
 
 NBOS Mail remains a separate module.
 
-| Messenger | Mail |
-| --- | --- |
-| `Conversation / Message` | `EmailThread / EmailMessage` |
-| realtime chat UX | email inbox/thread UX |
+| Messenger                    | Mail                          |
+| ---------------------------- | ----------------------------- |
+| `Conversation / Message`     | `EmailThread / EmailMessage`  |
+| realtime chat UX             | email inbox/thread UX         |
 | WhatsApp/Meta/internal chats | IMAP/Gmail/SMTP/provider sync |
-| chat provider mapping | RFC/email threading metadata |
+| chat provider mapping        | RFC/email threading metadata  |
 
 Messenger and Mail may link to the same Deal/Project/Ticket, but they do not share one persistence store.
 

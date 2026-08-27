@@ -1473,38 +1473,38 @@ A new Deal does not automatically mean a new physical WhatsApp group.
 
 This Master Canon includes the approved Decision Register areas:
 
-| Decision | Covered here |
-| --- | --- |
-| `M-BOUNDARY-01` | one Core, two product surfaces |
-| `M-BOUNDARY-02` | no cross-surface Collections |
-| `M-INTERNAL-01` | Internal navigation |
-| `M-INTERNAL-02` | flat `All` inbox |
-| `M-COLLECTIONS-01` | Favorites/PERSONAL/SHARED Collections |
-| `M-PROJECT-01` | Project aggregate + optional General |
-| `M-WORK-01` | Product + Connected Work Space one conversation |
-| `M-WORK-02` | standalone Work Space conversation |
-| `M-TASK-01` | Task Discussion via Messaging Core |
-| `M-TASK-02` | Discussion vs Activity |
-| `M-MESSAGE-01` | message actions |
-| `M-MESSAGE-02` | canonical references, not copied truth |
-| `M-MESSAGE-03` | threads optional, not mandatory workflow |
-| `M-CLIENT-01` | Inbox / Sales / Clients / Collections |
-| `M-CLIENT-02` | long-lived Product client conversation |
-| `M-WA-01` | purpose-based Product communication binding |
-| `M-WA-02` | one external conversation may serve many Products |
-| `M-WA-03` | deterministic WORK/FINANCE destinations |
-| `M-WA-04` | Deal Won resolves WORK without mandatory FINANCE |
-| `M-WA-05` | business resolver by Product + purpose |
-| `M-SECURITY-01` | locked Client composer |
-| `M-SECURITY-02` | Client READ != SEND |
-| `M-ROUTING-01` | access != attention ownership |
-| `M-SUPPORT-01` | Support Ticket is case management, not client chat |
-| `M-WHATSAPP-01` | existing Gateway remains transport boundary |
-| `M-TELEGRAM-01` | one-time migration, no permanent bridge |
-| `M-AI-01` | Client AI boundary |
-| `M-CORE-01` | DB truth + durable external send |
-| `M-FILES-01` | Drive owns attachments |
-| `M-MAIL-01` | Mail remains separate |
+| Decision           | Covered here                                       |
+| ------------------ | -------------------------------------------------- |
+| `M-BOUNDARY-01`    | one Core, two product surfaces                     |
+| `M-BOUNDARY-02`    | no cross-surface Collections                       |
+| `M-INTERNAL-01`    | Internal navigation                                |
+| `M-INTERNAL-02`    | flat `All` inbox                                   |
+| `M-COLLECTIONS-01` | Favorites/PERSONAL/SHARED Collections              |
+| `M-PROJECT-01`     | Project aggregate + optional General               |
+| `M-WORK-01`        | Product + Connected Work Space one conversation    |
+| `M-WORK-02`        | standalone Work Space conversation                 |
+| `M-TASK-01`        | Task Discussion via Messaging Core                 |
+| `M-TASK-02`        | Discussion vs Activity                             |
+| `M-MESSAGE-01`     | message actions                                    |
+| `M-MESSAGE-02`     | canonical references, not copied truth             |
+| `M-MESSAGE-03`     | threads optional, not mandatory workflow           |
+| `M-CLIENT-01`      | Inbox / Sales / Clients / Collections              |
+| `M-CLIENT-02`      | long-lived Product client conversation             |
+| `M-WA-01`          | purpose-based Product communication binding        |
+| `M-WA-02`          | one external conversation may serve many Products  |
+| `M-WA-03`          | deterministic WORK/FINANCE destinations            |
+| `M-WA-04`          | Deal Won resolves WORK without mandatory FINANCE   |
+| `M-WA-05`          | business resolver by Product + purpose             |
+| `M-SECURITY-01`    | locked Client composer                             |
+| `M-SECURITY-02`    | Client READ != SEND                                |
+| `M-ROUTING-01`     | access != attention ownership                      |
+| `M-SUPPORT-01`     | Support Ticket is case management, not client chat |
+| `M-WHATSAPP-01`    | existing Gateway remains transport boundary        |
+| `M-TELEGRAM-01`    | one-time migration, no permanent bridge            |
+| `M-AI-01`          | Client AI boundary                                 |
+| `M-CORE-01`        | DB truth + durable external send                   |
+| `M-FILES-01`       | Drive owns attachments                             |
+| `M-MAIL-01`        | Mail remains separate                              |
 
 If a future approved Decision is added to `08-Messenger-Decision-Register.md`, this table and the relevant Master section must be updated in the same documentation change.
 

@@ -235,18 +235,18 @@ External send must re-check authorization at command execution time even if the 
 
 Expected event families:
 
-| Event | Purpose |
-| --- | --- |
-| `message.created` | New durable message |
-| `message.updated` | Edit/redaction update |
-| `message.deleted` | Soft delete/redaction |
-| `conversation.updated` | Title/state/link/participant changes |
-| `read.updated` | Read cursor/state |
-| `typing.started/stopped` | Typing indicator |
-| `presence.updated` | Employee presence |
-| `delivery.updated` | External delivery/read result |
-| `attention.updated` | Client routing/assignment changed |
-| `binding.updated` | Product communication destination changed |
+| Event                    | Purpose                                   |
+| ------------------------ | ----------------------------------------- |
+| `message.created`        | New durable message                       |
+| `message.updated`        | Edit/redaction update                     |
+| `message.deleted`        | Soft delete/redaction                     |
+| `conversation.updated`   | Title/state/link/participant changes      |
+| `read.updated`           | Read cursor/state                         |
+| `typing.started/stopped` | Typing indicator                          |
+| `presence.updated`       | Employee presence                         |
+| `delivery.updated`       | External delivery/read result             |
+| `attention.updated`      | Client routing/assignment changed         |
+| `binding.updated`        | Product communication destination changed |
 
 Event names are implementation details; semantics are canonical.
 

@@ -194,15 +194,15 @@ Then Messaging Core/provider mapping decides how that conversation is delivered.
 
 Typical purpose mapping:
 
-| Event | Purpose |
-| --- | --- |
-| Subscription payment reminder | `FINANCE` |
-| Invoice/payment reminder | `FINANCE` |
-| Hosting/domain payment reminder | `FINANCE` |
-| Maintenance/client-service payment reminder | `FINANCE` |
-| Other approved automatic payment reminder | `FINANCE` |
-| Development/QA/maintenance operational message | `WORK` |
-| Manual normal Product communication | `WORK` |
+| Event                                          | Purpose   |
+| ---------------------------------------------- | --------- |
+| Subscription payment reminder                  | `FINANCE` |
+| Invoice/payment reminder                       | `FINANCE` |
+| Hosting/domain payment reminder                | `FINANCE` |
+| Maintenance/client-service payment reminder    | `FINANCE` |
+| Other approved automatic payment reminder      | `FINANCE` |
+| Development/QA/maintenance operational message | `WORK`    |
+| Manual normal Product communication            | `WORK`    |
 
 Advanced per-service overrides are not required for v1 unless a real business case appears.
 

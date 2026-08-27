@@ -619,19 +619,19 @@ These apply to every slice touching persistence or existing runtime.
 
 ## 3. Implementation slice status table
 
-| Slice | Status | Implementer evidence | Independent review |
-| --- | --- | --- | --- |
-| 0 — Baseline/reconciliation | `PLANNED` | — | — |
-| 1 — Messaging Core | `PLANNED` | — | — |
-| 2 — Permissions/boundary | `PLANNED` | — | — |
-| 3 — Internal base | `PLANNED` | — | — |
-| 4 — Entity conversations | `PLANNED` | — | — |
-| 5 — Task Discussion migration | `PLANNED` | — | — |
-| 6 — Message actions/references | `PLANNED` | — | — |
-| 7 — Client surface | `PLANNED` | — | — |
-| 8 — WhatsApp Gateway integration | `PLANNED` | — | — |
-| 9 — Flexible Product bindings | `PLANNED` | — | — |
-| 10 — Finance/Support/routing | `PLANNED` | — | — |
-| 11 — Hardening/cleanup readiness | `PLANNED` | — | — |
+| Slice                            | Status    | Implementer evidence | Independent review |
+| -------------------------------- | --------- | -------------------- | ------------------ |
+| 0 — Baseline/reconciliation      | `PLANNED` | —                    | —                  |
+| 1 — Messaging Core               | `PLANNED` | —                    | —                  |
+| 2 — Permissions/boundary         | `PLANNED` | —                    | —                  |
+| 3 — Internal base                | `PLANNED` | —                    | —                  |
+| 4 — Entity conversations         | `PLANNED` | —                    | —                  |
+| 5 — Task Discussion migration    | `PLANNED` | —                    | —                  |
+| 6 — Message actions/references   | `PLANNED` | —                    | —                  |
+| 7 — Client surface               | `PLANNED` | —                    | —                  |
+| 8 — WhatsApp Gateway integration | `PLANNED` | —                    | —                  |
+| 9 — Flexible Product bindings    | `PLANNED` | —                    | —                  |
+| 10 — Finance/Support/routing     | `PLANNED` | —                    | —                  |
+| 11 — Hardening/cleanup readiness | `PLANNED` | —                    | —                  |
 
 Status changes must follow `12-Messenger-Rebuild-Execution-Strategy.md`.

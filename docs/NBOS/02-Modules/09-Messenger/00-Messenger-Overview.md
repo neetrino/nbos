@@ -22,10 +22,10 @@ This is not a cosmetic tab split. Internal Messenger and Client Messenger have s
 
 ## 1. Product boundaries
 
-| Surface | Purpose | Example conversations |
-| --- | --- | --- |
-| `Internal Messenger` | Neetrino team communication only | Product/Work Space discussion, Task discussion, Deal discussion, internal groups, direct messages |
-| `Client Messenger` | Real communication with clients/external people | WhatsApp product groups, WhatsApp/Meta sales conversations, existing-client conversations |
+| Surface              | Purpose                                         | Example conversations                                                                             |
+| -------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `Internal Messenger` | Neetrino team communication only                | Product/Work Space discussion, Task discussion, Deal discussion, internal groups, direct messages |
+| `Client Messenger`   | Real communication with clients/external people | WhatsApp product groups, WhatsApp/Meta sales conversations, existing-client conversations         |
 
 Rules:
 
@@ -39,15 +39,15 @@ Rules:
 
 ## 2. What Messenger does not replace
 
-| Module | Boundary |
-| --- | --- |
-| `Tasks` | Message(s) may create or reference a Task; Task remains the work entity. Human Task Discussion uses Messaging Core. |
-| `Notifications` | Notifications decides when/how to notify; Messenger stores conversation history. |
-| `Drive` | Messenger attachments are Drive File Assets. |
-| `CRM` | CRM owns Lead/Deal lifecycle; Client Messenger owns client chat history. |
-| `Support` | Support owns Ticket/SLA/case workflow; client communication remains in Client Messenger. |
-| `Finance` | Finance owns Invoice/Subscription/Payment/Client Service state; Messenger is only a communication destination. |
-| `Mail` | `EmailThread/EmailMessage` stay in NBOS Mail and are not merged into chat persistence. |
+| Module          | Boundary                                                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `Tasks`         | Message(s) may create or reference a Task; Task remains the work entity. Human Task Discussion uses Messaging Core. |
+| `Notifications` | Notifications decides when/how to notify; Messenger stores conversation history.                                    |
+| `Drive`         | Messenger attachments are Drive File Assets.                                                                        |
+| `CRM`           | CRM owns Lead/Deal lifecycle; Client Messenger owns client chat history.                                            |
+| `Support`       | Support owns Ticket/SLA/case workflow; client communication remains in Client Messenger.                            |
+| `Finance`       | Finance owns Invoice/Subscription/Payment/Client Service state; Messenger is only a communication destination.      |
+| `Mail`          | `EmailThread/EmailMessage` stay in NBOS Mail and are not merged into chat persistence.                              |
 
 ---
 
@@ -237,20 +237,20 @@ If historical internal chats are migrated, migration is a controlled one-time im
 
 The exact Prisma model names may be finalized during runtime reconciliation, but the domain requires the following concepts:
 
-| Concept | Purpose |
-| --- | --- |
-| `Conversation` | Canonical internal or client conversation |
-| `ConversationParticipant` | User/participant membership and conversation role |
-| `Message` | Canonical message |
-| `MessageReadState` | Read cursor/state |
-| `ConversationLink` | Links conversation to Product, Work Space, Task, Deal, Project, Ticket, Client etc. |
-| `MessageReference` | Stable reference from Task/Ticket/forwarded context to source message(s) |
-| `ExternalChannelAccount` | Connected WhatsApp/Meta/etc account |
-| `ExternalConversationMapping` | Maps NBOS conversation to provider chat/group/thread |
-| `ProductCommunicationBinding` or equivalent | Resolves Product + purpose (`WORK`/`FINANCE`) to an External Conversation |
-| `ConversationCollection` | Internal- or Client-surface collection |
-| `UserConversationSetting` | Pin/mute/archive/default/personal preferences |
-| `ProviderEvent` / delivery state | Idempotent provider webhook and external delivery tracking |
+| Concept                                     | Purpose                                                                             |
+| ------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `Conversation`                              | Canonical internal or client conversation                                           |
+| `ConversationParticipant`                   | User/participant membership and conversation role                                   |
+| `Message`                                   | Canonical message                                                                   |
+| `MessageReadState`                          | Read cursor/state                                                                   |
+| `ConversationLink`                          | Links conversation to Product, Work Space, Task, Deal, Project, Ticket, Client etc. |
+| `MessageReference`                          | Stable reference from Task/Ticket/forwarded context to source message(s)            |
+| `ExternalChannelAccount`                    | Connected WhatsApp/Meta/etc account                                                 |
+| `ExternalConversationMapping`               | Maps NBOS conversation to provider chat/group/thread                                |
+| `ProductCommunicationBinding` or equivalent | Resolves Product + purpose (`WORK`/`FINANCE`) to an External Conversation           |
+| `ConversationCollection`                    | Internal- or Client-surface collection                                              |
+| `UserConversationSetting`                   | Pin/mute/archive/default/personal preferences                                       |
+| `ProviderEvent` / delivery state            | Idempotent provider webhook and external delivery tracking                          |
 
 The implementation may reuse existing models if they satisfy these contracts; documentation does not require unnecessary renames.
 
