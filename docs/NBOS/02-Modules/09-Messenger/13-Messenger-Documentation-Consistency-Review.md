@@ -2,38 +2,74 @@
 
 > Status: **PASSED — READY FOR IMPLEMENTATION, starting with Slice 0 after synchronizing latest `main`**.
 >
-> Scope: final independent documentation review of Messenger Canon + runtime reconciliation + implementation strategy. This is not implementation evidence and does not replace Slice 0.
+> Scope: final independent documentation review of the Master Canon, Decision Register, cross-module canon, runtime reconciliation, implementation checklist and execution strategy. This is not implementation evidence and does not replace Slice 0.
 
 ## 1. Review scope
 
 Reviewed as one architecture set:
 
-- `00-Messenger-Overview.md`
-- `01-Internal-Messenger.md`
-- `02-External-Messenger-and-CRM-Inbox.md`
-- `03-Messenger-Architecture.md`
-- `04-Messenger-Integrations.md`
-- `05-Messenger-Permissions-and-UX.md`
-- `06-Messenger-Cleanup-Register.md`
-- `07-Internal-Messenger-Implementation-Progress.md`
-- `08-Messenger-Decision-Register.md`
-- `09-Messenger-Cross-Module-Canon.md`
-- `10-Messenger-Runtime-Reconciliation.md`
-- `11-Messenger-Rebuild-Implementation-Checklist.md`
-- `12-Messenger-Rebuild-Execution-Strategy.md`
-- `90-Messenger-Final-Acceptance.md`
+- `00-Messenger-Master-Canon.md` — primary human-readable product + architecture truth;
+- `00-Messenger-Overview.md`;
+- `01-Internal-Messenger.md`;
+- `02-External-Messenger-and-CRM-Inbox.md`;
+- `03-Messenger-Architecture.md`;
+- `04-Messenger-Integrations.md`;
+- `05-Messenger-Permissions-and-UX.md`;
+- `06-Messenger-Cleanup-Register.md`;
+- `07-Internal-Messenger-Implementation-Progress.md`;
+- `08-Messenger-Decision-Register.md`;
+- `09-Messenger-Cross-Module-Canon.md`;
+- `10-Messenger-Runtime-Reconciliation.md`;
+- `11-Messenger-Rebuild-Implementation-Checklist.md`;
+- `12-Messenger-Rebuild-Execution-Strategy.md`;
+- `90-Messenger-Final-Acceptance.md`.
 
-Runtime was rechecked against current repository schema/service for the highest-risk areas and against the current `neetrino/whatsapp-gateway` architecture.
+Cross-module Messenger-sensitive documentation was also rechecked, especially Tasks/Task Card, Support and Product WhatsApp communication.
+
+The highest-risk runtime facts were rechecked against current repository schema/service and the current `neetrino/whatsapp-gateway` architecture.
 
 ---
 
-## 2. Corrections made during final review
+## 2. Master Canon result
 
-The previous version of `10-Messenger-Runtime-Reconciliation.md` contained several stale runtime claims. They were corrected before this review was marked passed.
+`00-Messenger-Master-Canon.md` was created as the single document a human can read to verify the intended system without reading every implementation/migration document.
 
-### Corrected active Messenger runtime
+It contains:
 
-The active normal service path is legacy Internal Messenger Channels + Direct Messages:
+- product goal and scope discipline;
+- one Messaging Core / two separate product surfaces;
+- Internal navigation, All inbox, Products, Tasks, Deals, Work Spaces, Groups and Direct;
+- Collections/Favorites;
+- message actions/references/Create Task;
+- Client Inbox/Sales/Clients navigation;
+- visual separation and locked composer;
+- READ/SEND separation;
+- Product client lifecycle;
+- WORK/FINANCE purpose bindings and shared external conversations;
+- Deal Won behavior;
+- Finance reminders/fallback/access defaults;
+- Support boundary;
+- attention routing;
+- Employee authorization vs physical WhatsApp participants;
+- WhatsApp Gateway boundary;
+- durable delivery/outcome-unknown handling;
+- realtime/search/files/Mail/Notifications/Telegram/AI/mobile boundaries;
+- modular-monolith architecture direction;
+- migration safety and legacy-runtime reconciliation;
+- required-vs-optional UX scope;
+- explicit forbidden shortcuts;
+- end-to-end business examples;
+- coverage index for every approved Decision ID in `08-Messenger-Decision-Register.md`.
+
+No approved Decision ID is missing from the Master coverage index.
+
+---
+
+## 3. Corrections preserved from runtime reconciliation
+
+### Active Messenger runtime
+
+The active normal Internal Messenger service path is Channel + Direct Message runtime:
 
 ```text
 MessengerChannel / MessengerChannelMessage
@@ -42,7 +78,7 @@ MessengerDirectThread / MessengerDirectMessage
 
 not a generic `Conversation / ConversationMember / Message / ChatFile` store.
 
-### Corrected Unified schema inventory
+### Additive Unified schema
 
 Current `messenger.prisma` contains the additive Unified models:
 
@@ -56,9 +92,9 @@ MessengerConversationReadState
 MessengerUserConversationSetting
 ```
 
-It does not currently contain the previously claimed Topic/Collection model family, and `MessengerConversation` does not have a mandatory `projectId`.
+The current schema snapshot does not contain the previously claimed Topic/Collection model family, and `MessengerConversation` does not have the previously claimed mandatory `projectId`.
 
-### Corrected Task Discussion facts
+### Task Discussion
 
 Current `TaskDiscussionEntry` directly stores:
 
@@ -74,25 +110,52 @@ visibility
 createdAt
 ```
 
-The schema itself does not expose reply/attachment/edit fields. Slice 0 must inspect whether related runtime data exists elsewhere before expanding the migration contract.
+The schema itself does not expose reply/attachment/edit fields. Slice 0 must inspect whether any related runtime data exists elsewhere before expanding the migration contract.
 
-`Task.chatId` remains a required runtime investigation item rather than an assumed canonical mapping.
+`Task.chatId` remains a required investigation item.
 
-### Corrected Collections baseline
+### Collections
 
-Current Unified schema has a per-user `favorite` setting but no user-created Collection models. Therefore Favorites has a reusable primitive; PERSONAL/SHARED Collections remain new runtime work.
+Current Unified schema has reusable per-user `favorite` state but no target PERSONAL/SHARED Collection model family. Therefore user-created Collections remain new runtime work.
 
-### Latest-main drift recorded
+### Product WhatsApp
 
-The documentation branch is currently behind latest `main` by 4 commits. Those commits include useful Product WhatsApp Settings search/select/paste/replace behavior. The target flexible binding architecture is unchanged; the implementation must reuse/adapt that UX after synchronizing latest `main`.
+Current Product WhatsApp runtime still uses the old single Product binding/group domain shape, but recent UI/settings work adds useful behavior that must be reused/adapted:
+
+- status/error visibility;
+- create group;
+- search/select existing group;
+- paste/bind where required;
+- explicit replace without deleting the old physical group;
+- participant sync;
+- client invitation/retry;
+- operation/status history.
+
+These features do not change the target `Product + purpose -> Client/External Conversation` architecture.
 
 ---
 
-## 3. Canon consistency result
+## 4. Latest-main drift rule
+
+Do **not** record a fixed `N commits behind main` number as architectural truth. It becomes stale while development continues.
+
+Current review confirmed that `main` continued moving during this documentation pass. The newer changes inspected in the Messenger-sensitive area were primarily Product WhatsApp UI/settings changes rather than a conflicting product architecture.
+
+Mandatory rule:
+
+```text
+before Slice 0
+  -> synchronize implementation branch with latest main
+  -> re-run runtime inventory against that exact codebase
+```
+
+The Canon defines the target. Latest `main` defines the runtime that must be reconciled.
+
+---
+
+## 5. Product/UX consistency result
 
 No unresolved contradiction was found among the approved product decisions.
-
-The following boundaries are consistent across Canon, cross-module rules, checklist and execution strategy:
 
 ### Messaging boundary
 
@@ -103,80 +166,116 @@ TWO separate product surfaces
   - Client Messenger
 ```
 
-They are not tabs/modes of one unsafe mixed screen.
+Not tabs/modes of one unsafe mixed screen.
 
-### Client safety
-
-- Client composer locked by default.
-- Explicit `Reply to client` unlock for current conversation session.
-- Conversation switch relocks.
-- READ and SEND remain separate permissions.
-- No Internal/Public composer toggle.
-
-### Internal navigation
+### Internal UX
 
 ```text
 All / Products / Tasks / Deals / Work Spaces / Groups / Direct / Collections
 ```
 
-`All` is recent activity, not a mandatory Project tree.
+`All` is flat recent activity, not a mandatory Project tree.
 
-### Collections
+Product + mandatory Connected Work Space resolve one Internal Conversation.
 
-- Favorites built-in personal behavior.
-- PERSONAL and SHARED user Collections.
-- no cross-surface Collections.
-- Shared Collection never grants access.
+Task Card remains the primary execution surface; human Discussion uses Messaging Core while Activity remains system history.
 
-### Product + Work Space
-
-Product and its mandatory Connected Work Space resolve the same Internal Conversation.
-
-### Tasks
-
-Human Task Discussion migrates to Messaging Core. Task Activity remains separate system history.
-
-### Message actions
-
-Canonical source messages are referenced, not copied into independent stores. Create Task remains a full Task creation flow.
-
-### Client Messenger
+### Client UX
 
 ```text
 Inbox / Sales / Clients / Collections
 ```
 
-Support and Finance remain workflows/purposes around canonical Client conversations, not separate message universes.
+Client surface has explicit external visual context and a locked-by-default composer.
 
-### Product external communication
+`Reply to client` unlock is session/conversation scoped; switching conversations relocks. READ and SEND are separate and server authorization remains mandatory.
 
-```text
-Product + purpose -> External Conversation
-purpose v1 = WORK | FINANCE
-```
+Support and Finance are not separate Messenger universes.
 
-- one active WORK destination per Product;
-- zero/one explicit FINANCE destination;
-- FINANCE fallback to WORK;
-- one physical external conversation may serve multiple Products.
+### Collections
 
-### Attention routing
+- Favorites built-in personal behavior;
+- PERSONAL/SHARED user Collections;
+- no cross-surface Collections;
+- Shared Collection never grants access.
 
-Access and current responsibility are independent. Lifecycle/assignee changes do not create another Conversation.
+### Message-to-work
 
-### WhatsApp boundary
-
-Existing `neetrino/whatsapp-gateway` remains transport/session/provider boundary. NBOS owns business context, history, permissions, routing and bindings.
-
-### Telegram
-
-No permanent Telegram ↔ NBOS internal chat bridge in target architecture.
+Canonical messages are referenced rather than copied into independent truth stores. Create Task remains a full Task creation flow. Threads are optional, not forced workflow.
 
 ---
 
-## 4. Runtime migration consistency result
+## 6. Product external communication consistency result
 
-The migration plan now consistently follows:
+Target remains:
+
+```text
+Product + purpose -> Client/External Conversation
+purpose v1 = WORK | FINANCE
+```
+
+For configured Product client communication:
+
+- one active WORK destination;
+- zero/one explicit FINANCE destination;
+- FINANCE fallback to WORK;
+- one physical external conversation may serve multiple Products;
+- Product binding does not grant Employee access.
+
+A Product row does not silently auto-create a WhatsApp group. Pending/failed/unconfigured setup is an operational state, not permission for competing WORK destinations.
+
+Deal Won resolves WORK through create or bind/select-existing. FINANCE remains optional configuration.
+
+Finance business logic decides WHAT/WHEN; Messenger resolves WHERE. Finance/Subscription code must not depend on raw Product `groupChatId` after cutover.
+
+Dedicated FINANCE conversations remain full Client conversations with restricted business participation defaults, not hidden notification sinks.
+
+---
+
+## 7. Support/CRM/Task boundary consistency
+
+Support Ticket remains internal case management:
+
+```text
+Client Message
+-> Ticket case/SLA/coverage
+-> Task/Work Space/CRM execution
+-> client response through original Client Messenger conversation
+```
+
+No Ticket-level Public/Internal composer toggle.
+
+Internal Deal discussion and Client Sales conversation remain separate conversations.
+
+Extension normally continues parent Product work/client communication rather than auto-creating duplicate conversations.
+
+---
+
+## 8. Architecture consistency result
+
+The target remains appropriately strong without premature distribution:
+
+- NBOS modular monolith;
+- one shared Messaging Core;
+- strict INTERNAL/CLIENT surface boundary;
+- Postgres/database as durable source of truth;
+- realtime as transport, never history source;
+- durable outbox/queue for external sends;
+- provider adapters;
+- existing WhatsApp Gateway reused/extended;
+- Drive owns physical files;
+- Mail remains a separate persistence model;
+- Notifications remain notification delivery;
+- no permanent Telegram chat bridge;
+- Client AI remains governed by AI Platform policy and exact conversation scope.
+
+No new Messenger microservice is required by the current product.
+
+---
+
+## 9. Runtime migration consistency result
+
+The migration plan consistently follows:
 
 ```text
 expand
@@ -190,50 +289,21 @@ expand
 -> delete later
 ```
 
-Three critical migrations are explicitly protected:
+Critical protected migrations:
 
 1. active Channel/DM history -> chosen canonical Messaging Core path;
 2. `TaskDiscussionEntry` -> Messaging Core Task Conversation;
 3. `ProductWhatsAppGroupBinding` 1:1 -> flexible WORK/FINANCE bindings.
 
-The documentation does not authorize drop-first migration or destructive schema cleanup during first cutover.
+The documentation does not authorize drop-first migration, provider-group recreation for schema convenience, permanent dual writes or a third permanent Messenger persistence generation.
 
 ---
 
-## 5. `11` checklist review
+## 10. Implementation checklist/execution strategy result
 
-`11-Messenger-Rebuild-Implementation-Checklist.md` is consistent with the Canon and corrected reconciliation.
+`11-Messenger-Rebuild-Implementation-Checklist.md` remains executable and consistent with Canon + corrected runtime reconciliation.
 
-It covers:
-
-- schema;
-- migrations/backfill;
-- API/services;
-- permissions;
-- realtime;
-- Internal UI;
-- Client UI;
-- WhatsApp/Gateway;
-- Product bindings;
-- Task migration;
-- message references/actions;
-- Support/Finance/routing;
-- Collections/search/notifications;
-- AI boundary;
-- tests and negative/adversarial tests;
-- audit/cleanup.
-
-No checklist item requires changing an approved product decision.
-
-Task attachment/reply/edit migration language must be interpreted as **preserve where runtime actually has such data**, as clarified by corrected `10`; do not fabricate fields that do not exist.
-
----
-
-## 6. `12` execution-strategy review
-
-The 12-slice strategy is technically coherent and avoids splitting every product decision into an artificial separate phase.
-
-Default chain remains:
+`12-Messenger-Rebuild-Execution-Strategy.md` remains technically coherent:
 
 ```text
 0 Baseline / reconciliation
@@ -261,51 +331,37 @@ Fresh Implementation Chat
 -> next dependent Slice only after VERIFIED
 ```
 
-This is consistent with migration risk and product boundaries.
-
 ---
 
-## 7. No remaining product decision needed before Slice 0
+## 11. No remaining product decision needed before Slice 0
 
-No new architecture question was found that requires the Owner to redesign/approve a product rule before implementation can begin.
+No architecture/product question was found that requires a new Owner decision before implementation can begin.
 
-The remaining unknowns are runtime facts, not product decisions. They belong in Slice 0, especially:
+Remaining unknowns are runtime facts and belong in Slice 0, including:
 
-- real DB row counts;
-- whether Unified tables contain production/test/history data;
+- real database row counts;
+- real usage of additive Unified tables;
 - exact `Task.chatId` meaning;
-- any Task-discussion-related data stored outside `TaskDiscussionEntry`;
-- all current Messenger read/write paths;
-- latest-main Product WhatsApp settings behavior;
-- current Finance/Support send paths;
-- exact NBOS webhook consumption of Gateway inbound events;
-- production/staging migration constraints.
+- any Task-discussion related data outside `TaskDiscussionEntry`;
+- latest Messenger read/write paths;
+- latest Product WhatsApp settings/runtime paths;
+- Finance/Support client-send paths;
+- NBOS consumption of Gateway inbound events;
+- staging/production migration constraints.
 
-If one of those facts makes a confirmed Canon rule unsafe or impossible, Slice 0 becomes `BLOCKED` and raises a concrete decision-needed item. It must not silently alter the architecture.
-
----
-
-## 8. Mandatory precondition before Slice 0
-
-Do not implement from the stale documentation branch snapshot.
-
-First:
-
-```text
-synchronize implementation branch with latest main
-```
-
-Then perform Slice 0 against that merged/current codebase.
-
-The Canon docs remain the target product truth; latest `main` supplies the freshest runtime to reconcile.
+If a fresh runtime fact makes a confirmed Canon rule unsafe or impossible, Slice 0 becomes `BLOCKED` and raises a concrete decision-needed item. It must not silently alter the architecture.
 
 ---
 
-## 9. Final documentation verdict
+## 12. Final documentation verdict
 
 ```text
-CANON: CONSISTENT
+MASTER CANON: COMPLETE
+DECISION COVERAGE: COMPLETE
+PRODUCT/UX CONSISTENCY: PASSED
+CROSS-MODULE CONSISTENCY: PASSED
 RUNTIME RECONCILIATION: CORRECTED AND SUFFICIENT FOR SLICE 0
+MIGRATION SAFETY: PASSED
 IMPLEMENTATION CHECKLIST: READY
 EXECUTION STRATEGY: READY
 OPEN PRODUCT DECISIONS: NONE
@@ -314,10 +370,11 @@ PRODUCTION CODE IMPLEMENTED BY THIS DOCUMENTATION PASS: NO
 
 # READY FOR IMPLEMENTATION
 
-The first implementation slice is:
+First implementation stage:
 
 ```text
-Slice 0 — Baseline, inventory and migration safety
+synchronize with latest main
+-> Slice 0 — Baseline, inventory and migration safety
+-> independent review
+-> Slice 1 only after Slice 0 VERIFIED
 ```
-
-Slice 0 must begin only after synchronizing latest `main`, and it must produce independent, runtime-first evidence before Slice 1 is allowed to begin.
