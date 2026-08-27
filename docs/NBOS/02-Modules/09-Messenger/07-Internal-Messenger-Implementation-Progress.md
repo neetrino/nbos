@@ -4,43 +4,44 @@
 >
 > Product canon: `00-Messenger-Overview.md` + `08-Messenger-Decision-Register.md`.
 >
-> Runtime reset evidence: `docs/NBOS_MESSENGER_CLEAN_CORE_RESET.md`.
+> Historical reset evidence: `docs/NBOS_MESSENGER_CLEAN_CORE_RESET.md`.
 
-## Current recorded baseline
+## Current verified static baseline
 
-The previous contents of this file were stale: they claimed the Unified API + L1/L2 Internal Messenger UI were the active completed runtime.
+The previous historical version of this file was stale: it claimed the Unified API + L1/L2 Internal Messenger UI were the active completed runtime.
 
-That architecture was intentionally removed by the 2026-08-11 Clean Core Reset.
+The 2026-08-11 Clean Core Reset removed that architecture from active runtime. A fresh repository inspection performed while preparing the rebuild documentation also confirms that the current `apps/api/src/modules/messenger/messenger.service.ts` uses the simple/legacy Prisma runtime (`Conversation`, `ConversationMember`, `Message`, `ChatFile`, read/reaction models) rather than the old `MessengerConversation` / `MessengerTopic` generation.
 
-Recorded post-reset state:
+Current static baseline:
 
 ```text
-Active runtime:
-  legacy Channels + Direct Messages shell
+Active runtime/code path:
+  legacy/simple Conversation + Message model
+  Channels + Direct Messages shell
   PostgreSQL persistence
   ACL-hardened REST
-  Socket.IO realtime
-  read/unread / typing / presence
+  Socket.IO/realtime-related runtime
+  read/unread / typing / presence-related behavior
   Drive attachment references
-  basic internal search
+  internal search-related behavior
 
-Removed from active runtime:
-  L1/L2 navigation
+Not active as the current Messenger service path:
+  old L1/L2 navigation
   Topics architecture
-  Unified Conversation REST/service runtime
-  Project General lifecycle hooks
-  ensure-on-selection
-  legacy -> unified dual-write/backfill tooling
+  old Unified Messenger service runtime
 
-Preserved but unused:
-  Unified Messenger Prisma schema/data
+Still present in schema/repository and requiring data inventory before deletion:
+  MessengerConversation / MessengerTopic / MessengerMessage generation
+  old Unified collections/favorites/read-state structures
 ```
 
-External provider-backed Client Messenger was not implemented by that reset.
+The presence of old Unified Prisma tables does **not** prove that their database row counts are zero. Slice 0 must inventory real data/references before any destructive cleanup.
+
+The final provider-backed Client Messenger surface is not yet implemented as the target runtime.
 
 ## Important rule
 
-This document records historical/current implementation claims only. It must not be used to derive the target Messenger architecture.
+This document records implementation/runtime status only. It must not be used to derive the target Messenger architecture.
 
 The rebuild target/process is defined by:
 
@@ -59,7 +60,7 @@ The rebuild target/process is defined by:
 
 ## Documentation stage completed
 
-The target canon, migration-safety rules, executable slice checklist, independent review strategy and final acceptance contract are now documented on the rebuild documentation branch.
+The target canon, decision rationale, cross-module precedence, migration-safety rules, executable slice checklist, independent review strategy and final acceptance contract are documented on the rebuild documentation branch.
 
 No product/runtime implementation is claimed by this documentation stage.
 
@@ -67,20 +68,23 @@ No product/runtime implementation is claimed by this documentation stage.
 
 Treat these as migration concerns, not reasons to preserve legacy architecture:
 
-- human Task Discussion has an existing separate runtime/data path and must be migrated without losing authorship, ordering, attachments, provenance or audit context;
-- the existing Product ↔ WhatsApp group relationship was designed around hard one-to-one ownership and must be migrated additively to flexible `Product + purpose -> External Conversation` bindings;
+- active Messenger API currently uses the legacy/simple Conversation/Message generation; it cannot be deleted before a deliberate canonical cutover;
+- the old Unified Messenger generation still exists in Prisma but is not the current Messenger service path; it must be inventoried and selectively migrated/removed, not blindly reactivated;
+- human Task Discussion has an existing separate `TaskDiscussionEntry` runtime/data path and must be migrated without losing authorship, ordering, replies, attachments, provenance or audit context;
+- current `ProductWhatsAppGroupBinding` hard-enforces the old 1:1 Product/group relationship and must be migrated additively to flexible `Product + purpose -> External Conversation` bindings;
 - existing Product/group relationships backfill as `WORK`; no FINANCE binding is auto-created;
 - Deal Won create/bind/error semantics should be reused and adapted to resolve WORK rather than rewritten from scratch;
-- `neetrino/whatsapp-gateway` already provides reusable transport/account/send/inbound-webhook capabilities and must be reused/extended;
-- the current end-to-end Finance reminder -> Messenger/WhatsApp send path remains `VERIFY/MISSING` until Slice 0 confirms it first-hand;
-- old Gateway wording that says to store a returned WhatsApp group id directly on Product is legacy relative to the new NBOS binding model.
+- `neetrino/whatsapp-gateway` already provides reusable transport/account/send/inbound-webhook foundations and must be reused/extended;
+- end-to-end Finance reminder -> canonical Messenger/WhatsApp delivery is **new integration work**, not a completed current runtime that should be preserved as source of truth;
+- Finance business rules decide WHAT/WHEN to remind, while the new Messaging resolver decides WHERE (`FINANCE`, fallback `WORK`);
+- old wording that says to store a returned WhatsApp group id directly on Product is legacy relative to the new NBOS binding model.
 
 ## Next step before product code changes
 
 Start **Slice 0 — Baseline, inventory and migration safety** from `11-Messenger-Rebuild-Implementation-Checklist.md` in a fresh implementation context.
 
-Slice 0 must inspect actual current schema/code/data and update `10-Messenger-Runtime-Reconciliation.md` if any runtime fact differs materially from the recorded baseline.
+Slice 0 must inspect actual current schema/code/data/environment counts and update `10-Messenger-Runtime-Reconciliation.md` if any runtime fact differs materially from the recorded baseline.
 
 After Slice 0 implementation evidence is complete, an independent reviewer must verify it before Slice 1 begins.
 
-Do not reintroduce old L1/L2/Topics implementation merely because historical migration/schema artifacts remain in the repository.
+Do not reintroduce old L1/L2/Topics implementation merely because historical schema/data artifacts remain in the repository.
