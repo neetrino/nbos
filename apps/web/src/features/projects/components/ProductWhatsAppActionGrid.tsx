@@ -29,8 +29,7 @@ export function ProductWhatsAppActionGrid({
   onSendClientInvitation,
   onResendInvitation,
 }: ProductWhatsAppActionGridProps) {
-  const createDisabled =
-    busy || !gatewayConfigured || status === 'ACTIVE' || createInFlight;
+  const createDisabled = busy || !gatewayConfigured || status === 'ACTIVE' || createInFlight;
   const activeOnlyDisabled = busy || !gatewayConfigured || status !== 'ACTIVE';
 
   return (

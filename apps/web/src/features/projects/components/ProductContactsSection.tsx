@@ -30,10 +30,7 @@ interface ProductContactsSectionProps {
 
 const CONTACTS_HEADER_SEARCH_CLASS = 'w-[55%] max-w-[55%] shrink-0';
 const CONTACTS_HEADER_SEARCH_PLACEHOLDER = 'Search…';
-const CONTACTS_HEADER_TITLE_CLASS = cn(
-  DETAIL_SHEET_SECTION_TITLE_CLASS,
-  'mb-0 shrink-0 text-xs',
-);
+const CONTACTS_HEADER_TITLE_CLASS = cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0 shrink-0 text-xs');
 
 function buildContactCards(
   product: FullProduct,
@@ -135,9 +132,7 @@ export function ProductContactsSection({
       selectionDisplay="none"
       value={draft.contactIds}
       selectionLabels={draft.contactLabels}
-      placeholder={
-        headerTitle ? CONTACTS_HEADER_SEARCH_PLACEHOLDER : 'Search or create contact…'
-      }
+      placeholder={headerTitle ? CONTACTS_HEADER_SEARCH_PLACEHOLDER : 'Search or create contact…'}
       icon={<User size={12} />}
       disabled={saving}
       onSearch={contactSearch}

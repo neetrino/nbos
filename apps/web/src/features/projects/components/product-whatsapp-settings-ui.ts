@@ -6,8 +6,7 @@ export const WA_ACCENT_ICON_WRAP =
 export const WA_HEADER_ICON_WRAP =
   'flex aspect-square h-full min-h-12 w-auto shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400';
 
-export const WA_SECTION_CARD =
-  'border-border bg-card rounded-xl border p-4 shadow-none';
+export const WA_SECTION_CARD = 'border-border bg-card rounded-xl border p-4 shadow-none';
 
 export const WA_ACTION_CARD =
   'border-border bg-card hover:bg-muted/40 flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors disabled:pointer-events-none disabled:opacity-50';

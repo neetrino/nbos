@@ -151,10 +151,7 @@ export function ProductSettingsSheet({
               void run(() => productWhatsAppApi.sync(productId), 'Participant sync queued')
             }
             onSendClientInvitation={() =>
-              void run(
-                () => productWhatsAppApi.clientInvite(productId),
-                'Client invitation queued',
-              )
+              void run(() => productWhatsAppApi.clientInvite(productId), 'Client invitation queued')
             }
             onResendInvitation={() => {
               if (

@@ -85,7 +85,7 @@ export function PageSettingsSheet({
         <SheetHeader className="border-border border-b pb-4">
           <div className="flex items-center gap-3">
             {titleLeading ? (
-              <div className="flex shrink-0 self-stretch items-stretch">{titleLeading}</div>
+              <div className="flex shrink-0 items-stretch self-stretch">{titleLeading}</div>
             ) : null}
             <div className="min-w-0 space-y-1">
               <SheetTitle>{title}</SheetTitle>

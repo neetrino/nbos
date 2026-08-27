@@ -2,16 +2,7 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import {
-  Activity,
-  AlertTriangle,
-  Clock3,
-  Copy,
-  Hash,
-  Mail,
-  Settings,
-  Users,
-} from 'lucide-react';
+import { Activity, AlertTriangle, Clock3, Copy, Hash, Mail, Settings, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -86,9 +77,7 @@ export function ProductWhatsAppStatusCard({
             <StatusValueBadge status={status} />
           </StatusRow>
           <StatusRow icon={Users} label="Group name">
-            <span className="text-foreground min-w-0 truncate font-medium">
-              {groupName || '—'}
-            </span>
+            <span className="text-foreground min-w-0 truncate font-medium">{groupName || '—'}</span>
           </StatusRow>
           <StatusRow icon={Hash} label="Group ID">
             <div className="flex min-w-0 items-center justify-end gap-1.5">

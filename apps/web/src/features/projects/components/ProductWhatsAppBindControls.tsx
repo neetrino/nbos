@@ -13,10 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { productWhatsAppApi, type WhatsAppAvailableGroup } from '@/lib/api/whatsapp';
-import {
-  WA_OUTLINE_ACTION_BUTTON,
-  WA_SECTION_CARD,
-} from './product-whatsapp-settings-ui';
+import { WA_OUTLINE_ACTION_BUTTON, WA_SECTION_CARD } from './product-whatsapp-settings-ui';
 
 const REPLACE_BINDING_CONFIRM =
   'Replace the current Product WhatsApp binding? The old WhatsApp group will not be deleted.';
@@ -202,7 +199,10 @@ function BindSection({
   return (
     <section className={WA_SECTION_CARD}>
       <div className="mb-3 flex items-start gap-2">
-        <Icon className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden />
+        <Icon
+          className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400"
+          aria-hidden
+        />
         <div className="min-w-0">
           <h4 className="text-foreground text-sm font-semibold">{title}</h4>
           <p className="text-muted-foreground text-xs">{description}</p>
