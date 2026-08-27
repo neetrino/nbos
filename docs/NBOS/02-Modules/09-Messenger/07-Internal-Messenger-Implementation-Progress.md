@@ -2,112 +2,184 @@
 
 > Status document only. **Not product canon.**
 >
-> Product canon: `00-Messenger-Overview.md` + `08-Messenger-Decision-Register.md`.
+> Primary human-readable canon: `00-Messenger-Master-Canon.md`.
 >
-> Historical reset evidence: `docs/NBOS_MESSENGER_CLEAN_CORE_RESET.md`.
+> Granular decision ledger: `08-Messenger-Decision-Register.md`.
+>
+> Runtime/migration truth: `10-Messenger-Runtime-Reconciliation.md`.
 
 ## Current verified static baseline
 
-The previous historical version of this file was stale: it claimed the Unified API + L1/L2 Internal Messenger UI were the active completed runtime.
+The previous historical status text was stale and must not be used as runtime proof.
 
-The 2026-08-11 Clean Core Reset removed that architecture from active runtime. A fresh repository inspection performed while preparing the rebuild documentation also confirms that the current `apps/api/src/modules/messenger/messenger.service.ts` uses the simple/legacy Prisma runtime (`Conversation`, `ConversationMember`, `Message`, `ChatFile`, read/reaction models) rather than the old `MessengerConversation` / `MessengerTopic` generation.
-
-Current static baseline:
+The active normal Internal Messenger service path currently uses the legacy Channel/Direct models:
 
 ```text
-Active runtime/code path:
-  legacy/simple Conversation + Message model
-  Channels + Direct Messages shell
-  PostgreSQL persistence
-  ACL-hardened REST
-  Socket.IO/realtime-related runtime
-  read/unread / typing / presence-related behavior
-  Drive attachment references
-  internal search-related behavior
+MessengerChannel
+MessengerChannelMessage
+MessengerChannelMessageAttachment
+MessengerChannelReadState
 
-Not active as the current Messenger service path:
-  old L1/L2 navigation
-  Topics architecture
-  old Unified Messenger service runtime
-
-Still present in schema/repository and requiring data inventory before deletion:
-  MessengerConversation / MessengerTopic / MessengerMessage generation
-  old Unified collections/favorites/read-state structures
+MessengerDirectThread
+MessengerDirectMessage
+MessengerDirectMessageAttachment
+MessengerDirectThreadReadState
 ```
 
-The presence of old Unified Prisma tables does **not** prove that their database row counts are zero. Slice 0 must inventory real data/references before any destructive cleanup.
-
-The final provider-backed Client Messenger surface is not yet implemented as the target runtime.
-
-## Latest-main note before implementation
-
-At the end of the documentation pass, `docs/messenger-rebuild-canon` was 4 commits behind then-current `main`. Those newer commits include Product WhatsApp Settings work, notably:
-
-- existing-group search/select UI;
-- paste/bind group id controls;
-- explicit replace confirmation;
-- preservation of the old physical WhatsApp group when replacing a Product binding;
-- tests/helpers around Product WhatsApp settings.
-
-This is **useful runtime to REUSE/EXTEND**, not a change to the approved flexible-binding target.
-
-The current UI still operates around one Product binding/current `groupChatId`. Slice 9 must preserve the useful search/select/replace UX while changing the domain/storage target to:
+The active API service uses Prisma paths such as:
 
 ```text
-Product + WORK/FINANCE purpose -> External Conversation
+prisma.messengerChannel
+prisma.messengerChannelMessage
+prisma.messengerDirectThread
+prisma.messengerDirectMessage
 ```
 
-Before Slice 0 begins, the implementation branch must be based on or synchronized with the latest `main`. Slice 0 then re-checks any Messenger/Task/WhatsApp/Support/Finance changes added since this documentation audit.
+This active history/runtime cannot be deleted before deliberate migration/cutover.
 
-Do not start product implementation from a stale documentation branch snapshot.
+## Additive Unified generation also present
 
-## Important rule
+`packages/database/prisma/schema/messenger.prisma` also contains an additive Unified generation:
 
-This document records implementation/runtime status only. It must not be used to derive the target Messenger architecture.
+```text
+MessengerConversation
+MessengerConversationParticipant
+MessengerConversationLink
+MessengerMessage
+MessengerMessageAttachment
+MessengerConversationReadState
+MessengerUserConversationSetting
+```
 
-The rebuild target/process is defined by:
+The current normal `MessengerService` does not use that generation as its primary message read/write path.
 
-- `00-Messenger-Overview.md`;
-- `01-Internal-Messenger.md`;
-- `02-External-Messenger-and-CRM-Inbox.md`;
-- `03-Messenger-Architecture.md`;
-- `04-Messenger-Integrations.md`;
-- `05-Messenger-Permissions-and-UX.md`;
-- `08-Messenger-Decision-Register.md`;
-- `09-Messenger-Cross-Module-Canon.md`;
+Important corrections to old status assumptions:
+
+- there is no current `MessengerTopic` / Topic hierarchy model family in this schema snapshot;
+- there is no current user-created Collection model family in this schema snapshot;
+- `MessengerConversation` does not have the previously claimed mandatory `projectId`;
+- existing `favorite` state is only a reusable primitive, not proof that the target PERSONAL/SHARED Collections already exist.
+
+Slice 0 must inventory actual database rows and dependencies before deciding what to reuse, migrate or delete.
+
+## Task Discussion runtime
+
+Human Task discussion currently has a real separate persistence model:
+
+```text
+TaskDiscussionEntry
+```
+
+Direct schema fields include:
+
+```text
+taskId
+body
+actorType
+actorId
+actorDisplayName
+channelSource?
+correlationId?
+visibility
+createdAt
+```
+
+The schema does not directly expose the previously claimed reply/attachment/edit fields. Slice 0 must inspect whether any related data exists elsewhere before defining the exact backfill contract.
+
+`Task.chatId` remains an explicit investigation item.
+
+Target remains unchanged: human Task Discussion migrates safely to Messaging Core; Task Activity remains separate.
+
+## Product WhatsApp runtime
+
+Current `ProductWhatsAppGroupBinding` still represents the legacy one-Product/one-physical-group model and hard-enforces uniqueness around Product/group identity.
+
+Existing useful Product WhatsApp behavior must be reused/adapted where compatible, including current settings/runtime capabilities such as:
+
+- visible binding/status/error state;
+- create group;
+- search/select existing group;
+- paste/bind group id where operationally required;
+- explicit replace flow without deleting the old physical group;
+- participant synchronization;
+- client invitation/retry behavior;
+- operation/status history and reconciliation/error visibility.
+
+These are useful runtime/UX capabilities, not reasons to preserve the old ownership model.
+
+Target remains:
+
+```text
+Product + WORK/FINANCE purpose
+  -> Client/External Conversation
+  -> provider mapping
+```
+
+Existing Product/group relations migrate as `WORK`. FINANCE is not auto-created and falls back to WORK when no explicit FINANCE binding exists.
+
+## Client Messenger runtime
+
+The final separate provider-backed Client Messenger surface is not yet the completed target runtime.
+
+Do not preserve or rebuild a mixed `Internal | External` switch merely because historical UI/runtime existed.
+
+Target surface remains the separate Client Messenger defined by Master Canon and Decision Register.
+
+## WhatsApp Gateway
+
+The existing `neetrino/whatsapp-gateway` remains reusable transport/session infrastructure and already contains account-scoped sending, idempotency, group operations and inbound webhook foundations.
+
+NBOS must reuse/extend it rather than build a second WhatsApp gateway.
+
+## Finance / Support integration status
+
+Finance and Support business modules remain owners of their own state.
+
+End-to-end canonical Client Messenger delivery is implementation work:
+
+- Finance decides WHAT/WHEN to remind;
+- Messenger resolves WHERE through `FINANCE` with WORK fallback;
+- Support Ticket remains internal case management;
+- client-visible communication remains in Client Messenger.
+
+Do not treat partial/legacy direct provider paths as target architecture.
+
+## Latest-main rule before implementation
+
+Do **not** hard-code a commit-behind count in documentation. `main` can move while documentation is being reviewed.
+
+Before Slice 0 begins:
+
+1. implementation branch must be based on or synchronized with the latest `main`;
+2. Slice 0 must re-check any Messenger/Task/WhatsApp/Support/Finance/AI changes added since this static audit;
+3. any materially changed runtime fact must update `10-Messenger-Runtime-Reconciliation.md` and Slice 0 evidence.
+
+Recent `main` changes in the Product WhatsApp area are primarily useful UI/settings work and do not change the approved flexible-binding architecture. They must still be inspected fresh after synchronization.
+
+## Canon precedence
+
+This status file never defines target product behavior.
+
+Target product/architecture truth is:
+
+1. `00-Messenger-Master-Canon.md`;
+2. `08-Messenger-Decision-Register.md`;
+3. `09-Messenger-Cross-Module-Canon.md` for affected module boundaries.
+
+Migration/runtime implementation uses additionally:
+
 - `10-Messenger-Runtime-Reconciliation.md`;
 - `11-Messenger-Rebuild-Implementation-Checklist.md`;
 - `12-Messenger-Rebuild-Execution-Strategy.md`;
 - `90-Messenger-Final-Acceptance.md`.
 
-## Documentation stage completed
-
-The target canon, decision rationale, cross-module precedence, migration-safety rules, executable slice checklist, independent review strategy and final acceptance contract are documented on the rebuild documentation branch.
-
-No product/runtime implementation is claimed by this documentation stage.
-
-## Runtime facts already important for implementation
-
-Treat these as migration concerns, not reasons to preserve legacy architecture:
-
-- active Messenger API currently uses the legacy/simple Conversation/Message generation; it cannot be deleted before a deliberate canonical cutover;
-- the old Unified Messenger generation still exists in Prisma but is not the current Messenger service path; it must be inventoried and selectively migrated/removed, not blindly reactivated;
-- human Task Discussion has an existing separate `TaskDiscussionEntry` runtime/data path and must be migrated without losing authorship, ordering, replies, attachments, provenance or audit context;
-- current `ProductWhatsAppGroupBinding` hard-enforces the old 1:1 Product/group relationship and must be migrated additively to flexible `Product + purpose -> External Conversation` bindings;
-- existing Product/group relationships backfill as `WORK`; no FINANCE binding is auto-created;
-- Deal Won create/bind/error semantics should be reused and adapted to resolve WORK rather than rewritten from scratch;
-- the latest Product Settings existing-group search/select/replace UX should also be reused/adapted rather than discarded;
-- `neetrino/whatsapp-gateway` already provides reusable transport/account/send/inbound-webhook foundations and must be reused/extended;
-- end-to-end Finance reminder -> canonical Messenger/WhatsApp delivery is **new integration work**, not a completed current runtime that should be preserved as source of truth;
-- Finance business rules decide WHAT/WHEN to remind, while the new Messaging resolver decides WHERE (`FINANCE`, fallback `WORK`);
-- old wording that says to store a returned WhatsApp group id directly on Product is legacy relative to the new NBOS binding model.
-
 ## Next step before product code changes
 
-1. synchronize the implementation branch with latest `main`;
-2. start **Slice 0 — Baseline, inventory and migration safety** from `11-Messenger-Rebuild-Implementation-Checklist.md` in a fresh implementation context;
-3. inspect actual current schema/code/data/environment counts and update `10-Messenger-Runtime-Reconciliation.md` if any runtime fact differs materially from the recorded baseline;
+1. synchronize implementation branch with latest `main`;
+2. start **Slice 0 — Baseline, inventory and migration safety** in a fresh implementation context;
+3. inspect actual schema/code/data/environment state;
 4. produce Slice 0 evidence;
-5. run an independent reviewer before Slice 1 begins.
+5. run independent review;
+6. begin Slice 1 only after Slice 0 is `VERIFIED`.
 
-Do not reintroduce old L1/L2/Topics implementation merely because historical schema/data artifacts remain in the repository.
+No production Messenger rebuild implementation is claimed by this documentation stage.
