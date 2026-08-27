@@ -12,12 +12,14 @@ import {
   type WhatsAppAvailableGroup,
 } from '@/lib/api/whatsapp';
 import { isWhatsAppCreateInFlight } from '@/features/crm/whatsapp-create-status';
+import { cn } from '@/lib/utils';
 import {
   loadProductWhatsAppSettings,
   nextProductWhatsAppSettingsState,
 } from '../product-whatsapp-settings';
 import { ProductWhatsAppActionGrid } from './ProductWhatsAppActionGrid';
 import { ProductWhatsAppBindControls } from './ProductWhatsAppBindControls';
+import { ProductWhatsAppNavTrigger } from './ProductWhatsAppNavTrigger';
 import { ProductWhatsAppOperationHistory } from './ProductWhatsAppOperationHistory';
 import { ProductWhatsAppStatusCard } from './ProductWhatsAppStatusCard';
 import { WA_HEADER_ICON_WRAP } from './product-whatsapp-settings-ui';
@@ -26,12 +28,17 @@ interface ProductSettingsSheetProps {
   productId: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Open control style. Default is the page settings gear. */
+  triggerVariant?: 'default' | 'tab' | 'inline';
+  className?: string;
 }
 
 export function ProductSettingsSheet({
   productId,
   open: openProp,
   onOpenChange,
+  triggerVariant = 'default',
+  className,
 }: ProductSettingsSheetProps) {
   const [localOpen, setLocalOpen] = useState(false);
   const [state, setState] = useState<ProductWhatsAppState | null>(null);
@@ -104,7 +111,18 @@ export function ProductSettingsSheet({
             <WhatsAppBrandIcon className="size-7" />
           </span>
         }
-        triggerAriaLabel="Product settings"
+        triggerAriaLabel="WhatsApp"
+        renderTrigger={
+          triggerVariant === 'default'
+            ? undefined
+            : (props) => (
+                <ProductWhatsAppNavTrigger
+                  {...props}
+                  variant={triggerVariant}
+                  className={cn(props.className, className)}
+                />
+              )
+        }
         open={openProp}
         onOpenChange={handleOpenChange}
       >

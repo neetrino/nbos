@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useState, type ComponentPropsWithRef, type ReactElement } from 'react';
 import { Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,13 +13,20 @@ import {
 } from '@/components/ui/sheet';
 import { PAGE_SETTINGS_SHEET_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
 
+type SheetTriggerRenderProps = ComponentPropsWithRef<'button'>;
+
 export interface PageSettingsSheetProps {
   title: string;
   description?: string;
   /** Optional icon or mark shown before the sheet title. */
-  titleLeading?: ReactNode;
+  titleLeading?: React.ReactNode;
+  /**
+   * Custom open control. Receives SheetTrigger props to spread onto the interactive element.
+   * Defaults to the outline settings icon button.
+   */
+  renderTrigger?: (props: SheetTriggerRenderProps) => ReactElement;
   triggerAriaLabel?: string;
-  children: ReactNode;
+  children: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
@@ -29,6 +36,7 @@ export function PageSettingsSheet({
   title,
   description,
   titleLeading,
+  renderTrigger,
   triggerAriaLabel = 'Page settings',
   children,
   open: openProp,
@@ -48,19 +56,24 @@ export function PageSettingsSheet({
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger
-        render={(props) => (
-          <Button
-            {...props}
-            type="button"
-            variant="outline"
-            size="icon-sm"
-            aria-label={triggerAriaLabel}
-            title={triggerAriaLabel}
-            className={props.className}
-          >
-            <Settings className="size-4" aria-hidden />
-          </Button>
-        )}
+        render={(props) => {
+          if (renderTrigger) {
+            return renderTrigger(props);
+          }
+          return (
+            <Button
+              {...props}
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              aria-label={triggerAriaLabel}
+              title={triggerAriaLabel}
+              className={props.className}
+            >
+              <Settings className="size-4" aria-hidden />
+            </Button>
+          );
+        }}
       />
       <SheetContent
         side="right"
