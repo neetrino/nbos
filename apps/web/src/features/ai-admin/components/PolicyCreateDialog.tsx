@@ -133,7 +133,10 @@ export function PolicyCreateDialog(props: {
           <Button
             type="button"
             disabled={
-              !name.trim() || !primaryId || (mode === 'PRIMARY_FALLBACK' && !fallbackId) || submitting
+              !name.trim() ||
+              !primaryId ||
+              (mode === 'PRIMARY_FALLBACK' && !fallbackId) ||
+              submitting
             }
             onClick={() => void submit()}
           >

@@ -69,21 +69,18 @@ function AiAdminSectionHeader(props: {
     </div>
   );
 
-  const summaryBadge =
-    props.summary ? (
-      <StatusBadge
-        label={props.summary}
-        variant={props.summaryVariant ?? 'default'}
-        className="shrink-0"
-      />
-    ) : null;
+  const summaryBadge = props.summary ? (
+    <StatusBadge
+      label={props.summary}
+      variant={props.summaryVariant ?? 'default'}
+      className="shrink-0"
+    />
+  ) : null;
 
   return (
     <header className={AI_ADMIN_SECTION_HEADER_CLASS}>
       {props.collapsible ? (
-        <CollapsibleTrigger
-          className="-mx-1 flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-left outline-none select-none"
-        >
+        <CollapsibleTrigger className="-mx-1 flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-left outline-none select-none">
           {identity}
           <span className="ml-auto flex shrink-0 items-center gap-2">
             {summaryBadge}

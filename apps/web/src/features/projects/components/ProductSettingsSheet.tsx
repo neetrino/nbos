@@ -17,6 +17,10 @@ import {
   isWhatsAppCreateInFlight,
   whatsappCreateButtonLabel,
 } from '@/features/crm/whatsapp-create-status';
+import {
+  loadProductWhatsAppSettings,
+  nextProductWhatsAppSettingsState,
+} from '../product-whatsapp-settings';
 import { ProductWhatsAppBindControls } from './ProductWhatsAppBindControls';
 import { ProductWhatsAppOperationHistory } from './ProductWhatsAppOperationHistory';
 
@@ -38,6 +42,8 @@ export function ProductSettingsSheet({
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState('');
+  const [gatewayConfigured, setGatewayConfigured] = useState(false);
+  const [gatewayNotice, setGatewayNotice] = useState<string | null>(null);
   const sheetOpen = openProp ?? localOpen;
 
   const handleOpenChange = useCallback(
@@ -51,13 +57,17 @@ export function ProductSettingsSheet({
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const [nextState, available] = await Promise.all([
-        productWhatsAppApi.getState(productId),
-        productWhatsAppApi.availableGroups(productId, search || undefined),
-      ]);
-      setState(nextState);
-      setGroups(available.groups);
-      setSelectedGroupId(available.currentGroupChatId ?? '');
+      const snapshot = await loadProductWhatsAppSettings(productId, search || undefined);
+      setState((previous) => nextProductWhatsAppSettingsState(previous, snapshot.state));
+      setGroups(snapshot.groups);
+      setSelectedGroupId((previous) => snapshot.selectedGroupId || previous);
+      setGatewayConfigured(snapshot.gatewayConfigured);
+      setGatewayNotice(snapshot.gatewayNotice);
+      if (snapshot.stateError && !snapshot.state) {
+        toast.error(getApiErrorMessage(snapshot.stateError, 'Could not load WhatsApp settings.'));
+      } else if (snapshot.gatewayNotice) {
+        toast.error(snapshot.gatewayNotice);
+      }
     } catch (error) {
       toast.error(getApiErrorMessage(error, 'Could not load WhatsApp settings.'));
     } finally {
@@ -100,6 +110,14 @@ export function ProductSettingsSheet({
             <h3 className="text-foreground mb-2 text-sm font-semibold tracking-tight">
               WhatsApp group
             </h3>
+            {gatewayNotice ? (
+              <p
+                role="status"
+                className="border-border bg-muted/40 text-foreground mb-2 rounded-lg border px-3 py-2 text-sm"
+              >
+                {gatewayNotice}
+              </p>
+            ) : null}
             {loading && !state ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : (
@@ -158,6 +176,7 @@ export function ProductSettingsSheet({
               className="justify-start"
               disabled={
                 busy ||
+                !gatewayConfigured ||
                 status === 'ACTIVE' ||
                 isWhatsAppCreateInFlight(status) ||
                 isWhatsAppCreateInFlight(state?.latestOperation?.status)
@@ -178,7 +197,7 @@ export function ProductSettingsSheet({
               type="button"
               variant="outline"
               className="justify-start"
-              disabled={busy || status !== 'ACTIVE'}
+              disabled={busy || !gatewayConfigured || status !== 'ACTIVE'}
               onClick={() =>
                 void run(() => productWhatsAppApi.sync(productId), 'Participant sync queued')
               }
@@ -189,7 +208,7 @@ export function ProductSettingsSheet({
               type="button"
               variant="outline"
               className="justify-start"
-              disabled={busy || status !== 'ACTIVE'}
+              disabled={busy || !gatewayConfigured || status !== 'ACTIVE'}
               onClick={() =>
                 void run(
                   () => productWhatsAppApi.clientInvite(productId),
@@ -203,7 +222,7 @@ export function ProductSettingsSheet({
               type="button"
               variant="outline"
               className="justify-start"
-              disabled={busy || status !== 'ACTIVE'}
+              disabled={busy || !gatewayConfigured || status !== 'ACTIVE'}
               onClick={() => {
                 if (
                   !window.confirm(
@@ -232,6 +251,7 @@ export function ProductSettingsSheet({
             onSelectedGroupIdChange={setSelectedGroupId}
             currentGroupChatId={binding?.groupChatId}
             busy={busy}
+            gatewayConfigured={gatewayConfigured}
             run={run}
           />
 

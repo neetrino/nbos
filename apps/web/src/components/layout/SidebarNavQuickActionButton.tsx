@@ -37,11 +37,7 @@ export function SidebarNavQuickActionButton({ onAction }: SidebarNavQuickActionB
       className={SIDEBAR_NAV_QUICK_ACTION_BUTTON_CLASS}
       onClick={(event) => stopSidebarNavQuickActionClick(event, onAction)}
     >
-      <Plus
-        size={SIDEBAR_NAV_QUICK_ACTION_ICON_SIZE_PX}
-        strokeWidth={2.25}
-        aria-hidden
-      />
+      <Plus size={SIDEBAR_NAV_QUICK_ACTION_ICON_SIZE_PX} strokeWidth={2.25} aria-hidden />
     </button>
   );
 }

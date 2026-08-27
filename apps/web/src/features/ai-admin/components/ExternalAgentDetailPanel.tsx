@@ -176,7 +176,12 @@ function ExternalAgentLifecycleActions(props: {
           </Button>
         ) : null}
         {canEnableExternalAgent(props.state) ? (
-          <Button type="button" size="sm" variant="outline" onClick={() => props.onConfirm('enable')}>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => props.onConfirm('enable')}
+          >
             Re-enable
           </Button>
         ) : null}
