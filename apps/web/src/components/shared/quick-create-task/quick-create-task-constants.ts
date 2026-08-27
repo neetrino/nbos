@@ -5,13 +5,12 @@ export const QUICK_CREATE_TASK_DIALOG_CLASS =
 /** Minimal top/right inset — Bitrix-style header alignment. */
 export const QUICK_CREATE_TASK_BODY_CLASS = 'min-w-0 w-full px-3 pb-4 pt-1 sm:px-4 sm:pt-1';
 
-/** Bleeds into body padding so title + icons hug the top-right corner. */
-export const QUICK_CREATE_TASK_TITLE_ROW_CLASS =
-  'relative -mr-3 -mt-1 min-w-0 w-full pr-[3.25rem] sm:-mr-4 sm:pr-[3.75rem]';
+/** Title row — flex keeps long titles from overlapping header actions. */
+export const QUICK_CREATE_TASK_TITLE_ROW_CLASS = 'flex min-w-0 w-full items-start gap-3 sm:gap-4';
 
-/** Slightly inset from the right edge (Bitrix flame alignment). */
+/** Header actions sit at the right edge with a slight inset from the dialog padding. */
 export const QUICK_CREATE_TASK_HEADER_ICONS_CLASS =
-  'absolute top-0 right-3 z-10 flex items-center gap-2.5 sm:right-4 sm:gap-3';
+  'flex shrink-0 items-center gap-2.5 self-start -mr-0.5 sm:gap-3 sm:-mr-1';
 
 export const TASK_PRIORITY_FLAME_ICON_SIZE = 22;
 
@@ -31,7 +30,7 @@ export const TASK_PRIORITY_FLAME_FILLED_CLASS = 'fill-current text-orange-500';
 
 /** Title textarea — grows with wrapped lines (Bitrix-style). */
 export const QUICK_CREATE_TASK_TITLE_INPUT_CLASS =
-  'text-foreground caret-foreground py-0 text-2xl leading-snug font-normal placeholder:text-2xl placeholder:text-muted-foreground/60';
+  'text-foreground caret-foreground py-0 text-xl leading-snug font-normal placeholder:text-xl placeholder:text-muted-foreground/60';
 
 export const QUICK_CREATE_TASK_DESCRIPTION_INPUT_CLASS =
   'text-foreground mt-0 text-sm leading-relaxed placeholder:text-muted-foreground/60';

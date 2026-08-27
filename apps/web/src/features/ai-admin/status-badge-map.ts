@@ -8,3 +8,12 @@ export function agentStateVariant(state: string): StatusVariant {
   if (state === 'DISCOVERED' || state === 'DRAFT') return 'blue';
   return 'gray';
 }
+
+export function executionStatusVariant(status: string): StatusVariant {
+  if (status === 'SUCCEEDED') return 'emerald';
+  if (status === 'FAILED') return 'red';
+  if (status === 'RATE_LIMITED') return 'amber';
+  if (status === 'STARTED') return 'blue';
+  if (status === 'CANCELLED') return 'gray';
+  return 'gray';
+}

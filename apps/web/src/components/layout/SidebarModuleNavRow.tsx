@@ -109,11 +109,12 @@ function ParentModuleNavRow({
 }) {
   if (collapsed) {
     return (
-      <li>
+      <li className="relative z-[1]">
         <Link
           href={firstChildHref}
           onClick={onExpandOnly}
           title={item.label}
+          data-sidebar-nav-active={isActive ? 'true' : undefined}
           className={navLinkClass(isActive, collapsed, muted)}
         >
           <SidebarModuleMarker moduleKey={item.key} visible={isActive} />
@@ -124,11 +125,12 @@ function ParentModuleNavRow({
   }
 
   return (
-    <li>
+    <li className="relative z-[1]">
       <div
+        data-sidebar-nav-active={isActive ? 'true' : undefined}
         className={cn(
-          'group relative flex w-full items-stretch overflow-hidden rounded-md transition-colors',
-          isActive ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-muted',
+          'group relative flex w-full items-center overflow-hidden rounded-md transition-colors',
+          isActive ? 'text-sidebar-foreground' : 'text-sidebar-muted',
         )}
       >
         <SidebarModuleMarker moduleKey={item.key} visible={isActive} />
@@ -184,10 +186,11 @@ function LeafModuleNavRow({
   const quickAction = item.quickAction;
   if (!quickAction || !onQuickAction || collapsed) {
     return (
-      <li>
+      <li className="relative z-[1]">
         <Link
           href={moduleHref}
           title={item.label}
+          data-sidebar-nav-active={isActive ? 'true' : undefined}
           className={navLinkClass(isActive, collapsed, muted)}
         >
           <SidebarModuleMarker moduleKey={item.key} visible={isActive} />
@@ -199,16 +202,18 @@ function LeafModuleNavRow({
   }
 
   return (
-    <li>
+    <li className="relative z-[1]">
       <div
+        data-sidebar-nav-active={isActive ? 'true' : undefined}
         className={cn(
-          'group relative flex w-full items-stretch overflow-hidden rounded-md transition-colors',
+          'group relative flex w-full items-center overflow-hidden rounded-md transition-colors',
           isActive
-            ? 'bg-sidebar-accent text-sidebar-foreground'
+            ? 'text-sidebar-foreground'
             : 'text-sidebar-muted hover:bg-secondary/50 hover:text-sidebar-foreground',
           muted && !isActive && 'opacity-60',
         )}
       >
+        <SidebarModuleMarker moduleKey={item.key} visible={isActive} />
         <Link
           href={moduleHref}
           title={item.label}
@@ -217,7 +222,6 @@ function LeafModuleNavRow({
             isActive ? 'text-sidebar-foreground' : 'hover:text-sidebar-foreground',
           )}
         >
-          <SidebarModuleMarker moduleKey={item.key} visible={isActive} />
           <SidebarModuleIcon moduleKey={item.key} active={isActive} muted={muted} />
           <span className="truncate">{item.label}</span>
         </Link>
@@ -286,7 +290,7 @@ function navLinkClass(active: boolean, collapsed: boolean, muted: boolean): stri
     'group relative flex items-center gap-2 rounded-md text-[13px] font-medium transition-colors duration-150',
     SIDEBAR_NAV_ITEM_CLASS,
     active
-      ? 'bg-sidebar-accent text-sidebar-foreground'
+      ? 'text-sidebar-foreground'
       : 'text-sidebar-muted hover:bg-secondary/50 hover:text-sidebar-foreground',
     muted && !active && 'opacity-60',
     collapsed && 'justify-center px-1.5 py-1',

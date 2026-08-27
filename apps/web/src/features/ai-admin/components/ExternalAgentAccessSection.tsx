@@ -50,6 +50,8 @@ export function ExternalAgentCapabilitiesSection(props: AccessProps) {
       title="Capabilities"
       description="Task delete and force-complete are not grantable."
       summary={`${activeCaps.size} of ${catalog.catalog.length} granted`}
+      collapsible
+      defaultOpen
     >
       <AiAdminCapabilityGrantList
         catalog={catalog.catalog}

@@ -34,6 +34,7 @@ export function AiAdminOverviewPanel() {
   }
   const data = query.data;
   const activityItems = asActivityItems(data.recentActivity);
+  const hasAttentionItems = data.attention.length > 0;
 
   return (
     <div className={AI_ADMIN_PAGE_STACK_CLASS}>
@@ -63,13 +64,13 @@ export function AiAdminOverviewPanel() {
 
       <div className={AI_ADMIN_OVERVIEW_SECONDARY_CLASS}>
         <AiAdminSection
-          icon={AlertTriangle}
-          title="Needs attention"
-          summary={data.attention.length === 0 ? 'All clear' : `${data.attention.length}`}
+          icon={hasAttentionItems ? AlertTriangle : ShieldCheck}
+          title={hasAttentionItems ? 'Needs attention' : 'All clear'}
+          summary={hasAttentionItems ? `${data.attention.length}` : undefined}
           collapsible
-          defaultOpen={data.attention.length > 0}
+          defaultOpen={hasAttentionItems}
         >
-          {data.attention.length === 0 ? (
+          {!hasAttentionItems ? (
             <p className="text-muted-foreground text-sm leading-relaxed">
               No disabled, revoked, or expired agents or connections.
             </p>

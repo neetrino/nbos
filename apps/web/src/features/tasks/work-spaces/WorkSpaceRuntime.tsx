@@ -115,6 +115,7 @@ export function WorkSpaceRuntime({
     handleMyPlanReorder,
     handleDeadlineMove,
     handleDeadlineReorder,
+    handleDueDateChange,
     handleAddTaskInColumn,
     handleQuickCreateTask,
     setQuickCreateColumnKey,
@@ -238,11 +239,12 @@ export function WorkSpaceRuntime({
       <TaskMiniCard
         task={task}
         onAction={handleCardAction}
+        onDueDateChange={handleDueDateChange}
         onClick={handleTaskClick}
         hideWorkspaceContext
       />
     ),
-    [handleCardAction, handleTaskClick],
+    [handleCardAction, handleDueDateChange, handleTaskClick],
   );
 
   const renderBoard = () => {

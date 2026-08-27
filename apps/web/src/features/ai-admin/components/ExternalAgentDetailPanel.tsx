@@ -160,37 +160,44 @@ function ExternalAgentLifecycleActions(props: {
   onReload: () => Promise<void>;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex w-full flex-wrap items-center gap-2">
       {props.canExtend ? (
         <ExpiryExtendInput agentId={props.agentId} onReload={props.onReload} />
       ) : null}
-      {props.state === 'ACTIVE' ? (
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => props.onConfirm('disable')}
-        >
-          Disable
-        </Button>
-      ) : null}
-      {canEnableExternalAgent(props.state) ? (
-        <Button type="button" size="sm" variant="outline" onClick={() => props.onConfirm('enable')}>
-          Re-enable
-        </Button>
-      ) : null}
-      {!props.revoked ? (
-        <Button
-          type="button"
-          size="sm"
-          variant="destructive"
-          onClick={() => props.onConfirm('revoke')}
-        >
-          Revoke agent
-        </Button>
-      ) : (
-        <span className="text-muted-foreground text-xs">Revoked permanently</span>
-      )}
+      <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+        {props.state === 'ACTIVE' ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => props.onConfirm('disable')}
+          >
+            Disable
+          </Button>
+        ) : null}
+        {canEnableExternalAgent(props.state) ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => props.onConfirm('enable')}
+          >
+            Re-enable
+          </Button>
+        ) : null}
+        {!props.revoked ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="destructive"
+            onClick={() => props.onConfirm('revoke')}
+          >
+            Revoke agent
+          </Button>
+        ) : (
+          <span className="text-muted-foreground text-xs">Revoked permanently</span>
+        )}
+      </div>
     </div>
   );
 }

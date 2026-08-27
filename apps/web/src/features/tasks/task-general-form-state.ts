@@ -38,7 +38,7 @@ export function createTaskGeneralDraft(task: Task): TaskGeneralDraft {
     description: task.description,
     status: normalizeTaskStatusForDraft(task.status),
     priority: task.priority,
-    dueDate: formatDueDateInput(task.dueDate),
+    dueDate: formatTaskDueDatePickerValue(task.dueDate),
     creatorId: task.creator.id,
     creatorLabel: formatEmployeeDisplayName(task.creator.firstName, task.creator.lastName),
     creatorAvatar: task.creator.avatar?.trim() || null,
@@ -150,7 +150,7 @@ export function isTaskGeneralDirty(a: TaskGeneralDraft, b: TaskGeneralDraft): bo
 }
 
 /** `datetime-local` value for {@link NbosDatePicker} mode="datetime". */
-function formatDueDateInput(value: string | null): string {
+export function formatTaskDueDatePickerValue(value: string | null): string {
   if (!value) return '';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';

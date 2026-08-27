@@ -1,18 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowRight, Route } from 'lucide-react';
+import { ArrowRight, Plus, Route } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import {
@@ -27,15 +18,13 @@ import {
   AI_ADMIN_PAGE_STACK_CLASS,
 } from '../ai-admin-ui.constants';
 import { productionEligibleModels } from '../model-catalog-groups';
-import { applySelectValue } from '../select-value';
 import { agentStateVariant } from '../status-badge-map';
-import { AI_ADMIN_POLICY_MODES, type AiAdminPolicyMode } from '../constants';
 import { shortId } from '../format';
 import { DisableImpactConfirm } from './DisableImpactConfirm';
 import { AiAdminPageToolbar } from './AiAdminPageToolbar';
 import { AiAdminSection } from './AiAdminSection';
 import { PolicyCandidateEditor } from './PolicyCandidateEditor';
-import { ModelSelect } from './PolicyModelSelect';
+import { PolicyCreateDialog } from './PolicyCreateDialog';
 
 export function ModelPolicyPanel() {
   const [policies, setPolicies] = useState<AiModelPolicyView[]>([]);
@@ -43,6 +32,7 @@ export function ModelPolicyPanel() {
   const [connections, setConnections] = useState<AiProviderConnectionView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
   const [pendingDisable, setPendingDisable] = useState<AiModelPolicyView | null>(null);
 
   const load = useCallback(async () => {
@@ -77,13 +67,29 @@ export function ModelPolicyPanel() {
       <AiAdminPageToolbar
         icon={Route}
         description="Phase 1 modes: FIXED and PRIMARY_FALLBACK. Candidates may come from different providers. TIERED and ADAPTIVE are not available."
+        actions={
+          <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" aria-hidden />
+            Create policy
+          </Button>
+        }
       />
-      <PolicyCreateForm eligible={eligible} onCreated={() => void load()} />
+      <PolicyCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        eligible={eligible}
+        onCreated={() => void load()}
+      />
       {policies.length === 0 ? (
         <EmptyState
           icon={Route}
           title="No Model Policies"
           description="Create a FIXED or PRIMARY_FALLBACK policy from production-eligible models."
+          action={
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              Create policy
+            </Button>
+          }
         />
       ) : (
         policies.map((policy) => (
@@ -167,97 +173,6 @@ export function ModelPolicyPanel() {
         }}
       />
     </div>
-  );
-}
-
-function PolicyCreateForm(props: { eligible: AiModelView[]; onCreated: () => void }) {
-  const [name, setName] = useState('');
-  const [mode, setMode] = useState<AiAdminPolicyMode>('FIXED');
-  const [primaryId, setPrimaryId] = useState('');
-  const [fallbackId, setFallbackId] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  const submit = async () => {
-    const candidates =
-      mode === 'FIXED'
-        ? [{ modelId: primaryId, role: 'PRIMARY' as const, priority: 0 }]
-        : [
-            { modelId: primaryId, role: 'PRIMARY' as const, priority: 0 },
-            { modelId: fallbackId, role: 'FALLBACK' as const, priority: 10 },
-          ];
-    setSubmitting(true);
-    try {
-      await aiAdminApi.createPolicy({ name: name.trim(), mode, candidates });
-      setName('');
-      setPrimaryId('');
-      setFallbackId('');
-      props.onCreated();
-    } catch {
-      toast.error('Policy create failed. Use only ACTIVE models.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <AiAdminSection icon={Route} title="Create policy">
-      <div className="space-y-3">
-        <div className="grid gap-3 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="policy-name">Name</Label>
-            <Input
-              id="policy-name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Mode</Label>
-            <Select
-              value={mode}
-              onValueChange={(value) =>
-                applySelectValue(value, (next) => setMode(next as AiAdminPolicyMode))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {AI_ADMIN_POLICY_MODES.map((item) => (
-                  <SelectItem key={item} value={item}>
-                    {item}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <ModelSelect
-            label="Primary model"
-            value={primaryId}
-            onChange={setPrimaryId}
-            models={props.eligible}
-          />
-          {mode === 'PRIMARY_FALLBACK' ? (
-            <ModelSelect
-              label="Fallback model"
-              value={fallbackId}
-              onChange={setFallbackId}
-              models={props.eligible}
-            />
-          ) : null}
-        </div>
-        <Button
-          type="button"
-          size="sm"
-          disabled={
-            !name.trim() || !primaryId || (mode === 'PRIMARY_FALLBACK' && !fallbackId) || submitting
-          }
-          onClick={() => void submit()}
-        >
-          Create
-        </Button>
-      </div>
-    </AiAdminSection>
   );
 }
 
