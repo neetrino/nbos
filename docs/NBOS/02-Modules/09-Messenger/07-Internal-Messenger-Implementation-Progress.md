@@ -39,6 +39,28 @@ The presence of old Unified Prisma tables does **not** prove that their database
 
 The final provider-backed Client Messenger surface is not yet implemented as the target runtime.
 
+## Latest-main note before implementation
+
+At the end of the documentation pass, `docs/messenger-rebuild-canon` was 4 commits behind then-current `main`. Those newer commits include Product WhatsApp Settings work, notably:
+
+- existing-group search/select UI;
+- paste/bind group id controls;
+- explicit replace confirmation;
+- preservation of the old physical WhatsApp group when replacing a Product binding;
+- tests/helpers around Product WhatsApp settings.
+
+This is **useful runtime to REUSE/EXTEND**, not a change to the approved flexible-binding target.
+
+The current UI still operates around one Product binding/current `groupChatId`. Slice 9 must preserve the useful search/select/replace UX while changing the domain/storage target to:
+
+```text
+Product + WORK/FINANCE purpose -> External Conversation
+```
+
+Before Slice 0 begins, the implementation branch must be based on or synchronized with the latest `main`. Slice 0 then re-checks any Messenger/Task/WhatsApp/Support/Finance changes added since this documentation audit.
+
+Do not start product implementation from a stale documentation branch snapshot.
+
 ## Important rule
 
 This document records implementation/runtime status only. It must not be used to derive the target Messenger architecture.
@@ -74,6 +96,7 @@ Treat these as migration concerns, not reasons to preserve legacy architecture:
 - current `ProductWhatsAppGroupBinding` hard-enforces the old 1:1 Product/group relationship and must be migrated additively to flexible `Product + purpose -> External Conversation` bindings;
 - existing Product/group relationships backfill as `WORK`; no FINANCE binding is auto-created;
 - Deal Won create/bind/error semantics should be reused and adapted to resolve WORK rather than rewritten from scratch;
+- the latest Product Settings existing-group search/select/replace UX should also be reused/adapted rather than discarded;
 - `neetrino/whatsapp-gateway` already provides reusable transport/account/send/inbound-webhook foundations and must be reused/extended;
 - end-to-end Finance reminder -> canonical Messenger/WhatsApp delivery is **new integration work**, not a completed current runtime that should be preserved as source of truth;
 - Finance business rules decide WHAT/WHEN to remind, while the new Messaging resolver decides WHERE (`FINANCE`, fallback `WORK`);
@@ -81,10 +104,10 @@ Treat these as migration concerns, not reasons to preserve legacy architecture:
 
 ## Next step before product code changes
 
-Start **Slice 0 — Baseline, inventory and migration safety** from `11-Messenger-Rebuild-Implementation-Checklist.md` in a fresh implementation context.
-
-Slice 0 must inspect actual current schema/code/data/environment counts and update `10-Messenger-Runtime-Reconciliation.md` if any runtime fact differs materially from the recorded baseline.
-
-After Slice 0 implementation evidence is complete, an independent reviewer must verify it before Slice 1 begins.
+1. synchronize the implementation branch with latest `main`;
+2. start **Slice 0 — Baseline, inventory and migration safety** from `11-Messenger-Rebuild-Implementation-Checklist.md` in a fresh implementation context;
+3. inspect actual current schema/code/data/environment counts and update `10-Messenger-Runtime-Reconciliation.md` if any runtime fact differs materially from the recorded baseline;
+4. produce Slice 0 evidence;
+5. run an independent reviewer before Slice 1 begins.
 
 Do not reintroduce old L1/L2/Topics implementation merely because historical schema/data artifacts remain in the repository.
