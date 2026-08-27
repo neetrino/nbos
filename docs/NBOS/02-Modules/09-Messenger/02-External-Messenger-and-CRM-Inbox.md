@@ -31,7 +31,10 @@ Possible filters include:
 - Needs response;
 - Assigned to me/team;
 - channel/provider;
-- lifecycle/routing state.
+- lifecycle/routing state;
+- communication purpose where useful, for example FINANCE.
+
+Inbox is a view over canonical Client conversations. It is not a second message store.
 
 ### Sales
 
@@ -169,7 +172,7 @@ For a genuinely new Product, a new Product binding is created. It may point to a
 
 ---
 
-## 6. Finance destination resolver
+## 6. Finance destination resolver and finance communication
 
 Finance, Subscription and Client Services must not send to a raw WhatsApp `groupChatId` stored on Product.
 
@@ -194,12 +197,38 @@ Typical purpose mapping:
 | Event | Purpose |
 | --- | --- |
 | Subscription payment reminder | `FINANCE` |
-| Invoice payment reminder | `FINANCE` |
-| Hosting/domain/client-service payment reminder | `FINANCE` |
+| Invoice/payment reminder | `FINANCE` |
+| Hosting/domain payment reminder | `FINANCE` |
+| Maintenance/client-service payment reminder | `FINANCE` |
+| Other approved automatic payment reminder | `FINANCE` |
 | Development/QA/maintenance operational message | `WORK` |
 | Manual normal Product communication | `WORK` |
 
 Advanced per-service overrides are not required for v1 unless a real business case appears.
+
+### Automatic reminder vs manual FINANCE conversation
+
+These are two different operations:
+
+```text
+Automatic FINANCE reminder
+  = Finance/Subscription business rule triggers a system outbound message
+
+Manual FINANCE conversation
+  = authorized Employees communicate normally in a Client conversation
+```
+
+The automatic reminder does not require a human participant to press Send. Manual communication always follows Client Messenger READ/SEND permissions and locked-composer rules.
+
+A dedicated FINANCE group is a full Client conversation, not merely a notification sink.
+
+If there is no dedicated FINANCE group, automatic FINANCE messages go to WORK through the fallback rule. The client reply then remains in that same WORK conversation; the system does not fabricate a second Finance history.
+
+If there is a dedicated FINANCE group, reminders and replies remain in that FINANCE conversation.
+
+### Why
+
+Most clients use one working group for both operational and financial communication, while a smaller group of enterprise clients explicitly separates finance. The resolver supports both without forcing every Product to own two physical WhatsApp groups.
 
 ---
 
@@ -336,6 +365,26 @@ They are not required to be identical.
 Example: an Employee may read/respond through NBOS according to company policy without becoming a newly inferred Product owner; conversely, adding a Product binding does not silently invite every Product developer into the client conversation.
 
 Suggested defaults can be derived from Product team, PM, Sales, Finance or Support role/routing, but effective access is always resolved through Messenger permissions.
+
+### Dedicated FINANCE conversation default
+
+When a separate FINANCE client group/conversation is configured, the default Neetrino-side participant/access template is:
+
+- Owner;
+- CEO;
+- Finance Director;
+- relevant Seller;
+- relevant Product PM.
+
+Seller and PM are resolved from the relevant Product/business context; they are not one globally hard-coded person.
+
+Developers and other Product employees are **not** automatically added to a dedicated FINANCE conversation. Additional participants can be invited explicitly when required.
+
+Physical WhatsApp participant membership and NBOS READ/SEND permissions still remain separate. A person appearing in the default business template does not bypass effective authorization rules.
+
+### Why
+
+A separate FINANCE group exists primarily for clients who want payment/financial discussion isolated from their operational employees and, correspondingly, from unnecessary operational/development participants on the Neetrino side.
 
 ---
 
