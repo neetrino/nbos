@@ -16,6 +16,8 @@ import { PAGE_SETTINGS_SHEET_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/sha
 export interface PageSettingsSheetProps {
   title: string;
   description?: string;
+  /** Optional icon or mark shown before the sheet title. */
+  titleLeading?: ReactNode;
   triggerAriaLabel?: string;
   children: ReactNode;
   open?: boolean;
@@ -26,6 +28,7 @@ export interface PageSettingsSheetProps {
 export function PageSettingsSheet({
   title,
   description,
+  titleLeading,
   triggerAriaLabel = 'Page settings',
   children,
   open: openProp,
@@ -67,8 +70,15 @@ export function PageSettingsSheet({
         className="flex flex-col gap-0 data-[side=right]:w-[85vw] sm:max-w-md sm:data-[side=right]:w-full"
       >
         <SheetHeader className="border-border border-b pb-4">
-          <SheetTitle>{title}</SheetTitle>
-          {description ? <SheetDescription>{description}</SheetDescription> : null}
+          <div className="flex items-center gap-3">
+            {titleLeading ? (
+              <div className="flex shrink-0 self-stretch items-stretch">{titleLeading}</div>
+            ) : null}
+            <div className="min-w-0 space-y-1">
+              <SheetTitle>{title}</SheetTitle>
+              {description ? <SheetDescription>{description}</SheetDescription> : null}
+            </div>
+          </div>
         </SheetHeader>
         <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-4">{children}</div>
       </SheetContent>
