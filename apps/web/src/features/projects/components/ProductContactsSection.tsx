@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { User } from 'lucide-react';
 import { RelationPickerField } from '@/components/shared';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
 import {
   useContactRelationSearch,
   useRelationPickerActions,
@@ -22,8 +23,17 @@ import {
 interface ProductContactsSectionProps {
   product: FullProduct;
   onProductUpdated: (product: FullProduct) => void;
+  /** When set, title + compact search share one header row. */
+  headerTitle?: string;
   className?: string;
 }
+
+const CONTACTS_HEADER_SEARCH_CLASS = 'w-[55%] max-w-[55%] shrink-0';
+const CONTACTS_HEADER_SEARCH_PLACEHOLDER = 'Search…';
+const CONTACTS_HEADER_TITLE_CLASS = cn(
+  DETAIL_SHEET_SECTION_TITLE_CLASS,
+  'mb-0 shrink-0 text-xs',
+);
 
 function buildContactCards(
   product: FullProduct,
@@ -47,6 +57,7 @@ function buildContactCards(
 export function ProductContactsSection({
   product,
   onProductUpdated,
+  headerTitle,
   className,
 }: ProductContactsSectionProps) {
   const [draft, setDraft] = useState<ProductContactsDraft>(() =>
@@ -116,22 +127,36 @@ export function ProductContactsSection({
 
   useRegisterRelationCreated(handleRelationCreated);
 
+  const searchField = (
+    <RelationPickerField
+      label=""
+      entityKind="contact"
+      multiple
+      selectionDisplay="none"
+      value={draft.contactIds}
+      selectionLabels={draft.contactLabels}
+      placeholder={
+        headerTitle ? CONTACTS_HEADER_SEARCH_PLACEHOLDER : 'Search or create contact…'
+      }
+      icon={<User size={12} />}
+      disabled={saving}
+      onSearch={contactSearch}
+      onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
+      className={headerTitle ? CONTACTS_HEADER_SEARCH_CLASS : undefined}
+      {...contactsPicker}
+    />
+  );
+
   return (
     <div className={cn('flex flex-col gap-3', saving && 'opacity-70', className)}>
-      <RelationPickerField
-        label=""
-        entityKind="contact"
-        multiple
-        selectionDisplay="none"
-        value={draft.contactIds}
-        selectionLabels={draft.contactLabels}
-        placeholder="Search or create contact…"
-        icon={<User size={12} />}
-        disabled={saving}
-        onSearch={contactSearch}
-        onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
-        {...contactsPicker}
-      />
+      {headerTitle ? (
+        <div className="flex items-center justify-between gap-2">
+          <p className={CONTACTS_HEADER_TITLE_CLASS}>{headerTitle}</p>
+          {searchField}
+        </div>
+      ) : (
+        searchField
+      )}
       {contactCards.length > 0 ? (
         <div className="grid grid-cols-2 gap-2">
           {contactCards.map((contact) => (

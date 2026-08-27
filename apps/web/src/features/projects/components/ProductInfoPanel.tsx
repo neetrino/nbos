@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Calendar, CalendarPlus, FolderKanban, Layers, User, Wallet } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
 import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
-import { ProductParticipantsSection } from '@/features/platform-access/components/ProductParticipantsSection';
 import { getProductDeliveryStageBadgeDisplay } from '@/features/projects/constants/delivery-stage-display';
 import { getProductType } from '@/features/projects/constants/projects';
 import {
@@ -53,7 +53,7 @@ export function ProductInfoPanel({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-sm font-semibold">About product</h2>
+          <h2 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0 text-xs')}>About product</h2>
           <p className="text-muted-foreground mt-0.5 truncate text-xs font-medium">
             {productType?.label ?? product.productType}
             <span className="mx-1.5 opacity-40">·</span>
@@ -150,10 +150,6 @@ export function ProductInfoPanel({
               value={new Date(product.createdAt).toLocaleDateString()}
             />
           </OverviewMetaGrid>
-        </DetailInfoSubsection>
-
-        <DetailInfoSubsection title="Product team" className="mt-4 pt-6">
-          <ProductParticipantsSection productId={product.id} embedded />
         </DetailInfoSubsection>
       </div>
     </aside>
