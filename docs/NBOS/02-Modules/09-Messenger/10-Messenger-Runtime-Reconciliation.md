@@ -1,10 +1,10 @@
 # Messenger Runtime Reconciliation and Migration Safety
 
-> Status: **required implementation precondition**.
+> Status: **required implementation precondition — static reconciliation completed; Slice 0 must refresh against latest `main` + real DB counts before product code changes**.
 >
 > Product truth: `00-Messenger-Overview.md` + `08-Messenger-Decision-Register.md`.
 >
-> This document describes how the approved Messenger canon must be reconciled with already existing runtime/data. It is not permission to redesign the canon to match legacy code.
+> This document reconciles the approved Messenger canon with the runtime that already exists. It does not redesign the canon to match legacy implementation.
 
 ## 1. Core rule
 
@@ -15,35 +15,35 @@ Canon wins for target behavior.
 Existing production data/runtime wins for migration safety.
 ```
 
-Therefore implementation follows:
+Implementation therefore follows:
 
 ```text
-EXPAND / ADD COMPATIBLE PATH
+EXPAND
   -> INVENTORY
   -> BACKFILL / MAP
-  -> VERIFY PARITY
+  -> VERIFY
   -> COMPATIBILITY WINDOW
-  -> CUT OVER WRITES/READS
+  -> CUT OVER WRITES
+  -> CUT OVER READS
   -> OBSERVE
-  -> REMOVE LEGACY ONLY LAST
+  -> FREEZE LEGACY
+  -> DELETE LEGACY LAST
 ```
 
-**Why:** the Messenger rebuild changes several already-used relationships. A drop-first rewrite could lose discussion history, break Deal Won/WhatsApp behavior, duplicate provider groups, or make existing Products unable to resolve their client communication.
-
-Destructive migration is forbidden until the relevant slice has independent review evidence and the cleanup gate allows it.
+Destructive migration is forbidden until the responsible slice has independent review evidence and its cleanup gate is satisfied.
 
 ---
 
 ## 2. Reconciliation classifications
 
-Use only these labels when inspecting current code/schema:
+Use these labels:
 
 - `REUSE` — existing runtime already satisfies the target contract.
-- `EXTEND` — keep existing behavior and add target capability around it.
-- `MIGRATE` — existing working data/runtime must move to a new canonical model.
-- `NEW` — target capability does not materially exist yet.
-- `DELETE-LATER` — legacy data/code remains temporarily for safe cutover, then is removed only after verification.
-- `VERIFY/MISSING` — documentation or previous inspection suggests something, but current runtime was not confirmed strongly enough to treat as implemented.
+- `EXTEND` — preserve working behavior and add canonical capability.
+- `MIGRATE` — working data/runtime must move to another canonical shape.
+- `NEW` — target capability materially does not exist yet.
+- `DELETE-LATER` — legacy code/data remains during compatibility and is removed only after verified cutover.
+- `VERIFY/MISSING` — a claim was not proven strongly enough against current runtime/data.
 
 A reviewer must reject any slice that silently treats `VERIFY/MISSING` as `REUSE`.
 
@@ -51,260 +51,313 @@ A reviewer must reject any slice that silently treats `VERIFY/MISSING` as `REUSE
 
 ## 3. Fresh verified runtime baseline
 
-This section records facts verified directly against current repository runtime before implementation planning.
+### 3.1 Active Internal Messenger runtime is still legacy Channels + Direct Messages
 
-### 3.1 Active Messenger runtime uses the legacy/simple models
-
-Current API module:
+Current active API path includes:
 
 ```text
-apps/api/src/modules/messenger/messenger.module.ts
 apps/api/src/modules/messenger/messenger.service.ts
+apps/api/src/modules/messenger/messenger.gateway.ts
 ```
 
-The active service reads/writes the existing simple models such as:
+The active service currently reads/writes these Prisma models:
 
 ```text
-Conversation
-ConversationMember
-Message
-ChatFile
-ChatMessageRead
-ChatMessageReaction
-...
+MessengerChannel
+MessengerChannelMessage
+MessengerChannelMessageAttachment
+MessengerChannelReadState
+
+MessengerDirectThread
+MessengerDirectMessage
+MessengerDirectMessageAttachment
+MessengerDirectThreadReadState
 ```
 
-It uses Prisma paths such as `prisma.conversation`, `prisma.conversationMember`, `prisma.message` and related legacy/simple tables.
+Observed Prisma calls include:
 
-**Verified conclusion:** these models are the current active Messenger runtime and cannot be deleted or ignored during the rebuild.
+```text
+prisma.messengerChannel
+prisma.messengerChannelMessage
+prisma.messengerDirectThread
+prisma.messengerDirectMessage
+prisma.messengerDirectThreadReadState
+```
 
-Classification: `REUSE + EXTEND`, with targeted migration only where the target contract cannot safely be expressed by the current model.
+Messages are persisted before Socket.IO emission. Existing ACL helpers, unread/read state, search and Drive-backed attachments are working primitives worth preserving.
 
-### 3.2 A second, older Unified Messenger schema also exists but is not the active service runtime
+Classification: `REUSE + EXTEND`, with migration where the canonical shared Core cannot safely be expressed by the current split Channel/DM stores.
 
-`packages/database/prisma/schema/messenger.prisma` also contains the previous additive Unified generation:
+**Important correction:** the active runtime is **not** a generic `Conversation / ConversationMember / Message / ChatFile` store. Any older reconciliation text describing those models as the current service path is stale.
+
+### 3.2 A second additive Unified schema exists, but it is not the active normal service path
+
+Current `packages/database/prisma/schema/messenger.prisma` also contains:
 
 ```text
 MessengerConversation
+MessengerConversationParticipant
 MessengerConversationLink
-MessengerConversationMember
-MessengerDirectKey
-MessengerTopic
-MessengerTopicMember
 MessengerMessage
-MessengerAsset
 MessengerMessageAttachment
-MessengerReadState
-MessengerThreadReadState
-MessengerFavorite
-MessengerCollection
-MessengerCollectionItem
-...
+MessengerConversationReadState
+MessengerUserConversationSetting
 ```
 
-This generation was designed around the earlier L1/L2/Project/Topic architecture. For example, the previous model includes a mandatory `projectId` on `MessengerConversation` and explicit Topic concepts.
+Current schema does **not** contain the old `MessengerTopic`, `MessengerTopicMember`, `MessengerCollection`, `MessengerCollectionItem`, `MessengerFavorite`, `MessengerDirectKey` model set, and `MessengerConversation` does **not** have a mandatory `projectId` field.
 
-Current `MessengerService` is not using that generation as its normal active message path.
+The current Unified model already has useful concepts such as:
 
-**Verified conclusion:** do **not** reactivate these tables wholesale merely because they already exist.
+- canonical key;
+- direct participant pair;
+- participants;
+- entity links;
+- message replies;
+- Drive-backed attachments;
+- read state;
+- per-user pinned/muted/favorite settings.
 
-Classification: `MIGRATE / SELECTIVE REUSE / DELETE-LATER` after Slice 0 data inventory.
+However, the normal active `MessengerService` still uses Channels/DM tables. Therefore the mere existence of Unified tables does not prove they are production source of truth or that they contain no valuable historical rows.
 
-Before deleting them, Slice 0 must still verify real database row counts and any external foreign-key/reference use. “Not used by current service code” does not prove “contains no valuable rows”.
+Classification: `SELECTIVE REUSE / MIGRATE / DELETE-LATER`, subject to Slice 0 DB row inventory and runtime-reference search.
 
-### 3.3 There must not be a third Messenger generation
+### 3.3 Do not create a third permanent message store
 
-The target implementation must deliberately evolve/select one canonical runtime path. It must not leave:
+The rebuild must end with one canonical durable Messaging Core, not:
 
 ```text
-legacy Conversation/Message runtime
-+ old Unified Messenger tables
-+ new third Messenger store
+legacy Channel/DM stores
++ additive Unified store
++ new third store
 ```
 
-all as parallel writable message systems.
+If the Unified schema can be safely evolved to satisfy the new canon, prefer that over inventing another generation. If the active Channel/DM data must be moved into it, preserve stable legacy -> canonical identity mapping and prove parity before freezing legacy writes.
 
-**Why:** three message stores would make migration, search, read state, mobile sync and future maintenance substantially more dangerous than the current problem.
+### 3.4 Task Discussion is a real separate persistence path
 
-### 3.4 Task Discussion is a real separate runtime
-
-Current Tasks schema contains `TaskDiscussionEntry` and related discussion attachments/reply/provenance fields. Its schema documentation explicitly states that the human Task Discussion is Tasks-owned and Messenger is not involved.
-
-This means Task Discussion migration is **not UI wiring**. It is a real persistence migration.
-
-Classification: `MIGRATE`, then old write/storage path `DELETE-LATER`.
-
-### 3.5 Current WhatsApp Product binding hard-enforces the old 1:1 model
-
-Current WhatsApp schema contains `ProductWhatsAppGroupBinding` with, among other fields:
+Current `tasks.prisma` contains:
 
 ```text
-productId   @unique
-groupChatId @unique
+Task.chatId String? @unique
+TaskDiscussionEntry
 ```
 
-This encodes the old relationship:
+`TaskDiscussionEntry` currently stores:
 
 ```text
-1 Product <-> 1 physical WhatsApp group
+taskId
+body
+actorType
+actorId
+actorDisplayName
+channelSource?
+correlationId?
+visibility
+createdAt
 ```
 
-It cannot represent the approved flexible model where Website + SEO may share WORK and several Products may share FINANCE.
+Its schema comment explicitly says Tasks owns the discussion and Messenger is not involved. This conflicts with `M-TASK-01`.
 
-Classification: `MIGRATE`, then legacy binding/constraints `DELETE-LATER`.
+Classification: `MIGRATE`, then legacy discussion write/storage path `DELETE-LATER`.
 
-### 3.6 Deal Won has useful existing behavior
+**Important correction:** the current `TaskDiscussionEntry` schema itself does not expose reply fields, attachment fields or an edited timestamp. Slice 0 must still inspect service/UI/other linked tables before concluding those concepts are absent from real Task discussion behavior, but migration requirements must not claim unsupported schema fields as already present.
 
-Existing Product/Deal Won communication flow already has useful create/bind and provisioning/failure concepts. The target should preserve those business semantics while changing the destination model from Product-owned group to Product `WORK` binding.
+`Task.chatId` also requires explicit runtime investigation before reuse. Do not assume it already points to the desired canonical `MessengerConversation`.
+
+### 3.5 Current Product WhatsApp binding hard-enforces 1:1
+
+Current `whatsapp.prisma` has:
+
+```text
+ProductWhatsAppGroupBinding.productId   @unique
+ProductWhatsAppGroupBinding.groupChatId @unique
+```
+
+It also has useful operational state that must not be discarded:
+
+- binding status including `OUTCOME_UNKNOWN` / `NEEDS_RECONCILIATION`;
+- `WhatsAppGroupOperation` with a unique dedupe key;
+- participant synchronization state;
+- client invitation state;
+- provider request/error/result metadata.
+
+Classification: binding ownership model `MIGRATE`; operational semantics `REUSE + EXTEND`; old constraints/table `DELETE-LATER` after cutover.
+
+### 3.6 Latest `main` contains useful Product WhatsApp Settings UX
+
+At the end of this documentation pass, `docs/messenger-rebuild-canon` is 4 commits behind current `main`. Those commits include Product WhatsApp Settings improvements:
+
+- search/select an existing group;
+- paste a group id;
+- explicit replace confirmation;
+- replacement does not delete the old physical WhatsApp group;
+- supporting tests/helpers.
+
+This runtime remains based on one current Product binding / `groupChatId`, so it does not change the target architecture. It is reusable UX/behavior that Slice 9 should adapt to purpose-based WORK/FINANCE bindings instead of discarding.
+
+Before Slice 0 begins, the implementation branch must be synchronized with latest `main`.
+
+### 3.7 Deal Won flow contains reusable semantics
+
+Existing Product/Deal Won flow already has create/bind and failure/reconciliation concepts. Preserve those business semantics while changing destination ownership from one Product-owned group to Product `WORK` communication binding.
 
 Classification: `REUSE + EXTEND`.
 
-### 3.7 Client Messenger target surface is mostly new
+### 3.8 Client Messenger target surface is mostly new
 
-The completed separate Client Messenger surface described by canon does not currently exist as the final runtime. The old mixed/placeholder External route/switch must not dictate final product architecture.
+The final separate Client Messenger defined by Canon is not the current completed runtime. Do not preserve an old Internal/External switch merely because placeholder/existing UI exists.
 
-Classification: target Client surface `NEW`; conflicting old mixed UI `DELETE-LATER` after cutover.
+Classification: Client surface `NEW`; conflicting mixed UI `DELETE-LATER` after verified cutover.
 
-### 3.8 Finance -> Messenger/WhatsApp automatic delivery is not treated as completed runtime
+### 3.9 Finance -> canonical Client Messenger delivery is new integration
 
-Messenger/notifications/WhatsApp are still being completed. Existing Finance business logic must therefore be integrated into the new destination resolver rather than assumed to already have the canonical send path.
+Existing Finance/Subscription/Client Service logic still owns WHAT/WHEN to remind. Canonical Product-purpose destination resolution and durable Client Messenger delivery are not treated as completed runtime.
 
-Classification: `NEW integration`, while preserving existing Finance business rules that determine WHAT/WHEN should be reminded.
+Classification: `NEW integration` around existing finance business rules.
 
-### 3.9 Existing WhatsApp Gateway is reusable
+### 3.10 Existing WhatsApp Gateway is strongly reusable
 
-The separate `neetrino/whatsapp-gateway` already owns WhatsApp transport/session boundaries and has outbound plus inbound webhook/idempotency/routing foundations.
+Fresh review of `neetrino/whatsapp-gateway` confirms:
+
+- Gateway is a standalone transport/session service, not a Messenger UI;
+- Project-scoped tokens and multiple WhatsApp accounts exist;
+- account-scoped v1 send exists with `Idempotency-Key`;
+- MESSENGER accounts expose chat/history reads;
+- inbound WAHA events are designed for durable normalized Project webhook delivery;
+- webhook delivery is project-scoped and signed;
+- outbound idempotency has `PROCESSING / SUCCEEDED / FAILED / OUTCOME_UNKNOWN` semantics;
+- Gateway intentionally does not own NBOS Product/Finance/Support/ACL business context.
 
 Classification: `REUSE + EXTEND`.
 
-NBOS must not create a second gateway or move Product/Finance/Support/ACL business ownership into the transport service.
+Do not build a second gateway and do not move NBOS authorization or Product binding ownership into Gateway.
 
 ---
 
-## 4. Current reconciliation map
+## 4. Reconciliation map
 
 | Area | Classification | Required treatment |
 | --- | --- | --- |
-| Active `Conversation` / `Message` Messenger runtime | `REUSE/EXTEND` | Preserve working history/runtime. Evolve or migrate deliberately; never delete before canonical cutover. |
-| Old `MessengerConversation` / `MessengerTopic` Unified generation | `MIGRATE / SELECTIVE REUSE / DELETE-LATER` | Current service does not use it as active runtime. Inventory DB rows first; do not resurrect L1/L2 architecture. |
-| Mandatory Project/Topic assumptions from old Unified design | `DO NOT RETURN` | Target core must support Groups, Direct, standalone Work Spaces and Client conversations without fake mandatory Project root. |
-| Human Task Discussion (`TaskDiscussionEntry`) | `MIGRATE` | Preserve full history/provenance/files/replies while moving human discussion to Messaging Core. |
-| Task system Activity Feed | `REUSE` | Remains Task/system activity, not converted into human chat messages. |
-| Product + Connected Work Space separate conversation assumptions | `MIGRATE/RECONCILE` | Resolve both surfaces to one canonical internal Conversation. |
-| `ProductWhatsAppGroupBinding` hard 1:1 relation | `MIGRATE` | Replace with flexible purpose-based bindings; existing bindings backfill as `WORK`. |
-| Deal Won WhatsApp create/bind lifecycle | `REUSE/EXTEND` | Keep proven create/bind/failure/outcome semantics; target becomes Product `WORK` binding. |
-| Product Client Communication settings | `EXTEND/REPLACE` | Replace one raw group concept with WORK/FINANCE destinations and existing-group selection. |
-| Client Messenger external UI | `NEW/REPLACE` | Build separate Client surface; old mixed Internal/External experience is not target UX. |
-| Platform RBAC/entity access foundation | `REUSE/EXTEND` | Add conversation participation and external READ/SEND; do not invent a separate global ACL system. |
-| Support Ticket case workflow | `REUSE/EXTEND` | Keep SLA/case state; remove public client-composer semantics and link to canonical Client messages. |
-| Finance reminder -> Messenger/WhatsApp send path | `NEW integration` | Use FINANCE purpose resolver; do not implement raw Product group sends. |
-| WhatsApp Gateway transport/webhook infrastructure | `REUSE/EXTEND` | Keep Gateway as provider transport boundary; NBOS consumes it. |
-| Gateway/old docs saying “store returned group id on Product” | `LEGACY DOC / CHANGE` | Provider mapping belongs to External Conversation; Product links by purpose binding. |
-| Permanent Telegram ↔ NBOS chat bridge | `DO NOT BUILD` | One-time import only where needed; Telegram notifications remain separate. |
-| Old `NBOS-Messanger-App` schema/UI | `OPTIONAL REUSE` | Reuse visual components only if useful; do not constrain domain model to its old schema. |
+| Active `MessengerChannel` / Channel messages | `REUSE/EXTEND/MIGRATE` | Preserve history, ACL/read/search/file behavior; move deliberately into chosen Core if needed. |
+| Active `MessengerDirectThread` / Direct messages | `REUSE/EXTEND/MIGRATE` | Preserve DM identity/history/read state; map safely into canonical Direct conversation. |
+| Existing `MessengerConversation` generation | `SELECTIVE REUSE/MIGRATE/DELETE-LATER` | Evaluate as likely canonical foundation; inventory real rows/references first. |
+| Old L1/L2/Topic architecture | `DO NOT RETURN` | No mandatory Topic hierarchy. |
+| Current `favorite` user setting | `REUSE/EXTEND` | May seed built-in Favorites behavior; it is not a full Collection system. |
+| User-created Collections | `NEW` | Implement PERSONAL/SHARED, surface-scoped, ACL-neutral. |
+| Human `TaskDiscussionEntry` | `MIGRATE` | Move human discussion to Messaging Core; preserve actual existing provenance fields. |
+| `Task.chatId` | `VERIFY/MISSING` | Determine real meaning/references before reuse/removal. |
+| Task Activity Feed | `REUSE` | Remains system activity, not human Message rows. |
+| Product + Connected Work Space chat identity | `MIGRATE/RECONCILE` | Both surfaces must resolve one internal conversation. |
+| `ProductWhatsAppGroupBinding` 1:1 ownership | `MIGRATE` | Replace with Product + purpose -> External Conversation binding. |
+| WhatsApp operations/participant/invite/reconciliation states | `REUSE/EXTEND` | Preserve semantics across binding migration. |
+| Product settings select/paste/replace UX | `REUSE/EXTEND` | Adapt to WORK/FINANCE destinations. |
+| Deal Won group lifecycle | `REUSE/EXTEND` | Resolve/create Product WORK destination. |
+| Client Messenger UI | `NEW/REPLACE` | Separate Client product surface. |
+| Platform RBAC/entity access | `REUSE/EXTEND` | Add conversation membership and Client READ/SEND separation. |
+| Support case workflow | `REUSE/EXTEND` | Keep internal case state; link to canonical Client messages. |
+| Finance reminder destination/delivery | `NEW integration` | Resolve FINANCE, fallback WORK; no raw group id dependency. |
+| WhatsApp Gateway | `REUSE/EXTEND` | Keep transport/session/provider boundary. |
+| Permanent Telegram bridge | `DO NOT BUILD` | One-time migration only; notifications may remain. |
 
 ---
 
 ## 5. Canonical Messaging Core migration direction
 
-The exact Prisma model names may be chosen during implementation, but the final runtime must provide the concepts defined by the Canon:
+The final Core must provide:
 
-- canonical `Conversation` with strict `INTERNAL` or `CLIENT` zone/surface;
+- strict `INTERNAL` vs `CLIENT` conversation zone/surface;
+- canonical durable Conversation + Message;
 - participants/membership;
-- canonical `Message`;
 - read state;
-- `ConversationLink`/equivalent entity linking;
-- `MessageReference`/equivalent source-message linking;
+- entity links;
+- source message references;
 - Drive File Asset attachments;
-- external provider account/mapping/event/delivery concepts;
+- provider account/conversation mapping + delivery/event state;
 - Product communication bindings;
-- Collections/settings.
+- Collections/settings;
+- database-first persistence with realtime as transport.
 
-### Preferred direction
+### Preferred technical direction
 
-Prefer evolving the currently active message path where it can safely satisfy the new contract instead of copying all active messages into a third store only to obtain cleaner table names.
+Evaluate the existing `MessengerConversation` generation first as the likely foundation because it already provides participants, links, message replies, read state and settings. Extend it only where Canon requires capabilities it lacks.
 
-If new canonical tables are necessary, migration must include stable legacy -> canonical identity mapping and a clear end-state where only one durable message store remains writable.
+Do not decide this from schema names alone. Slice 0 must prove:
 
-### Temporary dual-write rule
+- actual row counts;
+- whether any production code still writes/reads it;
+- whether previous migrations/backfills populated it;
+- whether Channel/DM -> Unified identity mapping already exists;
+- whether it can be evolved without destructive conflict.
 
-Dual-write is allowed only when a migration genuinely requires it.
+If another approach is chosen, the reviewer must explicitly prove why it does not create a third durable store.
 
-If used:
+### Dual-write rule
 
-- one side must be declared authoritative;
-- operations must be idempotent;
-- divergence must be measurable;
-- compatibility duration must be finite;
-- removal gate must be recorded before enabling dual-write.
+Dual-write is temporary only. If required:
+
+- declare the authoritative side;
+- make writes idempotent;
+- measure divergence;
+- define a finite compatibility window;
+- define the removal gate before enabling it.
 
 Permanent dual-write is forbidden.
 
 ---
 
-## 6. Task Discussion migration — mandatory safe sequence
+## 6. Task Discussion migration
 
-### Target
+Target: human Task Discussion uses Messaging Core (`M-TASK-01`); Task Activity remains separate (`M-TASK-02`).
 
-Human Task discussion becomes a Messaging Core Conversation embedded in Task Card (`M-TASK-01`). Task Activity remains separate (`M-TASK-02`).
+### Preserve what actually exists
 
-### Existing risk
-
-`TaskDiscussionEntry` is a real separate discussion system with more than visible text.
-
-Preserve at minimum:
+At minimum, map:
 
 - Task association;
-- author / actor identity;
-- body/content;
-- created/edited timestamps and ordering;
-- reply relationships;
-- attachments/File Asset references;
-- AI/system provenance where present;
-- audit/activity relationships where present;
-- stable migration/source identity.
+- body;
+- `actorType`;
+- `actorId`;
+- `actorDisplayName`;
+- `channelSource`;
+- `correlationId`;
+- visibility;
+- original `createdAt`;
+- stable legacy source identity.
 
-### Migration sequence
+If Slice 0 finds replies, files, edit history, AI/audit links or other discussion-related records elsewhere in runtime, include them in the migration contract before backfill.
 
-1. **EXPAND** — add/confirm canonical Task Conversation support and legacy-source mapping.
-2. **INVENTORY** — count Tasks with discussions, entries, replies, attachments and AI provenance.
-3. **BACKFILL** — for Tasks that actually have discussion, create/reuse exactly one Task Conversation and map each legacy entry to a canonical Message.
-4. Preserve original authorship/timestamps/replies/attachments/provenance.
-5. Make backfill idempotent and safely rerunnable.
-6. **VERIFY** — compare per-Task source/migrated counts and representative content topology.
-7. Verify permissions and Task Card rendering against the new path.
-8. **CUTOVER WRITES** — new human Task messages go only through Messaging Core.
-9. **CUTOVER READS** — Task Card reads the canonical conversation.
-10. **OBSERVE** — verify Activity, notifications, files, AI context and search.
-11. Disable old Task discussion writes.
-12. Mark old table/service `DELETE-LATER`.
-13. Remove legacy storage only after independent migration evidence/final cleanup gate.
+### Safe sequence
 
-### Hard prohibitions
+1. Inventory `Task.chatId`, Tasks with discussion and `TaskDiscussionEntry` rows.
+2. Add/confirm canonical lazy Task Conversation support + legacy source mapping.
+3. Backfill only Tasks that actually have human discussion.
+4. Map each legacy entry idempotently.
+5. Preserve original actor/provenance/timestamp/visibility fields.
+6. Verify per-Task counts/order/content/provenance.
+7. Verify Task access controls against direct Messenger conversation access.
+8. Switch new human writes to Messaging Core.
+9. Switch Task Card reads to Messaging Core.
+10. Observe search/notifications/AI context/file behavior as applicable.
+11. Freeze legacy discussion writes.
+12. Keep table `DELETE-LATER` until final cleanup gate.
 
-- no drop/recreate migration;
-- no permanent second Task comments source of truth;
-- no copying only visible `body` while losing replies/files/provenance;
-- no eager creation of empty conversations for every Task;
-- no conversion of human discussion into system Activity Feed.
+Hard prohibitions:
 
-**Why:** Task discussions contain real execution decisions. Losing authorship, order, files or provenance is business-data loss even if text appears to have migrated.
+- drop-first migration;
+- eager empty Task conversations;
+- converting Activity records into human messages;
+- fabricating migration fields that do not exist;
+- deleting `TaskDiscussionEntry` before parity is proven.
 
 ---
 
-## 7. Product WhatsApp binding migration — hard 1:1 -> flexible bindings
-
-### Existing model
-
-Current `ProductWhatsAppGroupBinding` combines Product ownership and provider group identity and enforces uniqueness on both Product and physical group.
-
-Do **not** solve the new requirement by merely deleting one `@unique` constraint and continuing to use the same conceptual model.
+## 7. Product WhatsApp binding migration
 
 ### Target
 
 ```text
 External Conversation
-  -> ExternalConversationMapping(provider account + physical chat id)
+  -> provider mapping (account + provider chat id)
 
 ProductCommunicationBinding
   -> productId
@@ -314,455 +367,363 @@ ProductCommunicationBinding
 
 Rules:
 
-- one active WORK destination per Product;
-- zero or one explicit FINANCE destination per Product;
-- FINANCE absent -> resolver falls back to WORK;
-- one External Conversation may serve many Products;
-- provider identity remains unique at provider mapping level;
-- Product binding is context, not Employee permission.
+- exactly one active WORK destination per Product;
+- zero/one explicit FINANCE destination;
+- FINANCE absent -> WORK fallback;
+- one External Conversation may serve multiple Products;
+- provider chat identity is unique at provider mapping layer;
+- Product binding does not grant Employee access.
 
-### Safe migration sequence
+### Safe sequence
 
-1. **EXPAND** — add canonical External Conversation/provider mapping and Product purpose binding while legacy binding remains intact.
-2. **INVENTORY** — count legacy bindings, invalid/orphan rows and physical provider identities.
-3. For each physical provider group, create/reuse exactly one canonical External Conversation/provider mapping.
-4. For every legacy Product binding, create one canonical `WORK` binding to that same physical conversation.
-5. Preserve provider/account/group identity and relevant provisioning/status/title/invite/error history.
-6. Record legacy binding -> canonical mapping.
-7. Do **not** auto-create FINANCE rows for existing Products. Their FINANCE behavior is fallback to WORK.
-8. **VERIFY** — every valid legacy Product resolves WORK to the same physical WhatsApp group as before.
-9. Verify no physical group is accidentally represented by multiple canonical External Conversations.
-10. Introduce one resolver such as `resolveClientDestination(productId, purpose)`.
-11. Adapt Product settings and Deal Won reads/writes to canonical WORK/FINANCE binding model.
-12. Enable selecting an existing allowed External Conversation for another Product.
-13. Verify shared WORK and shared FINANCE scenarios.
-14. Move Finance/Subscription/Client Service business sends to purpose resolver.
-15. Search/observe for remaining raw Product `groupChatId` business sends.
-16. Disable legacy binding writes.
-17. Mark legacy table/constraints `DELETE-LATER`.
-18. Destructive cleanup only after parity, cutover and independent acceptance.
+1. Add External Conversation/provider mapping + Product purpose binding while legacy binding remains.
+2. Inventory bindings, statuses, group ids, operations, participants, invitations and invalid/orphan states.
+3. Create/reuse exactly one provider mapping per physical group/account identity.
+4. Backfill every valid legacy Product binding as WORK.
+5. Do not auto-create FINANCE bindings.
+6. Preserve/relink operation, participant, invite and reconciliation history required for audit/runtime continuity.
+7. Verify every existing Product resolves WORK to the same physical WhatsApp group as before.
+8. Introduce one central resolver such as `resolveClientDestination(productId, purpose)`.
+9. Adapt Product Settings select/paste/create/replace UX to WORK/FINANCE.
+10. Adapt Deal Won to WORK.
+11. Move Finance/Subscription/Client Service sends to purpose resolver.
+12. Verify shared WORK and shared FINANCE groups.
+13. Freeze legacy binding writes.
+14. Keep old table/constraints `DELETE-LATER` until final acceptance.
 
-### Constraint rule
-
-Target uniqueness belongs at the correct layers:
+Correct target uniqueness:
 
 ```text
-(providerAccount, providerConversationId) -> one provider mapping
-(productId, purpose, active)              -> one active destination
-externalConversationId                   -> NOT unique across Products
+(providerAccountId, providerConversationId) -> unique provider mapping
+(productId, purpose)                        -> one active canonical destination
+externalConversationId                     -> reusable across Products
 ```
 
-### Rollback rule
-
-Before destructive cleanup, rollback must be possible without re-creating any physical WhatsApp group. Leave legacy relationship readable during the compatibility window and switch application paths if rollback is needed.
-
-### Idempotency rule
-
-New create/bind operation identity must include purpose and intended operation/target. `OUTCOME_UNKNOWN` must never trigger blind creation of another physical group.
-
-**Why:** physical WhatsApp groups are external resources. Duplicating or losing their identity during schema migration is substantially harder to repair than a local relational row.
+Never retry `OUTCOME_UNKNOWN` by blindly creating another physical group or sending a duplicate message.
 
 ---
 
-## 8. Deal Won migration rule
+## 8. Deal Won rule
 
-Keep the useful existing business semantics:
+Keep:
 
-- explicit create or bind/select;
-- visible provisioning/failure/outcome state;
-- provider/Gateway failure does not incorrectly roll back successful Deal/Product business state once communication provisioning has been attempted/recorded according to the existing flow;
-- Extension does not automatically create a new physical client group.
+- create group / bind existing group;
+- visible provisioning/failure/reconciliation state;
+- safe treatment of provider `OUTCOME_UNKNOWN`;
+- Product/Deal business success independent from blindly rolling back an uncertain external side effect;
+- Extension not automatically creating a new physical client group.
 
-Change ownership target only:
+Change target ownership:
 
 ```text
-OLD: Product owns one WhatsApp group
-NEW: Deal Won resolves Product WORK communication binding
+OLD: Product owns one physical group binding
+NEW: Deal Won resolves/creates Product WORK destination
 ```
 
-Normal Deal Won should not force a FINANCE group. Separate FINANCE configuration is optional and can be done later.
-
-**Migration guardrail:** do not delete the old binding path in the same deployment that first backfills existing Product WORK destinations.
+FINANCE remains optional and configurable later.
 
 ---
 
-## 9. FINANCE communication and automatic reminders
+## 9. Finance communication
 
-All automatic payment-related reminders use business purpose `FINANCE`, including approved:
+Finance/Subscriptions/Client Services decide WHAT and WHEN.
 
-- invoice/payment reminders;
-- subscriptions;
-- hosting/domain payments;
-- maintenance/client-service payments;
-- other automatic money/payment reminders.
-
-Target call semantics:
+Messaging decides WHERE and records delivery/history:
 
 ```text
-Finance/Subscription business logic decides WHAT + WHEN
+business rule
   -> resolveClientDestination(productId, FINANCE)
-  -> explicit FINANCE conversation when configured
-  -> otherwise Product WORK conversation
-  -> Messaging Core durable outbound
-  -> provider adapter / Gateway
+  -> explicit FINANCE if configured
+  -> otherwise WORK
+  -> canonical Client Message
+  -> durable outbound operation
+  -> Gateway account/provider mapping
 ```
 
-Finance/Subscription/Client Services must not know a raw Product WhatsApp `groupChatId` after cutover.
+After cutover, business modules must not depend on raw Product `groupChatId`.
 
-### Automatic vs manual communication
-
-These are separate concepts:
-
-```text
-Automatic reminder
-= system business rule creates outbound FINANCE message
-
-Manual FINANCE chat
-= authorized Employee communicates in a normal Client Conversation
-```
-
-Client reply remains in the physical conversation that received the reminder.
-
-If FINANCE is absent, reminder/reply live in WORK; the system must not fabricate a second Finance history.
-
-If FINANCE exists, reminder/reply live in that FINANCE conversation.
-
-### Dedicated FINANCE default access template
-
-Default Neetrino-side business participants/access recommendation:
-
-- Owner;
-- CEO;
-- Finance Director;
-- relevant Seller;
-- relevant Product PM.
-
-Seller and PM are resolved from context, not hard-coded globally. Developers and other Product employees are not automatically added.
-
-Effective Client READ/SEND authorization still wins over templates.
-
-**Why:** dedicated FINANCE groups exist specifically for clients who want financial discussion separated from operational employees; the Neetrino-side access model should preserve the same separation.
+Automatic reminders and normal human Finance chat are separate mechanisms but remain in the same resolved Client conversation history.
 
 ---
 
-## 10. WhatsApp Gateway reconciliation
+## 10. Gateway boundary
 
-The existing `neetrino/whatsapp-gateway` remains the provider transport boundary.
+Gateway owns:
 
-Reuse existing account/session/send/inbound webhook/idempotency/routing foundations rather than creating another WhatsApp service.
+- WhatsApp account/session;
+- WAHA boundary;
+- provider send;
+- provider-side idempotency/outcome state;
+- normalized inbound delivery to Project webhook;
+- provider chat/history transport capability.
 
-NBOS target responsibilities:
+NBOS owns:
 
-- canonical conversation/history;
+- canonical message history;
 - Product bindings;
-- Employee permissions;
+- Employee access/SEND permissions;
 - attention routing;
 - CRM/Support/Finance links;
 - AI policy/context;
-- durable outbound orchestration.
+- durable business-side outbound orchestration.
 
-Gateway responsibilities:
-
-- WhatsApp session/provider transport;
-- normalized inbound event delivery;
-- provider send API;
-- provider-side identifiers/statuses/health.
-
-Any old instruction to “store returned WhatsApp group id directly on Product” is legacy and must become:
-
-```text
-provider chat id
-  -> ExternalConversationMapping
-  -> Client Conversation
-  -> ProductCommunicationBinding(s)
-```
-
-Changing NBOS storage must not require recreating existing Gateway sessions or physical WhatsApp groups.
+NBOS must consume the existing Gateway contract rather than recreate WAHA/session logic.
 
 ---
 
 ## 11. Internal vs Client surface migration
 
-The shared core does not permit a shared unsafe product surface.
-
-Migration rules:
-
-- preserve reusable Internal channel/DM history/primitives;
-- build Client Messenger as separate route/entry/navigation;
-- do not evolve the old mixed `Internal | External` switch into final architecture;
-- Client composer remains locked until explicit authorized `Reply to client` activation;
-- server SEND authorization is mandatory;
-- Internal route cannot dispatch external provider send;
-- Collections are surface-scoped in API/domain validation, not only hidden in UI.
-
-Old mixed UI is `DELETE-LATER` after new routes/navigation are verified.
+- preserve reusable Internal history/primitives;
+- build Client Messenger as a separate route/entry/navigation surface;
+- Client composer starts locked;
+- explicit authorized `Reply to client` unlocks only the current conversation working session;
+- changing conversation relocks it;
+- server SEND authorization remains mandatory;
+- no Internal/Public toggle;
+- Internal APIs cannot dispatch external provider sends;
+- Collections are zone-scoped server-side.
 
 ---
 
 ## 12. Product + Connected Work Space reconciliation
 
-Product and its Connected Work Space must converge on one canonical internal Conversation.
+Product and its mandatory Connected Work Space must resolve the same internal conversation.
 
-Safe sequence:
+Before relinking:
 
-1. identify existing Product/Workspace chat identities and links;
-2. detect duplicates before changing links;
-3. when only one side contains real history, make/reuse it as canonical and link both entities;
-4. when both sides contain real history, preserve both histories with source provenance or require explicit/manual mapping if automated merge is ambiguous;
-5. update Product `Chat` and Work Space `Discussion` to resolve the same `conversationId`;
-6. make ensure/creation race-safe so two independent entry points cannot create duplicate conversations.
+1. inventory current Product/Workspace chat identifiers;
+2. inspect `Task.chatId` and any other reused chat-id conventions separately;
+3. detect duplicate conversations/history;
+4. preserve both histories if both contain real data;
+5. link Product and Work Space to one chosen canonical conversation;
+6. make ensure/create race-safe.
 
-Never discard one side merely to satisfy the one-conversation invariant.
+Never discard a history-bearing conversation solely to satisfy the one-conversation invariant.
 
 ---
 
-## 13. Permissions and access reconciliation
+## 13. Permissions
 
-Reuse NBOS platform/project/product access foundation. Add Messenger-specific effective access:
-
-- direct conversation membership/invite;
-- entity-derived defaults where appropriate;
-- surface/zone enforcement;
-- external `READ` and `SEND` separately;
-- management/manual overrides according to platform policy.
-
-### Critical distinction
+Effective access is not the same thing as business binding:
 
 ```text
 ConversationLink / ProductCommunicationBinding
-= business context
 != Employee authorization
 ```
 
-Adding SEO Product to Website client group must not silently give all SEO developers permission to read/send in that client conversation.
+Required controls:
 
-### Required negative tests
+- Internal access through platform/entity/conversation policy;
+- Client READ separated from SEND;
+- explicit invite can be read-only;
+- Shared Collection never grants access;
+- Product binding never grants access;
+- attention ownership never grants access;
+- management override remains explicit/auditable.
 
-- Client READ without SEND cannot send via API.
-- Employee without Client READ cannot open external history.
-- adding Product binding does not expand participant access implicitly;
-- Shared Collection does not grant conversation access;
-- Internal conversation cannot acquire external provider send path through malformed request.
-
----
-
-## 14. Support reconciliation
-
-Support Ticket remains an internal case-management entity.
-
-Target:
-
-```text
-Client Message(s)
-  -> stable reference to Ticket
-  -> Ticket SLA/category/coverage/assignee/resolution
-  -> linked Task(s) for execution
-  -> client communication through Client Messenger
-```
-
-Remove/disable any final UI/runtime assumption where one Ticket composer toggles between Public and Internal send modes.
-
-Historical Support data is preserved; the communication boundary changes, not the existence of Ticket business state.
+Negative tests must include forged API/UI attempts, not only hidden buttons.
 
 ---
 
-## 15. Message reference migration rule
+## 14. Support
 
-Canonical source message is not copied into several independent stores.
+Support Ticket remains internal case management:
 
-Target:
+- category/priority/SLA/coverage;
+- assignee;
+- resolution;
+- links to canonical Client messages;
+- linked Tasks.
 
-```text
-Message(s)
-  -> reference from internal forwarded context
-  -> Task source reference
-  -> Ticket source reference
-  -> Deal source reference
-```
-
-`Create Task` remains a full human Task creation workflow. Selected messages provide context; Task title/description/assignee/entity links remain real Task fields. Future AI may propose those fields with human confirmation.
+Client continues communicating in Client Messenger. Do not build a Ticket-level Public/Internal composer toggle.
 
 ---
 
-## 16. Collections reconciliation
+## 15. Message references
 
-Old Unified schema contains Favorite/Collection concepts, but those tables belong to the previous Messenger generation and are not automatically canonical merely because their names are useful.
+Source message remains canonical.
 
-Slice 0 must inspect row counts/real use.
+Task/Ticket/Deal/forward workflows use stable references to one or more source messages. `Create Task` opens the real Task creation flow; selected messages are context, not an automatic final Task body.
 
-Target rules remain:
+References must preserve authorization when opening/previewing source context.
 
-- separate Internal and Client Collections;
-- Favorites is built-in personal Collection;
-- PERSONAL/SHARED collections;
-- one conversation may belong to several Collections;
-- shared collection never grants chat access;
-- no cross-surface collection mixing.
+---
 
-If old collection tables are empty/test-only, prefer implementing against the chosen canonical runtime without reviving old L1/L2 dependencies.
+## 16. Collections
+
+Current schema has a per-user `favorite` flag in `MessengerUserConversationSetting`, but no current user-created Collection models.
+
+Therefore:
+
+- Favorites primitive may be reused/migrated;
+- PERSONAL/SHARED Collections are `NEW` domain/runtime work;
+- one conversation may belong to multiple Collections;
+- Collections are strictly Internal or Client;
+- Shared Collection membership never changes ACL.
+
+Do not revive removed Topic/L1/L2 architecture to obtain grouping.
 
 ---
 
 ## 17. Data migration standards
 
-Every data-bearing slice must follow these rules.
+Every data-bearing slice must:
 
-### Additive first
+- inventory real rows/dependencies;
+- add schema before destructive change;
+- use idempotent/rerunnable backfill;
+- preserve legacy identity mapping;
+- verify source/target counts and orphans;
+- verify authors/timestamps/provenance where applicable;
+- verify attachment/reference/provider identity integrity where applicable;
+- define rollback before cutover;
+- freeze old writes before deleting old storage.
 
-Deploy new structures before deleting old ones.
-
-### Inventory real data
-
-Code inspection is not enough. Before destructive work, measure relevant database rows and dependencies.
-
-### Backfill must be operationally safe
-
-Backfills must be:
-
-- idempotent;
-- resumable/rerunnable;
-- observable;
-- safe after partial failure;
-- able to report migrated/skipped/failed counts.
-
-### Preserve identity
-
-When rows move stores, keep stable source mapping such as `legacySourceType` + `legacySourceId` or an equivalent migration mapping.
-
-### Verify before cutover
-
-As applicable, verify:
-
-- source vs target counts;
-- orphan records;
-- duplicate records;
-- reply/thread topology;
-- attachment integrity;
-- authors/timestamps;
-- AI/audit provenance;
-- participant/access integrity;
-- provider identity uniqueness;
-- Product WORK/FINANCE resolution.
-
-### Avoid long-lived dual-write
-
-Dual-write is temporary only. Define authority, divergence checks and removal gate before enabling it.
-
-### Contract later
-
-Drop old table/field/constraint only after new reads/writes are live, migration parity passes and rollback/observation requirements are satisfied.
+Code inspection alone is not enough for destructive migration approval.
 
 ---
 
-## 18. Deployment and rollback discipline
+## 18. Deployment / rollback discipline
 
-For risky migrations prefer separate deploys:
+Prefer:
 
 ```text
-Deploy A — expand schema + compatibility code
-Deploy B — backfill + verify
-Deploy C — switch writes/reads
+Deploy A — additive schema + compatibility path
+Deploy B — backfill + verification
+Deploy C — write/read cutover
 Deploy D — cleanup after observation/review
 ```
 
-Do not bundle first cutover and destructive cleanup.
+Do not combine first cutover and irreversible cleanup.
 
-Before switching writes, document:
-
-- application rollback path;
-- whether old data remains readable;
-- how data written during compatibility window is reconciled;
-- provider-side consequences;
-- backup/restore point where required.
-
-External WhatsApp groups must never be recreated merely to make rollback/schema migration simpler.
+External WhatsApp groups must never be recreated just to simplify migration or rollback.
 
 ---
 
 ## 19. Cleanup gates
 
-No legacy production-relevant table/field/constraint may be deleted until:
+No production-relevant legacy table/field/constraint may be deleted until:
 
-- replacement schema/path exists;
-- backfill/mapping is verified;
-- new writes use target path;
-- representative reads/UI work;
+- replacement runtime exists;
+- backfill/mapping parity is proven;
+- new writes use canonical path;
+- reads/UI use canonical path;
 - negative/security tests pass;
-- search/static checks find no uncontrolled legacy writes;
-- rollback/backup procedure is recorded;
-- independent reviewer marks responsible slice `VERIFIED`;
-- deletion does not remove an active rollback dependency.
-
-Where risk is material, perform final acceptance before irreversible cleanup and make cleanup a separate reviewed change.
+- static/runtime search finds no uncontrolled old writes;
+- rollback/backup evidence exists;
+- independent reviewer marks the responsible slice `VERIFIED`;
+- removal no longer destroys an active rollback dependency.
 
 ---
 
-## 20. Explicitly prohibited shortcuts
+## 20. Prohibited shortcuts
 
-Implementation/review must reject:
+Reject:
 
 - drop-first migration;
-- deleting active legacy Conversation/Message history before canonical parity;
-- resurrecting old L1/L2 Unified architecture because its tables exist;
+- deleting Channel/DM history before parity;
 - creating a third permanent message store;
-- deleting `TaskDiscussionEntry` before proven migration;
-- permanent dual Task discussion stores;
-- merely removing WhatsApp uniqueness while keeping the wrong ownership model;
-- direct Finance/Product raw `groupChatId` sends after binding cutover;
-- global External Conversation uniqueness that prevents legitimate Product sharing;
-- Product binding silently granting Employee Client access;
-- recreating provider groups for schema convenience;
-- mixed Internal/Client UI as implementation shortcut;
-- public/internal Support composer toggle;
-- copying messages into Task/Ticket instead of stable references;
+- reintroducing Topics/L1/L2;
+- assuming Unified tables are active or empty without evidence;
+- deleting `TaskDiscussionEntry` before migration proof;
+- inventing Task reply/file fields that current schema does not contain;
+- merely removing WhatsApp `@unique` constraints while keeping wrong ownership semantics;
+- direct Finance raw `groupChatId` sends after cutover;
+- Product binding granting Client access;
+- duplicate provider sends/groups after `OUTCOME_UNKNOWN`;
+- mixed Internal/Client UI shortcut;
+- Support Public/Internal toggle;
+- copying messages instead of referencing them;
 - permanent Telegram chat bridge;
-- treating old status/docs as proof of runtime;
-- silently modifying an approved decision to fit unexpected code.
-
-If a real runtime conflict makes a canonical decision unsafe/impossible, mark the slice `BLOCKED`, document the evidence and review the architecture explicitly before continuing.
+- changing a Canon decision silently to fit legacy code.
 
 ---
 
-## 21. Slice 0 database/runtime inventory still required
+## 21. Slice 0 runtime/data inventory still required
 
-This static reconciliation verifies code/schema facts, but implementation Slice 0 must still record actual environment data needed for safe migration:
+Static reconciliation is complete enough to plan work, but Slice 0 must verify the current implementation branch after synchronizing latest `main` and record:
 
-- row counts for active legacy Messenger tables;
-- row counts for old Unified Messenger tables;
-- foreign-key/reference dependencies on Unified IDs;
-- Tasks with discussion, discussion entries, replies, attachments, AI provenance counts;
-- `ProductWhatsAppGroupBinding` row count, orphan/invalid state and provider identity consistency;
-- Products with/without bindings;
-- current Deal Won/Product Settings call sites;
-- current external UI routes/components;
-- current realtime/unread paths;
-- current Gateway endpoint/webhook/auth contracts;
-- any partial Finance/Notification -> WhatsApp code discovered at implementation time.
+### Messenger
 
-No message bodies/secrets need to be copied into evidence documents merely to prove counts/shape.
+- counts for legacy Channel/DM tables;
+- counts for existing Unified tables;
+- existing migration/backfill mapping if any;
+- all current read/write call sites;
+- realtime/unread/search/attachment paths;
+- whether any external system references Unified ids.
+
+### Tasks
+
+- meaning/usage of `Task.chatId`;
+- Tasks with `TaskDiscussionEntry` rows;
+- entry counts and actual runtime fields;
+- any discussion-related files/replies/edit/audit records stored outside `TaskDiscussionEntry`.
+
+### WhatsApp/Product
+
+- current bindings and invalid/orphan states;
+- physical group/account identity consistency;
+- operation/participant/invitation counts;
+- Deal Won call sites;
+- latest Product Settings select/paste/replace call sites;
+- any remaining direct `groupChatId` business sends.
+
+### Client/Finance/Support/Gateway
+
+- actual current Client UI routes/components;
+- Finance/Subscription/Client Service send paths;
+- Support communication paths;
+- NBOS -> Gateway account/token/send contracts;
+- Gateway -> NBOS webhook endpoint/HMAC/replay/idempotency handling;
+- delivery/status reconciliation behavior.
+
+Do not copy message bodies/secrets into evidence merely to prove counts or shape.
 
 ---
 
-## 22. Reconciliation conclusion
+## 22. Migration risk register
 
-The rebuild does not require a big-bang rewrite.
+| Risk | Severity | Primary mitigation |
+| --- | --- | --- |
+| Losing Channel/DM history while selecting canonical Core | Critical | additive mapping + parity + old store retained until cutover |
+| Creating a third Messenger store | Critical | choose/evolve one canonical path in Slice 1; reviewer rejects parallel permanent store |
+| Assuming Unified schema is active/empty | High | Slice 0 row counts + read/write/reference inventory |
+| Losing Task discussion provenance | Critical | field-accurate idempotent backfill + per-Task verification |
+| Misusing `Task.chatId` | High | determine actual meaning before reuse/removal |
+| Breaking existing Product group relationships | Critical | legacy -> WORK backfill preserving provider identity |
+| Duplicate WhatsApp groups/messages on uncertain provider outcome | Critical | preserve dedupe/idempotency + `OUTCOME_UNKNOWN` reconciliation |
+| Breaking latest Product WhatsApp Settings UX | Medium | reuse/adapt select/paste/replace behavior to purpose bindings |
+| Client READ accidentally implying SEND | Critical | server permission split + adversarial tests |
+| Product binding granting employee visibility | Critical | binding/context separated from ACL |
+| Finance bypassing canonical history | High | central purpose resolver + durable Client Message before provider dispatch |
+| Shared Collection becoming ACL bypass | High | server/database zone checks + effective ACL filtering |
+| Stale docs branch used for implementation | High | sync latest `main` before Slice 0 |
 
-The target strategy is:
+---
+
+## 23. Reconciliation conclusion
+
+The target does not require a big-bang rewrite.
 
 ```text
-keep current runtime operational
-  -> choose/evolve one canonical Messaging Core
-  -> expand schemas safely
-  -> migrate real data deliberately
-  -> cut modules over slice-by-slice
-  -> verify every transition independently
-  -> remove abandoned structures only at the end
+sync latest main
+  -> Slice 0 inventory
+  -> select/evolve one canonical Messaging Core
+  -> migrate Channel/DM data safely where required
+  -> enforce Internal/Client security boundary
+  -> migrate entity/Task discussions
+  -> connect Gateway + Client surface
+  -> migrate Product communication bindings
+  -> cut Finance/Support/routing over
+  -> harden
+  -> final acceptance
+  -> destructive cleanup last
 ```
 
-Highest-risk migrations:
+Highest-risk migrations are:
 
-1. `TaskDiscussionEntry` -> canonical Messaging Core;
-2. `ProductWhatsAppGroupBinding` hard 1:1 -> flexible WORK/FINANCE Product Communication Bindings;
-3. reconciling active legacy Messenger runtime with the unused previous Unified generation **without creating a third permanent store**.
+1. reconciling active Channel/DM stores with the existing Unified generation without creating a third store;
+2. `TaskDiscussionEntry` -> canonical Messaging Core while preserving real provenance;
+3. hard 1:1 `ProductWhatsAppGroupBinding` -> flexible WORK/FINANCE bindings without changing physical WhatsApp identity or duplicating side effects.
 
-`11-Messenger-Rebuild-Implementation-Checklist.md` is executable only together with this document.
+`11-Messenger-Rebuild-Implementation-Checklist.md` and `12-Messenger-Rebuild-Execution-Strategy.md` are executable only together with this reconciliation document.
