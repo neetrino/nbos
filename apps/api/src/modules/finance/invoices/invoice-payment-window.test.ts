@@ -13,7 +13,7 @@ function windowInput(
   overrides: Partial<SubscriptionPaymentWindowInput> = {},
 ): SubscriptionPaymentWindowInput {
   return {
-    createdAt: yerevanNoon('2026-04-01'),
+    issuedOn: yerevanNoon('2026-04-01'),
     dueDate: yerevanNoon('2026-04-20'),
     coverageStartMonth: '2026-04',
     billingDay: 15,
@@ -31,7 +31,7 @@ describe('resolvePaymentWindowStartKey', () => {
       resolvePaymentWindowStartKey(
         windowInput({
           billingDay: 10,
-          createdAt: yerevanNoon('2026-04-14'),
+          issuedOn: yerevanNoon('2026-04-14'),
           dueDate: yerevanNoon('2026-04-19'),
         }),
       ),
@@ -43,7 +43,7 @@ describe('resolvePaymentWindowStartKey', () => {
       resolvePaymentWindowStartKey(
         windowInput({
           billingDay: 1,
-          createdAt: yerevanNoon('2026-03-30'),
+          issuedOn: yerevanNoon('2026-03-30'),
           dueDate: yerevanNoon('2026-04-06'),
         }),
       ),
@@ -63,7 +63,7 @@ describe('isYerevanPaymentWindowOpen', () => {
   it('waits until the 1st for an early day-1 card', () => {
     const input = windowInput({
       billingDay: 1,
-      createdAt: yerevanNoon('2026-03-30'),
+      issuedOn: yerevanNoon('2026-03-30'),
       dueDate: yerevanNoon('2026-04-06'),
     });
     expect(isYerevanPaymentWindowOpen(yerevanNoon('2026-03-30'), input)).toBe(false);
@@ -75,7 +75,7 @@ describe('isYerevanPaymentWindowOpen', () => {
   it('opens on the late issue day (pay 10, issued 14)', () => {
     const input = windowInput({
       billingDay: 10,
-      createdAt: yerevanNoon('2026-04-14'),
+      issuedOn: yerevanNoon('2026-04-14'),
       dueDate: yerevanNoon('2026-04-19'),
     });
     expect(isYerevanPaymentWindowOpen(yerevanNoon('2026-04-10'), input)).toBe(false);
@@ -84,10 +84,22 @@ describe('isYerevanPaymentWindowOpen', () => {
     expect(isYerevanPaymentWindowOpen(yerevanNoon('2026-04-20'), input)).toBe(false);
   });
 
+  it('opens on official-send day when Tax issue is later than pay day', () => {
+    const input = windowInput({
+      billingDay: 10,
+      issuedOn: yerevanNoon('2026-04-15'),
+      dueDate: yerevanNoon('2026-04-20'),
+    });
+    expect(isYerevanPaymentWindowOpen(yerevanNoon('2026-04-10'), input)).toBe(false);
+    expect(isYerevanPaymentWindowOpen(yerevanNoon('2026-04-15'), input)).toBe(true);
+    expect(isYerevanPaymentWindowOpen(yerevanNoon('2026-04-20'), input)).toBe(true);
+    expect(isYerevanPaymentWindowOpen(yerevanNoon('2026-04-21'), input)).toBe(false);
+  });
+
   it('still opens on billing_day when dueDate is the old created+14 value', () => {
     const input = windowInput({
       billingDay: 10,
-      createdAt: yerevanNoon('2026-04-10'),
+      issuedOn: yerevanNoon('2026-04-10'),
       dueDate: yerevanNoon('2026-04-24'),
     });
     expect(isYerevanPaymentWindowOpen(yerevanNoon('2026-04-10'), input)).toBe(true);

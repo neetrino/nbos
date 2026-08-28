@@ -36,6 +36,14 @@ describe('InvoiceCardRemindersService', () => {
       { created: true, type: INVOICE_CARD_REMINDER_TYPES.OFFICIAL_REQUEST_DUE, invoiceId: 'inv-1' },
     ]);
     expect(prisma.invoice.findMany).toHaveBeenCalledTimes(2);
+    expect(prisma.invoice.findMany.mock.calls[0]?.[0]?.where).toEqual(
+      expect.objectContaining({
+        moneyStatus: 'AWAITING_PAYMENT',
+        taxStatus: 'TAX',
+        officialInvoiceRequestSent: false,
+      }),
+    );
+    expect(prisma.invoice.findMany.mock.calls[0]?.[0]?.where?.dueDate).toBeUndefined();
     expect(prisma.notificationJob.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -113,11 +121,12 @@ describe('InvoiceCardRemindersService', () => {
     ]);
   });
 
-  it('sends Tax cards on pay day even if official request is not sent yet', async () => {
+  it('does not send Tax 5-day letter until official request is sent', async () => {
     prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
       paymentCandidate({
         taxStatus: 'TAX',
         officialInvoiceRequestSent: false,
+        officialInvoiceSentAt: null,
         billingDay: 10,
         createdAt: new Date('2026-04-10T11:00:00+04:00'),
         dueDate: new Date('2026-04-15T00:00:00+04:00'),
@@ -129,7 +138,42 @@ describe('InvoiceCardRemindersService', () => {
       asOf: new Date('2026-04-10T11:00:00+04:00'),
     });
 
-    expect(result.created).toEqual([
+    expect(result.created).toEqual([]);
+    expect(prisma.notificationJob.create).not.toHaveBeenCalled();
+  });
+
+  it('sends Tax 5-day letter on the late official-send day', async () => {
+    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      paymentCandidate({
+        taxStatus: 'TAX',
+        officialInvoiceRequestSent: true,
+        officialInvoiceSentAt: new Date('2026-04-15T11:00:00+04:00'),
+        billingDay: 10,
+        createdAt: new Date('2026-04-01T11:00:00+04:00'),
+        dueDate: new Date('2026-04-20T00:00:00+04:00'),
+      }),
+    ]);
+    stubProductWhatsApp(prisma);
+
+    const tooEarly = await service.runDueInvoiceCardReminders({
+      asOf: new Date('2026-04-10T11:00:00+04:00'),
+    });
+    expect(tooEarly.created).toEqual([]);
+
+    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      paymentCandidate({
+        taxStatus: 'TAX',
+        officialInvoiceRequestSent: true,
+        officialInvoiceSentAt: new Date('2026-04-15T11:00:00+04:00'),
+        billingDay: 10,
+        createdAt: new Date('2026-04-01T11:00:00+04:00'),
+        dueDate: new Date('2026-04-20T00:00:00+04:00'),
+      }),
+    ]);
+    const onIssueDay = await service.runDueInvoiceCardReminders({
+      asOf: new Date('2026-04-15T11:00:00+04:00'),
+    });
+    expect(onIssueDay.created).toEqual([
       {
         created: true,
         type: INVOICE_CARD_REMINDER_TYPES.PAYMENT_WINDOW,
@@ -165,11 +209,8 @@ function officialCandidate(overrides: Record<string, unknown> = {}) {
     amount: 120000,
     dueDate: new Date('2026-05-01T00:00:00+04:00'),
     taxStatus: 'TAX',
-    moneyStatus: 'AWAITING_PAYMENT',
     officialInvoiceRequestSent: false,
-    notificationsEnabled: true,
     company: { name: 'ACME' },
-    clientServiceRecord: { notificationsEnabled: true },
     ...overrides,
   };
 }
@@ -188,10 +229,10 @@ function paymentCandidate(
     taxStatus: 'TAX_FREE',
     moneyStatus: 'AWAITING_PAYMENT',
     officialInvoiceRequestSent: false,
+    officialInvoiceSentAt: null,
     notificationsEnabled: true,
     paymentReminderCycle: 0,
     company: { name: 'ACME' },
-    clientServiceRecord: null,
     subscription: {
       productId: 'prod-1',
       billingDay,

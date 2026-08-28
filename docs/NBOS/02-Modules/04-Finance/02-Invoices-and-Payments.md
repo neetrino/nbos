@@ -169,6 +169,10 @@ Payment confirmed
 
 Автосоздание (подписка, client services) без готовности к сбору денег остаётся в `New`. Deal deposit: Tax без реквизитов → `New`; иначе → `Awaiting Payment`.
 
+Подписка `billing_day = 1` (раннее окно): карточка сразу в `Awaiting Payment`, если Tax-gate пропускает. Days 2–31 по-прежнему создаются в `New`.
+
+Вход в `Awaiting Payment` (billing, ручной drag, API): если Tax, запрос ещё не отправлен и реквизиты есть — система сама шлёт official request в бухгалтерскую WhatsApp-группу. Кнопка `Send to accountant` остаётся для повтора на всех этапах кроме `Cancelled`. С `Cancelled` send запрещён (UI скрыт, API отказ).
+
 ### Важное правило для `Tax`
 
 Если:
@@ -219,9 +223,9 @@ Payment confirmed
 
 Минимально достаточно таких действий:
 
-- `Send Official Invoice Request / Отправить запрос на счёт`
+- `Send Official Invoice Request / Отправить запрос на счёт` (не на `Cancelled`)
 - `Cancel Previous Request / Отменить прошлый запрос`
-- `Send Again / Отправить заново`
+- `Send Again / Отправить заново` (не на `Cancelled`)
 
 Можно реализовать это и одной последовательной кнопкой, если UI так удобнее, но логика должна оставаться именно такой.
 

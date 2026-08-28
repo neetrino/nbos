@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
@@ -10,8 +10,6 @@ import { createInvoiceReminderNotificationJob } from './invoice-reminder-job-cre
 import { yerevanCalendarDateKey } from './yerevan-calendar-date';
 import { officialRequestSelect } from './invoice-card-reminder-selects';
 import { SUBSCRIPTION_PAYMENT_REMINDER_EVENT_TYPES } from './subscription-payment-reminder.constants';
-
-const REMINDER_ELIGIBLE_MONEY_STATUSES = ['NEW', 'AWAITING_PAYMENT', 'OVERDUE'] as const;
 
 export const INVOICE_CARD_REMINDER_TYPES = {
   OFFICIAL_REQUEST_DUE: 'finance.invoice.official_request_due',
@@ -28,17 +26,12 @@ interface OfficialRequestCandidate {
   amount: unknown;
   dueDate: Date | null;
   taxStatus: string;
-  moneyStatus: string;
   officialInvoiceRequestSent: boolean;
-  notificationsEnabled: boolean;
   company: { name: string } | null;
-  clientServiceRecord: { notificationsEnabled: boolean } | null;
 }
 
 @Injectable()
 export class InvoiceCardRemindersService {
-  private readonly logger = new Logger(InvoiceCardRemindersService.name);
-
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     @Optional() private readonly officialWhatsApp?: InvoiceOfficialWhatsAppService,
@@ -46,8 +39,8 @@ export class InvoiceCardRemindersService {
   ) {}
 
   /**
-   * Tax official-request when due, plus subscription «pay within 5 days» on the
-   * pay/issue anchor (catch-up until dueDate). Overdue client waves stay manual.
+   * Tax official-request catch-up on Awaiting, plus subscription «pay within 5
+   * days» on the pay/issue anchor. Overdue client waves stay manual.
    */
   async runDueInvoiceCardReminders(params: InvoiceReminderRunParams = {}) {
     const asOf = params.asOf ?? new Date();
@@ -70,12 +63,11 @@ export class InvoiceCardRemindersService {
   }
 
   private async runOfficialRequestDue(asOf: Date, asOfKey: string) {
-    const candidates = await this.findOfficialRequestCandidates(asOf);
+    const candidates = await this.findOfficialRequestCandidates();
     const created = [];
     let skippedExisting = 0;
     for (const invoice of candidates) {
       if (!isOfficialRequestBlockingTaxReminders(invoice)) continue;
-      if (invoice.moneyStatus === 'ON_HOLD') continue;
       const result = await this.createOfficialRequestJob(invoice, asOf, asOfKey);
       if (result.created) created.push(result);
       else skippedExisting += 1;
@@ -83,20 +75,12 @@ export class InvoiceCardRemindersService {
     return { eligibleCount: candidates.length, created, skippedExisting };
   }
 
-  private findOfficialRequestCandidates(asOf: Date) {
-    const asOfKey = yerevanCalendarDateKey(asOf);
-    const endOfToday = new Date(`${asOfKey}T23:59:59.999+04:00`);
+  private findOfficialRequestCandidates() {
     return this.prisma.invoice.findMany({
       where: {
-        moneyStatus: { in: [...REMINDER_ELIGIBLE_MONEY_STATUSES] },
-        dueDate: { lte: endOfToday },
+        moneyStatus: 'AWAITING_PAYMENT',
         taxStatus: 'TAX',
         officialInvoiceRequestSent: false,
-        notificationsEnabled: true,
-        OR: [
-          { clientServiceRecordId: null },
-          { clientServiceRecord: { is: { notificationsEnabled: true } } },
-        ],
       },
       select: officialRequestSelect,
     });
@@ -130,14 +114,7 @@ export class InvoiceCardRemindersService {
         },
       });
     }
-    try {
-      await this.officialWhatsApp?.enqueueDueSend(invoice.id, asOfKey);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.warn(
-        `Official request WhatsApp enqueue failed invoice=${invoice.code}: ${message}`,
-      );
-    }
+    await this.officialWhatsApp?.enqueueIfAwaitingEligible(invoice.id);
     return { created: existing ? (false as const) : (true as const), type, invoiceId: invoice.id };
   }
 }

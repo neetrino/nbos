@@ -17,6 +17,6 @@ import { InvoicesService } from './invoices.service';
     InvoiceOfficialWhatsAppService,
     InvoiceOverdueRemindersService,
   ],
-  exports: [InvoicesService, InvoiceCardRemindersService],
+  exports: [InvoicesService, InvoiceCardRemindersService, InvoiceOfficialWhatsAppService],
 })
 export class InvoicesModule {}

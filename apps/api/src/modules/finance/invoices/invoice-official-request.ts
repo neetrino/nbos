@@ -1,10 +1,13 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { Prisma, PrismaClient } from '@nbos/database';
+import { OFFICIAL_SEND_CANCELLED_MESSAGE } from './invoice-official-awaiting-send';
+import { extendSubscriptionDueDateAfterOfficialSend } from './invoice-official-due-date-extend';
 import { assertOfficialInvoiceRequestSend } from './invoice-tax-readiness-assert';
 
 export interface InvoiceOfficialRequestRow {
   id: string;
   taxStatus: string;
+  moneyStatus: string;
   companyId: string | null;
   officialInvoiceRequestSent: boolean;
   officialInvoiceSentAt: Date | null;
@@ -28,10 +31,13 @@ export async function sendOfficialInvoiceRequest(
   if (invoice.taxStatus !== 'TAX') {
     throw new BadRequestException('Official invoice request applies only to Tax invoices');
   }
+  if (invoice.moneyStatus === 'CANCELLED') {
+    throw new BadRequestException(OFFICIAL_SEND_CANCELLED_MESSAGE);
+  }
   assertOfficialInvoiceRequestSend(invoice);
 
   const now = new Date();
-  return prisma.invoice.update({
+  const updated = await prisma.invoice.update({
     where: { id: invoiceId },
     data: {
       officialInvoiceRequestSent: true,
@@ -40,6 +46,8 @@ export async function sendOfficialInvoiceRequest(
     },
     select: officialRequestSelect,
   });
+  await extendSubscriptionDueDateAfterOfficialSend(prisma, invoiceId, now);
+  return updated;
 }
 
 export async function cancelOfficialInvoiceRequest(
@@ -93,6 +101,7 @@ async function loadInvoice(
 const officialRequestSelect = {
   id: true,
   taxStatus: true,
+  moneyStatus: true,
   companyId: true,
   officialInvoiceRequestSent: true,
   officialInvoiceSentAt: true,

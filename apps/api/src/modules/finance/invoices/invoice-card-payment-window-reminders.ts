@@ -2,6 +2,7 @@ import { Logger } from '@nestjs/common';
 import type { PrismaClient, SubscriptionReminderLanguage } from '@nbos/database';
 import type { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
 import { tryDeliverPaymentReminderWhatsApp } from './invoice-payment-reminder-whatsapp';
+import { isOfficialRequestBlockingTaxReminders } from './invoice-official-request';
 import { isYerevanPaymentWindowOpen, paymentWindowDueDateBounds } from './invoice-payment-window';
 import { resolveInvoiceProductWhatsAppGroup } from './invoice-product-whatsapp-resolve';
 import { createInvoiceReminderNotificationJob } from './invoice-reminder-job-create';
@@ -29,16 +30,11 @@ interface PaymentWindowCandidate {
   coverageStartMonth: string | null;
   taxStatus: string;
   moneyStatus: string;
+  officialInvoiceRequestSent: boolean;
+  officialInvoiceSentAt: Date | null;
   notificationsEnabled: boolean;
   paymentReminderCycle: number;
   company: { name: string } | null;
-  clientServiceRecord: {
-    notificationsEnabled: boolean;
-    reminderLanguage: SubscriptionReminderLanguage;
-    productId: string | null;
-    name: string;
-    product: { id: string; name: string } | null;
-  } | null;
   subscription: {
     productId: string;
     billingDay: number;
@@ -79,6 +75,21 @@ export async function runSubscriptionPaymentWindowReminders(args: {
   return { eligibleCount: candidates.length, created, skippedExisting, skippedNoWhatsApp };
 }
 
+export async function tryEnqueueSubscriptionPaymentWindowForInvoice(args: {
+  prisma: InstanceType<typeof PrismaClient>;
+  outbound?: WhatsAppOutboundQueueService;
+  invoiceId: string;
+  asOf: Date;
+  asOfKey: string;
+}): Promise<void> {
+  const invoice = await args.prisma.invoice.findUnique({
+    where: { id: args.invoiceId },
+    select: paymentReminderSelect,
+  });
+  if (invoice == null || !isPaymentWindowEligible(invoice, args.asOf)) return;
+  await createPaymentWindowJob(args, invoice);
+}
+
 function findPaymentWindowCandidates(prisma: InstanceType<typeof PrismaClient>, asOf: Date) {
   const window = paymentWindowDueDateBounds(asOf);
   return prisma.invoice.findMany({
@@ -98,8 +109,13 @@ function isPaymentWindowEligible(invoice: PaymentWindowCandidate, asOf: Date): b
   if (invoice.subscription == null) return false;
   if (invoice.moneyStatus === 'ON_HOLD') return false;
   if (!invoice.notificationsEnabled || !invoice.subscription.notificationsEnabled) return false;
+  if (isOfficialRequestBlockingTaxReminders(invoice)) return false;
+  const issuedOn =
+    invoice.taxStatus === 'TAX' && invoice.officialInvoiceSentAt != null
+      ? invoice.officialInvoiceSentAt
+      : invoice.createdAt;
   return isYerevanPaymentWindowOpen(asOf, {
-    createdAt: invoice.createdAt,
+    issuedOn,
     dueDate: invoice.dueDate,
     coverageStartMonth: invoice.coverageStartMonth,
     billingDay: invoice.subscription.billingDay,

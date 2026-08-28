@@ -7,15 +7,16 @@ import {
 } from './yerevan-calendar-date';
 
 export interface SubscriptionPaymentWindowInput {
-  createdAt: Date;
+  /** Free: card createdAt. Tax: officialInvoiceSentAt (actual issue). */
+  issuedOn: Date;
   dueDate: Date;
   coverageStartMonth: string | null;
   billingDay: number;
 }
 
-/** Yerevan pay/issue anchor: later of expected pay day and card creation day. */
+/** Yerevan pay/issue anchor: later of expected pay day and actual issue day. */
 export function resolvePaymentWindowStartKey(input: SubscriptionPaymentWindowInput): string {
-  const issuedKey = yerevanCalendarDateKey(input.createdAt);
+  const issuedKey = yerevanCalendarDateKey(input.issuedOn);
   const expectedKey = expectedPayKeyFromCoverage(input.coverageStartMonth, input.billingDay);
   if (expectedKey == null) return issuedKey;
   return expectedKey >= issuedKey ? expectedKey : issuedKey;
