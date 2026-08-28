@@ -59,27 +59,27 @@ Expense for our side
 
 ### Базовые поля карточки
 
-| Поле                    | Описание                                                                               |
-| ----------------------- | -------------------------------------------------------------------------------------- |
-| `service_id`            | Уникальный идентификатор                                                               |
-| `project`               | Проект                                                                                 |
-| `product`               | Продукт, если сервис относится к конкретному продукту                                  |
-| `type`                  | Domain / Hosting / Service / Account / License                                         |
-| `name`                  | Название сервиса                                                                       |
-| `provider`              | Поставщик                                                                              |
-| `provider_account`      | Ссылка на Credentials                                                                  |
-| `status`                | Active / Pending / Suspended / Expiring Soon / Expired / Cancelled                     |
-| `billing_model`         | We Pay / Reminder Only                                                                 |
-| `pricing_model`         | Fixed / Usage-based                                                                    |
-| `frequency`             | Monthly / Yearly / One-time                                                            |
-| `our_cost`              | Наша фактическая себестоимость                                                         |
-| `client_charge`         | Сколько должен платить клиент, если сервис клиентский                                  |
-| `tax_status`            | Tax / Free                                                                             |
-| `notifications_enabled` | Разрешены ли уведомления по связанным Invoice Cards                                    |
-| `reminder_language`     | HY / RU / EN for client WhatsApp payment reminders (same as Subscription). Default HY. |
-| `start_date`            | Дата начала                                                                            |
-| `renewal_date`          | Дата продления / следующей оплаты                                                      |
-| `notes`                 | Заметки                                                                                |
+| Поле                    | Описание                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
+| `service_id`            | Уникальный идентификатор                                                                    |
+| `project`               | Проект                                                                                      |
+| `product`               | Продукт, если сервис относится к конкретному продукту                                       |
+| `type`                  | Domain / Hosting / Service / Account / License                                              |
+| `name`                  | Название сервиса                                                                            |
+| `provider`              | Поставщик                                                                                   |
+| `provider_account`      | Ссылка на Credentials                                                                       |
+| `status`                | Active / Pending / Suspended / Expiring Soon / Expired / Cancelled                          |
+| `billing_model`         | We Pay / Reminder Only                                                                      |
+| `pricing_model`         | Fixed / Usage-based                                                                         |
+| `frequency`             | Monthly / Yearly / One-time                                                                 |
+| `our_cost`              | Наша фактическая себестоимость                                                              |
+| `client_charge`         | Сколько должен платить клиент, если сервис клиентский                                       |
+| `tax_status`            | Tax / Free                                                                                  |
+| `notifications_enabled` | Разрешены ли уведомления по связанным Invoice Cards, включая клиентские WhatsApp D-10 / D-2 |
+| `reminder_language`     | HY / RU / EN for client WhatsApp payment reminders (same as Subscription). Default HY.      |
+| `start_date`            | Дата начала                                                                                 |
+| `renewal_date`          | Дата продления / следующей оплаты                                                           |
+| `notes`                 | Заметки                                                                                     |
 
 ---
 
@@ -403,7 +403,8 @@ expiry_date updated
 ### Что должно автоматизироваться
 
 - приближение `renewal_date`;
-- создание `Invoice Card` для клиентских сервисов;
+- создание `Invoice Card` для клиентских сервисов (`WE_PAY`);
+- **клиентские WhatsApp D-10 / D-2** по связанной Invoice Card — тот же канал, что у подписки: Product WhatsApp Group (`ClientServiceRecord.productId`), если `notifications_enabled` и группа `ACTIVE`. Язык = `reminder_language` (`HY` / `RU` / `EN`, default `HY`). `On Hold` не повторяет уже отправленное; `Cancelled` → снова `Awaiting Payment` открывает новый цикл. `REMINDER_ONLY` invoice не создаёт и в WhatsApp не шлёт;
 - создание `Task` после оплаты;
 - напоминание, если credentials не заполнены;
 - напоминание, если сервис скоро истекает.

@@ -47,7 +47,7 @@ describe('subscription payment reminder templates', () => {
     expect(hy).toContain('Հարկավոր է');
     expect(hy).toContain('բաժանորդագրության');
     expect(hy).toContain('Site A');
-    expect(hy).toContain('120000 դրամ');
+    expect(hy).toContain('120.000 դրամ');
     expect(ru).toContain('Необходимо оплатить ежемесячную подписку');
     expect(en).toContain('monthly subscription payment');
   });

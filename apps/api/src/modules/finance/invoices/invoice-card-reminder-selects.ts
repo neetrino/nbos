@@ -21,6 +21,7 @@ export const paymentReminderSelect = {
   moneyStatus: true,
   officialInvoiceRequestSent: true,
   notificationsEnabled: true,
+  paymentReminderCycle: true,
   company: { select: { name: true } },
   clientServiceRecord: {
     select: {

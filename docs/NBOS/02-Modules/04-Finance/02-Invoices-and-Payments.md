@@ -144,6 +144,7 @@ Payment confirmed
 | `On Hold`                                          | `Awaiting Payment` | вручную                                                                                            |
 | `Awaiting Payment` / `Overdue` / `On Hold`         | `Paid`             | вручную (Mark Paid) или после записи Payment; Mark Paid при outstanding создаёт Payment на остаток |
 | `New` / `Awaiting Payment` / `Overdue` / `On Hold` | `Cancelled`        | вручную                                                                                            |
+| `Cancelled`                                        | `Awaiting Payment` | вручную; новый цикл взыскания (клиентские D-10/D-2 могут уйти снова, если календарный день совпал) |
 
 ### Tax readiness gates
 
@@ -255,6 +256,8 @@ Payment confirmed
 - через несколько дней отправить клиенту первое напоминание;
 - потом второе напоминание;
 - не отправлять напоминания, если карточка в `On Hold`;
+- `On Hold` → снова `Awaiting Payment` не повторяет уже отправленные D-10 / D-2;
+- `Cancelled` → снова `Awaiting Payment` открывает новый цикл: D-10 / D-2 могут уйти снова (без catch-up, только в свой календарный день);
 - не отправлять напоминания, если для `Tax` ещё нет `request_sent = Yes`.
 
 Для автоматических карточек (например, подписки) это должно запускаться без ручного участия.

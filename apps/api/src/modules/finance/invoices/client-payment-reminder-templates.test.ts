@@ -23,7 +23,7 @@ describe('client payment reminder templates', () => {
     });
     expect(message).toContain('Հարկավոր է');
     expect(message).toContain('Site A');
-    expect(message).toContain('120000 դրամ');
+    expect(message).toContain('120.000 դրամ');
     expect(message).toContain('դուրս գրված հաշվի');
     expect(message).not.toContain(TAX_FREE_PAYMENT_CARD);
     expect(message).not.toContain(TAX_FREE_PAYMENT_NAME);
@@ -41,7 +41,7 @@ describe('client payment reminder templates', () => {
     });
     expect(message).toContain('Просим оплатить');
     expect(message).toContain('Site B');
-    expect(message).toContain('50000 драм');
+    expect(message).toContain('50.000 драм');
     expect(message).toContain(TAX_FREE_PAYMENT_CARD);
     expect(message).toContain(TAX_FREE_PAYMENT_ACCOUNT);
     expect(message).toContain(TAX_FREE_PAYMENT_NAME);
@@ -60,7 +60,7 @@ describe('client payment reminder templates', () => {
     });
     expect(message).toContain('service payment');
     expect(message).toContain('example.com');
-    expect(message).toContain('25000 AMD');
+    expect(message).toContain('25.000 AMD');
     expect(message).toContain('official invoice');
   });
 

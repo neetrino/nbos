@@ -1,5 +1,4 @@
 import type { ClientServiceRecord, ClientServiceRecordPayload } from '@/lib/api/client-services';
-
 import { DEFAULT_SUBSCRIPTION_REMINDER_LANGUAGE } from '@/features/finance/constants/finance';
 
 export interface ClientServiceFormState {

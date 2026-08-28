@@ -222,6 +222,100 @@ describe('InvoiceCardRemindersService', () => {
 
     expect(result.created).toEqual([]);
   });
+
+  it('skips client-service D-10 when CSR notifications are off', async () => {
+    const candidate = clientServicePaymentCandidate({
+      id: 'inv-csr-off',
+      dueDate: new Date('2026-05-15T00:00:00+04:00'),
+    });
+    candidate.clientServiceRecord = {
+      ...candidate.clientServiceRecord,
+      notificationsEnabled: false,
+    };
+    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([candidate]);
+
+    const result = await service.runDueInvoiceCardReminders({
+      asOf: new Date('2026-05-05T12:00:00+04:00'),
+    });
+
+    expect(result.created).toEqual([]);
+    expect(prisma.notificationJob.create).not.toHaveBeenCalled();
+  });
+
+  it('skips payment reminder while invoice is On Hold', async () => {
+    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      paymentCandidate({
+        id: 'inv-hold',
+        moneyStatus: 'ON_HOLD',
+        dueDate: new Date('2026-05-15T00:00:00+04:00'),
+      }),
+    ]);
+
+    const result = await service.runDueInvoiceCardReminders({
+      asOf: new Date('2026-05-05T12:00:00+04:00'),
+    });
+
+    expect(result.created).toEqual([]);
+    expect(prisma.notificationJob.create).not.toHaveBeenCalled();
+  });
+
+  it('does not resend after On Hold when the same cycle job already exists', async () => {
+    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      paymentCandidate({
+        id: 'inv-reopen',
+        paymentReminderCycle: 0,
+        dueDate: new Date('2026-05-15T00:00:00+04:00'),
+      }),
+    ]);
+    prisma.notificationJob.findUnique.mockImplementation(async ({ where }) => {
+      if (where.dedupeKey === 'subscription_payment_reminder:d10:inv-reopen') {
+        return { id: 'job-first' };
+      }
+      return null;
+    });
+
+    const result = await service.runDueInvoiceCardReminders({
+      asOf: new Date('2026-05-05T12:00:00+04:00'),
+    });
+
+    expect(result.skippedExisting).toBe(1);
+    expect(prisma.notificationJob.create).not.toHaveBeenCalled();
+  });
+
+  it('sends again after Cancelled on a new reminder cycle', async () => {
+    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      paymentCandidate({
+        id: 'inv-cycle',
+        paymentReminderCycle: 1,
+        dueDate: new Date('2026-05-15T00:00:00+04:00'),
+      }),
+    ]);
+    prisma.notificationJob.findUnique.mockImplementation(async ({ where }) => {
+      if (where.dedupeKey === 'subscription_payment_reminder:d10:inv-cycle') {
+        return { id: 'job-first-cycle' };
+      }
+      return null;
+    });
+
+    const result = await service.runDueInvoiceCardReminders({
+      asOf: new Date('2026-05-05T12:00:00+04:00'),
+    });
+
+    expect(result.created).toEqual([
+      {
+        created: true,
+        type: SUBSCRIPTION_PAYMENT_REMINDER_EVENT_TYPES.D10,
+        invoiceId: 'inv-cycle',
+      },
+    ]);
+    expect(prisma.notificationJob.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          dedupeKey: 'subscription_payment_reminder:d10:inv-cycle:c1',
+        }),
+      }),
+    );
+  });
 });
 
 function officialCandidate(overrides: Partial<ReturnType<typeof baseOfficial>>) {
@@ -289,6 +383,7 @@ function basePayment() {
     moneyStatus: 'AWAITING_PAYMENT',
     officialInvoiceRequestSent: false,
     notificationsEnabled: true,
+    paymentReminderCycle: 0,
     company: { name: 'ACME' },
     clientServiceRecord: null,
     subscription: {
@@ -311,6 +406,7 @@ function baseClientServicePayment() {
     moneyStatus: 'AWAITING_PAYMENT',
     officialInvoiceRequestSent: true,
     notificationsEnabled: true,
+    paymentReminderCycle: 0,
     company: { name: 'ACME' },
     subscription: null,
     clientServiceRecord: {
