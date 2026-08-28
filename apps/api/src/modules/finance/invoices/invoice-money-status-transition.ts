@@ -30,7 +30,7 @@ export const INVOICE_MONEY_STATUS_TRANSITION_SELECT = {
   },
 } as const;
 
-/** Cancelled starts a new D-10/D-2 cycle; On Hold and other statuses do not. */
+/** Cancelled starts a new D-2 cycle; On Hold and other statuses do not. */
 export function paymentReminderCycleIncrement(
   current: InvoiceMoneyStatusEnum,
   target: InvoiceMoneyStatusEnum,

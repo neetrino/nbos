@@ -25,6 +25,7 @@ interface OverdueTemplateCopy {
   amountLine: string;
   taxPayByInvoice: string;
   taxFreePayBlockHeader: string;
+  writeIfProblem: string;
   closing: string;
 }
 
@@ -38,6 +39,8 @@ const COPY: Record<SubscriptionReminderLanguage, OverdueTemplateCopy> = {
     amountLine: 'Գումար՝ {amount} դրամ',
     taxPayByInvoice: 'Խնդրում ենք կատարել վճարումը ըստ դուրս գրված հաշվի:',
     taxFreePayBlockHeader: 'Վճարման տվյալներ՝',
+    writeIfProblem:
+      'Եթե կա խնդիր վճարման հետ կապված, խնդրում ենք անպայման գրեք մեզ՝ անջատումից խուսափելու համար։',
     closing: 'Կանխավ շնորհակալություն',
   },
   RU: {
@@ -49,6 +52,8 @@ const COPY: Record<SubscriptionReminderLanguage, OverdueTemplateCopy> = {
     amountLine: 'Сумма: {amount} драм',
     taxPayByInvoice: 'Пожалуйста, оплатите по выставленному счёту.',
     taxFreePayBlockHeader: 'Реквизиты для оплаты:',
+    writeIfProblem:
+      'Если есть проблема с оплатой, обязательно напишите нам, чтобы избежать отключения.',
     closing: 'Заранее спасибо',
   },
   EN: {
@@ -60,6 +65,8 @@ const COPY: Record<SubscriptionReminderLanguage, OverdueTemplateCopy> = {
     amountLine: 'Amount: {amount} AMD',
     taxPayByInvoice: 'Please pay using the official invoice issued to you.',
     taxFreePayBlockHeader: 'Payment details:',
+    writeIfProblem:
+      'If there is a problem with the payment, please write to us so we can avoid a disconnection.',
     closing: 'Thank you in advance',
   },
 };
@@ -104,6 +111,7 @@ export function renderOverdueReminderMessage(input: RenderOverdueReminderInput):
   } else {
     lines.push(copy.taxPayByInvoice);
   }
+  lines.push(copy.writeIfProblem);
   lines.push(copy.closing);
   return lines.join('\n');
 }

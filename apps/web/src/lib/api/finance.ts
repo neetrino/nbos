@@ -40,6 +40,7 @@ export type OverdueReminderSkipReason =
   | 'tax_gate'
   | 'no_whatsapp'
   | 'same_day'
+  | 'too_soon'
   | 'max_wave'
   | 'no_product_link'
   | 'already_sent';

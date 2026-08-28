@@ -144,7 +144,7 @@ Payment confirmed
 | `On Hold`                                          | `Awaiting Payment` | вручную                                                                                            |
 | `Awaiting Payment` / `Overdue` / `On Hold`         | `Paid`             | вручную (Mark Paid) или после записи Payment; Mark Paid при outstanding создаёт Payment на остаток |
 | `New` / `Awaiting Payment` / `Overdue` / `On Hold` | `Cancelled`        | вручную                                                                                            |
-| `Cancelled`                                        | `Awaiting Payment` | вручную; новый цикл взыскания (клиентские D-10/D-2 могут уйти снова, если календарный день совпал) |
+| `Cancelled`                                        | `Awaiting Payment` | вручную; новый цикл взыскания (клиентский D-2 может уйти снова, если календарный день совпал)      |
 
 ### Tax readiness gates
 
@@ -256,11 +256,10 @@ Payment confirmed
 - через несколько дней отправить клиенту первое напоминание;
 - потом второе напоминание;
 - не отправлять напоминания, если карточка в `On Hold`;
-- `On Hold` → снова `Awaiting Payment` не повторяет уже отправленные D-10 / D-2;
-- `Cancelled` → снова `Awaiting Payment` открывает новый цикл: D-10 / D-2 могут уйти снова (без catch-up, только в свой календарный день);
+- `On Hold` / `Cancelled` cycle rules apply to **overdue button** jobs, not a pre-due cron;
 - не отправлять напоминания, если для `Tax` ещё нет `request_sent = Yes`.
 
-Для автоматических карточек (например, подписки) **pre-due** D-10 / D-2 запускаются без ручного участия.
+Pre-due D-10 / D-2 cron is retired. Client WhatsApp is the manual overdue button.
 
 Клиентские письма **после** due date (`Overdue`) — только кнопка **Send overdue reminders** после сверки банка (волна 1 / 2 на карточке). Deal/Order клиентам не пишем.
 

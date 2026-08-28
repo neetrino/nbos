@@ -93,21 +93,11 @@ Ownership rule (required):
 | `partner`                   | Партнёр: для Partner Service как плательщик; для referral subscription как источник partner accruals                                                                                                                                                                  |
 | `amount_history`            | История изменений `amount` за период                                                                                                                                                                                                                                  |
 
-### Client WhatsApp payment reminders (D-10 / D-2)
+### Client WhatsApp payment reminders
 
-Anchor date: `Invoice.dueDate` (pay-by). Offsets: **10** and **2** calendar days before due (Yerevan calendar). Each offset fires **once per collection cycle** (idempotent; no catch-up if the invoice appears after the D-10 day). `On Hold` → `Awaiting Payment` keeps the same cycle (no resend). `Cancelled` then back to `Awaiting Payment` starts a new cycle.
+Pre-due auto pings **D-10** and **D-2** (`dueDate − 10` / `dueDate − 2`) are **retired**. They were the old “please pay within 5 days” cron, not overdue waves. Cron `invoice-card-reminders` now sends **accountant official-request only**.
 
-- Target: **Product WhatsApp Group** via `subscription.productId`. Client Service invoices without a subscription use the same D-10 / D-2 path via **`ClientServiceRecord.productId`** (same Product group; copy names the service, language = `ClientServiceRecord.reminderLanguage`).
-- Copy uses `Product.name` (subscription) or `ClientServiceRecord.name` (client-service), localized month from `Invoice.coverageStartMonth`, **amount**, and `tax_status` in `reminder_language`.
-- **Tax:** amount + purpose + pay-by-official-invoice line; **no** bank/card details.
-- **Tax-Free:** same + personal pay-to block (Hasmik card/account; constants in API code).
-- Tax gate: if `taxStatus = TAX` and official invoice request not sent → **no** client payment reminder (accountant official-request path is separate).
-- `notifications_enabled = false` (invoice / subscription / client-service as applicable) → no send.
-- Paid / cancelled / on hold → no send.
-- Missing WhatsApp `groupChatId` → skip + log (no crash).
-- Templates stay in code (no DB editor in v1).
-
-Sends go through the paced WhatsApp outbound queue (concurrency 1, 2s gap).
+Client WhatsApp about money is **only** the manual overdue button (wave 1 / wave 2) below.
 
 ### Client WhatsApp overdue waves (manual w1 / w2)
 
@@ -115,10 +105,10 @@ Status `OVERDUE` is automatic when `dueDate` passes and no Payment is recorded. 
 
 Finance reconciles the bank, marks paid cards `Paid`, then presses **Send overdue reminders** on the Invoices board (`FINANCE_INVOICES` EDIT). Preview shows who would get wave 1 vs wave 2.
 
-- Same eligibility as D-10/D-2 (Subscription or Client Service, `notifications_enabled`, Tax official-request gate, Product WhatsApp group). Deal/Order invoices are not written to.
+- Eligibility: Subscription or Client Service, `notifications_enabled`, Tax official-request gate, Product WhatsApp group. Deal/Order invoices are not written to.
 - One button run sends **at most one** letter per invoice. Wave is per card (`NotificationJob` `invoice_overdue_reminder:w{n}:{invoiceId}`), not a global “today is wave 2”.
-- No wave yet → wave 1. Wave 1 already sent and **≥ 1 Yerevan calendar day** has passed → wave 2. Same-day second press does not send wave 2. After wave 2 → stop (INV-07 CEO escalation is later).
-- Language, Tax / Tax-Free copy, and paced outbound queue match D-10/D-2. Templates stay in code.
+- No wave yet → wave 1 (first overdue letter; typically the 6th if pay-by is the 5th). Wave 1 already sent and **≥ 2 Yerevan calendar days** have passed → wave 2. Same-day or next-day press does not send wave 2. After wave 2 → stop (INV-07 CEO escalation is later).
+- Language, Tax / Tax-Free copy, and paced outbound queue. Overdue copy also asks the client to write if there is a payment problem, so Finance can wait instead of treating silence as a cut-off. Templates stay in code.
 
 ### Сумма подписки: `amount`, `coverage_month_count`, `monthly_equivalent_amount`
 
@@ -285,7 +275,7 @@ Important rules:
 - для целевого месяца `YYYY-MM` подписка **пропускается**, если у неё уже есть карточка оплаты, покрывающая этот месяц: месяц попадает в полуинтервал `[coverage_start_month, coverage_start_month + coverage_month_count)`;
 - наличие покрытия блокирует повторное выставление **независимо от статуса оплаты** карточки; факт оплаты (`Paid`) используется отдельно — для Subscription Grid.
 
-`Invoice.dueDate` (подписка): якорь = что позже — ожидаемый день оплаты в целевом месяце или день создания карточки; `dueDate` = якорь + **5 календарных дней** (последний день «ещё вовремя»). Пример: день 10, выставили 10 → до 15; выставили 14 → до 19. Напоминания D-10 / D-2 по-прежнему от `dueDate`. Order и ручные карточки без `subscriptionId` это правило не применяют.
+`Invoice.dueDate` (подписка): якорь = что позже — ожидаемый день оплаты в целевом месяце или день создания карточки; `dueDate` = якорь + **5 календарных дней** (последний день «ещё вовремя»). Пример: день 10, выставили 10 → до 15; выставили 14 → до 19. Клиенту до срока cron не пишет. Письма — кнопка overdue после 6-го. Order и ручные карточки без `subscriptionId` это правило не применяют.
 
 ---
 

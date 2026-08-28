@@ -14,34 +14,40 @@ export function buildWhatsAppClientInviteMessage(input: WhatsAppClientInviteMess
   locale: WhatsAppInviteLocale;
   text: string;
 } {
-  const locale = resolveLocale(input.locale);
-  const clientName = input.clientName.trim() || 'клиент';
-  const productName = input.productName.trim() || 'продукт';
+  const locale = resolveInviteLocale(input.locale);
+  const clientName =
+    input.clientName.trim() ||
+    (locale === 'en' ? 'partner' : locale === 'ru' ? 'клиент' : 'գործընկեր');
+  const productName =
+    input.productName.trim() ||
+    (locale === 'en' ? 'product' : locale === 'ru' ? 'продукт' : 'արտադրանք');
   const inviteUrl = input.inviteUrl.trim();
 
-  if (locale === 'hy') {
-    return {
-      locale,
-      text: `Բարև Ձեզ, ${clientName}.\n\n«${productName}» արտադրանքի քննարկման համար ստեղծվել է առանձին WhatsApp խումբ։\n\nՄիանալ՝\n${inviteUrl}`,
-    };
-  }
   if (locale === 'en') {
     return {
       locale,
       text: `Hello, ${clientName}.\n\nA dedicated WhatsApp group has been created to discuss the product "${productName}".\n\nJoin:\n${inviteUrl}`,
     };
   }
+  if (locale === 'ru') {
+    return {
+      locale,
+      text: `Здравствуйте, ${clientName}.\n\nДля обсуждения продукта «${productName}» создана отдельная WhatsApp-группа.\n\nПрисоединиться:\n${inviteUrl}`,
+    };
+  }
   return {
-    locale: 'ru',
-    text: `Здравствуйте, ${clientName}.\n\nДля обсуждения продукта «${productName}» создана отдельная WhatsApp-группа.\n\nПрисоединиться:\n${inviteUrl}`,
+    locale: 'hy',
+    text: `Բարև Ձեզ, ${clientName}.\n\n«${productName}» արտադրանքի քննարկման համար ստեղծվել է առանձին WhatsApp խումբ։\n\nՄիանալ՝\n${inviteUrl}`,
   };
 }
 
-function resolveLocale(raw: string | null | undefined): WhatsAppInviteLocale {
+/** Contact language if set; otherwise Armenian. Not subscription reminderLanguage. */
+export function resolveInviteLocale(raw: string | null | undefined): WhatsAppInviteLocale {
   const value = (raw ?? '').trim().toLowerCase();
   if (value.startsWith('hy') || value === 'armenian' || value === 'arm') return 'hy';
   if (value.startsWith('en') || value === 'english') return 'en';
-  return 'ru';
+  if (value.startsWith('ru') || value === 'russian') return 'ru';
+  return 'hy';
 }
 
 export function extractContactLanguage(messengerLinks: unknown): string | null {

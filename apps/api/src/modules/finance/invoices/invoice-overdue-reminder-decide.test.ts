@@ -17,13 +17,22 @@ describe('decideOverdueReminderAction', () => {
     expect(decideOverdueReminderAction(BASE)).toEqual({ kind: 'send', wave: 1 });
   });
 
-  it('sends wave 2 when wave 1 was at least one Yerevan day ago', () => {
+  it('sends wave 2 when wave 1 was at least two Yerevan days ago', () => {
+    expect(
+      decideOverdueReminderAction({
+        ...BASE,
+        wave1ScheduledFor: new Date('2026-08-06T12:00:00+04:00'),
+      }),
+    ).toEqual({ kind: 'send', wave: 2 });
+  });
+
+  it('skips too_soon when only one Yerevan day has passed', () => {
     expect(
       decideOverdueReminderAction({
         ...BASE,
         wave1ScheduledFor: new Date('2026-08-07T12:00:00+04:00'),
       }),
-    ).toEqual({ kind: 'send', wave: 2 });
+    ).toEqual({ kind: 'skip', reason: 'too_soon' });
   });
 
   it('skips same_day when wave 1 was sent today', () => {

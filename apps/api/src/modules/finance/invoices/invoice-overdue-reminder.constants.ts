@@ -5,7 +5,7 @@ export type OverdueReminderWave = (typeof OVERDUE_REMINDER_WAVES)[number];
 export const OVERDUE_REMINDER_MAX_WAVE = 2;
 
 /** Minimum Yerevan calendar days between wave 1 and wave 2 on the same invoice. */
-export const OVERDUE_REMINDER_MIN_DAYS_BETWEEN_WAVES = 1;
+export const OVERDUE_REMINDER_MIN_DAYS_BETWEEN_WAVES = 2;
 
 export const OVERDUE_REMINDER_EVENT_TYPES = {
   W1: 'finance.invoice.overdue_reminder_w1',
@@ -18,6 +18,7 @@ export type OverdueReminderSkipReason =
   | 'tax_gate'
   | 'no_whatsapp'
   | 'same_day'
+  | 'too_soon'
   | 'max_wave'
   | 'no_product_link'
   | 'already_sent';
@@ -26,7 +27,10 @@ export function overdueReminderEventTypeForWave(wave: OverdueReminderWave): stri
   return wave === 1 ? OVERDUE_REMINDER_EVENT_TYPES.W1 : OVERDUE_REMINDER_EVENT_TYPES.W2;
 }
 
-export function buildOverdueReminderDedupeKey(invoiceId: string, wave: OverdueReminderWave): string {
+export function buildOverdueReminderDedupeKey(
+  invoiceId: string,
+  wave: OverdueReminderWave,
+): string {
   return `invoice_overdue_reminder:w${wave}:${invoiceId}`;
 }
 

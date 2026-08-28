@@ -19,9 +19,9 @@ describe('subscription payment reminder templates', () => {
     expect(formatCoverageMonthLabel('2026-06', 'EN').toLowerCase()).toContain('june');
   });
 
-  it('renders D-10 necessary/subscription tone in all languages with amount', () => {
+  it('renders D-2 polite 5-day ask in all languages with amount', () => {
     const hy = renderSubscriptionPaymentReminderMessage({
-      offsetDays: 10,
+      offsetDays: 2,
       language: 'HY',
       productName: 'Site A',
       coverageStartMonth: '2026-06',
@@ -29,7 +29,7 @@ describe('subscription payment reminder templates', () => {
       taxStatus: 'TAX',
     });
     const ru = renderSubscriptionPaymentReminderMessage({
-      offsetDays: 10,
+      offsetDays: 2,
       language: 'RU',
       productName: 'Site A',
       coverageStartMonth: '2026-06',
@@ -37,22 +37,23 @@ describe('subscription payment reminder templates', () => {
       taxStatus: 'TAX',
     });
     const en = renderSubscriptionPaymentReminderMessage({
-      offsetDays: 10,
+      offsetDays: 2,
       language: 'EN',
       productName: 'Site A',
       coverageStartMonth: '2026-06',
       amount: 120000,
       taxStatus: 'TAX',
     });
-    expect(hy).toContain('Հարկավոր է');
+    expect(hy).toContain('Խնդրում ենք 5 օրվա ընթացքում');
     expect(hy).toContain('բաժանորդագրության');
     expect(hy).toContain('Site A');
     expect(hy).toContain('120.000 դրամ');
-    expect(ru).toContain('Необходимо оплатить ежемесячную подписку');
+    expect(ru).toContain('Просим в течение 5 дней оплатить ежемесячную подписку');
     expect(en).toContain('monthly subscription payment');
+    expect(en).toContain('within 5 days');
   });
 
-  it('renders D-2 softer ask tone in all languages', () => {
+  it('renders D-2 polite 5-day ask in all languages', () => {
     const hy = renderSubscriptionPaymentReminderMessage({
       offsetDays: 2,
       language: 'HY',
@@ -77,9 +78,10 @@ describe('subscription payment reminder templates', () => {
       amount: 50000,
       taxStatus: 'TAX_FREE',
     });
-    expect(hy).toContain('Խնդրում ենք');
+    expect(hy).toContain('Խնդրում ենք 5 օրվա ընթացքում');
     expect(hy).toContain(TAX_FREE_PAYMENT_CARD);
-    expect(ru).toContain('Просим оплатить');
-    expect(en).toContain('Kindly make the monthly subscription payment');
+    expect(ru).toContain('Просим в течение 5 дней оплатить');
+    expect(en).toContain('Please make the monthly subscription payment');
+    expect(en).toContain('within 5 days');
   });
 });

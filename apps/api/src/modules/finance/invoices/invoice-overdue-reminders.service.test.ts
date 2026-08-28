@@ -30,7 +30,7 @@ describe('InvoiceOverdueRemindersService', () => {
     service = new InvoiceOverdueRemindersService(prisma as never, outbound as never);
   });
 
-  it('sends wave 1 to new overdue and wave 2 to invoice that already had wave 1 yesterday', async () => {
+  it('sends wave 1 to new overdue and wave 2 to invoice that already had wave 1 two days ago', async () => {
     prisma.invoice.findMany.mockResolvedValue([
       overdueCandidate({ id: 'inv-new', code: 'INV-NEW' }),
       overdueCandidate({ id: 'inv-old', code: 'INV-OLD' }),
@@ -38,7 +38,7 @@ describe('InvoiceOverdueRemindersService', () => {
     prisma.notificationJob.findMany.mockResolvedValue([
       {
         dedupeKey: 'invoice_overdue_reminder:w1:inv-old',
-        scheduledFor: new Date('2026-08-07T11:00:00+04:00'),
+        scheduledFor: new Date('2026-08-06T11:00:00+04:00'),
       },
     ]);
 
@@ -118,12 +118,16 @@ describe('InvoiceOverdueRemindersService', () => {
   });
 
   it('skips when Product WhatsApp group is missing', async () => {
-    prisma.invoice.findMany.mockResolvedValue([overdueCandidate({ id: 'inv-nowa', code: 'INV-NO' })]);
+    prisma.invoice.findMany.mockResolvedValue([
+      overdueCandidate({ id: 'inv-nowa', code: 'INV-NO' }),
+    ]);
     resolveWhatsApp.mockResolvedValue(null);
 
     const result = await service.run({ asOf: new Date('2026-08-08T12:00:00+04:00') });
 
-    expect(result.skipped).toEqual([{ invoiceId: 'inv-nowa', code: 'INV-NO', reason: 'no_whatsapp' }]);
+    expect(result.skipped).toEqual([
+      { invoiceId: 'inv-nowa', code: 'INV-NO', reason: 'no_whatsapp' },
+    ]);
     expect(prisma.notificationJob.create).not.toHaveBeenCalled();
   });
 

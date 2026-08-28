@@ -1,16 +1,17 @@
 /** Asia/Yerevan calendar timezone for subscription payment reminder day math. */
 export const SUBSCRIPTION_PAYMENT_REMINDER_TIMEZONE = 'Asia/Yerevan';
 
-/**
- * Calendar days before Invoice.dueDate when client WhatsApp payment reminders fire.
- * Order is intentional (farther offset first); change here to adjust schedule later.
- */
-export const SUBSCRIPTION_PAYMENT_REMINDER_DAYS_BEFORE_DUE = [10, 2] as const;
+/** Historical offsets. Cron no longer sends these; client letters are the overdue button. */
+export type SubscriptionPaymentReminderOffsetDays = 10 | 2;
 
-export type SubscriptionPaymentReminderOffsetDays =
-  (typeof SUBSCRIPTION_PAYMENT_REMINDER_DAYS_BEFORE_DUE)[number];
+export const SUBSCRIPTION_PAYMENT_REMINDER_DAYS_BEFORE_DUE: readonly SubscriptionPaymentReminderOffsetDays[] =
+  [];
+
+/** Payment window named in leftover template copy (not a send schedule). */
+export const CLIENT_PAYMENT_REMINDER_PAY_WITHIN_DAYS = 5;
 
 export const SUBSCRIPTION_PAYMENT_REMINDER_EVENT_TYPES = {
+  /** Historical event types; cron no longer creates these jobs. */
   D10: 'finance.invoice.payment_reminder_d10',
   D2: 'finance.invoice.payment_reminder_d2',
 } as const;

@@ -111,7 +111,7 @@ export const SCHEDULER_PLATFORM_CRON_CATALOG: readonly SchedulerJobCatalogEntry[
   platformCronEntry({
     jobName: SCHEDULER_JOB_NAMES.invoiceCardReminders,
     title: 'Invoice card reminders',
-    description: 'Tax official-request + subscription D-10/D-2 WhatsApp reminders at 11:00.',
+    description: 'Tax official-request WhatsApp at 11:00. Client overdue is the Invoices button.',
     ownerModule: 'Finance',
     group: SCHEDULER_JOB_GROUP.money,
     defaultExpression: INVOICE_CARD_REMINDERS_DEFAULT_CRON,

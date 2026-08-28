@@ -173,7 +173,7 @@ New → Create in Gov System → Send Message → [Ожидание] → Paid
 
 Большинство подписок (≈90%) имеют Billing Day = 5-е число:
 
-- 1-го числа: массовое создание Invoice → уведомления бухгалтеру → клиентские D-10/D-2 по календарю due date
+- 1-го числа: массовое создание Invoice → уведомления бухгалтеру; клиенту до срока не пишем
 - 5-го числа: массовая проверка оплат → отметка Paid
 - 6-е и далее: статус Overdue авто; клиентские волны только после кнопки Send overdue reminders
 
@@ -352,40 +352,17 @@ Project Beta:
 
 ## Автоматизация уведомлений
 
-### Client WhatsApp payment reminders (canon)
+### Client WhatsApp (canon)
 
-Anchor: `Invoice.dueDate` (не Billing Day). Timezone for day math: **Asia/Yerevan**.
-
-| Offset | When (Yerevan calendar) | Event code                             | Idempotency                           |
-| ------ | ----------------------- | -------------------------------------- | ------------------------------------- |
-| D-10   | `dueDate − 10` days     | `finance.invoice.payment_reminder_d10` | once per invoice per collection cycle |
-| D-2    | `dueDate − 2` days      | `finance.invoice.payment_reminder_d2`  | once per invoice per collection cycle |
-
-- Collection cycle: `On Hold` → `Awaiting Payment` does **not** reset; `Cancelled` then `Awaiting Payment` starts a new cycle (`Invoice.paymentReminderCycle`).
-
-- Language: `Subscription.reminderLanguage` or `ClientServiceRecord.reminderLanguage` (`HY` / `RU` / `EN`, default `HY`).
-- Placeholders: subscription `{productName}` = `Product.name`; client-service `{serviceName}` = `ClientServiceRecord.name`; `{month}` = localized `coverageStartMonth` (else Yerevan month of `dueDate`).
-- No catch-up: if the invoice is created after the D-10 day, D-10 is skipped; D-2 still fires on its day.
-- Tax + official request not sent → block client payment reminders (accountant path separate).
-- Tax billing cards are created in `New`. They cannot enter `Awaiting Payment` or `Paid` until company requisites / official request gates pass (see Invoices canon).
-- Target: Product WhatsApp Group via `subscription.productId`, else `ClientServiceRecord.productId`. Never Project-level.
+Pre-due D-10 / D-2 cron is **retired**. Client WhatsApp is the manual **Send overdue reminders** button (wave 1, then wave 2 after ≥ 2 Yerevan days). Accountant official-request stays on the 11:00 cron.
 
 ### Типы уведомлений (смежные)
 
-| Событие         | Канал    | Получатель          | Текст (шаблон)                                                              |
-| --------------- | -------- | ------------------- | --------------------------------------------------------------------------- |
-| Invoice создан  | Система  | Бухгалтер           | «Создать счёт в госсистеме: [проект], [сумма], [реквизиты]» (Tax)           |
-| D-10 / D-2      | WhatsApp | Product group       | Subscription payment reminder (HY/RU/EN templates; see Subscriptions canon) |
-| Оплата получена | Система  | Финансовый директор | «Оплата [сумма] от [клиент] получена.»                                      |
-
-### Расписание (payment reminders)
-
-```
-dueDate − 10:  D-10 client WhatsApp (once per collection cycle)
-dueDate − 2:   D-2 client WhatsApp (once per collection cycle)
-dueDate:       pay-by deadline
-(Tax official-request internal reminders remain separate when request not sent)
-```
+| Событие         | Канал    | Получатель          | Текст (шаблон)                                                    |
+| --------------- | -------- | ------------------- | ----------------------------------------------------------------- |
+| Invoice создан  | Система  | Бухгалтер           | «Создать счёт в госсистеме: [проект], [сумма], [реквизиты]» (Tax) |
+| Overdue w1 / w2 | WhatsApp | Product group       | Manual button after due (HY/RU/EN; see Subscriptions canon)       |
+| Оплата получена | Система  | Финансовый директор | «Оплата [сумма] от [клиент] получена.»                            |
 
 ---
 
@@ -400,5 +377,5 @@ dueDate:       pay-by deadline
 7. **Предоплата возможна** — клиент может оплатить несколько месяцев вперёд
 8. **Subscription Grid — источник правды** для прогноза ежемесячного дохода
 9. **Автопауза deadline** смотрит только Product (+ Extensions) этой Subscription, не весь Project
-10. **WhatsApp client reminders** — Product WhatsApp Group по `subscription.productId`; D-10/D-2 vs `dueDate`; язык `reminderLanguage`
+10. **WhatsApp client reminders** — Product WhatsApp Group по `subscription.productId`; only manual overdue waves; язык `reminderLanguage`
 11. **Срок (`termMonths`)** считается покрытыми месяцами invoice, не календарём. Пауза (On Hold / late-delivery) месяц не расходует. По исчерпании срока — `Completed`, без новых карточек. Инвариант: `coverageMonthCount <= termMonths` и `termMonths % coverageMonthCount === 0`

@@ -5,7 +5,10 @@ import {
   TAX_FREE_PAYMENT_NAME,
 } from './client-payment-requisites';
 import { formatAmdAmount } from './invoice-official-whatsapp-templates';
-import type { SubscriptionPaymentReminderOffsetDays } from './subscription-payment-reminder.constants';
+import {
+  CLIENT_PAYMENT_REMINDER_PAY_WITHIN_DAYS,
+  type SubscriptionPaymentReminderOffsetDays,
+} from './subscription-payment-reminder.constants';
 
 const MONTH_LOCALES: Record<SubscriptionReminderLanguage, string> = {
   HY: 'hy-AM',
@@ -33,49 +36,37 @@ export interface RenderClientPaymentReminderInput {
 
 interface TemplateCopy {
   greeting: string;
-  purposeD10: string;
-  purposeD2: string;
+  purpose: string;
   amountLine: string;
   taxPayByInvoice: string;
   taxFreePayBlockHeader: string;
-  closingD10: string;
-  closingD2: string;
+  closing: string;
 }
 
 const COPY: Record<SubscriptionReminderLanguage, TemplateCopy> = {
   HY: {
     greeting: '🤖 Ողջույն հարգելի գործընկեր',
-    purposeD10:
-      'Հարկավոր է կատարել «{serviceLabel}» {serviceKind} վճարը՝ {periodLabel}{periodSuffix}',
-    purposeD2:
-      'Խնդրում ենք կատարել «{serviceLabel}» {serviceKind} վճարը՝ {periodLabel}{periodSuffix}',
+    purpose: `Խնդրում ենք ${CLIENT_PAYMENT_REMINDER_PAY_WITHIN_DAYS} օրվա ընթացքում կատարել «{serviceLabel}» {serviceKind} վճարը՝ {periodLabel}{periodSuffix}`,
     amountLine: 'Գումար՝ {amount} դրամ',
     taxPayByInvoice: 'Խնդրում ենք կատարել վճարումը ըստ դուրս գրված հաշվի:',
     taxFreePayBlockHeader: 'Վճարման տվյալներ՝',
-    closingD10: 'Կանխավ շնորհակալություն',
-    closingD2: 'Կանխավ շնորհակալություն',
+    closing: 'Կանխավ շնորհակալություն',
   },
   RU: {
     greeting: '🤖 Здравствуйте, уважаемый партнёр',
-    purposeD10: 'Необходимо оплатить {serviceKind} «{serviceLabel}» {periodLabel}{periodSuffix}',
-    purposeD2: 'Просим оплатить {serviceKind} «{serviceLabel}» {periodLabel}{periodSuffix}',
+    purpose: `Просим в течение ${CLIENT_PAYMENT_REMINDER_PAY_WITHIN_DAYS} дней оплатить {serviceKind} «{serviceLabel}» {periodLabel}{periodSuffix}`,
     amountLine: 'Сумма: {amount} драм',
     taxPayByInvoice: 'Пожалуйста, оплатите по выставленному счёту.',
     taxFreePayBlockHeader: 'Реквизиты для оплаты:',
-    closingD10: 'Заранее спасибо',
-    closingD2: 'Заранее спасибо',
+    closing: 'Заранее спасибо',
   },
   EN: {
     greeting: '🤖 Hello, dear partner',
-    purposeD10:
-      'Please make the {serviceKind} payment for «{serviceLabel}» {periodLabel}{periodSuffix}',
-    purposeD2:
-      'Kindly make the {serviceKind} payment for «{serviceLabel}» {periodLabel}{periodSuffix}',
+    purpose: `Please make the {serviceKind} payment for «{serviceLabel}» {periodLabel}{periodSuffix} within ${CLIENT_PAYMENT_REMINDER_PAY_WITHIN_DAYS} days`,
     amountLine: 'Amount: {amount} AMD',
     taxPayByInvoice: 'Please pay using the official invoice issued to you.',
     taxFreePayBlockHeader: 'Payment details:',
-    closingD10: 'Thank you in advance',
-    closingD2: 'Thank you in advance',
+    closing: 'Thank you in advance',
   },
 };
 
@@ -164,8 +155,8 @@ export function renderClientPaymentReminderMessage(
   input: RenderClientPaymentReminderInput,
 ): string {
   const copy = COPY[input.language];
-  const purposeTemplate = input.offsetDays === 10 ? copy.purposeD10 : copy.purposeD2;
-  const closing = input.offsetDays === 10 ? copy.closingD10 : copy.closingD2;
+  const purposeTemplate = copy.purpose;
+  const closing = copy.closing;
   const serviceKind = SERVICE_KIND[input.source][input.language];
   const periodSuffix = PERIOD_SUFFIX[input.source][input.language];
 

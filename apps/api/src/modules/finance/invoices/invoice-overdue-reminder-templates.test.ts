@@ -22,6 +22,7 @@ describe('overdue reminder templates', () => {
     expect(message).toContain('Site A');
     expect(message).toContain('120.000 դրամ');
     expect(message).toContain('դուրս գրված հաշվի');
+    expect(message).toContain('անջատումից խուսափելու համար');
     expect(message).not.toContain(TAX_FREE_PAYMENT_CARD);
   });
 
@@ -41,6 +42,7 @@ describe('overdue reminder templates', () => {
     expect(message).toContain(TAX_FREE_PAYMENT_CARD);
     expect(message).toContain(TAX_FREE_PAYMENT_ACCOUNT);
     expect(message).toContain(TAX_FREE_PAYMENT_NAME);
+    expect(message).toContain('напишите нам, чтобы избежать отключения');
   });
 
   it('renders wave 1 client service in EN', () => {

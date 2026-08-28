@@ -31,10 +31,9 @@ export class SchedulerController {
   @Post('invoice-card-reminders')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary:
-      'Invoice Card reminders: Tax official-request + D-10/D-2 WhatsApp (subscription and Client Service)',
+    summary: 'Invoice Card reminders: Tax official-request only',
     description:
-      'Yerevan calendar asOf. Official-request-due for Tax invoices past due without request. Client WhatsApp D-10/D-2 for subscription invoices and Client Service Record invoices (Product group; idempotent per invoice+offset).',
+      'Yerevan calendar asOf. Official-request-due for Tax invoices past due without request. Client WhatsApp is the manual overdue button (w1/w2), not a pre-due cron.',
   })
   async runInvoiceCardReminders() {
     return this.schedulerService.runInvoiceCardReminders();

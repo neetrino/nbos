@@ -6,6 +6,7 @@ const SKIP_LABELS: Record<OverdueReminderSkipReason, string> = {
   tax_gate: 'Official invoice request not sent',
   no_whatsapp: 'No Product WhatsApp group',
   same_day: 'Wave 1 already sent today',
+  too_soon: 'Wave 2 is only after 2 calendar days',
   max_wave: 'Both waves already sent',
   no_product_link: 'No subscription or client service',
   already_sent: 'Already sent this wave',

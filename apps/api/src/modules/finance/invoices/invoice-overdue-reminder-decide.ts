@@ -1,7 +1,4 @@
-import {
-  addCalendarDaysToKey,
-  yerevanCalendarDateKey,
-} from './yerevan-calendar-date';
+import { addCalendarDaysToKey, yerevanCalendarDateKey } from './yerevan-calendar-date';
 import {
   OVERDUE_REMINDER_MIN_DAYS_BETWEEN_WAVES,
   type OverdueReminderSkipReason,
@@ -33,8 +30,10 @@ export function decideOverdueReminderAction(
   if (!input.hasWhatsAppGroup) return { kind: 'skip', reason: 'no_whatsapp' };
   if (input.hasWave2) return { kind: 'skip', reason: 'max_wave' };
   if (input.wave1ScheduledFor == null) return { kind: 'send', wave: 1 };
+  const fromKey = yerevanCalendarDateKey(input.wave1ScheduledFor);
+  if (fromKey === input.asOfKey) return { kind: 'skip', reason: 'same_day' };
   if (!hasYerevanDayGap(input.wave1ScheduledFor, input.asOfKey)) {
-    return { kind: 'skip', reason: 'same_day' };
+    return { kind: 'skip', reason: 'too_soon' };
   }
   return { kind: 'send', wave: 2 };
 }
