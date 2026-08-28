@@ -62,7 +62,7 @@ NBOS (web + основной API) может быть на другом хост
 
 | Область                      | Ответственность                                                                                                                                                                                    |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **UI**                       | External Messenger: списки разговоров, история, composer, зоны CRM Inbox / группы / Support / Finance (по канону Messenger).                                                                       |
+| **UI**                       | External Messenger: списки разговоров, история, composer, зоны CRM Inbox / группы / Support / Finance (по канону Messenger). Company integrations: browse Gateway groups (name + chatId) with the stored URL/token. |
 | **Бизнес-связи**             | Привязка `chatId` / контекста к Project, Deal, Ticket, Invoice, Contact и т.д.                                                                                                                     |
 | **Права и UX**               | External send permission, подписи «клиент видит», audit на уровне продукта.                                                                                                                        |
 | **Notifications**            | Правила, jobs, решение «кому/когда/куда»; вызов **Gateway API**, а не WAHA.                                                                                                                        |

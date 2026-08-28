@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +15,8 @@ import {
 import { PermissionGate } from '@/lib/permissions/PermissionGate';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { whatsappGatewayApi, type WhatsAppGatewayConnectionView } from '@/lib/api/whatsapp';
+import { IntegrationBrandIcon } from './IntegrationBrandIcon';
+import { WhatsAppGatewayDirectorySheet } from './WhatsAppGatewayDirectorySheet';
 
 const GATEWAY_DESCRIPTION = 'WhatsApp Web via Gateway → product groups & messaging';
 
@@ -23,6 +24,7 @@ export function WhatsAppGatewayIntegrationsCard() {
   const [view, setView] = useState<WhatsAppGatewayConnectionView | null>(null);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [directoryOpen, setDirectoryOpen] = useState(false);
   const [baseUrl, setBaseUrl] = useState('');
   const [apiToken, setApiToken] = useState('');
   const [accountingGroupChatId, setAccountingGroupChatId] = useState('');
@@ -105,22 +107,32 @@ export function WhatsAppGatewayIntegrationsCard() {
       <div className="min-w-0">
         <section className="border-border bg-card rounded-xl border p-4">
           <div className="flex items-start gap-3">
-            <MessageCircle size={20} className="text-foreground mt-0.5 shrink-0" aria-hidden />
+            <IntegrationBrandIcon name="WhatsApp" />
             <div className="min-w-0 flex-1">
               <h3 className="text-sm font-semibold">WhatsApp Gateway</h3>
               <p className="text-muted-foreground mt-1 text-xs">{description}</p>
               {view?.lastErrorMessage ? (
                 <p className="text-destructive mt-1 truncate text-xs">{view.lastErrorMessage}</p>
               ) : null}
-              <Button
-                type="button"
-                size="sm"
-                className="mt-3"
-                disabled={loading}
-                onClick={() => setSheetOpen(true)}
-              >
-                {view?.configured ? 'Manage' : 'Connect'}
-              </Button>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={loading}
+                  onClick={() => setSheetOpen(true)}
+                >
+                  {view?.configured ? 'Manage' : 'Connect'}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={loading || !view?.configured}
+                  onClick={() => setDirectoryOpen(true)}
+                >
+                  Browse chats
+                </Button>
+              </div>
             </div>
           </div>
         </section>
@@ -218,6 +230,11 @@ export function WhatsAppGatewayIntegrationsCard() {
             </div>
           </SheetContent>
         </Sheet>
+        <WhatsAppGatewayDirectorySheet
+          open={directoryOpen}
+          onOpenChange={setDirectoryOpen}
+          configured={Boolean(view?.configured)}
+        />
       </div>
     </PermissionGate>
   );

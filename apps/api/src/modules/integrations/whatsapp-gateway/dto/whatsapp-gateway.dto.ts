@@ -1,4 +1,18 @@
-import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
+import {
+  WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE_MAX,
+  WHATSAPP_GATEWAY_DIRECTORY_SEARCH_MAX_LENGTH,
+} from '../whatsapp-gateway.constants';
 
 export class UpsertWhatsAppGatewayConnectionDto {
   @IsOptional()
@@ -40,4 +54,24 @@ export class ResendWhatsAppClientInviteDto {
   @IsOptional()
   @IsBoolean()
   forceResend?: boolean;
+}
+
+export class ListWhatsAppGatewayGroupsQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE_MAX)
+  limit?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  offset?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(WHATSAPP_GATEWAY_DIRECTORY_SEARCH_MAX_LENGTH)
+  search?: string;
 }

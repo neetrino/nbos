@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { BookUser } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { googleContactsApi, type GoogleContactsConnectionView } from '@/lib/api/google-contacts';
 import { usePermission } from '@/lib/permissions';
+import { IntegrationBrandIcon } from './IntegrationBrandIcon';
 
 const CARD_DESCRIPTION =
   'NBOS contacts → one Google account (caller ID / ATS.am # phones). Founder only.';
@@ -135,7 +135,7 @@ export function GoogleContactsIntegrationsCard() {
     <div className="min-w-0">
       <section className="border-border bg-card rounded-xl border p-4">
         <div className="flex items-start gap-3">
-          <BookUser size={20} className="text-foreground mt-0.5 shrink-0" aria-hidden />
+          <IntegrationBrandIcon name="Google Contacts" />
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-semibold">Google Contacts</h3>
             <p className="text-muted-foreground mt-1 text-xs">{description}</p>

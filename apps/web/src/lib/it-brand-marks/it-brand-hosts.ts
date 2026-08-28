@@ -65,6 +65,8 @@ export const IT_BRAND_HOSTS: ReadonlyArray<readonly [string, string]> = [
   ['telegram.org', 'telegram'],
   ['t.me', 'telegram'],
   ['whatsapp.com', 'whatsapp'],
+  ['facebook.com', 'facebook'],
+  ['instagram.com', 'instagram'],
   ['zoom.us', 'zoom'],
   ['figma.com', 'figma'],
   ['miro.com', 'miro'],
