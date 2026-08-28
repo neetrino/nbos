@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -8,6 +9,7 @@ import {
 
 export function AiAdminIconTile(props: {
   icon: LucideIcon;
+  glyph?: ReactNode;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }) {
@@ -21,7 +23,7 @@ export function AiAdminIconTile(props: {
   const iconClass = props.size === 'lg' ? 'size-6' : props.size === 'sm' ? 'size-4' : 'size-5';
   return (
     <div className={cn(tileClass, props.className)}>
-      <Icon className={iconClass} aria-hidden />
+      {props.glyph ?? <Icon className={iconClass} aria-hidden />}
     </div>
   );
 }

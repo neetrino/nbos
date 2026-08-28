@@ -13,6 +13,7 @@ import { agentStateVariant } from '../status-badge-map';
 import { AiAdminConfirmDialog } from './AiAdminConfirmDialog';
 import { AiAdminEntityRow } from './AiAdminEntityRow';
 import { AiAdminPageToolbar } from './AiAdminPageToolbar';
+import { aiAdminProviderGlyph } from './AiAdminProviderBrand';
 import { DisableImpactConfirm } from './DisableImpactConfirm';
 import { ProviderConnectDialog } from './ProviderConnectDialog';
 
@@ -150,6 +151,7 @@ function ProviderRow(props: {
   return (
     <AiAdminEntityRow
       icon={iconForProvider(row.provider)}
+      glyph={aiAdminProviderGlyph(row.provider, 'size-5')}
       title={row.name}
       description={`${row.provider} · ${row.keyPrefix}`}
       statusLabel={row.status}

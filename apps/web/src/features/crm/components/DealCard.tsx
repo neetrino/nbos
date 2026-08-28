@@ -76,7 +76,7 @@ export function DealCard({ deal, onClick, onStatusChange, onCreateTask }: DealCa
       )}
       onClick={() => onClick(deal)}
     >
-      <div className="flex items-start gap-2.5">
+      <div className={cn('flex gap-2.5', metaLabel ? 'items-start' : 'items-center')}>
         <span
           className={cn(TYPE_TINTED_BOARD_CARD_ACCENT_BAR_CLASS, chrome.readinessFillClass)}
           aria-hidden

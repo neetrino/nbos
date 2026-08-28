@@ -37,7 +37,7 @@ export const EXPENSE_STATUS_SEGMENTED_OPTIONS = [
 
 export const TAX_STATUSES = [
   { value: 'TAX', label: 'Tax' },
-  { value: 'TAX_FREE', label: 'Tax-free' },
+  { value: 'TAX_FREE', label: 'Free' },
 ] as const;
 
 /** Matches NBOS Expense Backlog reasons (`docs/NBOS/02-Modules/04-Finance/04-Expenses.md`). */

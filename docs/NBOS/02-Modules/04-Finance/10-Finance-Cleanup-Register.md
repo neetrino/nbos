@@ -179,10 +179,13 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 
 **Сделано (срез 2026-08):** Tax readiness gates — create всегда можно; `Awaiting Payment` требует Company name + tax_id; `Paid` требует актуальный official request; cancel карточки с отправленным запросом вызывает `Cancel Previous Request`. Shared + API + invoice UI.
 
+**Сделано (срез 2026-08, official WhatsApp v1):** paced outbound queue (`whatsapp.outbound-messages`, concurrency 1, 2s gap); accountant group JID on `WhatsAppGatewayConnection`; Send/Cancel реально шлют HY-шаблон в группу; `officialInvoiceRequestSent` после успеха; `govInvoiceId` скрыт в UI до EHDM.
+
+**Сделано (срез 2026-08, client WhatsApp v2):** Subscription + Client Service D-10/D-2; HY/RU/EN; `reminderLanguage` on Client Service; richer copy (amount, purpose); Tax without pay-to; Tax-Free with Hasmik personal requisites; same outbound queue; templates in code.
+
 **Остаётся:**
 
-- углубить поля official invoice request и шаблоны каналов (реальная доставка в бухгалтерский WhatsApp / EHDM);
-- добить scheduler/reminder логику после полноты official-invoice блока в runtime;
+- EHDM / Government invoice ID в UI — позже;
 - summary/order rollup — по мере появления полей (см. C8).
 
 ### C2. Subscription runtime still uses old status model

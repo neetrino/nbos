@@ -146,6 +146,7 @@ model Employee {
   atsCallsAnswered                   AtsCallEvent[]                      @relation("AtsCallAnswered")
   atsCallsInitiated                  AtsCallEvent[]                      @relation("AtsCallInitiated")
   atsCallIntents                     AtsCallIntent[]                     @relation("AtsCallIntentActor")
+  googleContactsConnections         GoogleContactsConnection[]            @relation("GoogleContactsConnectedBy")
   externalAgentsOwned                ExternalAgent[]                     @relation("ExternalAgentOwner")
   externalAgentsCreated              ExternalAgent[]                     @relation("ExternalAgentCreatedBy")
   externalAgentCredentialsCreated    ExternalAgentCredential[]           @relation("ExternalAgentCredentialCreatedBy")

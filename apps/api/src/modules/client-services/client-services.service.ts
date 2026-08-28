@@ -12,6 +12,7 @@ import {
   type ClientServiceType,
   type Prisma,
 } from '@nbos/database';
+import { PRISMA_TOKEN } from '../../database.module';
 import { parseReminderLanguage } from '../finance/subscriptions/subscription-reminder-language';
 import {
   requireClientServiceType,

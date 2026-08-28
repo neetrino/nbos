@@ -79,22 +79,22 @@ export function useDeliveryBoardMutations(
       setActionError(null);
       const targetForGate = action === 'MOVE_NEXT' ? inferMoveNextTarget(item) : null;
 
-      if (action === 'MOVE_NEXT' && targetForGate) {
-        const localErrors = getLocalDeliveryMoveNextErrors(item);
-        if (localErrors.length > 0) {
-          blockLocalGate(item, targetForGate, localErrors);
-          return;
-        }
-      }
-      if (action === 'COMPLETE') {
-        const localErrors = getLocalDeliveryCompleteErrors(item);
-        if (localErrors.length > 0) {
-          blockLocalGate(item, 'TRANSFER', localErrors);
-          return;
-        }
-      }
-
       try {
+        if (action === 'MOVE_NEXT' && targetForGate) {
+          const localErrors = getLocalDeliveryMoveNextErrors(item);
+          if (localErrors.length > 0) {
+            blockLocalGate(item, targetForGate, localErrors);
+            return;
+          }
+        }
+        if (action === 'COMPLETE') {
+          const localErrors = getLocalDeliveryCompleteErrors(item);
+          if (localErrors.length > 0) {
+            blockLocalGate(item, 'TRANSFER', localErrors);
+            return;
+          }
+        }
+
         await runBoardAction(item, action);
         options?.onStageGateClear?.();
         await onRefresh();
@@ -116,13 +116,13 @@ export function useDeliveryBoardMutations(
       setBusyItemId(itemId);
       setActionError(null);
 
-      const localErrors = getLocalDeliveryMoveStageErrors(item, target);
-      if (localErrors.length > 0) {
-        blockLocalGate(item, target, localErrors);
-        return;
-      }
-
       try {
+        const localErrors = getLocalDeliveryMoveStageErrors(item, target);
+        if (localErrors.length > 0) {
+          blockLocalGate(item, target, localErrors);
+          return;
+        }
+
         await advanceDeliveryItemToStage(item, target);
         options?.onStageGateClear?.();
         await onRefresh();

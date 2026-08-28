@@ -24,6 +24,7 @@ export type TasksListKanbanViewsProps = {
   tasks: Task[];
   myPlanStages: TaskBoardStage[];
   onTaskAction: (taskId: string, action: 'start' | 'complete' | 'reopen') => void;
+  onTaskDueDateChange: (taskId: string, dueDate: string) => void | Promise<void>;
   onTaskClick: (task: Task) => void;
   onKanbanMove: (taskId: string, from: string, toColumn: string) => void;
   onKanbanReorder: (taskId: string, columnKey: string, toIndex: number) => void;
@@ -43,6 +44,7 @@ export function TasksListKanbanViews({
   tasks,
   myPlanStages,
   onTaskAction,
+  onTaskDueDateChange,
   onTaskClick,
   onKanbanMove,
   onKanbanReorder,
@@ -64,7 +66,12 @@ export function TasksListKanbanViews({
   );
 
   const renderCard = (task: Task) => (
-    <TaskMiniCard task={task} onAction={onTaskAction} onClick={onTaskClick} />
+    <TaskMiniCard
+      task={task}
+      onAction={onTaskAction}
+      onDueDateChange={onTaskDueDateChange}
+      onClick={onTaskClick}
+    />
   );
 
   if (boardView === 'list') {

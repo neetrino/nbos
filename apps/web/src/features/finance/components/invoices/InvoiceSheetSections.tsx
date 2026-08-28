@@ -236,7 +236,7 @@ function OfficialInvoiceReadOnly({ invoice }: { invoice: InvoiceSheetInvoice }) 
   if (invoice.taxStatus !== 'TAX') {
     return (
       <p className="text-muted-foreground text-sm">
-        Tax-free invoice — accountant request is not required.
+        Free invoice — accountant request is not required.
       </p>
     );
   }
@@ -253,9 +253,6 @@ function OfficialInvoiceReadOnly({ invoice }: { invoice: InvoiceSheetInvoice }) 
   return (
     <div className="space-y-2">
       <StatusBadge label={status} variant={variant} />
-      {invoice.govInvoiceId ? (
-        <p className="text-muted-foreground font-mono text-xs">{invoice.govInvoiceId}</p>
-      ) : null}
     </div>
   );
 }

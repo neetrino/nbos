@@ -1,26 +1,37 @@
 /**
  * Single-flight refresh registry for Next.js BFF.
- * All concurrent 401s await the same Promise; max one retry of the original request.
+ * Concurrent 401s for the same AuthSession share one Nest refresh. Different
+ * sessions must never share credentials.
  */
 
-type RefreshFn = () => Promise<boolean>;
+import type { BackendRefreshResult } from './refresh-backend-session';
 
-let inflight: Promise<boolean> | null = null;
+type RefreshFn = () => Promise<BackendRefreshResult>;
+type RegistryEntry = { promise: Promise<BackendRefreshResult> };
 
-export async function runSingleFlightRefresh(refresh: RefreshFn): Promise<boolean> {
-  if (inflight) {
-    return inflight;
+const entries = new Map<string, RegistryEntry>();
+
+export async function runSingleFlightRefresh(
+  sessionId: string,
+  refresh: RefreshFn,
+): Promise<BackendRefreshResult> {
+  const existing = entries.get(sessionId);
+  if (existing) {
+    return existing.promise;
   }
-  inflight = (async () => {
-    try {
-      return await refresh();
-    } finally {
-      inflight = null;
-    }
-  })();
-  return inflight;
+
+  const entry: RegistryEntry = { promise: Promise.resolve().then(refresh) };
+  entries.set(sessionId, entry);
+
+  try {
+    return await entry.promise;
+  } finally {
+    // Share only work that is still in flight. Replaying a resolved Set-Cookie
+    // can overwrite a newer rotation completed by another web replica.
+    if (entries.get(sessionId) === entry) entries.delete(sessionId);
+  }
 }
 
 export function resetRefreshRegistryForTests(): void {
-  inflight = null;
+  entries.clear();
 }

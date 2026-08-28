@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/select';
 import type { AiModelView } from '@/lib/api/ai-admin';
 import { applySelectValue } from '../select-value';
+import { AiAdminProviderBrand } from './AiAdminProviderBrand';
 
 export function ModelSelect(props: {
   label: string;
@@ -30,7 +31,12 @@ export function ModelSelect(props: {
         <SelectContent>
           {props.models.map((model) => (
             <SelectItem key={model.id} value={model.id}>
-              {model.provider} / {model.displayName}
+              <span className="flex min-w-0 items-center gap-2">
+                <AiAdminProviderBrand provider={model.provider} className="size-3.5" />
+                <span className="truncate">
+                  {model.provider} / {model.displayName}
+                </span>
+              </span>
             </SelectItem>
           ))}
         </SelectContent>

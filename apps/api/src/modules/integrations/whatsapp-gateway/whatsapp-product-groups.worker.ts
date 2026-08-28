@@ -56,6 +56,7 @@ import {
 } from './whatsapp-client-invite-message.builder';
 import type { WhatsAppProductGroupJobPayload } from './whatsapp-product-groups-queue.service';
 import { WhatsAppProductGroupsQueueService } from './whatsapp-product-groups-queue.service';
+import { WhatsAppOutboundQueueService } from './whatsapp-outbound-queue.service';
 
 @Injectable()
 export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestroy {
@@ -70,6 +71,7 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     private readonly participants: ProductWhatsAppParticipantResolver,
     private readonly audit: AuditService,
     private readonly queue: WhatsAppProductGroupsQueueService,
+    private readonly outbound: WhatsAppOutboundQueueService,
     private readonly registry: BullmqWorkerRegistry,
     @Optional() private readonly opsAlerts?: OpsJobFailureAlertService,
   ) {}
@@ -645,10 +647,15 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     });
 
     try {
-      await this.client.sendTextMessage(config, {
-        chatId: phone.jid,
-        text: message.text,
-      });
+      await this.outbound.enqueue(
+        {
+          kind: 'client_invite',
+          chatId: phone.jid,
+          text: message.text,
+          idempotencyKey: `client_invite:${invitation.id}`,
+        },
+        true,
+      );
     } catch (error) {
       if (error instanceof WhatsAppGatewayHttpError && error.status >= 500) {
         await this.prisma.productWhatsAppClientInvitation.update({

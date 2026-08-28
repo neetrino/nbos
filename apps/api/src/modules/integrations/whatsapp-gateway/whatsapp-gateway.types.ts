@@ -63,6 +63,7 @@ export interface WhatsAppConnectionPublicView {
   lastConnectedAt: string | null;
   lastErrorCode: string | null;
   lastErrorMessage: string | null;
+  accountingGroupChatId: string | null;
 }
 
 export type ProductWhatsAppEnsureSource =

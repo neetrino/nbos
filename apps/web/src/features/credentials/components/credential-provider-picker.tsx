@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SearchField } from '@/components/shared/SearchField';
+import { ItBrandMarkIcon } from '@/components/shared/it-brand-mark/ItBrandMarkIcon';
+import { resolveItBrandMarkFromHints } from '@/lib/it-brand-marks/resolve-it-brand-mark';
 import { credentialsApi } from '@/lib/api/credentials';
 import { isProviderRequiredForType } from '@/features/credentials/credential-field-config';
 
@@ -36,14 +38,19 @@ export function CredentialProviderPicker({
   const [creating, setCreating] = useState(false);
 
   const required = isProviderRequiredForType(credentialType);
+  const brand = resolveItBrandMarkFromHints(providerName);
 
   const onSearch = useCallback(async (query: string) => {
     const items = await credentialsApi.searchProviders(query);
-    return items.map((p) => ({
-      value: p.id,
-      label: p.name,
-      subtitle: p.slug,
-    }));
+    return items.map((p) => {
+      const mark = resolveItBrandMarkFromHints(p.name, p.slug);
+      return {
+        value: p.id,
+        label: p.name,
+        subtitle: p.slug,
+        leading: mark ? <ItBrandMarkIcon mark={mark} className="size-3.5" /> : undefined,
+      };
+    });
   }, []);
 
   const openCreate = () => {
@@ -69,9 +76,16 @@ export function CredentialProviderPicker({
       <SearchField
         label={required ? 'Provider *' : 'Provider'}
         value={providerId}
-        displayValue={providerName || undefined}
         placeholder="Search providers…"
         icon={<Server size={14} />}
+        displayValue={
+          providerName ? (
+            <span className="flex min-w-0 items-center gap-2">
+              {brand ? <ItBrandMarkIcon mark={brand} className="size-3.5 shrink-0" /> : null}
+              <span className="truncate">{providerName}</span>
+            </span>
+          ) : undefined
+        }
         onSearch={onSearch}
         onSave={(id, label) => onChange(id, label)}
         onClear={() => onChange(null, '')}

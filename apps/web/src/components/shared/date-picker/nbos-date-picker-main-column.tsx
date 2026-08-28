@@ -22,6 +22,7 @@ export interface NbosDatePickerMainColumnProps {
   onClear: () => void;
   onToday: () => void;
   extended?: boolean;
+  showTypedInput?: boolean;
 }
 
 export function NbosDatePickerMainColumn({
@@ -40,16 +41,19 @@ export function NbosDatePickerMainColumn({
   onClear,
   onToday,
   extended = false,
+  showTypedInput = true,
 }: NbosDatePickerMainColumnProps) {
   return (
     <div className={cn('min-w-0 flex-1', extended && 'pr-1')}>
-      <NbosDateTypedInput
-        value={typedDraft}
-        onPartChange={onTypedPartChange}
-        onCommit={onTypedCommit}
-        disabled={disabled}
-        className="mb-3"
-      />
+      {showTypedInput ? (
+        <NbosDateTypedInput
+          value={typedDraft}
+          onPartChange={onTypedPartChange}
+          onCommit={onTypedCommit}
+          disabled={disabled}
+          className="mb-3"
+        />
+      ) : null}
       <NbosCalendarGrid
         viewMonth={viewMonth}
         selectedDate={selectedDate}

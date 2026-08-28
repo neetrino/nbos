@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { iconForCapabilityKey } from '../ai-admin-icons';
 import { AI_ADMIN_DENSE_ROW_CLASS, AI_ADMIN_PAGE_STACK_CLASS } from '../ai-admin-ui.constants';
 import { formatTimestamp } from '../format';
-import { agentStateVariant } from '../status-badge-map';
+import { executionStatusVariant } from '../status-badge-map';
 import { AiAdminIconTile } from './AiAdminIconTile';
 import { AiAdminSection } from './AiAdminSection';
 
@@ -71,6 +71,7 @@ export function UsagePanel() {
         icon={Gauge}
         title="Recent executions"
         summary={executions.length === 0 ? 'None' : `${executions.length}`}
+        summaryVariant={executions.length > 0 ? 'emerald' : 'default'}
         collapsible
         defaultOpen={executions.length > 0}
       >
@@ -101,7 +102,7 @@ function BudgetRow({ budget }: { budget: AiBudgetLimitView }) {
           {budget.currency ? ` ${budget.currency}` : ''}
         </p>
       </div>
-      <StatusBadge label={budget.behavior} variant="blue" />
+      <StatusBadge label={budget.behavior} variant="blue" className="shrink-0 self-center" />
     </li>
   );
 }
@@ -121,7 +122,11 @@ function ExecutionRow({ execution }: { execution: AiExecutionView }) {
           </p>
         </div>
       </div>
-      <StatusBadge label={execution.status} variant={agentStateVariant(execution.status)} />
+      <StatusBadge
+        label={execution.status}
+        variant={executionStatusVariant(execution.status)}
+        className="shrink-0 self-center"
+      />
     </li>
   );
 }

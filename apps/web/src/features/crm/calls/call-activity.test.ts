@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { CallActivity } from '@/lib/api/calls';
-import { formatCallDuration } from './format-call-duration';
+import { callActivityPartyName, isMissedCall, readAudioDuration } from './call-activity-status';
+import { formatPlaybackSpeedLabel, nextCallPlaybackSpeed } from './call-recording-playback';
+import { formatCallDuration, formatCallPlaybackClock } from './format-call-duration';
 import { callActivityTitle, groupCallActivitiesByDay } from './group-call-activities';
 
 const SAMPLE: CallActivity = {
@@ -32,6 +34,40 @@ describe('formatCallDuration', () => {
     expect(formatCallDuration(200)).toBe('03:20');
     expect(formatCallDuration(0)).toBe('00:00');
     expect(formatCallDuration(null)).toBe('—');
+  });
+
+  it('formats a compact playback clock', () => {
+    expect(formatCallPlaybackClock(0)).toBe('0:00');
+    expect(formatCallPlaybackClock(14)).toBe('0:14');
+    expect(formatCallPlaybackClock(95.7)).toBe('1:35');
+    expect(formatCallPlaybackClock(-1)).toBe('0:00');
+  });
+});
+
+describe('call activity card helpers', () => {
+  it('treats inbound no-answer as missed', () => {
+    expect(isMissedCall({ direction: 'INBOUND', disposition: 'NO ANSWER' })).toBe(true);
+    expect(isMissedCall({ direction: 'INBOUND', disposition: 'NO_ANSWER' })).toBe(true);
+    expect(isMissedCall({ direction: 'INBOUND', disposition: 'ANSWERED' })).toBe(false);
+    expect(isMissedCall({ direction: 'OUTBOUND', disposition: 'NO ANSWER' })).toBe(false);
+  });
+
+  it('falls back to New caller when Contact is missing', () => {
+    expect(callActivityPartyName({ contactName: null })).toBe('New caller');
+    expect(callActivityPartyName({ contactName: '  ' })).toBe('New caller');
+    expect(callActivityPartyName({ contactName: 'Movses' })).toBe('Movses');
+  });
+
+  it('keeps a duration hint when audio metadata is missing', () => {
+    expect(readAudioDuration(Number.NaN, 15)).toBe(15);
+    expect(readAudioDuration(14.2, 15)).toBe(14.2);
+  });
+
+  it('cycles playback speed 1 → 1.5 → 2 → 1', () => {
+    expect(nextCallPlaybackSpeed(1)).toBe(1.5);
+    expect(nextCallPlaybackSpeed(1.5)).toBe(2);
+    expect(nextCallPlaybackSpeed(2)).toBe(1);
+    expect(formatPlaybackSpeedLabel(1)).toBe('1.0x');
   });
 });
 

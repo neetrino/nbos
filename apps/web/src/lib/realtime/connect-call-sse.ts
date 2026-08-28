@@ -8,6 +8,7 @@ import {
   parseActiveCallSsePayload,
   type ActiveCallSsePayload,
 } from '@/features/crm/calls/active-call.types';
+import { recoverRealtimeSession } from '@/lib/auth/realtime-session';
 
 export type CallSseStatus = 'connecting' | 'connected' | 'disconnected';
 
@@ -70,7 +71,15 @@ export function connectCallSse(handlers: CallSseHandlers): { close: () => void }
       if (closed) return;
       source?.close();
       source = null;
-      scheduleReconnect();
+      void recoverRealtimeSession().then((result) => {
+        if (closed) return;
+        if (result.kind === 'session-invalid') {
+          closed = true;
+          handlers.onStatus?.('disconnected');
+          return;
+        }
+        scheduleReconnect();
+      });
     };
   };
 

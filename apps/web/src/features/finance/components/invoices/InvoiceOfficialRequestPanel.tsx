@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { FileCheck, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { InlineField, StatusBadge } from '@/components/shared';
+import { StatusBadge } from '@/components/shared';
 import { DETAIL_SHEET_SECTION_BODY_CLASS } from '@/components/shared/detail-sheet-classes';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { getOfficialInvoiceRequestSendErrors } from '@nbos/shared';
@@ -19,7 +19,6 @@ export function InvoiceOfficialRequestPanel({
   invoice,
   onUpdated,
 }: InvoiceOfficialRequestPanelProps) {
-  const [govDraft, setGovDraft] = useState(invoice.govInvoiceId ?? '');
   const [busy, setBusy] = useState(false);
 
   const runAction = useCallback(
@@ -28,7 +27,6 @@ export function InvoiceOfficialRequestPanel({
       try {
         const updated = await action();
         onUpdated(updated);
-        setGovDraft(updated.govInvoiceId ?? '');
         toast.success(successMessage);
       } catch (caught) {
         toast.error(getApiErrorMessage(caught, 'Action failed. Try again.'));
@@ -42,7 +40,7 @@ export function InvoiceOfficialRequestPanel({
   if (invoice.taxStatus !== 'TAX') {
     return (
       <p className="text-muted-foreground text-sm">
-        Tax-free invoice — accountant request is not required.
+        Free invoice — accountant request is not required.
       </p>
     );
   }
@@ -120,32 +118,6 @@ export function InvoiceOfficialRequestPanel({
           </>
         )}
       </div>
-
-      <InlineField
-        variant="controlled"
-        label="Government invoice ID"
-        type="text"
-        value={govDraft}
-        placeholder="ID from accountant after issue"
-        icon={<FileCheck size={12} />}
-        disabled={busy}
-        onValueChange={setGovDraft}
-      />
-      <Button
-        type="button"
-        size="sm"
-        variant="outline"
-        className="w-fit"
-        disabled={busy || govDraft === (invoice.govInvoiceId ?? '')}
-        onClick={() =>
-          void runAction(
-            () => invoicesApi.updateOfficialInvoiceGovId(invoice.id, govDraft.trim() || null),
-            'Government ID saved',
-          )
-        }
-      >
-        Save government ID
-      </Button>
     </div>
   );
 }

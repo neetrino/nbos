@@ -15,6 +15,7 @@ import {
   CredentialCriticalityIcon,
 } from '@/features/credentials/components/credential-meta-icon';
 import { cn } from '@/lib/utils';
+import { CredentialBrandMark } from '@/features/credentials/components/credential-brand-mark';
 
 const SHEET_TITLE_CLASS = 'text-xl font-semibold leading-tight tracking-tight';
 const SHEET_TITLE_FIELD_CLASS = cn(SHEET_TITLE_CLASS, 'min-h-7 max-w-full truncate');
@@ -32,6 +33,11 @@ export interface CredentialFormSheetHeaderProps {
   credentialId: string | null;
   name: string;
   onNameChange: (value: string) => void;
+  url?: string | null;
+  providerName?: string | null;
+  login?: string | null;
+  category?: string | null;
+  credentialType?: string | null;
   accessLevel: string;
   criticality: string;
   showSettings: boolean;
@@ -49,6 +55,11 @@ export function CredentialFormSheetHeader({
   credentialId,
   name,
   onNameChange,
+  url,
+  providerName,
+  login,
+  category,
+  credentialType,
   accessLevel,
   criticality,
   showSettings,
@@ -98,6 +109,15 @@ export function CredentialFormSheetHeader({
               editingName && 'min-w-0 flex-1',
             )}
           >
+            <CredentialBrandMark
+              url={url}
+              provider={providerName}
+              name={name}
+              login={login}
+              category={category}
+              credentialType={credentialType}
+              className="size-5 shrink-0"
+            />
             {editingName ? (
               <Input
                 ref={nameInputRef}

@@ -170,3 +170,13 @@ describe('serializeRequest', () => {
     });
   });
 });
+
+describe('logger redaction paths', () => {
+  it('redacts refresh tokens if request-body logging is enabled later', () => {
+    const params = buildLoggerParams();
+    const redact = params.pinoHttp && 'redact' in params.pinoHttp ? params.pinoHttp.redact : null;
+    expect(redact).toEqual(
+      expect.objectContaining({ paths: expect.arrayContaining(['req.body.refreshToken']) }),
+    );
+  });
+});

@@ -25,6 +25,7 @@ export function WhatsAppGatewayIntegrationsCard() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [baseUrl, setBaseUrl] = useState('');
   const [apiToken, setApiToken] = useState('');
+  const [accountingGroupChatId, setAccountingGroupChatId] = useState('');
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
 
@@ -34,6 +35,7 @@ export function WhatsAppGatewayIntegrationsCard() {
       const next = await whatsappGatewayApi.getConnection();
       setView(next);
       setBaseUrl(next.baseUrl ?? '');
+      setAccountingGroupChatId(next.accountingGroupChatId ?? '');
     } catch (error) {
       toast.error(getApiErrorMessage(error, 'Could not load WhatsApp Gateway settings.'));
     } finally {
@@ -51,6 +53,7 @@ export function WhatsAppGatewayIntegrationsCard() {
       const next = await whatsappGatewayApi.upsert({
         baseUrl: baseUrl.trim() || undefined,
         apiToken: apiToken.trim() || undefined,
+        accountingGroupChatId: accountingGroupChatId.trim(),
       });
       setView(next);
       setApiToken('');
@@ -171,6 +174,23 @@ export function WhatsAppGatewayIntegrationsCard() {
                     placeholder="gw_live_…"
                     autoComplete="off"
                   />
+                </div>
+                <div className="min-w-0 space-y-2">
+                  <label className="text-sm font-medium" htmlFor="wa-accounting-group">
+                    Accountant WhatsApp group ID
+                  </label>
+                  <Input
+                    id="wa-accounting-group"
+                    className="w-full min-w-0"
+                    value={accountingGroupChatId}
+                    onChange={(event) => setAccountingGroupChatId(event.target.value)}
+                    placeholder="1203…@g.us"
+                    autoComplete="off"
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    Stable company group for official invoice requests. Product groups stay on each
+                    product.
+                  </p>
                 </div>
               </div>
 

@@ -43,6 +43,7 @@ model Contact {
   atsCallEvents       AtsCallEvent[] @relation("AtsCallContact")
   mergedInto          Contact?       @relation("ContactMergedInto", fields: [mergedIntoId], references: [id])
   absorbedContacts    Contact[]      @relation("ContactMergedInto")
+  googleContactMapping GoogleContactMapping?
 
   @@index([trashedAt])
   @@index([phone])

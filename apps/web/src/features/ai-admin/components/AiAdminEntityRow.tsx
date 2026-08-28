@@ -18,6 +18,7 @@ export type AiAdminEntityPill = {
 
 export function AiAdminEntityRow(props: {
   icon: LucideIcon;
+  glyph?: ReactNode;
   title: string;
   description?: string | null;
   href?: string;
@@ -29,7 +30,7 @@ export function AiAdminEntityRow(props: {
   const body = (
     <>
       <div className="flex items-start gap-3">
-        <AiAdminIconTile icon={props.icon} />
+        <AiAdminIconTile icon={props.icon} glyph={props.glyph} />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">

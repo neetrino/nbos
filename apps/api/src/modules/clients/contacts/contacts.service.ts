@@ -1,4 +1,10 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  Optional,
+} from '@nestjs/common';
 import {
   PrismaClient,
   type Prisma,
@@ -16,6 +22,7 @@ import {
 } from '../../../common/lifecycle/entity-lifecycle-guards';
 import { parseLifecycleScopeFromQuery } from '../../../common/lifecycle/entity-lifecycle-scope';
 import type { ContactMergeFieldChoices } from '@nbos/shared';
+import { GoogleContactsQueueService } from '../../integrations/google-contacts/google-contacts-queue.service';
 import { mergeClientListScope } from '../client-entity-lifecycle';
 import {
   CONTACT_LIST_INCLUDE,
@@ -83,6 +90,7 @@ export class ContactsService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly auditService: AuditService,
+    @Optional() private readonly googleContactsQueue?: GoogleContactsQueueService,
   ) {}
 
   async findAll(params: ContactQueryParams) {
@@ -140,7 +148,7 @@ export class ContactsService {
   }
 
   async create(data: CreateContactDto) {
-    return this.prisma.contact.create({
+    const contact = await this.prisma.contact.create({
       data: {
         firstName: data.firstName,
         lastName: data.lastName,
@@ -153,12 +161,16 @@ export class ContactsService {
           : undefined,
       },
     });
+    await this.enqueueGoogleContactsSync(contact.id);
+    return contact;
   }
 
   async update(id: string, data: Partial<CreateContactDto>) {
     const existing = await this.findById(id);
     assertEntityIsActive(existing, 'trashedAt', 'Contact');
-    return this.prisma.$transaction((tx) => applyContactUpdate(tx, id, data));
+    const contact = await this.prisma.$transaction((tx) => applyContactUpdate(tx, id, data));
+    await this.enqueueGoogleContactsSync(id);
+    return contact;
   }
 
   async addExtraPhone(id: string, raw: string | undefined) {
@@ -182,6 +194,7 @@ export class ContactsService {
       });
     }
     await createExtraContactPhone(this.prisma, id, stored);
+    await this.enqueueGoogleContactsSync(id);
     return this.findById(id);
   }
 
@@ -198,6 +211,7 @@ export class ContactsService {
     });
     if (!extra) throw new NotFoundException(`Extra phone ${phoneId} not found`);
     await this.prisma.contactPhone.delete({ where: { id: phoneId } });
+    await this.enqueueGoogleContactsSync(id);
     return this.findById(id);
   }
 
@@ -229,11 +243,13 @@ export class ContactsService {
           'This Contact was merged into another card. Restore without un-merge is not allowed.',
       });
     }
-    return this.prisma.contact.update({
+    const restored = await this.prisma.contact.update({
       where: { id },
       data: { trashedAt: null },
       include: CONTACT_LIST_INCLUDE,
     });
+    await this.enqueueGoogleContactsSync(id);
+    return restored;
   }
 
   async findMergeCandidates(query: { q?: string; excludeId?: string }) {
@@ -253,6 +269,7 @@ export class ContactsService {
       actorRoleSlug: actor.roleSlug,
       isPlatformOwner: actor.isPlatformOwner === true,
     });
+    await this.enqueueGoogleContactsSync(survivorId);
     return this.findById(survivorId);
   }
 
@@ -262,5 +279,9 @@ export class ContactsService {
       id,
       userId,
     });
+  }
+
+  private async enqueueGoogleContactsSync(contactId: string): Promise<void> {
+    await this.googleContactsQueue?.enqueueContact(contactId);
   }
 }

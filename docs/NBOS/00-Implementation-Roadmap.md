@@ -207,7 +207,7 @@ Goal: money state is trustworthy.
 Scope:
 
 - Invoice Card lifecycle;
-- Official Invoice / tax status workflow;
+- Official Invoice / tax status workflow (v1: accountant WhatsApp via paced outbound queue + Settings group JID; client reminder copy upgrade = slice 2);
 - payments;
 - subscriptions;
 - expenses;

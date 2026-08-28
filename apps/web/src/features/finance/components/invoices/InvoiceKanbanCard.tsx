@@ -73,7 +73,7 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
               ) : null}
               {invoice.taxStatus === 'TAX' ? (
                 <StatusBadge
-                  label="TAX"
+                  label="Tax"
                   variant="green"
                   className="rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
                 />
@@ -95,7 +95,7 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
                 icon={<Calendar size={14} aria-hidden />}
                 iconClassName="bg-orange-100 text-orange-600 dark:bg-orange-950/50 dark:text-orange-400"
                 labelClassName="font-bold text-orange-500 dark:text-orange-400"
-                label={new Date(invoice.dueDate).toLocaleDateString()}
+                label={formatInvoiceCardDueDate(invoice.dueDate)}
               />
             ) : null}
             {invoice.company ? (
@@ -171,6 +171,16 @@ function MetaRow({
       <p className={cn('text-foreground/80 truncate text-xs', labelClassName)}>{label}</p>
     </div>
   );
+}
+
+function formatInvoiceCardDueDate(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 function getInvoicePaidPercent(invoice: Invoice): number | null {

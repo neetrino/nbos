@@ -1,6 +1,8 @@
 # Рабочий процесс Support
 
 > NBOS Platform — intake, исполнение, change control и эскалации
+>
+> Client communication boundary: `../09-Messenger/02-External-Messenger-and-CRM-Inbox.md` and `../09-Messenger/08-Messenger-Decision-Register.md` (`M-SUPPORT-01`).
 
 ## Назначение
 
@@ -9,18 +11,19 @@
 Важно:
 
 - Support не является доской разработки;
-- Support принимает и ведёт клиентский кейс;
-- фактическая работа исполняется через linked tasks / work spaces;
-- change requests уходят в CRM и Projects Hub.
+- Support принимает и ведёт внутренний клиентский case;
+- фактическая работа исполняется через linked Tasks / Work Spaces;
+- Change Requests уходят в CRM и Projects Hub;
+- реальная client-visible переписка остаётся в Client Messenger.
 
 ---
 
 ## Канонический workflow
 
 ```text
-Client contact / PM observation
+Client message / PM observation
         ->
-Ticket created
+Ticket created/linked when case tracking is needed
         ->
 Triage
         ->
@@ -46,27 +49,29 @@ Closed
 Ticket может появиться:
 
 - вручную PM / Support;
-- из клиентского сообщения в `Messenger`;
-- из project/product context;
-- в будущем — автоматически из AI intake или monitoring.
+- из Client Messenger message;
+- из Project/Product context;
+- в будущем — автоматически из approved AI intake или monitoring.
 
 Минимум для создания:
 
 - title;
-- project;
+- Project;
 - description;
-- contact, если известен.
+- Contact, если известен.
 
-На этом этапе ticket ещё не обязан иметь assignee и финальную категорию.
+Если Ticket создаётся из Client Messenger, сохраняются stable references на выбранные source message(s), conversation/channel context и доступные attachments. Message body не становится отдельной копией-источником истины внутри Support.
+
+На intake Ticket ещё не обязан иметь assignee и финальную категорию.
 
 ---
 
 ## 2. Triage
 
-На этапе triage PM / Support должен ответить на четыре вопроса:
+На triage PM / Support должен определить:
 
 1. Это `Incident`, `Service Request`, `Change Request` или `Problem`?
-2. Какой приоритет у кейса?
+2. Какой priority у кейса?
 3. Это support-covered кейс или платная работа?
 4. Кто должен дальше владеть исполнением?
 5. Нужен ли link на Technical Asset / Environment / Deployment?
@@ -74,10 +79,11 @@ Ticket может появиться:
 Результат triage:
 
 - заполнены category и priority;
-- ticket связан с `Project` и, если применимо, с `Product`;
+- Ticket связан с Project и, если применимо, Product;
 - заполнено coverage decision: maintenance / free / billable / extension required / rejected;
-- если это technical incident, ticket связан с Technical / Infrastructure context;
-- определён дальнейший маршрут.
+- technical incident связан с Technical / Infrastructure context;
+- определён дальнейший маршрут;
+- attention/assignee обновлены без переноса Client conversation в другой message store.
 
 ---
 
@@ -88,32 +94,27 @@ Ticket может появиться:
 Остаётся в обычном support flow:
 
 - назначается assignee;
-- создаются linked tasks;
-- ticket идёт по SLA до `Resolved`.
+- создаются linked Tasks;
+- Ticket идёт по SLA до `Resolved`.
 
 ### 3.2. Change Request
 
 Выходит из обычной очереди и идёт в `change control`.
 
-Правильный flow:
-
 ```text
 Support Ticket
-    ->
-Create / link Extension Deal
-    ->
-CRM pipeline
-    ->
-Deal Won
-    ->
-Extension in Projects Hub
-    ->
-Extension Done
-    ->
-Support Ticket Closed
+  -> Create / link Extension Deal
+  -> CRM pipeline
+  -> Deal Won
+  -> Extension in Projects Hub
+  -> execution in Product Connected Work Space
+  -> Extension Done
+  -> Support Ticket Closed
 ```
 
-Такой ticket должен быть виден в отдельном `Change Control` представлении, а не смешиваться с багами и сервисными запросами.
+Такой Ticket виден в отдельном `Change Control` представлении, а не смешивается с обычными Incidents/Service Requests.
+
+Клиентская коммуникация по исходному запросу остаётся в Client Messenger; новый Product/Deal communication path применяется по CRM/Messenger правилам, а не через публичный Support composer.
 
 ### 3.3. Problem
 
@@ -122,27 +123,28 @@ Support Ticket Closed
 - связываются incidents;
 - делается RCA;
 - создаётся action plan;
-- исполнение идёт через linked tasks;
+- исполнение идёт через linked Tasks;
 - после verification period кейс закрывается.
 
 ---
 
 ## 4. Execution
 
-Исполнение по тикету должно идти через `Tasks / Work Space`.
+Исполнение по Ticket идёт через `Tasks / Work Space`.
 
-### Правильная модель
+Правильная модель:
 
 - `Ticket` хранит customer case и SLA;
 - `Task` хранит конкретную работу;
-- несколько задач могут относиться к одному ticket;
-- задачи могут жить в product work space или в отдельном support work context.
+- несколько Tasks могут относиться к одному Ticket;
+- Tasks могут жить в Product Work Space или другом разрешённом support work context;
+- Task human Discussion использует Messaging Core.
 
-Ticket не должен быть местом, где команда пытается заменить нормальный task engine.
+Ticket не должен быть местом, где команда пытается заменить нормальный Task engine.
 
 ### 4.1. Files / Evidence
 
-Файлы тикета хранятся через Drive:
+Файлы Ticket хранятся через Drive:
 
 - screenshots;
 - logs;
@@ -151,80 +153,109 @@ Ticket не должен быть местом, где команда пытае
 - incident reports;
 - resolution documents.
 
-Support Ticket хранит links на Drive File Assets. Если ticket связан с Product, важные evidence files должны быть видны в Product Library в секции `Support History`. Temporary screenshots могут позже попасть в cleanup по правилам Drive, но incident/post-mortem материалы должны храниться дольше.
+Если evidence уже пришёл как attachment Client Message, Ticket хранит ссылку/reference на соответствующий Drive File Asset, а не создаёт дубликат файла.
+
+Если Ticket связан с Product, важные evidence files должны быть доступны в Product Library / Support History по правилам Drive. Temporary screenshots могут попадать в cleanup; incident/post-mortem материалы хранятся дольше согласно policy.
 
 ---
 
 ## 5. Communication
 
-Клиентская коммуникация остаётся частью support flow.
+Клиентская коммуникация и внутренняя работа разделены жёстко.
 
-Нужно разделять:
+### Client-visible communication
 
-- `Public updates` — что можно сообщить клиенту;
-- `Internal notes` — обсуждение команды;
-- `System activity` — смена статусов, SLA warnings, auto-close, reassignment.
+Всегда идёт через **Client Messenger** — например Product WORK/FINANCE WhatsApp conversation или Sales channel.
 
-External Messenger / WhatsApp Group не заменяет ticket.
+### Internal Support work
 
-Правильная модель:
+Живёт в:
 
-1. клиент пишет в project WhatsApp group или другой external channel;
-2. PM / Support создаёт ticket или связывает сообщение с существующим ticket;
-3. важная клиентская коммуникация отражается в ticket timeline;
-4. команда может обсуждать детали во внутренних notes/tasks;
-5. итоговое решение возвращается клиенту через external channel.
+- Ticket fields/status/activity;
+- linked Tasks and their Discussions;
+- Product/Work Space Internal conversation;
+- optional internal Ticket discussion/notes, если действительно нужен отдельный case-level internal context.
 
-В будущем это естественно вырастает в:
+Ticket internal discussion никогда не отправляет сообщение клиенту напрямую.
 
-- `Discussion`
-- `Activity Feed`
+### Source-message model
 
----
+1. клиент пишет в Client Messenger;
+2. PM/Support создаёт Ticket или связывает message с существующим Ticket;
+3. Ticket показывает значимые message references/previews;
+4. команда выполняет работу во внутренних инструментах;
+5. итоговый ответ отправляется из Client Messenger.
 
-## 6. Waiting и SLA pause
+**No `Public | Internal` composer toggle inside Ticket.**
 
-Если команда ждёт внешнее действие, ticket не должен хаотично висеть как будто никто не работает.
+### Why
 
-Правильный механизм:
-
-- установить overlay-state:
-  - `Waiting for Client`
-  - `Waiting for Third Party`
-  - `Escalated`
-- при допустимом waiting-state SLA ставится на паузу;
-- причина ожидания должна быть явно видна на карточке и в деталях тикета.
+Client Messenger уже является канонической внешней перепиской. Второй публичный composer внутри Ticket увеличивает риск accidental disclosure и дробит историю между двумя surfaces.
 
 ---
 
-## 7. Resolved -> Closed
+## 6. Attention routing
+
+Messenger attention и Support assignee — связанные, но разные понятия.
+
+Default Client WORK attention:
+
+```text
+Delivery     -> Product PM
+Maintenance  -> Support Intake queue
+```
+
+После triage конкретный Ticket получает assignee. Conversation остаётся тем же.
+
+`Support Intake` — team/role queue, а не hard-coded конкретный Employee. Это позволяет расширять Support team без миграции Product model.
+
+Manual routing/reassignment допускается.
+
+---
+
+## 7. Waiting и SLA pause
+
+Если команда ждёт внешнее действие, Ticket не должен хаотично висеть как будто никто не работает.
+
+Overlay states:
+
+- `Waiting for Client`;
+- `Waiting for Third Party`;
+- `Escalated`.
+
+При допустимом waiting-state SLA может ставиться на паузу. Причина ожидания должна быть явно видна.
+
+При `Waiting for Client` фактический вопрос/ответ клиенту всё равно идёт через Client Messenger; Ticket фиксирует state и reference на релевантную коммуникацию при необходимости.
+
+---
+
+## 8. Resolved -> Closed
 
 Когда linked work выполнена:
 
-1. ticket получает `resolution summary`;
-2. linked tasks / technical action имеют понятный результат;
-3. клиент уведомляется;
-4. ticket переходит в `Resolved`;
-5. после подтверждения или автозакрытия уходит в `Closed`.
+1. Ticket получает `resolution summary`;
+2. linked Tasks/technical action имеют понятный результат;
+3. клиент уведомляется через Client Messenger;
+4. Ticket переходит в `Resolved`;
+5. после подтверждения/правила закрытия уходит в `Closed`.
 
 Если клиент пишет, что проблема осталась:
 
-- ticket возвращается в `In Progress`;
-- это фиксируется как `reopen event`.
+- исходный Client conversation остаётся тем же;
+- Ticket возвращается в `In Progress`;
+- фиксируется `reopen event`.
 
 ---
 
-## 8. Эскалации
-
-Support должен поддерживать два типа эскалации.
+## 9. Эскалации
 
 ### SLA escalation
 
-Автоматическая эскалация при риске или нарушении SLA:
+Автоматическая эскалация при риске/нарушении SLA:
 
 - приближение к breach;
-- breach по first response;
-- breach по resolution.
+- breach first response;
+- breach resolution.
 
 ### Managerial escalation
 
@@ -235,52 +266,48 @@ Support должен поддерживать два типа эскалации
 - клиент угрожает уходом;
 - проблема за пределами обычной компетенции.
 
+Эскалация может менять attention/assignee/observers, но не создаёт новый Client conversation автоматически.
+
 ---
 
-## 9. Change Control как мост между модулями
-
-`Support` должен быть точкой входа запроса, а не местом продажи доработки.
-
-Канонический мост:
+## 10. Change Control как мост между модулями
 
 ```text
 Support
-    ->
-Extension Deal in CRM
-    ->
-Order / Delivery handoff
-    ->
-Extension in Projects Hub
-    ->
-Tasks / Work Space execution
-    ->
-Support ticket closes
+  -> Extension Deal in CRM
+  -> Order / Delivery handoff
+  -> Extension in Projects Hub
+  -> Tasks / Product Work Space execution
+  -> Support Ticket closes
 ```
 
+Support — точка case-management, CRM — коммерческий цикл, Projects/Tasks — delivery, Client Messenger — внешняя коммуникация.
+
 ---
 
-## 10. Операционный обзор
+## 11. Операционный обзор
 
-Support Lead / PM должен регулярно смотреть:
+Support Lead / PM должен регулярно видеть:
 
-- новые tickets без triage;
+- новые Tickets без triage;
 - breached / risk SLA;
 - unresolved P1/P2;
-- change requests waiting in CRM;
-- projects with abnormal ticket volume;
-- repeated incidents that deserve `Problem`.
-
-Это важнее, чем жёсткое описание “что делать в 09:00 и 17:30”.
+- Change Requests waiting in CRM;
+- Projects with abnormal Ticket volume;
+- repeated Incidents that deserve `Problem`;
+- Client WORK conversations in Maintenance with unresolved attention.
 
 ---
 
-## 11. Будущие расширения
+## 12. Будущие расширения
 
 Канон оставляет место для:
 
 - AI-assisted intake and triage;
 - self-service client portal;
-- monitoring-generated incidents;
+- monitoring-generated Incidents;
 - CSAT after close;
 - knowledge base;
-- richer messenger-driven support flows.
+- richer Messenger-driven support flows.
+
+Future AI must preserve the same boundary: AI may help classify/draft/route, but Client Messenger remains the external conversation source of truth and Support remains internal case management.

@@ -1,14 +1,10 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaClient, type SubscriptionReminderLanguage } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import { WhatsAppGatewayClient } from '../../integrations/whatsapp-gateway/whatsapp-gateway.client';
-import { WhatsAppGatewayConnectionService } from '../../integrations/whatsapp-gateway/whatsapp-gateway-connection.service';
+import { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
 import { isOfficialRequestBlockingTaxReminders } from './invoice-official-request';
-import { enqueueAndSendPaymentReminder } from './invoice-payment-reminder-enqueue';
-import {
-  renderResolvedPaymentReminderMessage,
-  resolvePaymentReminderCopy,
-} from './invoice-payment-reminder-copy';
+import { InvoiceOfficialWhatsAppService } from './invoice-official-whatsapp.service';
+import { tryDeliverPaymentReminderWhatsApp } from './invoice-payment-reminder-whatsapp';
 import { resolveInvoiceProductWhatsAppGroup } from './invoice-product-whatsapp-resolve';
 import { createInvoiceReminderNotificationJob } from './invoice-reminder-job-create';
 import {
@@ -18,6 +14,10 @@ import {
   SUBSCRIPTION_PAYMENT_REMINDER_DAYS_BEFORE_DUE,
   type SubscriptionPaymentReminderOffsetDays,
 } from './subscription-payment-reminder.constants';
+import {
+  renderPaymentReminderMessage,
+  resolvePaymentReminderRenderInput,
+} from './invoice-payment-reminder-render';
 import {
   isYerevanDueOffsetDay,
   yerevanCalendarDateKey,
@@ -61,9 +61,10 @@ interface PaymentReminderCandidate {
   company: { name: string } | null;
   clientServiceRecord: {
     notificationsEnabled: boolean;
-    name: string;
-    productId: string | null;
     reminderLanguage: SubscriptionReminderLanguage;
+    productId: string | null;
+    name: string;
+    product: { id: string; name: string } | null;
   } | null;
   subscription: {
     productId: string;
@@ -79,8 +80,8 @@ export class InvoiceCardRemindersService {
 
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
-    @Optional() private readonly whatsappConnection?: WhatsAppGatewayConnectionService,
-    @Optional() private readonly whatsappClient?: WhatsAppGatewayClient,
+    @Optional() private readonly officialWhatsApp?: InvoiceOfficialWhatsAppService,
+    @Optional() private readonly outbound?: WhatsAppOutboundQueueService,
   ) {}
 
   async runDueInvoiceCardReminders(params: InvoiceReminderRunParams = {}) {
@@ -120,6 +121,7 @@ export class InvoiceCardRemindersService {
     for (const invoice of candidates) {
       const dueDate = invoice.dueDate;
       if (dueDate == null) continue;
+      if (invoice.subscription == null && invoice.clientServiceRecord == null) continue;
       if (!isPaymentReminderEligible(invoice)) continue;
       for (const offsetDays of SUBSCRIPTION_PAYMENT_REMINDER_DAYS_BEFORE_DUE) {
         if (!isYerevanDueOffsetDay(asOf, dueDate, offsetDays)) continue;
@@ -156,24 +158,19 @@ export class InvoiceCardRemindersService {
     const window = yerevanDueDateWindowForOffsets(asOf, maxOffset);
     return this.prisma.invoice.findMany({
       where: {
-        moneyStatus: { in: [...REMINDER_ELIGIBLE_MONEY_STATUSES] },
-        dueDate: { gte: window.gte, lte: window.lte },
-        notificationsEnabled: true,
         OR: [
           {
             subscriptionId: { not: null },
             subscription: { is: { notificationsEnabled: true } },
-            OR: [
-              { clientServiceRecordId: null },
-              { clientServiceRecord: { is: { notificationsEnabled: true } } },
-            ],
           },
           {
-            subscriptionId: null,
             clientServiceRecordId: { not: null },
             clientServiceRecord: { is: { notificationsEnabled: true } },
           },
         ],
+        moneyStatus: { in: [...REMINDER_ELIGIBLE_MONEY_STATUSES] },
+        dueDate: { gte: window.gte, lte: window.lte },
+        notificationsEnabled: true,
       },
       select: paymentReminderSelect,
     });
@@ -187,27 +184,35 @@ export class InvoiceCardRemindersService {
     const type = INVOICE_CARD_REMINDER_TYPES.OFFICIAL_REQUEST_DUE;
     const dedupeKey = `invoice_card:${type}:${invoice.id}:${asOfKey}`;
     const existing = await this.prisma.notificationJob.findUnique({ where: { dedupeKey } });
-    if (existing) return { created: false as const, type, invoiceId: invoice.id };
-
-    const productWhatsApp = await resolveInvoiceProductWhatsAppGroup(this.prisma, invoice.id);
-    await createInvoiceReminderNotificationJob(this.prisma, {
-      type,
-      invoiceId: invoice.id,
-      dedupeKey,
-      idempotencyKey: `invoice-card-reminder:${type}:${invoice.id}:${asOfKey}`,
-      scheduledFor: asOf,
-      payload: {
-        invoiceCode: invoice.code,
-        amount: String(invoice.amount),
-        dueDate: invoice.dueDate?.toISOString() ?? null,
-        companyName: invoice.company?.name ?? null,
-        asOf: asOf.toISOString(),
-        asOfYerevan: asOfKey,
-        productId: productWhatsApp?.productId ?? null,
-        whatsappGroupChatId: productWhatsApp?.groupChatId ?? null,
-      },
-    });
-    return { created: true as const, type, invoiceId: invoice.id };
+    if (!existing) {
+      const productWhatsApp = await resolveInvoiceProductWhatsAppGroup(this.prisma, invoice.id);
+      await createInvoiceReminderNotificationJob(this.prisma, {
+        type,
+        invoiceId: invoice.id,
+        dedupeKey,
+        idempotencyKey: `invoice-card-reminder:${type}:${invoice.id}:${asOfKey}`,
+        scheduledFor: asOf,
+        payload: {
+          invoiceCode: invoice.code,
+          amount: String(invoice.amount),
+          dueDate: invoice.dueDate?.toISOString() ?? null,
+          companyName: invoice.company?.name ?? null,
+          asOf: asOf.toISOString(),
+          asOfYerevan: asOfKey,
+          productId: productWhatsApp?.productId ?? null,
+          whatsappGroupChatId: productWhatsApp?.groupChatId ?? null,
+        },
+      });
+    }
+    try {
+      await this.officialWhatsApp?.enqueueDueSend(invoice.id, asOfKey);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `Official request WhatsApp enqueue failed invoice=${invoice.code}: ${message}`,
+      );
+    }
+    return { created: existing ? (false as const) : (true as const), type, invoiceId: invoice.id };
   }
 
   private async createPaymentReminderJob(
@@ -217,12 +222,34 @@ export class InvoiceCardRemindersService {
     asOfKey: string,
   ) {
     const dueDate = invoice.dueDate;
-    const copy = resolvePaymentReminderCopy(invoice);
-    const type = paymentReminderEventTypeForOffset(offsetDays);
-    if (dueDate == null || copy == null) {
-      return { created: false as const, type, invoiceId: invoice.id, reason: 'existing' as const };
+    if (dueDate == null) {
+      return {
+        created: false as const,
+        type: paymentReminderEventTypeForOffset(offsetDays),
+        invoiceId: invoice.id,
+        reason: 'existing' as const,
+      };
     }
 
+    const resolved = resolvePaymentReminderRenderInput({
+      amount: invoice.amount,
+      taxStatus: invoice.taxStatus,
+      coverageStartMonth: invoice.coverageStartMonth,
+      dueDate,
+      offsetDays,
+      subscription: invoice.subscription,
+      clientServiceRecord: invoice.clientServiceRecord,
+    });
+    if (resolved == null) {
+      return {
+        created: false as const,
+        type: paymentReminderEventTypeForOffset(offsetDays),
+        invoiceId: invoice.id,
+        reason: 'existing' as const,
+      };
+    }
+
+    const type = paymentReminderEventTypeForOffset(offsetDays);
     const dedupeKey = buildSubscriptionPaymentReminderDedupeKey(invoice.id, offsetDays);
     const existing = await this.prisma.notificationJob.findUnique({ where: { dedupeKey } });
     if (existing) {
@@ -234,29 +261,47 @@ export class InvoiceCardRemindersService {
       this.logger.warn(
         `Payment reminder skipped (no Product WhatsApp group): invoice=${invoice.code} offset=d${offsetDays}`,
       );
-      return { created: false as const, type, invoiceId: invoice.id, reason: 'no_whatsapp' as const };
+      return {
+        created: false as const,
+        type,
+        invoiceId: invoice.id,
+        reason: 'no_whatsapp' as const,
+      };
     }
 
-    const messageText = renderResolvedPaymentReminderMessage(copy, offsetDays);
-    await enqueueAndSendPaymentReminder({
-      prisma: this.prisma,
-      connection: this.whatsappConnection,
-      client: this.whatsappClient,
+    const { language, productName } = resolved;
+    const messageText = renderPaymentReminderMessage(resolved);
+    const job = await createInvoiceReminderNotificationJob(this.prisma, {
       type,
       invoiceId: invoice.id,
-      invoiceCode: invoice.code,
-      amount: invoice.amount,
-      dueDate,
-      copy,
-      offsetDays,
-      asOf,
-      asOfKey,
-      companyName: invoice.company?.name ?? null,
-      productId: productWhatsApp.productId,
-      groupChatId: productWhatsApp.groupChatId,
       dedupeKey,
       idempotencyKey: buildSubscriptionPaymentReminderIdempotencyKey(invoice.id, offsetDays),
-      messageText,
+      scheduledFor: asOf,
+      payload: {
+        invoiceId: invoice.id,
+        invoiceCode: invoice.code,
+        code: invoice.code,
+        amount: String(invoice.amount),
+        dueDate: dueDate.toISOString(),
+        coverageStartMonth: invoice.coverageStartMonth,
+        productId: productWhatsApp.productId,
+        productName,
+        language,
+        offsetDays,
+        whatsappGroupChatId: productWhatsApp.groupChatId,
+        messageText,
+        asOf: asOf.toISOString(),
+        asOfYerevan: asOfKey,
+        companyName: invoice.company?.name ?? null,
+      },
+    });
+    await tryDeliverPaymentReminderWhatsApp({
+      prisma: this.prisma,
+      outbound: this.outbound,
+      jobId: job.jobId,
+      chatId: productWhatsApp.groupChatId,
+      text: messageText,
+      idempotencyKey: dedupeKey,
     });
     return { created: true as const, type, invoiceId: invoice.id };
   }
@@ -265,12 +310,11 @@ export class InvoiceCardRemindersService {
 function isPaymentReminderEligible(invoice: PaymentReminderCandidate): boolean {
   if (invoice.moneyStatus === 'ON_HOLD') return false;
   if (!invoice.notificationsEnabled) return false;
-  if (invoice.subscription) {
+  if (invoice.subscription != null) {
     if (!invoice.subscription.notificationsEnabled) return false;
-  } else if (!invoice.clientServiceRecord) {
-    return false;
-  }
-  if (invoice.clientServiceRecord && !invoice.clientServiceRecord.notificationsEnabled) {
+  } else if (invoice.clientServiceRecord != null) {
+    if (!invoice.clientServiceRecord.notificationsEnabled) return false;
+  } else {
     return false;
   }
   if (isOfficialRequestBlockingTaxReminders(invoice)) return false;

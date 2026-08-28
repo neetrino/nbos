@@ -70,6 +70,10 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
     confirmPendingTypeChange,
     showSettings,
     setShowSettings,
+    url,
+    providerName,
+    login,
+    category,
     isFavorite,
     toggleFavorite,
     dirty,
@@ -119,6 +123,11 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
               credentialId={credentialId}
               name={name}
               onNameChange={setName}
+              url={url}
+              providerName={providerName}
+              login={login}
+              category={category}
+              credentialType={credentialType}
               accessLevel={accessLevel}
               criticality={criticality}
               showSettings={showSettings}

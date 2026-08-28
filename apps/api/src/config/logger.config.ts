@@ -22,6 +22,7 @@ const REDACT_PATHS = [
   'req.body.newPassword',
   'req.body.token',
   'req.body.accessToken',
+  'req.body.refreshToken',
   'req.body.client_secret',
   'req.body.access_token',
 ];

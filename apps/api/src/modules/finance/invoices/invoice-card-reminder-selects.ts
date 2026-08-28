@@ -25,9 +25,10 @@ export const paymentReminderSelect = {
   clientServiceRecord: {
     select: {
       notificationsEnabled: true,
-      name: true,
-      productId: true,
       reminderLanguage: true,
+      productId: true,
+      name: true,
+      product: { select: { id: true, name: true } },
     },
   },
   subscription: {

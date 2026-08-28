@@ -100,7 +100,7 @@ describe('InvoiceCardRemindersService', () => {
             offsetDays: 10,
             language: 'HY',
             productName: 'Acme Site',
-            messageText: expect.stringContaining('բաժանորդագրության'),
+            messageText: expect.stringContaining('Հարկավոր է'),
           }),
         }),
       }),
@@ -134,7 +134,41 @@ describe('InvoiceCardRemindersService', () => {
           payload: expect.objectContaining({
             offsetDays: 2,
             language: 'EN',
-            messageText: expect.stringContaining('Kindly make the monthly payment'),
+            messageText: expect.stringContaining('Kindly make the monthly subscription payment'),
+          }),
+        }),
+      }),
+    );
+  });
+
+  it('creates D-2 payment reminder for client service invoice', async () => {
+    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      clientServicePaymentCandidate({
+        id: 'inv-cs',
+        dueDate: new Date('2026-05-15T00:00:00+04:00'),
+        reminderLanguage: 'RU',
+      }),
+    ]);
+
+    const result = await service.runDueInvoiceCardReminders({
+      asOf: new Date('2026-05-13T12:00:00+04:00'),
+    });
+
+    expect(result.created).toEqual([
+      {
+        created: true,
+        type: SUBSCRIPTION_PAYMENT_REMINDER_EVENT_TYPES.D2,
+        invoiceId: 'inv-cs',
+      },
+    ]);
+    expect(prisma.notificationEvent.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          payload: expect.objectContaining({
+            offsetDays: 2,
+            language: 'RU',
+            productName: 'example.com',
+            messageText: expect.stringContaining('Просим оплатить'),
           }),
         }),
       }),
@@ -189,66 +223,16 @@ describe('InvoiceCardRemindersService', () => {
     expect(result.created).toEqual([]);
   });
 
-  it('creates D-10 client-service reminder when invoice has no subscription', async () => {
-    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
-      {
-        ...paymentCandidate({
-          id: 'inv-csr',
-          coverageStartMonth: null,
-          dueDate: new Date('2026-05-15T00:00:00+04:00'),
-        }),
-        subscription: null,
-        clientServiceRecord: {
-          notificationsEnabled: true,
-          name: 'example.am domain',
-          productId: 'prod-1',
-          reminderLanguage: 'HY',
-        },
-      },
-    ]);
-
-    const result = await service.runDueInvoiceCardReminders({
-      asOf: new Date('2026-05-05T12:00:00+04:00'),
-    });
-
-    expect(result.created).toEqual([
-      {
-        created: true,
-        type: SUBSCRIPTION_PAYMENT_REMINDER_EVENT_TYPES.D10,
-        invoiceId: 'inv-csr',
-      },
-    ]);
-    expect(prisma.notificationEvent.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        create: expect.objectContaining({
-          payload: expect.objectContaining({
-            kind: 'client_service',
-            language: 'HY',
-            productName: 'example.am domain',
-            messageText: expect.stringContaining('ծառայության'),
-          }),
-        }),
-      }),
-    );
-  });
-
   it('skips client-service D-10 when CSR notifications are off', async () => {
-    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
-      {
-        ...paymentCandidate({
-          id: 'inv-csr-off',
-          coverageStartMonth: null,
-          dueDate: new Date('2026-05-15T00:00:00+04:00'),
-        }),
-        subscription: null,
-        clientServiceRecord: {
-          notificationsEnabled: false,
-          name: 'example.am domain',
-          productId: 'prod-1',
-          reminderLanguage: 'HY',
-        },
-      },
-    ]);
+    const candidate = clientServicePaymentCandidate({
+      id: 'inv-csr-off',
+      dueDate: new Date('2026-05-15T00:00:00+04:00'),
+    });
+    candidate.clientServiceRecord = {
+      ...candidate.clientServiceRecord,
+      notificationsEnabled: false,
+    };
+    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([candidate]);
 
     const result = await service.runDueInvoiceCardReminders({
       asOf: new Date('2026-05-05T12:00:00+04:00'),
@@ -280,6 +264,24 @@ function paymentCandidate(
   };
 }
 
+function clientServicePaymentCandidate(
+  overrides: Partial<ReturnType<typeof baseClientServicePayment>> & {
+    reminderLanguage?: string;
+  } = {},
+) {
+  const { reminderLanguage, ...rest } = overrides;
+  const base = baseClientServicePayment();
+  return {
+    ...base,
+    ...rest,
+    clientServiceRecord: {
+      ...base.clientServiceRecord,
+      ...(reminderLanguage ? { reminderLanguage } : {}),
+    },
+    subscription: null,
+  };
+}
+
 function baseOfficial() {
   return {
     id: 'inv-1',
@@ -307,17 +309,35 @@ function basePayment() {
     officialInvoiceRequestSent: false,
     notificationsEnabled: true,
     company: { name: 'ACME' },
-    clientServiceRecord: {
-      notificationsEnabled: true,
-      name: 'Acme Site',
-      productId: 'prod-1',
-      reminderLanguage: 'HY',
-    },
+    clientServiceRecord: null,
     subscription: {
       productId: 'prod-1',
       notificationsEnabled: true,
       reminderLanguage: 'HY' as const,
       product: { id: 'prod-1', name: 'Acme Site' },
+    },
+  };
+}
+
+function baseClientServicePayment() {
+  return {
+    id: 'inv-cs-pay',
+    code: 'INV-CS',
+    amount: 45000,
+    dueDate: new Date('2026-05-15T00:00:00+04:00'),
+    coverageStartMonth: null,
+    taxStatus: 'TAX',
+    moneyStatus: 'AWAITING_PAYMENT',
+    officialInvoiceRequestSent: true,
+    notificationsEnabled: true,
+    company: { name: 'ACME' },
+    subscription: null,
+    clientServiceRecord: {
+      notificationsEnabled: true,
+      reminderLanguage: 'RU' as const,
+      productId: 'prod-1',
+      name: 'example.com',
+      product: { id: 'prod-1', name: 'Example Product' },
     },
   };
 }

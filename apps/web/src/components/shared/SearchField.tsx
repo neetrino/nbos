@@ -1,23 +1,16 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
-import { Search, X, Plus, Pencil, Loader2 } from 'lucide-react';
+import { Search, X, Plus, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import {
-  DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
-  DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS,
-  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
-} from './detail-sheet-classes';
+  SearchFieldClosedValue,
+  SearchFieldOptionButton,
+  type SearchOption,
+} from './search-field-option';
 
 const DEFAULT_MAX_RESULTS = 5;
-
-interface SearchOption {
-  value: string;
-  label: string;
-  subtitle?: string;
-}
 
 interface SearchFieldBaseProps {
   label: string;
@@ -248,22 +241,13 @@ export function SearchField(props: SearchFieldProps) {
 
             {!loading &&
               results.map((opt, i) => (
-                <button
+                <SearchFieldOptionButton
                   key={opt.value}
-                  onClick={() => handleSelect(opt.value, opt.label)}
-                  className={cn(
-                    'hover:bg-muted flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors',
-                    i === highlightIdx && 'bg-muted',
-                    saving && 'pointer-events-none opacity-50',
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-foreground truncate text-sm font-medium">{opt.label}</p>
-                    {opt.subtitle && (
-                      <p className="text-muted-foreground truncate text-[11px]">{opt.subtitle}</p>
-                    )}
-                  </div>
-                </button>
+                  option={opt}
+                  highlighted={i === highlightIdx}
+                  saving={saving}
+                  onSelect={handleSelect}
+                />
               ))}
 
             {onNew && (
@@ -282,52 +266,18 @@ export function SearchField(props: SearchFieldProps) {
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-2">
-          <div
-            onClick={() => {
-              if (!disabled) setOpen(true);
-            }}
-            className={cn(
-              DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-              DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
-              'text-foreground flex-1 rounded-xl px-3 py-2 text-sm',
-              disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
-            )}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {displayValue ??
-                  (hasValue ? (
-                    <span className="text-foreground">{value}</span>
-                  ) : (
-                    <span className="text-muted-foreground">{placeholder ?? 'Not set'}</span>
-                  ))}
-              </div>
-              <div className="flex items-center gap-1">
-                {onClear && hasValue ? (
-                  <button
-                    type="button"
-                    onMouseDown={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                    }}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleClear();
-                    }}
-                    disabled={saving}
-                    className={DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS}
-                    aria-label={`Clear ${label}`}
-                  >
-                    <X size={16} />
-                  </button>
-                ) : null}
-                <Pencil size={16} className={DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS} aria-hidden />
-              </div>
-            </div>
-          </div>
-          {newBadge}
-        </div>
+        <SearchFieldClosedValue
+          label={label}
+          value={value}
+          displayValue={displayValue}
+          placeholder={placeholder}
+          hasValue={hasValue}
+          disabled={disabled}
+          saving={saving}
+          newBadge={newBadge}
+          onOpen={() => setOpen(true)}
+          onClear={onClear ? handleClear : undefined}
+        />
       )}
     </div>
   );
