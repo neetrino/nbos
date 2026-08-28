@@ -1,8 +1,9 @@
 import type { PrismaClient } from '@nbos/database';
 
 /**
- * Resolves Product WhatsApp group target for invoice / subscription client reminders.
- * Prefer Subscription.productId, then Order.productId. Never Project-level groups.
+ * Resolves Product WhatsApp group for client billing reminders.
+ * Prefer Subscription.productId, then Client Service Record.productId, then Order.productId.
+ * Never Project-level groups.
  */
 export async function resolveInvoiceProductWhatsAppGroup(
   prisma: InstanceType<typeof PrismaClient>,
@@ -12,8 +13,8 @@ export async function resolveInvoiceProductWhatsAppGroup(
     where: { id: invoiceId },
     select: {
       subscription: { select: { productId: true } },
-      order: { select: { productId: true } },
       clientServiceRecord: { select: { productId: true } },
+      order: { select: { productId: true } },
     },
   });
   if (!invoice) return null;

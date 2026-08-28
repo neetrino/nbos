@@ -360,12 +360,12 @@ Anchor: `Invoice.dueDate` (не Billing Day). Timezone for day math: **Asia/Yere
 | D-10   | `dueDate − 10` days     | `finance.invoice.payment_reminder_d10` | once per invoice |
 | D-2    | `dueDate − 2` days      | `finance.invoice.payment_reminder_d2`  | once per invoice |
 
-- Language: `Subscription.reminderLanguage` (`HY` / `RU` / `EN`, default `HY`).
-- Placeholders: `{productName}` = `Product.name`; `{month}` = localized `coverageStartMonth`.
+- Language: `Subscription.reminderLanguage` or `ClientServiceRecord.reminderLanguage` (`HY` / `RU` / `EN`, default `HY`).
+- Placeholders: subscription `{productName}` = `Product.name`; client-service `{serviceName}` = `ClientServiceRecord.name`; `{month}` = localized `coverageStartMonth` (else Yerevan month of `dueDate`).
 - No catch-up: if the invoice is created after the D-10 day, D-10 is skipped; D-2 still fires on its day.
 - Tax + official request not sent → block client payment reminders (accountant path separate).
 - Tax billing cards are created in `New`. They cannot enter `Awaiting Payment` or `Paid` until company requisites / official request gates pass (see Invoices canon).
-- Target: Product WhatsApp Group via `subscription.productId`.
+- Target: Product WhatsApp Group via `subscription.productId`, else `ClientServiceRecord.productId`. Never Project-level.
 
 ### Типы уведомлений (смежные)
 

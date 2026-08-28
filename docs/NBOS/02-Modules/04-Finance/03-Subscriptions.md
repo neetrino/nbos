@@ -97,8 +97,8 @@ Ownership rule (required):
 
 Anchor date: `Invoice.dueDate` (pay-by). Offsets: **10** and **2** calendar days before due (Yerevan calendar). Each offset fires **once** per invoice (idempotent; no catch-up if the invoice appears after the D-10 day).
 
-- Target: **Product WhatsApp Group** via `subscription.productId`.
-- Copy uses `Product.name`, localized month from `Invoice.coverageStartMonth`, **amount**, and `tax_status` in `reminder_language`.
+- Target: **Product WhatsApp Group** via `subscription.productId`. Client Service invoices without a subscription use the same D-10 / D-2 path via **`ClientServiceRecord.productId`** (same Product group; copy names the service, language = `ClientServiceRecord.reminderLanguage`).
+- Copy uses `Product.name` (subscription) or `ClientServiceRecord.name` (client-service), localized month from `Invoice.coverageStartMonth`, **amount**, and `tax_status` in `reminder_language`.
 - **Tax:** amount + purpose + pay-by-official-invoice line; **no** bank/card details.
 - **Tax-Free:** same + personal pay-to block (Hasmik card/account; constants in API code).
 - Tax gate: if `taxStatus = TAX` and official invoice request not sent → **no** client payment reminder (accountant official-request path is separate).

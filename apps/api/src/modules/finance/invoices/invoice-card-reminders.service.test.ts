@@ -222,6 +222,25 @@ describe('InvoiceCardRemindersService', () => {
 
     expect(result.created).toEqual([]);
   });
+
+  it('skips client-service D-10 when CSR notifications are off', async () => {
+    const candidate = clientServicePaymentCandidate({
+      id: 'inv-csr-off',
+      dueDate: new Date('2026-05-15T00:00:00+04:00'),
+    });
+    candidate.clientServiceRecord = {
+      ...candidate.clientServiceRecord,
+      notificationsEnabled: false,
+    };
+    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([candidate]);
+
+    const result = await service.runDueInvoiceCardReminders({
+      asOf: new Date('2026-05-05T12:00:00+04:00'),
+    });
+
+    expect(result.created).toEqual([]);
+    expect(prisma.notificationJob.create).not.toHaveBeenCalled();
+  });
 });
 
 function officialCandidate(overrides: Partial<ReturnType<typeof baseOfficial>>) {
