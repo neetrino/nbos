@@ -188,6 +188,75 @@ describe('InvoiceCardRemindersService', () => {
 
     expect(result.created).toEqual([]);
   });
+
+  it('creates D-10 client-service reminder when invoice has no subscription', async () => {
+    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      {
+        ...paymentCandidate({
+          id: 'inv-csr',
+          coverageStartMonth: null,
+          dueDate: new Date('2026-05-15T00:00:00+04:00'),
+        }),
+        subscription: null,
+        clientServiceRecord: {
+          notificationsEnabled: true,
+          name: 'example.am domain',
+          productId: 'prod-1',
+          reminderLanguage: 'HY',
+        },
+      },
+    ]);
+
+    const result = await service.runDueInvoiceCardReminders({
+      asOf: new Date('2026-05-05T12:00:00+04:00'),
+    });
+
+    expect(result.created).toEqual([
+      {
+        created: true,
+        type: SUBSCRIPTION_PAYMENT_REMINDER_EVENT_TYPES.D10,
+        invoiceId: 'inv-csr',
+      },
+    ]);
+    expect(prisma.notificationEvent.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          payload: expect.objectContaining({
+            kind: 'client_service',
+            language: 'HY',
+            productName: 'example.am domain',
+            messageText: expect.stringContaining('ծառայության'),
+          }),
+        }),
+      }),
+    );
+  });
+
+  it('skips client-service D-10 when CSR notifications are off', async () => {
+    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      {
+        ...paymentCandidate({
+          id: 'inv-csr-off',
+          coverageStartMonth: null,
+          dueDate: new Date('2026-05-15T00:00:00+04:00'),
+        }),
+        subscription: null,
+        clientServiceRecord: {
+          notificationsEnabled: false,
+          name: 'example.am domain',
+          productId: 'prod-1',
+          reminderLanguage: 'HY',
+        },
+      },
+    ]);
+
+    const result = await service.runDueInvoiceCardReminders({
+      asOf: new Date('2026-05-05T12:00:00+04:00'),
+    });
+
+    expect(result.created).toEqual([]);
+    expect(prisma.notificationJob.create).not.toHaveBeenCalled();
+  });
 });
 
 function officialCandidate(overrides: Partial<ReturnType<typeof baseOfficial>>) {
@@ -238,7 +307,12 @@ function basePayment() {
     officialInvoiceRequestSent: false,
     notificationsEnabled: true,
     company: { name: 'ACME' },
-    clientServiceRecord: { notificationsEnabled: true },
+    clientServiceRecord: {
+      notificationsEnabled: true,
+      name: 'Acme Site',
+      productId: 'prod-1',
+      reminderLanguage: 'HY',
+    },
     subscription: {
       productId: 'prod-1',
       notificationsEnabled: true,

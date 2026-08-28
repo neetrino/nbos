@@ -21,6 +21,7 @@ import {
   CLIENT_SERVICE_STATUSES,
   CLIENT_SERVICE_TYPES,
 } from '@/features/finance/constants/client-services';
+import { SUBSCRIPTION_REMINDER_LANGUAGES } from '@/features/finance/constants/finance';
 import {
   EMPTY_CLIENT_SERVICE_FORM,
   clientServiceFormToPayload,
@@ -128,6 +129,14 @@ export function ClientServiceCreateDialog({
               onChange={(billingModel) => billingModel && setForm({ ...form, billingModel })}
             />
           </div>
+          <ClientServiceSelectField
+            label="Payment reminder language"
+            value={form.reminderLanguage}
+            options={SUBSCRIPTION_REMINDER_LANGUAGES}
+            onChange={(reminderLanguage) =>
+              reminderLanguage && setForm({ ...form, reminderLanguage })
+            }
+          />
           <DialogFooter className="gap-0 sm:justify-end">
             <ClientServiceFormFooter
               onCancel={() => onOpenChange(false)}

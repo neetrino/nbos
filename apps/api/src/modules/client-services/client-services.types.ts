@@ -30,6 +30,7 @@ export interface ClientServiceRecordBody {
   clientCharge?: number | null;
   taxStatus?: string;
   notificationsEnabled?: boolean;
+  reminderLanguage?: string;
   startDate?: string | null;
   renewalDate?: string | null;
   notes?: string | null;

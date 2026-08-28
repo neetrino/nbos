@@ -48,10 +48,10 @@ Never `Project.products[0]`. Never create Product from this action.
 
 ## Client billing reminders
 
-Subscription / related Invoice payment reminders resolve the WhatsApp group via **`subscription.productId`** (Product WhatsApp Group).  
+Subscription / related Invoice payment reminders resolve the WhatsApp group via **`subscription.productId`**. Client Service invoices without a subscription use **`ClientServiceRecord.productId`**.  
 NBOS never uses a Project-level group for these client billing messages.
 
-Message language comes from **`Subscription.reminderLanguage`** (`HY` | `RU` | `EN`, default `HY`).  
+Message language comes from **`Subscription.reminderLanguage`** or **`ClientServiceRecord.reminderLanguage`** (`HY` | `RU` | `EN`, default `HY`).  
 Schedule: pre-due offsets **D-10** and **D-2** vs `Invoice.dueDate` (Asia/Yerevan calendar); one send per invoice per offset.
 
 ## Participants

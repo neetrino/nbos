@@ -31,7 +31,8 @@ describe('clientServiceToFormState', () => {
       ourCost: '12.00',
       clientCharge: null,
       taxStatus: 'TAX',
-      notificationsEnabled: true,
+        notificationsEnabled: true,
+      reminderLanguage: 'HY',
       startDate: '2026-01-02T00:00:00.000Z',
       renewalDate: null,
       notes: null,
@@ -43,6 +44,7 @@ describe('clientServiceToFormState', () => {
       startDate: '2026-01-02',
       renewalDate: '',
       clientCharge: '',
+      reminderLanguage: 'HY',
     });
   });
 });

@@ -97,8 +97,8 @@ Ownership rule (required):
 
 Anchor date: `Invoice.dueDate` (pay-by). Offsets: **10** and **2** calendar days before due (Yerevan calendar). Each offset fires **once** per invoice (idempotent; no catch-up if the invoice appears after the D-10 day).
 
-- Target: **Product WhatsApp Group** via `subscription.productId`.
-- Copy uses `Product.name` and localized month from `Invoice.coverageStartMonth` in `reminder_language`.
+- Target: **Product WhatsApp Group** via `subscription.productId`. Client Service invoices without a subscription use the same D-10 / D-2 path via **`ClientServiceRecord.productId`** (same Product group; copy names the service, language = `ClientServiceRecord.reminderLanguage`).
+- Copy: subscription uses `Product.name` in `reminder_language`; client-service uses `ClientServiceRecord.name` in `ClientServiceRecord.reminderLanguage` (`HY` / `RU` / `EN`, default `HY`). Month from `Invoice.coverageStartMonth`, else Yerevan month of `dueDate`.
 - Tax gate: if `taxStatus = TAX` and official invoice request not sent → **no** client payment reminder (accountant official-request path is separate).
 - `notifications_enabled = false` (invoice / subscription / client-service as applicable) → no send.
 - Paid / cancelled / on hold → no send.

@@ -2,18 +2,15 @@
 
 import { useState } from 'react';
 import {
-  Calendar,
   CalendarDays,
   CircleDot,
   DollarSign,
   FolderKanban,
   Layers,
   Receipt,
-  RefreshCw,
   Tag,
   Wallet,
 } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
@@ -42,6 +39,7 @@ import type { ClientServiceFormState } from '@/features/finance/utils/client-ser
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 import type { Project } from '@/lib/api/projects';
 import { projectDisplayName } from '@/lib/format/project-product-display';
+import { ClientServiceGeneralDatesSection } from './ClientServiceGeneralDatesSection';
 
 interface ClientServiceGeneralTabProps {
   serviceId: string;
@@ -61,7 +59,6 @@ export function ClientServiceGeneralTab({
 }: ClientServiceGeneralTabProps) {
   const [basicsOpen, setBasicsOpen] = useState(true);
   const [billingOpen, setBillingOpen] = useState(true);
-  const [datesOpen, setDatesOpen] = useState(true);
   const searchProjects = useProjectRelationSearch();
   const projectPicker = useRelationPickerActions('project');
 
@@ -223,47 +220,11 @@ export function ClientServiceGeneralTab({
         </div>
       </DetailSheetCollapsibleSection>
 
-      <DetailSheetCollapsibleSection
-        title="Dates"
-        icon={<Calendar size={12} />}
-        open={datesOpen}
-        onOpenChange={setDatesOpen}
-      >
-        <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <div className={EXPENSE_SHEET_FIELD_ROW_3_CLASS}>
-            <InlineField
-              variant="controlled"
-              label="Start date"
-              type="date"
-              value={draft.startDate}
-              icon={<Calendar size={12} />}
-              disabled={formDisabled}
-              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
-              onValueChange={(startDate) => patchDraft({ startDate })}
-            />
-            <InlineField
-              variant="controlled"
-              label="Renewal date"
-              type="date"
-              value={draft.renewalDate}
-              icon={<RefreshCw size={12} />}
-              disabled={formDisabled}
-              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
-              onValueChange={(renewalDate) => patchDraft({ renewalDate })}
-            />
-            <label className="flex h-10 min-w-0 items-center gap-2 self-end text-sm">
-              <Checkbox
-                checked={draft.notificationsEnabled}
-                disabled={formDisabled}
-                onCheckedChange={(checked) =>
-                  patchDraft({ notificationsEnabled: checked === true })
-                }
-              />
-              Renewal notifications
-            </label>
-          </div>
-        </div>
-      </DetailSheetCollapsibleSection>
+      <ClientServiceGeneralDatesSection
+        draft={draft}
+        patchDraft={patchDraft}
+        formDisabled={formDisabled}
+      />
 
       <DetailSheetSection title="Proofs">
         <FinanceProofAttachments
