@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useMemo } from 'react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import {
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
 import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
+import { OverdueRemindersDialog } from '@/features/finance/components/invoices/OverdueRemindersDialog';
 import { InvoicesPageContent } from '@/features/finance/components/invoices/InvoicesPageContent';
 import { INVOICE_VIEW_OPTIONS } from '@/features/finance/components/invoices/invoice-view-options';
 import { INVOICE_MONEY_STAGES, INVOICE_TYPES } from '@/features/finance/constants/finance';
@@ -37,6 +38,7 @@ import {
 } from '@/features/finance/constants/finance-period-filter';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
+import { PermissionGate } from '@/lib/permissions';
 
 const INVOICE_FILTER_CONFIGS_BASE = [
   {
@@ -70,6 +72,7 @@ function InvoicesPageInner() {
   const portfolioCreateInvoiceFromUrl = searchParams.get(PORTFOLIO_DEEP_LINK.createInvoice) === '1';
   const portfolioProjectIdFromUrl = searchParams.get(PORTFOLIO_DEEP_LINK.projectId)?.trim() || null;
 
+  const [overdueRemindersOpen, setOverdueRemindersOpen] = useState(false);
   const state = useInvoicesPageState({
     subscriptionIdFromUrl,
     openInvoiceIdFromUrl,
@@ -121,6 +124,10 @@ function InvoicesPageInner() {
     state.setPeriod(FINANCE_DEFAULT_LIST_PERIOD);
   }, [state]);
 
+  const openOverdueReminders = useCallback(() => {
+    setOverdueRemindersOpen(true);
+  }, [setOverdueRemindersOpen]);
+
   const invoiceFilterConfigs = useMemo(
     () => [buildFinancePeriodFilterConfig(), ...INVOICE_FILTER_CONFIGS_BASE],
     [],
@@ -168,6 +175,15 @@ function InvoicesPageInner() {
             onExportCsv={handleExportCsv}
             exportCsvLabel="Export invoices (CSV)"
           />
+          <PermissionGate module="FINANCE_INVOICES" action="EDIT">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={openOverdueReminders}
+            >
+              Send overdue reminders
+            </Button>
+          </PermissionGate>
           <Button type="button" onClick={() => state.setCreateOpen(true)}>
             <Plus size={16} aria-hidden />
             New Invoice
@@ -179,6 +195,7 @@ function InvoicesPageInner() {
       exportCsvSubmitting,
       handleClearFilters,
       handleExportCsv,
+      openOverdueReminders,
       handleExportScopeStatsCsv,
       handleFilterChange,
       invoiceFilterConfigs,
@@ -236,6 +253,7 @@ function InvoicesPageInner() {
         onCreated={state.handleInvoiceCreated}
         subscriptionId={subscriptionIdFromUrl}
       />
+      <OverdueRemindersDialog open={overdueRemindersOpen} onOpenChange={setOverdueRemindersOpen} />
     </div>
   );
 }

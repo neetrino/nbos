@@ -106,32 +106,32 @@
 | **Действия**   | Notification Engine создаёт WhatsApp delivery job через `WhatsAppWebAdapter` → **WhatsApp Gateway** → WAHA (группа / finance conversation), не «клиентский шаблон» Meta Cloud API |
 | **Получатели** | Project WhatsApp Group / Finance external conversation                                                                                                                            |
 
-### INV-05: Просрочка — 1-е уведомление
+### INV-05: Просрочка — волна 1 (ручная)
 
-| Параметр       | Значение                                                                     |
-| -------------- | ---------------------------------------------------------------------------- |
-| **Триггер**    | Billing Day прошёл AND Invoice.status ≠ Paid                                 |
-| **Условия**    | Прошёл 1 день после Billing Day                                              |
-| **Действия**   | Finance переводит Invoice в overdue state, Notifications отправляет reminder |
-| **Получатели** | Finance Director (In-App/Telegram), Project WhatsApp Group                   |
+| Параметр       | Значение                                                                                                                                                         |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Триггер**    | Finance нажимает **Send overdue reminders** после сверки банка                                                                                                   |
+| **Условия**    | `moneyStatus = OVERDUE`; Subscription / Client Service; notifications on; Tax official request sent when Tax; нет job волны 1; есть Product WhatsApp group       |
+| **Действия**   | Notification Engine создаёт job `finance.invoice.overdue_reminder_w1` и ставит WhatsApp в paced outbound queue                                                   |
+| **Получатели** | Product WhatsApp Group                                                                                                                                           |
 
-### INV-06: Просрочка — 2-е уведомление
+### INV-06: Просрочка — волна 2 (ручная)
 
-| Параметр       | Значение                                                         |
-| -------------- | ---------------------------------------------------------------- |
-| **Триггер**    | Invoice overdue state AND прошло 2 дня после просрочки           |
-| **Условия**    | Invoice.status ≠ Paid                                            |
-| **Действия**   | Notification Engine отправляет повторный WhatsApp group reminder |
-| **Получатели** | Project WhatsApp Group                                           |
+| Параметр       | Значение                                                                                                                                                          |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Триггер**    | Тот же прогон кнопки, что INV-05                                                                                                                                  |
+| **Условия**    | Карточка всё ещё `OVERDUE`; job волны 1 есть; с `scheduledFor` волны 1 прошёл ≥ 1 календарный день Еревана; job волны 2 ещё нет                                    |
+| **Действия**   | Notification Engine создаёт job `finance.invoice.overdue_reminder_w2` и ставит второе письмо в ту же очередь                                                      |
+| **Получатели** | Product WhatsApp Group                                                                                                                                            |
 
-### INV-07: Просрочка — 3-е уведомление (эскалация)
+### INV-07: Просрочка — эскалация (later)
 
-| Параметр       | Значение                                                             |
-| -------------- | -------------------------------------------------------------------- |
-| **Триггер**    | Invoice overdue state AND прошло 5 дней после просрочки              |
-| **Условия**    | Invoice.status ≠ Paid                                                |
-| **Действия**   | Notification Engine отправляет final reminder и запускает escalation |
-| **Получатели** | Project WhatsApp Group, Finance Director, CEO                        |
+| Параметр       | Значение                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------- |
+| **Триггер**    | Не в этом срезе                                                                                   |
+| **Условия**    | Волна 2 уже ушла, карточка всё ещё `OVERDUE`                                                      |
+| **Действия**   | Клиенту больше не пишем автоматически; внутренняя эскалация Finance / CEO — отдельный срез        |
+| **Получатели** | —                                                                                                 |
 
 ---
 
@@ -409,9 +409,9 @@
 | INV-02 | Invoices | Invoice создан (Tax)                           | Переход на стадию госсистемы                                        |
 | INV-03 | Invoices | Invoice создан (Free)                          | Пропуск стадии госсистемы                                           |
 | INV-04 | Invoices | Invoice → Send Message                         | WhatsApp group через Notification Engine                            |
-| INV-05 | Invoices | Overdue Day 1                                  | 1-е напоминание о просрочке                                         |
-| INV-06 | Invoices | Overdue Day 3                                  | 2-е напоминание о просрочке                                         |
-| INV-07 | Invoices | Overdue Day 6                                  | 3-е напоминание + эскалация                                         |
+| INV-05 | Invoices | Send overdue reminders (wave 1)                | Ручная волна 1 в Product WhatsApp Group                             |
+| INV-06 | Invoices | Send overdue reminders (wave 2)                | Ручная волна 2, если волна 1 была не сегодня                        |
+| INV-07 | Invoices | Overdue escalation (later)                     | После волны 2 клиенту не пишем; CEO path отложен                    |
 | EXP-01 | Expenses | 1-е число месяца                               | Автосоздание затрат из плана                                        |
 | PAR-01 | Partners | Project Delivered + Order Fully Paid (Classic) | Partner Accrual по classic order                                    |
 | PAR-02 | Partners | Subscription Invoice Paid                      | Partner Accrual по subscription payment; DEV — eligible после сдачи |

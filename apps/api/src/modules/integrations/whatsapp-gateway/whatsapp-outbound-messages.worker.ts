@@ -122,7 +122,10 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
       await cancelOfficialIfActive(this.prisma, data.invoiceId);
       return;
     }
-    if (data.kind === 'payment_reminder' && data.notificationJobId) {
+    if (
+      (data.kind === 'payment_reminder' || data.kind === 'overdue_reminder') &&
+      data.notificationJobId
+    ) {
       await markPaymentReminderDelivered(this.prisma, data);
     }
   }

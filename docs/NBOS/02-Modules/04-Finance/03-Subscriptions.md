@@ -109,6 +109,17 @@ Anchor date: `Invoice.dueDate` (pay-by). Offsets: **10** and **2** calendar days
 
 Sends go through the paced WhatsApp outbound queue (concurrency 1, 2s gap).
 
+### Client WhatsApp overdue waves (manual w1 / w2)
+
+Status `OVERDUE` is automatic when `dueDate` passes and no Payment is recorded. **Client WhatsApp about overdue is not automatic.**
+
+Finance reconciles the bank, marks paid cards `Paid`, then presses **Send overdue reminders** on the Invoices board (`FINANCE_INVOICES` EDIT). Preview shows who would get wave 1 vs wave 2.
+
+- Same eligibility as D-10/D-2 (Subscription or Client Service, `notifications_enabled`, Tax official-request gate, Product WhatsApp group). Deal/Order invoices are not written to.
+- One button run sends **at most one** letter per invoice. Wave is per card (`NotificationJob` `invoice_overdue_reminder:w{n}:{invoiceId}`), not a global “today is wave 2”.
+- No wave yet → wave 1. Wave 1 already sent and **≥ 1 Yerevan calendar day** has passed → wave 2. Same-day second press does not send wave 2. After wave 2 → stop (INV-07 CEO escalation is later).
+- Language, Tax / Tax-Free copy, and paced outbound queue match D-10/D-2. Templates stay in code.
+
 ### Сумма подписки: `amount`, `coverage_month_count`, `monthly_equivalent_amount`
 
 **Инвариант:** `amount` — единственный источник истины для денег. Сумма на `Invoice Card` = `amount` напрямую, без умножения. `monthly_equivalent_amount` — только для MRR и сравнения подписок разной частоты; **никогда** не использовать для расчёта счёта, не вводить вручную и **не умножать обратно**, чтобы восстановить сумму контракта.

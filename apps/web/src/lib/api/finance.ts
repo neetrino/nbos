@@ -32,6 +32,43 @@ export interface InvoiceStatsQueryParams extends FinanceDateRangeParams {
   subscriptionId?: string;
 }
 
+export type OverdueReminderWave = 1 | 2;
+
+export type OverdueReminderSkipReason =
+  | 'not_overdue'
+  | 'notifications_off'
+  | 'tax_gate'
+  | 'no_whatsapp'
+  | 'same_day'
+  | 'max_wave'
+  | 'no_product_link'
+  | 'already_sent';
+
+export interface OverdueReminderItem {
+  invoiceId: string;
+  code: string;
+  wave: OverdueReminderWave;
+}
+
+export interface OverdueReminderSkipItem {
+  invoiceId: string;
+  code: string;
+  reason: OverdueReminderSkipReason;
+}
+
+export interface OverdueReminderPreview {
+  asOf: string;
+  asOfYerevan: string;
+  wave1Count: number;
+  wave2Count: number;
+  sendable: OverdueReminderItem[];
+  skipped: OverdueReminderSkipItem[];
+}
+
+export interface OverdueReminderRunResult extends OverdueReminderPreview {
+  sent: OverdueReminderItem[];
+}
+
 export interface InvoiceDealSummary {
   id: string;
   name: string | null;
@@ -483,6 +520,18 @@ export const invoicesApi = {
   },
   async getStats(params?: InvoiceStatsQueryParams): Promise<InvoiceStats> {
     const resp = await api.get<InvoiceStats>('/api/finance/invoices/stats', { params });
+    return resp.data;
+  },
+  async previewOverdueReminders(): Promise<OverdueReminderPreview> {
+    const resp = await api.get<OverdueReminderPreview>(
+      '/api/finance/invoices/overdue-reminders/preview',
+    );
+    return resp.data;
+  },
+  async runOverdueReminders(): Promise<OverdueReminderRunResult> {
+    const resp = await api.post<OverdueReminderRunResult>(
+      '/api/finance/invoices/overdue-reminders/run',
+    );
     return resp.data;
   },
 };
