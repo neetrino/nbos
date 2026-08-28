@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildPaymentWindowReminderDedupeKey,
   buildSubscriptionPaymentReminderDedupeKey,
   buildSubscriptionPaymentReminderIdempotencyKey,
   PAYMENT_REMINDER_CYCLE_INITIAL,
@@ -16,6 +17,15 @@ describe('subscription payment reminder keys', () => {
     expect(
       buildSubscriptionPaymentReminderDedupeKey('inv-1', 10, PAYMENT_REMINDER_CYCLE_INITIAL),
     ).toBe('subscription_payment_reminder:d10:inv-1');
+  });
+
+  it('uses a window key for the pay-day letter, separate from historical D-10 / D-2', () => {
+    expect(buildPaymentWindowReminderDedupeKey('inv-1')).toBe(
+      'subscription_payment_reminder:window:inv-1',
+    );
+    expect(buildPaymentWindowReminderDedupeKey('inv-1', 1)).toBe(
+      'subscription_payment_reminder:window:inv-1:c1',
+    );
   });
 
   it('uses a new key after Cancelled so Awaiting Payment can send again', () => {

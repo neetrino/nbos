@@ -44,7 +44,7 @@ File: `apps/api/src/modules/notifications/notification.service.ts`
 
 | Flow                      | Trigger   | Notes                                                             |
 | ------------------------- | --------- | ----------------------------------------------------------------- |
-| Invoice card reminders    | Scheduler | `NotificationJob` PENDING; WhatsApp only for Tax official-request |
+| Invoice card reminders    | Scheduler | `NotificationJob` PENDING; WhatsApp for Tax official-request and subscription 5-day pay window |
 | Expense backlog reminders | Scheduler | Job PENDING; no consumer for in-app                               |
 
 ## Gaps

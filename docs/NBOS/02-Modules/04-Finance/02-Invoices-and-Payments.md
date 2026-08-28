@@ -259,7 +259,7 @@ Payment confirmed
 - `On Hold` / `Cancelled` cycle rules apply to **overdue button** jobs, not a pre-due cron;
 - не отправлять напоминания, если для `Tax` ещё нет `request_sent = Yes`.
 
-Pre-due D-10 / D-2 cron is retired. Client WhatsApp is the manual overdue button.
+Подписка: cron 11:00 шлёт «оплатите в течение 5 дней» в день якоря (день оплаты или день позднего выставления). D-10 / D-2 (`dueDate − 10` / `− 2`) cron не создаёт.
 
 Клиентские письма **после** due date (`Overdue`) — только кнопка **Send overdue reminders** после сверки банка (волна 1 / 2 на карточке). Deal/Order клиентам не пишем.
 

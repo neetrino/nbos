@@ -1,16 +1,18 @@
 /** Asia/Yerevan calendar timezone for subscription payment reminder day math. */
 export const SUBSCRIPTION_PAYMENT_REMINDER_TIMEZONE = 'Asia/Yerevan';
 
-/** Historical offsets. Cron no longer sends these; client letters are the overdue button. */
+/** Historical D-10 / D-2 offsets. Cron no longer sends those; window letter uses dueDate − 5. */
 export type SubscriptionPaymentReminderOffsetDays = 10 | 2;
 
 export const SUBSCRIPTION_PAYMENT_REMINDER_DAYS_BEFORE_DUE: readonly SubscriptionPaymentReminderOffsetDays[] =
   [];
 
-/** Payment window named in leftover template copy (not a send schedule). */
+/** Payment window named in client copy; also the send-day offset from dueDate. */
 export const CLIENT_PAYMENT_REMINDER_PAY_WITHIN_DAYS = 5;
 
 export const SUBSCRIPTION_PAYMENT_REMINDER_EVENT_TYPES = {
+  /** Polite «pay within 5 days» on the pay/issue anchor (dueDate − 5), with catch-up. */
+  WINDOW: 'finance.invoice.payment_reminder_due',
   /** Historical event types; cron no longer creates these jobs. */
   D10: 'finance.invoice.payment_reminder_d10',
   D2: 'finance.invoice.payment_reminder_d2',
@@ -25,6 +27,20 @@ export function paymentReminderEventTypeForOffset(
 
 /** Cycle 0 keeps historical job keys so already-sent reminders are not resent. */
 export const PAYMENT_REMINDER_CYCLE_INITIAL = 0;
+
+export function buildPaymentWindowReminderDedupeKey(
+  invoiceId: string,
+  cycle: number = PAYMENT_REMINDER_CYCLE_INITIAL,
+): string {
+  return withPaymentReminderCycleSuffix(`subscription_payment_reminder:window:${invoiceId}`, cycle);
+}
+
+export function buildPaymentWindowReminderIdempotencyKey(
+  invoiceId: string,
+  cycle: number = PAYMENT_REMINDER_CYCLE_INITIAL,
+): string {
+  return withPaymentReminderCycleSuffix(`subscription-payment-reminder:window:${invoiceId}`, cycle);
+}
 
 export function buildSubscriptionPaymentReminderDedupeKey(
   invoiceId: string,

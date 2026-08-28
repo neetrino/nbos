@@ -87,7 +87,7 @@ Finance-модуль NBOS обеспечивает полное управлен
 - Preview: сколько карточек получат волну 1 / волну 2, кратко skipped (нет группы, Tax gate, same-day, max wave)
 - Confirm шлёт **одно** WhatsApp-письмо на карточку в Product WhatsApp Group
 - Волна выбирается по `NotificationJob` этой карточки, не глобально
-- Pre-due D-10 / D-2 cron is retired. This button is the only client WhatsApp about payment.
+- Это кнопка писем «не оплатили» (overdue). Первое письмо «в течение 5 дней» уходит кроном в день оплаты / позднего выставления, не этой кнопкой.
 
 ### 2.6. Массовые действия
 

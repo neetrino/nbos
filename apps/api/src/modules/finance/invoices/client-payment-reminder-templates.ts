@@ -25,7 +25,7 @@ const DATE_LOCALES: Record<SubscriptionReminderLanguage, string> = {
 export type ClientPaymentReminderSource = 'subscription' | 'client_service';
 
 export interface RenderClientPaymentReminderInput {
-  offsetDays: SubscriptionPaymentReminderOffsetDays;
+  offsetDays?: SubscriptionPaymentReminderOffsetDays;
   language: SubscriptionReminderLanguage;
   source: ClientPaymentReminderSource;
   serviceLabel: string;

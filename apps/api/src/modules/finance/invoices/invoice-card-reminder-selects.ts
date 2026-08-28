@@ -16,6 +16,7 @@ export const paymentReminderSelect = {
   code: true,
   amount: true,
   dueDate: true,
+  createdAt: true,
   coverageStartMonth: true,
   taxStatus: true,
   moneyStatus: true,
@@ -35,6 +36,7 @@ export const paymentReminderSelect = {
   subscription: {
     select: {
       productId: true,
+      billingDay: true,
       notificationsEnabled: true,
       reminderLanguage: true,
       product: { select: { id: true, name: true } },
