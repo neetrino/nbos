@@ -19,16 +19,19 @@ import {
   getRedisQueueUrl,
 } from '../../../runtime/queue-redis';
 import { OpsJobFailureAlertService } from '../../ops-alerts/ops-job-failure-alert.service';
+import { tryEnqueueSubscriptionPaymentWindowForInvoice } from '../../finance/invoices/invoice-card-payment-window-reminders';
 import {
   cancelOfficialInvoiceRequest,
   sendOfficialInvoiceRequest,
 } from '../../finance/invoices/invoice-official-request';
+import { yerevanCalendarDateKey } from '../../finance/invoices/yerevan-calendar-date';
 import { WhatsAppGatewayClient } from './whatsapp-gateway.client';
 import { WhatsAppGatewayConnectionService } from './whatsapp-gateway-connection.service';
 import {
   WHATSAPP_OUTBOUND_JOB_NAME,
   WHATSAPP_OUTBOUND_QUEUE_NAME,
 } from './whatsapp-gateway.constants';
+import { WhatsAppOutboundQueueService } from './whatsapp-outbound-queue.service';
 import { waitWhatsAppOutboundGap } from './whatsapp-outbound-gap';
 import type { WhatsAppOutboundJobPayload } from './whatsapp-outbound.types';
 
@@ -44,6 +47,7 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
     private readonly client: WhatsAppGatewayClient,
     private readonly registry: BullmqWorkerRegistry,
     @Optional() private readonly opsAlerts?: OpsJobFailureAlertService,
+    @Optional() private readonly outbound?: WhatsAppOutboundQueueService,
   ) {}
 
   onModuleInit() {
@@ -115,14 +119,25 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
 
   private async applySideEffects(data: WhatsAppOutboundJobPayload): Promise<void> {
     if (data.kind === 'official_send' && data.invoiceId) {
+      const asOf = new Date();
       await sendOfficialInvoiceRequest(this.prisma, data.invoiceId);
+      await tryEnqueueSubscriptionPaymentWindowForInvoice({
+        prisma: this.prisma,
+        outbound: this.outbound,
+        invoiceId: data.invoiceId,
+        asOf,
+        asOfKey: yerevanCalendarDateKey(asOf),
+      });
       return;
     }
     if (data.kind === 'official_cancel' && data.invoiceId) {
       await cancelOfficialIfActive(this.prisma, data.invoiceId);
       return;
     }
-    if (data.kind === 'payment_reminder' && data.notificationJobId) {
+    if (
+      (data.kind === 'payment_reminder' || data.kind === 'overdue_reminder') &&
+      data.notificationJobId
+    ) {
       await markPaymentReminderDelivered(this.prisma, data);
     }
   }

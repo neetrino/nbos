@@ -331,6 +331,9 @@ export class InvoicesService {
     }
 
     await this.writeManualMoneyStatus(invoice, moneyStatus, amount, paid, now);
+    if (moneyStatus === 'AWAITING_PAYMENT') {
+      await this.officialWhatsApp?.enqueueIfAwaitingEligible(id);
+    }
     return this.findById(id);
   }
 

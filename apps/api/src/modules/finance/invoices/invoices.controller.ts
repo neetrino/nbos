@@ -17,13 +17,17 @@ import {
   RequirePermission,
 } from '../../../common/decorators';
 import { financeInvoiceAccessFromUser } from './finance-invoice-access';
+import { InvoiceOverdueRemindersService } from './invoice-overdue-reminders.service';
 import { InvoicesService } from './invoices.service';
 
 @ApiTags('Finance / Invoices')
 @ApiBearerAuth()
 @Controller('finance/invoices')
 export class InvoicesController {
-  constructor(private readonly invoicesService: InvoicesService) {}
+  constructor(
+    private readonly invoicesService: InvoicesService,
+    private readonly overdueReminders: InvoiceOverdueRemindersService,
+  ) {}
 
   @Get()
   @RequirePermission('FINANCE_INVOICES', 'VIEW')
@@ -69,6 +73,21 @@ export class InvoicesController {
       subscriptionId,
       access: financeInvoiceAccessFromUser(user),
     });
+  }
+
+  @Get('overdue-reminders/preview')
+  @RequirePermission('FINANCE_INVOICES', 'VIEW')
+  @ApiOperation({ summary: 'Preview overdue WhatsApp reminder waves after bank reconcile' })
+  async previewOverdueReminders() {
+    return this.overdueReminders.preview();
+  }
+
+  @Post('overdue-reminders/run')
+  @RequirePermission('FINANCE_INVOICES', 'EDIT')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Send next overdue WhatsApp wave per invoice after bank reconcile' })
+  async runOverdueReminders() {
+    return this.overdueReminders.run();
   }
 
   @Get(':id')

@@ -43,6 +43,16 @@ export const NOTIFICATION_RULE_CONFIGS: NotificationRuleConfig[] = [
     priority: 'high',
   },
   {
+    eventType: 'finance.invoice.overdue_reminder_w1',
+    category: 'action_required',
+    priority: 'high',
+  },
+  {
+    eventType: 'finance.invoice.overdue_reminder_w2',
+    category: 'action_required',
+    priority: 'high',
+  },
+  {
     eventType: 'finance.expense.backlog_weekly_digest',
     category: 'informational',
     priority: 'normal',

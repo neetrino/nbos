@@ -1,8 +1,17 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger, Optional } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { allocateInvoiceCode } from '../../../common/utils/entity-code-series';
+import { InvoiceOfficialWhatsAppService } from '../invoices/invoice-official-whatsapp.service';
+import { resolveSubscriptionInvoiceDueDate } from '../invoices/subscription-invoice-due-date';
+import { subscriptionChargeAmount } from '../subscriptions/subscription-billing-amount';
+import {
+  isBillingMonthCoveredByInvoices,
+  type SubscriptionCoverageInvoiceRow,
+} from '../subscriptions/subscription-coverage-window';
 import { loadCoverageInvoicesBySubscription } from './billing-coverage-invoices';
 import { subscriptionBillingPausedForLateDelivery } from './billing-subscription-delivery-pause';
+import { resolveBillingInvoiceMoneyStatus } from './billing-subscription-invoice-status';
 import { resolveTermCompletion } from './billing-subscription-term-completion';
 import {
   isSubscriptionOpenForTarget,
@@ -10,13 +19,6 @@ import {
   yerevanBillingQueryBounds,
   type SubscriptionBillingTarget,
 } from './subscription-billing-window';
-import { subscriptionChargeAmount } from '../subscriptions/subscription-billing-amount';
-import {
-  isBillingMonthCoveredByInvoices,
-  type SubscriptionCoverageInvoiceRow,
-} from '../subscriptions/subscription-coverage-window';
-import { allocateInvoiceCode } from '../../../common/utils/entity-code-series';
-import { resolveSubscriptionInvoiceDueDate } from '../invoices/subscription-invoice-due-date';
 
 export interface BillingRunResult {
   generatedInvoices: number;
@@ -29,7 +31,15 @@ export interface BillingRunResult {
 }
 
 const subscriptionBillingInclude = {
-  project: { select: { id: true, code: true, name: true, companyId: true } },
+  project: {
+    select: {
+      id: true,
+      code: true,
+      name: true,
+      companyId: true,
+      company: { select: { name: true, legalName: true, taxId: true } },
+    },
+  },
   product: {
     select: {
       deadline: true,
@@ -59,6 +69,7 @@ export class BillingService {
   constructor(
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
+    @Optional() private readonly officialWhatsApp?: InvoiceOfficialWhatsAppService,
   ) {}
 
   /**
@@ -209,8 +220,13 @@ export class BillingService {
       issuedOn: now,
     });
     const charge = subscriptionChargeAmount(Number(sub.amount), sub.coverageMonthCount);
+    const moneyStatus = resolveBillingInvoiceMoneyStatus({
+      billingDay: sub.billingDay,
+      taxStatus: sub.taxStatus,
+      company: sub.project.company,
+    });
 
-    await this.prisma.invoice.create({
+    const invoice = await this.prisma.invoice.create({
       data: {
         code,
         subscriptionId: sub.id,
@@ -220,11 +236,14 @@ export class BillingService {
         taxStatus: sub.taxStatus,
         type: 'SUBSCRIPTION' as Prisma.InvoiceCreateInput['type'],
         dueDate,
-        moneyStatus: 'NEW',
+        moneyStatus,
         coverageStartMonth: target.coverageMonthKey,
         coverageMonthCount: charge.coverageMonthCount,
       },
     });
+    if (moneyStatus === 'AWAITING_PAYMENT') {
+      await this.officialWhatsApp?.enqueueIfAwaitingEligible(invoice.id);
+    }
 
     this.logger.log(`Generated invoice ${code} for subscription ${sub.code}`);
     return charge.amount;

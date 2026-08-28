@@ -243,7 +243,7 @@ Safe rules remain:
 
 1. retrieve invite link transiently;
 2. resolve the intended client Contact;
-3. send the invite through the approved outbound path;
+3. send the invite through the approved outbound path. Language = Contact `messengerLinks.language` (Deal contact when the group is created from a Deal). If unset → **Armenian**. Do **not** use `Subscription.reminderLanguage` here — that field often does not exist yet and is only for later payment reminders;
 4. persist invitation status/provenance, not the long-lived raw invite URL unless explicitly required;
 5. failure is visible/retryable and does not roll back Product creation.
 

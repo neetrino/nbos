@@ -259,6 +259,36 @@ describe('InvoicesService', () => {
       );
     });
 
+    it('auto-enqueues accountant send after moving to Awaiting', async () => {
+      const officialWhatsApp = {
+        enqueueIfAwaitingEligible: vi.fn().mockResolvedValue(undefined),
+      };
+      service = new InvoicesService(
+        prisma as never,
+        { handle: vi.fn().mockResolvedValue(undefined) } as never,
+        operationalJournal as never,
+        moduleRef as never,
+        officialWhatsApp as never,
+      );
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: 'await-1',
+          orderId: null,
+          amount: 100000,
+          dueDate: new Date('2026-04-20'),
+          moneyStatus: 'NEW',
+          payments: [],
+        })
+        .mockResolvedValueOnce(
+          mockInvoiceFindByIdRow('await-1', { moneyStatus: 'AWAITING_PAYMENT' }),
+        );
+      prisma.invoice.update.mockResolvedValue({});
+
+      await service.updateMoneyStatus('await-1', 'AWAITING_PAYMENT');
+
+      expect(officialWhatsApp.enqueueIfAwaitingEligible).toHaveBeenCalledWith('await-1');
+    });
+
     it('creates payment for outstanding then returns when marking PAID', async () => {
       prisma.invoice.findUnique
         .mockResolvedValueOnce({

@@ -86,6 +86,8 @@ New docs replace this with:
 - Email Adapter;
 - channel health alerts.
 
+**Done (2026-08-28):** client overdue WhatsApp is manual Finance waves (`finance.invoice.overdue_reminder_w1` / `_w2`), not daily cron spam. See `03-Notification-Rules-and-Escalations.md`.
+
 ### Phase 5 - Messenger copy and escalations
 
 - outbound external Messenger copy;

@@ -183,6 +183,10 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 
 **Сделано (срез 2026-08, client WhatsApp v2):** Subscription + Client Service D-10/D-2; HY/RU/EN; `reminderLanguage` on Client Service; richer copy (amount, purpose); Tax without pay-to; Tax-Free with Hasmik personal requisites; same outbound queue; templates in code.
 
+**Сделано (срез 2026-08, overdue WhatsApp waves):** manual **Send overdue reminders** on Invoices (`preview` + `run`); per-invoice wave 1/2 via `NotificationJob`; ≥2 Yerevan days between waves; same eligibility/queue as D-2; no cron; INV-07 deferred. D-10 leftover schedule removed.
+
+**Сделано (срез 2026-08, D-10 retired):** automatic client WhatsApp before due is D-2 only. D-10 was not the first overdue wave.
+
 **Остаётся:**
 
 - EHDM / Government invoice ID в UI — позже;

@@ -11,9 +11,9 @@ import {
 } from './client-payment-reminder-templates';
 
 describe('client payment reminder templates', () => {
-  it('renders subscription D-10 TAX without pay-to block', () => {
+  it('renders subscription D-2 TAX without pay-to block', () => {
     const message = renderClientPaymentReminderMessage({
-      offsetDays: 10,
+      offsetDays: 2,
       language: 'HY',
       source: 'subscription',
       serviceLabel: 'Site A',
@@ -21,7 +21,7 @@ describe('client payment reminder templates', () => {
       amount: 120000,
       taxStatus: 'TAX',
     });
-    expect(message).toContain('Հարկավոր է');
+    expect(message).toContain('Խնդրում ենք 5 օրվա ընթացքում');
     expect(message).toContain('Site A');
     expect(message).toContain('120.000 դրամ');
     expect(message).toContain('դուրս գրված հաշվի');
@@ -39,7 +39,7 @@ describe('client payment reminder templates', () => {
       amount: 50000,
       taxStatus: 'TAX_FREE',
     });
-    expect(message).toContain('Просим оплатить');
+    expect(message).toContain('Просим в течение 5 дней оплатить');
     expect(message).toContain('Site B');
     expect(message).toContain('50.000 драм');
     expect(message).toContain(TAX_FREE_PAYMENT_CARD);
@@ -48,9 +48,9 @@ describe('client payment reminder templates', () => {
     expect(message).not.toContain('выставленному счёту');
   });
 
-  it('renders client service D-10 in English with due date label', () => {
+  it('renders client service D-2 in English with due date label', () => {
     const message = renderClientPaymentReminderMessage({
-      offsetDays: 10,
+      offsetDays: 2,
       language: 'EN',
       source: 'client_service',
       serviceLabel: 'example.com',

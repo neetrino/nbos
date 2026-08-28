@@ -909,6 +909,8 @@ function resolveKnownNotificationEventTypes(): string[] {
     'finance.invoice.payment_reminder_due',
     'finance.invoice.payment_reminder_d10',
     'finance.invoice.payment_reminder_d2',
+    'finance.invoice.overdue_reminder_w1',
+    'finance.invoice.overdue_reminder_w2',
     'finance.expense.backlog_weekly_digest',
     'finance.expense.backlog_due_overdue',
     'task.overdue',

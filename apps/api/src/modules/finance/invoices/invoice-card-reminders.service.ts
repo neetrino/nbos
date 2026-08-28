@@ -1,34 +1,19 @@
-import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import { PrismaClient, type SubscriptionReminderLanguage } from '@nbos/database';
+import { Inject, Injectable, Optional } from '@nestjs/common';
+import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
+import { runSubscriptionPaymentWindowReminders } from './invoice-card-payment-window-reminders';
 import { isOfficialRequestBlockingTaxReminders } from './invoice-official-request';
 import { InvoiceOfficialWhatsAppService } from './invoice-official-whatsapp.service';
-import { tryDeliverPaymentReminderWhatsApp } from './invoice-payment-reminder-whatsapp';
 import { resolveInvoiceProductWhatsAppGroup } from './invoice-product-whatsapp-resolve';
 import { createInvoiceReminderNotificationJob } from './invoice-reminder-job-create';
-import {
-  buildSubscriptionPaymentReminderDedupeKey,
-  buildSubscriptionPaymentReminderIdempotencyKey,
-  paymentReminderEventTypeForOffset,
-  SUBSCRIPTION_PAYMENT_REMINDER_DAYS_BEFORE_DUE,
-  type SubscriptionPaymentReminderOffsetDays,
-} from './subscription-payment-reminder.constants';
-import {
-  renderPaymentReminderMessage,
-  resolvePaymentReminderRenderInput,
-} from './invoice-payment-reminder-render';
-import {
-  isYerevanDueOffsetDay,
-  yerevanCalendarDateKey,
-  yerevanDueDateWindowForOffsets,
-} from './yerevan-calendar-date';
-import { officialRequestSelect, paymentReminderSelect } from './invoice-card-reminder-selects';
-
-const REMINDER_ELIGIBLE_MONEY_STATUSES = ['NEW', 'AWAITING_PAYMENT', 'OVERDUE'] as const;
+import { yerevanCalendarDateKey } from './yerevan-calendar-date';
+import { officialRequestSelect } from './invoice-card-reminder-selects';
+import { SUBSCRIPTION_PAYMENT_REMINDER_EVENT_TYPES } from './subscription-payment-reminder.constants';
 
 export const INVOICE_CARD_REMINDER_TYPES = {
   OFFICIAL_REQUEST_DUE: 'finance.invoice.official_request_due',
+  PAYMENT_WINDOW: SUBSCRIPTION_PAYMENT_REMINDER_EVENT_TYPES.WINDOW,
 } as const;
 
 interface InvoiceReminderRunParams {
@@ -41,55 +26,32 @@ interface OfficialRequestCandidate {
   amount: unknown;
   dueDate: Date | null;
   taxStatus: string;
-  moneyStatus: string;
   officialInvoiceRequestSent: boolean;
-  notificationsEnabled: boolean;
   company: { name: string } | null;
-  clientServiceRecord: { notificationsEnabled: boolean } | null;
-}
-
-interface PaymentReminderCandidate {
-  id: string;
-  code: string;
-  amount: unknown;
-  dueDate: Date | null;
-  coverageStartMonth: string | null;
-  taxStatus: string;
-  moneyStatus: string;
-  officialInvoiceRequestSent: boolean;
-  notificationsEnabled: boolean;
-  paymentReminderCycle: number;
-  company: { name: string } | null;
-  clientServiceRecord: {
-    notificationsEnabled: boolean;
-    reminderLanguage: SubscriptionReminderLanguage;
-    productId: string | null;
-    name: string;
-    product: { id: string; name: string } | null;
-  } | null;
-  subscription: {
-    productId: string;
-    notificationsEnabled: boolean;
-    reminderLanguage: SubscriptionReminderLanguage;
-    product: { id: string; name: string };
-  } | null;
 }
 
 @Injectable()
 export class InvoiceCardRemindersService {
-  private readonly logger = new Logger(InvoiceCardRemindersService.name);
-
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     @Optional() private readonly officialWhatsApp?: InvoiceOfficialWhatsAppService,
     @Optional() private readonly outbound?: WhatsAppOutboundQueueService,
   ) {}
 
+  /**
+   * Tax official-request catch-up on Awaiting, plus subscription «pay within 5
+   * days» on the pay/issue anchor. Overdue client waves stay manual.
+   */
   async runDueInvoiceCardReminders(params: InvoiceReminderRunParams = {}) {
     const asOf = params.asOf ?? new Date();
     const asOfKey = yerevanCalendarDateKey(asOf);
     const official = await this.runOfficialRequestDue(asOf, asOfKey);
-    const payment = await this.runSubscriptionPaymentReminders(asOf, asOfKey);
+    const payment = await runSubscriptionPaymentWindowReminders({
+      prisma: this.prisma,
+      outbound: this.outbound,
+      asOf,
+      asOfKey,
+    });
     return {
       asOf: asOf.toISOString(),
       asOfYerevan: asOfKey,
@@ -101,12 +63,11 @@ export class InvoiceCardRemindersService {
   }
 
   private async runOfficialRequestDue(asOf: Date, asOfKey: string) {
-    const candidates = await this.findOfficialRequestCandidates(asOf);
+    const candidates = await this.findOfficialRequestCandidates();
     const created = [];
     let skippedExisting = 0;
     for (const invoice of candidates) {
       if (!isOfficialRequestBlockingTaxReminders(invoice)) continue;
-      if (invoice.moneyStatus === 'ON_HOLD') continue;
       const result = await this.createOfficialRequestJob(invoice, asOf, asOfKey);
       if (result.created) created.push(result);
       else skippedExisting += 1;
@@ -114,66 +75,14 @@ export class InvoiceCardRemindersService {
     return { eligibleCount: candidates.length, created, skippedExisting };
   }
 
-  private async runSubscriptionPaymentReminders(asOf: Date, asOfKey: string) {
-    const candidates = await this.findPaymentReminderCandidates(asOf);
-    const created = [];
-    let skippedExisting = 0;
-    let skippedNoWhatsApp = 0;
-    for (const invoice of candidates) {
-      const dueDate = invoice.dueDate;
-      if (dueDate == null) continue;
-      if (invoice.subscription == null && invoice.clientServiceRecord == null) continue;
-      if (!isPaymentReminderEligible(invoice)) continue;
-      for (const offsetDays of SUBSCRIPTION_PAYMENT_REMINDER_DAYS_BEFORE_DUE) {
-        if (!isYerevanDueOffsetDay(asOf, dueDate, offsetDays)) continue;
-        const result = await this.createPaymentReminderJob(invoice, offsetDays, asOf, asOfKey);
-        if (result.created) created.push(result);
-        else if (result.reason === 'existing') skippedExisting += 1;
-        else if (result.reason === 'no_whatsapp') skippedNoWhatsApp += 1;
-      }
-    }
-    return { eligibleCount: candidates.length, created, skippedExisting, skippedNoWhatsApp };
-  }
-
-  private findOfficialRequestCandidates(asOf: Date) {
-    const asOfKey = yerevanCalendarDateKey(asOf);
-    const endOfToday = new Date(`${asOfKey}T23:59:59.999+04:00`);
+  private findOfficialRequestCandidates() {
     return this.prisma.invoice.findMany({
       where: {
-        moneyStatus: { in: [...REMINDER_ELIGIBLE_MONEY_STATUSES] },
-        dueDate: { lte: endOfToday },
+        moneyStatus: 'AWAITING_PAYMENT',
         taxStatus: 'TAX',
         officialInvoiceRequestSent: false,
-        notificationsEnabled: true,
-        OR: [
-          { clientServiceRecordId: null },
-          { clientServiceRecord: { is: { notificationsEnabled: true } } },
-        ],
       },
       select: officialRequestSelect,
-    });
-  }
-
-  private findPaymentReminderCandidates(asOf: Date) {
-    const maxOffset = Math.max(...SUBSCRIPTION_PAYMENT_REMINDER_DAYS_BEFORE_DUE);
-    const window = yerevanDueDateWindowForOffsets(asOf, maxOffset);
-    return this.prisma.invoice.findMany({
-      where: {
-        OR: [
-          {
-            subscriptionId: { not: null },
-            subscription: { is: { notificationsEnabled: true } },
-          },
-          {
-            clientServiceRecordId: { not: null },
-            clientServiceRecord: { is: { notificationsEnabled: true } },
-          },
-        ],
-        moneyStatus: { in: [...REMINDER_ELIGIBLE_MONEY_STATUSES] },
-        dueDate: { gte: window.gte, lte: window.lte },
-        notificationsEnabled: true,
-      },
-      select: paymentReminderSelect,
     });
   }
 
@@ -205,120 +114,7 @@ export class InvoiceCardRemindersService {
         },
       });
     }
-    try {
-      await this.officialWhatsApp?.enqueueDueSend(invoice.id, asOfKey);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.warn(
-        `Official request WhatsApp enqueue failed invoice=${invoice.code}: ${message}`,
-      );
-    }
+    await this.officialWhatsApp?.enqueueIfAwaitingEligible(invoice.id);
     return { created: existing ? (false as const) : (true as const), type, invoiceId: invoice.id };
   }
-
-  private async createPaymentReminderJob(
-    invoice: PaymentReminderCandidate,
-    offsetDays: SubscriptionPaymentReminderOffsetDays,
-    asOf: Date,
-    asOfKey: string,
-  ) {
-    const dueDate = invoice.dueDate;
-    if (dueDate == null) {
-      return {
-        created: false as const,
-        type: paymentReminderEventTypeForOffset(offsetDays),
-        invoiceId: invoice.id,
-        reason: 'existing' as const,
-      };
-    }
-
-    const resolved = resolvePaymentReminderRenderInput({
-      amount: invoice.amount,
-      taxStatus: invoice.taxStatus,
-      coverageStartMonth: invoice.coverageStartMonth,
-      dueDate,
-      offsetDays,
-      subscription: invoice.subscription,
-      clientServiceRecord: invoice.clientServiceRecord,
-    });
-    if (resolved == null) {
-      return {
-        created: false as const,
-        type: paymentReminderEventTypeForOffset(offsetDays),
-        invoiceId: invoice.id,
-        reason: 'existing' as const,
-      };
-    }
-
-    const type = paymentReminderEventTypeForOffset(offsetDays);
-    const cycle = invoice.paymentReminderCycle;
-    const dedupeKey = buildSubscriptionPaymentReminderDedupeKey(invoice.id, offsetDays, cycle);
-    const existing = await this.prisma.notificationJob.findUnique({ where: { dedupeKey } });
-    if (existing) {
-      return { created: false as const, type, invoiceId: invoice.id, reason: 'existing' as const };
-    }
-
-    const productWhatsApp = await resolveInvoiceProductWhatsAppGroup(this.prisma, invoice.id);
-    if (!productWhatsApp?.groupChatId) {
-      this.logger.warn(
-        `Payment reminder skipped (no Product WhatsApp group): invoice=${invoice.code} offset=d${offsetDays}`,
-      );
-      return {
-        created: false as const,
-        type,
-        invoiceId: invoice.id,
-        reason: 'no_whatsapp' as const,
-      };
-    }
-
-    const { language, productName } = resolved;
-    const messageText = renderPaymentReminderMessage(resolved);
-    const job = await createInvoiceReminderNotificationJob(this.prisma, {
-      type,
-      invoiceId: invoice.id,
-      dedupeKey,
-      idempotencyKey: buildSubscriptionPaymentReminderIdempotencyKey(invoice.id, offsetDays, cycle),
-      scheduledFor: asOf,
-      payload: {
-        invoiceId: invoice.id,
-        invoiceCode: invoice.code,
-        code: invoice.code,
-        amount: String(invoice.amount),
-        dueDate: dueDate.toISOString(),
-        coverageStartMonth: invoice.coverageStartMonth,
-        productId: productWhatsApp.productId,
-        productName,
-        language,
-        offsetDays,
-        whatsappGroupChatId: productWhatsApp.groupChatId,
-        messageText,
-        asOf: asOf.toISOString(),
-        asOfYerevan: asOfKey,
-        companyName: invoice.company?.name ?? null,
-      },
-    });
-    await tryDeliverPaymentReminderWhatsApp({
-      prisma: this.prisma,
-      outbound: this.outbound,
-      jobId: job.jobId,
-      chatId: productWhatsApp.groupChatId,
-      text: messageText,
-      idempotencyKey: dedupeKey,
-    });
-    return { created: true as const, type, invoiceId: invoice.id };
-  }
-}
-
-function isPaymentReminderEligible(invoice: PaymentReminderCandidate): boolean {
-  if (invoice.moneyStatus === 'ON_HOLD') return false;
-  if (!invoice.notificationsEnabled) return false;
-  if (invoice.subscription != null) {
-    if (!invoice.subscription.notificationsEnabled) return false;
-  } else if (invoice.clientServiceRecord != null) {
-    if (!invoice.clientServiceRecord.notificationsEnabled) return false;
-  } else {
-    return false;
-  }
-  if (isOfficialRequestBlockingTaxReminders(invoice)) return false;
-  return true;
 }

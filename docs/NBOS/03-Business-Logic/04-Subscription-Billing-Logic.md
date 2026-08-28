@@ -113,16 +113,18 @@ Tax Status берётся из подписки и наследуется каж
 
 Шаг 6: Просрочка (если не оплачено к Billing Day)
   ────────────────────────────────────
-  Invoice переходит на стадию "Overdue"
-  → 1-е уведомление о просрочке отправляется клиенту
+  Invoice переходит на стадию "Overdue" (авто по due date)
+  Клиенту письмо НЕ уходит само
 
-Шаг 7: Повторное уведомление (+2 дня после просрочки)
+Шаг 7: Сверка банка и ручные волны
   ────────────────────────────────────
-  → 2-е уведомление: «Оплата просрочена, возможно отключение»
+  Finance отмечает Paid → нажимает Send overdue reminders
+  → волна 1 или волна 2 по уже отправленному на этой карточке
+  Повтор в тот же день Еревана волну 2 не шлёт
 
-Шаг 8: Эскалация (при длительной неоплате)
+Шаг 8: После волны 2
   ────────────────────────────────────
-  Финансовый директор решает: напомнить ещё раз / приостановить / CEO
+  Клиенту больше не пишем. On Hold / ручная эскалация — решение Finance (INV-07 later)
 ```
 
 ### Визуализация стадий Invoice подписки
@@ -130,9 +132,9 @@ Tax Status берётся из подписки и наследуется каж
 ```
 New → Create in Gov System → Send Message → [Ожидание] → Paid
                                                 ↓
-                                            Overdue → Overdue Notification 2 → ...
-                                                              ↓
-                                                          Эскалация
+                                            Overdue
+                                                ↓
+                         Send overdue reminders → wave 1 / wave 2 (per invoice)
 ```
 
 ---
@@ -143,17 +145,16 @@ New → Create in Gov System → Send Message → [Ожидание] → Paid
 
 1. **Открыть банк** — проверить поступления за вчера/сегодня
 2. **Отметить оплаченные** — перевести оплаченные Invoice в статус «Paid»
-3. **Запустить автоматизацию** — нажать кнопку «Запустить процесс»:
-   - Неоплаченным клиентам отправляются уведомления
-   - Invoice переходят на следующие стадии автоматически
-   - Просроченные получают соответствующие уведомления
+3. **Send overdue reminders** — нажать кнопку на доске Invoices:
+   - Превью: кому волна 1, кому волна 2
+   - Письма уходят только карточкам, которые всё ещё `Overdue`
 
 ### Важно: порядок действий
 
 ```
 1. Проверить оплаты в банке
 2. Отметить оплаченные Invoice как "Paid" (чтобы они НЕ получили напоминание)
-3. Запустить автоматизацию (напоминания уходят только неоплаченным)
+3. Нажать Send overdue reminders (письма уходят только оставшимся Overdue)
 ```
 
 ---
@@ -162,19 +163,21 @@ New → Create in Gov System → Send Message → [Ожидание] → Paid
 
 Клиенты платят в разные дни месяца. Система учитывает индивидуальный Billing Day для каждой подписки.
 
-| Billing Day | Создание Invoice | Уведомление клиенту | Дедлайн оплаты | Просрочка  |
-| ----------- | ---------------- | ------------------- | -------------- | ---------- |
-| 5-е число   | 1-го числа       | 1-го числа          | 5-е число      | 6-е число  |
-| 15-е число  | 10-го числа      | 10-го числа         | 15-е число     | 16-е число |
-| 20-е число  | 15-го числа      | 15-го числа         | 20-е число     | 21-е число |
+| Billing Day | Создание Invoice                    | Письмо «в течение 5 дней» | dueDate (вовремя до) | Просрочка |
+| ----------- | ----------------------------------- | ------------------------- | -------------------- | --------- |
+| 1-е число   | предпоследний пн–пт прошлого месяца | 1-го                      | 6-е                  | 7-е       |
+| 5-е число   | 1-го числа                          | 5-го                      | 10-е                 | 11-е      |
+| 15-е число  | 1-го числа                          | 15-го                     | 20-е                 | 21-е      |
+
+Если карточку выставили позже дня оплаты, якорь = день создания: письмо в тот же день, `dueDate` = создание + 5.
 
 ### Процесс для 1-го числа (массовый)
 
 Большинство подписок (≈90%) имеют Billing Day = 5-е число:
 
-- 1-го числа: массовое создание Invoice → уведомления бухгалтеру → уведомления клиентам
-- 5-го числа: массовая проверка оплат → отметка Paid → автоматизация напоминаний
-- 6–7 числа: повторные проверки и напоминания о просрочке
+- 1-го числа: массовое создание Invoice для дней оплаты 2–31
+- В **день оплаты** (не в день создания, если карточку выставили заранее): письмо клиенту «оплатите в течение 5 дней»
+- После `dueDate`: статус Overdue авто; письма «не оплатили» — только после кнопки Send overdue reminders
 
 ### Процесс для других дат
 
@@ -351,40 +354,17 @@ Project Beta:
 
 ## Автоматизация уведомлений
 
-### Client WhatsApp payment reminders (canon)
+### Client WhatsApp (canon)
 
-Anchor: `Invoice.dueDate` (не Billing Day). Timezone for day math: **Asia/Yerevan**.
-
-| Offset | When (Yerevan calendar) | Event code                             | Idempotency                           |
-| ------ | ----------------------- | -------------------------------------- | ------------------------------------- |
-| D-10   | `dueDate − 10` days     | `finance.invoice.payment_reminder_d10` | once per invoice per collection cycle |
-| D-2    | `dueDate − 2` days      | `finance.invoice.payment_reminder_d2`  | once per invoice per collection cycle |
-
-- Collection cycle: `On Hold` → `Awaiting Payment` does **not** reset; `Cancelled` then `Awaiting Payment` starts a new cycle (`Invoice.paymentReminderCycle`).
-
-- Language: `Subscription.reminderLanguage` or `ClientServiceRecord.reminderLanguage` (`HY` / `RU` / `EN`, default `HY`).
-- Placeholders: subscription `{productName}` = `Product.name`; client-service `{serviceName}` = `ClientServiceRecord.name`; `{month}` = localized `coverageStartMonth` (else Yerevan month of `dueDate`).
-- No catch-up: if the invoice is created after the D-10 day, D-10 is skipped; D-2 still fires on its day.
-- Tax + official request not sent → block client payment reminders (accountant path separate).
-- Tax billing cards are created in `New`. They cannot enter `Awaiting Payment` or `Paid` until company requisites / official request gates pass (see Invoices canon).
-- Target: Product WhatsApp Group via `subscription.productId`, else `ClientServiceRecord.productId`. Never Project-level.
+Первое клиентское WhatsApp — cron 11:00, письмо «оплатите в течение 5 дней» в день якоря (`max(день оплаты, день создания)`), догон до `dueDate`. D-10 / D-2 (`dueDate − 10` / `− 2`) cron больше не создаёт. После просрочки — кнопка **Send overdue reminders** (волна 1, затем волна 2 через ≥ 2 дня Yerevan). Official-request бухгалтеру остаётся на том же кроне.
 
 ### Типы уведомлений (смежные)
 
-| Событие         | Канал    | Получатель          | Текст (шаблон)                                                              |
-| --------------- | -------- | ------------------- | --------------------------------------------------------------------------- |
-| Invoice создан  | Система  | Бухгалтер           | «Создать счёт в госсистеме: [проект], [сумма], [реквизиты]» (Tax)           |
-| D-10 / D-2      | WhatsApp | Product group       | Subscription payment reminder (HY/RU/EN templates; see Subscriptions canon) |
-| Оплата получена | Система  | Финансовый директор | «Оплата [сумма] от [клиент] получена.»                                      |
-
-### Расписание (payment reminders)
-
-```
-dueDate − 10:  D-10 client WhatsApp (once per collection cycle)
-dueDate − 2:   D-2 client WhatsApp (once per collection cycle)
-dueDate:       pay-by deadline
-(Tax official-request internal reminders remain separate when request not sent)
-```
+| Событие         | Канал    | Получатель          | Текст (шаблон)                                                    |
+| --------------- | -------- | ------------------- | ----------------------------------------------------------------- |
+| Invoice создан  | Система  | Бухгалтер           | «Создать счёт в госсистеме: [проект], [сумма], [реквизиты]» (Tax) |
+| Overdue w1 / w2 | WhatsApp | Product group       | Manual button after due (HY/RU/EN; see Subscriptions canon)       |
+| Оплата получена | Система  | Финансовый директор | «Оплата [сумма] от [клиент] получена.»                            |
 
 ---
 
@@ -399,5 +379,5 @@ dueDate:       pay-by deadline
 7. **Предоплата возможна** — клиент может оплатить несколько месяцев вперёд
 8. **Subscription Grid — источник правды** для прогноза ежемесячного дохода
 9. **Автопауза deadline** смотрит только Product (+ Extensions) этой Subscription, не весь Project
-10. **WhatsApp client reminders** — Product WhatsApp Group по `subscription.productId`; D-10/D-2 vs `dueDate`; язык `reminderLanguage`
+10. **WhatsApp client reminders** — Product WhatsApp Group по `subscription.productId`; only manual overdue waves; язык `reminderLanguage`
 11. **Срок (`termMonths`)** считается покрытыми месяцами invoice, не календарём. Пауза (On Hold / late-delivery) месяц не расходует. По исчерпании срока — `Completed`, без новых карточек. Инвариант: `coverageMonthCount <= termMonths` и `termMonths % coverageMonthCount === 0`

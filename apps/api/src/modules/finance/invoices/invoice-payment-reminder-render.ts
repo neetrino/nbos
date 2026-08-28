@@ -29,7 +29,7 @@ export function resolvePaymentReminderRenderInput(input: {
   taxStatus: string;
   coverageStartMonth: string | null;
   dueDate: Date;
-  offsetDays: RenderClientPaymentReminderInput['offsetDays'];
+  offsetDays?: RenderClientPaymentReminderInput['offsetDays'];
   subscription: PaymentReminderSubscription | null;
   clientServiceRecord: PaymentReminderClientService | null;
 }): ResolvedPaymentReminderRenderInput | null {

@@ -24,7 +24,13 @@ type MockBillableSubscription = {
   status: string;
   termMonths: number | null;
   endDate: Date | null;
-  project: { id: string; code: string; name: string; companyId: string | null };
+  project: {
+    id: string;
+    code: string;
+    name: string;
+    companyId: string | null;
+    company: { name: string; legalName: string | null; taxId: string | null } | null;
+  };
   product: typeof idleProduct;
 };
 
@@ -52,7 +58,7 @@ function mockBillableSubscription(
     status: 'ACTIVE',
     termMonths: null,
     endDate: null,
-    project: { id: 'proj-1', code: 'P-2026-0001', name: 'Test', companyId: null },
+    project: { id: 'proj-1', code: 'P-2026-0001', name: 'Test', companyId: null, company: null },
     product: idleProduct,
     ...overrides,
   };
@@ -155,14 +161,14 @@ describe('BillingService', () => {
           id: 'sub-1',
           code: 'SUB-1',
           projectId: 'p1',
-          project: { id: 'p1', code: 'PR-1', name: 'A' },
+          project: { id: 'p1', code: 'PR-1', name: 'A', companyId: null, company: null },
         }),
         mockBillableSubscription({
           id: 'sub-2',
           code: 'SUB-2',
           projectId: 'p2',
           amount: 200,
-          project: { id: 'p2', code: 'PR-2', name: 'B' },
+          project: { id: 'p2', code: 'PR-2', name: 'B', companyId: null, company: null },
         }),
       ]);
       prisma.invoice.findMany.mockResolvedValue([]);
@@ -393,6 +399,36 @@ describe('BillingService', () => {
       expect(prisma.subscription.findMany.mock.calls[0]?.[0]?.where?.billingDay).toBeUndefined();
     });
 
+    it('keeps day-1 Tax without company requisites in New', async () => {
+      const today = new Date('2026-03-30T11:00:00+04:00');
+      prisma.subscription.findMany.mockResolvedValue([
+        mockBillableSubscription({
+          billingDay: 1,
+          taxStatus: 'TAX',
+          project: {
+            id: 'proj-1',
+            code: 'P-2026-0001',
+            name: 'Test',
+            companyId: null,
+            company: null,
+          },
+        }),
+      ]);
+      prisma.invoice.findMany.mockResolvedValue([]);
+      setupInvoiceCodeGeneration(prisma);
+
+      await service.runMonthlyBilling(today);
+
+      expect(prisma.invoice.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            coverageStartMonth: '2026-04',
+            moneyStatus: 'NEW',
+          }),
+        }),
+      );
+    });
+
     it('creates a day-1 invoice for the next month on the penultimate weekday', async () => {
       const today = new Date('2026-03-30T11:00:00+04:00');
       prisma.subscription.findMany.mockResolvedValue([mockBillableSubscription({ billingDay: 1 })]);
@@ -406,6 +442,7 @@ describe('BillingService', () => {
         expect.objectContaining({
           data: expect.objectContaining({
             coverageStartMonth: '2026-04',
+            moneyStatus: 'AWAITING_PAYMENT',
             dueDate: new Date('2026-04-06T00:00:00+04:00'),
           }),
         }),

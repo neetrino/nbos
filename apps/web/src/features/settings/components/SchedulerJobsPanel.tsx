@@ -1,20 +1,30 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { ErrorState, LoadingState } from '@/components/shared';
 import {
   schedulerJobsApi,
   type PlatformSchedulerJobRow,
   type PlatformSchedulerJobsResponse,
 } from '@/lib/api/scheduler-jobs';
+import { filterSchedulerJobs } from './filter-scheduler-jobs';
 import { SchedulerJobTableRow } from './SchedulerJobTableRow';
 import { SchedulerJobsHero } from './SchedulerJobsHero';
 import {
   SchedulerHighRiskConfirmDialog,
   type SchedulerConfirmAction,
 } from './SchedulerHighRiskConfirmDialog';
+
+const SCHEDULER_JOB_TABLE_COLUMN_COUNT = 10;
 
 type PendingConfirm = {
   row: PlatformSchedulerJobRow;
@@ -28,6 +38,11 @@ export function SchedulerJobsPanel() {
   const [busyJob, setBusyJob] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingConfirm | null>(null);
+  const [search, setSearch] = useState('');
+  const visibleJobs = useMemo(
+    () => filterSchedulerJobs(data?.jobs ?? [], search),
+    [data?.jobs, search],
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -128,7 +143,15 @@ export function SchedulerJobsPanel() {
 
   return (
     <div className="space-y-4">
-      <SchedulerJobsHero data={data} loading={loading} onRefresh={() => void load()} />
+      <SchedulerJobsHero
+        data={data}
+        loading={loading}
+        search={search}
+        visibleCount={visibleJobs.length}
+        totalCount={data.jobs.length}
+        onSearchChange={setSearch}
+        onRefresh={() => void load()}
+      />
       <div className="border-border bg-card overflow-x-auto rounded-2xl border shadow-sm">
         <Table>
           <TableHeader>
@@ -146,16 +169,27 @@ export function SchedulerJobsPanel() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.jobs.map((row) => (
-              <SchedulerJobTableRow
-                key={row.jobName}
-                row={row}
-                timezone={data.timezone}
-                busy={busyJob === row.jobName}
-                onToggle={(enabled) => handleToggle(row, enabled)}
-                onRunNow={() => handleRunNow(row)}
-              />
-            ))}
+            {visibleJobs.length === 0 ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell
+                  colSpan={SCHEDULER_JOB_TABLE_COLUMN_COUNT}
+                  className="text-muted-foreground py-10 text-center text-sm"
+                >
+                  No jobs match this search.
+                </TableCell>
+              </TableRow>
+            ) : (
+              visibleJobs.map((row) => (
+                <SchedulerJobTableRow
+                  key={row.jobName}
+                  row={row}
+                  timezone={data.timezone}
+                  busy={busyJob === row.jobName}
+                  onToggle={(enabled) => handleToggle(row, enabled)}
+                  onRunNow={() => handleRunNow(row)}
+                />
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

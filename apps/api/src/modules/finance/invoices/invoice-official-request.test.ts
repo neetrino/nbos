@@ -11,6 +11,7 @@ function officialRow(overrides: Record<string, unknown> = {}) {
   return {
     id: 'inv-1',
     taxStatus: 'TAX',
+    moneyStatus: 'AWAITING_PAYMENT',
     companyId: 'c1',
     officialInvoiceRequestSent: false,
     officialInvoiceSentAt: null,
@@ -93,6 +94,19 @@ describe('sendOfficialInvoiceRequest', () => {
         findUnique: vi
           .fn()
           .mockResolvedValue(officialRow({ company: { name: 'InvestOn LLC', taxId: null } })),
+        update: vi.fn(),
+      },
+    };
+    await expect(sendOfficialInvoiceRequest(prisma as never, 'inv-1')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(prisma.invoice.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects Cancelled invoices', async () => {
+    const prisma = {
+      invoice: {
+        findUnique: vi.fn().mockResolvedValue(officialRow({ moneyStatus: 'CANCELLED' })),
         update: vi.fn(),
       },
     };

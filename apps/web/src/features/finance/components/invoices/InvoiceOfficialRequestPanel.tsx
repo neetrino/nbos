@@ -52,6 +52,7 @@ export function InvoiceOfficialRequestPanel({
     company: invoice.company,
   });
   const canSend = sendBlocked.length === 0;
+  const showSendActions = invoice.moneyStatus !== 'CANCELLED';
 
   return (
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
@@ -69,55 +70,57 @@ export function InvoiceOfficialRequestPanel({
         ) : null}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {!invoice.officialInvoiceRequestSent ? (
-          <Button
-            type="button"
-            size="sm"
-            disabled={busy || !canSend}
-            onClick={() =>
-              void runAction(
-                () => invoicesApi.sendOfficialInvoiceRequest(invoice.id),
-                'Request sent to accountant',
-              )
-            }
-          >
-            {busy ? <Loader2 className="mr-1 size-3.5 animate-spin" /> : null}
-            Send to accountant
-          </Button>
-        ) : (
-          <>
+      {showSendActions ? (
+        <div className="flex flex-wrap gap-2">
+          {!invoice.officialInvoiceRequestSent ? (
             <Button
               type="button"
               size="sm"
-              variant="outline"
-              disabled={busy}
-              onClick={() =>
-                void runAction(
-                  () => invoicesApi.cancelOfficialInvoiceRequest(invoice.id),
-                  'Request cancelled',
-                )
-              }
-            >
-              Cancel request
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
               disabled={busy || !canSend}
               onClick={() =>
                 void runAction(
                   () => invoicesApi.sendOfficialInvoiceRequest(invoice.id),
-                  'Request sent again',
+                  'Request sent to accountant',
                 )
               }
             >
-              Send again
+              {busy ? <Loader2 className="mr-1 size-3.5 animate-spin" /> : null}
+              Send to accountant
             </Button>
-          </>
-        )}
-      </div>
+          ) : (
+            <>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() =>
+                  void runAction(
+                    () => invoicesApi.cancelOfficialInvoiceRequest(invoice.id),
+                    'Request cancelled',
+                  )
+                }
+              >
+                Cancel request
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                disabled={busy || !canSend}
+                onClick={() =>
+                  void runAction(
+                    () => invoicesApi.sendOfficialInvoiceRequest(invoice.id),
+                    'Request sent again',
+                  )
+                }
+              >
+                Send again
+              </Button>
+            </>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }

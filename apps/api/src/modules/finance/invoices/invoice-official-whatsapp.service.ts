@@ -8,6 +8,11 @@ import { throwWhatsAppDomainError } from '../../integrations/whatsapp-gateway/wh
 import { WHATSAPP_ERROR } from '../../integrations/whatsapp-gateway/whatsapp-gateway.constants';
 import { assertOfficialInvoiceRequestSend } from './invoice-tax-readiness-assert';
 import {
+  canAutoSendOfficialOnAwaiting,
+  OFFICIAL_SEND_CANCELLED_MESSAGE,
+  officialSendIdempotencyKey,
+} from './invoice-official-awaiting-send';
+import {
   buildOfficialInvoicePurpose,
   renderOfficialInvoiceCancelMessage,
   renderOfficialInvoiceIssueMessage,
@@ -20,7 +25,9 @@ const OFFICIAL_CONTEXT_SELECT = {
   type: true,
   amount: true,
   taxStatus: true,
+  moneyStatus: true,
   officialInvoiceRequestSent: true,
+  officialInvoiceCancelledAt: true,
   coverageStartMonth: true,
   companyId: true,
   company: { select: { name: true, legalName: true, taxId: true } },
@@ -60,25 +67,27 @@ export class InvoiceOfficialWhatsAppService {
     }
   }
 
-  async enqueueDueSend(invoiceId: string, asOfKey: string): Promise<void> {
-    const invoice = await this.loadReadyToSend(invoiceId);
-    const chatId = await this.requireAccountingGroupChatId();
-    await this.outbound.enqueue(
-      {
-        kind: 'official_send',
-        chatId,
-        text: renderOfficialInvoiceIssueMessage(this.toFields(invoice)),
-        idempotencyKey: `official_send:${invoice.id}:${asOfKey}`,
-        invoiceId: invoice.id,
-      },
-      false,
-    );
+  async enqueueIfAwaitingEligible(invoiceId: string): Promise<void> {
+    const invoice = await this.loadContext(invoiceId);
+    if (!canAutoSendOfficialOnAwaiting(invoice)) return;
+    try {
+      await this.enqueueOfficial(
+        invoice,
+        'official_send',
+        false,
+        officialSendIdempotencyKey(invoice.id, invoice.officialInvoiceCancelledAt),
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Official auto-send skipped for ${invoice.code}: ${message}`);
+    }
   }
 
   private async enqueueOfficial(
     invoice: OfficialWhatsAppInvoice,
     kind: 'official_send' | 'official_cancel',
     wait: boolean,
+    idempotencyKey?: string,
   ): Promise<void> {
     const chatId = await this.requireAccountingGroupChatId();
     const fields = this.toFields(invoice);
@@ -91,7 +100,7 @@ export class InvoiceOfficialWhatsAppService {
         kind,
         chatId,
         text,
-        idempotencyKey: `${kind}:${invoice.id}:${Date.now()}`,
+        idempotencyKey: idempotencyKey ?? `${kind}:${invoice.id}:${Date.now()}`,
         invoiceId: invoice.id,
       },
       wait,
@@ -115,6 +124,9 @@ export class InvoiceOfficialWhatsAppService {
     const invoice = await this.loadContext(invoiceId);
     if (invoice.taxStatus !== 'TAX') {
       throw new BadRequestException('Official invoice request applies only to Tax invoices');
+    }
+    if (invoice.moneyStatus === 'CANCELLED') {
+      throw new BadRequestException(OFFICIAL_SEND_CANCELLED_MESSAGE);
     }
     assertOfficialInvoiceRequestSend(invoice);
     return invoice;
@@ -166,7 +178,9 @@ type OfficialWhatsAppInvoice = {
   type: InvoiceTypeEnum;
   amount: unknown;
   taxStatus: string;
+  moneyStatus: string;
   officialInvoiceRequestSent: boolean;
+  officialInvoiceCancelledAt: Date | null;
   coverageStartMonth: string | null;
   companyId: string | null;
   company: { name: string; legalName: string | null; taxId: string | null } | null;
