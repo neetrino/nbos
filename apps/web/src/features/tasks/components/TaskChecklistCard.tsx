@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import type { Task, TaskChecklistItem } from '@/lib/api/tasks';
 import { checklistProgressLabel, visibleChecklistItems } from './task-checklist-helpers';
 import { TaskChecklistInlineAdd } from './TaskChecklistInlineAdd';
+import { TaskChecklistInlineText } from './TaskChecklistInlineText';
 
 const HEADER_ICON_BTN_CLASS =
   'text-muted-foreground hover:text-foreground flex size-7 shrink-0 items-center justify-center rounded-md';
@@ -29,6 +30,9 @@ interface TaskChecklistCardProps {
   onToggleItem: (itemId: string) => void;
   onDeleteChecklist: () => void;
   onDeleteItem: (itemId: string) => void;
+  onRenameTitle: (title: string) => Promise<void>;
+  onRenameItem: (itemId: string, text: string) => Promise<void>;
+  disabled?: boolean;
 }
 
 export function TaskChecklistCard({
@@ -40,6 +44,9 @@ export function TaskChecklistCard({
   onToggleItem,
   onDeleteChecklist,
   onDeleteItem,
+  onRenameTitle,
+  onRenameItem,
+  disabled = false,
 }: TaskChecklistCardProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [hideCompleted, setHideCompleted] = useState(false);
@@ -59,6 +66,8 @@ export function TaskChecklistCard({
         onToggleCollapsed={() => setCollapsed((prev) => !prev)}
         onHideCompleted={() => setHideCompleted((prev) => !prev)}
         onDelete={onDeleteChecklist}
+        onRenameTitle={onRenameTitle}
+        disabled={disabled}
       />
 
       {total > 0 && !collapsed ? <Progress value={progress} className="mt-2" /> : null}
@@ -71,13 +80,15 @@ export function TaskChecklistCard({
                 <ChecklistItem
                   key={item.id}
                   item={item}
+                  disabled={disabled}
                   onToggleItem={onToggleItem}
                   onDeleteItem={onDeleteItem}
+                  onRenameItem={onRenameItem}
                 />
               ))}
             </div>
           ) : null}
-          <div className={cn(items.length > 0 && 'border-border/40 mt-1 border-t pt-1')}>
+          {disabled ? null : (
             <TaskChecklistInlineAdd
               label="Add item"
               placeholder="Item"
@@ -87,11 +98,24 @@ export function TaskChecklistCard({
               onChange={onNewItemTextChange}
               onSubmit={onAddItem}
             />
-          </div>
+          )}
         </div>
       )}
     </div>
   );
+}
+
+interface ChecklistHeaderProps {
+  title: string;
+  done: number;
+  total: number;
+  collapsed: boolean;
+  hideCompleted: boolean;
+  onToggleCollapsed: () => void;
+  onHideCompleted: () => void;
+  onDelete: () => void;
+  onRenameTitle: (title: string) => Promise<void>;
+  disabled: boolean;
 }
 
 function ChecklistHeader({
@@ -103,32 +127,33 @@ function ChecklistHeader({
   onToggleCollapsed,
   onHideCompleted,
   onDelete,
-}: {
-  title: string;
-  done: number;
-  total: number;
-  collapsed: boolean;
-  hideCompleted: boolean;
-  onToggleCollapsed: () => void;
-  onHideCompleted: () => void;
-  onDelete: () => void;
-}) {
+  onRenameTitle,
+  disabled,
+}: ChecklistHeaderProps) {
   return (
     <div className="flex items-start gap-2">
       <ListChecks size={16} className="text-primary mt-0.5 shrink-0" aria-hidden />
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium break-words">{title}</p>
+        <TaskChecklistInlineText
+          value={title}
+          onCommit={onRenameTitle}
+          ariaLabel="Checklist title"
+          disabled={disabled}
+          className="text-sm font-medium"
+        />
         {total > 0 ? (
           <p className="text-muted-foreground mt-0.5 text-xs">
             {checklistProgressLabel(done, total)}
           </p>
         ) : null}
       </div>
-      <ChecklistMenu
-        hideCompleted={hideCompleted}
-        onHideCompleted={onHideCompleted}
-        onDelete={onDelete}
-      />
+      {disabled ? null : (
+        <ChecklistMenu
+          hideCompleted={hideCompleted}
+          onHideCompleted={onHideCompleted}
+          onDelete={onDelete}
+        />
+      )}
       <button
         type="button"
         className={HEADER_ICON_BTN_CLASS}
@@ -190,35 +215,44 @@ function ChecklistMenu({
 
 function ChecklistItem({
   item,
+  disabled,
   onToggleItem,
   onDeleteItem,
+  onRenameItem,
 }: {
   item: TaskChecklistItem;
+  disabled: boolean;
   onToggleItem: (itemId: string) => void;
   onDeleteItem: (itemId: string) => void;
+  onRenameItem: (itemId: string, text: string) => Promise<void>;
 }) {
   return (
     <div className="group hover:bg-muted/60 flex items-center gap-2 rounded-md px-0.5 py-1">
-      <Checkbox checked={item.checked} onCheckedChange={() => onToggleItem(item.id)} />
-      <span
-        className={
-          item.checked
-            ? 'text-muted-foreground min-w-0 flex-1 text-sm break-words line-through'
-            : 'min-w-0 flex-1 text-sm break-words'
-        }
-      >
-        {item.text}
-      </span>
-      <Button
-        type="button"
-        size="icon-xs"
-        variant="ghost"
-        className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-        title="Delete item"
-        onClick={() => onDeleteItem(item.id)}
-      >
-        <Trash2 size={12} />
-      </Button>
+      <Checkbox
+        checked={item.checked}
+        disabled={disabled}
+        onCheckedChange={() => onToggleItem(item.id)}
+      />
+      <TaskChecklistInlineText
+        value={item.text}
+        onCommit={(text) => onRenameItem(item.id, text)}
+        ariaLabel="Checklist item"
+        disabled={disabled}
+        strike={item.checked}
+        className="min-w-0 flex-1 text-sm"
+      />
+      {disabled ? null : (
+        <Button
+          type="button"
+          size="icon-xs"
+          variant="ghost"
+          className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+          title="Delete item"
+          onClick={() => onDeleteItem(item.id)}
+        >
+          <Trash2 size={12} />
+        </Button>
+      )}
     </div>
   );
 }

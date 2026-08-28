@@ -171,7 +171,7 @@ function TasksPageContent() {
           }
         />
       ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-4">
+        <div className="flex min-h-0 flex-1 flex-col gap-1">
           {renderBoard(displayBoardView)}
           {taskMeta ? (
             <TaskListLoadMoreBanner
@@ -179,6 +179,7 @@ function TasksPageContent() {
               totalCount={taskMeta.total}
               onLoadMore={() => void loadMoreTasks()}
               loading={loadingMore}
+              hasMorePages={taskMeta.page < taskMeta.totalPages}
             />
           ) : null}
         </div>

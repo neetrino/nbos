@@ -280,9 +280,20 @@ export class TasksController {
     @Param('id') id: string,
     @Body() body: { title?: string },
   ) {
-    return this.tasksService.createChecklist(
-      id,
-      body.title ?? 'Checklist',
+    return this.tasksService.createChecklist(id, body.title, tasksAccessFromUser(user));
+  }
+
+  @Patch('checklists/:checklistId')
+  @RequirePermission('TASKS', 'EDIT')
+  @ApiOperation({ summary: 'Rename checklist' })
+  async updateChecklist(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('checklistId') checklistId: string,
+    @Body() body: { title: string },
+  ) {
+    return this.tasksService.updateChecklistTitle(
+      checklistId,
+      body.title,
       tasksAccessFromUser(user),
     );
   }
@@ -294,6 +305,17 @@ export class TasksController {
     @Body() body: { text: string },
   ) {
     return this.tasksService.addChecklistItem(checklistId, body.text);
+  }
+
+  @Patch('checklist-items/:itemId')
+  @RequirePermission('TASKS', 'EDIT')
+  @ApiOperation({ summary: 'Rename checklist item' })
+  async updateChecklistItem(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('itemId') itemId: string,
+    @Body() body: { text: string },
+  ) {
+    return this.tasksService.updateChecklistItemText(itemId, body.text, tasksAccessFromUser(user));
   }
 
   @Patch('checklist-items/:itemId/toggle')

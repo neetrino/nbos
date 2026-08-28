@@ -26,6 +26,7 @@ import {
 import { runTaskWorkflowApi } from './task-workflow-api';
 import { applyTaskSheetPipelineStatus } from './apply-task-sheet-pipeline-status';
 import { normalizeTaskStatusForDraft } from '../utils/task-status-draft';
+import { nextDefaultChecklistTitle } from './task-checklist-helpers';
 
 interface UseTaskSheetStateParams {
   taskId: string | null;
@@ -54,8 +55,8 @@ export function useTaskSheetState({
   const [generalDraft, setGeneralDraft] = useState<TaskGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<TaskGeneralDraft | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
-  const [newChecklistTitle, setNewChecklistTitle] = useState('');
   const [newItemTexts, setNewItemTexts] = useState<Record<string, string>>({});
+  const addingChecklistRef = useRef(false);
   const [completionBlockers, setCompletionBlockers] = useState<TaskCompletionBlocker[]>([]);
   /** Instant footer workflow mode — not affected by slow draft enrich. */
   const [workflowFooterStatus, setWorkflowFooterStatus] = useState<string | null>(null);
@@ -100,7 +101,6 @@ export function useTaskSheetState({
         setWorkflowFooterStatus(null);
         setGeneralError(null);
         setCompletionBlockers([]);
-        setNewChecklistTitle('');
         setNewItemTexts({});
         const quickDraft = createTaskGeneralDraft(seed);
         setGeneralDraft(quickDraft);
@@ -125,7 +125,6 @@ export function useTaskSheetState({
             setWorkflowFooterStatus(null);
             setGeneralError(null);
             setCompletionBlockers([]);
-            setNewChecklistTitle('');
             setNewItemTexts({});
           } else {
             setTask(nextTask);
@@ -401,15 +400,65 @@ export function useTaskSheetState({
   );
 
   const handleAddChecklist = useCallback(async () => {
-    if (!task || !newChecklistTitle.trim()) return;
+    if (!task || addingChecklistRef.current) return;
+    addingChecklistRef.current = true;
     try {
-      const checklist = await tasksApi.createChecklist(task.id, newChecklistTitle.trim());
+      const checklist = await tasksApi.createChecklist(
+        task.id,
+        nextDefaultChecklistTitle(task.checklists.map((item) => item.title)),
+      );
       setLocalTask((current) => ({ ...current, checklists: [...current.checklists, checklist] }));
-      setNewChecklistTitle('');
     } catch (caught) {
       toast.error(getApiErrorMessage(caught, 'Checklist could not be created.'));
+    } finally {
+      addingChecklistRef.current = false;
     }
-  }, [newChecklistTitle, setLocalTask, task]);
+  }, [setLocalTask, task]);
+
+  const handleRenameChecklist = useCallback(
+    async (checklistId: string, title: string) => {
+      try {
+        const updated = await tasksApi.updateChecklistTitle(checklistId, title);
+        setLocalTask((current) => ({
+          ...current,
+          checklists: current.checklists.map((checklist) =>
+            checklist.id === checklistId ? { ...checklist, title: updated.title } : checklist,
+          ),
+        }));
+      } catch (caught) {
+        const message = getApiErrorMessage(caught, 'Checklist could not be renamed.');
+        toast.error(message);
+        throw caught;
+      }
+    },
+    [setLocalTask],
+  );
+
+  const handleRenameItem = useCallback(
+    async (checklistId: string, itemId: string, text: string) => {
+      try {
+        const updated = await tasksApi.updateChecklistItemText(itemId, text);
+        setLocalTask((current) => ({
+          ...current,
+          checklists: current.checklists.map((checklist) =>
+            checklist.id === checklistId
+              ? {
+                  ...checklist,
+                  items: checklist.items.map((item) =>
+                    item.id === itemId ? { ...item, text: updated.text } : item,
+                  ),
+                }
+              : checklist,
+          ),
+        }));
+      } catch (caught) {
+        const message = getApiErrorMessage(caught, 'Checklist item could not be updated.');
+        toast.error(message);
+        throw caught;
+      }
+    },
+    [setLocalTask],
+  );
 
   const handleDeleteChecklist = useCallback(
     async (checklistId: string) => {
@@ -543,9 +592,7 @@ export function useTaskSheetState({
     generalError,
     generalDirty,
     completionBlockers,
-    newChecklistTitle,
     newItemTexts,
-    setNewChecklistTitle,
     setNewItemTexts,
     patchGeneralDraft,
     handleToggleTaskUrgent,
@@ -554,6 +601,8 @@ export function useTaskSheetState({
     handleAction,
     handlePipelineStatusClick,
     handleAddChecklist,
+    handleRenameChecklist,
+    handleRenameItem,
     handleDeleteChecklist,
     handleAddItem,
     handleToggleItem,

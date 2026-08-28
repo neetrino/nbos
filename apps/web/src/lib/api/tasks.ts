@@ -361,11 +361,24 @@ export const tasksApi = {
 
   // Checklists
   async createChecklist(taskId: string, title?: string): Promise<TaskChecklist> {
-    const resp = await api.post<TaskChecklist>(`/api/tasks/${taskId}/checklists`, { title });
+    const resp = await api.post<TaskChecklist>(
+      `/api/tasks/${taskId}/checklists`,
+      title ? { title } : {},
+    );
+    return resp.data;
+  },
+  async updateChecklistTitle(checklistId: string, title: string): Promise<TaskChecklist> {
+    const resp = await api.patch<TaskChecklist>(`/api/tasks/checklists/${checklistId}`, { title });
     return resp.data;
   },
   async addChecklistItem(checklistId: string, text: string): Promise<TaskChecklistItem> {
     const resp = await api.post<TaskChecklistItem>(`/api/tasks/checklists/${checklistId}/items`, {
+      text,
+    });
+    return resp.data;
+  },
+  async updateChecklistItemText(itemId: string, text: string): Promise<TaskChecklistItem> {
+    const resp = await api.patch<TaskChecklistItem>(`/api/tasks/checklist-items/${itemId}`, {
       text,
     });
     return resp.data;

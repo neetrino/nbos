@@ -290,6 +290,8 @@ PM-oriented вид по срокам, зависимостям и critical path.
 
 Членство в Project / Product team **само по себе** не делает задачу «своей». Такие задачи остаются в Work Space / Project Hub. Top-level `/tasks` и My Plan показывают только личные отметки.
 
+Top-level `/tasks` — execution-лента: задача из scrum-enabled workspace видна там только если она уже в active sprint. Backlog и future/planning sprint остаются только во вкладке Planning этого workspace. Задачи без workspace и задачи в kanban workspace на `/tasks` не скрываются этим правилом.
+
 ## 9. Контексты отображения
 
 | Контекст             | Что открывается                                                                         |
@@ -305,11 +307,12 @@ Project-level task aggregation может существовать только 
 ## 10. Базовые правила отображения
 
 1. В scrum-enabled workspace active kanban не показывает backlog и future sprint noise.
-2. В product workspace scrum и kanban могут сосуществовать как два режима одного пространства.
-3. Разные workspace types могут иметь разный UI и набор доступных блоков.
-4. Source of truth остаются `Task + Work Space + Sprint`, а не отдельные несвязанные доски.
-5. Work Space files являются Drive File Assets. Backlog/task attachments не должны попадать в Product Library как финальные документы, пока их не отметили как final artifact / delivery file.
-6. Product/Connected Work Space discussion source of truth — Messaging Core Conversation, а не локальное workspace comments storage.
+2. Top-level `/tasks` execution views (Board / List / Deadline / My Plan) тоже не показывают scrum backlog и future sprint — то же правило, что у workspace Active.
+3. В product workspace scrum и kanban могут сосуществовать как два режима одного пространства.
+4. Разные workspace types могут иметь разный UI и набор доступных блоков.
+5. Source of truth остаются `Task + Work Space + Sprint`, а не отдельные несвязанные доски.
+6. Work Space files являются Drive File Assets. Backlog/task attachments не должны попадать в Product Library как финальные документы, пока их не отметили как final artifact / delivery file.
+7. Product/Connected Work Space discussion source of truth — Messaging Core Conversation, а не локальное workspace comments storage.
 
 ## 10.1. Work Space Library
 

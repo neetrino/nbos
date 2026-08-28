@@ -16,6 +16,10 @@ import {
   buildTasksParticipationWhere,
   taskWhereInvolvesEmployee,
 } from './task-involves-employee-where.op';
+import {
+  buildExcludeScrumPlanningWhere,
+  shouldExcludeScrumPlanningFromGlobalFeed,
+} from './task-exclude-scrum-planning-where.op';
 import { loadTasksScopedEmployeeIds, tasksViewBypassesRowFilter } from './tasks-scoped-access';
 import { buildTaskListSearchWhere } from './task-list-search-where.op';
 import type { TasksAccessContext } from './tasks-scoped-access';
@@ -107,6 +111,16 @@ export async function taskFindAllPaginated(
   }
   if (params.involvesEmployeeId) {
     parts.push(taskWhereInvolvesEmployee(params.involvesEmployeeId));
+  }
+  if (
+    shouldExcludeScrumPlanningFromGlobalFeed({
+      involvesEmployeeId: params.involvesEmployeeId,
+      workspaceId: params.workspaceId,
+      planningStatus: params.planningStatus,
+      scope: params.scope,
+    })
+  ) {
+    parts.push(buildExcludeScrumPlanningWhere());
   }
   const searchTrimmed = search?.trim();
   if (searchTrimmed) {

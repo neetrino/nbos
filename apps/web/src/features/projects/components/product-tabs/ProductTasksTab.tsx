@@ -149,6 +149,7 @@ export function ProductTasksTab({
         quickCreateRef={openQuickCreateRef}
         refreshTasksFromServer={refreshTasksFromServer}
         taskListTotal={taskMeta?.total}
+        taskListHasMorePages={Boolean(taskMeta && taskMeta.page < taskMeta.totalPages)}
         onLoadMoreTasks={() => void loadMoreTasks()}
         loadingMoreTasks={loadingMoreTasks}
       />
