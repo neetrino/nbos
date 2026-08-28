@@ -35,7 +35,6 @@ import {
   type MarkPaidPaymentsPort,
 } from './invoice-mark-paid-settle';
 import { deriveBaseInvoiceMoneyStatus, parseInvoiceMoneyStatus } from './invoice-money-status';
-import { financeCalendarMonthKey } from '../subscriptions/subscription-coverage-month';
 import { DealWonHandler } from '../../crm/deals/deal-won.handler';
 import { dealDetailInclude } from '../../crm/deals/deal.includes';
 import {
@@ -55,7 +54,8 @@ import {
   parseUpdateInvoiceGeneralInput,
   type UpdateInvoiceGeneralInput,
 } from './invoice-general-update';
-import { resolveCreateInvoiceType, resolveInvoiceDueDate } from './invoice-create-resolver';
+import { resolveCreateInvoiceType } from './invoice-create-resolver';
+import { resolveInvoiceCreateSchedule } from './invoice-subscription-create-schedule';
 import { resolveInvoiceProjectRow } from './invoice-project-resolve';
 import { INVOICE_ORDER_DETAIL_INCLUDE, INVOICE_ORDER_SELECT } from './invoice-order-select';
 import type { FinanceInvoiceAccessContext } from './finance-invoice-access';
@@ -232,8 +232,12 @@ export class InvoicesService {
     const code = await allocateInvoiceCode(this.prisma);
     const taxStatus = await resolveInvoiceTaxStatus(this.prisma, data);
     const type = await resolveCreateInvoiceType(this.prisma, data);
-    const due = resolveInvoiceDueDate(data.dueDate);
-    const bookedAt = due;
+    const schedule = await resolveInvoiceCreateSchedule(this.prisma, {
+      subscriptionId: data.subscriptionId,
+      dueDate: data.dueDate,
+      type,
+    });
+    const bookedAt = schedule.dueDate;
     await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAt);
 
     const invoice = await this.prisma.invoice.create({
@@ -247,10 +251,10 @@ export class InvoicesService {
         amount: data.amount,
         taxStatus,
         type,
-        dueDate: due,
+        dueDate: schedule.dueDate,
         ...(data.subscriptionId && type === 'SUBSCRIPTION'
           ? {
-              coverageStartMonth: financeCalendarMonthKey(due),
+              coverageStartMonth: schedule.coverageStartMonth,
               coverageMonthCount: 1,
             }
           : {}),

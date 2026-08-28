@@ -1,4 +1,16 @@
-const MAX_BILLING_DAY = 31;
+export const MAX_BILLING_DAY = 31;
+
+/** Calendar days in `month` (1–12). */
+export function daysInCalendarMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+/** Clamps `billingDay` into the month (29–31 → last day on short months). */
+export function clampBillingDayInMonth(year: number, month: number, billingDay: number): number {
+  const dim = daysInCalendarMonth(year, month);
+  if (billingDay < 1) return 1;
+  return Math.min(billingDay, dim);
+}
 
 /**
  * Subscription `billingDay` values that should run on `date`.

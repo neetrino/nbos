@@ -7,7 +7,10 @@ import {
   SCHEDULER_JOB_KIND,
   SCHEDULER_JOB_VISIBILITY,
 } from './scheduler-job-catalog';
-import { BILLING_CRON_ENABLED_ENV } from './scheduler-internal-cron.constants';
+import {
+  BILLING_CRON_ENABLED_ENV,
+  BILLING_DEFAULT_CRON,
+} from './scheduler-internal-cron.constants';
 import { EXPENSE_PLAN_AUTO_DUE_ENABLED_ENV } from './expense-plan-auto-due-cron.constants';
 import { RECURRING_TASKS_DUE_ENABLED_ENV } from './recurring-tasks-due-cron.constants';
 import { CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED_ENV } from './client-services-renewal-invoice-cron.constants';
@@ -53,6 +56,12 @@ const START_CRON_ENABLED_ENV_KEYS = [
 ] as const;
 
 describe('scheduler-job-catalog', () => {
+  it('runs subscription billing daily at 11:00', () => {
+    expect(BILLING_DEFAULT_CRON).toBe('0 11 * * *');
+    const billing = SCHEDULER_JOB_CATALOG.find((entry) => entry.jobName === 'billing');
+    expect(billing?.defaultExpression).toBe('0 11 * * *');
+  });
+
   it('covers every SCHEDULER_JOB_NAMES value', () => {
     const catalogNames = new Set(SCHEDULER_JOB_CATALOG.map((entry) => entry.jobName));
     for (const jobName of Object.values(SCHEDULER_JOB_NAMES)) {

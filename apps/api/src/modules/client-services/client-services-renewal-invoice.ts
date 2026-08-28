@@ -1,6 +1,9 @@
 import { Logger } from '@nestjs/common';
 import type { ClientServiceType, Prisma, PrismaClient } from '@nbos/database';
-import { CLIENT_SERVICE_RENEWAL_INVOICE_WINDOW_DAYS } from './client-service-payment-stage';
+import {
+  CLIENT_SERVICE_INVOICE_OVERDUE_GRACE_DAYS,
+  CLIENT_SERVICE_RENEWAL_INVOICE_WINDOW_DAYS,
+} from './client-service-payment-stage';
 import { clientServiceInvoiceType, requirePositiveAmount } from './client-service-flow-helpers';
 import type { ClientServiceFlowsService } from './client-service-flows.service';
 
@@ -30,7 +33,7 @@ interface ServiceRow {
   name: string;
   renewalDate: Date | null;
   clientCharge: unknown;
-  invoices: Array<{ moneyStatus: string; dueDate: Date | null }>;
+  invoices: Array<{ moneyStatus: string; dueDate: Date | null; createdAt: Date }>;
 }
 
 function addDays(base: Date, days: number): Date {
@@ -65,10 +68,10 @@ export function buildRenewalInvoiceEligibleWhere(
 
 /**
  * True when a non-cancelled invoice already covers this renewal period
- * (active invoice or paid invoice whose due date aligns with the window).
+ * (active invoice, or paid invoice created inside the renewal window).
  */
 export function hasInvoiceForRenewalPeriod(
-  invoices: readonly { moneyStatus: string; dueDate: Date | null }[],
+  invoices: readonly { moneyStatus: string; createdAt?: Date | null; dueDate?: Date | null }[],
   renewalDate: Date,
   windowDays: number = CLIENT_SERVICE_RENEWAL_INVOICE_WINDOW_DAYS,
 ): boolean {
@@ -84,9 +87,9 @@ export function hasInvoiceForRenewalPeriod(
     if (isActive) return true;
 
     if (invoice.moneyStatus === 'PAID') {
-      if (!invoice.dueDate) return true;
-      const dueMs = invoice.dueDate.getTime();
-      if (dueMs >= windowStartMs && dueMs <= renewalEndMs) {
+      if (!invoice.createdAt) return true;
+      const createdMs = invoice.createdAt.getTime();
+      if (createdMs >= windowStartMs && createdMs <= renewalEndMs) {
         return true;
       }
     }
@@ -115,7 +118,7 @@ export async function runClientServicesRenewalInvoices(
       clientCharge: true,
       invoices: {
         where: { moneyStatus: { not: 'CANCELLED' } },
-        select: { moneyStatus: true, dueDate: true },
+        select: { moneyStatus: true, dueDate: true, createdAt: true },
       },
     },
   });
@@ -134,7 +137,7 @@ export async function runClientServicesRenewalInvoices(
     }
 
     try {
-      const invoiceId = await createRenewalInvoice(flows, row, renewalDate);
+      const invoiceId = await createRenewalInvoice(flows, row, asOf);
       created.push({ serviceId: row.id, invoiceId });
       logger.log(`Created renewal invoice ${invoiceId} for client service ${row.id}`);
     } catch (caught: unknown) {
@@ -156,13 +159,13 @@ export async function runClientServicesRenewalInvoices(
 async function createRenewalInvoice(
   flows: ClientServiceFlowsService,
   row: ServiceRow,
-  renewalDate: Date,
+  asOf: Date,
 ): Promise<string> {
   const amount = requirePositiveAmount(Number(row.clientCharge), 'Invoice amount');
   const invoice = await flows.createInvoice(row.id, {
     amount,
     type: clientServiceInvoiceType(row.type),
-    dueDate: renewalDate.toISOString(),
+    dueDate: addDays(asOf, CLIENT_SERVICE_INVOICE_OVERDUE_GRACE_DAYS).toISOString(),
   });
   return invoice.id;
 }

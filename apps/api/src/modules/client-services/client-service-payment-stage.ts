@@ -17,6 +17,8 @@ export const CLIENT_SERVICE_PAYMENT_STAGES: readonly ClientServicePaymentStage[]
 
 /** `renewal_date` within this window triggers the Invoice stage (matches EXP-04 auto-invoice). */
 export const CLIENT_SERVICE_RENEWAL_INVOICE_WINDOW_DAYS = 60;
+/** Auto-invoice OVERDUE grace after create (renewal_date stays the provider pay date). */
+export const CLIENT_SERVICE_INVOICE_OVERDUE_GRACE_DAYS = 15;
 const INVOICE_WINDOW_DAYS = CLIENT_SERVICE_RENEWAL_INVOICE_WINDOW_DAYS;
 /** `renewal_date` within this wider window (but past the invoice window) is Upcoming. */
 const UPCOMING_WINDOW_DAYS = 90;
