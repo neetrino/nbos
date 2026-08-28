@@ -105,37 +105,37 @@
 
 ## 7. Внешние сервисы
 
-| #    | Параметр            | Решение                           | Статус | Примечание                                       |
-| ---- | ------------------- | --------------------------------- | ------ | ------------------------------------------------ |
-| 7.1  | Email               | Resend                            | ✅     | React Email для шаблонов                         |
-| 7.2  | Платежи             | IDBank (ARCA) + Idram             | ✅     | клиент оплачивает по ссылке (payment link)       |
-| 7.3  | Аналитика           | PostHog                           | ✅     | опционально                                      |
-| 7.4  | Отслеживание ошибок | Sentry                            | ✅     |                                                  |
-| 7.5  | Поиск               | PostgreSQL FTS                    | ✅     | см. 4.11                                         |
-| 7.6  | WebSocket           | Socket.io (в NestJS)              | ✅     | не внешний сервис                                |
-| 7.7  | SMS                 | не требуется                      | ➖     | WhatsApp через агрегатор                         |
-| 7.11 | Mobile SDK (auth)   | Auth Session V2 (тот же Employee) | 🔄     | `clientKind` + refresh in JSON; не отдельный IdP |
-| 7.8  | AI                  | OpenAI + Vercel AI SDK            | ⬜     | Phase 3+                                         |
-| 7.9  | CMS                 | не требуется                      | ➖     |                                                  |
-| 7.10 | Карты               | не требуется                      | ➖     |                                                  |
+| #    | Параметр            | Решение                                                                              | Статус | Примечание                                                           |
+| ---- | ------------------- | ------------------------------------------------------------------------------------ | ------ | -------------------------------------------------------------------- |
+| 7.1  | Email               | Resend                                                                               | ✅     | React Email для шаблонов                                             |
+| 7.2  | Платежи             | IDBank (ARCA) + Idram                                                                | ✅     | клиент оплачивает по ссылке (payment link)                           |
+| 7.3  | Аналитика           | PostHog                                                                              | ✅     | опционально                                                          |
+| 7.4  | Отслеживание ошибок | Sentry                                                                               | ✅     |                                                                      |
+| 7.5  | Поиск               | PostgreSQL FTS                                                                       | ✅     | см. 4.11                                                             |
+| 7.6  | WebSocket           | Socket.io (в NestJS)                                                                 | ✅     | не внешний сервис                                                    |
+| 7.7  | SMS                 | не требуется                                                                         | ➖     | WhatsApp через агрегатор                                             |
+| 7.11 | Mobile SDK (auth)   | Auth Session V2 (тот же Employee)                                                    | 🔄     | `clientKind` + refresh in JSON; не отдельный IdP                     |
+| 7.8  | AI                  | OpenAI + Anthropic behind `AiProviderAdapter`; Vercel AI SDK optional behind adapter | 🔄     | Phase 1 foundation complete; Phase 2 runtime planned and entry-gated |
+| 7.9  | CMS                 | не требуется                                                                         | ➖     |                                                                      |
+| 7.10 | Карты               | не требуется                                                                         | ➖     |                                                                      |
 
 ---
 
 ## 8. DevOps и хостинг
 
-| #    | Параметр         | Решение                                 | Статус | Примечание                                              |
-| ---- | ---------------- | --------------------------------------- | ------ | ------------------------------------------------------- |
-| 8.1  | Хостинг frontend | Hetzner + Coolify `nbos-web`            | ✅     | Cloudflare DNS/TLS/WAF                                  |
-| 8.2  | Хостинг backend  | Hetzner + Coolify                       | ✅     | `nbos-api` / `nbos-worker` / `nbos-scheduler`           |
-| 8.3  | CI/CD            | GitHub Actions                          | ✅     | CI на `main`; CD после зелёного CI → `nbos-migrate` → 4 |
-| 8.4  | Docker           | `Dockerfile.web` / `.api` / `.migrator` | ✅     | Coolify Dockerfile apps; Auto Deploy OFF                |
-| 8.5  | WAF              | Cloudflare                              | ✅     |                                                         |
-| 8.6  | Мониторинг       | Sentry + Coolify                        | ✅     |                                                         |
-| 8.7  | Логирование      | Pino (production)                       | ✅     | структурированные JSON                                  |
-| 8.8  | Окружения        | dev + staging + prod                    | ✅     | Neon branches                                           |
-| 8.9  | Домен            | кастомный                               | ✅     | nbos.\* или аналог                                      |
-| 8.10 | Бэкапы БД        | Neon PITR (авто)                        | ✅     |                                                         |
-| 8.11 | Обновление deps  | Dependabot (monthly)                    | ✅     | minor/patch авто; major — вручную по roadmap (см. ниже) |
+| #    | Параметр         | Решение                      | Статус | Примечание                                              |
+| ---- | ---------------- | ---------------------------- | ------ | ------------------------------------------------------- |
+| 8.1  | Хостинг frontend | Hetzner + Coolify `nbos-web` | ✅     | Cloudflare DNS/TLS/WAF                                  |
+| 8.2  | Хостинг backend  | Hetzner + Coolify            | ✅     | `nbos-api` / `nbos-worker` / `nbos-scheduler`           |
+| 8.3  | CI/CD            | GitHub Actions + manual CD   | ✅     | CI на PR/`main`; production migration/deploy — вручную  |
+| 8.4  | Docker           | `Dockerfile.web` / `.api`    | ✅     | Coolify Dockerfile apps; Auto Deploy OFF                |
+| 8.5  | WAF              | Cloudflare                   | ✅     |                                                         |
+| 8.6  | Мониторинг       | Sentry + Coolify             | ✅     |                                                         |
+| 8.7  | Логирование      | Pino (production)            | ✅     | структурированные JSON                                  |
+| 8.8  | Окружения        | dev + staging + prod         | ✅     | Neon branches                                           |
+| 8.9  | Домен            | кастомный                    | ✅     | nbos.\* или аналог                                      |
+| 8.10 | Бэкапы БД        | Neon PITR (авто)             | ✅     |                                                         |
+| 8.11 | Обновление deps  | Dependabot (monthly)         | ✅     | minor/patch авто; major — вручную по roadmap (см. ниже) |
 
 **Политика зависимостей (8.11).** Dependabot: раз в месяц, до 3 npm + 2 Actions PR. Security alerts GitHub — отдельно. **Major не через бота:** TypeScript 6+, Zod 4+, ESLint 10+, `@types/node` 25+ (пока Node 22 LTS), lucide-react 1.x, commitlint 21+ — отдельная миграция с CI и обновлением этой карты. Текущий зафиксированный стек: **TS 5.9**, **Zod 3**, **ESLint 9**, **Node 22**.
 

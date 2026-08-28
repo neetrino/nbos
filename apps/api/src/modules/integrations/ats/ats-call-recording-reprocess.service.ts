@@ -84,7 +84,11 @@ export class AtsCallRecordingReprocessService {
       where: { id: asset.id },
       data: { mimeType: sniffed, displayName, originalName },
     });
-    this.logger.log({ event: 'ats_recording_mime_repaired', fileAssetId: asset.id, mimeType: sniffed });
+    this.logger.log({
+      event: 'ats_recording_mime_repaired',
+      fileAssetId: asset.id,
+      mimeType: sniffed,
+    });
     return { status: 'repaired', mimeType: sniffed };
   }
 

@@ -128,6 +128,23 @@ export const contactsApi = {
   },
 };
 
+export interface ArmeniaCompanyLookupItem {
+  tin: string;
+  name: string;
+  legalForm: string | null;
+  registeredAddress: string | null;
+  registrationDate: string | null;
+  status: string | null;
+  isActive: boolean;
+  activityCode: string | null;
+  country: string;
+}
+
+export interface ArmeniaCompanyLookupResponse {
+  queryKind: 'tin' | 'name';
+  items: ArmeniaCompanyLookupItem[];
+}
+
 export const companiesApi = {
   async getAll(params?: ClientsListParams): Promise<ListData<Company>> {
     const resp = await api.get<ListData<Company>>('/api/clients/companies', { params });
@@ -135,6 +152,12 @@ export const companiesApi = {
   },
   async getById(id: string): Promise<Company> {
     const resp = await api.get<Company>(`/api/clients/companies/${id}`);
+    return resp.data;
+  },
+  async lookup(q: string): Promise<ArmeniaCompanyLookupResponse> {
+    const resp = await api.get<ArmeniaCompanyLookupResponse>('/api/clients/companies/lookup', {
+      params: { q },
+    });
     return resp.data;
   },
   async create(data: Record<string, unknown>): Promise<Company> {

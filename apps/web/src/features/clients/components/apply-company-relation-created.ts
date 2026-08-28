@@ -6,16 +6,16 @@ type CompanyFormContacts = Pick<
   'contactIds' | 'contactLabels' | 'billingContactId' | 'billingContactLabel'
 >;
 
-/** Applies relation create events onto company sheet or create-dialog contact fields. */
+/** Applies relation create events onto company sheet contact fields. */
 export function applyCompanyRelationCreated(
   draft: CompanyFormContacts,
   event: RelationCreatedEvent,
 ): CompanyFormContacts {
   if (event.kind !== 'contact') return draft;
-  if (event.intent === 'company-sheet-billing' || event.intent === 'company-create-billing') {
+  if (event.intent === 'company-sheet-billing') {
     return { ...draft, billingContactId: event.id, billingContactLabel: event.label };
   }
-  if (event.intent === 'company-contacts' || event.intent === 'company-create-contacts') {
+  if (event.intent === 'company-contacts') {
     if (draft.contactIds.includes(event.id)) return draft;
     return {
       ...draft,

@@ -7,7 +7,7 @@
 | Env            | Used by                                     | Endpoint type               | Example shape                                                                         |
 | -------------- | ------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------- |
 | `DATABASE_URL` | `nbos-api`, `nbos-worker`, `nbos-scheduler` | Neon **pooled** (`-pooler`) | `postgresql://app_user:***@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require` |
-| `DIRECT_URL`   | Coolify `nbos-migrate` (Prisma CLI) only    | Neon **direct**             | `postgresql://neon_owner:***@ep-xxx.region.aws.neon.tech/neondb?sslmode=require`      |
+| `DIRECT_URL`   | Manual Prisma CLI migration process only    | Neon **direct**             | `postgresql://neon_owner:***@ep-xxx.region.aws.neon.tech/neondb?sslmode=require`      |
 
 Runtime processes **must not** use `DIRECT_URL`. Prisma config (`packages/database/prisma.config.ts`) reads `DIRECT_URL` for migrations.
 
@@ -95,7 +95,7 @@ Slow / sampled events never include SQL parameters or connection passwords.
 ## Coolify checklist
 
 1. Set pooled `DATABASE_URL` on api, worker, scheduler.
-2. Set `DIRECT_URL` only on `nbos-migrate` (one-shot). Canon: not on api/worker/scheduler. Leftover key on `nbos-api` is not the migration path.
+2. Do not set `DIRECT_URL` on Coolify apps. Keep it in the ops password manager and inject it only into the manual Prisma CLI process.
 3. Set replica count envs to match Coolify scale.
 4. Set `DB_TOTAL_CONNECTION_BUDGET` from Neon dashboard.
-5. Deploy worker → scheduler → api (Stage E).
+5. Follow [`docs/deploy.md` §5](../deploy.md#5-порядок-деплоя) for the manual migration and deploy order.

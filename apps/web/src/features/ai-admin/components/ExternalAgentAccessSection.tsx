@@ -1,39 +1,34 @@
 'use client';
 
 import { useState } from 'react';
+import { KeyRound, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ErrorState, LoadingState } from '@/components/shared';
+import { cn } from '@/lib/utils';
 import { aiAdminApi, type ExternalAgentBundle } from '@/lib/api/ai-admin';
-import { AI_ADMIN_ID_PREFIX_LENGTH } from '../constants';
-import { isCurrentGrant } from '../grant-current';
-import { applySelectValue } from '../select-value';
-import { useAccessCatalog } from '../use-access-catalog';
 import type { WorkSpace } from '@/lib/api/tasks';
+import { AI_ADMIN_DENSE_ROW_CLASS, AI_ADMIN_ICON_ACCENT_CLASS } from '../ai-admin-ui.constants';
+import { isCurrentGrant } from '../grant-current';
+import { workspaceLabel } from '../format';
+import { useAccessCatalog } from '../use-access-catalog';
+import { AiAdminCapabilityGrantList } from './AiAdminCapabilityGrantList';
+import { AiAdminSection } from './AiAdminSection';
+import { AiAdminWorkspaceGrantControls } from './AiAdminWorkspaceGrantControls';
 
-export function ExternalAgentAccessSection(props: {
+type AccessProps = {
   bundle: ExternalAgentBundle;
   canGrant: boolean;
   onChanged: () => void;
-}) {
-  const catalog = useAccessCatalog();
-  const [workspaceId, setWorkspaceId] = useState('');
-  const mutationsBlocked = !catalog.ready || !props.canGrant;
+};
 
+export function ExternalAgentCapabilitiesSection(props: AccessProps) {
+  const catalog = useAccessCatalog();
   const activeCaps = new Set(
     props.bundle.capabilities
       .filter((item) => isCurrentGrant(item))
       .map((item) => item.capabilityKey),
   );
-  const activeScopes = props.bundle.scopes.filter((item) => isCurrentGrant(item));
 
   const toggleCapability = async (key: string, enabled: boolean) => {
     if (!catalog.ready) return;
@@ -50,48 +45,86 @@ export function ExternalAgentAccessSection(props: {
   if (catalog.error) return <ErrorState description={catalog.error} onRetry={catalog.retry} />;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <section className="border-border bg-card rounded-xl border p-4">
-        <h2 className="text-sm font-semibold">WHAT — capabilities</h2>
-        <p className="text-muted-foreground mt-1 mb-3 text-xs">
-          Task delete and force-complete are not grantable.
-        </p>
+    <AiAdminSection
+      icon={KeyRound}
+      title="Capabilities"
+      description="Task delete and force-complete are not grantable."
+      summary={`${activeCaps.size} of ${catalog.catalog.length} granted`}
+    >
+      <AiAdminCapabilityGrantList
+        catalog={catalog.catalog}
+        activeKeys={activeCaps}
+        disabled={!catalog.ready || !props.canGrant}
+        showDescription
+        columns={1}
+        onToggle={(key, enabled) => void toggleCapability(key, enabled)}
+      />
+    </AiAdminSection>
+  );
+}
+
+export function ExternalAgentWorkspacesSection(props: AccessProps) {
+  const catalog = useAccessCatalog();
+  const [workspaceId, setWorkspaceId] = useState('');
+  const activeScopes = props.bundle.scopes.filter((item) => isCurrentGrant(item));
+
+  if (catalog.loading) return <LoadingState count={1} />;
+  if (catalog.error) return <ErrorState description={catalog.error} onRetry={catalog.retry} />;
+
+  return (
+    <AiAdminSection
+      icon={Layers}
+      title="Work Spaces"
+      description="A capability never implies all resources."
+      summary={`${activeScopes.length} granted`}
+    >
+      <WorkspaceScopeList
+        agentId={props.bundle.agent.id}
+        canGrant={props.canGrant}
+        catalogReady={catalog.ready}
+        workspaceId={workspaceId}
+        workspaces={catalog.workspaces}
+        scopes={activeScopes}
+        onWorkspaceId={setWorkspaceId}
+        onChanged={props.onChanged}
+      />
+    </AiAdminSection>
+  );
+}
+
+function WorkspaceScopeList(props: {
+  agentId: string;
+  canGrant: boolean;
+  catalogReady: boolean;
+  workspaceId: string;
+  workspaces: WorkSpace[];
+  scopes: ExternalAgentBundle['scopes'];
+  onWorkspaceId: (value: string) => void;
+  onChanged: () => void;
+}) {
+  return (
+    <div className="space-y-3">
+      {props.scopes.length === 0 ? (
+        <p className="text-muted-foreground text-sm">No Work Space scopes yet.</p>
+      ) : (
         <ul className="space-y-2">
-          {catalog.catalog.map((item) => (
-            <li key={item.key} className="flex items-start gap-2">
-              <Checkbox
-                checked={activeCaps.has(item.key)}
-                disabled={mutationsBlocked}
-                onCheckedChange={(value) => void toggleCapability(item.key, value === true)}
-              />
-              <div>
-                <p className="font-mono text-xs">{item.key}</p>
-                <p className="text-muted-foreground text-xs">{item.description}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
-      <section className="border-border bg-card rounded-xl border p-4">
-        <h2 className="text-sm font-semibold">WHERE — Work Space scopes</h2>
-        <p className="text-muted-foreground mt-1 mb-3 text-xs">
-          A capability never implies all resources. Expired grants are hidden.
-        </p>
-        <ul className="mb-3 space-y-2">
-          {activeScopes.map((scope) => (
-            <li key={scope.id} className="flex items-center justify-between gap-2">
-              <span className="text-xs">
-                {scope.scopeType} · {workspaceName(catalog.workspaces, scope.scopeId)}
+          {props.scopes.map((scope) => (
+            <li key={scope.id} className={cn(AI_ADMIN_DENSE_ROW_CLASS, 'justify-between')}>
+              <span className="flex min-w-0 items-center gap-2 text-sm">
+                <Layers className={cn('size-4 shrink-0', AI_ADMIN_ICON_ACCENT_CLASS)} aria-hidden />
+                <span className="truncate font-medium">
+                  {workspaceLabel(props.workspaces, scope.scopeId)}
+                </span>
               </span>
               {props.canGrant ? (
                 <Button
                   type="button"
                   size="sm"
                   variant="outline"
-                  disabled={!catalog.ready}
+                  disabled={!props.catalogReady}
                   onClick={() =>
                     void aiAdminApi
-                      .revokeScope(props.bundle.agent.id, scope.id)
+                      .revokeScope(props.agentId, scope.id)
                       .then(props.onChanged)
                       .catch(() => toast.error('Scope revoke failed.'))
                   }
@@ -102,46 +135,24 @@ export function ExternalAgentAccessSection(props: {
             </li>
           ))}
         </ul>
-        {props.canGrant ? (
-          <div className="flex gap-2">
-            <Select
-              value={workspaceId}
-              onValueChange={(value) => applySelectValue(value, setWorkspaceId)}
-            >
-              <SelectTrigger size="sm" className="min-w-[12rem]">
-                <SelectValue placeholder="Select Work Space" />
-              </SelectTrigger>
-              <SelectContent>
-                {catalog.workspaces.map((workspace) => (
-                  <SelectItem key={workspace.id} value={workspace.id}>
-                    {workspace.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              type="button"
-              size="sm"
-              disabled={!workspaceId || !catalog.ready}
-              onClick={() => {
-                void aiAdminApi
-                  .grantWorkspaceScope(props.bundle.agent.id, workspaceId)
-                  .then(() => {
-                    setWorkspaceId('');
-                    props.onChanged();
-                  })
-                  .catch(() => toast.error('Work Space grant failed.'));
-              }}
-            >
-              Grant
-            </Button>
-          </div>
-        ) : null}
-      </section>
+      )}
+      {props.canGrant ? (
+        <AiAdminWorkspaceGrantControls
+          workspaceId={props.workspaceId}
+          workspaces={props.workspaces}
+          grantDisabled={!props.workspaceId || !props.catalogReady}
+          onWorkspaceId={props.onWorkspaceId}
+          onGrant={() => {
+            void aiAdminApi
+              .grantWorkspaceScope(props.agentId, props.workspaceId)
+              .then(() => {
+                props.onWorkspaceId('');
+                props.onChanged();
+              })
+              .catch(() => toast.error('Work Space grant failed.'));
+          }}
+        />
+      ) : null}
     </div>
   );
-}
-
-function workspaceName(workspaces: WorkSpace[], id: string): string {
-  return workspaces.find((item) => item.id === id)?.name ?? id.slice(0, AI_ADMIN_ID_PREFIX_LENGTH);
 }

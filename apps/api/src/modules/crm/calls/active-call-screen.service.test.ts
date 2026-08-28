@@ -1,5 +1,5 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createMockPrisma } from '../../../test-utils/mock-prisma';
 import { ActiveCallScreenService } from './active-call-screen.service';
 import { CallAccessPolicyService } from './call-access-policy.service';
@@ -33,16 +33,18 @@ const SCREEN_ROW = {
 
 function createService() {
   const prisma = createMockPrisma();
+  const liveReconcile = { syncIfPending: vi.fn().mockResolvedValue(undefined) };
   const service = new ActiveCallScreenService(
     prisma as never,
     new CallAccessPolicyService(prisma as never),
+    liveReconcile as never,
   );
-  return { prisma, service };
+  return { prisma, service, liveReconcile };
 }
 
 describe('ActiveCallScreenService access', () => {
   it('loads the screen after object-level authorization', async () => {
-    const { prisma, service } = createService();
+    const { prisma, service, liveReconcile } = createService();
     prisma.atsCallEvent.findUnique.mockResolvedValue(SCREEN_ROW);
     prisma.atsCallEvent.findFirst.mockResolvedValue({ id: 'call-1' });
     prisma.atsCallEvent.findMany.mockResolvedValue([]);
@@ -51,6 +53,7 @@ describe('ActiveCallScreenService access', () => {
     expect(snapshot.callId).toBe('call-1');
     expect(snapshot.noteVersion).toBe(4);
     expect(prisma.atsCallEvent.findFirst).toHaveBeenCalled();
+    expect(liveReconcile.syncIfPending).toHaveBeenCalledWith('call-1');
   });
 
   it('keeps Call metadata VIEW available without EDIT', async () => {
@@ -68,7 +71,7 @@ describe('ActiveCallScreenService access', () => {
   });
 
   it('denies screen for NONE and for an unauthorized OWN call', async () => {
-    const { prisma, service } = createService();
+    const { prisma, service, liveReconcile } = createService();
     prisma.atsCallEvent.findUnique.mockResolvedValue({ id: 'call-1' });
     prisma.atsCallEvent.findFirst.mockResolvedValue(null);
 
@@ -77,6 +80,7 @@ describe('ActiveCallScreenService access', () => {
     );
     await expect(service.getScreen('call-1', OWN_ACTOR)).rejects.toBeInstanceOf(ForbiddenException);
     expect(prisma.atsCallEvent.findMany).not.toHaveBeenCalled();
+    expect(liveReconcile.syncIfPending).not.toHaveBeenCalled();
   });
 
   it('throws NotFound when the screen call is missing', async () => {

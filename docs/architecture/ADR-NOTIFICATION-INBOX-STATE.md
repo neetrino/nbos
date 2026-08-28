@@ -11,7 +11,7 @@ Unread HTTP read remains `COUNT(*)` until `NOTIFICATION_INBOX_STATE_READ_ENABLED
 
 ## Deploy order
 
-1. `pnpm db:migrate` (or Coolify migrate job) — creates table + set-based backfill
+1. Apply the committed migration with the environment-specific manual `pnpm db:migrate:deploy` run — creates table + set-based backfill
 2. Deploy API with flags **off**
 3. Set `WRITE=true`
 4. `POST /api/scheduler/notification-inbox-reconcile` with `RECONCILE=true`

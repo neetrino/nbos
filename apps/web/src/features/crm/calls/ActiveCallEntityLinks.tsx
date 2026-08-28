@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { Handshake, LayoutGrid, User, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ActiveCallScreenSnapshot } from '@/lib/api/calls';
 import { incomingCallCrmHref } from './incoming-call-href';
@@ -10,19 +11,22 @@ export function ActiveCallEntityLinks({ snapshot }: { snapshot: ActiveCallScreen
   if (!snapshot) return null;
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="border-border/60 bg-muted/40 flex flex-wrap gap-2 border-t px-5 py-3 sm:px-6">
       <EntityLink
         label="Open Lead"
+        icon={LayoutGrid}
         href={incomingCallCrmHref({ leadId: snapshot.leadId, contactId: null, dealId: null })}
         onOpen={router.push}
       />
       <EntityLink
         label="Open Contact"
+        icon={User}
         href={incomingCallCrmHref({ leadId: null, contactId: snapshot.contact.id, dealId: null })}
         onOpen={router.push}
       />
       <EntityLink
         label="Open Deal"
+        icon={Handshake}
         href={incomingCallCrmHref({ leadId: null, contactId: null, dealId: snapshot.deal.id })}
         onOpen={router.push}
       />
@@ -30,7 +34,13 @@ export function ActiveCallEntityLinks({ snapshot }: { snapshot: ActiveCallScreen
   );
 }
 
-function EntityLink(props: { label: string; href: string | null; onOpen: (href: string) => void }) {
+function EntityLink(props: {
+  label: string;
+  icon: LucideIcon;
+  href: string | null;
+  onOpen: (href: string) => void;
+}) {
+  const Icon = props.icon;
   return (
     <Button
       type="button"
@@ -41,6 +51,7 @@ function EntityLink(props: { label: string; href: string | null; onOpen: (href: 
         if (props.href) props.onOpen(props.href);
       }}
     >
+      <Icon />
       {props.label}
     </Button>
   );

@@ -546,7 +546,7 @@ function DealSheetBody({
                 gateRequiredFields={gateRequiredFields}
               />
             ) : null}
-            {activeTab === 'history' && <DealHistoryTab dealId={renderDeal.id} />}
+            {activeTab === 'history' && <DealHistoryTab />}
             {activeTab === 'invoice' && (
               <DealInvoiceTab deal={renderDeal} onCreateOpenChange={onInvoiceCreateOpenChange} />
             )}

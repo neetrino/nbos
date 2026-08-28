@@ -51,6 +51,27 @@ export function applyActiveCallEvent(
   };
 }
 
+export function applySnapshotToSession(
+  current: ActiveCallSession | null,
+  snapshot: {
+    callId: string;
+    uid: string;
+    phase: ActiveCallSession['phase'];
+    phone: string | null;
+    displayName: string | null;
+  },
+): ActiveCallSession | null {
+  if (!current || current.callId !== snapshot.callId) return current;
+  if (!canAdvanceActiveCallPhase(current.phase, snapshot.phase)) return current;
+  return {
+    ...current,
+    uid: snapshot.uid,
+    phase: snapshot.phase,
+    phone: snapshot.phone ?? current.phone,
+    displayName: snapshot.displayName ?? current.displayName,
+  };
+}
+
 export function sessionFromCallId(input: {
   callId: string;
   uid: string;

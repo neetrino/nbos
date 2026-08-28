@@ -22,7 +22,7 @@ export type RecordingPlaybackResult =
     }
   | { kind: 'unsatisfiable'; totalSize: number };
 
-const SINGLE_BYTE_RANGE = /^bytes\s*=\s*(\d*)\s*-\s*(\d*)$/iu;
+const BYTES_UNIT = 'bytes';
 
 export function toSafeByteLength(value: bigint | number | null | undefined): number | null {
   if (value == null) return null;
@@ -35,11 +35,47 @@ export function parseSingleByteRange(
   header: string | undefined,
   totalSize: number,
 ): ParsedRecordingRange {
-  if (header == null || header.trim() === '') return { kind: 'none' };
-  const match = SINGLE_BYTE_RANGE.exec(header.trim());
-  if (!match) return { kind: 'none' };
+  const parts = readSingleByteRangeParts(header);
+  if (!parts) return { kind: 'none' };
   if (totalSize <= 0) return { kind: 'unsatisfiable' };
-  return parseMatchedByteRange(match[1] ?? '', match[2] ?? '', totalSize);
+  return parseMatchedByteRange(parts.startRaw, parts.endRaw, totalSize);
+}
+
+function readSingleByteRangeParts(
+  header: string | undefined,
+): { startRaw: string; endRaw: string } | null {
+  if (header == null) return null;
+  const value = header.trim();
+  if (!value.toLowerCase().startsWith(BYTES_UNIT)) return null;
+  let index = skipWhitespace(value, BYTES_UNIT.length);
+  if (value[index] !== '=') return null;
+  index = skipWhitespace(value, index + 1);
+  const startPart = readDigits(value, index);
+  index = skipWhitespace(value, startPart.next);
+  if (value[index] !== '-') return null;
+  index = skipWhitespace(value, index + 1);
+  const endPart = readDigits(value, index);
+  index = skipWhitespace(value, endPart.next);
+  if (index !== value.length) return null;
+  return { startRaw: startPart.digits, endRaw: endPart.digits };
+}
+
+function skipWhitespace(value: string, start: number): number {
+  let index = start;
+  while (index < value.length && (value[index] ?? '').trim() === '') {
+    index += 1;
+  }
+  return index;
+}
+
+function readDigits(value: string, start: number): { digits: string; next: number } {
+  let next = start;
+  while (next < value.length) {
+    const char = value[next] ?? '';
+    if (char < '0' || char > '9') break;
+    next += 1;
+  }
+  return { digits: value.slice(start, next), next };
 }
 
 function parseMatchedByteRange(

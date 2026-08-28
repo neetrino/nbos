@@ -140,11 +140,9 @@ The attach crash window is closed in product code: one Drive-owned
 `FileArtifactOperation`, live resume (F1 removed), Human/Internal/External/SYSTEM
 share one finalization engine. Remaining debts (`FileUploadSession` dual-write,
 no scheduled recovery worker, full monorepo
-build) were outside this close. The production migration was later applied by
-the migration-gate rollout recorded in
-`docs/deployment/MIGRATION-GATE-ROLLOUT.md` § Phase 2. That record does not
-evidence the required old-writer pause, so post-cutover reconciliation remains
-an operations debt.
+build) were outside this close. The production migration was later applied,
+but the deployment evidence does not prove the required old-writer pause, so
+post-cutover reconciliation remains an operations debt.
 
 ## Definition of Done
 
@@ -224,7 +222,7 @@ Module create operation
 **PASS WITH DEBTS** — independent verifier recorded in
 `docs/NBOS/02-Modules/21-AI-Platform/34-Post-Phase-1-Chat-2-Code-Allocator-Handoff.md`.
 
-C25 is closed. Sibling series use `entity_code_counters` with real-DB concurrency / `9999` → `10000` / numeric seed evidence. Remaining debts (Tasks C8, Recurring machine actor, seed fixtures) are out of this workstream. Tasks `T-` was already closed in Chat 12 / C23 and was not reopened. Chat 2 seed was applied on Neon **dev** during Chat 3 and later on production by the migration-gate rollout recorded in `docs/deployment/MIGRATION-GATE-ROLLOUT.md` § Phase 2. That rollout does not record the required old-writer pause, so production counter-vs-table reconciliation remains an operations debt. K209/C24 / NEW CHAT 3 is closed separately. Cross-regression after all three chats: `36-Post-Phase-1-Cross-Regression.md`.
+C25 is closed. Sibling series use `entity_code_counters` with real-DB concurrency / `9999` → `10000` / numeric seed evidence. Remaining debts (Tasks C8, Recurring machine actor, seed fixtures) are out of this workstream. Tasks `T-` was already closed in Chat 12 / C23 and was not reopened. Chat 2 seed was applied on Neon **dev** during Chat 3 and later on production. The deployment evidence does not record the required old-writer pause, so production counter-vs-table reconciliation remains an operations debt. K209/C24 / NEW CHAT 3 is closed separately. Cross-regression after all three chats: `36-Post-Phase-1-Cross-Regression.md`.
 
 ## Definition of Done
 

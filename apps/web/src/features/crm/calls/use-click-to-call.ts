@@ -5,7 +5,7 @@ import { callsApi, type ClickToCallTargetType } from '@/lib/api/calls';
 import { ApiError, getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
 import { useActiveCall } from './ActiveCallProvider';
-import type { ClickToCallUiState } from './click-to-call-status';
+import { CLICK_TO_CALL_ERROR_LABEL, type ClickToCallUiState } from './click-to-call-status';
 import {
   clearClickToCallIdempotencyKey,
   nextClickToCallIdempotencyKey,
@@ -42,7 +42,7 @@ export function useClickToCall() {
           clearClickToCallIdempotencyKey(sessionStorage, input.targetType, input.targetId);
         }
         setState('error');
-        toast.error(getApiErrorMessage(caught, 'Ошибка запуска звонка'));
+        toast.error(getApiErrorMessage(caught, CLICK_TO_CALL_ERROR_LABEL));
       }
     },
     [openCall],

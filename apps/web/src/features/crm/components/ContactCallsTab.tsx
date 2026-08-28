@@ -3,13 +3,14 @@
 import { CrmCallActivityGate } from '@/features/crm/calls/CrmCallActivityGate';
 import { CallActivityTimeline } from '@/features/crm/calls/CallActivityTimeline';
 
-export function ContactCallActivityTimeline({ contactId }: { contactId: string }) {
+export function ContactCallsTab({ contactId }: { contactId: string }) {
   return (
     <CrmCallActivityGate parent="contact">
       <CallActivityTimeline
         key={contactId}
         scope={{ parent: 'contact', id: contactId }}
-        emptyDescription="Calls with this contact will appear here in the communication timeline."
+        emptyTitle="No calls yet"
+        emptyDescription="Phone calls with this contact will appear here, organized by date."
       />
     </CrmCallActivityGate>
   );

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { applyActiveCallEvent, sessionFromCallId } from './active-call-session';
+import {
+  applyActiveCallEvent,
+  applySnapshotToSession,
+  sessionFromCallId,
+} from './active-call-session';
 import type { ActiveCallSsePayload } from './active-call.types';
 import { parseActiveCallSsePayload } from './active-call.types';
 import { incomingCallCrmHref } from './incoming-call-href';
@@ -95,6 +99,27 @@ describe('sessionFromCallId', () => {
     });
     expect(session.phase).toBe('ringing');
     expect(session.direction).toBe('OUTBOUND');
+  });
+});
+
+describe('applySnapshotToSession', () => {
+  it('advances ringing to ended from a later screen snapshot', () => {
+    const ringing = sessionFromCallId({
+      callId: 'call-2',
+      uid: 'ctc:1',
+      direction: 'OUTBOUND',
+      phone: '+37499111111',
+      displayName: 'John Smith',
+    });
+    const next = applySnapshotToSession(ringing, {
+      callId: 'call-2',
+      uid: '1787582737.181871',
+      phase: 'ended',
+      phone: '+37499111111',
+      displayName: 'John Smith',
+    });
+    expect(next?.phase).toBe('ended');
+    expect(next?.uid).toBe('1787582737.181871');
   });
 });
 

@@ -173,7 +173,7 @@ Chat 4 self-reports complete. Entry conditions:
 - Вердикт: **PASS WITH DEBTS**.
 - Git:
   - ветка `sipan`, up to date with `origin/sipan`;
-  - `HEAD ae13381078aa2a50aee6fce90339f32d3878d8c6` (`docs(ai): update Phase 1 Chat 4 handoff and checklist`) — это **не** коммит продукта Chat 4, а последующий docs-коммит после Chat 3 (`c2bbe1c0`): `ai-modul-steps.md` + `docs/deployment/AUTOMATED-PRODUCTION-DATABASE-MIGRATIONS-STANDARD.md`;
+  - `HEAD ae13381078aa2a50aee6fce90339f32d3878d8c6` (`docs(ai): update Phase 1 Chat 4 handoff and checklist`) — это **не** коммит продукта Chat 4, а последующий docs-коммит после Chat 3 (`c2bbe1c0`): `ai-modul-steps.md` + deployment documentation;
   - staged нет; дерево **не чистое**, как и заявлено («No commit was made» относится к коду Chat 4): 7 modified tracked + 36 untracked (mcp/protocol/rest + fixture + два docs);
   - все заявленные пути существуют; `git diff --diff-filter=D HEAD` пуст — тесты не удалялись;
   - `package.json` / `apps/api/src/app.module.ts` не менялись; `AiPlatformModule` уже импортирован в `AppModule`.

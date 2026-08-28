@@ -109,6 +109,22 @@ WhatsAppWebAdapter (контракт)
 
 ## Message statuses
 
+### External draft boundary (Phase 2 planned)
+
+Customer reply draft is a Messenger-owned aggregate/revision, not an outbound
+Message with a delivery status. It keeps Conversation, current revision, body,
+author/editor, optional AI execution/provenance and stale/cancelled state.
+
+An authorized Employee send command atomically creates one durable outbound
+Message/operation + outbox from the current draft revision. Draft creation,
+editing, retry or AI generation never queues delivery. A new inbound/human
+message or target change may make the draft stale.
+
+This target contract is part of AI Platform Phase 2 planning in
+`../21-AI-Platform/42-Phase-2-Project-Intelligence-and-Draft-Assistant-Architecture.md`.
+External Messenger remains a placeholder until its own schema/services/queue
+implement and verify this boundary.
+
 ### Internal
 
 | Status      | Значение                                                       |
@@ -119,15 +135,16 @@ WhatsAppWebAdapter (контракт)
 
 ### External
 
-| Status      | Значение                                                |
-| ----------- | ------------------------------------------------------- |
-| `draft`     | Подготовлено, ещё не отправлено                         |
-| `queued`    | Поставлено в очередь отправки                           |
-| `sent`      | Provider принял сообщение                               |
-| `delivered` | Внешний канал подтвердил доставку                       |
-| `read`      | Внешний канал подтвердил прочтение, если поддерживается |
-| `failed`    | Provider/adapter вернул ошибку                          |
-| `cancelled` | Отправка отменена до provider send                      |
+| Status            | Значение                                                               |
+| ----------------- | ---------------------------------------------------------------------- |
+| `queued`          | Поставлено в очередь отправки                                          |
+| `sending`         | Worker начал provider attempt                                          |
+| `sent`            | Provider принял сообщение                                              |
+| `delivered`       | Внешний канал подтвердил доставку                                      |
+| `read`            | Внешний канал подтвердил прочтение, если поддерживается                |
+| `failed`          | Provider/adapter вернул ошибку                                         |
+| `outcome_unknown` | Provider outcome не подтверждён после submission; blind retry запрещён |
+| `cancelled`       | Отправка отменена до provider send                                     |
 
 ## Files and attachments
 

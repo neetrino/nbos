@@ -15,6 +15,15 @@ describe('parseSingleByteRange', () => {
     expect(parseSingleByteRange('', TOTAL)).toEqual({ kind: 'none' });
     expect(parseSingleByteRange('bytes=0-1,2-3', TOTAL)).toEqual({ kind: 'none' });
     expect(parseSingleByteRange('items=1-2', TOTAL)).toEqual({ kind: 'none' });
+    expect(parseSingleByteRange(`bytes=${' '.repeat(256)}`, TOTAL)).toEqual({ kind: 'none' });
+  });
+
+  it('allows optional whitespace around = and -', () => {
+    expect(parseSingleByteRange('BYTES = 100 - 199', TOTAL)).toEqual({
+      kind: 'range',
+      start: 100,
+      end: 199,
+    });
   });
 
   it('parses open-ended and bounded ranges', () => {

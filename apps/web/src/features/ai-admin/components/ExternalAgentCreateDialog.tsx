@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { aiAdminApi } from '@/lib/api/ai-admin';
+import { resolvePublicAgentApiOrigin } from '../agent-client-setup';
 import { AI_ADMIN_BASE_PATH } from '../constants';
 import { finishCreateWithOptionalIssue } from '../one-time-secret-flow';
 import { OneTimeSecretModal } from './OneTimeSecretModal';
@@ -179,7 +180,7 @@ export function ExternalAgentCreateDialog(props: {
         open={token !== null}
         title="External Agent token"
         secret={token}
-        setupHint="Authorization: Bearer <token>. See External Agent client setup for REST/MCP."
+        apiOrigin={resolvePublicAgentApiOrigin(process.env.NEXT_PUBLIC_BACKEND_URL)}
         onClose={closeAfterSecret}
       />
     </>

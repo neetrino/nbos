@@ -130,9 +130,13 @@ Completion remains controlled by normal Tasks workflow/review rules and should n
 - last used;
 - Rotate;
 - Revoke;
-- Create additional credential if the runtime supports safe multi-credential rotation.
+- Create additional credential if the runtime supports safe multi-credential rotation;
+- **Connect client** on the same card: REST API URL, MCP URL, and **Copy MCP config** (always available; the page snippet reads `NBOS_AGENT_TOKEN` from env);
+- **Copy .env** only in the one-time Issue/Rotate dialog: two `KEY="value"` lines, URL then token (`NBOS_AGENT_API_URL`, `NBOS_AGENT_TOKEN`), shown in the dialog and copied as a block. The control is not shown when the secret is unavailable.
 
-Raw secret is displayed only once at creation/rotation.
+Raw secret is displayed only once at creation/rotation. MCP is optional: API-only clients copy .env from that dialog and never need the MCP snippet.
+
+The copied API URL is the Nest origin (`NEXT_PUBLIC_BACKEND_URL` / `/api/v1/agent`), never the employee dashboard origin. The web BFF strips `Authorization` and cannot authenticate External Agents.
 
 ### Activity
 
@@ -150,7 +154,7 @@ Recommended wizard/flow:
 4. Optional expiration/rate policy.
 5. Review effective access.
 6. Create agent + issue credential.
-7. One-time secret modal with setup examples for REST/MCP.
+7. One-time secret modal with the two `.env` lines (URL then token), **Copy**, and **Copy MCP config**.
 
 The administrator must be able to create one agent with multiple Work Space grants.
 

@@ -64,5 +64,18 @@ export function resolveSidebarModuleOrder(
     }
   }
 
-  return ordered;
+  return placeAiAgentsBeforeReports(ordered);
+}
+
+/** Product default: AI & Agents sits immediately above Analytics. */
+export function placeAiAgentsBeforeReports(order: readonly SidebarModuleKey[]): SidebarModuleKey[] {
+  const reportsIndex = order.indexOf('reports');
+  const aiIndex = order.indexOf('ai-agents');
+  if (reportsIndex < 0 || aiIndex < 0 || aiIndex < reportsIndex) {
+    return [...order];
+  }
+  const next: SidebarModuleKey[] = order.filter((key) => key !== 'ai-agents');
+  const insertAt = next.indexOf('reports');
+  next.splice(insertAt, 0, 'ai-agents');
+  return next;
 }
