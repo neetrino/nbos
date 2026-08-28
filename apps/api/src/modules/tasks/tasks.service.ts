@@ -16,6 +16,7 @@ import {
   buildTasksParticipationWhere,
   taskWhereInvolvesEmployee,
 } from './task-involves-employee-where.op';
+import { buildExcludeScrumPlanningWhere } from './task-exclude-scrum-planning-where.op';
 import {
   loadTasksScopedEmployeeIds,
   tasksViewBypassesRowFilter,
@@ -476,17 +477,17 @@ export class TasksService {
   }
 
   async getStats(involvesEmployeeId?: string, access?: TasksAccessContext) {
-    let participantWhere: Prisma.TaskWhereInput | undefined;
+    const parts: Prisma.TaskWhereInput[] = [buildScopeWhere('active')];
     if (involvesEmployeeId) {
-      participantWhere = taskWhereInvolvesEmployee(involvesEmployeeId);
+      parts.push(taskWhereInvolvesEmployee(involvesEmployeeId));
+      parts.push(buildExcludeScrumPlanningWhere());
     } else if (access && !tasksViewBypassesRowFilter(access.viewScope)) {
       const scopedIds = await loadTasksScopedEmployeeIds(this.prisma, access);
-      participantWhere = buildTasksParticipationWhere(scopedIds);
+      parts.push(buildTasksParticipationWhere(scopedIds));
     }
-    const activeWhere = buildScopeWhere('active');
     const groupArgs = {
       _count: true as const,
-      where: participantWhere ? { AND: [participantWhere, activeWhere] } : activeWhere,
+      where: parts.length === 1 ? parts[0]! : { AND: parts },
     };
     const [byStatus, byPriority] = await Promise.all([
       this.prisma.task.groupBy({ by: ['status'], ...groupArgs }),

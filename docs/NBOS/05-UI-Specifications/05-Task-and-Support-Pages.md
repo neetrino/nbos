@@ -264,6 +264,8 @@
 
 Доступен PM и Head of Delivery. Показывает задачи в scope пользователя (с фильтрами по проекту, статусу, приоритету и т.д.).
 
+Глобальный `/tasks` — execution-лента: задачи из scrum workspace в backlog или planning/future sprint сюда не попадают (только active sprint). Их место — Planning внутри workspace.
+
 ### 5.1. Виды
 
 - **List:** таблица с полными фильтрами и сортировкой
