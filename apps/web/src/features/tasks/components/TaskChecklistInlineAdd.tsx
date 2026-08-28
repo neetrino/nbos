@@ -9,6 +9,23 @@ const ADD_TRIGGER_CLASS =
 const ADD_INPUT_CLASS =
   'placeholder:text-muted-foreground/55 h-8 w-full min-w-0 bg-transparent text-sm outline-none';
 
+export function TaskChecklistAddTrigger({
+  label,
+  onClick,
+  disabled = false,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button type="button" className={ADD_TRIGGER_CLASS} disabled={disabled} onClick={onClick}>
+      <Plus size={14} aria-hidden />
+      {label}
+    </button>
+  );
+}
+
 interface TaskChecklistInlineAddProps {
   label: string;
   placeholder: string;
@@ -49,12 +66,7 @@ export function TaskChecklistInlineAdd({
   }
 
   if (!open) {
-    return (
-      <button type="button" className={ADD_TRIGGER_CLASS} onClick={() => setOpen(true)}>
-        <Plus size={14} aria-hidden />
-        {label}
-      </button>
-    );
+    return <TaskChecklistAddTrigger label={label} onClick={() => setOpen(true)} />;
   }
 
   return (

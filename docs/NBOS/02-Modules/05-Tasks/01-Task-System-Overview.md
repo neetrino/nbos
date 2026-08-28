@@ -254,7 +254,7 @@ Checklist внутри задачи — это обычный task-level инс�
 
 Эти два слоя не должны смешиваться.
 
-Task checklist может быть создан вручную или как `ChecklistInstance` из reusable `ChecklistTemplate`.
+Task checklist может быть создан вручную одним кликом (очередное имя `Checklist N`, название меняется после создания) или как `ChecklistInstance` из reusable `ChecklistTemplate`. Название и пункты редактируются inline.
 
 Reusable checklist templates живут в My Company / SOP & Templates: `../07-My-Company/08-Checklist-Template-Builder.md`.
 

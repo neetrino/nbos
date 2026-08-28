@@ -28,6 +28,7 @@ import { TASK_DETAIL_INCLUDE, TASK_INCLUDE } from './task-response-includes';
 import { NotificationService } from '../notifications/notification.service';
 import { notifyTaskReviewRequested } from './task-review-notify.op';
 import { resolveTaskSprintAssignment } from './task-sprint-assign.op';
+import { resolveChecklistTitle } from './task-default-checklist-title.op';
 import type { EntityLifecycleScope } from '@nbos/shared';
 import {
   assertEntityIsActive,
@@ -420,12 +421,50 @@ export class TasksService {
 
   // ─── CHECKLISTS ──────────────────────────────────────────
 
-  async createChecklist(taskId: string, title: string, access?: TasksAccessContext) {
+  async createChecklist(taskId: string, title?: string, access?: TasksAccessContext) {
     const task = await this.findById(taskId, access);
     this.assertTaskMutable(task);
+    const resolvedTitle = resolveChecklistTitle(
+      title,
+      task.checklists.map((checklist) => checklist.title),
+    );
     return this.prisma.taskChecklist.create({
-      data: { taskId, title },
+      data: { taskId, title: resolvedTitle },
       include: { items: true },
+    });
+  }
+
+  async updateChecklistTitle(
+    checklistId: string,
+    title: string,
+    access?: TasksAccessContext,
+  ) {
+    const trimmed = title.trim();
+    if (!trimmed) throw new BadRequestException('Checklist title is required.');
+    const checklist = await this.prisma.taskChecklist.findUnique({ where: { id: checklistId } });
+    if (!checklist) throw new NotFoundException(`Checklist ${checklistId} not found`);
+    const task = await this.findById(checklist.taskId, access);
+    this.assertTaskMutable(task);
+    return this.prisma.taskChecklist.update({
+      where: { id: checklistId },
+      data: { title: trimmed },
+      include: { items: { orderBy: { sortOrder: 'asc' } } },
+    });
+  }
+
+  async updateChecklistItemText(itemId: string, text: string, access?: TasksAccessContext) {
+    const trimmed = text.trim();
+    if (!trimmed) throw new BadRequestException('Checklist item text is required.');
+    const item = await this.prisma.taskChecklistItem.findUnique({
+      where: { id: itemId },
+      include: { checklist: { select: { taskId: true } } },
+    });
+    if (!item) throw new NotFoundException(`Checklist item ${itemId} not found`);
+    const task = await this.findById(item.checklist.taskId, access);
+    this.assertTaskMutable(task);
+    return this.prisma.taskChecklistItem.update({
+      where: { id: itemId },
+      data: { text: trimmed },
     });
   }
 

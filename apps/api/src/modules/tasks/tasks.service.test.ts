@@ -603,4 +603,83 @@ describe('TasksService', () => {
       );
     });
   });
+
+  describe('checklists', () => {
+    it('creates a sequential default title when none is given', async () => {
+      prisma.task.findUnique.mockResolvedValue({
+        id: 't1',
+        trashedAt: null,
+        checklists: [{ title: 'Checklist 1' }],
+        links: [],
+      });
+
+      await service.createChecklist('t1');
+
+      expect(prisma.taskChecklist.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { taskId: 't1', title: 'Checklist 2' },
+        }),
+      );
+    });
+
+    it('keeps an explicit title', async () => {
+      prisma.task.findUnique.mockResolvedValue({
+        id: 't1',
+        trashedAt: null,
+        checklists: [],
+        links: [],
+      });
+
+      await service.createChecklist('t1', '  QA  ');
+
+      expect(prisma.taskChecklist.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { taskId: 't1', title: 'QA' },
+        }),
+      );
+    });
+
+    it('renames a checklist title', async () => {
+      prisma.taskChecklist.findUnique.mockResolvedValue({ id: 'cl-1', taskId: 't1' });
+      prisma.task.findUnique.mockResolvedValue({
+        id: 't1',
+        trashedAt: null,
+        checklists: [],
+        links: [],
+      });
+
+      await service.updateChecklistTitle('cl-1', '  Launch  ');
+
+      expect(prisma.taskChecklist.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'cl-1' },
+          data: { title: 'Launch' },
+        }),
+      );
+    });
+
+    it('rejects a blank checklist title', async () => {
+      await expect(service.updateChecklistTitle('cl-1', '   ')).rejects.toThrow(BadRequestException);
+    });
+
+    it('renames a checklist item', async () => {
+      prisma.taskChecklistItem.findUnique.mockResolvedValue({
+        id: 'item-1',
+        checklist: { taskId: 't1' },
+      });
+      prisma.task.findUnique.mockResolvedValue({
+        id: 't1',
+        trashedAt: null,
+        checklists: [],
+        links: [],
+      });
+
+      await service.updateChecklistItemText('item-1', '  Ship  ');
+
+      expect(prisma.taskChecklistItem.update).toHaveBeenCalledWith({
+        where: { id: 'item-1' },
+        data: { text: 'Ship' },
+      });
+    });
+  });
 });

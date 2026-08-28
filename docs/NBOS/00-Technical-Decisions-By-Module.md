@@ -157,6 +157,7 @@ Planning authority: `02-Modules/21-AI-Platform/42-Phase-2-Project-Intelligence-a
 | Sprint invariant | At most one `ACTIVE` sprint per scrum-enabled workspace.                                                                                                                                                                                                                      |
 | Product team     | **Product only** (not Extension): `developerId` = Developer Backend (primary); `frontendDeveloperId` = Developer Frontend (seat `DEVELOPER_FRONTEND`, optional). Slug `developer` / `role-developer` unchanged; display **Developer Backend**. New role `developer-frontend`. |
 | Developer bonus  | Delivery **developer pool** only (not PM/Designer/whole product): **70%** Backend / **30%** Frontend; if Frontend unassigned → Backend **100%**. Junior Developer stays a separate narrower role.                                                                             |
+| Task checklist UX | One click creates a checklist with the next unused `Checklist N` title. Title and item text are inline-editable (click the field, blur/Enter save, no extra buttons). Name can be changed after create.                                                                     |
 
 ### Drive
 
