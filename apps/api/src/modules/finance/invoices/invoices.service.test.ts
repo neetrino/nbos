@@ -234,6 +234,31 @@ describe('InvoicesService', () => {
       );
     });
 
+    it('does not start a new payment reminder cycle when leaving On Hold', async () => {
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: 'hold-1',
+          orderId: null,
+          amount: 100000,
+          dueDate: new Date('2026-04-20'),
+          moneyStatus: 'ON_HOLD',
+          payments: [],
+        })
+        .mockResolvedValueOnce(
+          mockInvoiceFindByIdRow('hold-1', { moneyStatus: 'AWAITING_PAYMENT' }),
+        );
+      prisma.invoice.update.mockResolvedValue({});
+      await service.updateMoneyStatus('hold-1', 'AWAITING_PAYMENT');
+      expect(prisma.invoice.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {
+            moneyStatus: 'AWAITING_PAYMENT',
+            paidDate: null,
+          },
+        }),
+      );
+    });
+
     it('creates payment for outstanding then returns when marking PAID', async () => {
       prisma.invoice.findUnique
         .mockResolvedValueOnce({
@@ -526,6 +551,7 @@ describe('InvoicesService', () => {
           orderId: null,
           amount: 1000,
           dueDate: new Date('2026-05-01'),
+          moneyStatus: 'AWAITING_PAYMENT',
           payments: [],
         })
         .mockResolvedValueOnce(mockInvoiceFindByIdRow('inv-1', { moneyStatus: 'CANCELLED' }));
@@ -534,7 +560,10 @@ describe('InvoicesService', () => {
       expect(prisma.invoice.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: 'inv-1' },
-          data: expect.objectContaining({ moneyStatus: 'CANCELLED' }),
+          data: expect.objectContaining({
+            moneyStatus: 'CANCELLED',
+            paymentReminderCycle: { increment: 1 },
+          }),
         }),
       );
       expect(result.moneyStatus).toBe('CANCELLED');

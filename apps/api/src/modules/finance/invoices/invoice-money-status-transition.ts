@@ -30,6 +30,15 @@ export const INVOICE_MONEY_STATUS_TRANSITION_SELECT = {
   },
 } as const;
 
+/** Cancelled starts a new D-10/D-2 cycle; On Hold and other statuses do not. */
+export function paymentReminderCycleIncrement(
+  current: InvoiceMoneyStatusEnum,
+  target: InvoiceMoneyStatusEnum,
+): { increment: 1 } | undefined {
+  if (target !== 'CANCELLED' || current === 'CANCELLED') return undefined;
+  return { increment: 1 };
+}
+
 /** Gates Tax money-status changes and cancels an issued official request on card cancel. */
 export async function prepareInvoiceMoneyStatusTransition(
   prisma: InstanceType<typeof PrismaClient>,

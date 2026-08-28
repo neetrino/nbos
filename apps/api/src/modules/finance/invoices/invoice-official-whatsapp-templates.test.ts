@@ -40,14 +40,15 @@ describe('official invoice WhatsApp templates', () => {
     const issue = renderOfficialInvoiceIssueMessage(fields);
     expect(issue).toContain('✅✅✅✅');
     expect(issue).toContain('IDINV-9');
-    expect(issue).toContain('300000');
+    expect(issue).toContain('300.000');
     const cancel = renderOfficialInvoiceCancelMessage(fields);
     expect(cancel).toContain('❌❌❌❌');
     expect(cancel).toContain('չեղարկել');
   });
 
-  it('formats integer AMD without decimals', () => {
-    expect(formatAmdAmount(120000)).toBe('120000');
-    expect(formatAmdAmount(12.5)).toBe('12.50');
+  it('formats integer AMD with dot thousands grouping', () => {
+    expect(formatAmdAmount(1000)).toBe('1.000');
+    expect(formatAmdAmount(120000)).toBe('120.000');
+    expect(formatAmdAmount(12.5)).toBe('12,50');
   });
 });

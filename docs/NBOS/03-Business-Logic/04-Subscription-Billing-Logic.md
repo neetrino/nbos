@@ -355,10 +355,12 @@ Project Beta:
 
 Anchor: `Invoice.dueDate` (не Billing Day). Timezone for day math: **Asia/Yerevan**.
 
-| Offset | When (Yerevan calendar) | Event code                             | Idempotency      |
-| ------ | ----------------------- | -------------------------------------- | ---------------- |
-| D-10   | `dueDate − 10` days     | `finance.invoice.payment_reminder_d10` | once per invoice |
-| D-2    | `dueDate − 2` days      | `finance.invoice.payment_reminder_d2`  | once per invoice |
+| Offset | When (Yerevan calendar) | Event code                             | Idempotency                           |
+| ------ | ----------------------- | -------------------------------------- | ------------------------------------- |
+| D-10   | `dueDate − 10` days     | `finance.invoice.payment_reminder_d10` | once per invoice per collection cycle |
+| D-2    | `dueDate − 2` days      | `finance.invoice.payment_reminder_d2`  | once per invoice per collection cycle |
+
+- Collection cycle: `On Hold` → `Awaiting Payment` does **not** reset; `Cancelled` then `Awaiting Payment` starts a new cycle (`Invoice.paymentReminderCycle`).
 
 - Language: `Subscription.reminderLanguage` or `ClientServiceRecord.reminderLanguage` (`HY` / `RU` / `EN`, default `HY`).
 - Placeholders: subscription `{productName}` = `Product.name`; client-service `{serviceName}` = `ClientServiceRecord.name`; `{month}` = localized `coverageStartMonth` (else Yerevan month of `dueDate`).
@@ -378,8 +380,8 @@ Anchor: `Invoice.dueDate` (не Billing Day). Timezone for day math: **Asia/Yere
 ### Расписание (payment reminders)
 
 ```
-dueDate − 10:  D-10 client WhatsApp (once)
-dueDate − 2:   D-2 client WhatsApp (once)
+dueDate − 10:  D-10 client WhatsApp (once per collection cycle)
+dueDate − 2:   D-2 client WhatsApp (once per collection cycle)
 dueDate:       pay-by deadline
 (Tax official-request internal reminders remain separate when request not sent)
 ```

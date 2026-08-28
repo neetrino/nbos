@@ -68,11 +68,23 @@ export function renderOfficialInvoiceCancelMessage(fields: OfficialInvoiceWhatsA
   ].join('\n');
 }
 
+const AMD_THOUSANDS_SEPARATOR = '.';
+const AMD_DECIMAL_SEPARATOR = ',';
+
 export function formatAmdAmount(amount: unknown): string {
   const numeric = Number(amount);
   if (!Number.isFinite(numeric)) return String(amount ?? '');
-  if (Number.isInteger(numeric)) return String(numeric);
-  return numeric.toFixed(2);
+  const sign = numeric < 0 ? '-' : '';
+  const absolute = Math.abs(numeric);
+  if (Number.isInteger(numeric)) {
+    return `${sign}${groupAmdIntegerDigits(String(absolute))}`;
+  }
+  const [whole = '0', fraction = '00'] = absolute.toFixed(2).split('.');
+  return `${sign}${groupAmdIntegerDigits(whole)}${AMD_DECIMAL_SEPARATOR}${fraction}`;
+}
+
+function groupAmdIntegerDigits(digits: string): string {
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, AMD_THOUSANDS_SEPARATOR);
 }
 
 export function resolveOfficialCompanyName(
