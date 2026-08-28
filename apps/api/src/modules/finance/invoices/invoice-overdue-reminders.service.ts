@@ -173,7 +173,9 @@ export class InvoiceOverdueRemindersService {
     invoice: OverdueCandidate,
     jobs: WaveJobState | undefined,
     asOfKey: string,
-  ): Promise<{ kind: 'send' } & ClassifiedSendable | { kind: 'skip'; skip: OverdueReminderSkipItem }> {
+  ): Promise<
+    ({ kind: 'send' } & ClassifiedSendable) | { kind: 'skip'; skip: OverdueReminderSkipItem }
+  > {
     const productWhatsApp = await resolveInvoiceProductWhatsAppGroup(this.prisma, invoice.id);
     const decision = decideOverdueReminderAction({
       moneyStatus: invoice.moneyStatus,
@@ -187,9 +189,14 @@ export class InvoiceOverdueRemindersService {
     });
     if (decision.kind === 'skip') {
       if (decision.reason === 'no_whatsapp') {
-        this.logger.warn(`Overdue reminder skipped (no Product WhatsApp group): invoice=${invoice.code}`);
+        this.logger.warn(
+          `Overdue reminder skipped (no Product WhatsApp group): invoice=${invoice.code}`,
+        );
       }
-      return { kind: 'skip', skip: { invoiceId: invoice.id, code: invoice.code, reason: decision.reason } };
+      return {
+        kind: 'skip',
+        skip: { invoiceId: invoice.id, code: invoice.code, reason: decision.reason },
+      };
     }
     return {
       kind: 'send',

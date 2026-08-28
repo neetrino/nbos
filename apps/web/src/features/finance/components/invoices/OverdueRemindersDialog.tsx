@@ -13,10 +13,7 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { invoicesApi, type OverdueReminderPreview } from '@/lib/api/finance';
 import { toast } from 'sonner';
-import {
-  countSkippedByReason,
-  overdueReminderSkipLabel,
-} from './overdue-reminder-skip-labels';
+import { countSkippedByReason, overdueReminderSkipLabel } from './overdue-reminder-skip-labels';
 
 interface OverdueRemindersDialogProps {
   open: boolean;

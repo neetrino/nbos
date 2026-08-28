@@ -176,11 +176,7 @@ function InvoicesPageInner() {
             exportCsvLabel="Export invoices (CSV)"
           />
           <PermissionGate module="FINANCE_INVOICES" action="EDIT">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={openOverdueReminders}
-            >
+            <Button type="button" variant="outline" onClick={openOverdueReminders}>
               Send overdue reminders
             </Button>
           </PermissionGate>
