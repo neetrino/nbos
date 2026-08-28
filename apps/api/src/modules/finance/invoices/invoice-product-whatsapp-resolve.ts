@@ -15,7 +15,6 @@ export async function resolveInvoiceProductWhatsAppGroup(
       subscription: { select: { productId: true } },
       clientServiceRecord: { select: { productId: true } },
       order: { select: { productId: true } },
-      clientServiceRecord: { select: { productId: true } },
     },
   });
   if (!invoice) return null;
