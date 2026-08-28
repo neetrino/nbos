@@ -2,19 +2,27 @@
 
 import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, RefreshCw, Shield, Timer } from 'lucide-react';
+import { Activity, RefreshCw, Search, Shield, Timer, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { LIST_SEARCH_INPUT_PROPS } from '@/components/shared/list-search-input-props';
 import { cn } from '@/lib/utils';
 import type { PlatformSchedulerJobsResponse } from '@/lib/api/scheduler-jobs';
 import { SchedulerInfoTip } from './SchedulerInfoTip';
 import { cronFieldLabels } from './scheduler-cron-format';
 
+const JOBS_SEARCH_PLACEHOLDER = 'Search jobs…';
+
 export function SchedulerJobsHero(props: {
   data: PlatformSchedulerJobsResponse;
   loading: boolean;
+  search: string;
+  visibleCount: number;
+  totalCount: number;
+  onSearchChange: (value: string) => void;
   onRefresh: () => void;
 }) {
-  const { data, loading, onRefresh } = props;
+  const { data, loading, search, visibleCount, totalCount, onSearchChange, onRefresh } = props;
   const updatedLabel = new Date(data.generatedAt).toLocaleString();
   const masterOn = data.masterEnabled === true;
   const online = data.schedulerOnline;
@@ -76,8 +84,14 @@ export function SchedulerJobsHero(props: {
         </div>
       </div>
 
-      <div className="border-border bg-muted/30 border-t px-4 py-2.5 sm:px-5">
+      <div className="border-border bg-muted/30 flex flex-col gap-2.5 border-t px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <CronLegend />
+        <SchedulerJobsSearch
+          value={search}
+          visibleCount={visibleCount}
+          totalCount={totalCount}
+          onChange={onSearchChange}
+        />
       </div>
     </motion.section>
   );
@@ -97,6 +111,53 @@ function StatusChip(props: { icon: ReactNode; ok: boolean; label: string }) {
       {icon}
       {label}
     </span>
+  );
+}
+
+function SchedulerJobsSearch(props: {
+  value: string;
+  visibleCount: number;
+  totalCount: number;
+  onChange: (value: string) => void;
+}) {
+  const { value, visibleCount, totalCount, onChange } = props;
+  const hasQuery = value.trim().length > 0;
+
+  return (
+    <div className="flex min-w-0 items-center gap-2 sm:max-w-xs sm:flex-1">
+      <div className="relative min-w-0 flex-1">
+        <Search
+          className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2"
+          aria-hidden
+        />
+        <Input
+          {...LIST_SEARCH_INPUT_PROPS}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={JOBS_SEARCH_PLACEHOLDER}
+          aria-label={JOBS_SEARCH_PLACEHOLDER}
+          role="searchbox"
+          className="bg-background h-8 rounded-lg pl-8 text-sm shadow-none"
+        />
+        {hasQuery ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="absolute top-1/2 right-1 size-6 -translate-y-1/2 rounded-full"
+            aria-label="Clear search"
+            onClick={() => onChange('')}
+          >
+            <X className="size-3.5" aria-hidden />
+          </Button>
+        ) : null}
+      </div>
+      {hasQuery ? (
+        <span className="text-muted-foreground shrink-0 text-[11px]">
+          {visibleCount} of {totalCount}
+        </span>
+      ) : null}
+    </div>
   );
 }
 
