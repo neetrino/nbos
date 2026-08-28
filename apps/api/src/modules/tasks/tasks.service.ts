@@ -434,11 +434,7 @@ export class TasksService {
     });
   }
 
-  async updateChecklistTitle(
-    checklistId: string,
-    title: string,
-    access?: TasksAccessContext,
-  ) {
+  async updateChecklistTitle(checklistId: string, title: string, access?: TasksAccessContext) {
     const trimmed = title.trim();
     if (!trimmed) throw new BadRequestException('Checklist title is required.');
     const checklist = await this.prisma.taskChecklist.findUnique({ where: { id: checklistId } });

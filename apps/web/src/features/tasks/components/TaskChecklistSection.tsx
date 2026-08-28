@@ -57,9 +57,7 @@ export function TaskChecklistSection({
           />
         </div>
       ))}
-      {disabled ? null : (
-        <TaskChecklistAddTrigger label="New checklist" onClick={onAddChecklist} />
-      )}
+      {disabled ? null : <TaskChecklistAddTrigger label="New checklist" onClick={onAddChecklist} />}
     </section>
   );
 }

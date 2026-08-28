@@ -7,9 +7,7 @@ import {
 
 describe('shouldExcludeScrumPlanningFromGlobalFeed', () => {
   it('applies for personal global feed', () => {
-    expect(
-      shouldExcludeScrumPlanningFromGlobalFeed({ involvesEmployeeId: 'emp-1' }),
-    ).toBe(true);
+    expect(shouldExcludeScrumPlanningFromGlobalFeed({ involvesEmployeeId: 'emp-1' })).toBe(true);
   });
 
   it('skips workspace-scoped lists', () => {

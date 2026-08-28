@@ -659,7 +659,9 @@ describe('TasksService', () => {
     });
 
     it('rejects a blank checklist title', async () => {
-      await expect(service.updateChecklistTitle('cl-1', '   ')).rejects.toThrow(BadRequestException);
+      await expect(service.updateChecklistTitle('cl-1', '   ')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('renames a checklist item', async () => {
