@@ -86,7 +86,8 @@ export const SCHEDULER_PLATFORM_CRON_CATALOG: readonly SchedulerJobCatalogEntry[
   platformCronEntry({
     jobName: SCHEDULER_JOB_NAMES.billing,
     title: 'Monthly billing',
-    description: 'Creates subscription invoices daily at 11:00 (day-1 early wave + rest on the 1st).',
+    description:
+      'Creates subscription invoices daily at 11:00 (day-1 early wave + rest on the 1st).',
     ownerModule: 'Finance',
     group: SCHEDULER_JOB_GROUP.money,
     defaultExpression: BILLING_DEFAULT_CRON,

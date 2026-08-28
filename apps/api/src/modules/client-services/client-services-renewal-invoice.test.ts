@@ -28,7 +28,10 @@ describe('hasInvoiceForRenewalPeriod', () => {
 
   it('returns true when a paid invoice was created in the renewal window', () => {
     expect(
-      hasInvoiceForRenewalPeriod([{ moneyStatus: 'PAID', createdAt: AS_OF, dueDate: RENEWAL }], RENEWAL),
+      hasInvoiceForRenewalPeriod(
+        [{ moneyStatus: 'PAID', createdAt: AS_OF, dueDate: RENEWAL }],
+        RENEWAL,
+      ),
     ).toBe(true);
   });
 

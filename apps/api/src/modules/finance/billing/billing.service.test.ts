@@ -395,9 +395,7 @@ describe('BillingService', () => {
 
     it('creates a day-1 invoice for the next month on the penultimate weekday', async () => {
       const today = new Date('2026-03-30T11:00:00+04:00');
-      prisma.subscription.findMany.mockResolvedValue([
-        mockBillableSubscription({ billingDay: 1 }),
-      ]);
+      prisma.subscription.findMany.mockResolvedValue([mockBillableSubscription({ billingDay: 1 })]);
       prisma.invoice.findMany.mockResolvedValue([]);
       setupInvoiceCodeGeneration(prisma);
 
@@ -416,9 +414,7 @@ describe('BillingService', () => {
 
     it('does not create day-3 early; bills March on 30 March', async () => {
       const today = new Date('2026-03-30T11:00:00+04:00');
-      prisma.subscription.findMany.mockResolvedValue([
-        mockBillableSubscription({ billingDay: 3 }),
-      ]);
+      prisma.subscription.findMany.mockResolvedValue([mockBillableSubscription({ billingDay: 3 })]);
       prisma.invoice.findMany.mockResolvedValue([]);
       setupInvoiceCodeGeneration(prisma);
 
