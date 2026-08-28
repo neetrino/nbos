@@ -1,4 +1,5 @@
 import { shouldStripDecodedContentLength } from './bff-content-length';
+import { SESSION_INVALID_HEADER } from './auth/session-state';
 
 /** Headers that must not be forwarded between hop and client. */
 export const BFF_HOP_BY_HOP_HEADERS = new Set([
@@ -17,7 +18,7 @@ export const BFF_HOP_BY_HOP_HEADERS = new Set([
 export function shouldForwardRequestHeaderToBackend(name: string): boolean {
   const lower = name.toLowerCase();
   if (BFF_HOP_BY_HOP_HEADERS.has(lower)) return false;
-  return lower !== 'authorization' && lower !== 'content-length';
+  return lower !== 'authorization' && lower !== 'content-length' && lower !== 'cookie';
 }
 
 export function copyBackendResponseHeaders(backend: Response, setCookie?: string): Headers {
@@ -26,6 +27,7 @@ export function copyBackendResponseHeaders(backend: Response, setCookie?: string
   backend.headers.forEach((value, key) => {
     const lower = key.toLowerCase();
     if (BFF_HOP_BY_HOP_HEADERS.has(lower)) return;
+    if (lower === SESSION_INVALID_HEADER) return;
     if (lower === 'content-length' && stripLength) return;
     headers.set(key, value);
   });

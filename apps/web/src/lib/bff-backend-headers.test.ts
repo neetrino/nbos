@@ -12,6 +12,15 @@ describe('BFF recording proxy headers', () => {
     expect(shouldForwardRequestHeaderToBackend('Host')).toBe(false);
     expect(shouldForwardRequestHeaderToBackend('Authorization')).toBe(false);
     expect(shouldForwardRequestHeaderToBackend('Content-Length')).toBe(false);
+    expect(shouldForwardRequestHeaderToBackend('Cookie')).toBe(false);
+  });
+
+  it('strips the reserved session-invalid header from backend responses', () => {
+    const backend = new Response(null, {
+      status: 401,
+      headers: { 'X-Nbos-Session-Invalid': '1' },
+    });
+    expect(copyBackendResponseHeaders(backend).has('X-Nbos-Session-Invalid')).toBe(false);
   });
 
   it('preserves 206, Content-Range, Content-Length, and the body bytes', async () => {

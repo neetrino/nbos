@@ -254,6 +254,8 @@ Same Nest routes. Differences:
 
 - `clientKind` is one of `mobile_work` | `mobile_messenger` | `mobile_vault`;
 - refresh is returned in JSON on login/refresh;
+- a grace-window refresh may omit `refreshToken`; native clients must keep the stored token when
+  the field is absent and replace it only when a non-empty rotated value is returned;
 - OS secure storage only (Keychain / Keystore / EncryptedSharedPreferences);
 - on 401, refresh once, then retry; if refresh fails, sign out;
 - Messenger Socket.IO uses the **current** short access JWT and must refresh before reconnect when expired.

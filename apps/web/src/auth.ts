@@ -3,6 +3,7 @@ import Credentials from 'next-auth/providers/credentials';
 import type { DefaultSession, User } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import { parseRefreshTokenFromResponse } from './lib/auth/parse-nest-refresh-cookie';
+import { resolveWebSessionMaxAgeSeconds } from './lib/auth/session-lifetime';
 
 declare module 'next-auth' {
   interface Session {
@@ -135,7 +136,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   session: {
     strategy: 'jwt',
-    maxAge: 7 * 24 * 60 * 60,
+    maxAge: resolveWebSessionMaxAgeSeconds(),
   },
   // Force the Secure cookie flag + `__Secure-` prefix in production.
   // The session cookie itself stays httpOnly + sameSite=lax (Auth.js defaults).

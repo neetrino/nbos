@@ -23,6 +23,7 @@ import {
 import type { MessengerMessageRow } from '@/lib/api/messenger';
 import { mapMessengerRowToView, type MessengerViewMessage } from './messenger-message-mapper';
 import type { MessengerActiveView } from './messenger-active-view';
+import { recoverRealtimeSession } from '@/lib/auth/realtime-session';
 
 const MESSENGER_SOCKET_DEV_ORIGIN = 'http://localhost:4000';
 
@@ -142,19 +143,9 @@ export function useMessengerRealtime(options: {
     let cancelled = false;
 
     async function loadRealtimeToken() {
-      try {
-        const res = await fetch('/api/auth/realtime-token');
-        if (!res.ok) {
-          if (!cancelled) setRealtimeToken(null);
-          return;
-        }
-        const body = (await res.json()) as { token?: string };
-        if (!cancelled) {
-          setRealtimeToken(typeof body.token === 'string' ? body.token : null);
-        }
-      } catch {
-        if (!cancelled) setRealtimeToken(null);
-      }
+      const result = await recoverRealtimeSession();
+      if (cancelled) return;
+      setRealtimeToken(result.kind === 'available' ? result.accessToken : null);
     }
 
     void loadRealtimeToken();
@@ -184,6 +175,18 @@ export function useMessengerRealtime(options: {
     }
 
     socket.on('connect', subscribeIfChannel);
+    socket.on('connect_error', () => {
+      void recoverRealtimeSession().then((result) => {
+        if (result.kind === 'session-invalid') {
+          socket.close();
+          setRealtimeToken(null);
+          return;
+        }
+        if (result.kind === 'available' && result.accessToken !== realtimeToken) {
+          setRealtimeToken(result.accessToken);
+        }
+      });
+    });
 
     socket.on(
       MESSENGER_WS_SERVER_CHANNEL_MESSAGE,

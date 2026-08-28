@@ -1,4 +1,10 @@
-import { Injectable, Inject, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  Logger,
+  ServiceUnavailableException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createId } from './auth-session.id';
 import { PrismaClient } from '@nbos/database';
@@ -55,7 +61,7 @@ export interface RotateSessionResult {
   employeeId: string;
   authVersion: number;
   email: string;
-  refreshToken: string;
+  refreshToken?: string;
   expiresAt: Date;
   clientKind: AuthSessionClientKindApi;
 }
@@ -158,11 +164,11 @@ export class AuthSessionService {
         })) as SessionRow | null;
 
         if (!session) {
-          throw new UnauthorizedException('Invalid refresh token');
+          return { kind: 'failure' as const, message: 'Invalid refresh token' };
         }
 
         if (session.status === 'COMPROMISED' || session.status === 'REVOKED') {
-          throw new UnauthorizedException('Invalid refresh token');
+          return { kind: 'failure' as const, message: 'Invalid refresh token' };
         }
 
         if (session.expiresAt <= now) {
@@ -170,7 +176,7 @@ export class AuthSessionService {
             where: { id: session.id },
             data: { status: 'EXPIRED', revokedAt: now, revokeReason: 'expired' },
           });
-          throw new UnauthorizedException('Invalid refresh token');
+          return { kind: 'failure' as const, message: 'Invalid refresh token' };
         }
 
         const matchesCurrent = refreshHashesEqual(session.refreshTokenHash, presentedHash);
@@ -182,6 +188,7 @@ export class AuthSessionService {
           refreshHashesEqual(previousHash!, presentedHash);
 
         if (!matchesCurrent && !previousStillValid) {
+          let reuseDetected = false;
           if (
             isAuthRefreshReuseDetectionEnabled() &&
             (session.status === 'ROTATED' || Boolean(previousHash))
@@ -194,16 +201,15 @@ export class AuthSessionService {
                 revokeReason: 'reuse_detected',
               },
             });
-            recordAuthMetric('auth_refresh_reuse_detected_total');
-            this.logger.warn(
-              JSON.stringify({
-                event: 'auth.refresh_reuse_detected',
-                tokenFamilyId: session.tokenFamilyId,
-                employeeId: session.employeeId,
-              }),
-            );
+            reuseDetected = true;
           }
-          throw new UnauthorizedException('Invalid refresh token');
+          return {
+            kind: 'failure' as const,
+            message: 'Invalid refresh token',
+            reuseDetected,
+            tokenFamilyId: session.tokenFamilyId,
+            employeeId: session.employeeId,
+          };
         }
 
         const employee = await tx.employee.findUniqueOrThrow({
@@ -220,14 +226,14 @@ export class AuthSessionService {
               revokeReason: 'user_disabled',
             },
           });
-          throw new UnauthorizedException('Account deactivated');
+          return { kind: 'failure' as const, message: 'Account deactivated' };
         }
 
         if (!matchesCurrent && previousStillValid) {
           return {
             session,
             employee,
-            refreshToken: rawRefreshToken,
+            refreshToken: undefined,
             kind: 'grace' as const,
           };
         }
@@ -253,7 +259,7 @@ export class AuthSessionService {
         });
 
         if (updated.count !== 1) {
-          throw new UnauthorizedException('Refresh conflict; retry');
+          return { kind: 'conflict' as const };
         }
 
         return {
@@ -263,6 +269,23 @@ export class AuthSessionService {
           kind: 'rotated' as const,
         };
       });
+
+      if (result.kind === 'failure') {
+        if ('reuseDetected' in result && result.reuseDetected) {
+          recordAuthMetric('auth_refresh_reuse_detected_total');
+          this.logger.warn(
+            JSON.stringify({
+              event: 'auth.refresh_reuse_detected',
+              tokenFamilyId: result.tokenFamilyId,
+              employeeId: result.employeeId,
+            }),
+          );
+        }
+        throw new UnauthorizedException(result.message);
+      }
+      if (result.kind === 'conflict') {
+        throw new ServiceUnavailableException('Refresh conflict; retry');
+      }
 
       recordAuthMetric('auth_refresh_success_total');
       this.logger.log(
@@ -283,7 +306,7 @@ export class AuthSessionService {
         clientKind: fromPrismaAuthSessionClientKind(result.session.clientKind),
       };
     } catch (err) {
-      if (err instanceof UnauthorizedException) {
+      if (err instanceof UnauthorizedException || err instanceof ServiceUnavailableException) {
         recordAuthMetric('auth_refresh_failed_total');
       }
       throw err;

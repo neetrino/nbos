@@ -1,29 +1,11 @@
 import axios from 'axios';
 import { toApiError } from './api-errors';
+import { shouldSignOutForResponse } from './auth/session-state';
+import { signOutForInvalidSession } from './auth/session-sign-out';
 
 export interface ApiResponse<T> {
   data: T;
   timestamp: string;
-}
-
-let sessionSignOutInFlight: Promise<void> | null = null;
-
-async function signOutOnUnauthorized(): Promise<void> {
-  if (sessionSignOutInFlight) {
-    await sessionSignOutInFlight;
-    return;
-  }
-
-  sessionSignOutInFlight = (async () => {
-    const { signOut } = await import('next-auth/react');
-    await signOut({ callbackUrl: '/sign-in' });
-  })();
-
-  try {
-    await sessionSignOutInFlight;
-  } finally {
-    sessionSignOutInFlight = null;
-  }
 }
 
 /**
@@ -46,9 +28,12 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
-    if (axios.isAxiosError(error) && error.response?.status === 401) {
+    if (
+      axios.isAxiosError(error) &&
+      shouldSignOutForResponse(error.response?.status, error.response?.headers)
+    ) {
       if (typeof window !== 'undefined') {
-        await signOutOnUnauthorized();
+        await signOutForInvalidSession();
       }
     }
 
