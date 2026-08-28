@@ -22,16 +22,32 @@ export function paymentReminderEventTypeForOffset(
   return SUBSCRIPTION_PAYMENT_REMINDER_EVENT_TYPES.D2;
 }
 
+/** Cycle 0 keeps historical job keys so already-sent reminders are not resent. */
+export const PAYMENT_REMINDER_CYCLE_INITIAL = 0;
+
 export function buildSubscriptionPaymentReminderDedupeKey(
   invoiceId: string,
   offsetDays: number,
+  cycle: number = PAYMENT_REMINDER_CYCLE_INITIAL,
 ): string {
-  return `subscription_payment_reminder:d${offsetDays}:${invoiceId}`;
+  return withPaymentReminderCycleSuffix(
+    `subscription_payment_reminder:d${offsetDays}:${invoiceId}`,
+    cycle,
+  );
 }
 
 export function buildSubscriptionPaymentReminderIdempotencyKey(
   invoiceId: string,
   offsetDays: number,
+  cycle: number = PAYMENT_REMINDER_CYCLE_INITIAL,
 ): string {
-  return `subscription-payment-reminder:d${offsetDays}:${invoiceId}`;
+  return withPaymentReminderCycleSuffix(
+    `subscription-payment-reminder:d${offsetDays}:${invoiceId}`,
+    cycle,
+  );
+}
+
+function withPaymentReminderCycleSuffix(base: string, cycle: number): string {
+  if (cycle <= PAYMENT_REMINDER_CYCLE_INITIAL) return base;
+  return `${base}:c${cycle}`;
 }

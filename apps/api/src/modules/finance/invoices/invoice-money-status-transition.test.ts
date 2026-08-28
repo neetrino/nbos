@@ -1,6 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
-import { prepareInvoiceMoneyStatusTransition } from './invoice-money-status-transition';
+import {
+  paymentReminderCycleIncrement,
+  prepareInvoiceMoneyStatusTransition,
+} from './invoice-money-status-transition';
 
 const readyTaxInvoice = {
   id: 'inv-1',
@@ -42,5 +45,21 @@ describe('prepareInvoiceMoneyStatusTransition', () => {
         data: expect.objectContaining({ officialInvoiceRequestSent: false }),
       }),
     );
+  });
+});
+
+describe('paymentReminderCycleIncrement', () => {
+  it('bumps only when entering Cancelled', () => {
+    expect(paymentReminderCycleIncrement('AWAITING_PAYMENT', 'CANCELLED')).toEqual({
+      increment: 1,
+    });
+    expect(paymentReminderCycleIncrement('ON_HOLD', 'CANCELLED')).toEqual({ increment: 1 });
+  });
+
+  it('does not bump On Hold or reopen without Cancelled', () => {
+    expect(paymentReminderCycleIncrement('AWAITING_PAYMENT', 'ON_HOLD')).toBeUndefined();
+    expect(paymentReminderCycleIncrement('ON_HOLD', 'AWAITING_PAYMENT')).toBeUndefined();
+    expect(paymentReminderCycleIncrement('CANCELLED', 'AWAITING_PAYMENT')).toBeUndefined();
+    expect(paymentReminderCycleIncrement('CANCELLED', 'CANCELLED')).toBeUndefined();
   });
 });

@@ -404,7 +404,7 @@ expiry_date updated
 
 - приближение `renewal_date`;
 - создание `Invoice Card` для клиентских сервисов (`WE_PAY`);
-- **клиентские WhatsApp D-10 / D-2** по связанной Invoice Card — тот же канал, что у подписки: Product WhatsApp Group (`ClientServiceRecord.productId`), если `notifications_enabled` и группа `ACTIVE`. Язык = `reminder_language` (`HY` / `RU` / `EN`, default `HY`). `REMINDER_ONLY` invoice не создаёт и в WhatsApp не шлёт;
+- **клиентские WhatsApp D-10 / D-2** по связанной Invoice Card — тот же канал, что у подписки: Product WhatsApp Group (`ClientServiceRecord.productId`), если `notifications_enabled` и группа `ACTIVE`. Язык = `reminder_language` (`HY` / `RU` / `EN`, default `HY`). `On Hold` не повторяет уже отправленное; `Cancelled` → снова `Awaiting Payment` открывает новый цикл. `REMINDER_ONLY` invoice не создаёт и в WhatsApp не шлёт;
 - создание `Task` после оплаты;
 - напоминание, если credentials не заполнены;
 - напоминание, если сервис скоро истекает.

@@ -46,6 +46,7 @@ import {
 import { InvoiceOfficialWhatsAppService } from './invoice-official-whatsapp.service';
 import {
   INVOICE_MONEY_STATUS_TRANSITION_SELECT,
+  paymentReminderCycleIncrement,
   prepareInvoiceMoneyStatusTransition,
 } from './invoice-money-status-transition';
 import { OperationalJournalService } from '../journal/operational-journal.service';
@@ -334,6 +335,7 @@ export class InvoicesService {
       id: string;
       orderId: string | null;
       dueDate: Date | null;
+      moneyStatus: InvoiceMoneyStatusEnum;
       payments: Array<FinanceAmountCarrier & { paymentDate: Date }>;
     },
     moneyStatus: InvoiceMoneyStatusEnum,
@@ -348,11 +350,13 @@ export class InvoicesService {
       now,
     });
     this.assertManualMoneyStatusAllowed(moneyStatus, derivedBase);
+    const cycleIncrement = paymentReminderCycleIncrement(invoice.moneyStatus, moneyStatus);
     await this.prisma.invoice.update({
       where: { id: invoice.id },
       data: {
         moneyStatus,
         paidDate: moneyStatus === 'PAID' ? (getLatestPaymentDate(invoice.payments) ?? now) : null,
+        ...(cycleIncrement ? { paymentReminderCycle: cycleIncrement } : {}),
       },
     });
     if (!invoice.orderId) return;

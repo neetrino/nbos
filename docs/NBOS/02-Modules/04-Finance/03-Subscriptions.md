@@ -95,7 +95,7 @@ Ownership rule (required):
 
 ### Client WhatsApp payment reminders (D-10 / D-2)
 
-Anchor date: `Invoice.dueDate` (pay-by). Offsets: **10** and **2** calendar days before due (Yerevan calendar). Each offset fires **once** per invoice (idempotent; no catch-up if the invoice appears after the D-10 day).
+Anchor date: `Invoice.dueDate` (pay-by). Offsets: **10** and **2** calendar days before due (Yerevan calendar). Each offset fires **once per collection cycle** (idempotent; no catch-up if the invoice appears after the D-10 day). `On Hold` → `Awaiting Payment` keeps the same cycle (no resend). `Cancelled` then back to `Awaiting Payment` starts a new cycle.
 
 - Target: **Product WhatsApp Group** via `subscription.productId`. Client Service invoices without a subscription use the same D-10 / D-2 path via **`ClientServiceRecord.productId`** (same Product group; copy names the service, language = `ClientServiceRecord.reminderLanguage`).
 - Copy uses `Product.name` (subscription) or `ClientServiceRecord.name` (client-service), localized month from `Invoice.coverageStartMonth`, **amount**, and `tax_status` in `reminder_language`.

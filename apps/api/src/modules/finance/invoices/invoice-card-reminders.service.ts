@@ -58,6 +58,7 @@ interface PaymentReminderCandidate {
   moneyStatus: string;
   officialInvoiceRequestSent: boolean;
   notificationsEnabled: boolean;
+  paymentReminderCycle: number;
   company: { name: string } | null;
   clientServiceRecord: {
     notificationsEnabled: boolean;
@@ -250,7 +251,8 @@ export class InvoiceCardRemindersService {
     }
 
     const type = paymentReminderEventTypeForOffset(offsetDays);
-    const dedupeKey = buildSubscriptionPaymentReminderDedupeKey(invoice.id, offsetDays);
+    const cycle = invoice.paymentReminderCycle;
+    const dedupeKey = buildSubscriptionPaymentReminderDedupeKey(invoice.id, offsetDays, cycle);
     const existing = await this.prisma.notificationJob.findUnique({ where: { dedupeKey } });
     if (existing) {
       return { created: false as const, type, invoiceId: invoice.id, reason: 'existing' as const };
@@ -275,7 +277,7 @@ export class InvoiceCardRemindersService {
       type,
       invoiceId: invoice.id,
       dedupeKey,
-      idempotencyKey: buildSubscriptionPaymentReminderIdempotencyKey(invoice.id, offsetDays),
+      idempotencyKey: buildSubscriptionPaymentReminderIdempotencyKey(invoice.id, offsetDays, cycle),
       scheduledFor: asOf,
       payload: {
         invoiceId: invoice.id,
