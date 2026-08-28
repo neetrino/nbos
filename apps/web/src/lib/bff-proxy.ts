@@ -1,8 +1,13 @@
-import { getToken } from 'next-auth/jwt';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import {
+  isAccessTokenUsable,
+  readAuthJsSessionToken,
+  resolveAuthSessionKey,
+} from './auth/authjs-session-token';
 import { refreshBackendSession } from './auth/refresh-backend-session';
 import { runSingleFlightRefresh } from './auth/refresh-registry';
+import { SESSION_INVALID_HEADER, SESSION_INVALID_VALUE } from './auth/session-state';
 import {
   copyBackendResponseHeaders,
   shouldForwardRequestHeaderToBackend,
@@ -26,14 +31,37 @@ export async function proxyToBackend(
   const bodyBuffer =
     req.method !== 'GET' && req.method !== 'HEAD' ? await req.arrayBuffer() : undefined;
 
-  const first = await forwardOnce(req, targetUrl, undefined, bodyBuffer);
+  const sessionToken = await readAuthJsSessionToken(req);
+  const accessToken =
+    typeof sessionToken?.accessToken === 'string' ? sessionToken.accessToken : undefined;
+
+  const first = await forwardOnce(req, targetUrl, accessToken, bodyBuffer);
   if (first.response.status !== 401) {
-    return toNextResponse(first.response, first.setCookie);
+    return toNextResponse(first.response);
   }
 
-  const refreshed = await runSingleFlightRefresh(() => refreshBackendSession(req));
-  if (!refreshed) {
+  // A usable access JWT from the trusted encrypted cookie means this is a
+  // business/high-risk 401, not an expiry signal. Refreshing it would rotate
+  // credentials unnecessarily and makes cross-replica response races unsafe.
+  if (accessToken && isAccessTokenUsable(accessToken)) {
     return toNextResponse(first.response);
+  }
+
+  let refreshed;
+  try {
+    const sessionKey = resolveAuthSessionKey(sessionToken);
+    refreshed = sessionKey
+      ? await runSingleFlightRefresh(sessionKey, () => refreshBackendSession(req))
+      : await refreshBackendSession(req);
+  } catch {
+    return temporaryRefreshFailure(503);
+  }
+
+  if (refreshed.kind === 'session-invalid') {
+    return toNextResponse(first.response, undefined, true);
+  }
+  if (refreshed.kind === 'temporarily-unavailable') {
+    return temporaryRefreshFailure(refreshed.status, refreshed.retryAfter);
   }
 
   const second = await forwardOnce(req, targetUrl, refreshed.accessToken, bodyBuffer);
@@ -43,18 +71,9 @@ export async function proxyToBackend(
 async function forwardOnce(
   req: NextRequest,
   targetUrl: URL,
-  accessTokenOverride: string | undefined,
+  accessToken: string | undefined,
   bodyBuffer: ArrayBuffer | undefined,
-): Promise<{ response: Response; setCookie?: string }> {
-  const sessionToken = await getToken({
-    req,
-    secret: process.env.AUTH_SECRET,
-    secureCookie: process.env.NODE_ENV === 'production',
-  });
-  const accessToken =
-    accessTokenOverride ??
-    (typeof sessionToken?.accessToken === 'string' ? sessionToken.accessToken : undefined);
-
+): Promise<{ response: Response }> {
   const headers = new Headers();
   req.headers.forEach((value, key) => {
     if (!shouldForwardRequestHeaderToBackend(key)) {
@@ -71,6 +90,7 @@ async function forwardOnce(
     method: req.method,
     headers,
     redirect: 'manual',
+    signal: req.signal,
   };
   if (bodyBuffer) {
     init.body = bodyBuffer;
@@ -80,6 +100,9 @@ async function forwardOnce(
     const response = await fetch(targetUrl, init);
     return { response };
   } catch {
+    if (req.signal.aborted) {
+      return { response: new Response(null, { status: 499 }) };
+    }
     return {
       response: Response.json(
         {
@@ -94,19 +117,34 @@ async function forwardOnce(
   }
 }
 
-function toNextResponse(backendResponse: Response, setCookie?: string): NextResponse {
+function toNextResponse(
+  backendResponse: Response,
+  setCookie?: string,
+  sessionInvalid = false,
+): NextResponse {
+  const headers = copyBackendResponseHeaders(backendResponse, setCookie);
+  if (sessionInvalid) {
+    headers.set(SESSION_INVALID_HEADER, SESSION_INVALID_VALUE);
+  }
   return new NextResponse(backendResponse.body, {
     status: backendResponse.status,
-    headers: copyBackendResponseHeaders(backendResponse, setCookie),
+    headers,
   });
 }
 
-/** Reads the backend access token from the encrypted session cookie (server-only). */
-export async function getBackendAccessToken(req: NextRequest): Promise<string | null> {
-  const sessionToken = await getToken({
-    req,
-    secret: process.env.AUTH_SECRET,
-    secureCookie: process.env.NODE_ENV === 'production',
-  });
-  return typeof sessionToken?.accessToken === 'string' ? sessionToken.accessToken : null;
+function temporaryRefreshFailure(status: 429 | 503, retryAfter?: string): NextResponse {
+  const response = NextResponse.json(
+    {
+      statusCode: status,
+      message:
+        status === 429
+          ? 'Authentication refresh is rate limited. Try again shortly.'
+          : 'Authentication service is temporarily unavailable. Try again shortly.',
+      error: status === 429 ? 'Too Many Requests' : 'Service Unavailable',
+      timestamp: new Date().toISOString(),
+    },
+    { status },
+  );
+  if (retryAfter) response.headers.set('Retry-After', retryAfter);
+  return response;
 }

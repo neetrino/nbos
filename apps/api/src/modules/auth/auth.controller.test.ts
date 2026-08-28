@@ -98,6 +98,28 @@ describe('AuthController public responses', () => {
     );
   });
 
+  it('does not set a stale refresh cookie for a grace-window response', async () => {
+    vi.mocked(authService.refresh).mockResolvedValue({
+      accessToken: 'access-from-grace',
+      refreshToken: undefined,
+      sessionId: 'sid',
+      tokenVersion: 2,
+      user: { id: '1', email: 'a@b.c', firstName: 'A', lastName: 'B' },
+    });
+
+    const body = await controller.refresh(
+      { refreshToken: 'sid.previous' },
+      { headers: {} },
+      res,
+      undefined,
+      undefined,
+      '1',
+    );
+
+    expect(body.accessToken).toBe('access-from-grace');
+    expect(setHeader).not.toHaveBeenCalled();
+  });
+
   it('returns refreshToken in JSON for native clientKind without browser Origin', async () => {
     vi.mocked(authService.login).mockResolvedValue({
       accessToken: 'access',

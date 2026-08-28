@@ -1,4 +1,5 @@
 import { NOTIFICATION_SSE_EVENTS, NOTIFICATION_SSE_PATH } from './notification-realtime.constants';
+import { recoverRealtimeSession } from '@/lib/auth/realtime-session';
 
 export type NotificationSseStatus = 'connecting' | 'connected' | 'disconnected';
 
@@ -84,7 +85,15 @@ export function connectNotificationSse(handlers: SseHandlers): { close: () => vo
       if (closed) return;
       source?.close();
       source = null;
-      scheduleReconnect();
+      void recoverRealtimeSession().then((result) => {
+        if (closed) return;
+        if (result.kind === 'session-invalid') {
+          closed = true;
+          handlers.onStatus('disconnected');
+          return;
+        }
+        scheduleReconnect();
+      });
     };
   };
 
