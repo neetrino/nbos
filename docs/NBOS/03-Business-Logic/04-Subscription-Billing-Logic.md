@@ -355,10 +355,10 @@ Project Beta:
 
 Anchor: `Invoice.dueDate` (не Billing Day). Timezone for day math: **Asia/Yerevan**.
 
-| Offset | When (Yerevan calendar) | Event code                             | Idempotency                                      |
-| ------ | ----------------------- | -------------------------------------- | ------------------------------------------------ |
-| D-10   | `dueDate − 10` days     | `finance.invoice.payment_reminder_d10` | once per invoice per collection cycle            |
-| D-2    | `dueDate − 2` days      | `finance.invoice.payment_reminder_d2`  | once per invoice per collection cycle            |
+| Offset | When (Yerevan calendar) | Event code                             | Idempotency                           |
+| ------ | ----------------------- | -------------------------------------- | ------------------------------------- |
+| D-10   | `dueDate − 10` days     | `finance.invoice.payment_reminder_d10` | once per invoice per collection cycle |
+| D-2    | `dueDate − 2` days      | `finance.invoice.payment_reminder_d2`  | once per invoice per collection cycle |
 
 - Collection cycle: `On Hold` → `Awaiting Payment` does **not** reset; `Cancelled` then `Awaiting Payment` starts a new cycle (`Invoice.paymentReminderCycle`).
 
