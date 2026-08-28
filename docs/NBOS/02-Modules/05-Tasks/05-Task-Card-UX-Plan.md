@@ -13,7 +13,7 @@ The Task card is the main execution surface for a Task: compact enough for daily
 - Header shows Task title, code, status, priority, readiness and primary actions.
 - Main Task fields are editable inline: title, description, status, priority, start date, due date and assignee.
 - Completion rules are visible before completion and show concrete blockers when completion is denied.
-- Checklists are operational: create checklist, add item, toggle item, remove item and remove empty/obsolete checklist.
+- Checklists are operational: one-click create with the next unused `Checklist N` title, inline-edit title and items (click the field, no extra save buttons), add item, toggle item, remove item and remove empty/obsolete checklist. The title can be renamed after create; naming is not required up front.
 - Linked entities, parent Task, subtasks, people and dates are visible in a scan-friendly structure.
 - Right-side Discussion is the **canonical Messaging Core Task Conversation**, not local sheet notes and not a separate `task_discussion_entries` comments engine.
 - System Activity remains a separate Task-owned history layer, even if Discussion and Activity are presented together in the same right rail.

@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { matchingSubscriptionBillingDays } from './subscription-billing-days';
+import {
+  clampBillingDayInMonth,
+  matchingSubscriptionBillingDays,
+} from './subscription-billing-days';
 
 describe('matchingSubscriptionBillingDays', () => {
   it('returns only the calendar day on a mid-month date', () => {
@@ -20,5 +23,15 @@ describe('matchingSubscriptionBillingDays', () => {
 
   it('does not select overflow days before month end', () => {
     expect(matchingSubscriptionBillingDays(new Date(2026, 1, 27))).toEqual([27]);
+  });
+});
+
+describe('clampBillingDayInMonth', () => {
+  it('clamps 31 onto February 2026', () => {
+    expect(clampBillingDayInMonth(2026, 2, 31)).toBe(28);
+  });
+
+  it('keeps day 15 in March', () => {
+    expect(clampBillingDayInMonth(2026, 3, 15)).toBe(15);
   });
 });

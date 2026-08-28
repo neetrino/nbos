@@ -7,7 +7,10 @@ import {
   hasInvoiceForRenewalPeriod,
   runClientServicesRenewalInvoices,
 } from './client-services-renewal-invoice';
-import { CLIENT_SERVICE_RENEWAL_INVOICE_WINDOW_DAYS } from './client-service-payment-stage';
+import {
+  CLIENT_SERVICE_INVOICE_OVERDUE_GRACE_DAYS,
+  CLIENT_SERVICE_RENEWAL_INVOICE_WINDOW_DAYS,
+} from './client-service-payment-stage';
 import type { ClientServiceFlowsService } from './client-service-flows.service';
 
 const AS_OF = new Date('2026-06-01T12:00:00.000Z');
@@ -16,26 +19,49 @@ const RENEWAL = new Date('2026-07-01T00:00:00.000Z');
 describe('hasInvoiceForRenewalPeriod', () => {
   it('returns true when an active invoice exists', () => {
     expect(
-      hasInvoiceForRenewalPeriod([{ moneyStatus: 'AWAITING_PAYMENT', dueDate: RENEWAL }], RENEWAL),
+      hasInvoiceForRenewalPeriod(
+        [{ moneyStatus: 'AWAITING_PAYMENT', createdAt: AS_OF, dueDate: RENEWAL }],
+        RENEWAL,
+      ),
     ).toBe(true);
   });
 
-  it('returns true when a paid invoice covers the renewal period', () => {
-    expect(hasInvoiceForRenewalPeriod([{ moneyStatus: 'PAID', dueDate: RENEWAL }], RENEWAL)).toBe(
-      true,
-    );
+  it('returns true when a paid invoice was created in the renewal window', () => {
+    expect(
+      hasInvoiceForRenewalPeriod(
+        [{ moneyStatus: 'PAID', createdAt: AS_OF, dueDate: RENEWAL }],
+        RENEWAL,
+      ),
+    ).toBe(true);
   });
 
   it('returns false when only a paid invoice for a prior renewal exists', () => {
-    const priorRenewal = new Date('2025-07-01T00:00:00.000Z');
+    const priorCreated = new Date('2025-06-01T00:00:00.000Z');
     expect(
-      hasInvoiceForRenewalPeriod([{ moneyStatus: 'PAID', dueDate: priorRenewal }], RENEWAL),
+      hasInvoiceForRenewalPeriod(
+        [{ moneyStatus: 'PAID', createdAt: priorCreated, dueDate: priorCreated }],
+        RENEWAL,
+      ),
     ).toBe(false);
+  });
+
+  it('treats paid create+15 dueDate after renewal as the same period', () => {
+    const created = new Date('2026-06-20T00:00:00.000Z');
+    const dueAfterRenewal = new Date('2026-07-05T00:00:00.000Z');
+    expect(
+      hasInvoiceForRenewalPeriod(
+        [{ moneyStatus: 'PAID', createdAt: created, dueDate: dueAfterRenewal }],
+        RENEWAL,
+      ),
+    ).toBe(true);
   });
 
   it('ignores cancelled invoices', () => {
     expect(
-      hasInvoiceForRenewalPeriod([{ moneyStatus: 'CANCELLED', dueDate: RENEWAL }], RENEWAL),
+      hasInvoiceForRenewalPeriod(
+        [{ moneyStatus: 'CANCELLED', createdAt: AS_OF, dueDate: RENEWAL }],
+        RENEWAL,
+      ),
     ).toBe(false);
   });
 });
@@ -74,12 +100,14 @@ describe('runClientServicesRenewalInvoices', () => {
 
     expect(result.created).toEqual([{ serviceId: 'svc-1', invoiceId: 'inv-new' }]);
     expect(result.skippedExisting).toBe(0);
+    const expectedDue = new Date(AS_OF);
+    expectedDue.setUTCDate(expectedDue.getUTCDate() + CLIENT_SERVICE_INVOICE_OVERDUE_GRACE_DAYS);
     expect(flows.createInvoice).toHaveBeenCalledWith(
       'svc-1',
       expect.objectContaining({
         amount: 149,
         type: 'SERVICE',
-        dueDate: RENEWAL.toISOString(),
+        dueDate: expectedDue.toISOString(),
       }),
     );
   });
@@ -96,7 +124,7 @@ describe('runClientServicesRenewalInvoices', () => {
   it('is idempotent when an active invoice already exists', async () => {
     prisma.clientServiceRecord.findMany.mockResolvedValue([
       buildEligibleService({
-        invoices: [{ moneyStatus: 'AWAITING_PAYMENT', dueDate: RENEWAL }],
+        invoices: [{ moneyStatus: 'AWAITING_PAYMENT', createdAt: AS_OF, dueDate: RENEWAL }],
       }),
     ]);
 
@@ -126,7 +154,7 @@ function buildEligibleService(
   overrides: {
     id?: string;
     clientCharge?: Decimal;
-    invoices?: Array<{ moneyStatus: string; dueDate: Date | null }>;
+    invoices?: Array<{ moneyStatus: string; dueDate: Date | null; createdAt?: Date }>;
   } = {},
 ) {
   return {

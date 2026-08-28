@@ -20,6 +20,7 @@ type MockBillableSubscription = {
   coverageMonthCount: number;
   taxStatus: string;
   billingDay: number;
+  billingStartDate: Date;
   status: string;
   termMonths: number | null;
   endDate: Date | null;
@@ -47,6 +48,7 @@ function mockBillableSubscription(
     coverageMonthCount: 1,
     taxStatus: 'TAX_FREE',
     billingDay: 15,
+    billingStartDate: new Date(2020, 0, 1),
     status: 'ACTIVE',
     termMonths: null,
     endDate: null,
@@ -375,29 +377,115 @@ describe('BillingService', () => {
       expect(prisma.invoice.create).toHaveBeenCalledTimes(1);
     });
 
-    it('matches end-of-month billing days on short months', async () => {
+    it('loads active subscriptions without filtering by billingDay', async () => {
       prisma.subscription.findMany.mockResolvedValue([]);
 
-      await service.runMonthlyBilling(new Date(2026, 1, 28));
+      await service.runMonthlyBilling(new Date('2026-03-15T12:00:00+04:00'));
 
       expect(prisma.subscription.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            billingDay: { in: [28, 29, 30, 31] },
+            status: 'ACTIVE',
+            billingStartDate: { lte: expect.any(Date) },
+          }),
+        }),
+      );
+      expect(prisma.subscription.findMany.mock.calls[0]?.[0]?.where?.billingDay).toBeUndefined();
+    });
+
+    it('creates a day-1 invoice for the next month on the penultimate weekday', async () => {
+      const today = new Date('2026-03-30T11:00:00+04:00');
+      prisma.subscription.findMany.mockResolvedValue([mockBillableSubscription({ billingDay: 1 })]);
+      prisma.invoice.findMany.mockResolvedValue([]);
+      setupInvoiceCodeGeneration(prisma);
+
+      const result = await service.runMonthlyBilling(today);
+
+      expect(result.generatedInvoices).toBe(1);
+      expect(prisma.invoice.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            coverageStartMonth: '2026-04',
+            dueDate: new Date('2026-04-06T00:00:00+04:00'),
           }),
         }),
       );
     });
 
-    it('matches only the calendar day on non-short months', async () => {
-      prisma.subscription.findMany.mockResolvedValue([]);
+    it('does not create day-3 early; bills March on 30 March', async () => {
+      const today = new Date('2026-03-30T11:00:00+04:00');
+      prisma.subscription.findMany.mockResolvedValue([mockBillableSubscription({ billingDay: 3 })]);
+      prisma.invoice.findMany.mockResolvedValue([]);
+      setupInvoiceCodeGeneration(prisma);
 
-      await service.runMonthlyBilling(new Date(2026, 2, 15));
+      await service.runMonthlyBilling(today);
 
-      expect(prisma.subscription.findMany).toHaveBeenCalledWith(
+      expect(prisma.invoice.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({
-            billingDay: { in: [15] },
+          data: expect.objectContaining({
+            coverageStartMonth: '2026-03',
+            dueDate: new Date('2026-04-04T00:00:00+04:00'),
+          }),
+        }),
+      );
+    });
+
+    it('allows billingStartDate on 1 April when issuing on 30 March', async () => {
+      const today = new Date('2026-03-30T11:00:00+04:00');
+      prisma.subscription.findMany.mockResolvedValue([
+        mockBillableSubscription({
+          billingDay: 1,
+          billingStartDate: new Date('2026-04-01T00:00:00+04:00'),
+        }),
+      ]);
+      prisma.invoice.findMany.mockResolvedValue([]);
+      setupInvoiceCodeGeneration(prisma);
+
+      const result = await service.runMonthlyBilling(today);
+
+      expect(result.generatedInvoices).toBe(1);
+      expect(prisma.invoice.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ coverageStartMonth: '2026-04' }),
+        }),
+      );
+    });
+
+    it('keeps pay-day + 5 when the 1st-of-month wave runs before billingDay', async () => {
+      const today = new Date('2026-04-02T11:00:00+04:00');
+      prisma.subscription.findMany.mockResolvedValue([
+        mockBillableSubscription({ billingDay: 15 }),
+      ]);
+      prisma.invoice.findMany.mockResolvedValue([]);
+      setupInvoiceCodeGeneration(prisma);
+
+      await service.runMonthlyBilling(today);
+
+      expect(prisma.invoice.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            coverageStartMonth: '2026-04',
+            dueDate: new Date('2026-04-20T00:00:00+04:00'),
+          }),
+        }),
+      );
+    });
+
+    it('anchors dueDate to the issue day when billing is late', async () => {
+      const today = new Date('2026-04-16T11:00:00+04:00');
+      prisma.subscription.findMany.mockResolvedValue([
+        mockBillableSubscription({ billingDay: 15 }),
+      ]);
+      prisma.invoice.findMany.mockResolvedValue([]);
+      setupInvoiceCodeGeneration(prisma);
+
+      await service.runMonthlyBilling(today);
+
+      expect(prisma.invoice.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            coverageStartMonth: '2026-04',
+            dueDate: new Date('2026-04-21T00:00:00+04:00'),
           }),
         }),
       );

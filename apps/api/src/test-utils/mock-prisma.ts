@@ -51,6 +51,8 @@ export function createMockPrisma() {
     subscription: createModelMock(),
     workSpace: createModelMock(),
     task: createModelMock(),
+    taskChecklist: createModelMock(),
+    taskChecklistItem: createModelMock(),
     recurringTaskTemplate: createModelMock(),
     taskLink: createModelMock(),
     fileAsset: createModelMock(),

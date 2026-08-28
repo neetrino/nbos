@@ -1,31 +1,44 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
+
+const TASK_LIST_LOAD_MORE_ROOT_MARGIN = '240px';
 
 type TaskListLoadMoreBannerProps = {
   loadedCount: number;
   totalCount: number;
   onLoadMore: () => void;
   loading?: boolean;
+  /** True when the API has another page. Do not derive this from filtered card counts. */
+  hasMorePages?: boolean;
 };
 
-/** Shown when the task list is truncated by pagination. */
+/** Compact remainder count; extra pages load when the marker enters view. */
 export function TaskListLoadMoreBanner({
   loadedCount,
   totalCount,
   onLoadMore,
   loading = false,
+  hasMorePages = false,
 }: TaskListLoadMoreBannerProps) {
-  if (totalCount <= loadedCount) return null;
+  const showCount = totalCount > loadedCount;
+  if (!showCount && !hasMorePages && !loading) return null;
 
   return (
-    <div className="border-border bg-muted/30 flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-2.5">
-      <p className="text-muted-foreground text-sm">
-        Showing {loadedCount} of {totalCount} tasks
-      </p>
-      <Button type="button" variant="outline" size="sm" onClick={onLoadMore} disabled={loading}>
-        {loading ? 'Loading…' : 'Load more'}
-      </Button>
+    <div className="flex flex-col items-end gap-1">
+      {showCount ? (
+        <p className="text-muted-foreground text-xs tabular-nums">
+          {loadedCount} of {totalCount}
+        </p>
+      ) : null}
+      {loading ? <p className="text-muted-foreground text-xs">Loading…</p> : null}
+      {hasMorePages ? (
+        <InfiniteScrollSentinel
+          onReach={onLoadMore}
+          disabled={loading}
+          rootMargin={TASK_LIST_LOAD_MORE_ROOT_MARGIN}
+        />
+      ) : null}
     </div>
   );
 }

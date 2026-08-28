@@ -176,9 +176,8 @@ export function TaskSheet({
 
                       <TaskChecklistSection
                         task={state.task}
-                        newChecklistTitle={state.newChecklistTitle}
                         newItemTexts={state.newItemTexts}
-                        onNewChecklistTitleChange={state.setNewChecklistTitle}
+                        disabled={readOnly}
                         onNewItemTextChange={(checklistId, value) =>
                           state.setNewItemTexts((prev) => ({
                             ...prev,
@@ -190,6 +189,8 @@ export function TaskSheet({
                         onToggleItem={state.handleToggleItem}
                         onDeleteChecklist={state.handleDeleteChecklist}
                         onDeleteItem={state.handleDeleteItem}
+                        onRenameTitle={state.handleRenameChecklist}
+                        onRenameItem={state.handleRenameItem}
                       />
 
                       {hasExtras ? (

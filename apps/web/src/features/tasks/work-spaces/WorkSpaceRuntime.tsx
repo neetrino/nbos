@@ -56,6 +56,7 @@ export type WorkSpaceRuntimeProps = {
   /** Refetch task list from server (merged list on product tab). Used after sprint bulk changes. */
   refreshTasksFromServer?: () => Promise<void>;
   taskListTotal?: number;
+  taskListHasMorePages?: boolean;
   onLoadMoreTasks?: () => void;
   loadingMoreTasks?: boolean;
 };
@@ -76,6 +77,7 @@ export function WorkSpaceRuntime({
   workspaceArea = 'active',
   refreshTasksFromServer,
   taskListTotal,
+  taskListHasMorePages = false,
   onLoadMoreTasks,
   loadingMoreTasks = false,
 }: WorkSpaceRuntimeProps) {
@@ -384,6 +386,7 @@ export function WorkSpaceRuntime({
           totalCount={taskListTotal}
           onLoadMore={onLoadMoreTasks}
           loading={loadingMoreTasks}
+          hasMorePages={taskListHasMorePages}
         />
       ) : null}
 

@@ -65,7 +65,7 @@ describe('TasksService', () => {
     it('applies involvesEmployeeId filter', async () => {
       await service.findAll({ involvesEmployeeId: 'emp-1' });
       const listCall = prisma.task.findMany.mock.calls[0]?.[0] as {
-        where?: { AND?: Array<{ OR?: unknown[] } | { trashedAt: null }> };
+        where?: { AND?: Array<{ OR?: unknown[] } | { trashedAt: null } | { NOT?: unknown }> };
       };
       const andClause = listCall?.where?.AND ?? [];
       const participation = andClause.find(
@@ -84,6 +84,51 @@ describe('TasksService', () => {
         (clause) => typeof clause === 'object' && clause !== null && 'product' in clause,
       );
       expect(hasProjectGraph).toBe(false);
+      expect(andClause).toEqual(
+        expect.arrayContaining([
+          {
+            NOT: {
+              AND: [
+                { workspace: { is: { scrumEnabled: true } } },
+                { planningStatus: { in: ['BACKLOG', 'FUTURE_SPRINT'] } },
+              ],
+            },
+          },
+        ]),
+      );
+    });
+
+    it('does not exclude scrum planning when listing a workspace', async () => {
+      await service.findAll({ workspaceId: 'ws-1', involvesEmployeeId: 'emp-1' });
+      const listCall = prisma.task.findMany.mock.calls[0]?.[0] as {
+        where?: { AND?: unknown[] };
+      };
+      const andClause = listCall?.where?.AND ?? [];
+      const hasScrumExclude = andClause.some(
+        (part) =>
+          typeof part === 'object' &&
+          part !== null &&
+          'NOT' in part &&
+          typeof (part as { NOT?: unknown }).NOT === 'object',
+      );
+      expect(hasScrumExclude).toBe(false);
+    });
+
+    it('does not exclude scrum planning when planningStatus is explicit', async () => {
+      await service.findAll({ involvesEmployeeId: 'emp-1', planningStatus: 'BACKLOG' });
+      const listCall = prisma.task.findMany.mock.calls[0]?.[0] as {
+        where?: { AND?: unknown[] };
+      };
+      const andClause = listCall?.where?.AND ?? [];
+      expect(andClause).toEqual(expect.arrayContaining([{ planningStatus: 'BACKLOG' }]));
+      const hasScrumExclude = andClause.some(
+        (part) =>
+          typeof part === 'object' &&
+          part !== null &&
+          'NOT' in part &&
+          typeof (part as { NOT?: unknown }).NOT === 'object',
+      );
+      expect(hasScrumExclude).toBe(false);
     });
 
     it('rejects orderId without projectId', async () => {
@@ -529,6 +574,7 @@ describe('TasksService', () => {
       await service.getStats('emp-1');
       const expectedWhere = expect.objectContaining({
         AND: expect.arrayContaining([
+          { trashedAt: null },
           expect.objectContaining({
             OR: expect.arrayContaining([
               { assigneeId: { in: ['emp-1'] } },
@@ -538,7 +584,14 @@ describe('TasksService', () => {
               { observers: { hasSome: ['emp-1'] } },
             ]),
           }),
-          { trashedAt: null },
+          {
+            NOT: {
+              AND: [
+                { workspace: { is: { scrumEnabled: true } } },
+                { planningStatus: { in: ['BACKLOG', 'FUTURE_SPRINT'] } },
+              ],
+            },
+          },
         ]),
       });
       expect(prisma.task.groupBy).toHaveBeenCalledTimes(2);
@@ -548,6 +601,87 @@ describe('TasksService', () => {
       expect(prisma.task.groupBy.mock.calls[1]?.[0]).toEqual(
         expect.objectContaining({ where: expectedWhere }),
       );
+    });
+  });
+
+  describe('checklists', () => {
+    it('creates a sequential default title when none is given', async () => {
+      prisma.task.findUnique.mockResolvedValue({
+        id: 't1',
+        trashedAt: null,
+        checklists: [{ title: 'Checklist 1' }],
+        links: [],
+      });
+
+      await service.createChecklist('t1');
+
+      expect(prisma.taskChecklist.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { taskId: 't1', title: 'Checklist 2' },
+        }),
+      );
+    });
+
+    it('keeps an explicit title', async () => {
+      prisma.task.findUnique.mockResolvedValue({
+        id: 't1',
+        trashedAt: null,
+        checklists: [],
+        links: [],
+      });
+
+      await service.createChecklist('t1', '  QA  ');
+
+      expect(prisma.taskChecklist.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { taskId: 't1', title: 'QA' },
+        }),
+      );
+    });
+
+    it('renames a checklist title', async () => {
+      prisma.taskChecklist.findUnique.mockResolvedValue({ id: 'cl-1', taskId: 't1' });
+      prisma.task.findUnique.mockResolvedValue({
+        id: 't1',
+        trashedAt: null,
+        checklists: [],
+        links: [],
+      });
+
+      await service.updateChecklistTitle('cl-1', '  Launch  ');
+
+      expect(prisma.taskChecklist.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'cl-1' },
+          data: { title: 'Launch' },
+        }),
+      );
+    });
+
+    it('rejects a blank checklist title', async () => {
+      await expect(service.updateChecklistTitle('cl-1', '   ')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('renames a checklist item', async () => {
+      prisma.taskChecklistItem.findUnique.mockResolvedValue({
+        id: 'item-1',
+        checklist: { taskId: 't1' },
+      });
+      prisma.task.findUnique.mockResolvedValue({
+        id: 't1',
+        trashedAt: null,
+        checklists: [],
+        links: [],
+      });
+
+      await service.updateChecklistItemText('item-1', '  Ship  ');
+
+      expect(prisma.taskChecklistItem.update).toHaveBeenCalledWith({
+        where: { id: 'item-1' },
+        data: { text: 'Ship' },
+      });
     });
   });
 });

@@ -37,15 +37,24 @@ export function yerevanDueDateWindowForOffsets(
   const asOfKey = yerevanCalendarDateKey(asOf);
   const farKey = addCalendarDaysToKey(asOfKey, maxOffsetDays);
   return {
-    gte: yerevanDayStartUtc(asOfKey),
-    lte: yerevanDayEndUtc(farKey),
+    gte: yerevanCalendarDayStart(asOfKey),
+    lte: yerevanCalendarDayEnd(farKey),
   };
 }
 
-function yerevanDayStartUtc(yyyyMmDd: string): Date {
+export function yerevanCalendarDayStart(yyyyMmDd: string): Date {
   return new Date(`${yyyyMmDd}T00:00:00+04:00`);
 }
 
-function yerevanDayEndUtc(yyyyMmDd: string): Date {
+export function yerevanCalendarDayEnd(yyyyMmDd: string): Date {
   return new Date(`${yyyyMmDd}T23:59:59.999+04:00`);
+}
+
+export function parseYerevanDateKey(yyyyMmDd: string): {
+  year: number;
+  month: number;
+  day: number;
+} {
+  const [year, month, day] = yyyyMmDd.split('-').map(Number);
+  return { year, month, day };
 }

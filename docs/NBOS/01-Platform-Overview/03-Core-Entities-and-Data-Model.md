@@ -368,7 +368,7 @@ Contact (человек)
 | tax_status                | Enum         | Tax, Free                                                                                                 |
 | notifications_enabled     | Boolean      | Разрешены ли автоматические уведомления по карточкам оплат                                                |
 | billing_frequency         | Enum         | Monthly, Yearly, Custom. **Required on Finance create** — no silent MONTHLY default                       |
-| billing_day               | Integer      | День месяца для биллинга (1–28), если применяется месячная логика                                         |
+| billing_day               | Integer      | День месяца, к которому клиент должен заплатить (1–31; 29–31 жмутся в короткий месяц)                     |
 | billing_start_date        | Date         | Дата старта биллинга                                                                                      |
 | end_date                  | Date         | Дата окончания (календарная; не счётчик срока)                                                            |
 | term_months               | Integer?     | Срок в покрытых месяцах (1–120); `null` = бессрочно. Пауза месяц не расходует                             |
