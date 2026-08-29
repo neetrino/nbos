@@ -6,14 +6,16 @@ import {
 
 export interface HeaderModuleTitleProps {
   children: string;
+  /** Divider before zone tabs on the same row. Hide when tabs stack below. */
+  showDivider?: boolean;
 }
 
 /** Module name in the top bar — left, vertically centered, divider before zone tabs. */
-export function HeaderModuleTitle({ children }: HeaderModuleTitleProps) {
+export function HeaderModuleTitle({ children, showDivider = true }: HeaderModuleTitleProps) {
   return (
     <div className={HEADER_MODULE_TITLE_WRAP}>
       <span className={HEADER_MODULE_TITLE_LABEL}>{children}</span>
-      <span className={HEADER_MODULE_TITLE_DIVIDER} aria-hidden />
+      {showDivider ? <span className={HEADER_MODULE_TITLE_DIVIDER} aria-hidden /> : null}
     </div>
   );
 }
