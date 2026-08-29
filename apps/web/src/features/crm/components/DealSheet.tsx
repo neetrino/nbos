@@ -51,6 +51,10 @@ import {
 } from './deal-general-form-state';
 import { CrmSheetEntityHeader } from './CrmSheetEntityHeader';
 import { DealSheetQuickActions } from './DealSheetQuickActions';
+import {
+  CRM_SHEET_HEADER_ACTIONS_STACK_CLASS,
+  CRM_SHEET_HEADER_SECONDARY_ACTIONS_CLASS,
+} from './crm-sheet-header-actions-layout';
 import { DealSheetCreateDialogs } from './DealSheetCreateDialogs';
 import { buildDealDetailSheetTabs } from './build-deal-detail-sheet-tabs';
 import { canOpenDealCreateInvoiceDialog } from '@/features/crm/utils/deal-invoice-eligibility';
@@ -470,51 +474,53 @@ function DealSheetBody({
         titleEditHint="Click to edit deal name"
         onStartEditing={startEditing}
         actions={
-          <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+          <div className={CRM_SHEET_HEADER_ACTIONS_STACK_CLASS}>
             <ClickToCallButton targetType="DEAL" targetId={renderDeal.id} hidden={isTrashView} />
-            {!isTrashView ? (
-              <DealSheetQuickActions
-                deal={renderDeal}
-                onRefresh={onRefresh}
-                onCreateInvoice={() => onInvoiceCreateOpenChange(true)}
-                onCreateTask={() => onTaskCreateOpenChange(true)}
-              />
-            ) : null}
-            {isTrashView && onRestore ? (
-              <DetailSheetSettingsMenu>
-                <DropdownMenuItem onClick={() => onRestore(renderDeal.id)}>
-                  <RotateCcw />
-                  Restore
-                </DropdownMenuItem>
-                {onPermanentDelete ? (
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => onPermanentDelete(renderDeal.id)}
-                  >
-                    <Trash2 />
-                    Delete permanently
+            <div className={CRM_SHEET_HEADER_SECONDARY_ACTIONS_CLASS}>
+              {!isTrashView ? (
+                <DealSheetQuickActions
+                  deal={renderDeal}
+                  onRefresh={onRefresh}
+                  onCreateInvoice={() => onInvoiceCreateOpenChange(true)}
+                  onCreateTask={() => onTaskCreateOpenChange(true)}
+                />
+              ) : null}
+              {isTrashView && onRestore ? (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem onClick={() => onRestore(renderDeal.id)}>
+                    <RotateCcw />
+                    Restore
                   </DropdownMenuItem>
-                ) : null}
-              </DetailSheetSettingsMenu>
-            ) : onMoveToTrash || canCreateExceptionOrder ? (
-              <DetailSheetSettingsMenu>
-                {canCreateExceptionOrder ? (
-                  <DropdownMenuItem onClick={onOpenExceptionDialog}>
-                    <AlertTriangle />
-                    Exception order
-                  </DropdownMenuItem>
-                ) : null}
-                {onMoveToTrash ? (
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => onMoveToTrash(renderDeal.id)}
-                  >
-                    <Trash2 />
-                    Move to Trash
-                  </DropdownMenuItem>
-                ) : null}
-              </DetailSheetSettingsMenu>
-            ) : null}
+                  {onPermanentDelete ? (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => onPermanentDelete(renderDeal.id)}
+                    >
+                      <Trash2 />
+                      Delete permanently
+                    </DropdownMenuItem>
+                  ) : null}
+                </DetailSheetSettingsMenu>
+              ) : onMoveToTrash || canCreateExceptionOrder ? (
+                <DetailSheetSettingsMenu>
+                  {canCreateExceptionOrder ? (
+                    <DropdownMenuItem onClick={onOpenExceptionDialog}>
+                      <AlertTriangle />
+                      Exception order
+                    </DropdownMenuItem>
+                  ) : null}
+                  {onMoveToTrash ? (
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => onMoveToTrash(renderDeal.id)}
+                    >
+                      <Trash2 />
+                      Move to Trash
+                    </DropdownMenuItem>
+                  ) : null}
+                </DetailSheetSettingsMenu>
+              ) : null}
+            </div>
           </div>
         }
       />
@@ -522,6 +528,7 @@ function DealSheetBody({
       <div className="shrink-0 pb-3">
         <DealPipelineStages
           currentStatus={renderDeal.status}
+          disabled={isTrashView}
           onStageClick={isTrashView ? () => {} : (key) => onStatusChange(renderDeal.id, key)}
         />
       </div>
@@ -533,7 +540,7 @@ function DealSheetBody({
       />
 
       <ScrollArea className="min-h-0 flex-1">
-        <div className="px-7 py-5">
+        <div className="px-3 py-5 md:px-7">
           <DetailSheetTabPanel tabKey={activeTab}>
             {activeTab === 'general' && generalDraft ? (
               <DealGeneralTab

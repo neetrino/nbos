@@ -10,6 +10,7 @@ import { HeaderContextProvider } from './header-context';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import {
+  APP_MAIN_CONTENT_CRM_MOBILE_INSET,
   APP_MAIN_CONTENT_DASHBOARD_MOBILE_INSET,
   APP_MAIN_CONTENT_INSET,
 } from './app-layout-constants';
@@ -45,6 +46,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isDocumentsRoute = pathname.startsWith('/documents');
   const isMessengerRoute = pathname.startsWith('/messenger');
   const isDashboardRoute = pathname === '/dashboard';
+  const isCrmRoute = pathname.startsWith('/crm');
 
   useEffect(() => {
     if (isMobileViewport) return;
@@ -106,6 +108,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                               : 'overflow-y-auto [scrollbar-gutter:stable]',
                             APP_MAIN_CONTENT_INSET,
                             isDashboardRoute && APP_MAIN_CONTENT_DASHBOARD_MOBILE_INSET,
+                            isCrmRoute && APP_MAIN_CONTENT_CRM_MOBILE_INSET,
                             isDashboardRoute && 'max-md:[scrollbar-gutter:auto]',
                           )}
                         >

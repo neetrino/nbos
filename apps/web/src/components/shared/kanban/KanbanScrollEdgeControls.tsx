@@ -7,32 +7,25 @@ import { EDGE_ZONE_WIDTH } from './kanban.types';
 interface KanbanScrollEdgeControlsProps {
   canScrollLeft: boolean;
   canScrollRight: boolean;
-  /** Mobile: discrete step buttons without gradient fades. */
+  /** Mobile relies on swipe; edge controls are desktop-only. */
   isMobile: boolean;
-  onStep: (side: 'left' | 'right') => void;
   onHoverStart: (side: 'left' | 'right') => void;
   onHoverEnd: () => void;
 }
 
 /**
  * Left/right stage navigation for the horizontal kanban scroller.
- * Mobile uses solid step buttons (no edge glow); desktop keeps hover auto-scroll zones.
+ * Desktop keeps hover auto-scroll zones; mobile uses swipe only.
  */
 export function KanbanScrollEdgeControls({
   canScrollLeft,
   canScrollRight,
   isMobile,
-  onStep,
   onHoverStart,
   onHoverEnd,
 }: KanbanScrollEdgeControlsProps) {
   if (isMobile) {
-    return (
-      <>
-        <MobileStepButton side="left" enabled={canScrollLeft} onStep={onStep} />
-        <MobileStepButton side="right" enabled={canScrollRight} onStep={onStep} />
-      </>
-    );
+    return null;
   }
 
   return (
@@ -50,36 +43,6 @@ export function KanbanScrollEdgeControls({
         onHoverEnd={onHoverEnd}
       />
     </>
-  );
-}
-
-function MobileStepButton({
-  side,
-  enabled,
-  onStep,
-}: {
-  side: 'left' | 'right';
-  enabled: boolean;
-  onStep: (side: 'left' | 'right') => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={side === 'left' ? 'Previous stage' : 'Next stage'}
-      disabled={!enabled}
-      onClick={() => onStep(side)}
-      className={cn(
-        'border-border bg-background absolute top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border shadow-sm',
-        side === 'left' ? 'left-1' : 'right-1',
-        enabled ? 'opacity-100' : 'pointer-events-none opacity-0',
-      )}
-    >
-      {side === 'left' ? (
-        <ChevronLeft size={14} className="text-muted-foreground" />
-      ) : (
-        <ChevronRight size={14} className="text-muted-foreground" />
-      )}
-    </button>
   );
 }
 

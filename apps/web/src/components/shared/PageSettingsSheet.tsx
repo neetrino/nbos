@@ -12,6 +12,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { PAGE_SETTINGS_SHEET_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
+import { cn } from '@/lib/utils';
 
 type SheetTriggerRenderProps = ComponentPropsWithRef<'button'>;
 
@@ -25,6 +26,8 @@ export interface PageSettingsSheetProps {
    * Defaults to the outline settings icon button.
    */
   renderTrigger?: (props: SheetTriggerRenderProps) => ReactElement;
+  /** Extra classes on the default settings icon trigger. */
+  triggerClassName?: string;
   triggerAriaLabel?: string;
   children: React.ReactNode;
   open?: boolean;
@@ -37,6 +40,7 @@ export function PageSettingsSheet({
   description,
   titleLeading,
   renderTrigger,
+  triggerClassName,
   triggerAriaLabel = 'Page settings',
   children,
   open: openProp,
@@ -68,7 +72,7 @@ export function PageSettingsSheet({
               size="icon-sm"
               aria-label={triggerAriaLabel}
               title={triggerAriaLabel}
-              className={props.className}
+              className={cn(props.className, triggerClassName)}
             >
               <Settings className="size-4" aria-hidden />
             </Button>

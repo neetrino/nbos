@@ -112,7 +112,6 @@ export function DeliveryKanbanBoard({
     isMobileViewport,
     startAutoScroll,
     stopAutoScroll,
-    scrollByOneColumn,
   } = useKanbanHorizontalScroll({
     columnWidth: DELIVERY_KANBAN_COLUMN_WIDTH_PX,
     columnMarginTotalPx: DELIVERY_KANBAN_COLUMN_GAP_PX,
@@ -238,7 +237,6 @@ export function DeliveryKanbanBoard({
         canScrollLeft={canScrollLeft}
         canScrollRight={canScrollRight}
         isMobile={isMobileViewport}
-        onStep={scrollByOneColumn}
         onHoverStart={startAutoScroll}
         onHoverEnd={stopAutoScroll}
       />

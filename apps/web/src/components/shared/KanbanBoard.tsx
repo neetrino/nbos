@@ -29,7 +29,6 @@ import {
 } from './kanban/use-kanban-horizontal-scroll';
 import {
   KANBAN_CARD_MOVED_HIGHLIGHT_MS,
-  KANBAN_COLUMN_X_MARGIN_TOTAL_PX,
   COLOR_PALETTE,
   contrastText,
   type KanbanBoardProps,
@@ -46,6 +45,7 @@ export function KanbanBoard<T>({
   onReorderWithinColumn,
   getItemId,
   columnWidth = 280,
+  mobileFullWidthColumns = false,
   emptyMessage = 'No items',
   onAddColumn,
   onRenameColumn,
@@ -80,12 +80,13 @@ export function KanbanBoard<T>({
     canScrollRight,
     isMobileViewport,
     resolvedColumnWidth,
+    activeMarginTotalPx,
     startAutoScroll,
     stopAutoScroll,
-    scrollByOneColumn,
   } = useKanbanHorizontalScroll({
     columnWidth,
     layoutKey: columns.length,
+    mobileFullWidthColumns,
   });
 
   const [addingAfter, setAddingAfter] = useState<string | null>(null);
@@ -293,7 +294,6 @@ export function KanbanBoard<T>({
         canScrollLeft={canScrollLeft}
         canScrollRight={canScrollRight}
         isMobile={isMobileViewport}
-        onStep={scrollByOneColumn}
         onHoverStart={startAutoScroll}
         onHoverEnd={stopAutoScroll}
       />
@@ -303,14 +303,13 @@ export function KanbanBoard<T>({
         className={cn(
           'min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-hidden pb-2',
           KANBAN_HORIZONTAL_SCROLL_HIDE_SCROLLBAR_CLASS,
-          isMobileViewport && 'snap-x snap-mandatory',
           dragItem && terminalDropZones?.length && 'pb-28',
         )}
       >
         <div
           className="flex h-full gap-0"
           style={{
-            minWidth: `${(columns.length + (editable ? 1 : 0)) * (resolvedColumnWidth + KANBAN_COLUMN_X_MARGIN_TOTAL_PX)}px`,
+            minWidth: `${(columns.length + (editable ? 1 : 0)) * (resolvedColumnWidth + activeMarginTotalPx)}px`,
           }}
         >
           {columns.map((column, idx) => {
@@ -324,7 +323,7 @@ export function KanbanBoard<T>({
               showDropPreview && dropInsert?.columnKey === column.key ? dropInsert.index : null;
 
             return (
-              <div key={column.key} className={cn('flex h-full', isMobileViewport && 'snap-start')}>
+              <div key={column.key} className="flex h-full">
                 {/* "+" between columns (before this column, except first) */}
                 {idx > 0 &&
                   addingAfter !== columns[idx - 1]?.key &&
@@ -335,7 +334,10 @@ export function KanbanBoard<T>({
 
                 {/* Column */}
                 <div
-                  className="relative mx-2 flex h-full flex-shrink-0 flex-col"
+                  className={cn(
+                    'relative flex h-full flex-shrink-0 flex-col',
+                    isMobileViewport ? 'mx-1' : 'mx-2',
+                  )}
                   style={{ width: resolvedColumnWidth }}
                 >
                   {idx > 0 ? <div className={KANBAN_COLUMN_LEFT_RULE_CLASS} aria-hidden /> : null}

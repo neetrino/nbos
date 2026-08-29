@@ -43,15 +43,15 @@ export function CrmSheetEntityHeader({
   titleClassName,
 }: CrmSheetEntityHeaderProps) {
   return (
-    <div className="bg-background min-w-0 shrink-0 px-7 pt-5 pb-3">
-      <div className="flex min-w-0 flex-wrap items-start gap-2">
-        <div className="min-w-0 flex-1 basis-0">
-          <div
-            className={cn(
-              'inline-flex max-w-full min-w-0 flex-wrap items-center gap-2',
-              titleClassName,
-            )}
-          >
+    <div className="bg-background min-w-0 shrink-0 px-3 pt-5 pb-3 md:px-7">
+      <div className="flex min-w-0 flex-col gap-3 md:flex-row md:flex-wrap md:items-start md:gap-2">
+        {actions ? (
+          <div className="flex w-full max-w-full min-w-0 flex-wrap items-center justify-end gap-1.5 md:order-2 md:w-auto">
+            {actions}
+          </div>
+        ) : null}
+        <div className="min-w-0 flex-1 basis-0 md:order-1">
+          <div className={cn('flex max-w-full min-w-0 items-center gap-2', titleClassName)}>
             <EntityIcon className={cn('size-5 shrink-0', headerIconClassName)} aria-hidden />
             {editing ? (
               <input
@@ -61,12 +61,12 @@ export function CrmSheetEntityHeader({
                 onBlur={onCommitName}
                 onKeyDown={onNameKeyDown}
                 placeholder={namePlaceholder}
-                className="border-primary text-foreground placeholder:text-muted-foreground/70 max-w-full min-w-0 flex-1 border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
+                className="border-primary text-foreground placeholder:text-muted-foreground/70 min-w-0 flex-1 border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
               />
             ) : (
               <h2
                 onClick={onStartEditing}
-                className="text-foreground hover:bg-muted -mx-1 max-w-full min-w-0 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors"
+                className="text-foreground hover:bg-muted -mx-1 min-w-0 flex-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors"
                 title={titleEditHint}
               >
                 {title}
@@ -82,11 +82,6 @@ export function CrmSheetEntityHeader({
             </span>
           </div>
         </div>
-        {actions ? (
-          <div className="flex max-w-full min-w-0 flex-wrap items-center justify-end gap-1.5">
-            {actions}
-          </div>
-        ) : null}
       </div>
     </div>
   );

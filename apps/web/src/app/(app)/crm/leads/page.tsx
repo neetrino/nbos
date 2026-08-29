@@ -17,6 +17,7 @@ import {
   useDeleteConfirm,
   type ViewModeOption,
 } from '@/components/shared';
+import { PAGE_HERO_MOBILE_ICON_ACTION_CLASS } from '@/components/shared/page-hero';
 import { LeadCard } from '@/features/crm/components/LeadCard';
 import { LeadBoardQuickCreateTask } from '@/features/crm/components/LeadBoardQuickCreateTask';
 import { LeadsListTable } from '@/features/crm/components/LeadsListTable';
@@ -562,16 +563,22 @@ function LeadsPipelinePageContent() {
         <ViewModeSwitch value={view} onChange={setView} options={LEAD_VIEW_OPTIONS} />
       ) : null,
       trailing: (
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
           <ClientsDirectorySettingsSheet
             listScope={scope}
             onListScopeChange={setScope}
             entityLabel="leads"
+            triggerClassName={isMobileViewport ? PAGE_HERO_MOBILE_ICON_ACTION_CLASS : undefined}
           />
           {!isTrashView ? (
-            <Button onClick={() => setShowCreate(true)}>
+            <Button
+              onClick={() => setShowCreate(true)}
+              size={isMobileViewport ? 'icon-sm' : 'default'}
+              aria-label="New Lead"
+              className={isMobileViewport ? PAGE_HERO_MOBILE_ICON_ACTION_CLASS : undefined}
+            >
               <Plus size={16} aria-hidden />
-              New Lead
+              {isMobileViewport ? null : 'New Lead'}
             </Button>
           ) : null}
         </div>
@@ -581,6 +588,7 @@ function LeadsPipelinePageContent() {
       filterConfigs,
       filters,
       isTrashView,
+      isMobileViewport,
       scope,
       search,
       setFilters,

@@ -10,12 +10,15 @@ export interface ClientsDirectorySettingsSheetProps {
   listScope: EntityLifecycleScope;
   onListScopeChange: (scope: EntityLifecycleScope) => void;
   entityLabel: string;
+  /** Extra classes on the settings icon trigger (e.g. hero mobile size match). */
+  triggerClassName?: string;
 }
 
 export function ClientsDirectorySettingsSheet({
   listScope,
   onListScopeChange,
   entityLabel,
+  triggerClassName,
 }: ClientsDirectorySettingsSheetProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const isTrashList = listScope === 'trash';
@@ -34,6 +37,7 @@ export function ClientsDirectorySettingsSheet({
           : 'Active directory. Open Trash to review removed items.'
       }
       triggerAriaLabel={`${entityLabel} settings`}
+      triggerClassName={triggerClassName}
       open={sheetOpen}
       onOpenChange={setSheetOpen}
     >

@@ -2,7 +2,9 @@
 
 import { PipelineStagesBar } from '@/components/shared';
 import { toSheetPipelineStages } from '@/components/shared/pipeline-stage-config';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { DEAL_STAGES } from '../constants/dealPipeline';
+import { CrmSheetPipelineStatusSelect } from './CrmSheetPipelineStatusSelect';
 
 const STAGE_HEX: Record<string, string> = {
   START_CONVERSATION: '#56b5eb',
@@ -19,15 +21,36 @@ const SHEET_STAGES = toSheetPipelineStages(DEAL_STAGES);
 interface DealPipelineStagesProps {
   currentStatus: string;
   onStageClick: (stageKey: string) => void;
+  disabled?: boolean;
 }
 
-export function DealPipelineStages({ currentStatus, onStageClick }: DealPipelineStagesProps) {
+export function DealPipelineStages({
+  currentStatus,
+  onStageClick,
+  disabled = false,
+}: DealPipelineStagesProps) {
+  const isMobileViewport = useIsMobileViewport();
+
+  if (isMobileViewport) {
+    return (
+      <CrmSheetPipelineStatusSelect
+        stages={SHEET_STAGES}
+        stageColors={STAGE_HEX}
+        currentStatus={currentStatus}
+        onStageChange={onStageClick}
+        disabled={disabled}
+        ariaLabel="Deal status"
+      />
+    );
+  }
+
   return (
     <PipelineStagesBar
       stages={SHEET_STAGES}
       stageColors={STAGE_HEX}
       currentStatus={currentStatus}
       fillToEndStatuses={['WON']}
+      disabled={disabled}
       onStageClick={onStageClick}
     />
   );

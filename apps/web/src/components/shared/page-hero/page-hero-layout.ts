@@ -63,3 +63,8 @@ export const PAGE_HERO_TAB_ICON = 'size-4';
 /** View mode icon button — labels live in aria-label / title only. */
 export const PAGE_HERO_VIEW_BUTTON =
   'inline-flex size-8 shrink-0 items-center justify-center rounded-full transition-colors';
+
+/**
+ * Mobile trailing icon actions — same footprint as IntegratedSearchFilters shell (`min-h-11`).
+ */
+export const PAGE_HERO_MOBILE_ICON_ACTION_CLASS = 'size-11 rounded-[17px]';

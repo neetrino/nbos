@@ -18,6 +18,7 @@ import {
   useDeleteConfirm,
   type ViewModeOption,
 } from '@/components/shared';
+import { PAGE_HERO_MOBILE_ICON_ACTION_CLASS } from '@/components/shared/page-hero';
 import { DealCard } from '@/features/crm/components/DealCard';
 import { DealBoardQuickCreateTask } from '@/features/crm/components/DealBoardQuickCreateTask';
 import { DealsListTable } from '@/features/crm/components/DealsListTable';
@@ -650,12 +651,14 @@ function DealsPipelinePageContent() {
             listScope={scope}
             onListScopeChange={setScope}
             entityLabel="deals"
+            triggerClassName={isMobileViewport ? PAGE_HERO_MOBILE_ICON_ACTION_CLASS : undefined}
           />
           {!isTrashView ? (
             <Button
               onClick={() => setShowCreate(true)}
               size={isMobileViewport ? 'icon-sm' : 'default'}
               aria-label="New Deal"
+              className={isMobileViewport ? PAGE_HERO_MOBILE_ICON_ACTION_CLASS : undefined}
             >
               <Plus size={16} aria-hidden />
               {isMobileViewport ? null : 'New Deal'}

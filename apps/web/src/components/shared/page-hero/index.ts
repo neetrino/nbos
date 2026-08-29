@@ -19,3 +19,4 @@ export {
   PAGE_HERO_TAB_SCROLL,
   PAGE_HERO_PILL_GROUP,
 } from './page-hero-constants';
+export { PAGE_HERO_MOBILE_ICON_ACTION_CLASS } from './page-hero-layout';

@@ -51,6 +51,11 @@ export interface KanbanBoardProps<T> {
   onReorderWithinColumn?: (itemId: string, columnKey: string, toIndex: number) => void;
   getItemId: (item: T) => string;
   columnWidth?: number;
+  /**
+   * Mobile: when true, each column fills the scrollport (page-style).
+   * Default false — fixed `columnWidth` so the board pans like a pipeline.
+   */
+  mobileFullWidthColumns?: boolean;
   emptyMessage?: string;
   onAddColumn?: (title: string, color: string, afterColumnKey?: string) => void;
   onRenameColumn?: (columnKey: string, newTitle: string, newColor: string) => void;
@@ -72,6 +77,24 @@ export const EDGE_ZONE_WIDTH = 48;
 
 /** Total horizontal margin from `mx-2` on each kanban column (`0.5rem` × 2). */
 export const KANBAN_COLUMN_X_MARGIN_TOTAL_PX = 16;
+
+/** Mobile full-width columns: tighter gutters (`mx-1` → `0.25rem` × 2). */
+export const KANBAN_COLUMN_X_MARGIN_TOTAL_MOBILE_PX = 8;
+
+/**
+ * Extra width for fixed (pipeline) columns on mobile vs desktop `columnWidth`.
+ * Keeps a peek of the next stage while making cards a bit roomier.
+ */
+export const KANBAN_MOBILE_PIPELINE_COLUMN_EXTRA_PX = 40;
+
+/** Touch intent threshold before locking kanban scroll to X or Y (px). */
+export const KANBAN_TOUCH_DIRECTION_LOCK_PX = 10;
+
+/** Friction applied each animation frame after a horizontal fling (0–1). */
+export const KANBAN_TOUCH_FLING_FRICTION = 0.95;
+
+/** Stop fling when |velocity| drops below this (px per frame). */
+export const KANBAN_TOUCH_FLING_MIN_VELOCITY_PX = 0.45;
 
 /** Brief highlight after a card moves between columns (ms). */
 export const KANBAN_CARD_MOVED_HIGHLIGHT_MS = 150;

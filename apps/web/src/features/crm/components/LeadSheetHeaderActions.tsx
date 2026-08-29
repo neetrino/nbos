@@ -7,6 +7,10 @@ import { DetailSheetSettingsMenu } from '@/components/shared';
 import type { Lead } from '@/lib/api/leads';
 import { ClickToCallButton } from '@/features/crm/calls/ClickToCallButton';
 import { LeadSvyazatMenu } from './LeadSvyazatMenu';
+import {
+  CRM_SHEET_HEADER_ACTIONS_STACK_CLASS,
+  CRM_SHEET_HEADER_SECONDARY_ACTIONS_CLASS,
+} from './crm-sheet-header-actions-layout';
 
 export interface LeadSheetHeaderActionsProps {
   renderLead: Lead;
@@ -25,39 +29,41 @@ export interface LeadSheetHeaderActionsProps {
 export function LeadSheetHeaderActions(props: LeadSheetHeaderActionsProps) {
   const { renderLead, isTrashView } = props;
   return (
-    <>
+    <div className={CRM_SHEET_HEADER_ACTIONS_STACK_CLASS}>
       <ClickToCallButton targetType="LEAD" targetId={renderLead.id} hidden={isTrashView} />
-      {!isTrashView && props.onMerged ? (
-        <LeadSvyazatMenu
-          lead={renderLead}
-          isTrashView={isTrashView}
-          onMerged={props.onMerged}
-          onUpdated={props.onUpdated}
-          onTrashed={props.onTrashed}
-        />
-      ) : null}
-      {!isTrashView && !props.isTerminal && renderLead.status === 'MQL' && props.onConvertToDeal ? (
-        <Button type="button" size="sm" onClick={() => props.onConvertToDeal?.(renderLead)}>
-          <ArrowRight size={14} className="mr-1" />
-          Convert to Deal
-        </Button>
-      ) : null}
-      {isTrashView && props.onRestore ? (
-        <LeadSheetTrashMenu
-          mergedIntoId={renderLead.mergedIntoId}
-          leadId={renderLead.id}
-          onRestore={props.onRestore}
-          onPermanentDelete={props.onPermanentDelete}
-        />
-      ) : props.onMoveToTrash ? (
-        <LeadSheetActiveMenu
-          leadId={renderLead.id}
-          status={renderLead.status}
-          onMoveToTrash={props.onMoveToTrash}
-          onStatusChange={props.onStatusChange}
-        />
-      ) : null}
-    </>
+      <div className={CRM_SHEET_HEADER_SECONDARY_ACTIONS_CLASS}>
+        {!isTrashView && props.onMerged ? (
+          <LeadSvyazatMenu
+            lead={renderLead}
+            isTrashView={isTrashView}
+            onMerged={props.onMerged}
+            onUpdated={props.onUpdated}
+            onTrashed={props.onTrashed}
+          />
+        ) : null}
+        {!isTrashView && !props.isTerminal && renderLead.status === 'MQL' && props.onConvertToDeal ? (
+          <Button type="button" size="sm" onClick={() => props.onConvertToDeal?.(renderLead)}>
+            <ArrowRight size={14} className="mr-1" />
+            Convert to Deal
+          </Button>
+        ) : null}
+        {isTrashView && props.onRestore ? (
+          <LeadSheetTrashMenu
+            mergedIntoId={renderLead.mergedIntoId}
+            leadId={renderLead.id}
+            onRestore={props.onRestore}
+            onPermanentDelete={props.onPermanentDelete}
+          />
+        ) : props.onMoveToTrash ? (
+          <LeadSheetActiveMenu
+            leadId={renderLead.id}
+            status={renderLead.status}
+            onMoveToTrash={props.onMoveToTrash}
+            onStatusChange={props.onStatusChange}
+          />
+        ) : null}
+      </div>
+    </div>
   );
 }
 

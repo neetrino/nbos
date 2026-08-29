@@ -95,7 +95,8 @@ export const DETAIL_SHEET_CONTENT_WIDTH_AUXILIARY_CLASS =
 export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_AUXILIARY_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[min(36rem,calc(100vw-2rem-2.75rem))]`;
 
 /** Block surface aligned with Deal General sections. */
-export const DETAIL_SHEET_SECTION_SURFACE_CLASS = 'rounded-2xl border border-border bg-card p-5';
+export const DETAIL_SHEET_SECTION_SURFACE_CLASS =
+  'rounded-2xl border border-border bg-card p-3 md:p-5';
 
 /** Section heading style (uppercase micro label) — primary blue, matches Delivery. */
 export const DETAIL_SHEET_SECTION_TITLE_CLASS =
@@ -310,9 +311,10 @@ export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
 export const DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE = 'form' as const;
 
 /** Tab strip wrapper for entity detail sheets. Button styles: {@link pillTabButtonClass} in `ui/tabs`. */
-export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'min-w-0 shrink-0 px-5 pb-0';
+export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'min-w-0 shrink-0 px-3 pb-0 md:px-5';
 
-export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS = 'flex items-center gap-1 overflow-x-auto';
+export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS =
+  'flex items-center gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 /** Fade + slide for sheet tab body crossfade (see globals.css). */
 export const DETAIL_SHEET_TAB_PANEL_TRANSITION_CLASS = 'detail-sheet-tab-panel-transition';

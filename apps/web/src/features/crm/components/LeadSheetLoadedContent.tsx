@@ -159,6 +159,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
       <div className="shrink-0 pb-3">
         <LeadPipelineStages
           currentStatus={renderLead.status}
+          disabled={isTrashView}
           onStageClick={isTrashView ? () => {} : (key) => props.onStatusChange(renderLead.id, key)}
         />
       </div>
@@ -172,7 +173,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
       />
 
       <ScrollArea className="min-h-0 min-w-0 flex-1">
-        <div className="px-7 py-5">
+        <div className="px-3 py-5 md:px-7">
           <DetailSheetTabPanel tabKey={props.activeTab}>
             {props.activeTab === 'general' && generalDraft ? (
               <LeadGeneralTab
