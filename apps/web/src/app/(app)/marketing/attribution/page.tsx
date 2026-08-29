@@ -25,6 +25,8 @@ import {
 import { matchesMarketingSearch } from '@/features/marketing/utils/matches-marketing-search';
 import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilterField } from '@/lib/persisted-client-state';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
+import { PAGE_HERO_MOBILE_ICON_ACTION_CLASS } from '@/components/shared/page-hero/page-hero-layout';
 
 type AttributionEntityTab = 'leads' | 'deals';
 
@@ -39,6 +41,7 @@ const ATTRIBUTION_ENTITY_TABS = [
 ];
 
 export default function AttributionReviewPage() {
+  const isMobileViewport = useIsMobileViewport();
   const [review, setReview] = useState<AttributionReview>({ leads: [], deals: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -135,8 +138,41 @@ export default function AttributionReviewPage() {
     [activeTab],
   );
 
-  const moduleHeroSlots = useMemo(
-    () => ({
+  const moduleHeroSlots = useMemo(() => {
+    const pipelineActions = (
+      <>
+        <Link
+          href="/crm/deals"
+          className={cn(
+            buttonVariants({
+              variant: 'outline',
+              size: isMobileViewport ? 'icon-sm' : 'lg',
+            }),
+            isMobileViewport ? PAGE_HERO_MOBILE_ICON_ACTION_CLASS : 'h-10 gap-1.5 px-3',
+          )}
+          aria-label="Deals pipeline"
+        >
+          <Handshake size={16} aria-hidden />
+          {isMobileViewport ? null : 'Deals'}
+        </Link>
+        <Link
+          href="/crm/leads"
+          className={cn(
+            buttonVariants({
+              variant: 'outline',
+              size: isMobileViewport ? 'icon-sm' : 'lg',
+            }),
+            isMobileViewport ? PAGE_HERO_MOBILE_ICON_ACTION_CLASS : 'h-10 gap-1.5 px-3',
+          )}
+          aria-label="Leads pipeline"
+        >
+          <Megaphone size={16} aria-hidden />
+          {isMobileViewport ? null : 'Leads'}
+        </Link>
+      </>
+    );
+
+    return {
       tabs: (
         <PageHeroTabs
           value={activeTab}
@@ -152,31 +188,19 @@ export default function AttributionReviewPage() {
           status={statusFilter}
           onStatusChange={setStatusFilter}
           statusOptions={statusOptions}
+          actions={pipelineActions}
         />
       ),
-      trailing: (
-        <div className="flex items-center gap-1">
-          <Link
-            href="/crm/deals"
-            className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'h-10 gap-1.5 px-3')}
-            aria-label="Deals pipeline"
-          >
-            <Handshake size={16} aria-hidden />
-            Deals
-          </Link>
-          <Link
-            href="/crm/leads"
-            className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'h-10 gap-1.5 px-3')}
-            aria-label="Leads pipeline"
-          >
-            <Megaphone size={16} aria-hidden />
-            Leads
-          </Link>
-        </div>
-      ),
-    }),
-    [activeTab, search, setStatusFilter, statusFilter, statusOptions, tabOptions],
-  );
+    };
+  }, [
+    activeTab,
+    isMobileViewport,
+    search,
+    setStatusFilter,
+    statusFilter,
+    statusOptions,
+    tabOptions,
+  ]);
 
   useModuleHeroSlots(moduleHeroSlots);
 

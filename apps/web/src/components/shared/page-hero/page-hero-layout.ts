@@ -22,19 +22,21 @@ export const PAGE_HERO_TOOLBAR = [
   'overflow-hidden',
 ].join(' ');
 
-export const PAGE_HERO_TABS_SLOT = 'min-w-0 max-w-full shrink-0';
+/** Full-width on mobile so tools always clear to the next row (no side-crush with tabs). */
+export const PAGE_HERO_TABS_SLOT =
+  'min-w-0 max-w-full shrink-0 max-md:w-full max-md:basis-full';
 
 /** flex-basis 24rem — wraps to row 2 when tabs leave less than ~24rem for tools. */
 export const PAGE_HERO_TOOLS_ROW = [
   'flex min-w-0 max-w-full flex-nowrap items-center gap-2 overflow-hidden',
   'min-w-[24rem] flex-[1_1_24rem]',
-  // Mobile: drop the 24rem floor so search + trailing fit the hero frame.
-  'max-md:min-w-0 max-md:w-full max-md:flex-[1_1_100%]',
+  // Mobile: full-width row under tabs; allow wrap so search + trailing do not overlap.
+  'max-md:min-w-0 max-md:w-full max-md:flex-[1_1_100%] max-md:flex-wrap',
 ].join(' ');
 
 /** overflow-visible — IntegratedSearchFilters panel is absolutely positioned below the input. */
 export const PAGE_HERO_SEARCH_SLOT =
-  'min-w-0 w-full max-w-full flex-1 basis-0 overflow-visible transition-[flex-grow] duration-200';
+  'min-w-0 w-full max-w-full flex-1 basis-0 overflow-visible transition-[flex-grow] duration-200 max-md:basis-full';
 
 export const PAGE_HERO_SEARCH_SLOT_EXPANDED = 'min-w-0 flex-1 overflow-visible';
 
