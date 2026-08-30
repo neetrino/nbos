@@ -64,6 +64,19 @@ export interface WhatsAppGatewayGroupsPage {
   pagination: { limit: number; offset: number; count: number };
 }
 
+export type WhatsAppGatewayChatType = 'group' | 'direct';
+
+export interface WhatsAppGatewayChatItem {
+  id: string;
+  name: string;
+  type: WhatsAppGatewayChatType;
+}
+
+export interface WhatsAppGatewayChatsPage {
+  items: WhatsAppGatewayChatItem[];
+  pagination: { limit: number; offset: number; count: number };
+}
+
 export const whatsappGatewayApi = {
   async getConnection(): Promise<WhatsAppGatewayConnectionView> {
     const resp = await api.get<WhatsAppGatewayConnectionView>('/api/integrations/whatsapp-gateway');
@@ -100,6 +113,17 @@ export const whatsappGatewayApi = {
     const resp = await api.get<WhatsAppGatewayGroupsPage>(
       '/api/integrations/whatsapp-gateway/groups',
       { params },
+    );
+    return resp.data;
+  },
+  async listChats(params?: {
+    limit?: number;
+    offset?: number;
+    search?: string;
+  }): Promise<WhatsAppGatewayChatsPage> {
+    const resp = await api.get<WhatsAppGatewayChatsPage>(
+      '/api/integrations/whatsapp-gateway/chats',
+      { params: { ...params, search: params?.search ?? '' } },
     );
     return resp.data;
   },

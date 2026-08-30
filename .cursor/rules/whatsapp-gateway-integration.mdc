@@ -1,0 +1,16 @@
+---
+description: WhatsApp Gateway handoff — picker, JIDs, never call WAHA.
+globs: "**/whatsapp-gateway/**/*.{ts,tsx},**/integrations/**/WhatsApp*.{ts,tsx},**/lib/api/whatsapp.ts"
+alwaysApply: false
+---
+
+# WhatsApp Gateway (NBOS)
+
+Always read the live contract (do not use a local copy):  
+[neetrino/whatsapp-gateway `docs/INTEGRATION.md`](https://github.com/neetrino/whatsapp-gateway/blob/main/docs/INTEGRATION.md)
+
+- NBOS calls **only** the Gateway (HTTPS + stored token). Never WAHA. Never put the token in the browser.
+- **Unified picker** (groups + personal, inbox order): `GET /api/chats?limit=&offset=&search=` — not `GET /api/groups`.
+- Each item: `id`, `name`, `type` (`group` | `direct`). Always send `search=`.
+- `GET /api/groups` is groups-only (product bind / management).
+- JIDs only: `{digits}@c.us` or `{id}@g.us`. No `phone` field. No `@lid`.

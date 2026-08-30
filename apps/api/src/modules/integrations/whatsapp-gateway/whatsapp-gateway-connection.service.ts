@@ -21,6 +21,7 @@ import { WhatsAppGatewaySecretStore } from './whatsapp-gateway-secret.store';
 import { isWhatsAppGroupChatId, normalizeWhatsAppGroupChatId } from '@nbos/shared';
 import type {
   WhatsAppConnectionPublicView,
+  WhatsAppGatewayChatsListData,
   WhatsAppGatewayGroupsListData,
 } from './whatsapp-gateway.types';
 
@@ -134,6 +135,26 @@ export class WhatsAppGatewayConnectionService {
         limit: params?.limit ?? WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE,
         offset: params?.offset ?? 0,
         search: params?.search,
+      });
+    } catch (error) {
+      if (error instanceof WhatsAppGatewayHttpError) {
+        mapGatewayErrorToDomain(error);
+      }
+      throw error;
+    }
+  }
+
+  async listChats(params?: {
+    limit?: number;
+    offset?: number;
+    search?: string;
+  }): Promise<WhatsAppGatewayChatsListData> {
+    const credentials = await this.requireClientConfig();
+    try {
+      return await this.client.listChats(credentials, {
+        limit: params?.limit ?? WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE,
+        offset: params?.offset ?? 0,
+        search: params?.search ?? '',
       });
     } catch (error) {
       if (error instanceof WhatsAppGatewayHttpError) {

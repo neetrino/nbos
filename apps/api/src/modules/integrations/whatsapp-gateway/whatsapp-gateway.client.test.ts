@@ -159,4 +159,36 @@ describe('WhatsAppGatewayClient', () => {
       }),
     );
   });
+
+  it('lists chats from Gateway GET /api/chats and normalizes type', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: {
+            items: [
+              { id: '120363@g.us', name: 'Qualitech', type: 'group' },
+              { id: '37499111222@c.us', name: 'Armen' },
+            ],
+            pagination: { limit: 20, offset: 0, count: 2 },
+          },
+        }),
+      }),
+    );
+
+    const result = await client.listChats(config, { limit: 20, offset: 0, search: '' });
+    expect(result.items).toEqual([
+      { id: '120363@g.us', name: 'Qualitech', type: 'group' },
+      { id: '37499111222@c.us', name: 'Armen', type: 'direct' },
+    ]);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://wa-gateway.test/api/chats?limit=20&offset=0&search=',
+      expect.objectContaining({
+        method: 'GET',
+        headers: expect.objectContaining({ Authorization: 'Bearer gw_test_token' }),
+      }),
+    );
+  });
 });

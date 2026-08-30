@@ -16,6 +16,19 @@ export interface WhatsAppGatewayGroupsListData {
   pagination: { limit: number; offset: number; count: number };
 }
 
+export type WhatsAppGatewayChatType = 'group' | 'direct';
+
+export interface WhatsAppGatewayChatSummary {
+  id: string;
+  name: string;
+  type: WhatsAppGatewayChatType;
+}
+
+export interface WhatsAppGatewayChatsListData {
+  items: WhatsAppGatewayChatSummary[];
+  pagination: { limit: number; offset: number; count: number };
+}
+
 export interface WhatsAppGatewayCreateGroupResult {
   id: string;
   name: string;
