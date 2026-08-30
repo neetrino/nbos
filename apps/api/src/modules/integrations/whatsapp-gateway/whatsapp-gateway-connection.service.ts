@@ -10,11 +10,19 @@ import {
   WHATSAPP_AUDIT_GATEWAY_DISCONNECTED,
   WHATSAPP_AUDIT_GATEWAY_TOKEN_CHANGED,
   WHATSAPP_ERROR,
+  WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE,
 } from './whatsapp-gateway.constants';
-import { throwWhatsAppDomainError, WhatsAppGatewayHttpError } from './whatsapp-gateway.errors';
+import {
+  mapGatewayErrorToDomain,
+  throwWhatsAppDomainError,
+  WhatsAppGatewayHttpError,
+} from './whatsapp-gateway.errors';
 import { WhatsAppGatewaySecretStore } from './whatsapp-gateway-secret.store';
 import { isWhatsAppGroupChatId, normalizeWhatsAppGroupChatId } from '@nbos/shared';
-import type { WhatsAppConnectionPublicView } from './whatsapp-gateway.types';
+import type {
+  WhatsAppConnectionPublicView,
+  WhatsAppGatewayGroupsListData,
+} from './whatsapp-gateway.types';
 
 const SINGLETON_ID = 'whatsapp-gateway-default';
 
@@ -113,6 +121,26 @@ export class WhatsAppGatewayConnectionService {
       userId: actorId,
     });
     return this.toPublic(updated);
+  }
+
+  async listGroups(params?: {
+    limit?: number;
+    offset?: number;
+    search?: string;
+  }): Promise<WhatsAppGatewayGroupsListData> {
+    const credentials = await this.requireClientConfig();
+    try {
+      return await this.client.listGroups(credentials, {
+        limit: params?.limit ?? WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE,
+        offset: params?.offset ?? 0,
+        search: params?.search,
+      });
+    } catch (error) {
+      if (error instanceof WhatsAppGatewayHttpError) {
+        mapGatewayErrorToDomain(error);
+      }
+      throw error;
+    }
   }
 
   async testConnection(): Promise<WhatsAppConnectionPublicView & { healthOk: boolean }> {

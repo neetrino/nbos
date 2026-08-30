@@ -59,6 +59,11 @@ export interface WhatsAppAvailableGroup {
   missingFromGateway?: boolean;
 }
 
+export interface WhatsAppGatewayGroupsPage {
+  groups: WhatsAppAvailableGroup[];
+  pagination: { limit: number; offset: number; count: number };
+}
+
 export const whatsappGatewayApi = {
   async getConnection(): Promise<WhatsAppGatewayConnectionView> {
     const resp = await api.get<WhatsAppGatewayConnectionView>('/api/integrations/whatsapp-gateway');
@@ -84,6 +89,17 @@ export const whatsappGatewayApi = {
   async disconnect(): Promise<WhatsAppGatewayConnectionView> {
     const resp = await api.delete<WhatsAppGatewayConnectionView>(
       '/api/integrations/whatsapp-gateway',
+    );
+    return resp.data;
+  },
+  async listGroups(params?: {
+    limit?: number;
+    offset?: number;
+    search?: string;
+  }): Promise<WhatsAppGatewayGroupsPage> {
+    const resp = await api.get<WhatsAppGatewayGroupsPage>(
+      '/api/integrations/whatsapp-gateway/groups',
+      { params },
     );
     return resp.data;
   },

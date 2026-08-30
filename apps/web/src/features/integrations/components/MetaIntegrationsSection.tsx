@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Copy, Facebook, Instagram, MessageCircle } from 'lucide-react';
+import { Copy, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { IntegrationBrandIcon } from './IntegrationBrandIcon';
 import { MetaAccountList } from '@/features/integrations/components/MetaAccountList';
 import { MetaConnectSheet } from '@/features/integrations/components/MetaConnectSheet';
 import { WhatsAppGatewayIntegrationsCard } from '@/features/integrations/components/WhatsAppGatewayIntegrationsCard';
@@ -110,7 +111,7 @@ export function MetaIntegrationsSection() {
         <MetaProviderCard
           title="Instagram"
           description="Instagram Direct → CRM Lead (via Meta)"
-          icon={Instagram}
+          brandName="Instagram"
           actionLabel="Connect"
           onConnect={() => setConnectOpen(true)}
           loading={loading}
@@ -118,7 +119,7 @@ export function MetaIntegrationsSection() {
         <MetaProviderCard
           title="Facebook"
           description="Facebook Messenger → CRM Lead (via Meta)"
-          icon={Facebook}
+          brandName="Facebook"
           actionLabel="Connect"
           onConnect={() => setConnectOpen(true)}
           loading={loading}
@@ -235,7 +236,7 @@ function MetaOAuthErrorPanel({ details, onCopyErrorId, onDismiss }: MetaOAuthErr
 interface MetaProviderCardProps {
   title: string;
   description: string;
-  icon: typeof Instagram;
+  brandName: string;
   actionLabel: string;
   onConnect: () => void;
   loading: boolean;
@@ -244,7 +245,7 @@ interface MetaProviderCardProps {
 function MetaProviderCard({
   title,
   description,
-  icon: Icon,
+  brandName,
   actionLabel,
   onConnect,
   loading,
@@ -252,7 +253,7 @@ function MetaProviderCard({
   return (
     <section className="border-border bg-card rounded-xl border p-4">
       <div className="flex items-start gap-3">
-        <Icon size={20} className="text-foreground mt-0.5 shrink-0" aria-hidden />
+        <IntegrationBrandIcon name={brandName} />
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-semibold">{title}</h3>
           <p className="text-muted-foreground mt-1 text-xs">{description}</p>

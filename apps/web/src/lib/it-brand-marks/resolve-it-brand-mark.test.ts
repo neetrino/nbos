@@ -84,6 +84,13 @@ describe('resolveItBrandMark', () => {
   it('matches a provider-style name by a later token', () => {
     expect(resolveItBrandMark('', 'Google Workspace')?.slug).toBe('google');
   });
+
+  it('matches WhatsApp, Facebook and Instagram brand marks', () => {
+    expect(resolveItBrandMark('', 'WhatsApp')?.slug).toBe('whatsapp');
+    expect(resolveItBrandMark('https://facebook.com', '')?.slug).toBe('facebook');
+    expect(resolveItBrandMark('', 'Instagram')?.slug).toBe('instagram');
+    expect(resolveItBrandMark('', 'Google Contacts')?.slug).toBe('google');
+  });
 });
 
 describe('resolveItBrandMarkFromHints', () => {

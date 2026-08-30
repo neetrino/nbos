@@ -1,11 +1,24 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   CurrentUser,
   RequirePermission,
   type CurrentUserPayload,
 } from '../../../common/decorators';
-import { UpsertWhatsAppGatewayConnectionDto } from './dto/whatsapp-gateway.dto';
+import {
+  ListWhatsAppGatewayGroupsQueryDto,
+  UpsertWhatsAppGatewayConnectionDto,
+} from './dto/whatsapp-gateway.dto';
 import { WhatsAppGatewayConnectionService } from './whatsapp-gateway-connection.service';
 
 @ApiTags('Integrations / WhatsApp Gateway')
@@ -19,6 +32,13 @@ export class WhatsAppGatewayController {
   @ApiOperation({ summary: 'Get WhatsApp Gateway connection (no secrets)' })
   getConnection() {
     return this.connection.getPublicView();
+  }
+
+  @Get('groups')
+  @RequirePermission('COMPANY', 'EDIT')
+  @ApiOperation({ summary: 'List WhatsApp groups from the connected Gateway' })
+  listGroups(@Query() query: ListWhatsAppGatewayGroupsQueryDto) {
+    return this.connection.listGroups(query);
   }
 
   @Put()

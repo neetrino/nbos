@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Facebook, Instagram } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { metaIntegrationApi, type MetaOAuthPlatform } from '@/lib/api/meta-integration';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { IntegrationBrandIcon } from './IntegrationBrandIcon';
 
 export interface MetaConnectSheetProps {
   onClose: () => void;
@@ -47,7 +47,7 @@ export function MetaConnectSheet({ onClose }: MetaConnectSheetProps) {
             disabled={loading}
             className={PROVIDER_TILE_CLASS}
           >
-            <Instagram size={20} className="text-foreground" aria-hidden />
+            <IntegrationBrandIcon name="Instagram" className="size-5" />
             <span className="text-foreground font-medium">Instagram</span>
             <span className="text-muted-foreground text-xs">
               Connect an Instagram professional account to receive Instagram Direct messages.
@@ -59,7 +59,7 @@ export function MetaConnectSheet({ onClose }: MetaConnectSheetProps) {
             disabled={loading}
             className={PROVIDER_TILE_CLASS}
           >
-            <Facebook size={20} className="text-foreground" aria-hidden />
+            <IntegrationBrandIcon name="Facebook" className="size-5" />
             <span className="text-foreground font-medium">Facebook</span>
             <span className="text-muted-foreground text-xs">
               Connect Facebook Pages to receive Messenger conversations.

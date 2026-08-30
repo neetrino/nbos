@@ -114,4 +114,49 @@ describe('WhatsAppGatewayClient', () => {
     );
     expect(result.alreadyMembers).toEqual(['37499123456@c.us']);
   });
+
+  it('lists groups with pagination and search', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: {
+            groups: [{ id: '120363@g.us', name: 'Finance' }],
+            pagination: { limit: 20, offset: 0, count: 1 },
+          },
+        }),
+      }),
+    );
+
+    const result = await client.listGroups(config, { limit: 20, offset: 0, search: 'Finance' });
+    expect(result.groups).toHaveLength(1);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://wa-gateway.test/api/groups?limit=20&offset=0&search=Finance',
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
+  it('lists groups from Gateway GET /api/groups', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: { groups: [], pagination: { limit: 20, offset: 0, count: 0 } },
+        }),
+      }),
+    );
+
+    await client.listGroups(config, { limit: 20, offset: 0 });
+    expect(fetch).toHaveBeenCalledWith(
+      'https://wa-gateway.test/api/groups?limit=20&offset=0',
+      expect.objectContaining({
+        method: 'GET',
+        headers: expect.objectContaining({ Authorization: 'Bearer gw_test_token' }),
+      }),
+    );
+  });
 });
