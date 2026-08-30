@@ -39,7 +39,7 @@ export function SubscriptionAmountTaxField({
       )}
     >
       <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{amountLabel}</span>
-      <div className={cn(DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS, 'gap-2 pr-1.5')}>
+      <div className={cn(DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS, 'gap-2 overflow-visible pr-1.5')}>
         <DollarSign size={12} className="text-muted-foreground/70 shrink-0" aria-hidden />
         <MoneyInput
           value={amount}
@@ -55,9 +55,10 @@ export function SubscriptionAmountTaxField({
           value={taxValue}
           options={TAX_STATUSES}
           ariaLabel="Tax"
-          listClassName="shrink-0 rounded-full bg-background p-0.5"
+          className="mb-1 self-end"
+          listClassName="h-7 shrink-0 rounded-full bg-background p-0.5"
           pillClassName="rounded-full"
-          buttonClassName="min-w-[2.75rem] rounded-full px-3 py-1 text-xs font-medium"
+          buttonClassName="h-6 min-w-[2.5rem] rounded-full px-2.5 py-0 text-xs font-medium leading-none"
           onChange={onTaxStatusChange}
         />
       </div>
