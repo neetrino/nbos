@@ -21,10 +21,7 @@ class MockIntersectionObserver {
   readonly callback: IntersectionObserverCallback;
   readonly disconnect: ReturnType<typeof vi.fn>;
 
-  constructor(
-    callback: IntersectionObserverCallback,
-    options?: IntersectionObserverInit,
-  ) {
+  constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
     this.callback = callback;
     this.disconnect = vi.fn();
     observers.push({
