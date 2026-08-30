@@ -578,6 +578,8 @@ Therefore:
 - Collections are strictly Internal or Client;
 - Shared Collection membership never changes ACL.
 
+Slice 2 added PERSONAL/SHARED Collection tables and zone-match DB triggers (`22-Slice-02-Permissions-Boundary.md`). Collection membership still does not grant conversation ACL. Slice 3 owns Collection UI / Favorites surface.
+
 Do not revive removed Topic/L1/L2 architecture to obtain grouping.
 
 ---
@@ -664,6 +666,8 @@ Reject:
 Completed for SHA `302f57f7` in `20-Slice-00-Baseline.md`. Status `VERIFIED` (FINDING-01 closed). Slice 1 may begin.
 
 **Slice 1:** evidence `21-Slice-01-Messaging-Core.md`. Status `VERIFIED`. Core path = evolved Unified. Dual-write none. Mapping scheduled. FINDING-S1-01/02 closed. Slice 2 may begin.
+
+**Slice 2:** evidence `22-Slice-02-Permissions-Boundary.md`. Status `VERIFIED`. FINDING-S2-01/02 closed. Conversation ACL on Core HTTP. Slice 3 may begin.
 
 Inventoried DB snapshot (local `DATABASE_URL`; not labeled prod vs staging): Channel/DM 0; Unified 0; Tasks 390 / chatId 0 / discussion 0; Product WhatsApp bindings 145 (ACTIVE 143 unique group ids, FAILED 2); gateway row 1 with accountant group id present; MetaConversation 0; MetaMessage 0; MetaConnectedAccount 0; MetaSenderIdentity 0; MetaProviderEvent 17.
 

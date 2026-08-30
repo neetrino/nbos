@@ -40,6 +40,7 @@ export const RESOURCE_GRANT_RESOURCE_TYPES = [
   'credential',
   'drive_file_asset',
   'drive_folder',
+  'messenger_conversation',
 ] as const;
 export type ResourceGrantResourceType = (typeof RESOURCE_GRANT_RESOURCE_TYPES)[number];
 
@@ -48,6 +49,7 @@ export const RESOURCE_GRANT_RESOURCE_TYPE = {
   CREDENTIAL: 'credential',
   DRIVE_FILE_ASSET: 'drive_file_asset',
   DRIVE_FOLDER: 'drive_folder',
+  MESSENGER_CONVERSATION: 'messenger_conversation',
 } as const satisfies Record<string, ResourceGrantResourceType>;
 
 /** Documented future types; not enforced until module ships manual override UI. */

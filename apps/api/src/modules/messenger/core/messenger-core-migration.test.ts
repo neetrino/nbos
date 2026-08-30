@@ -45,6 +45,27 @@ describe('Slice 1 migration safety', () => {
   });
 });
 
+describe('Slice 2 collection migration safety', () => {
+  const slice2Sql = readRepo(
+    'packages/database/prisma/migrations/20260830200000_messenger_core_permissions_boundary/migration.sql',
+  );
+
+  it('is additive and does not drop Channel/DM, Unified, Meta, or Task discussion', () => {
+    expect(slice2Sql).not.toMatch(/DROP TABLE/i);
+    expect(slice2Sql).not.toMatch(/DROP TYPE/i);
+    expect(slice2Sql).not.toMatch(/task_discussion/i);
+    expect(slice2Sql).not.toMatch(/meta_conversations/i);
+    expect(slice2Sql).not.toMatch(/messenger_channels/i);
+    expect(slice2Sql).not.toMatch(/messenger_direct_threads/i);
+  });
+
+  it('enforces Collection zone immutability and item zone match', () => {
+    expect(slice2Sql).toMatch(/Collection\.zone is immutable/);
+    expect(slice2Sql).toMatch(/Collection zone must match conversation zone/);
+    expect(slice2Sql).toMatch(/messenger_conversation_collections/);
+  });
+});
+
 describe('Core HTTP authorization metadata', () => {
   it('requires MESSENGER VIEW/EDIT on Core routes', () => {
     expect(
@@ -55,6 +76,9 @@ describe('Core HTTP authorization metadata', () => {
     ).toEqual({ module: 'MESSENGER', action: 'VIEW' });
     expect(
       Reflect.getMetadata(PERMISSION_KEY, MessengerCoreController.prototype.sendMessage),
+    ).toEqual({ module: 'MESSENGER', action: 'EDIT' });
+    expect(
+      Reflect.getMetadata(PERMISSION_KEY, MessengerCoreController.prototype.inviteParticipant),
     ).toEqual({ module: 'MESSENGER', action: 'EDIT' });
   });
 
@@ -87,5 +111,10 @@ describe('FINDING-S1-01 / FINDING-S1-02 closures', () => {
   it('does not expose allowClientPersist on persistAndBroadcast', () => {
     const service = readRepo('apps/api/src/modules/messenger/core/messenger-core.service.ts');
     expect(service).not.toMatch(/allowClientPersist/);
+  });
+
+  it('does not add a Core HTTP provider-mapping route', () => {
+    const controller = readRepo('apps/api/src/modules/messenger/core/messenger-core.controller.ts');
+    expect(controller).not.toMatch(/external-mapping|createCoreExternalMapping/);
   });
 });

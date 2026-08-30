@@ -108,6 +108,8 @@ model Employee {
   messengerMessageReactions         MessengerMessageReaction[]         @relation("MessengerMessageReactionEmployee")
   messengerCommands                 MessengerCommand[]                 @relation("MessengerCommandActor")
   messengerMessageReferencesCreated MessengerMessageReference[]        @relation("MessengerMessageReferenceCreatedBy")
+  messengerConversationCollectionsOwned MessengerConversationCollection[] @relation("MessengerConversationCollectionOwner")
+  messengerConversationCollectionMembers MessengerConversationCollectionMember[] @relation("MessengerConversationCollectionMemberEmployee")
   mailAccountsOwned                MailAccount[]                       @relation("MailAccountOwner")
   mailAccountsCreated              MailAccount[]                       @relation("MailAccountCreatedBy")
   mailDeliveryLogsActed            MailDeliveryLog[]                   @relation("MailDeliveryLogActor")

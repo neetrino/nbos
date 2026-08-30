@@ -47,8 +47,8 @@ These apply to every slice touching persistence or existing runtime.
 - [ ] Legacy write path is disabled before legacy storage is deleted.
 - [ ] Any `DELETE-LATER` item is tracked explicitly.
 - [ ] No raw provider send bypasses Messaging Core authorization/outbox after its cutover slice.
-- [ ] No Client SEND permission is inferred from READ, Product membership or collection membership.
-- [ ] No cross-surface Collection item is possible through API/database manipulation.
+- [x] No Client SEND permission is inferred from READ, Product membership or collection membership.
+- [x] No cross-surface Collection item is possible through API/database manipulation.
 
 ---
 
@@ -147,35 +147,35 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Permission contracts
 
-- [ ] Reuse platform role/entity/manual-access foundations where compatible.
-- [ ] Define Internal conversation read/write permission resolution.
-- [ ] Define Client conversation `READ` separately from `SEND`.
-- [ ] Explicit conversation invite/membership does not automatically imply SEND.
-- [ ] Product binding does not grant conversation access.
-- [ ] Shared Collection does not grant conversation access.
-- [ ] Management override, where existing platform rules allow it, remains explicit/auditable.
+- [x] Reuse platform role/entity/manual-access foundations where compatible.
+- [x] Define Internal conversation read/write permission resolution.
+- [x] Define Client conversation `READ` separately from `SEND`.
+- [x] Explicit conversation invite/membership does not automatically imply SEND.
+- [x] Product binding does not grant conversation access.
+- [x] Shared Collection does not grant conversation access.
+- [x] Management override, where existing platform rules allow it, remains explicit/auditable.
 
 ### Surface boundary
 
-- [ ] Internal routes/API cannot send through external provider path.
-- [ ] Client send endpoint requires Client conversation + SEND permission.
-- [ ] Server rejects attempts to send a Client message through Internal context.
-- [ ] Internal and Client Collections are zone-scoped server-side.
-- [ ] Client participant/access changes are audited.
+- [x] Internal routes/API cannot send through external provider path.
+- [x] Client send endpoint requires Client conversation + SEND permission.
+- [x] Server rejects attempts to send a Client message through Internal context.
+- [x] Internal and Client Collections are zone-scoped server-side.
+- [x] Client participant/access changes are audited.
 
 ### Negative tests
 
-- [ ] READ without SEND cannot send.
-- [ ] Product developer without Client access cannot read client history.
-- [ ] Adding Product binding does not add developer access.
-- [ ] Shared Collection item does not bypass conversation ACL.
-- [ ] Internal conversation cannot acquire provider mapping/send capability by malformed request.
-- [ ] Client conversation cannot be inserted into Internal Collection and vice versa.
+- [x] READ without SEND cannot send.
+- [x] Product developer without Client access cannot read client history.
+- [x] Adding Product binding does not add developer access.
+- [x] Shared Collection item does not bypass conversation ACL.
+- [x] Internal conversation cannot acquire provider mapping/send capability by malformed request.
+- [x] Client conversation cannot be inserted into Internal Collection and vice versa.
 
 ### Acceptance
 
-- [ ] Security boundary exists before Client composer implementation.
-- [ ] Slice status `VERIFIED`.
+- [x] Security boundary exists before Client composer implementation.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -622,19 +622,19 @@ These apply to every slice touching persistence or existing runtime.
 
 ## 3. Implementation slice status table
 
-| Slice                            | Status     | Implementer evidence            | Independent review                 |
-| -------------------------------- | ---------- | ------------------------------- | ---------------------------------- |
-| 0 — Baseline/reconciliation      | `VERIFIED` | `20-Slice-00-Baseline.md`       | VERIFIED (FINDING-01 closed)       |
-| 1 — Messaging Core               | `VERIFIED` | `21-Slice-01-Messaging-Core.md` | VERIFIED (FINDING-S1-01/02 closed) |
-| 2 — Permissions/boundary         | `PLANNED`  | —                               | —                                  |
-| 3 — Internal base                | `PLANNED`  | —                               | —                                  |
-| 4 — Entity conversations         | `PLANNED`  | —                               | —                                  |
-| 5 — Task Discussion migration    | `PLANNED`  | —                               | —                                  |
-| 6 — Message actions/references   | `PLANNED`  | —                               | —                                  |
-| 7 — Client surface               | `PLANNED`  | —                               | —                                  |
-| 8 — WhatsApp Gateway integration | `PLANNED`  | —                               | —                                  |
-| 9 — Flexible Product bindings    | `PLANNED`  | —                               | —                                  |
-| 10 — Finance/Support/routing     | `PLANNED`  | —                               | —                                  |
-| 11 — Hardening/cleanup readiness | `PLANNED`  | —                               | —                                  |
+| Slice                            | Status     | Implementer evidence                  | Independent review                 |
+| -------------------------------- | ---------- | ------------------------------------- | ---------------------------------- |
+| 0 — Baseline/reconciliation      | `VERIFIED` | `20-Slice-00-Baseline.md`             | VERIFIED (FINDING-01 closed)       |
+| 1 — Messaging Core               | `VERIFIED` | `21-Slice-01-Messaging-Core.md`       | VERIFIED (FINDING-S1-01/02 closed) |
+| 2 — Permissions/boundary         | `VERIFIED` | `22-Slice-02-Permissions-Boundary.md` | VERIFIED (FINDING-S2-01/02 closed) |
+| 3 — Internal base                | `PLANNED`  | —                                     | —                                  |
+| 4 — Entity conversations         | `PLANNED`  | —                                     | —                                  |
+| 5 — Task Discussion migration    | `PLANNED`  | —                                     | —                                  |
+| 6 — Message actions/references   | `PLANNED`  | —                                     | —                                  |
+| 7 — Client surface               | `PLANNED`  | —                                     | —                                  |
+| 8 — WhatsApp Gateway integration | `PLANNED`  | —                                     | —                                  |
+| 9 — Flexible Product bindings    | `PLANNED`  | —                                     | —                                  |
+| 10 — Finance/Support/routing     | `PLANNED`  | —                                     | —                                  |
+| 11 — Hardening/cleanup readiness | `PLANNED`  | —                                     | —                                  |
 
 Status changes must follow `12-Messenger-Rebuild-Execution-Strategy.md`.

@@ -207,6 +207,7 @@ model MessengerConversation {
   legacyIdentities      MessengerLegacyIdentity[]
   sourceReferences      MessengerMessageReference[]            @relation("MessengerMessageReferenceSourceConversation")
   targetReferences      MessengerMessageReference[]            @relation("MessengerMessageReferenceTargetConversation")
+  collectionItems       MessengerConversationCollectionItem[]
 
   @@unique([directParticipantLowId, directParticipantHighId])
   @@index([type, status])

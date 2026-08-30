@@ -11,6 +11,7 @@ describe('RESOURCE_GRANT_RESOURCE_TYPES', () => {
       'credential',
       'drive_file_asset',
       'drive_folder',
+      'messenger_conversation',
     ]);
   });
 

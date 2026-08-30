@@ -10,6 +10,8 @@ export type MessengerLegacyAccessContext = {
   departmentIds: string[];
   viewScope: MessengerRbacScope;
   editScope: MessengerRbacScope;
+  clientReadScope: MessengerRbacScope;
+  clientSendScope: MessengerRbacScope;
   driveViewScope?: string;
 };
 
@@ -68,6 +70,8 @@ export async function loadMessengerLegacyAccess(
     departmentIds: employee.departments.map((d) => d.departmentId),
     viewScope: normalizeMessengerRbacScope(permissions.MESSENGER_VIEW),
     editScope: normalizeMessengerRbacScope(permissions.MESSENGER_EDIT),
+    clientReadScope: normalizeMessengerRbacScope(permissions.MESSENGER_CLIENT_READ),
+    clientSendScope: normalizeMessengerRbacScope(permissions.MESSENGER_CLIENT_SEND),
     driveViewScope: permissions.DRIVE_VIEW,
   };
 }

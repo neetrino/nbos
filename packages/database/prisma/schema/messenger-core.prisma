@@ -163,3 +163,55 @@ model MessengerLegacyIdentity {
   @@index([messageId])
   @@map("messenger_legacy_identities")
 }
+
+enum MessengerCollectionVisibility {
+  PERSONAL
+  SHARED
+}
+
+/// Zone-scoped grouping. Membership never grants conversation ACL (M-BOUNDARY-02, M-COLLECTIONS-01).
+model MessengerConversationCollection {
+  id              String                         @id @default(uuid())
+  name            String
+  visibility      MessengerCollectionVisibility
+  zone            MessengerConversationZone
+  ownerEmployeeId String                         @map("owner_employee_id")
+  createdAt       DateTime                       @default(now()) @map("created_at")
+  updatedAt       DateTime                       @updatedAt @map("updated_at")
+
+  owner   Employee                                @relation("MessengerConversationCollectionOwner", fields: [ownerEmployeeId], references: [id], onDelete: Restrict)
+  items   MessengerConversationCollectionItem[]
+  members MessengerConversationCollectionMember[]
+
+  @@index([ownerEmployeeId, zone])
+  @@index([zone, visibility])
+  @@map("messenger_conversation_collections")
+}
+
+model MessengerConversationCollectionItem {
+  id             String   @id @default(uuid())
+  collectionId   String   @map("collection_id")
+  conversationId String   @map("conversation_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  collection   MessengerConversationCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  conversation MessengerConversation           @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, conversationId], map: "messenger_collection_items_pair_key")
+  @@index([conversationId])
+  @@map("messenger_conversation_collection_items")
+}
+
+model MessengerConversationCollectionMember {
+  id           String   @id @default(uuid())
+  collectionId String   @map("collection_id")
+  employeeId   String   @map("employee_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  collection MessengerConversationCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  employee   Employee                        @relation("MessengerConversationCollectionMemberEmployee", fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, employeeId], map: "messenger_collection_members_pair_key")
+  @@index([employeeId])
+  @@map("messenger_conversation_collection_members")
+}

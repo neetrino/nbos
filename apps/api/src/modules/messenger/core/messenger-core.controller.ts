@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   HttpCode,
@@ -17,6 +18,8 @@ import {
 import { CreateCoreConversationDto } from './dto/create-core-conversation.dto';
 import { CreateCoreLinkDto } from './dto/create-core-link.dto';
 import { CreateCoreReferenceDto } from './dto/create-core-reference.dto';
+import { GrantCoreAccessOverrideDto } from './dto/grant-core-override.dto';
+import { InviteCoreParticipantDto } from './dto/invite-core-participant.dto';
 import { SendCoreMessageDto } from './dto/send-core-message.dto';
 import { MessengerCoreService } from './messenger-core.service';
 
@@ -101,5 +104,51 @@ export class MessengerCoreController {
       throw new ForbiddenException('Forward references require a holder message');
     }
     return this.core.addReference(user.id, body);
+  }
+
+  @Post('conversations/:id/participants')
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({ summary: 'Invite an employee; READ_ONLY does not grant SEND' })
+  inviteParticipant(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: InviteCoreParticipantDto,
+  ) {
+    return this.core.inviteParticipant(id, user.id, body.employeeId, body.role ?? 'READ_ONLY');
+  }
+
+  @Delete('conversations/:id/participants/:employeeId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({ summary: 'Revoke conversation membership' })
+  revokeParticipant(
+    @Param('id') id: string,
+    @Param('employeeId') employeeId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.core.revokeParticipant(id, user.id, employeeId);
+  }
+
+  @Post('conversations/:id/access-overrides')
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({ summary: 'Explicit management override (VIEW never becomes Client SEND)' })
+  grantAccessOverride(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: GrantCoreAccessOverrideDto,
+  ) {
+    return this.core.grantAccessOverride(id, user.id, body.employeeId, body.level, body.reason);
+  }
+
+  @Delete('conversations/:id/access-overrides/:employeeId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({ summary: 'Revoke a management override' })
+  revokeAccessOverride(
+    @Param('id') id: string,
+    @Param('employeeId') employeeId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.core.revokeAccessOverride(id, user.id, employeeId);
   }
 }

@@ -35,6 +35,22 @@ export async function listCoreParticipants(
   }));
 }
 
+export async function leaveCoreParticipant(
+  prisma: PrismaLike,
+  conversationId: string,
+  employeeId: string,
+): Promise<MessengerCoreParticipantDto | null> {
+  const existing = await prisma.messengerConversationParticipant.findUnique({
+    where: { conversationId_employeeId: { conversationId, employeeId } },
+  });
+  if (!existing) return null;
+  const row = await prisma.messengerConversationParticipant.update({
+    where: { id: existing.id },
+    data: { leftAt: existing.leftAt ?? new Date() },
+  });
+  return { employeeId: row.employeeId, role: row.role, leftAt: row.leftAt };
+}
+
 export async function markCoreConversationRead(
   prisma: PrismaLike,
   conversationId: string,

@@ -16,6 +16,10 @@ Implementer evidence: `20-Slice-00-Baseline.md`. Status `VERIFIED`. Inventoried 
 
 Implementer evidence: `21-Slice-01-Messaging-Core.md`. Status `VERIFIED`. Core path = evolved Unified. Dual-write none. Mapping scheduled. FINDING-S1-01/02 closed (HTTP `canonicalKey` removed; Client persist unconditional). Slice 2 may begin.
 
+## Slice 2 status (not product canon)
+
+Implementer evidence: `22-Slice-02-Permissions-Boundary.md`. Status `VERIFIED`. Conversation ACL on Core HTTP. `CLIENT_READ` is a read ceiling; Client write needs a writeable participant or grant `EDIT`. `addReference` requires source/holder conversation READ. Slice 3 may begin.
+
 ## Current verified static baseline
 
 The previous historical status text was stale and must not be used as runtime proof. Slice 0 re-checked this against `302f57f7` + DB counts (see evidence file).
@@ -187,7 +191,7 @@ Migration/runtime implementation uses additionally:
 
 ## Next step before product code changes
 
-1. independent review of Slice 0 (`20-Slice-00-Baseline.md`);
-2. begin Slice 1 only after Slice 0 is `VERIFIED`.
+1. independent review of Slice 2 (`22-Slice-02-Permissions-Boundary.md`);
+2. begin Slice 3 only after Slice 2 is `VERIFIED`.
 
 No production Messenger rebuild implementation is claimed by this documentation stage.
