@@ -74,9 +74,9 @@ describe('buildSubscriptionGridPayload', () => {
     expect(payload.rows[0].months[2].kind).toBe('PAID');
     expect(payload.rows[0].months[3].kind).toBe('PAID');
     expect(payload.rows[0].months[2].invoiceId).toBe('i1');
-    expect(payload.rows[0].months[2].displayAmount).toBe(80000);
-    expect(payload.rows[0].months[3].displayAmount).toBeNull();
-    // Mar charge 80k + Jun–Dec monthly forecast 7×80k (Apr is covered, not charged)
+    expect(payload.rows[0].months[2].amountMonthly).toBe(40000);
+    expect(payload.rows[0].months[3].amountMonthly).toBe(40000);
+    // Mar–Apr invoice equivalent 2×40k + Jun–Dec forecast 7×80k
     expect(payload.rows[0].annualTotal).toBe(640000);
   });
 
@@ -184,62 +184,78 @@ describe('buildSubscriptionGridPayload', () => {
     expect(payload.rows[0].months[10].kind).toBe('FORECAST');
   });
 
-  it('shows the yearly period amount only on the charge month', () => {
+  it('keeps issued months on the invoice rate after the subscription amount changes', () => {
     const payload = buildSubscriptionGridPayload(
       [
         baseSub({
           amount: 100000,
+          coverageMonthCount: 1,
+          monthlyEquivalentAmount: 100000,
+          invoices: [subInvoice('i-mar', { start: '2026-03', count: 1, paid: true, amount: 80000 })],
+        }),
+      ],
+      2026,
+      NOW,
+    );
+    expect(payload.rows[0].months[2].kind).toBe('PAID');
+    expect(payload.rows[0].months[2].amountMonthly).toBe(80000);
+    expect(payload.rows[0].months[6].kind).toBe('FORECAST');
+    expect(payload.rows[0].months[6].amountMonthly).toBe(100000);
+    expect(payload.monthTotals[2]).toBe(80000);
+    expect(payload.monthTotals[6]).toBe(100000);
+  });
+
+  it('paints issued yearly months from the invoice equivalent, not the current rate', () => {
+    const payload = buildSubscriptionGridPayload(
+      [
+        baseSub({
+          amount: 144000,
           coverageMonthCount: 12,
-          monthlyEquivalentAmount: 8333.33,
+          monthlyEquivalentAmount: 12000,
           invoices: [
-            subInvoice('i-year', { start: '2026-01', count: 12, paid: true, amount: 100000 }),
+            subInvoice('i-year', { start: '2026-01', count: 12, paid: true, amount: 120000 }),
           ],
         }),
       ],
       2026,
       NOW,
     );
-    expect(payload.rows[0].months[0].kind).toBe('PAID');
-    expect(payload.rows[0].months[0].displayAmount).toBe(100000);
-    for (let month = 1; month < 12; month++) {
+    for (let month = 0; month < 12; month++) {
       expect(payload.rows[0].months[month].kind).toBe('PAID');
-      expect(payload.rows[0].months[month].displayAmount).toBeNull();
+      expect(payload.rows[0].months[month].amountMonthly).toBe(10000);
     }
-    expect(payload.rows[0].annualTotal).toBe(100000);
-    expect(payload.monthTotals[0]).toBe(100000);
-    expect(payload.monthTotals.slice(1).every((total) => total === 0)).toBe(true);
+    expect(payload.rows[0].annualTotal).toBe(120000);
+    expect(payload.monthTotals.every((total) => total === 10000)).toBe(true);
   });
 
-  it('shows custom six-month amount only on cadence charge months', () => {
+  it('uses current equivalent on forecast months of a custom period', () => {
+    const equivalent = 40000 / 6;
     const payload = buildSubscriptionGridPayload(
       [
         baseSub({
           amount: 40000,
           coverageMonthCount: 6,
-          monthlyEquivalentAmount: 40000 / 6,
+          monthlyEquivalentAmount: equivalent,
           invoices: [subInvoice('i-h1', { start: '2026-01', count: 6, paid: true, amount: 40000 })],
         }),
       ],
       2026,
       NOW,
     );
-    expect(payload.rows[0].months[0].displayAmount).toBe(40000);
+    expect(payload.rows[0].months[0].amountMonthly).toBe(equivalent);
     expect(payload.rows[0].months[5].kind).toBe('PAID');
-    expect(payload.rows[0].months[5].displayAmount).toBeNull();
+    expect(payload.rows[0].months[5].amountMonthly).toBe(equivalent);
     expect(payload.rows[0].months[6].kind).toBe('FORECAST');
-    expect(payload.rows[0].months[6].displayAmount).toBe(40000);
-    expect(payload.rows[0].months[7].displayAmount).toBeNull();
+    expect(payload.rows[0].months[6].amountMonthly).toBe(equivalent);
     expect(payload.rows[0].annualTotal).toBe(80000);
-    expect(payload.monthTotals[0]).toBe(40000);
-    expect(payload.monthTotals[6]).toBe(40000);
   });
 
-  it('keeps monthly cells on the full period amount', () => {
+  it('hides money on missed months and uses the current rate on forecast', () => {
     const payload = buildSubscriptionGridPayload([baseSub()], 2026, NOW);
     expect(payload.rows[0].months[0].kind).toBe('MISSED');
-    expect(payload.rows[0].months[0].displayAmount).toBe(80000);
+    expect(payload.rows[0].months[0].amountMonthly).toBeNull();
     expect(payload.rows[0].months[5].kind).toBe('FORECAST');
-    expect(payload.rows[0].months[5].displayAmount).toBe(80000);
+    expect(payload.rows[0].months[5].amountMonthly).toBe(80000);
     expect(payload.rows[0].annualTotal).toBe(560000);
   });
 });

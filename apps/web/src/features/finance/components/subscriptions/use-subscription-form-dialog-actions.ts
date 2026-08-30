@@ -8,6 +8,11 @@ import {
   applyBillingPeriodChangeToDraft,
   hasSubscriptionBillingPeriodChanged,
 } from '@/features/finance/utils/subscription-billing-period-change';
+import {
+  hasSubscriptionAmountChanged,
+  SUBSCRIPTION_AMOUNT_CHANGE_CONFIRM_DESCRIPTION,
+  SUBSCRIPTION_AMOUNT_CHANGE_CONFIRM_TITLE,
+} from '@/features/finance/utils/subscription-general-form-state';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 import { useCallback, useState } from 'react';
@@ -34,6 +39,7 @@ export function useSubscriptionFormDialogActions({
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [periodConfirmOpen, setPeriodConfirmOpen] = useState(false);
+  const [amountConfirmOpen, setAmountConfirmOpen] = useState(false);
 
   const parsedAmount = parseFloat(form.amount.replace(/\s/g, ''));
   const parsedBillingDay = parseInt(form.billingDay, 10);
@@ -71,14 +77,15 @@ export function useSubscriptionFormDialogActions({
     async (event: React.FormEvent) => {
       event.preventDefault();
       if (!canSubmit) return;
-      if (
-        mode === 'edit' &&
-        editSnap &&
-        subscription &&
-        hasSubscriptionBillingPeriodChanged(editSnap, form)
-      ) {
-        setPeriodConfirmOpen(true);
-        return;
+      if (mode === 'edit' && editSnap && subscription) {
+        if (hasSubscriptionBillingPeriodChanged(editSnap, form)) {
+          setPeriodConfirmOpen(true);
+          return;
+        }
+        if (hasSubscriptionAmountChanged(editSnap, form)) {
+          setAmountConfirmOpen(true);
+          return;
+        }
       }
       await submitForm();
     },
@@ -114,8 +121,17 @@ export function useSubscriptionFormDialogActions({
     formError,
     canSubmit,
     billingValidationError,
-    periodConfirmOpen,
-    setPeriodConfirmOpen,
+    saveConfirmOpen: periodConfirmOpen || amountConfirmOpen,
+    saveConfirmTitle: amountConfirmOpen
+      ? SUBSCRIPTION_AMOUNT_CHANGE_CONFIRM_TITLE
+      : 'Confirm billing period change?',
+    saveConfirmDescription: amountConfirmOpen
+      ? SUBSCRIPTION_AMOUNT_CHANGE_CONFIRM_DESCRIPTION
+      : null,
+    closeSaveConfirm: () => {
+      setPeriodConfirmOpen(false);
+      setAmountConfirmOpen(false);
+    },
     handleSubmit,
     submitForm,
     applyPeriodChange,

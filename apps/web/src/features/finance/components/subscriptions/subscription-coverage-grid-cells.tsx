@@ -126,7 +126,7 @@ export function SubscriptionGridMonthCell({
     return <SubscriptionEmptyMonthCell />;
   }
 
-  const amount = cell.displayAmount;
+  const amount = cell.amountMonthly;
   const hasAmount = amount != null;
   const fullAmount = hasAmount ? formatAmount(amount) : undefined;
   const amountLabel = hasAmount ? formatAmountAbbreviated(amount) : null;

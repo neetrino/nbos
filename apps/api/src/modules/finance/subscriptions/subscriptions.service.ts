@@ -333,6 +333,7 @@ export class SubscriptionsService {
         ? { connect: { id: data.partnerId } }
         : { disconnect: true };
 
+    // Amount is the future billing rate only; never rewrite issued invoices.
     await this.prisma.subscription.update({
       where: { id },
       data: updateData,

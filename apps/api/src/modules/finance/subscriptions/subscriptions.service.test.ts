@@ -335,6 +335,21 @@ describe('SubscriptionsService', () => {
   });
 
   describe('update', () => {
+    it('does not rewrite invoices when amount changes', async () => {
+      prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
+      prisma.subscription.update.mockResolvedValue({});
+
+      await service.update('1', { amount: 9000 });
+
+      expect(prisma.subscription.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ amount: 9000 }),
+        }),
+      );
+      expect(prisma.invoice.update).not.toHaveBeenCalled();
+      expect(prisma.invoice.updateMany).not.toHaveBeenCalled();
+    });
+
     it('updates commercial name when provided', async () => {
       prisma.subscription.findUnique.mockResolvedValue(mockSubscriptionForFindById());
       prisma.subscription.update.mockResolvedValue({});
