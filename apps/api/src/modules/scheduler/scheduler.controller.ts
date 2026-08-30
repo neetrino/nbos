@@ -33,7 +33,7 @@ export class SchedulerController {
   @ApiOperation({
     summary: 'Invoice Card reminders: official-request + subscription 5-day window',
     description:
-      'Yerevan calendar asOf. Official-request-due for Tax invoices past due without request. Subscription WhatsApp «pay within 5 days» on the pay/issue anchor with catch-up until dueDate. Overdue client waves stay on the Invoices button.',
+      'Yerevan calendar asOf. Official-request catch-up for Tax invoices in Awaiting Payment without a sent request. Subscription WhatsApp «pay within 5 days» on the pay/issue anchor with catch-up until dueDate. Overdue client waves stay on the Invoices button.',
   })
   async runInvoiceCardReminders() {
     return this.schedulerService.runInvoiceCardReminders();

@@ -113,4 +113,19 @@ describe('scheduler-job-catalog', () => {
       }
     }
   });
+
+  it('does not advertise retired D-10 / D-2 client offsets', () => {
+    for (const entry of SCHEDULER_JOB_CATALOG) {
+      expect(entry.title, entry.jobName).not.toMatch(/\bD-10\b|\bD-2\b/);
+      expect(entry.description, entry.jobName).not.toMatch(/\bD-10\b|\bD-2\b/);
+    }
+  });
+
+  it('describes invoice-card-reminders as the 5-day pay-window letter', () => {
+    const reminders = SCHEDULER_JOB_CATALOG.find(
+      (entry) => entry.jobName === SCHEDULER_JOB_NAMES.invoiceCardReminders,
+    );
+    expect(reminders?.description).toContain('pay within 5 days');
+    expect(reminders?.description).toContain('Invoices button');
+  });
 });

@@ -13,7 +13,7 @@ NBOS Messenger / CRM / Notifications
           -> WhatsApp Groups / 1:1 chats
 ```
 
-**Физическое развёртывание (production, согласовано):** логический `WhatsAppWebAdapter` реализуется как **отдельный сервис WhatsApp Gateway**; NBOS вызывает Gateway по HTTPS, Gateway вызывает WAHA по **внутренней** Docker-сети (например `http://waha:3000`). Детали границы ответственности, env и БД Gateway: `06-WhatsApp-Gateway-NBOS-Boundary.md`.
+**Физическое развёртывание (production, согласовано):** логический `WhatsAppWebAdapter` реализуется как **отдельный сервис WhatsApp Gateway**; NBOS вызывает Gateway по HTTPS, Gateway вызывает WAHA по **внутренней** Docker-сети (например `http://waha:3000`). Детали границы: `06-WhatsApp-Gateway-NBOS-Boundary.md`. Контракт picker/send — всегда live: [Gateway INTEGRATION.md](https://github.com/neetrino/whatsapp-gateway/blob/main/docs/INTEGRATION.md).
 
 **Product groups (automation):** каждая WhatsApp-группа принадлежит **Product**, не Project. См. `08-Product-WhatsApp-Groups.md`.
 

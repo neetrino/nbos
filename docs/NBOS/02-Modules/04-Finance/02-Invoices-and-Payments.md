@@ -136,15 +136,15 @@ Payment confirmed
 
 ### Правила переходов
 
-| Из                                                 | В                  | Как происходит                                                                                     |
-| -------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------- |
-| `New`                                              | `Awaiting Payment` | вручную или автоматикой, если карточка готова к ожиданию оплаты                                    |
-| `Awaiting Payment`                                 | `Overdue`          | автоматически по due date                                                                          |
-| `Overdue`                                          | `On Hold`          | вручную                                                                                            |
-| `On Hold`                                          | `Awaiting Payment` | вручную                                                                                            |
-| `Awaiting Payment` / `Overdue` / `On Hold`         | `Paid`             | вручную (Mark Paid) или после записи Payment; Mark Paid при outstanding создаёт Payment на остаток |
-| `New` / `Awaiting Payment` / `Overdue` / `On Hold` | `Cancelled`        | вручную                                                                                            |
-| `Cancelled`                                        | `Awaiting Payment` | вручную; новый цикл взыскания (клиентский D-2 может уйти снова, если календарный день совпал)      |
+| Из                                                 | В                  | Как происходит                                                                                      |
+| -------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------- |
+| `New`                                              | `Awaiting Payment` | вручную или автоматикой, если карточка готова к ожиданию оплаты                                     |
+| `Awaiting Payment`                                 | `Overdue`          | автоматически по due date                                                                           |
+| `Overdue`                                          | `On Hold`          | вручную                                                                                             |
+| `On Hold`                                          | `Awaiting Payment` | вручную                                                                                             |
+| `Awaiting Payment` / `Overdue` / `On Hold`         | `Paid`             | вручную (Mark Paid) или после записи Payment; Mark Paid при outstanding создаёт Payment на остаток  |
+| `New` / `Awaiting Payment` / `Overdue` / `On Hold` | `Cancelled`        | вручную                                                                                             |
+| `Cancelled`                                        | `Awaiting Payment` | вручную; новый цикл взыскания (письмо «оплатите в течение 5 дней» и overdue-волны могут уйти снова) |
 
 ### Tax readiness gates
 

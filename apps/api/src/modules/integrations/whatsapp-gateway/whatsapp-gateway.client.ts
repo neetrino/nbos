@@ -6,6 +6,8 @@ import {
 import { WhatsAppGatewayHttpError } from './whatsapp-gateway.errors';
 import type {
   WhatsAppGatewayAddParticipantsResult,
+  WhatsAppGatewayChatsListData,
+  WhatsAppGatewayChatType,
   WhatsAppGatewayCreateGroupResult,
   WhatsAppGatewayEnvelope,
   WhatsAppGatewayGroupsListData,
@@ -45,6 +47,24 @@ export class WhatsAppGatewayClient {
       query.set('search', params.search.trim().slice(0, 100));
     }
     return this.request(config, 'GET', `/api/groups?${query.toString()}`);
+  }
+
+  async listChats(
+    config: WhatsAppGatewayClientConfig,
+    params?: { limit?: number; offset?: number; search?: string },
+  ): Promise<WhatsAppGatewayChatsListData> {
+    const limit = params?.limit ?? 100;
+    const offset = params?.offset ?? 0;
+    const query = new URLSearchParams();
+    query.set('limit', String(limit));
+    query.set('offset', String(offset));
+    query.set('search', params?.search?.trim().slice(0, 100) ?? '');
+    const data = await this.request<WhatsAppGatewayChatsListData>(
+      config,
+      'GET',
+      `/api/chats?${query.toString()}`,
+    );
+    return normalizeChatsPage(data, limit, offset);
   }
 
   async createGroup(
@@ -211,6 +231,31 @@ export function assertHttpsBaseUrl(baseUrl: string, allowHttpLocalhost: boolean)
     'VALIDATION_ERROR',
     'Gateway base URL must use HTTPS (HTTP allowed only for localhost in non-production)',
   );
+}
+
+export function normalizeGatewayChatType(id: string, type?: string): WhatsAppGatewayChatType {
+  if (type === 'group' || type === 'direct') return type;
+  return id.endsWith('@g.us') ? 'group' : 'direct';
+}
+
+function normalizeChatsPage(
+  data: WhatsAppGatewayChatsListData | undefined,
+  limit: number,
+  offset: number,
+): WhatsAppGatewayChatsListData {
+  const items = Array.isArray(data?.items) ? data.items : [];
+  return {
+    items: items.map((item) => ({
+      id: item.id,
+      name: typeof item.name === 'string' ? item.name : '',
+      type: normalizeGatewayChatType(item.id, item.type),
+    })),
+    pagination: {
+      limit: data?.pagination?.limit ?? limit,
+      offset: data?.pagination?.offset ?? offset,
+      count: data?.pagination?.count ?? items.length,
+    },
+  };
 }
 
 export { WHATSAPP_GATEWAY_CONNECT_TIMEOUT_MS };

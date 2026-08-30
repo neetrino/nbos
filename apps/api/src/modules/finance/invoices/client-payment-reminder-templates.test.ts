@@ -11,7 +11,7 @@ import {
 } from './client-payment-reminder-templates';
 
 describe('client payment reminder templates', () => {
-  it('renders subscription D-2 TAX without pay-to block', () => {
+  it('renders subscription 5-day TAX without pay-to block', () => {
     const message = renderClientPaymentReminderMessage({
       offsetDays: 2,
       language: 'HY',
@@ -29,7 +29,7 @@ describe('client payment reminder templates', () => {
     expect(message).not.toContain(TAX_FREE_PAYMENT_NAME);
   });
 
-  it('renders subscription D-2 TAX_FREE with Hasmik pay-to block', () => {
+  it('renders subscription 5-day TAX_FREE with Hasmik pay-to block', () => {
     const message = renderClientPaymentReminderMessage({
       offsetDays: 2,
       language: 'RU',
@@ -48,7 +48,7 @@ describe('client payment reminder templates', () => {
     expect(message).not.toContain('выставленному счёту');
   });
 
-  it('renders client service D-2 in English with due date label', () => {
+  it('renders client service 5-day letter in English with due date label', () => {
     const message = renderClientPaymentReminderMessage({
       offsetDays: 2,
       language: 'EN',

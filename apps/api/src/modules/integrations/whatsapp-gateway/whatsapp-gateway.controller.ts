@@ -34,6 +34,15 @@ export class WhatsAppGatewayController {
     return this.connection.getPublicView();
   }
 
+  @Get('chats')
+  @RequirePermission('COMPANY', 'EDIT')
+  @ApiOperation({
+    summary: 'List WhatsApp chats (groups + personal) from the connected Gateway',
+  })
+  listChats(@Query() query: ListWhatsAppGatewayGroupsQueryDto) {
+    return this.connection.listChats(query);
+  }
+
   @Get('groups')
   @RequirePermission('COMPANY', 'EDIT')
   @ApiOperation({ summary: 'List WhatsApp groups from the connected Gateway' })

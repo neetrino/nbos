@@ -187,6 +187,8 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 
 **Сделано (срез 2026-08, D-10 retired):** automatic client WhatsApp before due is D-2 only. D-10 was not the first overdue wave.
 
+**Сделано (срез 2026-08, 5-day window):** cron `invoice-card-reminders` шлёт «оплатите в течение 5 дней» в день якоря (pay/issue). D-10 / D-2 cron retired. Overdue остаётся кнопкой на Invoices.
+
 **Остаётся:**
 
 - EHDM / Government invoice ID в UI — позже;

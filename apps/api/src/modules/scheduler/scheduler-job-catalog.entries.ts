@@ -112,7 +112,7 @@ export const SCHEDULER_PLATFORM_CRON_CATALOG: readonly SchedulerJobCatalogEntry[
     jobName: SCHEDULER_JOB_NAMES.invoiceCardReminders,
     title: 'Invoice card reminders',
     description:
-      'Tax official-request plus subscription 5-day pay-window WhatsApp at 11:00. Overdue client waves stay on the Invoices button.',
+      'Tax official-request to the accountant, plus subscription WhatsApp «pay within 5 days» on the pay/issue day at 11:00. Overdue client letters stay on the Invoices button.',
     ownerModule: 'Finance',
     group: SCHEDULER_JOB_GROUP.money,
     defaultExpression: INVOICE_CARD_REMINDERS_DEFAULT_CRON,

@@ -114,6 +114,7 @@ Full DoD/PR/release checklists: [`docs/reference/Check/Quality/project-quality-c
 | Onboarding | `21-project-onboarding.mdc` |
 | Project size | `99-project-size.mdc` |
 | Frontend safety | `front.mdc` |
+| WhatsApp Gateway | `whatsapp-gateway-integration.mdc` |
 
 Workflows: [`.agents/skills/`](../../.agents/skills/). Platform how-tos: `docs/reference/platforms/`.
 

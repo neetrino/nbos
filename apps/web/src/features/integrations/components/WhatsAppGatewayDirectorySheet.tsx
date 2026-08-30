@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Copy, Search } from 'lucide-react';
+import { Copy, Search, User, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -14,11 +15,15 @@ import {
 } from '@/components/ui/sheet';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { whatsappGatewayApi, type WhatsAppAvailableGroup } from '@/lib/api/whatsapp';
+import {
+  whatsappGatewayApi,
+  type WhatsAppGatewayChatItem,
+  type WhatsAppGatewayChatType,
+} from '@/lib/api/whatsapp';
 import {
   directoryHasMorePage,
+  resolveDirectoryChatType,
   WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE,
-  whatsappDirectoryItemKind,
 } from '../whatsapp-gateway-directory';
 
 interface WhatsAppGatewayDirectorySheetProps {
@@ -42,8 +47,8 @@ export function WhatsAppGatewayDirectorySheet({
           <SheetHeader className="border-border shrink-0 border-b px-5 py-4 pr-14">
             <SheetTitle>WhatsApp chats</SheetTitle>
             <SheetDescription>
-              Search groups from the connected WhatsApp account. Name and ID are shown so you can
-              copy the one you need.
+              Groups and personal chats in one inbox-style list. Search is sent to the Gateway on
+              every request.
             </SheetDescription>
           </SheetHeader>
           <WhatsAppGatewayDirectoryBody
@@ -96,7 +101,7 @@ function WhatsAppGatewayDirectoryResults(props: {
   configured: boolean;
   search: string;
 }) {
-  const [groups, setGroups] = useState<WhatsAppAvailableGroup[]>([]);
+  const [items, setItems] = useState<WhatsAppGatewayChatItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
@@ -105,7 +110,7 @@ function WhatsAppGatewayDirectoryResults(props: {
   const loadPage = useCallback(
     async (offset: number, append: boolean) => {
       if (!props.configured) {
-        setGroups([]);
+        setItems([]);
         setHasMore(false);
         setErrorMessage(null);
         return;
@@ -113,18 +118,18 @@ function WhatsAppGatewayDirectoryResults(props: {
       if (append) setLoadingMore(true);
       else setLoading(true);
       try {
-        const page = await whatsappGatewayApi.listGroups({
+        const page = await whatsappGatewayApi.listChats({
           limit: WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE,
           offset,
-          search: props.search || undefined,
+          search: props.search,
         });
-        setGroups((previous) => (append ? [...previous, ...page.groups] : page.groups));
-        setHasMore(directoryHasMorePage(page.groups.length, page.pagination.limit));
+        setItems((previous) => (append ? [...previous, ...page.items] : page.items));
+        setHasMore(directoryHasMorePage(page.items.length, page.pagination.limit));
         setErrorMessage(null);
       } catch (error) {
         const message = getApiErrorMessage(error, 'Could not load WhatsApp chats.');
         setErrorMessage(message);
-        if (!append) setGroups([]);
+        if (!append) setItems([]);
         toast.error(message);
       } finally {
         setLoading(false);
@@ -151,7 +156,7 @@ function WhatsAppGatewayDirectoryResults(props: {
     <div className="flex min-h-0 flex-1 flex-col gap-2">
       {errorMessage ? <p className="text-destructive text-xs">{errorMessage}</p> : null}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <WhatsAppGatewayDirectoryList groups={groups} loading={loading} />
+        <WhatsAppGatewayDirectoryList items={items} loading={loading} />
       </div>
       {hasMore ? (
         <Button
@@ -160,7 +165,7 @@ function WhatsAppGatewayDirectoryResults(props: {
           size="sm"
           className="shrink-0 self-start"
           disabled={loading || loadingMore}
-          onClick={() => void loadPage(groups.length, true)}
+          onClick={() => void loadPage(items.length, true)}
         >
           {loadingMore ? 'Loading…' : 'Load more'}
         </Button>
@@ -170,44 +175,46 @@ function WhatsAppGatewayDirectoryResults(props: {
 }
 
 function WhatsAppGatewayDirectoryList(props: {
-  groups: WhatsAppAvailableGroup[];
+  items: WhatsAppGatewayChatItem[];
   loading: boolean;
 }) {
-  if (props.loading && props.groups.length === 0) {
+  if (props.loading && props.items.length === 0) {
     return <p className="text-muted-foreground text-sm">Loading…</p>;
   }
-  if (props.groups.length === 0) {
+  if (props.items.length === 0) {
     return <p className="text-muted-foreground text-sm">No chats match this search.</p>;
   }
 
   return (
     <ul className="divide-border divide-y">
-      {props.groups.map((group) => (
-        <WhatsAppGatewayDirectoryRow key={group.id} group={group} />
+      {props.items.map((item) => (
+        <WhatsAppGatewayDirectoryRow key={item.id} item={item} />
       ))}
     </ul>
   );
 }
 
-function WhatsAppGatewayDirectoryRow({ group }: { group: WhatsAppAvailableGroup }) {
-  const kind = whatsappDirectoryItemKind(group.id);
+function WhatsAppGatewayDirectoryRow({ item }: { item: WhatsAppGatewayChatItem }) {
+  const type = resolveDirectoryChatType(item.id, item.type);
+  const title = item.name.trim() || item.id;
   return (
-    <li className="flex items-start gap-2 py-2.5 first:pt-0">
+    <li className="flex items-start gap-3 py-2.5 first:pt-0">
+      <WhatsAppDirectoryKindMark type={type} />
       <div className="min-w-0 flex-1">
-        <p className="text-foreground truncate text-sm font-medium">{group.name || group.id}</p>
-        <p className="text-muted-foreground mt-0.5 truncate font-mono text-xs">
-          {group.id}
-          <span className="ml-1.5 font-sans">{kind === 'group' ? 'Group' : 'Chat'}</span>
-        </p>
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="text-foreground truncate text-sm font-medium">{title}</p>
+          <WhatsAppDirectoryKindBadge type={type} />
+        </div>
+        <p className="text-muted-foreground mt-0.5 truncate font-mono text-xs">{item.id}</p>
       </div>
       <Button
         type="button"
         size="icon-sm"
         variant="ghost"
-        aria-label={`Copy ${group.name || group.id}`}
+        aria-label={`Copy ${title}`}
         className="text-muted-foreground shrink-0"
         onClick={() => {
-          void navigator.clipboard.writeText(group.id).then(
+          void navigator.clipboard.writeText(item.id).then(
             () => toast.success('Chat ID copied'),
             () => toast.error('Could not copy chat ID'),
           );
@@ -216,5 +223,31 @@ function WhatsAppGatewayDirectoryRow({ group }: { group: WhatsAppAvailableGroup 
         <Copy className="size-3.5" aria-hidden />
       </Button>
     </li>
+  );
+}
+
+function WhatsAppDirectoryKindMark({ type }: { type: WhatsAppGatewayChatType }) {
+  const isGroup = type === 'group';
+  const Icon = isGroup ? Users : User;
+  return (
+    <span
+      className={
+        isGroup
+          ? 'bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-full'
+          : 'bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-full'
+      }
+      aria-hidden
+    >
+      <Icon className="size-4" />
+    </span>
+  );
+}
+
+function WhatsAppDirectoryKindBadge({ type }: { type: WhatsAppGatewayChatType }) {
+  const isGroup = type === 'group';
+  return (
+    <Badge variant={isGroup ? 'secondary' : 'outline'} className="shrink-0">
+      {isGroup ? 'Group' : 'Personal'}
+    </Badge>
   );
 }
