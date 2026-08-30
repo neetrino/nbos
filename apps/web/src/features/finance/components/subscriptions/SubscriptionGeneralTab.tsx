@@ -1,19 +1,20 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Calendar, DollarSign, Handshake, Layers, Receipt, Repeat } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar, DollarSign, Handshake, Layers, Repeat } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetCollapsibleSection,
   InlineField,
 } from '@/components/shared';
-import { TAX_STATUSES } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
+import {
+  EXPENSE_SHEET_FIELD_CELL_CLASS,
+  EXPENSE_SHEET_FIELD_ROW_2_CLASS,
+} from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import {
   CUSTOM_PREPAID_MONTH_MAX,
   CUSTOM_PREPAID_MONTH_MIN,
   SUBSCRIPTION_BILLING_FREQUENCIES,
-  SUBSCRIPTION_REMINDER_LANGUAGES,
   SUBSCRIPTION_TYPES,
 } from '@/features/finance/constants/finance';
 import { applyBillingPeriodChangeToDraft } from '@/features/finance/utils/subscription-billing-period-change';
@@ -23,7 +24,9 @@ import {
   getSubscriptionPeriodAmountLabel,
 } from '@/features/finance/utils/subscription-form-state';
 import { partnersApi } from '@/lib/api/partners';
+import { SubscriptionAmountTaxField } from './SubscriptionAmountTaxField';
 import { SubscriptionDetailLinkedPanel } from './SubscriptionDetailLinkedPanel';
+import { SubscriptionNotificationSettingsRow } from './SubscriptionNotificationSettingsRow';
 import { SubscriptionTermSummary } from './SubscriptionTermSummary';
 import type { Subscription } from '@/lib/api/finance';
 
@@ -34,8 +37,6 @@ interface SubscriptionGeneralTabProps {
   replaceDraft: (next: SubscriptionGeneralDraft) => void;
   formDisabled?: boolean;
 }
-
-const BILLING_FIELD_PAIR_CLASS = 'grid grid-cols-1 gap-4 sm:grid-cols-2';
 
 export function SubscriptionGeneralTab({
   subscription,
@@ -115,17 +116,28 @@ export function SubscriptionGeneralTab({
         onOpenChange={setBillingOpen}
       >
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <InlineField
-            variant="controlled"
-            label="Type"
-            type="select"
-            value={draft.type}
-            options={SUBSCRIPTION_TYPES.map((t) => ({ value: t.value, label: t.label }))}
-            icon={<Layers size={12} />}
-            disabled={formDisabled}
-            onValueChange={(v) => v && patchDraft({ type: v })}
-          />
-          <div className={BILLING_FIELD_PAIR_CLASS}>
+          <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
+            <SubscriptionAmountTaxField
+              amountLabel={getSubscriptionPeriodAmountLabel(draft.billingFrequency)}
+              amount={draft.amount}
+              taxStatus={draft.taxStatus}
+              disabled={formDisabled}
+              onAmountChange={(amount) => patchDraft({ amount })}
+              onTaxStatusChange={(taxStatus) => patchDraft({ taxStatus })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Type"
+              type="select"
+              value={draft.type}
+              options={SUBSCRIPTION_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+              icon={<Layers size={12} />}
+              disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={(v) => v && patchDraft({ type: v })}
+            />
+          </div>
+          <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
             <InlineField
               variant="controlled"
               label="Frequency"
@@ -137,6 +149,7 @@ export function SubscriptionGeneralTab({
               }))}
               icon={<Repeat size={12} />}
               disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(v) => v && onBillingFrequencyChange(v)}
             />
             <InlineField
@@ -147,59 +160,26 @@ export function SubscriptionGeneralTab({
               placeholder="1–28"
               icon={<Calendar size={12} />}
               disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(v) => patchDraft({ billingDay: v })}
             />
           </div>
           {draft.billingFrequency === 'CUSTOM' ? (
-            <InlineField
-              variant="controlled"
-              label={`Coverage months (${CUSTOM_PREPAID_MONTH_MIN}–${CUSTOM_PREPAID_MONTH_MAX})`}
-              type="number"
-              value={draft.coverageMonthCount}
-              placeholder={`${CUSTOM_PREPAID_MONTH_MIN}–${CUSTOM_PREPAID_MONTH_MAX}`}
-              icon={<Repeat size={12} />}
-              disabled={formDisabled}
-              onValueChange={onCoverageMonthCountChange}
-            />
+            <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
+              <InlineField
+                variant="controlled"
+                label="Coverage"
+                type="number"
+                value={draft.coverageMonthCount}
+                placeholder={`${CUSTOM_PREPAID_MONTH_MIN}–${CUSTOM_PREPAID_MONTH_MAX}`}
+                icon={<Repeat size={12} />}
+                disabled={formDisabled}
+                className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+                onValueChange={onCoverageMonthCountChange}
+              />
+            </div>
           ) : null}
-          <InlineField
-            variant="controlled"
-            label={getSubscriptionPeriodAmountLabel(draft.billingFrequency)}
-            type="money"
-            value={draft.amount}
-            placeholder="Enter amount…"
-            icon={<DollarSign size={12} />}
-            disabled={formDisabled}
-            onValueChange={(v) => patchDraft({ amount: v })}
-          />
-          {billingValidationError ? (
-            <p className="text-destructive text-sm">{billingValidationError}</p>
-          ) : null}
-          <SubscriptionTermSummary subscription={subscription} />
-          <div className={BILLING_FIELD_PAIR_CLASS}>
-            <InlineField
-              variant="controlled"
-              label="Tax"
-              type="select"
-              value={draft.taxStatus}
-              options={TAX_STATUSES.map((t) => ({ value: t.value, label: t.label }))}
-              icon={<Receipt size={12} />}
-              disabled={formDisabled}
-              onValueChange={(v) => v && patchDraft({ taxStatus: v })}
-            />
-            <InlineField
-              variant="controlled"
-              label="Partner"
-              type="select"
-              value={draft.partnerId}
-              options={partnerSelectOptions}
-              icon={<Handshake size={12} />}
-              clearable
-              disabled={formDisabled}
-              onValueChange={onPartnerChange}
-            />
-          </div>
-          <div className={BILLING_FIELD_PAIR_CLASS}>
+          <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
             <InlineField
               variant="controlled"
               label="Started"
@@ -207,6 +187,7 @@ export function SubscriptionGeneralTab({
               value={draft.billingStartDate}
               icon={<Calendar size={12} />}
               disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(v) => patchDraft({ billingStartDate: v })}
             />
             <InlineField
@@ -217,29 +198,37 @@ export function SubscriptionGeneralTab({
               clearable
               icon={<Calendar size={12} />}
               disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(v) => patchDraft({ endDate: v })}
             />
           </div>
-          <label className="text-muted-foreground flex cursor-pointer items-center gap-2 text-sm">
-            <Checkbox
-              checked={draft.notificationsEnabled}
+          {billingValidationError ? (
+            <p className="text-destructive text-sm">{billingValidationError}</p>
+          ) : null}
+          <SubscriptionTermSummary subscription={subscription} />
+          <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
+            <SubscriptionNotificationSettingsRow
+              notificationsEnabled={draft.notificationsEnabled}
+              reminderLanguage={draft.reminderLanguage}
               disabled={formDisabled}
-              onCheckedChange={(checked) => patchDraft({ notificationsEnabled: checked === true })}
+              onNotificationsChange={(notificationsEnabled) =>
+                patchDraft({ notificationsEnabled })
+              }
+              onReminderLanguageChange={(reminderLanguage) => patchDraft({ reminderLanguage })}
             />
-            Billing notifications
-          </label>
-          <InlineField
-            variant="controlled"
-            label="Payment reminder language"
-            type="select"
-            value={draft.reminderLanguage}
-            options={SUBSCRIPTION_REMINDER_LANGUAGES.map((l) => ({
-              value: l.value,
-              label: l.label,
-            }))}
-            disabled={formDisabled}
-            onValueChange={(v) => v && patchDraft({ reminderLanguage: v })}
-          />
+            <InlineField
+              variant="controlled"
+              label="Partner"
+              type="select"
+              value={draft.partnerId}
+              options={partnerSelectOptions}
+              icon={<Handshake size={12} />}
+              clearable
+              disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onValueChange={onPartnerChange}
+            />
+          </div>
         </div>
       </DetailSheetCollapsibleSection>
 

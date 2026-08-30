@@ -86,6 +86,12 @@ export const SUBSCRIPTION_REMINDER_LANGUAGES = [
   { value: 'EN', label: 'English' },
 ] as const;
 
+export const SUBSCRIPTION_REMINDER_LANGUAGE_SHORT_OPTIONS =
+  SUBSCRIPTION_REMINDER_LANGUAGES.map((language) => ({
+    value: language.value,
+    label: language.value.toLowerCase(),
+  }));
+
 export const DEFAULT_SUBSCRIPTION_REMINDER_LANGUAGE = 'HY' as const;
 
 export const SUBSCRIPTION_STATUSES = [
