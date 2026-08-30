@@ -81,7 +81,7 @@ Finance-модуль NBOS обеспечивает полное управлен
 
 ### 2.5. Автоматизация (Send overdue reminders)
 
-Кнопка `Send overdue reminders` на hero Invoices (`FINANCE_INVOICES` EDIT). Не cron.
+Компактная кнопка `Remind` (иконка + `aria-label` / tooltip `Send overdue reminders`) на hero Invoices (`FINANCE_INVOICES` EDIT). По клику — confirm-диалог с preview. Не cron.
 
 - Сначала Finance отмечает оплаченных как `Paid`
 - Preview: сколько карточек получат волну 1 / волну 2, кратко skipped (нет группы, Tax gate, same-day, max wave)
