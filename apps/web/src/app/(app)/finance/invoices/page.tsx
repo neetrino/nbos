@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
 import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
+import { OverdueRemindersButton } from '@/features/finance/components/invoices/OverdueRemindersButton';
 import { OverdueRemindersDialog } from '@/features/finance/components/invoices/OverdueRemindersDialog';
 import { InvoicesPageContent } from '@/features/finance/components/invoices/InvoicesPageContent';
 import { INVOICE_VIEW_OPTIONS } from '@/features/finance/components/invoices/invoice-view-options';
@@ -176,9 +177,7 @@ function InvoicesPageInner() {
             exportCsvLabel="Export invoices (CSV)"
           />
           <PermissionGate module="FINANCE_INVOICES" action="EDIT">
-            <Button type="button" variant="outline" onClick={openOverdueReminders}>
-              Send overdue reminders
-            </Button>
+            <OverdueRemindersButton onClick={openOverdueReminders} />
           </PermissionGate>
           <Button type="button" onClick={() => state.setCreateOpen(true)}>
             <Plus size={16} aria-hidden />
