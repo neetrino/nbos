@@ -150,6 +150,17 @@ describe('buildSubscriptionGridPayload', () => {
     expect(payload.rows[0].months[8].kind).toBe('NA');
   });
 
+  it('keeps an out-of-year live row visible with empty months', () => {
+    const payload = buildSubscriptionGridPayload(
+      [baseSub({ billingStartDate: new Date('2027-03-01'), status: 'ACTIVE' })],
+      2026,
+      NOW,
+    );
+    expect(payload.rows).toHaveLength(1);
+    expect(payload.rows[0].months.every((cell) => cell.kind === 'NA')).toBe(true);
+    expect(payload.rows[0].annualTotal).toBe(0);
+  });
+
   it('keeps open-ended forecast unbounded by term', () => {
     const payload = buildSubscriptionGridPayload(
       [

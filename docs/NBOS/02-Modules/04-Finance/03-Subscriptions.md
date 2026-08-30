@@ -478,6 +478,8 @@ Client Subscription Invoice Paid
 
 Inbox по умолчанию (список и grid) показывает только **Pending + Active**. On Hold, Cancelled и Completed скрыты, пока пользователь не выберет их в фильтре статуса. **All statuses** показывает все строки; фильтр одного статуса (например **Cancelled**) — только его.
 
+**Pending и Active всегда остаются строками grid**, даже если `billing_start_date` / `end_date` не пересекают выбранный год: месяцы вне срока — пустые (`N/A`), в итоги года не входят. On Hold, Cancelled и Completed по-прежнему попадают в год только при календарном пересечении.
+
 Сортировка всегда одна и та же: ранг статуса `PENDING → ACTIVE → ON_HOLD → CANCELLED → COMPLETED`, внутри статуса — `createdAt` desc (новые сверху). Первая строка — самый новый Pending; после всех Pending — самый новый Active.
 
 ### Фильтры Subscription Grid
@@ -486,7 +488,7 @@ Inbox по умолчанию (список и grid) показывает тол
 - **По статусу**: Pending + Active (default) / Pending / Active / On Hold / Cancelled / Completed / All statuses
 - **По проекту**: выбор конкретного проекта
 - **По клиенту (компании)**: все подписки одного клиента
-- **По году**: переключение между годами
+- **По году**: переключение между годами (меняет покраску месяцев; Pending/Active не скрывает)
 - **По Tax статусу**: Tax / Free
 
 ### Альтернативные виды
