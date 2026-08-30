@@ -19,7 +19,7 @@ describe('subscription payment reminder templates', () => {
     expect(formatCoverageMonthLabel('2026-06', 'EN').toLowerCase()).toContain('june');
   });
 
-  it('renders D-2 polite 5-day ask in all languages with amount', () => {
+  it('renders the 5-day pay-window ask in all languages with amount', () => {
     const hy = renderSubscriptionPaymentReminderMessage({
       offsetDays: 2,
       language: 'HY',
@@ -53,7 +53,7 @@ describe('subscription payment reminder templates', () => {
     expect(en).toContain('within 5 days');
   });
 
-  it('renders D-2 polite 5-day ask in all languages', () => {
+  it('renders the 5-day pay-window ask in all languages', () => {
     const hy = renderSubscriptionPaymentReminderMessage({
       offsetDays: 2,
       language: 'HY',

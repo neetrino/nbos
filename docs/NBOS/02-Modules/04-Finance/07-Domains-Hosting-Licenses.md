@@ -75,7 +75,7 @@ Expense for our side
 | `our_cost`              | Наша фактическая себестоимость                                                         |
 | `client_charge`         | Сколько должен платить клиент, если сервис клиентский                                  |
 | `tax_status`            | Tax / Free                                                                             |
-| `notifications_enabled` | Разрешены ли уведомления по связанным Invoice Cards, включая клиентский WhatsApp D-2   |
+| `notifications_enabled` | Разрешены ли уведомления по связанным Invoice Cards, включая клиентский WhatsApp       |
 | `reminder_language`     | HY / RU / EN for client WhatsApp payment reminders (same as Subscription). Default HY. |
 | `start_date`            | Дата начала                                                                            |
 | `renewal_date`          | Дата продления / следующей оплаты                                                      |
@@ -404,7 +404,7 @@ expiry_date updated
 
 - приближение `renewal_date`;
 - создание `Invoice Card` для клиентских сервисов (`WE_PAY`);
-- **клиентский WhatsApp D-2** по связанной Invoice Card — тот же канал, что у подписки: Product WhatsApp Group (`ClientServiceRecord.productId`), если `notifications_enabled` и группа `ACTIVE`. Язык = `reminder_language` (`HY` / `RU` / `EN`, default `HY`). `On Hold` не повторяет уже отправленное; `Cancelled` → снова `Awaiting Payment` открывает новый цикл. D-10 не отправляется. `REMINDER_ONLY` invoice не создаёт и в WhatsApp не шлёт;
+- **клиентский WhatsApp** по связанной Invoice Card — тот же канал, что у подписки: Product WhatsApp Group (`ClientServiceRecord.productId`), если `notifications_enabled` и группа `ACTIVE`. Язык = `reminder_language` (`HY` / `RU` / `EN`, default `HY`). Первое письмо «оплатите в течение 5 дней» cron шлёт только по подписке. После `dueDate` — кнопка **Send overdue reminders** (волна 1 / 2), в том числе для Client Service. `On Hold` не повторяет уже отправленное; `Cancelled` → снова `Awaiting Payment` открывает новый цикл. Старые авто-пинги D-10 / D-2 cron больше не создаёт. `REMINDER_ONLY` invoice не создаёт и в WhatsApp не шлёт;
 - создание `Task` после оплаты;
 - напоминание, если credentials не заполнены;
 - напоминание, если сервис скоро истекает.

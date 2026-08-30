@@ -144,7 +144,7 @@ Payment confirmed
 | `On Hold`                                          | `Awaiting Payment` | вручную                                                                                            |
 | `Awaiting Payment` / `Overdue` / `On Hold`         | `Paid`             | вручную (Mark Paid) или после записи Payment; Mark Paid при outstanding создаёт Payment на остаток |
 | `New` / `Awaiting Payment` / `Overdue` / `On Hold` | `Cancelled`        | вручную                                                                                            |
-| `Cancelled`                                        | `Awaiting Payment` | вручную; новый цикл взыскания (клиентский D-2 может уйти снова, если календарный день совпал)      |
+| `Cancelled`                                        | `Awaiting Payment` | вручную; новый цикл взыскания (письмо «оплатите в течение 5 дней» и overdue-волны могут уйти снова) |
 
 ### Tax readiness gates
 
