@@ -22,6 +22,7 @@ import { isReorderNoop, mapFilteredInsertToFullIndex } from './kanban/kanban-reo
 import { KANBAN_COLUMN_LEFT_RULE_CLASS } from './kanban/kanban-column-surface';
 import { KanbanTerminalDropBar } from './kanban/KanbanTerminalDropBar';
 import { KanbanColumnQuickCreate } from './kanban/KanbanColumnQuickCreate';
+import { KanbanColumnLoadMore } from './kanban/KanbanColumnLoadMore';
 import { KanbanScrollEdgeControls } from './kanban/KanbanScrollEdgeControls';
 import {
   KANBAN_HORIZONTAL_SCROLL_HIDE_SCROLLBAR_CLASS,
@@ -53,6 +54,7 @@ export function KanbanBoard<T>({
   onAddItemInColumn,
   addButtonLabel = 'Quick',
   terminalDropZones,
+  onColumnLoadMore,
 }: KanbanBoardProps<T>) {
   const editable = !!(onAddColumn || onRenameColumn || onDeleteColumn);
 
@@ -409,6 +411,13 @@ export function KanbanBoard<T>({
                       {showDropPreview ? (
                         <div className="min-h-[3rem] flex-1 shrink-0" aria-hidden />
                       ) : null}
+                      <KanbanColumnLoadMore
+                        hasMore={column.hasMore}
+                        loadingMore={column.loadingMore}
+                        onLoadMore={
+                          onColumnLoadMore ? () => onColumnLoadMore(column.key) : undefined
+                        }
+                      />
                     </div>
                   </div>
                 </div>
