@@ -117,19 +117,19 @@ export function SubscriptionEmptyMonthCell() {
 
 export function SubscriptionGridMonthCell({
   cell,
-  amountMonthly,
   onOpen,
 }: {
   cell: SubscriptionGridCell;
-  amountMonthly: number;
   onOpen: () => void;
 }) {
   if (cell.kind === 'NA') {
     return <SubscriptionEmptyMonthCell />;
   }
 
-  const fullAmount = formatAmount(amountMonthly);
-  const amountLabel = formatAmountAbbreviated(amountMonthly);
+  const amount = cell.displayAmount;
+  const hasAmount = amount != null;
+  const fullAmount = hasAmount ? formatAmount(amount) : undefined;
+  const amountLabel = hasAmount ? formatAmountAbbreviated(amount) : null;
   const statusLabel = cellStatusLabel(cell.kind);
 
   return (
@@ -140,16 +140,18 @@ export function SubscriptionGridMonthCell({
         SUBSCRIPTION_CALENDAR_SLOT_CLASS,
         cellVisualClasses(cell.kind),
       )}
-      title={fullAmount}
-      aria-label={`${statusLabel} · ${fullAmount}`}
+      title={fullAmount ?? statusLabel}
+      aria-label={hasAmount && fullAmount ? `${statusLabel} · ${fullAmount}` : statusLabel}
       onClick={(e) => {
         e.stopPropagation();
         onOpen();
       }}
     >
-      <span className="max-w-full truncate text-sm leading-tight font-bold tabular-nums">
-        {amountLabel}
-      </span>
+      {amountLabel ? (
+        <span className="max-w-full truncate text-sm leading-tight font-bold tabular-nums">
+          {amountLabel}
+        </span>
+      ) : null}
     </button>
   );
 }

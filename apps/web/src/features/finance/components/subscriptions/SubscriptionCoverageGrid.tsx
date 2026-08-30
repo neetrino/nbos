@@ -193,7 +193,6 @@ export function SubscriptionCoverageGrid({
                   <td key={idx} className={SUB_MONTH_CELL_CLASS}>
                     <SubscriptionGridMonthCell
                       cell={cell}
-                      amountMonthly={row.amountMonthly}
                       onOpen={() =>
                         onOpenMonthCell({
                           subscriptionId: row.subscriptionId,

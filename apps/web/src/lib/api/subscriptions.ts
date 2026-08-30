@@ -112,6 +112,8 @@ export type SubscriptionGridCellKind =
 export interface SubscriptionGridCell {
   kind: SubscriptionGridCellKind;
   invoiceId: string | null;
+  /** Period cash due this month; null on covered non-charge months. */
+  displayAmount: number | null;
 }
 
 export interface SubscriptionGridRow {
