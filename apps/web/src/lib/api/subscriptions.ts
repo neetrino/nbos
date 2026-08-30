@@ -112,11 +112,8 @@ export type SubscriptionGridCellKind =
 export interface SubscriptionGridCell {
   kind: SubscriptionGridCellKind;
   invoiceId: string | null;
-  /**
-   * Monthly equivalent painted on this cell.
-   * Issued months use the covering invoice; forecast/pending use the current rate; else null.
-   */
-  amountMonthly: number | null;
+  /** Period cash due this month; null on covered non-charge months. */
+  displayAmount: number | null;
 }
 
 export interface SubscriptionGridRow {

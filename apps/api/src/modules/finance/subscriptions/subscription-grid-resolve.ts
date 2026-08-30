@@ -6,7 +6,9 @@ import {
 } from './subscription-coverage-month';
 import { countDistinctCoveredMonths, latestCoveredMonthKey } from './subscription-coverage-window';
 import {
-  invoiceMonthlyEquivalentAmount,
+  cadenceChargeDisplayAmount,
+  invoiceChargeDisplayAmount,
+  resolveCoverageStep,
   subscriptionGridMonthKey,
 } from './subscription-grid-cell-amount';
 import type {
@@ -29,10 +31,10 @@ export function numericAmount(value: unknown): number {
 }
 
 export function cellCashAmount(cell: SubscriptionGridCell | undefined): number {
-  if (!cell || !cellContributesToTotals(cell.kind) || cell.amountMonthly == null) {
+  if (!cell || !cellContributesToTotals(cell.kind) || cell.displayAmount == null) {
     return 0;
   }
-  return cell.amountMonthly;
+  return cell.displayAmount;
 }
 
 export function resolveMonthCell(
@@ -45,13 +47,14 @@ export function resolveMonthCell(
     return emptyGridCell();
   }
 
+  const monthKey = subscriptionGridMonthKey(year, monthIndex);
   const covering = invoicesCoveringMonth(sub.invoices, year, monthIndex);
   if (covering.length > 0) {
     const { kind, invoiceId } = resolveInvoiceCell(covering, now);
     return {
       kind,
       invoiceId,
-      amountMonthly: resolveInvoiceCellAmountMonthly(covering, invoiceId),
+      displayAmount: resolveInvoiceCellDisplayAmount(covering, invoiceId, monthKey),
     };
   }
 
@@ -62,10 +65,12 @@ export function resolveMonthCell(
   return {
     kind,
     invoiceId: null,
-    amountMonthly:
-      kind === 'FORECAST' || kind === 'SUBSCRIPTION_PENDING'
-        ? numericAmount(sub.monthlyEquivalentAmount)
-        : null,
+    displayAmount: cadenceChargeDisplayAmount(
+      numericAmount(sub.amount),
+      sub.billingStartDate,
+      resolveCoverageStep(sub.coverageMonthCount),
+      monthKey,
+    ),
   };
 }
 
@@ -80,7 +85,7 @@ function cellContributesToTotals(kind: SubscriptionGridCellKind): boolean {
 }
 
 function emptyGridCell(): SubscriptionGridCell {
-  return { kind: 'NA', invoiceId: null, amountMonthly: null };
+  return { kind: 'NA', invoiceId: null, displayAmount: null };
 }
 
 function invoiceFullyPaid(inv: SubscriptionGridInvoiceInput): boolean {
@@ -163,13 +168,18 @@ function resolveUncoveredMonthKind(
   return 'FORECAST';
 }
 
-function resolveInvoiceCellAmountMonthly(
+function resolveInvoiceCellDisplayAmount(
   covering: SubscriptionGridInvoiceInput[],
   invoiceId: string | null,
+  monthKey: string,
 ): number | null {
   const invoice = covering.find((row) => row.id === invoiceId);
   if (!invoice) return null;
-  return invoiceMonthlyEquivalentAmount(numericAmount(invoice.amount), invoice.coverageMonthCount);
+  return invoiceChargeDisplayAmount(
+    invoice.coverageStartMonth,
+    numericAmount(invoice.amount),
+    monthKey,
+  );
 }
 
 function isMonthWithinRemainingTermForecast(
