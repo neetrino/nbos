@@ -187,37 +187,37 @@ These apply to every slice touching persistence or existing runtime.
 
 ### UI/navigation
 
-- [ ] Separate Internal Messenger entry point/route.
-- [ ] Navigation: `All / Products / Tasks / Deals / Work Spaces / Groups / Direct / Collections`.
-- [ ] Slice implements at minimum working `All`, `Groups`, `Direct`, `Collections`; entity tabs may progressively activate in later slices.
-- [ ] `All` is recent accessible activity, not Project tree.
-- [ ] filters/search hooks for Unread/Mentions/current activity.
+- [x] Separate Internal Messenger entry point/route.
+- [x] Navigation: `All / Products / Tasks / Deals / Work Spaces / Groups / Direct / Collections`.
+- [x] Slice implements at minimum working `All`, `Groups`, `Direct`, `Collections`; entity tabs may progressively activate in later slices.
+- [x] `All` is recent accessible activity, not Project tree.
+- [x] filters/search hooks for Unread/Mentions/current activity.
 
 ### Collections
 
-- [ ] Built-in personal `Favorites` Collection.
-- [ ] PERSONAL Collections.
-- [ ] SHARED Collections.
-- [ ] one conversation may belong to multiple Collections.
-- [ ] Collection membership does not alter ACL.
-- [ ] Internal Collections reject Client conversations.
+- [x] Built-in personal `Favorites` Collection.
+- [x] PERSONAL Collections.
+- [x] SHARED Collections.
+- [x] one conversation may belong to multiple Collections.
+- [x] Collection membership does not alter ACL.
+- [x] Internal Collections reject Client conversations.
 
 ### Migration
 
-- [ ] Existing useful channel/DM history is reused/mapped without data loss.
-- [ ] Old L1/L2 navigation does not return.
+- [x] Existing useful channel/DM history is reused/mapped without data loss.
+- [x] Old L1/L2 navigation does not return.
 
 ### Tests
 
-- [ ] recent ordering/read state.
-- [ ] Favorites/personal/shared semantics.
-- [ ] ACL-filtered shared collections.
-- [ ] internal-only surface boundary.
+- [x] recent ordering/read state.
+- [x] Favorites/personal/shared semantics.
+- [x] ACL-filtered shared collections.
+- [x] internal-only surface boundary.
 
 ### Acceptance
 
-- [ ] Team can use Groups/Direct/All on the new surface without relying on legacy mixed UI.
-- [ ] Slice status `VERIFIED`.
+- [x] Team can use Groups/Direct/All on the new surface without relying on legacy mixed UI.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -622,19 +622,19 @@ These apply to every slice touching persistence or existing runtime.
 
 ## 3. Implementation slice status table
 
-| Slice                            | Status     | Implementer evidence                  | Independent review                 |
-| -------------------------------- | ---------- | ------------------------------------- | ---------------------------------- |
-| 0 — Baseline/reconciliation      | `VERIFIED` | `20-Slice-00-Baseline.md`             | VERIFIED (FINDING-01 closed)       |
-| 1 — Messaging Core               | `VERIFIED` | `21-Slice-01-Messaging-Core.md`       | VERIFIED (FINDING-S1-01/02 closed) |
-| 2 — Permissions/boundary         | `VERIFIED` | `22-Slice-02-Permissions-Boundary.md` | VERIFIED (FINDING-S2-01/02 closed) |
-| 3 — Internal base                | `PLANNED`  | —                                     | —                                  |
-| 4 — Entity conversations         | `PLANNED`  | —                                     | —                                  |
-| 5 — Task Discussion migration    | `PLANNED`  | —                                     | —                                  |
-| 6 — Message actions/references   | `PLANNED`  | —                                     | —                                  |
-| 7 — Client surface               | `PLANNED`  | —                                     | —                                  |
-| 8 — WhatsApp Gateway integration | `PLANNED`  | —                                     | —                                  |
-| 9 — Flexible Product bindings    | `PLANNED`  | —                                     | —                                  |
-| 10 — Finance/Support/routing     | `PLANNED`  | —                                     | —                                  |
-| 11 — Hardening/cleanup readiness | `PLANNED`  | —                                     | —                                  |
+| Slice                            | Status     | Implementer evidence                  | Independent review                    |
+| -------------------------------- | ---------- | ------------------------------------- | ------------------------------------- |
+| 0 — Baseline/reconciliation      | `VERIFIED` | `20-Slice-00-Baseline.md`             | VERIFIED (FINDING-01 closed)          |
+| 1 — Messaging Core               | `VERIFIED` | `21-Slice-01-Messaging-Core.md`       | VERIFIED (FINDING-S1-01/02 closed)    |
+| 2 — Permissions/boundary         | `VERIFIED` | `22-Slice-02-Permissions-Boundary.md` | VERIFIED (FINDING-S2-01/02 closed)    |
+| 3 — Internal base                | `VERIFIED` | `23-Slice-03-Internal-Base.md`        | VERIFIED (FINDING-S3-01…S3-06 closed) |
+| 4 — Entity conversations         | `PLANNED`  | —                                     | —                                     |
+| 5 — Task Discussion migration    | `PLANNED`  | —                                     | —                                     |
+| 6 — Message actions/references   | `PLANNED`  | —                                     | —                                     |
+| 7 — Client surface               | `PLANNED`  | —                                     | —                                     |
+| 8 — WhatsApp Gateway integration | `PLANNED`  | —                                     | —                                     |
+| 9 — Flexible Product bindings    | `PLANNED`  | —                                     | —                                     |
+| 10 — Finance/Support/routing     | `PLANNED`  | —                                     | —                                     |
+| 11 — Hardening/cleanup readiness | `PLANNED`  | —                                     | —                                     |
 
 Status changes must follow `12-Messenger-Rebuild-Execution-Strategy.md`.

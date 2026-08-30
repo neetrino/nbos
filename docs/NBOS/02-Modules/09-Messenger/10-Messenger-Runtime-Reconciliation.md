@@ -119,11 +119,13 @@ The current Unified model already has useful concepts such as:
 
 However, the normal active `MessengerService` still uses Channels/DM tables. Therefore the mere existence of Unified tables does not prove they are production source of truth or that they contain no valuable historical rows.
 
-Classification: `EXTEND` as Messaging Core (Slice 1). Channel/DM remains the live Internal UI path until Slice 3 (`REUSE` then `MIGRATE`).
+Classification: `EXTEND` as Messaging Core (Slice 1). Channel/DM remains the rollback Internal store after Slice 3 (`REUSE` then `MIGRATE`). Daily Internal UI writes Core.
 
 **Slice 0 (SHA `302f57f7`):** no production `prisma.messengerConversation*` callers. Inventoried DB: **0 rows** on all Unified tables. Schema comment that Unified is “Internal Messenger UI source of truth” is **stale** (UI is Channel+DM). Unused WS names `messenger.subscribe_conversation` / `messenger.conversation.message` exist in shared constants only.
 
-**Slice 1:** Unified generation is evolved into Messaging Core (`MessengerConversation*` + additive Core tables). This is not a third store. Daily Internal UI still writes Channel/DM. Core HTTP is `messenger/core` (Internal persist only). Dual-write: **none**. Channel/DM → Core mapping is scheduled (`messenger_legacy_identities`, canonicalKey `legacy:channel:{id}`) and is not hooked into Channel/DM send. Meta remains until Slice 7.
+**Slice 1:** Unified generation is evolved into Messaging Core (`MessengerConversation*` + additive Core tables). This is not a third store. Dual-write: **none**. Channel/DM → Core mapping uses `messenger_legacy_identities` and canonicalKey `legacy:channel:{id}` and is not hooked into Channel/DM send. Meta remains until Slice 7.
+
+**Slice 3:** evidence `23-Slice-03-Internal-Base.md`. Status `VERIFIED`. Internal `/messenger` and Portfolio write Core. Mapper is ops-only (not list GET). Dual-write still **none**. Channel/DM tables not dropped; `/messenger/legacy` remains labeled rollback.
 
 ### 3.3 Do not create a third permanent message store
 
@@ -252,7 +254,7 @@ Do not build a second gateway and do not move NBOS authorization or Product bind
 | ------------------------------------------------------------ | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Active `MessengerChannel` / Channel messages                 | `REUSE/EXTEND/MIGRATE`                             | Preserve history, ACL/read/search/file behavior; move deliberately into chosen Core if needed.                                                                       |
 | Active `MessengerDirectThread` / Direct messages             | `REUSE/EXTEND/MIGRATE`                             | Preserve DM identity/history/read state; map safely into canonical Direct conversation.                                                                              |
-| Existing `MessengerConversation` generation                  | `EXTEND` (Messaging Core)                          | Slice 1 evolved Unified as Core; Channel/DM still live UI until Slice 3. Dual-write none.                                                                            |
+| Existing `MessengerConversation` generation                  | `EXTEND` (Messaging Core)                          | Slice 1 evolved Unified as Core. Slice 3 Internal UI writes Core; Channel/DM is rollback. Dual-write none.                                                           |
 | Old L1/L2/Topic architecture                                 | `DO NOT RETURN`                                    | No `MessengerTopic` in schema/code.                                                                                                                                  |
 | Current `favorite` user setting                              | `REUSE/EXTEND`                                     | May seed built-in Favorites behavior; it is not a full Collection system.                                                                                            |
 | User-created Collections                                     | `NEW`                                              | Implement PERSONAL/SHARED, surface-scoped, ACL-neutral.                                                                                                              |
@@ -318,7 +320,9 @@ Dual-write is temporary only. If required:
 
 Permanent dual-write is forbidden.
 
-**Slice 1 decision:** no dual-write window. Channel/DM remains the sole live Internal UI write path until Slice 3 cutover. Core persist is a separate HTTP/service path used for foundation, tests, and later cutover. Mapper is idempotent and opt-in.
+**Slice 1 decision:** no dual-write window. Mapper is idempotent and not hooked into Channel/DM send.
+
+**Slice 3:** Internal `/messenger` and Portfolio write Core. Channel/DM is labeled rollback (`/messenger/legacy`) only. Permanent dual-write remains forbidden.
 
 ---
 
@@ -578,7 +582,7 @@ Therefore:
 - Collections are strictly Internal or Client;
 - Shared Collection membership never changes ACL.
 
-Slice 2 added PERSONAL/SHARED Collection tables and zone-match DB triggers (`22-Slice-02-Permissions-Boundary.md`). Collection membership still does not grant conversation ACL. Slice 3 owns Collection UI / Favorites surface.
+Slice 2 added PERSONAL/SHARED Collection tables and zone-match DB triggers (`22-Slice-02-Permissions-Boundary.md`). Collection membership still does not grant conversation ACL. Slice 3 owns Collection UI / Favorites surface (`23-Slice-03-Internal-Base.md`, VERIFIED).
 
 Do not revive removed Topic/L1/L2 architecture to obtain grouping.
 
@@ -668,6 +672,8 @@ Completed for SHA `302f57f7` in `20-Slice-00-Baseline.md`. Status `VERIFIED` (FI
 **Slice 1:** evidence `21-Slice-01-Messaging-Core.md`. Status `VERIFIED`. Core path = evolved Unified. Dual-write none. Mapping scheduled. FINDING-S1-01/02 closed. Slice 2 may begin.
 
 **Slice 2:** evidence `22-Slice-02-Permissions-Boundary.md`. Status `VERIFIED`. FINDING-S2-01/02 closed. Conversation ACL on Core HTTP. Slice 3 may begin.
+
+**Slice 3:** evidence `23-Slice-03-Internal-Base.md`. Status `VERIFIED`. FINDING-S3-01…S3-06 closed. Dual-write none. Slice 4 may begin.
 
 Inventoried DB snapshot (local `DATABASE_URL`; not labeled prod vs staging): Channel/DM 0; Unified 0; Tasks 390 / chatId 0 / discussion 0; Product WhatsApp bindings 145 (ACTIVE 143 unique group ids, FAILED 2); gateway row 1 with accountant group id present; MetaConversation 0; MetaMessage 0; MetaConnectedAccount 0; MetaSenderIdentity 0; MetaProviderEvent 17.
 

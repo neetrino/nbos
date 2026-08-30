@@ -144,6 +144,16 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     label: 'Messenger',
     href: '/messenger',
     permission: { module: 'MESSENGER', action: 'VIEW' },
+    children: [
+      { label: 'All', href: '/messenger' },
+      { label: 'Products', href: '/messenger/products' },
+      { label: 'Tasks', href: '/messenger/tasks' },
+      { label: 'Deals', href: '/messenger/deals' },
+      { label: 'Work Spaces', href: '/messenger/work-spaces' },
+      { label: 'Groups', href: '/messenger/groups' },
+      { label: 'Direct', href: '/messenger/direct' },
+      { label: 'Collections', href: '/messenger/collections' },
+    ],
   },
   {
     key: 'calendar',

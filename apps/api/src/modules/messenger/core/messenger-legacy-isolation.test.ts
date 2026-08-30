@@ -29,4 +29,13 @@ describe('legacy path isolation', () => {
     expect(coreConversation).toMatch(/messengerConversation\.create/);
     expect(coreMessage).toMatch(/messengerMessage\.create/);
   });
+
+  it('new Internal HTTP persist path does not write Channel/DM tables', () => {
+    const internalService = readRepo(
+      'apps/api/src/modules/messenger/core/messenger-core-internal.service.ts',
+    );
+    expect(internalService).toMatch(/persistAndBroadcast/);
+    expect(internalService).not.toMatch(/messengerChannelMessage/);
+    expect(internalService).not.toMatch(/messengerDirectMessage/);
+  });
 });

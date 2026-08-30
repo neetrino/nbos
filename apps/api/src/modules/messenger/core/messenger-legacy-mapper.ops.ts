@@ -7,6 +7,11 @@ import {
   directMessageLegacyIdentity,
   directThreadLegacyIdentity,
 } from './messenger-legacy-identity';
+import {
+  backfillMappedChannelParticipants,
+  resolveMappedChannelParticipants,
+  type MappedChannelParticipantSeed,
+} from './messenger-legacy-mapper-participants.ops';
 
 type PrismaClientLike = InstanceType<typeof PrismaClient>;
 
@@ -26,16 +31,19 @@ export async function mapLegacyChannelToCore(
     },
   });
   if (existing?.conversationId) {
+    await backfillMappedChannelIfPresent(prisma, channelId, existing.conversationId);
     return { conversationId: existing.conversationId, created: false, messageCount: 0 };
   }
   const channel = await prisma.messengerChannel.findUnique({
     where: { id: channelId },
     include: {
       messages: { include: { attachments: true }, orderBy: { createdAt: 'asc' } },
+      readStates: true,
     },
   });
   if (!channel) return null;
-  return prisma.$transaction((tx) => persistChannelMapping(tx, channel));
+  const participants = await resolveMappedChannelParticipants(prisma, channel);
+  return prisma.$transaction((tx) => persistChannelMapping(tx, channel, participants));
 }
 
 export async function mapLegacyDirectThreadToCore(
@@ -54,6 +62,7 @@ export async function mapLegacyDirectThreadToCore(
     where: { id: threadId },
     include: {
       messages: { include: { attachments: true }, orderBy: { createdAt: 'asc' } },
+      readStates: true,
     },
   });
   if (!thread) return null;
@@ -77,6 +86,31 @@ export async function mapAllLegacyInternalToCore(prisma: PrismaClientLike): Prom
   return { channels: channels.length, threads: threads.length };
 }
 
+type MappedLegacyMessage = {
+  id: string;
+  senderId: string;
+  senderNameSnapshot: string;
+  content: string;
+  createdAt: Date;
+  editedAt: Date | null;
+  attachments: Array<{ fileAssetId: string; attachedById: string | null }>;
+};
+
+type MappedLegacyReadState = { employeeId: string; lastReadAt: Date };
+
+async function backfillMappedChannelIfPresent(
+  prisma: PrismaClientLike,
+  channelId: string,
+  conversationId: string,
+): Promise<void> {
+  const channel = await prisma.messengerChannel.findUnique({
+    where: { id: channelId },
+    select: { type: true, projectId: true, messages: { select: { senderId: true } } },
+  });
+  if (!channel) return;
+  await backfillMappedChannelParticipants(prisma, conversationId, channel);
+}
+
 async function persistChannelMapping(
   tx: TransactionClient,
   channel: {
@@ -84,17 +118,12 @@ async function persistChannelMapping(
     name: string;
     projectId: string;
     type: string;
-    messages: Array<{
-      id: string;
-      senderId: string;
-      senderNameSnapshot: string;
-      content: string;
-      createdAt: Date;
-      editedAt: Date | null;
-      attachments: Array<{ fileAssetId: string; attachedById: string | null }>;
-    }>;
+    messages: MappedLegacyMessage[];
+    readStates: MappedLegacyReadState[];
   },
+  participants: MappedChannelParticipantSeed[],
 ): Promise<LegacyMapResult> {
+  const lastMessageAt = lastMappedActivityAt(channel.messages);
   const conversation = await tx.messengerConversation.create({
     data: {
       zone: 'INTERNAL',
@@ -102,7 +131,9 @@ async function persistChannelMapping(
       type: 'INTERNAL_GROUP',
       title: channel.name,
       canonicalKey: legacyChannelCanonicalKey(channel.id),
+      lastMessageAt,
       metadata: { legacyChannelType: channel.type, projectId: channel.projectId },
+      participants: participantCreate(participants),
     },
   });
   await tx.messengerLegacyIdentity.create({
@@ -117,6 +148,7 @@ async function persistChannelMapping(
     channel.messages,
     'CHANNEL_MESSAGE',
   );
+  await persistMappedReadStates(tx, conversation.id, channel.readStates);
   return { conversationId: conversation.id, created: true, messageCount };
 }
 
@@ -126,37 +158,12 @@ async function persistDirectMapping(
     id: string;
     participantAId: string;
     participantBId: string;
-    messages: Array<{
-      id: string;
-      senderId: string;
-      senderNameSnapshot: string;
-      content: string;
-      createdAt: Date;
-      editedAt: Date | null;
-      attachments: Array<{ fileAssetId: string; attachedById: string | null }>;
-    }>;
+    messages: MappedLegacyMessage[];
+    readStates: MappedLegacyReadState[];
   },
 ): Promise<LegacyMapResult> {
-  const [low, high] = orderedParticipantIds(thread.participantAId, thread.participantBId);
-  const canonicalKey = directCanonicalKey(thread.participantAId, thread.participantBId);
-  const conversation =
-    (await tx.messengerConversation.findUnique({ where: { canonicalKey } })) ??
-    (await tx.messengerConversation.create({
-      data: {
-        zone: 'INTERNAL',
-        kind: 'DIRECT',
-        type: 'DIRECT',
-        canonicalKey,
-        directParticipantLowId: low,
-        directParticipantHighId: high,
-        participants: {
-          create: [
-            { employeeId: thread.participantAId, role: 'MEMBER' },
-            { employeeId: thread.participantBId, role: 'MEMBER' },
-          ],
-        },
-      },
-    }));
+  const lastMessageAt = lastMappedActivityAt(thread.messages);
+  const conversation = await ensureMappedDirectConversation(tx, thread, lastMessageAt);
   await tx.messengerLegacyIdentity.create({
     data: {
       ...directThreadLegacyIdentity(thread.id),
@@ -169,21 +176,78 @@ async function persistDirectMapping(
     thread.messages,
     'DIRECT_MESSAGE',
   );
+  await persistMappedReadStates(tx, conversation.id, thread.readStates);
   return { conversationId: conversation.id, created: true, messageCount };
+}
+
+async function ensureMappedDirectConversation(
+  tx: TransactionClient,
+  thread: { participantAId: string; participantBId: string },
+  lastMessageAt: Date | null,
+): Promise<{ id: string }> {
+  const [low, high] = orderedParticipantIds(thread.participantAId, thread.participantBId);
+  const canonicalKey = directCanonicalKey(thread.participantAId, thread.participantBId);
+  const existing = await tx.messengerConversation.findUnique({ where: { canonicalKey } });
+  if (existing) {
+    if (lastMessageAt) {
+      await tx.messengerConversation.update({
+        where: { id: existing.id },
+        data: { lastMessageAt },
+      });
+    }
+    return existing;
+  }
+  return tx.messengerConversation.create({
+    data: {
+      zone: 'INTERNAL',
+      kind: 'DIRECT',
+      type: 'DIRECT',
+      canonicalKey,
+      lastMessageAt,
+      directParticipantLowId: low,
+      directParticipantHighId: high,
+      participants: {
+        create: [
+          { employeeId: thread.participantAId, role: 'MEMBER' },
+          { employeeId: thread.participantBId, role: 'MEMBER' },
+        ],
+      },
+    },
+  });
+}
+
+function lastMappedActivityAt(messages: Array<{ createdAt: Date }>): Date | null {
+  const last = messages[messages.length - 1];
+  return last?.createdAt ?? null;
+}
+
+function participantCreate(seeds: MappedChannelParticipantSeed[]) {
+  if (seeds.length === 0) return undefined;
+  return { create: seeds.map((seed) => ({ employeeId: seed.employeeId, role: seed.role })) };
+}
+
+async function persistMappedReadStates(
+  tx: TransactionClient,
+  conversationId: string,
+  readStates: MappedLegacyReadState[],
+): Promise<void> {
+  for (const state of readStates) {
+    await tx.messengerConversationReadState.upsert({
+      where: { conversationId_employeeId: { conversationId, employeeId: state.employeeId } },
+      create: {
+        conversationId,
+        employeeId: state.employeeId,
+        lastReadAt: state.lastReadAt,
+      },
+      update: { lastReadAt: state.lastReadAt },
+    });
+  }
 }
 
 async function persistMappedMessages(
   tx: TransactionClient,
   conversationId: string,
-  messages: Array<{
-    id: string;
-    senderId: string;
-    senderNameSnapshot: string;
-    content: string;
-    createdAt: Date;
-    editedAt: Date | null;
-    attachments: Array<{ fileAssetId: string; attachedById: string | null }>;
-  }>,
+  messages: MappedLegacyMessage[],
   sourceKind: 'CHANNEL_MESSAGE' | 'DIRECT_MESSAGE',
 ): Promise<number> {
   let count = 0;

@@ -16,6 +16,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import {
   MESSENGER_SOCKET_NAMESPACE,
   MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL,
+  MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION,
   MESSENGER_WS_CLIENT_TYPING_CHANNEL,
   MESSENGER_WS_CLIENT_TYPING_DM,
   MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
@@ -39,6 +40,10 @@ import {
   canAccessMessengerChannel,
   loadMessengerLegacyAccess,
 } from './access/messenger-legacy-channel-access.op';
+import {
+  employeeMayUseCoreConversation,
+  extractConversationId,
+} from './messenger-gateway-core-subscribe';
 import { MessengerPresenceTracker } from './messenger-presence-tracker';
 import { MessengerTypingThrottle } from './messenger-typing-throttle';
 import type { MessengerMessageDto } from './messenger.types';
@@ -97,6 +102,22 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     if (!channelId) return { ok: false };
     if (!(await this.employeeMayUseChannel(employeeId, channelId))) return { ok: false };
     await client.join(messengerSocketChannelRoom(channelId));
+    return { ok: true };
+  }
+
+  @SubscribeMessage(MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION)
+  async handleSubscribeConversation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: unknown,
+  ): Promise<{ ok: boolean }> {
+    const employeeId = client.data.employeeId as string | undefined;
+    if (!employeeId) return { ok: false };
+    const conversationId = extractConversationId(body);
+    if (!conversationId) return { ok: false };
+    if (!(await employeeMayUseCoreConversation(this.prisma, employeeId, conversationId))) {
+      return { ok: false };
+    }
+    await client.join(messengerSocketConversationRoom(conversationId));
     return { ok: true };
   }
 

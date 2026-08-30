@@ -129,8 +129,8 @@ model MessengerDirectThreadReadState {
 }
 
 // ─── MESSAGING CORE (evolved Unified generation) ──────────
-// Canonical durable Messaging Core (M-CORE-01). Channel/DM remains the live Internal UI
-// write path until Slice 3 cutover. Do not treat this as a third store.
+// Canonical durable Messaging Core (M-CORE-01). Slice 3 Internal UI reads/writes Core.
+// Channel/DM remains the rollback store; do not DROP. Mapper is idempotent and not dual-write.
 // NBOS Internal Messenger is single-organization (no tenantId on Employee); isolation is application RBAC.
 
 enum MessengerConversationType {

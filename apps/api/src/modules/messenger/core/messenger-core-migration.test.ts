@@ -66,6 +66,16 @@ describe('Slice 2 collection migration safety', () => {
   });
 });
 
+describe('Slice 3 cutover does not drop Channel/DM', () => {
+  it('keeps Channel/DM models in schema after Internal UI cutover', () => {
+    const schema = readRepo('packages/database/prisma/schema/messenger.prisma');
+    expect(schema).toMatch(/model MessengerChannel /);
+    expect(schema).toMatch(/model MessengerDirectThread /);
+    expect(schema).toMatch(/model MessengerChannelMessage /);
+    expect(schema).toMatch(/model MessengerDirectMessage /);
+  });
+});
+
 describe('Core HTTP authorization metadata', () => {
   it('requires MESSENGER VIEW/EDIT on Core routes', () => {
     expect(
@@ -93,6 +103,22 @@ describe('Core HTTP authorization metadata', () => {
       module: 'MESSENGER',
       action: 'EDIT',
     });
+  });
+});
+
+describe('Slice 3 Internal HTTP', () => {
+  it('requires MESSENGER VIEW/EDIT on Internal Core routes', async () => {
+    const { MessengerCoreInternalController } =
+      await import('./messenger-core-internal.controller');
+    expect(
+      Reflect.getMetadata(
+        PERMISSION_KEY,
+        MessengerCoreInternalController.prototype.listConversations,
+      ),
+    ).toEqual({ module: 'MESSENGER', action: 'VIEW' });
+    expect(
+      Reflect.getMetadata(PERMISSION_KEY, MessengerCoreInternalController.prototype.sendMessage),
+    ).toEqual({ module: 'MESSENGER', action: 'EDIT' });
   });
 });
 

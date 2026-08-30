@@ -3,6 +3,9 @@ import { AuditModule } from '../audit/audit.module';
 import { MessengerCoreCollectionController } from './core/messenger-core-collection.controller';
 import { MessengerCoreCollectionService } from './core/messenger-core-collection.service';
 import { MessengerCoreController } from './core/messenger-core.controller';
+import { MessengerCoreInternalCollectionController } from './core/messenger-core-internal-collection.controller';
+import { MessengerCoreInternalController } from './core/messenger-core-internal.controller';
+import { MessengerCoreInternalService } from './core/messenger-core-internal.service';
 import { MessengerCoreService } from './core/messenger-core.service';
 import { MessengerController } from './messenger.controller';
 import { MessengerGateway } from './messenger.gateway';
@@ -10,10 +13,17 @@ import { MessengerService } from './messenger.service';
 
 @Module({
   imports: [AuditModule],
-  controllers: [MessengerController, MessengerCoreController, MessengerCoreCollectionController],
+  controllers: [
+    MessengerController,
+    MessengerCoreController,
+    MessengerCoreCollectionController,
+    MessengerCoreInternalController,
+    MessengerCoreInternalCollectionController,
+  ],
   providers: [
     MessengerService,
     MessengerCoreService,
+    MessengerCoreInternalService,
     MessengerCoreCollectionService,
     MessengerGateway,
   ],

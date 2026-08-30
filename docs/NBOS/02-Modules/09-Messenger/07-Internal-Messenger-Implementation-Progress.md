@@ -20,6 +20,10 @@ Implementer evidence: `21-Slice-01-Messaging-Core.md`. Status `VERIFIED`. Core p
 
 Implementer evidence: `22-Slice-02-Permissions-Boundary.md`. Status `VERIFIED`. Conversation ACL on Core HTTP. `CLIENT_READ` is a read ceiling; Client write needs a writeable participant or grant `EDIT`. `addReference` requires source/holder conversation READ. Slice 3 may begin.
 
+## Slice 3 status (not product canon)
+
+Implementer evidence: `23-Slice-03-Internal-Base.md`. Status `VERIFIED`. Daily Internal (`/messenger`, Portfolio) writes Core. Mapper is ops-only (`POST .../legacy-map`). Channel/DM remains labeled rollback at `/messenger/legacy`. FINDING-S3-01…S3-06 closed. Slice 4 may begin.
+
 ## Current verified static baseline
 
 The previous historical status text was stale and must not be used as runtime proof. Slice 0 re-checked this against `302f57f7` + DB counts (see evidence file).
@@ -48,6 +52,8 @@ prisma.messengerDirectMessage
 ```
 
 This active history/runtime cannot be deleted before deliberate migration/cutover.
+
+**Slice 3 VERIFIED runtime:** daily Internal Messenger (`/messenger` and Portfolio sheet) reads/writes Messaging Core (`persistAndBroadcast`). Channel/DM tables and `MessengerService` remain as labeled rollback (`/messenger/legacy` only). Mapper is ops-only; not hooked into Channel/DM send. Do not DROP Channel/DM.
 
 ## Additive Unified generation also present
 
@@ -191,7 +197,7 @@ Migration/runtime implementation uses additionally:
 
 ## Next step before product code changes
 
-1. independent review of Slice 2 (`22-Slice-02-Permissions-Boundary.md`);
-2. begin Slice 3 only after Slice 2 is `VERIFIED`.
+1. Slice 3 is `VERIFIED` (`23-Slice-03-Internal-Base.md`);
+2. begin Slice 4 (entity conversations).
 
-No production Messenger rebuild implementation is claimed by this documentation stage.
+No production Messenger rebuild completion is claimed by this documentation stage.
