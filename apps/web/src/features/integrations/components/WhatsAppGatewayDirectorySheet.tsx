@@ -14,10 +14,7 @@ import {
 } from '@/components/ui/sheet';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import {
-  whatsappGatewayApi,
-  type WhatsAppAvailableGroup,
-} from '@/lib/api/whatsapp';
+import { whatsappGatewayApi, type WhatsAppAvailableGroup } from '@/lib/api/whatsapp';
 import {
   directoryHasMorePage,
   WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE,

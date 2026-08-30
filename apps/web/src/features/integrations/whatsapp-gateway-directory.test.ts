@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  directoryHasMorePage,
-  whatsappDirectoryItemKind,
-} from './whatsapp-gateway-directory';
+import { directoryHasMorePage, whatsappDirectoryItemKind } from './whatsapp-gateway-directory';
 
 describe('whatsappDirectoryItemKind', () => {
   it('classifies group and chat JIDs', () => {
