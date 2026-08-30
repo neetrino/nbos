@@ -8,9 +8,17 @@
 >
 > Runtime/migration truth: `10-Messenger-Runtime-Reconciliation.md`.
 
+## Slice 0 status (not product canon)
+
+Implementer evidence: `20-Slice-00-Baseline.md`. Status `VERIFIED`. Inventoried SHA `302f57f7`. FINDING-01 closed: MetaConversation/MetaMessage classified `MIGRATE` (Client Sales UI remains `NEW`).
+
+## Slice 1 status (not product canon)
+
+Implementer evidence: `21-Slice-01-Messaging-Core.md`. Status `VERIFIED`. Core path = evolved Unified. Dual-write none. Mapping scheduled. FINDING-S1-01/02 closed (HTTP `canonicalKey` removed; Client persist unconditional). Slice 2 may begin.
+
 ## Current verified static baseline
 
-The previous historical status text was stale and must not be used as runtime proof.
+The previous historical status text was stale and must not be used as runtime proof. Slice 0 re-checked this against `302f57f7` + DB counts (see evidence file).
 
 The active normal Internal Messenger service path currently uses the legacy Channel/Direct models:
 
@@ -86,7 +94,7 @@ createdAt
 
 The schema does not directly expose the previously claimed reply/attachment/edit fields. Slice 0 must inspect whether any related data exists elsewhere before defining the exact backfill contract.
 
-`Task.chatId` remains an explicit investigation item.
+`Task.chatId` is unused by the Tasks API (leftover unique column; inventoried DB 0 non-null).
 
 Target remains unchanged: human Task Discussion migrates safely to Messaging Core; Task Activity remains separate.
 
@@ -121,7 +129,9 @@ Existing Product/group relations migrate as `WORK`. FINANCE is not auto-created 
 
 The final separate provider-backed Client Messenger surface is not yet the completed target runtime.
 
-Do not preserve or rebuild a mixed `Internal | External` switch merely because historical UI/runtime existed.
+`/messenger` is Channel+DM. A placeholder Internal | External toggle exists; External is not a working Client product.
+
+Do not preserve or rebuild that mixed switch as the target.
 
 Target surface remains the separate Client Messenger defined by Master Canon and Decision Register.
 
@@ -134,6 +144,8 @@ NBOS must reuse/extend it rather than build a second WhatsApp gateway.
 ## Finance / Support integration status
 
 Finance and Support business modules remain owners of their own state.
+
+Current (non-canonical) send path: Product `groupChatId` for client invoice/subscription/CSR reminders; company `accountingGroupChatId` for official invoices. Support Ticket has no public/internal composer.
 
 End-to-end canonical Client Messenger delivery is implementation work:
 
@@ -175,11 +187,7 @@ Migration/runtime implementation uses additionally:
 
 ## Next step before product code changes
 
-1. synchronize implementation branch with latest `main`;
-2. start **Slice 0 — Baseline, inventory and migration safety** in a fresh implementation context;
-3. inspect actual schema/code/data/environment state;
-4. produce Slice 0 evidence;
-5. run independent review;
-6. begin Slice 1 only after Slice 0 is `VERIFIED`.
+1. independent review of Slice 0 (`20-Slice-00-Baseline.md`);
+2. begin Slice 1 only after Slice 0 is `VERIFIED`.
 
 No production Messenger rebuild implementation is claimed by this documentation stage.

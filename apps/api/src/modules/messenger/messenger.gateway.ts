@@ -20,6 +20,7 @@ import {
   MESSENGER_WS_CLIENT_TYPING_DM,
   MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
   MESSENGER_WS_SERVER_CHANNEL_TYPING,
+  MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
   MESSENGER_WS_SERVER_DM_MESSAGE,
   MESSENGER_WS_SERVER_DM_TYPING,
   MESSENGER_WS_READ_UPDATED_SCOPE,
@@ -31,6 +32,7 @@ import {
   type MessengerWsChannelPeerReadPayload,
   type MessengerWsDmPeerReadPayload,
   messengerSocketChannelRoom,
+  messengerSocketConversationRoom,
   messengerSocketUserRoom,
 } from '@nbos/shared';
 import {
@@ -40,6 +42,7 @@ import {
 import { MessengerPresenceTracker } from './messenger-presence-tracker';
 import { MessengerTypingThrottle } from './messenger-typing-throttle';
 import type { MessengerMessageDto } from './messenger.types';
+import type { MessengerCoreMessageDto } from './core/messenger-core.types';
 import { parseCorsOriginsFromEnv } from '../../security/cors-origins';
 
 interface JwtSubPayload {
@@ -147,6 +150,16 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
       .to(messengerSocketChannelRoom(channelId))
       .emit(MESSENGER_WS_SERVER_CHANNEL_MESSAGE, {
         channelId,
+        message,
+      });
+  }
+
+  emitCoreConversationMessage(conversationId: string, message: MessengerCoreMessageDto): void {
+    if (!this.server) return;
+    this.server
+      .to(messengerSocketConversationRoom(conversationId))
+      .emit(MESSENGER_WS_SERVER_CONVERSATION_MESSAGE, {
+        conversationId,
         message,
       });
   }

@@ -1,6 +1,6 @@
 # Messenger Runtime Reconciliation and Migration Safety
 
-> Status: **required implementation precondition — static reconciliation completed; Slice 0 must refresh against latest `main` + real DB counts before product code changes**.
+> Status: **required implementation precondition — Slice 0 inventory against `302f57f7` recorded in `20-Slice-00-Baseline.md` (`VERIFIED`; FINDING-01 closed)**.
 >
 > Product truth: `00-Messenger-Overview.md` + `08-Messenger-Decision-Register.md`.
 >
@@ -119,7 +119,11 @@ The current Unified model already has useful concepts such as:
 
 However, the normal active `MessengerService` still uses Channels/DM tables. Therefore the mere existence of Unified tables does not prove they are production source of truth or that they contain no valuable historical rows.
 
-Classification: `SELECTIVE REUSE / MIGRATE / DELETE-LATER`, subject to Slice 0 DB row inventory and runtime-reference search.
+Classification: `EXTEND` as Messaging Core (Slice 1). Channel/DM remains the live Internal UI path until Slice 3 (`REUSE` then `MIGRATE`).
+
+**Slice 0 (SHA `302f57f7`):** no production `prisma.messengerConversation*` callers. Inventoried DB: **0 rows** on all Unified tables. Schema comment that Unified is “Internal Messenger UI source of truth” is **stale** (UI is Channel+DM). Unused WS names `messenger.subscribe_conversation` / `messenger.conversation.message` exist in shared constants only.
+
+**Slice 1:** Unified generation is evolved into Messaging Core (`MessengerConversation*` + additive Core tables). This is not a third store. Daily Internal UI still writes Channel/DM. Core HTTP is `messenger/core` (Internal persist only). Dual-write: **none**. Channel/DM → Core mapping is scheduled (`messenger_legacy_identities`, canonicalKey `legacy:channel:{id}`) and is not hooked into Channel/DM send. Meta remains until Slice 7.
 
 ### 3.3 Do not create a third permanent message store
 
@@ -162,7 +166,9 @@ Classification: `MIGRATE`, then legacy discussion write/storage path `DELETE-LAT
 
 **Important correction:** the current `TaskDiscussionEntry` schema itself does not expose reply fields, attachment fields or an edited timestamp. Slice 0 must still inspect service/UI/other linked tables before concluding those concepts are absent from real Task discussion behavior, but migration requirements must not claim unsupported schema fields as already present.
 
-`Task.chatId` also requires explicit runtime investigation before reuse. Do not assume it already points to the desired canonical `MessengerConversation`.
+**Slice 0:** `Task.chatId` is unused by `apps/api/src/modules/tasks` (no reads/writes; create path does not set it). Inventoried DB: 0 tasks with `chatId`, 0 `TaskDiscussionEntry` rows, 390 tasks. Do not reuse `Task.chatId` as a MessengerConversation pointer. WhatsApp finance `chatId` is a provider JID, unrelated.
+
+Discussion writes go only to `TaskDiscussionEntry` (no reply/edit/attachment columns). Task Card “activity” is derived from Task timestamps, not a separate Activity table.
 
 ### 3.5 Current Product WhatsApp binding hard-enforces 1:1
 
@@ -185,7 +191,7 @@ Classification: binding ownership model `MIGRATE`; operational semantics `REUSE 
 
 ### 3.6 Latest `main` contains useful Product WhatsApp Settings UX
 
-At the end of this documentation pass, `docs/messenger-rebuild-canon` is 4 commits behind current `main`. Those commits include Product WhatsApp Settings improvements:
+Slice 0 inventoried `origin/main` at `302f57f7`. That SHA already includes Product WhatsApp Settings improvements:
 
 - search/select an existing group;
 - paste a group id;
@@ -195,25 +201,31 @@ At the end of this documentation pass, `docs/messenger-rebuild-canon` is 4 commi
 
 This runtime remains based on one current Product binding / `groupChatId`, so it does not change the target architecture. It is reusable UX/behavior that Slice 9 should adapt to purpose-based WORK/FINANCE bindings instead of discarding.
 
-Before Slice 0 begins, the implementation branch must be synchronized with latest `main`.
-
 ### 3.7 Deal Won flow contains reusable semantics
 
 Existing Product/Deal Won flow already has create/bind and failure/reconciliation concepts. Preserve those business semantics while changing destination ownership from one Product-owned group to Product `WORK` communication binding.
 
 Classification: `REUSE + EXTEND`.
 
-### 3.8 Client Messenger target surface is mostly new
+### 3.8 Client Messenger target surface is mostly new; Sales history is not
 
-The final separate Client Messenger defined by Canon is not the current completed runtime. Do not preserve an old Internal/External switch merely because placeholder/existing UI exists.
+The final separate Client Messenger defined by Canon is not the current completed **UI**.
 
-Classification: Client surface `NEW`; conflicting mixed UI `DELETE-LATER` after verified cutover.
+**Slice 0:** `/messenger` mounts Channel+DM only. A placeholder **Internal | External** toggle exists in `MessengerClient.tsx`; External is copy-only (mentions historical WAHA adapter and Support/Finance as chat categories). Not a Client product surface.
 
-### 3.9 Finance -> canonical Client Messenger delivery is new integration
+**Sales inbound store already exists:** `MetaConversation` / `MetaMessage` (Instagram/Facebook webhook persist, CRM Lead UI). Classify the **UI** `NEW`; classify the **store** `MIGRATE` then `DELETE-LATER` (Slice 7 map into Core Client Sales, Slice 11 drop). Empty Meta rows do not license `NEW` (`M-CLIENT-01`, `M-CORE-01`). Mail stays separate (`M-MAIL-01`); Meta does not inherit that exemption. Meta outbound send is absent (`NEW` when Client SEND exists; persist in Core, not a fourth store).
 
-Existing Finance/Subscription/Client Service logic still owns WHAT/WHEN to remind. Canonical Product-purpose destination resolution and durable Client Messenger delivery are not treated as completed runtime.
+Classification: Client surface `NEW`; Meta conversation/message store `MIGRATE` then `DELETE-LATER`; mixed toggle `DELETE-LATER` (Slice 7).
 
-Classification: `NEW integration` around existing finance business rules.
+### 3.9 Finance send paths are proven and are not Messaging Core
+
+Inventoried runtime (not Canon target):
+
+- Client payment/overdue/subscription-window (and CSR invoices with Product): `resolveInvoiceProductWhatsAppGroup` → Product `groupChatId` → `WhatsAppOutboundQueueService`.
+- Official tax invoice WhatsApp: `WhatsAppGatewayConnection.accountingGroupChatId` (company accountant group), a **different destination class**.
+- No durable Client Messenger history on these sends.
+
+Classification: destination `MIGRATE` (Slices 9–10); outbound worker `REUSE`; accountant group must not be collapsed into Product WORK/FINANCE.
 
 ### 3.10 Existing WhatsApp Gateway is strongly reusable
 
@@ -236,28 +248,31 @@ Do not build a second gateway and do not move NBOS authorization or Product bind
 
 ## 4. Reconciliation map
 
-| Area                                                         | Classification                         | Required treatment                                                                             |
-| ------------------------------------------------------------ | -------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Active `MessengerChannel` / Channel messages                 | `REUSE/EXTEND/MIGRATE`                 | Preserve history, ACL/read/search/file behavior; move deliberately into chosen Core if needed. |
-| Active `MessengerDirectThread` / Direct messages             | `REUSE/EXTEND/MIGRATE`                 | Preserve DM identity/history/read state; map safely into canonical Direct conversation.        |
-| Existing `MessengerConversation` generation                  | `SELECTIVE REUSE/MIGRATE/DELETE-LATER` | Evaluate as likely canonical foundation; inventory real rows/references first.                 |
-| Old L1/L2/Topic architecture                                 | `DO NOT RETURN`                        | No mandatory Topic hierarchy.                                                                  |
-| Current `favorite` user setting                              | `REUSE/EXTEND`                         | May seed built-in Favorites behavior; it is not a full Collection system.                      |
-| User-created Collections                                     | `NEW`                                  | Implement PERSONAL/SHARED, surface-scoped, ACL-neutral.                                        |
-| Human `TaskDiscussionEntry`                                  | `MIGRATE`                              | Move human discussion to Messaging Core; preserve actual existing provenance fields.           |
-| `Task.chatId`                                                | `VERIFY/MISSING`                       | Determine real meaning/references before reuse/removal.                                        |
-| Task Activity Feed                                           | `REUSE`                                | Remains system activity, not human Message rows.                                               |
-| Product + Connected Work Space chat identity                 | `MIGRATE/RECONCILE`                    | Both surfaces must resolve one internal conversation.                                          |
-| `ProductWhatsAppGroupBinding` 1:1 ownership                  | `MIGRATE`                              | Replace with Product + purpose -> External Conversation binding.                               |
-| WhatsApp operations/participant/invite/reconciliation states | `REUSE/EXTEND`                         | Preserve semantics across binding migration.                                                   |
-| Product settings select/paste/replace UX                     | `REUSE/EXTEND`                         | Adapt to WORK/FINANCE destinations.                                                            |
-| Deal Won group lifecycle                                     | `REUSE/EXTEND`                         | Resolve/create Product WORK destination.                                                       |
-| Client Messenger UI                                          | `NEW/REPLACE`                          | Separate Client product surface.                                                               |
-| Platform RBAC/entity access                                  | `REUSE/EXTEND`                         | Add conversation membership and Client READ/SEND separation.                                   |
-| Support case workflow                                        | `REUSE/EXTEND`                         | Keep internal case state; link to canonical Client messages.                                   |
-| Finance reminder destination/delivery                        | `NEW integration`                      | Resolve FINANCE, fallback WORK; no raw group id dependency.                                    |
-| WhatsApp Gateway                                             | `REUSE/EXTEND`                         | Keep transport/session/provider boundary.                                                      |
-| Permanent Telegram bridge                                    | `DO NOT BUILD`                         | One-time migration only; notifications may remain.                                             |
+| Area                                                         | Classification                                     | Required treatment                                                                                                                                                   |
+| ------------------------------------------------------------ | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Active `MessengerChannel` / Channel messages                 | `REUSE/EXTEND/MIGRATE`                             | Preserve history, ACL/read/search/file behavior; move deliberately into chosen Core if needed.                                                                       |
+| Active `MessengerDirectThread` / Direct messages             | `REUSE/EXTEND/MIGRATE`                             | Preserve DM identity/history/read state; map safely into canonical Direct conversation.                                                                              |
+| Existing `MessengerConversation` generation                  | `EXTEND` (Messaging Core)                          | Slice 1 evolved Unified as Core; Channel/DM still live UI until Slice 3. Dual-write none.                                                                            |
+| Old L1/L2/Topic architecture                                 | `DO NOT RETURN`                                    | No `MessengerTopic` in schema/code.                                                                                                                                  |
+| Current `favorite` user setting                              | `REUSE/EXTEND`                                     | May seed built-in Favorites behavior; it is not a full Collection system.                                                                                            |
+| User-created Collections                                     | `NEW`                                              | Implement PERSONAL/SHARED, surface-scoped, ACL-neutral.                                                                                                              |
+| Human `TaskDiscussionEntry`                                  | `MIGRATE`                                          | Live write path; Slice 0 DB 0 rows. Keep table until Slice 5.                                                                                                        |
+| `Task.chatId`                                                | `DELETE-LATER`                                     | Unused leftover unique column; 0 rows; not a conversation pointer.                                                                                                   |
+| Task Activity Feed                                           | `REUSE` concept / `VERIFY-MISSING` dedicated store | System-activity **concept** remains Task-owned (not human Message rows). Dedicated feed **store** is not proven; derived Task Card timeline + `auditLog` are not it. |
+| Product + Connected Work Space chat identity                 | `MIGRATE/RECONCILE`                                | Both surfaces must resolve one internal conversation.                                                                                                                |
+| `ProductWhatsAppGroupBinding` 1:1 ownership                  | `MIGRATE`                                          | Replace with Product + purpose -> External Conversation binding.                                                                                                     |
+| WhatsApp operations/participant/invite/reconciliation states | `REUSE/EXTEND`                                     | Preserve semantics across binding migration.                                                                                                                         |
+| Product settings select/paste/replace UX                     | `REUSE/EXTEND`                                     | Adapt to WORK/FINANCE destinations.                                                                                                                                  |
+| Deal Won group lifecycle                                     | `REUSE/EXTEND`                                     | Resolve/create Product WORK destination.                                                                                                                             |
+| Client Messenger UI                                          | `NEW/REPLACE`                                      | Separate Client product surface (Slice 7).                                                                                                                           |
+| `MetaConversation` / `MetaMessage`                           | `MIGRATE` then `DELETE-LATER`                      | Live IG/FB inbound store; Slice 7 maps into Core Client Sales; 11 drop. 0 rows ≠ unused. Mail exemption does not apply.                                              |
+| Meta connected account / sender identity / provider events   | `REUSE/EXTEND`                                     | OAuth, webhook subscribe, ingest idempotency.                                                                                                                        |
+| Meta outbound send                                           | `NEW`                                              | Enum unused; Graph has no send. Persist in Core when Client SEND exists; not a fourth store.                                                                         |
+| Platform RBAC/entity access                                  | `REUSE/EXTEND`                                     | Add conversation membership and Client READ/SEND separation.                                                                                                         |
+| Support case workflow                                        | `REUSE/EXTEND`                                     | Keep internal case state; link to canonical Client messages.                                                                                                         |
+| Finance reminder destination/delivery                        | `MIGRATE` + `REUSE` worker                         | Today: Product `groupChatId`; official: `accountingGroupChatId`. Target: purpose resolver.                                                                           |
+| WhatsApp Gateway                                             | `REUSE/EXTEND`                                     | Keep transport/session/provider boundary.                                                                                                                            |
+| Permanent Telegram bridge                                    | `DO NOT BUILD`                                     | One-time migration only; notifications may remain.                                                                                                                   |
 
 ---
 
@@ -302,6 +317,8 @@ Dual-write is temporary only. If required:
 - define the removal gate before enabling it.
 
 Permanent dual-write is forbidden.
+
+**Slice 1 decision:** no dual-write window. Channel/DM remains the sole live Internal UI write path until Slice 3 cutover. Core persist is a separate HTTP/service path used for foundation, tests, and later cutover. Mapper is idempotent and opt-in.
 
 ---
 
@@ -626,6 +643,9 @@ Reject:
 - reintroducing Topics/L1/L2;
 - assuming Unified tables are active or empty without evidence;
 - deleting `TaskDiscussionEntry` before migration proof;
+- deleting `MetaConversation` / `MetaMessage` before Slice 7 cutover proof, or treating empty Meta rows as license for `NEW` Client Sales history;
+- treating Meta as covered by `M-MAIL-01` (Mail exemption);
+- creating a fourth permanent message store for Instagram/Facebook;
 - inventing Task reply/file fields that current schema does not contain;
 - merely removing WhatsApp `@unique` constraints while keeping wrong ownership semantics;
 - direct Finance raw `groupChatId` sends after cutover;
@@ -639,9 +659,19 @@ Reject:
 
 ---
 
-## 21. Slice 0 runtime/data inventory still required
+## 21. Slice 0 runtime/data inventory
 
-Static reconciliation is complete enough to plan work, but Slice 0 must verify the current implementation branch after synchronizing latest `main` and record:
+Completed for SHA `302f57f7` in `20-Slice-00-Baseline.md`. Status `VERIFIED` (FINDING-01 closed). Slice 1 may begin.
+
+**Slice 1:** evidence `21-Slice-01-Messaging-Core.md`. Status `VERIFIED`. Core path = evolved Unified. Dual-write none. Mapping scheduled. FINDING-S1-01/02 closed. Slice 2 may begin.
+
+Inventoried DB snapshot (local `DATABASE_URL`; not labeled prod vs staging): Channel/DM 0; Unified 0; Tasks 390 / chatId 0 / discussion 0; Product WhatsApp bindings 145 (ACTIVE 143 unique group ids, FAILED 2); gateway row 1 with accountant group id present; MetaConversation 0; MetaMessage 0; MetaConnectedAccount 0; MetaSenderIdentity 0; MetaProviderEvent 17.
+
+NBOS `whatsapp-gateway` module has **no inbound webhook**. Meta webhook persists inbound messages into `MetaConversation`/`MetaMessage` (CRM Lead UI); that store is `MIGRATE` into Core Client Sales (Slice 7), not `NEW`.
+
+`seed.ts` / `seed-messenger.ts` `deleteMany` Channel/DM (wipe risk). Seed does **not** delete Meta tables; `lead.deleteMany` SetNulls `MetaConversation.leadId`.
+
+Original checklist (kept for reviewers):
 
 ### Messenger
 
@@ -671,6 +701,7 @@ Static reconciliation is complete enough to plan work, but Slice 0 must verify t
 ### Client/Finance/Support/Gateway
 
 - actual current Client UI routes/components;
+- MetaConversation / MetaMessage / MetaConnectedAccount / MetaProviderEvent counts and inbound persist path (not Mail);
 - Finance/Subscription/Client Service send paths;
 - Support communication paths;
 - NBOS -> Gateway account/token/send contracts;
@@ -689,15 +720,16 @@ Do not copy message bodies/secrets into evidence merely to prove counts or shape
 | Creating a third Messenger store                                 | Critical | choose/evolve one canonical path in Slice 1; reviewer rejects parallel permanent store |
 | Assuming Unified schema is active/empty                          | High     | Slice 0 row counts + read/write/reference inventory                                    |
 | Losing Task discussion provenance                                | Critical | field-accurate idempotent backfill + per-Task verification                             |
-| Misusing `Task.chatId`                                           | High     | determine actual meaning before reuse/removal                                          |
+| Misusing `Task.chatId`                                           | High     | Slice 0: unused leftover; do not treat as conversation id                              |
 | Breaking existing Product group relationships                    | Critical | legacy -> WORK backfill preserving provider identity                                   |
 | Duplicate WhatsApp groups/messages on uncertain provider outcome | Critical | preserve dedupe/idempotency + `OUTCOME_UNKNOWN` reconciliation                         |
 | Breaking latest Product WhatsApp Settings UX                     | Medium   | reuse/adapt select/paste/replace behavior to purpose bindings                          |
 | Client READ accidentally implying SEND                           | Critical | server permission split + adversarial tests                                            |
 | Product binding granting employee visibility                     | Critical | binding/context separated from ACL                                                     |
 | Finance bypassing canonical history                              | High     | central purpose resolver + durable Client Message before provider dispatch             |
+| Treating Meta Sales history as `NEW` because snapshot is empty   | High     | live inbound writers; `MIGRATE` into Core in Slice 7; Mail exemption does not apply    |
 | Shared Collection becoming ACL bypass                            | High     | server/database zone checks + effective ACL filtering                                  |
-| Stale docs branch used for implementation                        | High     | sync latest `main` before Slice 0                                                      |
+| Stale docs branch used for implementation                        | High     | Slice 0 inventoried latest `origin/main` at `302f57f7`                                 |
 
 ---
 
@@ -724,6 +756,7 @@ Highest-risk migrations are:
 
 1. reconciling active Channel/DM stores with the existing Unified generation without creating a third store;
 2. `TaskDiscussionEntry` -> canonical Messaging Core while preserving real provenance;
-3. hard 1:1 `ProductWhatsAppGroupBinding` -> flexible WORK/FINANCE bindings without changing physical WhatsApp identity or duplicating side effects.
+3. hard 1:1 `ProductWhatsAppGroupBinding` -> flexible WORK/FINANCE bindings without changing physical WhatsApp identity or duplicating side effects;
+4. `MetaConversation` / `MetaMessage` -> Core Client Sales (Slice 7) without a fourth store and without applying Mail’s exemption.
 
 `11-Messenger-Rebuild-Implementation-Checklist.md` and `12-Messenger-Rebuild-Execution-Strategy.md` are executable only together with this reconciliation document.

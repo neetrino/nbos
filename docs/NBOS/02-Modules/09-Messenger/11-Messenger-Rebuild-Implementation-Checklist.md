@@ -56,37 +56,38 @@ These apply to every slice touching persistence or existing runtime.
 
 **Goal:** establish a fresh runtime baseline before changing product code.
 
-**Canon:** all decisions; especially `M-CORE-01`, `M-TASK-01`, `M-WA-*`, `M-WHATSAPP-01`.
+**Canon:** all decisions; especially `M-CORE-01`, `M-CLIENT-01`, `M-MAIL-01`, `M-TASK-01`, `M-WA-*`, `M-WHATSAPP-01`.
 
 ### Runtime inventory
 
-- [ ] Inspect actual Prisma/schema models for current Messenger channel/DM/unified remnants.
-- [ ] Inspect current Messenger REST/controllers/services.
-- [ ] Inspect Socket.IO/realtime handlers and unread/presence behavior.
-- [ ] Inspect Drive attachment integration.
-- [ ] Inspect current Messenger RBAC/access helpers.
-- [ ] Inspect Task Discussion schema/service/API/UI and real data shape.
-- [ ] Inspect Product ↔ WhatsApp group schema, unique constraints and provider identity fields.
-- [ ] Inspect Deal Won create/bind path and failure/outcome behavior.
-- [ ] Inspect Product Client Communication settings/current group actions.
-- [ ] Inspect Support public/internal communication runtime if present.
-- [ ] Inspect Finance/Subscription/Client Service reminder code; classify exact send path as `REUSE/EXTEND/MIGRATE/NEW/VERIFY-MISSING`.
-- [ ] Inspect NBOS integration with `neetrino/whatsapp-gateway` v1 + inbound webhook contract.
-- [ ] Inspect any relevant production/staging counts without exposing secrets/message content unnecessarily.
+- [x] Inspect actual Prisma/schema models for current Messenger channel/DM/unified remnants.
+- [x] Inspect current Messenger REST/controllers/services.
+- [x] Inspect Socket.IO/realtime handlers and unread/presence behavior.
+- [x] Inspect Drive attachment integration.
+- [x] Inspect current Messenger RBAC/access helpers.
+- [x] Inspect Task Discussion schema/service/API/UI and real data shape.
+- [x] Inspect Product ↔ WhatsApp group schema, unique constraints and provider identity fields.
+- [x] Inspect Deal Won create/bind path and failure/outcome behavior.
+- [x] Inspect Product Client Communication settings/current group actions.
+- [x] Inspect Support public/internal communication runtime if present.
+- [x] Inspect Finance/Subscription/Client Service reminder code; classify exact send path as `REUSE/EXTEND/MIGRATE/NEW/VERIFY-MISSING`.
+- [x] Inspect NBOS integration with `neetrino/whatsapp-gateway` v1 + inbound webhook contract.
+- [x] Inspect MetaConversation / MetaMessage / MetaConnectedAccount / MetaProviderEvent runtime (inbound persist, CRM Lead UI, merge/reassign, outbound absence); classify store vs Client Sales UI separately.
+- [x] Inspect any relevant production/staging counts without exposing secrets/message content unnecessarily.
 
 ### Deliverables
 
-- [ ] Update `10-Messenger-Runtime-Reconciliation.md` with any materially different facts.
-- [ ] Produce runtime map: `REUSE / EXTEND / MIGRATE / NEW / DELETE-LATER / VERIFY-MISSING`.
-- [ ] Record exact legacy tables/fields/routes that later slices must retire.
-- [ ] Record migration ordering/dependencies.
-- [ ] No product behavior change in Slice 0 unless required only to add safe observability for migration.
+- [x] Update `10-Messenger-Runtime-Reconciliation.md` with any materially different facts.
+- [x] Produce runtime map: `REUSE / EXTEND / MIGRATE / NEW / DELETE-LATER / VERIFY-MISSING`.
+- [x] Record exact legacy tables/fields/routes that later slices must retire.
+- [x] Record migration ordering/dependencies.
+- [x] No product behavior change in Slice 0 unless required only to add safe observability for migration.
 
 ### Acceptance
 
-- [ ] Reviewer can trace every planned destructive change to a prior migration/cutover slice.
-- [ ] No important existing store is classified from old documentation alone.
-- [ ] Slice status `VERIFIED`.
+- [x] Reviewer can trace every planned destructive change to a prior migration/cutover slice.
+- [x] No important existing store is classified from old documentation alone.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -98,43 +99,43 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Data model
 
-- [ ] Canonical `Conversation` supports strict zone/surface identity (`INTERNAL` or `CLIENT`).
-- [ ] Canonical `Message` supports sender/direction/status/provenance needed by internal and external messages.
-- [ ] Participants/membership/read state are normalized and permission-aware.
-- [ ] `ConversationLink` can link Project/Product/Work Space/Deal/Task/Ticket/Client without forcing one exclusive entity.
-- [ ] `MessageReference` can reference one/multiple canonical source messages from Task/Ticket/forward actions.
-- [ ] Reply/reaction/thread-root support is possible without making threads mandatory.
-- [ ] Attachments reference Drive File Assets.
-- [ ] Provider mapping/event/delivery concepts can be added without storing provider ids directly on Product.
-- [ ] Database constraints prevent impossible cross-zone relationships where feasible.
+- [x] Canonical `Conversation` supports strict zone/surface identity (`INTERNAL` or `CLIENT`).
+- [x] Canonical `Message` supports sender/direction/status/provenance needed by internal and external messages.
+- [x] Participants/membership/read state are normalized and permission-aware.
+- [x] `ConversationLink` can link Project/Product/Work Space/Deal/Task/Ticket/Client without forcing one exclusive entity.
+- [x] `MessageReference` can reference one/multiple canonical source messages from Task/Ticket/forward actions.
+- [x] Reply/reaction/thread-root support is possible without making threads mandatory.
+- [x] Attachments reference Drive File Assets.
+- [x] Provider mapping/event/delivery concepts can be added without storing provider ids directly on Product.
+- [x] Database constraints prevent impossible cross-zone relationships where feasible.
 
 ### Runtime
 
-- [ ] Commands persist DB state before realtime broadcast.
-- [ ] Realtime is transport only, not source of truth.
-- [ ] Duplicate command/idempotency behavior is defined where external/provider side effects may occur.
-- [ ] No L1/L2 Topic layer is required by canonical core.
+- [x] Commands persist DB state before realtime broadcast.
+- [x] Realtime is transport only, not source of truth.
+- [x] Duplicate command/idempotency behavior is defined where external/provider side effects may occur.
+- [x] No L1/L2 Topic layer is required by canonical core.
 
 ### Migration
 
-- [ ] Existing compatible channel/DM data is mapped or explicitly scheduled for later mapping.
-- [ ] No existing message history is deleted.
-- [ ] Old unified remnants are reused only when contracts match canon.
+- [x] Existing compatible channel/DM data is mapped or explicitly scheduled for later mapping.
+- [x] No existing message history is deleted.
+- [x] Old unified remnants are reused only when contracts match canon.
 
 ### Tests
 
-- [ ] Conversation/message persistence.
-- [ ] zone validation.
-- [ ] participant/read-state behavior.
-- [ ] reference integrity.
-- [ ] attachment authorization/reference.
-- [ ] realtime replay does not create duplicate durable messages.
+- [x] Conversation/message persistence.
+- [x] zone validation.
+- [x] participant/read-state behavior.
+- [x] reference integrity.
+- [x] attachment authorization/reference.
+- [x] realtime replay does not create duplicate durable messages.
 
 ### Acceptance
 
-- [ ] Core can support both surfaces without mixing product UI.
-- [ ] Reviewer finds no hidden dependency on old Topic hierarchy.
-- [ ] Slice status `VERIFIED`.
+- [x] Core can support both surfaces without mixing product UI.
+- [x] Reviewer finds no hidden dependency on old Topic hierarchy.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -354,6 +355,8 @@ These apply to every slice touching persistence or existing runtime.
 **Goal:** build the separate external communication product surface before full provider cutover.
 
 **Canon:** `M-BOUNDARY-01`, `M-CLIENT-01`, `M-CLIENT-02`, `M-SECURITY-01`, `M-SECURITY-02`, `M-COLLECTIONS-01`, `M-AI-01`.
+
+**Slice 0 note:** `MetaConversation` / `MetaMessage` is the live Client Sales inbound store (`MIGRATE` into Core). This slice owns that cutover identity. Do not classify Sales **history** as `NEW`. Do not wait for Slice 8 (WhatsApp-only) to map Meta. Do not apply `M-MAIL-01` to Meta. Meta outbound send is `NEW` and must persist in Core, not a fourth store.
 
 ### Navigation/UI
 
@@ -619,19 +622,19 @@ These apply to every slice touching persistence or existing runtime.
 
 ## 3. Implementation slice status table
 
-| Slice                            | Status    | Implementer evidence | Independent review |
-| -------------------------------- | --------- | -------------------- | ------------------ |
-| 0 — Baseline/reconciliation      | `PLANNED` | —                    | —                  |
-| 1 — Messaging Core               | `PLANNED` | —                    | —                  |
-| 2 — Permissions/boundary         | `PLANNED` | —                    | —                  |
-| 3 — Internal base                | `PLANNED` | —                    | —                  |
-| 4 — Entity conversations         | `PLANNED` | —                    | —                  |
-| 5 — Task Discussion migration    | `PLANNED` | —                    | —                  |
-| 6 — Message actions/references   | `PLANNED` | —                    | —                  |
-| 7 — Client surface               | `PLANNED` | —                    | —                  |
-| 8 — WhatsApp Gateway integration | `PLANNED` | —                    | —                  |
-| 9 — Flexible Product bindings    | `PLANNED` | —                    | —                  |
-| 10 — Finance/Support/routing     | `PLANNED` | —                    | —                  |
-| 11 — Hardening/cleanup readiness | `PLANNED` | —                    | —                  |
+| Slice                            | Status     | Implementer evidence            | Independent review                 |
+| -------------------------------- | ---------- | ------------------------------- | ---------------------------------- |
+| 0 — Baseline/reconciliation      | `VERIFIED` | `20-Slice-00-Baseline.md`       | VERIFIED (FINDING-01 closed)       |
+| 1 — Messaging Core               | `VERIFIED` | `21-Slice-01-Messaging-Core.md` | VERIFIED (FINDING-S1-01/02 closed) |
+| 2 — Permissions/boundary         | `PLANNED`  | —                               | —                                  |
+| 3 — Internal base                | `PLANNED`  | —                               | —                                  |
+| 4 — Entity conversations         | `PLANNED`  | —                               | —                                  |
+| 5 — Task Discussion migration    | `PLANNED`  | —                               | —                                  |
+| 6 — Message actions/references   | `PLANNED`  | —                               | —                                  |
+| 7 — Client surface               | `PLANNED`  | —                               | —                                  |
+| 8 — WhatsApp Gateway integration | `PLANNED`  | —                               | —                                  |
+| 9 — Flexible Product bindings    | `PLANNED`  | —                               | —                                  |
+| 10 — Finance/Support/routing     | `PLANNED`  | —                               | —                                  |
+| 11 — Hardening/cleanup readiness | `PLANNED`  | —                               | —                                  |
 
 Status changes must follow `12-Messenger-Rebuild-Execution-Strategy.md`.
