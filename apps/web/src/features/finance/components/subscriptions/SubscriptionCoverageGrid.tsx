@@ -175,7 +175,7 @@ export function SubscriptionCoverageGrid({
           </tr>
         </thead>
         <tbody>
-          {sortedRows.map((row, rowIndex) => {
+          {sortedRows.map((row) => {
             const subscription = subscriptionsById.get(row.subscriptionId);
             return (
               <tr key={row.subscriptionId} className="hover:bg-muted/15">
@@ -184,7 +184,6 @@ export function SubscriptionCoverageGrid({
                   onClick={() => onOpenSubscription(row.subscriptionId)}
                 >
                   <SubscriptionGridRowLabel
-                    rowNumber={rowIndex + 1}
                     subscriptionName={row.subscriptionName}
                     subscription={subscription}
                     fallbackStatus={row.subscriptionStatus}
@@ -225,7 +224,8 @@ export function SubscriptionCoverageGrid({
                 SUB_LABEL_COL_CLASS,
               )}
             >
-              Month total
+              Month total{' '}
+              <span className="tabular-nums">{sortedRows.length}</span>
             </td>
             {payload.monthTotals.map((total, idx) => (
               <td
