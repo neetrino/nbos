@@ -138,6 +138,7 @@ export {
   formatAmountAbbreviated,
   formatAmountCompact,
   formatAmountDramSuffix,
+  formatAmountThousandsDram,
   formatGroupedNumber,
   formatMoneyDram,
   formatMoneyDramOrDash,

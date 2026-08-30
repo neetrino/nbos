@@ -1,10 +1,10 @@
 'use client';
 
 import { useMemo } from 'react';
-import { formatAmount } from '@/features/finance/constants/finance';
 import type { Subscription, SubscriptionGridPayload } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS,
   FINANCE_CALENDAR_SCROLL_SHELL_CLASS,
@@ -23,6 +23,7 @@ import {
   SubscriptionGridMonthCell,
   formatSubscriptionGridAmount,
 } from './subscription-coverage-grid-cells';
+import { SubscriptionAmountHover } from './subscription-amount-hover';
 import { SubscriptionGridRowLabel } from './SubscriptionGridRowLabel';
 import {
   FINANCE_CALENDAR_LABEL_HEADER_INNER_CLASS,
@@ -140,10 +141,11 @@ export function SubscriptionCoverageGrid({
   }
 
   return (
-    <div
-      className={FINANCE_CALENDAR_SCROLL_SHELL_CLASS}
-      aria-label={`Subscription calendar ${year}`}
-    >
+    <TooltipProvider delay={0}>
+      <div
+        className={FINANCE_CALENDAR_SCROLL_SHELL_CLASS}
+        aria-label={`Subscription calendar ${year}`}
+      >
       <table className="w-full table-fixed border-collapse text-sm">
         <colgroup>
           <col className={SUB_LABEL_COL_CLASS} />
@@ -236,15 +238,19 @@ export function SubscriptionCoverageGrid({
                 )}
               >
                 {total > 0 ? (
-                  <div
-                    className={cn(
-                      FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS,
-                      SUBSCRIPTION_CALENDAR_SLOT_CLASS,
-                    )}
-                    title={formatAmount(total)}
+                  <SubscriptionAmountHover
+                    amount={total}
+                    trigger={
+                      <div
+                        className={cn(
+                          FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS,
+                          SUBSCRIPTION_CALENDAR_SLOT_CLASS,
+                        )}
+                      />
+                    }
                   >
                     {formatSubscriptionGridAmount(total, false)}
-                  </div>
+                  </SubscriptionAmountHover>
                 ) : (
                   <SubscriptionEmptyMonthCell />
                 )}
@@ -267,6 +273,7 @@ export function SubscriptionCoverageGrid({
           </tr>
         </tfoot>
       </table>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
