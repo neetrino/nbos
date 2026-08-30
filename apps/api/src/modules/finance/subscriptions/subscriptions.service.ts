@@ -442,10 +442,7 @@ export class SubscriptionsService {
 const SUBSCRIPTION_INBOX_ORDER_BY = [{ status: 'asc' as const }, { createdAt: 'desc' as const }];
 
 /** Live inbox rows stay on every year board; other statuses still need calendar overlap. */
-const SUBSCRIPTION_GRID_ALWAYS_VISIBLE_STATUSES: SubscriptionStatusEnum[] = [
-  'PENDING',
-  'ACTIVE',
-];
+const SUBSCRIPTION_GRID_ALWAYS_VISIBLE_STATUSES: SubscriptionStatusEnum[] = ['PENDING', 'ACTIVE'];
 
 function subscriptionOverlapsYearWindow(
   yearStart: Date,

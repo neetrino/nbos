@@ -26,9 +26,10 @@ function compactFrequencyLabel(billingFrequency: string, coverageMonthCount: num
 }
 
 /** One-line grid meta: billing day + frequency. */
-export function formatSubscriptionGridRowMeta(
-  subscription: SubscriptionGridRowMetaSource,
-): { text: string; title: string } {
+export function formatSubscriptionGridRowMeta(subscription: SubscriptionGridRowMetaSource): {
+  text: string;
+  title: string;
+} {
   const frequency = compactFrequencyLabel(
     subscription.billingFrequency,
     subscription.coverageMonthCount,

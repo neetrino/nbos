@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  formatSubscriptionGridRowMeta,
-  getSubscriptionDisplayTitle,
-} from './subscription-display';
+import { formatSubscriptionGridRowMeta, getSubscriptionDisplayTitle } from './subscription-display';
 
 describe('getSubscriptionDisplayTitle', () => {
   it('prefers the commercial name', () => {

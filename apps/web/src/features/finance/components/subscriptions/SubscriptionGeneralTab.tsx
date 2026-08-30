@@ -211,9 +211,7 @@ export function SubscriptionGeneralTab({
               notificationsEnabled={draft.notificationsEnabled}
               reminderLanguage={draft.reminderLanguage}
               disabled={formDisabled}
-              onNotificationsChange={(notificationsEnabled) =>
-                patchDraft({ notificationsEnabled })
-              }
+              onNotificationsChange={(notificationsEnabled) => patchDraft({ notificationsEnabled })}
               onReminderLanguageChange={(reminderLanguage) => patchDraft({ reminderLanguage })}
             />
             <InlineField

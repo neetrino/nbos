@@ -191,7 +191,9 @@ describe('buildSubscriptionGridPayload', () => {
           amount: 100000,
           coverageMonthCount: 1,
           monthlyEquivalentAmount: 100000,
-          invoices: [subInvoice('i-mar', { start: '2026-03', count: 1, paid: true, amount: 80000 })],
+          invoices: [
+            subInvoice('i-mar', { start: '2026-03', count: 1, paid: true, amount: 80000 }),
+          ],
         }),
       ],
       2026,
