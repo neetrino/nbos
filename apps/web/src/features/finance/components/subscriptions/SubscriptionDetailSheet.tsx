@@ -134,12 +134,13 @@ export function SubscriptionDetailSheet({
   const {
     saving,
     generalError,
-    periodConfirmOpen,
-    setPeriodConfirmOpen,
-    periodConfirmDescription,
+    saveConfirmOpen,
+    saveConfirmTitle,
+    saveConfirmDescription,
+    closeSaveConfirm,
     handleSave: handleGeneralSave,
     handleCancel: handleGeneralCancel,
-    confirmPeriodChangeAndSave,
+    confirmSave,
   } = useSubscriptionGeneralSave({
     subscription,
     generalDraft,
@@ -263,12 +264,15 @@ export function SubscriptionDetailSheet({
         </EntityDetailSheetContent>
       </Sheet>
       <SubscriptionBillingPeriodConfirmDialog
-        open={periodConfirmOpen}
+        open={saveConfirmOpen}
+        title={saveConfirmTitle}
         subscriptionTitle={subscription ? getSubscriptionDisplayTitle(subscription) : ''}
-        description={periodConfirmDescription}
+        description={saveConfirmDescription}
         isSubmitting={saving}
-        onOpenChange={setPeriodConfirmOpen}
-        onConfirm={confirmPeriodChangeAndSave}
+        onOpenChange={(open) => {
+          if (!open) closeSaveConfirm();
+        }}
+        onConfirm={confirmSave}
         forceNestedBackdrop
       />
     </EntityItemHost>

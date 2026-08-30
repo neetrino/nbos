@@ -21,6 +21,7 @@ export interface SegmentedTabsProps<T extends string> {
   className?: string;
   listClassName?: string;
   buttonClassName?: string;
+  pillClassName?: string;
 }
 
 const SEGMENTED_TABS_LIST_CLASS =
@@ -38,6 +39,7 @@ export function SegmentedTabs<T extends string>({
   className,
   listClassName,
   buttonClassName,
+  pillClassName,
 }: SegmentedTabsProps<T>) {
   const groupRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -57,7 +59,7 @@ export function SegmentedTabs<T extends string>({
         <SlidingPillBackdrop
           indicator={indicator}
           ready={ready}
-          className="bg-primary top-0.5 bottom-0.5 rounded-md shadow-sm"
+          className={cn('bg-primary top-0.5 bottom-0.5 rounded-md shadow-sm', pillClassName)}
         />
         {options.map((option) => {
           const active = option.value === value;

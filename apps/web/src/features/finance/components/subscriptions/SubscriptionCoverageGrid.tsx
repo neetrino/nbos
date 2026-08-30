@@ -1,10 +1,10 @@
 'use client';
 
 import { useMemo } from 'react';
-import { formatAmount } from '@/features/finance/constants/finance';
 import type { Subscription, SubscriptionGridPayload } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS,
   FINANCE_CALENDAR_SCROLL_SHELL_CLASS,
@@ -23,6 +23,7 @@ import {
   SubscriptionGridMonthCell,
   formatSubscriptionGridAmount,
 } from './subscription-coverage-grid-cells';
+import { SubscriptionAmountHover } from './subscription-amount-hover';
 import { SubscriptionGridRowLabel } from './SubscriptionGridRowLabel';
 import {
   FINANCE_CALENDAR_LABEL_HEADER_INNER_CLASS,
@@ -140,134 +141,142 @@ export function SubscriptionCoverageGrid({
   }
 
   return (
-    <div
-      className={FINANCE_CALENDAR_SCROLL_SHELL_CLASS}
-      aria-label={`Subscription calendar ${year}`}
-    >
-      <table className="w-full table-fixed border-collapse text-sm">
-        <colgroup>
-          <col className={SUB_LABEL_COL_CLASS} />
-          {months.map((month) => (
-            <col key={month.key} className={SUB_MONTH_COL_CLASS} />
-          ))}
-          <col className={totalColClass} />
-        </colgroup>
-        <thead>
-          <tr className={STICKY_SURFACE_CLASS}>
-            <th className={cn(STICKY_LABEL_HEADER_CLASS, 'py-2 normal-case')}>
-              <div className={FINANCE_CALENDAR_LABEL_HEADER_INNER_CLASS}>
-                <FinanceCalendarYearControl
-                  year={year}
-                  onYearChange={onYearChange}
-                  minYear={MIN_SUBSCRIPTION_BOARD_YEAR}
-                  maxYearOffset={MAX_SUBSCRIPTION_BOARD_YEAR_OFFSET}
-                />
-              </div>
-            </th>
+    <TooltipProvider delay={0}>
+      <div
+        className={FINANCE_CALENDAR_SCROLL_SHELL_CLASS}
+        aria-label={`Subscription calendar ${year}`}
+      >
+        <table className="w-full table-fixed border-collapse text-sm">
+          <colgroup>
+            <col className={SUB_LABEL_COL_CLASS} />
             {months.map((month) => (
-              <th key={month.key} className={SUB_MONTH_HEAD_CLASS}>
-                <span className="text-muted-foreground text-xs font-semibold">{month.label}</span>
-              </th>
+              <col key={month.key} className={SUB_MONTH_COL_CLASS} />
             ))}
-            <th className={cn(STICKY_TOTAL_HEADER_CLASS, STICKY_SURFACE_CLASS, totalColClass)}>
-              Total
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedRows.map((row, rowIndex) => {
-            const subscription = subscriptionsById.get(row.subscriptionId);
-            return (
-              <tr key={row.subscriptionId} className="hover:bg-muted/15">
-                <td
-                  className={STICKY_LABEL_CELL_CLASS}
-                  onClick={() => onOpenSubscription(row.subscriptionId)}
-                >
-                  <SubscriptionGridRowLabel
-                    rowNumber={rowIndex + 1}
-                    subscriptionName={row.subscriptionName}
-                    subscription={subscription}
-                    fallbackStatus={row.subscriptionStatus}
+            <col className={totalColClass} />
+          </colgroup>
+          <thead>
+            <tr className={STICKY_SURFACE_CLASS}>
+              <th className={cn(STICKY_LABEL_HEADER_CLASS, 'py-2 normal-case')}>
+                <div className={FINANCE_CALENDAR_LABEL_HEADER_INNER_CLASS}>
+                  <FinanceCalendarYearControl
+                    year={year}
+                    onYearChange={onYearChange}
+                    minYear={MIN_SUBSCRIPTION_BOARD_YEAR}
+                    maxYearOffset={MAX_SUBSCRIPTION_BOARD_YEAR_OFFSET}
                   />
-                </td>
-                {row.months.map((cell, idx) => (
-                  <td key={idx} className={SUB_MONTH_CELL_CLASS}>
-                    <SubscriptionGridMonthCell
-                      cell={cell}
-                      amountMonthly={row.amountMonthly}
-                      onOpen={() =>
-                        onOpenMonthCell({
-                          subscriptionId: row.subscriptionId,
-                          invoiceId: cell.invoiceId,
-                        })
-                      }
+                </div>
+              </th>
+              {months.map((month) => (
+                <th key={month.key} className={SUB_MONTH_HEAD_CLASS}>
+                  <span className="text-muted-foreground text-xs font-semibold">{month.label}</span>
+                </th>
+              ))}
+              <th className={cn(STICKY_TOTAL_HEADER_CLASS, STICKY_SURFACE_CLASS, totalColClass)}>
+                Total
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedRows.map((row) => {
+              const subscription = subscriptionsById.get(row.subscriptionId);
+              return (
+                <tr key={row.subscriptionId} className="hover:bg-muted/15">
+                  <td
+                    className={STICKY_LABEL_CELL_CLASS}
+                    onClick={() => onOpenSubscription(row.subscriptionId)}
+                  >
+                    <SubscriptionGridRowLabel
+                      subscriptionName={row.subscriptionName}
+                      subscription={subscription}
+                      fallbackStatus={row.subscriptionStatus}
                     />
                   </td>
-                ))}
-                <td
-                  className={cn(STICKY_TOTAL_CELL_CLASS, TOTAL_STICKY_SURFACE_CLASS, totalColClass)}
-                >
-                  <SubscriptionCompactAmount
-                    value={row.annualTotal}
-                    preferFullTotal={preferFullTotal}
-                  />
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-        <tfoot>
-          <tr className="font-medium">
-            <td
-              className={cn(
-                FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
-                'border-border text-muted-foreground left-0 z-50 border-t border-r px-3 py-2 text-xs font-semibold tracking-wide uppercase',
-                SUB_LABEL_COL_CLASS,
-              )}
-            >
-              Month total
-            </td>
-            {payload.monthTotals.map((total, idx) => (
+                  {row.months.map((cell, idx) => (
+                    <td key={idx} className={SUB_MONTH_CELL_CLASS}>
+                      <SubscriptionGridMonthCell
+                        cell={cell}
+                        onOpen={() =>
+                          onOpenMonthCell({
+                            subscriptionId: row.subscriptionId,
+                            invoiceId: cell.invoiceId,
+                          })
+                        }
+                      />
+                    </td>
+                  ))}
+                  <td
+                    className={cn(
+                      STICKY_TOTAL_CELL_CLASS,
+                      TOTAL_STICKY_SURFACE_CLASS,
+                      totalColClass,
+                    )}
+                  >
+                    <SubscriptionCompactAmount
+                      value={row.annualTotal}
+                      preferFullTotal={preferFullTotal}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr className="font-medium">
               <td
-                key={idx}
                 className={cn(
                   FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
-                  SUB_MONTH_COL_CLASS,
-                  'border-border z-40 border-t p-1 text-center align-middle',
+                  'border-border text-muted-foreground left-0 z-50 border-t border-r px-3 py-2 text-xs font-semibold tracking-wide uppercase',
+                  SUB_LABEL_COL_CLASS,
                 )}
               >
-                {total > 0 ? (
-                  <div
-                    className={cn(
-                      FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS,
-                      SUBSCRIPTION_CALENDAR_SLOT_CLASS,
-                    )}
-                    title={formatAmount(total)}
-                  >
-                    {formatSubscriptionGridAmount(total, false)}
-                  </div>
-                ) : (
-                  <SubscriptionEmptyMonthCell />
-                )}
+                Month total <span className="tabular-nums">{sortedRows.length}</span>
               </td>
-            ))}
-            <td
-              className={cn(
-                FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
-                STICKY_TOTAL_FOOTER_CLASS,
-                'z-50 border-t',
-                totalColClass,
-              )}
-            >
-              <SubscriptionCompactAmount
-                value={payload.grandAnnualTotal}
-                preferFullTotal={preferFullTotal}
-                size="base"
-              />
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+              {payload.monthTotals.map((total, idx) => (
+                <td
+                  key={idx}
+                  className={cn(
+                    FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
+                    SUB_MONTH_COL_CLASS,
+                    'border-border z-40 border-t p-1 text-center align-middle',
+                  )}
+                >
+                  {total > 0 ? (
+                    <SubscriptionAmountHover
+                      amount={total}
+                      trigger={
+                        <div
+                          className={cn(
+                            FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS,
+                            SUBSCRIPTION_CALENDAR_SLOT_CLASS,
+                          )}
+                        />
+                      }
+                    >
+                      {formatSubscriptionGridAmount(total, false)}
+                    </SubscriptionAmountHover>
+                  ) : (
+                    <SubscriptionEmptyMonthCell />
+                  )}
+                </td>
+              ))}
+              <td
+                className={cn(
+                  FINANCE_CALENDAR_STICKY_FOOTER_CELL_CLASS,
+                  STICKY_TOTAL_FOOTER_CLASS,
+                  'z-50 border-t',
+                  totalColClass,
+                )}
+              >
+                <SubscriptionCompactAmount
+                  value={payload.grandAnnualTotal}
+                  preferFullTotal={preferFullTotal}
+                  size="base"
+                />
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </TooltipProvider>
   );
 }

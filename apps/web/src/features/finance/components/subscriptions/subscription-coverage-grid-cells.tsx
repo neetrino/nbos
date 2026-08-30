@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { AmdCurrencyIcon } from '@/components/shared/AmdCurrencyIcon';
 import {
   FINANCE_CALENDAR_CELL_AMBER,
@@ -12,6 +13,7 @@ import {
 import { formatAmount, formatAmountAbbreviated } from '@/features/finance/constants/finance';
 import type { SubscriptionGridCell, SubscriptionGridCellKind } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
+import { SubscriptionAmountHover } from './subscription-amount-hover';
 
 /** Same slot size as expense-plans / salary calendar cells. */
 export const SUBSCRIPTION_CALENDAR_SLOT_CLASS = 'h-16 w-full';
@@ -72,16 +74,14 @@ export function SubscriptionCompactAmount({
   size?: 'sm' | 'base';
 }) {
   const display = formatSubscriptionGridAmount(value, preferFullTotal);
-  const fullAmount = formatAmount(value);
   const isCompact = !preferFullTotal;
 
-  return (
+  const body = (
     <div
       className={cn(
         'flex w-full items-center justify-center text-center',
         size === 'sm' && SUBSCRIPTION_CALENDAR_SLOT_CLASS,
       )}
-      title={isCompact ? fullAmount : undefined}
     >
       <span
         className={cn(
@@ -105,6 +105,12 @@ export function SubscriptionCompactAmount({
       </span>
     </div>
   );
+
+  return isCompact ? (
+    <SubscriptionAmountHover amount={value}>{body}</SubscriptionAmountHover>
+  ) : (
+    body
+  );
 }
 
 export function SubscriptionEmptyMonthCell() {
@@ -115,41 +121,71 @@ export function SubscriptionEmptyMonthCell() {
   );
 }
 
-export function SubscriptionGridMonthCell({
-  cell,
-  amountMonthly,
+function MonthCellButton({
+  kind,
+  statusLabel,
   onOpen,
+  children,
 }: {
-  cell: SubscriptionGridCell;
-  amountMonthly: number;
+  kind: SubscriptionGridCellKind;
+  statusLabel: string;
   onOpen: () => void;
+  children?: ReactNode;
 }) {
-  if (cell.kind === 'NA') {
-    return <SubscriptionEmptyMonthCell />;
-  }
-
-  const fullAmount = formatAmount(amountMonthly);
-  const amountLabel = formatAmountAbbreviated(amountMonthly);
-  const statusLabel = cellStatusLabel(cell.kind);
-
   return (
     <button
       type="button"
       className={cn(
         MONTH_CELL_BLOCK_CLASS,
         SUBSCRIPTION_CALENDAR_SLOT_CLASS,
-        cellVisualClasses(cell.kind),
+        cellVisualClasses(kind),
       )}
-      title={fullAmount}
-      aria-label={`${statusLabel} · ${fullAmount}`}
+      aria-label={statusLabel}
       onClick={(e) => {
         e.stopPropagation();
         onOpen();
       }}
     >
-      <span className="max-w-full truncate text-sm leading-tight font-bold tabular-nums">
-        {amountLabel}
-      </span>
+      {children}
     </button>
+  );
+}
+
+export function SubscriptionGridMonthCell({
+  cell,
+  onOpen,
+}: {
+  cell: SubscriptionGridCell;
+  onOpen: () => void;
+}) {
+  if (cell.kind === 'NA') {
+    return <SubscriptionEmptyMonthCell />;
+  }
+
+  const amount = cell.amountMonthly;
+  const hasAmount = amount != null;
+  const amountLabel = hasAmount ? formatAmountAbbreviated(amount) : null;
+  const statusLabel = cellStatusLabel(cell.kind);
+  const body = amountLabel ? (
+    <span className="max-w-full truncate text-sm leading-tight font-bold tabular-nums">
+      {amountLabel}
+    </span>
+  ) : null;
+
+  if (!hasAmount) {
+    return (
+      <MonthCellButton kind={cell.kind} statusLabel={statusLabel} onOpen={onOpen}>
+        {body}
+      </MonthCellButton>
+    );
+  }
+
+  return (
+    <SubscriptionAmountHover
+      amount={amount}
+      trigger={<MonthCellButton kind={cell.kind} statusLabel={statusLabel} onOpen={onOpen} />}
+    >
+      {body}
+    </SubscriptionAmountHover>
   );
 }

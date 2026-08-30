@@ -103,12 +103,13 @@ export default function SubscriptionDetailPage() {
   const {
     saving,
     generalError,
-    periodConfirmOpen,
-    setPeriodConfirmOpen,
-    periodConfirmDescription,
+    saveConfirmOpen,
+    saveConfirmTitle,
+    saveConfirmDescription,
+    closeSaveConfirm,
     handleSave: handleGeneralSave,
     handleCancel: handleGeneralCancel,
-    confirmPeriodChangeAndSave,
+    confirmSave,
   } = useSubscriptionGeneralSave({
     subscription,
     generalDraft,
@@ -230,12 +231,15 @@ export default function SubscriptionDetailPage() {
       />
 
       <SubscriptionBillingPeriodConfirmDialog
-        open={periodConfirmOpen}
+        open={saveConfirmOpen}
+        title={saveConfirmTitle}
         subscriptionTitle={getSubscriptionDisplayTitle(subscription)}
-        description={periodConfirmDescription}
+        description={saveConfirmDescription}
         isSubmitting={saving}
-        onOpenChange={setPeriodConfirmOpen}
-        onConfirm={confirmPeriodChangeAndSave}
+        onOpenChange={(open) => {
+          if (!open) closeSaveConfirm();
+        }}
+        onConfirm={confirmSave}
       />
     </div>
   );

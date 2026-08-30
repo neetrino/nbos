@@ -2,12 +2,14 @@
 
 import type { StatusVariant } from '@/components/shared';
 import { getSubscriptionStatus } from '@/features/finance/constants/finance';
-import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
+import {
+  formatSubscriptionGridRowMeta,
+  getSubscriptionDisplayTitle,
+} from '@/features/finance/utils/subscription-display';
 import type { Subscription } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
 
 interface SubscriptionGridRowLabelProps {
-  rowNumber: number;
   subscriptionName: string;
   subscription: Subscription | undefined;
   fallbackStatus: string;
@@ -33,7 +35,6 @@ const SUBSCRIPTION_STATUS_DOT_CLASS: Record<StatusVariant, string> = {
 };
 
 export function SubscriptionGridRowLabel({
-  rowNumber,
   subscriptionName,
   subscription,
   fallbackStatus,
@@ -43,19 +44,22 @@ export function SubscriptionGridRowLabel({
     name: subscriptionName,
     code: subscription?.code ?? subscriptionName,
   });
+  const meta = subscription ? formatSubscriptionGridRowMeta(subscription) : null;
 
   return (
-    <div className="flex items-center gap-2.5">
-      <span
-        className="bg-muted/50 text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums"
-        aria-hidden
-      >
-        {rowNumber}
-      </span>
-      <div className="min-w-0">
+    <div className="flex items-center gap-2">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5 leading-tight">
         <div className="truncate font-medium" title={title}>
           {title}
         </div>
+        {meta ? (
+          <div
+            className="text-muted-foreground truncate text-[10px] leading-none"
+            title={meta.title}
+          >
+            {meta.text}
+          </div>
+        ) : null}
       </div>
       {statusMeta ? (
         <span
