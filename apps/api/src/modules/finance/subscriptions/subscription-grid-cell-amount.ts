@@ -1,7 +1,4 @@
-import {
-  financeCalendarMonthKey,
-  isValidCoverageMonthKey,
-} from './subscription-coverage-month';
+import { financeCalendarMonthKey, isValidCoverageMonthKey } from './subscription-coverage-month';
 
 const FALLBACK_COVERAGE_MONTH_COUNT = 1;
 
