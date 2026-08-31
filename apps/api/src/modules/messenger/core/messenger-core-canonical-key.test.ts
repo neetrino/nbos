@@ -1,18 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import {
+  dealCanonicalKey,
   directCanonicalKey,
   legacyChannelCanonicalKey,
+  legacyMetaCanonicalKey,
   productCanonicalKey,
-  workspaceCanonicalKey,
-  dealCanonicalKey,
   projectGeneralCanonicalKey,
   taskCanonicalKey,
+  workspaceCanonicalKey,
 } from './messenger-core-canonical-key';
 import {
   channelLegacyIdentity,
   channelMessageLegacyIdentity,
   directMessageLegacyIdentity,
   directThreadLegacyIdentity,
+  metaConversationLegacyIdentity,
+  metaMessageLegacyIdentity,
   taskDiscussionEntryLegacyIdentity,
   taskLegacyIdentity,
 } from './messenger-legacy-identity';
@@ -26,12 +29,13 @@ describe('messenger-core-canonical-key', () => {
     expect(directCanonicalKey(LOW, HIGH)).toBe(`direct:${LOW}:${HIGH}`);
   });
 
-  it('computes Product, Work Space, Deal, and Project General keys server-side', () => {
+  it('computes Product, Work Space, Deal, Project General, and Meta keys server-side', () => {
     expect(productCanonicalKey('p1')).toBe('product:p1');
     expect(workspaceCanonicalKey('w1')).toBe('workspace:w1');
     expect(dealCanonicalKey('d1')).toBe('deal:d1');
     expect(projectGeneralCanonicalKey('g1')).toBe('project_general:g1');
     expect(taskCanonicalKey('t1')).toBe('task:t1');
+    expect(legacyMetaCanonicalKey('meta-1')).toBe('legacy:meta:meta-1');
   });
 
   it('uses a stable legacy channel identity key', () => {
@@ -58,6 +62,14 @@ describe('messenger-legacy-identity', () => {
     expect(taskDiscussionEntryLegacyIdentity('e1')).toEqual({
       sourceKind: 'TASK_DISCUSSION_ENTRY',
       sourceId: 'e1',
+    });
+    expect(metaConversationLegacyIdentity('meta-1')).toEqual({
+      sourceKind: 'META_CONVERSATION',
+      sourceId: 'meta-1',
+    });
+    expect(metaMessageLegacyIdentity('INSTAGRAM:acc:mid')).toEqual({
+      sourceKind: 'META_MESSAGE',
+      sourceId: 'INSTAGRAM:acc:mid',
     });
   });
 });

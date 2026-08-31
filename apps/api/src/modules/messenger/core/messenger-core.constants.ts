@@ -39,11 +39,13 @@ export const MESSENGER_CORE_WORKSPACE_KEY_PREFIX = 'workspace:';
 export const MESSENGER_CORE_DEAL_KEY_PREFIX = 'deal:';
 export const MESSENGER_CORE_TASK_KEY_PREFIX = 'task:';
 export const MESSENGER_CORE_PROJECT_GENERAL_KEY_PREFIX = 'project_general:';
+export const MESSENGER_CORE_META_KEY_PREFIX = 'legacy:meta:';
 export const MESSENGER_CORE_RESERVED_CANONICAL_KEY_PREFIXES = [
   'product:',
   'workspace:',
   'direct:',
   'legacy:channel:',
+  'legacy:meta:',
   'project_general:',
   'deal:',
   'task:',
@@ -54,6 +56,10 @@ export const MESSENGER_CORE_INTERNAL_LIST_PAGE_SIZE = 100;
 export const MESSENGER_CORE_INTERNAL_MESSAGE_PAGE_SIZE = 100;
 export const MESSENGER_CORE_INTERNAL_CLIENT_ZONE_FORBIDDEN =
   'Internal Messenger cannot open Client conversations';
+export const MESSENGER_CORE_CLIENT_INTERNAL_ZONE_FORBIDDEN =
+  'Client Messenger cannot open Internal conversations';
+export const MESSENGER_CORE_CLIENT_INVITE_ROLE = 'READ_ONLY' as const;
+export const MESSENGER_CORE_CLIENT_LIST_PAGE_SIZE = 100;
 export const MESSENGER_CORE_INTERNAL_CREATE_TYPE_FORBIDDEN =
   'Internal Messenger can create Groups and Direct only';
 export const MESSENGER_CORE_MENTION_MAX_COUNT = 20;
@@ -82,3 +88,15 @@ export const MESSENGER_INTERNAL_SECTIONS = [
 ] as const;
 
 export type MessengerInternalSection = (typeof MESSENGER_INTERNAL_SECTIONS)[number];
+
+export const MESSENGER_CLIENT_SECTIONS = ['inbox', 'sales', 'clients', 'collections'] as const;
+
+export type MessengerClientSection = (typeof MESSENGER_CLIENT_SECTIONS)[number];
+
+export const MESSENGER_CLIENT_LIST_FILTERS = ['unread', 'needs_response', 'assigned'] as const;
+
+export type MessengerClientListFilter = (typeof MESSENGER_CLIENT_LIST_FILTERS)[number];
+
+export const MESSENGER_CLIENT_PROVIDERS = ['WHATSAPP', 'INSTAGRAM', 'FACEBOOK'] as const;
+
+export type MessengerClientProviderFilter = (typeof MESSENGER_CLIENT_PROVIDERS)[number];

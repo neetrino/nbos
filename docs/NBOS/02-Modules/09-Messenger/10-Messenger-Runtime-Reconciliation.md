@@ -123,7 +123,7 @@ Classification: `EXTEND` as Messaging Core (Slice 1). Channel/DM remains the rol
 
 **Slice 0 (SHA `302f57f7`):** no production `prisma.messengerConversation*` callers. Inventoried DB: **0 rows** on all Unified tables. Schema comment that Unified is “Internal Messenger UI source of truth” is **stale** (UI is Channel+DM). Unused WS names `messenger.subscribe_conversation` / `messenger.conversation.message` exist in shared constants only.
 
-**Slice 1:** Unified generation is evolved into Messaging Core (`MessengerConversation*` + additive Core tables). This is not a third store. Dual-write: **none**. Channel/DM → Core mapping uses `messenger_legacy_identities` and canonicalKey `legacy:channel:{id}` and is not hooked into Channel/DM send. Meta remains until Slice 7.
+**Slice 1:** Unified generation is evolved into Messaging Core (`MessengerConversation*` + additive Core tables). This is not a third store. Dual-write: **none**. Channel/DM → Core mapping uses `messenger_legacy_identities` and canonicalKey `legacy:channel:{id}` and is not hooked into Channel/DM send. Meta Sales inbound maps into Core Client Sales in Slice 7; Meta tables remain until Slice 11.
 
 **Slice 3:** evidence `23-Slice-03-Internal-Base.md`. Status `VERIFIED`. Internal `/messenger` and Portfolio write Core. Mapper is ops-only (not list GET). Dual-write still **none**. Channel/DM tables not dropped; `/messenger/legacy` remains labeled rollback.
 
@@ -218,6 +218,8 @@ The final separate Client Messenger defined by Canon is not the current complete
 **Slice 0:** `/messenger` mounts Channel+DM only. A placeholder **Internal | External** toggle exists in `MessengerClient.tsx`; External is copy-only (mentions historical WAHA adapter and Support/Finance as chat categories). Not a Client product surface.
 
 **Sales inbound store already exists:** `MetaConversation` / `MetaMessage` (Instagram/Facebook webhook persist, CRM Lead UI). Classify the **UI** `NEW`; classify the **store** `MIGRATE` then `DELETE-LATER` (Slice 7 map into Core Client Sales, Slice 11 drop). Empty Meta rows do not license `NEW` (`M-CLIENT-01`, `M-CORE-01`). Mail stays separate (`M-MAIL-01`); Meta does not inherit that exemption. Meta outbound send is absent (`NEW` when Client SEND exists; persist in Core, not a fourth store).
+
+**Slice 7 implementer (`VERIFIED`):** Client UI is `/client-messenger` (not CRM `/clients`, not an Internal tab). Live Meta ingest persists Core CLIENT EXTERNAL + mapping + Core messages; it no longer writes `MetaMessage` as live SOT. MetaConversation/Lead attach remain. Mapper is ops-only and idempotent. 0 Meta rows remains a no-op, still `MIGRATE`. Mixed Internal|External toggle is not the Client product.
 
 Classification: Client surface `NEW`; Meta conversation/message store `MIGRATE` then `DELETE-LATER`; mixed toggle `DELETE-LATER` (Slice 7).
 
@@ -655,7 +657,7 @@ Reject:
 - reintroducing Topics/L1/L2;
 - assuming Unified tables are active or empty without evidence;
 - deleting `TaskDiscussionEntry` before migration proof;
-- deleting `MetaConversation` / `MetaMessage` before Slice 7 cutover proof, or treating empty Meta rows as license for `NEW` Client Sales history;
+- deleting `MetaConversation` / `MetaMessage` before Slice 11 (Slice 7 maps into Core; tables remain), or treating empty Meta rows as license for `NEW` Client Sales history;
 - treating Meta as covered by `M-MAIL-01` (Mail exemption);
 - creating a fourth permanent message store for Instagram/Facebook;
 - inventing Task reply/file fields that current schema does not contain;
@@ -687,9 +689,11 @@ Completed for SHA `302f57f7` in `20-Slice-00-Baseline.md`. Status `VERIFIED` (FI
 
 **Slice 6:** evidence `26-Slice-06-Message-Actions.md`. Status `VERIFIED`. FINDING-S6-01/02 closed. Dual-write none. No DROP. Slice 7 may begin.
 
+**Slice 7:** evidence `27-Slice-07-Client-Messenger.md`. Status `VERIFIED`. Separate Client surface + locked composer. Meta inbound cutover into Core Client Sales. Dual-write none. No DROP. Slice 8 may begin.
+
 Inventoried DB snapshot (local `DATABASE_URL`; not labeled prod vs staging): Channel/DM 0; Unified 0; Tasks 390 / chatId 0 / discussion 0; Product WhatsApp bindings 145 (ACTIVE 143 unique group ids, FAILED 2); gateway row 1 with accountant group id present; MetaConversation 0; MetaMessage 0; MetaConnectedAccount 0; MetaSenderIdentity 0; MetaProviderEvent 17.
 
-NBOS `whatsapp-gateway` module has **no inbound webhook**. Meta webhook persists inbound messages into `MetaConversation`/`MetaMessage` (CRM Lead UI); that store is `MIGRATE` into Core Client Sales (Slice 7), not `NEW`.
+NBOS `whatsapp-gateway` module has **no inbound webhook**. Slice 7 live Meta ingest persists Core Client Sales (MetaMessage is not live SOT after cutover). Meta tables remain until Slice 11. Classification stays `MIGRATE`, not `NEW`, including when snapshot row counts are 0.
 
 `seed.ts` / `seed-messenger.ts` `deleteMany` Channel/DM (wipe risk). Seed does **not** delete Meta tables; `lead.deleteMany` SetNulls `MetaConversation.leadId`.
 
@@ -779,6 +783,6 @@ Highest-risk migrations are:
 1. reconciling active Channel/DM stores with the existing Unified generation without creating a third store;
 2. `TaskDiscussionEntry` -> canonical Messaging Core while preserving real provenance;
 3. hard 1:1 `ProductWhatsAppGroupBinding` -> flexible WORK/FINANCE bindings without changing physical WhatsApp identity or duplicating side effects;
-4. `MetaConversation` / `MetaMessage` -> Core Client Sales (Slice 7) without a fourth store and without applying Mail’s exemption.
+4. `MetaConversation` / `MetaMessage` -> Core Client Sales (Slice 7 `VERIFIED`) without a fourth store and without applying Mail’s exemption. Meta tables remain until Slice 11.
 
 `11-Messenger-Rebuild-Implementation-Checklist.md` and `12-Messenger-Rebuild-Execution-Strategy.md` are executable only together with this reconciliation document.

@@ -269,3 +269,58 @@ describe('Slice 6 message actions migration safety', () => {
     expect(hooks).toMatch(/createDealImplemented: false/);
   });
 });
+
+describe('Slice 7 Client Messenger migration safety', () => {
+  const slice7Sql = readRepo(
+    'packages/database/prisma/migrations/20260831180000_messenger_client_meta_identity/migration.sql',
+  );
+
+  it('is additive and does not DROP Meta, Channel/DM, Unified, or Task discussion', () => {
+    expect(slice7Sql).not.toMatch(/DROP TABLE/i);
+    expect(slice7Sql).not.toMatch(/DROP TYPE/i);
+    expect(slice7Sql).not.toMatch(/DROP COLUMN/i);
+    expect(slice7Sql).toMatch(/ADD VALUE IF NOT EXISTS 'META_CONVERSATION'/);
+    expect(slice7Sql).toMatch(/ADD VALUE IF NOT EXISTS 'META_MESSAGE'/);
+    expect(slice7Sql).toMatch(/ADD VALUE IF NOT EXISTS 'LEAD'/);
+    expect(slice7Sql).not.toMatch(/meta_conversations/);
+    expect(slice7Sql).not.toMatch(/messenger_channels/);
+    expect(slice7Sql).not.toMatch(/task_discussion_entries/);
+  });
+
+  it('does not accept HTTP canonicalKey on Client controllers or DTOs', () => {
+    const controller = readRepo(
+      'apps/api/src/modules/messenger/core/messenger-core-client.controller.ts',
+    );
+    const collections = readRepo(
+      'apps/api/src/modules/messenger/core/messenger-core-client-collection.controller.ts',
+    );
+    const query = readRepo(
+      'apps/api/src/modules/messenger/core/dto/list-client-conversations.query.ts',
+    );
+    const invite = readRepo(
+      'apps/api/src/modules/messenger/core/dto/invite-client-read-only.dto.ts',
+    );
+    expect(controller).not.toMatch(/canonicalKey/);
+    expect(collections).not.toMatch(/canonicalKey/);
+    expect(query).not.toMatch(/canonicalKey/);
+    expect(invite).not.toMatch(/canonicalKey/);
+    expect(invite).not.toMatch(/MEMBER|SEND|ADMIN/);
+  });
+
+  it('keeps persistAndBroadcast arity 1 and Client send on VIEW not EDIT', async () => {
+    const service = readRepo('apps/api/src/modules/messenger/core/messenger-core.service.ts');
+    expect(service).not.toMatch(/allowClientPersist/);
+    expect(service).not.toMatch(/assertClientPersistBlocked/);
+    const { MessengerCoreClientController } = await import('./messenger-core-client.controller');
+    expect(
+      Reflect.getMetadata(PERMISSION_KEY, MessengerCoreClientController.prototype.sendMessage),
+    ).toEqual({ module: 'MESSENGER', action: 'VIEW' });
+  });
+
+  it('does not apply Mail exemption patterns to Meta inbound', () => {
+    const ingest = readRepo('apps/api/src/modules/integrations/meta/meta-lead-ingest.service.ts');
+    expect(ingest).toMatch(/persistLiveMetaInboundToCore/);
+    expect(ingest).not.toMatch(/metaMessage\.create/);
+    expect(ingest).not.toMatch(/allowClientPersist/);
+  });
+});

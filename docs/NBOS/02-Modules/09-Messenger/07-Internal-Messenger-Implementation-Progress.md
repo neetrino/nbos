@@ -36,6 +36,10 @@ Implementer evidence: `25-Slice-05-Task-Discussion.md`. Status `VERIFIED`. FINDI
 
 Implementer evidence: `26-Slice-06-Message-Actions.md`. Status `VERIFIED`. FINDING-S6-01/02 closed. Message actions reference canonical sources; mentions persist is queryable. Slice 7 may begin.
 
+## Slice 7 status (not product canon)
+
+Implementer evidence: `27-Slice-07-Client-Messenger.md`. Status `VERIFIED`. Separate Client Messenger, locked composer, Meta Sales on Core. Slice 8 may begin.
+
 ## Current verified static baseline
 
 The previous historical status text was stale and must not be used as runtime proof. Slice 0 re-checked this against `302f57f7` + DB counts (see evidence file).
@@ -147,13 +151,13 @@ Existing Product/group relations migrate as `WORK`. FINANCE is not auto-created 
 
 ## Client Messenger runtime
 
-The final separate provider-backed Client Messenger surface is not yet the completed target runtime.
+Slice 7 implementer (READY_FOR_REVIEW, not VERIFIED): separate Client Messenger lives at `/client-messenger` (Inbox / Sales / Clients / Collections). CRM `/clients` is unchanged. Internal `/messenger` remains Internal-only.
 
-`/messenger` is Channel+DM. A placeholder Internal | External toggle exists; External is not a working Client product.
+Locked composer starts locked; `Reply to client` unlocks this conversation session only. Persist uses `canSend`, not UI unlock and not `MESSENGER.EDIT`.
 
-Do not preserve or rebuild that mixed switch as the target.
+Live Meta inbound persists Core CLIENT EXTERNAL (MetaMessage is not live SOT after cutover). Meta tables remain until Slice 11. WhatsApp Gateway inbound/outbound remains Slice 8. Product WORK bindings remain Slice 9.
 
-Target surface remains the separate Client Messenger defined by Master Canon and Decision Register.
+Do not preserve or rebuild the old Internal | External mixed switch as the target.
 
 ## WhatsApp Gateway
 
@@ -207,7 +211,7 @@ Migration/runtime implementation uses additionally:
 
 ## Next step before product code changes
 
-1. Begin Slice 7 (Client Messenger surface, locked composer, Meta history into Core Client Sales).
-2. Do not start Slice 8 until Slice 7 is independently `VERIFIED`.
+1. Begin Slice 8 (WhatsApp Gateway inbound/outbound into Messaging Core).
+2. Do not start Slice 9 until Slice 8 is independently `VERIFIED`.
 
 No production Messenger rebuild completion is claimed by this documentation stage.

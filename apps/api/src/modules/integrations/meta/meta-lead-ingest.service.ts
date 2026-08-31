@@ -1,6 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Prisma, PrismaClient, type InputJsonValue, type TransactionClient } from '@nbos/database';
+import { Prisma, PrismaClient, type TransactionClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { persistLiveMetaInboundToCore } from '../../messenger/core/messenger-meta-live-inbound.ops';
+import { MessengerGateway } from '../../messenger/messenger.gateway';
 import {
   buildMetaLeadNames,
   isGenericMetaLeadField,
@@ -8,11 +10,9 @@ import {
 } from './meta-lead-display';
 import {
   buildLatestMessagePreview,
-  buildMinimalProviderMetadata,
   isPrismaSerializationFailure,
   isPrismaUniqueViolation,
   META_TX_MAX_RETRIES,
-  resolveInboundMessageType,
   resolveMessageSentAt,
 } from './meta-lead-ingest.helpers';
 import { MetaProfileService } from './meta-profile.service';
@@ -39,6 +39,7 @@ export class MetaLeadIngestService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly profileService: MetaProfileService,
+    private readonly messengerGateway: MessengerGateway,
   ) {}
 
   async ingestMessage(message: ParsedMetaInboundMessage): Promise<void> {
@@ -96,12 +97,10 @@ export class MetaLeadIngestService {
     const { account, message, platform, resolvedProfile } = params;
     const preview = buildLatestMessagePreview(message.messageText);
     const sentAt = resolveMessageSentAt(message.timestamp);
-    const messageType = resolveInboundMessageType(message.messageText);
-    const providerMetadata = buildMinimalProviderMetadata(message);
 
     for (let attempt = 0; attempt < META_TX_MAX_RETRIES; attempt += 1) {
       try {
-        return await this.prisma.$transaction(
+        const result = await this.prisma.$transaction(
           async (tx) => {
             const senderIdentity = await tx.metaSenderIdentity.upsert({
               where: {
@@ -161,25 +160,16 @@ export class MetaLeadIngestService {
               await this.maybeEnrichExistingLead(tx, leadId, platform, resolvedProfile.profile);
             }
 
-            try {
-              await tx.metaMessage.create({
-                data: {
-                  conversationId: conversation.id,
-                  metaConnectedAccountId: account.id,
-                  providerMessageId: message.eventId,
-                  platform,
-                  direction: 'INBOUND',
-                  messageType,
-                  text: message.messageText,
-                  sentAt,
-                  providerMetadata: (providerMetadata ?? undefined) as InputJsonValue | undefined,
-                },
-              });
-            } catch (error) {
-              if (!isPrismaUniqueViolation(error)) {
-                throw error;
-              }
-            }
+            const core = await persistLiveMetaInboundToCore(tx as never, {
+              metaConversationId: conversation.id,
+              leadId,
+              providerAccountId: account.id,
+              platform,
+              providerMessageId: message.eventId,
+              text: message.messageText,
+              senderName: resolvedProfile.profile.displayName?.trim() || 'Client',
+              sentAt: sentAt ?? new Date(),
+            });
 
             await tx.metaConversation.update({
               where: { id: conversation.id },
@@ -189,7 +179,7 @@ export class MetaLeadIngestService {
               },
             });
 
-            return leadId;
+            return { leadId, core };
           },
           {
             isolationLevel: 'Serializable',
@@ -197,6 +187,11 @@ export class MetaLeadIngestService {
             timeout: 10000,
           },
         );
+        this.messengerGateway.emitCoreConversationMessage(
+          result.core.conversationId,
+          result.core.message,
+        );
+        return result.leadId;
       } catch (error) {
         if (isPrismaSerializationFailure(error) && attempt < META_TX_MAX_RETRIES - 1) {
           continue;

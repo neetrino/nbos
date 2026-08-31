@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/audit.module';
 import { MessengerCoreActionsController } from './core/messenger-core-actions.controller';
 import { MessengerCoreActionsService } from './core/messenger-core-actions.service';
+import { MessengerCoreClientCollectionController } from './core/messenger-core-client-collection.controller';
+import { MessengerCoreClientController } from './core/messenger-core-client.controller';
+import { MessengerCoreClientService } from './core/messenger-core-client.service';
 import { MessengerCoreCollectionController } from './core/messenger-core-collection.controller';
 import { MessengerCoreCollectionService } from './core/messenger-core-collection.service';
 import { MessengerCoreController } from './core/messenger-core.controller';
@@ -24,15 +27,18 @@ import { MessengerService } from './messenger.service';
     MessengerCoreInternalController,
     MessengerCoreInternalEntityController,
     MessengerCoreInternalCollectionController,
+    MessengerCoreClientController,
+    MessengerCoreClientCollectionController,
   ],
   providers: [
     MessengerService,
     MessengerCoreService,
     MessengerCoreActionsService,
     MessengerCoreInternalService,
+    MessengerCoreClientService,
     MessengerCoreCollectionService,
     MessengerGateway,
   ],
-  exports: [MessengerService, MessengerCoreService],
+  exports: [MessengerService, MessengerCoreService, MessengerGateway],
 })
 export class MessengerModule {}

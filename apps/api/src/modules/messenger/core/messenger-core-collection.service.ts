@@ -21,11 +21,19 @@ import {
 import {
   ensureInternalFavoritesCollection,
   listAclFilteredCollectionItems,
+  listClientCollections,
   listInternalCollections,
+  ensureClientFavoritesCollection,
   removeCoreCollectionItem,
 } from './messenger-core-collection-list.ops';
 import { listAccessibleInternalConversationsByIds } from './messenger-core-internal-list.ops';
-import { MESSENGER_CORE_INTERNAL_ZONE } from './messenger-core.constants';
+import { listAccessibleClientConversationsByIds } from './messenger-core-client-list.ops';
+import {
+  MESSENGER_CORE_CLIENT_INTERNAL_ZONE_FORBIDDEN,
+  MESSENGER_CORE_CLIENT_ZONE,
+  MESSENGER_CORE_INTERNAL_CLIENT_ZONE_FORBIDDEN,
+  MESSENGER_CORE_INTERNAL_ZONE,
+} from './messenger-core.constants';
 import type { TasksAccessContext } from '../../tasks/tasks-scoped-access';
 
 @Injectable()
@@ -87,7 +95,7 @@ export class MessengerCoreCollectionService {
     conversationId: string,
   ): Promise<{ id: string }> {
     await this.requireInternalCollection(collectionId, actorId);
-    await this.requireConversationRead(conversationId, actorId);
+    await this.requireConversationRead(conversationId, actorId, MESSENGER_CORE_INTERNAL_ZONE);
     return addCoreCollectionItem(this.prisma, collectionId, conversationId);
   }
 
@@ -133,6 +141,69 @@ export class MessengerCoreCollectionService {
     await removeCoreCollectionItem(this.prisma, collectionId, conversationId);
   }
 
+  async listClient(employeeId: string) {
+    await this.requireView(employeeId);
+    await ensureClientFavoritesCollection(this.prisma, employeeId);
+    return listClientCollections(this.prisma, employeeId);
+  }
+
+  async createClient(
+    employeeId: string,
+    input: { name: string; visibility: MessengerCollectionVisibility },
+  ): Promise<MessengerCoreCollectionDto> {
+    return this.createCollection(employeeId, {
+      ...input,
+      zone: MESSENGER_CORE_CLIENT_ZONE,
+    });
+  }
+
+  async getClient(collectionId: string, employeeId: string) {
+    await this.requireClientCollection(collectionId, employeeId);
+    const access = await this.requireView(employeeId);
+    const items = await listAclFilteredCollectionItems(
+      this.prisma,
+      collectionId,
+      employeeId,
+      MESSENGER_CORE_CLIENT_ZONE,
+    );
+    const conversations = await listAccessibleClientConversationsByIds(
+      this.prisma,
+      employeeId,
+      access.clientReadScope,
+      access.clientSendScope,
+      items.map((item) => item.conversationId),
+    );
+    const collection = await this.prisma.messengerConversationCollection.findUnique({
+      where: { id: collectionId },
+    });
+    if (!collection) throw new NotFoundException('Collection not found');
+    return {
+      id: collection.id,
+      name: collection.name,
+      visibility: collection.visibility,
+      zone: collection.zone,
+      ownerEmployeeId: collection.ownerEmployeeId,
+      items,
+      conversations,
+    };
+  }
+
+  async addClientMember(collectionId: string, actorId: string, employeeId: string) {
+    await this.requireClientCollection(collectionId, actorId);
+    return addCoreCollectionMember(this.prisma, collectionId, employeeId);
+  }
+
+  async addClientItem(collectionId: string, actorId: string, conversationId: string) {
+    await this.requireClientCollection(collectionId, actorId);
+    await this.requireConversationRead(conversationId, actorId, MESSENGER_CORE_CLIENT_ZONE);
+    return addCoreCollectionItem(this.prisma, collectionId, conversationId);
+  }
+
+  async removeClientItem(collectionId: string, actorId: string, conversationId: string) {
+    await this.requireClientCollection(collectionId, actorId);
+    await removeCoreCollectionItem(this.prisma, collectionId, conversationId);
+  }
+
   private async requireInternalCollection(collectionId: string, employeeId: string): Promise<void> {
     await this.requireCollectionManage(collectionId, employeeId);
     const collection = await this.prisma.messengerConversationCollection.findUnique({
@@ -140,6 +211,17 @@ export class MessengerCoreCollectionService {
       select: { zone: true },
     });
     if (!collection || collection.zone !== MESSENGER_CORE_INTERNAL_ZONE) {
+      throw new NotFoundException('Collection not found');
+    }
+  }
+
+  private async requireClientCollection(collectionId: string, employeeId: string): Promise<void> {
+    await this.requireCollectionManage(collectionId, employeeId);
+    const collection = await this.prisma.messengerConversationCollection.findUnique({
+      where: { id: collectionId },
+      select: { zone: true },
+    });
+    if (!collection || collection.zone !== MESSENGER_CORE_CLIENT_ZONE) {
       throw new NotFoundException('Collection not found');
     }
   }
@@ -158,7 +240,11 @@ export class MessengerCoreCollectionService {
     if (!allowed) throw new NotFoundException('Collection not found');
   }
 
-  private async requireConversationRead(conversationId: string, employeeId: string): Promise<void> {
+  private async requireConversationRead(
+    conversationId: string,
+    employeeId: string,
+    zone?: MessengerConversationZone,
+  ): Promise<void> {
     const loaded = await loadMessengerCoreAccessFacts(this.prisma, employeeId, conversationId);
     if (!loaded.access || loaded.access.viewScope === 'NONE') {
       throw new ForbiddenException('No permission: MESSENGER.VIEW');
@@ -166,5 +252,12 @@ export class MessengerCoreCollectionService {
     if (!loaded.facts) throw new NotFoundException('Conversation not found');
     const decision = evaluateMessengerCoreAccess(loaded.facts);
     if (!decision.canRead) throw new NotFoundException('Conversation not found');
+    if (zone && loaded.facts.zone !== zone) {
+      throw new NotFoundException(
+        zone === MESSENGER_CORE_CLIENT_ZONE
+          ? MESSENGER_CORE_CLIENT_INTERNAL_ZONE_FORBIDDEN
+          : MESSENGER_CORE_INTERNAL_CLIENT_ZONE_FORBIDDEN,
+      );
+    }
   }
 }

@@ -28,3 +28,13 @@ export function taskLegacyIdentity(taskId: string): MessengerLegacyIdentityKey {
 export function taskDiscussionEntryLegacyIdentity(entryId: string): MessengerLegacyIdentityKey {
   return { sourceKind: 'TASK_DISCUSSION_ENTRY', sourceId: entryId };
 }
+
+export function metaConversationLegacyIdentity(
+  metaConversationId: string,
+): MessengerLegacyIdentityKey {
+  return { sourceKind: 'META_CONVERSATION', sourceId: metaConversationId };
+}
+
+export function metaMessageLegacyIdentity(providerMessageKey: string): MessengerLegacyIdentityKey {
+  return { sourceKind: 'META_MESSAGE', sourceId: providerMessageKey };
+}

@@ -2,9 +2,10 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MessengerCoreService } from './messenger-core.service';
 import {
-  MESSENGER_CORE_CLIENT_SEND_DISABLED,
+  MESSENGER_CORE_CLIENT_READ_ONLY,
   MESSENGER_CORE_CLIENT_SEND_FORBIDDEN,
   MESSENGER_CORE_CLIENT_WRITE_FORBIDDEN,
+  MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN,
 } from './messenger-core.constants';
 
 const loadMessengerLegacyAccess = vi.fn();
@@ -159,54 +160,46 @@ describe('MessengerCoreService persist-before-emit', () => {
     expect(gateway.emitCoreConversationMessage).not.toHaveBeenCalled();
   });
 
-  it('blocks Client send on the HTTP/service default path', async () => {
+  it('rejects employee persist without senderId', async () => {
     const { service, prisma, gateway } = createService();
-    prisma.messengerConversation.findUnique.mockResolvedValue({
-      id: 'conv-c',
-      zone: 'CLIENT',
-      type: 'EXTERNAL',
-      title: 'Client',
-      status: 'ACTIVE',
-      canonicalKey: null,
-      createdAt: new Date(),
-      lastMessageAt: null,
-    });
     await expect(
       service.persistAndBroadcast({
-        conversationId: 'conv-c',
-        senderId: 'e1',
-        content: 'visible to client',
+        conversationId: 'conv-1',
+        senderId: null,
+        content: 'no employee',
       }),
-    ).rejects.toThrow(MESSENGER_CORE_CLIENT_SEND_DISABLED);
+    ).rejects.toThrow(MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN);
     expect(prisma.messengerMessage.create).not.toHaveBeenCalled();
     expect(gateway.emitCoreConversationMessage).not.toHaveBeenCalled();
+  });
+
+  it('persists Client send when canSend is true', async () => {
+    const { service, prisma, gateway } = createService();
+    prisma.messengerConversation.findUnique.mockResolvedValue(clientConversation());
+    const message = await service.persistAndBroadcast({
+      conversationId: 'conv-c',
+      senderId: 'e1',
+      content: 'visible to client',
+    });
+    expect(message.id).toBe('msg-1');
+    expect(prisma.messengerMessage.create).toHaveBeenCalledTimes(1);
+    expect(gateway.emitCoreConversationMessage).toHaveBeenCalledTimes(1);
   });
 
   it('has no allowClientPersist parameter and ignores a leftover second argument', async () => {
     const { service, prisma, gateway } = createService();
     expect(service.persistAndBroadcast.length).toBe(1);
-    prisma.messengerConversation.findUnique.mockResolvedValue({
-      id: 'conv-c',
-      zone: 'CLIENT',
-      type: 'EXTERNAL',
-      title: 'Client',
-      status: 'ACTIVE',
-      canonicalKey: null,
-      createdAt: new Date(),
-      lastMessageAt: null,
-    });
+    prisma.messengerConversation.findUnique.mockResolvedValue(clientConversation());
     const persist = service.persistAndBroadcast.bind(service) as unknown as (
       input: { conversationId: string; senderId: string; content: string },
       extra?: { allowClientPersist: boolean },
     ) => Promise<unknown>;
-    await expect(
-      persist(
-        { conversationId: 'conv-c', senderId: 'e1', content: 'bypass' },
-        { allowClientPersist: true },
-      ),
-    ).rejects.toThrow(MESSENGER_CORE_CLIENT_SEND_DISABLED);
-    expect(prisma.messengerMessage.create).not.toHaveBeenCalled();
-    expect(gateway.emitCoreConversationMessage).not.toHaveBeenCalled();
+    await persist(
+      { conversationId: 'conv-c', senderId: 'e1', content: 'bypass' },
+      { allowClientPersist: true },
+    );
+    expect(prisma.messengerMessage.create).toHaveBeenCalledTimes(1);
+    expect(gateway.emitCoreConversationMessage).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -263,6 +256,39 @@ describe('MessengerCoreService Slice 2 ACL', () => {
         senderId: 'e1',
         content: 'should not send',
       }),
+    ).rejects.toThrow(MESSENGER_CORE_CLIENT_SEND_FORBIDDEN);
+    expect(prisma.messengerMessage.create).not.toHaveBeenCalled();
+    expect(gateway.emitCoreConversationMessage).not.toHaveBeenCalled();
+  });
+
+  it('forbids Client persist for a READ_ONLY participant even when SEND scope is ALL', async () => {
+    const { service, prisma, gateway } = createService();
+    prisma.messengerConversation.findUnique.mockResolvedValue(clientConversation());
+    prisma.messengerConversationParticipant.findFirst.mockResolvedValue({ role: 'READ_ONLY' });
+    await expect(
+      service.persistAndBroadcast({
+        conversationId: 'conv-c',
+        senderId: 'e1',
+        content: 'should not send',
+      }),
+    ).rejects.toThrow(MESSENGER_CORE_CLIENT_READ_ONLY);
+    expect(prisma.messengerMessage.create).not.toHaveBeenCalled();
+    expect(gateway.emitCoreConversationMessage).not.toHaveBeenCalled();
+  });
+
+  it('ignores a leftover second argument when canSend is false', async () => {
+    loadMessengerLegacyAccess.mockResolvedValue({
+      ...ACCESS,
+      clientSendScope: 'NONE',
+    });
+    const { service, prisma, gateway } = createService();
+    prisma.messengerConversation.findUnique.mockResolvedValue(clientConversation());
+    const persist = service.persistAndBroadcast.bind(service) as unknown as (
+      input: { conversationId: string; senderId: string; content: string },
+      extra?: { unlocked: boolean },
+    ) => Promise<unknown>;
+    await expect(
+      persist({ conversationId: 'conv-c', senderId: 'e1', content: 'forged' }, { unlocked: true }),
     ).rejects.toThrow(MESSENGER_CORE_CLIENT_SEND_FORBIDDEN);
     expect(prisma.messengerMessage.create).not.toHaveBeenCalled();
     expect(gateway.emitCoreConversationMessage).not.toHaveBeenCalled();
@@ -342,19 +368,23 @@ describe('MessengerCoreService Slice 2 ACL', () => {
     expect(gateway.emitCoreConversationMessage).not.toHaveBeenCalled();
   });
 
-  it('still disables Client persist after canSend is true', async () => {
+  it('persists Client when canSend is true even if MESSENGER.EDIT is NONE', async () => {
+    loadMessengerLegacyAccess.mockResolvedValue({
+      ...ACCESS,
+      editScope: 'NONE',
+      clientReadScope: 'ALL',
+      clientSendScope: 'ALL',
+    });
     const { service, prisma, gateway } = createService();
     prisma.messengerConversation.findUnique.mockResolvedValue(clientConversation());
     prisma.messengerConversationParticipant.findFirst.mockResolvedValue({ role: 'MEMBER' });
-    await expect(
-      service.persistAndBroadcast({
-        conversationId: 'conv-c',
-        senderId: 'e1',
-        content: 'visible to client',
-      }),
-    ).rejects.toThrow(MESSENGER_CORE_CLIENT_SEND_DISABLED);
-    expect(prisma.messengerMessage.create).not.toHaveBeenCalled();
-    expect(gateway.emitCoreConversationMessage).not.toHaveBeenCalled();
+    await service.persistAndBroadcast({
+      conversationId: 'conv-c',
+      senderId: 'e1',
+      content: 'visible to client',
+    });
+    expect(prisma.messengerMessage.create).toHaveBeenCalledTimes(1);
+    expect(gateway.emitCoreConversationMessage).toHaveBeenCalledTimes(1);
   });
 
   it('returns 404 and does not create a reference from a Client source without Client READ', async () => {

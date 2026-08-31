@@ -15,6 +15,7 @@ import {
   ListTodo,
   Mail,
   Megaphone,
+  MessageCircle,
   MessagesSquare,
   Settings,
   ShieldCheck,
@@ -127,6 +128,13 @@ export const SIDEBAR_MODULE_VISUALS: Record<SidebarModuleKey, SidebarModuleVisua
     tileClass: 'bg-purple-500/10',
     tileActiveClass: 'bg-purple-500/16 ring-purple-500/25 ring-1',
     markerClass: 'bg-purple-600 dark:bg-purple-400',
+  },
+  'client-messenger': {
+    Icon: MessageCircle,
+    iconClass: 'text-teal-800 dark:text-teal-300',
+    tileClass: 'bg-teal-800/10',
+    tileActiveClass: 'bg-teal-800/16 ring-teal-800/25 ring-1',
+    markerClass: 'bg-teal-800 dark:bg-teal-300',
   },
   calendar: {
     Icon: CalendarDays,

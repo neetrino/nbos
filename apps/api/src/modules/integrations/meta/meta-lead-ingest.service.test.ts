@@ -2,6 +2,11 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { MetaLeadIngestService } from './meta-lead-ingest.service';
 import type { MetaProfileService } from './meta-profile.service';
 import type { ParsedMetaInboundMessage } from './meta.types';
+import { persistLiveMetaInboundToCore } from '../../messenger/core/messenger-meta-live-inbound.ops';
+
+vi.mock('../../messenger/core/messenger-meta-live-inbound.ops', () => ({
+  persistLiveMetaInboundToCore: vi.fn(),
+}));
 
 const baseMessage: ParsedMetaInboundMessage = {
   eventId: 'mid-1',
@@ -150,24 +155,60 @@ function createProfileService(): MetaProfileService {
 
 describe('MetaLeadIngestService', () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
+    vi.mocked(persistLiveMetaInboundToCore).mockReset();
+    vi.mocked(persistLiveMetaInboundToCore).mockResolvedValue({
+      conversationId: 'core-1',
+      created: true,
+      message: {
+        id: 'core-msg-1',
+        conversationId: 'core-1',
+        senderId: null,
+        senderName: 'Karo Gabrielyan',
+        content: 'hello',
+        direction: 'INBOUND',
+        status: 'SENT',
+        provenance: 'PROVIDER',
+        replyToMessageId: null,
+        threadRootMessageId: null,
+        createdAt: new Date(),
+        editedAt: null,
+        attachments: [],
+        mentionedEmployeeIds: [],
+        references: [],
+      },
+    });
   });
 
-  it('creates one lead and stores first inbound message', async () => {
+  function gateway() {
+    return { emitCoreConversationMessage: vi.fn() };
+  }
+
+  it('creates one lead and persists Core instead of MetaMessage', async () => {
     const { prisma, state } = createPrismaMock();
-    const service = new MetaLeadIngestService(prisma as never, createProfileService());
+    const emit = gateway();
+    const service = new MetaLeadIngestService(
+      prisma as never,
+      createProfileService(),
+      emit as never,
+    );
 
     await service.ingestMessage(baseMessage);
 
     expect(state.leads).toHaveLength(1);
     expect(state.leads[0]?.name).toBe('Karo Gabrielyan');
     expect(state.leads[0]?.contactName).toBe('@karo_gabrielyan');
-    expect(state.messages.has('mid-1')).toBe(true);
+    expect(prisma.metaMessage.create).not.toHaveBeenCalled();
+    expect(persistLiveMetaInboundToCore).toHaveBeenCalledTimes(1);
+    expect(emit.emitCoreConversationMessage).toHaveBeenCalledTimes(1);
   });
 
   it('reuses the same lead for a second message from the same sender', async () => {
     const { prisma, state } = createPrismaMock();
-    const service = new MetaLeadIngestService(prisma as never, createProfileService());
+    const service = new MetaLeadIngestService(
+      prisma as never,
+      createProfileService(),
+      gateway() as never,
+    );
 
     await service.ingestMessage(baseMessage);
     prisma.metaConversation.upsert.mockImplementation(async () => ({
@@ -184,18 +225,22 @@ describe('MetaLeadIngestService', () => {
     });
 
     expect(state.leads).toHaveLength(1);
-    expect(state.messages.has('mid-1')).toBe(true);
-    expect(state.messages.has('mid-2')).toBe(true);
+    expect(prisma.metaMessage.create).not.toHaveBeenCalled();
+    expect(persistLiveMetaInboundToCore).toHaveBeenCalledTimes(2);
   });
 
   it('skips duplicate webhook events', async () => {
     const { prisma, state } = createPrismaMock();
-    const service = new MetaLeadIngestService(prisma as never, createProfileService());
+    const service = new MetaLeadIngestService(
+      prisma as never,
+      createProfileService(),
+      gateway() as never,
+    );
 
     await service.ingestMessage(baseMessage);
     await service.ingestMessage(baseMessage);
 
     expect(state.leads).toHaveLength(1);
-    expect(state.messages.has('mid-1')).toBe(true);
+    expect(persistLiveMetaInboundToCore).toHaveBeenCalledTimes(1);
   });
 });

@@ -178,6 +178,7 @@ export function ThreadComposer({
   mentions,
   onMentionsChange,
   onSend,
+  placeholder,
 }: {
   canSend: boolean;
   sendDisabled: boolean;
@@ -188,6 +189,7 @@ export function ThreadComposer({
   mentions: Array<{ id: string; label: string }>;
   onMentionsChange: (next: Array<{ id: string; label: string }>) => void;
   onSend: () => void;
+  placeholder?: string;
 }) {
   return (
     <div className="border-t border-black/[0.06] p-3">
@@ -206,7 +208,8 @@ export function ThreadComposer({
         disabled={!canSend || sendDisabled}
         sendDisabled={!canSend || sendDisabled || newMessage.trim().length === 0}
         placeholder={
-          canSend ? 'Write an Internal message…' : 'You cannot send in this conversation'
+          placeholder ??
+          (canSend ? 'Write an Internal message…' : 'You cannot send in this conversation')
         }
       />
     </div>

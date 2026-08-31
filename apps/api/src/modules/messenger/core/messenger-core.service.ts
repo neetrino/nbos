@@ -41,7 +41,6 @@ import {
 import {
   MESSENGER_CORE_CLIENT_CREATE_FORBIDDEN,
   MESSENGER_CORE_CLIENT_READ_ONLY,
-  MESSENGER_CORE_CLIENT_SEND_DISABLED,
   MESSENGER_CORE_CLIENT_SEND_FORBIDDEN,
   MESSENGER_CORE_CLIENT_WRITE_FORBIDDEN,
   MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN,
@@ -100,11 +99,12 @@ export class MessengerCoreService {
       throw new ForbiddenException(MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN);
     }
     const resolved = await this.requireRead(input.conversationId, senderId);
-    if (!isInternalZone(resolved.facts.zone)) {
-      this.assertClientPersistBlocked(resolved.decision);
-    }
-    if (!resolved.decision.canWrite) {
-      throw new ForbiddenException(MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN);
+    if (isInternalZone(resolved.facts.zone)) {
+      if (!resolved.decision.canWrite) {
+        throw new ForbiddenException(MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN);
+      }
+    } else {
+      this.assertClientMayPersist(resolved.decision);
     }
     const fileAssetIds = await this.validateAttachments(resolved.access, input.fileAssetIds);
     const message = await persistCoreMessage(this.prisma, input, fileAssetIds);
@@ -211,14 +211,12 @@ export class MessengerCoreService {
     return row;
   }
 
-  private assertClientPersistBlocked(decision: MessengerCoreAccessDecision): never {
+  private assertClientMayPersist(decision: MessengerCoreAccessDecision): void {
+    if (decision.canSend) return;
     if (decision.sendDeniedBecause === 'READ_ONLY') {
       throw new ForbiddenException(MESSENGER_CORE_CLIENT_READ_ONLY);
     }
-    if (!decision.canSend) {
-      throw new ForbiddenException(MESSENGER_CORE_CLIENT_SEND_FORBIDDEN);
-    }
-    throw new ForbiddenException(MESSENGER_CORE_CLIENT_SEND_DISABLED);
+    throw new ForbiddenException(MESSENGER_CORE_CLIENT_SEND_FORBIDDEN);
   }
 
   async requireRead(conversationId: string, employeeId: string): Promise<ResolvedAccess> {

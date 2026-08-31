@@ -3,6 +3,7 @@ import {
   MESSENGER_CORE_DEAL_KEY_PREFIX,
   MESSENGER_CORE_DIRECT_KEY_PREFIX,
   MESSENGER_CORE_LEGACY_CHANNEL_KEY_PREFIX,
+  MESSENGER_CORE_META_KEY_PREFIX,
   MESSENGER_CORE_PRODUCT_KEY_PREFIX,
   MESSENGER_CORE_PROJECT_GENERAL_KEY_PREFIX,
   MESSENGER_CORE_TASK_KEY_PREFIX,
@@ -40,4 +41,8 @@ export function legacyChannelCanonicalKey(channelId: string): string {
 
 export function legacyDirectThreadSourceId(threadId: string): string {
   return threadId;
+}
+
+export function legacyMetaCanonicalKey(metaConversationId: string): string {
+  return `${MESSENGER_CORE_META_KEY_PREFIX}${metaConversationId}`;
 }

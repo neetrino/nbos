@@ -156,6 +156,18 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     ],
   },
   {
+    key: 'client-messenger',
+    label: 'Client Messenger',
+    href: '/client-messenger',
+    permission: { module: 'MESSENGER', action: 'VIEW' },
+    children: [
+      { label: 'Inbox', href: '/client-messenger' },
+      { label: 'Sales', href: '/client-messenger/sales' },
+      { label: 'Clients', href: '/client-messenger/clients' },
+      { label: 'Collections', href: '/client-messenger/collections' },
+    ],
+  },
+  {
     key: 'calendar',
     label: 'Calendar',
     href: '/calendar',

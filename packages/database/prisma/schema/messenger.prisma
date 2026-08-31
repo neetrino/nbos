@@ -165,6 +165,7 @@ enum MessengerLinkEntityType {
   WORKSPACE
   TICKET
   CLIENT
+  LEAD
 }
 
 enum MessengerLinkRelationType {
@@ -185,7 +186,7 @@ model MessengerConversation {
   title                   String?
   status                  MessengerConversationStatus  @default(ACTIVE)
   createdById             String?                      @map("created_by_id")
-  /// Deterministic uniqueness key: project_general:{id} | product:{id} | workspace:{id} | deal:{id} | task:{id} | direct:{low}:{high} | legacy:channel:{id}
+  /// Deterministic uniqueness key: project_general:{id} | product:{id} | workspace:{id} | deal:{id} | task:{id} | direct:{low}:{high} | legacy:channel:{id} | legacy:meta:{id}
   canonicalKey            String?                      @unique @map("canonical_key")
   /// Normalized DIRECT pair (lexicographic employee UUID order). Null for non-DIRECT types.
   directParticipantLowId  String?                      @map("direct_participant_low_id")

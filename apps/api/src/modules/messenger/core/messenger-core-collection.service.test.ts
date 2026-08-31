@@ -83,4 +83,60 @@ describe('Internal collection zone mutate', () => {
       id: 'item-1',
     });
   });
+
+  it('404s Client member and item POST against an Internal collection', async () => {
+    const { service } = createService('INTERNAL');
+    await expect(service.addClientMember('col-i', 'e1', 'e2')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    await expect(service.addClientItem('col-i', 'e1', 'conv-c')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(addCoreCollectionMember).not.toHaveBeenCalled();
+    expect(addCoreCollectionItem).not.toHaveBeenCalled();
+  });
+
+  it('404s adding a Client conversation to an Internal collection', async () => {
+    const { service } = createService('INTERNAL');
+    loadMessengerCoreAccessFacts.mockResolvedValue({
+      access: ACCESS,
+      facts: {
+        conversationId: 'conv-c',
+        zone: 'CLIENT',
+        viewScope: 'ALL',
+        editScope: 'ALL',
+        clientReadScope: 'ALL',
+        clientSendScope: 'ALL',
+        isActiveParticipant: true,
+        participantRole: 'MEMBER',
+        grantLevel: null,
+      },
+    });
+    await expect(service.addInternalItem('col-i', 'e1', 'conv-c')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(addCoreCollectionItem).not.toHaveBeenCalled();
+  });
+
+  it('404s adding an Internal conversation to a Client collection', async () => {
+    const { service } = createService('CLIENT');
+    loadMessengerCoreAccessFacts.mockResolvedValue({
+      access: ACCESS,
+      facts: {
+        conversationId: 'conv-i',
+        zone: 'INTERNAL',
+        viewScope: 'ALL',
+        editScope: 'ALL',
+        clientReadScope: 'NONE',
+        clientSendScope: 'NONE',
+        isActiveParticipant: true,
+        participantRole: 'MEMBER',
+        grantLevel: null,
+      },
+    });
+    await expect(service.addClientItem('col-c', 'e1', 'conv-i')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(addCoreCollectionItem).not.toHaveBeenCalled();
+  });
 });

@@ -364,42 +364,43 @@ These apply to every slice touching persistence or existing runtime.
 
 **Slice 0 note:** `MetaConversation` / `MetaMessage` is the live Client Sales inbound store (`MIGRATE` into Core). This slice owns that cutover identity. Do not classify Sales **history** as `NEW`. Do not wait for Slice 8 (WhatsApp-only) to map Meta. Do not apply `M-MAIL-01` to Meta. Meta outbound send is `NEW` and must persist in Core, not a fourth store.
 
+**Implementer status:** `VERIFIED` — evidence `27-Slice-07-Client-Messenger.md`.
+
 ### Navigation/UI
 
-- [ ] separate Client Messenger entry point/route.
-- [ ] navigation: `Inbox / Sales / Clients / Collections`.
-- [ ] visibly different external identity/accent/icons from Internal surface.
-- [ ] Inbox supports attention-oriented views such as Unread/Needs response/assigned team/provider.
-- [ ] Client Collections are separate and cannot contain Internal chats.
+- [x] separate Client Messenger entry point/route.
+- [x] navigation: `Inbox / Sales / Clients / Collections`.
+- [x] visibly different external identity/accent/icons from Internal surface.
+- [x] Inbox supports attention-oriented views such as Unread/Needs response/assigned team/provider.
+- [x] Client Collections are separate and cannot contain Internal chats.
 
 ### Locked composer
 
-- [ ] opening/switching to a Client conversation starts composer locked.
-- [ ] authorized user explicitly clicks `Reply to client`.
-- [ ] unlocked composer clearly displays `CLIENT VISIBLE` + provider/client/context.
-- [ ] switching conversation relocks.
-- [ ] server SEND check remains mandatory.
-- [ ] no Internal/Public toggle.
+- [x] opening/switching to a Client conversation starts composer locked.
+- [x] authorized user explicitly clicks `Reply to client`.
+- [x] unlocked composer clearly displays `CLIENT VISIBLE` + provider/client/context.
+- [x] switching conversation relocks.
+- [x] server SEND check remains mandatory.
+- [x] no Internal/Public toggle.
 
 ### External-specific tools
 
-- [ ] Create Task.
-- [ ] Share/Forward internally.
+- [x] Create Task.
+- [x] Share/Forward internally.
 - [ ] Ticket/Deal actions where dependency is ready.
-- [ ] invite/read-only specialist flow.
-- [ ] placeholder/interface for future AI operator/draft policy without granting implicit SEND.
+- [x] invite/read-only specialist flow.
+- [x] placeholder/interface for future AI operator/draft policy without granting implicit SEND.
 
 ### Negative/adversarial tests
 
-- [ ] keyboard/route state cannot leave composer unlocked for another conversation.
-- [ ] Internal message draft cannot be silently carried into Client composer as send-ready text.
-- [ ] READ-only user cannot unlock/send.
-- [ ] forged UI state does not bypass server SEND permission.
+- [x] keyboard/route state cannot leave composer unlocked for another conversation.
+- [x] Internal message draft cannot be silently carried into Client composer as send-ready text.
+- [x] READ-only user cannot unlock/send.
+- [x] forged UI state does not bypass server SEND permission.
 
 ### Acceptance
 
-- [ ] Internal and Client surfaces feel and behave as separate work modes.
-- [ ] Slice status `VERIFIED`.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -628,19 +629,19 @@ These apply to every slice touching persistence or existing runtime.
 
 ## 3. Implementation slice status table
 
-| Slice                            | Status     | Implementer evidence                  | Independent review                       |
-| -------------------------------- | ---------- | ------------------------------------- | ---------------------------------------- |
-| 0 — Baseline/reconciliation      | `VERIFIED` | `20-Slice-00-Baseline.md`             | VERIFIED (FINDING-01 closed)             |
-| 1 — Messaging Core               | `VERIFIED` | `21-Slice-01-Messaging-Core.md`       | VERIFIED (FINDING-S1-01/02 closed)       |
-| 2 — Permissions/boundary         | `VERIFIED` | `22-Slice-02-Permissions-Boundary.md` | VERIFIED (FINDING-S2-01/02 closed)       |
-| 3 — Internal base                | `VERIFIED` | `23-Slice-03-Internal-Base.md`        | VERIFIED (FINDING-S3-01…S3-06 closed)    |
-| 4 — Entity conversations         | `VERIFIED` | `24-Slice-04-Entity-Conversations.md` | VERIFIED (FINDING-S4-01/02/03/04 closed) |
-| 5 — Task Discussion migration    | `VERIFIED` | `25-Slice-05-Task-Discussion.md`      | VERIFIED (FINDING-S5-01/02/03 closed)    |
-| 6 — Message actions/references   | `VERIFIED` | `26-Slice-06-Message-Actions.md`      | VERIFIED (FINDING-S6-01/02 closed)       |
-| 7 — Client surface               | `PLANNED`  | —                                     | —                                        |
-| 8 — WhatsApp Gateway integration | `PLANNED`  | —                                     | —                                        |
-| 9 — Flexible Product bindings    | `PLANNED`  | —                                     | —                                        |
-| 10 — Finance/Support/routing     | `PLANNED`  | —                                     | —                                        |
-| 11 — Hardening/cleanup readiness | `PLANNED`  | —                                     | —                                        |
+| Slice                            | Status     | Implementer evidence                  | Independent review                        |
+| -------------------------------- | ---------- | ------------------------------------- | ----------------------------------------- |
+| 0 — Baseline/reconciliation      | `VERIFIED` | `20-Slice-00-Baseline.md`             | VERIFIED (FINDING-01 closed)              |
+| 1 — Messaging Core               | `VERIFIED` | `21-Slice-01-Messaging-Core.md`       | VERIFIED (FINDING-S1-01/02 closed)        |
+| 2 — Permissions/boundary         | `VERIFIED` | `22-Slice-02-Permissions-Boundary.md` | VERIFIED (FINDING-S2-01/02 closed)        |
+| 3 — Internal base                | `VERIFIED` | `23-Slice-03-Internal-Base.md`        | VERIFIED (FINDING-S3-01…S3-06 closed)     |
+| 4 — Entity conversations         | `VERIFIED` | `24-Slice-04-Entity-Conversations.md` | VERIFIED (FINDING-S4-01/02/03/04 closed)  |
+| 5 — Task Discussion migration    | `VERIFIED` | `25-Slice-05-Task-Discussion.md`      | VERIFIED (FINDING-S5-01/02/03 closed)     |
+| 6 — Message actions/references   | `VERIFIED` | `26-Slice-06-Message-Actions.md`      | VERIFIED (FINDING-S6-01/02 closed)        |
+| 7 — Client surface               | `VERIFIED` | `27-Slice-07-Client-Messenger.md`     | VERIFIED (locked composer + Meta cutover) |
+| 8 — WhatsApp Gateway integration | `PLANNED`  | —                                     | —                                         |
+| 9 — Flexible Product bindings    | `PLANNED`  | —                                     | —                                         |
+| 10 — Finance/Support/routing     | `PLANNED`  | —                                     | —                                         |
+| 11 — Hardening/cleanup readiness | `PLANNED`  | —                                     | —                                         |
 
 Status changes must follow `12-Messenger-Rebuild-Execution-Strategy.md`.

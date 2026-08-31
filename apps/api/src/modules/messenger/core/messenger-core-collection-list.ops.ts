@@ -1,7 +1,8 @@
-import { PrismaClient } from '@nbos/database';
+import { PrismaClient, type MessengerConversationZone } from '@nbos/database';
 import { evaluateMessengerCoreAccess } from './messenger-core-access';
 import { loadMessengerCoreAccessFacts } from './messenger-core-access-load';
 import {
+  MESSENGER_CORE_CLIENT_ZONE,
   MESSENGER_CORE_FAVORITES_NAME,
   MESSENGER_CORE_INTERNAL_ZONE,
 } from './messenger-core.constants';
@@ -12,13 +13,21 @@ import {
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
-export async function listInternalCollections(
+export async function listClientCollections(
   prisma: PrismaLike,
   employeeId: string,
 ): Promise<MessengerCoreCollectionDto[]> {
+  return listCollectionsForZone(prisma, employeeId, MESSENGER_CORE_CLIENT_ZONE);
+}
+
+async function listCollectionsForZone(
+  prisma: PrismaLike,
+  employeeId: string,
+  zone: MessengerConversationZone,
+): Promise<MessengerCoreCollectionDto[]> {
   const rows = await prisma.messengerConversationCollection.findMany({
     where: {
-      zone: MESSENGER_CORE_INTERNAL_ZONE,
+      zone,
       OR: [
         { ownerEmployeeId: employeeId },
         { visibility: 'SHARED', members: { some: { employeeId } } },
@@ -35,13 +44,21 @@ export async function listInternalCollections(
   }));
 }
 
+export async function listInternalCollections(
+  prisma: PrismaLike,
+  employeeId: string,
+): Promise<MessengerCoreCollectionDto[]> {
+  return listCollectionsForZone(prisma, employeeId, MESSENGER_CORE_INTERNAL_ZONE);
+}
+
 export async function listAclFilteredCollectionItems(
   prisma: PrismaLike,
   collectionId: string,
   employeeId: string,
+  zone: MessengerConversationZone = MESSENGER_CORE_INTERNAL_ZONE,
 ): Promise<Array<{ conversationId: string }>> {
   const items = await prisma.messengerConversationCollectionItem.findMany({
-    where: { collectionId, conversation: { zone: MESSENGER_CORE_INTERNAL_ZONE } },
+    where: { collectionId, conversation: { zone } },
     select: { conversationId: true },
     orderBy: { createdAt: 'desc' },
   });
@@ -74,20 +91,35 @@ export async function removeCoreCollectionItem(
   });
 }
 
+export async function ensureClientFavoritesCollection(
+  prisma: PrismaLike,
+  employeeId: string,
+): Promise<MessengerCoreCollectionDto> {
+  return ensureFavoritesCollection(prisma, employeeId, MESSENGER_CORE_CLIENT_ZONE);
+}
+
 export async function ensureInternalFavoritesCollection(
   prisma: PrismaLike,
   employeeId: string,
 ): Promise<MessengerCoreCollectionDto> {
+  return ensureFavoritesCollection(prisma, employeeId, MESSENGER_CORE_INTERNAL_ZONE);
+}
+
+async function ensureFavoritesCollection(
+  prisma: PrismaLike,
+  employeeId: string,
+  zone: MessengerConversationZone,
+): Promise<MessengerCoreCollectionDto> {
   const existing = await prisma.messengerConversationCollection.findFirst({
     where: {
       ownerEmployeeId: employeeId,
-      zone: MESSENGER_CORE_INTERNAL_ZONE,
+      zone,
       visibility: 'PERSONAL',
       name: MESSENGER_CORE_FAVORITES_NAME,
     },
   });
   if (existing) {
-    await seedFavoritesFromSettings(prisma, employeeId, existing.id);
+    await seedFavoritesFromSettings(prisma, employeeId, existing.id, zone);
     return {
       id: existing.id,
       name: existing.name,
@@ -99,10 +131,10 @@ export async function ensureInternalFavoritesCollection(
   const created = await createCoreCollection(prisma, {
     name: MESSENGER_CORE_FAVORITES_NAME,
     visibility: 'PERSONAL',
-    zone: MESSENGER_CORE_INTERNAL_ZONE,
+    zone,
     ownerEmployeeId: employeeId,
   });
-  await seedFavoritesFromSettings(prisma, employeeId, created.id);
+  await seedFavoritesFromSettings(prisma, employeeId, created.id, zone);
   return created;
 }
 
@@ -110,9 +142,10 @@ async function seedFavoritesFromSettings(
   prisma: PrismaLike,
   employeeId: string,
   collectionId: string,
+  zone: MessengerConversationZone,
 ): Promise<void> {
   const settings = await prisma.messengerUserConversationSetting.findMany({
-    where: { employeeId, favorite: true, conversation: { zone: MESSENGER_CORE_INTERNAL_ZONE } },
+    where: { employeeId, favorite: true, conversation: { zone } },
     select: { conversationId: true },
   });
   for (const setting of settings) {
