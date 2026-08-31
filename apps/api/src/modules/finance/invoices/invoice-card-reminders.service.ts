@@ -3,12 +3,9 @@ import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
 import { runSubscriptionPaymentWindowReminders } from './invoice-card-payment-window-reminders';
-import { isOfficialRequestBlockingTaxReminders } from './invoice-official-request';
+import { notifyOfficialAfterInvoiceWrite } from './invoice-card-persist';
 import { InvoiceOfficialWhatsAppService } from './invoice-official-whatsapp.service';
-import { resolveInvoiceProductWhatsAppGroup } from './invoice-product-whatsapp-resolve';
-import { createInvoiceReminderNotificationJob } from './invoice-reminder-job-create';
 import { yerevanCalendarDateKey } from './yerevan-calendar-date';
-import { officialRequestSelect } from './invoice-card-reminder-selects';
 import { SUBSCRIPTION_PAYMENT_REMINDER_EVENT_TYPES } from './subscription-payment-reminder.constants';
 
 export const INVOICE_CARD_REMINDER_TYPES = {
@@ -18,16 +15,6 @@ export const INVOICE_CARD_REMINDER_TYPES = {
 
 interface InvoiceReminderRunParams {
   asOf?: Date;
-}
-
-interface OfficialRequestCandidate {
-  id: string;
-  code: string;
-  amount: unknown;
-  dueDate: Date | null;
-  taxStatus: string;
-  officialInvoiceRequestSent: boolean;
-  company: { name: string } | null;
 }
 
 @Injectable()
@@ -45,7 +32,7 @@ export class InvoiceCardRemindersService {
   async runDueInvoiceCardReminders(params: InvoiceReminderRunParams = {}) {
     const asOf = params.asOf ?? new Date();
     const asOfKey = yerevanCalendarDateKey(asOf);
-    const official = await this.runOfficialRequestDue(asOf, asOfKey);
+    const official = await this.runOfficialRequestDue();
     const payment = await runSubscriptionPaymentWindowReminders({
       prisma: this.prisma,
       outbound: this.outbound,
@@ -62,17 +49,15 @@ export class InvoiceCardRemindersService {
     };
   }
 
-  private async runOfficialRequestDue(asOf: Date, asOfKey: string) {
+  private async runOfficialRequestDue() {
     const candidates = await this.findOfficialRequestCandidates();
+    const type = INVOICE_CARD_REMINDER_TYPES.OFFICIAL_REQUEST_DUE;
     const created = [];
-    let skippedExisting = 0;
     for (const invoice of candidates) {
-      if (!isOfficialRequestBlockingTaxReminders(invoice)) continue;
-      const result = await this.createOfficialRequestJob(invoice, asOf, asOfKey);
-      if (result.created) created.push(result);
-      else skippedExisting += 1;
+      await notifyOfficialAfterInvoiceWrite(this.officialWhatsApp, invoice);
+      created.push({ created: true as const, type, invoiceId: invoice.id });
     }
-    return { eligibleCount: candidates.length, created, skippedExisting };
+    return { eligibleCount: candidates.length, created, skippedExisting: 0 };
   }
 
   private findOfficialRequestCandidates() {
@@ -82,39 +67,7 @@ export class InvoiceCardRemindersService {
         taxStatus: 'TAX',
         officialInvoiceRequestSent: false,
       },
-      select: officialRequestSelect,
+      select: { id: true },
     });
-  }
-
-  private async createOfficialRequestJob(
-    invoice: OfficialRequestCandidate,
-    asOf: Date,
-    asOfKey: string,
-  ) {
-    const type = INVOICE_CARD_REMINDER_TYPES.OFFICIAL_REQUEST_DUE;
-    const dedupeKey = `invoice_card:${type}:${invoice.id}:${asOfKey}`;
-    const existing = await this.prisma.notificationJob.findUnique({ where: { dedupeKey } });
-    if (!existing) {
-      const productWhatsApp = await resolveInvoiceProductWhatsAppGroup(this.prisma, invoice.id);
-      await createInvoiceReminderNotificationJob(this.prisma, {
-        type,
-        invoiceId: invoice.id,
-        dedupeKey,
-        idempotencyKey: `invoice-card-reminder:${type}:${invoice.id}:${asOfKey}`,
-        scheduledFor: asOf,
-        payload: {
-          invoiceCode: invoice.code,
-          amount: String(invoice.amount),
-          dueDate: invoice.dueDate?.toISOString() ?? null,
-          companyName: invoice.company?.name ?? null,
-          asOf: asOf.toISOString(),
-          asOfYerevan: asOfKey,
-          productId: productWhatsApp?.productId ?? null,
-          whatsappGroupChatId: productWhatsApp?.groupChatId ?? null,
-        },
-      });
-    }
-    await this.officialWhatsApp?.enqueueIfAwaitingEligible(invoice.id);
-    return { created: existing ? (false as const) : (true as const), type, invoiceId: invoice.id };
   }
 }

@@ -167,11 +167,11 @@ Payment confirmed
 
 `Mark Paid` и запись `Payment`, которая перевела бы карточку в `Paid`, используют тот же Paid-gate.
 
-Автосоздание (подписка, client services) без готовности к сбору денег остаётся в `New`. Deal deposit: Tax без реквизитов → `New`; иначе → `Awaiting Payment`.
+Автосоздание (подписка, client services) без готовности к сбору денег остаётся в `New`. Ручное создание из deal / order всегда в `New`: Finance двигает карточку в `Awaiting Payment`, когда готовы ждать деньги (после сверки с клиентом).
 
 Подписка `billing_day = 1` (раннее окно): карточка сразу в `Awaiting Payment`, если Tax-gate пропускает. Days 2–31 по-прежнему создаются в `New`.
 
-Вход в `Awaiting Payment` (billing, ручной drag, API): если Tax, запрос ещё не отправлен и реквизиты есть — система сама шлёт official request в бухгалтерскую WhatsApp-группу. Кнопка `Send to accountant` остаётся для повтора на всех этапах кроме `Cancelled`. С `Cancelled` send запрещён (UI скрыт, API отказ).
+Вход в `Awaiting Payment` с любого пути (create сразу в этап или переход статуса; deal / order / billing / drag не важны): если Tax, запрос ещё не отправлен и реквизиты есть — система сама шлёт official request в бухгалтерскую WhatsApp-группу. Один persist-хук (`persistInvoiceCreate` / `notifyOfficialAfterInvoiceWrite`); origin в условии не участвует. Кнопка `Send to accountant` остаётся для повтора на всех этапах кроме `Cancelled`. С `Cancelled` send запрещён (UI скрыт, API отказ). Catch-up cron остаётся, если автоотправка при входе не прошла.
 
 ### Важное правило для `Tax`
 

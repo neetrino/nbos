@@ -174,7 +174,8 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 
 **Уже было ранее:**
 
-- `InvoiceCardRemindersService` — idempotent `NotificationEvent` / `NotificationJob` для правил Invoice Card;
+- `InvoiceCardRemindersService` — official catch-up enqueues accountant WhatsApp (no `NotificationJob`);
+  subscription 5-day window still uses idempotent `NotificationJob`;
   пропуск `ON_HOLD`, `notificationsEnabled = false`, Tax без маркера official invoice.
 
 **Сделано (срез 2026-08):** Tax readiness gates — create всегда можно; `Awaiting Payment` требует Company name + tax_id; `Paid` требует актуальный official request; cancel карточки с отправленным запросом вызывает `Cancel Previous Request`. Shared + API + invoice UI.

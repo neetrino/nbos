@@ -1,6 +1,12 @@
 import type { InvoiceTypeEnum, PrismaClient, TaxStatus } from '@nbos/database';
 import { allocateInvoiceCode } from '../../../common/utils/entity-code-series';
-import { resolveDepositInvoiceMoneyStatus } from '@nbos/shared';
+import {
+  persistInvoiceCreate,
+  type OfficialAwaitingNotifier,
+} from '../../finance/invoices/invoice-card-persist';
+
+/** Manual deal/order invoices stay in New until Finance moves them to collection. */
+const MANUAL_DEAL_INVOICE_MONEY_STATUS = 'NEW' as const;
 
 interface CreateDealInvoiceInput {
   orderId: string;
@@ -15,20 +21,12 @@ interface CreateDealInvoiceInput {
 export async function createDealDepositInvoice(
   prisma: InstanceType<typeof PrismaClient>,
   input: CreateDealInvoiceInput,
+  notifier?: OfficialAwaitingNotifier,
 ) {
   const code = await allocateInvoiceCode(prisma);
-  const company = input.companyId
-    ? await prisma.company.findUnique({
-        where: { id: input.companyId },
-        select: { name: true, legalName: true, taxId: true },
-      })
-    : null;
-  const moneyStatus = resolveDepositInvoiceMoneyStatus({
-    taxStatus: input.taxStatus,
-    company,
-  });
-  return prisma.invoice.create({
-    data: {
+  return persistInvoiceCreate(
+    prisma,
+    {
       code,
       orderId: input.orderId,
       projectId: input.projectId,
@@ -36,8 +34,9 @@ export async function createDealDepositInvoice(
       amount: input.amount,
       type: input.type,
       dueDate: input.dueDate,
-      moneyStatus,
+      moneyStatus: MANUAL_DEAL_INVOICE_MONEY_STATUS,
       taxStatus: input.taxStatus,
     },
-  });
+    notifier,
+  );
 }

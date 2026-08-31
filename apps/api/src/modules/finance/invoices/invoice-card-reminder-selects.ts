@@ -1,13 +1,3 @@
-export const officialRequestSelect = {
-  id: true,
-  code: true,
-  amount: true,
-  dueDate: true,
-  taxStatus: true,
-  officialInvoiceRequestSent: true,
-  company: { select: { name: true } },
-} as const;
-
 export const paymentReminderSelect = {
   id: true,
   code: true,

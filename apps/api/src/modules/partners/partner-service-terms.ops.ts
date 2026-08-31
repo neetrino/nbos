@@ -5,6 +5,10 @@ import {
   allocateInvoiceCode,
   allocateSubscriptionCode,
 } from '../../common/utils/entity-code-series';
+import {
+  persistInvoiceCreate,
+  type OfficialAwaitingNotifier,
+} from '../finance/invoices/invoice-card-persist';
 
 const PARTNER_SERVICE_TYPES = ['SEO', 'SMM', 'ADS', 'OTHER'] as const;
 const PARTNER_SERVICE_PAYMENT_MODELS = ['ONE_TIME', 'MONTHLY', 'CUSTOM'] as const;
@@ -193,6 +197,7 @@ export async function createFinanceFromPartnerServiceTerm(
   partnerId: string,
   termId: string,
   input: CreateFinanceFromServiceTermInput = {},
+  notifier?: OfficialAwaitingNotifier,
 ): Promise<PartnerServiceTermWireDto> {
   const term = await prisma.partnerServiceTerm.findUnique({
     where: { id: termId },
@@ -273,8 +278,9 @@ export async function createFinanceFromPartnerServiceTerm(
   const code = await allocateInvoiceCode(prisma);
   const taxStatus = await resolveTaxStatusForPartnerServiceTerm(prisma, term.clientCompanyId);
 
-  const invoice = await prisma.invoice.create({
-    data: {
+  const invoice = await persistInvoiceCreate(
+    prisma,
+    {
       code,
       projectId: term.projectId,
       companyId: term.clientCompanyId,
@@ -283,8 +289,8 @@ export async function createFinanceFromPartnerServiceTerm(
       type: 'SERVICE',
       dueDate,
     },
-    select: { id: true },
-  });
+    notifier,
+  );
 
   const updated = await prisma.partnerServiceTerm.update({
     where: { id: term.id },
