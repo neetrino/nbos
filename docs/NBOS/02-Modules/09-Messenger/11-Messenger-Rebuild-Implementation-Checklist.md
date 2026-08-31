@@ -457,60 +457,60 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Additive data model
 
-- [ ] ProductCommunicationBinding/equivalent stores Product + purpose + canonical External Conversation.
-- [ ] one active WORK per Product.
-- [ ] zero/one explicit FINANCE per Product.
-- [ ] same External Conversation can be reused by many Products.
-- [ ] binding is separate from participant/access records.
+- [x] ProductCommunicationBinding/equivalent stores Product + purpose + canonical External Conversation.
+- [x] one active WORK per Product.
+- [x] zero/one explicit FINANCE per Product.
+- [x] same External Conversation can be reused by many Products.
+- [x] binding is separate from participant/access records.
 
 ### Legacy migration
 
-- [ ] execute full sequence in `10-Messenger-Runtime-Reconciliation.md`.
-- [ ] every existing group provider id maps to one External Conversation/provider mapping.
-- [ ] every existing Product group binding backfills as WORK.
-- [ ] no automatic FINANCE rows are created.
-- [ ] current Products resolve to their same old physical group after backfill.
-- [ ] current group history/status/settings/provenance are preserved where available.
+- [x] execute full sequence in `10-Messenger-Runtime-Reconciliation.md`.
+- [x] every existing group provider id maps to one External Conversation/provider mapping.
+- [x] every existing Product group binding backfills as WORK.
+- [x] no automatic FINANCE rows are created.
+- [x] current Products resolve to their same old physical group after backfill.
+- [x] current group history/status/settings/provenance are preserved where available.
 
 ### Product settings
 
-- [ ] WORK: Create new / Select existing.
-- [ ] FINANCE: Use WORK(default) / Create new / Select existing.
-- [ ] existing-group selector is scoped to safe client/Project context by default.
-- [ ] selecting an existing conversation does not send duplicate client invite.
+- [x] WORK: Create new / Select existing.
+- [x] FINANCE: Use WORK(default) / Create new / Select existing.
+- [x] existing-group selector is scoped to safe client/Project context by default.
+- [x] selecting an existing conversation does not send duplicate client invite.
 
 ### Deal Won
 
-- [ ] Product/Outsource Deal Won resolves WORK.
-- [ ] preserves current create/bind/error/outcome behavior.
-- [ ] Gateway failure does not incorrectly roll back Product/Deal state.
-- [ ] Extension uses existing Product communication by default.
-- [ ] FINANCE is not required to finish normal Deal Won.
+- [x] Product/Outsource Deal Won resolves WORK.
+- [x] preserves current create/bind/error/outcome behavior.
+- [x] Gateway failure does not incorrectly roll back Product/Deal state.
+- [x] Extension uses existing Product communication by default.
+- [x] FINANCE is not required to finish normal Deal Won.
 
 ### Resolver
 
-- [ ] `resolveClientDestination(productId, WORK)` deterministic.
-- [ ] `resolveClientDestination(productId, FINANCE)` explicit FINANCE else WORK.
-- [ ] no new business send depends on Product raw group id.
+- [x] `resolveClientDestination(productId, WORK)` deterministic.
+- [x] `resolveClientDestination(productId, FINANCE)` explicit FINANCE else WORK.
+- [x] no new business send depends on Product raw group id.
 
 ### Scenario tests
 
-- [ ] Product A WORK → Group 1.
-- [ ] SEO Product WORK → same Group 1.
-- [ ] Product A and SEO remain distinct Products/entities.
-- [ ] five Products FINANCE → one Finance Group F.
-- [ ] Product without FINANCE → WORK fallback.
-- [ ] linking second Product does not grant its developers access.
-- [ ] cannot create two active WORK destinations for one Product.
+- [x] Product A WORK → Group 1.
+- [x] SEO Product WORK → same Group 1.
+- [x] Product A and SEO remain distinct Products/entities.
+- [x] five Products FINANCE → one Finance Group F.
+- [x] Product without FINANCE → WORK fallback.
+- [x] linking second Product does not grant its developers access.
+- [x] cannot create two active WORK destinations for one Product.
 
 ### Cleanup gate
 
-- [ ] legacy one-to-one constraints/fields are `DELETE-LATER`, not dropped until parity/cutover verified.
+- [x] legacy one-to-one constraints/fields are `DELETE-LATER`, not dropped until parity/cutover verified.
 
 ### Acceptance
 
-- [ ] shared groups are real reused conversations, not cloned rows/provider groups.
-- [ ] Slice status `VERIFIED`.
+- [x] shared groups are real reused conversations, not cloned rows/provider groups.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -629,19 +629,19 @@ These apply to every slice touching persistence or existing runtime.
 
 ## 3. Implementation slice status table
 
-| Slice                            | Status     | Implementer evidence                  | Independent review                        |
-| -------------------------------- | ---------- | ------------------------------------- | ----------------------------------------- |
-| 0 — Baseline/reconciliation      | `VERIFIED` | `20-Slice-00-Baseline.md`             | VERIFIED (FINDING-01 closed)              |
-| 1 — Messaging Core               | `VERIFIED` | `21-Slice-01-Messaging-Core.md`       | VERIFIED (FINDING-S1-01/02 closed)        |
-| 2 — Permissions/boundary         | `VERIFIED` | `22-Slice-02-Permissions-Boundary.md` | VERIFIED (FINDING-S2-01/02 closed)        |
-| 3 — Internal base                | `VERIFIED` | `23-Slice-03-Internal-Base.md`        | VERIFIED (FINDING-S3-01…S3-06 closed)     |
-| 4 — Entity conversations         | `VERIFIED` | `24-Slice-04-Entity-Conversations.md` | VERIFIED (FINDING-S4-01/02/03/04 closed)  |
-| 5 — Task Discussion migration    | `VERIFIED` | `25-Slice-05-Task-Discussion.md`      | VERIFIED (FINDING-S5-01/02/03 closed)     |
-| 6 — Message actions/references   | `VERIFIED` | `26-Slice-06-Message-Actions.md`      | VERIFIED (FINDING-S6-01/02 closed)        |
-| 7 — Client surface               | `VERIFIED` | `27-Slice-07-Client-Messenger.md`     | VERIFIED (locked composer + Meta cutover) |
-| 8 — WhatsApp Gateway integration | `VERIFIED` | `28-Slice-08-WhatsApp-Gateway.md`     | VERIFIED (FINDING-S8-01…10 closed)        |
-| 9 — Flexible Product bindings    | `PLANNED`  | —                                     | —                                         |
-| 10 — Finance/Support/routing     | `PLANNED`  | —                                     | —                                         |
-| 11 — Hardening/cleanup readiness | `PLANNED`  | —                                     | —                                         |
+| Slice                            | Status     | Implementer evidence                            | Independent review                        |
+| -------------------------------- | ---------- | ----------------------------------------------- | ----------------------------------------- |
+| 0 — Baseline/reconciliation      | `VERIFIED` | `20-Slice-00-Baseline.md`                       | VERIFIED (FINDING-01 closed)              |
+| 1 — Messaging Core               | `VERIFIED` | `21-Slice-01-Messaging-Core.md`                 | VERIFIED (FINDING-S1-01/02 closed)        |
+| 2 — Permissions/boundary         | `VERIFIED` | `22-Slice-02-Permissions-Boundary.md`           | VERIFIED (FINDING-S2-01/02 closed)        |
+| 3 — Internal base                | `VERIFIED` | `23-Slice-03-Internal-Base.md`                  | VERIFIED (FINDING-S3-01…S3-06 closed)     |
+| 4 — Entity conversations         | `VERIFIED` | `24-Slice-04-Entity-Conversations.md`           | VERIFIED (FINDING-S4-01/02/03/04 closed)  |
+| 5 — Task Discussion migration    | `VERIFIED` | `25-Slice-05-Task-Discussion.md`                | VERIFIED (FINDING-S5-01/02/03 closed)     |
+| 6 — Message actions/references   | `VERIFIED` | `26-Slice-06-Message-Actions.md`                | VERIFIED (FINDING-S6-01/02 closed)        |
+| 7 — Client surface               | `VERIFIED` | `27-Slice-07-Client-Messenger.md`               | VERIFIED (locked composer + Meta cutover) |
+| 8 — WhatsApp Gateway integration | `VERIFIED` | `28-Slice-08-WhatsApp-Gateway.md`               | VERIFIED (FINDING-S8-01…10 closed)        |
+| 9 — Flexible Product bindings    | `VERIFIED` | `29-Slice-09-Product-Communication-Bindings.md` | VERIFIED (FINDING-S9-01…10 closed)        |
+| 10 — Finance/Support/routing     | `PLANNED`  | —                                               | —                                         |
+| 11 — Hardening/cleanup readiness | `PLANNED`  | —                                               | —                                         |
 
 Status changes must follow `12-Messenger-Rebuild-Execution-Strategy.md`.

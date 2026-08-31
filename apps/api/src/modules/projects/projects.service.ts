@@ -12,6 +12,8 @@ import {
   attachProductDeliveryLifecycle,
   type DeliveryStatusCarrier,
 } from './delivery-lifecycle';
+import { overlayProductWorkWhatsAppList } from './product-whatsapp-list-overlay';
+import { resolveWhatsAppAccountantGroupChatId } from '../messenger/core/product-communication-account';
 import { syncEntityContactLinks } from '../crm/shared/sync-entity-contact-links.ops';
 import { clearProductMembershipsForRemovedProjectContacts } from './products/product-contacts.ops';
 import { resolveSortField, normalizeSortDirection } from '../../common/utils/sort-order';
@@ -107,12 +109,15 @@ export class ProjectsService {
   }
 
   async findById(id: string) {
-    const project = await this.prisma.project.findUnique({
-      where: { id },
-      include: projectDetailInclude,
-    });
+    const [project, accountant] = await Promise.all([
+      this.prisma.project.findUnique({
+        where: { id },
+        include: projectDetailInclude,
+      }),
+      resolveWhatsAppAccountantGroupChatId(this.prisma),
+    ]);
     if (!project) throw new NotFoundException(`Project ${id} not found`);
-    const deliveryProject = attachProjectDeliveryLifecycles(project);
+    const deliveryProject = attachProjectDeliveryLifecycles(project, accountant);
     return { ...deliveryProject, intake: buildProjectIntake(deliveryProject) };
   }
 
@@ -215,10 +220,15 @@ export class ProjectsService {
 
 function attachProjectDeliveryLifecycles<
   T extends { products?: Array<DeliveryStatusCarrier>; extensions?: Array<DeliveryStatusCarrier> },
->(project: T) {
+>(project: T, accountantGroupChatId: string | null) {
   return {
     ...project,
-    products: project.products?.map((product) => attachProductDeliveryLifecycle(product)),
+    products: project.products?.map((product) =>
+      overlayProductWorkWhatsAppList(
+        attachProductDeliveryLifecycle(product),
+        accountantGroupChatId,
+      ),
+    ),
     extensions: project.extensions?.map((extension) => attachExtensionDeliveryLifecycle(extension)),
   };
 }

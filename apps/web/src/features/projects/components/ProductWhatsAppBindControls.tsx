@@ -30,6 +30,7 @@ export function ProductWhatsAppBindControls(props: {
   busy: boolean;
   gatewayConfigured: boolean;
   run: (action: () => Promise<unknown>, successMessage: string) => Promise<void>;
+  purpose?: 'WORK' | 'FINANCE';
 }) {
   const gatewayActionsDisabled = props.busy || !props.gatewayConfigured;
   return (
@@ -38,6 +39,7 @@ export function ProductWhatsAppBindControls(props: {
         productId={props.productId}
         currentGroupChatId={props.currentGroupChatId}
         busy={props.busy}
+        purpose={props.purpose ?? 'WORK'}
         run={props.run}
       />
       <SelectExistingGroupControls {...props} gatewayActionsDisabled={gatewayActionsDisabled} />
@@ -49,6 +51,7 @@ function PasteGroupIdControls(props: {
   productId: string;
   currentGroupChatId: string | null | undefined;
   busy: boolean;
+  purpose: 'WORK' | 'FINANCE';
   run: (action: () => Promise<unknown>, successMessage: string) => Promise<void>;
 }) {
   const [pastedGroupId, setPastedGroupId] = useState('');
@@ -106,6 +109,7 @@ function PasteGroupIdControls(props: {
               currentGroupChatId: props.currentGroupChatId,
               persistIfUnreachable: true,
               boundMessage: 'WhatsApp group ID saved.',
+              purpose: props.purpose,
               run: props.run,
             })
           }
@@ -129,13 +133,14 @@ function SelectExistingGroupControls(props: {
   currentGroupChatId: string | null | undefined;
   busy: boolean;
   gatewayActionsDisabled: boolean;
+  purpose?: 'WORK' | 'FINANCE';
   run: (action: () => Promise<unknown>, successMessage: string) => Promise<void>;
 }) {
   return (
     <BindSection
       icon={Search}
       title="Select existing group"
-      description="Search and bind an existing WhatsApp group."
+      description="Search existing client groups (same Project first)."
     >
       <div className="space-y-2">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -165,6 +170,7 @@ function SelectExistingGroupControls(props: {
                 currentGroupChatId: props.currentGroupChatId,
                 persistIfUnreachable: false,
                 boundMessage: 'Group bound',
+                purpose: props.purpose ?? 'WORK',
                 run: props.run,
               })
             }
@@ -255,6 +261,7 @@ async function bindGroupChatId(props: {
   currentGroupChatId: string | null | undefined;
   persistIfUnreachable: boolean;
   boundMessage: string;
+  purpose: 'WORK' | 'FINANCE';
   run: (action: () => Promise<unknown>, successMessage: string) => Promise<void>;
 }): Promise<void> {
   if (!props.groupChatId) return;
@@ -268,6 +275,7 @@ async function bindGroupChatId(props: {
         groupChatId: props.groupChatId,
         replace,
         persistIfUnreachable: props.persistIfUnreachable || undefined,
+        purpose: props.purpose,
       }),
     replace ? 'Binding replaced' : props.boundMessage,
   );
@@ -284,6 +292,7 @@ function formatSelectedGroupLabel(
 
 function formatWhatsAppGroupOptionLabel(group: WhatsAppAvailableGroup): string {
   const missing = group.missingFromGateway ? ' (missing from Gateway)' : '';
+  const project = group.inProjectContext ? ' · Project' : '';
   const count = typeof group.participantCount === 'number' ? ` · ${group.participantCount}` : '';
-  return `${group.name}${missing}${count}`;
+  return `${group.name}${project}${missing}${count}`;
 }

@@ -97,6 +97,7 @@ export interface EnsureProductWhatsAppGroupInput {
   source: ProductWhatsAppEnsureSource;
   contextDealId?: string | null;
   actorId?: string | null;
+  purpose?: 'WORK' | 'FINANCE';
 }
 
 export interface ProductWhatsAppParticipantCandidate {

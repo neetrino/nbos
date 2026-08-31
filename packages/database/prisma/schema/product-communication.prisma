@@ -1,0 +1,36 @@
+// Product purpose bindings to canonical Client External Conversations (Slice 9).
+// Legacy ProductWhatsAppGroupBinding + unique groupChatId remain DELETE-LATER (Slice 11).
+
+enum ProductCommunicationPurpose {
+  WORK
+  FINANCE
+}
+
+enum ProductCommunicationBindingStatus {
+  ACTIVE
+}
+
+/// Product + purpose → one canonical External Conversation.
+/// Binding does not grant conversation ACL. Same conversation may serve many Products.
+model ProductCommunicationBinding {
+  id                String                            @id @default(uuid())
+  productId         String                            @map("product_id")
+  purpose           ProductCommunicationPurpose
+  conversationId    String                            @map("conversation_id")
+  status            ProductCommunicationBindingStatus @default(ACTIVE)
+  legacyBindingId   String?                           @map("legacy_binding_id")
+  createdFromDealId String?                           @map("created_from_deal_id")
+  createdAt         DateTime                          @default(now()) @map("created_at")
+  updatedAt         DateTime                          @updatedAt @map("updated_at")
+
+  product         Product                       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  conversation    MessengerConversation         @relation(fields: [conversationId], references: [id], onDelete: Restrict)
+  legacyBinding   ProductWhatsAppGroupBinding?  @relation(fields: [legacyBindingId], references: [id], onDelete: SetNull)
+  createdFromDeal Deal?                         @relation("ProductCommunicationBindingCreatedFromDeal", fields: [createdFromDealId], references: [id], onDelete: SetNull)
+
+  @@unique([productId, purpose], map: "product_communication_bindings_product_purpose_key")
+  @@index([conversationId])
+  @@index([legacyBindingId])
+  @@index([createdFromDealId])
+  @@map("product_communication_bindings")
+}

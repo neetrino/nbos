@@ -44,6 +44,10 @@ Implementer evidence: `27-Slice-07-Client-Messenger.md`. Status `VERIFIED`. Sepa
 
 Implementer evidence: `28-Slice-08-WhatsApp-Gateway.md`. Status `VERIFIED`. FINDING-S8-01…10 closed. Product WORK/FINANCE bindings remain Slice 9.
 
+## Slice 9 status (not product canon)
+
+Implementer evidence: `29-Slice-09-Product-Communication-Bindings.md`. Status `VERIFIED`. FINDING-S9-01…10 closed. Additive `ProductCommunicationBinding` WORK/FINANCE; legacy Product WhatsApp group table DELETE-LATER. Slice 10 may begin.
+
 ## Current verified static baseline
 
 The previous historical status text was stale and must not be used as runtime proof. Slice 0 re-checked this against `302f57f7` + DB counts (see evidence file).
@@ -226,7 +230,7 @@ Migration/runtime implementation uses additionally:
 
 ## Next step before product code changes
 
-1. Slice 8 is independently `VERIFIED` (`28-Slice-08-WhatsApp-Gateway.md`). FINDING-S8-01…10 closed.
-2. Slice 9 (ProductCommunicationBinding WORK/FINANCE) may begin. Do not start Slice 10 until Slice 9 is independently `VERIFIED`.
+1. Slice 9 is independently `VERIFIED` (`29-Slice-09-Product-Communication-Bindings.md`). FINDING-S9-01…10 closed.
+2. Slice 10 (Finance, Support, attention routing) may begin. After Slice 10 `VERIFIED`, stop. Do not start Slice 11.
 
 No production Messenger rebuild completion is claimed by this documentation stage.

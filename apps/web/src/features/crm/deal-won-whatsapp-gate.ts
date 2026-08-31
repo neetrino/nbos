@@ -48,6 +48,14 @@ export function isMissingActiveWhatsAppGroup(input: {
   return input.bindingStatus !== 'ACTIVE' || !input.groupChatId;
 }
 
+/** Deal Won client treats resolver WORK as the existing group — never leftover unique-legacy. */
+export function resolveWonWhatsAppExistingGroupChatId(state: {
+  work?: { groupChatId: string } | null;
+  binding?: { groupChatId: string | null } | null;
+}): string | null {
+  return state.work?.groupChatId ?? null;
+}
+
 export function whatsappGroupMissingLabel(bindingStatus?: string | null): string {
   if (bindingStatus === 'FAILED') return 'WhatsApp group failed';
   if (bindingStatus === 'PENDING' || bindingStatus === 'CREATING') {

@@ -250,8 +250,10 @@ function stubProductWhatsApp(prisma: MockPrisma): void {
     clientServiceRecord: null,
     order: null,
   });
-  prisma.productWhatsAppGroupBinding.findUnique.mockResolvedValue({
-    groupChatId: '120@g.us',
-    status: 'ACTIVE',
+  prisma.productCommunicationBinding.findUnique.mockResolvedValue({
+    conversationId: 'conv-1',
+    conversation: {
+      externalMappings: [{ externalAccountId: 'acc', externalConversationId: '120@g.us' }],
+    },
   });
 }

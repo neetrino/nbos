@@ -197,6 +197,7 @@ model Product {
   whatsappGroupOperations   WhatsAppGroupOperation[]
   whatsappParticipantSyncs  ProductWhatsAppParticipantSync[]
   whatsappClientInvitations ProductWhatsAppClientInvitation[]
+  communicationBindings     ProductCommunicationBinding[]
   subscriptions             Subscription[]
   partnerServiceTerms       PartnerServiceTerm[]
 

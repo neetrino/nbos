@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -59,6 +60,10 @@ export class BindProductWhatsAppGroupDto {
   @IsOptional()
   @IsBoolean()
   persistIfUnreachable?: boolean;
+
+  @IsOptional()
+  @IsIn(['WORK', 'FINANCE'])
+  purpose?: 'WORK' | 'FINANCE';
 }
 
 export class ResendWhatsAppClientInviteDto {

@@ -25,6 +25,7 @@ export async function applyDealWonWhatsAppAction(
         source: 'DEAL_WON',
         contextDealId: input.dealId,
         actorId: input.intent.actorId,
+        purpose: 'WORK',
       });
       return;
     }
@@ -36,7 +37,7 @@ export async function applyDealWonWhatsAppAction(
       input.productId,
       groupChatId,
       input.intent.actorId ?? input.dealId,
-      { persistIfUnreachable: true },
+      { persistIfUnreachable: true, purpose: 'WORK' },
     );
   } catch (error) {
     input.logger.warn(

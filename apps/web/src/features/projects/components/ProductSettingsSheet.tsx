@@ -16,7 +16,9 @@ import { cn } from '@/lib/utils';
 import {
   loadProductWhatsAppSettings,
   nextProductWhatsAppSettingsState,
+  productWhatsAppBindingView,
 } from '../product-whatsapp-settings';
+import { ProductFinanceCommunicationSection } from './ProductFinanceCommunicationSection';
 import { ProductWhatsAppActionGrid } from './ProductWhatsAppActionGrid';
 import { ProductWhatsAppBindControls } from './ProductWhatsAppBindControls';
 import { ProductWhatsAppNavTrigger } from './ProductWhatsAppNavTrigger';
@@ -47,6 +49,7 @@ export function ProductSettingsSheet({
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState('');
+  const [selectedFinanceGroupId, setSelectedFinanceGroupId] = useState('');
   const [gatewayConfigured, setGatewayConfigured] = useState(false);
   const [gatewayNotice, setGatewayNotice] = useState<string | null>(null);
   const sheetOpen = openProp ?? localOpen;
@@ -96,8 +99,8 @@ export function ProductSettingsSheet({
     }
   }
 
-  const binding = state?.binding;
-  const status = binding?.status ?? 'NOT_STARTED';
+  const bindingView = productWhatsAppBindingView(state);
+  const status = bindingView.status;
   const createInFlight =
     isWhatsAppCreateInFlight(status) || isWhatsAppCreateInFlight(state?.latestOperation?.status);
 
@@ -105,7 +108,7 @@ export function ProductSettingsSheet({
     <PermissionGate module="PROJECTS" action="EDIT">
       <PageSettingsSheet
         title="Product settings"
-        description="WhatsApp group for this product only."
+        description="Client communication destinations for this product."
         titleLeading={
           <span className={WA_HEADER_ICON_WRAP} aria-hidden>
             <WhatsAppBrandIcon className="size-7" />
@@ -127,15 +130,20 @@ export function ProductSettingsSheet({
         onOpenChange={handleOpenChange}
       >
         <section className="space-y-3">
+          <h3 className="text-foreground mb-3 text-sm font-semibold tracking-tight">WORK</h3>
           <ProductWhatsAppStatusCard
             loading={loading && !state}
             gatewayNotice={gatewayNotice}
             status={status}
-            groupName={binding?.groupName}
-            groupChatId={binding?.groupChatId}
-            lastSuccessfulSyncAt={binding?.lastSuccessfulSyncAt}
+            groupName={bindingView.groupName}
+            groupChatId={bindingView.groupChatId}
+            lastSuccessfulSyncAt={
+              status === 'ACTIVE' ? (state?.binding?.lastSuccessfulSyncAt ?? null) : null
+            }
             invitationStatus={state?.invitation?.status}
-            lastErrorMessage={binding?.lastErrorMessage}
+            lastErrorMessage={
+              status === 'FAILED' ? (state?.binding?.lastErrorMessage ?? null) : null
+            }
           />
 
           <ProductWhatsAppActionGrid
@@ -145,7 +153,7 @@ export function ProductSettingsSheet({
             createInFlight={createInFlight}
             createFailed={status === 'FAILED'}
             onCreateGroup={() =>
-              void run(() => productWhatsAppApi.ensure(productId), 'Group creation started')
+              void run(() => productWhatsAppApi.ensure(productId, 'WORK'), 'Group creation started')
             }
             onSyncParticipants={() =>
               void run(() => productWhatsAppApi.sync(productId), 'Participant sync queued')
@@ -176,9 +184,44 @@ export function ProductSettingsSheet({
             loading={loading}
             selectedGroupId={selectedGroupId}
             onSelectedGroupIdChange={setSelectedGroupId}
-            currentGroupChatId={binding?.groupChatId}
+            currentGroupChatId={bindingView.groupChatId}
             busy={busy}
             gatewayConfigured={gatewayConfigured}
+            purpose="WORK"
+            run={run}
+          />
+
+          <ProductFinanceCommunicationSection
+            productId={productId}
+            financeUsesWork={state?.financeUsesWork !== false}
+            financeGroupChatId={
+              state?.finance && !state.finance.fallbackFromWork ? state.finance.groupChatId : null
+            }
+            busy={busy}
+            gatewayConfigured={gatewayConfigured}
+            onCreateFinance={() =>
+              void run(
+                () => productWhatsAppApi.ensure(productId, 'FINANCE'),
+                'FINANCE group creation started',
+              )
+            }
+            run={run}
+          />
+
+          <ProductWhatsAppBindControls
+            productId={productId}
+            search={search}
+            onSearchChange={setSearch}
+            groups={groups}
+            loading={loading}
+            selectedGroupId={selectedFinanceGroupId}
+            onSelectedGroupIdChange={setSelectedFinanceGroupId}
+            currentGroupChatId={
+              state?.finance && !state.finance.fallbackFromWork ? state.finance.groupChatId : null
+            }
+            busy={busy}
+            gatewayConfigured={gatewayConfigured}
+            purpose="FINANCE"
             run={run}
           />
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildProductWhatsAppClientInviteDedupeKey,
   buildProductWhatsAppCreateDedupeKey,
+  buildProductWhatsAppFinanceCreateDedupeKey,
   buildProductWhatsAppGroupName,
   buildProductWhatsAppParticipantDedupeKey,
   normalizePhoneToWhatsAppJid,
@@ -90,6 +91,9 @@ describe('normalizePhoneToWhatsAppJid', () => {
 describe('whatsapp dedupe + name helpers', () => {
   it('builds stable keys', () => {
     expect(buildProductWhatsAppCreateDedupeKey('p1')).toBe('whatsapp-product-group:create:p1');
+    expect(buildProductWhatsAppFinanceCreateDedupeKey('p1')).toBe(
+      'whatsapp-product-group:create-finance:p1',
+    );
     expect(buildProductWhatsAppParticipantDedupeKey('p1', 'e1')).toBe(
       'whatsapp-product-group:p1:participant:e1',
     );

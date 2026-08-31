@@ -193,6 +193,8 @@ It also has useful operational state that must not be discarded:
 
 Classification: binding ownership model `MIGRATE`; operational semantics `REUSE + EXTEND`; old constraints/table `DELETE-LATER` after cutover.
 
+**Slice 9 implementer (`VERIFIED`):** destination of record is `ProductCommunicationBinding` + Core WHATSAPP mapping. Unique `groupChatId` is not dropped. Dual-write legacy when uniqueness allows. Resolver is the new read path.
+
 ### 3.6 Latest `main` contains useful Product WhatsApp Settings UX
 
 Slice 0 inventoried `origin/main` at `302f57f7`. That SHA already includes Product WhatsApp Settings improvements:
@@ -227,11 +229,11 @@ Classification: Client surface `NEW`; Meta conversation/message store `MIGRATE` 
 
 Inventoried runtime (not Canon target):
 
-- Client payment/overdue/subscription-window (and CSR invoices with Product): `resolveInvoiceProductWhatsAppGroup` → Product `groupChatId` → `WhatsAppOutboundQueueService`.
+- Client payment/overdue/subscription-window (and CSR invoices with Product): `resolveInvoiceProductWhatsAppGroup` → `resolveClientDestination(productId, FINANCE)` (explicit FINANCE else WORK) → `WhatsAppOutboundQueueService`.
 - Official tax invoice WhatsApp: `WhatsAppGatewayConnection.accountingGroupChatId` (company accountant group), a **different destination class**.
 - No durable Client Messenger history on these sends.
 
-Classification: destination `MIGRATE` (Slices 9–10); outbound worker `REUSE`; accountant group must not be collapsed into Product WORK/FINANCE.
+Classification: destination lookup Slice 9 (`VERIFIED`); reminder scheduling/content Slice 10; outbound worker `REUSE`; accountant group must not be collapsed into Product WORK/FINANCE.
 
 ### 3.10 Existing WhatsApp Gateway is strongly reusable
 
@@ -268,7 +270,7 @@ Do not build a second gateway and do not move NBOS authorization or Product bind
 | `Task.chatId`                                                | `DELETE-LATER`                                     | Unused leftover unique column; 0 rows; not a conversation pointer.                                                                                                   |
 | Task Activity Feed                                           | `REUSE` concept / `VERIFY-MISSING` dedicated store | System-activity **concept** remains Task-owned (not human Message rows). Dedicated feed **store** is not proven; derived Task Card timeline + `auditLog` are not it. |
 | Product + Connected Work Space chat identity                 | `MIGRATE/RECONCILE`                                | Both surfaces must resolve one internal conversation.                                                                                                                |
-| `ProductWhatsAppGroupBinding` 1:1 ownership                  | `MIGRATE`                                          | Replace with Product + purpose -> External Conversation binding.                                                                                                     |
+| `ProductWhatsAppGroupBinding` 1:1 ownership                  | `MIGRATE` then `DELETE-LATER`                      | Slice 9 implementer: `ProductCommunicationBinding` is destination of record; unique `groupChatId` kept. Reviewer must verify before Slice 11 DROP.                   |
 | WhatsApp operations/participant/invite/reconciliation states | `REUSE/EXTEND`                                     | Preserve semantics across binding migration.                                                                                                                         |
 | Product settings select/paste/replace UX                     | `REUSE/EXTEND`                                     | Adapt to WORK/FINANCE destinations.                                                                                                                                  |
 | Deal Won group lifecycle                                     | `REUSE/EXTEND`                                     | Resolve/create Product WORK destination.                                                                                                                             |
@@ -278,7 +280,7 @@ Do not build a second gateway and do not move NBOS authorization or Product bind
 | Meta outbound send                                           | `NEW`                                              | Enum unused; Graph has no send. Persist in Core when Client SEND exists; not a fourth store.                                                                         |
 | Platform RBAC/entity access                                  | `REUSE/EXTEND`                                     | Add conversation membership and Client READ/SEND separation.                                                                                                         |
 | Support case workflow                                        | `REUSE/EXTEND`                                     | Keep internal case state; link to canonical Client messages.                                                                                                         |
-| Finance reminder destination/delivery                        | `MIGRATE` + `REUSE` worker                         | Today: Product `groupChatId`; official: `accountingGroupChatId`. Target: purpose resolver.                                                                           |
+| Finance reminder destination/delivery                        | `MIGRATE` + `REUSE` worker                         | Slice 9: destination via `resolveClientDestination(productId, FINANCE)` (WORK fallback). Timing/content remain Slice 10. Official: `accountingGroupChatId`.          |
 | WhatsApp Gateway                                             | `REUSE/EXTEND`                                     | Keep transport/session/provider boundary.                                                                                                                            |
 | Permanent Telegram bridge                                    | `DO NOT BUILD`                                     | One-time migration only; notifications may remain.                                                                                                                   |
 
@@ -698,6 +700,8 @@ Completed for SHA `302f57f7` in `20-Slice-00-Baseline.md`. Status `VERIFIED` (FI
 **Slice 7:** evidence `27-Slice-07-Client-Messenger.md`. Status `VERIFIED`. Separate Client surface + locked composer. Meta inbound cutover into Core Client Sales. Dual-write none. No DROP. Slice 8 may begin.
 
 **Slice 8:** evidence `28-Slice-08-WhatsApp-Gateway.md`. Status `VERIFIED`. FINDING-S8-01…10 closed. Gateway Project webhook → Core inbound. Client WhatsApp SEND persist-first via existing outbound queue + v1 account send. Dual-write none. No DROP. Product bindings remain Slice 9.
+
+**Slice 9:** evidence `29-Slice-09-Product-Communication-Bindings.md`. Status `VERIFIED`. FINDING-S9-01…10 closed. `ProductCommunicationBinding` (WORK | FINANCE) is additive. Resolver is the destination read path. Legacy `ProductWhatsAppGroupBinding` + unique `groupChatId` remain DELETE-LATER. No DROP. Production migrate not run. Slice 10 may begin.
 
 Inventoried DB snapshot (local `DATABASE_URL`; not labeled prod vs staging): Channel/DM 0; Unified 0; Tasks 390 / chatId 0 / discussion 0; Product WhatsApp bindings 145 (ACTIVE 143 unique group ids, FAILED 2); gateway row 1 with accountant group id present; MetaConversation 0; MetaMessage 0; MetaConnectedAccount 0; MetaSenderIdentity 0; MetaProviderEvent 17.
 

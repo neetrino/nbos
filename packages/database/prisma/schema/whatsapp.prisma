@@ -18,6 +18,7 @@ enum ProductWhatsAppGroupBindingStatusEnum {
 
 enum WhatsAppGroupOperationTypeEnum {
   CREATE_PRODUCT_GROUP
+  CREATE_FINANCE_GROUP
   BIND_EXISTING_GROUP
   SYNC_PRODUCT_PARTICIPANTS
   ADD_PRODUCT_PARTICIPANT
@@ -85,7 +86,8 @@ model WhatsAppGatewayConnection {
   @@map("whatsapp_gateway_connections")
 }
 
-/// Product owns at most one WhatsApp group binding.
+/// DELETE-LATER (Slice 11). Slice 9 destinations live on ProductCommunicationBinding.
+/// Unique groupChatId is kept so existing Deal Won / ops rows stay valid during dual-write.
 model ProductWhatsAppGroupBinding {
   id                   String                                 @id @default(uuid())
   productId            String                                 @unique @map("product_id")
@@ -101,9 +103,10 @@ model ProductWhatsAppGroupBinding {
 
   product         Product                          @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdFromDeal Deal?                            @relation("ProductWhatsAppGroupCreatedFromDeal", fields: [createdFromDealId], references: [id], onDelete: SetNull)
-  operations      WhatsAppGroupOperation[]
-  participants    ProductWhatsAppParticipantSync[]
-  invitations     ProductWhatsAppClientInvitation[]
+  operations              WhatsAppGroupOperation[]
+  participants            ProductWhatsAppParticipantSync[]
+  invitations             ProductWhatsAppClientInvitation[]
+  communicationBindings   ProductCommunicationBinding[]
 
   @@index([status])
   @@index([createdFromDealId])
