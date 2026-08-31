@@ -127,6 +127,8 @@ Classification: `EXTEND` as Messaging Core (Slice 1). Channel/DM remains the rol
 
 **Slice 3:** evidence `23-Slice-03-Internal-Base.md`. Status `VERIFIED`. Internal `/messenger` and Portfolio write Core. Mapper is ops-only (not list GET). Dual-write still **none**. Channel/DM tables not dropped; `/messenger/legacy` remains labeled rollback.
 
+**Slice 4:** evidence `24-Slice-04-Entity-Conversations.md`. Status `VERIFIED`. FINDING-S4-01/02/03/04 closed. Entity ensure on Core. Dual-write still **none**.
+
 ### 3.3 Do not create a third permanent message store
 
 The rebuild must end with one canonical durable Messaging Core, not:
@@ -323,6 +325,8 @@ Permanent dual-write is forbidden.
 **Slice 1 decision:** no dual-write window. Mapper is idempotent and not hooked into Channel/DM send.
 
 **Slice 3:** Internal `/messenger` and Portfolio write Core. Channel/DM is labeled rollback (`/messenger/legacy`) only. Permanent dual-write remains forbidden.
+
+**Slice 4:** Entity ensure/persist stays on Core. Dual-write still forbidden.
 
 ---
 
@@ -674,6 +678,8 @@ Completed for SHA `302f57f7` in `20-Slice-00-Baseline.md`. Status `VERIFIED` (FI
 **Slice 2:** evidence `22-Slice-02-Permissions-Boundary.md`. Status `VERIFIED`. FINDING-S2-01/02 closed. Conversation ACL on Core HTTP. Slice 3 may begin.
 
 **Slice 3:** evidence `23-Slice-03-Internal-Base.md`. Status `VERIFIED`. FINDING-S3-01…S3-06 closed. Dual-write none. Slice 4 may begin.
+
+**Slice 4:** evidence `24-Slice-04-Entity-Conversations.md`. Status `VERIFIED`. FINDING-S4-01/02/03/04 closed. Dual-write none. Slice 5 may begin.
 
 Inventoried DB snapshot (local `DATABASE_URL`; not labeled prod vs staging): Channel/DM 0; Unified 0; Tasks 390 / chatId 0 / discussion 0; Product WhatsApp bindings 145 (ACTIVE 143 unique group ids, FAILED 2); gateway row 1 with accountant group id present; MetaConversation 0; MetaMessage 0; MetaConnectedAccount 0; MetaSenderIdentity 0; MetaProviderEvent 17.
 

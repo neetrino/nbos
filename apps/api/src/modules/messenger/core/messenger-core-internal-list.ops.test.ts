@@ -76,6 +76,24 @@ describe('Internal conversation list', () => {
     expect(prisma.resourceAccessGrant.findMany).toHaveBeenCalled();
   });
 
+  it('filters Products by type PRODUCT, Deals by DEAL, Work Spaces by WORKSPACE link', async () => {
+    const findMany = vi.fn().mockResolvedValue([]);
+    const prisma = {
+      messengerConversation: { findMany },
+      resourceAccessGrant: { findMany: vi.fn().mockResolvedValue([]) },
+    };
+    await listAccessibleInternalConversations(prisma as never, 'e1', 'ALL', {
+      section: 'products',
+    });
+    expect(JSON.stringify(findMany.mock.calls[0]?.[0]?.where)).toContain('PRODUCT');
+    await listAccessibleInternalConversations(prisma as never, 'e1', 'ALL', { section: 'deals' });
+    expect(JSON.stringify(findMany.mock.calls[1]?.[0]?.where)).toContain('DEAL');
+    await listAccessibleInternalConversations(prisma as never, 'e1', 'ALL', {
+      section: 'workspaces',
+    });
+    expect(JSON.stringify(findMany.mock.calls[2]?.[0]?.where)).toContain('WORKSPACE');
+  });
+
   it('does not grant canWrite to a READ_ONLY participant with OWN edit', async () => {
     const findMany = vi.fn().mockResolvedValue([
       listRow({

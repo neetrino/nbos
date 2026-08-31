@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { directCanonicalKey, legacyChannelCanonicalKey } from './messenger-core-canonical-key';
+import {
+  directCanonicalKey,
+  legacyChannelCanonicalKey,
+  productCanonicalKey,
+  workspaceCanonicalKey,
+  dealCanonicalKey,
+  projectGeneralCanonicalKey,
+} from './messenger-core-canonical-key';
 import {
   channelLegacyIdentity,
   channelMessageLegacyIdentity,
@@ -14,6 +21,13 @@ describe('messenger-core-canonical-key', () => {
   it('orders DIRECT pairs lexicographically', () => {
     expect(directCanonicalKey(HIGH, LOW)).toBe(`direct:${LOW}:${HIGH}`);
     expect(directCanonicalKey(LOW, HIGH)).toBe(`direct:${LOW}:${HIGH}`);
+  });
+
+  it('computes Product, Work Space, Deal, and Project General keys server-side', () => {
+    expect(productCanonicalKey('p1')).toBe('product:p1');
+    expect(workspaceCanonicalKey('w1')).toBe('workspace:w1');
+    expect(dealCanonicalKey('d1')).toBe('deal:d1');
+    expect(projectGeneralCanonicalKey('g1')).toBe('project_general:g1');
   });
 
   it('uses a stable legacy channel identity key', () => {

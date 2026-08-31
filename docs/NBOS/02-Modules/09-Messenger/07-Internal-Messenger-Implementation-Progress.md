@@ -24,6 +24,10 @@ Implementer evidence: `22-Slice-02-Permissions-Boundary.md`. Status `VERIFIED`. 
 
 Implementer evidence: `23-Slice-03-Internal-Base.md`. Status `VERIFIED`. Daily Internal (`/messenger`, Portfolio) writes Core. Mapper is ops-only (`POST .../legacy-map`). Channel/DM remains labeled rollback at `/messenger/legacy`. FINDING-S3-01…S3-06 closed. Slice 4 may begin.
 
+## Slice 4 status (not product canon)
+
+Implementer evidence: `24-Slice-04-Entity-Conversations.md`. Status `VERIFIED`. FINDING-S4-01/02/03/04 closed. Product/Work Space/Deal/Project General ensure on Core with access before create. Slice 5 may begin.
+
 ## Current verified static baseline
 
 The previous historical status text was stale and must not be used as runtime proof. Slice 0 re-checked this against `302f57f7` + DB counts (see evidence file).
@@ -197,7 +201,7 @@ Migration/runtime implementation uses additionally:
 
 ## Next step before product code changes
 
-1. Slice 3 is `VERIFIED` (`23-Slice-03-Internal-Base.md`);
-2. begin Slice 4 (entity conversations).
+1. begin Slice 5 (Task Discussion migration) from a fresh implementer chat;
+2. independent review of Slice 5 before Slice 6.
 
 No production Messenger rebuild completion is claimed by this documentation stage.

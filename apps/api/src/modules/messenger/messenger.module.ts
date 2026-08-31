@@ -5,6 +5,7 @@ import { MessengerCoreCollectionService } from './core/messenger-core-collection
 import { MessengerCoreController } from './core/messenger-core.controller';
 import { MessengerCoreInternalCollectionController } from './core/messenger-core-internal-collection.controller';
 import { MessengerCoreInternalController } from './core/messenger-core-internal.controller';
+import { MessengerCoreInternalEntityController } from './core/messenger-core-internal-entity.controller';
 import { MessengerCoreInternalService } from './core/messenger-core-internal.service';
 import { MessengerCoreService } from './core/messenger-core.service';
 import { MessengerController } from './messenger.controller';
@@ -18,6 +19,7 @@ import { MessengerService } from './messenger.service';
     MessengerCoreController,
     MessengerCoreCollectionController,
     MessengerCoreInternalController,
+    MessengerCoreInternalEntityController,
     MessengerCoreInternalCollectionController,
   ],
   providers: [

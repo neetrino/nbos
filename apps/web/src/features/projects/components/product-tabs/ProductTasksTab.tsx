@@ -16,6 +16,10 @@ import { WORKSPACE_BOARD_VIEW_OPTIONS } from '@/features/tasks/tasks-board-view-
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { EditWorkSpaceDialog } from '@/features/tasks/work-spaces/EditWorkSpaceDialog';
 import { WorkSpaceDetailSettingsSheet } from '@/features/tasks/work-spaces/WorkSpaceDetailSettingsSheet';
+import {
+  WorkSpaceDiscussionSheet,
+  WorkSpaceDiscussionTrigger,
+} from '@/features/tasks/work-spaces/WorkSpaceDiscussionSheet';
 import { WorkSpaceRuntime } from '@/features/tasks/work-spaces/WorkSpaceRuntime';
 import { WorkSpaceAreaSegmented } from '@/features/tasks/work-spaces/WorkSpaceAreaSegmented';
 import { WorkSpaceScrumPlanningEnable } from '@/features/tasks/work-spaces/WorkSpaceScrumPlanningEnable';
@@ -52,6 +56,7 @@ export function ProductTasksTab({
   const { creatorReady, creatorId } = useTaskCreatorId();
   const taskViewFilters = useWorkspaceRuntimeTaskFilters(SEARCH_FILTER_PAGE_ID.productTasks);
   const [editOpen, setEditOpen] = useState(false);
+  const [discussionOpen, setDiscussionOpen] = useState(false);
   const { boardView, handleBoardViewChange, workspaceArea, setWorkspaceArea } =
     useWorkspaceBoardViewState();
   const openQuickCreateRef = useRef<(() => void) | null>(null);
@@ -109,6 +114,7 @@ export function ProductTasksTab({
             >
               Work Space <ArrowUpRight size={14} aria-hidden />
             </Link>
+            <WorkSpaceDiscussionTrigger onClick={() => setDiscussionOpen(true)} />
             <WorkSpaceDetailSettingsSheet
               workspaceId={workspace.id}
               workspaceName={workspace.name}
@@ -159,6 +165,12 @@ export function ProductTasksTab({
         open={editOpen}
         onOpenChange={setEditOpen}
         onUpdated={onWorkspaceUpdate}
+      />
+      <WorkSpaceDiscussionSheet
+        open={discussionOpen}
+        onOpenChange={setDiscussionOpen}
+        workspaceId={workspace.id}
+        workspaceName={workspace.name}
       />
     </div>
   );

@@ -5,6 +5,7 @@ export type MessengerCoreConversationType =
   | 'PRODUCT'
   | 'DEAL'
   | 'TASK'
+  | 'WORKSPACE'
   | 'DIRECT'
   | 'INTERNAL_GROUP'
   | 'EXTERNAL';
@@ -156,6 +157,34 @@ export const messengerCoreApi = {
       {
         conversationId,
       },
+    );
+    return resp.data;
+  },
+
+  async ensureProduct(productId: string): Promise<MessengerCoreConversationRow> {
+    const resp = await api.post<MessengerCoreConversationRow>(
+      `${INTERNAL_ROOT}/entities/products/${productId}`,
+    );
+    return resp.data;
+  },
+
+  async ensureWorkSpace(workspaceId: string): Promise<MessengerCoreConversationRow> {
+    const resp = await api.post<MessengerCoreConversationRow>(
+      `${INTERNAL_ROOT}/entities/work-spaces/${workspaceId}`,
+    );
+    return resp.data;
+  },
+
+  async ensureDeal(dealId: string): Promise<MessengerCoreConversationRow> {
+    const resp = await api.post<MessengerCoreConversationRow>(
+      `${INTERNAL_ROOT}/entities/deals/${dealId}`,
+    );
+    return resp.data;
+  },
+
+  async ensureProjectGeneral(projectId: string): Promise<MessengerCoreConversationRow> {
+    const resp = await api.post<MessengerCoreConversationRow>(
+      `${INTERNAL_ROOT}/entities/projects/${projectId}/general`,
     );
     return resp.data;
   },

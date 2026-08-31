@@ -122,6 +122,48 @@ describe('Slice 3 Internal HTTP', () => {
   });
 });
 
+describe('Slice 4 entity conversation migration safety', () => {
+  const slice4Sql = readRepo(
+    'packages/database/prisma/migrations/20260830210000_messenger_entity_workspace_type/migration.sql',
+  );
+
+  it('is additive and does not drop Channel/DM, Unified, Meta, or Task discussion', () => {
+    expect(slice4Sql).not.toMatch(/DROP TABLE/i);
+    expect(slice4Sql).not.toMatch(/DROP TYPE/i);
+    expect(slice4Sql).not.toMatch(/task_discussion/i);
+    expect(slice4Sql).not.toMatch(/meta_conversations/i);
+    expect(slice4Sql).not.toMatch(/messenger_channels/i);
+    expect(slice4Sql).not.toMatch(/messenger_direct_threads/i);
+    expect(slice4Sql).toMatch(/ADD VALUE IF NOT EXISTS 'WORKSPACE'/);
+  });
+
+  it('does not add a global unique on ConversationLink entity identity', () => {
+    expect(slice4Sql).not.toMatch(/entity_type.*entity_id.*UNIQUE/i);
+    const schema = readRepo('packages/database/prisma/schema/messenger.prisma');
+    expect(schema).toMatch(/@@unique\(\[conversationId, entityType, entityId, relationType\]\)/);
+    expect(schema).not.toMatch(/@@unique\(\[entityType, entityId\]\)/);
+  });
+
+  it('does not create Project General from Project create or list', () => {
+    const projectService = readRepo('apps/api/src/modules/projects/projects.service.ts');
+    const projectController = readRepo('apps/api/src/modules/projects/projects.controller.ts');
+    expect(projectService).not.toMatch(/ensureProjectGeneral/);
+    expect(projectService).not.toMatch(/PROJECT_GENERAL/);
+    expect(projectService).not.toMatch(/messengerConversation\.create/);
+    expect(projectController).not.toMatch(/ensureProjectGeneral/);
+  });
+
+  it('entity HTTP ensure has no caller canonicalKey field', () => {
+    const entityController = readRepo(
+      'apps/api/src/modules/messenger/core/messenger-core-internal-entity.controller.ts',
+    );
+    expect(entityController).not.toMatch(/canonicalKey/);
+    expect(entityController).toMatch(/products\/:productId/);
+    expect(entityController).toMatch(/work-spaces\/:workspaceId/);
+    expect(entityController).toMatch(/deals\/:dealId/);
+  });
+});
+
 describe('FINDING-S1-01 / FINDING-S1-02 closures', () => {
   it('does not accept canonicalKey on the HTTP create DTO or controller', () => {
     const dto = readRepo('apps/api/src/modules/messenger/core/dto/create-core-conversation.dto.ts');

@@ -5,6 +5,7 @@ export const MESSENGER_CORE_INTERNAL_TYPES: readonly MessengerConversationType[]
   'PRODUCT',
   'DEAL',
   'TASK',
+  'WORKSPACE',
   'DIRECT',
   'INTERNAL_GROUP',
 ];
@@ -33,8 +34,13 @@ export const MESSENGER_CORE_INTERNAL_OUTBOX_FORBIDDEN =
 
 export const MESSENGER_CORE_LEGACY_CHANNEL_KEY_PREFIX = 'legacy:channel:';
 export const MESSENGER_CORE_DIRECT_KEY_PREFIX = 'direct:';
+export const MESSENGER_CORE_PRODUCT_KEY_PREFIX = 'product:';
+export const MESSENGER_CORE_WORKSPACE_KEY_PREFIX = 'workspace:';
+export const MESSENGER_CORE_DEAL_KEY_PREFIX = 'deal:';
+export const MESSENGER_CORE_PROJECT_GENERAL_KEY_PREFIX = 'project_general:';
 export const MESSENGER_CORE_RESERVED_CANONICAL_KEY_PREFIXES = [
   'product:',
+  'workspace:',
   'direct:',
   'legacy:channel:',
   'project_general:',

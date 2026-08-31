@@ -10,6 +10,7 @@ describe('messenger-core-zone', () => {
   it('accepts INTERNAL types and rejects Client types on INTERNAL zone', () => {
     expect(() => assertZoneTypeCompatibility('INTERNAL', 'INTERNAL_GROUP')).not.toThrow();
     expect(() => assertZoneTypeCompatibility('INTERNAL', 'DIRECT')).not.toThrow();
+    expect(() => assertZoneTypeCompatibility('INTERNAL', 'WORKSPACE')).not.toThrow();
     expect(() => assertZoneTypeCompatibility('INTERNAL', 'EXTERNAL')).toThrow(
       /cannot use a Client type/,
     );

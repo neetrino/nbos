@@ -2,6 +2,7 @@ export const PRODUCT_DETAIL_TAB_QUERY = 'tab';
 
 export const PRODUCT_DETAIL_TAB_VALUES = [
   'overview',
+  'chat',
   'tasks',
   'extensions',
   'support',
@@ -17,6 +18,7 @@ export const PRODUCT_DETAIL_TAB_DEFAULT: ProductDetailTab = 'overview';
 /** Named tab slugs for product detail deep links (`?tab=`). */
 export const PRODUCT_DETAIL_TAB = {
   overview: 'overview',
+  chat: 'chat',
   tasks: 'tasks',
   extensions: 'extensions',
   support: 'support',

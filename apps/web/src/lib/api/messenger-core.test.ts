@@ -35,4 +35,21 @@ describe('Internal Messenger web client', () => {
     expect(app).not.toMatch(/\/api\/messenger\/channels/);
     expect(app).not.toMatch(/\/api\/messenger\/dm/);
   });
+
+  it('entity ensure client uses Internal Core paths only', () => {
+    const client = readWeb('lib/api/messenger-core.ts');
+    expect(client).toMatch(/entities\/products\//);
+    expect(client).toMatch(/entities\/work-spaces\//);
+    expect(client).toMatch(/entities\/deals\//);
+    expect(client).toMatch(/async ensureProduct\(productId: string\)/);
+    expect(client).not.toMatch(/ensureProduct\([^)]*canonicalKey/);
+    const panel = readWeb('features/messenger-internal/EntityConversationPanel.tsx');
+    const hook = readWeb('features/messenger-internal/use-entity-conversation.ts');
+    expect(hook).toMatch(/messengerCoreApi\.ensureProduct/);
+    expect(hook).toMatch(/messengerCoreApi\.ensureWorkSpace/);
+    expect(panel).not.toMatch(/\/api\/messenger\/channels/);
+    expect(hook).not.toMatch(/\/api\/messenger\/channels/);
+    expect(hook).not.toMatch(/\/api\/messenger\/dm/);
+    expect(hook).not.toMatch(/tasksApi\.addDiscussion/);
+  });
 });

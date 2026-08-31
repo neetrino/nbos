@@ -9,6 +9,10 @@ const listAccessibleInternalConversations = vi.fn();
 const listCoreConversationMessages = vi.fn();
 const toggleInternalFavorite = vi.fn();
 const loadMessengerCoreAccessFacts = vi.fn();
+const ensureProductWorkConversation = vi.fn();
+const ensureWorkSpaceConversation = vi.fn();
+const ensureDealConversation = vi.fn();
+const ensureProjectGeneralConversation = vi.fn();
 
 vi.mock('../access/messenger-legacy-channel-access.op', () => ({
   loadMessengerLegacyAccess: (...args: unknown[]) => loadMessengerLegacyAccess(...args),
@@ -33,6 +37,14 @@ vi.mock('./messenger-core-favorites.ops', () => ({
 
 vi.mock('./messenger-core-access-load', () => ({
   loadMessengerCoreAccessFacts: (...args: unknown[]) => loadMessengerCoreAccessFacts(...args),
+}));
+
+vi.mock('./messenger-core-entity-ensure.ops', () => ({
+  ensureProductWorkConversation: (...args: unknown[]) => ensureProductWorkConversation(...args),
+  ensureWorkSpaceConversation: (...args: unknown[]) => ensureWorkSpaceConversation(...args),
+  ensureDealConversation: (...args: unknown[]) => ensureDealConversation(...args),
+  ensureProjectGeneralConversation: (...args: unknown[]) =>
+    ensureProjectGeneralConversation(...args),
 }));
 
 const ACCESS = {
@@ -83,6 +95,10 @@ describe('MessengerCoreInternalService', () => {
         grantLevel: null,
       },
     });
+    ensureProductWorkConversation.mockReset();
+    ensureWorkSpaceConversation.mockReset();
+    ensureDealConversation.mockReset();
+    ensureProjectGeneralConversation.mockReset();
   });
 
   it('rejects opening a CLIENT conversation on Internal routes', async () => {
@@ -138,5 +154,47 @@ describe('MessengerCoreInternalService', () => {
     await expect(service.mapLegacyInternal()).resolves.toEqual({ channels: 0, threads: 0 });
     expect(mapAllLegacyInternalToCore).toHaveBeenCalledTimes(1);
     expect(prisma.messengerChannelMessage.create).not.toHaveBeenCalled();
+  });
+
+  it('entity ensure persists Core identity and does not write Channel/DM', async () => {
+    const { service, prisma, core } = createService();
+    ensureProductWorkConversation.mockResolvedValue({
+      id: 'prod-conv',
+      zone: 'INTERNAL',
+      type: 'PRODUCT',
+      created: true,
+    });
+    core.getConversation.mockResolvedValue({ id: 'prod-conv', zone: 'INTERNAL', type: 'PRODUCT' });
+    const result = await service.ensureProduct('p1', 'e1');
+    expect(result.id).toBe('prod-conv');
+    expect(ensureProductWorkConversation).toHaveBeenCalled();
+    expect(prisma.messengerChannelMessage.create).not.toHaveBeenCalled();
+    expect(prisma.messengerDirectMessage.create).not.toHaveBeenCalled();
+  });
+
+  it('still 404s CLIENT after entity ensure wiring', async () => {
+    const { service, core } = createService();
+    core.getConversation.mockResolvedValue({ id: 'c1', zone: 'CLIENT' });
+    await expect(service.getConversation('c1', 'e1')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('does not GET after entity access 404s ensure', async () => {
+    const { service, core } = createService();
+    ensureProductWorkConversation.mockRejectedValue(new NotFoundException('Product not found'));
+    await expect(service.ensureProduct('p1', 'e1')).rejects.toBeInstanceOf(NotFoundException);
+    expect(core.getConversation).not.toHaveBeenCalled();
+  });
+
+  it('forwards TASKS.VIEW scope into Work Space ensure', async () => {
+    const { service, core } = createService();
+    ensureWorkSpaceConversation.mockResolvedValue({
+      id: 'ws-conv',
+      zone: 'INTERNAL',
+      type: 'WORKSPACE',
+      created: true,
+    });
+    core.getConversation.mockResolvedValue({ id: 'ws-conv', zone: 'INTERNAL', type: 'WORKSPACE' });
+    await service.ensureWorkSpace('ws1', 'e1', 'OWN');
+    expect(ensureWorkSpaceConversation).toHaveBeenCalledWith(expect.anything(), 'ws1', 'e1', 'OWN');
   });
 });

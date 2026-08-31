@@ -229,37 +229,40 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Product / Connected Work Space
 
-- [ ] Product `Chat` resolves to canonical work Conversation.
-- [ ] Connected Work Space `Discussion` resolves to the same conversation id.
-- [ ] race-safe ensure/lookup prevents duplicate conversations.
-- [ ] Product and Work Space are both represented through ConversationLink/equivalent context.
+- [x] Product `Chat` resolves to canonical work Conversation.
+- [x] Connected Work Space `Discussion` resolves to the same conversation id.
+- [x] race-safe ensure/lookup prevents duplicate conversations.
+- [x] Product and Work Space are both represented through ConversationLink/equivalent context.
 
 ### Standalone Work Space
 
-- [ ] Standalone Work Space can have its own conversation.
-- [ ] It does not require fake Product ownership.
+- [x] Standalone Work Space can have its own conversation identity (`WORKSPACE` / `workspace:{workspaceId}`).
+- [x] It does not require fake Product ownership.
+- [x] FINDING-S4-04: org-level standalone (`projectId`/`productId`/`extensionId` null) Discussion ensure is reachable for people who can open that Work Space in Tasks.
 
 ### Deal
 
-- [ ] Internal Deal discussion is an Internal conversation.
-- [ ] It is never the same object as Client Sales conversation.
+- [x] Internal Deal discussion is an Internal conversation.
+- [x] It is never the same object as Client Sales conversation.
 
 ### Project
 
-- [ ] Project communication view acts as contextual aggregator.
-- [ ] Project General is optional/lazy, not auto-created for every Project.
+- [x] Project communication view acts as contextual aggregator.
+- [x] Project General is optional/lazy, not auto-created for every Project.
 
 ### Migration
 
-- [ ] Detect Product/Workspace duplicate legacy chats before relinking.
-- [ ] Preserve both histories if both contain real data; no silent overwrite.
-- [ ] Ambiguous duplicate history is manually mapped or merged with provenance.
+- [x] Detect Product/Workspace duplicate legacy chats before relinking.
+- [x] Preserve both histories if both contain real data; no silent overwrite.
+- [x] Ambiguous duplicate history is manually mapped or merged with provenance.
 
 ### Acceptance
 
-- [ ] Product and its Connected Work Space demonstrably open the same conversation.
-- [ ] No eager empty Project General creation.
-- [ ] Slice status `VERIFIED`.
+- [x] Entity access before ensure: OWN non-member 404s; team graph / Deal commercial roles; VIEW ALL does not skip entity access
+- [x] Relink only with proven identity (PRIMARY link or metadata that names the product/workspace)
+- [x] Extension Work Space (`productId` null) is not Product Chat
+- [x] FINDING-S4-04 closed: standalone access is not a 404-for-everyone filter on null parent FKs
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -622,19 +625,19 @@ These apply to every slice touching persistence or existing runtime.
 
 ## 3. Implementation slice status table
 
-| Slice                            | Status     | Implementer evidence                  | Independent review                    |
-| -------------------------------- | ---------- | ------------------------------------- | ------------------------------------- |
-| 0 — Baseline/reconciliation      | `VERIFIED` | `20-Slice-00-Baseline.md`             | VERIFIED (FINDING-01 closed)          |
-| 1 — Messaging Core               | `VERIFIED` | `21-Slice-01-Messaging-Core.md`       | VERIFIED (FINDING-S1-01/02 closed)    |
-| 2 — Permissions/boundary         | `VERIFIED` | `22-Slice-02-Permissions-Boundary.md` | VERIFIED (FINDING-S2-01/02 closed)    |
-| 3 — Internal base                | `VERIFIED` | `23-Slice-03-Internal-Base.md`        | VERIFIED (FINDING-S3-01…S3-06 closed) |
-| 4 — Entity conversations         | `PLANNED`  | —                                     | —                                     |
-| 5 — Task Discussion migration    | `PLANNED`  | —                                     | —                                     |
-| 6 — Message actions/references   | `PLANNED`  | —                                     | —                                     |
-| 7 — Client surface               | `PLANNED`  | —                                     | —                                     |
-| 8 — WhatsApp Gateway integration | `PLANNED`  | —                                     | —                                     |
-| 9 — Flexible Product bindings    | `PLANNED`  | —                                     | —                                     |
-| 10 — Finance/Support/routing     | `PLANNED`  | —                                     | —                                     |
-| 11 — Hardening/cleanup readiness | `PLANNED`  | —                                     | —                                     |
+| Slice                            | Status     | Implementer evidence                  | Independent review                       |
+| -------------------------------- | ---------- | ------------------------------------- | ---------------------------------------- |
+| 0 — Baseline/reconciliation      | `VERIFIED` | `20-Slice-00-Baseline.md`             | VERIFIED (FINDING-01 closed)             |
+| 1 — Messaging Core               | `VERIFIED` | `21-Slice-01-Messaging-Core.md`       | VERIFIED (FINDING-S1-01/02 closed)       |
+| 2 — Permissions/boundary         | `VERIFIED` | `22-Slice-02-Permissions-Boundary.md` | VERIFIED (FINDING-S2-01/02 closed)       |
+| 3 — Internal base                | `VERIFIED` | `23-Slice-03-Internal-Base.md`        | VERIFIED (FINDING-S3-01…S3-06 closed)    |
+| 4 — Entity conversations         | `VERIFIED` | `24-Slice-04-Entity-Conversations.md` | VERIFIED (FINDING-S4-01/02/03/04 closed) |
+| 5 — Task Discussion migration    | `PLANNED`  | —                                     | —                                        |
+| 6 — Message actions/references   | `PLANNED`  | —                                     | —                                        |
+| 7 — Client surface               | `PLANNED`  | —                                     | —                                        |
+| 8 — WhatsApp Gateway integration | `PLANNED`  | —                                     | —                                        |
+| 9 — Flexible Product bindings    | `PLANNED`  | —                                     | —                                        |
+| 10 — Finance/Support/routing     | `PLANNED`  | —                                     | —                                        |
+| 11 — Hardening/cleanup readiness | `PLANNED`  | —                                     | —                                        |
 
 Status changes must follow `12-Messenger-Rebuild-Execution-Strategy.md`.

@@ -24,6 +24,7 @@ function defaultTypeLabel(type: string): string {
   if (type === 'PRODUCT') return 'Product';
   if (type === 'TASK') return 'Task';
   if (type === 'DEAL') return 'Deal';
+  if (type === 'WORKSPACE') return 'Work Space';
   if (type === 'PROJECT_GENERAL') return 'Project';
   return 'Conversation';
 }
@@ -34,6 +35,7 @@ export function conversationTypeBadge(type: string): string {
   if (type === 'PRODUCT') return 'Product';
   if (type === 'TASK') return 'Task';
   if (type === 'DEAL') return 'Deal';
+  if (type === 'WORKSPACE') return 'Work Space';
   if (type === 'PROJECT_GENERAL') return 'Project';
   return 'Internal';
 }

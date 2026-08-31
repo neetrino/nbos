@@ -27,9 +27,16 @@ import { isInternalZone } from './messenger-core-zone';
 import { toggleInternalFavorite } from './messenger-core-favorites.ops';
 import { evaluateMessengerCoreAccess } from './messenger-core-access';
 import { loadMessengerCoreAccessFacts } from './messenger-core-access-load';
+import {
+  ensureDealConversation,
+  ensureProductWorkConversation,
+  ensureProjectGeneralConversation,
+  ensureWorkSpaceConversation,
+} from './messenger-core-entity-ensure.ops';
 import type {
   MessengerCoreConversationDto,
   MessengerCoreMessageDto,
+  MessengerEntityEnsureResult,
   PersistMessengerCoreMessageInput,
 } from './messenger-core.types';
 
@@ -116,6 +123,53 @@ export class MessengerCoreInternalService {
       peerEmployeeId: input.peerEmployeeId,
       participantIds: input.participantIds,
     });
+  }
+
+  async ensureProduct(
+    productId: string,
+    employeeId: string,
+  ): Promise<MessengerInternalConversationDetail & Pick<MessengerEntityEnsureResult, 'created'>> {
+    return this.finishEnsure(employeeId, () =>
+      ensureProductWorkConversation(this.prisma, productId, employeeId),
+    );
+  }
+
+  async ensureWorkSpace(
+    workspaceId: string,
+    employeeId: string,
+    tasksViewScope?: string,
+  ): Promise<MessengerInternalConversationDetail & Pick<MessengerEntityEnsureResult, 'created'>> {
+    return this.finishEnsure(employeeId, () =>
+      ensureWorkSpaceConversation(this.prisma, workspaceId, employeeId, tasksViewScope),
+    );
+  }
+
+  async ensureDeal(
+    dealId: string,
+    employeeId: string,
+  ): Promise<MessengerInternalConversationDetail & Pick<MessengerEntityEnsureResult, 'created'>> {
+    return this.finishEnsure(employeeId, () =>
+      ensureDealConversation(this.prisma, dealId, employeeId),
+    );
+  }
+
+  async ensureProjectGeneral(
+    projectId: string,
+    employeeId: string,
+  ): Promise<MessengerInternalConversationDetail & Pick<MessengerEntityEnsureResult, 'created'>> {
+    return this.finishEnsure(employeeId, () =>
+      ensureProjectGeneralConversation(this.prisma, projectId, employeeId),
+    );
+  }
+
+  private async finishEnsure(
+    employeeId: string,
+    ensure: () => Promise<MessengerEntityEnsureResult>,
+  ): Promise<MessengerInternalConversationDetail & Pick<MessengerEntityEnsureResult, 'created'>> {
+    await this.requireView(employeeId);
+    const ensured = await ensure();
+    const detail = await this.getConversation(ensured.id, employeeId);
+    return { ...detail, created: ensured.created };
   }
 
   private assertInternalSurface(zone: string): void {

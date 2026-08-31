@@ -21,6 +21,11 @@ export type MessengerCoreConversationDto = {
   lastMessageAt: Date | null;
 };
 
+export type MessengerEntityEnsureResult = MessengerCoreConversationDto & {
+  created: boolean;
+  linkedLegacyConversationId: string | null;
+};
+
 export type MessengerCoreMessageDto = {
   id: string;
   conversationId: string;

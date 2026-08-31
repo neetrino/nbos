@@ -10,6 +10,8 @@ import {
   KeyRound,
   DollarSign,
   ServerCog,
+  MessageSquare,
+  type LucideIcon,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -19,6 +21,7 @@ import { productsApi, type Product, type FullProduct } from '@/lib/api/products'
 import { projectsApi } from '@/lib/api/projects';
 import { EntityDetailSheetsHost } from '@/features/projects/components/EntityDetailSheetsHost';
 import { ProductOverviewTab } from '@/features/projects/components/product-tabs/ProductOverviewTab';
+import { ProductChatTab } from '@/features/projects/components/product-tabs/ProductChatTab';
 import { ProductTasksTab } from '@/features/projects/components/product-tabs/ProductTasksTab';
 import { ProductExtensionsTab } from '@/features/projects/components/product-tabs/ProductExtensionsTab';
 import { ProductSupportTab } from '@/features/projects/components/product-tabs/ProductSupportTab';
@@ -39,6 +42,7 @@ import {
 
 const TAB_ITEMS = [
   { value: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { value: 'chat', label: 'Chat', icon: MessageSquare },
   { value: 'tasks', label: 'Work Space', icon: ListChecks },
   { value: 'extensions', label: 'Extensions', icon: Puzzle },
   { value: 'support', label: 'Support', icon: Headphones },
@@ -48,7 +52,7 @@ const TAB_ITEMS = [
 ] as const satisfies ReadonlyArray<{
   value: ProductDetailTab;
   label: string;
-  icon: typeof LayoutDashboard;
+  icon: LucideIcon;
 }>;
 
 function ProductDetailPageContent() {
@@ -190,6 +194,10 @@ function ProductDetailPageContent() {
 
         <TabsContent value="overview" className="mt-5">
           <ProductOverviewTab product={product} onProductUpdated={setProduct} />
+        </TabsContent>
+
+        <TabsContent value="chat" className="mt-5 flex min-h-0 flex-1 flex-col">
+          <ProductChatTab productId={product.id} />
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-5">
