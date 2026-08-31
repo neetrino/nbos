@@ -23,8 +23,9 @@ export async function createCoreProviderSendOutbox(
   if (isInternalZone(conversation.zone)) {
     throw new ForbiddenException(MESSENGER_CORE_INTERNAL_OUTBOX_FORBIDDEN);
   }
-  const created = await prisma.messengerCommand.create({
-    data: {
+  return prisma.messengerCommand.upsert({
+    where: { idempotencyKey: input.idempotencyKey },
+    create: {
       idempotencyKey: input.idempotencyKey,
       conversationId: conversation.id,
       resultMessageId: input.messageId,
@@ -33,7 +34,7 @@ export async function createCoreProviderSendOutbox(
       actorEmployeeId: input.createdById,
       payload: input.payload,
     },
+    update: {},
     select: { id: true, status: true },
   });
-  return created;
 }

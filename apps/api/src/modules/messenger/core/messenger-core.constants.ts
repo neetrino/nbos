@@ -31,6 +31,11 @@ export const MESSENGER_CORE_INTERNAL_PROVIDER_FORBIDDEN =
   'Internal conversations cannot have a provider mapping';
 export const MESSENGER_CORE_INTERNAL_OUTBOX_FORBIDDEN =
   'Internal conversations cannot enqueue provider send';
+export const MESSENGER_CORE_WHATSAPP_INTERNAL_INBOUND_FORBIDDEN =
+  'WhatsApp inbound cannot bind to an Internal conversation';
+export const MESSENGER_CORE_WHATSAPP_ACCOUNT_MISMATCH =
+  'WhatsApp provider event cannot cross account boundary';
+export const MESSENGER_CORE_WHATSAPP_UNKNOWN_CHAT = 'WhatsApp chat has no Client conversation yet';
 
 export const MESSENGER_CORE_LEGACY_CHANNEL_KEY_PREFIX = 'legacy:channel:';
 export const MESSENGER_CORE_DIRECT_KEY_PREFIX = 'direct:';
@@ -40,6 +45,7 @@ export const MESSENGER_CORE_DEAL_KEY_PREFIX = 'deal:';
 export const MESSENGER_CORE_TASK_KEY_PREFIX = 'task:';
 export const MESSENGER_CORE_PROJECT_GENERAL_KEY_PREFIX = 'project_general:';
 export const MESSENGER_CORE_META_KEY_PREFIX = 'legacy:meta:';
+export const MESSENGER_CORE_WHATSAPP_KEY_PREFIX = 'wa:';
 export const MESSENGER_CORE_RESERVED_CANONICAL_KEY_PREFIXES = [
   'product:',
   'workspace:',
@@ -49,6 +55,7 @@ export const MESSENGER_CORE_RESERVED_CANONICAL_KEY_PREFIXES = [
   'project_general:',
   'deal:',
   'task:',
+  'wa:',
 ] as const;
 
 export const MESSENGER_CORE_FAVORITES_NAME = 'Favorites';

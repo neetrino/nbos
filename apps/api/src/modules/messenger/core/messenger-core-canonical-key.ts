@@ -7,6 +7,7 @@ import {
   MESSENGER_CORE_PRODUCT_KEY_PREFIX,
   MESSENGER_CORE_PROJECT_GENERAL_KEY_PREFIX,
   MESSENGER_CORE_TASK_KEY_PREFIX,
+  MESSENGER_CORE_WHATSAPP_KEY_PREFIX,
   MESSENGER_CORE_WORKSPACE_KEY_PREFIX,
 } from './messenger-core.constants';
 
@@ -45,4 +46,8 @@ export function legacyDirectThreadSourceId(threadId: string): string {
 
 export function legacyMetaCanonicalKey(metaConversationId: string): string {
   return `${MESSENGER_CORE_META_KEY_PREFIX}${metaConversationId}`;
+}
+
+export function whatsAppCanonicalKey(accountId: string, chatId: string): string {
+  return `${MESSENGER_CORE_WHATSAPP_KEY_PREFIX}${accountId}:${chatId}`;
 }

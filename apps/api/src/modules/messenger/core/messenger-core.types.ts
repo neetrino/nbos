@@ -85,6 +85,7 @@ export type PersistMessengerCoreMessageInput = {
   senderNameSnapshot?: string;
   createdAt?: Date;
   metadata?: InputJsonValue;
+  status?: MessengerMessageStatus;
 };
 
 export type CreateMessengerCoreReferenceInput = {

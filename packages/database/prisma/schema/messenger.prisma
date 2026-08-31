@@ -206,6 +206,7 @@ model MessengerConversation {
   userSettings          MessengerUserConversationSetting[]
   externalMappings      MessengerExternalConversationMapping[]
   commands              MessengerCommand[]
+  providerEvents        MessengerProviderEvent[]
   legacyIdentities      MessengerLegacyIdentity[]
   sourceReferences      MessengerMessageReference[]            @relation("MessengerMessageReferenceSourceConversation")
   targetReferences      MessengerMessageReference[]            @relation("MessengerMessageReferenceTargetConversation")
@@ -287,6 +288,8 @@ model MessengerMessage {
   referencesAsSource MessengerMessageReference[]   @relation("MessengerMessageReferenceSource")
   referencesAsTarget MessengerMessageReference[]   @relation("MessengerMessageReferenceTarget")
   commands           MessengerCommand[]
+  externalRefs       MessengerMessageExternalRef[]
+  providerEvents     MessengerProviderEvent[]
 
   @@unique([conversationId, idempotencyKey])
   @@index([conversationId, createdAt])

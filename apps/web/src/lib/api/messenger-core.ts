@@ -58,6 +58,16 @@ export interface MessengerCoreMessageRow {
   editedAt: string | null;
   replyToMessageId?: string | null;
   threadRootMessageId?: string | null;
+  direction?: 'INTERNAL' | 'INBOUND' | 'OUTBOUND';
+  status?:
+    | 'QUEUED'
+    | 'SENDING'
+    | 'SENT'
+    | 'DELIVERED'
+    | 'READ'
+    | 'FAILED'
+    | 'OUTCOME_UNKNOWN'
+    | 'CANCELLED';
   mentionedEmployeeIds?: string[];
   references?: MessengerCoreMessageReferenceRow[];
   attachments: Array<{ id: string; fileAssetId: string; createdAt: string }>;

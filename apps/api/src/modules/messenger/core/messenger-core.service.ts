@@ -1,4 +1,10 @@
-import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import {
   PrismaClient,
   type MessengerParticipantRole,
@@ -29,6 +35,11 @@ import { assertCoreFileAssetsExist } from './messenger-core-attachment.ops';
 import { createCoreConversation, getCoreConversation } from './messenger-core-conversation.ops';
 import { addCoreConversationLink } from './messenger-core-link.ops';
 import { persistCoreMessage } from './messenger-core-message.ops';
+import {
+  finalizeWhatsAppCoreOutbound,
+  findClientWhatsAppMapping,
+} from './messenger-wa-outbound.ops';
+import { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
 import {
   grantMessengerConversationOverride,
   revokeMessengerConversationOverride,
@@ -69,6 +80,7 @@ export class MessengerCoreService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly messengerGateway: MessengerGateway,
     private readonly audit: AuditService,
+    @Optional() private readonly whatsAppOutbound?: WhatsAppOutboundQueueService,
   ) {}
 
   async createConversation(
@@ -107,9 +119,23 @@ export class MessengerCoreService {
       this.assertClientMayPersist(resolved.decision);
     }
     const fileAssetIds = await this.validateAttachments(resolved.access, input.fileAssetIds);
-    const message = await persistCoreMessage(this.prisma, input, fileAssetIds);
-    this.messengerGateway.emitCoreConversationMessage(resolved.facts.conversationId, message);
-    return message;
+    const mapping = isInternalZone(resolved.facts.zone)
+      ? null
+      : await findClientWhatsAppMapping(this.prisma, input.conversationId);
+    const message = await persistCoreMessage(
+      this.prisma,
+      { ...input, status: mapping ? 'QUEUED' : input.status },
+      fileAssetIds,
+    );
+    const delivered = await finalizeWhatsAppCoreOutbound(
+      this.prisma,
+      this.whatsAppOutbound,
+      message,
+      senderId,
+      mapping,
+    );
+    this.messengerGateway.emitCoreConversationMessage(resolved.facts.conversationId, delivered);
+    return delivered;
   }
 
   async addLink(

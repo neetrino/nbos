@@ -32,6 +32,17 @@ export class UpsertWhatsAppGatewayConnectionDto {
   @IsString()
   @MaxLength(128)
   accountingGroupChatId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(8)
+  @MaxLength(500)
+  webhookSigningSecret?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(128)
+  gatewayAccountId?: string | null;
 }
 
 export class BindProductWhatsAppGroupDto {

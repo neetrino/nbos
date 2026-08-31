@@ -110,3 +110,12 @@ export function isUnknownCreateOutcome(code: string | null | undefined): boolean
     code === 'GROUP_CREATE_OUTCOME_UNKNOWN' || code === WHATSAPP_ERROR.PRODUCT_GROUP_OUTCOME_UNKNOWN
   );
 }
+
+export function isMessageOutcomeUnknown(code: string | null | undefined): boolean {
+  if (!code) return false;
+  return (
+    code === 'MESSAGE_OUTCOME_UNKNOWN' ||
+    code.endsWith('_OUTCOME_UNKNOWN') ||
+    code === WHATSAPP_ERROR.CORE_SEND_OUTCOME_UNKNOWN
+  );
+}

@@ -70,15 +70,17 @@ enum ProductWhatsAppClientInvitationStatusEnum {
 model WhatsAppGatewayConnection {
   id                 String                             @id @default(uuid())
   baseUrl            String?                            @map("base_url")
-  encryptedApiToken  String?                            @map("encrypted_api_token") @db.Text
-  status             WhatsAppGatewayConnectionStatusEnum @default(NOT_CONFIGURED)
-  lastHealthCheckAt  DateTime?                          @map("last_health_check_at")
-  lastConnectedAt    DateTime?                          @map("last_connected_at")
-  lastErrorCode           String?                            @map("last_error_code")
-  lastErrorMessage        String?                            @map("last_error_message") @db.Text
-  accountingGroupChatId  String?                            @map("accounting_group_chat_id")
-  createdAt              DateTime                           @default(now()) @map("created_at")
-  updatedAt          DateTime                           @updatedAt @map("updated_at")
+  encryptedApiToken      String?                             @map("encrypted_api_token") @db.Text
+  encryptedWebhookSecret String?                             @map("encrypted_webhook_secret") @db.Text
+  gatewayAccountId       String?                             @map("gateway_account_id")
+  status                 WhatsAppGatewayConnectionStatusEnum @default(NOT_CONFIGURED)
+  lastHealthCheckAt      DateTime?                           @map("last_health_check_at")
+  lastConnectedAt        DateTime?                           @map("last_connected_at")
+  lastErrorCode          String?                             @map("last_error_code")
+  lastErrorMessage       String?                             @map("last_error_message") @db.Text
+  accountingGroupChatId  String?                             @map("accounting_group_chat_id")
+  createdAt              DateTime                            @default(now()) @map("created_at")
+  updatedAt              DateTime                            @updatedAt @map("updated_at")
 
   @@map("whatsapp_gateway_connections")
 }

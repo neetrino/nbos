@@ -140,6 +140,15 @@ describe('MessengerCoreInternalService', () => {
     expect(prisma.messengerDirectMessage.create).not.toHaveBeenCalled();
   });
 
+  it('404s Internal persist against a CLIENT conversation (FINDING-S8-02)', async () => {
+    const { service, core } = createService();
+    core.getConversation.mockResolvedValue({ id: 'c1', zone: 'CLIENT' });
+    await expect(
+      service.persistMessage({ conversationId: 'c1', senderId: 'e1', content: 'hi' }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(core.persistAndBroadcast).not.toHaveBeenCalled();
+  });
+
   it('creates Internal Group and Direct on Core with INTERNAL zone', async () => {
     const { service, core } = createService();
     core.createConversation.mockResolvedValue({ id: 'd1', zone: 'INTERNAL', type: 'DIRECT' });

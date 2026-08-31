@@ -7,6 +7,7 @@ import {
   productCanonicalKey,
   projectGeneralCanonicalKey,
   taskCanonicalKey,
+  whatsAppCanonicalKey,
   workspaceCanonicalKey,
 } from './messenger-core-canonical-key';
 import {
@@ -36,6 +37,7 @@ describe('messenger-core-canonical-key', () => {
     expect(projectGeneralCanonicalKey('g1')).toBe('project_general:g1');
     expect(taskCanonicalKey('t1')).toBe('task:t1');
     expect(legacyMetaCanonicalKey('meta-1')).toBe('legacy:meta:meta-1');
+    expect(whatsAppCanonicalKey('acc_1', '37499@c.us')).toBe('wa:acc_1:37499@c.us');
   });
 
   it('uses a stable legacy channel identity key', () => {

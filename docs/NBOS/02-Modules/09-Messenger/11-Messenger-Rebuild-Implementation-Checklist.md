@@ -412,40 +412,40 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Gateway reuse
 
-- [ ] use existing `neetrino/whatsapp-gateway` project/account/session boundary.
-- [ ] prefer account-scoped v1 send with idempotency where appropriate.
-- [ ] consume normalized authenticated Project webhooks for MESSENGER account inbound events.
-- [ ] do not expose WAHA directly to NBOS/web clients.
-- [ ] do not move Product/permissions/routing logic into Gateway.
+- [x] use existing `neetrino/whatsapp-gateway` project/account/session boundary.
+- [x] prefer account-scoped v1 send with idempotency where appropriate.
+- [x] consume normalized authenticated Project webhooks for MESSENGER account inbound events.
+- [x] do not expose WAHA directly to NBOS/web clients.
+- [x] do not move Product/permissions/routing logic into Gateway.
 
 ### Outbound
 
-- [ ] Client message is persisted before provider dispatch.
-- [ ] durable outbox/queue job dispatches to Gateway.
-- [ ] stable idempotency key links NBOS send attempt to Gateway attempt.
-- [ ] delivery states handle queued/sending/sent/delivered/read/failed/outcome-unknown as supported.
-- [ ] retries never double-send an outcome-unknown message blindly.
+- [x] Client message is persisted before provider dispatch.
+- [x] durable outbox/queue job dispatches to Gateway.
+- [x] stable idempotency key links NBOS send attempt to Gateway attempt.
+- [x] delivery states handle queued/sending/sent/delivered/read/failed/outcome-unknown as supported.
+- [x] retries never double-send an outcome-unknown message blindly.
 
 ### Inbound
 
-- [ ] verify Gateway HMAC/timestamp/replay protection.
-- [ ] dedupe by stable provider/Gateway event/message ids.
-- [ ] resolve account + external chat to canonical Client Conversation mapping.
-- [ ] persist before realtime broadcast.
-- [ ] ack/edit/revoke/reaction/session status handled according to supported contract.
+- [x] verify Gateway HMAC/timestamp/replay protection.
+- [x] dedupe by stable provider/Gateway event/message ids.
+- [x] resolve account + external chat to canonical Client Conversation mapping.
+- [x] persist before realtime broadcast.
+- [x] ack/edit/revoke/reaction/session status handled according to supported contract.
 
 ### Tests
 
-- [ ] inbound duplicate webhook idempotency.
-- [ ] outbound retry/idempotency.
-- [ ] disconnected session failure.
-- [ ] unknown external conversation behavior is explicit, not silently misbound.
-- [ ] provider event cannot cross Project/account boundary.
+- [x] inbound duplicate webhook idempotency.
+- [x] outbound retry/idempotency.
+- [x] disconnected session failure.
+- [x] unknown external conversation behavior is explicit, not silently misbound.
+- [x] provider event cannot cross Project/account boundary.
 
 ### Acceptance
 
-- [ ] end-to-end inbound/outbound works through Gateway without direct WAHA dependency in NBOS.
-- [ ] Slice status `VERIFIED`.
+- [x] end-to-end inbound/outbound works through Gateway without direct WAHA dependency in NBOS.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -639,7 +639,7 @@ These apply to every slice touching persistence or existing runtime.
 | 5 — Task Discussion migration    | `VERIFIED` | `25-Slice-05-Task-Discussion.md`      | VERIFIED (FINDING-S5-01/02/03 closed)     |
 | 6 — Message actions/references   | `VERIFIED` | `26-Slice-06-Message-Actions.md`      | VERIFIED (FINDING-S6-01/02 closed)        |
 | 7 — Client surface               | `VERIFIED` | `27-Slice-07-Client-Messenger.md`     | VERIFIED (locked composer + Meta cutover) |
-| 8 — WhatsApp Gateway integration | `PLANNED`  | —                                     | —                                         |
+| 8 — WhatsApp Gateway integration | `VERIFIED` | `28-Slice-08-WhatsApp-Gateway.md`     | VERIFIED (FINDING-S8-01…10 closed)        |
 | 9 — Flexible Product bindings    | `PLANNED`  | —                                     | —                                         |
 | 10 — Finance/Support/routing     | `PLANNED`  | —                                     | —                                         |
 | 11 — Hardening/cleanup readiness | `PLANNED`  | —                                     | —                                         |

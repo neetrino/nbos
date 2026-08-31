@@ -248,6 +248,8 @@ Fresh review of `neetrino/whatsapp-gateway` confirms:
 
 Classification: `REUSE + EXTEND`.
 
+**Slice 8 implementer (`VERIFIED`):** NBOS now consumes Gateway Project webhooks at `POST /api/integrations/whatsapp-gateway/webhook` (HMAC-SHA512 on captured raw body, replay window, `eventId` dedupe) and persists Client WhatsApp history in Messaging Core. Client SEND on a WhatsApp-mapped conversation persists first, then durable outbox + account-scoped v1 send. PENDING core sends and aged `OUTCOME_UNKNOWN` rows without a WHATSAPP ref are drained by the outbound worker. NBOS still does not call WAHA. Product WORK/FINANCE bindings remain Slice 9. Finance/Product-group outbound kinds are unchanged.
+
 Do not build a second gateway and do not move NBOS authorization or Product binding ownership into Gateway.
 
 ---
@@ -487,6 +489,8 @@ Gateway owns:
 NBOS owns:
 
 - canonical message history;
+- Gateway Project webhook HMAC verification, replay protection, and provider-event idempotency;
+- Client WhatsApp persist-first outbound orchestration (`messenger_commands` + BullMQ `core_client_send`);
 - Product bindings;
 - Employee access/SEND permissions;
 - attention routing;
@@ -495,6 +499,8 @@ NBOS owns:
 - durable business-side outbound orchestration.
 
 NBOS must consume the existing Gateway contract rather than recreate WAHA/session logic.
+
+**Slice 8:** that consume path exists for MESSENGER Client conversations (`VERIFIED`). Product purpose bindings and Finance destination resolver remain Slices 9–10.
 
 ---
 
@@ -691,9 +697,11 @@ Completed for SHA `302f57f7` in `20-Slice-00-Baseline.md`. Status `VERIFIED` (FI
 
 **Slice 7:** evidence `27-Slice-07-Client-Messenger.md`. Status `VERIFIED`. Separate Client surface + locked composer. Meta inbound cutover into Core Client Sales. Dual-write none. No DROP. Slice 8 may begin.
 
+**Slice 8:** evidence `28-Slice-08-WhatsApp-Gateway.md`. Status `VERIFIED`. FINDING-S8-01…10 closed. Gateway Project webhook → Core inbound. Client WhatsApp SEND persist-first via existing outbound queue + v1 account send. Dual-write none. No DROP. Product bindings remain Slice 9.
+
 Inventoried DB snapshot (local `DATABASE_URL`; not labeled prod vs staging): Channel/DM 0; Unified 0; Tasks 390 / chatId 0 / discussion 0; Product WhatsApp bindings 145 (ACTIVE 143 unique group ids, FAILED 2); gateway row 1 with accountant group id present; MetaConversation 0; MetaMessage 0; MetaConnectedAccount 0; MetaSenderIdentity 0; MetaProviderEvent 17.
 
-NBOS `whatsapp-gateway` module has **no inbound webhook**. Slice 7 live Meta ingest persists Core Client Sales (MetaMessage is not live SOT after cutover). Meta tables remain until Slice 11. Classification stays `MIGRATE`, not `NEW`, including when snapshot row counts are 0.
+NBOS `whatsapp-gateway` module now has an inbound webhook (`POST /api/integrations/whatsapp-gateway/webhook`) for Slice 8 Client Core. Slice 7 live Meta ingest persists Core Client Sales (MetaMessage is not live SOT after cutover). Meta tables remain until Slice 11. Classification stays `MIGRATE`, not `NEW`, including when snapshot row counts are 0.
 
 `seed.ts` / `seed-messenger.ts` `deleteMany` Channel/DM (wipe risk). Seed does **not** delete Meta tables; `lead.deleteMany` SetNulls `MetaConversation.leadId`.
 

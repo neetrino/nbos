@@ -19,6 +19,7 @@ import { InternalMessengerNav } from './InternalMessengerNav';
 import { InternalStartBar } from './InternalStartBar';
 import { sendInternalThreadMessage } from './send-internal-thread-message';
 import { useInternalMessengerRealtime } from './useInternalMessengerRealtime';
+import { mergeCoreRealtimeMessage } from '@/features/messenger/merge-core-realtime-message';
 
 export function InternalMessengerApp({ embedded = false }: { embedded?: boolean }) {
   const pathname = usePathname();
@@ -92,9 +93,7 @@ export function InternalMessengerApp({ embedded = false }: { embedded?: boolean 
     conversationId: activeId,
     onInboundMessage: (conversationId, message) => {
       if (conversationId === activeId) {
-        setMessages((prev) =>
-          prev.some((row) => row.id === message.id) ? prev : [...prev, message],
-        );
+        setMessages((prev) => mergeCoreRealtimeMessage(prev, message));
       }
       void refreshLists();
     },

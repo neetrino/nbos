@@ -14,6 +14,7 @@ describe('core provider mapping / outbox hooks', () => {
     },
     messengerCommand: {
       create: vi.fn(),
+      upsert: vi.fn(),
     },
   };
 
@@ -56,7 +57,7 @@ describe('core provider mapping / outbox hooks', () => {
         idempotencyKey: 'k1',
       }),
     ).rejects.toThrow(/cannot enqueue provider send/);
-    expect(prisma.messengerCommand.create).not.toHaveBeenCalled();
+    expect(prisma.messengerCommand.upsert).not.toHaveBeenCalled();
   });
 
   it('allows mapping hook on CLIENT conversations without dispatching Gateway', async () => {

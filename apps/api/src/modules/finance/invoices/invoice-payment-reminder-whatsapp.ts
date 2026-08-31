@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { PrismaClient } from '@nbos/database';
 import type { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
-import type { WhatsAppOutboundKind } from '../../integrations/whatsapp-gateway/whatsapp-outbound.types';
+import type { WhatsAppFinanceOutboundKind } from '../../integrations/whatsapp-gateway/whatsapp-outbound.types';
 
 const logger = new Logger('InvoicePaymentReminderWhatsApp');
 
@@ -13,7 +13,7 @@ export async function tryDeliverPaymentReminderWhatsApp(params: {
   chatId: string;
   text: string;
   idempotencyKey: string;
-  kind?: WhatsAppOutboundKind;
+  kind?: WhatsAppFinanceOutboundKind;
 }): Promise<void> {
   if (!params.outbound) return;
   const kind = params.kind ?? 'payment_reminder';

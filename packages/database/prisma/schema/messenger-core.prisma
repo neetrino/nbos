@@ -60,6 +60,13 @@ enum MessengerCommandStatus {
   PENDING
   COMPLETED
   FAILED
+  OUTCOME_UNKNOWN
+}
+
+enum MessengerProviderEventStatus {
+  RECEIVED
+  PROCESSED
+  SKIPPED
 }
 
 enum MessengerLegacyIdentityKind {
@@ -89,7 +96,7 @@ model MessengerExternalConversationMapping {
   @@map("messenger_external_conversation_mappings")
 }
 
-/// Durable command/idempotency hook. Slice 1 does not dispatch Gateway.
+/// Durable command/idempotency hook. Slice 8 dispatches WhatsApp SEND_MESSAGE via Gateway.
 model MessengerCommand {
   id              String                  @id @default(uuid())
   conversationId  String?                 @map("conversation_id")
@@ -110,6 +117,47 @@ model MessengerCommand {
   @@index([conversationId, createdAt])
   @@index([status])
   @@map("messenger_commands")
+}
+
+/// Idempotent Gateway/provider webhook event. Slice 8 WhatsApp connector.
+model MessengerProviderEvent {
+  id                String                         @id @default(uuid())
+  provider          MessengerExternalProvider
+  eventId           String                         @map("event_id")
+  externalAccountId String                         @map("external_account_id")
+  eventType         String                         @map("event_type")
+  status            MessengerProviderEventStatus   @default(RECEIVED)
+  skipReason        String?                        @map("skip_reason")
+  conversationId    String?                        @map("conversation_id")
+  messageId         String?                        @map("message_id")
+  payload           Json?
+  processedAt       DateTime?                      @map("processed_at")
+  createdAt         DateTime                       @default(now()) @map("created_at")
+
+  conversation MessengerConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  message      MessengerMessage?      @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, eventId], map: "messenger_provider_events_provider_event_id_key")
+  @@index([externalAccountId, eventType])
+  @@index([conversationId])
+  @@index([messageId])
+  @@map("messenger_provider_events")
+}
+
+/// Provider message id for delivery ack/edit/revoke. Not a second history store.
+model MessengerMessageExternalRef {
+  id                String                    @id @default(uuid())
+  messageId         String                    @map("message_id")
+  provider          MessengerExternalProvider
+  externalAccountId String                    @map("external_account_id")
+  externalMessageId String                    @map("external_message_id")
+  createdAt         DateTime                  @default(now()) @map("created_at")
+
+  message MessengerMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, externalAccountId, externalMessageId], map: "messenger_message_external_refs_provider_account_message_key")
+  @@index([messageId])
+  @@map("messenger_message_external_refs")
 }
 
 /// Stable reference to a canonical source message. Deleting a reference never deletes the source.

@@ -6,6 +6,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Post,
 } from '@nestjs/common';
@@ -21,6 +22,8 @@ import { CreateCoreReferenceDto } from './dto/create-core-reference.dto';
 import { GrantCoreAccessOverrideDto } from './dto/grant-core-override.dto';
 import { InviteCoreParticipantDto } from './dto/invite-core-participant.dto';
 import { SendCoreMessageDto } from './dto/send-core-message.dto';
+import { MESSENGER_CORE_INTERNAL_CLIENT_ZONE_FORBIDDEN } from './messenger-core.constants';
+import { isInternalZone } from './messenger-core-zone';
 import { MessengerCoreService } from './messenger-core.service';
 
 @ApiTags('Messenger Core')
@@ -58,11 +61,15 @@ export class MessengerCoreController {
   @ApiOperation({
     summary: 'Persist an Internal Core message (does not send to external providers)',
   })
-  sendMessage(
+  async sendMessage(
     @Param('id') id: string,
     @CurrentUser() user: CurrentUserPayload,
     @Body() body: SendCoreMessageDto,
   ) {
+    const conversation = await this.core.getConversation(id, user.id);
+    if (!isInternalZone(conversation.zone)) {
+      throw new NotFoundException(MESSENGER_CORE_INTERNAL_CLIENT_ZONE_FORBIDDEN);
+    }
     return this.core.persistAndBroadcast({
       conversationId: id,
       senderId: user.id,

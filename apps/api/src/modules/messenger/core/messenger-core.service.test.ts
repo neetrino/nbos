@@ -75,30 +75,38 @@ function createService() {
         createdAt: new Date(),
         lastMessageAt: null,
       }),
+      findUniqueOrThrow: vi.fn().mockResolvedValue({
+        id: 'conv-1',
+        zone: 'INTERNAL',
+      }),
       update: vi.fn().mockImplementation(async () => {
         return {};
       }),
     },
     messengerMessage: {
       findUnique: vi.fn().mockResolvedValue(null),
-      create: vi.fn().mockImplementation(async ({ data }: { data: { content: string } }) => {
-        order.push('persist');
-        return {
-          id: 'msg-1',
-          conversationId: 'conv-1',
-          senderId: 'e1',
-          senderNameSnapshot: 'Ada Lovelace',
-          content: data.content,
-          direction: 'INTERNAL',
-          status: 'SENT',
-          provenance: 'EMPLOYEE',
-          replyToMessageId: null,
-          threadRootMessageId: null,
-          createdAt: new Date(),
-          editedAt: null,
-          attachments: [],
-        };
-      }),
+      create: vi
+        .fn()
+        .mockImplementation(
+          async ({ data }: { data: { content: string; direction?: string; status?: string } }) => {
+            order.push('persist');
+            return {
+              id: 'msg-1',
+              conversationId: 'conv-1',
+              senderId: 'e1',
+              senderNameSnapshot: 'Ada Lovelace',
+              content: data.content,
+              direction: data.direction ?? 'INTERNAL',
+              status: data.status ?? 'SENT',
+              provenance: 'EMPLOYEE',
+              replyToMessageId: null,
+              threadRootMessageId: null,
+              createdAt: new Date(),
+              editedAt: null,
+              attachments: [],
+            };
+          },
+        ),
     },
     messengerConversationParticipant: {
       findFirst: vi.fn().mockResolvedValue(null),
@@ -108,6 +116,8 @@ function createService() {
     messengerConversationReadState: { upsert: vi.fn() },
     messengerConversationLink: { create: vi.fn() },
     messengerMessageReference: { create: vi.fn() },
+    messengerExternalConversationMapping: { findFirst: vi.fn().mockResolvedValue(null) },
+    messengerCommand: { upsert: vi.fn().mockResolvedValue({ id: 'cmd-1', status: 'PENDING' }) },
   };
   const gateway = {
     emitCoreConversationMessage: vi.fn().mockImplementation(() => {
@@ -116,8 +126,17 @@ function createService() {
     emitReadListsUpdated: vi.fn(),
   };
   const audit = { log: vi.fn().mockResolvedValue({ id: 'audit-1' }) };
-  const service = new MessengerCoreService(prisma as never, gateway as never, audit as never);
-  return { service, prisma, gateway, audit, order };
+  const queue = {
+    isAvailable: vi.fn().mockReturnValue(false),
+    enqueue: vi.fn().mockResolvedValue(undefined),
+  };
+  const service = new MessengerCoreService(
+    prisma as never,
+    gateway as never,
+    audit as never,
+    queue as never,
+  );
+  return { service, prisma, gateway, audit, order, queue };
 }
 
 describe('MessengerCoreService persist-before-emit', () => {
@@ -183,6 +202,45 @@ describe('MessengerCoreService persist-before-emit', () => {
     });
     expect(message.id).toBe('msg-1');
     expect(prisma.messengerMessage.create).toHaveBeenCalledTimes(1);
+    expect(gateway.emitCoreConversationMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('queues WhatsApp Client send after persist and before emit', async () => {
+    const { service, prisma, gateway, order, queue } = createService();
+    prisma.messengerConversation.findUnique.mockResolvedValue(clientConversation());
+    prisma.messengerConversation.findUniqueOrThrow.mockResolvedValue({
+      id: 'conv-c',
+      zone: 'CLIENT',
+    });
+    prisma.messengerExternalConversationMapping.findFirst.mockResolvedValue({
+      externalAccountId: 'acc_a',
+      externalConversationId: '37499111222@c.us',
+      conversation: { zone: 'CLIENT' },
+    });
+    queue.isAvailable.mockReturnValue(true);
+    queue.enqueue.mockImplementation(async () => {
+      order.push('enqueue');
+    });
+    await service.persistAndBroadcast({
+      conversationId: 'conv-c',
+      senderId: 'e1',
+      content: 'to whatsapp',
+      direction: 'OUTBOUND',
+    });
+    expect(prisma.messengerMessage.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: 'QUEUED', direction: 'OUTBOUND' }),
+      }),
+    );
+    expect(order).toEqual(['persist', 'enqueue', 'emit']);
+    expect(queue.enqueue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'core_client_send',
+        accountId: 'acc_a',
+        chatId: '37499111222@c.us',
+      }),
+      false,
+    );
     expect(gateway.emitCoreConversationMessage).toHaveBeenCalledTimes(1);
   });
 

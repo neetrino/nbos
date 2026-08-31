@@ -2,7 +2,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import type { Request } from 'express';
 import { json, urlencoded } from 'express';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
@@ -30,6 +29,7 @@ import {
   createAgentBodyLimitErrorHandler,
   createAgentJsonBodyParser,
 } from './modules/ai-platform/limits/agent-body-limit.middleware';
+import { captureJsonWebhookRawBody } from './http/json-webhook-raw-body';
 
 /** Request body caps (defense against memory-exhaustion / DoS). Uploads go straight to R2 (presigned). */
 const JSON_BODY_LIMIT = '1mb';
@@ -64,11 +64,7 @@ async function bootstrap() {
     json({
       limit: JSON_BODY_LIMIT,
       verify: (req, _res, buf) => {
-        const expressReq = req as Request & { rawBody?: Buffer };
-        const requestUrl = expressReq.originalUrl ?? expressReq.url ?? '';
-        if (requestUrl.includes('/api/integrations/meta/webhook')) {
-          expressReq.rawBody = Buffer.from(buf);
-        }
+        captureJsonWebhookRawBody(req, buf);
       },
     }),
   );

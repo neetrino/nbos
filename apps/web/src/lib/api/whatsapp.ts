@@ -10,6 +10,8 @@ export interface WhatsAppGatewayConnectionView {
   lastErrorCode: string | null;
   lastErrorMessage: string | null;
   accountingGroupChatId: string | null;
+  hasWebhookSecret: boolean;
+  gatewayAccountId: string | null;
   healthOk?: boolean;
 }
 
@@ -86,6 +88,8 @@ export const whatsappGatewayApi = {
     baseUrl?: string;
     apiToken?: string;
     accountingGroupChatId?: string | null;
+    webhookSigningSecret?: string;
+    gatewayAccountId?: string | null;
   }): Promise<WhatsAppGatewayConnectionView> {
     const resp = await api.put<WhatsAppGatewayConnectionView>(
       '/api/integrations/whatsapp-gateway',

@@ -158,7 +158,10 @@ function ThreadMessageRow({
         {showDate ? (
           <MessengerThreadDateDivider label={messengerDateLabel(message.timestamp)} />
         ) : null}
-        <MessengerThreadMessageBubble message={message} readReceiptLabel={null} />
+        <MessengerThreadMessageBubble
+          message={message}
+          readReceiptLabel={message.deliveryLabel ?? null}
+        />
         <InternalForwardReferenceCard
           references={references}
           onOpenOriginal={onOpenOriginalSource}

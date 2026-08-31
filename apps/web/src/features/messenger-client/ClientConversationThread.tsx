@@ -24,10 +24,11 @@ import { ClientInviteDialog } from './ClientInviteDialog';
 import { ClientLockedComposer, ClientUnlockedComposerBanner } from './ClientLockedComposer';
 import { clientConversationTitle, clientProviderLabel } from './client-messenger-section';
 import { canUnlockClientComposer, isClientComposerUnlocked } from './client-composer-unlock';
+import { clientOutboundDeliveryLabel } from './client-delivery-label';
 
 function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[] {
-  return rows.map((row) =>
-    mapMessengerRowToView({
+  return rows.map((row) => ({
+    ...mapMessengerRowToView({
       id: row.id,
       channelId: row.conversationId,
       senderId: row.senderId ?? '',
@@ -37,7 +38,8 @@ function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[]
       editedAt: row.editedAt,
       attachments: row.attachments,
     }),
-  );
+    deliveryLabel: clientOutboundDeliveryLabel(row),
+  }));
 }
 
 export function ClientConversationThread({

@@ -17,6 +17,10 @@ import {
   WHATSAPP_OUTBOUND_WAIT_TIMEOUT_MS,
 } from './whatsapp-gateway.constants';
 import type { WhatsAppOutboundJobPayload } from './whatsapp-outbound.types';
+import {
+  nextWhatsAppOutboundEnqueueAction,
+  removeWhatsAppOutboundJobForReplace,
+} from './whatsapp-outbound-enqueue.ops';
 
 @Injectable()
 export class WhatsAppOutboundQueueService implements OnModuleInit, OnModuleDestroy {
@@ -69,18 +73,15 @@ export class WhatsAppOutboundQueueService implements OnModuleInit, OnModuleDestr
     }
     const jobId = toBullMqSafeJobId(payload.idempotencyKey);
     const existing = await this.queue.getJob(jobId);
-    if (existing) {
-      const state = await existing.getState();
-      if (state === 'completed') return;
-      if (state === 'failed') {
-        await existing.remove();
-      } else if (wait) {
-        await existing.waitUntilFinished(this.queueEvents, WHATSAPP_OUTBOUND_WAIT_TIMEOUT_MS);
-        return;
-      } else {
-        return;
-      }
+    const existingState = existing ? await existing.getState() : null;
+    const action = nextWhatsAppOutboundEnqueueAction(payload.kind, existingState, wait);
+    if (action === 'skip') return;
+    if (action === 'wait') {
+      if (!existing) return;
+      await existing.waitUntilFinished(this.queueEvents, WHATSAPP_OUTBOUND_WAIT_TIMEOUT_MS);
+      return;
     }
+    await removeWhatsAppOutboundJobForReplace(existing ?? null, action);
     const job = await this.queue.add(WHATSAPP_OUTBOUND_JOB_NAME, payload, { jobId });
     if (wait) {
       await job.waitUntilFinished(this.queueEvents, WHATSAPP_OUTBOUND_WAIT_TIMEOUT_MS);

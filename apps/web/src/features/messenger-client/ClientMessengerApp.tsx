@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useHeaderModuleTitle } from '@/components/layout/header-context';
 import { usePermission } from '@/lib/permissions/PermissionContext';
 import { useInternalMessengerRealtime } from '@/features/messenger-internal/useInternalMessengerRealtime';
+import { mergeCoreRealtimeMessage } from '@/features/messenger/merge-core-realtime-message';
 import type { MessengerCoreCollectionRow, MessengerCoreMessageRow } from '@/lib/api/messenger-core';
 import {
   messengerClientApi,
@@ -103,9 +104,7 @@ export function ClientMessengerApp() {
     conversationId: activeId,
     onInboundMessage: (conversationId, message) => {
       if (conversationId === activeId) {
-        setMessages((prev) =>
-          prev.some((row) => row.id === message.id) ? prev : [...prev, message],
-        );
+        setMessages((prev) => mergeCoreRealtimeMessage(prev, message));
       }
       void refreshLists();
     },

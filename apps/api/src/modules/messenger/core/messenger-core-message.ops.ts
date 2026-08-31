@@ -76,7 +76,7 @@ function coreMessageCreateData(
   senderNameSnapshot: string;
   content: string;
   direction: NonNullable<PersistMessengerCoreMessageInput['direction']>;
-  status: 'SENT';
+  status: NonNullable<PersistMessengerCoreMessageInput['status']>;
   provenance: NonNullable<PersistMessengerCoreMessageInput['provenance']>;
   replyToMessageId: string | undefined;
   threadRootMessageId: string | undefined;
@@ -91,7 +91,7 @@ function coreMessageCreateData(
     senderNameSnapshot: snapshot,
     content: input.content,
     direction,
-    status: 'SENT',
+    status: input.status ?? 'SENT',
     provenance: input.provenance ?? 'EMPLOYEE',
     replyToMessageId: input.replyToMessageId,
     threadRootMessageId: input.threadRootMessageId,
