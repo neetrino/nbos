@@ -38,10 +38,7 @@ import { deriveBaseInvoiceMoneyStatus, parseInvoiceMoneyStatus } from './invoice
 import { DealWonHandler } from '../../crm/deals/deal-won.handler';
 import { dealDetailInclude } from '../../crm/deals/deal.includes';
 import { updateOfficialInvoiceGovId } from './invoice-official-request';
-import {
-  persistInvoiceCreate,
-  notifyOfficialAfterInvoiceWrite,
-} from './invoice-card-persist';
+import { persistInvoiceCreate, notifyOfficialAfterInvoiceWrite } from './invoice-card-persist';
 import { InvoiceOfficialWhatsAppService } from './invoice-official-whatsapp.service';
 import {
   INVOICE_MONEY_STATUS_TRANSITION_SELECT,
