@@ -211,7 +211,9 @@ export const dealWhatsAppApi = {
     return resp.data;
   },
   async ensure(dealId: string): Promise<DealWhatsAppState> {
-    const resp = await api.post<DealWhatsAppState>(`/api/crm/deals/${dealId}/whatsapp-group/ensure`);
+    const resp = await api.post<DealWhatsAppState>(
+      `/api/crm/deals/${dealId}/whatsapp-group/ensure`,
+    );
     return resp.data;
   },
   async bind(

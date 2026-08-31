@@ -48,7 +48,12 @@ export function WonWhatsAppGatePanel({ deal, open, onSatisfiedChange }: WonWhats
         </p>
       ) : null}
       {hasDealGroup ? (
-        <Button type="button" variant="ghost" size="sm" onClick={() => setShowAdvanced((open) => !open)}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowAdvanced((open) => !open)}
+        >
           {showAdvanced ? 'Hide other options' : 'Need a different group?'}
         </Button>
       ) : null}
@@ -90,7 +95,9 @@ function WonWhatsAppAdvancedActions(input: {
         {whatsappCreateButtonLabel({
           inFlight: input.createInFlight,
           failed: input.createFailed,
-          idleLabel: input.hasDealGroup ? 'Create a separate delivery group' : 'Create WhatsApp group',
+          idleLabel: input.hasDealGroup
+            ? 'Create a separate delivery group'
+            : 'Create WhatsApp group',
         })}
       </Button>
       <div className="space-y-1.5">

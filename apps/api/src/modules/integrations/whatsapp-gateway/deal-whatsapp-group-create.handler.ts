@@ -15,10 +15,7 @@ import {
   WHATSAPP_AUDIT_GROUP_OUTCOME_UNKNOWN,
   WHATSAPP_ERROR,
 } from './whatsapp-gateway.constants';
-import {
-  isUnknownCreateOutcome,
-  WhatsAppGatewayHttpError,
-} from './whatsapp-gateway.errors';
+import { isUnknownCreateOutcome, WhatsAppGatewayHttpError } from './whatsapp-gateway.errors';
 import { WhatsAppGatewayClient } from './whatsapp-gateway.client';
 import { WhatsAppGatewayConnectionService } from './whatsapp-gateway-connection.service';
 import { WhatsAppOutboundQueueService } from './whatsapp-outbound-queue.service';

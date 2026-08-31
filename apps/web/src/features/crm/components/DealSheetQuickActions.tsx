@@ -136,8 +136,7 @@ export function DealSheetQuickActions({
     [deal.id, onRefresh],
   );
 
-  const bindingStatus =
-    whatsappState?.binding?.status ?? deal.whatsappGroupBinding?.status ?? null;
+  const bindingStatus = whatsappState?.binding?.status ?? deal.whatsappGroupBinding?.status ?? null;
   const groupChatId =
     whatsappState?.binding?.groupChatId ?? deal.whatsappGroupBinding?.groupChatId ?? null;
 

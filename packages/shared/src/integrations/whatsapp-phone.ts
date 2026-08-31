@@ -133,7 +133,10 @@ export function toBullMqSafeJobId(businessKey: string): string {
 const WHATSAPP_GROUP_NAME_MAX = 100;
 
 export function buildProductWhatsAppGroupName(projectName: string, productName: string): string {
-  return truncateWhatsAppGroupName(`${sanitizeNamePart(projectName)} · ${sanitizeNamePart(productName)}`, 'Product');
+  return truncateWhatsAppGroupName(
+    `${sanitizeNamePart(projectName)} · ${sanitizeNamePart(productName)}`,
+    'Product',
+  );
 }
 
 /** Auto name for a pre-Won Deal client group. Optional parts are omitted. */
