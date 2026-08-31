@@ -37,6 +37,7 @@ export const MESSENGER_CORE_DIRECT_KEY_PREFIX = 'direct:';
 export const MESSENGER_CORE_PRODUCT_KEY_PREFIX = 'product:';
 export const MESSENGER_CORE_WORKSPACE_KEY_PREFIX = 'workspace:';
 export const MESSENGER_CORE_DEAL_KEY_PREFIX = 'deal:';
+export const MESSENGER_CORE_TASK_KEY_PREFIX = 'task:';
 export const MESSENGER_CORE_PROJECT_GENERAL_KEY_PREFIX = 'project_general:';
 export const MESSENGER_CORE_RESERVED_CANONICAL_KEY_PREFIXES = [
   'product:',

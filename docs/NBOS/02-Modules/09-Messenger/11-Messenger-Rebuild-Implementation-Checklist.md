@@ -274,40 +274,43 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Migration/backfill
 
-- [ ] Implement the exact safe sequence in `10-Messenger-Runtime-Reconciliation.md`.
-- [ ] Map only Tasks with legacy discussion to existing/backfilled conversations; new empty Tasks stay lazy.
-- [ ] Preserve author/actor identity.
-- [ ] Preserve timestamps/order.
-- [ ] Preserve edited state where available.
-- [ ] Preserve attachments/File Assets.
-- [ ] Preserve AI/system provenance where relevant.
-- [ ] Preserve audit/activity associations/source provenance.
-- [ ] Idempotent source mapping prevents duplicate migrated messages.
-- [ ] Per-Task count/order/attachment verification report exists.
+- [x] Implement the exact safe sequence in `10-Messenger-Runtime-Reconciliation.md`.
+- [x] Map only Tasks with legacy discussion to existing/backfilled conversations; new empty Tasks stay lazy.
+- [x] Preserve author/actor identity.
+- [x] Preserve timestamps/order.
+- [x] Preserve edited state where available. (Slice 0/runtime: no `editedAt` — not fabricated.)
+- [x] Preserve attachments/File Assets. (Slice 0/runtime: none on `TaskDiscussionEntry` — skipped, `attachmentsSkipped: 0`.)
+- [x] Preserve AI/system provenance where relevant.
+- [x] Preserve audit/activity associations/source provenance. (Activity stays Task-owned; not converted.)
+- [x] Idempotent source mapping prevents duplicate migrated messages. FINDING-S5-01 closed: `idempotencyKey` `task-discussion-entry:{entry.id}` + identity upsert in one transaction.
+- [x] Per-Task count/order/attachment verification report exists.
 
 ### Runtime cutover
 
-- [ ] New Task human messages write only to Messaging Core after cutover.
-- [ ] Task Card reads human Discussion from Messaging Core.
-- [ ] System Activity Feed remains Task-owned system activity.
-- [ ] Task closure/archive behavior does not delete discussion.
+- [x] New Task human messages write only to Messaging Core after cutover.
+- [x] Task Card reads human Discussion from Messaging Core.
+- [x] System Activity Feed remains Task-owned system activity.
+- [x] Task closure/archive behavior does not delete discussion.
 
 ### Negative tests
 
-- [ ] rerunning backfill creates no duplicates.
-- [ ] legacy attachment cannot disappear.
-- [ ] inaccessible Task discussion cannot be opened through Messenger direct id.
-- [ ] Activity event is not accidentally transformed into human message.
+- [x] rerunning backfill creates no duplicates (FINDING-S5-01 closed: persist-without-identity rerun returns the existing message).
+- [x] legacy attachment cannot disappear. (None exist; mapper reports `attachmentsSkipped: 0`.)
+- [x] inaccessible Task discussion cannot be opened through Messenger direct id.
+- [x] HIDDEN Task notes cannot appear as a normal All/Tasks preview or search hit (FINDING-S5-02 closed).
+- [x] collection-by-ids applies the same Task access list gate as All (FINDING-S5-03 closed).
+- [x] Activity event is not accidentally transformed into human message.
 
 ### Cleanup gate
 
-- [ ] legacy Task Discussion write path marked disabled.
-- [ ] legacy table/storage remains `DELETE-LATER` until final acceptance.
+- [x] legacy Task Discussion write path marked disabled.
+- [x] legacy table/storage remains `DELETE-LATER` until final acceptance.
 
 ### Acceptance
 
-- [ ] reviewer samples migrated Tasks with text + attachments + varied authors/provenance.
-- [ ] Slice status `VERIFIED`.
+- [x] FINDING-S5-01/02/03 closed
+- [x] reviewer samples migrated Tasks with text + attachments + varied authors/provenance. (Slice 0 inventory: 0 discussion rows / 0 attachments; 0-row report is the sample. Live entries were not present to sample.)
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -632,7 +635,7 @@ These apply to every slice touching persistence or existing runtime.
 | 2 — Permissions/boundary         | `VERIFIED` | `22-Slice-02-Permissions-Boundary.md` | VERIFIED (FINDING-S2-01/02 closed)       |
 | 3 — Internal base                | `VERIFIED` | `23-Slice-03-Internal-Base.md`        | VERIFIED (FINDING-S3-01…S3-06 closed)    |
 | 4 — Entity conversations         | `VERIFIED` | `24-Slice-04-Entity-Conversations.md` | VERIFIED (FINDING-S4-01/02/03/04 closed) |
-| 5 — Task Discussion migration    | `PLANNED`  | —                                     | —                                        |
+| 5 — Task Discussion migration    | `VERIFIED` | `25-Slice-05-Task-Discussion.md`      | VERIFIED (FINDING-S5-01/02/03 closed)    |
 | 6 — Message actions/references   | `PLANNED`  | —                                     | —                                        |
 | 7 — Client surface               | `PLANNED`  | —                                     | —                                        |
 | 8 — WhatsApp Gateway integration | `PLANNED`  | —                                     | —                                        |

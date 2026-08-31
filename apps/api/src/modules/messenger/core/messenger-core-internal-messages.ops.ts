@@ -2,6 +2,7 @@ import { PrismaClient } from '@nbos/database';
 import { MESSENGER_CORE_INTERNAL_MESSAGE_PAGE_SIZE } from './messenger-core.constants';
 import type { MessengerCoreMessageDto } from './messenger-core.types';
 import type { MessengerInternalMessagePage } from './messenger-core-internal.types';
+import { hiddenTaskDiscussionNoteWhere } from './messenger-task-discussion.metadata';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -9,6 +10,7 @@ export async function listCoreConversationMessages(
   prisma: PrismaLike,
   conversationId: string,
   query: { before?: string; pageSize?: number },
+  options?: { excludeHiddenTaskNotes?: boolean },
 ): Promise<MessengerInternalMessagePage> {
   const pageSize = query.pageSize ?? MESSENGER_CORE_INTERNAL_MESSAGE_PAGE_SIZE;
   const before = query.before ? new Date(query.before) : null;
@@ -17,6 +19,7 @@ export async function listCoreConversationMessages(
       conversationId,
       deletedAt: null,
       ...(before && !Number.isNaN(before.getTime()) ? { createdAt: { lt: before } } : {}),
+      ...(options?.excludeHiddenTaskNotes ? hiddenTaskDiscussionNoteWhere() : {}),
     },
     orderBy: { createdAt: 'desc' },
     take: pageSize,

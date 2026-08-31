@@ -10,6 +10,7 @@ import {
   AddCoreCollectionMemberDto,
 } from './dto/add-core-collection-item.dto';
 import { CreateInternalCollectionDto } from './dto/create-internal-collection.dto';
+import { tasksAccessFromUser } from '../../tasks/tasks-scoped-access';
 import { MessengerCoreCollectionService } from './messenger-core-collection.service';
 
 @ApiTags('Messenger Core Internal')
@@ -36,7 +37,7 @@ export class MessengerCoreInternalCollectionController {
   @RequirePermission('MESSENGER', 'VIEW')
   @ApiOperation({ summary: 'Get an Internal Collection; items are ACL-filtered' })
   get(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    return this.collections.getInternal(id, user.id);
+    return this.collections.getInternal(id, user.id, tasksAccessFromUser(user));
   }
 
   @Post(':id/members')

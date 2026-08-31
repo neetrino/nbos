@@ -20,6 +20,7 @@ import { ListCoreMessagesQueryDto } from './dto/list-core-messages.query';
 import { ListInternalConversationsQueryDto } from './dto/list-internal-conversations.query';
 import { SendCoreMessageDto } from './dto/send-core-message.dto';
 import { MessengerCoreInternalService } from './messenger-core-internal.service';
+import { tasksAccessFromUser } from '../../tasks/tasks-scoped-access';
 
 @ApiTags('Messenger Core Internal')
 @ApiBearerAuth()
@@ -36,6 +37,15 @@ export class MessengerCoreInternalController {
     return this.internal.mapLegacyInternal();
   }
 
+  @Post('task-discussion-map')
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({
+    summary: 'Idempotent TaskDiscussionEntry → Core mapping (ops-only; no DROP, no dual-write)',
+  })
+  mapTaskDiscussion(@CurrentUser() _user: CurrentUserPayload) {
+    return this.internal.mapTaskDiscussion();
+  }
+
   @Get('conversations')
   @RequirePermission('MESSENGER', 'VIEW')
   @ApiOperation({ summary: 'List accessible Internal conversations (never Client zone)' })
@@ -43,7 +53,7 @@ export class MessengerCoreInternalController {
     @CurrentUser() user: CurrentUserPayload,
     @Query() query: ListInternalConversationsQueryDto,
   ) {
-    return this.internal.listConversations(user.id, query);
+    return this.internal.listConversations(user.id, query, tasksAccessFromUser(user));
   }
 
   @Post('conversations')

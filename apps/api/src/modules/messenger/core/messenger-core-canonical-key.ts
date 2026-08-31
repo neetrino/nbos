@@ -5,6 +5,7 @@ import {
   MESSENGER_CORE_LEGACY_CHANNEL_KEY_PREFIX,
   MESSENGER_CORE_PRODUCT_KEY_PREFIX,
   MESSENGER_CORE_PROJECT_GENERAL_KEY_PREFIX,
+  MESSENGER_CORE_TASK_KEY_PREFIX,
   MESSENGER_CORE_WORKSPACE_KEY_PREFIX,
 } from './messenger-core.constants';
 
@@ -23,6 +24,10 @@ export function workspaceCanonicalKey(workspaceId: string): string {
 
 export function dealCanonicalKey(dealId: string): string {
   return `${MESSENGER_CORE_DEAL_KEY_PREFIX}${dealId}`;
+}
+
+export function taskCanonicalKey(taskId: string): string {
+  return `${MESSENGER_CORE_TASK_KEY_PREFIX}${taskId}`;
 }
 
 export function projectGeneralCanonicalKey(projectId: string): string {

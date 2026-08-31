@@ -26,6 +26,7 @@ import {
 } from './messenger-core-collection-list.ops';
 import { listAccessibleInternalConversationsByIds } from './messenger-core-internal-list.ops';
 import { MESSENGER_CORE_INTERNAL_ZONE } from './messenger-core.constants';
+import type { TasksAccessContext } from '../../tasks/tasks-scoped-access';
 
 @Injectable()
 export class MessengerCoreCollectionService {
@@ -90,7 +91,7 @@ export class MessengerCoreCollectionService {
     return addCoreCollectionItem(this.prisma, collectionId, conversationId);
   }
 
-  async getInternal(collectionId: string, employeeId: string) {
+  async getInternal(collectionId: string, employeeId: string, tasksAccess: TasksAccessContext) {
     await this.requireInternalCollection(collectionId, employeeId);
     const access = await this.requireView(employeeId);
     const items = await listAclFilteredCollectionItems(this.prisma, collectionId, employeeId);
@@ -100,6 +101,7 @@ export class MessengerCoreCollectionService {
       access.viewScope,
       items.map((item) => item.conversationId),
       access.editScope,
+      tasksAccess,
     );
     const collection = await this.prisma.messengerConversationCollection.findUnique({
       where: { id: collectionId },

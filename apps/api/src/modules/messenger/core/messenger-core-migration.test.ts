@@ -186,3 +186,56 @@ describe('FINDING-S1-01 / FINDING-S1-02 closures', () => {
     expect(controller).not.toMatch(/external-mapping|createCoreExternalMapping/);
   });
 });
+
+describe('Slice 5 Task Discussion migration safety', () => {
+  const slice5Sql = readRepo(
+    'packages/database/prisma/migrations/20260831120000_messenger_task_discussion_legacy_identity/migration.sql',
+  );
+
+  it('is additive and does not DROP Task discussion, Channel/DM, Unified, or Meta', () => {
+    expect(slice5Sql).not.toMatch(/DROP TABLE/i);
+    expect(slice5Sql).not.toMatch(/DROP TYPE/i);
+    expect(slice5Sql).not.toMatch(/DROP COLUMN/i);
+    expect(slice5Sql).toMatch(/ADD VALUE IF NOT EXISTS 'TASK'/);
+    expect(slice5Sql).toMatch(/ADD VALUE IF NOT EXISTS 'TASK_DISCUSSION_ENTRY'/);
+    expect(slice5Sql).toMatch(/ADD COLUMN IF NOT EXISTS "metadata"/);
+    expect(slice5Sql).not.toMatch(/DROP TABLE .*task_discussion/i);
+    expect(slice5Sql).not.toMatch(/messenger_channels/);
+  });
+
+  it('does not eager-ensure Task conversations on Task create or list', () => {
+    const createOp = readRepo('apps/api/src/modules/tasks/create-task.op.ts');
+    const tasksService = readRepo('apps/api/src/modules/tasks/tasks.service.ts');
+    expect(createOp).not.toMatch(/ensureTaskConversation/);
+    expect(createOp).not.toMatch(/messengerConversation/);
+    expect(tasksService).not.toMatch(/ensureTaskConversation/);
+    expect(tasksService).not.toMatch(/messengerConversation\.delete/);
+  });
+
+  it('does not reuse Task.chatId as the conversation pointer', () => {
+    const ensure = readRepo(
+      'apps/api/src/modules/messenger/core/messenger-core-task-ensure.ops.ts',
+    );
+    const discussion = readRepo('apps/api/src/modules/tasks/task-discussion.service.ts');
+    expect(ensure).not.toMatch(/task\.update/);
+    expect(ensure).not.toMatch(/chat_id/);
+    expect(discussion).not.toMatch(/chatId/);
+    expect(ensure).toMatch(/taskCanonicalKey/);
+  });
+
+  it('keeps Activity on the Task Card and does not persist it as Core human notes', () => {
+    const panel = readRepo('apps/web/src/features/tasks/components/TaskSheetChatPanel.tsx');
+    const discussion = readRepo('apps/api/src/modules/tasks/task-discussion.service.ts');
+    expect(panel).toMatch(/function buildTaskActivity/);
+    expect(discussion).not.toMatch(/buildTaskActivity/);
+    expect(discussion).not.toMatch(/Task marked completed/);
+  });
+
+  it('does not add HTTP entity ensure for empty Tasks', () => {
+    const entityController = readRepo(
+      'apps/api/src/modules/messenger/core/messenger-core-internal-entity.controller.ts',
+    );
+    expect(entityController).not.toMatch(/tasks\/:taskId/);
+    expect(entityController).not.toMatch(/canonicalKey/);
+  });
+});

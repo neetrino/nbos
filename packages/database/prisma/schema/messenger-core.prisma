@@ -67,6 +67,8 @@ enum MessengerLegacyIdentityKind {
   DIRECT_THREAD
   CHANNEL_MESSAGE
   DIRECT_MESSAGE
+  TASK
+  TASK_DISCUSSION_ENTRY
 }
 
 model MessengerExternalConversationMapping {

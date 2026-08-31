@@ -111,6 +111,43 @@ describe('core message persistence', () => {
     expect(second.id).toBe('msg-dup');
     expect(prisma.messengerMessage.create).not.toHaveBeenCalled();
   });
+
+  it('persists an agent note with null senderId and a provided display name', async () => {
+    prisma.messengerMessage.findUnique.mockResolvedValue(null);
+    prisma.messengerConversation.findUnique.mockResolvedValue({
+      id: 'conv-1',
+      zone: 'INTERNAL',
+    });
+    prisma.messengerMessage.create.mockResolvedValue({
+      id: 'msg-agent',
+      conversationId: 'conv-1',
+      senderId: null,
+      senderNameSnapshot: 'Cursor Agent',
+      content: 'Working',
+      direction: 'INTERNAL',
+      status: 'SENT',
+      provenance: 'AI',
+      replyToMessageId: null,
+      threadRootMessageId: null,
+      createdAt: new Date(),
+      editedAt: null,
+      attachments: [],
+    });
+    const created = await persistCoreMessage(
+      prisma as never,
+      {
+        conversationId: 'conv-1',
+        senderId: null,
+        senderNameSnapshot: 'Cursor Agent',
+        content: 'Working',
+        provenance: 'AI',
+      },
+      [],
+    );
+    expect(created.senderId).toBeNull();
+    expect(created.senderName).toBe('Cursor Agent');
+    expect(prisma.employee.findUnique).not.toHaveBeenCalled();
+  });
 });
 
 describe('attachment FileAsset reference', () => {

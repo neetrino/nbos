@@ -7,7 +7,7 @@ import { backfillEntityParticipants } from './messenger-core-entity-participants
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
 export type EntityConversationCreateInput = {
-  type: 'PRODUCT' | 'WORKSPACE' | 'DEAL' | 'PROJECT_GENERAL';
+  type: 'PRODUCT' | 'WORKSPACE' | 'DEAL' | 'PROJECT_GENERAL' | 'TASK';
   title: string;
   createdById: string;
   canonicalKey: string;

@@ -47,6 +47,28 @@ export async function participantSeedsForDeal(
   return toSeeds(createdById, ids);
 }
 
+/** Personal marks plus opener after Task access succeeded. Do not call before access. */
+export function participantSeedsForTask(
+  task: {
+    creatorId: string;
+    assigneeId: string | null;
+    reviewerId: string | null;
+    coAssignees: string[];
+    observers: string[];
+  },
+  openerEmployeeId?: string,
+): EntityParticipantSeed[] {
+  const createdById = openerEmployeeId ?? task.creatorId;
+  return toSeeds(createdById, [
+    task.creatorId,
+    task.assigneeId,
+    task.reviewerId,
+    ...task.coAssignees,
+    ...task.observers,
+    openerEmployeeId,
+  ]);
+}
+
 export async function backfillEntityParticipants(
   prisma: PrismaLike,
   conversationId: string,

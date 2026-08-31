@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { listAccessibleInternalConversations } from './messenger-core-internal-list.ops';
+import {
+  listAccessibleInternalConversations,
+  listAccessibleInternalConversationsByIds,
+} from './messenger-core-internal-list.ops';
+import { TASK_DISCUSSION_VISIBILITY_HIDDEN } from './messenger-task-discussion.metadata';
 
 function listRow(overrides: Record<string, unknown> = {}) {
   return {
@@ -92,6 +96,8 @@ describe('Internal conversation list', () => {
       section: 'workspaces',
     });
     expect(JSON.stringify(findMany.mock.calls[2]?.[0]?.where)).toContain('WORKSPACE');
+    await listAccessibleInternalConversations(prisma as never, 'e1', 'ALL', { section: 'tasks' });
+    expect(JSON.stringify(findMany.mock.calls[3]?.[0]?.where)).toContain('TASK');
   });
 
   it('does not grant canWrite to a READ_ONLY participant with OWN edit', async () => {
@@ -120,5 +126,91 @@ describe('Internal conversation list', () => {
       'OWN',
     );
     expect(result.items[0]?.canWrite).toBe(false);
+  });
+
+  it('does not list TASK conversations the caller cannot open in Tasks', async () => {
+    const findMany = vi.fn().mockResolvedValue([]);
+    const prisma = {
+      messengerConversation: { findMany },
+      resourceAccessGrant: { findMany: vi.fn().mockResolvedValue([]) },
+      employeeDepartment: { findMany: vi.fn().mockResolvedValue([]) },
+      task: { findMany: vi.fn().mockResolvedValue([{ id: 'task-ok' }]) },
+    };
+    await listAccessibleInternalConversations(
+      prisma as never,
+      'e1',
+      'ALL',
+      { section: 'all' },
+      'ALL',
+      { employeeId: 'e1', departmentIds: [], viewScope: 'OWN' },
+    );
+    const where = JSON.stringify(findMany.mock.calls[0]?.[0]?.where);
+    expect(where).toContain('TASK');
+    expect(where).toContain('task-ok');
+    expect(prisma.task.findMany).toHaveBeenCalled();
+  });
+
+  it('does not use a HIDDEN Task note as lastMessagePreview', async () => {
+    const findMany = vi.fn().mockResolvedValue([
+      listRow({
+        type: 'TASK',
+        messages: [{ content: 'visible note' }],
+      }),
+    ]);
+    const prisma = {
+      messengerConversation: { findMany },
+      resourceAccessGrant: { findMany: vi.fn().mockResolvedValue([]) },
+    };
+    const result = await listAccessibleInternalConversations(prisma as never, 'e1', 'ALL', {
+      section: 'tasks',
+    });
+    const includeWhere = JSON.stringify(findMany.mock.calls[0]?.[0]?.include?.messages?.where);
+    expect(includeWhere).toContain(TASK_DISCUSSION_VISIBILITY_HIDDEN);
+    expect(includeWhere).toContain('taskDiscussion');
+    expect(result.items[0]?.lastMessagePreview).toBe('visible note');
+    expect(result.items[0]?.lastMessagePreview).not.toBe('hidden body');
+  });
+
+  it('does not match a HIDDEN Task note body in search', async () => {
+    const findMany = vi.fn().mockResolvedValue([]);
+    const prisma = {
+      messengerConversation: { findMany },
+      resourceAccessGrant: { findMany: vi.fn().mockResolvedValue([]) },
+    };
+    await listAccessibleInternalConversations(prisma as never, 'e1', 'ALL', {
+      section: 'all',
+      q: 'secret-hidden-body',
+    });
+    const where = JSON.stringify(findMany.mock.calls[0]?.[0]?.where);
+    expect(where).toContain('secret-hidden-body');
+    expect(where).toContain(TASK_DISCUSSION_VISIBILITY_HIDDEN);
+    expect(where).toContain('taskDiscussion');
+  });
+
+  it('does not return a TASK conversation id the caller cannot open via list-by-ids', async () => {
+    const findMany = vi
+      .fn()
+      .mockResolvedValue([listRow({ id: 'group-ok', type: 'INTERNAL_GROUP' })]);
+    const prisma = {
+      messengerConversation: { findMany },
+      resourceAccessGrant: { findMany: vi.fn().mockResolvedValue([]) },
+      employeeDepartment: { findMany: vi.fn().mockResolvedValue([]) },
+      task: { findMany: vi.fn().mockResolvedValue([{ id: 'task-ok' }]) },
+    };
+    const items = await listAccessibleInternalConversationsByIds(
+      prisma as never,
+      'e1',
+      'ALL',
+      ['task-secret', 'group-ok'],
+      'ALL',
+      { employeeId: 'e1', departmentIds: [], viewScope: 'OWN' },
+    );
+    const where = JSON.stringify(findMany.mock.calls[0]?.[0]?.where);
+    expect(where).toContain('task-secret');
+    expect(where).toContain('TASK');
+    expect(where).toContain('task-ok');
+    expect(prisma.task.findMany).toHaveBeenCalled();
+    expect(items.map((row) => row.id)).toEqual(['group-ok']);
+    expect(items.map((row) => row.id)).not.toContain('task-secret');
   });
 });

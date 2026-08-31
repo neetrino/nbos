@@ -260,7 +260,7 @@ Do not build a second gateway and do not move NBOS authorization or Product bind
 | Old L1/L2/Topic architecture                                 | `DO NOT RETURN`                                    | No `MessengerTopic` in schema/code.                                                                                                                                  |
 | Current `favorite` user setting                              | `REUSE/EXTEND`                                     | May seed built-in Favorites behavior; it is not a full Collection system.                                                                                            |
 | User-created Collections                                     | `NEW`                                              | Implement PERSONAL/SHARED, surface-scoped, ACL-neutral.                                                                                                              |
-| Human `TaskDiscussionEntry`                                  | `MIGRATE`                                          | Live write path; Slice 0 DB 0 rows. Keep table until Slice 5.                                                                                                        |
+| Human `TaskDiscussionEntry`                                  | `MIGRATE` then `DELETE-LATER`                      | Slice 5 `VERIFIED`: Core is the write path; writes frozen. Table DELETE-LATER until final acceptance. Slice 0 DB 0 rows.                                             |
 | `Task.chatId`                                                | `DELETE-LATER`                                     | Unused leftover unique column; 0 rows; not a conversation pointer.                                                                                                   |
 | Task Activity Feed                                           | `REUSE` concept / `VERIFY-MISSING` dedicated store | System-activity **concept** remains Task-owned (not human Message rows). Dedicated feed **store** is not proven; derived Task Card timeline + `auditLog` are not it. |
 | Product + Connected Work Space chat identity                 | `MIGRATE/RECONCILE`                                | Both surfaces must resolve one internal conversation.                                                                                                                |
@@ -680,6 +680,8 @@ Completed for SHA `302f57f7` in `20-Slice-00-Baseline.md`. Status `VERIFIED` (FI
 **Slice 3:** evidence `23-Slice-03-Internal-Base.md`. Status `VERIFIED`. FINDING-S3-01…S3-06 closed. Dual-write none. Slice 4 may begin.
 
 **Slice 4:** evidence `24-Slice-04-Entity-Conversations.md`. Status `VERIFIED`. FINDING-S4-01/02/03/04 closed. Dual-write none. Slice 5 may begin.
+
+**Slice 5:** evidence `25-Slice-05-Task-Discussion.md`. Status `VERIFIED`. FINDING-S5-01/02/03 closed. Dual-write none. No DROP. Slice 6 may begin.
 
 Inventoried DB snapshot (local `DATABASE_URL`; not labeled prod vs staging): Channel/DM 0; Unified 0; Tasks 390 / chatId 0 / discussion 0; Product WhatsApp bindings 145 (ACTIVE 143 unique group ids, FAILED 2); gateway row 1 with accountant group id present; MetaConversation 0; MetaMessage 0; MetaConnectedAccount 0; MetaSenderIdentity 0; MetaProviderEvent 17.
 

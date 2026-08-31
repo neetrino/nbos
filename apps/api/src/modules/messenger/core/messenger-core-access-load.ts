@@ -23,7 +23,7 @@ export async function loadMessengerCoreAccessFacts(
   if (!access) return { access: null, facts: null };
   const conversation = await prisma.messengerConversation.findUnique({
     where: { id: conversationId },
-    select: { id: true, zone: true },
+    select: { id: true, zone: true, type: true },
   });
   if (!conversation) return { access, facts: null };
 
@@ -48,6 +48,7 @@ export async function loadMessengerCoreAccessFacts(
     facts: {
       conversationId: conversation.id,
       zone: conversation.zone,
+      conversationType: conversation.type,
       viewScope: access.viewScope,
       editScope: access.editScope,
       clientReadScope: access.clientReadScope,

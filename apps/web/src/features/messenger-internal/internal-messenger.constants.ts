@@ -18,12 +18,10 @@ export const INTERNAL_MESSENGER_ENTITY_SECTIONS: ReadonlySet<InternalMessengerSe
   'workspaces',
 ]);
 
-export const INTERNAL_MESSENGER_COMING_LATER = 'Task conversations arrive in Slice 5.';
-
 export const INTERNAL_MESSENGER_EMPTY_COPY: Record<InternalMessengerSectionId, string> = {
   all: 'No Internal conversations yet. Open Groups or Direct to start.',
   products: 'No Product conversations yet. Open a Product Chat to start.',
-  tasks: INTERNAL_MESSENGER_COMING_LATER,
+  tasks: 'No Task conversations yet. Open a Task Card and add a note to start.',
   deals: 'No Deal conversations yet. Open Internal discussion on a Deal to start.',
   workspaces: 'No Work Space conversations yet. Open Discussion on a Work Space to start.',
   groups: 'No groups yet. Create an Internal group to start a team conversation.',

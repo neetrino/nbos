@@ -28,6 +28,10 @@ Implementer evidence: `23-Slice-03-Internal-Base.md`. Status `VERIFIED`. Daily I
 
 Implementer evidence: `24-Slice-04-Entity-Conversations.md`. Status `VERIFIED`. FINDING-S4-01/02/03/04 closed. Product/Work Space/Deal/Project General ensure on Core with access before create. Slice 5 may begin.
 
+## Slice 5 status (not product canon)
+
+Implementer evidence: `25-Slice-05-Task-Discussion.md`. Status `VERIFIED`. FINDING-S5-01/02/03 closed. Human Task Discussion writes/reads Messaging Core (`TASK` / `task:{taskId}`). Mapper is crash-safe. Slice 6 may begin.
+
 ## Current verified static baseline
 
 The previous historical status text was stale and must not be used as runtime proof. Slice 0 re-checked this against `302f57f7` + DB counts (see evidence file).
@@ -86,13 +90,11 @@ Slice 0 must inventory actual database rows and dependencies before deciding wha
 
 ## Task Discussion runtime
 
-Human Task discussion currently has a real separate persistence model:
+Human Task discussion **write/read path after Slice 5 implementer cutover** is Messaging Core (`TaskDiscussionService` → TASK conversation `task:{taskId}`).
 
-```text
-TaskDiscussionEntry
-```
+Legacy table `TaskDiscussionEntry` remains `DELETE-LATER` until final acceptance. Writes are frozen.
 
-Direct schema fields include:
+Direct schema fields on the legacy table (unchanged; not dropped):
 
 ```text
 taskId
@@ -106,11 +108,11 @@ visibility
 createdAt
 ```
 
-The schema does not directly expose the previously claimed reply/attachment/edit fields. Slice 0 must inspect whether any related data exists elsewhere before defining the exact backfill contract.
+The schema does not expose reply/attachment/edit fields. None were fabricated.
 
-`Task.chatId` is unused by the Tasks API (leftover unique column; inventoried DB 0 non-null).
+`Task.chatId` remains unused by Tasks (leftover unique column; inventoried DB 0 non-null). It is not the Messenger conversation pointer.
 
-Target remains unchanged: human Task Discussion migrates safely to Messaging Core; Task Activity remains separate.
+Target remains unchanged: human Task Discussion on Messaging Core; Task Activity remains separate.
 
 ## Product WhatsApp runtime
 
@@ -201,7 +203,7 @@ Migration/runtime implementation uses additionally:
 
 ## Next step before product code changes
 
-1. begin Slice 5 (Task Discussion migration) from a fresh implementer chat;
-2. independent review of Slice 5 before Slice 6.
+1. Begin Slice 6 (message references, forwarding, Create Task from messages, mentions persist).
+2. Do not start Slice 7 until Slice 6 is independently `VERIFIED`.
 
 No production Messenger rebuild completion is claimed by this documentation stage.

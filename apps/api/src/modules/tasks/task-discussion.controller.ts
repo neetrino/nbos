@@ -13,7 +13,7 @@ export class TaskDiscussionController {
 
   @Get(':id/discussion')
   @RequirePermission('TASKS', 'VIEW')
-  @ApiOperation({ summary: 'List persisted task discussion entries' })
+  @ApiOperation({ summary: 'List Task Discussion from Messaging Core' })
   async list(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
@@ -33,7 +33,7 @@ export class TaskDiscussionController {
 
   @Post(':id/discussion')
   @RequirePermission('TASKS', 'EDIT')
-  @ApiOperation({ summary: 'Add a task discussion note attributed to the employee' })
+  @ApiOperation({ summary: 'Add a Task Discussion note on Messaging Core' })
   async create(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,

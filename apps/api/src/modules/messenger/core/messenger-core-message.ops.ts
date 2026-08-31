@@ -1,5 +1,5 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
+import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { snapshotMessengerSenderName } from '../messenger-prisma-message.mapper';
 import { assertMessageDirectionForZone, defaultDirectionForZone } from './messenger-core-zone';
 import type {
@@ -72,29 +72,9 @@ export async function persistCoreMessage(
   const direction = input.direction ?? defaultDirectionForZone(conversation.zone);
   assertMessageDirectionForZone(conversation.zone, direction);
   await assertOptionalReply(prisma, input.conversationId, input.replyToMessageId);
-  const snapshot = await snapshotMessengerSenderName(prisma, input.senderId);
+  const snapshot = await resolveSenderSnapshot(prisma, input);
   const created = await prisma.messengerMessage.create({
-    data: {
-      conversationId: conversation.id,
-      senderId: input.senderId,
-      senderNameSnapshot: snapshot,
-      content: input.content,
-      direction,
-      status: 'SENT',
-      provenance: input.provenance ?? 'EMPLOYEE',
-      replyToMessageId: input.replyToMessageId,
-      threadRootMessageId: input.threadRootMessageId,
-      idempotencyKey: input.idempotencyKey,
-      attachments:
-        fileAssetIds.length > 0
-          ? {
-              create: fileAssetIds.map((fileAssetId) => ({
-                fileAssetId,
-                attachedById: input.senderId,
-              })),
-            }
-          : undefined,
-    },
+    data: coreMessageCreateData(conversation.id, input, snapshot, fileAssetIds, direction),
     include: { attachments: true },
   });
   await prisma.messengerConversation.update({
@@ -102,6 +82,61 @@ export async function persistCoreMessage(
     data: { lastMessageAt: created.createdAt },
   });
   return mapMessage(created);
+}
+
+async function resolveSenderSnapshot(
+  prisma: PrismaLike,
+  input: PersistMessengerCoreMessageInput,
+): Promise<string> {
+  if (input.senderNameSnapshot?.trim()) return input.senderNameSnapshot.trim();
+  if (!input.senderId) return 'Unknown';
+  return snapshotMessengerSenderName(prisma, input.senderId);
+}
+
+function coreMessageCreateData(
+  conversationId: string,
+  input: PersistMessengerCoreMessageInput,
+  snapshot: string,
+  fileAssetIds: string[],
+  direction: NonNullable<PersistMessengerCoreMessageInput['direction']>,
+): {
+  conversationId: string;
+  senderId: string | null;
+  senderNameSnapshot: string;
+  content: string;
+  direction: NonNullable<PersistMessengerCoreMessageInput['direction']>;
+  status: 'SENT';
+  provenance: NonNullable<PersistMessengerCoreMessageInput['provenance']>;
+  replyToMessageId: string | undefined;
+  threadRootMessageId: string | undefined;
+  idempotencyKey: string | undefined;
+  createdAt?: Date;
+  metadata?: InputJsonValue;
+  attachments?: { create: Array<{ fileAssetId: string; attachedById: string | null }> };
+} {
+  return {
+    conversationId,
+    senderId: input.senderId,
+    senderNameSnapshot: snapshot,
+    content: input.content,
+    direction,
+    status: 'SENT',
+    provenance: input.provenance ?? 'EMPLOYEE',
+    replyToMessageId: input.replyToMessageId,
+    threadRootMessageId: input.threadRootMessageId,
+    idempotencyKey: input.idempotencyKey,
+    ...(input.createdAt ? { createdAt: input.createdAt } : {}),
+    ...(input.metadata ? { metadata: input.metadata } : {}),
+    attachments:
+      fileAssetIds.length > 0
+        ? {
+            create: fileAssetIds.map((fileAssetId) => ({
+              fileAssetId,
+              attachedById: input.senderId,
+            })),
+          }
+        : undefined,
+  };
 }
 
 async function assertOptionalReply(

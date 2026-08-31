@@ -20,3 +20,11 @@ export function directThreadLegacyIdentity(threadId: string): MessengerLegacyIde
 export function directMessageLegacyIdentity(messageId: string): MessengerLegacyIdentityKey {
   return { sourceKind: 'DIRECT_MESSAGE', sourceId: messageId };
 }
+
+export function taskLegacyIdentity(taskId: string): MessengerLegacyIdentityKey {
+  return { sourceKind: 'TASK', sourceId: taskId };
+}
+
+export function taskDiscussionEntryLegacyIdentity(entryId: string): MessengerLegacyIdentityKey {
+  return { sourceKind: 'TASK_DISCUSSION_ENTRY', sourceId: entryId };
+}

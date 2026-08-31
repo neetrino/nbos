@@ -1,4 +1,8 @@
-import type { MessengerConversationZone, MessengerParticipantRole } from '@nbos/database';
+import type {
+  MessengerConversationType,
+  MessengerConversationZone,
+  MessengerParticipantRole,
+} from '@nbos/database';
 import type { MessengerRbacScope } from '../access/messenger-legacy-channel-access.op';
 
 export const MESSENGER_CONVERSATION_GRANT_RESOURCE_TYPE = 'messenger_conversation' as const;
@@ -15,6 +19,7 @@ export const MESSENGER_CORE_AUDIT_OVERRIDE_REVOKED =
 export type MessengerCoreAccessFacts = {
   conversationId: string;
   zone: MessengerConversationZone;
+  conversationType?: MessengerConversationType;
   viewScope: MessengerRbacScope;
   editScope: MessengerRbacScope;
   clientReadScope: MessengerRbacScope;

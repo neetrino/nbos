@@ -52,4 +52,18 @@ describe('Internal Messenger web client', () => {
     expect(hook).not.toMatch(/\/api\/messenger\/dm/);
     expect(hook).not.toMatch(/tasksApi\.addDiscussion/);
   });
+
+  it('lists Task conversations lazily without Slice 4 coming-later copy', () => {
+    const constants = readWeb('features/messenger-internal/internal-messenger.constants.ts');
+    expect(constants).toMatch(/Open a Task Card and add a note to start/);
+    expect(constants).not.toMatch(/coming later/i);
+    expect(constants).not.toMatch(/Slice 5/);
+  });
+
+  it('keeps Task Card Activity as Task-owned timestamps, not Core messages', () => {
+    const panel = readWeb('features/tasks/components/TaskSheetChatPanel.tsx');
+    expect(panel).toMatch(/buildTaskActivity/);
+    expect(panel).not.toMatch(/persistAndBroadcast/);
+    expect(panel).not.toMatch(/messengerCoreApi\.sendMessage/);
+  });
 });

@@ -28,7 +28,8 @@ export function ProjectCommunicationSection({ project }: { project: FullProject 
         ))}
       </ul>
       <p className="text-muted-foreground mt-2 text-xs">
-        Deals keep Internal discussion on the Deal. Tasks stay on the Task card until Slice 5.
+        Deals keep Internal discussion on the Deal. Task notes live on the Task Card and in
+        Messenger Tasks.
       </p>
       {generalOpen ? (
         <div className="mt-3 flex min-h-[16rem] min-w-0 flex-col">

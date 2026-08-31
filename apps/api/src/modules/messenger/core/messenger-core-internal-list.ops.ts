@@ -1,6 +1,12 @@
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { RESOURCE_GRANT_RESOURCE_TYPE } from '@nbos/shared';
 import { activeResourceAccessGrantWhere } from '../../credentials/credential-active-grant.where';
+import { buildTasksParticipationWhere } from '../../tasks/task-involves-employee-where.op';
+import {
+  loadTasksScopedEmployeeIds,
+  tasksViewBypassesRowFilter,
+  type TasksAccessContext,
+} from '../../tasks/tasks-scoped-access';
 import {
   MESSENGER_CORE_INTERNAL_LIST_PAGE_SIZE,
   MESSENGER_CORE_INTERNAL_ZONE,
@@ -12,6 +18,7 @@ import type {
   MessengerInternalListQuery,
   MessengerInternalListResult,
 } from './messenger-core-internal.types';
+import { hiddenTaskDiscussionNoteWhere } from './messenger-task-discussion.metadata';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -21,13 +28,14 @@ export async function listAccessibleInternalConversations(
   viewScope: string,
   query: MessengerInternalListQuery,
   editScope = 'NONE',
+  tasksAccess?: TasksAccessContext,
 ): Promise<MessengerInternalListResult> {
   if (query.filter === 'mentions') {
     return { items: [], mentionsAvailable: false };
   }
   const pageSize = query.pageSize ?? MESSENGER_CORE_INTERNAL_LIST_PAGE_SIZE;
   const unreadOnly = query.filter === 'unread' || query.unread === true;
-  const where = await internalListWhere(prisma, employeeId, viewScope, query);
+  const where = await internalListWhere(prisma, employeeId, viewScope, query, tasksAccess);
   const [rows, editGrantIds] = await Promise.all([
     prisma.messengerConversation.findMany({
       where,
@@ -50,12 +58,14 @@ export async function listAccessibleInternalConversationsByIds(
   viewScope: string,
   conversationIds: string[],
   editScope = 'NONE',
+  tasksAccess?: TasksAccessContext,
 ): Promise<MessengerInternalConversationListItem[]> {
   if (conversationIds.length === 0) return [];
   const accessWhere = await accessibleInternalWhere(prisma, employeeId, viewScope);
+  const taskGate = await taskConversationListWhere(prisma, tasksAccess);
   const editGrantIds = await loadEditGrantIds(prisma, employeeId, editScope);
   const rows = await prisma.messengerConversation.findMany({
-    where: { AND: [accessWhere, { id: { in: conversationIds } }] },
+    where: { AND: [accessWhere, { id: { in: conversationIds } }, taskGate] },
     include: listInclude(employeeId),
   });
   const byId = new Map(
@@ -72,10 +82,41 @@ async function internalListWhere(
   employeeId: string,
   viewScope: string,
   query: MessengerInternalListQuery,
+  tasksAccess?: TasksAccessContext,
 ): Promise<Prisma.MessengerConversationWhereInput> {
   const access = await accessibleInternalWhere(prisma, employeeId, viewScope);
+  const taskGate = await taskConversationListWhere(prisma, tasksAccess);
   return {
-    AND: [access, sectionWhere(query.section), searchWhere(query.q)],
+    AND: [access, sectionWhere(query.section), searchWhere(query.q), taskGate],
+  };
+}
+
+/** MESSENGER.VIEW ALL does not list Task conversations the caller cannot open in Tasks. */
+async function taskConversationListWhere(
+  prisma: PrismaLike,
+  tasksAccess: TasksAccessContext | undefined,
+): Promise<Prisma.MessengerConversationWhereInput> {
+  if (!tasksAccess) return {};
+  if (tasksViewBypassesRowFilter(tasksAccess.viewScope)) return {};
+  const scopedIds = await loadTasksScopedEmployeeIds(prisma, tasksAccess);
+  const rows = await prisma.task.findMany({
+    where: { trashedAt: null, AND: [buildTasksParticipationWhere(scopedIds)] },
+    select: { id: true },
+  });
+  return {
+    OR: [
+      { type: { not: 'TASK' } },
+      {
+        type: 'TASK',
+        links: {
+          some: {
+            entityType: 'TASK',
+            relationType: 'PRIMARY',
+            entityId: { in: rows.map((row) => row.id) },
+          },
+        },
+      },
+    ],
   };
 }
 
@@ -144,7 +185,11 @@ function searchWhere(q: string | undefined): Prisma.MessengerConversationWhereIn
       { title: { contains: term, mode: 'insensitive' } },
       {
         messages: {
-          some: { deletedAt: null, content: { contains: term, mode: 'insensitive' } },
+          some: {
+            deletedAt: null,
+            content: { contains: term, mode: 'insensitive' },
+            ...hiddenTaskDiscussionNoteWhere(),
+          },
         },
       },
     ],
@@ -154,7 +199,7 @@ function searchWhere(q: string | undefined): Prisma.MessengerConversationWhereIn
 function listInclude(employeeId: string) {
   return {
     messages: {
-      where: { deletedAt: null },
+      where: { deletedAt: null, ...hiddenTaskDiscussionNoteWhere() },
       orderBy: { createdAt: 'desc' as const },
       take: 1,
       select: { content: true },

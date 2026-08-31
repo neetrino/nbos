@@ -14,6 +14,7 @@ import { assertMessengerFileAssetsAttachable } from '../messenger-attachment-acc
 import { MessengerGateway } from '../messenger.gateway';
 import { evaluateMessengerCoreAccess } from './messenger-core-access';
 import { loadMessengerCoreAccessFacts } from './messenger-core-access-load';
+import { requireTaskConversationAccess } from './messenger-core-task-access.ops';
 import type {
   MessengerCoreAccessDecision,
   MessengerCoreAccessFacts,
@@ -93,7 +94,11 @@ export class MessengerCoreService {
   async persistAndBroadcast(
     input: PersistMessengerCoreMessageInput,
   ): Promise<MessengerCoreMessageDto> {
-    const resolved = await this.requireRead(input.conversationId, input.senderId);
+    const senderId = input.senderId;
+    if (!senderId) {
+      throw new ForbiddenException(MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN);
+    }
+    const resolved = await this.requireRead(input.conversationId, senderId);
     if (!isInternalZone(resolved.facts.zone)) {
       this.assertClientPersistBlocked(resolved.decision);
     }
@@ -218,6 +223,13 @@ export class MessengerCoreService {
     if (!loaded.facts) throw new NotFoundException('Conversation not found');
     const decision = evaluateMessengerCoreAccess(loaded.facts);
     if (!decision.canRead) throw new NotFoundException('Conversation not found');
+    if (loaded.facts.conversationType === 'TASK') {
+      await requireTaskConversationAccess(this.prisma, conversationId, {
+        employeeId,
+        departmentIds: loaded.access.departmentIds,
+        viewScope: loaded.access.tasksViewScope,
+      });
+    }
     return { access: loaded.access, facts: loaded.facts, decision };
   }
 

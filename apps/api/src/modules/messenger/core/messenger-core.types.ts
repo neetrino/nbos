@@ -1,4 +1,5 @@
 import type {
+  InputJsonValue,
   MessengerConversationType,
   MessengerConversationZone,
   MessengerLinkEntityType,
@@ -60,7 +61,7 @@ export type CreateMessengerCoreConversationInput = {
 
 export type PersistMessengerCoreMessageInput = {
   conversationId: string;
-  senderId: string;
+  senderId: string | null;
   content: string;
   fileAssetIds?: string[];
   replyToMessageId?: string;
@@ -68,6 +69,9 @@ export type PersistMessengerCoreMessageInput = {
   idempotencyKey?: string;
   direction?: MessengerMessageDirection;
   provenance?: MessengerMessageProvenance;
+  senderNameSnapshot?: string;
+  createdAt?: Date;
+  metadata?: InputJsonValue;
 };
 
 export type CreateMessengerCoreReferenceInput = {

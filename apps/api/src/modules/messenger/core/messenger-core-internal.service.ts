@@ -11,6 +11,7 @@ import { loadMessengerLegacyAccess } from '../access/messenger-legacy-channel-ac
 import {
   MESSENGER_CORE_INTERNAL_CLIENT_ZONE_FORBIDDEN,
   MESSENGER_CORE_INTERNAL_CREATE_TYPE_FORBIDDEN,
+  MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN,
   MESSENGER_CORE_INTERNAL_ZONE,
 } from './messenger-core.constants';
 import { listAccessibleInternalConversations } from './messenger-core-internal-list.ops';
@@ -22,6 +23,7 @@ import type {
   MessengerInternalMessagePage,
 } from './messenger-core-internal.types';
 import { mapAllLegacyInternalToCore } from './messenger-legacy-mapper.ops';
+import { mapAllTaskDiscussionsToCore } from './messenger-task-discussion-mapper.ops';
 import { MessengerCoreService } from './messenger-core.service';
 import { isInternalZone } from './messenger-core-zone';
 import { toggleInternalFavorite } from './messenger-core-favorites.ops';
@@ -39,6 +41,7 @@ import type {
   MessengerEntityEnsureResult,
   PersistMessengerCoreMessageInput,
 } from './messenger-core.types';
+import type { TasksAccessContext } from '../../tasks/tasks-scoped-access';
 
 @Injectable()
 export class MessengerCoreInternalService {
@@ -51,9 +54,14 @@ export class MessengerCoreInternalService {
     return mapAllLegacyInternalToCore(this.prisma);
   }
 
+  async mapTaskDiscussion(): Promise<ReturnType<typeof mapAllTaskDiscussionsToCore>> {
+    return mapAllTaskDiscussionsToCore(this.prisma);
+  }
+
   async listConversations(
     employeeId: string,
     query: MessengerInternalListQuery,
+    tasksAccess?: TasksAccessContext,
   ): Promise<MessengerInternalListResult> {
     const access = await this.requireView(employeeId);
     return listAccessibleInternalConversations(
@@ -62,6 +70,7 @@ export class MessengerCoreInternalService {
       access.viewScope,
       query,
       access.editScope,
+      tasksAccess,
     );
   }
 
@@ -81,12 +90,18 @@ export class MessengerCoreInternalService {
     employeeId: string,
     query: { before?: string; pageSize?: number },
   ): Promise<MessengerInternalMessagePage> {
-    await this.getConversation(conversationId, employeeId);
-    return listCoreConversationMessages(this.prisma, conversationId, query);
+    const conversation = await this.getConversation(conversationId, employeeId);
+    return listCoreConversationMessages(this.prisma, conversationId, query, {
+      excludeHiddenTaskNotes: conversation.type === 'TASK',
+    });
   }
 
   async persistMessage(input: PersistMessengerCoreMessageInput): Promise<MessengerCoreMessageDto> {
-    await this.getConversation(input.conversationId, input.senderId);
+    const senderId = input.senderId;
+    if (!senderId) {
+      throw new ForbiddenException(MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN);
+    }
+    await this.getConversation(input.conversationId, senderId);
     return this.core.persistAndBroadcast(input);
   }
 

@@ -6,12 +6,15 @@ import {
   workspaceCanonicalKey,
   dealCanonicalKey,
   projectGeneralCanonicalKey,
+  taskCanonicalKey,
 } from './messenger-core-canonical-key';
 import {
   channelLegacyIdentity,
   channelMessageLegacyIdentity,
   directMessageLegacyIdentity,
   directThreadLegacyIdentity,
+  taskDiscussionEntryLegacyIdentity,
+  taskLegacyIdentity,
 } from './messenger-legacy-identity';
 
 const LOW = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
@@ -28,6 +31,7 @@ describe('messenger-core-canonical-key', () => {
     expect(workspaceCanonicalKey('w1')).toBe('workspace:w1');
     expect(dealCanonicalKey('d1')).toBe('deal:d1');
     expect(projectGeneralCanonicalKey('g1')).toBe('project_general:g1');
+    expect(taskCanonicalKey('t1')).toBe('task:t1');
   });
 
   it('uses a stable legacy channel identity key', () => {
@@ -49,6 +53,11 @@ describe('messenger-legacy-identity', () => {
     expect(directMessageLegacyIdentity('dm1')).toEqual({
       sourceKind: 'DIRECT_MESSAGE',
       sourceId: 'dm1',
+    });
+    expect(taskLegacyIdentity('t1')).toEqual({ sourceKind: 'TASK', sourceId: 't1' });
+    expect(taskDiscussionEntryLegacyIdentity('e1')).toEqual({
+      sourceKind: 'TASK_DISCUSSION_ENTRY',
+      sourceId: 'e1',
     });
   });
 });

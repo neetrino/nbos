@@ -25,4 +25,9 @@ export type TasksDbClient = Pick<
   | 'order'
   | 'deal'
   | 'lead'
+  | 'messengerConversation'
+  | 'messengerConversationLink'
+  | 'messengerConversationParticipant'
+  | 'messengerLegacyIdentity'
+  | 'messengerMessage'
 >;

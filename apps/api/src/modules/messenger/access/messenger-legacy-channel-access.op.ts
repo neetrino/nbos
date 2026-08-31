@@ -13,6 +13,8 @@ export type MessengerLegacyAccessContext = {
   clientReadScope: MessengerRbacScope;
   clientSendScope: MessengerRbacScope;
   driveViewScope?: string;
+  /** TASKS.VIEW for Task conversation GET/ensure. Not a Messenger ACL substitute. */
+  tasksViewScope?: string;
 };
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -73,6 +75,7 @@ export async function loadMessengerLegacyAccess(
     clientReadScope: normalizeMessengerRbacScope(permissions.MESSENGER_CLIENT_READ),
     clientSendScope: normalizeMessengerRbacScope(permissions.MESSENGER_CLIENT_SEND),
     driveViewScope: permissions.DRIVE_VIEW,
+    tasksViewScope: permissions.TASKS_VIEW,
   };
 }
 
