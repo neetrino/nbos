@@ -117,6 +117,16 @@ export function getInvoiceMoneyStage(value: string | undefined) {
   return INVOICE_MONEY_STAGES.find((s) => s.value === value);
 }
 
+export function getInvoiceType(value: string | undefined) {
+  if (!value) return undefined;
+  return INVOICE_TYPES.find((t) => t.value === value);
+}
+
+export function getInvoiceTypeLabel(value: string): string {
+  const type = getInvoiceType(value);
+  return (type?.label ?? value.replace(/_/g, ' ')).toUpperCase();
+}
+
 export function getExpenseStage(value: string) {
   return EXPENSE_STAGES.find((s) => s.value === value);
 }

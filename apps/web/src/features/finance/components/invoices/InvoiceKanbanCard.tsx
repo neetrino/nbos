@@ -3,7 +3,7 @@
 import type { KeyboardEvent, ReactNode } from 'react';
 import { AlertTriangle, Building2, Calendar, CheckCircle2, FolderKanban } from 'lucide-react';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
-import { formatAmount, INVOICE_TYPES } from '@/features/finance/constants/finance';
+import { formatAmount, getInvoiceTypeLabel } from '@/features/finance/constants/finance';
 import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
 import { getInvoiceDisplayTitle } from '@/features/finance/utils/order-display';
 import { parseMoneyAmount } from '@/lib/format/money';
@@ -18,8 +18,7 @@ interface InvoiceKanbanCardProps {
 }
 
 export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCardProps) {
-  const type = INVOICE_TYPES.find((invoiceType) => invoiceType.value === invoice.type);
-  const typeLabel = (type?.label ?? invoice.type.replace(/_/g, ' ')).toUpperCase();
+  const typeLabel = getInvoiceTypeLabel(invoice.type);
   const title = getInvoiceDisplayTitle(invoice);
   const showCodeSubline = title !== invoice.code;
   const overdueDays = resolveInvoiceOverdueDays(invoice);
