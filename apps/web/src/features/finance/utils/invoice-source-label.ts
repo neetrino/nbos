@@ -24,9 +24,7 @@ export function getInvoiceSourceLabel(invoice: InvoiceSourceLabelInput): string 
   if (invoice.orderId || invoice.order) return INVOICE_SOURCE_ORDER_LABEL;
   if (invoice.subscriptionId) return INVOICE_SOURCE_SUBSCRIPTION_LABEL;
   if (invoice.clientServiceRecordId || invoice.clientServiceRecord) {
-    return resolveClientServiceSourceLabel(
-      invoice.clientServiceRecord?.type ?? invoice.type,
-    );
+    return resolveClientServiceSourceLabel(invoice.clientServiceRecord?.type ?? invoice.type);
   }
   return INVOICE_SOURCE_MANUAL_LABEL;
 }
