@@ -61,6 +61,7 @@ function createService() {
   const prisma = {
     messengerChannelMessage: { create: vi.fn() },
     messengerDirectMessage: { create: vi.fn() },
+    messengerConversationLink: { findMany: vi.fn().mockResolvedValue([]) },
   };
   const core = {
     getConversation: vi.fn(),
@@ -68,8 +69,13 @@ function createService() {
     markRead: vi.fn(),
     createConversation: vi.fn(),
   };
-  const service = new MessengerCoreInternalService(prisma as never, core as never);
-  return { service, prisma, core };
+  const actions = { forwardMessages: vi.fn() };
+  const service = new MessengerCoreInternalService(
+    prisma as never,
+    core as never,
+    actions as never,
+  );
+  return { service, prisma, core, actions };
 }
 
 describe('MessengerCoreInternalService', () => {
@@ -108,6 +114,15 @@ describe('MessengerCoreInternalService', () => {
     await expect(service.getConversation('c1', 'e1')).rejects.toThrow(
       MESSENGER_CORE_INTERNAL_CLIENT_ZONE_FORBIDDEN,
     );
+  });
+
+  it('rejects Internal forward into a Client conversation', async () => {
+    const { service, core, actions } = createService();
+    core.getConversation.mockResolvedValue({ id: 'c1', zone: 'CLIENT' });
+    await expect(service.forwardMessages('e1', 'c1', ['src-1'])).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(actions.forwardMessages).not.toHaveBeenCalled();
   });
 
   it('persists Groups/Direct on Core, not Channel/DM tables', async () => {

@@ -56,15 +56,24 @@ describe('Internal conversation list', () => {
     expect(result.items.map((row) => row.id)).toEqual(['newer', 'older']);
     expect(result.items.every((row) => row.zone === 'INTERNAL')).toBe(true);
     expect(result.items.every((row) => row.canWrite === true)).toBe(true);
+    expect(result.mentionsAvailable).toBe(true);
   });
 
-  it('returns an empty mentions hook until Slice 6 persist exists', async () => {
-    const prisma = { messengerConversation: { findMany: vi.fn() } };
+  it('lists Internal conversations where the caller is mentioned and marks persist available', async () => {
+    const findMany = vi.fn().mockResolvedValue([]);
+    const prisma = {
+      messengerConversation: { findMany },
+      resourceAccessGrant: { findMany: vi.fn().mockResolvedValue([]) },
+    };
     const result = await listAccessibleInternalConversations(prisma as never, 'e1', 'ALL', {
       filter: 'mentions',
     });
-    expect(result).toEqual({ items: [], mentionsAvailable: false });
-    expect(prisma.messengerConversation.findMany).not.toHaveBeenCalled();
+    const where = JSON.stringify(findMany.mock.calls[0]?.[0]?.where);
+    expect(where).toContain('INTERNAL');
+    expect(where).toContain('mentions');
+    expect(where).toContain('taskDiscussion');
+    expect(result.mentionsAvailable).toBe(true);
+    expect(prisma.messengerConversation.findMany).toHaveBeenCalled();
   });
 
   it('filters Groups to INTERNAL_GROUP and Direct to DIRECT', async () => {

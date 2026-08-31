@@ -408,6 +408,11 @@ describe('MessengerCoreService Slice 2 ACL', () => {
     });
     expect(created.sourceMessageId).toBe('src-1');
     expect(prisma.messengerMessageReference.create).toHaveBeenCalledTimes(1);
+    expect(prisma.messengerMessageReference.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ createdById: 'e1', sortOrder: 0 }),
+      }),
+    );
   });
 
   it('returns 404 when a holder message is in a Client conversation the actor cannot read', async () => {

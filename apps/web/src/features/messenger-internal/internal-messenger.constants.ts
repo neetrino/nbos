@@ -31,3 +31,5 @@ export const INTERNAL_MESSENGER_EMPTY_COPY: Record<InternalMessengerSectionId, s
 
 export const INTERNAL_MESSENGER_SHELL_CLASS =
   'flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-[#F5F5F0]';
+
+export const INTERNAL_FORWARD_PREVIEW_MAX_LENGTH = 140;

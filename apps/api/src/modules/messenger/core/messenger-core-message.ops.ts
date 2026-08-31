@@ -1,6 +1,8 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { snapshotMessengerSenderName } from '../messenger-prisma-message.mapper';
+import { persistCoreMessageMentions } from './messenger-core-mention.ops';
+import { mapCoreMessage } from './messenger-core-message-map';
 import { assertMessageDirectionForZone, defaultDirectionForZone } from './messenger-core-zone';
 import type {
   MessengerCoreMessageDto,
@@ -8,42 +10,6 @@ import type {
 } from './messenger-core.types';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
-
-function mapMessage(row: {
-  id: string;
-  conversationId: string;
-  senderId: string | null;
-  senderNameSnapshot: string;
-  content: string;
-  direction: MessengerCoreMessageDto['direction'];
-  status: MessengerCoreMessageDto['status'];
-  provenance: MessengerCoreMessageDto['provenance'];
-  replyToMessageId: string | null;
-  threadRootMessageId: string | null;
-  createdAt: Date;
-  editedAt: Date | null;
-  attachments?: Array<{ id: string; fileAssetId: string; createdAt: Date }>;
-}): MessengerCoreMessageDto {
-  return {
-    id: row.id,
-    conversationId: row.conversationId,
-    senderId: row.senderId,
-    senderName: row.senderNameSnapshot,
-    content: row.content,
-    direction: row.direction,
-    status: row.status,
-    provenance: row.provenance,
-    replyToMessageId: row.replyToMessageId,
-    threadRootMessageId: row.threadRootMessageId,
-    createdAt: row.createdAt,
-    editedAt: row.editedAt,
-    attachments: (row.attachments ?? []).map((attachment) => ({
-      id: attachment.id,
-      fileAssetId: attachment.fileAssetId,
-      createdAt: attachment.createdAt,
-    })),
-  };
-}
 
 export async function persistCoreMessage(
   prisma: PrismaLike,
@@ -58,9 +24,9 @@ export async function persistCoreMessage(
           idempotencyKey: input.idempotencyKey,
         },
       },
-      include: { attachments: true },
+      include: { attachments: true, mentions: true, referencesAsTarget: true },
     });
-    if (existing) return mapMessage(existing);
+    if (existing) return mapCoreMessage(existing);
   }
   const conversation = await prisma.messengerConversation.findUnique({
     where: { id: input.conversationId },
@@ -81,7 +47,12 @@ export async function persistCoreMessage(
     where: { id: conversation.id },
     data: { lastMessageAt: created.createdAt },
   });
-  return mapMessage(created);
+  const mentionedEmployeeIds = await persistCoreMessageMentions(
+    prisma,
+    created.id,
+    input.mentionedEmployeeIds,
+  );
+  return mapCoreMessage(created, { mentionedEmployeeIds });
 }
 
 async function resolveSenderSnapshot(

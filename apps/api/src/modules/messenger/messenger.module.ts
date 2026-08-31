@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/audit.module';
+import { MessengerCoreActionsController } from './core/messenger-core-actions.controller';
+import { MessengerCoreActionsService } from './core/messenger-core-actions.service';
 import { MessengerCoreCollectionController } from './core/messenger-core-collection.controller';
 import { MessengerCoreCollectionService } from './core/messenger-core-collection.service';
 import { MessengerCoreController } from './core/messenger-core.controller';
@@ -17,6 +19,7 @@ import { MessengerService } from './messenger.service';
   controllers: [
     MessengerController,
     MessengerCoreController,
+    MessengerCoreActionsController,
     MessengerCoreCollectionController,
     MessengerCoreInternalController,
     MessengerCoreInternalEntityController,
@@ -25,6 +28,7 @@ import { MessengerService } from './messenger.service';
   providers: [
     MessengerService,
     MessengerCoreService,
+    MessengerCoreActionsService,
     MessengerCoreInternalService,
     MessengerCoreCollectionService,
     MessengerGateway,

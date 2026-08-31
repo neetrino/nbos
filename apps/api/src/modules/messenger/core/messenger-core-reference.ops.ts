@@ -22,14 +22,19 @@ export async function createCoreMessageReference(
   if (!source) {
     throw new NotFoundException('Source message not found');
   }
+  const targetMessageId = input.targetMessageId ?? input.referencedByMessageId;
+  const targetConversationId = await resolveTargetConversationId(prisma, targetMessageId);
   const created = await prisma.messengerMessageReference.create({
     data: {
       sourceMessageId: source.id,
       sourceConversationId: source.conversationId,
-      targetMessageId: input.targetMessageId ?? input.referencedByMessageId,
+      targetMessageId,
+      targetConversationId,
       entityType: input.targetEntityType,
       entityId: input.targetEntityId,
       purpose: input.purpose,
+      createdById: input.createdById,
+      sortOrder: input.sortOrder ?? 0,
     },
     select: { id: true, sourceMessageId: true },
   });
@@ -49,4 +54,16 @@ export async function deleteCoreMessageReference(
   }
   await prisma.messengerMessageReference.delete({ where: { id: referenceId } });
   return { sourceMessageId: existing.sourceMessageId };
+}
+
+async function resolveTargetConversationId(
+  prisma: PrismaLike,
+  targetMessageId: string | undefined,
+): Promise<string | undefined> {
+  if (!targetMessageId) return undefined;
+  const holder = await prisma.messengerMessage.findUnique({
+    where: { id: targetMessageId },
+    select: { conversationId: true },
+  });
+  return holder?.conversationId;
 }

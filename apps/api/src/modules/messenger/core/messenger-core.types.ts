@@ -27,6 +27,16 @@ export type MessengerEntityEnsureResult = MessengerCoreConversationDto & {
   linkedLegacyConversationId: string | null;
 };
 
+export type MessengerCoreMessageReferenceDto = {
+  id: string;
+  purpose: MessengerMessageReferencePurpose;
+  sourceMessageId: string;
+  sourceConversationId: string;
+  sortOrder: number;
+  entityType: string | null;
+  entityId: string | null;
+};
+
 export type MessengerCoreMessageDto = {
   id: string;
   conversationId: string;
@@ -41,6 +51,8 @@ export type MessengerCoreMessageDto = {
   createdAt: Date;
   editedAt: Date | null;
   attachments: Array<{ id: string; fileAssetId: string; createdAt: Date }>;
+  mentionedEmployeeIds: string[];
+  references: MessengerCoreMessageReferenceDto[];
 };
 
 export type MessengerCoreLinkInput = {
@@ -66,6 +78,7 @@ export type PersistMessengerCoreMessageInput = {
   fileAssetIds?: string[];
   replyToMessageId?: string;
   threadRootMessageId?: string;
+  mentionedEmployeeIds?: string[];
   idempotencyKey?: string;
   direction?: MessengerMessageDirection;
   provenance?: MessengerMessageProvenance;
@@ -82,6 +95,7 @@ export type CreateMessengerCoreReferenceInput = {
   targetEntityId?: string;
   purpose: MessengerMessageReferencePurpose;
   sortOrder?: number;
+  createdById?: string;
 };
 
 export type MessengerCoreParticipantDto = {

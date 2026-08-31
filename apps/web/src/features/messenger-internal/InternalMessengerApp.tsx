@@ -17,6 +17,7 @@ import { InternalConversationList } from './InternalConversationList';
 import { InternalConversationThread } from './InternalConversationThread';
 import { InternalMessengerNav } from './InternalMessengerNav';
 import { InternalStartBar } from './InternalStartBar';
+import { sendInternalThreadMessage } from './send-internal-thread-message';
 import { useInternalMessengerRealtime } from './useInternalMessengerRealtime';
 
 export function InternalMessengerApp({ embedded = false }: { embedded?: boolean }) {
@@ -104,23 +105,6 @@ export function InternalMessengerApp({ embedded = false }: { embedded?: boolean 
 
   const active = items.find((row) => row.id === activeId) ?? null;
 
-  async function send() {
-    if (!activeId || !active?.canWrite || sendBusy) return;
-    const content = newMessage.trim();
-    if (!content) return;
-    setSendBusy(true);
-    try {
-      const message = await messengerCoreApi.sendMessage(activeId, { content });
-      setMessages((prev) =>
-        prev.some((row) => row.id === message.id) ? prev : [...prev, message],
-      );
-      setNewMessage('');
-      await refreshLists();
-    } finally {
-      setSendBusy(false);
-    }
-  }
-
   async function toggleFavorite(id: string) {
     const result = await messengerCoreApi.toggleFavorite(id);
     setItems((prev) =>
@@ -197,7 +181,19 @@ export function InternalMessengerApp({ embedded = false }: { embedded?: boolean 
             messagesLoading={messagesLoading}
             newMessage={newMessage}
             onNewMessageChange={setNewMessage}
-            onSend={() => void send()}
+            onSend={(extras) =>
+              void sendInternalThreadMessage({
+                conversationId: activeId,
+                canWrite: Boolean(active.canWrite),
+                sendBusy,
+                content: newMessage,
+                extras,
+                setSendBusy,
+                setMessages,
+                setNewMessage,
+                refreshLists,
+              })
+            }
             canSend={Boolean(active.canWrite)}
             sendDisabled={sendBusy}
             onToggleFavorite={() => void toggleFavorite(active.id)}
@@ -206,6 +202,7 @@ export function InternalMessengerApp({ embedded = false }: { embedded?: boolean 
               void messengerCoreApi.addCollectionItem(collectionId, active.id)
             }
             remoteTypingHint={null}
+            onOpenInternalSource={(id) => void openConversation(id)}
           />
         ) : (
           <div className="flex min-h-0 flex-1 items-center justify-center bg-white text-sm text-black/40">

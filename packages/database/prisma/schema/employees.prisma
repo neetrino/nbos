@@ -106,6 +106,7 @@ model Employee {
   messengerConversationReadStates  MessengerConversationReadState[]    @relation("MessengerConversationReadStateEmployee")
   messengerUserConversationSettings MessengerUserConversationSetting[] @relation("MessengerUserConversationSettingEmployee")
   messengerMessageReactions         MessengerMessageReaction[]         @relation("MessengerMessageReactionEmployee")
+  messengerMessageMentions          MessengerMessageMention[]          @relation("MessengerMessageMentionEmployee")
   messengerCommands                 MessengerCommand[]                 @relation("MessengerCommandActor")
   messengerMessageReferencesCreated MessengerMessageReference[]        @relation("MessengerMessageReferenceCreatedBy")
   messengerConversationCollectionsOwned MessengerConversationCollection[] @relation("MessengerConversationCollectionOwner")

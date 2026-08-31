@@ -30,9 +30,6 @@ export async function listAccessibleInternalConversations(
   editScope = 'NONE',
   tasksAccess?: TasksAccessContext,
 ): Promise<MessengerInternalListResult> {
-  if (query.filter === 'mentions') {
-    return { items: [], mentionsAvailable: false };
-  }
   const pageSize = query.pageSize ?? MESSENGER_CORE_INTERNAL_LIST_PAGE_SIZE;
   const unreadOnly = query.filter === 'unread' || query.unread === true;
   const where = await internalListWhere(prisma, employeeId, viewScope, query, tasksAccess);
@@ -49,7 +46,7 @@ export async function listAccessibleInternalConversations(
   const items = unreadOnly
     ? mapped.filter((row) => row.unreadCount > 0).slice(0, pageSize)
     : mapped;
-  return { items, mentionsAvailable: false };
+  return { items, mentionsAvailable: true };
 }
 
 export async function listAccessibleInternalConversationsByIds(
@@ -87,7 +84,29 @@ async function internalListWhere(
   const access = await accessibleInternalWhere(prisma, employeeId, viewScope);
   const taskGate = await taskConversationListWhere(prisma, tasksAccess);
   return {
-    AND: [access, sectionWhere(query.section), searchWhere(query.q), taskGate],
+    AND: [
+      access,
+      sectionWhere(query.section),
+      searchWhere(query.q),
+      taskGate,
+      mentionsFilterWhere(employeeId, query.filter),
+    ],
+  };
+}
+
+function mentionsFilterWhere(
+  employeeId: string,
+  filter: MessengerInternalListQuery['filter'],
+): Prisma.MessengerConversationWhereInput {
+  if (filter !== 'mentions') return {};
+  return {
+    messages: {
+      some: {
+        deletedAt: null,
+        mentions: { some: { employeeId } },
+        ...hiddenTaskDiscussionNoteWhere(),
+      },
+    },
   };
 }
 

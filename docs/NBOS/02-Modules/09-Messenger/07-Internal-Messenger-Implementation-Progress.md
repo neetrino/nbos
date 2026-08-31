@@ -32,6 +32,10 @@ Implementer evidence: `24-Slice-04-Entity-Conversations.md`. Status `VERIFIED`. 
 
 Implementer evidence: `25-Slice-05-Task-Discussion.md`. Status `VERIFIED`. FINDING-S5-01/02/03 closed. Human Task Discussion writes/reads Messaging Core (`TASK` / `task:{taskId}`). Mapper is crash-safe. Slice 6 may begin.
 
+## Slice 6 status (not product canon)
+
+Implementer evidence: `26-Slice-06-Message-Actions.md`. Status `VERIFIED`. FINDING-S6-01/02 closed. Message actions reference canonical sources; mentions persist is queryable. Slice 7 may begin.
+
 ## Current verified static baseline
 
 The previous historical status text was stale and must not be used as runtime proof. Slice 0 re-checked this against `302f57f7` + DB counts (see evidence file).
@@ -203,7 +207,7 @@ Migration/runtime implementation uses additionally:
 
 ## Next step before product code changes
 
-1. Begin Slice 6 (message references, forwarding, Create Task from messages, mentions persist).
-2. Do not start Slice 7 until Slice 6 is independently `VERIFIED`.
+1. Begin Slice 7 (Client Messenger surface, locked composer, Meta history into Core Client Sales).
+2. Do not start Slice 8 until Slice 7 is independently `VERIFIED`.
 
 No production Messenger rebuild completion is claimed by this documentation stage.

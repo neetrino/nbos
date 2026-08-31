@@ -322,37 +322,37 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Message actions
 
-- [ ] one-message selection.
-- [ ] multi-message selection.
-- [ ] Reply.
-- [ ] Share/Forward reference into permitted Internal conversation.
-- [ ] Create Task from selected Internal or Client messages.
-- [ ] Open/copy source context.
-- [ ] Client-only action hooks for Ticket/Deal/Invite prepared or implemented where dependency permits.
+- [x] one-message selection.
+- [x] multi-message selection.
+- [x] Reply.
+- [x] Share/Forward reference into permitted Internal conversation.
+- [x] Create Task from selected Internal or Client messages.
+- [x] Open/copy source context. FIX: Open original / copy GET `sourceMessageId` from FORWARD refs; card exposes Open original per source.
+- [x] Client-only action hooks for Ticket/Deal/Invite prepared or implemented where dependency permits.
 
 ### Create Task
 
-- [ ] opens full Task creation workflow; does not blindly convert message body into final Task.
-- [ ] selected messages/attachments become source references/context.
-- [ ] title/description/assignee/links remain explicit Task fields.
-- [ ] supports primary context + additional entity links where Task domain allows.
+- [x] opens full Task creation workflow; does not blindly convert message body into final Task.
+- [x] selected messages/attachments become source references/context.
+- [x] title/description/assignee/links remain explicit Task fields.
+- [x] supports primary context + additional entity links where Task domain allows.
 
 ### Threads
 
-- [ ] reply/thread support does not force forwarding into a new thread.
-- [ ] `Discuss internally`/Share does not create a new Conversation automatically.
+- [x] reply/thread support does not force forwarding into a new thread.
+- [x] `Discuss internally`/Share does not create a new Conversation automatically.
 
 ### Tests
 
-- [ ] source message remains canonical after Task/Ticket/reference creation.
-- [ ] deleting/removing a reference does not delete source message.
-- [ ] permission to source preview/open is checked.
-- [ ] multiple selected messages retain deterministic order.
+- [x] source message remains canonical after Task/Ticket/reference creation.
+- [x] deleting/removing a reference does not delete source message.
+- [x] permission to source preview/open is checked. FIX: GET uses `sourceMessageId`; 404 without source READ even if target is readable. TASK_SOURCE create/delete requires Task access.
+- [x] multiple selected messages retain deterministic order.
 
 ### Acceptance
 
-- [ ] no duplicate independent message store is introduced.
-- [ ] Slice status `VERIFIED`.
+- [x] no duplicate independent message store is introduced.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -636,7 +636,7 @@ These apply to every slice touching persistence or existing runtime.
 | 3 — Internal base                | `VERIFIED` | `23-Slice-03-Internal-Base.md`        | VERIFIED (FINDING-S3-01…S3-06 closed)    |
 | 4 — Entity conversations         | `VERIFIED` | `24-Slice-04-Entity-Conversations.md` | VERIFIED (FINDING-S4-01/02/03/04 closed) |
 | 5 — Task Discussion migration    | `VERIFIED` | `25-Slice-05-Task-Discussion.md`      | VERIFIED (FINDING-S5-01/02/03 closed)    |
-| 6 — Message actions/references   | `PLANNED`  | —                                     | —                                        |
+| 6 — Message actions/references   | `VERIFIED` | `26-Slice-06-Message-Actions.md`      | VERIFIED (FINDING-S6-01/02 closed)       |
 | 7 — Client surface               | `PLANNED`  | —                                     | —                                        |
 | 8 — WhatsApp Gateway integration | `PLANNED`  | —                                     | —                                        |
 | 9 — Flexible Product bindings    | `PLANNED`  | —                                     | —                                        |

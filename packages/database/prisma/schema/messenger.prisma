@@ -282,6 +282,7 @@ model MessengerMessage {
   threadReplies      MessengerMessage[]            @relation("MessengerMessageThreadRoot")
   attachments        MessengerMessageAttachment[]
   reactions          MessengerMessageReaction[]
+  mentions           MessengerMessageMention[]
   referencesAsSource MessengerMessageReference[]   @relation("MessengerMessageReferenceSource")
   referencesAsTarget MessengerMessageReference[]   @relation("MessengerMessageReferenceTarget")
   commands           MessengerCommand[]

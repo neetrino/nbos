@@ -41,6 +41,9 @@ import type {
   MessengerEntityEnsureResult,
   PersistMessengerCoreMessageInput,
 } from './messenger-core.types';
+import { listCoreConversationLinks } from './messenger-core-link.ops';
+import { defaultTaskLinksFromPrimary } from './messenger-core-task-default-links';
+import { MessengerCoreActionsService } from './messenger-core-actions.service';
 import type { TasksAccessContext } from '../../tasks/tasks-scoped-access';
 
 @Injectable()
@@ -48,6 +51,7 @@ export class MessengerCoreInternalService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly core: MessengerCoreService,
+    private readonly actions: MessengerCoreActionsService,
   ) {}
 
   async mapLegacyInternal(): Promise<{ channels: number; threads: number }> {
@@ -82,7 +86,21 @@ export class MessengerCoreInternalService {
     this.assertInternalSurface(conversation.zone);
     const loaded = await loadMessengerCoreAccessFacts(this.prisma, employeeId, conversationId);
     const canWrite = loaded.facts ? evaluateMessengerCoreAccess(loaded.facts).canWrite : false;
-    return { ...conversation, canWrite };
+    const links = await listCoreConversationLinks(this.prisma, conversationId);
+    return {
+      ...conversation,
+      canWrite,
+      primaryLinks: defaultTaskLinksFromPrimary(links),
+    };
+  }
+
+  async forwardMessages(
+    employeeId: string,
+    targetConversationId: string,
+    sourceMessageIds: string[],
+  ) {
+    await this.getConversation(targetConversationId, employeeId);
+    return this.actions.forwardMessages(employeeId, targetConversationId, sourceMessageIds);
   }
 
   async listMessages(

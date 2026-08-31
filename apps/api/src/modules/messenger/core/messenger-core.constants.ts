@@ -56,8 +56,19 @@ export const MESSENGER_CORE_INTERNAL_CLIENT_ZONE_FORBIDDEN =
   'Internal Messenger cannot open Client conversations';
 export const MESSENGER_CORE_INTERNAL_CREATE_TYPE_FORBIDDEN =
   'Internal Messenger can create Groups and Direct only';
-export const MESSENGER_CORE_INTERNAL_MENTIONS_UNAVAILABLE =
-  'Mentions filter is a Slice 6 hook until mention persist exists';
+export const MESSENGER_CORE_MENTION_MAX_COUNT = 20;
+export const MESSENGER_CORE_FORWARD_SOURCE_MAX_COUNT = 50;
+export const MESSENGER_CORE_FORWARD_PREVIEW_MAX_LENGTH = 140;
+export const MESSENGER_CORE_FORWARD_CLIENT_TARGET_FORBIDDEN =
+  'Internal messages cannot be forwarded into a Client conversation';
+export const MESSENGER_CORE_FORWARD_REQUIRES_INTERNAL_TARGET =
+  'Forward target must be an Internal conversation';
+export const MESSENGER_CORE_TASK_SOURCE_CONTEXT_TYPES = [
+  'PROJECT',
+  'PRODUCT',
+  'DEAL',
+  'WORKSPACE',
+] as const;
 
 export const MESSENGER_INTERNAL_SECTIONS = [
   'all',

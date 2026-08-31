@@ -16,6 +16,7 @@ import {
   RequirePermission,
 } from '../../../common/decorators';
 import { CreateInternalConversationDto } from './dto/create-internal-conversation.dto';
+import { ForwardCoreMessagesDto } from './dto/forward-core-messages.dto';
 import { ListCoreMessagesQueryDto } from './dto/list-core-messages.query';
 import { ListInternalConversationsQueryDto } from './dto/list-internal-conversations.query';
 import { SendCoreMessageDto } from './dto/send-core-message.dto';
@@ -98,8 +99,22 @@ export class MessengerCoreInternalController {
       content: body.content,
       fileAssetIds: body.fileAssetIds,
       replyToMessageId: body.replyToMessageId,
+      mentionedEmployeeIds: body.mentionedEmployeeIds,
       idempotencyKey: body.idempotencyKey,
     });
+  }
+
+  @Post('conversations/:id/forwards')
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({
+    summary: 'Forward selected messages as references into this Internal conversation',
+  })
+  forwardMessages(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: ForwardCoreMessagesDto,
+  ) {
+    return this.internal.forwardMessages(user.id, id, body.sourceMessageIds);
   }
 
   @Post('conversations/:id/read')

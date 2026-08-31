@@ -1,7 +1,7 @@
 import { PrismaClient } from '@nbos/database';
 import { MESSENGER_CORE_INTERNAL_MESSAGE_PAGE_SIZE } from './messenger-core.constants';
-import type { MessengerCoreMessageDto } from './messenger-core.types';
 import type { MessengerInternalMessagePage } from './messenger-core-internal.types';
+import { mapCoreMessage } from './messenger-core-message-map';
 import { hiddenTaskDiscussionNoteWhere } from './messenger-task-discussion.metadata';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
@@ -23,47 +23,15 @@ export async function listCoreConversationMessages(
     },
     orderBy: { createdAt: 'desc' },
     take: pageSize,
-    include: { attachments: true },
+    include: {
+      attachments: true,
+      mentions: { select: { employeeId: true } },
+      referencesAsTarget: { orderBy: { sortOrder: 'asc' } },
+    },
   });
   const chronological = [...rows].reverse();
   return {
-    items: chronological.map(mapMessage),
+    items: chronological.map((row) => mapCoreMessage(row)),
     meta: { hasMoreOlder: rows.length === pageSize, pageSize },
-  };
-}
-
-function mapMessage(row: {
-  id: string;
-  conversationId: string;
-  senderId: string | null;
-  senderNameSnapshot: string;
-  content: string;
-  direction: MessengerCoreMessageDto['direction'];
-  status: MessengerCoreMessageDto['status'];
-  provenance: MessengerCoreMessageDto['provenance'];
-  replyToMessageId: string | null;
-  threadRootMessageId: string | null;
-  createdAt: Date;
-  editedAt: Date | null;
-  attachments: Array<{ id: string; fileAssetId: string; createdAt: Date }>;
-}): MessengerCoreMessageDto {
-  return {
-    id: row.id,
-    conversationId: row.conversationId,
-    senderId: row.senderId,
-    senderName: row.senderNameSnapshot,
-    content: row.content,
-    direction: row.direction,
-    status: row.status,
-    provenance: row.provenance,
-    replyToMessageId: row.replyToMessageId,
-    threadRootMessageId: row.threadRootMessageId,
-    createdAt: row.createdAt,
-    editedAt: row.editedAt,
-    attachments: row.attachments.map((attachment) => ({
-      id: attachment.id,
-      fileAssetId: attachment.fileAssetId,
-      createdAt: attachment.createdAt,
-    })),
   };
 }

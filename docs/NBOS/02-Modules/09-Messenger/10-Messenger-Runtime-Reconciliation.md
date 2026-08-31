@@ -572,6 +572,8 @@ Task/Ticket/Deal/forward workflows use stable references to one or more source m
 
 References must preserve authorization when opening/previewing source context.
 
+**Slice 6 runtime (`VERIFIED`):** Forward writes a holder plus `FORWARD` references into an existing writable Internal conversation. Open original / copy source GET `sourceMessageId` from those references, not the holder. Create Task uses `QuickCreateTaskDialog` then `TASK_SOURCE` rows after Task access, without ensuring a Task chat. Mentions persist is queryable. FINDING-S6-01/02 closed. See `26-Slice-06-Message-Actions.md`.
+
 ---
 
 ## 16. Collections
@@ -682,6 +684,8 @@ Completed for SHA `302f57f7` in `20-Slice-00-Baseline.md`. Status `VERIFIED` (FI
 **Slice 4:** evidence `24-Slice-04-Entity-Conversations.md`. Status `VERIFIED`. FINDING-S4-01/02/03/04 closed. Dual-write none. Slice 5 may begin.
 
 **Slice 5:** evidence `25-Slice-05-Task-Discussion.md`. Status `VERIFIED`. FINDING-S5-01/02/03 closed. Dual-write none. No DROP. Slice 6 may begin.
+
+**Slice 6:** evidence `26-Slice-06-Message-Actions.md`. Status `VERIFIED`. FINDING-S6-01/02 closed. Dual-write none. No DROP. Slice 7 may begin.
 
 Inventoried DB snapshot (local `DATABASE_URL`; not labeled prod vs staging): Channel/DM 0; Unified 0; Tasks 390 / chatId 0 / discussion 0; Product WhatsApp bindings 145 (ACTIVE 143 unique group ids, FAILED 2); gateway row 1 with accountant group id present; MetaConversation 0; MetaMessage 0; MetaConnectedAccount 0; MetaSenderIdentity 0; MetaProviderEvent 17.
 

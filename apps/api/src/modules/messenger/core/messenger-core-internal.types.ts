@@ -1,4 +1,4 @@
-import type { MessengerConversationType } from '@nbos/database';
+import type { MessengerConversationType, MessengerLinkEntityType } from '@nbos/database';
 import type { MessengerCoreConversationDto, MessengerCoreMessageDto } from './messenger-core.types';
 import type { MessengerInternalSection } from './messenger-core.constants';
 
@@ -13,6 +13,7 @@ export type MessengerInternalConversationListItem = MessengerCoreConversationDto
 
 export type MessengerInternalConversationDetail = MessengerCoreConversationDto & {
   canWrite: boolean;
+  primaryLinks: Array<{ entityType: MessengerLinkEntityType; entityId: string }>;
 };
 
 export type MessengerInternalListQuery = {

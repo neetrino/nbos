@@ -66,4 +66,34 @@ describe('Internal Messenger web client', () => {
     expect(panel).not.toMatch(/persistAndBroadcast/);
     expect(panel).not.toMatch(/messengerCoreApi\.sendMessage/);
   });
+
+  it('wires Slice 6 actions on the shared Internal thread', () => {
+    const thread = readWeb('features/messenger-internal/InternalConversationThread.tsx');
+    const client = readWeb('lib/api/messenger-core.ts');
+    const createTask = readWeb('features/messenger-internal/InternalCreateTaskFromMessages.tsx');
+    const sort = readWeb('features/messenger-internal/sort-selected-messages.ts');
+    const canonical = readWeb('features/messenger-internal/canonical-source-message-ids.ts');
+    const openOriginal = readWeb('features/messenger-internal/open-original-source.ts');
+    const card = readWeb('features/messenger-internal/InternalForwardReferenceCard.tsx');
+    expect(thread).toMatch(/InternalMessageActionsBar/);
+    expect(thread).toMatch(/InternalCreateTaskFromMessages/);
+    expect(thread).toMatch(/onOpenOriginalSource/);
+    expect(thread).toMatch(/openOriginalBySourceId/);
+    expect(thread).toMatch(/replyToMessageId/);
+    expect(client).toMatch(/replyToMessageId/);
+    expect(client).toMatch(/mentionedEmployeeIds/);
+    expect(client).toMatch(/forwards/);
+    expect(client).toMatch(/task-sources/);
+    expect(client).toMatch(/getSourceMessage/);
+    expect(createTask).toMatch(/QuickCreateTaskDialog/);
+    expect(createTask).not.toMatch(/defaultTitle/);
+    expect(sort).toMatch(/createdAt/);
+    expect(canonical).toMatch(/sourceMessageId/);
+    expect(canonical).not.toMatch(/holder\.id/);
+    expect(openOriginal).toMatch(/getSourceMessage/);
+    expect(openOriginal).toMatch(/canonicalSourceMessageIds/);
+    expect(card).toMatch(/Open original/);
+    expect(card).toMatch(/sourceMessageId/);
+    expect(thread).not.toMatch(/\/api\/messenger\/channels/);
+  });
 });

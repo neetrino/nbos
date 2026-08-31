@@ -35,6 +35,17 @@ export interface MessengerCoreConversationRow {
   peerName?: string | null;
   isFavorite?: boolean;
   canWrite?: boolean;
+  primaryLinks?: Array<{ entityType: string; entityId: string }>;
+}
+
+export interface MessengerCoreMessageReferenceRow {
+  id: string;
+  purpose: 'FORWARD' | 'TASK_SOURCE' | 'TICKET_SOURCE' | 'DEAL_SOURCE';
+  sourceMessageId: string;
+  sourceConversationId: string;
+  sortOrder: number;
+  entityType: string | null;
+  entityId: string | null;
 }
 
 export interface MessengerCoreMessageRow {
@@ -45,7 +56,16 @@ export interface MessengerCoreMessageRow {
   content: string;
   createdAt: string;
   editedAt: string | null;
+  replyToMessageId?: string | null;
+  threadRootMessageId?: string | null;
+  mentionedEmployeeIds?: string[];
+  references?: MessengerCoreMessageReferenceRow[];
   attachments: Array<{ id: string; fileAssetId: string; createdAt: string }>;
+}
+
+export interface MessengerCoreSourceMessageRow extends MessengerCoreMessageRow {
+  zone: 'INTERNAL' | 'CLIENT';
+  conversationType: MessengerCoreConversationType;
 }
 
 export interface MessengerCoreCollectionRow {
@@ -113,12 +133,47 @@ export const messengerCoreApi = {
 
   async sendMessage(
     id: string,
-    body: { content: string; fileAssetIds?: string[]; idempotencyKey?: string },
+    body: {
+      content: string;
+      fileAssetIds?: string[];
+      idempotencyKey?: string;
+      replyToMessageId?: string;
+      mentionedEmployeeIds?: string[];
+    },
   ): Promise<MessengerCoreMessageRow> {
     const resp = await api.post<MessengerCoreMessageRow>(
       `${INTERNAL_ROOT}/conversations/${id}/messages`,
       body,
     );
+    return resp.data;
+  },
+
+  async forwardMessages(
+    targetConversationId: string,
+    sourceMessageIds: string[],
+  ): Promise<{ holder: MessengerCoreMessageRow; sourceIds: string[]; createdConversation: false }> {
+    const resp = await api.post<{
+      holder: MessengerCoreMessageRow;
+      sourceIds: string[];
+      createdConversation: false;
+    }>(`${INTERNAL_ROOT}/conversations/${targetConversationId}/forwards`, { sourceMessageIds });
+    return resp.data;
+  },
+
+  async getSourceMessage(id: string): Promise<MessengerCoreSourceMessageRow> {
+    const resp = await api.get<MessengerCoreSourceMessageRow>(`/api/messenger/core/messages/${id}`);
+    return resp.data;
+  },
+
+  async attachTaskSources(
+    sourceMessageIds: string[],
+    taskId: string,
+  ): Promise<{ referenceIds: string[]; sourceMessageIds: string[]; createdConversation: false }> {
+    const resp = await api.post<{
+      referenceIds: string[];
+      sourceMessageIds: string[];
+      createdConversation: false;
+    }>('/api/messenger/core/messages/task-sources', { sourceMessageIds, taskId });
     return resp.data;
   },
 

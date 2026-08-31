@@ -9,6 +9,7 @@ import {
 } from '@/lib/api/messenger-core';
 import { useInternalMessengerRealtime } from '@/features/messenger-internal/useInternalMessengerRealtime';
 import type { EntityConversationKind } from './entity-conversation-kind';
+import type { InternalSendExtras } from './InternalConversationThread';
 
 export function useEntityConversation(kind: EntityConversationKind, entityId: string) {
   const { me, can } = usePermission();
@@ -55,8 +56,16 @@ export function useEntityConversation(kind: EntityConversationKind, entityId: st
     loading,
     sendBusy,
     error,
-    send: () =>
-      void sendMessage(conversation, newMessage, sendBusy, setSendBusy, setMessages, setNewMessage),
+    send: (extras: InternalSendExtras) =>
+      void sendEntityMessage(
+        conversation,
+        newMessage,
+        extras,
+        sendBusy,
+        setSendBusy,
+        setMessages,
+        setNewMessage,
+      ),
     toggleFavorite: () => void toggleFavorite(conversation, setConversation),
   };
 }
@@ -115,9 +124,10 @@ async function ensureEntityConversation(
   return messengerCoreApi.ensureProjectGeneral(entityId);
 }
 
-async function sendMessage(
+async function sendEntityMessage(
   conversation: MessengerCoreConversationRow | null,
   newMessage: string,
+  extras: InternalSendExtras,
   sendBusy: boolean,
   setSendBusy: (busy: boolean) => void,
   setMessages: (updater: (prev: MessengerCoreMessageRow[]) => MessengerCoreMessageRow[]) => void,
@@ -128,7 +138,11 @@ async function sendMessage(
   if (!content) return;
   setSendBusy(true);
   try {
-    const message = await messengerCoreApi.sendMessage(conversation.id, { content });
+    const message = await messengerCoreApi.sendMessage(conversation.id, {
+      content,
+      replyToMessageId: extras.replyToMessageId,
+      mentionedEmployeeIds: extras.mentionedEmployeeIds,
+    });
     setMessages((prev) => (prev.some((row) => row.id === message.id) ? prev : [...prev, message]));
     setNewMessage('');
   } finally {

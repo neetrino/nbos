@@ -69,6 +69,7 @@ export class MessengerCoreController {
       content: body.content,
       fileAssetIds: body.fileAssetIds,
       replyToMessageId: body.replyToMessageId,
+      mentionedEmployeeIds: body.mentionedEmployeeIds,
       idempotencyKey: body.idempotencyKey,
     });
   }

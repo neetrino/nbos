@@ -148,6 +148,51 @@ describe('core message persistence', () => {
     expect(created.senderName).toBe('Cursor Agent');
     expect(prisma.employee.findUnique).not.toHaveBeenCalled();
   });
+
+  it('persists queryable mentions without adding participants', async () => {
+    prisma.messengerMessage.findUnique.mockResolvedValue(null);
+    prisma.messengerConversation.findUnique.mockResolvedValue({
+      id: 'conv-1',
+      zone: 'INTERNAL',
+    });
+    prisma.messengerMessage.create.mockResolvedValue({
+      id: 'msg-1',
+      conversationId: 'conv-1',
+      senderId: 'e1',
+      senderNameSnapshot: 'Ada Lovelace',
+      content: 'hello @e2',
+      direction: 'INTERNAL',
+      status: 'SENT',
+      provenance: 'EMPLOYEE',
+      replyToMessageId: null,
+      threadRootMessageId: null,
+      createdAt: new Date(),
+      editedAt: null,
+      attachments: [],
+    });
+    const mentionPrisma = {
+      ...prisma,
+      employee: {
+        ...prisma.employee,
+        findMany: vi.fn().mockResolvedValue([{ id: 'e2' }]),
+      },
+      messengerMessageMention: { createMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      messengerConversationParticipant: { create: vi.fn() },
+    };
+    const created = await persistCoreMessage(
+      mentionPrisma as never,
+      {
+        conversationId: 'conv-1',
+        senderId: 'e1',
+        content: 'hello @e2',
+        mentionedEmployeeIds: ['e2'],
+      },
+      [],
+    );
+    expect(created.mentionedEmployeeIds).toEqual(['e2']);
+    expect(mentionPrisma.messengerMessageMention.createMany).toHaveBeenCalled();
+    expect(mentionPrisma.messengerConversationParticipant.create).not.toHaveBeenCalled();
+  });
 });
 
 describe('attachment FileAsset reference', () => {

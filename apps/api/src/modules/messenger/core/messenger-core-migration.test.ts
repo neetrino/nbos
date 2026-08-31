@@ -239,3 +239,33 @@ describe('Slice 5 Task Discussion migration safety', () => {
     expect(entityController).not.toMatch(/canonicalKey/);
   });
 });
+
+describe('Slice 6 message actions migration safety', () => {
+  const slice6Sql = readRepo(
+    'packages/database/prisma/migrations/20260831140000_messenger_message_actions_mentions/migration.sql',
+  );
+
+  it('is additive and does not DROP Channel/DM, Unified, Meta, or Task discussion', () => {
+    expect(slice6Sql).not.toMatch(/DROP TABLE/i);
+    expect(slice6Sql).not.toMatch(/DROP TYPE/i);
+    expect(slice6Sql).not.toMatch(/DROP COLUMN/i);
+    expect(slice6Sql).toMatch(/messenger_message_mentions/);
+    expect(slice6Sql).toMatch(/sort_order/);
+    expect(slice6Sql).not.toMatch(/task_discussion_entries/);
+    expect(slice6Sql).not.toMatch(/messenger_channels/);
+    expect(slice6Sql).not.toMatch(/messenger_direct_threads/);
+  });
+
+  it('does not invent Create Task with AI or Client Ticket/Deal products', () => {
+    const createTaskUi = readRepo(
+      'apps/web/src/features/messenger-internal/InternalCreateTaskFromMessages.tsx',
+    );
+    const hooks = readRepo(
+      'apps/api/src/modules/messenger/core/messenger-core-client-action-hooks.ts',
+    );
+    expect(createTaskUi).toMatch(/QuickCreateTaskDialog/);
+    expect(createTaskUi).not.toMatch(/defaultTitle|title:.*content/);
+    expect(hooks).toMatch(/createTicketImplemented: false/);
+    expect(hooks).toMatch(/createDealImplemented: false/);
+  });
+});

@@ -121,6 +121,7 @@ model MessengerMessageReference {
   entityType           String?                          @map("entity_type")
   entityId             String?                          @map("entity_id")
   createdById          String?                          @map("created_by_id")
+  sortOrder            Int                              @default(0) @map("sort_order")
   createdAt            DateTime                         @default(now()) @map("created_at")
 
   sourceMessage      MessengerMessage        @relation("MessengerMessageReferenceSource", fields: [sourceMessageId], references: [id])
@@ -132,7 +133,23 @@ model MessengerMessageReference {
   @@index([sourceMessageId])
   @@index([purpose, entityType, entityId])
   @@index([targetMessageId])
+  @@index([targetConversationId])
   @@map("messenger_message_references")
+}
+
+/// Queryable Internal mention. Unique per message + employee. Does not grant conversation ACL.
+model MessengerMessageMention {
+  id         String   @id @default(uuid())
+  messageId  String   @map("message_id")
+  employeeId String   @map("employee_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  message  MessengerMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  employee Employee         @relation("MessengerMessageMentionEmployee", fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@unique([messageId, employeeId])
+  @@index([employeeId])
+  @@map("messenger_message_mentions")
 }
 
 model MessengerMessageReaction {

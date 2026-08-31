@@ -11,6 +11,7 @@ import {
   MESSENGER_MESSAGE_ATTACHMENT_MAX_COUNT,
   MESSENGER_MESSAGE_BODY_MAX_LENGTH,
 } from '../../messenger.constants';
+import { MESSENGER_CORE_MENTION_MAX_COUNT } from '../messenger-core.constants';
 
 export class SendCoreMessageDto {
   @ApiProperty({ maxLength: MESSENGER_MESSAGE_BODY_MAX_LENGTH })
@@ -35,4 +36,11 @@ export class SendCoreMessageDto {
   @IsOptional()
   @IsString()
   idempotencyKey?: string;
+
+  @ApiProperty({ required: false, type: [String] })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MESSENGER_CORE_MENTION_MAX_COUNT)
+  @IsString({ each: true })
+  mentionedEmployeeIds?: string[];
 }
