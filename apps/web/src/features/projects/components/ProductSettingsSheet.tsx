@@ -116,10 +116,7 @@ export function ProductSettingsSheet({
   function syncFromStoredGroupId() {
     const groupChatId = binding?.groupChatId;
     if (!groupChatId) return;
-    void run(
-      () => productWhatsAppApi.bind(productId, { groupChatId }),
-      'Group details synced',
-    );
+    void run(() => productWhatsAppApi.bind(productId, { groupChatId }), 'Group details synced');
   }
 
   function inviteClient() {

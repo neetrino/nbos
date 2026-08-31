@@ -4,7 +4,11 @@ import type { LucideIcon } from 'lucide-react';
 import { ChevronRight, Plus, RefreshCw, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { whatsappCreateButtonLabel } from '@/features/crm/whatsapp-create-status';
-import { WA_ACCENT_ICON_WRAP, WA_ACTION_CARD, WA_ACTION_STACK } from './product-whatsapp-settings-ui';
+import {
+  WA_ACCENT_ICON_WRAP,
+  WA_ACTION_CARD,
+  WA_ACTION_STACK,
+} from './product-whatsapp-settings-ui';
 
 export interface ProductWhatsAppActionGridProps {
   busy: boolean;
