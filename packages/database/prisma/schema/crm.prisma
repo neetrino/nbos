@@ -260,8 +260,9 @@ model Deal {
   salesBonusEntries    BonusEntry[]          @relation("DealSalesBonusEntries")
   partnerReferralTerms PartnerReferralTerms?
   additionalContacts   DealAdditionalContact[]
-  whatsappGroupsCreatedFrom ProductWhatsAppGroupBinding[] @relation("ProductWhatsAppGroupCreatedFromDeal")
-  whatsappGroupOperations   WhatsAppGroupOperation[]      @relation("WhatsAppGroupOperationContextDeal")
+  whatsappGroupBinding      DealWhatsAppGroupBinding?         @relation("DealWhatsAppGroupBinding")
+  whatsappGroupsCreatedFrom ProductWhatsAppGroupBinding[]     @relation("ProductWhatsAppGroupCreatedFromDeal")
+  whatsappGroupOperations   WhatsAppGroupOperation[]          @relation("WhatsAppGroupOperationContextDeal")
   atsCallEvents             AtsCallEvent[]                @relation("AtsCallDeal")
 
   @@index([trashedAt])

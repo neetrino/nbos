@@ -84,6 +84,16 @@ function getReadinessItems(deal: Deal): ReadinessItem[] {
       hint: 'Finance should mark invoice as paid',
     },
     {
+      label: 'WhatsApp group',
+      ready:
+        deal.whatsappGroupBinding?.status === 'ACTIVE' &&
+        Boolean(deal.whatsappGroupBinding.groupChatId),
+      hint:
+        deal.whatsappGroupBinding?.status === 'FAILED'
+          ? 'Retry from Actions. Deal Won stays available.'
+          : 'Create or bind from Actions; attaches on Won',
+    },
+    {
       label: 'Project linked',
       ready: Boolean(deal.projectId || deal.handoff?.project),
       hint: 'Link a project in Deal & project, or auto-created when delivery starts',

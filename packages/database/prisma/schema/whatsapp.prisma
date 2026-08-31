@@ -83,6 +83,25 @@ model WhatsAppGatewayConnection {
   @@map("whatsapp_gateway_connections")
 }
 
+/// Deal-level client WhatsApp group before Product exists. Bound as Product WORK on Won.
+model DealWhatsAppGroupBinding {
+  id                   String                                @id @default(uuid())
+  dealId               String                                @unique @map("deal_id")
+  groupChatId          String?                               @unique @map("group_chat_id")
+  groupName            String?                               @map("group_name")
+  status               ProductWhatsAppGroupBindingStatusEnum @default(PENDING)
+  lastSuccessfulSyncAt DateTime?                             @map("last_successful_sync_at")
+  lastErrorCode        String?                               @map("last_error_code")
+  lastErrorMessage     String?                               @map("last_error_message") @db.Text
+  createdAt            DateTime                              @default(now()) @map("created_at")
+  updatedAt            DateTime                              @updatedAt @map("updated_at")
+
+  deal Deal @relation("DealWhatsAppGroupBinding", fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("deal_whatsapp_group_bindings")
+}
+
 /// Product owns at most one WhatsApp group binding.
 model ProductWhatsAppGroupBinding {
   id                   String                                 @id @default(uuid())

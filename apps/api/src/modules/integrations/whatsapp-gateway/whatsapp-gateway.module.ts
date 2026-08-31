@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../../audit/audit.module';
+import { DealWhatsAppGroupCreateHandler } from './deal-whatsapp-group-create.handler';
+import { DealWhatsAppGroupService } from './deal-whatsapp-group.service';
 import { ProductWhatsAppGroupService } from './product-whatsapp-group.service';
 import { ProductWhatsAppParticipantResolver } from './product-whatsapp-participant.resolver';
 import { ProductWhatsAppController } from './product-whatsapp.controller';
@@ -22,9 +24,12 @@ import { WhatsAppOutboundQueueService } from './whatsapp-outbound-queue.service'
     WhatsAppProductGroupsQueueService,
     WhatsAppOutboundQueueService,
     ProductWhatsAppGroupService,
+    DealWhatsAppGroupService,
+    DealWhatsAppGroupCreateHandler,
   ],
   exports: [
     ProductWhatsAppGroupService,
+    DealWhatsAppGroupService,
     WhatsAppGatewayConnectionService,
     WhatsAppGatewayClient,
     ProductWhatsAppParticipantResolver,

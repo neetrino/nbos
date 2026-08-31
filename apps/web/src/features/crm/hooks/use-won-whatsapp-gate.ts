@@ -27,9 +27,14 @@ export function useWonWhatsAppGate(
   const [groupIdInput, setGroupIdInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [sessionAction, setSessionAction] = useState<DealWonWhatsAppSessionAction | null>(null);
-  const [groupChatId, setGroupChatId] = useState<string | null>(null);
-  const [createOperationStatus, setCreateOperationStatus] = useState<string | null>(null);
-  const [createFailed, setCreateFailed] = useState(false);
+  const [groupChatId, setGroupChatId] = useState<string | null>(
+    deal.whatsappGroupBinding?.groupChatId ?? null,
+  );
+  const [createOperationStatus, setCreateOperationStatus] = useState<string | null>(
+    deal.whatsappGroupBinding?.status ?? null,
+  );
+  const [createFailed, setCreateFailed] = useState(deal.whatsappGroupBinding?.status === 'FAILED');
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const publish = useCallback(
     (
@@ -51,17 +56,18 @@ export function useWonWhatsAppGate(
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    void loadWonWhatsAppExisting(productId, (nextGroupId, nextCreateStatus) => {
+    void loadWonWhatsAppExisting(deal.id, productId, (nextGroupId, nextCreateStatus) => {
       if (cancelled) return;
       setGroupChatId(nextGroupId);
       setCreateOperationStatus(nextCreateStatus);
       setCreateFailed(nextCreateStatus === 'FAILED');
-      publish(null, nextGroupId, nextCreateStatus);
+      const defaultAction = nextGroupId ? 'bind' : null;
+      publish(defaultAction, nextGroupId, nextCreateStatus);
     });
     return () => {
       cancelled = true;
     };
-  }, [open, productId, publish]);
+  }, [deal.id, open, productId, publish]);
 
   const handleCreate = () =>
     runCreateWhatsApp({
@@ -78,6 +84,7 @@ export function useWonWhatsAppGate(
 
   const handleSaveId = () =>
     runSaveWhatsAppId({
+      dealId: deal.id,
       productId,
       pasted: groupIdInput.trim(),
       createOperationStatus,
@@ -93,6 +100,9 @@ export function useWonWhatsAppGate(
     busy,
     createFailed,
     createInFlight: isWhatsAppCreateInFlight(createOperationStatus),
+    hasDealGroup: Boolean(groupChatId),
+    showAdvanced,
+    setShowAdvanced,
     handleCreate,
     handleSaveId,
     sessionAction,
@@ -110,14 +120,22 @@ function toWonWhatsAppPayload(
 }
 
 async function loadWonWhatsAppExisting(
+  dealId: string,
   productId: string | null,
   onLoaded: (groupChatId: string | null, createStatus: string | null) => void,
 ): Promise<void> {
-  if (!productId) {
-    onLoaded(null, null);
-    return;
-  }
   try {
+    const dealState = await dealWhatsAppApi.getState(dealId);
+    const dealGroupId = dealState.binding?.groupChatId ?? null;
+    const dealStatus = dealState.binding?.status ?? dealState.latestOperation?.status ?? null;
+    if (dealGroupId || dealStatus) {
+      onLoaded(dealGroupId, dealStatus);
+      return;
+    }
+    if (!productId) {
+      onLoaded(null, null);
+      return;
+    }
     const [state, operations] = await Promise.all([
       productWhatsAppApi.getState(productId),
       productWhatsAppApi.operations(productId),
@@ -146,24 +164,16 @@ async function runCreateWhatsApp(input: {
 }): Promise<void> {
   input.setBusy(true);
   try {
-    if (input.productId) {
-      const state = await dealWhatsAppApi.ensure(input.dealId);
-      const nextStatus = state.latestOperation?.status ?? 'PENDING';
-      input.setCreateOperationStatus(nextStatus);
-      input.setCreateFailed(nextStatus === 'FAILED');
-      input.setSessionAction('create');
-      input.publish('create', input.groupChatId, nextStatus);
-      toast.success(
-        nextStatus === 'FAILED'
-          ? 'Group creation failed. You can still mark the deal as Won and retry later.'
-          : 'WhatsApp group creation started.',
-      );
-      return;
-    }
+    const state = await dealWhatsAppApi.ensure(input.dealId);
+    const nextStatus = state.latestOperation?.status ?? state.binding?.status ?? 'PENDING';
+    input.setCreateOperationStatus(nextStatus);
+    input.setCreateFailed(nextStatus === 'FAILED');
     input.setSessionAction('create');
-    input.publish('create', input.groupChatId, input.createOperationStatus);
+    input.publish('create', state.binding?.groupChatId ?? input.groupChatId, nextStatus);
     toast.success(
-      'Create group selected. Mark as Won will start creation after the product exists.',
+      nextStatus === 'FAILED'
+        ? 'Group creation failed. You can still mark the deal as Won and retry later.'
+        : 'WhatsApp group creation started.',
     );
   } catch (error) {
     input.setSessionAction('create');
@@ -178,6 +188,7 @@ async function runCreateWhatsApp(input: {
 }
 
 async function runSaveWhatsAppId(input: {
+  dealId: string;
   productId: string | null;
   pasted: string;
   createOperationStatus: string | null;
@@ -193,22 +204,15 @@ async function runSaveWhatsAppId(input: {
   if (!input.pasted) return;
   input.setBusy(true);
   try {
-    if (input.productId) {
-      const state = await productWhatsAppApi.bind(input.productId, {
-        groupChatId: input.pasted,
-        persistIfUnreachable: true,
-      });
-      const nextId = state.binding?.groupChatId ?? input.pasted;
-      input.setGroupChatId(nextId);
-      input.setSessionAction('bind');
-      input.publish('bind', nextId, input.createOperationStatus);
-      toast.success('WhatsApp group ID saved.');
-      return;
-    }
-    input.setGroupChatId(input.pasted);
+    const state = await dealWhatsAppApi.bind(input.dealId, {
+      groupChatId: input.pasted,
+      persistIfUnreachable: true,
+    });
+    const nextId = state.binding?.groupChatId ?? input.pasted;
+    input.setGroupChatId(nextId);
     input.setSessionAction('bind');
-    input.publish('bind', input.pasted, input.createOperationStatus);
-    toast.success('Group ID will be saved when the product is created on Won.');
+    input.publish('bind', nextId, input.createOperationStatus);
+    toast.success('WhatsApp group ID saved.');
   } catch (error) {
     toast.error(getApiErrorMessage(error, 'Could not save WhatsApp group ID.'));
   } finally {

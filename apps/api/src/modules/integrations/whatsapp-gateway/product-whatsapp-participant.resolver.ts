@@ -162,6 +162,48 @@ export class ProductWhatsAppParticipantResolver {
     };
   }
 
+  async resolveForDeal(dealId: string): Promise<ResolvedProductWhatsAppParticipants> {
+    const deal = await this.prisma.deal.findUnique({
+      where: { id: dealId },
+      select: dealSelect,
+    });
+    if (!deal) {
+      return {
+        dealId: null,
+        candidates: [],
+        warnings: [{ role: 'DEAL', code: 'DEAL_NOT_FOUND', message: 'Deal not found' }],
+        ceoEmployeeId: null,
+        multipleCeoWarning: false,
+      };
+    }
+    const byEmployee = new Map<string, { roles: Set<string>; phone: string | null }>();
+    const warnings: ProductWhatsAppParticipantWarning[] = [];
+    const push = (role: string, employee: { id: string; phone: string | null } | null) => {
+      if (!employee) {
+        warnings.push({ role, code: 'EMPLOYEE_MISSING', message: `${role} is not assigned` });
+        return;
+      }
+      const existing = byEmployee.get(employee.id) ?? {
+        roles: new Set<string>(),
+        phone: employee.phone,
+      };
+      existing.roles.add(role);
+      existing.phone = employee.phone;
+      byEmployee.set(employee.id, existing);
+    };
+    push('SALES_MANAGER', deal.seller);
+    push('SALES_ASSISTANT', deal.sellerAssistant);
+    push('PROJECT_MANAGER', deal.pm);
+    const ceo = await this.pushActiveCeo(push, warnings);
+    return {
+      dealId: deal.id,
+      candidates: this.toCandidates(byEmployee, warnings),
+      warnings,
+      ceoEmployeeId: ceo,
+      multipleCeoWarning: warnings.some((row) => row.code === 'MULTIPLE_CEO'),
+    };
+  }
+
   async resolveTechnicalSpecialist(
     productId: string,
   ): Promise<ProductWhatsAppParticipantCandidate | null> {
@@ -180,6 +222,52 @@ export class ProductWhatsAppParticipantResolver {
       jid: normalized.jid,
       roles: ['TECHNICAL_SPECIALIST'],
     };
+  }
+
+  private async pushActiveCeo(
+    push: (role: string, employee: { id: string; phone: string | null } | null) => void,
+    warnings: ProductWhatsAppParticipantWarning[],
+  ): Promise<string | null> {
+    const ceos = await this.prisma.employee.findMany({
+      where: { status: 'ACTIVE', role: { slug: 'ceo' } },
+      select: { id: true, phone: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (ceos.length === 0) {
+      warnings.push({ role: 'CEO', code: 'EMPLOYEE_MISSING', message: 'No active CEO found' });
+      return null;
+    }
+    if (ceos.length > 1) {
+      warnings.push({
+        role: 'CEO',
+        employeeId: ceos[0].id,
+        code: 'MULTIPLE_CEO',
+        message: `Multiple active CEOs found; using ${ceos[0].id}`,
+      });
+    }
+    push('CEO', ceos[0]);
+    return ceos[0].id;
+  }
+
+  private toCandidates(
+    byEmployee: Map<string, { roles: Set<string>; phone: string | null }>,
+    warnings: ProductWhatsAppParticipantWarning[],
+  ): ProductWhatsAppParticipantCandidate[] {
+    const candidates: ProductWhatsAppParticipantCandidate[] = [];
+    for (const [employeeId, entry] of byEmployee) {
+      const normalized = normalizePhoneToWhatsAppJid(entry.phone);
+      if (!normalized.success) {
+        warnings.push({
+          employeeId,
+          role: [...entry.roles].join(','),
+          code: normalized.reason,
+          message: `Phone ${normalized.reason.toLowerCase()} for employee ${employeeId}`,
+        });
+        continue;
+      }
+      candidates.push({ employeeId, jid: normalized.jid, roles: [...entry.roles] });
+    }
+    return candidates;
   }
 }
 

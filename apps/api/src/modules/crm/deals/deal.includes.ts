@@ -66,8 +66,18 @@ export const dealListInclude = {
   ...dealAdditionalContactsInclude,
 } as const;
 
+const dealWhatsAppBindingSelect = {
+  id: true,
+  groupChatId: true,
+  groupName: true,
+  status: true,
+  lastErrorCode: true,
+  lastErrorMessage: true,
+} as const;
+
 export const dealDetailInclude = {
   ...dealListInclude,
+  whatsappGroupBinding: { select: dealWhatsAppBindingSelect },
   lead: true,
   contact: true,
   orders: {

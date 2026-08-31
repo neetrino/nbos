@@ -3,6 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 import {
   getDealWonWhatsAppErrors,
   resolveDealProductIdForWhatsApp,
+  resolveWonWhatsAppIntent,
   validateDealWonWhatsAppGate,
 } from './deal-won-whatsapp';
 
@@ -76,5 +77,27 @@ describe('deal-won-whatsapp gate', () => {
         orders: [{ productId: 'p2' }],
       }),
     ).toBe('p2');
+  });
+
+  it('defaults Won intent to bind the existing Deal group', () => {
+    expect(
+      resolveWonWhatsAppIntent({
+        contextGroupChatId: '120363012345678901@g.us',
+      }),
+    ).toEqual({
+      action: 'bind',
+      groupChatId: '120363012345678901@g.us',
+      actorId: undefined,
+    });
+    expect(
+      resolveWonWhatsAppIntent({
+        action: 'create',
+        contextGroupChatId: '120363012345678901@g.us',
+      }),
+    ).toEqual({
+      action: 'create',
+      groupChatId: undefined,
+      actorId: undefined,
+    });
   });
 });

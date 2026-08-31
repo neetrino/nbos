@@ -11,14 +11,14 @@ import {
 } from '@/features/crm/utils/deal-invoice-eligibility';
 import type { Deal } from '@/lib/api/deals';
 import { dealsApi } from '@/lib/api/deals';
-import { dealWhatsAppApi, productWhatsAppApi, type ProductWhatsAppState } from '@/lib/api/whatsapp';
+import { dealWhatsAppApi, type DealWhatsAppState } from '@/lib/api/whatsapp';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
 import { DealSheetActionsMenu } from './DealSheetActionsMenu';
+import { DealWhatsAppBindDialog } from './DealWhatsAppBindDialog';
 import { WhatsAppGroupMissingBadge } from './WhatsAppGroupMissingBadge';
 import { isMissingActiveWhatsAppGroup } from '../deal-won-whatsapp-gate';
-import { buildDealWhatsAppQuickAction } from '../deal-whatsapp-quick-action';
-import { isWhatsAppCreateInFlight } from '../whatsapp-create-status';
+import { buildDealWhatsAppQuickActions } from '../deal-whatsapp-quick-action';
 
 interface DealSheetQuickActionsProps {
   deal: Deal;
@@ -51,7 +51,8 @@ export function DealSheetQuickActions({
   const router = useRouter();
   const [startingEarly, setStartingEarly] = useState(false);
   const [whatsappBusy, setWhatsappBusy] = useState(false);
-  const [whatsappState, setWhatsappState] = useState<ProductWhatsAppState | null>(null);
+  const [bindOpen, setBindOpen] = useState(false);
+  const [whatsappState, setWhatsappState] = useState<DealWhatsAppState | null>(null);
   const { creatorId, creatorReady } = useTaskCreatorId();
 
   const firstOrder = deal.orders?.[0];
@@ -62,13 +63,9 @@ export function DealSheetQuickActions({
   const depositBootstrap = canCreateDepositInvoice(deal, taxStatus);
 
   useEffect(() => {
-    if (!productId) {
-      setWhatsappState(null);
-      return;
-    }
     let cancelled = false;
-    void productWhatsAppApi
-      .getState(productId)
+    void dealWhatsAppApi
+      .getState(deal.id)
       .then((state) => {
         if (!cancelled) setWhatsappState(state);
       })
@@ -78,7 +75,7 @@ export function DealSheetQuickActions({
     return () => {
       cancelled = true;
     };
-  }, [productId]);
+  }, [deal.id, deal.whatsappGroupBinding?.status, deal.whatsappGroupBinding?.groupChatId]);
 
   const canStartEarlyDelivery = Boolean(
     firstOrder &&
@@ -104,7 +101,7 @@ export function DealSheetQuickActions({
   }, [canStartEarlyDelivery, deal.id, onRefresh]);
 
   const handleEnsureWhatsApp = useCallback(async () => {
-    if (!productId || whatsappBusy) return;
+    if (whatsappBusy) return;
     setWhatsappBusy(true);
     try {
       const state = await dealWhatsAppApi.ensure(deal.id);
@@ -116,9 +113,32 @@ export function DealSheetQuickActions({
     } finally {
       setWhatsappBusy(false);
     }
-  }, [deal.id, onRefresh, productId, whatsappBusy]);
+  }, [deal.id, onRefresh, whatsappBusy]);
 
-  const bindingStatus = whatsappState?.binding?.status ?? null;
+  const handleBindWhatsApp = useCallback(
+    async (groupChatId: string) => {
+      setWhatsappBusy(true);
+      try {
+        const state = await dealWhatsAppApi.bind(deal.id, {
+          groupChatId,
+          persistIfUnreachable: true,
+        });
+        setWhatsappState(state);
+        setBindOpen(false);
+        toast.success('WhatsApp group bound to this deal.');
+        onRefresh?.();
+      } catch (caught) {
+        toast.error(getApiErrorMessage(caught, 'Could not bind WhatsApp group.'));
+      } finally {
+        setWhatsappBusy(false);
+      }
+    },
+    [deal.id, onRefresh],
+  );
+
+  const bindingStatus = whatsappState?.binding?.status ?? deal.whatsappGroupBinding?.status ?? null;
+  const groupChatId =
+    whatsappState?.binding?.groupChatId ?? deal.whatsappGroupBinding?.groupChatId ?? null;
 
   const actions = useMemo(() => {
     const items: QuickActionItem[] = [
@@ -145,17 +165,25 @@ export function DealSheetQuickActions({
     }
 
     items.push(
-      buildDealWhatsAppQuickAction({
+      ...buildDealWhatsAppQuickActions({
+        dealType: deal.type,
+        contactId: deal.contactId ?? deal.contact?.id ?? null,
         productId,
         projectId,
         bindingStatus,
+        groupChatId,
         latestOperationStatus: whatsappState?.latestOperation?.status,
         whatsappBusy,
         onEnsure: () => void handleEnsureWhatsApp(),
+        onBind: () => setBindOpen(true),
         onOpenSettings: (id) => {
           router.push(
             projectId ? `/projects/${projectId}/products/${id}?settings=whatsapp` : '/projects',
           );
+        },
+        onCopyGroupId: (id) => {
+          void navigator.clipboard.writeText(id);
+          toast.success('WhatsApp group ID copied.');
         },
       }),
     );
@@ -184,8 +212,12 @@ export function DealSheetQuickActions({
     canStartEarlyDelivery,
     creatorId,
     creatorReady,
+    deal.contact?.id,
+    deal.contactId,
     deal.id,
+    deal.type,
     depositBootstrap,
+    groupChatId,
     handleEnsureWhatsApp,
     handleStartEarlyDelivery,
     onCreateInvoice,
@@ -198,22 +230,23 @@ export function DealSheetQuickActions({
     whatsappState,
   ]);
 
-  const showWhatsAppMissing =
-    Boolean(productId) &&
-    isMissingActiveWhatsAppGroup({
-      bindingStatus,
-      groupChatId: whatsappState?.binding?.groupChatId,
-    });
+  const showWhatsAppMissing = isMissingActiveWhatsAppGroup({
+    bindingStatus,
+    groupChatId,
+  });
 
   return (
     <>
       {showWhatsAppMissing ? (
-        <WhatsAppGroupMissingBadge
-          bindingStatus={bindingStatus}
-          groupChatId={whatsappState?.binding?.groupChatId}
-        />
+        <WhatsAppGroupMissingBadge bindingStatus={bindingStatus} groupChatId={groupChatId} />
       ) : null}
       <DealSheetActionsMenu actions={actions} />
+      <DealWhatsAppBindDialog
+        open={bindOpen}
+        busy={whatsappBusy}
+        onOpenChange={setBindOpen}
+        onSubmit={handleBindWhatsApp}
+      />
     </>
   );
 }

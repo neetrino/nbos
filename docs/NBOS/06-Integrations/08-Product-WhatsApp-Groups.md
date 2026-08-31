@@ -79,7 +79,8 @@ Group creation/binding remains an explicit business action.
 
 Normal entry points:
 
-- Deal Won handoff for `PRODUCT` / `OUTSOURCE` resolves the Product `WORK` destination;
+- Deal card Actions can create or bind a client WhatsApp group before Product exists (`PRODUCT` / `OUTSOURCE`, primary Contact required);
+- Deal Won handoff for `PRODUCT` / `OUTSOURCE` resolves the Product `WORK` destination — default is bind the existing Deal group;
 - Product Client Communication Settings can create/bind/replace WORK or FINANCE destinations;
 - retry/reconciliation occurs from explicit settings/actions after failure.
 
@@ -94,9 +95,11 @@ Deal Won must consciously resolve Product client WORK communication.
 Allowed actions:
 
 ```text
-Create new WORK WhatsApp group
+Use existing Deal client group as Product WORK   # default when a Deal group exists
 or
-Select / bind existing allowed WhatsApp conversation
+Create a new WORK WhatsApp group                 # advanced / separate delivery group
+or
+Select / bind another existing allowed WhatsApp conversation
 ```
 
 The existing group selector should normally show safe candidates from the current Project/client context rather than every WhatsApp group in the company.

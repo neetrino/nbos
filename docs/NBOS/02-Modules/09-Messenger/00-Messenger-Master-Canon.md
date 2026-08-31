@@ -669,10 +669,14 @@ For Product/Outsource Deal Won, Product WORK communication should be resolved co
 Allowed paths:
 
 ```text
+Use existing Deal client group as Product WORK
+or
 Create new WORK WhatsApp group
 or
 Select/bind an existing allowed External Conversation
 ```
+
+A Deal-level client group may be created or bound before Product exists (`PRODUCT` / `OUTSOURCE`, Contact required). Won defaults to the Deal group when it already exists.
 
 FINANCE does not need to complicate the normal Deal Won flow. It can be configured later.
 
@@ -682,9 +686,10 @@ Important behavior:
 - failure/pending/outcome-unknown state is recorded and visible;
 - retry/reconciliation is explicit and idempotent;
 - Extension does not automatically create another client group;
-- binding existing group must not duplicate invitations or physical groups.
+- binding existing group must not duplicate invitations or physical groups;
+- Failed Deal does not delete the physical group.
 
-**Decision ID:** `M-WA-04`.
+**Decision IDs:** `M-WA-04`, `M-WA-06`.
 
 ---
 
@@ -1495,6 +1500,7 @@ This Master Canon includes the approved Decision Register areas:
 | `M-WA-03`          | deterministic WORK/FINANCE destinations            |
 | `M-WA-04`          | Deal Won resolves WORK without mandatory FINANCE   |
 | `M-WA-05`          | business resolver by Product + purpose             |
+| `M-WA-06`          | Deal client group before Product; bind on Won      |
 | `M-SECURITY-01`    | locked Client composer                             |
 | `M-SECURITY-02`    | Client READ != SEND                                |
 | `M-ROUTING-01`     | access != attention ownership                      |

@@ -18,11 +18,17 @@ describe('DealsService', () => {
     wonHandler = { handle: vi.fn().mockResolvedValue(undefined) };
     auditService = { log: vi.fn().mockResolvedValue({ id: 'audit-1' }) };
     productTeamSync = { syncProductSeller: vi.fn().mockResolvedValue(undefined) };
+    const dealWhatsApp = {
+      ensureForDealAction: vi.fn(),
+      getState: vi.fn(),
+      bindExistingGroup: vi.fn(),
+    };
     service = new DealsService(
       prisma as never,
       wonHandler as unknown as DealWonHandler,
       auditService as never,
       productTeamSync as never,
+      dealWhatsApp as never,
     );
   });
 
@@ -688,6 +694,32 @@ describe('DealsService', () => {
 
       expect(result.status).toBe('WON');
       expect(wonHandler.handle).toHaveBeenCalledTimes(1);
+    });
+
+    it('allows PRODUCT WON after a Deal-level group without Product', async () => {
+      const base = completeProductDeal();
+      const won = { ...base, status: 'WON' as const };
+      prisma.deal.findUnique
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(won)
+        .mockResolvedValueOnce(won);
+      prisma.deal.update.mockResolvedValue({ id: '1', status: 'WON', type: 'PRODUCT' });
+      prisma.dealWhatsAppGroupBinding.findUnique.mockResolvedValue({
+        groupChatId: '120363012345678901@g.us',
+        status: 'ACTIVE',
+      });
+
+      const result = await service.updateStatus('1', 'WON');
+
+      expect(result.status).toBe('WON');
+      expect(wonHandler.handle).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          action: 'bind',
+          groupChatId: '120363012345678901@g.us',
+        }),
+      );
     });
 
     it('allows PRODUCT WON after a persisted groupChatId', async () => {

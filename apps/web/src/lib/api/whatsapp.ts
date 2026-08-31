@@ -199,12 +199,30 @@ export const productWhatsAppApi = {
   },
 };
 
+export type DealWhatsAppState = ProductWhatsAppState & {
+  dealId: string;
+  productId: string | null;
+  source?: 'DEAL' | 'PRODUCT';
+};
+
 export const dealWhatsAppApi = {
-  async ensure(
-    dealId: string,
-  ): Promise<ProductWhatsAppState & { dealId: string; productId: string }> {
-    const resp = await api.post<ProductWhatsAppState & { dealId: string; productId: string }>(
+  async getState(dealId: string): Promise<DealWhatsAppState> {
+    const resp = await api.get<DealWhatsAppState>(`/api/crm/deals/${dealId}/whatsapp-group`);
+    return resp.data;
+  },
+  async ensure(dealId: string): Promise<DealWhatsAppState> {
+    const resp = await api.post<DealWhatsAppState>(
       `/api/crm/deals/${dealId}/whatsapp-group/ensure`,
+    );
+    return resp.data;
+  },
+  async bind(
+    dealId: string,
+    body: { groupChatId: string; persistIfUnreachable?: boolean },
+  ): Promise<DealWhatsAppState> {
+    const resp = await api.post<DealWhatsAppState>(
+      `/api/crm/deals/${dealId}/whatsapp-group/bind`,
+      body,
     );
     return resp.data;
   },

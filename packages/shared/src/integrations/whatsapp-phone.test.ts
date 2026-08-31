@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildProductWhatsAppClientInviteDedupeKey,
+  buildDealWhatsAppCreateDedupeKey,
+  buildDealWhatsAppGroupName,
   buildProductWhatsAppCreateDedupeKey,
   buildProductWhatsAppGroupName,
   buildProductWhatsAppParticipantDedupeKey,
@@ -108,5 +110,17 @@ describe('whatsapp dedupe + name helpers', () => {
   it('builds group names', () => {
     expect(buildProductWhatsAppGroupName('ACME', 'Website')).toBe('ACME · Website');
     expect(buildProductWhatsAppGroupName('  ACME  ', '  Website  ')).toBe('ACME · Website');
+  });
+
+  it('builds deal group names and deal create keys', () => {
+    expect(buildDealWhatsAppCreateDedupeKey('d1')).toBe('whatsapp-deal-group:create:d1');
+    expect(
+      buildDealWhatsAppGroupName({
+        dealCode: 'D-0123',
+        contactName: 'Teghout',
+        dealName: 'Website discussion',
+      }),
+    ).toBe('D-0123 · Teghout · Website discussion');
+    expect(buildDealWhatsAppGroupName({ dealCode: 'D-1', dealName: 'Offer' })).toBe('D-1 · Offer');
   });
 });

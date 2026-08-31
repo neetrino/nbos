@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-  BadRequestException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { permanentlyDeleteProfileATrashedEntity } from '../../../common/lifecycle/profile-a-permanent-delete.ops';
@@ -20,14 +14,14 @@ import type { CreateDealDto, DealForHandoff, DealQueryParams, UpdateDealDto } fr
 import { applyDealListResponsibilityWhere } from './deal-list-responsibility.where';
 import { DealWonHandler } from './deal-won.handler';
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
-import { ProductWhatsAppGroupService } from '../../integrations/whatsapp-gateway/product-whatsapp-group.service';
-import { WHATSAPP_ERROR } from '../../integrations/whatsapp-gateway/whatsapp-gateway.constants';
+import { DealWhatsAppGroupService } from '../../integrations/whatsapp-gateway/deal-whatsapp-group.service';
 import { isDealAttributionLocked } from '@nbos/shared';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { validateDealStageGate } from './deal-stage-gate';
 import { validateDealWonGate } from './deal-won-gate';
 import {
   loadDealWonWhatsAppContext,
+  resolveWonWhatsAppIntent,
   validateDealWonWhatsAppGate,
   type DealWonWhatsAppAction,
 } from './deal-won-whatsapp';
@@ -64,7 +58,7 @@ export class DealsService {
     private readonly dealWonHandler: DealWonHandler,
     private readonly auditService: AuditService,
     private readonly productTeamSync: ProductTeamSyncService,
-    private readonly productWhatsApp: ProductWhatsAppGroupService,
+    private readonly dealWhatsApp: DealWhatsAppGroupService,
   ) {}
 
   async findAll(params: DealQueryParams) {
@@ -140,45 +134,23 @@ export class DealsService {
     return this.enrichDealForClient(await this.attachHandoffReferences(deal));
   }
 
-  /**
-   * Resolve Product for Deal WhatsApp action:
-   * 1) existingProductId
-   * 2) Order.productId for this deal
-   * Never Project.products[0].
-   */
   async ensureWhatsAppGroup(dealId: string, actorId: string) {
-    const deal = await this.prisma.deal.findUnique({
-      where: { id: dealId },
-      select: { id: true, existingProductId: true },
+    return this.dealWhatsApp.ensureForDealAction(dealId, actorId);
+  }
+
+  async getWhatsAppGroupState(dealId: string) {
+    return this.dealWhatsApp.getState(dealId);
+  }
+
+  async bindWhatsAppGroup(
+    dealId: string,
+    groupChatId: string,
+    actorId: string,
+    persistIfUnreachable?: boolean,
+  ) {
+    return this.dealWhatsApp.bindExistingGroup(dealId, groupChatId, actorId, {
+      persistIfUnreachable,
     });
-    if (!deal) {
-      throw new NotFoundException(`Deal ${dealId} not found`);
-    }
-
-    let productId = deal.existingProductId;
-    if (!productId) {
-      const order = await this.prisma.order.findFirst({
-        where: { dealId, productId: { not: null } },
-        select: { productId: true },
-        orderBy: { createdAt: 'desc' },
-      });
-      productId = order?.productId ?? null;
-    }
-
-    if (!productId) {
-      throw new ConflictException({
-        statusCode: 409,
-        code: WHATSAPP_ERROR.DEAL_PRODUCT_NOT_READY,
-        message: 'Product has not been created yet for this deal',
-      });
-    }
-
-    const state = await this.productWhatsApp.ensureGroupForProduct(productId, {
-      source: 'DEAL_ACTION',
-      contextDealId: dealId,
-      actorId,
-    });
-    return { dealId, ...state };
   }
 
   async create(
@@ -449,12 +421,13 @@ export class DealsService {
       this.countLinkedDealAssets(id, ['CONTRACT']),
     ]);
     validateDealStageGate({ ...current, linkedOfferAssetCount, linkedContractAssetCount }, status);
+    let wonWhatsApp = null as Awaited<ReturnType<typeof loadDealWonWhatsAppContext>> | null;
     if (status === 'WON') {
       validateDealWonGate(current);
-      const whatsapp = await loadDealWonWhatsAppContext(this.prisma, current);
+      wonWhatsApp = await loadDealWonWhatsAppContext(this.prisma, current);
       validateDealWonWhatsAppGate({
         dealType: current.type,
-        ...whatsapp,
+        ...wonWhatsApp,
         whatsappAction: options.whatsappAction,
         whatsappGroupChatId: options.whatsappGroupChatId,
       });
@@ -469,13 +442,12 @@ export class DealsService {
       });
       await this.dealWonHandler.handle(
         deal,
-        options.whatsappAction
-          ? {
-              action: options.whatsappAction,
-              groupChatId: options.whatsappGroupChatId,
-              actorId: options.actorId,
-            }
-          : null,
+        resolveWonWhatsAppIntent({
+          action: options.whatsappAction,
+          groupChatId: options.whatsappGroupChatId,
+          actorId: options.actorId,
+          contextGroupChatId: wonWhatsApp?.groupChatId,
+        }),
       );
       return this.findById(id);
     }

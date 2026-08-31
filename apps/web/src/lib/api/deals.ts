@@ -78,6 +78,7 @@ export interface Deal {
   subscriptionTermMonths?: number | null;
   paymentType: string | null;
   projectId: string | null;
+  contactId?: string | null;
   taxStatus?: string;
   companyId?: string | null;
   sellerAssistantId?: string | null;
@@ -95,6 +96,14 @@ export interface Deal {
   deadline: string | null;
   pm: DealEmployeeRef | null;
   existingProductId: string | null;
+  whatsappGroupBinding?: {
+    id: string;
+    groupChatId: string | null;
+    groupName: string | null;
+    status: string;
+    lastErrorCode: string | null;
+    lastErrorMessage: string | null;
+  } | null;
   existingProduct: { id: string; name: string; productType: string } | null;
   offerSentAt: string | null;
   offerLink: string | null;
