@@ -331,9 +331,38 @@ body {
   }
 }
 
+@keyframes nbos-task-flame-flicker {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: drop-shadow(0 0 2.6px rgb(var(--nbos-task-ember-orange) / 0.55));
+  }
+  35% {
+    opacity: 0.71;
+    transform: scale(0.9);
+    filter: drop-shadow(0 0 5.2px rgb(var(--nbos-task-ember-amber) / 0.7));
+  }
+  70% {
+    opacity: 1;
+    transform: scale(var(--nbos-task-flame-pulse-scale));
+    filter: drop-shadow(0 0 7.8px rgb(var(--nbos-task-ember-red) / 0.45));
+  }
+}
+
 @layer utilities {
   .nbos-animate-pulse-soft {
     animation: nbos-pulse-soft 2s var(--motion-ease-out) infinite;
+  }
+
+  .nbos-task-flame-flicker {
+    --nbos-task-ember-orange: 249 115 22;
+    --nbos-task-ember-amber: 251 191 36;
+    --nbos-task-ember-red: 239 68 68;
+    --nbos-task-flame-flicker-duration: 1.15s;
+    --nbos-task-flame-pulse-scale: 1.3;
+    transform-origin: center;
+    animation: nbos-task-flame-flicker var(--nbos-task-flame-flicker-duration) ease-in-out infinite;
   }
 
   .detail-sheet-tab-panel-transition {
@@ -359,6 +388,12 @@ body {
     .detail-sheet-tab-panel-fading {
       opacity: 1;
       transform: none;
+    }
+
+    .nbos-task-flame-flicker {
+      animation: none;
+      transform: none;
+      filter: none;
     }
   }
 }
