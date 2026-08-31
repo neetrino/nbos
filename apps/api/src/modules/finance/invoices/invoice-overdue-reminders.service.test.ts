@@ -95,6 +95,8 @@ describe('InvoiceOverdueRemindersService', () => {
       overdueCandidate({
         id: 'inv-sub-off',
         subscription: {
+          name: 'Acme Site',
+          code: 'SUB-1',
           productId: 'prod-1',
           notificationsEnabled: false,
           reminderLanguage: 'HY',
@@ -212,6 +214,8 @@ function baseOverdue() {
     company: { name: 'ACME' },
     clientServiceRecord: null,
     subscription: {
+      name: 'Acme Site',
+      code: 'SUB-1',
       productId: 'prod-1',
       notificationsEnabled: true,
       reminderLanguage: 'HY' as const,

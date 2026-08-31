@@ -124,6 +124,7 @@ export class InvoicesController {
       taxStatus?: string;
       companyId?: string | null;
       projectId?: string | null;
+      orderComment?: string | null;
     },
   ) {
     return this.invoicesService.updateGeneral(id, body);

@@ -40,6 +40,8 @@ type OverdueCandidate = {
     product: { id: string; name: string } | null;
   } | null;
   subscription: {
+    name: string;
+    code: string;
     productId: string;
     notificationsEnabled: boolean;
     reminderLanguage: SubscriptionReminderLanguage;
@@ -217,6 +219,7 @@ export class InvoiceOverdueRemindersService {
     const existing = await this.prisma.notificationJob.findUnique({ where: { dedupeKey } });
     if (existing) return { kind: 'skip', reason: 'already_sent' };
     const resolved = resolveOverdueReminderRenderInput({
+      code: item.invoice.code,
       amount: item.invoice.amount,
       taxStatus: item.invoice.taxStatus,
       coverageStartMonth: item.invoice.coverageStartMonth,

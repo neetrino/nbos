@@ -14,6 +14,8 @@ export const paymentReminderSelect = {
   company: { select: { name: true } },
   subscription: {
     select: {
+      name: true,
+      code: true,
       productId: true,
       billingDay: true,
       notificationsEnabled: true,

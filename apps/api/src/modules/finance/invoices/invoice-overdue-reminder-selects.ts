@@ -20,6 +20,8 @@ export const overdueReminderSelect = {
   },
   subscription: {
     select: {
+      name: true,
+      code: true,
       productId: true,
       notificationsEnabled: true,
       reminderLanguage: true,

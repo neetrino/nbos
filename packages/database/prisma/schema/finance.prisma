@@ -90,6 +90,15 @@ enum InvoiceMoneyStatusEnum {
   CANCELLED
 }
 
+/// Accountant note for deal/order invoices (`02-Invoices-and-Payments.md`).
+enum InvoiceOrderCommentEnum {
+  FIRST_PHASE
+  INTERMEDIATE_PHASE
+  FINAL_PHASE
+  EXECUTION
+  MAINTENANCE
+}
+
 model Invoice {
   id                    String                 @id @default(uuid())
   code                  String                 @unique
@@ -102,6 +111,8 @@ model Invoice {
   taxStatus             TaxStatus              @default(TAX) @map("tax_status")
   type                  InvoiceTypeEnum
   moneyStatus           InvoiceMoneyStatusEnum @default(NEW) @map("money_status")
+  /// Deal/order accountant note. Null on billing/client-service invoices and New cards.
+  orderComment          InvoiceOrderCommentEnum? @map("order_comment")
   /// First month covered by this invoice (`YYYY-MM`, UTC calendar month). Subscription / prepayment invoices per `03-Subscriptions`.
   coverageStartMonth    String?                @map("coverage_start_month") @db.VarChar(7)
   /// Number of consecutive months covered starting at `coverageStartMonth` (e.g. 12 for yearly prepayment).

@@ -1,45 +1,20 @@
-import type { InvoiceTypeEnum } from '@nbos/database';
-import { formatCoverageMonthLabel } from './subscription-payment-reminder-templates';
+export { buildOfficialInvoicePurpose } from './invoice-official-note';
 
 const ISSUE_MARK = '✅✅✅✅';
 const CANCEL_MARK = '❌❌❌❌';
 
 export interface OfficialInvoiceWhatsAppFields {
   code: string;
-  type: InvoiceTypeEnum;
   amount: unknown;
   companyName: string;
   companyTaxId: string;
   purpose: string;
 }
 
-export function buildOfficialInvoicePurpose(input: {
-  type: InvoiceTypeEnum;
-  code: string;
-  productName?: string | null;
-  coverageStartMonth?: string | null;
-  clientServiceName?: string | null;
-  projectName?: string | null;
-  orderCode?: string | null;
-}): string {
-  if (input.type === 'SUBSCRIPTION') {
-    const month = formatCoverageMonthLabel(input.coverageStartMonth ?? null, 'HY');
-    const product = input.productName?.trim() || input.code;
-    return month ? `«${product}» — ${month}` : product;
-  }
-  if (input.type === 'DOMAIN' || input.type === 'SERVICE') {
-    return input.clientServiceName?.trim() || input.projectName?.trim() || input.code;
-  }
-  if (input.type === 'DEVELOPMENT' || input.type === 'EXTENSION') {
-    return input.projectName?.trim() || input.orderCode?.trim() || input.code;
-  }
-  return input.code;
-}
-
 export function renderOfficialInvoiceIssueMessage(fields: OfficialInvoiceWhatsAppFields): string {
   return [
     ISSUE_MARK,
-    `Խնդրում եմ դուրս գրել հաշիվ ID${fields.code}`,
+    'Խնդրում եմ դուրս գրել հաշիվ',
     '',
     'Իրավաբանական տեղեկություն՝',
     fields.companyTaxId,
@@ -54,7 +29,7 @@ export function renderOfficialInvoiceIssueMessage(fields: OfficialInvoiceWhatsAp
 
 export function renderOfficialInvoiceCancelMessage(fields: OfficialInvoiceWhatsAppFields): string {
   return [
-    `Խնդրում եմ այս հաշիվը չեղարկել ID${fields.code}`,
+    'Խնդրում եմ այս հաշիվը չեղարկել',
     CANCEL_MARK,
     '',
     'Իրավաբանական տեղեկություն՝',

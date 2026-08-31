@@ -23,10 +23,7 @@ describe('InvoiceCardRemindersService', () => {
     const officialWhatsApp = {
       enqueueIfAwaitingEligible: vi.fn().mockResolvedValue(undefined),
     };
-    service = new InvoiceCardRemindersService(
-      prisma as never,
-      officialWhatsApp as never,
-    );
+    service = new InvoiceCardRemindersService(prisma as never, officialWhatsApp as never);
     prisma.invoice.findMany.mockResolvedValueOnce([
       officialCandidate({
         id: 'inv-1',
@@ -227,6 +224,8 @@ function paymentCandidate(
     paymentReminderCycle: 0,
     company: { name: 'ACME' },
     subscription: {
+      name: 'Site A',
+      code: 'SUB-1',
       productId: 'prod-1',
       billingDay,
       notificationsEnabled: true,

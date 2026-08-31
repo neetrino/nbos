@@ -74,6 +74,7 @@ export interface InvoiceDealSummary {
   id: string;
   name: string | null;
   code: string;
+  type?: string | null;
 }
 
 export interface InvoiceOrderSummary {
@@ -107,6 +108,7 @@ export interface Invoice {
   officialInvoiceSentAt: string | null;
   officialInvoiceCancelledAt: string | null;
   notificationsEnabled: boolean;
+  orderComment: string | null;
   description: string | null;
   createdAt: string;
   order: InvoiceOrderSummary | null;
@@ -487,6 +489,7 @@ export const invoicesApi = {
       taxStatus?: string;
       companyId?: string | null;
       projectId?: string | null;
+      orderComment?: string | null;
     },
   ): Promise<Invoice> {
     const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}`, data);

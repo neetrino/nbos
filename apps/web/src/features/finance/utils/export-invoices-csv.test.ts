@@ -22,6 +22,7 @@ function minimalInvoice(overrides: Partial<Invoice>): Invoice {
     officialInvoiceSentAt: null,
     officialInvoiceCancelledAt: null,
     notificationsEnabled: true,
+    orderComment: null,
     description: null,
     createdAt: '2026-04-28T12:00:00.000Z',
     order: null,
@@ -46,6 +47,7 @@ describe('buildInvoicesCsvContent', () => {
     expect(csv.split('\r\n')).toHaveLength(1);
     expect(csv).toContain('coveragePaidAmount');
     expect(csv).toContain('moneyStatus');
+    expect(csv).toContain('displayTitle');
   });
 
   it('escapes commas in description', () => {

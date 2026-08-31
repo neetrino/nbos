@@ -94,6 +94,19 @@ describe('invoice-money-status-gate-client', () => {
     expect(errors.map((error) => error.field)).toEqual(['companyTaxId']);
   });
 
+  it('blocks order invoices entering Awaiting without an accountant note', () => {
+    const errors = getLocalInvoiceMoneyStatusGateErrors(
+      baseInvoice({
+        orderId: 'ord-1',
+        orderComment: null,
+        moneyStatus: 'NEW',
+        taxStatus: 'TAX_FREE',
+      }),
+      'AWAITING_PAYMENT',
+    );
+    expect(errors[0]?.field).toBe('orderComment');
+  });
+
   it('blocks Tax Paid when official request is not sent', () => {
     const errors = getLocalInvoiceMoneyStatusGateErrors(
       baseInvoice({ officialInvoiceRequestSent: false }),

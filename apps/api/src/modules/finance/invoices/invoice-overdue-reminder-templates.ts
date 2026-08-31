@@ -14,6 +14,7 @@ export interface RenderOverdueReminderInput {
   source: ClientPaymentReminderSource;
   serviceLabel: string;
   periodLabel: string;
+  invoiceCode?: string;
   amount: unknown;
   taxStatus: TaxStatus;
 }
@@ -105,7 +106,11 @@ export function renderOverdueReminderMessage(input: RenderOverdueReminderInput):
     periodSuffix: PERIOD_SUFFIX[input.source][input.language],
   });
   const amountLine = fillTemplate(copy.amountLine, { amount: formatAmdAmount(input.amount) });
-  const lines = [copy.greeting, purpose, amountLine];
+  const lines = [copy.greeting, purpose];
+  if (input.invoiceCode?.trim()) {
+    lines.push(input.invoiceCode.trim());
+  }
+  lines.push(amountLine);
   if (input.taxStatus === 'TAX_FREE') {
     lines.push(buildTaxFreePayBlock(input.language));
   } else {

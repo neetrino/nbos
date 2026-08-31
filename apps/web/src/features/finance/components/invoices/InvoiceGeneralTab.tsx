@@ -10,6 +10,7 @@ import { FinanceProofAttachments } from '@/features/finance/components/FinancePr
 import { DetailSheetSection } from '@/components/shared';
 import { InvoiceGeneralBillingFields } from './InvoiceGeneralBillingFields';
 import { InvoiceManualContextFields } from './InvoiceManualContextFields';
+import { InvoiceOrderCommentField } from './InvoiceOrderCommentField';
 import { InvoiceMoneyCard } from './InvoiceMoneyCard';
 import type { InvoiceGeneralDraft } from '@/features/finance/utils/invoice-general-form-state';
 
@@ -32,7 +33,20 @@ export function InvoiceGeneralTab({
 }: InvoiceGeneralTabProps) {
   const billingFields =
     draft && onInvoiceUpdated ? (
-      <InvoiceGeneralBillingFields draft={draft} patchDraft={patchDraft} disabled={formDisabled} />
+      <>
+        <InvoiceGeneralBillingFields
+          draft={draft}
+          patchDraft={patchDraft}
+          disabled={formDisabled}
+        />
+        <InvoiceOrderCommentField
+          invoice={invoice}
+          draft={draft}
+          patchDraft={patchDraft}
+          gateRequiredFields={gateRequiredFields}
+          disabled={formDisabled}
+        />
+      </>
     ) : null;
 
   return (

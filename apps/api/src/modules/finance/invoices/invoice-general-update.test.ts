@@ -21,4 +21,16 @@ describe('parseUpdateInvoiceGeneralInput', () => {
   it('rejects empty patch', () => {
     expect(() => parseUpdateInvoiceGeneralInput({})).toThrow(BadRequestException);
   });
+
+  it('accepts a deal/order accountant note', () => {
+    expect(parseUpdateInvoiceGeneralInput({ orderComment: 'FIRST_PHASE' })).toEqual({
+      orderComment: 'FIRST_PHASE',
+    });
+  });
+
+  it('rejects an unknown accountant note', () => {
+    expect(() => parseUpdateInvoiceGeneralInput({ orderComment: 'OTHER' })).toThrow(
+      BadRequestException,
+    );
+  });
 });

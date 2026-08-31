@@ -36,6 +36,8 @@ interface PaymentWindowCandidate {
   paymentReminderCycle: number;
   company: { name: string } | null;
   subscription: {
+    name: string;
+    code: string;
     productId: string;
     billingDay: number;
     notificationsEnabled: boolean;
@@ -140,6 +142,7 @@ async function createPaymentWindowJob(
     return { created: false, type, invoiceId: invoice.id, reason: 'existing' };
   }
   const resolved = resolvePaymentReminderRenderInput({
+    code: invoice.code,
     amount: invoice.amount,
     taxStatus: invoice.taxStatus,
     coverageStartMonth: invoice.coverageStartMonth,

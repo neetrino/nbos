@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import { DETAIL_SHEET_SECTION_BODY_CLASS } from '@/components/shared/detail-sheet-classes';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { getOfficialInvoiceRequestSendErrors } from '@nbos/shared';
+import {
+  getOfficialInvoiceOrderCommentSendErrors,
+  getOfficialInvoiceRequestSendErrors,
+} from '@nbos/shared';
 import { invoicesApi, type Invoice } from '@/lib/api/finance';
 
 interface InvoiceOfficialRequestPanelProps {
@@ -46,11 +49,17 @@ export function InvoiceOfficialRequestPanel({
   }
 
   const status = officialRequestStatus(invoice);
-  const sendBlocked = getOfficialInvoiceRequestSendErrors({
-    taxStatus: invoice.taxStatus,
-    companyId: invoice.companyId,
-    company: invoice.company,
-  });
+  const sendBlocked = [
+    ...getOfficialInvoiceRequestSendErrors({
+      taxStatus: invoice.taxStatus,
+      companyId: invoice.companyId,
+      company: invoice.company,
+    }),
+    ...getOfficialInvoiceOrderCommentSendErrors({
+      orderId: invoice.orderId,
+      orderComment: invoice.orderComment,
+    }),
+  ];
   const canSend = sendBlocked.length === 0;
   const showSendActions = invoice.moneyStatus !== 'CANCELLED';
 
