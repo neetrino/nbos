@@ -55,7 +55,11 @@ import {
   extractContactLanguage,
 } from './whatsapp-client-invite-message.builder';
 import type { WhatsAppProductGroupJobPayload } from './whatsapp-product-groups-queue.service';
-import { WhatsAppProductGroupsQueueService } from './whatsapp-product-groups-queue.service';
+import {
+  isDealWhatsAppCreateJob,
+  WhatsAppProductGroupsQueueService,
+} from './whatsapp-product-groups-queue.service';
+import { DealWhatsAppGroupCreateHandler } from './deal-whatsapp-group-create.handler';
 import { WhatsAppOutboundQueueService } from './whatsapp-outbound-queue.service';
 
 @Injectable()
@@ -71,6 +75,7 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     private readonly participants: ProductWhatsAppParticipantResolver,
     private readonly audit: AuditService,
     private readonly queue: WhatsAppProductGroupsQueueService,
+    private readonly dealCreate: DealWhatsAppGroupCreateHandler,
     private readonly outbound: WhatsAppOutboundQueueService,
     private readonly registry: BullmqWorkerRegistry,
     @Optional() private readonly opsAlerts?: OpsJobFailureAlertService,
@@ -118,7 +123,14 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     );
     this.registry.register(WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME);
     this.worker.on('failed', (job, error) => {
-      this.logger.error(`WhatsApp job failed operationId=${job?.data.operationId}`, error);
+      this.logger.error(
+        `WhatsApp job failed ${
+          job?.data && isDealWhatsAppCreateJob(job.data)
+            ? `dealBinding=${job.data.bindingId}`
+            : `operationId=${job?.data && 'operationId' in job.data ? job.data.operationId : 'unknown'}`
+        }`,
+        error,
+      );
       void this.onJobExhausted(job, error);
       void this.opsAlerts?.notifyIfBullmqFinallyFailed(
         WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
@@ -136,6 +148,10 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
   }
 
   async process(job: Job<WhatsAppProductGroupJobPayload>): Promise<void> {
+    if (isDealWhatsAppCreateJob(job.data)) {
+      await this.dealCreate.process(job.data.bindingId);
+      return;
+    }
     const operation = await this.prisma.whatsAppGroupOperation.findUnique({
       where: { id: job.data.operationId },
     });
@@ -897,7 +913,13 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     job: Job<WhatsAppProductGroupJobPayload> | undefined,
     error: Error,
   ): Promise<void> {
-    if (!job?.data.operationId) return;
+    if (!job?.data) return;
+    if (isDealWhatsAppCreateJob(job.data)) {
+      if (job.attemptsMade < (job.opts.attempts ?? 1)) return;
+      await this.dealCreate.markExhausted(job.data.bindingId, error);
+      return;
+    }
+    if (!job.data.operationId) return;
     const maxAttempts = job.opts.attempts ?? 1;
     if (job.attemptsMade < maxAttempts) return;
 

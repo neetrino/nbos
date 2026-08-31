@@ -159,10 +159,14 @@ For Product/Outsource Deal Won, normal communication handoff should resolve the 
 Allowed paths:
 
 ```text
+Use existing Deal client group as Product WORK
+or
 Create new WORK WhatsApp group
 or
 Bind/select an existing allowed External Conversation
 ```
+
+A Deal-level client group may already exist before Product is created. See `M-WA-06`.
 
 A separate FINANCE destination is optional. It can be configured later in Product Client Communication settings instead of making every Deal Won flow handle an enterprise-only finance-group case.
 
