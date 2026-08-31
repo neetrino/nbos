@@ -13,7 +13,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { productWhatsAppApi, type WhatsAppAvailableGroup } from '@/lib/api/whatsapp';
-import { WA_OUTLINE_ACTION_BUTTON, WA_SECTION_CARD } from './product-whatsapp-settings-ui';
+import { cn } from '@/lib/utils';
+import {
+  WA_COMPACT_FIELD,
+  WA_COMPACT_SECTION_CARD,
+  WA_OUTLINE_ACTION_BUTTON,
+} from './product-whatsapp-settings-ui';
 
 const REPLACE_BINDING_CONFIRM =
   'Replace the current Product WhatsApp binding? The old WhatsApp group will not be deleted.';
@@ -67,12 +72,8 @@ function PasteGroupIdControls(props: {
   }
 
   return (
-    <BindSection
-      icon={Link2}
-      title="Paste group ID"
-      description="Paste group link or ID to bind it with this product."
-    >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+    <BindSection icon={Link2} title="Paste group ID">
+      <div className="flex items-center gap-2">
         <div className="relative min-w-0 flex-1">
           <Input
             id="wa-group-id"
@@ -80,11 +81,11 @@ function PasteGroupIdControls(props: {
             onChange={(event) => setPastedGroupId(event.target.value)}
             placeholder="120363… or 120363…@g.us"
             disabled={props.busy}
-            className="pr-10"
+            className={cn(WA_COMPACT_FIELD, 'pr-9')}
           />
           <Button
             type="button"
-            size="icon-sm"
+            size="icon-xs"
             variant="ghost"
             aria-label="Paste from clipboard"
             className="text-muted-foreground absolute top-1/2 right-1 -translate-y-1/2"
@@ -96,6 +97,7 @@ function PasteGroupIdControls(props: {
         </div>
         <Button
           type="button"
+          size="sm"
           variant="outline"
           className={WA_OUTLINE_ACTION_BUTTON}
           disabled={props.busy || !pastedGroupId.trim()}
@@ -110,8 +112,8 @@ function PasteGroupIdControls(props: {
             })
           }
         >
-          <Save className="size-3.5" aria-hidden />
-          Save group ID
+          <Save aria-hidden />
+          Save ID
         </Button>
       </div>
     </BindSection>
@@ -132,13 +134,9 @@ function SelectExistingGroupControls(props: {
   run: (action: () => Promise<unknown>, successMessage: string) => Promise<void>;
 }) {
   return (
-    <BindSection
-      icon={Search}
-      title="Select existing group"
-      description="Search and bind an existing WhatsApp group."
-    >
+    <BindSection icon={Search} title="Select existing group">
       <div className="space-y-2">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-2">
           <div className="relative min-w-0 flex-1">
             <Input
               id="wa-group-search"
@@ -146,15 +144,16 @@ function SelectExistingGroupControls(props: {
               onChange={(event) => props.onSearchChange(event.target.value)}
               placeholder="Search groups…"
               disabled={props.gatewayActionsDisabled}
-              className="pr-10"
+              className={cn(WA_COMPACT_FIELD, 'pr-9')}
             />
             <Search
-              className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 size-3.5 -translate-y-1/2"
+              className="text-muted-foreground pointer-events-none absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2"
               aria-hidden
             />
           </div>
           <Button
             type="button"
+            size="sm"
             variant="outline"
             className={WA_OUTLINE_ACTION_BUTTON}
             disabled={props.gatewayActionsDisabled || !props.selectedGroupId}
@@ -169,8 +168,8 @@ function SelectExistingGroupControls(props: {
               })
             }
           >
-            <Link2 className="size-3.5" aria-hidden />
-            Bind selected group
+            <Link2 aria-hidden />
+            Bind
           </Button>
         </div>
         <WhatsAppGroupSelect
@@ -188,25 +187,17 @@ function SelectExistingGroupControls(props: {
 function BindSection({
   icon: Icon,
   title,
-  description,
   children,
 }: {
   icon: typeof Link2;
   title: string;
-  description: string;
   children: ReactNode;
 }) {
   return (
-    <section className={WA_SECTION_CARD}>
-      <div className="mb-3 flex items-start gap-2">
-        <Icon
-          className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400"
-          aria-hidden
-        />
-        <div className="min-w-0">
-          <h4 className="text-foreground text-sm font-semibold">{title}</h4>
-          <p className="text-muted-foreground text-xs">{description}</p>
-        </div>
+    <section className={WA_COMPACT_SECTION_CARD}>
+      <div className="mb-2 flex items-center gap-2">
+        <Icon className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden />
+        <h4 className="text-foreground text-sm font-semibold">{title}</h4>
       </div>
       {children}
     </section>
@@ -233,7 +224,7 @@ function WhatsAppGroupSelect(props: {
         if (value) props.onSelectedGroupIdChange(value);
       }}
     >
-      <SelectTrigger className="w-full" aria-label="Select WhatsApp group">
+      <SelectTrigger className={cn(WA_COMPACT_FIELD, 'w-full')} aria-label="Select WhatsApp group">
         <SelectValue placeholder="Select a group…">
           {(value: string | null) => formatSelectedGroupLabel(value, props.groups)}
         </SelectValue>

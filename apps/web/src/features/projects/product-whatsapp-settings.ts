@@ -46,6 +46,16 @@ export function nextProductWhatsAppSettingsState(
   return loaded ?? previous;
 }
 
+export const CLIENT_INVITE_CONFIRM = 'Send client invitation to this group?';
+
+export const CLIENT_INVITE_RESEND_CONFIRM =
+  'Resend client invitation? Only confirm if the previous send is safe to retry.';
+
+/** SENT and unknown outcomes require an explicit forceResend, otherwise the API no-ops or 409s. */
+export function clientInviteNeedsForceResend(invitationStatus: string | null | undefined): boolean {
+  return invitationStatus === 'SENT' || invitationStatus === 'OUTCOME_UNKNOWN';
+}
+
 /** Stored ID can refresh name/metadata from Gateway without re-pasting. */
 export function canRefreshProductWhatsAppFromStoredId(input: {
   groupChatId: string | null | undefined;
