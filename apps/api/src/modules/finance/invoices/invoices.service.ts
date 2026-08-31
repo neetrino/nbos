@@ -55,7 +55,11 @@ import {
 import { resolveCreateInvoiceType } from './invoice-create-resolver';
 import { resolveInvoiceCreateSchedule } from './invoice-subscription-create-schedule';
 import { resolveInvoiceProjectRow } from './invoice-project-resolve';
-import { INVOICE_ORDER_DETAIL_INCLUDE, INVOICE_ORDER_SELECT } from './invoice-order-select';
+import {
+  INVOICE_CLIENT_SERVICE_SELECT,
+  INVOICE_ORDER_DETAIL_INCLUDE,
+  INVOICE_ORDER_SELECT,
+} from './invoice-order-select';
 import type { FinanceInvoiceAccessContext } from './finance-invoice-access';
 import {
   mergeInvoiceWhere,
@@ -181,6 +185,7 @@ export class InvoicesService {
             },
           },
           company: { select: { id: true, name: true, legalName: true, taxId: true } },
+          clientServiceRecord: { select: INVOICE_CLIENT_SERVICE_SELECT },
           payments: { select: { id: true, amount: true, paymentDate: true } },
           _count: { select: { payments: true } },
         },
@@ -210,6 +215,7 @@ export class InvoicesService {
         order: { include: INVOICE_ORDER_DETAIL_INCLUDE },
         subscription: { include: { project: true } },
         company: true,
+        clientServiceRecord: { select: INVOICE_CLIENT_SERVICE_SELECT },
         payments: true,
       },
     });

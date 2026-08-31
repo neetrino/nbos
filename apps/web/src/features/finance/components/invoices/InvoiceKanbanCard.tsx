@@ -3,8 +3,9 @@
 import type { KeyboardEvent, ReactNode } from 'react';
 import { AlertTriangle, Building2, Calendar, CheckCircle2, FolderKanban } from 'lucide-react';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
-import { formatAmount, INVOICE_TYPES } from '@/features/finance/constants/finance';
+import { formatAmount } from '@/features/finance/constants/finance';
 import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
+import { getInvoiceSourceLabel } from '@/features/finance/utils/invoice-source-label';
 import { getInvoiceDisplayTitle } from '@/features/finance/utils/order-display';
 import { parseMoneyAmount } from '@/lib/format/money';
 import type { Invoice } from '@/lib/api/finance';
@@ -18,8 +19,7 @@ interface InvoiceKanbanCardProps {
 }
 
 export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCardProps) {
-  const type = INVOICE_TYPES.find((invoiceType) => invoiceType.value === invoice.type);
-  const typeLabel = (type?.label ?? invoice.type.replace(/_/g, ' ')).toUpperCase();
+  const sourceLabel = getInvoiceSourceLabel(invoice);
   const title = getInvoiceDisplayTitle(invoice);
   const showCodeSubline = title !== invoice.code;
   const overdueDays = resolveInvoiceOverdueDays(invoice);
@@ -51,7 +51,7 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
             <div className="flex items-center justify-between gap-2">
               <p className="text-foreground truncate text-sm leading-none font-bold">{title}</p>
               <StatusBadge
-                label={typeLabel}
+                label={sourceLabel}
                 variant="blue"
                 className="shrink-0 rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
               />

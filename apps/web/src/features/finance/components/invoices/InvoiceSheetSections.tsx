@@ -9,7 +9,7 @@ import {
   StatusBadge,
 } from '@/components/shared';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
-import { getInvoiceMoneyStage } from '@/features/finance/constants/finance';
+import { getInvoiceSourceLabel } from '@/features/finance/utils/invoice-source-label';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
 import { subscriptionsListWithOpenSubscriptionHref } from '@/features/finance/constants/subscription-deep-link';
 import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
@@ -25,9 +25,9 @@ import { INVOICE_GATE_FIELD_COMPANY } from '@/features/finance/constants/invoice
 export type InvoiceSheetInvoice = Invoice;
 
 export function InvoiceSheetBadge({ invoice }: { invoice: InvoiceSheetInvoice }) {
-  const money = getInvoiceMoneyStage(invoice.moneyStatus);
-  if (!money) return null;
-  return <StatusBadge label={money.label} variant={money.variant} className="self-center" />;
+  return (
+    <StatusBadge label={getInvoiceSourceLabel(invoice)} variant="blue" className="self-center" />
+  );
 }
 
 export function InvoiceOfficialSection({

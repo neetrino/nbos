@@ -81,6 +81,17 @@ describe('InvoicesService', () => {
       expect(result.meta.page).toBe(1);
     });
 
+    it('includes client service type for sheet source labels', async () => {
+      await service.findAll({});
+      expect(prisma.invoice.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            clientServiceRecord: { select: { id: true, type: true } },
+          }),
+        }),
+      );
+    });
+
     it('scopes list by project participation when view scope is not ALL', async () => {
       await service.findAll({
         access: { employeeId: 'emp-1', departmentIds: [], viewScope: 'OWN' },
@@ -173,6 +184,18 @@ describe('InvoicesService', () => {
   describe('findById', () => {
     it('throws NotFoundException', async () => {
       await expect(service.findById('x')).rejects.toThrow(NotFoundException);
+    });
+
+    it('includes client service type for sheet source labels', async () => {
+      prisma.invoice.findUnique.mockResolvedValue(mockInvoiceFindByIdRow('1'));
+      await service.findById('1');
+      expect(prisma.invoice.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            clientServiceRecord: { select: { id: true, type: true } },
+          }),
+        }),
+      );
     });
   });
 
