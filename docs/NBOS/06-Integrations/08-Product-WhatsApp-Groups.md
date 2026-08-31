@@ -79,7 +79,7 @@ Group creation/binding remains an explicit business action.
 
 Normal entry points:
 
-- Deal card Actions can create or bind a client WhatsApp group before Product exists (`PRODUCT` / `OUTSOURCE`, primary Contact required);
+- Deal card WhatsApp control can create or bind a client WhatsApp group before Product exists (`PRODUCT` / `OUTSOURCE`, primary Contact required);
 - Deal Won handoff for `PRODUCT` / `OUTSOURCE` resolves the Product `WORK` destination — default is bind the existing Deal group;
 - Product Client Communication Settings can create/bind/replace WORK or FINANCE destinations;
 - retry/reconciliation occurs from explicit settings/actions after failure.

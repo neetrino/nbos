@@ -46,6 +46,15 @@ export function nextProductWhatsAppSettingsState(
   return loaded ?? previous;
 }
 
+/** Stored ID can refresh name/metadata from Gateway without re-pasting. */
+export function canRefreshProductWhatsAppFromStoredId(input: {
+  groupChatId: string | null | undefined;
+  busy: boolean;
+  gatewayConfigured: boolean;
+}): boolean {
+  return Boolean(input.groupChatId && !input.busy && input.gatewayConfigured);
+}
+
 /** Fields Product settings renders from getState — independent of Gateway health. */
 export function productWhatsAppBindingView(
   state: ProductWhatsAppState | null,

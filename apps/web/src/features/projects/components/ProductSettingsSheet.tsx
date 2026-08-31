@@ -11,9 +11,10 @@ import {
   type ProductWhatsAppState,
   type WhatsAppAvailableGroup,
 } from '@/lib/api/whatsapp';
-import { isWhatsAppCreateInFlight } from '@/features/crm/whatsapp-create-status';
+import { isWhatsAppCreateInFlightFromLatest } from '@/features/crm/whatsapp-create-status';
 import { cn } from '@/lib/utils';
 import {
+  canRefreshProductWhatsAppFromStoredId,
   loadProductWhatsAppSettings,
   nextProductWhatsAppSettingsState,
 } from '../product-whatsapp-settings';
@@ -98,8 +99,25 @@ export function ProductSettingsSheet({
 
   const binding = state?.binding;
   const status = binding?.status ?? 'NOT_STARTED';
-  const createInFlight =
-    isWhatsAppCreateInFlight(status) || isWhatsAppCreateInFlight(state?.latestOperation?.status);
+  const createInFlight = isWhatsAppCreateInFlightFromLatest({
+    bindingStatus: status,
+    latestOperationType: state?.latestOperation?.type,
+    latestOperationStatus: state?.latestOperation?.status,
+  });
+  const canSyncFromGroupId = canRefreshProductWhatsAppFromStoredId({
+    groupChatId: binding?.groupChatId,
+    busy,
+    gatewayConfigured,
+  });
+
+  function syncFromStoredGroupId() {
+    const groupChatId = binding?.groupChatId;
+    if (!groupChatId) return;
+    void run(
+      () => productWhatsAppApi.bind(productId, { groupChatId }),
+      'Group details synced',
+    );
+  }
 
   return (
     <PermissionGate module="PROJECTS" action="EDIT">
@@ -136,6 +154,9 @@ export function ProductSettingsSheet({
             lastSuccessfulSyncAt={binding?.lastSuccessfulSyncAt}
             invitationStatus={state?.invitation?.status}
             lastErrorMessage={binding?.lastErrorMessage}
+            syncBusy={busy}
+            canSyncFromGroupId={canSyncFromGroupId}
+            onSyncFromGroupId={syncFromStoredGroupId}
           />
 
           <ProductWhatsAppActionGrid

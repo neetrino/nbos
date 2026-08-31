@@ -3,6 +3,7 @@ import { ApiError } from '@/lib/api-errors';
 import type { ProductWhatsAppState } from '@/lib/api/whatsapp';
 import { isMissingActiveWhatsAppGroup } from '@/features/crm/deal-won-whatsapp-gate';
 import {
+  canRefreshProductWhatsAppFromStoredId,
   loadProductWhatsAppSettings,
   nextProductWhatsAppSettingsState,
   productWhatsAppBindingView,
@@ -80,6 +81,30 @@ describe('loadProductWhatsAppSettings', () => {
     expect(snapshot.gatewayNotice).toBeNull();
     expect(snapshot.groups).toHaveLength(1);
     expect(snapshot.selectedGroupId).toBe(TOONEXPO_GROUP_CHAT_ID);
+  });
+
+  it('allows refresh from a stored group ID only when Gateway is ready', () => {
+    expect(
+      canRefreshProductWhatsAppFromStoredId({
+        groupChatId: TOONEXPO_GROUP_CHAT_ID,
+        busy: false,
+        gatewayConfigured: true,
+      }),
+    ).toBe(true);
+    expect(
+      canRefreshProductWhatsAppFromStoredId({
+        groupChatId: TOONEXPO_GROUP_CHAT_ID,
+        busy: false,
+        gatewayConfigured: false,
+      }),
+    ).toBe(false);
+    expect(
+      canRefreshProductWhatsAppFromStoredId({
+        groupChatId: null,
+        busy: false,
+        gatewayConfigured: true,
+      }),
+    ).toBe(false);
   });
 });
 
