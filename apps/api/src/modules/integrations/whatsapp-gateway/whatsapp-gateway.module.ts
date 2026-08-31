@@ -30,6 +30,7 @@ import { WhatsAppOutboundQueueService } from './whatsapp-outbound-queue.service'
   exports: [
     ProductWhatsAppGroupService,
     DealWhatsAppGroupService,
+    DealWhatsAppGroupCreateHandler,
     WhatsAppGatewayConnectionService,
     WhatsAppGatewayClient,
     ProductWhatsAppParticipantResolver,
