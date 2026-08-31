@@ -89,6 +89,11 @@ export interface InvoiceSubscriptionSummary {
   name: string;
 }
 
+export interface InvoiceClientServiceSummary {
+  id: string;
+  type: string;
+}
+
 export interface Invoice {
   id: string;
   code: string;
@@ -96,6 +101,7 @@ export interface Invoice {
   subscriptionId: string | null;
   projectId: string | null;
   companyId: string | null;
+  clientServiceRecordId?: string | null;
   amount: string;
   currency: string;
   taxStatus: string;
@@ -113,6 +119,7 @@ export interface Invoice {
   createdAt: string;
   order: InvoiceOrderSummary | null;
   subscription?: InvoiceSubscriptionSummary | null;
+  clientServiceRecord?: InvoiceClientServiceSummary | null;
   company: { id: string; name: string; legalName?: string | null; taxId?: string | null } | null;
   project: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string } | null;

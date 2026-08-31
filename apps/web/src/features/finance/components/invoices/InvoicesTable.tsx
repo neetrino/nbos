@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
 import { getInvoiceMoneyStage } from '@/features/finance/constants/finance';
+import { getInvoiceSourceLabel } from '@/features/finance/utils/invoice-source-label';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
 import { getInvoiceDisplayTitle } from '@/features/finance/utils/order-display';
@@ -70,7 +71,7 @@ function InvoiceTableRow({
   onInvoiceClick: (invoice: Invoice) => void;
 }) {
   const money = getInvoiceMoneyStage(invoice.moneyStatus);
-  const typeLabel = invoice.type.replace(/_/g, ' ').toUpperCase();
+  const sourceLabel = getInvoiceSourceLabel(invoice);
   const title = getInvoiceDisplayTitle(invoice);
 
   return (
@@ -90,7 +91,7 @@ function InvoiceTableRow({
         )}
       </TableCell>
       <TableCell className={`${FINANCE_LIST_CELL_CLASS} ${FINANCE_LIST_TYPE_CLASS}`}>
-        {typeLabel}
+        {sourceLabel}
       </TableCell>
       <TableCell className={FINANCE_LIST_CELL_CLASS}>
         <FinanceListAmount amount={invoice.amount} currency={invoice.currency} />
