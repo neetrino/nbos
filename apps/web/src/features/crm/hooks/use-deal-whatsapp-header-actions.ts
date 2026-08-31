@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Deal } from '@/lib/api/deals';
 import { dealWhatsAppApi, type DealWhatsAppState } from '@/lib/api/whatsapp';
@@ -29,30 +29,43 @@ export function useDealWhatsAppHeaderActions(deal: Deal, onRefresh?: () => void)
   };
 }
 
+function dealWhatsAppFetchKey(deal: Deal): string {
+  return `${deal.id}:${deal.whatsappGroupBinding?.status ?? ''}:${deal.whatsappGroupBinding?.groupChatId ?? ''}`;
+}
+
 function useDealWhatsAppRemoteState(deal: Deal) {
-  const [whatsappState, setWhatsappState] = useState<DealWhatsAppState | null>(null);
-  const [stateReady, setStateReady] = useState(false);
+  const fetchKey = dealWhatsAppFetchKey(deal);
+  const [snapshot, setSnapshot] = useState<{
+    key: string;
+    ready: boolean;
+    state: DealWhatsAppState | null;
+  }>({ key: fetchKey, ready: false, state: null });
 
   useEffect(() => {
     let cancelled = false;
-    setStateReady(false);
-    setWhatsappState(null);
     void dealWhatsAppApi
       .getState(deal.id)
       .then((state) => {
         if (cancelled) return;
-        setWhatsappState(state);
-        setStateReady(true);
+        setSnapshot({ key: fetchKey, ready: true, state });
       })
       .catch(() => {
         if (cancelled) return;
-        setWhatsappState(null);
-        setStateReady(true);
+        setSnapshot({ key: fetchKey, ready: true, state: null });
       });
     return () => {
       cancelled = true;
     };
-  }, [deal.id, deal.whatsappGroupBinding?.status, deal.whatsappGroupBinding?.groupChatId]);
+  }, [deal.id, fetchKey]);
+
+  const matchesCurrentKey = snapshot.key === fetchKey;
+  const whatsappState = matchesCurrentKey ? snapshot.state : null;
+  const setWhatsappState = useCallback(
+    (state: DealWhatsAppState) => {
+      setSnapshot({ key: fetchKey, ready: true, state });
+    },
+    [fetchKey],
+  );
 
   return {
     bindingStatus: whatsappState?.binding?.status ?? deal.whatsappGroupBinding?.status ?? null,
@@ -60,7 +73,7 @@ function useDealWhatsAppRemoteState(deal: Deal) {
       whatsappState?.binding?.groupChatId ?? deal.whatsappGroupBinding?.groupChatId ?? null,
     latestOperationStatus: whatsappState?.latestOperation?.status,
     setWhatsappState,
-    stateReady,
+    stateReady: matchesCurrentKey && snapshot.ready,
   };
 }
 
@@ -111,62 +124,44 @@ function useDealWhatsAppMutations(
   return { bindOpen, handleBindWhatsApp, handleEnsureWhatsApp, setBindOpen, whatsappBusy };
 }
 
-function useDealWhatsAppActionItems(
-  deal: Deal,
-  input: {
-    bindingStatus: string | null;
-    groupChatId: string | null;
-    latestOperationStatus: string | undefined;
-    handleBindOpen: (open: boolean) => void;
-    handleEnsure: () => Promise<void>;
-    stateReady: boolean;
-    whatsappBusy: boolean;
-  },
-) {
+type DealWhatsAppActionInput = {
+  bindingStatus: string | null;
+  groupChatId: string | null;
+  latestOperationStatus: string | undefined;
+  handleBindOpen: (open: boolean) => void;
+  handleEnsure: () => Promise<void>;
+  stateReady: boolean;
+  whatsappBusy: boolean;
+};
+
+function useDealWhatsAppActionItems(deal: Deal, input: DealWhatsAppActionInput) {
   const router = useRouter();
   const productId = resolveDealProductId(deal);
   const projectId = deal.projectId ?? deal.orders?.[0]?.projectId;
+  const contactId = deal.contactId ?? deal.contact?.id ?? null;
 
-  return useMemo(
-    () =>
-      buildDealWhatsAppQuickActions({
-        dealType: deal.type,
-        contactId: deal.contactId ?? deal.contact?.id ?? null,
-        productId,
-        projectId,
-        bindingStatus: input.bindingStatus,
-        groupChatId: input.groupChatId,
-        latestOperationStatus: input.latestOperationStatus,
-        whatsappBusy: input.whatsappBusy,
-        stateReady: input.stateReady,
-        onEnsure: () => void input.handleEnsure(),
-        onBind: () => input.handleBindOpen(true),
-        onOpenSettings: (id) => {
-          router.push(
-            projectId ? `/projects/${projectId}/products/${id}?settings=whatsapp` : '/projects',
-          );
-        },
-        onCopyGroupId: (id) => {
-          void navigator.clipboard.writeText(id);
-          toast.success('WhatsApp group ID copied.');
-        },
-      }),
-    [
-      deal.contact?.id,
-      deal.contactId,
-      deal.type,
-      input.bindingStatus,
-      input.groupChatId,
-      input.handleBindOpen,
-      input.handleEnsure,
-      input.latestOperationStatus,
-      input.stateReady,
-      input.whatsappBusy,
-      productId,
-      projectId,
-      router,
-    ],
-  );
+  return buildDealWhatsAppQuickActions({
+    dealType: deal.type,
+    contactId,
+    productId,
+    projectId,
+    bindingStatus: input.bindingStatus,
+    groupChatId: input.groupChatId,
+    latestOperationStatus: input.latestOperationStatus,
+    whatsappBusy: input.whatsappBusy,
+    stateReady: input.stateReady,
+    onEnsure: () => void input.handleEnsure(),
+    onBind: () => input.handleBindOpen(true),
+    onOpenSettings: (id) => {
+      router.push(
+        projectId ? `/projects/${projectId}/products/${id}?settings=whatsapp` : '/projects',
+      );
+    },
+    onCopyGroupId: (id) => {
+      void navigator.clipboard.writeText(id);
+      toast.success('WhatsApp group ID copied.');
+    },
+  });
 }
 
 function resolveDealProductId(deal: Deal): string | null {
