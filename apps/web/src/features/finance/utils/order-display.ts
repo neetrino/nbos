@@ -1,12 +1,15 @@
-import { getDealDisplayTitle } from '@/features/crm/utils/crm-entity-display';
 import {
-  getSubscriptionDisplayTitle,
-  type SubscriptionDisplaySource,
-} from '@/features/finance/utils/subscription-display';
+  resolveInvoiceDisplaySubtitle,
+  resolveInvoiceDisplayTitle,
+  resolveOrderDisplayTitle,
+  type InvoiceDisplayTitleSource,
+} from '@nbos/shared';
+import { getDealDisplayTitle } from '@/features/crm/utils/crm-entity-display';
 
 export type OrderDealSummary = {
   name: string | null;
   code: string;
+  type?: string | null;
 };
 
 export type OrderWithOptionalDeal = {
@@ -14,38 +17,24 @@ export type OrderWithOptionalDeal = {
   deal?: OrderDealSummary | null;
 };
 
+export type InvoiceDisplaySource = InvoiceDisplayTitleSource;
+
 /** Human-readable order label — deal name when the order originated from a deal. */
 export function getOrderDisplayTitle(order: OrderWithOptionalDeal): string {
-  if (order.deal) {
-    return getDealDisplayTitle(order.deal);
-  }
-  return order.code;
+  return resolveOrderDisplayTitle(order);
 }
-
-export type InvoiceDisplaySource = {
-  code: string;
-  order?: OrderWithOptionalDeal | null;
-  subscription?: SubscriptionDisplaySource | null;
-};
 
 /**
  * Primary invoice title — order deal name, else subscription name, else invoice code.
  * Invoice code stays secondary in the UI when it is not the title.
  */
 export function getInvoiceDisplayTitle(invoice: InvoiceDisplaySource): string {
-  if (invoice.order) {
-    return getOrderDisplayTitle(invoice.order);
-  }
-  if (invoice.subscription) {
-    return getSubscriptionDisplayTitle(invoice.subscription);
-  }
-  return invoice.code;
+  return resolveInvoiceDisplayTitle(invoice);
 }
 
 /** Secondary invoice line — code when it is not already the primary title. */
 export function getInvoiceDisplaySubtitle(invoice: InvoiceDisplaySource): string | undefined {
-  const title = getInvoiceDisplayTitle(invoice);
-  return title !== invoice.code ? invoice.code : undefined;
+  return resolveInvoiceDisplaySubtitle(invoice);
 }
 
 export function getInvoiceDealTitle(

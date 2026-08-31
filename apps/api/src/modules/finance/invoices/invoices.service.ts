@@ -37,11 +37,8 @@ import {
 import { deriveBaseInvoiceMoneyStatus, parseInvoiceMoneyStatus } from './invoice-money-status';
 import { DealWonHandler } from '../../crm/deals/deal-won.handler';
 import { dealDetailInclude } from '../../crm/deals/deal.includes';
-import {
-  cancelOfficialInvoiceRequest,
-  sendOfficialInvoiceRequest,
-  updateOfficialInvoiceGovId,
-} from './invoice-official-request';
+import { updateOfficialInvoiceGovId } from './invoice-official-request';
+import { persistInvoiceCreate, notifyOfficialAfterInvoiceWrite } from './invoice-card-persist';
 import { InvoiceOfficialWhatsAppService } from './invoice-official-whatsapp.service';
 import {
   INVOICE_MONEY_STATUS_TRANSITION_SELECT,
@@ -241,8 +238,9 @@ export class InvoicesService {
     const bookedAt = schedule.dueDate;
     await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAt);
 
-    const invoice = await this.prisma.invoice.create({
-      data: {
+    const invoice = await persistInvoiceCreate(
+      this.prisma,
+      {
         code,
         orderId: data.orderId,
         subscriptionId: data.subscriptionId,
@@ -260,7 +258,8 @@ export class InvoicesService {
             }
           : {}),
       },
-    });
+      this.officialWhatsApp,
+    );
 
     const order = data.orderId
       ? await this.prisma.order.findUnique({
@@ -331,9 +330,7 @@ export class InvoicesService {
     }
 
     await this.writeManualMoneyStatus(invoice, moneyStatus, amount, paid, now);
-    if (moneyStatus === 'AWAITING_PAYMENT') {
-      await this.officialWhatsApp?.enqueueIfAwaitingEligible(id);
-    }
+    await notifyOfficialAfterInvoiceWrite(this.officialWhatsApp, { id, moneyStatus });
     return this.findById(id);
   }
 
@@ -441,21 +438,20 @@ export class InvoicesService {
   }
 
   async sendOfficialInvoiceRequest(id: string) {
-    if (this.officialWhatsApp) {
-      await this.officialWhatsApp.sendAndWait(id);
-    } else {
-      await sendOfficialInvoiceRequest(this.prisma, id);
-    }
+    await this.requireOfficialWhatsApp().sendAndWait(id);
     return this.findById(id);
   }
 
   async cancelOfficialInvoiceRequest(id: string) {
-    if (this.officialWhatsApp) {
-      await this.officialWhatsApp.cancelAndWait(id);
-    } else {
-      await cancelOfficialInvoiceRequest(this.prisma, id);
-    }
+    await this.requireOfficialWhatsApp().cancelAndWait(id);
     return this.findById(id);
+  }
+
+  private requireOfficialWhatsApp(): InvoiceOfficialWhatsAppService {
+    if (!this.officialWhatsApp) {
+      throw new BadRequestException('Official invoice WhatsApp is not available');
+    }
+    return this.officialWhatsApp;
   }
 
   async updateOfficialInvoiceGovId(id: string, govInvoiceId: string | null) {

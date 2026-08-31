@@ -345,6 +345,7 @@ describe('InvoicesService', () => {
         .mockResolvedValueOnce({
           id: 'inv-1',
           orderId: 'ord-1',
+          orderComment: 'FIRST_PHASE',
           amount: 100000,
           dueDate: new Date('2026-04-20'),
           payments: [
@@ -391,6 +392,7 @@ describe('InvoicesService', () => {
         .mockResolvedValueOnce({
           id: 'inv-2',
           orderId: 'ord-2',
+          orderComment: 'FIRST_PHASE',
           amount: 50000,
           dueDate: new Date('2026-04-20'),
           payments: [{ amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') }],
@@ -464,6 +466,7 @@ describe('InvoicesService', () => {
         .mockResolvedValueOnce({
           id: 'inv-3',
           orderId: 'ord-3',
+          orderComment: 'FIRST_PHASE',
           amount: 100000,
           dueDate: new Date('2026-04-20'),
           payments: [

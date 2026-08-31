@@ -1,4 +1,9 @@
-import { getInvoiceTaxMoneyStatusGateErrors, INVOICE_TAX_GATE_FIELD } from '@nbos/shared';
+import {
+  getInvoiceOrderCommentGateErrors,
+  getInvoiceTaxMoneyStatusGateErrors,
+  INVOICE_ORDER_COMMENT_FIELD,
+  INVOICE_TAX_GATE_FIELD,
+} from '@nbos/shared';
 import type { ApiFieldError } from '@/lib/api-errors';
 import type { Invoice } from '@/lib/api/finance';
 
@@ -7,6 +12,7 @@ export const INVOICE_GATE_FIELD_MONEY_STATUS = 'moneyStatus' as const;
 export const INVOICE_GATE_FIELD_COMPANY = INVOICE_TAX_GATE_FIELD.COMPANY;
 export const INVOICE_GATE_FIELD_PROJECT = 'project' as const;
 export const INVOICE_GATE_FIELD_OFFICIAL_INVOICE = INVOICE_TAX_GATE_FIELD.OFFICIAL_INVOICE;
+export const INVOICE_GATE_FIELD_ORDER_COMMENT = INVOICE_ORDER_COMMENT_FIELD;
 
 const AWAITING_PAYMENT_CONTEXT_STATUSES = new Set(['AWAITING_PAYMENT', 'OVERDUE']);
 
@@ -45,6 +51,12 @@ export function getLocalInvoiceMoneyStatusGateErrors(
       company: invoice.company,
       officialInvoiceRequestSent: invoice.officialInvoiceRequestSent,
     }),
+    ...getInvoiceOrderCommentGateErrors({
+      orderId: invoice.orderId,
+      orderComment: invoice.orderComment,
+      currentMoneyStatus: invoice.moneyStatus,
+      targetMoneyStatus,
+    }),
   );
 
   if (invoice.moneyStatus === 'PAID' && targetMoneyStatus !== 'PAID') {
@@ -64,6 +76,9 @@ export function mapInvoiceMoneyStatusApiMessage(message: string): ApiFieldError[
   }
   if (message.includes('official invoice request')) {
     return [{ field: INVOICE_GATE_FIELD_OFFICIAL_INVOICE, message }];
+  }
+  if (message.includes('accountant note')) {
+    return [{ field: INVOICE_GATE_FIELD_ORDER_COMMENT, message }];
   }
   if (message.includes('tax ID') || message.includes('legal name') || message.includes('company')) {
     return [{ field: INVOICE_GATE_FIELD_COMPANY, message }];

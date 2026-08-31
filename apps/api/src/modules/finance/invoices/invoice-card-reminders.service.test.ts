@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import {
   INVOICE_CARD_REMINDER_TYPES,
@@ -19,12 +19,14 @@ describe('InvoiceCardRemindersService', () => {
     service = new InvoiceCardRemindersService(prisma as never);
   });
 
-  it('creates an official request job for due Tax invoices without request sent', async () => {
+  it('retries official WhatsApp for Tax Awaiting invoices without request sent', async () => {
+    const officialWhatsApp = {
+      enqueueIfAwaitingEligible: vi.fn().mockResolvedValue(undefined),
+    };
+    service = new InvoiceCardRemindersService(prisma as never, officialWhatsApp as never);
     prisma.invoice.findMany.mockResolvedValueOnce([
       officialCandidate({
         id: 'inv-1',
-        taxStatus: 'TAX',
-        officialInvoiceRequestSent: false,
       }),
     ]);
 
@@ -35,6 +37,7 @@ describe('InvoiceCardRemindersService', () => {
     expect(result.created).toEqual([
       { created: true, type: INVOICE_CARD_REMINDER_TYPES.OFFICIAL_REQUEST_DUE, invoiceId: 'inv-1' },
     ]);
+    expect(officialWhatsApp.enqueueIfAwaitingEligible).toHaveBeenCalledWith('inv-1');
     expect(prisma.invoice.findMany).toHaveBeenCalledTimes(2);
     expect(prisma.invoice.findMany.mock.calls[0]?.[0]?.where).toEqual(
       expect.objectContaining({
@@ -44,14 +47,7 @@ describe('InvoiceCardRemindersService', () => {
       }),
     );
     expect(prisma.invoice.findMany.mock.calls[0]?.[0]?.where?.dueDate).toBeUndefined();
-    expect(prisma.notificationJob.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          status: 'PENDING',
-          dedupeKey: expect.stringContaining('finance.invoice.official_request_due:inv-1'),
-        }),
-      }),
-    );
+    expect(prisma.notificationJob.create).not.toHaveBeenCalled();
   });
 
   it('sends the 5-day letter on the pay day, not on the 1st when pay day is the 15th', async () => {
@@ -205,12 +201,6 @@ describe('InvoiceCardRemindersService', () => {
 function officialCandidate(overrides: Record<string, unknown> = {}) {
   return {
     id: 'inv-1',
-    code: 'INV-1',
-    amount: 120000,
-    dueDate: new Date('2026-05-01T00:00:00+04:00'),
-    taxStatus: 'TAX',
-    officialInvoiceRequestSent: false,
-    company: { name: 'ACME' },
     ...overrides,
   };
 }
@@ -234,6 +224,8 @@ function paymentCandidate(
     paymentReminderCycle: 0,
     company: { name: 'ACME' },
     subscription: {
+      name: 'Site A',
+      code: 'SUB-1',
       productId: 'prod-1',
       billingDay,
       notificationsEnabled: true,

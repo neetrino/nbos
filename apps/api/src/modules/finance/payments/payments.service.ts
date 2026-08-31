@@ -1,10 +1,18 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  Optional,
+} from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { NotificationService } from '../../notifications/notification.service';
 import { SalesBonusAccrualService } from '../../bonus/sales-bonus-accrual.service';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { getLatestPaymentDate, resolveOrderStatus, sumAmounts } from '../finance-status.utils';
+import { notifyOfficialAfterInvoiceWrite } from '../invoices/invoice-card-persist';
+import { InvoiceOfficialWhatsAppService } from '../invoices/invoice-official-whatsapp.service';
 import { syncInvoiceMoneyStatusFromPayments } from '../invoices/invoice-money-status';
 import { assertInvoiceTaxMoneyStatusGate } from '../invoices/invoice-tax-readiness-assert';
 import { OperationalJournalService } from '../journal/operational-journal.service';
@@ -48,6 +56,7 @@ export class PaymentsService {
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
     private readonly partnerAccrualSubscription: PartnerAccrualSubscriptionService,
     private readonly clientPaidInvoiceAutomation: ClientPaidInvoiceAutomationService,
+    @Optional() private readonly officialWhatsApp?: InvoiceOfficialWhatsAppService,
   ) {}
 
   async findAll(params: PaymentQueryParams) {
@@ -171,6 +180,7 @@ export class PaymentsService {
         moneyStatus: true,
         taxStatus: true,
         officialInvoiceRequestSent: true,
+        orderComment: true,
         dueDate: true,
         payments: { select: { amount: true } },
         company: { select: { name: true, legalName: true, taxId: true } },
@@ -211,6 +221,8 @@ export class PaymentsService {
       companyId: invoice.companyId,
       company: invoice.company,
       officialInvoiceRequestSent: invoice.officialInvoiceRequestSent,
+      orderId: invoice.orderId,
+      orderComment: invoice.orderComment,
     });
     await assertPostingPeriodOpenForBookedAt(this.prisma, paymentDate);
     const created = await this.prisma.payment.create({
@@ -380,6 +392,7 @@ export class PaymentsService {
         paidDate: moneyStatus === 'PAID' ? getLatestPaymentDate(invoice.payments) : null,
       },
     });
+    await notifyOfficialAfterInvoiceWrite(this.officialWhatsApp, { id: invoiceId, moneyStatus });
   }
 
   private async syncOrderStatus(orderId: string) {

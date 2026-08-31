@@ -33,6 +33,13 @@ describe('canAutoSendOfficialOnAwaiting', () => {
       false,
     );
     expect(canAutoSendOfficialOnAwaiting({ ...base, moneyStatus: 'NEW' })).toBe(false);
+    expect(
+      canAutoSendOfficialOnAwaiting({
+        ...base,
+        orderId: 'ord-1',
+        orderComment: null,
+      }),
+    ).toBe(false);
   });
 });
 

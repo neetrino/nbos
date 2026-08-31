@@ -1,10 +1,15 @@
 import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import type { Invoice } from '@/lib/api/finance';
-import { getInvoiceDealTitle, getOrderDisplayTitle } from '@/features/finance/utils/order-display';
+import {
+  getInvoiceDealTitle,
+  getInvoiceDisplayTitle,
+  getOrderDisplayTitle,
+} from '@/features/finance/utils/order-display';
 
 const CSV_HEADERS = [
   'id',
   'code',
+  'displayTitle',
   'orderId',
   'orderCode',
   'dealName',
@@ -64,6 +69,7 @@ function invoiceToCsvCells(invoice: Invoice): string[] {
   const cells = [
     invoice.id,
     invoice.code,
+    getInvoiceDisplayTitle(invoice),
     invoice.orderId ?? '',
     invoice.order ? getOrderDisplayTitle(invoice.order) : '',
     getInvoiceDealTitle(invoice.order) ?? '',
@@ -103,7 +109,10 @@ function grandTotalInvoicesCsvLine(invoices: Invoice[]): string {
     '',
     '',
     '',
+    '',
+    '',
     amount,
+    '',
     '',
     '',
     '',

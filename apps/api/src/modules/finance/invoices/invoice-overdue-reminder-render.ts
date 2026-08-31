@@ -1,3 +1,4 @@
+import { resolveInvoiceDisplayTitle } from '@nbos/shared';
 import {
   formatCoverageMonthLabel,
   formatDueDateLabel,
@@ -15,6 +16,8 @@ export interface ResolvedOverdueReminderRender {
 interface OverdueReminderSubscription {
   notificationsEnabled: boolean;
   reminderLanguage: RenderOverdueReminderInput['language'];
+  name: string;
+  code: string;
   product: { name: string };
 }
 
@@ -26,6 +29,7 @@ interface OverdueReminderClientService {
 }
 
 export function resolveOverdueReminderRenderInput(input: {
+  code: string;
   amount: unknown;
   taxStatus: string;
   coverageStartMonth: string | null;
@@ -35,8 +39,12 @@ export function resolveOverdueReminderRenderInput(input: {
   clientServiceRecord: OverdueReminderClientService | null;
 }): ResolvedOverdueReminderRender | null {
   if (input.subscription != null) {
+    const serviceLabel = resolveInvoiceDisplayTitle({
+      code: input.code,
+      subscription: input.subscription,
+    });
     return buildResolved(input, 'subscription', input.subscription.reminderLanguage, {
-      serviceLabel: input.subscription.product.name,
+      serviceLabel,
       periodLabel: formatCoverageMonthLabel(
         input.coverageStartMonth,
         input.subscription.reminderLanguage,
@@ -48,7 +56,7 @@ export function resolveOverdueReminderRenderInput(input: {
     const serviceLabel =
       input.clientServiceRecord.name.trim() ||
       input.clientServiceRecord.product?.name.trim() ||
-      'Client service';
+      input.code;
     return buildResolved(input, 'client_service', language, {
       serviceLabel,
       periodLabel: formatDueDateLabel(input.dueDate, language),
@@ -59,6 +67,7 @@ export function resolveOverdueReminderRenderInput(input: {
 
 function buildResolved(
   input: {
+    code: string;
     amount: unknown;
     taxStatus: string;
     wave: OverdueReminderWave;
@@ -76,6 +85,7 @@ function buildResolved(
       source,
       serviceLabel: labels.serviceLabel,
       periodLabel: labels.periodLabel,
+      invoiceCode: input.code,
       amount: input.amount,
       taxStatus: input.taxStatus as RenderOverdueReminderInput['taxStatus'],
     },

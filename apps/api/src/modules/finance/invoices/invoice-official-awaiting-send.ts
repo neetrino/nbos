@@ -1,4 +1,7 @@
-import { getOfficialInvoiceRequestSendErrors } from '@nbos/shared';
+import {
+  getOfficialInvoiceOrderCommentSendErrors,
+  getOfficialInvoiceRequestSendErrors,
+} from '@nbos/shared';
 import type { InvoiceTaxCompanyRequisites } from '@nbos/shared';
 
 export const OFFICIAL_SEND_CANCELLED_MESSAGE =
@@ -17,9 +20,12 @@ export function canAutoSendOfficialOnAwaiting(invoice: {
   officialInvoiceRequestSent: boolean;
   companyId: string | null;
   company: InvoiceTaxCompanyRequisites | null;
+  orderId?: string | null;
+  orderComment?: string | null;
 }): boolean {
   if (invoice.taxStatus !== 'TAX') return false;
   if (invoice.moneyStatus !== 'AWAITING_PAYMENT') return false;
   if (invoice.officialInvoiceRequestSent) return false;
-  return getOfficialInvoiceRequestSendErrors(invoice).length === 0;
+  if (getOfficialInvoiceRequestSendErrors(invoice).length > 0) return false;
+  return getOfficialInvoiceOrderCommentSendErrors(invoice).length === 0;
 }

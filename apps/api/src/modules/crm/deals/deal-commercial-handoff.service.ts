@@ -4,10 +4,12 @@ import {
   Injectable,
   Inject,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import type { DealWonModeEnum, PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
+import { InvoiceOfficialWhatsAppService } from '../../finance/invoices/invoice-official-whatsapp.service';
 import { dealDetailInclude } from './deal.includes';
 import { DealWonHandler } from './deal-won.handler';
 import { validateDealWonGate } from './deal-won-gate';
@@ -34,6 +36,7 @@ export class DealCommercialHandoffService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly dealWonHandler: DealWonHandler,
     private readonly auditService: AuditService,
+    @Optional() private readonly officialWhatsApp?: InvoiceOfficialWhatsAppService,
   ) {}
 
   async createDepositOrder(dealId: string, body: CreateDepositOrderBody) {
@@ -68,15 +71,19 @@ export class DealCommercialHandoffService {
     const hasInvoice = order.invoices.length > 0;
     if (!hasInvoice) {
       const taxStatus = deal.taxStatus ?? 'TAX';
-      await createDealDepositInvoice(this.prisma, {
-        orderId: order.id,
-        projectId: order.projectId,
-        companyId: taxStatus === 'TAX' ? (deal.companyId ?? undefined) : undefined,
-        amount,
-        type: deal.paymentType === 'SUBSCRIPTION' ? 'SUBSCRIPTION' : 'DEVELOPMENT',
-        taxStatus,
-        dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
-      });
+      await createDealDepositInvoice(
+        this.prisma,
+        {
+          orderId: order.id,
+          projectId: order.projectId,
+          companyId: taxStatus === 'TAX' ? (deal.companyId ?? undefined) : undefined,
+          amount,
+          type: deal.paymentType === 'SUBSCRIPTION' ? 'SUBSCRIPTION' : 'DEVELOPMENT',
+          taxStatus,
+          dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
+        },
+        this.officialWhatsApp,
+      );
     }
 
     return this.reloadDeal(dealId);

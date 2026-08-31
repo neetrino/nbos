@@ -1,3 +1,4 @@
+import { resolveInvoiceDisplayTitle } from '@nbos/shared';
 import {
   formatCoverageMonthLabel,
   formatDueDateLabel,
@@ -14,6 +15,8 @@ export interface ResolvedPaymentReminderRenderInput {
 interface PaymentReminderSubscription {
   notificationsEnabled: boolean;
   reminderLanguage: RenderClientPaymentReminderInput['language'];
+  name: string;
+  code: string;
   product: { name: string };
 }
 
@@ -25,6 +28,7 @@ interface PaymentReminderClientService {
 }
 
 export function resolvePaymentReminderRenderInput(input: {
+  code: string;
   amount: unknown;
   taxStatus: string;
   coverageStartMonth: string | null;
@@ -34,18 +38,23 @@ export function resolvePaymentReminderRenderInput(input: {
   clientServiceRecord: PaymentReminderClientService | null;
 }): ResolvedPaymentReminderRenderInput | null {
   if (input.subscription != null) {
+    const serviceLabel = resolveInvoiceDisplayTitle({
+      code: input.code,
+      subscription: input.subscription,
+    });
     return {
       language: input.subscription.reminderLanguage,
-      productName: input.subscription.product.name,
+      productName: serviceLabel,
       renderInput: {
         offsetDays: input.offsetDays,
         language: input.subscription.reminderLanguage,
         source: 'subscription',
-        serviceLabel: input.subscription.product.name,
+        serviceLabel,
         periodLabel: formatCoverageMonthLabel(
           input.coverageStartMonth,
           input.subscription.reminderLanguage,
         ),
+        invoiceCode: input.code,
         amount: input.amount,
         taxStatus: input.taxStatus as RenderClientPaymentReminderInput['taxStatus'],
       },
@@ -57,7 +66,7 @@ export function resolvePaymentReminderRenderInput(input: {
     const serviceLabel =
       input.clientServiceRecord.name.trim() ||
       input.clientServiceRecord.product?.name.trim() ||
-      'Client service';
+      input.code;
     return {
       language,
       productName: serviceLabel,
@@ -67,6 +76,7 @@ export function resolvePaymentReminderRenderInput(input: {
         source: 'client_service',
         serviceLabel,
         periodLabel: formatDueDateLabel(input.dueDate, language),
+        invoiceCode: input.code,
         amount: input.amount,
         taxStatus: input.taxStatus as RenderClientPaymentReminderInput['taxStatus'],
       },

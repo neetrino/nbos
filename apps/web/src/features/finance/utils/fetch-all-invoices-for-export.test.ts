@@ -28,6 +28,7 @@ const mockInvoice = (id: string): Invoice => ({
   officialInvoiceSentAt: null,
   officialInvoiceCancelledAt: null,
   notificationsEnabled: true,
+  orderComment: null,
   description: null,
   createdAt: '2026-04-01T00:00:00.000Z',
   order: null,

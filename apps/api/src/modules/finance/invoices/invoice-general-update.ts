@@ -1,5 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import type { Prisma, PrismaClient } from '@nbos/database';
+import type { InvoiceOrderCommentEnum, Prisma, PrismaClient } from '@nbos/database';
+import { isInvoiceOrderComment } from '@nbos/shared';
 import { sumAmounts } from '../finance-status.utils';
 
 const TAX_STATUSES = new Set(['TAX', 'TAX_FREE']);
@@ -9,6 +10,7 @@ export type UpdateInvoiceGeneralInput = {
   taxStatus?: string;
   companyId?: string | null;
   projectId?: string | null;
+  orderComment?: string | null;
 };
 
 export function parseUpdateInvoiceGeneralInput(
@@ -38,11 +40,22 @@ export function parseUpdateInvoiceGeneralInput(
     out.projectId = body.projectId?.trim() ? body.projectId.trim() : null;
   }
 
+  if (body.orderComment !== undefined) {
+    if (body.orderComment == null || body.orderComment.trim() === '') {
+      out.orderComment = null;
+    } else if (isInvoiceOrderComment(body.orderComment)) {
+      out.orderComment = body.orderComment;
+    } else {
+      throw new BadRequestException(`Unknown orderComment: ${body.orderComment}`);
+    }
+  }
+
   if (
     out.amount === undefined &&
     out.taxStatus === undefined &&
     out.companyId === undefined &&
-    out.projectId === undefined
+    out.projectId === undefined &&
+    out.orderComment === undefined
   ) {
     throw new BadRequestException('No fields to update');
   }
@@ -60,6 +73,7 @@ export async function applyInvoiceGeneralUpdate(
     select: {
       id: true,
       type: true,
+      orderId: true,
       amount: true,
       taxStatus: true,
       payments: { select: { amount: true } },
@@ -103,6 +117,13 @@ export async function applyInvoiceGeneralUpdate(
 
   if (input.projectId !== undefined) {
     data.project = input.projectId ? { connect: { id: input.projectId } } : { disconnect: true };
+  }
+
+  if (input.orderComment !== undefined) {
+    if (!invoice.orderId) {
+      throw new BadRequestException('Accountant note applies only to deal/order invoices');
+    }
+    data.orderComment = input.orderComment as InvoiceOrderCommentEnum | null;
   }
 
   if (Object.keys(data).length === 0) return;

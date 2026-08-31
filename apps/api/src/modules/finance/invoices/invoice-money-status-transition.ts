@@ -9,12 +9,15 @@ export interface InvoiceMoneyStatusTransitionRow {
   moneyStatus: InvoiceMoneyStatusEnum;
   companyId: string | null;
   officialInvoiceRequestSent: boolean;
+  orderId?: string | null;
+  orderComment?: string | null;
   company: { name: string; legalName: string | null; taxId: string | null } | null;
 }
 
 export const INVOICE_MONEY_STATUS_TRANSITION_SELECT = {
   id: true,
   orderId: true,
+  orderComment: true,
   amount: true,
   dueDate: true,
   taxStatus: true,
@@ -52,6 +55,8 @@ export async function prepareInvoiceMoneyStatusTransition(
     companyId: invoice.companyId,
     company: invoice.company,
     officialInvoiceRequestSent: invoice.officialInvoiceRequestSent,
+    orderId: invoice.orderId,
+    orderComment: invoice.orderComment,
   });
   if (targetMoneyStatus === 'CANCELLED' && shouldCancelOfficialRequestOnCardCancel(invoice)) {
     await cancelOfficialInvoiceRequest(prisma, invoice.id);

@@ -1,14 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { FileText, Loader2, Trash2, XCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
   DetailSheetFormFooter,
-  DetailSheetSettingsMenu,
   DetailSheetTabBar,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
@@ -24,7 +22,8 @@ import {
   INVOICE_DETAIL_SHEET_TABS,
   type InvoiceDetailSheetTab,
 } from '@/features/finance/components/invoices/invoice-detail-sheet-tabs';
-import { InvoiceSheetBadge, type InvoiceSheetInvoice } from './invoices/InvoiceSheetSections';
+import { type InvoiceSheetInvoice } from './invoices/InvoiceSheetSections';
+import { InvoiceSheetHeader } from './invoices/InvoiceSheetHeader';
 import { buildInvoiceGateRequiredFields } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import type { InvoiceSheetStageGateHighlight } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import {
@@ -198,31 +197,12 @@ export function InvoiceSheet({
           sourcePageHref={sourcePageHref}
           forceNestedBackdrop={forceNestedBackdrop}
         >
-          <div className="bg-background shrink-0 px-7 pt-5 pb-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-                  <FileText className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                    {renderInvoice.code}
-                  </h2>
-                  <InvoiceSheetBadge invoice={renderInvoice} />
-                </div>
-              </div>
-              {lifecycleMode ? (
-                <DetailSheetSettingsMenu>
-                  <DropdownMenuItem
-                    variant="destructive"
-                    disabled={saving}
-                    onClick={() => setLifecycleOpen(true)}
-                  >
-                    {lifecycleMode === 'delete' ? <Trash2 /> : <XCircle />}
-                    {lifecycleMode === 'delete' ? 'Delete invoice' : 'Cancel invoice'}
-                  </DropdownMenuItem>
-                </DetailSheetSettingsMenu>
-              ) : null}
-            </div>
-          </div>
+          <InvoiceSheetHeader
+            invoice={renderInvoice}
+            lifecycleMode={lifecycleMode}
+            saving={saving}
+            onLifecycleOpen={() => setLifecycleOpen(true)}
+          />
 
           {onMoneyStatusChange ? (
             <div className="shrink-0 pb-3">
