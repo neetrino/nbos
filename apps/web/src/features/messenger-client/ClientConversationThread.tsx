@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Globe, Star } from 'lucide-react';
 import {
   mapMessengerRowToView,
   type MessengerViewMessage,
@@ -22,7 +21,10 @@ import { useInternalThreadActions } from '@/features/messenger-internal/use-inte
 import { ClientAiPlaceholder } from './ClientAiPlaceholder';
 import { ClientInviteDialog } from './ClientInviteDialog';
 import { ClientLockedComposer, ClientUnlockedComposerBanner } from './ClientLockedComposer';
-import { clientConversationTitle, clientProviderLabel } from './client-messenger-section';
+import { ClientTicketFromMessages } from './ClientTicketFromMessages';
+import { ClientThreadHeader } from './ClientThreadHeader';
+import { CLIENT_MESSAGE_ACTION_HOOKS } from '@/features/messenger-internal/client-message-action-hooks';
+import { clientConversationTitle } from './client-messenger-section';
 import { canUnlockClientComposer, isClientComposerUnlocked } from './client-composer-unlock';
 import { clientOutboundDeliveryLabel } from './client-delivery-label';
 
@@ -56,6 +58,7 @@ export function ClientConversationThread({
   collections,
   onAddToCollection,
   onInvite,
+  onAttentionChange,
 }: {
   conversation: MessengerClientConversationRow;
   messages: MessengerCoreMessageRow[];
@@ -70,14 +73,20 @@ export function ClientConversationThread({
   collections: Array<{ id: string; name: string }>;
   onAddToCollection: (collectionId: string) => void;
   onInvite: (employeeId: string) => Promise<void>;
+  onAttentionChange?: (attention: NonNullable<MessengerClientConversationRow['attention']>) => void;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
   const { can } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
   const actions = useInternalThreadActions(messages);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [createTicketOpen, setCreateTicketOpen] = useState(false);
+  const [linkTicketOpen, setLinkTicketOpen] = useState(false);
   const canSend = Boolean(conversation.canSend);
   const unlocked = isClientComposerUnlocked(unlockedConversationId, conversation.id);
+  const canTicket = CLIENT_MESSAGE_ACTION_HOOKS.createTicket && can('ADD', 'SUPPORT_TICKETS');
+  const productId =
+    conversation.primaryLinks?.find((link) => link.entityType === 'PRODUCT')?.entityId ?? null;
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'end' });
@@ -91,17 +100,23 @@ export function ClientConversationThread({
         conversation={conversation}
         title={contextLabel}
         collections={collections}
+        viewedProductId={productId}
         onToggleFavorite={onToggleFavorite}
         onAddToCollection={onAddToCollection}
         onInvite={() => setInviteOpen(true)}
+        onAttentionChange={onAttentionChange}
       />
       <InternalMessageActionsBar
         selectedCount={actions.selectedMessages.length}
         canReply={actions.selectedMessages.length === 1}
         canCreateTask={can('EDIT', 'TASKS') && Boolean(creatorId)}
+        canCreateTicket={canTicket}
+        canLinkTicket={canTicket}
         onReply={actions.startReply}
         onForward={() => actions.setForwardOpen(true)}
         onCreateTask={() => actions.setCreateTaskOpen(true)}
+        onCreateTicket={() => setCreateTicketOpen(true)}
+        onLinkTicket={() => setLinkTicketOpen(true)}
         onOpenOriginal={() => void actions.openOriginal()}
         onCopySource={() => void actions.copySource()}
         onClear={actions.clearSelection}
@@ -168,70 +183,21 @@ export function ClientConversationThread({
         onClose={() => setInviteOpen(false)}
         onInvite={onInvite}
       />
+      <ClientTicketFromMessages
+        openCreate={createTicketOpen}
+        openLink={linkTicketOpen}
+        selectedCount={actions.selectedMessages.length}
+        selectedMessageIds={actions.selectedMessages.map((row) => row.id)}
+        productId={productId}
+        onOpenCreateChange={setCreateTicketOpen}
+        onOpenLinkChange={setLinkTicketOpen}
+        onAttached={() => {
+          actions.clearSelection();
+          setCreateTicketOpen(false);
+          setLinkTicketOpen(false);
+        }}
+      />
     </section>
-  );
-}
-
-function ClientThreadHeader({
-  conversation,
-  title,
-  collections,
-  onToggleFavorite,
-  onAddToCollection,
-  onInvite,
-}: {
-  conversation: MessengerClientConversationRow;
-  title: string;
-  collections: Array<{ id: string; name: string }>;
-  onToggleFavorite: () => void;
-  onAddToCollection: (collectionId: string) => void;
-  onInvite: () => void;
-}) {
-  return (
-    <header className="flex items-center gap-3 border-b border-teal-900/10 px-5 py-3">
-      <Globe size={16} className="text-teal-800" />
-      <div className="min-w-0 flex-1">
-        <h2 className="truncate text-sm font-semibold text-black">{title}</h2>
-        <p className="text-[11px] text-teal-900/70">
-          {clientProviderLabel(conversation.provider)} · Client Messenger
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={onInvite}
-        className="rounded-lg px-2 py-1 text-[11px] font-medium text-teal-900 hover:bg-teal-800/10"
-      >
-        Invite specialist
-      </button>
-      <button
-        type="button"
-        aria-label={conversation.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-        onClick={onToggleFavorite}
-        className="rounded-lg p-1.5 text-black/35 hover:bg-teal-800/10 hover:text-teal-800"
-      >
-        <Star size={16} className={conversation.isFavorite ? 'fill-teal-800 text-teal-800' : ''} />
-      </button>
-      {collections.length > 0 ? (
-        <select
-          aria-label="Add to Client collection"
-          defaultValue=""
-          className="max-w-[10rem] rounded-lg border border-teal-900/10 bg-[#F4F7F7] px-2 py-1 text-[11px] text-black"
-          onChange={(event) => {
-            const collectionId = event.target.value;
-            if (!collectionId) return;
-            onAddToCollection(collectionId);
-            event.target.value = '';
-          }}
-        >
-          <option value="">Add to collection</option>
-          {collections.map((collection) => (
-            <option key={collection.id} value={collection.id}>
-              {collection.name}
-            </option>
-          ))}
-        </select>
-      ) : null}
-    </header>
   );
 }
 

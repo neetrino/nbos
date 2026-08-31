@@ -412,7 +412,6 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
       prisma: this.prisma,
       client: this.client,
       connection: this.connectionService,
-      participants: this.participants,
       operationId,
     });
     if (result === 'ok') {

@@ -7,6 +7,7 @@ import {
 } from '../../../common/decorators';
 import { tasksAccessFromUser } from '../../tasks/tasks-scoped-access';
 import { AttachTaskSourcesDto } from './dto/attach-task-sources.dto';
+import { AttachTicketSourcesDto } from './dto/attach-ticket-sources.dto';
 import { MessengerCoreActionsService } from './messenger-core-actions.service';
 
 @ApiTags('Messenger Core Actions')
@@ -44,5 +45,26 @@ export class MessengerCoreActionsController {
       body.taskId,
       tasksAccessFromUser(user),
     );
+  }
+
+  @Post('messages/ticket-sources')
+  @RequirePermission('SUPPORT_TICKETS', 'ADD')
+  @ApiOperation({
+    summary: 'Attach TICKET_SOURCE after Ticket create/link; requires source Client READ',
+  })
+  attachTicketSources(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: AttachTicketSourcesDto,
+  ) {
+    return this.actions.attachTicketSources(user.id, body.sourceMessageIds, body.ticketId);
+  }
+
+  @Get('tickets/:ticketId/source-messages')
+  @RequirePermission('SUPPORT_TICKETS', 'VIEW')
+  @ApiOperation({
+    summary: 'List Ticket source references; preview requires Client conversation READ',
+  })
+  listTicketSources(@Param('ticketId') ticketId: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.actions.listTicketSources(user.id, ticketId);
   }
 }

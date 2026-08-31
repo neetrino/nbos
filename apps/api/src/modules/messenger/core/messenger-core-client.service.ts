@@ -3,6 +3,7 @@ import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { loadMessengerLegacyAccess } from '../access/messenger-legacy-channel-access.op';
 import {
+  MESSENGER_CORE_CLIENT_ATTENTION_FORBIDDEN,
   MESSENGER_CORE_CLIENT_INTERNAL_ZONE_FORBIDDEN,
   MESSENGER_CORE_CLIENT_INVITE_ROLE,
   MESSENGER_CORE_CLIENT_SEND_FORBIDDEN,
@@ -27,6 +28,10 @@ import type {
   PersistMessengerCoreMessageInput,
 } from './messenger-core.types';
 import { defaultTaskLinksFromPrimary } from './messenger-core-task-default-links';
+import { listConversationAttentions } from './messenger-core-attention.ops';
+import { assignConversationAttention } from './messenger-core-attention-assign.ops';
+import type { AssignConversationAttentionInput } from './messenger-core-attention-assign.ops';
+import type { MessengerAttentionDto } from './messenger-core-attention.types';
 
 @Injectable()
 export class MessengerCoreClientService {
@@ -68,12 +73,14 @@ export class MessengerCoreClientService {
       where: { conversationId },
       select: { provider: true },
     });
+    const attention = await listConversationAttentions(this.prisma, conversationId);
     return {
       ...conversation,
       canSend: decision.canSend,
       canWrite: decision.canWrite,
       provider: mapping?.provider ?? null,
       primaryLinks: defaultTaskLinksFromPrimary(links),
+      attention,
     };
   }
 
@@ -117,6 +124,22 @@ export class MessengerCoreClientService {
       employeeId,
       MESSENGER_CORE_CLIENT_INVITE_ROLE,
     );
+  }
+
+  async assignAttention(
+    conversationId: string,
+    actorId: string,
+    input: Omit<AssignConversationAttentionInput, 'conversationId' | 'assignedById'>,
+  ): Promise<MessengerAttentionDto[]> {
+    const conversation = await this.getConversation(conversationId, actorId);
+    if (!conversation.canSend && !conversation.canWrite) {
+      throw new ForbiddenException(MESSENGER_CORE_CLIENT_ATTENTION_FORBIDDEN);
+    }
+    return assignConversationAttention(this.prisma, {
+      ...input,
+      conversationId,
+      assignedById: actorId,
+    });
   }
 
   private assertClientSurface(zone: string): void {

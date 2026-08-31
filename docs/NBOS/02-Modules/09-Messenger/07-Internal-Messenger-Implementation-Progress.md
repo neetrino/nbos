@@ -48,6 +48,10 @@ Implementer evidence: `28-Slice-08-WhatsApp-Gateway.md`. Status `VERIFIED`. FIND
 
 Implementer evidence: `29-Slice-09-Product-Communication-Bindings.md`. Status `VERIFIED`. FINDING-S9-01…10 closed. Additive `ProductCommunicationBinding` WORK/FINANCE; legacy Product WhatsApp group table DELETE-LATER. Slice 10 may begin.
 
+## Slice 10 status (not product canon)
+
+Implementer evidence: `30-Slice-10-Finance-Support-Routing.md`. Status `VERIFIED`. FINDING-S10-01…08 closed. Finance reminders persist Core SYSTEM then Slice 8 `core_client_send` via `resolveClientDestination(productId, FINANCE)`. Support Ticket sources are references, not copied history. Attention is additive and does not change conversation id. Slice 11 is **not** started (hard stop).
+
 ## Current verified static baseline
 
 The previous historical status text was stale and must not be used as runtime proof. Slice 0 re-checked this against `302f57f7` + DB counts (see evidence file).
@@ -180,7 +184,7 @@ Inbound:  WhatsApp -> WAHA -> Gateway -> POST /api/integrations/whatsapp-gateway
 Outbound: persistAndBroadcast (canSend) -> messenger_commands + BullMQ core_client_send -> Gateway v1 account send -> WAHA
 ```
 
-HMAC-SHA512 + replay window; dedupe by Gateway `eventId`. Unknown chats create a new CLIENT EXTERNAL conversation keyed by `(WHATSAPP, accountId, chatId)`. Finance/Product-group outbound stays on the existing worker kinds until Slices 9–10.
+HMAC-SHA512 + replay window; dedupe by Gateway `eventId`. Unknown chats create a new CLIENT EXTERNAL conversation keyed by `(WHATSAPP, accountId, chatId)`. Product payment reminders persist Core then `core_client_send`. Official tax still uses `accountingGroupChatId`. Product group operations remain existing worker kinds.
 
 NBOS must reuse/extend this Gateway rather than build a second WhatsApp gateway.
 
@@ -188,16 +192,17 @@ NBOS must reuse/extend this Gateway rather than build a second WhatsApp gateway.
 
 Finance and Support business modules remain owners of their own state.
 
-Current (non-canonical) send path: Product `groupChatId` for client invoice/subscription/CSR reminders; company `accountingGroupChatId` for official invoices. Support Ticket has no public/internal composer.
-
-End-to-end canonical Client Messenger delivery is implementation work:
+Slice 10 runtime (`VERIFIED`):
 
 - Finance decides WHAT/WHEN to remind;
-- Messenger resolves WHERE through `FINANCE` with WORK fallback;
-- Support Ticket remains internal case management;
-- client-visible communication remains in Client Messenger.
+- Messenger resolves WHERE through `resolveClientDestination(productId, FINANCE)` with WORK fallback, persists Core history, and sends via Slice 8 outbox;
+- official/tax accountant send stays `accountingGroupChatId`;
+- Support Ticket remains internal case management with `TICKET_SOURCE` references;
+- client-visible communication remains in Client Messenger;
+- no Public/Internal Ticket composer;
+- attention routing is additive and does not change conversation id.
 
-Do not treat partial/legacy direct provider paths as target architecture.
+Do not treat leftover notification-job `whatsappGroupChatId` audit fields as a second send path.
 
 ## Latest-main rule before implementation
 
@@ -230,7 +235,7 @@ Migration/runtime implementation uses additionally:
 
 ## Next step before product code changes
 
-1. Slice 9 is independently `VERIFIED` (`29-Slice-09-Product-Communication-Bindings.md`). FINDING-S9-01…10 closed.
-2. Slice 10 (Finance, Support, attention routing) may begin. After Slice 10 `VERIFIED`, stop. Do not start Slice 11.
+1. Slice 10 is `VERIFIED` (`30-Slice-10-Finance-Support-Routing.md`).
+2. Hard stop. Do not start Slice 11, destructive cleanup, or extra Messenger features without an explicit user instruction.
 
 No production Messenger rebuild completion is claimed by this documentation stage.

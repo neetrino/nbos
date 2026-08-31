@@ -187,6 +187,39 @@ export const messengerCoreApi = {
     return resp.data;
   },
 
+  async attachTicketSources(
+    sourceMessageIds: string[],
+    ticketId: string,
+  ): Promise<{ referenceIds: string[]; sourceMessageIds: string[]; createdConversation: false }> {
+    const resp = await api.post<{
+      referenceIds: string[];
+      sourceMessageIds: string[];
+      createdConversation: false;
+    }>('/api/messenger/core/messages/ticket-sources', { sourceMessageIds, ticketId });
+    return resp.data;
+  },
+
+  async listTicketSources(ticketId: string): Promise<
+    Array<{
+      referenceId: string;
+      sourceMessageId: string;
+      sourceConversationId: string;
+      preview: string | null;
+      canOpen: boolean;
+    }>
+  > {
+    const resp = await api.get<
+      Array<{
+        referenceId: string;
+        sourceMessageId: string;
+        sourceConversationId: string;
+        preview: string | null;
+        canOpen: boolean;
+      }>
+    >(`/api/messenger/core/tickets/${ticketId}/source-messages`);
+    return resp.data;
+  },
+
   async markRead(id: string): Promise<void> {
     await api.post(`${INTERNAL_ROOT}/conversations/${id}/read`);
   },

@@ -147,6 +147,7 @@ export function createMockPrisma() {
     messengerLegacyIdentity: createModelMock(),
     messengerMessage: createModelMock(),
     messengerMessageMention: createModelMock(),
+    messengerConversationAttention: createModelMock(),
     externalAgentIdempotencyRecord: createModelMock(),
     aiProviderConnection: createModelMock(),
     aiProviderSecret: createModelMock(),

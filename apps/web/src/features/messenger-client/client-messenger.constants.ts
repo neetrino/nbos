@@ -24,3 +24,4 @@ export const CLIENT_VISIBLE_LABEL = 'CLIENT VISIBLE';
 export const CLIENT_REPLY_LABEL = 'Reply to client';
 export const INTERNAL_COMPOSER_DRAFT_STORE_KEY = 'nbos:internal-messenger:draft';
 export const CLIENT_COMPOSER_DRAFT_STORE_KEY = 'nbos:client-messenger:draft';
+export const CLIENT_OPEN_CONVERSATION_QUERY = 'conversation';

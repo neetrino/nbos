@@ -34,10 +34,8 @@ import {
 } from './whatsapp-gateway.constants';
 import { WhatsAppOutboundQueueService } from './whatsapp-outbound-queue.service';
 import { waitWhatsAppOutboundGap } from './whatsapp-outbound-gap';
-import type {
-  WhatsAppFinanceOutboundJobPayload,
-  WhatsAppOutboundJobPayload,
-} from './whatsapp-outbound.types';
+import type { WhatsAppOutboundJobPayload } from './whatsapp-outbound.types';
+import { isLeftoverFinanceReminderKind } from './whatsapp-outbound-leftover-finance-kind';
 import { drainPendingWhatsAppCoreSends } from '../../messenger/core/messenger-wa-outbound-drain.ops';
 import {
   dispatchWhatsAppCoreSendJob,
@@ -112,6 +110,10 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
 
   async process(job: Job<WhatsAppOutboundJobPayload>): Promise<void> {
     await this.drainPendingCoreSends();
+    if (isLeftoverFinanceReminderKind(job.data.kind)) {
+      this.logger.warn(`Skipping leftover finance reminder kind=${job.data.kind} jobId=${job.id}`);
+      return;
+    }
     try {
       if (job.data.kind === 'core_client_send') {
         await dispatchWhatsAppCoreSendJob(
@@ -166,13 +168,6 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
     }
     if (data.kind === 'official_cancel' && data.invoiceId) {
       await cancelOfficialIfActive(this.prisma, data.invoiceId);
-      return;
-    }
-    if (
-      (data.kind === 'payment_reminder' || data.kind === 'overdue_reminder') &&
-      data.notificationJobId
-    ) {
-      await markPaymentReminderDelivered(this.prisma, data);
     }
   }
 }
@@ -187,26 +182,4 @@ async function cancelOfficialIfActive(
   });
   if (!row?.officialInvoiceRequestSent) return;
   await cancelOfficialInvoiceRequest(prisma, invoiceId);
-}
-
-async function markPaymentReminderDelivered(
-  prisma: InstanceType<typeof PrismaClient>,
-  data: WhatsAppFinanceOutboundJobPayload,
-): Promise<void> {
-  if (!data.notificationJobId) return;
-  await prisma.notificationDelivery.create({
-    data: {
-      jobId: data.notificationJobId,
-      channel: 'WHATSAPP',
-      recipient: data.chatId,
-      status: 'DELIVERED',
-      provider: 'whatsapp_gateway',
-      sentAt: new Date(),
-      deliveredAt: new Date(),
-    },
-  });
-  await prisma.notificationJob.update({
-    where: { id: data.notificationJobId },
-    data: { status: 'DELIVERED', processedAt: new Date() },
-  });
 }

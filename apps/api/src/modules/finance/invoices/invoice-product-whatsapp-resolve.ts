@@ -9,7 +9,7 @@ import { resolveClientDestination } from '../../messenger/core/product-communica
 export async function resolveInvoiceProductWhatsAppGroup(
   prisma: InstanceType<typeof PrismaClient>,
   invoiceId: string,
-): Promise<{ productId: string; groupChatId: string } | null> {
+): Promise<{ productId: string; groupChatId: string; conversationId: string } | null> {
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
     select: {
@@ -29,5 +29,9 @@ export async function resolveInvoiceProductWhatsAppGroup(
 
   const destination = await resolveClientDestination(prisma, productId, 'FINANCE');
   if (!destination) return null;
-  return { productId, groupChatId: destination.groupChatId };
+  return {
+    productId,
+    groupChatId: destination.groupChatId,
+    conversationId: destination.conversationId,
+  };
 }

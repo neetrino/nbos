@@ -284,3 +284,44 @@ model MessengerConversationCollectionMember {
   @@index([employeeId])
   @@map("messenger_conversation_collection_members")
 }
+
+enum MessengerAttentionOwnerKind {
+  EMPLOYEE
+  QUEUE
+  ROLE
+}
+
+enum MessengerAttentionQueue {
+  SUPPORT_INTAKE
+  FINANCE
+}
+
+enum MessengerAttentionRole {
+  PRODUCT_PM
+}
+
+/// Manual attention override. Defaults are computed (M-ROUTING-01); not access control.
+model MessengerConversationAttention {
+  id              String                      @id @default(uuid())
+  conversationId  String                      @map("conversation_id")
+  productId       String                      @map("product_id")
+  purpose         ProductCommunicationPurpose
+  ownerKind       MessengerAttentionOwnerKind @map("owner_kind")
+  ownerEmployeeId String?                     @map("owner_employee_id")
+  ownerQueue      MessengerAttentionQueue?    @map("owner_queue")
+  ownerRole       MessengerAttentionRole?     @map("owner_role")
+  assignedById    String?                     @map("assigned_by_id")
+  createdAt       DateTime                    @default(now()) @map("created_at")
+  updatedAt       DateTime                    @updatedAt @map("updated_at")
+
+  conversation  MessengerConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  product       Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ownerEmployee Employee?             @relation("MessengerAttentionOwner", fields: [ownerEmployeeId], references: [id], onDelete: SetNull)
+  assignedBy    Employee?             @relation("MessengerAttentionAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@unique([conversationId, productId, purpose], map: "messenger_conversation_attentions_scope_key")
+  @@index([conversationId])
+  @@index([productId])
+  @@index([ownerEmployeeId])
+  @@map("messenger_conversation_attentions")
+}

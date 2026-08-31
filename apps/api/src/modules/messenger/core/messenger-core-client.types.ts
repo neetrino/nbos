@@ -1,5 +1,6 @@
 import type { MessengerExternalProvider, MessengerLinkEntityType } from '@nbos/database';
 import type { MessengerCoreConversationDto, MessengerCoreMessageDto } from './messenger-core.types';
+import type { MessengerAttentionDto } from './messenger-core-attention.types';
 import type {
   MessengerClientListFilter,
   MessengerClientProviderFilter,
@@ -14,6 +15,7 @@ export type MessengerClientConversationListItem = MessengerCoreConversationDto &
   canSend: boolean;
   provider: MessengerExternalProvider | null;
   leadId: string | null;
+  attention: MessengerAttentionDto[];
 };
 
 export type MessengerClientConversationDetail = MessengerCoreConversationDto & {
@@ -21,6 +23,7 @@ export type MessengerClientConversationDetail = MessengerCoreConversationDto & {
   canWrite: boolean;
   provider: MessengerExternalProvider | null;
   primaryLinks: Array<{ entityType: MessengerLinkEntityType; entityId: string }>;
+  attention: MessengerAttentionDto[];
 };
 
 export type MessengerClientListQuery = {

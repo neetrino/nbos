@@ -38,6 +38,11 @@ describe('Client Messenger web surface', () => {
     expect(thread).not.toMatch(/Internal \| Public/);
     expect(thread).toMatch(/InternalCreateTaskFromMessages/);
     expect(thread).toMatch(/InternalForwardDialog/);
+    expect(thread).toMatch(/ClientTicketFromMessages/);
+    expect(thread).not.toMatch(/Public \| Internal/);
+    expect(readWeb('features/messenger-internal/client-message-action-hooks.ts')).toMatch(
+      /createTicket: true/,
+    );
   });
 
   it('does not pass HTTP canonicalKey on Client API calls', () => {
@@ -47,5 +52,17 @@ describe('Client Messenger web surface', () => {
     expect(client).not.toMatch(/allowClientPersist/);
     expect(client).not.toMatch(/\/api\/messenger\/channels/);
     expect(client).not.toMatch(/metaMessage/);
+  });
+
+  it('does not silently PATCH attention[0] on shared conversations', () => {
+    const assign = readWeb('features/messenger-client/ClientAttentionAssign.tsx');
+    const header = readWeb('features/messenger-client/ClientThreadHeader.tsx');
+    const list = readWeb('features/messenger-client/ClientConversationList.tsx');
+    expect(assign).not.toMatch(/attention\?\.\[0\]/);
+    expect(header).not.toMatch(/attention\?\.\[0\]/);
+    expect(list).not.toMatch(/attention\?\.\[0\]/);
+    expect(assign).toMatch(/viewedProductId/);
+    expect(header).toMatch(/uniqueAttentionLabels/);
+    expect(list).toMatch(/uniqueAttentionLabels/);
   });
 });

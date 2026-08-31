@@ -32,7 +32,11 @@ describe('resolveInvoiceProductWhatsAppGroup', () => {
 
     const result = await resolveInvoiceProductWhatsAppGroup(prisma as never, 'inv-1');
 
-    expect(result).toEqual({ productId: 'prod-csr', groupChatId: '120363@g.us' });
+    expect(result).toEqual({
+      productId: 'prod-csr',
+      groupChatId: '120363@g.us',
+      conversationId: 'conv-1',
+    });
     expect(prisma.productCommunicationBinding.findUnique).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { productId_purpose: { productId: 'prod-csr', purpose: 'FINANCE' } },
@@ -77,7 +81,11 @@ describe('resolveInvoiceProductWhatsAppGroup', () => {
       });
 
     const result = await resolveInvoiceProductWhatsAppGroup(prisma as never, 'inv-1');
-    expect(result).toEqual({ productId: 'prod-sub', groupChatId: 'work@g.us' });
+    expect(result).toEqual({
+      productId: 'prod-sub',
+      groupChatId: 'work@g.us',
+      conversationId: 'conv-work',
+    });
   });
 
   it('does not return WORK JID when it equals the accountant group', async () => {

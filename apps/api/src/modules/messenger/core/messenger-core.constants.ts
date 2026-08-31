@@ -22,6 +22,8 @@ export const MESSENGER_CORE_CLIENT_READ_ONLY = 'Client conversation is read-only
 export const MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN =
   'Internal conversation write access is required';
 export const MESSENGER_CORE_CLIENT_WRITE_FORBIDDEN = 'Client conversation write access is required';
+export const MESSENGER_CORE_CLIENT_ATTENTION_FORBIDDEN =
+  'Client conversation write or send access is required to reassign attention';
 export const MESSENGER_CORE_CLIENT_CREATE_FORBIDDEN =
   'Client conversation create requires Client READ';
 export const MESSENGER_CORE_COLLECTION_ZONE_MISMATCH =

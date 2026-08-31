@@ -212,6 +212,7 @@ model MessengerConversation {
   targetReferences      MessengerMessageReference[]            @relation("MessengerMessageReferenceTargetConversation")
   collectionItems              MessengerConversationCollectionItem[]
   productCommunicationBindings ProductCommunicationBinding[]
+  attentions                   MessengerConversationAttention[]
 
   @@unique([directParticipantLowId, directParticipantHighId])
   @@index([type, status])

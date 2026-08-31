@@ -4,9 +4,13 @@ export function InternalMessageActionsBar({
   selectedCount,
   canReply,
   canCreateTask,
+  canCreateTicket = false,
+  canLinkTicket = false,
   onReply,
   onForward,
   onCreateTask,
+  onCreateTicket,
+  onLinkTicket,
   onOpenOriginal,
   onCopySource,
   onClear,
@@ -14,9 +18,13 @@ export function InternalMessageActionsBar({
   selectedCount: number;
   canReply: boolean;
   canCreateTask: boolean;
+  canCreateTicket?: boolean;
+  canLinkTicket?: boolean;
   onReply: () => void;
   onForward: () => void;
   onCreateTask: () => void;
+  onCreateTicket?: () => void;
+  onLinkTicket?: () => void;
   onOpenOriginal: () => void;
   onCopySource: () => void;
   onClear: () => void;
@@ -28,6 +36,12 @@ export function InternalMessageActionsBar({
       {canReply ? <ActionButton label="Reply" onClick={onReply} /> : null}
       <ActionButton label="Forward" onClick={onForward} />
       {canCreateTask ? <ActionButton label="Create Task" onClick={onCreateTask} /> : null}
+      {canCreateTicket && onCreateTicket ? (
+        <ActionButton label="Create Ticket" onClick={onCreateTicket} />
+      ) : null}
+      {canLinkTicket && onLinkTicket ? (
+        <ActionButton label="Link Ticket" onClick={onLinkTicket} />
+      ) : null}
       <ActionButton label="Open original" onClick={onOpenOriginal} />
       <ActionButton label="Copy source" onClick={onCopySource} />
       <ActionButton label="Clear" onClick={onClear} />

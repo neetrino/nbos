@@ -21,6 +21,7 @@ import { CLIENT_MESSENGER_SHELL_CLASS } from './client-messenger.constants';
 import { clientSectionFromPathname } from './client-messenger-section';
 import { relockComposerOnConversationChange } from './client-composer-unlock';
 import { sendClientThreadMessage } from './send-client-thread-message';
+import { useClientOpenConversationQuery } from './use-client-open-conversation-query';
 
 export function ClientMessengerApp() {
   const pathname = usePathname();
@@ -88,7 +89,7 @@ export function ClientMessengerApp() {
         messengerClientApi.getConversation(id),
         messengerClientApi.listMessages(id),
       ]);
-      setItems((prev) => prev.map((row) => (row.id === id ? { ...row, ...conversation } : row)));
+      setItems((prev) => upsertClientConversation(prev, id, conversation));
       setMessages(page.items);
       await messengerClientApi.markRead(id);
     } catch {
@@ -97,6 +98,8 @@ export function ClientMessengerApp() {
       setMessagesLoading(false);
     }
   }, []);
+
+  useClientOpenConversationQuery(openConversation);
 
   useInternalMessengerRealtime({
     canViewMessenger: canView,
@@ -192,6 +195,11 @@ export function ClientMessengerApp() {
             onInvite={async (employeeId) => {
               await messengerClientApi.inviteReadOnly(active.id, employeeId);
             }}
+            onAttentionChange={(attention) => {
+              setItems((prev) =>
+                prev.map((row) => (row.id === active.id ? { ...row, attention } : row)),
+              );
+            }}
           />
         ) : (
           <div className="flex min-h-0 flex-1 items-center justify-center bg-white text-sm text-black/40">
@@ -231,4 +239,15 @@ export function ClientMessengerApp() {
     setUnlockedId(null);
     setNewMessage('');
   }
+}
+
+function upsertClientConversation(
+  prev: MessengerClientConversationRow[],
+  id: string,
+  conversation: MessengerClientConversationRow,
+): MessengerClientConversationRow[] {
+  if (prev.some((row) => row.id === id)) {
+    return prev.map((row) => (row.id === id ? { ...row, ...conversation } : row));
+  }
+  return [conversation, ...prev];
 }

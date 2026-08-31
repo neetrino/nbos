@@ -41,7 +41,7 @@ export async function enqueueWhatsAppCoreSend(
   queue: WhatsAppOutboundQueueService | undefined,
   input: {
     message: MessengerCoreMessageDto;
-    actorEmployeeId: string;
+    actorEmployeeId?: string;
     mapping: WhatsAppMappingRef;
   },
 ): Promise<void> {
@@ -86,7 +86,7 @@ export async function finalizeWhatsAppCoreOutbound(
   prisma: PrismaLike,
   queue: WhatsAppOutboundQueueService | undefined,
   message: MessengerCoreMessageDto,
-  actorEmployeeId: string,
+  actorEmployeeId: string | undefined,
   mapping: WhatsAppMappingRef | null,
 ): Promise<MessengerCoreMessageDto> {
   if (!mapping || message.direction !== 'OUTBOUND') return message;

@@ -84,6 +84,7 @@ describe('Internal Messenger web client', () => {
     expect(client).toMatch(/mentionedEmployeeIds/);
     expect(client).toMatch(/forwards/);
     expect(client).toMatch(/task-sources/);
+    expect(client).toMatch(/ticket-sources/);
     expect(client).toMatch(/getSourceMessage/);
     expect(createTask).toMatch(/QuickCreateTaskDialog/);
     expect(createTask).not.toMatch(/defaultTitle/);

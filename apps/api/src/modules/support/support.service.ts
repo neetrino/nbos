@@ -31,6 +31,7 @@ import {
 import { resolveSupportSlaNotificationRecipientIds } from './support-sla-recipients';
 import { assertSupportTechnicalLinksValid } from './support-technical-link.validation';
 import { parseSupportTicketCloseReason } from './support-close-reason.parse';
+import { resolveSupportTicketProjectId } from './support-ticket-project';
 import {
   MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH,
   SUPPORT_EXTENSION_DELIVERED_RESOLUTION_SUMMARY,
@@ -240,8 +241,8 @@ export class SupportService {
       throw new BadRequestException('Title is required.');
     }
 
-    const projectId = data.projectId?.trim() || null;
     const productId = data.productId ?? null;
+    const projectId = await resolveSupportTicketProjectId(this.prisma, productId, data.projectId);
 
     if (productId && !projectId) {
       throw new BadRequestException('Project is required when product is set.');

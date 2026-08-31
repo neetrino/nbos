@@ -3,15 +3,26 @@ import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-pris
 import { InvoiceOverdueRemindersService } from './invoice-overdue-reminders.service';
 import { OVERDUE_REMINDER_EVENT_TYPES } from './invoice-overdue-reminder.constants';
 import { resolveInvoiceProductWhatsAppGroup } from './invoice-product-whatsapp-resolve';
+import { deliverFinanceClientReminder } from '../../messenger/core/messenger-finance-reminder.ops';
 
 vi.mock('./invoice-product-whatsapp-resolve', () => ({
   resolveInvoiceProductWhatsAppGroup: vi.fn(async () => ({
     productId: 'prod-1',
     groupChatId: 'group-1@g.us',
+    conversationId: 'conv-1',
+  })),
+}));
+
+vi.mock('../../messenger/core/messenger-finance-reminder.ops', () => ({
+  deliverFinanceClientReminder: vi.fn(async () => ({
+    conversationId: 'conv-1',
+    messageId: 'msg-1',
+    groupChatId: 'group-1@g.us',
   })),
 }));
 
 const resolveWhatsApp = vi.mocked(resolveInvoiceProductWhatsAppGroup);
+const deliverReminder = vi.mocked(deliverFinanceClientReminder);
 
 describe('InvoiceOverdueRemindersService', () => {
   let prisma: MockPrisma;
@@ -26,7 +37,16 @@ describe('InvoiceOverdueRemindersService', () => {
     prisma.notificationEvent.upsert.mockResolvedValue({ id: 'event-1' });
     prisma.notificationJob.create.mockResolvedValue({ id: 'job-1' });
     outbound = { enqueue: vi.fn().mockResolvedValue(undefined) };
-    resolveWhatsApp.mockResolvedValue({ productId: 'prod-1', groupChatId: 'group-1@g.us' });
+    resolveWhatsApp.mockReset().mockResolvedValue({
+      productId: 'prod-1',
+      groupChatId: 'group-1@g.us',
+      conversationId: 'conv-1',
+    });
+    deliverReminder.mockReset().mockResolvedValue({
+      conversationId: 'conv-1',
+      messageId: 'msg-1',
+      groupChatId: 'group-1@g.us',
+    });
     service = new InvoiceOverdueRemindersService(prisma as never, outbound as never);
   });
 
@@ -62,9 +82,10 @@ describe('InvoiceOverdueRemindersService', () => {
         }),
       }),
     );
-    expect(outbound.enqueue).toHaveBeenCalledWith(
-      expect.objectContaining({ kind: 'overdue_reminder' }),
-      false,
+    expect(deliverReminder).toHaveBeenCalledWith(
+      prisma,
+      outbound,
+      expect.objectContaining({ productId: 'prod-1' }),
     );
   });
 
@@ -104,7 +125,7 @@ describe('InvoiceOverdueRemindersService', () => {
     ]);
     resolveWhatsApp.mockImplementation(async (_prisma, invoiceId) => {
       if (invoiceId === 'inv-nowa') return null;
-      return { productId: 'prod-1', groupChatId: 'group-1@g.us' };
+      return { productId: 'prod-1', groupChatId: 'group-1@g.us', conversationId: 'conv-1' };
     });
 
     const preview = await service.preview({ asOf: new Date('2026-08-08T12:00:00+04:00') });
@@ -146,14 +167,38 @@ describe('InvoiceOverdueRemindersService', () => {
     );
   });
 
-  it('does not create a second job for the same wave', async () => {
+  it('does not create a second job when Core already persisted the wave', async () => {
     prisma.invoice.findMany.mockResolvedValue([overdueCandidate({ id: 'inv-1', code: 'INV-1' })]);
     prisma.notificationJob.findUnique.mockResolvedValue({ id: 'job-existing' });
+    prisma.messengerMessage.findFirst.mockResolvedValue({ id: 'msg-existing' });
 
     const result = await service.run({ asOf: new Date('2026-08-08T12:00:00+04:00') });
 
     expect(result.sent).toEqual([]);
     expect(result.skipped).toEqual([{ invoiceId: 'inv-1', code: 'INV-1', reason: 'already_sent' }]);
+    expect(prisma.notificationJob.create).not.toHaveBeenCalled();
+    expect(deliverReminder).not.toHaveBeenCalled();
+  });
+
+  it('retries Core persist when a NotificationJob exists without a Core message', async () => {
+    prisma.invoice.findMany.mockResolvedValue([overdueCandidate({ id: 'inv-1', code: 'INV-1' })]);
+    prisma.notificationJob.findUnique.mockResolvedValue({ id: 'job-existing' });
+    prisma.messengerMessage.findFirst.mockResolvedValue(null);
+    deliverReminder.mockRejectedValueOnce(new Error('persist failed'));
+
+    const first = await service.run({ asOf: new Date('2026-08-08T12:00:00+04:00') });
+    expect(first.sent).toEqual([]);
+    expect(first.skipped).toEqual([{ invoiceId: 'inv-1', code: 'INV-1', reason: 'send_failed' }]);
+    expect(first.skipped[0]?.reason).not.toBe('already_sent');
+
+    deliverReminder.mockResolvedValueOnce({
+      conversationId: 'conv-1',
+      messageId: 'msg-retry',
+      groupChatId: 'group-1@g.us',
+    });
+    const second = await service.run({ asOf: new Date('2026-08-08T12:00:00+04:00') });
+    expect(deliverReminder).toHaveBeenCalledTimes(2);
+    expect(second.sent).toEqual([{ invoiceId: 'inv-1', code: 'INV-1', wave: 1 }]);
     expect(prisma.notificationJob.create).not.toHaveBeenCalled();
   });
 

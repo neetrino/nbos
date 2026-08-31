@@ -265,7 +265,7 @@ describe('Slice 6 message actions migration safety', () => {
     );
     expect(createTaskUi).toMatch(/QuickCreateTaskDialog/);
     expect(createTaskUi).not.toMatch(/defaultTitle|title:.*content/);
-    expect(hooks).toMatch(/createTicketImplemented: false/);
+    expect(hooks).toMatch(/createTicketImplemented: true/);
     expect(hooks).toMatch(/createDealImplemented: false/);
   });
 });
@@ -322,5 +322,21 @@ describe('Slice 7 Client Messenger migration safety', () => {
     expect(ingest).toMatch(/persistLiveMetaInboundToCore/);
     expect(ingest).not.toMatch(/metaMessage\.create/);
     expect(ingest).not.toMatch(/allowClientPersist/);
+  });
+});
+
+describe('Slice 10 Finance/Support/attention migration safety', () => {
+  const slice10Sql = readRepo(
+    'packages/database/prisma/migrations/20260901010000_messenger_attention_routing/migration.sql',
+  );
+
+  it('is additive and does not DROP legacy Messenger or Product WhatsApp tables', () => {
+    expect(slice10Sql).not.toMatch(/DROP TABLE/i);
+    expect(slice10Sql).not.toMatch(/DROP TYPE/i);
+    expect(slice10Sql).not.toMatch(/DROP COLUMN/i);
+    expect(slice10Sql).toMatch(/messenger_conversation_attentions/);
+    expect(slice10Sql).not.toMatch(/product_whatsapp_group_bindings/);
+    expect(slice10Sql).not.toMatch(/messenger_channels/);
+    expect(slice10Sql).not.toMatch(/task_discussion_entries/);
   });
 });

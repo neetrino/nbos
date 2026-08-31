@@ -13,9 +13,19 @@ export type MessengerClientProvider = 'WHATSAPP' | 'INSTAGRAM' | 'FACEBOOK';
 
 export interface MessengerClientConversationRow extends MessengerCoreConversationRow {
   canSend?: boolean;
+  canWrite?: boolean;
   lastMessageDirection?: 'INBOUND' | 'OUTBOUND' | 'INTERNAL' | null;
   provider?: MessengerClientProvider | null;
   leadId?: string | null;
+  attention?: Array<{
+    productId: string;
+    purpose: 'WORK' | 'FINANCE';
+    productName?: string;
+    ownerKind: 'EMPLOYEE' | 'QUEUE' | 'ROLE';
+    ownerQueue: 'SUPPORT_INTAKE' | 'FINANCE' | null;
+    label: string;
+    isManual: boolean;
+  }>;
 }
 
 const CLIENT_ROOT = '/api/messenger/core/client';
@@ -87,6 +97,23 @@ export const messengerClientApi = {
     const resp = await api.post<{ employeeId: string }>(
       `${CLIENT_ROOT}/conversations/${conversationId}/participants`,
       { employeeId },
+    );
+    return resp.data;
+  },
+
+  async assignAttention(
+    conversationId: string,
+    body: {
+      productId: string;
+      purpose: 'WORK' | 'FINANCE';
+      ownerKind: 'EMPLOYEE' | 'QUEUE' | 'ROLE';
+      ownerEmployeeId?: string;
+      ownerQueue?: 'SUPPORT_INTAKE' | 'FINANCE';
+    },
+  ): Promise<NonNullable<MessengerClientConversationRow['attention']>> {
+    const resp = await api.patch<NonNullable<MessengerClientConversationRow['attention']>>(
+      `${CLIENT_ROOT}/conversations/${conversationId}/attention`,
+      body,
     );
     return resp.data;
   },

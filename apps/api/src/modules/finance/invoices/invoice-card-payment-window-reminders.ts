@@ -1,7 +1,10 @@
 import { Logger } from '@nestjs/common';
 import type { PrismaClient, SubscriptionReminderLanguage } from '@nbos/database';
 import type { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
-import { tryDeliverPaymentReminderWhatsApp } from './invoice-payment-reminder-whatsapp';
+import {
+  findPaymentReminderCoreMessage,
+  tryDeliverPaymentReminderWhatsApp,
+} from './invoice-payment-reminder-whatsapp';
 import { isOfficialRequestBlockingTaxReminders } from './invoice-official-request';
 import { isYerevanPaymentWindowOpen, paymentWindowDueDateBounds } from './invoice-payment-window';
 import { resolveInvoiceProductWhatsAppGroup } from './invoice-product-whatsapp-resolve';
@@ -153,10 +156,19 @@ async function createPaymentWindowJob(
   const cycle = invoice.paymentReminderCycle;
   const dedupeKey = buildPaymentWindowReminderDedupeKey(invoice.id, cycle);
   const existing = await args.prisma.notificationJob.findUnique({ where: { dedupeKey } });
-  if (existing) {
+  const existingCore = await findPaymentReminderCoreMessage(args.prisma, dedupeKey);
+  if (existing && existingCore) {
     return { created: false, type, invoiceId: invoice.id, reason: 'existing' };
   }
-  return enqueuePaymentWindowJob(args, invoice, dueDate, resolved, dedupeKey, cycle);
+  return enqueuePaymentWindowJob(
+    args,
+    invoice,
+    dueDate,
+    resolved,
+    dedupeKey,
+    cycle,
+    existing != null,
+  );
 }
 
 async function enqueuePaymentWindowJob(
@@ -171,9 +183,10 @@ async function enqueuePaymentWindowJob(
   resolved: NonNullable<ReturnType<typeof resolvePaymentReminderRenderInput>>,
   dedupeKey: string,
   cycle: number,
+  jobExists: boolean,
 ): Promise<
   | PaymentWindowReminderCreated
-  | { created: false; type: string; invoiceId: string; reason: 'no_whatsapp' }
+  | { created: false; type: string; invoiceId: string; reason: 'no_whatsapp' | 'existing' }
 > {
   const type = SUBSCRIPTION_PAYMENT_REMINDER_EVENT_TYPES.WINDOW;
   const productWhatsApp = await resolveInvoiceProductWhatsAppGroup(args.prisma, invoice.id);
@@ -182,7 +195,49 @@ async function enqueuePaymentWindowJob(
     return { created: false, type, invoiceId: invoice.id, reason: 'no_whatsapp' };
   }
   const messageText = renderPaymentReminderMessage(resolved);
-  const job = await createInvoiceReminderNotificationJob(args.prisma, {
+  const delivered = await tryDeliverPaymentReminderWhatsApp({
+    prisma: args.prisma,
+    outbound: args.outbound,
+    productId: productWhatsApp.productId,
+    text: messageText,
+    idempotencyKey: dedupeKey,
+  });
+  if (!delivered) {
+    return { created: false, type, invoiceId: invoice.id, reason: 'no_whatsapp' };
+  }
+  if (jobExists) {
+    return { created: false, type, invoiceId: invoice.id, reason: 'existing' };
+  }
+  await recordPaymentWindowJob(
+    args,
+    invoice,
+    dueDate,
+    resolved,
+    productWhatsApp,
+    messageText,
+    dedupeKey,
+    cycle,
+    type,
+  );
+  return { created: true, type, invoiceId: invoice.id };
+}
+
+async function recordPaymentWindowJob(
+  args: {
+    prisma: InstanceType<typeof PrismaClient>;
+    asOf: Date;
+    asOfKey: string;
+  },
+  invoice: PaymentWindowCandidate,
+  dueDate: Date,
+  resolved: NonNullable<ReturnType<typeof resolvePaymentReminderRenderInput>>,
+  productWhatsApp: { productId: string; groupChatId: string },
+  messageText: string,
+  dedupeKey: string,
+  cycle: number,
+  type: string,
+): Promise<void> {
+  await createInvoiceReminderNotificationJob(args.prisma, {
     type,
     invoiceId: invoice.id,
     dedupeKey,
@@ -197,15 +252,6 @@ async function enqueuePaymentWindowJob(
       messageText,
     ),
   });
-  await tryDeliverPaymentReminderWhatsApp({
-    prisma: args.prisma,
-    outbound: args.outbound,
-    jobId: job.jobId,
-    chatId: productWhatsApp.groupChatId,
-    text: messageText,
-    idempotencyKey: dedupeKey,
-  });
-  return { created: true, type, invoiceId: invoice.id };
 }
 
 function paymentWindowJobPayload(

@@ -522,55 +522,58 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Finance automation
 
-- [ ] all automatic payment/money reminders use purpose `FINANCE`.
-- [ ] includes approved invoices/subscriptions/hosting/domain/maintenance/client-service reminders.
-- [ ] Finance owns timing/business rule; Messaging Core owns destination/send/history.
-- [ ] explicit FINANCE binding receives reminder.
-- [ ] no explicit FINANCE binding falls back to WORK.
-- [ ] manual employee Finance chat is ordinary Client Messenger behavior, separate from scheduler/reminder generation.
-- [ ] client reply remains in the physical conversation that received the reminder.
-- [ ] no separate Finance Messenger is introduced.
+- [x] all automatic payment/money reminders use purpose `FINANCE`.
+- [x] includes approved invoices/subscriptions/hosting/domain/maintenance/client-service reminders.
+- [x] Finance owns timing/business rule; Messaging Core owns destination/send/history.
+- [x] explicit FINANCE binding receives reminder.
+- [x] no explicit FINANCE binding falls back to WORK.
+- [x] manual employee Finance chat is ordinary Client Messenger behavior, separate from scheduler/reminder generation.
+- [x] client reply remains in the physical conversation that received the reminder.
+- [x] no separate Finance Messenger is introduced.
 
 ### FINANCE default access template
 
-- [ ] Owner.
-- [ ] CEO.
-- [ ] Finance Director.
-- [ ] relevant Seller.
-- [ ] relevant Product PM.
-- [ ] developers/other Product members are not automatically added.
-- [ ] READ/SEND still resolved by permissions.
+- [x] Owner.
+- [x] CEO.
+- [x] Finance Director.
+- [x] relevant Seller.
+- [x] relevant Product PM.
+- [x] developers/other Product members are not automatically added.
+- [x] READ/SEND still resolved by permissions.
 
 ### Support
 
-- [ ] Ticket remains internal case/SLA entity.
-- [ ] Client external messages are referenced, not copied into public Ticket chat.
-- [ ] Ticket has no final Public/Internal composer toggle.
-- [ ] Create/link Ticket action available from Client message where authorized.
-- [ ] execution can create/link Task(s).
-- [ ] client reply/update returns through Client Messenger.
+- [x] Ticket remains internal case/SLA entity.
+- [x] Client external messages are referenced, not copied into public Ticket chat.
+- [x] Ticket has no final Public/Internal composer toggle.
+- [x] Create/link Ticket action available from Client message where authorized.
+- [x] execution can create/link Task(s).
+- [x] client reply/update returns through Client Messenger.
 
 ### Attention routing
 
-- [ ] Delivery WORK default → Product PM.
-- [ ] Maintenance WORK default → Support Intake queue.
-- [ ] FINANCE → Finance/authorized queue.
-- [ ] routing does not change canonical conversation id.
-- [ ] manual reassignment supported.
-- [ ] no permanent hard-coded employee owner.
+- [x] Delivery WORK default → Product PM.
+- [x] Maintenance WORK default → Support Intake queue.
+- [x] FINANCE → Finance/authorized queue.
+- [x] routing does not change canonical conversation id.
+- [x] manual reassignment supported.
+- [x] no permanent hard-coded employee owner.
 
 ### Tests
 
-- [ ] reminder routing with and without explicit FINANCE.
-- [ ] one shared FINANCE group serving multiple Products.
-- [ ] manual finance participant with READ but no SEND.
-- [ ] lifecycle Delivery → Maintenance changes attention, not conversation.
-- [ ] Ticket source references obey Client access.
+- [x] reminder routing with and without explicit FINANCE.
+- [x] one shared FINANCE group serving multiple Products.
+- [x] manual finance participant with READ but no SEND.
+- [x] lifecycle Delivery → Maintenance changes attention, not conversation.
+- [x] Ticket source references obey Client access.
+- [x] no Public/Internal Ticket composer toggle.
 
 ### Acceptance
 
-- [ ] Support/Finance behavior operates around Client Messenger, not parallel chat stores.
-- [ ] Slice status `VERIFIED`.
+- [x] Support/Finance behavior operates around Client Messenger, not parallel chat stores.
+- [x] Slice status `VERIFIED`.
+
+**Status:** `VERIFIED` — evidence `30-Slice-10-Finance-Support-Routing.md`. Independent XHigh review closed FINDING-S10-01…08. Slice 11 is **not** started (hard stop).
 
 ---
 
@@ -641,7 +644,7 @@ These apply to every slice touching persistence or existing runtime.
 | 7 — Client surface               | `VERIFIED` | `27-Slice-07-Client-Messenger.md`               | VERIFIED (locked composer + Meta cutover) |
 | 8 — WhatsApp Gateway integration | `VERIFIED` | `28-Slice-08-WhatsApp-Gateway.md`               | VERIFIED (FINDING-S8-01…10 closed)        |
 | 9 — Flexible Product bindings    | `VERIFIED` | `29-Slice-09-Product-Communication-Bindings.md` | VERIFIED (FINDING-S9-01…10 closed)        |
-| 10 — Finance/Support/routing     | `PLANNED`  | —                                               | —                                         |
+| 10 — Finance/Support/routing     | `VERIFIED` | `30-Slice-10-Finance-Support-Routing.md`        | VERIFIED (FINDING-S10-01…08 closed)       |
 | 11 — Hardening/cleanup readiness | `PLANNED`  | —                                               | —                                         |
 
 Status changes must follow `12-Messenger-Rebuild-Execution-Strategy.md`.

@@ -11,6 +11,12 @@ import type {
   MessengerClientListQuery,
   MessengerClientListResult,
 } from './messenger-core-client.types';
+import type { MessengerAttentionDto } from './messenger-core-attention.types';
+import {
+  attentionsFromListRow,
+  CLIENT_LIST_ATTENTION_INCLUDE,
+} from './messenger-core-client-list-attention';
+import { listAssignedConversationIds } from './messenger-core-client-list-assigned.ops';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -22,6 +28,16 @@ export async function listAccessibleClientConversations(
   query: MessengerClientListQuery,
 ): Promise<MessengerClientListResult> {
   const pageSize = query.pageSize ?? MESSENGER_CORE_CLIENT_LIST_PAGE_SIZE;
+  if (query.filter === 'assigned') {
+    return listAssignedClientConversations(
+      prisma,
+      employeeId,
+      clientReadScope,
+      clientSendScope,
+      query,
+      pageSize,
+    );
+  }
   const extra = query.filter === 'unread' || query.filter === 'needs_response';
   const where = await clientListWhere(prisma, employeeId, clientReadScope, query);
   const rows = await prisma.messengerConversation.findMany({
@@ -32,6 +48,34 @@ export async function listAccessibleClientConversations(
   });
   const mapped = rows.map((row) => mapClientListItem(row, clientSendScope));
   return { items: applyClientListFilter(mapped, query.filter, pageSize) };
+}
+
+async function listAssignedClientConversations(
+  prisma: PrismaLike,
+  employeeId: string,
+  clientReadScope: string,
+  clientSendScope: string,
+  query: MessengerClientListQuery,
+  pageSize: number,
+): Promise<MessengerClientListResult> {
+  const access = await accessibleClientWhere(prisma, employeeId, clientReadScope);
+  const ids = await listAssignedConversationIds(prisma, employeeId, access);
+  if (ids.length === 0) return { items: [] };
+  const rows = await prisma.messengerConversation.findMany({
+    where: {
+      AND: [
+        access,
+        { id: { in: ids } },
+        sectionWhere(query.section),
+        searchWhere(query.q),
+        providerWhere(query.provider),
+      ],
+    },
+    orderBy: [{ lastMessageAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
+    take: pageSize,
+    include: clientListInclude(employeeId),
+  });
+  return { items: rows.map((row) => mapClientListItem(row, clientSendScope)) };
 }
 
 export async function listAccessibleClientConversationsByIds(
@@ -62,13 +106,7 @@ async function clientListWhere(
 ): Promise<Prisma.MessengerConversationWhereInput> {
   const access = await accessibleClientWhere(prisma, employeeId, clientReadScope);
   return {
-    AND: [
-      access,
-      sectionWhere(query.section),
-      searchWhere(query.q),
-      assignedWhere(employeeId, query.filter),
-      providerWhere(query.provider),
-    ],
+    AND: [access, sectionWhere(query.section), searchWhere(query.q), providerWhere(query.provider)],
   };
 }
 
@@ -132,14 +170,6 @@ function searchWhere(q: string | undefined): Prisma.MessengerConversationWhereIn
   };
 }
 
-function assignedWhere(
-  employeeId: string,
-  filter: MessengerClientListQuery['filter'],
-): Prisma.MessengerConversationWhereInput {
-  if (filter !== 'assigned') return {};
-  return { participants: { some: { employeeId, leftAt: null } } };
-}
-
 function providerWhere(
   provider: MessengerClientListQuery['provider'],
 ): Prisma.MessengerConversationWhereInput {
@@ -178,6 +208,7 @@ function clientListInclude(employeeId: string) {
       where: { entityType: 'LEAD' as const, relationType: 'PRIMARY' as const },
       select: { entityId: true },
     },
+    ...CLIENT_LIST_ATTENTION_INCLUDE,
   };
 }
 
@@ -197,6 +228,10 @@ function mapClientListItem(
     participants: Array<{ role: string }>;
     externalMappings: Array<{ provider: MessengerClientConversationListItem['provider'] }>;
     links: Array<{ entityId: string }>;
+    productCommunicationBindings: Parameters<
+      typeof attentionsFromListRow
+    >[0]['productCommunicationBindings'];
+    attentions: Parameters<typeof attentionsFromListRow>[0]['attentions'];
   },
   clientSendScope: string,
 ): MessengerClientConversationListItem {
@@ -205,6 +240,7 @@ function mapClientListItem(
     row.lastMessageAt !== null && (lastReadAt === null || row.lastMessageAt > lastReadAt);
   const last = row.messages[0];
   const role = row.participants[0]?.role ?? null;
+  const attention: MessengerAttentionDto[] = attentionsFromListRow(row);
   return {
     id: row.id,
     zone: 'CLIENT',
@@ -222,5 +258,6 @@ function mapClientListItem(
     canSend: clientSendScope !== 'NONE' && role !== 'READ_ONLY',
     provider: row.externalMappings[0]?.provider ?? null,
     leadId: row.links[0]?.entityId ?? null,
+    attention,
   };
 }

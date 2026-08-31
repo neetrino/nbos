@@ -1,4 +1,14 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   CurrentUser,
@@ -6,6 +16,7 @@ import {
   RequirePermission,
 } from '../../../common/decorators';
 import { InviteClientReadOnlyDto } from './dto/invite-client-read-only.dto';
+import { AssignClientAttentionDto } from './dto/assign-client-attention.dto';
 import { ListClientConversationsQueryDto } from './dto/list-client-conversations.query';
 import { ListCoreMessagesQueryDto } from './dto/list-core-messages.query';
 import { SendCoreMessageDto } from './dto/send-core-message.dto';
@@ -99,5 +110,18 @@ export class MessengerCoreClientController {
     @Body() body: InviteClientReadOnlyDto,
   ) {
     return this.client.inviteReadOnly(id, user.id, body.employeeId);
+  }
+
+  @Patch('conversations/:id/attention')
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({
+    summary: 'Reassign attention when the actor can write or send; does not change conversation id',
+  })
+  assignAttention(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: AssignClientAttentionDto,
+  ) {
+    return this.client.assignAttention(id, user.id, body);
   }
 }

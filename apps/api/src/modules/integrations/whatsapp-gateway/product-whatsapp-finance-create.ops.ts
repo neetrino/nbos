@@ -6,7 +6,7 @@ import {
 import { persistBoundDestination } from './product-whatsapp-bind.ops';
 import { WhatsAppGatewayClient } from './whatsapp-gateway.client';
 import { WhatsAppGatewayConnectionService } from './whatsapp-gateway-connection.service';
-import { ProductWhatsAppParticipantResolver } from './product-whatsapp-participant.resolver';
+import { resolveFinanceTemplateParticipants } from './product-whatsapp-finance-participants.ops';
 import { WhatsAppGatewayHttpError, isUnknownCreateOutcome } from './whatsapp-gateway.errors';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
@@ -17,7 +17,6 @@ export async function executeFinanceGroupCreate(input: {
   prisma: PrismaLike;
   client: WhatsAppGatewayClient;
   connection: WhatsAppGatewayConnectionService;
-  participants: ProductWhatsAppParticipantResolver;
   operationId: string;
 }): Promise<'ok' | 'unknown' | 'no_participants' | 'failed'> {
   const operation = await input.prisma.whatsAppGroupOperation.findUniqueOrThrow({
@@ -27,7 +26,11 @@ export async function executeFinanceGroupCreate(input: {
     where: { id: operation.productId },
     select: { id: true, name: true, project: { select: { name: true } } },
   });
-  const resolved = await input.participants.resolve(product.id, operation.contextDealId);
+  const resolved = await resolveFinanceTemplateParticipants(
+    input.prisma,
+    product.id,
+    operation.contextDealId,
+  );
   if (resolved.candidates.length === 0) return 'no_participants';
   const created = await createFinanceGatewayGroup(input, product, resolved.candidates);
   if (created === 'unknown' || created === 'failed') return created;

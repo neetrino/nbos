@@ -12,6 +12,7 @@ import {
   CLIENT_MESSENGER_EMPTY_COPY,
   type ClientMessengerSectionId,
 } from './client-messenger.constants';
+import { uniqueAttentionLabels } from './client-attention-view';
 import { clientConversationTitle, clientProviderLabel } from './client-messenger-section';
 
 const INBOX_FILTERS: Array<{ id: 'all' | MessengerClientListFilter; label: string }> = [
@@ -130,6 +131,7 @@ function ClientListRow({
 }) {
   const title = clientConversationTitle(row.title, row.provider ?? null);
   const unread = row.unreadCount ?? 0;
+  const attentionLabel = uniqueAttentionLabels(row.attention);
   return (
     <div
       className={`mb-0.5 flex items-center rounded-lg ${
@@ -146,6 +148,7 @@ function ClientListRow({
           <span className="block truncate font-medium text-black">{title}</span>
           <span className="block truncate text-[11px] text-black/40">
             {clientProviderLabel(row.provider)}
+            {attentionLabel ? ` · ${attentionLabel}` : ''}
             {row.lastMessagePreview ? ` · ${row.lastMessagePreview}` : ''}
           </span>
         </span>

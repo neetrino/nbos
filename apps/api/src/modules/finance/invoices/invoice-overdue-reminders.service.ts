@@ -3,17 +3,12 @@ import { PrismaClient, type SubscriptionReminderLanguage } from '@nbos/database'
 import { PRISMA_TOKEN } from '../../../database.module';
 import { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
 import { isOfficialRequestBlockingTaxReminders } from './invoice-official-request';
-import { tryDeliverPaymentReminderWhatsApp } from './invoice-payment-reminder-whatsapp';
 import { resolveInvoiceProductWhatsAppGroup } from './invoice-product-whatsapp-resolve';
-import { createInvoiceReminderNotificationJob } from './invoice-reminder-job-create';
 import { overdueReminderSelect } from './invoice-overdue-reminder-selects';
 import { decideOverdueReminderAction } from './invoice-overdue-reminder-decide';
-import { resolveOverdueReminderRenderInput } from './invoice-overdue-reminder-render';
-import { renderOverdueReminderMessage } from './invoice-overdue-reminder-templates';
+import { sendOverdueReminderWave } from './invoice-overdue-reminder-send';
 import {
   buildOverdueReminderDedupeKey,
-  buildOverdueReminderIdempotencyKey,
-  overdueReminderEventTypeForWave,
   OVERDUE_REMINDER_WAVES,
   parseOverdueReminderDedupeKey,
   type OverdueReminderSkipReason,
@@ -116,7 +111,13 @@ export class InvoiceOverdueRemindersService {
     const sent: OverdueReminderItem[] = [];
     const skipped = [...classified.skipped];
     for (const item of classified.sendable) {
-      const result = await this.sendWave(item, classified.asOf, classified.asOfKey);
+      const result = await sendOverdueReminderWave(
+        this.prisma,
+        this.outbound,
+        item,
+        classified.asOf,
+        classified.asOfKey,
+      );
       if (result.kind === 'sent') {
         sent.push({ invoiceId: item.invoice.id, code: item.invoice.code, wave: item.wave });
         continue;
@@ -206,46 +207,6 @@ export class InvoiceOverdueRemindersService {
       productId: productWhatsApp?.productId ?? '',
     };
   }
-
-  private async sendWave(
-    item: ClassifiedSendable,
-    asOf: Date,
-    asOfKey: string,
-  ): Promise<{ kind: 'sent' } | { kind: 'skip'; reason: OverdueReminderSkipReason }> {
-    const type = overdueReminderEventTypeForWave(item.wave);
-    const dedupeKey = buildOverdueReminderDedupeKey(item.invoice.id, item.wave);
-    const existing = await this.prisma.notificationJob.findUnique({ where: { dedupeKey } });
-    if (existing) return { kind: 'skip', reason: 'already_sent' };
-    const resolved = resolveOverdueReminderRenderInput({
-      amount: item.invoice.amount,
-      taxStatus: item.invoice.taxStatus,
-      coverageStartMonth: item.invoice.coverageStartMonth,
-      dueDate: item.invoice.dueDate,
-      wave: item.wave,
-      subscription: item.invoice.subscription,
-      clientServiceRecord: item.invoice.clientServiceRecord,
-    });
-    if (resolved == null) return { kind: 'skip', reason: 'no_product_link' };
-    const messageText = renderOverdueReminderMessage(resolved.renderInput);
-    const job = await createInvoiceReminderNotificationJob(this.prisma, {
-      type,
-      invoiceId: item.invoice.id,
-      dedupeKey,
-      idempotencyKey: buildOverdueReminderIdempotencyKey(item.invoice.id, item.wave),
-      scheduledFor: asOf,
-      payload: buildOverdueJobPayload(item, resolved, messageText, asOf, asOfKey),
-    });
-    await tryDeliverPaymentReminderWhatsApp({
-      prisma: this.prisma,
-      outbound: this.outbound,
-      jobId: job.jobId,
-      chatId: item.groupChatId,
-      text: messageText,
-      idempotencyKey: dedupeKey,
-      kind: 'overdue_reminder',
-    });
-    return { kind: 'sent' };
-  }
 }
 
 function toPreviewPayload(batch: ClassifiedBatch): OverdueReminderPreviewResult {
@@ -275,31 +236,6 @@ function applyWaveJob(
   if (!state) return;
   if (parsed.wave === 1) state.wave1ScheduledFor = scheduledFor;
   else state.hasWave2 = true;
-}
-
-function buildOverdueJobPayload(
-  item: ClassifiedSendable,
-  resolved: { productName: string; language: SubscriptionReminderLanguage },
-  messageText: string,
-  asOf: Date,
-  asOfKey: string,
-) {
-  return {
-    invoiceId: item.invoice.id,
-    invoiceCode: item.invoice.code,
-    amount: String(item.invoice.amount),
-    dueDate: item.invoice.dueDate?.toISOString() ?? null,
-    coverageStartMonth: item.invoice.coverageStartMonth,
-    productId: item.productId,
-    productName: resolved.productName,
-    language: resolved.language,
-    wave: item.wave,
-    whatsappGroupChatId: item.groupChatId,
-    messageText,
-    asOf: asOf.toISOString(),
-    asOfYerevan: asOfKey,
-    companyName: item.invoice.company?.name ?? null,
-  };
 }
 
 function isOverdueNotificationsEnabled(invoice: OverdueCandidate): boolean {

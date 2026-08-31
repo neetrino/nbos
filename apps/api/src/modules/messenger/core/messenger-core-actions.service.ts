@@ -10,9 +10,13 @@ import { deleteCoreMessageReference } from './messenger-core-reference.ops';
 import { loadCoreSourceMessage } from './messenger-core-source-message.ops';
 import { requireTaskEntityAccess } from './messenger-core-task-access.ops';
 import { attachTaskSourceReferences } from './messenger-core-task-source.ops';
+import { requireTicketEntityAccess } from './messenger-core-ticket-access.ops';
+import { listTicketSourceReferences } from './messenger-core-ticket-source-list.ops';
+import { attachTicketSourceReferences } from './messenger-core-ticket-source.ops';
 import { MessengerCoreService } from './messenger-core.service';
 
 const PURPOSE_TASK_SOURCE = 'TASK_SOURCE';
+const PURPOSE_TICKET_SOURCE = 'TICKET_SOURCE';
 
 type ReferenceMutationRow = {
   purpose: string;
@@ -69,6 +73,29 @@ export class MessengerCoreActionsService {
     });
   }
 
+  async attachTicketSources(employeeId: string, sourceMessageIds: string[], ticketId: string) {
+    await requireTicketEntityAccess(this.prisma, ticketId);
+    const sources = await loadOrderedSourceMessages(this.prisma, sourceMessageIds);
+    await this.requireSourceReads(employeeId, sources);
+    return attachTicketSourceReferences(this.prisma, {
+      sourceMessageIds: sources.map((row) => row.id),
+      ticketId,
+      createdById: employeeId,
+    });
+  }
+
+  async listTicketSources(employeeId: string, ticketId: string) {
+    await requireTicketEntityAccess(this.prisma, ticketId);
+    return listTicketSourceReferences(this.prisma, ticketId, async (conversationId) => {
+      try {
+        await this.core.requireRead(conversationId, employeeId);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+  }
+
   async forwardMessages(
     employeeId: string,
     targetConversationId: string,
@@ -94,6 +121,10 @@ export class MessengerCoreActionsService {
   ): Promise<void> {
     if (existing.purpose === PURPOSE_TASK_SOURCE && existing.entityId) {
       await requireTaskEntityAccess(this.prisma, existing.entityId, tasksAccess);
+      return;
+    }
+    if (existing.purpose === PURPOSE_TICKET_SOURCE && existing.entityId) {
+      await requireTicketEntityAccess(this.prisma, existing.entityId);
       return;
     }
     if (existing.targetConversationId) {
