@@ -4,6 +4,7 @@ import {
   isMissingActiveWhatsAppGroup,
   isWhatsAppWonGateDealType,
   whatsappGroupMissingLabel,
+  whatsappGroupMissingShortLabel,
 } from './deal-won-whatsapp-gate';
 
 describe('deal-won-whatsapp-gate', () => {
@@ -59,5 +60,9 @@ describe('deal-won-whatsapp-gate', () => {
     ).toBe(false);
     expect(whatsappGroupMissingLabel('FAILED')).toBe('WhatsApp group failed');
     expect(whatsappGroupMissingLabel(null)).toBe('WhatsApp group not created');
+    expect(whatsappGroupMissingShortLabel(null)).toBe('WhatsApp');
+    expect(whatsappGroupMissingShortLabel('FAILED')).toBe('Failed');
+    expect(whatsappGroupMissingShortLabel('CREATING')).toBe('Creating…');
+    expect(whatsappGroupMissingShortLabel('NEEDS_RECONCILIATION')).toBe('Unresolved');
   });
 });

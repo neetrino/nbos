@@ -1,4 +1,4 @@
-import { MessageCircle, type LucideIcon } from 'lucide-react';
+import { CircleAlert, Copy, Link2, Plus, RotateCcw, Settings, type LucideIcon } from 'lucide-react';
 import { isWhatsAppWonGateDealType } from './deal-won-whatsapp-gate';
 import { isWhatsAppCreateInFlight } from './whatsapp-create-status';
 
@@ -7,6 +7,7 @@ export type DealWhatsAppQuickAction = {
   label: string;
   icon: LucideIcon;
   enabled: boolean;
+  title?: string;
   disabledTitle?: string;
   onClick?: () => void;
 };
@@ -29,27 +30,34 @@ export function buildDealWhatsAppQuickActions(input: {
   groupChatId: string | null;
   latestOperationStatus: string | null | undefined;
   whatsappBusy: boolean;
+  /** False while Deal WhatsApp state is still loading — avoid a Create-group flash. */
+  stateReady?: boolean;
   onEnsure: () => void;
   onBind: () => void;
   onOpenSettings: (productId: string) => void;
   onCopyGroupId: (groupChatId: string) => void;
 }): DealWhatsAppQuickAction[] {
+  const creating =
+    isWhatsAppCreateInFlight(input.bindingStatus) ||
+    isWhatsAppCreateInFlight(input.latestOperationStatus);
   const actions: DealWhatsAppQuickAction[] = [
     buildDealWhatsAppPrimaryAction(input),
     {
       id: 'whatsapp-bind',
-      label: 'Bind existing group',
-      icon: MessageCircle,
-      enabled: canCreateDealLevelWhatsAppGroup(input) && !input.whatsappBusy,
-      disabledTitle: bindDisabledTitle(input),
+      label: 'Bind group',
+      title: 'Bind existing group',
+      icon: Link2,
+      enabled: canCreateDealLevelWhatsAppGroup(input) && !input.whatsappBusy && !creating,
+      disabledTitle: creating ? 'WhatsApp group creation is in progress' : bindDisabledTitle(input),
       onClick: input.onBind,
     },
   ];
   if (input.groupChatId && input.bindingStatus === 'ACTIVE') {
     actions.push({
       id: 'whatsapp-copy-id',
-      label: 'Copy group ID',
-      icon: MessageCircle,
+      label: 'Copy ID',
+      title: 'Copy group ID',
+      icon: Copy,
       enabled: true,
       onClick: () => input.onCopyGroupId(input.groupChatId as string),
     });
@@ -76,14 +84,17 @@ function buildDealWhatsAppPrimaryAction(input: {
   bindingStatus: string | null;
   latestOperationStatus: string | null | undefined;
   whatsappBusy: boolean;
+  stateReady?: boolean;
   onEnsure: () => void;
   onOpenSettings: (productId: string) => void;
 }): DealWhatsAppQuickAction {
-  if (input.bindingStatus === 'ACTIVE' && input.productId) {
+  const holdCreateUntilReady = input.stateReady === false && input.bindingStatus !== 'FAILED';
+  if (input.productId && (input.bindingStatus === 'ACTIVE' || holdCreateUntilReady)) {
     return {
       id: 'whatsapp-settings',
-      label: 'Open WhatsApp settings',
-      icon: MessageCircle,
+      label: 'Settings',
+      title: 'Open WhatsApp settings',
+      icon: Settings,
       enabled: true,
       onClick: () => input.onOpenSettings(input.productId as string),
     };
@@ -95,7 +106,7 @@ function buildDealWhatsAppPrimaryAction(input: {
     return {
       id: 'whatsapp-group',
       label: 'Creating group…',
-      icon: MessageCircle,
+      icon: Plus,
       enabled: false,
       disabledTitle: 'WhatsApp group creation is in progress',
     };
@@ -103,8 +114,8 @@ function buildDealWhatsAppPrimaryAction(input: {
   if (!canCreateDealLevelWhatsAppGroup(input) && input.bindingStatus !== 'FAILED') {
     return {
       id: 'whatsapp-group',
-      label: 'Create WhatsApp group',
-      icon: MessageCircle,
+      label: 'Create group',
+      icon: Plus,
       enabled: false,
       disabledTitle: bindDisabledTitle(input) ?? 'Product has not been created yet.',
     };
@@ -112,8 +123,8 @@ function buildDealWhatsAppPrimaryAction(input: {
   if (input.bindingStatus === 'OUTCOME_UNKNOWN' || input.bindingStatus === 'NEEDS_RECONCILIATION') {
     return {
       id: 'whatsapp-resolve',
-      label: 'Resolve WhatsApp group',
-      icon: MessageCircle,
+      label: 'Resolve',
+      icon: CircleAlert,
       enabled: Boolean(input.productId),
       disabledTitle: input.productId ? undefined : 'Open Product settings after Deal Won.',
       onClick: () => {
@@ -125,8 +136,8 @@ function buildDealWhatsAppPrimaryAction(input: {
   const failed = input.bindingStatus === 'FAILED' || input.latestOperationStatus === 'FAILED';
   return {
     id: failed ? 'whatsapp-retry' : 'whatsapp-group',
-    label: failed ? 'Retry WhatsApp group creation' : 'Create WhatsApp group',
-    icon: MessageCircle,
+    label: failed ? 'Retry create' : 'Create group',
+    icon: failed ? RotateCcw : Plus,
     enabled: !input.whatsappBusy && canCreateDealLevelWhatsAppGroup(input),
     disabledTitle: bindDisabledTitle(input),
     onClick: () => input.onEnsure(),

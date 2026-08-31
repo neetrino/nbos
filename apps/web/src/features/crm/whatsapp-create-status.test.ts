@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { isWhatsAppCreateInFlight, whatsappCreateButtonLabel } from './whatsapp-create-status';
+import {
+  isWhatsAppCreateInFlight,
+  isWhatsAppCreateInFlightFromLatest,
+  whatsappCreateButtonLabel,
+} from './whatsapp-create-status';
 
 describe('whatsapp-create-status', () => {
   it('treats queued and creating as in-flight', () => {
@@ -9,6 +13,23 @@ describe('whatsapp-create-status', () => {
     expect(isWhatsAppCreateInFlight('FAILED')).toBe(false);
     expect(isWhatsAppCreateInFlight('SUCCEEDED')).toBe(false);
     expect(isWhatsAppCreateInFlight(null)).toBe(false);
+  });
+
+  it('does not treat participant sync PROCESSING as create in flight', () => {
+    expect(
+      isWhatsAppCreateInFlightFromLatest({
+        bindingStatus: 'ACTIVE',
+        latestOperationType: 'SYNC_PRODUCT_PARTICIPANTS',
+        latestOperationStatus: 'PROCESSING',
+      }),
+    ).toBe(false);
+    expect(
+      isWhatsAppCreateInFlightFromLatest({
+        bindingStatus: 'PENDING',
+        latestOperationType: 'CREATE_PRODUCT_GROUP',
+        latestOperationStatus: 'PROCESSING',
+      }),
+    ).toBe(true);
   });
 
   it('labels creating, retry, and idle', () => {

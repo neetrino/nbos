@@ -58,3 +58,12 @@ export function whatsappGroupMissingLabel(bindingStatus?: string | null): string
   }
   return 'WhatsApp group not created';
 }
+
+export function whatsappGroupMissingShortLabel(bindingStatus?: string | null): string {
+  if (bindingStatus === 'FAILED') return 'Failed';
+  if (bindingStatus === 'PENDING' || bindingStatus === 'CREATING') return 'Creating…';
+  if (bindingStatus === 'OUTCOME_UNKNOWN' || bindingStatus === 'NEEDS_RECONCILIATION') {
+    return 'Unresolved';
+  }
+  return 'WhatsApp';
+}

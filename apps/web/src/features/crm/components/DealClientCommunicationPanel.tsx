@@ -7,7 +7,6 @@ import {
 } from '@/components/shared/detail-sheet-classes';
 import type { Deal } from '@/lib/api/deals';
 import { isWhatsAppCreateInFlight } from '../whatsapp-create-status';
-import { whatsappGroupMissingLabel } from '../deal-won-whatsapp-gate';
 
 interface DealClientCommunicationPanelProps {
   deal: Deal;
@@ -23,7 +22,9 @@ export function DealClientCommunicationPanel({ deal }: DealClientCommunicationPa
     ? 'This group attaches as Product WORK on Deal Won.'
     : inFlight
       ? 'Creation is in progress.'
-      : whatsappGroupMissingLabel(status);
+      : status === 'FAILED'
+        ? 'Group creation failed.'
+        : 'Not created yet.';
 
   return (
     <section className={DETAIL_SHEET_SECTION_SURFACE_CLASS}>

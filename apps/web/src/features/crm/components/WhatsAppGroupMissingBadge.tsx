@@ -1,7 +1,12 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { isMissingActiveWhatsAppGroup, whatsappGroupMissingLabel } from '../deal-won-whatsapp-gate';
+import { IntegrationBrandIcon } from '@/features/integrations/components/IntegrationBrandIcon';
+import {
+  isMissingActiveWhatsAppGroup,
+  whatsappGroupMissingLabel,
+  whatsappGroupMissingShortLabel,
+} from '../deal-won-whatsapp-gate';
 
 interface WhatsAppGroupMissingBadgeProps {
   bindingStatus?: string | null;
@@ -22,7 +27,8 @@ export function WhatsAppGroupMissingBadge({
       variant={failed ? 'destructive' : 'outline'}
       title={whatsappGroupMissingLabel(bindingStatus)}
     >
-      {whatsappGroupMissingLabel(bindingStatus)}
+      <IntegrationBrandIcon name="WhatsApp" className="size-3" />
+      {whatsappGroupMissingShortLabel(bindingStatus)}
     </Badge>
   );
 }

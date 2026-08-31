@@ -24,7 +24,7 @@ describe('buildDealWhatsAppQuickActions', () => {
     expect(canCreateDealLevelWhatsAppGroup(base)).toBe(true);
     const create = buildDealWhatsAppQuickActions(base)[0];
     expect(create?.enabled).toBe(true);
-    expect(create?.label).toBe('Create WhatsApp group');
+    expect(create?.label).toBe('Create group');
   });
 
   it('disables create when Contact is missing', () => {
@@ -39,12 +39,24 @@ describe('buildDealWhatsAppQuickActions', () => {
   });
 
   it('shows creating while the job is in flight', () => {
-    const action = buildDealWhatsAppQuickActions({
+    const actions = buildDealWhatsAppQuickActions({
       ...base,
       latestOperationStatus: 'QUEUED',
+    });
+    expect(actions[0]?.enabled).toBe(false);
+    expect(actions[0]?.label).toBe('Creating group…');
+    expect(actions[1]?.enabled).toBe(false);
+  });
+
+  it('holds Settings instead of Create while Product state is still loading', () => {
+    const action = buildDealWhatsAppQuickActions({
+      ...base,
+      dealType: 'EXTENSION',
+      productId: 'p1',
+      stateReady: false,
     })[0];
-    expect(action?.enabled).toBe(false);
-    expect(action?.label).toBe('Creating group…');
+    expect(action?.id).toBe('whatsapp-settings');
+    expect(action?.label).toBe('Settings');
   });
 
   it('offers retry after FAILED', () => {
