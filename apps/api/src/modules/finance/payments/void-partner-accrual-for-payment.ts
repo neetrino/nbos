@@ -14,10 +14,7 @@ export const PARTNER_ACCRUAL_REMOVED_JOURNAL_NOTE =
   'Partner accrual voided because the client payment was removed';
 
 export interface PartnerAccrualJournalPort {
-  reverseJournalLineByIdempotencyKey(
-    idempotencyKey: string,
-    reversalNote: string,
-  ): Promise<void>;
+  reverseJournalLineByIdempotencyKey(idempotencyKey: string, reversalNote: string): Promise<void>;
 }
 
 /**
