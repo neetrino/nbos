@@ -4,13 +4,14 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'reac
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PageHero, PageHeroTabs, type PageHeroTabOption } from '@/components/shared';
 import { calendarApi, type CalendarEventProjection, type CalendarLayer } from '@/lib/api/calendar';
-import { Button } from '@/components/ui/button';
+import { CalendarCreateHeroButton } from './calendar-create-options';
 import { CreateMeetingCalendarDialog } from './calendar-create-meeting-dialog';
 import { CreatePersonalCalendarDialog } from './calendar-create-personal-dialog';
 import { CalendarEventDetailSheet } from './calendar-event-detail-sheet';
 import {
   CALENDAR_DEFAULT_LAYER_STORAGE_KEY,
   parseStoredCalendarLayer,
+  type CalendarCreateKind,
 } from './calendar-ui-constants';
 import { CalendarEmptyState, DayCell, EventCard, WEEKDAYS } from './calendar-view-parts';
 
@@ -92,6 +93,15 @@ export default function CalendarPage() {
     setSheetOpen(true);
   }, []);
 
+  const openCreateForDate = useCallback((date: Date, kind: CalendarCreateKind) => {
+    setSelectedDate(date);
+    if (kind === 'meeting') {
+      setMeetingOpen(true);
+      return;
+    }
+    setPersonalOpen(true);
+  }, []);
+
   const onSheetOpenChange = useCallback((open: boolean) => {
     setSheetOpen(open);
     if (!open) setSheetEvent(null);
@@ -156,19 +166,10 @@ export default function CalendarPage() {
           />
         }
         trailing={
-          <>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => setMeetingOpen(true)}
-            >
-              New meeting
-            </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => setPersonalOpen(true)}>
-              Personal event
-            </Button>
-          </>
+          <div className="flex flex-wrap items-center gap-2">
+            <CalendarCreateHeroButton kind="meeting" onClick={() => setMeetingOpen(true)} />
+            <CalendarCreateHeroButton kind="personal" onClick={() => setPersonalOpen(true)} />
+          </div>
         }
       />
       <p className="text-muted-foreground text-sm">
@@ -221,6 +222,7 @@ export default function CalendarPage() {
                 isToday={date !== null && isSameDay(date, today)}
                 isSelected={date !== null && isSameDay(date, selectedDate)}
                 onSelect={setSelectedDate}
+                onCreate={openCreateForDate}
               />
             ))}
           </div>
