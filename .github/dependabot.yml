@@ -1,14 +1,18 @@
-# TECH_CARD 8.11 — monthly minor/patch; major upgrades are manual.
+# TECH_CARD 8.11 — version updates paused (no Dependabot PR spam).
+# Security alerts stay in GitHub. Majors stay manual.
+# To resume monthly minor/patch: set open-pull-requests-limit back to 1.
 version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "monthly"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
     labels:
       - "dependencies"
     ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
       - dependency-name: "zod"
@@ -28,6 +32,6 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
-    open-pull-requests-limit: 2
+    open-pull-requests-limit: 0
     labels:
       - "dependencies"
