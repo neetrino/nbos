@@ -146,6 +146,7 @@ Payment confirmed
 | `Overdue`                                          | `On Hold`          | вручную                                                                                             |
 | `On Hold`                                          | `Awaiting Payment` | вручную                                                                                             |
 | `Awaiting Payment` / `Overdue` / `On Hold`         | `Paid`             | вручную (Mark Paid) или после записи Payment; Mark Paid при outstanding создаёт Payment на остаток  |
+| `Paid`                                             | `New` / `Awaiting Payment` / `Overdue` / `On Hold` | только после удаления Payment; статус пересчитывается из оставшихся платежей. Пока outstanding = 0, уйти из Paid нельзя |
 | `New` / `Awaiting Payment` / `Overdue` / `On Hold` | `Cancelled`        | вручную                                                                                             |
 | `Cancelled`                                        | `Awaiting Payment` | вручную; новый цикл взыскания (письмо «оплатите в течение 5 дней» и overdue-волны могут уйти снова) |
 
@@ -351,6 +352,16 @@ Payment confirmed
 3. карточка становится `Paid` с coverage = 0.
 
 Так статус денег и факт оплаты не расходятся: `Payment` остаётся источником правды для cash / P&L / bonus.
+
+### Remove Payment
+
+На вкладке Payments карточки можно снять записанный платёж (в том числе auto-created Mark Paid). Система:
+
+1. сторнирует cash-проводку платежа;
+2. снимает inbound Partner Accrual по этому платежу, если он ещё не в payout batch (`IN_BATCH` / `PAID` — отказ);
+3. удаляет `Payment` и пересчитывает money status из оставшихся платежей.
+
+После этого карточку снова можно поставить в `On Hold` / `Awaiting Payment` / `Cancelled`.
 
 ---
 
