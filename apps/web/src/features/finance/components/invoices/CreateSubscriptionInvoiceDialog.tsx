@@ -25,25 +25,22 @@ export function CreateSubscriptionInvoiceDialog(props: CreateSubscriptionInvoice
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent className="sm:max-w-[420px]" forceNestedBackdrop={props.forceNestedBackdrop}>
+      <DialogContent className="sm:max-w-[560px]" forceNestedBackdrop={props.forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>Create Subscription Invoice</DialogTitle>
-          <DialogDescription>
-            Choose one or more uncovered coverage months. Each month becomes a separate invoice.
-            Amount and due date follow the subscription billing rules.
-          </DialogDescription>
+          <DialogDescription>Select months to invoice. Each month is a separate card.</DialogDescription>
         </DialogHeader>
         <form onSubmit={(event) => void state.handleSubmit(event)} className="space-y-4">
           <SubscriptionInvoiceContext
             loading={state.loading}
             loadError={state.loadError}
             subscription={state.subscription}
+            selectedCount={state.coverageMonths.length}
           />
           <CoverageMonthChecklist
             eligibleMonths={state.eligibleMonths}
             coverageMonths={state.coverageMonths}
             coverageMonthCount={state.subscription?.coverageMonthCount ?? 1}
-            periodAmount={state.subscription ? parseFloat(state.subscription.amount) : 0}
             canAddMonth={state.canAddMonth}
             disabled={state.loading || state.submitting || !state.subscription}
             onToggle={state.toggleCoverageMonth}
@@ -71,10 +68,12 @@ function SubscriptionInvoiceContext({
   loading,
   loadError,
   subscription,
+  selectedCount,
 }: {
   loading: boolean;
   loadError: string | null;
   subscription: Subscription | null;
+  selectedCount: number;
 }) {
   if (loading) {
     return (
@@ -92,18 +91,13 @@ function SubscriptionInvoiceContext({
   }
   if (!subscription) return null;
   const displayTitle = getSubscriptionDisplayTitle(subscription);
+  const totalAmount = selectedCount * parseFloat(subscription.amount);
   return (
-    <div className="bg-muted/40 rounded-lg border p-3 text-sm">
-      <p className="font-medium">{displayTitle}</p>
-      {displayTitle !== subscription.code ? (
-        <p className="text-muted-foreground text-xs">{subscription.code}</p>
-      ) : null}
-      <p className="text-muted-foreground">
-        {subscription.project.name}
-        {subscription.company?.name ? ` · ${subscription.company.name}` : ''}
-      </p>
-      <p className="text-muted-foreground mt-1">
-        Period amount: {formatAmount(parseFloat(subscription.amount))}
+    <div className="bg-muted/40 flex items-center justify-between gap-4 rounded-lg border px-4 py-3.5">
+      <p className="text-xl font-semibold leading-tight">{displayTitle}</p>
+      <p className="flex shrink-0 items-baseline gap-2">
+        <span className="text-muted-foreground text-sm">Total</span>
+        <span className="text-xl font-semibold tabular-nums">{formatAmount(totalAmount)}</span>
       </p>
     </div>
   );

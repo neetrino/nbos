@@ -28,11 +28,43 @@ export function formatSubscriptionInvoiceMonthLabel(monthKey: string, locale = '
   if (!MONTH_KEY_RE.test(monthKey)) {
     return monthKey;
   }
-  const year = Number(monthKey.slice(0, 4));
-  const monthIndex = Number(monthKey.slice(5, 7)) - 1;
+  const parts = parseCoverageMonthParts(monthKey);
   return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(
-    new Date(year, monthIndex, 1),
+    new Date(parts.year, parts.monthIndex, 1),
   );
+}
+
+export function formatSubscriptionInvoiceMonthName(monthKey: string, locale = 'en'): string {
+  if (!MONTH_KEY_RE.test(monthKey)) {
+    return monthKey;
+  }
+  const parts = parseCoverageMonthParts(monthKey);
+  return new Intl.DateTimeFormat(locale, { month: 'long' }).format(
+    new Date(parts.year, parts.monthIndex, 1),
+  );
+}
+
+export function formatSubscriptionInvoiceMonthYear(monthKey: string): string {
+  if (!MONTH_KEY_RE.test(monthKey)) {
+    return '';
+  }
+  return String(parseCoverageMonthParts(monthKey).year);
+}
+
+export type CoverageMonthKind = 'past' | 'current' | 'future';
+
+export function classifyCoverageMonth(monthKey: string, now: Date = new Date()): CoverageMonthKind {
+  const current = yerevanMonthKey(now);
+  if (monthKey < current) return 'past';
+  if (monthKey === current) return 'current';
+  return 'future';
+}
+
+function parseCoverageMonthParts(monthKey: string): { year: number; monthIndex: number } {
+  return {
+    year: Number(monthKey.slice(0, 4)),
+    monthIndex: Number(monthKey.slice(5, 7)) - 1,
+  };
 }
 
 export function defaultSubscriptionInvoiceMonth(eligible: readonly string[], now: Date): string {

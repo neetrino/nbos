@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import type { Subscription } from '@/lib/api/subscriptions';
 import {
   canSelectAnotherCoverageMonth,
+  classifyCoverageMonth,
   defaultSubscriptionInvoiceMonth,
   formatSubscriptionInvoiceMonthLabel,
+  formatSubscriptionInvoiceMonthName,
+  formatSubscriptionInvoiceMonthYear,
   isCoverageMonthBlockedBySelection,
   listEligibleSubscriptionInvoiceMonths,
   toggleCoverageMonthSelection,
@@ -139,6 +142,16 @@ describe('formatSubscriptionInvoiceMonthLabel', () => {
   it('formats a coverage month', () => {
     expect(formatSubscriptionInvoiceMonthLabel('2026-09', 'en')).toMatch(/September/);
     expect(formatSubscriptionInvoiceMonthLabel('2026-09', 'en')).toMatch(/2026/);
+    expect(formatSubscriptionInvoiceMonthName('2026-09', 'en')).toBe('September');
+    expect(formatSubscriptionInvoiceMonthYear('2026-09')).toBe('2026');
+  });
+});
+
+describe('classifyCoverageMonth', () => {
+  it('labels past, current, and future against the Yerevan month', () => {
+    expect(classifyCoverageMonth('2026-08', midSeptember)).toBe('past');
+    expect(classifyCoverageMonth('2026-09', midSeptember)).toBe('current');
+    expect(classifyCoverageMonth('2026-10', midSeptember)).toBe('future');
   });
 });
 
