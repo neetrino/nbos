@@ -3,6 +3,7 @@ import type { Subscription } from '@/lib/api/finance';
 import {
   subscriptionCanActivateOrResume,
   subscriptionCanCancel,
+  subscriptionCanCreatePeriodInvoice,
   subscriptionCanHold,
 } from './subscription-action-eligibility';
 
@@ -59,5 +60,15 @@ describe('subscriptionCanCancel', () => {
     expect(subscriptionCanCancel(subscriptionWithStatus('ON_HOLD'))).toBe(true);
     expect(subscriptionCanCancel(subscriptionWithStatus('CANCELLED'))).toBe(false);
     expect(subscriptionCanCancel(subscriptionWithStatus('COMPLETED'))).toBe(false);
+  });
+});
+
+describe('subscriptionCanCreatePeriodInvoice', () => {
+  it('allows ACTIVE only', () => {
+    expect(subscriptionCanCreatePeriodInvoice(subscriptionWithStatus('ACTIVE'))).toBe(true);
+    expect(subscriptionCanCreatePeriodInvoice(subscriptionWithStatus('PENDING'))).toBe(false);
+    expect(subscriptionCanCreatePeriodInvoice(subscriptionWithStatus('ON_HOLD'))).toBe(false);
+    expect(subscriptionCanCreatePeriodInvoice(subscriptionWithStatus('CANCELLED'))).toBe(false);
+    expect(subscriptionCanCreatePeriodInvoice(subscriptionWithStatus('COMPLETED'))).toBe(false);
   });
 });

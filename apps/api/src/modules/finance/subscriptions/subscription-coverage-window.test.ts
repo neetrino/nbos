@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   countDistinctCoveredMonths,
+  coverageWindowOverlapsInvoices,
   isBillingMonthCoveredByInvoices,
   latestCoveredMonthKey,
   type SubscriptionCoverageInvoiceRow,
@@ -69,6 +70,20 @@ describe('isBillingMonthCoveredByInvoices', () => {
     ];
     expect(isBillingMonthCoveredByInvoices('2026-13', invoices)).toBe(false);
     expect(isBillingMonthCoveredByInvoices('bad', invoices)).toBe(false);
+  });
+});
+
+describe('coverageWindowOverlapsInvoices', () => {
+  it('detects overlap when a yearly window would cover an existing month', () => {
+    const invoices = [
+      row({
+        coverageStartMonth: '2026-03',
+        coverageMonthCount: 1,
+        createdAt: new Date(2026, 2, 1),
+      }),
+    ];
+    expect(coverageWindowOverlapsInvoices('2026-01', 12, invoices)).toBe(true);
+    expect(coverageWindowOverlapsInvoices('2026-04', 1, invoices)).toBe(false);
   });
 });
 

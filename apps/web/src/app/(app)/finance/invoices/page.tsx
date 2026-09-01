@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
 import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
+import { CreateSubscriptionInvoiceDialog } from '@/features/finance/components/invoices/CreateSubscriptionInvoiceDialog';
 import { OverdueRemindersButton } from '@/features/finance/components/invoices/OverdueRemindersButton';
 import { OverdueRemindersDialog } from '@/features/finance/components/invoices/OverdueRemindersDialog';
 import { InvoicesPageContent } from '@/features/finance/components/invoices/InvoicesPageContent';
@@ -242,12 +243,20 @@ function InvoicesPageInner() {
         onPaymentRecorded={state.handlePaymentRecorded}
         stageGateHighlight={state.stageGateHighlight}
       />
-      <CreateInvoiceDialog
-        open={state.createDialogOpen}
-        onOpenChange={state.handleCreateDialogOpenChange}
-        onCreated={state.handleInvoiceCreated}
-        subscriptionId={subscriptionIdFromUrl}
-      />
+      {subscriptionIdFromUrl ? (
+        <CreateSubscriptionInvoiceDialog
+          open={state.createDialogOpen}
+          onOpenChange={state.handleCreateDialogOpenChange}
+          onCreated={state.handleInvoiceCreated}
+          subscriptionId={subscriptionIdFromUrl}
+        />
+      ) : (
+        <CreateInvoiceDialog
+          open={state.createDialogOpen}
+          onOpenChange={state.handleCreateDialogOpenChange}
+          onCreated={state.handleInvoiceCreated}
+        />
+      )}
       <OverdueRemindersDialog open={overdueRemindersOpen} onOpenChange={setOverdueRemindersOpen} />
     </div>
   );

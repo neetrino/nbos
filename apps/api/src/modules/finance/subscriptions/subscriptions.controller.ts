@@ -6,13 +6,17 @@ import {
   RequirePermission,
 } from '../../../common/decorators';
 import { financeSubscriptionAccessFromUser } from '../finance-module-access';
+import { SubscriptionPeriodInvoiceService } from './subscription-period-invoice.service';
 import { SubscriptionsService } from './subscriptions.service';
 
 @ApiTags('Finance / Subscriptions')
 @ApiBearerAuth()
 @Controller('finance/subscriptions')
 export class SubscriptionsController {
-  constructor(private readonly subscriptionsService: SubscriptionsService) {}
+  constructor(
+    private readonly subscriptionsService: SubscriptionsService,
+    private readonly periodInvoiceService: SubscriptionPeriodInvoiceService,
+  ) {}
 
   @Get()
   @RequirePermission('FINANCE_SUBSCRIPTIONS', 'VIEW')
@@ -148,5 +152,13 @@ export class SubscriptionsController {
   @ApiOperation({ summary: 'Update subscription status' })
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.subscriptionsService.updateStatus(id, body.status);
+  }
+
+  @Post(':id/actions/create-invoice')
+  @ApiOperation({
+    summary: 'Create a subscription billing invoice for an uncovered coverage month',
+  })
+  async createPeriodInvoice(@Param('id') id: string, @Body() body: { coverageMonth?: string }) {
+    return this.periodInvoiceService.create(id, body);
   }
 }
