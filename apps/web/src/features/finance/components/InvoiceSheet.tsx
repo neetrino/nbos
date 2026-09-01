@@ -239,6 +239,7 @@ export function InvoiceSheet({
                     invoice={renderInvoice}
                     gateRequiredFields={gateRequiredFields}
                     onPaymentRecorded={onPaymentRecorded}
+                    onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
                   />
                 ) : null}
                 {activeTab === 'history' ? <InvoiceHistoryTab /> : null}

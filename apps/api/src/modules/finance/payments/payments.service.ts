@@ -25,6 +25,8 @@ import { mergeFinanceWhere } from '../finance-scoped-access';
 import type { FinanceScopedAccessContext } from '../finance-scoped-access';
 import { resolvePaymentParticipationWhere } from '../finance-module-participation.where';
 import { buildPaymentSearchWhere } from './payment-search.where';
+import { PAYMENT_REMOVED_JOURNAL_NOTE, paymentCashJournalKey } from './payment-cash-journal';
+import { voidPartnerAccrualForRemovedPayment } from './void-partner-accrual-for-payment';
 
 interface CreatePaymentDto {
   invoiceId: string;
@@ -292,6 +294,11 @@ export class PaymentsService {
   async delete(id: string) {
     const payment = await this.findById(id);
     await assertPostingPeriodOpenForBookedAt(this.prisma, payment.paymentDate);
+    await voidPartnerAccrualForRemovedPayment(this.prisma, this.operationalJournal, id);
+    await this.operationalJournal.reverseJournalLineByIdempotencyKey(
+      paymentCashJournalKey(id),
+      PAYMENT_REMOVED_JOURNAL_NOTE,
+    );
     await this.prisma.payment.delete({ where: { id } });
 
     await this.syncInvoiceStatus(payment.invoiceId);

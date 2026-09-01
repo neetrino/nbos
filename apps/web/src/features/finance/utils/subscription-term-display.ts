@@ -7,7 +7,7 @@ function isValidCoverageMonthKey(value: string): boolean {
   return COVERAGE_MONTH_KEY_RE.test(value);
 }
 
-function shiftCoverageMonthKey(ym: string, deltaMonths: number): string | null {
+export function shiftCoverageMonthKey(ym: string, deltaMonths: number): string | null {
   if (!isValidCoverageMonthKey(ym) || !Number.isInteger(deltaMonths)) {
     return null;
   }
@@ -59,14 +59,20 @@ function coveredMonthKeysForInvoice(invoice: Subscription['invoices'][number]): 
 }
 
 /** Distinct calendar months covered by subscription invoices (union of coverage windows). */
-export function countSubscriptionDistinctCoveredMonths(invoices: Subscription['invoices']): number {
+export function collectCoveredSubscriptionMonthKeys(
+  invoices: Subscription['invoices'],
+): Set<string> {
   const keys = new Set<string>();
   for (const invoice of invoices) {
     for (const key of coveredMonthKeysForInvoice(invoice)) {
       keys.add(key);
     }
   }
-  return keys.size;
+  return keys;
+}
+
+export function countSubscriptionDistinctCoveredMonths(invoices: Subscription['invoices']): number {
+  return collectCoveredSubscriptionMonthKeys(invoices).size;
 }
 
 export function deriveSubscriptionRemainingMonths(subscription: Subscription): number | null {

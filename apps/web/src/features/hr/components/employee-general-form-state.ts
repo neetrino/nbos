@@ -11,6 +11,7 @@ export interface EmployeeGeneralDraft {
   level: string;
   notes: string;
   hireDate: string;
+  birthday: string;
   status: string;
   roleId: string;
 }
@@ -34,6 +35,7 @@ export function createEmployeeGeneralDraft(employee: Employee): EmployeeGeneralD
     level: employee.level ?? '',
     notes: employee.notes ?? '',
     hireDate: toDateInput(employee.hireDate),
+    birthday: toDateInput(employee.birthday),
     status: employee.status,
     roleId: employee.role.id,
   };
@@ -59,6 +61,9 @@ export function buildEmployeeGeneralPatch(
   if (!strEq(draft.notes, snap.notes)) out.notes = draft.notes.trim() || null;
   if (draft.hireDate !== snap.hireDate) {
     out.hireDate = draft.hireDate ? new Date(draft.hireDate).toISOString() : null;
+  }
+  if (draft.birthday !== snap.birthday) {
+    out.birthday = draft.birthday ? new Date(draft.birthday).toISOString() : null;
   }
   return out;
 }

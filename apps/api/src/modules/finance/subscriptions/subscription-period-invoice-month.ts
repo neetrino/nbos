@@ -1,0 +1,114 @@
+import { BadRequestException } from '@nestjs/common';
+import { isValidCoverageMonthKey, shiftCoverageMonthKey } from './subscription-coverage-month';
+import {
+  coverageWindowOverlapsInvoices,
+  countDistinctCoveredMonths,
+  type SubscriptionCoverageInvoiceRow,
+} from './subscription-coverage-window';
+import { yerevanCalendarDateKey } from '../invoices/yerevan-calendar-date';
+import {
+  coverageMonthKey,
+  shiftYearMonth,
+  yerevanYearMonth,
+} from '../billing/subscription-billing-window';
+
+/** Manual issue may target the current Yerevan month or the next one. */
+export const MANUAL_SUBSCRIPTION_INVOICE_MAX_MONTHS_AHEAD = 1;
+
+export const SUBSCRIPTION_PERIOD_INVOICE_ERROR = {
+  NOT_ACTIVE: 'Only active subscriptions can create a billing invoice.',
+  INVALID_MONTH: 'coverageMonth must be YYYY-MM.',
+  BEFORE_START: 'Coverage month is before the subscription billing start.',
+  AFTER_END: 'Coverage month is after the subscription end date.',
+  TOO_FAR: 'Choose this month, next month, or an uncovered past month.',
+  ALREADY_COVERED: 'An invoice already covers that month.',
+  TERM_COMPLETE: 'The subscription term is already fully covered.',
+  TERM_REMAINING: 'Not enough remaining term months for this billing period.',
+  DELIVERY_PAUSE: 'Billing is paused until delivery is completed.',
+} as const;
+
+export function parseCoverageMonthKey(raw: string | undefined): string {
+  const key = raw?.trim() ?? '';
+  if (!isValidCoverageMonthKey(key)) {
+    throw new BadRequestException(SUBSCRIPTION_PERIOD_INVOICE_ERROR.INVALID_MONTH);
+  }
+  return key;
+}
+
+export function yerevanMonthKeyFromDate(date: Date): string {
+  return yerevanCalendarDateKey(date).slice(0, 7);
+}
+
+export function maxManualInvoiceMonthKey(now: Date): string {
+  const { year, month } = yerevanYearMonth(now);
+  const next = shiftYearMonth(year, month, MANUAL_SUBSCRIPTION_INVOICE_MAX_MONTHS_AHEAD);
+  return coverageMonthKey(next.year, next.month);
+}
+
+export function assertCoverageMonthInManualWindow(args: {
+  coverageMonthKey: string;
+  now: Date;
+  billingStartDate: Date;
+  endDate: Date | null;
+}): void {
+  const startKey = yerevanMonthKeyFromDate(args.billingStartDate);
+  if (args.coverageMonthKey < startKey) {
+    throw new BadRequestException(SUBSCRIPTION_PERIOD_INVOICE_ERROR.BEFORE_START);
+  }
+  if (args.endDate != null && args.coverageMonthKey > yerevanMonthKeyFromDate(args.endDate)) {
+    throw new BadRequestException(SUBSCRIPTION_PERIOD_INVOICE_ERROR.AFTER_END);
+  }
+  if (args.coverageMonthKey > maxManualInvoiceMonthKey(args.now)) {
+    throw new BadRequestException(SUBSCRIPTION_PERIOD_INVOICE_ERROR.TOO_FAR);
+  }
+}
+
+export function assertCoverageMonthFreeForCharge(args: {
+  coverageMonthKey: string;
+  coverageMonthCount: number;
+  invoices: readonly SubscriptionCoverageInvoiceRow[];
+  termMonths: number | null;
+}): void {
+  if (
+    coverageWindowOverlapsInvoices(args.coverageMonthKey, args.coverageMonthCount, args.invoices)
+  ) {
+    throw new BadRequestException(SUBSCRIPTION_PERIOD_INVOICE_ERROR.ALREADY_COVERED);
+  }
+  if (args.termMonths == null) {
+    return;
+  }
+  const remaining = args.termMonths - countDistinctCoveredMonths(args.invoices);
+  if (remaining <= 0) {
+    throw new BadRequestException(SUBSCRIPTION_PERIOD_INVOICE_ERROR.TERM_COMPLETE);
+  }
+  if (remaining < args.coverageMonthCount) {
+    throw new BadRequestException(SUBSCRIPTION_PERIOD_INVOICE_ERROR.TERM_REMAINING);
+  }
+}
+
+/** Inclusive YYYY-MM keys from billing start through the manual cap (or end date). */
+export function listManualInvoiceMonthKeys(args: {
+  now: Date;
+  billingStartDate: Date;
+  endDate: Date | null;
+}): string[] {
+  const startKey = yerevanMonthKeyFromDate(args.billingStartDate);
+  const lastKey =
+    args.endDate != null
+      ? minMonthKey(yerevanMonthKeyFromDate(args.endDate), maxManualInvoiceMonthKey(args.now))
+      : maxManualInvoiceMonthKey(args.now);
+  if (startKey > lastKey) {
+    return [];
+  }
+  const keys: string[] = [];
+  let cursor: string | null = startKey;
+  while (cursor && cursor <= lastKey) {
+    keys.push(cursor);
+    cursor = shiftCoverageMonthKey(cursor, 1);
+  }
+  return keys;
+}
+
+function minMonthKey(a: string, b: string): string {
+  return a < b ? a : b;
+}

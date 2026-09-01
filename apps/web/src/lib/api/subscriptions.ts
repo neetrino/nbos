@@ -1,4 +1,5 @@
 import { api } from '../api';
+import type { Invoice } from './finance';
 import type { FinanceDateRangeParams, ListData } from './finance-common';
 
 export interface SubscriptionListParams extends FinanceDateRangeParams {
@@ -198,6 +199,13 @@ export const subscriptionsApi = {
         search: params?.search,
       },
     });
+    return resp.data;
+  },
+  async createInvoice(id: string, data: { coverageMonth: string }): Promise<Invoice> {
+    const resp = await api.post<Invoice>(
+      `/api/finance/subscriptions/${id}/actions/create-invoice`,
+      data,
+    );
     return resp.data;
   },
 };

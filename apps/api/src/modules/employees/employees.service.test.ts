@@ -45,4 +45,24 @@ describe('EmployeesService', () => {
       expect(result).toBeNull();
     });
   });
+
+  describe('updateOwnProfile', () => {
+    it('skips write when the body is empty and returns the current record', async () => {
+      prisma.employee.findUnique.mockResolvedValue({ id: '1', phone: null });
+      const result = await service.updateOwnProfile('1', {});
+      expect(prisma.employee.update).not.toHaveBeenCalled();
+      expect(result.id).toBe('1');
+    });
+
+    it('writes allowed personal fields and reloads the record', async () => {
+      prisma.employee.update.mockResolvedValue({ id: '1' });
+      prisma.employee.findUnique.mockResolvedValue({ id: '1', phone: '+374' });
+      const result = await service.updateOwnProfile('1', { phone: '+374' });
+      expect(prisma.employee.update).toHaveBeenCalledWith({
+        where: { id: '1' },
+        data: { phone: '+374' },
+      });
+      expect(result.phone).toBe('+374');
+    });
+  });
 });
