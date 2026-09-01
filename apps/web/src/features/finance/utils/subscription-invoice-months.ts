@@ -13,7 +13,8 @@ const YEREVAN_DATE = new Intl.DateTimeFormat('en-CA', {
 });
 
 const MONTH_KEY_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
-const MANUAL_MAX_MONTHS_AHEAD = 1;
+export const MANUAL_SUBSCRIPTION_INVOICE_MAX_MONTHS_AHEAD = 12;
+export const MANUAL_SUBSCRIPTION_INVOICE_MAX_CARDS = 12;
 
 export function yerevanMonthKey(date: Date): string {
   return YEREVAN_DATE.format(date).slice(0, 7);
@@ -27,11 +28,43 @@ export function formatSubscriptionInvoiceMonthLabel(monthKey: string, locale = '
   if (!MONTH_KEY_RE.test(monthKey)) {
     return monthKey;
   }
-  const year = Number(monthKey.slice(0, 4));
-  const monthIndex = Number(monthKey.slice(5, 7)) - 1;
+  const parts = parseCoverageMonthParts(monthKey);
   return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(
-    new Date(year, monthIndex, 1),
+    new Date(parts.year, parts.monthIndex, 1),
   );
+}
+
+export function formatSubscriptionInvoiceMonthName(monthKey: string, locale = 'en'): string {
+  if (!MONTH_KEY_RE.test(monthKey)) {
+    return monthKey;
+  }
+  const parts = parseCoverageMonthParts(monthKey);
+  return new Intl.DateTimeFormat(locale, { month: 'long' }).format(
+    new Date(parts.year, parts.monthIndex, 1),
+  );
+}
+
+export function formatSubscriptionInvoiceMonthYear(monthKey: string): string {
+  if (!MONTH_KEY_RE.test(monthKey)) {
+    return '';
+  }
+  return String(parseCoverageMonthParts(monthKey).year);
+}
+
+export type CoverageMonthKind = 'past' | 'current' | 'future';
+
+export function classifyCoverageMonth(monthKey: string, now: Date = new Date()): CoverageMonthKind {
+  const current = yerevanMonthKey(now);
+  if (monthKey < current) return 'past';
+  if (monthKey === current) return 'current';
+  return 'future';
+}
+
+function parseCoverageMonthParts(monthKey: string): { year: number; monthIndex: number } {
+  return {
+    year: Number(monthKey.slice(0, 4)),
+    monthIndex: Number(monthKey.slice(5, 7)) - 1,
+  };
 }
 
 export function defaultSubscriptionInvoiceMonth(eligible: readonly string[], now: Date): string {
@@ -43,7 +76,7 @@ export function defaultSubscriptionInvoiceMonth(eligible: readonly string[], now
 }
 
 /**
- * Uncovered coverage-start months from billing start through next Yerevan month.
+ * Uncovered coverage-start months from billing start through the next 12 Yerevan months.
  * Only ACTIVE subscriptions with enough remaining term are listed.
  */
 export function listEligibleSubscriptionInvoiceMonths(
@@ -59,7 +92,10 @@ export function listEligibleSubscriptionInvoiceMonths(
   }
   const startKey = yerevanMonthKey(new Date(subscription.billingStartDate));
   const currentKey = yerevanMonthKey(now);
-  const maxKey = shiftSubscriptionMonthKey(currentKey, MANUAL_MAX_MONTHS_AHEAD);
+  const maxKey = shiftSubscriptionMonthKey(
+    currentKey,
+    MANUAL_SUBSCRIPTION_INVOICE_MAX_MONTHS_AHEAD,
+  );
   const endKey = subscription.endDate ? yerevanMonthKey(new Date(subscription.endDate)) : null;
   const lastKey = pickLastEligibleMonth(maxKey, endKey);
   if (!lastKey || startKey > lastKey) {
@@ -81,6 +117,59 @@ function collectMonthKeys(startKey: string, lastKey: string): string[] {
   const keys: string[] = [];
   let cursor: string | null = startKey;
   while (cursor && cursor <= lastKey) {
+    keys.push(cursor);
+    cursor = shiftSubscriptionMonthKey(cursor, 1);
+  }
+  return keys;
+}
+
+export function isCoverageMonthBlockedBySelection(
+  monthKey: string,
+  selected: readonly string[],
+  coverageMonthCount: number,
+): boolean {
+  if (selected.includes(monthKey)) return false;
+  return selected.some((start) => coverageWindowsOverlap(start, monthKey, coverageMonthCount));
+}
+
+export function canSelectAnotherCoverageMonth(args: {
+  selectedCount: number;
+  coverageMonthCount: number;
+  remainingMonths: number | null;
+  maxCards?: number;
+}): boolean {
+  const maxCards = args.maxCards ?? MANUAL_SUBSCRIPTION_INVOICE_MAX_CARDS;
+  if (args.selectedCount >= maxCards) return false;
+  if (args.remainingMonths == null) return true;
+  return (args.selectedCount + 1) * args.coverageMonthCount <= args.remainingMonths;
+}
+
+export function toggleCoverageMonthSelection(
+  selected: readonly string[],
+  monthKey: string,
+  coverageMonthCount: number,
+  maxSelected = MANUAL_SUBSCRIPTION_INVOICE_MAX_CARDS,
+): string[] {
+  if (selected.includes(monthKey)) {
+    return selected.filter((key) => key !== monthKey);
+  }
+  if (selected.length >= maxSelected) return [...selected];
+  if (isCoverageMonthBlockedBySelection(monthKey, selected, coverageMonthCount)) {
+    return [...selected];
+  }
+  return [...selected, monthKey].sort();
+}
+
+function coverageWindowsOverlap(left: string, right: string, monthCount: number): boolean {
+  const leftKeys = new Set(expandMonthWindow(left, monthCount));
+  return expandMonthWindow(right, monthCount).some((key) => leftKeys.has(key));
+}
+
+function expandMonthWindow(startKey: string, monthCount: number): string[] {
+  const keys: string[] = [];
+  let cursor: string | null = startKey;
+  for (let i = 0; i < monthCount; i += 1) {
+    if (!cursor) return keys;
     keys.push(cursor);
     cursor = shiftSubscriptionMonthKey(cursor, 1);
   }

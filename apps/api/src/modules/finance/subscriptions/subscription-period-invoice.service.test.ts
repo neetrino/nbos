@@ -75,7 +75,7 @@ describe('SubscriptionPeriodInvoiceService', () => {
 
     const result = await service.create('sub-1', { coverageMonth: '2026-09' }, AS_OF);
 
-    expect(result).toEqual({ id: 'inv-1', code: 'INV-2026-0001' });
+    expect(result).toEqual([{ id: 'inv-1', code: 'INV-2026-0001' }]);
     expect(prisma.$transaction).toHaveBeenCalled();
     expect(queryRawSql(prisma)).toContain('FOR UPDATE');
     expect(prisma.invoice.create).toHaveBeenCalledWith(
@@ -183,12 +183,57 @@ describe('SubscriptionPeriodInvoiceService', () => {
     );
   });
 
-  it('rejects a month beyond the current Yerevan month plus one', async () => {
+  it('rejects a month beyond the current Yerevan month plus 12', async () => {
     prisma.subscription.findUnique.mockResolvedValue(mockSubscription());
     prisma.invoice.findMany.mockResolvedValue([]);
-    await expect(service.create('sub-1', { coverageMonth: '2026-11' }, AS_OF)).rejects.toThrow(
+    await expect(service.create('sub-1', { coverageMonth: '2027-10' }, AS_OF)).rejects.toThrow(
       SUBSCRIPTION_PERIOD_INVOICE_ERROR.TOO_FAR,
     );
+    expect(prisma.invoice.create).not.toHaveBeenCalled();
+  });
+
+  it('creates a separate card for each selected month in one transaction', async () => {
+    prisma.subscription.findUnique.mockResolvedValue(mockSubscription());
+    prisma.invoice.findMany.mockResolvedValue([]);
+    prisma.invoice.create.mockImplementation(async ({ data }) => ({
+      id: `inv-${data.coverageStartMonth}`,
+      code: `INV-${data.coverageStartMonth}`,
+    }));
+    invoicesService.findById.mockImplementation(async (id: string) => ({
+      id,
+      code: id.replace('inv-', 'INV-'),
+    }));
+
+    const result = await service.create(
+      'sub-1',
+      { coverageMonths: ['2026-10', '2026-11', '2026-12'] },
+      AS_OF,
+    );
+
+    expect(prisma.invoice.create).toHaveBeenCalledTimes(3);
+    expect(result).toEqual([
+      { id: 'inv-2026-10', code: 'INV-2026-10' },
+      { id: 'inv-2026-11', code: 'INV-2026-11' },
+      { id: 'inv-2026-12', code: 'INV-2026-12' },
+    ]);
+  });
+
+  it('rejects a batch that exceeds remaining term', async () => {
+    prisma.subscription.findUnique.mockResolvedValue(mockSubscription({ termMonths: 2 }));
+    prisma.invoice.findMany.mockResolvedValue([]);
+    await expect(
+      service.create('sub-1', { coverageMonths: ['2026-09', '2026-10', '2026-11'] }, AS_OF),
+    ).rejects.toThrow(SUBSCRIPTION_PERIOD_INVOICE_ERROR.TERM_COMPLETE);
+  });
+
+  it('rejects selected yearly starts that overlap each other', async () => {
+    prisma.subscription.findUnique.mockResolvedValue(
+      mockSubscription({ coverageMonthCount: 12, amount: 120_000 }),
+    );
+    prisma.invoice.findMany.mockResolvedValue([]);
+    await expect(
+      service.create('sub-1', { coverageMonths: ['2026-09', '2026-10'] }, AS_OF),
+    ).rejects.toThrow(SUBSCRIPTION_PERIOD_INVOICE_ERROR.SELECTED_OVERLAP);
     expect(prisma.invoice.create).not.toHaveBeenCalled();
   });
 });

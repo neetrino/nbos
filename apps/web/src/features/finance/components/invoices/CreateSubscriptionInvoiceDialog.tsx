@@ -9,18 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
-import { formatSubscriptionInvoiceMonthLabel } from '@/features/finance/utils/subscription-invoice-months';
 import type { Subscription } from '@/lib/api/subscriptions';
+import { CoverageMonthChecklist } from './CoverageMonthChecklist';
 import {
   useCreateSubscriptionInvoiceDialog,
   type CreateSubscriptionInvoiceDialogProps,
@@ -33,12 +25,11 @@ export function CreateSubscriptionInvoiceDialog(props: CreateSubscriptionInvoice
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent className="sm:max-w-[420px]" forceNestedBackdrop={props.forceNestedBackdrop}>
+      <DialogContent className="sm:max-w-[560px]" forceNestedBackdrop={props.forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>Create Subscription Invoice</DialogTitle>
           <DialogDescription>
-            Choose an uncovered coverage month. Amount and due date follow the subscription billing
-            rules.
+            Select months to invoice. Each month is a separate card.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={(event) => void state.handleSubmit(event)} className="space-y-4">
@@ -46,13 +37,15 @@ export function CreateSubscriptionInvoiceDialog(props: CreateSubscriptionInvoice
             loading={state.loading}
             loadError={state.loadError}
             subscription={state.subscription}
+            selectedCount={state.coverageMonths.length}
           />
-          <CoverageMonthField
+          <CoverageMonthChecklist
             eligibleMonths={state.eligibleMonths}
-            coverageMonth={state.coverageMonth}
-            onCoverageMonthChange={state.setCoverageMonth}
+            coverageMonths={state.coverageMonths}
             coverageMonthCount={state.subscription?.coverageMonthCount ?? 1}
+            canAddMonth={state.canAddMonth}
             disabled={state.loading || state.submitting || !state.subscription}
+            onToggle={state.toggleCoverageMonth}
           />
           {state.error ? (
             <p className="text-destructive text-sm" role="alert">
@@ -64,7 +57,7 @@ export function CreateSubscriptionInvoiceDialog(props: CreateSubscriptionInvoice
               Cancel
             </Button>
             <Button type="submit" disabled={!state.canSubmit || state.submitting}>
-              {state.submitting ? 'Creating...' : 'Create Invoice'}
+              {submitLabel(state.submitting, state.coverageMonths.length)}
             </Button>
           </DialogFooter>
         </form>
@@ -77,10 +70,12 @@ function SubscriptionInvoiceContext({
   loading,
   loadError,
   subscription,
+  selectedCount,
 }: {
   loading: boolean;
   loadError: string | null;
   subscription: Subscription | null;
+  selectedCount: number;
 }) {
   if (loading) {
     return (
@@ -98,83 +93,20 @@ function SubscriptionInvoiceContext({
   }
   if (!subscription) return null;
   const displayTitle = getSubscriptionDisplayTitle(subscription);
+  const totalAmount = selectedCount * parseFloat(subscription.amount);
   return (
-    <div className="bg-muted/40 rounded-lg border p-3 text-sm">
-      <p className="font-medium">{displayTitle}</p>
-      {displayTitle !== subscription.code ? (
-        <p className="text-muted-foreground text-xs">{subscription.code}</p>
-      ) : null}
-      <p className="text-muted-foreground">
-        {subscription.project.name}
-        {subscription.company?.name ? ` · ${subscription.company.name}` : ''}
-      </p>
-      <p className="text-muted-foreground mt-1">
-        Period amount: {formatAmount(parseFloat(subscription.amount))}
+    <div className="bg-muted/40 flex items-center justify-between gap-4 rounded-lg border px-4 py-3.5">
+      <p className="text-xl leading-tight font-semibold">{displayTitle}</p>
+      <p className="flex shrink-0 items-baseline gap-2">
+        <span className="text-muted-foreground text-sm">Total</span>
+        <span className="text-xl font-semibold tabular-nums">{formatAmount(totalAmount)}</span>
       </p>
     </div>
   );
 }
 
-function CoverageMonthField({
-  eligibleMonths,
-  coverageMonth,
-  onCoverageMonthChange,
-  coverageMonthCount,
-  disabled,
-}: {
-  eligibleMonths: readonly string[];
-  coverageMonth: string;
-  onCoverageMonthChange: (value: string) => void;
-  coverageMonthCount: number;
-  disabled: boolean;
-}) {
-  if (eligibleMonths.length === 0) {
-    return (
-      <p className="text-muted-foreground text-sm">
-        No uncovered month is available. Only active subscriptions can invoice this month, next
-        month, or an unpaid past month.
-      </p>
-    );
-  }
-  return (
-    <div className="space-y-2">
-      <Label htmlFor="subscription-invoice-coverage-month">Coverage month</Label>
-      <Select
-        value={coverageMonth}
-        onValueChange={(value) => {
-          if (value) onCoverageMonthChange(value);
-        }}
-        disabled={disabled}
-      >
-        <SelectTrigger id="subscription-invoice-coverage-month" className="w-full">
-          <SelectValue placeholder="Select month">
-            {coverageMonth ? formatSubscriptionInvoiceMonthLabel(coverageMonth) : null}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {eligibleMonths.map((monthKey) => (
-            <SelectItem key={monthKey} value={monthKey}>
-              {formatSubscriptionInvoiceMonthLabel(monthKey)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <CoverageMonthHint coverageMonthCount={coverageMonthCount} />
-    </div>
-  );
-}
-
-function CoverageMonthHint({ coverageMonthCount }: { coverageMonthCount: number }) {
-  if (coverageMonthCount > 1) {
-    return (
-      <p className="text-muted-foreground text-xs">
-        This invoice covers {coverageMonthCount} months starting in the selected month.
-      </p>
-    );
-  }
-  return (
-    <p className="text-muted-foreground text-xs">
-      Due date is the later of billing day and issue day, plus 5 days.
-    </p>
-  );
+function submitLabel(submitting: boolean, selectedCount: number): string {
+  if (submitting) return 'Creating...';
+  if (selectedCount > 1) return `Create ${selectedCount} Invoices`;
+  return 'Create Invoice';
 }

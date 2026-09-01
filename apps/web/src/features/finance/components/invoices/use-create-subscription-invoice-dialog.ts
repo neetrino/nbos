@@ -4,14 +4,17 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import type { Invoice } from '@/lib/api/finance';
 import { subscriptionsApi, type Subscription } from '@/lib/api/subscriptions';
 import {
+  canSelectAnotherCoverageMonth,
   defaultSubscriptionInvoiceMonth,
   listEligibleSubscriptionInvoiceMonths,
+  toggleCoverageMonthSelection,
 } from '@/features/finance/utils/subscription-invoice-months';
+import { deriveSubscriptionRemainingMonths } from '@/features/finance/utils/subscription-term-display';
 
 export interface CreateSubscriptionInvoiceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: (invoice: Invoice) => Promise<void> | void;
+  onCreated: (invoices: Invoice[]) => Promise<void> | void;
   subscription?: Subscription | null;
   subscriptionId?: string | null;
   forceNestedBackdrop?: boolean;
@@ -31,35 +34,56 @@ export function useCreateSubscriptionInvoiceDialog({
     subscriptionId,
     ...state,
   });
-  const eligibleMonths = state.subscription
-    ? listEligibleSubscriptionInvoiceMonths(state.subscription)
-    : [];
-  const canSubmit = Boolean(
-    state.subscription && state.coverageMonth && eligibleMonths.includes(state.coverageMonth),
-  );
+  const selection = resolvePeriodInvoiceSelection(state.subscription, state.coverageMonths);
   return {
     subscription: state.subscription,
-    coverageMonth: state.coverageMonth,
-    setCoverageMonth: state.setCoverageMonth,
-    eligibleMonths,
+    coverageMonths: state.coverageMonths,
+    toggleCoverageMonth: (monthKey: string) => {
+      state.setCoverageMonths(
+        toggleCoverageMonthSelection(state.coverageMonths, monthKey, selection.coverageMonthCount),
+      );
+    },
+    canAddMonth: selection.canAddMonth,
+    eligibleMonths: selection.eligibleMonths,
     loading: state.loading,
     submitting: state.submitting,
     loadError: state.loadError,
     error: state.error,
-    canSubmit,
+    canSubmit: selection.canSubmit,
     onOpenChange,
     handleSubmit: bindPeriodInvoiceSubmit({
       ...state,
-      canSubmit,
+      canSubmit: selection.canSubmit,
       onCreated,
       onOpenChange,
     }),
   };
 }
 
+function resolvePeriodInvoiceSelection(
+  subscription: Subscription | null,
+  coverageMonths: readonly string[],
+) {
+  const eligibleMonths = subscription ? listEligibleSubscriptionInvoiceMonths(subscription) : [];
+  const coverageMonthCount = subscription?.coverageMonthCount ?? 1;
+  const remainingMonths = subscription ? deriveSubscriptionRemainingMonths(subscription) : null;
+  return {
+    eligibleMonths,
+    coverageMonthCount,
+    canAddMonth: canSelectAnotherCoverageMonth({
+      selectedCount: coverageMonths.length,
+      coverageMonthCount,
+      remainingMonths,
+    }),
+    canSubmit:
+      coverageMonths.length > 0 &&
+      coverageMonths.every((monthKey) => eligibleMonths.includes(monthKey)),
+  };
+}
+
 function usePeriodInvoiceDialogState(initial: Subscription | null) {
   const [subscription, setSubscription] = useState<Subscription | null>(initial);
-  const [coverageMonth, setCoverageMonth] = useState('');
+  const [coverageMonths, setCoverageMonths] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -68,8 +92,8 @@ function usePeriodInvoiceDialogState(initial: Subscription | null) {
   return {
     subscription,
     setSubscription,
-    coverageMonth,
-    setCoverageMonth,
+    coverageMonths,
+    setCoverageMonths,
     loading,
     setLoading,
     submitting,
@@ -95,7 +119,7 @@ function useHydrateSubscriptionInvoiceDialog(args: {
   subscriptionId?: string | null;
   submittingRef: { current: boolean };
   setSubscription: (value: Subscription | null) => void;
-  setCoverageMonth: (value: string) => void;
+  setCoverageMonths: (value: string[]) => void;
   setLoading: (value: boolean) => void;
   setLoadError: (value: string | null) => void;
   setError: (value: string | null) => void;
@@ -122,7 +146,7 @@ function useHydrateSubscriptionInvoiceDialog(args: {
         if (cancelled) return;
         args.setSubscription(next);
         args.setLoadError(loadErrorMessage);
-        args.setCoverageMonth(pickDefaultMonth(next));
+        args.setCoverageMonths(pickDefaultMonths(next));
         args.setLoading(false);
       },
     });
@@ -134,12 +158,13 @@ function useHydrateSubscriptionInvoiceDialog(args: {
   }, [open, subscriptionId, subscriptionProp?.id]);
 }
 
-function pickDefaultMonth(subscription: Subscription | null): string {
-  if (!subscription) return '';
-  return defaultSubscriptionInvoiceMonth(
+function pickDefaultMonths(subscription: Subscription | null): string[] {
+  if (!subscription) return [];
+  const month = defaultSubscriptionInvoiceMonth(
     listEligibleSubscriptionInvoiceMonths(subscription),
     new Date(),
   );
+  return month ? [month] : [];
 }
 
 async function hydrateDialogSubscription(args: {
@@ -167,9 +192,9 @@ async function hydrateDialogSubscription(args: {
 
 type PeriodInvoiceSubmitArgs = {
   subscription: Subscription | null;
-  coverageMonth: string;
+  coverageMonths: string[];
   canSubmit: boolean;
-  onCreated: (invoice: Invoice) => Promise<void> | void;
+  onCreated: (invoices: Invoice[]) => Promise<void> | void;
   onOpenChange: (open: boolean) => void;
   submittingRef: { current: boolean };
   setSubmitting: (value: boolean) => void;
@@ -191,9 +216,9 @@ async function submitSubscriptionPeriodInvoice(
   args.setError(null);
   try {
     const created = await subscriptionsApi.createInvoice(args.subscription.id, {
-      coverageMonth: args.coverageMonth,
+      coverageMonths: args.coverageMonths,
     });
-    toast.success(`Invoice ${created.code} created`);
+    toast.success(periodInvoiceCreatedToast(created));
     await args.onCreated(created);
     args.onOpenChange(false);
   } catch (caught) {
@@ -202,4 +227,11 @@ async function submitSubscriptionPeriodInvoice(
     args.submittingRef.current = false;
     args.setSubmitting(false);
   }
+}
+
+function periodInvoiceCreatedToast(invoices: readonly Invoice[]): string {
+  if (invoices.length === 1) {
+    return `Invoice ${invoices[0]?.code ?? ''} created`;
+  }
+  return `${invoices.length} invoices created`;
 }

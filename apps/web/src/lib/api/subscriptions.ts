@@ -201,8 +201,8 @@ export const subscriptionsApi = {
     });
     return resp.data;
   },
-  async createInvoice(id: string, data: { coverageMonth: string }): Promise<Invoice> {
-    const resp = await api.post<Invoice>(
+  async createInvoice(id: string, data: { coverageMonths: string[] }): Promise<Invoice[]> {
+    const resp = await api.post<Invoice[]>(
       `/api/finance/subscriptions/${id}/actions/create-invoice`,
       data,
     );

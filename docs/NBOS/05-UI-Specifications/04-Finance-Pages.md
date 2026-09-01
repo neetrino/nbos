@@ -127,7 +127,7 @@ Finance-модуль NBOS обеспечивает полное управлен
 
 **В Sheet:** type label, partner, company, /mo, coverage, start/end, invoices, полное редактирование billing.
 
-**Вкладка Invoices:** список карточек подписки. Для `Active` — кнопка **Create invoice** (и hover + на табе) открывает диалог с выбором непокрытого месяца покрытия (этот / следующий / прошлый в окне). Сумма периода read-only; due date считается по правилам биллинга. На доске Invoices при drill-down `subscriptionId` та же форма вместо generic New Invoice.
+**Вкладка Invoices:** список карточек подписки. Для `Active` — кнопка **Create invoice** (и hover + на табе) открывает диалог с multi-select непокрытых месяцев покрытия (от старта биллинга до текущего месяца Еревана + 12). Каждый выбранный месяц — отдельная карточка; сумма периода read-only, рядом итог `N × amount`; due date считается по правилам биллинга. На доске Invoices при drill-down `subscriptionId` та же форма вместо generic New Invoice.
 
 **Канон строки:** одна запись = одна подписка (`subscription_id`) с одним `type`; у проекта может быть несколько подписок (maintenance, email-сервис, review-widget, ежемесячная разработка и т.д.) — **различаются коммерческим `name`**, проект остаётся видимым вторичной строкой. `DEV_AND_MAINTENANCE` — один тип договора, не «две подписки в одной».
 
