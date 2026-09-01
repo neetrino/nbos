@@ -156,9 +156,12 @@ export class SubscriptionsController {
 
   @Post(':id/actions/create-invoice')
   @ApiOperation({
-    summary: 'Create a subscription billing invoice for an uncovered coverage month',
+    summary: 'Create subscription billing invoices for uncovered coverage months',
   })
-  async createPeriodInvoice(@Param('id') id: string, @Body() body: { coverageMonth?: string }) {
+  async createPeriodInvoice(
+    @Param('id') id: string,
+    @Body() body: { coverageMonth?: string; coverageMonths?: string[] },
+  ) {
     return this.periodInvoiceService.create(id, body);
   }
 }

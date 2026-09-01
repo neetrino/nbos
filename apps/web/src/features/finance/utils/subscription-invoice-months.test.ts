@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Subscription } from '@/lib/api/subscriptions';
 import {
+  canSelectAnotherCoverageMonth,
   defaultSubscriptionInvoiceMonth,
   formatSubscriptionInvoiceMonthLabel,
+  isCoverageMonthBlockedBySelection,
   listEligibleSubscriptionInvoiceMonths,
+  toggleCoverageMonthSelection,
 } from './subscription-invoice-months';
 
 function baseSubscription(overrides: Partial<Subscription> = {}): Subscription {
@@ -36,12 +39,10 @@ function baseSubscription(overrides: Partial<Subscription> = {}): Subscription {
 const midSeptember = new Date('2026-09-15T10:00:00+04:00');
 
 describe('listEligibleSubscriptionInvoiceMonths', () => {
-  it('lists uncovered months from billing start through next month', () => {
-    expect(listEligibleSubscriptionInvoiceMonths(baseSubscription(), midSeptember)).toEqual([
-      '2026-08',
-      '2026-09',
-      '2026-10',
-    ]);
+  it('lists uncovered months from billing start through the next 12 months', () => {
+    expect(listEligibleSubscriptionInvoiceMonths(baseSubscription(), midSeptember)).toEqual(
+      monthKeysInclusive('2026-08', '2027-09'),
+    );
   });
 
   it('drops months already covered by an invoice', () => {
@@ -58,10 +59,9 @@ describe('listEligibleSubscriptionInvoiceMonths', () => {
         },
       ],
     });
-    expect(listEligibleSubscriptionInvoiceMonths(subscription, midSeptember)).toEqual([
-      '2026-08',
-      '2026-10',
-    ]);
+    expect(listEligibleSubscriptionInvoiceMonths(subscription, midSeptember)).toEqual(
+      monthKeysInclusive('2026-08', '2027-09').filter((key) => key !== '2026-09'),
+    );
   });
 
   it('returns no months unless the subscription is active', () => {
@@ -95,7 +95,10 @@ describe('listEligibleSubscriptionInvoiceMonths', () => {
         },
       ],
     });
-    expect(listEligibleSubscriptionInvoiceMonths(subscription, midSeptember)).toEqual([]);
+    expect(listEligibleSubscriptionInvoiceMonths(subscription, midSeptember)).toEqual([
+      '2027-08',
+      '2027-09',
+    ]);
   });
 
   it('returns no months when remaining term is shorter than the billing period', () => {
@@ -138,3 +141,42 @@ describe('formatSubscriptionInvoiceMonthLabel', () => {
     expect(formatSubscriptionInvoiceMonthLabel('2026-09', 'en')).toMatch(/2026/);
   });
 });
+
+describe('toggleCoverageMonthSelection', () => {
+  it('adds and removes a monthly key', () => {
+    expect(toggleCoverageMonthSelection(['2026-09'], '2026-11', 1)).toEqual(['2026-09', '2026-11']);
+    expect(toggleCoverageMonthSelection(['2026-09', '2026-11'], '2026-09', 1)).toEqual(['2026-11']);
+  });
+
+  it('ignores a yearly start that overlaps the current selection', () => {
+    expect(toggleCoverageMonthSelection(['2026-09'], '2026-10', 12)).toEqual(['2026-09']);
+    expect(isCoverageMonthBlockedBySelection('2026-10', ['2026-09'], 12)).toBe(true);
+  });
+
+  it('stops adding when remaining term cannot cover another period', () => {
+    expect(
+      canSelectAnotherCoverageMonth({
+        selectedCount: 2,
+        coverageMonthCount: 1,
+        remainingMonths: 2,
+      }),
+    ).toBe(false);
+  });
+});
+
+function monthKeysInclusive(start: string, end: string): string[] {
+  const keys: string[] = [];
+  let year = Number(start.slice(0, 4));
+  let month = Number(start.slice(5, 7));
+  const endYear = Number(end.slice(0, 4));
+  const endMonth = Number(end.slice(5, 7));
+  while (year < endYear || (year === endYear && month <= endMonth)) {
+    keys.push(`${year}-${String(month).padStart(2, '0')}`);
+    month += 1;
+    if (month > 12) {
+      month = 1;
+      year += 1;
+    }
+  }
+  return keys;
+}

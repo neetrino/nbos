@@ -307,13 +307,14 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   );
 
   const handleInvoiceCreated = useCallback(
-    async (created?: Invoice) => {
+    async (created?: Invoice | Invoice[]) => {
       await fetchInvoices();
       setStageGateHighlight(null);
-      if (!created) return;
-      setSelectedInvoice(created);
+      const first = Array.isArray(created) ? created[0] : created;
+      if (!first) return;
+      setSelectedInvoice(first);
       setSheetOpen(true);
-      pushOpenInvoiceToUrl(created.id);
+      pushOpenInvoiceToUrl(first.id);
     },
     [fetchInvoices, pushOpenInvoiceToUrl],
   );
