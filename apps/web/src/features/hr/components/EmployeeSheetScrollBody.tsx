@@ -22,7 +22,8 @@ export interface EmployeeSheetScrollBodyProps {
   patchDraft: (partial: Partial<EmployeeGeneralDraft>) => void;
   roles: RoleItem[];
   saving: boolean;
-  canEdit: boolean;
+  canEditPersonal: boolean;
+  canEditHr: boolean;
   generalError: string | null;
 }
 
@@ -32,7 +33,8 @@ export function EmployeeSheetScrollBody({
   patchDraft,
   roles,
   saving,
-  canEdit,
+  canEditPersonal,
+  canEditHr,
   generalError,
 }: EmployeeSheetScrollBodyProps) {
   const levelOptions = EMPLOYEE_LEVELS.map((l) => ({ value: l.value, label: l.label }));
@@ -40,6 +42,8 @@ export function EmployeeSheetScrollBody({
     (s) => s.value !== 'TERMINATED' || draft.status === 'TERMINATED',
   ).map((s) => ({ value: s.value, label: s.label }));
   const roleOptions = roles.map((r) => ({ value: r.id, label: r.name }));
+  const lockPersonal = saving || !canEditPersonal;
+  const lockHr = saving || !canEditHr;
 
   return (
     <div className={`${TEAM_SHEET_BODY_CLASS} ${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS}`}>
@@ -62,7 +66,7 @@ export function EmployeeSheetScrollBody({
             value={draft.firstName}
             placeholder="First name"
             icon={<User size={12} />}
-            disabled={saving || !canEdit}
+            disabled={lockPersonal}
             onValueChange={(v) => patchDraft({ firstName: v })}
           />
           <InlineField
@@ -72,8 +76,17 @@ export function EmployeeSheetScrollBody({
             value={draft.lastName}
             placeholder="Last name"
             icon={<User size={12} />}
-            disabled={saving || !canEdit}
+            disabled={lockPersonal}
             onValueChange={(v) => patchDraft({ lastName: v })}
+          />
+          <InlineField
+            variant="controlled"
+            label="Birthday"
+            type="date"
+            value={draft.birthday || null}
+            icon={<Calendar size={12} />}
+            disabled={lockPersonal}
+            onValueChange={(v) => patchDraft({ birthday: v ?? '' })}
           />
           <InlineField
             variant="controlled"
@@ -82,7 +95,7 @@ export function EmployeeSheetScrollBody({
             value={draft.position}
             placeholder="e.g. Senior Developer"
             icon={<Building2 size={12} />}
-            disabled={saving || !canEdit}
+            disabled={lockHr}
             onValueChange={(v) => patchDraft({ position: v })}
           />
           <InlineField
@@ -92,7 +105,7 @@ export function EmployeeSheetScrollBody({
             value={draft.level || undefined}
             options={levelOptions}
             placeholder="Select level"
-            disabled={saving || !canEdit}
+            disabled={lockHr}
             onValueChange={(v) => patchDraft({ level: v ?? '' })}
           />
         </div>
@@ -111,7 +124,7 @@ export function EmployeeSheetScrollBody({
             value={draft.email}
             placeholder="name@company.com"
             icon={<Mail size={12} />}
-            disabled={saving || !canEdit}
+            disabled={lockHr}
             onValueChange={(v) => patchDraft({ email: v })}
           />
           <InlineField
@@ -121,7 +134,7 @@ export function EmployeeSheetScrollBody({
             value={draft.phone}
             placeholder="+1 …"
             icon={<Phone size={12} />}
-            disabled={saving || !canEdit}
+            disabled={lockPersonal}
             onValueChange={(v) => patchDraft({ phone: v })}
           />
           <InlineField
@@ -131,7 +144,7 @@ export function EmployeeSheetScrollBody({
             value={draft.telegram}
             placeholder="@username"
             icon={<Send size={12} />}
-            disabled={saving || !canEdit}
+            disabled={lockPersonal}
             onValueChange={(v) => patchDraft({ telegram: v })}
           />
           <InlineField
@@ -141,7 +154,7 @@ export function EmployeeSheetScrollBody({
             value={draft.sipId}
             placeholder="3126107"
             icon={<Phone size={12} />}
-            disabled={saving || !canEdit}
+            disabled={lockPersonal}
             onValueChange={(v) => patchDraft({ sipId: v })}
           />
         </div>
@@ -159,7 +172,7 @@ export function EmployeeSheetScrollBody({
             type="select"
             value={draft.status}
             options={statusOptions}
-            disabled={saving || !canEdit}
+            disabled={lockHr}
             onValueChange={(v) => patchDraft({ status: v ?? draft.status })}
           />
           <InlineField
@@ -168,7 +181,7 @@ export function EmployeeSheetScrollBody({
             type="select"
             value={draft.roleId}
             options={roleOptions}
-            disabled={saving || !canEdit}
+            disabled={lockHr}
             onValueChange={(v) => patchDraft({ roleId: v ?? draft.roleId })}
           />
           <InlineField
@@ -177,7 +190,7 @@ export function EmployeeSheetScrollBody({
             type="date"
             value={draft.hireDate || null}
             icon={<Calendar size={12} />}
-            disabled={saving || !canEdit}
+            disabled={lockHr}
             onValueChange={(v) => patchDraft({ hireDate: v ?? '' })}
           />
         </div>
@@ -188,7 +201,7 @@ export function EmployeeSheetScrollBody({
         entityId={employeeId}
         value={draft.notes}
         onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-        disabled={saving || !canEdit}
+        disabled={lockHr}
       />
     </div>
   );

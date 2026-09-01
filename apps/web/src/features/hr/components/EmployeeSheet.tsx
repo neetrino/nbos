@@ -11,7 +11,6 @@ import {
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
   DetailSheetTabPanel,
-  type DetailSheetTabItem,
   DeleteConfirmDialog,
   EntityDetailSheetContent,
   StatusBadge,
@@ -35,12 +34,17 @@ import {
 } from '@/lib/api/employees';
 import { toast } from 'sonner';
 import {
-  buildEmployeeGeneralPatch,
   createEmployeeGeneralDraft,
-  employeeRoleChanged,
   isEmployeeGeneralDirty,
   type EmployeeGeneralDraft,
 } from './employee-general-form-state';
+import { buildEmployeeSheetTabs } from './build-employee-sheet-tabs';
+import {
+  canEditHrEmployeeFields,
+  canEditOwnAccountFields,
+  isEmployeeOwnProfileDirty,
+} from './employee-own-profile-fields';
+import { persistEmployeeGeneral } from './persist-employee-general';
 import { EmployeeDepartmentsPanel } from './EmployeeDepartmentsPanel';
 import { EmployeeOffboardingPanel } from './EmployeeOffboardingPanel';
 import { EmployeeOnboardingPanel } from './EmployeeOnboardingPanel';
@@ -133,7 +137,7 @@ export function EmployeeSheet({
   }, [open]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !canEdit) return;
     void rolesApi
       .getAll()
       .then((r) => setRoles(r ?? []))
@@ -142,7 +146,7 @@ export function EmployeeSheet({
       .getAll()
       .then((d) => setDepartments(d ?? []))
       .catch(() => {});
-  }, [open]);
+  }, [canEdit, open]);
 
   useEffect(() => {
     if (!open || !current || current.status === 'TERMINATED') {
@@ -171,35 +175,40 @@ export function EmployeeSheet({
   const generalDirty = draft != null && snap != null && isEmployeeGeneralDirty(draft, snap);
 
   const handleSave = useCallback(async () => {
-    if (!current || !draft || !snap || !canEdit) return;
+    if (!current || !draft || !snap) return;
+    const ownOk = canEditOwnAccountFields(selfProfile, current.status);
+    const hrOk = canEditHrEmployeeFields(canEdit, current.status);
+    if (!ownOk && !hrOk) return;
     setGeneralError(null);
-    if (!draft.firstName.trim() || !draft.lastName.trim() || !draft.email.trim()) {
+    if (!draft.firstName.trim() || !draft.lastName.trim()) {
+      setGeneralError('First name and last name are required.');
+      return;
+    }
+    if (hrOk && !draft.email.trim()) {
       setGeneralError('First name, last name, and email are required.');
       return;
     }
     setSaving(true);
     try {
-      let updated = current;
-      const patch = buildEmployeeGeneralPatch(snap, draft);
-      if (Object.keys(patch).length > 0) {
-        updated = await employeesApi.update(current.id, patch);
-      }
-      if (employeeRoleChanged(snap, draft)) {
-        updated = await employeesApi.changeRole(current.id, draft.roleId);
-      }
-      const fresh = await employeesApi.getById(updated.id);
+      const fresh = await persistEmployeeGeneral({
+        employeeId: current.id,
+        selfProfile,
+        canEditCompany: canEdit,
+        snap,
+        draft,
+      });
       setCurrent(fresh);
       const next = createEmployeeGeneralDraft(fresh);
       setDraft(next);
       setSnap(next);
-      toast.success('Employee updated');
+      toast.success(selfProfile ? 'Account updated' : 'Employee updated');
       await onSaved?.();
     } catch (err) {
       setGeneralError(saveErrorMessage(err));
     } finally {
       setSaving(false);
     }
-  }, [canEdit, current, draft, onSaved, snap]);
+  }, [canEdit, current, draft, onSaved, selfProfile, snap]);
 
   const handleCancel = useCallback(() => {
     setGeneralError(null);
@@ -267,18 +276,26 @@ export function EmployeeSheet({
   const statusInfo = getEmployeeStatus(displayEmployee.status);
   const dept = employeePrimaryDepartment(displayEmployee);
 
-  const employeeTabs: DetailSheetTabItem[] = [
-    { value: 'general', label: 'General' },
-    { value: 'departments', label: 'Departments' },
-  ];
-  if (selfProfile) {
-    employeeTabs.push({ value: 'security', label: 'Security' });
-  }
-  if (displayEmployee.status === 'TERMINATED') {
-    employeeTabs.push({ value: 'offboarding', label: 'Offboarding' });
-  } else if (hasOnboardingChecklist) {
-    employeeTabs.push({ value: 'onboarding', label: 'Onboarding' });
-  }
+  const canEditOwn = canEditOwnAccountFields(selfProfile, displayEmployee.status);
+  const canEditHr = canEditHrEmployeeFields(canEdit, displayEmployee.status);
+  const formDirty = canEditHr ? generalDirty : isEmployeeOwnProfileDirty(draft, snap);
+  const employeeTabs = buildEmployeeSheetTabs({
+    selfProfile,
+    status: displayEmployee.status,
+    hasOnboardingChecklist,
+  });
+  const rolePickerRoles =
+    roles.length > 0
+      ? roles
+      : [
+          {
+            id: displayEmployee.role.id,
+            name: displayEmployee.role.name,
+            slug: displayEmployee.role.slug,
+            level: displayEmployee.role.level,
+            isSystem: false,
+          },
+        ];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
@@ -366,12 +383,13 @@ export function EmployeeSheet({
                   draft={draft}
                   patchDraft={patchDraft}
                   roles={filterRolesForAssignmentPicker(
-                    roles,
+                    rolePickerRoles,
                     assignmentPickerActor(me),
                     displayEmployee.role.id,
                   )}
                   saving={saving}
-                  canEdit={canEdit && displayEmployee.status !== 'TERMINATED'}
+                  canEditPersonal={canEditOwn || canEditHr}
+                  canEditHr={canEditHr}
                   generalError={generalError}
                 />
               ) : null}
@@ -407,8 +425,8 @@ export function EmployeeSheet({
           </ScrollArea>
 
           <DetailSheetFormFooter
-            visible={canEdit && displayEmployee.status !== 'TERMINATED' && activeTab !== 'security'}
-            dirty={generalDirty}
+            visible={(canEditOwn || canEditHr) && activeTab !== 'security'}
+            dirty={formDirty}
             saving={saving}
             errorMessage={generalError}
             onSave={() => void handleSave()}
