@@ -28,7 +28,9 @@ export function CreateSubscriptionInvoiceDialog(props: CreateSubscriptionInvoice
       <DialogContent className="sm:max-w-[560px]" forceNestedBackdrop={props.forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>Create Subscription Invoice</DialogTitle>
-          <DialogDescription>Select months to invoice. Each month is a separate card.</DialogDescription>
+          <DialogDescription>
+            Select months to invoice. Each month is a separate card.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={(event) => void state.handleSubmit(event)} className="space-y-4">
           <SubscriptionInvoiceContext
@@ -94,7 +96,7 @@ function SubscriptionInvoiceContext({
   const totalAmount = selectedCount * parseFloat(subscription.amount);
   return (
     <div className="bg-muted/40 flex items-center justify-between gap-4 rounded-lg border px-4 py-3.5">
-      <p className="text-xl font-semibold leading-tight">{displayTitle}</p>
+      <p className="text-xl leading-tight font-semibold">{displayTitle}</p>
       <p className="flex shrink-0 items-baseline gap-2">
         <span className="text-muted-foreground text-sm">Total</span>
         <span className="text-xl font-semibold tabular-nums">{formatAmount(totalAmount)}</span>

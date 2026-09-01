@@ -40,11 +40,7 @@ export function useCreateSubscriptionInvoiceDialog({
     coverageMonths: state.coverageMonths,
     toggleCoverageMonth: (monthKey: string) => {
       state.setCoverageMonths(
-        toggleCoverageMonthSelection(
-          state.coverageMonths,
-          monthKey,
-          selection.coverageMonthCount,
-        ),
+        toggleCoverageMonthSelection(state.coverageMonths, monthKey, selection.coverageMonthCount),
       );
     },
     canAddMonth: selection.canAddMonth,
@@ -80,7 +76,8 @@ function resolvePeriodInvoiceSelection(
       remainingMonths,
     }),
     canSubmit:
-      coverageMonths.length > 0 && coverageMonths.every((monthKey) => eligibleMonths.includes(monthKey)),
+      coverageMonths.length > 0 &&
+      coverageMonths.every((monthKey) => eligibleMonths.includes(monthKey)),
   };
 }
 

@@ -199,7 +199,10 @@ describe('SubscriptionPeriodInvoiceService', () => {
       id: `inv-${data.coverageStartMonth}`,
       code: `INV-${data.coverageStartMonth}`,
     }));
-    invoicesService.findById.mockImplementation(async (id: string) => ({ id, code: id.replace('inv-', 'INV-') }));
+    invoicesService.findById.mockImplementation(async (id: string) => ({
+      id,
+      code: id.replace('inv-', 'INV-'),
+    }));
 
     const result = await service.create(
       'sub-1',

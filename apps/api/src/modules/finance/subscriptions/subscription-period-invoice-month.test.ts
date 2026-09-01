@@ -118,7 +118,9 @@ describe('parseCoverageMonthKeys', () => {
   });
 
   it('rejects an empty or oversized list', () => {
-    expect(() => parseCoverageMonthKeys({})).toThrow(SUBSCRIPTION_PERIOD_INVOICE_ERROR.EMPTY_MONTHS);
+    expect(() => parseCoverageMonthKeys({})).toThrow(
+      SUBSCRIPTION_PERIOD_INVOICE_ERROR.EMPTY_MONTHS,
+    );
     expect(() =>
       parseCoverageMonthKeys({
         coverageMonths: monthKeysInclusive('2026-01', '2027-01'),
@@ -129,13 +131,15 @@ describe('parseCoverageMonthKeys', () => {
 
 describe('assertSelectedCoverageWindowsCompatible', () => {
   it('rejects overlapping yearly starts', () => {
-    expect(() =>
-      assertSelectedCoverageWindowsCompatible(['2026-09', '2026-10'], 12),
-    ).toThrow(SUBSCRIPTION_PERIOD_INVOICE_ERROR.SELECTED_OVERLAP);
+    expect(() => assertSelectedCoverageWindowsCompatible(['2026-09', '2026-10'], 12)).toThrow(
+      SUBSCRIPTION_PERIOD_INVOICE_ERROR.SELECTED_OVERLAP,
+    );
   });
 
   it('allows distinct monthly starts', () => {
-    expect(() => assertSelectedCoverageWindowsCompatible(['2026-09', '2026-10', '2026-11'], 1)).not.toThrow();
+    expect(() =>
+      assertSelectedCoverageWindowsCompatible(['2026-09', '2026-10', '2026-11'], 1),
+    ).not.toThrow();
   });
 });
 
