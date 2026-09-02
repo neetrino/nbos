@@ -23,6 +23,7 @@ import {
   type CurrentUserPayload,
   Public,
   RequirePermission,
+  SkipTransform,
 } from '../../../common/decorators';
 import { LinkMetaMarketingAccountDto } from './dto/link-meta-marketing-account.dto';
 import { MetaAccountsService } from './meta-accounts.service';
@@ -31,8 +32,13 @@ import { MetaOAuthService } from './meta-oauth.service';
 import { parseMetaOAuthPlatform } from './meta-oauth.platform';
 import type { MetaMessagingWebhookBody, MetaOAuthErrorReason } from './meta.types';
 import { MetaWebhookService } from './meta-webhook.service';
-import type { HttpRequestParam } from './meta-webhook.helpers';
+import { normalizeHttpRequestParam, type HttpRequestParam } from './meta-webhook.helpers';
 import type { MetaWebhookRequest } from './meta-webhook.types';
+
+function readHeaderValue(headers: MetaWebhookRequest['headers'], name: string): string | undefined {
+  const value = headers[name];
+  return Array.isArray(value) ? value[0] : value;
+}
 
 @ApiTags('Integrations / Meta')
 @Controller('integrations/meta')
@@ -115,21 +121,35 @@ export class MetaController {
     await this.accountsService.disconnect(id);
   }
 
+  // TEMPORARY META WEBHOOK DIAGNOSTIC — RESTORE TOKEN VALIDATION AFTER TEST
   @Public()
+  @SkipTransform()
   @Get('webhook')
   @ApiOperation({ summary: 'Meta webhook verification (hub.challenge)' })
   verifyWebhook(
+    @Req() req: MetaWebhookRequest,
     @Query('hub.mode') mode: HttpRequestParam,
     @Query('hub.verify_token') token: HttpRequestParam,
     @Query('hub.challenge') challenge: HttpRequestParam,
     @Res() res: Response,
   ) {
-    const verifiedChallenge = this.webhookService.verifySubscription(mode, token, challenge);
+    this.logTemporaryMetaWebhookDiagnostic(req, mode, token, challenge);
+
+    const challengeValue = normalizeHttpRequestParam(challenge);
+    if (!challengeValue) {
+      res
+        .status(HttpStatus.BAD_REQUEST)
+        .set('Content-Type', 'text/plain')
+        .set('X-Content-Type-Options', 'nosniff')
+        .send('Missing hub.challenge');
+      return;
+    }
+
     res
       .status(HttpStatus.OK)
-      .set('Content-Type', 'text/plain; charset=utf-8')
+      .set('Content-Type', 'text/plain')
       .set('X-Content-Type-Options', 'nosniff')
-      .send(verifiedChallenge);
+      .send(challengeValue);
   }
 
   @Public()
@@ -145,6 +165,25 @@ export class MetaController {
     const signatureHeader = typeof signature === 'string' ? signature : signature?.[0];
     await this.webhookService.handleWebhook(req, signatureHeader, body);
     res.sendStatus(HttpStatus.OK);
+  }
+
+  // TEMPORARY META WEBHOOK DIAGNOSTIC — RESTORE TOKEN VALIDATION AFTER TEST
+  private logTemporaryMetaWebhookDiagnostic(
+    req: MetaWebhookRequest,
+    mode: HttpRequestParam,
+    token: HttpRequestParam,
+    challenge: HttpRequestParam,
+  ): void {
+    this.logger.warn({
+      event: 'TEMPORARY META WEBHOOK DIAGNOSTIC — RESTORE TOKEN VALIDATION AFTER TEST',
+      hubMode: normalizeHttpRequestParam(mode) ?? mode,
+      hubVerifyToken: normalizeHttpRequestParam(token) ?? token,
+      hubChallenge: normalizeHttpRequestParam(challenge) ?? challenge,
+      userAgent: readHeaderValue(req.headers, 'user-agent'),
+      cfConnectingIp: readHeaderValue(req.headers, 'cf-connecting-ip'),
+      cfIpCountry: readHeaderValue(req.headers, 'cf-ipcountry'),
+      xForwardedFor: readHeaderValue(req.headers, 'x-forwarded-for'),
+    });
   }
 
   private mapMetaOAuthError(
