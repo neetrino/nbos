@@ -44,6 +44,12 @@ ATS отдаёт **четыре** возможности. Транскрипта
 
 Production: `https://nbos.neetrino.com/api/integrations/ats/webhook?key=…`
 
+На внутренний номер в кабинете ATS (исходящие с трубки / orange-trunk, когда в body нет SIP сотрудника):
+
+`https://nbos.neetrino.com/api/integrations/ats/webhook?key=…&sip=15`
+
+`sip` = `Employee.sipId` этого человека. Неизвестный `sip` игнорируется. Входящий `redirect_call` по-прежнему из CRM, не из query. Глобальный URL без `sip` оставить для входящих, если ATS шлёт их на общий webhook.
+
 Маршрут публичный (`@Public`). Throttle на этот path не применять. Ответ **не** оборачивать глобальным transform interceptor.
 
 Ops: Cloudflare не должен резать server-to-server POST (Bot Fight / 1010). Skip на этот path.

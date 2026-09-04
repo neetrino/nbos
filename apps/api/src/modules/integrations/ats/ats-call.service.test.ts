@@ -404,6 +404,25 @@ describe('AtsCallService', () => {
       }),
     );
   });
+
+  it('sets outbound seller from webhook sip query when body has no employee SIP', async () => {
+    state.employees.push({ id: 'emp-15', sipId: '15' });
+
+    await service.ingestCallEvent(
+      outboundStart({
+        uid: 'out-sip-q',
+        clid: '3103581',
+        input: '37411111111',
+        op: '37499123456',
+      }),
+      '15',
+    );
+
+    expect(state.leads[0]?.assignedTo).toBe('emp-15');
+    expect(state.events.get('out-sip-q')?.initiatedByEmployeeId).toBe('emp-15');
+    expect(state.events.get('out-sip-q')?.responsibleEmployeeId).toBe('emp-15');
+    expect(state.events.get('out-sip-q')?.phone).toBe('+37499123456');
+  });
 });
 
 function openLeadRow(id: string, code: string) {

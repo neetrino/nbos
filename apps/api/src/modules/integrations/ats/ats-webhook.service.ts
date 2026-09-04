@@ -13,6 +13,7 @@ import { AtsProviderConfig } from './ats-provider.config';
 import { parseAtsWebhookBody } from './ats-webhook-body.parse';
 import { shouldEnqueueCallRecording } from './ats-call-recording-should-enqueue';
 import { maskAtsLogValue } from './ats-call-log.util';
+import { presentWebhookString } from './ats-webhook-field';
 import { ATS_WEBHOOK_SUCCESS } from './ats.constants';
 import type { AtsWebhookPayload, AtsWebhookSuccessResponse } from './ats.types';
 
@@ -31,11 +32,13 @@ export class AtsWebhookService {
   async handleWebhook(
     key: string | undefined,
     body: Record<string, unknown>,
+    sipFromQuery?: string,
   ): Promise<AtsWebhookSuccessResponse> {
     this.assertApiKey(key);
     const payload = this.parseBody(body);
-    this.logWebhookReceived(payload);
-    const ingest = await this.callService.ingestCallEvent(payload);
+    const sip = presentWebhookString(sipFromQuery);
+    this.logWebhookReceived(payload, sip);
+    const ingest = await this.callService.ingestCallEvent(payload, sip);
     await this.publishLifecycleSafely(payload, ingest);
     await this.enqueueRecordingSafely(payload, ingest);
     const redirectCall = await this.callRedirectService.resolveRedirectCall(payload);
@@ -86,7 +89,7 @@ export class AtsWebhookService {
     }
   }
 
-  private logWebhookReceived(payload: AtsWebhookPayload): void {
+  private logWebhookReceived(payload: AtsWebhookPayload, sipFromQuery?: string): void {
     this.logger.log({
       event: 'ats_webhook_received',
       uid: payload.uid,
@@ -95,6 +98,7 @@ export class AtsWebhookService {
       calldirect: payload.calldirect ?? null,
       disposition: payload.disposition ?? null,
       channel: payload.channel ?? null,
+      sip: sipFromQuery ?? null,
       input: maskAtsLogValue(payload.input),
       clid: maskAtsLogValue(payload.clid),
       op: maskAtsLogValue(payload.op),

@@ -88,7 +88,20 @@ describe('AtsWebhookService', () => {
         calldirect: '0',
         clid: '+37499123456',
       }),
+      undefined,
     );
+  });
+
+  it('forwards sip query to ingest for per-extension webhook URLs', async () => {
+    const ingest = vi.fn().mockResolvedValue({
+      callId: 'call-1',
+      isFirstSeen: true,
+      stateTransitionApplied: true,
+    });
+    const service = createService({ ingest });
+
+    await service.handleWebhook('test-ats-key', startBody, '15');
+    expect(ingest).toHaveBeenCalledWith(expect.objectContaining({ uid: 'call-1' }), '15');
   });
 
   it('includes redirect_call when redirect service returns a SIP id', async () => {

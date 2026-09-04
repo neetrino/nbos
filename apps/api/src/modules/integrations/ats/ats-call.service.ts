@@ -34,10 +34,13 @@ export class AtsCallService {
     private readonly contextResolver: AtsCallContextResolver,
   ) {}
 
-  async ingestCallEvent(payload: AtsWebhookPayload): Promise<AtsCallIngestMeta> {
+  async ingestCallEvent(
+    payload: AtsWebhookPayload,
+    sipFromQuery?: string,
+  ): Promise<AtsCallIngestMeta> {
     const existing = await this.findExistingCall(payload);
     const persisted = await persistAtsCallByUid(this.prisma, payload, existing);
-    await this.applyCrmContext(payload, persisted.row, persisted.created);
+    await this.applyCrmContext(payload, persisted.row, persisted.created, sipFromQuery);
     return {
       callId: persisted.row.id,
       isFirstSeen: persisted.created,
@@ -58,6 +61,7 @@ export class AtsCallService {
     payload: AtsWebhookPayload,
     event: AtsCallRow,
     isFirstSeen: boolean,
+    sipFromQuery?: string,
   ): Promise<void> {
     const clientPhone = resolveAtsClientPhone(payload);
     this.logOutgoingReceived(payload, clientPhone);
@@ -67,11 +71,14 @@ export class AtsCallService {
     }
     if (context.skip) {
       this.logInvalidPhone(payload, clientPhone);
-      await this.patchCall(event.id, await this.employeePatch(payload, event, context));
+      await this.patchCall(
+        event.id,
+        await this.employeePatch(payload, event, context, sipFromQuery),
+      );
       return;
     }
 
-    const employees = await this.employeePatch(payload, event, context);
+    const employees = await this.employeePatch(payload, event, context, sipFromQuery);
     const callerId = employees.initiatedByEmployeeId ?? employees.responsibleEmployeeId ?? null;
     const leadId = await this.resolveLeadId(payload, event, context, isFirstSeen, callerId);
     const contactId = event.contactId ?? context.contactId;
@@ -114,12 +121,13 @@ export class AtsCallService {
     payload: AtsWebhookPayload,
     event: AtsCallRow,
     context: AtsCallContext,
+    sipFromQuery?: string,
   ): Promise<{
     responsibleEmployeeId?: string | null;
     answeredEmployeeId?: string | null;
     initiatedByEmployeeId?: string | null;
   }> {
-    const callerId = await this.resolveCallerEmployeeId(payload);
+    const callerId = await this.resolveCallerEmployeeId(payload, sipFromQuery);
     if (isOutboundPayload(payload)) {
       this.logOutgoingEmployee(payload, callerId);
     }
@@ -146,7 +154,12 @@ export class AtsCallService {
     );
   }
 
-  private async resolveCallerEmployeeId(payload: AtsWebhookPayload): Promise<string | null> {
+  private async resolveCallerEmployeeId(
+    payload: AtsWebhookPayload,
+    sipFromQuery?: string,
+  ): Promise<string | null> {
+    const fromQuery = await findEmployeeIdBySip(this.prisma, sipFromQuery ?? null);
+    if (fromQuery) return fromQuery;
     const op = presentWebhookString(payload.op);
     if (op && !isAtsDialedPartyToken(op)) {
       const fromOp = await findEmployeeIdBySip(this.prisma, op);

@@ -12,6 +12,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public, SkipTransform } from '../../../common/decorators';
 import { AtsWebhookService } from './ats-webhook.service';
+import { ATS_WEBHOOK_SIP_QUERY } from './ats.constants';
 import type { AtsWebhookSuccessResponse } from './ats.types';
 
 @ApiTags('Integrations / ATS.am')
@@ -30,8 +31,9 @@ export class AtsController {
   })
   receiveWebhook(
     @Query('key') key: string | undefined,
+    @Query(ATS_WEBHOOK_SIP_QUERY) sip: string | undefined,
     @Body() body: Record<string, unknown>,
   ): Promise<AtsWebhookSuccessResponse> {
-    return this.webhookService.handleWebhook(key, body ?? {});
+    return this.webhookService.handleWebhook(key, body ?? {}, sip);
   }
 }
