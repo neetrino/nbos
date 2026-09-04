@@ -11,6 +11,7 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { NotificationService } from '../notifications/notification.service';
+import { coerceExpenseCategoryToCanonical } from './expense-category-canonical';
 import {
   pickExpenseBacklogReasonFilter,
   pickExpenseCategoryFilter,
@@ -53,6 +54,7 @@ import {
 import { OperationalJournalService } from '../finance/journal/operational-journal.service';
 import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
 import { mergeFinanceWhere } from '../finance/finance-scoped-access';
+import { settleExpenseMarkPaidIfOutstanding } from './expense-mark-paid-settle';
 import { assertExpenseAccessible } from './expense-access.op';
 import { resolveExpenseListParticipationWhere } from './expense-list-participation.op';
 import { buildExpenseSearchAnd } from './expense-search.where';
@@ -107,7 +109,10 @@ export class ExpensesService {
     const orderBy = this.buildExpenseListOrderBy(sortBy, sortOrder);
 
     const safeType = pickExpenseTypeFilter(type);
-    const safeCategory = pickExpenseCategoryFilter(category);
+    const rawCategory = pickExpenseCategoryFilter(category);
+    const safeCategory = rawCategory
+      ? (coerceExpenseCategoryToCanonical(rawCategory) ?? rawCategory)
+      : undefined;
     const safeStatus = pickExpenseStatusFilter(status);
     const safeFrequency = pickExpenseFrequencyFilter(frequency);
     const safeBacklogReason = pickExpenseBacklogReasonFilter(backlogReason);
@@ -326,6 +331,7 @@ export class ExpensesService {
           : new Date()
         : (existing.dueDate ?? new Date());
     await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAtForGuard);
+    await this.settleMarkPaidIfRequested(id, statusPatch);
 
     await this.prisma.expense.update({
       where: { id },
@@ -448,6 +454,19 @@ export class ExpensesService {
     const statsWhere = mergeFinanceWhere(scopeWhere, participationWhere);
 
     return fetchExpenseStatsAggregates(this.prisma, statsWhere);
+  }
+
+  private async settleMarkPaidIfRequested(
+    id: string,
+    statusPatch: string | undefined,
+  ): Promise<void> {
+    if (statusPatch !== 'PAID') {
+      return;
+    }
+    await settleExpenseMarkPaidIfOutstanding(this.prisma, id, {
+      notify: this.notifications,
+      journal: this.operationalJournal,
+    });
   }
 
   private async persistRefreshedWorkflowStatus(id: string): Promise<void> {

@@ -6,7 +6,6 @@ export type ExpensePlanFormState = {
   category: string;
   frequency: string;
   nextDueDate: string;
-  provider: string;
   projectId: string;
   autoGenerate: boolean;
   notes: string;
@@ -18,7 +17,6 @@ export const EMPTY_EXPENSE_PLAN_FORM: ExpensePlanFormState = {
   category: 'OTHER',
   frequency: 'ONE_TIME',
   nextDueDate: '',
-  provider: '',
   projectId: 'none',
   autoGenerate: false,
   notes: '',
@@ -32,7 +30,6 @@ export function expensePlanToFormState(plan: ExpensePlan): ExpensePlanFormState 
     category: plan.category,
     frequency: plan.frequency,
     nextDueDate: plan.nextDueDate ? plan.nextDueDate.slice(0, 10) : '',
-    provider: plan.provider ?? '',
     projectId: plan.projectId ?? 'none',
     autoGenerate: plan.autoGenerate,
     notes: plan.notes ?? '',

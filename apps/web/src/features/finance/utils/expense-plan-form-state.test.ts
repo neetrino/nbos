@@ -9,8 +9,9 @@ const basePlan: ExpensePlan = {
   amount: '1200.50',
   frequency: 'MONTHLY',
   nextDueDate: '2026-05-01T00:00:00.000Z',
-  provider: 'Landlord',
   projectId: 'proj-1',
+  status: 'ACTIVE',
+  cancelledAt: null,
   autoGenerate: true,
   notes: 'HQ',
   createdAt: '',
@@ -27,7 +28,6 @@ describe('expensePlanToFormState', () => {
     expect(form.category).toBe('HOSTING');
     expect(form.frequency).toBe('MONTHLY');
     expect(form.nextDueDate).toBe('2026-05-01');
-    expect(form.provider).toBe('Landlord');
     expect(form.projectId).toBe('proj-1');
     expect(form.autoGenerate).toBe(true);
     expect(form.notes).toBe('HQ');
@@ -37,12 +37,10 @@ describe('expensePlanToFormState', () => {
     const form = expensePlanToFormState({
       ...basePlan,
       nextDueDate: null,
-      provider: null,
       projectId: null,
       notes: null,
     });
     expect(form.nextDueDate).toBe('');
-    expect(form.provider).toBe('');
     expect(form.projectId).toBe('none');
     expect(form.notes).toBe('');
   });

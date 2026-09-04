@@ -17,8 +17,10 @@ import {
   EXPENSE_PLANS_LIST_CATEGORY_QUERY,
   EXPENSE_PLANS_LIST_PROJECT_QUERY,
   EXPENSE_PLANS_LIST_SEARCH_QUERY,
+  EXPENSE_PLANS_LIST_STATUS_QUERY,
   EXPENSE_PLANS_LIST_YEAR_QUERY,
 } from '@/features/finance/constants/expense-plans-list-url';
+import { EXPENSE_PLAN_STATUS_FILTER_ACTIVE } from '@/features/finance/constants/expense-plan-status';
 import {
   useExpensePlansViewMode,
   type ExpensePlansViewMode,
@@ -49,6 +51,7 @@ import {
   parseExpensePlansListCategoryParam,
   parseExpensePlansListProjectIdParam,
   parseExpensePlansListSearchParam,
+  parseExpensePlansListStatusParam,
 } from '@/features/finance/utils/build-expense-plan-list-api-params';
 import {
   expensePlansApi,
@@ -86,6 +89,9 @@ export function ExpensePlansPageContent() {
   );
   const projectId = parseExpensePlansListProjectIdParam(
     searchParams.get(EXPENSE_PLANS_LIST_PROJECT_QUERY) ?? planFilters.project ?? null,
+  );
+  const status = parseExpensePlansListStatusParam(
+    searchParams.get(EXPENSE_PLANS_LIST_STATUS_QUERY) ?? planFilters.status ?? null,
   );
   const gridYear = parseGridYearParam(searchParams.get(EXPENSE_PLANS_LIST_YEAR_QUERY));
 
@@ -154,10 +160,11 @@ export function ExpensePlansPageContent() {
         search: urlSearch,
         category,
         projectId,
+        status,
         page: 1,
         pageSize: 100,
       }),
-    [urlSearch, category, projectId],
+    [urlSearch, category, projectId, status],
   );
 
   const gridParams = useMemo(
@@ -166,8 +173,9 @@ export function ExpensePlansPageContent() {
       search: urlSearch || undefined,
       category: category || undefined,
       projectId: projectId || undefined,
+      status: listParams.status,
     }),
-    [gridYear, urlSearch, category, projectId],
+    [gridYear, urlSearch, category, projectId, status],
   );
 
   const exportParams = useMemo(
@@ -176,14 +184,16 @@ export function ExpensePlansPageContent() {
         search: urlSearch,
         category,
         projectId,
+        status,
       }),
-    [urlSearch, category, projectId],
+    [urlSearch, category, projectId, status],
   );
 
   const hasActiveFilters = expensePlanListHasActiveFilters({
     search: urlSearch,
     category,
     projectId,
+    status,
   });
 
   const { exportCsvSubmitting, handleExportCsv } = useExpensePlansCsvExport(exportParams);
@@ -300,6 +310,21 @@ export function ExpensePlansPageContent() {
     [replaceListUrl, setPlanFilters],
   );
 
+  const handleStatusChange = useCallback(
+    (value: string) => {
+      const nextStatus = value || EXPENSE_PLAN_STATUS_FILTER_ACTIVE;
+      setPlanFilters((prev) => ({ ...prev, status: nextStatus }));
+      replaceListUrl((next) => {
+        if (!nextStatus || nextStatus === EXPENSE_PLAN_STATUS_FILTER_ACTIVE) {
+          next.delete(EXPENSE_PLANS_LIST_STATUS_QUERY);
+        } else {
+          next.set(EXPENSE_PLANS_LIST_STATUS_QUERY, nextStatus);
+        }
+      });
+    },
+    [replaceListUrl, setPlanFilters],
+  );
+
   const planFilterConfigs = useMemo(
     () => buildExpensePlanIntegratedFilterConfigs(projects),
     [projects],
@@ -307,14 +332,19 @@ export function ExpensePlansPageContent() {
 
   const planFilterValues = useMemo(
     () => ({
+      status,
       category: category ?? 'all',
       project: projectId ?? 'all',
     }),
-    [category, projectId],
+    [category, projectId, status],
   );
 
   const handlePlanFilterChange = useCallback(
     (key: string, value: string) => {
+      if (key === 'status') {
+        handleStatusChange(value);
+        return;
+      }
       if (key === 'category') {
         handleCategoryChange(value === 'all' ? '' : value);
         return;
@@ -323,7 +353,7 @@ export function ExpensePlansPageContent() {
         handleProjectIdChange(value === 'all' ? '' : value);
       }
     },
-    [handleCategoryChange, handleProjectIdChange],
+    [handleCategoryChange, handleProjectIdChange, handleStatusChange],
   );
 
   const handleClearFilters = useCallback(() => {
@@ -333,6 +363,7 @@ export function ExpensePlansPageContent() {
       next.delete(EXPENSE_PLANS_LIST_SEARCH_QUERY);
       next.delete(EXPENSE_PLANS_LIST_CATEGORY_QUERY);
       next.delete(EXPENSE_PLANS_LIST_PROJECT_QUERY);
+      next.delete(EXPENSE_PLANS_LIST_STATUS_QUERY);
     });
   }, [replaceListUrl, setPlanFilters]);
 
@@ -404,7 +435,7 @@ export function ExpensePlansPageContent() {
         <IntegratedSearchFilters
           search={searchDraft}
           onSearchChange={setSearchDraft}
-          searchPlaceholder="Search by name or provider…"
+          searchPlaceholder="Search by name…"
           filters={planFilterConfigs}
           filterValues={planFilterValues}
           onFilterChange={handlePlanFilterChange}

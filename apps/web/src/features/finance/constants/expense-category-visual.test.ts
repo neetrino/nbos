@@ -3,32 +3,38 @@ import {
   getExpenseCategoryLabel,
   getExpenseCategoryVisual,
 } from '@/features/finance/constants/expense-category-visual';
-import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
+import {
+  EXPENSE_CATEGORIES,
+  EXPENSE_SYSTEM_CATEGORIES,
+} from '@/features/finance/constants/finance';
 
-describe('expense category ops cuts', () => {
-  it('includes additive P&L categories in the shared UI list', () => {
-    const values = EXPENSE_CATEGORIES.map((c) => c.value);
-    expect(values).toEqual(
-      expect.arrayContaining([
-        'OFFICE',
-        'TAXES',
-        'BANK_FEES',
-        'TRAINING',
-        'INTERNAL_INFRA',
-        'SALARY',
-        'BONUS',
-        'DOMAIN',
-        'HOSTING',
-      ]),
-    );
+describe('expense category consolidation', () => {
+  it('exposes selectable categories including Partner Payout', () => {
+    expect(EXPENSE_CATEGORIES.map((c) => c.value)).toEqual([
+      'DOMAIN',
+      'TOOLS',
+      'MARKETING',
+      'OFFICE',
+      'TAXES',
+      'PARTNER_PAYOUT',
+      'OTHER',
+    ]);
   });
 
-  it('labels and visuals resolve for new categories', () => {
-    expect(getExpenseCategoryLabel('OFFICE')).toBe('Office');
-    expect(getExpenseCategoryLabel('TAXES')).toBe('Taxes');
-    expect(getExpenseCategoryLabel('BANK_FEES')).toBe('Bank fees');
-    expect(getExpenseCategoryLabel('TRAINING')).toBe('Training');
-    expect(getExpenseCategoryLabel('INTERNAL_INFRA')).toBe('Internal infra');
+  it('keeps system payroll categories for labels only', () => {
+    expect(EXPENSE_SYSTEM_CATEGORIES.map((c) => c.value)).toEqual(['SALARY', 'BONUS']);
+    expect(getExpenseCategoryLabel('SALARY')).toBe('Salary');
+    expect(getExpenseCategoryLabel('PARTNER_PAYOUT')).toBe('Partner Payout');
+  });
+
+  it('labels and visuals resolve for consolidated buckets', () => {
+    expect(getExpenseCategoryLabel('DOMAIN')).toBe('Domain & Hosting');
+    expect(getExpenseCategoryLabel('HOSTING')).toBe('Domain & Hosting');
+    expect(getExpenseCategoryLabel('TOOLS')).toBe('Tools & services');
+    expect(getExpenseCategoryLabel('SERVICE')).toBe('Tools & services');
+    expect(getExpenseCategoryLabel('TAXES')).toBe('Taxes & fees');
+    expect(getExpenseCategoryLabel('BANK_FEES')).toBe('Taxes & fees');
+    expect(getExpenseCategoryLabel('TRAINING')).toBe('Other');
     expect(getExpenseCategoryVisual('INTERNAL_INFRA').icon).toBeTruthy();
   });
 });

@@ -1,7 +1,7 @@
 import type { FilterConfig } from '@/components/shared';
 import { buildClientServiceIntegratedFilterConfigs } from '@/features/finance/components/client-services/build-client-service-integrated-filter-configs';
 import {
-  EXPENSE_CATEGORIES,
+  EXPENSE_FILTER_CATEGORIES,
   EXPENSE_STAGES,
   SUBSCRIPTION_STATUSES,
   SUBSCRIPTION_TYPES,
@@ -53,7 +53,7 @@ export const PRODUCT_EXPENSE_FILTER_CONFIGS: FilterConfig[] = [
   {
     key: 'category',
     label: 'Category',
-    options: EXPENSE_CATEGORIES.map((row) => ({ value: row.value, label: row.label })),
+    options: EXPENSE_FILTER_CATEGORIES.map((row) => ({ value: row.value, label: row.label })),
   },
   {
     key: 'status',

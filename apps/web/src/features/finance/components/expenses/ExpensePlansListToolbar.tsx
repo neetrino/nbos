@@ -66,11 +66,11 @@ export function ExpensePlansListToolbar(props: {
         <Input
           id="expense-plans-search"
           type="search"
-          placeholder="Name or provider"
+          placeholder="Search by name"
           value={searchDraft}
           onChange={(e) => onSearchDraftChange(e.target.value)}
           className={TOOLBAR_CONTROL_CLASS}
-          aria-label="Search expense plans by name or provider"
+          aria-label="Search expense plans by name"
         />
       </div>
       <div className="flex min-w-[10rem] flex-col gap-1">

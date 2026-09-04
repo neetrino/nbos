@@ -2,6 +2,8 @@ import { api } from '../api';
 import type { Expense } from './finance';
 import type { ListData } from './finance-common';
 
+export type ExpensePlanStatus = 'ACTIVE' | 'CANCELLED';
+
 export interface ExpensePlan {
   id: string;
   name: string;
@@ -9,9 +11,10 @@ export interface ExpensePlan {
   amount: string;
   frequency: string;
   nextDueDate: string | null;
-  provider: string | null;
   projectId: string | null;
   autoGenerate: boolean;
+  status: ExpensePlanStatus;
+  cancelledAt: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
@@ -32,21 +35,13 @@ export interface CreateExpensePlanPayload {
   amount: number;
   frequency?: string;
   nextDueDate?: string | null;
-  provider?: string | null;
   projectId?: string | null;
   clientServiceRecordId?: string | null;
   autoGenerate?: boolean;
   notes?: string | null;
 }
 
-export type ExpensePlanGridCellKind =
-  | 'NA'
-  | 'FORECAST'
-  | 'DUE'
-  | 'OPEN'
-  | 'PARTIAL'
-  | 'PAID'
-  | 'OVERDUE';
+export type ExpensePlanGridCellKind = 'NA' | 'FORECAST' | 'OPEN' | 'PARTIAL' | 'PAID' | 'OVERDUE';
 
 export interface ExpensePlanGridCell {
   kind: ExpensePlanGridCellKind;
@@ -76,6 +71,7 @@ export interface ExpensePlanListParams {
   pageSize?: number;
   projectId?: string;
   category?: string;
+  status?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
@@ -85,6 +81,7 @@ export interface ExpensePlanGridParams {
   year?: number;
   projectId?: string;
   category?: string;
+  status?: string;
   search?: string;
 }
 
@@ -111,6 +108,11 @@ export const expensePlansApi = {
 
   async update(id: string, data: Partial<CreateExpensePlanPayload>): Promise<ExpensePlan> {
     const resp = await api.put<ExpensePlan>(`/api/expense-plans/${id}`, data);
+    return resp.data;
+  },
+
+  async updateStatus(id: string, status: ExpensePlanStatus): Promise<ExpensePlan> {
+    const resp = await api.patch<ExpensePlan>(`/api/expense-plans/${id}/status`, { status });
     return resp.data;
   },
 

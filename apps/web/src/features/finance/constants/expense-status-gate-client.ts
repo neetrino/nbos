@@ -5,33 +5,12 @@ import {
   EXPENSE_GATE_FIELD_STATUS,
 } from './expense-stage-gate-highlight';
 
-function expenseRemainingAmount(expense: Expense): number {
-  if (expense.remainingAmount !== undefined) {
-    const remaining = parseFloat(expense.remainingAmount);
-    return Number.isFinite(remaining) ? Math.max(0, remaining) : 0;
-  }
-  const amount = parseFloat(expense.amount);
-  const paid = expense.paidAmount !== undefined ? parseFloat(expense.paidAmount) : Number.NaN;
-  if (!Number.isFinite(amount)) return 0;
-  if (!Number.isFinite(paid)) return amount;
-  return Math.max(0, amount - paid);
-}
-
-/** Local pre-check before kanban status move (payment ledger parity). */
+/** Local pre-check before kanban status move. Mark Paid settles remaining on the API. */
 export function getLocalExpenseStatusGateErrors(
   expense: Expense,
   targetStatus: string,
 ): ApiFieldError[] {
   const errors: ApiFieldError[] = [];
-  const remaining = expenseRemainingAmount(expense);
-
-  if (targetStatus === 'PAID' && remaining > 0) {
-    errors.push({
-      field: EXPENSE_GATE_FIELD_PAYMENTS,
-      message: 'Record payments until the expense is fully paid before marking it paid.',
-    });
-  }
-
   if (expense.status === 'PAID' && targetStatus !== 'PAID' && targetStatus !== 'CANCELLED') {
     errors.push({
       field: EXPENSE_GATE_FIELD_STATUS,

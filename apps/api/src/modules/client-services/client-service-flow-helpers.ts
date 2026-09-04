@@ -15,9 +15,8 @@ export function clientServiceInvoiceType(type: ClientServiceType): InvoiceTypeEn
 }
 
 export function clientServiceExpenseCategory(type: ClientServiceType): ExpenseCategoryEnum {
-  if (type === 'DOMAIN') return 'DOMAIN';
-  if (type === 'HOSTING') return 'HOSTING';
-  return 'SERVICE';
+  if (type === 'DOMAIN' || type === 'HOSTING') return 'DOMAIN';
+  return 'TOOLS';
 }
 
 export function clientServiceTaskTitle(name: string, type: ClientServiceType): string {

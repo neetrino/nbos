@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -25,6 +26,11 @@ export class ExpensePlansController {
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'ACTIVE, CANCELLED, or comma list. Omit for all.',
+  })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] })
@@ -33,6 +39,7 @@ export class ExpensePlansController {
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
     @Query('category') category?: string,
+    @Query('status') status?: string,
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
@@ -42,6 +49,7 @@ export class ExpensePlansController {
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       projectId,
       category,
+      status,
       search,
       sortBy,
       sortOrder,
@@ -59,11 +67,17 @@ export class ExpensePlansController {
   })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'ACTIVE, CANCELLED, or comma list. Omit for all.',
+  })
   @ApiQuery({ name: 'search', required: false })
   async getGrid(
     @Query('year') year?: string,
     @Query('projectId') projectId?: string,
     @Query('category') category?: string,
+    @Query('status') status?: string,
     @Query('search') search?: string,
   ) {
     const parsedYear = year ? parseInt(year, 10) : undefined;
@@ -71,6 +85,7 @@ export class ExpensePlansController {
       year: Number.isFinite(parsedYear) ? parsedYear : undefined,
       projectId,
       category,
+      status,
       search,
     });
   }
@@ -116,13 +131,22 @@ export class ExpensePlansController {
       amount: number;
       frequency?: string;
       nextDueDate?: string | null;
-      provider?: string | null;
       projectId?: string | null;
       autoGenerate?: boolean;
       notes?: string | null;
     },
   ) {
     return this.expensePlansService.create(body);
+  }
+
+  @Patch(':id/status')
+  @ApiOperation({
+    summary: 'Change expense plan status',
+    description:
+      'ACTIVE → CANCELLED stops auto-generate and forecast. CANCELLED → ACTIVE resumes the plan.',
+  })
+  async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
+    return this.expensePlansService.updateStatus(id, body.status);
   }
 
   @Put(':id')
@@ -136,7 +160,6 @@ export class ExpensePlansController {
       amount?: number;
       frequency?: string;
       nextDueDate?: string | null;
-      provider?: string | null;
       projectId?: string | null;
       autoGenerate?: boolean;
       notes?: string | null;

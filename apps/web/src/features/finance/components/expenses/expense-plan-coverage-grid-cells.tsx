@@ -2,7 +2,6 @@
 
 import { AmdCurrencyIcon } from '@/components/shared/AmdCurrencyIcon';
 import {
-  FINANCE_CALENDAR_CELL_AMBER,
   FINANCE_CALENDAR_CELL_BLUE,
   FINANCE_CALENDAR_CELL_EMPTY,
   FINANCE_CALENDAR_CELL_GREEN,
@@ -29,8 +28,6 @@ function cellVisualClasses(kind: ExpensePlanGridCellKind): string {
       return FINANCE_CALENDAR_CELL_ORANGE;
     case 'OPEN':
       return FINANCE_CALENDAR_CELL_BLUE;
-    case 'DUE':
-      return FINANCE_CALENDAR_CELL_AMBER;
     case 'FORECAST':
       return FINANCE_CALENDAR_CELL_MUTED;
     default:
@@ -48,8 +45,6 @@ function cellStatusLabel(kind: ExpensePlanGridCellKind): string {
       return 'Overdue';
     case 'OPEN':
       return 'Open';
-    case 'DUE':
-      return 'Due';
     case 'FORECAST':
       return 'Forecast';
     default:

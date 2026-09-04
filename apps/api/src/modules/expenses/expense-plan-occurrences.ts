@@ -4,43 +4,10 @@ import { planNextDueAfterOccurrence } from './expense-plan-next-due';
 /** Headroom for WEEKLY (~52/year); MONTHLY/YEARLY need far fewer steps. */
 const MAX_OCCURRENCE_STEPS = 1040;
 
-/** Previous occurrence before `due` for recurring frequencies; `ONE_TIME` has no prior step. */
-export function planOccurrenceBefore(due: Date, frequency: ExpenseFrequency): Date | null {
-  const base = new Date(due.getTime());
-  switch (frequency) {
-    case 'ONE_TIME':
-      return null;
-    case 'WEEKLY': {
-      const d = new Date(base);
-      d.setUTCDate(d.getUTCDate() - 7);
-      return d;
-    }
-    case 'MONTHLY': {
-      const d = new Date(base);
-      d.setUTCMonth(d.getUTCMonth() - 1);
-      return d;
-    }
-    case 'QUARTERLY': {
-      const d = new Date(base);
-      d.setUTCMonth(d.getUTCMonth() - 3);
-      return d;
-    }
-    case 'YEARLY': {
-      const d = new Date(base);
-      d.setUTCFullYear(d.getUTCFullYear() - 1);
-      return d;
-    }
-    case 'MULTI_YEAR': {
-      const d = new Date(base);
-      d.setUTCFullYear(d.getUTCFullYear() - 2);
-      return d;
-    }
-    default:
-      return null;
-  }
-}
-
-/** UTC month indexes (0–11) in `year` when the plan is due, from `nextDueDate` and `frequency`. */
+/**
+ * UTC month indexes (0–11) in `year` from `nextDueDate` forward.
+ * Does not invent months before the next due — past cells appear only when a card exists.
+ */
 export function collectPlanMonthIndexesInYear(
   year: number,
   frequency: ExpenseFrequency,
@@ -55,16 +22,8 @@ export function collectPlanMonthIndexesInYear(
 
   const indexes = new Set<number>();
   let cursor = new Date(anchorDue.getTime());
-
-  for (let i = 0; i < MAX_OCCURRENCE_STEPS; i++) {
-    if (cursor.getUTCFullYear() < year) {
-      break;
-    }
-    const prev = planOccurrenceBefore(cursor, frequency);
-    if (!prev || prev.getTime() >= cursor.getTime()) {
-      break;
-    }
-    cursor = prev;
+  if (cursor.getUTCFullYear() > year) {
+    return indexes;
   }
 
   for (let i = 0; i < MAX_OCCURRENCE_STEPS; i++) {

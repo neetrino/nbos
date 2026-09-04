@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { coerceExpenseCategoryToCanonical } from './expense-category-canonical';
 import {
   pickExpenseBacklogReasonFilter,
   pickExpenseCategoryFilter,
@@ -23,9 +24,24 @@ export function requireExpenseType(value: string): string {
   return v;
 }
 
+/** Accepts canonical or legacy category; returns consolidated enum value. */
 export function requireExpenseCategory(value: string): string {
-  const v = pickExpenseCategoryFilter(value);
-  if (!v) throw new BadRequestException(INVALID.category);
+  const raw = pickExpenseCategoryFilter(value);
+  if (!raw) throw new BadRequestException(INVALID.category);
+  const canonical = coerceExpenseCategoryToCanonical(raw);
+  if (canonical) return canonical;
+  if (raw === 'SALARY' || raw === 'BONUS') return raw;
+  throw new BadRequestException(INVALID.category);
+}
+
+const EXPENSE_PLAN_BLOCKED_CATEGORIES = new Set(['SALARY', 'BONUS']);
+
+/** Plan categories exclude payroll automation enums. Partner Payout is selectable. */
+export function requireExpensePlanCategory(value: string): string {
+  const v = requireExpenseCategory(value);
+  if (EXPENSE_PLAN_BLOCKED_CATEGORIES.has(v)) {
+    throw new BadRequestException('Salary and Bonus are not valid expense plan categories');
+  }
   return v;
 }
 
@@ -53,9 +69,7 @@ export function requireExpenseCategoryIfPresent(
   value: string | undefined | null,
 ): string | undefined {
   if (value === undefined || value === null) return undefined;
-  const v = pickExpenseCategoryFilter(value);
-  if (!v) throw new BadRequestException(INVALID.category);
-  return v;
+  return requireExpenseCategory(value);
 }
 
 export function requireExpenseFrequencyIfPresent(

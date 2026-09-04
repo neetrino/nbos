@@ -37,10 +37,6 @@ export function buildExpensePlanGeneralPatch(
   const snapDue = snap.nextDueDate.trim();
   if (nextDue !== snapDue) out.nextDueDate = nextDue ? nextDue : null;
 
-  const provider = draft.provider.trim();
-  const snapProvider = snap.provider.trim();
-  if (provider !== snapProvider) out.provider = provider || null;
-
   const projectId = draft.projectId !== 'none' ? draft.projectId : null;
   const snapProjectId = snap.projectId !== 'none' ? snap.projectId : null;
   if (projectId !== snapProjectId) out.projectId = projectId;

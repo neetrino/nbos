@@ -1,15 +1,13 @@
-import { Decimal, type ExpenseFrequency, type ExpenseStatusEnum } from '@nbos/database';
+import {
+  Decimal,
+  type ExpenseFrequency,
+  type ExpensePlanStatusEnum,
+  type ExpenseStatusEnum,
+} from '@nbos/database';
 import { collectPlanMonthIndexesInYear, utcMonthIndexFromDate } from './expense-plan-occurrences';
 import { computeExpenseLedgerPaymentStatus } from './expense-payment-rollup';
 
-export type ExpensePlanGridCellKind =
-  | 'NA'
-  | 'FORECAST'
-  | 'DUE'
-  | 'OPEN'
-  | 'PARTIAL'
-  | 'PAID'
-  | 'OVERDUE';
+export type ExpensePlanGridCellKind = 'NA' | 'FORECAST' | 'OPEN' | 'PARTIAL' | 'PAID' | 'OVERDUE';
 
 export interface ExpensePlanGridCell {
   kind: ExpensePlanGridCellKind;
@@ -31,6 +29,7 @@ export interface ExpensePlanGridRowInput {
   amount: unknown;
   frequency: ExpenseFrequency;
   nextDueDate: Date | null;
+  status?: ExpensePlanStatusEnum;
   project: { id: string; code: string; name: string } | null;
   expenses: ExpensePlanGridExpenseInput[];
 }
@@ -120,21 +119,18 @@ function buildMonthCell(
   now: Date,
   year: number,
 ): ExpensePlanGridCell {
-  const amount = numericAmount(plan.amount);
+  const planAmount = numericAmount(plan.amount);
   if (expense) {
     return {
       kind: resolveExpenseCellKind(expense),
-      amount,
+      amount: numericAmount(expense.amount),
       expenseId: expense.id,
     };
   }
-  if (!scheduled) {
+  if (!scheduled || isPastCalendarMonth(year, monthIndex, now)) {
     return { kind: 'NA', amount: 0, expenseId: null };
   }
-  if (isPastCalendarMonth(year, monthIndex, now)) {
-    return { kind: 'DUE', amount, expenseId: null };
-  }
-  return { kind: 'FORECAST', amount, expenseId: null };
+  return { kind: 'FORECAST', amount: planAmount, expenseId: null };
 }
 
 export function buildExpensePlanGridPayload(
@@ -147,7 +143,10 @@ export function buildExpensePlanGridPayload(
 
   const rows: ExpensePlanGridRow[] = plans.map((plan) => {
     const planAmount = numericAmount(plan.amount);
-    const scheduledMonths = collectPlanMonthIndexesInYear(year, plan.frequency, plan.nextDueDate);
+    const allowForecast = plan.status !== 'CANCELLED';
+    const scheduledMonths = allowForecast
+      ? collectPlanMonthIndexesInYear(year, plan.frequency, plan.nextDueDate)
+      : new Set<number>();
     const byMonth = expensesByMonth(plan.expenses, year);
     const months: ExpensePlanGridCell[] = [];
     let annualTotal = 0;

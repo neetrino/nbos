@@ -1,17 +1,30 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
-import { Decimal, PrismaClient, type Prisma, type ExpenseCategoryEnum } from '@nbos/database';
+import {
+  Decimal,
+  PrismaClient,
+  type Prisma,
+  type ExpenseCategoryEnum,
+  type ExpensePlanStatusEnum,
+} from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { coerceExpenseCategoryToCanonical } from './expense-category-canonical';
 import { pickExpenseCategoryFilter } from './expense-query-enum-guards';
 import { endOfUtcDayUtc } from './expense-plan-auto-due-scope';
 import { planNextDueAfterOccurrence } from './expense-plan-next-due';
 import {
-  requireExpenseCategory,
+  requireExpensePlanCategory,
   resolveExpenseFrequency,
 } from './expense-mutation-enum-validators';
 import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
 import { ExpensesService } from './expenses.service';
 import { assertExpensePlanEmptyDeletable } from '../../common/lifecycle/finance-record-lifecycle-guards';
 import { buildExpensePlanGridPayload } from './expense-plan-grid';
+import {
+  assertExpensePlanStatus,
+  assertExpensePlanStatusTransition,
+  expensePlanStatusUpdateData,
+  parseExpensePlanStatusQuery,
+} from './expense-plan-status';
 
 const EXPENSE_PLAN_SORT_FIELDS = new Set(['createdAt', 'nextDueDate', 'amount', 'name']);
 const EXPENSE_PLAN_GRID_MAX_ROWS = 300;
@@ -21,6 +34,7 @@ export interface ExpensePlanQueryParams {
   pageSize?: number;
   projectId?: string;
   category?: string;
+  status?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
@@ -32,7 +46,6 @@ export interface CreateExpensePlanBody {
   amount: number;
   frequency?: string;
   nextDueDate?: string | null;
-  provider?: string | null;
   projectId?: string | null;
   clientServiceRecordId?: string | null;
   autoGenerate?: boolean;
@@ -127,6 +140,7 @@ export class ExpensePlansService {
         amount: plan.amount,
         frequency: plan.frequency,
         nextDueDate: plan.nextDueDate,
+        status: plan.status,
         project: plan.project,
         expenses: plan.expenses,
       })),
@@ -149,7 +163,7 @@ export class ExpensePlansService {
   async create(body: CreateExpensePlanBody) {
     const name = body.name?.trim();
     if (!name) throw new BadRequestException('Name is required');
-    const category = requireExpenseCategory(body.category);
+    const category = requireExpensePlanCategory(body.category);
     const frequency = resolveExpenseFrequency(body.frequency);
     const amount = toAmountDecimal(body.amount);
     const projectId = await this.resolveProjectIdOrThrow(body.projectId);
@@ -161,7 +175,6 @@ export class ExpensePlansService {
         amount,
         frequency: frequency as Prisma.ExpensePlanCreateInput['frequency'],
         nextDueDate: body.nextDueDate ? new Date(body.nextDueDate) : null,
-        provider: body.provider?.trim() || null,
         projectId,
         clientServiceRecordId: body.clientServiceRecordId?.trim() || null,
         autoGenerate: Boolean(body.autoGenerate),
@@ -185,7 +198,7 @@ export class ExpensePlansService {
       data.name = n;
     }
     if (body.category !== undefined) {
-      data.category = requireExpenseCategory(
+      data.category = requireExpensePlanCategory(
         body.category,
       ) as Prisma.ExpensePlanUpdateInput['category'];
     }
@@ -199,9 +212,6 @@ export class ExpensePlansService {
     }
     if (body.nextDueDate !== undefined) {
       data.nextDueDate = body.nextDueDate ? new Date(body.nextDueDate) : null;
-    }
-    if (body.provider !== undefined) {
-      data.provider = body.provider?.trim() || null;
     }
     if (body.projectId !== undefined) {
       const pid = await this.resolveProjectIdOrThrow(body.projectId);
@@ -230,6 +240,22 @@ export class ExpensePlansService {
     return serializePlanRow(row);
   }
 
+  async updateStatus(id: string, status: string) {
+    assertExpensePlanStatus(status);
+    const current = await this.findById(id);
+    const from = current.status as ExpensePlanStatusEnum;
+    assertExpensePlanStatusTransition(from, status);
+    const row = await this.prisma.expensePlan.update({
+      where: { id },
+      data: expensePlanStatusUpdateData(status),
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        _count: { select: { expenses: true } },
+      },
+    });
+    return serializePlanRow(row);
+  }
+
   async delete(id: string) {
     const plan = await this.prisma.expensePlan.findUnique({
       where: { id },
@@ -246,6 +272,9 @@ export class ExpensePlansService {
   async generateCard(planId: string, body?: { dueDate?: string | null }) {
     const plan = await this.prisma.expensePlan.findUnique({ where: { id: planId } });
     if (!plan) throw new NotFoundException('Expense plan not found');
+    if (plan.status === 'CANCELLED') {
+      throw new BadRequestException('Resume the expense plan before generating a card.');
+    }
 
     const fromBody = body?.dueDate?.trim() ? new Date(body.dueDate) : null;
     const occurrence = fromBody ?? plan.nextDueDate;
@@ -263,7 +292,7 @@ export class ExpensePlansService {
       dueDate: occurrence.toISOString(),
       status: 'PLANNED',
       projectId: plan.projectId ?? undefined,
-      notes: plan.provider ? `From plan. Provider: ${plan.provider}` : 'From expense plan',
+      notes: 'From expense plan',
       expensePlanId: planId,
       clientServiceRecordId: plan.clientServiceRecordId ?? undefined,
     });
@@ -287,6 +316,7 @@ export class ExpensePlansService {
     const plans = await this.prisma.expensePlan.findMany({
       where: {
         autoGenerate: true,
+        status: 'ACTIVE',
         nextDueDate: { not: null, lte: cutoff },
       },
       orderBy: { nextDueDate: 'asc' },
@@ -327,24 +357,23 @@ export class ExpensePlansService {
   }
 
   private buildListWhere(params: ExpensePlanQueryParams): Prisma.ExpensePlanWhereInput {
-    const safeCategory = pickExpenseCategoryFilter(params.category);
+    const rawCategory = pickExpenseCategoryFilter(params.category);
+    const safeCategory = rawCategory
+      ? (coerceExpenseCategoryToCanonical(rawCategory) ?? rawCategory)
+      : undefined;
     const searchTrimmed = params.search?.trim();
     const ic = searchTrimmed
       ? { contains: searchTrimmed, mode: 'insensitive' as const }
       : undefined;
     const searchOr: Prisma.ExpensePlanWhereInput['OR'] = ic
-      ? [
-          { name: ic },
-          { provider: ic },
-          { notes: ic },
-          { project: { name: ic } },
-          { project: { code: ic } },
-        ]
+      ? [{ name: ic }, { notes: ic }, { project: { name: ic } }, { project: { code: ic } }]
       : undefined;
 
+    const statusWhere = parseExpensePlanStatusQuery(params.status);
     return {
       ...(safeCategory ? { category: safeCategory as ExpenseCategoryEnum } : {}),
       ...(params.projectId?.trim() ? { projectId: params.projectId.trim() } : {}),
+      ...(statusWhere ? { status: statusWhere } : {}),
       ...(searchOr ? { OR: searchOr } : {}),
     };
   }

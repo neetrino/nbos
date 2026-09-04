@@ -10,7 +10,6 @@ export function buildExpenseSearchAnd(searchTrimmed: string): Prisma.ExpenseWher
       { project: { name: ic } },
       { project: { code: ic } },
       { expensePlan: { name: ic } },
-      { expensePlan: { provider: ic } },
     ],
   };
 }
