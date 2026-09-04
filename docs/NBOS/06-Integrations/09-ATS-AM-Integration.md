@@ -107,13 +107,13 @@ SIP из `Employee.sipId`, не хардкод. Пример: `{"redirect_call":
 
 ### 2.5 Lead при создании с ATS
 
-| Field                  | Value                                        |
-| ---------------------- | -------------------------------------------- |
-| `source`               | `MARKETING`                                  |
-| `sourceDetail`         | `ATS`                                        |
-| `phone`                | `+{digits}`                                  |
+| Field                  | Value                                               |
+| ---------------------- | --------------------------------------------------- |
+| `source`               | `MARKETING`                                         |
+| `sourceDetail`         | `ATS`                                               |
+| `phone`                | `+{digits}`                                         |
 | `contactName` / `name` | `Incoming call {phone}` или `Outgoing call {phone}` |
-| `code`                 | Тот же генератор `L-{year}-{nnnn}`, что Meta |
+| `code`                 | Тот же генератор `L-{year}-{nnnn}`, что Meta        |
 
 Contact на webhook не создаём.
 
