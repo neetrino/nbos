@@ -4,7 +4,11 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import { allocateLeadCode } from '../../../common/utils/entity-code-series';
 import { ATS_CALLDIRECT_OUTBOUND, ATS_STATE_START, ATS_TERMINAL_STATES } from './ats.constants';
 import { findPendingClickToCallEvent } from './ats-call-click-to-call.reconcile';
-import { resolveAtsClientPhone, type AtsClientPhoneResolution } from './ats-call-client-phone';
+import {
+  isAtsDialedPartyToken,
+  resolveAtsClientPhone,
+  type AtsClientPhoneResolution,
+} from './ats-call-client-phone';
 import { AtsCallContextResolver, type AtsCallContext } from './ats-call-context.resolver';
 import { findEmployeeIdBySip, findResponsibleEmployeeId } from './ats-call-employee.ops';
 import { createAtsLead } from './ats-call-lead.ops';
@@ -143,8 +147,11 @@ export class AtsCallService {
   }
 
   private async resolveCallerEmployeeId(payload: AtsWebhookPayload): Promise<string | null> {
-    const fromOp = await findEmployeeIdBySip(this.prisma, presentWebhookString(payload.op) ?? null);
-    if (fromOp) return fromOp;
+    const op = presentWebhookString(payload.op);
+    if (op && !isAtsDialedPartyToken(op)) {
+      const fromOp = await findEmployeeIdBySip(this.prisma, op);
+      if (fromOp) return fromOp;
+    }
     if (!isOutboundPayload(payload)) return null;
     return findEmployeeIdBySip(this.prisma, presentWebhookString(payload.clid) ?? null);
   }

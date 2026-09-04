@@ -10,7 +10,7 @@ describe('resolveAtsClientPhone', () => {
     });
   });
 
-  it('uses input for outbound when present', () => {
+  it('uses input for outbound when op is a SIP extension', () => {
     expect(
       resolveAtsClientPhone(
         inboundStart({
@@ -21,6 +21,19 @@ describe('resolveAtsClientPhone', () => {
         }),
       ),
     ).toEqual({ raw: '37499123456', source: 'input' });
+  });
+
+  it('uses op for outbound when op is the dialed client phone', () => {
+    expect(
+      resolveAtsClientPhone(
+        inboundStart({
+          calldirect: '1',
+          clid: '3103581',
+          input: '37444343000',
+          op: '37444343019',
+        }),
+      ),
+    ).toEqual({ raw: '37444343019', source: 'op' });
   });
 
   it('falls back to clid for outbound when input is absent', () => {

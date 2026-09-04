@@ -382,6 +382,28 @@ describe('AtsCallService', () => {
     expect(state.events.get('out-sip-clid')?.phone).toBe('+37499123456');
     expect(state.leads[0]?.phone).toBe('+37499123456');
   });
+
+  it('uses outbound op as the client when input is the office DID', async () => {
+    await service.ingestCallEvent(
+      outboundStart({
+        uid: 'out-trunk-op',
+        clid: '3103581',
+        input: '37411111111',
+        op: '37499123456',
+      }),
+    );
+
+    expect(state.events.get('out-trunk-op')?.phone).toBe('+37499123456');
+    expect(state.leads[0]?.phone).toBe('+37499123456');
+    expect(state.leads[0]?.assignedTo).toBeNull();
+    expect(prisma.lead.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          contactName: 'Outgoing call +37499123456',
+        }),
+      }),
+    );
+  });
 });
 
 function openLeadRow(id: string, code: string) {
