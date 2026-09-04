@@ -11,7 +11,10 @@ import {
   Wrench,
 } from 'lucide-react';
 import { coerceExpenseCategoryToCanonical } from '@/features/finance/constants/expense-category-canonical';
-import { EXPENSE_CATEGORIES, EXPENSE_SYSTEM_CATEGORIES } from '@/features/finance/constants/finance';
+import {
+  EXPENSE_CATEGORIES,
+  EXPENSE_SYSTEM_CATEGORIES,
+} from '@/features/finance/constants/finance';
 
 type ExpenseCategoryVisual = {
   icon: LucideIcon;

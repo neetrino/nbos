@@ -17,21 +17,22 @@ export type ExpenseCategoryCanonical = (typeof EXPENSE_CATEGORY_CANONICAL)[numbe
 const EXPENSE_CATEGORY_CANONICAL_SET = new Set<string>(EXPENSE_CATEGORY_CANONICAL);
 
 /** Map retired category enums onto the 6-bucket model. */
-export const EXPENSE_CATEGORY_LEGACY_TO_CANONICAL: Readonly<Record<string, ExpenseCategoryCanonical>> =
-  {
-    DOMAIN: 'DOMAIN',
-    HOSTING: 'DOMAIN',
-    SERVICE: 'TOOLS',
-    TOOLS: 'TOOLS',
-    INTERNAL_INFRA: 'TOOLS',
-    MARKETING: 'MARKETING',
-    OFFICE: 'OFFICE',
-    TAXES: 'TAXES',
-    BANK_FEES: 'TAXES',
-    PARTNER_PAYOUT: 'PARTNER_PAYOUT',
-    TRAINING: 'OTHER',
-    OTHER: 'OTHER',
-  };
+export const EXPENSE_CATEGORY_LEGACY_TO_CANONICAL: Readonly<
+  Record<string, ExpenseCategoryCanonical>
+> = {
+  DOMAIN: 'DOMAIN',
+  HOSTING: 'DOMAIN',
+  SERVICE: 'TOOLS',
+  TOOLS: 'TOOLS',
+  INTERNAL_INFRA: 'TOOLS',
+  MARKETING: 'MARKETING',
+  OFFICE: 'OFFICE',
+  TAXES: 'TAXES',
+  BANK_FEES: 'TAXES',
+  PARTNER_PAYOUT: 'PARTNER_PAYOUT',
+  TRAINING: 'OTHER',
+  OTHER: 'OTHER',
+};
 
 export function coerceExpenseCategoryToCanonical(value: string): ExpenseCategoryCanonical | null {
   const mapped = EXPENSE_CATEGORY_LEGACY_TO_CANONICAL[value];

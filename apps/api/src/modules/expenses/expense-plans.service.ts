@@ -366,12 +366,7 @@ export class ExpensePlansService {
       ? { contains: searchTrimmed, mode: 'insensitive' as const }
       : undefined;
     const searchOr: Prisma.ExpensePlanWhereInput['OR'] = ic
-      ? [
-          { name: ic },
-          { notes: ic },
-          { project: { name: ic } },
-          { project: { code: ic } },
-        ]
+      ? [{ name: ic }, { notes: ic }, { project: { name: ic } }, { project: { code: ic } }]
       : undefined;
 
     const statusWhere = parseExpensePlanStatusQuery(params.status);

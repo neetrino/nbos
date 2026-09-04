@@ -26,7 +26,11 @@ export class ExpensePlansController {
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'category', required: false })
-  @ApiQuery({ name: 'status', required: false, description: 'ACTIVE, CANCELLED, or comma list. Omit for all.' })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'ACTIVE, CANCELLED, or comma list. Omit for all.',
+  })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] })
@@ -63,7 +67,11 @@ export class ExpensePlansController {
   })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'category', required: false })
-  @ApiQuery({ name: 'status', required: false, description: 'ACTIVE, CANCELLED, or comma list. Omit for all.' })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'ACTIVE, CANCELLED, or comma list. Omit for all.',
+  })
   @ApiQuery({ name: 'search', required: false })
   async getGrid(
     @Query('year') year?: string,
@@ -134,7 +142,8 @@ export class ExpensePlansController {
   @Patch(':id/status')
   @ApiOperation({
     summary: 'Change expense plan status',
-    description: 'ACTIVE → CANCELLED stops auto-generate and forecast. CANCELLED → ACTIVE resumes the plan.',
+    description:
+      'ACTIVE → CANCELLED stops auto-generate and forecast. CANCELLED → ACTIVE resumes the plan.',
   })
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
     return this.expensePlansService.updateStatus(id, body.status);

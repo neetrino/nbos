@@ -3,10 +3,7 @@ import type { ExpensePlanStatusEnum, Prisma } from '@nbos/database';
 
 export const EXPENSE_PLAN_STATUSES = ['ACTIVE', 'CANCELLED'] as const;
 
-const ALLOWED_TRANSITIONS: Record<
-  ExpensePlanStatusEnum,
-  readonly ExpensePlanStatusEnum[]
-> = {
+const ALLOWED_TRANSITIONS: Record<ExpensePlanStatusEnum, readonly ExpensePlanStatusEnum[]> = {
   ACTIVE: ['CANCELLED'],
   CANCELLED: ['ACTIVE'],
 };
@@ -29,9 +26,7 @@ export function assertExpensePlanStatusTransition(
   }
 }
 
-export type ExpensePlanStatusQueryFilter =
-  | ExpensePlanStatusEnum
-  | { in: ExpensePlanStatusEnum[] };
+export type ExpensePlanStatusQueryFilter = ExpensePlanStatusEnum | { in: ExpensePlanStatusEnum[] };
 
 /** Parses `status` query: omitted → all; one token → equals; comma list → `{ in }`. */
 export function parseExpensePlanStatusQuery(

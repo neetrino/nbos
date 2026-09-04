@@ -3,7 +3,10 @@ import {
   getExpenseCategoryLabel,
   getExpenseCategoryVisual,
 } from '@/features/finance/constants/expense-category-visual';
-import { EXPENSE_CATEGORIES, EXPENSE_SYSTEM_CATEGORIES } from '@/features/finance/constants/finance';
+import {
+  EXPENSE_CATEGORIES,
+  EXPENSE_SYSTEM_CATEGORIES,
+} from '@/features/finance/constants/finance';
 
 describe('expense category consolidation', () => {
   it('exposes selectable categories including Partner Payout', () => {

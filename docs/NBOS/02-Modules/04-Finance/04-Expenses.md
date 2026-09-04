@@ -43,21 +43,21 @@
 
 ### Поля плана расхода
 
-| Поле                    | Описание                                                                                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`                  | Название расхода                                                                                                                                  |
+| Поле                    | Описание                                                                                                                                              |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                  | Название расхода                                                                                                                                      |
 | `category`              | Domain & Hosting / Tools & services / Marketing / Office / Taxes & fees / Partner Payout / Other (не Salary / Bonus — те только с payroll automation) |
-| `amount`                | Ожидаемая сумма                                                                                                                                                                              |
-| `currency`              | Валюта                                                                                                                                                                                       |
-| `frequency`             | Weekly / Monthly / Quarterly / Yearly / Multi-year / One-time                                                                                                                                |
-| `next_due_date`         | Следующая дата оплаты                                                                                                                                                                        |
-| `project`               | Проект, если расход проектный                                                                                                                                                                |
-| `product`               | Продукт, если применимо                                                                                                                           |
-| `client_service_record` | Связанный сервис клиента, если расход идёт от него                                                                                                |
-| `auto_generate`         | Создавать ли карточки автоматически                                                                                                               |
-| `status`                | `ACTIVE` / `CANCELLED`. Отключённый план не создаёт карточки и не рисует forecast на сетке. История карточек сохраняется.                         |
-| `cancelled_at`          | Когда план остановили. Resume (`CANCELLED` → `ACTIVE`) очищает поле и не включает auto-generate сам.                                              |
-| `notes`                 | Комментарии                                                                                                                                       |
+| `amount`                | Ожидаемая сумма                                                                                                                                       |
+| `currency`              | Валюта                                                                                                                                                |
+| `frequency`             | Weekly / Monthly / Quarterly / Yearly / Multi-year / One-time                                                                                         |
+| `next_due_date`         | Следующая дата оплаты                                                                                                                                 |
+| `project`               | Проект, если расход проектный                                                                                                                         |
+| `product`               | Продукт, если применимо                                                                                                                               |
+| `client_service_record` | Связанный сервис клиента, если расход идёт от него                                                                                                    |
+| `auto_generate`         | Создавать ли карточки автоматически                                                                                                                   |
+| `status`                | `ACTIVE` / `CANCELLED`. Отключённый план не создаёт карточки и не рисует forecast на сетке. История карточек сохраняется.                             |
+| `cancelled_at`          | Когда план остановили. Resume (`CANCELLED` → `ACTIVE`) очищает поле и не включает auto-generate сам.                                                  |
+| `notes`                 | Комментарии                                                                                                                                           |
 
 ### Где смотреть планы расходов
 
@@ -347,17 +347,17 @@ Expense Payment
 
 Selectable (Expense Plan / ручной Expense Card) — 7 корзин. Клиентский Domain/Hosting живёт в Client Services; здесь только **наши** затраты.
 
-| Категория           | Enum       | Описание / что вошло при consolidation                                                                 |
-| ------------------- | ---------- | ------------------------------------------------------------------------------------------------------ |
-| `Domain & Hosting`  | `DOMAIN`   | Наши домены и хостинг (бывшие DOMAIN + HOSTING)                                                        |
-| `Tools & services`  | `TOOLS`    | SaaS, инструменты компании, internal infra (бывшие SERVICE + TOOLS + INTERNAL_INFRA)                   |
-| `Marketing`         | `MARKETING`| Маркетинговые расходы                                                                                  |
-| `Office`            | `OFFICE`   | Аренда, коммуналка, офисные операции                                                                   |
-| `Taxes & fees`      | `TAXES`    | Налоги, гос. сборы, банковские комиссии (бывшие TAXES + BANK_FEES)                                     |
-| `Other`             | `OTHER`    | Прочее, включая обучение (бывшие OTHER + TRAINING)                                                     |
-| `Salary`            | `SALARY`   | Зарплаты (только automation из payroll; не выбирается на Expense Plan)                                 |
-| `Bonus`             | `BONUS`    | Бонусы (только automation из payroll; не выбирается на Expense Plan)                                   |
-| `Partner Payout`    | `PARTNER_PAYOUT` | Выплаты партнёрам (selectable на Plan и Card; automation из payout batch тоже пишет сюда)        |
+| Категория          | Enum             | Описание / что вошло при consolidation                                                    |
+| ------------------ | ---------------- | ----------------------------------------------------------------------------------------- |
+| `Domain & Hosting` | `DOMAIN`         | Наши домены и хостинг (бывшие DOMAIN + HOSTING)                                           |
+| `Tools & services` | `TOOLS`          | SaaS, инструменты компании, internal infra (бывшие SERVICE + TOOLS + INTERNAL_INFRA)      |
+| `Marketing`        | `MARKETING`      | Маркетинговые расходы                                                                     |
+| `Office`           | `OFFICE`         | Аренда, коммуналка, офисные операции                                                      |
+| `Taxes & fees`     | `TAXES`          | Налоги, гос. сборы, банковские комиссии (бывшие TAXES + BANK_FEES)                        |
+| `Other`            | `OTHER`          | Прочее, включая обучение (бывшие OTHER + TRAINING)                                        |
+| `Salary`           | `SALARY`         | Зарплаты (только automation из payroll; не выбирается на Expense Plan)                    |
+| `Bonus`            | `BONUS`          | Бонусы (только automation из payroll; не выбирается на Expense Plan)                      |
+| `Partner Payout`   | `PARTNER_PAYOUT` | Выплаты партнёрам (selectable на Plan и Card; automation из payout batch тоже пишет сюда) |
 
 Legacy enum values (`HOSTING`, `SERVICE`, `INTERNAL_INFRA`, `BANK_FEES`, `TRAINING`) могут оставаться в PostgreSQL enum type, но в данных remapped на survivors выше.
 
