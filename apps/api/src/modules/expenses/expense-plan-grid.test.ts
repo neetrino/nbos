@@ -138,4 +138,34 @@ describe('buildExpensePlanGridPayload', () => {
     expect(payload.rows[0].months[4].kind).toBe('FORECAST');
     expect(payload.rows[0].months[4].amount).toBe(50);
   });
+
+  it('does not forecast months after a plan is cancelled', () => {
+    const payload = buildExpensePlanGridPayload(
+      [
+        {
+          id: 'plan-1',
+          name: 'Figma',
+          amount: 100,
+          frequency: 'MONTHLY',
+          nextDueDate: new Date('2026-04-01T00:00:00.000Z'),
+          status: 'CANCELLED',
+          project: null,
+          expenses: [
+            {
+              id: 'exp-apr',
+              amount: 100,
+              dueDate: new Date('2026-04-10T00:00:00.000Z'),
+              status: 'PAID',
+              expensePayments: [{ amount: 100 }],
+            },
+          ],
+        },
+      ],
+      2026,
+      NOW,
+    );
+    expect(payload.rows[0].months[3].kind).toBe('PAID');
+    expect(payload.rows[0].months[4].kind).toBe('NA');
+    expect(payload.rows[0].annualTotal).toBe(100);
+  });
 });

@@ -1,14 +1,19 @@
 'use client';
 
-import { CalendarDays, Trash2 } from 'lucide-react';
-import { DetailSheetSettingsMenu } from '@/components/shared';
+import { Ban, CalendarDays, RotateCcw, Trash2 } from 'lucide-react';
+import { DetailSheetSettingsMenu, StatusBadge } from '@/components/shared';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { getExpensePlanStatus } from '@/features/finance/constants/expense-plan-status';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getExpenseCategoryLabel } from '@/features/finance/constants/expense-category-visual';
 import {
   expensePlanFrequencyLabel,
   formatExpensePlanShortDate,
 } from '@/features/finance/utils/expense-plan-display';
+import {
+  expensePlanCanCancel,
+  expensePlanCanResume,
+} from '@/features/finance/utils/expense-plan-status-eligibility';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import { parseMoneyAmount } from '@/lib/format/money';
 import { projectDisplayName } from '@/lib/format/project-product-display';
@@ -16,7 +21,9 @@ import { projectDisplayName } from '@/lib/format/project-product-display';
 interface ExpensePlanDetailSheetHeaderProps {
   plan: ExpensePlan;
   displayName: string;
-  deleteDisabled?: boolean;
+  actionsDisabled?: boolean;
+  onCancelClick: () => void;
+  onResumeClick: () => void;
   onDeleteClick: () => void;
 }
 
@@ -33,11 +40,14 @@ function buildExpensePlanHeaderSubline(plan: ExpensePlan): string {
 export function ExpensePlanDetailSheetHeader({
   plan,
   displayName,
-  deleteDisabled = false,
+  actionsDisabled = false,
+  onCancelClick,
+  onResumeClick,
   onDeleteClick,
 }: ExpensePlanDetailSheetHeaderProps) {
   const categoryLabel = getExpenseCategoryLabel(plan.category);
   const subline = buildExpensePlanHeaderSubline(plan);
+  const statusMeta = getExpensePlanStatus(plan.status);
 
   return (
     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -52,11 +62,30 @@ export function ExpensePlanDetailSheetHeader({
           <span className="text-muted-foreground rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
             {categoryLabel}
           </span>
+          {statusMeta ? (
+            <StatusBadge
+              label={statusMeta.label}
+              variant={statusMeta.variant}
+              className="rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
+            />
+          ) : null}
         </div>
         {subline ? <p className="text-muted-foreground mt-0.5 text-sm">{subline}</p> : null}
       </div>
       <DetailSheetSettingsMenu>
-        <DropdownMenuItem variant="destructive" disabled={deleteDisabled} onClick={onDeleteClick}>
+        {expensePlanCanCancel(plan) ? (
+          <DropdownMenuItem disabled={actionsDisabled} onClick={onCancelClick}>
+            <Ban />
+            Stop plan
+          </DropdownMenuItem>
+        ) : null}
+        {expensePlanCanResume(plan) ? (
+          <DropdownMenuItem disabled={actionsDisabled} onClick={onResumeClick}>
+            <RotateCcw />
+            Resume plan
+          </DropdownMenuItem>
+        ) : null}
+        <DropdownMenuItem variant="destructive" disabled={actionsDisabled} onClick={onDeleteClick}>
           <Trash2 />
           Delete plan
         </DropdownMenuItem>

@@ -6,6 +6,7 @@ import {
   parseExpensePlansListCategoryParam,
   parseExpensePlansListProjectIdParam,
   parseExpensePlansListSearchParam,
+  parseExpensePlansListStatusParam,
 } from '@/features/finance/utils/build-expense-plan-list-api-params';
 
 describe('parseExpensePlansListCategoryParam', () => {
@@ -40,15 +41,24 @@ describe('parseExpensePlansListSearchParam', () => {
   });
 });
 
+describe('parseExpensePlansListStatusParam', () => {
+  it('defaults to Active and accepts cancelled or all', () => {
+    expect(parseExpensePlansListStatusParam(null)).toBe('ACTIVE');
+    expect(parseExpensePlansListStatusParam('CANCELLED')).toBe('CANCELLED');
+    expect(parseExpensePlansListStatusParam('all')).toBe('all');
+    expect(parseExpensePlansListStatusParam('NOPE')).toBe('ACTIVE');
+  });
+});
+
 describe('buildExpensePlanListApiParams', () => {
-  it('includes paging and stable sort', () => {
+  it('includes paging, stable sort, and default Active status', () => {
     expect(
       buildExpensePlanListApiParams({
         search: '',
         page: 1,
         pageSize: 100,
       }),
-    ).toEqual({ sortBy: 'name', sortOrder: 'asc', page: 1, pageSize: 100 });
+    ).toEqual({ sortBy: 'name', sortOrder: 'asc', status: 'ACTIVE', page: 1, pageSize: 100 });
   });
 
   it('passes filters when set', () => {
@@ -57,6 +67,7 @@ describe('buildExpensePlanListApiParams', () => {
         search: 'acme',
         category: 'TOOLS',
         projectId: 'p1',
+        status: 'CANCELLED',
         page: 1,
         pageSize: 50,
       }),
@@ -66,9 +77,21 @@ describe('buildExpensePlanListApiParams', () => {
       search: 'acme',
       category: 'TOOLS',
       projectId: 'p1',
+      status: 'CANCELLED',
       page: 1,
       pageSize: 50,
     });
+  });
+
+  it('omits status when All is selected', () => {
+    expect(
+      buildExpensePlanListApiParams({
+        search: '',
+        status: 'all',
+        page: 1,
+        pageSize: 100,
+      }),
+    ).toEqual({ sortBy: 'name', sortOrder: 'asc', page: 1, pageSize: 100 });
   });
 });
 
@@ -78,6 +101,7 @@ describe('buildExpensePlanListExportParams', () => {
       sortBy: 'name',
       sortOrder: 'asc',
       search: 'x',
+      status: 'ACTIVE',
     });
   });
 });
@@ -88,5 +112,8 @@ describe('expensePlanListHasActiveFilters', () => {
     expect(expensePlanListHasActiveFilters({ search: 'a' })).toBe(true);
     expect(expensePlanListHasActiveFilters({ search: '', category: 'OTHER' })).toBe(true);
     expect(expensePlanListHasActiveFilters({ search: '', projectId: 'z' })).toBe(true);
+    expect(expensePlanListHasActiveFilters({ search: '', status: 'ACTIVE' })).toBe(false);
+    expect(expensePlanListHasActiveFilters({ search: '', status: 'CANCELLED' })).toBe(true);
+    expect(expensePlanListHasActiveFilters({ search: '', status: 'all' })).toBe(true);
   });
 });

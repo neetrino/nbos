@@ -13,6 +13,7 @@ import {
 import { useProjectRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { ExpensePlanAutoGenerateField } from '@/features/finance/components/expenses/ExpensePlanAutoGenerateField';
+import { expensePlanIsCancelled } from '@/features/finance/utils/expense-plan-status-eligibility';
 import {
   EXPENSE_FREQUENCIES,
   EXPENSE_SHEET_FIELD_CELL_CLASS,
@@ -65,8 +66,15 @@ export function ExpensePlanGeneralTab({
     return items;
   }, [plan.frequency]);
 
+  const cancelled = expensePlanIsCancelled(plan);
+
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} mx-auto w-full max-w-none gap-4`}>
+      {cancelled ? (
+        <p className="text-muted-foreground text-sm">
+          This plan is stopped. Resume it from the menu to create cards or change the schedule.
+        </p>
+      ) : null}
       <DetailSheetSection title="Plan" icon={<Layers size={12} />}>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
           <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>

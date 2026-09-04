@@ -10,6 +10,8 @@ const basePlan: ExpensePlan = {
   frequency: 'MONTHLY',
   nextDueDate: '2026-05-01T00:00:00.000Z',
   projectId: 'proj-1',
+  status: 'ACTIVE',
+  cancelledAt: null,
   autoGenerate: true,
   notes: 'HQ',
   createdAt: '',

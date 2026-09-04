@@ -198,6 +198,8 @@ Default view: `Calendar Grid / Календарная сетка`.
 
 Web: переключатель **Grid | Board | List**; выбор сохраняется в `localStorage`.
 
+Статус плана: default **Active**. В карточке плана меню **Stop plan** переводит в `Cancelled` (история карточек остаётся). **Resume plan** возвращает в Active. Delete только если связанных карточек нет.
+
 ### 4.2. Expense Board / Доска расходов
 
 **Путь:** `/finance/expenses` (Finance top tab **Expense board**; sub-nav: Active / Backlog / Closed)

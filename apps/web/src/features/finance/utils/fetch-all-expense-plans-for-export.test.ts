@@ -18,6 +18,8 @@ function mockPlan(id: string): ExpensePlan {
     frequency: 'MONTHLY',
     nextDueDate: null,
     projectId: null,
+    status: 'ACTIVE',
+    cancelledAt: null,
     autoGenerate: false,
     notes: null,
     createdAt: '2026-04-01T00:00:00.000Z',

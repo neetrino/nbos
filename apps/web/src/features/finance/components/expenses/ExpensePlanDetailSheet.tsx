@@ -7,7 +7,6 @@ import {
   DetailSheetTabBar,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
-  DeleteConfirmDialog,
   ErrorState,
   LoadingState,
 } from '@/components/shared';
@@ -16,7 +15,7 @@ import { Sheet } from '@/components/ui/sheet';
 import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
 import { buildExpensePlanDetailSheetTabs } from '@/features/finance/components/expenses/build-expense-plan-detail-sheet-tabs';
 import { ExpensePlanCardsTab } from '@/features/finance/components/expenses/ExpensePlanCardsTab';
-import { ExpensePlanDetailSheetHeader } from '@/features/finance/components/expenses/ExpensePlanDetailSheetHeader';
+import { ExpensePlanDetailSheetLifecycle } from '@/features/finance/components/expenses/ExpensePlanDetailSheetLifecycle';
 import { ExpensePlanGeneralTab } from '@/features/finance/components/expenses/ExpensePlanGeneralTab';
 import { ExpensePlanHistoryTab } from '@/features/finance/components/expenses/ExpensePlanHistoryTab';
 import type { ExpensePlanDetailSheetTab } from '@/features/finance/components/expenses/expense-plan-detail-sheet-tabs';
@@ -63,7 +62,6 @@ export function ExpensePlanDetailSheet({
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const generalDirtyRef = useRef(false);
 
   useEffect(() => {
@@ -97,6 +95,7 @@ export function ExpensePlanDetailSheet({
     plan?.nextDueDate,
     plan?.projectId,
     plan?.autoGenerate,
+    plan?.status,
     plan?.notes,
   ]);
 
@@ -153,24 +152,12 @@ export function ExpensePlanDetailSheet({
     if (generalSnap) setGeneralDraft({ ...generalSnap });
   }, [generalSnap]);
 
-  const handleDeletePlan = useCallback(async () => {
-    if (!plan) return;
-    try {
-      await expensePlansApi.delete(plan.id);
-      toast.success('Expense plan deleted.');
-      onPlanDeleted?.(plan.id);
-      onOpenChange(false);
-    } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not delete expense plan.'));
-    }
-  }, [onOpenChange, onPlanDeleted, plan]);
-
   const openGenerate = useCallback(() => setGenerateOpen(true), []);
 
   const detailSheetTabs = useMemo(
     () =>
       buildExpensePlanDetailSheetTabs({
-        canGenerateCard: Boolean(plan) && !saving,
+        canGenerateCard: plan != null && !saving && plan.status === 'ACTIVE',
         onGenerateCard: openGenerate,
       }),
     [openGenerate, plan, saving],
@@ -194,11 +181,16 @@ export function ExpensePlanDetailSheet({
             {loading && !plan ? (
               <p className="text-muted-foreground text-sm">Loading…</p>
             ) : plan ? (
-              <ExpensePlanDetailSheetHeader
+              <ExpensePlanDetailSheetLifecycle
                 plan={plan}
                 displayName={displayName}
-                deleteDisabled={saving}
-                onDeleteClick={() => setDeleteOpen(true)}
+                actionsDisabled={saving}
+                onPlanUpdated={(updated) => {
+                  handlePlanChange(updated);
+                  void fetchPlan();
+                }}
+                onPlanDeleted={onPlanDeleted}
+                onClose={() => onOpenChange(false)}
               />
             ) : null}
           </div>
@@ -222,14 +214,14 @@ export function ExpensePlanDetailSheet({
                       plan={plan}
                       draft={generalDraft}
                       patchDraft={patchGeneralDraft}
-                      formDisabled={saving}
+                      formDisabled={saving || plan.status === 'CANCELLED'}
                     />
                   ) : null}
                   {activeTab === 'cards' ? (
                     <ExpensePlanCardsTab
                       plan={plan}
                       onGenerateClick={openGenerate}
-                      generateDisabled={saving}
+                      generateDisabled={saving || plan.status === 'CANCELLED'}
                     />
                   ) : null}
                   {activeTab === 'history' ? <ExpensePlanHistoryTab /> : null}
@@ -257,20 +249,6 @@ export function ExpensePlanDetailSheet({
           onGenerated={() => void fetchPlan()}
         />
       ) : null}
-
-      <DeleteConfirmDialog
-        level="simple"
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        itemName={plan?.name ?? ''}
-        title="Delete plan?"
-        description="Linked expense cards keep running; only the plan link is cleared."
-        forceNestedBackdrop
-        onConfirm={async () => {
-          setDeleteOpen(false);
-          await handleDeletePlan();
-        }}
-      />
     </>
   );
 }

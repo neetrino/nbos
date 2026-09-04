@@ -8,10 +8,12 @@ import {
   getExpenseCategoryVisual,
 } from '@/features/finance/constants/expense-category-visual';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { getExpensePlanStatus } from '@/features/finance/constants/expense-plan-status';
 import {
   expensePlanFrequencyLabel,
   formatExpensePlanShortDate,
 } from '@/features/finance/utils/expense-plan-display';
+import { expensePlanIsCancelled } from '@/features/finance/utils/expense-plan-status-eligibility';
 import { parseMoneyAmount } from '@/lib/format/money';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import { cn } from '@/lib/utils';
@@ -29,6 +31,8 @@ export function ExpensePlanBoardCard({ plan, onOpen }: ExpensePlanBoardCardProps
   const categoryLabel = getExpenseCategoryLabel(plan.category);
   const linkedCount = plan._count.expenses;
   const linkedCardsLabel = `${linkedCount} linked card${linkedCount === 1 ? '' : 's'}`;
+  const statusMeta = getExpensePlanStatus(plan.status);
+  const cancelled = expensePlanIsCancelled(plan);
 
   return (
     <KanbanCardShell as="article" radius="xl" padding="none" baseShadow="sm" hoverShadow="md">
@@ -47,11 +51,20 @@ export function ExpensePlanBoardCard({ plan, onOpen }: ExpensePlanBoardCardProps
             <p className="text-foreground min-w-0 truncate text-sm leading-snug font-bold">
               {plan.name}
             </p>
-            <StatusBadge
-              label={frequencyLabel}
-              variant="blue"
-              className="shrink-0 rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
-            />
+            <div className="flex shrink-0 flex-wrap justify-end gap-1">
+              {statusMeta && cancelled ? (
+                <StatusBadge
+                  label={statusMeta.label}
+                  variant={statusMeta.variant}
+                  className="rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
+                />
+              ) : null}
+              <StatusBadge
+                label={frequencyLabel}
+                variant="blue"
+                className="rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
+              />
+            </div>
           </div>
         </div>
 
@@ -65,7 +78,7 @@ export function ExpensePlanBoardCard({ plan, onOpen }: ExpensePlanBoardCardProps
               variant="green"
               className="rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
             />
-            {plan.autoGenerate ? (
+            {plan.autoGenerate && !cancelled ? (
               <StatusBadge
                 label="Auto-generate"
                 variant="blue"

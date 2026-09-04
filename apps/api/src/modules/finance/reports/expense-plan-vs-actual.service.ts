@@ -15,7 +15,7 @@ import type {
 } from './expense-plan-vs-actual.types';
 
 const PLAN_ACTUAL_NOTES = [
-  'Planned amount uses current ExpensePlan rows, scoped by nextDueDate when a period is selected.',
+  'Planned amount uses current ACTIVE ExpensePlan rows, scoped by nextDueDate when a period is selected.',
   'Generated card amount uses Expense rows linked to ExpensePlan rows, scoped by dueDate.',
   'Paid amount uses ExpensePayment rows whose Expense is linked to an ExpensePlan, scoped by paymentDate.',
   'Historical plan occurrences before card generation require a future journal/accrual layer.',
@@ -51,7 +51,10 @@ export class ExpensePlanVsActualService {
   private async getPlanRows(dateFilter: ReturnType<typeof buildDateFilter>) {
     return this.prisma.expensePlan.groupBy({
       by: ['category'],
-      ...(dateFilter ? { where: { nextDueDate: dateFilter } } : {}),
+      where: {
+        status: 'ACTIVE',
+        ...(dateFilter ? { nextDueDate: dateFilter } : {}),
+      },
       _count: true,
       _sum: { amount: true },
     });

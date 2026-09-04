@@ -366,19 +366,26 @@ enum ExpenseBacklogReasonEnum {
   OTHER
 }
 
+enum ExpensePlanStatusEnum {
+  ACTIVE
+  CANCELLED
+}
+
 model ExpensePlan {
-  id                    String              @id @default(uuid())
+  id                    String                 @id @default(uuid())
   name                  String
   category              ExpenseCategoryEnum
-  amount                Decimal             @db.Decimal(12, 2)
-  frequency             ExpenseFrequency    @default(ONE_TIME)
-  nextDueDate           DateTime?           @map("next_due_date")
-  projectId             String?             @map("project_id")
-  clientServiceRecordId String?             @map("client_service_record_id")
-  autoGenerate          Boolean             @default(false) @map("auto_generate")
+  amount                Decimal                @db.Decimal(12, 2)
+  frequency             ExpenseFrequency       @default(ONE_TIME)
+  nextDueDate           DateTime?              @map("next_due_date")
+  projectId             String?                @map("project_id")
+  clientServiceRecordId String?                @map("client_service_record_id")
+  autoGenerate          Boolean                @default(false) @map("auto_generate")
+  status                ExpensePlanStatusEnum  @default(ACTIVE)
+  cancelledAt           DateTime?              @map("cancelled_at")
   notes                 String?
-  createdAt             DateTime            @default(now()) @map("created_at")
-  updatedAt             DateTime            @updatedAt @map("updated_at")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
 
   project             Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
   clientServiceRecord ClientServiceRecord? @relation(fields: [clientServiceRecordId], references: [id], onDelete: SetNull)
@@ -386,6 +393,7 @@ model ExpensePlan {
 
   @@index([projectId])
   @@index([clientServiceRecordId])
+  @@index([status])
   @@map("expense_plans")
 }
 

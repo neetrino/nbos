@@ -13,6 +13,8 @@ function plan(
     amount: '1000',
     nextDueDate: null,
     projectId: null,
+    status: 'ACTIVE',
+    cancelledAt: null,
     autoGenerate: false,
     notes: null,
     createdAt: '',

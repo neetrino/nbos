@@ -33,9 +33,11 @@ export function ExpensePlanCardsTab({
       titleRowClassName="flex-nowrap"
     >
       <p className="text-muted-foreground text-sm">
-        {cardCount > 0
-          ? `${cardCount} card${cardCount === 1 ? '' : 's'} linked to this plan. Open the pay now board to review or pay them.`
-          : 'No cards generated yet. Use Generate to create an expense card from this plan.'}
+        {plan.status === 'CANCELLED'
+          ? 'This plan is stopped. Existing cards stay on the pay now board; resume the plan to generate new ones.'
+          : cardCount > 0
+            ? `${cardCount} card${cardCount === 1 ? '' : 's'} linked to this plan. Open the pay now board to review or pay them.`
+            : 'No cards generated yet. Use Generate to create an expense card from this plan.'}
       </p>
     </DetailSheetSection>
   );
