@@ -29,19 +29,18 @@ export function requireExpenseCategory(value: string): string {
   const raw = pickExpenseCategoryFilter(value);
   if (!raw) throw new BadRequestException(INVALID.category);
   const canonical = coerceExpenseCategoryToCanonical(raw);
-  if (!canonical) throw new BadRequestException(INVALID.category);
-  return canonical;
+  if (canonical) return canonical;
+  if (raw === 'SALARY' || raw === 'BONUS') return raw;
+  throw new BadRequestException(INVALID.category);
 }
 
-const EXPENSE_PLAN_BLOCKED_CATEGORIES = new Set(['SALARY', 'BONUS', 'PARTNER_PAYOUT']);
+const EXPENSE_PLAN_BLOCKED_CATEGORIES = new Set(['SALARY', 'BONUS']);
 
-/** Plan categories exclude payroll/partner automation enums. */
+/** Plan categories exclude payroll automation enums. Partner Payout is selectable. */
 export function requireExpensePlanCategory(value: string): string {
   const v = requireExpenseCategory(value);
   if (EXPENSE_PLAN_BLOCKED_CATEGORIES.has(v)) {
-    throw new BadRequestException(
-      'Salary, Bonus, and Partner Payout are not valid expense plan categories',
-    );
+    throw new BadRequestException('Salary and Bonus are not valid expense plan categories');
   }
   return v;
 }

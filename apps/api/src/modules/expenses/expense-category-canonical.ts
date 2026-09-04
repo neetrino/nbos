@@ -8,6 +8,7 @@ export const EXPENSE_CATEGORY_CANONICAL = [
   'MARKETING',
   'OFFICE',
   'TAXES',
+  'PARTNER_PAYOUT',
   'OTHER',
 ] as const;
 
@@ -27,6 +28,7 @@ export const EXPENSE_CATEGORY_LEGACY_TO_CANONICAL: Readonly<Record<string, Expen
     OFFICE: 'OFFICE',
     TAXES: 'TAXES',
     BANK_FEES: 'TAXES',
+    PARTNER_PAYOUT: 'PARTNER_PAYOUT',
     TRAINING: 'OTHER',
     OTHER: 'OTHER',
   };

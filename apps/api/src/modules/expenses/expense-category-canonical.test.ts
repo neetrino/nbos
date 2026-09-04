@@ -14,6 +14,7 @@ describe('coerceExpenseCategoryToCanonical', () => {
     expect(coerceExpenseCategoryToCanonical('DOMAIN')).toBe('DOMAIN');
     expect(coerceExpenseCategoryToCanonical('TOOLS')).toBe('TOOLS');
     expect(coerceExpenseCategoryToCanonical('OTHER')).toBe('OTHER');
+    expect(coerceExpenseCategoryToCanonical('PARTNER_PAYOUT')).toBe('PARTNER_PAYOUT');
   });
 
   it('returns null for unknown or payroll values', () => {

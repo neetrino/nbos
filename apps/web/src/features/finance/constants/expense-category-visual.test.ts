@@ -6,24 +6,22 @@ import {
 import { EXPENSE_CATEGORIES, EXPENSE_SYSTEM_CATEGORIES } from '@/features/finance/constants/finance';
 
 describe('expense category consolidation', () => {
-  it('exposes six selectable categories', () => {
+  it('exposes selectable categories including Partner Payout', () => {
     expect(EXPENSE_CATEGORIES.map((c) => c.value)).toEqual([
       'DOMAIN',
       'TOOLS',
       'MARKETING',
       'OFFICE',
       'TAXES',
+      'PARTNER_PAYOUT',
       'OTHER',
     ]);
   });
 
   it('keeps system payroll categories for labels only', () => {
-    expect(EXPENSE_SYSTEM_CATEGORIES.map((c) => c.value)).toEqual([
-      'SALARY',
-      'BONUS',
-      'PARTNER_PAYOUT',
-    ]);
+    expect(EXPENSE_SYSTEM_CATEGORIES.map((c) => c.value)).toEqual(['SALARY', 'BONUS']);
     expect(getExpenseCategoryLabel('SALARY')).toBe('Salary');
+    expect(getExpenseCategoryLabel('PARTNER_PAYOUT')).toBe('Partner Payout');
   });
 
   it('labels and visuals resolve for consolidated buckets', () => {

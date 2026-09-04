@@ -45,21 +45,21 @@ export const EXPENSE_STAGES = [
   { value: 'CANCELLED', label: 'Cancelled', variant: 'gray' as StatusVariant },
 ] as const;
 
-/** Manual / plan-selectable categories (6 buckets after consolidation). */
+/** Manual / plan-selectable categories after consolidation. */
 export const EXPENSE_CATEGORIES = [
   { value: 'DOMAIN', label: 'Domain & Hosting' },
   { value: 'TOOLS', label: 'Tools & services' },
   { value: 'MARKETING', label: 'Marketing' },
   { value: 'OFFICE', label: 'Office' },
   { value: 'TAXES', label: 'Taxes & fees' },
+  { value: 'PARTNER_PAYOUT', label: 'Partner Payout' },
   { value: 'OTHER', label: 'Other' },
 ] as const;
 
-/** System-generated on cards from payroll / partner — not selectable on plans. */
+/** System-generated on cards from payroll — not selectable on plans. */
 export const EXPENSE_SYSTEM_CATEGORIES = [
   { value: 'SALARY', label: 'Salary' },
   { value: 'BONUS', label: 'Bonus' },
-  { value: 'PARTNER_PAYOUT', label: 'Partner Payout' },
 ] as const;
 
 /** Board / list filters: manual + system categories. */

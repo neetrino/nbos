@@ -46,7 +46,7 @@
 | Поле                    | Описание                                                                                                                                          |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`                  | Название расхода                                                                                                                                  |
-| `category`              | Domain & Hosting / Tools & services / Marketing / Office / Taxes & fees / Other (не Salary / Bonus / Partner payout — те только с payroll/partner automation) |
+| `category`              | Domain & Hosting / Tools & services / Marketing / Office / Taxes & fees / Partner Payout / Other (не Salary / Bonus — те только с payroll automation) |
 | `amount`                | Ожидаемая сумма                                                                                                                                                                              |
 | `currency`              | Валюта                                                                                                                                                                                       |
 | `frequency`             | Weekly / Monthly / Quarterly / Yearly / Multi-year / One-time                                                                                                                                |
@@ -345,7 +345,7 @@ Expense Payment
 
 ## Категории расходов
 
-Selectable (Expense Plan / ручной Expense Card) — 6 корзин. Клиентский Domain/Hosting живёт в Client Services; здесь только **наши** затраты.
+Selectable (Expense Plan / ручной Expense Card) — 7 корзин. Клиентский Domain/Hosting живёт в Client Services; здесь только **наши** затраты.
 
 | Категория           | Enum       | Описание / что вошло при consolidation                                                                 |
 | ------------------- | ---------- | ------------------------------------------------------------------------------------------------------ |
@@ -357,7 +357,7 @@ Selectable (Expense Plan / ручной Expense Card) — 6 корзин. Кли
 | `Other`             | `OTHER`    | Прочее, включая обучение (бывшие OTHER + TRAINING)                                                     |
 | `Salary`            | `SALARY`   | Зарплаты (только automation из payroll; не выбирается на Expense Plan)                                 |
 | `Bonus`             | `BONUS`    | Бонусы (только automation из payroll; не выбирается на Expense Plan)                                   |
-| `Partner Payout`    | `PARTNER_PAYOUT` | Выплаты партнёрам (только automation; не выбирается на Expense Plan)                             |
+| `Partner Payout`    | `PARTNER_PAYOUT` | Выплаты партнёрам (selectable на Plan и Card; automation из payout batch тоже пишет сюда)        |
 
 Legacy enum values (`HOSTING`, `SERVICE`, `INTERNAL_INFRA`, `BANK_FEES`, `TRAINING`) могут оставаться в PostgreSQL enum type, но в данных remapped на survivors выше.
 

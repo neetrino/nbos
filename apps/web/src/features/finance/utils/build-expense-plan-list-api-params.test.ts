@@ -25,6 +25,7 @@ describe('parseExpensePlansListCategoryParam', () => {
     expect(parseExpensePlansListCategoryParam('BANK_FEES')).toBe('TAXES');
     expect(parseExpensePlansListCategoryParam('TRAINING')).toBe('OTHER');
     expect(parseExpensePlansListCategoryParam('TOOLS')).toBe('TOOLS');
+    expect(parseExpensePlansListCategoryParam('PARTNER_PAYOUT')).toBe('PARTNER_PAYOUT');
   });
 });
 

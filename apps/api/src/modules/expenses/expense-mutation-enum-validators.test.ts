@@ -20,9 +20,9 @@ describe('expense-mutation-enum-validators', () => {
   it('requireExpensePlanCategory rejects payroll categories', () => {
     expect(requireExpensePlanCategory('HOSTING')).toBe('DOMAIN');
     expect(requireExpensePlanCategory('SERVICE')).toBe('TOOLS');
+    expect(requireExpensePlanCategory('PARTNER_PAYOUT')).toBe('PARTNER_PAYOUT');
     expect(() => requireExpensePlanCategory('SALARY')).toThrow(BadRequestException);
     expect(() => requireExpensePlanCategory('BONUS')).toThrow(BadRequestException);
-    expect(() => requireExpensePlanCategory('PARTNER_PAYOUT')).toThrow(BadRequestException);
   });
 
   it('resolveExpenseTaxStatus defaults and validates', () => {
