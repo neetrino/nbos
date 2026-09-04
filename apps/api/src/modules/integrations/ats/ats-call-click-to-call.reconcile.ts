@@ -7,30 +7,13 @@ import {
 } from './ats.constants';
 import { resolveAtsClientPhone } from './ats-call-client-phone';
 import { findEmployeeIdBySip } from './ats-call-employee.ops';
+import { CALL_ROW_SELECT, type AtsPersistedCallRow } from './ats-call-uid-persist';
 import { normalizeAtsCallerPhone } from './ats-phone.util';
 import type { AtsWebhookPayload } from './ats.types';
 
 type CallLookupDb = Pick<PrismaClient, 'atsCallEvent' | 'employee' | 'lead' | 'deal'>;
 
-export type ClickToCallReconcileRow = {
-  id: string;
-  uid: string;
-  leadId: string | null;
-  contactId: string | null;
-  dealId: string | null;
-  responsibleEmployeeId: string | null;
-  answeredEmployeeId: string | null;
-};
-
-const RECONCILE_SELECT = {
-  id: true,
-  uid: true,
-  leadId: true,
-  contactId: true,
-  dealId: true,
-  responsibleEmployeeId: true,
-  answeredEmployeeId: true,
-} as const;
+export type ClickToCallReconcileRow = AtsPersistedCallRow;
 
 /**
  * Match an ATS active-call webhook to a pending click-to-call row
@@ -59,13 +42,13 @@ export async function findPendingClickToCallEvent(
     const byInitiator = await db.atsCallEvent.findFirst({
       where: { ...baseWhere, initiatedByEmployeeId },
       orderBy: { createdAt: 'desc' },
-      select: RECONCILE_SELECT,
+      select: CALL_ROW_SELECT,
     });
     if (byInitiator) return byInitiator;
   }
   return db.atsCallEvent.findFirst({
     where: baseWhere,
     orderBy: { createdAt: 'desc' },
-    select: RECONCILE_SELECT,
+    select: CALL_ROW_SELECT,
   });
 }
