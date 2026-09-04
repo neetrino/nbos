@@ -11,6 +11,7 @@ export type AtsDisposition = 'ANSWERED' | 'NO ANSWER';
  */
 export interface AtsWebhookPayload {
   uid: string;
+  lid?: string | null;
   state?: string | null;
   input?: string | null;
   clid?: string | null;

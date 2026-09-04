@@ -61,22 +61,23 @@ SIP из `Employee.sipId`, не хардкод. Пример: `{"redirect_call":
 
 ### 2.2 Payload
 
-`state`, `uid`, `input`, `clid`, `op`, `rate`, `billsec`, `calldirect`, `disposition`, `channel`, `record_link`
+`state`, `uid`, `lid`, `input`, `clid`, `op`, `rate`, `billsec`, `calldirect`, `disposition`, `channel`, `record_link`
 
-| Field         | Semantics                                                  |
-| ------------- | ---------------------------------------------------------- |
-| `state`       | `start` \| `status` (answered) \| `finish` \| `end`        |
-| `calldirect`  | `"0"` inbound, `"1"` outbound                              |
-| `disposition` | `ANSWERED` \| `NO ANSWER`                                  |
-| `uid`         | Уникальный id звонка (идемпотентность)                     |
-| `clid`        | Номер собеседника                                          |
-| `op`          | Номер/SIP, на который сел звонок                           |
-| `input`       | DID (маркетинг later)                                      |
-| `rate`        | 0–5, обычно на конце                                       |
-| `billsec`     | Длительность                                               |
-| `record_link` | URL записи; может протухнуть — канон хранения в `08-Calls` |
+| Field         | Semantics                                                            |
+| ------------- | -------------------------------------------------------------------- |
+| `state`       | `start` \| `status` (answered) \| `finish` \| `end`                  |
+| `calldirect`  | `"0"` inbound, `"1"` outbound                                        |
+| `disposition` | `ANSWERED` \| `NO ANSWER`                                            |
+| `uid`         | Sub-leg id; NBOS Call identity (идемпотентность)                     |
+| `lid`         | Global call id; parsed for logs only, not Call identity (follow-up)  |
+| `clid`        | Inbound: номер клиента. Outbound: часто локальный SIP, **не** клиент |
+| `op`          | SIP сотрудника (`3103585` или `3103585-26`)                          |
+| `input`       | Inbound: DID. Outbound: набранный номер клиента                      |
+| `rate`        | 0–5, обычно на конце                                                 |
+| `billsec`     | Длительность                                                         |
+| `record_link` | URL записи; может протухнуть — канон хранения в `08-Calls`           |
 
-Неизвестные поля игнорировать.
+Неизвестные поля игнорировать. `lid` не пишется в DB в этом срезе.
 
 ### 2.3 Поведение ingest (контракт)
 
@@ -90,7 +91,7 @@ SIP из `Employee.sipId`, не хардкод. Пример: `{"redirect_call":
 | Тот же `uid`                                                 | Atomic persist той же строки Call; absent fields не затирают; terminal `finish`/`end` absorbing |
 | Concurrent webhook на один `uid`                             | Unique `uid` + P2002 recovery; ATS 200, не 500                                                  |
 | Inbound `start` (или первое не-терминальное появление `uid`) | Нормализация `clid` → attach или Lead                                                           |
-| Outbound                                                     | Строка Call; Lead если номер новый (продукт `08-Calls`)                                         |
+| Outbound (`calldirect=1`)                                    | Клиентский номер из `input` (fallback `clid`); тот же CRM resolver; `op` → Employee.sipId       |
 | `finish` / `end`                                             | Update; **без** `redirect_call`                                                                 |
 | Inbound `start` + SIP                                        | `redirect_call` в голом JSON                                                                    |
 
@@ -106,13 +107,13 @@ SIP из `Employee.sipId`, не хардкод. Пример: `{"redirect_call":
 
 ### 2.5 Lead при создании с ATS
 
-| Field                  | Value                                        |
-| ---------------------- | -------------------------------------------- |
-| `source`               | `MARKETING`                                  |
-| `sourceDetail`         | `ATS`                                        |
-| `phone`                | `+{digits}`                                  |
-| `contactName` / `name` | `Incoming call {phone}`                      |
-| `code`                 | Тот же генератор `L-{year}-{nnnn}`, что Meta |
+| Field                  | Value                                               |
+| ---------------------- | --------------------------------------------------- |
+| `source`               | `MARKETING`                                         |
+| `sourceDetail`         | `ATS`                                               |
+| `phone`                | `+{digits}`                                         |
+| `contactName` / `name` | `Incoming call {phone}` или `Outgoing call {phone}` |
+| `code`                 | Тот же генератор `L-{year}-{nnnn}`, что Meta        |
 
 Contact на webhook не создаём.
 

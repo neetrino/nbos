@@ -12,6 +12,7 @@ import { AtsCallService } from './ats-call.service';
 import { AtsProviderConfig } from './ats-provider.config';
 import { parseAtsWebhookBody } from './ats-webhook-body.parse';
 import { shouldEnqueueCallRecording } from './ats-call-recording-should-enqueue';
+import { maskAtsLogValue } from './ats-call-log.util';
 import { ATS_WEBHOOK_SUCCESS } from './ats.constants';
 import type { AtsWebhookPayload, AtsWebhookSuccessResponse } from './ats.types';
 
@@ -33,6 +34,7 @@ export class AtsWebhookService {
   ): Promise<AtsWebhookSuccessResponse> {
     this.assertApiKey(key);
     const payload = this.parseBody(body);
+    this.logWebhookReceived(payload);
     const ingest = await this.callService.ingestCallEvent(payload);
     await this.publishLifecycleSafely(payload, ingest);
     await this.enqueueRecordingSafely(payload, ingest);
@@ -82,6 +84,21 @@ export class AtsWebhookService {
     if (!provided || provided !== this.config.apiKey) {
       throw new UnauthorizedException('Invalid ATS API key');
     }
+  }
+
+  private logWebhookReceived(payload: AtsWebhookPayload): void {
+    this.logger.log({
+      event: 'ats_webhook_received',
+      uid: payload.uid,
+      lid: payload.lid ?? null,
+      state: payload.state ?? null,
+      calldirect: payload.calldirect ?? null,
+      disposition: payload.disposition ?? null,
+      channel: payload.channel ?? null,
+      input: maskAtsLogValue(payload.input),
+      clid: maskAtsLogValue(payload.clid),
+      op: maskAtsLogValue(payload.op),
+    });
   }
 
   private parseBody(body: Record<string, unknown>) {
