@@ -98,6 +98,22 @@ describe('ATS webhook HTTP response contract', () => {
     expect(handleWebhook).toHaveBeenCalledOnce();
   });
 
+  it('forwards sip query from the per-extension webhook URL', async () => {
+    const url = new URL(ATS_WEBHOOK_URL_PATH, baseUrl);
+    url.searchParams.set('key', ATS_WEBHOOK_TEST_KEY);
+    url.searchParams.set('sip', '15');
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ uid: 'call-sip', state: 'start', calldirect: '1' }).toString(),
+    });
+    expect(handleWebhook).toHaveBeenCalledWith(
+      ATS_WEBHOOK_TEST_KEY,
+      expect.objectContaining({ uid: 'call-sip' }),
+      '15',
+    );
+  });
+
   it('returns redirect_call on the top-level JSON object', async () => {
     handleWebhook.mockResolvedValue({
       redirect_call: REDIRECT_CALL_SIP,
