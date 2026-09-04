@@ -63,19 +63,19 @@ SIP из `Employee.sipId`, не хардкод. Пример: `{"redirect_call":
 
 `state`, `uid`, `lid`, `input`, `clid`, `op`, `rate`, `billsec`, `calldirect`, `disposition`, `channel`, `record_link`
 
-| Field         | Semantics                                                            |
-| ------------- | -------------------------------------------------------------------- |
-| `state`       | `start` \| `status` (answered) \| `finish` \| `end`                  |
-| `calldirect`  | `"0"` inbound, `"1"` outbound                                        |
-| `disposition` | `ANSWERED` \| `NO ANSWER`                                            |
-| `uid`         | Sub-leg id; NBOS Call identity (идемпотентность)                     |
-| `lid`         | Global call id; parsed for logs only, not Call identity (follow-up)  |
-| `clid`        | Inbound: номер клиента. Outbound: часто локальный SIP, **не** клиент |
-| `op`          | SIP сотрудника (`3103585` или `3103585-26`)                          |
-| `input`       | Inbound: DID. Outbound: набранный номер клиента                      |
-| `rate`        | 0–5, обычно на конце                                                 |
-| `billsec`     | Длительность                                                         |
-| `record_link` | URL записи; может протухнуть — канон хранения в `08-Calls`           |
+| Field         | Semantics                                                                                      |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| `state`       | `start` \| `status` (answered) \| `finish` \| `end`                                            |
+| `calldirect`  | `"0"` inbound, `"1"` outbound                                                                  |
+| `disposition` | `ANSWERED` \| `NO ANSWER`                                                                      |
+| `uid`         | Sub-leg id; NBOS Call identity (идемпотентность)                                               |
+| `lid`         | Global call id; parsed for logs only, not Call identity (follow-up)                            |
+| `clid`        | Inbound: номер клиента. Outbound: часто локальный SIP / trunk, **не** клиент                   |
+| `op`          | SIP сотрудника (`15`, `3103585-26`) **или**, на orange-trunk outbound, набранный номер клиента |
+| `input`       | Inbound: DID. Outbound: DID или набранный номер; клиент = `op`, если `op` — валидный телефон   |
+| `rate`        | 0–5, обычно на конце                                                                           |
+| `billsec`     | Длительность                                                                                   |
+| `record_link` | URL записи; может протухнуть — канон хранения в `08-Calls`                                     |
 
 Неизвестные поля игнорировать. `lid` не пишется в DB в этом срезе.
 
@@ -91,7 +91,7 @@ SIP из `Employee.sipId`, не хардкод. Пример: `{"redirect_call":
 | Тот же `uid`                                                 | Atomic persist той же строки Call; absent fields не затирают; terminal `finish`/`end` absorbing |
 | Concurrent webhook на один `uid`                             | Unique `uid` + P2002 recovery; ATS 200, не 500                                                  |
 | Inbound `start` (или первое не-терминальное появление `uid`) | Нормализация `clid` → attach или Lead                                                           |
-| Outbound (`calldirect=1`)                                    | Клиентский номер из `input` (fallback `clid`); тот же CRM resolver; `op` → Employee.sipId       |
+| Outbound (`calldirect=1`)                                    | Клиент: `op` если это телефон, иначе `input`, иначе `clid`. `op`/`channel` → Employee.sipId     |
 | `finish` / `end`                                             | Update; **без** `redirect_call`                                                                 |
 | Inbound `start` + SIP                                        | `redirect_call` в голом JSON                                                                    |
 
