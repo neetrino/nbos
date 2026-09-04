@@ -458,7 +458,7 @@ export class ExpensesService {
 
   private async settleMarkPaidIfRequested(
     id: string,
-    statusPatch: ExpenseStatusEnum | undefined,
+    statusPatch: string | undefined,
   ): Promise<void> {
     if (statusPatch !== 'PAID') {
       return;

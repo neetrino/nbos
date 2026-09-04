@@ -79,7 +79,6 @@ export class ClientServiceFlowsService {
       amount,
       frequency: service.frequency,
       nextDueDate: body.nextDueDate?.trim() || service.renewalDate?.toISOString() || null,
-      provider: service.provider,
       projectId: service.projectId,
       clientServiceRecordId: service.id,
       autoGenerate: body.autoGenerate ?? false,
