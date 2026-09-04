@@ -120,11 +120,11 @@ function buildMonthCell(
   now: Date,
   year: number,
 ): ExpensePlanGridCell {
-  const amount = numericAmount(plan.amount);
+  const planAmount = numericAmount(plan.amount);
   if (expense) {
     return {
       kind: resolveExpenseCellKind(expense),
-      amount,
+      amount: numericAmount(expense.amount),
       expenseId: expense.id,
     };
   }
@@ -132,9 +132,9 @@ function buildMonthCell(
     return { kind: 'NA', amount: 0, expenseId: null };
   }
   if (isPastCalendarMonth(year, monthIndex, now)) {
-    return { kind: 'DUE', amount, expenseId: null };
+    return { kind: 'DUE', amount: planAmount, expenseId: null };
   }
-  return { kind: 'FORECAST', amount, expenseId: null };
+  return { kind: 'FORECAST', amount: planAmount, expenseId: null };
 }
 
 export function buildExpensePlanGridPayload(
