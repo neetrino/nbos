@@ -77,7 +77,7 @@ function resolveDisplayName(
   const fallback =
     session.direction === 'INBOUND'
       ? `Incoming call ${session.phone ?? ''}`.trim()
-      : (session.phone ?? 'Call');
+      : `Outgoing call ${session.phone ?? ''}`.trim();
   const raw = snapshot?.displayName ?? session.displayName ?? fallback;
   return activeCallHeroTitle(snapshot?.contact.name ?? null, raw);
 }

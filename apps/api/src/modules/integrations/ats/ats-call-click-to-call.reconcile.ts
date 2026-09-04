@@ -5,6 +5,7 @@ import {
   ATS_CLICK_TO_CALL_RECONCILE_WINDOW_MS,
   ATS_STATE_INITIATED,
 } from './ats.constants';
+import { resolveAtsClientPhone } from './ats-call-client-phone';
 import { findEmployeeIdBySip } from './ats-call-employee.ops';
 import { normalizeAtsCallerPhone } from './ats-phone.util';
 import type { AtsWebhookPayload } from './ats.types';
@@ -42,7 +43,7 @@ export async function findPendingClickToCallEvent(
   db: CallLookupDb,
   payload: AtsWebhookPayload,
 ): Promise<ClickToCallReconcileRow | null> {
-  const phone = normalizeAtsCallerPhone(payload.clid);
+  const phone = normalizeAtsCallerPhone(resolveAtsClientPhone(payload).raw);
   if (!phone.success) return null;
 
   const windowStart = new Date(Date.now() - ATS_CLICK_TO_CALL_RECONCILE_WINDOW_MS);
