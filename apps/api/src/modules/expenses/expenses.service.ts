@@ -11,6 +11,7 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { NotificationService } from '../notifications/notification.service';
+import { coerceExpenseCategoryToCanonical } from './expense-category-canonical';
 import {
   pickExpenseBacklogReasonFilter,
   pickExpenseCategoryFilter,
@@ -108,7 +109,10 @@ export class ExpensesService {
     const orderBy = this.buildExpenseListOrderBy(sortBy, sortOrder);
 
     const safeType = pickExpenseTypeFilter(type);
-    const safeCategory = pickExpenseCategoryFilter(category);
+    const rawCategory = pickExpenseCategoryFilter(category);
+    const safeCategory = rawCategory
+      ? (coerceExpenseCategoryToCanonical(rawCategory) ?? rawCategory)
+      : undefined;
     const safeStatus = pickExpenseStatusFilter(status);
     const safeFrequency = pickExpenseFrequencyFilter(frequency);
     const safeBacklogReason = pickExpenseBacklogReasonFilter(backlogReason);

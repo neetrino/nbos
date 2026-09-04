@@ -46,7 +46,7 @@
 | Поле                    | Описание                                                                                                                                          |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`                  | Название расхода                                                                                                                                  |
-| `category`              | Domain / Hosting / Service / Marketing / Tools / Office / Taxes / Bank fees / Training / Internal infra / Other (не Salary / Bonus / Partner payout — те только с payroll/partner automation) |
+| `category`              | Domain & Hosting / Tools & services / Marketing / Office / Taxes & fees / Other (не Salary / Bonus / Partner payout — те только с payroll/partner automation) |
 | `amount`                | Ожидаемая сумма                                                                                                                                                                              |
 | `currency`              | Валюта                                                                                                                                                                                       |
 | `frequency`             | Weekly / Monthly / Quarterly / Yearly / Multi-year / One-time                                                                                                                                |
@@ -339,22 +339,21 @@ Expense Payment
 
 ## Категории расходов
 
-| Категория        | Enum             | Описание                                                                                                   |
-| ---------------- | ---------------- | ---------------------------------------------------------------------------------------------------------- |
-| `Domain`         | `DOMAIN`         | Домены клиента                                                                                             |
-| `Hosting`        | `HOSTING`        | Хостинг и серверы клиента                                                                                  |
-| `Service`        | `SERVICE`        | Внешние сервисы и SaaS                                                                                     |
-| `Marketing`      | `MARKETING`      | Маркетинговые расходы                                                                                      |
-| `Salary`         | `SALARY`         | Зарплаты (только automation из payroll; не выбирается на Expense Plan)                                     |
-| `Bonus`          | `BONUS`          | Бонусы (только automation из payroll; не выбирается на Expense Plan)                                       |
-| `Partner Payout` | `PARTNER_PAYOUT` | Выплаты партнёрам (только automation; не выбирается на Expense Plan)                                       |
-| `Tools`          | `TOOLS`          | Инструменты компании                                                                                       |
-| `Office`         | `OFFICE`         | Аренда, коммуналка, офисные операции                                                                       |
-| `Taxes`          | `TAXES`          | Налоги и гос. сборы                                                                                        |
-| `Bank fees`      | `BANK_FEES`      | Банковские / финансовые комиссии                                                                           |
-| `Training`       | `TRAINING`       | Курсы и обучение                                                                                           |
-| `Internal infra` | `INTERNAL_INFRA` | Компанейская инфраструктура (Neetrino.\*, vibecode.am, company Beget и т.п.), не клиентский Domain/Hosting |
-| `Other`          | `OTHER`          | Прочее                                                                                                     |
+Selectable (Expense Plan / ручной Expense Card) — 6 корзин. Клиентский Domain/Hosting живёт в Client Services; здесь только **наши** затраты.
+
+| Категория           | Enum       | Описание / что вошло при consolidation                                                                 |
+| ------------------- | ---------- | ------------------------------------------------------------------------------------------------------ |
+| `Domain & Hosting`  | `DOMAIN`   | Наши домены и хостинг (бывшие DOMAIN + HOSTING)                                                        |
+| `Tools & services`  | `TOOLS`    | SaaS, инструменты компании, internal infra (бывшие SERVICE + TOOLS + INTERNAL_INFRA)                   |
+| `Marketing`         | `MARKETING`| Маркетинговые расходы                                                                                  |
+| `Office`            | `OFFICE`   | Аренда, коммуналка, офисные операции                                                                   |
+| `Taxes & fees`      | `TAXES`    | Налоги, гос. сборы, банковские комиссии (бывшие TAXES + BANK_FEES)                                     |
+| `Other`             | `OTHER`    | Прочее, включая обучение (бывшие OTHER + TRAINING)                                                     |
+| `Salary`            | `SALARY`   | Зарплаты (только automation из payroll; не выбирается на Expense Plan)                                 |
+| `Bonus`             | `BONUS`    | Бонусы (только automation из payroll; не выбирается на Expense Plan)                                   |
+| `Partner Payout`    | `PARTNER_PAYOUT` | Выплаты партнёрам (только automation; не выбирается на Expense Plan)                             |
+
+Legacy enum values (`HOSTING`, `SERVICE`, `INTERNAL_INFRA`, `BANK_FEES`, `TRAINING`) могут оставаться в PostgreSQL enum type, но в данных remapped на survivors выше.
 
 ---
 

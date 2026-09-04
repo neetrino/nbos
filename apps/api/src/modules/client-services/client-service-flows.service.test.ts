@@ -59,7 +59,7 @@ describe('ClientServiceFlowsService', () => {
 
     expect(expensePlansService.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        category: 'HOSTING',
+        category: 'DOMAIN',
         clientServiceRecordId: 'svc-1',
         amount: 99,
         autoGenerate: false,

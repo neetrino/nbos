@@ -45,18 +45,13 @@ export const EXPENSE_STAGES = [
   { value: 'CANCELLED', label: 'Cancelled', variant: 'gray' as StatusVariant },
 ] as const;
 
-/** Manual / plan-selectable categories (not payroll automation). */
+/** Manual / plan-selectable categories (6 buckets after consolidation). */
 export const EXPENSE_CATEGORIES = [
-  { value: 'DOMAIN', label: 'Domain' },
-  { value: 'HOSTING', label: 'Hosting' },
-  { value: 'SERVICE', label: 'Service' },
+  { value: 'DOMAIN', label: 'Domain & Hosting' },
+  { value: 'TOOLS', label: 'Tools & services' },
   { value: 'MARKETING', label: 'Marketing' },
-  { value: 'TOOLS', label: 'Tools' },
   { value: 'OFFICE', label: 'Office' },
-  { value: 'TAXES', label: 'Taxes' },
-  { value: 'BANK_FEES', label: 'Bank fees' },
-  { value: 'TRAINING', label: 'Training' },
-  { value: 'INTERNAL_INFRA', label: 'Internal infra' },
+  { value: 'TAXES', label: 'Taxes & fees' },
   { value: 'OTHER', label: 'Other' },
 ] as const;
 

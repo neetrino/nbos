@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { coerceExpenseCategoryToCanonical } from './expense-category-canonical';
 import {
   pickExpenseBacklogReasonFilter,
   pickExpenseCategoryFilter,
@@ -23,10 +24,13 @@ export function requireExpenseType(value: string): string {
   return v;
 }
 
+/** Accepts canonical or legacy category; returns consolidated enum value. */
 export function requireExpenseCategory(value: string): string {
-  const v = pickExpenseCategoryFilter(value);
-  if (!v) throw new BadRequestException(INVALID.category);
-  return v;
+  const raw = pickExpenseCategoryFilter(value);
+  if (!raw) throw new BadRequestException(INVALID.category);
+  const canonical = coerceExpenseCategoryToCanonical(raw);
+  if (!canonical) throw new BadRequestException(INVALID.category);
+  return canonical;
 }
 
 const EXPENSE_PLAN_BLOCKED_CATEGORIES = new Set(['SALARY', 'BONUS', 'PARTNER_PAYOUT']);
@@ -66,9 +70,7 @@ export function requireExpenseCategoryIfPresent(
   value: string | undefined | null,
 ): string | undefined {
   if (value === undefined || value === null) return undefined;
-  const v = pickExpenseCategoryFilter(value);
-  if (!v) throw new BadRequestException(INVALID.category);
-  return v;
+  return requireExpenseCategory(value);
 }
 
 export function requireExpenseFrequencyIfPresent(

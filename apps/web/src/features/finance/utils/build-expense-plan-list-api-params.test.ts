@@ -15,13 +15,15 @@ describe('parseExpensePlansListCategoryParam', () => {
     expect(parseExpensePlansListCategoryParam('NOT_REAL')).toBeUndefined();
   });
 
-  it('accepts allowed plan categories including ops cuts', () => {
-    expect(parseExpensePlansListCategoryParam('HOSTING')).toBe('HOSTING');
+  it('accepts canonical plan categories and coerces legacy', () => {
+    expect(parseExpensePlansListCategoryParam('DOMAIN')).toBe('DOMAIN');
+    expect(parseExpensePlansListCategoryParam('HOSTING')).toBe('DOMAIN');
     expect(parseExpensePlansListCategoryParam('OFFICE')).toBe('OFFICE');
-    expect(parseExpensePlansListCategoryParam('INTERNAL_INFRA')).toBe('INTERNAL_INFRA');
+    expect(parseExpensePlansListCategoryParam('INTERNAL_INFRA')).toBe('TOOLS');
     expect(parseExpensePlansListCategoryParam('TAXES')).toBe('TAXES');
-    expect(parseExpensePlansListCategoryParam('BANK_FEES')).toBe('BANK_FEES');
-    expect(parseExpensePlansListCategoryParam('TRAINING')).toBe('TRAINING');
+    expect(parseExpensePlansListCategoryParam('BANK_FEES')).toBe('TAXES');
+    expect(parseExpensePlansListCategoryParam('TRAINING')).toBe('OTHER');
+    expect(parseExpensePlansListCategoryParam('TOOLS')).toBe('TOOLS');
   });
 });
 

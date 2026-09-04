@@ -865,7 +865,7 @@ async function seedExpensePlansAndMoreExpenses(
     const plan = await prisma.expensePlan.create({
       data: {
         name: `Hosting plan — slice ${i}`,
-        category: 'HOSTING',
+        category: 'DOMAIN',
         amount: 18_000,
         frequency: 'MONTHLY',
         projectId,
@@ -876,7 +876,7 @@ async function seedExpensePlansAndMoreExpenses(
     const expense = await prisma.expense.create({
       data: {
         type: 'PLANNED',
-        category: 'HOSTING',
+        category: 'DOMAIN',
         name: plan.name,
         amount: plan.amount,
         frequency: 'MONTHLY',

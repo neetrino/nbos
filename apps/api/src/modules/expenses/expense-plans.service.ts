@@ -1,6 +1,7 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Decimal, PrismaClient, type Prisma, type ExpenseCategoryEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { coerceExpenseCategoryToCanonical } from './expense-category-canonical';
 import { pickExpenseCategoryFilter } from './expense-query-enum-guards';
 import { endOfUtcDayUtc } from './expense-plan-auto-due-scope';
 import { planNextDueAfterOccurrence } from './expense-plan-next-due';
@@ -322,7 +323,10 @@ export class ExpensePlansService {
   }
 
   private buildListWhere(params: ExpensePlanQueryParams): Prisma.ExpensePlanWhereInput {
-    const safeCategory = pickExpenseCategoryFilter(params.category);
+    const rawCategory = pickExpenseCategoryFilter(params.category);
+    const safeCategory = rawCategory
+      ? (coerceExpenseCategoryToCanonical(rawCategory) ?? rawCategory)
+      : undefined;
     const searchTrimmed = params.search?.trim();
     const ic = searchTrimmed
       ? { contains: searchTrimmed, mode: 'insensitive' as const }

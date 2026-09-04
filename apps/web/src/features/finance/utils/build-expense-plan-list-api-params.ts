@@ -1,3 +1,4 @@
+import { coerceExpenseCategoryToCanonical } from '@/features/finance/constants/expense-category-canonical';
 import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 import type { ExpensePlanListParams } from '@/lib/api/expense-plans';
 
@@ -8,7 +9,8 @@ const EXPENSE_PLAN_LIST_ALLOWED_CATEGORIES: ReadonlySet<string> = new Set(
 export function parseExpensePlansListCategoryParam(raw: string | null): string | undefined {
   const v = raw?.trim();
   if (!v) return undefined;
-  return EXPENSE_PLAN_LIST_ALLOWED_CATEGORIES.has(v) ? v : undefined;
+  const canonical = coerceExpenseCategoryToCanonical(v) ?? v;
+  return EXPENSE_PLAN_LIST_ALLOWED_CATEGORIES.has(canonical) ? canonical : undefined;
 }
 
 export function parseExpensePlansListProjectIdParam(raw: string | null): string | undefined {
