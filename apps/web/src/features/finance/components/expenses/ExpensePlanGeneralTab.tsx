@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { DollarSign, FileOutput, FolderKanban, Layers } from 'lucide-react';
+import { DollarSign, FolderKanban, Layers } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
@@ -12,13 +12,11 @@ import {
 } from '@/components/shared';
 import { useProjectRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import { ExpensePlanAutoGenerateField } from '@/features/finance/components/expenses/ExpensePlanAutoGenerateField';
 import {
   EXPENSE_FREQUENCIES,
   EXPENSE_SHEET_FIELD_CELL_CLASS,
-  EXPENSE_SHEET_FIELD_ROW_3_CLASS,
+  EXPENSE_SHEET_FIELD_ROW_2_CLASS,
 } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 import type { ExpensePlanGeneralDraft } from '@/features/finance/utils/expense-plan-general-form-state';
@@ -32,7 +30,6 @@ interface ExpensePlanGeneralTabProps {
   draft: ExpensePlanGeneralDraft;
   patchDraft: (partial: Partial<ExpensePlanGeneralDraft>) => void;
   formDisabled?: boolean;
-  onGenerateClick: () => void;
 }
 
 export function ExpensePlanGeneralTab({
@@ -40,7 +37,6 @@ export function ExpensePlanGeneralTab({
   draft,
   patchDraft,
   formDisabled = false,
-  onGenerateClick,
 }: ExpensePlanGeneralTabProps) {
   const searchProjects = useProjectRelationSearch();
   const projectPicker = useRelationPickerActions('project');
@@ -73,7 +69,7 @@ export function ExpensePlanGeneralTab({
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} mx-auto w-full max-w-none gap-4`}>
       <DetailSheetSection title="Plan" icon={<Layers size={12} />}>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <div className="flex items-end gap-3">
+          <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
             <InlineField
               variant="controlled"
               label="Expected amount"
@@ -82,21 +78,9 @@ export function ExpensePlanGeneralTab({
               placeholder="0"
               icon={<DollarSign size={12} />}
               disabled={formDisabled}
-              className="min-w-0 flex-1"
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(v) => patchDraft({ amount: v })}
             />
-            <Button
-              type="button"
-              size="lg"
-              className="shrink-0 rounded-xl"
-              onClick={onGenerateClick}
-              disabled={formDisabled}
-            >
-              <FileOutput size={14} aria-hidden />
-              Generate expense card
-            </Button>
-          </div>
-          <div className={EXPENSE_SHEET_FIELD_ROW_3_CLASS}>
             <InlineField
               variant="controlled"
               label="Category"
@@ -108,6 +92,8 @@ export function ExpensePlanGeneralTab({
               className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(v) => v && patchDraft({ category: v })}
             />
+          </div>
+          <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
             <InlineField
               variant="controlled"
               label="Frequency"
@@ -129,25 +115,12 @@ export function ExpensePlanGeneralTab({
               onValueChange={(v) => patchDraft({ nextDueDate: v })}
             />
           </div>
-          <InlineField
-            variant="controlled"
-            label="Provider"
-            type="text"
-            value={draft.provider}
-            placeholder="Vendor or service…"
-            disabled={formDisabled}
-            onValueChange={(v) => patchDraft({ provider: v })}
-          />
-          <div className="flex items-center gap-2 pt-1">
-            <Checkbox
-              id={`plan-auto-${plan.id}`}
+          <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
+            <ExpensePlanAutoGenerateField
               checked={draft.autoGenerate}
               disabled={formDisabled}
-              onCheckedChange={(v) => patchDraft({ autoGenerate: v === true })}
+              onCheckedChange={(autoGenerate) => patchDraft({ autoGenerate })}
             />
-            <Label htmlFor={`plan-auto-${plan.id}`} className="text-sm font-normal">
-              Auto-generate expense cards
-            </Label>
           </div>
           <div className="pt-3 pb-3">
             <div className="border-border/50 border-t pt-3">
