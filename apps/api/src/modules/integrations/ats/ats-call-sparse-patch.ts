@@ -1,3 +1,4 @@
+import { resolveAtsClientPhone } from './ats-call-client-phone';
 import { normalizeAtsCallerPhone } from './ats-phone.util';
 import { isKnownAtsState, normalizeIncomingState } from './ats-call-state';
 import { presentWebhookString } from './ats-webhook-field';
@@ -29,6 +30,7 @@ export function buildSparseAtsCallPatch(payload: AtsWebhookPayload): AtsCallSpar
   assignPresentString(patch, 'channel', payload.channel);
   assignPresentString(patch, 'rate', payload.rate);
   assignClid(patch, payload.clid);
+  assignClientPhone(patch, payload);
   assignState(patch, payload.state);
   return patch;
 }
@@ -53,7 +55,12 @@ function assignClid(patch: AtsCallSparsePatch, clid: string | null | undefined):
   const present = presentWebhookString(clid);
   if (present === undefined) return;
   patch.clid = present;
-  const phone = normalizeAtsCallerPhone(present);
+}
+
+function assignClientPhone(patch: AtsCallSparsePatch, payload: AtsWebhookPayload): void {
+  const resolved = resolveAtsClientPhone(payload);
+  if (!resolved.raw) return;
+  const phone = normalizeAtsCallerPhone(resolved.raw);
   if (phone.success) {
     patch.phone = phone.e164;
   }
