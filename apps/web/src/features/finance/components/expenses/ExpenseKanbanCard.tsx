@@ -1,13 +1,14 @@
 'use client';
 
 import type { LucideIcon } from 'lucide-react';
-import { AppWindow, ChevronRight, Clock3 } from 'lucide-react';
+import { AppWindow, Calendar, ChevronRight } from 'lucide-react';
 import { KanbanCardShell } from '@/components/shared';
 import {
   getExpenseCategoryLabel,
   getExpenseCategoryVisual,
 } from '@/features/finance/constants/expense-category-visual';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { formatExpenseCardDueDate } from '@/features/finance/utils/expense-kanban-card-due';
 import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payroll-expense-notes';
 import { parseMoneyAmount } from '@/lib/format/money';
 import type { Expense } from '@/lib/api/finance';
@@ -82,7 +83,6 @@ function ExpenseCardHeader({ expense }: { expense: Expense }) {
 
 function ExpenseCardMetrics({ expense }: { expense: Expense }) {
   const paidAmount = parseMoneyAmount(expense.paidAmount ?? 0);
-  const remainingAmount = parseMoneyAmount(expense.remainingAmount ?? expense.amount);
 
   return (
     <div className="border-border/60 space-y-3 border-t pt-3">
@@ -97,10 +97,10 @@ function ExpenseCardMetrics({ expense }: { expense: Expense }) {
           value={formatAmount(paidAmount)}
         />
         <ExpenseMetric
-          icon={Clock3}
-          iconShellClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300"
-          label="Left"
-          value={formatAmount(remainingAmount)}
+          icon={Calendar}
+          iconShellClassName="bg-orange-100 text-orange-600 dark:bg-orange-950/40 dark:text-orange-300"
+          label="Due"
+          value={formatExpenseCardDueDate(expense.dueDate)}
           bordered
         />
       </div>
