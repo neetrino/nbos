@@ -8,9 +8,8 @@ import { clientServiceTaskDefaultDueDate } from './client-service-task-links';
 
 /** Mirrors API `clientServiceExpenseCategory` (`client-service-flow-helpers.ts`). */
 export function clientServiceExpenseCategory(type: string): string {
-  if (type === 'DOMAIN') return 'DOMAIN';
-  if (type === 'HOSTING') return 'HOSTING';
-  return 'SERVICE';
+  if (type === 'DOMAIN' || type === 'HOSTING') return 'DOMAIN';
+  return 'TOOLS';
 }
 
 function formatMoneyDefault(value: string | null | undefined): string {
