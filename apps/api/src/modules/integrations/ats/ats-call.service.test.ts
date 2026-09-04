@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AtsCallContextResolver } from './ats-call-context.resolver';
 import { AtsCallService } from './ats-call.service';
-import { createAtsIngestPrismaMock, inboundStart } from './ats-call.test-harness';
+import { createAtsIngestPrismaMock, inboundStart, outboundStart } from './ats-call.test-harness';
 
 describe('AtsCallService', () => {
   let prisma: ReturnType<typeof createAtsIngestPrismaMock>['prisma'];
@@ -49,13 +49,27 @@ describe('AtsCallService', () => {
   });
 
   it('creates a Call and Lead for outbound start to an unknown number', async () => {
-    await service.ingestCallEvent(
-      inboundStart({ calldirect: '1', uid: 'out-1', clid: '+37499123456' }),
-    );
+    state.employees.push({ id: 'emp-caller', sipId: '3103585' });
+
+    await service.ingestCallEvent(outboundStart({ uid: 'out-1' }));
 
     expect(state.leads).toHaveLength(1);
-    expect(state.events.get('out-1')?.leadId).toBe(state.leads[0]?.id);
-    expect(state.events.get('out-1')?.phone).toBe('+37499123456');
+    expect(state.leads[0]?.phone).toBe('+37499123456');
+    expect(state.leads[0]?.assignedTo).toBe('emp-caller');
+    expect(prisma.lead.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          contactName: 'Outgoing call +37499123456',
+          assignedTo: 'emp-caller',
+        }),
+      }),
+    );
+    const call = state.events.get('out-1');
+    expect(call?.leadId).toBe(state.leads[0]?.id);
+    expect(call?.phone).toBe('+37499123456');
+    expect(call?.responsibleEmployeeId).toBe('emp-caller');
+    expect(call?.initiatedByEmployeeId).toBe('emp-caller');
+    expect(call?.answeredEmployeeId).toBe('emp-caller');
   });
 
   it('updates the same Call on duplicate uid and never creates a second row', async () => {
@@ -225,12 +239,12 @@ describe('AtsCallService', () => {
     });
 
     await service.ingestCallEvent(
-      inboundStart({
+      outboundStart({
         uid: 'ats-uid-9',
-        calldirect: '1',
         state: 'start',
         op: '3126107',
-        clid: '+37499123456',
+        clid: '3126107',
+        input: '+37499123456',
       }),
     );
 
@@ -280,13 +294,10 @@ describe('AtsCallService', () => {
   });
 
   it('does not create a second row when the same outbound webhook repeats', async () => {
+    await service.ingestCallEvent(outboundStart({ uid: 'out-dup', state: 'start' }));
     await service.ingestCallEvent(
-      inboundStart({ uid: 'out-dup', calldirect: '1', state: 'start' }),
-    );
-    await service.ingestCallEvent(
-      inboundStart({
+      outboundStart({
         uid: 'out-dup',
-        calldirect: '1',
         state: 'finish',
         disposition: 'ANSWERED',
         billsec: '12',
@@ -294,7 +305,82 @@ describe('AtsCallService', () => {
     );
 
     expect(state.events.size).toBe(1);
+    expect(state.leads).toHaveLength(1);
     expect(state.events.get('out-dup')?.billsec).toBe('12');
+  });
+
+  it('links an outbound call to an existing Contact, Lead, and Deal', async () => {
+    state.employees.push({ id: 'emp-b', sipId: '3103585' });
+    state.contacts.push({ id: 'contact-out', phone: '+37499123456', trashedAt: null });
+    state.leads.push({
+      ...openLeadRow('open-lead-out', 'L-2026-0300'),
+      contactId: 'contact-out',
+      assignedTo: 'emp-a',
+    });
+    state.deals.push({
+      id: 'deal-out',
+      contactId: 'contact-out',
+      leadId: 'open-lead-out',
+      status: 'START_CONVERSATION',
+      trashedAt: null,
+      sellerId: 'emp-a',
+    });
+
+    await service.ingestCallEvent(outboundStart({ uid: 'out-known' }));
+
+    expect(prisma.lead.create).not.toHaveBeenCalled();
+    const call = state.events.get('out-known');
+    expect(call?.contactId).toBe('contact-out');
+    expect(call?.leadId).toBe('open-lead-out');
+    expect(call?.dealId).toBe('deal-out');
+    expect(call?.responsibleEmployeeId).toBe('emp-b');
+    expect(call?.initiatedByEmployeeId).toBe('emp-b');
+    expect(state.leads.find((lead) => lead.id === 'open-lead-out')?.assignedTo).toBe('emp-a');
+    expect(state.deals.find((deal) => deal.id === 'deal-out')?.sellerId).toBe('emp-a');
+  });
+
+  it('reuses an existing open Lead without Contact on outbound', async () => {
+    state.employees.push({ id: 'emp-b', sipId: '3103585' });
+    state.leads.push({
+      ...openLeadRow('phone-lead', 'L-2026-0301'),
+      assignedTo: 'emp-a',
+    });
+
+    await service.ingestCallEvent(outboundStart({ uid: 'out-lead-only' }));
+
+    expect(prisma.lead.create).not.toHaveBeenCalled();
+    expect(state.events.get('out-lead-only')?.leadId).toBe('phone-lead');
+    expect(state.leads[0]?.assignedTo).toBe('emp-a');
+  });
+
+  it('matches outbound op with a channel suffix to Employee.sipId', async () => {
+    state.employees.push({ id: 'emp-sip', sipId: '3103585' });
+
+    await service.ingestCallEvent(outboundStart({ uid: 'out-suffix', op: '3103585-26' }));
+
+    expect(state.events.get('out-suffix')?.responsibleEmployeeId).toBe('emp-sip');
+    expect(state.events.get('out-suffix')?.initiatedByEmployeeId).toBe('emp-sip');
+  });
+
+  it('persists an outbound Call when op does not match an employee', async () => {
+    await service.ingestCallEvent(outboundStart({ uid: 'out-no-op', op: null, clid: '999' }));
+
+    expect(state.events.get('out-no-op')?.leadId).toBe(state.leads[0]?.id);
+    expect(state.events.get('out-no-op')?.responsibleEmployeeId).toBeNull();
+    expect(state.leads[0]?.assignedTo).toBeNull();
+  });
+
+  it('does not use outbound clid SIP as the client phone', async () => {
+    await service.ingestCallEvent(
+      outboundStart({
+        uid: 'out-sip-clid',
+        clid: '3103585',
+        input: '+37499123456',
+      }),
+    );
+
+    expect(state.events.get('out-sip-clid')?.phone).toBe('+37499123456');
+    expect(state.leads[0]?.phone).toBe('+37499123456');
   });
 });
 
