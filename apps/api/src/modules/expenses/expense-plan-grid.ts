@@ -2,14 +2,7 @@ import { Decimal, type ExpenseFrequency, type ExpenseStatusEnum } from '@nbos/da
 import { collectPlanMonthIndexesInYear, utcMonthIndexFromDate } from './expense-plan-occurrences';
 import { computeExpenseLedgerPaymentStatus } from './expense-payment-rollup';
 
-export type ExpensePlanGridCellKind =
-  | 'NA'
-  | 'FORECAST'
-  | 'DUE'
-  | 'OPEN'
-  | 'PARTIAL'
-  | 'PAID'
-  | 'OVERDUE';
+export type ExpensePlanGridCellKind = 'NA' | 'FORECAST' | 'OPEN' | 'PARTIAL' | 'PAID' | 'OVERDUE';
 
 export interface ExpensePlanGridCell {
   kind: ExpensePlanGridCellKind;
@@ -128,11 +121,8 @@ function buildMonthCell(
       expenseId: expense.id,
     };
   }
-  if (!scheduled) {
+  if (!scheduled || isPastCalendarMonth(year, monthIndex, now)) {
     return { kind: 'NA', amount: 0, expenseId: null };
-  }
-  if (isPastCalendarMonth(year, monthIndex, now)) {
-    return { kind: 'DUE', amount: planAmount, expenseId: null };
   }
   return { kind: 'FORECAST', amount: planAmount, expenseId: null };
 }

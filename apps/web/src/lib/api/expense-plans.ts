@@ -39,14 +39,7 @@ export interface CreateExpensePlanPayload {
   notes?: string | null;
 }
 
-export type ExpensePlanGridCellKind =
-  | 'NA'
-  | 'FORECAST'
-  | 'DUE'
-  | 'OPEN'
-  | 'PARTIAL'
-  | 'PAID'
-  | 'OVERDUE';
+export type ExpensePlanGridCellKind = 'NA' | 'FORECAST' | 'OPEN' | 'PARTIAL' | 'PAID' | 'OVERDUE';
 
 export interface ExpensePlanGridCell {
   kind: ExpensePlanGridCellKind;

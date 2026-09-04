@@ -5,7 +5,7 @@ import { buildExpensePlanGridPayload } from './expense-plan-grid';
 const NOW = new Date('2026-04-15T12:00:00.000Z');
 
 describe('buildExpensePlanGridPayload', () => {
-  it('marks scheduled future month as FORECAST and past without card as DUE', () => {
+  it('leaves months before next due empty and forecasts from next due forward', () => {
     const payload = buildExpensePlanGridPayload(
       [
         {
@@ -21,8 +21,30 @@ describe('buildExpensePlanGridPayload', () => {
       2026,
       NOW,
     );
-    expect(payload.rows[0].months[2].kind).toBe('DUE');
+    expect(payload.rows[0].months[2].kind).toBe('NA');
+    expect(payload.rows[0].months[3].kind).toBe('FORECAST');
     expect(payload.rows[0].months[8].kind).toBe('FORECAST');
+  });
+
+  it('does not invent past due cells when next due is in the current month', () => {
+    const payload = buildExpensePlanGridPayload(
+      [
+        {
+          id: 'plan-1',
+          name: 'Cloudflare',
+          amount: 100,
+          frequency: 'MONTHLY',
+          nextDueDate: new Date('2026-09-04T00:00:00.000Z'),
+          project: null,
+          expenses: [],
+        },
+      ],
+      2026,
+      new Date('2026-09-04T12:00:00.000Z'),
+    );
+    expect(payload.rows[0].months[7].kind).toBe('NA');
+    expect(payload.rows[0].months[8].kind).toBe('FORECAST');
+    expect(payload.rows[0].annualTotal).toBe(400);
   });
 
   it('maps linked expense to PAID when fully paid', () => {
