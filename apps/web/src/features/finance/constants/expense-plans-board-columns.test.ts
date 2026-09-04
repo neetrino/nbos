@@ -12,7 +12,6 @@ function plan(
     category: 'TOOLS',
     amount: '1000',
     nextDueDate: null,
-    provider: null,
     projectId: null,
     autoGenerate: false,
     notes: null,

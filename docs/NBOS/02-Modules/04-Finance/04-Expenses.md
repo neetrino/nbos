@@ -46,13 +46,12 @@
 | Поле                    | Описание                                                                                                                                          |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`                  | Название расхода                                                                                                                                  |
-| `category`              | Domain / Hosting / Service / Marketing / Tools / Office / Taxes / Bank fees / Training / Internal infra / Salary / Bonus / Partner payout / Other |
-| `amount`                | Ожидаемая сумма                                                                                                                                   |
-| `currency`              | Валюта                                                                                                                                            |
-| `frequency`             | Weekly / Monthly / Quarterly / Yearly / Multi-year / One-time                                                                                     |
-| `next_due_date`         | Следующая дата оплаты                                                                                                                             |
-| `provider`              | Поставщик                                                                                                                                         |
-| `project`               | Проект, если расход проектный                                                                                                                     |
+| `category`              | Domain / Hosting / Service / Marketing / Tools / Office / Taxes / Bank fees / Training / Internal infra / Other (не Salary / Bonus / Partner payout — те только с payroll/partner automation) |
+| `amount`                | Ожидаемая сумма                                                                                                                                                                              |
+| `currency`              | Валюта                                                                                                                                                                                       |
+| `frequency`             | Weekly / Monthly / Quarterly / Yearly / Multi-year / One-time                                                                                                                                |
+| `next_due_date`         | Следующая дата оплаты                                                                                                                                                                        |
+| `project`               | Проект, если расход проектный                                                                                                                                                                |
 | `product`               | Продукт, если применимо                                                                                                                           |
 | `client_service_record` | Связанный сервис клиента, если расход идёт от него                                                                                                |
 | `auto_generate`         | Создавать ли карточки автоматически                                                                                                               |
@@ -346,9 +345,9 @@ Expense Payment
 | `Hosting`        | `HOSTING`        | Хостинг и серверы клиента                                                                                  |
 | `Service`        | `SERVICE`        | Внешние сервисы и SaaS                                                                                     |
 | `Marketing`      | `MARKETING`      | Маркетинговые расходы                                                                                      |
-| `Salary`         | `SALARY`         | Зарплаты (платформенный payroll; не Bitrix Pay-for-What как live Expense)                                  |
-| `Bonus`          | `BONUS`          | Бонусы (платформенный payroll contour)                                                                     |
-| `Partner Payout` | `PARTNER_PAYOUT` | Выплаты партнёрам                                                                                          |
+| `Salary`         | `SALARY`         | Зарплаты (только automation из payroll; не выбирается на Expense Plan)                                     |
+| `Bonus`          | `BONUS`          | Бонусы (только automation из payroll; не выбирается на Expense Plan)                                       |
+| `Partner Payout` | `PARTNER_PAYOUT` | Выплаты партнёрам (только automation; не выбирается на Expense Plan)                                       |
 | `Tools`          | `TOOLS`          | Инструменты компании                                                                                       |
 | `Office`         | `OFFICE`         | Аренда, коммуналка, офисные операции                                                                       |
 | `Taxes`          | `TAXES`          | Налоги и гос. сборы                                                                                        |

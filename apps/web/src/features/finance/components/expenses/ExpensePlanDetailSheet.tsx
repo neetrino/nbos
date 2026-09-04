@@ -95,7 +95,6 @@ export function ExpensePlanDetailSheet({
     plan?.category,
     plan?.frequency,
     plan?.nextDueDate,
-    plan?.provider,
     plan?.projectId,
     plan?.autoGenerate,
     plan?.notes,

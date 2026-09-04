@@ -3,7 +3,8 @@
 import { CalendarDays, Trash2 } from 'lucide-react';
 import { DetailSheetSettingsMenu } from '@/components/shared';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { EXPENSE_CATEGORIES, formatAmount } from '@/features/finance/constants/finance';
+import { formatAmount } from '@/features/finance/constants/finance';
+import { getExpenseCategoryLabel } from '@/features/finance/constants/expense-category-visual';
 import {
   expensePlanFrequencyLabel,
   formatExpensePlanShortDate,
@@ -17,10 +18,6 @@ interface ExpensePlanDetailSheetHeaderProps {
   displayName: string;
   deleteDisabled?: boolean;
   onDeleteClick: () => void;
-}
-
-function expensePlanCategoryLabel(category: string): string {
-  return EXPENSE_CATEGORIES.find((c) => c.value === category)?.label ?? category;
 }
 
 function buildExpensePlanHeaderSubline(plan: ExpensePlan): string {
@@ -39,7 +36,7 @@ export function ExpensePlanDetailSheetHeader({
   deleteDisabled = false,
   onDeleteClick,
 }: ExpensePlanDetailSheetHeaderProps) {
-  const categoryLabel = expensePlanCategoryLabel(plan.category);
+  const categoryLabel = getExpenseCategoryLabel(plan.category);
   const subline = buildExpensePlanHeaderSubline(plan);
 
   return (

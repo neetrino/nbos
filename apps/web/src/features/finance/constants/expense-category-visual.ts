@@ -15,7 +15,9 @@ import {
   UserRound,
   Wrench,
 } from 'lucide-react';
-import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
+import { EXPENSE_CATEGORIES, EXPENSE_SYSTEM_CATEGORIES } from '@/features/finance/constants/finance';
+
+const EXPENSE_CATEGORY_LABELS = [...EXPENSE_CATEGORIES, ...EXPENSE_SYSTEM_CATEGORIES] as const;
 
 type ExpenseCategoryVisual = {
   icon: LucideIcon;
@@ -92,5 +94,5 @@ export function getExpenseCategoryVisual(category: string): ExpenseCategoryVisua
 
 /** Human label for category enum (falls back to raw value). */
 export function getExpenseCategoryLabel(category: string): string {
-  return EXPENSE_CATEGORIES.find((item) => item.value === category)?.label ?? category;
+  return EXPENSE_CATEGORY_LABELS.find((item) => item.value === category)?.label ?? category;
 }

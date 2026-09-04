@@ -3,7 +3,7 @@ import {
   getExpenseCategoryLabel,
   getExpenseCategoryVisual,
 } from '@/features/finance/constants/expense-category-visual';
-import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
+import { EXPENSE_CATEGORIES, EXPENSE_SYSTEM_CATEGORIES } from '@/features/finance/constants/finance';
 
 describe('expense category ops cuts', () => {
   it('includes additive P&L categories in the shared UI list', () => {
@@ -15,12 +15,22 @@ describe('expense category ops cuts', () => {
         'BANK_FEES',
         'TRAINING',
         'INTERNAL_INFRA',
-        'SALARY',
-        'BONUS',
         'DOMAIN',
         'HOSTING',
       ]),
     );
+    expect(values).not.toContain('SALARY');
+    expect(values).not.toContain('BONUS');
+    expect(values).not.toContain('PARTNER_PAYOUT');
+  });
+
+  it('keeps system payroll categories for labels only', () => {
+    expect(EXPENSE_SYSTEM_CATEGORIES.map((c) => c.value)).toEqual([
+      'SALARY',
+      'BONUS',
+      'PARTNER_PAYOUT',
+    ]);
+    expect(getExpenseCategoryLabel('SALARY')).toBe('Salary');
   });
 
   it('labels and visuals resolve for new categories', () => {

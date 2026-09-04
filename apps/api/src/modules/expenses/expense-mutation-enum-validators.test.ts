@@ -3,6 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 import {
   parseExpenseBacklogReasonField,
   requireExpenseCategory,
+  requireExpensePlanCategory,
   requireExpenseType,
   resolveExpenseTaxStatus,
 } from './expense-mutation-enum-validators';
@@ -14,6 +15,13 @@ describe('expense-mutation-enum-validators', () => {
 
   it('requireExpenseCategory throws on invalid value', () => {
     expect(() => requireExpenseCategory('NOT_CAT')).toThrow(BadRequestException);
+  });
+
+  it('requireExpensePlanCategory rejects payroll categories', () => {
+    expect(requireExpensePlanCategory('HOSTING')).toBe('HOSTING');
+    expect(() => requireExpensePlanCategory('SALARY')).toThrow(BadRequestException);
+    expect(() => requireExpensePlanCategory('BONUS')).toThrow(BadRequestException);
+    expect(() => requireExpensePlanCategory('PARTNER_PAYOUT')).toThrow(BadRequestException);
   });
 
   it('resolveExpenseTaxStatus defaults and validates', () => {

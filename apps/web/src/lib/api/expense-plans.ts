@@ -9,7 +9,6 @@ export interface ExpensePlan {
   amount: string;
   frequency: string;
   nextDueDate: string | null;
-  provider: string | null;
   projectId: string | null;
   autoGenerate: boolean;
   notes: string | null;
@@ -32,7 +31,6 @@ export interface CreateExpensePlanPayload {
   amount: number;
   frequency?: string;
   nextDueDate?: string | null;
-  provider?: string | null;
   projectId?: string | null;
   clientServiceRecordId?: string | null;
   autoGenerate?: boolean;

@@ -5,7 +5,7 @@ import { pickExpenseCategoryFilter } from './expense-query-enum-guards';
 import { endOfUtcDayUtc } from './expense-plan-auto-due-scope';
 import { planNextDueAfterOccurrence } from './expense-plan-next-due';
 import {
-  requireExpenseCategory,
+  requireExpensePlanCategory,
   resolveExpenseFrequency,
 } from './expense-mutation-enum-validators';
 import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
@@ -32,7 +32,6 @@ export interface CreateExpensePlanBody {
   amount: number;
   frequency?: string;
   nextDueDate?: string | null;
-  provider?: string | null;
   projectId?: string | null;
   clientServiceRecordId?: string | null;
   autoGenerate?: boolean;
@@ -149,7 +148,7 @@ export class ExpensePlansService {
   async create(body: CreateExpensePlanBody) {
     const name = body.name?.trim();
     if (!name) throw new BadRequestException('Name is required');
-    const category = requireExpenseCategory(body.category);
+    const category = requireExpensePlanCategory(body.category);
     const frequency = resolveExpenseFrequency(body.frequency);
     const amount = toAmountDecimal(body.amount);
     const projectId = await this.resolveProjectIdOrThrow(body.projectId);
@@ -161,7 +160,6 @@ export class ExpensePlansService {
         amount,
         frequency: frequency as Prisma.ExpensePlanCreateInput['frequency'],
         nextDueDate: body.nextDueDate ? new Date(body.nextDueDate) : null,
-        provider: body.provider?.trim() || null,
         projectId,
         clientServiceRecordId: body.clientServiceRecordId?.trim() || null,
         autoGenerate: Boolean(body.autoGenerate),
@@ -185,7 +183,7 @@ export class ExpensePlansService {
       data.name = n;
     }
     if (body.category !== undefined) {
-      data.category = requireExpenseCategory(
+      data.category = requireExpensePlanCategory(
         body.category,
       ) as Prisma.ExpensePlanUpdateInput['category'];
     }
@@ -199,9 +197,6 @@ export class ExpensePlansService {
     }
     if (body.nextDueDate !== undefined) {
       data.nextDueDate = body.nextDueDate ? new Date(body.nextDueDate) : null;
-    }
-    if (body.provider !== undefined) {
-      data.provider = body.provider?.trim() || null;
     }
     if (body.projectId !== undefined) {
       const pid = await this.resolveProjectIdOrThrow(body.projectId);
@@ -263,7 +258,7 @@ export class ExpensePlansService {
       dueDate: occurrence.toISOString(),
       status: 'PLANNED',
       projectId: plan.projectId ?? undefined,
-      notes: plan.provider ? `From plan. Provider: ${plan.provider}` : 'From expense plan',
+      notes: 'From expense plan',
       expensePlanId: planId,
       clientServiceRecordId: plan.clientServiceRecordId ?? undefined,
     });
@@ -335,7 +330,6 @@ export class ExpensePlansService {
     const searchOr: Prisma.ExpensePlanWhereInput['OR'] = ic
       ? [
           { name: ic },
-          { provider: ic },
           { notes: ic },
           { project: { name: ic } },
           { project: { code: ic } },

@@ -104,7 +104,6 @@ export function CreateExpensePlanDialog({
       amount: parsedAmount,
       frequency: form.frequency,
       nextDueDate: form.nextDueDate.trim() ? form.nextDueDate : null,
-      provider: form.provider.trim() || null,
       projectId: form.projectId !== 'none' ? form.projectId : null,
       autoGenerate: form.autoGenerate,
       notes: form.notes.trim() || null,
@@ -217,14 +216,6 @@ export function CreateExpensePlanDialog({
                 aria-label="Next due"
               />
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Provider</Label>
-            <Input
-              value={form.provider}
-              onChange={(e) => setForm({ ...form, provider: e.target.value })}
-              placeholder="Vendor or service name"
-            />
           </div>
           <RelationPickerField
             label="Project"

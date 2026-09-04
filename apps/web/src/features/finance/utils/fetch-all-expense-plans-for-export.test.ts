@@ -17,7 +17,6 @@ function mockPlan(id: string): ExpensePlan {
     amount: '10.00',
     frequency: 'MONTHLY',
     nextDueDate: null,
-    provider: null,
     projectId: null,
     autoGenerate: false,
     notes: null,

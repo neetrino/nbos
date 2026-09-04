@@ -404,7 +404,7 @@ export function ExpensePlansPageContent() {
         <IntegratedSearchFilters
           search={searchDraft}
           onSearchChange={setSearchDraft}
-          searchPlaceholder="Search by name or provider…"
+          searchPlaceholder="Search by name…"
           filters={planFilterConfigs}
           filterValues={planFilterValues}
           onFilterChange={handlePlanFilterChange}

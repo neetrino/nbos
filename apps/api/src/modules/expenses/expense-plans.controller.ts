@@ -116,7 +116,6 @@ export class ExpensePlansController {
       amount: number;
       frequency?: string;
       nextDueDate?: string | null;
-      provider?: string | null;
       projectId?: string | null;
       autoGenerate?: boolean;
       notes?: string | null;
@@ -136,7 +135,6 @@ export class ExpensePlansController {
       amount?: number;
       frequency?: string;
       nextDueDate?: string | null;
-      provider?: string | null;
       projectId?: string | null;
       autoGenerate?: boolean;
       notes?: string | null;

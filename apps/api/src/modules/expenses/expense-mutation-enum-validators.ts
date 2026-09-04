@@ -29,6 +29,19 @@ export function requireExpenseCategory(value: string): string {
   return v;
 }
 
+const EXPENSE_PLAN_BLOCKED_CATEGORIES = new Set(['SALARY', 'BONUS', 'PARTNER_PAYOUT']);
+
+/** Plan categories exclude payroll/partner automation enums. */
+export function requireExpensePlanCategory(value: string): string {
+  const v = requireExpenseCategory(value);
+  if (EXPENSE_PLAN_BLOCKED_CATEGORIES.has(v)) {
+    throw new BadRequestException(
+      'Salary, Bonus, and Partner Payout are not valid expense plan categories',
+    );
+  }
+  return v;
+}
+
 export function resolveExpenseFrequency(value: string | undefined): string {
   return pickExpenseFrequencyFilter(value) ?? 'ONE_TIME';
 }
