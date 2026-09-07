@@ -1,7 +1,7 @@
 'use client';
 
 import type { KeyboardEvent, ReactNode } from 'react';
-import { AlertTriangle, Building2, CheckCircle2, FolderKanban } from 'lucide-react';
+import { AlertTriangle, Building2, CheckCircle2, FolderKanban, type LucideIcon } from 'lucide-react';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { formatEntityListDate, resolveEntityCardDateParts } from '@/components/shared/entity-list-date';
 import { formatAmount } from '@/features/finance/constants/finance';
@@ -17,6 +17,20 @@ const CARD_DATE_DAY_MONTH_CLASS =
   'text-base leading-none font-bold tabular-nums text-orange-500 dark:text-orange-400';
 const CARD_DATE_YEAR_CLASS =
   'mt-0.5 text-[10px] leading-tight text-orange-500/70 dark:text-orange-400/70';
+
+const INVOICE_CARD_RELATION_VISUAL: Record<
+  'company' | 'project',
+  { icon: LucideIcon; iconClassName: string }
+> = {
+  company: {
+    icon: Building2,
+    iconClassName: 'bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400',
+  },
+  project: {
+    icon: FolderKanban,
+    iconClassName: 'bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400',
+  },
+};
 
 interface InvoiceKanbanCardProps {
   invoice: Invoice;
@@ -142,35 +156,45 @@ function InvoiceCardMeta({
   projectName?: string;
   dueDate?: string | null;
 }) {
-  const hasRelations = Boolean(companyName || projectName);
+  const relation = resolveInvoiceCardRelation(companyName, projectName);
 
   return (
     <div
       className={cn(
         'border-border flex gap-3 border-t pt-3',
-        hasRelations ? 'items-center justify-between' : 'justify-end',
+        relation ? 'items-center justify-between' : 'justify-end',
       )}
     >
-      {hasRelations ? (
-        <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-          {companyName ? (
-            <MetaRow
-              icon={<Building2 size={14} aria-hidden />}
-              iconClassName="bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400"
-              label={companyName}
-            />
-          ) : null}
-          {projectName ? (
-            <MetaRow
-              icon={<FolderKanban size={14} aria-hidden />}
-              iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
-              label={projectName}
-            />
-          ) : null}
+      {relation ? (
+        <div className="min-w-0 flex-1">
+          <InvoiceCardRelationRow relation={relation} />
         </div>
       ) : null}
       {dueDate ? <InvoiceCardDueDate value={dueDate} /> : null}
     </div>
+  );
+}
+
+type InvoiceCardRelation = { kind: 'company' | 'project'; label: string };
+
+function resolveInvoiceCardRelation(
+  companyName?: string,
+  projectName?: string,
+): InvoiceCardRelation | null {
+  if (companyName) return { kind: 'company', label: companyName };
+  if (projectName) return { kind: 'project', label: projectName };
+  return null;
+}
+
+function InvoiceCardRelationRow({ relation }: { relation: InvoiceCardRelation }) {
+  const visual = INVOICE_CARD_RELATION_VISUAL[relation.kind];
+  const Icon = visual.icon;
+  return (
+    <MetaRow
+      icon={<Icon size={14} aria-hidden />}
+      iconClassName={visual.iconClassName}
+      label={relation.label}
+    />
   );
 }
 
