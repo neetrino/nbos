@@ -20,7 +20,7 @@
     "@nbos/shared": "workspace:*",
     "@radix-ui/react-tabs": "^1.1.13",
     "@tanstack/react-query": "^5.101.0",
-    "@tiptap/core": "^3.26.0",
+    "@tiptap/core": "^3.30.4",
     "@tiptap/extension-color": "^3.26.0",
     "@tiptap/extension-font-family": "^3.26.0",
     "@tiptap/extension-highlight": "^3.26.0",
