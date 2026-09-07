@@ -1,8 +1,9 @@
 'use client';
 
 import type { KeyboardEvent, ReactNode } from 'react';
-import { AlertTriangle, Building2, Calendar, CheckCircle2, FolderKanban } from 'lucide-react';
+import { AlertTriangle, Building2, CheckCircle2, FolderKanban } from 'lucide-react';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
+import { formatEntityListDate, resolveEntityCardDateParts } from '@/components/shared/entity-list-date';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
 import { getInvoiceSourceLabel } from '@/features/finance/utils/invoice-source-label';
@@ -12,6 +13,10 @@ import type { Invoice } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
 
 const COVERAGE_FULL_PERCENT = 100;
+const CARD_DATE_DAY_MONTH_CLASS =
+  'text-base leading-none font-bold tabular-nums text-orange-500 dark:text-orange-400';
+const CARD_DATE_YEAR_CLASS =
+  'mt-0.5 text-[10px] leading-tight text-orange-500/70 dark:text-orange-400/70';
 
 interface InvoiceKanbanCardProps {
   invoice: Invoice;
@@ -89,30 +94,11 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
         </div>
 
         {hasMeta ? (
-          <div className="border-border flex flex-col gap-2.5 border-t pt-3">
-            {invoice.dueDate ? (
-              <MetaRow
-                icon={<Calendar size={14} aria-hidden />}
-                iconClassName="bg-orange-100 text-orange-600 dark:bg-orange-950/50 dark:text-orange-400"
-                labelClassName="font-bold text-orange-500 dark:text-orange-400"
-                label={formatInvoiceCardDueDate(invoice.dueDate)}
-              />
-            ) : null}
-            {invoice.company ? (
-              <MetaRow
-                icon={<Building2 size={14} aria-hidden />}
-                iconClassName="bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400"
-                label={invoice.company.name}
-              />
-            ) : null}
-            {invoice.project ? (
-              <MetaRow
-                icon={<FolderKanban size={14} aria-hidden />}
-                iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
-                label={invoice.project.name}
-              />
-            ) : null}
-          </div>
+          <InvoiceCardMeta
+            companyName={invoice.company?.name}
+            projectName={invoice.project?.name}
+            dueDate={invoice.dueDate}
+          />
         ) : null}
       </div>
     </KanbanCardShell>
@@ -147,16 +133,71 @@ function CoveragePill({
   );
 }
 
+function InvoiceCardMeta({
+  companyName,
+  projectName,
+  dueDate,
+}: {
+  companyName?: string;
+  projectName?: string;
+  dueDate?: string | null;
+}) {
+  const hasRelations = Boolean(companyName || projectName);
+
+  return (
+    <div
+      className={cn(
+        'border-border flex gap-3 border-t pt-3',
+        hasRelations ? 'items-center justify-between' : 'justify-end',
+      )}
+    >
+      {hasRelations ? (
+        <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+          {companyName ? (
+            <MetaRow
+              icon={<Building2 size={14} aria-hidden />}
+              iconClassName="bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400"
+              label={companyName}
+            />
+          ) : null}
+          {projectName ? (
+            <MetaRow
+              icon={<FolderKanban size={14} aria-hidden />}
+              iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
+              label={projectName}
+            />
+          ) : null}
+        </div>
+      ) : null}
+      {dueDate ? <InvoiceCardDueDate value={dueDate} /> : null}
+    </div>
+  );
+}
+
+function InvoiceCardDueDate({ value }: { value: string }) {
+  const parts = resolveEntityCardDateParts(value);
+  if (!parts) return null;
+
+  return (
+    <time
+      dateTime={value}
+      aria-label={formatEntityListDate(value) || parts.dayMonth}
+      className="shrink-0 text-right"
+    >
+      <p className={CARD_DATE_DAY_MONTH_CLASS}>{parts.dayMonth}</p>
+      <p className={CARD_DATE_YEAR_CLASS}>{parts.year}</p>
+    </time>
+  );
+}
+
 function MetaRow({
   icon,
   iconClassName,
   label,
-  labelClassName,
 }: {
   icon: ReactNode;
   iconClassName: string;
   label: string;
-  labelClassName?: string;
 }) {
   return (
     <div className="grid grid-cols-[1.75rem_minmax(0,1fr)] items-center gap-x-2.5">
@@ -168,19 +209,9 @@ function MetaRow({
       >
         {icon}
       </span>
-      <p className={cn('text-foreground/80 truncate text-xs', labelClassName)}>{label}</p>
+      <p className="text-foreground/80 truncate text-xs">{label}</p>
     </div>
   );
-}
-
-function formatInvoiceCardDueDate(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
 }
 
 function getInvoicePaidPercent(invoice: Invoice): number | null {

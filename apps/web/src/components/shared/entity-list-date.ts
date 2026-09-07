@@ -11,9 +11,21 @@ const LIST_DATE_MONTH_YEAR_FORMATTER = new Intl.DateTimeFormat('en-US', {
   year: 'numeric',
 });
 
+const CARD_DATE_DAY_MONTH_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+});
+
+const CARD_DATE_YEAR_FORMATTER = new Intl.DateTimeFormat('en-US', { year: 'numeric' });
+
 export interface EntityListDateParts {
   day: string;
   monthYear: string;
+}
+
+export interface EntityCardDateParts {
+  dayMonth: string;
+  year: string;
 }
 
 function parseListDate(value: string): Date | null {
@@ -35,5 +47,14 @@ export function resolveEntityListDateParts(value: string): EntityListDateParts |
   return {
     day: LIST_DATE_DAY_FORMATTER.format(date),
     monthYear: LIST_DATE_MONTH_YEAR_FORMATTER.format(date),
+  };
+}
+
+export function resolveEntityCardDateParts(value: string): EntityCardDateParts | null {
+  const date = parseListDate(value);
+  if (!date) return null;
+  return {
+    dayMonth: CARD_DATE_DAY_MONTH_FORMATTER.format(date),
+    year: CARD_DATE_YEAR_FORMATTER.format(date),
   };
 }
