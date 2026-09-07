@@ -37,6 +37,18 @@ describe('official invoice WhatsApp templates', () => {
     expect(purpose).toContain('INV-1');
   });
 
+  it('builds auto-subscription note with a coverage month range', () => {
+    const purpose = buildOfficialInvoicePurpose({
+      code: 'INV-1',
+      subscriptionId: 'sub-1',
+      subscriptionName: 'Acme Site',
+      subscriptionType: 'DEV_ONLY',
+      coverageStartMonth: '2026-04',
+      coverageMonthCount: 3,
+    });
+    expect(purpose).toMatch(/ապրիլ–հունիս 2026/i);
+  });
+
   it('builds client-service note from type and due date', () => {
     const purpose = buildOfficialInvoicePurpose({
       code: 'INV-2',

@@ -5,7 +5,10 @@ import {
   type OfficialAwaitingNotifier,
 } from '../invoices/invoice-card-persist';
 import { resolveSubscriptionInvoiceDueDate } from '../invoices/subscription-invoice-due-date';
-import { subscriptionChargeAmount } from '../subscriptions/subscription-billing-amount';
+import {
+  subscriptionChargeAmount,
+  type SubscriptionChargeAmount,
+} from '../subscriptions/subscription-billing-amount';
 import { resolveBillingInvoiceMoneyStatus } from './billing-subscription-invoice-status';
 import type { SubscriptionBillingTarget } from './subscription-billing-window';
 
@@ -41,6 +44,7 @@ export async function persistSubscriptionBillingInvoice(
   sub: SubscriptionBillingInvoiceSource,
   now: Date,
   target: SubscriptionBillingTarget,
+  chargeOverride?: SubscriptionChargeAmount,
 ): Promise<PersistedSubscriptionBillingInvoice> {
   const coverageYear = Number(target.coverageMonthKey.slice(0, 4));
   const code = await allocateInvoiceCode(prisma, coverageYear);
@@ -48,7 +52,8 @@ export async function persistSubscriptionBillingInvoice(
     expectedPayDate: target.expectedPayDate,
     issuedOn: now,
   });
-  const charge = subscriptionChargeAmount(Number(sub.amount), sub.coverageMonthCount);
+  const charge =
+    chargeOverride ?? subscriptionChargeAmount(Number(sub.amount), sub.coverageMonthCount);
   const moneyStatus = resolveBillingInvoiceMoneyStatus({
     billingDay: sub.billingDay,
     taxStatus: sub.taxStatus,

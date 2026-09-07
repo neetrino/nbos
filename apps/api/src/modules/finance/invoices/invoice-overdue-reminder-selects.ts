@@ -4,6 +4,7 @@ export const overdueReminderSelect = {
   amount: true,
   dueDate: true,
   coverageStartMonth: true,
+  coverageMonthCount: true,
   taxStatus: true,
   moneyStatus: true,
   officialInvoiceRequestSent: true,

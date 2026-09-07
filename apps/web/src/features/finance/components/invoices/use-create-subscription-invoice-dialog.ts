@@ -4,6 +4,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import type { Invoice } from '@/lib/api/finance';
 import { subscriptionsApi, type Subscription } from '@/lib/api/subscriptions';
 import {
+  areCoverageStartsConsecutive,
   canSelectAnotherCoverageMonth,
   defaultSubscriptionInvoiceMonth,
   listEligibleSubscriptionInvoiceMonths,
@@ -50,6 +51,7 @@ export function useCreateSubscriptionInvoiceDialog({
     loadError: state.loadError,
     error: state.error,
     canSubmit: selection.canSubmit,
+    isConsecutive: selection.isConsecutive,
     onOpenChange,
     handleSubmit: bindPeriodInvoiceSubmit({
       ...state,
@@ -77,7 +79,9 @@ function resolvePeriodInvoiceSelection(
     }),
     canSubmit:
       coverageMonths.length > 0 &&
-      coverageMonths.every((monthKey) => eligibleMonths.includes(monthKey)),
+      coverageMonths.every((monthKey) => eligibleMonths.includes(monthKey)) &&
+      areCoverageStartsConsecutive(coverageMonths, coverageMonthCount),
+    isConsecutive: areCoverageStartsConsecutive(coverageMonths, coverageMonthCount),
   };
 }
 

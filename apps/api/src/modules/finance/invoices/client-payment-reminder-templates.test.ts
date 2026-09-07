@@ -6,6 +6,7 @@ import {
 } from './client-payment-requisites';
 import {
   formatCoverageMonthLabel,
+  formatCoveragePeriodLabel,
   formatDueDateLabel,
   renderClientPaymentReminderMessage,
 } from './client-payment-reminder-templates';
@@ -70,5 +71,30 @@ describe('client payment reminder templates', () => {
     expect(formatCoverageMonthLabel('2026-06', 'HY')).toMatch(/2026/);
     expect(formatCoverageMonthLabel('2026-06', 'RU').toLowerCase()).toContain('июнь');
     expect(formatCoverageMonthLabel('2026-06', 'EN').toLowerCase()).toContain('june');
+  });
+
+  it('formats a multi-month coverage range', () => {
+    expect(formatCoveragePeriodLabel('2026-04', 3, 'HY')).toMatch(/ապրիլ–հունիս 2026/i);
+    expect(formatCoveragePeriodLabel('2026-04', 3, 'RU').toLowerCase()).toContain('апрель');
+    expect(formatCoveragePeriodLabel('2026-04', 3, 'RU').toLowerCase()).toContain('июнь');
+    expect(formatCoveragePeriodLabel('2026-04', 3, 'EN').toLowerCase()).toContain('april');
+    expect(formatCoveragePeriodLabel('2026-04', 3, 'EN').toLowerCase()).toContain('june');
+  });
+
+  it('drops monthly wording when coverage is more than one month', () => {
+    const message = renderClientPaymentReminderMessage({
+      language: 'RU',
+      source: 'subscription',
+      serviceLabel: 'Site B',
+      periodLabel: formatCoveragePeriodLabel('2026-04', 3, 'RU'),
+      amount: 150000,
+      taxStatus: 'TAX',
+      coverageMonthCount: 3,
+    });
+    expect(message).toContain('подписку');
+    expect(message).not.toContain('ежемесячную');
+    expect(message).toContain('150.000');
+    expect(message.toLowerCase()).toContain('апрель');
+    expect(message.toLowerCase()).toContain('июнь');
   });
 });

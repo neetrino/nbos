@@ -7,10 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaClient, type Prisma, type SubscriptionStatusEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import {
-  persistSubscriptionBillingInvoice,
-  type PersistedSubscriptionBillingInvoice,
-} from '../billing/persist-subscription-billing-invoice';
+import { persistSubscriptionBillingInvoice } from '../billing/persist-subscription-billing-invoice';
 import { subscriptionBillingPausedForLateDelivery } from '../billing/billing-subscription-delivery-pause';
 import { buildSubscriptionBillingTarget } from '../billing/subscription-billing-window';
 import { loadCoverageInvoicesBySubscription } from '../billing/billing-coverage-invoices';
@@ -18,11 +15,12 @@ import type { OfficialAwaitingNotifier } from '../invoices/invoice-card-persist'
 import { InvoiceOfficialWhatsAppService } from '../invoices/invoice-official-whatsapp.service';
 import { InvoicesService } from '../invoices/invoices.service';
 import { lockSubscriptionRow } from './lock-subscription-row';
-import { subscriptionChargeAmount } from './subscription-billing-amount';
+import { subscriptionChargeAmount, subscriptionPrepaidCharge } from './subscription-billing-amount';
 import type { SubscriptionCoverageInvoiceRow } from './subscription-coverage-window';
 import {
   assertCoverageMonthFreeForCharge,
   assertCoverageMonthInManualWindow,
+  assertSelectedCoverageStartsConsecutive,
   assertSelectedCoverageWindowsCompatible,
   parseCoverageMonthKeys,
   SUBSCRIPTION_PERIOD_INVOICE_ERROR,
@@ -72,18 +70,18 @@ export class SubscriptionPeriodInvoiceService {
   ) {}
 
   /**
-   * Issues one billing card per uncovered coverage-start month.
-   * Same persist path as the daily billing cron (amount, tax, due date, money status).
+   * Issues one billing card for the selected consecutive period starts.
+   * Amount and coverage are the period charge × selected count (prepaid).
    */
   async create(subscriptionId: string, body: CreatePeriodInvoiceBody, now: Date = new Date()) {
     const coverageMonthKeys = parseCoverageMonthKeys(body);
     const created = await this.prisma.$transaction((tx) =>
-      this.issueLockedBatch(tx, subscriptionId, coverageMonthKeys, now),
+      this.issueLockedInvoice(tx, subscriptionId, coverageMonthKeys, now),
     );
-    return Promise.all(created.map((row) => this.invoicesService.findById(row.id)));
+    return [await this.invoicesService.findById(created.id)];
   }
 
-  private async issueLockedBatch(
+  private async issueLockedInvoice(
     tx: PeriodInvoiceDb,
     subscriptionId: string,
     coverageMonthKeys: string[],
@@ -92,10 +90,16 @@ export class SubscriptionPeriodInvoiceService {
     await lockSubscriptionRow(tx, subscriptionId);
     const sub = await this.loadActiveSubscription(tx, subscriptionId);
     this.assertIssuable(sub, coverageMonthKeys, now);
-    const charge = subscriptionChargeAmount(Number(sub.amount), sub.coverageMonthCount);
-    assertSelectedCoverageWindowsCompatible(coverageMonthKeys, charge.coverageMonthCount);
+    const period = subscriptionChargeAmount(Number(sub.amount), sub.coverageMonthCount);
+    assertSelectedCoverageStartsConsecutive(coverageMonthKeys, period.coverageMonthCount);
+    assertSelectedCoverageWindowsCompatible(coverageMonthKeys, period.coverageMonthCount);
+    const charge = subscriptionPrepaidCharge(
+      Number(sub.amount),
+      sub.coverageMonthCount,
+      coverageMonthKeys.length,
+    );
     const existing = await this.loadCoverageRows(tx, sub.id);
-    return persistSelectedPeriods({
+    return persistPrepaidInvoice({
       tx,
       officialWhatsApp: this.officialWhatsApp,
       sub,
@@ -153,7 +157,7 @@ export class SubscriptionPeriodInvoiceService {
   }
 }
 
-async function persistSelectedPeriods(args: {
+async function persistPrepaidInvoice(args: {
   tx: PeriodInvoiceDb;
   officialWhatsApp: OfficialAwaitingNotifier | undefined;
   sub: PeriodInvoiceSubscription;
@@ -162,54 +166,24 @@ async function persistSelectedPeriods(args: {
   existing: SubscriptionCoverageInvoiceRow[];
   now: Date;
 }) {
-  const created: PersistedSubscriptionBillingInvoice[] = [];
-  let invoices = args.existing;
-  for (const coverageMonthKey of args.coverageMonthKeys) {
-    const persisted = await persistOnePeriod({
-      tx: args.tx,
-      officialWhatsApp: args.officialWhatsApp,
-      sub: args.sub,
-      coverageMonthKey,
-      coverageMonthCount: args.charge.coverageMonthCount,
-      invoices,
-      now: args.now,
-    });
-    created.push(persisted);
-    invoices = [
-      ...invoices,
-      {
-        type: 'SUBSCRIPTION',
-        coverageStartMonth: coverageMonthKey,
-        coverageMonthCount: args.charge.coverageMonthCount,
-        createdAt: args.now,
-      },
-    ];
+  const coverageMonthKey = args.coverageMonthKeys[0];
+  if (!coverageMonthKey) {
+    throw new BadRequestException(SUBSCRIPTION_PERIOD_INVOICE_ERROR.EMPTY_MONTHS);
   }
-  return created;
-}
-
-async function persistOnePeriod(args: {
-  tx: PeriodInvoiceDb;
-  officialWhatsApp: OfficialAwaitingNotifier | undefined;
-  sub: PeriodInvoiceSubscription;
-  coverageMonthKey: string;
-  coverageMonthCount: number;
-  invoices: readonly SubscriptionCoverageInvoiceRow[];
-  now: Date;
-}) {
   assertCoverageMonthFreeForCharge({
-    coverageMonthKey: args.coverageMonthKey,
-    coverageMonthCount: args.coverageMonthCount,
-    invoices: args.invoices,
+    coverageMonthKey,
+    coverageMonthCount: args.charge.coverageMonthCount,
+    invoices: args.existing,
     termMonths: args.sub.termMonths,
   });
-  const year = Number(args.coverageMonthKey.slice(0, 4));
-  const month = Number(args.coverageMonthKey.slice(5, 7));
+  const year = Number(coverageMonthKey.slice(0, 4));
+  const month = Number(coverageMonthKey.slice(5, 7));
   return persistSubscriptionBillingInvoice(
     args.tx,
     args.officialWhatsApp,
     args.sub,
     args.now,
     buildSubscriptionBillingTarget(year, month, args.sub.billingDay),
+    args.charge,
   );
 }
