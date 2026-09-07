@@ -49,14 +49,14 @@ export function ExpensesTableSection({ expenses, onOpen }: ExpensesTableSectionP
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Expense</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Amount</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Due Date</TableHead>
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Category</TableHead>
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Type</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Amount</TableHead>
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Paid / Remaining</TableHead>
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Status</TableHead>
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Project</TableHead>
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Payroll</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Due Date</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -94,6 +94,12 @@ function ExpenseTableRow({
         <FinanceListPrimaryCell title={expense.name} />
       </TableCell>
       <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        <FinanceListAmount amount={expense.amount} />
+      </TableCell>
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
+        <FinanceListDate value={expense.dueDate} />
+      </TableCell>
+      <TableCell className={FINANCE_LIST_CELL_CLASS}>
         <span className="flex min-w-0 items-center gap-2">
           <FinanceListIconTile
             icon={categoryVisual.icon}
@@ -108,9 +114,6 @@ function ExpenseTableRow({
           variant={expense.type === 'PLANNED' ? 'blue' : 'orange'}
           className={FINANCE_LIST_BADGE_CLASS}
         />
-      </TableCell>
-      <TableCell className={FINANCE_LIST_CELL_CLASS}>
-        <FinanceListAmount amount={expense.amount} />
       </TableCell>
       <TableCell className={FINANCE_LIST_CELL_CLASS}>
         {ledgerPresentation && hasLedger ? (
@@ -165,9 +168,6 @@ function ExpenseTableRow({
         ) : (
           <FinanceListMutedDash />
         )}
-      </TableCell>
-      <TableCell className={FINANCE_LIST_CELL_CLASS}>
-        <FinanceListDate value={expense.dueDate} />
       </TableCell>
     </TableRow>
   );

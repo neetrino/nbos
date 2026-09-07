@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, Suspense } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { CalendarDays, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -111,13 +111,15 @@ export function ExpensePlansPageContent() {
   const [autoRunning, setAutoRunning] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [, setProjectsLoading] = useState(false);
+  const plansRef = useRef(plans);
+  const gridPayloadRef = useRef(gridPayload);
 
   const replaceListUrl = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
       const next = new URLSearchParams(searchParams.toString());
       mutate(next);
       const q = next.toString();
-      router.replace(q ? `${pathname}?${q}` : pathname);
+      router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
     },
     [pathname, router, searchParams],
   );
@@ -198,8 +200,16 @@ export function ExpensePlansPageContent() {
 
   const { exportCsvSubmitting, handleExportCsv } = useExpensePlansCsvExport(exportParams);
 
+  useEffect(() => {
+    plansRef.current = plans;
+  }, [plans]);
+
+  useEffect(() => {
+    gridPayloadRef.current = gridPayload;
+  }, [gridPayload]);
+
   const fetchPlans = useCallback(async () => {
-    setLoading(true);
+    if (plansRef.current.length === 0) setLoading(true);
     try {
       const res = await expensePlansApi.getAll(listParams);
       setPlans(res.items);
@@ -215,7 +225,7 @@ export function ExpensePlansPageContent() {
   }, [listParams]);
 
   const fetchGrid = useCallback(async () => {
-    setGridLoading(true);
+    if (!gridPayloadRef.current) setGridLoading(true);
     try {
       const payload = await expensePlansApi.getGrid(gridParams);
       setGridPayload(payload);
@@ -384,7 +394,7 @@ export function ExpensePlansPageContent() {
     (planId: string) => {
       const params = new URLSearchParams(searchParams.toString());
       params.set(OPEN_EXPENSE_PLAN_QUERY, planId);
-      router.push(`${pathname}?${params.toString()}`);
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
     },
     [pathname, router, searchParams],
   );
@@ -400,7 +410,7 @@ export function ExpensePlansPageContent() {
     (expenseId: string) => {
       const params = new URLSearchParams(searchParams.toString());
       params.set(OPEN_EXPENSE_QUERY, expenseId);
-      router.push(`${pathname}?${params.toString()}`);
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
     },
     [pathname, router, searchParams],
   );
@@ -412,7 +422,7 @@ export function ExpensePlansPageContent() {
       if (!params.has(OPEN_EXPENSE_PLAN_QUERY)) return;
       params.delete(OPEN_EXPENSE_PLAN_QUERY);
       const qs = params.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname);
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     },
     [pathname, router, searchParams],
   );
@@ -424,7 +434,7 @@ export function ExpensePlansPageContent() {
       if (!params.has(OPEN_EXPENSE_QUERY)) return;
       params.delete(OPEN_EXPENSE_QUERY);
       const qs = params.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname);
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     },
     [pathname, router, searchParams],
   );

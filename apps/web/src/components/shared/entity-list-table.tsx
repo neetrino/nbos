@@ -2,6 +2,9 @@ import type { ReactNode } from 'react';
 import { AlertTriangle, Calendar, type LucideIcon } from 'lucide-react';
 import { AMD_CURRENCY_SYMBOL, formatGroupedNumber, parseMoneyAmount } from '@/lib/format/money';
 import { cn } from '@/lib/utils';
+import { resolveEntityListDateParts } from './entity-list-date';
+
+export { formatEntityListDate, formatFinanceListDate } from './entity-list-date';
 
 /** Shared shell for module list/table views (board|list dual views). */
 export const ENTITY_LIST_SHELL_CLASS = 'border-border bg-card rounded-xl border';
@@ -37,18 +40,8 @@ export const FINANCE_LIST_TYPE_CLASS = ENTITY_LIST_TYPE_CLASS;
 /** @deprecated Prefer {@link ENTITY_LIST_ROW_HOVER_CLASS}. */
 export const FINANCE_LIST_ROW_HOVER_CLASS = ENTITY_LIST_ROW_HOVER_CLASS;
 
-const LIST_DATE_FORMATTER = new Intl.DateTimeFormat('ru-RU', {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-});
-
-export function formatEntityListDate(value: string): string {
-  return LIST_DATE_FORMATTER.format(new Date(value));
-}
-
-/** @deprecated Prefer {@link formatEntityListDate}. */
-export const formatFinanceListDate = formatEntityListDate;
+const ENTITY_LIST_DATE_DAY_CLASS = 'text-foreground text-base leading-none font-bold tabular-nums';
+const ENTITY_LIST_DATE_MONTH_YEAR_CLASS = 'text-muted-foreground mt-0.5 text-[10px] leading-tight';
 
 export function EntityListAmount({
   amount,
@@ -152,11 +145,19 @@ export function EntityListDate({
     return <span className="text-muted-foreground text-xs">{emptyLabel}</span>;
   }
 
+  const parts = resolveEntityListDateParts(value);
+  if (!parts) {
+    return <span className="text-muted-foreground text-xs">{emptyLabel}</span>;
+  }
+
   return (
     <div className="space-y-1">
-      <div className="text-foreground flex items-center gap-1.5 text-xs">
-        <Calendar size={12} className="text-muted-foreground shrink-0" aria-hidden />
-        <span>{formatEntityListDate(value)}</span>
+      <div className="flex items-start gap-1.5">
+        <Calendar size={12} className="text-muted-foreground mt-1 shrink-0" aria-hidden />
+        <div className="min-w-0">
+          <p className={ENTITY_LIST_DATE_DAY_CLASS}>{parts.day}</p>
+          <p className={ENTITY_LIST_DATE_MONTH_YEAR_CLASS}>{parts.monthYear}</p>
+        </div>
       </div>
       {overdueDays > 0 ? (
         <div className="flex items-center gap-1 text-xs font-medium text-red-500">

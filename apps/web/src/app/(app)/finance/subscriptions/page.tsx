@@ -98,7 +98,7 @@ function SubscriptionsPageInner() {
   useFinanceDocumentTitle(subscriptionsListPageTitle(Boolean(partnerIdFromUrl?.trim())));
 
   const clearPartnerDrilldown = () => {
-    router.replace(pathname ?? '/finance/subscriptions');
+    router.replace(pathname ?? '/finance/subscriptions', { scroll: false });
     page.setFilters((prev) => {
       const next = { ...prev };
       delete next.partner;
@@ -113,7 +113,7 @@ function SubscriptionsPageInner() {
         return;
       }
       if (partnerIdFromUrl && key === 'partner') {
-        router.replace(pathname ?? '/finance/subscriptions');
+        router.replace(pathname ?? '/finance/subscriptions', { scroll: false });
       }
       page.setFilters((prev) => ({ ...prev, [key]: value }));
     },

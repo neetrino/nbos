@@ -43,7 +43,7 @@ export function useClientServiceBoard({
 
   if (trackedFetchKey !== fetchKey) {
     setTrackedFetchKey(fetchKey);
-    setLoading(true);
+    if (board === null) setLoading(true);
   }
 
   useEffect(() => {
