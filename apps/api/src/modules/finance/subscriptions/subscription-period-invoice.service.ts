@@ -11,7 +11,7 @@ import { persistSubscriptionBillingInvoice } from '../billing/persist-subscripti
 import { subscriptionBillingPausedForLateDelivery } from '../billing/billing-subscription-delivery-pause';
 import { buildSubscriptionBillingTarget } from '../billing/subscription-billing-window';
 import { loadCoverageInvoicesBySubscription } from '../billing/billing-coverage-invoices';
-import type { OfficialAwaitingNotifier } from '../invoices/invoice-card-persist';
+import { notifyOfficialAfterInvoiceWrite } from '../invoices/invoice-card-persist';
 import { InvoiceOfficialWhatsAppService } from '../invoices/invoice-official-whatsapp.service';
 import { InvoicesService } from '../invoices/invoices.service';
 import { lockSubscriptionRow } from './lock-subscription-row';
@@ -78,6 +78,8 @@ export class SubscriptionPeriodInvoiceService {
     const created = await this.prisma.$transaction((tx) =>
       this.issueLockedInvoice(tx, subscriptionId, coverageMonthKeys, now),
     );
+    // Official WhatsApp reads via the root Prisma client — notify only after commit.
+    await notifyOfficialAfterInvoiceWrite(this.officialWhatsApp, created);
     return [await this.invoicesService.findById(created.id)];
   }
 
@@ -101,7 +103,6 @@ export class SubscriptionPeriodInvoiceService {
     const existing = await this.loadCoverageRows(tx, sub.id);
     return persistPrepaidInvoice({
       tx,
-      officialWhatsApp: this.officialWhatsApp,
       sub,
       coverageMonthKeys,
       charge,
@@ -159,7 +160,6 @@ export class SubscriptionPeriodInvoiceService {
 
 async function persistPrepaidInvoice(args: {
   tx: PeriodInvoiceDb;
-  officialWhatsApp: OfficialAwaitingNotifier | undefined;
   sub: PeriodInvoiceSubscription;
   coverageMonthKeys: readonly string[];
   charge: { amount: number; coverageMonthCount: number };
@@ -180,7 +180,7 @@ async function persistPrepaidInvoice(args: {
   const month = Number(coverageMonthKey.slice(5, 7));
   return persistSubscriptionBillingInvoice(
     args.tx,
-    args.officialWhatsApp,
+    undefined,
     args.sub,
     args.now,
     buildSubscriptionBillingTarget(year, month, args.sub.billingDay),

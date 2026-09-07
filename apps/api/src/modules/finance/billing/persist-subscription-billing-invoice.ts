@@ -30,6 +30,7 @@ export interface PersistedSubscriptionBillingInvoice {
   id: string;
   code: string;
   amount: number;
+  moneyStatus: string;
 }
 
 export type SubscriptionBillingPersistDb = Pick<
@@ -78,5 +79,5 @@ export async function persistSubscriptionBillingInvoice(
     officialWhatsApp,
   );
 
-  return { id: invoice.id, code, amount: charge.amount };
+  return { id: invoice.id, code, amount: charge.amount, moneyStatus };
 }
