@@ -15,6 +15,7 @@ const CALL_ROW_SELECT = {
   dealId: true,
   responsibleEmployeeId: true,
   answeredEmployeeId: true,
+  initiatedByEmployeeId: true,
 } as const;
 
 export type AtsPersistedCallRow = {
@@ -25,6 +26,7 @@ export type AtsPersistedCallRow = {
   dealId: string | null;
   responsibleEmployeeId: string | null;
   answeredEmployeeId: string | null;
+  initiatedByEmployeeId: string | null;
 };
 
 export type AtsCallPersistResult = {

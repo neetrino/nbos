@@ -14,6 +14,7 @@ describe('parseAtsWebhookBody', () => {
       }),
     ).toEqual({
       uid: 'u-1',
+      lid: undefined,
       state: 'start',
       calldirect: '0',
       clid: '099123456',
@@ -30,6 +31,7 @@ describe('parseAtsWebhookBody', () => {
   it('preserves absence versus explicit empty at the DTO boundary', () => {
     expect(parseAtsWebhookBody({ uid: 'u-1', clid: '' })).toEqual({
       uid: 'u-1',
+      lid: undefined,
       state: undefined,
       input: undefined,
       clid: null,
@@ -41,6 +43,10 @@ describe('parseAtsWebhookBody', () => {
       channel: undefined,
       recordLink: undefined,
     });
+  });
+
+  it('parses lid from form-urlencoded fields', () => {
+    expect(parseAtsWebhookBody({ uid: 'u-1', lid: '100' }).lid).toBe('100');
   });
 
   it('throws when uid is missing', () => {
