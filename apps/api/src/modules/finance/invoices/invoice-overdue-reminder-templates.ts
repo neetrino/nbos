@@ -5,7 +5,10 @@ import {
   TAX_FREE_PAYMENT_NAME,
 } from './client-payment-requisites';
 import { formatAmdAmount } from './invoice-official-whatsapp-templates';
-import type { ClientPaymentReminderSource } from './client-payment-reminder-templates';
+import {
+  resolveClientReminderServiceKind,
+  type ClientPaymentReminderSource,
+} from './client-payment-reminder-templates';
 import type { OverdueReminderWave } from './invoice-overdue-reminder.constants';
 
 export interface RenderOverdueReminderInput {
@@ -17,6 +20,7 @@ export interface RenderOverdueReminderInput {
   invoiceCode?: string;
   amount: unknown;
   taxStatus: TaxStatus;
+  coverageMonthCount?: number;
 }
 
 interface OverdueTemplateCopy {
@@ -72,22 +76,6 @@ const COPY: Record<SubscriptionReminderLanguage, OverdueTemplateCopy> = {
   },
 };
 
-const SERVICE_KIND: Record<
-  ClientPaymentReminderSource,
-  Record<SubscriptionReminderLanguage, string>
-> = {
-  subscription: {
-    HY: 'բաժանորդագրության ամենամսյա',
-    RU: 'ежемесячную подписку',
-    EN: 'monthly subscription',
-  },
-  client_service: {
-    HY: 'ծառայության',
-    RU: 'услугу',
-    EN: 'service',
-  },
-};
-
 const PERIOD_SUFFIX: Record<
   ClientPaymentReminderSource,
   Record<SubscriptionReminderLanguage, string>
@@ -101,7 +89,11 @@ export function renderOverdueReminderMessage(input: RenderOverdueReminderInput):
   const purposeTemplate = input.wave === 1 ? copy.purposeW1 : copy.purposeW2;
   const purpose = fillTemplate(purposeTemplate, {
     serviceLabel: input.serviceLabel,
-    serviceKind: SERVICE_KIND[input.source][input.language],
+    serviceKind: resolveClientReminderServiceKind(
+      input.source,
+      input.language,
+      input.coverageMonthCount ?? 1,
+    ),
     periodLabel: input.periodLabel,
     periodSuffix: PERIOD_SUFFIX[input.source][input.language],
   });

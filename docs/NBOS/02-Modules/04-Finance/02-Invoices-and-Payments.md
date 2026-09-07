@@ -233,11 +233,11 @@ Payment confirmed
 
 Конверт письма не менять (галочки, юрблок, сумма). Резать по источнику карточки, не по `Invoice.type`:
 
-| Источник            | Как узнать                                | Նշում                                                                               |
-| ------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------- |
-| Ручной deal/order   | `orderId`                                 | display title + выбранный comment + `INV-…`                                         |
-| Авто-подписка       | `subscriptionId`, без ручного deal-create | `Subscription.name` + фраза от `Subscription.type` + месяц покрытия + `INV-…`       |
-| Авто client service | `clientServiceRecordId`                   | `ClientServiceRecord.name` + фраза от `ClientServiceType` + `մինչև {due}` + `INV-…` |
+| Источник            | Как узнать                                | Նշում                                                                                               |
+| ------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Ручной deal/order   | `orderId`                                 | display title + выбранный comment + `INV-…`                                                         |
+| Авто-подписка       | `subscriptionId`, без ручного deal-create | `Subscription.name` + фраза от `Subscription.type` + период покрытия (месяц или диапазон) + `INV-…` |
+| Авто client service | `clientServiceRecordId`                   | `ClientServiceRecord.name` + фраза от `ClientServiceType` + `մինչև {due}` + `INV-…`                 |
 
 Не писать `IDINV-…`. Отмена — тот же «Նշում», сверху չեղարկել.
 

@@ -19,15 +19,16 @@ import {
 /** Manual issue may target uncovered months through the next 12 Yerevan months. */
 export const MANUAL_SUBSCRIPTION_INVOICE_MAX_MONTHS_AHEAD = 12;
 
-/** One request creates at most this many separate period cards. */
+/** One request selects at most this many period starts (one prepaid card). */
 export const MANUAL_SUBSCRIPTION_INVOICE_MAX_CARDS = 12;
 
 export const SUBSCRIPTION_PERIOD_INVOICE_ERROR = {
   NOT_ACTIVE: 'Only active subscriptions can create a billing invoice.',
   INVALID_MONTH: 'coverageMonth must be YYYY-MM.',
   EMPTY_MONTHS: 'Select at least one coverage month.',
-  BATCH_SIZE: `Create at most ${MANUAL_SUBSCRIPTION_INVOICE_MAX_CARDS} invoices at once.`,
+  BATCH_SIZE: `Select at most ${MANUAL_SUBSCRIPTION_INVOICE_MAX_CARDS} coverage months at once.`,
   SELECTED_OVERLAP: 'Selected months overlap each other.',
+  NOT_CONSECUTIVE: 'Select consecutive coverage months.',
   BEFORE_START: 'Coverage month is before the subscription billing start.',
   AFTER_END: 'Coverage month is after the subscription end date.',
   TOO_FAR: 'Choose an uncovered month from the billing start through the next 12 months.',
@@ -62,6 +63,31 @@ export function parseCoverageMonthKeys(body: CreatePeriodInvoiceBody): string[] 
   const unique = [...new Set(raw.map((value) => parseCoverageMonthKey(value)))];
   unique.sort();
   return unique;
+}
+
+export function areCoverageStartsConsecutive(
+  coverageMonthKeys: readonly string[],
+  coverageMonthCount: number,
+): boolean {
+  if (coverageMonthKeys.length <= 1) return true;
+  const step =
+    Number.isInteger(coverageMonthCount) && coverageMonthCount >= 1 ? coverageMonthCount : 1;
+  for (let index = 1; index < coverageMonthKeys.length; index += 1) {
+    const previous = coverageMonthKeys[index - 1];
+    const current = coverageMonthKeys[index];
+    if (!previous || !current) return false;
+    if (shiftCoverageMonthKey(previous, step) !== current) return false;
+  }
+  return true;
+}
+
+export function assertSelectedCoverageStartsConsecutive(
+  coverageMonthKeys: readonly string[],
+  coverageMonthCount: number,
+): void {
+  if (!areCoverageStartsConsecutive(coverageMonthKeys, coverageMonthCount)) {
+    throw new BadRequestException(SUBSCRIPTION_PERIOD_INVOICE_ERROR.NOT_CONSECUTIVE);
+  }
 }
 
 export function assertSelectedCoverageWindowsCompatible(

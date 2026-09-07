@@ -206,6 +206,7 @@ function baseOverdue() {
     amount: 120000,
     dueDate: new Date('2026-08-05T00:00:00+04:00'),
     coverageStartMonth: '2026-07',
+    coverageMonthCount: 1,
     taxStatus: 'TAX_FREE',
     moneyStatus: 'OVERDUE',
     officialInvoiceRequestSent: false,

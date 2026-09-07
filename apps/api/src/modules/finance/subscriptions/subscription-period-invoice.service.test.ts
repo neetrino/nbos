@@ -192,17 +192,9 @@ describe('SubscriptionPeriodInvoiceService', () => {
     expect(prisma.invoice.create).not.toHaveBeenCalled();
   });
 
-  it('creates a separate card for each selected month in one transaction', async () => {
+  it('creates one prepaid card covering the selected consecutive months', async () => {
     prisma.subscription.findUnique.mockResolvedValue(mockSubscription());
     prisma.invoice.findMany.mockResolvedValue([]);
-    prisma.invoice.create.mockImplementation(async ({ data }) => ({
-      id: `inv-${data.coverageStartMonth}`,
-      code: `INV-${data.coverageStartMonth}`,
-    }));
-    invoicesService.findById.mockImplementation(async (id: string) => ({
-      id,
-      code: id.replace('inv-', 'INV-'),
-    }));
 
     const result = await service.create(
       'sub-1',
@@ -210,12 +202,26 @@ describe('SubscriptionPeriodInvoiceService', () => {
       AS_OF,
     );
 
-    expect(prisma.invoice.create).toHaveBeenCalledTimes(3);
-    expect(result).toEqual([
-      { id: 'inv-2026-10', code: 'INV-2026-10' },
-      { id: 'inv-2026-11', code: 'INV-2026-11' },
-      { id: 'inv-2026-12', code: 'INV-2026-12' },
-    ]);
+    expect(prisma.invoice.create).toHaveBeenCalledTimes(1);
+    expect(prisma.invoice.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          coverageStartMonth: '2026-10',
+          coverageMonthCount: 3,
+          amount: 150_000,
+        }),
+      }),
+    );
+    expect(result).toEqual([{ id: 'inv-1', code: 'INV-2026-0001' }]);
+  });
+
+  it('rejects a gap between selected months', async () => {
+    prisma.subscription.findUnique.mockResolvedValue(mockSubscription());
+    prisma.invoice.findMany.mockResolvedValue([]);
+    await expect(
+      service.create('sub-1', { coverageMonths: ['2026-09', '2026-11'] }, AS_OF),
+    ).rejects.toThrow(SUBSCRIPTION_PERIOD_INVOICE_ERROR.NOT_CONSECUTIVE);
+    expect(prisma.invoice.create).not.toHaveBeenCalled();
   });
 
   it('rejects a batch that exceeds remaining term', async () => {
@@ -223,17 +229,17 @@ describe('SubscriptionPeriodInvoiceService', () => {
     prisma.invoice.findMany.mockResolvedValue([]);
     await expect(
       service.create('sub-1', { coverageMonths: ['2026-09', '2026-10', '2026-11'] }, AS_OF),
-    ).rejects.toThrow(SUBSCRIPTION_PERIOD_INVOICE_ERROR.TERM_COMPLETE);
+    ).rejects.toThrow(SUBSCRIPTION_PERIOD_INVOICE_ERROR.TERM_REMAINING);
   });
 
-  it('rejects selected yearly starts that overlap each other', async () => {
+  it('rejects selected yearly starts that are not consecutive periods', async () => {
     prisma.subscription.findUnique.mockResolvedValue(
       mockSubscription({ coverageMonthCount: 12, amount: 120_000 }),
     );
     prisma.invoice.findMany.mockResolvedValue([]);
     await expect(
       service.create('sub-1', { coverageMonths: ['2026-09', '2026-10'] }, AS_OF),
-    ).rejects.toThrow(SUBSCRIPTION_PERIOD_INVOICE_ERROR.SELECTED_OVERLAP);
+    ).rejects.toThrow(SUBSCRIPTION_PERIOD_INVOICE_ERROR.NOT_CONSECUTIVE);
     expect(prisma.invoice.create).not.toHaveBeenCalled();
   });
 });

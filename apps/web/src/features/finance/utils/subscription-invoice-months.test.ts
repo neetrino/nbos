@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Subscription } from '@/lib/api/subscriptions';
 import {
+  areCoverageStartsConsecutive,
   canSelectAnotherCoverageMonth,
   classifyCoverageMonth,
   defaultSubscriptionInvoiceMonth,
@@ -164,6 +165,12 @@ describe('toggleCoverageMonthSelection', () => {
   it('ignores a yearly start that overlaps the current selection', () => {
     expect(toggleCoverageMonthSelection(['2026-09'], '2026-10', 12)).toEqual(['2026-09']);
     expect(isCoverageMonthBlockedBySelection('2026-10', ['2026-09'], 12)).toBe(true);
+  });
+
+  it('requires selected months to be consecutive period starts', () => {
+    expect(areCoverageStartsConsecutive(['2026-09', '2026-11'], 1)).toBe(false);
+    expect(areCoverageStartsConsecutive(['2026-09', '2026-10', '2026-11'], 1)).toBe(true);
+    expect(areCoverageStartsConsecutive(['2026-09', '2027-09'], 12)).toBe(true);
   });
 
   it('stops adding when remaining term cannot cover another period', () => {

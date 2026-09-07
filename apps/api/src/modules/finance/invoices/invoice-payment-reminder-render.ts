@@ -1,6 +1,6 @@
 import { resolveInvoiceDisplayTitle } from '@nbos/shared';
 import {
-  formatCoverageMonthLabel,
+  formatCoveragePeriodLabel,
   formatDueDateLabel,
   renderClientPaymentReminderMessage,
   type RenderClientPaymentReminderInput,
@@ -32,6 +32,7 @@ export function resolvePaymentReminderRenderInput(input: {
   amount: unknown;
   taxStatus: string;
   coverageStartMonth: string | null;
+  coverageMonthCount?: number | null;
   dueDate: Date;
   offsetDays?: RenderClientPaymentReminderInput['offsetDays'];
   subscription: PaymentReminderSubscription | null;
@@ -50,13 +51,15 @@ export function resolvePaymentReminderRenderInput(input: {
         language: input.subscription.reminderLanguage,
         source: 'subscription',
         serviceLabel,
-        periodLabel: formatCoverageMonthLabel(
+        periodLabel: formatCoveragePeriodLabel(
           input.coverageStartMonth,
+          input.coverageMonthCount,
           input.subscription.reminderLanguage,
         ),
         invoiceCode: input.code,
         amount: input.amount,
         taxStatus: input.taxStatus as RenderClientPaymentReminderInput['taxStatus'],
+        coverageMonthCount: input.coverageMonthCount ?? 1,
       },
     };
   }

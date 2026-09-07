@@ -144,6 +144,22 @@ export function canSelectAnotherCoverageMonth(args: {
   return (args.selectedCount + 1) * args.coverageMonthCount <= args.remainingMonths;
 }
 
+export function areCoverageStartsConsecutive(
+  selected: readonly string[],
+  coverageMonthCount: number,
+): boolean {
+  if (selected.length <= 1) return true;
+  const step = coverageMonthCount >= 1 ? coverageMonthCount : 1;
+  const sorted = [...selected].sort();
+  for (let index = 1; index < sorted.length; index += 1) {
+    const previous = sorted[index - 1];
+    const current = sorted[index];
+    if (!previous || !current) return false;
+    if (shiftSubscriptionMonthKey(previous, step) !== current) return false;
+  }
+  return true;
+}
+
 export function toggleCoverageMonthSelection(
   selected: readonly string[],
   monthKey: string,

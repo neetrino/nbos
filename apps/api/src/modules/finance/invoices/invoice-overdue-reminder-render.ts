@@ -1,6 +1,6 @@
 import { resolveInvoiceDisplayTitle } from '@nbos/shared';
 import {
-  formatCoverageMonthLabel,
+  formatCoveragePeriodLabel,
   formatDueDateLabel,
   type ClientPaymentReminderSource,
 } from './client-payment-reminder-templates';
@@ -33,6 +33,7 @@ export function resolveOverdueReminderRenderInput(input: {
   amount: unknown;
   taxStatus: string;
   coverageStartMonth: string | null;
+  coverageMonthCount?: number | null;
   dueDate: Date | null;
   wave: OverdueReminderWave;
   subscription: OverdueReminderSubscription | null;
@@ -45,10 +46,12 @@ export function resolveOverdueReminderRenderInput(input: {
     });
     return buildResolved(input, 'subscription', input.subscription.reminderLanguage, {
       serviceLabel,
-      periodLabel: formatCoverageMonthLabel(
+      periodLabel: formatCoveragePeriodLabel(
         input.coverageStartMonth,
+        input.coverageMonthCount,
         input.subscription.reminderLanguage,
       ),
+      coverageMonthCount: input.coverageMonthCount ?? 1,
     });
   }
   if (input.clientServiceRecord != null && input.dueDate != null) {
@@ -74,7 +77,7 @@ function buildResolved(
   },
   source: ClientPaymentReminderSource,
   language: RenderOverdueReminderInput['language'],
-  labels: { serviceLabel: string; periodLabel: string },
+  labels: { serviceLabel: string; periodLabel: string; coverageMonthCount?: number },
 ): ResolvedOverdueReminderRender {
   return {
     language,
@@ -88,6 +91,7 @@ function buildResolved(
       invoiceCode: input.code,
       amount: input.amount,
       taxStatus: input.taxStatus as RenderOverdueReminderInput['taxStatus'],
+      coverageMonthCount: labels.coverageMonthCount,
     },
   };
 }

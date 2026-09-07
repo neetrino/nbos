@@ -5,6 +5,7 @@ export const paymentReminderSelect = {
   dueDate: true,
   createdAt: true,
   coverageStartMonth: true,
+  coverageMonthCount: true,
   taxStatus: true,
   moneyStatus: true,
   officialInvoiceRequestSent: true,

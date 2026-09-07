@@ -29,7 +29,7 @@ export function CreateSubscriptionInvoiceDialog(props: CreateSubscriptionInvoice
         <DialogHeader>
           <DialogTitle>Create Subscription Invoice</DialogTitle>
           <DialogDescription>
-            Select months to invoice. Each month is a separate card.
+            Select consecutive months. One invoice covers all selected months.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={(event) => void state.handleSubmit(event)} className="space-y-4">
@@ -47,6 +47,9 @@ export function CreateSubscriptionInvoiceDialog(props: CreateSubscriptionInvoice
             disabled={state.loading || state.submitting || !state.subscription}
             onToggle={state.toggleCoverageMonth}
           />
+          {state.coverageMonths.length > 1 && !state.isConsecutive ? (
+            <p className="text-muted-foreground text-sm">Select consecutive months.</p>
+          ) : null}
           {state.error ? (
             <p className="text-destructive text-sm" role="alert">
               {state.error}
@@ -57,7 +60,7 @@ export function CreateSubscriptionInvoiceDialog(props: CreateSubscriptionInvoice
               Cancel
             </Button>
             <Button type="submit" disabled={!state.canSubmit || state.submitting}>
-              {submitLabel(state.submitting, state.coverageMonths.length)}
+              {state.submitting ? 'Creating...' : 'Create Invoice'}
             </Button>
           </DialogFooter>
         </form>
@@ -103,10 +106,4 @@ function SubscriptionInvoiceContext({
       </p>
     </div>
   );
-}
-
-function submitLabel(submitting: boolean, selectedCount: number): string {
-  if (submitting) return 'Creating...';
-  if (selectedCount > 1) return `Create ${selectedCount} Invoices`;
-  return 'Create Invoice';
 }

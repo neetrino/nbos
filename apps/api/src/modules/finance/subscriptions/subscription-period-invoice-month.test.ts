@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   assertCoverageMonthFreeForCharge,
   assertCoverageMonthInManualWindow,
+  assertSelectedCoverageStartsConsecutive,
   assertSelectedCoverageWindowsCompatible,
   listManualInvoiceMonthKeys,
   maxManualInvoiceMonthKey,
@@ -140,6 +141,21 @@ describe('assertSelectedCoverageWindowsCompatible', () => {
     expect(() =>
       assertSelectedCoverageWindowsCompatible(['2026-09', '2026-10', '2026-11'], 1),
     ).not.toThrow();
+  });
+});
+
+describe('assertSelectedCoverageStartsConsecutive', () => {
+  it('allows consecutive monthly starts and consecutive yearly starts', () => {
+    expect(() =>
+      assertSelectedCoverageStartsConsecutive(['2026-09', '2026-10', '2026-11'], 1),
+    ).not.toThrow();
+    expect(() => assertSelectedCoverageStartsConsecutive(['2026-09', '2027-09'], 12)).not.toThrow();
+  });
+
+  it('rejects a gap between selected starts', () => {
+    expect(() => assertSelectedCoverageStartsConsecutive(['2026-09', '2026-11'], 1)).toThrow(
+      SUBSCRIPTION_PERIOD_INVOICE_ERROR.NOT_CONSECUTIVE,
+    );
   });
 });
 

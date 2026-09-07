@@ -28,6 +28,7 @@ const OFFICIAL_CONTEXT_SELECT = {
   officialInvoiceRequestSent: true,
   officialInvoiceCancelledAt: true,
   coverageStartMonth: true,
+  coverageMonthCount: true,
   dueDate: true,
   orderId: true,
   subscriptionId: true,
@@ -174,6 +175,7 @@ export class InvoiceOfficialWhatsAppService {
         subscriptionCode: invoice.subscription?.code,
         subscriptionType: invoice.subscription?.type,
         coverageStartMonth: invoice.coverageStartMonth,
+        coverageMonthCount: invoice.coverageMonthCount,
         clientServiceName: invoice.clientServiceRecord?.name,
         clientServiceType: invoice.clientServiceRecord?.type,
         dueDate: invoice.dueDate,
@@ -191,6 +193,7 @@ type OfficialWhatsAppInvoice = {
   officialInvoiceRequestSent: boolean;
   officialInvoiceCancelledAt: Date | null;
   coverageStartMonth: string | null;
+  coverageMonthCount: number | null;
   dueDate: Date | null;
   orderId: string | null;
   subscriptionId: string | null;

@@ -216,6 +216,7 @@ function paymentCandidate(
     createdAt: createdAt ?? new Date('2026-04-01T11:00:00+04:00'),
     dueDate: new Date('2026-04-20T00:00:00+04:00'),
     coverageStartMonth: '2026-04',
+    coverageMonthCount: 1,
     taxStatus: 'TAX_FREE',
     moneyStatus: 'AWAITING_PAYMENT',
     officialInvoiceRequestSent: false,

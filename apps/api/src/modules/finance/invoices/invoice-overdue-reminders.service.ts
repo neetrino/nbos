@@ -27,6 +27,7 @@ type OverdueCandidate = {
   amount: unknown;
   dueDate: Date | null;
   coverageStartMonth: string | null;
+  coverageMonthCount: number | null;
   taxStatus: string;
   moneyStatus: string;
   officialInvoiceRequestSent: boolean;
@@ -223,6 +224,7 @@ export class InvoiceOverdueRemindersService {
       amount: item.invoice.amount,
       taxStatus: item.invoice.taxStatus,
       coverageStartMonth: item.invoice.coverageStartMonth,
+      coverageMonthCount: item.invoice.coverageMonthCount,
       dueDate: item.invoice.dueDate,
       wave: item.wave,
       subscription: item.invoice.subscription,

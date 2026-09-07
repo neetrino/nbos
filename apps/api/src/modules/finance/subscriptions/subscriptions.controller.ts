@@ -156,7 +156,7 @@ export class SubscriptionsController {
 
   @Post(':id/actions/create-invoice')
   @ApiOperation({
-    summary: 'Create subscription billing invoices for uncovered coverage months',
+    summary: 'Create one subscription billing invoice for uncovered consecutive months',
   })
   async createPeriodInvoice(
     @Param('id') id: string,

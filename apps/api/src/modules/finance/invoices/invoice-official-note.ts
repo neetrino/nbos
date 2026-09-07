@@ -1,5 +1,5 @@
 import { resolveInvoiceDisplayTitle, resolveInvoiceOrderCommentLabelHy } from '@nbos/shared';
-import { formatCoverageMonthLabel, formatDueDateLabel } from './client-payment-reminder-templates';
+import { formatCoveragePeriodLabel, formatDueDateLabel } from './client-payment-reminder-templates';
 
 const SUBSCRIPTION_TYPE_PHRASE_HY: Record<string, string> = {
   DEV_ONLY: 'մշակում',
@@ -42,6 +42,7 @@ export interface OfficialInvoiceNoteInput {
   subscriptionCode?: string | null;
   subscriptionType?: string | null;
   coverageStartMonth?: string | null;
+  coverageMonthCount?: number | null;
   clientServiceName?: string | null;
   clientServiceType?: string | null;
   dueDate?: Date | string | null;
@@ -59,7 +60,11 @@ export function buildOfficialInvoicePurpose(input: OfficialInvoiceNoteInput): st
   if (source === 'subscription') {
     const name = input.subscriptionName?.trim() || resolveNoteDisplayTitle(input);
     const phrase = phraseFor(SUBSCRIPTION_TYPE_PHRASE_HY, input.subscriptionType);
-    const month = formatCoverageMonthLabel(input.coverageStartMonth ?? null, 'HY');
+    const month = formatCoveragePeriodLabel(
+      input.coverageStartMonth ?? null,
+      input.coverageMonthCount,
+      'HY',
+    );
     return joinNoteLines([name, joinWhy(phrase, month), input.code]);
   }
   if (source === 'client_service') {

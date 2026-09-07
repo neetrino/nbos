@@ -28,6 +28,7 @@ interface PaymentWindowCandidate {
   dueDate: Date | null;
   createdAt: Date;
   coverageStartMonth: string | null;
+  coverageMonthCount: number | null;
   taxStatus: string;
   moneyStatus: string;
   officialInvoiceRequestSent: boolean;
@@ -146,6 +147,7 @@ async function createPaymentWindowJob(
     amount: invoice.amount,
     taxStatus: invoice.taxStatus,
     coverageStartMonth: invoice.coverageStartMonth,
+    coverageMonthCount: invoice.coverageMonthCount,
     dueDate,
     subscription: invoice.subscription,
     clientServiceRecord: null,
