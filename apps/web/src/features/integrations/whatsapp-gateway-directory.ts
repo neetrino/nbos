@@ -16,13 +16,17 @@ export function directoryHasMorePage(receivedCount: number, pageSize: number): b
   return receivedCount >= pageSize;
 }
 
-export function groupsPageToDirectoryPage(page: WhatsAppGatewayGroupsPage): WhatsAppGatewayChatsPage {
+export function groupsPageToDirectoryPage(
+  page: WhatsAppGatewayGroupsPage,
+): WhatsAppGatewayChatsPage {
   return {
-    items: page.groups.map((group): WhatsAppGatewayChatItem => ({
-      id: group.id,
-      name: group.name,
-      type: 'group',
-    })),
+    items: page.groups.map(
+      (group): WhatsAppGatewayChatItem => ({
+        id: group.id,
+        name: group.name,
+        type: 'group',
+      }),
+    ),
     pagination: page.pagination,
   };
 }

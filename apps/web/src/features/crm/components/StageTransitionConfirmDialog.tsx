@@ -42,9 +42,7 @@ export function StageTransitionConfirmDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={
-          children
-            ? 'min-w-0 [grid-template-columns:minmax(0,1fr)] sm:max-w-lg'
-            : 'sm:max-w-md'
+          children ? 'min-w-0 [grid-template-columns:minmax(0,1fr)] sm:max-w-lg' : 'sm:max-w-md'
         }
         forceNestedBackdrop
       >

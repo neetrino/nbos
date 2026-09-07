@@ -3,7 +3,10 @@
 import type { KeyboardEvent, ReactNode } from 'react';
 import { Building2, FolderKanban, type LucideIcon } from 'lucide-react';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
-import { formatEntityListDate, resolveEntityCardDateParts } from '@/components/shared/entity-list-date';
+import {
+  formatEntityListDate,
+  resolveEntityCardDateParts,
+} from '@/components/shared/entity-list-date';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
 import { getInvoiceSourceLabel } from '@/features/finance/utils/invoice-source-label';
