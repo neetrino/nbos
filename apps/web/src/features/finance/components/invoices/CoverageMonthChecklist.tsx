@@ -68,15 +68,15 @@ function CoverageMonthSummary({
     <div className="space-y-1">
       {coverageMonthCount > 1 ? (
         <p className="text-muted-foreground text-xs">
-          Each invoice covers {coverageMonthCount} months starting in the selected month.
-          Overlapping starts stay disabled.
+          Each selected start covers {coverageMonthCount} months. Overlapping starts stay disabled.
         </p>
       ) : null}
       {selectedCount === 0 ? (
         <p className="text-muted-foreground text-xs">Select at least one month.</p>
       ) : (
         <p className="text-muted-foreground text-xs">
-          {selectedCount} {selectedCount === 1 ? 'invoice' : 'invoices'}
+          1 invoice covering {selectedCount * coverageMonthCount}{' '}
+          {selectedCount * coverageMonthCount === 1 ? 'month' : 'months'}
         </p>
       )}
     </div>

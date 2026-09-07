@@ -215,6 +215,28 @@ describe('SubscriptionPeriodInvoiceService', () => {
     expect(result).toEqual([{ id: 'inv-1', code: 'INV-2026-0001' }]);
   });
 
+  it('sends the accountant notice after the create transaction commits', async () => {
+    const officialWhatsApp = { enqueueIfAwaitingEligible: vi.fn().mockResolvedValue(undefined) };
+    service = new SubscriptionPeriodInvoiceService(
+      prisma as never,
+      invoicesService as never,
+      officialWhatsApp as never,
+    );
+    prisma.subscription.findUnique.mockResolvedValue(mockSubscription({ billingDay: 1 }));
+    prisma.invoice.findMany.mockResolvedValue([]);
+    prisma.invoice.create.mockResolvedValue({
+      id: 'inv-await',
+      code: 'INV-2026-0002',
+      moneyStatus: 'AWAITING_PAYMENT',
+    });
+    invoicesService.findById.mockResolvedValue({ id: 'inv-await', code: 'INV-2026-0002' });
+
+    await service.create('sub-1', { coverageMonth: '2026-09' }, AS_OF);
+
+    expect(officialWhatsApp.enqueueIfAwaitingEligible).toHaveBeenCalledWith('inv-await');
+    expect(invoicesService.findById).toHaveBeenCalledWith('inv-await');
+  });
+
   it('rejects a gap between selected months', async () => {
     prisma.subscription.findUnique.mockResolvedValue(mockSubscription());
     prisma.invoice.findMany.mockResolvedValue([]);
