@@ -1,7 +1,7 @@
 'use client';
 
 import type { KeyboardEvent, ReactNode } from 'react';
-import { AlertTriangle, Building2, CheckCircle2, FolderKanban, type LucideIcon } from 'lucide-react';
+import { Building2, CheckCircle2, FolderKanban, type LucideIcon } from 'lucide-react';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { formatEntityListDate, resolveEntityCardDateParts } from '@/components/shared/entity-list-date';
 import { formatAmount } from '@/features/finance/constants/finance';
@@ -13,10 +13,13 @@ import type { Invoice } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
 
 const COVERAGE_FULL_PERCENT = 100;
-const CARD_DATE_DAY_MONTH_CLASS =
-  'text-base leading-none font-bold tabular-nums text-orange-500 dark:text-orange-400';
-const CARD_DATE_YEAR_CLASS =
-  'mt-0.5 text-[10px] leading-tight text-orange-500/70 dark:text-orange-400/70';
+const CARD_DATE_DAY_MONTH_CLASS = 'text-base leading-none font-bold tabular-nums';
+const CARD_DATE_YEAR_CLASS = 'mt-0.5 text-[10px] leading-tight';
+const CARD_DATE_DUE_TONE_CLASS = 'text-orange-500 dark:text-orange-400';
+const CARD_DATE_DUE_YEAR_TONE_CLASS = 'text-orange-500/70 dark:text-orange-400/70';
+const CARD_DATE_OVERDUE_TONE_CLASS = 'text-red-600 dark:text-red-400';
+const CARD_DATE_OVERDUE_YEAR_TONE_CLASS = 'text-red-600/70 dark:text-red-400/70';
+const CARD_DATE_OVERDUE_LABEL = 'overdue';
 
 const INVOICE_CARD_RELATION_VISUAL: Record<
   'company' | 'project',
@@ -85,7 +88,7 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
           <p className="text-foreground text-xl leading-none font-bold tabular-nums">
             {formatAmount(amount, invoice.currency)}
           </p>
-          {paidPercent !== null || invoice.taxStatus === 'TAX' || overdueDays > 0 ? (
+          {paidPercent !== null || invoice.taxStatus === 'TAX' ? (
             <div className="flex flex-wrap items-center gap-1.5">
               {paidPercent !== null ? (
                 <CoveragePill label="Paid" percent={paidPercent} tone="blue" />
@@ -97,12 +100,6 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
                   className="rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
                 />
               ) : null}
-              {overdueDays > 0 ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600 dark:bg-red-950/40 dark:text-red-400">
-                  <AlertTriangle size={11} className="shrink-0" aria-hidden />
-                  {overdueDays}d overdue
-                </span>
-              ) : null}
             </div>
           ) : null}
         </div>
@@ -112,6 +109,7 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
             companyName={invoice.company?.name}
             projectName={invoice.project?.name}
             dueDate={invoice.dueDate}
+            overdue={overdueDays > 0}
           />
         ) : null}
       </div>
@@ -151,10 +149,12 @@ function InvoiceCardMeta({
   companyName,
   projectName,
   dueDate,
+  overdue,
 }: {
   companyName?: string;
   projectName?: string;
   dueDate?: string | null;
+  overdue: boolean;
 }) {
   const relation = resolveInvoiceCardRelation(companyName, projectName);
 
@@ -170,7 +170,7 @@ function InvoiceCardMeta({
           <InvoiceCardRelationRow relation={relation} />
         </div>
       ) : null}
-      {dueDate ? <InvoiceCardDueDate value={dueDate} /> : null}
+      {dueDate ? <InvoiceCardDueDate value={dueDate} overdue={overdue} /> : null}
     </div>
   );
 }
@@ -198,18 +198,31 @@ function InvoiceCardRelationRow({ relation }: { relation: InvoiceCardRelation })
   );
 }
 
-function InvoiceCardDueDate({ value }: { value: string }) {
+function InvoiceCardDueDate({ value, overdue }: { value: string; overdue: boolean }) {
   const parts = resolveEntityCardDateParts(value);
   if (!parts) return null;
 
+  const formatted = formatEntityListDate(value) || parts.dayMonth;
+  const label = overdue ? `${formatted} ${CARD_DATE_OVERDUE_LABEL}` : formatted;
+
   return (
-    <time
-      dateTime={value}
-      aria-label={formatEntityListDate(value) || parts.dayMonth}
-      className="shrink-0 text-right"
-    >
-      <p className={CARD_DATE_DAY_MONTH_CLASS}>{parts.dayMonth}</p>
-      <p className={CARD_DATE_YEAR_CLASS}>{parts.year}</p>
+    <time dateTime={value} aria-label={label} className="shrink-0 text-right">
+      <p
+        className={cn(
+          CARD_DATE_DAY_MONTH_CLASS,
+          overdue ? CARD_DATE_OVERDUE_TONE_CLASS : CARD_DATE_DUE_TONE_CLASS,
+        )}
+      >
+        {parts.dayMonth}
+      </p>
+      <p
+        className={cn(
+          CARD_DATE_YEAR_CLASS,
+          overdue ? CARD_DATE_OVERDUE_YEAR_TONE_CLASS : CARD_DATE_DUE_YEAR_TONE_CLASS,
+        )}
+      >
+        {parts.year}
+      </p>
     </time>
   );
 }
