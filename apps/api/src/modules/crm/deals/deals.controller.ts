@@ -26,6 +26,7 @@ import type {
   CreateExceptionOrderBody,
   StartEarlyDeliveryBody,
 } from './deal-commercial-handoff.types';
+import { ListWhatsAppGatewayGroupsQueryDto } from '../../integrations/whatsapp-gateway/dto/whatsapp-gateway.dto';
 import { BindDealWhatsAppGroupDto } from './dto/bind-deal-whatsapp-group.dto';
 import { UpdateDealStatusDto } from './dto/update-deal-status.dto';
 
@@ -239,25 +240,32 @@ export class DealsController {
     return this.dealsService.findById(id);
   }
 
+  @Get(':id/whatsapp-group/available-groups')
+  @ApiOperation({ summary: 'Search WhatsApp groups from Gateway to bind to this Deal' })
+  listWhatsAppAvailableGroups(
+    @Param('id') id: string,
+    @Query() query: ListWhatsAppGatewayGroupsQueryDto,
+  ) {
+    return this.dealsService.listWhatsAppAvailableGroups(id, query);
+  }
+
   @Get(':id/whatsapp-group')
   @ApiOperation({ summary: 'Get Deal client WhatsApp group state (Deal-level or Product WORK)' })
-  async getWhatsAppGroup(@Param('id') id: string) {
+  getWhatsAppGroup(@Param('id') id: string) {
     return this.dealsService.getWhatsAppGroupState(id);
   }
 
   @Post(':id/whatsapp-group/ensure')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Create or retry Deal client WhatsApp group (no Product required)',
-  })
-  async ensureWhatsAppGroup(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+  @ApiOperation({ summary: 'Create or retry Deal client WhatsApp group (no Product required)' })
+  ensureWhatsAppGroup(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
     return this.dealsService.ensureWhatsAppGroup(id, user.id);
   }
 
   @Post(':id/whatsapp-group/bind')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Bind an existing WhatsApp group to this Deal' })
-  async bindWhatsAppGroup(
+  bindWhatsAppGroup(
     @Param('id') id: string,
     @CurrentUser() user: CurrentUserPayload,
     @Body() body: BindDealWhatsAppGroupDto,

@@ -1,4 +1,9 @@
-import type { WhatsAppGatewayChatType } from '@/lib/api/whatsapp';
+import type {
+  WhatsAppGatewayChatItem,
+  WhatsAppGatewayChatType,
+  WhatsAppGatewayChatsPage,
+  WhatsAppGatewayGroupsPage,
+} from '@/lib/api/whatsapp';
 
 export const WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE = 50;
 
@@ -9,4 +14,15 @@ export function resolveDirectoryChatType(id: string, type?: string): WhatsAppGat
 
 export function directoryHasMorePage(receivedCount: number, pageSize: number): boolean {
   return receivedCount >= pageSize;
+}
+
+export function groupsPageToDirectoryPage(page: WhatsAppGatewayGroupsPage): WhatsAppGatewayChatsPage {
+  return {
+    items: page.groups.map((group): WhatsAppGatewayChatItem => ({
+      id: group.id,
+      name: group.name,
+      type: 'group',
+    })),
+    pagination: page.pagination,
+  };
 }

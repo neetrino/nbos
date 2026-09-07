@@ -478,7 +478,7 @@ Required commercial fields for OUTSOURCE before Won follow PRODUCT-like taxonomy
 | **ON**                    | Order + Project + Product → **active Delivery Board** (`Starting → Development → QA → Transfer`) + WhatsApp Product group + Finance (Invoice / Subscription as payment type allows) |
 | **OFF** (default)         | Order + Project + Product **without** active Delivery Board (post-delivery style: product stays in Project Hub + Finance + WhatsApp; must not appear on active Development kanban)  |
 
-In both modes the Product still owns the WhatsApp group. Group create is **not** silent at Won — Sales uses the Won modal (create or paste ID). Missing/failed groups stay visible for later retry.
+In both modes the Product still owns the WhatsApp group. Group create is **not** silent at Won — Sales uses the Won modal (create a group, or search by name/ID and select an existing one). Missing/failed groups stay visible for later retry.
 
 ### Subscription / Finance
 

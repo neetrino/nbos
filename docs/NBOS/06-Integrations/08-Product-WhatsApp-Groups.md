@@ -102,6 +102,8 @@ or
 Select / bind another existing allowed WhatsApp conversation
 ```
 
+The Won modal searches Gateway groups by name or ID (same directory search as Settings → Integrations) and binds the selected group. A typed/pasted `@g.us` id remains a fallback when the group is not in the current page.
+
 The existing group selector should normally show safe candidates from the current Project/client context rather than every WhatsApp group in the company.
 
 A separate `FINANCE` destination is **not required** to complete normal Deal Won. It may be configured later from Product Client Communication Settings.

@@ -117,4 +117,39 @@ describe('DealWhatsAppGroupService', () => {
       response: { code: WHATSAPP_ERROR.DEAL_TYPE_NOT_ELIGIBLE },
     });
   });
+
+  it('lists Gateway groups for an existing Deal', async () => {
+    const listGroups = vi.fn().mockResolvedValue({
+      groups: [{ id: '120363408874132550@g.us', name: 'APP' }],
+      pagination: { limit: 50, offset: 0, count: 1 },
+    });
+    const prisma = {
+      deal: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'deal-1',
+          code: 'D-1',
+          name: 'Site',
+          type: 'PRODUCT',
+          contactId: 'c1',
+          existingProductId: null,
+          status: 'DEPOSIT_AND_CONTRACT',
+          contact: { firstName: 'Ada', lastName: 'Client' },
+          orders: [],
+        }),
+      },
+    };
+    const service = new DealWhatsAppGroupService(
+      prisma as never,
+      {} as never,
+      {} as never,
+      { listGroups } as never,
+      {} as never,
+      { log: vi.fn() } as never,
+    );
+
+    const page = await service.listAvailableGroups('deal-1', { search: 'APP' });
+
+    expect(listGroups).toHaveBeenCalledWith({ search: 'APP' });
+    expect(page.groups).toEqual([{ id: '120363408874132550@g.us', name: 'APP' }]);
+  });
 });

@@ -95,6 +95,7 @@ export function DealSheetQuickActions({
   return (
     <>
       <DealWhatsAppHeaderControl
+        dealId={deal.id}
         actions={whatsapp.whatsappActions}
         bindOpen={whatsapp.bindOpen}
         busy={whatsapp.whatsappBusy}

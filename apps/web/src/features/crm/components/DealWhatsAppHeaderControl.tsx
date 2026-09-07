@@ -22,6 +22,7 @@ const HEADER_BUTTON_CLASS = 'rounded-full shadow-sm';
 const WHATSAPP_MENU_WIDTH_CLASS = 'w-max min-w-0';
 
 interface DealWhatsAppHeaderControlProps {
+  dealId: string;
   actions: DealWhatsAppQuickAction[];
   bindOpen: boolean;
   busy: boolean;
@@ -30,6 +31,7 @@ interface DealWhatsAppHeaderControlProps {
 }
 
 export function DealWhatsAppHeaderControl({
+  dealId,
   actions,
   bindOpen,
   busy,
@@ -41,6 +43,7 @@ export function DealWhatsAppHeaderControl({
     <>
       <DealWhatsAppHeaderTrigger presentation={presentation} />
       <DealWhatsAppBindDialog
+        dealId={dealId}
         open={bindOpen}
         busy={busy}
         onOpenChange={onBindOpenChange}

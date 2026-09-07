@@ -12,16 +12,27 @@ import {
 } from 'react';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { whatsappGatewayApi, type WhatsAppGatewayChatItem } from '@/lib/api/whatsapp';
+import {
+  whatsappGatewayApi,
+  type WhatsAppGatewayChatItem,
+  type WhatsAppGatewayChatsPage,
+} from '@/lib/api/whatsapp';
 import {
   directoryHasMorePage,
   WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE,
 } from './whatsapp-gateway-directory';
 
+export type WhatsAppDirectoryPageLoader = (args: {
+  limit: number;
+  offset: number;
+  search: string;
+}) => Promise<WhatsAppGatewayChatsPage>;
+
 export function useWhatsAppGatewayDirectory(props: {
   open: boolean;
   configured: boolean;
   search: string;
+  loadPage?: WhatsAppDirectoryPageLoader;
 }) {
   const [items, setItems] = useState<WhatsAppGatewayChatItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -30,6 +41,7 @@ export function useWhatsAppGatewayDirectory(props: {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const inflightRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const fetchPage = props.loadPage ?? loadGatewayChatsPage;
   const loadPage = useCallback(
     (offset: number, append: boolean) =>
       loadDirectoryPage({
@@ -37,6 +49,7 @@ export function useWhatsAppGatewayDirectory(props: {
         search: props.search,
         append,
         offset,
+        fetchPage,
         inflightRef,
         setItems,
         setHasMore,
@@ -44,7 +57,7 @@ export function useWhatsAppGatewayDirectory(props: {
         setLoading,
         setLoadingMore,
       }),
-    [props.configured, props.search],
+    [fetchPage, props.configured, props.search],
   );
 
   useEffect(() => {
@@ -65,11 +78,20 @@ export function useWhatsAppGatewayDirectory(props: {
   return { items, loading, loadingMore, hasMore, errorMessage, loadPage, sentinelRef };
 }
 
+function loadGatewayChatsPage(args: {
+  limit: number;
+  offset: number;
+  search: string;
+}): Promise<WhatsAppGatewayChatsPage> {
+  return whatsappGatewayApi.listChats(args);
+}
+
 async function loadDirectoryPage(args: {
   configured: boolean;
   search: string;
   append: boolean;
   offset: number;
+  fetchPage: WhatsAppDirectoryPageLoader;
   inflightRef: MutableRefObject<boolean>;
   setItems: Dispatch<SetStateAction<WhatsAppGatewayChatItem[]>>;
   setHasMore: Dispatch<SetStateAction<boolean>>;
@@ -88,7 +110,7 @@ async function loadDirectoryPage(args: {
   if (args.append) args.setLoadingMore(true);
   else args.setLoading(true);
   try {
-    const page = await whatsappGatewayApi.listChats({
+    const page = await args.fetchPage({
       limit: WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE,
       offset: args.offset,
       search: args.search,

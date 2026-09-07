@@ -1,12 +1,13 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Deal } from '@/lib/api/deals';
+import { resolveDealWhatsAppBindId } from '../deal-whatsapp-bind-id';
 import type { DealWonWhatsAppPayload } from '../deal-won-whatsapp-gate';
 import { useWonWhatsAppGate } from '../hooks/use-won-whatsapp-gate';
 import { whatsappCreateButtonLabel } from '../whatsapp-create-status';
+import { WhatsAppGroupSearchPicker } from './WhatsAppGroupSearchPicker';
 
 interface WonWhatsAppGatePanelProps {
   deal: Deal;
@@ -27,26 +28,12 @@ export function WonWhatsAppGatePanel({ deal, open, onSatisfiedChange }: WonWhats
     handleCreate,
     handleSaveId,
   } = useWonWhatsAppGate(deal, open, onSatisfiedChange);
+  const pickerOpen = open && (!hasDealGroup || showAdvanced);
 
   return (
     <div className="border-border space-y-3 rounded-lg border p-3">
       <p className="text-sm font-medium">WhatsApp group</p>
-      {hasDealGroup ? (
-        <p className="text-muted-foreground text-xs">
-          This deal already has a client group. It will be attached as Product WORK. History is not
-          copied.
-        </p>
-      ) : (
-        <p className="text-muted-foreground text-xs">
-          Create a group or paste an existing group ID. There is no skip — Mark as Won stays off
-          until you choose one.
-        </p>
-      )}
-      {createFailed ? (
-        <p className="text-destructive text-xs">
-          Creation failed (WhatsApp may be down). You can still mark as Won and retry later.
-        </p>
-      ) : null}
+      <WonWhatsAppGateCopy createFailed={createFailed} hasDealGroup={hasDealGroup} />
       {hasDealGroup ? (
         <Button
           type="button"
@@ -57,19 +44,44 @@ export function WonWhatsAppGatePanel({ deal, open, onSatisfiedChange }: WonWhats
           {showAdvanced ? 'Hide other options' : 'Need a different group?'}
         </Button>
       ) : null}
-      {!hasDealGroup || showAdvanced ? (
+      {pickerOpen ? (
         <WonWhatsAppAdvancedActions
           busy={busy}
           createFailed={createFailed}
           createInFlight={createInFlight}
+          dealId={deal.id}
           groupIdInput={groupIdInput}
           hasDealGroup={hasDealGroup}
+          pickerOpen={pickerOpen}
           onCreate={() => void handleCreate()}
           onGroupIdChange={setGroupIdInput}
-          onSaveId={() => void handleSaveId()}
+          onSaveId={(id) => void handleSaveId(id)}
         />
       ) : null}
     </div>
+  );
+}
+
+function WonWhatsAppGateCopy(props: { createFailed: boolean; hasDealGroup: boolean }) {
+  return (
+    <>
+      {props.hasDealGroup ? (
+        <p className="text-muted-foreground text-xs">
+          This deal already has a client group. It will be attached as Product WORK. History is not
+          copied.
+        </p>
+      ) : (
+        <p className="text-muted-foreground text-xs">
+          Create a group or search by name or ID and select one. There is no skip — Mark as Won
+          stays off until you choose one.
+        </p>
+      )}
+      {props.createFailed ? (
+        <p className="text-destructive text-xs">
+          Creation failed (WhatsApp may be down). You can still mark as Won and retry later.
+        </p>
+      ) : null}
+    </>
   );
 }
 
@@ -77,12 +89,15 @@ function WonWhatsAppAdvancedActions(input: {
   busy: boolean;
   createFailed: boolean;
   createInFlight: boolean;
+  dealId: string;
   groupIdInput: string;
   hasDealGroup: boolean;
+  pickerOpen: boolean;
   onCreate: () => void;
   onGroupIdChange: (value: string) => void;
-  onSaveId: () => void;
+  onSaveId: (groupChatId?: string) => void;
 }) {
+  const bindId = resolveDealWhatsAppBindId(input.groupIdInput);
   return (
     <div className="space-y-3">
       <Button
@@ -100,21 +115,23 @@ function WonWhatsAppAdvancedActions(input: {
             : 'Create WhatsApp group',
         })}
       </Button>
-      <div className="space-y-1.5">
-        <Label htmlFor="won-wa-group-id">WhatsApp group ID</Label>
-        <Input
-          id="won-wa-group-id"
-          value={input.groupIdInput}
-          onChange={(event) => input.onGroupIdChange(event.target.value)}
-          placeholder="120363… or 120363…@g.us"
+      <div className="min-w-0 space-y-1.5">
+        <Label htmlFor="wa-directory-search">Find existing group</Label>
+        <WhatsAppGroupSearchPicker
+          dealId={input.dealId}
+          open={input.pickerOpen}
           disabled={input.busy}
+          selectedId={bindId}
+          search={input.groupIdInput}
+          onSearchChange={input.onGroupIdChange}
+          onSelect={(groupChatId) => input.onSaveId(groupChatId)}
         />
         <Button
           type="button"
           variant="outline"
           className="w-full"
-          disabled={input.busy || !input.groupIdInput.trim()}
-          onClick={input.onSaveId}
+          disabled={input.busy || !bindId}
+          onClick={() => input.onSaveId(bindId ?? undefined)}
         >
           Bind a different group
         </Button>
