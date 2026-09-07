@@ -33,6 +33,7 @@ import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clien
 import { useListScope } from '@/hooks/use-list-scope';
 import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import { contactsApi, type Contact } from '@/lib/api/clients';
+import { beginPermittedCreate, usePermission } from '@/lib/permissions';
 import { toast } from 'sonner';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
@@ -49,6 +50,7 @@ function ContactsPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { can } = usePermission();
   const sidebarCollapsed = useAppSidebarCollapsed();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [listMeta, setListMeta] = useState<ListPaginationMeta>(emptyContactsListMeta);
@@ -58,6 +60,8 @@ function ContactsPageContent() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.clientsContacts);
   const [showCreate, setShowCreate] = useState(false);
+  const openCreateContact = () =>
+    beginPermittedCreate(can('ADD', 'CLIENTS'), () => setShowCreate(true));
   const [view, setView] = useState<ClientsDirectoryViewMode>('grid');
   const [fetchedContact, setFetchedContact] = useState<Contact | null>(null);
   const deleteConfirm = useDeleteConfirm();
@@ -246,7 +250,7 @@ function ContactsPageContent() {
             entityLabel="contacts"
           />
           {!isTrashView ? (
-            <Button onClick={() => setShowCreate(true)}>
+            <Button onClick={openCreateContact}>
               <Plus size={16} aria-hidden />
               New Contact
             </Button>
@@ -254,7 +258,17 @@ function ContactsPageContent() {
         </div>
       ),
     }),
-    [filterConfigs, filters, isTrashView, scope, search, setFilters, setScope, view],
+    [
+      filterConfigs,
+      filters,
+      isTrashView,
+      openCreateContact,
+      scope,
+      search,
+      setFilters,
+      setScope,
+      view,
+    ],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -285,7 +299,7 @@ function ContactsPageContent() {
           }
           action={
             isTrashView ? undefined : (
-              <Button onClick={() => setShowCreate(true)}>
+              <Button onClick={openCreateContact}>
                 <Plus size={16} />
                 Create First Contact
               </Button>

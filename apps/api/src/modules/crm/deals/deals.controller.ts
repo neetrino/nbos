@@ -13,7 +13,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { hasCompanyExecutiveOpsFromUser } from '@nbos/shared';
-import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
+import {
+  CurrentUser,
+  RequirePermission,
+  type CurrentUserPayload,
+} from '../../../common/decorators';
 import { DealsService } from './deals.service';
 import type { PatchPartnerReferralTermsBody } from './partner-referral-terms.ops';
 import { DealCommercialHandoffService } from './deal-commercial-handoff.service';
@@ -194,6 +198,7 @@ export class DealsController {
   }
 
   @Post(':id/actions/create-deposit-order')
+  @RequirePermission('FINANCE_INVOICES', 'ADD')
   @ApiOperation({ summary: 'Create standard prepay order + deposit invoice for a deal' })
   async createDepositOrder(@Param('id') id: string, @Body() body: CreateDepositOrderBody) {
     await this.dealCommercialHandoff.createDepositOrder(id, body);

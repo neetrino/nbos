@@ -13,6 +13,8 @@ import type { Deal } from '@/lib/api/deals';
 import { dealsApi } from '@/lib/api/deals';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
+import { usePermission } from '@/lib/permissions';
+import { dealInvoiceCreateDeniedMessage } from '@/features/crm/utils/deal-invoice-create-guard';
 import { useDealWhatsAppHeaderActions } from '../hooks/use-deal-whatsapp-header-actions';
 import { DealSheetActionsMenu } from './DealSheetActionsMenu';
 import { DealWhatsAppHeaderControl } from './DealWhatsAppHeaderControl';
@@ -40,10 +42,20 @@ export function DealSheetQuickActions({
   onCreateTask,
 }: DealSheetQuickActionsProps) {
   const router = useRouter();
+  const { can } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
   const whatsapp = useDealWhatsAppHeaderActions(deal, onRefresh);
   const taxStatus = deal.taxStatus ?? 'TAX';
   const canCreateInvoice = canOpenDealCreateInvoiceDialog(deal, taxStatus);
+  const canAddInvoice = can('ADD', 'FINANCE_INVOICES');
+  const requestCreateInvoice = useCallback(() => {
+    const denied = dealInvoiceCreateDeniedMessage(canAddInvoice, canCreateInvoice);
+    if (denied) {
+      toast.error(denied);
+      return;
+    }
+    onCreateInvoice();
+  }, [canAddInvoice, canCreateInvoice, onCreateInvoice]);
   const depositBootstrap = canCreateDepositInvoice(deal, taxStatus);
   const canStartEarlyDelivery = canStartDealEarlyDelivery(deal, deal.orders?.[0]);
   const { startingEarly, handleStartEarlyDelivery } = useStartEarlyDelivery(
@@ -55,27 +67,26 @@ export function DealSheetQuickActions({
   const actions = useMemo(
     () =>
       buildDealSheetMenuActions({
-        canCreateInvoice,
+        canCreateInvoice: true,
         canStartEarlyDelivery,
         creatorId,
         creatorReady,
         depositBootstrap,
-        onCreateInvoice,
+        onCreateInvoice: requestCreateInvoice,
         onCreateTask,
         onOpenDrive: () => router.push(buildDriveHrefWithDeal(deal.id)),
         onStartEarlyDelivery: () => void handleStartEarlyDelivery(),
         startingEarly,
       }),
     [
-      canCreateInvoice,
       canStartEarlyDelivery,
       creatorId,
       creatorReady,
       deal.id,
       depositBootstrap,
       handleStartEarlyDelivery,
-      onCreateInvoice,
       onCreateTask,
+      requestCreateInvoice,
       router,
       startingEarly,
     ],

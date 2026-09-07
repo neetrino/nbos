@@ -98,6 +98,7 @@ export class InvoicesController {
   }
 
   @Post()
+  @RequirePermission('FINANCE_INVOICES', 'ADD')
   @ApiOperation({ summary: 'Create invoice' })
   async create(
     @Body()

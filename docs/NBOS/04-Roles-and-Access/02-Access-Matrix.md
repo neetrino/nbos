@@ -6,6 +6,8 @@
 
 > **Developer Frontend (2026-08):** роль `developer-frontend` использует **ту же** permission matrix, что и Developer Backend (`developer` / Delivery User). В таблицах ниже колонка **Dev** = Backend; Frontend наследует те же уровни. **Junior Developer** — отдельная более узкая роль; не объединять с Frontend.
 
+> **Seller Assistant (2026-09):** роль `seller-assistant` / `role-seller-assistant` использует **ту же** permission matrix, что и Seller. Колонка **Seller** ниже покрывает обоих. Назначение `Deal.sellerAssistantId` без этой роли прав не даёт.
+
 ## Обзор
 
 Доступ в NBOS построен на модели RBAC (Role-Based Access Control). Каждый модуль платформы имеет настройку уровня доступа для каждой роли. Доступ определяется комбинацией роли сотрудника и его привязки к конкретным проектам/отделам.
@@ -54,7 +56,7 @@
 
 **Пояснения:**
 
-- **Seller** — создаёт Invoice из сделки (ограниченный доступ), видит свои бонусы в Bonus Ledger
+- **Seller / Seller Assistant** — создают Invoice из сделки (`FINANCE_INVOICES` ADD OWN) и Contact / Company (`CLIENTS` ADD ALL); видят свои бонусы в Bonus Ledger
 - **Tech Ops** — видит только инфраструктурные расходы (домены, хостинг, сервисы)
 - **Bonus Ledger (🔶)** — каждый сотрудник видит только свои бонусы (Incoming, Active, Paid)
 - **Expenses** — полный доступ только у CEO и Finance Director
