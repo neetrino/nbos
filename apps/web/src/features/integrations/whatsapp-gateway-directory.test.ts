@@ -15,7 +15,7 @@ describe('resolveDirectoryChatType', () => {
 
 describe('directoryHasMorePage', () => {
   it('treats a full page as having more items', () => {
-    expect(directoryHasMorePage(20, 20)).toBe(true);
-    expect(directoryHasMorePage(7, 20)).toBe(false);
+    expect(directoryHasMorePage(50, 50)).toBe(true);
+    expect(directoryHasMorePage(7, 50)).toBe(false);
   });
 });

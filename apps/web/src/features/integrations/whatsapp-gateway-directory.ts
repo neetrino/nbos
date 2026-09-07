@@ -1,6 +1,6 @@
 import type { WhatsAppGatewayChatType } from '@/lib/api/whatsapp';
 
-export const WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE = 20;
+export const WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE = 50;
 
 export function resolveDirectoryChatType(id: string, type?: string): WhatsAppGatewayChatType {
   if (type === 'group' || type === 'direct') return type;

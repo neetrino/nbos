@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Copy, Search, User, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -14,17 +14,12 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
-import { getApiErrorMessage } from '@/lib/api-errors';
 import {
-  whatsappGatewayApi,
   type WhatsAppGatewayChatItem,
   type WhatsAppGatewayChatType,
 } from '@/lib/api/whatsapp';
-import {
-  directoryHasMorePage,
-  resolveDirectoryChatType,
-  WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE,
-} from '../whatsapp-gateway-directory';
+import { resolveDirectoryChatType } from '../whatsapp-gateway-directory';
+import { useWhatsAppGatewayDirectory } from '../use-whatsapp-gateway-directory';
 
 interface WhatsAppGatewayDirectorySheetProps {
   open: boolean;
@@ -101,48 +96,8 @@ function WhatsAppGatewayDirectoryResults(props: {
   configured: boolean;
   search: string;
 }) {
-  const [items, setItems] = useState<WhatsAppGatewayChatItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const loadPage = useCallback(
-    async (offset: number, append: boolean) => {
-      if (!props.configured) {
-        setItems([]);
-        setHasMore(false);
-        setErrorMessage(null);
-        return;
-      }
-      if (append) setLoadingMore(true);
-      else setLoading(true);
-      try {
-        const page = await whatsappGatewayApi.listChats({
-          limit: WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE,
-          offset,
-          search: props.search,
-        });
-        setItems((previous) => (append ? [...previous, ...page.items] : page.items));
-        setHasMore(directoryHasMorePage(page.items.length, page.pagination.limit));
-        setErrorMessage(null);
-      } catch (error) {
-        const message = getApiErrorMessage(error, 'Could not load WhatsApp chats.');
-        setErrorMessage(message);
-        if (!append) setItems([]);
-        toast.error(message);
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-      }
-    },
-    [props.configured, props.search],
-  );
-
-  useEffect(() => {
-    if (!props.open) return;
-    void loadPage(0, false);
-  }, [props.open, loadPage]);
+  const { items, loading, loadingMore, hasMore, errorMessage, loadPage, sentinelRef } =
+    useWhatsAppGatewayDirectory(props);
 
   if (!props.configured) {
     return (
@@ -170,6 +125,7 @@ function WhatsAppGatewayDirectoryResults(props: {
           {loadingMore ? 'Loading…' : 'Load more'}
         </Button>
       ) : null}
+      <div ref={sentinelRef} className="h-px w-full" aria-hidden />
     </div>
   );
 }
