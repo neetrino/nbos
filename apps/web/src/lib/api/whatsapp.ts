@@ -226,4 +226,14 @@ export const dealWhatsAppApi = {
     );
     return resp.data;
   },
+  async availableGroups(
+    dealId: string,
+    params?: { limit?: number; offset?: number; search?: string },
+  ): Promise<WhatsAppGatewayGroupsPage> {
+    const resp = await api.get<WhatsAppGatewayGroupsPage>(
+      `/api/crm/deals/${dealId}/whatsapp-group/available-groups`,
+      { params: { ...params, search: params?.search ?? '' } },
+    );
+    return resp.data;
+  },
 };

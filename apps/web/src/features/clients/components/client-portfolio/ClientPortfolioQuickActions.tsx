@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { usePermission } from '@/lib/permissions';
+import { notifyPermissionDenied, usePermission } from '@/lib/permissions';
 import type {
   CompanyPortfolioResponse,
   ContactPortfolioResponse,
@@ -117,14 +117,23 @@ export function ClientPortfolioQuickActions({
         onClick: () => setOpenDialog('deal'),
       });
     }
-    if (can('ADD', 'FINANCE_INVOICES') && mask.finance) {
+    if (mask.finance) {
+      const canAddInvoice = can('ADD', 'FINANCE_INVOICES');
       items.push({
         id: 'create-invoice',
         label: 'Create invoice',
         icon: Receipt,
-        enabled: Boolean(projectId),
-        disabledTitle: 'No project in this portfolio slice; open a project first or create a deal.',
-        onClick: () => setOpenDialog('invoice'),
+        enabled: !canAddInvoice || Boolean(projectId),
+        disabledTitle: canAddInvoice
+          ? 'No project in this portfolio slice; open a project first or create a deal.'
+          : undefined,
+        onClick: () => {
+          if (!canAddInvoice) {
+            notifyPermissionDenied();
+            return;
+          }
+          setOpenDialog('invoice');
+        },
       });
     }
     if (can('ADD', 'SUPPORT_TICKETS') && mask.support) {

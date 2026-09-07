@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { DetailSheetFieldSegmented, InlineField } from '@/components/shared';
 import { COMPANY_TYPES, TAX_STATUSES } from '../constants/clients';
 import { companiesApi, type Company } from '@/lib/api/clients';
+import { toastApiError } from '@/lib/permissions';
 
 interface CreateCompanyDialogProps {
   open: boolean;
@@ -65,6 +66,8 @@ export function CreateCompanyDialog({
       onCreated?.(created);
       onOpenChange(false);
       reset();
+    } catch (caught: unknown) {
+      toastApiError(caught, 'Company could not be created.');
     } finally {
       setLoading(false);
     }

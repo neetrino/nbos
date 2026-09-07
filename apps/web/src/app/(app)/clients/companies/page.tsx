@@ -33,6 +33,7 @@ import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clien
 import { useListScope } from '@/hooks/use-list-scope';
 import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import { companiesApi, type Company } from '@/lib/api/clients';
+import { beginPermittedCreate, usePermission } from '@/lib/permissions';
 import { toast } from 'sonner';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
@@ -50,6 +51,7 @@ function CompaniesPageContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const sidebarCollapsed = useAppSidebarCollapsed();
+  const { can } = usePermission();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [listMeta, setListMeta] = useState<ListPaginationMeta>(emptyCompaniesListMeta);
   const [page, setPage] = useState(1);
@@ -58,6 +60,8 @@ function CompaniesPageContent() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.clientsCompanies);
   const [showCreate, setShowCreate] = useState(false);
+  const openCreateCompany = () =>
+    beginPermittedCreate(can('ADD', 'CLIENTS'), () => setShowCreate(true));
   const [view, setView] = useState<ClientsDirectoryViewMode>('grid');
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -245,7 +249,7 @@ function CompaniesPageContent() {
             entityLabel="companies"
           />
           {!isTrashView ? (
-            <Button onClick={() => setShowCreate(true)}>
+            <Button onClick={openCreateCompany}>
               <Plus size={16} aria-hidden />
               New Company
             </Button>
@@ -253,7 +257,17 @@ function CompaniesPageContent() {
         </div>
       ),
     }),
-    [filterConfigs, filters, isTrashView, scope, search, setFilters, setScope, view],
+    [
+      filterConfigs,
+      filters,
+      isTrashView,
+      openCreateCompany,
+      scope,
+      search,
+      setFilters,
+      setScope,
+      view,
+    ],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -284,7 +298,7 @@ function CompaniesPageContent() {
           }
           action={
             isTrashView ? undefined : (
-              <Button onClick={() => setShowCreate(true)}>
+              <Button onClick={openCreateCompany}>
                 <Plus size={16} />
                 Create First Company
               </Button>

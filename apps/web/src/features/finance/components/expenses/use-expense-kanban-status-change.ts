@@ -36,6 +36,7 @@ function openExpenseWithStageGate(
       closed: options.closed,
       expensePlanId: options.expensePlanId,
     }),
+    { scroll: false },
   );
 }
 

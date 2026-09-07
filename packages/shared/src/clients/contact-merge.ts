@@ -1,7 +1,12 @@
 /** CEO / PM. Founder uses `isPlatformOwner`, not slug `owner`. */
 export const CONTACT_MERGE_ALLOWED_ROLE_SLUGS = ['ceo', 'pm'] as const;
 
-export const CONTACT_MERGE_BLOCKED_ROLE_SLUGS = ['marketing', 'head-marketing', 'seller'] as const;
+export const CONTACT_MERGE_BLOCKED_ROLE_SLUGS = [
+  'marketing',
+  'head-marketing',
+  'seller',
+  'seller-assistant',
+] as const;
 
 export const CONTACT_MERGE_FIELD_KEYS = [
   'firstName',

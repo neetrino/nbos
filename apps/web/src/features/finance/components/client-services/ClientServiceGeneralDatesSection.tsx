@@ -1,18 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, Languages, RefreshCw } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar, RefreshCw } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetCollapsibleSection,
   InlineField,
 } from '@/components/shared';
-import { SUBSCRIPTION_REMINDER_LANGUAGES } from '@/features/finance/constants/finance';
 import {
   EXPENSE_SHEET_FIELD_CELL_CLASS,
-  EXPENSE_SHEET_FIELD_ROW_3_CLASS,
+  EXPENSE_SHEET_FIELD_ROW_2_CLASS,
 } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
+import { SubscriptionNotificationSettingsRow } from '@/features/finance/components/subscriptions/SubscriptionNotificationSettingsRow';
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
 
 export function ClientServiceGeneralDatesSection(props: {
@@ -31,7 +30,7 @@ export function ClientServiceGeneralDatesSection(props: {
       onOpenChange={setOpen}
     >
       <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-        <div className={EXPENSE_SHEET_FIELD_ROW_3_CLASS}>
+        <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
           <InlineField
             variant="controlled"
             label="Start date"
@@ -52,31 +51,16 @@ export function ClientServiceGeneralDatesSection(props: {
             className={EXPENSE_SHEET_FIELD_CELL_CLASS}
             onValueChange={(renewalDate) => patchDraft({ renewalDate })}
           />
-          <InlineField
-            variant="controlled"
-            label="Reminder language"
-            type="select"
-            value={draft.reminderLanguage}
-            options={SUBSCRIPTION_REMINDER_LANGUAGES.map((lang) => ({
-              value: lang.value,
-              label: lang.label,
-            }))}
-            icon={<Languages size={12} />}
+        </div>
+        <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
+          <SubscriptionNotificationSettingsRow
+            notificationsEnabled={draft.notificationsEnabled}
+            reminderLanguage={draft.reminderLanguage}
             disabled={formDisabled}
-            className={EXPENSE_SHEET_FIELD_CELL_CLASS}
-            onValueChange={(reminderLanguage) =>
-              reminderLanguage && patchDraft({ reminderLanguage })
-            }
+            onNotificationsChange={(notificationsEnabled) => patchDraft({ notificationsEnabled })}
+            onReminderLanguageChange={(reminderLanguage) => patchDraft({ reminderLanguage })}
           />
         </div>
-        <label className="flex h-10 min-w-0 items-center gap-2 text-sm">
-          <Checkbox
-            checked={draft.notificationsEnabled}
-            disabled={formDisabled}
-            onCheckedChange={(checked) => patchDraft({ notificationsEnabled: checked === true })}
-          />
-          Renewal notifications
-        </label>
       </div>
     </DetailSheetCollapsibleSection>
   );

@@ -82,15 +82,16 @@ export function useWonWhatsAppGate(
       setSessionAction,
     });
 
-  const handleSaveId = () =>
+  const handleSaveId = (groupChatId?: string) =>
     runSaveWhatsAppId({
       dealId: deal.id,
       productId,
-      pasted: groupIdInput.trim(),
+      pasted: (groupChatId ?? groupIdInput).trim(),
       createOperationStatus,
       publish,
       setBusy,
       setGroupChatId,
+      setGroupIdInput,
       setSessionAction,
     });
 
@@ -199,6 +200,7 @@ async function runSaveWhatsAppId(input: {
   ) => void;
   setBusy: (busy: boolean) => void;
   setGroupChatId: (id: string | null) => void;
+  setGroupIdInput: (id: string) => void;
   setSessionAction: (action: DealWonWhatsAppSessionAction | null) => void;
 }): Promise<void> {
   if (!input.pasted) return;
@@ -210,6 +212,7 @@ async function runSaveWhatsAppId(input: {
     });
     const nextId = state.binding?.groupChatId ?? input.pasted;
     input.setGroupChatId(nextId);
+    input.setGroupIdInput(nextId);
     input.setSessionAction('bind');
     input.publish('bind', nextId, input.createOperationStatus);
     toast.success('WhatsApp group ID saved.');

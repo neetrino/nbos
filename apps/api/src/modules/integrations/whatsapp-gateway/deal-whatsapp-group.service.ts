@@ -99,6 +99,14 @@ export class DealWhatsAppGroupService {
     return this.ensureGroupForDeal(deal, actorId);
   }
 
+  async listAvailableGroups(
+    dealId: string,
+    params?: { limit?: number; offset?: number; search?: string },
+  ) {
+    await this.requireDeal(dealId);
+    return this.connection.listGroups(params);
+  }
+
   async bindExistingGroup(
     dealId: string,
     groupChatId: string,

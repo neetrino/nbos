@@ -153,6 +153,13 @@ export class DealsService {
     });
   }
 
+  async listWhatsAppAvailableGroups(
+    dealId: string,
+    params?: { limit?: number; offset?: number; search?: string },
+  ) {
+    return this.dealWhatsApp.listAvailableGroups(dealId, params);
+  }
+
   async create(
     data: CreateDealDto,
     meta: { actorId?: string; canOverridePausedPartner?: boolean } = {},

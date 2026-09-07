@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { CONTACT_ROLES } from '../constants/clients';
 import { contactsApi, type Contact } from '@/lib/api/clients';
+import { toastApiError } from '@/lib/permissions';
 
 interface CreateContactDialogProps {
   open: boolean;
@@ -78,6 +79,8 @@ export function CreateContactDialog({
       onCreated?.(created);
       onOpenChange(false);
       reset();
+    } catch (caught: unknown) {
+      toastApiError(caught, 'Contact could not be created.');
     } finally {
       setLoading(false);
     }

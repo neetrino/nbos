@@ -9,10 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { resolveDealWhatsAppBindId } from '../deal-whatsapp-bind-id';
+import { WhatsAppGroupSearchPicker } from './WhatsAppGroupSearchPicker';
 
 interface DealWhatsAppBindDialogProps {
+  dealId: string;
   open: boolean;
   busy: boolean;
   onOpenChange: (open: boolean) => void;
@@ -20,33 +22,40 @@ interface DealWhatsAppBindDialogProps {
 }
 
 export function DealWhatsAppBindDialog({
+  dealId,
   open,
   busy,
   onOpenChange,
   onSubmit,
 }: DealWhatsAppBindDialogProps) {
-  const [groupChatId, setGroupChatId] = useState('');
+  const [search, setSearch] = useState('');
+  const bindId = resolveDealWhatsAppBindId(search);
 
   return (
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        if (!next) setGroupChatId('');
+        if (!next) setSearch('');
         onOpenChange(next);
       }}
     >
-      <DialogContent forceNestedBackdrop>
+      <DialogContent
+        forceNestedBackdrop
+        className="min-w-0 [grid-template-columns:minmax(0,1fr)] sm:max-w-md"
+      >
         <DialogHeader>
           <DialogTitle>Bind existing WhatsApp group</DialogTitle>
         </DialogHeader>
-        <div className="space-y-1.5">
-          <Label htmlFor="deal-wa-bind-id">WhatsApp group ID</Label>
-          <Input
-            id="deal-wa-bind-id"
-            value={groupChatId}
-            onChange={(event) => setGroupChatId(event.target.value)}
-            placeholder="120363… or 120363…@g.us"
+        <div className="min-w-0 space-y-1.5">
+          <Label htmlFor="wa-directory-search">Find existing group</Label>
+          <WhatsAppGroupSearchPicker
+            dealId={dealId}
+            open={open}
             disabled={busy}
+            selectedId={bindId}
+            search={search}
+            onSearchChange={setSearch}
+            onSelect={(groupChatId) => void onSubmit(groupChatId)}
           />
         </div>
         <DialogFooter>
@@ -55,8 +64,11 @@ export function DealWhatsAppBindDialog({
           </Button>
           <Button
             type="button"
-            disabled={busy || !groupChatId.trim()}
-            onClick={() => void onSubmit(groupChatId.trim())}
+            disabled={busy || !bindId}
+            onClick={() => {
+              if (!bindId) return;
+              void onSubmit(bindId);
+            }}
           >
             Bind group
           </Button>

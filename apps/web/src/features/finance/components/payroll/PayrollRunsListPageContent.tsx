@@ -88,7 +88,7 @@ export function PayrollRunsListPageContent() {
       const next = new URLSearchParams(searchParams.toString());
       mutate(next);
       const q = next.toString();
-      router.replace(q ? `${pathname}?${q}` : pathname);
+      router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
     },
     [pathname, router, searchParams],
   );

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { directoryHasMorePage, resolveDirectoryChatType } from './whatsapp-gateway-directory';
+import {
+  directoryHasMorePage,
+  groupsPageToDirectoryPage,
+  resolveDirectoryChatType,
+} from './whatsapp-gateway-directory';
 
 describe('resolveDirectoryChatType', () => {
   it('prefers Gateway type when present', () => {
@@ -15,7 +19,21 @@ describe('resolveDirectoryChatType', () => {
 
 describe('directoryHasMorePage', () => {
   it('treats a full page as having more items', () => {
-    expect(directoryHasMorePage(20, 20)).toBe(true);
-    expect(directoryHasMorePage(7, 20)).toBe(false);
+    expect(directoryHasMorePage(50, 50)).toBe(true);
+    expect(directoryHasMorePage(7, 50)).toBe(false);
+  });
+});
+
+describe('groupsPageToDirectoryPage', () => {
+  it('maps Gateway groups to directory chat items', () => {
+    expect(
+      groupsPageToDirectoryPage({
+        groups: [{ id: '120363408874132550@g.us', name: 'APP' }],
+        pagination: { limit: 50, offset: 0, count: 1 },
+      }),
+    ).toEqual({
+      items: [{ id: '120363408874132550@g.us', name: 'APP', type: 'group' }],
+      pagination: { limit: 50, offset: 0, count: 1 },
+    });
   });
 });

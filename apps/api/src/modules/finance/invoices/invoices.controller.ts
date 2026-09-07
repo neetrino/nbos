@@ -17,6 +17,7 @@ import {
   RequirePermission,
 } from '../../../common/decorators';
 import { financeInvoiceAccessFromUser } from './finance-invoice-access';
+import { assertCanDeleteInvoice } from './invoice-delete-access';
 import { InvoiceOverdueRemindersService } from './invoice-overdue-reminders.service';
 import { InvoicesService } from './invoices.service';
 
@@ -97,6 +98,7 @@ export class InvoicesController {
   }
 
   @Post()
+  @RequirePermission('FINANCE_INVOICES', 'ADD')
   @ApiOperation({ summary: 'Create invoice' })
   async create(
     @Body()
@@ -165,8 +167,9 @@ export class InvoicesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete draft invoice (NEW only, no payments)' })
-  async remove(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Delete draft invoice (platform owner, NEW only, no payments)' })
+  async remove(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    assertCanDeleteInvoice(user);
     await this.invoicesService.delete(id);
   }
 }

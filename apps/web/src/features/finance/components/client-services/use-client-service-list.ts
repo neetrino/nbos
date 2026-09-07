@@ -43,13 +43,21 @@ export function useClientServiceList(
   const [error, setError] = useState<string | null>(null);
 
   const requestIdRef = useRef(0);
+  const itemsRef = useRef(items);
   const paramsKey = useMemo(() => JSON.stringify(params), [params]);
+
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
 
   const fetchPage = useCallback(
     async (nextPage: number) => {
       const requestId = ++requestIdRef.current;
-      if (nextPage === 1) setLoading(true);
-      else setLoadingMore(true);
+      if (nextPage === 1) {
+        if (itemsRef.current.length === 0) setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
       try {
         const parsed = JSON.parse(paramsKey) as ClientServiceRecordListParams;
         const data = await clientServicesApi.getAll({ ...parsed, page: nextPage, pageSize });

@@ -23,17 +23,19 @@ describe('CRM_CALL_RECORDINGS_PLAY catalog', () => {
     );
   });
 
-  it('grants the capability to Owner, CEO, Seller, and Head of Sales by default', () => {
+  it('grants the capability to Owner, CEO, Seller, Seller Assistant, and Head of Sales by default', () => {
     expect([...CRM_CALL_RECORDINGS_PLAY_DEFAULT_ROLE_IDS]).toEqual([
       'role-owner',
       'role-ceo',
       'role-seller',
+      'role-seller-assistant',
       'role-head-sales',
     ]);
     expect([...CRM_CALL_RECORDINGS_PLAY_DEFAULT_ROLE_SLUGS]).toEqual([
       'owner',
       'ceo',
       'seller',
+      'seller-assistant',
       'head-sales',
     ]);
   });

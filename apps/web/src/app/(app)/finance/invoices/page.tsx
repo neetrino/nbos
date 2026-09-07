@@ -40,7 +40,7 @@ import {
 } from '@/features/finance/constants/finance-period-filter';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
-import { PermissionGate } from '@/lib/permissions';
+import { beginPermittedCreate, PermissionGate, usePermission } from '@/lib/permissions';
 
 const INVOICE_FILTER_CONFIGS_BASE = [
   {
@@ -69,6 +69,7 @@ function InvoicesPageInner() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { can } = usePermission();
   const subscriptionIdFromUrl = searchParams.get(SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY);
   const openInvoiceIdFromUrl = searchParams.get(OPEN_INVOICE_QUERY);
   const portfolioCreateInvoiceFromUrl = searchParams.get(PORTFOLIO_DEEP_LINK.createInvoice) === '1';
@@ -81,6 +82,8 @@ function InvoicesPageInner() {
     portfolioCreateInvoiceFromUrl,
     portfolioProjectIdFromUrl,
   });
+  const openCreateInvoice = () =>
+    beginPermittedCreate(can('ADD', 'FINANCE_INVOICES'), () => state.setCreateOpen(true));
   const { exportCsvSubmitting, handleExportCsv } = useInvoicesCsvExport(
     state.invoiceListExportParams,
   );
@@ -180,7 +183,7 @@ function InvoicesPageInner() {
           <PermissionGate module="FINANCE_INVOICES" action="EDIT">
             <OverdueRemindersButton onClick={openOverdueReminders} />
           </PermissionGate>
-          <Button type="button" onClick={() => state.setCreateOpen(true)}>
+          <Button type="button" onClick={openCreateInvoice}>
             <Plus size={16} aria-hidden />
             New Invoice
           </Button>
@@ -196,6 +199,7 @@ function InvoicesPageInner() {
       handleFilterChange,
       invoiceFilterConfigs,
       invoiceFilterValues,
+      openCreateInvoice,
       state,
     ],
   );
@@ -226,7 +230,7 @@ function InvoicesPageInner() {
           onRetry={state.fetchInvoices}
           onInvoiceClick={state.handleInvoiceClick}
           onMove={(itemId, _from, toColumn) => state.handleMoneyStatusChange(itemId, toColumn)}
-          onOpenQuickCreate={() => state.setCreateOpen(true)}
+          onOpenQuickCreate={openCreateInvoice}
           columnMeta={state.columnMeta}
           hasMoreAny={state.hasMoreAny}
           onColumnLoadMore={state.loadMoreColumn}

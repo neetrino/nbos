@@ -187,7 +187,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     (invoiceId: string) => {
       const p = new URLSearchParams(searchParams.toString());
       p.set(OPEN_INVOICE_QUERY, invoiceId);
-      router.push(`${pathname}?${p.toString()}`);
+      router.push(`${pathname}?${p.toString()}`, { scroll: false });
     },
     [pathname, router, searchParams],
   );

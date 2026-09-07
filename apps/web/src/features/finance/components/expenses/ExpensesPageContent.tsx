@@ -159,7 +159,7 @@ export function ExpensesPageContent({
     (expenseId: string) => {
       const params = new URLSearchParams(searchParams.toString());
       params.set(OPEN_EXPENSE_QUERY, expenseId);
-      router.push(`${pathname}?${params.toString()}`);
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
     },
     [pathname, router, searchParams],
   );

@@ -36,6 +36,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { invoicesApi } from '@/lib/api/finance';
 import { invoiceLifecycleAction } from '@/features/finance/utils/invoice-lifecycle';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
+import { usePermission } from '@/lib/permissions';
 
 interface InvoiceSheetProps {
   invoice: InvoiceSheetInvoice | null;
@@ -70,8 +71,10 @@ export function InvoiceSheet({
   stageGateHighlight = null,
   forceNestedBackdrop,
 }: InvoiceSheetProps) {
+  const { me } = usePermission();
   const { persistedValue: renderInvoice, onOpenChangeComplete } = useSheetPersistedValue(invoice);
   const hostMounted = useSheetHostMounted(open, renderInvoice);
+  const isPlatformOwner = me?.isPlatformOwner === true;
 
   const [activeTab, setActiveTab] = useState<InvoiceDetailSheetTab>('general');
   const [generalDraft, setGeneralDraft] = useState<InvoiceGeneralDraft | null>(null);
@@ -185,7 +188,9 @@ export function InvoiceSheet({
   }
 
   const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(renderInvoice.id)}`;
-  const lifecycleMode = onInvoiceUpdated ? invoiceLifecycleAction(renderInvoice) : null;
+  const lifecycleMode = onInvoiceUpdated
+    ? invoiceLifecycleAction(renderInvoice, isPlatformOwner)
+    : null;
 
   return (
     <>
@@ -261,6 +266,7 @@ export function InvoiceSheet({
       {lifecycleMode && onInvoiceUpdated ? (
         <InvoiceLifecycleConfirmDialog
           invoice={renderInvoice}
+          isPlatformOwner={isPlatformOwner}
           open={lifecycleOpen}
           onOpenChange={setLifecycleOpen}
           onInvoiceUpdated={handleInvoiceChange}

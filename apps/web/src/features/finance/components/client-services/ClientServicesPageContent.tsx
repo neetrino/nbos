@@ -119,7 +119,9 @@ function ClientServicesPageInner() {
       setSelectedService(service);
       const params = new URLSearchParams(searchParams.toString());
       params.set(OPEN_CLIENT_SERVICE_QUERY, service.id);
-      router.push(`${pathname ?? '/finance/client-services'}?${params.toString()}`);
+      router.push(`${pathname ?? '/finance/client-services'}?${params.toString()}`, {
+        scroll: false,
+      });
     },
     [pathname, router, searchParams],
   );
@@ -136,6 +138,7 @@ function ClientServicesPageInner() {
         qs
           ? `${pathname ?? '/finance/client-services'}?${qs}`
           : (pathname ?? '/finance/client-services'),
+        { scroll: false },
       );
     },
     [pathname, router, searchParams],
