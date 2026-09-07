@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import {
   FINANCE_DEFAULT_LIST_PERIOD,
@@ -92,7 +92,7 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
     setLoading,
     setError,
     setMutationError,
-    hasVisibleData: () => subscriptionsRef.current.length > 0,
+    subscriptionsRef,
   });
 
   const handleActivate = useSubscriptionActivation(
@@ -185,7 +185,7 @@ function useSubscriptionFetch({
   setLoading,
   setError,
   setMutationError,
-  hasVisibleData,
+  subscriptionsRef,
 }: {
   search: string;
   filters: Record<string, string>;
@@ -196,10 +196,10 @@ function useSubscriptionFetch({
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setMutationError: (message: string | null) => void;
-  hasVisibleData: () => boolean;
+  subscriptionsRef: MutableRefObject<Subscription[]>;
 }) {
   return useCallback(async () => {
-    if (!hasVisibleData()) setLoading(true);
+    if (subscriptionsRef.current.length === 0) setLoading(true);
     try {
       const { listQuery, statsParams } = buildSubscriptionPageQueries(
         { filters, search, partnerIdFromUrl },
@@ -228,7 +228,7 @@ function useSubscriptionFetch({
     partnerIdFromUrl,
     period,
     search,
-    hasVisibleData,
+    subscriptionsRef,
     setError,
     setLoading,
     setMutationError,

@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 
 interface InvoiceLifecycleConfirmDialogProps {
   invoice: Invoice;
+  isPlatformOwner: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onInvoiceUpdated: (invoice: Invoice) => void;
@@ -19,13 +20,14 @@ interface InvoiceLifecycleConfirmDialogProps {
 
 export function InvoiceLifecycleConfirmDialog({
   invoice,
+  isPlatformOwner,
   open,
   onOpenChange,
   onInvoiceUpdated,
   onInvoiceDeleted,
   forceNestedBackdrop,
 }: InvoiceLifecycleConfirmDialogProps) {
-  const action = invoiceLifecycleAction(invoice);
+  const action = invoiceLifecycleAction(invoice, isPlatformOwner);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,7 +77,7 @@ export function InvoiceLifecycleConfirmDialog({
       title={isDelete ? 'Delete draft invoice?' : 'Cancel invoice?'}
       description={
         isDelete
-          ? 'Only NEW invoices without payments can be deleted. Accrual journal line will be reversed.'
+          ? 'Only the platform owner can delete a NEW invoice without payments. Accrual journal line will be reversed.'
           : 'The invoice will move to Cancelled and stay in history. Payments are preserved.'
       }
       confirmLabel={isDelete ? 'Delete' : 'Cancel invoice'}
