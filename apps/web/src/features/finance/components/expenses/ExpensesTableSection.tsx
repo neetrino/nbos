@@ -18,6 +18,7 @@ import {
   getExpenseCategoryVisual,
 } from '@/features/finance/constants/expense-category-visual';
 import type { Expense } from '@/lib/api/finance';
+import { expenseOwnerLabel } from '@/features/finance/utils/expense-owner-label';
 import {
   resolveExpensePayrollMonthLabel,
   resolveExpensePayrollRunId,
@@ -87,6 +88,7 @@ function ExpenseTableRow({
       ? expenseLedgerPaymentStatusPresentation(expense.paymentStatus)
       : null;
   const hasLedger = expense.paidAmount !== undefined;
+  const ownerLabel = expenseOwnerLabel(expense);
 
   return (
     <TableRow className={FINANCE_LIST_ROW_HOVER_CLASS} onClick={() => onOpen(expense)}>
@@ -132,11 +134,11 @@ function ExpenseTableRow({
         ) : null}
       </TableCell>
       <TableCell className={FINANCE_LIST_CELL_CLASS}>
-        {expense.project?.name ? (
+        {ownerLabel ? (
           <FinanceListIconLabel
             icon={FolderKanban}
             iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
-            label={expense.project.name}
+            label={ownerLabel}
           />
         ) : (
           <FinanceListMutedDash />

@@ -43,6 +43,7 @@ import type {
 } from './relation-picker.types';
 import type { RelationCreatedEvent } from './relation-created-event';
 import { applyCreatedRelationSheet } from './apply-created-relation-sheet';
+import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
 
 type CreateKind = 'contact' | 'company' | 'project' | 'partner' | 'product';
 
@@ -73,6 +74,7 @@ export function EntityRelationHost({
   const [employeeOpenId, setEmployeeOpenId] = useState<string | null>(null);
   const [employeeSheet, setEmployeeSheet] = useState<Employee | null>(null);
   const [entityOpenOptions, setEntityOpenOptions] = useState<OpenEntityOptions | null>(null);
+  const [credentialOpenId, setCredentialOpenId] = useState<string | null>(null);
   const [createKind, setCreateKind] = useState<CreateKind | null>(null);
   const [createPrefill, setCreatePrefill] = useState<RelationCreatePrefill | null>(null);
   const [createIntent, setCreateIntent] = useState<string | undefined>(undefined);
@@ -174,6 +176,11 @@ export function EntityRelationHost({
           .catch((caught) => {
             toast.error(getApiErrorMessage(caught, 'Product could not be opened.'));
           });
+        return;
+      }
+      if (kind === 'credential') {
+        setCredentialOpenId(id);
+        return;
       }
     },
     [router],
@@ -188,6 +195,7 @@ export function EntityRelationHost({
     ) => {
       if (kind === 'employee') return;
       if (kind === 'order') return;
+      if (kind === 'credential') return;
       if (kind === 'product') {
         const prefill = buildRelationCreatePrefill(kind, searchQuery, context, intent);
         if (!prefill.projectId) return;
@@ -349,6 +357,15 @@ export function EntityRelationHost({
           if (!next) setPartnerId(null);
         }}
         onPartnerUpdated={() => onEntityChanged?.()}
+      />
+
+      <CredentialFormSheet
+        open={credentialOpenId !== null}
+        credentialId={credentialOpenId}
+        forceNestedBackdrop={nested}
+        onOpenChange={(next) => {
+          if (!next) setCredentialOpenId(null);
+        }}
       />
 
       <EmployeeSheet

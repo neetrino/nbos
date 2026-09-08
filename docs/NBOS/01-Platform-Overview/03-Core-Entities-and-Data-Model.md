@@ -410,8 +410,9 @@ Contact (человек)
 | frequency                | Enum                       | One-time, Monthly, Quarterly, Yearly, Custom                                             |
 | next_due_date            | Date                       | Следующая дата оплаты                                                                    |
 | provider                 | String                     | Поставщик                                                                                |
-| project_id               | FK → Project               | Проект, если расход проектный                                                            |
-| product_id               | FK → Product               | Продукт, если применимо                                                                  |
+| product_id               | FK → Product               | Продукт, если затрата продуктовая (optional)                                             |
+| project_id               | FK → Project               | Денормализация = Product.projectId; не UI                                                |
+| credential_id            | FK → Credential            | Карточка пароля, если нужна для оплаты (optional)                                        |
 | client_service_record_id | FK → Client Service Record | Сервис клиента, если план идёт от него                                                   |
 | auto_generate            | Boolean                    | Создавать ли карточки автоматически                                                      |
 | notes                    | Text                       | Заметки                                                                                  |
@@ -432,8 +433,9 @@ Contact (человек)
 | workflow_status          | Enum                       | Planned, Due Soon, Due Now, Overdue, On Hold, Backlog, Paid, Cancelled                   |
 | payment_status           | Enum                       | Unpaid, Partially Paid, Paid                                                             |
 | backlog_reason           | Enum                       | Debt to Pay Later, Waiting for Decision, Waiting for Client, Waiting for Provider, Other |
-| project_id               | FK → Project               | Привязка к проекту                                                                       |
-| product_id               | FK → Product               | Привязка к продукту                                                                      |
+| product_id               | FK → Product               | Продукт (снимок с Plan / Client Service при создании)                                    |
+| project_id               | FK → Project               | Денормализация = Product.projectId; не UI                                                |
+| credential_id            | FK → Credential            | Карточка пароля (снимок при создании)                                                    |
 | order_id                 | FK → Order                 | Привязка к заказу                                                                        |
 | partner_id               | FK → Partner               | Партнёр, если partner payout                                                             |
 | client_service_record_id | FK → Client Service Record | Сервис клиента                                                                           |
@@ -461,7 +463,8 @@ Contact (человек)
 - Expense Card → many Expense Payments
 - Client Service Record (`billing_model`: `WE_PAY` | `REMINDER_ONLY`) → Invoice Card → Payment → Expense Card → Task (только для `WE_PAY`)
 - Payroll Run → Expense Card
-- Expense Card → one Project / Product / Order (опционально)
+- Expense Plan / Expense Card → optional Product (owner of delivery bind); `project_id` denormalized from Product
+- Expense Plan / Expense Card → optional Credential (login for paying the vendor)
 - Expense Card → one Partner (для partner payouts)
 
 ---

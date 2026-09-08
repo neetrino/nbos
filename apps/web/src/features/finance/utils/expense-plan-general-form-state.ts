@@ -37,9 +37,13 @@ export function buildExpensePlanGeneralPatch(
   const snapDue = snap.nextDueDate.trim();
   if (nextDue !== snapDue) out.nextDueDate = nextDue ? nextDue : null;
 
-  const projectId = draft.projectId !== 'none' ? draft.projectId : null;
-  const snapProjectId = snap.projectId !== 'none' ? snap.projectId : null;
-  if (projectId !== snapProjectId) out.projectId = projectId;
+  const productId = draft.productId.trim() || null;
+  const snapProductId = snap.productId.trim() || null;
+  if (productId !== snapProductId) out.productId = productId;
+
+  const credentialId = draft.credentialId.trim() || null;
+  const snapCredentialId = snap.credentialId.trim() || null;
+  if (credentialId !== snapCredentialId) out.credentialId = credentialId;
 
   if (draft.autoGenerate !== snap.autoGenerate) out.autoGenerate = draft.autoGenerate;
 

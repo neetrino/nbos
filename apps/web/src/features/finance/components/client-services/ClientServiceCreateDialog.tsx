@@ -38,6 +38,7 @@ export function ClientServiceCreateDialog({
   const [form, setForm] = useState<ClientServiceFormState>({ ...EMPTY_CLIENT_SERVICE_FORM });
   const [productLabel, setProductLabel] = useState<string | null>(null);
   const [projectLabel, setProjectLabel] = useState<string | null>(null);
+  const [credentialLabel, setCredentialLabel] = useState<string | null>(null);
   const [productResolving, setProductResolving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -46,6 +47,7 @@ export function ClientServiceCreateDialog({
     setFormError(null);
     setProductLabel(null);
     setProjectLabel(null);
+    setCredentialLabel(null);
     setProductResolving(false);
     setForm({ ...EMPTY_CLIENT_SERVICE_FORM });
   }, [open]);
@@ -101,9 +103,18 @@ export function ClientServiceCreateDialog({
             form={form}
             productLabel={productLabel}
             projectLabel={projectLabel}
+            credentialLabel={credentialLabel}
             productResolving={productResolving}
             onProductSelect={(id, label) => {
               void handleProductSelect(id, label);
+            }}
+            onCredentialSelect={(id, label) => {
+              setForm((prev) => ({ ...prev, providerAccountId: id }));
+              setCredentialLabel(label);
+            }}
+            onCredentialClear={() => {
+              setForm((prev) => ({ ...prev, providerAccountId: '' }));
+              setCredentialLabel(null);
             }}
             onFormChange={(partial) => setForm((prev) => ({ ...prev, ...partial }))}
           />

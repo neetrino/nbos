@@ -182,6 +182,7 @@ export function ProductFinanceSectionContent({
     return (
       <ProductFinanceExpensesPanel
         projectId={projectId}
+        productId={productId}
         search={debouncedSearch}
         filters={filters}
         view={expensesView}
@@ -191,7 +192,7 @@ export function ProductFinanceSectionContent({
 
   return (
     <ProductFinanceClientServicesPanel
-      projectId={projectId}
+      productId={productId}
       search={debouncedSearch}
       filters={filters}
       view={clientServicesView}

@@ -18,6 +18,7 @@ import {
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
 import { productsApi } from '@/lib/api/products';
 import { productDisplayName, projectDisplayName } from '@/lib/format/project-product-display';
+import { ClientServiceCredentialField } from './ClientServiceCredentialField';
 import { ClientServiceProductField } from './ClientServiceProductField';
 import { ClientServiceProviderField } from './ClientServiceProviderField';
 
@@ -26,6 +27,7 @@ interface ClientServiceGeneralBasicsSectionProps {
   patchDraft: (partial: Partial<ClientServiceFormState>) => void;
   productName: string | null;
   projectName: string | null;
+  credentialName: string | null;
   formDisabled: boolean;
 }
 
@@ -34,17 +36,20 @@ export function ClientServiceGeneralBasicsSection({
   patchDraft,
   productName,
   projectName,
+  credentialName,
   formDisabled,
 }: ClientServiceGeneralBasicsSectionProps) {
   const [open, setOpen] = useState(true);
   const [productLabel, setProductLabel] = useState(productName);
   const [projectLabel, setProjectLabel] = useState(projectName);
+  const [credentialLabel, setCredentialLabel] = useState(credentialName);
   const [productResolving, setProductResolving] = useState(false);
 
   useEffect(() => {
     setProductLabel(productName);
     setProjectLabel(projectName);
-  }, [draft.productId, productName, projectName]);
+    setCredentialLabel(credentialName);
+  }, [draft.productId, draft.providerAccountId, productName, projectName, credentialName]);
 
   const selectProduct = async (productId: string, label: string) => {
     setProductLabel(label);
@@ -88,6 +93,19 @@ export function ClientServiceGeneralBasicsSection({
           providerName={draft.provider}
           disabled={formDisabled}
           onProviderChange={(provider) => patchDraft({ provider })}
+        />
+        <ClientServiceCredentialField
+          credentialId={draft.providerAccountId}
+          credentialLabel={credentialLabel}
+          disabled={formDisabled}
+          onSelect={(id, label) => {
+            patchDraft({ providerAccountId: id });
+            setCredentialLabel(label);
+          }}
+          onClear={() => {
+            patchDraft({ providerAccountId: '' });
+            setCredentialLabel(null);
+          }}
         />
       </div>
     </DetailSheetCollapsibleSection>

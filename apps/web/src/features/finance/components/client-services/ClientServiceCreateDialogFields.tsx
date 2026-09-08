@@ -16,6 +16,7 @@ import {
   ClientServiceMoneyInput,
   ClientServiceSelectField,
 } from './client-service-form-controls';
+import { ClientServiceCredentialField } from './ClientServiceCredentialField';
 import { ClientServiceProductField } from './ClientServiceProductField';
 import { ClientServiceProviderField } from './ClientServiceProviderField';
 
@@ -23,8 +24,11 @@ interface ClientServiceCreateDialogFieldsProps {
   form: ClientServiceFormState;
   productLabel: string | null;
   projectLabel: string | null;
+  credentialLabel: string | null;
   productResolving: boolean;
   onProductSelect: (productId: string, label: string) => void;
+  onCredentialSelect: (credentialId: string, label: string) => void;
+  onCredentialClear: () => void;
   onFormChange: (partial: Partial<ClientServiceFormState>) => void;
 }
 
@@ -32,8 +36,11 @@ export function ClientServiceCreateDialogFields({
   form,
   productLabel,
   projectLabel,
+  credentialLabel,
   productResolving,
   onProductSelect,
+  onCredentialSelect,
+  onCredentialClear,
   onFormChange,
 }: ClientServiceCreateDialogFieldsProps) {
   return (
@@ -104,6 +111,13 @@ export function ClientServiceCreateDialogFields({
           onProviderChange={(provider) => onFormChange({ provider })}
         />
       </div>
+
+      <ClientServiceCredentialField
+        credentialId={form.providerAccountId}
+        credentialLabel={credentialLabel}
+        onSelect={onCredentialSelect}
+        onClear={onCredentialClear}
+      />
     </div>
   );
 }

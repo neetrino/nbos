@@ -1,16 +1,13 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ExpensesPageMainPanel,
   type ExpensesViewMode,
 } from '@/features/finance/components/expenses/ExpensesPageMainPanel';
+import { CreateExpenseDialog } from '@/features/finance/components/expenses/CreateExpenseDialog';
 import { ExpenseDetailSheet } from '@/features/finance/components/expenses/ExpenseDetailSheet';
 import { useExpenseKanbanStatusChange } from '@/features/finance/components/expenses/use-expense-kanban-status-change';
-import {
-  projectExpensesBacklogDrilldownHref,
-  projectExpensesDrilldownHref,
-} from '@/features/finance/constants/project-expenses-drilldown';
 import {
   EXPENSE_LIST_DEFAULT_SORT_BY,
   EXPENSE_LIST_DEFAULT_SORT_ORDER,
@@ -18,10 +15,10 @@ import {
 import { useProductFinanceExpenses } from '@/features/projects/hooks/use-product-finance-expenses';
 import { useProductEntityDetailSheet } from '@/features/projects/hooks/use-product-entity-detail-sheet';
 import type { Expense } from '@/lib/api/finance';
-import { useRouter } from 'next/navigation';
 
 interface ProductFinanceExpensesPanelProps {
   projectId: string;
+  productId: string;
   search: string;
   filters: Record<string, string>;
   view: ExpensesViewMode;
@@ -29,14 +26,15 @@ interface ProductFinanceExpensesPanelProps {
 
 export function ProductFinanceExpensesPanel({
   projectId,
+  productId,
   search,
   filters,
   view,
 }: ProductFinanceExpensesPanelProps) {
-  const router = useRouter();
   const expenseSheet = useProductEntityDetailSheet<Expense>();
+  const [createOpen, setCreateOpen] = useState(false);
   const { expenses, loading, error, refetch, pageVariant, kanbanScope, fromBacklog } =
-    useProductFinanceExpenses(projectId, search, filters);
+    useProductFinanceExpenses(productId, search, filters);
 
   const listSort = {
     sortBy: EXPENSE_LIST_DEFAULT_SORT_BY,
@@ -64,12 +62,8 @@ export function ProductFinanceExpensesPanel({
   );
 
   const handleAddFirstExpense = useCallback(() => {
-    router.push(
-      fromBacklog
-        ? projectExpensesBacklogDrilldownHref(projectId)
-        : projectExpensesDrilldownHref(projectId),
-    );
-  }, [router, projectId, fromBacklog]);
+    setCreateOpen(true);
+  }, []);
 
   const onKanbanMove = useCallback(
     async (expenseId: string, from: string, toStatus: string) => {
@@ -91,6 +85,16 @@ export function ProductFinanceExpensesPanel({
         onOpenExpense={handleOpenExpense}
         onAddFirstExpense={handleAddFirstExpense}
         onKanbanMove={pageVariant === 'backlog' ? undefined : onKanbanMove}
+      />
+
+      <CreateExpenseDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        defaultProductId={productId}
+        defaultStatus={fromBacklog ? 'BACKLOG' : undefined}
+        onCreated={() => {
+          void refetch();
+        }}
       />
 
       <ExpenseDetailSheet

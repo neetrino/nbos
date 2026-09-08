@@ -34,6 +34,7 @@ export function ClientServiceGeneralTab({
         patchDraft={patchDraft}
         productName={service.product?.name ?? null}
         projectName={service.project?.name ?? null}
+        credentialName={service.providerAccount?.name ?? null}
         formDisabled={formDisabled}
       />
       <ClientServiceGeneralBillingSection

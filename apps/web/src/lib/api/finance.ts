@@ -232,7 +232,9 @@ export interface Expense {
   frequency: string;
   dueDate: string | null;
   status: string;
+  productId: string | null;
   projectId: string | null;
+  credentialId: string | null;
   isPassThrough: boolean;
   taxStatus: string;
   backlogReason: string | null;
@@ -247,6 +249,8 @@ export interface Expense {
   /** Present when this expense was created from an Expense Plan (Plan→Card). */
   linkedExpensePlan?: { id: string; name: string } | null;
   project?: { id: string; code: string; name: string } | null;
+  product?: { id: string; name: string } | null;
+  credential?: { id: string; name: string; login: string | null; url: string | null } | null;
   paidAmount?: string;
   remainingAmount?: string;
   paymentStatus?: ExpenseLedgerPaymentStatus;
@@ -272,6 +276,7 @@ export interface ExpenseStats {
 /** Query params for `expensesApi.getStats` (optional project drill-down parity). */
 export interface ExpenseStatsQueryParams extends FinanceDateRangeParams {
   projectId?: string;
+  productId?: string;
   /** When set, aggregates match expenses linked to this plan (list parity). */
   expensePlanId?: string;
   /** When set, aggregates match the same status scope as the expenses list. */
@@ -295,6 +300,7 @@ export interface ExpenseListParams extends FinanceDateRangeParams {
   category?: string;
   status?: string;
   projectId?: string;
+  productId?: string;
   /** Filter by linked expense plan (`GET /expenses?expensePlanId=`). */
   expensePlanId?: string;
   type?: string;
@@ -324,7 +330,8 @@ export interface CreateExpensePayload {
   frequency?: string;
   dueDate?: string | null;
   status?: string;
-  projectId?: string | null;
+  productId?: string | null;
+  credentialId?: string | null;
   expensePlanId?: string | null;
   clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
@@ -348,7 +355,8 @@ export interface UpdateExpensePayload {
   frequency?: string;
   dueDate?: string | null;
   status?: string;
-  projectId?: string | null;
+  productId?: string | null;
+  credentialId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: string;
   backlogReason?: string | null;

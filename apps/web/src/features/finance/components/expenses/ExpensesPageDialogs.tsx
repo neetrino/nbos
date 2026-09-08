@@ -15,7 +15,7 @@ interface ExpensesPageDialogsProps {
 export function ExpensesPageDialogs({
   createOpen,
   onCreateOpenChange,
-  effectiveProjectId,
+  effectiveProjectId: _effectiveProjectId,
   defaultCreateStatus,
   onExpenseCreated,
 }: ExpensesPageDialogsProps) {
@@ -23,7 +23,7 @@ export function ExpensesPageDialogs({
     <CreateExpenseDialog
       open={createOpen}
       onOpenChange={onCreateOpenChange}
-      defaultProjectId={effectiveProjectId}
+      defaultProductId={null}
       defaultStatus={defaultCreateStatus}
       onCreated={onExpenseCreated}
     />

@@ -9,7 +9,9 @@ const PLAN_A: ExpensePlan = {
   amount: '100.50',
   frequency: 'MONTHLY',
   nextDueDate: '2026-05-01T00:00:00.000Z',
+  productId: 'prod-1',
   projectId: 'proj-1',
+  credentialId: 'cred-1',
   status: 'ACTIVE',
   cancelledAt: null,
   autoGenerate: true,
@@ -17,13 +19,15 @@ const PLAN_A: ExpensePlan = {
   createdAt: '2026-04-01T00:00:00.000Z',
   updatedAt: '2026-04-02T00:00:00.000Z',
   project: { id: 'proj-1', code: 'P1', name: 'Project One' },
+  product: { id: 'prod-1', name: 'Site' },
+  credential: { id: 'cred-1', name: 'Beget', login: null, url: null },
   _count: { expenses: 2 },
 };
 
 describe('buildExpensePlansCsvContent', () => {
   it('returns header only when no rows', () => {
     expect(buildExpensePlansCsvContent([])).toBe(
-      'id,name,category,amount,frequency,frequencyLabel,status,autoGenerate,nextDueDate,projectId,projectCode,projectName,linkedExpenseCount,notes,createdAt,updatedAt',
+      'id,name,category,amount,frequency,frequencyLabel,status,autoGenerate,nextDueDate,projectId,projectCode,projectName,productId,productName,credentialId,credentialName,linkedExpenseCount,notes,createdAt,updatedAt',
     );
   });
 

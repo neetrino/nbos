@@ -17,6 +17,8 @@ import {
 } from './expense-mutation-enum-validators';
 import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
 import { ExpensesService } from './expenses.service';
+import { resolveExpenseLinks } from './expense-link-resolve';
+import { EXPENSE_PLAN_DETAIL_INCLUDE } from './expense-relation-include';
 import { assertExpensePlanEmptyDeletable } from '../../common/lifecycle/finance-record-lifecycle-guards';
 import { buildExpensePlanGridPayload } from './expense-plan-grid';
 import {
@@ -33,6 +35,7 @@ export interface ExpensePlanQueryParams {
   page?: number;
   pageSize?: number;
   projectId?: string;
+  productId?: string;
   category?: string;
   status?: string;
   search?: string;
@@ -46,7 +49,8 @@ export interface CreateExpensePlanBody {
   amount: number;
   frequency?: string;
   nextDueDate?: string | null;
-  projectId?: string | null;
+  productId?: string | null;
+  credentialId?: string | null;
   clientServiceRecordId?: string | null;
   autoGenerate?: boolean;
   notes?: string | null;
@@ -91,10 +95,7 @@ export class ExpensePlansService {
     const [items, total] = await Promise.all([
       this.prisma.expensePlan.findMany({
         where,
-        include: {
-          project: { select: { id: true, code: true, name: true } },
-          _count: { select: { expenses: true } },
-        },
+        include: EXPENSE_PLAN_DETAIL_INCLUDE,
         orderBy,
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -117,7 +118,7 @@ export class ExpensePlansService {
     const plans = await this.prisma.expensePlan.findMany({
       where,
       include: {
-        project: { select: { id: true, code: true, name: true } },
+        ...EXPENSE_PLAN_DETAIL_INCLUDE,
         expenses: {
           where: { dueDate: { gte: rangeStart, lte: rangeEnd } },
           select: {
@@ -151,10 +152,7 @@ export class ExpensePlansService {
   async findById(id: string) {
     const row = await this.prisma.expensePlan.findUnique({
       where: { id },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        _count: { select: { expenses: true } },
-      },
+      include: EXPENSE_PLAN_DETAIL_INCLUDE,
     });
     if (!row) throw new NotFoundException('Expense plan not found');
     return serializePlanRow(row);
@@ -166,7 +164,11 @@ export class ExpensePlansService {
     const category = requireExpensePlanCategory(body.category);
     const frequency = resolveExpenseFrequency(body.frequency);
     const amount = toAmountDecimal(body.amount);
-    const projectId = await this.resolveProjectIdOrThrow(body.projectId);
+    const links = await resolveExpenseLinks(this.prisma, {
+      productId: body.productId,
+      credentialId: body.credentialId,
+      clientServiceRecordId: body.clientServiceRecordId,
+    });
 
     const row = await this.prisma.expensePlan.create({
       data: {
@@ -175,15 +177,14 @@ export class ExpensePlansService {
         amount,
         frequency: frequency as Prisma.ExpensePlanCreateInput['frequency'],
         nextDueDate: body.nextDueDate ? new Date(body.nextDueDate) : null,
-        projectId,
+        productId: links.productId,
+        projectId: links.projectId,
+        credentialId: links.credentialId,
         clientServiceRecordId: body.clientServiceRecordId?.trim() || null,
         autoGenerate: Boolean(body.autoGenerate),
         notes: body.notes?.trim() || null,
       },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        _count: { select: { expenses: true } },
-      },
+      include: EXPENSE_PLAN_DETAIL_INCLUDE,
     });
     return serializePlanRow(row);
   }
@@ -213,9 +214,33 @@ export class ExpensePlansService {
     if (body.nextDueDate !== undefined) {
       data.nextDueDate = body.nextDueDate ? new Date(body.nextDueDate) : null;
     }
-    if (body.projectId !== undefined) {
-      const pid = await this.resolveProjectIdOrThrow(body.projectId);
-      data.project = pid ? { connect: { id: pid } } : { disconnect: true };
+    if (
+      body.productId !== undefined ||
+      body.credentialId !== undefined ||
+      body.clientServiceRecordId !== undefined
+    ) {
+      const current = await this.prisma.expensePlan.findUnique({
+        where: { id },
+        select: { productId: true, credentialId: true, clientServiceRecordId: true },
+      });
+      const links = await resolveExpenseLinks(this.prisma, {
+        productId: body.productId !== undefined ? body.productId : current?.productId,
+        credentialId: body.credentialId !== undefined ? body.credentialId : current?.credentialId,
+        clientServiceRecordId:
+          body.clientServiceRecordId !== undefined
+            ? body.clientServiceRecordId
+            : current?.clientServiceRecordId,
+        useClientServiceAsSource: body.clientServiceRecordId !== undefined,
+      });
+      if (body.productId !== undefined || body.clientServiceRecordId !== undefined) {
+        data.product = links.productId ? { connect: { id: links.productId } } : { disconnect: true };
+        data.project = links.projectId ? { connect: { id: links.projectId } } : { disconnect: true };
+      }
+      if (body.credentialId !== undefined || body.clientServiceRecordId !== undefined) {
+        data.credential = links.credentialId
+          ? { connect: { id: links.credentialId } }
+          : { disconnect: true };
+      }
     }
     if (body.clientServiceRecordId !== undefined) {
       data.clientServiceRecord = body.clientServiceRecordId?.trim()
@@ -232,10 +257,7 @@ export class ExpensePlansService {
     const row = await this.prisma.expensePlan.update({
       where: { id },
       data,
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        _count: { select: { expenses: true } },
-      },
+      include: EXPENSE_PLAN_DETAIL_INCLUDE,
     });
     return serializePlanRow(row);
   }
@@ -248,10 +270,7 @@ export class ExpensePlansService {
     const row = await this.prisma.expensePlan.update({
       where: { id },
       data: expensePlanStatusUpdateData(status),
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        _count: { select: { expenses: true } },
-      },
+      include: EXPENSE_PLAN_DETAIL_INCLUDE,
     });
     return serializePlanRow(row);
   }
@@ -291,7 +310,8 @@ export class ExpensePlansService {
       frequency: 'ONE_TIME',
       dueDate: occurrence.toISOString(),
       status: 'PLANNED',
-      projectId: plan.projectId ?? undefined,
+      productId: plan.productId,
+      credentialId: plan.credentialId,
       notes: 'From expense plan',
       expensePlanId: planId,
       clientServiceRecordId: plan.clientServiceRecordId ?? undefined,
@@ -366,13 +386,20 @@ export class ExpensePlansService {
       ? { contains: searchTrimmed, mode: 'insensitive' as const }
       : undefined;
     const searchOr: Prisma.ExpensePlanWhereInput['OR'] = ic
-      ? [{ name: ic }, { notes: ic }, { project: { name: ic } }, { project: { code: ic } }]
+      ? [
+          { name: ic },
+          { notes: ic },
+          { project: { name: ic } },
+          { project: { code: ic } },
+          { product: { name: ic } },
+        ]
       : undefined;
 
     const statusWhere = parseExpensePlanStatusQuery(params.status);
     return {
       ...(safeCategory ? { category: safeCategory as ExpenseCategoryEnum } : {}),
       ...(params.projectId?.trim() ? { projectId: params.projectId.trim() } : {}),
+      ...(params.productId?.trim() ? { productId: params.productId.trim() } : {}),
       ...(statusWhere ? { status: statusWhere } : {}),
       ...(searchOr ? { OR: searchOr } : {}),
     };
@@ -392,13 +419,4 @@ export class ExpensePlansService {
     if (!n) throw new NotFoundException('Expense plan not found');
   }
 
-  private async resolveProjectIdOrThrow(
-    projectId: string | null | undefined,
-  ): Promise<string | null> {
-    if (projectId === undefined || projectId === null || projectId === '') return null;
-    const id = projectId.trim();
-    const p = await this.prisma.project.findUnique({ where: { id }, select: { id: true } });
-    if (!p) throw new BadRequestException('Project not found');
-    return id;
-  }
 }

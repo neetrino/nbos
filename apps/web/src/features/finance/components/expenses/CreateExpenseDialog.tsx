@@ -18,8 +18,8 @@ interface CreateExpenseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated: (created: Expense) => void;
-  /** Pre-select project when opening from `/finance/expenses?projectId=`. */
-  defaultProjectId?: string | null;
+  /** Pre-select product when opening from a product finance hub. */
+  defaultProductId?: string | null;
   /** Pre-select status (e.g. Delayed when creating from backlog). */
   defaultStatus?: string;
   /** Pre-filled fields when opening from a client service sheet. */
@@ -45,7 +45,7 @@ export function CreateExpenseDialog({
   open,
   onOpenChange,
   onCreated,
-  defaultProjectId = null,
+  defaultProductId = null,
   defaultStatus,
   initialForm,
   submitOverride,
@@ -76,7 +76,7 @@ export function CreateExpenseDialog({
         ? await submitOverride(form)
         : await expensesApi.create(
             buildCreateExpensePayload(form, {
-              defaultProjectId,
+              defaultProductId,
               defaultStatus:
                 defaultStatus && SCHEMA_EXPENSE_STATUSES.has(defaultStatus)
                   ? defaultStatus

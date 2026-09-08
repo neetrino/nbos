@@ -29,6 +29,7 @@ interface ClientServiceRecordRow {
   id: string;
   projectId: string;
   productId: string | null;
+  providerAccountId: string | null;
   type: ClientServiceType;
   name: string;
   provider: string | null;
@@ -83,7 +84,8 @@ export class ClientServiceFlowsService {
       amount,
       frequency: service.frequency,
       nextDueDate: body.nextDueDate?.trim() || service.renewalDate?.toISOString() || null,
-      projectId: service.projectId,
+      productId: service.productId,
+      credentialId: service.providerAccountId,
       clientServiceRecordId: service.id,
       autoGenerate: body.autoGenerate ?? false,
       notes: `From client service: ${service.name}`,
@@ -106,7 +108,8 @@ export class ClientServiceFlowsService {
       frequency: 'ONE_TIME',
       dueDate: body.dueDate?.trim() || service.renewalDate?.toISOString() || undefined,
       status,
-      projectId: service.projectId,
+      productId: service.productId,
+      credentialId: service.providerAccountId,
       clientServiceRecordId: service.id,
       isPassThrough: service.billingModel === 'WE_PAY',
       taxStatus: service.taxStatus,

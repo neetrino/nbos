@@ -15,14 +15,14 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
 
 interface ProductFinanceClientServicesPanelProps {
-  projectId: string;
+  productId: string;
   search: string;
   filters: Record<string, string>;
   view: ClientServicesViewMode;
 }
 
 export function ProductFinanceClientServicesPanel({
-  projectId,
+  productId,
   search,
   filters,
   view,
@@ -34,8 +34,8 @@ export function ProductFinanceClientServicesPanel({
   const [cancelTarget, setCancelTarget] = useState<{ id: string; name: string } | null>(null);
 
   const baseParams = useMemo(
-    () => buildProductClientServiceListParams(projectId, search, filters),
-    [projectId, search, filters],
+    () => buildProductClientServiceListParams(productId, search, filters),
+    [productId, search, filters],
   );
 
   const refreshAll = useCallback(() => {

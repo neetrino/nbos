@@ -37,8 +37,16 @@ describe('ExpensesService', () => {
         category: 'HOSTING',
         status: 'PAID',
         projectId: 'p1',
+        productId: 'prod-1',
       });
-      expect(prisma.expense.findMany).toHaveBeenCalled();
+      expect(prisma.expense.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            projectId: 'p1',
+            productId: 'prod-1',
+          }),
+        }),
+      );
     });
 
     it('applies createdAt date range filter', async () => {
@@ -462,6 +470,89 @@ describe('ExpensesService', () => {
       });
       expect(result.name).toBe('Hosting');
       expect(prisma.expense.findUnique).toHaveBeenCalled();
+    });
+
+    it('writes resolved product ownership on create', async () => {
+      prisma.product.findUnique.mockResolvedValue({ projectId: 'proj-owned' });
+      prisma.expense.create.mockResolvedValue({
+        id: 'owned-1',
+        name: 'Hosting',
+        amount: new Decimal(20000),
+        productId: 'prod-1',
+        projectId: 'proj-owned',
+      });
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'owned-1',
+        name: 'Hosting',
+        amount: new Decimal(20000),
+        expensePayments: [],
+        product: { id: 'prod-1', name: 'Site' },
+        project: { id: 'proj-owned', code: 'P1', name: 'P' },
+      });
+
+      await service.create({
+        name: 'Hosting',
+        type: 'PLANNED',
+        category: 'HOSTING',
+        amount: 20000,
+        productId: 'prod-1',
+      });
+
+      expect(prisma.expense.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            productId: 'prod-1',
+            projectId: 'proj-owned',
+          }),
+        }),
+      );
+      expect(operationalJournal.appendExpenseCardAccrualLine).toHaveBeenCalledWith(
+        expect.objectContaining({
+          productId: 'prod-1',
+          projectId: 'proj-owned',
+        }),
+      );
+    });
+
+    it('keeps the plan product when a linked client service later diverges', async () => {
+      prisma.product.findUnique.mockResolvedValue({ projectId: 'proj-plan' });
+      prisma.expensePlan.findUnique.mockResolvedValue({ productId: 'prod-plan' });
+      prisma.clientServiceRecord.findUnique.mockResolvedValue({ productId: 'prod-csr' });
+      prisma.expense.create.mockResolvedValue({
+        id: 'from-plan',
+        name: 'Hosting',
+        amount: new Decimal(99),
+        productId: 'prod-plan',
+        projectId: 'proj-plan',
+      });
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'from-plan',
+        name: 'Hosting',
+        amount: new Decimal(99),
+        expensePayments: [],
+        project: null,
+      });
+
+      await service.create({
+        name: 'Hosting',
+        type: 'PLANNED',
+        category: 'HOSTING',
+        amount: 99,
+        productId: 'prod-plan',
+        expensePlanId: 'plan-1',
+        clientServiceRecordId: 'csr-1',
+      });
+
+      expect(prisma.expense.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            productId: 'prod-plan',
+            projectId: 'proj-plan',
+            clientServiceRecordId: 'csr-1',
+          }),
+        }),
+      );
+      expect(prisma.clientServiceRecord.findUnique).not.toHaveBeenCalled();
     });
 
     it('rejects invalid type', async () => {

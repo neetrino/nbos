@@ -48,6 +48,7 @@ describe('clientServiceToFormState', () => {
       productId: 'product-1',
       name: 'example.com',
       provider: '',
+      providerAccountId: '',
       startDate: '2026-01-02',
       renewalDate: '',
       clientCharge: '',
@@ -66,7 +67,7 @@ describe('clientServiceToFormState', () => {
 });
 
 describe('clientServiceFormToPayload', () => {
-  it('sends productId and omits a blank product as null', () => {
+  it('sends productId and credential id, and omits blanks as null', () => {
     const withProduct = clientServiceToFormState({
       projectId: 'project-1',
       productId: 'product-1',
@@ -88,6 +89,10 @@ describe('clientServiceFormToPayload', () => {
     } as ClientServiceRecord);
 
     expect(clientServiceFormToPayload(withProduct).productId).toBe('product-1');
+    expect(clientServiceFormToPayload(withProduct).providerAccountId).toBeNull();
     expect(clientServiceFormToPayload({ ...withProduct, productId: '  ' }).productId).toBeNull();
+    expect(
+      clientServiceFormToPayload({ ...withProduct, providerAccountId: 'cred-1' }).providerAccountId,
+    ).toBe('cred-1');
   });
 });

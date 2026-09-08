@@ -9,6 +9,7 @@ export function buildExpenseSearchAnd(searchTrimmed: string): Prisma.ExpenseWher
       { notes: ic },
       { project: { name: ic } },
       { project: { code: ic } },
+      { product: { name: ic } },
       { expensePlan: { name: ic } },
     ],
   };

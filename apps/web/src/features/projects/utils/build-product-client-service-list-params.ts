@@ -6,7 +6,7 @@ import {
 import type { ClientServiceRecordListParams } from '@/lib/api/client-services';
 
 export function buildProductClientServiceListParams(
-  projectId: string,
+  productId: string,
   search: string,
   filters: Record<string, string>,
 ): ClientServiceRecordListParams {
@@ -15,7 +15,7 @@ export function buildProductClientServiceListParams(
   const billing = filters[CLIENT_SERVICE_FILTER_BILLING_KEY];
 
   return {
-    projectId,
+    productId,
     ...(search.trim() ? { search: search.trim() } : {}),
     ...(type && type !== 'all' ? { type } : {}),
     ...(status && status !== 'all' ? { status } : {}),

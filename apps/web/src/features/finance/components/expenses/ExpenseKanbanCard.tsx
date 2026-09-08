@@ -9,6 +9,7 @@ import {
 } from '@/features/finance/constants/expense-category-visual';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { formatExpenseCardDueDate } from '@/features/finance/utils/expense-kanban-card-due';
+import { expenseOwnerLabel } from '@/features/finance/utils/expense-owner-label';
 import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payroll-expense-notes';
 import { parseMoneyAmount } from '@/lib/format/money';
 import type { Expense } from '@/lib/api/finance';
@@ -20,6 +21,7 @@ interface ExpenseKanbanCardProps {
 }
 
 export function ExpenseKanbanCard({ expense, onOpen }: ExpenseKanbanCardProps) {
+  const ownerLabel = expenseOwnerLabel(expense);
   return (
     <KanbanCardShell
       as="article"
@@ -46,7 +48,7 @@ export function ExpenseKanbanCard({ expense, onOpen }: ExpenseKanbanCardProps) {
       >
         <ExpenseCardHeader expense={expense} />
         <ExpenseCardMetrics expense={expense} />
-        {expense.project ? <ExpenseCardProjectBar projectName={expense.project.name} /> : null}
+        {ownerLabel ? <ExpenseCardProjectBar projectName={ownerLabel} /> : null}
       </div>
     </KanbanCardShell>
   );

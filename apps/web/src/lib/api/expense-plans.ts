@@ -11,7 +11,9 @@ export interface ExpensePlan {
   amount: string;
   frequency: string;
   nextDueDate: string | null;
+  productId: string | null;
   projectId: string | null;
+  credentialId: string | null;
   autoGenerate: boolean;
   status: ExpensePlanStatus;
   cancelledAt: string | null;
@@ -19,6 +21,8 @@ export interface ExpensePlan {
   createdAt: string;
   updatedAt: string;
   project: { id: string; code: string; name: string } | null;
+  product: { id: string; name: string } | null;
+  credential: { id: string; name: string; login: string | null; url: string | null } | null;
   _count: { expenses: number };
 }
 
@@ -35,7 +39,8 @@ export interface CreateExpensePlanPayload {
   amount: number;
   frequency?: string;
   nextDueDate?: string | null;
-  projectId?: string | null;
+  productId?: string | null;
+  credentialId?: string | null;
   clientServiceRecordId?: string | null;
   autoGenerate?: boolean;
   notes?: string | null;
@@ -70,6 +75,7 @@ export interface ExpensePlanListParams {
   page?: number;
   pageSize?: number;
   projectId?: string;
+  productId?: string;
   category?: string;
   status?: string;
   search?: string;
@@ -80,6 +86,7 @@ export interface ExpensePlanListParams {
 export interface ExpensePlanGridParams {
   year?: number;
   projectId?: string;
+  productId?: string;
   category?: string;
   status?: string;
   search?: string;

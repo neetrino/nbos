@@ -1,21 +1,17 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { DollarSign, FolderKanban, Layers, LayoutGrid } from 'lucide-react';
+import { DollarSign, Layers, LayoutGrid } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
   DetailSheetOptionalDescription,
   DetailSheetSection,
   InlineField,
-  RelationPickerField,
   StatusBadge,
 } from '@/components/shared';
-import {
-  useProjectRelationSearch,
-  useRelationPickerActions,
-} from '@/components/shared/relation-picker';
 import { Checkbox } from '@/components/ui/checkbox';
+import { FinanceProductCredentialFields } from '@/features/finance/components/FinanceProductCredentialFields';
 import { Label } from '@/components/ui/label';
 import { ExpensePayrollLinkBanner } from '@/features/finance/components/expenses/ExpensePayrollLinkBanner';
 import { ExpensePlanLinkBanner } from '@/features/finance/components/expenses/ExpensePlanLinkBanner';
@@ -53,17 +49,17 @@ export function ExpenseGeneralTab({
   patchDraft,
   formDisabled = false,
 }: ExpenseGeneralTabProps) {
-  const searchProjects = useProjectRelationSearch();
-  const projectPicker = useRelationPickerActions('project');
-  const initialProjectLabel = projectDisplayName(expense.project);
-  const [projectLabel, setProjectLabel] = useState<string | null>(initialProjectLabel);
-  const projectSeed = `${expense.id}:${expense.projectId ?? ''}:${initialProjectLabel ?? ''}`;
-  const [projectSeedSeen, setProjectSeedSeen] = useState(projectSeed);
-  if (projectSeed !== projectSeedSeen) {
-    setProjectSeedSeen(projectSeed);
-    setProjectLabel(initialProjectLabel);
+  const productLabelSeed = expense.product?.name ?? null;
+  const credentialLabelSeed = expense.credential?.name ?? null;
+  const [productLabel, setProductLabel] = useState(productLabelSeed);
+  const [credentialLabel, setCredentialLabel] = useState(credentialLabelSeed);
+  const labelSeed = `${expense.id}:${expense.productId ?? ''}:${expense.credentialId ?? ''}`;
+  const [labelSeedSeen, setLabelSeedSeen] = useState(labelSeed);
+  if (labelSeed !== labelSeedSeen) {
+    setLabelSeedSeen(labelSeed);
+    setProductLabel(productLabelSeed);
+    setCredentialLabel(credentialLabelSeed);
   }
-  const projectValue = draft.projectId === 'none' ? null : draft.projectId;
 
   const categoryOptions = useMemo((): Array<{ value: string; label: string }> => {
     const items: Array<{ value: string; label: string }> = EXPENSE_CATEGORIES.map((c) => ({
@@ -219,27 +215,31 @@ export function ExpenseGeneralTab({
               className={EXPENSE_SHEET_FIELD_CELL_CLASS}
               onValueChange={(v) => v && patchDraft({ taxStatus: v })}
             />
-            <RelationPickerField
-              label="Project"
-              entityKind="project"
-              value={projectValue}
-              selectionLabel={projectLabel}
-              placeholder="Optional — search project…"
-              icon={<FolderKanban size={12} />}
-              disabled={formDisabled}
-              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
-              onSearch={searchProjects}
-              onSelect={(id, label) => {
-                patchDraft({ projectId: id });
-                setProjectLabel(label);
-              }}
-              onClear={() => {
-                patchDraft({ projectId: 'none' });
-                setProjectLabel(null);
-              }}
-              {...projectPicker}
-            />
           </div>
+          <FinanceProductCredentialFields
+            productId={draft.productId || null}
+            productLabel={productLabel}
+            credentialId={draft.credentialId || null}
+            credentialLabel={credentialLabel}
+            projectHint={draft.productId ? null : projectDisplayName(expense.project)}
+            disabled={formDisabled}
+            onProductSelect={(id, label) => {
+              patchDraft({ productId: id });
+              setProductLabel(label);
+            }}
+            onProductClear={() => {
+              patchDraft({ productId: '' });
+              setProductLabel(null);
+            }}
+            onCredentialSelect={(id, label) => {
+              patchDraft({ credentialId: id });
+              setCredentialLabel(label);
+            }}
+            onCredentialClear={() => {
+              patchDraft({ credentialId: '' });
+              setCredentialLabel(null);
+            }}
+          />
           <div className="flex items-center gap-2 pt-1">
             <Checkbox
               id={`expense-pass-${expense.id}`}

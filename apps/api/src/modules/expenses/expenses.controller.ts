@@ -34,6 +34,7 @@ export class ExpensesController {
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'projectId', required: false })
+  @ApiQuery({ name: 'productId', required: false })
   @ApiQuery({
     name: 'expensePlanId',
     required: false,
@@ -75,6 +76,7 @@ export class ExpensesController {
     @Query('category') category?: string,
     @Query('status') status?: string,
     @Query('projectId') projectId?: string,
+    @Query('productId') productId?: string,
     @Query('expensePlanId') expensePlanId?: string,
     @Query('backlogReason') backlogReason?: string,
     @Query('frequency') frequency?: string,
@@ -96,6 +98,7 @@ export class ExpensesController {
       category,
       status,
       projectId,
+      productId,
       expensePlanId,
       backlogReason,
       frequency,
@@ -117,6 +120,7 @@ export class ExpensesController {
   @RequirePermission('FINANCE_EXPENSES', 'VIEW')
   @ApiOperation({ summary: 'Get expense statistics' })
   @ApiQuery({ name: 'projectId', required: false })
+  @ApiQuery({ name: 'productId', required: false })
   @ApiQuery({
     name: 'expensePlanId',
     required: false,
@@ -145,6 +149,7 @@ export class ExpensesController {
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
     @Query('projectId') projectId?: string,
+    @Query('productId') productId?: string,
     @Query('expensePlanId') expensePlanId?: string,
     @Query('status') status?: string,
     @Query('activeBoard') activeBoard?: string,
@@ -157,6 +162,7 @@ export class ExpensesController {
       dateFrom,
       dateTo,
       projectId,
+      productId,
       expensePlanId,
       status,
       activeBoard: activeBoard === 'true',
@@ -224,7 +230,8 @@ export class ExpensesController {
       frequency?: string;
       dueDate?: string;
       status?: string;
-      projectId?: string;
+      productId?: string | null;
+      credentialId?: string | null;
       isPassThrough?: boolean;
       taxStatus?: string;
       backlogReason?: string | null;
@@ -250,7 +257,8 @@ export class ExpensesController {
       frequency?: string;
       dueDate?: string;
       status?: string;
-      projectId?: string;
+      productId?: string | null;
+      credentialId?: string | null;
       isPassThrough?: boolean;
       taxStatus?: string;
       backlogReason?: string | null;

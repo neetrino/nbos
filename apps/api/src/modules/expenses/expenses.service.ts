@@ -58,6 +58,8 @@ import { settleExpenseMarkPaidIfOutstanding } from './expense-mark-paid-settle';
 import { assertExpenseAccessible } from './expense-access.op';
 import { resolveExpenseListParticipationWhere } from './expense-list-participation.op';
 import { buildExpenseSearchAnd } from './expense-search.where';
+import { expenseOwnershipWrite, resolveExpenseLinks } from './expense-link-resolve';
+import { EXPENSE_OWNER_INCLUDE } from './expense-relation-include';
 import type {
   CreateExpenseDto,
   ExpenseQueryParams,
@@ -89,6 +91,7 @@ export class ExpensesService {
       status,
       backlogReason,
       projectId,
+      productId,
       expensePlanId,
       frequency,
       search,
@@ -123,6 +126,7 @@ export class ExpensesService {
       status: safeStatus,
       backlogReason: safeBacklogReason,
       projectId,
+      productId,
       expensePlanId,
       frequency: safeFrequency,
       search,
@@ -145,7 +149,7 @@ export class ExpensesService {
       this.prisma.expense.findMany({
         where,
         include: {
-          project: { select: { id: true, code: true, name: true } },
+          ...EXPENSE_OWNER_INCLUDE,
           expensePlan: { select: { id: true, name: true } },
           salaryLine: {
             select: {
@@ -186,7 +190,7 @@ export class ExpensesService {
     const row = await this.prisma.expense.findUnique({
       where: { id },
       include: {
-        project: { select: { id: true, code: true, name: true } },
+        ...EXPENSE_OWNER_INCLUDE,
         expensePlan: { select: { id: true, name: true } },
         expensePayments: { orderBy: { paymentDate: 'desc' } },
         salaryLine: {
@@ -238,18 +242,13 @@ export class ExpensesService {
   }
 
   async create(data: CreateExpenseDto, access?: ExpenseQueryParams['access']) {
-    if (data.expensePlanId) {
-      const plan = await this.prisma.expensePlan.findUnique({
-        where: { id: data.expensePlanId },
-        select: { id: true, projectId: true },
-      });
-      if (!plan) {
-        throw new BadRequestException('Expense plan not found');
-      }
-      if (data.projectId && plan.projectId && data.projectId !== plan.projectId) {
-        throw new BadRequestException('Project does not match the selected expense plan');
-      }
-    }
+    const links = await resolveExpenseLinks(this.prisma, {
+      productId: data.productId,
+      credentialId: data.credentialId,
+      expensePlanId: data.expensePlanId,
+      clientServiceRecordId: data.clientServiceRecordId,
+      useClientServiceAsSource: !data.expensePlanId,
+    });
 
     const dueDate = data.dueDate ? new Date(data.dueDate) : undefined;
     const requestedStatus = resolveExpenseStatus(data.status) as ExpenseStatusEnum;
@@ -267,7 +266,7 @@ export class ExpensesService {
         frequency: resolveExpenseFrequency(data.frequency) as ExpenseFrequency,
         dueDate,
         status: workflowStatus,
-        projectId: data.projectId,
+        ...expenseOwnershipWrite(links),
         ...(data.expensePlanId ? { expensePlanId: data.expensePlanId } : {}),
         ...(data.clientServiceRecordId
           ? { clientServiceRecordId: data.clientServiceRecordId }
@@ -291,6 +290,7 @@ export class ExpensesService {
       amount: new Decimal(created.amount).toNumber(),
       bookedAt,
       projectId: created.projectId,
+      productId: created.productId,
     });
 
     return this.findById(created.id, access);
@@ -300,7 +300,12 @@ export class ExpensesService {
     await assertExpenseAccessible(this.prisma, id, access);
     const existing = await this.prisma.expense.findUnique({
       where: { id },
-      select: { dueDate: true },
+      select: {
+        dueDate: true,
+        productId: true,
+        credentialId: true,
+        clientServiceRecordId: true,
+      },
     });
     if (!existing) {
       throw new NotFoundException(`Expense ${id} not found`);
@@ -333,6 +338,8 @@ export class ExpensesService {
     await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAtForGuard);
     await this.settleMarkPaidIfRequested(id, statusPatch);
 
+    const linkPatch = await this.resolveExpenseUpdateLinks(data, existing);
+
     await this.prisma.expense.update({
       where: { id },
       data: {
@@ -345,7 +352,7 @@ export class ExpensesService {
           dueDate: data.dueDate ? new Date(data.dueDate) : null,
         }),
         ...(statusPatch !== undefined && { status: statusPatch as ExpenseStatusEnum }),
-        ...(data.projectId !== undefined && { projectId: data.projectId || null }),
+        ...linkPatch,
         ...(data.clientServiceRecordId !== undefined && {
           clientServiceRecordId: data.clientServiceRecordId || null,
         }),
@@ -417,6 +424,7 @@ export class ExpensesService {
     const safeStatus = pickExpenseStatusFilter(params.status);
     const createdAt = this.buildDateRange(params.dateFrom, params.dateTo);
     const projectWhere = params.projectId ? { projectId: params.projectId } : {};
+    const productWhere = params.productId ? { productId: params.productId } : {};
     const planIdTrimmed = params.expensePlanId?.trim();
     const planWhere = planIdTrimmed ? { expensePlanId: planIdTrimmed } : {};
     const statusWhere = safeStatus
@@ -433,6 +441,7 @@ export class ExpensesService {
 
     const scopeWhere: Prisma.ExpenseWhereInput = {
       ...projectWhere,
+      ...productWhere,
       ...planWhere,
       ...statusWhere,
       ...(createdAt ? { createdAt } : {}),
@@ -467,6 +476,29 @@ export class ExpensesService {
       notify: this.notifications,
       journal: this.operationalJournal,
     });
+  }
+
+  private async resolveExpenseUpdateLinks(
+    data: UpdateExpenseDto,
+    existing: {
+      productId: string | null;
+      credentialId: string | null;
+      clientServiceRecordId: string | null;
+    },
+  ): Promise<Prisma.ExpenseUpdateInput> {
+    if (data.productId === undefined && data.credentialId === undefined) return {};
+    const links = await resolveExpenseLinks(this.prisma, {
+      productId: data.productId !== undefined ? data.productId : existing.productId,
+      credentialId: data.credentialId !== undefined ? data.credentialId : existing.credentialId,
+      clientServiceRecordId: existing.clientServiceRecordId,
+      useClientServiceAsSource: false,
+    });
+    return {
+      ...(data.productId !== undefined
+        ? { productId: links.productId, projectId: links.projectId }
+        : {}),
+      ...(data.credentialId !== undefined ? { credentialId: links.credentialId } : {}),
+    };
   }
 
   private async persistRefreshedWorkflowStatus(id: string): Promise<void> {
@@ -509,6 +541,7 @@ export class ExpensesService {
       where.backlogReason = filters.backlogReason as ExpenseBacklogReasonEnum;
     }
     if (filters.projectId) where.projectId = filters.projectId;
+    if (filters.productId) where.productId = filters.productId;
     const planId = filters.expensePlanId?.trim();
     if (planId) where.expensePlanId = planId;
     if (filters.frequency) where.frequency = filters.frequency as ExpenseFrequency;

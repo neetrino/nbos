@@ -30,6 +30,7 @@ import { useInvoicesBoardViewMode } from '@/features/finance/constants/invoices-
 import { INVOICE_VIEW_OPTIONS } from '@/features/finance/components/invoices/invoice-view-options';
 import { projectOrderToFinanceOrder } from '@/features/projects/utils/project-order-finance-adapter';
 import { ProductFinanceSectionContent } from '@/features/projects/components/tabs/product-finance-section-content';
+import { useProductFinanceExpenseTotal } from '@/features/projects/hooks/use-product-finance-expense-total';
 import { PRODUCT_FINANCE_SECTION_OPTIONS } from '@/features/projects/constants/product-finance-section';
 import { useProductFinanceSection } from '@/features/projects/hooks/use-product-finance-section';
 import type { ProjectExpense, ProjectOrder, ProjectSubscription } from '@/lib/api/projects';
@@ -53,7 +54,7 @@ interface FinanceTabProps {
 export function FinanceTab({
   orders,
   subscriptions,
-  expenses,
+  expenses: _expenses,
   projectId,
   project,
   productId,
@@ -81,7 +82,7 @@ export function FinanceTab({
     .flatMap((o) => o.invoices)
     .filter((i) => i.moneyStatus === 'PAID');
   const totalPaid = paidInvoices.reduce((s, i) => s + Number(i.amount), 0);
-  const totalExpenses = expenses.reduce((s, e) => s + Number(e.amount), 0);
+  const totalExpenses = useProductFinanceExpenseTotal(productId);
   const monthlyMRR = subscriptions
     .filter((s) => s.status === 'ACTIVE')
     .reduce((sum, sub) => sum + projectSubscriptionMonthlyAmount(sub), 0);

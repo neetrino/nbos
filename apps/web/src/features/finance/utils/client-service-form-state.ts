@@ -7,6 +7,7 @@ export interface ClientServiceFormState {
   type: string;
   name: string;
   provider: string;
+  providerAccountId: string;
   status: string;
   billingModel: string;
   pricingModel: string;
@@ -27,6 +28,7 @@ export const EMPTY_CLIENT_SERVICE_FORM: ClientServiceFormState = {
   type: 'DOMAIN',
   name: '',
   provider: '',
+  providerAccountId: '',
   status: 'PENDING',
   billingModel: 'WE_PAY',
   pricingModel: 'FIXED',
@@ -52,6 +54,7 @@ export function clientServiceToFormState(row: ClientServiceRecord): ClientServic
     type: row.type,
     name: row.name,
     provider: row.provider ?? '',
+    providerAccountId: row.providerAccountId ?? '',
     status: row.status,
     billingModel: row.billingModel,
     pricingModel: row.pricingModel,
@@ -76,6 +79,7 @@ export function clientServiceFormToPayload(
     type: form.type,
     name: form.name.trim(),
     provider: form.provider.trim() || null,
+    providerAccountId: form.providerAccountId.trim() || null,
     status: form.status,
     billingModel: form.billingModel,
     pricingModel: form.pricingModel,

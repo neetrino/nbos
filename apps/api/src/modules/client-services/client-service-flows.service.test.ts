@@ -70,6 +70,8 @@ describe('ClientServiceFlowsService', () => {
       expect.objectContaining({
         category: 'DOMAIN',
         clientServiceRecordId: 'svc-1',
+        productId: null,
+        credentialId: null,
         amount: 99,
         autoGenerate: false,
       }),
