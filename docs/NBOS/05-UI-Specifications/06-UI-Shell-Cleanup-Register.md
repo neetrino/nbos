@@ -102,7 +102,7 @@ My Company -> Departments
 
 Статус: `DONE IN UI SHELL SLICE`
 
-Runtime: единый global search в header (`Search` / `⌘K` / `Ctrl+K`) + один overlay modal. Sidebar search entry не дублируется. Server: `GET /api/search` с RBAC и row-level filters по модулям (Leads, Deals, Products, Finance, Credentials).
+Runtime: единый global search в header (`Search` / `⌘K` / `Ctrl+K`) + один overlay modal. Sidebar search entry не дублируется. Server: `GET /api/search` с RBAC и row-level filters по модулям (Leads, Deals, Products, Finance, Credentials). Empty overlay shows last opened search hits from `localStorage` (`nbos.globalSearch.recentHits`), not last query strings.
 
 ### B6. Finance/CRM sidebar children are incomplete
 

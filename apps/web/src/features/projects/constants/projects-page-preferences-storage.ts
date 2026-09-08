@@ -15,7 +15,7 @@ export type ProjectsHubPagePreferences = {
 export const PROJECTS_HUB_PAGE_STORAGE_KEY = 'nbos.projectsHub.pagePreferences';
 
 export const DEFAULT_PROJECTS_HUB_PAGE_PREFERENCES: ProjectsHubPagePreferences = {
-  activeTab: 'all',
+  activeTab: 'active',
   viewMode: 'grid',
 };
 

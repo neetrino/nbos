@@ -16,7 +16,7 @@ import {
 } from '@/features/finance/utils/expense-plan-status-eligibility';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import { parseMoneyAmount } from '@/lib/format/money';
-import { projectDisplayName } from '@/lib/format/project-product-display';
+import { expenseOwnerLabel } from '@/features/finance/utils/expense-owner-label';
 
 interface ExpensePlanDetailSheetHeaderProps {
   plan: ExpensePlan;
@@ -32,7 +32,7 @@ function buildExpensePlanHeaderSubline(plan: ExpensePlan): string {
     formatAmount(parseMoneyAmount(plan.amount)),
     expensePlanFrequencyLabel(plan.frequency),
     plan.nextDueDate ? `Due ${formatExpensePlanShortDate(plan.nextDueDate)}` : null,
-    projectDisplayName(plan.project),
+    expenseOwnerLabel(plan),
   ].filter(Boolean);
   return parts.join(' · ');
 }

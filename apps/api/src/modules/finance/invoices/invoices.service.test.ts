@@ -30,10 +30,12 @@ function mockInvoiceFindByIdRow(
     orderId: null,
     subscriptionId: null,
     projectId: 'proj-1',
+    productId: 'prod-1',
     companyId: null,
     createdAt: new Date(),
     order: null,
     subscription: null,
+    product: { id: 'prod-1', name: 'Site' },
     company: null,
     payments,
     paidDate: new Date('2026-04-12T00:00:00.000Z'),
@@ -86,7 +88,7 @@ describe('InvoicesService', () => {
       expect(prisma.invoice.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           include: expect.objectContaining({
-            clientServiceRecord: { select: { id: true, type: true } },
+            clientServiceRecord: { select: { id: true, type: true, name: true } },
           }),
         }),
       );
@@ -164,6 +166,18 @@ describe('InvoicesService', () => {
       );
     });
 
+    it('applies productId filter', async () => {
+      await service.findAll({ productId: 'prod-1' });
+
+      expect(prisma.invoice.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            productId: 'prod-1',
+          }),
+        }),
+      );
+    });
+
     it('applies moneyStatus filter', async () => {
       await service.findAll({ moneyStatus: 'OVERDUE' });
 
@@ -192,7 +206,7 @@ describe('InvoicesService', () => {
       expect(prisma.invoice.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({
           include: expect.objectContaining({
-            clientServiceRecord: { select: { id: true, type: true } },
+            clientServiceRecord: { select: { id: true, type: true, name: true } },
           }),
         }),
       );

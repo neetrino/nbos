@@ -4,6 +4,7 @@ import {
   persistInvoiceCreate,
   type OfficialAwaitingNotifier,
 } from '../../finance/invoices/invoice-card-persist';
+import { resolveInvoiceProductOwnership } from '../../finance/invoices/invoice-product-ownership';
 
 /** Manual deal/order invoices stay in New until Finance moves them to collection. */
 const MANUAL_DEAL_INVOICE_MONEY_STATUS = 'NEW' as const;
@@ -24,12 +25,14 @@ export async function createDealDepositInvoice(
   notifier?: OfficialAwaitingNotifier,
 ) {
   const code = await allocateInvoiceCode(prisma);
+  const ownership = await resolveInvoiceProductOwnership(prisma, { orderId: input.orderId });
   return persistInvoiceCreate(
     prisma,
     {
       code,
       orderId: input.orderId,
-      projectId: input.projectId,
+      productId: ownership.productId,
+      projectId: ownership.projectId ?? input.projectId,
       companyId: input.companyId,
       amount: input.amount,
       type: input.type,

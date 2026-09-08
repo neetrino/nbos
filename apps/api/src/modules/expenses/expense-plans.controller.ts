@@ -25,6 +25,7 @@ export class ExpensePlansController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
+  @ApiQuery({ name: 'productId', required: false })
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({
     name: 'status',
@@ -38,6 +39,7 @@ export class ExpensePlansController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
+    @Query('productId') productId?: string,
     @Query('category') category?: string,
     @Query('status') status?: string,
     @Query('search') search?: string,
@@ -48,6 +50,7 @@ export class ExpensePlansController {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       projectId,
+      productId,
       category,
       status,
       search,
@@ -66,6 +69,7 @@ export class ExpensePlansController {
     description: 'Calendar year (defaults to current UTC year)',
   })
   @ApiQuery({ name: 'projectId', required: false })
+  @ApiQuery({ name: 'productId', required: false })
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({
     name: 'status',
@@ -76,6 +80,7 @@ export class ExpensePlansController {
   async getGrid(
     @Query('year') year?: string,
     @Query('projectId') projectId?: string,
+    @Query('productId') productId?: string,
     @Query('category') category?: string,
     @Query('status') status?: string,
     @Query('search') search?: string,
@@ -84,6 +89,7 @@ export class ExpensePlansController {
     return this.expensePlansService.getGrid({
       year: Number.isFinite(parsedYear) ? parsedYear : undefined,
       projectId,
+      productId,
       category,
       status,
       search,
@@ -131,7 +137,8 @@ export class ExpensePlansController {
       amount: number;
       frequency?: string;
       nextDueDate?: string | null;
-      projectId?: string | null;
+      productId?: string | null;
+      credentialId?: string | null;
       autoGenerate?: boolean;
       notes?: string | null;
     },
@@ -160,7 +167,8 @@ export class ExpensePlansController {
       amount?: number;
       frequency?: string;
       nextDueDate?: string | null;
-      projectId?: string | null;
+      productId?: string | null;
+      credentialId?: string | null;
       autoGenerate?: boolean;
       notes?: string | null;
     },

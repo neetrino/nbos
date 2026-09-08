@@ -66,10 +66,10 @@ export function resolvePaymentReminderRenderInput(input: {
 
   if (input.clientServiceRecord != null) {
     const language = input.clientServiceRecord.reminderLanguage;
-    const serviceLabel =
-      input.clientServiceRecord.name.trim() ||
-      input.clientServiceRecord.product?.name.trim() ||
-      input.code;
+    const serviceLabel = resolveInvoiceDisplayTitle({
+      code: input.code,
+      clientServiceRecord: input.clientServiceRecord,
+    });
     return {
       language,
       productName: serviceLabel,

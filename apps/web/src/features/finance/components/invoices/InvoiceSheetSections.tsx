@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, Building2, User, FolderKanban, Repeat, Handshake } from 'lucide-react';
+import { FileText, Building2, User, Layers, Repeat, Handshake } from 'lucide-react';
 import {
   DetailSheetEntityLinkCard,
   DetailSheetEntityLinkGrid,
@@ -77,13 +77,13 @@ export function InvoiceLinkedEntitiesSection({
           href: ordersListWithOpenOrderHref(invoice.order.id),
         }
       : null,
-    invoice.project
+    invoice.product && invoice.projectId
       ? {
-          key: `project-${invoice.project.id}`,
-          icon: FolderKanban,
-          label: 'Project',
-          title: invoice.project.name,
-          href: `/projects/${invoice.project.id}`,
+          key: `product-${invoice.product.id}`,
+          icon: Layers,
+          label: 'Product',
+          title: invoice.product.name,
+          href: `/projects/${invoice.projectId}/products/${invoice.product.id}`,
         }
       : null,
     invoice.subscriptionId
@@ -109,7 +109,10 @@ export function InvoiceLinkedEntitiesSection({
 
   const hasCompany = Boolean(invoice.company);
   const hasContact = Boolean(invoice.contact);
-  if (cards.length === 0 && !hasDeal && !hasCompany && !hasContact) return null;
+  const hasUnlinkedProduct = Boolean(invoice.product && !invoice.projectId);
+  if (cards.length === 0 && !hasDeal && !hasCompany && !hasContact && !hasUnlinkedProduct) {
+    return null;
+  }
 
   return (
     <>
@@ -132,6 +135,14 @@ export function InvoiceLinkedEntitiesSection({
               title={row.title}
             />
           ))}
+          {hasUnlinkedProduct && invoice.product ? (
+            <DetailSheetEntityLinkCard
+              icon={Layers}
+              label="Product"
+              title={invoice.product.name}
+              onOpen={() => relations.openEntity('product', invoice.product!.id)}
+            />
+          ) : null}
           {invoice.company ? (
             <div
               className={invoiceStageGateSectionClass(

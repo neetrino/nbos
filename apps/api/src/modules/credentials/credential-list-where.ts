@@ -17,6 +17,7 @@ export async function buildCredentialListWhere(
 ): Promise<Prisma.CredentialWhereInput> {
   const {
     projectId,
+    productId,
     category,
     credentialType,
     accessLevel,
@@ -40,6 +41,7 @@ export async function buildCredentialListWhere(
   Object.assign(where, buildScopeWhere(listScope));
 
   if (projectId) where.projectId = projectId;
+  if (productId) where.productId = productId;
   if (category) where.category = category as Prisma.CredentialWhereInput['category'];
   if (credentialType) {
     where.credentialType = credentialType as Prisma.CredentialWhereInput['credentialType'];

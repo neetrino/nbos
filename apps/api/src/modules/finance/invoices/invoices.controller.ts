@@ -40,6 +40,7 @@ export class InvoicesController {
     @Query('moneyStatus') moneyStatus?: string,
     @Query('type') type?: string,
     @Query('projectId') projectId?: string,
+    @Query('productId') productId?: string,
     @Query('subscriptionId') subscriptionId?: string,
     @Query('search') search?: string,
     @Query('dateFrom') dateFrom?: string,
@@ -51,6 +52,7 @@ export class InvoicesController {
       moneyStatus,
       type,
       projectId,
+      productId,
       subscriptionId,
       search,
       dateFrom,
@@ -105,7 +107,7 @@ export class InvoicesController {
     body: {
       orderId?: string;
       subscriptionId?: string;
-      projectId?: string;
+      productId?: string;
       companyId?: string;
       clientServiceRecordId?: string;
       amount: number;
@@ -125,7 +127,7 @@ export class InvoicesController {
       amount?: number;
       taxStatus?: string;
       companyId?: string | null;
-      projectId?: string | null;
+      productId?: string | null;
       orderComment?: string | null;
     },
   ) {

@@ -29,19 +29,28 @@ describe('ClientServiceFlowsService', () => {
 
   it('creates linked invoice for we-pay service', async () => {
     prisma.clientServiceRecord.findUnique.mockResolvedValue(
-      buildService({ billingModel: 'WE_PAY' }),
+      buildService({ billingModel: 'WE_PAY', productId: 'prod-1' }),
     );
 
     await service.createInvoice('svc-1', {});
 
     expect(invoicesService.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        projectId: 'project-1',
+        productId: 'prod-1',
         clientServiceRecordId: 'svc-1',
         amount: 149,
         type: 'SERVICE',
       }),
     );
+  });
+
+  it('rejects invoice when the service has no product', async () => {
+    prisma.clientServiceRecord.findUnique.mockResolvedValue(
+      buildService({ billingModel: 'WE_PAY', productId: null }),
+    );
+
+    await expect(service.createInvoice('svc-1', {})).rejects.toBeInstanceOf(BadRequestException);
+    expect(invoicesService.create).not.toHaveBeenCalled();
   });
 
   it('rejects invoice for reminder-only service', async () => {
@@ -61,6 +70,8 @@ describe('ClientServiceFlowsService', () => {
       expect.objectContaining({
         category: 'DOMAIN',
         clientServiceRecordId: 'svc-1',
+        productId: null,
+        credentialId: null,
         amount: 99,
         autoGenerate: false,
       }),

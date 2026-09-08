@@ -21,6 +21,7 @@ import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persiste
 
 const EMPTY_SECTION_SEARCH: Record<ProductFinanceSection, string> = {
   orders: '',
+  invoices: '',
   subscriptions: '',
   expenses: '',
   'client-services': '',

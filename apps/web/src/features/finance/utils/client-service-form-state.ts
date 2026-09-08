@@ -3,9 +3,11 @@ import { DEFAULT_SUBSCRIPTION_REMINDER_LANGUAGE } from '@/features/finance/const
 
 export interface ClientServiceFormState {
   projectId: string;
+  productId: string;
   type: string;
   name: string;
   provider: string;
+  providerAccountId: string;
   status: string;
   billingModel: string;
   pricingModel: string;
@@ -22,9 +24,11 @@ export interface ClientServiceFormState {
 
 export const EMPTY_CLIENT_SERVICE_FORM: ClientServiceFormState = {
   projectId: '',
+  productId: '',
   type: 'DOMAIN',
   name: '',
   provider: '',
+  providerAccountId: '',
   status: 'PENDING',
   billingModel: 'WE_PAY',
   pricingModel: 'FIXED',
@@ -46,9 +50,11 @@ function toDateInputValue(value: string | null): string {
 export function clientServiceToFormState(row: ClientServiceRecord): ClientServiceFormState {
   return {
     projectId: row.projectId,
+    productId: row.productId ?? '',
     type: row.type,
     name: row.name,
     provider: row.provider ?? '',
+    providerAccountId: row.providerAccountId ?? '',
     status: row.status,
     billingModel: row.billingModel,
     pricingModel: row.pricingModel,
@@ -69,9 +75,11 @@ export function clientServiceFormToPayload(
 ): ClientServiceRecordPayload {
   return {
     projectId: form.projectId,
+    productId: form.productId.trim() || null,
     type: form.type,
     name: form.name.trim(),
     provider: form.provider.trim() || null,
+    providerAccountId: form.providerAccountId.trim() || null,
     status: form.status,
     billingModel: form.billingModel,
     pricingModel: form.pricingModel,

@@ -7,7 +7,8 @@ export type RelationEntityKind =
   | 'partner'
   | 'product'
   | 'employee'
-  | 'order';
+  | 'order'
+  | 'credential';
 
 export type RelationPickerOption = {
   value: string;
@@ -89,6 +90,7 @@ export const RELATION_KIND_LABELS: Record<RelationEntityKind, string> = {
   product: 'Product',
   employee: 'Employee',
   order: 'Order',
+  credential: 'Credentials',
 };
 
 /** Empty-state trigger when an employee relation has no selection. */
@@ -102,4 +104,5 @@ export const RELATION_CREATE_LABELS: Record<RelationEntityKind, string> = {
   product: 'Create product',
   employee: 'Add employee',
   order: 'Create order',
+  credential: 'Create credential',
 };

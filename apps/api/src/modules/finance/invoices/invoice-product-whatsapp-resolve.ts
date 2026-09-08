@@ -12,6 +12,7 @@ export async function resolveInvoiceProductWhatsAppGroup(
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
     select: {
+      productId: true,
       subscription: { select: { productId: true } },
       clientServiceRecord: { select: { productId: true } },
       order: { select: { productId: true } },
@@ -20,6 +21,7 @@ export async function resolveInvoiceProductWhatsAppGroup(
   if (!invoice) return null;
 
   const productId =
+    invoice.productId ??
     invoice.subscription?.productId ??
     invoice.clientServiceRecord?.productId ??
     invoice.order?.productId ??

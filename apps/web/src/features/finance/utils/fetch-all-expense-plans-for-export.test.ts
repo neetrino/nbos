@@ -17,7 +17,9 @@ function mockPlan(id: string): ExpensePlan {
     amount: '10.00',
     frequency: 'MONTHLY',
     nextDueDate: null,
+    productId: null,
     projectId: null,
+    credentialId: null,
     status: 'ACTIVE',
     cancelledAt: null,
     autoGenerate: false,
@@ -25,6 +27,8 @@ function mockPlan(id: string): ExpensePlan {
     createdAt: '2026-04-01T00:00:00.000Z',
     updatedAt: '2026-04-01T00:00:00.000Z',
     project: null,
+    product: null,
+    credential: null,
     _count: { expenses: 0 },
   };
 }

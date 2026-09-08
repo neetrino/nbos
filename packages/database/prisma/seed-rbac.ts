@@ -6,7 +6,6 @@ import {
   CRM_CALL_RECORDINGS_PLAY_DEFAULT_SCOPE,
   CRM_CALL_RECORDINGS_PLAY_PERMISSION_ID,
   PLATFORM_RESOURCE_FAMILIES,
-  ROLE_SELLER_ASSISTANT_ID,
   ROLE_SELLER_ID,
 } from '@nbos/shared';
 import type { PlatformResourceFamilyEnum } from '@nbos/database';
@@ -67,6 +66,8 @@ const D: [Scope, Scope, Scope, Scope] = ['DEPARTMENT', 'DEPARTMENT', 'DEPARTMENT
 const N: [Scope, Scope, Scope, Scope] = ['NONE', 'NONE', 'NONE', 'NONE'];
 /** View all + create, no edit/delete — Seller / Head of Sales on Clients. */
 const VA: [Scope, Scope, Scope, Scope] = ['ALL', 'NONE', 'ALL', 'NONE'];
+/** View own + create own, no edit/delete — Head of Marketing invoices. */
+const VA_OWN: [Scope, Scope, Scope, Scope] = ['OWN', 'NONE', 'OWN', 'NONE'];
 
 const DEVELOPER_ROLE_MATRIX: MatrixEntry = {
   CRM_LEADS: N,
@@ -126,7 +127,6 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
   'role-owner': Object.fromEntries(MODULES.map((m) => [m, F])),
   'role-ceo': Object.fromEntries(MODULES.map((m) => [m, F])),
   [ROLE_SELLER_ID]: SELLER_ROLE_MATRIX,
-  [ROLE_SELLER_ASSISTANT_ID]: SELLER_ROLE_MATRIX,
   'role-pm': {
     CRM_LEADS: N,
     CRM_DEALS: L,
@@ -150,7 +150,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: D,
     AUDIT_LOGS: N,
-    CLIENTS: R,
+    CLIENTS: VA,
     AI_PLATFORM: N,
   },
   'role-developer': DEVELOPER_ROLE_MATRIX,
@@ -280,7 +280,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: F,
     DASHBOARDS: F,
     AUDIT_LOGS: R,
-    CLIENTS: R,
+    CLIENTS: VA,
     AI_PLATFORM: N,
   },
   'role-marketing': {
@@ -306,7 +306,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: D,
     AUDIT_LOGS: N,
-    CLIENTS: R,
+    CLIENTS: VA,
     AI_PLATFORM: N,
   },
   'role-head-sales': {
@@ -358,14 +358,14 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: D,
     AUDIT_LOGS: N,
-    CLIENTS: R,
+    CLIENTS: VA,
     AI_PLATFORM: N,
   },
   'role-head-marketing': {
     CRM_LEADS: F,
     CRM_DEALS: D,
     ORDERS: N,
-    FINANCE_INVOICES: N,
+    FINANCE_INVOICES: VA_OWN,
     FINANCE_PAYMENTS: N,
     FINANCE_SUBSCRIPTIONS: N,
     FINANCE_EXPENSES: N,
@@ -384,7 +384,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: D,
     AUDIT_LOGS: N,
-    CLIENTS: R,
+    CLIENTS: VA,
     AI_PLATFORM: N,
   },
   'role-observer': {

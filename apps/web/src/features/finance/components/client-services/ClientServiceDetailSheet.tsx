@@ -43,7 +43,6 @@ import { ClientServiceCreateDialogs } from './ClientServiceCreateDialogs';
 import { ClientServiceDetailSheetBody } from './ClientServiceDetailSheetBody';
 import { type ClientServiceDetailSheetTab } from './client-service-detail-sheet-tabs';
 import { buildClientServiceDetailSheetTabs } from './build-client-service-detail-sheet-tabs';
-import { useClientServiceProjects } from './use-client-service-projects';
 
 interface ClientServiceDetailSheetProps {
   serviceId: string | null;
@@ -109,7 +108,6 @@ export function ClientServiceDetailSheet({
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [quickCreateTaskOpen, setQuickCreateTaskOpen] = useState(false);
   const dirtyRef = useRef(false);
-  const projects = useClientServiceProjects(open);
 
   useEffect(() => {
     setActiveTab('general');
@@ -314,7 +312,6 @@ export function ClientServiceDetailSheet({
                     service={service}
                     draft={draft}
                     patchDraft={patchDraft}
-                    projects={projects}
                     saving={saving}
                     readOnly={isCancelled}
                     canCreateTask={canCreateTask && !isCancelled}

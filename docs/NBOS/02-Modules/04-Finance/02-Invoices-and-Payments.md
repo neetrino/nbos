@@ -67,9 +67,9 @@ Payment confirmed
 | `code`                  | Системный номер карточки `INV-[YEAR]-[SEQ]`; вторичная строка UI, когда не display title |
 | `type`                  | Development / Extension / Subscription / Domain / Service / Other                        |
 | `source_entity`         | Из чего создана карточка                                                                 |
-| `project`               | Проект                                                                                   |
-| `product`               | Продукт, если применимо                                                                  |
-| `company`               | Компания-плательщик                                                                      |
+| `product`               | Продукт-владелец (за что выставлен; один Invoice = один Product)                         |
+| `project`               | Денормализация с `Product.projectId`; в UI карточки не показывать                        |
+| `company`               | Юрлицо-плательщик; обязательно для Tax, опционально для Free                             |
 | `contact`               | Контактное лицо                                                                          |
 | `amount`                | Сумма                                                                                    |
 | `currency`              | Валюта                                                                                   |
@@ -89,7 +89,8 @@ Payment confirmed
 
 1. есть `order` → display title заказа: `Deal.name` через `order.deal`, иначе `Order.code`;
 2. иначе есть `subscription` → `Subscription.name`;
-3. иначе → `Invoice.code`.
+3. иначе есть `clientServiceRecord` → `ClientServiceRecord.name`, иначе `product.name`;
+4. иначе → `Invoice.code`.
 
 `Invoice.code` всегда показывается **вторичной** строкой, когда не является заголовком (kanban, list, **detail sheet**, CSV `displayTitle`, исходящие письма). На kanban-карточке **сумма остаётся доминирующим элементом**; display title — меньшая строка над суммой (см. `05-UI-Specifications/04-Finance-Pages.md` §2.2).
 
@@ -101,9 +102,9 @@ Payment confirmed
 
 - `tax_status`
 - `notifications_enabled`
-- проектный контекст
+- продукт (владелец) и денорм проекта с `Product.projectId`
 - source link
-- при необходимости контакт / компания / продукт
+- при необходимости контакт / компания
 
 Примеры:
 

@@ -14,6 +14,7 @@ describe('resolveInvoiceProductWhatsAppGroup', () => {
 
   it('uses Client Service Record productId when there is no subscription', async () => {
     prisma.invoice.findUnique.mockResolvedValue({
+      productId: null,
       subscription: null,
       clientServiceRecord: { productId: 'prod-csr' },
       order: null,
@@ -34,6 +35,7 @@ describe('resolveInvoiceProductWhatsAppGroup', () => {
 
   it('prefers subscription productId over Client Service Record', async () => {
     prisma.invoice.findUnique.mockResolvedValue({
+      productId: null,
       subscription: { productId: 'prod-sub' },
       clientServiceRecord: { productId: 'prod-csr' },
       order: { productId: 'prod-order' },
@@ -46,5 +48,22 @@ describe('resolveInvoiceProductWhatsAppGroup', () => {
     const result = await resolveInvoiceProductWhatsAppGroup(prisma as never, 'inv-1');
 
     expect(result?.productId).toBe('prod-sub');
+  });
+
+  it('prefers invoice.productId over source product ids', async () => {
+    prisma.invoice.findUnique.mockResolvedValue({
+      productId: 'prod-card',
+      subscription: { productId: 'prod-sub' },
+      clientServiceRecord: { productId: 'prod-csr' },
+      order: { productId: 'prod-order' },
+    });
+    prisma.productWhatsAppGroupBinding.findUnique.mockResolvedValue({
+      groupChatId: 'card@g.us',
+      status: 'ACTIVE',
+    });
+
+    const result = await resolveInvoiceProductWhatsAppGroup(prisma as never, 'inv-1');
+
+    expect(result?.productId).toBe('prod-card');
   });
 });

@@ -81,7 +81,7 @@ export function ClientServiceCreateDialogs({
         onOpenChange={onInvoiceOpenChange}
         defaultForm={invoiceDefaultForm}
         clientServiceContext={clientServiceContext}
-        hiddenContext={{ projectId: service.projectId }}
+        hiddenContext={{ productId: service.productId }}
         submitOverride={submitInvoice}
         forceNestedBackdrop
         onCreated={handleInvoiceCreated}

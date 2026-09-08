@@ -7,6 +7,9 @@ export function buildProductSearchOr(q: string): Prisma.ProductWhereInput[] {
     { name: ic },
     { project: { name: ic } },
     { project: { code: ic } },
+    { project: { company: { name: ic } } },
+    { project: { contact: { firstName: ic } } },
+    { project: { contact: { lastName: ic } } },
     { order: { code: ic } },
   ];
 }

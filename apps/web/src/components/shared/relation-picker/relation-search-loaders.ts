@@ -6,6 +6,7 @@ import { ordersApi } from '@/lib/api/finance';
 import { partnersApi } from '@/lib/api/partners';
 import { projectsApi } from '@/lib/api/projects';
 import { productsApi } from '@/lib/api/products';
+import { credentialsApi } from '@/lib/api/credentials';
 import { searchEmployeesForPicker } from '@/lib/employees';
 import type { RelationPickerSearchFn } from './relation-picker.types';
 
@@ -99,7 +100,8 @@ export function useProductRelationSearch(
       return res.items.map((product) => ({
         value: product.id,
         label: product.name,
-        subtitle: product.productType,
+        subtitle:
+          [product.project?.name, product.productType].filter(Boolean).join(' · ') || undefined,
       }));
     },
     [projectId, pageSize],
@@ -122,6 +124,29 @@ export function usePartnerRelationSearch(pageSize = DEFAULT_PAGE_SIZE): Relation
       }));
     },
     [pageSize],
+  );
+}
+
+/** Search vault credentials for {@link RelationPickerField}. */
+export function useCredentialRelationSearch(
+  productId: string | null,
+  pageSize = DEFAULT_PAGE_SIZE,
+): RelationPickerSearchFn {
+  return useCallback(
+    async (query: string) => {
+      const res = await credentialsApi.getAll({
+        pageSize,
+        search: query.trim() || undefined,
+        productId: productId || undefined,
+        tab: 'all',
+      });
+      return res.items.map((credential) => ({
+        value: credential.id,
+        label: credential.name,
+        subtitle: [credential.login, credential.provider].filter(Boolean).join(' · ') || undefined,
+      }));
+    },
+    [productId, pageSize],
   );
 }
 

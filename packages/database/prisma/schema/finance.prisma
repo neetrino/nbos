@@ -105,6 +105,7 @@ model Invoice {
   orderId               String?                @map("order_id")
   subscriptionId        String?                @map("subscription_id")
   projectId             String?                @map("project_id")
+  productId             String?                @map("product_id")
   companyId             String?                @map("company_id")
   clientServiceRecordId String?                @map("client_service_record_id")
   amount                Decimal                @db.Decimal(12, 2)
@@ -134,6 +135,7 @@ model Invoice {
   order               Order?               @relation(fields: [orderId], references: [id])
   subscription        Subscription?        @relation(fields: [subscriptionId], references: [id])
   project             Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  product             Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
   company             Company?             @relation(fields: [companyId], references: [id])
   clientServiceRecord ClientServiceRecord? @relation(fields: [clientServiceRecordId], references: [id], onDelete: SetNull)
   payments            Payment[]
@@ -141,6 +143,7 @@ model Invoice {
   partnerServiceTerms PartnerServiceTerm[]
 
   @@index([clientServiceRecordId])
+  @@index([productId])
   @@map("invoices")
 }
 
@@ -378,7 +381,9 @@ model ExpensePlan {
   amount                Decimal                @db.Decimal(12, 2)
   frequency             ExpenseFrequency       @default(ONE_TIME)
   nextDueDate           DateTime?              @map("next_due_date")
+  productId             String?                @map("product_id")
   projectId             String?                @map("project_id")
+  credentialId          String?                @map("credential_id")
   clientServiceRecordId String?                @map("client_service_record_id")
   autoGenerate          Boolean                @default(false) @map("auto_generate")
   status                ExpensePlanStatusEnum  @default(ACTIVE)
@@ -387,11 +392,15 @@ model ExpensePlan {
   createdAt             DateTime               @default(now()) @map("created_at")
   updatedAt             DateTime               @updatedAt @map("updated_at")
 
+  product             Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
   project             Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  credential          Credential?          @relation(fields: [credentialId], references: [id], onDelete: SetNull)
   clientServiceRecord ClientServiceRecord? @relation(fields: [clientServiceRecordId], references: [id], onDelete: SetNull)
   expenses            Expense[]
 
+  @@index([productId])
   @@index([projectId])
+  @@index([credentialId])
   @@index([clientServiceRecordId])
   @@index([status])
   @@map("expense_plans")
@@ -406,7 +415,9 @@ model Expense {
   frequency             ExpenseFrequency          @default(ONE_TIME)
   dueDate               DateTime?                 @map("due_date")
   status                ExpenseStatusEnum         @default(PLANNED)
+  productId             String?                   @map("product_id")
   projectId             String?                   @map("project_id")
+  credentialId          String?                   @map("credential_id")
   expensePlanId         String?                   @map("expense_plan_id")
   clientServiceRecordId String?                   @map("client_service_record_id")
   isPassThrough         Boolean                   @default(false) @map("is_pass_through")
@@ -416,13 +427,17 @@ model Expense {
   createdAt             DateTime                  @default(now()) @map("created_at")
   updatedAt             DateTime                  @updatedAt @map("updated_at")
 
+  product             Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
   project             Project?             @relation(fields: [projectId], references: [id])
+  credential          Credential?          @relation(fields: [credentialId], references: [id], onDelete: SetNull)
   expensePlan         ExpensePlan?         @relation(fields: [expensePlanId], references: [id], onDelete: SetNull)
   clientServiceRecord ClientServiceRecord? @relation(fields: [clientServiceRecordId], references: [id], onDelete: SetNull)
   expensePayments     ExpensePayment[]
   salaryLine          SalaryLine?
   partnerPayoutBatch  PartnerPayoutBatch?
 
+  @@index([productId])
+  @@index([credentialId])
   @@index([expensePlanId])
   @@index([clientServiceRecordId])
   @@map("expenses")

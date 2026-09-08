@@ -117,7 +117,6 @@ export function ClientPortfolioQuickActionDialogs({
         onOpenChange={(open) => {
           if (!open) closeDialog();
         }}
-        hiddenContext={projectId ? { projectId } : undefined}
         forceNestedBackdrop
         onCreated={handleInvoiceCreated}
       />

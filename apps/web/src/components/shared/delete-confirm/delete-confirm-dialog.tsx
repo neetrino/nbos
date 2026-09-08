@@ -25,6 +25,7 @@ export interface DeleteConfirmDialogProps {
   title?: string;
   description?: string;
   confirmLabel?: string;
+  submittingLabel?: string;
   isSubmitting?: boolean;
   errorMessage?: string | null;
   onConfirm: () => void | Promise<void>;
@@ -50,6 +51,7 @@ export function DeleteConfirmDialog({
   title,
   description,
   confirmLabel = 'Delete',
+  submittingLabel = 'Deleting…',
   isSubmitting = false,
   errorMessage,
   onConfirm,
@@ -152,7 +154,7 @@ export function DeleteConfirmDialog({
             disabled={isSubmitting || !nameOk}
             onClick={() => void onConfirm()}
           >
-            {isSubmitting ? 'Deleting…' : confirmLabel}
+            {isSubmitting ? submittingLabel : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

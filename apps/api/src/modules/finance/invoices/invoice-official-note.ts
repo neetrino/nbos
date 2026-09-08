@@ -96,6 +96,7 @@ function resolveNoteDisplayTitle(input: OfficialInvoiceNoteInput): string {
             code: input.subscriptionCode?.trim() || input.code,
           }
         : null,
+    clientServiceRecord: input.clientServiceName ? { name: input.clientServiceName } : null,
   });
 }
 

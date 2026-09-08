@@ -14,6 +14,7 @@ import {
   formatExpensePlanShortDate,
 } from '@/features/finance/utils/expense-plan-display';
 import { expensePlanIsCancelled } from '@/features/finance/utils/expense-plan-status-eligibility';
+import { expenseOwnerLabel } from '@/features/finance/utils/expense-owner-label';
 import { parseMoneyAmount } from '@/lib/format/money';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import { cn } from '@/lib/utils';
@@ -33,6 +34,7 @@ export function ExpensePlanBoardCard({ plan, onOpen }: ExpensePlanBoardCardProps
   const linkedCardsLabel = `${linkedCount} linked card${linkedCount === 1 ? '' : 's'}`;
   const statusMeta = getExpensePlanStatus(plan.status);
   const cancelled = expensePlanIsCancelled(plan);
+  const ownerLabel = expenseOwnerLabel(plan);
 
   return (
     <KanbanCardShell as="article" radius="xl" padding="none" baseShadow="sm" hoverShadow="md">
@@ -100,11 +102,11 @@ export function ExpensePlanBoardCard({ plan, onOpen }: ExpensePlanBoardCardProps
             labelClassName="font-bold text-orange-500 dark:text-orange-400"
             label={`Due ${formatExpensePlanShortDate(plan.nextDueDate)}`}
           />
-          {plan.project ? (
+          {ownerLabel ? (
             <MetaRow
               icon={<FolderKanban size={14} aria-hidden />}
               iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
-              label={plan.project.name}
+              label={ownerLabel}
             />
           ) : null}
         </div>

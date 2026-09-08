@@ -122,8 +122,9 @@ Owner может видеть все Deals.
 Некоторые роли являются системными:
 
 - нельзя удалить;
-- нельзя сломать базовые permissions;
-- изменение требует дополнительного подтверждения;
+- нельзя менять сущность роли (имя / slug / system flag);
+- матрицу permissions (VIEW / EDIT / ADD / DELETE + scope) можно менять в Settings → Permissions / RBAC;
+- сохранение system-роли — strong confirm (copy / paste имени роли); кастомной роли — simple Yes;
 - изменение пишется в audit log.
 
 ## Role editing UX

@@ -135,7 +135,7 @@ Projects Hub нужно понимать не как "одну большую к
 
 ## 5. Экранная иерархия модуля
 
-Projects Hub должен иметь три основных пользовательских слоя:
+На каталогах Hub двухуровневые табы как в Finance: L1 **Project | Product** в header, L2 — computed views в PageHero. Сайдбар в первый раз открывает Product; дальше last-visit. Каталог продуктов — поиск, не Delivery Board.
 
 ### 5.1. Projects List
 
@@ -144,13 +144,29 @@ Projects Hub должен иметь три основных пользоват�
 Список проектов и фильтрованные views:
 
 - `All`
-- `Development`
-- `Maintenance`
+- `Incoming`
+- `Active` (`Development` ∪ `Maintenance`)
 - `Closed`
+- `Trash` (корзина, не Closed)
+
+`Development` и `Maintenance` остаются computed views над детьми; отдельными вкладками Project-каталога не показаны.
 
 Это views над проектами-контейнерами, а не место, где двигаются рабочие карточки по стадиям.
 
-### 5.2. Project Shell
+### 5.2. Products List
+
+`/projects/products`
+
+Компанейский каталог продуктов (не Extensions). Вкладки взаимоисключающие:
+
+- `All` — все продукты не-trash родителя
+- `Delivery` — открытая delivery (`deliveryResolution` null и legacy status не `DONE`/`LOST`); live maintenance не вытесняет
+- `Maintenance` — delivery закрыта и есть live-подписка `MAINTENANCE_ONLY` / `DEV_AND_MAINTENANCE` + `PENDING`/`ACTIVE`
+- `Closed` — delivery закрыта и нет live maintenance
+
+Не дублирует стадии Starting/QA. Create продукта остаётся в оболочке проекта.
+
+### 5.3. Project Shell
 
 `/projects/:projectId`
 
@@ -166,7 +182,7 @@ Project Shell не должен быть местом, где команда в�
 
 Текущая встроенная Project Delivery Board v1 и большой Project-level Tasks block считаются transitional UI. В новом каноне они заменяются отдельной `Delivery Board` page и Product Work Space. Если позже нужен delivery block внутри Project page, он должен переиспользовать тот же `DeliveryBoardCore` с фильтром `projectId`, lazy-load и без дублирования логики. Если нужен project-level task aggregate, он должен быть compact summary/link, а не полноценный execution block на Project page.
 
-### 5.3. Delivery Board / Product Workspace
+### 5.4. Delivery Board / Product Workspace
 
 Рабочая зона исполнения:
 
@@ -270,7 +286,7 @@ Hub views считаются из детей.
 
 «Проект активен» = `Development` ∪ `Maintenance`.
 
-Когда появятся фильтры этих views на `/projects`: одна общая функция вывода рядом с `apps/api/src/modules/projects/delivery-lifecycle.ts`, переиспользуемая списком, счётчиками и Project Shell. Сейчас вычисления нет (`projects.service.ts` отсекает только удалённые проекты через `active-project-list-scope.ts`).
+Project-views считает `GET /projects?hubView=`. Product-views считает `GET /projects/products?hubView=` (`delivery` / `maintenance` / `closed`). Общие примитивы — `openDeliveryWhere` / `liveMaintenanceWhere` в `project-hub-status.ts`.
 
 ---
 

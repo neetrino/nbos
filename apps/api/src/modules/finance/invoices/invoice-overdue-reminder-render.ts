@@ -56,10 +56,10 @@ export function resolveOverdueReminderRenderInput(input: {
   }
   if (input.clientServiceRecord != null && input.dueDate != null) {
     const language = input.clientServiceRecord.reminderLanguage;
-    const serviceLabel =
-      input.clientServiceRecord.name.trim() ||
-      input.clientServiceRecord.product?.name.trim() ||
-      input.code;
+    const serviceLabel = resolveInvoiceDisplayTitle({
+      code: input.code,
+      clientServiceRecord: input.clientServiceRecord,
+    });
     return buildResolved(input, 'client_service', language, {
       serviceLabel,
       periodLabel: formatDueDateLabel(input.dueDate, language),

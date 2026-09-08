@@ -126,6 +126,14 @@ function ClientServicesPageInner() {
     [pathname, router, searchParams],
   );
 
+  const handleCreated = useCallback(
+    (service: ClientServiceRecord) => {
+      refreshAll();
+      openServiceDetail(service);
+    },
+    [openServiceDetail, refreshAll],
+  );
+
   const handleServiceSheetOpenChange = useCallback(
     (next: boolean) => {
       if (next) return;
@@ -236,7 +244,7 @@ function ClientServicesPageInner() {
       <ClientServiceCreateDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onSaved={refreshAll}
+        onSaved={handleCreated}
       />
 
       <ClientServiceDetailSheet

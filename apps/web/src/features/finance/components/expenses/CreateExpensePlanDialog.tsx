@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FolderKanban } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -22,11 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { RelationPickerField } from '@/components/shared';
-import {
-  useProjectRelationSearch,
-  useRelationPickerActions,
-} from '@/components/shared/relation-picker';
+import { FinanceProductCredentialFields } from '@/features/finance/components/FinanceProductCredentialFields';
 import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 import { EXPENSE_FREQUENCIES } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -71,9 +66,8 @@ export function CreateExpensePlanDialog({
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState<ExpensePlanFormState>({ ...EMPTY_EXPENSE_PLAN_FORM });
-  const [projectLabel, setProjectLabel] = useState<string | null>(null);
-  const searchProjects = useProjectRelationSearch();
-  const projectPicker = useRelationPickerActions('project');
+  const [productLabel, setProductLabel] = useState<string | null>(null);
+  const [credentialLabel, setCredentialLabel] = useState<string | null>(null);
 
   const initialFormKey = JSON.stringify(initialForm ?? {});
 
@@ -82,17 +76,17 @@ export function CreateExpensePlanDialog({
     setFormError(null);
     if (planToEdit) {
       setForm(expensePlanToFormState(planToEdit));
-      setProjectLabel(projectDisplayName(planToEdit?.project));
+      setProductLabel(planToEdit.product?.name ?? null);
+      setCredentialLabel(planToEdit.credential?.name ?? null);
     } else {
       setForm({ ...EMPTY_EXPENSE_PLAN_FORM, ...initialForm });
-      setProjectLabel(null);
+      setProductLabel(null);
+      setCredentialLabel(null);
     }
   }, [open, planToEdit, initialFormKey, initialForm]);
 
   const parsedAmount = parseFloat(form.amount.replace(/\s/g, ''));
   const canSubmit = Boolean(form.name.trim()) && Number.isFinite(parsedAmount) && parsedAmount > 0;
-  const projectValue = form.projectId === 'none' ? null : form.projectId;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
@@ -104,7 +98,8 @@ export function CreateExpensePlanDialog({
       amount: parsedAmount,
       frequency: form.frequency,
       nextDueDate: form.nextDueDate.trim() ? form.nextDueDate : null,
-      projectId: form.projectId !== 'none' ? form.projectId : null,
+      productId: form.productId.trim() || null,
+      credentialId: form.credentialId.trim() || null,
       autoGenerate: form.autoGenerate,
       notes: form.notes.trim() || null,
     };
@@ -217,23 +212,28 @@ export function CreateExpensePlanDialog({
               />
             </div>
           </div>
-          <RelationPickerField
-            label="Project"
-            entityKind="project"
-            value={projectValue}
-            selectionLabel={projectLabel}
-            placeholder="Optional — search project…"
-            icon={<FolderKanban size={12} />}
-            onSearch={searchProjects}
-            onSelect={(id, label) => {
-              setForm((prev) => ({ ...prev, projectId: id }));
-              setProjectLabel(label);
+          <FinanceProductCredentialFields
+            productId={form.productId || null}
+            productLabel={productLabel}
+            credentialId={form.credentialId || null}
+            credentialLabel={credentialLabel}
+            projectHint={form.productId ? null : projectDisplayName(planToEdit?.project ?? null)}
+            onProductSelect={(id, label) => {
+              setForm((prev) => ({ ...prev, productId: id }));
+              setProductLabel(label);
             }}
-            onClear={() => {
-              setForm((prev) => ({ ...prev, projectId: 'none' }));
-              setProjectLabel(null);
+            onProductClear={() => {
+              setForm((prev) => ({ ...prev, productId: '' }));
+              setProductLabel(null);
             }}
-            {...projectPicker}
+            onCredentialSelect={(id, label) => {
+              setForm((prev) => ({ ...prev, credentialId: id }));
+              setCredentialLabel(label);
+            }}
+            onCredentialClear={() => {
+              setForm((prev) => ({ ...prev, credentialId: '' }));
+              setCredentialLabel(null);
+            }}
           />
           <div className="flex items-center gap-2">
             <Checkbox

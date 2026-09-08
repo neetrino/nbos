@@ -212,19 +212,25 @@ Lifecycle board работает на уровне `Product` и `Extension`. У 
 
 Признак «продукт на maintenance»: `Subscription` с `type` ∈ { `MAINTENANCE_ONLY`, `DEV_AND_MAINTENANCE` } и `status` ∈ { `PENDING`, `ACTIVE` }. Отдельного поля на `Product` нет. Maintenance — view, не сущность.
 
+### Incoming view
+
+Проект виден в `Incoming`, если нет ни одного `Product` и нет ни одного `Extension` (создан из Deal / вручную, delivery ещё не началась). Пустой проект **не** считается `Closed`.
+
+Как только появляется Product или Extension (включая стадию `STARTING`), проект покидает Incoming.
+
 ### Development view
 
-Проект виден в `Development`, если есть ≥1 `Product` **или** `Extension` с `deliveryResolution IS NULL` (любая стадия, включая `STARTING` и `ON_HOLD`).
+Проект виден в `Development`, если есть ≥1 `Product` **или** `Extension` с открытой delivery: `deliveryResolution IS NULL` и legacy `status` не `DONE` / `LOST` (любая стадия, включая `STARTING` и `ON_HOLD`).
 
 ### Maintenance view
 
-Проект виден в `Maintenance`, если есть ≥1 `Product` с maintenance-подпиской (`PENDING` / `ACTIVE`). Проект может одновременно попадать в `Development` и `Maintenance`.
+Проект виден в `Maintenance`, если есть ≥1 `Product` с maintenance-подпиской (`PENDING` / `ACTIVE`, типы `MAINTENANCE_ONLY` / `DEV_AND_MAINTENANCE`). Проект может одновременно попадать в `Development` и `Maintenance`.
 
 ### Closed view
 
-Проект виден в `Closed`, если нет ни одного `Product` / `Extension` с `deliveryResolution IS NULL` **и нет** активной maintenance-подписки.
+Проект виден в `Closed`, если есть ≥1 `Product` или `Extension`, нет открытой delivery **и нет** живой maintenance-подписки.
 
-«Проект активен» = `Development` ∪ `Maintenance`.
+«Проект активен» = `Development` ∪ `Maintenance`. Hub list в текущем срезе показывает эту сумму как вкладку `Active`. `All` = Incoming ∪ Active ∪ Closed (без Trash). Trash (`trashedAt`) остаётся корзиной и не смешивается с Closed.
 
 ---
 

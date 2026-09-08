@@ -12,7 +12,9 @@ function plan(
     category: 'TOOLS',
     amount: '1000',
     nextDueDate: null,
+    productId: null,
     projectId: null,
+    credentialId: null,
     status: 'ACTIVE',
     cancelledAt: null,
     autoGenerate: false,
@@ -20,6 +22,8 @@ function plan(
     createdAt: '',
     updatedAt: '',
     project: null,
+    product: null,
+    credential: null,
     _count: { expenses: 0 },
     ...partial,
   };

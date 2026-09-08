@@ -149,6 +149,7 @@ describe('partner service terms ops', () => {
       clientContactId: null,
       clientCompanyId: 'co-1',
       projectId: 'pr-1',
+      productId: 'prod-1',
       serviceType: 'SEO',
       paymentModel: 'ONE_TIME',
       amount: new Decimal('45000'),
@@ -162,6 +163,7 @@ describe('partner service terms ops', () => {
     });
     stubEntityCodeAllocation(prisma, 8);
     prisma.company.findUnique.mockResolvedValue({ taxStatus: 'TAX' });
+    prisma.product.findUnique.mockResolvedValue({ projectId: 'pr-1' });
     prisma.invoice.create.mockResolvedValue({ id: 'inv-new' });
     prisma.partnerServiceTerm.update.mockResolvedValue({
       id: 'pst-2',
@@ -185,6 +187,7 @@ describe('partner service terms ops', () => {
     expect(prisma.invoice.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
+          productId: 'prod-1',
           projectId: 'pr-1',
           type: 'SERVICE',
           amount: new Decimal('45000'),
@@ -193,6 +196,32 @@ describe('partner service terms ops', () => {
     );
     expect(row.invoiceId).toBe('inv-new');
     expect(row.status).toBe('ACTIVE');
+  });
+
+  it('rejects one-time finance create when the term has no product', async () => {
+    prisma.partnerServiceTerm.findUnique.mockResolvedValue({
+      id: 'pst-orphan',
+      partnerId: 'p1',
+      clientContactId: null,
+      clientCompanyId: 'co-1',
+      projectId: 'pr-1',
+      productId: null,
+      serviceType: 'SEO',
+      paymentModel: 'ONE_TIME',
+      amount: new Decimal('45000'),
+      billingStartDate: null,
+      subscriptionId: null,
+      invoiceId: null,
+      status: 'PENDING',
+      notes: null,
+      createdAt: new Date('2026-05-05T00:00:00.000Z'),
+      updatedAt: new Date('2026-05-05T00:00:00.000Z'),
+    });
+
+    await expect(
+      createFinanceFromPartnerServiceTerm(prisma as never, 'p1', 'pst-orphan', {}),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.invoice.create).not.toHaveBeenCalled();
   });
 
   it('creates partner service subscription for monthly term and links subscriptionId', async () => {

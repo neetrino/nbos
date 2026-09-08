@@ -19,6 +19,7 @@ describe('buildExpenseListApiParams', () => {
     expect(params.category).toBe('TOOLS');
     expect(params.status).toBe('PAID');
     expect(params.projectId).toBe('proj-1');
+    expect(params.productId).toBeUndefined();
     expect(params.sortBy).toBe('amount');
     expect(params.sortOrder).toBe('asc');
     expect(params.dateFrom).toBeDefined();
@@ -97,6 +98,7 @@ describe('pickExpenseStatsQueryParams', () => {
       dateFrom: list.dateFrom,
       dateTo: list.dateTo,
       projectId: 'proj-1',
+      productId: undefined,
       expensePlanId: list.expensePlanId,
       status: 'PAID',
       activeBoard: undefined,

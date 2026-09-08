@@ -12,6 +12,7 @@ import {
 import { StatusBadge } from '@/components/shared';
 import { getExpensePlanStatus } from '@/features/finance/constants/expense-plan-status';
 import { expensePlanFrequencyLabel } from '@/features/finance/utils/expense-plan-display';
+import { expenseOwnerLabel } from '@/features/finance/utils/expense-owner-label';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import {
   FINANCE_LIST_BADGE_CLASS,
@@ -91,11 +92,11 @@ export function ExpensePlansListTable({ plans, onOpen }: ExpensePlansListTablePr
                 <FinanceListDate value={plan.nextDueDate} />
               </TableCell>
               <TableCell className={FINANCE_LIST_CELL_CLASS}>
-                {plan.project ? (
+                {expenseOwnerLabel(plan) ? (
                   <FinanceListIconLabel
                     icon={FolderKanban}
                     iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
-                    label={plan.project.name}
+                    label={expenseOwnerLabel(plan)!}
                   />
                 ) : (
                   <FinanceListMutedDash />

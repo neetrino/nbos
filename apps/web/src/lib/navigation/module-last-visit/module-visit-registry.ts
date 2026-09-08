@@ -1,5 +1,6 @@
 import type { ModuleVisitConfig, RegisteredModuleKey } from './types';
 import { FINANCE_MODULE_VISIT_CONFIG, isFinanceModulePath } from './finance-visit-config';
+import { PROJECT_HUB_MODULE_VISIT_CONFIG } from './project-hub-visit-config';
 import { REPORTS_MODULE_VISIT_CONFIG, isReportsModulePath } from './reports-visit-config';
 
 function startsWithPath(pathname: string, prefix: string): boolean {
@@ -110,6 +111,7 @@ export const MODULE_VISIT_REGISTRY: Record<RegisteredModuleKey, ModuleVisitConfi
     isValidPath: (pathname) => startsWithPath(pathname, '/credentials'),
   },
   reports: REPORTS_MODULE_VISIT_CONFIG,
+  'project-hub': PROJECT_HUB_MODULE_VISIT_CONFIG,
 };
 
 export function isRegisteredModuleKey(key: string): key is RegisteredModuleKey {

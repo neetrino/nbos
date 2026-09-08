@@ -153,7 +153,7 @@ function InvoicesPageInner() {
         <IntegratedSearchFilters
           search={state.search}
           onSearchChange={state.setSearch}
-          searchPlaceholder="Search by invoice, company, order, project…"
+          searchPlaceholder="Search by invoice, company, order, product…"
           filters={invoiceFilterConfigs}
           filterValues={invoiceFilterValues}
           onFilterChange={handleFilterChange}

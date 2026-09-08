@@ -63,8 +63,6 @@ function ProductDetailPageContent() {
   const [projectData, setProjectData] = useState<{
     orders: unknown[];
     subscriptions: unknown[];
-    expenses: unknown[];
-    domains: unknown[];
   } | null>(null);
 
   useProductDetailHeader({
@@ -120,8 +118,6 @@ function ProductDetailPageContent() {
       setProjectData({
         orders: data.orders,
         subscriptions: data.subscriptions,
-        expenses: data.expenses,
-        domains: data.domains,
       });
     } catch {
       /* empty */
@@ -217,15 +213,16 @@ function ProductDetailPageContent() {
           {projectData ? (
             <FinanceTab
               projectId={params.id}
+              productId={product.id}
               project={{
                 id: product.project.id,
                 code: product.project.code,
                 name: product.project.name,
               }}
+              companyId={product.project.companyId ?? product.project.company?.id ?? null}
               productOrderId={product.order?.id ?? null}
               orders={projectData.orders as never[]}
               subscriptions={projectData.subscriptions as never[]}
-              expenses={projectData.expenses as never[]}
             />
           ) : (
             <div className="text-muted-foreground py-8 text-center text-sm">Loading...</div>

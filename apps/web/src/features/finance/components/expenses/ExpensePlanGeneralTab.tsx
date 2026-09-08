@@ -1,18 +1,16 @@
 'use client';
 
-import { useMemo } from 'react';
-import { DollarSign, FolderKanban, Layers } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { DollarSign, Layers } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
   DetailSheetOptionalDescription,
   DetailSheetSection,
   InlineField,
-  RelationPickerField,
 } from '@/components/shared';
-import { useProjectRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
-import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { ExpensePlanAutoGenerateField } from '@/features/finance/components/expenses/ExpensePlanAutoGenerateField';
+import { FinanceProductCredentialFields } from '@/features/finance/components/FinanceProductCredentialFields';
 import { expensePlanIsCancelled } from '@/features/finance/utils/expense-plan-status-eligibility';
 import {
   EXPENSE_FREQUENCIES,
@@ -39,10 +37,17 @@ export function ExpensePlanGeneralTab({
   patchDraft,
   formDisabled = false,
 }: ExpensePlanGeneralTabProps) {
-  const searchProjects = useProjectRelationSearch();
-  const projectPicker = useRelationPickerActions('project');
-  const projectLabel = projectDisplayName(plan.project);
-  const projectValue = draft.projectId === 'none' ? null : draft.projectId;
+  const productLabelSeed = plan.product?.name ?? null;
+  const credentialLabelSeed = plan.credential?.name ?? null;
+  const [productLabel, setProductLabel] = useState(productLabelSeed);
+  const [credentialLabel, setCredentialLabel] = useState(credentialLabelSeed);
+  const labelSeed = `${plan.id}:${plan.productId ?? ''}:${plan.credentialId ?? ''}`;
+  const [labelSeedSeen, setLabelSeedSeen] = useState(labelSeed);
+  if (labelSeed !== labelSeedSeen) {
+    setLabelSeedSeen(labelSeed);
+    setProductLabel(productLabelSeed);
+    setCredentialLabel(credentialLabelSeed);
+  }
 
   const categoryOptions = useMemo((): Array<{ value: string; label: string }> => {
     const items: Array<{ value: string; label: string }> = PLAN_CATEGORY_OPTIONS.map((c) => ({
@@ -132,18 +137,29 @@ export function ExpensePlanGeneralTab({
           </div>
           <div className="pt-3 pb-3">
             <div className="border-border/50 border-t pt-3">
-              <RelationPickerField
-                label="Project"
-                entityKind="project"
-                value={projectValue}
-                selectionLabel={projectLabel}
-                placeholder="Optional — search project…"
-                icon={<FolderKanban size={12} />}
+              <FinanceProductCredentialFields
+                productId={draft.productId || null}
+                productLabel={productLabel}
+                credentialId={draft.credentialId || null}
+                credentialLabel={credentialLabel}
+                projectHint={draft.productId ? null : projectDisplayName(plan.project)}
                 disabled={formDisabled}
-                onSearch={searchProjects}
-                onSelect={(id) => patchDraft({ projectId: id })}
-                onClear={() => patchDraft({ projectId: 'none' })}
-                {...projectPicker}
+                onProductSelect={(id, label) => {
+                  patchDraft({ productId: id });
+                  setProductLabel(label);
+                }}
+                onProductClear={() => {
+                  patchDraft({ productId: '' });
+                  setProductLabel(null);
+                }}
+                onCredentialSelect={(id, label) => {
+                  patchDraft({ credentialId: id });
+                  setCredentialLabel(label);
+                }}
+                onCredentialClear={() => {
+                  patchDraft({ credentialId: '' });
+                  setCredentialLabel(null);
+                }}
               />
             </div>
           </div>

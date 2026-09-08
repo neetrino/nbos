@@ -1,6 +1,5 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { PrismaClient, type Prisma } from '@nbos/database';
-import type { EntityLifecycleScope } from '@nbos/shared';
+import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { allocateProjectCode } from '../../common/utils/entity-code-series';
@@ -19,10 +18,9 @@ import {
   assertEntityIsActive,
   assertEntityIsTrashed,
 } from '../../common/lifecycle/entity-lifecycle-guards';
-import {
-  mergeProfileAListScope,
-  parseLifecycleScopeFromQuery,
-} from '../../common/lifecycle/entity-lifecycle-scope';
+import { mergeProfileAListScope } from '../../common/lifecycle/entity-lifecycle-scope';
+import { PROJECT_LIST_INCLUDE, toProjectListItem } from './project-list-item';
+import { buildProjectListWhere, type ProjectListQueryParams } from './project-list-where';
 
 const PROJECT_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'name', 'code']);
 
@@ -41,19 +39,6 @@ interface UpdateProjectDto {
   contactIds?: string[];
 }
 
-interface ProjectQueryParams {
-  page?: number;
-  pageSize?: number;
-  scope?: string;
-  search?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-}
-
-function resolveProjectListScope(params: ProjectQueryParams): EntityLifecycleScope {
-  return parseLifecycleScopeFromQuery(params.scope);
-}
-
 @Injectable()
 export class ProjectsService {
   constructor(
@@ -61,39 +46,21 @@ export class ProjectsService {
     private readonly auditService: AuditService,
   ) {}
 
-  async findAll(params: ProjectQueryParams) {
-    const { page = 1, pageSize = 20, search, sortBy = 'createdAt', sortOrder = 'desc' } = params;
-
-    const where: Prisma.ProjectWhereInput = mergeProfileAListScope(
-      {},
-      resolveProjectListScope(params),
-    );
-
-    if (search) {
-      const q = search.trim();
-      if (q.length > 0) {
-        where.OR = [
-          { name: { contains: q, mode: 'insensitive' } },
-          { code: { contains: q, mode: 'insensitive' } },
-          { company: { name: { contains: q, mode: 'insensitive' } } },
-          { contact: { firstName: { contains: q, mode: 'insensitive' } } },
-          { contact: { lastName: { contains: q, mode: 'insensitive' } } },
-        ];
-      }
-    }
+  async findAll(params: ProjectListQueryParams) {
+    const { page = 1, pageSize = 20, sortBy = 'createdAt', sortOrder = 'desc' } = params;
+    const where = buildProjectListWhere(params);
 
     const [items, total] = await Promise.all([
       this.prisma.project.findMany({
         where,
-        include: {
-          company: { select: { id: true, name: true } },
-          contact: { select: { id: true, firstName: true, lastName: true } },
-          _count: { select: { orders: true, products: true } },
-        },
-        orderBy: {
-          [resolveSortField(sortBy, PROJECT_SORT_FIELDS, 'createdAt')]:
-            normalizeSortDirection(sortOrder),
-        },
+        include: PROJECT_LIST_INCLUDE,
+        orderBy: [
+          {
+            [resolveSortField(sortBy, PROJECT_SORT_FIELDS, 'createdAt')]:
+              normalizeSortDirection(sortOrder),
+          },
+          { id: normalizeSortDirection(sortOrder) },
+        ],
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
@@ -101,7 +68,7 @@ export class ProjectsService {
     ]);
 
     return {
-      items,
+      items: items.map(toProjectListItem),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }

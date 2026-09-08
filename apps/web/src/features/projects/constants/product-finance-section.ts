@@ -1,10 +1,18 @@
-import { Receipt, RefreshCw, ServerCog, ShoppingCart, type LucideIcon } from 'lucide-react';
+import {
+  FileText,
+  Receipt,
+  RefreshCw,
+  ServerCog,
+  ShoppingCart,
+  type LucideIcon,
+} from 'lucide-react';
 import type { PageHeroTabOption } from '@/components/shared/page-hero/PageHeroTabs';
 
 export const PRODUCT_FINANCE_SECTION_QUERY = 'financeSection';
 
 export const PRODUCT_FINANCE_SECTION_VALUES = [
   'orders',
+  'invoices',
   'subscriptions',
   'expenses',
   'client-services',
@@ -20,6 +28,7 @@ const LEGACY_SECTION_ALIASES: Record<string, ProductFinanceSection> = {
 
 const SECTION_ICON: Record<ProductFinanceSection, LucideIcon> = {
   orders: ShoppingCart,
+  invoices: FileText,
   subscriptions: RefreshCw,
   expenses: Receipt,
   'client-services': ServerCog,
@@ -27,6 +36,7 @@ const SECTION_ICON: Record<ProductFinanceSection, LucideIcon> = {
 
 const SECTION_LABEL: Record<ProductFinanceSection, string> = {
   orders: 'Orders',
+  invoices: 'Invoices',
   subscriptions: 'Subscriptions',
   expenses: 'Expenses',
   'client-services': 'Client services',

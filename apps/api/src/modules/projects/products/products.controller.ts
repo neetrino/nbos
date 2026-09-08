@@ -46,6 +46,16 @@ export class ProductsController {
   @ApiQuery({ name: 'productType', required: false })
   @ApiQuery({ name: 'pmId', required: false })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({
+    name: 'hubView',
+    required: false,
+    description: 'Product directory view: delivery | maintenance | closed',
+  })
+  @ApiQuery({
+    name: 'includeHubView',
+    required: false,
+    description: 'Attach derived hubView (All catalog). Implied when hubView is set.',
+  })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -59,6 +69,8 @@ export class ProductsController {
     @Query('productType') productType?: string,
     @Query('pmId') pmId?: string,
     @Query('search') search?: string,
+    @Query('hubView') hubView?: string,
+    @Query('includeHubView') includeHubView?: string,
   ) {
     return this.productsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -73,6 +85,8 @@ export class ProductsController {
       productType,
       pmId,
       search,
+      hubView,
+      includeHubView,
     });
   }
 

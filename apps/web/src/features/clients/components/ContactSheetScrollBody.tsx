@@ -53,6 +53,7 @@ export function ContactSheetScrollBody({
   const channelOptions = PREFERRED_CHANNELS.map((c) => ({ value: c.value, label: c.label }));
   const contactRoleOptions = CONTACT_ROLES.map((r) => ({ value: r.value, label: r.label }));
   const languageOptions = LANGUAGES.map((l) => ({ value: l.value, label: l.label }));
+  const linkedCompanies = contact.companies ?? [];
 
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} space-y-6 px-5 py-5`}>
@@ -189,13 +190,13 @@ export function ContactSheetScrollBody({
           </div>
         </DetailSheetSection>
 
-        {contact.companies.length > 0 ? (
+        {linkedCompanies.length > 0 ? (
           <DetailSheetSection
-            title={`Companies (${contact.companies.length})`}
+            title={`Companies (${linkedCompanies.length})`}
             icon={<Building2 size={12} />}
           >
             <div className="space-y-2">
-              {contact.companies.map((c) => (
+              {linkedCompanies.map((c) => (
                 <div
                   key={c.id}
                   className="border-border flex items-center gap-2 rounded-lg border p-3 text-sm"

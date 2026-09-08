@@ -27,6 +27,7 @@ function mockSubscription(overrides: Record<string, unknown> = {}) {
     id: 'sub-1',
     code: 'SUB-2026-0001',
     projectId: 'proj-1',
+    productId: 'prod-1',
     type: 'MAINTENANCE_ONLY',
     amount: 50000,
     coverageMonthCount: 1,
@@ -83,6 +84,8 @@ describe('SubscriptionPeriodInvoiceService', () => {
         data: expect.objectContaining({
           subscriptionId: 'sub-1',
           type: 'SUBSCRIPTION',
+          productId: 'prod-1',
+          projectId: 'proj-1',
           coverageStartMonth: '2026-09',
           coverageMonthCount: 1,
           amount: 50000,
@@ -178,7 +181,11 @@ describe('SubscriptionPeriodInvoiceService', () => {
 
     expect(prisma.invoice.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ coverageStartMonth: '2026-09' }),
+        data: expect.objectContaining({
+          coverageStartMonth: '2026-09',
+          productId: 'prod-1',
+          projectId: 'proj-1',
+        }),
       }),
     );
   });
@@ -209,6 +216,8 @@ describe('SubscriptionPeriodInvoiceService', () => {
           coverageStartMonth: '2026-10',
           coverageMonthCount: 3,
           amount: 150_000,
+          productId: 'prod-1',
+          projectId: 'proj-1',
         }),
       }),
     );

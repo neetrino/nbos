@@ -14,6 +14,7 @@ export function buildExpenseListApiParams(input: {
   filters: Record<string, string>;
   period: FinancePeriod;
   effectiveProjectId?: string;
+  effectiveProductId?: string;
   sortBy: ExpenseListSortField;
   sortOrder: 'asc' | 'desc';
   /** Main board omits paid + backlog statuses unless a specific status filter is set (NBOS Expense Board). */
@@ -24,6 +25,8 @@ export function buildExpenseListApiParams(input: {
   const periodParams = getFinancePeriodParams(input.period);
   const projectParams =
     input.effectiveProjectId !== undefined ? { projectId: input.effectiveProjectId } : {};
+  const productParams =
+    input.effectiveProductId !== undefined ? { productId: input.effectiveProductId } : {};
   const variant = input.pageVariant ?? 'default';
   const status =
     input.filters.status && input.filters.status !== 'all' ? input.filters.status : undefined;
@@ -49,6 +52,7 @@ export function buildExpenseListApiParams(input: {
     sortOrder: input.sortOrder,
     ...periodParams,
     ...projectParams,
+    ...productParams,
     ...planParams,
     ...activeBoard,
     ...closedBoard,
@@ -64,6 +68,7 @@ export function pickExpenseStatsQueryParams(
     dateFrom: list.dateFrom,
     dateTo: list.dateTo,
     projectId: list.projectId,
+    productId: list.productId,
     expensePlanId: list.expensePlanId,
     status: list.status,
     activeBoard: list.activeBoard,

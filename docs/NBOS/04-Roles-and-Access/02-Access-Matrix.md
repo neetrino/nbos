@@ -56,7 +56,9 @@
 
 **Пояснения:**
 
-- **Seller / Seller Assistant** — создают Invoice из сделки (`FINANCE_INVOICES` ADD OWN) и Contact / Company (`CLIENTS` ADD ALL); видят свои бонусы в Bonus Ledger
+- **Seller / Head of Sales** — создают Invoice из сделки (`FINANCE_INVOICES` ADD OWN) и Contact / Company (`CLIENTS` ADD ALL); видят свои бонусы в Bonus Ledger. Seller Assistant в коде совпадает с Seller, если роль есть в БД.
+- **Head of Marketing** — роль не меняется. Дополнительно `FINANCE_INVOICES` VIEW/ADD OWN: может создать invoice (попадает на Invoice Board). Без EDIT/DELETE. Колонка Marketing в таблице выше по-прежнему ❌.
+- **Clients directory (🔶)** — `CLIENTS` VIEW ALL + ADD ALL, без EDIT/DELETE. Кроме Seller / Head of Sales: PM, Head of Delivery, Head of Marketing, Marketing, Finance Director. Head of Marketing в таблице выше совпадает с колонкой Marketing.
 - **Tech Ops** — видит только инфраструктурные расходы (домены, хостинг, сервисы)
 - **Bonus Ledger (🔶)** — каждый сотрудник видит только свои бонусы (Incoming, Active, Paid)
 - **Expenses** — полный доступ только у CEO и Finance Director
@@ -107,7 +109,7 @@ Credentials rows below are a high-level role reference. Exact access is resolved
 | Dashboards (own)     | ✅  | ✅     | ✅  | ✅  | ✅     | ✅       | ✅  | ✅       | ✅      | ✅        | ✅         | ✅            |
 | Dashboards (dept)    | ✅  | ❌     | 🔶  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | 🔶        | ✅         | ✅            |
 | Dashboards (company) | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | ❌        | ❌         | ❌            |
-| Clients (directory)  | ✅  | 🔶     | 👁  | ❌  | ❌     | ❌       | ❌  | ❌       | 👁      | 👁        | 🔶         | 👁            |
+| Clients (directory)  | ✅  | 🔶     | 🔶  | ❌  | ❌     | ❌       | ❌  | ❌       | 🔶      | 🔶        | 🔶         | 🔶            |
 | AI & Agents (admin)  | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ❌      | ❌        | ❌         | ❌            |
 | Audit Logs           | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | 👁      | ❌        | ❌         | ❌            |
 

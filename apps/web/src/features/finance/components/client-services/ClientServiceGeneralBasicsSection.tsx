@@ -1,15 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { CircleDot, FolderKanban, Layers, Tag } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CircleDot, Layers, Tag } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetCollapsibleSection,
   InlineField,
-  RelationPickerField,
 } from '@/components/shared';
-import { useProjectRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
-import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import {
   CLIENT_SERVICE_STATUSES,
   CLIENT_SERVICE_TYPES,
@@ -19,27 +16,55 @@ import {
   EXPENSE_SHEET_FIELD_ROW_2_CLASS,
 } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
-import type { Project } from '@/lib/api/projects';
-import { projectDisplayName } from '@/lib/format/project-product-display';
+import { productsApi } from '@/lib/api/products';
+import { productDisplayName, projectDisplayName } from '@/lib/format/project-product-display';
+import { ClientServiceCredentialField } from './ClientServiceCredentialField';
+import { ClientServiceProductField } from './ClientServiceProductField';
 import { ClientServiceProviderField } from './ClientServiceProviderField';
 
 interface ClientServiceGeneralBasicsSectionProps {
   draft: ClientServiceFormState;
   patchDraft: (partial: Partial<ClientServiceFormState>) => void;
-  projects: Project[];
+  productName: string | null;
+  projectName: string | null;
+  credentialName: string | null;
   formDisabled: boolean;
 }
 
 export function ClientServiceGeneralBasicsSection({
   draft,
   patchDraft,
-  projects,
+  productName,
+  projectName,
+  credentialName,
   formDisabled,
 }: ClientServiceGeneralBasicsSectionProps) {
   const [open, setOpen] = useState(true);
-  const searchProjects = useProjectRelationSearch();
-  const projectPicker = useRelationPickerActions('project');
-  const linkedProject = projects.find((p) => p.id === draft.projectId);
+  const [productLabel, setProductLabel] = useState(productName);
+  const [projectLabel, setProjectLabel] = useState(projectName);
+  const [credentialLabel, setCredentialLabel] = useState(credentialName);
+  const [productResolving, setProductResolving] = useState(false);
+
+  useEffect(() => {
+    setProductLabel(productName);
+    setProjectLabel(projectName);
+    setCredentialLabel(credentialName);
+  }, [draft.productId, draft.providerAccountId, productName, projectName, credentialName]);
+
+  const selectProduct = async (productId: string, label: string) => {
+    setProductLabel(label);
+    setProductResolving(true);
+    try {
+      const product = await productsApi.getById(productId);
+      patchDraft({ productId: product.id, projectId: product.projectId });
+      setProductLabel(productDisplayName(product) ?? label);
+      setProjectLabel(projectDisplayName(product.project) ?? product.project.name);
+    } catch {
+      setProductLabel(productName);
+    } finally {
+      setProductResolving(false);
+    }
+  };
 
   return (
     <DetailSheetCollapsibleSection
@@ -49,18 +74,15 @@ export function ClientServiceGeneralBasicsSection({
       onOpenChange={setOpen}
     >
       <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-        <RelationPickerField
-          label="Project"
-          entityKind="project"
-          value={draft.projectId || null}
-          selectionLabel={projectDisplayName(linkedProject)}
-          placeholder="Search projects…"
-          icon={<FolderKanban size={12} />}
+        <ClientServiceProductField
+          productId={draft.productId}
+          productLabel={productLabel}
+          projectLabel={projectLabel}
           disabled={formDisabled}
-          className="w-full min-w-0"
-          onSearch={searchProjects}
-          onSelect={(id) => patchDraft({ projectId: id })}
-          {...projectPicker}
+          resolving={productResolving}
+          onSelect={(id, label) => {
+            void selectProduct(id, label);
+          }}
         />
         <ClientServiceBasicsTypeStatusRow
           draft={draft}
@@ -72,6 +94,19 @@ export function ClientServiceGeneralBasicsSection({
           disabled={formDisabled}
           onProviderChange={(provider) => patchDraft({ provider })}
         />
+        <ClientServiceCredentialField
+          credentialId={draft.providerAccountId}
+          credentialLabel={credentialLabel}
+          disabled={formDisabled}
+          onSelect={(id, label) => {
+            patchDraft({ providerAccountId: id });
+            setCredentialLabel(label);
+          }}
+          onClear={() => {
+            patchDraft({ providerAccountId: '' });
+            setCredentialLabel(null);
+          }}
+        />
       </div>
     </DetailSheetCollapsibleSection>
   );
@@ -81,7 +116,7 @@ function ClientServiceBasicsTypeStatusRow({
   draft,
   formDisabled,
   patchDraft,
-}: Omit<ClientServiceGeneralBasicsSectionProps, 'projects'>) {
+}: Pick<ClientServiceGeneralBasicsSectionProps, 'draft' | 'formDisabled' | 'patchDraft'>) {
   return (
     <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
       <InlineField

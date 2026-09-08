@@ -8,7 +8,6 @@ import {
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
-import type { Project } from '@/lib/api/projects';
 import { ClientServiceGeneralBasicsSection } from './ClientServiceGeneralBasicsSection';
 import { ClientServiceGeneralBillingSection } from './ClientServiceGeneralBillingSection';
 import { ClientServiceGeneralDatesSection } from './ClientServiceGeneralDatesSection';
@@ -18,15 +17,14 @@ interface ClientServiceGeneralTabProps {
   service: ClientServiceRecord;
   draft: ClientServiceFormState;
   patchDraft: (partial: Partial<ClientServiceFormState>) => void;
-  projects: Project[];
   formDisabled?: boolean;
 }
 
 export function ClientServiceGeneralTab({
   serviceId,
+  service,
   draft,
   patchDraft,
-  projects,
   formDisabled = false,
 }: ClientServiceGeneralTabProps) {
   return (
@@ -34,7 +32,9 @@ export function ClientServiceGeneralTab({
       <ClientServiceGeneralBasicsSection
         draft={draft}
         patchDraft={patchDraft}
-        projects={projects}
+        productName={service.product?.name ?? null}
+        projectName={service.project?.name ?? null}
+        credentialName={service.providerAccount?.name ?? null}
         formDisabled={formDisabled}
       />
       <ClientServiceGeneralBillingSection

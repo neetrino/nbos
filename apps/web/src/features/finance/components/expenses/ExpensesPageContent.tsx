@@ -547,7 +547,6 @@ export function ExpensesPageContent({
       <ExpensesPageDialogs
         createOpen={createOpen}
         onCreateOpenChange={setCreateOpen}
-        effectiveProjectId={effectiveProjectId ?? null}
         defaultCreateStatus={pageVariant === 'backlog' ? EXPENSE_BACKLOG_FIXED_STATUS : undefined}
         onExpenseCreated={(created) => {
           void fetchExpenses().then(() => {
