@@ -26,6 +26,7 @@ export function RolePermissionsSaveConfirm(props: {
       confirmLabel="Save"
       submittingLabel="Saving…"
       isSubmitting={props.isSubmitting}
+      forceNestedBackdrop
       onConfirm={props.onConfirm}
     />
   );
