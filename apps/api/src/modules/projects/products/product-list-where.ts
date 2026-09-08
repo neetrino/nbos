@@ -89,10 +89,7 @@ export function applyProductHubAndSearch(
 
 function closedDeliveryWhere(): Prisma.ProductWhereInput {
   return {
-    OR: [
-      { deliveryResolution: { not: null } },
-      { status: { in: [...TERMINAL_LEGACY_STATUSES] } },
-    ],
+    OR: [{ deliveryResolution: { not: null } }, { status: { in: [...TERMINAL_LEGACY_STATUSES] } }],
   };
 }
 

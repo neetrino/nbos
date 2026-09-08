@@ -12,6 +12,8 @@ describe('applyCreatedRelationSheet', () => {
     expect(setOpenId).toHaveBeenCalledWith('contact-1');
     expect(setSheet).toHaveBeenCalledWith(contact);
     expect(setSheet).not.toHaveBeenCalledWith(null);
-    expect(setOpenId.mock.invocationCallOrder[0]).toBeLessThan(setSheet.mock.invocationCallOrder[0]!);
+    expect(setOpenId.mock.invocationCallOrder[0]).toBeLessThan(
+      setSheet.mock.invocationCallOrder[0]!,
+    );
   });
 });

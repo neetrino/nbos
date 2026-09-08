@@ -13,7 +13,10 @@ import {
 import { ProductsHubListTable } from '@/features/projects/components/ProductsHubListTable';
 import { ProjectsListTable } from '@/features/projects/components/ProjectsListTable';
 import type { ProductsHubViewMode } from '@/features/projects/constants/products-hub-page-preferences-storage';
-import type { ProjectsHubTab, ProjectsHubViewMode } from '@/features/projects/constants/projects-page-preferences-storage';
+import type {
+  ProjectsHubTab,
+  ProjectsHubViewMode,
+} from '@/features/projects/constants/projects-page-preferences-storage';
 import type { Product } from '@/lib/api/products';
 import type { Project } from '@/lib/api/projects';
 
@@ -70,7 +73,9 @@ export function ProjectsHubDirectoryPanel({
       </div>
     );
   }
-  return <ProjectsListTable projects={projects} onProjectClick={onProjectClick} tabHint={activeTab} />;
+  return (
+    <ProjectsListTable projects={projects} onProjectClick={onProjectClick} tabHint={activeTab} />
+  );
 }
 
 export function ProductsHubDirectoryPanel({

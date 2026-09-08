@@ -1,7 +1,4 @@
-import {
-  parseOptionalAmount,
-  type ClientServiceFormState,
-} from './client-service-form-state';
+import { parseOptionalAmount, type ClientServiceFormState } from './client-service-form-state';
 
 const NAME_PLACEHOLDERS: Record<string, string> = {
   DOMAIN: 'example.com',

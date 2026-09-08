@@ -233,8 +233,12 @@ export class ExpensePlansService {
         useClientServiceAsSource: body.clientServiceRecordId !== undefined,
       });
       if (body.productId !== undefined || body.clientServiceRecordId !== undefined) {
-        data.product = links.productId ? { connect: { id: links.productId } } : { disconnect: true };
-        data.project = links.projectId ? { connect: { id: links.projectId } } : { disconnect: true };
+        data.product = links.productId
+          ? { connect: { id: links.productId } }
+          : { disconnect: true };
+        data.project = links.projectId
+          ? { connect: { id: links.projectId } }
+          : { disconnect: true };
       }
       if (body.credentialId !== undefined || body.clientServiceRecordId !== undefined) {
         data.credential = links.credentialId
@@ -418,5 +422,4 @@ export class ExpensePlansService {
     const n = await this.prisma.expensePlan.count({ where: { id } });
     if (!n) throw new NotFoundException('Expense plan not found');
   }
-
 }

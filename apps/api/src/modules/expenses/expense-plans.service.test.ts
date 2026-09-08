@@ -76,15 +76,15 @@ describe('ExpensePlansService', () => {
     });
 
     expect(row.amount).toBe('99');
-      expect(prisma.expensePlan.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            productId: 'prod-1',
-            projectId: 'p1',
-          }),
+    expect(prisma.expensePlan.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          productId: 'prod-1',
+          projectId: 'p1',
         }),
-      );
-    });
+      }),
+    );
+  });
 
   it('create accepts WEEKLY frequency', async () => {
     prisma.expensePlan.create = vi.fn().mockResolvedValue({

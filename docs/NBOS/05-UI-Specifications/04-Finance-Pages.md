@@ -237,19 +237,19 @@ Backlog должен показывать отдельную сумму нако
 
 ### 4.4. Карточка расхода
 
-| Элемент                  | Описание                                             |
-| ------------------------ | ---------------------------------------------------- |
-| Название                 | Описание расхода                                     |
-| Original Amount          | Исходная сумма                                       |
-| Paid Amount              | Уже оплачено                                         |
-| Remaining Amount         | Осталось оплатить                                    |
-| Payment Status           | Unpaid / Partially Paid / Paid                       |
-| Категория бейдж          | Salary / Service / Domain / Hosting / Office / Other |
+| Элемент                  | Описание                                                                   |
+| ------------------------ | -------------------------------------------------------------------------- |
+| Название                 | Описание расхода                                                           |
+| Original Amount          | Исходная сумма                                                             |
+| Paid Amount              | Уже оплачено                                                               |
+| Remaining Amount         | Осталось оплатить                                                          |
+| Payment Status           | Unpaid / Partially Paid / Paid                                             |
+| Категория бейдж          | Salary / Service / Domain / Hosting / Office / Other                       |
 | Product / Credentials    | Компактный dual-connect: Product (страница) и пароль (sheet). Оба optional |
-| Ссылка на Client Service | Если расход создан из сервиса клиента                                    |
-| Ссылка на Invoice Card   | Если это pass-through                                |
-| Дата оплаты              | Плановая дата                                        |
-| Payments                 | Список частичных оплат                               |
+| Ссылка на Client Service | Если расход создан из сервиса клиента                                      |
+| Ссылка на Invoice Card   | Если это pass-through                                                      |
+| Дата оплаты              | Плановая дата                                                              |
+| Payments                 | Список частичных оплат                                                     |
 
 Действие `Add Payment / Добавить оплату` создаёт частичную или полную оплату расхода.
 

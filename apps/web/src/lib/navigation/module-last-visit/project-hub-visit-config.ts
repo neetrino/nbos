@@ -23,10 +23,7 @@ export function resolveProjectHubSectionId(pathname: string): ProjectHubSectionI
   return null;
 }
 
-export function isProjectHubSectionPath(
-  pathname: string,
-  sectionId: ProjectHubSectionId,
-): boolean {
+export function isProjectHubSectionPath(pathname: string, sectionId: ProjectHubSectionId): boolean {
   return resolveProjectHubSectionId(pathname) === sectionId;
 }
 

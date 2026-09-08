@@ -41,9 +41,12 @@ export const PRODUCT_HUB_LIST_INCLUDE = {
   },
 } as const;
 
-export function splitProductListSubscriptions<T extends { subscriptions?: ReadonlyArray<unknown> }>(
-  row: T,
-): { listed: Omit<T, 'subscriptions'>; subscriptions: ReadonlyArray<unknown> | undefined } {
-  const { subscriptions, ...listed } = row;
+export function splitProductListSubscriptions<T>(row: T): {
+  listed: Omit<T, 'subscriptions'>;
+  subscriptions: ReadonlyArray<unknown> | undefined;
+} {
+  const { subscriptions, ...listed } = row as T & {
+    subscriptions?: ReadonlyArray<unknown>;
+  };
   return { listed, subscriptions };
 }

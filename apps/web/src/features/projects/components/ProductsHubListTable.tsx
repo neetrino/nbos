@@ -81,7 +81,11 @@ export function ProductsHubListTable({ products, onProductClick }: ProductsHubLi
                   )}
                 </TableCell>
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
-                  {badge ? <StatusBadge label={badge.label} variant={badge.variant} /> : <EntityListMutedDash />}
+                  {badge ? (
+                    <StatusBadge label={badge.label} variant={badge.variant} />
+                  ) : (
+                    <EntityListMutedDash />
+                  )}
                 </TableCell>
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
                   {pmName || <EntityListMutedDash />}

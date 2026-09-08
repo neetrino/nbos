@@ -329,8 +329,7 @@ export class ProductsService {
           readiness,
           checklistStageProgress,
         );
-        const { listed, subscriptions: liveSubscriptions } =
-          splitProductListSubscriptions(withLc);
+        const { listed, subscriptions: liveSubscriptions } = splitProductListSubscriptions(withLc);
         return {
           ...listed,
           ...(classifyHubView

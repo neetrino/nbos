@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import {
   Decimal,
   PrismaClient,
@@ -257,32 +257,29 @@ export class ExpensesService {
     const bookedAt = dueDate ?? new Date();
     await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAt);
 
-    const created = await this.prisma.expense.create({
-      data: {
-        name: data.name,
-        type: requireExpenseType(data.type) as ExpenseTypeEnum,
-        category: requireExpenseCategory(data.category) as ExpenseCategoryEnum,
-        amount: data.amount,
-        frequency: resolveExpenseFrequency(data.frequency) as ExpenseFrequency,
-        dueDate,
-        status: workflowStatus,
-        ...expenseOwnershipWrite(links),
-        ...(data.expensePlanId ? { expensePlanId: data.expensePlanId } : {}),
-        ...(data.clientServiceRecordId
-          ? { clientServiceRecordId: data.clientServiceRecordId }
-          : {}),
-        isPassThrough: data.isPassThrough ?? false,
-        taxStatus: resolveExpenseTaxStatus(
-          data.taxStatus,
-        ) as Prisma.ExpenseCreateInput['taxStatus'],
-        ...(data.backlogReason !== undefined && {
-          backlogReason: parseExpenseBacklogReasonField(
-            data.backlogReason,
-          ) as ExpenseBacklogReasonEnum | null,
-        }),
-        notes: data.notes,
-      },
-    });
+    const createData: Prisma.ExpenseUncheckedCreateInput = {
+      name: data.name,
+      type: requireExpenseType(data.type) as ExpenseTypeEnum,
+      category: requireExpenseCategory(data.category) as ExpenseCategoryEnum,
+      amount: data.amount,
+      frequency: resolveExpenseFrequency(data.frequency) as ExpenseFrequency,
+      dueDate,
+      status: workflowStatus,
+      ...expenseOwnershipWrite(links),
+      ...(data.expensePlanId ? { expensePlanId: data.expensePlanId } : {}),
+      ...(data.clientServiceRecordId ? { clientServiceRecordId: data.clientServiceRecordId } : {}),
+      isPassThrough: data.isPassThrough ?? false,
+      taxStatus: resolveExpenseTaxStatus(
+        data.taxStatus,
+      ) as Prisma.ExpenseUncheckedCreateInput['taxStatus'],
+      ...(data.backlogReason !== undefined && {
+        backlogReason: parseExpenseBacklogReasonField(
+          data.backlogReason,
+        ) as ExpenseBacklogReasonEnum | null,
+      }),
+      notes: data.notes,
+    };
+    const created = await this.prisma.expense.create({ data: createData });
 
     await this.operationalJournal.appendExpenseCardAccrualLine({
       expenseId: created.id,
@@ -340,31 +337,32 @@ export class ExpensesService {
 
     const linkPatch = await this.resolveExpenseUpdateLinks(data, existing);
 
+    const updateData: Prisma.ExpenseUncheckedUpdateInput = {
+      ...(data.name && { name: data.name }),
+      ...(typePatch !== undefined && { type: typePatch as ExpenseTypeEnum }),
+      ...(categoryPatch !== undefined && { category: categoryPatch as ExpenseCategoryEnum }),
+      ...(data.amount !== undefined && { amount: data.amount }),
+      ...(frequencyPatch !== undefined && { frequency: frequencyPatch as ExpenseFrequency }),
+      ...(data.dueDate !== undefined && {
+        dueDate: data.dueDate ? new Date(data.dueDate) : null,
+      }),
+      ...(statusPatch !== undefined && { status: statusPatch as ExpenseStatusEnum }),
+      ...linkPatch,
+      ...(data.clientServiceRecordId !== undefined && {
+        clientServiceRecordId: data.clientServiceRecordId || null,
+      }),
+      ...(data.isPassThrough !== undefined && { isPassThrough: data.isPassThrough }),
+      ...(taxStatusPatch !== undefined && {
+        taxStatus: taxStatusPatch as Prisma.ExpenseUncheckedUpdateInput['taxStatus'],
+      }),
+      ...(backlogReasonPatch !== undefined && {
+        backlogReason: backlogReasonPatch as ExpenseBacklogReasonEnum | null,
+      }),
+      ...(data.notes !== undefined && { notes: data.notes }),
+    };
     await this.prisma.expense.update({
       where: { id },
-      data: {
-        ...(data.name && { name: data.name }),
-        ...(typePatch !== undefined && { type: typePatch as ExpenseTypeEnum }),
-        ...(categoryPatch !== undefined && { category: categoryPatch as ExpenseCategoryEnum }),
-        ...(data.amount !== undefined && { amount: data.amount }),
-        ...(frequencyPatch !== undefined && { frequency: frequencyPatch as ExpenseFrequency }),
-        ...(data.dueDate !== undefined && {
-          dueDate: data.dueDate ? new Date(data.dueDate) : null,
-        }),
-        ...(statusPatch !== undefined && { status: statusPatch as ExpenseStatusEnum }),
-        ...linkPatch,
-        ...(data.clientServiceRecordId !== undefined && {
-          clientServiceRecordId: data.clientServiceRecordId || null,
-        }),
-        ...(data.isPassThrough !== undefined && { isPassThrough: data.isPassThrough }),
-        ...(taxStatusPatch !== undefined && {
-          taxStatus: taxStatusPatch as Prisma.ExpenseUpdateInput['taxStatus'],
-        }),
-        ...(backlogReasonPatch !== undefined && {
-          backlogReason: backlogReasonPatch as ExpenseBacklogReasonEnum | null,
-        }),
-        ...(data.notes !== undefined && { notes: data.notes }),
-      },
+      data: updateData,
     });
     if (statusPatch === undefined) {
       await this.persistRefreshedWorkflowStatus(id);
@@ -485,7 +483,7 @@ export class ExpensesService {
       credentialId: string | null;
       clientServiceRecordId: string | null;
     },
-  ): Promise<Prisma.ExpenseUpdateInput> {
+  ): Promise<Prisma.ExpenseUncheckedUpdateInput> {
     if (data.productId === undefined && data.credentialId === undefined) return {};
     const links = await resolveExpenseLinks(this.prisma, {
       productId: data.productId !== undefined ? data.productId : existing.productId,

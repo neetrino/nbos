@@ -114,14 +114,6 @@ function useProductsHubHeroSlots({
         />
       ),
     }),
-    [
-      activeTab,
-      isMobileViewport,
-      searchInput,
-      setActiveTab,
-      setSearchInput,
-      setViewMode,
-      viewMode,
-    ],
+    [activeTab, isMobileViewport, searchInput, setActiveTab, setSearchInput, setViewMode, viewMode],
   );
 }

@@ -217,9 +217,7 @@ export function CreateExpensePlanDialog({
             productLabel={productLabel}
             credentialId={form.credentialId || null}
             credentialLabel={credentialLabel}
-            projectHint={
-              form.productId ? null : projectDisplayName(planToEdit?.project ?? null)
-            }
+            projectHint={form.productId ? null : projectDisplayName(planToEdit?.project ?? null)}
             onProductSelect={(id, label) => {
               setForm((prev) => ({ ...prev, productId: id }));
               setProductLabel(label);

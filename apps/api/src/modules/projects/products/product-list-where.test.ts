@@ -39,21 +39,21 @@ describe('shouldClassifyProductHubView', () => {
 
 describe('classifyProductHubView', () => {
   it('prefers open delivery over live maintenance', () => {
-    expect(
-      classifyProductHubView({ isOpenDelivery: true, hasLiveMaintenance: true }),
-    ).toBe('delivery');
+    expect(classifyProductHubView({ isOpenDelivery: true, hasLiveMaintenance: true })).toBe(
+      'delivery',
+    );
   });
 
   it('classifies closed delivery with live maintenance as maintenance', () => {
-    expect(
-      classifyProductHubView({ isOpenDelivery: false, hasLiveMaintenance: true }),
-    ).toBe('maintenance');
+    expect(classifyProductHubView({ isOpenDelivery: false, hasLiveMaintenance: true })).toBe(
+      'maintenance',
+    );
   });
 
   it('classifies closed delivery without live maintenance as closed', () => {
-    expect(
-      classifyProductHubView({ isOpenDelivery: false, hasLiveMaintenance: false }),
-    ).toBe('closed');
+    expect(classifyProductHubView({ isOpenDelivery: false, hasLiveMaintenance: false })).toBe(
+      'closed',
+    );
   });
 });
 

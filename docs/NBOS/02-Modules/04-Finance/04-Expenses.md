@@ -111,26 +111,26 @@ Default list/grid/board показывает `ACTIVE`. Фильтр Status: Acti
 
 ### Поля карточки расхода
 
-| Поле                    | Описание                                                                  |
-| ----------------------- | ------------------------------------------------------------------------- |
-| `name`                  | Название                                                                  |
-| `source_type`           | Manual / Expense Plan / Client Service / Payroll / Bonus / Partner Payout |
-| `category`              | Категория расхода                                                         |
-| `original_amount`       | Исходная сумма                                                            |
-| `paid_amount`           | Уже оплачено                                                              |
-| `remaining_amount`      | Осталось оплатить                                                         |
-| `currency`              | Валюта                                                                    |
-| `due_date`              | Дата оплаты                                                               |
-| `workflow_status`       | Текущий статус на доске                                                   |
-| `payment_status`        | Unpaid / Partially Paid / Paid                                            |
+| Поле                    | Описание                                                                                |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| `name`                  | Название                                                                                |
+| `source_type`           | Manual / Expense Plan / Client Service / Payroll / Bonus / Partner Payout               |
+| `category`              | Категория расхода                                                                       |
+| `original_amount`       | Исходная сумма                                                                          |
+| `paid_amount`           | Уже оплачено                                                                            |
+| `remaining_amount`      | Осталось оплатить                                                                       |
+| `currency`              | Валюта                                                                                  |
+| `due_date`              | Дата оплаты                                                                             |
+| `workflow_status`       | Текущий статус на доске                                                                 |
+| `payment_status`        | Unpaid / Partially Paid / Paid                                                          |
 | `product`               | Продукт, если затрата продуктовая. Снимок с Plan / Client Service при создании карточки |
 | `project`               | Денормализация = `Product.projectId`. Не UI-picker                                      |
 | `credential`            | Карточка пароля (Vault) для оплаты сервиса. Снимок при создании карточки                |
 | `order`                 | Заказ, если применимо                                                                   |
 | `client_service_record` | Связанный сервис клиента                                                                |
-| `invoice_card`          | Связанная карточка оплаты клиента, если pass-through                      |
-| `owner`                 | Ответственный                                                             |
-| `notes`                 | Комментарии                                                               |
+| `invoice_card`          | Связанная карточка оплаты клиента, если pass-through                                    |
+| `owner`                 | Ответственный                                                                           |
+| `notes`                 | Комментарии                                                                             |
 
 ---
 
@@ -369,12 +369,12 @@ Legacy enum values (`HOSTING`, `SERVICE`, `INTERNAL_INFRA`, `BANK_FEES`, `TRAINI
 
 Каждый расход должен иметь уровень привязки:
 
-| Уровень        | Где отражается                                                                 |
-| -------------- | ------------------------------------------------------------------------------ |
-| Company        | Нет Product — только Company P&L (офис, инструменты, payroll без продукта)     |
-| Product        | Product P&L, Project P&L (через денорм) и Company P&L                          |
-| Order          | Order P&L, Project P&L и Company P&L                                           |
-| Client Service | Сервис клиента; Product/Project P&L если у сервиса есть Product                |
+| Уровень        | Где отражается                                                             |
+| -------------- | -------------------------------------------------------------------------- |
+| Company        | Нет Product — только Company P&L (офис, инструменты, payroll без продукта) |
+| Product        | Product P&L, Project P&L (через денорм) и Company P&L                      |
+| Order          | Order P&L, Project P&L и Company P&L                                       |
+| Client Service | Сервис клиента; Product/Project P&L если у сервиса есть Product            |
 
 Это нужно, чтобы видеть маржинальность на каждом уровне.
 

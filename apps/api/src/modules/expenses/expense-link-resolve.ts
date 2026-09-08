@@ -48,7 +48,7 @@ export async function resolveExpenseLinks(
 
 export function expenseOwnershipWrite(
   links: ResolvedExpenseLinks,
-): Pick<Prisma.ExpenseCreateInput, 'productId' | 'projectId' | 'credentialId'> {
+): Pick<Prisma.ExpenseUncheckedCreateInput, 'productId' | 'projectId' | 'credentialId'> {
   return {
     productId: links.productId,
     projectId: links.projectId,

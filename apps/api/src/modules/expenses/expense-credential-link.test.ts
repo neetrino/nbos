@@ -1,6 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fillCredentialContextIfEmpty, resolveExpenseCredentialId } from './expense-credential-link';
+import {
+  fillCredentialContextIfEmpty,
+  resolveExpenseCredentialId,
+} from './expense-credential-link';
 
 describe('resolveExpenseCredentialId', () => {
   const prisma = {

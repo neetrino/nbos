@@ -33,7 +33,7 @@ import { ProductFinanceSectionContent } from '@/features/projects/components/tab
 import { useProductFinanceExpenseTotal } from '@/features/projects/hooks/use-product-finance-expense-total';
 import { PRODUCT_FINANCE_SECTION_OPTIONS } from '@/features/projects/constants/product-finance-section';
 import { useProductFinanceSection } from '@/features/projects/hooks/use-product-finance-section';
-import type { ProjectExpense, ProjectOrder, ProjectSubscription } from '@/lib/api/projects';
+import type { ProjectOrder, ProjectSubscription } from '@/lib/api/projects';
 import { buttonVariants } from '@/components/ui/button';
 import {
   formatProjectFinanceAmount,
@@ -43,7 +43,6 @@ import {
 interface FinanceTabProps {
   orders: ProjectOrder[];
   subscriptions: ProjectSubscription[];
-  expenses: ProjectExpense[];
   projectId: string;
   project: { id: string; name: string; code: string };
   productId: string;
@@ -54,7 +53,6 @@ interface FinanceTabProps {
 export function FinanceTab({
   orders,
   subscriptions,
-  expenses: _expenses,
   projectId,
   project,
   productId,
