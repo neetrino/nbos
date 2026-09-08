@@ -56,7 +56,7 @@
 
 **Пояснения:**
 
-- **Seller / Seller Assistant** — создают Invoice из сделки (`FINANCE_INVOICES` ADD OWN) и Contact / Company (`CLIENTS` ADD ALL); видят свои бонусы в Bonus Ledger
+- **Seller / Head of Sales** — создают Invoice из сделки (`FINANCE_INVOICES` ADD OWN) и Contact / Company (`CLIENTS` ADD ALL); видят свои бонусы в Bonus Ledger. Seller Assistant в коде совпадает с Seller, если роль есть в БД.
 - **Clients directory (🔶)** — `CLIENTS` VIEW ALL + ADD ALL, без EDIT/DELETE. Кроме Seller / Head of Sales: PM, Head of Delivery, Head of Marketing, Marketing, Finance Director. Head of Marketing в таблице выше совпадает с колонкой Marketing.
 - **Tech Ops** — видит только инфраструктурные расходы (домены, хостинг, сервисы)
 - **Bonus Ledger (🔶)** — каждый сотрудник видит только свои бонусы (Incoming, Active, Paid)
