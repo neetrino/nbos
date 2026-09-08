@@ -228,8 +228,8 @@ export function EntityRelationHost({
     closeCreate();
     if (contact) {
       const label = `${contact.firstName} ${contact.lastName}`.trim();
+      setContactSheet(null);
       setContactOpenId(contact.id);
-      setContactSheet(contact);
       emitCreated({
         kind: 'contact',
         id: contact.id,
