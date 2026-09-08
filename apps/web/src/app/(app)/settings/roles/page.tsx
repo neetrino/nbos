@@ -319,12 +319,10 @@ export default function RolesPage() {
               <Shield size={16} />
               Permissions — {selectedRole.name}
             </h3>
-            {!selectedRole.isSystem && (
-              <Button size="sm" onClick={handleSavePermissions} disabled={saving}>
-                <Save size={16} />
-                {saving ? 'Saving...' : 'Save'}
-              </Button>
-            )}
+            <Button size="sm" onClick={handleSavePermissions} disabled={saving}>
+              <Save size={16} />
+              {saving ? 'Saving...' : 'Save'}
+            </Button>
           </div>
 
           {loadingRole ? (
@@ -364,7 +362,6 @@ export default function RolesPage() {
                                 onValueChange={(v) =>
                                   handleScopeChange(perm.id, module, action, v as Scope)
                                 }
-                                disabled={selectedRole.isSystem}
                               >
                                 <SelectTrigger className="h-8 text-xs">
                                   <SelectValue />
