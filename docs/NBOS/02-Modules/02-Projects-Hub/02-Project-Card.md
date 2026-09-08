@@ -28,7 +28,7 @@
 | Поле           | Описание                                                                  |
 | -------------- | ------------------------------------------------------------------------- |
 | Project Name   | Название бизнеса / бренда                                                 |
-| Computed Views | В каких views проект сейчас виден: `Development`, `Maintenance`, `Closed` |
+| Computed Views | В каких views проект сейчас виден: `Incoming`, `Development`, `Maintenance`, `Closed`. Hub list показывает `Active` = Development ∪ Maintenance |
 | Contact        | Основной контакт                                                          |
 | Company        | Юрлицо для биллинга                                                       |
 | Description    | Общий контекст проекта                                                    |

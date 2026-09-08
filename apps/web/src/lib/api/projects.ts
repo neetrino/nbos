@@ -271,6 +271,18 @@ export interface ProjectListData {
   meta: { total: number; page: number; pageSize: number; totalPages: number };
 }
 
+export type ProjectHubView = 'incoming' | 'active' | 'closed';
+
+export type ProjectListParams = {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  scope?: 'active' | 'trash';
+  hubView?: ProjectHubView;
+};
+
 /** Workspace-wide counts from `GET /api/projects/stats`. */
 export interface ProjectWorkspaceStats {
   total: number;
@@ -282,7 +294,7 @@ export const projectsApi = {
     return resp.data;
   },
 
-  async getAll(params?: Record<string, unknown>): Promise<ProjectListData> {
+  async getAll(params?: ProjectListParams): Promise<ProjectListData> {
     const resp = await api.get<ProjectListData>('/api/projects', { params });
     return resp.data;
   },

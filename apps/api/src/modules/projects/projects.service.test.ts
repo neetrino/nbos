@@ -141,11 +141,33 @@ describe('ProjectsService', () => {
       );
     });
 
+    it('applies incoming hubView on non-trash lists', async () => {
+      await service.findAll({ hubView: 'incoming' });
+      expect(prisma.project.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            trashedAt: null,
+            products: { none: {} },
+            extensions: { none: {} },
+          }),
+        }),
+      );
+    });
+
+    it('ignores hubView when listing trash', async () => {
+      await service.findAll({ scope: 'trash', hubView: 'closed' });
+      expect(prisma.project.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { trashedAt: { not: null } },
+        }),
+      );
+    });
+
     it('uses custom sort', async () => {
       await service.findAll({ sortBy: 'name', sortOrder: 'asc' });
       expect(prisma.project.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          orderBy: { name: 'asc' },
+          orderBy: [{ name: 'asc' }, { id: 'asc' }],
         }),
       );
     });

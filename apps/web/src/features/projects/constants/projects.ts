@@ -2,7 +2,9 @@ import type { StatusVariant } from '@/components/shared/StatusBadge';
 
 export const PROJECT_HUB_TABS = [
   { value: 'all', label: 'All' },
+  { value: 'incoming', label: 'Incoming' },
   { value: 'active', label: 'Active' },
+  { value: 'closed', label: 'Closed' },
   { value: 'trash', label: 'Trash' },
 ] as const;
 

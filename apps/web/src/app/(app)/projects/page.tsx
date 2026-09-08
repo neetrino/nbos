@@ -24,6 +24,7 @@ import { CreateProjectHubDialog } from '@/features/projects/components/CreatePro
 import { ProjectsListTable } from '@/features/projects/components/ProjectsListTable';
 import { ProjectsPageSettingsSheet } from '@/features/projects/components/ProjectsPageSettingsSheet';
 import { useProjectsHubDirectory } from '@/features/projects/hooks/use-projects-hub-directory';
+import { projectsHubEmptyCopy } from '@/features/projects/utils/projects-hub-empty-copy';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import type { Project } from '@/lib/api/projects';
 
@@ -64,6 +65,7 @@ export default function ProjectsPage() {
   } = directory;
 
   const effectiveView: ProjectsHubViewMode = isMobileViewport ? 'grid' : view;
+  const emptyCopy = projectsHubEmptyCopy(activeTab);
 
   const handleClick = (project: Project) => {
     router.push(`/projects/${project.id}`);
@@ -133,17 +135,19 @@ export default function ProjectsPage() {
         ) : projects.length === 0 ? (
           <EmptyState
             icon={FolderKanban}
-            title="No projects found"
-            description="Create your first project to get started"
+            title={emptyCopy.title}
+            description={emptyCopy.description}
             action={
-              <Button
-                type="button"
-                aria-label="Create new project"
-                onClick={() => setCreateOpen(true)}
-              >
-                <Plus size={16} aria-hidden />
-                Project
-              </Button>
+              emptyCopy.showCreate ? (
+                <Button
+                  type="button"
+                  aria-label="Create new project"
+                  onClick={() => setCreateOpen(true)}
+                >
+                  <Plus size={16} aria-hidden />
+                  Project
+                </Button>
+              ) : undefined
             }
           />
         ) : effectiveView === 'grid' ? (

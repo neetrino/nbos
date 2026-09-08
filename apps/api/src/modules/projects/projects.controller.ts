@@ -30,11 +30,13 @@ export class ProjectsController {
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'scope', required: false, enum: ['active', 'trash'] })
+  @ApiQuery({ name: 'hubView', required: false, enum: ['incoming', 'active', 'closed'] })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('search') search?: string,
     @Query('scope') scope?: string,
+    @Query('hubView') hubView?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
   ) {
@@ -43,6 +45,7 @@ export class ProjectsController {
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       search,
       scope,
+      hubView,
       sortBy,
       sortOrder,
     });

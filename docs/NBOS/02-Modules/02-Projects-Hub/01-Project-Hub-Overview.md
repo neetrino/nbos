@@ -144,9 +144,12 @@ Projects Hub должен иметь три основных пользоват�
 Список проектов и фильтрованные views:
 
 - `All`
-- `Development`
-- `Maintenance`
+- `Incoming`
+- `Active` (`Development` ∪ `Maintenance`)
 - `Closed`
+- `Trash` (корзина, не Closed)
+
+`Development` и `Maintenance` остаются computed views над детьми; отдельными вкладками Hub в текущем срезе не показаны.
 
 Это views над проектами-контейнерами, а не место, где двигаются рабочие карточки по стадиям.
 

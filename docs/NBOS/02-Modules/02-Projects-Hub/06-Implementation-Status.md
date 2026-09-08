@@ -2,6 +2,12 @@
 
 Tracks **shipped runtime** vs `01-Project-Hub-Overview.md` and delivery canon. Broader migration history: `06-Projects-Hub-Cleanup-Register.md`.
 
+## Shipped (web + API) — Project Hub list views
+
+- **API:** `GET /projects?hubView=` `incoming` / `active` / `closed` on non-trash scope. Trash + `hubView` is ignored. No `Project.status` column.
+- **Rules:** Incoming = no Product/Extension. Active = open delivery (`deliveryResolution` null and legacy status not `DONE`/`LOST`) or live maintenance (`MAINTENANCE_ONLY` / `DEV_AND_MAINTENANCE` + `PENDING`/`ACTIVE`). Closed = has children, no open delivery, no live maintenance.
+- **Web:** Hub tabs `All | Incoming | Active | Closed | Trash`; default tab Active.
+
 ## Shipped (web + API) — Project Trash (Profile A)
 
 - **Schema:** `projects.trashed_at`; legacy `is_archived` **dropped** (`20260612200000`).
@@ -24,7 +30,7 @@ Tracks **shipped runtime** vs `01-Project-Hub-Overview.md` and delivery canon. B
 
 ## API routes (lifecycle)
 
-- `projects` — list `scope`; `DELETE` → Trash; `POST :id/restore`; `DELETE :id/permanent`.
+- `projects` — list `scope` + `hubView`; `DELETE` → Trash; `POST :id/restore`; `DELETE :id/permanent`.
 
 ## Related code
 
