@@ -42,6 +42,7 @@ import type {
   RelationEntityKind,
 } from './relation-picker.types';
 import type { RelationCreatedEvent } from './relation-created-event';
+import { applyCreatedRelationSheet } from './apply-created-relation-sheet';
 
 type CreateKind = 'contact' | 'company' | 'project' | 'partner' | 'product';
 
@@ -228,8 +229,7 @@ export function EntityRelationHost({
     closeCreate();
     if (contact) {
       const label = `${contact.firstName} ${contact.lastName}`.trim();
-      setContactSheet(null);
-      setContactOpenId(contact.id);
+      applyCreatedRelationSheet(contact, setContactOpenId, setContactSheet);
       emitCreated({
         kind: 'contact',
         id: contact.id,
@@ -243,8 +243,7 @@ export function EntityRelationHost({
     const intent = createIntent;
     closeCreate();
     if (company) {
-      setCompanyOpenId(company.id);
-      setCompanySheet(company);
+      applyCreatedRelationSheet(company, setCompanyOpenId, setCompanySheet);
       emitCreated({
         kind: 'company',
         id: company.id,
