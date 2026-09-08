@@ -129,7 +129,8 @@ export default function RolesPage() {
         })
         .map((permission) => ({
           permissionId: permission.id,
-          scope: matrixScopes[rolePermissionScopeKey(permission.module, permission.action)] ?? 'NONE',
+          scope:
+            matrixScopes[rolePermissionScopeKey(permission.module, permission.action)] ?? 'NONE',
         }));
       await api.put(`/api/roles/${selectedRole.id}/permissions`, { permissions });
       toast.success('Permissions saved');
