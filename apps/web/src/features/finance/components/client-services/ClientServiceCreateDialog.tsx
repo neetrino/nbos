@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FolderKanban } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -9,27 +8,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RelationPickerField } from '@/components/shared';
 import {
-  useProjectRelationSearch,
-  useRelationPickerActions,
-} from '@/components/shared/relation-picker';
-import {
-  CLIENT_SERVICE_BILLING_MODELS,
-  CLIENT_SERVICE_STATUSES,
-  CLIENT_SERVICE_TYPES,
-} from '@/features/finance/constants/client-services';
-import { SUBSCRIPTION_REMINDER_LANGUAGES } from '@/features/finance/constants/finance';
+  applyProductToClientServiceForm,
+  canSubmitClientServiceCreate,
+} from '@/features/finance/utils/client-service-create-form';
 import {
   EMPTY_CLIENT_SERVICE_FORM,
   clientServiceFormToPayload,
   type ClientServiceFormState,
 } from '@/features/finance/utils/client-service-form-state';
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
+import { productsApi } from '@/lib/api/products';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { ClientServiceFormFooter, ClientServiceSelectField } from './client-service-form-controls';
+import { projectDisplayName } from '@/lib/format/project-product-display';
+import { ClientServiceCreateDialogFields } from './ClientServiceCreateDialogFields';
+import { ClientServiceFormFooter } from './client-service-form-controls';
 
 interface ClientServiceCreateDialogProps {
   open: boolean;
@@ -43,20 +36,38 @@ export function ClientServiceCreateDialog({
   onSaved,
 }: ClientServiceCreateDialogProps) {
   const [form, setForm] = useState<ClientServiceFormState>({ ...EMPTY_CLIENT_SERVICE_FORM });
+  const [productLabel, setProductLabel] = useState<string | null>(null);
   const [projectLabel, setProjectLabel] = useState<string | null>(null);
+  const [productResolving, setProductResolving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const searchProjects = useProjectRelationSearch();
-  const projectPicker = useRelationPickerActions('project');
-
   useEffect(() => {
     if (!open) return;
     setFormError(null);
+    setProductLabel(null);
     setProjectLabel(null);
+    setProductResolving(false);
     setForm({ ...EMPTY_CLIENT_SERVICE_FORM });
   }, [open]);
 
-  const canSubmit = Boolean(form.projectId && form.name.trim());
+  const canSubmit = canSubmitClientServiceCreate(form) && !productResolving;
+
+  const handleProductSelect = async (productId: string, label: string) => {
+    setProductLabel(label);
+    setProductResolving(true);
+    setFormError(null);
+    try {
+      const product = await productsApi.getById(productId);
+      setForm((prev) => applyProductToClientServiceForm(prev, product));
+      setProjectLabel(projectDisplayName(product.project) ?? product.project.name);
+    } catch {
+      setForm((prev) => ({ ...prev, productId, projectId: '' }));
+      setProjectLabel(null);
+      setFormError('Could not load the product project.');
+    } finally {
+      setProductResolving(false);
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -76,66 +87,25 @@ export function ClientServiceCreateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle>New client service</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-4">
           {formError ? (
             <p className="text-destructive text-sm" role="alert">
               {formError}
             </p>
           ) : null}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <RelationPickerField
-              label="Project *"
-              entityKind="project"
-              value={form.projectId || null}
-              selectionLabel={projectLabel}
-              placeholder="Search projects…"
-              icon={<FolderKanban size={12} />}
-              onSearch={searchProjects}
-              onSelect={(projectId, label) => {
-                setForm((prev) => ({ ...prev, projectId }));
-                setProjectLabel(label);
-              }}
-              {...projectPicker}
-            />
-            <div className="space-y-2">
-              <Label>Name *</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <ClientServiceSelectField
-              label="Type"
-              value={form.type}
-              options={CLIENT_SERVICE_TYPES}
-              onChange={(type) => type && setForm({ ...form, type })}
-            />
-            <ClientServiceSelectField
-              label="Status"
-              value={form.status}
-              options={CLIENT_SERVICE_STATUSES}
-              onChange={(status) => status && setForm({ ...form, status })}
-            />
-            <ClientServiceSelectField
-              label="Billing"
-              value={form.billingModel}
-              options={CLIENT_SERVICE_BILLING_MODELS}
-              onChange={(billingModel) => billingModel && setForm({ ...form, billingModel })}
-            />
-          </div>
-          <ClientServiceSelectField
-            label="Payment reminder language"
-            value={form.reminderLanguage}
-            options={SUBSCRIPTION_REMINDER_LANGUAGES}
-            onChange={(reminderLanguage) =>
-              reminderLanguage && setForm({ ...form, reminderLanguage })
-            }
+          <ClientServiceCreateDialogFields
+            form={form}
+            productLabel={productLabel}
+            projectLabel={projectLabel}
+            productResolving={productResolving}
+            onProductSelect={(id, label) => {
+              void handleProductSelect(id, label);
+            }}
+            onFormChange={(partial) => setForm((prev) => ({ ...prev, ...partial }))}
           />
           <DialogFooter className="gap-0 sm:justify-end">
             <ClientServiceFormFooter

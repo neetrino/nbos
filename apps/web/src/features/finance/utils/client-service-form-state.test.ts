@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { clientServiceToFormState, parseOptionalAmount } from './client-service-form-state';
+import {
+  clientServiceFormToPayload,
+  clientServiceToFormState,
+  parseOptionalAmount,
+} from './client-service-form-state';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 
 describe('parseOptionalAmount', () => {
@@ -21,6 +25,7 @@ describe('clientServiceToFormState', () => {
   it('maps API row to edit form state', () => {
     const row = {
       projectId: 'project-1',
+      productId: 'product-1',
       type: 'DOMAIN',
       name: 'example.com',
       provider: null,
@@ -39,6 +44,8 @@ describe('clientServiceToFormState', () => {
     } as ClientServiceRecord;
 
     expect(clientServiceToFormState(row)).toMatchObject({
+      projectId: 'project-1',
+      productId: 'product-1',
       name: 'example.com',
       provider: '',
       startDate: '2026-01-02',
@@ -46,5 +53,41 @@ describe('clientServiceToFormState', () => {
       clientCharge: '',
       reminderLanguage: 'HY',
     });
+  });
+
+  it('maps a missing product to an empty form id', () => {
+    const row = {
+      projectId: 'project-1',
+      productId: null,
+      name: 'legacy.com',
+    } as ClientServiceRecord;
+    expect(clientServiceToFormState(row).productId).toBe('');
+  });
+});
+
+describe('clientServiceFormToPayload', () => {
+  it('sends productId and omits a blank product as null', () => {
+    const withProduct = clientServiceToFormState({
+      projectId: 'project-1',
+      productId: 'product-1',
+      type: 'DOMAIN',
+      name: 'example.com',
+      provider: null,
+      status: 'PENDING',
+      billingModel: 'WE_PAY',
+      pricingModel: 'FIXED',
+      frequency: 'YEARLY',
+      ourCost: '12',
+      clientCharge: '20',
+      taxStatus: 'TAX',
+      notificationsEnabled: true,
+      reminderLanguage: 'HY',
+      startDate: null,
+      renewalDate: null,
+      notes: null,
+    } as ClientServiceRecord);
+
+    expect(clientServiceFormToPayload(withProduct).productId).toBe('product-1');
+    expect(clientServiceFormToPayload({ ...withProduct, productId: '  ' }).productId).toBeNull();
   });
 });

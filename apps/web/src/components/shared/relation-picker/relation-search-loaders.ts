@@ -99,7 +99,8 @@ export function useProductRelationSearch(
       return res.items.map((product) => ({
         value: product.id,
         label: product.name,
-        subtitle: product.productType,
+        subtitle:
+          [product.project?.name, product.productType].filter(Boolean).join(' · ') || undefined,
       }));
     },
     [projectId, pageSize],
