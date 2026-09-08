@@ -67,6 +67,8 @@ const D: [Scope, Scope, Scope, Scope] = ['DEPARTMENT', 'DEPARTMENT', 'DEPARTMENT
 const N: [Scope, Scope, Scope, Scope] = ['NONE', 'NONE', 'NONE', 'NONE'];
 /** View all + create, no edit/delete — Seller / Head of Sales on Clients. */
 const VA: [Scope, Scope, Scope, Scope] = ['ALL', 'NONE', 'ALL', 'NONE'];
+/** View own + create own, no edit/delete — Head of Marketing invoices. */
+const VA_OWN: [Scope, Scope, Scope, Scope] = ['OWN', 'NONE', 'OWN', 'NONE'];
 
 const DEVELOPER_ROLE_MATRIX: MatrixEntry = {
   CRM_LEADS: N,
@@ -365,7 +367,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     CRM_LEADS: F,
     CRM_DEALS: D,
     ORDERS: N,
-    FINANCE_INVOICES: N,
+    FINANCE_INVOICES: VA_OWN,
     FINANCE_PAYMENTS: N,
     FINANCE_SUBSCRIPTIONS: N,
     FINANCE_EXPENSES: N,
