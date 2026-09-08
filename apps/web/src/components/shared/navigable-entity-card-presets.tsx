@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
 import {
-  Archive,
   Building2,
   Calendar,
   FolderKanban,
@@ -39,6 +38,8 @@ import {
 } from '@/features/projects/constants/projects';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
+import { ProjectHubStatusBadge } from '@/features/projects/components/ProjectHubStatusBadge';
+import type { ProjectsHubTab } from '@/features/projects/constants/projects-page-preferences-storage';
 import type { Project, ProjectProductSummary } from '@/lib/api/projects';
 import type { WorkSpace } from '@/lib/api/tasks';
 import {
@@ -85,7 +86,13 @@ function buildProductStatusBadge(product: ProjectProductSummary): NavigableEntit
 }
 
 /** Project Hub directory card. */
-export function ProjectNavigableCard({ project }: { project: Project }) {
+export function ProjectNavigableCard({
+  project,
+  tabHint,
+}: {
+  project: Project;
+  tabHint?: ProjectsHubTab;
+}) {
   const contactName =
     `${project.contact?.firstName ?? ''} ${project.contact?.lastName ?? ''}`.trim();
   const productCount = project._count.products ?? 0;
@@ -104,18 +111,12 @@ export function ProjectNavigableCard({ project }: { project: Project }) {
             <FolderKanban className="size-5" aria-hidden />
           </div>
           <div className="min-w-0 flex-1">
-            {project.trashedAt != null ? (
-              <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                <Archive
-                  size={14}
-                  className="text-muted-foreground shrink-0"
-                  aria-label="In Trash"
-                />
-              </div>
-            ) : null}
-            <h3 className="text-foreground line-clamp-2 text-base font-bold tracking-tight">
-              {project.name}
-            </h3>
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="text-foreground line-clamp-2 text-base font-bold tracking-tight">
+                {project.name}
+              </h3>
+              <ProjectHubStatusBadge project={project} tabHint={tabHint} />
+            </div>
             {project.company || contactName ? (
               <div className="mt-3 flex flex-col gap-1.5">
                 {project.company ? (

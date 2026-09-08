@@ -153,11 +153,11 @@ export default function ProjectsPage() {
         ) : effectiveView === 'grid' ? (
           <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
             {projects.map((project) => (
-              <ProjectNavigableCard key={project.id} project={project} />
+              <ProjectNavigableCard key={project.id} project={project} tabHint={activeTab} />
             ))}
           </div>
         ) : (
-          <ProjectsListTable projects={projects} onProjectClick={handleClick} />
+          <ProjectsListTable projects={projects} onProjectClick={handleClick} tabHint={activeTab} />
         )}
       </DetailSheetTabPanel>
 

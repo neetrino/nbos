@@ -24,12 +24,16 @@ export interface DeliveryLifecycleProjection {
   currentStageReadiness?: { completed: number; total: number };
 }
 
+export type ProjectHubStatus = 'incoming' | 'active' | 'closed' | 'trash';
+
 export interface Project {
   id: string;
   code: string;
   name: string;
   description: string | null;
   trashedAt?: string | null;
+  /** Computed Hub list view. Present on directory list items. */
+  hubView?: ProjectHubStatus;
   createdAt: string;
   updatedAt: string;
   company: { id: string; name: string } | null;
@@ -271,7 +275,7 @@ export interface ProjectListData {
   meta: { total: number; page: number; pageSize: number; totalPages: number };
 }
 
-export type ProjectHubView = 'incoming' | 'active' | 'closed';
+export type ProjectHubView = Exclude<ProjectHubStatus, 'trash'>;
 
 export type ProjectListParams = {
   page?: number;

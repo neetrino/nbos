@@ -4,13 +4,10 @@ import {
   mergeProfileAListScope,
   parseLifecycleScopeFromQuery,
 } from '../../common/lifecycle/entity-lifecycle-scope';
+import { liveMaintenanceWhere, openDeliveryWhere } from './project-hub-status';
 
 export const PROJECT_HUB_VIEWS = ['incoming', 'active', 'closed'] as const;
 export type ProjectHubView = (typeof PROJECT_HUB_VIEWS)[number];
-
-const TERMINAL_LEGACY_STATUSES = ['DONE', 'LOST'] as const;
-const LIVE_MAINTENANCE_TYPES = ['MAINTENANCE_ONLY', 'DEV_AND_MAINTENANCE'] as const;
-const LIVE_MAINTENANCE_STATUSES = ['PENDING', 'ACTIVE'] as const;
 
 export interface ProjectListQueryParams {
   page?: number;
@@ -69,20 +66,6 @@ function buildProjectSearchOr(search?: string): Prisma.ProjectWhereInput[] | und
     { contact: { firstName: { contains: q, mode: 'insensitive' } } },
     { contact: { lastName: { contains: q, mode: 'insensitive' } } },
   ];
-}
-
-function openDeliveryWhere() {
-  return {
-    deliveryResolution: null,
-    status: { notIn: [...TERMINAL_LEGACY_STATUSES] },
-  };
-}
-
-function liveMaintenanceWhere() {
-  return {
-    type: { in: [...LIVE_MAINTENANCE_TYPES] },
-    status: { in: [...LIVE_MAINTENANCE_STATUSES] },
-  };
 }
 
 function incomingProjectWhere(): Prisma.ProjectWhereInput {

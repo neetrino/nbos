@@ -18,6 +18,21 @@ describe('ProjectsService', () => {
       expect(result.items).toEqual([]);
       expect(result.meta.totalPages).toBe(0);
     });
+
+    it('attaches hubView on list items', async () => {
+      prisma.project.findMany.mockResolvedValue([
+        {
+          id: 'p1',
+          trashedAt: null,
+          _count: { orders: 0, products: 0, extensions: 0 },
+          products: [],
+          extensions: [],
+          subscriptions: [],
+        },
+      ]);
+      const result = await service.findAll({});
+      expect(result.items[0]).toMatchObject({ id: 'p1', hubView: 'incoming' });
+    });
   });
 
   describe('findById', () => {
@@ -112,12 +127,12 @@ describe('ProjectsService', () => {
   });
 
   describe('findAll (branch coverage)', () => {
-    it('includes order and product counts', async () => {
+    it('includes order, product, and extension counts', async () => {
       await service.findAll({});
       expect(prisma.project.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           include: expect.objectContaining({
-            _count: { select: { orders: true, products: true } },
+            _count: { select: { orders: true, products: true, extensions: true } },
           }),
         }),
       );

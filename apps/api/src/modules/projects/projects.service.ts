@@ -19,6 +19,7 @@ import {
   assertEntityIsTrashed,
 } from '../../common/lifecycle/entity-lifecycle-guards';
 import { mergeProfileAListScope } from '../../common/lifecycle/entity-lifecycle-scope';
+import { PROJECT_LIST_INCLUDE, toProjectListItem } from './project-list-item';
 import { buildProjectListWhere, type ProjectListQueryParams } from './project-list-where';
 
 const PROJECT_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'name', 'code']);
@@ -52,11 +53,7 @@ export class ProjectsService {
     const [items, total] = await Promise.all([
       this.prisma.project.findMany({
         where,
-        include: {
-          company: { select: { id: true, name: true } },
-          contact: { select: { id: true, firstName: true, lastName: true } },
-          _count: { select: { orders: true, products: true } },
-        },
+        include: PROJECT_LIST_INCLUDE,
         orderBy: [
           {
             [resolveSortField(sortBy, PROJECT_SORT_FIELDS, 'createdAt')]:
@@ -71,7 +68,7 @@ export class ProjectsService {
     ]);
 
     return {
-      items,
+      items: items.map(toProjectListItem),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
