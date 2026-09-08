@@ -89,7 +89,8 @@ Payment confirmed
 
 1. есть `order` → display title заказа: `Deal.name` через `order.deal`, иначе `Order.code`;
 2. иначе есть `subscription` → `Subscription.name`;
-3. иначе → `Invoice.code`.
+3. иначе есть `clientServiceRecord` → `ClientServiceRecord.name`, иначе `product.name`;
+4. иначе → `Invoice.code`.
 
 `Invoice.code` всегда показывается **вторичной** строкой, когда не является заголовком (kanban, list, **detail sheet**, CSV `displayTitle`, исходящие письма). На kanban-карточке **сумма остаётся доминирующим элементом**; display title — меньшая строка над суммой (см. `05-UI-Specifications/04-Finance-Pages.md` §2.2).
 

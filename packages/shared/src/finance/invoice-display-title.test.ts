@@ -26,6 +26,40 @@ describe('resolveInvoiceDisplayTitle', () => {
     expect(resolveInvoiceDisplayTitle({ code: 'INV-1' })).toBe('INV-1');
   });
 
+  it('uses client service name when invoice has no order or subscription', () => {
+    expect(
+      resolveInvoiceDisplayTitle({
+        code: 'INV-2026-0146',
+        clientServiceRecord: { name: 'borboraqua.am' },
+      }),
+    ).toBe('borboraqua.am');
+  });
+
+  it('falls back to product name, then invoice code, for a blank client service name', () => {
+    expect(
+      resolveInvoiceDisplayTitle({
+        code: 'INV-2026-0146',
+        clientServiceRecord: { name: '   ', product: { name: 'Hosting' } },
+      }),
+    ).toBe('Hosting');
+    expect(
+      resolveInvoiceDisplayTitle({
+        code: 'INV-2026-0146',
+        clientServiceRecord: { name: '   ' },
+      }),
+    ).toBe('INV-2026-0146');
+  });
+
+  it('prefers subscription name over client service name', () => {
+    expect(
+      resolveInvoiceDisplayTitle({
+        code: 'INV-1',
+        subscription: { name: 'Acme maintenance', code: 'SUB-1' },
+        clientServiceRecord: { name: 'borboraqua.am' },
+      }),
+    ).toBe('Acme maintenance');
+  });
+
   it('returns invoice code as subtitle when title comes from a source', () => {
     expect(
       resolveInvoiceDisplaySubtitle({
@@ -33,6 +67,12 @@ describe('resolveInvoiceDisplayTitle', () => {
         order: { code: 'ORD-1', deal: { name: 'SEO Qualitech', code: 'D-1' } },
       }),
     ).toBe('INV-2026-0138');
+    expect(
+      resolveInvoiceDisplaySubtitle({
+        code: 'INV-2026-0146',
+        clientServiceRecord: { name: 'borboraqua.am' },
+      }),
+    ).toBe('INV-2026-0146');
     expect(resolveInvoiceDisplaySubtitle({ code: 'INV-1' })).toBeUndefined();
   });
 });

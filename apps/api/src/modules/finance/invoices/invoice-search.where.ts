@@ -30,6 +30,7 @@ export function buildInvoiceSearchOr(
           OR: [{ code: ic }, { name: ic }, { project: { name: ic } }, { project: { code: ic } }],
         },
       },
+      { clientServiceRecord: { name: ic } },
       ...(matchedProjectIds.length > 0 ? [{ projectId: { in: matchedProjectIds } }] : []),
     ],
   };

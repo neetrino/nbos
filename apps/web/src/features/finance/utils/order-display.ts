@@ -25,7 +25,7 @@ export function getOrderDisplayTitle(order: OrderWithOptionalDeal): string {
 }
 
 /**
- * Primary invoice title — order deal name, else subscription name, else invoice code.
+ * Primary invoice title — order/deal, subscription, client service, else invoice code.
  * Invoice code stays secondary in the UI when it is not the title.
  */
 export function getInvoiceDisplayTitle(invoice: InvoiceDisplaySource): string {

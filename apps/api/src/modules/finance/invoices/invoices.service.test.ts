@@ -86,7 +86,7 @@ describe('InvoicesService', () => {
       expect(prisma.invoice.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           include: expect.objectContaining({
-            clientServiceRecord: { select: { id: true, type: true } },
+            clientServiceRecord: { select: { id: true, type: true, name: true } },
           }),
         }),
       );
@@ -192,7 +192,7 @@ describe('InvoicesService', () => {
       expect(prisma.invoice.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({
           include: expect.objectContaining({
-            clientServiceRecord: { select: { id: true, type: true } },
+            clientServiceRecord: { select: { id: true, type: true, name: true } },
           }),
         }),
       );

@@ -92,6 +92,7 @@ export interface InvoiceSubscriptionSummary {
 export interface InvoiceClientServiceSummary {
   id: string;
   type: string;
+  name: string;
 }
 
 export interface Invoice {
