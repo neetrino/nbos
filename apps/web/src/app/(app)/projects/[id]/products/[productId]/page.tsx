@@ -217,11 +217,13 @@ function ProductDetailPageContent() {
           {projectData ? (
             <FinanceTab
               projectId={params.id}
+              productId={product.id}
               project={{
                 id: product.project.id,
                 code: product.project.code,
                 name: product.project.name,
               }}
+              companyId={product.project.companyId ?? product.project.company?.id ?? null}
               productOrderId={product.order?.id ?? null}
               orders={projectData.orders as never[]}
               subscriptions={projectData.subscriptions as never[]}

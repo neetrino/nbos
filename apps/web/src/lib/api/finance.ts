@@ -23,6 +23,7 @@ export interface InvoiceListParams extends FinanceDateRangeParams {
   moneyStatus?: string;
   type?: string;
   projectId?: string;
+  productId?: string;
   subscriptionId?: string;
   search?: string;
 }
@@ -101,6 +102,7 @@ export interface Invoice {
   orderId: string | null;
   subscriptionId: string | null;
   projectId: string | null;
+  productId: string | null;
   companyId: string | null;
   clientServiceRecordId?: string | null;
   amount: string;
@@ -122,6 +124,7 @@ export interface Invoice {
   subscription?: InvoiceSubscriptionSummary | null;
   clientServiceRecord?: InvoiceClientServiceSummary | null;
   company: { id: string; name: string; legalName?: string | null; taxId?: string | null } | null;
+  product: { id: string; name: string } | null;
   project: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string } | null;
   payments: Payment[];
@@ -496,7 +499,7 @@ export const invoicesApi = {
       amount?: number;
       taxStatus?: string;
       companyId?: string | null;
-      projectId?: string | null;
+      productId?: string | null;
       orderComment?: string | null;
     },
   ): Promise<Invoice> {

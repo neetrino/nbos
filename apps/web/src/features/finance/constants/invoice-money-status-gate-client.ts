@@ -1,7 +1,9 @@
 import {
+  getInvoiceManualProductGateErrors,
   getInvoiceOrderCommentGateErrors,
   getInvoiceTaxMoneyStatusGateErrors,
   INVOICE_ORDER_COMMENT_FIELD,
+  INVOICE_PRODUCT_GATE_FIELD,
   INVOICE_TAX_GATE_FIELD,
 } from '@nbos/shared';
 import type { ApiFieldError } from '@/lib/api-errors';
@@ -10,15 +12,9 @@ import type { Invoice } from '@/lib/api/finance';
 export const INVOICE_GATE_FIELD_PAYMENTS = 'payments' as const;
 export const INVOICE_GATE_FIELD_MONEY_STATUS = 'moneyStatus' as const;
 export const INVOICE_GATE_FIELD_COMPANY = INVOICE_TAX_GATE_FIELD.COMPANY;
-export const INVOICE_GATE_FIELD_PROJECT = 'project' as const;
+export const INVOICE_GATE_FIELD_PRODUCT = INVOICE_PRODUCT_GATE_FIELD;
 export const INVOICE_GATE_FIELD_OFFICIAL_INVOICE = INVOICE_TAX_GATE_FIELD.OFFICIAL_INVOICE;
 export const INVOICE_GATE_FIELD_ORDER_COMMENT = INVOICE_ORDER_COMMENT_FIELD;
-
-const AWAITING_PAYMENT_CONTEXT_STATUSES = new Set(['AWAITING_PAYMENT', 'OVERDUE']);
-
-function requiresManualContextGate(invoice: Invoice, targetMoneyStatus: string): boolean {
-  return invoice.type === 'MANUAL' && AWAITING_PAYMENT_CONTEXT_STATUSES.has(targetMoneyStatus);
-}
 
 /** Local pre-check aligned with invoice Tax readiness + manual money-status guards. */
 export function getLocalInvoiceMoneyStatusGateErrors(
@@ -27,20 +23,13 @@ export function getLocalInvoiceMoneyStatusGateErrors(
 ): ApiFieldError[] {
   const errors: ApiFieldError[] = [];
 
-  if (requiresManualContextGate(invoice, targetMoneyStatus)) {
-    if (!invoice.companyId) {
-      errors.push({
-        field: INVOICE_GATE_FIELD_COMPANY,
-        message: 'Link a company on the invoice card before awaiting payment.',
-      });
-    }
-    if (!invoice.projectId) {
-      errors.push({
-        field: INVOICE_GATE_FIELD_PROJECT,
-        message: 'Link a project on the invoice card before awaiting payment.',
-      });
-    }
-  }
+  errors.push(
+    ...getInvoiceManualProductGateErrors({
+      type: invoice.type,
+      productId: invoice.productId,
+      targetMoneyStatus,
+    }),
+  );
 
   errors.push(
     ...getInvoiceTaxMoneyStatusGateErrors({

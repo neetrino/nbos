@@ -28,6 +28,7 @@ import type {
 interface ClientServiceRecordRow {
   id: string;
   projectId: string;
+  productId: string | null;
   type: ClientServiceType;
   name: string;
   provider: string | null;
@@ -58,8 +59,11 @@ export class ClientServiceFlowsService {
       body.amount ?? Number(service.clientCharge),
       'Invoice amount',
     );
+    if (!service.productId) {
+      throw new BadRequestException('A product is required to create this invoice');
+    }
     return this.invoicesService.create({
-      projectId: service.projectId,
+      productId: service.productId,
       clientServiceRecordId: service.id,
       amount,
       type: body.type?.trim() || clientServiceInvoiceType(service.type),

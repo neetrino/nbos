@@ -26,6 +26,8 @@ import { projectExpensesDrilldownHref } from '@/features/finance/constants/proje
 import { useClientServicesViewMode } from '@/features/finance/constants/client-services-view';
 import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-board-view';
 import { useOrdersBoardViewMode } from '@/features/finance/constants/orders-board-view';
+import { useInvoicesBoardViewMode } from '@/features/finance/constants/invoices-board-view';
+import { INVOICE_VIEW_OPTIONS } from '@/features/finance/components/invoices/invoice-view-options';
 import { projectOrderToFinanceOrder } from '@/features/projects/utils/project-order-finance-adapter';
 import { ProductFinanceSectionContent } from '@/features/projects/components/tabs/product-finance-section-content';
 import { PRODUCT_FINANCE_SECTION_OPTIONS } from '@/features/projects/constants/product-finance-section';
@@ -43,6 +45,8 @@ interface FinanceTabProps {
   expenses: ProjectExpense[];
   projectId: string;
   project: { id: string; name: string; code: string };
+  productId: string;
+  companyId?: string | null;
   productOrderId?: string | null;
 }
 
@@ -52,10 +56,13 @@ export function FinanceTab({
   expenses,
   projectId,
   project,
+  productId,
+  companyId,
   productOrderId,
 }: FinanceTabProps) {
   const financeSection = useProductFinanceSection();
   const [ordersView, setOrdersView] = useOrdersBoardViewMode();
+  const [invoicesView, setInvoicesView] = useInvoicesBoardViewMode();
   const [expensesView, setExpensesView] = useExpensesBoardViewMode();
   const [clientServicesView, setClientServicesView] = useClientServicesViewMode();
 
@@ -80,13 +87,15 @@ export function FinanceTab({
     .reduce((sum, sub) => sum + projectSubscriptionMonthlyAmount(sub), 0);
 
   const openFinanceHref =
-    financeSection.activeSection === 'subscriptions'
-      ? '/finance/subscriptions'
-      : financeSection.activeSection === 'expenses'
-        ? projectExpensesDrilldownHref(projectId)
-        : financeSection.activeSection === 'client-services'
-          ? '/finance/client-services'
-          : '/finance/orders';
+    financeSection.activeSection === 'invoices'
+      ? '/finance/invoices'
+      : financeSection.activeSection === 'subscriptions'
+        ? '/finance/subscriptions'
+        : financeSection.activeSection === 'expenses'
+          ? projectExpensesDrilldownHref(projectId)
+          : financeSection.activeSection === 'client-services'
+            ? '/finance/client-services'
+            : '/finance/orders';
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6">
@@ -147,6 +156,12 @@ export function FinanceTab({
               onChange={setOrdersView}
               options={ORDER_VIEW_OPTIONS}
             />
+          ) : financeSection.activeSection === 'invoices' ? (
+            <ViewModeSwitch
+              value={invoicesView}
+              onChange={setInvoicesView}
+              options={INVOICE_VIEW_OPTIONS}
+            />
           ) : financeSection.activeSection === 'expenses' &&
             financeSection.filters[EXPENSE_BOARD_SCOPE_FILTER_KEY] !== 'backlog' ? (
             <ViewModeSwitch
@@ -186,6 +201,7 @@ export function FinanceTab({
       <div
         className={
           (financeSection.activeSection === 'orders' && ordersView === 'board') ||
+          (financeSection.activeSection === 'invoices' && invoicesView === 'kanban') ||
           (financeSection.activeSection === 'expenses' && expensesView === 'kanban') ||
           (financeSection.activeSection === 'client-services' &&
             (clientServicesView === 'status' || clientServicesView === 'months'))
@@ -199,11 +215,14 @@ export function FinanceTab({
           debouncedSearch={financeSection.debouncedSearch}
           filters={financeSection.filters}
           ordersView={ordersView}
+          invoicesView={invoicesView}
           expensesView={expensesView}
           clientServicesView={clientServicesView}
           financeOrders={financeOrders}
           subscriptions={subscriptions}
           projectId={projectId}
+          productId={productId}
+          companyId={companyId}
         />
       </div>
     </div>

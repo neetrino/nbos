@@ -30,10 +30,12 @@ function mockInvoiceFindByIdRow(
     orderId: null,
     subscriptionId: null,
     projectId: 'proj-1',
+    productId: 'prod-1',
     companyId: null,
     createdAt: new Date(),
     order: null,
     subscription: null,
+    product: { id: 'prod-1', name: 'Site' },
     company: null,
     payments,
     paidDate: new Date('2026-04-12T00:00:00.000Z'),
@@ -159,6 +161,18 @@ describe('InvoicesService', () => {
         expect.objectContaining({
           where: expect.objectContaining({
             subscriptionId: 'sub-1',
+          }),
+        }),
+      );
+    });
+
+    it('applies productId filter', async () => {
+      await service.findAll({ productId: 'prod-1' });
+
+      expect(prisma.invoice.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            productId: 'prod-1',
           }),
         }),
       );

@@ -14,6 +14,7 @@ type MockBillableSubscription = {
   id: string;
   code: string;
   projectId: string;
+  productId: string;
   type: string;
   amount: number;
   billingFrequency: SubscriptionBillingFrequencyEnum;
@@ -48,6 +49,7 @@ function mockBillableSubscription(
     id: 'sub-1',
     code: 'SUB-2026-0001',
     projectId: 'proj-1',
+    productId: 'prod-1',
     type: 'MAINTENANCE_ONLY',
     amount: 5000,
     billingFrequency: 'MONTHLY',

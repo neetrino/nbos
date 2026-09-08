@@ -1,13 +1,19 @@
 import type { InvoiceMoneyStatusEnum, PrismaClient } from '@nbos/database';
-import { shouldCancelOfficialRequestOnCardCancel } from '@nbos/shared';
+import {
+  getInvoiceManualProductGateErrors,
+  shouldCancelOfficialRequestOnCardCancel,
+} from '@nbos/shared';
+import { BadRequestException } from '@nestjs/common';
 import { cancelOfficialInvoiceRequest } from './invoice-official-request';
 import { assertInvoiceTaxMoneyStatusGate } from './invoice-tax-readiness-assert';
 
 export interface InvoiceMoneyStatusTransitionRow {
   id: string;
+  type: string;
   taxStatus: string;
   moneyStatus: InvoiceMoneyStatusEnum;
   companyId: string | null;
+  productId: string | null;
   officialInvoiceRequestSent: boolean;
   orderId?: string | null;
   orderComment?: string | null;
@@ -16,6 +22,7 @@ export interface InvoiceMoneyStatusTransitionRow {
 
 export const INVOICE_MONEY_STATUS_TRANSITION_SELECT = {
   id: true,
+  type: true,
   orderId: true,
   orderComment: true,
   amount: true,
@@ -23,6 +30,7 @@ export const INVOICE_MONEY_STATUS_TRANSITION_SELECT = {
   taxStatus: true,
   moneyStatus: true,
   companyId: true,
+  productId: true,
   officialInvoiceRequestSent: true,
   company: { select: { name: true, legalName: true, taxId: true } },
   payments: {
@@ -48,6 +56,14 @@ export async function prepareInvoiceMoneyStatusTransition(
   invoice: InvoiceMoneyStatusTransitionRow,
   targetMoneyStatus: InvoiceMoneyStatusEnum,
 ): Promise<void> {
+  const productErrors = getInvoiceManualProductGateErrors({
+    type: invoice.type,
+    productId: invoice.productId,
+    targetMoneyStatus,
+  });
+  if (productErrors[0]) {
+    throw new BadRequestException(productErrors[0].message);
+  }
   assertInvoiceTaxMoneyStatusGate({
     taxStatus: invoice.taxStatus,
     currentMoneyStatus: invoice.moneyStatus,

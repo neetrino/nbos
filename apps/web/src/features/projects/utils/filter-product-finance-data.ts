@@ -11,7 +11,8 @@ import {
   resolveBoardLifecycleScope,
   type BoardLifecycleScope,
 } from '@/features/shared/board-lifecycle';
-import type { Order } from '@/lib/api/finance';
+import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
+import type { Invoice, Order } from '@/lib/api/finance';
 import type { ProjectSubscription } from '@/lib/api/projects';
 import type { ProductFinanceSection } from '@/features/projects/constants/product-finance-section';
 
@@ -45,6 +46,30 @@ export function filterProductFinanceOrders(
   );
 }
 
+export function filterProductFinanceInvoices(
+  invoices: Invoice[],
+  search: string,
+  filters: Record<string, string>,
+): Invoice[] {
+  const needle = search.trim().toLowerCase();
+  const boardScope = resolveBoardLifecycleScope(filters.boardScope) as BoardLifecycleScope;
+  const hasStatusFilter = Boolean(filters.moneyStatus) && filters.moneyStatus !== 'all';
+
+  let rows = invoices;
+  if (needle) {
+    rows = rows.filter((invoice) => {
+      const haystack = `${invoice.code} ${invoice.company?.name ?? ''} ${invoice.product?.name ?? ''}`;
+      return haystack.toLowerCase().includes(needle);
+    });
+  }
+  if (hasStatusFilter) {
+    return rows.filter((invoice) => invoice.moneyStatus === filters.moneyStatus);
+  }
+  return rows.filter((invoice) =>
+    matchesBoardLifecycleScope(invoice.moneyStatus, INVOICE_MONEY_BOARD_STAGES, boardScope),
+  );
+}
+
 export function filterProductFinanceSubscriptions(
   subscriptions: ProjectSubscription[],
   search: string,
@@ -66,7 +91,7 @@ export function productFinanceFilterValuesForUi(
   section: ProductFinanceSection,
   filters: Record<string, string>,
 ): Record<string, string> {
-  if (section === 'orders') {
+  if (section === 'orders' || section === 'invoices') {
     return {
       boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
       ...filters,

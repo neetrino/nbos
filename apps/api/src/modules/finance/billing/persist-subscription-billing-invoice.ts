@@ -16,6 +16,7 @@ export interface SubscriptionBillingInvoiceSource {
   id: string;
   code: string;
   projectId: string;
+  productId: string;
   amount: unknown;
   coverageMonthCount: number;
   taxStatus: TaxStatus;
@@ -66,6 +67,7 @@ export async function persistSubscriptionBillingInvoice(
     {
       code,
       subscriptionId: sub.id,
+      productId: sub.productId,
       projectId: sub.projectId,
       companyId: sub.project.companyId,
       amount: charge.amount,

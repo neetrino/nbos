@@ -53,7 +53,7 @@ export function InvoiceFilters({
         <FilterBar
           search={search}
           onSearchChange={onSearchChange}
-          searchPlaceholder="Search by invoice, company, order, project…"
+          searchPlaceholder="Search by invoice, company, order, product…"
           filters={FILTER_CONFIGS}
           filterValues={{
             boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,

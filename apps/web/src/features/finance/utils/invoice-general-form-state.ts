@@ -4,7 +4,7 @@ export type InvoiceGeneralDraft = {
   amount: string;
   taxStatus: string;
   companyId: string | null;
-  projectId: string | null;
+  productId: string | null;
   orderComment: string | null;
 };
 
@@ -12,7 +12,7 @@ export type UpdateInvoiceGeneralPayload = {
   amount?: number;
   taxStatus?: string;
   companyId?: string | null;
-  projectId?: string | null;
+  productId?: string | null;
   orderComment?: string | null;
 };
 
@@ -21,7 +21,7 @@ export function createInvoiceGeneralDraft(invoice: Invoice): InvoiceGeneralDraft
     amount: invoice.amount,
     taxStatus: invoice.taxStatus,
     companyId: invoice.companyId,
-    projectId: invoice.projectId,
+    productId: invoice.productId,
     orderComment: invoice.orderComment,
   };
 }
@@ -51,8 +51,8 @@ export function buildInvoiceGeneralPatch(
     out.companyId = draft.companyId;
   }
 
-  if (draft.projectId !== snap.projectId) {
-    out.projectId = draft.projectId;
+  if (draft.productId !== snap.productId) {
+    out.productId = draft.productId;
   }
 
   if (draft.orderComment !== snap.orderComment) {
@@ -67,7 +67,7 @@ export function isInvoiceGeneralDirty(a: InvoiceGeneralDraft, b: InvoiceGeneralD
     a.amount !== b.amount ||
     a.taxStatus !== b.taxStatus ||
     a.companyId !== b.companyId ||
-    a.projectId !== b.projectId ||
+    a.productId !== b.productId ||
     a.orderComment !== b.orderComment
   );
 }

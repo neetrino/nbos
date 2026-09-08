@@ -8,6 +8,15 @@ function depositPrisma(moneyStatus: string) {
       findFirst: vi.fn().mockResolvedValue(null),
       create: vi.fn().mockResolvedValue({ id: 'inv-1', moneyStatus }),
     },
+    order: {
+      findUnique: vi.fn().mockResolvedValue({
+        productId: 'prod-1',
+        extension: null,
+      }),
+    },
+    subscription: { findUnique: vi.fn().mockResolvedValue(null) },
+    clientServiceRecord: { findUnique: vi.fn().mockResolvedValue(null) },
+    product: { findUnique: vi.fn().mockResolvedValue({ projectId: 'proj-1' }) },
   };
 }
 
@@ -26,7 +35,11 @@ describe('createDealDepositInvoice', () => {
 
     expect(prisma.invoice.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ moneyStatus: 'NEW' }),
+        data: expect.objectContaining({
+          moneyStatus: 'NEW',
+          productId: 'prod-1',
+          projectId: 'proj-1',
+        }),
       }),
     );
   });

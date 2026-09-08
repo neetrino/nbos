@@ -4,6 +4,7 @@ import type { Prisma } from '@nbos/database';
 export function buildInvoiceSearchOr(
   searchTrimmed: string,
   matchedProjectIds: string[],
+  matchedProductIds: string[] = [],
 ): Prisma.InvoiceWhereInput {
   const ic = { contains: searchTrimmed, mode: 'insensitive' as const };
   return {
@@ -12,6 +13,7 @@ export function buildInvoiceSearchOr(
       { govInvoiceId: ic },
       { company: { name: ic } },
       { company: { legalName: ic } },
+      { product: { name: ic } },
       {
         order: {
           OR: [
@@ -32,6 +34,7 @@ export function buildInvoiceSearchOr(
       },
       { clientServiceRecord: { name: ic } },
       ...(matchedProjectIds.length > 0 ? [{ projectId: { in: matchedProjectIds } }] : []),
+      ...(matchedProductIds.length > 0 ? [{ productId: { in: matchedProductIds } }] : []),
     ],
   };
 }

@@ -199,6 +199,7 @@ model Product {
   whatsappClientInvitations ProductWhatsAppClientInvitation[]
   subscriptions             Subscription[]
   partnerServiceTerms       PartnerServiceTerm[]
+  invoices                  Invoice[]
 
   @@index([contactId])
   @@index([deliveryStage])

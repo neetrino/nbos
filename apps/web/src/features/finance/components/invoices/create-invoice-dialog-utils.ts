@@ -8,7 +8,7 @@ export interface CreateInvoiceFormState {
 }
 
 export interface CreateInvoiceHiddenContext {
-  projectId?: string | null;
+  productId?: string | null;
   companyId?: string | null;
   orderId?: string | null;
   subscriptionId?: string | null;
@@ -56,7 +56,6 @@ export function buildCreateInvoicePayload(
   if (order) {
     return {
       orderId: order.id,
-      projectId: order.projectId,
       companyId: order.company?.id,
       amount,
       type: resolveOrderInvoiceType(order),
@@ -67,7 +66,7 @@ export function buildCreateInvoicePayload(
   if (subscription) {
     return {
       subscriptionId: subscription.id,
-      projectId: subscription.projectId,
+      productId: subscription.productId,
       ...(subscription.company?.id ? { companyId: subscription.company.id } : {}),
       amount,
       type: 'SUBSCRIPTION',
@@ -76,7 +75,7 @@ export function buildCreateInvoicePayload(
   }
 
   return {
-    ...(hidden?.projectId ? { projectId: hidden.projectId } : {}),
+    ...(hidden?.productId ? { productId: hidden.productId } : {}),
     ...(hidden?.companyId ? { companyId: hidden.companyId } : {}),
     ...(hidden?.orderId ? { orderId: hidden.orderId } : {}),
     ...(hidden?.subscriptionId ? { subscriptionId: hidden.subscriptionId } : {}),

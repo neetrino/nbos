@@ -1,4 +1,4 @@
-import { SEARCH_DEBOUNCE_MS } from '@/components/shared/constants/search-debounce';
+import { SEARCH_DEBOUNCE_MS } from '@/components/shared';
 
-/** Debounce before server-backed product finance search triggers list/board refetch. */
 export const PRODUCT_FINANCE_SEARCH_DEBOUNCE_MS = SEARCH_DEBOUNCE_MS;
+export const PRODUCT_FINANCE_INVOICE_PAGE_SIZE = 100;

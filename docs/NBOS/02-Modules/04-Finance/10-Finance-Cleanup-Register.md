@@ -418,6 +418,12 @@ Remaining refactor:
 - ~~expose expense `due now` separately (`DUE_NOW` workflow status bucket on dashboard summary)~~ — done in runtime;
 - replace subscription statuses and coverage fields.
 
+### C10. Invoice product ownership (2026-09-08)
+
+`Invoice.productId` is the card owner; `projectId` stays denormalized from `Product.projectId` (not dropped). Company remains the Tax legal party. Product Finance tab lists invoices by `productId`.
+
+---
+
 ### C9. Invoice / Order / Subscription codes used MAX+1 — FIXED (2026-08-23)
 
 `INV-`, `ORD-` and `SUB-` now allocate from `entity_code_counters` (`INVOICE`, `ORDER`, `SUBSCRIPTION`). Writers moved together: `InvoicesService`, `BillingService`, `deal-deposit-invoice.ops`, `partner-service-terms.ops`, `OrdersService`, `deal-order-bootstrap.ops`, `SubscriptionsService`, `DealWonHandler`. Seed + write-pause rollout is in AI C25 / Chat 2 handoff. Business semantics unchanged.

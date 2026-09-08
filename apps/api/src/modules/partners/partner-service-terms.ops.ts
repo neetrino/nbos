@@ -9,6 +9,10 @@ import {
   persistInvoiceCreate,
   type OfficialAwaitingNotifier,
 } from '../finance/invoices/invoice-card-persist';
+import {
+  requireInvoiceProductId,
+  resolveInvoiceProductOwnership,
+} from '../finance/invoices/invoice-product-ownership';
 
 const PARTNER_SERVICE_TYPES = ['SEO', 'SMM', 'ADS', 'OTHER'] as const;
 const PARTNER_SERVICE_PAYMENT_MODELS = ['ONE_TIME', 'MONTHLY', 'CUSTOM'] as const;
@@ -270,19 +274,21 @@ export async function createFinanceFromPartnerServiceTerm(
   if (term.invoiceId) {
     throw new BadRequestException('Finance invoice is already linked to this service term');
   }
-  if (!term.projectId) {
-    throw new BadRequestException('projectId is required to create an invoice from service term');
-  }
+  requireInvoiceProductId(term.productId);
 
   const dueDate = input.dueDate ? parseDate(input.dueDate, 'dueDate') : term.billingStartDate;
   const code = await allocateInvoiceCode(prisma);
   const taxStatus = await resolveTaxStatusForPartnerServiceTerm(prisma, term.clientCompanyId);
+  const ownership = await resolveInvoiceProductOwnership(prisma, {
+    productId: term.productId,
+  });
 
   const invoice = await persistInvoiceCreate(
     prisma,
     {
       code,
-      projectId: term.projectId,
+      productId: ownership.productId,
+      projectId: ownership.projectId,
       companyId: term.clientCompanyId,
       amount: term.amount,
       taxStatus,

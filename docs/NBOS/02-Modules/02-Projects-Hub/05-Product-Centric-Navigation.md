@@ -26,7 +26,7 @@
 - Support
 - Credentials
 - Files / Drive Library
-- Finance
+- Finance (секции Orders, Invoices, Subscriptions, Expenses, Client services — все в разрезе **этого** Product; Invoices = `Invoice.productId`)
 - (остальные по модулю — по тем же правилам привязки к Product)
 
 **Правило:** задачи, тикеты, файлы, финансы по продукту, пароли, относящиеся к этой линии — в контексте **Product**, если иное явно не задано (например, общие пароли компании — по правилам Vault).

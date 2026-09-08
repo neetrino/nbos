@@ -18,7 +18,9 @@ import type { ClientServicesViewMode } from '@/features/finance/constants/client
 import { FinanceSubscriptionsSection } from '@/features/projects/components/tabs/finance-tab-sections';
 import { ProductFinanceClientServicesPanel } from '@/features/projects/components/tabs/product-finance-client-services-panel';
 import { ProductFinanceExpensesPanel } from '@/features/projects/components/tabs/product-finance-expenses-panel';
+import { ProductFinanceInvoicesPanel } from '@/features/projects/components/tabs/product-finance-invoices-panel';
 import type { ProductFinanceSection } from '@/features/projects/constants/product-finance-section';
+import type { InvoiceViewMode } from '@/features/finance/components/invoices/invoice-page-types';
 import {
   filterProductFinanceOrders,
   filterProductFinanceSubscriptions,
@@ -36,11 +38,14 @@ interface ProductFinanceSectionContentProps {
   debouncedSearch: string;
   filters: Record<string, string>;
   ordersView: OrderViewMode;
+  invoicesView: InvoiceViewMode;
   expensesView: ExpensesViewMode;
   clientServicesView: ClientServicesViewMode;
   financeOrders: Order[];
   subscriptions: ProjectSubscription[];
   projectId: string;
+  productId: string;
+  companyId?: string | null;
 }
 
 export function ProductFinanceSectionContent({
@@ -49,11 +54,14 @@ export function ProductFinanceSectionContent({
   debouncedSearch,
   filters,
   ordersView,
+  invoicesView,
   expensesView,
   clientServicesView,
   financeOrders,
   subscriptions,
   projectId,
+  productId,
+  companyId,
 }: ProductFinanceSectionContentProps) {
   const orderSheet = useProductEntityDetailSheet();
   const subscriptionSheet = useProductEntityDetailSheet();
@@ -126,6 +134,18 @@ export function ProductFinanceSectionContent({
           canQuickCreateInvoice={false}
         />
       </>
+    );
+  }
+
+  if (section === 'invoices') {
+    return (
+      <ProductFinanceInvoicesPanel
+        productId={productId}
+        companyId={companyId}
+        search={search}
+        filters={filters}
+        view={invoicesView}
+      />
     );
   }
 

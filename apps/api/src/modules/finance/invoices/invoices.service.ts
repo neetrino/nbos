@@ -66,6 +66,7 @@ import {
   resolveInvoiceParticipationWhere,
 } from './finance-invoice-participation.where';
 import { buildInvoiceSearchOr } from './invoice-search.where';
+import { resolveInvoiceProductOwnership } from './invoice-product-ownership';
 import { allocateInvoiceCode } from '../../../common/utils/entity-code-series';
 import {
   assertInvoiceCancellable,
@@ -76,7 +77,7 @@ import {
 interface CreateInvoiceDto {
   orderId?: string;
   subscriptionId?: string;
-  projectId?: string;
+  productId?: string;
   companyId?: string;
   clientServiceRecordId?: string;
   amount: number;
@@ -91,6 +92,7 @@ interface InvoiceQueryParams {
   moneyStatus?: string;
   type?: string;
   projectId?: string;
+  productId?: string;
   subscriptionId?: string;
   search?: string;
   dateFrom?: string;
@@ -126,6 +128,7 @@ export class InvoicesService {
       moneyStatus,
       type,
       projectId,
+      productId,
       subscriptionId,
       search,
       dateFrom,
@@ -140,23 +143,31 @@ export class InvoicesService {
     if (money) where.moneyStatus = money;
     if (type) where.type = type as InvoiceTypeEnum;
     if (projectId) where.projectId = projectId;
+    if (productId) where.productId = productId;
     if (subscriptionId) where.subscriptionId = subscriptionId;
 
     const searchTrimmed = search?.trim();
     if (searchTrimmed) {
-      const projectMatches = await this.prisma.project.findMany({
-        where: {
-          OR: [
-            { name: { contains: searchTrimmed, mode: 'insensitive' } },
-            { code: { contains: searchTrimmed, mode: 'insensitive' } },
-          ],
-        },
-        select: { id: true },
-      });
+      const [projectMatches, productMatches] = await Promise.all([
+        this.prisma.project.findMany({
+          where: {
+            OR: [
+              { name: { contains: searchTrimmed, mode: 'insensitive' } },
+              { code: { contains: searchTrimmed, mode: 'insensitive' } },
+            ],
+          },
+          select: { id: true },
+        }),
+        this.prisma.product.findMany({
+          where: { name: { contains: searchTrimmed, mode: 'insensitive' } },
+          select: { id: true },
+        }),
+      ]);
       const matchedProjectIds = projectMatches.map((p) => p.id);
+      const matchedProductIds = productMatches.map((p) => p.id);
       where.AND = [
         ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
-        buildInvoiceSearchOr(searchTrimmed, matchedProjectIds),
+        buildInvoiceSearchOr(searchTrimmed, matchedProjectIds, matchedProductIds),
       ];
     }
 
@@ -173,6 +184,7 @@ export class InvoicesService {
         where: listWhere,
         include: {
           project: { select: { id: true, name: true } },
+          product: { select: { id: true, name: true } },
           order: {
             select: INVOICE_ORDER_SELECT,
           },
@@ -212,6 +224,7 @@ export class InvoicesService {
       where: { id },
       include: {
         project: true,
+        product: { select: { id: true, name: true } },
         order: { include: INVOICE_ORDER_DETAIL_INCLUDE },
         subscription: { include: { project: true } },
         company: true,
@@ -244,13 +257,21 @@ export class InvoicesService {
     const bookedAt = schedule.dueDate;
     await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAt);
 
+    const ownership = await resolveInvoiceProductOwnership(this.prisma, {
+      productId: data.productId,
+      orderId: data.orderId,
+      subscriptionId: data.subscriptionId,
+      clientServiceRecordId: data.clientServiceRecordId,
+    });
+
     const invoice = await persistInvoiceCreate(
       this.prisma,
       {
         code,
         orderId: data.orderId,
         subscriptionId: data.subscriptionId,
-        projectId: data.projectId?.trim() || null,
+        productId: ownership.productId,
+        projectId: ownership.projectId,
         companyId: data.companyId,
         clientServiceRecordId: data.clientServiceRecordId,
         amount: data.amount,
@@ -267,21 +288,14 @@ export class InvoicesService {
       this.officialWhatsApp,
     );
 
-    const order = data.orderId
-      ? await this.prisma.order.findUnique({
-          where: { id: data.orderId },
-          select: { productId: true },
-        })
-      : null;
-
     await this.operationalJournal.appendInvoiceCardAccrualLine({
       invoiceId: invoice.id,
       invoiceCode: invoice.code,
       amount: data.amount,
       bookedAt,
       companyId: data.companyId ?? null,
-      projectId: data.projectId?.trim() || null,
-      productId: order?.productId ?? null,
+      projectId: ownership.projectId,
+      productId: ownership.productId,
       orderId: data.orderId ?? null,
     });
 
