@@ -32,6 +32,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { PermissionGate } from '@/lib/permissions';
+import { RolePermissionsSaveConfirm } from '@/features/settings/components/RolePermissionsSaveConfirm';
 
 const SCOPE_OPTIONS = ['NONE', 'OWN', 'DEPARTMENT', 'ALL'] as const;
 type Scope = (typeof SCOPE_OPTIONS)[number];
@@ -79,6 +80,7 @@ export default function RolesPage() {
   const [loadingRole, setLoadingRole] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createName, setCreateName] = useState('');
   const [createSlug, setCreateSlug] = useState('');
@@ -163,6 +165,7 @@ export default function RolesPage() {
   }, [selectedRole, allPermissions]);
 
   const handleSelectRole = (role: RoleItem) => {
+    setSaveConfirmOpen(false);
     setSelectedRole(null);
     fetchRoleById(role.id);
   };
@@ -177,8 +180,8 @@ export default function RolesPage() {
     setMatrixScopes((prev) => ({ ...prev, [key]: scope }));
   };
 
-  const handleSavePermissions = async () => {
-    if (!selectedRole) return;
+  const handleSavePermissions = async (): Promise<boolean> => {
+    if (!selectedRole) return false;
     setSaving(true);
     try {
       const permissions = allPermissions
@@ -199,8 +202,10 @@ export default function RolesPage() {
         .get<RoleWithPermissions>(`/api/roles/${selectedRole.id}`)
         .then((r) => r.data);
       setSelectedRole(data);
+      return true;
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to save permissions');
+      return false;
     } finally {
       setSaving(false);
     }
@@ -319,7 +324,7 @@ export default function RolesPage() {
               <Shield size={16} />
               Permissions — {selectedRole.name}
             </h3>
-            <Button size="sm" onClick={handleSavePermissions} disabled={saving}>
+            <Button size="sm" onClick={() => setSaveConfirmOpen(true)} disabled={saving}>
               <Save size={16} />
               {saving ? 'Saving...' : 'Save'}
             </Button>
@@ -388,6 +393,20 @@ export default function RolesPage() {
           )}
         </div>
       )}
+
+      {selectedRole ? (
+        <RolePermissionsSaveConfirm
+          open={saveConfirmOpen}
+          roleName={selectedRole.name}
+          isSystem={selectedRole.isSystem}
+          isSubmitting={saving}
+          onOpenChange={setSaveConfirmOpen}
+          onConfirm={async () => {
+            const saved = await handleSavePermissions();
+            if (saved) setSaveConfirmOpen(false);
+          }}
+        />
+      ) : null}
 
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent>
