@@ -150,7 +150,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: D,
     AUDIT_LOGS: N,
-    CLIENTS: R,
+    CLIENTS: VA,
     AI_PLATFORM: N,
   },
   'role-developer': DEVELOPER_ROLE_MATRIX,
@@ -280,7 +280,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: F,
     DASHBOARDS: F,
     AUDIT_LOGS: R,
-    CLIENTS: R,
+    CLIENTS: VA,
     AI_PLATFORM: N,
   },
   'role-marketing': {
@@ -306,7 +306,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: D,
     AUDIT_LOGS: N,
-    CLIENTS: R,
+    CLIENTS: VA,
     AI_PLATFORM: N,
   },
   'role-head-sales': {
@@ -358,7 +358,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: D,
     AUDIT_LOGS: N,
-    CLIENTS: R,
+    CLIENTS: VA,
     AI_PLATFORM: N,
   },
   'role-head-marketing': {
@@ -384,7 +384,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     PARTNERS: N,
     DASHBOARDS: D,
     AUDIT_LOGS: N,
-    CLIENTS: R,
+    CLIENTS: VA,
     AI_PLATFORM: N,
   },
   'role-observer': {

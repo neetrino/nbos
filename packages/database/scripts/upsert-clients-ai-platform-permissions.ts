@@ -26,18 +26,18 @@ const CLIENTS_AI_MATRIX: Record<string, MatrixEntry> = {
   'role-ceo': { CLIENTS: F, AI_PLATFORM: F },
   'role-seller': { CLIENTS: VA, AI_PLATFORM: N },
   'role-seller-assistant': { CLIENTS: VA, AI_PLATFORM: N },
-  'role-pm': { CLIENTS: R, AI_PLATFORM: N },
+  'role-pm': { CLIENTS: VA, AI_PLATFORM: N },
   'role-developer': { CLIENTS: N, AI_PLATFORM: N },
   'role-developer-frontend': { CLIENTS: N, AI_PLATFORM: N },
   'role-junior-developer': { CLIENTS: N, AI_PLATFORM: N },
   'role-designer': { CLIENTS: N, AI_PLATFORM: N },
   'role-qa': { CLIENTS: N, AI_PLATFORM: N },
   'role-tech-specialist': { CLIENTS: N, AI_PLATFORM: N },
-  'role-finance-director': { CLIENTS: R, AI_PLATFORM: N },
-  'role-marketing': { CLIENTS: R, AI_PLATFORM: N },
+  'role-finance-director': { CLIENTS: VA, AI_PLATFORM: N },
+  'role-marketing': { CLIENTS: VA, AI_PLATFORM: N },
   'role-head-sales': { CLIENTS: VA, AI_PLATFORM: N },
-  'role-head-delivery': { CLIENTS: R, AI_PLATFORM: N },
-  'role-head-marketing': { CLIENTS: R, AI_PLATFORM: N },
+  'role-head-delivery': { CLIENTS: VA, AI_PLATFORM: N },
+  'role-head-marketing': { CLIENTS: VA, AI_PLATFORM: N },
   'role-observer': { CLIENTS: N, AI_PLATFORM: N },
 };
 
@@ -59,9 +59,21 @@ async function main(): Promise<void> {
     }
   }
 
+  const existingRoleIds = new Set(
+    (
+      await prisma.role.findMany({
+        where: { id: { in: Object.keys(CLIENTS_AI_MATRIX) } },
+        select: { id: true },
+      })
+    ).map((role) => role.id),
+  );
+
   let upserted = 0;
   await prisma.$transaction(async (tx) => {
     for (const [roleId, moduleMap] of Object.entries(CLIENTS_AI_MATRIX)) {
+      if (!existingRoleIds.has(roleId)) {
+        continue;
+      }
       for (const module of NEW_MODULES) {
         const scopes = moduleMap[module];
         if (!scopes) continue;
