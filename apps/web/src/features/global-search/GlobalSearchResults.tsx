@@ -57,6 +57,7 @@ interface GlobalSearchResultsProps {
   selectedIndex: number;
   onSelect: (hit: SearchHit) => void;
   onHover: (index: number) => void;
+  heading?: string;
 }
 
 export function GlobalSearchResults({
@@ -66,6 +67,7 @@ export function GlobalSearchResults({
   selectedIndex,
   onSelect,
   onHover,
+  heading,
 }: GlobalSearchResultsProps) {
   if (loading && items.length === 0) {
     return (
@@ -85,19 +87,24 @@ export function GlobalSearchResults({
   }
 
   return (
-    <ul role="listbox" className="space-y-0.5 px-2 py-1.5">
-      {items.map((hit, index) => (
-        <li key={`${hit.entityType}-${hit.id}`}>
-          <GlobalSearchResultRow
-            hit={hit}
-            query={query}
-            selected={selectedIndex === index}
-            onSelect={onSelect}
-            onHover={onHover}
-            index={index}
-          />
-        </li>
-      ))}
-    </ul>
+    <div>
+      {heading ? (
+        <p className="text-muted-foreground px-5 pt-1 pb-1 text-xs font-medium">{heading}</p>
+      ) : null}
+      <ul role="listbox" className="space-y-0.5 px-2 py-1.5">
+        {items.map((hit, index) => (
+          <li key={`${hit.entityType}-${hit.id}`}>
+            <GlobalSearchResultRow
+              hit={hit}
+              query={query}
+              selected={selectedIndex === index}
+              onSelect={onSelect}
+              onHover={onHover}
+              index={index}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

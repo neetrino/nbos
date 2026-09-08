@@ -13,14 +13,16 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { SearchHit, SearchQueryGroup } from '@/lib/api/search';
 import {
-  GLOBAL_SEARCH_HINT,
   GLOBAL_SEARCH_QUERY_GROUP_ALL,
   GLOBAL_SEARCH_RESULTS_PANEL_CLASS,
-  GLOBAL_SEARCH_SHORT_QUERY_HINT,
 } from './global-search-constants';
-import { GlobalSearchResults } from './GlobalSearchResults';
+import { GlobalSearchOverlayPanel } from './GlobalSearchOverlayPanel';
 import { useGlobalSearchQuery } from './use-global-search-query';
 import { useGlobalSearchEntitySheets } from './global-search-entity-sheets-context';
+import {
+  rememberGlobalSearchRecentHit,
+  useGlobalSearchRecentHits,
+} from './global-search-recent-storage';
 
 interface GlobalSearchOverlayProps {
   open: boolean;
@@ -40,13 +42,17 @@ function resetOverlayState(
 export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { openSearchHit } = useGlobalSearchEntitySheets();
+  const recentHits = useGlobalSearchRecentHits();
   const [query, setQuery] = useState('');
   const [group, setGroup] = useState<SearchQueryGroup>(GLOBAL_SEARCH_QUERY_GROUP_ALL);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { loading, error, response } = useGlobalSearchQuery({ open, query, group });
 
   const items = response?.items ?? [];
-  const activeSelectedIndex = items.length === 0 ? 0 : Math.min(selectedIndex, items.length - 1);
+  const showHint = query.trim().length < 2;
+  const displayedItems = showHint ? recentHits : items;
+  const activeSelectedIndex =
+    displayedItems.length === 0 ? 0 : Math.min(selectedIndex, displayedItems.length - 1);
 
   const tabs = useMemo(
     () => [{ id: GLOBAL_SEARCH_QUERY_GROUP_ALL, label: 'All' }, ...(response?.groups ?? [])],
@@ -67,6 +73,7 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
 
   const navigateToHit = useCallback(
     (hit: SearchHit) => {
+      rememberGlobalSearchRecentHit(hit);
       close();
       openSearchHit(hit);
     },
@@ -82,24 +89,23 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
-      if (items.length === 0) return;
-      setSelectedIndex((current) => (current + 1) % items.length);
+      if (displayedItems.length === 0) return;
+      setSelectedIndex((current) => (current + 1) % displayedItems.length);
       return;
     }
     if (event.key === 'ArrowUp') {
       event.preventDefault();
-      if (items.length === 0) return;
-      setSelectedIndex((current) => (current - 1 + items.length) % items.length);
+      if (displayedItems.length === 0) return;
+      setSelectedIndex((current) => (current - 1 + displayedItems.length) % displayedItems.length);
       return;
     }
     if (event.key === 'Enter') {
       event.preventDefault();
-      const hit = items[activeSelectedIndex];
+      const hit = displayedItems[activeSelectedIndex];
       if (hit) navigateToHit(hit);
     }
   };
 
-  const showHint = query.trim().length < 2;
   const clearQuery = useCallback(() => {
     setQuery('');
     setSelectedIndex(0);
@@ -158,7 +164,7 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
           </Button>
         </div>
 
-        {tabs.length > 1 ? (
+        {!showHint && tabs.length > 1 ? (
           <div className="flex flex-wrap gap-1.5 px-5 pt-1 pb-3">
             {tabs.map((tab) => {
               const active = group === tab.id;
@@ -185,25 +191,17 @@ export function GlobalSearchOverlay({ open, onOpenChange }: GlobalSearchOverlayP
         ) : null}
 
         <div className={GLOBAL_SEARCH_RESULTS_PANEL_CLASS}>
-          {error ? (
-            <div className="text-destructive flex h-full items-center justify-center px-5 text-center text-sm">
-              {error}
-            </div>
-          ) : showHint ? (
-            <div className="text-muted-foreground flex h-full flex-col items-center justify-center px-5 text-center text-sm">
-              <p>{GLOBAL_SEARCH_SHORT_QUERY_HINT}</p>
-              <p className="mt-2 text-xs">{GLOBAL_SEARCH_HINT}</p>
-            </div>
-          ) : (
-            <GlobalSearchResults
-              items={items}
-              query={query.trim()}
-              loading={loading}
-              selectedIndex={activeSelectedIndex}
-              onSelect={navigateToHit}
-              onHover={setSelectedIndex}
-            />
-          )}
+          <GlobalSearchOverlayPanel
+            error={error}
+            showHint={showHint}
+            recentHits={recentHits}
+            items={items}
+            query={query}
+            loading={loading}
+            selectedIndex={activeSelectedIndex}
+            onSelect={navigateToHit}
+            onHover={setSelectedIndex}
+          />
         </div>
 
         <div
