@@ -6,7 +6,6 @@ import {
   CRM_CALL_RECORDINGS_PLAY_DEFAULT_SCOPE,
   CRM_CALL_RECORDINGS_PLAY_PERMISSION_ID,
   PLATFORM_RESOURCE_FAMILIES,
-  ROLE_SELLER_ASSISTANT_ID,
   ROLE_SELLER_ID,
 } from '@nbos/shared';
 import type { PlatformResourceFamilyEnum } from '@nbos/database';
@@ -128,7 +127,6 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
   'role-owner': Object.fromEntries(MODULES.map((m) => [m, F])),
   'role-ceo': Object.fromEntries(MODULES.map((m) => [m, F])),
   [ROLE_SELLER_ID]: SELLER_ROLE_MATRIX,
-  [ROLE_SELLER_ASSISTANT_ID]: SELLER_ROLE_MATRIX,
   'role-pm': {
     CRM_LEADS: N,
     CRM_DEALS: L,

@@ -25,7 +25,6 @@ const CLIENTS_AI_MATRIX: Record<string, MatrixEntry> = {
   'role-owner': { CLIENTS: F, AI_PLATFORM: F },
   'role-ceo': { CLIENTS: F, AI_PLATFORM: F },
   'role-seller': { CLIENTS: VA, AI_PLATFORM: N },
-  'role-seller-assistant': { CLIENTS: VA, AI_PLATFORM: N },
   'role-pm': { CLIENTS: VA, AI_PLATFORM: N },
   'role-developer': { CLIENTS: N, AI_PLATFORM: N },
   'role-developer-frontend': { CLIENTS: N, AI_PLATFORM: N },
