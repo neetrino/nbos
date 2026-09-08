@@ -143,10 +143,83 @@ describe('ProductsService', () => {
             OR: expect.arrayContaining([
               { name: { contains: 'site', mode: 'insensitive' } },
               { project: { name: { contains: 'site', mode: 'insensitive' } } },
+              { project: { company: { name: { contains: 'site', mode: 'insensitive' } } } },
             ]),
           }),
         }),
       );
+    });
+
+    it('applies product hubView as AND', async () => {
+      await service.findAll({ hubView: 'delivery' });
+      expect(prisma.product.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: [
+              expect.objectContaining({
+                deliveryResolution: null,
+                status: { notIn: ['DONE', 'LOST'] },
+              }),
+            ],
+          }),
+        }),
+      );
+    });
+
+    it('omits live-subscription include on generic lists', async () => {
+      await service.findAll({});
+      expect(prisma.product.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.not.objectContaining({
+            subscriptions: expect.anything(),
+          }),
+        }),
+      );
+    });
+
+    it('includes live subscriptions when classifying hubView', async () => {
+      await service.findAll({ includeHubView: true });
+      expect(prisma.product.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            subscriptions: expect.objectContaining({ take: 1 }),
+          }),
+        }),
+      );
+    });
+
+    it('attaches hubView and strips subscriptions when classifying', async () => {
+      prisma.product.findMany.mockResolvedValue([
+        {
+          id: 'p1',
+          status: 'DONE',
+          deliveryResolution: 'DONE',
+          subscriptions: [{ id: 'sub-1' }],
+        },
+      ]);
+      prisma.product.count.mockResolvedValue(1);
+
+      const result = await service.findAll({ includeHubView: true });
+
+      expect(result.items[0]).toEqual(
+        expect.objectContaining({ id: 'p1', hubView: 'maintenance' }),
+      );
+      expect(result.items[0]).not.toHaveProperty('subscriptions');
+    });
+
+    it('does not attach hubView on generic lists', async () => {
+      prisma.product.findMany.mockResolvedValue([
+        {
+          id: 'p1',
+          status: 'DONE',
+          deliveryResolution: 'DONE',
+        },
+      ]);
+      prisma.product.count.mockResolvedValue(1);
+
+      const result = await service.findAll({});
+
+      expect(result.items[0]).not.toHaveProperty('hubView');
     });
   });
 

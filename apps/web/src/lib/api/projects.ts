@@ -74,6 +74,8 @@ export interface ProjectProductSummary {
   technicalSpecialist?: EmployeeRef | null;
   qaLead?: EmployeeRef | null;
   deliveryLifecycle?: DeliveryLifecycleProjection;
+  /** Computed Product Hub directory view. Present on company-wide list items. */
+  hubView?: 'delivery' | 'maintenance' | 'closed';
   /** Present when item comes from list/global board (not embedded project bundle). */
   projectId?: string;
   project?: {
@@ -82,6 +84,7 @@ export interface ProjectProductSummary {
     code: string;
     companyId?: string | null;
     company?: { id: string; name: string } | null;
+    contact?: { id: string; firstName: string; lastName: string } | null;
   };
   /** List/global board: proxy for closed-at when terminal (ISO). */
   updatedAt?: string;

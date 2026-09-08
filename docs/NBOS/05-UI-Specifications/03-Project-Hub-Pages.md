@@ -7,7 +7,8 @@
 | Уровень                                    | Назначение                                                                                                                                     |
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/delivery-board`                          | **Главный delivery lifecycle board:** все `Product` и `Extension` компании на одной доске `Starting / Development / QA / Transfer`.            |
-| `/projects`                                | Список проектов (карточки / список) — как раньше по смыслу глобального каталога.                                                               |
+| `/projects`                                | L1 **Project**. Список проектов (карточки / список) с вкладками All / Incoming / Active / Closed / Trash.                                      |
+| `/projects/products`                       | L1 **Product**. Каталог продуктов: All / Delivery / Maintenance / Closed. Не заменяет Delivery Board и не показывает Extensions.               |
 | `/projects/:projectId`                     | **Оболочка проекта:** короткая сводка + **список всех Product** в проекте; вход в работу — выбор продукта или filtered link на Delivery Board. |
 | `/projects/:projectId/products/:productId` | **Основной функционал** по линии поставки: вкладки вроде Overview, Work Space, Support, Credentials, Finance — **в разрезе этого Product**.    |
 
@@ -36,6 +37,8 @@ Projects Hub — центральный модуль управления про
 ## 2. Страница списка проектов (Projects List)
 
 **Путь:** `/projects`
+
+На каталогах header показывает L1 **Project | Product** (паттерн Finance). L2 ниже — фильтры текущего каталога.
 
 ### 2.1. Панель вкладок (Tab Bar)
 
@@ -98,6 +101,14 @@ Projects Hub — центральный модуль управления про
 - **По дате:** диапазон дат создания
 - Кнопка «Сбросить фильтры»
 - Быстрый поиск (строка поиска по названию проекта)
+
+### 2.6. Product directory
+
+**Путь:** `/projects/products`
+
+Тот же каркас, что у списка проектов (поиск, Grid / List, empty), но сущности — продукты. L2: `All | Delivery | Maintenance | Closed`. Default `All`. Карточка показывает проект и компанию. Create на этом экране нет.
+
+Каталог ≠ Delivery Board: board двигает стадии Starting/QA; каталог нужен, чтобы найти продукт, включая Maintenance (на board maintenance не живёт).
 
 ---
 

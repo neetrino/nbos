@@ -22,6 +22,8 @@ export type NavigableEntityCardBadge = {
 export type NavigableEntityCardMetaLine = {
   icon?: LucideIcon;
   text: string;
+  /** Stable React key when `text` can repeat across rows. */
+  id?: string;
 };
 
 export type NavigableEntityCardStat = {
@@ -123,11 +125,11 @@ export function NavigableEntityCard({
               'mt-4 flex min-h-[3.25rem] flex-col justify-center gap-2.5 pt-4',
             )}
           >
-            {metaLines!.map((line) => {
+            {metaLines!.map((line, index) => {
               const LineIcon = line.icon;
               return (
                 <div
-                  key={line.text}
+                  key={line.id ?? `${index}-${line.text}`}
                   className="text-muted-foreground flex min-w-0 items-center gap-2 text-sm"
                 >
                   {LineIcon ? <LineIcon size={15} className="shrink-0" aria-hidden /> : null}

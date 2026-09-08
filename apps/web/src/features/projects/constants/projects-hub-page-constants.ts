@@ -7,3 +7,9 @@ export const PROJECTS_HUB_PAGE_SIZE = 20;
 /** Newest projects first on All / Incoming / Active / Closed / Trash. */
 export const PROJECTS_HUB_SORT_BY = 'createdAt' as const;
 export const PROJECTS_HUB_SORT_ORDER = 'desc' as const;
+
+export const PROJECTS_HUB_SEARCH_PLACEHOLDER =
+  'Search by project name, code, company, contact…';
+
+export const PRODUCTS_HUB_SEARCH_PLACEHOLDER =
+  'Search by product, project, company, contact…';

@@ -62,6 +62,16 @@ describe('module-last-visit-storage', () => {
     expect(readModuleEntryHref('credentials')).toBe('/credentials');
   });
 
+  it('defaults project-hub to the Product catalog and stores directories only', () => {
+    expect(readModuleEntryHref('project-hub')).toBe('/projects/products');
+
+    writeModuleLastVisitFromPathname('/projects/abc/products/xyz');
+    expect(readModuleEntryHref('project-hub')).toBe('/projects/products');
+
+    writeModuleLastVisitFromPathname('/projects/abc');
+    expect(readModuleEntryHref('project-hub')).toBe('/projects');
+  });
+
   it('migrates legacy finance storage key', () => {
     storage.set(
       'nbos:finance:zone-last-href',

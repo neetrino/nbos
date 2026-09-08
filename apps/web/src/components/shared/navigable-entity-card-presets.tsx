@@ -16,7 +16,6 @@ import {
   EntityLinkedSheetsHoverActions,
   NavigableEntityCard,
   StatusBadge,
-  type NavigableEntityCardBadge,
   type NavigableEntityCardMetaLine,
 } from '@/components/shared';
 import {
@@ -31,11 +30,8 @@ import {
   buildProductDetailPageHref,
   PRODUCT_DETAIL_TAB,
 } from '@/features/projects/constants/product-detail-tab';
-import {
-  formatDeliveryLifecycleLabel,
-  getProductStatus,
-  getProductType,
-} from '@/features/projects/constants/projects';
+import { getProductType } from '@/features/projects/constants/projects';
+import { getProductDirectoryBadge } from '@/features/projects/utils/products-hub-directory-badge';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
 import { ProjectHubStatusBadge } from '@/features/projects/components/ProjectHubStatusBadge';
@@ -57,32 +53,35 @@ interface WorkSpaceNavigableCardProps {
 interface ProductNavigableCardProps {
   projectId: string;
   product: ProjectProductSummary;
+  showProjectContext?: boolean;
 }
 
-function buildProductCardMeta(product: ProjectProductSummary): NavigableEntityCardMetaLine[] {
+function buildProductCardMeta(
+  product: ProjectProductSummary,
+  showProjectContext: boolean,
+): NavigableEntityCardMetaLine[] {
   const lines: NavigableEntityCardMetaLine[] = [];
+  if (showProjectContext && product.project) {
+    lines.push({ id: 'project', icon: FolderKanban, text: product.project.name });
+    if (product.project.company?.name) {
+      lines.push({ id: 'company', icon: Building2, text: product.project.company.name });
+    }
+  }
   if (product.pm) {
     lines.push({
+      id: 'pm',
       icon: User,
       text: `${product.pm.firstName} ${product.pm.lastName}`,
     });
   }
   if (product.deadline) {
     lines.push({
+      id: 'deadline',
       icon: Calendar,
       text: new Date(product.deadline).toLocaleDateString(),
     });
   }
   return lines;
-}
-
-function buildProductStatusBadge(product: ProjectProductSummary): NavigableEntityCardBadge | null {
-  const status = getProductStatus(product.status);
-  const statusLabel = product.deliveryLifecycle
-    ? formatDeliveryLifecycleLabel(product.deliveryLifecycle)
-    : status?.label;
-  if (!status || !statusLabel) return null;
-  return { label: statusLabel, variant: status.variant };
 }
 
 /** Project Hub directory card. */
@@ -238,10 +237,10 @@ export function WorkSpaceNavigableCard({
                   className="shrink-0"
                 />
               </div>
-              {metaRows.map((row) => {
+              {metaRows.map((row, index) => {
                 const RowIcon = row.icon;
                 return (
-                  <span key={row.text} className={PROJECT_HUB_CARD_META_ROW_CLASS}>
+                  <span key={`${index}-${row.text}`} className={PROJECT_HUB_CARD_META_ROW_CLASS}>
                     <RowIcon className="size-3.5 shrink-0" aria-hidden />
                     <span className="truncate">{row.text}</span>
                   </span>
@@ -308,10 +307,10 @@ export function WorkSpaceNavigableCard({
             </div>
             {metaRows.length > 0 ? (
               <div className="mt-3 flex flex-col gap-1.5">
-                {metaRows.map((row) => {
+                {metaRows.map((row, index) => {
                   const RowIcon = row.icon;
                   return (
-                    <span key={row.text} className={PROJECT_HUB_CARD_META_ROW_CLASS}>
+                    <span key={`${index}-${row.text}`} className={PROJECT_HUB_CARD_META_ROW_CLASS}>
                       <RowIcon className="size-3.5 shrink-0" aria-hidden />
                       <span className="truncate">{row.text}</span>
                     </span>
@@ -334,11 +333,15 @@ export function WorkSpaceNavigableCard({
 }
 
 /** Project detail product card. */
-export function ProductNavigableCard({ projectId, product }: ProductNavigableCardProps) {
+export function ProductNavigableCard({
+  projectId,
+  product,
+  showProjectContext = false,
+}: ProductNavigableCardProps) {
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const dealId = getEntityOrderDealId(product.order);
   const productType = getProductType(product.productType);
-  const statusBadge = buildProductStatusBadge(product);
+  const statusBadge = getProductDirectoryBadge(product);
 
   return (
     <NavigableEntityCard
@@ -347,7 +350,7 @@ export function ProductNavigableCard({ projectId, product }: ProductNavigableCar
       eyebrow={productType?.label}
       title={product.name}
       badges={statusBadge ? [statusBadge] : undefined}
-      metaLines={buildProductCardMeta(product)}
+      metaLines={buildProductCardMeta(product, showProjectContext)}
       stats={[
         { value: product._count.tasks, label: 'Tasks' },
         { value: product._count.extensions, label: 'Ext.' },
