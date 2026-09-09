@@ -34,6 +34,27 @@ export interface ClientServiceFinanceLinks {
 /** Computed payment lifecycle stage (server-derived, not a stored field). */
 export type ClientServicePaymentStage = 'active' | 'upcoming' | 'invoice' | 'pay_now';
 
+export type ClientServiceRegistryLookupStatus = 'OBSERVED' | 'NOT_FOUND' | 'NO_EXPIRY' | 'FAILED';
+
+export type ClientServiceRegistryCheckOutcome =
+  | 'updated'
+  | 'unchanged'
+  | 'not_found'
+  | 'no_expiry'
+  | 'failed';
+
+export interface ClientServiceRegistryCheckResult {
+  serviceId: string;
+  domainName: string;
+  outcome: ClientServiceRegistryCheckOutcome;
+  renewalUpdated: boolean;
+  registryLookupStatus: ClientServiceRegistryLookupStatus;
+  registryExpiryDate: string | null;
+  registryCheckedAt: string;
+  registryLookupSource: 'WHOIS' | 'RDAP' | null;
+  renewalDate: string | null;
+}
+
 export interface ClientServiceRecord {
   id: string;
   projectId: string;
@@ -53,6 +74,10 @@ export interface ClientServiceRecord {
   reminderLanguage: string;
   startDate: string | null;
   renewalDate: string | null;
+  registryLookupStatus?: ClientServiceRegistryLookupStatus | null;
+  registryExpiryDate?: string | null;
+  registryCheckedAt?: string | null;
+  registryLookupSource?: 'WHOIS' | 'RDAP' | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
@@ -239,6 +264,13 @@ export const clientServicesApi = {
     data: { creatorId: string; title?: string; description?: string; dueDate?: string | null },
   ): Promise<Task> {
     const resp = await api.post<Task>(`/api/client-services/${id}/actions/create-task`, data);
+    return resp.data;
+  },
+
+  async checkRegistry(id: string): Promise<ClientServiceRegistryCheckResult> {
+    const resp = await api.post<ClientServiceRegistryCheckResult>(
+      `/api/client-services/${id}/actions/check-registry`,
+    );
     return resp.data;
   },
 };

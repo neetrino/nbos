@@ -3,7 +3,7 @@
 Ops-журнал решений (вкл/выкл на проде). Каталог «что существует» и Settings UI: [`docs/NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md`](../NBOS/02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md). Code catalog: `apps/api/src/modules/scheduler/scheduler-job-catalog.ts`.
 
 Часовой пояс: **`TZ=Asia/Yerevan`**. Мастер: **`SCHEDULER_ENABLED`**.
-Прод: мастер **вкл**, девять 🟢 крутятся (биллинг, просрочка, KPI, повтор. задачи, планы расходов, inbox, enqueue, Client Services, отчёты по расписанию). Остальные жёлтые не включать пакетом.
+Прод: мастер **вкл**, десять 🟢 крутятся (биллинг, просрочка, KPI, повтор. задачи, планы расходов, inbox, enqueue, Client Services invoice + domain registry, отчёты по расписанию). Остальные жёлтые не включать пакетом.
 
 - 🟢 включаем
 - 🟡 позже (время уже выставлено)
@@ -73,6 +73,9 @@ Ops-журнал решений (вкл/выкл на проде). Катало�
 
 17. 🟢 **Client Services (домены, хостинг, лицензии)** — каждый день в **06:00**: для `WE_PAY` с `renewal_date` ≤ 60 дней создаёт `Invoice Card` (EXP-04; поле `renewal_date`, не `expiry_date`). `REMINDER_ONLY` — без invoice. На проде флаг **вкл**.  
     `SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED` · cron `SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_CRON` (default `0 6 * * *`)
+
+17a. 🟢 **Client Services — domain registry check** — каждый день в **05:45**: WHOIS/RDAP для Domain-карточек в 90-дневном окне (и Pay now). Обновляет `renewal_date`, если реестр уже продлил. На проде флаг **вкл**.  
+ `SCHEDULER_CLIENT_SERVICES_DOMAIN_REGISTRY_ENABLED` · cron `SCHEDULER_CLIENT_SERVICES_DOMAIN_REGISTRY_CRON` (default `45 5 * * *`)
 
 18. 🟡 **Почта — сверка исходящих** — каждые **2 минуты**: `QUEUED` старше 60 с и зависший `SENDING`. Default **off**.  
     `SCHEDULER_MAIL_OUTBOUND_RECONCILE_ENABLED` · cron `SCHEDULER_MAIL_OUTBOUND_RECONCILE_CRON` (default `*/2 * * * *`)

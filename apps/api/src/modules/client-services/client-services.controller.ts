@@ -11,8 +11,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { actorContextFromUserId } from '@nbos/shared';
+import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { ClientServiceFlowsService } from './client-service-flows.service';
 import { ClientServicesService } from './client-services.service';
+import { DomainRegistryService } from './registry/domain-registry.service';
 import type {
   CreateClientServiceExpenseBody,
   CreateClientServiceExpensePlanBody,
@@ -31,6 +34,7 @@ export class ClientServicesController {
   constructor(
     private readonly clientServicesService: ClientServicesService,
     private readonly clientServiceFlowsService: ClientServiceFlowsService,
+    private readonly domainRegistryService: DomainRegistryService,
   ) {}
 
   @Get()
@@ -155,6 +159,14 @@ export class ClientServicesController {
   @ApiOperation({ summary: 'Create a task linked to this client service' })
   async createTask(@Param('id') id: string, @Body() body: CreateClientServiceTaskBody) {
     return this.clientServiceFlowsService.createTask(id, body);
+  }
+
+  @Post(':id/actions/check-registry')
+  @ApiOperation({ summary: 'Look up domain expiry via WHOIS/RDAP and refresh renewal date' })
+  async checkRegistry(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.domainRegistryService.checkService(id, actorContextFromUserId(user.id), {
+      force: true,
+    });
   }
 
   @Post()

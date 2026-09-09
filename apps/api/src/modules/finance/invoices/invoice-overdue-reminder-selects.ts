@@ -16,6 +16,8 @@ export const overdueReminderSelect = {
       reminderLanguage: true,
       productId: true,
       name: true,
+      type: true,
+      registryLookupStatus: true,
       product: { select: { id: true, name: true } },
     },
   },

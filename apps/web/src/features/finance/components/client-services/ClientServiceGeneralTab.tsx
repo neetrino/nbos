@@ -7,7 +7,10 @@ import {
 } from '@/components/shared';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
-import type { ClientServiceRecord } from '@/lib/api/client-services';
+import type {
+  ClientServiceRecord,
+  ClientServiceRegistryCheckResult,
+} from '@/lib/api/client-services';
 import { ClientServiceGeneralBasicsSection } from './ClientServiceGeneralBasicsSection';
 import { ClientServiceGeneralBillingSection } from './ClientServiceGeneralBillingSection';
 import { ClientServiceGeneralDatesSection } from './ClientServiceGeneralDatesSection';
@@ -18,6 +21,7 @@ interface ClientServiceGeneralTabProps {
   draft: ClientServiceFormState;
   patchDraft: (partial: Partial<ClientServiceFormState>) => void;
   formDisabled?: boolean;
+  onRegistryChecked?: (result: ClientServiceRegistryCheckResult) => void;
 }
 
 export function ClientServiceGeneralTab({
@@ -26,6 +30,7 @@ export function ClientServiceGeneralTab({
   draft,
   patchDraft,
   formDisabled = false,
+  onRegistryChecked,
 }: ClientServiceGeneralTabProps) {
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} w-full max-w-none gap-4`}>
@@ -43,9 +48,11 @@ export function ClientServiceGeneralTab({
         formDisabled={formDisabled}
       />
       <ClientServiceGeneralDatesSection
+        service={service}
         draft={draft}
         patchDraft={patchDraft}
         formDisabled={formDisabled}
+        onRegistryChecked={onRegistryChecked}
       />
       <DetailSheetSection title="Proofs">
         <FinanceProofAttachments

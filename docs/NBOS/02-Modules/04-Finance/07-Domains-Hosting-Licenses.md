@@ -244,7 +244,9 @@ Domain record created
     ->
 renewal date approaches
     ->
-Invoice Card to client (if we-pay)
+WHOIS/RDAP check (Upcoming, then Invoice window)
+    ->
+Invoice Card to client (if we-pay and not already renewed / not dead)
     ->
 Payment
     ->
@@ -252,8 +254,21 @@ Task: renew domain
     ->
 Expense
     ->
-expiry_date updated
+registry check updates expiry_date / renewal_date
 ```
+
+### Проверка реестра (WHOIS / RDAP)
+
+Для `type = DOMAIN` система сверяет дату с публичным реестром (гибрид WHOIS + RDAP). Работает для `WE_PAY` и `REMINDER_ONLY`.
+
+- Имя: связанный `Domain.domainName`, иначе `ClientServiceRecord.name` как FQDN.
+- Автопроверка в окнах Upcoming (90 дней) и Invoice / Pay now / overdue (≤60 дней), не чаще раза в сутки на домен; ручная кнопка **Check** рядом с renewal date — сразу.
+- Реестр позже нашей даты → пишем `renewalDate` (и `Domain.expiryDate`), карточка уходит в `Active`, если нет открытого Invoice/Expense. Новый Invoice не создаём.
+- `No match` → бейдж Dead. Новый Invoice и клиентское напоминание не шлём. Существующие счета не отменяем.
+- Нет expiry (`.nl`) или сбой lookup → бейдж No data. Invoice, оплату и напоминания **не блокируем**.
+- Дату вниз из реестра не двигаем. Сырой WHOIS не храним.
+
+EXP-04 читает свежий снимок перед созданием Invoice. Клиентский WhatsApp по Client Service — через Invoice Card; если домен `NOT_FOUND`, overdue-письмо не уходит.
 
 ### Правило для Website Product
 
@@ -403,6 +418,7 @@ expiry_date updated
 ### Что должно автоматизироваться
 
 - приближение `renewal_date`;
+- сверка Domain-карточек с WHOIS/RDAP до создания Invoice и до клиентского напоминания;
 - создание `Invoice Card` для клиентских сервисов (`WE_PAY`);
 - **клиентский WhatsApp** по связанной Invoice Card — тот же канал, что у подписки: Product WhatsApp Group (`ClientServiceRecord.productId`), если `notifications_enabled` и группа `ACTIVE`. Язык = `reminder_language` (`HY` / `RU` / `EN`, default `HY`). Первое письмо «оплатите в течение 5 дней» cron шлёт только по подписке. После `dueDate` — кнопка **Send overdue reminders** (волна 1 / 2), в том числе для Client Service. `On Hold` не повторяет уже отправленное; `Cancelled` → снова `Awaiting Payment` открывает новый цикл. Старые авто-пинги D-10 / D-2 cron больше не создаёт. `REMINDER_ONLY` invoice не создаёт и в WhatsApp не шлёт;
 - создание `Task` после оплаты;

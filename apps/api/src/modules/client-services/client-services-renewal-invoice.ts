@@ -6,6 +6,8 @@ import {
 } from './client-service-payment-stage';
 import { clientServiceInvoiceType, requirePositiveAmount } from './client-service-flow-helpers';
 import type { ClientServiceFlowsService } from './client-service-flows.service';
+import { shouldSkipRenewalInvoiceForRegistry } from './registry/domain-registry.apply';
+import type { DomainRegistryCheckOutcome } from './registry/domain-registry.types';
 
 const logger = new Logger('ClientServicesRenewalInvoice');
 
@@ -20,8 +22,13 @@ export interface ClientServicesRenewalInvoiceResult {
   asOf: string;
   eligibleCount: number;
   skippedExisting: number;
+  skippedRegistry: number;
   created: Array<{ serviceId: string; invoiceId: string }>;
   failures: Array<{ serviceId: string; message: string }>;
+}
+
+export interface DomainRegistryInvoiceGate {
+  ensureFresh(serviceId: string): Promise<{ outcome: DomainRegistryCheckOutcome }>;
 }
 
 type PrismaLike = Pick<PrismaClient, 'clientServiceRecord'>;
@@ -102,6 +109,7 @@ export async function runClientServicesRenewalInvoices(
   prisma: PrismaLike,
   flows: ClientServiceFlowsService,
   params: ClientServicesRenewalInvoiceParams = {},
+  registry?: DomainRegistryInvoiceGate,
 ): Promise<ClientServicesRenewalInvoiceResult> {
   const asOf = parseAsOfOptional(params.asOf);
   const where = buildRenewalInvoiceEligibleWhere(asOf);
@@ -126,6 +134,7 @@ export async function runClientServicesRenewalInvoices(
   const created: ClientServicesRenewalInvoiceResult['created'] = [];
   const failures: ClientServicesRenewalInvoiceResult['failures'] = [];
   let skippedExisting = 0;
+  let skippedRegistry = 0;
 
   for (const row of services) {
     const renewalDate = row.renewalDate;
@@ -133,6 +142,12 @@ export async function runClientServicesRenewalInvoices(
 
     if (hasInvoiceForRenewalPeriod(row.invoices, renewalDate)) {
       skippedExisting += 1;
+      continue;
+    }
+
+    const registryOutcome = await resolveRegistryOutcome(row, registry);
+    if (shouldSkipRenewalInvoiceForRegistry({ type: row.type, outcome: registryOutcome })) {
+      skippedRegistry += 1;
       continue;
     }
 
@@ -151,9 +166,23 @@ export async function runClientServicesRenewalInvoices(
     asOf: asOf.toISOString(),
     eligibleCount: services.length,
     skippedExisting,
+    skippedRegistry,
     created,
     failures,
   };
+}
+
+async function resolveRegistryOutcome(
+  row: ServiceRow,
+  registry?: DomainRegistryInvoiceGate,
+): Promise<DomainRegistryCheckOutcome | null> {
+  if (row.type !== 'DOMAIN' || !registry) return null;
+  try {
+    const fresh = await registry.ensureFresh(row.id);
+    return fresh.outcome;
+  } catch {
+    return 'failed';
+  }
 }
 
 async function createRenewalInvoice(

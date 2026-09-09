@@ -11,6 +11,9 @@ import {
 import { parseMoneyAmount } from '@/lib/format/money';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 import { cn } from '@/lib/utils';
+import { isClientServiceDomain } from '@/features/finance/constants/client-service-registry';
+import { ClientServiceRegistryBadge } from './ClientServiceRegistryBadge';
+import { ClientServiceRegistryCheckButton } from './ClientServiceRegistryCheckButton';
 import { ClientServiceStageBadge } from './ClientServiceStageBadge';
 
 interface ClientServiceCardProps {
@@ -57,9 +60,14 @@ export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
           <p className="text-foreground min-w-0 truncate text-sm leading-snug font-bold">
             {service.name}
           </p>
-          {service.overdue ? (
-            <ClientServiceStageBadge service={service} className="shrink-0" />
-          ) : null}
+          <div className="flex shrink-0 items-center gap-1">
+            {isClientServiceDomain(service) ? (
+              <ClientServiceRegistryBadge status={service.registryLookupStatus} />
+            ) : null}
+            {service.overdue ? (
+              <ClientServiceStageBadge service={service} className="shrink-0" />
+            ) : null}
+          </div>
         </div>
 
         <div className="flex items-center justify-between gap-2">
@@ -81,6 +89,11 @@ export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
               service.renewalDate ? 'font-bold text-orange-500 dark:text-orange-400' : undefined
             }
             label={formatShortDate(service.renewalDate)}
+            trailing={
+              isClientServiceDomain(service) ? (
+                <ClientServiceRegistryCheckButton serviceId={service.id} compact />
+              ) : null
+            }
           />
           <MetaRow
             icon={<FolderKanban size={14} aria-hidden />}
@@ -98,14 +111,16 @@ function MetaRow({
   iconClassName,
   label,
   labelClassName,
+  trailing,
 }: {
   icon: ReactNode;
   iconClassName: string;
   label: string;
   labelClassName?: string;
+  trailing?: ReactNode;
 }) {
   return (
-    <div className="grid grid-cols-[1.75rem_minmax(0,1fr)] items-center gap-x-2.5">
+    <div className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] items-center gap-x-2.5">
       <span
         className={cn(
           'flex size-7 items-center justify-center justify-self-start rounded-lg',
@@ -115,6 +130,7 @@ function MetaRow({
         {icon}
       </span>
       <p className={cn('text-foreground/80 truncate text-xs', labelClassName)}>{label}</p>
+      {trailing}
     </div>
   );
 }

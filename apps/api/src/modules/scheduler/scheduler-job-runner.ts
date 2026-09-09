@@ -21,6 +21,7 @@ const RUNNABLE_JOB_NAMES = [
   SCHEDULER_JOB_NAMES.salesKpiMonthClose,
   SCHEDULER_JOB_NAMES.expensePlanAutoDue,
   SCHEDULER_JOB_NAMES.recurringTasksDue,
+  SCHEDULER_JOB_NAMES.clientServicesDomainRegistry,
   SCHEDULER_JOB_NAMES.clientServicesRenewalInvoice,
   SCHEDULER_JOB_NAMES.platformTrashPurge,
   SCHEDULER_JOB_NAMES.supportSlaEscalation,
@@ -79,6 +80,8 @@ async function dispatchRunnableJob(
       return service.runExpensePlanAutoDue(trigger);
     case SCHEDULER_JOB_NAMES.recurringTasksDue:
       return service.runRecurringTasksDue(trigger);
+    case SCHEDULER_JOB_NAMES.clientServicesDomainRegistry:
+      return service.runClientServicesDomainRegistry(trigger);
     case SCHEDULER_JOB_NAMES.clientServicesRenewalInvoice:
       return service.runClientServicesRenewalInvoice(trigger);
     case SCHEDULER_JOB_NAMES.platformTrashPurge:

@@ -21,7 +21,8 @@ export type OverdueReminderSkipReason =
   | 'too_soon'
   | 'max_wave'
   | 'no_product_link'
-  | 'already_sent';
+  | 'already_sent'
+  | 'domain_not_found';
 
 export function overdueReminderEventTypeForWave(wave: OverdueReminderWave): string {
   return wave === 1 ? OVERDUE_REMINDER_EVENT_TYPES.W1 : OVERDUE_REMINDER_EVENT_TYPES.W2;

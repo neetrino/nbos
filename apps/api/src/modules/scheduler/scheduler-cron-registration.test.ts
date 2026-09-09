@@ -11,6 +11,7 @@ import { MailGmailWatchRenewCron } from './mail-gmail-watch-renew.cron';
 import { MailOutboundReconcileCron } from './mail-outbound-reconcile.cron';
 import { MailSyncReconcileCron } from './mail-sync-reconcile.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
+import { ClientServicesDomainRegistryCron } from './client-services-domain-registry.cron';
 import { ClientServicesRenewalInvoiceCron } from './client-services-renewal-invoice.cron';
 import { NotificationEnqueueReconcileCron } from './notification-enqueue-reconcile.cron';
 import { NotificationInboxReconcileCron } from './notification-inbox-reconcile.cron';
@@ -28,6 +29,7 @@ import {
 
 const CRON_PROVIDERS = [
   ExpensePlanAutoDueCron,
+  ClientServicesDomainRegistryCron,
   ClientServicesRenewalInvoiceCron,
   ReportSchedulesDueCron,
   RecurringTasksDueCron,
@@ -62,6 +64,7 @@ function createSchedulerServiceMock(): SchedulerService {
     runNotificationEnqueueReconcile: vi.fn().mockResolvedValue({}),
     runRecurringTasksDue: vi.fn().mockResolvedValue({}),
     runAuthSessionExpiryCleanup: vi.fn().mockResolvedValue({}),
+    runClientServicesDomainRegistry: vi.fn().mockResolvedValue({}),
     runClientServicesRenewalInvoice: vi.fn().mockResolvedValue({}),
     runMailOutboundReconcile: vi.fn().mockResolvedValue({}),
     runMailGmailWatchRenew: vi.fn().mockResolvedValue({}),

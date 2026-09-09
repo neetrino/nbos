@@ -13,6 +13,7 @@ import {
 } from './scheduler-internal-cron.constants';
 import { EXPENSE_PLAN_AUTO_DUE_ENABLED_ENV } from './expense-plan-auto-due-cron.constants';
 import { RECURRING_TASKS_DUE_ENABLED_ENV } from './recurring-tasks-due-cron.constants';
+import { CLIENT_SERVICES_DOMAIN_REGISTRY_ENABLED_ENV } from './client-services-domain-registry-cron.constants';
 import { CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED_ENV } from './client-services-renewal-invoice-cron.constants';
 import { REPORT_SCHEDULES_DUE_ENABLED_ENV } from './report-schedules-due-cron.constants';
 import { NOTIFICATION_INBOX_RECONCILE_CRON_ENABLED_ENV } from './notification-inbox-reconcile-cron.constants';
@@ -43,6 +44,7 @@ const START_CRON_ENABLED_ENV_KEYS = [
   SUPPORT_SLA_ESCALATION_CRON_ENABLED_ENV,
   EXPENSE_PLAN_AUTO_DUE_ENABLED_ENV,
   RECURRING_TASKS_DUE_ENABLED_ENV,
+  CLIENT_SERVICES_DOMAIN_REGISTRY_ENABLED_ENV,
   CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED_ENV,
   REPORT_SCHEDULES_DUE_ENABLED_ENV,
   NOTIFICATION_INBOX_RECONCILE_CRON_ENABLED_ENV,
@@ -89,6 +91,7 @@ describe('scheduler-job-catalog', () => {
   it('rosterIntent=on platform crons match prod green set', () => {
     expect(listRosterOnPlatformCronJobNames()).toEqual([
       'billing',
+      'client-services-domain-registry-check',
       'client-services-renewal-invoice',
       'expense-plan-auto-due',
       'notification-enqueue-reconcile',
