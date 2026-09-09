@@ -48,7 +48,10 @@ export function ProductDetailHeader({
 
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
-      <div className="shrink-0 rounded-lg bg-purple-500/10 p-2 text-purple-500" aria-hidden>
+      <div
+        className="shrink-0 rounded-lg bg-purple-500/10 p-2 text-purple-500 max-md:hidden"
+        aria-hidden
+      >
         <Package className="size-4" />
       </div>
       <div className="min-w-0 flex-1">
@@ -79,7 +82,7 @@ export function ProductDetailHeader({
         </div>
         <Link
           href={projectHref}
-          className="text-muted-foreground hover:text-foreground mt-0.5 block truncate text-xs transition-colors"
+          className="text-muted-foreground hover:text-foreground mt-0.5 block truncate text-xs transition-colors max-md:hidden"
         >
           {product.project.name}
         </Link>

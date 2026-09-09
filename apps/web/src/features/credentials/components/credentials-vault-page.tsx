@@ -24,6 +24,7 @@ import { useCredentialsVaultPage } from '@/features/credentials/hooks/use-creden
 import { CredentialsPageSettingsSheet } from '@/features/credentials/components/credentials-page-settings-sheet';
 import { CredentialEmergencyRequestsPanel } from '@/features/credentials/components/credential-emergency-requests-panel';
 import { PermissionGate } from '@/lib/permissions';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
 export function CredentialsVaultPage() {
   return (
@@ -35,6 +36,7 @@ export function CredentialsVaultPage() {
 
 function CredentialsVaultPageContent() {
   const vault = useCredentialsVaultPage();
+  const viewMode = useMobilePreferredView(vault.viewMode, 'tiles');
 
   const handleSecretCopied = (flashId: string) => {
     vault.setPasswordFlashCredentialId(flashId);
@@ -108,6 +110,7 @@ function CredentialsVaultPageContent() {
         <CredentialVaultTrashBanner onBackToVault={() => vault.setVaultListScope('active')} />
       ) : null}
 
+      <div className="max-md:hidden">
       <CredentialQuickFilterChips
         vaultScope={vault.activeTab}
         categoryChips={vault.quickCategoryChips}
@@ -116,13 +119,14 @@ function CredentialsVaultPageContent() {
         activeQuick={vault.quickFilters}
         onToggleQuick={vault.toggleQuickFilter}
         trailing={
-          vault.viewMode === 'folders' &&
+          viewMode === 'folders' &&
           vault.showCreate &&
           (!vault.isProjectFoldersMode || vault.activeProjectId) ? (
             <CredentialFolderCreateButton onCreateFolder={vault.createFolder} />
           ) : undefined
         }
       />
+      </div>
 
       {vault.selection.selectionActive && (
         <CredentialVaultBulkBar
@@ -141,13 +145,13 @@ function CredentialsVaultPageContent() {
 
       <div
         className={
-          vault.viewMode === 'category-board'
+          viewMode === 'category-board'
             ? 'flex min-h-0 flex-1 flex-col overflow-hidden'
             : undefined
         }
       >
         <CredentialsVaultMainView
-          viewMode={vault.viewMode}
+          viewMode={viewMode}
           credentials={vault.credentials}
           loading={vault.loading}
           columnMeta={vault.columnMeta}

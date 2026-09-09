@@ -1,20 +1,13 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { LayoutGrid } from 'lucide-react';
+import { LayoutGrid, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { usePermission } from '@/lib/permissions';
-import { NAV_MODULE_DEFINITIONS } from '@/lib/navigation/nav-config';
-import { getVisibleNavModules } from '@/lib/navigation/nav-visibility';
-import { useModuleEntryHref } from '@/lib/navigation/hooks/use-module-entry-href';
-import { SIDEBAR_MODULE_VISUALS } from './sidebar-module-visual';
-import {
-  MOBILE_DOCK_HEIGHT_CLASS,
-  MOBILE_DOCK_ITEM_CLASS,
-  pickMobileDockKeys,
-} from './mobile-bottom-nav-constants';
+import { useMobileModuleDockResolved } from './MobileModuleDockProvider';
+import { MobileDockOverflowSheet } from './MobileDockOverflowSheet';
+import type { MobileDockItem } from './mobile-module-dock-types';
+import { MOBILE_DOCK_HEIGHT_CLASS, MOBILE_DOCK_ITEM_CLASS } from './mobile-bottom-nav-constants';
 
 interface MobileBottomNavProps {
   menuOpen?: boolean;
@@ -22,24 +15,12 @@ interface MobileBottomNavProps {
 }
 
 export function MobileBottomNav({ menuOpen = false, onMoreClick }: MobileBottomNavProps) {
-  const { can, isLoading } = usePermission();
-  const visibleModules = useMemo(
-    () => getVisibleNavModules(can, isLoading, NAV_MODULE_DEFINITIONS),
-    [can, isLoading],
-  );
-  const dockKeys = useMemo(
-    () => pickMobileDockKeys(visibleModules.map((item) => item.key)),
-    [visibleModules],
-  );
+  const { slots, overflow } = useMobileModuleDockResolved();
+  const [overflowOpen, setOverflowOpen] = useState(false);
 
   return (
-    <nav className="nbos-mobile-dock md:hidden" aria-label="Primary mobile navigation">
-      <div className={cn('flex items-stretch gap-1 px-2', MOBILE_DOCK_HEIGHT_CLASS)}>
-        {dockKeys.map((key) => {
-          const item = visibleModules.find((module) => module.key === key);
-          if (!item) return null;
-          return <MobileDockLink key={key} href={item.href} label={item.label} moduleKey={key} />;
-        })}
+    <nav className="nbos-mobile-dock md:hidden" aria-label="Module navigation">
+      <div className={cn('flex items-stretch gap-1 px-1.5', MOBILE_DOCK_HEIGHT_CLASS)}>
         <button
           type="button"
           onClick={onMoreClick}
@@ -52,40 +33,60 @@ export function MobileBottomNav({ menuOpen = false, onMoreClick }: MobileBottomN
           aria-expanded={menuOpen}
         >
           <LayoutGrid size={18} aria-hidden />
-          More
+          Menu
         </button>
+        {slots.map((item) => (
+          <MobileDockSlot key={item.id} item={item} />
+        ))}
+        {overflow.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setOverflowOpen(true)}
+            className={cn(
+              MOBILE_DOCK_ITEM_CLASS,
+              overflowOpen || overflow.some((item) => item.active)
+                ? 'bg-primary/12 text-primary'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
+            )}
+            aria-expanded={overflowOpen}
+          >
+            <MoreHorizontal size={18} aria-hidden />
+            More
+          </button>
+        ) : null}
       </div>
+      <MobileDockOverflowSheet open={overflowOpen} onOpenChange={setOverflowOpen} items={overflow} />
     </nav>
   );
 }
 
-function MobileDockLink({
-  href,
-  label,
-  moduleKey,
-}: {
-  href: string;
-  label: string;
-  moduleKey: (typeof NAV_MODULE_DEFINITIONS)[number]['key'];
-}) {
-  const pathname = usePathname();
-  const entryHref = useModuleEntryHref(moduleKey, href, pathname);
-  const { Icon } = SIDEBAR_MODULE_VISUALS[moduleKey];
-  const active = pathname === entryHref || pathname.startsWith(`${href}/`) || pathname === href;
+function MobileDockSlot({ item }: { item: MobileDockItem }) {
+  const Icon = item.icon;
+  const className = cn(
+    MOBILE_DOCK_ITEM_CLASS,
+    item.active
+      ? 'bg-primary/12 text-primary'
+      : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
+  );
+
+  if (item.href) {
+    return (
+      <Link href={item.href} aria-current={item.active ? 'page' : undefined} className={className}>
+        {Icon ? <Icon size={18} strokeWidth={item.active ? 2.2 : 1.8} aria-hidden /> : null}
+        <span className="max-w-full truncate">{item.label}</span>
+      </Link>
+    );
+  }
 
   return (
-    <Link
-      href={entryHref}
-      aria-current={active ? 'page' : undefined}
-      className={cn(
-        MOBILE_DOCK_ITEM_CLASS,
-        active
-          ? 'bg-primary/12 text-primary'
-          : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
-      )}
+    <button
+      type="button"
+      aria-current={item.active ? 'page' : undefined}
+      className={className}
+      onClick={() => item.onSelect?.()}
     >
-      <Icon size={18} strokeWidth={active ? 2.2 : 1.8} aria-hidden />
-      <span className="max-w-full truncate">{label}</span>
-    </Link>
+      {Icon ? <Icon size={18} strokeWidth={item.active ? 2.2 : 1.8} aria-hidden /> : null}
+      <span className="max-w-full truncate">{item.label}</span>
+    </button>
   );
 }

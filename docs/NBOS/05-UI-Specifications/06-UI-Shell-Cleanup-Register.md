@@ -12,6 +12,7 @@
 - Dashboard = персональный Control Center;
 - Header = глобальные действия;
 - Module Shell = контекстные actions/views/filters;
+- Mobile App Shell = Menu (карта платформы) + Dock (карта модуля) + минимальный top; не сжатый desktop;
 - Team живёт внутри My Company;
 - My Account открывается из header user menu;
 - Departments живут в My Company;
@@ -258,6 +259,7 @@ Deep work -> full page.
 12. Add My Links.
 13. Share My Links with Dashboard pinned actions.
 14. Standardize Module Shell.
+15. Align remaining list pages to Mobile App Shell (dock destinations as a module contract, cards/board on phone).
 
 ## E. Non-goals for MVP
 

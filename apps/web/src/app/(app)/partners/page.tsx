@@ -42,6 +42,7 @@ import { useListScope } from '@/hooks/use-list-scope';
 import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import { toast } from 'sonner';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
 const PARTNERS_LIST_PAGE_SIZE = 12;
 
@@ -65,6 +66,7 @@ function PartnersPageContent() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.partners);
   const [view, setView] = useState<PartnersDirectoryViewMode>('grid');
+  const displayView = useMobilePreferredView(view, 'grid');
   const [createOpen, setCreateOpen] = useState(false);
   const permanentDeleteConfirm = useDeleteConfirm();
   const [purging, setPurging] = useState(false);
@@ -242,6 +244,7 @@ function PartnersPageContent() {
           <>
             {!isTrashView ? (
               <div className="flex items-center gap-1.5">
+                <div className="max-md:hidden">
                 <PartnerStatusFilterChips
                   value={filters.status && filters.status !== 'all' ? filters.status : null}
                   onChange={(status) =>
@@ -256,6 +259,7 @@ function PartnersPageContent() {
                   }
                   disabled={loading}
                 />
+                </div>
                 {partnersSettingsSheet}
               </div>
             ) : (
@@ -277,7 +281,7 @@ function PartnersPageContent() {
         onCreated={fetchPartners}
       />
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4 max-md:hidden">
         <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Total partners</p>
           <p className="mt-1 text-xl font-bold">{summary.total}</p>
@@ -294,8 +298,8 @@ function PartnersPageContent() {
 
       {loading ? (
         <LoadingState
-          variant={view === 'grid' ? 'cards' : 'list'}
-          count={view === 'grid' ? 6 : 5}
+          variant={displayView === 'grid' ? 'cards' : 'list'}
+          count={displayView === 'grid' ? 6 : 5}
         />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchPartners} />
@@ -316,7 +320,7 @@ function PartnersPageContent() {
             )
           }
         />
-      ) : view === 'grid' ? (
+      ) : displayView === 'grid' ? (
         <div className={`${partnersDirectoryCardGridClass(sidebarCollapsed)} pb-6`}>
           {partners.map((partner) => (
             <PartnerCard key={partner.id} partner={partner} onOpen={openPartnerSheet} />
