@@ -726,7 +726,7 @@ Body  = одна удобная поверхность (cards / tiles / board)
 
    **Workspace layout** — tools of one list (trial: Credentials):  
    `Menu | Search | + | Category | Settings`.  
-   Category is the current scope (default **All**). Tap opens a More-style sheet with All / My / Team / Company / Project / Secret. These are tabs of one system, not separate module destinations.  
+   Category is the current scope (default **All**), shown as icon + label + a small down caret. Tap opens a More-style sheet with All / My / Team / Company / Project / Secret. These are tabs of one system, not separate module destinations.  
    Do not use workspace on CRM, Finance, Project Hub, or other multi-destination modules until the trial is accepted and applied on purpose.
 
 #### What the destination dock shows

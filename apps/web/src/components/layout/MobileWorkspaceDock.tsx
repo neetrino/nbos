@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { LayoutGrid, Plus } from 'lucide-react';
+import { ChevronDown, LayoutGrid, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMobileModuleDockResolved } from './MobileModuleDockProvider';
 import { MobileDockOverflowSheet } from './MobileDockOverflowSheet';
@@ -12,6 +12,9 @@ import {
   MOBILE_WORKSPACE_CATEGORY_SHEET_TITLE,
   MOBILE_WORKSPACE_CREATE_LABEL,
   MOBILE_WORKSPACE_DEFAULT_SCOPE_LABEL,
+  MOBILE_WORKSPACE_SCOPE_CARET_CLASS,
+  MOBILE_WORKSPACE_SCOPE_CARET_SIZE,
+  MOBILE_WORKSPACE_SCOPE_LABEL_CLASS,
   MOBILE_WORKSPACE_SEARCH_LABEL,
 } from './mobile-workspace-dock-constants';
 
@@ -83,10 +86,19 @@ export function MobileWorkspaceDock({ menuOpen = false, onMoreClick }: MobileWor
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
             )}
             aria-expanded={categoryOpen}
+            aria-haspopup="listbox"
           >
             {ScopeIcon ? <ScopeIcon size={18} aria-hidden /> : null}
-            <span className="max-w-full truncate">
-              {activeScope?.label ?? MOBILE_WORKSPACE_DEFAULT_SCOPE_LABEL}
+            <span className={MOBILE_WORKSPACE_SCOPE_LABEL_CLASS}>
+              <span className="truncate">
+                {activeScope?.label ?? MOBILE_WORKSPACE_DEFAULT_SCOPE_LABEL}
+              </span>
+              <ChevronDown
+                size={MOBILE_WORKSPACE_SCOPE_CARET_SIZE}
+                strokeWidth={2.25}
+                className={MOBILE_WORKSPACE_SCOPE_CARET_CLASS}
+                aria-hidden
+              />
             </span>
           </button>
         ) : null}
