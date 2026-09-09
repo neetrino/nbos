@@ -51,7 +51,11 @@ export function PageHeroDesktopChrome({
 }: PageHeroDesktopChromeProps) {
   const trailingNode =
     viewMode || trailing ? (
-      <HeroTrailingActions searchExpanded={searchExpanded} viewMode={viewMode} trailing={trailing} />
+      <HeroTrailingActions
+        searchExpanded={searchExpanded}
+        viewMode={viewMode}
+        trailing={trailing}
+      />
     ) : null;
 
   return (
@@ -68,9 +72,7 @@ export function PageHeroDesktopChrome({
     >
       {hasToolbar ? (
         <div className={cn(PAGE_HERO_TOOLBAR, filterOverflowClass)}>
-          {hasTabsRow ? (
-            <HeroTabsRow tabs={tabs} tabsEnd={tabsEnd} />
-          ) : null}
+          {hasTabsRow ? <HeroTabsRow tabs={tabs} tabsEnd={tabsEnd} /> : null}
           {hasSearch || trailingNode ? (
             <div
               ref={toolsRowRef}
@@ -115,7 +117,9 @@ function HeroTabsRow({ tabs, tabsEnd }: { tabs?: ReactNode; tabsEnd?: ReactNode 
           : PAGE_HERO_TAB_SCROLL,
       )}
     >
-      {tabs ? <div className={cn(PAGE_HERO_TAB_SCROLL, tabsEnd && 'min-w-0 flex-1')}>{tabs}</div> : null}
+      {tabs ? (
+        <div className={cn(PAGE_HERO_TAB_SCROLL, tabsEnd && 'min-w-0 flex-1')}>{tabs}</div>
+      ) : null}
       {tabsEnd ? <div className="shrink-0">{tabsEnd}</div> : null}
     </div>
   );

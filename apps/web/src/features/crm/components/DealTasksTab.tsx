@@ -10,11 +10,7 @@ interface DealTasksTabProps {
   tasksRefreshSignal?: number;
 }
 
-export function DealTasksTab({
-  deal,
-  onCreateOpenChange,
-  tasksRefreshSignal,
-}: DealTasksTabProps) {
+export function DealTasksTab({ deal, onCreateOpenChange, tasksRefreshSignal }: DealTasksTabProps) {
   return (
     <EntityLinkedTasksTab
       entityType={CRM_TASK_ENTITY_DEAL}

@@ -529,7 +529,9 @@ export function ExpensesPageContent({
           pageVariant === 'default' && displayView === 'kanban' ? onKanbanStatusMove : undefined
         }
         onOpenQuickCreate={
-          pageVariant === 'default' && displayView === 'kanban' ? () => setCreateOpen(true) : undefined
+          pageVariant === 'default' && displayView === 'kanban'
+            ? () => setCreateOpen(true)
+            : undefined
         }
       />
 

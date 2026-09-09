@@ -4,11 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { tasksApi, type Task } from '@/lib/api/tasks';
 import { buildEntityLinkedTasksQuery } from '../utils/crm-entity-task-links';
 
-export function useEntityLinkedTasks(
-  entityType: string,
-  entityId: string,
-  refreshSignal = 0,
-) {
+export function useEntityLinkedTasks(entityType: string, entityId: string, refreshSignal = 0) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 

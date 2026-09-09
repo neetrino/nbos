@@ -4,7 +4,10 @@ import Link from 'next/link';
 import { X } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import { MOBILE_APP_MENU_HANDLE_CLASS, MOBILE_APP_MENU_SHEET_CLASS } from './mobile-app-menu-constants';
+import {
+  MOBILE_APP_MENU_HANDLE_CLASS,
+  MOBILE_APP_MENU_SHEET_CLASS,
+} from './mobile-app-menu-constants';
 import type { MobileDockItem, MobileDockSwitcherGroup } from './mobile-module-dock-types';
 
 interface MobileDockOverflowSheetProps {

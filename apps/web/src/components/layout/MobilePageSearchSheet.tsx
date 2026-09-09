@@ -4,7 +4,10 @@ import { useState, type ReactNode } from 'react';
 import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
-import { MOBILE_APP_MENU_HANDLE_CLASS, MOBILE_APP_MENU_SHEET_CLASS } from './mobile-app-menu-constants';
+import {
+  MOBILE_APP_MENU_HANDLE_CLASS,
+  MOBILE_APP_MENU_SHEET_CLASS,
+} from './mobile-app-menu-constants';
 import { MOBILE_DOCK_ITEM_CLASS } from './mobile-bottom-nav-constants';
 import { MOBILE_WORKSPACE_SEARCH_LABEL } from './mobile-workspace-dock-constants';
 

@@ -720,10 +720,9 @@ Body  = одна удобная поверхность (cards / tiles / board)
 
    Empty tools are omitted (a page without create has no `+`).  
    **Place** is the current location in the module (icon + label + a small down caret). Tap opens a sheet:
-
    - **Zone** — header context `nav` (Finance Revenue / Expenses / …; Project / Product).
    - **Section** — `PageHeroNavLinks` (CRM Dashboard / Leads / Deals; Finance Orders / Invoices / …).
-   - **Category** — `PageHeroTabs` when those tabs *are* the module (Credentials All / My / Team / …).
+   - **Category** — `PageHeroTabs` when those tabs _are_ the module (Credentials All / My / Team / …).
    - **View** — page filters that are not destinations, listed under sections when both exist.
    - **Fallback** — only Tasks: Board / Recurring / Spaces. Do not invent cross-module shortcuts on Dashboard or empty pages.
 

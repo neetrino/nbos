@@ -245,20 +245,20 @@ function PartnersPageContent() {
             {!isTrashView ? (
               <div className="flex items-center gap-1.5">
                 <div className="max-md:hidden">
-                <PartnerStatusFilterChips
-                  value={filters.status && filters.status !== 'all' ? filters.status : null}
-                  onChange={(status) =>
-                    setFilters((prev) => {
-                      if (!status) {
-                        const next = { ...prev };
-                        delete next.status;
-                        return next;
-                      }
-                      return { ...prev, status };
-                    })
-                  }
-                  disabled={loading}
-                />
+                  <PartnerStatusFilterChips
+                    value={filters.status && filters.status !== 'all' ? filters.status : null}
+                    onChange={(status) =>
+                      setFilters((prev) => {
+                        if (!status) {
+                          const next = { ...prev };
+                          delete next.status;
+                          return next;
+                        }
+                        return { ...prev, status };
+                      })
+                    }
+                    disabled={loading}
+                  />
                 </div>
                 {partnersSettingsSheet}
               </div>

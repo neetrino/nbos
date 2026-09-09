@@ -5,10 +5,7 @@ import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 
 export function usePageSettingsDockTrigger(openSheet: () => void): boolean {
   const isMobileViewport = useIsMobileViewport();
-  const settings = useMemo(
-    () => <MobileDockSettingsButton onClick={openSheet} />,
-    [openSheet],
-  );
+  const settings = useMemo(() => <MobileDockSettingsButton onClick={openSheet} />, [openSheet]);
   useRegisterMobileDockWorkspaceActions(isMobileViewport ? { settings } : {});
   return isMobileViewport;
 }

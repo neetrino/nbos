@@ -10,11 +10,7 @@ interface LeadTasksTabProps {
   tasksRefreshSignal?: number;
 }
 
-export function LeadTasksTab({
-  lead,
-  onCreateOpenChange,
-  tasksRefreshSignal,
-}: LeadTasksTabProps) {
+export function LeadTasksTab({ lead, onCreateOpenChange, tasksRefreshSignal }: LeadTasksTabProps) {
   return (
     <EntityLinkedTasksTab
       entityType={CRM_TASK_ENTITY_LEAD}

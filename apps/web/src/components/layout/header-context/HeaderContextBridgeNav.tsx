@@ -74,13 +74,21 @@ function HeaderContextBridgeTab({ item, active }: { item: HeaderNavItem; active:
   }
 
   return (
-    <Link href={item.href} aria-current="page" className={cn(HEADER_CONTEXT_TAB_ACTIVE, accent?.activeShell)}>
-      {accent ? <span aria-hidden className={cn('absolute inset-x-0 top-0 h-1', accent.activeBar)} /> : null}
+    <Link
+      href={item.href}
+      aria-current="page"
+      className={cn(HEADER_CONTEXT_TAB_ACTIVE, accent?.activeShell)}
+    >
+      {accent ? (
+        <span aria-hidden className={cn('absolute inset-x-0 top-0 h-1', accent.activeBar)} />
+      ) : null}
       <span className={HEADER_CONTEXT_TAB_ACTIVE_LABEL}>{item.label}</span>
       <span
         aria-hidden
         className={
-          accent ? 'h-2.5 w-full shrink-0' : cn(MODULE_SHELL_BRIDGE_FILL, HEADER_CONTEXT_TAB_CONNECTOR)
+          accent
+            ? 'h-2.5 w-full shrink-0'
+            : cn(MODULE_SHELL_BRIDGE_FILL, HEADER_CONTEXT_TAB_CONNECTOR)
         }
       />
     </Link>

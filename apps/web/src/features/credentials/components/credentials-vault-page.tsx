@@ -112,21 +112,21 @@ function CredentialsVaultPageContent() {
       ) : null}
 
       <div className="max-md:hidden">
-      <CredentialQuickFilterChips
-        vaultScope={vault.activeTab}
-        categoryChips={vault.quickCategoryChips}
-        activeCategory={vault.quickCategory}
-        onCategoryChange={vault.setQuickCategory}
-        activeQuick={vault.quickFilters}
-        onToggleQuick={vault.toggleQuickFilter}
-        trailing={
-          viewMode === 'folders' &&
-          vault.showCreate &&
-          (!vault.isProjectFoldersMode || vault.activeProjectId) ? (
-            <CredentialFolderCreateButton onCreateFolder={vault.createFolder} />
-          ) : undefined
-        }
-      />
+        <CredentialQuickFilterChips
+          vaultScope={vault.activeTab}
+          categoryChips={vault.quickCategoryChips}
+          activeCategory={vault.quickCategory}
+          onCategoryChange={vault.setQuickCategory}
+          activeQuick={vault.quickFilters}
+          onToggleQuick={vault.toggleQuickFilter}
+          trailing={
+            viewMode === 'folders' &&
+            vault.showCreate &&
+            (!vault.isProjectFoldersMode || vault.activeProjectId) ? (
+              <CredentialFolderCreateButton onCreateFolder={vault.createFolder} />
+            ) : undefined
+          }
+        />
       </div>
 
       {vault.selection.selectionActive && (
@@ -146,9 +146,7 @@ function CredentialsVaultPageContent() {
 
       <div
         className={
-          viewMode === 'category-board'
-            ? 'flex min-h-0 flex-1 flex-col overflow-hidden'
-            : undefined
+          viewMode === 'category-board' ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : undefined
         }
       >
         <CredentialsVaultMainView

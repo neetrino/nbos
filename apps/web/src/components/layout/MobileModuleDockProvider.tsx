@@ -174,7 +174,10 @@ export function useMobileModuleDockResolved() {
   };
 }
 
-export function useRegisterMobileDockItems(source: MobileDockSource, items: MobileDockItem[]): void {
+export function useRegisterMobileDockItems(
+  source: MobileDockSource,
+  items: MobileDockItem[],
+): void {
   const ctx = useContext(MobileModuleDockContext);
   const setSourceItems = ctx?.setSourceItems;
 
