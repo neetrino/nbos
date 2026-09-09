@@ -12,7 +12,13 @@ export type MobileDockItem = {
   active: boolean;
 };
 
-export type MobileDockLayout = 'destinations' | 'workspace';
+export type MobileDockSwitcherGroupId = 'zone' | 'section' | 'category' | 'view';
+
+export type MobileDockSwitcherGroup = {
+  id: MobileDockSwitcherGroupId;
+  title: string;
+  items: MobileDockItem[];
+};
 
 export type MobileDockCreateAction = {
   onSelect: () => void;
@@ -26,5 +32,3 @@ export type MobileDockTools = {
   create?: MobileDockCreateAction;
   settings?: ReactNode;
 };
-
-export const MOBILE_DOCK_CONTENT_SLOTS = 4;

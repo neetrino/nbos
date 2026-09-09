@@ -1,22 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import { ChevronDown, LayoutGrid, Plus } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { LayoutGrid, Plus } from 'lucide-react';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
-import { useMobileModuleDockResolved } from './MobileModuleDockProvider';
 import { MobileDockOverflowSheet } from './MobileDockOverflowSheet';
+import { MobileDockSwitcherButton } from './MobileDockSwitcherButton';
 import { MobilePageSearchSheet } from './MobilePageSearchSheet';
-import { pickActiveMobileDockItem } from './mobile-module-dock-resolve';
+import { useMobileModuleDockResolved } from './MobileModuleDockProvider';
+import { usePageHeroDockCreate } from './use-page-hero-dock-create';
 import { MOBILE_DOCK_HEIGHT_CLASS, MOBILE_DOCK_ITEM_CLASS } from './mobile-bottom-nav-constants';
 import {
-  MOBILE_WORKSPACE_CATEGORY_SHEET_TITLE,
   MOBILE_WORKSPACE_CREATE_LABEL,
-  MOBILE_WORKSPACE_DEFAULT_SCOPE_LABEL,
-  MOBILE_WORKSPACE_SCOPE_CARET_CLASS,
-  MOBILE_WORKSPACE_SCOPE_CARET_SIZE,
-  MOBILE_WORKSPACE_SCOPE_LABEL_CLASS,
-  MOBILE_WORKSPACE_SEARCH_LABEL,
+  MOBILE_WORKSPACE_SWITCHER_MULTI_TITLE,
 } from './mobile-workspace-dock-constants';
+import type { MobileDockCreateAction } from './mobile-module-dock-types';
 
 interface MobileWorkspaceDockProps {
   menuOpen?: boolean;
@@ -24,94 +22,89 @@ interface MobileWorkspaceDockProps {
 }
 
 export function MobileWorkspaceDock({ menuOpen = false, onMoreClick }: MobileWorkspaceDockProps) {
-  const { scopeItems, hasSearch, hasCreate, hasSettings, workspaceActions, getTools } =
+  const { switcherGroups, switcherItem, create, settings, hasSearch, hasSettings, getTools } =
     useMobileModuleDockResolved();
   const tools = getTools();
-  const create = workspaceActions.create ?? tools.create;
-  const settings = workspaceActions.settings ?? tools.settings;
-  const [categoryOpen, setCategoryOpen] = useState(false);
-  const activeScope = pickActiveMobileDockItem(scopeItems);
-  const ScopeIcon = activeScope?.icon;
+  const isMobileViewport = useIsMobileViewport();
+  const trailingHostRef = useRef<HTMLDivElement>(null);
+  const resolvedCreate = usePageHeroDockCreate(trailingHostRef, create);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const switcherTitle =
+    switcherGroups.length > 1
+      ? MOBILE_WORKSPACE_SWITCHER_MULTI_TITLE
+      : (switcherGroups[0]?.title ?? MOBILE_WORKSPACE_SWITCHER_MULTI_TITLE);
 
   return (
     <nav className="nbos-mobile-dock md:hidden" aria-label="Workspace tools">
       <div className={cn('flex items-stretch gap-1 px-1.5', MOBILE_DOCK_HEIGHT_CLASS)}>
-        <button
-          type="button"
-          onClick={onMoreClick}
-          className={cn(
-            MOBILE_DOCK_ITEM_CLASS,
-            menuOpen
-              ? 'bg-primary/12 text-primary'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
-          )}
-          aria-expanded={menuOpen}
-        >
-          <LayoutGrid size={18} aria-hidden />
-          Menu
-        </button>
-        {hasSearch && tools.search ? (
-          <MobilePageSearchSheet
-            search={tools.search}
-            variant="dock"
-            label={MOBILE_WORKSPACE_SEARCH_LABEL}
+        <WorkspaceMenuButton open={menuOpen} onClick={onMoreClick} />
+        {hasSearch && tools.search ? <MobilePageSearchSheet search={tools.search} /> : null}
+        <WorkspaceCreateButton create={resolvedCreate} />
+        {switcherGroups.length > 0 ? (
+          <MobileDockSwitcherButton
+            icon={switcherItem?.icon}
+            label={switcherItem?.label}
+            expanded={switcherOpen}
+            onClick={() => setSwitcherOpen(true)}
           />
-        ) : null}
-        {hasCreate && create ? (
-          <button
-            type="button"
-            disabled={create.disabled}
-            className={cn(
-              MOBILE_DOCK_ITEM_CLASS,
-              create.disabled
-                ? 'text-muted-foreground/50'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
-            )}
-            onClick={() => {
-              if (!create.disabled) create.onSelect();
-            }}
-          >
-            <Plus size={18} aria-hidden />
-            {MOBILE_WORKSPACE_CREATE_LABEL}
-          </button>
-        ) : null}
-        {scopeItems.length > 0 ? (
-          <button
-            type="button"
-            onClick={() => setCategoryOpen(true)}
-            className={cn(
-              MOBILE_DOCK_ITEM_CLASS,
-              categoryOpen
-                ? 'bg-primary/12 text-primary'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
-            )}
-            aria-expanded={categoryOpen}
-            aria-haspopup="listbox"
-          >
-            {ScopeIcon ? <ScopeIcon size={18} aria-hidden /> : null}
-            <span className={MOBILE_WORKSPACE_SCOPE_LABEL_CLASS}>
-              <span className="truncate">
-                {activeScope?.label ?? MOBILE_WORKSPACE_DEFAULT_SCOPE_LABEL}
-              </span>
-              <ChevronDown
-                size={MOBILE_WORKSPACE_SCOPE_CARET_SIZE}
-                strokeWidth={2.25}
-                className={MOBILE_WORKSPACE_SCOPE_CARET_CLASS}
-                aria-hidden
-              />
-            </span>
-          </button>
         ) : null}
         {hasSettings && settings ? (
           <div className="flex min-w-0 flex-1 items-stretch">{settings}</div>
         ) : null}
       </div>
+      {isMobileViewport ? (
+        <div ref={trailingHostRef} hidden>
+          {tools.trailing}
+          {tools.tabsEnd}
+        </div>
+      ) : null}
       <MobileDockOverflowSheet
-        open={categoryOpen}
-        onOpenChange={setCategoryOpen}
-        items={scopeItems}
-        title={MOBILE_WORKSPACE_CATEGORY_SHEET_TITLE}
+        open={switcherOpen}
+        onOpenChange={setSwitcherOpen}
+        groups={switcherGroups}
+        title={switcherTitle}
       />
     </nav>
+  );
+}
+
+function WorkspaceMenuButton({ open, onClick }: { open: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        MOBILE_DOCK_ITEM_CLASS,
+        open
+          ? 'bg-primary/12 text-primary'
+          : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
+      )}
+      aria-expanded={open}
+    >
+      <LayoutGrid size={18} aria-hidden />
+      Menu
+    </button>
+  );
+}
+
+function WorkspaceCreateButton({ create }: { create?: MobileDockCreateAction }) {
+  if (!create) return null;
+  return (
+    <button
+      type="button"
+      disabled={create.disabled}
+      className={cn(
+        MOBILE_DOCK_ITEM_CLASS,
+        create.disabled
+          ? 'text-muted-foreground/50'
+          : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
+      )}
+      onClick={() => {
+        if (!create.disabled) create.onSelect();
+      }}
+    >
+      <Plus size={18} aria-hidden />
+      {MOBILE_WORKSPACE_CREATE_LABEL}
+    </button>
   );
 }

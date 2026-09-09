@@ -1,43 +1,59 @@
 import { describe, expect, it } from 'vitest';
-import {
-  mergeMobileDockItems,
-  pickActiveMobileDockItem,
-  resolveMobileDockSlots,
-} from './mobile-module-dock-resolve';
+import { pickActiveMobileDockItem, resolveMobileDockSwitcher } from './mobile-module-dock-resolve';
 import type { MobileDockItem } from './mobile-module-dock-types';
+import {
+  MOBILE_WORKSPACE_SWITCHER_CATEGORY_TITLE,
+  MOBILE_WORKSPACE_SWITCHER_SECTION_TITLE,
+  MOBILE_WORKSPACE_SWITCHER_VIEW_TITLE,
+  MOBILE_WORKSPACE_SWITCHER_ZONE_TITLE,
+} from './mobile-workspace-dock-constants';
 
 function item(id: string, active = false): MobileDockItem {
   return { id, label: id, active };
 }
 
-describe('mergeMobileDockItems', () => {
-  it('keeps module section links first, then header zones, then page filters', () => {
-    const merged = mergeMobileDockItems(
-      [item('leads'), item('deals')],
-      [item('all'), item('my')],
-      [item('project')],
+describe('resolveMobileDockSwitcher', () => {
+  it('keeps header zones and page sections as separate groups', () => {
+    const resolved = resolveMobileDockSwitcher(
+      [item('invoices', true)],
+      [item('revenue'), item('expenses')],
+      [],
+      [],
     );
-    expect(merged.map((entry) => entry.id)).toEqual(['leads', 'deals', 'project', 'all', 'my']);
+    expect(resolved.groups.map((group) => group.title)).toEqual([
+      MOBILE_WORKSPACE_SWITCHER_ZONE_TITLE,
+      MOBILE_WORKSPACE_SWITCHER_SECTION_TITLE,
+    ]);
+    expect(resolved.displayItem?.id).toBe('invoices');
   });
 
-  it('uses header zones when the page has no section links', () => {
-    const merged = mergeMobileDockItems([], [item('incoming')], [item('project'), item('product')]);
-    expect(merged.map((entry) => entry.id)).toEqual(['project', 'product', 'incoming']);
+  it('uses category when the page only has list scopes', () => {
+    const resolved = resolveMobileDockSwitcher([], [], [item('all'), item('company', true)], []);
+    expect(resolved.groups).toEqual([
+      {
+        id: 'category',
+        title: MOBILE_WORKSPACE_SWITCHER_CATEGORY_TITLE,
+        items: [item('all'), item('company', true)],
+      },
+    ]);
+    expect(resolved.displayItem?.id).toBe('company');
   });
-});
 
-describe('resolveMobileDockSlots', () => {
-  it('keeps four or fewer items on the bar', () => {
-    const items = [item('a'), item('b'), item('c'), item('d')];
-    expect(resolveMobileDockSlots(items)).toEqual({ slots: items, overflow: [] });
+  it('adds page filters as a view group when sections already exist', () => {
+    const resolved = resolveMobileDockSwitcher(
+      [item('leads', true), item('deals')],
+      [],
+      [item('incoming'), item('active')],
+      [],
+    );
+    expect(resolved.groups[1]?.title).toBe(MOBILE_WORKSPACE_SWITCHER_VIEW_TITLE);
+    expect(resolved.displayItem?.id).toBe('leads');
   });
 
-  it('keeps three items and overflows the rest when there are more than four', () => {
-    const items = [item('a'), item('b'), item('c'), item('d'), item('e')];
-    expect(resolveMobileDockSlots(items)).toEqual({
-      slots: [item('a'), item('b'), item('c')],
-      overflow: [item('d'), item('e')],
-    });
+  it('uses fallback only when nothing else registered', () => {
+    const resolved = resolveMobileDockSwitcher([], [], [], [item('board', true)]);
+    expect(resolved.groups[0]?.items.map((entry) => entry.id)).toEqual(['board']);
+    expect(resolved.displayItem?.id).toBe('board');
   });
 });
 

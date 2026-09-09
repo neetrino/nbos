@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useRegisterMobileDockItems } from '@/components/layout/MobileModuleDockProvider';
-import type { MobileDockItem, MobileDockSource } from '@/components/layout/mobile-module-dock-types';
+import type { MobileDockItem } from '@/components/layout/mobile-module-dock-types';
 import { cn } from '@/lib/utils';
 import { PAGE_HERO_PILL_GROUP } from './page-hero-constants';
 import {
@@ -28,8 +28,6 @@ export interface PageHeroTabsProps<T extends string> {
   className?: string;
   /** When true, tabs look inactive (e.g. lifecycle overlay). */
   dimmed?: boolean;
-  /** Mobile dock group. Filters default to secondary so module section links stay first. Workspace docks use these as the category picker, not as destinations. */
-  dockSource?: MobileDockSource;
 }
 
 export function PageHeroTabs<T extends string>({
@@ -39,7 +37,6 @@ export function PageHeroTabs<T extends string>({
   ariaLabel,
   className,
   dimmed = false,
-  dockSource = 'secondary',
 }: PageHeroTabsProps<T>) {
   const isMobileViewport = useIsMobileViewport();
   const groupRef = useRef<HTMLDivElement>(null);
@@ -55,7 +52,7 @@ export function PageHeroTabs<T extends string>({
       })),
     [dimmed, onChange, options, value],
   );
-  useRegisterMobileDockItems(dockSource, dockItems);
+  useRegisterMobileDockItems('secondary', dockItems);
 
   const getActiveElement = useCallback(
     () => (dimmed ? undefined : buttonRefs.current.get(value)),

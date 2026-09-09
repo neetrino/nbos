@@ -21,7 +21,6 @@ import { CredentialsVaultPageOverlays } from '@/features/credentials/components/
 import { CredentialVaultSessionProvider } from '@/features/credentials/hooks/use-credential-vault-session';
 import { useVaultPasswordCopy } from '@/features/credentials/hooks/use-vault-password-copy';
 import { useCredentialsVaultPage } from '@/features/credentials/hooks/use-credentials-vault-page';
-import { CredentialsMobileWorkspaceDock } from '@/features/credentials/components/credentials-mobile-workspace-dock';
 import { CredentialsPageSettingsSheet } from '@/features/credentials/components/credentials-page-settings-sheet';
 import { CredentialEmergencyRequestsPanel } from '@/features/credentials/components/credential-emergency-requests-panel';
 import { PermissionGate } from '@/lib/permissions';
@@ -59,6 +58,7 @@ function CredentialsVaultPageContent() {
     <div className="flex h-full min-h-0 flex-col gap-5">
       <PageHero
         title={vault.vaultListScope === 'trash' ? 'Credentials Vault — Trash' : 'Credentials Vault'}
+        create={{ onSelect: vault.openCreate, disabled: !vault.showCreate }}
         tabs={
           <PageHeroTabs
             value={vault.activeTab}
@@ -103,12 +103,6 @@ function CredentialsVaultPageContent() {
             )}
           </>
         }
-      />
-      <CredentialsMobileWorkspaceDock
-        showCreate={vault.showCreate}
-        onCreate={vault.openCreate}
-        vaultListScope={vault.vaultListScope}
-        onVaultListScopeChange={vault.setVaultListScope}
       />
 
       <CredentialEmergencyRequestsPanel />

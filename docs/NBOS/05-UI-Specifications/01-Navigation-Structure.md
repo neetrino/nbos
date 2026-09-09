@@ -491,7 +491,7 @@ Header не содержит постоянную глобальную кноп�
 Правильные места для create actions:
 
 - Dashboard pinned actions;
-- module header;
+- module header (desktop) and the mobile dock `+` slot;
 - entity context;
 - command palette later.
 
@@ -698,54 +698,41 @@ Desktop chrome (sidebar, header zone tabs, PageHero pills, list/table switchers)
 
 ```text
 Menu  = карта платформы          (desktop Sidebar)
-Dock  = карта текущего модуля    (desktop header zones + PageHero section links)
-      или workspace-тулбар      (когда вкладки — скоуп одного списка, не маршруты)
-Top   = идентичность + глобальные (+ действие страницы на destination-доке)
+Dock  = инструменты модуля       (Menu | Search | + | Place | Settings)
+Top   = идентичность + глобальные
 Body  = одна удобная поверхность (cards / tiles / board)
 ```
 
 #### Three chrome bands
 
 1. **Top (minimal)**  
-   Module or entity title. Notifications. Account.  
-   On a **destination** dock: page search as an icon (sheet) and compact create / settings.  
-   On a **workspace** dock: global search only — page search, create, and settings live in the dock.  
-   No module tabs. No view-mode switcher. No Project / Product / Finance zone pills.
+   Module or entity title. Global search. Notifications. Account.  
+   Page search, create, settings, module tabs, view switchers, and zone pills do **not** live here.
 
 2. **Body**  
    One preferred surface: cards, tiles, or kanban.  
    List and table views stay desktop-only unless a module documents an exception (trash, reconciliation gap, print).  
    Extra desktop chrome that does not help a thumb (stat strips, filter chip rows, view switchers) is hidden.
 
-3. **Dock (bottom)**  
-   Slot 1 is always **Menu** — the same app-module sheet as the former mobile drawer.
+3. **Dock (bottom)** — one layout for every module:
 
-   **Destination layout (default)** — module map:  
-   Slots 2–5 are destinations of the **current module**.  
-   If there are more than four destinations, three stay on the bar and the rest open from **More**.
+   `Menu | Search | + | Place | Settings`
 
-   **Workspace layout** — tools of one list (trial: Credentials):  
-   `Menu | Search | + | Category | Settings`.  
-   Category is the current scope (default **All**), shown as icon + label + a small down caret. Tap opens a More-style sheet with All / My / Team / Company / Project / Secret. These are tabs of one system, not separate module destinations.  
-   Do not use workspace on CRM, Finance, Project Hub, or other multi-destination modules until the trial is accepted and applied on purpose.
+   Empty tools are omitted (a page without create has no `+`).  
+   **Place** is the current location in the module (icon + label + a small down caret). Tap opens a sheet:
 
-#### What the destination dock shows
-
-Priority (first match wins as the primary group; extras go after it, then into More):
-
-1. **Module / section destinations** — `PageHeroNavLinks` (CRM Dashboard / Leads / Deals; Finance Orders / Invoices / …; Clients, Support, My Company).
-2. **Sibling zones** — header context `nav` (Project / Product; Finance Revenue / Expenses / …) when the page has no section links, or after section links when both exist.
-3. **Page places that ARE the module** — only when the page is still on the destination layout and the tabs are real places. Workspace pages keep `PageHeroTabs` as the Category picker instead.
-4. **Declared fallback** — only for modules with neither links nor zones (Tasks: Board / Recurring / Spaces). Do not invent random global shortcuts on every empty page.
-
-Page filters that are **not** destinations (Incoming / Active / Closed, All / My / Team when CRM already has Leads / Deals) belong in **More** or as compact in-content chips. They must not steal the four dock slots from module navigation.
+   - **Zone** — header context `nav` (Finance Revenue / Expenses / …; Project / Product).
+   - **Section** — `PageHeroNavLinks` (CRM Dashboard / Leads / Deals; Finance Orders / Invoices / …).
+   - **Category** — `PageHeroTabs` when those tabs *are* the module (Credentials All / My / Team / …).
+   - **View** — page filters that are not destinations, listed under sections when both exist.
+   - **Fallback** — only Tasks: Board / Recurring / Spaces. Do not invent cross-module shortcuts on Dashboard or empty pages.
 
 #### Contract for every new module or page
 
-- Register destinations through the existing module shell (`PageHeroNavLinks`, header zone `nav`, or an explicit fallback). Do not add a custom mobile tab row in the top bar.
+- Register places through the existing module shell (`PageHeroNavLinks`, header zone `nav`, `PageHeroTabs`, or the Tasks fallback). Do not add a custom mobile tab row in the top bar.
 - Keep desktop PageHero / header / sidebar unchanged. Mobile dualizes chrome; it does not fork business behavior, routes, or RBAC.
 - Prefer cards or a board on the phone. Do not expose list/table as a user choice on mobile.
-- Create is never a global header action. On destination pages it stays a page action (top `+` or in-content). On a workspace dock it is the dock `+` slot.
+- Create is never a global header action. It is the dock `+` slot (PageHero trailing New / Create, or an explicit `create` action).
 
 #### Why this is the platform pattern
 

@@ -5,28 +5,29 @@ import { X } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { MOBILE_APP_MENU_HANDLE_CLASS, MOBILE_APP_MENU_SHEET_CLASS } from './mobile-app-menu-constants';
-import type { MobileDockItem } from './mobile-module-dock-types';
+import type { MobileDockItem, MobileDockSwitcherGroup } from './mobile-module-dock-types';
 
 interface MobileDockOverflowSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  items: MobileDockItem[];
-  title?: string;
+  groups: MobileDockSwitcherGroup[];
+  title: string;
 }
 
 export function MobileDockOverflowSheet({
   open,
   onOpenChange,
-  items,
-  title = 'More',
+  groups,
+  title,
 }: MobileDockOverflowSheetProps) {
   const close = () => onOpenChange(false);
+  const showGroupTitles = groups.length > 1;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" showCloseButton={false} className={MOBILE_APP_MENU_SHEET_CLASS}>
         <SheetTitle className="sr-only">{title}</SheetTitle>
-        <SheetDescription className="sr-only">Additional sections for the current module.</SheetDescription>
+        <SheetDescription className="sr-only">Places in the current module.</SheetDescription>
         <span className={MOBILE_APP_MENU_HANDLE_CLASS} aria-hidden />
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
           <p className="text-foreground text-lg font-semibold tracking-tight">{title}</p>
@@ -39,13 +40,24 @@ export function MobileDockOverflowSheet({
             <X size={18} aria-hidden />
           </button>
         </div>
-        <ul className="flex flex-col gap-1 px-4 pb-5">
-          {items.map((item) => (
-            <li key={item.id}>
-              <OverflowDockRow item={item} onNavigate={close} />
-            </li>
+        <div className="flex flex-col gap-4 px-4 pb-5">
+          {groups.map((group) => (
+            <section key={group.id}>
+              {showGroupTitles ? (
+                <p className="text-muted-foreground mb-1.5 px-3 text-[11px] font-semibold tracking-[0.14em] uppercase">
+                  {group.title}
+                </p>
+              ) : null}
+              <ul className="flex flex-col gap-1">
+                {group.items.map((item) => (
+                  <li key={item.id}>
+                    <OverflowDockRow item={item} onNavigate={close} />
+                  </li>
+                ))}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
       </SheetContent>
     </Sheet>
   );
@@ -60,7 +72,12 @@ function OverflowDockRow({ item, onNavigate }: { item: MobileDockItem; onNavigat
 
   if (item.href) {
     return (
-      <Link href={item.href} onClick={onNavigate} className={className} aria-current={item.active ? 'page' : undefined}>
+      <Link
+        href={item.href}
+        onClick={onNavigate}
+        className={className}
+        aria-current={item.active ? 'page' : undefined}
+      >
         {Icon ? <Icon size={18} aria-hidden /> : null}
         {item.label}
       </Link>

@@ -11,16 +11,13 @@ import {
   type ReactNode,
 } from 'react';
 import { usePathname } from 'next/navigation';
-import {
-  mergeMobileDockItems,
-  mobileDockItemsEqual,
-  resolveMobileDockSlots,
-} from './mobile-module-dock-resolve';
+import { mobileDockItemsEqual, resolveMobileDockSwitcher } from './mobile-module-dock-resolve';
 import { fallbackMobileDockItems } from './mobile-module-fallback-dock';
 import type {
+  MobileDockCreateAction,
   MobileDockItem,
-  MobileDockLayout,
   MobileDockSource,
+  MobileDockSwitcherGroup,
   MobileDockTools,
 } from './mobile-module-dock-types';
 
@@ -29,41 +26,30 @@ type MobileDockToolsPatch = { [K in keyof MobileDockTools]?: MobileDockTools[K] 
 
 const EMPTY_SOURCES: DockSources = { page: [], secondary: [], header: [] };
 const EMPTY_TOOLS: MobileDockTools = {};
-const DEFAULT_LAYOUT: MobileDockLayout = 'destinations';
 
 type ToolFlags = {
   hasSearch: boolean;
-  hasTrailing: boolean;
-  hasTabsEnd: boolean;
   hasCreate: boolean;
   hasSettings: boolean;
 };
 
 const EMPTY_TOOL_FLAGS: ToolFlags = {
   hasSearch: false,
-  hasTrailing: false,
-  hasTabsEnd: false,
   hasCreate: false,
   hasSettings: false,
 };
 
-type WorkspaceActions = Pick<MobileDockTools, 'create' | 'settings'>;
-
 type MobileModuleDockContextValue = {
-  layout: MobileDockLayout;
-  slots: MobileDockItem[];
-  overflow: MobileDockItem[];
-  scopeItems: MobileDockItem[];
-  workspaceActions: WorkspaceActions;
+  switcherGroups: MobileDockSwitcherGroup[];
+  switcherItem: MobileDockItem | null;
+  create: MobileDockCreateAction | undefined;
+  settings: ReactNode | undefined;
   hasSearch: boolean;
-  hasTrailing: boolean;
-  hasTabsEnd: boolean;
   hasCreate: boolean;
   hasSettings: boolean;
   getTools: () => MobileDockTools;
   setSourceItems: (source: MobileDockSource, items: MobileDockItem[]) => void;
   setTools: (patch: MobileDockToolsPatch) => void;
-  setLayout: (layout: MobileDockLayout) => void;
 };
 
 const MobileModuleDockContext = createContext<MobileModuleDockContextValue | null>(null);
@@ -84,8 +70,6 @@ function applyToolsPatch(current: MobileDockTools, patch: MobileDockToolsPatch):
 function toolsToFlags(tools: MobileDockTools): ToolFlags {
   return {
     hasSearch: Boolean(tools.search),
-    hasTrailing: Boolean(tools.trailing),
-    hasTabsEnd: Boolean(tools.tabsEnd),
     hasCreate: Boolean(tools.create),
     hasSettings: Boolean(tools.settings),
   };
@@ -94,8 +78,6 @@ function toolsToFlags(tools: MobileDockTools): ToolFlags {
 function toolFlagsEqual(left: ToolFlags, right: ToolFlags): boolean {
   return (
     left.hasSearch === right.hasSearch &&
-    left.hasTrailing === right.hasTrailing &&
-    left.hasTabsEnd === right.hasTabsEnd &&
     left.hasCreate === right.hasCreate &&
     left.hasSettings === right.hasSettings
   );
@@ -104,10 +86,11 @@ function toolFlagsEqual(left: ToolFlags, right: ToolFlags): boolean {
 export function MobileModuleDockProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [sources, setSources] = useState<DockSources>(EMPTY_SOURCES);
-  const [layout, setLayout] = useState<MobileDockLayout>(DEFAULT_LAYOUT);
-  const [workspaceActions, setWorkspaceActions] = useState<WorkspaceActions>({});
   const toolsRef = useRef<MobileDockTools>(EMPTY_TOOLS);
   const [toolFlags, setToolFlags] = useState<ToolFlags>(EMPTY_TOOL_FLAGS);
+  const [workspaceActions, setWorkspaceActions] = useState<
+    Pick<MobileDockTools, 'create' | 'settings'>
+  >({});
 
   const setSourceItems = useCallback((source: MobileDockSource, items: MobileDockItem[]) => {
     setSources((prev) => {
@@ -130,35 +113,29 @@ export function MobileModuleDockProvider({ children }: { children: ReactNode }) 
 
   const getTools = useCallback(() => toolsRef.current, []);
 
-  const resolved = useMemo(() => {
-    const merged = mergeMobileDockItems(sources.page, sources.secondary, sources.header);
-    const items = merged.length > 0 ? merged : fallbackMobileDockItems(pathname);
-    return resolveMobileDockSlots(items);
-  }, [pathname, sources]);
+  const switcher = useMemo(
+    () =>
+      resolveMobileDockSwitcher(
+        sources.page,
+        sources.header,
+        sources.secondary,
+        fallbackMobileDockItems(pathname),
+      ),
+    [pathname, sources],
+  );
 
   const value = useMemo(
     () => ({
-      layout,
-      slots: resolved.slots,
-      overflow: resolved.overflow,
-      scopeItems: sources.secondary,
-      workspaceActions,
+      switcherGroups: switcher.groups,
+      switcherItem: switcher.displayItem,
+      create: workspaceActions.create,
+      settings: workspaceActions.settings,
       ...toolFlags,
       getTools,
       setSourceItems,
       setTools,
-      setLayout,
     }),
-    [
-      layout,
-      resolved,
-      sources.secondary,
-      workspaceActions,
-      toolFlags,
-      getTools,
-      setSourceItems,
-      setTools,
-    ],
+    [switcher, workspaceActions, toolFlags, getTools, setSourceItems, setTools],
   );
 
   return (
@@ -176,27 +153,21 @@ function useMobileModuleDock(): MobileModuleDockContextValue {
 
 export function useMobileModuleDockResolved() {
   const {
-    layout,
-    slots,
-    overflow,
-    scopeItems,
-    workspaceActions,
+    switcherGroups,
+    switcherItem,
+    create,
+    settings,
     hasSearch,
-    hasTrailing,
-    hasTabsEnd,
     hasCreate,
     hasSettings,
     getTools,
   } = useMobileModuleDock();
   return {
-    layout,
-    slots,
-    overflow,
-    scopeItems,
-    workspaceActions,
+    switcherGroups,
+    switcherItem,
+    create,
+    settings,
     hasSearch,
-    hasTrailing,
-    hasTabsEnd,
     hasCreate,
     hasSettings,
     getTools,
@@ -226,28 +197,27 @@ export function useRegisterMobileDockTools(tools: MobileDockTools): void {
   }, [setTools, search, trailing, tabsEnd]);
 }
 
-export function useRegisterMobileDockLayout(layout: MobileDockLayout): void {
-  const ctx = useContext(MobileModuleDockContext);
-  const setLayout = ctx?.setLayout;
-
-  useLayoutEffect(() => {
-    if (!setLayout) return;
-    setLayout(layout);
-    return () => setLayout(DEFAULT_LAYOUT);
-  }, [setLayout, layout]);
-}
-
 export function useRegisterMobileDockWorkspaceActions(actions: {
   create?: MobileDockTools['create'];
   settings?: MobileDockTools['settings'];
 }): void {
   const ctx = useContext(MobileModuleDockContext);
   const setTools = ctx?.setTools;
+  const hasCreate = Object.prototype.hasOwnProperty.call(actions, 'create');
+  const hasSettings = Object.prototype.hasOwnProperty.call(actions, 'settings');
   const { create, settings } = actions;
 
   useLayoutEffect(() => {
     if (!setTools) return;
-    setTools({ create, settings });
-    return () => setTools({ create: undefined, settings: undefined });
-  }, [setTools, create, settings]);
+    const patch: MobileDockToolsPatch = {};
+    if (hasCreate) patch.create = create;
+    if (hasSettings) patch.settings = settings;
+    setTools(patch);
+    return () => {
+      const clear: MobileDockToolsPatch = {};
+      if (hasCreate) clear.create = undefined;
+      if (hasSettings) clear.settings = undefined;
+      setTools(clear);
+    };
+  }, [setTools, hasCreate, hasSettings, create, settings]);
 }

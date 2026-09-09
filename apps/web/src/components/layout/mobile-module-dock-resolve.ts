@@ -1,36 +1,63 @@
-import { MOBILE_DOCK_CONTENT_SLOTS, type MobileDockItem } from './mobile-module-dock-types';
-
-export function mergeMobileDockItems(
-  pageItems: MobileDockItem[],
-  secondaryItems: MobileDockItem[],
-  headerItems: MobileDockItem[],
-): MobileDockItem[] {
-  const seen = new Set<string>();
-  const merged: MobileDockItem[] = [];
-  for (const item of [...pageItems, ...headerItems, ...secondaryItems]) {
-    if (seen.has(item.id)) continue;
-    seen.add(item.id);
-    merged.push(item);
-  }
-  return merged;
-}
-
-export function resolveMobileDockSlots(items: MobileDockItem[]): {
-  slots: MobileDockItem[];
-  overflow: MobileDockItem[];
-} {
-  if (items.length <= MOBILE_DOCK_CONTENT_SLOTS) {
-    return { slots: items, overflow: [] };
-  }
-
-  return {
-    slots: items.slice(0, MOBILE_DOCK_CONTENT_SLOTS - 1),
-    overflow: items.slice(MOBILE_DOCK_CONTENT_SLOTS - 1),
-  };
-}
+import type { MobileDockItem, MobileDockSwitcherGroup } from './mobile-module-dock-types';
+import {
+  MOBILE_WORKSPACE_SWITCHER_CATEGORY_TITLE,
+  MOBILE_WORKSPACE_SWITCHER_SECTION_TITLE,
+  MOBILE_WORKSPACE_SWITCHER_VIEW_TITLE,
+  MOBILE_WORKSPACE_SWITCHER_ZONE_TITLE,
+} from './mobile-workspace-dock-constants';
 
 export function pickActiveMobileDockItem(items: MobileDockItem[]): MobileDockItem | null {
   return items.find((item) => item.active) ?? items[0] ?? null;
+}
+
+export function resolveMobileDockSwitcher(
+  pageItems: MobileDockItem[],
+  headerItems: MobileDockItem[],
+  secondaryItems: MobileDockItem[],
+  fallbackItems: MobileDockItem[],
+): { groups: MobileDockSwitcherGroup[]; displayItem: MobileDockItem | null } {
+  const groups: MobileDockSwitcherGroup[] = [];
+
+  if (headerItems.length > 0) {
+    groups.push({
+      id: 'zone',
+      title: MOBILE_WORKSPACE_SWITCHER_ZONE_TITLE,
+      items: headerItems,
+    });
+  }
+  if (pageItems.length > 0) {
+    groups.push({
+      id: 'section',
+      title: MOBILE_WORKSPACE_SWITCHER_SECTION_TITLE,
+      items: pageItems,
+    });
+  }
+  if (secondaryItems.length > 0) {
+    groups.push({
+      id: groups.length === 0 ? 'category' : 'view',
+      title:
+        groups.length === 0
+          ? MOBILE_WORKSPACE_SWITCHER_CATEGORY_TITLE
+          : MOBILE_WORKSPACE_SWITCHER_VIEW_TITLE,
+      items: secondaryItems,
+    });
+  }
+  if (groups.length === 0 && fallbackItems.length > 0) {
+    groups.push({
+      id: 'section',
+      title: MOBILE_WORKSPACE_SWITCHER_SECTION_TITLE,
+      items: fallbackItems,
+    });
+  }
+
+  return {
+    groups,
+    displayItem:
+      pickActiveMobileDockItem(pageItems) ??
+      pickActiveMobileDockItem(headerItems) ??
+      pickActiveMobileDockItem(secondaryItems) ??
+      pickActiveMobileDockItem(fallbackItems),
+  };
 }
 
 export function mobileDockItemsEqual(left: MobileDockItem[], right: MobileDockItem[]): boolean {

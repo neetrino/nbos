@@ -6,41 +6,35 @@ import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { MOBILE_APP_MENU_HANDLE_CLASS, MOBILE_APP_MENU_SHEET_CLASS } from './mobile-app-menu-constants';
 import { MOBILE_DOCK_ITEM_CLASS } from './mobile-bottom-nav-constants';
+import { MOBILE_WORKSPACE_SEARCH_LABEL } from './mobile-workspace-dock-constants';
 
 interface MobilePageSearchSheetProps {
   search: ReactNode;
-  variant?: 'header' | 'dock';
   label?: string;
 }
 
 export function MobilePageSearchSheet({
   search,
-  variant = 'header',
-  label = 'Search',
+  label = MOBILE_WORKSPACE_SEARCH_LABEL,
 }: MobilePageSearchSheetProps) {
   const [open, setOpen] = useState(false);
-  const isDock = variant === 'dock';
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <button
         type="button"
-        className={
-          isDock
-            ? cn(
-                MOBILE_DOCK_ITEM_CLASS,
-                open
-                  ? 'bg-primary/12 text-primary'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
-              )
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground flex size-9 items-center justify-center rounded-full'
-        }
+        className={cn(
+          MOBILE_DOCK_ITEM_CLASS,
+          open
+            ? 'bg-primary/12 text-primary'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
+        )}
         aria-label="Search this page"
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >
         <Search size={18} aria-hidden />
-        {isDock ? label : null}
+        {label}
       </button>
       <SheetContent
         side="bottom"

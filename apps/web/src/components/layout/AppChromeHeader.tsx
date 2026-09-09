@@ -13,9 +13,6 @@ import {
   GlobalSearchTrigger,
 } from '@/features/global-search/GlobalSearchTrigger';
 import type { MeResponse } from '@/lib/permissions';
-import { APP_CHROME_MOBILE_TRAILING_CLASS } from './app-chrome-header-constants';
-import { useMobileModuleDockResolved } from './MobileModuleDockProvider';
-import { MobilePageSearchSheet } from './MobilePageSearchSheet';
 
 interface AppChromeHeaderProps {
   moduleTitle: string | null;
@@ -52,43 +49,17 @@ export function AppChromeHeader({
           </div>
         ) : null}
       </div>
-      <AppChromeActions isMobileViewport={isMobileViewport} showQuickNote={showQuickNote} me={me} />
-    </header>
-  );
-}
-
-function AppChromeActions({
-  isMobileViewport,
-  showQuickNote,
-  me,
-}: Pick<AppChromeHeaderProps, 'isMobileViewport' | 'showQuickNote' | 'me'>) {
-  const { layout, hasSearch, hasTrailing, hasTabsEnd, getTools } = useMobileModuleDockResolved();
-  const tools = getTools();
-  const workspaceMobile = isMobileViewport && layout === 'workspace';
-  const showPageSearch = isMobileViewport && !workspaceMobile && hasSearch && Boolean(tools.search);
-  const showPageTrailing = isMobileViewport && !workspaceMobile && (hasTrailing || hasTabsEnd);
-
-  return (
-    <div className="ml-auto flex shrink-0 items-center gap-1.5 self-center overflow-visible sm:gap-3">
-      {showPageSearch && tools.search ? (
-        <MobilePageSearchSheet search={tools.search} />
-      ) : (
+      <div className="ml-auto flex shrink-0 items-center gap-1.5 self-center overflow-visible sm:gap-3">
         <GlobalSearchMobileTrigger />
-      )}
-      <GlobalSearchTrigger />
-      {showPageTrailing ? (
-        <div className={APP_CHROME_MOBILE_TRAILING_CLASS}>
-          {tools.tabsEnd}
-          {tools.trailing}
-        </div>
-      ) : null}
-      {showQuickNote ? (
-        <div className="max-md:hidden">
-          <HeaderQuickNote />
-        </div>
-      ) : null}
-      <NotificationDropdown />
-      <AccountMenuDropdown me={me} />
-    </div>
+        <GlobalSearchTrigger />
+        {showQuickNote ? (
+          <div className="max-md:hidden">
+            <HeaderQuickNote />
+          </div>
+        ) : null}
+        <NotificationDropdown />
+        <AccountMenuDropdown me={me} />
+      </div>
+    </header>
   );
 }
