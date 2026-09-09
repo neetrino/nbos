@@ -318,6 +318,7 @@ export function ClientServiceDetailSheet({
                     onCreateInvoice={() => setInvoiceOpen(true)}
                     onCreateExpense={() => setExpenseOpen(true)}
                     onCreateTask={() => setQuickCreateTaskOpen(true)}
+                    onRegistryChecked={refreshAfterLinkCreated}
                   />
                 </DetailSheetTabPanel>
               ) : null}

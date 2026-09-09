@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -26,6 +26,7 @@ import {
   CLIENT_SERVICE_FILTER_STATUS_KEY,
   CLIENT_SERVICE_FILTER_TYPE_KEY,
 } from './build-client-service-integrated-filter-configs';
+import { subscribeClientServiceRegistryRefresh } from './client-service-registry-events';
 import { ClientServiceCreateDialog } from './ClientServiceCreateDialog';
 import { ClientServiceDetailSheet } from './ClientServiceDetailSheet';
 import { ClientServicesPageSettingsSheet } from './ClientServicesPageSettingsSheet';
@@ -78,6 +79,8 @@ function ClientServicesPageInner() {
   const statusFilter = clientFilters[CLIENT_SERVICE_FILTER_STATUS_KEY] ?? 'all';
   const billingFilter = clientFilters[CLIENT_SERVICE_FILTER_BILLING_KEY] ?? 'all';
   const refreshAll = useCallback(() => setReloadToken((token) => token + 1), []);
+
+  useEffect(() => subscribeClientServiceRegistryRefresh(refreshAll), [refreshAll]);
 
   const baseParams = useMemo<ClientServiceRecordListParams>(
     () => ({

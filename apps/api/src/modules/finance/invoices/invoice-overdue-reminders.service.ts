@@ -38,6 +38,8 @@ type OverdueCandidate = {
     reminderLanguage: SubscriptionReminderLanguage;
     productId: string | null;
     name: string;
+    type: string;
+    registryLookupStatus: string | null;
     product: { id: string; name: string } | null;
   } | null;
   subscription: {
@@ -184,6 +186,7 @@ export class InvoiceOverdueRemindersService {
       moneyStatus: invoice.moneyStatus,
       hasProductLink: invoice.subscription != null || invoice.clientServiceRecord != null,
       notificationsEnabled: isOverdueNotificationsEnabled(invoice),
+      domainRegistryDead: isDomainRegistryDead(invoice),
       taxBlocked: isOfficialRequestBlockingTaxReminders(invoice),
       hasWhatsAppGroup: Boolean(productWhatsApp?.groupChatId),
       wave1ScheduledFor: jobs?.wave1ScheduledFor ?? null,
@@ -312,4 +315,9 @@ function isOverdueNotificationsEnabled(invoice: OverdueCandidate): boolean {
   if (invoice.subscription != null) return invoice.subscription.notificationsEnabled;
   if (invoice.clientServiceRecord != null) return invoice.clientServiceRecord.notificationsEnabled;
   return false;
+}
+
+function isDomainRegistryDead(invoice: OverdueCandidate): boolean {
+  const record = invoice.clientServiceRecord;
+  return record?.type === 'DOMAIN' && record.registryLookupStatus === 'NOT_FOUND';
 }

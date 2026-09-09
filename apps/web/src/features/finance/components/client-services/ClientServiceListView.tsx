@@ -33,6 +33,9 @@ import {
   EntityListMutedDash,
   EntityListPrimaryCell,
 } from '@/components/shared/entity-list-table';
+import { isClientServiceDomain } from '@/features/finance/constants/client-service-registry';
+import { ClientServiceRegistryBadge } from './ClientServiceRegistryBadge';
+import { ClientServiceRegistryCheckButton } from './ClientServiceRegistryCheckButton';
 import { ClientServiceStageBadge } from './ClientServiceStageBadge';
 import { useClientServiceList } from './use-client-service-list';
 
@@ -94,7 +97,12 @@ export function ClientServiceListView({
               onClick={() => onOpen(service)}
             >
               <TableCell className={`${ENTITY_LIST_CELL_CLASS} max-w-[240px]`}>
-                <EntityListPrimaryCell title={service.name} subtitle={service.provider ?? null} />
+                <div className="flex min-w-0 items-center gap-2">
+                  <EntityListPrimaryCell title={service.name} subtitle={service.provider ?? null} />
+                  {isClientServiceDomain(service) ? (
+                    <ClientServiceRegistryBadge status={service.registryLookupStatus} />
+                  ) : null}
+                </div>
               </TableCell>
 
               <TableCell className={`${ENTITY_LIST_CELL_CLASS} max-w-[140px]`}>
@@ -116,7 +124,12 @@ export function ClientServiceListView({
               </TableCell>
 
               <TableCell className={ENTITY_LIST_CELL_CLASS}>
-                <EntityListDate value={service.renewalDate} />
+                <div className="flex items-center gap-1">
+                  <EntityListDate value={service.renewalDate} />
+                  {isClientServiceDomain(service) ? (
+                    <ClientServiceRegistryCheckButton serviceId={service.id} compact />
+                  ) : null}
+                </div>
               </TableCell>
 
               <TableCell className={ENTITY_LIST_CELL_CLASS}>

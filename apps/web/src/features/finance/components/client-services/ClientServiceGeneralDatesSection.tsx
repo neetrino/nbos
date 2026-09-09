@@ -12,15 +12,26 @@ import {
   EXPENSE_SHEET_FIELD_ROW_2_CLASS,
 } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import { SubscriptionNotificationSettingsRow } from '@/features/finance/components/subscriptions/SubscriptionNotificationSettingsRow';
+import { isClientServiceDomain } from '@/features/finance/constants/client-service-registry';
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
+import type {
+  ClientServiceRecord,
+  ClientServiceRegistryCheckResult,
+} from '@/lib/api/client-services';
+import { ClientServiceRegistryBadge } from './ClientServiceRegistryBadge';
+import { ClientServiceRegistryCheckButton } from './ClientServiceRegistryCheckButton';
 
 export function ClientServiceGeneralDatesSection(props: {
+  service: ClientServiceRecord;
   draft: ClientServiceFormState;
   patchDraft: (partial: Partial<ClientServiceFormState>) => void;
   formDisabled: boolean;
+  onRegistryChecked?: (result: ClientServiceRegistryCheckResult) => void;
 }) {
   const [open, setOpen] = useState(true);
-  const { draft, patchDraft, formDisabled } = props;
+  const { draft, patchDraft, formDisabled, service } = props;
+  const isDomain = isClientServiceDomain(service);
+  const checkedLabel = formatRegistryCheckedAt(service.registryCheckedAt);
 
   return (
     <DetailSheetCollapsibleSection
@@ -52,6 +63,22 @@ export function ClientServiceGeneralDatesSection(props: {
             onValueChange={(renewalDate) => patchDraft({ renewalDate })}
           />
         </div>
+        {isDomain ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <ClientServiceRegistryCheckButton
+              serviceId={service.id}
+              disabled={formDisabled}
+              onChecked={props.onRegistryChecked}
+            />
+            <ClientServiceRegistryBadge status={service.registryLookupStatus} />
+            {checkedLabel ? (
+              <p className="text-muted-foreground text-xs">
+                Last checked {checkedLabel}
+                {service.registryLookupSource ? ` · ${service.registryLookupSource}` : ''}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
         <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
           <SubscriptionNotificationSettingsRow
             notificationsEnabled={draft.notificationsEnabled}
@@ -64,4 +91,15 @@ export function ClientServiceGeneralDatesSection(props: {
       </div>
     </DetailSheetCollapsibleSection>
   );
+}
+
+function formatRegistryCheckedAt(value: string | null | undefined): string | null {
+  if (!value) return null;
+  return new Intl.DateTimeFormat('en', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value));
 }

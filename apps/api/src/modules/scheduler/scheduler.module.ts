@@ -24,6 +24,7 @@ import { MailSyncReconcileCron } from './mail-sync-reconcile.cron';
 import { RecurringTasksDueCron } from './recurring-tasks-due.cron';
 import { PlatformTrashPurgeCron } from './platform-trash-purge.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
+import { ClientServicesDomainRegistryCron } from './client-services-domain-registry.cron';
 import { ClientServicesRenewalInvoiceCron } from './client-services-renewal-invoice.cron';
 import { ReportSchedulesDueCron } from './report-schedules-due.cron';
 import { NotificationInboxReconcileCron } from './notification-inbox-reconcile.cron';
@@ -67,6 +68,7 @@ const SCHEDULER_IMPORTS = [
 
 const CRON_PROVIDERS = [
   ExpensePlanAutoDueCron,
+  ClientServicesDomainRegistryCron,
   ClientServicesRenewalInvoiceCron,
   ReportSchedulesDueCron,
   RecurringTasksDueCron,

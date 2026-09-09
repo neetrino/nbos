@@ -7,18 +7,22 @@ import {
   type ClientServicesRenewalInvoiceResult,
 } from './client-services-renewal-invoice';
 import { ClientServiceFlowsService } from './client-service-flows.service';
+import { DomainRegistryService } from './registry/domain-registry.service';
 
 @Injectable()
 export class ClientServicesRenewalInvoiceService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly flows: ClientServiceFlowsService,
+    private readonly domainRegistry: DomainRegistryService,
   ) {}
 
   /** Idempotent daily pass: Invoice Cards for WE_PAY services within the renewal window. */
   async runDueRenewalInvoices(
     params?: ClientServicesRenewalInvoiceParams,
   ): Promise<ClientServicesRenewalInvoiceResult> {
-    return runClientServicesRenewalInvoices(this.prisma, this.flows, params);
+    return runClientServicesRenewalInvoices(this.prisma, this.flows, params, {
+      ensureFresh: (serviceId) => this.domainRegistry.checkService(serviceId),
+    });
   }
 }

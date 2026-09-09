@@ -170,6 +170,8 @@ describe('InvoiceOverdueRemindersService', () => {
           reminderLanguage: 'RU',
           productId: 'prod-1',
           name: 'example.com',
+          type: 'DOMAIN',
+          registryLookupStatus: 'OBSERVED',
           product: { id: 'prod-1', name: 'Example' },
         },
       },

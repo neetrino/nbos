@@ -149,6 +149,17 @@ export class SchedulerController {
     return this.schedulerService.runNotificationEnqueueReconcile();
   }
 
+  @Post('client-services-domain-registry-check')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'WHOIS/RDAP check for Domain client services in the renewal window',
+    description:
+      'Looks up approaching Domain cards and updates renewal_date when the registry expiry moved forward. Optional in-process cron when SCHEDULER_CLIENT_SERVICES_DOMAIN_REGISTRY_ENABLED=true.',
+  })
+  async runClientServicesDomainRegistry() {
+    return this.schedulerService.runClientServicesDomainRegistry();
+  }
+
   @Post('client-services-renewal-invoice')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

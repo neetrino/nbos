@@ -34,6 +34,7 @@ export const SCHEDULER_JOB_NAMES = {
   salesKpiMonthClose: 'sales-kpi-month-close',
   supportSlaEscalation: 'support-sla-escalation',
   authSessionExpiryCleanup: 'auth-session-expiry-cleanup',
+  clientServicesDomainRegistry: 'client-services-domain-registry-check',
   clientServicesRenewalInvoice: 'client-services-renewal-invoice',
   mailOutboundReconcile: 'mail-outbound-reconcile',
   mailGmailWatchRenew: 'mail-gmail-watch-renew',

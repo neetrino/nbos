@@ -1,7 +1,10 @@
 'use client';
 
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
-import type { ClientServiceRecord } from '@/lib/api/client-services';
+import type {
+  ClientServiceRecord,
+  ClientServiceRegistryCheckResult,
+} from '@/lib/api/client-services';
 import { ClientServiceGeneralTab } from './ClientServiceGeneralTab';
 import { ClientServiceInvoicesTab } from './ClientServiceInvoicesTab';
 import { ClientServiceExpensesTab } from './ClientServiceExpensesTab';
@@ -20,6 +23,7 @@ interface ClientServiceDetailSheetBodyProps {
   onCreateInvoice: () => void;
   onCreateExpense: () => void;
   onCreateTask: () => void;
+  onRegistryChecked?: (result: ClientServiceRegistryCheckResult) => void;
 }
 
 export function ClientServiceDetailSheetBody({
@@ -34,6 +38,7 @@ export function ClientServiceDetailSheetBody({
   onCreateInvoice,
   onCreateExpense,
   onCreateTask,
+  onRegistryChecked,
 }: ClientServiceDetailSheetBodyProps) {
   if (activeTab === 'general') {
     return (
@@ -43,6 +48,7 @@ export function ClientServiceDetailSheetBody({
         draft={draft}
         patchDraft={patchDraft}
         formDisabled={saving || readOnly}
+        onRegistryChecked={onRegistryChecked}
       />
     );
   }

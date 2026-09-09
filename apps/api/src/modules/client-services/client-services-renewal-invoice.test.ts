@@ -100,6 +100,7 @@ describe('runClientServicesRenewalInvoices', () => {
 
     expect(result.created).toEqual([{ serviceId: 'svc-1', invoiceId: 'inv-new' }]);
     expect(result.skippedExisting).toBe(0);
+    expect(result.skippedRegistry).toBe(0);
     const expectedDue = new Date(AS_OF);
     expectedDue.setUTCDate(expectedDue.getUTCDate() + CLIENT_SERVICE_INVOICE_OVERDUE_GRACE_DAYS);
     expect(flows.createInvoice).toHaveBeenCalledWith(
@@ -148,11 +149,53 @@ describe('runClientServicesRenewalInvoices', () => {
     expect(result.failures[0]?.serviceId).toBe('svc-1');
     expect(result.created).toEqual([{ serviceId: 'svc-2', invoiceId: 'inv-2' }]);
   });
+
+  it('skips DOMAIN invoice when registry says renewed or not found', async () => {
+    prisma.clientServiceRecord.findMany.mockResolvedValue([
+      buildEligibleService({ id: 'dom-1', type: 'DOMAIN', invoices: [] }),
+    ]);
+    const registry = { ensureFresh: vi.fn().mockResolvedValue({ outcome: 'updated' }) };
+
+    const renewed = await runClientServicesRenewalInvoices(
+      prisma as never,
+      flows as never as ClientServiceFlowsService,
+      { asOf: AS_OF.toISOString() },
+      registry,
+    );
+    expect(renewed.skippedRegistry).toBe(1);
+    expect(flows.createInvoice).not.toHaveBeenCalled();
+
+    registry.ensureFresh.mockResolvedValue({ outcome: 'not_found' });
+    const dead = await runClientServicesRenewalInvoices(
+      prisma as never,
+      flows as never as ClientServiceFlowsService,
+      { asOf: AS_OF.toISOString() },
+      registry,
+    );
+    expect(dead.skippedRegistry).toBe(1);
+  });
+
+  it('does not skip DOMAIN invoice when registry lookup failed', async () => {
+    prisma.clientServiceRecord.findMany.mockResolvedValue([
+      buildEligibleService({ id: 'dom-1', type: 'DOMAIN', invoices: [] }),
+    ]);
+    const registry = { ensureFresh: vi.fn().mockResolvedValue({ outcome: 'failed' }) };
+
+    const result = await runClientServicesRenewalInvoices(
+      prisma as never,
+      flows as never as ClientServiceFlowsService,
+      { asOf: AS_OF.toISOString() },
+      registry,
+    );
+    expect(result.skippedRegistry).toBe(0);
+    expect(result.created).toEqual([{ serviceId: 'dom-1', invoiceId: 'inv-new' }]);
+  });
 });
 
 function buildEligibleService(
   overrides: {
     id?: string;
+    type?: 'DOMAIN' | 'HOSTING';
     clientCharge?: Decimal;
     invoices?: Array<{ moneyStatus: string; dueDate: Date | null; createdAt?: Date }>;
   } = {},
@@ -160,7 +203,7 @@ function buildEligibleService(
   return {
     id: overrides.id ?? 'svc-1',
     projectId: 'project-1',
-    type: 'HOSTING' as const,
+    type: overrides.type ?? 'HOSTING',
     name: 'Acme hosting',
     renewalDate: RENEWAL,
     clientCharge: overrides.clientCharge ?? new Decimal(149),
