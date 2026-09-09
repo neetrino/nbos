@@ -17,6 +17,7 @@ export const INTEGRATED_SEARCH_FILTER_PANEL_POSITION = [
   INTEGRATED_SEARCH_FILTER_PANEL_WIDTH_CLASS,
   INTEGRATED_SEARCH_FILTER_PANEL_MIN_WIDTH_CLASS,
   INTEGRATED_SEARCH_FILTER_PANEL_MAX_WIDTH_CLASS,
+  '[[data-hero-tools-sheet]_&]:static [[data-hero-tools-sheet]_&]:mt-3 [[data-hero-tools-sheet]_&]:w-full [[data-hero-tools-sheet]_&]:min-w-0 [[data-hero-tools-sheet]_&]:max-w-none',
 ].join(' ');
 
 export const INTEGRATED_SEARCH_FILTER_PANEL_SURFACE = [
@@ -25,4 +26,5 @@ export const INTEGRATED_SEARCH_FILTER_PANEL_SURFACE = [
 ].join(' ');
 
 /** Always two columns inside the fixed-width panel. */
-export const INTEGRATED_SEARCH_FILTER_PANEL_GRID = 'grid grid-cols-2 gap-x-3 gap-y-3';
+export const INTEGRATED_SEARCH_FILTER_PANEL_GRID =
+  'grid grid-cols-2 gap-x-3 gap-y-3 [[data-hero-tools-sheet]_&]:grid-cols-1';

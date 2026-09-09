@@ -36,6 +36,7 @@ import { companiesApi, type Company } from '@/lib/api/clients';
 import { beginPermittedCreate, usePermission } from '@/lib/permissions';
 import { toast } from 'sonner';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
 const OPEN_COMPANY_QUERY = 'openId';
 
@@ -63,6 +64,7 @@ function CompaniesPageContent() {
   const openCreateCompany = () =>
     beginPermittedCreate(can('ADD', 'CLIENTS'), () => setShowCreate(true));
   const [view, setView] = useState<ClientsDirectoryViewMode>('grid');
+  const displayView = useMobilePreferredView(view, 'grid');
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const deleteConfirm = useDeleteConfirm();
@@ -282,8 +284,8 @@ function CompaniesPageContent() {
       ) : null}
       {loading ? (
         <LoadingState
-          variant={view === 'grid' ? 'cards' : 'list'}
-          count={view === 'grid' ? 6 : 5}
+          variant={displayView === 'grid' ? 'cards' : 'list'}
+          count={displayView === 'grid' ? 6 : 5}
         />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchCompanies} />
@@ -305,7 +307,7 @@ function CompaniesPageContent() {
             )
           }
         />
-      ) : view === 'grid' ? (
+      ) : displayView === 'grid' ? (
         <div className={clientsDirectoryCardGridClass(sidebarCollapsed)}>
           {companies.map((company) => (
             <CompanyCard key={company.id} company={company} onOpen={handleRowClick} />

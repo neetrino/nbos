@@ -12,11 +12,11 @@ export const NAVIGABLE_ENTITY_CARD_GRID_CLASS =
 
 /** Elevated shadow ramp for hub/directory entity cards (rest + hover). */
 export const NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS =
-  'shadow-[0_8px_24px_-6px_rgb(0_0_0/0.16)] transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_48px_-12px_rgb(0_0_0/0.28)]';
+  'shadow-[var(--shadow-panel)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-panel-hover)]';
 
 /** Soft product/extension card elevation (mock-aligned, less lift than hub). */
 export const NAVIGABLE_ENTITY_CARD_SOFT_ELEVATED_CLASS =
-  'shadow-[0_4px_20px_-4px_rgb(0_0_0/0.08)] transition-shadow hover:shadow-[0_8px_28px_-6px_rgb(0_0_0/0.12)]';
+  'shadow-[var(--shadow-panel)] transition-shadow hover:shadow-[var(--shadow-panel-hover)]';
 
 /**
  * Project detail product/extension cards.

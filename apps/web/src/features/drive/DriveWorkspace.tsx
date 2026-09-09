@@ -72,6 +72,7 @@ import {
   getInitialViewMode,
   mergeFileAssetsById,
 } from './drive-utils';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import {
   DriveCreateFolderDialog,
   DriveDeleteFolderDialog,
@@ -160,6 +161,7 @@ export function DriveWorkspace() {
   const purpose: PurposeFilter = ALL_PURPOSES;
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<DriveViewMode>(getInitialViewMode);
+  const displayViewMode = useMobilePreferredView(viewMode, 'cards');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -2319,7 +2321,7 @@ export function DriveWorkspace() {
               rows={mergedLibraryEntityRows}
               loading={libraryEntityFoldersLoading}
               searchQuery={search}
-              viewMode={viewMode}
+              viewMode={displayViewMode}
               onOpenRow={(row) =>
                 setSystemLibraryLink({ entityType: row.entityType, entityId: row.id })
               }
@@ -2333,7 +2335,7 @@ export function DriveWorkspace() {
                   : []
               }
               loading={loading}
-              viewMode={viewMode}
+              viewMode={displayViewMode}
               selectedId={selected?.id ?? null}
               checkedIds={selectedIds}
               checkedFolderIds={selectedFolderIds}

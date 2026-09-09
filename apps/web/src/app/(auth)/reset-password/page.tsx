@@ -1,9 +1,10 @@
 'use client';
 
-import { Suspense, useEffect, useState, type ReactNode } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { KeyRound } from 'lucide-react';
+import { AuthScene } from '@/components/auth/AuthScene';
 import { ResetPasswordForm } from '@/features/account/components/reset-password-form';
 import { authApi } from '@/lib/api/auth';
 
@@ -36,32 +37,30 @@ function ResetPasswordContent() {
 
   if (tokenError) {
     return (
-      <AuthCard>
+      <AuthScene eyebrow="Recover access" title="Reset link error">
         <ResetStatusCard tone="error" title="Reset link error" body={tokenError} />
-      </AuthCard>
+      </AuthScene>
     );
   }
 
   if (success) {
     return (
-      <AuthCard>
+      <AuthScene eyebrow="Recover access" title="Password updated">
         <ResetStatusCard
           tone="success"
           title="Password updated"
           body="You can sign in with your new password."
         />
-      </AuthCard>
+      </AuthScene>
     );
   }
 
   return (
-    <AuthCard>
-      <div className="mb-6 text-center">
-        <h1 className="text-foreground text-xl font-semibold tracking-tight">Set a new password</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Choose a password you have not used before.
-        </p>
-      </div>
+    <AuthScene
+      eyebrow="Recover access"
+      title="Set a new password"
+      description="Choose a password you have not used before."
+    >
       <ResetPasswordForm
         token={token}
         email={email ?? undefined}
@@ -70,7 +69,7 @@ function ResetPasswordContent() {
           window.setTimeout(() => router.push('/sign-in'), 2000);
         }}
       />
-    </AuthCard>
+    </AuthScene>
   );
 }
 
@@ -101,20 +100,6 @@ function ResetStatusCard({
       >
         {isError ? 'Back to sign in' : 'Sign in'}
       </Link>
-    </div>
-  );
-}
-
-function AuthCard({ children }: { children: ReactNode }) {
-  return (
-    <div className="bg-background flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 flex justify-center">
-          {/* eslint-disable-next-line @next/next/no-img-element -- auth logo SVG; fixed dimensions, no next/image benefit */}
-          <img src="/logo/logo.svg" alt="NBOS" width={168} height={28} className="h-7 w-auto" />
-        </div>
-        {children}
-      </div>
     </div>
   );
 }

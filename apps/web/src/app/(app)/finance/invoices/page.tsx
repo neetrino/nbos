@@ -28,6 +28,7 @@ import {
 import { useInvoicesCsvExport } from '@/features/finance/components/invoices/use-invoices-csv-export';
 import { useInvoicesScopeStatsCsvExport } from '@/features/finance/components/invoices/use-invoices-scope-stats-csv-export';
 import { useInvoicesPageState } from '@/features/finance/components/invoices/useInvoicesPageState';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import { invoicesListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-invoice-drilldown';
@@ -82,6 +83,7 @@ function InvoicesPageInner() {
     portfolioCreateInvoiceFromUrl,
     portfolioProjectIdFromUrl,
   });
+  const displayView = useMobilePreferredView(state.view, 'kanban');
   const openCreateInvoice = () =>
     beginPermittedCreate(can('ADD', 'FINANCE_INVOICES'), () => state.setCreateOpen(true));
   const { exportCsvSubmitting, handleExportCsv } = useInvoicesCsvExport(
@@ -226,7 +228,7 @@ function InvoicesPageInner() {
           error={state.error}
           mutationError={state.mutationError}
           onDismissMutationError={state.clearMutationError}
-          view={state.view}
+          view={displayView}
           onRetry={state.fetchInvoices}
           onInvoiceClick={state.handleInvoiceClick}
           onMove={(itemId, _from, toColumn) => state.handleMoneyStatusChange(itemId, toColumn)}

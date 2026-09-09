@@ -99,7 +99,7 @@ export function PinnedActions({
   }
 
   return (
-    <section className="border-border bg-card rounded-2xl border p-4 shadow-sm">
+    <section className="nbos-desk-surface p-4 sm:p-5">
       <PinnedActionsTitle editMode={editMode} onToggleEdit={onToggleEdit} />
 
       {hasPinned ? (
@@ -303,7 +303,10 @@ function PinnedActionsTitle({
   return (
     <div className="flex items-center justify-between gap-3">
       <div className="flex min-w-0 items-center gap-2">
-        <h2 className="text-base font-semibold">Pinned actions</h2>
+        <div>
+          <p className="nbos-desk-kicker">Shortcuts</p>
+          <h2 className="mt-1 text-base font-semibold">Pinned actions</h2>
+        </div>
         {editMode ? <Badge variant="outline">Editing</Badge> : null}
       </div>
       <Button

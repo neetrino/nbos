@@ -12,6 +12,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { PAGE_SETTINGS_SHEET_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
+import { usePageSettingsDockTrigger } from '@/components/shared/use-page-settings-dock-trigger';
 
 type SheetTriggerRenderProps = ComponentPropsWithRef<'button'>;
 
@@ -52,29 +53,33 @@ export function PageSettingsSheet({
     },
     [onOpenChange, openProp],
   );
+  const openFromDock = useCallback(() => handleOpenChange(true), [handleOpenChange]);
+  const isMobileDock = usePageSettingsDockTrigger(openFromDock);
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetTrigger
-        render={(props) => {
-          if (renderTrigger) {
-            return renderTrigger(props);
-          }
-          return (
-            <Button
-              {...props}
-              type="button"
-              variant="outline"
-              size="icon-sm"
-              aria-label={triggerAriaLabel}
-              title={triggerAriaLabel}
-              className={props.className}
-            >
-              <Settings className="size-4" aria-hidden />
-            </Button>
-          );
-        }}
-      />
+      {isMobileDock && !renderTrigger ? null : (
+        <SheetTrigger
+          render={(props) => {
+            if (renderTrigger) {
+              return renderTrigger(props);
+            }
+            return (
+              <Button
+                {...props}
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                aria-label={triggerAriaLabel}
+                title={triggerAriaLabel}
+                className={props.className}
+              >
+                <Settings className="size-4" aria-hidden />
+              </Button>
+            );
+          }}
+        />
+      )}
       <SheetContent
         side="right"
         floatingClose

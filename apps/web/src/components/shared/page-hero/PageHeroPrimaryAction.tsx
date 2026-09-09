@@ -18,9 +18,10 @@ export function PageHeroPrimaryAction({ label, className, ...props }: PageHeroPr
     <Button
       type="button"
       size="sm"
-      aria-label={label}
-      className={cn('h-8 shrink-0 px-2.5 text-xs', className)}
       {...props}
+      aria-label={label}
+      data-mobile-dock-create="true"
+      className={cn('h-8 shrink-0 px-2.5 text-xs', className)}
     >
       <Plus className="size-4 shrink-0" aria-hidden />
       {PAGE_HERO_PRIMARY_LABEL}

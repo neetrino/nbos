@@ -39,6 +39,7 @@ import {
   parseFinancePeriodFilterValue,
 } from '@/features/finance/constants/finance-period-filter';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
 function OrdersPageInner() {
   const router = useRouter();
@@ -54,6 +55,7 @@ function OrdersPageInner() {
     partnerIdFromUrl,
     openOrderIdFromUrl,
   });
+  const displayView = useMobilePreferredView(state.view, 'board');
 
   const { exportCsvSubmitting, handleExportCsv } = useOrdersCsvExport(state.orderListExportParams);
   const { handleExportScopeStatsCsv } = useOrdersScopeStatsCsvExport(state.stats, {
@@ -174,7 +176,7 @@ function OrdersPageInner() {
         <OrdersPageContent
           orders={displayOrders}
           boardScope={boardScope as BoardLifecycleScope}
-          view={state.view}
+          view={displayView}
           loading={state.loading}
           error={state.error}
           mutationError={state.mutationError}

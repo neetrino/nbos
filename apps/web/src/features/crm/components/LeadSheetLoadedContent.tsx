@@ -194,7 +194,6 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
             {props.activeTab === 'task' ? (
               <LeadTasksTab
                 lead={renderLead}
-                onRefresh={props.onRefresh}
                 onCreateOpenChange={props.onTaskCreateOpenChange}
                 tasksRefreshSignal={props.taskListRefreshSignal}
               />

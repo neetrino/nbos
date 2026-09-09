@@ -20,21 +20,23 @@ export function ErrorState({
   onRetry,
 }: ErrorStateProps) {
   return (
-    <div
-      role="alert"
-      className="border-destructive/30 bg-destructive/5 rounded-2xl border border-dashed px-6 py-16 text-center"
-    >
-      <Icon size={44} className="text-destructive/70 mx-auto" />
-      <h3 className="text-foreground mt-4 text-lg font-semibold">{title}</h3>
-      <p className="text-muted-foreground mx-auto mt-1 max-w-md text-sm">{description}</p>
-      {onRetry && (
-        <div className="mt-5">
+    <div role="alert" className="nbos-state-frame">
+      <p className="nbos-desk-kicker">Needs attention</p>
+      <div className="bg-destructive/10 text-destructive mx-auto mt-5 flex size-14 items-center justify-center rounded-2xl">
+        <Icon size={26} aria-hidden />
+      </div>
+      <h3 className="nbos-display text-foreground mt-5 text-3xl">{title}</h3>
+      <p className="text-muted-foreground mx-auto mt-2 max-w-md text-sm leading-relaxed">
+        {description}
+      </p>
+      {onRetry ? (
+        <div className="mt-6">
           <Button variant="outline" onClick={onRetry}>
             <RefreshCcw size={16} />
             {actionLabel}
           </Button>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -1,7 +1,10 @@
 'use client';
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
+import { useRegisterMobileDockItems } from '@/components/layout/MobileModuleDockProvider';
+import type { MobileDockItem } from '@/components/layout/mobile-module-dock-types';
 import { cn } from '@/lib/utils';
 import { PAGE_HERO_PILL_GROUP } from './page-hero-constants';
 import {
@@ -35,8 +38,21 @@ export function PageHeroTabs<T extends string>({
   className,
   dimmed = false,
 }: PageHeroTabsProps<T>) {
+  const isMobileViewport = useIsMobileViewport();
   const groupRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef(new Map<string, HTMLButtonElement>());
+  const dockItems = useMemo<MobileDockItem[]>(
+    () =>
+      options.map((option) => ({
+        id: `page-tab:${option.value}`,
+        label: option.label,
+        icon: option.icon,
+        active: !dimmed && option.value === value,
+        onSelect: () => onChange(option.value),
+      })),
+    [dimmed, onChange, options, value],
+  );
+  useRegisterMobileDockItems('secondary', dockItems);
 
   const getActiveElement = useCallback(
     () => (dimmed ? undefined : buttonRefs.current.get(value)),
@@ -50,6 +66,10 @@ export function PageHeroTabs<T extends string>({
     false,
   );
 
+  if (isMobileViewport) {
+    return null;
+  }
+
   return (
     <div
       ref={groupRef}
@@ -58,7 +78,11 @@ export function PageHeroTabs<T extends string>({
       aria-label={ariaLabel}
     >
       {!dimmed ? (
-        <SlidingPillBackdrop indicator={indicator} ready={ready} className="bg-primary shadow-md" />
+        <SlidingPillBackdrop
+          indicator={indicator}
+          ready={ready}
+          className="bg-primary shadow-[0_8px_18px_-8px_var(--primary-glow)] max-md:shadow-none"
+        />
       ) : null}
       {options.map((option) => {
         const active = !dimmed && option.value === value;

@@ -36,6 +36,7 @@ import { PermissionGate, usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
 type ViewMode = 'list' | 'grid';
 
@@ -67,6 +68,7 @@ function TeamDirectoryPageContent() {
   const [quickStatus, setQuickStatus] = useState<string | null>(null);
   const [showTerminated, setShowTerminated] = useState(false);
   const [view, setView] = useState<ViewMode>('grid');
+  const displayView = useMobilePreferredView(view, 'grid');
   const [inviteOpen, setInviteOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -292,7 +294,7 @@ function TeamDirectoryPageContent() {
         />
       ) : (
         <div className={cn('flex flex-col gap-4', refreshing && 'opacity-80')}>
-          {view === 'grid' ? (
+          {displayView === 'grid' ? (
             <div className={teamDirectoryCardGridClass(sidebarCollapsed)}>
               {employees.map((emp) => (
                 <TeamEmployeeCard key={emp.id} employee={emp} onOpen={openSheet} />

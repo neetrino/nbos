@@ -15,6 +15,9 @@ Header = глобальные действия.
 Module Shell = контекст конкретного модуля.
 ```
 
+На **desktop** эти слои живут в sidebar + header + PageHero.  
+На **mobile** те же слои есть, но chrome другой. Это не сжатый desktop и не временный обход. Канон: [Mobile App Shell](#mobile-app-shell).
+
 Навигация адаптируется по RBAC: пользователь видит только те пункты, к которым у него есть доступ.
 
 ---
@@ -479,7 +482,7 @@ Header делится на две зоны:
 
 Sidebar и module context bar — независимые источники; совпадение (Finance zones) — продуктовое решение, не техническое правило.
 
-Второй уровень навигации внутри зоны (Orders / Invoices / …) остаётся в **Module Header (PageHero)**, не дублируется в Topbar.
+Второй уровень навигации внутри зоны (Orders / Invoices / …) остаётся в **Module Header (PageHero)** на desktop и не дублируется в Topbar. На mobile эти пункты уходят в **Dock**, не в шапку. См. [Mobile App Shell](#mobile-app-shell).
 
 Header не содержит постоянную глобальную кнопку `Create`.
 
@@ -488,7 +491,7 @@ Header не содержит постоянную глобальную кноп�
 Правильные места для create actions:
 
 - Dashboard pinned actions;
-- module header;
+- module header (desktop) and the mobile dock `+` slot;
 - entity context;
 - command palette later.
 
@@ -676,8 +679,8 @@ Do not force right rail until it solves a real workflow.
 ### Desktop
 
 - sidebar visible;
-- header visible;
-- module shell full;
+- header visible: global actions + optional module zone tabs;
+- PageHero: section links, filters, search, view switcher, create;
 - drawers available.
 
 ### Tablet
@@ -685,15 +688,54 @@ Do not force right rail until it solves a real workflow.
 - sidebar collapsible;
 - module tabs horizontally scrollable;
 - filters can collapse.
+- If the viewport is still phone-width (`max-width: 767px`), apply Mobile App Shell, not a squeezed desktop header.
 
-### Mobile
+### Mobile App Shell
 
-- sidebar behind hamburger;
-- header simplified;
-- search icon only;
-- breadcrumbs shortened;
-- primary actions move into module action menu;
-- dashboard pinned actions become horizontal scroll or grid.
+NBOS mobile is a first-class information architecture, not a shrunken desktop.
+
+Desktop chrome (sidebar, header zone tabs, PageHero pills, list/table switchers) **must not** reappear as a second header row on the phone. New modules and pages follow this contract. They do not invent a parallel mobile header.
+
+```text
+Menu  = карта платформы          (desktop Sidebar)
+Dock  = инструменты модуля       (Menu | Search | + | Place | Settings)
+Top   = идентичность + глобальные
+Body  = одна удобная поверхность (cards / tiles / board)
+```
+
+#### Three chrome bands
+
+1. **Top (minimal)**  
+   Module or entity title. Global search. Notifications. Account.  
+   Page search, create, settings, module tabs, view switchers, and zone pills do **not** live here.
+
+2. **Body**  
+   One preferred surface: cards, tiles, or kanban.  
+   List and table views stay desktop-only unless a module documents an exception (trash, reconciliation gap, print).  
+   Extra desktop chrome that does not help a thumb (stat strips, filter chip rows, view switchers) is hidden.
+
+3. **Dock (bottom)** — one layout for every module. The bar is inset and rounded, without a stroke or extra outline layer.
+
+   `Menu | Search | + | Place | Settings`
+
+   Empty tools are omitted (a page without create has no `+`).  
+   **Place** is the current location in the module (icon + label + a small down caret). Tap opens a sheet:
+   - **Zone** — header context `nav` (Finance Revenue / Expenses / …; Project / Product).
+   - **Section** — `PageHeroNavLinks` (CRM Dashboard / Leads / Deals; Finance Orders / Invoices / …).
+   - **Category** — `PageHeroTabs` when those tabs _are_ the module (Credentials All / My / Team / …).
+   - **View** — page filters that are not destinations, listed under sections when both exist.
+   - **Fallback** — only Tasks: Board / Recurring / Spaces. Do not invent cross-module shortcuts on Dashboard or empty pages.
+
+#### Contract for every new module or page
+
+- Register places through the existing module shell (`PageHeroNavLinks`, header zone `nav`, `PageHeroTabs`, or the Tasks fallback). Do not add a custom mobile tab row in the top bar.
+- Keep desktop PageHero / header / sidebar unchanged. Mobile dualizes chrome; it does not fork business behavior, routes, or RBAC.
+- Prefer cards or a board on the phone. Do not expose list/table as a user choice on mobile.
+- Create is never a global header action. It is the dock `+` slot (PageHero trailing New / Create, or an explicit `create` action).
+
+#### Why this is the platform pattern
+
+A serious operations desk on a phone is used with one thumb. Platform switching is Menu. Work switching inside the module is the dock. The page itself is the work, not a second toolbar. This is the same product as desktop, with a different chrome contract — not a temporary adapter and not a separate mobile app IA.
 
 ---
 

@@ -34,8 +34,8 @@ interface ReadinessItem {
 }
 
 function hasPaidInvoice(deal: Deal) {
-  return deal.orders.some((order) =>
-    order.invoices.some((invoice) => invoice.moneyStatus === 'PAID'),
+  return (deal.orders ?? []).some((order) =>
+    (order.invoices ?? []).some((invoice) => invoice.moneyStatus === 'PAID'),
   );
 }
 
@@ -49,7 +49,7 @@ function getReadinessItems(deal: Deal): ReadinessItem[] {
   const hasContractProof = Boolean(
     (deal.linkedContractAssetCount ?? 0) > 0 || deal.contractFileUrl,
   );
-  const hasInvoice = deal.orders.some((order) => order.invoices.length > 0);
+  const hasInvoice = (deal.orders ?? []).some((order) => (order.invoices ?? []).length > 0);
   const isClassic = deal.paymentType === 'CLASSIC';
 
   return [
@@ -102,7 +102,7 @@ function getReadinessItems(deal: Deal): ReadinessItem[] {
       label: 'Delivery shell',
       ready:
         Boolean(deal.handoff?.product) ||
-        deal.orders.some((order) => order.deliveryStartMode === 'EARLY_START'),
+        (deal.orders ?? []).some((order) => order.deliveryStartMode === 'EARLY_START'),
       hint: 'Product or extension appears after Won or early delivery start',
     },
   ];
@@ -111,8 +111,8 @@ function getReadinessItems(deal: Deal): ReadinessItem[] {
 function shouldShowHandoffPanel(deal: Deal): boolean {
   const handoff = deal.handoff;
   if (deal.status === 'WON') return true;
-  if (deal.orders.some((order) => order.deliveryStartMode === 'EARLY_START')) return true;
-  if (handoff?.project || handoff?.product || handoff?.subscriptions.length) return true;
+  if ((deal.orders ?? []).some((order) => order.deliveryStartMode === 'EARLY_START')) return true;
+  if (handoff?.project || handoff?.product || handoff?.subscriptions?.length) return true;
   if (handoff?.maintenanceDeal) return true;
   if (
     deal.type &&
@@ -146,7 +146,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
   const handoff = deal.handoff;
   const project = handoff?.project ?? null;
   const product = handoff?.product ?? null;
-  const subscription = handoff?.subscriptions[0] ?? null;
+  const subscription = handoff?.subscriptions?.[0] ?? null;
   const maintenanceDeal = handoff?.maintenanceDeal ?? null;
   if (!shouldShowHandoffPanel(deal)) return null;
 
