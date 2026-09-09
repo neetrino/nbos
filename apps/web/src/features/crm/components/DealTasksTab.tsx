@@ -6,14 +6,12 @@ import { EntityLinkedTasksTab } from './EntityLinkedTasksTab';
 
 interface DealTasksTabProps {
   deal: Deal;
-  onRefresh?: () => void;
   onCreateOpenChange: (open: boolean) => void;
   tasksRefreshSignal?: number;
 }
 
 export function DealTasksTab({
   deal,
-  onRefresh,
   onCreateOpenChange,
   tasksRefreshSignal,
 }: DealTasksTabProps) {
@@ -21,7 +19,6 @@ export function DealTasksTab({
     <EntityLinkedTasksTab
       entityType={CRM_TASK_ENTITY_DEAL}
       entityId={deal.id}
-      onRefresh={onRefresh}
       emptyDescription="No tasks yet. Create one to track work for this deal."
       onCreateOpenChange={onCreateOpenChange}
       tasksRefreshSignal={tasksRefreshSignal}
