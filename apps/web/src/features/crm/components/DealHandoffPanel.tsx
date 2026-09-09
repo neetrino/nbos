@@ -18,11 +18,9 @@ import {
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import type { Deal } from '@/lib/api/deals';
 import {
-  hasDealInvoice,
-  hasEarlyStartOrder,
-  hasPaidInvoice,
-  shouldShowHandoffPanel,
-} from './deal-handoff-panel.helpers';
+  COMMERCIAL_DEAL_TYPES,
+  HANDOFF_VISIBLE_DEAL_STATUSES,
+} from '../constants/deal-handoff.constants';
 
 interface DealHandoffPanelProps {
   deal: Deal;
@@ -35,6 +33,12 @@ interface ReadinessItem {
   hint: string;
 }
 
+function hasPaidInvoice(deal: Deal) {
+  return (deal.orders ?? []).some((order) =>
+    (order.invoices ?? []).some((invoice) => invoice.moneyStatus === 'PAID'),
+  );
+}
+
 function getReadinessItems(deal: Deal): ReadinessItem[] {
   const hasOfferProof = Boolean(
     (deal.linkedOfferAssetCount ?? 0) > 0 ||
@@ -45,7 +49,7 @@ function getReadinessItems(deal: Deal): ReadinessItem[] {
   const hasContractProof = Boolean(
     (deal.linkedContractAssetCount ?? 0) > 0 || deal.contractFileUrl,
   );
-  const hasInvoice = hasDealInvoice(deal);
+  const hasInvoice = (deal.orders ?? []).some((order) => (order.invoices ?? []).length > 0);
   const isClassic = deal.paymentType === 'CLASSIC';
 
   return [
@@ -96,10 +100,28 @@ function getReadinessItems(deal: Deal): ReadinessItem[] {
     },
     {
       label: 'Delivery shell',
-      ready: Boolean(deal.handoff?.product) || hasEarlyStartOrder(deal),
+      ready:
+        Boolean(deal.handoff?.product) ||
+        (deal.orders ?? []).some((order) => order.deliveryStartMode === 'EARLY_START'),
       hint: 'Product or extension appears after Won or early delivery start',
     },
   ];
+}
+
+function shouldShowHandoffPanel(deal: Deal): boolean {
+  const handoff = deal.handoff;
+  if (deal.status === 'WON') return true;
+  if ((deal.orders ?? []).some((order) => order.deliveryStartMode === 'EARLY_START')) return true;
+  if (handoff?.project || handoff?.product || handoff?.subscriptions?.length) return true;
+  if (handoff?.maintenanceDeal) return true;
+  if (
+    deal.type &&
+    COMMERCIAL_DEAL_TYPES.has(deal.type) &&
+    HANDOFF_VISIBLE_DEAL_STATUSES.has(deal.status)
+  ) {
+    return true;
+  }
+  return false;
 }
 
 function ReadinessRow({ item }: { item: ReadinessItem }) {
