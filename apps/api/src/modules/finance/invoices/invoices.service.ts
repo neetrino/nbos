@@ -350,7 +350,11 @@ export class InvoicesService {
     }
 
     await this.writeManualMoneyStatus(invoice, moneyStatus, amount, paid, now);
-    await notifyOfficialAfterInvoiceWrite(this.officialWhatsApp, { id, moneyStatus });
+    await notifyOfficialAfterInvoiceWrite(
+      this.officialWhatsApp,
+      { id, moneyStatus },
+      { wait: true },
+    );
     return this.findById(id);
   }
 
@@ -457,8 +461,8 @@ export class InvoicesService {
     return this.prisma.invoice.delete({ where: { id } });
   }
 
-  async sendOfficialInvoiceRequest(id: string) {
-    await this.requireOfficialWhatsApp().sendAndWait(id);
+  async sendOfficialInvoiceRequest(id: string, resend = false) {
+    await this.requireOfficialWhatsApp().sendAndWait(id, resend);
     return this.findById(id);
   }
 

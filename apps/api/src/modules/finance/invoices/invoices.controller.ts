@@ -142,8 +142,8 @@ export class InvoicesController {
 
   @Post(':id/official-request/send')
   @ApiOperation({ summary: 'Send official invoice request to accountant (Tax)' })
-  async sendOfficialInvoiceRequest(@Param('id') id: string) {
-    return this.invoicesService.sendOfficialInvoiceRequest(id);
+  async sendOfficialInvoiceRequest(@Param('id') id: string, @Body() body?: { resend?: boolean }) {
+    return this.invoicesService.sendOfficialInvoiceRequest(id, body?.resend === true);
   }
 
   @Post(':id/official-request/cancel')

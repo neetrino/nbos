@@ -11,6 +11,7 @@ import {
   canAutoSendOfficialOnAwaiting,
   OFFICIAL_SEND_CANCELLED_MESSAGE,
   officialSendIdempotencyKey,
+  resolveManualOfficialSend,
 } from './invoice-official-awaiting-send';
 import { buildOfficialInvoicePurpose } from './invoice-official-note';
 import {
@@ -51,9 +52,11 @@ export class InvoiceOfficialWhatsAppService {
     private readonly outbound: WhatsAppOutboundQueueService,
   ) {}
 
-  async sendAndWait(invoiceId: string): Promise<void> {
+  async sendAndWait(invoiceId: string, resend = false): Promise<void> {
     const invoice = await this.loadReadyToSend(invoiceId);
-    await this.enqueueOfficial(invoice, 'official_send', true);
+    const plan = resolveManualOfficialSend(invoice, resend);
+    if (plan.skip) return;
+    await this.enqueueOfficial(invoice, 'official_send', true, plan.idempotencyKey);
   }
 
   async cancelAndWait(invoiceId: string): Promise<void> {
@@ -71,14 +74,14 @@ export class InvoiceOfficialWhatsAppService {
     }
   }
 
-  async enqueueIfAwaitingEligible(invoiceId: string): Promise<void> {
+  async enqueueIfAwaitingEligible(invoiceId: string, options?: { wait?: boolean }): Promise<void> {
     const invoice = await this.loadContext(invoiceId);
     if (!canAutoSendOfficialOnAwaiting(invoice)) return;
     try {
       await this.enqueueOfficial(
         invoice,
         'official_send',
-        false,
+        options?.wait === true,
         officialSendIdempotencyKey(invoice.id, invoice.officialInvoiceCancelledAt),
       );
     } catch (error) {

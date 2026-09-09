@@ -19,6 +19,16 @@ describe('notifyOfficialAfterInvoiceWrite', () => {
     expect(notifier.enqueueIfAwaitingEligible).toHaveBeenCalledWith('inv-1');
     expect(notifier.enqueueIfAwaitingEligible).toHaveBeenCalledWith('inv-2');
   });
+
+  it('asks the notifier to wait when the write is user-initiated', async () => {
+    const notifier = { enqueueIfAwaitingEligible: vi.fn().mockResolvedValue(undefined) };
+    await notifyOfficialAfterInvoiceWrite(
+      notifier,
+      { id: 'inv-1', moneyStatus: 'AWAITING_PAYMENT' },
+      { wait: true },
+    );
+    expect(notifier.enqueueIfAwaitingEligible).toHaveBeenCalledWith('inv-1', { wait: true });
+  });
 });
 
 describe('persistInvoiceCreate', () => {

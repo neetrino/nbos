@@ -323,7 +323,9 @@ describe('InvoicesService', () => {
 
       await service.updateMoneyStatus('await-1', 'AWAITING_PAYMENT');
 
-      expect(officialWhatsApp.enqueueIfAwaitingEligible).toHaveBeenCalledWith('await-1');
+      expect(officialWhatsApp.enqueueIfAwaitingEligible).toHaveBeenCalledWith('await-1', {
+        wait: true,
+      });
     });
 
     it('creates payment for outstanding then returns when marking PAID', async () => {
