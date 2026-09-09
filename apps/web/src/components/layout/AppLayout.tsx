@@ -115,7 +115,10 @@ export function AppLayout({ children }: AppLayoutProps) {
                           </PageEnter>
                         </main>
                         {isMobileViewport ? (
-                          <MobileBottomNav onMoreClick={() => setMobileNavOpen(true)} />
+                          <MobileBottomNav
+                            menuOpen={mobileNavOpen}
+                            onMoreClick={() => setMobileNavOpen((open) => !open)}
+                          />
                         ) : null}
                       </div>
                     </div>

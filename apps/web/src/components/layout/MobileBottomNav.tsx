@@ -17,10 +17,11 @@ import {
 } from './mobile-bottom-nav-constants';
 
 interface MobileBottomNavProps {
+  menuOpen?: boolean;
   onMoreClick: () => void;
 }
 
-export function MobileBottomNav({ onMoreClick }: MobileBottomNavProps) {
+export function MobileBottomNav({ menuOpen = false, onMoreClick }: MobileBottomNavProps) {
   const { can, isLoading } = usePermission();
   const visibleModules = useMemo(
     () => getVisibleNavModules(can, isLoading, NAV_MODULE_DEFINITIONS),
@@ -44,8 +45,11 @@ export function MobileBottomNav({ onMoreClick }: MobileBottomNavProps) {
           onClick={onMoreClick}
           className={cn(
             MOBILE_DOCK_ITEM_CLASS,
-            'text-muted-foreground hover:text-foreground hover:bg-muted/70',
+            menuOpen
+              ? 'bg-primary/12 text-primary'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
           )}
+          aria-expanded={menuOpen}
         >
           <LayoutGrid size={18} aria-hidden />
           More

@@ -8,14 +8,14 @@ export { formatEntityListDate, formatFinanceListDate } from './entity-list-date'
 
 /** Shared shell for module list/table views (board|list dual views). */
 export const ENTITY_LIST_SHELL_CLASS =
-  'border-border/70 bg-card overflow-hidden rounded-2xl border shadow-[var(--shadow-panel)]';
+  'border-border/70 bg-card overflow-hidden rounded-2xl border shadow-[var(--shadow-panel)] max-md:rounded-[1.25rem]';
 
 /**
  * Scrollable list shell — fills remaining height.
  * Do not pair with `overflow-hidden` (breaks end-of-list scrolling).
  */
 export const ENTITY_LIST_SCROLL_SHELL_CLASS =
-  'border-border/70 bg-card min-h-0 flex-1 overflow-auto rounded-2xl border shadow-[var(--shadow-panel)]';
+  'border-border/70 bg-card min-h-0 flex-1 overflow-auto rounded-2xl border shadow-[var(--shadow-panel)] max-md:rounded-[1.25rem]';
 
 export const ENTITY_LIST_HEAD_CLASS =
   'text-muted-foreground px-4 text-[11px] font-semibold tracking-[0.14em] uppercase';

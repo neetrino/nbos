@@ -97,6 +97,33 @@
     @apply border-border/80 bg-background/92 supports-[backdrop-filter]:bg-background/78 pointer-events-auto fixed inset-x-0 bottom-0 z-30 border-t backdrop-blur-md;
     padding-bottom: env(safe-area-inset-bottom);
   }
+
+  @media (max-width: 767px) {
+    .nbos-app-canvas {
+      background-image: none;
+    }
+
+    .nbos-desk-surface,
+    .nbos-state-frame,
+    .nbos-app-canvas .nbos-insight-panel {
+      background-image: none;
+    }
+
+    .nbos-desk-surface::before {
+      background: var(--primary);
+    }
+
+    .nbos-app-canvas [data-slot='card'] {
+      border-radius: 1.25rem;
+    }
+
+    .nbos-app-canvas input:not([type='checkbox']):not([type='radio']):not([type='hidden']),
+    .nbos-app-canvas select,
+    .nbos-app-canvas textarea {
+      font-size: 1rem;
+      min-height: 2.75rem;
+    }
+  }
 }
 
 @layer utilities {
