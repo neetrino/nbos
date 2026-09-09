@@ -36,6 +36,7 @@ import { contactsApi, type Contact } from '@/lib/api/clients';
 import { beginPermittedCreate, usePermission } from '@/lib/permissions';
 import { toast } from 'sonner';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
 const OPEN_CONTACT_QUERY = 'openId';
 
@@ -63,6 +64,7 @@ function ContactsPageContent() {
   const openCreateContact = () =>
     beginPermittedCreate(can('ADD', 'CLIENTS'), () => setShowCreate(true));
   const [view, setView] = useState<ClientsDirectoryViewMode>('grid');
+  const displayView = useMobilePreferredView(view, 'grid');
   const [fetchedContact, setFetchedContact] = useState<Contact | null>(null);
   const deleteConfirm = useDeleteConfirm();
   const permanentDeleteConfirm = useDeleteConfirm();
@@ -283,8 +285,8 @@ function ContactsPageContent() {
       ) : null}
       {loading ? (
         <LoadingState
-          variant={view === 'grid' ? 'cards' : 'list'}
-          count={view === 'grid' ? 6 : 5}
+          variant={displayView === 'grid' ? 'cards' : 'list'}
+          count={displayView === 'grid' ? 6 : 5}
         />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchContacts} />
@@ -306,7 +308,7 @@ function ContactsPageContent() {
             )
           }
         />
-      ) : view === 'grid' ? (
+      ) : displayView === 'grid' ? (
         <div className="min-h-0 flex-1 overflow-auto">
           <div className={clientsDirectoryCardGridClass(sidebarCollapsed)}>
             {contacts.map((contact) => (

@@ -11,6 +11,7 @@ import type {
   PinnedAction,
   PriorityCard,
 } from '../dashboard-control-registry';
+import { DashboardDeskHeader } from './DashboardDeskHeader';
 import { MiniAnalytics, PriorityFeed } from './DashboardInsightPanels';
 import { DashboardNotesPanel } from './DashboardNotesPanel';
 import { PinnedActions } from './DashboardPinnedActions';
@@ -78,6 +79,7 @@ export function DashboardControlCenterView({
 
   return (
     <div className="flex min-h-0 w-full max-w-none flex-col gap-5 max-md:gap-4">
+      <DashboardDeskHeader />
       {error ? <DashboardError message={error} /> : null}
       <section className={DASHBOARD_GRID_CLASS}>
         <div className="min-w-0 lg:col-span-2 xl:col-span-2 xl:row-start-1">
@@ -133,6 +135,7 @@ export function DashboardControlCenterView({
 export function DashboardLoadingSkeleton() {
   return (
     <div className="flex min-h-0 w-full max-w-none flex-col gap-5 max-md:gap-4">
+      <Skeleton className="h-36 w-full rounded-2xl" />
       <div className={DASHBOARD_GRID_CLASS}>
         <div className="min-w-0 lg:col-span-2 xl:col-span-2 xl:row-start-1">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -158,7 +161,7 @@ export function DashboardLoadingSkeleton() {
 
 function DashboardError({ message }: { message: string }) {
   return (
-    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+    <div className="border-warning/30 bg-warning/10 text-foreground rounded-2xl border p-4 text-sm">
       {message}
     </div>
   );

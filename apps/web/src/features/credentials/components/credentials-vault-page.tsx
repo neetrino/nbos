@@ -24,6 +24,7 @@ import { useCredentialsVaultPage } from '@/features/credentials/hooks/use-creden
 import { CredentialsPageSettingsSheet } from '@/features/credentials/components/credentials-page-settings-sheet';
 import { CredentialEmergencyRequestsPanel } from '@/features/credentials/components/credential-emergency-requests-panel';
 import { PermissionGate } from '@/lib/permissions';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
 export function CredentialsVaultPage() {
   return (
@@ -35,6 +36,7 @@ export function CredentialsVaultPage() {
 
 function CredentialsVaultPageContent() {
   const vault = useCredentialsVaultPage();
+  const viewMode = useMobilePreferredView(vault.viewMode, 'tiles');
 
   const handleSecretCopied = (flashId: string) => {
     vault.setPasswordFlashCredentialId(flashId);
@@ -56,6 +58,7 @@ function CredentialsVaultPageContent() {
     <div className="flex h-full min-h-0 flex-col gap-5">
       <PageHero
         title={vault.vaultListScope === 'trash' ? 'Credentials Vault — Trash' : 'Credentials Vault'}
+        create={{ onSelect: vault.openCreate, disabled: !vault.showCreate }}
         tabs={
           <PageHeroTabs
             value={vault.activeTab}
@@ -108,21 +111,23 @@ function CredentialsVaultPageContent() {
         <CredentialVaultTrashBanner onBackToVault={() => vault.setVaultListScope('active')} />
       ) : null}
 
-      <CredentialQuickFilterChips
-        vaultScope={vault.activeTab}
-        categoryChips={vault.quickCategoryChips}
-        activeCategory={vault.quickCategory}
-        onCategoryChange={vault.setQuickCategory}
-        activeQuick={vault.quickFilters}
-        onToggleQuick={vault.toggleQuickFilter}
-        trailing={
-          vault.viewMode === 'folders' &&
-          vault.showCreate &&
-          (!vault.isProjectFoldersMode || vault.activeProjectId) ? (
-            <CredentialFolderCreateButton onCreateFolder={vault.createFolder} />
-          ) : undefined
-        }
-      />
+      <div className="max-md:hidden">
+        <CredentialQuickFilterChips
+          vaultScope={vault.activeTab}
+          categoryChips={vault.quickCategoryChips}
+          activeCategory={vault.quickCategory}
+          onCategoryChange={vault.setQuickCategory}
+          activeQuick={vault.quickFilters}
+          onToggleQuick={vault.toggleQuickFilter}
+          trailing={
+            viewMode === 'folders' &&
+            vault.showCreate &&
+            (!vault.isProjectFoldersMode || vault.activeProjectId) ? (
+              <CredentialFolderCreateButton onCreateFolder={vault.createFolder} />
+            ) : undefined
+          }
+        />
+      </div>
 
       {vault.selection.selectionActive && (
         <CredentialVaultBulkBar
@@ -141,13 +146,11 @@ function CredentialsVaultPageContent() {
 
       <div
         className={
-          vault.viewMode === 'category-board'
-            ? 'flex min-h-0 flex-1 flex-col overflow-hidden'
-            : undefined
+          viewMode === 'category-board' ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : undefined
         }
       >
         <CredentialsVaultMainView
-          viewMode={vault.viewMode}
+          viewMode={viewMode}
           credentials={vault.credentials}
           loading={vault.loading}
           columnMeta={vault.columnMeta}

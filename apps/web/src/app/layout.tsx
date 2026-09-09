@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono, Source_Serif_4 } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
 import './globals.css';
 import { auth } from '@/auth';
@@ -16,6 +16,12 @@ const inter = Inter({
 
 const jetbrainsMono = JetBrains_Mono({
   variable: '--font-jetbrains-mono',
+  subsets: ['latin'],
+  preload: false,
+});
+
+const sourceSerif = Source_Serif_4({
+  variable: '--font-source-serif',
   subsets: ['latin'],
   preload: false,
 });
@@ -64,8 +70,14 @@ export default async function RootLayout({
   return (
     <SessionProvider session={session} refetchOnWindowFocus={false}>
       <QueryProvider>
-        <html lang="en" suppressHydrationWarning className={cn('font-sans', inter.variable)}>
-          <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+        <html
+          lang="en"
+          suppressHydrationWarning
+          className={cn('font-sans', inter.variable, sourceSerif.variable)}
+        >
+          <body
+            className={`${inter.variable} ${sourceSerif.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+          >
             <ThemeProvider>
               {children}
               <Toaster richColors closeButton position="top-center" />

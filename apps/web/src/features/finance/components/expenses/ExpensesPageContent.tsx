@@ -64,6 +64,7 @@ import {
 } from './expense-board-scope';
 import { ExpensesPageSettingsSheet } from './ExpensesPageSettingsSheet';
 import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-board-view';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import {
   SEARCH_FILTER_PAGE_ID,
   usePersistedSearchFilterField,
@@ -126,6 +127,7 @@ export function ExpensesPageContent({
     initialExpenseFilterRecord(pageVariant),
   );
   const [view, handleViewChange] = useExpensesBoardViewMode();
+  const displayView = useMobilePreferredView(view, 'kanban');
   const [periodRaw, setPeriodRaw] = usePersistedSearchFilterField(
     `${expenseFilterPageId}.period`,
     'period',
@@ -518,16 +520,18 @@ export function ExpensesPageContent({
         error={error}
         onRetry={fetchExpenses}
         expenses={expenses}
-        view={pageVariant === 'backlog' ? 'list' : view}
+        view={pageVariant === 'backlog' ? 'list' : displayView}
         kanbanScope={pageVariant === 'closed' ? 'closed' : 'active'}
         fromBacklog={pageVariant === 'backlog'}
         onOpenExpense={handleExpenseClick}
         onAddFirstExpense={() => setCreateOpen(true)}
         onKanbanMove={
-          pageVariant === 'default' && view === 'kanban' ? onKanbanStatusMove : undefined
+          pageVariant === 'default' && displayView === 'kanban' ? onKanbanStatusMove : undefined
         }
         onOpenQuickCreate={
-          pageVariant === 'default' && view === 'kanban' ? () => setCreateOpen(true) : undefined
+          pageVariant === 'default' && displayView === 'kanban'
+            ? () => setCreateOpen(true)
+            : undefined
         }
       />
 

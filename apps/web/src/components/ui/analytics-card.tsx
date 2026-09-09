@@ -61,21 +61,19 @@ export function AnalyticsCard({
   const colClass = GRID_COLS_CLASS[Math.min(Math.max(data.length, 1), 5)] ?? 'grid-cols-5';
 
   return (
-    <div
-      className={cn(
-        'text-card-foreground bg-card w-full rounded-2xl border p-6 shadow-sm',
-        className,
-      )}
-    >
-      <div className="flex items-start justify-between">
-        <h3 className="text-muted-foreground text-lg font-medium">{title}</h3>
-        <div className="bg-muted/50 flex h-8 w-8 items-center justify-center rounded-full">
+    <div className={cn('nbos-desk-surface text-card-foreground w-full p-5 sm:p-6', className)}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="nbos-desk-kicker">Pulse</p>
+          <h3 className="mt-1 text-base font-semibold">{title}</h3>
+        </div>
+        <div className="bg-primary/10 text-primary flex h-9 w-9 items-center justify-center rounded-xl">
           {icon}
         </div>
       </div>
 
-      <div className="my-4">
-        <h2 className="text-4xl font-bold tracking-tight">{totalAmount}</h2>
+      <div className="my-5">
+        <h2 className="nbos-display text-4xl tabular-nums sm:text-5xl">{totalAmount}</h2>
       </div>
 
       <div className={cn('grid gap-4', colClass)} aria-label="Mini analytics chart">
@@ -95,7 +93,7 @@ export function AnalyticsCard({
               className="flex min-w-0 flex-col items-center gap-2"
             >
               <div
-                className="bg-muted/40 relative flex h-32 w-full items-end overflow-hidden rounded-lg"
+                className="bg-muted/50 relative flex h-32 w-full items-end overflow-hidden rounded-xl"
                 role="presentation"
               >
                 <motion.div

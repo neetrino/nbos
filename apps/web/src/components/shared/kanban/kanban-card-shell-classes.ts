@@ -17,12 +17,12 @@ export const KANBAN_CARD_SHELL_BASE_SHADOW_CLASS = {
 } as const;
 
 export const KANBAN_CARD_SHELL_HOVER_SHADOW_CLASS = {
-  sm: 'hover:shadow-sm',
-  md: 'hover:shadow-md',
+  sm: 'hover:shadow-[var(--shadow-panel)]',
+  md: 'hover:shadow-[var(--shadow-panel-hover)]',
 } as const;
 
 export const KANBAN_CARD_SHELL_TRANSITION_CLASS = {
-  shadow: 'transition-shadow',
+  shadow: 'transition-[box-shadow,transform,border-color] duration-200 ease-out',
   all: 'transition-all duration-200',
   colors: 'transition-colors',
 } as const;

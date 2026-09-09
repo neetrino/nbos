@@ -13,7 +13,7 @@ export const HEADER_CONTEXT_TAB_ROW =
 
 /** Inactive zone tab — sits on the bar, not connected to the page shell. */
 export const HEADER_CONTEXT_TAB_INACTIVE =
-  'text-muted-foreground hover:text-foreground mb-1.5 inline-flex items-center rounded-t-lg px-3 py-2 text-[15px] font-semibold tracking-tight whitespace-nowrap transition-colors hover:bg-muted/60 sm:px-4 sm:text-base';
+  'text-muted-foreground hover:text-foreground mb-1.5 inline-flex items-center rounded-t-xl px-3 py-2 text-[15px] font-semibold tracking-tight whitespace-nowrap transition-colors hover:bg-muted/70 sm:px-4 sm:text-base';
 
 /** Active tab label row. */
 export const HEADER_CONTEXT_TAB_ACTIVE_LABEL =

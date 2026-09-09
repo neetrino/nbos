@@ -2,8 +2,15 @@ import type { Prisma } from '@nbos/database';
 
 const AWAITING_PAYMENT = 'AWAITING_PAYMENT';
 
+export type OfficialAwaitingNotifyOptions = {
+  wait?: boolean;
+};
+
 export type OfficialAwaitingNotifier = {
-  enqueueIfAwaitingEligible(invoiceId: string): Promise<void>;
+  enqueueIfAwaitingEligible(
+    invoiceId: string,
+    options?: OfficialAwaitingNotifyOptions,
+  ): Promise<void>;
 };
 
 /**
@@ -13,9 +20,14 @@ export type OfficialAwaitingNotifier = {
 export async function notifyOfficialAfterInvoiceWrite(
   notifier: OfficialAwaitingNotifier | undefined,
   invoice: { id: string; moneyStatus?: string | null },
+  options?: OfficialAwaitingNotifyOptions,
 ): Promise<void> {
   if (!notifier) return;
   if (invoice.moneyStatus != null && invoice.moneyStatus !== AWAITING_PAYMENT) return;
+  if (options?.wait) {
+    await notifier.enqueueIfAwaitingEligible(invoice.id, options);
+    return;
+  }
   await notifier.enqueueIfAwaitingEligible(invoice.id);
 }
 

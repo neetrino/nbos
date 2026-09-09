@@ -84,7 +84,7 @@ export function MiniAnalytics({
 
   if (editMode) {
     return (
-      <div className="text-card-foreground bg-card w-full rounded-2xl border p-6 shadow-sm">
+      <div className="nbos-desk-surface text-card-foreground w-full p-6">
         <div className="flex items-start justify-between">
           <h3 className="text-muted-foreground text-lg font-medium">Mini analytics</h3>
           <div className="bg-muted/50 flex h-8 w-8 items-center justify-center rounded-full">

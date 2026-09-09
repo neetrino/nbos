@@ -9,10 +9,12 @@ import { SupportTicketsPageBody } from '@/features/support/components/SupportTic
 import { SupportWorkflowScopeBanner } from '@/features/support/components/SupportWorkflowScopeBanner';
 import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
 import { useSupportChangeControlPage } from '@/features/support/hooks/use-support-change-control-page';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
 export function SupportChangeControlView() {
   const page = useSupportChangeControlPage();
   const { query, createForm, actions } = page;
+  const displayView = useMobilePreferredView(query.view, 'kanban');
 
   const filterValues = useMemo(
     () => ({
@@ -51,7 +53,7 @@ export function SupportChangeControlView() {
         error={query.error}
         tickets={page.displayTickets}
         boardScope={page.boardScope}
-        view={query.view}
+        view={displayView}
         kanbanColumns={page.kanbanColumns}
         actionId={actions.actionId}
         emptyIcon={GitPullRequest}

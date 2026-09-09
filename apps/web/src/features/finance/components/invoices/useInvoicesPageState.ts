@@ -26,6 +26,7 @@ import {
   type InvoiceStats,
 } from '@/lib/api/finance';
 import { useInvoicesBoardViewMode } from '@/features/finance/constants/invoices-board-view';
+import { withOfficialAwaitingSendPending } from './official-awaiting-send-pending';
 import {
   SEARCH_FILTER_PAGE_ID,
   usePersistedSearchFilterField,
@@ -398,12 +399,14 @@ function useInvoiceMoneyStatusChange({
       }
 
       try {
-        const updated = await invoicesApi.updateMoneyStatus(id, moneyStatus);
-        setItems((current) => replaceInvoice(current, updated));
-        if (selectedInvoice?.id === id) {
-          setSelectedInvoice(updated);
-        }
-        onTransitionSuccess();
+        await withOfficialAwaitingSendPending(currentInvoice, moneyStatus, async () => {
+          const updated = await invoicesApi.updateMoneyStatus(id, moneyStatus);
+          setItems((current) => replaceInvoice(current, updated));
+          if (selectedInvoice?.id === id) {
+            setSelectedInvoice(updated);
+          }
+          onTransitionSuccess();
+        });
       } catch (caught) {
         setItems(() => previousInvoices);
         if (previousSelected?.id === id) {

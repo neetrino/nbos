@@ -54,7 +54,9 @@ export function KanbanCardShell<T extends ElementType = 'div'>({
   return (
     <Component
       className={cn(
-        preset === 'neutral' ? 'border-border bg-card border' : 'border',
+        preset === 'neutral'
+          ? 'border-border/80 bg-card border hover:-translate-y-px'
+          : 'border hover:-translate-y-px',
         KANBAN_CARD_SHELL_RADIUS_CLASS[radius],
         KANBAN_CARD_SHELL_PADDING_CLASS[padding],
         KANBAN_CARD_SHELL_BASE_SHADOW_CLASS[baseShadow],

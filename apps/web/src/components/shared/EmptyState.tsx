@@ -12,11 +12,18 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon: Icon, title, description, action }: EmptyStateProps) {
   return (
-    <div className="border-border rounded-2xl border border-dashed py-20 text-center">
-      <Icon size={48} className="text-muted-foreground/30 mx-auto" />
-      <h3 className="text-foreground mt-4 text-lg font-semibold">{title}</h3>
-      {description && <p className="text-muted-foreground mt-1 text-sm">{description}</p>}
-      {action && <div className="mt-4">{action}</div>}
+    <div className="nbos-state-frame">
+      <p className="nbos-desk-kicker">Empty ledger</p>
+      <div className="bg-primary/10 text-primary mx-auto mt-5 flex size-14 items-center justify-center rounded-2xl">
+        <Icon size={26} aria-hidden />
+      </div>
+      <h3 className="nbos-display text-foreground mt-5 text-3xl">{title}</h3>
+      {description ? (
+        <p className="text-muted-foreground mx-auto mt-2 max-w-md text-sm leading-relaxed">
+          {description}
+        </p>
+      ) : null}
+      {action ? <div className="mt-6">{action}</div> : null}
     </div>
   );
 }

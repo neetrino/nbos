@@ -2,8 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
+import { useRegisterMobileDockItems } from '@/components/layout/MobileModuleDockProvider';
+import type { MobileDockItem } from '@/components/layout/mobile-module-dock-types';
 import { cn } from '@/lib/utils';
 import { PAGE_HERO_PILL_GROUP } from './page-hero-constants';
 import {
@@ -42,8 +45,21 @@ function isNavItemActive(pathname: string, item: PageHeroNavLinkItem): boolean {
 
 export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLinksProps) {
   const pathname = usePathname();
+  const isMobileViewport = useIsMobileViewport();
   const navRef = useRef<HTMLElement>(null);
   const linkRefs = useRef(new Map<string, HTMLAnchorElement>());
+  const dockItems = useMemo<MobileDockItem[]>(
+    () =>
+      items.map((item) => ({
+        id: `page-link:${item.href}`,
+        label: item.label,
+        icon: item.icon,
+        href: item.href,
+        active: isNavItemActive(pathname, item),
+      })),
+    [items, pathname],
+  );
+  useRegisterMobileDockItems('page', dockItems);
 
   const activeHref = items.find((item) => isNavItemActive(pathname, item))?.href ?? '';
 
@@ -58,13 +74,21 @@ export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLin
     `${activeHref}:${pathname}`,
   );
 
+  if (isMobileViewport) {
+    return null;
+  }
+
   return (
     <nav
       ref={navRef}
       className={cn(PAGE_HERO_PILL_GROUP, 'relative w-max min-w-0', className)}
       aria-label={ariaLabel}
     >
-      <SlidingPillBackdrop indicator={indicator} ready={ready} className="bg-primary shadow-md" />
+      <SlidingPillBackdrop
+        indicator={indicator}
+        ready={ready}
+        className="bg-primary shadow-md max-md:shadow-none"
+      />
       {items.map((item) => {
         const active = isNavItemActive(pathname, item);
         const Icon = item.icon;

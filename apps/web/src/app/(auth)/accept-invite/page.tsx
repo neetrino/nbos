@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff, UserCheck } from 'lucide-react';
+import { AuthScene } from '@/components/auth/AuthScene';
 import { cn } from '@/lib/utils';
 
 const schema = z
@@ -83,168 +84,147 @@ function AcceptInviteContent() {
 
   if (tokenError || inviteError) {
     return (
-      <div className="bg-background flex min-h-dvh items-center justify-center overflow-x-hidden px-4 py-8">
-        <div className="w-full max-w-sm text-center">
-          <div className="bg-destructive/10 text-destructive rounded-xl p-5 sm:p-6">
-            <p className="font-medium">Invitation Error</p>
-            <p className="mt-1 text-sm break-words">{tokenError ?? inviteError}</p>
-          </div>
+      <AuthScene eyebrow="Invitation" title="Invitation error">
+        <div className="bg-destructive/10 text-destructive rounded-xl p-5">
+          <p className="font-medium">Invitation Error</p>
+          <p className="mt-1 text-sm break-words">{tokenError ?? inviteError}</p>
         </div>
-      </div>
+      </AuthScene>
     );
   }
 
   if (success) {
     return (
-      <div className="bg-background flex min-h-dvh items-center justify-center overflow-x-hidden px-4 py-8">
-        <div className="w-full max-w-sm text-center">
-          <div className="bg-accent/10 rounded-xl p-5 sm:p-6">
-            <UserCheck className="text-accent mx-auto mb-3" size={40} />
-            <p className="text-foreground font-semibold">Account created!</p>
-            <p className="text-muted-foreground mt-1 text-sm">Redirecting to sign in…</p>
-          </div>
+      <AuthScene eyebrow="Invitation" title="Account created">
+        <div className="bg-primary/10 rounded-xl p-5 text-center">
+          <UserCheck className="text-primary mx-auto mb-3" size={40} />
+          <p className="text-foreground font-semibold">Account created!</p>
+          <p className="text-muted-foreground mt-1 text-sm">Redirecting to sign in…</p>
         </div>
-      </div>
+      </AuthScene>
     );
   }
 
   return (
-    <div className="bg-background flex min-h-dvh items-center justify-center overflow-x-hidden px-4 py-8">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="mb-8 text-center">
-          <div className="bg-accent mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
-            <span className="text-accent-foreground text-lg font-bold">N</span>
+    <AuthScene
+      eyebrow="Invitation"
+      title="Create your account"
+      description={
+        inviteInfo
+          ? `Invited as ${inviteInfo.roleName} · ${inviteInfo.email}`
+          : 'Complete your profile to join the desk.'
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label htmlFor="firstName" className="text-foreground mb-1.5 block text-sm font-medium">
+              First name
+            </label>
+            <input
+              id="firstName"
+              type="text"
+              autoFocus
+              {...register('firstName')}
+              className={cn(
+                'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2',
+                errors.firstName && 'border-destructive',
+              )}
+            />
+            {errors.firstName && (
+              <p className="text-destructive mt-1 text-xs">{errors.firstName.message}</p>
+            )}
           </div>
-          <h1 className="text-foreground text-xl font-semibold tracking-tight sm:text-2xl">
-            Create your account
-          </h1>
-          {inviteInfo && (
-            <p className="text-muted-foreground mt-1 text-sm break-words">
-              Invited as <span className="text-foreground font-medium">{inviteInfo.roleName}</span>
-              {' · '}
-              {inviteInfo.email}
-            </p>
+          <div>
+            <label htmlFor="lastName" className="text-foreground mb-1.5 block text-sm font-medium">
+              Last name
+            </label>
+            <input
+              id="lastName"
+              type="text"
+              {...register('lastName')}
+              className={cn(
+                'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2',
+                errors.lastName && 'border-destructive',
+              )}
+            />
+            {errors.lastName && (
+              <p className="text-destructive mt-1 text-xs">{errors.lastName.message}</p>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="password" className="text-foreground mb-1.5 block text-sm font-medium">
+            Password
+          </label>
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              {...register('password')}
+              className={cn(
+                'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 pr-10 text-sm transition-colors outline-none focus-visible:ring-2',
+                errors.password && 'border-destructive',
+              )}
+              placeholder="Min. 8 characters"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+          {errors.password && (
+            <p className="text-destructive mt-1 text-xs">{errors.password.message}</p>
           )}
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label
-                htmlFor="firstName"
-                className="text-foreground mb-1.5 block text-sm font-medium"
-              >
-                First name
-              </label>
-              <input
-                id="firstName"
-                type="text"
-                autoFocus
-                {...register('firstName')}
-                className={cn(
-                  'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2',
-                  errors.firstName && 'border-destructive',
-                )}
-              />
-              {errors.firstName && (
-                <p className="text-destructive mt-1 text-xs">{errors.firstName.message}</p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="lastName"
-                className="text-foreground mb-1.5 block text-sm font-medium"
-              >
-                Last name
-              </label>
-              <input
-                id="lastName"
-                type="text"
-                {...register('lastName')}
-                className={cn(
-                  'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2',
-                  errors.lastName && 'border-destructive',
-                )}
-              />
-              {errors.lastName && (
-                <p className="text-destructive mt-1 text-xs">{errors.lastName.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="password" className="text-foreground mb-1.5 block text-sm font-medium">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                {...register('password')}
-                className={cn(
-                  'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 pr-10 text-sm transition-colors outline-none focus-visible:ring-2',
-                  errors.password && 'border-destructive',
-                )}
-                placeholder="Min. 8 characters"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            {errors.password && (
-              <p className="text-destructive mt-1 text-xs">{errors.password.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="text-foreground mb-1.5 block text-sm font-medium"
-            >
-              Confirm password
-            </label>
-            <input
-              id="confirmPassword"
-              type={showPassword ? 'text' : 'password'}
-              {...register('confirmPassword')}
-              className={cn(
-                'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2',
-                errors.confirmPassword && 'border-destructive',
-              )}
-              placeholder="Repeat password"
-            />
-            {errors.confirmPassword && (
-              <p className="text-destructive mt-1 text-xs">{errors.confirmPassword.message}</p>
-            )}
-          </div>
-
-          {submitError && (
-            <div className="bg-destructive/10 text-destructive rounded-lg px-3 py-2.5 text-sm">
-              {submitError}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isSubmitting || !inviteInfo}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-60"
+        <div>
+          <label
+            htmlFor="confirmPassword"
+            className="text-foreground mb-1.5 block text-sm font-medium"
           >
-            {isSubmitting ? (
-              <span className="border-primary-foreground/30 border-primary-foreground h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
-            ) : (
-              <UserCheck size={16} />
+            Confirm password
+          </label>
+          <input
+            id="confirmPassword"
+            type={showPassword ? 'text' : 'password'}
+            {...register('confirmPassword')}
+            className={cn(
+              'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2',
+              errors.confirmPassword && 'border-destructive',
             )}
-            {isSubmitting ? 'Creating account…' : 'Create account'}
-          </button>
-        </form>
-      </div>
-    </div>
+            placeholder="Repeat password"
+          />
+          {errors.confirmPassword && (
+            <p className="text-destructive mt-1 text-xs">{errors.confirmPassword.message}</p>
+          )}
+        </div>
+
+        {submitError && (
+          <div className="bg-destructive/10 text-destructive rounded-lg px-3 py-2.5 text-sm">
+            {submitError}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={isSubmitting || !inviteInfo}
+          className="bg-primary text-primary-foreground hover:bg-primary/90 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-60"
+        >
+          {isSubmitting ? (
+            <span className="border-primary-foreground/30 border-primary-foreground h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+          ) : (
+            <UserCheck size={16} />
+          )}
+          {isSubmitting ? 'Creating account…' : 'Create account'}
+        </button>
+      </form>
+    </AuthScene>
   );
 }
 

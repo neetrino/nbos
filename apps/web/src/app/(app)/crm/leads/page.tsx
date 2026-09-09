@@ -684,7 +684,7 @@ function LeadsPipelinePageContent() {
         }}
         onUpdate={handleUpdate}
         onStatusChange={requestStatusChange}
-        onRefresh={() => void fetchLeads()}
+        onRefresh={fetchLeads}
         onMerged={(lead) => {
           setSelectedLead(lead);
           pushOpenLeadToUrl(lead.id);
