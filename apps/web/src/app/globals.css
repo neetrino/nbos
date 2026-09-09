@@ -53,6 +53,15 @@
   --primary-glow: color-mix(in oklch, var(--primary) 28%, transparent);
   --desk-wash: color-mix(in oklch, var(--primary) 8%, transparent);
   --desk-wash-soft: color-mix(in oklch, var(--primary) 4%, transparent);
+  --nbos-mobile-dock-height: 3.25rem;
+  --nbos-mobile-dock-inset-x: 0.5rem;
+  --nbos-mobile-dock-inset-bottom: 0px;
+  --nbos-mobile-dock-clearance: 0.25rem;
+  --nbos-mobile-dock-radius: 1rem;
+  --nbos-mobile-dock-reserve: calc(
+    var(--nbos-mobile-dock-height) + var(--nbos-mobile-dock-inset-bottom) +
+      var(--nbos-mobile-dock-clearance) + env(safe-area-inset-bottom, 0px)
+  );
   --motion-duration-fast: 150ms;
   --motion-duration-base: 280ms;
   --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);

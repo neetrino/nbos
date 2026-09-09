@@ -2,8 +2,7 @@
 export const APP_MAIN_CONTENT_INSET = 'px-6 pt-4 pb-4 max-md:px-4 max-md:pt-3';
 
 /** Reserve space for the mobile dock without covering page actions. */
-export const APP_MAIN_CONTENT_MOBILE_DOCK_INSET =
-  'max-md:pb-[calc(4.5rem+env(safe-area-inset-bottom))]';
+export const APP_MAIN_CONTENT_MOBILE_DOCK_INSET = 'max-md:pb-[var(--nbos-mobile-dock-reserve)]';
 
 /**
  * Dashboard control center on narrow viewports: flush to the main column edges

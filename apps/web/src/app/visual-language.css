@@ -81,8 +81,13 @@
   }
 
   .nbos-mobile-dock {
-    @apply border-border/80 bg-background/92 supports-[backdrop-filter]:bg-background/78 pointer-events-auto fixed inset-x-0 bottom-0 z-30 border-t backdrop-blur-md;
-    padding-bottom: env(safe-area-inset-bottom);
+    @apply border-border/70 bg-card/95 supports-[backdrop-filter]:bg-card/88 pointer-events-auto fixed z-30 overflow-hidden border backdrop-blur-md;
+    left: var(--nbos-mobile-dock-inset-x);
+    right: var(--nbos-mobile-dock-inset-x);
+    bottom: calc(var(--nbos-mobile-dock-inset-bottom) + env(safe-area-inset-bottom, 0px));
+    height: var(--nbos-mobile-dock-height);
+    border-radius: var(--nbos-mobile-dock-radius);
+    box-shadow: var(--shadow-panel);
   }
 
   @media (max-width: 767px) {

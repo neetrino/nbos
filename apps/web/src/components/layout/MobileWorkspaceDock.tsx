@@ -36,7 +36,7 @@ export function MobileWorkspaceDock({ menuOpen = false, onMoreClick }: MobileWor
 
   return (
     <nav className="nbos-mobile-dock md:hidden" aria-label="Workspace tools">
-      <div className={cn('flex items-stretch gap-1 px-1.5', MOBILE_DOCK_HEIGHT_CLASS)}>
+      <div className={cn('flex items-stretch gap-0.5 px-1', MOBILE_DOCK_HEIGHT_CLASS)}>
         <WorkspaceMenuButton open={menuOpen} onClick={onMoreClick} />
         {hasSearch && tools.search ? <MobilePageSearchSheet search={tools.search} /> : null}
         <WorkspaceCreateButton create={resolvedCreate} />
