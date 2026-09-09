@@ -1,0 +1,5 @@
+export const MOBILE_WORKSPACE_SEARCH_LABEL = 'Search';
+export const MOBILE_WORKSPACE_CREATE_LABEL = 'New';
+export const MOBILE_WORKSPACE_SETTINGS_LABEL = 'Settings';
+export const MOBILE_WORKSPACE_CATEGORY_SHEET_TITLE = 'Category';
+export const MOBILE_WORKSPACE_DEFAULT_SCOPE_LABEL = 'All';

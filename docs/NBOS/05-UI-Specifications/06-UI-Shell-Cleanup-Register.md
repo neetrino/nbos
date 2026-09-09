@@ -12,7 +12,7 @@
 - Dashboard = персональный Control Center;
 - Header = глобальные действия;
 - Module Shell = контекстные actions/views/filters;
-- Mobile App Shell = Menu (карта платформы) + Dock (карта модуля) + минимальный top; не сжатый desktop;
+- Mobile App Shell = Menu (карта платформы) + Dock (карта модуля **или** workspace-тулбар одной системы) + минимальный top; не сжатый desktop;
 - Team живёт внутри My Company;
 - My Account открывается из header user menu;
 - Departments живут в My Company;

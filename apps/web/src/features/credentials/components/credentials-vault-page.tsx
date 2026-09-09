@@ -21,6 +21,7 @@ import { CredentialsVaultPageOverlays } from '@/features/credentials/components/
 import { CredentialVaultSessionProvider } from '@/features/credentials/hooks/use-credential-vault-session';
 import { useVaultPasswordCopy } from '@/features/credentials/hooks/use-vault-password-copy';
 import { useCredentialsVaultPage } from '@/features/credentials/hooks/use-credentials-vault-page';
+import { CredentialsMobileWorkspaceDock } from '@/features/credentials/components/credentials-mobile-workspace-dock';
 import { CredentialsPageSettingsSheet } from '@/features/credentials/components/credentials-page-settings-sheet';
 import { CredentialEmergencyRequestsPanel } from '@/features/credentials/components/credential-emergency-requests-panel';
 import { PermissionGate } from '@/lib/permissions';
@@ -102,6 +103,12 @@ function CredentialsVaultPageContent() {
             )}
           </>
         }
+      />
+      <CredentialsMobileWorkspaceDock
+        showCreate={vault.showCreate}
+        onCreate={vault.openCreate}
+        vaultListScope={vault.vaultListScope}
+        onVaultListScopeChange={vault.setVaultListScope}
       />
 
       <CredentialEmergencyRequestsPanel />

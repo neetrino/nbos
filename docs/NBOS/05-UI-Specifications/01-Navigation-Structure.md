@@ -699,14 +699,17 @@ Desktop chrome (sidebar, header zone tabs, PageHero pills, list/table switchers)
 ```text
 Menu  = карта платформы          (desktop Sidebar)
 Dock  = карта текущего модуля    (desktop header zones + PageHero section links)
-Top   = идентичность + глобальные + действие страницы
+      или workspace-тулбар      (когда вкладки — скоуп одного списка, не маршруты)
+Top   = идентичность + глобальные (+ действие страницы на destination-доке)
 Body  = одна удобная поверхность (cards / tiles / board)
 ```
 
 #### Three chrome bands
 
 1. **Top (minimal)**  
-   Module or entity title. Page search as an icon (sheet). Compact create / settings. Notifications. Account.  
+   Module or entity title. Notifications. Account.  
+   On a **destination** dock: page search as an icon (sheet) and compact create / settings.  
+   On a **workspace** dock: global search only — page search, create, and settings live in the dock.  
    No module tabs. No view-mode switcher. No Project / Product / Finance zone pills.
 
 2. **Body**  
@@ -715,17 +718,24 @@ Body  = одна удобная поверхность (cards / tiles / board)
    Extra desktop chrome that does not help a thumb (stat strips, filter chip rows, view switchers) is hidden.
 
 3. **Dock (bottom)**  
-   Slot 1 is always **Menu** — the same app-module sheet as the former mobile drawer.  
+   Slot 1 is always **Menu** — the same app-module sheet as the former mobile drawer.
+
+   **Destination layout (default)** — module map:  
    Slots 2–5 are destinations of the **current module**.  
    If there are more than four destinations, three stay on the bar and the rest open from **More**.
 
-#### What the dock shows
+   **Workspace layout** — tools of one list (trial: Credentials):  
+   `Menu | Search | + | Category | Settings`.  
+   Category is the current scope (default **All**). Tap opens a More-style sheet with All / My / Team / Company / Project / Secret. These are tabs of one system, not separate module destinations.  
+   Do not use workspace on CRM, Finance, Project Hub, or other multi-destination modules until the trial is accepted and applied on purpose.
+
+#### What the destination dock shows
 
 Priority (first match wins as the primary group; extras go after it, then into More):
 
 1. **Module / section destinations** — `PageHeroNavLinks` (CRM Dashboard / Leads / Deals; Finance Orders / Invoices / …; Clients, Support, My Company).
 2. **Sibling zones** — header context `nav` (Project / Product; Finance Revenue / Expenses / …) when the page has no section links, or after section links when both exist.
-3. **Page places that ARE the module** — `PageHeroTabs` only when they are the module’s own places (Credentials All / My / Team / Company). They must not overwrite section links.
+3. **Page places that ARE the module** — only when the page is still on the destination layout and the tabs are real places. Workspace pages keep `PageHeroTabs` as the Category picker instead.
 4. **Declared fallback** — only for modules with neither links nor zones (Tasks: Board / Recurring / Spaces). Do not invent random global shortcuts on every empty page.
 
 Page filters that are **not** destinations (Incoming / Active / Closed, All / My / Team when CRM already has Leads / Deals) belong in **More** or as compact in-content chips. They must not steal the four dock slots from module navigation.
@@ -735,7 +745,7 @@ Page filters that are **not** destinations (Incoming / Active / Closed, All / My
 - Register destinations through the existing module shell (`PageHeroNavLinks`, header zone `nav`, or an explicit fallback). Do not add a custom mobile tab row in the top bar.
 - Keep desktop PageHero / header / sidebar unchanged. Mobile dualizes chrome; it does not fork business behavior, routes, or RBAC.
 - Prefer cards or a board on the phone. Do not expose list/table as a user choice on mobile.
-- Create stays a page action (top `+` or in-content). There is still no global Create in the header.
+- Create is never a global header action. On destination pages it stays a page action (top `+` or in-content). On a workspace dock it is the dock `+` slot.
 
 #### Why this is the platform pattern
 

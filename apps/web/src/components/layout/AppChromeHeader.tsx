@@ -62,18 +62,21 @@ function AppChromeActions({
   showQuickNote,
   me,
 }: Pick<AppChromeHeaderProps, 'isMobileViewport' | 'showQuickNote' | 'me'>) {
-  const { hasSearch, hasTrailing, hasTabsEnd, getTools } = useMobileModuleDockResolved();
+  const { layout, hasSearch, hasTrailing, hasTabsEnd, getTools } = useMobileModuleDockResolved();
   const tools = getTools();
+  const workspaceMobile = isMobileViewport && layout === 'workspace';
+  const showPageSearch = isMobileViewport && !workspaceMobile && hasSearch && Boolean(tools.search);
+  const showPageTrailing = isMobileViewport && !workspaceMobile && (hasTrailing || hasTabsEnd);
 
   return (
     <div className="ml-auto flex shrink-0 items-center gap-1.5 self-center overflow-visible sm:gap-3">
-      {isMobileViewport && hasSearch && tools.search ? (
+      {showPageSearch && tools.search ? (
         <MobilePageSearchSheet search={tools.search} />
       ) : (
         <GlobalSearchMobileTrigger />
       )}
       <GlobalSearchTrigger />
-      {isMobileViewport && (hasTrailing || hasTabsEnd) ? (
+      {showPageTrailing ? (
         <div className={APP_CHROME_MOBILE_TRAILING_CLASS}>
           {tools.tabsEnd}
           {tools.trailing}

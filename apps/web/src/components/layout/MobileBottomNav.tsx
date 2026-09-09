@@ -6,6 +6,7 @@ import { LayoutGrid, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMobileModuleDockResolved } from './MobileModuleDockProvider';
 import { MobileDockOverflowSheet } from './MobileDockOverflowSheet';
+import { MobileWorkspaceDock } from './MobileWorkspaceDock';
 import type { MobileDockItem } from './mobile-module-dock-types';
 import { MOBILE_DOCK_HEIGHT_CLASS, MOBILE_DOCK_ITEM_CLASS } from './mobile-bottom-nav-constants';
 
@@ -15,8 +16,12 @@ interface MobileBottomNavProps {
 }
 
 export function MobileBottomNav({ menuOpen = false, onMoreClick }: MobileBottomNavProps) {
-  const { slots, overflow } = useMobileModuleDockResolved();
+  const { layout, slots, overflow } = useMobileModuleDockResolved();
   const [overflowOpen, setOverflowOpen] = useState(false);
+
+  if (layout === 'workspace') {
+    return <MobileWorkspaceDock menuOpen={menuOpen} onMoreClick={onMoreClick} />;
+  }
 
   return (
     <nav className="nbos-mobile-dock md:hidden" aria-label="Module navigation">

@@ -28,7 +28,7 @@ export interface PageHeroTabsProps<T extends string> {
   className?: string;
   /** When true, tabs look inactive (e.g. lifecycle overlay). */
   dimmed?: boolean;
-  /** Mobile dock group. Filters default to secondary so module section links stay first. */
+  /** Mobile dock group. Filters default to secondary so module section links stay first. Workspace docks use these as the category picker, not as destinations. */
   dockSource?: MobileDockSource;
 }
 

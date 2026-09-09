@@ -12,10 +12,19 @@ export type MobileDockItem = {
   active: boolean;
 };
 
+export type MobileDockLayout = 'destinations' | 'workspace';
+
+export type MobileDockCreateAction = {
+  onSelect: () => void;
+  disabled?: boolean;
+};
+
 export type MobileDockTools = {
   search?: ReactNode;
   trailing?: ReactNode;
   tabsEnd?: ReactNode;
+  create?: MobileDockCreateAction;
+  settings?: ReactNode;
 };
 
 export const MOBILE_DOCK_CONTENT_SLOTS = 4;

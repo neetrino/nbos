@@ -11,23 +11,25 @@ interface MobileDockOverflowSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   items: MobileDockItem[];
+  title?: string;
 }
 
 export function MobileDockOverflowSheet({
   open,
   onOpenChange,
   items,
+  title = 'More',
 }: MobileDockOverflowSheetProps) {
   const close = () => onOpenChange(false);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" showCloseButton={false} className={MOBILE_APP_MENU_SHEET_CLASS}>
-        <SheetTitle className="sr-only">More in this module</SheetTitle>
+        <SheetTitle className="sr-only">{title}</SheetTitle>
         <SheetDescription className="sr-only">Additional sections for the current module.</SheetDescription>
         <span className={MOBILE_APP_MENU_HANDLE_CLASS} aria-hidden />
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
-          <p className="text-foreground text-lg font-semibold tracking-tight">More</p>
+          <p className="text-foreground text-lg font-semibold tracking-tight">{title}</p>
           <button
             type="button"
             onClick={close}

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { mergeMobileDockItems, resolveMobileDockSlots } from './mobile-module-dock-resolve';
+import {
+  mergeMobileDockItems,
+  pickActiveMobileDockItem,
+  resolveMobileDockSlots,
+} from './mobile-module-dock-resolve';
 import type { MobileDockItem } from './mobile-module-dock-types';
 
 function item(id: string, active = false): MobileDockItem {
@@ -34,5 +38,19 @@ describe('resolveMobileDockSlots', () => {
       slots: [item('a'), item('b'), item('c')],
       overflow: [item('d'), item('e')],
     });
+  });
+});
+
+describe('pickActiveMobileDockItem', () => {
+  it('returns the active item when one is selected', () => {
+    expect(pickActiveMobileDockItem([item('all'), item('my', true)])?.id).toBe('my');
+  });
+
+  it('falls back to the first item when none is active', () => {
+    expect(pickActiveMobileDockItem([item('all'), item('my')])?.id).toBe('all');
+  });
+
+  it('returns null for an empty list', () => {
+    expect(pickActiveMobileDockItem([])).toBeNull();
   });
 });

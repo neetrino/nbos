@@ -29,10 +29,15 @@ export function resolveMobileDockSlots(items: MobileDockItem[]): {
   };
 }
 
+export function pickActiveMobileDockItem(items: MobileDockItem[]): MobileDockItem | null {
+  return items.find((item) => item.active) ?? items[0] ?? null;
+}
+
 export function mobileDockItemsEqual(left: MobileDockItem[], right: MobileDockItem[]): boolean {
   if (left.length !== right.length) return false;
   return left.every((item, index) => {
     const other = right[index];
+    if (!other) return false;
     return (
       item.id === other.id &&
       item.label === other.label &&
