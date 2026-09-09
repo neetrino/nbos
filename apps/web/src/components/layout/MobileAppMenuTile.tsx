@@ -9,7 +9,6 @@ import { SIDEBAR_MODULE_VISUALS } from './sidebar-module-visual';
 import {
   MOBILE_APP_MENU_TILE_ACTIVE_CLASS,
   MOBILE_APP_MENU_TILE_CLASS,
-  MOBILE_APP_MENU_TILE_RAIL_CLASS,
   isMobileAppMenuItemActive,
 } from './mobile-app-menu-constants';
 
@@ -33,7 +32,6 @@ export function MobileAppMenuTile({ item, onNavigate }: MobileAppMenuTileProps) 
       aria-current={active ? 'page' : undefined}
       className={cn(MOBILE_APP_MENU_TILE_CLASS, active && MOBILE_APP_MENU_TILE_ACTIVE_CLASS)}
     >
-      {active ? <span className={MOBILE_APP_MENU_TILE_RAIL_CLASS} aria-hidden /> : null}
       <Icon className={iconClass} size={MOBILE_APP_MENU_ICON_SIZE_PX} strokeWidth={2} aria-hidden />
       <span className="text-sm leading-tight font-semibold tracking-tight">{item.label}</span>
     </Link>

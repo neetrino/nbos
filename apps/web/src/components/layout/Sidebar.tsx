@@ -142,7 +142,6 @@ export function Sidebar({
         className={cn(
           'border-sidebar-border bg-sidebar flex flex-col overflow-x-hidden border-r',
           'transition-[width] duration-200',
-          'shadow-[inset_-1px_0_0_0_color-mix(in_oklch,var(--primary)_16%,transparent)]',
           isHoveringCollapsed ? 'absolute inset-y-0 left-0 z-[45] shadow-xl' : 'h-full',
         )}
         style={{

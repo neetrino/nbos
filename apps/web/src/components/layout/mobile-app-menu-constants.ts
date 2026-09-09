@@ -17,9 +17,6 @@ export const MOBILE_APP_MENU_TILE_CLASS = [
 
 export const MOBILE_APP_MENU_TILE_ACTIVE_CLASS = 'border-primary/20 bg-sidebar-accent';
 
-export const MOBILE_APP_MENU_TILE_RAIL_CLASS =
-  'bg-primary absolute top-3 bottom-3 left-0 w-1 rounded-r-full';
-
 export function isMobileAppMenuItemActive(
   pathname: string,
   href: string,

@@ -12,26 +12,13 @@
   }
 
   .nbos-desk-surface {
-    @apply border-border/70 bg-card relative overflow-hidden rounded-2xl border;
+    @apply border-border/70 bg-card overflow-hidden rounded-2xl border;
     box-shadow: var(--shadow-panel);
     background-image: linear-gradient(
       180deg,
       color-mix(in oklch, var(--primary) 4.5%, var(--card)) 0%,
       var(--card) 42%
     );
-  }
-
-  .nbos-desk-surface::before {
-    content: '';
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 3px;
-    background: linear-gradient(
-      180deg,
-      var(--primary),
-      color-mix(in oklch, var(--primary) 30%, transparent)
-    );
-    pointer-events: none;
   }
 
   .nbos-desk-kicker {
@@ -107,10 +94,6 @@
     .nbos-state-frame,
     .nbos-app-canvas .nbos-insight-panel {
       background-image: none;
-    }
-
-    .nbos-desk-surface::before {
-      background: var(--primary);
     }
 
     .nbos-app-canvas [data-slot='card'] {
