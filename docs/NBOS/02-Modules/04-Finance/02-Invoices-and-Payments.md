@@ -182,7 +182,7 @@ Payment confirmed
 
 Подписка `billing_day = 1` (раннее окно): карточка сразу в `Awaiting Payment`, если Tax-gate пропускает. Days 2–31 по-прежнему создаются в `New`.
 
-Вход в `Awaiting Payment` с любого пути (create сразу в этап или переход статуса; deal / order / billing / drag не важны): если Tax, запрос ещё не отправлен и реквизиты есть — система сама шлёт official request в бухгалтерскую WhatsApp-группу. Один persist-хук (`persistInvoiceCreate` / `notifyOfficialAfterInvoiceWrite`); origin в условии не участвует. Кнопка `Send to accountant` остаётся для повтора на всех этапах кроме `Cancelled`. С `Cancelled` send запрещён (UI скрыт, API отказ). Catch-up cron остаётся, если автоотправка при входе не прошла.
+Вход в `Awaiting Payment` с любого пути (create сразу в этап или переход статуса; deal / order / billing / drag не важны): если Tax, запрос ещё не отправлен и реквизиты есть — система сама шлёт official request в бухгалтерскую WhatsApp-группу. Один persist-хук (`persistInvoiceCreate` / `notifyOfficialAfterInvoiceWrite`); origin в условии не участвует. Ручной переход статуса **ждёт** успешную отправку (тот же idempotency key, что и кнопка `Send to accountant`), затем карточка возвращается уже с `request_sent`. Пока письмо в очереди, UI показывает `Sending to accountant` и кнопку блокирует — повторный клик не создаёт второе WhatsApp. `Send` без `resend` после успешной автоотправки — no-op. Кнопка `Send again` — явный повтор на всех этапах кроме `Cancelled`. С `Cancelled` send запрещён (UI скрыт, API отказ). Catch-up cron остаётся fire-and-forget, если автоотправка при входе не прошла.
 
 ### Важное правило для `Tax`
 

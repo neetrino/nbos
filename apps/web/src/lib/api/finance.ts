@@ -520,8 +520,11 @@ export const invoicesApi = {
     });
     return resp.data;
   },
-  async sendOfficialInvoiceRequest(id: string): Promise<Invoice> {
-    const resp = await api.post<Invoice>(`/api/finance/invoices/${id}/official-request/send`);
+  async sendOfficialInvoiceRequest(id: string, options?: { resend?: boolean }): Promise<Invoice> {
+    const resp = await api.post<Invoice>(
+      `/api/finance/invoices/${id}/official-request/send`,
+      options?.resend ? { resend: true } : {},
+    );
     return resp.data;
   },
   async cancelOfficialInvoiceRequest(id: string): Promise<Invoice> {

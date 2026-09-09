@@ -29,3 +29,23 @@ export function canAutoSendOfficialOnAwaiting(invoice: {
   if (getOfficialInvoiceRequestSendErrors(invoice).length > 0) return false;
   return getOfficialInvoiceOrderCommentSendErrors(invoice).length === 0;
 }
+
+export function resolveManualOfficialSend(
+  invoice: {
+    id: string;
+    officialInvoiceRequestSent: boolean;
+    officialInvoiceCancelledAt: Date | null | undefined;
+  },
+  resend: boolean,
+): { skip: boolean; idempotencyKey?: string } {
+  if (invoice.officialInvoiceRequestSent && !resend) {
+    return { skip: true };
+  }
+  if (invoice.officialInvoiceRequestSent) {
+    return { skip: false };
+  }
+  return {
+    skip: false,
+    idempotencyKey: officialSendIdempotencyKey(invoice.id, invoice.officialInvoiceCancelledAt),
+  };
+}
