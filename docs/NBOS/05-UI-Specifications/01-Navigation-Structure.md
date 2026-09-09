@@ -714,7 +714,7 @@ Body  = одна удобная поверхность (cards / tiles / board)
    List and table views stay desktop-only unless a module documents an exception (trash, reconciliation gap, print).  
    Extra desktop chrome that does not help a thumb (stat strips, filter chip rows, view switchers) is hidden.
 
-3. **Dock (bottom)** — one layout for every module. The bar is a floating card (inset, rounded, panel shadow), not a flush edge-to-edge strip.
+3. **Dock (bottom)** — one layout for every module. The bar is inset and rounded, without a stroke or extra outline layer.
 
    `Menu | Search | + | Place | Settings`
 
