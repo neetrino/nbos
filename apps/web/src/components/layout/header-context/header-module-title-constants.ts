@@ -2,7 +2,7 @@
 export const HEADER_MODULE_TITLE_WRAP = 'flex shrink-0 items-center gap-2.5 sm:gap-3';
 
 export const HEADER_MODULE_TITLE_LABEL =
-  'text-foreground shrink-0 text-base font-semibold tracking-tight whitespace-nowrap xl:text-lg';
+  'nbos-display text-foreground shrink-0 text-[1.35rem] font-semibold tracking-tight whitespace-nowrap xl:text-[1.65rem]';
 
 /** Vertical rule between module name and zone navigation. */
 export const HEADER_MODULE_TITLE_DIVIDER = 'bg-border h-8 w-px shrink-0 opacity-80';

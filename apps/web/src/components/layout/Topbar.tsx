@@ -44,7 +44,7 @@ export function Topbar({ showMobileMenuButton = false, onMobileMenuClick }: Topb
       ) : null}
       <header
         className={cn(
-          'border-border bg-background/90 supports-[backdrop-filter]:bg-background/75 sticky top-0 z-30 flex h-16 shrink-0 items-stretch gap-3 overflow-visible px-4 backdrop-blur-md sm:gap-4 sm:px-6',
+          'border-border/70 bg-background/88 supports-[backdrop-filter]:bg-background/72 sticky top-0 z-30 flex h-16 shrink-0 items-stretch gap-3 overflow-visible px-4 backdrop-blur-md sm:gap-4 sm:px-6',
           hasBridgedZoneNav ? 'border-b-0' : 'border-b',
         )}
       >

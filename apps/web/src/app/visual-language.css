@@ -1,0 +1,159 @@
+@layer components {
+  .nbos-app-canvas {
+    background-color: var(--background);
+    background-image:
+      radial-gradient(1200px 520px at 8% -8%, var(--desk-wash), transparent 58%),
+      radial-gradient(900px 420px at 100% 0%, var(--desk-wash-soft), transparent 52%),
+      linear-gradient(
+        180deg,
+        color-mix(in oklch, var(--foreground) 3.5%, transparent),
+        transparent 28%
+      );
+  }
+
+  .nbos-desk-surface {
+    @apply border-border/70 bg-card relative overflow-hidden rounded-2xl border;
+    box-shadow: var(--shadow-panel);
+    background-image: linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--primary) 4.5%, var(--card)) 0%,
+      var(--card) 42%
+    );
+  }
+
+  .nbos-desk-surface::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: linear-gradient(
+      180deg,
+      var(--primary),
+      color-mix(in oklch, var(--primary) 30%, transparent)
+    );
+    pointer-events: none;
+  }
+
+  .nbos-desk-kicker {
+    @apply text-muted-foreground text-[11px] font-semibold tracking-[0.18em] uppercase;
+  }
+
+  .nbos-display {
+    font-family: var(--font-display), var(--font-sans), ui-serif, Georgia, serif;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+
+  .nbos-folio {
+    @apply font-display text-primary/25 pointer-events-none select-none;
+    font-size: clamp(4.5rem, 12vw, 8.5rem);
+    font-weight: 600;
+    line-height: 0.8;
+  }
+
+  .nbos-state-frame {
+    @apply border-border/70 bg-card relative overflow-hidden rounded-2xl border px-6 py-16 text-center;
+    background-image:
+      linear-gradient(180deg, color-mix(in oklch, var(--primary) 6%, var(--card)), var(--card) 46%),
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 47px,
+        color-mix(in oklch, var(--primary) 7%, transparent) 47px,
+        color-mix(in oklch, var(--primary) 7%, transparent) 48px
+      );
+  }
+
+  .nbos-auth-scene {
+    @apply bg-background relative isolate min-h-dvh overflow-x-hidden;
+  }
+
+  .nbos-auth-ledger {
+    @apply relative isolate overflow-hidden;
+    background:
+      radial-gradient(
+        80% 70% at 18% 12%,
+        color-mix(in oklch, white 16%, transparent),
+        transparent 58%
+      ),
+      linear-gradient(165deg, #1a1d63 0%, #2e3192 48%, #12143c 100%);
+  }
+
+  .nbos-auth-ledger::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 71px,
+      rgb(255 255 255 / 0.06) 71px,
+      rgb(255 255 255 / 0.06) 72px
+    );
+    pointer-events: none;
+  }
+
+  .nbos-mobile-dock {
+    @apply border-border/80 bg-background/92 supports-[backdrop-filter]:bg-background/78 pointer-events-auto fixed inset-x-0 bottom-0 z-30 border-t backdrop-blur-md;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@layer utilities {
+  .nbos-page-enter {
+    animation: nbos-page-enter var(--motion-duration-base) var(--motion-ease-out);
+  }
+
+  .nbos-shimmer {
+    background-image: linear-gradient(
+      90deg,
+      var(--muted) 0%,
+      color-mix(in oklch, var(--foreground) 8%, var(--muted)) 48%,
+      var(--muted) 100%
+    );
+    background-size: 220% 100%;
+    animation: nbos-shimmer 1.4s var(--motion-ease-out) infinite;
+  }
+
+  .nbos-pressable {
+    transition:
+      transform var(--motion-duration-fast) var(--motion-ease-out),
+      box-shadow var(--motion-duration-fast) ease-out;
+  }
+
+  .nbos-pressable:active {
+    transform: translateY(1px);
+  }
+}
+
+@keyframes nbos-page-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes nbos-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nbos-page-enter,
+  .nbos-shimmer,
+  .nbos-animate-pulse-soft {
+    animation: none;
+  }
+
+  .nbos-pressable,
+  .nbos-pressable:active {
+    transition: none;
+    transform: none;
+  }
+}

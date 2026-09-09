@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronLeft, ExternalLink, Link2 } from 'lucide-react';
@@ -15,10 +15,6 @@ import type { DashboardPersonalLink } from '@/lib/api/dashboard';
 import { writeModuleLastVisitFromPathname } from '@/lib/navigation/module-last-visit';
 import { isNavChildLinkActive } from '@/lib/navigation/nav-route-utils';
 import { useUnsortedTaskCreate } from '@/features/tasks/components/UnsortedTaskCreateProvider';
-import {
-  SlidingSidebarBackdrop,
-  useSlidingSidebarIndicator,
-} from '@/components/shared/page-hero/sliding-pill-indicator';
 import { SidebarModuleNavRow } from './SidebarModuleNavRow';
 
 interface SidebarNavListProps {
@@ -40,19 +36,6 @@ export function SidebarNavList({
 }: SidebarNavListProps) {
   const pathname = usePathname();
   const { openUnsortedTaskCreate } = useUnsortedTaskCreate();
-  const listRef = useRef<HTMLUListElement>(null);
-
-  const getActiveNavElement = useCallback(
-    () => listRef.current?.querySelector<HTMLElement>('[data-sidebar-nav-active="true"]') ?? null,
-    [pathname],
-  );
-
-  const { indicator, ready } = useSlidingSidebarIndicator(
-    listRef,
-    getActiveNavElement,
-    `${pathname}:${moreExpanded}`,
-    !collapsed,
-  );
 
   useLayoutEffect(() => {
     writeModuleLastVisitFromPathname(pathname);
@@ -93,8 +76,7 @@ export function SidebarNavList({
   };
 
   return (
-    <ul ref={listRef} className="relative space-y-0">
-      <SlidingSidebarBackdrop indicator={indicator} ready={ready} />
+    <ul className="relative space-y-0">
       {primaryItems.map((item) => (
         <SidebarModuleNavRow
           key={item.key}

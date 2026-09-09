@@ -16,19 +16,19 @@ export const SIDEBAR_HEADER_HEIGHT_CLASS = 'h-16';
 
 /** Logo + collapse control row; horizontal padding pairs with `SIDEBAR_NAV_LIST_CLASS`. */
 export const SIDEBAR_HEADER_CLASS =
-  'border-sidebar-border flex shrink-0 items-center border-b px-2 gap-2';
+  'border-sidebar-border flex shrink-0 items-center border-b px-2.5 gap-2';
 
 /** Max rendered logo width inside the sidebar header (intrinsic SVG is wider). */
 export const SIDEBAR_LOGO_MAX_WIDTH_CLASS = 'max-w-[7.5rem]';
 
 /** Nav list container padding (pairs with inset on items). */
-export const SIDEBAR_NAV_LIST_CLASS = 'px-2 py-2';
+export const SIDEBAR_NAV_LIST_CLASS = 'px-2 py-3';
 
 /** Standard top-level nav link padding. */
-export const SIDEBAR_NAV_ITEM_CLASS = 'px-2 py-1';
+export const SIDEBAR_NAV_ITEM_CLASS = 'px-2.5 py-1.5';
 
 /** Child link indent under expandable modules. */
 export const SIDEBAR_NAV_CHILD_LIST_CLASS = 'mt-0.5 ml-9 space-y-0';
 
 export const SIDEBAR_NAV_CHILD_LINK_CLASS =
-  'block rounded-md px-3 py-1 text-[13px] transition-colors';
+  'block rounded-lg px-3 py-1.5 text-[13px] transition-colors';

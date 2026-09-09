@@ -128,7 +128,7 @@ export function ReportPieChart({ data }: { data: ChartDatum[] }) {
 
 function ChartFrame({ children }: { children: ReactElement }) {
   return (
-    <div className="h-[280px] w-full">
+    <div className="nbos-desk-surface h-[280px] w-full px-2 pt-3">
       <ResponsiveContainer width="100%" height="100%">
         {children}
       </ResponsiveContainer>

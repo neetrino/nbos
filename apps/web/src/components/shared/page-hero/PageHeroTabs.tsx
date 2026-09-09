@@ -58,7 +58,11 @@ export function PageHeroTabs<T extends string>({
       aria-label={ariaLabel}
     >
       {!dimmed ? (
-        <SlidingPillBackdrop indicator={indicator} ready={ready} className="bg-primary shadow-md" />
+        <SlidingPillBackdrop
+          indicator={indicator}
+          ready={ready}
+          className="bg-primary shadow-[0_8px_18px_-8px_var(--primary-glow)]"
+        />
       ) : null}
       {options.map((option) => {
         const active = !dimmed && option.value === value;

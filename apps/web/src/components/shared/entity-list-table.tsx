@@ -7,16 +7,18 @@ import { resolveEntityListDateParts } from './entity-list-date';
 export { formatEntityListDate, formatFinanceListDate } from './entity-list-date';
 
 /** Shared shell for module list/table views (board|list dual views). */
-export const ENTITY_LIST_SHELL_CLASS = 'border-border bg-card rounded-xl border';
+export const ENTITY_LIST_SHELL_CLASS =
+  'border-border/70 bg-card overflow-hidden rounded-2xl border shadow-[var(--shadow-panel)]';
 
 /**
  * Scrollable list shell — fills remaining height.
  * Do not pair with `overflow-hidden` (breaks end-of-list scrolling).
  */
 export const ENTITY_LIST_SCROLL_SHELL_CLASS =
-  'border-border bg-card min-h-0 flex-1 overflow-auto rounded-xl border';
+  'border-border/70 bg-card min-h-0 flex-1 overflow-auto rounded-2xl border shadow-[var(--shadow-panel)]';
 
-export const ENTITY_LIST_HEAD_CLASS = 'px-4';
+export const ENTITY_LIST_HEAD_CLASS =
+  'text-muted-foreground px-4 text-[11px] font-semibold tracking-[0.14em] uppercase';
 
 export const ENTITY_LIST_CELL_CLASS = 'px-4 py-3';
 
@@ -25,7 +27,7 @@ export const ENTITY_LIST_BADGE_CLASS = 'rounded-full px-2.5 text-[11px]';
 export const ENTITY_LIST_TYPE_CLASS =
   'text-muted-foreground text-xs font-medium tracking-wide uppercase';
 
-export const ENTITY_LIST_ROW_HOVER_CLASS = 'hover:bg-muted/40';
+export const ENTITY_LIST_ROW_HOVER_CLASS = 'hover:bg-primary/[0.04]';
 
 /** @deprecated Prefer {@link ENTITY_LIST_SHELL_CLASS}. */
 export const FINANCE_LIST_SHELL_CLASS = ENTITY_LIST_SHELL_CLASS;

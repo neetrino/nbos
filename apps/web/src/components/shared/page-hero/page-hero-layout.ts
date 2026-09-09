@@ -52,7 +52,7 @@ export const PAGE_HERO_TRAILING_COLLAPSED = [
 /** Single tab size on all viewports (Drive-style pill tabs). */
 export const PAGE_HERO_TAB_BUTTON = [
   'inline-flex items-center gap-2 rounded-full px-3 py-2',
-  'text-sm font-bold tracking-tight whitespace-nowrap transition-colors sm:px-3.5',
+  'text-sm font-semibold tracking-tight whitespace-nowrap transition-colors sm:px-3.5',
 ].join(' ');
 
 export const PAGE_HERO_TAB_ICON_WRAP =

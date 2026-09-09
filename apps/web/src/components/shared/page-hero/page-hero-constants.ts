@@ -8,4 +8,5 @@ export const PAGE_HERO_TAB_SCROLL =
   'min-w-0 max-w-full overflow-x-auto overscroll-x-contain scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 /** Pill group container (tabs, view mode). */
-export const PAGE_HERO_PILL_GROUP = 'bg-muted/70 inline-flex items-center gap-0.5 rounded-full p-1';
+export const PAGE_HERO_PILL_GROUP =
+  'bg-muted/80 inline-flex items-center gap-0.5 rounded-full p-1 ring-1 ring-border/50';

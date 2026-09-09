@@ -12,7 +12,10 @@ import { Topbar } from './Topbar';
 import {
   APP_MAIN_CONTENT_DASHBOARD_MOBILE_INSET,
   APP_MAIN_CONTENT_INSET,
+  APP_MAIN_CONTENT_MOBILE_DOCK_INSET,
 } from './app-layout-constants';
+import { MobileBottomNav } from './MobileBottomNav';
+import { PageEnter } from './PageEnter';
 import { SIDEBAR_WIDTH_COLLAPSED_PX, SIDEBAR_WIDTH_EXPANDED_PX } from './sidebar-layout-constants';
 import { AppEntityRelationProvider } from '@/components/shared/relation-picker/AppEntityRelationProvider';
 import { UnsortedTaskCreateProvider } from '@/features/tasks/components/UnsortedTaskCreateProvider';
@@ -84,7 +87,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <ActiveCallProvider>
                     <EmployeeDirectoryWarmup />
                     <div
-                      className="bg-background grid h-screen overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
+                      className="nbos-app-canvas grid h-screen overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
                       style={{ gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr)` }}
                     >
                       <Sidebar
@@ -94,23 +97,26 @@ export function AppLayout({ children }: AppLayoutProps) {
                         onMobileOpenChange={isMobileViewport ? setMobileNavOpen : undefined}
                       />
                       <div className="flex min-w-0 flex-col overflow-hidden">
-                        <Topbar
-                          showMobileMenuButton={isMobileViewport}
-                          onMobileMenuClick={() => setMobileNavOpen(true)}
-                        />
+                        <Topbar />
                         <main
                           className={cn(
-                            'bg-background flex min-h-0 flex-1 flex-col overscroll-contain',
+                            'flex min-h-0 flex-1 flex-col overscroll-contain bg-transparent',
                             isMessengerRoute
                               ? 'overflow-hidden'
                               : 'overflow-y-auto [scrollbar-gutter:stable]',
                             APP_MAIN_CONTENT_INSET,
+                            APP_MAIN_CONTENT_MOBILE_DOCK_INSET,
                             isDashboardRoute && APP_MAIN_CONTENT_DASHBOARD_MOBILE_INSET,
                             isDashboardRoute && 'max-md:[scrollbar-gutter:auto]',
                           )}
                         >
-                          {children}
+                          <PageEnter className={isMessengerRoute ? 'overflow-hidden' : undefined}>
+                            {children}
+                          </PageEnter>
                         </main>
+                        {isMobileViewport ? (
+                          <MobileBottomNav onMoreClick={() => setMobileNavOpen(true)} />
+                        ) : null}
                       </div>
                     </div>
                   </ActiveCallProvider>
