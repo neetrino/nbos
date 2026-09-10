@@ -41,9 +41,10 @@ export function formatDateDisplay(
   date: Date | undefined,
   locale: string,
   withTime = false,
+  alwaysShowYear = false,
 ): string {
   if (!date || !isValid(date)) return '';
-  const includeYear = date.getFullYear() !== new Date().getFullYear();
+  const includeYear = alwaysShowYear || date.getFullYear() !== new Date().getFullYear();
   return new Intl.DateTimeFormat(locale, {
     day: 'numeric',
     month: 'short',

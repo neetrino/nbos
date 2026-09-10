@@ -15,6 +15,8 @@ import { notifyClientServiceRegistryRefresh } from './client-service-registry-ev
 export function ClientServiceRegistryCheckButton(props: {
   serviceId: string;
   compact?: boolean;
+  /** Match outlined detail-sheet field shells (`h-10 rounded-xl`). */
+  matchFieldHeight?: boolean;
   disabled?: boolean;
   onChecked?: (result: ClientServiceRegistryCheckResult) => void;
 }) {
@@ -30,8 +32,7 @@ export function ClientServiceRegistryCheckButton(props: {
       const notice = clientServiceRegistryToast(result.outcome);
       if (notice.kind === 'success') toast.success(notice.message);
       else if (notice.kind === 'warning') toast.warning(notice.message);
-      else if (notice.kind === 'error') toast.error(notice.message);
-      else toast.message(notice.message);
+      else toast.error(notice.message);
       props.onChecked?.(result);
       notifyClientServiceRegistryRefresh();
     } catch (error: unknown) {
@@ -45,7 +46,8 @@ export function ClientServiceRegistryCheckButton(props: {
     <Button
       type="button"
       variant={props.compact ? 'ghost' : 'outline'}
-      size={props.compact ? 'icon' : 'sm'}
+      size={props.compact ? 'icon' : props.matchFieldHeight ? 'lg' : 'sm'}
+      className={props.matchFieldHeight ? 'rounded-xl' : undefined}
       disabled={checking || props.disabled}
       aria-label="Check domain registry"
       title="Check domain registry"

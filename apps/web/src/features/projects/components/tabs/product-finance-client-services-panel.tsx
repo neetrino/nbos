@@ -117,7 +117,10 @@ export function ProductFinanceClientServicesPanel({
         }}
         itemName={cancelTarget?.name ?? ''}
         title="Cancel client service?"
-        description="The service will be marked cancelled and hidden from active lists. Linked finance records and history stay intact."
+        description="The record is not deleted. Status becomes Cancelled, it leaves active lists, and domain tracking stops. Linked finance records stay intact."
+        dismissLabel="No"
+        confirmLabel="Yes"
+        submittingLabel="Cancelling…"
         onConfirm={() => {
           const id = cancelTarget?.id;
           if (!id) return;

@@ -40,6 +40,8 @@ export interface NbosDatePickerProps {
   embedded?: boolean;
   /** Raised pill button (icon-only when empty — no placeholder dash). */
   iconButtonShell?: boolean;
+  /** Always include the year in the trigger label (payment / renewal dates). */
+  alwaysShowYear?: boolean;
   /** Position popover relative to this element instead of the trigger (e.g. full form row). */
   popoverAnchorRef?: RefObject<HTMLElement | null>;
   popoverAlign?: 'start' | 'center' | 'end';
@@ -59,6 +61,7 @@ export function NbosDatePicker({
   'aria-label': ariaLabel,
   embedded = false,
   iconButtonShell = false,
+  alwaysShowYear = false,
   popoverAnchorRef,
   popoverAlign = 'end',
 }: NbosDatePickerProps) {
@@ -101,8 +104,8 @@ export function NbosDatePicker({
 
   const displayText = useMemo(() => {
     if (iconButtonShell) return formatDateDisplayShort(parsed, locale);
-    return formatDateDisplay(parsed, locale, mode === 'datetime');
-  }, [iconButtonShell, locale, mode, parsed]);
+    return formatDateDisplay(parsed, locale, mode === 'datetime', alwaysShowYear);
+  }, [alwaysShowYear, iconButtonShell, locale, mode, parsed]);
 
   const handleClear = useCallback(() => {
     onChange('');

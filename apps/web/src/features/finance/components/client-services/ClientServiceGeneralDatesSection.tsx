@@ -21,6 +21,9 @@ import type {
 import { ClientServiceRegistryBadge } from './ClientServiceRegistryBadge';
 import { ClientServiceRegistryCheckButton } from './ClientServiceRegistryCheckButton';
 
+const DATES_ROW_WITH_CHECK_CLASS =
+  'grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-3';
+
 export function ClientServiceGeneralDatesSection(props: {
   service: ClientServiceRecord;
   draft: ClientServiceFormState;
@@ -41,35 +44,16 @@ export function ClientServiceGeneralDatesSection(props: {
       onOpenChange={setOpen}
     >
       <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-        <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
-          <InlineField
-            variant="controlled"
-            label="Start date"
-            type="date"
-            value={draft.startDate}
-            icon={<Calendar size={12} />}
-            disabled={formDisabled}
-            className={EXPENSE_SHEET_FIELD_CELL_CLASS}
-            onValueChange={(startDate) => patchDraft({ startDate })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Renewal date"
-            type="date"
-            value={draft.renewalDate}
-            icon={<RefreshCw size={12} />}
-            disabled={formDisabled}
-            className={EXPENSE_SHEET_FIELD_CELL_CLASS}
-            onValueChange={(renewalDate) => patchDraft({ renewalDate })}
-          />
-        </div>
+        <ClientServiceDateFieldsRow
+          draft={draft}
+          patchDraft={patchDraft}
+          formDisabled={formDisabled}
+          isDomain={isDomain}
+          serviceId={service.id}
+          onRegistryChecked={props.onRegistryChecked}
+        />
         {isDomain ? (
           <div className="flex flex-wrap items-center gap-2">
-            <ClientServiceRegistryCheckButton
-              serviceId={service.id}
-              disabled={formDisabled}
-              onChecked={props.onRegistryChecked}
-            />
             <ClientServiceRegistryBadge status={service.registryLookupStatus} />
             {checkedLabel ? (
               <p className="text-muted-foreground text-xs">
@@ -90,6 +74,49 @@ export function ClientServiceGeneralDatesSection(props: {
         </div>
       </div>
     </DetailSheetCollapsibleSection>
+  );
+}
+
+function ClientServiceDateFieldsRow(props: {
+  draft: ClientServiceFormState;
+  patchDraft: (partial: Partial<ClientServiceFormState>) => void;
+  formDisabled: boolean;
+  isDomain: boolean;
+  serviceId: string;
+  onRegistryChecked?: (result: ClientServiceRegistryCheckResult) => void;
+}) {
+  return (
+    <div className={props.isDomain ? DATES_ROW_WITH_CHECK_CLASS : EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
+      <InlineField
+        variant="controlled"
+        label="Start date"
+        type="date"
+        value={props.draft.startDate}
+        icon={<Calendar size={12} />}
+        disabled={props.formDisabled}
+        className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+        onValueChange={(startDate) => props.patchDraft({ startDate })}
+      />
+      <InlineField
+        variant="controlled"
+        label="Renewal date"
+        type="date"
+        value={props.draft.renewalDate}
+        icon={<RefreshCw size={12} />}
+        disabled={props.formDisabled}
+        datePickerAlwaysShowYear
+        className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+        onValueChange={(renewalDate) => props.patchDraft({ renewalDate })}
+      />
+      {props.isDomain ? (
+        <ClientServiceRegistryCheckButton
+          serviceId={props.serviceId}
+          matchFieldHeight
+          disabled={props.formDisabled}
+          onChecked={props.onRegistryChecked}
+        />
+      ) : null}
+    </div>
   );
 }
 

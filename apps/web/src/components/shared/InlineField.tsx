@@ -76,6 +76,7 @@ type InlineFieldControlledProps = {
   hideLabel?: boolean;
   datePickerVariant?: 'compact' | 'extended';
   datePickerMode?: 'date' | 'datetime';
+  datePickerAlwaysShowYear?: boolean;
   fitContent?: boolean;
   selectMenuTone?: 'default' | 'highlight';
   selectContentClassName?: string;
@@ -353,6 +354,7 @@ export function InlineField(props: InlineFieldProps) {
     const {
       datePickerVariant,
       datePickerMode,
+      datePickerAlwaysShowYear,
       hideLabel,
       fitContent,
       selectMenuTone,
@@ -366,6 +368,7 @@ export function InlineField(props: InlineFieldProps) {
         hideLabel={hideLabel}
         datePickerVariant={datePickerVariant}
         datePickerMode={datePickerMode}
+        datePickerAlwaysShowYear={datePickerAlwaysShowYear}
         fitContent={fitContent}
         selectMenuTone={selectMenuTone}
         selectContentClassName={selectContentClassName}

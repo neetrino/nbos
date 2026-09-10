@@ -20,6 +20,7 @@ describe('client-service-registry helpers', () => {
 
   it('maps check outcomes to toast copy', () => {
     expect(clientServiceRegistryToast('updated').kind).toBe('success');
+    expect(clientServiceRegistryToast('unchanged').kind).toBe('success');
     expect(clientServiceRegistryToast('not_found').kind).toBe('warning');
     expect(clientServiceRegistryToast('failed').kind).toBe('error');
   });
