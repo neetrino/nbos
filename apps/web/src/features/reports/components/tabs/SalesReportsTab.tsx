@@ -1,6 +1,7 @@
 'use client';
 
 import { Handshake, Target, TrendingUp, Users } from 'lucide-react';
+import { getDealStage } from '@/features/crm/constants/dealPipeline';
 import type { LazyReportTabState } from '../../hooks/useLazyReportTabData';
 import type { SalesReportsTabData } from '../../hooks/useReportTabData';
 import { count, money } from '../../report-number-format';
@@ -22,21 +23,21 @@ export function SalesReportsTab({ state }: SalesReportsTabProps) {
       {data ? (
         <>
           <SalesKpis data={data} />
+          <ChartCard title="Deal pipeline funnel" description="Deal count by current stage.">
+            <ReportBarChart data={dealStatusChart(data)} />
+          </ChartCard>
           <div className="grid gap-5 xl:grid-cols-2">
-            <ChartCard title="Deal pipeline funnel" description="Deal count by current stage.">
-              <ReportBarChart data={dealStatusChart(data)} />
+            <ChartCard
+              title="Deal value by type"
+              description="Potential revenue grouped by deal type."
+            >
+              <ReportBarChart data={dealTypeValueChart(data)} />
             </ChartCard>
             <ChartCard
               title="Lead source distribution"
               description="Where leads enter the pipeline."
             >
               <ReportPieChart data={leadSourceChart(data)} />
-            </ChartCard>
-            <ChartCard
-              title="Deal value by type"
-              description="Potential revenue grouped by deal type."
-            >
-              <ReportBarChart data={dealTypeValueChart(data)} />
             </ChartCard>
           </div>
         </>
@@ -70,7 +71,10 @@ function SalesKpis({ data }: { data: SalesReportsTabData }) {
 }
 
 function dealStatusChart(data: SalesReportsTabData): ChartDatum[] {
-  return data.deals.byStatus.map((row) => ({ name: row.status, value: row._count }));
+  return data.deals.byStatus.map((row) => ({
+    name: getDealStage(row.status)?.shortLabel ?? row.status,
+    value: row._count,
+  }));
 }
 
 function leadSourceChart(data: SalesReportsTabData): ChartDatum[] {
