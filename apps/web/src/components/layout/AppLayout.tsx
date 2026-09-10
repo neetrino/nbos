@@ -103,7 +103,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                           <Topbar />
                           <main
                             className={cn(
-                              'flex min-h-0 flex-1 flex-col overscroll-contain bg-transparent',
+                              'flex min-h-0 min-w-0 flex-1 flex-col overscroll-contain bg-transparent',
                               isMessengerRoute
                                 ? 'overflow-hidden'
                                 : 'overflow-y-auto [scrollbar-gutter:stable]',
@@ -114,7 +114,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                           >
                             <PageEnter
                               className={
-                                isMessengerRoute ? 'overflow-hidden' : 'max-md:overflow-y-auto'
+                                isMessengerRoute ? 'overflow-hidden' : 'max-md:overflow-x-hidden max-md:overflow-y-auto'
                               }
                             >
                               {children}

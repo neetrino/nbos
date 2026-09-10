@@ -24,6 +24,7 @@ import { EXPENSES_VIEW_OPTIONS } from '@/features/finance/components/expenses/ex
 import { CLIENT_SERVICES_VIEW_OPTIONS } from '@/features/finance/components/client-services/client-services-view-options';
 import { projectExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
 import { useClientServicesViewMode } from '@/features/finance/constants/client-services-view';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-board-view';
 import { useOrdersBoardViewMode } from '@/features/finance/constants/orders-board-view';
 import { useInvoicesBoardViewMode } from '@/features/finance/constants/invoices-board-view';
@@ -64,6 +65,10 @@ export function FinanceTab({
   const [invoicesView, setInvoicesView] = useInvoicesBoardViewMode();
   const [expensesView, setExpensesView] = useExpensesBoardViewMode();
   const [clientServicesView, setClientServicesView] = useClientServicesViewMode();
+  const displayOrdersView = useMobilePreferredView(ordersView, 'board');
+  const displayInvoicesView = useMobilePreferredView(invoicesView, 'kanban');
+  const displayExpensesView = useMobilePreferredView(expensesView, 'kanban');
+  const displayClientServicesView = useMobilePreferredView(clientServicesView, 'status');
 
   const scopedOrders = useMemo(() => {
     if (!productOrderId) return orders;
@@ -199,11 +204,11 @@ export function FinanceTab({
 
       <div
         className={
-          (financeSection.activeSection === 'orders' && ordersView === 'board') ||
-          (financeSection.activeSection === 'invoices' && invoicesView === 'kanban') ||
-          (financeSection.activeSection === 'expenses' && expensesView === 'kanban') ||
+          (financeSection.activeSection === 'orders' && displayOrdersView === 'board') ||
+          (financeSection.activeSection === 'invoices' && displayInvoicesView === 'kanban') ||
+          (financeSection.activeSection === 'expenses' && displayExpensesView === 'kanban') ||
           (financeSection.activeSection === 'client-services' &&
-            (clientServicesView === 'status' || clientServicesView === 'months'))
+            (displayClientServicesView === 'status' || displayClientServicesView === 'months'))
             ? 'flex min-h-0 flex-1 flex-col overflow-y-auto'
             : undefined
         }
@@ -213,10 +218,10 @@ export function FinanceTab({
           search={financeSection.search}
           debouncedSearch={financeSection.debouncedSearch}
           filters={financeSection.filters}
-          ordersView={ordersView}
-          invoicesView={invoicesView}
-          expensesView={expensesView}
-          clientServicesView={clientServicesView}
+          ordersView={displayOrdersView}
+          invoicesView={displayInvoicesView}
+          expensesView={displayExpensesView}
+          clientServicesView={displayClientServicesView}
           financeOrders={financeOrders}
           subscriptions={subscriptions}
           projectId={projectId}

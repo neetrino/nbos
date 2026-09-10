@@ -52,7 +52,6 @@ export function DeliveryBoardClosedBoard({
     isMobileViewport,
     startAutoScroll,
     stopAutoScroll,
-    scrollByOneColumn,
   } = useKanbanHorizontalScroll({
     columnWidth: DELIVERY_KANBAN_COLUMN_WIDTH_PX,
     columnMarginTotalPx: DELIVERY_KANBAN_COLUMN_GAP_PX,
@@ -72,16 +71,12 @@ export function DeliveryBoardClosedBoard({
         canScrollLeft={canScrollLeft}
         canScrollRight={canScrollRight}
         isMobile={isMobileViewport}
-        onStep={scrollByOneColumn}
         onHoverStart={startAutoScroll}
         onHoverEnd={stopAutoScroll}
       />
       <div
         ref={scrollRef}
-        className={cn(
-          DELIVERY_KANBAN_BOARD_SCROLL_CLASS,
-          isMobileViewport && 'snap-x snap-mandatory',
-        )}
+        className={DELIVERY_KANBAN_BOARD_SCROLL_CLASS}
       >
         <div
           className={DELIVERY_KANBAN_BOARD_ROW_CLASS}

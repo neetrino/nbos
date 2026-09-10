@@ -9,7 +9,7 @@ export const DELIVERY_KANBAN_COLUMN_SHELL_CLASS =
 
 /** Scroll viewport — width constrained by parent; never set minWidth here. */
 export const DELIVERY_KANBAN_BOARD_SCROLL_CLASS =
-  'min-h-0 w-full min-w-0 flex-1 overflow-x-auto overflow-y-hidden pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+  'min-h-0 w-full min-w-0 flex-1 overflow-x-scroll overflow-y-hidden pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-md:snap-x max-md:snap-proximity max-md:[-webkit-overflow-scrolling:touch]';
 
 /** Inner row that defines total board width. */
 export const DELIVERY_KANBAN_BOARD_ROW_CLASS = 'flex h-full min-h-0 gap-0';

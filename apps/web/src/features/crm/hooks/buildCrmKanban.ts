@@ -11,6 +11,21 @@ import {
   type BoardStageDefinition,
 } from '@/features/shared/board-lifecycle';
 
+const SEARCH_FILTER_ALL = 'all';
+
+/**
+ * Desktop Stage chip can collapse the board to one column. Mobile hides that chip,
+ * so ignore a persisted status and show the full lifecycle board (same as Finance).
+ */
+export function resolveCrmKanbanStatusFilter(
+  status: string | undefined,
+  isMobileViewport: boolean,
+): string | undefined {
+  if (isMobileViewport) return undefined;
+  if (status && status !== SEARCH_FILTER_ALL) return status;
+  return undefined;
+}
+
 interface StageMeta extends BoardStageDefinition, TerminalDropStageSource {
   color: string;
   hexColor?: string;
