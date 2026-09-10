@@ -21,6 +21,8 @@ const INLINE_CLASS = cn(
   'text-muted-foreground hover:bg-secondary/50 hover:text-foreground',
 );
 
+export type ProductWhatsAppNavTriggerVariant = 'inline' | 'tab' | 'tile';
+
 export function ProductWhatsAppNavTrigger({
   className,
   hideLabelOnMobile = false,
@@ -28,7 +30,7 @@ export function ProductWhatsAppNavTrigger({
   ...props
 }: ComponentPropsWithRef<'button'> & {
   hideLabelOnMobile?: boolean;
-  variant?: 'inline' | 'tab' | 'tile';
+  variant?: ProductWhatsAppNavTriggerVariant;
 }) {
   if (variant === 'tile') {
     return (
@@ -44,7 +46,7 @@ export function ProductWhatsAppNavTrigger({
         {...props}
       >
         <span className={actionTileIconVariants({ tone: 'emerald', size: 'md' })} aria-hidden>
-          <WhatsAppBrandIcon className="size-3.5" />
+          <WhatsAppBrandIcon className={WHATSAPP_ICON_SIZE_CLASS} />
         </span>
         <span className="min-w-0 flex-1 truncate">{WHATSAPP_NAV_LABEL}</span>
       </button>

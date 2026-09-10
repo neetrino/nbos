@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Calendar, CalendarPlus, Cloud, FolderKanban, Layers, User, Wallet } from 'lucide-react';
+import { Calendar, CalendarPlus, FolderKanban, Layers, User, Wallet } from 'lucide-react';
 import { ActionTileButton, StatusBadge } from '@/components/shared';
 import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
+import { SIDEBAR_MODULE_VISUALS } from '@/components/layout/sidebar-module-visual';
 import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
 import { getProductDeliveryStageBadgeDisplay } from '@/features/projects/constants/delivery-stage-display';
@@ -36,6 +37,7 @@ export function ProductInfoPanel({
   className,
 }: ProductInfoPanelProps) {
   const searchParams = useSearchParams();
+  const isMobileViewport = useIsMobileViewport();
   const [whatsappOpen, setWhatsappOpen] = useState(
     () => searchParams.get('settings') === 'whatsapp',
   );
@@ -46,8 +48,8 @@ export function ProductInfoPanel({
   const stageStatus = getProductDeliveryStageBadgeDisplay(product);
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const dealId = getEntityOrderDealId(product.order);
-  const isMobileViewport = useIsMobileViewport();
   const driveHref = buildDriveHrefWithProduct(product.id);
+  const DriveIcon = SIDEBAR_MODULE_VISUALS.drive.Icon;
 
   return (
     <aside
@@ -63,35 +65,33 @@ export function ProductInfoPanel({
             {product.project.name}
           </p>
         </div>
-        {isMobileViewport ? (
-          <div className="grid w-full grid-cols-2 gap-2">
+        <div
+          className={cn(
+            isMobileViewport
+              ? 'grid w-full grid-cols-2 gap-2'
+              : 'flex w-auto shrink-0 items-center gap-1',
+          )}
+        >
+          {isMobileViewport ? (
             <ActionTileButton
               label="Drive"
               href={driveHref}
-              openInNewTab={false}
+              icon={<DriveIcon className={SIDEBAR_MODULE_VISUALS.drive.iconClass} aria-hidden />}
               tone="sky"
               size="md"
               fullWidth
-              icon={<Cloud aria-hidden />}
             />
-            <ProductSettingsSheet
-              productId={product.id}
-              triggerVariant="tile"
-              open={whatsappOpen}
-              onOpenChange={setWhatsappOpen}
-            />
-          </div>
-        ) : (
-          <div className="flex shrink-0 items-center gap-1">
+          ) : (
             <EntityDriveNavAction href={driveHref} />
-            <ProductSettingsSheet
-              productId={product.id}
-              triggerVariant="inline"
-              open={whatsappOpen}
-              onOpenChange={setWhatsappOpen}
-            />
-          </div>
-        )}
+          )}
+          <ProductSettingsSheet
+            productId={product.id}
+            triggerVariant={isMobileViewport ? 'tile' : 'inline'}
+            open={whatsappOpen}
+            onOpenChange={setWhatsappOpen}
+            className={isMobileViewport ? 'w-full' : undefined}
+          />
+        </div>
       </div>
 
       <DeliveryDealPanelActions
