@@ -1,10 +1,12 @@
 'use client';
 
 import { Handshake, Target, TrendingUp, Users } from 'lucide-react';
+import { AmdCurrencyIcon } from '@/components/shared';
 import { getDealStage } from '@/features/crm/constants/dealPipeline';
+import { formatGroupedNumber } from '@/lib/format/money';
 import type { LazyReportTabState } from '../../hooks/useLazyReportTabData';
 import type { SalesReportsTabData } from '../../hooks/useReportTabData';
-import { count, money } from '../../report-number-format';
+import { count } from '../../report-number-format';
 import { ChartCard } from '../charts/ChartCard';
 import { KpiCard } from '../charts/KpiCard';
 import { ReportBarChart, ReportPieChart, type ChartDatum } from '../charts/ReportCharts';
@@ -57,13 +59,29 @@ function SalesKpis({ data }: { data: SalesReportsTabData }) {
   );
 
   return (
-    <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-      <KpiCard label="Leads" value={count(data.leads.total)} icon={<Users size={18} />} />
-      <KpiCard label="Active deals" value={count(activeDeals)} icon={<Handshake size={18} />} />
-      <KpiCard label="Won deals" value={count(won)} icon={<Target size={18} />} />
+    <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.35fr)]">
       <KpiCard
+        size="emphasis"
+        label="Leads"
+        value={count(data.leads.total)}
+        icon={<Users size={18} />}
+      />
+      <KpiCard
+        size="emphasis"
+        label="Active deals"
+        value={count(activeDeals)}
+        icon={<Handshake size={18} />}
+      />
+      <KpiCard size="emphasis" label="Won deals" value={count(won)} icon={<Target size={18} />} />
+      <KpiCard
+        size="emphasis"
         label="Pipeline value"
-        value={money(pipelineValue)}
+        value={
+          <span className="inline-flex items-baseline gap-1">
+            {formatGroupedNumber(pipelineValue)}
+            <AmdCurrencyIcon className="text-xl font-semibold leading-none" />
+          </span>
+        }
         icon={<TrendingUp size={18} />}
       />
     </section>
