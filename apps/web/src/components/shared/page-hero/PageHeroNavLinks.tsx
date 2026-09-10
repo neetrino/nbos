@@ -46,6 +46,11 @@ export interface PageHeroNavLinksProps {
   items: PageHeroNavLinkItem[];
   ariaLabel: string;
   className?: string;
+  /**
+   * Mobile: stretch pills across the row (Delivery-style Active/Closed).
+   * Default scrolls horizontally so long labels stay reachable.
+   */
+  fullWidthOnMobile?: boolean;
 }
 
 function isNavItemActive(pathname: string, item: PageHeroNavLinkItem): boolean {
@@ -57,12 +62,18 @@ function isNavItemActive(pathname: string, item: PageHeroNavLinkItem): boolean {
   return pathname === item.href || pathname.startsWith(`${prefix}/`);
 }
 
-export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLinksProps) {
+export function PageHeroNavLinks({
+  items,
+  ariaLabel,
+  className,
+  fullWidthOnMobile = false,
+}: PageHeroNavLinksProps) {
   const pathname = usePathname();
   const isMobileViewport = useIsMobileViewport();
   const navRef = useRef<HTMLElement>(null);
   const linkRefs = useRef(new Map<string, HTMLAnchorElement>());
   const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const stretchMobile = isMobileViewport && fullWidthOnMobile;
 
   const routeActiveHref = items.find((item) => isNavItemActive(pathname, item))?.href ?? '';
   const activeHref = pendingHref ?? routeActiveHref;
@@ -92,7 +103,7 @@ export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLin
     navRef,
     getActiveElement,
     activeHref,
-    isMobileViewport,
+    isMobileViewport && !fullWidthOnMobile,
   );
 
   const nav = (
@@ -100,16 +111,20 @@ export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLin
       items={items}
       activeHref={activeHref}
       ariaLabel={ariaLabel}
-      className={isMobileViewport ? undefined : className}
+      className={cn(
+        stretchMobile ? 'w-full' : undefined,
+        !isMobileViewport || stretchMobile ? className : undefined,
+      )}
       navRef={navRef}
       linkRefs={linkRefs}
       indicator={indicator}
       ready={ready}
       onSelect={setPendingHref}
+      stretchMobile={stretchMobile}
     />
   );
 
-  if (!isMobileViewport) {
+  if (!isMobileViewport || stretchMobile) {
     return nav;
   }
 
@@ -126,6 +141,7 @@ function PageHeroNavTrack({
   indicator,
   ready,
   onSelect,
+  stretchMobile,
 }: {
   items: PageHeroNavLinkItem[];
   activeHref: string;
@@ -136,11 +152,17 @@ function PageHeroNavTrack({
   indicator: SlidingPillIndicatorRect | null;
   ready: boolean;
   onSelect: (href: string) => void;
+  stretchMobile: boolean;
 }) {
   return (
     <nav
       ref={navRef}
-      className={cn(PAGE_HERO_PILL_GROUP, 'relative w-max min-w-0 shrink-0', className)}
+      className={cn(
+        PAGE_HERO_PILL_GROUP,
+        'relative min-w-0 shrink-0',
+        stretchMobile ? 'w-full' : 'w-max',
+        className,
+      )}
       aria-label={ariaLabel}
     >
       <SlidingPillBackdrop
@@ -155,6 +177,7 @@ function PageHeroNavTrack({
           active={item.href === activeHref}
           linkRefs={linkRefs}
           onSelect={onSelect}
+          stretchMobile={stretchMobile}
         />
       ))}
     </nav>
@@ -166,11 +189,13 @@ function PageHeroNavLink({
   active,
   linkRefs,
   onSelect,
+  stretchMobile,
 }: {
   item: PageHeroNavLinkItem;
   active: boolean;
   linkRefs: MutableRefObject<Map<string, HTMLAnchorElement>>;
   onSelect: (href: string) => void;
+  stretchMobile: boolean;
 }) {
   const Icon = item.icon;
 
@@ -186,7 +211,8 @@ function PageHeroNavLink({
       onClick={() => onSelect(item.href)}
       className={cn(
         PAGE_HERO_TAB_BUTTON,
-        'relative z-10 shrink-0',
+        'relative z-10',
+        stretchMobile ? 'flex-1 justify-center' : 'shrink-0',
         active
           ? 'text-primary-foreground'
           : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',

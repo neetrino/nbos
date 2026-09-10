@@ -30,6 +30,8 @@ export interface PageHeroTabsProps<T extends string> {
   dimmed?: boolean;
   /** When false, mobile does not duplicate these tabs into the dock. */
   registerMobileDock?: boolean;
+  /** When true, render the pill switcher on mobile (default hides; dock may own the tabs). */
+  showOnMobile?: boolean;
 }
 
 const EMPTY_MOBILE_DOCK_ITEMS: MobileDockItem[] = [];
@@ -42,13 +44,15 @@ export function PageHeroTabs<T extends string>({
   className,
   dimmed = false,
   registerMobileDock = true,
+  showOnMobile = false,
 }: PageHeroTabsProps<T>) {
   const isMobileViewport = useIsMobileViewport();
   const groupRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef(new Map<string, HTMLButtonElement>());
+  const shouldRegisterDock = registerMobileDock && !(isMobileViewport && showOnMobile);
   const dockItems = useMemo<MobileDockItem[]>(
     () =>
-      registerMobileDock
+      shouldRegisterDock
         ? options.map((option) => ({
             id: `page-tab:${option.value}`,
             label: option.label,
@@ -57,7 +61,7 @@ export function PageHeroTabs<T extends string>({
             onSelect: () => onChange(option.value),
           }))
         : EMPTY_MOBILE_DOCK_ITEMS,
-    [dimmed, onChange, options, registerMobileDock, value],
+    [dimmed, onChange, options, shouldRegisterDock, value],
   );
   useRegisterMobileDockItems('secondary', dockItems);
 
@@ -73,14 +77,20 @@ export function PageHeroTabs<T extends string>({
     false,
   );
 
-  if (isMobileViewport) {
+  if (isMobileViewport && !showOnMobile) {
     return null;
   }
 
   return (
     <div
       ref={groupRef}
-      className={cn(PAGE_HERO_PILL_GROUP, 'relative shrink-0', dimmed && 'opacity-45', className)}
+      className={cn(
+        PAGE_HERO_PILL_GROUP,
+        'relative shrink-0',
+        showOnMobile && 'max-md:w-full max-md:justify-center',
+        dimmed && 'opacity-45',
+        className,
+      )}
       role="tablist"
       aria-label={ariaLabel}
     >
@@ -108,6 +118,7 @@ export function PageHeroTabs<T extends string>({
             className={cn(
               PAGE_HERO_TAB_BUTTON,
               'relative z-10',
+              showOnMobile && 'max-md:flex-1 max-md:justify-center',
               active
                 ? 'text-primary-foreground'
                 : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
