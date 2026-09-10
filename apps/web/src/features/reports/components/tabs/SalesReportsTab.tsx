@@ -72,7 +72,7 @@ function SalesKpis({ data }: { data: SalesReportsTabData }) {
 
 function dealStatusChart(data: SalesReportsTabData): ChartDatum[] {
   return data.deals.byStatus.map((row) => ({
-    name: getDealStage(row.status)?.shortLabel ?? row.status,
+    name: (getDealStage(row.status)?.shortLabel ?? row.status).toUpperCase(),
     value: row._count,
   }));
 }
