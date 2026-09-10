@@ -59,3 +59,10 @@ export function evaluateMessengerCoreAccess(
   }
   return evaluateClient(facts);
 }
+
+export function clientPersistDenial(
+  decision: MessengerCoreAccessDecision,
+): 'READ_ONLY' | 'NO_SEND' | null {
+  if (decision.canSend) return null;
+  return decision.sendDeniedBecause === 'READ_ONLY' ? 'READ_ONLY' : 'NO_SEND';
+}

@@ -1,16 +1,21 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { io, type Socket } from 'socket.io-client';
-import {
-  MESSENGER_SOCKET_NAMESPACE,
-  MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION,
-  MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
-  MESSENGER_WS_READ_UPDATED_SCOPE,
-  MESSENGER_WS_SERVER_READ_UPDATED,
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { io } from 'socket.io-client';
+import { MESSENGER_SOCKET_NAMESPACE } from '@nbos/shared';
+import type {
+  MessengerWsConversationAccessChangedPayload,
+  MessengerWsConversationReadUpdatedPayload,
+  MessengerWsConversationSummaryPayload,
 } from '@nbos/shared';
 import { recoverRealtimeSession } from '@/lib/auth/realtime-session';
 import type { MessengerCoreMessageRow } from '@/lib/api/messenger-core';
+import {
+  bindMessengerRealtimeSocket,
+  emitConversationLeave,
+  emitConversationSubscribe,
+  type MessengerRealtimeBindRefs,
+} from './messenger-realtime-bind';
 
 const MESSENGER_SOCKET_DEV_ORIGIN = 'http://localhost:4000';
 
@@ -19,32 +24,76 @@ function messengerSocketOrigin(): string {
   return origin && origin.length > 0 ? origin : MESSENGER_SOCKET_DEV_ORIGIN;
 }
 
-function isListReadPayload(payload: unknown): boolean {
-  if (!payload || typeof payload !== 'object') return false;
-  return (payload as { scope?: unknown }).scope === MESSENGER_WS_READ_UPDATED_SCOPE.LISTS;
-}
-
-export function useInternalMessengerRealtime(options: {
+export type InternalMessengerRealtimeOptions = {
   canViewMessenger: boolean;
   meId: string | undefined;
   conversationId: string | null;
   onInboundMessage: (conversationId: string, message: MessengerCoreMessageRow) => void;
+  onConversationSummary?: (payload: MessengerWsConversationSummaryPayload) => void;
+  onConversationRead?: (payload: MessengerWsConversationReadUpdatedPayload) => void;
+  onAccessChanged?: (payload: MessengerWsConversationAccessChangedPayload) => void;
+  onReconnect?: () => void;
   onReadListsInvalidate?: () => void;
-}): void {
+};
+
+export function useInternalMessengerRealtime(options: InternalMessengerRealtimeOptions): void {
   const [token, setToken] = useState<string | null>(null);
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const refs = useRealtimeCallbackRefs(options);
+
+  useRealtimeAccessToken(options.canViewMessenger, options.meId, setToken);
+  useRealtimeSocketSession(options.canViewMessenger, options.meId, token, socketRef, refs);
+  useActiveConversationRoom(socketRef, options.conversationId);
+}
+
+function useRealtimeCallbackRefs(
+  options: InternalMessengerRealtimeOptions,
+): MessengerRealtimeBindRefs {
   const conversationIdRef = useRef(options.conversationId);
   const onInboundRef = useRef(options.onInboundMessage);
+  const onSummaryRef = useRef(options.onConversationSummary);
+  const onConversationReadRef = useRef(options.onConversationRead);
+  const onAccessChangedRef = useRef(options.onAccessChanged);
   const onReadRef = useRef(options.onReadListsInvalidate);
-
+  const onReconnectRef = useRef(options.onReconnect);
   useLayoutEffect(() => {
     conversationIdRef.current = options.conversationId;
     onInboundRef.current = options.onInboundMessage;
+    onSummaryRef.current = options.onConversationSummary;
+    onConversationReadRef.current = options.onConversationRead;
+    onAccessChangedRef.current = options.onAccessChanged;
     onReadRef.current = options.onReadListsInvalidate;
+    onReconnectRef.current = options.onReconnect;
   });
+  return useMemo(
+    () => ({
+      conversationIdRef,
+      onInboundRef,
+      onSummaryRef,
+      onConversationReadRef,
+      onAccessChangedRef,
+      onReadRef,
+      onReconnectRef,
+    }),
+    [
+      conversationIdRef,
+      onInboundRef,
+      onSummaryRef,
+      onConversationReadRef,
+      onAccessChangedRef,
+      onReadRef,
+      onReconnectRef,
+    ],
+  );
+}
 
+function useRealtimeAccessToken(
+  canViewMessenger: boolean,
+  meId: string | undefined,
+  setToken: (token: string | null) => void,
+): void {
   useEffect(() => {
-    if (!options.canViewMessenger || !options.meId) {
+    if (!canViewMessenger || !meId) {
       queueMicrotask(() => setToken(null));
       return;
     }
@@ -56,10 +105,18 @@ export function useInternalMessengerRealtime(options: {
     return () => {
       cancelled = true;
     };
-  }, [options.canViewMessenger, options.meId]);
+  }, [canViewMessenger, meId, setToken]);
+}
 
+function useRealtimeSocketSession(
+  canViewMessenger: boolean,
+  meId: string | undefined,
+  token: string | null,
+  socketRef: { current: ReturnType<typeof io> | null },
+  refs: MessengerRealtimeBindRefs,
+): void {
   useEffect(() => {
-    if (!options.canViewMessenger || !token || !options.meId) {
+    if (!canViewMessenger || !token || !meId) {
       socketRef.current?.close();
       socketRef.current = null;
       return;
@@ -69,31 +126,23 @@ export function useInternalMessengerRealtime(options: {
       transports: ['websocket'],
     });
     socketRef.current = socket;
-    function joinActive() {
-      const id = conversationIdRef.current;
-      if (id) socket.emit(MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION, { conversationId: id });
-    }
-    socket.on('connect', joinActive);
-    socket.on(
-      MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
-      (payload: { conversationId: string; message: MessengerCoreMessageRow }) => {
-        onInboundRef.current(payload.conversationId, payload.message);
-      },
-    );
-    socket.on(MESSENGER_WS_SERVER_READ_UPDATED, (payload: unknown) => {
-      if (isListReadPayload(payload)) onReadRef.current?.();
-    });
+    const unbind = bindMessengerRealtimeSocket(socket, refs);
     return () => {
-      socket.close();
+      unbind();
       socketRef.current = null;
     };
-  }, [options.canViewMessenger, options.meId, token]);
+  }, [canViewMessenger, meId, token, socketRef, refs]);
+}
 
+function useActiveConversationRoom(
+  socketRef: { current: ReturnType<typeof io> | null },
+  conversationId: string | null,
+): void {
   useEffect(() => {
     const socket = socketRef.current;
-    if (!socket || !options.conversationId) return;
-    socket.emit(MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION, {
-      conversationId: options.conversationId,
-    });
-  }, [options.conversationId]);
+    if (conversationId) emitConversationSubscribe(socket, conversationId);
+    return () => {
+      if (conversationId) emitConversationLeave(socket, conversationId);
+    };
+  }, [conversationId, socketRef]);
 }

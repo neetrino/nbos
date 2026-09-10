@@ -71,6 +71,11 @@ import {
   MAIL_SYNC_RECONCILE_DEFAULT_CRON,
   MAIL_SYNC_RECONCILE_ENABLED_ENV,
 } from '../mail/mail-sync-runtime.constants';
+import {
+  MESSENGER_OUTBOUND_RECONCILE_CRON_ENV,
+  MESSENGER_OUTBOUND_RECONCILE_DEFAULT_CRON,
+  MESSENGER_OUTBOUND_RECONCILE_ENABLED_ENV,
+} from '../messenger/core/messenger-outbound-reconcile.constants';
 import { SCHEDULER_AI_CRON_CATALOG } from './scheduler-job-catalog.ai.entries';
 import { SCHEDULER_JOB_NAMES } from './scheduler-lease.constants';
 import {
@@ -288,6 +293,19 @@ export const SCHEDULER_PLATFORM_CRON_CATALOG: readonly SchedulerJobCatalogEntry[
     enabledEnvKey: MAIL_SYNC_RECONCILE_ENABLED_ENV,
     cronEnvKey: MAIL_SYNC_RECONCILE_CRON_ENV,
     risk: SCHEDULER_JOB_RISK.medium,
+    rosterIntent: SCHEDULER_ROSTER_INTENT.off,
+  }),
+  platformCronEntry({
+    jobName: SCHEDULER_JOB_NAMES.messengerOutboundReconcile,
+    title: 'Messenger outbound reconcile',
+    description:
+      'Enqueues PENDING WhatsApp Core sends, repairs proven refs, and same-key reconciles UNKNOWN inside the Gateway 24h window every minute. Default off.',
+    ownerModule: 'Messenger',
+    group: SCHEDULER_JOB_GROUP.messenger,
+    defaultExpression: MESSENGER_OUTBOUND_RECONCILE_DEFAULT_CRON,
+    enabledEnvKey: MESSENGER_OUTBOUND_RECONCILE_ENABLED_ENV,
+    cronEnvKey: MESSENGER_OUTBOUND_RECONCILE_CRON_ENV,
+    risk: SCHEDULER_JOB_RISK.high,
     rosterIntent: SCHEDULER_ROSTER_INTENT.off,
   }),
   ...SCHEDULER_AI_CRON_CATALOG,

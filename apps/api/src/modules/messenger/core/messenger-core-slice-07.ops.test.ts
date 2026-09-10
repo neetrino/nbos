@@ -8,6 +8,14 @@ import { persistLiveMetaInboundToCore } from './messenger-meta-live-inbound.ops'
 import { metaProviderMessageKey } from './messenger-meta-identity';
 import { legacyMetaCanonicalKey } from './messenger-core-canonical-key';
 
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async <T>(prisma: T, fn: (tx: T) => Promise<unknown>) => fn(prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpGlobalConversationRevision: async () => 1n,
+}));
+
 const persistCoreMessage = vi.fn();
 
 vi.mock('./messenger-core-message.ops', () => ({

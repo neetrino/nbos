@@ -15,6 +15,12 @@ import {
   MESSENGER_CORE_INTERNAL_ZONE,
 } from './messenger-core.constants';
 import { listAccessibleInternalConversations } from './messenger-core-internal-list.ops';
+import { loadInternalMessengerBootstrap } from './messenger-core-bootstrap.ops';
+import type { MessengerInternalBootstrapResult } from './messenger-core-bootstrap.ops';
+import { loadInternalMessengerDelta } from './messenger-core-delta.ops';
+import { assertMessengerDeltaRecoveryEnabled } from './messenger-core-recovery-flag';
+import type { MessengerInternalDeltaResult } from './messenger-core-revision.types';
+import { zoneAccessFingerprint } from './messenger-core-auth-epoch';
 import { listCoreConversationMessages } from './messenger-core-internal-messages.ops';
 import type {
   MessengerInternalConversationDetail,
@@ -75,6 +81,33 @@ export class MessengerCoreInternalService {
       query,
       access.editScope,
       tasksAccess,
+    );
+  }
+
+  async bootstrap(
+    employeeId: string,
+    tasksAccess?: TasksAccessContext,
+  ): Promise<MessengerInternalBootstrapResult> {
+    const access = await this.requireView(employeeId);
+    return loadInternalMessengerBootstrap(
+      this.prisma,
+      zoneAccessFingerprint(access, 'INTERNAL', tasksAccess),
+      tasksAccess,
+    );
+  }
+
+  async listDelta(
+    employeeId: string,
+    query: { after: string; cursor?: string; authorizationEpoch?: string; pageSize?: number },
+    tasksAccess?: TasksAccessContext,
+  ): Promise<MessengerInternalDeltaResult> {
+    const access = await this.requireView(employeeId);
+    assertMessengerDeltaRecoveryEnabled();
+    return loadInternalMessengerDelta(
+      this.prisma,
+      zoneAccessFingerprint(access, 'INTERNAL', tasksAccess),
+      tasksAccess,
+      query,
     );
   }
 

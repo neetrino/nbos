@@ -13,6 +13,14 @@ import { evaluateMessengerCoreAccess } from './messenger-core-access';
 import { resolveClientDestination } from './product-communication-resolver';
 import { PRODUCT_COMMUNICATION_ACCOUNTANT_FORBIDDEN } from './product-communication.constants';
 
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async <T>(prisma: T, fn: (tx: T) => Promise<unknown>) => fn(prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpGlobalConversationRevision: async () => 1n,
+}));
+
 function createService(prisma: object) {
   const enqueueOperation = vi.fn().mockResolvedValue(true);
   const service = new ProductWhatsAppGroupService(

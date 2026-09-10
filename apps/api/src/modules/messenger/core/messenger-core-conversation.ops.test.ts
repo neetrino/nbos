@@ -5,6 +5,14 @@ import {
 } from './messenger-core-conversation.ops';
 import { addCoreConversationLink } from './messenger-core-link.ops';
 
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async (_prisma: unknown, fn: (tx: unknown) => unknown) => fn(_prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpGlobalConversationRevision: vi.fn(async () => 1n),
+}));
+
 const LOW = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const HIGH = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 

@@ -62,6 +62,15 @@ Adds:
 - `MessengerMessageExternalRef` unique `(provider, externalAccountId, externalMessageId)`
 - `WhatsAppGatewayConnection.encryptedWebhookSecret` / `gatewayAccountId`
 
+Phase 4B expand-only follow-ons (nullable, no defaults/backfill/DROP):
+
+- `20260905180000_messenger_outbound_reconcile` — `next_reconcile_at`, `first_attempt_at`, `invalid_reason`
+- `20260905193000_messenger_outbound_dispatch_claim` — `dispatch_token`, `dispatch_claimed_at` (NULL = unclaimed; `next_reconcile_at` is the 60s lease expiry)
+
+Rolling compatibility: old writers ignore the new columns. Application rollback may leave unused NULL columns (forward-fix; do not DROP). Scheduler stays default-off.
+
+Paired outbound lock order (every worker/scheduler/proof/ACK path that touches command + Message): canonical `messenger_commands` row first (`SELECT ... FOR UPDATE` by id/idempotency key + kind), then provider-ref/Message, then audit. After the command lock, require exact `resultMessageId` + `conversationId` + canonical `core-wa-send:{messageId}` before mutating that command or writing its completion audit. The same canonical key+identity+routing match is required before any Gateway HTTP call; scheduler never enqueues a malformed key and instead command-only terminalizes that row (`FAILED` + `MALFORMED_PAYLOAD`) when the unclaimed snapshot still fails canonical identity under lock. Do not mutate Message from an untrusted command identity. Initial prepare `skip` (Message already CANCELLED/FAILED) finalizes the command before claim. Do not dummy-update claim clocks to take the lock. ACK without a matching command may still monotonically advance the independently resolved Message, including FAILED→SENT+ when the ACK was resolved through an owned provider ref.
+
 Rollback: do not apply the migration. No destructive steps.
 
 ## Tests / negative tests

@@ -12,6 +12,12 @@ import {
 import { evaluateMessengerCoreAccess } from './messenger-core-access';
 import { loadMessengerCoreAccessFacts } from './messenger-core-access-load';
 import { listAccessibleClientConversations } from './messenger-core-client-list.ops';
+import { loadClientMessengerBootstrap } from './messenger-core-bootstrap.ops';
+import type { MessengerClientBootstrapResult } from './messenger-core-bootstrap.ops';
+import { loadClientMessengerDelta } from './messenger-core-delta.ops';
+import { assertMessengerDeltaRecoveryEnabled } from './messenger-core-recovery-flag';
+import type { MessengerClientDeltaResult } from './messenger-core-revision.types';
+import { zoneAccessFingerprint } from './messenger-core-auth-epoch';
 import type {
   MessengerClientConversationDetail,
   MessengerClientListQuery,
@@ -56,6 +62,20 @@ export class MessengerCoreClientService {
       access.clientSendScope,
       query,
     );
+  }
+
+  async bootstrap(employeeId: string): Promise<MessengerClientBootstrapResult> {
+    const access = await this.requireView(employeeId);
+    return loadClientMessengerBootstrap(this.prisma, zoneAccessFingerprint(access, 'CLIENT'));
+  }
+
+  async listDelta(
+    employeeId: string,
+    query: { after: string; cursor?: string; authorizationEpoch?: string; pageSize?: number },
+  ): Promise<MessengerClientDeltaResult> {
+    const access = await this.requireView(employeeId);
+    assertMessengerDeltaRecoveryEnabled();
+    return loadClientMessengerDelta(this.prisma, zoneAccessFingerprint(access, 'CLIENT'), query);
   }
 
   async getConversation(

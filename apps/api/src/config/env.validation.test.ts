@@ -63,6 +63,21 @@ describe('validateEnv', () => {
     );
   });
 
+  it('rejects an invalid Messenger delta recovery flag', () => {
+    expect(() =>
+      validateEnv({
+        NODE_ENV: 'development',
+        DATABASE_URL: 'x',
+        JWT_SECRET: 'dev-weak',
+        CREDENTIALS_ENCRYPTION_KEY: 'dev-weak',
+        BACKEND_URL: 'http://localhost:4000',
+        AUTH_REFRESH_TOKEN_PEPPER: STRONG,
+        AUTH_REFRESH_COOKIE_NAME: 'nbos_refresh',
+        MESSENGER_DELTA_RECOVERY_ENABLED: 'maybe',
+      }),
+    ).toThrow(/MESSENGER_DELTA_RECOVERY_ENABLED/);
+  });
+
   it('does not enforce strength/placeholder outside production', () => {
     expect(() =>
       validateEnv({

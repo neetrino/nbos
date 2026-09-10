@@ -9,92 +9,138 @@ import {
 } from '../../integrations/whatsapp-gateway/whatsapp-gateway.errors';
 import { WHATSAPP_ERROR } from '../../integrations/whatsapp-gateway/whatsapp-gateway.constants';
 import type { WhatsAppCoreSendJobPayload } from '../../integrations/whatsapp-gateway/whatsapp-outbound.types';
+import type { MessengerDeliveryStatusPublisher } from './messenger-delivery-status.types';
+import { markWhatsAppCommandInvalid } from './messenger-outbound-command-invalid.ops';
+import { finalizeWhatsAppTerminalMessageSkip } from './messenger-outbound-message-skip.ops';
+import { prepareWhatsAppCoreSend } from './messenger-wa-outbound-prepare.ops';
+import { completeCoreSend, setCoreSendStatus } from './messenger-wa-outbound-complete.ops';
+import { beginWhatsAppCoreSendAttempt } from './messenger-wa-outbound-attempt.ops';
+import { repairWhatsAppRefProof } from './messenger-wa-outbound-repair.ops';
 import {
-  whatsAppOutboundIdempotencyKey,
-  whatsAppStatusesAllowedForOutboundWrite,
-  type WhatsAppOutboundCasStatus,
-} from './messenger-wa-identity';
-import { bumpWhatsAppUnknownReconcileClock } from './messenger-wa-outbound-drain.ops';
+  type CanonicalWhatsAppCommand,
+  canonicalCommandMatchesJob,
+  isCanonicalCommandTerminal,
+  loadCanonicalWhatsAppCommand,
+} from './messenger-outbound-command-canonical';
+import { recordWhatsAppSendPayloadConflict } from './messenger-outbound-payload-conflict.ops';
+import {
+  isNeverAttemptedQueuedSend,
+  isWithinWhatsAppSameKeyWindow,
+} from './messenger-outbound-gateway-window';
+import { MESSENGER_COMMAND_INVALID_REASON } from './messenger-outbound-reconcile.constants';
+import { whatsAppOutboundIdempotencyKey } from './messenger-wa-identity';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
-const TERMINAL_OK: readonly MessengerMessageStatus[] = ['SENT', 'DELIVERED', 'READ', 'CANCELLED'];
-const RECOVER_REF_STATUSES: readonly MessengerMessageStatus[] = [
-  'SENT',
-  'DELIVERED',
-  'READ',
-  'OUTCOME_UNKNOWN',
-];
 const STUCK_FOR_EXHAUSTION: readonly MessengerMessageStatus[] = ['QUEUED', 'SENDING'];
-const MISSING_PROVIDER_MESSAGE_ID_CODE = 'HTTP_503';
 
 export async function dispatchWhatsAppCoreSendJob(
   prisma: PrismaLike,
   connection: WhatsAppGatewayConnectionService,
   client: WhatsAppGatewayClient,
   job: WhatsAppCoreSendJobPayload,
+  publisher?: MessengerDeliveryStatusPublisher,
 ): Promise<void> {
-  const message = await loadCoreSendMessage(prisma, job);
-  if (!message) return;
-  const hasRef = await hasWhatsAppOutboundRef(prisma, message.id);
-  if (shouldSkipCoreSend(message.status, hasRef)) return;
-  const recovering = isMissingRefRecovery(message.status, hasRef);
-  if (!recovering && !(await casOutboundStatus(prisma, message.id, 'SENDING'))) return;
+  const command = await loadCanonicalWhatsAppCommand(prisma, job.idempotencyKey);
+  if (!command || !canonicalCommandMatchesJob(command, job)) {
+    await recordWhatsAppSendPayloadConflict(prisma, command, job);
+    return;
+  }
+  const prepared = await prepareWhatsAppCoreSend(prisma, job);
+  if (await stopBeforeGateway(prisma, command, job, prepared, publisher)) return;
+  if (prepared.kind !== 'ready') return;
+  if (!isNeverAttemptedQueuedSend(command.firstAttemptAt, prepared.message.status)) {
+    if (!isWithinWhatsAppSameKeyWindow(command, new Date())) {
+      await markWhatsAppCommandInvalid(
+        prisma,
+        command,
+        job,
+        MESSENGER_COMMAND_INVALID_REASON.GATEWAY_WINDOW_EXPIRED,
+        undefined,
+        publisher,
+      );
+      return;
+    }
+  }
+  const attempt = await beginWhatsAppCoreSendAttempt(
+    prisma,
+    command,
+    job,
+    prepared.message.status,
+    publisher,
+  );
+  if (attempt.kind === 'stop') return;
+  await submitPreparedWhatsAppSend(
+    prisma,
+    connection,
+    client,
+    command,
+    job,
+    prepared,
+    publisher,
+    attempt.token,
+  );
+}
+
+async function stopBeforeGateway(
+  prisma: PrismaLike,
+  command: CanonicalWhatsAppCommand,
+  job: WhatsAppCoreSendJobPayload,
+  prepared: Awaited<ReturnType<typeof prepareWhatsAppCoreSend>>,
+  publisher?: MessengerDeliveryStatusPublisher,
+): Promise<boolean> {
+  if (prepared.kind === 'skip') {
+    await finalizeWhatsAppTerminalMessageSkip(
+      prisma,
+      command,
+      job,
+      { kind: 'scheduler', snapshot: command },
+      publisher,
+    );
+    return true;
+  }
+  if (prepared.kind === 'repair') {
+    await repairWhatsAppRefProof(prisma, command, job, publisher);
+    return true;
+  }
+  if (isCanonicalCommandTerminal(command)) return true;
+  if (prepared.kind === 'invalid') {
+    await markWhatsAppCommandInvalid(prisma, command, job, prepared.reason, undefined, publisher);
+    return true;
+  }
+  return false;
+}
+
+async function submitPreparedWhatsAppSend(
+  prisma: PrismaLike,
+  connection: WhatsAppGatewayConnectionService,
+  client: WhatsAppGatewayClient,
+  command: CanonicalWhatsAppCommand,
+  job: WhatsAppCoreSendJobPayload,
+  prepared: Extract<Awaited<ReturnType<typeof prepareWhatsAppCoreSend>>, { kind: 'ready' }>,
+  publisher?: MessengerDeliveryStatusPublisher,
+  token?: string,
+): Promise<void> {
   try {
     const config = await connection.requireClientConfig();
     const result = await client.sendAccountTextMessage(
       config,
-      job.accountId,
-      { chatId: job.chatId, text: message.content },
+      prepared.accountId,
+      { chatId: prepared.chatId, text: prepared.message.content },
       job.idempotencyKey,
     );
     await completeCoreSend(
       prisma,
-      message.id,
-      readProviderMessageId(result.messageId),
+      command,
       job,
-      recovering,
+      readProviderMessageId(result.messageId),
+      prepared.recovering,
+      publisher,
+      token,
     );
   } catch (error) {
-    await failOrUnknownCoreSend(prisma, message.id, error);
+    await failOrUnknownCoreSend(prisma, command, job, error, publisher, token);
   }
-}
-
-async function loadCoreSendMessage(
-  prisma: PrismaLike,
-  job: WhatsAppCoreSendJobPayload,
-): Promise<{ id: string; content: string; status: MessengerMessageStatus } | null> {
-  const message = await prisma.messengerMessage.findUnique({
-    where: { id: job.messageId },
-    select: {
-      id: true,
-      conversationId: true,
-      content: true,
-      status: true,
-      deletedAt: true,
-    },
-  });
-  if (!message || message.deletedAt) return null;
-  if (message.conversationId !== job.conversationId) return null;
-  return { id: message.id, content: message.content, status: message.status };
-}
-
-async function hasWhatsAppOutboundRef(prisma: PrismaLike, messageId: string): Promise<boolean> {
-  const row = await prisma.messengerMessageExternalRef.findFirst({
-    where: { messageId, provider: 'WHATSAPP' },
-    select: { id: true },
-  });
-  return row !== null;
-}
-
-function shouldSkipCoreSend(status: MessengerMessageStatus, hasRef: boolean): boolean {
-  if (status === 'CANCELLED') return true;
-  if (!hasRef) return false;
-  return status === 'OUTCOME_UNKNOWN' || TERMINAL_OK.includes(status);
-}
-
-function isMissingRefRecovery(status: MessengerMessageStatus, hasRef: boolean): boolean {
-  return !hasRef && RECOVER_REF_STATUSES.includes(status);
 }
 
 function readProviderMessageId(messageId: string | undefined): string | null {
@@ -102,54 +148,22 @@ function readProviderMessageId(messageId: string | undefined): string | null {
   return trimmed ? trimmed : null;
 }
 
-async function completeCoreSend(
-  prisma: PrismaLike,
-  messageId: string,
-  providerMessageId: string | null,
-  job: WhatsAppCoreSendJobPayload,
-  recovering: boolean,
-): Promise<void> {
-  if (!providerMessageId) {
-    if (recovering) {
-      await bumpWhatsAppUnknownReconcileClock(prisma, whatsAppOutboundIdempotencyKey(messageId));
-      return;
-    }
-    throw new WhatsAppGatewayHttpError(
-      503,
-      MISSING_PROVIDER_MESSAGE_ID_CODE,
-      'WhatsApp Gateway send returned no provider message id',
-    );
-  }
-  await prisma.messengerMessageExternalRef.createMany({
-    data: [
-      {
-        messageId,
-        provider: 'WHATSAPP',
-        externalAccountId: job.accountId,
-        externalMessageId: providerMessageId,
-      },
-    ],
-    skipDuplicates: true,
-  });
-  await casOutboundStatus(prisma, messageId, 'SENT');
-  await prisma.messengerCommand.updateMany({
-    where: { idempotencyKey: whatsAppOutboundIdempotencyKey(messageId) },
-    data: { status: 'COMPLETED', completedAt: new Date(), errorCode: null },
-  });
-}
-
 async function failOrUnknownCoreSend(
   prisma: PrismaLike,
-  messageId: string,
+  command: CanonicalWhatsAppCommand,
+  job: WhatsAppCoreSendJobPayload,
   error: unknown,
+  publisher?: MessengerDeliveryStatusPublisher,
+  token?: string,
 ): Promise<void> {
   const code = readGatewayErrorCode(error);
+  const ownership = token ? { kind: 'worker' as const, token } : undefined;
   if (isMessageOutcomeUnknown(code)) {
-    await setCoreSendStatus(prisma, messageId, 'OUTCOME_UNKNOWN', code);
+    await setCoreSendStatus(prisma, command, job, 'OUTCOME_UNKNOWN', code, publisher, ownership);
     return;
   }
   if (isProvenSendFailure(code)) {
-    await setCoreSendStatus(prisma, messageId, 'FAILED', code);
+    await setCoreSendStatus(prisma, command, job, 'FAILED', code, publisher, ownership);
     return;
   }
   throw error;
@@ -163,23 +177,34 @@ function isProvenSendFailure(code: string): boolean {
   );
 }
 
-/** Last BullMQ attempt: do not leave SENDING/QUEUED without a terminal or unknown outcome. */
 export async function markWhatsAppCoreSendExhausted(
   prisma: PrismaLike,
   messageId: string,
   error: unknown,
+  conversationId?: string,
+  publisher?: MessengerDeliveryStatusPublisher,
 ): Promise<void> {
   const message = await prisma.messengerMessage.findUnique({
     where: { id: messageId },
-    select: { status: true },
+    select: { status: true, conversationId: true },
   });
   if (!message || !STUCK_FOR_EXHAUSTION.includes(message.status)) return;
+  const command = await loadCanonicalWhatsAppCommand(
+    prisma,
+    whatsAppOutboundIdempotencyKey(messageId),
+  );
+  if (!command || isCanonicalCommandTerminal(command)) return;
+  if (command.resultMessageId !== messageId) return;
   const code = readGatewayErrorCode(error);
-  if (isExhaustedSendUnknown(code, error)) {
-    await setCoreSendStatus(prisma, messageId, 'OUTCOME_UNKNOWN', code);
-    return;
-  }
-  await setCoreSendStatus(prisma, messageId, 'FAILED', code);
+  const next = isExhaustedSendUnknown(code, error) ? 'OUTCOME_UNKNOWN' : 'FAILED';
+  await setCoreSendStatus(
+    prisma,
+    command,
+    { messageId, conversationId: conversationId ?? message.conversationId },
+    next,
+    code,
+    publisher,
+  );
 }
 
 function isExhaustedSendUnknown(code: string, error: unknown): boolean {
@@ -198,34 +223,4 @@ function readGatewayErrorCode(error: unknown): string {
     }
   }
   return 'MESSAGE_SEND_FAILED';
-}
-
-async function casOutboundStatus(
-  prisma: PrismaLike,
-  messageId: string,
-  status: WhatsAppOutboundCasStatus,
-): Promise<boolean> {
-  const result = await prisma.messengerMessage.updateMany({
-    where: { id: messageId, status: { in: whatsAppStatusesAllowedForOutboundWrite(status) } },
-    data: { status },
-  });
-  return result.count > 0;
-}
-
-async function setCoreSendStatus(
-  prisma: PrismaLike,
-  messageId: string,
-  status: 'FAILED' | 'OUTCOME_UNKNOWN',
-  errorCode: string,
-): Promise<void> {
-  const advanced = await casOutboundStatus(prisma, messageId, status);
-  if (!advanced) return;
-  await prisma.messengerCommand.updateMany({
-    where: { idempotencyKey: whatsAppOutboundIdempotencyKey(messageId) },
-    data: {
-      status: status === 'OUTCOME_UNKNOWN' ? 'OUTCOME_UNKNOWN' : 'FAILED',
-      errorCode,
-      completedAt: new Date(),
-    },
-  });
 }

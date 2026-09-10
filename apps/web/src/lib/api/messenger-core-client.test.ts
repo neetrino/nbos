@@ -26,12 +26,15 @@ describe('Client Messenger web surface', () => {
 
   it('locks the composer per conversation and does not carry Internal draft', () => {
     const app = readWeb('features/messenger-client/ClientMessengerApp.tsx');
+    const session = readWeb('features/messenger-client/use-client-messenger-session.ts');
     const unlock = readWeb('features/messenger-client/client-composer-unlock.ts');
     const thread = readWeb('features/messenger-client/ClientConversationThread.tsx');
     const locked = readWeb('features/messenger-client/ClientLockedComposer.tsx');
-    expect(app).toMatch(/relockComposerOnConversationChange/);
-    expect(app).toMatch(/setNewMessage\(''\)/);
+    expect(session).toMatch(/relockComposerOnConversationChange/);
+    expect(session).toMatch(/setNewMessage\(''\)/);
     expect(app).not.toMatch(/nbos:internal-messenger:draft/);
+    expect(app).not.toMatch(/setItems\(\[\]\)/);
+    expect(app).not.toMatch(/refreshLists/);
     expect(unlock).toMatch(/unlockedConversationId === nextConversationId/);
     expect(locked).toMatch(/CLIENT_REPLY_LABEL|Reply to client/);
     expect(locked).toMatch(/CLIENT_VISIBLE_LABEL|CLIENT VISIBLE/);
@@ -52,6 +55,20 @@ describe('Client Messenger web surface', () => {
     expect(client).not.toMatch(/allowClientPersist/);
     expect(client).not.toMatch(/\/api\/messenger\/channels/);
     expect(client).not.toMatch(/metaMessage/);
+  });
+
+  it('bootstraps Client Inbox defaults without mixing Internal collections', () => {
+    const client = readWeb('lib/api/messenger-core-client.ts');
+    const queries = readWeb('features/messenger-client/use-client-messenger-queries.ts');
+    expect(client).toMatch(/\/bootstrap/);
+    expect(client).toMatch(/api\.post/);
+    expect(client).toMatch(/listDelta/);
+    expect(queries).toMatch(/useMessengerZoneBootstrap\('CLIENT'/);
+    expect(queries).toMatch(/isDefaultClientInbox/);
+    expect(queries).toMatch(/messengerCollectionsEnabled/);
+    expect(queries).toMatch(/messengerDefaultQueriesEnabled/);
+    expect(queries).toMatch(/bootstrap\.error/);
+    expect(queries).toMatch(/useMessengerCollectionDetail/);
   });
 
   it('does not silently PATCH attention[0] on shared conversations', () => {

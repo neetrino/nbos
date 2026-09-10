@@ -3,6 +3,8 @@ import { PrismaClient, classifyDatabaseError, type InputJsonValue } from '@nbos/
 import type { MessengerCoreConversationDto, MessengerCoreLinkInput } from './messenger-core.types';
 import type { EntityParticipantSeed } from './messenger-core-entity-participants.ops';
 import { backfillEntityParticipants } from './messenger-core-entity-participants.ops';
+import { bumpGlobalConversationRevision } from './messenger-core-revision-write.ops';
+import { runMessengerWriteTx } from './messenger-core-revision-tx';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -47,18 +49,22 @@ export async function findOrCreateEntityConversation(
   });
   if (existing) return { row: mapEntityConversation(existing), created: false };
   try {
-    const created = await prisma.messengerConversation.create({
-      data: {
-        zone: 'INTERNAL',
-        kind: 'ENTITY',
-        type: input.type,
-        title: input.title,
-        createdById: input.createdById,
-        canonicalKey: input.canonicalKey,
-        metadata: input.metadata,
-        participants: { create: input.participants },
-        links: { create: input.links },
-      },
+    const created = await runMessengerWriteTx(prisma, async (tx) => {
+      const row = await tx.messengerConversation.create({
+        data: {
+          zone: 'INTERNAL',
+          kind: 'ENTITY',
+          type: input.type,
+          title: input.title,
+          createdById: input.createdById,
+          canonicalKey: input.canonicalKey,
+          metadata: input.metadata,
+          participants: { create: input.participants },
+          links: { create: input.links },
+        },
+      });
+      await bumpGlobalConversationRevision(tx, row.zone, row.id);
+      return row;
     });
     return { row: mapEntityConversation(created), created: true };
   } catch (error) {
@@ -91,16 +97,20 @@ export async function relinkMappedGroupToEntity(
   conversationId: string,
   input: EntityConversationCreateInput,
 ): Promise<MessengerCoreConversationDto> {
-  const updated = await prisma.messengerConversation.update({
-    where: { id: conversationId },
-    data: {
-      type: input.type,
-      kind: 'ENTITY',
-      title: input.title,
-      canonicalKey: input.canonicalKey,
-      metadata: input.metadata,
-    },
+  const updated = await runMessengerWriteTx(prisma, async (tx) => {
+    const row = await tx.messengerConversation.update({
+      where: { id: conversationId },
+      data: {
+        type: input.type,
+        kind: 'ENTITY',
+        title: input.title,
+        canonicalKey: input.canonicalKey,
+        metadata: input.metadata,
+      },
+    });
+    await attachEntityIdentity(tx, conversationId, input.links, input.participants);
+    await bumpGlobalConversationRevision(tx, row.zone, row.id);
+    return row;
   });
-  await attachEntityIdentity(prisma, conversationId, input.links, input.participants);
   return mapEntityConversation(updated);
 }

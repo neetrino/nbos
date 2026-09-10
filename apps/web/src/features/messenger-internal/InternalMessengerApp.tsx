@@ -1,15 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
 import { useHeaderModuleTitle } from '@/components/layout/header-context';
 import { usePermission } from '@/lib/permissions/PermissionContext';
+import { applyMessengerRealtimeMessage } from '@/features/messenger/query/messenger-cache';
 import {
-  messengerCoreApi,
-  type MessengerCoreCollectionRow,
-  type MessengerCoreConversationRow,
-  type MessengerCoreMessageRow,
-} from '@/lib/api/messenger-core';
+  applyMessengerAccessChanged,
+  applyMessengerRealtimeRead,
+  applyMessengerRealtimeSummary,
+} from '@/features/messenger/query/messenger-realtime-cache';
+import { recoverMessengerZone } from '@/features/messenger/query/messenger-delta-recovery';
+import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
+import { resolveActiveConversation } from '@/features/messenger/query/resolve-active-conversation';
+import { messengerCoreApi } from '@/lib/api/messenger-core';
 import { INTERNAL_MESSENGER_SHELL_CLASS } from './internal-messenger.constants';
 import { sectionFromPathname } from './internal-messenger-section';
 import { InternalCollectionsPanel } from './InternalCollectionsPanel';
@@ -18,102 +22,82 @@ import { InternalConversationThread } from './InternalConversationThread';
 import { InternalMessengerNav } from './InternalMessengerNav';
 import { InternalStartBar } from './InternalStartBar';
 import { sendInternalThreadMessage } from './send-internal-thread-message';
+import { useInternalMessengerQueries } from './use-internal-messenger-queries';
 import { useInternalMessengerRealtime } from './useInternalMessengerRealtime';
-import { mergeCoreRealtimeMessage } from '@/features/messenger/merge-core-realtime-message';
+import { useInternalMessengerSession } from './use-internal-messenger-session';
+import { openInternalConversation, toggleInternalFavorite } from './internal-messenger-cache-ops';
 
 export function InternalMessengerApp({ embedded = false }: { embedded?: boolean }) {
   const pathname = usePathname();
   const section = sectionFromPathname(pathname);
+  return <InternalMessengerScreen section={section} embedded={embedded} />;
+}
+
+function InternalMessengerScreen({
+  section,
+  embedded,
+}: {
+  section: ReturnType<typeof sectionFromPathname>;
+  embedded: boolean;
+}) {
+  const queryClient = useQueryClient();
   const { me, isLoading: permsLoading, meLoadError, can } = usePermission();
   const canView = can('VIEW', 'MESSENGER');
   const canEdit = can('EDIT', 'MESSENGER');
   useHeaderModuleTitle('Internal Messenger', !embedded);
-
-  const [items, setItems] = useState<MessengerCoreConversationRow[]>([]);
-  const [collections, setCollections] = useState<MessengerCoreCollectionRow[]>([]);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [activeCollectionId, setActiveCollectionId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<MessengerCoreMessageRow[]>([]);
-  const [messagesLoading, setMessagesLoading] = useState(false);
-  const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'all' | 'unread' | 'mentions'>('all');
-  const [newMessage, setNewMessage] = useState('');
-  const [sendBusy, setSendBusy] = useState(false);
-  const [collectionName, setCollectionName] = useState('');
-  const [creatingCollection, setCreatingCollection] = useState(false);
-  const [bootError, setBootError] = useState<string | null>(null);
-
-  const refreshLists = useCallback(async () => {
-    const collectionRows = await messengerCoreApi.listCollections();
-    setCollections(collectionRows);
-    if (section === 'collections') return;
-    const result = await messengerCoreApi.listConversations({
-      section,
-      q: search.trim() || undefined,
-      filter: filter === 'all' ? undefined : filter,
-    });
-    setItems(result.items);
-  }, [section, search, filter]);
-
-  useEffect(() => {
-    setActiveId(null);
-    setActiveCollectionId(null);
-    setMessages([]);
-    setItems([]);
-    setSearch('');
-    setFilter('all');
-  }, [section]);
-
-  useEffect(() => {
-    if (!canView || !me) return;
-    void refreshLists().catch(() => setBootError('Could not load Internal Messenger.'));
-  }, [canView, me, refreshLists]);
-
-  const openConversation = useCallback(async (id: string) => {
-    setActiveId(id);
-    setMessagesLoading(true);
-    try {
-      const [conversation, page] = await Promise.all([
-        messengerCoreApi.getConversation(id),
-        messengerCoreApi.listMessages(id),
-      ]);
-      setItems((prev) => prev.map((row) => (row.id === id ? { ...row, ...conversation } : row)));
-      setMessages(page.items);
-      await messengerCoreApi.markRead(id);
-    } catch {
-      setBootError('Could not open that Internal conversation.');
-    } finally {
-      setMessagesLoading(false);
-    }
-  }, []);
+  const session = useInternalMessengerSession(section);
+  const enabled = Boolean(canView && me);
+  const data = useInternalMessengerQueries({
+    section,
+    search: session.search,
+    filter: session.filter,
+    activeId: session.activeId,
+    activeCollectionId: session.activeCollectionId,
+    enabled,
+  });
+  const active = resolveActiveConversation(
+    data.items,
+    session.activeId,
+    session.openedConversation,
+  );
 
   useInternalMessengerRealtime({
     canViewMessenger: canView,
     meId: me?.id,
-    conversationId: activeId,
-    onInboundMessage: (conversationId, message) => {
-      if (conversationId === activeId) {
-        setMessages((prev) => mergeCoreRealtimeMessage(prev, message));
-      }
-      void refreshLists();
+    conversationId: session.activeId,
+    onInboundMessage: (_conversationId, message) => {
+      applyMessengerRealtimeMessage(queryClient, message);
+    },
+    onConversationSummary: (payload) => {
+      applyMessengerRealtimeSummary(queryClient, 'INTERNAL', payload);
+    },
+    onConversationRead: (payload) => {
+      applyMessengerRealtimeRead(queryClient, 'INTERNAL', payload);
+    },
+    onAccessChanged: (payload) => {
+      applyMessengerAccessChanged(
+        queryClient,
+        'INTERNAL',
+        payload.conversationId,
+        payload.zone,
+        {
+          activeId: session.activeId,
+          clearActive: () => session.setActiveId(null),
+        },
+      );
+    },
+    onReconnect: () => {
+      void recoverMessengerZone(queryClient, 'INTERNAL', {
+        activeId: session.activeId,
+        clearActive: () => session.setActiveId(null),
+      });
     },
     onReadListsInvalidate: () => {
-      void refreshLists();
+      void queryClient.invalidateQueries({ queryKey: messengerQueryKeys.internalSummariesRoot });
     },
   });
 
-  const active = items.find((row) => row.id === activeId) ?? null;
-
-  async function toggleFavorite(id: string) {
-    const result = await messengerCoreApi.toggleFavorite(id);
-    setItems((prev) =>
-      prev.map((row) => (row.id === id ? { ...row, isFavorite: result.favorite } : row)),
-    );
-  }
-
-  if (permsLoading) {
-    return <div className={INTERNAL_MESSENGER_SHELL_CLASS} />;
-  }
+  if (permsLoading) return <div className={INTERNAL_MESSENGER_SHELL_CLASS} />;
   if (meLoadError || !canView) {
     return (
       <div
@@ -135,73 +119,99 @@ export function InternalMessengerApp({ embedded = false }: { embedded?: boolean 
             type: 'INTERNAL_GROUP',
             title,
           });
-          await refreshLists();
-          await openConversation(created.id);
+          await openInternalConversation(
+            queryClient,
+            created.id,
+            session.setActiveId,
+            session.setOpenedConversation,
+          );
         }}
         onStartDirect={async (peerEmployeeId) => {
           const created = await messengerCoreApi.createConversation({
             type: 'DIRECT',
             peerEmployeeId,
           });
-          await refreshLists();
-          await openConversation(created.id);
+          await openInternalConversation(
+            queryClient,
+            created.id,
+            session.setActiveId,
+            session.setOpenedConversation,
+          );
         }}
       />
-      {bootError ? <p className="px-3 py-1 text-xs text-red-600">{bootError}</p> : null}
+      {session.bootError || data.listError ? (
+        <p className="px-3 py-1 text-xs text-red-600">
+          {session.bootError ?? 'Could not refresh Internal Messenger.'}
+        </p>
+      ) : null}
       <div className="flex min-h-0 flex-1">
-        {section === 'collections' && !activeCollectionId ? (
+        {section === 'collections' && !session.activeCollectionId ? (
           <InternalCollectionsPanel
-            collections={collections}
-            activeId={activeCollectionId}
-            newName={collectionName}
-            creating={creatingCollection}
-            onNewNameChange={setCollectionName}
+            collections={data.collections.data ?? []}
+            activeId={session.activeCollectionId}
+            newName={session.collectionName}
+            creating={session.creatingCollection}
+            onNewNameChange={session.setCollectionName}
             onCreatePersonal={() => void createCollection('PERSONAL')}
             onCreateShared={() => void createCollection('SHARED')}
-            onSelect={(id) => void openCollection(id)}
+            onSelect={(id) => session.setActiveCollectionId(id)}
           />
         ) : (
           <InternalConversationList
             section={section}
-            items={items}
-            activeId={activeId}
-            search={search}
-            filter={filter}
-            onSearchChange={setSearch}
-            onFilterChange={setFilter}
-            onSelect={(id) => void openConversation(id)}
-            onToggleFavorite={(id) => void toggleFavorite(id)}
+            items={data.items}
+            activeId={session.activeId}
+            search={session.search}
+            filter={session.filter}
+            listPending={data.listPending}
+            onSearchChange={session.setSearch}
+            onFilterChange={session.setFilter}
+            onSelect={(id) =>
+              void openInternalConversation(
+                queryClient,
+                id,
+                session.setActiveId,
+                session.setOpenedConversation,
+              ).catch(() => session.setBootError('Could not open that Internal conversation.'))
+            }
+            onToggleFavorite={(id) => void toggleInternalFavorite(queryClient, id)}
           />
         )}
         {active ? (
           <InternalConversationThread
             conversation={active}
-            messages={messages}
-            messagesLoading={messagesLoading}
-            newMessage={newMessage}
-            onNewMessageChange={setNewMessage}
+            messages={data.messages.data?.items ?? []}
+            messagesLoading={data.messages.isPending && data.messages.data === undefined}
+            newMessage={session.newMessage}
+            onNewMessageChange={session.setNewMessage}
             onSend={(extras) =>
               void sendInternalThreadMessage({
-                conversationId: activeId,
+                conversationId: session.activeId,
                 canWrite: Boolean(active.canWrite),
-                sendBusy,
-                content: newMessage,
+                sendBusy: session.sendBusy,
+                content: session.newMessage,
                 extras,
-                setSendBusy,
-                setMessages,
-                setNewMessage,
-                refreshLists,
+                setSendBusy: session.setSendBusy,
+                setNewMessage: session.setNewMessage,
+                queryClient,
               })
             }
             canSend={Boolean(active.canWrite)}
-            sendDisabled={sendBusy}
-            onToggleFavorite={() => void toggleFavorite(active.id)}
-            collections={collections}
+            sendDisabled={session.sendBusy}
+            onToggleFavorite={() => void toggleInternalFavorite(queryClient, active.id)}
+            collections={data.collections.data ?? []}
             onAddToCollection={(collectionId) =>
               void messengerCoreApi.addCollectionItem(collectionId, active.id)
             }
             remoteTypingHint={null}
-            onOpenInternalSource={(id) => void openConversation(id)}
+            onOpenInternalSource={(id) =>
+              void openInternalConversation(
+                queryClient,
+                id,
+                session.setActiveId,
+                session.setOpenedConversation,
+              )
+            }
           />
         ) : (
           <div className="flex min-h-0 flex-1 items-center justify-center bg-white text-sm text-black/40">
@@ -213,23 +223,15 @@ export function InternalMessengerApp({ embedded = false }: { embedded?: boolean 
   );
 
   async function createCollection(visibility: 'PERSONAL' | 'SHARED') {
-    const name = collectionName.trim();
+    const name = session.collectionName.trim();
     if (!name) return;
-    setCreatingCollection(true);
+    session.setCreatingCollection(true);
     try {
       await messengerCoreApi.createCollection({ name, visibility });
-      setCollectionName('');
-      await refreshLists();
+      session.setCollectionName('');
+      await queryClient.invalidateQueries({ queryKey: messengerQueryKeys.collections('INTERNAL') });
     } finally {
-      setCreatingCollection(false);
+      session.setCreatingCollection(false);
     }
-  }
-
-  async function openCollection(id: string) {
-    setActiveCollectionId(id);
-    const collection = await messengerCoreApi.getCollection(id);
-    setItems(collection.conversations ?? []);
-    setActiveId(null);
-    setMessages([]);
   }
 }

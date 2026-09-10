@@ -1,122 +1,116 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { usePathname } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useHeaderModuleTitle } from '@/components/layout/header-context';
 import { usePermission } from '@/lib/permissions/PermissionContext';
 import { useInternalMessengerRealtime } from '@/features/messenger-internal/useInternalMessengerRealtime';
-import { mergeCoreRealtimeMessage } from '@/features/messenger/merge-core-realtime-message';
-import type { MessengerCoreCollectionRow, MessengerCoreMessageRow } from '@/lib/api/messenger-core';
+import { applyMessengerRealtimeMessage } from '@/features/messenger/query/messenger-cache';
 import {
-  messengerClientApi,
-  type MessengerClientConversationRow,
-  type MessengerClientListFilter,
-  type MessengerClientProvider,
-} from '@/lib/api/messenger-core-client';
+  applyMessengerAccessChanged,
+  applyMessengerRealtimeRead,
+  applyMessengerRealtimeSummary,
+} from '@/features/messenger/query/messenger-realtime-cache';
+import { recoverMessengerZone } from '@/features/messenger/query/messenger-delta-recovery';
+import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
+import { resolveActiveConversation } from '@/features/messenger/query/resolve-active-conversation';
+import { messengerClientApi } from '@/lib/api/messenger-core-client';
 import { ClientCollectionsPanel } from './ClientCollectionsPanel';
 import { ClientConversationList } from './ClientConversationList';
 import { ClientConversationThread } from './ClientConversationThread';
 import { ClientMessengerNav } from './ClientMessengerNav';
 import { CLIENT_MESSENGER_SHELL_CLASS } from './client-messenger.constants';
 import { clientSectionFromPathname } from './client-messenger-section';
-import { relockComposerOnConversationChange } from './client-composer-unlock';
 import { sendClientThreadMessage } from './send-client-thread-message';
 import { useClientOpenConversationQuery } from './use-client-open-conversation-query';
+import { useClientMessengerQueries } from './use-client-messenger-queries';
+import { useClientMessengerSession } from './use-client-messenger-session';
+import {
+  openClientConversation,
+  patchClientAttention,
+  toggleClientFavorite,
+} from './client-messenger-cache-ops';
 
 export function ClientMessengerApp() {
   const pathname = usePathname();
   const section = clientSectionFromPathname(pathname);
+  return <ClientMessengerScreen section={section} />;
+}
+
+function ClientMessengerScreen({
+  section,
+}: {
+  section: ReturnType<typeof clientSectionFromPathname>;
+}) {
+  const queryClient = useQueryClient();
   const { me, isLoading: permsLoading, meLoadError, can } = usePermission();
   const canView = can('VIEW', 'MESSENGER');
   useHeaderModuleTitle('Client Messenger', true);
-
-  const [items, setItems] = useState<MessengerClientConversationRow[]>([]);
-  const [collections, setCollections] = useState<MessengerCoreCollectionRow[]>([]);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [activeCollectionId, setActiveCollectionId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<MessengerCoreMessageRow[]>([]);
-  const [messagesLoading, setMessagesLoading] = useState(false);
-  const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'all' | MessengerClientListFilter>('all');
-  const [provider, setProvider] = useState<'' | MessengerClientProvider>('');
-  const [newMessage, setNewMessage] = useState('');
-  const [unlockedId, setUnlockedId] = useState<string | null>(null);
-  const [sendBusy, setSendBusy] = useState(false);
-  const [collectionName, setCollectionName] = useState('');
-  const [creatingCollection, setCreatingCollection] = useState(false);
-  const [bootError, setBootError] = useState<string | null>(null);
-
-  const refreshLists = useCallback(async () => {
-    const collectionRows = await messengerClientApi.listCollections();
-    setCollections(collectionRows);
-    if (section === 'collections') return;
-    const result = await messengerClientApi.listConversations({
-      section,
-      q: search.trim() || undefined,
-      filter: filter === 'all' ? undefined : filter,
-      provider: provider || undefined,
-    });
-    setItems(result.items);
-  }, [section, search, filter, provider]);
-
-  useEffect(() => {
-    setActiveId(null);
-    setActiveCollectionId(null);
-    setMessages([]);
-    setItems([]);
-    setSearch('');
-    setFilter('all');
-    setProvider('');
-    setNewMessage('');
-    setUnlockedId(null);
-  }, [section]);
-
-  useEffect(() => {
-    setUnlockedId((prev) => relockComposerOnConversationChange(prev, activeId));
-    setNewMessage('');
-  }, [activeId]);
-
-  useEffect(() => {
-    if (!canView || !me) return;
-    void refreshLists().catch(() => setBootError('Could not load Client Messenger.'));
-  }, [canView, me, refreshLists]);
-
-  const openConversation = useCallback(async (id: string) => {
-    setActiveId(id);
-    setMessagesLoading(true);
-    try {
-      const [conversation, page] = await Promise.all([
-        messengerClientApi.getConversation(id),
-        messengerClientApi.listMessages(id),
-      ]);
-      setItems((prev) => upsertClientConversation(prev, id, conversation));
-      setMessages(page.items);
-      await messengerClientApi.markRead(id);
-    } catch {
-      setBootError('Could not open that Client conversation.');
-    } finally {
-      setMessagesLoading(false);
-    }
-  }, []);
+  const session = useClientMessengerSession(section);
+  const enabled = Boolean(canView && me);
+  const data = useClientMessengerQueries({
+    section,
+    search: session.search,
+    filter: session.filter,
+    provider: session.provider,
+    activeId: session.activeId,
+    activeCollectionId: session.activeCollectionId,
+    enabled,
+  });
+  const active = resolveActiveConversation(
+    data.items,
+    session.activeId,
+    session.openedConversation,
+  );
+  const openConversation = useCallback(
+    (id: string) =>
+      openClientConversation(
+        queryClient,
+        id,
+        session.setActiveId,
+        session.setOpenedConversation,
+      ),
+    [queryClient, session.setActiveId, session.setOpenedConversation],
+  );
 
   useClientOpenConversationQuery(openConversation);
 
   useInternalMessengerRealtime({
     canViewMessenger: canView,
     meId: me?.id,
-    conversationId: activeId,
-    onInboundMessage: (conversationId, message) => {
-      if (conversationId === activeId) {
-        setMessages((prev) => mergeCoreRealtimeMessage(prev, message));
-      }
-      void refreshLists();
+    conversationId: session.activeId,
+    onInboundMessage: (_conversationId, message) => {
+      applyMessengerRealtimeMessage(queryClient, message);
+    },
+    onConversationSummary: (payload) => {
+      applyMessengerRealtimeSummary(queryClient, 'CLIENT', payload);
+    },
+    onConversationRead: (payload) => {
+      applyMessengerRealtimeRead(queryClient, 'CLIENT', payload);
+    },
+    onAccessChanged: (payload) => {
+      applyMessengerAccessChanged(
+        queryClient,
+        'CLIENT',
+        payload.conversationId,
+        payload.zone,
+        {
+          activeId: session.activeId,
+          clearActive: () => session.setActiveId(null),
+        },
+      );
+    },
+    onReconnect: () => {
+      void recoverMessengerZone(queryClient, 'CLIENT', {
+        activeId: session.activeId,
+        clearActive: () => session.setActiveId(null),
+      });
     },
     onReadListsInvalidate: () => {
-      void refreshLists();
+      void queryClient.invalidateQueries({ queryKey: messengerQueryKeys.clientSummariesRoot });
     },
   });
-
-  const active = items.find((row) => row.id === activeId) ?? null;
 
   if (permsLoading) return <div className={CLIENT_MESSENGER_SHELL_CLASS} />;
   if (meLoadError || !canView) {
@@ -132,63 +126,74 @@ export function ClientMessengerApp() {
   return (
     <div className={CLIENT_MESSENGER_SHELL_CLASS}>
       <ClientMessengerNav section={section} />
-      {bootError ? <p className="px-3 py-1 text-xs text-red-600">{bootError}</p> : null}
+      {session.bootError || data.listError ? (
+        <p className="px-3 py-1 text-xs text-red-600">
+          {session.bootError ?? 'Could not refresh Client Messenger.'}
+        </p>
+      ) : null}
       <div className="flex min-h-0 flex-1">
-        {section === 'collections' && !activeCollectionId ? (
+        {section === 'collections' && !session.activeCollectionId ? (
           <ClientCollectionsPanel
-            collections={collections}
-            activeId={activeCollectionId}
-            newName={collectionName}
-            creating={creatingCollection}
-            onNewNameChange={setCollectionName}
+            collections={data.collections.data ?? []}
+            activeId={session.activeCollectionId}
+            newName={session.collectionName}
+            creating={session.creatingCollection}
+            onNewNameChange={session.setCollectionName}
             onCreatePersonal={() => void createCollection('PERSONAL')}
             onCreateShared={() => void createCollection('SHARED')}
-            onSelect={(id) => void openCollection(id)}
+            onSelect={(id) => session.setActiveCollectionId(id)}
           />
         ) : (
           <ClientConversationList
             section={section}
-            items={items}
-            activeId={activeId}
-            search={search}
-            filter={filter}
-            provider={provider}
-            onSearchChange={setSearch}
-            onFilterChange={setFilter}
-            onProviderChange={setProvider}
-            onSelect={(id) => void openConversation(id)}
-            onToggleFavorite={(id) => void toggleFavorite(id)}
+            items={data.items}
+            activeId={session.activeId}
+            search={session.search}
+            filter={session.filter}
+            provider={session.provider}
+            listPending={data.listPending}
+            onSearchChange={session.setSearch}
+            onFilterChange={session.setFilter}
+            onProviderChange={session.setProvider}
+            onSelect={(id) =>
+              void openClientConversation(
+                queryClient,
+                id,
+                session.setActiveId,
+                session.setOpenedConversation,
+              ).catch(() => session.setBootError('Could not open that Client conversation.'))
+            }
+            onToggleFavorite={(id) => void toggleClientFavorite(queryClient, id)}
           />
         )}
         {active ? (
           <ClientConversationThread
             conversation={active}
-            messages={messages}
-            messagesLoading={messagesLoading}
-            newMessage={newMessage}
-            onNewMessageChange={setNewMessage}
-            unlockedConversationId={unlockedId}
+            messages={data.messages.data?.items ?? []}
+            messagesLoading={data.messages.isPending && data.messages.data === undefined}
+            newMessage={session.newMessage}
+            onNewMessageChange={session.setNewMessage}
+            unlockedConversationId={session.unlockedId}
             onUnlock={() => {
-              if (active.canSend) setUnlockedId(active.id);
+              if (active.canSend) session.setUnlockedId(active.id);
             }}
             onSend={(replyToMessageId) =>
               void sendClientThreadMessage({
-                conversationId: activeId,
+                conversationId: session.activeId,
                 canSend: Boolean(active.canSend),
-                unlocked: unlockedId === activeId,
-                unlockedConversationId: unlockedId,
-                sendBusy,
-                content: newMessage,
+                unlocked: session.unlockedId === session.activeId,
+                unlockedConversationId: session.unlockedId,
+                sendBusy: session.sendBusy,
+                content: session.newMessage,
                 replyToMessageId,
-                setSendBusy,
-                setMessages,
-                setNewMessage,
-                refreshLists,
+                setSendBusy: session.setSendBusy,
+                setNewMessage: session.setNewMessage,
+                queryClient,
               })
             }
-            sendDisabled={sendBusy}
-            onToggleFavorite={() => void toggleFavorite(active.id)}
-            collections={collections}
+            sendDisabled={session.sendBusy}
+            onToggleFavorite={() => void toggleClientFavorite(queryClient, active.id)}
+            collections={data.collections.data ?? []}
             onAddToCollection={(collectionId) =>
               void messengerClientApi.addCollectionItem(collectionId, active.id)
             }
@@ -196,9 +201,7 @@ export function ClientMessengerApp() {
               await messengerClientApi.inviteReadOnly(active.id, employeeId);
             }}
             onAttentionChange={(attention) => {
-              setItems((prev) =>
-                prev.map((row) => (row.id === active.id ? { ...row, attention } : row)),
-              );
+              patchClientAttention(queryClient, active.id, attention);
             }}
           />
         ) : (
@@ -210,44 +213,16 @@ export function ClientMessengerApp() {
     </div>
   );
 
-  async function toggleFavorite(id: string) {
-    const result = await messengerClientApi.toggleFavorite(id);
-    setItems((prev) =>
-      prev.map((row) => (row.id === id ? { ...row, isFavorite: result.favorite } : row)),
-    );
-  }
-
   async function createCollection(visibility: 'PERSONAL' | 'SHARED') {
-    const name = collectionName.trim();
+    const name = session.collectionName.trim();
     if (!name) return;
-    setCreatingCollection(true);
+    session.setCreatingCollection(true);
     try {
       await messengerClientApi.createCollection({ name, visibility });
-      setCollectionName('');
-      await refreshLists();
+      session.setCollectionName('');
+      await queryClient.invalidateQueries({ queryKey: messengerQueryKeys.collections('CLIENT') });
     } finally {
-      setCreatingCollection(false);
+      session.setCreatingCollection(false);
     }
   }
-
-  async function openCollection(id: string) {
-    setActiveCollectionId(id);
-    const collection = await messengerClientApi.getCollection(id);
-    setItems((collection.conversations ?? []) as MessengerClientConversationRow[]);
-    setActiveId(null);
-    setMessages([]);
-    setUnlockedId(null);
-    setNewMessage('');
-  }
-}
-
-function upsertClientConversation(
-  prev: MessengerClientConversationRow[],
-  id: string,
-  conversation: MessengerClientConversationRow,
-): MessengerClientConversationRow[] {
-  if (prev.some((row) => row.id === id)) {
-    return prev.map((row) => (row.id === id ? { ...row, ...conversation } : row));
-  }
-  return [conversation, ...prev];
 }

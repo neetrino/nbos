@@ -15,12 +15,14 @@ import { AuthModule } from '../auth/auth.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { ClientServicesModule } from '../client-services/client-services.module';
 import { MailModule } from '../mail/mail.module';
+import { MessengerOutboundReconcileModule } from '../messenger/messenger-outbound-reconcile.module';
 import { AiPlatformCoreModule } from '../ai-platform/ai-platform-core.module';
 import { AiModelCatalogSyncCron } from './ai-model-catalog-sync.cron';
 import { SchedulerAiService } from './scheduler-ai.service';
 import { MailGmailWatchRenewCron } from './mail-gmail-watch-renew.cron';
 import { MailOutboundReconcileCron } from './mail-outbound-reconcile.cron';
 import { MailSyncReconcileCron } from './mail-sync-reconcile.cron';
+import { MessengerOutboundReconcileCron } from './messenger-outbound-reconcile.cron';
 import { RecurringTasksDueCron } from './recurring-tasks-due.cron';
 import { PlatformTrashPurgeCron } from './platform-trash-purge.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
@@ -61,6 +63,7 @@ const SCHEDULER_IMPORTS = [
   TasksModule,
   ClientServicesModule,
   MailModule,
+  MessengerOutboundReconcileModule,
   AuditModule,
   AiPlatformCoreModule,
 ] as const;
@@ -77,6 +80,7 @@ const CRON_PROVIDERS = [
   MailOutboundReconcileCron,
   MailGmailWatchRenewCron,
   MailSyncReconcileCron,
+  MessengerOutboundReconcileCron,
   AiModelCatalogSyncCron,
   ...INTERNAL_SCHEDULER_CRON_PROVIDERS,
 ] as const;

@@ -3,26 +3,21 @@
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SIDEBAR_NAV_ITEM_CLASS } from './sidebar-layout-constants';
 import {
-  SIDEBAR_NAV_CHILD_LINK_CLASS,
-  SIDEBAR_NAV_CHILD_LIST_CLASS,
-  SIDEBAR_NAV_ITEM_CLASS,
-} from './sidebar-layout-constants';
-import {
-  isNavChildGroup,
   isNavChildLink,
   type NavModuleDefinition,
 } from '@/lib/navigation/nav-config';
-import { ModuleSectionNavLink } from './ModuleSectionNavLink';
 import { useModuleEntryHref } from '@/lib/navigation/hooks/use-module-entry-href';
 import {
   getFirstChildHref,
-  getPathFromHref,
   isNavChildLinkActive,
 } from '@/lib/navigation/nav-route-utils';
 import { isRegisteredModuleKey } from '@/lib/navigation/module-last-visit';
 import { SidebarModuleIcon, SidebarModuleMarker } from './SidebarModuleIcon';
 import { SidebarNavQuickActionButton } from './SidebarNavQuickActionButton';
+import { SidebarChildNavList } from './sidebar-child-nav-list';
+import { useMessengerBootstrapPrefetch } from '@/features/messenger/persist/use-messenger-bootstrap-prefetch';
 
 interface SidebarModuleNavRowProps {
   item: NavModuleDefinition;
@@ -45,6 +40,7 @@ export function SidebarModuleNavRow({
   onQuickAction,
   muted = false,
 }: SidebarModuleNavRowProps) {
+  const prefetchMessenger = useMessengerBootstrapPrefetch(item.key);
   const moduleEntryHref = useModuleEntryHref(item.key, item.href, pathname);
   const moduleHref = isRegisteredModuleKey(item.key) ? moduleEntryHref : item.href;
   const childPathActive =
@@ -67,6 +63,7 @@ export function SidebarModuleNavRow({
         muted={muted}
         moduleHref={moduleHref}
         onQuickAction={onQuickAction}
+        onPrefetch={prefetchMessenger}
       />
     );
   }
@@ -82,6 +79,7 @@ export function SidebarModuleNavRow({
       pathname={pathname}
       onToggleExpanded={onToggleExpanded}
       onExpandOnly={onExpandOnly}
+      onPrefetch={prefetchMessenger}
     />
   );
 }
@@ -96,6 +94,7 @@ function ParentModuleNavRow({
   pathname,
   onToggleExpanded,
   onExpandOnly,
+  onPrefetch,
 }: {
   item: NavModuleDefinition;
   collapsed: boolean;
@@ -106,10 +105,11 @@ function ParentModuleNavRow({
   pathname: string;
   onToggleExpanded: () => void;
   onExpandOnly: () => void;
+  onPrefetch: () => void;
 }) {
   if (collapsed) {
     return (
-      <li className="relative z-[1]">
+      <li className="relative z-[1]" onPointerEnter={onPrefetch} onFocusCapture={onPrefetch}>
         <Link
           href={firstChildHref}
           onClick={onExpandOnly}
@@ -125,7 +125,7 @@ function ParentModuleNavRow({
   }
 
   return (
-    <li className="relative z-[1]">
+    <li className="relative z-[1]" onPointerEnter={onPrefetch} onFocusCapture={onPrefetch}>
       <div
         data-sidebar-nav-active={isActive ? 'true' : undefined}
         className={cn(
@@ -163,7 +163,7 @@ function ParentModuleNavRow({
           <ChevronLeft size={14} className={cn('transition-transform', expanded && '-rotate-90')} />
         </button>
       </div>
-      {expanded ? <ChildNavList item={item} pathname={pathname} /> : null}
+      {expanded ? <SidebarChildNavList item={item} pathname={pathname} /> : null}
     </li>
   );
 }
@@ -175,6 +175,7 @@ function LeafModuleNavRow({
   muted,
   moduleHref,
   onQuickAction,
+  onPrefetch,
 }: {
   item: NavModuleDefinition;
   collapsed: boolean;
@@ -182,11 +183,12 @@ function LeafModuleNavRow({
   muted: boolean;
   moduleHref: string;
   onQuickAction?: (action: NonNullable<NavModuleDefinition['quickAction']>) => void;
+  onPrefetch: () => void;
 }) {
   const quickAction = item.quickAction;
   if (!quickAction || !onQuickAction || collapsed) {
     return (
-      <li className="relative z-[1]">
+      <li className="relative z-[1]" onPointerEnter={onPrefetch} onFocusCapture={onPrefetch}>
         <Link
           href={moduleHref}
           title={item.label}
@@ -202,7 +204,7 @@ function LeafModuleNavRow({
   }
 
   return (
-    <li className="relative z-[1]">
+    <li className="relative z-[1]" onPointerEnter={onPrefetch} onFocusCapture={onPrefetch}>
       <div
         data-sidebar-nav-active={isActive ? 'true' : undefined}
         className={cn(
@@ -228,60 +230,6 @@ function LeafModuleNavRow({
         <SidebarNavQuickActionButton onAction={() => onQuickAction(quickAction)} />
       </div>
     </li>
-  );
-}
-
-function ChildNavList({ item, pathname }: { item: NavModuleDefinition; pathname: string }) {
-  if (!item.children) return null;
-
-  return (
-    <ul className={SIDEBAR_NAV_CHILD_LIST_CLASS}>
-      {item.children.map((child) => {
-        if (isNavChildGroup(child)) {
-          return (
-            <li key={`group-${child.label}`}>
-              <span
-                className={cn(
-                  SIDEBAR_NAV_CHILD_LINK_CLASS,
-                  'text-sidebar-muted pointer-events-none pt-2 text-xs font-semibold tracking-wide uppercase',
-                )}
-              >
-                {child.label}
-              </span>
-            </li>
-          );
-        }
-        if (child.navSection && isRegisteredModuleKey(item.key)) {
-          return (
-            <ModuleSectionNavLink
-              key={`${item.key}-${child.navSection}`}
-              moduleKey={item.key}
-              sectionId={child.navSection}
-              label={child.label}
-              fallbackHref={child.href}
-              pathname={pathname}
-            />
-          );
-        }
-        const childPath = getPathFromHref(child.href);
-        const childActive = pathname === childPath || pathname.startsWith(`${childPath}/`);
-        return (
-          <li key={child.href}>
-            <Link
-              href={child.href}
-              className={cn(
-                SIDEBAR_NAV_CHILD_LINK_CLASS,
-                childActive
-                  ? 'text-sidebar-foreground font-medium'
-                  : 'text-sidebar-muted hover:text-sidebar-foreground',
-              )}
-            >
-              {child.label}
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
   );
 }
 

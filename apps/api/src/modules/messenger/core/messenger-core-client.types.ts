@@ -32,10 +32,13 @@ export type MessengerClientListQuery = {
   filter?: MessengerClientListFilter;
   provider?: MessengerClientProviderFilter;
   pageSize?: number;
+  cursor?: string;
 };
 
 export type MessengerClientListResult = {
   items: MessengerClientConversationListItem[];
+  hasMore: boolean;
+  nextCursor?: string;
 };
 
 export type MessengerClientMessagePage = {

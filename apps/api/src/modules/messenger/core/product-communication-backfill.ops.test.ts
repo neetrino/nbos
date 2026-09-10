@@ -1,5 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { backfillProductWorkBindings } from './product-communication-backfill.ops';
+
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async <T>(prisma: T, fn: (tx: T) => Promise<unknown>) => fn(prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpGlobalConversationRevision: async () => 1n,
+}));
 
 describe('backfillProductWorkBindings', () => {
   it('skips accountant group and does not create FINANCE rows', async () => {

@@ -1,33 +1,80 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { snapshotMessengerSenderName } from '../messenger-prisma-message.mapper';
+import { lockMessengerHttpIdempotency } from './messenger-core-idempotency-lock';
 import { persistCoreMessageMentions } from './messenger-core-mention.ops';
 import { mapCoreMessage } from './messenger-core-message-map';
+import { bumpGlobalConversationRevision } from './messenger-core-revision-write.ops';
+import { runMessengerWriteTx } from './messenger-core-revision-tx';
 import { assertMessageDirectionForZone, defaultDirectionForZone } from './messenger-core-zone';
 import type {
   MessengerCoreMessageDto,
   PersistMessengerCoreMessageInput,
 } from './messenger-core.types';
+import {
+  persistWhatsAppSendCommandInTx,
+  reuseOrRepairWhatsAppSendCommand,
+  type PersistWhatsAppSendIntent,
+} from './messenger-wa-outbound.ops';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
+
+const MESSAGE_INCLUDE = {
+  attachments: true,
+  mentions: true,
+  referencesAsTarget: true,
+} as const;
 
 export async function persistCoreMessage(
   prisma: PrismaLike,
   input: PersistMessengerCoreMessageInput,
   fileAssetIds: string[],
+  whatsAppSend?: PersistWhatsAppSendIntent,
+): Promise<MessengerCoreMessageDto> {
+  return runMessengerWriteTx(prisma, (tx) =>
+    persistCoreMessageInTx(tx, input, fileAssetIds, whatsAppSend),
+  );
+}
+
+async function persistCoreMessageInTx(
+  prisma: PrismaLike,
+  input: PersistMessengerCoreMessageInput,
+  fileAssetIds: string[],
+  whatsAppSend?: PersistWhatsAppSendIntent,
 ): Promise<MessengerCoreMessageDto> {
   if (input.idempotencyKey) {
-    const existing = await prisma.messengerMessage.findUnique({
-      where: {
-        conversationId_idempotencyKey: {
-          conversationId: input.conversationId,
-          idempotencyKey: input.idempotencyKey,
-        },
-      },
-      include: { attachments: true, mentions: true, referencesAsTarget: true },
-    });
-    if (existing) return mapCoreMessage(existing);
+    await lockMessengerHttpIdempotency(prisma, input.conversationId, input.idempotencyKey);
+    const existing = await loadIdempotentCoreMessage(prisma, input);
+    if (existing) {
+      await reuseOrRepairWhatsAppSendCommand(prisma, existing, whatsAppSend);
+      return mapCoreMessage(existing);
+    }
   }
+  return createCoreMessageWithIntent(prisma, input, fileAssetIds, whatsAppSend);
+}
+
+async function loadIdempotentCoreMessage(
+  prisma: PrismaLike,
+  input: PersistMessengerCoreMessageInput,
+) {
+  if (!input.idempotencyKey) return null;
+  return prisma.messengerMessage.findUnique({
+    where: {
+      conversationId_idempotencyKey: {
+        conversationId: input.conversationId,
+        idempotencyKey: input.idempotencyKey,
+      },
+    },
+    include: MESSAGE_INCLUDE,
+  });
+}
+
+async function createCoreMessageWithIntent(
+  prisma: PrismaLike,
+  input: PersistMessengerCoreMessageInput,
+  fileAssetIds: string[],
+  whatsAppSend?: PersistWhatsAppSendIntent,
+): Promise<MessengerCoreMessageDto> {
   const conversation = await prisma.messengerConversation.findUnique({
     where: { id: input.conversationId },
     select: { id: true, zone: true },
@@ -52,7 +99,38 @@ export async function persistCoreMessage(
     created.id,
     input.mentionedEmployeeIds,
   );
+  await bumpGlobalConversationRevision(prisma, conversation.zone, conversation.id);
+  await attachWhatsAppSendCommand(
+    prisma,
+    { ...created, direction, deletedAt: null, conversationId: conversation.id },
+    conversation.zone === 'CLIENT' ? whatsAppSend : undefined,
+    true,
+  );
   return mapCoreMessage(created, { mentionedEmployeeIds });
+}
+
+async function attachWhatsAppSendCommand(
+  prisma: PrismaLike,
+  message: {
+    id: string;
+    conversationId: string;
+    direction: string;
+    status: string;
+    deletedAt?: Date | null;
+  },
+  whatsAppSend: PersistWhatsAppSendIntent | undefined,
+  forceCreate = false,
+): Promise<void> {
+  if (!whatsAppSend || message.direction !== 'OUTBOUND') return;
+  const allowCreate =
+    forceCreate || (message.status === 'QUEUED' && message.deletedAt == null);
+  await persistWhatsAppSendCommandInTx(prisma, {
+    conversationId: message.conversationId,
+    messageId: message.id,
+    mapping: whatsAppSend.mapping,
+    actorEmployeeId: whatsAppSend.actorEmployeeId,
+    allowCreate,
+  });
 }
 
 async function resolveSenderSnapshot(

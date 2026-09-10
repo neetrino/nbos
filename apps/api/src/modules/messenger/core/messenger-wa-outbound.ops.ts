@@ -1,9 +1,11 @@
-import { Logger } from '@nestjs/common';
-import { PrismaClient, type InputJsonValue } from '@nbos/database';
+import { ConflictException, Logger } from '@nestjs/common';
+import { PrismaClient } from '@nbos/database';
 import type { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
 import type { WhatsAppCoreSendJobPayload } from '../../integrations/whatsapp-gateway/whatsapp-outbound.types';
+import { MESSENGER_CORE_COMMAND_CONFLICT } from './messenger-core.constants';
+import { parseWhatsAppSendCommandPayload } from './messenger-core-command-payload';
 import { mapCoreMessage } from './messenger-core-message-map';
-import { createCoreProviderSendOutbox } from './messenger-core-outbox.ops';
+import { ensureWhatsAppSendCommand } from './messenger-core-outbox.ops';
 import type { MessengerCoreMessageDto } from './messenger-core.types';
 import { isWhatsAppChatId, whatsAppOutboundIdempotencyKey } from './messenger-wa-identity';
 
@@ -14,6 +16,11 @@ type PrismaLike = InstanceType<typeof PrismaClient>;
 export type WhatsAppMappingRef = {
   externalAccountId: string;
   externalConversationId: string;
+};
+
+export type PersistWhatsAppSendIntent = {
+  mapping: WhatsAppMappingRef;
+  actorEmployeeId?: string;
 };
 
 export async function findClientWhatsAppMapping(
@@ -36,38 +43,64 @@ export async function findClientWhatsAppMapping(
   };
 }
 
-export async function enqueueWhatsAppCoreSend(
+export async function reuseOrRepairWhatsAppSendCommand(
   prisma: PrismaLike,
-  queue: WhatsAppOutboundQueueService | undefined,
-  input: {
-    message: MessengerCoreMessageDto;
-    actorEmployeeId?: string;
-    mapping: WhatsAppMappingRef;
+  message: {
+    id: string;
+    conversationId: string;
+    direction: string;
+    status: string;
+    deletedAt?: Date | null;
   },
+  whatsAppSend: PersistWhatsAppSendIntent | undefined,
 ): Promise<void> {
-  if (input.message.direction !== 'OUTBOUND') return;
-  const idempotencyKey = whatsAppOutboundIdempotencyKey(input.message.id);
-  await createCoreProviderSendOutbox(prisma, {
-    conversationId: input.message.conversationId,
-    messageId: input.message.id,
-    idempotencyKey,
-    createdById: input.actorEmployeeId,
-    payload: {
-      accountId: input.mapping.externalAccountId,
-      chatId: input.mapping.externalConversationId,
-    } satisfies InputJsonValue,
+  if (message.direction !== 'OUTBOUND') return;
+  const existing = await prisma.messengerCommand.findUnique({
+    where: { idempotencyKey: whatsAppOutboundIdempotencyKey(message.id) },
+    select: { kind: true, resultMessageId: true, conversationId: true, payload: true },
   });
-  await offerWhatsAppCoreSendJob(queue, {
-    kind: 'core_client_send',
-    chatId: input.mapping.externalConversationId,
-    accountId: input.mapping.externalAccountId,
-    messageId: input.message.id,
-    conversationId: input.message.conversationId,
-    idempotencyKey,
+  if (existing) {
+    const identityOk =
+      existing.kind === 'SEND_MESSAGE' &&
+      existing.resultMessageId === message.id &&
+      existing.conversationId === message.conversationId;
+    if (!identityOk) throw new ConflictException(MESSENGER_CORE_COMMAND_CONFLICT);
+    return;
+  }
+  if (!whatsAppSend || message.status !== 'QUEUED' || message.deletedAt) return;
+  await persistWhatsAppSendCommandInTx(prisma, {
+    conversationId: message.conversationId,
+    messageId: message.id,
+    mapping: whatsAppSend.mapping,
+    actorEmployeeId: whatsAppSend.actorEmployeeId,
+    allowCreate: true,
   });
 }
 
-async function offerWhatsAppCoreSendJob(
+export async function persistWhatsAppSendCommandInTx(
+  prisma: PrismaLike,
+  input: {
+    conversationId: string;
+    messageId: string;
+    mapping: WhatsAppMappingRef;
+    actorEmployeeId?: string;
+    allowCreate: boolean;
+  },
+): Promise<void> {
+  await ensureWhatsAppSendCommand(prisma, {
+    conversationId: input.conversationId,
+    messageId: input.messageId,
+    idempotencyKey: whatsAppOutboundIdempotencyKey(input.messageId),
+    payload: {
+      accountId: input.mapping.externalAccountId,
+      chatId: input.mapping.externalConversationId,
+    },
+    createdById: input.actorEmployeeId,
+    allowCreate: input.allowCreate,
+  });
+}
+
+export async function offerWhatsAppCoreSendJob(
   queue: WhatsAppOutboundQueueService | undefined,
   payload: WhatsAppCoreSendJobPayload,
 ): Promise<void> {
@@ -82,16 +115,79 @@ async function offerWhatsAppCoreSendJob(
   }
 }
 
+export function whatsAppCoreSendJobFromMessage(
+  message: Pick<MessengerCoreMessageDto, 'id' | 'conversationId'>,
+  mapping: WhatsAppMappingRef,
+): WhatsAppCoreSendJobPayload {
+  return {
+    kind: 'core_client_send',
+    chatId: mapping.externalConversationId,
+    accountId: mapping.externalAccountId,
+    messageId: message.id,
+    conversationId: message.conversationId,
+    idempotencyKey: whatsAppOutboundIdempotencyKey(message.id),
+  };
+}
+
+export async function enqueueWhatsAppCoreSend(
+  prisma: PrismaLike,
+  queue: WhatsAppOutboundQueueService | undefined,
+  input: {
+    message: MessengerCoreMessageDto;
+    actorEmployeeId?: string;
+    mapping: WhatsAppMappingRef;
+  },
+): Promise<void> {
+  if (input.message.direction !== 'OUTBOUND') return;
+  await persistWhatsAppSendCommandInTx(prisma, {
+    conversationId: input.message.conversationId,
+    messageId: input.message.id,
+    mapping: input.mapping,
+    actorEmployeeId: input.actorEmployeeId,
+    allowCreate: true,
+  });
+  await offerWhatsAppCoreSendJob(queue, whatsAppCoreSendJobFromMessage(input.message, input.mapping));
+}
+
 export async function finalizeWhatsAppCoreOutbound(
   prisma: PrismaLike,
   queue: WhatsAppOutboundQueueService | undefined,
   message: MessengerCoreMessageDto,
-  actorEmployeeId: string | undefined,
+  _actorEmployeeId: string | undefined,
   mapping: WhatsAppMappingRef | null,
 ): Promise<MessengerCoreMessageDto> {
-  if (!mapping || message.direction !== 'OUTBOUND') return message;
-  await enqueueWhatsAppCoreSend(prisma, queue, { message, actorEmployeeId, mapping });
+  if (message.direction !== 'OUTBOUND') return message;
+  const job = await coreSendJobFromCanonicalCommand(prisma, message, mapping);
+  if (job) await offerWhatsAppCoreSendJob(queue, job);
   return (await reloadCoreMessage(prisma, message.id)) ?? message;
+}
+
+async function coreSendJobFromCanonicalCommand(
+  prisma: PrismaLike,
+  message: MessengerCoreMessageDto,
+  mapping: WhatsAppMappingRef | null,
+): Promise<WhatsAppCoreSendJobPayload | null> {
+  const command = await prisma.messengerCommand.findUnique({
+    where: { idempotencyKey: whatsAppOutboundIdempotencyKey(message.id) },
+    select: { kind: true, resultMessageId: true, conversationId: true, payload: true },
+  });
+  if (command) {
+    if (
+      command.kind !== 'SEND_MESSAGE' ||
+      command.resultMessageId !== message.id ||
+      command.conversationId !== message.conversationId
+    ) {
+      return null;
+    }
+    const payload = parseWhatsAppSendCommandPayload(command.payload);
+    if (!payload) return null;
+    return whatsAppCoreSendJobFromMessage(message, {
+      externalAccountId: payload.accountId,
+      externalConversationId: payload.chatId,
+    });
+  }
+  if (!mapping) return null;
+  return whatsAppCoreSendJobFromMessage(message, mapping);
 }
 
 async function reloadCoreMessage(

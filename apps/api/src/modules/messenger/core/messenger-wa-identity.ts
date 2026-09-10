@@ -72,6 +72,12 @@ const RANKED_WHATSAPP_STATUSES: readonly MessengerMessageStatus[] = [
 
 const ACK_REPAIR_FROM_UNKNOWN: readonly MessengerMessageStatus[] = ['SENT', 'DELIVERED', 'READ'];
 const OUTBOUND_CAS_FROM: readonly MessengerMessageStatus[] = ['QUEUED', 'SENDING'];
+const OWNED_PROOF_REPAIR_FROM: readonly MessengerMessageStatus[] = [
+  'QUEUED',
+  'SENDING',
+  'OUTCOME_UNKNOWN',
+  'FAILED',
+];
 
 export type WhatsAppOutboundCasStatus = 'SENDING' | 'SENT' | 'FAILED' | 'OUTCOME_UNKNOWN';
 
@@ -99,15 +105,26 @@ export function whatsAppStatusesStrictlyBelow(
   return below;
 }
 
+/** Owned provider-ref proof only. Generic outbound/failure CAS must not use this. */
+export function whatsAppStatusesAllowedForOwnedProofWrite(
+  next: MessengerMessageStatus,
+): MessengerMessageStatus[] {
+  if (next !== 'SENT' && next !== 'DELIVERED' && next !== 'READ') return [];
+  const to = STATUS_RANK[next] ?? -1;
+  const below = RANKED_WHATSAPP_STATUSES.filter((status) => (STATUS_RANK[status] ?? -1) < to);
+  return [...new Set<MessengerMessageStatus>([...OWNED_PROOF_REPAIR_FROM, ...below])];
+}
+
 export function whatsAppStatusesAllowedForOutboundWrite(
   next: WhatsAppOutboundCasStatus,
 ): MessengerMessageStatus[] {
   switch (next) {
     case 'SENDING':
-    case 'SENT':
     case 'FAILED':
     case 'OUTCOME_UNKNOWN':
       return [...OUTBOUND_CAS_FROM];
+    case 'SENT':
+      return [...OUTBOUND_CAS_FROM, 'OUTCOME_UNKNOWN'];
   }
 }
 

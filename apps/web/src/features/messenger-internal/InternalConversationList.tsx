@@ -29,6 +29,7 @@ export function InternalConversationList({
   activeId,
   search,
   filter,
+  listPending = false,
   onSearchChange,
   onFilterChange,
   onSelect,
@@ -39,6 +40,7 @@ export function InternalConversationList({
   activeId: string | null;
   search: string;
   filter: 'all' | 'unread' | 'mentions';
+  listPending?: boolean;
   onSearchChange: (value: string) => void;
   onFilterChange: (value: 'all' | 'unread' | 'mentions') => void;
   onSelect: (id: string) => void;
@@ -77,7 +79,12 @@ export function InternalConversationList({
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-2 pb-3">
-        {items.length === 0 ? (
+        {listPending ? (
+          <p className="px-2 py-6 text-center text-xs leading-relaxed text-black/40">
+            Loading conversations…
+          </p>
+        ) : null}
+        {!listPending && items.length === 0 ? (
           <p className="px-2 py-6 text-center text-xs leading-relaxed text-black/40">
             {INTERNAL_MESSENGER_EMPTY_COPY[section]}
           </p>

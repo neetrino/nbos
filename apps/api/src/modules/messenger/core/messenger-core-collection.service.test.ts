@@ -7,6 +7,8 @@ const loadMessengerCoreAccessFacts = vi.fn();
 const addCoreCollectionMember = vi.fn();
 const addCoreCollectionItem = vi.fn();
 const isCoreCollectionMember = vi.fn();
+const listCollectionItemIds = vi.fn();
+const listAccessibleInternalConversationsByIds = vi.fn();
 
 vi.mock('../access/messenger-legacy-channel-access.op', () => ({
   loadMessengerLegacyAccess: (...args: unknown[]) => loadMessengerLegacyAccess(...args),
@@ -21,6 +23,22 @@ vi.mock('./messenger-core-collection.ops', () => ({
   addCoreCollectionItem: (...args: unknown[]) => addCoreCollectionItem(...args),
   isCoreCollectionMember: (...args: unknown[]) => isCoreCollectionMember(...args),
   createCoreCollection: vi.fn(),
+}));
+
+vi.mock('./messenger-core-collection-list.ops', () => ({
+  listCollectionItemIds: (...args: unknown[]) => listCollectionItemIds(...args),
+  listInternalCollections: vi.fn(),
+  listClientCollections: vi.fn(),
+  removeCoreCollectionItem: vi.fn(),
+}));
+
+vi.mock('./messenger-core-internal-list.ops', () => ({
+  listAccessibleInternalConversationsByIds: (...args: unknown[]) =>
+    listAccessibleInternalConversationsByIds(...args),
+}));
+
+vi.mock('./messenger-core-client-list.ops', () => ({
+  listAccessibleClientConversationsByIds: vi.fn(),
 }));
 
 const ACCESS = {
@@ -138,5 +156,59 @@ describe('Internal collection zone mutate', () => {
       NotFoundException,
     );
     expect(addCoreCollectionItem).not.toHaveBeenCalled();
+  });
+});
+
+describe('Internal collection detail ACL and query shape', () => {
+  beforeEach(() => {
+    loadMessengerLegacyAccess.mockReset().mockResolvedValue(ACCESS);
+    isCoreCollectionMember.mockReset().mockResolvedValue(true);
+    loadMessengerCoreAccessFacts.mockReset();
+    listCollectionItemIds.mockReset();
+    listAccessibleInternalConversationsByIds.mockReset();
+  });
+
+  it('excludes unauthorized and Task-inaccessible items while preserving stored order', async () => {
+    const itemIds = Array.from({ length: 40 }, (_, index) => `c${index}`);
+    listCollectionItemIds.mockResolvedValue(itemIds);
+    listAccessibleInternalConversationsByIds.mockImplementation(
+      async (_prisma: unknown, _employeeId: string, _scope: string, ids: string[]) =>
+        ids.filter((id) => id !== 'c3' && id !== 'c10').map((id) => ({ id })),
+    );
+    const prisma = {
+      messengerConversationCollection: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'col-1',
+          name: 'Watch',
+          visibility: 'SHARED',
+          zone: 'INTERNAL',
+          ownerEmployeeId: 'e1',
+        }),
+        create: vi.fn(),
+        update: vi.fn(),
+      },
+      messengerConversationCollectionItem: { createMany: vi.fn(), upsert: vi.fn() },
+    };
+    const service = new MessengerCoreCollectionService(prisma as never);
+    const result = await service.getInternal('col-1', 'e1', {
+      employeeId: 'e1',
+      departmentIds: [],
+      viewScope: 'OWN',
+    });
+    expect(listCollectionItemIds).toHaveBeenCalledTimes(1);
+    expect(listAccessibleInternalConversationsByIds).toHaveBeenCalledTimes(1);
+    expect(listAccessibleInternalConversationsByIds.mock.calls[0]?.[3]).toEqual(itemIds);
+    expect(loadMessengerCoreAccessFacts).not.toHaveBeenCalled();
+    expect(prisma.messengerConversationCollectionItem.createMany).not.toHaveBeenCalled();
+    expect(prisma.messengerConversationCollectionItem.upsert).not.toHaveBeenCalled();
+    expect(result.items.map((item: { conversationId: string }) => item.conversationId)).toEqual(
+      result.conversations.map((row: { id: string }) => row.id),
+    );
+    expect(result.items.map((item: { conversationId: string }) => item.conversationId)).not.toContain(
+      'c3',
+    );
+    expect(result.conversations[0]?.id).toBe('c0');
+    expect(result.conversations[2]?.id).toBe('c2');
+    expect(result.conversations[3]?.id).toBe('c4');
   });
 });

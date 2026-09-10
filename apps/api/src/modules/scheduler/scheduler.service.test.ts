@@ -24,7 +24,8 @@ describe('SchedulerService', () => {
   let reportsService: { runDueSchedules: ReturnType<typeof vi.fn> };
   let supportSlaOrchestrationService: { runSlaEscalationScan: ReturnType<typeof vi.fn> };
   let clientServicesRenewalInvoice: { runDueRenewalInvoices: ReturnType<typeof vi.fn> };
-  let lease: { runWithLease: ReturnType<typeof vi.fn> };
+    let messengerOutboundReconcile: { reconcile: ReturnType<typeof vi.fn> };
+    let lease: { runWithLease: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     prisma = createMockPrisma();
@@ -81,6 +82,16 @@ describe('SchedulerService', () => {
         refreshedPayableCount: 0,
       }),
     };
+    messengerOutboundReconcile = {
+      reconcile: vi.fn().mockResolvedValue({
+        scanned: 0,
+        enqueued: 0,
+        repaired: 0,
+        manualReview: 0,
+        invalid: 0,
+        errors: 0,
+      }),
+    };
     lease = {
       runWithLease: vi.fn(async (_opts, handler) => {
         const abort = new AbortController();
@@ -113,6 +124,7 @@ describe('SchedulerService', () => {
       { reconcileOrphans: vi.fn() } as never,
       { renewExpiringWatches: vi.fn() } as never,
       { enqueueActiveMailboxSyncs: vi.fn() } as never,
+      messengerOutboundReconcile as never,
       lease as never,
     );
   });
@@ -195,6 +207,18 @@ describe('SchedulerService', () => {
       const result = await service.runSupportSlaEscalation();
       expect(supportSlaOrchestrationService.runSlaEscalationScan).toHaveBeenCalled();
       expect(result.status).toBe('SUCCEEDED');
+    });
+  });
+
+  describe('runMessengerOutboundReconcile', () => {
+    it('delegates to MessengerOutboundReconcileService under lease', async () => {
+      const result = await service.runMessengerOutboundReconcile();
+      expect(messengerOutboundReconcile.reconcile).toHaveBeenCalled();
+      expect(result.status).toBe('SUCCEEDED');
+      expect(lease.runWithLease).toHaveBeenCalledWith(
+        expect.objectContaining({ jobName: 'messenger-outbound-reconcile' }),
+        expect.any(Function),
+      );
     });
   });
 });

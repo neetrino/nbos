@@ -4,6 +4,7 @@ import type {
   MessengerCoreConversationRow,
   MessengerCoreMessageRow,
 } from './messenger-core';
+import { listClientMessengerDelta, type MessengerDeltaPage } from './messenger-core-delta';
 
 export type MessengerClientSection = 'inbox' | 'sales' | 'clients' | 'collections';
 
@@ -36,12 +37,39 @@ export const messengerClientApi = {
     q?: string;
     filter?: MessengerClientListFilter;
     provider?: MessengerClientProvider;
-  }): Promise<{ items: MessengerClientConversationRow[] }> {
-    const resp = await api.get<{ items: MessengerClientConversationRow[] }>(
-      `${CLIENT_ROOT}/conversations`,
-      { params },
-    );
+    cursor?: string;
+  }): Promise<{ items: MessengerClientConversationRow[]; hasMore?: boolean; nextCursor?: string }> {
+    const resp = await api.get<{
+      items: MessengerClientConversationRow[];
+      hasMore?: boolean;
+      nextCursor?: string;
+    }>(`${CLIENT_ROOT}/conversations`, { params });
     return resp.data;
+  },
+
+  async bootstrap(): Promise<{
+    summaries: { items: MessengerClientConversationRow[]; hasMore?: boolean };
+    collections: MessengerCoreCollectionRow[];
+    recoveryMode?: 'FULL' | 'DELTA' | null;
+    checkpoint?: string | null;
+    authorizationEpoch?: string | null;
+  }> {
+    const resp = await api.post<{
+      summaries: { items: MessengerClientConversationRow[]; hasMore?: boolean };
+      collections: MessengerCoreCollectionRow[];
+      recoveryMode?: 'FULL' | 'DELTA' | null;
+      checkpoint?: string | null;
+      authorizationEpoch?: string | null;
+    }>(`${CLIENT_ROOT}/bootstrap`);
+    return resp.data;
+  },
+
+  async listDelta(params: {
+    after: string;
+    cursor?: string;
+    authorizationEpoch?: string;
+  }): Promise<MessengerDeltaPage<MessengerClientConversationRow>> {
+    return listClientMessengerDelta(params);
   },
 
   async getConversation(id: string): Promise<MessengerClientConversationRow> {

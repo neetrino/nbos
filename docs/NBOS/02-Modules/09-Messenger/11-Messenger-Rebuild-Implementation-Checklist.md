@@ -648,3 +648,17 @@ These apply to every slice touching persistence or existing runtime.
 | 11 — Hardening/cleanup readiness | `PLANNED`  | —                                               | —                                         |
 
 Status changes must follow `12-Messenger-Rebuild-Execution-Strategy.md`.
+
+## 4. Modernization Phase 6 (engineering audit)
+
+Not a rebuild slice. Implementer evidence:
+`33-Messenger-Modernization-Final-Evidence.md`. Manual checklist:
+`34-Messenger-Phase6-Browser-Checklist.md`.
+
+- [x] Automated request/query/cardinality/UTF-8/outbound/Socket.IO evidence files exist (implementer).
+- [ ] Independent master `VERIFIED PASS`.
+- [ ] Live browser checklist executed.
+- [ ] Live `EXPLAIN` on isolated PostgreSQL.
+- [x] Production `next build` recorded by the implementer validation report (local PASS; not a production deploy).
+
+Slice 11 remains `PLANNED`. Do not treat Phase 6 as rebuild ACCEPTED.

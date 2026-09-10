@@ -24,12 +24,49 @@ function messageRow(status: string) {
   };
 }
 
-function createAckPrisma(initialStatus: string) {
+function createAckPrisma(initialStatus: string, commandStatus = 'PENDING') {
   const stored = { status: initialStatus };
   const prisma = {
     messengerMessageExternalRef: {
       findUnique: vi.fn().mockResolvedValue({ messageId: 'msg-1' }),
     },
+    messengerCommand: {
+      findUnique: vi.fn().mockResolvedValue({
+        id: 'cmd-1',
+        idempotencyKey: 'core-wa-send:msg-1',
+        kind: 'SEND_MESSAGE',
+        status: commandStatus,
+        resultMessageId: 'msg-1',
+        conversationId: 'conv-1',
+        payload: null,
+        firstAttemptAt: null,
+        createdAt: new Date(),
+        invalidReason: null,
+        nextReconcileAt: null,
+        dispatchToken: null,
+        dispatchClaimedAt: null,
+      }),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      update: vi.fn().mockResolvedValue({}),
+    },
+    $queryRaw: vi.fn().mockResolvedValue([
+      {
+        id: 'cmd-1',
+        idempotencyKey: 'core-wa-send:msg-1',
+        kind: 'SEND_MESSAGE',
+        status: commandStatus,
+        resultMessageId: 'msg-1',
+        conversationId: 'conv-1',
+        payload: null,
+        firstAttemptAt: null,
+        createdAt: new Date(),
+        invalidReason: null,
+        nextReconcileAt: null,
+        dispatchToken: null,
+        dispatchClaimedAt: null,
+      },
+    ]),
+    auditLog: { create: vi.fn().mockResolvedValue({ id: 'a1' }) },
     messengerMessage: {
       findUnique: vi.fn(async () => messageRow(stored.status)),
       updateMany: vi.fn(
@@ -106,8 +143,56 @@ describe('applyWhatsAppAck (FINDING-S8-03)', () => {
     expect(stored.status).toBe('READ');
   });
 
-  it('does not repair FAILED via ACK', async () => {
+  it('audits command COMPLETED on ACK even when message does not advance', async () => {
+    const { prisma } = createAckPrisma('READ');
+    await applyWhatsAppAck(prisma as never, {
+      accountId: ACCOUNT,
+      providerMessageId: PROVIDER_MESSAGE_ID,
+      ack: 1,
+    });
+    expect(prisma.messengerCommand.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: 'COMPLETED' }) }),
+    );
+    expect(prisma.auditLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          action: 'messenger.external_send_completed',
+          actorType: 'AUTOMATION',
+          actorId: 'messenger.whatsapp-gateway',
+        }),
+      }),
+    );
+  });
+
+  it('advances Message after COMPLETED command without a second completion audit', async () => {
+    const { prisma, stored } = createAckPrisma('SENT', 'COMPLETED');
+    const result = await applyWhatsAppAck(prisma as never, {
+      accountId: ACCOUNT,
+      providerMessageId: PROVIDER_MESSAGE_ID,
+      ack: 2,
+    });
+    expect(result.skipped).toBe(false);
+    expect(stored.status).toBe('DELIVERED');
+    expect(prisma.messengerCommand.update).not.toHaveBeenCalled();
+    expect(prisma.auditLog.create).not.toHaveBeenCalled();
+  });
+
+  it('repairs FAILED Message from an owned-ref ACK and completes the matching command', async () => {
     const { prisma, stored } = createAckPrisma('FAILED');
+    const result = await applyWhatsAppAck(prisma as never, {
+      accountId: ACCOUNT,
+      providerMessageId: PROVIDER_MESSAGE_ID,
+      ack: 2,
+    });
+    expect(result.skipped).toBe(false);
+    expect(stored.status).toBe('DELIVERED');
+    expect(prisma.messengerCommand.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: 'COMPLETED' }) }),
+    );
+  });
+
+  it('keeps CANCELLED Message on ACK and still completes the matching command', async () => {
+    const { prisma, stored } = createAckPrisma('CANCELLED');
     const result = await applyWhatsAppAck(prisma as never, {
       accountId: ACCOUNT,
       providerMessageId: PROVIDER_MESSAGE_ID,
@@ -115,8 +200,10 @@ describe('applyWhatsAppAck (FINDING-S8-03)', () => {
     });
     expect(result.skipped).toBe(true);
     expect(result.skipReason).toBe('ACK_NOT_ADVANCED');
-    expect(stored.status).toBe('FAILED');
-    expect(prisma.messengerMessage.updateMany).not.toHaveBeenCalled();
+    expect(stored.status).toBe('CANCELLED');
+    expect(prisma.messengerCommand.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: 'COMPLETED' }) }),
+    );
   });
 
   it('returns MESSAGE_NOT_FOUND when the provider ref is missing (FINDING-S8-07)', async () => {

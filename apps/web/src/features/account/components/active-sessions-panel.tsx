@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { MonitorSmartphone } from 'lucide-react';
-import { signOut } from 'next-auth/react';
+import { signOutClient } from '@/lib/auth/session-sign-out';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -48,7 +48,7 @@ export function ActiveSessionsPanel() {
       await authApi.revokeSession(row.id);
       if (row.current) {
         toast.success('Signed out this device.');
-        await signOut({ callbackUrl: '/sign-in' });
+        await signOutClient();
         return;
       }
       toast.success('Device signed out.');

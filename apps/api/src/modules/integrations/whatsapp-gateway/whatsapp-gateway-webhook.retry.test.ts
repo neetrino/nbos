@@ -89,11 +89,34 @@ describe('WhatsApp webhook retryable ACK miss (FINDING-S8-07)', () => {
           return { count: 1 };
         }),
       },
+      messengerCommand: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'cmd-1',
+          idempotencyKey: 'core-wa-send:msg-1',
+          kind: 'SEND_MESSAGE',
+          status: 'PENDING',
+          resultMessageId: 'msg-1',
+          conversationId: 'conv-1',
+        }),
+        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+        update: vi.fn().mockResolvedValue({}),
+      },
+      $queryRaw: vi.fn().mockResolvedValue([
+        {
+          id: 'cmd-1',
+          idempotencyKey: 'core-wa-send:msg-1',
+          kind: 'SEND_MESSAGE',
+          status: 'PENDING',
+          resultMessageId: 'msg-1',
+          conversationId: 'conv-1',
+        },
+      ]),
+      auditLog: { create: vi.fn().mockResolvedValue({ id: 'a1' }) },
     };
     const service = new WhatsAppGatewayWebhookService(
       prisma as never,
       { requireWebhookSigningSecret: vi.fn().mockResolvedValue(SECRET) } as never,
-      { emitCoreConversationMessage: vi.fn() } as never,
+      { emitCoreConversationMessage: vi.fn(), publishPersistedCoreMessage: vi.fn() } as never,
     );
     const first = signedCall(ackBody());
     await expect(
@@ -121,10 +144,14 @@ describe('WhatsApp webhook retryable ACK miss (FINDING-S8-07)', () => {
         update: vi.fn().mockResolvedValue({}),
       },
     };
+    const gateway = {
+      emitCoreConversationMessage: vi.fn(),
+      publishPersistedCoreMessage: vi.fn(),
+    };
     const service = new WhatsAppGatewayWebhookService(
       prisma as never,
       { requireWebhookSigningSecret: vi.fn().mockResolvedValue(SECRET) } as never,
-      { emitCoreConversationMessage: vi.fn() } as never,
+      gateway as never,
     );
     const call = signedCall(echoBody());
     await expect(service.handleWebhook(call.raw, call.headers, call.body)).resolves.toEqual({
@@ -135,6 +162,8 @@ describe('WhatsApp webhook retryable ACK miss (FINDING-S8-07)', () => {
         data: expect.objectContaining({ status: 'SKIPPED', skipReason: 'FROM_ME_ECHO' }),
       }),
     );
+    expect(gateway.publishPersistedCoreMessage).not.toHaveBeenCalled();
+    expect(gateway.emitCoreConversationMessage).not.toHaveBeenCalled();
   });
 
   it('returns 503 with WEBHOOK_MESSAGE_NOT_READY on ACK before ref', async () => {
@@ -148,7 +177,7 @@ describe('WhatsApp webhook retryable ACK miss (FINDING-S8-07)', () => {
     const service = new WhatsAppGatewayWebhookService(
       prisma as never,
       { requireWebhookSigningSecret: vi.fn().mockResolvedValue(SECRET) } as never,
-      { emitCoreConversationMessage: vi.fn() } as never,
+      { emitCoreConversationMessage: vi.fn(), publishPersistedCoreMessage: vi.fn() } as never,
     );
     const call = signedCall(ackBody());
     try {

@@ -14,6 +14,14 @@ import { assertForwardTargetZone } from './messenger-core-reference-access';
 import { MESSENGER_CORE_FORWARD_CLIENT_TARGET_FORBIDDEN } from './messenger-core.constants';
 import { MessengerCoreActionsService } from './messenger-core-actions.service';
 
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async <T>(prisma: T, fn: (tx: T) => Promise<unknown>) => fn(prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpGlobalConversationRevision: async () => 1n,
+}));
+
 describe('Slice 6 message order', () => {
   it('sorts multi-select by createdAt asc then id', () => {
     const later = { id: 'a', createdAt: new Date('2026-08-31T12:00:00.000Z') };
@@ -260,7 +268,7 @@ describe('Slice 6 actions service negatives', () => {
     requireWrite: vi.fn(),
     requireEditAccess: vi.fn(),
   };
-  const gateway = { emitCoreConversationMessage: vi.fn() };
+  const gateway = { emitCoreConversationMessage: vi.fn(), publishPersistedCoreMessage: vi.fn() };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -307,6 +315,7 @@ describe('Slice 6 actions service negatives', () => {
     await expect(service.forwardMessages('e1', 'conv-target', ['src-1'])).rejects.toBeInstanceOf(
       ForbiddenException,
     );
+    expect(gateway.publishPersistedCoreMessage).not.toHaveBeenCalled();
     expect(gateway.emitCoreConversationMessage).not.toHaveBeenCalled();
   });
 });

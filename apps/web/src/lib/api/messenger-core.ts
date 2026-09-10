@@ -1,4 +1,6 @@
 import { api } from '../api';
+import { bootstrapInternalMessenger } from './messenger-core-bootstrap';
+import { listInternalMessengerDelta } from './messenger-core-delta';
 
 export type MessengerCoreConversationType =
   | 'PROJECT_GENERAL'
@@ -102,13 +104,24 @@ export const messengerCoreApi = {
     section?: MessengerInternalSection;
     q?: string;
     filter?: 'unread' | 'mentions';
-  }): Promise<{ items: MessengerCoreConversationRow[]; mentionsAvailable: boolean }> {
+    cursor?: string;
+  }): Promise<{
+    items: MessengerCoreConversationRow[];
+    mentionsAvailable: boolean;
+    hasMore?: boolean;
+    nextCursor?: string;
+  }> {
     const resp = await api.get<{
       items: MessengerCoreConversationRow[];
       mentionsAvailable: boolean;
+      hasMore?: boolean;
+      nextCursor?: string;
     }>(`${INTERNAL_ROOT}/conversations`, { params });
     return resp.data;
   },
+
+  bootstrap: bootstrapInternalMessenger,
+  listDelta: listInternalMessengerDelta,
 
   async createConversation(body: {
     type: 'INTERNAL_GROUP' | 'DIRECT';

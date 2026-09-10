@@ -9,6 +9,14 @@ import {
 } from './messenger-core-entity-ensure.ops';
 import { productCanonicalKey, workspaceCanonicalKey } from './messenger-core-canonical-key';
 
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async (_prisma: unknown, fn: (tx: unknown) => unknown) => fn(_prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpGlobalConversationRevision: vi.fn(async () => 1n),
+}));
+
 const PRODUCT_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001';
 const WORKSPACE_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002';
 const STANDALONE_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003';

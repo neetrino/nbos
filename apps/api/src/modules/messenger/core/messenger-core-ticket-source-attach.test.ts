@@ -13,7 +13,7 @@ describe('FINDING-S10-03 attachTicketSources access', () => {
     requireWrite: vi.fn(),
     requireEditAccess: vi.fn(),
   };
-  const gateway = { emitCoreConversationMessage: vi.fn() };
+  const gateway = { emitCoreConversationMessage: vi.fn(), publishPersistedCoreMessage: vi.fn() };
 
   beforeEach(() => {
     vi.clearAllMocks();

@@ -18,6 +18,14 @@ vi.mock('./messenger-core-collection.ops', () => ({
   addCoreCollectionItem: vi.fn(async () => ({ id: 'item-1' })),
 }));
 
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async (_prisma: unknown, fn: (tx: unknown) => unknown) => fn(_prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpTargetedFavoriteRevision: vi.fn(async () => 1n),
+}));
+
 describe('Internal Favorites toggle', () => {
   it('rejects Client conversations', async () => {
     const prisma = {

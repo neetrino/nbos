@@ -1,12 +1,21 @@
 import { PrismaClient, type MessengerMessageStatus } from '@nbos/database';
 import { mapCoreMessage } from './messenger-core-message-map';
+import { runMessengerWriteTx } from './messenger-core-revision-tx';
 import type { MessengerCoreMessageDto } from './messenger-core.types';
+import { messengerGatewayAuditActor } from './messenger-outbound-audit';
+import { isWhatsAppProofMessageStatus } from './messenger-outbound-command-claim';
 import {
-  canAdvanceWhatsAppDelivery,
+  lockCanonicalWhatsAppCommand,
+  lockedCommandMatchesResolvedMessage,
+} from './messenger-outbound-command-lock';
+import { completeLockedCommand } from './messenger-outbound-outcome-reducer';
+import {
   mapWhatsAppAckToStatus,
+  whatsAppOutboundIdempotencyKey,
+  whatsAppStatusesAllowedForOwnedProofWrite,
   WHATSAPP_LIFECYCLE_MESSAGE_NOT_FOUND,
-  whatsAppStatusesStrictlyBelow,
 } from './messenger-wa-identity';
+import { casOwnedProofStatus } from './messenger-wa-outbound-cas';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -29,30 +38,49 @@ export async function applyWhatsAppAck(
       skipReason: next ? WHATSAPP_LIFECYCLE_MESSAGE_NOT_FOUND : 'UNKNOWN_ACK',
     };
   }
-  if (!canAdvanceWhatsAppDelivery(found.status, next)) {
-    return { message: mapCoreMessage(found), skipped: true, skipReason: 'ACK_NOT_ADVANCED' };
+  const messageChanged = await runMessengerWriteTx(prisma, (tx) =>
+    persistWhatsAppAckProof(tx, found, next),
+  );
+  const current = (await reloadLifecycleMessage(prisma, found.id)) ?? found;
+  if (!messageChanged) {
+    return { message: mapCoreMessage(current), skipped: true, skipReason: 'ACK_NOT_ADVANCED' };
   }
-  const advanced = await prisma.messengerMessage.updateMany({
-    where: { id: found.id, status: { in: whatsAppStatusesStrictlyBelow(next) } },
-    data: { status: next },
+  return { message: mapCoreMessage(current), skipped: false, skipReason: null };
+}
+
+async function persistWhatsAppAckProof(
+  prisma: PrismaLike,
+  found: { id: string; conversationId: string; status: MessengerMessageStatus },
+  next: MessengerMessageStatus,
+): Promise<boolean> {
+  const live = await lockCanonicalWhatsAppCommand(prisma, {
+    idempotencyKey: whatsAppOutboundIdempotencyKey(found.id),
   });
-  if (advanced.count === 0) {
-    const current = await reloadLifecycleMessage(prisma, found.id);
-    return {
-      message: current ? mapCoreMessage(current) : mapCoreMessage(found),
-      skipped: true,
-      skipReason: 'ACK_NOT_ADVANCED',
-    };
+  const row = await prisma.messengerMessage.findUnique({
+    where: { id: found.id },
+    select: { status: true },
+  });
+  const from = row?.status ?? found.status;
+  const allowed = whatsAppStatusesAllowedForOwnedProofWrite(next);
+  const messageChanged =
+    allowed.includes(from) && (await casOwnedProofStatus(prisma, found.id, next));
+  const after = messageChanged ? next : from;
+  const commandMatched =
+    live != null &&
+    lockedCommandMatchesResolvedMessage(live, {
+      messageId: found.id,
+      conversationId: found.conversationId,
+    });
+  if (commandMatched && (isWhatsAppProofMessageStatus(after) || after === 'CANCELLED')) {
+    await completeLockedCommand(
+      prisma,
+      live,
+      { messageId: found.id, conversationId: found.conversationId },
+      messengerGatewayAuditActor(),
+      messageChanged ? next : undefined,
+    );
   }
-  const updated = await reloadLifecycleMessage(prisma, found.id);
-  if (!updated) {
-    return {
-      message: mapCoreMessage(found),
-      skipped: true,
-      skipReason: WHATSAPP_LIFECYCLE_MESSAGE_NOT_FOUND,
-    };
-  }
-  return { message: mapCoreMessage(updated), skipped: false, skipReason: null };
+  return messageChanged;
 }
 
 export async function applyWhatsAppEdit(

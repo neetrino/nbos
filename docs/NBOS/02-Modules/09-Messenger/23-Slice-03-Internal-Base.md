@@ -217,6 +217,20 @@ Internal `POST collections/:id/members` and `POST collections/:id/items` use `ad
 
 Internal GET conversation and list items expose `canWrite` from `evaluateMessengerCoreAccess` (list uses the same write rule). Composer uses `canWrite`, not module EDIT alone. Persist ACL stays server-side.
 
+## Browser persistence (Phase 5)
+
+Client-only IndexedDB restore for Internal/Client inbox lists. Persisted state is never authoritative.
+
+- Envelope `schemaVersion` `2` with immutable `capturedAt`; database name `nbos-messenger-cache` (no identity in the name); records keyed by authenticated employee/session id
+- Retention: 24 hours (`MESSENGER_PERSISTENCE_MAX_AGE_MS`) measured from envelope `capturedAt`. Capture omits query rows that are already expired/invalid so a mixed envelope is never self-invalid. Parse omits only safe-expired query rows so remaining fresh canonical rows can restore; malformed/unknown/unsafe companions still reject the envelope. A whole envelope older than 24h still rejects. Checkpoint-only envelopes are not persisted. An authenticated identity that is not a safe persist key settles without IDB (HTTP remains authoritative)
+- Multi-tab last-write: one IndexedDB readwrite compare-and-write (memory backend matches). Recency is `capturedAt` (equal capture is first-write-wins). Channel notices are advisory and identity-scoped
+- Allowlist: exact Internal/Client list DTOs, collection-list DTOs (`id/name/visibility/zone/ownerEmployeeId`), and safe HTTP checkpoints. Unknown keys are rejected. Persisted query families are only the four canonical inbox keys (Internal all-dataset, Client default inbox `q=''`, INTERNAL collections, CLIENT collections). Search/filter/provider variants are not persisted
+- Ready state carries the prepared/session identity. Messenger queries enable only when those identities match and hydration has settled. Account switch withholds the app subtree until a layout-phase purge prepares the new identity
+- Restore can render immediately after the gate; existing bootstrap/delta recovery then reconciles. Late IDB reads cannot overwrite newer QueryClient data
+- Logout (`signOutClient`) purges memory synchronously and starts IndexedDB clear best-effort without delaying NextAuth/navigation. Unauthenticated session also withholds children while old identity memory remains
+- Rollout/rollback: set `NEXT_PUBLIC_MESSENGER_PERSISTENCE=0` on web. No data migration. Stale IDB is ignored. Browser-side storage is not encryption-at-rest
+- Phase 6 request/payload/cardinality evidence: `33-Messenger-Modernization-Final-Evidence.md`. Manual browser checklist: `34-Messenger-Phase6-Browser-Checklist.md`.
+
 ## Final status
 
 VERIFIED

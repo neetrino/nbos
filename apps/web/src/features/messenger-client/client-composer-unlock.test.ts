@@ -6,6 +6,11 @@ import {
   relockComposerOnConversationChange,
 } from './client-composer-unlock';
 import {
+  applyClientSectionChange,
+  clientComposerAfterSectionChange,
+  createClientSessionSnapshot,
+} from './client-section-navigation';
+import {
   CLIENT_COMPOSER_DRAFT_STORE_KEY,
   INTERNAL_COMPOSER_DRAFT_STORE_KEY,
 } from './client-messenger.constants';
@@ -32,6 +37,24 @@ describe('Client locked composer', () => {
         unlockedConversationId: 'conv-a',
       }),
     ).toBe(false);
+  });
+
+  it('relocks on section change even when the conversation id stays the same', () => {
+    const next = applyClientSectionChange(
+      {
+        ...createClientSessionSnapshot('inbox'),
+        activeId: 'conv-a',
+        unlockedId: 'conv-a',
+        newMessage: 'draft',
+      },
+      'clients',
+    );
+    expect(relockComposerOnConversationChange('conv-a', 'conv-a')).toBe('conv-a');
+    expect(clientComposerAfterSectionChange()).toEqual({ unlockedId: null, newMessage: '' });
+    expect(next.activeId).toBeNull();
+    expect(next.openedConversation).toBeNull();
+    expect(next.unlockedId).toBeNull();
+    expect(next.newMessage).toBe('');
   });
 
   it('does not share Internal draft storage as Client send-ready text', () => {

@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MessengerCoreClientService } from './messenger-core-client.service';
 import {
@@ -25,6 +25,17 @@ vi.mock('./messenger-meta-mapper.ops', () => ({
 vi.mock('./messenger-core-client-list.ops', () => ({
   listAccessibleClientConversations: (...args: unknown[]) =>
     listAccessibleClientConversations(...args),
+}));
+
+vi.mock('./messenger-core-favorites-ensure.ops', () => ({
+  ensureClientFavoritesCollection: vi.fn(async () => ({
+    id: 'fav-c',
+    name: 'Favorites',
+    visibility: 'PERSONAL',
+    zone: 'CLIENT',
+    ownerEmployeeId: 'e1',
+  })),
+  ensureInternalFavoritesCollection: vi.fn(),
 }));
 
 vi.mock('./messenger-core-internal-messages.ops', () => ({
@@ -67,6 +78,9 @@ function createService() {
     messengerConversationLink: { findMany: vi.fn().mockResolvedValue([]) },
     messengerChannelMessage: { create: vi.fn() },
     metaMessage: { create: vi.fn() },
+    messengerConversationCollection: { findMany: vi.fn().mockResolvedValue([]) },
+    $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn(prisma)),
+    $queryRaw: vi.fn().mockResolvedValue([{ revision: 0n }]),
   };
   const core = {
     getConversation: vi.fn(),
@@ -123,6 +137,40 @@ describe('MessengerCoreClientService', () => {
     await service.listConversations('e1', { section: 'inbox' });
     expect(mapAllMetaSalesToCore).not.toHaveBeenCalled();
     expect(listAccessibleClientConversations).toHaveBeenCalled();
+  });
+
+  it('bootstraps Client Inbox through the same VIEW gate and list mapper', async () => {
+    const { service } = createService();
+    await service.bootstrap('e1');
+    expect(listAccessibleClientConversations).toHaveBeenCalledWith(
+      expect.anything(),
+      'e1',
+      'ALL',
+      'ALL',
+      { section: 'inbox' },
+      undefined,
+    );
+  });
+
+  it('makes Client delta unavailable while recovery is disabled', async () => {
+    const previous = process.env.MESSENGER_DELTA_RECOVERY_ENABLED;
+    delete process.env.MESSENGER_DELTA_RECOVERY_ENABLED;
+    const { service } = createService();
+    try {
+      await expect(service.listDelta('e1', { after: '0' })).rejects.toBeInstanceOf(
+        ServiceUnavailableException,
+      );
+    } finally {
+      if (previous === undefined) delete process.env.MESSENGER_DELTA_RECOVERY_ENABLED;
+      else process.env.MESSENGER_DELTA_RECOVERY_ENABLED = previous;
+    }
+  });
+
+  it('rejects Client bootstrap without MESSENGER.VIEW', async () => {
+    loadMessengerLegacyAccess.mockResolvedValue(null);
+    const { service } = createService();
+    await expect(service.bootstrap('e1')).rejects.toBeInstanceOf(ForbiddenException);
+    expect(listAccessibleClientConversations).not.toHaveBeenCalled();
   });
 
   it('persists through persistAndBroadcast arity 1 with senderId', async () => {

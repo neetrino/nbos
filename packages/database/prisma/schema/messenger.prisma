@@ -213,6 +213,8 @@ model MessengerConversation {
   collectionItems              MessengerConversationCollectionItem[]
   productCommunicationBindings ProductCommunicationBinding[]
   attentions                   MessengerConversationAttention[]
+  conversationRevisions         MessengerConversationRevision[]
+  employeeConversationRevisions MessengerEmployeeConversationRevision[]
 
   @@unique([directParticipantLowId, directParticipantHighId])
   @@index([type, status])

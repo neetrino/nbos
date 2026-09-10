@@ -1,6 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { deliverFinanceClientReminder } from './messenger-finance-reminder.ops';
 
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async <T>(prisma: T, fn: (tx: T) => Promise<unknown>) => fn(prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpGlobalConversationRevision: async () => 1n,
+}));
+
 describe('Slice 10 finance reminder Core persist', () => {
   it('persists SYSTEM outbound on explicit FINANCE conversation, not WORK', async () => {
     const prisma = reminderPrisma({
@@ -91,7 +99,23 @@ function reminderPrisma(input: { financeChat: string | null; workChat: string })
       }),
       update: vi.fn(),
     },
-    messengerCommand: { upsert: vi.fn().mockResolvedValue({ id: 'cmd-1', status: 'PENDING' }) },
+    messengerCommand: {
+      findUnique: vi
+        .fn()
+        .mockResolvedValueOnce(null)
+        .mockImplementation(async () => ({
+          id: 'cmd-1',
+          status: 'PENDING',
+          conversationId: input.financeChat ? 'conv-finance' : 'conv-work',
+          resultMessageId: 'msg-1',
+          kind: 'SEND_MESSAGE',
+          payload: { accountId: 'acc', chatId: input.financeChat ?? input.workChat },
+        })),
+      create: vi.fn().mockResolvedValue({ id: 'cmd-1', status: 'PENDING' }),
+      createMany: vi.fn().mockResolvedValue({ count: 1 }),
+    },
+    auditLog: { create: vi.fn().mockResolvedValue({ id: 'a1' }) },
+    $executeRaw: vi.fn().mockResolvedValue(1),
   };
 }
 

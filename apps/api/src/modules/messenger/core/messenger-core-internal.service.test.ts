@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MessengerCoreInternalService } from './messenger-core-internal.service';
 import { MESSENGER_CORE_INTERNAL_CLIENT_ZONE_FORBIDDEN } from './messenger-core.constants';
@@ -25,6 +25,17 @@ vi.mock('./messenger-legacy-mapper.ops', () => ({
 vi.mock('./messenger-core-internal-list.ops', () => ({
   listAccessibleInternalConversations: (...args: unknown[]) =>
     listAccessibleInternalConversations(...args),
+}));
+
+vi.mock('./messenger-core-favorites-ensure.ops', () => ({
+  ensureInternalFavoritesCollection: vi.fn(async () => ({
+    id: 'fav-1',
+    name: 'Favorites',
+    visibility: 'PERSONAL',
+    zone: 'INTERNAL',
+    ownerEmployeeId: 'e1',
+  })),
+  ensureClientFavoritesCollection: vi.fn(),
 }));
 
 vi.mock('./messenger-core-internal-messages.ops', () => ({
@@ -62,6 +73,9 @@ function createService() {
     messengerChannelMessage: { create: vi.fn() },
     messengerDirectMessage: { create: vi.fn() },
     messengerConversationLink: { findMany: vi.fn().mockResolvedValue([]) },
+    messengerConversationCollection: { findMany: vi.fn().mockResolvedValue([]) },
+    $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn(prisma)),
+    $queryRaw: vi.fn().mockResolvedValue([{ revision: 0n }]),
   };
   const core = {
     getConversation: vi.fn(),
@@ -163,6 +177,42 @@ describe('MessengerCoreInternalService', () => {
     await service.listConversations('e1', { section: 'all' });
     expect(mapAllLegacyInternalToCore).not.toHaveBeenCalled();
     expect(listAccessibleInternalConversations).toHaveBeenCalled();
+  });
+
+  it('bootstraps Internal All through the same VIEW gate and list mapper', async () => {
+    const { service } = createService();
+    const tasksAccess = { employeeId: 'e1', departmentIds: [], viewScope: 'OWN' as const };
+    await service.bootstrap('e1', tasksAccess);
+    expect(listAccessibleInternalConversations).toHaveBeenCalledWith(
+      expect.anything(),
+      'e1',
+      'ALL',
+      { section: 'all' },
+      'ALL',
+      tasksAccess,
+      undefined,
+    );
+  });
+
+  it('makes Internal delta unavailable while recovery is disabled', async () => {
+    const previous = process.env.MESSENGER_DELTA_RECOVERY_ENABLED;
+    delete process.env.MESSENGER_DELTA_RECOVERY_ENABLED;
+    const { service } = createService();
+    try {
+      await expect(service.listDelta('e1', { after: '0' })).rejects.toBeInstanceOf(
+        ServiceUnavailableException,
+      );
+    } finally {
+      if (previous === undefined) delete process.env.MESSENGER_DELTA_RECOVERY_ENABLED;
+      else process.env.MESSENGER_DELTA_RECOVERY_ENABLED = previous;
+    }
+  });
+
+  it('rejects Internal bootstrap without MESSENGER.VIEW', async () => {
+    loadMessengerLegacyAccess.mockResolvedValue(null);
+    const { service } = createService();
+    await expect(service.bootstrap('e1')).rejects.toBeInstanceOf(ForbiddenException);
+    expect(listAccessibleInternalConversations).not.toHaveBeenCalled();
   });
 
   it('exposes canWrite from conversation ACL on Internal GET', async () => {

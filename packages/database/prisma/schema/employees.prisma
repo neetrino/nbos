@@ -113,6 +113,7 @@ model Employee {
   messengerConversationCollectionMembers MessengerConversationCollectionMember[] @relation("MessengerConversationCollectionMemberEmployee")
   messengerAttentionsOwned     MessengerConversationAttention[]      @relation("MessengerAttentionOwner")
   messengerAttentionsAssigned  MessengerConversationAttention[]      @relation("MessengerAttentionAssignedBy")
+  messengerEmployeeConversationRevisions MessengerEmployeeConversationRevision[] @relation("MessengerEmployeeConversationRevisionEmployee")
   mailAccountsOwned                MailAccount[]                       @relation("MailAccountOwner")
   mailAccountsCreated              MailAccount[]                       @relation("MailAccountCreatedBy")
   mailDeliveryLogsActed            MailDeliveryLog[]                   @relation("MailDeliveryLogActor")

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { persistBoundDestination } from '../../integrations/whatsapp-gateway/product-whatsapp-bind.ops';
 import { resolveClientDestination } from './product-communication-resolver';
 import { dualWriteLegacyWorkBinding } from './product-communication-legacy-write.ops';
@@ -6,6 +6,14 @@ import {
   createSlice9RuntimeStore,
   SLICE9_GROUP_1,
 } from '../../integrations/whatsapp-gateway/product-whatsapp-runtime.store';
+
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async <T>(prisma: T, fn: (tx: T) => Promise<unknown>) => fn(prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpGlobalConversationRevision: async () => 1n,
+}));
 
 describe('FINDING-S9-06 dual-write unique groupChatId', () => {
   it('create unique-constraint returns null without throwing', async () => {

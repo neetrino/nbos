@@ -1,6 +1,9 @@
 import { PrismaClient, type Prisma } from '@nbos/database';
-import { RESOURCE_GRANT_RESOURCE_TYPE } from '@nbos/shared';
-import { activeResourceAccessGrantWhere } from '../../credentials/credential-active-grant.where';
+import {
+  createMessengerGrantSnapshot,
+  viewGrantIdsFromSnapshot,
+  type MessengerGrantSnapshot,
+} from './messenger-core-grant-epoch';
 import {
   MESSENGER_CORE_CLIENT_LIST_PAGE_SIZE,
   MESSENGER_CORE_CLIENT_ZONE,
@@ -11,12 +14,18 @@ import type {
   MessengerClientListQuery,
   MessengerClientListResult,
 } from './messenger-core-client.types';
-import type { MessengerAttentionDto } from './messenger-core-attention.types';
-import {
-  attentionsFromListRow,
-  CLIENT_LIST_ATTENTION_INCLUDE,
-} from './messenger-core-client-list-attention';
 import { listAssignedConversationIds } from './messenger-core-client-list-assigned.ops';
+import { clientListInclude, mapClientListItem } from './messenger-core-client-list-map';
+import { selectClientFilteredConversationIds } from './messenger-core-client-list-filtered.ops';
+import {
+  MESSENGER_LIST_ORDER_BY,
+  messengerListContinuation,
+  parseMessengerListCursor,
+  prismaAfterListCursor,
+  sliceMessengerListPage,
+  takeListPagePlusOne,
+  type MessengerListCursor,
+} from './messenger-core-list-page';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -26,8 +35,11 @@ export async function listAccessibleClientConversations(
   clientReadScope: string,
   clientSendScope: string,
   query: MessengerClientListQuery,
+  grants?: MessengerGrantSnapshot,
 ): Promise<MessengerClientListResult> {
+  const snap = grants ?? (await createMessengerGrantSnapshot(prisma, employeeId, 'CLIENT'));
   const pageSize = query.pageSize ?? MESSENGER_CORE_CLIENT_LIST_PAGE_SIZE;
+  const cursor = parseMessengerListCursor(query.cursor);
   if (query.filter === 'assigned') {
     return listAssignedClientConversations(
       prisma,
@@ -36,18 +48,114 @@ export async function listAccessibleClientConversations(
       clientSendScope,
       query,
       pageSize,
+      cursor,
+      snap,
     );
   }
-  const extra = query.filter === 'unread' || query.filter === 'needs_response';
-  const where = await clientListWhere(prisma, employeeId, clientReadScope, query);
+  if (query.filter === 'unread' || query.filter === 'needs_response') {
+    return listClientFilteredPage(
+      prisma,
+      employeeId,
+      clientReadScope,
+      clientSendScope,
+      query,
+      pageSize,
+      cursor,
+      query.filter,
+      snap,
+    );
+  }
+  return listClientPlainPage(
+    prisma,
+    employeeId,
+    clientReadScope,
+    clientSendScope,
+    query,
+    pageSize,
+    cursor,
+    snap,
+  );
+}
+
+export async function listAccessibleClientConversationsByIds(
+  prisma: PrismaLike,
+  employeeId: string,
+  clientReadScope: string,
+  clientSendScope: string,
+  conversationIds: string[],
+  grants?: MessengerGrantSnapshot,
+): Promise<MessengerClientConversationListItem[]> {
+  if (conversationIds.length === 0) return [];
+  const snap = grants ?? (await createMessengerGrantSnapshot(prisma, employeeId, 'CLIENT'));
+  const accessWhere = accessibleClientWhere(employeeId, clientReadScope, snap);
   const rows = await prisma.messengerConversation.findMany({
-    where,
-    orderBy: [{ lastMessageAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
-    take: extra ? pageSize * 5 : pageSize,
+    where: { AND: [accessWhere, { id: { in: conversationIds } }] },
     include: clientListInclude(employeeId),
   });
-  const mapped = rows.map((row) => mapClientListItem(row, clientSendScope));
-  return { items: applyClientListFilter(mapped, query.filter, pageSize) };
+  const byId = new Map(
+    rows.map((row) => [row.id, mapClientListItem(row, employeeId, clientSendScope)]),
+  );
+  return conversationIds.flatMap((id) => {
+    const item = byId.get(id);
+    return item ? [item] : [];
+  });
+}
+
+async function listClientPlainPage(
+  prisma: PrismaLike,
+  employeeId: string,
+  clientReadScope: string,
+  clientSendScope: string,
+  query: MessengerClientListQuery,
+  pageSize: number,
+  cursor: MessengerListCursor | undefined,
+  grants: MessengerGrantSnapshot,
+): Promise<MessengerClientListResult> {
+  const where = clientListWhere(employeeId, clientReadScope, query, cursor, grants);
+  const rows = await prisma.messengerConversation.findMany({
+    where,
+    orderBy: MESSENGER_LIST_ORDER_BY,
+    take: takeListPagePlusOne(pageSize),
+    include: clientListInclude(employeeId),
+  });
+  const page = sliceMessengerListPage(rows, pageSize);
+  const items = page.items.map((row) => mapClientListItem(row, employeeId, clientSendScope));
+  return toClientListResult(items, page);
+}
+
+async function listClientFilteredPage(
+  prisma: PrismaLike,
+  employeeId: string,
+  clientReadScope: string,
+  clientSendScope: string,
+  query: MessengerClientListQuery,
+  pageSize: number,
+  cursor: MessengerListCursor | undefined,
+  kind: 'unread' | 'needs_response',
+  grants: MessengerGrantSnapshot,
+): Promise<MessengerClientListResult> {
+  const grantIds = viewGrantIdsFromSnapshot(grants, clientReadScope === 'ALL' ? 'ALL' : 'OWN');
+  const idRows = await selectClientFilteredConversationIds(prisma, {
+    employeeId,
+    clientReadScope,
+    grantIds,
+    section: query.section,
+    q: query.q,
+    provider: query.provider,
+    cursor,
+    take: takeListPagePlusOne(pageSize),
+    kind,
+  });
+  const page = sliceMessengerListPage(idRows, pageSize);
+  const items = await listAccessibleClientConversationsByIds(
+    prisma,
+    employeeId,
+    clientReadScope,
+    clientSendScope,
+    page.items.map((row) => row.id),
+    grants,
+  );
+  return toClientListResult(items, page);
 }
 
 async function listAssignedClientConversations(
@@ -57,10 +165,12 @@ async function listAssignedClientConversations(
   clientSendScope: string,
   query: MessengerClientListQuery,
   pageSize: number,
+  cursor: MessengerListCursor | undefined,
+  grants: MessengerGrantSnapshot,
 ): Promise<MessengerClientListResult> {
-  const access = await accessibleClientWhere(prisma, employeeId, clientReadScope);
+  const access = accessibleClientWhere(employeeId, clientReadScope, grants);
   const ids = await listAssignedConversationIds(prisma, employeeId, access);
-  if (ids.length === 0) return { items: [] };
+  if (ids.length === 0) return { items: [], hasMore: false };
   const rows = await prisma.messengerConversation.findMany({
     where: {
       AND: [
@@ -69,73 +179,58 @@ async function listAssignedClientConversations(
         sectionWhere(query.section),
         searchWhere(query.q),
         providerWhere(query.provider),
+        cursor ? prismaAfterListCursor(cursor) : {},
       ],
     },
-    orderBy: [{ lastMessageAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
-    take: pageSize,
+    orderBy: MESSENGER_LIST_ORDER_BY,
+    take: takeListPagePlusOne(pageSize),
     include: clientListInclude(employeeId),
   });
-  return { items: rows.map((row) => mapClientListItem(row, clientSendScope)) };
+  const page = sliceMessengerListPage(rows, pageSize);
+  const items = page.items.map((row) => mapClientListItem(row, employeeId, clientSendScope));
+  return toClientListResult(items, page);
 }
 
-export async function listAccessibleClientConversationsByIds(
-  prisma: PrismaLike,
-  employeeId: string,
-  clientReadScope: string,
-  clientSendScope: string,
-  conversationIds: string[],
-): Promise<MessengerClientConversationListItem[]> {
-  if (conversationIds.length === 0) return [];
-  const accessWhere = await accessibleClientWhere(prisma, employeeId, clientReadScope);
-  const rows = await prisma.messengerConversation.findMany({
-    where: { AND: [accessWhere, { id: { in: conversationIds } }] },
-    include: clientListInclude(employeeId),
-  });
-  const byId = new Map(rows.map((row) => [row.id, mapClientListItem(row, clientSendScope)]));
-  return conversationIds.flatMap((id) => {
-    const item = byId.get(id);
-    return item ? [item] : [];
-  });
+function toClientListResult(
+  items: MessengerClientConversationListItem[],
+  page: { items: MessengerListCursor[]; hasMore: boolean },
+): MessengerClientListResult {
+  return { items, ...messengerListContinuation(page) };
 }
 
-async function clientListWhere(
-  prisma: PrismaLike,
+function clientListWhere(
   employeeId: string,
   clientReadScope: string,
   query: MessengerClientListQuery,
-): Promise<Prisma.MessengerConversationWhereInput> {
-  const access = await accessibleClientWhere(prisma, employeeId, clientReadScope);
+  cursor: MessengerListCursor | undefined,
+  grants: MessengerGrantSnapshot,
+): Prisma.MessengerConversationWhereInput {
+  const access = accessibleClientWhere(employeeId, clientReadScope, grants);
   return {
-    AND: [access, sectionWhere(query.section), searchWhere(query.q), providerWhere(query.provider)],
+    AND: [
+      access,
+      sectionWhere(query.section),
+      searchWhere(query.q),
+      providerWhere(query.provider),
+      cursor ? prismaAfterListCursor(cursor) : {},
+    ],
   };
 }
 
-async function accessibleClientWhere(
-  prisma: PrismaLike,
+function accessibleClientWhere(
   employeeId: string,
   clientReadScope: string,
-): Promise<Prisma.MessengerConversationWhereInput> {
+  grants: MessengerGrantSnapshot,
+): Prisma.MessengerConversationWhereInput {
   const base: Prisma.MessengerConversationWhereInput = {
     zone: MESSENGER_CORE_CLIENT_ZONE,
     status: 'ACTIVE',
   };
   if (clientReadScope === 'ALL') return base;
-  const grants = await prisma.resourceAccessGrant.findMany({
-    where: {
-      resourceType: RESOURCE_GRANT_RESOURCE_TYPE.MESSENGER_CONVERSATION,
-      employeeId,
-      level: { in: ['VIEW', 'EDIT'] },
-      ...activeResourceAccessGrantWhere(),
-    },
-    select: { resourceId: true },
-  });
-  return {
-    ...base,
-    OR: [
-      { participants: { some: { employeeId, leftAt: null } } },
-      { id: { in: grants.map((grant) => grant.resourceId) } },
-    ],
-  };
+  const grantIds = viewGrantIdsFromSnapshot(grants, clientReadScope);
+  const participant = { participants: { some: { employeeId, leftAt: null } } };
+  if (grantIds.length === 0) return { ...base, ...participant };
+  return { ...base, OR: [participant, { id: { in: grantIds } }] };
 }
 
 function sectionWhere(
@@ -150,9 +245,7 @@ function sectionWhere(
       ],
     };
   }
-  return {
-    links: { some: { entityType: { in: ['CLIENT', 'PRODUCT'] } } },
-  };
+  return { links: { some: { entityType: { in: ['CLIENT', 'PRODUCT'] } } } };
 }
 
 function searchWhere(q: string | undefined): Prisma.MessengerConversationWhereInput {
@@ -175,89 +268,4 @@ function providerWhere(
 ): Prisma.MessengerConversationWhereInput {
   if (!provider) return {};
   return { externalMappings: { some: { provider } } };
-}
-
-function applyClientListFilter(
-  items: MessengerClientConversationListItem[],
-  filter: MessengerClientListQuery['filter'],
-  pageSize: number,
-): MessengerClientConversationListItem[] {
-  if (filter === 'unread') return items.filter((row) => row.unreadCount > 0).slice(0, pageSize);
-  if (filter === 'needs_response') {
-    return items.filter((row) => row.lastMessageDirection === 'INBOUND').slice(0, pageSize);
-  }
-  return items.slice(0, pageSize);
-}
-
-function clientListInclude(employeeId: string) {
-  return {
-    messages: {
-      where: { deletedAt: null },
-      orderBy: { createdAt: 'desc' as const },
-      take: 1,
-      select: { content: true, direction: true },
-    },
-    readStates: { where: { employeeId }, select: { lastReadAt: true } },
-    userSettings: { where: { employeeId }, select: { favorite: true } },
-    participants: {
-      where: { leftAt: null, employeeId },
-      select: { role: true },
-    },
-    externalMappings: { select: { provider: true }, take: 1 },
-    links: {
-      where: { entityType: 'LEAD' as const, relationType: 'PRIMARY' as const },
-      select: { entityId: true },
-    },
-    ...CLIENT_LIST_ATTENTION_INCLUDE,
-  };
-}
-
-function mapClientListItem(
-  row: {
-    id: string;
-    zone: MessengerClientConversationListItem['zone'];
-    type: MessengerClientConversationListItem['type'];
-    title: string | null;
-    status: string;
-    canonicalKey: string | null;
-    createdAt: Date;
-    lastMessageAt: Date | null;
-    messages: Array<{ content: string; direction: string }>;
-    readStates: Array<{ lastReadAt: Date }>;
-    userSettings: Array<{ favorite: boolean }>;
-    participants: Array<{ role: string }>;
-    externalMappings: Array<{ provider: MessengerClientConversationListItem['provider'] }>;
-    links: Array<{ entityId: string }>;
-    productCommunicationBindings: Parameters<
-      typeof attentionsFromListRow
-    >[0]['productCommunicationBindings'];
-    attentions: Parameters<typeof attentionsFromListRow>[0]['attentions'];
-  },
-  clientSendScope: string,
-): MessengerClientConversationListItem {
-  const lastReadAt = row.readStates[0]?.lastReadAt ?? null;
-  const unread =
-    row.lastMessageAt !== null && (lastReadAt === null || row.lastMessageAt > lastReadAt);
-  const last = row.messages[0];
-  const role = row.participants[0]?.role ?? null;
-  const attention: MessengerAttentionDto[] = attentionsFromListRow(row);
-  return {
-    id: row.id,
-    zone: 'CLIENT',
-    type: row.type,
-    title: row.title,
-    status: row.status,
-    canonicalKey: row.canonicalKey,
-    createdAt: row.createdAt,
-    lastMessageAt: row.lastMessageAt,
-    lastMessagePreview: last?.content ?? null,
-    lastMessageDirection:
-      last?.direction === 'INBOUND' || last?.direction === 'OUTBOUND' ? last.direction : null,
-    unreadCount: unread ? 1 : 0,
-    isFavorite: row.userSettings[0]?.favorite === true,
-    canSend: clientSendScope !== 'NONE' && role !== 'READ_ONLY',
-    provider: row.externalMappings[0]?.provider ?? null,
-    leadId: row.links[0]?.entityId ?? null,
-    attention,
-  };
 }

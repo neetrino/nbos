@@ -3,6 +3,8 @@ import { PrismaClient, classifyDatabaseError } from '@nbos/database';
 import { MESSENGER_CORE_CLIENT_ZONE } from './messenger-core.constants';
 import { upsertCoreExternalMapping } from './messenger-core-mapping.ops';
 import { whatsAppConversationCanonicalKey } from './messenger-wa-identity';
+import { bumpGlobalConversationRevision } from './messenger-core-revision-write.ops';
+import { runMessengerWriteTx } from './messenger-core-revision-tx';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -68,16 +70,20 @@ async function createOrReuseByCanonicalKey(
   });
   if (existing) return { id: existing.id, created: false };
   try {
-    const created = await prisma.messengerConversation.create({
-      data: {
-        zone: MESSENGER_CORE_CLIENT_ZONE,
-        kind: 'EXTERNAL',
-        type: 'EXTERNAL',
-        title: input.title,
-        canonicalKey,
-        metadata: { whatsAppAccountId: input.accountId, whatsAppChatId: input.chatId },
-      },
-      select: { id: true },
+    const created = await runMessengerWriteTx(prisma, async (tx) => {
+      const row = await tx.messengerConversation.create({
+        data: {
+          zone: MESSENGER_CORE_CLIENT_ZONE,
+          kind: 'EXTERNAL',
+          type: 'EXTERNAL',
+          title: input.title,
+          canonicalKey,
+          metadata: { whatsAppAccountId: input.accountId, whatsAppChatId: input.chatId },
+        },
+        select: { id: true, zone: true },
+      });
+      await bumpGlobalConversationRevision(tx, row.zone, row.id);
+      return row;
     });
     return { id: created.id, created: true };
   } catch (error) {

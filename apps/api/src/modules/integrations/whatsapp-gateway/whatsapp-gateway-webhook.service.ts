@@ -82,7 +82,7 @@ export class WhatsAppGatewayWebhookService {
     if (!claimed.dispatch) return;
     try {
       await settleWhatsAppWebhookDispatch(this.prisma, claimed.id, event, (message) => {
-        this.messengerGateway.emitCoreConversationMessage(message.conversationId, message);
+        this.messengerGateway.publishPersistedCoreMessage(message);
       });
     } catch (error) {
       if (!(error instanceof ServiceUnavailableException)) {

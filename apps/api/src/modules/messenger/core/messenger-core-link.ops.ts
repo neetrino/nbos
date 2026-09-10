@@ -1,6 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import type { MessengerCoreLinkInput } from './messenger-core.types';
+import { bumpGlobalConversationRevision } from './messenger-core-revision-write.ops';
+import { runMessengerWriteTx } from './messenger-core-revision-tx';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -16,16 +18,19 @@ export async function addCoreConversationLink(
   if (!conversation) {
     throw new NotFoundException('Conversation not found');
   }
-  const created = await prisma.messengerConversationLink.create({
-    data: {
-      conversationId,
-      entityType: link.entityType,
-      entityId: link.entityId,
-      relationType: link.relationType,
-    },
-    select: { id: true },
+  return runMessengerWriteTx(prisma, async (tx) => {
+    const created = await tx.messengerConversationLink.create({
+      data: {
+        conversationId,
+        entityType: link.entityType,
+        entityId: link.entityId,
+        relationType: link.relationType,
+      },
+      select: { id: true },
+    });
+    await bumpGlobalConversationRevision(tx, conversation.zone, conversationId);
+    return created;
   });
-  return created;
 }
 
 export async function listCoreConversationLinks(

@@ -22,12 +22,25 @@ export type MessengerInternalListQuery = {
   filter?: 'unread' | 'mentions';
   unread?: boolean;
   pageSize?: number;
+  cursor?: string;
 };
 
 export type MessengerInternalListResult = {
   items: MessengerInternalConversationListItem[];
   mentionsAvailable: boolean;
+  hasMore: boolean;
+  nextCursor?: string;
 };
+
+export function conversationCanWrite(
+  editScope: string,
+  participantRole: string | null,
+  hasEditGrant: boolean,
+): boolean {
+  if (editScope === 'NONE') return false;
+  if (editScope === 'ALL' || hasEditGrant) return true;
+  return participantRole !== null && participantRole !== 'READ_ONLY';
+}
 
 export type MessengerInternalMessagePage = {
   items: MessengerCoreMessageDto[];

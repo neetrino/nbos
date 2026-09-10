@@ -35,11 +35,13 @@ export interface TaskDiscussionEntryView {
   authorDisplayName: string;
   channelSource: string | null;
   createdAt: Date;
+  conversationId: string;
 }
 
 export interface TaskDiscussionListResult {
   items: TaskDiscussionEntryView[];
   meta: { total: number; page: number; pageSize: number; totalPages: number };
+  conversationId: string | null;
 }
 
 /**
@@ -68,7 +70,14 @@ export class TaskDiscussionService {
     const actorFields = discussionActorFields(actor);
     const opener = actor.actor.type === 'USER' ? actor.actor.id : undefined;
     const conversation = await ensureTaskConversation(db as never, taskId, access, opener);
-    return this.persistCoreNote(db, conversation.id, actor, actorFields, body, Boolean(tx));
+    return this.persistCoreNote(
+      db,
+      conversation.id,
+      actor,
+      actorFields,
+      body,
+      Boolean(tx),
+    );
   }
 
   async listEntries(
@@ -114,10 +123,10 @@ export class TaskDiscussionService {
     };
     if (actor.actor.type === 'USER' && !inTransaction && input.senderId) {
       const message = await this.core.persistAndBroadcast(input);
-      return toDiscussionViewFromCore(message, actorFields);
+      return toDiscussionViewFromCore(message, actorFields, conversationId);
     }
     const message = await persistCoreMessage(db as never, input, []);
-    return toDiscussionViewFromCore(message, actorFields);
+    return toDiscussionViewFromCore(message, actorFields, conversationId);
   }
 
   private async listCoreNotes(
@@ -145,8 +154,9 @@ export class TaskDiscussionService {
       take: pageSize,
     });
     return {
-      items: rows.map((row) => toDiscussionViewFromRow(row)),
+      items: rows.map((row) => toDiscussionViewFromRow(row, conversationId)),
       meta: { total, page, pageSize, totalPages },
+      conversationId,
     };
   }
 
@@ -180,12 +190,13 @@ export class TaskDiscussionService {
 }
 
 function emptyDiscussionList(pageSize: number): TaskDiscussionListResult {
-  return { items: [], meta: { total: 0, page: 1, pageSize, totalPages: 0 } };
+  return { items: [], meta: { total: 0, page: 1, pageSize, totalPages: 0 }, conversationId: null };
 }
 
 function toDiscussionViewFromCore(
   row: { id: string; content: string; senderName: string; createdAt: Date },
   actor: ReturnType<typeof discussionActorFields>,
+  conversationId: string,
 ): TaskDiscussionEntryView {
   return {
     id: row.id,
@@ -195,17 +206,21 @@ function toDiscussionViewFromCore(
     authorDisplayName: actor.actorDisplayName,
     channelSource: actor.channelSource,
     createdAt: row.createdAt,
+    conversationId,
   };
 }
 
-function toDiscussionViewFromRow(row: {
-  id: string;
-  content: string;
-  senderId: string | null;
-  senderNameSnapshot: string;
-  metadata: unknown;
-  createdAt: Date;
-}): TaskDiscussionEntryView {
+function toDiscussionViewFromRow(
+  row: {
+    id: string;
+    content: string;
+    senderId: string | null;
+    senderNameSnapshot: string;
+    metadata: unknown;
+    createdAt: Date;
+  },
+  conversationId: string,
+): TaskDiscussionEntryView {
   const meta = parseTaskDiscussionMeta(row.metadata);
   return {
     id: row.id,
@@ -215,5 +230,6 @@ function toDiscussionViewFromRow(row: {
     authorDisplayName: row.senderNameSnapshot,
     channelSource: meta?.channelSource ?? null,
     createdAt: row.createdAt,
+    conversationId,
   };
 }

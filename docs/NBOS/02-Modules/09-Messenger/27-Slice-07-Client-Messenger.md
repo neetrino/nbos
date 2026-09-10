@@ -205,6 +205,10 @@ Independently re-run: claimed combined vitest command — **229 passed**, 5 skip
 - Draft isolation tests compare store-key strings; Client/Internal are separate trees and Client clears `newMessage` on switch.
 - `MESSENGER_CORE_CLIENT_SEND_DISABLED` constant is unused leftover.
 
+## Browser persistence (Phase 5)
+
+Client Messenger uses the same IndexedDB envelope as Internal Messenger (`schemaVersion` `2`, immutable `capturedAt`, atomic compare-and-write, 24h retention from envelope `capturedAt`, employee identity isolation). Only the canonical Client default inbox (`q=''`) and CLIENT collection list are persisted, with the shared Internal defaults. Expired query rows are omitted on capture/parse so a stale collection cannot invalidate a fresh inbox; the envelope still expires at 24h. Search variants are not persisted. Account switch withholds the tree until the new identity is prepared. Thread messages, drafts, and Task discussion caches are not persisted. Restored lists remain non-authoritative and must pass current delta/auth-epoch guards. Logout purges memory synchronously and does not wait for IndexedDB clear. Disable with `NEXT_PUBLIC_MESSENGER_PERSISTENCE=0` (stale IDB ignored; no migration).
+
 ## Final status
 
 VERIFIED

@@ -33,6 +33,8 @@ export const MESSENGER_CORE_INTERNAL_PROVIDER_FORBIDDEN =
   'Internal conversations cannot have a provider mapping';
 export const MESSENGER_CORE_INTERNAL_OUTBOX_FORBIDDEN =
   'Internal conversations cannot enqueue provider send';
+export const MESSENGER_CORE_COMMAND_CONFLICT =
+  'Messenger command idempotency key already exists with a different intent';
 export const MESSENGER_CORE_WHATSAPP_INTERNAL_INBOUND_FORBIDDEN =
   'WhatsApp inbound cannot bind to an Internal conversation';
 export const MESSENGER_CORE_WHATSAPP_ACCOUNT_MISMATCH =

@@ -2,6 +2,14 @@ import { BadRequestException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { assignConversationAttention } from './messenger-core-attention-assign.ops';
 
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async (_prisma: unknown, fn: (tx: unknown) => unknown) => fn(_prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpGlobalConversationRevision: vi.fn(async () => 1n),
+}));
+
 describe('assignConversationAttention', () => {
   it('deletes the override when Product PM is the computed default', async () => {
     const prisma = assignPrisma({

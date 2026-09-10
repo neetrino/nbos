@@ -8,10 +8,12 @@ import {
   directThreadLegacyIdentity,
 } from './messenger-legacy-identity';
 import {
-  backfillMappedChannelParticipants,
+  backfillMappedChannelIfPresent,
   resolveMappedChannelParticipants,
   type MappedChannelParticipantSeed,
 } from './messenger-legacy-mapper-participants.ops';
+import { bumpGlobalConversationRevision } from './messenger-core-revision-write.ops';
+import { runMessengerWriteTx } from './messenger-core-revision-tx';
 
 type PrismaClientLike = InstanceType<typeof PrismaClient>;
 
@@ -43,7 +45,7 @@ export async function mapLegacyChannelToCore(
   });
   if (!channel) return null;
   const participants = await resolveMappedChannelParticipants(prisma, channel);
-  return prisma.$transaction((tx) => persistChannelMapping(tx, channel, participants));
+  return runMessengerWriteTx(prisma, (tx) => persistChannelMapping(tx, channel, participants));
 }
 
 export async function mapLegacyDirectThreadToCore(
@@ -66,7 +68,7 @@ export async function mapLegacyDirectThreadToCore(
     },
   });
   if (!thread) return null;
-  return prisma.$transaction((tx) => persistDirectMapping(tx, thread));
+  return runMessengerWriteTx(prisma, (tx) => persistDirectMapping(tx, thread));
 }
 
 export async function mapAllLegacyInternalToCore(prisma: PrismaClientLike): Promise<{
@@ -98,17 +100,13 @@ type MappedLegacyMessage = {
 
 type MappedLegacyReadState = { employeeId: string; lastReadAt: Date };
 
-async function backfillMappedChannelIfPresent(
-  prisma: PrismaClientLike,
-  channelId: string,
+async function finishMappedConversation(
+  tx: TransactionClient,
   conversationId: string,
-): Promise<void> {
-  const channel = await prisma.messengerChannel.findUnique({
-    where: { id: channelId },
-    select: { type: true, projectId: true, messages: { select: { senderId: true } } },
-  });
-  if (!channel) return;
-  await backfillMappedChannelParticipants(prisma, conversationId, channel);
+  messageCount: number,
+): Promise<LegacyMapResult> {
+  await bumpGlobalConversationRevision(tx as PrismaClientLike, 'INTERNAL', conversationId);
+  return { conversationId, created: true, messageCount };
 }
 
 async function persistChannelMapping(
@@ -149,7 +147,7 @@ async function persistChannelMapping(
     'CHANNEL_MESSAGE',
   );
   await persistMappedReadStates(tx, conversation.id, channel.readStates);
-  return { conversationId: conversation.id, created: true, messageCount };
+  return finishMappedConversation(tx, conversation.id, messageCount);
 }
 
 async function persistDirectMapping(
@@ -177,7 +175,7 @@ async function persistDirectMapping(
     'DIRECT_MESSAGE',
   );
   await persistMappedReadStates(tx, conversation.id, thread.readStates);
-  return { conversationId: conversation.id, created: true, messageCount };
+  return finishMappedConversation(tx, conversation.id, messageCount);
 }
 
 async function ensureMappedDirectConversation(

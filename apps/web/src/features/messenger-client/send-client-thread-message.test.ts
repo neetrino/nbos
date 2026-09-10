@@ -1,6 +1,9 @@
+import { QueryClient } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { messengerClientApi } from '@/lib/api/messenger-core-client';
 import type { MessengerCoreMessageRow } from '@/lib/api/messenger-core';
+import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
+import type { MessengerMessagesPage } from '@/features/messenger/query/messenger-cache';
 import { sendClientThreadMessage } from './send-client-thread-message';
 
 vi.mock('@/lib/api/messenger-core-client', () => ({
@@ -11,10 +14,10 @@ vi.mock('@/lib/api/messenger-core-client', () => ({
 
 const sendMessage = vi.mocked(messengerClientApi.sendMessage);
 
-function messageRow(id: string): MessengerCoreMessageRow {
+function messageRow(id: string, conversationId = 'conv-s8-06'): MessengerCoreMessageRow {
   return {
     id,
-    conversationId: 'conv-s8-06',
+    conversationId,
     senderId: 'e1',
     senderName: 'Ada',
     content: 'hello',
@@ -26,7 +29,7 @@ function messageRow(id: string): MessengerCoreMessageRow {
   };
 }
 
-function sendInput(conversationId: string) {
+function sendInput(conversationId: string, queryClient = new QueryClient()) {
   return {
     conversationId,
     canSend: true,
@@ -35,9 +38,8 @@ function sendInput(conversationId: string) {
     sendBusy: false,
     content: 'hello',
     setSendBusy: vi.fn(),
-    setMessages: vi.fn(),
     setNewMessage: vi.fn(),
-    refreshLists: vi.fn().mockResolvedValue(undefined),
+    queryClient,
   };
 }
 
@@ -53,7 +55,7 @@ describe('sendClientThreadMessage idempotency (FINDING-S8-06)', () => {
     await expect(sendClientThreadMessage(first)).rejects.toThrow('network');
     expect(first.setNewMessage).not.toHaveBeenCalled();
 
-    const second = sendInput(conversationId);
+    const second = sendInput(conversationId, first.queryClient);
     await sendClientThreadMessage(second);
     expect(sendMessage).toHaveBeenCalledTimes(2);
     const firstKey = sendMessage.mock.calls[0]?.[1]?.idempotencyKey;
@@ -73,5 +75,17 @@ describe('sendClientThreadMessage idempotency (FINDING-S8-06)', () => {
       unlockedConversationId: conversationId,
     });
     expect(sendMessage).not.toHaveBeenCalled();
+  });
+
+  it('patches the thread cache instead of refreshing the inbox', async () => {
+    const conversationId = `conv-${crypto.randomUUID()}`;
+    const queryClient = new QueryClient();
+    sendMessage.mockResolvedValueOnce(messageRow('m1', conversationId));
+    await sendClientThreadMessage(sendInput(conversationId, queryClient));
+    const page = queryClient.getQueryData<MessengerMessagesPage>(
+      messengerQueryKeys.messages(conversationId),
+    );
+    expect(page?.items).toHaveLength(1);
+    expect(page?.items[0]?.id).toBe('m1');
   });
 });

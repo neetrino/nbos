@@ -20,6 +20,17 @@ vi.mock('../messenger-attachment-access.op', () => ({
   ),
 }));
 
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async <T>(prisma: T, fn: (tx: T) => Promise<unknown>) => fn(prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpGlobalConversationRevision: async () => 1n,
+  bumpTargetedReadRevision: async () => 1n,
+  bumpTargetedFavoriteRevision: async () => 1n,
+  bumpTargetedAccessRemovedRevision: async () => 1n,
+}));
+
 const ACCESS = {
   employeeId: 'e1',
   departmentIds: [],
@@ -88,11 +99,15 @@ function createService() {
       create: vi
         .fn()
         .mockImplementation(
-          async ({ data }: { data: { content: string; direction?: string; status?: string } }) => {
+          async ({
+            data,
+          }: {
+            data: { conversationId?: string; content: string; direction?: string; status?: string };
+          }) => {
             order.push('persist');
             return {
               id: 'msg-1',
-              conversationId: 'conv-1',
+              conversationId: data.conversationId ?? 'conv-1',
               senderId: 'e1',
               senderNameSnapshot: 'Ada Lovelace',
               content: data.content,
@@ -117,14 +132,36 @@ function createService() {
     messengerConversationLink: { create: vi.fn() },
     messengerMessageReference: { create: vi.fn() },
     messengerExternalConversationMapping: { findFirst: vi.fn().mockResolvedValue(null) },
-    messengerCommand: { upsert: vi.fn().mockResolvedValue({ id: 'cmd-1', status: 'PENDING' }) },
+    messengerCommand: {
+      findUnique: vi
+        .fn()
+        .mockResolvedValueOnce(null)
+        .mockResolvedValue({
+          id: 'cmd-1',
+          status: 'PENDING',
+          conversationId: 'conv-c',
+          resultMessageId: 'msg-1',
+          kind: 'SEND_MESSAGE',
+          payload: { accountId: 'acc_a', chatId: '37499111222@c.us' },
+        }),
+      create: vi.fn().mockResolvedValue({ id: 'cmd-1', status: 'PENDING' }),
+      createMany: vi.fn().mockResolvedValue({ count: 1 }),
+    },
+    $executeRaw: vi.fn().mockResolvedValue(1),
+    auditLog: { create: vi.fn().mockResolvedValue({ id: 'a1' }) },
   };
   const gateway = {
     emitCoreConversationMessage: vi.fn().mockImplementation(() => {
       order.push('emit');
     }),
     emitReadListsUpdated: vi.fn(),
+    emitConversationReadUpdated: vi.fn(),
+    publishPersistedCoreMessage: vi.fn(),
+    evictEmployeeFromConversation: vi.fn().mockResolvedValue(undefined),
   };
+  gateway.publishPersistedCoreMessage.mockImplementation((message: { conversationId: string }) => {
+    gateway.emitCoreConversationMessage(message.conversationId, message as never);
+  });
   const audit = { log: vi.fn().mockResolvedValue({ id: 'audit-1' }) };
   const queue = {
     isAvailable: vi.fn().mockReturnValue(false),
@@ -153,16 +190,25 @@ describe('MessengerCoreService persist-before-emit', () => {
     );
   });
 
-  it('persists the durable message before realtime emit', async () => {
+  it('persists the durable message then emits without waiting for fanout', async () => {
     const { service, gateway, order } = createService();
-    const message = await service.persistAndBroadcast({
+    let resolveFanout: (() => void) | undefined;
+    const hanging = new Promise<void>((resolve) => {
+      resolveFanout = resolve;
+    });
+    gateway.publishPersistedCoreMessage.mockImplementation((message: { conversationId: string }) => {
+      gateway.emitCoreConversationMessage(message.conversationId, message as never);
+      return hanging;
+    });
+    const resultPromise = service.persistAndBroadcast({
       conversationId: 'conv-1',
       senderId: 'e1',
       content: 'hello',
     });
-    expect(message.id).toBe('msg-1');
+    await expect(resultPromise).resolves.toMatchObject({ id: 'msg-1' });
     expect(order).toEqual(['persist', 'emit']);
-    expect(gateway.emitCoreConversationMessage).toHaveBeenCalledTimes(1);
+    expect(gateway.publishPersistedCoreMessage).toHaveBeenCalledTimes(1);
+    resolveFanout?.();
   });
 
   it('does not emit when persist throws', async () => {
@@ -177,6 +223,23 @@ describe('MessengerCoreService persist-before-emit', () => {
     ).rejects.toThrow('db down');
     expect(order).toEqual([]);
     expect(gateway.emitCoreConversationMessage).not.toHaveBeenCalled();
+    expect(gateway.publishPersistedCoreMessage).not.toHaveBeenCalled();
+  });
+
+  it('emits conversation-scoped absolute unread on markRead', async () => {
+    const { service, gateway } = createService();
+    await service.markRead('conv-1', 'e1');
+    expect(gateway.emitConversationReadUpdated).toHaveBeenCalledWith(
+      'e1',
+      expect.objectContaining({
+        scope: 'conversation',
+        conversationId: 'conv-1',
+        unreadCount: 0,
+        zone: 'INTERNAL',
+        lastReadAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      }),
+    );
+    expect(gateway.emitReadListsUpdated).not.toHaveBeenCalled();
   });
 
   it('rejects employee persist without senderId', async () => {

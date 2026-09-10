@@ -180,7 +180,7 @@ describe('MetaLeadIngestService', () => {
   });
 
   function gateway() {
-    return { emitCoreConversationMessage: vi.fn() };
+    return { emitCoreConversationMessage: vi.fn(), publishPersistedCoreMessage: vi.fn() };
   }
 
   it('creates one lead and persists Core instead of MetaMessage', async () => {
@@ -199,7 +199,8 @@ describe('MetaLeadIngestService', () => {
     expect(state.leads[0]?.contactName).toBe('@karo_gabrielyan');
     expect(prisma.metaMessage.create).not.toHaveBeenCalled();
     expect(persistLiveMetaInboundToCore).toHaveBeenCalledTimes(1);
-    expect(emit.emitCoreConversationMessage).toHaveBeenCalledTimes(1);
+    expect(emit.publishPersistedCoreMessage).toHaveBeenCalledTimes(1);
+    expect(emit.emitCoreConversationMessage).not.toHaveBeenCalled();
   });
 
   it('reuses the same lead for a second message from the same sender', async () => {
@@ -231,10 +232,11 @@ describe('MetaLeadIngestService', () => {
 
   it('skips duplicate webhook events', async () => {
     const { prisma, state } = createPrismaMock();
+    const emit = gateway();
     const service = new MetaLeadIngestService(
       prisma as never,
       createProfileService(),
-      gateway() as never,
+      emit as never,
     );
 
     await service.ingestMessage(baseMessage);
@@ -242,5 +244,6 @@ describe('MetaLeadIngestService', () => {
 
     expect(state.leads).toHaveLength(1);
     expect(persistLiveMetaInboundToCore).toHaveBeenCalledTimes(1);
+    expect(emit.publishPersistedCoreMessage).toHaveBeenCalledTimes(1);
   });
 });

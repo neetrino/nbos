@@ -12,15 +12,16 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
-import {
-  loadMessengerLegacyAccess,
-  type MessengerLegacyAccessContext,
-} from '../access/messenger-legacy-channel-access.op';
-import { assertMessengerFileAssetsAttachable } from '../messenger-attachment-access.op';
+import { type MessengerLegacyAccessContext } from '../access/messenger-legacy-channel-access.op';
 import { MessengerGateway } from '../messenger.gateway';
-import { evaluateMessengerCoreAccess } from './messenger-core-access';
-import { loadMessengerCoreAccessFacts } from './messenger-core-access-load';
-import { requireTaskConversationAccess } from './messenger-core-task-access.ops';
+import { MESSENGER_WS_READ_UPDATED_SCOPE } from '@nbos/shared';
+import { evictIfCoreReadLost } from './messenger-core-access-revoke.ops';
+import { resolveCoreConversationRead } from './messenger-core-read-authorize';
+import {
+  assertClientMayPersist,
+  requireMessengerEditAccess,
+  validateCorePersistAttachments,
+} from './messenger-core-service-guards';
 import type {
   MessengerCoreAccessDecision,
   MessengerCoreAccessFacts,
@@ -31,7 +32,6 @@ import {
   MESSENGER_CORE_AUDIT_PARTICIPANT_GRANTED,
   MESSENGER_CORE_AUDIT_PARTICIPANT_REVOKED,
 } from './messenger-core-access.types';
-import { assertCoreFileAssetsExist } from './messenger-core-attachment.ops';
 import { createCoreConversation, getCoreConversation } from './messenger-core-conversation.ops';
 import { addCoreConversationLink } from './messenger-core-link.ops';
 import { persistCoreMessage } from './messenger-core-message.ops';
@@ -51,8 +51,6 @@ import {
 } from './messenger-core-participant.ops';
 import {
   MESSENGER_CORE_CLIENT_CREATE_FORBIDDEN,
-  MESSENGER_CORE_CLIENT_READ_ONLY,
-  MESSENGER_CORE_CLIENT_SEND_FORBIDDEN,
   MESSENGER_CORE_CLIENT_WRITE_FORBIDDEN,
   MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN,
 } from './messenger-core.constants';
@@ -86,7 +84,7 @@ export class MessengerCoreService {
   async createConversation(
     input: CreateMessengerCoreConversationInput,
   ): Promise<MessengerCoreConversationDto> {
-    const access = await this.requireEditAccess(input.createdById);
+    const access = await requireMessengerEditAccess(this.prisma, input.createdById);
     if (input.zone === 'CLIENT' && access.clientReadScope === 'NONE') {
       throw new ForbiddenException(MESSENGER_CORE_CLIENT_CREATE_FORBIDDEN);
     }
@@ -116,9 +114,13 @@ export class MessengerCoreService {
         throw new ForbiddenException(MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN);
       }
     } else {
-      this.assertClientMayPersist(resolved.decision);
+      assertClientMayPersist(resolved.decision);
     }
-    const fileAssetIds = await this.validateAttachments(resolved.access, input.fileAssetIds);
+    const fileAssetIds = await validateCorePersistAttachments(
+      this.prisma,
+      resolved.access,
+      input.fileAssetIds,
+    );
     const mapping = isInternalZone(resolved.facts.zone)
       ? null
       : await findClientWhatsAppMapping(this.prisma, input.conversationId);
@@ -126,6 +128,7 @@ export class MessengerCoreService {
       this.prisma,
       { ...input, status: mapping ? 'QUEUED' : input.status },
       fileAssetIds,
+      mapping ? { mapping, actorEmployeeId: senderId } : undefined,
     );
     const delivered = await finalizeWhatsAppCoreOutbound(
       this.prisma,
@@ -134,7 +137,10 @@ export class MessengerCoreService {
       senderId,
       mapping,
     );
-    this.messengerGateway.emitCoreConversationMessage(resolved.facts.conversationId, delivered);
+    this.messengerGateway.publishPersistedCoreMessage(delivered, {
+      zone: resolved.facts.zone,
+      conversationType: resolved.facts.conversationType,
+    });
     return delivered;
   }
 
@@ -148,7 +154,7 @@ export class MessengerCoreService {
   }
 
   async addReference(employeeId: string, input: CreateMessengerCoreReferenceInput) {
-    await this.requireEditAccess(employeeId);
+    await requireMessengerEditAccess(this.prisma, employeeId);
     await assertReferenceConversations(
       this.prisma,
       input,
@@ -159,9 +165,20 @@ export class MessengerCoreService {
   }
 
   async markRead(conversationId: string, employeeId: string): Promise<void> {
-    await this.requireRead(conversationId, employeeId);
-    await markCoreConversationRead(this.prisma, conversationId, employeeId, new Date());
-    this.messengerGateway.emitReadListsUpdated(employeeId);
+    const resolved = await this.requireRead(conversationId, employeeId);
+    const lastReadAt = await markCoreConversationRead(
+      this.prisma,
+      conversationId,
+      employeeId,
+      new Date(),
+    );
+    this.messengerGateway.emitConversationReadUpdated(employeeId, {
+      scope: MESSENGER_WS_READ_UPDATED_SCOPE.CONVERSATION,
+      conversationId,
+      unreadCount: 0,
+      zone: resolved.facts.zone,
+      lastReadAt: lastReadAt.toISOString(),
+    });
   }
 
   async inviteParticipant(
@@ -187,6 +204,13 @@ export class MessengerCoreService {
   async revokeParticipant(conversationId: string, actorId: string, employeeId: string) {
     const resolved = await this.requireWrite(conversationId, actorId);
     const row = await leaveCoreParticipant(this.prisma, conversationId, employeeId);
+    await evictIfCoreReadLost(
+      this.prisma,
+      conversationId,
+      employeeId,
+      resolved.facts.zone,
+      this.messengerGateway.evictEmployeeFromConversation.bind(this.messengerGateway),
+    );
     if (resolved.facts.zone === 'CLIENT') {
       await this.audit.log({
         entityType: 'messenger_conversation',
@@ -225,8 +249,15 @@ export class MessengerCoreService {
   }
 
   async revokeAccessOverride(conversationId: string, actorId: string, employeeId: string) {
-    await this.requireWrite(conversationId, actorId);
+    const resolved = await this.requireWrite(conversationId, actorId);
     const row = await revokeMessengerConversationOverride(this.prisma, conversationId, employeeId);
+    await evictIfCoreReadLost(
+      this.prisma,
+      conversationId,
+      employeeId,
+      resolved.facts.zone,
+      this.messengerGateway.evictEmployeeFromConversation.bind(this.messengerGateway),
+    );
     await this.audit.log({
       entityType: 'messenger_conversation',
       entityId: conversationId,
@@ -237,30 +268,15 @@ export class MessengerCoreService {
     return row;
   }
 
-  private assertClientMayPersist(decision: MessengerCoreAccessDecision): void {
-    if (decision.canSend) return;
-    if (decision.sendDeniedBecause === 'READ_ONLY') {
-      throw new ForbiddenException(MESSENGER_CORE_CLIENT_READ_ONLY);
-    }
-    throw new ForbiddenException(MESSENGER_CORE_CLIENT_SEND_FORBIDDEN);
-  }
-
   async requireRead(conversationId: string, employeeId: string): Promise<ResolvedAccess> {
-    const loaded = await loadMessengerCoreAccessFacts(this.prisma, employeeId, conversationId);
-    if (!loaded.access || loaded.access.viewScope === 'NONE') {
+    const resolved = await resolveCoreConversationRead(this.prisma, employeeId, conversationId);
+    if (resolved.status === 'NO_VIEW') {
       throw new ForbiddenException('No permission: MESSENGER.VIEW');
     }
-    if (!loaded.facts) throw new NotFoundException('Conversation not found');
-    const decision = evaluateMessengerCoreAccess(loaded.facts);
-    if (!decision.canRead) throw new NotFoundException('Conversation not found');
-    if (loaded.facts.conversationType === 'TASK') {
-      await requireTaskConversationAccess(this.prisma, conversationId, {
-        employeeId,
-        departmentIds: loaded.access.departmentIds,
-        viewScope: loaded.access.tasksViewScope,
-      });
+    if (resolved.status !== 'OK') {
+      throw new NotFoundException('Conversation not found');
     }
-    return { access: loaded.access, facts: loaded.facts, decision };
+    return { access: resolved.access, facts: resolved.facts, decision: resolved.decision };
   }
 
   async requireWrite(conversationId: string, employeeId: string): Promise<ResolvedAccess> {
@@ -274,22 +290,7 @@ export class MessengerCoreService {
     return resolved;
   }
 
-  private async validateAttachments(
-    access: MessengerLegacyAccessContext,
-    fileAssetIds: string[] | undefined,
-  ): Promise<string[]> {
-    const existing = await assertCoreFileAssetsExist(this.prisma, fileAssetIds ?? []);
-    return assertMessengerFileAssetsAttachable(this.prisma, access, existing);
-  }
-
   async requireEditAccess(employeeId: string): Promise<MessengerLegacyAccessContext> {
-    const access = await loadMessengerLegacyAccess(this.prisma, employeeId);
-    if (!access || access.viewScope === 'NONE') {
-      throw new ForbiddenException('No permission: MESSENGER.VIEW');
-    }
-    if (access.editScope === 'NONE') {
-      throw new ForbiddenException('No permission: MESSENGER.EDIT');
-    }
-    return access;
+    return requireMessengerEditAccess(this.prisma, employeeId);
   }
 }

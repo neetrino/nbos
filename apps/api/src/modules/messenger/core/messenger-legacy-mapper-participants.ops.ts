@@ -4,6 +4,8 @@ import {
   isOrgWideMessengerChannelType,
   normalizeMessengerRbacScope,
 } from '../access/messenger-legacy-channel-access.op';
+import { bumpGlobalConversationRevision } from './messenger-core-revision-write.ops';
+import { runMessengerWriteTx } from './messenger-core-revision-tx';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -39,26 +41,58 @@ export async function resolveMappedChannelParticipants(
     .filter((seed): seed is MappedChannelParticipantSeed => seed !== null);
 }
 
-export async function backfillMappedChannelParticipants(
+export async function planMissingMappedChannelParticipants(
   prisma: PrismaLike,
   conversationId: string,
   channel: MappedChannelSource,
-): Promise<void> {
+): Promise<MappedChannelParticipantSeed[]> {
   const seeds = await resolveMappedChannelParticipants(prisma, channel);
   const existing = await prisma.messengerConversationParticipant.findMany({
     where: { conversationId },
     select: { employeeId: true },
   });
   const have = new Set(existing.map((row) => row.employeeId));
-  const missing = seeds.filter((seed) => !have.has(seed.employeeId));
-  if (missing.length === 0) return;
-  await prisma.messengerConversationParticipant.createMany({
+  return seeds.filter((seed) => !have.has(seed.employeeId));
+}
+
+export async function insertMappedChannelParticipants(
+  prisma: PrismaLike,
+  conversationId: string,
+  missing: MappedChannelParticipantSeed[],
+): Promise<number> {
+  if (missing.length === 0) return 0;
+  const inserted = await prisma.messengerConversationParticipant.createMany({
     data: missing.map((seed) => ({
       conversationId,
       employeeId: seed.employeeId,
       role: seed.role,
     })),
     skipDuplicates: true,
+  });
+  return inserted.count;
+}
+
+export async function backfillMappedChannelIfPresent(
+  prisma: PrismaLike,
+  channelId: string,
+  conversationId: string,
+): Promise<void> {
+  const channel = await prisma.messengerChannel.findUnique({
+    where: { id: channelId },
+    select: { type: true, projectId: true, messages: { select: { senderId: true } } },
+  });
+  if (!channel) return;
+  const missing = await planMissingMappedChannelParticipants(prisma, conversationId, channel);
+  if (missing.length === 0) return;
+  await runMessengerWriteTx(prisma, async (tx) => {
+    const live = await tx.messengerConversation.findUnique({
+      where: { id: conversationId },
+      select: { id: true },
+    });
+    if (!live) return;
+    const inserted = await insertMappedChannelParticipants(tx, conversationId, missing);
+    if (inserted === 0) return;
+    await bumpGlobalConversationRevision(tx, 'INTERNAL', conversationId);
   });
 }
 

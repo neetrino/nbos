@@ -79,7 +79,7 @@ describe('FINDING-S6-01 open original GET', () => {
     requireWrite: vi.fn(),
     requireEditAccess: vi.fn(),
   };
-  const gateway = { emitCoreConversationMessage: vi.fn() };
+  const gateway = { emitCoreConversationMessage: vi.fn(), publishPersistedCoreMessage: vi.fn() };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -136,7 +136,7 @@ describe('FINDING-S6-02 TASK_SOURCE Task access', () => {
     requireWrite: vi.fn(),
     requireEditAccess: vi.fn(),
   };
-  const gateway = { emitCoreConversationMessage: vi.fn() };
+  const gateway = { emitCoreConversationMessage: vi.fn(), publishPersistedCoreMessage: vi.fn() };
 
   beforeEach(() => {
     vi.clearAllMocks();

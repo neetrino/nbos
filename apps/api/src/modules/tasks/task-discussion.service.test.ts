@@ -91,6 +91,15 @@ describe('TaskDiscussionService', () => {
     expect(TASK_DISCUSSION_LEGACY_WRITES_DISABLED).toBe(true);
   });
 
+  it('returns conversationId on an Employee add so clients can share the message cache', async () => {
+    const entry = await service.addEntry(
+      'task-1',
+      actorContextFromEmployee({ id: 'emp-1', firstName: 'Ada', lastName: 'Lovelace' }),
+      'Looks good',
+    );
+    expect(entry.conversationId).toBe('conv-task');
+  });
+
   it('rejects an empty body', async () => {
     await expect(service.addEntry('task-1', actorContextFromUser(), '   ')).rejects.toBeInstanceOf(
       BadRequestException,
@@ -108,6 +117,7 @@ describe('TaskDiscussionService', () => {
     prisma.messengerConversation.findUnique.mockResolvedValue(null);
     const page = await service.listEntries('task-1', { page: 1, pageSize: 20 });
     expect(page.items).toEqual([]);
+    expect(page.conversationId).toBeNull();
     expect(ensureTaskConversation).not.toHaveBeenCalled();
     expect(prisma.messengerMessage.findMany).not.toHaveBeenCalled();
   });
@@ -135,6 +145,8 @@ describe('TaskDiscussionService', () => {
     ]);
     const page = await service.listEntries('task-1', { page: 1, pageSize: 20 });
     expect(page.items[0]?.body).toBe('Visible');
+    expect(page.conversationId).toBe('conv-task');
+    expect(page.items[0]?.conversationId).toBe('conv-task');
     expect(prisma.messengerMessage.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({

@@ -24,4 +24,21 @@ describe('mergeCoreRealtimeMessage', () => {
     expect(mergeCoreRealtimeMessage([], queued)).toEqual([queued]);
     expect(mergeCoreRealtimeMessage([queued], sent)[0]?.status).toBe('SENT');
   });
+
+  it('keeps DELIVERED when a late SENT event arrives', () => {
+    const delivered = row('m1', 'DELIVERED');
+    const sent = row('m1', 'SENT');
+    expect(mergeCoreRealtimeMessage([delivered], sent)[0]?.status).toBe('DELIVERED');
+  });
+
+  it('does not let late SENDING overwrite SENT', () => {
+    const sent = row('m1', 'SENT');
+    const sending = row('m1', 'SENDING');
+    expect(mergeCoreRealtimeMessage([sent], sending)[0]?.status).toBe('SENT');
+  });
+
+  it('is idempotent for duplicate delivery events', () => {
+    const sent = row('m1', 'SENT');
+    expect(mergeCoreRealtimeMessage([sent], sent)[0]?.status).toBe('SENT');
+  });
 });

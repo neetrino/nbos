@@ -15,7 +15,11 @@ function listRow(overrides: Record<string, unknown> = {}) {
     canonicalKey: null,
     createdAt: new Date('2026-08-01T10:00:00.000Z'),
     lastMessageAt: new Date('2026-08-30T12:00:00.000Z'),
-    messages: [{ content: 'hello' }],
+    messages: [{
+      content: 'hello',
+      senderId: 'other',
+      createdAt: new Date('2026-08-30T12:00:00.000Z'),
+    }],
     readStates: [],
     userSettings: [],
     participants: [],
@@ -52,11 +56,14 @@ describe('Internal conversation list', () => {
     expect(findMany.mock.calls[0]?.[0]?.orderBy).toEqual([
       { lastMessageAt: { sort: 'desc', nulls: 'last' } },
       { createdAt: 'desc' },
+      { id: 'desc' },
     ]);
+    expect(findMany.mock.calls[0]?.[0]?.take).toBe(101);
     expect(result.items.map((row) => row.id)).toEqual(['newer', 'older']);
     expect(result.items.every((row) => row.zone === 'INTERNAL')).toBe(true);
     expect(result.items.every((row) => row.canWrite === true)).toBe(true);
     expect(result.mentionsAvailable).toBe(true);
+    expect(result.hasMore).toBe(false);
   });
 
   it('lists Internal conversations where the caller is mentioned and marks persist available', async () => {
@@ -196,6 +203,31 @@ describe('Internal conversation list', () => {
     expect(where).toContain('taskDiscussion');
   });
 
+  it('hydrates a large id set with a bounded query count and preserves stored order', async () => {
+    const ids = Array.from({ length: 80 }, (_, index) => `conv-${index}`);
+    const accessible = ids.filter((id) => id !== 'conv-3' && id !== 'conv-10');
+    const findMany = vi.fn().mockResolvedValue(accessible.map((id) => listRow({ id })));
+    const grantFind = vi.fn().mockResolvedValue([]);
+    const taskFind = vi.fn().mockResolvedValue([{ id: 'task-ok' }]);
+    const items = await listAccessibleInternalConversationsByIds(
+      {
+        messengerConversation: { findMany },
+        resourceAccessGrant: { findMany: grantFind },
+        employeeDepartment: { findMany: vi.fn().mockResolvedValue([]) },
+        task: { findMany: taskFind },
+      } as never,
+      'e1',
+      'OWN',
+      ids,
+      'ALL',
+      { employeeId: 'e1', departmentIds: [], viewScope: 'OWN' },
+    );
+    expect(findMany).toHaveBeenCalledTimes(1);
+    expect(grantFind).toHaveBeenCalledTimes(1);
+    expect(taskFind).toHaveBeenCalledTimes(1);
+    expect(items.map((row) => row.id)).toEqual(accessible);
+  });
+
   it('does not return a TASK conversation id the caller cannot open via list-by-ids', async () => {
     const findMany = vi
       .fn()
@@ -221,5 +253,44 @@ describe('Internal conversation list', () => {
     expect(prisma.task.findMany).toHaveBeenCalled();
     expect(items.map((row) => row.id)).toEqual(['group-ok']);
     expect(items.map((row) => row.id)).not.toContain('task-secret');
+  });
+
+  it('marks own latest send unread 0 and inbound null sender unread 1', async () => {
+    const findMany = vi.fn().mockResolvedValue([
+      listRow({
+        id: 'mine',
+        lastMessageAt: new Date('2026-09-05T12:00:00.000Z'),
+        messages: [{
+          content: 'own',
+          senderId: 'e1',
+          createdAt: new Date('2026-09-05T12:00:00.000Z'),
+        }],
+        readStates: [{ lastReadAt: new Date('2020-01-01T00:00:00.000Z') }],
+      }),
+      listRow({
+        id: 'inbound',
+        lastMessageAt: new Date('2026-09-05T12:00:00.000Z'),
+        messages: [{
+          content: 'wa',
+          senderId: null,
+          createdAt: new Date('2026-09-05T12:00:00.000Z'),
+        }],
+        readStates: [{ lastReadAt: new Date('2020-01-01T00:00:00.000Z') }],
+      }),
+    ]);
+    const prisma = {
+      messengerConversation: { findMany },
+      resourceAccessGrant: { findMany: vi.fn().mockResolvedValue([]) },
+    };
+    const result = await listAccessibleInternalConversations(prisma as never, 'e1', 'ALL', {
+      section: 'all',
+    });
+    expect(findMany.mock.calls[0]?.[0]?.include?.messages?.select).toEqual({
+      content: true,
+      senderId: true,
+      createdAt: true,
+    });
+    expect(result.items.find((row) => row.id === 'mine')?.unreadCount).toBe(0);
+    expect(result.items.find((row) => row.id === 'inbound')?.unreadCount).toBe(1);
   });
 });

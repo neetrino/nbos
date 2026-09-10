@@ -110,7 +110,7 @@ export class MessengerCoreActionsService {
       senderId: employeeId,
       sourceMessageIds: sources.map((row) => row.id),
     });
-    this.messengerGateway.emitCoreConversationMessage(targetConversationId, result.holder);
+    this.messengerGateway.publishPersistedCoreMessage(result.holder);
     return result;
   }
 

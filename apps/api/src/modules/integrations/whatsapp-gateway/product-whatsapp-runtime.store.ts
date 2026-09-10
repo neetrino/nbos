@@ -215,6 +215,10 @@ export function createSlice9RuntimeStore() {
         return { id };
       },
     },
+    $queryRaw: async () => [{ revision: 1n }],
+    messengerConversationRevision: {
+      upsert: async () => ({ revision: 1n }),
+    },
     ...createSlice9AccessAndOpsPrisma(nextId, operations, invitations, participantCreates),
   };
 

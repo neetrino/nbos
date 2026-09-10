@@ -12,6 +12,7 @@ import { AtsModule } from '../modules/integrations/ats/ats.module';
 import { AtsCallRecordingWorker } from '../modules/integrations/ats/ats-call-recording.worker';
 import { WhatsAppProductGroupsWorker } from '../modules/integrations/whatsapp-gateway/whatsapp-product-groups.worker';
 import { WhatsAppOutboundMessagesWorker } from '../modules/integrations/whatsapp-gateway/whatsapp-outbound-messages.worker';
+import { MessengerDeliveryStatusModule } from '../modules/messenger/messenger-delivery-status.module';
 import { GoogleContactsWorker } from '../modules/integrations/google-contacts/google-contacts.worker';
 import { OpsAlertsModule } from '../modules/ops-alerts/ops-alerts.module';
 import { BullmqWorkerRegistry } from './bullmq-worker-registry';
@@ -44,6 +45,7 @@ export class QueueWorkersModule {
         ReportsModule,
         DriveModule,
         WhatsAppGatewayModule,
+        MessengerDeliveryStatusModule,
         GoogleContactsModule,
         AtsModule,
         OpsAlertsModule,

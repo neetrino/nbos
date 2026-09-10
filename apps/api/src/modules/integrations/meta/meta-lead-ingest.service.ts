@@ -187,10 +187,7 @@ export class MetaLeadIngestService {
             timeout: 10000,
           },
         );
-        this.messengerGateway.emitCoreConversationMessage(
-          result.core.conversationId,
-          result.core.message,
-        );
+        this.messengerGateway.publishPersistedCoreMessage(result.core.message);
         return result.leadId;
       } catch (error) {
         if (isPrismaSerializationFailure(error) && attempt < META_TX_MAX_RETRIES - 1) {

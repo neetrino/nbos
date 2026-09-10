@@ -11,6 +11,8 @@ import {
   MESSENGER_CORE_CLIENT_ZONE,
   MESSENGER_CORE_INTERNAL_ZONE,
 } from './messenger-core.constants';
+import { bumpTargetedFavoriteRevision } from './messenger-core-revision-write.ops';
+import { runMessengerWriteTx } from './messenger-core-revision-tx';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -55,19 +57,23 @@ async function toggleFavoriteForZone(
     zone === MESSENGER_CORE_INTERNAL_ZONE
       ? await ensureInternalFavoritesCollection(prisma, employeeId)
       : await ensureClientFavoritesCollection(prisma, employeeId);
-  const existing = await prisma.messengerConversationCollectionItem.findUnique({
-    where: {
-      collectionId_conversationId: { collectionId: favorites.id, conversationId },
-    },
+  return runMessengerWriteTx(prisma, async (tx) => {
+    const existing = await tx.messengerConversationCollectionItem.findUnique({
+      where: {
+        collectionId_conversationId: { collectionId: favorites.id, conversationId },
+      },
+    });
+    if (existing) {
+      await removeCoreCollectionItem(tx, favorites.id, conversationId);
+      await upsertFavoriteSetting(tx, employeeId, conversationId, false);
+      await bumpTargetedFavoriteRevision(tx, zone, employeeId, conversationId);
+      return { favorite: false, collectionId: favorites.id };
+    }
+    await addCoreCollectionItem(tx, favorites.id, conversationId);
+    await upsertFavoriteSetting(tx, employeeId, conversationId, true);
+    await bumpTargetedFavoriteRevision(tx, zone, employeeId, conversationId);
+    return { favorite: true, collectionId: favorites.id };
   });
-  if (existing) {
-    await removeCoreCollectionItem(prisma, favorites.id, conversationId);
-    await upsertFavoriteSetting(prisma, employeeId, conversationId, false);
-    return { favorite: false, collectionId: favorites.id };
-  }
-  await addCoreCollectionItem(prisma, favorites.id, conversationId);
-  await upsertFavoriteSetting(prisma, employeeId, conversationId, true);
-  return { favorite: true, collectionId: favorites.id };
 }
 
 async function upsertFavoriteSetting(

@@ -1,0 +1,52 @@
+// Phase 4 coalesced recovery markers. Identifiers/change kind/revision only.
+// Never store message body, title, preview, provider payload, or secrets.
+
+enum MessengerRevisionChangeKind {
+  CONVERSATION
+  READ
+  FAVORITE
+  ACCESS_REMOVED
+}
+
+/// Per-zone committed revision counter. Writers lock this row in the state transaction.
+model MessengerZoneRevisionCounter {
+  zone      MessengerConversationZone @id
+  revision  BigInt                    @default(0)
+  updatedAt DateTime                  @updatedAt @map("updated_at")
+
+  @@map("messenger_zone_revision_counters")
+}
+
+/// Latest global conversation change per zone+conversation. ACL-filtered at read.
+model MessengerConversationRevision {
+  id             String                      @id @default(uuid())
+  zone           MessengerConversationZone
+  conversationId String                      @map("conversation_id")
+  changeKind     MessengerRevisionChangeKind @map("change_kind")
+  revision       BigInt
+  updatedAt      DateTime                    @updatedAt @map("updated_at")
+
+  conversation MessengerConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([zone, conversationId], map: "messenger_conversation_revisions_zone_conversation_key")
+  @@index([zone, revision, conversationId], map: "messenger_conversation_revisions_zone_revision_idx")
+  @@map("messenger_conversation_revisions")
+}
+
+/// Latest targeted read/favorite/access-loss per employee+zone+conversation.
+model MessengerEmployeeConversationRevision {
+  id             String                      @id @default(uuid())
+  employeeId     String                      @map("employee_id")
+  zone           MessengerConversationZone
+  conversationId String                      @map("conversation_id")
+  changeKind     MessengerRevisionChangeKind @map("change_kind")
+  revision       BigInt
+  updatedAt      DateTime                    @updatedAt @map("updated_at")
+
+  employee     Employee              @relation("MessengerEmployeeConversationRevisionEmployee", fields: [employeeId], references: [id], onDelete: Cascade)
+  conversation MessengerConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, zone, conversationId], map: "messenger_employee_revisions_employee_zone_conversation_key")
+  @@index([employeeId, zone, revision, conversationId], map: "messenger_employee_revisions_employee_zone_revision_idx")
+  @@map("messenger_employee_conversation_revisions")
+}

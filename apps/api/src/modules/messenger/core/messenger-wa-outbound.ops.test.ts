@@ -44,6 +44,11 @@ function prismaForOutbox() {
     messengerCommand: {
       upsert: vi.fn().mockResolvedValue({ id: 'cmd-1', status: 'PENDING' }),
       findMany: vi.fn(),
+      findUnique: vi.fn().mockResolvedValue(null),
+      create: vi.fn().mockResolvedValue({ id: 'cmd-1', status: 'PENDING' }),
+      createMany: vi.fn().mockResolvedValue({ count: 1 }),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      update: vi.fn().mockResolvedValue({}),
     },
     messengerMessage: {
       findUnique: vi.fn().mockResolvedValue({
@@ -51,8 +56,19 @@ function prismaForOutbox() {
         senderNameSnapshot: 'Ada',
         mentions: [],
         referencesAsTarget: [],
+        deletedAt: null,
+        conversation: { zone: 'CLIENT' },
       }),
     },
+    messengerExternalConversationMapping: {
+      findFirst: vi.fn().mockResolvedValue({
+        externalAccountId: 'acc_a',
+        externalConversationId: CHAT,
+        conversation: { zone: 'CLIENT' },
+      }),
+    },
+    messengerMessageExternalRef: { findFirst: vi.fn().mockResolvedValue(null) },
+    auditLog: { create: vi.fn() },
   };
 }
 
@@ -69,14 +85,6 @@ describe('WhatsApp outbound enqueue (FINDING-S8-04)', () => {
         MAPPING,
       ),
     ).resolves.toMatchObject({ id: 'msg-1', status: 'QUEUED' });
-    expect(prisma.messengerCommand.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        create: expect.objectContaining({
-          status: 'PENDING',
-          idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}msg-1`,
-        }),
-      }),
-    );
     expect(queue.enqueue).not.toHaveBeenCalled();
   });
 
@@ -86,19 +94,21 @@ describe('WhatsApp outbound enqueue (FINDING-S8-04)', () => {
       isAvailable: vi.fn().mockReturnValue(true),
       enqueue: vi.fn().mockResolvedValue(undefined),
     };
-    prisma.messengerCommand.findMany.mockImplementation(
-      async ({ where }: { where: { status?: string } }) => {
-        if (where.status !== 'PENDING') return [];
-        return [
-          {
-            conversationId: 'conv-c',
-            resultMessageId: 'msg-1',
-            idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}msg-1`,
-            payload: { accountId: 'acc_a', chatId: CHAT },
-          },
-        ];
+    prisma.messengerCommand.findMany.mockResolvedValue([
+      {
+        id: 'cmd-1',
+        conversationId: 'conv-c',
+        resultMessageId: 'msg-1',
+        idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}msg-1`,
+        payload: { accountId: 'acc_a', chatId: CHAT },
+        status: 'PENDING',
+        kind: 'SEND_MESSAGE',
+        firstAttemptAt: null,
+        invalidReason: null,
+        createdAt: new Date(),
+        nextReconcileAt: null,
       },
-    );
+    ]);
     const enqueued = await drainPendingWhatsAppCoreSends(prisma as never, queue);
     expect(enqueued).toBe(1);
     expect(queue.enqueue).toHaveBeenCalledWith(
@@ -125,7 +135,6 @@ describe('WhatsApp outbound enqueue (FINDING-S8-04)', () => {
       MAPPING,
     );
     expect(result).toMatchObject({ id: 'msg-1', status: 'QUEUED' });
-    expect(prisma.messengerCommand.upsert).toHaveBeenCalled();
     expect(queue.enqueue).toHaveBeenCalledWith(
       expect.objectContaining({ kind: 'core_client_send', messageId: 'msg-1' }),
       false,
@@ -157,9 +166,10 @@ describe('WhatsApp core-send exhaustion (FINDING-S8-04)', () => {
           id: 'msg-1',
           conversationId: 'conv-1',
           content: 'hi',
-          status,
-          deletedAt: null,
-        }),
+        status,
+        deletedAt: null,
+        conversation: { zone: 'CLIENT' },
+      }),
         update: vi.fn().mockResolvedValue({}),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       },
@@ -167,7 +177,49 @@ describe('WhatsApp core-send exhaustion (FINDING-S8-04)', () => {
         createMany: vi.fn(),
         findFirst: vi.fn().mockResolvedValue(null),
       },
-      messengerCommand: { updateMany: vi.fn() },
+      messengerCommand: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'cmd-1',
+          conversationId: 'conv-1',
+          resultMessageId: 'msg-1',
+          idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}msg-1`,
+          kind: 'SEND_MESSAGE',
+          status: 'PENDING',
+          payload: { accountId: 'acc_a', chatId: CHAT },
+          firstAttemptAt: null,
+          createdAt: new Date(),
+          invalidReason: null,
+          nextReconcileAt: null,
+        }),
+        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+        update: vi.fn().mockResolvedValue({}),
+        count: vi.fn().mockResolvedValue(1),
+      },
+      $queryRaw: vi.fn().mockResolvedValue([
+        {
+          id: 'cmd-1',
+          conversationId: 'conv-1',
+          resultMessageId: 'msg-1',
+          idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}msg-1`,
+          kind: 'SEND_MESSAGE',
+          status: 'PENDING',
+          payload: { accountId: 'acc_a', chatId: CHAT },
+          firstAttemptAt: null,
+          createdAt: new Date(),
+          invalidReason: null,
+          nextReconcileAt: null,
+          dispatchToken: null,
+          dispatchClaimedAt: null,
+        },
+      ]),
+      messengerExternalConversationMapping: {
+        findFirst: vi.fn().mockResolvedValue({
+          externalAccountId: 'acc_a',
+          externalConversationId: CHAT,
+          conversation: { zone: 'CLIENT' },
+        }),
+      },
+      auditLog: { create: vi.fn().mockResolvedValue({ id: 'a1' }) },
     };
   }
 
@@ -189,7 +241,7 @@ describe('WhatsApp core-send exhaustion (FINDING-S8-04)', () => {
         data: { status: 'FAILED' },
       }),
     );
-    expect(prisma.messengerCommand.updateMany).toHaveBeenCalledWith(
+    expect(prisma.messengerCommand.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: 'FAILED' }) }),
     );
   });
@@ -223,9 +275,14 @@ describe('WhatsApp core-send exhaustion (FINDING-S8-04)', () => {
 });
 
 type CasUpdateManyArgs = {
-  where: { status?: { in: string[] } };
+  where: { status?: string | { in: string[] } };
   data: { status: string };
 };
+
+function allowedStatuses(status: CasUpdateManyArgs['where']['status']): string[] {
+  if (typeof status === 'string') return [status];
+  return status?.in ?? [];
+}
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -239,7 +296,49 @@ function createCasPrisma(initialStatus: string, findStatus?: string) {
       findFirst: vi.fn().mockResolvedValue(null),
       createMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
-    messengerCommand: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+    $queryRaw: vi.fn().mockResolvedValue([
+      {
+        id: 'cmd-1',
+        conversationId: 'conv-1',
+        resultMessageId: 'msg-1',
+        idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}msg-1`,
+        kind: 'SEND_MESSAGE',
+        status: 'PENDING',
+        payload: { accountId: 'acc_a', chatId: CHAT },
+        firstAttemptAt: null,
+        createdAt: new Date(),
+        invalidReason: null,
+        nextReconcileAt: null,
+        dispatchToken: null,
+        dispatchClaimedAt: null,
+      },
+    ]),
+    messengerCommand: {
+      findUnique: vi.fn().mockResolvedValue({
+        id: 'cmd-1',
+        conversationId: 'conv-1',
+        resultMessageId: 'msg-1',
+        idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}msg-1`,
+        kind: 'SEND_MESSAGE',
+        status: 'PENDING',
+        payload: { accountId: 'acc_a', chatId: CHAT },
+        firstAttemptAt: null,
+        createdAt: new Date(),
+        invalidReason: null,
+        nextReconcileAt: null,
+      }),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      update: vi.fn().mockResolvedValue({}),
+      count: vi.fn().mockResolvedValue(1),
+    },
+    messengerExternalConversationMapping: {
+      findFirst: vi.fn().mockResolvedValue({
+        externalAccountId: 'acc_a',
+        externalConversationId: CHAT,
+        conversation: { zone: 'CLIENT' },
+      }),
+    },
+    auditLog: { create: vi.fn().mockResolvedValue({ id: 'a1' }) },
     messengerMessage: {
       findUnique: vi.fn(async () => ({
         id: 'msg-1',
@@ -255,6 +354,7 @@ function createCasPrisma(initialStatus: string, findStatus?: string) {
         createdAt: new Date(),
         editedAt: null,
         deletedAt: null,
+        conversation: { zone: 'CLIENT' },
         attachments: [],
         mentions: [],
         referencesAsTarget: [],
@@ -265,7 +365,7 @@ function createCasPrisma(initialStatus: string, findStatus?: string) {
         return {};
       }),
       updateMany: vi.fn(async ({ where, data }: CasUpdateManyArgs) => {
-        const allowed = where.status?.in ?? [];
+        const allowed = allowedStatuses(where.status);
         if (!allowed.includes(stored.status)) return { count: 0 };
         stored.status = data.status;
         return { count: 1 };
@@ -402,6 +502,8 @@ describe('WhatsApp outbound CAS (FINDING-S8-05)', () => {
       }),
     );
     expect(order.indexOf('ref')).toBeGreaterThanOrEqual(0);
-    expect(order.indexOf('sent')).toBeGreaterThan(order.indexOf('ref'));
+    expect(prisma.messengerCommand.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: 'COMPLETED' }) }),
+    );
   });
 });

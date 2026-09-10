@@ -1,4 +1,6 @@
-import { messengerCoreApi, type MessengerCoreMessageRow } from '@/lib/api/messenger-core';
+import type { QueryClient } from '@tanstack/react-query';
+import { messengerCoreApi } from '@/lib/api/messenger-core';
+import { applyMessengerSendResult } from '@/features/messenger/query/messenger-cache';
 import type { InternalSendExtras } from './InternalConversationThread';
 
 export async function sendInternalThreadMessage(input: {
@@ -8,9 +10,8 @@ export async function sendInternalThreadMessage(input: {
   content: string;
   extras: InternalSendExtras;
   setSendBusy: (busy: boolean) => void;
-  setMessages: (updater: (prev: MessengerCoreMessageRow[]) => MessengerCoreMessageRow[]) => void;
   setNewMessage: (value: string) => void;
-  refreshLists: () => Promise<void>;
+  queryClient: QueryClient;
 }): Promise<void> {
   if (!input.conversationId || !input.canWrite || input.sendBusy) return;
   const content = input.content.trim();
@@ -22,11 +23,8 @@ export async function sendInternalThreadMessage(input: {
       replyToMessageId: input.extras.replyToMessageId,
       mentionedEmployeeIds: input.extras.mentionedEmployeeIds,
     });
-    input.setMessages((prev) =>
-      prev.some((row) => row.id === message.id) ? prev : [...prev, message],
-    );
+    applyMessengerSendResult(input.queryClient, 'INTERNAL', message);
     input.setNewMessage('');
-    await input.refreshLists();
   } finally {
     input.setSendBusy(false);
   }

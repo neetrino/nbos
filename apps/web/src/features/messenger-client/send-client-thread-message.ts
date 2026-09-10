@@ -1,5 +1,6 @@
+import type { QueryClient } from '@tanstack/react-query';
 import { messengerClientApi } from '@/lib/api/messenger-core-client';
-import type { MessengerCoreMessageRow } from '@/lib/api/messenger-core';
+import { applyMessengerSendResult } from '@/features/messenger/query/messenger-cache';
 import { isClientSendReady } from './client-composer-unlock';
 
 const pendingClientSendKeys = new Map<string, string>();
@@ -13,9 +14,8 @@ export async function sendClientThreadMessage(input: {
   content: string;
   replyToMessageId?: string;
   setSendBusy: (busy: boolean) => void;
-  setMessages: (updater: (prev: MessengerCoreMessageRow[]) => MessengerCoreMessageRow[]) => void;
   setNewMessage: (value: string) => void;
-  refreshLists: () => Promise<void>;
+  queryClient: QueryClient;
 }): Promise<void> {
   if (
     !isClientSendReady({
@@ -40,11 +40,8 @@ export async function sendClientThreadMessage(input: {
       idempotencyKey,
     });
     pendingClientSendKeys.delete(conversationId);
-    input.setMessages((prev) =>
-      prev.some((row) => row.id === message.id) ? prev : [...prev, message],
-    );
+    applyMessengerSendResult(input.queryClient, 'CLIENT', message);
     input.setNewMessage('');
-    await input.refreshLists();
   } finally {
     input.setSendBusy(false);
   }

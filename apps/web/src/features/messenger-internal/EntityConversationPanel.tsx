@@ -34,7 +34,7 @@ export function EntityConversationPanel({
       <InternalConversationThread
         conversation={state.conversation}
         messages={state.messages}
-        messagesLoading={false}
+        messagesLoading={state.messagesLoading}
         newMessage={state.newMessage}
         onNewMessageChange={state.setNewMessage}
         onSend={state.send}

@@ -19,11 +19,9 @@ import {
   type MessengerCoreCollectionDto,
 } from './messenger-core-collection.ops';
 import {
-  ensureInternalFavoritesCollection,
-  listAclFilteredCollectionItems,
+  listCollectionItemIds,
   listClientCollections,
   listInternalCollections,
-  ensureClientFavoritesCollection,
   removeCoreCollectionItem,
 } from './messenger-core-collection-list.ops';
 import { listAccessibleInternalConversationsByIds } from './messenger-core-internal-list.ops';
@@ -76,7 +74,6 @@ export class MessengerCoreCollectionService {
 
   async listInternal(employeeId: string): Promise<MessengerCoreCollectionDto[]> {
     await this.requireView(employeeId);
-    await ensureInternalFavoritesCollection(this.prisma, employeeId);
     return listInternalCollections(this.prisma, employeeId);
   }
 
@@ -102,15 +99,20 @@ export class MessengerCoreCollectionService {
   async getInternal(collectionId: string, employeeId: string, tasksAccess: TasksAccessContext) {
     await this.requireInternalCollection(collectionId, employeeId);
     const access = await this.requireView(employeeId);
-    const items = await listAclFilteredCollectionItems(this.prisma, collectionId, employeeId);
+    const itemIds = await listCollectionItemIds(
+      this.prisma,
+      collectionId,
+      MESSENGER_CORE_INTERNAL_ZONE,
+    );
     const conversations = await listAccessibleInternalConversationsByIds(
       this.prisma,
       employeeId,
       access.viewScope,
-      items.map((item) => item.conversationId),
+      itemIds,
       access.editScope,
       tasksAccess,
     );
+    const items = conversations.map((row) => ({ conversationId: row.id }));
     const collection = await this.prisma.messengerConversationCollection.findUnique({
       where: { id: collectionId },
     });
@@ -143,7 +145,6 @@ export class MessengerCoreCollectionService {
 
   async listClient(employeeId: string) {
     await this.requireView(employeeId);
-    await ensureClientFavoritesCollection(this.prisma, employeeId);
     return listClientCollections(this.prisma, employeeId);
   }
 
@@ -160,10 +161,9 @@ export class MessengerCoreCollectionService {
   async getClient(collectionId: string, employeeId: string) {
     await this.requireClientCollection(collectionId, employeeId);
     const access = await this.requireView(employeeId);
-    const items = await listAclFilteredCollectionItems(
+    const itemIds = await listCollectionItemIds(
       this.prisma,
       collectionId,
-      employeeId,
       MESSENGER_CORE_CLIENT_ZONE,
     );
     const conversations = await listAccessibleClientConversationsByIds(
@@ -171,8 +171,9 @@ export class MessengerCoreCollectionService {
       employeeId,
       access.clientReadScope,
       access.clientSendScope,
-      items.map((item) => item.conversationId),
+      itemIds,
     );
+    const items = conversations.map((row) => ({ conversationId: row.id }));
     const collection = await this.prisma.messengerConversationCollection.findUnique({
       where: { id: collectionId },
     });

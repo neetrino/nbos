@@ -8,6 +8,8 @@ import type {
   MessengerCoreConversationDto,
   MessengerCoreLinkInput,
 } from './messenger-core.types';
+import { bumpGlobalConversationRevision } from './messenger-core-revision-write.ops';
+import { runMessengerWriteTx } from './messenger-core-revision-tx';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -56,23 +58,26 @@ export async function createCoreConversation(
   if (input.type === 'DIRECT') {
     return ensureDirectConversation(prisma, input);
   }
-  const created = await prisma.messengerConversation.create({
-    data: {
-      zone: input.zone,
-      kind: kindFor(input.zone, input.type),
-      type: input.type,
-      title: input.title,
-      createdById: input.createdById,
-      participants: {
-        create: uniqueParticipantIds(input).map((employeeId) => ({
-          employeeId,
-          role: employeeId === input.createdById ? 'OWNER' : 'MEMBER',
-        })),
+  return runMessengerWriteTx(prisma, async (tx) => {
+    const created = await tx.messengerConversation.create({
+      data: {
+        zone: input.zone,
+        kind: kindFor(input.zone, input.type),
+        type: input.type,
+        title: input.title,
+        createdById: input.createdById,
+        participants: {
+          create: uniqueParticipantIds(input).map((employeeId) => ({
+            employeeId,
+            role: employeeId === input.createdById ? 'OWNER' : 'MEMBER',
+          })),
+        },
+        links: linkCreate(input.links),
       },
-      links: linkCreate(input.links),
-    },
+    });
+    await bumpGlobalConversationRevision(tx, created.zone, created.id);
+    return mapConversation(created);
   });
-  return mapConversation(created);
 }
 
 export async function ensureDirectConversation(
@@ -89,25 +94,28 @@ export async function ensureDirectConversation(
   });
   if (existing) return mapConversation(existing);
   try {
-    const created = await prisma.messengerConversation.create({
-      data: {
-        zone: 'INTERNAL',
-        kind: 'DIRECT',
-        type: 'DIRECT',
-        title: input.title,
-        createdById: input.createdById,
-        canonicalKey: pair.canonicalKey,
-        directParticipantLowId: pair.low,
-        directParticipantHighId: pair.high,
-        participants: {
-          create: [
-            { employeeId: pair.low, role: 'MEMBER' },
-            { employeeId: pair.high, role: 'MEMBER' },
-          ],
+    return await runMessengerWriteTx(prisma, async (tx) => {
+      const created = await tx.messengerConversation.create({
+        data: {
+          zone: 'INTERNAL',
+          kind: 'DIRECT',
+          type: 'DIRECT',
+          title: input.title,
+          createdById: input.createdById,
+          canonicalKey: pair.canonicalKey,
+          directParticipantLowId: pair.low,
+          directParticipantHighId: pair.high,
+          participants: {
+            create: [
+              { employeeId: pair.low, role: 'MEMBER' },
+              { employeeId: pair.high, role: 'MEMBER' },
+            ],
+          },
         },
-      },
+      });
+      await bumpGlobalConversationRevision(tx, created.zone, created.id);
+      return mapConversation(created);
     });
-    return mapConversation(created);
   } catch (error) {
     if (classifyDatabaseError(error)?.code !== 'DB_UNIQUE_CONSTRAINT') throw error;
     const raced = await prisma.messengerConversation.findUnique({

@@ -20,6 +20,11 @@ export class ListInternalConversationsQueryDto {
   filter?: 'unread' | 'mentions';
 
   @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  cursor?: string;
+
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)

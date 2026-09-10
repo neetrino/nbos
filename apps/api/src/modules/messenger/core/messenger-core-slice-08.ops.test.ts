@@ -12,6 +12,15 @@ import {
 import { WhatsAppGatewayHttpError } from '../../integrations/whatsapp-gateway/whatsapp-gateway.errors';
 import { isWhatsAppChatId, whatsAppOutboundIdempotencyKey } from './messenger-wa-identity';
 import { MESSENGER_CORE_INTERNAL_PROVIDER_FORBIDDEN } from './messenger-core.constants';
+import { commandLockMocks } from './messenger-outbound-lock-test.util';
+
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async (_prisma: unknown, fn: (tx: unknown) => unknown) => fn(_prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpGlobalConversationRevision: vi.fn(async () => 1n),
+}));
 
 const ACCOUNT_A = 'acc_a';
 const ACCOUNT_B = 'acc_b';
@@ -54,6 +63,7 @@ describe('WhatsApp inbound persist', () => {
     messengerMessageMention: {
       createMany: vi.fn(),
     },
+    $executeRaw: vi.fn().mockResolvedValue(1),
   };
 
   beforeEach(() => {
@@ -76,7 +86,7 @@ describe('WhatsApp inbound persist', () => {
         return null;
       },
     );
-    prisma.messengerConversation.create.mockResolvedValue({ id: 'conv-new' });
+    prisma.messengerConversation.create.mockResolvedValue({ id: 'conv-new', zone: 'CLIENT' });
     prisma.messengerMessage.create.mockImplementation(
       async ({ data }: { data: { content: string } }) => ({
         id: 'msg-1',
@@ -306,6 +316,21 @@ describe('WhatsApp outbound dispatch', () => {
   const client = { sendAccountTextMessage: vi.fn() };
 
   function prismaFor(status: string, hasWhatsAppRef = status === 'OUTCOME_UNKNOWN') {
+    const cmd = {
+      id: 'cmd-1',
+      conversationId: 'conv-1',
+      resultMessageId: 'msg-1',
+      idempotencyKey: 'core-wa-send:msg-1',
+      kind: 'SEND_MESSAGE',
+      status: 'PENDING',
+      payload: { accountId: ACCOUNT_A, chatId: CHAT },
+      firstAttemptAt: null as Date | null,
+      createdAt: new Date(),
+      invalidReason: null as string | null,
+      nextReconcileAt: null as Date | null,
+      dispatchToken: null as string | null,
+      dispatchClaimedAt: null as Date | null,
+    };
     return {
       messengerMessage: {
         findUnique: vi.fn().mockResolvedValue({
@@ -314,15 +339,29 @@ describe('WhatsApp outbound dispatch', () => {
           content: 'hi',
           status,
           deletedAt: null,
+          conversation: { zone: 'CLIENT' },
         }),
         update: vi.fn().mockResolvedValue({}),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       },
       messengerMessageExternalRef: {
         createMany: vi.fn(),
-        findFirst: vi.fn().mockResolvedValue(hasWhatsAppRef ? { id: 'ref-1' } : null),
+        findFirst: vi.fn().mockResolvedValue(
+          hasWhatsAppRef
+            ? { id: 'ref-1', externalMessageId: 'wamid-1', externalAccountId: ACCOUNT_A }
+            : null,
+        ),
+        findUnique: vi.fn().mockResolvedValue({ messageId: 'msg-1' }),
       },
-      messengerCommand: { updateMany: vi.fn() },
+      messengerExternalConversationMapping: {
+        findFirst: vi.fn().mockResolvedValue({
+          externalAccountId: ACCOUNT_A,
+          externalConversationId: CHAT,
+          conversation: { zone: 'CLIENT' },
+        }),
+      },
+      ...commandLockMocks(cmd),
+      auditLog: { create: vi.fn().mockResolvedValue({ id: 'a1' }) },
     };
   }
 
@@ -390,6 +429,7 @@ describe('WhatsApp outbound dispatch', () => {
           content: 'hi',
           status: findStatus ?? stored.status,
           deletedAt: null,
+          conversation: { zone: 'CLIENT' },
         })),
         update: vi.fn(async ({ data }: { data: { status: string } }) => {
           stored.status = data.status;
@@ -400,10 +440,10 @@ describe('WhatsApp outbound dispatch', () => {
             where,
             data,
           }: {
-            where: { status?: { in: string[] } };
+            where: { status?: string | { in: string[] } };
             data: { status: string };
           }) => {
-            const allowed = where.status?.in ?? [];
+            const allowed = typeof where.status === 'string' ? [where.status] : (where.status?.in ?? []);
             if (!allowed.includes(stored.status)) return { count: 0 };
             stored.status = data.status;
             return { count: 1 };
@@ -413,8 +453,51 @@ describe('WhatsApp outbound dispatch', () => {
       messengerMessageExternalRef: {
         createMany: vi.fn(),
         findFirst: vi.fn().mockResolvedValue(null),
+        findUnique: vi.fn().mockResolvedValue({ messageId: 'msg-1' }),
       },
-      messengerCommand: { updateMany: vi.fn() },
+      messengerExternalConversationMapping: {
+        findFirst: vi.fn().mockResolvedValue({
+          externalAccountId: ACCOUNT_A,
+          externalConversationId: CHAT,
+          conversation: { zone: 'CLIENT' },
+        }),
+      },
+      $queryRaw: vi.fn().mockResolvedValue([
+        {
+          id: 'cmd-1',
+          conversationId: 'conv-1',
+          resultMessageId: 'msg-1',
+          idempotencyKey: 'core-wa-send:msg-1',
+          kind: 'SEND_MESSAGE',
+          status: 'PENDING',
+          payload: { accountId: ACCOUNT_A, chatId: CHAT },
+          firstAttemptAt: null,
+          createdAt: new Date(),
+          invalidReason: null,
+          nextReconcileAt: null,
+          dispatchToken: null,
+          dispatchClaimedAt: null,
+        },
+      ]),
+      messengerCommand: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'cmd-1',
+          conversationId: 'conv-1',
+          resultMessageId: 'msg-1',
+          idempotencyKey: 'core-wa-send:msg-1',
+          kind: 'SEND_MESSAGE',
+          status: 'PENDING',
+          payload: { accountId: ACCOUNT_A, chatId: CHAT },
+          firstAttemptAt: null,
+          createdAt: new Date(),
+          invalidReason: null,
+          nextReconcileAt: null,
+        }),
+        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+        update: vi.fn().mockResolvedValue({}),
+        count: vi.fn().mockResolvedValue(1),
+      },
+      auditLog: { create: vi.fn().mockResolvedValue({ id: 'a1' }) },
     };
     return { prisma, stored };
   }

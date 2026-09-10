@@ -17,7 +17,10 @@ describe('MetaLeadIngestService Nest DI', () => {
         MetaLeadIngestService,
         { provide: PRISMA_TOKEN, useValue: {} },
         { provide: MetaProfileService, useValue: profileService },
-        { provide: MessengerGateway, useValue: { emitCoreConversationMessage: vi.fn() } },
+        {
+          provide: MessengerGateway,
+          useValue: { emitCoreConversationMessage: vi.fn(), publishPersistedCoreMessage: vi.fn() },
+        },
       ],
     }).compile();
 

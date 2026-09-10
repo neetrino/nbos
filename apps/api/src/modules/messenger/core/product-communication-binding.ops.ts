@@ -14,6 +14,8 @@ import {
   resolveWhatsAppAccountantGroupChatId,
   resolveWhatsAppGatewayAccountId,
 } from './product-communication-account';
+import { bumpGlobalConversationRevision } from './messenger-core-revision-write.ops';
+import { runMessengerWriteTx } from './messenger-core-revision-tx';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -61,17 +63,20 @@ async function persistBindingRow(
   existing: { id: string; conversationId: string } | null,
 ): Promise<UpsertProductCommunicationBindingResult> {
   if (existing) {
-    const updated = await prisma.productCommunicationBinding.update({
-      where: { id: existing.id },
-      data: {
-        conversationId,
-        status: PRODUCT_COMMUNICATION_BINDING_ACTIVE,
-        legacyBindingId: input.legacyBindingId ?? undefined,
-        createdFromDealId: input.createdFromDealId ?? undefined,
-      },
-      select: { id: true, conversationId: true },
+    return runMessengerWriteTx(prisma, async (tx) => {
+      const updated = await tx.productCommunicationBinding.update({
+        where: { id: existing.id },
+        data: {
+          conversationId,
+          status: PRODUCT_COMMUNICATION_BINDING_ACTIVE,
+          legacyBindingId: input.legacyBindingId ?? undefined,
+          createdFromDealId: input.createdFromDealId ?? undefined,
+        },
+        select: { id: true, conversationId: true },
+      });
+      await bumpGlobalConversationRevision(tx, 'CLIENT', conversationId);
+      return { ...updated, created: false };
     });
-    return { ...updated, created: false };
   }
   return createBindingRow(prisma, input, conversationId);
 }
@@ -82,16 +87,20 @@ async function createBindingRow(
   conversationId: string,
 ): Promise<UpsertProductCommunicationBindingResult> {
   try {
-    const created = await prisma.productCommunicationBinding.create({
-      data: {
-        productId: input.productId,
-        purpose: input.purpose,
-        conversationId,
-        status: PRODUCT_COMMUNICATION_BINDING_ACTIVE,
-        legacyBindingId: input.legacyBindingId ?? null,
-        createdFromDealId: input.createdFromDealId ?? null,
-      },
-      select: { id: true, conversationId: true },
+    const created = await runMessengerWriteTx(prisma, async (tx) => {
+      const row = await tx.productCommunicationBinding.create({
+        data: {
+          productId: input.productId,
+          purpose: input.purpose,
+          conversationId,
+          status: PRODUCT_COMMUNICATION_BINDING_ACTIVE,
+          legacyBindingId: input.legacyBindingId ?? null,
+          createdFromDealId: input.createdFromDealId ?? null,
+        },
+        select: { id: true, conversationId: true },
+      });
+      await bumpGlobalConversationRevision(tx, 'CLIENT', conversationId);
+      return row;
     });
     return { ...created, created: true };
   } catch (error) {

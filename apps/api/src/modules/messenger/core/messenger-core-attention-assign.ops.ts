@@ -17,6 +17,8 @@ import { listConversationAttentions } from './messenger-core-attention.ops';
 import { assertAttentionOwnerAllowed } from './messenger-core-attention-assign-validate';
 import type { MessengerAttentionDto } from './messenger-core-attention.types';
 import { PRODUCT_COMMUNICATION_PURPOSES } from './product-communication.constants';
+import { bumpGlobalConversationRevision } from './messenger-core-revision-write.ops';
+import { runMessengerWriteTx } from './messenger-core-revision-tx';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -37,17 +39,21 @@ export async function assignConversationAttention(
   assertPurpose(input.purpose);
   await assertAttentionOwnerAllowed(prisma, input);
   const product = await loadBoundProduct(prisma, input);
-  if (shouldRestoreProductPmDefault(input, product)) {
-    await prisma.messengerConversationAttention.deleteMany({
-      where: {
-        conversationId: input.conversationId,
-        productId: input.productId,
-        purpose: input.purpose,
-      },
-    });
-    return listConversationAttentions(prisma, input.conversationId);
-  }
-  return upsertAttentionOverride(prisma, input);
+  return runMessengerWriteTx(prisma, async (tx) => {
+    if (shouldRestoreProductPmDefault(input, product)) {
+      await tx.messengerConversationAttention.deleteMany({
+        where: {
+          conversationId: input.conversationId,
+          productId: input.productId,
+          purpose: input.purpose,
+        },
+      });
+    } else {
+      await upsertAttentionOverride(tx, input);
+    }
+    await bumpGlobalConversationRevision(tx, 'CLIENT', input.conversationId);
+    return listConversationAttentions(tx, input.conversationId);
+  });
 }
 
 function assertPurpose(purpose: ProductCommunicationPurpose): void {
@@ -88,7 +94,7 @@ function shouldRestoreProductPmDefault(
 async function upsertAttentionOverride(
   prisma: PrismaLike,
   input: AssignConversationAttentionInput,
-): Promise<MessengerAttentionDto[]> {
+): Promise<void> {
   const fields = resolveOwnerFields(input);
   await prisma.messengerConversationAttention.upsert({
     where: {
@@ -107,7 +113,6 @@ async function upsertAttentionOverride(
     },
     update: { assignedById: input.assignedById, ...fields },
   });
-  return listConversationAttentions(prisma, input.conversationId);
 }
 
 function resolveOwnerFields(input: AssignConversationAttentionInput): {

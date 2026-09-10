@@ -4,6 +4,14 @@ import { buildTasksParticipationWhere } from '../../tasks/task-involves-employee
 import { ensureTaskConversation } from './messenger-core-task-ensure.ops';
 import { taskCanonicalKey } from './messenger-core-canonical-key';
 
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async <T>(prisma: T, fn: (tx: T) => Promise<unknown>) => fn(prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpGlobalConversationRevision: async () => 1n,
+}));
+
 const TASK_ID = 'dddddddd-dddd-4ddd-8ddd-dddddddd0001';
 const EMPLOYEE_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 const OUTSIDER_ID = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';

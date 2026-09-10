@@ -5,6 +5,7 @@ import {
   dispatchWhatsAppCoreSendJob,
   markWhatsAppCoreSendExhausted,
 } from './messenger-wa-outbound-dispatch.ops';
+import { commandLockMocks } from './messenger-outbound-lock-test.util';
 
 const CHAT = '37499111222@c.us';
 const JOB = {
@@ -16,11 +17,46 @@ const JOB = {
   idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}msg-1`,
 };
 
+function canonicalCommand(overrides?: Record<string, unknown>) {
+  return {
+    id: 'cmd-1',
+    conversationId: JOB.conversationId,
+    resultMessageId: JOB.messageId,
+    idempotencyKey: JOB.idempotencyKey,
+    kind: 'SEND_MESSAGE',
+    status: 'PENDING',
+    payload: { accountId: JOB.accountId, chatId: JOB.chatId },
+    firstAttemptAt: null,
+    createdAt: new Date(),
+    invalidReason: null,
+    nextReconcileAt: null,
+    ...overrides,
+  };
+}
+
 const connection = {
   requireClientConfig: vi.fn().mockResolvedValue({ baseUrl: 'https://wa.test', apiToken: 'tok' }),
 };
 
-type CasArgs = { where: { status?: { in: string[] } }; data: { status: string } };
+type CasArgs = { where: { status?: string | { in: string[] } }; data: { status: string } };
+
+function allowedStatuses(status: CasArgs['where']['status']): string[] {
+  if (typeof status === 'string') return [status];
+  return status?.in ?? [];
+}
+
+function mappingMocks() {
+  return {
+    messengerExternalConversationMapping: {
+      findFirst: vi.fn().mockResolvedValue({
+        externalAccountId: 'acc_a',
+        externalConversationId: CHAT,
+        conversation: { zone: 'CLIENT' },
+      }),
+    },
+    auditLog: { create: vi.fn().mockResolvedValue({ id: 'a1' }) },
+  };
+}
 
 function prismaFor(status: string, hasWhatsAppRef = false) {
   return {
@@ -31,14 +67,21 @@ function prismaFor(status: string, hasWhatsAppRef = false) {
         content: 'hi',
         status,
         deletedAt: null,
+        conversation: { zone: 'CLIENT' },
       }),
       updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
     messengerMessageExternalRef: {
       createMany: vi.fn(),
-      findFirst: vi.fn().mockResolvedValue(hasWhatsAppRef ? { id: 'ref-1' } : null),
+      findFirst: vi.fn().mockResolvedValue(
+        hasWhatsAppRef
+          ? { id: 'ref-1', externalMessageId: 'wamid-1', externalAccountId: 'acc_a' }
+          : null,
+      ),
+      findUnique: vi.fn().mockResolvedValue({ messageId: 'msg-1' }),
     },
-    messengerCommand: { updateMany: vi.fn() },
+    ...commandLockMocks(canonicalCommand()),
+    ...mappingMocks(),
   };
 }
 
@@ -52,9 +95,10 @@ function casPrisma(status: string, hasWhatsAppRef = false) {
         content: 'hi',
         status: stored.status,
         deletedAt: null,
+        conversation: { zone: 'CLIENT' },
       })),
       updateMany: vi.fn(async ({ where, data }: CasArgs) => {
-        const allowed = where.status?.in ?? [];
+        const allowed = allowedStatuses(where.status);
         if (!allowed.includes(stored.status)) return { count: 0 };
         stored.status = data.status;
         return { count: 1 };
@@ -62,9 +106,15 @@ function casPrisma(status: string, hasWhatsAppRef = false) {
     },
     messengerMessageExternalRef: {
       createMany: vi.fn().mockResolvedValue({ count: 1 }),
-      findFirst: vi.fn().mockResolvedValue(hasWhatsAppRef ? { id: 'ref-1' } : null),
+      findFirst: vi.fn().mockResolvedValue(
+        hasWhatsAppRef
+          ? { id: 'ref-1', externalMessageId: 'wamid-1', externalAccountId: 'acc_a' }
+          : null,
+      ),
+      findUnique: vi.fn().mockResolvedValue({ messageId: 'msg-1' }),
     },
-    messengerCommand: { updateMany: vi.fn() },
+    ...commandLockMocks(canonicalCommand()),
+    ...mappingMocks(),
   };
   return { prisma, stored };
 }
@@ -192,7 +242,7 @@ describe('WhatsApp core send 5xx exhaustion (FINDING-S8-09)', () => {
         data: { status: 'OUTCOME_UNKNOWN' },
       }),
     );
-    expect(prisma.messengerCommand.updateMany).toHaveBeenCalledWith(
+    expect(prisma.messengerCommand.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: 'OUTCOME_UNKNOWN' }) }),
     );
   });

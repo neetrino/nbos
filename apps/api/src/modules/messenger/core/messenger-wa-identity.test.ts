@@ -3,6 +3,7 @@ import {
   canAdvanceWhatsAppDelivery,
   isRetryableWhatsAppLifecycleSkip,
   whatsAppStatusesAllowedForOutboundWrite,
+  whatsAppStatusesAllowedForOwnedProofWrite,
   whatsAppStatusesStrictlyBelow,
 } from './messenger-wa-identity';
 
@@ -31,9 +32,25 @@ describe('WhatsApp delivery rank (FINDING-S8-05)', () => {
     expect(whatsAppStatusesStrictlyBelow('READ')).not.toContain('CANCELLED');
   });
 
+  it('lets owned-proof CAS repair FAILED without opening generic outbound/failure writes', () => {
+    expect(whatsAppStatusesAllowedForOwnedProofWrite('SENT')).toEqual(
+      expect.arrayContaining(['QUEUED', 'SENDING', 'OUTCOME_UNKNOWN', 'FAILED']),
+    );
+    expect(whatsAppStatusesAllowedForOwnedProofWrite('SENT')).not.toContain('CANCELLED');
+    expect(whatsAppStatusesAllowedForOwnedProofWrite('READ')).toEqual(
+      expect.arrayContaining(['FAILED', 'SENT', 'DELIVERED']),
+    );
+    expect(whatsAppStatusesAllowedForOutboundWrite('SENT')).not.toContain('FAILED');
+    expect(whatsAppStatusesAllowedForOutboundWrite('FAILED')).toEqual(['QUEUED', 'SENDING']);
+  });
+
   it('restricts outbound SENDING/SENT/FAILED/OUTCOME_UNKNOWN to QUEUED/SENDING', () => {
     expect(whatsAppStatusesAllowedForOutboundWrite('SENDING')).toEqual(['QUEUED', 'SENDING']);
-    expect(whatsAppStatusesAllowedForOutboundWrite('SENT')).toEqual(['QUEUED', 'SENDING']);
+    expect(whatsAppStatusesAllowedForOutboundWrite('SENT')).toEqual([
+      'QUEUED',
+      'SENDING',
+      'OUTCOME_UNKNOWN',
+    ]);
     expect(whatsAppStatusesAllowedForOutboundWrite('FAILED')).toEqual(['QUEUED', 'SENDING']);
     expect(whatsAppStatusesAllowedForOutboundWrite('OUTCOME_UNKNOWN')).toEqual([
       'QUEUED',

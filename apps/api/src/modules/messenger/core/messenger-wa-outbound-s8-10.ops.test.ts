@@ -1,8 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX,
-  WHATSAPP_CORE_UNKNOWN_RECONCILE_MS,
-} from '../../integrations/whatsapp-gateway/whatsapp-gateway.constants';
+import { WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX } from '../../integrations/whatsapp-gateway/whatsapp-gateway.constants';
 import { WhatsAppGatewayHttpError } from '../../integrations/whatsapp-gateway/whatsapp-gateway.errors';
 import { drainPendingWhatsAppCoreSends } from './messenger-wa-outbound-drain.ops';
 import {
@@ -22,11 +19,33 @@ const JOB = {
   idempotencyKey: IDEMPOTENCY_KEY,
 };
 
+function canonicalCommand(overrides?: Record<string, unknown>) {
+  return {
+    id: 'cmd-1',
+    conversationId: JOB.conversationId,
+    resultMessageId: JOB.messageId,
+    idempotencyKey: JOB.idempotencyKey,
+    kind: 'SEND_MESSAGE',
+    status: 'PENDING',
+    payload: { accountId: JOB.accountId, chatId: JOB.chatId },
+    firstAttemptAt: null,
+    createdAt: new Date(),
+    invalidReason: null,
+    nextReconcileAt: null,
+    ...overrides,
+  };
+}
+
 const connection = {
   requireClientConfig: vi.fn().mockResolvedValue({ baseUrl: 'https://wa.test', apiToken: 'tok' }),
 };
 
-type CasArgs = { where: { status?: { in: string[] } }; data: { status: string } };
+type CasArgs = { where: { status?: string | { in: string[] } }; data: { status: string } };
+
+function allowedStatuses(status: CasArgs['where']['status']): string[] {
+  if (typeof status === 'string') return [status];
+  return status?.in ?? [];
+}
 
 function prismaFor(status: string, hasWhatsAppRef = false) {
   return {
@@ -37,6 +56,7 @@ function prismaFor(status: string, hasWhatsAppRef = false) {
         content: 'hi',
         status,
         deletedAt: null,
+        conversation: { zone: 'CLIENT' },
       }),
       create: vi.fn(),
       updateMany: vi.fn().mockResolvedValue({ count: 1 }),
@@ -46,7 +66,21 @@ function prismaFor(status: string, hasWhatsAppRef = false) {
       findFirst: vi.fn().mockResolvedValue(hasWhatsAppRef ? { id: 'ref-1' } : null),
       findUnique: vi.fn().mockResolvedValue(hasWhatsAppRef ? { messageId: 'msg-1' } : null),
     },
-    messengerCommand: { updateMany: vi.fn(), findMany: vi.fn() },
+    $queryRaw: vi.fn(async () => [canonicalCommand()]),
+    messengerCommand: {
+      findUnique: vi.fn().mockResolvedValue(canonicalCommand()),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      update: vi.fn().mockResolvedValue({}),
+      count: vi.fn().mockResolvedValue(1),
+    },
+    messengerExternalConversationMapping: {
+      findFirst: vi.fn().mockResolvedValue({
+        externalAccountId: 'acc_a',
+        externalConversationId: CHAT,
+        conversation: { zone: 'CLIENT' },
+      }),
+    },
+    auditLog: { create: vi.fn() },
   };
 }
 
@@ -68,13 +102,14 @@ function casPrisma(status: string) {
         createdAt: new Date(),
         editedAt: null,
         deletedAt: null,
+        conversation: { zone: 'CLIENT' },
         attachments: [],
         mentions: [],
         referencesAsTarget: [],
       })),
       create: vi.fn(),
       updateMany: vi.fn(async ({ where, data }: CasArgs) => {
-        const allowed = where.status?.in ?? [];
+        const allowed = allowedStatuses(where.status);
         if (!allowed.includes(stored.status)) return { count: 0 };
         stored.status = data.status;
         return { count: 1 };
@@ -85,7 +120,25 @@ function casPrisma(status: string) {
       findFirst: vi.fn().mockResolvedValue(null),
       findUnique: vi.fn().mockResolvedValue({ messageId: 'msg-1' }),
     },
-    messengerCommand: { updateMany: vi.fn(), findMany: vi.fn() },
+    $queryRaw: vi.fn(async () => [
+      canonicalCommand({ status: status === 'OUTCOME_UNKNOWN' ? 'OUTCOME_UNKNOWN' : 'PENDING' }),
+    ]),
+    messengerCommand: {
+      findUnique: vi.fn().mockResolvedValue(
+        canonicalCommand({ status: status === 'OUTCOME_UNKNOWN' ? 'OUTCOME_UNKNOWN' : 'PENDING' }),
+      ),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      update: vi.fn().mockResolvedValue({}),
+      count: vi.fn().mockResolvedValue(1),
+    },
+    messengerExternalConversationMapping: {
+      findFirst: vi.fn().mockResolvedValue({
+        externalAccountId: 'acc_a',
+        externalConversationId: CHAT,
+        conversation: { zone: 'CLIENT' },
+      }),
+    },
+    auditLog: { create: vi.fn() },
   };
   return { prisma, stored };
 }
@@ -145,40 +198,66 @@ describe('WhatsApp WAHA_UNAVAILABLE retry (FINDING-S8-10)', () => {
 });
 
 describe('WhatsApp OUTCOME_UNKNOWN drain (FINDING-S8-10)', () => {
-  const unknownRow = {
+  const pendingRow = {
+    id: 'cmd-1',
     conversationId: 'conv-1',
     resultMessageId: 'msg-1',
     idempotencyKey: IDEMPOTENCY_KEY,
+    kind: 'SEND_MESSAGE',
     payload: { accountId: 'acc_a', chatId: CHAT },
+    status: 'PENDING',
+    createdAt: new Date(),
+    nextReconcileAt: null,
   };
 
-  function drainPrisma(pendingRows: (typeof unknownRow)[], unknownRows: (typeof unknownRow)[]) {
+  function drainPrisma(
+    rows: Array<typeof pendingRow>,
+    messageStatus = 'QUEUED',
+    hasRef = false,
+  ) {
     return {
+      $queryRaw: vi.fn(async () => (rows[0] ? [{ ...rows[0] }] : [])),
       messengerCommand: {
-        findMany: vi.fn(async ({ where }: { where: { status?: string } }) => {
-          if (where.status === 'PENDING') return pendingRows;
-          if (where.status === 'OUTCOME_UNKNOWN') return unknownRows;
-          return [];
+        findMany: vi.fn().mockResolvedValue(rows),
+        findUnique: vi.fn().mockResolvedValue(rows[0] ?? null),
+        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+        update: vi.fn().mockResolvedValue({}),
+      },
+      messengerMessage: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'msg-1',
+          conversationId: 'conv-1',
+          content: 'hi',
+          status: messageStatus,
+          deletedAt: null,
+          conversation: { zone: 'CLIENT' },
         }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       },
+      messengerExternalConversationMapping: {
+        findFirst: vi.fn().mockResolvedValue({
+          externalAccountId: 'acc_a',
+          externalConversationId: CHAT,
+          conversation: { zone: 'CLIENT' },
+        }),
+      },
+      messengerMessageExternalRef: {
+        findFirst: vi.fn().mockResolvedValue(hasRef ? { id: 'ref-1' } : null),
+      },
+      auditLog: { create: vi.fn() },
     };
   }
 
-  it('enqueues 0 for an OUTCOME_UNKNOWN command when only PENDING rows are selected', async () => {
-    const prisma = drainPrisma([], []);
+  it('enqueues 0 when no candidate commands are selected', async () => {
+    const prisma = drainPrisma([]);
     const queue = { isAvailable: vi.fn().mockReturnValue(true), enqueue: vi.fn() };
     const enqueued = await drainPendingWhatsAppCoreSends(prisma as never, queue);
     expect(enqueued).toBe(0);
     expect(queue.enqueue).not.toHaveBeenCalled();
-    expect(prisma.messengerCommand.findMany).toHaveBeenNthCalledWith(
-      1,
-      expect.objectContaining({ where: expect.objectContaining({ status: 'PENDING' }) }),
-    );
   });
 
-  it('enqueues the same idempotencyKey for eligible OUTCOME_UNKNOWN without a WHATSAPP ref', async () => {
-    const prisma = drainPrisma([], [unknownRow]);
+  it('enqueues the same idempotencyKey for eligible PENDING without a WHATSAPP ref', async () => {
+    const prisma = drainPrisma([pendingRow]);
     const queue = {
       isAvailable: vi.fn().mockReturnValue(true),
       enqueue: vi.fn().mockResolvedValue(undefined),
@@ -193,29 +272,23 @@ describe('WhatsApp OUTCOME_UNKNOWN drain (FINDING-S8-10)', () => {
       }),
       false,
     );
-    expect(prisma.messengerCommand.findMany).toHaveBeenNthCalledWith(
-      2,
+  });
+
+  it('does not auto-submit OUTCOME_UNKNOWN after the Gateway 24h window', async () => {
+    const prisma = drainPrisma([
+      {
+        ...pendingRow,
+        status: 'OUTCOME_UNKNOWN',
+        createdAt: new Date(Date.now() - 25 * 60 * 60 * 1000),
+      },
+    ], 'OUTCOME_UNKNOWN');
+    const queue = { isAvailable: vi.fn().mockReturnValue(true), enqueue: vi.fn() };
+    const enqueued = await drainPendingWhatsAppCoreSends(prisma as never, queue);
+    expect(enqueued).toBe(0);
+    expect(queue.enqueue).not.toHaveBeenCalled();
+    expect(prisma.messengerCommand.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({
-          status: 'OUTCOME_UNKNOWN',
-          idempotencyKey: { startsWith: WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX },
-          completedAt: { lte: expect.any(Date) },
-          resultMessage: { is: { externalRefs: { none: { provider: 'WHATSAPP' } } } },
-        }),
-      }),
-    );
-    const unknownWhere = prisma.messengerCommand.findMany.mock.calls[1]?.[0]?.where as {
-      completedAt: { lte: Date };
-    };
-    const ageMs = Date.now() - unknownWhere.completedAt.lte.getTime();
-    expect(ageMs).toBeGreaterThanOrEqual(WHATSAPP_CORE_UNKNOWN_RECONCILE_MS - 50);
-    expect(prisma.messengerCommand.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          idempotencyKey: IDEMPOTENCY_KEY,
-          status: 'OUTCOME_UNKNOWN',
-        }),
-        data: expect.objectContaining({ completedAt: expect.any(Date) }),
+        data: expect.objectContaining({ invalidReason: 'GATEWAY_WINDOW_EXPIRED' }),
       }),
     );
   });
@@ -244,7 +317,7 @@ describe('WhatsApp missing-ref recovery then ACK (FINDING-S8-10)', () => {
       }),
     );
     expect(prisma.messengerMessage.create).not.toHaveBeenCalled();
-    expect(stored.status).toBe('OUTCOME_UNKNOWN');
+    expect(stored.status).toBe('SENT');
     const ack = await applyWhatsAppAck(prisma as never, {
       accountId: 'acc_a',
       providerMessageId: 'wamid-1',

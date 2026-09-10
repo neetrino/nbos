@@ -10,6 +10,7 @@ import { SchedulerAiService } from './scheduler-ai.service';
 import { MailGmailWatchRenewCron } from './mail-gmail-watch-renew.cron';
 import { MailOutboundReconcileCron } from './mail-outbound-reconcile.cron';
 import { MailSyncReconcileCron } from './mail-sync-reconcile.cron';
+import { MessengerOutboundReconcileCron } from './messenger-outbound-reconcile.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
 import { ClientServicesRenewalInvoiceCron } from './client-services-renewal-invoice.cron';
 import { NotificationEnqueueReconcileCron } from './notification-enqueue-reconcile.cron';
@@ -38,6 +39,7 @@ const CRON_PROVIDERS = [
   MailOutboundReconcileCron,
   MailGmailWatchRenewCron,
   MailSyncReconcileCron,
+  MessengerOutboundReconcileCron,
   AiModelCatalogSyncCron,
   ...INTERNAL_SCHEDULER_CRON_PROVIDERS,
 ] as const;
@@ -66,6 +68,7 @@ function createSchedulerServiceMock(): SchedulerService {
     runMailOutboundReconcile: vi.fn().mockResolvedValue({}),
     runMailGmailWatchRenew: vi.fn().mockResolvedValue({}),
     runMailSyncReconcile: vi.fn().mockResolvedValue({}),
+    runMessengerOutboundReconcile: vi.fn().mockResolvedValue({}),
   } as unknown as SchedulerService;
 }
 

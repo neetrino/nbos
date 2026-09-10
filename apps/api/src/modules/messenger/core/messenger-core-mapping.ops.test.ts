@@ -58,6 +58,21 @@ describe('core provider mapping / outbox hooks', () => {
       }),
     ).rejects.toThrow(/cannot enqueue provider send/);
     expect(prisma.messengerCommand.upsert).not.toHaveBeenCalled();
+    expect(prisma.messengerCommand.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects CLIENT outbox without a validated WhatsApp payload and messageId', async () => {
+    prisma.messengerConversation.findUniqueOrThrow.mockResolvedValue({
+      id: 'conv-2',
+      zone: 'CLIENT',
+    });
+    await expect(
+      createCoreProviderSendOutbox(prisma as never, {
+        conversationId: 'conv-2',
+        idempotencyKey: 'core-wa-send:msg-1',
+      }),
+    ).rejects.toThrow(/different intent/);
+    expect(prisma.messengerCommand.create).not.toHaveBeenCalled();
   });
 
   it('allows mapping hook on CLIENT conversations without dispatching Gateway', async () => {

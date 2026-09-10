@@ -2,8 +2,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { persistCoreMessage } from './messenger-core-message.ops';
 import { assertCoreFileAssetsExist } from './messenger-core-attachment.ops';
 
+vi.mock('./messenger-core-revision-tx', () => ({
+  runMessengerWriteTx: async (_prisma: unknown, fn: (tx: unknown) => unknown) => fn(_prisma),
+  runMessengerReadTx: async (_prisma: unknown, fn: (tx: unknown) => unknown) => fn(_prisma),
+}));
+
+vi.mock('./messenger-core-revision-write.ops', () => ({
+  bumpGlobalConversationRevision: vi.fn(async () => 1n),
+}));
+
 describe('core message persistence', () => {
   const prisma = {
+    $executeRaw: vi.fn().mockResolvedValue(1),
     messengerMessage: {
       findUnique: vi.fn(),
       create: vi.fn(),

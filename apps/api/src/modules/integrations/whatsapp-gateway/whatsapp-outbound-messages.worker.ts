@@ -41,6 +41,7 @@ import {
   dispatchWhatsAppCoreSendJob,
   markWhatsAppCoreSendExhausted,
 } from '../../messenger/core/messenger-wa-outbound-dispatch.ops';
+import { MessengerDeliveryStatusBus } from '../../messenger/core/messenger-delivery-status-bus';
 
 @Injectable()
 export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDestroy {
@@ -55,6 +56,7 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
     private readonly registry: BullmqWorkerRegistry,
     @Optional() private readonly opsAlerts?: OpsJobFailureAlertService,
     @Optional() private readonly outbound?: WhatsAppOutboundQueueService,
+    @Optional() private readonly deliveryBus?: MessengerDeliveryStatusBus,
   ) {}
 
   onModuleInit() {
@@ -121,6 +123,7 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
           this.connectionService,
           this.client,
           job.data,
+          this.deliveryBus,
         );
         return;
       }
@@ -141,7 +144,13 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
     void this.opsAlerts?.notifyIfBullmqFinallyFailed(WHATSAPP_OUTBOUND_QUEUE_NAME, job, error);
     if (!job || job.data.kind !== 'core_client_send') return;
     if (!isBullmqJobFinallyFailed(job)) return;
-    void markWhatsAppCoreSendExhausted(this.prisma, job.data.messageId, error);
+    void markWhatsAppCoreSendExhausted(
+      this.prisma,
+      job.data.messageId,
+      error,
+      job.data.conversationId,
+      this.deliveryBus,
+    );
   }
 
   private async drainPendingCoreSends(): Promise<void> {

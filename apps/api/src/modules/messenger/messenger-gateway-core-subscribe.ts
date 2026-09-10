@@ -1,23 +1,40 @@
 import type { PrismaClient } from '@nbos/database';
-import { evaluateMessengerCoreAccess } from './core/messenger-core-access';
-import { loadMessengerCoreAccessFacts } from './core/messenger-core-access-load';
+import { messengerSocketConversationRoom } from '@nbos/shared';
+import { employeeMayUseCoreConversation } from './core/messenger-core-read-authorize';
+import { extractConversationId } from './messenger-gateway-parse';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
-export async function employeeMayUseCoreConversation(
+export { employeeMayUseCoreConversation, extractConversationId };
+
+export async function subscribeSocketToCoreConversation(
   prisma: PrismaLike,
-  employeeId: string,
-  conversationId: string,
-): Promise<boolean> {
-  const loaded = await loadMessengerCoreAccessFacts(prisma, employeeId, conversationId);
-  if (!loaded.access || loaded.access.viewScope === 'NONE' || !loaded.facts) return false;
-  return evaluateMessengerCoreAccess(loaded.facts).canRead;
+  employeeId: string | undefined,
+  body: unknown,
+  join: (room: string) => void | Promise<void>,
+): Promise<{ ok: boolean }> {
+  if (!employeeId) return { ok: false };
+  const conversationId = extractConversationId(body);
+  if (!conversationId) return { ok: false };
+  if (!(await employeeMayUseCoreConversation(prisma, employeeId, conversationId))) {
+    return { ok: false };
+  }
+  await join(messengerSocketConversationRoom(conversationId));
+  return { ok: true };
 }
 
-export function extractConversationId(body: unknown): string | null {
-  if (!body || typeof body !== 'object') return null;
-  const raw = (body as { conversationId?: unknown }).conversationId;
-  if (typeof raw !== 'string') return null;
-  const id = raw.trim();
-  return id.length > 0 ? id : null;
+/**
+ * Leaves only the conversation room derived from a validated body.
+ * Never touches `messenger:user:{employeeId}`.
+ */
+export async function leaveSocketCoreConversation(
+  employeeId: string | undefined,
+  body: unknown,
+  leave: (room: string) => void | Promise<void>,
+): Promise<{ ok: boolean }> {
+  if (!employeeId) return { ok: false };
+  const conversationId = extractConversationId(body);
+  if (!conversationId) return { ok: false };
+  await leave(messengerSocketConversationRoom(conversationId));
+  return { ok: true };
 }

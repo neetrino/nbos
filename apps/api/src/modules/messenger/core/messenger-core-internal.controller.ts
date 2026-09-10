@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -19,6 +18,7 @@ import { CreateInternalConversationDto } from './dto/create-internal-conversatio
 import { ForwardCoreMessagesDto } from './dto/forward-core-messages.dto';
 import { ListCoreMessagesQueryDto } from './dto/list-core-messages.query';
 import { ListInternalConversationsQueryDto } from './dto/list-internal-conversations.query';
+import { ListMessengerDeltaQueryDto } from './dto/list-messenger-delta.query';
 import { SendCoreMessageDto } from './dto/send-core-message.dto';
 import { MessengerCoreInternalService } from './messenger-core-internal.service';
 import { tasksAccessFromUser } from '../../tasks/tasks-scoped-access';
@@ -45,6 +45,28 @@ export class MessengerCoreInternalController {
   })
   mapTaskDiscussion(@CurrentUser() _user: CurrentUserPayload) {
     return this.internal.mapTaskDiscussion();
+  }
+
+  @Post('bootstrap')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({
+    summary: 'Initialize Internal Favorites and return All summaries plus zone Collections',
+  })
+  bootstrap(@CurrentUser() user: CurrentUserPayload) {
+    return this.internal.bootstrap(user.id, tasksAccessFromUser(user));
+  }
+
+  @Get('delta')
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({
+    summary: 'Internal zone delta from an HTTP checkpoint (current authorized state only)',
+  })
+  listDelta(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: ListMessengerDeltaQueryDto,
+  ) {
+    return this.internal.listDelta(user.id, query, tasksAccessFromUser(user));
   }
 
   @Get('conversations')

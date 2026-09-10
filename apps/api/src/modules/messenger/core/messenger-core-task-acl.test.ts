@@ -68,7 +68,13 @@ describe('Task conversation GET ACL', () => {
     };
     const service = new MessengerCoreService(
       prisma as never,
-      { emitCoreConversationMessage: vi.fn(), emitReadListsUpdated: vi.fn() } as never,
+      {
+        emitCoreConversationMessage: vi.fn(),
+        emitReadListsUpdated: vi.fn(),
+        emitConversationReadUpdated: vi.fn(),
+        publishPersistedCoreMessage: vi.fn(),
+        evictEmployeeFromConversation: vi.fn().mockResolvedValue(undefined),
+      } as never,
       { log: vi.fn() } as never,
     );
     await expect(service.getConversation('conv-task', 'outsider')).rejects.toBeInstanceOf(
@@ -118,7 +124,13 @@ describe('Task conversation GET ACL', () => {
     };
     const service = new MessengerCoreService(
       prisma as never,
-      { emitCoreConversationMessage: vi.fn(), emitReadListsUpdated: vi.fn() } as never,
+      {
+        emitCoreConversationMessage: vi.fn(),
+        emitReadListsUpdated: vi.fn(),
+        emitConversationReadUpdated: vi.fn(),
+        publishPersistedCoreMessage: vi.fn(),
+        evictEmployeeFromConversation: vi.fn().mockResolvedValue(undefined),
+      } as never,
       { log: vi.fn() } as never,
     );
     await expect(service.getConversation('conv-task', 'admin')).resolves.toEqual(

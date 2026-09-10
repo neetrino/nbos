@@ -18,6 +18,8 @@ export const WHATSAPP_INBOUND_IDEMPOTENCY_PREFIX = 'core-wa-in:';
 export const WHATSAPP_CORE_PENDING_DRAIN_BATCH_SIZE = 50;
 /** Min age of OUTCOME_UNKNOWN (no WHATSAPP ref) before same-key drain re-enqueues. */
 export const WHATSAPP_CORE_UNKNOWN_RECONCILE_MS = 60_000;
+/** Gateway Idempotency-Key TTL (documented 24h). Same-key reconcile only inside this window. */
+export const WHATSAPP_GATEWAY_IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000;
 export const WHATSAPP_GROUP_NAME_MAX_LENGTH = 100;
 export const WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE = 20;
 export const WHATSAPP_GATEWAY_DIRECTORY_PAGE_SIZE_MAX = 50;

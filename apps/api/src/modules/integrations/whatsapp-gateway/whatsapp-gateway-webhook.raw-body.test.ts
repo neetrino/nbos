@@ -11,7 +11,7 @@ describe('WhatsApp webhook rawBody (FINDING-S8-01)', () => {
     const service = new WhatsAppGatewayWebhookService(
       {} as never,
       connection as never,
-      { emitCoreConversationMessage: vi.fn() } as never,
+      { emitCoreConversationMessage: vi.fn(), publishPersistedCoreMessage: vi.fn() } as never,
     );
     const headers = {
       eventId: 'evt_1',

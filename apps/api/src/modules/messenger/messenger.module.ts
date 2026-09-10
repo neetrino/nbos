@@ -19,9 +19,11 @@ import { MessengerService } from './messenger.service';
 import { WhatsAppGatewayModule } from '../integrations/whatsapp-gateway/whatsapp-gateway.module';
 import { WhatsAppGatewayWebhookController } from '../integrations/whatsapp-gateway/whatsapp-gateway-webhook.controller';
 import { WhatsAppGatewayWebhookService } from '../integrations/whatsapp-gateway/whatsapp-gateway-webhook.service';
+import { MessengerDeliveryStatusModule } from './messenger-delivery-status.module';
+import { MessengerDeliveryStatusSubscriber } from './messenger-delivery-status.subscriber';
 
 @Module({
-  imports: [AuditModule, WhatsAppGatewayModule],
+  imports: [AuditModule, WhatsAppGatewayModule, MessengerDeliveryStatusModule],
   controllers: [
     MessengerController,
     MessengerCoreController,
@@ -43,6 +45,7 @@ import { WhatsAppGatewayWebhookService } from '../integrations/whatsapp-gateway/
     MessengerCoreCollectionService,
     MessengerGateway,
     WhatsAppGatewayWebhookService,
+    MessengerDeliveryStatusSubscriber,
   ],
   exports: [MessengerService, MessengerCoreService, MessengerGateway],
 })

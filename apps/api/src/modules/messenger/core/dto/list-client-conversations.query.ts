@@ -26,6 +26,11 @@ export class ListClientConversationsQueryDto {
   provider?: (typeof MESSENGER_CLIENT_PROVIDERS)[number];
 
   @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  cursor?: string;
+
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)

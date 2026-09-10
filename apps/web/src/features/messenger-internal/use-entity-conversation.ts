@@ -1,117 +1,172 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { usePermission } from '@/lib/permissions/PermissionContext';
 import {
   messengerCoreApi,
   type MessengerCoreConversationRow,
-  type MessengerCoreMessageRow,
 } from '@/lib/api/messenger-core';
 import { useInternalMessengerRealtime } from '@/features/messenger-internal/useInternalMessengerRealtime';
+import {
+  applyMessengerRealtimeMessage,
+  invalidateMessengerCollections,
+  patchConversationFavorite,
+} from '@/features/messenger/query/messenger-cache';
+import {
+  applyMessengerAccessChanged,
+  applyMessengerRealtimeRead,
+  applyMessengerRealtimeSummary,
+} from '@/features/messenger/query/messenger-realtime-cache';
+import { recoverMessengerZone } from '@/features/messenger/query/messenger-delta-recovery';
+import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
+import {
+  MESSENGER_QUERY_GC_TIME_MS,
+  MESSENGER_QUERY_STALE_TIME_MS,
+} from '@/features/messenger/query/messenger-query-policy';
+import { useMessengerMessages } from '@/features/messenger/query/use-messenger-messages';
+import { sendInternalThreadMessage } from './send-internal-thread-message';
 import type { EntityConversationKind } from './entity-conversation-kind';
 import type { InternalSendExtras } from './InternalConversationThread';
 
 export function useEntityConversation(kind: EntityConversationKind, entityId: string) {
+  const queryClient = useQueryClient();
   const { me, can } = usePermission();
   const canView = can('VIEW', 'MESSENGER');
-  const bootKey = `${kind}:${entityId}`;
-  const [conversation, setConversation] = useState<MessengerCoreConversationRow | null>(null);
-  const [messages, setMessages] = useState<MessengerCoreMessageRow[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const [sendBusy, setSendBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const loading = Boolean(canView && me && entityId && loadedKey !== bootKey);
-
-  useEntityConversationBoot(
-    canView,
-    me,
-    kind,
-    entityId,
-    bootKey,
-    setConversation,
-    setMessages,
-    setError,
-    setLoadedKey,
-  );
-
-  useInternalMessengerRealtime({
-    canViewMessenger: canView,
-    meId: me?.id,
-    conversationId: conversation?.id ?? null,
-    onInboundMessage: (conversationId, message) => {
-      if (conversationId !== conversation?.id) return;
-      setMessages((prev) =>
-        prev.some((row) => row.id === message.id) ? prev : [...prev, message],
-      );
-    },
+  const conversation = useEntityEnsureQuery(kind, entityId, Boolean(canView && me));
+  const messagesQuery = useMessengerMessages(conversation.data?.id ?? null, {
+    enabled: Boolean(canView && conversation.data?.id),
+    zone: 'INTERNAL',
   });
-
-  return {
+  useEntityRealtime(
     canView,
+    me?.id,
+    conversation.data?.id ?? null,
+    queryClient,
+    () => setNewMessage(''),
+  );
+  useEffect(() => {
+    if (!conversation.data?.id) return;
+    void messengerCoreApi.markRead(conversation.data.id);
+  }, [conversation.data?.id]);
+
+  return buildEntityConversationState({
+    canView,
+    meId: me?.id,
+    entityId,
+    kind,
     conversation,
-    messages,
+    messagesQuery,
     newMessage,
     setNewMessage,
-    loading,
     sendBusy,
-    error,
-    send: (extras: InternalSendExtras) =>
-      void sendEntityMessage(
-        conversation,
-        newMessage,
-        extras,
-        sendBusy,
-        setSendBusy,
-        setMessages,
-        setNewMessage,
-      ),
-    toggleFavorite: () => void toggleFavorite(conversation, setConversation),
-  };
+    setSendBusy,
+    queryClient,
+  });
 }
 
-function useEntityConversationBoot(
-  canView: boolean,
-  me: { id: string } | null | undefined,
+function useEntityEnsureQuery(
   kind: EntityConversationKind,
   entityId: string,
-  bootKey: string,
-  setConversation: (row: MessengerCoreConversationRow) => void,
-  setMessages: (rows: MessengerCoreMessageRow[]) => void,
-  setError: (message: string | null) => void,
-  setLoadedKey: (key: string) => void,
+  enabled: boolean,
 ) {
-  useEffect(() => {
-    if (!canView || !me || !entityId) return;
-    let cancelled = false;
-    void (async () => {
-      try {
-        const loaded = await loadEntityConversation(kind, entityId);
-        if (cancelled) return;
-        setConversation(loaded.conversation);
-        setMessages(loaded.messages);
-        setError(null);
-        setLoadedKey(bootKey);
-      } catch {
-        if (cancelled) return;
-        setError('Could not open this Internal conversation.');
-        setLoadedKey(bootKey);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [bootKey, canView, entityId, kind, me, setConversation, setError, setLoadedKey, setMessages]);
+  return useQuery({
+    queryKey: messengerQueryKeys.internalEntity(kind, entityId),
+    queryFn: () => ensureEntityConversation(kind, entityId),
+    enabled: enabled && Boolean(entityId),
+    staleTime: MESSENGER_QUERY_STALE_TIME_MS,
+    gcTime: MESSENGER_QUERY_GC_TIME_MS,
+  });
 }
 
-async function loadEntityConversation(
-  kind: EntityConversationKind,
-  entityId: string,
-): Promise<{ conversation: MessengerCoreConversationRow; messages: MessengerCoreMessageRow[] }> {
-  const conversation = await ensureEntityConversation(kind, entityId);
-  const page = await messengerCoreApi.listMessages(conversation.id);
-  await messengerCoreApi.markRead(conversation.id);
-  return { conversation, messages: page.items };
+function useEntityRealtime(
+  canView: boolean,
+  meId: string | undefined,
+  conversationId: string | null,
+  queryClient: QueryClient,
+  clearComposer: () => void,
+): void {
+  useInternalMessengerRealtime({
+    canViewMessenger: canView,
+    meId,
+    conversationId,
+    onInboundMessage: (_id, message) => {
+      applyMessengerRealtimeMessage(queryClient, message);
+    },
+    onConversationSummary: (payload) => {
+      applyMessengerRealtimeSummary(queryClient, 'INTERNAL', payload);
+    },
+    onConversationRead: (payload) => {
+      applyMessengerRealtimeRead(queryClient, 'INTERNAL', payload);
+    },
+    onAccessChanged: (payload) => {
+      applyMessengerAccessChanged(
+        queryClient,
+        'INTERNAL',
+        payload.conversationId,
+        payload.zone,
+        { activeId: conversationId, clearActive: clearComposer },
+      );
+    },
+    onReconnect: () => {
+      void recoverMessengerZone(queryClient, 'INTERNAL', {
+        activeId: conversationId,
+        clearActive: clearComposer,
+      });
+    },
+  });
+}
+
+function buildEntityConversationState(input: {
+  canView: boolean;
+  meId: string | undefined;
+  entityId: string;
+  kind: EntityConversationKind;
+  conversation: ReturnType<typeof useEntityEnsureQuery>;
+  messagesQuery: ReturnType<typeof useMessengerMessages>;
+  newMessage: string;
+  setNewMessage: (value: string) => void;
+  sendBusy: boolean;
+  setSendBusy: (busy: boolean) => void;
+  queryClient: QueryClient;
+}) {
+  const row = input.conversation.data ?? null;
+  return {
+    canView: input.canView,
+    conversation: row,
+    messages: input.messagesQuery.data?.items ?? [],
+    newMessage: input.newMessage,
+    setNewMessage: input.setNewMessage,
+    loading: Boolean(
+      input.canView &&
+        input.meId &&
+        input.entityId &&
+        input.conversation.isPending &&
+        input.conversation.data === undefined,
+    ),
+    sendBusy: input.sendBusy,
+    messagesLoading:
+      input.messagesQuery.isPending && input.messagesQuery.data === undefined,
+    error:
+      input.conversation.error || input.messagesQuery.error
+        ? 'Could not open this Internal conversation.'
+        : null,
+    send: (extras: InternalSendExtras) =>
+      void sendInternalThreadMessage({
+        conversationId: row?.id ?? null,
+        canWrite: Boolean(row?.canWrite),
+        sendBusy: input.sendBusy,
+        content: input.newMessage,
+        extras,
+        setSendBusy: input.setSendBusy,
+        setNewMessage: input.setNewMessage,
+        queryClient: input.queryClient,
+      }),
+    toggleFavorite: () =>
+      void toggleEntityFavorite(input.queryClient, input.kind, input.entityId, row),
+  };
 }
 
 async function ensureEntityConversation(
@@ -124,39 +179,18 @@ async function ensureEntityConversation(
   return messengerCoreApi.ensureProjectGeneral(entityId);
 }
 
-async function sendEntityMessage(
+async function toggleEntityFavorite(
+  queryClient: QueryClient,
+  kind: EntityConversationKind,
+  entityId: string,
   conversation: MessengerCoreConversationRow | null,
-  newMessage: string,
-  extras: InternalSendExtras,
-  sendBusy: boolean,
-  setSendBusy: (busy: boolean) => void,
-  setMessages: (updater: (prev: MessengerCoreMessageRow[]) => MessengerCoreMessageRow[]) => void,
-  setNewMessage: (value: string) => void,
-): Promise<void> {
-  if (!conversation?.id || !conversation.canWrite || sendBusy) return;
-  const content = newMessage.trim();
-  if (!content) return;
-  setSendBusy(true);
-  try {
-    const message = await messengerCoreApi.sendMessage(conversation.id, {
-      content,
-      replyToMessageId: extras.replyToMessageId,
-      mentionedEmployeeIds: extras.mentionedEmployeeIds,
-    });
-    setMessages((prev) => (prev.some((row) => row.id === message.id) ? prev : [...prev, message]));
-    setNewMessage('');
-  } finally {
-    setSendBusy(false);
-  }
-}
-
-async function toggleFavorite(
-  conversation: MessengerCoreConversationRow | null,
-  setConversation: (
-    updater: (current: MessengerCoreConversationRow | null) => MessengerCoreConversationRow | null,
-  ) => void,
 ): Promise<void> {
   if (!conversation) return;
   const result = await messengerCoreApi.toggleFavorite(conversation.id);
-  setConversation((current) => (current ? { ...current, isFavorite: result.favorite } : current));
+  patchConversationFavorite(queryClient, 'INTERNAL', conversation.id, result.favorite);
+  invalidateMessengerCollections(queryClient, 'INTERNAL', result.collectionId);
+  queryClient.setQueryData<MessengerCoreConversationRow>(
+    messengerQueryKeys.internalEntity(kind, entityId),
+    (current) => (current ? { ...current, isFavorite: result.favorite } : current),
+  );
 }

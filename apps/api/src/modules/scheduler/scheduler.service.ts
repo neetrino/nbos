@@ -18,6 +18,7 @@ import { ClientServicesRenewalInvoiceService } from '../client-services/client-s
 import { MailGmailWatchRenewService } from '../mail/mail-gmail-watch-renew.service';
 import { MailOutboundReconcileService } from '../mail/mail-outbound-reconcile.service';
 import { MailSyncReconcileService } from '../mail/mail-sync-reconcile.service';
+import { MessengerOutboundReconcileService } from '../messenger/messenger-outbound-reconcile.service';
 import { SchedulerLeaseService } from './scheduler-lease.service';
 import {
   SCHEDULER_JOB_NAMES,
@@ -53,6 +54,7 @@ export class SchedulerService {
     private readonly mailOutboundReconcile: MailOutboundReconcileService,
     private readonly mailGmailWatchRenew: MailGmailWatchRenewService,
     private readonly mailSyncReconcile: MailSyncReconcileService,
+    private readonly messengerOutboundReconcile: MessengerOutboundReconcileService,
     private readonly lease: SchedulerLeaseService,
   ) {}
 
@@ -364,6 +366,27 @@ export class SchedulerService {
         return {
           processedCount: result.enqueued,
           metadata: { enqueued: result.enqueued },
+        };
+      },
+    );
+  }
+
+  async runMessengerOutboundReconcile(trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp) {
+    return this.lease.runWithLease(
+      { jobName: SCHEDULER_JOB_NAMES.messengerOutboundReconcile, trigger },
+      async ({ signal }) => {
+        if (signal.aborted) return;
+        const result = await this.messengerOutboundReconcile.reconcile();
+        return {
+          processedCount: result.enqueued + result.repaired,
+          metadata: {
+            scanned: result.scanned,
+            enqueued: result.enqueued,
+            repaired: result.repaired,
+            manualReview: result.manualReview,
+            invalid: result.invalid,
+            errors: result.errors,
+          },
         };
       },
     );

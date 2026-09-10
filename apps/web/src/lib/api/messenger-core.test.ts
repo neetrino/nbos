@@ -30,10 +30,30 @@ describe('Internal Messenger web client', () => {
     expect(sheet).not.toMatch(/\/api\/messenger\/dm/);
     expect(app).not.toMatch(/legacy-map/);
     expect(app).not.toMatch(/mapLegacy/);
-    expect(app).toMatch(/collection\.conversations/);
     expect(app).toMatch(/active\.canWrite/);
+    expect(app).not.toMatch(/setItems\(\[\]\)/);
+    expect(app).not.toMatch(/refreshLists/);
     expect(app).not.toMatch(/\/api\/messenger\/channels/);
     expect(app).not.toMatch(/\/api\/messenger\/dm/);
+    const queries = readWeb('features/messenger-internal/use-internal-messenger-queries.ts');
+    expect(queries).toMatch(/collectionDetail\.data\?\.conversations/);
+    expect(queries).toMatch(/useMessengerZoneBootstrap\('INTERNAL'/);
+    expect(queries).toMatch(/usesSharedInternalAllDataset/);
+    expect(queries).toMatch(/messengerCollectionsEnabled/);
+    expect(queries).toMatch(/messengerDefaultQueriesEnabled/);
+    expect(queries).toMatch(/bootstrap\.error/);
+    expect(queries).toMatch(/collectionDetail/);
+    const bootstrapClient = readWeb('lib/api/messenger-core-bootstrap.ts');
+    expect(bootstrapClient).toMatch(/\/bootstrap/);
+    expect(bootstrapClient).toMatch(/api\.post/);
+    expect(bootstrapClient).not.toMatch(/api\.get/);
+    expect(readWeb('lib/api/messenger-core-delta.ts')).toMatch(/\/delta/);
+    expect(readWeb('lib/api/messenger-core.ts')).toMatch(/listDelta/);
+    const summaries = readWeb('features/messenger/query/use-internal-summaries.ts');
+    expect(summaries).toMatch(/listConversations/);
+    expect(summaries).toMatch(/filter: params\.filter === 'all' \? undefined : params\.filter/);
+    const collections = readWeb('features/messenger/query/use-messenger-collections.ts');
+    expect(collections).toMatch(/getCollection/);
   });
 
   it('entity ensure client uses Internal Core paths only', () => {
@@ -96,5 +116,10 @@ describe('Internal Messenger web client', () => {
     expect(card).toMatch(/Open original/);
     expect(card).toMatch(/sourceMessageId/);
     expect(thread).not.toMatch(/\/api\/messenger\/channels/);
+  });
+
+  it('does not disable React Strict Mode', () => {
+    const nextConfig = readFileSync(path.join(process.cwd(), 'apps/web/next.config.ts'), 'utf8');
+    expect(nextConfig).not.toMatch(/reactStrictMode:\s*false/);
   });
 });

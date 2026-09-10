@@ -453,3 +453,25 @@ At minimum audit high-risk Client Messenger events:
 - AI enable/disable/takeover and AI-origin external actions where applicable.
 
 Message bodies should not be duplicated into broad audit logs unless a specific legal/security requirement requires it; audit should reference canonical records.
+
+---
+
+## 16. Realtime scale and modernization rollout
+
+Socket.IO is transport only. The API process uses a CORS `IoAdapter` with **no**
+Redis Socket.IO adapter. Inbox events are process-local until a shared adapter
+is an approved, separately deployed prerequisite.
+
+Modernization rollout (flags default as in `.env.example` / `docs/deploy.md`):
+
+1. Additive revision/command migrations before readers that require those tables.
+2. `MESSENGER_DELTA_RECOVERY_ENABLED` after writers already instrument revisions.
+3. Browser persistence (`NEXT_PUBLIC_MESSENGER_PERSISTENCE`) after delta, or
+   accept FULL bootstrap while delta is off.
+4. `SCHEDULER_MESSENGER_OUTBOUND_RECONCILE_ENABLED` after migration + worker +
+   API compatibility; keep `whatsapp.outbound-messages` as the send worker.
+5. Monitor UNKNOWN/PENDING age inside the Gateway 24h window.
+6. Rollback by turning flags off. Do not deploy a Socket.IO adapter from
+   Messenger modernization Phase 6.
+
+Evidence: `33-Messenger-Modernization-Final-Evidence.md`.

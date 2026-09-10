@@ -107,6 +107,16 @@ model MessengerCommand {
   payload         Json?
   resultMessageId String?                 @map("result_message_id")
   errorCode       String?                 @map("error_code")
+  /// Bounded scheduler/worker claim clock. Not a terminal timestamp.
+  nextReconcileAt DateTime?               @map("next_reconcile_at")
+  /// Conservative start of the Gateway 24h idempotency window. Set once.
+  firstAttemptAt  DateTime?               @map("first_attempt_at")
+  /// Deterministic invalid/manual-review class. Never stores message body.
+  invalidReason   String?                 @map("invalid_reason")
+  /// Opaque worker dispatch lease token. Null means unclaimed.
+  dispatchToken     String?               @map("dispatch_token")
+  /// When the current dispatch token was acquired.
+  dispatchClaimedAt DateTime?             @map("dispatch_claimed_at")
   createdAt       DateTime                @default(now()) @map("created_at")
   completedAt     DateTime?               @map("completed_at")
 
@@ -116,6 +126,7 @@ model MessengerCommand {
 
   @@index([conversationId, createdAt])
   @@index([status])
+  @@index([kind, status, nextReconcileAt], map: "messenger_commands_kind_status_reconcile_idx")
   @@map("messenger_commands")
 }
 

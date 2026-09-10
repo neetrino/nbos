@@ -10,50 +10,54 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { PrismaClient } from '@nbos/database';
-import * as jwt from 'jsonwebtoken';
 import type { Server, Socket } from 'socket.io';
 import { PRISMA_TOKEN } from '../../database.module';
 import {
   MESSENGER_SOCKET_NAMESPACE,
+  MESSENGER_WS_CLIENT_LEAVE_CONVERSATION,
   MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL,
   MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION,
   MESSENGER_WS_CLIENT_TYPING_CHANNEL,
   MESSENGER_WS_CLIENT_TYPING_DM,
-  MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
-  MESSENGER_WS_SERVER_CHANNEL_TYPING,
-  MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
-  MESSENGER_WS_SERVER_DM_MESSAGE,
-  MESSENGER_WS_SERVER_DM_TYPING,
   MESSENGER_WS_READ_UPDATED_SCOPE,
+  MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
   MESSENGER_WS_SERVER_CHANNEL_PEER_READ,
+  MESSENGER_WS_SERVER_CHANNEL_TYPING,
+  MESSENGER_WS_SERVER_DM_MESSAGE,
   MESSENGER_WS_SERVER_DM_PEER_READ,
+  MESSENGER_WS_SERVER_DM_TYPING,
   MESSENGER_WS_SERVER_PRESENCE,
-  MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
   MESSENGER_WS_SERVER_READ_UPDATED,
   type MessengerWsChannelPeerReadPayload,
+  type MessengerWsConversationReadUpdatedPayload,
   type MessengerWsDmPeerReadPayload,
+  type MessengerWsZone,
   messengerSocketChannelRoom,
-  messengerSocketConversationRoom,
   messengerSocketUserRoom,
 } from '@nbos/shared';
 import {
   canAccessMessengerChannel,
   loadMessengerLegacyAccess,
 } from './access/messenger-legacy-channel-access.op';
+import { authenticateMessengerSocket } from './messenger-gateway-auth';
 import {
-  employeeMayUseCoreConversation,
-  extractConversationId,
+  leaveSocketCoreConversation,
+  subscribeSocketToCoreConversation,
 } from './messenger-gateway-core-subscribe';
+import {
+  emitCoreConversationRoomMessage,
+  evictEmployeeFromConversationRoom,
+  loadConversationPublishFacts,
+  publishCoreConversationSummariesToConnected,
+  publishPersistedCoreConversationMessage,
+  type PersistedCoreMessageFacts,
+} from './messenger-gateway-fanout';
+import { extractChannelId, extractRecipientId } from './messenger-gateway-parse';
 import { MessengerPresenceTracker } from './messenger-presence-tracker';
 import { MessengerTypingThrottle } from './messenger-typing-throttle';
 import type { MessengerMessageDto } from './messenger.types';
 import type { MessengerCoreMessageDto } from './core/messenger-core.types';
 import { parseCorsOriginsFromEnv } from '../../security/cors-origins';
-
-interface JwtSubPayload {
-  sub: string;
-  authVersion?: number;
-}
 
 @WebSocketGateway({
   namespace: MESSENGER_SOCKET_NAMESPACE,
@@ -76,7 +80,14 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
   }
 
   handleConnection(client: Socket): void {
-    void this.authenticateAndJoinUserRoom(client);
+    void authenticateMessengerSocket({
+      client,
+      server: this.server,
+      prisma: this.prisma,
+      jwtSecret: this.jwtSecret,
+      presenceTracker: this.presenceTracker,
+      logger: this.logger,
+    });
   }
 
   handleDisconnect(client: Socket): void {
@@ -110,15 +121,24 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() body: unknown,
   ): Promise<{ ok: boolean }> {
-    const employeeId = client.data.employeeId as string | undefined;
-    if (!employeeId) return { ok: false };
-    const conversationId = extractConversationId(body);
-    if (!conversationId) return { ok: false };
-    if (!(await employeeMayUseCoreConversation(this.prisma, employeeId, conversationId))) {
-      return { ok: false };
-    }
-    await client.join(messengerSocketConversationRoom(conversationId));
-    return { ok: true };
+    return subscribeSocketToCoreConversation(
+      this.prisma,
+      client.data.employeeId as string | undefined,
+      body,
+      (room) => client.join(room),
+    );
+  }
+
+  @SubscribeMessage(MESSENGER_WS_CLIENT_LEAVE_CONVERSATION)
+  async handleLeaveConversation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: unknown,
+  ): Promise<{ ok: boolean }> {
+    return leaveSocketCoreConversation(
+      client.data.employeeId as string | undefined,
+      body,
+      (room) => client.leave(room),
+    );
   }
 
   @SubscribeMessage(MESSENGER_WS_CLIENT_TYPING_CHANNEL)
@@ -167,22 +187,36 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
 
   emitChannelMessage(channelId: string, message: MessengerMessageDto): void {
     if (!this.server) return;
-    this.server
-      .to(messengerSocketChannelRoom(channelId))
-      .emit(MESSENGER_WS_SERVER_CHANNEL_MESSAGE, {
-        channelId,
-        message,
-      });
+    this.server.to(messengerSocketChannelRoom(channelId)).emit(MESSENGER_WS_SERVER_CHANNEL_MESSAGE, {
+      channelId,
+      message,
+    });
   }
 
   emitCoreConversationMessage(conversationId: string, message: MessengerCoreMessageDto): void {
-    if (!this.server) return;
-    this.server
-      .to(messengerSocketConversationRoom(conversationId))
-      .emit(MESSENGER_WS_SERVER_CONVERSATION_MESSAGE, {
-        conversationId,
-        message,
-      });
+    emitCoreConversationRoomMessage(this.server, conversationId, message);
+  }
+
+  publishPersistedCoreMessage(
+    message: MessengerCoreMessageDto,
+    knownFacts?: PersistedCoreMessageFacts,
+  ): void {
+    publishPersistedCoreConversationMessage({
+      emitRoomMessage: (conversationId, roomMessage) =>
+        this.emitCoreConversationMessage(conversationId, roomMessage),
+      scheduleSummaries: (payload) =>
+        publishCoreConversationSummariesToConnected({
+          server: this.server,
+          prisma: this.prisma,
+          presenceTracker: this.presenceTracker,
+          logger: this.logger,
+          payload,
+        }),
+      loadFacts: (id) => loadConversationPublishFacts(this.prisma, id),
+      logger: this.logger,
+      message,
+      knownFacts,
+    });
   }
 
   emitDmToParticipants(
@@ -212,7 +246,22 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     });
   }
 
-  /** Notifies `peerEmployeeId` that `payload.counterpartId` advanced their DM read cursor. */
+  emitConversationReadUpdated(
+    employeeId: string,
+    payload: MessengerWsConversationReadUpdatedPayload,
+  ): void {
+    if (!this.server) return;
+    this.server.to(messengerSocketUserRoom(employeeId)).emit(MESSENGER_WS_SERVER_READ_UPDATED, payload);
+  }
+
+  async evictEmployeeFromConversation(
+    employeeId: string,
+    conversationId: string,
+    zone: MessengerWsZone,
+  ): Promise<void> {
+    await evictEmployeeFromConversationRoom(this.server, employeeId, conversationId, zone);
+  }
+
   emitDmPeerRead(peerEmployeeId: string, payload: MessengerWsDmPeerReadPayload): void {
     if (!this.server) return;
     this.server
@@ -225,58 +274,6 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     this.server
       .to(messengerSocketChannelRoom(channelId))
       .emit(MESSENGER_WS_SERVER_CHANNEL_PEER_READ, payload);
-  }
-
-  private async authenticateAndJoinUserRoom(client: Socket): Promise<void> {
-    const token = readSocketToken(client);
-    if (!token) {
-      client.disconnect(true);
-      return;
-    }
-    try {
-      const payload = jwt.verify(token, this.jwtSecret) as JwtSubPayload;
-      const employeeId = payload.sub;
-      if (!employeeId) {
-        client.disconnect(true);
-        return;
-      }
-
-      const employee = await this.prisma.employee.findUnique({
-        where: { id: employeeId },
-        select: { id: true, status: true, authVersion: true },
-      });
-      if (!employee || employee.status === 'TERMINATED') {
-        client.disconnect(true);
-        return;
-      }
-      if (typeof payload.authVersion === 'number' && payload.authVersion !== employee.authVersion) {
-        client.disconnect(true);
-        return;
-      }
-
-      const access = await loadMessengerLegacyAccess(this.prisma, employeeId);
-      if (!access || access.viewScope === 'NONE') {
-        this.logger.warn(`Messenger socket denied: no MESSENGER VIEW for ${employeeId}`);
-        client.disconnect(true);
-        return;
-      }
-
-      client.data.employeeId = employeeId;
-      await client.join(messengerSocketUserRoom(employeeId));
-      const { becameOnline } = this.presenceTracker.increment(employeeId);
-      if (becameOnline) {
-        this.server.emit(MESSENGER_WS_SERVER_PRESENCE, {
-          employeeId,
-          state: 'online' as const,
-        });
-      }
-      client.emit(MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT, {
-        employeeIds: this.presenceTracker.snapshotEmployeeIds(),
-      });
-    } catch {
-      this.logger.warn('Messenger socket auth failed');
-      client.disconnect(true);
-    }
   }
 
   private async employeeMayUseChannel(employeeId: string, channelId: string): Promise<boolean> {
@@ -298,30 +295,4 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     const n = emp?.firstName?.trim();
     return n && n.length > 0 ? n : 'Someone';
   }
-}
-
-function readSocketToken(client: Socket): string | null {
-  const fromAuth = client.handshake.auth?.token;
-  if (typeof fromAuth === 'string' && fromAuth.length > 0) return fromAuth;
-  const header = client.handshake.headers.authorization;
-  if (typeof header === 'string' && header.startsWith('Bearer ')) {
-    return header.slice(7);
-  }
-  return null;
-}
-
-function extractChannelId(body: unknown): string | null {
-  if (!body || typeof body !== 'object') return null;
-  const raw = (body as { channelId?: unknown }).channelId;
-  if (typeof raw !== 'string') return null;
-  const id = raw.trim();
-  return id.length > 0 ? id : null;
-}
-
-function extractRecipientId(body: unknown): string | null {
-  if (!body || typeof body !== 'object') return null;
-  const raw = (body as { recipientId?: unknown }).recipientId;
-  if (typeof raw !== 'string') return null;
-  const id = raw.trim();
-  return id.length > 0 ? id : null;
 }

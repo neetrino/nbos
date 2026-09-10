@@ -2,7 +2,10 @@ import type { PrismaClient } from '@nbos/database';
 import type { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
 import { FINANCE_REMINDER_SENDER_NAME } from './messenger-core-attention.constants';
 import { persistCoreMessage } from './messenger-core-message.ops';
-import { enqueueWhatsAppCoreSend } from './messenger-wa-outbound.ops';
+import {
+  offerWhatsAppCoreSendJob,
+  whatsAppCoreSendJobFromMessage,
+} from './messenger-wa-outbound.ops';
 import { resolveClientDestination } from './product-communication-resolver';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
@@ -24,6 +27,10 @@ export async function deliverFinanceClientReminder(
 ): Promise<FinanceClientReminderDelivery | null> {
   const destination = await resolveClientDestination(prisma, input.productId, 'FINANCE');
   if (!destination) return null;
+  const mapping = {
+    externalAccountId: destination.accountId,
+    externalConversationId: destination.groupChatId,
+  };
   const message = await persistCoreMessage(
     prisma,
     {
@@ -37,14 +44,9 @@ export async function deliverFinanceClientReminder(
       idempotencyKey: input.idempotencyKey,
     },
     [],
+    { mapping },
   );
-  await enqueueWhatsAppCoreSend(prisma, outbound, {
-    message,
-    mapping: {
-      externalAccountId: destination.accountId,
-      externalConversationId: destination.groupChatId,
-    },
-  });
+  await offerWhatsAppCoreSendJob(outbound, whatsAppCoreSendJobFromMessage(message, mapping));
   return {
     conversationId: destination.conversationId,
     messageId: message.id,

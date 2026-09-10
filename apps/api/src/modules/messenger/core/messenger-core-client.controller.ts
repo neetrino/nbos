@@ -18,6 +18,7 @@ import {
 import { InviteClientReadOnlyDto } from './dto/invite-client-read-only.dto';
 import { AssignClientAttentionDto } from './dto/assign-client-attention.dto';
 import { ListClientConversationsQueryDto } from './dto/list-client-conversations.query';
+import { ListMessengerDeltaQueryDto } from './dto/list-messenger-delta.query';
 import { ListCoreMessagesQueryDto } from './dto/list-core-messages.query';
 import { SendCoreMessageDto } from './dto/send-core-message.dto';
 import { MessengerCoreClientService } from './messenger-core-client.service';
@@ -35,6 +36,28 @@ export class MessengerCoreClientController {
   })
   mapMeta(@CurrentUser() _user: CurrentUserPayload) {
     return this.client.mapMetaSales();
+  }
+
+  @Post('bootstrap')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({
+    summary: 'Initialize Client Favorites and return Inbox summaries plus zone Collections',
+  })
+  bootstrap(@CurrentUser() user: CurrentUserPayload) {
+    return this.client.bootstrap(user.id);
+  }
+
+  @Get('delta')
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({
+    summary: 'Client zone delta from an HTTP checkpoint (current authorized state only)',
+  })
+  listDelta(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: ListMessengerDeltaQueryDto,
+  ) {
+    return this.client.listDelta(user.id, query);
   }
 
   @Get('conversations')

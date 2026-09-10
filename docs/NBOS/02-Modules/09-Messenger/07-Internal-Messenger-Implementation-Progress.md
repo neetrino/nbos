@@ -239,3 +239,18 @@ Migration/runtime implementation uses additionally:
 2. Hard stop. Do not start Slice 11, destructive cleanup, or extra Messenger features without an explicit user instruction.
 
 No production Messenger rebuild completion is claimed by this documentation stage.
+
+## Modernization Phase 6 (not product canon)
+
+Implementer evidence: `33-Messenger-Modernization-Final-Evidence.md`. Manual
+browser checklist: `34-Messenger-Phase6-Browser-Checklist.md`. Independent
+master audit is still required. Not `VERIFIED PASS`.
+
+Automated coverage includes jsdom hook request-graph (production Internal
+and Client query composition), UTF-8 payload/cardinality bounds, GET
+query-count vs unmocked Favorites bootstrap provisioning, SQL/index
+alignment (no live `EXPLAIN`), outbound queue observability, and Socket.IO
+process-local limitation. Local production `next build` is implementer
+**PASS** (not a production deploy). Live browser IDB/two-tab checks and live
+`EXPLAIN` remain `NOT RUN` / `OPERATIONAL GATE`. Delta and outbound-reconcile flags stay default-off. Do
+not edit `32-Messenger-Modernization-Ledger.md` from this status file.
