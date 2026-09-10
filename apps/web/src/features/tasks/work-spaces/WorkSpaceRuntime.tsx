@@ -270,7 +270,7 @@ export function WorkSpaceRuntime({
 
     if (boardView === 'deadline') {
       return (
-        <div className="min-h-0 flex-1">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <KanbanBoard
             columns={buildDeadlineColumns()}
             renderCard={renderCard}
@@ -287,7 +287,7 @@ export function WorkSpaceRuntime({
 
     if (boardView === 'kanban') {
       return (
-        <div className="min-h-0 flex-1">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <KanbanBoard
             columns={buildWorkspaceKanbanColumns()}
             renderCard={renderCard}
@@ -306,7 +306,7 @@ export function WorkSpaceRuntime({
     }
 
     return (
-      <div className="min-h-0 flex-1">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <KanbanBoard
           columns={buildMyPlanColumns()}
           renderCard={renderCard}

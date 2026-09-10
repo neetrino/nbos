@@ -1,11 +1,14 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { DollarSign, ListChecks, Puzzle, Ticket } from 'lucide-react';
 import type { FullProduct } from '@/lib/api/products';
+import { AmdCurrencyIcon } from '@/components/shared';
 import { ProductInfoPanel } from '@/features/projects/components/ProductInfoPanel';
 import { ProductContactsSection } from '@/features/projects/components/ProductContactsSection';
 import { ProductParticipantsSection } from '@/features/platform-access/components/ProductParticipantsSection';
 import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
+import { formatAmount, formatGroupedNumber } from '@/lib/format/money';
 import { cn } from '@/lib/utils';
 
 interface ProductOverviewTabProps {
@@ -79,15 +82,25 @@ function ProductStats({
       <StatChip
         icon={DollarSign}
         label="Order"
-        value={
-          product.order
-            ? `${Number(product.order.totalAmount).toLocaleString()} ${product.order.currency}`
-            : '—'
-        }
+        value={formatOrderStatValue(product.order)}
         tone="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
       />
     </div>
   );
+}
+
+function formatOrderStatValue(order: FullProduct['order']): ReactNode {
+  if (!order) return '—';
+  const amount = Number(order.totalAmount);
+  if (order.currency === 'AMD') {
+    return (
+      <span className="inline-flex items-baseline gap-1">
+        {formatGroupedNumber(amount)}
+        <AmdCurrencyIcon className="text-base font-semibold leading-none" />
+      </span>
+    );
+  }
+  return formatAmount(amount, order.currency);
 }
 
 function StatChip({
@@ -98,7 +111,7 @@ function StatChip({
 }: {
   icon: React.ElementType;
   label: string;
-  value: string;
+  value: ReactNode;
   tone: string;
 }) {
   return (

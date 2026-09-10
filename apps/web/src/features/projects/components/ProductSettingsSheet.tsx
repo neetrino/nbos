@@ -33,7 +33,7 @@ interface ProductSettingsSheetProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   /** Open control style. Default is the page settings gear. */
-  triggerVariant?: 'default' | 'tab' | 'inline';
+  triggerVariant?: 'default' | 'tab' | 'inline' | 'tile';
   className?: string;
 }
 

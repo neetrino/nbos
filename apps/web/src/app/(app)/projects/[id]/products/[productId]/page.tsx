@@ -166,7 +166,7 @@ function ProductDetailPageContent() {
   if (!product) return null;
 
   return (
-    <div className="flex h-full flex-col gap-5">
+    <div className="flex h-full min-h-0 flex-col gap-5">
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
@@ -188,7 +188,10 @@ function ProductDetailPageContent() {
           <ProductOverviewTab product={product} onProductUpdated={setProduct} />
         </TabsContent>
 
-        <TabsContent value="tasks" className="mt-5">
+        <TabsContent
+          value="tasks"
+          className="mt-5 min-h-0 flex-1 flex-col data-[state=active]:flex"
+        >
           <ProductTasksTab {...workSpaceTab} />
         </TabsContent>
 

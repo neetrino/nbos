@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Calendar, CalendarPlus, FolderKanban, Layers, User, Wallet } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
+import { Calendar, CalendarPlus, Cloud, FolderKanban, Layers, User, Wallet } from 'lucide-react';
+import { ActionTileButton, StatusBadge } from '@/components/shared';
 import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
 import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { DeliveryDealPanelActions } from '@/features/projects/components/delivery-deal-action-tiles';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { DetailInfoSubsection } from './detail-info-subsection';
 
 interface ProductInfoPanelProps {
@@ -45,13 +46,15 @@ export function ProductInfoPanel({
   const stageStatus = getProductDeliveryStageBadgeDisplay(product);
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const dealId = getEntityOrderDealId(product.order);
+  const isMobileViewport = useIsMobileViewport();
+  const driveHref = buildDriveHrefWithProduct(product.id);
 
   return (
     <aside
       className={cn('bg-card border-border rounded-xl border p-5', className)}
       aria-label="Product information"
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h2 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0 text-xs')}>About product</h2>
           <p className="text-muted-foreground mt-0.5 truncate text-xs font-medium">
@@ -60,15 +63,35 @@ export function ProductInfoPanel({
             {product.project.name}
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-1">
-          <EntityDriveNavAction href={buildDriveHrefWithProduct(product.id)} />
-          <ProductSettingsSheet
-            productId={product.id}
-            triggerVariant="inline"
-            open={whatsappOpen}
-            onOpenChange={setWhatsappOpen}
-          />
-        </div>
+        {isMobileViewport ? (
+          <div className="grid w-full grid-cols-2 gap-2">
+            <ActionTileButton
+              label="Drive"
+              href={driveHref}
+              openInNewTab={false}
+              tone="sky"
+              size="md"
+              fullWidth
+              icon={<Cloud aria-hidden />}
+            />
+            <ProductSettingsSheet
+              productId={product.id}
+              triggerVariant="tile"
+              open={whatsappOpen}
+              onOpenChange={setWhatsappOpen}
+            />
+          </div>
+        ) : (
+          <div className="flex shrink-0 items-center gap-1">
+            <EntityDriveNavAction href={driveHref} />
+            <ProductSettingsSheet
+              productId={product.id}
+              triggerVariant="inline"
+              open={whatsappOpen}
+              onOpenChange={setWhatsappOpen}
+            />
+          </div>
+        )}
       </div>
 
       <DeliveryDealPanelActions
