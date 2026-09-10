@@ -2,6 +2,11 @@
 
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import {
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 
@@ -47,12 +52,14 @@ export function CrmSheetEntityHeader({
 
   if (isMobileViewport) {
     return (
-      <div className="bg-background min-w-0 shrink-0 pb-3">
-        {/* Match floating Back: max-sm:top-3 + size-9 → same vertical center. */}
-        <div className="px-4 pt-3">
-          <div className="flex h-9 items-center justify-end gap-1.5">{actions}</div>
-        </div>
-        <div className="mt-3 flex min-w-0 items-start gap-3 px-4">
+      <div className={DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS}>
+        <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>{actions}</div>
+        <div
+          className={cn(
+            DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+            'flex min-w-0 items-start gap-3',
+          )}
+        >
           <div className={cn('flex min-w-0 flex-1 items-start gap-2', titleClassName)}>
             <EntityIcon
               className={cn('mt-0.5 size-5 shrink-0', headerIconClassName)}
@@ -71,7 +78,7 @@ export function CrmSheetEntityHeader({
             ) : (
               <h2
                 onClick={onStartEditing}
-                className="text-foreground hover:bg-muted max-w-full min-w-0 cursor-text rounded text-xl leading-snug font-bold tracking-tight transition-colors line-clamp-2 break-words"
+                className="text-foreground hover:bg-muted max-w-full min-w-0 cursor-text rounded text-xl leading-snug font-bold tracking-tight break-words line-clamp-2 transition-colors"
                 title={titleEditHint}
               >
                 {title}

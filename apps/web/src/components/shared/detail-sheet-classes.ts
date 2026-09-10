@@ -310,6 +310,20 @@ export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
 /** Use on Save / Cancel in detail sheets and sticky form footers. */
 export const DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE = 'form' as const;
 
+/**
+ * Mobile entity-sheet header shell — title/actions sit below floating Back
+ * (`max-sm:top-3` + `size-9`), so text does not run under the control.
+ * Pair with {@link useIsMobileViewport} (do not rely on CSS alone).
+ */
+export const DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS = 'bg-background min-w-0 shrink-0 pb-3';
+
+/** Top row aligned with floating Back; put trailing sheet actions here on mobile. */
+export const DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS =
+  'flex h-9 items-center justify-end gap-1.5 px-4 pt-3';
+
+/** Title / identity block under the Back clearance row on mobile. */
+export const DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS = 'mt-5 px-4';
+
 /** Tab strip wrapper for entity detail sheets. Button styles: {@link pillTabButtonClass} in `ui/tabs`. */
 export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS =
   'min-w-0 shrink-0 px-5 pb-0 max-md:px-0';

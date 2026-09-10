@@ -203,6 +203,9 @@ export {
   DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS,
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
   DETAIL_SHEET_SECTION_TITLE_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
   RELATION_PICKER_CHIP_STACK_CLASS,
   RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS,
 } from './detail-sheet-classes';
@@ -218,6 +221,10 @@ export {
   DetailSheetCollapsibleSection,
   type DetailSheetCollapsibleSectionProps,
 } from './DetailSheetCollapsibleSection';
+export {
+  DetailSheetCollapsibleSubsection,
+  type DetailSheetCollapsibleSubsectionProps,
+} from './DetailSheetCollapsibleSubsection';
 export { SheetFileAttachments, type SheetFileAttachmentsProps } from './SheetFileAttachments';
 export {
   EntitySheetFloatingRail,

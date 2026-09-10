@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { KeyRound, Loader2 } from 'lucide-react';
-import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
+import { DetailSheetCollapsibleSection } from '@/components/shared';
 import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
 import { UNIVERSAL_ACCESS_SLOT_KEY } from '@nbos/shared';
 import { productsApi, type ProductAccessSlotRow } from '@/lib/api/products';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { CreateAccessSlotCredentialDialog } from './delivery-access-slot-dialogs';
 import { DeliveryAccessSlotField } from './DeliveryAccessSlotField';
@@ -25,6 +24,7 @@ export function DeliveryAccessInfrastructureSection({
   onRefreshDetail,
   setupPanel,
 }: DeliveryAccessInfrastructureSectionProps) {
+  const [sectionOpen, setSectionOpen] = useState(true);
   const [slots, setSlots] = useState<ProductAccessSlotRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [sheetCredentialId, setSheetCredentialId] = useState<string | null>(null);
@@ -83,7 +83,7 @@ export function DeliveryAccessInfrastructureSection({
       );
     }
     return (
-      <div className="grid grid-cols-2 items-start gap-3">
+      <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2">
         {visibleDeliveryAccessSlots(slots).map((slot) => (
           <DeliveryAccessSlotField
             key={slot.slotKey}
@@ -105,22 +105,25 @@ export function DeliveryAccessInfrastructureSection({
   }
 
   return (
-    <section className="border-border bg-card rounded-xl border p-4 shadow-sm">
-      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>
-        <KeyRound size={13} aria-hidden />
-        Access & infrastructure
-      </h3>
-
-      {setupPanel ? (
-        <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
-          <div className="min-w-0">{renderSlotBody()}</div>
-          <div className="border-border flex min-w-0 flex-col gap-4 border-t pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-4">
-            {setupPanel}
+    <>
+      <DetailSheetCollapsibleSection
+        title="Access & infrastructure"
+        icon={<KeyRound size={12} />}
+        open={sectionOpen}
+        onOpenChange={setSectionOpen}
+        className="shadow-sm"
+      >
+        {setupPanel ? (
+          <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+            <div className="min-w-0">{renderSlotBody()}</div>
+            <div className="border-border flex min-w-0 flex-col gap-4 border-t pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-4">
+              {setupPanel}
+            </div>
           </div>
-        </div>
-      ) : (
-        renderSlotBody()
-      )}
+        ) : (
+          renderSlotBody()
+        )}
+      </DetailSheetCollapsibleSection>
 
       <CredentialFormSheet
         open={sheetOpen}
@@ -155,7 +158,7 @@ export function DeliveryAccessInfrastructureSection({
           }}
         />
       ) : null}
-    </section>
+    </>
   );
 }
 
