@@ -519,7 +519,7 @@ function DealSheetBody({
         }
       />
 
-      <div className="shrink-0 pb-3 max-md:px-7">
+      <div className="shrink-0 pb-3">
         <DealPipelineStages
           currentStatus={renderDeal.status}
           onStageClick={isTrashView ? () => {} : (key) => onStatusChange(renderDeal.id, key)}
