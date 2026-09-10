@@ -96,6 +96,8 @@ function useProductsHubHeroSlots({
           onChange={setActiveTab}
           options={[...PRODUCT_HUB_TABS]}
           ariaLabel="Product Hub filters"
+          showOnMobile
+          registerMobileDock={false}
         />
       ),
       search: (
