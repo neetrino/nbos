@@ -6,6 +6,16 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { XIcon } from 'lucide-react';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
+import { BOTTOM_SHEET_SWIPE_PANEL_CLASS } from '@/components/layout/bottom-sheet-swipe';
+import { BOTTOM_SHEET_SWIPE_SCROLL_ATTR } from '@/components/layout/bottom-sheet-swipe-motion';
+import {
+  DIALOG_MOBILE_CLOSE_BUTTON_CLASS,
+  DIALOG_MOBILE_FOOTER_CLASS,
+  DIALOG_MOBILE_SHEET_BODY_CLASS,
+  DIALOG_MOBILE_SHEET_POPUP_CLASS,
+} from './dialog-mobile-sheet';
+import { DialogMobileSwipeChrome } from './dialog-mobile-swipe-chrome';
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
@@ -25,6 +35,9 @@ function DialogClose({ ...props }: DialogPrimitive.Close.Props) {
 
 /** Dialog above entity sheet (z-50) and nested sheets (z-70). Dropdowns use z-90. */
 const DIALOG_ABOVE_SHEET_Z_CLASS = 'z-[80]';
+
+const DIALOG_POPUP_SURFACE_CLASS =
+  'bg-background ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-1/2 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-2xl p-5 text-sm shadow-lg ring-1 shadow-black/[0.07] duration-150 outline-none sm:max-w-sm sm:p-6';
 
 function DialogOverlay({
   className,
@@ -58,7 +71,9 @@ function DialogContent({
    */
   forceNestedBackdrop?: boolean;
 }) {
+  const isMobileViewport = useIsMobileViewport();
   const nestedStackClass = forceNestedBackdrop ? DIALOG_ABOVE_SHEET_Z_CLASS : 'z-50';
+  const scrollAttr = isMobileViewport ? { [BOTTOM_SHEET_SWIPE_SCROLL_ATTR]: '' } : undefined;
 
   return (
     <DialogPortal>
@@ -66,24 +81,35 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          'bg-background ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-1/2 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-2xl p-5 text-sm shadow-lg ring-1 shadow-black/[0.07] duration-150 outline-none max-md:top-auto max-md:right-0 max-md:bottom-0 max-md:left-0 max-md:max-h-[92dvh] max-md:w-full max-md:max-w-none max-md:translate-x-0 max-md:translate-y-0 max-md:overflow-y-auto max-md:rounded-t-3xl max-md:rounded-b-none max-md:p-5 sm:max-w-sm sm:p-6',
+          DIALOG_POPUP_SURFACE_CLASS,
+          DIALOG_MOBILE_SHEET_POPUP_CLASS,
+          isMobileViewport && BOTTOM_SHEET_SWIPE_PANEL_CLASS,
           nestedStackClass,
           className,
         )}
         {...props}
       >
-        {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close
-            data-slot="dialog-close"
-            render={<Button variant="ghost" className="absolute top-3 right-3" size="icon-sm" />}
-          >
-            <XIcon />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
-        )}
+        {isMobileViewport ? <DialogMobileSwipeChrome /> : null}
+        <div className={DIALOG_MOBILE_SHEET_BODY_CLASS} {...scrollAttr}>
+          {children}
+        </div>
+        {showCloseButton ? <DialogAbsoluteCloseButton /> : null}
       </DialogPrimitive.Popup>
     </DialogPortal>
+  );
+}
+
+function DialogAbsoluteCloseButton() {
+  return (
+    <DialogPrimitive.Close
+      data-slot="dialog-close"
+      render={
+        <Button variant="ghost" className={DIALOG_MOBILE_CLOSE_BUTTON_CLASS} size="icon-sm" />
+      }
+    >
+      <XIcon />
+      <span className="sr-only">Close</span>
+    </DialogPrimitive.Close>
   );
 }
 
@@ -105,7 +131,8 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        'bg-muted/40 border-border/60 -mx-5 -mb-5 flex flex-col-reverse gap-2 rounded-b-2xl border-t p-4 max-md:rounded-b-none sm:-mx-6 sm:-mb-6 sm:flex-row sm:justify-end sm:gap-3 sm:p-5',
+        'bg-muted/40 border-border/60 -mx-5 -mb-5 flex flex-col-reverse gap-2 rounded-b-2xl border-t p-4 sm:-mx-6 sm:-mb-6 sm:flex-row sm:justify-end sm:gap-3 sm:p-5',
+        DIALOG_MOBILE_FOOTER_CLASS,
         className,
       )}
       {...props}

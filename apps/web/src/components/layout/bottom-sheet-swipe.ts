@@ -22,7 +22,7 @@ export {
   BOTTOM_SHEET_SWIPE_SCROLL_ATTR,
 } from './bottom-sheet-swipe-motion';
 
-const SHEET_OVERLAY_SLOT = '[data-slot="sheet-overlay"]';
+const SHEET_OVERLAY_SLOT = '[data-slot="sheet-overlay"], [data-slot="dialog-overlay"]';
 
 type SwipeSession = {
   pointerId: number | null;

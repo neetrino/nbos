@@ -24,10 +24,8 @@ import { KanbanTerminalDropBar } from './kanban/KanbanTerminalDropBar';
 import { KanbanColumnQuickCreate } from './kanban/KanbanColumnQuickCreate';
 import { KanbanColumnLoadMore } from './kanban/KanbanColumnLoadMore';
 import { KanbanScrollEdgeControls } from './kanban/KanbanScrollEdgeControls';
-import {
-  KANBAN_HORIZONTAL_SCROLL_HIDE_SCROLLBAR_CLASS,
-  useKanbanHorizontalScroll,
-} from './kanban/use-kanban-horizontal-scroll';
+import { KANBAN_BOARD_SCROLL_CLASS } from './kanban/kanban-scroll-classes';
+import { useKanbanHorizontalScroll } from './kanban/use-kanban-horizontal-scroll';
 import {
   KANBAN_CARD_MOVED_HIGHLIGHT_MS,
   KANBAN_COLUMN_X_MARGIN_TOTAL_PX,
@@ -289,7 +287,7 @@ export function KanbanBoard<T>({
   );
 
   return (
-    <div className="relative flex h-full min-w-0 w-full flex-col">
+    <div className="relative flex h-full min-h-0 min-w-0 w-full flex-1 flex-col">
       <KanbanScrollEdgeControls
         canScrollLeft={canScrollLeft}
         canScrollRight={canScrollRight}
@@ -301,9 +299,7 @@ export function KanbanBoard<T>({
       <div
         ref={scrollRef}
         className={cn(
-          'min-h-0 min-w-0 w-full flex-1 overflow-x-scroll overflow-y-hidden pb-2',
-          KANBAN_HORIZONTAL_SCROLL_HIDE_SCROLLBAR_CLASS,
-          isMobileViewport && 'overscroll-x-contain [-webkit-overflow-scrolling:touch]',
+          KANBAN_BOARD_SCROLL_CLASS,
           dragItem && terminalDropZones?.length && 'pb-28',
         )}
       >

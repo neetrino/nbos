@@ -17,6 +17,7 @@ import {
 } from '@/features/tasks/task-board';
 import type { Task, TaskBoardStage } from '@/lib/api/tasks';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
+import { createTaskKanbanQuickCreateConfig } from '@/features/tasks/kanban/tasks-kanban-quick-create';
 
 export type TasksListKanbanViewsProps = {
   boardView: TasksListBoardView;
@@ -64,6 +65,10 @@ export function TasksListKanbanViews({
       }),
     [],
   );
+  const taskQuickCreate = useMemo(
+    () => createTaskKanbanQuickCreateConfig(onAddTaskInColumn),
+    [onAddTaskInColumn],
+  );
 
   const renderCard = (task: Task) => (
     <TaskMiniCard
@@ -91,8 +96,7 @@ export function TasksListKanbanViews({
           getItemId={(t) => t.id}
           onMove={onDeadlineMove}
           onReorderWithinColumn={onDeadlineReorder}
-          onAddItemInColumn={onAddTaskInColumn}
-          addButtonLabel="Quick"
+          columnQuickCreate={taskQuickCreate}
           columnWidth={240}
           emptyMessage="No tasks"
         />
@@ -111,8 +115,7 @@ export function TasksListKanbanViews({
             getItemId={(t) => t.id}
             onMove={onKanbanMove}
             onReorderWithinColumn={onKanbanReorder}
-            onAddItemInColumn={onAddTaskInColumn}
-            addButtonLabel="Quick"
+            columnQuickCreate={taskQuickCreate}
             emptyMessage="No tasks"
             terminalDropZones={
               shouldShowTerminalDropBar(boardScope) ? taskTerminalDropZones : undefined
@@ -134,8 +137,7 @@ export function TasksListKanbanViews({
         onAddColumn={onAddMyPlanStage}
         onRenameColumn={onRenameMyPlanStage}
         onDeleteColumn={onDeleteMyPlanStage}
-        onAddItemInColumn={onAddTaskInColumn}
-        addButtonLabel="Quick"
+        columnQuickCreate={taskQuickCreate}
         columnWidth={270}
         emptyMessage="No tasks"
       />

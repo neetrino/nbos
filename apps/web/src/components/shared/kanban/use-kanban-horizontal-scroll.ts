@@ -13,8 +13,8 @@ type UseKanbanHorizontalScrollOptions = {
   /** Re-measure when column count / layout key changes. */
   layoutKey?: number | string;
   /**
-   * When true (default), mobile columns fill the scrollport so cards stay wide.
-   * Delivery keeps a fixed desktop width — pass false.
+   * When true (default), mobile columns fill the scrollport like CRM —
+   * one stage per swipe. Pass false only for a documented exception.
    */
   mobileFullWidthColumns?: boolean;
   /**
@@ -147,7 +147,3 @@ export function useKanbanHorizontalScroll({
     stopAutoScroll,
   };
 }
-
-/** Hide native scrollbar; desktop edge zones own navigation affordance. */
-export const KANBAN_HORIZONTAL_SCROLL_HIDE_SCROLLBAR_CLASS =
-  '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';

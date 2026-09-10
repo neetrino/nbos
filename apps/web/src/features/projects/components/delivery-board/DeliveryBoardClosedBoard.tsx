@@ -3,7 +3,6 @@
 import { KANBAN_COLUMN_LEFT_RULE_CLASS } from '@/components/shared/kanban/kanban-column-surface';
 import { KanbanScrollEdgeControls } from '@/components/shared/kanban/KanbanScrollEdgeControls';
 import { useKanbanHorizontalScroll } from '@/components/shared/kanban/use-kanban-horizontal-scroll';
-import { cn } from '@/lib/utils';
 import {
   DELIVERY_KANBAN_BOARD_ROW_CLASS,
   DELIVERY_KANBAN_BOARD_SCROLL_CLASS,
@@ -50,13 +49,13 @@ export function DeliveryBoardClosedBoard({
     canScrollLeft,
     canScrollRight,
     isMobileViewport,
+    resolvedColumnWidth,
     startAutoScroll,
     stopAutoScroll,
   } = useKanbanHorizontalScroll({
     columnWidth: DELIVERY_KANBAN_COLUMN_WIDTH_PX,
     columnMarginTotalPx: DELIVERY_KANBAN_COLUMN_GAP_PX,
     layoutKey: CLOSED_BOARD_COLUMN_COUNT,
-    mobileFullWidthColumns: false,
   });
 
   if (doneItems.length === 0 && cancelledItems.length === 0) {
@@ -80,14 +79,16 @@ export function DeliveryBoardClosedBoard({
       >
         <div
           className={DELIVERY_KANBAN_BOARD_ROW_CLASS}
-          style={{ minWidth: `${deliveryKanbanBoardMinWidthPx(CLOSED_BOARD_COLUMN_COUNT)}px` }}
+          style={{
+            minWidth: `${deliveryKanbanBoardMinWidthPx(CLOSED_BOARD_COLUMN_COUNT, resolvedColumnWidth)}px`,
+          }}
         >
           <TerminalColumn
             title="Cancelled"
             hex={DELIVERY_TERMINAL_COLUMN_COLORS.CANCELLED}
             items={cancelledItems}
             showLeftRule={false}
-            snapStart={isMobileViewport}
+            columnWidthPx={resolvedColumnWidth}
             busyItemId={busyItemId}
             onOpenProduct={onOpenProduct}
             onOpenProductTab={onOpenProductTab}
@@ -100,7 +101,7 @@ export function DeliveryBoardClosedBoard({
             hex={DELIVERY_TERMINAL_COLUMN_COLORS.DONE}
             items={doneItems}
             showLeftRule
-            snapStart={isMobileViewport}
+            columnWidthPx={resolvedColumnWidth}
             busyItemId={busyItemId}
             onOpenProduct={onOpenProduct}
             onOpenProductTab={onOpenProductTab}
@@ -119,7 +120,7 @@ function TerminalColumn({
   hex,
   items,
   showLeftRule,
-  snapStart,
+  columnWidthPx,
   busyItemId,
   onOpenProduct,
   onOpenProductTab,
@@ -131,7 +132,7 @@ function TerminalColumn({
   hex: string;
   items: DeliveryBoardItem[];
   showLeftRule: boolean;
-  snapStart: boolean;
+  columnWidthPx: number;
   busyItemId: string | null;
   onOpenProduct: (productId: string) => void;
   onOpenProductTab: (productId: string, tab: ProductBoardTab) => void;
@@ -146,7 +147,7 @@ function TerminalColumn({
   const textColor = (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? '#000' : '#fff';
 
   return (
-    <div className={cn(DELIVERY_KANBAN_COLUMN_SHELL_CLASS, snapStart && 'snap-start')}>
+    <div className={DELIVERY_KANBAN_COLUMN_SHELL_CLASS} style={{ width: columnWidthPx }}>
       <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col">
         {showLeftRule ? <div className={KANBAN_COLUMN_LEFT_RULE_CLASS} aria-hidden /> : null}
         <div

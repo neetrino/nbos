@@ -3,7 +3,7 @@
 import { useCallback, useLayoutEffect, useRef, type RefCallback } from 'react';
 import { attachBottomSheetSwipe } from './bottom-sheet-swipe';
 
-const SHEET_CONTENT_SLOT = '[data-slot="sheet-content"]';
+const SHEET_CONTENT_SLOT = '[data-slot="sheet-content"], [data-slot="dialog-content"]';
 
 export function useBottomSheetSwipeToClose(
   open: boolean,

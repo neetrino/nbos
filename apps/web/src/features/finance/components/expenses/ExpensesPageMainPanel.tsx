@@ -98,22 +98,24 @@ export function ExpensesPageMainPanel({
   }
   if (view === 'kanban') {
     return (
-      <KanbanBoard
-        columns={kanbanColumns}
-        columnWidth={kanbanScope === 'closed' ? 288 : undefined}
-        getItemId={(e: Expense) => e.id}
-        onMove={onKanbanMove}
-        columnQuickCreate={expenseQuickCreate}
-        terminalDropZones={
-          kanbanScope === 'active' && onKanbanMove ? expenseTerminalDropZones : undefined
-        }
-        renderColumnHeader={(column) => (
-          <KanbanColumnMoneyTotal column={column} getAmount={(expense) => expense.amount} />
-        )}
-        renderCard={(expense: Expense) => (
-          <ExpenseKanbanCard expense={expense} onOpen={onOpenExpense} />
-        )}
-      />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <KanbanBoard
+          columns={kanbanColumns}
+          columnWidth={kanbanScope === 'closed' ? 288 : undefined}
+          getItemId={(e: Expense) => e.id}
+          onMove={onKanbanMove}
+          columnQuickCreate={expenseQuickCreate}
+          terminalDropZones={
+            kanbanScope === 'active' && onKanbanMove ? expenseTerminalDropZones : undefined
+          }
+          renderColumnHeader={(column) => (
+            <KanbanColumnMoneyTotal column={column} getAmount={(expense) => expense.amount} />
+          )}
+          renderCard={(expense: Expense) => (
+            <ExpenseKanbanCard expense={expense} onOpen={onOpenExpense} />
+          )}
+        />
+      </div>
     );
   }
   return <ExpensesTableSection expenses={expenses} onOpen={onOpenExpense} />;

@@ -26,6 +26,7 @@ import {
   shouldShowTerminalDropBar,
 } from '@/features/shared/kanban-terminal-drop';
 import { TASK_BOARD_STAGES } from '@/features/tasks/constants/task-board-lifecycle';
+import { createTaskKanbanQuickCreateConfig } from '@/features/tasks/kanban/tasks-kanban-quick-create';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import type { WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { useWorkspaceRuntimeBoard, type WorkspaceBoardView } from './use-workspace-runtime-board';
@@ -138,6 +139,11 @@ export function WorkSpaceRuntime({
     workspace.scrumEnabled,
     getActiveSprintId(sprints),
     workspaceArea,
+  );
+
+  const taskQuickCreate = useMemo(
+    () => createTaskKanbanQuickCreateConfig(handleAddTaskInColumn),
+    [handleAddTaskInColumn],
   );
 
   const [localSelectedTaskId, setLocalSelectedTaskId] = useState<string | null>(null);
@@ -271,8 +277,7 @@ export function WorkSpaceRuntime({
             getItemId={(t) => t.id}
             onMove={handleDeadlineMove}
             onReorderWithinColumn={handleDeadlineReorder}
-            onAddItemInColumn={handleAddTaskInColumn}
-            addButtonLabel="Quick"
+            columnQuickCreate={taskQuickCreate}
             columnWidth={240}
             emptyMessage="No tasks"
           />
@@ -289,8 +294,7 @@ export function WorkSpaceRuntime({
             getItemId={(t) => t.id}
             onMove={handleKanbanMove}
             onReorderWithinColumn={handleKanbanReorder}
-            onAddItemInColumn={handleAddTaskInColumn}
-            addButtonLabel="Quick"
+            columnQuickCreate={taskQuickCreate}
             columnWidth={boardScope === 'CLOSED' ? 288 : 270}
             emptyMessage="No tasks"
             terminalDropZones={
@@ -312,8 +316,7 @@ export function WorkSpaceRuntime({
           onAddColumn={handleAddMyPlanStage}
           onRenameColumn={handleRenameMyPlanStage}
           onDeleteColumn={handleDeleteMyPlanStage}
-          onAddItemInColumn={handleAddTaskInColumn}
-          addButtonLabel="Quick"
+          columnQuickCreate={taskQuickCreate}
           columnWidth={270}
           emptyMessage="No tasks"
         />
