@@ -84,9 +84,14 @@
     @apply bg-card/95 supports-[backdrop-filter]:bg-card/88 pointer-events-auto fixed z-30 overflow-hidden border-0 shadow-none backdrop-blur-md;
     left: var(--nbos-mobile-dock-inset-x);
     right: var(--nbos-mobile-dock-inset-x);
-    bottom: calc(var(--nbos-mobile-dock-inset-bottom) + env(safe-area-inset-bottom, 0px));
-    height: var(--nbos-mobile-dock-height);
-    border-radius: var(--nbos-mobile-dock-radius);
+    bottom: var(--nbos-mobile-dock-inset-bottom);
+    height: calc(
+      var(--nbos-mobile-dock-height) + (2 * var(--nbos-mobile-dock-pad-y)) +
+        env(safe-area-inset-bottom, 0px)
+    );
+    padding-top: var(--nbos-mobile-dock-pad-y);
+    padding-bottom: calc(var(--nbos-mobile-dock-pad-y) + env(safe-area-inset-bottom, 0px));
+    border-radius: var(--nbos-mobile-dock-radius) var(--nbos-mobile-dock-radius) 0 0;
   }
 
   @media (max-width: 767px) {

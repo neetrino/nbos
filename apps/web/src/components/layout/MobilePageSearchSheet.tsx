@@ -7,7 +7,8 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/
 import { BottomSheetSwipeHandle } from './BottomSheetSwipeHandle';
 import { BOTTOM_SHEET_SWIPE_PANEL_CLASS } from './bottom-sheet-swipe';
 import { MOBILE_APP_MENU_SHEET_CLASS } from './mobile-app-menu-constants';
-import { MOBILE_DOCK_ITEM_CLASS } from './mobile-bottom-nav-constants';
+import { MobileDockItem } from './MobileDockItem';
+import { MOBILE_DOCK_ICON_SIZE_PX } from './mobile-bottom-nav-constants';
 import { MOBILE_WORKSPACE_SEARCH_LABEL } from './mobile-workspace-dock-constants';
 import { useBottomSheetSwipeToClose } from './use-bottom-sheet-swipe-to-close';
 
@@ -26,21 +27,14 @@ export function MobilePageSearchSheet({
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <button
-        type="button"
-        className={cn(
-          MOBILE_DOCK_ITEM_CLASS,
-          open
-            ? 'bg-primary/12 text-primary'
-            : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
-        )}
-        aria-label="Search this page"
+      <MobileDockItem
+        label={label}
+        active={open}
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >
-        <Search size={18} aria-hidden />
-        {label}
-      </button>
+        <Search size={MOBILE_DOCK_ICON_SIZE_PX} aria-hidden />
+      </MobileDockItem>
       <SheetContent
         side="bottom"
         showCloseButton={false}
