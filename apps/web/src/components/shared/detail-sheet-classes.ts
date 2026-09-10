@@ -317,9 +317,13 @@ export const DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE = 'form' as const;
  */
 export const DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS = 'bg-background min-w-0 shrink-0 pb-3';
 
-/** Top row aligned with floating Back; put trailing sheet actions here on mobile. */
+/** Top row aligned with floating Back; put trailing sheet actions here on mobile.
+ * `pt-3` matches Back `top-3`; row height comes from `size-9` / `h-9` children so
+ * their vertical center lines up with Back (do not set `h-9` on this row — it
+ * would include padding and shift actions up).
+ */
 export const DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS =
-  'flex h-9 items-center justify-end gap-1.5 px-4 pt-3';
+  'flex items-center justify-end gap-1.5 px-4 pt-3';
 
 /** Title / identity block under the Back clearance row on mobile. */
 export const DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS = 'mt-8 px-4';

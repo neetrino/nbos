@@ -3,6 +3,7 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import { Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { usePermission } from '@/lib/permissions';
 import type { ClickToCallTargetType } from '@/lib/api/calls';
 import {
@@ -24,11 +25,8 @@ interface ClickToCallButtonProps {
   hidden?: boolean;
 }
 
-export function ClickToCallButton({
-  targetType,
-  targetId,
-  hidden = false,
-}: ClickToCallButtonProps) {
+function useClickToCallVisibility(params: ClickToCallButtonProps) {
+  const { targetType, targetId, hidden = false } = params;
   const { can } = usePermission();
   const { state, start, startNewCall } = useClickToCall();
   const readPendingKey = useCallback(
@@ -44,6 +42,12 @@ export function ClickToCallButton({
     hidden,
     canCreate: hasClickToCallPermission(can, targetType),
   });
+  return { visible, state, start, startNewCall, hasPendingKey, targetType, targetId };
+}
+
+export function ClickToCallButton(props: ClickToCallButtonProps) {
+  const { visible, state, start, startNewCall, hasPendingKey, targetType, targetId } =
+    useClickToCallVisibility(props);
   if (!visible) return null;
 
   return (
@@ -79,6 +83,34 @@ export function ClickToCallButton({
         </Button>
       ) : null}
     </span>
+  );
+}
+
+/** Settings-menu items for the same click-to-call actions as {@link ClickToCallButton}. */
+export function ClickToCallMenuItems(props: ClickToCallButtonProps) {
+  const { visible, state, start, startNewCall, hasPendingKey, targetType, targetId } =
+    useClickToCallVisibility(props);
+  if (!visible) return null;
+
+  return (
+    <>
+      <DropdownMenuItem
+        disabled={state === 'loading'}
+        onClick={() => void start({ targetType, targetId })}
+      >
+        <Phone />
+        {clickToCallButtonLabel(state)}
+      </DropdownMenuItem>
+      {hasPendingKey ? (
+        <DropdownMenuItem
+          disabled={state === 'loading'}
+          onClick={() => void startNewCall({ targetType, targetId })}
+        >
+          <Phone />
+          {CLICK_TO_CALL_NEW_CALL_LABEL}
+        </DropdownMenuItem>
+      ) : null}
+    </>
   );
 }
 

@@ -10,8 +10,11 @@ import {
 } from '@/components/layout/header-context/header-module-title-constants';
 import { usePageDocumentTitle } from '@/features/account/hooks/use-page-document-title';
 import { InlineEditableEntityTitle } from '@/features/projects/components/InlineEditableEntityTitle';
+import { DetailPageMobileBackLink } from '@/features/projects/components/DetailPageMobileBackLink';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
+
+const PROJECTS_DIRECTORY_HREF = '/projects';
 
 function isProjectInTrash(project: FullProject): boolean {
   return project.trashedAt != null;
@@ -51,6 +54,10 @@ export function useProjectDetailHeader({
       kind: 'custom' as const,
       node: (
         <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
+          <DetailPageMobileBackLink
+            href={PROJECTS_DIRECTORY_HREF}
+            ariaLabel="Back to projects"
+          />
           <InlineEditableEntityTitle
             value={project.name}
             onCommit={handleCommitName}

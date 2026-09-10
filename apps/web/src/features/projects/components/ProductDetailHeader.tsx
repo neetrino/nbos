@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { StatusBadge } from '@/components/shared';
 import { getProductDeliveryStageBadgeDisplay } from '@/features/projects/constants/delivery-stage-display';
 import { InlineEditableEntityTitle } from '@/features/projects/components/InlineEditableEntityTitle';
+import { DetailPageMobileBackLink } from '@/features/projects/components/DetailPageMobileBackLink';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { productsApi, type FullProduct, type Product } from '@/lib/api/products';
 import { cn } from '@/lib/utils';
@@ -48,6 +49,7 @@ export function ProductDetailHeader({
 
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
+      <DetailPageMobileBackLink href={projectHref} ariaLabel="Back to project" />
       <div
         className="shrink-0 rounded-lg bg-purple-500/10 p-2 text-purple-500 max-md:hidden"
         aria-hidden

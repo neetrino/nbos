@@ -60,7 +60,7 @@ export function CompanySheetScrollBody({
   const typeOptions = COMPANY_TYPES.map((t) => ({ value: t.value, label: t.label }));
 
   return (
-    <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} space-y-6 px-7 py-5`}>
+    <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} space-y-6 px-5 py-5 max-md:px-4`}>
       {generalError ? (
         <p className="text-destructive text-center text-sm" role="alert">
           {generalError}
@@ -69,8 +69,8 @@ export function CompanySheetScrollBody({
 
       <div className="flex w-full min-w-0 flex-col gap-6">
         <DetailSheetSection title="Company details" icon={<Tag size={12} />}>
-          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-            <div className="col-span-2">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
               <CompanyArmeniaLookup
                 disabled={fieldDisabled}
                 current={draft}
