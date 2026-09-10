@@ -18,10 +18,14 @@ export default function ReportsLayout({ children }: { children: ReactNode }) {
         title="Reports"
         tabs={
           zoneNav ? (
-            <PageHeroNavLinks items={zoneNav} ariaLabel="Reports section navigation" />
+            <PageHeroNavLinks
+              items={zoneNav}
+              ariaLabel="Reports section navigation"
+              fullWidthOnMobile
+            />
           ) : null
         }
-        className="flex h-full min-h-0 flex-col gap-5"
+        className="flex h-full min-h-0 flex-col gap-5 max-md:gap-3"
       >
         {children}
       </ModuleHeroSlotProvider>
