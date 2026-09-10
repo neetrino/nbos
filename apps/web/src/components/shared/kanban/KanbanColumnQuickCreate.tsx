@@ -67,6 +67,7 @@ export function KanbanColumnQuickCreate<T>({ column, config }: KanbanColumnQuick
           'px-2.5 py-1 text-xs font-medium transition-colors',
           'hover:border-primary/30 hover:bg-primary/[0.14] hover:text-foreground',
           'focus-visible:ring-primary/25 focus-visible:ring-2 focus-visible:outline-none',
+          config.hideOnMobile && 'max-md:hidden',
         )}
       >
         <Plus size={13} strokeWidth={2} aria-hidden />
@@ -80,7 +81,12 @@ export function KanbanColumnQuickCreate<T>({ column, config }: KanbanColumnQuick
   const canSubmit = title.trim().length > 0 && !loading;
 
   return (
-    <div className="bg-card border-border space-y-2.5 rounded-xl border p-3 shadow-sm">
+    <div
+      className={cn(
+        'bg-card border-border space-y-2.5 rounded-xl border p-3 shadow-sm',
+        config.hideOnMobile && 'max-md:hidden',
+      )}
+    >
       <Input
         ref={inputRef}
         value={title}

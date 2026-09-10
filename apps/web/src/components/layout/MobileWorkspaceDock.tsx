@@ -1,13 +1,14 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { LayoutGrid, Plus } from 'lucide-react';
+import { LayoutGrid } from 'lucide-react';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 import { MobileDockOverflowSheet } from './MobileDockOverflowSheet';
 import { MobileDockItem } from './MobileDockItem';
 import { MobileDockSwitcherButton } from './MobileDockSwitcherButton';
 import { MobilePageSearchSheet } from './MobilePageSearchSheet';
+import { MobileWorkspaceCreateButton } from './MobileWorkspaceCreateButton';
 import { useMobileModuleDockResolved } from './MobileModuleDockProvider';
 import { usePageHeroDockCreate } from './use-page-hero-dock-create';
 import {
@@ -15,11 +16,7 @@ import {
   MOBILE_DOCK_ICON_SIZE_PX,
   MOBILE_DOCK_ROW_CLASS,
 } from './mobile-bottom-nav-constants';
-import {
-  MOBILE_WORKSPACE_CREATE_LABEL,
-  MOBILE_WORKSPACE_SWITCHER_MULTI_TITLE,
-} from './mobile-workspace-dock-constants';
-import type { MobileDockCreateAction } from './mobile-module-dock-types';
+import { MOBILE_WORKSPACE_SWITCHER_MULTI_TITLE } from './mobile-workspace-dock-constants';
 
 interface MobileWorkspaceDockProps {
   menuOpen?: boolean;
@@ -44,7 +41,7 @@ export function MobileWorkspaceDock({ menuOpen = false, onMoreClick }: MobileWor
       <div className={cn(MOBILE_DOCK_ROW_CLASS, MOBILE_DOCK_HEIGHT_CLASS)}>
         <WorkspaceMenuButton open={menuOpen} onClick={onMoreClick} />
         {hasSearch && tools.search ? <MobilePageSearchSheet search={tools.search} /> : null}
-        <WorkspaceCreateButton create={resolvedCreate} />
+        <MobileWorkspaceCreateButton create={resolvedCreate} />
         {switcherGroups.length > 0 ? (
           <MobileDockSwitcherButton
             icon={switcherItem?.icon}
@@ -75,21 +72,6 @@ function WorkspaceMenuButton({ open, onClick }: { open: boolean; onClick: () => 
   return (
     <MobileDockItem label="Menu" active={open} aria-expanded={open} onClick={onClick}>
       <LayoutGrid size={MOBILE_DOCK_ICON_SIZE_PX} aria-hidden />
-    </MobileDockItem>
-  );
-}
-
-function WorkspaceCreateButton({ create }: { create?: MobileDockCreateAction }) {
-  if (!create) return null;
-  return (
-    <MobileDockItem
-      label={MOBILE_WORKSPACE_CREATE_LABEL}
-      disabled={create.disabled}
-      onClick={() => {
-        if (!create.disabled) create.onSelect();
-      }}
-    >
-      <Plus size={MOBILE_DOCK_ICON_SIZE_PX} aria-hidden />
     </MobileDockItem>
   );
 }

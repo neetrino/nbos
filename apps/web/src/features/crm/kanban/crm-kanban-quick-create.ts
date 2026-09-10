@@ -10,6 +10,7 @@ export function createLeadKanbanQuickCreateConfig(
 ): KanbanColumnQuickCreateConfig<Lead> {
   return {
     isEnabled: (column) => column.key === LEAD_NEW_STAGE_KEY,
+    hideOnMobile: true,
     buttonLabel: 'Quick Lead',
     titlePlaceholder: 'Title',
     titleAriaLabel: 'Lead title',
@@ -25,6 +26,7 @@ export function createDealKanbanQuickCreateConfig(
 ): KanbanColumnQuickCreateConfig<unknown> {
   return {
     isEnabled: (column) => column.key === DEAL_INBOX_STAGE_KEY,
+    hideOnMobile: true,
     buttonLabel: 'Quick Deal',
     onOpenDialog: onOpenCreateDialog,
   };
