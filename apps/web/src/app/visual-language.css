@@ -12,13 +12,9 @@
   }
 
   .nbos-desk-surface {
-    @apply border-border/70 bg-card overflow-hidden rounded-2xl border;
+    @apply border-border/70 overflow-hidden rounded-2xl border;
+    background-color: var(--desk-panel-fill);
     box-shadow: var(--shadow-panel);
-    background-image: linear-gradient(
-      180deg,
-      color-mix(in oklch, var(--primary) 4.5%, var(--card)) 0%,
-      var(--card) 42%
-    );
   }
 
   .nbos-desk-kicker {
@@ -39,16 +35,8 @@
   }
 
   .nbos-state-frame {
-    @apply border-border/70 bg-card relative overflow-hidden rounded-2xl border px-6 py-16 text-center;
-    background-image:
-      linear-gradient(180deg, color-mix(in oklch, var(--primary) 6%, var(--card)), var(--card) 46%),
-      repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 47px,
-        color-mix(in oklch, var(--primary) 7%, transparent) 47px,
-        color-mix(in oklch, var(--primary) 7%, transparent) 48px
-      );
+    @apply border-border/70 relative overflow-hidden rounded-2xl border px-6 py-16 text-center;
+    background-color: var(--desk-panel-fill);
   }
 
   .nbos-auth-scene {
@@ -95,12 +83,6 @@
 
   @media (max-width: 767px) {
     .nbos-app-canvas {
-      background-image: none;
-    }
-
-    .nbos-desk-surface,
-    .nbos-state-frame,
-    .nbos-app-canvas .nbos-insight-panel {
       background-image: none;
     }
 
