@@ -117,6 +117,28 @@
   }
 }
 
+/* Flatten elevation shadows below Tailwind `md`. Keep ring/inset-ring
+ * (focus) and arbitrary `[box-shadow:…]` seals (sticky table cells). */
+@media (max-width: 767px) {
+  :root,
+  .dark {
+    --shadow-panel: none;
+    --shadow-panel-hover: none;
+  }
+
+  * {
+    --tw-shadow: 0 0 #0000 !important;
+    --tw-inset-shadow: 0 0 #0000 !important;
+  }
+
+  .nbos-desk-surface,
+  .nbos-insight-panel,
+  .nbos-insight-panel:hover,
+  .nbos-metric-row-fill--peak {
+    box-shadow: none;
+  }
+}
+
 @layer utilities {
   .nbos-page-enter {
     animation: nbos-page-enter var(--motion-duration-base) var(--motion-ease-out);

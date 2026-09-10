@@ -11,10 +11,7 @@ import { HeaderContextDockRegistrar } from './header-context/HeaderContextDockRe
 import { MobileModuleDockProvider } from './MobileModuleDockProvider';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
-import {
-  APP_MAIN_CONTENT_DASHBOARD_MOBILE_INSET,
-  APP_MAIN_CONTENT_INSET,
-} from './app-layout-constants';
+import { APP_MAIN_CONTENT_INSET } from './app-layout-constants';
 import { MobileBottomNav } from './MobileBottomNav';
 import { PageEnter } from './PageEnter';
 import { SIDEBAR_WIDTH_COLLAPSED_PX, SIDEBAR_WIDTH_EXPANDED_PX } from './sidebar-layout-constants';
@@ -48,7 +45,6 @@ export function AppLayout({ children }: AppLayoutProps) {
   const autoCollapsedRef = useRef(false);
   const isDocumentsRoute = pathname.startsWith('/documents');
   const isMessengerRoute = pathname.startsWith('/messenger');
-  const isDashboardRoute = pathname === '/dashboard';
 
   useEffect(() => {
     if (isMobileViewport) return;
@@ -108,8 +104,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                                 ? 'overflow-hidden'
                                 : 'overflow-y-auto [scrollbar-gutter:stable]',
                               APP_MAIN_CONTENT_INSET,
-                              isDashboardRoute && APP_MAIN_CONTENT_DASHBOARD_MOBILE_INSET,
-                              isDashboardRoute && 'max-md:[scrollbar-gutter:auto]',
                             )}
                           >
                             <PageEnter
