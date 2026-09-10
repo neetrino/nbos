@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCallback, useRef, type MutableRefObject } from 'react';
+import { useCallback, useRef, type MutableRefObject, type RefObject } from 'react';
 import { cn } from '@/lib/utils';
-import { PAGE_HERO_PILL_GROUP } from '@/components/shared/page-hero/page-hero-constants';
+import { PAGE_HERO_PILL_GROUP, PAGE_HERO_TAB_SCROLL } from '@/components/shared/page-hero/page-hero-constants';
 import {
   PAGE_HERO_TAB_BUTTON,
   PAGE_HERO_TAB_ICON,
@@ -13,6 +13,7 @@ import {
 import {
   SlidingPillBackdrop,
   useSlidingPillIndicator,
+  type SlidingPillIndicatorRect,
 } from '@/components/shared/page-hero/sliding-pill-indicator';
 import type { HeaderNavItem } from './header-context-types';
 import { isHeaderNavItemActive } from './header-context-nav-utils';
@@ -41,20 +42,48 @@ export function HeaderContextMobileNav({
     navRef,
     getActiveElement,
     activeHref,
-    false,
+    true,
   );
 
   return (
-    <nav
-      ref={navRef}
-      className={cn(PAGE_HERO_PILL_GROUP, 'relative w-full min-w-0 shrink-0', className)}
-      aria-label={ariaLabel}
-    >
-      <SlidingPillBackdrop
+    <div className={cn(PAGE_HERO_TAB_SCROLL, 'w-full min-w-0', className)}>
+      <HeaderContextMobileNavTrack
+        items={items}
+        pathname={pathname}
+        ariaLabel={ariaLabel}
+        navRef={navRef}
+        linkRefs={linkRefs}
         indicator={indicator}
         ready={ready}
-        className="bg-primary"
       />
+    </div>
+  );
+}
+
+function HeaderContextMobileNavTrack({
+  items,
+  pathname,
+  ariaLabel,
+  navRef,
+  linkRefs,
+  indicator,
+  ready,
+}: {
+  items: HeaderNavItem[];
+  pathname: string;
+  ariaLabel: string;
+  navRef: RefObject<HTMLElement | null>;
+  linkRefs: MutableRefObject<Map<string, HTMLAnchorElement>>;
+  indicator: SlidingPillIndicatorRect | null;
+  ready: boolean;
+}) {
+  return (
+    <nav
+      ref={navRef}
+      className={cn(PAGE_HERO_PILL_GROUP, 'relative w-max min-w-0 shrink-0')}
+      aria-label={ariaLabel}
+    >
+      <SlidingPillBackdrop indicator={indicator} ready={ready} className="bg-primary" />
       {items.map((item) => (
         <HeaderContextMobileNavLink
           key={`${item.href}-${item.label}`}
@@ -89,7 +118,7 @@ function HeaderContextMobileNavLink({
       title={item.label}
       className={cn(
         PAGE_HERO_TAB_BUTTON,
-        'relative z-10 flex-1 justify-center',
+        'relative z-10 shrink-0',
         active
           ? 'text-primary-foreground'
           : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',

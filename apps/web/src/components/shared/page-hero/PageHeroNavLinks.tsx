@@ -2,7 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCallback, useMemo, useRef, type MutableRefObject, type RefObject } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MutableRefObject,
+  type RefObject,
+} from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useRegisterMobileDockItems } from '@/components/layout/MobileModuleDockProvider';
@@ -54,6 +62,15 @@ export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLin
   const isMobileViewport = useIsMobileViewport();
   const navRef = useRef<HTMLElement>(null);
   const linkRefs = useRef(new Map<string, HTMLAnchorElement>());
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  const routeActiveHref = items.find((item) => isNavItemActive(pathname, item))?.href ?? '';
+  const activeHref = pendingHref ?? routeActiveHref;
+
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
+
   const dockItems = useMemo<MobileDockItem[]>(
     () =>
       items.map((item) => ({
@@ -67,7 +84,6 @@ export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLin
   );
   useRegisterMobileDockItems('page', isMobileViewport ? EMPTY_MOBILE_DOCK_ITEMS : dockItems);
 
-  const activeHref = items.find((item) => isNavItemActive(pathname, item))?.href ?? '';
   const getActiveElement = useCallback(
     () => (activeHref ? linkRefs.current.get(activeHref) : undefined),
     [activeHref],
@@ -76,19 +92,20 @@ export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLin
     navRef,
     getActiveElement,
     activeHref,
-    false,
+    isMobileViewport,
   );
 
   const nav = (
     <PageHeroNavTrack
       items={items}
-      pathname={pathname}
+      activeHref={activeHref}
       ariaLabel={ariaLabel}
       className={isMobileViewport ? undefined : className}
       navRef={navRef}
       linkRefs={linkRefs}
       indicator={indicator}
       ready={ready}
+      onSelect={setPendingHref}
     />
   );
 
@@ -101,22 +118,24 @@ export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLin
 
 function PageHeroNavTrack({
   items,
-  pathname,
+  activeHref,
   ariaLabel,
   className,
   navRef,
   linkRefs,
   indicator,
   ready,
+  onSelect,
 }: {
   items: PageHeroNavLinkItem[];
-  pathname: string;
+  activeHref: string;
   ariaLabel: string;
   className?: string;
   navRef: RefObject<HTMLElement | null>;
   linkRefs: MutableRefObject<Map<string, HTMLAnchorElement>>;
   indicator: SlidingPillIndicatorRect | null;
   ready: boolean;
+  onSelect: (href: string) => void;
 }) {
   return (
     <nav
@@ -133,8 +152,9 @@ function PageHeroNavTrack({
         <PageHeroNavLink
           key={item.href}
           item={item}
-          active={isNavItemActive(pathname, item)}
+          active={item.href === activeHref}
           linkRefs={linkRefs}
+          onSelect={onSelect}
         />
       ))}
     </nav>
@@ -145,10 +165,12 @@ function PageHeroNavLink({
   item,
   active,
   linkRefs,
+  onSelect,
 }: {
   item: PageHeroNavLinkItem;
   active: boolean;
   linkRefs: MutableRefObject<Map<string, HTMLAnchorElement>>;
+  onSelect: (href: string) => void;
 }) {
   const Icon = item.icon;
 
@@ -161,6 +183,7 @@ function PageHeroNavLink({
       href={item.href}
       aria-current={active ? 'page' : undefined}
       title={item.label}
+      onClick={() => onSelect(item.href)}
       className={cn(
         PAGE_HERO_TAB_BUTTON,
         'relative z-10 shrink-0',
