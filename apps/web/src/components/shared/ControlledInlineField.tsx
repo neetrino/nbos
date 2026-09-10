@@ -64,6 +64,7 @@ export interface ControlledInlineFieldProps {
   hideLabel?: boolean;
   datePickerVariant?: NbosDatePickerVariant;
   datePickerMode?: NbosDatePickerMode;
+  datePickerAlwaysShowYear?: boolean;
   /** Select dropdown item styling (`highlight` = blue selected, gray hover, no checkmark). */
   selectMenuTone?: 'default' | 'highlight';
   /** Extra classes for the select popup (menu width, etc.). */
@@ -89,6 +90,7 @@ export function ControlledInlineField({
   hideLabel = false,
   datePickerVariant = 'compact',
   datePickerMode = 'date',
+  datePickerAlwaysShowYear = false,
   fitContent = false,
   selectMenuTone = 'default',
   selectContentClassName,
@@ -235,6 +237,7 @@ export function ControlledInlineField({
                 onChange={onValueChange}
                 variant={datePickerVariant}
                 mode={datePickerMode}
+                alwaysShowYear={datePickerAlwaysShowYear}
                 disabled={disabled}
                 clearable={clearable}
                 placeholder={placeholder ?? 'Select date…'}
@@ -253,6 +256,7 @@ export function ControlledInlineField({
               onChange={onValueChange}
               variant={datePickerVariant}
               mode={datePickerMode}
+              alwaysShowYear={datePickerAlwaysShowYear}
               disabled={disabled}
               clearable={clearable}
               placeholder={placeholder ?? 'Select date…'}

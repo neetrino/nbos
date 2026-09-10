@@ -17,14 +17,14 @@ export function clientServiceRegistryBadge(
 }
 
 export function clientServiceRegistryToast(outcome: ClientServiceRegistryCheckOutcome): {
-  kind: 'success' | 'warning' | 'error' | 'info';
+  kind: 'success' | 'warning' | 'error';
   message: string;
 } {
   if (outcome === 'updated') {
     return { kind: 'success', message: 'Registry expiry found. Renewal date updated.' };
   }
   if (outcome === 'unchanged') {
-    return { kind: 'info', message: 'Registry date matches the current renewal date.' };
+    return { kind: 'success', message: 'Registry date matches the current renewal date.' };
   }
   if (outcome === 'not_found') {
     return { kind: 'warning', message: 'Domain is not in the registry (dead / not found).' };
