@@ -120,7 +120,7 @@ export function Sidebar({
      * position:relative makes it the containing block for the inner surface.
      */
     <aside
-      className="relative h-screen min-w-0 shrink-0"
+      className="relative h-dvh min-w-0 shrink-0"
       style={{ width: collapsed ? SIDEBAR_WIDTH_COLLAPSED_PX : SIDEBAR_WIDTH_EXPANDED_PX }}
     >
       {/*

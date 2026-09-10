@@ -81,14 +81,13 @@
   }
 
   .nbos-mobile-dock {
-    @apply bg-card/95 supports-[backdrop-filter]:bg-card/88 pointer-events-auto fixed z-30 overflow-hidden border-0 shadow-none backdrop-blur-md;
-    left: var(--nbos-mobile-dock-inset-x);
-    right: var(--nbos-mobile-dock-inset-x);
-    bottom: var(--nbos-mobile-dock-inset-bottom);
+    @apply bg-card/95 supports-[backdrop-filter]:bg-card/88 pointer-events-auto relative z-30 w-full shrink-0 overflow-hidden border-0 shadow-none backdrop-blur-md;
     height: calc(
       var(--nbos-mobile-dock-height) + (2 * var(--nbos-mobile-dock-pad-y)) +
         env(safe-area-inset-bottom, 0px)
     );
+    margin-inline: var(--nbos-mobile-dock-inset-x);
+    margin-bottom: var(--nbos-mobile-dock-inset-bottom);
     padding-top: var(--nbos-mobile-dock-pad-y);
     padding-bottom: calc(var(--nbos-mobile-dock-pad-y) + env(safe-area-inset-bottom, 0px));
     border-radius: var(--nbos-mobile-dock-radius) var(--nbos-mobile-dock-radius) 0 0;
