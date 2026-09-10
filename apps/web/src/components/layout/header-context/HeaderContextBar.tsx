@@ -17,6 +17,7 @@ export function HeaderContextBar() {
           items={content.items}
           ariaLabel={content.ariaLabel}
           mobileVariant={content.mobileVariant}
+          fullWidthOnMobile={content.fullWidthOnMobile}
           className="min-w-0 w-full flex-1 self-stretch"
         />
       );

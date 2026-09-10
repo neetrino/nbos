@@ -22,6 +22,8 @@ interface HeaderContextMobileNavProps {
   items: HeaderNavItem[];
   ariaLabel: string;
   className?: string;
+  /** Stretch pills equally across the available width. */
+  fullWidth?: boolean;
 }
 
 /** Compact pill switcher for header zone tabs on narrow viewports. */
@@ -29,6 +31,7 @@ export function HeaderContextMobileNav({
   items,
   ariaLabel,
   className,
+  fullWidth = false,
 }: HeaderContextMobileNavProps) {
   const pathname = usePathname();
   const navRef = useRef<HTMLElement>(null);
@@ -42,22 +45,28 @@ export function HeaderContextMobileNav({
     navRef,
     getActiveElement,
     activeHref,
-    true,
+    !fullWidth,
   );
 
-  return (
-    <div className={cn(PAGE_HERO_TAB_SCROLL, 'w-full min-w-0', className)}>
-      <HeaderContextMobileNavTrack
-        items={items}
-        pathname={pathname}
-        ariaLabel={ariaLabel}
-        navRef={navRef}
-        linkRefs={linkRefs}
-        indicator={indicator}
-        ready={ready}
-      />
-    </div>
+  const track = (
+    <HeaderContextMobileNavTrack
+      items={items}
+      pathname={pathname}
+      ariaLabel={ariaLabel}
+      navRef={navRef}
+      linkRefs={linkRefs}
+      indicator={indicator}
+      ready={ready}
+      fullWidth={fullWidth}
+      className={fullWidth ? className : undefined}
+    />
   );
+
+  if (fullWidth) {
+    return track;
+  }
+
+  return <div className={cn(PAGE_HERO_TAB_SCROLL, 'w-full min-w-0', className)}>{track}</div>;
 }
 
 function HeaderContextMobileNavTrack({
@@ -68,6 +77,8 @@ function HeaderContextMobileNavTrack({
   linkRefs,
   indicator,
   ready,
+  fullWidth,
+  className,
 }: {
   items: HeaderNavItem[];
   pathname: string;
@@ -76,11 +87,18 @@ function HeaderContextMobileNavTrack({
   linkRefs: MutableRefObject<Map<string, HTMLAnchorElement>>;
   indicator: SlidingPillIndicatorRect | null;
   ready: boolean;
+  fullWidth: boolean;
+  className?: string;
 }) {
   return (
     <nav
       ref={navRef}
-      className={cn(PAGE_HERO_PILL_GROUP, 'relative w-max min-w-0 shrink-0')}
+      className={cn(
+        PAGE_HERO_PILL_GROUP,
+        'relative min-w-0 shrink-0',
+        fullWidth ? 'w-full' : 'w-max',
+        className,
+      )}
       aria-label={ariaLabel}
     >
       <SlidingPillBackdrop indicator={indicator} ready={ready} className="bg-primary" />
@@ -90,6 +108,7 @@ function HeaderContextMobileNavTrack({
           item={item}
           active={isHeaderNavItemActive(pathname, item)}
           linkRefs={linkRefs}
+          fullWidth={fullWidth}
         />
       ))}
     </nav>
@@ -100,10 +119,12 @@ function HeaderContextMobileNavLink({
   item,
   active,
   linkRefs,
+  fullWidth,
 }: {
   item: HeaderNavItem;
   active: boolean;
   linkRefs: MutableRefObject<Map<string, HTMLAnchorElement>>;
+  fullWidth: boolean;
 }) {
   const Icon = item.icon;
 
@@ -118,7 +139,8 @@ function HeaderContextMobileNavLink({
       title={item.label}
       className={cn(
         PAGE_HERO_TAB_BUTTON,
-        'relative z-10 shrink-0',
+        'relative z-10',
+        fullWidth ? 'flex-1 justify-center' : 'shrink-0',
         active
           ? 'text-primary-foreground'
           : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',

@@ -11,6 +11,8 @@ export interface HeaderContextNavProps {
   className?: string;
   /** Defaults to compact pills. Finance uses desktop zone tabs on mobile too. */
   mobileVariant?: 'pills' | 'tabs';
+  /** Stretch mobile pills across the row (CRM-style). */
+  fullWidthOnMobile?: boolean;
 }
 
 /** Desktop zone tabs; mobile renders pills unless `mobileVariant` is `tabs`. */
@@ -19,6 +21,7 @@ export function HeaderContextNav({
   ariaLabel,
   className,
   mobileVariant = 'pills',
+  fullWidthOnMobile = false,
 }: HeaderContextNavProps) {
   const isMobileViewport = useIsMobileViewport();
 
@@ -27,7 +30,14 @@ export function HeaderContextNav({
   }
 
   if (isMobileViewport && mobileVariant !== 'tabs') {
-    return <HeaderContextMobileNav items={items} ariaLabel={ariaLabel} className={className} />;
+    return (
+      <HeaderContextMobileNav
+        items={items}
+        ariaLabel={ariaLabel}
+        className={className}
+        fullWidth={fullWidthOnMobile}
+      />
+    );
   }
 
   return <HeaderContextBridgeNav items={items} ariaLabel={ariaLabel} className={className} />;

@@ -33,6 +33,8 @@ export type HeaderContextNavContent = {
    * Mobile header chrome: compact pills (CRM, Work Spaces) or desktop zone tabs (Finance).
    */
   mobileVariant?: 'pills' | 'tabs';
+  /** Mobile pills: stretch equally across the header row. */
+  fullWidthOnMobile?: boolean;
 };
 
 export type HeaderContextActionsContent = {

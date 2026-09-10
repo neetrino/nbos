@@ -26,5 +26,6 @@ export function crmHeaderContent(
     kind: 'nav',
     ariaLabel: 'CRM areas',
     items,
+    fullWidthOnMobile: true,
   };
 }
