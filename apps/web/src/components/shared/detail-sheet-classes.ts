@@ -322,7 +322,7 @@ export const DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS =
   'flex h-9 items-center justify-end gap-1.5 px-4 pt-3';
 
 /** Title / identity block under the Back clearance row on mobile. */
-export const DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS = 'mt-5 px-4';
+export const DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS = 'mt-8 px-4';
 
 /** Tab strip wrapper for entity detail sheets. Button styles: {@link pillTabButtonClass} in `ui/tabs`. */
 export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS =
