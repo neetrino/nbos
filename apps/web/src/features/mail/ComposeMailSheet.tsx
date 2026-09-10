@@ -12,10 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { mailApi, type MailAccountRow } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { MailComposeMessageEditor } from './MailComposeMessageEditor';
+import { MailSheetPanelHeader } from './MailSheetPanelHeader';
 import { MAIL_QUEUED_TOAST } from './mail-outbound-copy';
 import { isMailAccountSendable } from './mail-sendable-account';
 import { splitEmailList } from './mail-thread-helpers';
@@ -93,14 +93,14 @@ export function ComposeMailSheet({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <SheetHeader className="border-border shrink-0 border-b px-5 py-4">
-        <SheetTitle>{isForward ? 'Forward email' : 'New email'}</SheetTitle>
-        <SheetDescription>
-          {isForward
+      <MailSheetPanelHeader
+        title={isForward ? 'Forward email' : 'New email'}
+        description={
+          isForward
             ? 'Forward this message from a connected mailbox.'
-            : 'Compose and send from a connected mailbox.'}
-        </SheetDescription>
-      </SheetHeader>
+            : 'Compose and send from a connected mailbox.'
+        }
+      />
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 py-4">
         <div className="grid gap-2">

@@ -5,6 +5,11 @@ import { RotateCcw, Star, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import {
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { DetailSheetSettingsMenu, StatusBadge } from '@/components/shared';
 import {
   getAccessLevel,
@@ -16,6 +21,7 @@ import {
 } from '@/features/credentials/components/credential-meta-icon';
 import { cn } from '@/lib/utils';
 import { CredentialBrandMark } from '@/features/credentials/components/credential-brand-mark';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 
 const SHEET_TITLE_CLASS = 'text-xl font-semibold leading-tight tracking-tight';
 const SHEET_TITLE_FIELD_CLASS = cn(SHEET_TITLE_CLASS, 'min-h-7 max-w-full truncate');
@@ -71,6 +77,7 @@ export function CredentialFormSheetHeader({
   onRestore,
   resetKey,
 }: CredentialFormSheetHeaderProps) {
+  const isMobileViewport = useIsMobileViewport();
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(name);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -98,137 +105,159 @@ export function CredentialFormSheetHeader({
     setEditingName(false);
   };
 
+  const favoriteButton =
+    !isCreate && onToggleFavorite ? (
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        className={cn(
+          'text-muted-foreground hover:text-foreground shrink-0',
+          isFavorite && 'text-amber-500 hover:text-amber-600',
+        )}
+        aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        onClick={onToggleFavorite}
+      >
+        <Star className={cn('size-4', isFavorite && 'fill-current')} aria-hidden />
+      </Button>
+    ) : null;
+
+  const settingsMenu =
+    !isCreate && credentialId ? (
+      <DetailSheetSettingsMenu>
+        <DropdownMenuItem onClick={onToggleSettings}>
+          {showSettings ? 'Hide advanced settings' : 'Advanced settings'}
+        </DropdownMenuItem>
+        {isTrashView && onRestore ? (
+          <DropdownMenuItem onClick={() => void onRestore(credentialId)}>
+            <RotateCcw className="mr-2 size-4" />
+            Restore
+          </DropdownMenuItem>
+        ) : null}
+        {!isTrashView && onRequestMoveToTrash ? (
+          <DropdownMenuItem
+            className="text-destructive"
+            onClick={() => onRequestMoveToTrash(credentialId, name)}
+          >
+            <Trash2 className="mr-2 size-4" />
+            Move to Trash
+          </DropdownMenuItem>
+        ) : null}
+      </DetailSheetSettingsMenu>
+    ) : null;
+
+  const titleCluster = (
+    <div
+      className={cn(
+        'inline-flex min-w-0 items-center gap-1.5',
+        !isMobileViewport && TITLE_CLUSTER_MAX_CLASS,
+        editingName && 'min-w-0 flex-1',
+      )}
+    >
+      <CredentialBrandMark
+        url={url}
+        provider={providerName}
+        name={name}
+        login={login}
+        category={category}
+        credentialType={credentialType}
+        className="size-5 shrink-0"
+      />
+      {editingName ? (
+        <Input
+          ref={nameInputRef}
+          value={nameDraft}
+          onChange={(e) => setNameDraft(e.target.value)}
+          onBlur={commitName}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commitName();
+            if (e.key === 'Escape') {
+              setNameDraft(name);
+              setEditingName(false);
+            }
+          }}
+          className={SHEET_TITLE_INPUT_CLASS}
+          placeholder="Credential name"
+          aria-label="Name"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+          data-1p-ignore
+          data-lpignore="true"
+        />
+      ) : (
+        <button
+          type="button"
+          className={cn(
+            SHEET_TITLE_FIELD_CLASS,
+            'text-left outline-none',
+            name.trim() ? 'text-foreground' : 'text-muted-foreground',
+          )}
+          onClick={() => {
+            setNameDraft(name);
+            setEditingName(true);
+          }}
+        >
+          {name.trim() || 'Credential name'}
+        </button>
+      )}
+
+      {accessMeta ? (
+        <StatusBadge
+          label={accessMeta.label}
+          variant={accessMeta.variant}
+          className={ACCESS_SCOPE_BADGE_CLASS}
+          icon={
+            <CredentialAccessIcon
+              accessLevel={accessLevel}
+              className="size-2.5 shrink-0 opacity-90"
+              aria-hidden
+            />
+          }
+        />
+      ) : null}
+
+      {critMeta && !isCreate ? (
+        <StatusBadge
+          label={critMeta.label}
+          variant={critMeta.variant}
+          className={ACCESS_SCOPE_BADGE_CLASS}
+          icon={
+            <CredentialCriticalityIcon
+              criticality={criticality}
+              className="size-2.5 shrink-0 opacity-90"
+              aria-hidden
+            />
+          }
+        />
+      ) : null}
+    </div>
+  );
+
+  if (isMobileViewport) {
+    return (
+      <div className={cn('border-border border-b', DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS)}>
+        <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>
+          {favoriteButton}
+          {settingsMenu}
+        </div>
+        <div className={DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS}>
+          <div className="flex min-w-0 items-center gap-2.5">{titleCluster}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="border-border flex shrink-0 items-start justify-between gap-4 border-b px-6 py-5">
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-2.5">
-          <div
-            className={cn(
-              'inline-flex min-w-0 items-center gap-1.5',
-              TITLE_CLUSTER_MAX_CLASS,
-              editingName && 'min-w-0 flex-1',
-            )}
-          >
-            <CredentialBrandMark
-              url={url}
-              provider={providerName}
-              name={name}
-              login={login}
-              category={category}
-              credentialType={credentialType}
-              className="size-5 shrink-0"
-            />
-            {editingName ? (
-              <Input
-                ref={nameInputRef}
-                value={nameDraft}
-                onChange={(e) => setNameDraft(e.target.value)}
-                onBlur={commitName}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') commitName();
-                  if (e.key === 'Escape') {
-                    setNameDraft(name);
-                    setEditingName(false);
-                  }
-                }}
-                className={SHEET_TITLE_INPUT_CLASS}
-                placeholder="Credential name"
-                aria-label="Name"
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck={false}
-                data-1p-ignore
-                data-lpignore="true"
-              />
-            ) : (
-              <button
-                type="button"
-                className={cn(
-                  SHEET_TITLE_FIELD_CLASS,
-                  'text-left outline-none',
-                  name.trim() ? 'text-foreground' : 'text-muted-foreground',
-                )}
-                onClick={() => {
-                  setNameDraft(name);
-                  setEditingName(true);
-                }}
-              >
-                {name.trim() || 'Credential name'}
-              </button>
-            )}
-
-            {accessMeta ? (
-              <StatusBadge
-                label={accessMeta.label}
-                variant={accessMeta.variant}
-                className={ACCESS_SCOPE_BADGE_CLASS}
-                icon={
-                  <CredentialAccessIcon
-                    accessLevel={accessLevel}
-                    className="size-2.5 shrink-0 opacity-90"
-                    aria-hidden
-                  />
-                }
-              />
-            ) : null}
-
-            {critMeta && !isCreate ? (
-              <StatusBadge
-                label={critMeta.label}
-                variant={critMeta.variant}
-                className={ACCESS_SCOPE_BADGE_CLASS}
-                icon={
-                  <CredentialCriticalityIcon
-                    criticality={criticality}
-                    className="size-2.5 shrink-0 opacity-90"
-                    aria-hidden
-                  />
-                }
-              />
-            ) : null}
-          </div>
-
-          {!isCreate && onToggleFavorite ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className={cn(
-                'text-muted-foreground ml-auto size-8 shrink-0',
-                isFavorite && 'text-amber-500 hover:text-amber-600',
-              )}
-              aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-              title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-              onClick={onToggleFavorite}
-            >
-              <Star className={cn('size-4', isFavorite && 'fill-current')} aria-hidden />
-            </Button>
-          ) : null}
+          {titleCluster}
+          {favoriteButton ? <div className="ml-auto shrink-0">{favoriteButton}</div> : null}
         </div>
       </div>
-
-      {!isCreate && credentialId ? (
-        <DetailSheetSettingsMenu>
-          <DropdownMenuItem onClick={onToggleSettings}>
-            {showSettings ? 'Hide advanced settings' : 'Advanced settings'}
-          </DropdownMenuItem>
-          {isTrashView && onRestore ? (
-            <DropdownMenuItem onClick={() => void onRestore(credentialId)}>
-              <RotateCcw className="mr-2 size-4" />
-              Restore
-            </DropdownMenuItem>
-          ) : null}
-          {!isTrashView && onRequestMoveToTrash ? (
-            <DropdownMenuItem
-              className="text-destructive"
-              onClick={() => onRequestMoveToTrash(credentialId, name)}
-            >
-              <Trash2 className="mr-2 size-4" />
-              Move to Trash
-            </DropdownMenuItem>
-          ) : null}
-        </DetailSheetSettingsMenu>
-      ) : null}
+      {settingsMenu}
     </div>
   );
 }
