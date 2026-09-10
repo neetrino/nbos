@@ -99,7 +99,7 @@ export type EntityDetailSheetContentProps = Omit<
   /**
    * When false, only floating Close is shown.
    * Defaults: `true` for `layout="full"`, `false` for `layout="auxiliary"`.
-   * On mobile viewports, rail actions are always hidden (Close only).
+   * On mobile viewports, rail actions are always hidden (Back only).
    */
   showRailActions?: boolean;
   children: ReactNode;

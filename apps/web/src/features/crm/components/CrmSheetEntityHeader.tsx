@@ -2,6 +2,7 @@
 
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 
 interface CrmSheetEntityHeaderProps {
@@ -42,6 +43,54 @@ export function CrmSheetEntityHeader({
   actions,
   titleClassName,
 }: CrmSheetEntityHeaderProps) {
+  const isMobileViewport = useIsMobileViewport();
+
+  if (isMobileViewport) {
+    return (
+      <div className="bg-background min-w-0 shrink-0 px-7 pt-5 pb-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <EntityIcon className={cn('size-5 shrink-0', headerIconClassName)} aria-hidden />
+          {actions ? (
+            <div className="ml-auto flex max-w-full min-w-0 flex-wrap items-center justify-end gap-1.5">
+              {actions}
+            </div>
+          ) : null}
+        </div>
+        <div className="mt-2 flex min-w-0 items-start gap-3">
+          <div className={cn('min-w-0 flex-1', titleClassName)}>
+            {editing ? (
+              <input
+                ref={nameInputRef}
+                value={nameValue}
+                onChange={(e) => onNameValueChange(e.target.value)}
+                onBlur={onCommitName}
+                onKeyDown={onNameKeyDown}
+                placeholder={namePlaceholder}
+                className="border-primary text-foreground placeholder:text-muted-foreground/70 w-full min-w-0 border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
+              />
+            ) : (
+              <h2
+                onClick={onStartEditing}
+                className="text-foreground hover:bg-muted max-w-full min-w-0 cursor-text rounded text-xl leading-snug font-bold tracking-tight transition-colors line-clamp-2 break-words"
+                title={titleEditHint}
+              >
+                {title}
+              </h2>
+            )}
+          </div>
+          <span
+            className={cn(
+              'mt-1 shrink-0 rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase',
+              headerBadgeClassName,
+            )}
+          >
+            {entityLabel}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-background min-w-0 shrink-0 px-7 pt-5 pb-3">
       <div className="flex min-w-0 flex-wrap items-start gap-2">

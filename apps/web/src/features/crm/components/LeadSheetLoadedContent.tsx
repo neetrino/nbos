@@ -156,7 +156,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
         }
       />
 
-      <div className="shrink-0 pb-3">
+      <div className="shrink-0 pb-3 max-md:px-7">
         <LeadPipelineStages
           currentStatus={renderLead.status}
           onStageClick={isTrashView ? () => {} : (key) => props.onStatusChange(renderLead.id, key)}

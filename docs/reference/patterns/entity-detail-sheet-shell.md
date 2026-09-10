@@ -6,8 +6,8 @@
 
 | `layout`    | Width                                                       | Default rail (desktop)                | Mobile rail   |
 | ----------- | ----------------------------------------------------------- | ------------------------------------- | ------------- |
-| `full`      | `width`: `wide` (75vw), `medium` (48rem), `compact` (42rem) | Close + Copy + Open (+ Workspace)     | Close only    |
-| `auxiliary` | 36rem fixed                                                 | **Close only**                        | Close only    |
+| `full`      | `width`: `wide` (75vw), `medium` (48rem), `compact` (42rem) | Close + Copy + Open (+ Workspace)     | Back only     |
+| `auxiliary` | 36rem fixed                                                 | **Close only**                        | Back only     |
 
 ### Center-rise shell (`EntityCenterSheetContent`)
 

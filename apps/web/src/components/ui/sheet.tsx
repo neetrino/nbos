@@ -5,13 +5,15 @@ import { Dialog as SheetPrimitive } from '@base-ui/react/dialog';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { XIcon } from 'lucide-react';
+import { ChevronLeft, XIcon } from 'lucide-react';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import {
   SHEET_CENTER_PANEL_SURFACE_CLASS,
   SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
 } from '@/components/shared/detail-sheet-classes';
 import {
   ENTITY_SHEET_FLOATING_RAIL_CLOSE_CLASS,
+  ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,
   ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS,
   ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS,
 } from '@/components/shared/entity-sheet-floating-rail';
@@ -131,26 +133,48 @@ function SheetFloatingRailStack({
   showClose?: boolean;
   className?: string;
 }) {
+  const isMobileViewport = useIsMobileViewport();
+
   return (
     <div className={cn(ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS, className)}>
       {showClose ? (
-        <SheetPrimitive.Close
-          data-slot="sheet-close-floating"
-          render={
-            <Button
-              type="button"
-              variant="default"
-              size="icon"
-              className={ENTITY_SHEET_FLOATING_RAIL_CLOSE_CLASS}
-              aria-label="Close panel"
-              title="Close"
-            />
-          }
-        >
-          <XIcon className="size-4" aria-hidden />
-          <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Close</span>
-          <span className="sr-only">Close</span>
-        </SheetPrimitive.Close>
+        isMobileViewport ? (
+          <SheetPrimitive.Close
+            data-slot="sheet-close-floating"
+            render={
+              <Button
+                type="button"
+                variant="default"
+                size="icon"
+                className={ENTITY_SHEET_FLOATING_RAIL_CLOSE_CLASS}
+                aria-label="Back"
+                title="Back"
+              />
+            }
+          >
+            <ChevronLeft className="size-4" aria-hidden />
+            <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Back</span>
+            <span className="sr-only">Back</span>
+          </SheetPrimitive.Close>
+        ) : (
+          <SheetPrimitive.Close
+            data-slot="sheet-close-floating"
+            render={
+              <Button
+                type="button"
+                variant="default"
+                size="icon"
+                className={ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS}
+                aria-label="Close panel"
+                title="Close"
+              />
+            }
+          >
+            <XIcon className="size-4" aria-hidden />
+            <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Close</span>
+            <span className="sr-only">Close</span>
+          </SheetPrimitive.Close>
+        )
       ) : null}
       {floatingRail}
     </div>

@@ -249,13 +249,14 @@ Right-side entity sheets use a **floating rail** outside the panel seam: Close a
 
 | Control               | Rule                                                                 |
 | --------------------- | -------------------------------------------------------------------- |
-| Close                 | Always — provided by the shell; do not add a second close in header. |
+| Close                 | Desktop — seam half-pill with X. Always provided by the shell.       |
+| Back                  | Mobile only — circular control with `<`; dismisses the sheet.        |
 | Copy link             | Desktop only. Copies `window.location.href` (deep-link friendly).    |
 | Open                  | Desktop only. Opens `sourcePageHref` in a new tab when set.          |
 | Dashboard / Workspace | Desktop only. Shown when `workspaceHref` is passed.                  |
 | Module extras         | Desktop only. Pass via `trailingRail` on the shell.                  |
 
-**Mobile:** rail shows **Close only** (no Copy / Open / Workspace / trailing).
+**Mobile:** rail shows **Back only** (no Copy / Open / Workspace / trailing).
 
 **Layout modes** (`EntityDetailSheetContent`):
 

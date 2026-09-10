@@ -56,7 +56,7 @@ export type EntityCenterSheetContentProps = Omit<
 
 /**
  * Bottom-center sheet (90vh). Rail is a flex sibling of the panel — always left of the sheet.
- * On mobile, rail actions are hidden (Close only).
+ * On mobile, rail actions are hidden (Back only).
  */
 export function EntityCenterSheetContent({
   open,
