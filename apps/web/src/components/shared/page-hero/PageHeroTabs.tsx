@@ -28,7 +28,11 @@ export interface PageHeroTabsProps<T extends string> {
   className?: string;
   /** When true, tabs look inactive (e.g. lifecycle overlay). */
   dimmed?: boolean;
+  /** When false, mobile does not duplicate these tabs into the dock. */
+  registerMobileDock?: boolean;
 }
+
+const EMPTY_MOBILE_DOCK_ITEMS: MobileDockItem[] = [];
 
 export function PageHeroTabs<T extends string>({
   value,
@@ -37,20 +41,23 @@ export function PageHeroTabs<T extends string>({
   ariaLabel,
   className,
   dimmed = false,
+  registerMobileDock = true,
 }: PageHeroTabsProps<T>) {
   const isMobileViewport = useIsMobileViewport();
   const groupRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef(new Map<string, HTMLButtonElement>());
   const dockItems = useMemo<MobileDockItem[]>(
     () =>
-      options.map((option) => ({
-        id: `page-tab:${option.value}`,
-        label: option.label,
-        icon: option.icon,
-        active: !dimmed && option.value === value,
-        onSelect: () => onChange(option.value),
-      })),
-    [dimmed, onChange, options, value],
+      registerMobileDock
+        ? options.map((option) => ({
+            id: `page-tab:${option.value}`,
+            label: option.label,
+            icon: option.icon,
+            active: !dimmed && option.value === value,
+            onSelect: () => onChange(option.value),
+          }))
+        : EMPTY_MOBILE_DOCK_ITEMS,
+    [dimmed, onChange, options, registerMobileDock, value],
   );
   useRegisterMobileDockItems('secondary', dockItems);
 
