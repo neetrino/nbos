@@ -1,14 +1,14 @@
 'use client';
 
+import { useCallback } from 'react';
 import Link from 'next/link';
-import { X } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import {
-  MOBILE_APP_MENU_HANDLE_CLASS,
-  MOBILE_APP_MENU_SHEET_CLASS,
-} from './mobile-app-menu-constants';
+import { BottomSheetSwipeHandle } from './BottomSheetSwipeHandle';
+import { BOTTOM_SHEET_SWIPE_PANEL_CLASS } from './bottom-sheet-swipe';
+import { MOBILE_APP_MENU_SHEET_CLASS } from './mobile-app-menu-constants';
 import type { MobileDockItem, MobileDockSwitcherGroup } from './mobile-module-dock-types';
+import { useBottomSheetSwipeToClose } from './use-bottom-sheet-swipe-to-close';
 
 interface MobileDockOverflowSheetProps {
   open: boolean;
@@ -23,27 +23,27 @@ export function MobileDockOverflowSheet({
   groups,
   title,
 }: MobileDockOverflowSheetProps) {
-  const close = () => onOpenChange(false);
+  const close = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const handleRef = useBottomSheetSwipeToClose(open, close);
   const showGroupTitles = groups.length > 1;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" showCloseButton={false} className={MOBILE_APP_MENU_SHEET_CLASS}>
+      <SheetContent
+        side="bottom"
+        showCloseButton={false}
+        className={cn(MOBILE_APP_MENU_SHEET_CLASS, BOTTOM_SHEET_SWIPE_PANEL_CLASS)}
+      >
         <SheetTitle className="sr-only">{title}</SheetTitle>
         <SheetDescription className="sr-only">Places in the current module.</SheetDescription>
-        <span className={MOBILE_APP_MENU_HANDLE_CLASS} aria-hidden />
-        <div className="flex items-center justify-between px-4 pt-3 pb-2">
+        <BottomSheetSwipeHandle handleRef={handleRef} />
+        <div className="touch-none px-4 pt-3 pb-2">
           <p className="text-foreground text-lg font-semibold tracking-tight">{title}</p>
-          <button
-            type="button"
-            onClick={close}
-            aria-label="Close"
-            className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-9 items-center justify-center rounded-full"
-          >
-            <X size={18} aria-hidden />
-          </button>
         </div>
-        <div className="flex flex-col gap-4 px-4 pb-5">
+        <div
+          data-nbos-sheet-swipe-scroll=""
+          className="flex flex-col gap-4 overflow-y-auto overscroll-y-contain px-4 pb-5"
+        >
           {groups.map((group) => (
             <section key={group.id}>
               {showGroupTitles ? (
