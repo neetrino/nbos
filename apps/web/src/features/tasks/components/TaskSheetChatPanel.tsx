@@ -13,6 +13,9 @@ import {
   MessengerThreadMessageBubble,
   MessengerThreadNotice,
 } from '@/features/messenger/messenger-thread-primitives';
+import { DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS } from '@/components/shared/detail-sheet-classes';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
+import { cn } from '@/lib/utils';
 
 export interface TaskLocalMessage {
   id: string;
@@ -32,6 +35,7 @@ type TimelineRow =
   | { kind: 'note'; id: string; at: string; message: MessengerViewMessage };
 
 export function TaskSheetChatPanel({ task, messages, onSend }: TaskSheetChatPanelProps) {
+  const isMobileViewport = useIsMobileViewport();
   const [draft, setDraft] = useState('');
   const activity = useMemo(() => buildTaskActivity(task), [task]);
   const participantCount = useMemo(() => countTaskParticipants(task), [task]);
@@ -92,17 +96,36 @@ export function TaskSheetChatPanel({ task, messages, onSend }: TaskSheetChatPane
     setDraft('');
   };
 
+  const titleBlock = (
+    <>
+      <Hash size={18} className={MESSENGER_THREAD_HASH_ICON_CLASS} aria-hidden />
+      <div className="min-w-0">
+        <h2 className="text-sm font-semibold text-black">Task chat</h2>
+        <p className="text-xs text-black/40">
+          {participantCount} participant{participantCount === 1 ? '' : 's'}
+        </p>
+      </div>
+    </>
+  );
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center gap-3 border-b border-black/[0.06] px-5 py-3">
-        <Hash size={18} className={MESSENGER_THREAD_HASH_ICON_CLASS} aria-hidden />
-        <div className="min-w-0">
-          <h2 className="text-sm font-semibold text-black">Task chat</h2>
-          <p className="text-xs text-black/40">
-            {participantCount} participant{participantCount === 1 ? '' : 's'}
-          </p>
+      {isMobileViewport ? (
+        <div
+          className={cn(
+            DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+            'mt-4 justify-start gap-3 border-b border-black/[0.06] pb-4',
+          )}
+        >
+          {/* Clears floating Back (`left-4` + `size-9`) so the title sits to its right. */}
+          <span className="size-9 shrink-0" aria-hidden />
+          {titleBlock}
         </div>
-      </div>
+      ) : (
+        <div className="flex items-center gap-3 border-b border-black/[0.06] px-5 py-3">
+          {titleBlock}
+        </div>
+      )}
 
       <div className="min-h-0 flex-1 overflow-y-auto py-4">
         {rows.map((row) => {

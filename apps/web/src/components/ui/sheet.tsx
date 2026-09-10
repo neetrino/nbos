@@ -102,10 +102,12 @@ function SheetFloatingRailInset({
   floatingRail,
   showClose,
   topClassName,
+  floatingCloseClassName,
 }: {
   floatingRail?: React.ReactNode;
   showClose: boolean;
   topClassName?: string;
+  floatingCloseClassName?: string;
 }) {
   return (
     <div
@@ -118,6 +120,7 @@ function SheetFloatingRailInset({
       <SheetFloatingRailStack
         floatingRail={floatingRail}
         showClose={showClose}
+        floatingCloseClassName={floatingCloseClassName}
         className="pointer-events-auto"
       />
     </div>
@@ -127,10 +130,12 @@ function SheetFloatingRailInset({
 function SheetFloatingRailStack({
   floatingRail,
   showClose = true,
+  floatingCloseClassName,
   className,
 }: {
   floatingRail?: React.ReactNode;
   showClose?: boolean;
+  floatingCloseClassName?: string;
   className?: string;
 }) {
   const isMobileViewport = useIsMobileViewport();
@@ -146,7 +151,7 @@ function SheetFloatingRailStack({
                 type="button"
                 variant="default"
                 size="icon"
-                className={ENTITY_SHEET_FLOATING_RAIL_CLOSE_CLASS}
+                className={cn(ENTITY_SHEET_FLOATING_RAIL_CLOSE_CLASS, floatingCloseClassName)}
                 aria-label="Back"
                 title="Back"
               />
@@ -237,6 +242,7 @@ function SheetContent({
   floatingRailAnchorClassName,
   floatingRailTopClassName,
   floatingRailPlacement = 'viewport',
+  floatingCloseClassName,
   forceNestedBackdrop = false,
   stackAboveEntitySheet = false,
   ...props
@@ -251,6 +257,8 @@ function SheetContent({
   floatingRailTopClassName?: string;
   /** `viewport` = fixed rail at panel seam (entity sheets). `inset` = inside panel (page settings). */
   floatingRailPlacement?: 'viewport' | 'inset';
+  /** Extra classes for the mobile floating Back control (e.g. chat accent). */
+  floatingCloseClassName?: string;
   forceNestedBackdrop?: boolean;
   /** Above nested entity sheets (contact portfolio quick actions). */
   stackAboveEntitySheet?: boolean;
@@ -293,6 +301,7 @@ function SheetContent({
           floatingRail={floatingRail}
           showClose={floatingClose}
           topClassName={floatingRailTopClassName}
+          floatingCloseClassName={floatingCloseClassName}
         />
       ) : null}
       {children}
@@ -338,7 +347,13 @@ function SheetContent({
         <SheetCenterShell
           floatingRailVisible={floatingRailVisible}
           nestedStackClass={nestedStackClass}
-          rail={<SheetFloatingRailStack floatingRail={floatingRail} showClose={floatingClose} />}
+          rail={
+            <SheetFloatingRailStack
+              floatingRail={floatingRail}
+              showClose={floatingClose}
+              floatingCloseClassName={floatingCloseClassName}
+            />
+          }
           panel={popup}
         />
       ) : (
@@ -358,7 +373,11 @@ function SheetContent({
             zIndex: floatingRailZIndex,
           }}
         >
-          <SheetFloatingRailStack floatingRail={floatingRail} showClose={floatingClose} />
+          <SheetFloatingRailStack
+            floatingRail={floatingRail}
+            showClose={floatingClose}
+            floatingCloseClassName={floatingCloseClassName}
+          />
         </div>
       ) : null}
     </SheetPortal>

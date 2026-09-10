@@ -3,6 +3,7 @@
 import { Sheet } from '@/components/ui/sheet';
 import { EntityDetailSheetContent } from '@/components/shared';
 import { SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
+import { MESSENGER_THREAD_SHEET_BACK_CLASS } from '@/features/messenger/messenger-thread-ui.constants';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import type { Task } from '@/lib/api/tasks';
 import { TaskSheetChatPanel, type TaskLocalMessage } from './TaskSheetChatPanel';
@@ -43,6 +44,8 @@ export function TaskSheetChatSheet({
         width="compact"
         contentClassName={TASK_CHAT_SHEET_WIDTH_CLASS}
         railAnchorClassName={TASK_CHAT_SHEET_RAIL_ANCHOR_CLASS}
+        floatingRailTopClassName="max-sm:top-4"
+        floatingCloseClassName={MESSENGER_THREAD_SHEET_BACK_CLASS}
         showRailActions={false}
         forceNestedBackdrop
         sourcePageHref={sourcePageHref}
