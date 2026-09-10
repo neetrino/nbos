@@ -275,7 +275,7 @@ function CompaniesPageContent() {
   useModuleHeroSlots(moduleHeroSlots);
 
   return (
-    <div className="flex h-full flex-col gap-5">
+    <div className="flex flex-col gap-5">
       {isTrashView ? (
         <ClientsDirectoryTrashBanner
           entityLabel="companies"

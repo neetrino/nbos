@@ -1,5 +1,5 @@
 const CLIENTS_DIRECTORY_CARD_SHELL_CLASS =
-  'bg-card focus-visible:ring-ring flex w-full flex-col rounded-3xl p-5 text-left focus-visible:ring-2 focus-visible:outline-none';
+  'bg-card focus-visible:ring-ring flex h-full w-full flex-col rounded-3xl p-5 text-left focus-visible:ring-2 focus-visible:outline-none';
 
 /**
  * Soft diffuse ambient elevation (mock-aligned).
