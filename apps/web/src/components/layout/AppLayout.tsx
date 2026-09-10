@@ -102,7 +102,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                               'flex min-h-0 min-w-0 flex-1 flex-col overscroll-contain bg-transparent',
                               isMessengerRoute
                                 ? 'overflow-hidden'
-                                : 'overflow-y-auto [scrollbar-gutter:stable]',
+                                : 'overflow-y-auto [scrollbar-gutter:stable] max-md:[scrollbar-gutter:auto]',
                               APP_MAIN_CONTENT_INSET,
                             )}
                           >

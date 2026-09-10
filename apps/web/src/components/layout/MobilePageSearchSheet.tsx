@@ -26,7 +26,7 @@ export function MobilePageSearchSheet({
   const handleRef = useBottomSheetSwipeToClose(open, close);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={setOpen} className="contents">
       <MobileDockItem
         label={label}
         active={open}
