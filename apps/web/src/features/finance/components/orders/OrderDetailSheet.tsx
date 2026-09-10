@@ -18,6 +18,7 @@ import {
   LoadingState,
   StatusBadge,
 } from '@/components/shared';
+import { SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
 import { orderLifecycleAction } from '@/features/finance/utils/order-lifecycle';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
@@ -38,8 +39,7 @@ import { ORDER_STATUSES } from './order-statuses';
 const ORDER_DETAIL_SHEET_WIDTH_CLASS =
   'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[30rem]';
 
-const ORDER_DETAIL_SHEET_RAIL_ANCHOR_CLASS =
-  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[30rem]';
+const ORDER_DETAIL_SHEET_RAIL_ANCHOR_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[30rem]`;
 
 interface OrderDetailSheetProps {
   orderId: string | null;

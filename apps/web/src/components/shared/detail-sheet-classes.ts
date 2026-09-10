@@ -25,11 +25,11 @@ export const SHEET_FLOATING_RAIL_TOP_INSET_CLASS = 'sm:top-[calc(2.5vh+1.5rem)]'
 export const SHEET_MOBILE_PANEL_WIDTH_CLASS = 'data-[side=right]:w-[85vw]';
 
 /**
- * Floating rail at the left seam of an 85vw mobile right sheet.
- * {@code translate-x-px} pulls the rail flush into the panel edge (no hairline gap).
+ * Floating rail at the left of the mobile sheet — same inset as page Back (`px-4`).
+ * Desktop anchors keep attaching to the panel seam via `sm:right-[…]`.
  */
 export const SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS =
-  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px';
+  'max-sm:left-4 max-sm:right-auto max-sm:translate-x-0';
 
 /**
  * Horizontal anchor for page settings sheets.

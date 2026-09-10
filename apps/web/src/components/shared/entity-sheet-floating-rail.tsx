@@ -16,9 +16,9 @@ export const ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS = cn(
   'hover:w-14 focus-visible:w-14',
 );
 
-/** Floating Back — circular control on mobile (Close-only rail), offset left of the sheet seam. */
+/** Floating Back — circular on mobile; flush with page Back inset (no left pull on max-sm). */
 export const ENTITY_SHEET_FLOATING_RAIL_CLOSE_CLASS =
-  'group/rail-control relative size-9 shrink-0 self-end -translate-x-2.5 overflow-visible rounded-full border-0 bg-primary text-primary-foreground shadow-md transition-colors duration-300 ease-out hover:bg-primary/90 active:-translate-x-2.5';
+  'group/rail-control relative size-9 shrink-0 self-end -translate-x-2.5 overflow-visible rounded-full border-0 bg-primary text-primary-foreground shadow-md transition-colors duration-300 ease-out hover:bg-primary/90 active:-translate-x-2.5 max-sm:translate-x-0 max-sm:active:translate-x-0';
 
 /** Vertical stack — right edges align to sheet seam; overflow visible so hover lengthens left. */
 export const ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS =

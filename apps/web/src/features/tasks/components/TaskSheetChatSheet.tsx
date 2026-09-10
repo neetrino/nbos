@@ -2,6 +2,7 @@
 
 import { Sheet } from '@/components/ui/sheet';
 import { EntityDetailSheetContent } from '@/components/shared';
+import { SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import type { Task } from '@/lib/api/tasks';
 import { TaskSheetChatPanel, type TaskLocalMessage } from './TaskSheetChatPanel';
@@ -9,8 +10,7 @@ import { TaskSheetChatPanel, type TaskLocalMessage } from './TaskSheetChatPanel'
 const TASK_CHAT_SHEET_WIDTH_CLASS =
   'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[90vw] sm:max-w-none sm:data-[side=right]:w-[min(28rem,calc(100vw-2rem))]';
 
-const TASK_CHAT_SHEET_RAIL_ANCHOR_CLASS =
-  'max-sm:left-auto max-sm:right-[90vw] max-sm:translate-x-px sm:right-[min(28rem,calc(100vw-2rem))]';
+const TASK_CHAT_SHEET_RAIL_ANCHOR_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[min(28rem,calc(100vw-2rem))]`;
 
 interface TaskSheetChatSheetProps {
   open: boolean;

@@ -11,6 +11,7 @@ import {
 import {
   DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
   DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
 } from '@/components/shared/detail-sheet-classes';
 import { Flame, MessageCircle } from 'lucide-react';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
@@ -115,6 +116,17 @@ export function TaskSheetHeader({
 
   const headerIcons = (
     <div className={QUICK_CREATE_TASK_HEADER_ICONS_CLASS}>
+      {onOpenChat ? (
+        <button
+          type="button"
+          className={cn(TASK_PRIORITY_FLAME_BUTTON_CLASS, 'hover:text-foreground')}
+          aria-label="Open task chat"
+          title="Task chat"
+          onClick={onOpenChat}
+        >
+          <MessageCircle size={TASK_SHEET_PRIORITY_FLAME_ICON_SIZE} strokeWidth={1.75} aria-hidden />
+        </button>
+      ) : null}
       <button
         type="button"
         className={cn(
@@ -130,17 +142,6 @@ export function TaskSheetHeader({
       >
         <Flame size={TASK_SHEET_PRIORITY_FLAME_ICON_SIZE} strokeWidth={1.75} aria-hidden />
       </button>
-      {onOpenChat ? (
-        <button
-          type="button"
-          className={cn(TASK_PRIORITY_FLAME_BUTTON_CLASS, 'hover:text-foreground')}
-          aria-label="Open task chat"
-          title="Task chat"
-          onClick={onOpenChat}
-        >
-          <MessageCircle size={TASK_SHEET_PRIORITY_FLAME_ICON_SIZE} strokeWidth={1.75} aria-hidden />
-        </button>
-      ) : null}
       {moreActions ? (
         <TaskSheetMoreActionsMenu
           taskStatus={moreActions.taskStatus}
@@ -159,10 +160,8 @@ export function TaskSheetHeader({
   if (isMobileViewport) {
     return (
       <header className={DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS}>
-        <div className={cn(DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS, 'justify-between gap-2')}>
-          <div className="min-w-0 flex-1">{titleControl}</div>
-          {headerIcons}
-        </div>
+        <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>{headerIcons}</div>
+        <div className={DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS}>{titleControl}</div>
       </header>
     );
   }

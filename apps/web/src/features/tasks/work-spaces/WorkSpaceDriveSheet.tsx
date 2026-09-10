@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { EntityDetailSheetContent, DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
+import { SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
 import { Sheet } from '@/components/ui/sheet';
 import { DriveCreateFolderDialog } from '@/features/drive/DriveFolderActionDialogs';
 import { buildDriveHrefWithWorkSpace } from '@/features/drive/drive-deep-link';
@@ -31,8 +32,7 @@ import { useWorkSpaceDriveBrowser } from './use-work-space-drive-browser';
 
 /** Matches `SheetContent` width and `floatingRailAnchorClassName`. */
 const WORKSPACE_DRIVE_SHEET_WIDTH_CLASS = 'sm:data-[side=right]:w-[min(92vw,52rem)]';
-const WORKSPACE_DRIVE_RAIL_ANCHOR_CLASS =
-  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[min(92vw,52rem)]';
+const WORKSPACE_DRIVE_RAIL_ANCHOR_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[min(92vw,52rem)]`;
 
 export function WorkSpaceDriveSheet({
   open,
