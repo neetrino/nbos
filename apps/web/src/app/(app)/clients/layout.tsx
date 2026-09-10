@@ -11,8 +11,14 @@ export default function ClientsLayout({ children }: { children: ReactNode }) {
   return (
     <ModuleHeroSlotProvider
       title="Clients"
-      tabs={<PageHeroNavLinks items={CLIENTS_MODULE_NAV} ariaLabel="Clients sections" />}
-      className="flex h-full min-h-0 flex-col gap-5"
+      tabs={
+        <PageHeroNavLinks
+          items={CLIENTS_MODULE_NAV}
+          ariaLabel="Clients sections"
+          fullWidthOnMobile
+        />
+      }
+      className="flex h-full min-h-0 flex-col gap-5 max-md:gap-3"
     >
       <div className={CLIENTS_PAGE_CONTENT_BOTTOM_GAP}>{children}</div>
     </ModuleHeroSlotProvider>

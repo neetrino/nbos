@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { AccountMenuDropdown } from '@/components/layout/AccountMenuDropdown';
 import { HeaderQuickNote } from '@/components/layout/HeaderQuickNote';
 import {
@@ -7,11 +8,14 @@ import {
   HeaderModuleTitle,
   useHeaderContextResolved,
 } from '@/components/layout/header-context';
+import { HEADER_MODULE_TITLE_ICON_WRAP } from '@/components/layout/header-context/header-module-title-constants';
 import { NotificationDropdown } from '@/components/layout/NotificationDropdown';
+import { SidebarModuleIcon } from '@/components/layout/SidebarModuleIcon';
 import {
   GlobalSearchMobileTrigger,
   GlobalSearchTrigger,
 } from '@/features/global-search/GlobalSearchTrigger';
+import { resolveSidebarModuleKeyFromPathname } from '@/lib/navigation/nav-route-utils';
 import type { MeResponse } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +32,7 @@ export function AppChromeHeader({
   showQuickNote,
   me,
 }: AppChromeHeaderProps) {
+  const pathname = usePathname();
   const headerContext = useHeaderContextResolved();
   const showMobileEntityHeader =
     isMobileViewport && (headerContext?.kind === 'custom' || headerContext?.kind === 'actions');
@@ -35,6 +40,7 @@ export function AppChromeHeader({
   const mobileNavAsTabs =
     headerContext?.kind === 'nav' && headerContext.mobileVariant === 'tabs';
   const showModuleTitle = Boolean(moduleTitle) && !showMobileEntityHeader;
+  const moduleKey = isMobileViewport ? resolveSidebarModuleKeyFromPathname(pathname) : null;
 
   return (
     <header
@@ -49,6 +55,7 @@ export function AppChromeHeader({
         showQuickNote={showQuickNote}
         showMobileEntityHeader={showMobileEntityHeader}
         showModuleTitle={showModuleTitle}
+        moduleKey={moduleKey}
         me={me}
       />
       {showMobileNav ? <AppChromeHeaderMobileNav asTabs={Boolean(mobileNavAsTabs)} /> : null}
@@ -62,6 +69,7 @@ function AppChromeHeaderPrimaryRow({
   showQuickNote,
   showMobileEntityHeader,
   showModuleTitle,
+  moduleKey,
   me,
 }: {
   moduleTitle: string | null;
@@ -69,6 +77,7 @@ function AppChromeHeaderPrimaryRow({
   showQuickNote: boolean;
   showMobileEntityHeader: boolean;
   showModuleTitle: boolean;
+  moduleKey: ReturnType<typeof resolveSidebarModuleKeyFromPathname>;
   me: MeResponse | null | undefined;
 }) {
   return (
@@ -79,7 +88,17 @@ function AppChromeHeaderPrimaryRow({
             className="mr-1 flex min-w-0 shrink items-center self-stretch sm:mr-2"
             aria-label={`Module: ${moduleTitle}`}
           >
-            <HeaderModuleTitle>{moduleTitle}</HeaderModuleTitle>
+            <HeaderModuleTitle
+              leadingIcon={
+                moduleKey ? (
+                  <span className={HEADER_MODULE_TITLE_ICON_WRAP}>
+                    <SidebarModuleIcon moduleKey={moduleKey} active />
+                  </span>
+                ) : null
+              }
+            >
+              {moduleTitle}
+            </HeaderModuleTitle>
           </div>
         ) : null}
         {!isMobileViewport || showMobileEntityHeader ? (
