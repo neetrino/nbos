@@ -8,6 +8,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
   DeleteConfirmDialog,
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
   DetailSheetSettingsMenu,
   EntityDetailSheetContent,
   useDeleteConfirm,
@@ -18,6 +21,7 @@ import { PartnerLifecycleStages } from '@/features/partners/components/PartnerLi
 import { getPartnerLevel } from '@/features/partners/constants/partners';
 import { formatPartnerDateTime } from '@/features/partners/utils/partner-detail-format';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { partnersApi, type Partner } from '@/lib/api/partners';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
@@ -53,6 +57,7 @@ export function PartnerDetailSheet({
   onPermanentDelete,
   forceNestedBackdrop = false,
 }: PartnerDetailSheetProps) {
+  const isMobileViewport = useIsMobileViewport();
   const {
     entity: partner,
     setEntity: setPartner,
@@ -104,6 +109,72 @@ export function PartnerDetailSheet({
   const tier = partner ? getPartnerLevel(partner.level) : null;
   const showBodyLoading = loading && !partner;
 
+  const settingsMenu = (
+    <DetailSheetSettingsMenu>
+      {!inTrash ? (
+        <DropdownMenuItem onClick={() => setEditOpen(true)} disabled={!partner || loading}>
+          <Pencil />
+          Edit partner
+        </DropdownMenuItem>
+      ) : null}
+      {inTrash && onRestore ? (
+        <DropdownMenuItem
+          disabled={!partner || loading}
+          onClick={() => partner && void onRestore(partner.id)}
+        >
+          <RotateCcw />
+          Restore
+        </DropdownMenuItem>
+      ) : null}
+      {inTrash && onPermanentDelete ? (
+        <DropdownMenuItem
+          variant="destructive"
+          disabled={!partner || loading}
+          onClick={() => partner && onPermanentDelete(partner.id)}
+        >
+          <Trash2 />
+          Delete permanently
+        </DropdownMenuItem>
+      ) : null}
+      {!inTrash && onMoveToTrash ? (
+        <DropdownMenuItem
+          variant="destructive"
+          disabled={!partner || loading}
+          onClick={() =>
+            partner && deleteConfirm.request({ id: partner.id, name: partner.name })
+          }
+        >
+          <Trash2 />
+          Move to Trash
+        </DropdownMenuItem>
+      ) : null}
+      <DropdownMenuItem
+        onClick={() =>
+          window.open(
+            `${window.location.origin}/partners?${PARTNER_OPEN_QUERY}=${encodeURIComponent(partnerId ?? '')}`,
+            '_blank',
+            'noopener,noreferrer',
+          )
+        }
+        disabled={!partnerId}
+      >
+        <ExternalLink />
+        Open in new tab
+      </DropdownMenuItem>
+    </DetailSheetSettingsMenu>
+  );
+
+  const lifecycleControl = partner ? (
+    <PartnerLifecycleStages
+      layout="inline"
+      currentStatus={partner.status}
+      disabled={loading || statusBusy || inTrash}
+      onStatusSelect={handleStatusSelect}
+    />
+  ) : showBodyLoading ? (
+    <Skeleton className="h-8 w-52" />
+  ) : null;
+
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
@@ -120,8 +191,29 @@ export function PartnerDetailSheet({
         >
           {!partnerId ? null : (
             <>
-              <div className="bg-background shrink-0 px-7 pt-5 pb-3">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+              <div
+                className={cn(
+                  isMobileViewport
+                    ? DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS
+                    : 'bg-background shrink-0 px-7 pt-5 pb-3',
+                )}
+              >
+                {isMobileViewport ? (
+                  <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>
+                    <div className="min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                      {lifecycleControl}
+                    </div>
+                    {settingsMenu}
+                  </div>
+                ) : null}
+
+                <div
+                  className={cn(
+                    isMobileViewport
+                      ? DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS
+                      : 'flex flex-wrap items-center justify-between gap-3',
+                  )}
+                >
                   <div className="min-w-0 flex-1">
                     <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
                       <Handshake className="text-primary size-5 shrink-0" aria-hidden />
@@ -145,73 +237,12 @@ export function PartnerDetailSheet({
                       </p>
                     ) : null}
                   </div>
-                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-                    {partner ? (
-                      <PartnerLifecycleStages
-                        layout="inline"
-                        currentStatus={partner.status}
-                        disabled={loading || statusBusy || inTrash}
-                        onStatusSelect={handleStatusSelect}
-                      />
-                    ) : showBodyLoading ? (
-                      <Skeleton className="h-8 w-52" />
-                    ) : null}
-                    <DetailSheetSettingsMenu>
-                      {!inTrash ? (
-                        <DropdownMenuItem
-                          onClick={() => setEditOpen(true)}
-                          disabled={!partner || loading}
-                        >
-                          <Pencil />
-                          Edit partner
-                        </DropdownMenuItem>
-                      ) : null}
-                      {inTrash && onRestore ? (
-                        <DropdownMenuItem
-                          disabled={!partner || loading}
-                          onClick={() => partner && void onRestore(partner.id)}
-                        >
-                          <RotateCcw />
-                          Restore
-                        </DropdownMenuItem>
-                      ) : null}
-                      {inTrash && onPermanentDelete ? (
-                        <DropdownMenuItem
-                          variant="destructive"
-                          disabled={!partner || loading}
-                          onClick={() => partner && onPermanentDelete(partner.id)}
-                        >
-                          <Trash2 />
-                          Delete permanently
-                        </DropdownMenuItem>
-                      ) : null}
-                      {!inTrash && onMoveToTrash ? (
-                        <DropdownMenuItem
-                          variant="destructive"
-                          disabled={!partner || loading}
-                          onClick={() =>
-                            partner && deleteConfirm.request({ id: partner.id, name: partner.name })
-                          }
-                        >
-                          <Trash2 />
-                          Move to Trash
-                        </DropdownMenuItem>
-                      ) : null}
-                      <DropdownMenuItem
-                        onClick={() =>
-                          window.open(
-                            `${window.location.origin}/partners?${PARTNER_OPEN_QUERY}=${encodeURIComponent(partnerId)}`,
-                            '_blank',
-                            'noopener,noreferrer',
-                          )
-                        }
-                        disabled={!partnerId}
-                      >
-                        <ExternalLink />
-                        Open in new tab
-                      </DropdownMenuItem>
-                    </DetailSheetSettingsMenu>
-                  </div>
+                  {!isMobileViewport ? (
+                    <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+                      {lifecycleControl}
+                      {settingsMenu}
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
