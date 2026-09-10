@@ -50,6 +50,7 @@ export function PinnedActionCard({ action, variant = 'visible', editMode }: Pinn
         tone={isHidden ? 'muted' : getPinnedActionTone(action.key)}
         size="lg"
         fullWidth
+        wrapLabel
         className="h-full"
         href={!editMode && !isHidden ? action.href : undefined}
         displayOnly={editMode || isHidden}
@@ -72,6 +73,7 @@ export function PersonalLinkCard({ editMode, link, onDelete }: PersonalLinkCardP
         tone="secondary"
         size="lg"
         fullWidth
+        wrapLabel
         className="h-full min-w-0 flex-1"
         href={link.url}
         external={link.isExternal}
