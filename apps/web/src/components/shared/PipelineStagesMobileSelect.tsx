@@ -55,7 +55,7 @@ export function PipelineStagesMobileSelect({
         aria-label={`Stage: ${label}. Choose stage`}
       >
         <MobileStageArrowSvg fill={fill} />
-        <span className="relative z-10 flex h-full min-w-0 items-center justify-between gap-2 px-3 pr-5 text-sm leading-none font-semibold text-white">
+        <span className="relative z-10 flex h-full min-w-0 items-center justify-between gap-2 pl-4 pr-7 text-sm leading-none font-semibold text-white">
           <span className="min-w-0 truncate text-left">{label}</span>
           <ChevronDown className="lucide-chevron-down size-4 shrink-0" aria-hidden />
         </span>

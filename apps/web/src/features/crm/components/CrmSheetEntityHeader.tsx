@@ -47,17 +47,17 @@ export function CrmSheetEntityHeader({
 
   if (isMobileViewport) {
     return (
-      <div className="bg-background min-w-0 shrink-0 px-7 pt-5 pb-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <EntityIcon className={cn('size-5 shrink-0', headerIconClassName)} aria-hidden />
-          {actions ? (
-            <div className="ml-auto flex max-w-full min-w-0 flex-wrap items-center justify-end gap-1.5">
-              {actions}
-            </div>
-          ) : null}
+      <div className="bg-background min-w-0 shrink-0 pb-3">
+        {/* Match floating Back: max-sm:top-3 + size-9 → same vertical center. */}
+        <div className="px-4 pt-3">
+          <div className="flex h-9 items-center justify-end gap-1.5">{actions}</div>
         </div>
-        <div className="mt-2 flex min-w-0 items-start gap-3">
-          <div className={cn('min-w-0 flex-1', titleClassName)}>
+        <div className="mt-3 flex min-w-0 items-start gap-3 px-4">
+          <div className={cn('flex min-w-0 flex-1 items-start gap-2', titleClassName)}>
+            <EntityIcon
+              className={cn('mt-0.5 size-5 shrink-0', headerIconClassName)}
+              aria-hidden
+            />
             {editing ? (
               <input
                 ref={nameInputRef}
