@@ -29,6 +29,10 @@ export type HeaderContextNavContent = {
   kind: 'nav';
   ariaLabel: string;
   items: HeaderNavItem[];
+  /**
+   * Mobile header chrome: compact pills (CRM, Work Spaces) or desktop zone tabs (Finance).
+   */
+  mobileVariant?: 'pills' | 'tabs';
 };
 
 export type HeaderContextActionsContent = {

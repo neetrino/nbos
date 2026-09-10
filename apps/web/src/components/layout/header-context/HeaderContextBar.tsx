@@ -16,7 +16,8 @@ export function HeaderContextBar() {
         <HeaderContextNav
           items={content.items}
           ariaLabel={content.ariaLabel}
-          className="min-w-0 flex-1 self-stretch"
+          mobileVariant={content.mobileVariant}
+          className="min-w-0 w-full flex-1 self-stretch"
         />
       );
     case 'actions':

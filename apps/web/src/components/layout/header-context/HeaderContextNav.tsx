@@ -9,17 +9,24 @@ export interface HeaderContextNavProps {
   items: HeaderNavItem[];
   ariaLabel: string;
   className?: string;
+  /** Defaults to compact pills. Finance uses desktop zone tabs on mobile too. */
+  mobileVariant?: 'pills' | 'tabs';
 }
 
-/** Desktop zone tabs; mobile renders a top pill switcher. */
-export function HeaderContextNav({ items, ariaLabel, className }: HeaderContextNavProps) {
+/** Desktop zone tabs; mobile renders pills unless `mobileVariant` is `tabs`. */
+export function HeaderContextNav({
+  items,
+  ariaLabel,
+  className,
+  mobileVariant = 'pills',
+}: HeaderContextNavProps) {
   const isMobileViewport = useIsMobileViewport();
 
   if (items.length === 0) {
     return null;
   }
 
-  if (isMobileViewport) {
+  if (isMobileViewport && mobileVariant !== 'tabs') {
     return <HeaderContextMobileNav items={items} ariaLabel={ariaLabel} className={className} />;
   }
 

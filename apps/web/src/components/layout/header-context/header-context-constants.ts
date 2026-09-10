@@ -5,7 +5,7 @@ import {
 
 /** Horizontal scroll when module context exceeds available width. */
 export const HEADER_CONTEXT_SCROLL =
-  'min-w-0 max-w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+  'min-w-0 max-w-full overflow-x-auto overscroll-x-contain touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 /** Tab row; line under inactive zones (active tab overlaps this border). */
 export const HEADER_CONTEXT_TAB_ROW =
@@ -22,7 +22,8 @@ export const HEADER_CONTEXT_TAB_ACTIVE_LABEL =
 /**
  * White strip under the active tab — visual link to PageHero below (not a flush merge).
  */
-export const HEADER_CONTEXT_TAB_CONNECTOR = 'border-border/70 h-2.5 w-full shrink-0 border-x';
+export const HEADER_CONTEXT_TAB_CONNECTOR =
+  'border-border/70 h-2.5 w-full shrink-0 border-x';
 
 /** Active zone tab shell (rounded top + connector strip). */
 export const HEADER_CONTEXT_TAB_ACTIVE = [

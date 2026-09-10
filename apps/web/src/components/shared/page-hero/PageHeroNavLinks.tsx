@@ -2,19 +2,23 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCallback, useMemo, useRef, type MutableRefObject } from 'react';
+import { useCallback, useMemo, useRef, type MutableRefObject, type RefObject } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useRegisterMobileDockItems } from '@/components/layout/MobileModuleDockProvider';
 import type { MobileDockItem } from '@/components/layout/mobile-module-dock-types';
 import { cn } from '@/lib/utils';
-import { PAGE_HERO_PILL_GROUP } from './page-hero-constants';
+import { PAGE_HERO_PILL_GROUP, PAGE_HERO_TAB_SCROLL } from './page-hero-constants';
 import {
   PAGE_HERO_TAB_BUTTON,
   PAGE_HERO_TAB_ICON,
   PAGE_HERO_TAB_ICON_WRAP,
 } from './page-hero-layout';
-import { SlidingPillBackdrop, useSlidingPillIndicator } from './sliding-pill-indicator';
+import {
+  SlidingPillBackdrop,
+  useSlidingPillIndicator,
+  type SlidingPillIndicatorRect,
+} from './sliding-pill-indicator';
 
 export type PageHeroNavLinkItem = {
   href: string;
@@ -64,12 +68,10 @@ export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLin
   useRegisterMobileDockItems('page', isMobileViewport ? EMPTY_MOBILE_DOCK_ITEMS : dockItems);
 
   const activeHref = items.find((item) => isNavItemActive(pathname, item))?.href ?? '';
-
   const getActiveElement = useCallback(
     () => (activeHref ? linkRefs.current.get(activeHref) : undefined),
     [activeHref],
   );
-
   const { indicator, ready } = useSlidingPillIndicator(
     navRef,
     getActiveElement,
@@ -77,14 +79,49 @@ export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLin
     false,
   );
 
+  const nav = (
+    <PageHeroNavTrack
+      items={items}
+      pathname={pathname}
+      ariaLabel={ariaLabel}
+      className={isMobileViewport ? undefined : className}
+      navRef={navRef}
+      linkRefs={linkRefs}
+      indicator={indicator}
+      ready={ready}
+    />
+  );
+
+  if (!isMobileViewport) {
+    return nav;
+  }
+
+  return <div className={cn(PAGE_HERO_TAB_SCROLL, 'w-full min-w-0', className)}>{nav}</div>;
+}
+
+function PageHeroNavTrack({
+  items,
+  pathname,
+  ariaLabel,
+  className,
+  navRef,
+  linkRefs,
+  indicator,
+  ready,
+}: {
+  items: PageHeroNavLinkItem[];
+  pathname: string;
+  ariaLabel: string;
+  className?: string;
+  navRef: RefObject<HTMLElement | null>;
+  linkRefs: MutableRefObject<Map<string, HTMLAnchorElement>>;
+  indicator: SlidingPillIndicatorRect | null;
+  ready: boolean;
+}) {
   return (
     <nav
       ref={navRef}
-      className={cn(
-        PAGE_HERO_PILL_GROUP,
-        'relative w-max min-w-0 shrink-0 max-md:w-full',
-        className,
-      )}
+      className={cn(PAGE_HERO_PILL_GROUP, 'relative w-max min-w-0 shrink-0', className)}
       aria-label={ariaLabel}
     >
       <SlidingPillBackdrop
@@ -126,7 +163,7 @@ function PageHeroNavLink({
       title={item.label}
       className={cn(
         PAGE_HERO_TAB_BUTTON,
-        'relative z-10 max-md:flex-1 max-md:justify-center',
+        'relative z-10 shrink-0',
         active
           ? 'text-primary-foreground'
           : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
