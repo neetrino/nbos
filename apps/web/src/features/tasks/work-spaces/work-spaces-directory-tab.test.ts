@@ -27,6 +27,7 @@ describe('work spaces directory tab', () => {
     const content = workSpacesDirectoryHeaderContent('product');
     expect(content.kind).toBe('nav');
     if (content.kind !== 'nav') return;
+    expect(content.fullWidthOnMobile).toBe(true);
     expect(content.items.map((item) => item.label)).toEqual(['Standalone', 'Product']);
     expect(content.items[0]?.isActive?.('/work-spaces')).toBe(false);
     expect(content.items[1]?.isActive?.('/work-spaces')).toBe(true);

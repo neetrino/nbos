@@ -48,5 +48,6 @@ export function workSpacesDirectoryHeaderContent(
     kind: 'nav',
     ariaLabel: 'Work space type',
     items: workSpacesDirectoryHeaderItems(activeTab),
+    fullWidthOnMobile: true,
   };
 }

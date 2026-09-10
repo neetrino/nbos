@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckSquare, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Sheet } from '@/components/ui/sheet';
 import {
   DeleteConfirmDialog,
@@ -21,6 +21,7 @@ import {
 } from './task-sheet-classes';
 import { TaskSheetSplitLayout } from './TaskSheetSplitLayout';
 import { TaskSheetChatPanel } from './TaskSheetChatPanel';
+import { TaskSheetChatSheet } from './TaskSheetChatSheet';
 import { TaskChecklistSection } from './TaskChecklistSection';
 import { TaskCompletionRulesPanel } from './TaskCompletionRulesPanel';
 import { TaskPipelineStages } from './TaskPipelineStages';
@@ -32,7 +33,9 @@ import type { Task } from '@/lib/api/tasks';
 import { useTaskSheetState } from './use-task-sheet-state';
 import { useTaskDiscussion } from './use-task-discussion';
 import { canDeleteTaskDraft, canMoveTaskToTrash, isTaskInTrash } from '../utils/task-draft-delete';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
+import { cn } from '@/lib/utils';
 
 interface TaskSheetProps {
   taskId: string | null;
@@ -58,6 +61,7 @@ export function TaskSheet({
   isTrashView = false,
   forceNestedBackdrop,
 }: TaskSheetProps) {
+  const isMobileViewport = useIsMobileViewport();
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(taskId);
   const hostMounted = useSheetHostMounted(open, sheetId);
   const state = useTaskSheetState({
@@ -71,6 +75,11 @@ export function TaskSheet({
   const discussion = useTaskDiscussion(sheetId, open);
   const [extrasOpen, setExtrasOpen] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) setChatOpen(false);
+  }, [open]);
 
   const task = state.task;
   const isTrashed = Boolean(task && (isTaskInTrash(task) || isTrashView));
@@ -98,6 +107,89 @@ export function TaskSheet({
     state.workflowFooterStatus ??
     (state.task ? normalizeTaskStatusForDraft(state.task.status) : 'OPEN');
 
+  const sourcePageHref = state.task
+    ? `/tasks?${TASK_OPEN_QUERY}=${encodeURIComponent(state.task.id)}`
+    : sheetId
+      ? `/tasks?${TASK_OPEN_QUERY}=${encodeURIComponent(sheetId)}`
+      : '#';
+
+  const detailPane = state.task && state.generalDraft ? (
+    <>
+      <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="min-w-0 space-y-3 px-4 py-4 sm:px-5">
+          {state.generalError && (
+            <div className="border-destructive/25 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm">
+              {state.generalError}
+            </div>
+          )}
+
+          <TaskSheetGeneralSection
+            task={state.task}
+            taskId={state.task.id}
+            draft={state.generalDraft}
+            disabled={state.loading || readOnly}
+            onPatchDraft={state.patchGeneralDraft}
+            onLinksChange={state.handleLinksChange}
+            onTaskChange={state.handleTaskChange}
+            onSearchEmployees={state.searchEmployees}
+          />
+
+          <TaskChecklistSection
+            task={state.task}
+            newItemTexts={state.newItemTexts}
+            disabled={readOnly}
+            onNewItemTextChange={(checklistId, value) =>
+              state.setNewItemTexts((prev) => ({
+                ...prev,
+                [checklistId]: value,
+              }))
+            }
+            onAddChecklist={state.handleAddChecklist}
+            onAddItem={state.handleAddItem}
+            onToggleItem={state.handleToggleItem}
+            onDeleteChecklist={state.handleDeleteChecklist}
+            onDeleteItem={state.handleDeleteItem}
+            onRenameTitle={state.handleRenameChecklist}
+            onRenameItem={state.handleRenameItem}
+          />
+
+          {hasExtras ? (
+            <DetailSheetCollapsibleSection
+              title="Rules"
+              icon={<CheckSquare size={12} />}
+              open={extrasOpen}
+              onOpenChange={setExtrasOpen}
+              className={TASK_SHEET_SECTION_SURFACE_CLASS}
+            >
+              <div className="space-y-4">
+                <TaskCompletionRulesPanel
+                  task={state.task}
+                  serverBlockers={state.completionBlockers}
+                />
+                {state.task.subtasks.length > 0 ? (
+                  <TaskSubtasksSection task={state.task} />
+                ) : null}
+              </div>
+            </DetailSheetCollapsibleSection>
+          ) : null}
+        </div>
+      </div>
+
+      <TaskSheetStickyFooter
+        dirty={state.generalDirty}
+        workflowSaving={state.workflowSaving}
+        workflowFooterStatus={state.workflowFooterStatus}
+        errorMessage={state.generalError}
+        taskStatus={state.task?.status ?? 'OPEN'}
+        onSave={() => void state.handleGeneralSave()}
+        onCancel={state.handleGeneralCancel}
+        onTaskAction={state.handleAction}
+        isTrashed={isTrashed}
+        onRestore={onRestore ? () => void handleRestore() : undefined}
+      />
+    </>
+  ) : null;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
       <EntityDetailSheetContent
@@ -106,13 +198,7 @@ export function TaskSheet({
         railAnchorClassName={TASK_SHEET_RAIL_ANCHOR_CLASS}
         showRailActions={Boolean(state.task)}
         forceNestedBackdrop={forceNestedBackdrop}
-        sourcePageHref={
-          state.task
-            ? `/tasks?${TASK_OPEN_QUERY}=${encodeURIComponent(state.task.id)}`
-            : sheetId
-              ? `/tasks?${TASK_OPEN_QUERY}=${encodeURIComponent(sheetId)}`
-              : '#'
-        }
+        sourcePageHref={sourcePageHref}
         workspaceHref={state.task?.workspaceId ? `/work-spaces/${state.task.workspaceId}` : null}
       >
         {state.loading && !state.task ? (
@@ -122,12 +208,19 @@ export function TaskSheet({
           </div>
         ) : state.task && state.generalDraft ? (
           <>
-            <div className="bg-background shrink-0 px-7 pt-5 pb-3">
+            <div
+              className={cn(
+                isMobileViewport
+                  ? undefined
+                  : 'bg-background shrink-0 px-7 pt-5 pb-3',
+              )}
+            >
               <TaskSheetHeader
                 draft={state.generalDraft}
                 disabled={state.loading || readOnly}
                 onPatchDraft={state.patchGeneralDraft}
                 onToggleUrgent={() => void state.handleToggleTaskUrgent()}
+                onOpenChat={isMobileViewport ? () => setChatOpen(true) : undefined}
                 moreActions={
                   !isTrashed
                     ? {
@@ -152,98 +245,42 @@ export function TaskSheet({
               />
             </div>
 
-            <TaskSheetSplitLayout
-              detail={
-                <>
-                  <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="min-w-0 space-y-3 px-4 py-4 sm:px-5">
-                      {state.generalError && (
-                        <div className="border-destructive/25 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm">
-                          {state.generalError}
-                        </div>
-                      )}
-
-                      <TaskSheetGeneralSection
-                        task={state.task}
-                        taskId={state.task.id}
-                        draft={state.generalDraft}
-                        disabled={state.loading || readOnly}
-                        onPatchDraft={state.patchGeneralDraft}
-                        onLinksChange={state.handleLinksChange}
-                        onTaskChange={state.handleTaskChange}
-                        onSearchEmployees={state.searchEmployees}
-                      />
-
-                      <TaskChecklistSection
-                        task={state.task}
-                        newItemTexts={state.newItemTexts}
-                        disabled={readOnly}
-                        onNewItemTextChange={(checklistId, value) =>
-                          state.setNewItemTexts((prev) => ({
-                            ...prev,
-                            [checklistId]: value,
-                          }))
-                        }
-                        onAddChecklist={state.handleAddChecklist}
-                        onAddItem={state.handleAddItem}
-                        onToggleItem={state.handleToggleItem}
-                        onDeleteChecklist={state.handleDeleteChecklist}
-                        onDeleteItem={state.handleDeleteItem}
-                        onRenameTitle={state.handleRenameChecklist}
-                        onRenameItem={state.handleRenameItem}
-                      />
-
-                      {hasExtras ? (
-                        <DetailSheetCollapsibleSection
-                          title="Rules"
-                          icon={<CheckSquare size={12} />}
-                          open={extrasOpen}
-                          onOpenChange={setExtrasOpen}
-                          className={TASK_SHEET_SECTION_SURFACE_CLASS}
-                        >
-                          <div className="space-y-4">
-                            <TaskCompletionRulesPanel
-                              task={state.task}
-                              serverBlockers={state.completionBlockers}
-                            />
-                            {state.task.subtasks.length > 0 ? (
-                              <TaskSubtasksSection task={state.task} />
-                            ) : null}
-                          </div>
-                        </DetailSheetCollapsibleSection>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <TaskSheetStickyFooter
-                    dirty={state.generalDirty}
-                    workflowSaving={state.workflowSaving}
-                    workflowFooterStatus={state.workflowFooterStatus}
-                    errorMessage={state.generalError}
-                    taskStatus={state.task?.status ?? 'OPEN'}
-                    onSave={() => void state.handleGeneralSave()}
-                    onCancel={state.handleGeneralCancel}
-                    onTaskAction={state.handleAction}
-                    isTrashed={isTrashed}
-                    onRestore={onRestore ? () => void handleRestore() : undefined}
+            {isMobileViewport ? (
+              <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+                {detailPane}
+              </div>
+            ) : (
+              <TaskSheetSplitLayout
+                detail={detailPane}
+                chat={
+                  <TaskSheetChatPanel
+                    task={state.task}
+                    messages={discussion.messages}
+                    onSend={(body) => {
+                      void discussion.send(body);
+                    }}
                   />
-                </>
-              }
-              chat={
-                <TaskSheetChatPanel
-                  task={state.task}
-                  messages={discussion.messages}
-                  onSend={(body) => {
-                    void discussion.send(body);
-                  }}
-                />
-              }
-            />
+                }
+              />
+            )}
           </>
         ) : (
           <div className="text-muted-foreground p-5 text-sm">{state.generalError}</div>
         )}
       </EntityDetailSheetContent>
+
+      {isMobileViewport ? (
+        <TaskSheetChatSheet
+          open={chatOpen}
+          onOpenChange={setChatOpen}
+          task={state.task}
+          messages={discussion.messages}
+          onSend={(body) => {
+            void discussion.send(body);
+          }}
+          sourcePageHref={sourcePageHref}
+        />
+      ) : null}
 
       <DeleteConfirmDialog
         level="simple"

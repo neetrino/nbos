@@ -8,7 +8,12 @@ import {
   TASK_PRIORITY_FLAME_BUTTON_CLASS,
   TASK_SHEET_PRIORITY_FLAME_ICON_SIZE,
 } from '@/components/shared/quick-create-task/quick-create-task-constants';
-import { Flame } from 'lucide-react';
+import {
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+} from '@/components/shared/detail-sheet-classes';
+import { Flame, MessageCircle } from 'lucide-react';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 import { isTaskUrgentPriority } from '../constants/tasks';
 import type { TaskGeneralDraft } from '../task-general-form-state';
@@ -20,6 +25,8 @@ interface TaskSheetHeaderProps {
   disabled?: boolean;
   onPatchDraft: (partial: Partial<TaskGeneralDraft>) => void;
   onToggleUrgent: () => void;
+  /** Mobile: opens task chat as a nested side sheet. */
+  onOpenChat?: () => void;
   /** When set, shows settings-style ⋯ menu in the top-right. */
   moreActions?: {
     taskStatus: string;
@@ -37,8 +44,10 @@ export function TaskSheetHeader({
   disabled = false,
   onPatchDraft,
   onToggleUrgent,
+  onOpenChat,
   moreActions = null,
 }: TaskSheetHeaderProps) {
+  const isMobileViewport = useIsMobileViewport();
   const urgent = isTaskUrgentPriority(draft.priority);
   const [editing, setEditing] = useState(false);
   const [titleValue, setTitleValue] = useState(draft.title);
@@ -77,65 +86,92 @@ export function TaskSheetHeader({
 
   const displayTitle = draft.title.trim() || 'Untitled task';
 
+  const titleControl =
+    editing && !disabled ? (
+      <input
+        ref={inputRef}
+        value={titleValue}
+        onChange={(e) => setTitleValue(e.target.value)}
+        onBlur={commitTitle}
+        onKeyDown={handleTitleKeyDown}
+        placeholder="Task title…"
+        aria-label="Task title"
+        className="border-primary text-foreground placeholder:text-muted-foreground/55 w-full min-w-0 border-0 border-b-2 bg-transparent py-0 text-lg leading-snug font-bold tracking-tight outline-none sm:text-[1.65rem]"
+      />
+    ) : (
+      <h2
+        onClick={startEditing}
+        className={cn(
+          'text-foreground -mx-1 min-w-0 truncate rounded px-1 text-lg leading-snug font-bold tracking-tight sm:text-[1.65rem]',
+          disabled
+            ? 'cursor-default opacity-60'
+            : 'cursor-text transition-colors hover:bg-stone-100 dark:hover:bg-stone-800',
+        )}
+        title={disabled ? displayTitle : 'Click to edit task title'}
+      >
+        {displayTitle}
+      </h2>
+    );
+
+  const headerIcons = (
+    <div className={QUICK_CREATE_TASK_HEADER_ICONS_CLASS}>
+      <button
+        type="button"
+        className={cn(
+          TASK_PRIORITY_FLAME_BUTTON_CLASS,
+          'hover:text-orange-600',
+          urgent && TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
+        )}
+        aria-pressed={urgent}
+        aria-label={urgent ? 'Urgent' : 'Mark as urgent'}
+        title={urgent ? 'Urgent' : 'Mark as urgent'}
+        disabled={disabled}
+        onClick={onToggleUrgent}
+      >
+        <Flame size={TASK_SHEET_PRIORITY_FLAME_ICON_SIZE} strokeWidth={1.75} aria-hidden />
+      </button>
+      {onOpenChat ? (
+        <button
+          type="button"
+          className={cn(TASK_PRIORITY_FLAME_BUTTON_CLASS, 'hover:text-foreground')}
+          aria-label="Open task chat"
+          title="Task chat"
+          onClick={onOpenChat}
+        >
+          <MessageCircle size={TASK_SHEET_PRIORITY_FLAME_ICON_SIZE} strokeWidth={1.75} aria-hidden />
+        </button>
+      ) : null}
+      {moreActions ? (
+        <TaskSheetMoreActionsMenu
+          taskStatus={moreActions.taskStatus}
+          workflowSaving={moreActions.workflowSaving}
+          onTaskAction={moreActions.onTaskAction}
+          canDeleteDraft={moreActions.canDeleteDraft}
+          canMoveToTrash={moreActions.canMoveToTrash}
+          onDelete={moreActions.onDelete}
+          onMoveToTrash={moreActions.onMoveToTrash}
+          disabled={disabled}
+        />
+      ) : null}
+    </div>
+  );
+
+  if (isMobileViewport) {
+    return (
+      <header className={DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS}>
+        <div className={cn(DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS, 'justify-between gap-2')}>
+          <div className="min-w-0 flex-1">{titleControl}</div>
+          {headerIcons}
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header>
       <div className={QUICK_CREATE_TASK_TITLE_ROW_CLASS}>
-        <div className="min-w-0 flex-1">
-          {editing && !disabled ? (
-            <input
-              ref={inputRef}
-              value={titleValue}
-              onChange={(e) => setTitleValue(e.target.value)}
-              onBlur={commitTitle}
-              onKeyDown={handleTitleKeyDown}
-              placeholder="Task title…"
-              aria-label="Task title"
-              className="border-primary text-foreground placeholder:text-muted-foreground/55 w-full min-w-0 border-0 border-b-2 bg-transparent py-0 text-2xl leading-snug font-bold tracking-tight outline-none sm:text-[1.65rem]"
-            />
-          ) : (
-            <h2
-              onClick={startEditing}
-              className={cn(
-                'text-foreground -mx-1 min-w-0 truncate rounded px-1 text-2xl leading-snug font-bold tracking-tight sm:text-[1.65rem]',
-                disabled
-                  ? 'cursor-default opacity-60'
-                  : 'cursor-text transition-colors hover:bg-stone-100 dark:hover:bg-stone-800',
-              )}
-              title={disabled ? displayTitle : 'Click to edit task title'}
-            >
-              {displayTitle}
-            </h2>
-          )}
-        </div>
-        <div className={QUICK_CREATE_TASK_HEADER_ICONS_CLASS}>
-          <button
-            type="button"
-            className={cn(
-              TASK_PRIORITY_FLAME_BUTTON_CLASS,
-              'hover:text-orange-600',
-              urgent && TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
-            )}
-            aria-pressed={urgent}
-            aria-label={urgent ? 'Urgent' : 'Mark as urgent'}
-            title={urgent ? 'Urgent' : 'Mark as urgent'}
-            disabled={disabled}
-            onClick={onToggleUrgent}
-          >
-            <Flame size={TASK_SHEET_PRIORITY_FLAME_ICON_SIZE} strokeWidth={1.75} aria-hidden />
-          </button>
-          {moreActions ? (
-            <TaskSheetMoreActionsMenu
-              taskStatus={moreActions.taskStatus}
-              workflowSaving={moreActions.workflowSaving}
-              onTaskAction={moreActions.onTaskAction}
-              canDeleteDraft={moreActions.canDeleteDraft}
-              canMoveToTrash={moreActions.canMoveToTrash}
-              onDelete={moreActions.onDelete}
-              onMoveToTrash={moreActions.onMoveToTrash}
-              disabled={disabled}
-            />
-          ) : null}
-        </div>
+        <div className="min-w-0 flex-1">{titleControl}</div>
+        {headerIcons}
       </div>
     </header>
   );
