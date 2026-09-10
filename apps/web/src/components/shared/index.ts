@@ -221,6 +221,7 @@ export {
 export { SheetFileAttachments, type SheetFileAttachmentsProps } from './SheetFileAttachments';
 export {
   EntitySheetFloatingRail,
+  ENTITY_SHEET_FLOATING_RAIL_CLOSE_CLASS,
   ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,
   ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS,
   ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS,

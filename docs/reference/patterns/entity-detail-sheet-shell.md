@@ -4,10 +4,10 @@
 
 ## Layout modes (primary)
 
-| `layout`    | Width                                                       | Default rail                      |
-| ----------- | ----------------------------------------------------------- | --------------------------------- |
-| `full`      | `width`: `wide` (75vw), `medium` (48rem), `compact` (42rem) | Close + Copy + Open (+ Workspace) |
-| `auxiliary` | 36rem fixed                                                 | **Close only**                    |
+| `layout`    | Width                                                       | Default rail (desktop)                | Mobile rail   |
+| ----------- | ----------------------------------------------------------- | ------------------------------------- | ------------- |
+| `full`      | `width`: `wide` (75vw), `medium` (48rem), `compact` (42rem) | Close + Copy + Open (+ Workspace)     | Close only    |
+| `auxiliary` | 36rem fixed                                                 | **Close only**                        | Close only    |
 
 ### Center-rise shell (`EntityCenterSheetContent`)
 

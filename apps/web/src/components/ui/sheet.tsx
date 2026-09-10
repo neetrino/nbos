@@ -11,7 +11,7 @@ import {
   SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
 } from '@/components/shared/detail-sheet-classes';
 import {
-  ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,
+  ENTITY_SHEET_FLOATING_RAIL_CLOSE_CLASS,
   ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS,
   ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS,
 } from '@/components/shared/entity-sheet-floating-rail';
@@ -141,7 +141,7 @@ function SheetFloatingRailStack({
               type="button"
               variant="default"
               size="icon"
-              className={ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS}
+              className={ENTITY_SHEET_FLOATING_RAIL_CLOSE_CLASS}
               aria-label="Close panel"
               title="Close"
             />
