@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 import { StatusBadge } from '@/components/shared';
 import { getProductDeliveryStageBadgeDisplay } from '@/features/projects/constants/delivery-stage-display';
 import { InlineEditableEntityTitle } from '@/features/projects/components/InlineEditableEntityTitle';
-import { DetailPageMobileBackLink } from '@/features/projects/components/DetailPageMobileBackLink';
+import { DetailPageMobileBackLink, DETAIL_PAGE_MOBILE_BACK_ROW_CLASS } from '@/features/projects/components/DetailPageMobileBackLink';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { productsApi, type FullProduct, type Product } from '@/lib/api/products';
 import { cn } from '@/lib/utils';
@@ -23,6 +24,9 @@ export interface ProductDetailHeaderProps {
 const PRODUCT_TITLE_CLASS =
   'text-foreground truncate text-base font-semibold tracking-tight xl:text-lg';
 
+const PRODUCT_TITLE_MOBILE_CLASS =
+  'text-foreground min-w-0 max-w-none flex-1 truncate text-base font-semibold tracking-tight';
+
 export function ProductDetailHeader({
   product,
   siblingProducts,
@@ -30,6 +34,7 @@ export function ProductDetailHeader({
   onSelectProduct,
   onProductUpdated,
 }: ProductDetailHeaderProps) {
+  const isMobileViewport = useIsMobileViewport();
   const [showSwitcher, setShowSwitcher] = useState(false);
   const stageStatus = getProductDeliveryStageBadgeDisplay(product);
   const hasProductSwitcher = siblingProducts.length > 1;
@@ -47,13 +52,51 @@ export function ProductDetailHeader({
     [onProductUpdated, product],
   );
 
+  const stageBadge = stageStatus ? (
+    <StatusBadge
+      label={stageStatus.label}
+      variant={stageStatus.variant}
+      className="shrink-0 self-center"
+    />
+  ) : null;
+
+  const switcher = hasProductSwitcher ? (
+    <ProductSwitcherTrigger
+      open={showSwitcher}
+      onOpenChange={setShowSwitcher}
+      productName={product.name}
+      siblingProducts={siblingProducts}
+      currentProductId={product.id}
+      onSelectProduct={onSelectProduct}
+    />
+  ) : null;
+
+  if (isMobileViewport) {
+    return (
+      <div className="flex w-full min-w-0 flex-col gap-2.5">
+        <div className={DETAIL_PAGE_MOBILE_BACK_ROW_CLASS}>
+          <DetailPageMobileBackLink href={projectHref} ariaLabel="Back to project" />
+        </div>
+        <div className="flex w-full min-w-0 items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
+            <InlineEditableEntityTitle
+              value={product.name}
+              onCommit={handleCommitName}
+              editHint="Click to edit product name"
+              className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden"
+              titleClassName={PRODUCT_TITLE_MOBILE_CLASS}
+            />
+            {switcher}
+          </div>
+          {stageBadge}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
-      <DetailPageMobileBackLink href={projectHref} ariaLabel="Back to project" />
-      <div
-        className="shrink-0 rounded-lg bg-purple-500/10 p-2 text-purple-500 max-md:hidden"
-        aria-hidden
-      >
+      <div className="shrink-0 rounded-lg bg-purple-500/10 p-2 text-purple-500" aria-hidden>
         <Package className="size-4" />
       </div>
       <div className="min-w-0 flex-1">
@@ -64,27 +107,12 @@ export function ProductDetailHeader({
             editHint="Click to edit product name"
             titleClassName={PRODUCT_TITLE_CLASS}
           />
-          {stageStatus ? (
-            <StatusBadge
-              label={stageStatus.label}
-              variant={stageStatus.variant}
-              className="shrink-0 self-center"
-            />
-          ) : null}
-          {hasProductSwitcher ? (
-            <ProductSwitcherTrigger
-              open={showSwitcher}
-              onOpenChange={setShowSwitcher}
-              productName={product.name}
-              siblingProducts={siblingProducts}
-              currentProductId={product.id}
-              onSelectProduct={onSelectProduct}
-            />
-          ) : null}
+          {stageBadge}
+          {switcher}
         </div>
         <Link
           href={projectHref}
-          className="text-muted-foreground hover:text-foreground mt-0.5 block truncate text-xs transition-colors max-md:hidden"
+          className="text-muted-foreground hover:text-foreground mt-0.5 block truncate text-xs transition-colors"
         >
           {product.project.name}
         </Link>

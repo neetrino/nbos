@@ -80,6 +80,33 @@ function AppChromeHeaderPrimaryRow({
   moduleKey: ReturnType<typeof resolveSidebarModuleKeyFromPathname>;
   me: MeResponse | null | undefined;
 }) {
+  const trailing = (
+    <>
+      <GlobalSearchMobileTrigger />
+      <GlobalSearchTrigger />
+      {showQuickNote ? (
+        <div className="max-md:hidden">
+          <HeaderQuickNote />
+        </div>
+      ) : null}
+      <NotificationDropdown />
+      <AccountMenuDropdown me={me} />
+    </>
+  );
+
+  if (showMobileEntityHeader && isMobileViewport) {
+    return (
+      <div className="relative grid w-full min-w-0 grid-cols-1 px-4 py-2">
+        <div className="col-start-1 row-start-1 min-w-0 w-full">
+          <HeaderContextBar />
+        </div>
+        <div className="pointer-events-none col-start-1 row-start-1 z-10 flex h-9 w-full items-center justify-end">
+          <div className="pointer-events-auto flex items-center gap-1.5">{trailing}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-16 min-w-0 items-stretch gap-3 px-4 max-md:h-14 sm:gap-4 sm:px-6">
       <div className="flex min-w-0 flex-1 items-stretch">
@@ -101,22 +128,14 @@ function AppChromeHeaderPrimaryRow({
             </HeaderModuleTitle>
           </div>
         ) : null}
-        {!isMobileViewport || showMobileEntityHeader ? (
+        {!isMobileViewport ? (
           <div className="flex min-w-0 flex-1 items-stretch overflow-hidden">
             <HeaderContextBar />
           </div>
         ) : null}
       </div>
       <div className="ml-auto flex shrink-0 items-center gap-1.5 self-center overflow-visible sm:gap-3">
-        <GlobalSearchMobileTrigger />
-        <GlobalSearchTrigger />
-        {showQuickNote ? (
-          <div className="max-md:hidden">
-            <HeaderQuickNote />
-          </div>
-        ) : null}
-        <NotificationDropdown />
-        <AccountMenuDropdown me={me} />
+        {trailing}
       </div>
     </div>
   );

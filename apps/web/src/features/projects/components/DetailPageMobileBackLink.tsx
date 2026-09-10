@@ -9,6 +9,12 @@ import { cn } from '@/lib/utils';
 export const DETAIL_PAGE_MOBILE_BACK_LINK_CLASS =
   'bg-primary text-primary-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-full shadow-md transition-colors hover:bg-primary/90';
 
+/**
+ * Clears space under overlay search / bell / avatar on mobile entity headers
+ * so Back stays on the left of row 1.
+ */
+export const DETAIL_PAGE_MOBILE_BACK_ROW_CLASS = 'flex h-9 w-full items-center pr-32';
+
 interface DetailPageMobileBackLinkProps {
   href: string;
   ariaLabel: string;
