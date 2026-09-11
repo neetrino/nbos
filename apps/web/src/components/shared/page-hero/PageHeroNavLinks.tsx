@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -72,15 +71,13 @@ export function PageHeroNavLinks({
   const isMobileViewport = useIsMobileViewport();
   const navRef = useRef<HTMLElement>(null);
   const linkRefs = useRef(new Map<string, HTMLAnchorElement>());
-  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [pendingNav, setPendingNav] = useState<{ href: string; fromPathname: string } | null>(null);
   const stretchMobile = isMobileViewport && fullWidthOnMobile;
 
   const routeActiveHref = items.find((item) => isNavItemActive(pathname, item))?.href ?? '';
+  const pendingHref =
+    pendingNav !== null && pendingNav.fromPathname === pathname ? pendingNav.href : null;
   const activeHref = pendingHref ?? routeActiveHref;
-
-  useEffect(() => {
-    setPendingHref(null);
-  }, [pathname]);
 
   const dockItems = useMemo<MobileDockItem[]>(
     () =>
@@ -119,7 +116,7 @@ export function PageHeroNavLinks({
       linkRefs={linkRefs}
       indicator={indicator}
       ready={ready}
-      onSelect={setPendingHref}
+      onSelect={(href) => setPendingNav({ href, fromPathname: pathname })}
       stretchMobile={stretchMobile}
     />
   );

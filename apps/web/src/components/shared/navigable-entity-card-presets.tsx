@@ -237,9 +237,9 @@ function useWorkSpaceCardMobileActions() {
     return () => document.removeEventListener('pointerdown', onPointerDown);
   }, [actionsRevealed, isMobileViewport]);
 
-  useEffect(() => {
-    if (!isMobileViewport) setActionsRevealed(false);
-  }, [isMobileViewport]);
+  if (!isMobileViewport && actionsRevealed) {
+    setActionsRevealed(false);
+  }
 
   function handleBodyClick(event: MouseEvent<HTMLAnchorElement>) {
     if (!isMobileViewport) return;

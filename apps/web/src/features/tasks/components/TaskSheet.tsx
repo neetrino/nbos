@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckSquare, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Sheet } from '@/components/ui/sheet';
 import {
   DeleteConfirmDialog,
@@ -77,9 +77,9 @@ export function TaskSheet({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
 
-  useEffect(() => {
-    if (!open) setChatOpen(false);
-  }, [open]);
+  if (!open && chatOpen) {
+    setChatOpen(false);
+  }
 
   const task = state.task;
   const isTrashed = Boolean(task && (isTaskInTrash(task) || isTrashView));
