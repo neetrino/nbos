@@ -34,7 +34,7 @@ function PageHeroInner(props: PageHeroProps) {
     return (
       <>
         {tabs}
-        {secondaryTabs}
+        {secondaryTabs ? <div className="w-full min-w-0">{secondaryTabs}</div> : null}
       </>
     );
   }

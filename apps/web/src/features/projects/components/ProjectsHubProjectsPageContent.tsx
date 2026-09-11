@@ -114,6 +114,7 @@ function useProjectsHubHeroSlots({
           options={[...PROJECT_HUB_TABS]}
           ariaLabel="Project Hub filters"
           showOnMobile
+          fullWidthOnMobile
           registerMobileDock={false}
         />
       ),

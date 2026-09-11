@@ -242,29 +242,7 @@ function PartnersPageContent() {
         }
         trailing={
           <>
-            {!isTrashView ? (
-              <div className="flex items-center gap-1.5">
-                <div className="max-md:hidden">
-                  <PartnerStatusFilterChips
-                    value={filters.status && filters.status !== 'all' ? filters.status : null}
-                    onChange={(status) =>
-                      setFilters((prev) => {
-                        if (!status) {
-                          const next = { ...prev };
-                          delete next.status;
-                          return next;
-                        }
-                        return { ...prev, status };
-                      })
-                    }
-                    disabled={loading}
-                  />
-                </div>
-                {partnersSettingsSheet}
-              </div>
-            ) : (
-              partnersSettingsSheet
-            )}
+            {partnersSettingsSheet}
             {!isTrashView ? (
               <Button type="button" onClick={() => setCreateOpen(true)}>
                 <Plus size={16} aria-hidden />
@@ -272,6 +250,24 @@ function PartnersPageContent() {
               </Button>
             ) : null}
           </>
+        }
+        secondaryTabs={
+          !isTrashView ? (
+            <PartnerStatusFilterChips
+              value={filters.status && filters.status !== 'all' ? filters.status : null}
+              onChange={(status) =>
+                setFilters((prev) => {
+                  if (!status) {
+                    const next = { ...prev };
+                    delete next.status;
+                    return next;
+                  }
+                  return { ...prev, status };
+                })
+              }
+              disabled={loading}
+            />
+          ) : undefined
         }
       />
 

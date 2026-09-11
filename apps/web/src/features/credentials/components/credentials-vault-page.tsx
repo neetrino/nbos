@@ -56,178 +56,181 @@ function CredentialsVaultPageContent() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      <PageHero
-        title={vault.vaultListScope === 'trash' ? 'Credentials Vault — Trash' : 'Credentials Vault'}
-        create={{ onSelect: vault.openCreate, disabled: !vault.showCreate }}
-        tabs={
-          <PageHeroTabs
-            value={vault.activeTab}
-            onChange={vault.handleTabChange}
-            options={CREDENTIAL_VAULT_TAB_OPTIONS}
-            ariaLabel="Credential scope"
-            showOnMobile
-            registerMobileDock={false}
-          />
-        }
-        search={
-          <IntegratedSearchFilters
-            search={vault.search}
-            onSearchChange={vault.setSearch}
-            searchPlaceholder="Search by name, provider…"
-            filters={vault.filterConfigs}
-            filterValues={vault.filterValuesForUi}
-            onFilterChange={(key, value) => vault.setFilters((prev) => ({ ...prev, [key]: value }))}
-            onClearAll={vault.clearFilters}
-          />
-        }
-        viewMode={
-          <ViewModeSwitch
-            value={vault.viewMode}
-            onChange={vault.setViewMode}
-            options={CREDENTIAL_VAULT_VIEW_OPTIONS}
-          />
-        }
-        trailing={
-          <>
-            <PermissionGate module="CREDENTIALS" action="VIEW">
-              <CredentialsPageSettingsSheet
-                vaultListScope={vault.vaultListScope}
-                onVaultListScopeChange={vault.setVaultListScope}
-              />
-            </PermissionGate>
-            {vault.showCreate && (
-              <PermissionGate module="CREDENTIALS" action="ADD">
-                <Button type="button" onClick={() => vault.openCreate()}>
-                  <Plus size={16} aria-hidden />
-                  New Credential
-                </Button>
-              </PermissionGate>
-            )}
-          </>
-        }
-      />
-
-      <CredentialEmergencyRequestsPanel />
-
-      {vault.vaultListScope === 'trash' ? (
-        <CredentialVaultTrashBanner onBackToVault={() => vault.setVaultListScope('active')} />
-      ) : null}
-
-      <div className="max-md:hidden">
-        <CredentialQuickFilterChips
-          vaultScope={vault.activeTab}
-          categoryChips={vault.quickCategoryChips}
-          activeCategory={vault.quickCategory}
-          onCategoryChange={vault.setQuickCategory}
-          activeQuick={vault.quickFilters}
-          onToggleQuick={vault.toggleQuickFilter}
+      <div className="shrink-0 max-md:contents">
+        <PageHero
+          title={vault.vaultListScope === 'trash' ? 'Credentials Vault — Trash' : 'Credentials Vault'}
+          create={{ onSelect: vault.openCreate, disabled: !vault.showCreate }}
+          tabs={
+            <PageHeroTabs
+              value={vault.activeTab}
+              onChange={vault.handleTabChange}
+              options={CREDENTIAL_VAULT_TAB_OPTIONS}
+              ariaLabel="Credential scope"
+              showOnMobile
+              registerMobileDock={false}
+            />
+          }
+          search={
+            <IntegratedSearchFilters
+              search={vault.search}
+              onSearchChange={vault.setSearch}
+              searchPlaceholder="Search by name, provider…"
+              filters={vault.filterConfigs}
+              filterValues={vault.filterValuesForUi}
+              onFilterChange={(key, value) => vault.setFilters((prev) => ({ ...prev, [key]: value }))}
+              onClearAll={vault.clearFilters}
+            />
+          }
+          viewMode={
+            <ViewModeSwitch
+              value={vault.viewMode}
+              onChange={vault.setViewMode}
+              options={CREDENTIAL_VAULT_VIEW_OPTIONS}
+            />
+          }
           trailing={
-            viewMode === 'folders' &&
-            vault.showCreate &&
-            (!vault.isProjectFoldersMode || vault.activeProjectId) ? (
-              <CredentialFolderCreateButton onCreateFolder={vault.createFolder} />
-            ) : undefined
+            <>
+              <PermissionGate module="CREDENTIALS" action="VIEW">
+                <CredentialsPageSettingsSheet
+                  vaultListScope={vault.vaultListScope}
+                  onVaultListScopeChange={vault.setVaultListScope}
+                />
+              </PermissionGate>
+              {vault.showCreate && (
+                <PermissionGate module="CREDENTIALS" action="ADD">
+                  <Button type="button" onClick={() => vault.openCreate()}>
+                    <Plus size={16} aria-hidden />
+                    New Credential
+                  </Button>
+                </PermissionGate>
+              )}
+            </>
+          }
+          secondaryTabs={
+            <CredentialQuickFilterChips
+              vaultScope={vault.activeTab}
+              categoryChips={vault.quickCategoryChips}
+              activeCategory={vault.quickCategory}
+              onCategoryChange={vault.setQuickCategory}
+              activeQuick={vault.quickFilters}
+              onToggleQuick={vault.toggleQuickFilter}
+              trailing={
+                viewMode === 'folders' &&
+                vault.showCreate &&
+                (!vault.isProjectFoldersMode || vault.activeProjectId) ? (
+                  <CredentialFolderCreateButton onCreateFolder={vault.createFolder} />
+                ) : undefined
+              }
+            />
           }
         />
       </div>
 
-      {vault.selection.selectionActive && (
-        <CredentialVaultBulkBar
-          count={vault.selection.selectedCount}
-          trashList={vault.vaultListScope === 'trash'}
-          busy={vault.loading}
-          showSelectAll={vault.pageCredentialIds.length > 0}
-          selectedIds={vault.selection.selectedIdList}
-          folders={vault.bulkFolderOptions}
-          activeFolderId={vault.activeFolderId}
-          onSelectAll={vault.selection.selectAllOnPage}
-          onClear={vault.selection.clearSelection}
-          onCompleted={handleSaved}
-        />
-      )}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-5 max-md:overflow-x-hidden max-md:overflow-y-auto">
+        <CredentialEmergencyRequestsPanel />
 
-      <div
-        className={
-          viewMode === 'category-board' ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : undefined
-        }
-      >
-        <CredentialsVaultMainView
-          viewMode={viewMode}
-          credentials={vault.credentials}
-          loading={vault.loading}
-          columnMeta={vault.columnMeta}
-          onColumnLoadMore={vault.loadMoreColumn}
-          showCreate={vault.showCreate}
-          activeTab={vault.activeTab}
-          vaultListScope={vault.vaultListScope}
-          quickCategoryChips={vault.quickCategoryChips}
-          activeCategory={vault.quickCategory}
-          secretFlashCredentialId={vault.passwordFlashCredentialId}
-          tableSelection={
-            vault.selectionEnabled
-              ? {
-                  enabled: true,
-                  selectionActive: vault.selection.selectionActive,
-                  isSelected: vault.selection.isSelected,
-                  onToggle: vault.selection.toggleSelected,
-                  onTogglePage: vault.selection.selectAllOnPage,
-                  pageIds: vault.pageCredentialIds,
-                }
-              : undefined
+        {vault.vaultListScope === 'trash' ? (
+          <CredentialVaultTrashBanner onBackToVault={() => vault.setVaultListScope('active')} />
+        ) : null}
+
+        {vault.selection.selectionActive && (
+          <CredentialVaultBulkBar
+            count={vault.selection.selectedCount}
+            trashList={vault.vaultListScope === 'trash'}
+            busy={vault.loading}
+            showSelectAll={vault.pageCredentialIds.length > 0}
+            selectedIds={vault.selection.selectedIdList}
+            folders={vault.bulkFolderOptions}
+            activeFolderId={vault.activeFolderId}
+            onSelectAll={vault.selection.selectAllOnPage}
+            onClear={vault.selection.clearSelection}
+            onCompleted={handleSaved}
+          />
+        )}
+
+        <div
+          className={
+            viewMode === 'category-board' ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : undefined
           }
-          tilesSelection={
-            vault.selectionEnabled
-              ? {
-                  enabled: true,
-                  selectionActive: vault.selection.selectionActive,
-                  isSelected: vault.selection.isSelected,
-                  onToggle: vault.selection.toggleSelected,
-                }
-              : undefined
-          }
-          onCreateOpen={() => vault.openCreate()}
-          onCreateInCategory={(cat) => vault.openCreate(cat)}
-          onOpenCredential={vault.openCredential}
-          onSetFavorite={(id, favorite) => void vault.setCredentialFavorite(id, favorite)}
-          onCopyText={vault.copyToClipboard}
-          onCopySecret={(id, criticality, field) =>
-            void copyVaultSecret({ id, criticality, field })
-          }
-          onRequestDelete={(id, name) => vault.setDeleteTarget({ id, name })}
-          onRequestPurge={(id, name, criticality) =>
-            vault.setPurgeTarget({ id, name, criticality })
-          }
-          onRestored={handleSaved}
-          folders={vault.folders}
-          foldersLoading={vault.foldersLoading}
-          activeFolderId={vault.activeFolderId}
-          onNavigateFolder={vault.navigateFolder}
-          onOpenFolder={vault.openFolder}
-          onRenameFolder={vault.renameFolder}
-          onDeleteFolder={vault.deleteFolder}
-          onRemoveFolderGrouping={vault.removeFolderGrouping}
-          projectShellsMode={vault.isProjectFoldersMode}
-          projectShells={vault.projectShells}
-          projectShellsLoading={vault.projectShellsLoading}
-          activeProject={vault.activeProject}
-          onOpenProject={vault.openProject}
-          onNavigateProject={vault.navigateProject}
-          credentialFolderDrag={vault.credentialFolderDragConfig}
-          credentialFolderDrop={vault.credentialFolderDropConfig}
-        />
+        >
+          <CredentialsVaultMainView
+            viewMode={viewMode}
+            credentials={vault.credentials}
+            loading={vault.loading}
+            columnMeta={vault.columnMeta}
+            onColumnLoadMore={vault.loadMoreColumn}
+            showCreate={vault.showCreate}
+            activeTab={vault.activeTab}
+            vaultListScope={vault.vaultListScope}
+            quickCategoryChips={vault.quickCategoryChips}
+            activeCategory={vault.quickCategory}
+            secretFlashCredentialId={vault.passwordFlashCredentialId}
+            tableSelection={
+              vault.selectionEnabled
+                ? {
+                    enabled: true,
+                    selectionActive: vault.selection.selectionActive,
+                    isSelected: vault.selection.isSelected,
+                    onToggle: vault.selection.toggleSelected,
+                    onTogglePage: vault.selection.selectAllOnPage,
+                    pageIds: vault.pageCredentialIds,
+                  }
+                : undefined
+            }
+            tilesSelection={
+              vault.selectionEnabled
+                ? {
+                    enabled: true,
+                    selectionActive: vault.selection.selectionActive,
+                    isSelected: vault.selection.isSelected,
+                    onToggle: vault.selection.toggleSelected,
+                  }
+                : undefined
+            }
+            onCreateOpen={() => vault.openCreate()}
+            onCreateInCategory={(cat) => vault.openCreate(cat)}
+            onOpenCredential={vault.openCredential}
+            onSetFavorite={(id, favorite) => void vault.setCredentialFavorite(id, favorite)}
+            onCopyText={vault.copyToClipboard}
+            onCopySecret={(id, criticality, field) =>
+              void copyVaultSecret({ id, criticality, field })
+            }
+            onRequestDelete={(id, name) => vault.setDeleteTarget({ id, name })}
+            onRequestPurge={(id, name, criticality) =>
+              vault.setPurgeTarget({ id, name, criticality })
+            }
+            onRestored={handleSaved}
+            folders={vault.folders}
+            foldersLoading={vault.foldersLoading}
+            activeFolderId={vault.activeFolderId}
+            onNavigateFolder={vault.navigateFolder}
+            onOpenFolder={vault.openFolder}
+            onRenameFolder={vault.renameFolder}
+            onDeleteFolder={vault.deleteFolder}
+            onRemoveFolderGrouping={vault.removeFolderGrouping}
+            projectShellsMode={vault.isProjectFoldersMode}
+            projectShells={vault.projectShells}
+            projectShellsLoading={vault.projectShellsLoading}
+            activeProject={vault.activeProject}
+            onOpenProject={vault.openProject}
+            onNavigateProject={vault.navigateProject}
+            credentialFolderDrag={vault.credentialFolderDragConfig}
+            credentialFolderDrop={vault.credentialFolderDropConfig}
+          />
+        </div>
+
+        {vault.showPagedFooter ? (
+          <ListPagination
+            meta={{
+              total: vault.total,
+              page: vault.page,
+              pageSize: vault.pageSize,
+              totalPages: vault.totalPages,
+            }}
+            onPageChange={vault.setPage}
+          />
+        ) : null}
       </div>
-
-      {vault.showPagedFooter ? (
-        <ListPagination
-          meta={{
-            total: vault.total,
-            page: vault.page,
-            pageSize: vault.pageSize,
-            totalPages: vault.totalPages,
-          }}
-          onPageChange={vault.setPage}
-        />
-      ) : null}
 
       <CredentialsVaultPageOverlays
         activeTab={vault.activeTab}
