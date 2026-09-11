@@ -16,6 +16,8 @@ import { assertEntityIsActive } from '../../common/lifecycle/entity-lifecycle-gu
 import { MessengerCoreService } from '../messenger/core/messenger-core.service';
 import { persistCoreMessage } from '../messenger/core/messenger-core-message.ops';
 import { ensureTaskConversation } from '../messenger/core/messenger-core-task-ensure.ops';
+import { loadAccessibleInternalConversationSummary } from '../messenger/core/messenger-core-internal-summary-for-viewer.ops';
+import type { MessengerInternalConversationListItem } from '../messenger/core/messenger-core-internal.types';
 import { taskCanonicalKey } from '../messenger/core/messenger-core-canonical-key';
 import {
   parseTaskDiscussionMeta,
@@ -36,6 +38,8 @@ export interface TaskDiscussionEntryView {
   channelSource: string | null;
   createdAt: Date;
   conversationId: string;
+  /** Canonical Internal inbox row for the writer. Absent when they cannot see Messenger. */
+  conversation?: MessengerInternalConversationListItem;
 }
 
 export interface TaskDiscussionListResult {
@@ -70,7 +74,7 @@ export class TaskDiscussionService {
     const actorFields = discussionActorFields(actor);
     const opener = actor.actor.type === 'USER' ? actor.actor.id : undefined;
     const conversation = await ensureTaskConversation(db as never, taskId, access, opener);
-    return this.persistCoreNote(db, conversation.id, actor, actorFields, body, Boolean(tx));
+    return this.persistCoreNote(db, conversation.id, actor, actorFields, body, Boolean(tx), access);
   }
 
   async listEntries(
@@ -97,6 +101,7 @@ export class TaskDiscussionService {
     actorFields: ReturnType<typeof discussionActorFields>,
     body: string,
     inTransaction: boolean,
+    access?: TasksAccessContext,
   ): Promise<TaskDiscussionEntryView> {
     const actorType = isActorType(actor.actor.type) ? actor.actor.type : 'SYSTEM';
     const input = {
@@ -116,10 +121,28 @@ export class TaskDiscussionService {
     };
     if (actor.actor.type === 'USER' && !inTransaction && input.senderId) {
       const message = await this.core.persistAndBroadcast(input);
-      return toDiscussionViewFromCore(message, actorFields, conversationId);
+      return this.withViewerInboxSummary(
+        toDiscussionViewFromCore(message, actorFields, conversationId),
+        input.senderId,
+        access,
+      );
     }
     const message = await persistCoreMessage(db as never, input, []);
     return toDiscussionViewFromCore(message, actorFields, conversationId);
+  }
+
+  private async withViewerInboxSummary(
+    view: TaskDiscussionEntryView,
+    employeeId: string,
+    access?: TasksAccessContext,
+  ): Promise<TaskDiscussionEntryView> {
+    const conversation = await loadAccessibleInternalConversationSummary(
+      this.prisma,
+      employeeId,
+      view.conversationId,
+      access,
+    );
+    return conversation ? { ...view, conversation } : view;
   }
 
   private async listCoreNotes(

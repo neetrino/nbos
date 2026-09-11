@@ -1,5 +1,6 @@
 import type { EntityLifecycleScope } from '@nbos/shared';
 import { api } from '../api';
+import type { MessengerCoreConversationRow } from './messenger-core';
 
 export interface TaskLink {
   id: string;
@@ -212,6 +213,8 @@ export interface TaskDiscussionEntry {
   channelSource: string | null;
   createdAt: string;
   conversationId?: string;
+  /** Canonical Internal inbox row from POST. List GET notes do not include this. */
+  conversation?: MessengerCoreConversationRow;
 }
 
 export interface TaskDiscussionList {
