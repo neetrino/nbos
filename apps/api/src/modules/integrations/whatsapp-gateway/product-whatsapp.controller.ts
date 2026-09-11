@@ -38,23 +38,36 @@ export class ProductWhatsAppController {
   @HttpCode(HttpStatus.OK)
   @RequirePermission('PROJECTS', 'EDIT')
   @ApiOperation({ summary: 'Ensure Product WhatsApp group (enqueue)' })
-  ensure(@Param('productId') productId: string, @CurrentUser() user: CurrentUserPayload) {
+  ensure(
+    @Param('productId') productId: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('purpose') purpose?: 'WORK' | 'FINANCE',
+  ) {
     return this.productWhatsApp.ensureGroupForProduct(productId, {
       source: 'MANUAL_RETRY',
       actorId: user.id,
+      purpose: purpose === 'FINANCE' ? 'FINANCE' : 'WORK',
     });
   }
 
   @Get('available-groups')
   @RequirePermission('PROJECTS', 'EDIT')
   @ApiOperation({ summary: 'List Gateway groups available for this Product' })
-  availableGroups(@Param('productId') productId: string, @Query('search') search?: string) {
-    return this.productWhatsApp.listAvailableGroups(productId, search);
+  availableGroups(
+    @Param('productId') productId: string,
+    @Query('search') search?: string,
+    @Query('purpose') purpose?: 'WORK' | 'FINANCE',
+  ) {
+    return this.productWhatsApp.listAvailableGroups(
+      productId,
+      search,
+      purpose === 'FINANCE' ? 'FINANCE' : 'WORK',
+    );
   }
 
   @Put('binding')
   @RequirePermission('PROJECTS', 'EDIT')
-  @ApiOperation({ summary: 'Bind or replace Product WhatsApp group' })
+  @ApiOperation({ summary: 'Bind or replace Product WhatsApp destination' })
   bind(
     @Param('productId') productId: string,
     @CurrentUser() user: CurrentUserPayload,
@@ -63,7 +76,16 @@ export class ProductWhatsAppController {
     return this.productWhatsApp.bindExistingGroup(productId, body.groupChatId, user.id, {
       replace: body.replace,
       persistIfUnreachable: body.persistIfUnreachable,
+      purpose: body.purpose === 'FINANCE' ? 'FINANCE' : 'WORK',
     });
+  }
+
+  @Post('finance/use-work')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('PROJECTS', 'EDIT')
+  @ApiOperation({ summary: 'Clear explicit FINANCE destination (fall back to WORK)' })
+  useWorkForFinance(@Param('productId') productId: string) {
+    return this.productWhatsApp.useWorkForFinance(productId);
   }
 
   @Post('sync')
@@ -71,15 +93,7 @@ export class ProductWhatsAppController {
   @RequirePermission('PROJECTS', 'EDIT')
   @ApiOperation({ summary: 'Sync Product WhatsApp participants' })
   async sync(@Param('productId') productId: string, @CurrentUser() user: CurrentUserPayload) {
-    const state = await this.productWhatsApp.getProductWhatsAppState(productId);
-    if (!state.binding?.id) {
-      return this.productWhatsApp.ensureGroupForProduct(productId, {
-        source: 'MANUAL_SYNC',
-        actorId: user.id,
-      });
-    }
-    await this.productWhatsApp.queueParticipantSync(productId, state.binding.id, user.id);
-    return this.productWhatsApp.getProductWhatsAppState(productId);
+    return this.productWhatsApp.syncParticipants(productId, user.id);
   }
 
   @Post('client-invite')

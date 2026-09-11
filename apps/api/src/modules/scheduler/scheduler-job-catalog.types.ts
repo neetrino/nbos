@@ -40,6 +40,7 @@ export const SCHEDULER_JOB_GROUP = {
   support: 'Support',
   sessions: 'Sessions',
   mail: 'Mail',
+  messenger: 'Messenger',
   reports: 'Reports',
   ai: 'AI',
 } as const;

@@ -142,8 +142,9 @@ enum TaskDiscussionVisibilityEnum {
   HIDDEN
 }
 
-/// Tasks-owned discussion. Agent and human notes share this table; authorship is
-/// ActorContext, never a forged Employee row. Messenger is not involved.
+/// Legacy human discussion rows. Messaging Core is the write path after Slice 5.
+/// Table remains until final acceptance (DELETE-LATER). Do not DROP.
+/// Authorship is ActorContext, never a forged Employee row.
 model TaskDiscussionEntry {
   id               String                         @id @default(uuid())
   taskId           String                         @map("task_id")

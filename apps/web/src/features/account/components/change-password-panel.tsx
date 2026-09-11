@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff, KeyRound } from 'lucide-react';
-import { signOut } from 'next-auth/react';
+import { signOutClient } from '@/lib/auth/session-sign-out';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -78,7 +78,7 @@ export function ChangePasswordPanel({ accountEmail }: { accountEmail?: string })
       });
       reset();
       toast.success('Password updated. Sign in again with your new password.');
-      await signOut({ callbackUrl: '/sign-in' });
+      await signOutClient();
     } catch (caught) {
       setFormError(getApiErrorMessage(caught, 'Could not change password.'));
     }

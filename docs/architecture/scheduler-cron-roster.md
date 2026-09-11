@@ -86,6 +86,8 @@ Ops-журнал решений (вкл/выкл на проде). Катало�
 20. 🟡 **Почта — сверка inbox** — каждые **5 минут**: `enqueueSync` для `ACTIVE` / `DEGRADED`. Default **off**.  
     `SCHEDULER_MAIL_SYNC_RECONCILE_ENABLED` · cron `SCHEDULER_MAIL_SYNC_RECONCILE_CRON` (default `*/5 * * * *`)
 
+21. 🟡 **Messenger — сверка исходящих WhatsApp** — каждую **минуту**: PENDING enqueue, repair по WHATSAPP ref, same-key `OUTCOME_UNKNOWN` внутри Gateway 24h. Default **off**. Env `SCHEDULER_MESSENGER_OUTBOUND_RECONCILE_ENABLED` · cron `SCHEDULER_MESSENGER_OUTBOUND_RECONCILE_CRON` (default `* * * * *`). Non-proof invalid/manual-review only on unclaimed or lease-expired commands; an active `dispatch_token` lease cannot be terminalized. Nullable `dispatch_token` / `dispatch_claimed_at` are expand-only (NULL = unclaimed).
+
 Ручной ремонт без cron: `POST /api/scheduler/sales-kpi-backfill-all`.
 
 ---

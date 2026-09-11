@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { NotificationModule } from '../notifications/notification.module';
+import { MessengerModule } from '../messenger/messenger.module';
 import { TasksController } from './tasks.controller';
 import { TaskCreationService } from './task-creation.service';
 import { TasksService } from './tasks.service';
@@ -15,7 +16,7 @@ import { TaskDiscussionController } from './task-discussion.controller';
 import { TaskDiscussionService } from './task-discussion.service';
 
 @Module({
-  imports: [NotificationModule],
+  imports: [NotificationModule, MessengerModule],
   controllers: [
     // WorkSpacesController must be registered before TasksController: otherwise
     // GET /tasks/:id on TasksController captures the literal segment "work-spaces"

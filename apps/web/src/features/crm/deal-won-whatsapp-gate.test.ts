@@ -3,6 +3,7 @@ import {
   canConfirmDealWonWhatsApp,
   isMissingActiveWhatsAppGroup,
   isWhatsAppWonGateDealType,
+  resolveWonWhatsAppExistingGroupChatId,
   whatsappGroupMissingLabel,
   whatsappGroupMissingShortLabel,
 } from './deal-won-whatsapp-gate';
@@ -64,5 +65,20 @@ describe('deal-won-whatsapp-gate', () => {
     expect(whatsappGroupMissingShortLabel('FAILED')).toBe('Failed');
     expect(whatsappGroupMissingShortLabel('CREATING')).toBe('Creating…');
     expect(whatsappGroupMissingShortLabel('NEEDS_RECONCILIATION')).toBe('Unresolved');
+  });
+
+  it('does not treat leftover unique-legacy as existing WORK', () => {
+    expect(
+      resolveWonWhatsAppExistingGroupChatId({
+        work: null,
+        binding: { groupChatId: '120363111111111111@g.us' },
+      }),
+    ).toBeNull();
+    expect(
+      resolveWonWhatsAppExistingGroupChatId({
+        work: { groupChatId: '120363111111111111@g.us' },
+        binding: { groupChatId: 'stale-legacy@g.us' },
+      }),
+    ).toBe('120363111111111111@g.us');
   });
 });

@@ -37,6 +37,7 @@ export const SCHEDULER_JOB_NAMES = {
   clientServicesDomainRegistry: 'client-services-domain-registry-check',
   clientServicesRenewalInvoice: 'client-services-renewal-invoice',
   mailOutboundReconcile: 'mail-outbound-reconcile',
+  messengerOutboundReconcile: 'messenger-outbound-reconcile',
   mailGmailWatchRenew: 'mail-gmail-watch-renew',
   mailSyncReconcile: 'mail-sync-reconcile',
   aiModelCatalogSync: 'ai-model-catalog-sync',

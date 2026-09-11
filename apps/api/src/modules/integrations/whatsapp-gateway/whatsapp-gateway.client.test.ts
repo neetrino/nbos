@@ -191,4 +191,34 @@ describe('WhatsAppGatewayClient', () => {
       }),
     );
   });
+
+  it('sends account-scoped TEXT via v1 with Idempotency-Key', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: { messageId: 'wamid-out', chatId: '37499111222@c.us', status: 'sent' },
+        }),
+      }),
+    );
+    const result = await client.sendAccountTextMessage(
+      config,
+      'acc_a',
+      { chatId: '37499111222@c.us', text: 'hello' },
+      'core-wa-send:msg-1',
+    );
+    expect(result.messageId).toBe('wamid-out');
+    expect(fetch).toHaveBeenCalledWith(
+      'https://wa-gateway.test/api/v1/accounts/acc_a/messages',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer gw_test_token',
+          'Idempotency-Key': 'core-wa-send:msg-1',
+        }),
+      }),
+    );
+  });
 });

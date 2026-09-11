@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { MessengerModule } from '../../messenger/messenger.module';
 import { MetaAccountsService } from './meta-accounts.service';
 import { MetaController } from './meta.controller';
 import { MetaLeadIngestService } from './meta-lead-ingest.service';
@@ -9,6 +10,7 @@ import { MetaProviderSecretStore } from './meta-provider-secret.store';
 import { MetaWebhookService } from './meta-webhook.service';
 
 @Module({
+  imports: [MessengerModule],
   controllers: [MetaController],
   providers: [
     MetaProviderConfig,

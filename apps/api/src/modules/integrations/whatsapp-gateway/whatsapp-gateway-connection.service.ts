@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaClient, Prisma, type WhatsAppGatewayConnectionStatusEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
-import { assertHttpsBaseUrl, WhatsAppGatewayClient } from './whatsapp-gateway.client';
+import { WhatsAppGatewayClient } from './whatsapp-gateway.client';
 import {
   WHATSAPP_AUDIT_ENTITY_GATEWAY,
   WHATSAPP_AUDIT_GATEWAY_CONFIGURED,
@@ -18,7 +18,10 @@ import {
   WhatsAppGatewayHttpError,
 } from './whatsapp-gateway.errors';
 import { WhatsAppGatewaySecretStore } from './whatsapp-gateway-secret.store';
-import { isWhatsAppGroupChatId, normalizeWhatsAppGroupChatId } from '@nbos/shared';
+import {
+  buildWhatsAppConnectionWritePatch,
+  parseAccountingGroupChatId,
+} from './whatsapp-gateway-connection-write.ops';
 import type {
   WhatsAppConnectionPublicView,
   WhatsAppGatewayChatsListData,
@@ -45,62 +48,41 @@ export class WhatsAppGatewayConnectionService {
   }
 
   async upsertConnection(
-    input: { baseUrl?: string; apiToken?: string; accountingGroupChatId?: string | null },
+    input: {
+      baseUrl?: string;
+      apiToken?: string;
+      accountingGroupChatId?: string | null;
+      webhookSigningSecret?: string;
+      gatewayAccountId?: string | null;
+    },
     actorId: string,
   ): Promise<WhatsAppConnectionPublicView> {
     const row = await this.getOrCreateRow();
     const allowHttp = this.config.get<string>('NODE_ENV') !== 'production';
-    let nextBaseUrl = row.baseUrl;
-    let nextEncrypted = row.encryptedApiToken;
-    let tokenChanged = false;
-    let nextAccountingGroupChatId = row.accountingGroupChatId;
-
-    if (input.baseUrl !== undefined) {
-      nextBaseUrl = assertHttpsBaseUrl(input.baseUrl, allowHttp);
-    }
-    if (input.apiToken !== undefined && input.apiToken.trim()) {
-      nextEncrypted = this.secrets.encryptToken(input.apiToken.trim());
-      tokenChanged = true;
-    }
-    if (input.accountingGroupChatId !== undefined) {
-      nextAccountingGroupChatId = parseAccountingGroupChatId(input.accountingGroupChatId);
-    }
-
-    const configuringGateway = input.baseUrl !== undefined || Boolean(input.apiToken?.trim());
-    if (configuringGateway && (!nextBaseUrl || !nextEncrypted)) {
-      throwWhatsAppDomainError(
-        400,
-        WHATSAPP_ERROR.GATEWAY_NOT_CONFIGURED,
-        'Gateway base URL and API token are required',
-      );
-    }
-
+    const accountingGroupChatId =
+      input.accountingGroupChatId !== undefined
+        ? parseAccountingGroupChatId(input.accountingGroupChatId)
+        : row.accountingGroupChatId;
+    const patch = buildWhatsAppConnectionWritePatch(
+      row,
+      input,
+      this.secrets,
+      allowHttp,
+      accountingGroupChatId,
+    );
     const updated = await this.prisma.whatsAppGatewayConnection.update({
       where: { id: row.id },
-      data: {
-        ...(configuringGateway
-          ? {
-              baseUrl: nextBaseUrl,
-              encryptedApiToken: nextEncrypted,
-              status: 'CONNECTED' as const,
-              lastErrorCode: null,
-              lastErrorMessage: null,
-            }
-          : {}),
-        accountingGroupChatId: nextAccountingGroupChatId,
-      },
+      data: patch.data,
     });
-
     await this.audit.log({
       entityType: WHATSAPP_AUDIT_ENTITY_GATEWAY,
       entityId: updated.id,
-      action: tokenChanged
+      action: patch.tokenChanged
         ? WHATSAPP_AUDIT_GATEWAY_TOKEN_CHANGED
         : WHATSAPP_AUDIT_GATEWAY_CONFIGURED,
       userId: actorId,
-      changes: { baseUrl: nextBaseUrl, hasToken: true },
+      changes: { baseUrl: patch.nextBaseUrl, hasToken: true },
     });
-
     return this.toPublic(updated);
   }
 
@@ -225,6 +207,20 @@ export class WhatsAppGatewayConnectionService {
     };
   }
 
+  async requireWebhookSigningSecret(): Promise<string> {
+    const row = await this.getOrCreateRow();
+    if (row.encryptedWebhookSecret) {
+      return this.secrets.decryptToken(row.encryptedWebhookSecret);
+    }
+    const fromEnv = this.config.get<string>('WHATSAPP_GATEWAY_WEBHOOK_SECRET')?.trim();
+    if (fromEnv) return fromEnv;
+    throwWhatsAppDomainError(
+      503,
+      WHATSAPP_ERROR.WEBHOOK_SECRET_NOT_CONFIGURED,
+      'WhatsApp Gateway webhook signing secret is not configured',
+    );
+  }
+
   private async getOrCreateRow(): Promise<WhatsAppGatewayConnection> {
     const existing = await this.prisma.whatsAppGatewayConnection.findUnique({
       where: { id: SINGLETON_ID },
@@ -246,6 +242,8 @@ export class WhatsAppGatewayConnectionService {
       lastErrorCode: row.lastErrorCode,
       lastErrorMessage: row.lastErrorMessage,
       accountingGroupChatId: row.accountingGroupChatId,
+      hasWebhookSecret: Boolean(row.encryptedWebhookSecret),
+      gatewayAccountId: row.gatewayAccountId,
     };
   }
 
@@ -290,18 +288,4 @@ export class WhatsAppGatewayConnectionService {
       httpStatus: 503,
     };
   }
-}
-
-function parseAccountingGroupChatId(raw: string | null): string | null {
-  const trimmed = raw?.trim() ?? '';
-  if (!trimmed) return null;
-  const normalized = normalizeWhatsAppGroupChatId(trimmed);
-  if (!isWhatsAppGroupChatId(normalized)) {
-    throwWhatsAppDomainError(
-      400,
-      WHATSAPP_ERROR.INVALID_GROUP_ID,
-      'Accountant WhatsApp group ID must be a group JID (@g.us)',
-    );
-  }
-  return normalized;
 }

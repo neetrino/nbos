@@ -25,6 +25,7 @@ import {
   MAIL_GMAIL_WATCH_RENEW_ENABLED_ENV,
   MAIL_SYNC_RECONCILE_ENABLED_ENV,
 } from '../mail/mail-sync-runtime.constants';
+import { MESSENGER_OUTBOUND_RECONCILE_ENABLED_ENV } from '../messenger/core/messenger-outbound-reconcile.constants';
 import { AI_MODEL_CATALOG_SYNC_ENABLED_ENV } from '../ai-platform/providers/ai-provider.constants';
 import {
   OVERDUE_INVOICES_CRON_ENABLED_ENV,
@@ -54,6 +55,7 @@ const START_CRON_ENABLED_ENV_KEYS = [
   MAIL_OUTBOUND_RECONCILE_ENABLED_ENV,
   MAIL_GMAIL_WATCH_RENEW_ENABLED_ENV,
   MAIL_SYNC_RECONCILE_ENABLED_ENV,
+  MESSENGER_OUTBOUND_RECONCILE_ENABLED_ENV,
   AI_MODEL_CATALOG_SYNC_ENABLED_ENV,
 ] as const;
 
@@ -130,5 +132,14 @@ describe('scheduler-job-catalog', () => {
     );
     expect(reminders?.description).toContain('pay within 5 days');
     expect(reminders?.description).toContain('Invoices button');
+  });
+
+  it('keeps messenger outbound reconcile default-off at one-minute cadence', () => {
+    const entry = SCHEDULER_JOB_CATALOG.find(
+      (row) => row.jobName === SCHEDULER_JOB_NAMES.messengerOutboundReconcile,
+    );
+    expect(entry?.rosterIntent).toBe('off');
+    expect(entry?.defaultExpression).toBe('* * * * *');
+    expect(entry?.enabledEnvKey).toBe(MESSENGER_OUTBOUND_RECONCILE_ENABLED_ENV);
   });
 });

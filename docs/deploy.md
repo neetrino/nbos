@@ -268,6 +268,9 @@ Production release выполняется вручную. Merge в `main` зап
 - В production не использовать `prisma migrate dev`, `db push` или `migrate reset`.
 - Production `DIRECT_URL` не хранить в репозитории, `.env.local` или Coolify runtime apps.
 - Обычный порядок migration-first допустим только для backward-compatible schema changes; breaking changes требуют expand/contract rollout.
+- Messenger delta recovery (`MESSENGER_DELTA_RECOVERY_ENABLED`) stays **false** until the additive revision migration is applied and every API/worker instance runs instrumented writers. Then set the flag and roll all instances; clients take a fresh bootstrap before trusting checkpoints. Do not enable the flag in repository defaults.
+- Messenger browser list persistence is **on by default** in the web client (`schemaVersion` `2`, `capturedAt` compare-and-write, 24h IndexedDB envelope for summaries/collections/safe checkpoints only). It does not change API/DB behavior. Logout does not wait for IndexedDB clear. To disable without data migration, set `NEXT_PUBLIC_MESSENGER_PERSISTENCE=0` on `nbos-web` and redeploy web. Stale IndexedDB is ignored and deleted on the next valid session or logout. This is not encryption-at-rest.
+- Messenger outbound reconcile (`SCHEDULER_MESSENGER_OUTBOUND_RECONCILE_ENABLED`) stays **false** until the additive `messenger_commands` reconcile/dispatch-claim columns are applied (`next_reconcile_at`, `first_attempt_at`, `invalid_reason`, nullable `dispatch_token`, nullable `dispatch_claimed_at`) and `nbos-worker` consumes `whatsapp.outbound-messages`. Rolling compatibility: old writers leave the new columns NULL (unclaimed). New writers treat `next_reconcile_at` as the 60s dispatch-lease expiry only; Gateway HTTP timeout stays 30s. Application rollback may leave unused NULL columns (forward-fix; do not DROP). Then enable from Settings → Scheduler (or seed env once). Default cron is every minute. Same-key Gateway idempotency window is 24h; do not auto-submit after that. The scheduler must not terminalize an active dispatch lease. Do not enable in repository defaults.
 - Не запускать два ручных release/migration одновременно.
 - При неуспешном healthcheck остановиться и вернуть уже обновлённые apps на предыдущий зелёный SHA.
 
@@ -365,6 +368,24 @@ CMD ["node", "--import", "tsx", "dist/main.js"]
 1. Coolify → **Deployments** → redeploy предыдущего зелёного SHA для всех уже обновлённых apps.
 2. DB: forward-fix migration; Neon PITR только по отдельному аварийному решению (`security.todo` §4.4).
 3. Запись деплоя в Technical module deployment record.
+
+---
+
+## 10. Messenger modernization rollout (flags)
+
+Do not enable in the first traffic cutover unless the matching additive
+migrations are already applied and the fleet is homogeneous.
+
+| Flag                                             | Default                          | Enable after                                                      | Rollback                                         |
+| ------------------------------------------------ | -------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------ |
+| `MESSENGER_DELTA_RECOVERY_ENABLED`               | off                              | revision migration + all API instances instrumented               | unset/false; clients fall back to FULL bootstrap |
+| `NEXT_PUBLIC_MESSENGER_PERSISTENCE`              | on in web (`0`/`false` disables) | preferably after delta; IDB is not encryption-at-rest             | set `0`; stale IDB ignored                       |
+| `SCHEDULER_MESSENGER_OUTBOUND_RECONCILE_ENABLED` | off (`rosterIntent=off`)         | command-reconcile migration + `whatsapp.outbound-messages` worker | unset/false                                      |
+
+Order: migrations → delta → persistence (controlled) → scheduler. Monitor
+UNKNOWN/PENDING age (24h Gateway window). Socket.IO remains process-local;
+do not deploy a Redis adapter from this change. Evidence:
+[`33-Messenger-Modernization-Final-Evidence.md`](NBOS/02-Modules/09-Messenger/33-Messenger-Modernization-Final-Evidence.md).
 
 ---
 

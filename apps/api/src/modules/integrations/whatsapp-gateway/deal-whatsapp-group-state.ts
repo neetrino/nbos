@@ -1,3 +1,4 @@
+import type { ProductWhatsAppBindingView } from './product-whatsapp-communication-view.ops';
 import type { DealWhatsAppBindingView, DealWhatsAppState } from './deal-whatsapp-group.types';
 
 export function toDealBindingView(row: {
@@ -17,6 +18,23 @@ export function toDealBindingView(row: {
     lastSuccessfulSyncAt: row.lastSuccessfulSyncAt?.toISOString() ?? null,
     lastErrorCode: row.lastErrorCode,
     lastErrorMessage: row.lastErrorMessage,
+  };
+}
+
+export function toDealBindingFromProductView(
+  view: ProductWhatsAppBindingView | null,
+): DealWhatsAppBindingView | null {
+  if (!view) return null;
+  const id = view.id ?? view.groupChatId;
+  if (!id) return null;
+  return {
+    id,
+    groupChatId: view.groupChatId,
+    groupName: view.groupName,
+    status: view.status as DealWhatsAppBindingView['status'],
+    lastSuccessfulSyncAt: view.lastSuccessfulSyncAt,
+    lastErrorCode: view.lastErrorCode,
+    lastErrorMessage: view.lastErrorMessage,
   };
 }
 

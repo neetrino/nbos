@@ -95,6 +95,10 @@ Already streams `backendResponse.body` — dedicated SSE route still preferred t
 ## Socket.IO
 
 Messenger namespace only (`/messenger`). Not used for notification unread.
+Delivery is **process-local** (CORS `IoAdapter` only; no Redis adapter).
+Messenger modernization Phase 6 evidence:
+[`33-Messenger-Modernization-Final-Evidence.md`](../NBOS/02-Modules/09-Messenger/33-Messenger-Modernization-Final-Evidence.md).
+No production latency numbers are claimed from unit tests.
 
 ## Cron / N+1 candidates (background)
 

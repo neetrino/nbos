@@ -19,6 +19,7 @@ import {
   getRedisQueueUrl,
 } from '../../../runtime/queue-redis';
 import { OpsJobFailureAlertService } from '../../ops-alerts/ops-job-failure-alert.service';
+import { isBullmqJobFinallyFailed } from '../../ops-alerts/ops-job-failure-alert.bullmq';
 import { tryEnqueueSubscriptionPaymentWindowForInvoice } from '../../finance/invoices/invoice-card-payment-window-reminders';
 import {
   cancelOfficialInvoiceRequest,
@@ -34,6 +35,13 @@ import {
 import { WhatsAppOutboundQueueService } from './whatsapp-outbound-queue.service';
 import { waitWhatsAppOutboundGap } from './whatsapp-outbound-gap';
 import type { WhatsAppOutboundJobPayload } from './whatsapp-outbound.types';
+import { isLeftoverFinanceReminderKind } from './whatsapp-outbound-leftover-finance-kind';
+import { drainPendingWhatsAppCoreSends } from '../../messenger/core/messenger-wa-outbound-drain.ops';
+import {
+  dispatchWhatsAppCoreSendJob,
+  markWhatsAppCoreSendExhausted,
+} from '../../messenger/core/messenger-wa-outbound-dispatch.ops';
+import { MessengerDeliveryStatusBus } from '../../messenger/core/messenger-delivery-status-bus';
 
 @Injectable()
 export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDestroy {
@@ -48,6 +56,7 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
     private readonly registry: BullmqWorkerRegistry,
     @Optional() private readonly opsAlerts?: OpsJobFailureAlertService,
     @Optional() private readonly outbound?: WhatsAppOutboundQueueService,
+    @Optional() private readonly deliveryBus?: MessengerDeliveryStatusBus,
   ) {}
 
   onModuleInit() {
@@ -64,10 +73,8 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
       { connection: this.connection, concurrency: 1, ...resolveBullmqWorkerRuntimeOptions() },
     );
     this.registry.register(WHATSAPP_OUTBOUND_QUEUE_NAME);
-    this.worker.on('failed', (job, error) => {
-      this.logger.error(`WhatsApp outbound failed jobId=${job?.id}`, error);
-      void this.opsAlerts?.notifyIfBullmqFinallyFailed(WHATSAPP_OUTBOUND_QUEUE_NAME, job, error);
-    });
+    this.worker.on('failed', (job, error) => this.onOutboundFailed(job, error));
+    void this.drainPendingCoreSends();
   }
 
   async onModuleDestroy() {
@@ -104,7 +111,22 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
   }
 
   async process(job: Job<WhatsAppOutboundJobPayload>): Promise<void> {
+    await this.drainPendingCoreSends();
+    if (isLeftoverFinanceReminderKind(job.data.kind)) {
+      this.logger.warn(`Skipping leftover finance reminder kind=${job.data.kind} jobId=${job.id}`);
+      return;
+    }
     try {
+      if (job.data.kind === 'core_client_send') {
+        await dispatchWhatsAppCoreSendJob(
+          this.prisma,
+          this.connectionService,
+          this.client,
+          job.data,
+          this.deliveryBus,
+        );
+        return;
+      }
       const config = await this.connectionService.requireClientConfig();
       await this.client.sendTextMessage(
         config,
@@ -114,6 +136,29 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
       await this.applySideEffects(job.data);
     } finally {
       await waitWhatsAppOutboundGap();
+    }
+  }
+
+  private onOutboundFailed(job: Job<WhatsAppOutboundJobPayload> | undefined, error: Error): void {
+    this.logger.error(`WhatsApp outbound failed jobId=${job?.id}`, error);
+    void this.opsAlerts?.notifyIfBullmqFinallyFailed(WHATSAPP_OUTBOUND_QUEUE_NAME, job, error);
+    if (!job || job.data.kind !== 'core_client_send') return;
+    if (!isBullmqJobFinallyFailed(job)) return;
+    void markWhatsAppCoreSendExhausted(
+      this.prisma,
+      job.data.messageId,
+      error,
+      job.data.conversationId,
+      this.deliveryBus,
+    );
+  }
+
+  private async drainPendingCoreSends(): Promise<void> {
+    if (!this.outbound?.isAvailable()) return;
+    try {
+      await drainPendingWhatsAppCoreSends(this.prisma, this.outbound);
+    } catch (error) {
+      this.logger.error('WhatsApp pending core-send drain failed', error);
     }
   }
 
@@ -132,13 +177,6 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
     }
     if (data.kind === 'official_cancel' && data.invoiceId) {
       await cancelOfficialIfActive(this.prisma, data.invoiceId);
-      return;
-    }
-    if (
-      (data.kind === 'payment_reminder' || data.kind === 'overdue_reminder') &&
-      data.notificationJobId
-    ) {
-      await markPaymentReminderDelivered(this.prisma, data);
     }
   }
 }
@@ -153,26 +191,4 @@ async function cancelOfficialIfActive(
   });
   if (!row?.officialInvoiceRequestSent) return;
   await cancelOfficialInvoiceRequest(prisma, invoiceId);
-}
-
-async function markPaymentReminderDelivered(
-  prisma: InstanceType<typeof PrismaClient>,
-  data: WhatsAppOutboundJobPayload,
-): Promise<void> {
-  if (!data.notificationJobId) return;
-  await prisma.notificationDelivery.create({
-    data: {
-      jobId: data.notificationJobId,
-      channel: 'WHATSAPP',
-      recipient: data.chatId,
-      status: 'DELIVERED',
-      provider: 'whatsapp_gateway',
-      sentAt: new Date(),
-      deliveredAt: new Date(),
-    },
-  });
-  await prisma.notificationJob.update({
-    where: { id: data.notificationJobId },
-    data: { status: 'DELIVERED', processedAt: new Date() },
-  });
 }

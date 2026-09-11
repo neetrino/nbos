@@ -47,8 +47,8 @@ These apply to every slice touching persistence or existing runtime.
 - [ ] Legacy write path is disabled before legacy storage is deleted.
 - [ ] Any `DELETE-LATER` item is tracked explicitly.
 - [ ] No raw provider send bypasses Messaging Core authorization/outbox after its cutover slice.
-- [ ] No Client SEND permission is inferred from READ, Product membership or collection membership.
-- [ ] No cross-surface Collection item is possible through API/database manipulation.
+- [x] No Client SEND permission is inferred from READ, Product membership or collection membership.
+- [x] No cross-surface Collection item is possible through API/database manipulation.
 
 ---
 
@@ -56,37 +56,38 @@ These apply to every slice touching persistence or existing runtime.
 
 **Goal:** establish a fresh runtime baseline before changing product code.
 
-**Canon:** all decisions; especially `M-CORE-01`, `M-TASK-01`, `M-WA-*`, `M-WHATSAPP-01`.
+**Canon:** all decisions; especially `M-CORE-01`, `M-CLIENT-01`, `M-MAIL-01`, `M-TASK-01`, `M-WA-*`, `M-WHATSAPP-01`.
 
 ### Runtime inventory
 
-- [ ] Inspect actual Prisma/schema models for current Messenger channel/DM/unified remnants.
-- [ ] Inspect current Messenger REST/controllers/services.
-- [ ] Inspect Socket.IO/realtime handlers and unread/presence behavior.
-- [ ] Inspect Drive attachment integration.
-- [ ] Inspect current Messenger RBAC/access helpers.
-- [ ] Inspect Task Discussion schema/service/API/UI and real data shape.
-- [ ] Inspect Product ↔ WhatsApp group schema, unique constraints and provider identity fields.
-- [ ] Inspect Deal Won create/bind path and failure/outcome behavior.
-- [ ] Inspect Product Client Communication settings/current group actions.
-- [ ] Inspect Support public/internal communication runtime if present.
-- [ ] Inspect Finance/Subscription/Client Service reminder code; classify exact send path as `REUSE/EXTEND/MIGRATE/NEW/VERIFY-MISSING`.
-- [ ] Inspect NBOS integration with `neetrino/whatsapp-gateway` v1 + inbound webhook contract.
-- [ ] Inspect any relevant production/staging counts without exposing secrets/message content unnecessarily.
+- [x] Inspect actual Prisma/schema models for current Messenger channel/DM/unified remnants.
+- [x] Inspect current Messenger REST/controllers/services.
+- [x] Inspect Socket.IO/realtime handlers and unread/presence behavior.
+- [x] Inspect Drive attachment integration.
+- [x] Inspect current Messenger RBAC/access helpers.
+- [x] Inspect Task Discussion schema/service/API/UI and real data shape.
+- [x] Inspect Product ↔ WhatsApp group schema, unique constraints and provider identity fields.
+- [x] Inspect Deal Won create/bind path and failure/outcome behavior.
+- [x] Inspect Product Client Communication settings/current group actions.
+- [x] Inspect Support public/internal communication runtime if present.
+- [x] Inspect Finance/Subscription/Client Service reminder code; classify exact send path as `REUSE/EXTEND/MIGRATE/NEW/VERIFY-MISSING`.
+- [x] Inspect NBOS integration with `neetrino/whatsapp-gateway` v1 + inbound webhook contract.
+- [x] Inspect MetaConversation / MetaMessage / MetaConnectedAccount / MetaProviderEvent runtime (inbound persist, CRM Lead UI, merge/reassign, outbound absence); classify store vs Client Sales UI separately.
+- [x] Inspect any relevant production/staging counts without exposing secrets/message content unnecessarily.
 
 ### Deliverables
 
-- [ ] Update `10-Messenger-Runtime-Reconciliation.md` with any materially different facts.
-- [ ] Produce runtime map: `REUSE / EXTEND / MIGRATE / NEW / DELETE-LATER / VERIFY-MISSING`.
-- [ ] Record exact legacy tables/fields/routes that later slices must retire.
-- [ ] Record migration ordering/dependencies.
-- [ ] No product behavior change in Slice 0 unless required only to add safe observability for migration.
+- [x] Update `10-Messenger-Runtime-Reconciliation.md` with any materially different facts.
+- [x] Produce runtime map: `REUSE / EXTEND / MIGRATE / NEW / DELETE-LATER / VERIFY-MISSING`.
+- [x] Record exact legacy tables/fields/routes that later slices must retire.
+- [x] Record migration ordering/dependencies.
+- [x] No product behavior change in Slice 0 unless required only to add safe observability for migration.
 
 ### Acceptance
 
-- [ ] Reviewer can trace every planned destructive change to a prior migration/cutover slice.
-- [ ] No important existing store is classified from old documentation alone.
-- [ ] Slice status `VERIFIED`.
+- [x] Reviewer can trace every planned destructive change to a prior migration/cutover slice.
+- [x] No important existing store is classified from old documentation alone.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -98,43 +99,43 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Data model
 
-- [ ] Canonical `Conversation` supports strict zone/surface identity (`INTERNAL` or `CLIENT`).
-- [ ] Canonical `Message` supports sender/direction/status/provenance needed by internal and external messages.
-- [ ] Participants/membership/read state are normalized and permission-aware.
-- [ ] `ConversationLink` can link Project/Product/Work Space/Deal/Task/Ticket/Client without forcing one exclusive entity.
-- [ ] `MessageReference` can reference one/multiple canonical source messages from Task/Ticket/forward actions.
-- [ ] Reply/reaction/thread-root support is possible without making threads mandatory.
-- [ ] Attachments reference Drive File Assets.
-- [ ] Provider mapping/event/delivery concepts can be added without storing provider ids directly on Product.
-- [ ] Database constraints prevent impossible cross-zone relationships where feasible.
+- [x] Canonical `Conversation` supports strict zone/surface identity (`INTERNAL` or `CLIENT`).
+- [x] Canonical `Message` supports sender/direction/status/provenance needed by internal and external messages.
+- [x] Participants/membership/read state are normalized and permission-aware.
+- [x] `ConversationLink` can link Project/Product/Work Space/Deal/Task/Ticket/Client without forcing one exclusive entity.
+- [x] `MessageReference` can reference one/multiple canonical source messages from Task/Ticket/forward actions.
+- [x] Reply/reaction/thread-root support is possible without making threads mandatory.
+- [x] Attachments reference Drive File Assets.
+- [x] Provider mapping/event/delivery concepts can be added without storing provider ids directly on Product.
+- [x] Database constraints prevent impossible cross-zone relationships where feasible.
 
 ### Runtime
 
-- [ ] Commands persist DB state before realtime broadcast.
-- [ ] Realtime is transport only, not source of truth.
-- [ ] Duplicate command/idempotency behavior is defined where external/provider side effects may occur.
-- [ ] No L1/L2 Topic layer is required by canonical core.
+- [x] Commands persist DB state before realtime broadcast.
+- [x] Realtime is transport only, not source of truth.
+- [x] Duplicate command/idempotency behavior is defined where external/provider side effects may occur.
+- [x] No L1/L2 Topic layer is required by canonical core.
 
 ### Migration
 
-- [ ] Existing compatible channel/DM data is mapped or explicitly scheduled for later mapping.
-- [ ] No existing message history is deleted.
-- [ ] Old unified remnants are reused only when contracts match canon.
+- [x] Existing compatible channel/DM data is mapped or explicitly scheduled for later mapping.
+- [x] No existing message history is deleted.
+- [x] Old unified remnants are reused only when contracts match canon.
 
 ### Tests
 
-- [ ] Conversation/message persistence.
-- [ ] zone validation.
-- [ ] participant/read-state behavior.
-- [ ] reference integrity.
-- [ ] attachment authorization/reference.
-- [ ] realtime replay does not create duplicate durable messages.
+- [x] Conversation/message persistence.
+- [x] zone validation.
+- [x] participant/read-state behavior.
+- [x] reference integrity.
+- [x] attachment authorization/reference.
+- [x] realtime replay does not create duplicate durable messages.
 
 ### Acceptance
 
-- [ ] Core can support both surfaces without mixing product UI.
-- [ ] Reviewer finds no hidden dependency on old Topic hierarchy.
-- [ ] Slice status `VERIFIED`.
+- [x] Core can support both surfaces without mixing product UI.
+- [x] Reviewer finds no hidden dependency on old Topic hierarchy.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -146,35 +147,35 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Permission contracts
 
-- [ ] Reuse platform role/entity/manual-access foundations where compatible.
-- [ ] Define Internal conversation read/write permission resolution.
-- [ ] Define Client conversation `READ` separately from `SEND`.
-- [ ] Explicit conversation invite/membership does not automatically imply SEND.
-- [ ] Product binding does not grant conversation access.
-- [ ] Shared Collection does not grant conversation access.
-- [ ] Management override, where existing platform rules allow it, remains explicit/auditable.
+- [x] Reuse platform role/entity/manual-access foundations where compatible.
+- [x] Define Internal conversation read/write permission resolution.
+- [x] Define Client conversation `READ` separately from `SEND`.
+- [x] Explicit conversation invite/membership does not automatically imply SEND.
+- [x] Product binding does not grant conversation access.
+- [x] Shared Collection does not grant conversation access.
+- [x] Management override, where existing platform rules allow it, remains explicit/auditable.
 
 ### Surface boundary
 
-- [ ] Internal routes/API cannot send through external provider path.
-- [ ] Client send endpoint requires Client conversation + SEND permission.
-- [ ] Server rejects attempts to send a Client message through Internal context.
-- [ ] Internal and Client Collections are zone-scoped server-side.
-- [ ] Client participant/access changes are audited.
+- [x] Internal routes/API cannot send through external provider path.
+- [x] Client send endpoint requires Client conversation + SEND permission.
+- [x] Server rejects attempts to send a Client message through Internal context.
+- [x] Internal and Client Collections are zone-scoped server-side.
+- [x] Client participant/access changes are audited.
 
 ### Negative tests
 
-- [ ] READ without SEND cannot send.
-- [ ] Product developer without Client access cannot read client history.
-- [ ] Adding Product binding does not add developer access.
-- [ ] Shared Collection item does not bypass conversation ACL.
-- [ ] Internal conversation cannot acquire provider mapping/send capability by malformed request.
-- [ ] Client conversation cannot be inserted into Internal Collection and vice versa.
+- [x] READ without SEND cannot send.
+- [x] Product developer without Client access cannot read client history.
+- [x] Adding Product binding does not add developer access.
+- [x] Shared Collection item does not bypass conversation ACL.
+- [x] Internal conversation cannot acquire provider mapping/send capability by malformed request.
+- [x] Client conversation cannot be inserted into Internal Collection and vice versa.
 
 ### Acceptance
 
-- [ ] Security boundary exists before Client composer implementation.
-- [ ] Slice status `VERIFIED`.
+- [x] Security boundary exists before Client composer implementation.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -186,37 +187,37 @@ These apply to every slice touching persistence or existing runtime.
 
 ### UI/navigation
 
-- [ ] Separate Internal Messenger entry point/route.
-- [ ] Navigation: `All / Products / Tasks / Deals / Work Spaces / Groups / Direct / Collections`.
-- [ ] Slice implements at minimum working `All`, `Groups`, `Direct`, `Collections`; entity tabs may progressively activate in later slices.
-- [ ] `All` is recent accessible activity, not Project tree.
-- [ ] filters/search hooks for Unread/Mentions/current activity.
+- [x] Separate Internal Messenger entry point/route.
+- [x] Navigation: `All / Products / Tasks / Deals / Work Spaces / Groups / Direct / Collections`.
+- [x] Slice implements at minimum working `All`, `Groups`, `Direct`, `Collections`; entity tabs may progressively activate in later slices.
+- [x] `All` is recent accessible activity, not Project tree.
+- [x] filters/search hooks for Unread/Mentions/current activity.
 
 ### Collections
 
-- [ ] Built-in personal `Favorites` Collection.
-- [ ] PERSONAL Collections.
-- [ ] SHARED Collections.
-- [ ] one conversation may belong to multiple Collections.
-- [ ] Collection membership does not alter ACL.
-- [ ] Internal Collections reject Client conversations.
+- [x] Built-in personal `Favorites` Collection.
+- [x] PERSONAL Collections.
+- [x] SHARED Collections.
+- [x] one conversation may belong to multiple Collections.
+- [x] Collection membership does not alter ACL.
+- [x] Internal Collections reject Client conversations.
 
 ### Migration
 
-- [ ] Existing useful channel/DM history is reused/mapped without data loss.
-- [ ] Old L1/L2 navigation does not return.
+- [x] Existing useful channel/DM history is reused/mapped without data loss.
+- [x] Old L1/L2 navigation does not return.
 
 ### Tests
 
-- [ ] recent ordering/read state.
-- [ ] Favorites/personal/shared semantics.
-- [ ] ACL-filtered shared collections.
-- [ ] internal-only surface boundary.
+- [x] recent ordering/read state.
+- [x] Favorites/personal/shared semantics.
+- [x] ACL-filtered shared collections.
+- [x] internal-only surface boundary.
 
 ### Acceptance
 
-- [ ] Team can use Groups/Direct/All on the new surface without relying on legacy mixed UI.
-- [ ] Slice status `VERIFIED`.
+- [x] Team can use Groups/Direct/All on the new surface without relying on legacy mixed UI.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -228,37 +229,40 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Product / Connected Work Space
 
-- [ ] Product `Chat` resolves to canonical work Conversation.
-- [ ] Connected Work Space `Discussion` resolves to the same conversation id.
-- [ ] race-safe ensure/lookup prevents duplicate conversations.
-- [ ] Product and Work Space are both represented through ConversationLink/equivalent context.
+- [x] Product `Chat` resolves to canonical work Conversation.
+- [x] Connected Work Space `Discussion` resolves to the same conversation id.
+- [x] race-safe ensure/lookup prevents duplicate conversations.
+- [x] Product and Work Space are both represented through ConversationLink/equivalent context.
 
 ### Standalone Work Space
 
-- [ ] Standalone Work Space can have its own conversation.
-- [ ] It does not require fake Product ownership.
+- [x] Standalone Work Space can have its own conversation identity (`WORKSPACE` / `workspace:{workspaceId}`).
+- [x] It does not require fake Product ownership.
+- [x] FINDING-S4-04: org-level standalone (`projectId`/`productId`/`extensionId` null) Discussion ensure is reachable for people who can open that Work Space in Tasks.
 
 ### Deal
 
-- [ ] Internal Deal discussion is an Internal conversation.
-- [ ] It is never the same object as Client Sales conversation.
+- [x] Internal Deal discussion is an Internal conversation.
+- [x] It is never the same object as Client Sales conversation.
 
 ### Project
 
-- [ ] Project communication view acts as contextual aggregator.
-- [ ] Project General is optional/lazy, not auto-created for every Project.
+- [x] Project communication view acts as contextual aggregator.
+- [x] Project General is optional/lazy, not auto-created for every Project.
 
 ### Migration
 
-- [ ] Detect Product/Workspace duplicate legacy chats before relinking.
-- [ ] Preserve both histories if both contain real data; no silent overwrite.
-- [ ] Ambiguous duplicate history is manually mapped or merged with provenance.
+- [x] Detect Product/Workspace duplicate legacy chats before relinking.
+- [x] Preserve both histories if both contain real data; no silent overwrite.
+- [x] Ambiguous duplicate history is manually mapped or merged with provenance.
 
 ### Acceptance
 
-- [ ] Product and its Connected Work Space demonstrably open the same conversation.
-- [ ] No eager empty Project General creation.
-- [ ] Slice status `VERIFIED`.
+- [x] Entity access before ensure: OWN non-member 404s; team graph / Deal commercial roles; VIEW ALL does not skip entity access
+- [x] Relink only with proven identity (PRIMARY link or metadata that names the product/workspace)
+- [x] Extension Work Space (`productId` null) is not Product Chat
+- [x] FINDING-S4-04 closed: standalone access is not a 404-for-everyone filter on null parent FKs
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -270,40 +274,43 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Migration/backfill
 
-- [ ] Implement the exact safe sequence in `10-Messenger-Runtime-Reconciliation.md`.
-- [ ] Map only Tasks with legacy discussion to existing/backfilled conversations; new empty Tasks stay lazy.
-- [ ] Preserve author/actor identity.
-- [ ] Preserve timestamps/order.
-- [ ] Preserve edited state where available.
-- [ ] Preserve attachments/File Assets.
-- [ ] Preserve AI/system provenance where relevant.
-- [ ] Preserve audit/activity associations/source provenance.
-- [ ] Idempotent source mapping prevents duplicate migrated messages.
-- [ ] Per-Task count/order/attachment verification report exists.
+- [x] Implement the exact safe sequence in `10-Messenger-Runtime-Reconciliation.md`.
+- [x] Map only Tasks with legacy discussion to existing/backfilled conversations; new empty Tasks stay lazy.
+- [x] Preserve author/actor identity.
+- [x] Preserve timestamps/order.
+- [x] Preserve edited state where available. (Slice 0/runtime: no `editedAt` — not fabricated.)
+- [x] Preserve attachments/File Assets. (Slice 0/runtime: none on `TaskDiscussionEntry` — skipped, `attachmentsSkipped: 0`.)
+- [x] Preserve AI/system provenance where relevant.
+- [x] Preserve audit/activity associations/source provenance. (Activity stays Task-owned; not converted.)
+- [x] Idempotent source mapping prevents duplicate migrated messages. FINDING-S5-01 closed: `idempotencyKey` `task-discussion-entry:{entry.id}` + identity upsert in one transaction.
+- [x] Per-Task count/order/attachment verification report exists.
 
 ### Runtime cutover
 
-- [ ] New Task human messages write only to Messaging Core after cutover.
-- [ ] Task Card reads human Discussion from Messaging Core.
-- [ ] System Activity Feed remains Task-owned system activity.
-- [ ] Task closure/archive behavior does not delete discussion.
+- [x] New Task human messages write only to Messaging Core after cutover.
+- [x] Task Card reads human Discussion from Messaging Core.
+- [x] System Activity Feed remains Task-owned system activity.
+- [x] Task closure/archive behavior does not delete discussion.
 
 ### Negative tests
 
-- [ ] rerunning backfill creates no duplicates.
-- [ ] legacy attachment cannot disappear.
-- [ ] inaccessible Task discussion cannot be opened through Messenger direct id.
-- [ ] Activity event is not accidentally transformed into human message.
+- [x] rerunning backfill creates no duplicates (FINDING-S5-01 closed: persist-without-identity rerun returns the existing message).
+- [x] legacy attachment cannot disappear. (None exist; mapper reports `attachmentsSkipped: 0`.)
+- [x] inaccessible Task discussion cannot be opened through Messenger direct id.
+- [x] HIDDEN Task notes cannot appear as a normal All/Tasks preview or search hit (FINDING-S5-02 closed).
+- [x] collection-by-ids applies the same Task access list gate as All (FINDING-S5-03 closed).
+- [x] Activity event is not accidentally transformed into human message.
 
 ### Cleanup gate
 
-- [ ] legacy Task Discussion write path marked disabled.
-- [ ] legacy table/storage remains `DELETE-LATER` until final acceptance.
+- [x] legacy Task Discussion write path marked disabled.
+- [x] legacy table/storage remains `DELETE-LATER` until final acceptance.
 
 ### Acceptance
 
-- [ ] reviewer samples migrated Tasks with text + attachments + varied authors/provenance.
-- [ ] Slice status `VERIFIED`.
+- [x] FINDING-S5-01/02/03 closed
+- [x] reviewer samples migrated Tasks with text + attachments + varied authors/provenance. (Slice 0 inventory: 0 discussion rows / 0 attachments; 0-row report is the sample. Live entries were not present to sample.)
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -315,37 +322,37 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Message actions
 
-- [ ] one-message selection.
-- [ ] multi-message selection.
-- [ ] Reply.
-- [ ] Share/Forward reference into permitted Internal conversation.
-- [ ] Create Task from selected Internal or Client messages.
-- [ ] Open/copy source context.
-- [ ] Client-only action hooks for Ticket/Deal/Invite prepared or implemented where dependency permits.
+- [x] one-message selection.
+- [x] multi-message selection.
+- [x] Reply.
+- [x] Share/Forward reference into permitted Internal conversation.
+- [x] Create Task from selected Internal or Client messages.
+- [x] Open/copy source context. FIX: Open original / copy GET `sourceMessageId` from FORWARD refs; card exposes Open original per source.
+- [x] Client-only action hooks for Ticket/Deal/Invite prepared or implemented where dependency permits.
 
 ### Create Task
 
-- [ ] opens full Task creation workflow; does not blindly convert message body into final Task.
-- [ ] selected messages/attachments become source references/context.
-- [ ] title/description/assignee/links remain explicit Task fields.
-- [ ] supports primary context + additional entity links where Task domain allows.
+- [x] opens full Task creation workflow; does not blindly convert message body into final Task.
+- [x] selected messages/attachments become source references/context.
+- [x] title/description/assignee/links remain explicit Task fields.
+- [x] supports primary context + additional entity links where Task domain allows.
 
 ### Threads
 
-- [ ] reply/thread support does not force forwarding into a new thread.
-- [ ] `Discuss internally`/Share does not create a new Conversation automatically.
+- [x] reply/thread support does not force forwarding into a new thread.
+- [x] `Discuss internally`/Share does not create a new Conversation automatically.
 
 ### Tests
 
-- [ ] source message remains canonical after Task/Ticket/reference creation.
-- [ ] deleting/removing a reference does not delete source message.
-- [ ] permission to source preview/open is checked.
-- [ ] multiple selected messages retain deterministic order.
+- [x] source message remains canonical after Task/Ticket/reference creation.
+- [x] deleting/removing a reference does not delete source message.
+- [x] permission to source preview/open is checked. FIX: GET uses `sourceMessageId`; 404 without source READ even if target is readable. TASK_SOURCE create/delete requires Task access.
+- [x] multiple selected messages retain deterministic order.
 
 ### Acceptance
 
-- [ ] no duplicate independent message store is introduced.
-- [ ] Slice status `VERIFIED`.
+- [x] no duplicate independent message store is introduced.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -355,42 +362,45 @@ These apply to every slice touching persistence or existing runtime.
 
 **Canon:** `M-BOUNDARY-01`, `M-CLIENT-01`, `M-CLIENT-02`, `M-SECURITY-01`, `M-SECURITY-02`, `M-COLLECTIONS-01`, `M-AI-01`.
 
+**Slice 0 note:** `MetaConversation` / `MetaMessage` is the live Client Sales inbound store (`MIGRATE` into Core). This slice owns that cutover identity. Do not classify Sales **history** as `NEW`. Do not wait for Slice 8 (WhatsApp-only) to map Meta. Do not apply `M-MAIL-01` to Meta. Meta outbound send is `NEW` and must persist in Core, not a fourth store.
+
+**Implementer status:** `VERIFIED` — evidence `27-Slice-07-Client-Messenger.md`.
+
 ### Navigation/UI
 
-- [ ] separate Client Messenger entry point/route.
-- [ ] navigation: `Inbox / Sales / Clients / Collections`.
-- [ ] visibly different external identity/accent/icons from Internal surface.
-- [ ] Inbox supports attention-oriented views such as Unread/Needs response/assigned team/provider.
-- [ ] Client Collections are separate and cannot contain Internal chats.
+- [x] separate Client Messenger entry point/route.
+- [x] navigation: `Inbox / Sales / Clients / Collections`.
+- [x] visibly different external identity/accent/icons from Internal surface.
+- [x] Inbox supports attention-oriented views such as Unread/Needs response/assigned team/provider.
+- [x] Client Collections are separate and cannot contain Internal chats.
 
 ### Locked composer
 
-- [ ] opening/switching to a Client conversation starts composer locked.
-- [ ] authorized user explicitly clicks `Reply to client`.
-- [ ] unlocked composer clearly displays `CLIENT VISIBLE` + provider/client/context.
-- [ ] switching conversation relocks.
-- [ ] server SEND check remains mandatory.
-- [ ] no Internal/Public toggle.
+- [x] opening/switching to a Client conversation starts composer locked.
+- [x] authorized user explicitly clicks `Reply to client`.
+- [x] unlocked composer clearly displays `CLIENT VISIBLE` + provider/client/context.
+- [x] switching conversation relocks.
+- [x] server SEND check remains mandatory.
+- [x] no Internal/Public toggle.
 
 ### External-specific tools
 
-- [ ] Create Task.
-- [ ] Share/Forward internally.
+- [x] Create Task.
+- [x] Share/Forward internally.
 - [ ] Ticket/Deal actions where dependency is ready.
-- [ ] invite/read-only specialist flow.
-- [ ] placeholder/interface for future AI operator/draft policy without granting implicit SEND.
+- [x] invite/read-only specialist flow.
+- [x] placeholder/interface for future AI operator/draft policy without granting implicit SEND.
 
 ### Negative/adversarial tests
 
-- [ ] keyboard/route state cannot leave composer unlocked for another conversation.
-- [ ] Internal message draft cannot be silently carried into Client composer as send-ready text.
-- [ ] READ-only user cannot unlock/send.
-- [ ] forged UI state does not bypass server SEND permission.
+- [x] keyboard/route state cannot leave composer unlocked for another conversation.
+- [x] Internal message draft cannot be silently carried into Client composer as send-ready text.
+- [x] READ-only user cannot unlock/send.
+- [x] forged UI state does not bypass server SEND permission.
 
 ### Acceptance
 
-- [ ] Internal and Client surfaces feel and behave as separate work modes.
-- [ ] Slice status `VERIFIED`.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -402,40 +412,40 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Gateway reuse
 
-- [ ] use existing `neetrino/whatsapp-gateway` project/account/session boundary.
-- [ ] prefer account-scoped v1 send with idempotency where appropriate.
-- [ ] consume normalized authenticated Project webhooks for MESSENGER account inbound events.
-- [ ] do not expose WAHA directly to NBOS/web clients.
-- [ ] do not move Product/permissions/routing logic into Gateway.
+- [x] use existing `neetrino/whatsapp-gateway` project/account/session boundary.
+- [x] prefer account-scoped v1 send with idempotency where appropriate.
+- [x] consume normalized authenticated Project webhooks for MESSENGER account inbound events.
+- [x] do not expose WAHA directly to NBOS/web clients.
+- [x] do not move Product/permissions/routing logic into Gateway.
 
 ### Outbound
 
-- [ ] Client message is persisted before provider dispatch.
-- [ ] durable outbox/queue job dispatches to Gateway.
-- [ ] stable idempotency key links NBOS send attempt to Gateway attempt.
-- [ ] delivery states handle queued/sending/sent/delivered/read/failed/outcome-unknown as supported.
-- [ ] retries never double-send an outcome-unknown message blindly.
+- [x] Client message is persisted before provider dispatch.
+- [x] durable outbox/queue job dispatches to Gateway.
+- [x] stable idempotency key links NBOS send attempt to Gateway attempt.
+- [x] delivery states handle queued/sending/sent/delivered/read/failed/outcome-unknown as supported.
+- [x] retries never double-send an outcome-unknown message blindly.
 
 ### Inbound
 
-- [ ] verify Gateway HMAC/timestamp/replay protection.
-- [ ] dedupe by stable provider/Gateway event/message ids.
-- [ ] resolve account + external chat to canonical Client Conversation mapping.
-- [ ] persist before realtime broadcast.
-- [ ] ack/edit/revoke/reaction/session status handled according to supported contract.
+- [x] verify Gateway HMAC/timestamp/replay protection.
+- [x] dedupe by stable provider/Gateway event/message ids.
+- [x] resolve account + external chat to canonical Client Conversation mapping.
+- [x] persist before realtime broadcast.
+- [x] ack/edit/revoke/reaction/session status handled according to supported contract.
 
 ### Tests
 
-- [ ] inbound duplicate webhook idempotency.
-- [ ] outbound retry/idempotency.
-- [ ] disconnected session failure.
-- [ ] unknown external conversation behavior is explicit, not silently misbound.
-- [ ] provider event cannot cross Project/account boundary.
+- [x] inbound duplicate webhook idempotency.
+- [x] outbound retry/idempotency.
+- [x] disconnected session failure.
+- [x] unknown external conversation behavior is explicit, not silently misbound.
+- [x] provider event cannot cross Project/account boundary.
 
 ### Acceptance
 
-- [ ] end-to-end inbound/outbound works through Gateway without direct WAHA dependency in NBOS.
-- [ ] Slice status `VERIFIED`.
+- [x] end-to-end inbound/outbound works through Gateway without direct WAHA dependency in NBOS.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -447,60 +457,60 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Additive data model
 
-- [ ] ProductCommunicationBinding/equivalent stores Product + purpose + canonical External Conversation.
-- [ ] one active WORK per Product.
-- [ ] zero/one explicit FINANCE per Product.
-- [ ] same External Conversation can be reused by many Products.
-- [ ] binding is separate from participant/access records.
+- [x] ProductCommunicationBinding/equivalent stores Product + purpose + canonical External Conversation.
+- [x] one active WORK per Product.
+- [x] zero/one explicit FINANCE per Product.
+- [x] same External Conversation can be reused by many Products.
+- [x] binding is separate from participant/access records.
 
 ### Legacy migration
 
-- [ ] execute full sequence in `10-Messenger-Runtime-Reconciliation.md`.
-- [ ] every existing group provider id maps to one External Conversation/provider mapping.
-- [ ] every existing Product group binding backfills as WORK.
-- [ ] no automatic FINANCE rows are created.
-- [ ] current Products resolve to their same old physical group after backfill.
-- [ ] current group history/status/settings/provenance are preserved where available.
+- [x] execute full sequence in `10-Messenger-Runtime-Reconciliation.md`.
+- [x] every existing group provider id maps to one External Conversation/provider mapping.
+- [x] every existing Product group binding backfills as WORK.
+- [x] no automatic FINANCE rows are created.
+- [x] current Products resolve to their same old physical group after backfill.
+- [x] current group history/status/settings/provenance are preserved where available.
 
 ### Product settings
 
-- [ ] WORK: Create new / Select existing.
-- [ ] FINANCE: Use WORK(default) / Create new / Select existing.
-- [ ] existing-group selector is scoped to safe client/Project context by default.
-- [ ] selecting an existing conversation does not send duplicate client invite.
+- [x] WORK: Create new / Select existing.
+- [x] FINANCE: Use WORK(default) / Create new / Select existing.
+- [x] existing-group selector is scoped to safe client/Project context by default.
+- [x] selecting an existing conversation does not send duplicate client invite.
 
 ### Deal Won
 
-- [ ] Product/Outsource Deal Won resolves WORK.
-- [ ] preserves current create/bind/error/outcome behavior.
-- [ ] Gateway failure does not incorrectly roll back Product/Deal state.
-- [ ] Extension uses existing Product communication by default.
-- [ ] FINANCE is not required to finish normal Deal Won.
+- [x] Product/Outsource Deal Won resolves WORK.
+- [x] preserves current create/bind/error/outcome behavior.
+- [x] Gateway failure does not incorrectly roll back Product/Deal state.
+- [x] Extension uses existing Product communication by default.
+- [x] FINANCE is not required to finish normal Deal Won.
 
 ### Resolver
 
-- [ ] `resolveClientDestination(productId, WORK)` deterministic.
-- [ ] `resolveClientDestination(productId, FINANCE)` explicit FINANCE else WORK.
-- [ ] no new business send depends on Product raw group id.
+- [x] `resolveClientDestination(productId, WORK)` deterministic.
+- [x] `resolveClientDestination(productId, FINANCE)` explicit FINANCE else WORK.
+- [x] no new business send depends on Product raw group id.
 
 ### Scenario tests
 
-- [ ] Product A WORK → Group 1.
-- [ ] SEO Product WORK → same Group 1.
-- [ ] Product A and SEO remain distinct Products/entities.
-- [ ] five Products FINANCE → one Finance Group F.
-- [ ] Product without FINANCE → WORK fallback.
-- [ ] linking second Product does not grant its developers access.
-- [ ] cannot create two active WORK destinations for one Product.
+- [x] Product A WORK → Group 1.
+- [x] SEO Product WORK → same Group 1.
+- [x] Product A and SEO remain distinct Products/entities.
+- [x] five Products FINANCE → one Finance Group F.
+- [x] Product without FINANCE → WORK fallback.
+- [x] linking second Product does not grant its developers access.
+- [x] cannot create two active WORK destinations for one Product.
 
 ### Cleanup gate
 
-- [ ] legacy one-to-one constraints/fields are `DELETE-LATER`, not dropped until parity/cutover verified.
+- [x] legacy one-to-one constraints/fields are `DELETE-LATER`, not dropped until parity/cutover verified.
 
 ### Acceptance
 
-- [ ] shared groups are real reused conversations, not cloned rows/provider groups.
-- [ ] Slice status `VERIFIED`.
+- [x] shared groups are real reused conversations, not cloned rows/provider groups.
+- [x] Slice status `VERIFIED`.
 
 ---
 
@@ -512,55 +522,58 @@ These apply to every slice touching persistence or existing runtime.
 
 ### Finance automation
 
-- [ ] all automatic payment/money reminders use purpose `FINANCE`.
-- [ ] includes approved invoices/subscriptions/hosting/domain/maintenance/client-service reminders.
-- [ ] Finance owns timing/business rule; Messaging Core owns destination/send/history.
-- [ ] explicit FINANCE binding receives reminder.
-- [ ] no explicit FINANCE binding falls back to WORK.
-- [ ] manual employee Finance chat is ordinary Client Messenger behavior, separate from scheduler/reminder generation.
-- [ ] client reply remains in the physical conversation that received the reminder.
-- [ ] no separate Finance Messenger is introduced.
+- [x] all automatic payment/money reminders use purpose `FINANCE`.
+- [x] includes approved invoices/subscriptions/hosting/domain/maintenance/client-service reminders.
+- [x] Finance owns timing/business rule; Messaging Core owns destination/send/history.
+- [x] explicit FINANCE binding receives reminder.
+- [x] no explicit FINANCE binding falls back to WORK.
+- [x] manual employee Finance chat is ordinary Client Messenger behavior, separate from scheduler/reminder generation.
+- [x] client reply remains in the physical conversation that received the reminder.
+- [x] no separate Finance Messenger is introduced.
 
 ### FINANCE default access template
 
-- [ ] Owner.
-- [ ] CEO.
-- [ ] Finance Director.
-- [ ] relevant Seller.
-- [ ] relevant Product PM.
-- [ ] developers/other Product members are not automatically added.
-- [ ] READ/SEND still resolved by permissions.
+- [x] Owner.
+- [x] CEO.
+- [x] Finance Director.
+- [x] relevant Seller.
+- [x] relevant Product PM.
+- [x] developers/other Product members are not automatically added.
+- [x] READ/SEND still resolved by permissions.
 
 ### Support
 
-- [ ] Ticket remains internal case/SLA entity.
-- [ ] Client external messages are referenced, not copied into public Ticket chat.
-- [ ] Ticket has no final Public/Internal composer toggle.
-- [ ] Create/link Ticket action available from Client message where authorized.
-- [ ] execution can create/link Task(s).
-- [ ] client reply/update returns through Client Messenger.
+- [x] Ticket remains internal case/SLA entity.
+- [x] Client external messages are referenced, not copied into public Ticket chat.
+- [x] Ticket has no final Public/Internal composer toggle.
+- [x] Create/link Ticket action available from Client message where authorized.
+- [x] execution can create/link Task(s).
+- [x] client reply/update returns through Client Messenger.
 
 ### Attention routing
 
-- [ ] Delivery WORK default → Product PM.
-- [ ] Maintenance WORK default → Support Intake queue.
-- [ ] FINANCE → Finance/authorized queue.
-- [ ] routing does not change canonical conversation id.
-- [ ] manual reassignment supported.
-- [ ] no permanent hard-coded employee owner.
+- [x] Delivery WORK default → Product PM.
+- [x] Maintenance WORK default → Support Intake queue.
+- [x] FINANCE → Finance/authorized queue.
+- [x] routing does not change canonical conversation id.
+- [x] manual reassignment supported.
+- [x] no permanent hard-coded employee owner.
 
 ### Tests
 
-- [ ] reminder routing with and without explicit FINANCE.
-- [ ] one shared FINANCE group serving multiple Products.
-- [ ] manual finance participant with READ but no SEND.
-- [ ] lifecycle Delivery → Maintenance changes attention, not conversation.
-- [ ] Ticket source references obey Client access.
+- [x] reminder routing with and without explicit FINANCE.
+- [x] one shared FINANCE group serving multiple Products.
+- [x] manual finance participant with READ but no SEND.
+- [x] lifecycle Delivery → Maintenance changes attention, not conversation.
+- [x] Ticket source references obey Client access.
+- [x] no Public/Internal Ticket composer toggle.
 
 ### Acceptance
 
-- [ ] Support/Finance behavior operates around Client Messenger, not parallel chat stores.
-- [ ] Slice status `VERIFIED`.
+- [x] Support/Finance behavior operates around Client Messenger, not parallel chat stores.
+- [x] Slice status `VERIFIED`.
+
+**Status:** `VERIFIED` — evidence `30-Slice-10-Finance-Support-Routing.md`. Independent XHigh review closed FINDING-S10-01…08. Slice 11 is **not** started (hard stop).
 
 ---
 
@@ -619,19 +632,33 @@ These apply to every slice touching persistence or existing runtime.
 
 ## 3. Implementation slice status table
 
-| Slice                            | Status    | Implementer evidence | Independent review |
-| -------------------------------- | --------- | -------------------- | ------------------ |
-| 0 — Baseline/reconciliation      | `PLANNED` | —                    | —                  |
-| 1 — Messaging Core               | `PLANNED` | —                    | —                  |
-| 2 — Permissions/boundary         | `PLANNED` | —                    | —                  |
-| 3 — Internal base                | `PLANNED` | —                    | —                  |
-| 4 — Entity conversations         | `PLANNED` | —                    | —                  |
-| 5 — Task Discussion migration    | `PLANNED` | —                    | —                  |
-| 6 — Message actions/references   | `PLANNED` | —                    | —                  |
-| 7 — Client surface               | `PLANNED` | —                    | —                  |
-| 8 — WhatsApp Gateway integration | `PLANNED` | —                    | —                  |
-| 9 — Flexible Product bindings    | `PLANNED` | —                    | —                  |
-| 10 — Finance/Support/routing     | `PLANNED` | —                    | —                  |
-| 11 — Hardening/cleanup readiness | `PLANNED` | —                    | —                  |
+| Slice                            | Status     | Implementer evidence                            | Independent review                        |
+| -------------------------------- | ---------- | ----------------------------------------------- | ----------------------------------------- |
+| 0 — Baseline/reconciliation      | `VERIFIED` | `20-Slice-00-Baseline.md`                       | VERIFIED (FINDING-01 closed)              |
+| 1 — Messaging Core               | `VERIFIED` | `21-Slice-01-Messaging-Core.md`                 | VERIFIED (FINDING-S1-01/02 closed)        |
+| 2 — Permissions/boundary         | `VERIFIED` | `22-Slice-02-Permissions-Boundary.md`           | VERIFIED (FINDING-S2-01/02 closed)        |
+| 3 — Internal base                | `VERIFIED` | `23-Slice-03-Internal-Base.md`                  | VERIFIED (FINDING-S3-01…S3-06 closed)     |
+| 4 — Entity conversations         | `VERIFIED` | `24-Slice-04-Entity-Conversations.md`           | VERIFIED (FINDING-S4-01/02/03/04 closed)  |
+| 5 — Task Discussion migration    | `VERIFIED` | `25-Slice-05-Task-Discussion.md`                | VERIFIED (FINDING-S5-01/02/03 closed)     |
+| 6 — Message actions/references   | `VERIFIED` | `26-Slice-06-Message-Actions.md`                | VERIFIED (FINDING-S6-01/02 closed)        |
+| 7 — Client surface               | `VERIFIED` | `27-Slice-07-Client-Messenger.md`               | VERIFIED (locked composer + Meta cutover) |
+| 8 — WhatsApp Gateway integration | `VERIFIED` | `28-Slice-08-WhatsApp-Gateway.md`               | VERIFIED (FINDING-S8-01…10 closed)        |
+| 9 — Flexible Product bindings    | `VERIFIED` | `29-Slice-09-Product-Communication-Bindings.md` | VERIFIED (FINDING-S9-01…10 closed)        |
+| 10 — Finance/Support/routing     | `VERIFIED` | `30-Slice-10-Finance-Support-Routing.md`        | VERIFIED (FINDING-S10-01…08 closed)       |
+| 11 — Hardening/cleanup readiness | `PLANNED`  | —                                               | —                                         |
 
 Status changes must follow `12-Messenger-Rebuild-Execution-Strategy.md`.
+
+## 4. Modernization Phase 6 (engineering audit)
+
+Not a rebuild slice. Implementer evidence:
+`33-Messenger-Modernization-Final-Evidence.md`. Manual checklist:
+`34-Messenger-Phase6-Browser-Checklist.md`.
+
+- [x] Automated request/query/cardinality/UTF-8/outbound/Socket.IO evidence files exist (implementer).
+- [ ] Independent master `VERIFIED PASS`.
+- [ ] Live browser checklist executed.
+- [ ] Live `EXPLAIN` on isolated PostgreSQL.
+- [x] Production `next build` recorded by the implementer validation report (local PASS; not a production deploy).
+
+Slice 11 remains `PLANNED`. Do not treat Phase 6 as rebuild ACCEPTED.

@@ -1,22 +1,30 @@
+import { scheduleMessengerPersistStoreClear } from '@/features/messenger/persist/messenger-persist-controller';
+import { purgeMessengerPersistForSignOut } from '@/features/messenger/persist/messenger-persist-session';
+
 let sessionSignOutInFlight: Promise<void> | null = null;
 
-/** Deduplicates invalid-session sign-out across Axios, SSE and Socket.IO. */
-export async function signOutForInvalidSession(): Promise<void> {
-  if (sessionSignOutInFlight) {
-    await sessionSignOutInFlight;
-    return;
+/** Central client sign-out: purge Messenger memory, then NextAuth. Storage clear is best-effort. */
+export async function signOutClient(callbackUrl = '/sign-in'): Promise<void> {
+  purgeMessengerPersistForSignOut();
+  if (!sessionSignOutInFlight) {
+    scheduleMessengerPersistStoreClear();
+    sessionSignOutInFlight = startNextAuthSignOut(callbackUrl);
   }
+  await sessionSignOutInFlight;
+}
 
-  sessionSignOutInFlight = (async () => {
-    const { signOut } = await import('next-auth/react');
-    await signOut({ callbackUrl: '/sign-in' });
-  })();
-
+async function startNextAuthSignOut(callbackUrl: string): Promise<void> {
   try {
-    await sessionSignOutInFlight;
+    const { signOut } = await import('next-auth/react');
+    await signOut({ callbackUrl });
   } finally {
     sessionSignOutInFlight = null;
   }
+}
+
+/** Deduplicates invalid-session sign-out across Axios, SSE and Socket.IO. */
+export async function signOutForInvalidSession(): Promise<void> {
+  await signOutClient('/sign-in');
 }
 
 export function resetSessionSignOutForTests(): void {

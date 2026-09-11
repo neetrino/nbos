@@ -39,8 +39,25 @@ describe('scheduler manual job runner', () => {
     expect(runAiModelCatalogSync).toHaveBeenCalledWith(SCHEDULER_TRIGGER.manualAdmin);
   });
 
-  it('advertises the AI catalog sync as runnable from Settings', () => {
-    expect(canRunSchedulerJobNow(SCHEDULER_JOB_NAMES.aiModelCatalogSync)).toBe(true);
+  it('dispatches messenger outbound reconcile to SchedulerService', async () => {
+    const runMessengerOutboundReconcile = vi.fn().mockResolvedValue({ status: 'SUCCEEDED' });
+    const { runners: dispatchTargets } = runners();
+    dispatchTargets.scheduler = {
+      ...dispatchTargets.scheduler,
+      runMessengerOutboundReconcile,
+    } as unknown as SchedulerService;
+
+    await runSchedulerJobByName(
+      dispatchTargets,
+      SCHEDULER_JOB_NAMES.messengerOutboundReconcile,
+      SCHEDULER_TRIGGER.manualAdmin,
+    );
+
+    expect(runMessengerOutboundReconcile).toHaveBeenCalledWith(SCHEDULER_TRIGGER.manualAdmin);
+  });
+
+  it('advertises messenger outbound reconcile as runnable from Settings', () => {
+    expect(canRunSchedulerJobNow(SCHEDULER_JOB_NAMES.messengerOutboundReconcile)).toBe(true);
   });
 
   it('still refuses a job name with no runner', async () => {

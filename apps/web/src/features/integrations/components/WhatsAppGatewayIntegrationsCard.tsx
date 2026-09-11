@@ -28,6 +28,7 @@ export function WhatsAppGatewayIntegrationsCard() {
   const [baseUrl, setBaseUrl] = useState('');
   const [apiToken, setApiToken] = useState('');
   const [accountingGroupChatId, setAccountingGroupChatId] = useState('');
+  const [webhookSigningSecret, setWebhookSigningSecret] = useState('');
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
 
@@ -56,9 +57,11 @@ export function WhatsAppGatewayIntegrationsCard() {
         baseUrl: baseUrl.trim() || undefined,
         apiToken: apiToken.trim() || undefined,
         accountingGroupChatId: accountingGroupChatId.trim(),
+        webhookSigningSecret: webhookSigningSecret.trim() || undefined,
       });
       setView(next);
       setApiToken('');
+      setWebhookSigningSecret('');
       toast.success('WhatsApp Gateway saved.');
       setSheetOpen(false);
     } catch (error) {
@@ -152,6 +155,7 @@ export function WhatsAppGatewayIntegrationsCard() {
                 <p className="text-muted-foreground text-sm">
                   Status: {view?.configured ? view.status : 'Not configured'}
                   {view?.hasToken ? ' · token stored' : ''}
+                  {view?.hasWebhookSecret ? ' · webhook secret stored' : ''}
                 </p>
                 {view?.baseUrl ? (
                   <p className="text-muted-foreground text-xs break-all">{view.baseUrl}</p>
@@ -186,6 +190,25 @@ export function WhatsAppGatewayIntegrationsCard() {
                     placeholder="gw_live_…"
                     autoComplete="off"
                   />
+                </div>
+                <div className="min-w-0 space-y-2">
+                  <label className="text-sm font-medium" htmlFor="wa-gateway-webhook-secret">
+                    Webhook signing secret{' '}
+                    {view?.hasWebhookSecret ? '(leave blank to keep current)' : ''}
+                  </label>
+                  <Input
+                    id="wa-gateway-webhook-secret"
+                    className="w-full min-w-0"
+                    type="password"
+                    value={webhookSigningSecret}
+                    onChange={(event) => setWebhookSigningSecret(event.target.value)}
+                    placeholder="Gateway Project signing key"
+                    autoComplete="off"
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    HMAC key from the Gateway Project webhook settings. Inbound URL:{' '}
+                    <span className="break-all">/api/integrations/whatsapp-gateway/webhook</span>
+                  </p>
                 </div>
                 <div className="min-w-0 space-y-2">
                   <label className="text-sm font-medium" htmlFor="wa-accounting-group">

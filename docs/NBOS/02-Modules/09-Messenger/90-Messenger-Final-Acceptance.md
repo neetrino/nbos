@@ -369,3 +369,32 @@ Date: ...
 ```
 
 `ACCEPTED` requires zero unresolved Critical/High findings that violate canon, data integrity, security boundary or provider-delivery safety.
+
+---
+
+## 18. Modernization Phase 6 engineering evidence
+
+Independent of Slices 0–11 product ACCEPTED/REJECTED. Implementer file:
+`33-Messenger-Modernization-Final-Evidence.md`. Manual UI:
+`34-Messenger-Phase6-Browser-Checklist.md`.
+
+Legend: `PASS` = automated or live evidence in-repo; `NOT RUN`; `OPERATIONAL GATE`.
+
+| Gate                                                                                                | Status                                                |
+| --------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Client hook request graph (Internal/Client bootstrap; Strict Mode; failure fallback; stale restore) | PASS (automated jsdom integration)                    |
+| Client unit helpers (All↔Tasks / same-session; not hook composition)                                | PASS (automated unit)                                 |
+| Realtime reducers: no blind full-list refetch; delta thread invalidation                            | PASS (automated)                                      |
+| Persist envelope UTF-8 budget vs named 100-row page contract                                        | PASS (automated; observed fixture sizes, no SLA)      |
+| Cache cardinality (4 families, row/watermark/checkpoint/gc caps)                                    | PASS (automated)                                      |
+| GET list/unread/collection query bounds; GET no Favorites writes                                    | PASS (automated mock Prisma)                          |
+| POST bootstrap provisioning counts (Favorites ensure unmocked; 6/7/10)                              | PASS (automated mock Prisma; not a read-only path)    |
+| Live PostgreSQL `EXPLAIN`                                                                           | OPERATIONAL GATE                                      |
+| Speculative composite list index                                                                    | not added                                             |
+| Queue payload / enqueue-fail / scheduler default-off / worker duration log                          | PASS (automated)                                      |
+| Socket.IO process-local; no Redis adapter deployed                                                  | PASS (automated) + OPERATIONAL GATE for multi-replica |
+| Phase 5 live browser IDB/two-tab/a11y                                                               | NOT RUN                                               |
+| Production `next build`                                                                             | PASS (local implementer; not a production deploy)     |
+| Rebuild `90` product ACCEPTED                                                                       | NOT RUN (Slice 11 still `PLANNED`)                    |
+
+Do not treat this table as rebuild ACCEPTED.

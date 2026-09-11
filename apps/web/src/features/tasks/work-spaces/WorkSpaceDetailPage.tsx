@@ -26,6 +26,7 @@ import type { WorkspaceBoardView } from './use-workspace-runtime-board';
 import { useWorkspaceBoardViewState } from './use-workspace-board-view-state';
 import { WORKSPACE_AREA_ACTIVE, WORKSPACE_AREA_PLANNING } from './workspace-area';
 import { WorkSpaceDriveSheet } from './WorkSpaceDriveSheet';
+import { WorkSpaceDiscussionSheet, WorkSpaceDiscussionTrigger } from './WorkSpaceDiscussionSheet';
 import {
   useWorkspaceRuntimeTaskFilters,
   WORKSPACE_TASK_FILTER_CONFIGS,
@@ -57,6 +58,7 @@ export function WorkSpaceDetailPage() {
   } = useWorkSpaceDetail(params.id);
   const [editOpen, setEditOpen] = useState(false);
   const [driveOpen, setDriveOpen] = useState(false);
+  const [discussionOpen, setDiscussionOpen] = useState(false);
   const { boardView, handleBoardViewChange, workspaceArea, setWorkspaceArea } =
     useWorkspaceBoardViewState();
   const openQuickCreateRef = useRef<(() => void) | null>(null);
@@ -122,6 +124,7 @@ export function WorkSpaceDetailPage() {
             {isPlanningArea ? (
               <WorkSpaceScrumPlanningEnable workspace={workspace} onUpdated={onWorkspaceUpdate} />
             ) : null}
+            <WorkSpaceDiscussionTrigger onClick={() => setDiscussionOpen(true)} />
             <EntityDriveNavAction onClick={() => setDriveOpen(true)} />
             <WorkSpaceDetailSettingsSheet
               workspaceId={workspace.id}
@@ -176,6 +179,12 @@ export function WorkSpaceDetailPage() {
         onOpenChange={setDriveOpen}
         workSpaceId={workspace.id}
         workSpaceName={workspace.name}
+      />
+      <WorkSpaceDiscussionSheet
+        open={discussionOpen}
+        onOpenChange={setDiscussionOpen}
+        workspaceId={workspace.id}
+        workspaceName={workspace.name}
       />
     </div>
   );

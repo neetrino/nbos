@@ -1,0 +1,144 @@
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  CurrentUser,
+  type CurrentUserPayload,
+  RequirePermission,
+} from '../../../common/decorators';
+import { CreateInternalConversationDto } from './dto/create-internal-conversation.dto';
+import { ForwardCoreMessagesDto } from './dto/forward-core-messages.dto';
+import { ListCoreMessagesQueryDto } from './dto/list-core-messages.query';
+import { ListInternalConversationsQueryDto } from './dto/list-internal-conversations.query';
+import { ListMessengerDeltaQueryDto } from './dto/list-messenger-delta.query';
+import { SendCoreMessageDto } from './dto/send-core-message.dto';
+import { MessengerCoreInternalService } from './messenger-core-internal.service';
+import { tasksAccessFromUser } from '../../tasks/tasks-scoped-access';
+
+@ApiTags('Messenger Core Internal')
+@ApiBearerAuth()
+@Controller('messenger/core/internal')
+export class MessengerCoreInternalController {
+  constructor(private readonly internal: MessengerCoreInternalService) {}
+
+  @Post('legacy-map')
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({
+    summary: 'Idempotent Channel/DM → Core mapping (one-way cutover, no dual-write)',
+  })
+  mapLegacy(@CurrentUser() _user: CurrentUserPayload) {
+    return this.internal.mapLegacyInternal();
+  }
+
+  @Post('task-discussion-map')
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({
+    summary: 'Idempotent TaskDiscussionEntry → Core mapping (ops-only; no DROP, no dual-write)',
+  })
+  mapTaskDiscussion(@CurrentUser() _user: CurrentUserPayload) {
+    return this.internal.mapTaskDiscussion();
+  }
+
+  @Post('bootstrap')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({
+    summary: 'Initialize Internal Favorites and return All summaries plus zone Collections',
+  })
+  bootstrap(@CurrentUser() user: CurrentUserPayload) {
+    return this.internal.bootstrap(user.id, tasksAccessFromUser(user));
+  }
+
+  @Get('delta')
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({
+    summary: 'Internal zone delta from an HTTP checkpoint (current authorized state only)',
+  })
+  listDelta(@CurrentUser() user: CurrentUserPayload, @Query() query: ListMessengerDeltaQueryDto) {
+    return this.internal.listDelta(user.id, query, tasksAccessFromUser(user));
+  }
+
+  @Get('conversations')
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({ summary: 'List accessible Internal conversations (never Client zone)' })
+  listConversations(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: ListInternalConversationsQueryDto,
+  ) {
+    return this.internal.listConversations(user.id, query, tasksAccessFromUser(user));
+  }
+
+  @Post('conversations')
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({ summary: 'Create Internal Group or Direct on Core' })
+  createConversation(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: CreateInternalConversationDto,
+  ) {
+    return this.internal.createConversation(user.id, body);
+  }
+
+  @Get('conversations/:id')
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({ summary: 'Open an Internal conversation; Client zone is rejected' })
+  getConversation(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.internal.getConversation(id, user.id);
+  }
+
+  @Get('conversations/:id/messages')
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({ summary: 'List Internal conversation messages from Core' })
+  listMessages(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: ListCoreMessagesQueryDto,
+  ) {
+    return this.internal.listMessages(id, user.id, query);
+  }
+
+  @Post('conversations/:id/messages')
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({ summary: 'Persist an Internal Core message (not Channel/DM tables)' })
+  sendMessage(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: SendCoreMessageDto,
+  ) {
+    return this.internal.persistMessage({
+      conversationId: id,
+      senderId: user.id,
+      content: body.content,
+      fileAssetIds: body.fileAssetIds,
+      replyToMessageId: body.replyToMessageId,
+      mentionedEmployeeIds: body.mentionedEmployeeIds,
+      idempotencyKey: body.idempotencyKey,
+    });
+  }
+
+  @Post('conversations/:id/forwards')
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({
+    summary: 'Forward selected messages as references into this Internal conversation',
+  })
+  forwardMessages(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: ForwardCoreMessagesDto,
+  ) {
+    return this.internal.forwardMessages(user.id, id, body.sourceMessageIds);
+  }
+
+  @Post('conversations/:id/read')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({ summary: 'Mark an Internal Core conversation read' })
+  markRead(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.internal.markRead(id, user.id);
+  }
+
+  @Post('conversations/:id/favorite')
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({ summary: 'Toggle built-in Internal Favorites (PERSONAL Collection)' })
+  toggleFavorite(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.internal.toggleFavorite(id, user.id);
+  }
+}

@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { Test } from '@nestjs/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { MessengerGateway } from '../../messenger/messenger.gateway';
 import { MetaLeadIngestService } from './meta-lead-ingest.service';
 import { MetaProfileService } from './meta-profile.service';
 
@@ -16,6 +17,10 @@ describe('MetaLeadIngestService Nest DI', () => {
         MetaLeadIngestService,
         { provide: PRISMA_TOKEN, useValue: {} },
         { provide: MetaProfileService, useValue: profileService },
+        {
+          provide: MessengerGateway,
+          useValue: { emitCoreConversationMessage: vi.fn(), publishPersistedCoreMessage: vi.fn() },
+        },
       ],
     }).compile();
 

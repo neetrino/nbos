@@ -127,15 +127,15 @@ export function splitSchedulerWhen(
   if (Number.isNaN(date.getTime())) return null;
   const tz = timezone && timezone.trim().length > 0 ? timezone : undefined;
   try {
-    const day = date.toLocaleString(undefined, { timeZone: tz, day: 'numeric' });
-    const time = date.toLocaleString(undefined, {
+    const day = date.toLocaleString('en-US', { timeZone: tz, day: 'numeric' });
+    const time = date.toLocaleString('en-US', {
       timeZone: tz,
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
     });
-    const month = date.toLocaleString(undefined, { timeZone: tz, month: 'short' });
-    const year = date.toLocaleString(undefined, { timeZone: tz, year: 'numeric' });
+    const month = date.toLocaleString('en-US', { timeZone: tz, month: 'short' });
+    const year = date.toLocaleString('en-US', { timeZone: tz, year: 'numeric' });
     return {
       primary: `${day} · ${time}`,
       secondary: `${month} ${year}`,

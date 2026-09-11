@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { isWhatsAppGroupChatId, normalizeWhatsAppGroupChatId } from '@nbos/shared';
 import type { PrismaClient } from '@nbos/database';
 import { DEAL_WHATSAPP_CREATE_SATISFIER_STATUSES } from '../../integrations/whatsapp-gateway/deal-whatsapp-group.types';
+import { resolveClientDestination } from '../../messenger/core/product-communication-resolver';
 
 export const WHATSAPP_WON_GATE_DEAL_TYPES = new Set(['PRODUCT', 'OUTSOURCE']);
 
@@ -115,11 +116,7 @@ export async function loadDealWonWhatsAppContext(
     };
   }
 
-  const [binding, createOp] = await Promise.all([
-    prisma.productWhatsAppGroupBinding.findUnique({
-      where: { productId },
-      select: { groupChatId: true },
-    }),
+  const [createOp, work] = await Promise.all([
     prisma.whatsAppGroupOperation.findFirst({
       where: {
         productId,
@@ -128,11 +125,12 @@ export async function loadDealWonWhatsAppContext(
       },
       select: { id: true },
     }),
+    resolveClientDestination(prisma, productId, 'WORK'),
   ]);
 
   return {
     productId,
-    groupChatId: binding?.groupChatId ?? dealBinding?.groupChatId ?? null,
+    groupChatId: work?.groupChatId ?? dealBinding?.groupChatId ?? null,
     hasCreateOperation: Boolean(createOp) || dealCreateSatisfied,
   };
 }

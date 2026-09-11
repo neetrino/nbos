@@ -211,11 +211,13 @@ export interface TaskDiscussionEntry {
   authorDisplayName: string;
   channelSource: string | null;
   createdAt: string;
+  conversationId?: string;
 }
 
 export interface TaskDiscussionList {
   items: TaskDiscussionEntry[];
   meta: { total: number; page: number; pageSize: number; totalPages: number };
+  conversationId: string | null;
 }
 
 export const tasksApi = {

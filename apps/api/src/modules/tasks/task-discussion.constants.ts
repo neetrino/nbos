@@ -8,3 +8,6 @@ export const TASK_DISCUSSION_MIN_PAGE_SIZE = 1;
 
 /** Maximum stored body length for one discussion entry. */
 export const TASK_DISCUSSION_BODY_MAX_LENGTH = 8_000;
+
+/** Legacy TaskDiscussionEntry writes are frozen after Slice 5 cutover. Table is DELETE-LATER. */
+export const TASK_DISCUSSION_LEGACY_WRITES_DISABLED = true;

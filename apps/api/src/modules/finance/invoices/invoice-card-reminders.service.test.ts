@@ -5,6 +5,14 @@ import {
   InvoiceCardRemindersService,
 } from './invoice-card-reminders.service';
 
+vi.mock('../../messenger/core/messenger-finance-reminder.ops', () => ({
+  deliverFinanceClientReminder: vi.fn(async () => ({
+    conversationId: 'conv-1',
+    messageId: 'msg-1',
+    groupChatId: '120@g.us',
+  })),
+}));
+
 describe('InvoiceCardRemindersService', () => {
   let prisma: MockPrisma;
   let service: InvoiceCardRemindersService;
@@ -187,6 +195,7 @@ describe('InvoiceCardRemindersService', () => {
       }),
     ]);
     prisma.notificationJob.findUnique.mockResolvedValue({ id: 'existing' });
+    prisma.messengerMessage.findFirst.mockResolvedValue({ id: 'msg-existing' });
 
     const result = await service.runDueInvoiceCardReminders({
       asOf: new Date('2026-04-10T11:00:00+04:00'),
@@ -243,8 +252,10 @@ function stubProductWhatsApp(prisma: MockPrisma): void {
     clientServiceRecord: null,
     order: null,
   });
-  prisma.productWhatsAppGroupBinding.findUnique.mockResolvedValue({
-    groupChatId: '120@g.us',
-    status: 'ACTIVE',
+  prisma.productCommunicationBinding.findUnique.mockResolvedValue({
+    conversationId: 'conv-1',
+    conversation: {
+      externalMappings: [{ externalAccountId: 'acc', externalConversationId: '120@g.us' }],
+    },
   });
 }

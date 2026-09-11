@@ -2,7 +2,7 @@
 
 import { EntityDetailSheetContent } from '@/components/shared';
 import { Sheet } from '@/components/ui/sheet';
-import { MessengerClient } from '@/features/messenger/MessengerClient';
+import { InternalMessengerApp } from '@/features/messenger-internal/InternalMessengerApp';
 import { cn } from '@/lib/utils';
 import {
   PORTFOLIO_QUICK_ACTION_SHEET_CONTENT_CLASS,
@@ -32,7 +32,7 @@ export function PortfolioMessengerSheet({
         className="flex min-h-0 flex-col"
       >
         <div className="flex min-h-0 flex-1 flex-col px-3 pt-2 pb-3">
-          <MessengerClient embedded />
+          <InternalMessengerApp embedded />
         </div>
       </EntityDetailSheetContent>
     </Sheet>

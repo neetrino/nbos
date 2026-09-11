@@ -10,10 +10,61 @@ export type MessengerLegacyAccessContext = {
   departmentIds: string[];
   viewScope: MessengerRbacScope;
   editScope: MessengerRbacScope;
+  clientReadScope: MessengerRbacScope;
+  clientSendScope: MessengerRbacScope;
   driveViewScope?: string;
+  /** TASKS.VIEW for Task conversation GET/ensure. Not a Messenger ACL substitute. */
+  tasksViewScope?: string;
 };
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const EMPLOYEE_MESSENGER_ACCESS_SELECT = {
+  id: true,
+  status: true,
+  departments: { select: { departmentId: true } },
+  role: {
+    select: {
+      permissions: {
+        select: {
+          scope: true,
+          permission: { select: { module: true, action: true } },
+        },
+      },
+    },
+  },
+} as const;
+
+type EmployeeMessengerAccessRow = {
+  id: string;
+  status: string;
+  departments: Array<{ departmentId: string }>;
+  role: {
+    permissions: Array<{
+      scope: string;
+      permission: { module: string; action: string };
+    }>;
+  };
+};
+
+function accessContextFromEmployee(
+  employee: EmployeeMessengerAccessRow,
+): MessengerLegacyAccessContext {
+  const permissions: Record<string, string> = {};
+  for (const rp of employee.role.permissions) {
+    permissions[`${rp.permission.module}_${rp.permission.action}`] = rp.scope;
+  }
+  return {
+    employeeId: employee.id,
+    departmentIds: employee.departments.map((d) => d.departmentId),
+    viewScope: normalizeMessengerRbacScope(permissions.MESSENGER_VIEW),
+    editScope: normalizeMessengerRbacScope(permissions.MESSENGER_EDIT),
+    clientReadScope: normalizeMessengerRbacScope(permissions.MESSENGER_CLIENT_READ),
+    clientSendScope: normalizeMessengerRbacScope(permissions.MESSENGER_CLIENT_SEND),
+    driveViewScope: permissions.DRIVE_VIEW,
+    tasksViewScope: permissions.TASKS_VIEW,
+  };
+}
 
 export function normalizeMessengerRbacScope(raw: string | null | undefined): MessengerRbacScope {
   const s = raw?.trim().toUpperCase();
@@ -40,36 +91,28 @@ export async function loadMessengerLegacyAccess(
 ): Promise<MessengerLegacyAccessContext | null> {
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
-    select: {
-      id: true,
-      status: true,
-      departments: { select: { departmentId: true } },
-      role: {
-        select: {
-          permissions: {
-            select: {
-              scope: true,
-              permission: { select: { module: true, action: true } },
-            },
-          },
-        },
-      },
-    },
+    select: EMPLOYEE_MESSENGER_ACCESS_SELECT,
   });
   if (!employee || employee.status === 'TERMINATED') return null;
+  return accessContextFromEmployee(employee);
+}
 
-  const permissions: Record<string, string> = {};
-  for (const rp of employee.role.permissions) {
-    permissions[`${rp.permission.module}_${rp.permission.action}`] = rp.scope;
+/** One query for currently connected sockets. Skips terminated employees. */
+export async function loadMessengerLegacyAccessForEmployees(
+  prisma: InstanceType<typeof PrismaClient>,
+  employeeIds: string[],
+): Promise<Map<string, MessengerLegacyAccessContext>> {
+  const unique = [...new Set(employeeIds.filter((id) => id.length > 0))];
+  const result = new Map<string, MessengerLegacyAccessContext>();
+  if (unique.length === 0) return result;
+  const employees = await prisma.employee.findMany({
+    where: { id: { in: unique }, NOT: { status: 'TERMINATED' } },
+    select: EMPLOYEE_MESSENGER_ACCESS_SELECT,
+  });
+  for (const employee of employees) {
+    result.set(employee.id, accessContextFromEmployee(employee));
   }
-
-  return {
-    employeeId: employee.id,
-    departmentIds: employee.departments.map((d) => d.departmentId),
-    viewScope: normalizeMessengerRbacScope(permissions.MESSENGER_VIEW),
-    editScope: normalizeMessengerRbacScope(permissions.MESSENGER_EDIT),
-    driveViewScope: permissions.DRIVE_VIEW,
-  };
+  return result;
 }
 
 export async function loadMessengerScopedEmployeeIds(

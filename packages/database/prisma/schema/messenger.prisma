@@ -128,9 +128,9 @@ model MessengerDirectThreadReadState {
   @@map("messenger_direct_thread_read_states")
 }
 
-// ─── UNIFIED INTERNAL MESSENGER ────────────────────────────
-// Unified conversation tables are the Internal Messenger UI source of truth.
-// Legacy channel/DM tables remain for compatibility until write-freeze + verified retirement.
+// ─── MESSAGING CORE (evolved Unified generation) ──────────
+// Canonical durable Messaging Core (M-CORE-01). Slice 3 Internal UI reads/writes Core.
+// Channel/DM remains the rollback store; do not DROP. Mapper is idempotent and not dual-write.
 // NBOS Internal Messenger is single-organization (no tenantId on Employee); isolation is application RBAC.
 
 enum MessengerConversationType {
@@ -138,8 +138,10 @@ enum MessengerConversationType {
   PRODUCT
   DEAL
   TASK
+  WORKSPACE
   DIRECT
   INTERNAL_GROUP
+  EXTERNAL
 }
 
 enum MessengerConversationStatus {
@@ -161,6 +163,9 @@ enum MessengerLinkEntityType {
   DEAL
   TASK
   WORKSPACE
+  TICKET
+  CLIENT
+  LEAD
 }
 
 enum MessengerLinkRelationType {
@@ -174,32 +179,46 @@ enum MessengerMessageType {
 }
 
 model MessengerConversation {
-  id                     String                      @id @default(uuid())
-  type                   MessengerConversationType
-  title                  String?
-  status                 MessengerConversationStatus @default(ACTIVE)
-  createdById            String?                     @map("created_by_id")
-  /// Deterministic uniqueness key: project_general:{id} | product:{id} | deal:{id} | task:{id} | direct:{low}:{high}
-  canonicalKey           String?                     @unique @map("canonical_key")
+  id                      String                       @id @default(uuid())
+  zone                    MessengerConversationZone    @default(INTERNAL)
+  kind                    MessengerConversationKind    @default(ENTITY)
+  type                    MessengerConversationType
+  title                   String?
+  status                  MessengerConversationStatus  @default(ACTIVE)
+  createdById             String?                      @map("created_by_id")
+  /// Deterministic uniqueness key: project_general:{id} | product:{id} | workspace:{id} | deal:{id} | task:{id} | direct:{low}:{high} | legacy:channel:{id} | legacy:meta:{id}
+  canonicalKey            String?                      @unique @map("canonical_key")
   /// Normalized DIRECT pair (lexicographic employee UUID order). Null for non-DIRECT types.
-  directParticipantLowId String?                     @map("direct_participant_low_id")
-  directParticipantHighId String?                    @map("direct_participant_high_id")
-  metadata               Json?
-  lastMessageAt          DateTime?                   @map("last_message_at")
-  createdAt              DateTime                    @default(now()) @map("created_at")
-  updatedAt              DateTime                    @updatedAt @map("updated_at")
+  directParticipantLowId  String?                      @map("direct_participant_low_id")
+  directParticipantHighId String?                      @map("direct_participant_high_id")
+  metadata                Json?
+  lastMessageAt           DateTime?                    @map("last_message_at")
+  createdAt               DateTime                     @default(now()) @map("created_at")
+  updatedAt               DateTime                     @updatedAt @map("updated_at")
 
-  createdBy              Employee?                           @relation("MessengerConversationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  directParticipantLow   Employee?                           @relation("MessengerConversationDirectLow", fields: [directParticipantLowId], references: [id], onDelete: Restrict)
-  directParticipantHigh  Employee?                           @relation("MessengerConversationDirectHigh", fields: [directParticipantHighId], references: [id], onDelete: Restrict)
-  participants           MessengerConversationParticipant[]
-  links                  MessengerConversationLink[]
-  messages               MessengerMessage[]
-  readStates             MessengerConversationReadState[]
-  userSettings           MessengerUserConversationSetting[]
+  createdBy             Employee?                              @relation("MessengerConversationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  directParticipantLow  Employee?                              @relation("MessengerConversationDirectLow", fields: [directParticipantLowId], references: [id], onDelete: Restrict)
+  directParticipantHigh Employee?                              @relation("MessengerConversationDirectHigh", fields: [directParticipantHighId], references: [id], onDelete: Restrict)
+  participants          MessengerConversationParticipant[]
+  links                 MessengerConversationLink[]
+  messages              MessengerMessage[]
+  readStates            MessengerConversationReadState[]
+  userSettings          MessengerUserConversationSetting[]
+  externalMappings      MessengerExternalConversationMapping[]
+  commands              MessengerCommand[]
+  providerEvents        MessengerProviderEvent[]
+  legacyIdentities      MessengerLegacyIdentity[]
+  sourceReferences      MessengerMessageReference[]            @relation("MessengerMessageReferenceSourceConversation")
+  targetReferences      MessengerMessageReference[]            @relation("MessengerMessageReferenceTargetConversation")
+  collectionItems              MessengerConversationCollectionItem[]
+  productCommunicationBindings ProductCommunicationBinding[]
+  attentions                   MessengerConversationAttention[]
+  conversationRevisions         MessengerConversationRevision[]
+  employeeConversationRevisions MessengerEmployeeConversationRevision[]
 
   @@unique([directParticipantLowId, directParticipantHighId])
   @@index([type, status])
+  @@index([zone, status])
   @@index([lastMessageAt])
   @@index([status, updatedAt])
   @@map("messenger_conversations")
@@ -225,12 +244,12 @@ model MessengerConversationParticipant {
 }
 
 model MessengerConversationLink {
-  id             String                     @id @default(uuid())
-  conversationId String                     @map("conversation_id")
-  entityType     MessengerLinkEntityType    @map("entity_type")
-  entityId       String                     @map("entity_id")
-  relationType   MessengerLinkRelationType  @map("relation_type")
-  createdAt      DateTime                   @default(now()) @map("created_at")
+  id             String                      @id @default(uuid())
+  conversationId String                      @map("conversation_id")
+  entityType     MessengerLinkEntityType     @map("entity_type")
+  entityId       String                      @map("entity_id")
+  relationType   MessengerLinkRelationType   @map("relation_type")
+  createdAt      DateTime                    @default(now()) @map("created_at")
 
   conversation MessengerConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
@@ -242,27 +261,45 @@ model MessengerConversationLink {
 }
 
 model MessengerMessage {
-  id                 String              @id @default(uuid())
-  conversationId     String              @map("conversation_id")
-  senderId           String?             @map("sender_id")
-  senderNameSnapshot String              @map("sender_name_snapshot")
-  content            String              @db.Text
-  messageType        MessengerMessageType @default(TEXT) @map("message_type")
-  replyToMessageId   String?             @map("reply_to_message_id")
-  editedAt           DateTime?           @map("edited_at")
-  deletedAt          DateTime?           @map("deleted_at")
-  createdAt          DateTime            @default(now()) @map("created_at")
-  updatedAt          DateTime            @updatedAt @map("updated_at")
+  id                  String                     @id @default(uuid())
+  conversationId      String                     @map("conversation_id")
+  senderId            String?                    @map("sender_id")
+  senderNameSnapshot  String                     @map("sender_name_snapshot")
+  content             String                     @db.Text
+  messageType         MessengerMessageType       @default(TEXT) @map("message_type")
+  direction           MessengerMessageDirection  @default(INTERNAL)
+  status              MessengerMessageStatus     @default(SENT)
+  provenance          MessengerMessageProvenance @default(EMPLOYEE)
+  replyToMessageId    String?                    @map("reply_to_message_id")
+  threadRootMessageId String?                    @map("thread_root_message_id")
+  idempotencyKey      String?                    @map("idempotency_key")
+  /// Slice 5 Task Discussion provenance (actorType/visibility). Null on older Core rows.
+  metadata            Json?
+  editedAt            DateTime?                  @map("edited_at")
+  deletedAt           DateTime?                  @map("deleted_at")
+  createdAt           DateTime                   @default(now()) @map("created_at")
+  updatedAt           DateTime                   @updatedAt @map("updated_at")
 
-  conversation MessengerConversation         @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender       Employee?                     @relation("MessengerMessageSender", fields: [senderId], references: [id], onDelete: Restrict)
-  replyTo      MessengerMessage?             @relation("MessengerMessageReply", fields: [replyToMessageId], references: [id], onDelete: SetNull)
-  replies      MessengerMessage[]            @relation("MessengerMessageReply")
-  attachments  MessengerMessageAttachment[]
+  conversation       MessengerConversation         @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender             Employee?                     @relation("MessengerMessageSender", fields: [senderId], references: [id], onDelete: Restrict)
+  replyTo            MessengerMessage?             @relation("MessengerMessageReply", fields: [replyToMessageId], references: [id], onDelete: SetNull)
+  replies            MessengerMessage[]            @relation("MessengerMessageReply")
+  threadRoot         MessengerMessage?             @relation("MessengerMessageThreadRoot", fields: [threadRootMessageId], references: [id], onDelete: SetNull)
+  threadReplies      MessengerMessage[]            @relation("MessengerMessageThreadRoot")
+  attachments        MessengerMessageAttachment[]
+  reactions          MessengerMessageReaction[]
+  mentions           MessengerMessageMention[]
+  referencesAsSource MessengerMessageReference[]   @relation("MessengerMessageReferenceSource")
+  referencesAsTarget MessengerMessageReference[]   @relation("MessengerMessageReferenceTarget")
+  commands           MessengerCommand[]
+  externalRefs       MessengerMessageExternalRef[]
+  providerEvents     MessengerProviderEvent[]
 
+  @@unique([conversationId, idempotencyKey])
   @@index([conversationId, createdAt])
   @@index([senderId])
   @@index([replyToMessageId])
+  @@index([threadRootMessageId])
   @@map("messenger_messages")
 }
 

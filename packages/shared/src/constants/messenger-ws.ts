@@ -10,11 +10,31 @@ export const MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL = 'messenger.subscribe_channe
 /** Client → server: join a unified conversation room. */
 export const MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION = 'messenger.subscribe_conversation';
 
+/** Client → server: leave a unified conversation room. Does not leave the user room. */
+export const MESSENGER_WS_CLIENT_LEAVE_CONVERSATION = 'messenger.leave_conversation';
+
+export const MESSENGER_WS_ZONE = {
+  INTERNAL: 'INTERNAL',
+  CLIENT: 'CLIENT',
+} as const;
+
+export type MessengerWsZone = (typeof MESSENGER_WS_ZONE)[keyof typeof MESSENGER_WS_ZONE];
+
 /** Server → client: new channel message persisted. */
 export const MESSENGER_WS_SERVER_CHANNEL_MESSAGE = 'messenger.channel.message';
 
 /** Server → client: new unified conversation message persisted. */
 export const MESSENGER_WS_SERVER_CONVERSATION_MESSAGE = 'messenger.conversation.message';
+
+/**
+ * Server → client: recipient-scoped Core summary patch (user room).
+ * Absolute unreadCount; not a local increment.
+ */
+export const MESSENGER_WS_SERVER_CONVERSATION_SUMMARY = 'messenger.conversation.summary';
+
+/** Server → client: non-sensitive signal that this conversation is no longer readable. */
+export const MESSENGER_WS_SERVER_CONVERSATION_ACCESS_CHANGED =
+  'messenger.conversation.access_changed';
 
 /** Server → client: new DM persisted (`counterpartId` is the other participant). */
 export const MESSENGER_WS_SERVER_DM_MESSAGE = 'messenger.dm.message';
@@ -46,16 +66,44 @@ export const MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT = 'messenger.presence.snapsho
 /** Server → client: read cursors for `employeeId` changed; fan-out to `messenger:user:{employeeId}` only. */
 export const MESSENGER_WS_SERVER_READ_UPDATED = 'messenger.read.updated';
 
-/** Payload `scope` for {@link MESSENGER_WS_SERVER_READ_UPDATED} (re-fetch channel + DM list unread). */
+/** Payload `scope` for {@link MESSENGER_WS_SERVER_READ_UPDATED}. */
 export const MESSENGER_WS_READ_UPDATED_SCOPE = {
   LISTS: 'lists',
+  CONVERSATION: 'conversation',
 } as const;
 
 export type MessengerWsReadUpdatedScope =
   (typeof MESSENGER_WS_READ_UPDATED_SCOPE)[keyof typeof MESSENGER_WS_READ_UPDATED_SCOPE];
 
 export interface MessengerWsReadUpdatedPayload {
-  scope: MessengerWsReadUpdatedScope;
+  scope: typeof MESSENGER_WS_READ_UPDATED_SCOPE.LISTS;
+}
+
+export interface MessengerWsConversationReadUpdatedPayload {
+  scope: typeof MESSENGER_WS_READ_UPDATED_SCOPE.CONVERSATION;
+  conversationId: string;
+  unreadCount: number;
+  zone: MessengerWsZone;
+  /** ISO-8601 instant actually stored by mark-read. In-session monotonicity only. */
+  lastReadAt: string;
+}
+
+/**
+ * Recipient-scoped summary. `lastReadAt` is the watermark used to derive unread.
+ * Clients apply in-session monotonicity only; durable revision/delta replay is Phase 4.
+ */
+export interface MessengerWsConversationSummaryPayload {
+  conversationId: string;
+  zone: MessengerWsZone;
+  lastMessageAt: string;
+  lastMessagePreview: string | null;
+  unreadCount: number;
+  lastReadAt: string | null;
+}
+
+export interface MessengerWsConversationAccessChangedPayload {
+  conversationId: string;
+  zone: MessengerWsZone;
 }
 
 /** Server → client: DM peer advanced their read cursor (notify the other participant). */

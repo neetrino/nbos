@@ -1,9 +1,9 @@
-import { MessengerClient } from '@/features/messenger/MessengerClient';
+import { InternalMessengerApp } from '@/features/messenger-internal/InternalMessengerApp';
 
 export default function MessengerPage() {
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      <MessengerClient />
+      <InternalMessengerApp />
     </div>
   );
 }

@@ -57,9 +57,9 @@ export async function proxy(req: NextRequest): Promise<NextResponse> {
 export const config = {
   matcher: [
     /*
-     * Skip API route handlers, static assets, and files with extensions.
-     * Auth.js (`/api/auth/session`) must return JSON, not an HTML redirect/404.
+     * Skip API handlers, static assets, and PWA manifest. Auth.js session
+     * must return JSON; the manifest must not redirect to /sign-in.
      */
-    '/((?!api(?:/|$)|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)',
+    '/((?!api(?:/|$)|_next/static|_next/image|favicon.ico|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|webmanifest)$).*)',
   ],
 };

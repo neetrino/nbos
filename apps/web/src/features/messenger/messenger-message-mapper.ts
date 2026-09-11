@@ -8,6 +8,7 @@ export interface MessengerViewMessage {
   content: string;
   timestamp: string;
   attachments: Array<{ id: string; fileAssetId: string }>;
+  deliveryLabel?: string | null;
 }
 
 export function initialsFromDisplayName(name: string): string {

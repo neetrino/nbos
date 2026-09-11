@@ -61,6 +61,9 @@ import {
 } from './whatsapp-product-groups-queue.service';
 import { DealWhatsAppGroupCreateHandler } from './deal-whatsapp-group-create.handler';
 import { WhatsAppOutboundQueueService } from './whatsapp-outbound-queue.service';
+import { persistBoundDestination } from './product-whatsapp-bind.ops';
+import { executeFinanceGroupCreate } from './product-whatsapp-finance-create.ops';
+import { loadWorkTransportChatId } from '../../messenger/core/product-communication-legacy-destination';
 
 @Injectable()
 export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestroy {
@@ -177,6 +180,9 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
       switch (operation.type) {
         case 'CREATE_PRODUCT_GROUP':
           await this.handleCreate(operation.id);
+          break;
+        case 'CREATE_FINANCE_GROUP':
+          await this.handleFinanceCreate(operation.id);
           break;
         case 'SYNC_PRODUCT_PARTICIPANTS':
         case 'ADD_PRODUCT_PARTICIPANT':
@@ -371,6 +377,14 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
         lastErrorMessage: null,
       },
     });
+    await persistBoundDestination(this.prisma, {
+      productId: product.id,
+      purpose: 'WORK',
+      groupChatId: created.id,
+      groupName: created.name,
+      replace: true,
+      createdFromDealId: operation.contextDealId,
+    });
 
     for (const candidate of resolved.candidates) {
       await this.prisma.productWhatsAppParticipantSync.update({
@@ -409,14 +423,45 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     await this.enqueueClientInviteAfterCreate(product.id, binding.id, operation.contextDealId);
   }
 
+  private async handleFinanceCreate(operationId: string) {
+    const result = await executeFinanceGroupCreate({
+      prisma: this.prisma,
+      client: this.client,
+      connection: this.connectionService,
+      operationId,
+    });
+    if (result === 'ok') {
+      await this.markSucceeded(operationId, { purpose: 'FINANCE' });
+      return;
+    }
+    if (result === 'unknown') {
+      await this.markOutcomeUnknown(
+        operationId,
+        WHATSAPP_ERROR.PRODUCT_GROUP_OUTCOME_UNKNOWN,
+        'Finance group create outcome is unknown',
+      );
+      return;
+    }
+    const message =
+      result === 'no_participants'
+        ? 'No valid internal participants with WhatsApp phones'
+        : 'Finance group create failed';
+    const code =
+      result === 'no_participants'
+        ? WHATSAPP_ERROR.NO_VALID_INTERNAL_PARTICIPANTS
+        : WHATSAPP_ERROR.PRODUCT_GROUP_CREATE_FAILED;
+    await this.markFailed(operationId, code, message);
+  }
+
   private async handleParticipants(operationId: string) {
     const operation = await this.prisma.whatsAppGroupOperation.findUniqueOrThrow({
       where: { id: operationId },
     });
+    const groupChatId = await loadWorkTransportChatId(this.prisma, operation.productId);
     const binding = await this.prisma.productWhatsAppGroupBinding.findUnique({
       where: { productId: operation.productId },
     });
-    if (!binding?.groupChatId || binding.status !== 'ACTIVE') {
+    if (!groupChatId) {
       await this.markFailed(
         operationId,
         WHATSAPP_ERROR.PRODUCT_GROUP_NOT_FOUND,
@@ -446,12 +491,16 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
         ? buildProductWhatsAppParticipantDedupeKey(operation.productId, payload.employeeId)
         : operation.dedupeKey;
 
-    const result = await this.client.addParticipants(
-      config,
-      binding.groupChatId,
-      jids,
-      idempotencyKey,
-    );
+    const result = await this.client.addParticipants(config, groupChatId, jids, idempotencyKey);
+
+    if (!binding) {
+      await this.markSucceeded(operationId, {
+        added: result.added.length,
+        alreadyMembers: result.alreadyMembers.length,
+        failed: result.failed.length,
+      });
+      return;
+    }
 
     for (const candidate of candidates) {
       const already = result.alreadyMembers.includes(candidate.jid);
@@ -510,10 +559,11 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
       invitationId?: string;
       contactId?: string;
     };
+    const groupChatId = await loadWorkTransportChatId(this.prisma, operation.productId);
     const binding = await this.prisma.productWhatsAppGroupBinding.findUnique({
       where: { productId: operation.productId },
     });
-    if (!binding?.groupChatId || binding.status !== 'ACTIVE') {
+    if (!groupChatId || !binding) {
       await this.markFailed(
         operationId,
         WHATSAPP_ERROR.PRODUCT_GROUP_NOT_FOUND,
@@ -594,7 +644,7 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
       const dedupeKey = buildProductWhatsAppClientInviteDedupeKey(
         product.id,
         contact.id,
-        binding.groupChatId,
+        groupChatId,
       );
       await this.prisma.productWhatsAppClientInvitation.upsert({
         where: { dedupeKey },
@@ -620,7 +670,7 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     const config = await this.connectionService.requireClientConfig();
     let inviteUrl: string;
     try {
-      const invite = await this.client.getInviteLink(config, binding.groupChatId);
+      const invite = await this.client.getInviteLink(config, groupChatId);
       inviteUrl = invite.inviteUrl;
     } catch (error) {
       const code =
@@ -642,7 +692,7 @@ export class WhatsAppProductGroupsWorker implements OnModuleInit, OnModuleDestro
     const dedupeKey = buildProductWhatsAppClientInviteDedupeKey(
       product.id,
       contact.id,
-      binding.groupChatId,
+      groupChatId,
     );
     const invitation = await this.prisma.productWhatsAppClientInvitation.upsert({
       where: { dedupeKey },

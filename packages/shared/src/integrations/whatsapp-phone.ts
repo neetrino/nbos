@@ -105,6 +105,11 @@ export function buildProductWhatsAppCreateDedupeKey(productId: string): string {
   return `whatsapp-product-group:create:${productId}`;
 }
 
+/** Finance purpose create is a separate physical group from WORK. */
+export function buildProductWhatsAppFinanceCreateDedupeKey(productId: string): string {
+  return `whatsapp-product-group:create-finance:${productId}`;
+}
+
 /** Deal-level create key — must not use productId (Product may not exist yet). */
 export function buildDealWhatsAppCreateDedupeKey(dealId: string): string {
   return `whatsapp-deal-group:create:${dealId}`;

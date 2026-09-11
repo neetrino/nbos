@@ -11,6 +11,7 @@ import {
   CheckSquare,
   AlertTriangle,
   Loader2,
+  MessageSquare,
 } from 'lucide-react';
 import {
   DetailSheetFormFooter,
@@ -33,6 +34,7 @@ import { DealGeneralTab } from './DealGeneralTab';
 import { DealHistoryTab } from './DealHistoryTab';
 import { DealInvoiceTab } from './DealInvoiceTab';
 import { DealCallsTab } from './DealCallsTab';
+import { DealInternalDiscussionTab } from './DealInternalDiscussionTab';
 import { DealTasksTab } from './DealTasksTab';
 import { ClickToCallButton } from '@/features/crm/calls/ClickToCallButton';
 import type { Deal } from '@/lib/api/deals';
@@ -61,6 +63,7 @@ import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-p
 
 const TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
+  { value: 'internal', label: 'Internal', icon: MessageSquare },
   { value: 'history', label: 'History', icon: History },
   { value: 'invoice', label: 'Invoice', icon: FileText },
   { value: 'task', label: 'Task', icon: CheckSquare },
@@ -547,6 +550,7 @@ function DealSheetBody({
               />
             ) : null}
             {activeTab === 'history' && <DealHistoryTab />}
+            {activeTab === 'internal' && <DealInternalDiscussionTab dealId={renderDeal.id} />}
             {activeTab === 'invoice' && (
               <DealInvoiceTab deal={renderDeal} onCreateOpenChange={onInvoiceCreateOpenChange} />
             )}

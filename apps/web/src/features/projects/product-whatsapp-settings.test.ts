@@ -84,6 +84,77 @@ describe('loadProductWhatsAppSettings', () => {
     expect(snapshot.selectedGroupId).toBe(TOONEXPO_GROUP_CHAT_ID);
   });
 
+  it('prefers resolver WORK groupChatId when unique-legacy id is absent', () => {
+    const view = productWhatsAppBindingView({
+      productId: TOONEXPO_PRODUCT_ID,
+      binding: {
+        id: null,
+        groupChatId: TOONEXPO_GROUP_CHAT_ID,
+        groupName: null,
+        status: 'ACTIVE',
+        lastSuccessfulSyncAt: null,
+        lastErrorCode: null,
+        lastErrorMessage: null,
+      },
+      work: {
+        conversationId: 'conv-shared',
+        groupChatId: TOONEXPO_GROUP_CHAT_ID,
+        fallbackFromWork: false,
+      },
+      participants: [],
+      invitation: null,
+      latestOperation: null,
+    });
+    expect(view.status).toBe('ACTIVE');
+    expect(view.groupChatId).toBe(TOONEXPO_GROUP_CHAT_ID);
+  });
+
+  it('does not show leftover unique-legacy as current WORK when resolver WORK is empty', async () => {
+    const snapshot = await loadProductWhatsAppSettings(
+      TOONEXPO_PRODUCT_ID,
+      undefined,
+      createClient({
+        state: leftoverUniqueLegacyState(),
+        groupsError: gatewayNotConfiguredError(),
+      }),
+    );
+    const view = productWhatsAppBindingView(snapshot.state);
+    expect(view.groupChatId).toBeNull();
+    expect(view.status).toBe('NOT_STARTED');
+    expect(view.groupName).toBeNull();
+    expect(snapshot.selectedGroupId).toBe('');
+  });
+
+  it('FINDING-S9-09 after S9-05 detach, getState+view is ACTIVE Group1 not FAILED old name', async () => {
+    const snapshot = await loadProductWhatsAppSettings(
+      TOONEXPO_PRODUCT_ID,
+      undefined,
+      createClient({
+        state: detachedUniqueLegacyWithLiveWorkState(),
+        groupsError: gatewayNotConfiguredError(),
+      }),
+    );
+    const view = productWhatsAppBindingView(snapshot.state);
+    expect(view.status).toBe('ACTIVE');
+    expect(view.groupChatId).toBe(TOONEXPO_GROUP_CHAT_ID);
+    expect(view.groupName).not.toBe('GroupB');
+    expect(view.groupName).toBeNull();
+    expect(view.status === 'FAILED').toBe(false);
+    expect(snapshot.selectedGroupId).toBe(TOONEXPO_GROUP_CHAT_ID);
+  });
+
+  it('keeps unique-legacy groupName only while it still matches WORK', () => {
+    const state = activeToonexpoState();
+    const binding = state.binding;
+    if (!binding) throw new Error('expected unique-legacy fixture');
+    const view = productWhatsAppBindingView({
+      ...state,
+      binding: { ...binding, groupName: 'Group1' },
+    });
+    expect(view.status).toBe('ACTIVE');
+    expect(view.groupName).toBe('Group1');
+  });
+
   it('allows refresh from a stored group ID only when Gateway is ready', () => {
     expect(
       canRefreshProductWhatsAppFromStoredId({
@@ -127,6 +198,54 @@ function activeToonexpoState(): ProductWhatsAppState {
       lastSuccessfulSyncAt: null,
       lastErrorCode: null,
       lastErrorMessage: null,
+    },
+    work: {
+      conversationId: 'conv-toonexpo',
+      groupChatId: TOONEXPO_GROUP_CHAT_ID,
+      fallbackFromWork: false,
+    },
+    participants: [],
+    invitation: null,
+    latestOperation: null,
+  };
+}
+
+function leftoverUniqueLegacyState(): ProductWhatsAppState {
+  return {
+    productId: TOONEXPO_PRODUCT_ID,
+    binding: {
+      id: 'legacy-1',
+      groupChatId: TOONEXPO_GROUP_CHAT_ID,
+      groupName: 'Leftover',
+      status: 'ACTIVE',
+      lastSuccessfulSyncAt: null,
+      lastErrorCode: null,
+      lastErrorMessage: null,
+    },
+    work: null,
+    participants: [],
+    invitation: null,
+    latestOperation: null,
+  };
+}
+
+/** getState shape after S9-05 detach: unique-legacy FAILED + stale name, live WORK Group1. */
+function detachedUniqueLegacyWithLiveWorkState(): ProductWhatsAppState {
+  return {
+    productId: TOONEXPO_PRODUCT_ID,
+    binding: {
+      id: 'legacy-b',
+      groupChatId: TOONEXPO_GROUP_CHAT_ID,
+      groupName: 'GroupB',
+      status: 'FAILED',
+      lastSuccessfulSyncAt: null,
+      lastErrorCode: null,
+      lastErrorMessage: null,
+    },
+    work: {
+      conversationId: 'conv-shared',
+      groupChatId: TOONEXPO_GROUP_CHAT_ID,
+      fallbackFromWork: false,
     },
     participants: [],
     invitation: null,

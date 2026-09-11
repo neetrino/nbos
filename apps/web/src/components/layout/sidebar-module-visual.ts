@@ -15,6 +15,7 @@ import {
   ListTodo,
   Mail,
   Megaphone,
+  MessageCircle,
   MessagesSquare,
   Settings,
   ShieldCheck,
@@ -82,6 +83,10 @@ export const SIDEBAR_MODULE_VISUALS: Record<SidebarModuleKey, SidebarModuleVisua
   messenger: {
     Icon: MessagesSquare,
     iconClass: 'text-purple-600 dark:text-purple-400',
+  },
+  'client-messenger': {
+    Icon: MessageCircle,
+    iconClass: 'text-teal-800 dark:text-teal-300',
   },
   calendar: {
     Icon: CalendarDays,

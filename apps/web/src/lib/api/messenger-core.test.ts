@@ -1,0 +1,125 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+const WEB_SRC = path.join(process.cwd(), 'apps/web/src');
+
+function readWeb(relative: string): string {
+  return readFileSync(path.join(WEB_SRC, relative), 'utf8');
+}
+
+describe('Internal Messenger web client', () => {
+  it('does not call Channel/DM send endpoints', () => {
+    const client = readWeb('lib/api/messenger-core.ts');
+    expect(client).toMatch(/\/api\/messenger\/core\/internal/);
+    expect(client).not.toMatch(/\/api\/messenger\/channels/);
+    expect(client).not.toMatch(/\/api\/messenger\/dm/);
+    expect(client).not.toMatch(/messengerChannelMessage/);
+    expect(client).not.toMatch(/sendChannelMessage/);
+    expect(client).not.toMatch(/sendDirectMessage/);
+  });
+
+  it('product Internal surfaces do not embed Channel/DM send', () => {
+    const sheet = readWeb(
+      'features/clients/components/client-portfolio/PortfolioMessengerSheet.tsx',
+    );
+    const app = readWeb('features/messenger-internal/InternalMessengerApp.tsx');
+    expect(sheet).toMatch(/InternalMessengerApp/);
+    expect(sheet).not.toMatch(/MessengerClient/);
+    expect(sheet).not.toMatch(/\/api\/messenger\/channels/);
+    expect(sheet).not.toMatch(/\/api\/messenger\/dm/);
+    expect(app).not.toMatch(/legacy-map/);
+    expect(app).not.toMatch(/mapLegacy/);
+    expect(app).toMatch(/active\.canWrite/);
+    expect(app).not.toMatch(/setItems\(\[\]\)/);
+    expect(app).not.toMatch(/refreshLists/);
+    expect(app).not.toMatch(/\/api\/messenger\/channels/);
+    expect(app).not.toMatch(/\/api\/messenger\/dm/);
+    const queries = readWeb('features/messenger-internal/use-internal-messenger-queries.ts');
+    expect(queries).toMatch(/collectionDetail\.data\?\.conversations/);
+    expect(queries).toMatch(/useMessengerZoneBootstrap\('INTERNAL'/);
+    expect(queries).toMatch(/usesSharedInternalAllDataset/);
+    expect(queries).toMatch(/messengerCollectionsEnabled/);
+    expect(queries).toMatch(/messengerDefaultQueriesEnabled/);
+    expect(queries).toMatch(/bootstrap\.error/);
+    expect(queries).toMatch(/collectionDetail/);
+    const bootstrapClient = readWeb('lib/api/messenger-core-bootstrap.ts');
+    expect(bootstrapClient).toMatch(/\/bootstrap/);
+    expect(bootstrapClient).toMatch(/api\.post/);
+    expect(bootstrapClient).not.toMatch(/api\.get/);
+    expect(readWeb('lib/api/messenger-core-delta.ts')).toMatch(/\/delta/);
+    expect(readWeb('lib/api/messenger-core.ts')).toMatch(/listDelta/);
+    const summaries = readWeb('features/messenger/query/use-internal-summaries.ts');
+    expect(summaries).toMatch(/listConversations/);
+    expect(summaries).toMatch(/filter: params\.filter === 'all' \? undefined : params\.filter/);
+    const collections = readWeb('features/messenger/query/use-messenger-collections.ts');
+    expect(collections).toMatch(/getCollection/);
+  });
+
+  it('entity ensure client uses Internal Core paths only', () => {
+    const client = readWeb('lib/api/messenger-core.ts');
+    expect(client).toMatch(/entities\/products\//);
+    expect(client).toMatch(/entities\/work-spaces\//);
+    expect(client).toMatch(/entities\/deals\//);
+    expect(client).toMatch(/async ensureProduct\(productId: string\)/);
+    expect(client).not.toMatch(/ensureProduct\([^)]*canonicalKey/);
+    const panel = readWeb('features/messenger-internal/EntityConversationPanel.tsx');
+    const hook = readWeb('features/messenger-internal/use-entity-conversation.ts');
+    expect(hook).toMatch(/messengerCoreApi\.ensureProduct/);
+    expect(hook).toMatch(/messengerCoreApi\.ensureWorkSpace/);
+    expect(panel).not.toMatch(/\/api\/messenger\/channels/);
+    expect(hook).not.toMatch(/\/api\/messenger\/channels/);
+    expect(hook).not.toMatch(/\/api\/messenger\/dm/);
+    expect(hook).not.toMatch(/tasksApi\.addDiscussion/);
+  });
+
+  it('lists Task conversations lazily without Slice 4 coming-later copy', () => {
+    const constants = readWeb('features/messenger-internal/internal-messenger.constants.ts');
+    expect(constants).toMatch(/Open a Task Card and add a note to start/);
+    expect(constants).not.toMatch(/coming later/i);
+    expect(constants).not.toMatch(/Slice 5/);
+  });
+
+  it('keeps Task Card Activity as Task-owned timestamps, not Core messages', () => {
+    const panel = readWeb('features/tasks/components/TaskSheetChatPanel.tsx');
+    expect(panel).toMatch(/buildTaskActivity/);
+    expect(panel).not.toMatch(/persistAndBroadcast/);
+    expect(panel).not.toMatch(/messengerCoreApi\.sendMessage/);
+  });
+
+  it('wires Slice 6 actions on the shared Internal thread', () => {
+    const thread = readWeb('features/messenger-internal/InternalConversationThread.tsx');
+    const client = readWeb('lib/api/messenger-core.ts');
+    const createTask = readWeb('features/messenger-internal/InternalCreateTaskFromMessages.tsx');
+    const sort = readWeb('features/messenger-internal/sort-selected-messages.ts');
+    const canonical = readWeb('features/messenger-internal/canonical-source-message-ids.ts');
+    const openOriginal = readWeb('features/messenger-internal/open-original-source.ts');
+    const card = readWeb('features/messenger-internal/InternalForwardReferenceCard.tsx');
+    expect(thread).toMatch(/InternalMessageActionsBar/);
+    expect(thread).toMatch(/InternalCreateTaskFromMessages/);
+    expect(thread).toMatch(/onOpenOriginalSource/);
+    expect(thread).toMatch(/openOriginalBySourceId/);
+    expect(thread).toMatch(/replyToMessageId/);
+    expect(client).toMatch(/replyToMessageId/);
+    expect(client).toMatch(/mentionedEmployeeIds/);
+    expect(client).toMatch(/forwards/);
+    expect(client).toMatch(/task-sources/);
+    expect(client).toMatch(/ticket-sources/);
+    expect(client).toMatch(/getSourceMessage/);
+    expect(createTask).toMatch(/QuickCreateTaskDialog/);
+    expect(createTask).not.toMatch(/defaultTitle/);
+    expect(sort).toMatch(/createdAt/);
+    expect(canonical).toMatch(/sourceMessageId/);
+    expect(canonical).not.toMatch(/holder\.id/);
+    expect(openOriginal).toMatch(/getSourceMessage/);
+    expect(openOriginal).toMatch(/canonicalSourceMessageIds/);
+    expect(card).toMatch(/Open original/);
+    expect(card).toMatch(/sourceMessageId/);
+    expect(thread).not.toMatch(/\/api\/messenger\/channels/);
+  });
+
+  it('does not disable React Strict Mode', () => {
+    const nextConfig = readFileSync(path.join(process.cwd(), 'apps/web/next.config.ts'), 'utf8');
+    expect(nextConfig).not.toMatch(/reactStrictMode:\s*false/);
+  });
+});

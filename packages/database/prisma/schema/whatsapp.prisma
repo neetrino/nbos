@@ -18,6 +18,7 @@ enum ProductWhatsAppGroupBindingStatusEnum {
 
 enum WhatsAppGroupOperationTypeEnum {
   CREATE_PRODUCT_GROUP
+  CREATE_FINANCE_GROUP
   BIND_EXISTING_GROUP
   SYNC_PRODUCT_PARTICIPANTS
   ADD_PRODUCT_PARTICIPANT
@@ -70,15 +71,17 @@ enum ProductWhatsAppClientInvitationStatusEnum {
 model WhatsAppGatewayConnection {
   id                 String                             @id @default(uuid())
   baseUrl            String?                            @map("base_url")
-  encryptedApiToken  String?                            @map("encrypted_api_token") @db.Text
-  status             WhatsAppGatewayConnectionStatusEnum @default(NOT_CONFIGURED)
-  lastHealthCheckAt  DateTime?                          @map("last_health_check_at")
-  lastConnectedAt    DateTime?                          @map("last_connected_at")
-  lastErrorCode           String?                            @map("last_error_code")
-  lastErrorMessage        String?                            @map("last_error_message") @db.Text
-  accountingGroupChatId  String?                            @map("accounting_group_chat_id")
-  createdAt              DateTime                           @default(now()) @map("created_at")
-  updatedAt          DateTime                           @updatedAt @map("updated_at")
+  encryptedApiToken      String?                             @map("encrypted_api_token") @db.Text
+  encryptedWebhookSecret String?                             @map("encrypted_webhook_secret") @db.Text
+  gatewayAccountId       String?                             @map("gateway_account_id")
+  status                 WhatsAppGatewayConnectionStatusEnum @default(NOT_CONFIGURED)
+  lastHealthCheckAt      DateTime?                           @map("last_health_check_at")
+  lastConnectedAt        DateTime?                           @map("last_connected_at")
+  lastErrorCode          String?                             @map("last_error_code")
+  lastErrorMessage       String?                             @map("last_error_message") @db.Text
+  accountingGroupChatId  String?                             @map("accounting_group_chat_id")
+  createdAt              DateTime                            @default(now()) @map("created_at")
+  updatedAt              DateTime                            @updatedAt @map("updated_at")
 
   @@map("whatsapp_gateway_connections")
 }
@@ -102,7 +105,8 @@ model DealWhatsAppGroupBinding {
   @@map("deal_whatsapp_group_bindings")
 }
 
-/// Product owns at most one WhatsApp group binding.
+/// DELETE-LATER (Slice 11). Slice 9 destinations live on ProductCommunicationBinding.
+/// Unique groupChatId is kept so existing Deal Won / ops rows stay valid during dual-write.
 model ProductWhatsAppGroupBinding {
   id                   String                                 @id @default(uuid())
   productId            String                                 @unique @map("product_id")
@@ -118,9 +122,10 @@ model ProductWhatsAppGroupBinding {
 
   product         Product                          @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdFromDeal Deal?                            @relation("ProductWhatsAppGroupCreatedFromDeal", fields: [createdFromDealId], references: [id], onDelete: SetNull)
-  operations      WhatsAppGroupOperation[]
-  participants    ProductWhatsAppParticipantSync[]
-  invitations     ProductWhatsAppClientInvitation[]
+  operations              WhatsAppGroupOperation[]
+  participants            ProductWhatsAppParticipantSync[]
+  invitations             ProductWhatsAppClientInvitation[]
+  communicationBindings   ProductCommunicationBinding[]
 
   @@index([status])
   @@index([createdFromDealId])

@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronRight, LogOut, UserCircle2, Wallet } from 'lucide-react';
-import { signOut } from 'next-auth/react';
+import { signOutClient } from '@/lib/auth/session-sign-out';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -168,7 +168,7 @@ export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
         initials={initials}
         onMyAccount={() => void openMyAccountSheet()}
         onMyWallet={() => openMyWalletSheet()}
-        onSignOut={() => signOut({ callbackUrl: '/sign-in' })}
+        onSignOut={() => void signOutClient()}
       />
     </DropdownMenu>
   );

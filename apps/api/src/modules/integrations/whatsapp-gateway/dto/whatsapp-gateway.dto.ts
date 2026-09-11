@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -32,6 +33,17 @@ export class UpsertWhatsAppGatewayConnectionDto {
   @IsString()
   @MaxLength(128)
   accountingGroupChatId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(8)
+  @MaxLength(500)
+  webhookSigningSecret?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(128)
+  gatewayAccountId?: string | null;
 }
 
 export class BindProductWhatsAppGroupDto {
@@ -48,6 +60,10 @@ export class BindProductWhatsAppGroupDto {
   @IsOptional()
   @IsBoolean()
   persistIfUnreachable?: boolean;
+
+  @IsOptional()
+  @IsIn(['WORK', 'FINANCE'])
+  purpose?: 'WORK' | 'FINANCE';
 }
 
 export class ResendWhatsAppClientInviteDto {

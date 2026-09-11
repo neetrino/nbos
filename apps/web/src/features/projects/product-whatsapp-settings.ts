@@ -69,11 +69,26 @@ export function canRefreshProductWhatsAppFromStoredId(input: {
 export function productWhatsAppBindingView(
   state: ProductWhatsAppState | null,
 ): ProductWhatsAppBindingView {
+  const groupChatId = currentWorkGroupChatId(state);
+  if (state?.work) {
+    return { status: 'ACTIVE', groupChatId, groupName: workMatchedGroupName(state) };
+  }
+  const rawStatus = state?.binding?.status ?? 'NOT_STARTED';
   return {
-    status: state?.binding?.status ?? 'NOT_STARTED',
-    groupChatId: state?.binding?.groupChatId ?? null,
-    groupName: state?.binding?.groupName ?? null,
+    status: rawStatus === 'ACTIVE' && !groupChatId ? 'NOT_STARTED' : rawStatus,
+    groupChatId,
+    groupName: null,
   };
+}
+
+/** Unique-legacy name is the destination only while it still matches live WORK. */
+function workMatchedGroupName(state: ProductWhatsAppState): string | null {
+  const workId = state.work?.groupChatId;
+  const binding = state.binding;
+  if (!workId || !binding?.groupName) return null;
+  if (binding.status !== 'ACTIVE') return null;
+  if (binding.groupChatId && binding.groupChatId !== workId) return null;
+  return binding.groupName;
 }
 
 /**
@@ -106,7 +121,7 @@ function snapshotFromGroupsSuccess(
   return {
     state,
     groups: available.groups,
-    selectedGroupId: available.currentGroupChatId ?? state?.binding?.groupChatId ?? '',
+    selectedGroupId: available.currentGroupChatId ?? currentWorkGroupChatId(state) ?? '',
     gatewayConfigured: true,
     gatewayNotice: null,
     stateError,
@@ -122,11 +137,15 @@ function snapshotFromGroupsFailure(
   return {
     state,
     groups: [],
-    selectedGroupId: state?.binding?.groupChatId ?? '',
+    selectedGroupId: currentWorkGroupChatId(state) ?? '',
     gatewayConfigured: !notConfigured,
     gatewayNotice: notConfigured
       ? WHATSAPP_GATEWAY_NOT_CONFIGURED_MESSAGE
       : getApiErrorMessage(groupsError, 'Could not load WhatsApp groups.'),
     stateError,
   };
+}
+
+function currentWorkGroupChatId(state: ProductWhatsAppState | null): string | null {
+  return state?.work?.groupChatId ?? null;
 }

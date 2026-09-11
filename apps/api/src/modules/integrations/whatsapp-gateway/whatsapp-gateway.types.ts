@@ -77,6 +77,8 @@ export interface WhatsAppConnectionPublicView {
   lastErrorCode: string | null;
   lastErrorMessage: string | null;
   accountingGroupChatId: string | null;
+  hasWebhookSecret: boolean;
+  gatewayAccountId: string | null;
 }
 
 export type ProductWhatsAppEnsureSource =
@@ -95,6 +97,7 @@ export interface EnsureProductWhatsAppGroupInput {
   source: ProductWhatsAppEnsureSource;
   contextDealId?: string | null;
   actorId?: string | null;
+  purpose?: 'WORK' | 'FINANCE';
 }
 
 export interface ProductWhatsAppParticipantCandidate {

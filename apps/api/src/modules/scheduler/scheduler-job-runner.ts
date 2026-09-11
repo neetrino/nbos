@@ -32,6 +32,7 @@ const RUNNABLE_JOB_NAMES = [
   SCHEDULER_JOB_NAMES.mailOutboundReconcile,
   SCHEDULER_JOB_NAMES.mailGmailWatchRenew,
   SCHEDULER_JOB_NAMES.mailSyncReconcile,
+  SCHEDULER_JOB_NAMES.messengerOutboundReconcile,
   SCHEDULER_JOB_NAMES.aiModelCatalogSync,
   SALES_KPI_BACKFILL_ALL_JOB_NAME,
 ] as const;
@@ -102,6 +103,8 @@ async function dispatchRunnableJob(
       return service.runMailGmailWatchRenew(trigger);
     case SCHEDULER_JOB_NAMES.mailSyncReconcile:
       return service.runMailSyncReconcile(trigger);
+    case SCHEDULER_JOB_NAMES.messengerOutboundReconcile:
+      return service.runMessengerOutboundReconcile(trigger);
     case SALES_KPI_BACKFILL_ALL_JOB_NAME:
       return service.runSalesKpiBackfillAll(trigger);
     default: {

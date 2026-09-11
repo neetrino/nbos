@@ -8,9 +8,53 @@
 >
 > Runtime/migration truth: `10-Messenger-Runtime-Reconciliation.md`.
 
+## Slice 0 status (not product canon)
+
+Implementer evidence: `20-Slice-00-Baseline.md`. Status `VERIFIED`. Inventoried SHA `302f57f7`. FINDING-01 closed: MetaConversation/MetaMessage classified `MIGRATE` (Client Sales UI remains `NEW`).
+
+## Slice 1 status (not product canon)
+
+Implementer evidence: `21-Slice-01-Messaging-Core.md`. Status `VERIFIED`. Core path = evolved Unified. Dual-write none. Mapping scheduled. FINDING-S1-01/02 closed (HTTP `canonicalKey` removed; Client persist unconditional). Slice 2 may begin.
+
+## Slice 2 status (not product canon)
+
+Implementer evidence: `22-Slice-02-Permissions-Boundary.md`. Status `VERIFIED`. Conversation ACL on Core HTTP. `CLIENT_READ` is a read ceiling; Client write needs a writeable participant or grant `EDIT`. `addReference` requires source/holder conversation READ. Slice 3 may begin.
+
+## Slice 3 status (not product canon)
+
+Implementer evidence: `23-Slice-03-Internal-Base.md`. Status `VERIFIED`. Daily Internal (`/messenger`, Portfolio) writes Core. Mapper is ops-only (`POST .../legacy-map`). Channel/DM remains labeled rollback at `/messenger/legacy`. FINDING-S3-01…S3-06 closed. Slice 4 may begin.
+
+## Slice 4 status (not product canon)
+
+Implementer evidence: `24-Slice-04-Entity-Conversations.md`. Status `VERIFIED`. FINDING-S4-01/02/03/04 closed. Product/Work Space/Deal/Project General ensure on Core with access before create. Slice 5 may begin.
+
+## Slice 5 status (not product canon)
+
+Implementer evidence: `25-Slice-05-Task-Discussion.md`. Status `VERIFIED`. FINDING-S5-01/02/03 closed. Human Task Discussion writes/reads Messaging Core (`TASK` / `task:{taskId}`). Mapper is crash-safe. Slice 6 may begin.
+
+## Slice 6 status (not product canon)
+
+Implementer evidence: `26-Slice-06-Message-Actions.md`. Status `VERIFIED`. FINDING-S6-01/02 closed. Message actions reference canonical sources; mentions persist is queryable. Slice 7 may begin.
+
+## Slice 7 status (not product canon)
+
+Implementer evidence: `27-Slice-07-Client-Messenger.md`. Status `VERIFIED`. Separate Client Messenger, locked composer, Meta Sales on Core. Slice 8 may begin.
+
+## Slice 8 status (not product canon)
+
+Implementer evidence: `28-Slice-08-WhatsApp-Gateway.md`. Status `VERIFIED`. FINDING-S8-01…10 closed. Product WORK/FINANCE bindings remain Slice 9.
+
+## Slice 9 status (not product canon)
+
+Implementer evidence: `29-Slice-09-Product-Communication-Bindings.md`. Status `VERIFIED`. FINDING-S9-01…10 closed. Additive `ProductCommunicationBinding` WORK/FINANCE; legacy Product WhatsApp group table DELETE-LATER. Slice 10 may begin.
+
+## Slice 10 status (not product canon)
+
+Implementer evidence: `30-Slice-10-Finance-Support-Routing.md`. Status `VERIFIED`. FINDING-S10-01…08 closed. Finance reminders persist Core SYSTEM then Slice 8 `core_client_send` via `resolveClientDestination(productId, FINANCE)`. Support Ticket sources are references, not copied history. Attention is additive and does not change conversation id. Slice 11 is **not** started (hard stop).
+
 ## Current verified static baseline
 
-The previous historical status text was stale and must not be used as runtime proof.
+The previous historical status text was stale and must not be used as runtime proof. Slice 0 re-checked this against `302f57f7` + DB counts (see evidence file).
 
 The active normal Internal Messenger service path currently uses the legacy Channel/Direct models:
 
@@ -36,6 +80,8 @@ prisma.messengerDirectMessage
 ```
 
 This active history/runtime cannot be deleted before deliberate migration/cutover.
+
+**Slice 3 VERIFIED runtime:** daily Internal Messenger (`/messenger` and Portfolio sheet) reads/writes Messaging Core (`persistAndBroadcast`). Channel/DM tables and `MessengerService` remain as labeled rollback (`/messenger/legacy` only). Mapper is ops-only; not hooked into Channel/DM send. Do not DROP Channel/DM.
 
 ## Additive Unified generation also present
 
@@ -64,13 +110,11 @@ Slice 0 must inventory actual database rows and dependencies before deciding wha
 
 ## Task Discussion runtime
 
-Human Task discussion currently has a real separate persistence model:
+Human Task discussion **write/read path after Slice 5 implementer cutover** is Messaging Core (`TaskDiscussionService` → TASK conversation `task:{taskId}`).
 
-```text
-TaskDiscussionEntry
-```
+Legacy table `TaskDiscussionEntry` remains `DELETE-LATER` until final acceptance. Writes are frozen.
 
-Direct schema fields include:
+Direct schema fields on the legacy table (unchanged; not dropped):
 
 ```text
 taskId
@@ -84,11 +128,11 @@ visibility
 createdAt
 ```
 
-The schema does not directly expose the previously claimed reply/attachment/edit fields. Slice 0 must inspect whether any related data exists elsewhere before defining the exact backfill contract.
+The schema does not expose reply/attachment/edit fields. None were fabricated.
 
-`Task.chatId` remains an explicit investigation item.
+`Task.chatId` remains unused by Tasks (leftover unique column; inventoried DB 0 non-null). It is not the Messenger conversation pointer.
 
-Target remains unchanged: human Task Discussion migrates safely to Messaging Core; Task Activity remains separate.
+Target remains unchanged: human Task Discussion on Messaging Core; Task Activity remains separate.
 
 ## Product WhatsApp runtime
 
@@ -119,30 +163,46 @@ Existing Product/group relations migrate as `WORK`. FINANCE is not auto-created 
 
 ## Client Messenger runtime
 
-The final separate provider-backed Client Messenger surface is not yet the completed target runtime.
+Slice 7 implementer (`VERIFIED`): separate Client Messenger lives at `/client-messenger` (Inbox / Sales / Clients / Collections). CRM `/clients` is unchanged. Internal `/messenger` remains Internal-only.
 
-Do not preserve or rebuild a mixed `Internal | External` switch merely because historical UI/runtime existed.
+Locked composer starts locked; `Reply to client` unlocks this conversation session only. Persist uses `canSend`, not UI unlock and not `MESSENGER.EDIT`.
 
-Target surface remains the separate Client Messenger defined by Master Canon and Decision Register.
+Live Meta inbound persists Core CLIENT EXTERNAL (MetaMessage is not live SOT after cutover). Meta tables remain until Slice 11.
+
+Slice 8 implementer (`VERIFIED`): WhatsApp inbound/outbound for mapped Client conversations goes through Gateway (HMAC webhook in, persist-first outbox + v1 account send out). Product WORK bindings remain Slice 9.
+
+Do not preserve or rebuild the old Internal | External mixed switch as the target.
 
 ## WhatsApp Gateway
 
-The existing `neetrino/whatsapp-gateway` remains reusable transport/session infrastructure and already contains account-scoped sending, idempotency, group operations and inbound webhook foundations.
+The existing `neetrino/whatsapp-gateway` remains the transport/session boundary. NBOS does not call WAHA and does not expose Gateway tokens to web clients.
 
-NBOS must reuse/extend it rather than build a second WhatsApp gateway.
+Slice 8 runtime (`VERIFIED`):
+
+```text
+Inbound:  WhatsApp -> WAHA -> Gateway -> POST /api/integrations/whatsapp-gateway/webhook -> Messaging Core
+Outbound: persistAndBroadcast (canSend) -> messenger_commands + BullMQ core_client_send -> Gateway v1 account send -> WAHA
+```
+
+HMAC-SHA512 + replay window; dedupe by Gateway `eventId`. Unknown chats create a new CLIENT EXTERNAL conversation keyed by `(WHATSAPP, accountId, chatId)`. Product payment reminders persist Core then `core_client_send`. Official tax still uses `accountingGroupChatId`. Product group operations remain existing worker kinds.
+
+NBOS must reuse/extend this Gateway rather than build a second WhatsApp gateway.
 
 ## Finance / Support integration status
 
 Finance and Support business modules remain owners of their own state.
 
-End-to-end canonical Client Messenger delivery is implementation work:
+Slice 10 runtime (`VERIFIED`):
 
 - Finance decides WHAT/WHEN to remind;
-- Messenger resolves WHERE through `FINANCE` with WORK fallback;
-- Support Ticket remains internal case management;
-- client-visible communication remains in Client Messenger.
+- Messenger resolves WHERE through `resolveClientDestination(productId, FINANCE)` with WORK fallback, persists Core history, and sends via Slice 8 outbox;
+- official/tax accountant send stays `accountingGroupChatId`;
+- Support Ticket remains internal case management with `TICKET_SOURCE` references;
+- client-visible communication remains in Client Messenger;
+- no Public/Internal Ticket composer;
+- attention routing is additive and does not change conversation id.
 
-Do not treat partial/legacy direct provider paths as target architecture.
+Do not treat leftover notification-job `whatsappGroupChatId` audit fields as a second send path.
 
 ## Latest-main rule before implementation
 
@@ -175,11 +235,22 @@ Migration/runtime implementation uses additionally:
 
 ## Next step before product code changes
 
-1. synchronize implementation branch with latest `main`;
-2. start **Slice 0 — Baseline, inventory and migration safety** in a fresh implementation context;
-3. inspect actual schema/code/data/environment state;
-4. produce Slice 0 evidence;
-5. run independent review;
-6. begin Slice 1 only after Slice 0 is `VERIFIED`.
+1. Slice 10 is `VERIFIED` (`30-Slice-10-Finance-Support-Routing.md`).
+2. Hard stop. Do not start Slice 11, destructive cleanup, or extra Messenger features without an explicit user instruction.
 
-No production Messenger rebuild implementation is claimed by this documentation stage.
+No production Messenger rebuild completion is claimed by this documentation stage.
+
+## Modernization Phase 6 (not product canon)
+
+Implementer evidence: `33-Messenger-Modernization-Final-Evidence.md`. Manual
+browser checklist: `34-Messenger-Phase6-Browser-Checklist.md`. Independent
+master audit is still required. Not `VERIFIED PASS`.
+
+Automated coverage includes jsdom hook request-graph (production Internal
+and Client query composition), UTF-8 payload/cardinality bounds, GET
+query-count vs unmocked Favorites bootstrap provisioning, SQL/index
+alignment (no live `EXPLAIN`), outbound queue observability, and Socket.IO
+process-local limitation. Local production `next build` is implementer
+**PASS** (not a production deploy). Live browser IDB/two-tab checks and live
+`EXPLAIN` remain `NOT RUN` / `OPERATIONAL GATE`. Delta and outbound-reconcile flags stay default-off. Do
+not edit `32-Messenger-Modernization-Ledger.md` from this status file.

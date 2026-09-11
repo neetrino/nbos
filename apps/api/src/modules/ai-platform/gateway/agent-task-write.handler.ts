@@ -130,6 +130,7 @@ export class AgentTaskWriteHandler {
     return toAgentTaskProjection(updated);
   }
 
+  /** Writes Messaging Core via TaskDiscussionService (not TaskDiscussionEntry). */
   async comment(agent: AuthenticatedAgent, input: Record<string, unknown>, tx?: TasksDbClient) {
     const { task } = await this.access.requireAuthorizedTask(
       agent,

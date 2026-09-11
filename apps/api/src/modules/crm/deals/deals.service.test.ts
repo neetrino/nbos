@@ -734,8 +734,16 @@ describe('DealsService', () => {
         .mockResolvedValueOnce(won)
         .mockResolvedValueOnce(won);
       prisma.deal.update.mockResolvedValue({ id: '1', status: 'WON', type: 'PRODUCT' });
-      prisma.productWhatsAppGroupBinding.findUnique.mockResolvedValue({
-        groupChatId: '120363012345678901@g.us',
+      prisma.productCommunicationBinding.findUnique.mockResolvedValue({
+        conversationId: 'conv-work',
+        conversation: {
+          externalMappings: [
+            {
+              externalAccountId: 'acc-1',
+              externalConversationId: '120363012345678901@g.us',
+            },
+          ],
+        },
       });
 
       const result = await service.updateStatus('1', 'WON');

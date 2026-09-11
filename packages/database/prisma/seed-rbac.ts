@@ -5,6 +5,13 @@ import {
   CRM_CALL_RECORDINGS_PLAY_DEFAULT_ROLE_IDS,
   CRM_CALL_RECORDINGS_PLAY_DEFAULT_SCOPE,
   CRM_CALL_RECORDINGS_PLAY_PERMISSION_ID,
+  MESSENGER_CLIENT_CAPABILITY_ALL_ROLE_IDS,
+  MESSENGER_CLIENT_CAPABILITY_OWN_ROLE_IDS,
+  MESSENGER_CLIENT_READ_ACTION,
+  MESSENGER_CLIENT_READ_PERMISSION_ID,
+  MESSENGER_CLIENT_SEND_ACTION,
+  MESSENGER_CLIENT_SEND_PERMISSION_ID,
+  MESSENGER_MODULE,
   PLATFORM_RESOURCE_FAMILIES,
   ROLE_SELLER_ID,
 } from '@nbos/shared';
@@ -457,6 +464,16 @@ async function main() {
     module: CRM_CALL_RECORDINGS_MODULE,
     action: CRM_CALL_RECORDINGS_PLAY_ACTION,
   });
+  permissionRecords.push({
+    id: MESSENGER_CLIENT_READ_PERMISSION_ID,
+    module: MESSENGER_MODULE,
+    action: MESSENGER_CLIENT_READ_ACTION,
+  });
+  permissionRecords.push({
+    id: MESSENGER_CLIENT_SEND_PERMISSION_ID,
+    module: MESSENGER_MODULE,
+    action: MESSENGER_CLIENT_SEND_ACTION,
+  });
 
   await prisma.permission.createMany({
     data: permissionRecords,
@@ -556,6 +573,32 @@ async function main() {
       roleId,
       permissionId: CRM_CALL_RECORDINGS_PLAY_PERMISSION_ID,
       scope: CRM_CALL_RECORDINGS_PLAY_DEFAULT_SCOPE,
+    });
+  }
+
+  for (const roleId of MESSENGER_CLIENT_CAPABILITY_ALL_ROLE_IDS) {
+    rolePermissionData.push({
+      roleId,
+      permissionId: MESSENGER_CLIENT_READ_PERMISSION_ID,
+      scope: 'ALL',
+    });
+    rolePermissionData.push({
+      roleId,
+      permissionId: MESSENGER_CLIENT_SEND_PERMISSION_ID,
+      scope: 'ALL',
+    });
+  }
+
+  for (const roleId of MESSENGER_CLIENT_CAPABILITY_OWN_ROLE_IDS) {
+    rolePermissionData.push({
+      roleId,
+      permissionId: MESSENGER_CLIENT_READ_PERMISSION_ID,
+      scope: 'OWN',
+    });
+    rolePermissionData.push({
+      roleId,
+      permissionId: MESSENGER_CLIENT_SEND_PERMISSION_ID,
+      scope: 'OWN',
     });
   }
 

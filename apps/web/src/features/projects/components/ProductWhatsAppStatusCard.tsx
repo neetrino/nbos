@@ -57,7 +57,7 @@ export function ProductWhatsAppStatusCard({
     <section className={WA_SECTION_CARD}>
       <div className="mb-3 flex items-center gap-2">
         <Users className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden />
-        <h3 className="text-foreground text-sm font-semibold tracking-tight">WhatsApp group</h3>
+        <h3 className="text-foreground text-sm font-semibold tracking-tight">WORK destination</h3>
       </div>
 
       {gatewayNotice ? (

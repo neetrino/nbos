@@ -1,5 +1,6 @@
 import { ScheduleModule } from '@nestjs/schedule';
 import { describe, expect, it } from 'vitest';
+import { MessengerOutboundReconcileCron } from './messenger-outbound-reconcile.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
 import { PlatformSchedulerJobsController } from './platform-scheduler-jobs.controller';
 import { PlatformSchedulerJobsService } from './platform-scheduler-jobs.service';
@@ -13,6 +14,7 @@ describe('SchedulerModule.forRoot', () => {
 
     expect(module.imports).toContainEqual(ScheduleModule.forRoot());
     expect(module.providers).toContain(ExpensePlanAutoDueCron);
+    expect(module.providers).toContain(MessengerOutboundReconcileCron);
     expect(module.providers).toContain(SchedulerJobRuntimeSnapshotService);
   });
 
@@ -21,6 +23,7 @@ describe('SchedulerModule.forRoot', () => {
 
     expect(module.imports).not.toContainEqual(ScheduleModule.forRoot());
     expect(module.providers).not.toContain(ExpensePlanAutoDueCron);
+    expect(module.providers).not.toContain(MessengerOutboundReconcileCron);
     expect(module.providers).not.toContain(SchedulerJobRuntimeSnapshotService);
   });
 

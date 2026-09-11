@@ -44,6 +44,7 @@
 
 - `REMOVE`: separate top-level `Support Conversations` and `Finance Conversations` message stores.
 - `CHANGE`: primary navigation becomes `Inbox / Sales / Clients / Collections`.
+- `MIGRATE`: existing `MetaConversation` / `MetaMessage` Instagram/Facebook inbound history into Messaging Core Client Sales (Slice 7); do not classify that store `NEW` because a snapshot is empty; Mail exemption (`M-MAIL-01`) does not apply.
 - `ADD`: locked Client composer / explicit `Reply to client` activation.
 - `ADD`: separate external READ vs SEND permission semantics.
 - `ADD`: attention routing independent from access (`Delivery -> PM`, `Maintenance -> Support Intake`, `FINANCE -> Finance/authorized`).
@@ -94,9 +95,10 @@ Additional rebuild reconciliation already identified important migration areas:
 - existing human Task Discussion is not treated as disposable; it requires data migration into Messaging Core;
 - existing Product WhatsApp relation was designed around one-to-one ownership and cannot represent shared WORK/FINANCE groups;
 - Deal Won has useful create/bind/failure semantics to preserve while storage ownership changes;
-- Client external UI is largely a new/separate surface rather than an extension of the old casual zone switch;
+- Client external **UI** is largely a new/separate surface rather than an extension of the old casual zone switch;
+- Client Sales **history** already exists as `MetaConversation` / `MetaMessage` (inbound webhook persist + CRM Lead UI) and must `MIGRATE` into Core (Slice 7), then `DELETE-LATER` (Slice 11);
 - `neetrino/whatsapp-gateway` has reusable account-scoped send and inbound Project webhook infrastructure;
-- exact current Finance reminder -> Messenger/WhatsApp send path remains `VERIFY/MISSING` until Slice 0 confirms it from runtime.
+- Finance client reminders use Product `groupChatId` + outbound worker; official invoices use `accountingGroupChatId` (Slice 0: `20-Slice-00-Baseline.md`).
 
 `10-Messenger-Runtime-Reconciliation.md` is the authoritative migration-safety document. Slice 0 must still inspect actual current code/schema/data before any product code change.
 
@@ -123,6 +125,14 @@ Reason: approved navigation is flat/contextual and entity conversations are cano
 System Task Activity remains separate.
 
 Migration must preserve authorship, timestamps/order, attachments/File Assets, AI/system provenance and audit/activity relationships before legacy writes/storage are retired.
+
+### C2b. Meta Instagram/Facebook conversation store
+
+`MIGRATE -> DELETE-LATER` `MetaConversation` / `MetaMessage` into Messaging Core Client Sales (Slice 7 map, Slice 11 drop).
+
+Do not classify this store `NEW` because a database snapshot is empty. Live inbound writers exist. Do not apply Mail’s `M-MAIL-01` exemption. Do not drop Meta because Core does not exist yet. Do not create a fourth permanent Messenger store.
+
+Meta connected accounts / sender identities / provider events are `REUSE/EXTEND`. Meta outbound send is `NEW` and must persist in Core when Client SEND exists.
 
 ### C3. One Product -> one WhatsApp group
 
@@ -188,6 +198,7 @@ Before migrations, inspect current Prisma/runtime and classify each target conce
 - legacy MessengerChannel / MessengerDirect models;
 - preserved unused unified MessengerConversation models;
 - TaskDiscussionEntry/equivalent legacy human discussion store;
+- MetaConversation / MetaMessage (Client Sales inbound store; not Mail);
 - ProductWhatsAppGroupBinding/equivalent legacy Product/group relationship;
 - Deal Won communication DTO/service paths;
 - Finance reminder send path;

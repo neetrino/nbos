@@ -26,6 +26,7 @@ import type { SupportTicket } from '@/lib/api/support';
 import type { Task } from '@/lib/api/tasks';
 import type { SupportTriageDraft } from './support-ticket-detail-helpers';
 import { SupportTicketDetailTriageFields } from './support-ticket-detail-triage-fields';
+import { SupportTicketSourceMessages } from './SupportTicketSourceMessages';
 
 export interface SupportTicketDetailGeneralTabProps {
   ticket: SupportTicket;
@@ -239,6 +240,7 @@ export function SupportTicketDetailGeneralTab({
                   </ul>
                 )}
               </DetailSheetSection>
+              <SupportTicketSourceMessages key={ticket.id} ticketId={ticket.id} />
             </div>
           </div>
         </div>

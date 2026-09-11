@@ -10,14 +10,22 @@ export interface WhatsAppGatewayConnectionView {
   lastErrorCode: string | null;
   lastErrorMessage: string | null;
   accountingGroupChatId: string | null;
+  hasWebhookSecret: boolean;
+  gatewayAccountId: string | null;
   healthOk?: boolean;
+}
+
+export interface ProductCommunicationDestinationView {
+  conversationId: string;
+  groupChatId: string;
+  fallbackFromWork: boolean;
 }
 
 export interface ProductWhatsAppState {
   productId: string;
   dealId?: string;
   binding: {
-    id: string;
+    id: string | null;
     groupChatId: string | null;
     groupName: string | null;
     status: string;
@@ -25,6 +33,9 @@ export interface ProductWhatsAppState {
     lastErrorCode: string | null;
     lastErrorMessage: string | null;
   } | null;
+  work?: ProductCommunicationDestinationView | null;
+  finance?: ProductCommunicationDestinationView | null;
+  financeUsesWork?: boolean;
   participants: Array<{
     employeeId: string;
     status: string;
@@ -57,6 +68,7 @@ export interface WhatsAppAvailableGroup {
   participantCount?: number | null;
   pictureUrl?: string | null;
   missingFromGateway?: boolean;
+  inProjectContext?: boolean;
 }
 
 export interface WhatsAppGatewayGroupsPage {
@@ -86,6 +98,8 @@ export const whatsappGatewayApi = {
     baseUrl?: string;
     apiToken?: string;
     accountingGroupChatId?: string | null;
+    webhookSigningSecret?: string;
+    gatewayAccountId?: string | null;
   }): Promise<WhatsAppGatewayConnectionView> {
     const resp = await api.put<WhatsAppGatewayConnectionView>(
       '/api/integrations/whatsapp-gateway',
@@ -129,6 +143,8 @@ export const whatsappGatewayApi = {
   },
 };
 
+export type ProductCommunicationPurpose = 'WORK' | 'FINANCE';
+
 export const productWhatsAppApi = {
   async getState(productId: string): Promise<ProductWhatsAppState> {
     const resp = await api.get<ProductWhatsAppState>(
@@ -136,31 +152,48 @@ export const productWhatsAppApi = {
     );
     return resp.data;
   },
-  async ensure(productId: string): Promise<ProductWhatsAppState> {
+  async ensure(
+    productId: string,
+    purpose: ProductCommunicationPurpose = 'WORK',
+  ): Promise<ProductWhatsAppState> {
     const resp = await api.post<ProductWhatsAppState>(
       `/api/projects/products/${productId}/whatsapp/ensure`,
+      undefined,
+      { params: { purpose } },
     );
     return resp.data;
   },
   async availableGroups(
     productId: string,
     search?: string,
+    purpose: ProductCommunicationPurpose = 'WORK',
   ): Promise<{ groups: WhatsAppAvailableGroup[]; currentGroupChatId: string | null }> {
     const resp = await api.get<{
       groups: WhatsAppAvailableGroup[];
       currentGroupChatId: string | null;
     }>(`/api/projects/products/${productId}/whatsapp/available-groups`, {
-      params: search ? { search } : undefined,
+      params: { ...(search ? { search } : {}), purpose },
     });
     return resp.data;
   },
   async bind(
     productId: string,
-    body: { groupChatId: string; replace?: boolean; persistIfUnreachable?: boolean },
+    body: {
+      groupChatId: string;
+      replace?: boolean;
+      persistIfUnreachable?: boolean;
+      purpose?: ProductCommunicationPurpose;
+    },
   ): Promise<ProductWhatsAppState> {
     const resp = await api.put<ProductWhatsAppState>(
       `/api/projects/products/${productId}/whatsapp/binding`,
       body,
+    );
+    return resp.data;
+  },
+  async useWorkForFinance(productId: string): Promise<ProductWhatsAppState> {
+    const resp = await api.post<ProductWhatsAppState>(
+      `/api/projects/products/${productId}/whatsapp/finance/use-work`,
     );
     return resp.data;
   },

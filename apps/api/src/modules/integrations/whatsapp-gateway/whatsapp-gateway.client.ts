@@ -126,6 +126,23 @@ export class WhatsAppGatewayClient {
     return this.request(config, 'POST', '/api/messages/send', { body, idempotencyKey });
   }
 
+  async sendAccountTextMessage(
+    config: WhatsAppGatewayClientConfig,
+    accountId: string,
+    body: { chatId: string; text: string },
+    idempotencyKey: string,
+  ): Promise<WhatsAppGatewaySendMessageResult> {
+    return this.request(
+      config,
+      'POST',
+      `/api/v1/accounts/${encodeURIComponent(accountId)}/messages`,
+      {
+        body: { type: 'TEXT', chatId: body.chatId, text: body.text },
+        idempotencyKey,
+      },
+    );
+  }
+
   private async request<T>(
     config: WhatsAppGatewayClientConfig,
     method: string,

@@ -5,6 +5,8 @@
  */
 
 import { assertAuthSessionV2Config } from '../modules/auth/auth-session.flags';
+import { parseMessengerDeltaRecoveryEnabled } from '../modules/messenger/core/messenger-core-recovery-flag';
+import { MESSENGER_DELTA_RECOVERY_ENABLED_ENV } from '../modules/messenger/core/messenger-core-revision.constants';
 
 const MIN_SECRET_LENGTH = 32;
 const FOUNDER_EMPLOYEE_ID_KEY = 'NBOS_FOUNDER_EMPLOYEE_ID';
@@ -87,6 +89,13 @@ export function validateEnv(config: Record<string, unknown>): Record<string, unk
     if (!FOUNDER_EMPLOYEE_ID_RE.test(founderId.trim())) {
       errors.push(`${FOUNDER_EMPLOYEE_ID_KEY} must be a UUID`);
     }
+  }
+
+  try {
+    parseMessengerDeltaRecoveryEnabled(config[MESSENGER_DELTA_RECOVERY_ENABLED_ENV]);
+  } catch (err) {
+    if (err instanceof Error) errors.push(err.message);
+    else errors.push(`${MESSENGER_DELTA_RECOVERY_ENABLED_ENV} is invalid`);
   }
 
   if (errors.length > 0) {

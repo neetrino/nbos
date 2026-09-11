@@ -7,6 +7,7 @@ import { dealWhatsAppApi, productWhatsAppApi } from '@/lib/api/whatsapp';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   canConfirmDealWonWhatsApp,
+  resolveWonWhatsAppExistingGroupChatId,
   type DealWonWhatsAppPayload,
   type DealWonWhatsAppSessionAction,
 } from '../deal-won-whatsapp-gate';
@@ -142,7 +143,7 @@ async function loadWonWhatsAppExisting(
       productWhatsAppApi.operations(productId),
     ]);
     const createOp = operations.items.find((item) => item.type === 'CREATE_PRODUCT_GROUP');
-    onLoaded(state.binding?.groupChatId ?? null, createOp?.status ?? null);
+    onLoaded(resolveWonWhatsAppExistingGroupChatId(state), createOp?.status ?? null);
   } catch {
     onLoaded(null, null);
   }
