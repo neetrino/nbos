@@ -89,7 +89,7 @@ export function SalaryBoardPageContent() {
     INITIAL_CLIENT_FILTERS,
   );
   const [view, handleViewChange] = useSalaryBoardViewMode();
-  const displayView = useMobilePreferredView(view, 'board');
+  const displayView = useMobilePreferredView(view, 'calendar');
   const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
 
   const monthFrom = parsePayrollRunsListMonthParam(

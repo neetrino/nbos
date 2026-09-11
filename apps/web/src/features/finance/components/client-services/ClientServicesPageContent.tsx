@@ -64,7 +64,7 @@ function ClientServicesPageInner() {
   const openServiceIdFromUrl = searchParams.get(OPEN_CLIENT_SERVICE_QUERY)?.trim() || null;
 
   const [view, handleViewChange] = useClientServicesViewMode();
-  const displayView = useMobilePreferredView(view, 'status');
+  const displayView = useMobilePreferredView(view, 'months');
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [reloadToken, setReloadToken] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);

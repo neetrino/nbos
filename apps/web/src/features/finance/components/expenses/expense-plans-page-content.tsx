@@ -97,7 +97,7 @@ export function ExpensePlansPageContent() {
   const gridYear = parseGridYearParam(searchParams.get(EXPENSE_PLANS_LIST_YEAR_QUERY));
 
   const [view, setView] = useExpensePlansViewMode();
-  const displayView = useMobilePreferredView(view, 'board');
+  const displayView = useMobilePreferredView(view, 'grid');
   const [searchDraft, setSearchDraft] = useState(urlSearch);
   const debouncedSearchDraft = useDebouncedValue(searchDraft, EXPENSE_PLANS_SEARCH_DEBOUNCE_MS);
   const [plans, setPlans] = useState<ExpensePlan[]>([]);
