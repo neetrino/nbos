@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 import { buildCredentialVaultHref } from '@/features/credentials/constants/credential-vault-deep-link';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { credentialsApi } from '@/lib/api/credentials';
 import { cn } from '@/lib/utils';
 import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
@@ -19,11 +20,21 @@ const FLOATING_DOCK_CLASS = cn(
   PORTAL_DROPDOWN_Z_CLASS,
 );
 
+const MOBILE_ON_CARD_DOCK_CLASS =
+  'pointer-events-auto absolute top-1/2 right-2 z-20 flex -translate-y-1/2 flex-col gap-1.5';
+
 const FLOATING_BTN_CLASS = cn(
   'flex size-8 shrink-0 items-center justify-center rounded-lg border shadow-lg',
   'bg-card text-foreground border-border/90',
   'transition-[background-color,border-color,box-shadow,transform,color] duration-150',
   'hover:scale-105 hover:shadow-xl active:scale-95',
+  'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+);
+
+const MOBILE_ON_CARD_BTN_CLASS = cn(
+  'flex size-7 shrink-0 items-center justify-center rounded-full border shadow-sm',
+  'bg-card/95 text-foreground border-border/90 backdrop-blur-sm',
+  'active:scale-95',
   'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
 );
 
@@ -52,12 +63,13 @@ interface CredentialVaultCardHoverActionsProps {
   onRequestMoveToTrash?: () => void;
 }
 
-function FloatingVaultActionButton({
+function VaultActionButton({
   label,
   onClick,
   tone = 'default',
   active = false,
   activeClassName,
+  compact = false,
   children,
 }: {
   label: string;
@@ -65,14 +77,15 @@ function FloatingVaultActionButton({
   tone?: FloatingBtnHoverTone;
   active?: boolean;
   activeClassName?: string;
+  compact?: boolean;
   children: ReactNode;
 }) {
   return (
     <button
       type="button"
       className={cn(
-        FLOATING_BTN_CLASS,
-        FLOATING_BTN_HOVER_TONE_CLASS[tone],
+        compact ? MOBILE_ON_CARD_BTN_CLASS : FLOATING_BTN_CLASS,
+        !compact && FLOATING_BTN_HOVER_TONE_CLASS[tone],
         active && activeClassName,
       )}
       aria-label={label}
@@ -96,7 +109,7 @@ function readDockPosition(card: HTMLElement): DockPosition {
   };
 }
 
-export function CredentialVaultCardHoverActions({
+function useCredentialVaultCardActions({
   credentialId,
   url,
   isFavorite,
@@ -104,12 +117,118 @@ export function CredentialVaultCardHoverActions({
   onSetFavorite,
   onRequestMoveToTrash,
 }: CredentialVaultCardHoverActionsProps) {
+  const hasUrl = Boolean(url?.trim());
+  const showMoveToTrash = canMoveToTrash && Boolean(onRequestMoveToTrash);
+
+  const handleOpenUrl = () => {
+    void (async () => {
+      try {
+        const { url: openUrl } = await credentialsApi.recordUrlOpened(credentialId);
+        window.open(openUrl, '_blank', 'noopener,noreferrer');
+      } catch {
+        toast.error('Could not open URL');
+      }
+    })();
+  };
+
+  const handleCopyLink = () => {
+    void (async () => {
+      try {
+        const href = `${window.location.origin}${buildCredentialVaultHref(credentialId)}`;
+        await navigator.clipboard.writeText(href);
+        toast.success('Link copied');
+      } catch {
+        toast.error('Could not copy link');
+      }
+    })();
+  };
+
+  return { hasUrl, showMoveToTrash, isFavorite, onSetFavorite, handleOpenUrl, handleCopyLink, onRequestMoveToTrash };
+}
+
+function CredentialVaultCardActionButtons({
+  compact,
+  hasUrl,
+  showMoveToTrash,
+  isFavorite,
+  onSetFavorite,
+  handleOpenUrl,
+  handleCopyLink,
+  onRequestMoveToTrash,
+}: {
+  compact: boolean;
+  hasUrl: boolean;
+  showMoveToTrash: boolean;
+  isFavorite: boolean;
+  onSetFavorite?: (favorite: boolean) => void;
+  handleOpenUrl: () => void;
+  handleCopyLink: () => void;
+  onRequestMoveToTrash?: () => void;
+}) {
+  const iconClass = compact ? 'size-3' : 'size-3.5';
+
+  return (
+    <>
+      {onSetFavorite ? (
+        <VaultActionButton
+          label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          tone="favorite"
+          active={isFavorite}
+          activeClassName="border-amber-400 bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+          compact={compact}
+          onClick={() => onSetFavorite(!isFavorite)}
+        >
+          <Star className={cn(iconClass, isFavorite && 'fill-current')} aria-hidden />
+        </VaultActionButton>
+      ) : null}
+      {hasUrl ? (
+        <VaultActionButton
+          label="Open URL"
+          tone="url"
+          compact={compact}
+          onClick={handleOpenUrl}
+        >
+          <ExternalLink className={iconClass} aria-hidden />
+        </VaultActionButton>
+      ) : null}
+      <VaultActionButton label="Copy link" tone="link" compact={compact} onClick={handleCopyLink}>
+        <Link2 className={iconClass} aria-hidden />
+      </VaultActionButton>
+      {showMoveToTrash ? (
+        <VaultActionButton
+          label="Move to Trash"
+          tone="destructive"
+          compact={compact}
+          onClick={() => onRequestMoveToTrash?.()}
+        >
+          <Trash2 className={iconClass} aria-hidden />
+        </VaultActionButton>
+      ) : null}
+    </>
+  );
+}
+
+function CredentialVaultCardMobileActions(props: CredentialVaultCardHoverActionsProps) {
+  const actions = useCredentialVaultCardActions(props);
+
+  return (
+    <div
+      className={MOBILE_ON_CARD_DOCK_CLASS}
+      data-credential-vault-action
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
+    >
+      <CredentialVaultCardActionButtons compact {...actions} />
+    </div>
+  );
+}
+
+function CredentialVaultCardDesktopHoverActions(props: CredentialVaultCardHoverActionsProps) {
+  const actions = useCredentialVaultCardActions(props);
   const anchorRef = useRef<HTMLDivElement>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<DockPosition | null>(null);
-  const hasUrl = Boolean(url?.trim());
-  const showMoveToTrash = canMoveToTrash && Boolean(onRequestMoveToTrash);
 
   const clearHideTimer = useCallback(() => {
     if (!hideTimerRef.current) return;
@@ -171,29 +290,6 @@ export function CredentialVaultCardHoverActions({
     };
   }, [open]);
 
-  const handleOpenUrl = () => {
-    void (async () => {
-      try {
-        const { url: openUrl } = await credentialsApi.recordUrlOpened(credentialId);
-        window.open(openUrl, '_blank', 'noopener,noreferrer');
-      } catch {
-        toast.error('Could not open URL');
-      }
-    })();
-  };
-
-  const handleCopyLink = () => {
-    void (async () => {
-      try {
-        const href = `${window.location.origin}${buildCredentialVaultHref(credentialId)}`;
-        await navigator.clipboard.writeText(href);
-        toast.success('Link copied');
-      } catch {
-        toast.error('Could not copy link');
-      }
-    })();
-  };
-
   const dock =
     open && position ? (
       <div
@@ -206,34 +302,7 @@ export function CredentialVaultCardHoverActions({
         onMouseLeave={scheduleHideDock}
       >
         <div className="flex gap-1.5">
-          {onSetFavorite ? (
-            <FloatingVaultActionButton
-              label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-              tone="favorite"
-              active={isFavorite}
-              activeClassName="border-amber-400 bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
-              onClick={() => onSetFavorite(!isFavorite)}
-            >
-              <Star className={cn('size-3.5', isFavorite && 'fill-current')} aria-hidden />
-            </FloatingVaultActionButton>
-          ) : null}
-          {hasUrl ? (
-            <FloatingVaultActionButton label="Open URL" tone="url" onClick={handleOpenUrl}>
-              <ExternalLink className="size-3.5" aria-hidden />
-            </FloatingVaultActionButton>
-          ) : null}
-          <FloatingVaultActionButton label="Copy link" tone="link" onClick={handleCopyLink}>
-            <Link2 className="size-3.5" aria-hidden />
-          </FloatingVaultActionButton>
-          {showMoveToTrash ? (
-            <FloatingVaultActionButton
-              label="Move to Trash"
-              tone="destructive"
-              onClick={() => onRequestMoveToTrash?.()}
-            >
-              <Trash2 className="size-3.5" aria-hidden />
-            </FloatingVaultActionButton>
-          ) : null}
+          <CredentialVaultCardActionButtons compact={false} {...actions} />
         </div>
         <div className={HOVER_DOCK_BRIDGE_CLASS} aria-hidden />
       </div>
@@ -249,4 +318,14 @@ export function CredentialVaultCardHoverActions({
       {dock && typeof document !== 'undefined' ? createPortal(dock, document.body) : null}
     </>
   );
+}
+
+export function CredentialVaultCardHoverActions(props: CredentialVaultCardHoverActionsProps) {
+  const isMobileViewport = useIsMobileViewport();
+
+  if (isMobileViewport) {
+    return <CredentialVaultCardMobileActions {...props} />;
+  }
+
+  return <CredentialVaultCardDesktopHoverActions {...props} />;
 }

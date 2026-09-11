@@ -65,6 +65,8 @@ function CredentialsVaultPageContent() {
             onChange={vault.handleTabChange}
             options={CREDENTIAL_VAULT_TAB_OPTIONS}
             ariaLabel="Credential scope"
+            showOnMobile
+            registerMobileDock={false}
           />
         }
         search={
