@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { AlertCircle, CheckCircle2, ClipboardCheck, Loader2 } from 'lucide-react';
 import { EntityDetailSheetContent } from '@/components/shared';
+import { SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,9 +20,8 @@ import {
   type ChecklistWorkbenchMarkHandler,
 } from '@/features/checklist/checklist-instance-workbench-item-row';
 
-/** Align floating rail with panel left edge (85vw mobile; rem-capped on larger breakpoints). */
-const CHECKLIST_WORKBENCH_FLOATING_RAIL_ANCHOR =
-  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px right-[min(85vw,42rem)] sm:right-[min(75vw,56rem)] xl:right-[min(75vw,64rem)]';
+/** Align floating rail with page Back inset on mobile; rem-capped on larger breakpoints. */
+const CHECKLIST_WORKBENCH_FLOATING_RAIL_ANCHOR = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} right-[min(85vw,42rem)] sm:right-[min(75vw,56rem)] xl:right-[min(75vw,64rem)]`;
 
 const CHECKLIST_WORKBENCH_PANEL_CLASS =
   'flex w-full max-w-2xl flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-4xl sm:data-[side=right]:w-full xl:max-w-5xl';

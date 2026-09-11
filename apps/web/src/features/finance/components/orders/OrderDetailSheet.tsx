@@ -6,6 +6,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
   DetailSheetTabPanel,
@@ -15,12 +18,15 @@ import {
   LoadingState,
   StatusBadge,
 } from '@/components/shared';
+import { SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
 import { orderLifecycleAction } from '@/features/finance/utils/order-lifecycle';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { ordersApi, type Order } from '@/lib/api/finance';
+import { cn } from '@/lib/utils';
 import { OrderGeneralTab } from './OrderGeneralTab';
 import { OrderInvoicesTab } from './OrderInvoicesTab';
 import { OrderLifecycleConfirmDialog } from './OrderLifecycleConfirmDialog';
@@ -33,8 +39,7 @@ import { ORDER_STATUSES } from './order-statuses';
 const ORDER_DETAIL_SHEET_WIDTH_CLASS =
   'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[30rem]';
 
-const ORDER_DETAIL_SHEET_RAIL_ANCHOR_CLASS =
-  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[30rem]';
+const ORDER_DETAIL_SHEET_RAIL_ANCHOR_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[30rem]`;
 
 interface OrderDetailSheetProps {
   orderId: string | null;
@@ -58,6 +63,7 @@ export function OrderDetailSheet({
   refreshSignal = 0,
   forceNestedBackdrop = false,
 }: OrderDetailSheetProps) {
+  const isMobileViewport = useIsMobileViewport();
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(orderId);
   const hostMounted = useSheetHostMounted(open, sheetId);
 
@@ -145,31 +151,78 @@ export function OrderDetailSheet({
           sourcePageHref={sourcePageHref}
           forceNestedBackdrop={forceNestedBackdrop}
         >
-          <div className="bg-background shrink-0 px-5 pt-5 pb-3">
+          <div
+            className={cn(
+              isMobileViewport
+                ? DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS
+                : 'bg-background shrink-0 px-5 pt-5 pb-3',
+            )}
+          >
             {loading && !order ? (
-              <p className="text-muted-foreground text-sm">Loading…</p>
+              <p
+                className={cn(
+                  'text-muted-foreground text-sm',
+                  isMobileViewport && DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+                )}
+              >
+                Loading…
+              </p>
             ) : order ? (
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+              <>
+                {isMobileViewport ? (
+                  <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>
+                    {lifecycleMode ? (
+                      <DetailSheetSettingsMenu>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => setLifecycleOpen(true)}
+                        >
+                          {lifecycleMode === 'delete' ? <Trash2 /> : <Archive />}
+                          {lifecycleMode === 'delete' ? 'Delete order' : 'Close order'}
+                        </DropdownMenuItem>
+                      </DetailSheetSettingsMenu>
+                    ) : null}
+                  </div>
+                ) : null}
+                <div
+                  className={cn(
+                    isMobileViewport
+                      ? cn(
+                          DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+                          'flex min-w-0 items-center gap-2',
+                        )
+                      : 'flex flex-wrap items-center justify-between gap-3',
+                  )}
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
                     <ShoppingCart className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                    <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                    <h2 className="text-foreground min-w-0 truncate text-xl font-bold tracking-tight">
                       {getOrderDisplayTitle(order)}
                     </h2>
-                    {statusCfg ? (
+                    {statusCfg && !isMobileViewport ? (
                       <StatusBadge label={statusCfg.label} variant={statusCfg.variant} />
                     ) : null}
                   </div>
+                  {statusCfg && isMobileViewport ? (
+                    <StatusBadge
+                      label={statusCfg.label}
+                      variant={statusCfg.variant}
+                      className="shrink-0 self-center"
+                    />
+                  ) : null}
+                  {!isMobileViewport && lifecycleMode ? (
+                    <DetailSheetSettingsMenu>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => setLifecycleOpen(true)}
+                      >
+                        {lifecycleMode === 'delete' ? <Trash2 /> : <Archive />}
+                        {lifecycleMode === 'delete' ? 'Delete order' : 'Close order'}
+                      </DropdownMenuItem>
+                    </DetailSheetSettingsMenu>
+                  ) : null}
                 </div>
-                {lifecycleMode ? (
-                  <DetailSheetSettingsMenu>
-                    <DropdownMenuItem variant="destructive" onClick={() => setLifecycleOpen(true)}>
-                      {lifecycleMode === 'delete' ? <Trash2 /> : <Archive />}
-                      {lifecycleMode === 'delete' ? 'Delete order' : 'Close order'}
-                    </DropdownMenuItem>
-                  </DetailSheetSettingsMenu>
-                ) : null}
-              </div>
+              </>
             ) : null}
           </div>
 
@@ -177,6 +230,7 @@ export function OrderDetailSheet({
             tabs={detailSheetTabs}
             activeTab={activeTab}
             onTabChange={(value) => setActiveTab(value as OrderDetailSheetTab)}
+            className="max-md:mt-3 max-md:px-5"
           />
 
           <ScrollArea className="min-h-0 flex-1">

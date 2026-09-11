@@ -113,6 +113,9 @@ function useProjectsHubHeroSlots({
           onChange={setActiveTab}
           options={[...PROJECT_HUB_TABS]}
           ariaLabel="Project Hub filters"
+          showOnMobile
+          fullWidthOnMobile
+          registerMobileDock={false}
         />
       ),
       search: (

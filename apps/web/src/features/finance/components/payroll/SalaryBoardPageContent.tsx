@@ -28,6 +28,7 @@ import {
   findSalaryBoardEntryByLineId,
 } from '@/features/finance/utils/salary-line-month-detail-placeholder';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import { departmentsApi } from '@/lib/api/employees';
 import { payrollRunsApi, type SalaryBoardResponse } from '@/lib/api/payroll-runs';
 import {
@@ -88,6 +89,7 @@ export function SalaryBoardPageContent() {
     INITIAL_CLIENT_FILTERS,
   );
   const [view, handleViewChange] = useSalaryBoardViewMode();
+  const displayView = useMobilePreferredView(view, 'calendar');
   const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
 
   const monthFrom = parsePayrollRunsListMonthParam(
@@ -104,8 +106,8 @@ export function SalaryBoardPageContent() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const payrollMonthFrom = view === 'calendar' ? `${calendarYear}-01` : monthFrom;
-    const payrollMonthTo = view === 'calendar' ? `${calendarYear}-12` : monthTo;
+    const payrollMonthFrom = displayView === 'calendar' ? `${calendarYear}-01` : monthFrom;
+    const payrollMonthTo = displayView === 'calendar' ? `${calendarYear}-12` : monthTo;
     try {
       const board = await payrollRunsApi.getSalaryBoard({
         payrollMonthFrom,
@@ -118,7 +120,7 @@ export function SalaryBoardPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [calendarYear, monthFrom, monthTo, view]);
+  }, [calendarYear, displayView, monthFrom, monthTo]);
 
   useEffect(() => {
     void load();
@@ -385,7 +387,7 @@ export function SalaryBoardPageContent() {
         />
       ) : (
         <>
-          {view === 'calendar' ? (
+          {displayView === 'calendar' ? (
             <SalaryBoardCalendarView
               data={data}
               rows={filteredRows}
@@ -393,7 +395,7 @@ export function SalaryBoardPageContent() {
               onCalendarYearChange={setCalendarYear}
               onOpenMonth={openMonthSheet}
             />
-          ) : view === 'list' ? (
+          ) : displayView === 'list' ? (
             <SalaryBoardListView
               entries={filteredEntries}
               totals={filteredTotals}

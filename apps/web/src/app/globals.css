@@ -53,14 +53,17 @@
   --primary-glow: color-mix(in oklch, var(--primary) 28%, transparent);
   --desk-wash: color-mix(in oklch, var(--primary) 8%, transparent);
   --desk-wash-soft: color-mix(in oklch, var(--primary) 4%, transparent);
-  --nbos-mobile-dock-height: 3.25rem;
-  --nbos-mobile-dock-inset-x: 0.5rem;
+  --desk-panel-fill: color-mix(in oklch, var(--primary) 3.5%, var(--card));
+  --nbos-mobile-dock-height: 3.5rem;
+  --nbos-mobile-dock-inset-x: 0px;
   --nbos-mobile-dock-inset-bottom: 0px;
+  --nbos-mobile-dock-pad-y: 0.5rem;
   --nbos-mobile-dock-clearance: 0.25rem;
-  --nbos-mobile-dock-radius: 1rem;
+  --nbos-mobile-dock-radius: 2.5rem;
   --nbos-mobile-dock-reserve: calc(
-    var(--nbos-mobile-dock-height) + var(--nbos-mobile-dock-inset-bottom) +
-      var(--nbos-mobile-dock-clearance) + env(safe-area-inset-bottom, 0px)
+    var(--nbos-mobile-dock-height) + (2 * var(--nbos-mobile-dock-pad-y)) +
+      var(--nbos-mobile-dock-inset-bottom) + var(--nbos-mobile-dock-clearance) +
+      env(safe-area-inset-bottom, 0px)
   );
   --motion-duration-fast: 150ms;
   --motion-duration-base: 280ms;
@@ -112,6 +115,7 @@
   --primary-glow: color-mix(in oklch, var(--primary) 38%, transparent);
   --desk-wash: color-mix(in oklch, var(--primary) 14%, transparent);
   --desk-wash-soft: color-mix(in oklch, var(--primary) 8%, transparent);
+  --desk-panel-fill: color-mix(in oklch, var(--primary) 5%, var(--card));
 }
 
 @theme inline {
@@ -286,13 +290,9 @@ body {
   }
 
   .nbos-insight-panel {
-    @apply border-border/70 bg-card relative overflow-hidden rounded-2xl border p-4;
+    @apply border-border/70 relative overflow-hidden rounded-2xl border p-4;
+    background-color: var(--desk-panel-fill);
     box-shadow: var(--shadow-panel);
-    background-image: linear-gradient(
-      180deg,
-      color-mix(in oklch, var(--primary) 4.5%, var(--card)) 0%,
-      var(--card) 42%
-    );
     transition:
       box-shadow var(--motion-duration-base) var(--motion-ease-out),
       border-color var(--motion-duration-fast) ease-out;
@@ -304,11 +304,7 @@ body {
 
   .nbos-insight-panel-icon {
     @apply flex size-8 shrink-0 items-center justify-center rounded-xl;
-    background: linear-gradient(
-      145deg,
-      color-mix(in oklch, var(--primary) 18%, var(--card)) 0%,
-      color-mix(in oklch, var(--primary) 8%, var(--muted)) 100%
-    );
+    background-color: color-mix(in oklch, var(--primary) 14%, var(--card));
     box-shadow: 0 0 0 1px color-mix(in oklch, var(--primary) 12%, transparent);
   }
 

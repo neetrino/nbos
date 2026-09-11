@@ -75,23 +75,25 @@ export function InvoiceMoneyCard({
       <div className={cn('mt-4 border-t pt-4', MONEY_METRIC_DIVIDER_CLASS)}>
         <div
           className={cn(
-            'grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0',
+            'flex flex-col divide-y sm:grid sm:grid-cols-3 sm:divide-x sm:divide-y-0',
             MONEY_METRIC_DIVIDER_CLASS,
           )}
         >
-          <InvoiceMoneyMetric
-            icon={FileCheck}
-            iconClassName="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300"
-            label="Outstanding"
-            value={formatAmount(outstanding, invoice.currency)}
-            valueClassName="text-emerald-600 dark:text-emerald-400"
-          />
-          <InvoiceMoneyMetric
-            icon={Wallet}
-            iconClassName="bg-sky-100 text-sky-600 dark:bg-sky-950/40 dark:text-sky-300"
-            label="Paid"
-            value={formatAmount(coverage?.paidAmount ?? 0, invoice.currency)}
-          />
+          <div className={cn('grid grid-cols-2 divide-x sm:contents', MONEY_METRIC_DIVIDER_CLASS)}>
+            <InvoiceMoneyMetric
+              icon={FileCheck}
+              iconClassName="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300"
+              label="Outstanding"
+              value={formatAmount(outstanding, invoice.currency)}
+              valueClassName="text-emerald-600 dark:text-emerald-400"
+            />
+            <InvoiceMoneyMetric
+              icon={Wallet}
+              iconClassName="bg-sky-100 text-sky-600 dark:bg-sky-950/40 dark:text-sky-300"
+              label="Paid"
+              value={formatAmount(coverage?.paidAmount ?? 0, invoice.currency)}
+            />
+          </div>
           <InvoiceMoneyMetric
             icon={Calendar}
             iconClassName="bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-300"

@@ -2,6 +2,10 @@
 
 import type { ComponentPropsWithRef } from 'react';
 import { WhatsAppBrandIcon } from '@/components/shared/WhatsAppBrandIcon';
+import {
+  actionTileIconVariants,
+  actionTileShellVariants,
+} from '@/components/shared/action-tile-button-classes';
 import { SIDEBAR_NAV_ITEM_CLASS } from '@/components/layout/sidebar-layout-constants';
 import { tabsTriggerVariants } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -17,6 +21,8 @@ const INLINE_CLASS = cn(
   'text-muted-foreground hover:bg-secondary/50 hover:text-foreground',
 );
 
+export type ProductWhatsAppNavTriggerVariant = 'inline' | 'tab' | 'tile';
+
 export function ProductWhatsAppNavTrigger({
   className,
   hideLabelOnMobile = false,
@@ -24,8 +30,29 @@ export function ProductWhatsAppNavTrigger({
   ...props
 }: ComponentPropsWithRef<'button'> & {
   hideLabelOnMobile?: boolean;
-  variant?: 'inline' | 'tab';
+  variant?: ProductWhatsAppNavTriggerVariant;
 }) {
+  if (variant === 'tile') {
+    return (
+      <button
+        type="button"
+        title={WHATSAPP_NAV_LABEL}
+        aria-label={WHATSAPP_NAV_LABEL}
+        className={cn(
+          actionTileShellVariants({ tone: 'emerald', size: 'md' }),
+          'w-full flex-1',
+          className,
+        )}
+        {...props}
+      >
+        <span className={actionTileIconVariants({ tone: 'emerald', size: 'md' })} aria-hidden>
+          <WhatsAppBrandIcon className={WHATSAPP_ICON_SIZE_CLASS} />
+        </span>
+        <span className="min-w-0 flex-1 truncate">{WHATSAPP_NAV_LABEL}</span>
+      </button>
+    );
+  }
+
   const variantClass =
     variant === 'tab' ? cn(tabsTriggerVariants({ listVariant: 'pill' }), 'gap-1.5') : INLINE_CLASS;
 

@@ -35,10 +35,16 @@ export function LeadSvyazatDropdown(props: LeadSvyazatDropdownProps) {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={(triggerProps) => (
-          <Button {...triggerProps} type="button" size="sm" variant="outline" className="gap-1.5">
+          <Button
+            {...triggerProps}
+            type="button"
+            size="sm"
+            variant="outline"
+            className="gap-1 px-2"
+          >
             <Link2 size={14} aria-hidden />
-            {LEAD_SVYAZAT_LABELS.button}
-            <ChevronDown size={14} className="opacity-60" aria-hidden />
+            <span className="min-w-0">{LEAD_SVYAZAT_LABELS.button}</span>
+            <ChevronDown size={14} className="lucide-chevron-down opacity-60" aria-hidden />
           </Button>
         )}
       />

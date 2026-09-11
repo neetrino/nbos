@@ -5,12 +5,14 @@ import { Dialog as SheetPrimitive } from '@base-ui/react/dialog';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { XIcon } from 'lucide-react';
+import { ChevronLeft, XIcon } from 'lucide-react';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import {
   SHEET_CENTER_PANEL_SURFACE_CLASS,
   SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
 } from '@/components/shared/detail-sheet-classes';
 import {
+  ENTITY_SHEET_FLOATING_RAIL_CLOSE_CLASS,
   ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,
   ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS,
   ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS,
@@ -100,10 +102,12 @@ function SheetFloatingRailInset({
   floatingRail,
   showClose,
   topClassName,
+  floatingCloseClassName,
 }: {
   floatingRail?: React.ReactNode;
   showClose: boolean;
   topClassName?: string;
+  floatingCloseClassName?: string;
 }) {
   return (
     <div
@@ -116,6 +120,7 @@ function SheetFloatingRailInset({
       <SheetFloatingRailStack
         floatingRail={floatingRail}
         showClose={showClose}
+        floatingCloseClassName={floatingCloseClassName}
         className="pointer-events-auto"
       />
     </div>
@@ -125,32 +130,56 @@ function SheetFloatingRailInset({
 function SheetFloatingRailStack({
   floatingRail,
   showClose = true,
+  floatingCloseClassName,
   className,
 }: {
   floatingRail?: React.ReactNode;
   showClose?: boolean;
+  floatingCloseClassName?: string;
   className?: string;
 }) {
+  const isMobileViewport = useIsMobileViewport();
+
   return (
     <div className={cn(ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS, className)}>
       {showClose ? (
-        <SheetPrimitive.Close
-          data-slot="sheet-close-floating"
-          render={
-            <Button
-              type="button"
-              variant="default"
-              size="icon"
-              className={ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS}
-              aria-label="Close panel"
-              title="Close"
-            />
-          }
-        >
-          <XIcon className="size-4" aria-hidden />
-          <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Close</span>
-          <span className="sr-only">Close</span>
-        </SheetPrimitive.Close>
+        isMobileViewport ? (
+          <SheetPrimitive.Close
+            data-slot="sheet-close-floating"
+            render={
+              <Button
+                type="button"
+                variant="default"
+                size="icon"
+                className={cn(ENTITY_SHEET_FLOATING_RAIL_CLOSE_CLASS, floatingCloseClassName)}
+                aria-label="Back"
+                title="Back"
+              />
+            }
+          >
+            <ChevronLeft className="size-4" aria-hidden />
+            <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Back</span>
+            <span className="sr-only">Back</span>
+          </SheetPrimitive.Close>
+        ) : (
+          <SheetPrimitive.Close
+            data-slot="sheet-close-floating"
+            render={
+              <Button
+                type="button"
+                variant="default"
+                size="icon"
+                className={ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS}
+                aria-label="Close panel"
+                title="Close"
+              />
+            }
+          >
+            <XIcon className="size-4" aria-hidden />
+            <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Close</span>
+            <span className="sr-only">Close</span>
+          </SheetPrimitive.Close>
+        )
       ) : null}
       {floatingRail}
     </div>
@@ -213,6 +242,7 @@ function SheetContent({
   floatingRailAnchorClassName,
   floatingRailTopClassName,
   floatingRailPlacement = 'viewport',
+  floatingCloseClassName,
   forceNestedBackdrop = false,
   stackAboveEntitySheet = false,
   ...props
@@ -227,6 +257,8 @@ function SheetContent({
   floatingRailTopClassName?: string;
   /** `viewport` = fixed rail at panel seam (entity sheets). `inset` = inside panel (page settings). */
   floatingRailPlacement?: 'viewport' | 'inset';
+  /** Extra classes for the mobile floating Back control (e.g. chat accent). */
+  floatingCloseClassName?: string;
   forceNestedBackdrop?: boolean;
   /** Above nested entity sheets (contact portfolio quick actions). */
   stackAboveEntitySheet?: boolean;
@@ -269,6 +301,7 @@ function SheetContent({
           floatingRail={floatingRail}
           showClose={floatingClose}
           topClassName={floatingRailTopClassName}
+          floatingCloseClassName={floatingCloseClassName}
         />
       ) : null}
       {children}
@@ -314,7 +347,13 @@ function SheetContent({
         <SheetCenterShell
           floatingRailVisible={floatingRailVisible}
           nestedStackClass={nestedStackClass}
-          rail={<SheetFloatingRailStack floatingRail={floatingRail} showClose={floatingClose} />}
+          rail={
+            <SheetFloatingRailStack
+              floatingRail={floatingRail}
+              showClose={floatingClose}
+              floatingCloseClassName={floatingCloseClassName}
+            />
+          }
           panel={popup}
         />
       ) : (
@@ -334,7 +373,11 @@ function SheetContent({
             zIndex: floatingRailZIndex,
           }}
         >
-          <SheetFloatingRailStack floatingRail={floatingRail} showClose={floatingClose} />
+          <SheetFloatingRailStack
+            floatingRail={floatingRail}
+            showClose={floatingClose}
+            floatingCloseClassName={floatingCloseClassName}
+          />
         </div>
       ) : null}
     </SheetPortal>

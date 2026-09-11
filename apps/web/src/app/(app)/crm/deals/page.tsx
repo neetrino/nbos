@@ -53,6 +53,7 @@ import {
   buildScopedKanbanColumns,
   buildTerminalDropZones,
   reorderCrmKanbanColumn,
+  resolveCrmKanbanStatusFilter,
   shouldShowTerminalDropBar,
 } from '@/features/crm/hooks/buildCrmKanban';
 import {
@@ -183,11 +184,12 @@ function DealsPipelinePageContent() {
   );
 
   const boardScope = resolveBoardLifecycleScope(filters.boardScope);
+  const statusFilter = resolveCrmKanbanStatusFilter(filters.status, isMobileViewport);
   const stageKeys = useMemo(() => {
     if (isTrashView) return [] as string[];
-    if (filters.status && filters.status !== 'all') return [filters.status];
+    if (statusFilter) return [statusFilter];
     return getBoardStageKeys(DEAL_STAGES, boardScope);
-  }, [boardScope, filters.status, isTrashView]);
+  }, [boardScope, isTrashView, statusFilter]);
 
   const fetchDealPage = useCallback(
     (params: CrmStageColumnFetchParams) =>
@@ -237,7 +239,7 @@ function DealsPipelinePageContent() {
         pageSize: CRM_TRASH_LIST_PAGE_SIZE,
         scope,
         search: search || undefined,
-        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+        status: statusFilter,
         type: filters.type && filters.type !== 'all' ? filters.type : undefined,
         sellerId: dealResponsibility.sellerId,
         sellerAssistantId: dealResponsibility.sellerAssistantId,
@@ -250,7 +252,7 @@ function DealsPipelinePageContent() {
     } finally {
       setTrashLoading(false);
     }
-  }, [dealResponsibility, filters.status, filters.type, scope, search]);
+  }, [dealResponsibility, filters.type, scope, search, statusFilter]);
 
   useEffect(() => {
     if (isTrashView) void fetchTrashDeals();
@@ -577,21 +579,21 @@ function DealsPipelinePageContent() {
   );
 
   const kanbanStages = useMemo(() => {
-    if (filters.status && filters.status !== 'all') {
-      return DEAL_STAGES.filter((stage) => stage.key === filters.status);
+    if (statusFilter) {
+      return DEAL_STAGES.filter((stage) => stage.key === statusFilter);
     }
     return DEAL_STAGES;
-  }, [filters.status]);
+  }, [statusFilter]);
 
   const kanbanColumns = useMemo(
     () =>
       buildScopedKanbanColumns({
         items: deals,
         stages: kanbanStages,
-        scopeValue: filters.status && filters.status !== 'all' ? 'ALL' : boardScope,
+        scopeValue: statusFilter ? 'ALL' : boardScope,
         columnMeta: isTrashView ? undefined : columnMeta,
       }),
-    [columnMeta, boardScope, deals, filters.status, isTrashView, kanbanStages],
+    [columnMeta, boardScope, deals, isTrashView, kanbanStages, statusFilter],
   );
 
   const dealTerminalZones = useMemo(() => buildTerminalDropZones(DEAL_STAGES), []);

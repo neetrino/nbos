@@ -44,6 +44,7 @@ import {
 import { useExpensePlansCsvExport } from '@/features/finance/components/expenses/use-expense-plans-csv-export';
 import { PROJECTS_PAGE_SIZE } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import {
   buildExpensePlanListApiParams,
   buildExpensePlanListExportParams,
@@ -96,6 +97,7 @@ export function ExpensePlansPageContent() {
   const gridYear = parseGridYearParam(searchParams.get(EXPENSE_PLANS_LIST_YEAR_QUERY));
 
   const [view, setView] = useExpensePlansViewMode();
+  const displayView = useMobilePreferredView(view, 'grid');
   const [searchDraft, setSearchDraft] = useState(urlSearch);
   const debouncedSearchDraft = useDebouncedValue(searchDraft, EXPENSE_PLANS_SEARCH_DEBOUNCE_MS);
   const [plans, setPlans] = useState<ExpensePlan[]>([]);
@@ -377,9 +379,9 @@ export function ExpensePlansPageContent() {
     });
   }, [replaceListUrl, setPlanFilters]);
 
-  const showListPanel = view === 'list';
-  const showGridPanel = view === 'grid';
-  const showBoardPanel = view === 'board';
+  const showListPanel = displayView === 'list';
+  const showGridPanel = displayView === 'grid';
+  const showBoardPanel = displayView === 'board';
 
   const openPlanIdFromUrl = searchParams.get(OPEN_EXPENSE_PLAN_QUERY)?.trim() || null;
   const openExpenseIdFromUrl = searchParams.get(OPEN_EXPENSE_QUERY)?.trim() || null;

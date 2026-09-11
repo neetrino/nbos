@@ -1,10 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { tasksApi, type WorkSpace, type WorkSpaceListPayload } from '@/lib/api/tasks';
 import {
   WORK_SPACES_PAGE_SIZE,
   WORK_SPACES_SEARCH_DEBOUNCE_MS,
 } from './work-spaces-page-constants';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilterField } from '@/lib/persisted-client-state';
+import {
+  parseWorkSpaceDirectoryTab,
+  WORK_SPACES_DIRECTORY_TAB_QUERY,
+  workSpacesDirectorySearch,
+  type WorkSpaceDirectoryTab,
+} from './work-spaces-directory-tab';
+
+export type { WorkSpaceDirectoryTab };
 
 type WorkSpaceModeFilter = 'all' | 'scrum' | 'kanban';
 
@@ -12,8 +21,6 @@ function parseWorkSpaceModeFilter(raw: string): WorkSpaceModeFilter {
   if (raw === 'scrum' || raw === 'kanban') return raw;
   return 'all';
 }
-
-export type WorkSpaceDirectoryTab = 'standalone' | 'product';
 
 const TYPE_BY_TAB: Record<WorkSpaceDirectoryTab, WorkSpace['type']> = {
   standalone: 'STANDALONE_OPERATIONAL',
@@ -28,7 +35,10 @@ const emptyMeta = () => ({
 });
 
 export function useWorkSpacesDirectory() {
-  const [tab, setTab] = useState<WorkSpaceDirectoryTab>('standalone');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tab = parseWorkSpaceDirectoryTab(searchParams.get(WORK_SPACES_DIRECTORY_TAB_QUERY));
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [modeRaw, setModeRaw] = usePersistedSearchFilterField(
@@ -54,12 +64,16 @@ export function useWorkSpacesDirectory() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, mode]);
+  }, [debouncedSearch, mode, tab]);
 
-  const handleTabChange = useCallback((next: WorkSpaceDirectoryTab) => {
-    setTab(next);
-    setPage(1);
-  }, []);
+  const handleTabChange = useCallback(
+    (next: WorkSpaceDirectoryTab) => {
+      if (next === tab) return;
+      const qs = workSpacesDirectorySearch(next, searchParams.toString());
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
+    },
+    [pathname, router, searchParams, tab],
+  );
 
   const fetchList = useCallback(async () => {
     setLoading(true);

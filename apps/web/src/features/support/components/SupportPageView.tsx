@@ -34,7 +34,7 @@ export function SupportPageView() {
   );
 
   return (
-    <div className="flex h-full flex-col gap-5">
+    <div className="flex h-full flex-col gap-5 max-md:gap-3">
       <SupportPageHero
         search={query.search}
         onSearchChange={query.setSearch}

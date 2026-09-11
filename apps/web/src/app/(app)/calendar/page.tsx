@@ -163,6 +163,8 @@ export default function CalendarPage() {
             onChange={persistLayer}
             options={CALENDAR_LAYER_OPTIONS}
             ariaLabel="Calendar layers"
+            showOnMobile
+            registerMobileDock={false}
           />
         }
         trailing={

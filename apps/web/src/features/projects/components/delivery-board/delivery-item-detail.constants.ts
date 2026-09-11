@@ -1,3 +1,5 @@
+import { SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
+
 export const DELIVERY_DETAIL_TABS = [
   { id: 'general' as const, label: 'General' },
   { id: 'workspace' as const, label: 'Work Space' },
@@ -18,8 +20,7 @@ export const DELIVERY_DETAIL_SHEET_CONTENT_CLASS =
   'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[60vw]';
 
 /** Floating rail seam for {@link DELIVERY_DETAIL_SHEET_CONTENT_CLASS}. */
-export const DELIVERY_DETAIL_SHEET_RAIL_ANCHOR_CLASS =
-  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[60vw]';
+export const DELIVERY_DETAIL_SHEET_RAIL_ANCHOR_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[60vw]`;
 
 /**
  * General tab: wider left (planning, access, team) + narrow Stage readiness / Client & order column.

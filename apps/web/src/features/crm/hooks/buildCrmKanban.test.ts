@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildScopedKanbanColumns } from './buildCrmKanban';
+import { buildScopedKanbanColumns, resolveCrmKanbanStatusFilter } from './buildCrmKanban';
 
 const STAGES = [
   { key: 'A', label: 'A', color: 'bg-blue-500', hexColor: '#3B82F6' },
@@ -25,5 +25,19 @@ describe('buildScopedKanbanColumns', () => {
     expect(columns[0]?.items).toHaveLength(2);
     expect(columns[0]?.totalCount).toBe(12);
     expect(columns[0]?.hasMore).toBe(true);
+  });
+});
+
+describe('resolveCrmKanbanStatusFilter', () => {
+  it('keeps a desktop stage filter so one-column boards still work', () => {
+    expect(resolveCrmKanbanStatusFilter('NEW', false)).toBe('NEW');
+  });
+
+  it('ignores a persisted stage on mobile so all lifecycle columns stay visible', () => {
+    expect(resolveCrmKanbanStatusFilter('NEW', true)).toBeUndefined();
+  });
+
+  it('treats all as no stage filter', () => {
+    expect(resolveCrmKanbanStatusFilter('all', false)).toBeUndefined();
   });
 });

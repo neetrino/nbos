@@ -115,7 +115,9 @@ function BonusEntryIdentityCard({ entry }: { entry: BonusEntryListRow }) {
       <div
         className={cn(
           'border-border grid border-t',
-          showPercent ? 'divide-border grid-cols-2 divide-x' : 'grid-cols-1',
+          showPercent
+            ? 'divide-border grid-cols-1 divide-y sm:grid-cols-2 sm:divide-x sm:divide-y-0'
+            : 'grid-cols-1',
         )}
       >
         <BonusIdentityDetailRow icon={Hash} label="Order" value={entry.order.code} />

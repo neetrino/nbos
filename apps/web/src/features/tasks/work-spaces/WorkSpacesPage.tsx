@@ -30,6 +30,7 @@ import {
   WorkSpacesEntitySheetsHost,
 } from './WorkSpacesEntitySheetsHost';
 import { useWorkSpacesDirectory } from './use-work-spaces-directory';
+import { WorkSpacesDirectoryHeaderNav } from './WorkSpacesDirectoryHeaderNav';
 
 type WorkSpaceView = 'grid' | 'list';
 
@@ -121,6 +122,7 @@ export function WorkSpacesPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
+      <WorkSpacesDirectoryHeaderNav tab={tab} />
       <PageHero
         title="Work Spaces"
         tabs={
@@ -129,6 +131,7 @@ export function WorkSpacesPage() {
             onChange={setTab}
             options={tabOptions}
             ariaLabel="Work space type"
+            registerMobileDock={false}
           />
         }
         search={

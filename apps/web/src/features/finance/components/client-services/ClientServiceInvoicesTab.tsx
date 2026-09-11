@@ -8,6 +8,7 @@ import {
   DetailSheetSection,
   EntityItemList,
   useOpenEntityItemFromSummary,
+  useEntityItemMobileView,
   ViewModeSwitch,
   ENTITY_ITEM_VIEW_OPTIONS,
   type EntityItemVariant,
@@ -30,6 +31,7 @@ export function ClientServiceInvoicesTab({
 }: ClientServiceInvoicesTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
+  const displayVariant = useEntityItemMobileView(viewVariant);
   const invoices = useMemo(() => links?.invoices ?? [], [links?.invoices]);
   const firstInvoice = invoices[0];
 
@@ -61,7 +63,7 @@ export function ClientServiceInvoicesTab({
 
       <EntityItemList
         items={itemSummaries}
-        variant={viewVariant}
+        variant={displayVariant}
         onOpen={onOpenItem}
         emptyIcon={FileText}
         emptyTitle="No invoices"

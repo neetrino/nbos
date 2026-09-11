@@ -39,6 +39,7 @@ export function ReportsHeaderContextLayout() {
       kind: 'nav',
       ariaLabel: 'Reports areas',
       items,
+      mobileVariant: 'tabs',
     };
   }, [pathname]);
 

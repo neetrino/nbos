@@ -13,7 +13,7 @@ export default function BonusLayout({ children }: { children: ReactNode }) {
         linkToHeaderTab
         title="Finance"
         tabs={<PageHeroNavLinks items={FINANCE_PAYROLL_NAV} ariaLabel="Finance payroll sections" />}
-        className="flex h-full min-h-0 flex-col gap-5"
+        className="flex h-full min-h-0 min-w-0 flex-col gap-5"
       >
         {children}
       </ModuleHeroSlotProvider>

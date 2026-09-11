@@ -24,10 +24,8 @@ import { KanbanTerminalDropBar } from './kanban/KanbanTerminalDropBar';
 import { KanbanColumnQuickCreate } from './kanban/KanbanColumnQuickCreate';
 import { KanbanColumnLoadMore } from './kanban/KanbanColumnLoadMore';
 import { KanbanScrollEdgeControls } from './kanban/KanbanScrollEdgeControls';
-import {
-  KANBAN_HORIZONTAL_SCROLL_HIDE_SCROLLBAR_CLASS,
-  useKanbanHorizontalScroll,
-} from './kanban/use-kanban-horizontal-scroll';
+import { KANBAN_BOARD_SCROLL_CLASS } from './kanban/kanban-scroll-classes';
+import { useKanbanHorizontalScroll } from './kanban/use-kanban-horizontal-scroll';
 import {
   KANBAN_CARD_MOVED_HIGHLIGHT_MS,
   KANBAN_COLUMN_X_MARGIN_TOTAL_PX,
@@ -84,7 +82,6 @@ export function KanbanBoard<T>({
     resolvedColumnWidth,
     startAutoScroll,
     stopAutoScroll,
-    scrollByOneColumn,
   } = useKanbanHorizontalScroll({
     columnWidth,
     layoutKey: columns.length,
@@ -290,24 +287,18 @@ export function KanbanBoard<T>({
   );
 
   return (
-    <div className="relative flex h-full min-w-0 flex-col">
+    <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col">
       <KanbanScrollEdgeControls
         canScrollLeft={canScrollLeft}
         canScrollRight={canScrollRight}
         isMobile={isMobileViewport}
-        onStep={scrollByOneColumn}
         onHoverStart={startAutoScroll}
         onHoverEnd={stopAutoScroll}
       />
 
       <div
         ref={scrollRef}
-        className={cn(
-          'min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-hidden pb-2',
-          KANBAN_HORIZONTAL_SCROLL_HIDE_SCROLLBAR_CLASS,
-          isMobileViewport && 'snap-x snap-mandatory',
-          dragItem && terminalDropZones?.length && 'pb-28',
-        )}
+        className={cn(KANBAN_BOARD_SCROLL_CLASS, dragItem && terminalDropZones?.length && 'pb-28')}
       >
         <div
           className="flex h-full gap-0"
@@ -326,7 +317,7 @@ export function KanbanBoard<T>({
               showDropPreview && dropInsert?.columnKey === column.key ? dropInsert.index : null;
 
             return (
-              <div key={column.key} className={cn('flex h-full', isMobileViewport && 'snap-start')}>
+              <div key={column.key} className="flex h-full">
                 {/* "+" between columns (before this column, except first) */}
                 {idx > 0 &&
                   addingAfter !== columns[idx - 1]?.key &&
@@ -355,7 +346,7 @@ export function KanbanBoard<T>({
                   </div>
 
                   <div
-                    className="min-h-0 flex-1 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                     {...{ [KANBAN_COLUMN_DROP_ZONE_DATA_ATTR]: column.key }}
                     onDragOver={(event) => handleColumnDragOver(event, column.key)}
                     onDrop={() => handleDrop(column.key, column.items)}
@@ -381,13 +372,20 @@ export function KanbanBoard<T>({
                               heightPx={dragCardHeightPx}
                             />
                             <div
-                              draggable
-                              onDragStart={(event) => handleDragStart(id, column.key, event)}
-                              onDragEnd={clearDragState}
+                              draggable={!isMobileViewport}
+                              onDragStart={
+                                isMobileViewport
+                                  ? undefined
+                                  : (event) => handleDragStart(id, column.key, event)
+                              }
+                              onDragEnd={isMobileViewport ? undefined : clearDragState}
                               {...{ [KANBAN_CARD_ROW_DATA_ATTR]: true }}
                               data-item-id={id}
                               className={cn(
-                                'min-w-0 cursor-grab transition-opacity duration-150 active:cursor-grabbing',
+                                'min-w-0 transition-opacity duration-150',
+                                isMobileViewport
+                                  ? 'cursor-pointer'
+                                  : 'cursor-grab active:cursor-grabbing',
                                 dragItem?.id === id && 'scale-[0.97] opacity-50',
                                 recentlyMoved.has(id) && 'animate-in fade-in duration-150',
                               )}

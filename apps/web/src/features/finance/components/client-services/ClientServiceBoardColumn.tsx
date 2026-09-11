@@ -20,6 +20,8 @@ interface ClientServiceBoardColumnProps {
   onOpen: (service: ClientServiceRecord) => void;
   showLeftRule?: boolean;
   seed?: ClientServiceListSeed | null;
+  /** Desktop fixed width or mobile full-bleed width from board scroller. */
+  columnWidth?: number;
 }
 
 function ClientServiceKanbanColumnHeader({
@@ -62,6 +64,7 @@ export function ClientServiceBoardColumn({
   onOpen,
   showLeftRule = false,
   seed,
+  columnWidth = CLIENT_SERVICE_BOARD_COLUMN_WIDTH,
 }: ClientServiceBoardColumnProps) {
   const { items, loading, loadingMore, error, hasMore, loadMore } = useClientServiceList(
     params,
@@ -73,7 +76,7 @@ export function ClientServiceBoardColumn({
   return (
     <div
       className="relative mx-2 flex h-full min-h-0 shrink-0 flex-col"
-      style={{ width: CLIENT_SERVICE_BOARD_COLUMN_WIDTH }}
+      style={{ width: columnWidth }}
     >
       {showLeftRule ? <div className={KANBAN_COLUMN_LEFT_RULE_CLASS} aria-hidden /> : null}
 

@@ -1,18 +1,21 @@
 'use client';
 
+import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Settings, UserCircle2, X } from 'lucide-react';
+import { Settings, UserCircle2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { useMyAccountSheet } from '@/features/account/components/my-account-sheet-provider';
 import { cn } from '@/lib/utils';
 import type { NavModuleDefinition } from '@/lib/navigation/nav-config';
+import { BottomSheetSwipeHandle } from './BottomSheetSwipeHandle';
 import { MobileAppMenuTile } from './MobileAppMenuTile';
 import {
   MOBILE_APP_MENU_GRID_CLASS,
-  MOBILE_APP_MENU_HANDLE_CLASS,
   MOBILE_APP_MENU_SHEET_CLASS,
   MOBILE_APP_MENU_TILE_CLASS,
 } from './mobile-app-menu-constants';
+import { BOTTOM_SHEET_SWIPE_PANEL_CLASS } from './bottom-sheet-swipe';
+import { useBottomSheetSwipeToClose } from './use-bottom-sheet-swipe-to-close';
 
 const MOBILE_APP_MENU_FOOTER_ICON_SIZE_PX = 20;
 
@@ -23,29 +26,29 @@ interface MobileAppMenuProps {
 }
 
 export function MobileAppMenu({ open, onOpenChange, items }: MobileAppMenuProps) {
-  const close = () => onOpenChange(false);
+  const close = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const handleRef = useBottomSheetSwipeToClose(open, close);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" showCloseButton={false} className={MOBILE_APP_MENU_SHEET_CLASS}>
+      <SheetContent
+        side="bottom"
+        showCloseButton={false}
+        className={cn(MOBILE_APP_MENU_SHEET_CLASS, BOTTOM_SHEET_SWIPE_PANEL_CLASS)}
+      >
         <SheetTitle className="sr-only">Menu</SheetTitle>
         <SheetDescription className="sr-only">
           Open a module. Items are arranged as large buttons.
         </SheetDescription>
         <div className="flex min-h-0 flex-1 flex-col">
-          <span className={MOBILE_APP_MENU_HANDLE_CLASS} aria-hidden />
-          <div className="flex items-center justify-between px-4 pt-3 pb-2">
+          <BottomSheetSwipeHandle handleRef={handleRef} />
+          <div className="touch-none px-4 pt-3 pb-2">
             <p className="text-foreground text-lg font-semibold tracking-tight">Menu</p>
-            <button
-              type="button"
-              onClick={close}
-              aria-label="Close menu"
-              className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-9 items-center justify-center rounded-full"
-            >
-              <X size={18} aria-hidden />
-            </button>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5">
+          <div
+            data-nbos-sheet-swipe-scroll=""
+            className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 pb-5"
+          >
             <div className={MOBILE_APP_MENU_GRID_CLASS}>
               {items.map((item) => (
                 <MobileAppMenuTile key={item.key} item={item} onNavigate={close} />

@@ -12,6 +12,9 @@ import {
   DetailSheetTabBar,
   DetailSheetTabPanel,
   DeleteConfirmDialog,
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
   EntityDetailSheetContent,
   StatusBadge,
 } from '@/components/shared';
@@ -24,6 +27,8 @@ import {
 import { getEmployeeLevel, getEmployeeStatus } from '@/features/hr/constants/hr';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { employeeFullName, employeePrimaryDepartment } from '@/features/hr/utils/employee-display';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
+import { cn } from '@/lib/utils';
 import {
   departmentsApi,
   employeesApi,
@@ -95,6 +100,7 @@ export function EmployeeSheet({
   forceNestedBackdrop = false,
   onRemoveParticipant,
 }: EmployeeSheetProps) {
+  const isMobileViewport = useIsMobileViewport();
   const { persistedValue: renderEmployee, onOpenChangeComplete } = useSheetPersistedValue(employee);
   const hostMounted = useSheetHostMounted(open, renderEmployee);
 
@@ -311,8 +317,41 @@ export function EmployeeSheet({
         }
       >
         <div className="flex h-full min-h-0 flex-col">
-          <div className={TEAM_SHEET_HEADER_CLASS}>
-            <div className="flex items-start gap-3">
+          <div
+            className={cn(
+              isMobileViewport ? DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS : TEAM_SHEET_HEADER_CLASS,
+              isMobileViewport && 'border-border border-b',
+            )}
+          >
+            {isMobileViewport ? (
+              <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>
+                {!selfProfile && canEdit && displayEmployee.status !== 'TERMINATED' ? (
+                  <DetailSheetSettingsMenu>
+                    <DropdownMenuItem
+                      className="text-destructive"
+                      onClick={() => setTerminateOpen(true)}
+                    >
+                      <UserX className="mr-2 size-4" />
+                      Offboard employee
+                    </DropdownMenuItem>
+                  </DetailSheetSettingsMenu>
+                ) : null}
+                {!selfProfile && canReactivate && displayEmployee.status === 'TERMINATED' ? (
+                  <DetailSheetSettingsMenu>
+                    <DropdownMenuItem onClick={() => setReactivateOpen(true)}>
+                      <UserCheck className="mr-2 size-4" />
+                      Reactivate employee
+                    </DropdownMenuItem>
+                  </DetailSheetSettingsMenu>
+                ) : null}
+              </div>
+            ) : null}
+            <div
+              className={cn(
+                'flex items-start gap-3',
+                isMobileViewport && DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+              )}
+            >
               <EmployeePersonAvatar
                 label={fullName}
                 imageUrl={displayEmployee.avatar}
@@ -351,7 +390,10 @@ export function EmployeeSheet({
                   </Button>
                 ) : null}
               </div>
-              {!selfProfile && canEdit && displayEmployee.status !== 'TERMINATED' && (
+              {!isMobileViewport &&
+              !selfProfile &&
+              canEdit &&
+              displayEmployee.status !== 'TERMINATED' ? (
                 <DetailSheetSettingsMenu>
                   <DropdownMenuItem
                     className="text-destructive"
@@ -361,19 +403,27 @@ export function EmployeeSheet({
                     Offboard employee
                   </DropdownMenuItem>
                 </DetailSheetSettingsMenu>
-              )}
-              {!selfProfile && canReactivate && displayEmployee.status === 'TERMINATED' && (
+              ) : null}
+              {!isMobileViewport &&
+              !selfProfile &&
+              canReactivate &&
+              displayEmployee.status === 'TERMINATED' ? (
                 <DetailSheetSettingsMenu>
                   <DropdownMenuItem onClick={() => setReactivateOpen(true)}>
                     <UserCheck className="mr-2 size-4" />
                     Reactivate employee
                   </DropdownMenuItem>
                 </DetailSheetSettingsMenu>
-              )}
+              ) : null}
             </div>
           </div>
 
-          <DetailSheetTabBar tabs={employeeTabs} activeTab={activeTab} onTabChange={setActiveTab} />
+          <DetailSheetTabBar
+            tabs={employeeTabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            className="max-md:mt-3 max-md:px-5"
+          />
 
           <ScrollArea className="min-h-0 flex-1">
             <DetailSheetTabPanel tabKey={activeTab}>

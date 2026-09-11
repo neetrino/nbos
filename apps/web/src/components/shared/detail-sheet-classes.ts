@@ -25,11 +25,11 @@ export const SHEET_FLOATING_RAIL_TOP_INSET_CLASS = 'sm:top-[calc(2.5vh+1.5rem)]'
 export const SHEET_MOBILE_PANEL_WIDTH_CLASS = 'data-[side=right]:w-[85vw]';
 
 /**
- * Floating rail at the left seam of an 85vw mobile right sheet.
- * {@code translate-x-px} pulls the rail flush into the panel edge (no hairline gap).
+ * Floating rail at the left of the mobile sheet — same inset as page Back (`px-4`).
+ * Desktop anchors keep attaching to the panel seam via `sm:right-[…]`.
  */
 export const SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS =
-  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px';
+  'max-sm:left-4 max-sm:right-auto max-sm:translate-x-0';
 
 /**
  * Horizontal anchor for page settings sheets.
@@ -95,7 +95,8 @@ export const DETAIL_SHEET_CONTENT_WIDTH_AUXILIARY_CLASS =
 export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_AUXILIARY_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[min(36rem,calc(100vw-2rem-2.75rem))]`;
 
 /** Block surface aligned with Deal General sections. */
-export const DETAIL_SHEET_SECTION_SURFACE_CLASS = 'rounded-2xl border border-border bg-card p-5';
+export const DETAIL_SHEET_SECTION_SURFACE_CLASS =
+  'rounded-2xl border border-border bg-card p-5 max-md:p-4';
 
 /** Section heading style (uppercase micro label) — primary blue, matches Delivery. */
 export const DETAIL_SHEET_SECTION_TITLE_CLASS =
@@ -309,10 +310,28 @@ export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
 /** Use on Save / Cancel in detail sheets and sticky form footers. */
 export const DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE = 'form' as const;
 
-/** Tab strip wrapper for entity detail sheets. Button styles: {@link pillTabButtonClass} in `ui/tabs`. */
-export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'min-w-0 shrink-0 px-5 pb-0';
+/**
+ * Mobile entity-sheet header shell — title/actions sit below floating Back
+ * (`max-sm:top-3` + `size-9`), so text does not run under the control.
+ * Pair with {@link useIsMobileViewport} (do not rely on CSS alone).
+ */
+export const DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS = 'bg-background min-w-0 shrink-0 pb-3';
 
-export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS = 'flex items-center gap-1 overflow-x-auto';
+/** Top row aligned with floating Back; put trailing sheet actions here on mobile.
+ * `mt-3` (not `pt-3`) + `min-h-9` so an empty row still clears Back (`top-3` + `size-9`)
+ * and action centers stay aligned with the control.
+ */
+export const DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS =
+  'mt-3 flex min-h-9 items-center justify-end gap-1.5 px-4';
+
+/** Title / identity block under the Back clearance row on mobile. */
+export const DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS = 'mt-6 px-4';
+
+/** Tab strip wrapper for entity detail sheets. Button styles: {@link pillTabButtonClass} in `ui/tabs`. */
+export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'min-w-0 shrink-0 px-5 pb-0 max-md:px-0';
+
+export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS =
+  'flex items-center gap-1 overflow-x-auto overscroll-x-contain touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 /** Fade + slide for sheet tab body crossfade (see globals.css). */
 export const DETAIL_SHEET_TAB_PANEL_TRANSITION_CLASS = 'detail-sheet-tab-panel-transition';

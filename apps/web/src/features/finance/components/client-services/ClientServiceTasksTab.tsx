@@ -8,6 +8,7 @@ import {
   DetailSheetSection,
   EntityItemList,
   useOpenEntityItemFromSummary,
+  useEntityItemMobileView,
   ViewModeSwitch,
   ENTITY_ITEM_VIEW_OPTIONS,
   type EntityItemVariant,
@@ -36,6 +37,7 @@ export function ClientServiceTasksTab({
 }: ClientServiceTasksTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
+  const displayVariant = useEntityItemMobileView(viewVariant);
   const tasks = useMemo(() => links?.tasks ?? [], [links?.tasks]);
   const firstTask = tasks[0];
 
@@ -61,7 +63,7 @@ export function ClientServiceTasksTab({
 
       <EntityItemList
         items={itemSummaries}
-        variant={viewVariant}
+        variant={displayVariant}
         onOpen={onOpenItem}
         emptyIcon={CheckSquare}
         emptyTitle="No tasks"

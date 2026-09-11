@@ -2,6 +2,12 @@
 
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import {
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+} from '@/components/shared/detail-sheet-classes';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 
 interface CrmSheetEntityHeaderProps {
@@ -42,6 +48,53 @@ export function CrmSheetEntityHeader({
   actions,
   titleClassName,
 }: CrmSheetEntityHeaderProps) {
+  const isMobileViewport = useIsMobileViewport();
+
+  if (isMobileViewport) {
+    return (
+      <div className={DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS}>
+        <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>{actions}</div>
+        <div
+          className={cn(
+            DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+            'flex min-w-0 items-start gap-3',
+          )}
+        >
+          <div className={cn('flex min-w-0 flex-1 items-start gap-2', titleClassName)}>
+            <EntityIcon className={cn('mt-0.5 size-5 shrink-0', headerIconClassName)} aria-hidden />
+            {editing ? (
+              <input
+                ref={nameInputRef}
+                value={nameValue}
+                onChange={(e) => onNameValueChange(e.target.value)}
+                onBlur={onCommitName}
+                onKeyDown={onNameKeyDown}
+                placeholder={namePlaceholder}
+                className="border-primary text-foreground placeholder:text-muted-foreground/70 w-full min-w-0 border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
+              />
+            ) : (
+              <h2
+                onClick={onStartEditing}
+                className="text-foreground hover:bg-muted line-clamp-2 max-w-full min-w-0 cursor-text rounded text-xl leading-snug font-bold tracking-tight break-words transition-colors"
+                title={titleEditHint}
+              >
+                {title}
+              </h2>
+            )}
+          </div>
+          <span
+            className={cn(
+              'mt-1 shrink-0 rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase',
+              headerBadgeClassName,
+            )}
+          >
+            {entityLabel}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-background min-w-0 shrink-0 px-7 pt-5 pb-3">
       <div className="flex min-w-0 flex-wrap items-start gap-2">

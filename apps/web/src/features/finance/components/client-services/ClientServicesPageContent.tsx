@@ -39,6 +39,7 @@ import {
   type ClientServiceRecordListParams,
 } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 const CLIENT_SERVICE_FILTER_DEFAULTS: Record<string, string> = {
@@ -63,6 +64,7 @@ function ClientServicesPageInner() {
   const openServiceIdFromUrl = searchParams.get(OPEN_CLIENT_SERVICE_QUERY)?.trim() || null;
 
   const [view, handleViewChange] = useClientServicesViewMode();
+  const displayView = useMobilePreferredView(view, 'months');
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [reloadToken, setReloadToken] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
@@ -220,13 +222,13 @@ function ClientServicesPageInner() {
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
       <div className="flex min-h-0 flex-1 flex-col">
-        {view === 'status' ? (
+        {displayView === 'status' ? (
           <ClientServiceStatusBoardView
             baseParams={baseParams}
             reloadToken={reloadToken}
             onOpen={openServiceDetail}
           />
-        ) : view === 'months' ? (
+        ) : displayView === 'months' ? (
           <ClientServiceMonthsBoardView
             baseParams={baseParams}
             year={year}

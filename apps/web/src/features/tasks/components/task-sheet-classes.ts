@@ -1,5 +1,7 @@
 /** Layout / surface class strings for {@link TaskSheet}. */
 
+import { SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
+
 /** Right task sheet width on sm+ (fraction of viewport). */
 export const TASK_SHEET_VIEWPORT_WIDTH_FRACTION = 0.8;
 
@@ -8,8 +10,7 @@ export const TASK_SHEET_WIDTH_CLASS =
   'flex w-full flex-col gap-0 overflow-hidden p-0 shadow-2xl data-[side=right]:w-[90vw] sm:max-w-none sm:data-[side=right]:w-[80vw]';
 
 /** Anchor floating rail to the left edge of {@link TASK_SHEET_WIDTH_CLASS}. */
-export const TASK_SHEET_RAIL_ANCHOR_CLASS =
-  'max-sm:left-auto max-sm:right-[90vw] max-sm:translate-x-px sm:right-[80vw]';
+export const TASK_SHEET_RAIL_ANCHOR_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[80vw]`;
 
 export const TASK_SHEET_DETAIL_COLUMN_CLASS =
   'flex min-h-0 flex-1 flex-col border-border/50 bg-muted/25 xl:min-w-0 xl:border-r dark:bg-muted/15';

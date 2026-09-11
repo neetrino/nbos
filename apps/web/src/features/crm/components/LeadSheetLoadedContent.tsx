@@ -172,7 +172,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
       />
 
       <ScrollArea className="min-h-0 min-w-0 flex-1">
-        <div className="px-7 py-5">
+        <div className="px-7 py-5 max-md:px-4">
           <DetailSheetTabPanel tabKey={props.activeTab}>
             {props.activeTab === 'general' && generalDraft ? (
               <LeadGeneralTab

@@ -4,6 +4,8 @@ import {
   useRegisterMobileDockTools,
   useRegisterMobileDockWorkspaceActions,
 } from '@/components/layout/MobileModuleDockProvider';
+import { cn } from '@/lib/utils';
+import { PAGE_HERO_TAB_SCROLL } from './page-hero-constants';
 import { PageHeroDesktopChrome } from './PageHeroDesktopChrome';
 import { PageHeroToolbarProvider } from './page-hero-toolbar-context';
 import type { PageHeroProps } from './page-hero-types';
@@ -34,7 +36,9 @@ function PageHeroInner(props: PageHeroProps) {
     return (
       <>
         {tabs}
-        {secondaryTabs}
+        {secondaryTabs ? (
+          <div className={cn(PAGE_HERO_TAB_SCROLL, 'w-full min-w-0')}>{secondaryTabs}</div>
+        ) : null}
       </>
     );
   }

@@ -6,7 +6,7 @@ import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useRegisterMobileDockItems } from '@/components/layout/MobileModuleDockProvider';
 import type { MobileDockItem } from '@/components/layout/mobile-module-dock-types';
 import { cn } from '@/lib/utils';
-import { PAGE_HERO_PILL_GROUP } from './page-hero-constants';
+import { PAGE_HERO_PILL_GROUP, PAGE_HERO_TAB_SCROLL } from './page-hero-constants';
 import {
   PAGE_HERO_TAB_BUTTON,
   PAGE_HERO_TAB_ICON,
@@ -28,7 +28,18 @@ export interface PageHeroTabsProps<T extends string> {
   className?: string;
   /** When true, tabs look inactive (e.g. lifecycle overlay). */
   dimmed?: boolean;
+  /** When false, mobile does not duplicate these tabs into the dock. */
+  registerMobileDock?: boolean;
+  /** When true, render the pill switcher on mobile (default hides; dock may own the tabs). */
+  showOnMobile?: boolean;
+  /**
+   * Mobile: stretch pills across the row.
+   * Default scrolls horizontally so long option lists stay reachable.
+   */
+  fullWidthOnMobile?: boolean;
 }
+
+const EMPTY_MOBILE_DOCK_ITEMS: MobileDockItem[] = [];
 
 export function PageHeroTabs<T extends string>({
   value,
@@ -37,20 +48,28 @@ export function PageHeroTabs<T extends string>({
   ariaLabel,
   className,
   dimmed = false,
+  registerMobileDock = true,
+  showOnMobile = false,
+  fullWidthOnMobile = false,
 }: PageHeroTabsProps<T>) {
   const isMobileViewport = useIsMobileViewport();
   const groupRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef(new Map<string, HTMLButtonElement>());
+  const shouldRegisterDock = registerMobileDock && !(isMobileViewport && showOnMobile);
+  const stretchMobile = Boolean(isMobileViewport && showOnMobile && fullWidthOnMobile);
+  const scrollMobile = Boolean(isMobileViewport && showOnMobile && !fullWidthOnMobile);
   const dockItems = useMemo<MobileDockItem[]>(
     () =>
-      options.map((option) => ({
-        id: `page-tab:${option.value}`,
-        label: option.label,
-        icon: option.icon,
-        active: !dimmed && option.value === value,
-        onSelect: () => onChange(option.value),
-      })),
-    [dimmed, onChange, options, value],
+      shouldRegisterDock
+        ? options.map((option) => ({
+            id: `page-tab:${option.value}`,
+            label: option.label,
+            icon: option.icon,
+            active: !dimmed && option.value === value,
+            onSelect: () => onChange(option.value),
+          }))
+        : EMPTY_MOBILE_DOCK_ITEMS,
+    [dimmed, onChange, options, shouldRegisterDock, value],
   );
   useRegisterMobileDockItems('secondary', dockItems);
 
@@ -63,17 +82,23 @@ export function PageHeroTabs<T extends string>({
     groupRef,
     getActiveElement,
     `${value}:${dimmed}`,
-    false,
+    scrollMobile,
   );
 
-  if (isMobileViewport) {
+  if (isMobileViewport && !showOnMobile) {
     return null;
   }
 
-  return (
+  const tabs = (
     <div
       ref={groupRef}
-      className={cn(PAGE_HERO_PILL_GROUP, 'relative shrink-0', dimmed && 'opacity-45', className)}
+      className={cn(
+        PAGE_HERO_PILL_GROUP,
+        'relative min-w-0 shrink-0',
+        stretchMobile ? 'w-full' : 'w-max',
+        dimmed && 'opacity-45',
+        !scrollMobile ? className : undefined,
+      )}
       role="tablist"
       aria-label={ariaLabel}
     >
@@ -101,6 +126,7 @@ export function PageHeroTabs<T extends string>({
             className={cn(
               PAGE_HERO_TAB_BUTTON,
               'relative z-10',
+              stretchMobile && 'max-md:flex-1 max-md:justify-center',
               active
                 ? 'text-primary-foreground'
                 : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
@@ -124,4 +150,10 @@ export function PageHeroTabs<T extends string>({
       })}
     </div>
   );
+
+  if (!scrollMobile) {
+    return tabs;
+  }
+
+  return <div className={cn(PAGE_HERO_TAB_SCROLL, 'w-full min-w-0', className)}>{tabs}</div>;
 }

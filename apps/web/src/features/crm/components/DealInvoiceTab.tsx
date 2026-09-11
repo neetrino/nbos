@@ -5,6 +5,7 @@ import { FileText, Plus } from 'lucide-react';
 import {
   EntityItemList,
   useOpenEntityItemFromSummary,
+  useEntityItemMobileView,
   ViewModeSwitch,
   ENTITY_ITEM_VIEW_OPTIONS,
   type EntityItemVariant,
@@ -29,6 +30,7 @@ export function DealInvoiceTab({ deal, onCreateOpenChange }: DealInvoiceTabProps
   const { can } = usePermission();
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
+  const displayVariant = useEntityItemMobileView(viewVariant);
 
   const taxStatus = deal.taxStatus ?? 'TAX';
   const canCreate = canOpenDealCreateInvoiceDialog(deal, taxStatus);
@@ -88,7 +90,7 @@ export function DealInvoiceTab({ deal, onCreateOpenChange }: DealInvoiceTabProps
 
       <EntityItemList
         items={itemSummaries}
-        variant={viewVariant}
+        variant={displayVariant}
         onOpen={onOpenItem}
         emptyIcon={FileText}
         emptyTitle="Invoices"

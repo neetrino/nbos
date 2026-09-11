@@ -11,12 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { LoadingState, RelationPickerField } from '@/components/shared';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { useEmployeeRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
 import { mailApi, type MailAccountAccessListDto, type MailAccountAccessRole } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { MailSheetPanelHeader } from './MailSheetPanelHeader';
 
 export interface ShareMailboxSheetProps {
   enabled: boolean;
@@ -111,10 +111,7 @@ export function ShareMailboxSheet({ enabled, accountId, accountEmail }: ShareMai
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <SheetHeader className="border-border shrink-0 border-b px-5 py-4">
-        <SheetTitle>Share mailbox</SheetTitle>
-        <SheetDescription>{accountEmail}</SheetDescription>
-      </SheetHeader>
+      <MailSheetPanelHeader title="Share mailbox" description={accountEmail} />
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
         {loading || !access ? (

@@ -38,7 +38,14 @@ export function ReportBarChart({ data }: { data: ChartDatum[] }) {
     <ChartFrame>
       <BarChart data={data} margin={{ top: 20, right: 10, left: 4, bottom: 4 }}>
         <CartesianGrid stroke="var(--border)" vertical={false} />
-        <XAxis dataKey="name" tickLine={false} axisLine={false} interval={0} tickMargin={8} />
+        <XAxis
+          dataKey="name"
+          tickLine={false}
+          axisLine={false}
+          interval={0}
+          tickMargin={10}
+          tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
+        />
         <YAxis tickLine={false} axisLine={false} width={54} tickFormatter={formatChartValue} />
         <Tooltip cursor={{ fill: 'var(--muted)' }} formatter={formatTooltipValue} />
         <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="var(--primary)" minPointSize={3}>
@@ -126,9 +133,11 @@ export function ReportPieChart({ data }: { data: ChartDatum[] }) {
   );
 }
 
+const CHART_FRAME_HEIGHT_CLASS = 'h-[280px]';
+
 function ChartFrame({ children }: { children: ReactElement }) {
   return (
-    <div className="nbos-desk-surface h-[280px] w-full px-2 pt-3">
+    <div className={`nbos-desk-surface w-full px-2 pt-3 ${CHART_FRAME_HEIGHT_CLASS}`}>
       <ResponsiveContainer width="100%" height="100%">
         {children}
       </ResponsiveContainer>

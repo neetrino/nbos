@@ -44,6 +44,7 @@ export function MarketingHeaderContextLayout() {
       kind: 'nav',
       ariaLabel: 'Marketing areas',
       items,
+      mobileVariant: 'tabs',
     };
   }, [pathname]);
 

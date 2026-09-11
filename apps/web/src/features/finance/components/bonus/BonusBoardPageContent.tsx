@@ -60,6 +60,7 @@ import {
   type BonusType,
 } from '@/lib/api/bonus';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
 const BONUS_FILTER_DEFAULTS: Record<string, string> = {
   type: 'ALL',
@@ -90,6 +91,7 @@ export function BonusBoardPageContent() {
   const projectFilter = bonusFilters.project ?? 'ALL';
   const boardScopeFilter = bonusFilters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE;
   const [view, handleViewChange] = useBonusBoardViewMode();
+  const displayView = useMobilePreferredView(view, 'board');
   const [createOpen, setCreateOpen] = useState(false);
   useEffect(() => {
     const raw = searchParams.get(BONUS_BOARD_PROJECT_FILTER_QUERY)?.trim();
@@ -351,7 +353,7 @@ export function BonusBoardPageContent() {
   );
 
   const boardBody = useMemo(() => {
-    switch (view) {
+    switch (displayView) {
       case 'list':
         return (
           <BonusBoardListView
@@ -375,7 +377,7 @@ export function BonusBoardPageContent() {
           />
         );
     }
-  }, [boardScope, filtered, openReleaseLedger, view]);
+  }, [boardScope, displayView, filtered, openReleaseLedger]);
 
   useModuleHeroSlots(moduleHeroSlots);
 

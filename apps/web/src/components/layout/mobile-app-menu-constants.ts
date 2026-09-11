@@ -5,7 +5,10 @@ export const MOBILE_APP_MENU_SHEET_CLASS = [
   'data-[side=bottom]:rounded-t-3xl data-[side=bottom]:border-t',
 ].join(' ');
 
-export const MOBILE_APP_MENU_HANDLE_CLASS = 'bg-border mx-auto mt-2 h-1 w-10 rounded-full';
+export const MOBILE_APP_MENU_HANDLE_CLASS = 'bg-border h-1 w-10 rounded-full';
+
+export const MOBILE_APP_MENU_HANDLE_HIT_CLASS =
+  'flex cursor-grab touch-none items-center justify-center pt-3.5 pb-1 active:cursor-grabbing';
 
 export const MOBILE_APP_MENU_GRID_CLASS = 'grid grid-cols-2 gap-2.5';
 

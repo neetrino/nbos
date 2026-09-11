@@ -9,6 +9,13 @@ export const MESSENGER_THREAD_COMPOSER_SURFACE_HEX = '#F5F5F0';
 /** Hash icon in thread header (channel + embedded task thread). */
 export const MESSENGER_THREAD_HASH_ICON_CLASS = 'text-[#E5A84B]';
 
+/**
+ * Floating Back on task chat sheet — same gold as the thread accent
+ * (overrides entity-sheet primary Close).
+ */
+export const MESSENGER_THREAD_SHEET_BACK_CLASS =
+  'bg-[#E5A84B] text-white hover:bg-[#d4983f] active:bg-[#d4983f]';
+
 /** Tailwind classes for the single-line composer input (matches MessengerThread). */
 export const MESSENGER_THREAD_COMPOSER_INPUT_CLASS =
   'flex-1 rounded-lg border border-black/[0.08] bg-[#F5F5F0] px-3 py-2 text-sm text-black placeholder:text-black/35 focus:ring-2 focus:ring-[#E5A84B]/30 focus:outline-none disabled:opacity-50';

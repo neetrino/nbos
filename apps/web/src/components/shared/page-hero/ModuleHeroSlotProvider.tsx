@@ -100,7 +100,9 @@ export function ModuleHeroSlotProvider({
               className={linkToHeaderTab ? '!mt-0' : undefined}
             />
           </div>
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col max-md:overflow-x-hidden max-md:overflow-y-auto">
+            {children}
+          </div>
         </div>
       </ModuleHeroSlotContext.Provider>
     </HeaderModuleTitleLockedContext.Provider>

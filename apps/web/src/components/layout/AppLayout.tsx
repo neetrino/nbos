@@ -11,11 +11,7 @@ import { HeaderContextDockRegistrar } from './header-context/HeaderContextDockRe
 import { MobileModuleDockProvider } from './MobileModuleDockProvider';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
-import {
-  APP_MAIN_CONTENT_DASHBOARD_MOBILE_INSET,
-  APP_MAIN_CONTENT_INSET,
-  APP_MAIN_CONTENT_MOBILE_DOCK_INSET,
-} from './app-layout-constants';
+import { APP_MAIN_CONTENT_INSET } from './app-layout-constants';
 import { MobileBottomNav } from './MobileBottomNav';
 import { PageEnter } from './PageEnter';
 import { SIDEBAR_WIDTH_COLLAPSED_PX, SIDEBAR_WIDTH_EXPANDED_PX } from './sidebar-layout-constants';
@@ -49,7 +45,6 @@ export function AppLayout({ children }: AppLayoutProps) {
   const autoCollapsedRef = useRef(false);
   const isDocumentsRoute = pathname.startsWith('/documents');
   const isMessengerRoute = pathname.startsWith('/messenger');
-  const isDashboardRoute = pathname === '/dashboard';
 
   useEffect(() => {
     if (isMobileViewport) return;
@@ -91,7 +86,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                       <EmployeeDirectoryWarmup />
                       <HeaderContextDockRegistrar />
                       <div
-                        className="nbos-app-canvas grid h-screen overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
+                        className="nbos-app-canvas grid h-dvh overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
                         style={{ gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr)` }}
                       >
                         <Sidebar
@@ -100,21 +95,24 @@ export function AppLayout({ children }: AppLayoutProps) {
                           mobileOpen={isMobileViewport ? mobileNavOpen : undefined}
                           onMobileOpenChange={isMobileViewport ? setMobileNavOpen : undefined}
                         />
-                        <div className="flex min-w-0 flex-col overflow-hidden">
+                        <div className="flex min-h-0 min-w-0 flex-col overflow-hidden">
                           <Topbar />
                           <main
                             className={cn(
-                              'flex min-h-0 flex-1 flex-col overscroll-contain bg-transparent',
+                              'flex min-h-0 min-w-0 flex-1 flex-col overscroll-contain bg-transparent',
                               isMessengerRoute
                                 ? 'overflow-hidden'
-                                : 'overflow-y-auto [scrollbar-gutter:stable]',
+                                : 'overflow-y-auto [scrollbar-gutter:stable] max-md:[scrollbar-gutter:auto]',
                               APP_MAIN_CONTENT_INSET,
-                              APP_MAIN_CONTENT_MOBILE_DOCK_INSET,
-                              isDashboardRoute && APP_MAIN_CONTENT_DASHBOARD_MOBILE_INSET,
-                              isDashboardRoute && 'max-md:[scrollbar-gutter:auto]',
                             )}
                           >
-                            <PageEnter className={isMessengerRoute ? 'overflow-hidden' : undefined}>
+                            <PageEnter
+                              className={
+                                isMessengerRoute
+                                  ? 'overflow-hidden'
+                                  : 'max-md:overflow-x-hidden max-md:overflow-y-auto'
+                              }
+                            >
                               {children}
                             </PageEnter>
                           </main>

@@ -1,20 +1,22 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { LayoutGrid, Plus } from 'lucide-react';
+import { LayoutGrid } from 'lucide-react';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 import { MobileDockOverflowSheet } from './MobileDockOverflowSheet';
+import { MobileDockItem } from './MobileDockItem';
 import { MobileDockSwitcherButton } from './MobileDockSwitcherButton';
 import { MobilePageSearchSheet } from './MobilePageSearchSheet';
+import { MobileWorkspaceCreateButton } from './MobileWorkspaceCreateButton';
 import { useMobileModuleDockResolved } from './MobileModuleDockProvider';
 import { usePageHeroDockCreate } from './use-page-hero-dock-create';
-import { MOBILE_DOCK_HEIGHT_CLASS, MOBILE_DOCK_ITEM_CLASS } from './mobile-bottom-nav-constants';
 import {
-  MOBILE_WORKSPACE_CREATE_LABEL,
-  MOBILE_WORKSPACE_SWITCHER_MULTI_TITLE,
-} from './mobile-workspace-dock-constants';
-import type { MobileDockCreateAction } from './mobile-module-dock-types';
+  MOBILE_DOCK_HEIGHT_CLASS,
+  MOBILE_DOCK_ICON_SIZE_PX,
+  MOBILE_DOCK_ROW_CLASS,
+} from './mobile-bottom-nav-constants';
+import { MOBILE_WORKSPACE_SWITCHER_MULTI_TITLE } from './mobile-workspace-dock-constants';
 
 interface MobileWorkspaceDockProps {
   menuOpen?: boolean;
@@ -36,10 +38,10 @@ export function MobileWorkspaceDock({ menuOpen = false, onMoreClick }: MobileWor
 
   return (
     <nav className="nbos-mobile-dock md:hidden" aria-label="Workspace tools">
-      <div className={cn('flex items-stretch gap-0.5 px-1', MOBILE_DOCK_HEIGHT_CLASS)}>
+      <div className={cn(MOBILE_DOCK_ROW_CLASS, MOBILE_DOCK_HEIGHT_CLASS)}>
         <WorkspaceMenuButton open={menuOpen} onClick={onMoreClick} />
         {hasSearch && tools.search ? <MobilePageSearchSheet search={tools.search} /> : null}
-        <WorkspaceCreateButton create={resolvedCreate} />
+        <MobileWorkspaceCreateButton create={resolvedCreate} />
         {switcherGroups.length > 0 ? (
           <MobileDockSwitcherButton
             icon={switcherItem?.icon}
@@ -48,9 +50,7 @@ export function MobileWorkspaceDock({ menuOpen = false, onMoreClick }: MobileWor
             onClick={() => setSwitcherOpen(true)}
           />
         ) : null}
-        {hasSettings && settings ? (
-          <div className="flex min-w-0 flex-1 items-stretch">{settings}</div>
-        ) : null}
+        {hasSettings && settings ? <div className="contents">{settings}</div> : null}
       </div>
       {isMobileViewport ? (
         <div ref={trailingHostRef} hidden>
@@ -70,41 +70,8 @@ export function MobileWorkspaceDock({ menuOpen = false, onMoreClick }: MobileWor
 
 function WorkspaceMenuButton({ open, onClick }: { open: boolean; onClick: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        MOBILE_DOCK_ITEM_CLASS,
-        open
-          ? 'bg-primary/12 text-primary'
-          : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
-      )}
-      aria-expanded={open}
-    >
-      <LayoutGrid size={18} aria-hidden />
-      Menu
-    </button>
-  );
-}
-
-function WorkspaceCreateButton({ create }: { create?: MobileDockCreateAction }) {
-  if (!create) return null;
-  return (
-    <button
-      type="button"
-      disabled={create.disabled}
-      className={cn(
-        MOBILE_DOCK_ITEM_CLASS,
-        create.disabled
-          ? 'text-muted-foreground/50'
-          : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
-      )}
-      onClick={() => {
-        if (!create.disabled) create.onSelect();
-      }}
-    >
-      <Plus size={18} aria-hidden />
-      {MOBILE_WORKSPACE_CREATE_LABEL}
-    </button>
+    <MobileDockItem label="Menu" active={open} aria-expanded={open} onClick={onClick}>
+      <LayoutGrid size={MOBILE_DOCK_ICON_SIZE_PX} aria-hidden />
+    </MobileDockItem>
   );
 }

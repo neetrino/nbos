@@ -12,13 +12,9 @@
   }
 
   .nbos-desk-surface {
-    @apply border-border/70 bg-card overflow-hidden rounded-2xl border;
+    @apply border-border/70 overflow-hidden rounded-2xl border;
+    background-color: var(--desk-panel-fill);
     box-shadow: var(--shadow-panel);
-    background-image: linear-gradient(
-      180deg,
-      color-mix(in oklch, var(--primary) 4.5%, var(--card)) 0%,
-      var(--card) 42%
-    );
   }
 
   .nbos-desk-kicker {
@@ -39,16 +35,8 @@
   }
 
   .nbos-state-frame {
-    @apply border-border/70 bg-card relative overflow-hidden rounded-2xl border px-6 py-16 text-center;
-    background-image:
-      linear-gradient(180deg, color-mix(in oklch, var(--primary) 6%, var(--card)), var(--card) 46%),
-      repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 47px,
-        color-mix(in oklch, var(--primary) 7%, transparent) 47px,
-        color-mix(in oklch, var(--primary) 7%, transparent) 48px
-      );
+    @apply border-border/70 relative overflow-hidden rounded-2xl border px-6 py-16 text-center;
+    background-color: var(--desk-panel-fill);
   }
 
   .nbos-auth-scene {
@@ -81,22 +69,20 @@
   }
 
   .nbos-mobile-dock {
-    @apply bg-card/95 supports-[backdrop-filter]:bg-card/88 pointer-events-auto fixed z-30 overflow-hidden border-0 shadow-none backdrop-blur-md;
-    left: var(--nbos-mobile-dock-inset-x);
-    right: var(--nbos-mobile-dock-inset-x);
-    bottom: calc(var(--nbos-mobile-dock-inset-bottom) + env(safe-area-inset-bottom, 0px));
-    height: var(--nbos-mobile-dock-height);
-    border-radius: var(--nbos-mobile-dock-radius);
+    @apply bg-card/95 supports-[backdrop-filter]:bg-card/88 pointer-events-auto relative z-30 w-full shrink-0 overflow-hidden border-0 shadow-none backdrop-blur-md;
+    height: calc(
+      var(--nbos-mobile-dock-height) + (2 * var(--nbos-mobile-dock-pad-y)) +
+        env(safe-area-inset-bottom, 0px)
+    );
+    margin-inline: var(--nbos-mobile-dock-inset-x);
+    margin-bottom: var(--nbos-mobile-dock-inset-bottom);
+    padding-top: var(--nbos-mobile-dock-pad-y);
+    padding-bottom: calc(var(--nbos-mobile-dock-pad-y) + env(safe-area-inset-bottom, 0px));
+    border-radius: var(--nbos-mobile-dock-radius) var(--nbos-mobile-dock-radius) 0 0;
   }
 
   @media (max-width: 767px) {
     .nbos-app-canvas {
-      background-image: none;
-    }
-
-    .nbos-desk-surface,
-    .nbos-state-frame,
-    .nbos-app-canvas .nbos-insight-panel {
       background-image: none;
     }
 
@@ -110,6 +96,28 @@
       font-size: 1rem;
       min-height: 2.75rem;
     }
+  }
+}
+
+/* Flatten elevation shadows below Tailwind `md`. Keep ring/inset-ring
+ * (focus) and arbitrary `[box-shadow:…]` seals (sticky table cells). */
+@media (max-width: 767px) {
+  :root,
+  .dark {
+    --shadow-panel: none;
+    --shadow-panel-hover: none;
+  }
+
+  * {
+    --tw-shadow: 0 0 #0000 !important;
+    --tw-inset-shadow: 0 0 #0000 !important;
+  }
+
+  .nbos-desk-surface,
+  .nbos-insight-panel,
+  .nbos-insight-panel:hover,
+  .nbos-metric-row-fill--peak {
+    box-shadow: none;
   }
 }
 
@@ -137,6 +145,42 @@
 
   .nbos-pressable:active {
     transform: translateY(1px);
+  }
+
+  .nbos-sheet-swipe,
+  .nbos-sheet-swipe-overlay {
+    --nbos-sheet-swipe-snap-duration: 300ms;
+    --nbos-sheet-swipe-snap-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .nbos-sheet-swipe {
+    overscroll-behavior: contain;
+  }
+
+  .nbos-sheet-swipe[data-swiping='true'] {
+    animation: none !important;
+    transition: none;
+    touch-action: none;
+    will-change: transform;
+    transform: translate3d(0, var(--nbos-sheet-swipe-y, 0px), 0) !important;
+  }
+
+  .nbos-sheet-swipe[data-swipe-snap='true'] {
+    animation: none !important;
+    transition: transform var(--nbos-sheet-swipe-snap-duration) var(--nbos-sheet-swipe-snap-ease);
+    transform: translate3d(0, var(--nbos-sheet-swipe-y, 0px), 0) !important;
+  }
+
+  .nbos-sheet-swipe-overlay[data-swiping='true'] {
+    animation: none !important;
+    transition: none;
+    opacity: var(--nbos-sheet-swipe-overlay, 1) !important;
+  }
+
+  .nbos-sheet-swipe-overlay[data-swipe-snap='true'] {
+    animation: none !important;
+    transition: opacity var(--nbos-sheet-swipe-snap-duration) var(--nbos-sheet-swipe-snap-ease);
+    opacity: var(--nbos-sheet-swipe-overlay, 1) !important;
   }
 }
 
@@ -169,5 +213,10 @@
   .nbos-pressable:active {
     transition: none;
     transform: none;
+  }
+
+  .nbos-sheet-swipe[data-swipe-snap='true'],
+  .nbos-sheet-swipe-overlay[data-swipe-snap='true'] {
+    transition: none;
   }
 }

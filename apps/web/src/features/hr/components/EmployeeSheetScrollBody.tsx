@@ -90,16 +90,6 @@ export function EmployeeSheetScrollBody({
           />
           <InlineField
             variant="controlled"
-            label="Position / seat"
-            type="text"
-            value={draft.position}
-            placeholder="e.g. Senior Developer"
-            icon={<Building2 size={12} />}
-            disabled={lockHr}
-            onValueChange={(v) => patchDraft({ position: v })}
-          />
-          <InlineField
-            variant="controlled"
             label="Level"
             type="select"
             value={draft.level || undefined}
@@ -107,6 +97,17 @@ export function EmployeeSheetScrollBody({
             placeholder="Select level"
             disabled={lockHr}
             onValueChange={(v) => patchDraft({ level: v ?? '' })}
+          />
+          <InlineField
+            variant="controlled"
+            label="Position / seat"
+            type="text"
+            value={draft.position}
+            placeholder="e.g. Senior Developer"
+            icon={<Building2 size={12} />}
+            disabled={lockHr}
+            className="col-span-2"
+            onValueChange={(v) => patchDraft({ position: v })}
           />
         </div>
       </DetailSheetSection>
@@ -125,6 +126,7 @@ export function EmployeeSheetScrollBody({
             placeholder="name@company.com"
             icon={<Mail size={12} />}
             disabled={lockHr}
+            className="col-span-2"
             onValueChange={(v) => patchDraft({ email: v })}
           />
           <InlineField
@@ -139,16 +141,6 @@ export function EmployeeSheetScrollBody({
           />
           <InlineField
             variant="controlled"
-            label="Telegram"
-            type="text"
-            value={draft.telegram}
-            placeholder="@username"
-            icon={<Send size={12} />}
-            disabled={lockPersonal}
-            onValueChange={(v) => patchDraft({ telegram: v })}
-          />
-          <InlineField
-            variant="controlled"
             label="ATS SIP ID"
             type="text"
             value={draft.sipId}
@@ -156,6 +148,17 @@ export function EmployeeSheetScrollBody({
             icon={<Phone size={12} />}
             disabled={lockPersonal}
             onValueChange={(v) => patchDraft({ sipId: v })}
+          />
+          <InlineField
+            variant="controlled"
+            label="Telegram"
+            type="text"
+            value={draft.telegram}
+            placeholder="@username"
+            icon={<Send size={12} />}
+            disabled={lockPersonal}
+            className="col-span-2"
+            onValueChange={(v) => patchDraft({ telegram: v })}
           />
         </div>
       </DetailSheetSection>
@@ -177,21 +180,22 @@ export function EmployeeSheetScrollBody({
           />
           <InlineField
             variant="controlled"
-            label="Platform role"
-            type="select"
-            value={draft.roleId}
-            options={roleOptions}
-            disabled={lockHr}
-            onValueChange={(v) => patchDraft({ roleId: v ?? draft.roleId })}
-          />
-          <InlineField
-            variant="controlled"
             label="Hire date"
             type="date"
             value={draft.hireDate || null}
             icon={<Calendar size={12} />}
             disabled={lockHr}
             onValueChange={(v) => patchDraft({ hireDate: v ?? '' })}
+          />
+          <InlineField
+            variant="controlled"
+            label="Platform role"
+            type="select"
+            value={draft.roleId}
+            options={roleOptions}
+            disabled={lockHr}
+            className="col-span-2"
+            onValueChange={(v) => patchDraft({ roleId: v ?? draft.roleId })}
           />
         </div>
       </DetailSheetSection>

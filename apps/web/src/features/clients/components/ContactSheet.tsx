@@ -8,6 +8,9 @@ import {
   DetailSheetTabPanel,
   EntityDetailSheetContent,
   StatusBadge,
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
 } from '@/components/shared';
 import { getContactRole } from '../constants/clients';
 import type { Contact } from '@/lib/api/clients';
@@ -34,6 +37,8 @@ import type {
   ClientSheetPanelTabId,
 } from './client-portfolio/client-portfolio-tabs';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
+import { cn } from '@/lib/utils';
 
 interface ContactSheetProps {
   contact: Contact | null;
@@ -70,6 +75,7 @@ export function ContactSheet({
   forceNestedBackdrop = false,
   onRemoveParticipant,
 }: ContactSheetProps) {
+  const isMobileViewport = useIsMobileViewport();
   const { persistedValue: renderContact, onOpenChangeComplete } = useSheetPersistedValue(contact);
   const hostMounted = useSheetHostMounted(open, renderContact);
 
@@ -199,8 +205,41 @@ export function ContactSheet({
             </div>
           ) : (
             <>
-              <div className="bg-background shrink-0 px-5 pt-5 pb-3">
-                <div className="flex min-h-9 min-w-0 flex-nowrap items-center gap-2">
+              <div
+                className={cn(
+                  isMobileViewport
+                    ? DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS
+                    : 'bg-background shrink-0 px-5 pt-5 pb-3',
+                )}
+              >
+                {isMobileViewport ? (
+                  <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>
+                    <ContactSheetHeaderActions
+                      contact={renderContact}
+                      isTrashView={isTrashView}
+                      saving={saving}
+                      removingFromProject={removingFromProject}
+                      portfolioData={portfolio.data}
+                      portfolioLoading={portfolio.loading}
+                      onRemoveParticipant={onRemoveParticipant}
+                      onMerged={onMerged}
+                      onRestore={onRestore}
+                      onPermanentDelete={onPermanentDelete}
+                      onMoveToTrash={onMoveToTrash}
+                      onRequestRemoveFromProject={() => setRemoveFromProjectOpen(true)}
+                    />
+                  </div>
+                ) : null}
+                <div
+                  className={cn(
+                    isMobileViewport
+                      ? cn(
+                          DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+                          'flex min-w-0 flex-wrap items-center gap-2',
+                        )
+                      : 'flex min-h-9 min-w-0 flex-nowrap items-center gap-2',
+                  )}
+                >
                   <div className="min-w-0 flex-1">
                     <div className="inline-flex max-w-full min-w-0 flex-nowrap items-center gap-2">
                       <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
@@ -215,20 +254,22 @@ export function ContactSheet({
                       ) : null}
                     </div>
                   </div>
-                  <ContactSheetHeaderActions
-                    contact={renderContact}
-                    isTrashView={isTrashView}
-                    saving={saving}
-                    removingFromProject={removingFromProject}
-                    portfolioData={portfolio.data}
-                    portfolioLoading={portfolio.loading}
-                    onRemoveParticipant={onRemoveParticipant}
-                    onMerged={onMerged}
-                    onRestore={onRestore}
-                    onPermanentDelete={onPermanentDelete}
-                    onMoveToTrash={onMoveToTrash}
-                    onRequestRemoveFromProject={() => setRemoveFromProjectOpen(true)}
-                  />
+                  {!isMobileViewport ? (
+                    <ContactSheetHeaderActions
+                      contact={renderContact}
+                      isTrashView={isTrashView}
+                      saving={saving}
+                      removingFromProject={removingFromProject}
+                      portfolioData={portfolio.data}
+                      portfolioLoading={portfolio.loading}
+                      onRemoveParticipant={onRemoveParticipant}
+                      onMerged={onMerged}
+                      onRestore={onRestore}
+                      onPermanentDelete={onPermanentDelete}
+                      onMoveToTrash={onMoveToTrash}
+                      onRequestRemoveFromProject={() => setRemoveFromProjectOpen(true)}
+                    />
+                  ) : null}
                 </div>
               </div>
 

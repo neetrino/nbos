@@ -34,6 +34,7 @@ function projectHubHeaderContent(
     kind: 'nav',
     ariaLabel: 'Project Hub areas',
     items,
+    mobileVariant: 'tabs',
   };
 }
 

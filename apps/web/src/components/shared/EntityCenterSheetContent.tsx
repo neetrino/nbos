@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { SheetContent } from '@/components/ui/sheet';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 import { EntitySheetFloatingRail } from './entity-sheet-floating-rail';
 import {
@@ -55,6 +56,7 @@ export type EntityCenterSheetContentProps = Omit<
 
 /**
  * Bottom-center sheet (90vh). Rail is a flex sibling of the panel — always left of the sheet.
+ * On mobile, rail actions are hidden (Back only).
  */
 export function EntityCenterSheetContent({
   open,
@@ -71,14 +73,17 @@ export function EntityCenterSheetContent({
   children,
   ...props
 }: EntityCenterSheetContentProps) {
+  const isMobileViewport = useIsMobileViewport();
+  const railActionsVisible = floatingClose && showRailActions && !isMobileViewport;
   const defaultRail =
-    floatingClose && showRailActions && !floatingRailContent ? (
+    railActionsVisible && !floatingRailContent ? (
       <EntitySheetFloatingRail
         sourcePageHref={sourcePageHref}
         workspaceHref={workspaceHref}
         trailing={trailingRail}
       />
     ) : undefined;
+  const floatingRail = isMobileViewport ? undefined : (floatingRailContent ?? defaultRail);
 
   return (
     <SheetContent
@@ -86,7 +91,7 @@ export function EntityCenterSheetContent({
       showCloseButton={showCloseButton}
       floatingClose={floatingClose}
       floatingRailVisible={open}
-      floatingRail={floatingRailContent ?? defaultRail}
+      floatingRail={floatingRail}
       className={cn('gap-0 p-0', resolveCenterWidthClass(width), contentClassName, className)}
       {...props}
     >

@@ -1,6 +1,6 @@
-import { ChevronDown, type LucideIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { MOBILE_DOCK_ITEM_CLASS } from './mobile-bottom-nav-constants';
+import { ChevronDown, Layers, type LucideIcon } from 'lucide-react';
+import { MobileDockItem } from './MobileDockItem';
+import { MOBILE_DOCK_ICON_SIZE_PX } from './mobile-bottom-nav-constants';
 import {
   MOBILE_WORKSPACE_DEFAULT_SCOPE_LABEL,
   MOBILE_WORKSPACE_SCOPE_CARET_CLASS,
@@ -21,29 +21,29 @@ export function MobileDockSwitcherButton({
   expanded,
   onClick,
 }: MobileDockSwitcherButtonProps) {
+  const resolvedLabel = label ?? MOBILE_WORKSPACE_DEFAULT_SCOPE_LABEL;
+  const ResolvedIcon = Icon ?? Layers;
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        MOBILE_DOCK_ITEM_CLASS,
-        expanded
-          ? 'bg-primary/12 text-primary'
-          : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
-      )}
+    <MobileDockItem
+      label={resolvedLabel}
+      active={expanded}
       aria-expanded={expanded}
       aria-haspopup="listbox"
+      onClick={onClick}
+      caption={
+        <span className={MOBILE_WORKSPACE_SCOPE_LABEL_CLASS}>
+          <span className="truncate">{resolvedLabel}</span>
+          <ChevronDown
+            size={MOBILE_WORKSPACE_SCOPE_CARET_SIZE}
+            strokeWidth={2.25}
+            className={MOBILE_WORKSPACE_SCOPE_CARET_CLASS}
+            aria-hidden
+          />
+        </span>
+      }
     >
-      {Icon ? <Icon size={18} aria-hidden /> : null}
-      <span className={MOBILE_WORKSPACE_SCOPE_LABEL_CLASS}>
-        <span className="truncate">{label ?? MOBILE_WORKSPACE_DEFAULT_SCOPE_LABEL}</span>
-        <ChevronDown
-          size={MOBILE_WORKSPACE_SCOPE_CARET_SIZE}
-          strokeWidth={2.25}
-          className={MOBILE_WORKSPACE_SCOPE_CARET_CLASS}
-          aria-hidden
-        />
-      </span>
-    </button>
+      <ResolvedIcon size={MOBILE_DOCK_ICON_SIZE_PX} aria-hidden />
+    </MobileDockItem>
   );
 }

@@ -208,7 +208,7 @@ function DeliveryBoardPageContent() {
   );
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-5">
+    <div className="flex h-full min-h-0 flex-col gap-5 max-md:gap-3">
       {loadError && (
         <p className="text-destructive text-sm" role="alert">
           {loadError}
@@ -247,7 +247,7 @@ function DeliveryBoardPageContent() {
           >
             <TabsContent
               value="active"
-              className="mt-4 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden"
+              className="mt-4 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden max-md:mt-0"
             >
               {displayActiveViewMode === 'LIST' ? (
                 <DeliveryBoardItemsTable
@@ -273,7 +273,7 @@ function DeliveryBoardPageContent() {
             </TabsContent>
             <TabsContent
               value="closed"
-              className="mt-4 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden"
+              className="mt-4 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden max-md:mt-0"
             >
               {displayClosedViewMode === 'LIST' ? (
                 <DeliveryBoardItemsTable

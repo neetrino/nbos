@@ -18,10 +18,10 @@ export const EXPENSE_COMPACT_FIELD_WIDTH_CLASS = 'w-[10rem] shrink-0';
 /** Due date field width in expense detail sheet. */
 export const EXPENSE_DUE_DATE_FIELD_WIDTH_CLASS = 'w-[8.5rem] shrink-0';
 
-/** Equal-width rows in expense detail General — fields stretch edge-to-edge. */
-export const EXPENSE_SHEET_FIELD_ROW_3_CLASS = 'grid grid-cols-3 gap-3';
+/** Equal-width rows in expense/subscription detail General — 1 col mobile, multi-col sm+. */
+export const EXPENSE_SHEET_FIELD_ROW_3_CLASS = 'grid grid-cols-1 gap-3 sm:grid-cols-3';
 
-export const EXPENSE_SHEET_FIELD_ROW_2_CLASS = 'grid grid-cols-2 gap-3';
+export const EXPENSE_SHEET_FIELD_ROW_2_CLASS = 'grid grid-cols-1 gap-3 sm:grid-cols-2';
 
 export const EXPENSE_SHEET_FIELD_CELL_CLASS = 'min-w-0 w-full';
 

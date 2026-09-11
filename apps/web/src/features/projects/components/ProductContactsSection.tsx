@@ -153,7 +153,7 @@ export function ProductContactsSection({
         searchField
       )}
       {contactCards.length > 0 ? (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {contactCards.map((contact) => (
             <ProjectContactCard
               key={contact.id}

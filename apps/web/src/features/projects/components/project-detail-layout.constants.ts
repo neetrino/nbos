@@ -10,10 +10,19 @@ export const PROJECT_DETAIL_SIDEBAR_STICKY_CLASS = [
   'lg:min-h-[calc(100dvh-5rem)]',
 ].join(' ');
 
-/** Sidebar meets viewport right edge (counteracts main `px-6`). */
+/** Gap under About project card on mobile so it does not glue to the dock. */
+const PROJECT_DETAIL_SIDEBAR_MOBILE_BOTTOM_GAP_CLASS = 'max-lg:mb-3';
+
+/**
+ * Sidebar chrome:
+ * - Mobile / tablet: normal card (rounded top + bottom, full border, bottom gap).
+ * - Desktop: edge-attached rail (flush right, rounded left only).
+ */
 export const PROJECT_DETAIL_SIDEBAR_EDGE_CLASS = [
   PROJECT_DETAIL_SIDEBAR_STICKY_CLASS,
-  '-mr-6 rounded-none border-y-0 border-r-0 lg:rounded-l-xl lg:border-l',
+  PROJECT_DETAIL_SIDEBAR_MOBILE_BOTTOM_GAP_CLASS,
+  'max-lg:rounded-xl max-lg:border',
+  'lg:-mr-6 lg:rounded-none lg:rounded-l-xl lg:border-y-0 lg:border-r-0 lg:border-l',
 ].join(' ');
 
 export const PROJECT_DETAIL_PAGE_ROW_CLASS =

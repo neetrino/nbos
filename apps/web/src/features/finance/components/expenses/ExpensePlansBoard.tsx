@@ -14,15 +14,17 @@ export function ExpensePlansBoard({ plans, onOpen }: ExpensePlansBoardProps) {
   const columns = buildExpensePlansKanbanColumns(plans);
 
   return (
-    <KanbanBoard
-      columns={columns}
-      getItemId={(p) => p.id}
-      columnWidth={270}
-      emptyMessage="No plans in this frequency column."
-      renderColumnHeader={(column) => (
-        <KanbanColumnMoneyTotal column={column} getAmount={(plan) => plan.amount} />
-      )}
-      renderCard={(plan) => <ExpensePlanBoardCard plan={plan} onOpen={onOpen} />}
-    />
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <KanbanBoard
+        columns={columns}
+        getItemId={(p) => p.id}
+        columnWidth={270}
+        emptyMessage="No plans in this frequency column."
+        renderColumnHeader={(column) => (
+          <KanbanColumnMoneyTotal column={column} getAmount={(plan) => plan.amount} />
+        )}
+        renderCard={(plan) => <ExpensePlanBoardCard plan={plan} onOpen={onOpen} />}
+      />
+    </div>
   );
 }

@@ -3,9 +3,11 @@ import {
   isPathInModuleSection,
   isRegisteredModuleKey,
   readModuleEntryHref,
+  resolveRegisteredModuleFromPathname,
 } from '@/lib/navigation/module-last-visit';
 import {
   isNavChildLink,
+  NAV_MODULE_DEFINITIONS,
   type NavChildLinkDefinition,
   type NavModuleDefinition,
 } from './nav-config';
@@ -43,4 +45,24 @@ export function getFirstChildHref(item: NavModuleDefinition): string {
   }
   const firstLink = item.children?.find((child) => isNavChildLink(child));
   return firstLink?.href ?? item.href;
+}
+
+/** Resolve the sidebar module for the current route (header icon, etc.). */
+export function resolveSidebarModuleKeyFromPathname(pathname: string): SidebarModuleKey | null {
+  const registered = resolveRegisteredModuleFromPathname(pathname);
+  if (registered) {
+    return registered;
+  }
+
+  let best: { key: SidebarModuleKey; hrefLength: number } | null = null;
+  for (const definition of NAV_MODULE_DEFINITIONS) {
+    const href = getPathFromHref(definition.href);
+    if (pathname !== href && !pathname.startsWith(`${href}/`)) {
+      continue;
+    }
+    if (!best || href.length > best.hrefLength) {
+      best = { key: definition.key, hrefLength: href.length };
+    }
+  }
+  return best?.key ?? null;
 }
