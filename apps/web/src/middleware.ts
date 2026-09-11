@@ -1,7 +1,10 @@
 /**
- * Next.js 16+ network boundary: `src/proxy.ts` replaces the deprecated `middleware.ts` file.
- * This file is loaded by the framework; do not import it from app code.
- * @see https://nextjs.org/docs/app/api-reference/file-conventions/proxy
+ * Auth gate at the Next.js request boundary.
+ *
+ * Next.js 16 prefers `proxy.ts`, but 16.2 Turbopack on this stack 404s real
+ * App Router routes when that file is present — including `/api/auth/session`,
+ * which then returns HTML and Auth.js throws ClientFetchError.
+ * `middleware.ts` keeps the same `auth()` gate without that routing bug.
  */
 import { auth } from '@/auth';
 import { getAuthenticatedRootRedirect } from '@/lib/auth/authenticated-root-redirect';
@@ -24,8 +27,7 @@ function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
-/** Auth-aware proxy: named export `proxy` is the convention expected by Next.js. */
-export const proxy = auth((req: NextRequest & { auth: unknown }) => {
+export const middleware = auth((req: NextRequest & { auth: unknown }) => {
   const { pathname } = req.nextUrl;
 
   const authenticatedRootRedirect = getAuthenticatedRootRedirect(pathname, Boolean(req.auth));
@@ -49,9 +51,9 @@ export const proxy = auth((req: NextRequest & { auth: unknown }) => {
 export const config = {
   matcher: [
     /*
-     * Skip API route handlers, static assets, and files with extensions.
-     * Auth.js (`/api/auth/session`) must return JSON, not an HTML redirect/404.
+     * Skip API handlers, static assets, and PWA manifest. Auth.js session
+     * must return JSON; the manifest must not redirect to /sign-in.
      */
-    '/((?!api(?:/|$)|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)',
+    '/((?!api(?:/|$)|_next/static|_next/image|favicon.ico|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|webmanifest)$).*)',
   ],
 };
