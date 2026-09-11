@@ -90,7 +90,7 @@ NBOS объединяет все операционные процессы IT-к
 - **Технологии:** Next.js 16 (App Router), React 19, Tailwind CSS 4, shadcn/ui, TanStack Query, Zustand, Framer Motion, @dnd-kit
 - **Назначение:** UI для всех модулей, SSR где нужно, клиентский кеш и real-time подписки через WebSocket
 - **Расположение:** `apps/web/`
-- **Особенности:** 14 разделов в сайдбаре (RBAC скрывает недоступное), Kanban/List/Grid представления, глобальный поиск, центр уведомлений
+- **Особенности:** 14 разделов в сайдбаре (RBAC скрывает недоступное), Kanban/List/Grid представления, глобальный поиск, центр уведомлений, install-only PWA (домашний экран, без offline-кеша страниц/API)
 
 ### Backend (apps/api)
 

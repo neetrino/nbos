@@ -6,6 +6,7 @@ import { auth } from '@/auth';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/theme/theme-provider';
+import { PwaRegister } from '@/components/pwa/PwaRegister';
 import { QueryProvider } from '@/lib/query/query-provider';
 
 const inter = Inter({
@@ -30,6 +31,7 @@ const NBOS_BRAND_COLOR = '#2e3192';
 
 export const viewport: Viewport = {
   themeColor: NBOS_BRAND_COLOR,
+  viewportFit: 'cover',
 };
 
 export const metadata: Metadata = {
@@ -80,6 +82,7 @@ export default async function RootLayout({
           >
             <ThemeProvider>
               {children}
+              <PwaRegister />
               <Toaster richColors closeButton position="top-center" />
             </ThemeProvider>
           </body>
