@@ -96,7 +96,7 @@ function formatOrderStatValue(order: FullProduct['order']): ReactNode {
     return (
       <span className="inline-flex items-baseline gap-1">
         {formatGroupedNumber(amount)}
-        <AmdCurrencyIcon className="text-base font-semibold leading-none" />
+        <AmdCurrencyIcon className="text-base leading-none font-semibold" />
       </span>
     );
   }

@@ -79,12 +79,7 @@ export function InvoiceMoneyCard({
             MONEY_METRIC_DIVIDER_CLASS,
           )}
         >
-          <div
-            className={cn(
-              'grid grid-cols-2 divide-x sm:contents',
-              MONEY_METRIC_DIVIDER_CLASS,
-            )}
-          >
+          <div className={cn('grid grid-cols-2 divide-x sm:contents', MONEY_METRIC_DIVIDER_CLASS)}>
             <InvoiceMoneyMetric
               icon={FileCheck}
               iconClassName="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300"

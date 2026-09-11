@@ -10,7 +10,10 @@ import {
 } from '@/components/layout/header-context/header-module-title-constants';
 import { usePageDocumentTitle } from '@/features/account/hooks/use-page-document-title';
 import { InlineEditableEntityTitle } from '@/features/projects/components/InlineEditableEntityTitle';
-import { DetailPageMobileBackLink, DETAIL_PAGE_MOBILE_BACK_ROW_CLASS } from '@/features/projects/components/DetailPageMobileBackLink';
+import {
+  DetailPageMobileBackLink,
+  DETAIL_PAGE_MOBILE_BACK_ROW_CLASS,
+} from '@/features/projects/components/DetailPageMobileBackLink';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
@@ -53,11 +56,7 @@ export function useProjectDetailHeader({
     if (!project) return null;
     const inTrash = isProjectInTrash(project);
     const trashBadge = inTrash ? (
-      <StatusBadge
-        label="In Trash"
-        variant="zinc"
-        className={HEADER_CONTEXT_STATUS_BADGE_CLASS}
-      />
+      <StatusBadge label="In Trash" variant="zinc" className={HEADER_CONTEXT_STATUS_BADGE_CLASS} />
     ) : null;
     const title = (
       <InlineEditableEntityTitle

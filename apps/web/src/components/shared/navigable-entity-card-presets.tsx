@@ -291,7 +291,7 @@ function WorkSpaceCardActionFooter({
             : cn(
                 'pointer-events-none opacity-0',
                 hasDesktopHoverReveal &&
-                  'group-hover/project-hub-card:pointer-events-auto group-hover/project-hub-card:opacity-100 group-focus-within/project-hub-card:pointer-events-auto group-focus-within/project-hub-card:opacity-100',
+                  'group-focus-within/project-hub-card:pointer-events-auto group-focus-within/project-hub-card:opacity-100 group-hover/project-hub-card:pointer-events-auto group-hover/project-hub-card:opacity-100',
               ),
         )}
       >
@@ -365,10 +365,7 @@ export function WorkSpaceNavigableCard({
       <Link
         href={workspaceHref}
         onClick={footerActions ? handleBodyClick : undefined}
-        className={cn(
-          'block focus-visible:outline-none',
-          isProductDelivery ? 'p-4' : 'p-5 pb-1',
-        )}
+        className={cn('block focus-visible:outline-none', isProductDelivery ? 'p-4' : 'p-5 pb-1')}
       >
         <div className={cn('flex items-start', isProductDelivery ? 'gap-2.5' : 'gap-3')}>
           <div

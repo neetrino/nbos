@@ -51,17 +51,14 @@ export function SubscriptionDetailSheetHeader({
             code={subscription.code}
             typeLabel={subType?.label}
           />
-          <SubscriptionHeaderSummary
-            subscription={subscription}
-            termSummary={termSummary}
-          />
+          <SubscriptionHeaderSummary subscription={subscription} termSummary={termSummary} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-background flex flex-wrap items-start justify-between gap-3 shrink-0 px-7 pt-5 pb-3">
+    <div className="bg-background flex shrink-0 flex-wrap items-start justify-between gap-3 px-7 pt-5 pb-3">
       <div className="min-w-0 flex-1">
         <SubscriptionHeaderIdentity
           displayTitle={displayTitle}
@@ -91,7 +88,9 @@ function SubscriptionHeaderIdentity({
     <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
       <Repeat className="text-muted-foreground size-5 shrink-0" aria-hidden />
       <div className="min-w-0">
-        <h2 className="text-foreground truncate text-xl font-bold tracking-tight">{displayTitle}</h2>
+        <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+          {displayTitle}
+        </h2>
         {showCodeSubline ? (
           <p className="text-muted-foreground mt-0.5 truncate text-xs">{code}</p>
         ) : null}

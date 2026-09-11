@@ -37,10 +37,7 @@ type SwipeSession = {
   overlay: HTMLElement | null;
 };
 
-export function isBottomSheetChromeTarget(
-  panel: HTMLElement,
-  target: EventTarget | null,
-): boolean {
+export function isBottomSheetChromeTarget(panel: HTMLElement, target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false;
   const scroll = panel.querySelector(`[${BOTTOM_SHEET_SWIPE_SCROLL_ATTR}]`);
   if (!(scroll instanceof HTMLElement)) {
@@ -87,8 +84,7 @@ export function attachBottomSheetSwipe(panel: HTMLElement, onClose: () => void):
   const session = createSwipeSession(panel);
   const onPointerDown = (event: PointerEvent) => handleSwipePointerDown(session, panel, event);
   const onPointerMove = (event: PointerEvent) => handleSwipePointerMove(session, panel, event);
-  const onPointerUp = (event: PointerEvent) =>
-    handleSwipePointerUp(session, panel, event, onClose);
+  const onPointerUp = (event: PointerEvent) => handleSwipePointerUp(session, panel, event, onClose);
   const detachScroll = attachScrollSettleTracking(panel, session);
 
   const onTouchMove = (event: TouchEvent) => {

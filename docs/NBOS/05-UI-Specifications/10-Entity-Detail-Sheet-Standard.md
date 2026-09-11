@@ -247,23 +247,23 @@ Rules:
 
 Right-side entity sheets use a **floating rail** outside the panel seam: Close always, then contextual shortcuts.
 
-| Control               | Rule                                                                 |
-| --------------------- | -------------------------------------------------------------------- |
-| Close                 | Desktop — seam half-pill with X. Always provided by the shell.       |
-| Back                  | Mobile only — circular control with `<`; dismisses the sheet.        |
-| Copy link             | Desktop only. Copies `window.location.href` (deep-link friendly).    |
-| Open                  | Desktop only. Opens `sourcePageHref` in a new tab when set.          |
-| Dashboard / Workspace | Desktop only. Shown when `workspaceHref` is passed.                  |
-| Module extras         | Desktop only. Pass via `trailingRail` on the shell.                  |
+| Control               | Rule                                                              |
+| --------------------- | ----------------------------------------------------------------- |
+| Close                 | Desktop — seam half-pill with X. Always provided by the shell.    |
+| Back                  | Mobile only — circular control with `<`; dismisses the sheet.     |
+| Copy link             | Desktop only. Copies `window.location.href` (deep-link friendly). |
+| Open                  | Desktop only. Opens `sourcePageHref` in a new tab when set.       |
+| Dashboard / Workspace | Desktop only. Shown when `workspaceHref` is passed.               |
+| Module extras         | Desktop only. Pass via `trailingRail` on the shell.               |
 
 **Mobile:** rail shows **Back only** (no Copy / Open / Workspace / trailing).
 
 **Layout modes** (`EntityDetailSheetContent`):
 
-| `layout`    | Use for                                                        | Panel                                                     | Default rail (desktop)                |
-| ----------- | -------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------- |
-| `full`      | Entity detail (Deal, Lead, Invoice, checklist workbench)       | `width`: `wide` / `medium` / `compact`, or custom classes | Close + Copy + Open (+ Workspace)     |
-| `auxiliary` | Narrow helper panels (bonus releases ledger, HR employee peek) | 36rem                                                     | Close only                            |
+| `layout`    | Use for                                                        | Panel                                                     | Default rail (desktop)            |
+| ----------- | -------------------------------------------------------------- | --------------------------------------------------------- | --------------------------------- |
+| `full`      | Entity detail (Deal, Lead, Invoice, checklist workbench)       | `width`: `wide` / `medium` / `compact`, or custom classes | Close + Copy + Open (+ Workspace) |
+| `auxiliary` | Narrow helper panels (bonus releases ledger, HR employee peek) | 36rem                                                     | Close only                        |
 
 Do **not** hand-wire `floatingClose` / `floatingRail`. Use raw `SheetContent` only for quick dialogs. Drive file panel and workspace drive use the shell with `contentClassName` / `floatingRailContent` overrides. See `docs/reference/patterns/entity-detail-sheet-shell.md`.
 

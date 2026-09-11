@@ -61,10 +61,7 @@ export function CrmSheetEntityHeader({
           )}
         >
           <div className={cn('flex min-w-0 flex-1 items-start gap-2', titleClassName)}>
-            <EntityIcon
-              className={cn('mt-0.5 size-5 shrink-0', headerIconClassName)}
-              aria-hidden
-            />
+            <EntityIcon className={cn('mt-0.5 size-5 shrink-0', headerIconClassName)} aria-hidden />
             {editing ? (
               <input
                 ref={nameInputRef}
@@ -78,7 +75,7 @@ export function CrmSheetEntityHeader({
             ) : (
               <h2
                 onClick={onStartEditing}
-                className="text-foreground hover:bg-muted max-w-full min-w-0 cursor-text rounded text-xl leading-snug font-bold tracking-tight break-words line-clamp-2 transition-colors"
+                className="text-foreground hover:bg-muted line-clamp-2 max-w-full min-w-0 cursor-text rounded text-xl leading-snug font-bold tracking-tight break-words transition-colors"
                 title={titleEditHint}
               >
                 {title}

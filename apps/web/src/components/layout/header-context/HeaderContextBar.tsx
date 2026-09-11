@@ -18,7 +18,7 @@ export function HeaderContextBar() {
           ariaLabel={content.ariaLabel}
           mobileVariant={content.mobileVariant}
           fullWidthOnMobile={content.fullWidthOnMobile}
-          className="min-w-0 w-full flex-1 self-stretch"
+          className="w-full min-w-0 flex-1 self-stretch"
         />
       );
     case 'actions':
@@ -33,9 +33,7 @@ export function HeaderContextBar() {
       );
     case 'custom':
       return (
-        <div className="flex w-full min-w-0 flex-1 items-center self-stretch">
-          {content.node}
-        </div>
+        <div className="flex w-full min-w-0 flex-1 items-center self-stretch">{content.node}</div>
       );
     default: {
       const _exhaustive: never = content;

@@ -179,7 +179,9 @@ function SalaryBoardMobileMonthCell({
   onOpenMonth: (salaryLineId: string) => void;
 }) {
   if (!cell) {
-    return <FinanceCalendarMobileEmptyMonthCell caption={caption} isCurrentMonth={isCurrentMonth} />;
+    return (
+      <FinanceCalendarMobileEmptyMonthCell caption={caption} isCurrentMonth={isCurrentMonth} />
+    );
   }
   const statusUi = salaryLineStatusBoardUi(cell.lineStatus);
   const amount = formatAmountAbbreviated(parseSalaryBoardAmount(cell.totalPayable));

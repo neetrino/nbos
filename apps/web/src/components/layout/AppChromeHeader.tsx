@@ -37,8 +37,7 @@ export function AppChromeHeader({
   const showMobileEntityHeader =
     isMobileViewport && (headerContext?.kind === 'custom' || headerContext?.kind === 'actions');
   const showMobileNav = isMobileViewport && headerContext?.kind === 'nav';
-  const mobileNavAsTabs =
-    headerContext?.kind === 'nav' && headerContext.mobileVariant === 'tabs';
+  const mobileNavAsTabs = headerContext?.kind === 'nav' && headerContext.mobileVariant === 'tabs';
   const showModuleTitle = Boolean(moduleTitle) && !showMobileEntityHeader;
   const moduleKey = isMobileViewport ? resolveSidebarModuleKeyFromPathname(pathname) : null;
 
@@ -97,10 +96,10 @@ function AppChromeHeaderPrimaryRow({
   if (showMobileEntityHeader && isMobileViewport) {
     return (
       <div className="relative grid w-full min-w-0 grid-cols-1 px-4 py-2">
-        <div className="col-start-1 row-start-1 min-w-0 w-full">
+        <div className="col-start-1 row-start-1 w-full min-w-0">
           <HeaderContextBar />
         </div>
-        <div className="pointer-events-none col-start-1 row-start-1 z-10 flex h-9 w-full items-center justify-end">
+        <div className="pointer-events-none z-10 col-start-1 row-start-1 flex h-9 w-full items-center justify-end">
           <div className="pointer-events-auto flex items-center gap-1.5">{trailing}</div>
         </div>
       </div>

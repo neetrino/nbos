@@ -204,7 +204,9 @@ export function SubscriptionDetailSheet({
                   : 'bg-background shrink-0 px-7 pt-5 pb-3',
               )}
             >
-              {isMobileViewport ? <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS} /> : null}
+              {isMobileViewport ? (
+                <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS} />
+              ) : null}
               <p
                 className={cn(
                   'text-muted-foreground text-sm',

@@ -37,7 +37,10 @@ export function SubscriptionCoverageMobileBoard({
   const subscriptionsById = useMemo(() => buildSubscriptionsById(subscriptions), [subscriptions]);
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3" aria-label={`Subscription board ${year}`}>
+    <div
+      className="flex min-h-0 min-w-0 flex-1 flex-col gap-3"
+      aria-label={`Subscription board ${year}`}
+    >
       <SubscriptionCoverageMobileToolbar
         year={year}
         onYearChange={onYearChange}

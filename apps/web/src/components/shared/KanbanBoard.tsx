@@ -287,7 +287,7 @@ export function KanbanBoard<T>({
   );
 
   return (
-    <div className="relative flex h-full min-h-0 min-w-0 w-full flex-1 flex-col">
+    <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col">
       <KanbanScrollEdgeControls
         canScrollLeft={canScrollLeft}
         canScrollRight={canScrollRight}
@@ -298,10 +298,7 @@ export function KanbanBoard<T>({
 
       <div
         ref={scrollRef}
-        className={cn(
-          KANBAN_BOARD_SCROLL_CLASS,
-          dragItem && terminalDropZones?.length && 'pb-28',
-        )}
+        className={cn(KANBAN_BOARD_SCROLL_CLASS, dragItem && terminalDropZones?.length && 'pb-28')}
       >
         <div
           className="flex h-full gap-0"
@@ -386,7 +383,9 @@ export function KanbanBoard<T>({
                               data-item-id={id}
                               className={cn(
                                 'min-w-0 transition-opacity duration-150',
-                                isMobileViewport ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing',
+                                isMobileViewport
+                                  ? 'cursor-pointer'
+                                  : 'cursor-grab active:cursor-grabbing',
                                 dragItem?.id === id && 'scale-[0.97] opacity-50',
                                 recentlyMoved.has(id) && 'animate-in fade-in duration-150',
                               )}

@@ -2,16 +2,17 @@
 
 import Link from 'next/link';
 import { AmdCurrencyIcon } from '@/components/shared/AmdCurrencyIcon';
-import {
-  FINANCE_CALENDAR_CELL_EMPTY,
-} from '@/features/finance/constants/finance-calendar-cell-colors';
+import { FINANCE_CALENDAR_CELL_EMPTY } from '@/features/finance/constants/finance-calendar-cell-colors';
 import { formatAmount, formatAmountAbbreviated } from '@/features/finance/constants/finance';
 import { payrollRunStatusUi } from '@/features/finance/constants/payroll-run-status-ui';
 import {
   salaryLineCalendarCellClass,
   salaryLineStatusBoardUi,
 } from '@/features/finance/constants/salary-board-line-status';
-import { formatPayrollMonthAbbrev, parseSalaryBoardAmount } from '@/features/finance/utils/salary-board-month-utils';
+import {
+  formatPayrollMonthAbbrev,
+  parseSalaryBoardAmount,
+} from '@/features/finance/utils/salary-board-month-utils';
 import type { SalaryBoardCell, SalaryBoardColumn } from '@/lib/api/payroll-runs';
 import { cn } from '@/lib/utils';
 

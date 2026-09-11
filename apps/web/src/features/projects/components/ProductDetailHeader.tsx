@@ -7,7 +7,10 @@ import { toast } from 'sonner';
 import { StatusBadge } from '@/components/shared';
 import { getProductDeliveryStageBadgeDisplay } from '@/features/projects/constants/delivery-stage-display';
 import { InlineEditableEntityTitle } from '@/features/projects/components/InlineEditableEntityTitle';
-import { DetailPageMobileBackLink, DETAIL_PAGE_MOBILE_BACK_ROW_CLASS } from '@/features/projects/components/DetailPageMobileBackLink';
+import {
+  DetailPageMobileBackLink,
+  DETAIL_PAGE_MOBILE_BACK_ROW_CLASS,
+} from '@/features/projects/components/DetailPageMobileBackLink';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { productsApi, type FullProduct, type Product } from '@/lib/api/products';

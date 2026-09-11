@@ -240,13 +240,7 @@ export function DeliveryKanbanBoard({
         onHoverStart={startAutoScroll}
         onHoverEnd={stopAutoScroll}
       />
-      <div
-        ref={scrollRef}
-        className={cn(
-          DELIVERY_KANBAN_BOARD_SCROLL_CLASS,
-          dragItem && 'pb-28',
-        )}
-      >
+      <div ref={scrollRef} className={cn(DELIVERY_KANBAN_BOARD_SCROLL_CLASS, dragItem && 'pb-28')}>
         <div
           className={DELIVERY_KANBAN_BOARD_ROW_CLASS}
           style={{

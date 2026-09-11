@@ -8,10 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import {
-  PIPELINE_SEGMENT_HEIGHT_PX,
-  mobileStageArrowPath,
-} from './pipeline-stage-segment-path';
+import { PIPELINE_SEGMENT_HEIGHT_PX, mobileStageArrowPath } from './pipeline-stage-segment-path';
 
 type MobilePipelineStage = {
   key: string;
@@ -48,14 +45,14 @@ export function PipelineStagesMobileSelect({
       <DropdownMenuTrigger
         disabled={disabled}
         className={cn(
-          'relative w-full min-w-0 select-none outline-none',
+          'relative w-full min-w-0 outline-none select-none',
           disabled && 'pointer-events-none opacity-60',
         )}
         style={{ height: PIPELINE_SEGMENT_HEIGHT_PX }}
         aria-label={`Stage: ${label}. Choose stage`}
       >
         <MobileStageArrowSvg fill={fill} />
-        <span className="relative z-10 flex h-full min-w-0 items-center justify-between gap-2 pl-4 pr-7 text-sm leading-none font-semibold text-white">
+        <span className="relative z-10 flex h-full min-w-0 items-center justify-between gap-2 pr-7 pl-4 text-sm leading-none font-semibold text-white">
           <span className="min-w-0 truncate text-left">{label}</span>
           <ChevronDown className="lucide-chevron-down size-4 shrink-0" aria-hidden />
         </span>
@@ -63,10 +60,7 @@ export function PipelineStagesMobileSelect({
       <DropdownMenuContent
         align="end"
         sideOffset={6}
-        className={cn(
-          'w-auto min-w-0 max-w-[min(100vw-2rem,22rem)]',
-          'duration-200 ease-out',
-        )}
+        className={cn('w-auto max-w-[min(100vw-2rem,22rem)] min-w-0', 'duration-200 ease-out')}
       >
         {stages.map((stage, index) => {
           const clickable = !disabled && (canClickStage == null || canClickStage(stage.key, index));

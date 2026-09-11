@@ -187,15 +187,15 @@ export function OrderDetailSheet({
                 <div
                   className={cn(
                     isMobileViewport
-                      ? cn(DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS, 'flex min-w-0 items-center gap-2')
+                      ? cn(
+                          DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+                          'flex min-w-0 items-center gap-2',
+                        )
                       : 'flex flex-wrap items-center justify-between gap-3',
                   )}
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-                    <ShoppingCart
-                      className="text-muted-foreground size-5 shrink-0"
-                      aria-hidden
-                    />
+                    <ShoppingCart className="text-muted-foreground size-5 shrink-0" aria-hidden />
                     <h2 className="text-foreground min-w-0 truncate text-xl font-bold tracking-tight">
                       {getOrderDisplayTitle(order)}
                     </h2>

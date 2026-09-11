@@ -124,7 +124,11 @@ export function TaskSheetHeader({
           title="Task chat"
           onClick={onOpenChat}
         >
-          <MessageCircle size={TASK_SHEET_PRIORITY_FLAME_ICON_SIZE} strokeWidth={1.75} aria-hidden />
+          <MessageCircle
+            size={TASK_SHEET_PRIORITY_FLAME_ICON_SIZE}
+            strokeWidth={1.75}
+            aria-hidden
+          />
         </button>
       ) : null}
       <button

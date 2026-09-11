@@ -590,14 +590,7 @@ export default function MailInboxPage() {
       setThreadPage(1);
       setFilterAccountId(queryAccountId);
     }
-  }, [
-    canView,
-    loading,
-    queryAccountId,
-    accountHealth,
-    filterAccountId,
-    updateMailQuery,
-  ]);
+  }, [canView, loading, queryAccountId, accountHealth, filterAccountId, updateMailQuery]);
 
   useEffect(() => {
     if (!canView || loading) {
@@ -748,14 +741,7 @@ export default function MailInboxPage() {
             accountEmail: shareAccount.emailAddress,
           },
     );
-  }, [
-    canView,
-    loading,
-    queryOpenShareMailboxId,
-    accountHealth,
-    filterAccountId,
-    updateMailQuery,
-  ]);
+  }, [canView, loading, queryOpenShareMailboxId, accountHealth, filterAccountId, updateMailQuery]);
 
   if (accessPhase === 'loading') {
     return (

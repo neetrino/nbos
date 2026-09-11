@@ -38,7 +38,9 @@ export function FinanceCalendarMobileMonthCell({
         onOpen();
       }}
     >
-      <span className={cn(FINANCE_CALENDAR_MOBILE_MONTH_CAPTION_CLASS, 'opacity-80')}>{caption}</span>
+      <span className={cn(FINANCE_CALENDAR_MOBILE_MONTH_CAPTION_CLASS, 'opacity-80')}>
+        {caption}
+      </span>
       <span className="max-w-full truncate text-xs leading-tight font-bold tabular-nums">
         {amountOrStatus}
       </span>
@@ -62,7 +64,9 @@ export function FinanceCalendarMobileEmptyMonthCell({
       )}
       aria-label={`${caption}, none`}
     >
-      <span className={cn(FINANCE_CALENDAR_MOBILE_MONTH_CAPTION_CLASS, 'opacity-80')}>{caption}</span>
+      <span className={cn(FINANCE_CALENDAR_MOBILE_MONTH_CAPTION_CLASS, 'opacity-80')}>
+        {caption}
+      </span>
       <span className="text-xs">—</span>
     </div>
   );

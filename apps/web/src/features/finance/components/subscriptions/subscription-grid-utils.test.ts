@@ -13,7 +13,9 @@ function emptyMonths(): SubscriptionGridCell[] {
   }));
 }
 
-function row(partial: Pick<SubscriptionGridRow, 'subscriptionId' | 'subscriptionName' | 'amountMonthly'>): SubscriptionGridRow {
+function row(
+  partial: Pick<SubscriptionGridRow, 'subscriptionId' | 'subscriptionName' | 'amountMonthly'>,
+): SubscriptionGridRow {
   return {
     projectId: 'p1',
     projectName: 'P',

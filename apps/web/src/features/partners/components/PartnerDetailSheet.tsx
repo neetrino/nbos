@@ -140,9 +140,7 @@ export function PartnerDetailSheet({
         <DropdownMenuItem
           variant="destructive"
           disabled={!partner || loading}
-          onClick={() =>
-            partner && deleteConfirm.request({ id: partner.id, name: partner.name })
-          }
+          onClick={() => partner && deleteConfirm.request({ id: partner.id, name: partner.name })}
         >
           <Trash2 />
           Move to Trash

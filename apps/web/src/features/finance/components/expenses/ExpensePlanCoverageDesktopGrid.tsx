@@ -148,8 +148,13 @@ export function ExpensePlanCoverageDesktopGrid({
                   />
                 </td>
               ))}
-              <td className={cn(STICKY_TOTAL_CELL_CLASS, TOTAL_STICKY_SURFACE_CLASS, totalColClass)}>
-                <ExpensePlanCompactAmount value={row.annualTotal} preferFullTotal={preferFullTotal} />
+              <td
+                className={cn(STICKY_TOTAL_CELL_CLASS, TOTAL_STICKY_SURFACE_CLASS, totalColClass)}
+              >
+                <ExpensePlanCompactAmount
+                  value={row.annualTotal}
+                  preferFullTotal={preferFullTotal}
+                />
               </td>
             </tr>
           ))}

@@ -328,8 +328,7 @@ export const DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS =
 export const DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS = 'mt-6 px-4';
 
 /** Tab strip wrapper for entity detail sheets. Button styles: {@link pillTabButtonClass} in `ui/tabs`. */
-export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS =
-  'min-w-0 shrink-0 px-5 pb-0 max-md:px-0';
+export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS = 'min-w-0 shrink-0 px-5 pb-0 max-md:px-0';
 
 export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS =
   'flex items-center gap-1 overflow-x-auto overscroll-x-contain touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';

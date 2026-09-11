@@ -58,7 +58,9 @@ function CredentialsVaultPageContent() {
     <div className="flex h-full min-h-0 flex-col gap-5">
       <div className="shrink-0 max-md:contents">
         <PageHero
-          title={vault.vaultListScope === 'trash' ? 'Credentials Vault — Trash' : 'Credentials Vault'}
+          title={
+            vault.vaultListScope === 'trash' ? 'Credentials Vault — Trash' : 'Credentials Vault'
+          }
           create={{ onSelect: vault.openCreate, disabled: !vault.showCreate }}
           tabs={
             <PageHeroTabs
@@ -77,7 +79,9 @@ function CredentialsVaultPageContent() {
               searchPlaceholder="Search by name, provider…"
               filters={vault.filterConfigs}
               filterValues={vault.filterValuesForUi}
-              onFilterChange={(key, value) => vault.setFilters((prev) => ({ ...prev, [key]: value }))}
+              onFilterChange={(key, value) =>
+                vault.setFilters((prev) => ({ ...prev, [key]: value }))
+              }
               onClearAll={vault.clearFilters}
             />
           }
@@ -150,7 +154,9 @@ function CredentialsVaultPageContent() {
 
         <div
           className={
-            viewMode === 'category-board' ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : undefined
+            viewMode === 'category-board'
+              ? 'flex min-h-0 flex-1 flex-col overflow-hidden'
+              : undefined
           }
         >
           <CredentialsVaultMainView

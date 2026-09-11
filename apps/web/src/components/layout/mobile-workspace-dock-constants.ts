@@ -13,4 +13,3 @@ export const MOBILE_WORKSPACE_SCOPE_LABEL_CLASS =
   'flex h-4 max-w-full min-w-0 items-center justify-center gap-0.5 overflow-hidden';
 export const MOBILE_WORKSPACE_SCOPE_CARET_CLASS = 'shrink-0 opacity-70';
 export const MOBILE_WORKSPACE_SCOPE_CARET_SIZE = 10;
-

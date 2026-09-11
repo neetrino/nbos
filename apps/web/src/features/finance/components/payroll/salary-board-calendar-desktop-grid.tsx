@@ -231,4 +231,3 @@ export function SalaryBoardCalendarDesktopGrid({
     </div>
   );
 }
-

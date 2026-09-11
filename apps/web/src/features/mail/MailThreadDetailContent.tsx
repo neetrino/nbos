@@ -181,8 +181,7 @@ export function MailThreadDetailContent({
     onMarkSpam: () => void markSpam(),
     onMoveToTrash: () => deleteConfirm.request({ id: threadId, name: title }),
     onRestore: () => void confirmRestore(),
-    onDeletePermanently: () =>
-      permanentDeleteConfirm.request({ id: threadId, name: title }),
+    onDeletePermanently: () => permanentDeleteConfirm.request({ id: threadId, name: title }),
   };
 
   return (

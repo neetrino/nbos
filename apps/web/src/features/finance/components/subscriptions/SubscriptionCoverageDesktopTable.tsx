@@ -137,7 +137,9 @@ function SubscriptionCoverageDesktopHead({
             <span className="text-muted-foreground text-xs font-semibold">{month.label}</span>
           </th>
         ))}
-        <th className={cn(STICKY_TOTAL_HEADER_CLASS, STICKY_SURFACE_CLASS, totalColClass)}>Total</th>
+        <th className={cn(STICKY_TOTAL_HEADER_CLASS, STICKY_SURFACE_CLASS, totalColClass)}>
+          Total
+        </th>
       </tr>
     </thead>
   );
@@ -160,7 +162,10 @@ function SubscriptionCoverageDesktopRow({
 }) {
   return (
     <tr className="hover:bg-muted/15">
-      <td className={STICKY_LABEL_CELL_CLASS} onClick={() => onOpenSubscription(row.subscriptionId)}>
+      <td
+        className={STICKY_LABEL_CELL_CLASS}
+        onClick={() => onOpenSubscription(row.subscriptionId)}
+      >
         <SubscriptionGridRowLabel
           subscriptionName={row.subscriptionName}
           subscription={subscription}
@@ -231,7 +236,9 @@ function SubscriptionCoverageDesktopMonthTotal({ total }: { total: number }) {
     <SubscriptionAmountHover
       amount={total}
       trigger={
-        <div className={cn(FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS, SUBSCRIPTION_CALENDAR_SLOT_CLASS)} />
+        <div
+          className={cn(FINANCE_CALENDAR_MONTH_TOTAL_CARD_CLASS, SUBSCRIPTION_CALENDAR_SLOT_CLASS)}
+        />
       }
     >
       {formatSubscriptionGridAmount(total, false)}

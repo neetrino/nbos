@@ -73,10 +73,7 @@ export function DeliveryBoardClosedBoard({
         onHoverStart={startAutoScroll}
         onHoverEnd={stopAutoScroll}
       />
-      <div
-        ref={scrollRef}
-        className={DELIVERY_KANBAN_BOARD_SCROLL_CLASS}
-      >
+      <div ref={scrollRef} className={DELIVERY_KANBAN_BOARD_SCROLL_CLASS}>
         <div
           className={DELIVERY_KANBAN_BOARD_ROW_CLASS}
           style={{

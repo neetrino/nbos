@@ -108,7 +108,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                           >
                             <PageEnter
                               className={
-                                isMessengerRoute ? 'overflow-hidden' : 'max-md:overflow-x-hidden max-md:overflow-y-auto'
+                                isMessengerRoute
+                                  ? 'overflow-hidden'
+                                  : 'max-md:overflow-x-hidden max-md:overflow-y-auto'
                               }
                             >
                               {children}

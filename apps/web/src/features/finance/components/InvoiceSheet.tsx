@@ -187,7 +187,9 @@ export function InvoiceSheet({
                 : 'flex flex-1 items-center gap-2 px-5 py-8 text-sm',
             )}
           >
-            {isMobileViewport ? <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS} /> : null}
+            {isMobileViewport ? (
+              <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS} />
+            ) : null}
             <div
               className={cn(
                 'flex items-center gap-2 text-sm',

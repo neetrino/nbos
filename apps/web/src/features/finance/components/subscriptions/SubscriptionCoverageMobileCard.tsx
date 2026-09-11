@@ -1,7 +1,10 @@
 'use client';
 
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
-import { formatAmountAbbreviated, getSubscriptionStatus } from '@/features/finance/constants/finance';
+import {
+  formatAmountAbbreviated,
+  getSubscriptionStatus,
+} from '@/features/finance/constants/finance';
 import {
   formatSubscriptionGridRowMeta,
   getSubscriptionDisplayTitle,

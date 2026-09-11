@@ -22,8 +22,7 @@ export const HEADER_CONTEXT_TAB_ACTIVE_LABEL =
 /**
  * White strip under the active tab — visual link to PageHero below (not a flush merge).
  */
-export const HEADER_CONTEXT_TAB_CONNECTOR =
-  'border-border/70 h-2.5 w-full shrink-0 border-x';
+export const HEADER_CONTEXT_TAB_CONNECTOR = 'border-border/70 h-2.5 w-full shrink-0 border-x';
 
 /** Active zone tab shell (rounded top + connector strip). */
 export const HEADER_CONTEXT_TAB_ACTIVE = [

@@ -390,7 +390,10 @@ export function EmployeeSheet({
                   </Button>
                 ) : null}
               </div>
-              {!isMobileViewport && !selfProfile && canEdit && displayEmployee.status !== 'TERMINATED' ? (
+              {!isMobileViewport &&
+              !selfProfile &&
+              canEdit &&
+              displayEmployee.status !== 'TERMINATED' ? (
                 <DetailSheetSettingsMenu>
                   <DropdownMenuItem
                     className="text-destructive"

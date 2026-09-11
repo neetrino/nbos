@@ -15,16 +15,17 @@ export function workSpacesDirectoryHref(tab: WorkSpaceDirectoryTab): string {
   return qs ? `${WORK_SPACES_DIRECTORY_PATH}?${qs}` : WORK_SPACES_DIRECTORY_PATH;
 }
 
-export function workSpacesDirectorySearch(tab: WorkSpaceDirectoryTab, currentSearch: string): string {
+export function workSpacesDirectorySearch(
+  tab: WorkSpaceDirectoryTab,
+  currentSearch: string,
+): string {
   const params = new URLSearchParams(currentSearch);
   if (tab === 'product') params.set(WORK_SPACES_DIRECTORY_TAB_QUERY, 'product');
   else params.delete(WORK_SPACES_DIRECTORY_TAB_QUERY);
   return params.toString();
 }
 
-export function workSpacesDirectoryHeaderItems(
-  activeTab: WorkSpaceDirectoryTab,
-): HeaderNavItem[] {
+export function workSpacesDirectoryHeaderItems(activeTab: WorkSpaceDirectoryTab): HeaderNavItem[] {
   return [
     {
       href: workSpacesDirectoryHref('standalone'),

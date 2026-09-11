@@ -20,7 +20,11 @@ import {
 } from '@/features/finance/constants/finance-calendar-mobile';
 import { formatAmountAbbreviated } from '@/features/finance/constants/finance';
 import { formatExpensePlanGridRowSubtitle } from '@/features/finance/utils/expense-plan-display';
-import type { ExpensePlanGridCell, ExpensePlanGridPayload, ExpensePlanGridRow } from '@/lib/api/expense-plans';
+import type {
+  ExpensePlanGridCell,
+  ExpensePlanGridPayload,
+  ExpensePlanGridRow,
+} from '@/lib/api/expense-plans';
 import { cn } from '@/lib/utils';
 import {
   expensePlanMonthCellStatusLabel,
@@ -48,7 +52,10 @@ export function ExpensePlanCoverageMobileBoard({
   const sortedRows = useMemo(() => sortExpensePlanGridRows(payload.rows), [payload.rows]);
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3" aria-label={`Expense plan board ${year}`}>
+    <div
+      className="flex min-h-0 min-w-0 flex-1 flex-col gap-3"
+      aria-label={`Expense plan board ${year}`}
+    >
       <div className="flex shrink-0 items-center gap-3">
         <div
           className={cn(
@@ -180,7 +187,9 @@ function ExpensePlanMobileMonthCell({
   onOpen: () => void;
 }) {
   if (cell.kind === 'NA') {
-    return <FinanceCalendarMobileEmptyMonthCell caption={caption} isCurrentMonth={isCurrentMonth} />;
+    return (
+      <FinanceCalendarMobileEmptyMonthCell caption={caption} isCurrentMonth={isCurrentMonth} />
+    );
   }
   const statusLabel = expensePlanMonthCellStatusLabel(cell.kind);
   const amountLabel = formatAmountAbbreviated(cell.amount);

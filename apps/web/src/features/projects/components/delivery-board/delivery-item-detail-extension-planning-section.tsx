@@ -3,11 +3,7 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { ClipboardList, Layers, Package, Tag } from 'lucide-react';
-import {
-  DetailSheetCollapsibleSection,
-  EntityNotesField,
-  InlineField,
-} from '@/components/shared';
+import { DetailSheetCollapsibleSection, EntityNotesField, InlineField } from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
 import { EXTENSION_SIZES, getProductType } from '@/features/projects/constants/projects';
 import { cn } from '@/lib/utils';

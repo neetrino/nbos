@@ -157,7 +157,7 @@ export function DeliveryItemDetailHeader({
           onClick={startEditing}
           className={cn(
             'text-foreground -mx-1 min-w-0 flex-1 cursor-text rounded px-1 text-xl font-bold tracking-tight transition-colors',
-            isMobileViewport ? 'leading-snug break-words line-clamp-2' : 'truncate',
+            isMobileViewport ? 'line-clamp-2 leading-snug break-words' : 'truncate',
             loading ? 'cursor-default' : 'hover:bg-stone-100 dark:hover:bg-stone-800',
           )}
           title={loading ? undefined : 'Click to edit name'}

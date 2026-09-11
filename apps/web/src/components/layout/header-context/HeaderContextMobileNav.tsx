@@ -4,7 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useRef, type MutableRefObject, type RefObject } from 'react';
 import { cn } from '@/lib/utils';
-import { PAGE_HERO_PILL_GROUP, PAGE_HERO_TAB_SCROLL } from '@/components/shared/page-hero/page-hero-constants';
+import {
+  PAGE_HERO_PILL_GROUP,
+  PAGE_HERO_TAB_SCROLL,
+} from '@/components/shared/page-hero/page-hero-constants';
 import {
   PAGE_HERO_TAB_BUTTON,
   PAGE_HERO_TAB_ICON,

@@ -79,7 +79,7 @@ function SalesKpis({ data }: { data: SalesReportsTabData }) {
         value={
           <span className="inline-flex items-baseline gap-1">
             {formatGroupedNumber(pipelineValue)}
-            <AmdCurrencyIcon className="text-xl font-semibold leading-none" />
+            <AmdCurrencyIcon className="text-xl leading-none font-semibold" />
           </span>
         }
         icon={<TrendingUp size={18} />}

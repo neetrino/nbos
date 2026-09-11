@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  Check,
-  Forward,
-  MailOpen,
-  Reply,
-  RotateCcw,
-  ShieldAlert,
-  Trash2,
-} from 'lucide-react';
+import { Check, Forward, MailOpen, Reply, RotateCcw, ShieldAlert, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DetailSheetSettingsMenu } from '@/components/shared';
@@ -92,11 +84,7 @@ export function MailThreadDetailActions({
                 Spam
               </DropdownMenuItem>
             ) : null}
-            <DropdownMenuItem
-              variant="destructive"
-              disabled={deleting}
-              onClick={onMoveToTrash}
-            >
+            <DropdownMenuItem variant="destructive" disabled={deleting} onClick={onMoveToTrash}>
               <Trash2 />
               Move to Trash
             </DropdownMenuItem>

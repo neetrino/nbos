@@ -11,14 +11,7 @@ interface KpiCardProps {
   className?: string;
 }
 
-export function KpiCard({
-  label,
-  value,
-  hint,
-  icon,
-  size = 'default',
-  className,
-}: KpiCardProps) {
+export function KpiCard({ label, value, hint, icon, size = 'default', className }: KpiCardProps) {
   return (
     <div
       className={cn(
