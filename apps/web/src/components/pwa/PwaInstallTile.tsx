@@ -41,11 +41,7 @@ export function PwaInstallTile({ onClose }: PwaInstallTileProps) {
           void promptInstall();
         }}
       >
-        <Download
-          size={PWA_INSTALL_TILE_ICON_SIZE_PX}
-          className="text-indigo-600"
-          aria-hidden
-        />
+        <Download size={PWA_INSTALL_TILE_ICON_SIZE_PX} className="text-indigo-600" aria-hidden />
         <span className="text-sm font-semibold tracking-tight">{label}</span>
       </button>
     </div>
