@@ -42,7 +42,7 @@
 | 2.9  | Тёмная тема      | next-themes + CSS variables | ✅     | Phase 2+                                                                          |
 | 2.10 | Анимации         | Framer Motion               | ✅     | Kanban, переходы                                                                  |
 | 2.11 | Drag & Drop      | @dnd-kit                    | ✅     | Kanban-доски                                                                      |
-| 2.12 | PWA              | не требуется (v1)           | ➖     | при необходимости позже                                                           |
+| 2.12 | PWA              | install-only (manifest + SW) | ✅     | Add to Home Screen / Install; без offline-кеша HTML/API                           |
 | 2.13 | Icons            | lucide-react + Simple Icons | ✅     | Lucide — UI chrome; Simple Icons — brand marks (links, credentials, AI providers) |
 
 ---
