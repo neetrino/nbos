@@ -13,7 +13,6 @@ import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { APP_MAIN_CONTENT_INSET } from './app-layout-constants';
 import { MobileBottomNav } from './MobileBottomNav';
-import { PageEnter } from './PageEnter';
 import { SIDEBAR_WIDTH_COLLAPSED_PX, SIDEBAR_WIDTH_EXPANDED_PX } from './sidebar-layout-constants';
 import { AppEntityRelationProvider } from '@/components/shared/relation-picker/AppEntityRelationProvider';
 import { UnsortedTaskCreateProvider } from '@/features/tasks/components/UnsortedTaskCreateProvider';
@@ -102,19 +101,11 @@ export function AppLayout({ children }: AppLayoutProps) {
                               'flex min-h-0 min-w-0 flex-1 flex-col overscroll-contain bg-transparent',
                               isMessengerRoute
                                 ? 'overflow-hidden'
-                                : 'overflow-y-auto [scrollbar-gutter:stable] max-md:[scrollbar-gutter:auto]',
+                                : 'overflow-y-auto [scrollbar-gutter:stable] max-md:overflow-x-hidden max-md:[scrollbar-gutter:auto]',
                               APP_MAIN_CONTENT_INSET,
                             )}
                           >
-                            <PageEnter
-                              className={
-                                isMessengerRoute
-                                  ? 'overflow-hidden'
-                                  : 'max-md:overflow-x-hidden max-md:overflow-y-auto'
-                              }
-                            >
-                              {children}
-                            </PageEnter>
+                            {children}
                           </main>
                           {isMobileViewport ? (
                             <MobileBottomNav

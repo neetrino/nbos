@@ -13,7 +13,7 @@ export const MOBILE_APP_MENU_HANDLE_HIT_CLASS =
 export const MOBILE_APP_MENU_GRID_CLASS = 'grid grid-cols-2 gap-2.5';
 
 export const MOBILE_APP_MENU_TILE_CLASS = [
-  'nbos-pressable relative flex min-h-[4.75rem] flex-col items-start justify-between gap-3 overflow-hidden',
+  'relative flex min-h-[4.75rem] flex-col items-start justify-between gap-3 overflow-hidden',
   'rounded-2xl border border-border/80 bg-card px-3.5 py-3 text-left',
   'text-foreground',
 ].join(' ');

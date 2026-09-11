@@ -1,14 +1,6 @@
 @layer components {
   .nbos-app-canvas {
     background-color: var(--background);
-    background-image:
-      radial-gradient(1200px 520px at 8% -8%, var(--desk-wash), transparent 58%),
-      radial-gradient(900px 420px at 100% 0%, var(--desk-wash-soft), transparent 52%),
-      linear-gradient(
-        180deg,
-        color-mix(in oklch, var(--foreground) 3.5%, transparent),
-        transparent 28%
-      );
   }
 
   .nbos-desk-surface {
@@ -69,7 +61,7 @@
   }
 
   .nbos-mobile-dock {
-    @apply bg-card/95 supports-[backdrop-filter]:bg-card/88 pointer-events-auto relative z-30 w-full shrink-0 overflow-hidden border-0 shadow-none backdrop-blur-md;
+    @apply bg-card pointer-events-auto relative z-30 w-full shrink-0 overflow-hidden border-0 shadow-none;
     height: calc(
       var(--nbos-mobile-dock-height) + (2 * var(--nbos-mobile-dock-pad-y)) +
         env(safe-area-inset-bottom, 0px)
@@ -82,10 +74,6 @@
   }
 
   @media (max-width: 767px) {
-    .nbos-app-canvas {
-      background-image: none;
-    }
-
     .nbos-app-canvas [data-slot='card'] {
       border-radius: 1.25rem;
     }
@@ -122,31 +110,6 @@
 }
 
 @layer utilities {
-  .nbos-page-enter {
-    animation: nbos-page-enter var(--motion-duration-base) var(--motion-ease-out);
-  }
-
-  .nbos-shimmer {
-    background-image: linear-gradient(
-      90deg,
-      var(--muted) 0%,
-      color-mix(in oklch, var(--foreground) 8%, var(--muted)) 48%,
-      var(--muted) 100%
-    );
-    background-size: 220% 100%;
-    animation: nbos-shimmer 1.4s var(--motion-ease-out) infinite;
-  }
-
-  .nbos-pressable {
-    transition:
-      transform var(--motion-duration-fast) var(--motion-ease-out),
-      box-shadow var(--motion-duration-fast) ease-out;
-  }
-
-  .nbos-pressable:active {
-    transform: translateY(1px);
-  }
-
   .nbos-sheet-swipe,
   .nbos-sheet-swipe-overlay {
     --nbos-sheet-swipe-snap-duration: 300ms;
@@ -184,37 +147,7 @@
   }
 }
 
-@keyframes nbos-page-enter {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes nbos-shimmer {
-  0% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: -100% 0;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .nbos-page-enter,
-  .nbos-shimmer,
-  .nbos-animate-pulse-soft {
-    animation: none;
-  }
-
-  .nbos-pressable,
-  .nbos-pressable:active {
-    transition: none;
-    transform: none;
-  }
-
   .nbos-sheet-swipe[data-swipe-snap='true'],
   .nbos-sheet-swipe-overlay[data-swipe-snap='true'] {
     transition: none;
