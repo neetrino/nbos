@@ -10,6 +10,11 @@ import {
   ErrorState,
   LoadingState,
 } from '@/components/shared';
+import {
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import { CreateSubscriptionInvoiceDialog } from '@/features/finance/components/invoices/CreateSubscriptionInvoiceDialog';
@@ -17,15 +22,18 @@ import {
   subscriptionWorkspaceHref,
   subscriptionsListWithOpenSubscriptionHref,
 } from '@/features/finance/constants/subscription-deep-link';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import {
   createSubscriptionGeneralDraft,
   isSubscriptionGeneralDirty,
   type SubscriptionGeneralDraft,
 } from '@/features/finance/utils/subscription-general-form-state';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 import { usePermission } from '@/lib/permissions';
+import { cn } from '@/lib/utils';
 import { buildSubscriptionDetailSheetTabs } from './build-subscription-detail-sheet-tabs';
 import { subscriptionCanCreatePeriodInvoice } from './subscription-action-eligibility';
 import { SubscriptionBillingPeriodConfirmDialog } from './SubscriptionBillingPeriodConfirmDialog';
@@ -35,7 +43,6 @@ import { SubscriptionHistoryTab } from './SubscriptionHistoryTab';
 import { SubscriptionInvoicesTab } from './SubscriptionInvoicesTab';
 import type { SubscriptionDetailSheetTab } from './subscription-detail-sheet-tabs';
 import { useSubscriptionGeneralSave } from './use-subscription-general-save';
-import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 
 interface SubscriptionDetailSheetProps {
   subscriptionId: string | null;
@@ -173,6 +180,8 @@ export function SubscriptionDetailSheet({
     },
   });
 
+  const isMobileViewport = useIsMobileViewport();
+
   if (!hostMounted) return null;
 
   const sourcePageHref = subscriptionsListWithOpenSubscriptionHref(sheetId ?? '');
@@ -187,26 +196,41 @@ export function SubscriptionDetailSheet({
           sourcePageHref={sourcePageHref}
           workspaceHref={subscriptionWorkspaceHref(sheetId ?? '')}
         >
-          <div className="bg-background shrink-0 px-7 pt-5 pb-3">
-            {loading && !subscription ? (
-              <p className="text-muted-foreground text-sm">Loading…</p>
-            ) : subscription ? (
-              <SubscriptionDetailSheetHeader
-                subscription={subscription}
-                onSubscriptionChange={handleSubscriptionChange}
-                onError={setActionError}
-              />
-            ) : null}
-          </div>
+          {loading && !subscription ? (
+            <div
+              className={cn(
+                isMobileViewport
+                  ? DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS
+                  : 'bg-background shrink-0 px-7 pt-5 pb-3',
+              )}
+            >
+              {isMobileViewport ? <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS} /> : null}
+              <p
+                className={cn(
+                  'text-muted-foreground text-sm',
+                  isMobileViewport && DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+                )}
+              >
+                Loading…
+              </p>
+            </div>
+          ) : subscription ? (
+            <SubscriptionDetailSheetHeader
+              subscription={subscription}
+              onSubscriptionChange={handleSubscriptionChange}
+              onError={setActionError}
+            />
+          ) : null}
 
           <DetailSheetTabBar
             tabs={detailSheetTabs}
             activeTab={activeTab}
             onTabChange={(value) => setActiveTab(value as SubscriptionDetailSheetTab)}
+            className="max-md:mt-3 max-md:px-4"
           />
 
           <ScrollArea className="min-h-0 flex-1">
-            <div className="px-7 py-5">
+            <div className="px-7 py-5 max-md:px-4">
               {loading && !subscription ? (
                 <LoadingState count={3} />
               ) : error ? (
