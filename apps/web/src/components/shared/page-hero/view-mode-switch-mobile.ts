@@ -4,9 +4,10 @@ const KANBAN_SWITCHER_BOARD_VALUES = new Set([
   'category-board',
   'kanban',
   'status',
+  'compact-card',
 ]);
 
-const KANBAN_SWITCHER_LIST_VALUES = new Set(['LIST', 'list']);
+const KANBAN_SWITCHER_LIST_VALUES = new Set(['LIST', 'list', 'list-row']);
 
 /** True when the control is a board/list toggle that mobile must not expose. */
 export function isKanbanListViewSwitcher(optionValues: readonly string[]): boolean {

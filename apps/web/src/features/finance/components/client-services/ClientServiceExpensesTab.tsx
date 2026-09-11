@@ -8,6 +8,7 @@ import {
   DetailSheetSection,
   EntityItemList,
   useOpenEntityItemFromSummary,
+  useEntityItemMobileView,
   ViewModeSwitch,
   ENTITY_ITEM_VIEW_OPTIONS,
   type EntityItemVariant,
@@ -30,6 +31,7 @@ export function ClientServiceExpensesTab({
 }: ClientServiceExpensesTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
+  const displayVariant = useEntityItemMobileView(viewVariant);
   const expenses = useMemo(() => links?.expenses ?? [], [links?.expenses]);
 
   const itemSummaries = useMemo(
@@ -60,7 +62,7 @@ export function ClientServiceExpensesTab({
 
       <EntityItemList
         items={itemSummaries}
-        variant={viewVariant}
+        variant={displayVariant}
         onOpen={onOpenItem}
         emptyIcon={Receipt}
         emptyTitle="No expense cards"

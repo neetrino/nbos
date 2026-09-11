@@ -269,6 +269,7 @@ export {
   EntityItemSurface,
   ENTITY_ITEM_VIEW_OPTIONS,
   useEntityItemHost,
+  useEntityItemMobileView,
   useOpenEntityItemFromSummary,
   type EntityItemHostProps,
   type EntityItemListProps,

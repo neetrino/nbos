@@ -7,6 +7,7 @@ export type {
   EntityItemVariant,
 } from './entity-item.types';
 export { ENTITY_ITEM_VIEW_OPTIONS } from './entity-item-view-options';
+export { useEntityItemMobileView } from './use-entity-item-mobile-view';
 export { EntityItemSurface, type EntityItemSurfaceProps } from './EntityItemSurface';
 export { EntityItemList, type EntityItemListProps } from './EntityItemList';
 export { EntityItemHost, type EntityItemHostProps } from './EntityItemHost';

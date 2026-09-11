@@ -7,6 +7,7 @@ import {
   ENTITY_ITEM_VIEW_OPTIONS,
   EntityItemList,
   useOpenEntityItemFromSummary,
+  useEntityItemMobileView,
   ViewModeSwitch,
   type EntityItemVariant,
 } from '@/components/shared';
@@ -32,6 +33,7 @@ export function EntityLinkedTasksTab({
 }: EntityLinkedTasksTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
+  const displayVariant = useEntityItemMobileView(viewVariant);
   const { creatorId, creatorReady } = useTaskCreatorId();
   const { tasks, loading } = useEntityLinkedTasks(entityType, entityId, tasksRefreshSignal);
 
@@ -49,7 +51,7 @@ export function EntityLinkedTasksTab({
       <EntityLinkedTasksList
         loading={loading}
         items={itemSummaries}
-        viewVariant={viewVariant}
+        viewVariant={displayVariant}
         emptyDescription={emptyDescription}
         onOpenItem={onOpenItem}
       />

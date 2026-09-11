@@ -8,11 +8,11 @@ describe('isKanbanListViewSwitcher', () => {
     expect(isKanbanListViewSwitcher(['BOARD', 'LIST'])).toBe(true);
     expect(isKanbanListViewSwitcher(['status', 'list', 'months'])).toBe(true);
     expect(isKanbanListViewSwitcher(['category-board', 'list', 'tiles'])).toBe(true);
+    expect(isKanbanListViewSwitcher(['compact-card', 'list-row'])).toBe(true);
   });
 
   it('ignores card/grid switchers that are not kanban', () => {
     expect(isKanbanListViewSwitcher(['grid', 'list'])).toBe(false);
     expect(isKanbanListViewSwitcher(['tiles', 'list', 'folders'])).toBe(false);
-    expect(isKanbanListViewSwitcher(['compact-card', 'list-row'])).toBe(false);
   });
 });
