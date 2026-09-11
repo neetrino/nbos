@@ -1,8 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { listAccessibleInternalConversations } from './messenger-core-internal-list.ops';
 import { listAccessibleClientConversations } from './messenger-core-client-list.ops';
-import { listInternalCollections, listClientCollections } from './messenger-core-collection-list.ops';
-import { loadInternalMessengerBootstrap, loadClientMessengerBootstrap } from './messenger-core-bootstrap.ops';
+import {
+  listInternalCollections,
+  listClientCollections,
+} from './messenger-core-collection-list.ops';
+import {
+  loadInternalMessengerBootstrap,
+  loadClientMessengerBootstrap,
+} from './messenger-core-bootstrap.ops';
 import { instrumentPrismaDelegates } from './messenger-prisma-call-count';
 import { takeListPagePlusOne } from './messenger-core-list-page';
 import { MESSENGER_CORE_INTERNAL_LIST_PAGE_SIZE } from './messenger-core.constants';
@@ -59,7 +65,9 @@ function internalRow(id: string) {
     canonicalKey: null,
     createdAt: new Date('2026-08-01T10:00:00.000Z'),
     lastMessageAt: new Date('2026-08-30T12:00:00.000Z'),
-    messages: [{ content: 'hello', senderId: 'other', createdAt: new Date('2026-08-30T12:00:00.000Z') }],
+    messages: [
+      { content: 'hello', senderId: 'other', createdAt: new Date('2026-08-30T12:00:00.000Z') },
+    ],
     readStates: [],
     userSettings: [],
     participants: [],
@@ -76,12 +84,14 @@ function clientRow(id: string) {
     canonicalKey: null,
     createdAt: new Date('2026-08-01T10:00:00.000Z'),
     lastMessageAt: new Date('2026-09-05T12:00:00.000Z'),
-    messages: [{
-      content: 'hello',
-      direction: 'INBOUND',
-      senderId: null,
-      createdAt: new Date('2026-09-05T12:00:00.000Z'),
-    }],
+    messages: [
+      {
+        content: 'hello',
+        direction: 'INBOUND',
+        senderId: null,
+        createdAt: new Date('2026-09-05T12:00:00.000Z'),
+      },
+    ],
     readStates: [],
     userSettings: [],
     participants: [{ role: 'MEMBER' }],
@@ -104,12 +114,24 @@ function listPrisma(rows: unknown[], extra?: { queryRaw?: unknown[] }) {
 describe('Phase 6 Messenger Prisma query counts', () => {
   it('Internal default list stays at two queries regardless of row cardinality', async () => {
     const small = instrumentPrismaDelegates(listPrisma([internalRow('a'), internalRow('b')]));
-    await listAccessibleInternalConversations(small.prisma as never, 'e1', 'ALL', { section: 'all' }, 'ALL');
+    await listAccessibleInternalConversations(
+      small.prisma as never,
+      'e1',
+      'ALL',
+      { section: 'all' },
+      'ALL',
+    );
     expect(small.snapshot().total).toBe(INTERNAL_DEFAULT_QUERIES);
     expect(small.snapshot().mutating).toBe(0);
     const largeRows = Array.from({ length: 80 }, (_, i) => internalRow(`c${i}`));
     const large = instrumentPrismaDelegates(listPrisma(largeRows));
-    await listAccessibleInternalConversations(large.prisma as never, 'e1', 'ALL', { section: 'all' }, 'ALL');
+    await listAccessibleInternalConversations(
+      large.prisma as never,
+      'e1',
+      'ALL',
+      { section: 'all' },
+      'ALL',
+    );
     expect(large.snapshot().total).toBe(INTERNAL_DEFAULT_QUERIES);
     expect(large.snapshot().byPath['messengerConversation.findMany']).toBe(1);
     expect(takeListPagePlusOne(MESSENGER_CORE_INTERNAL_LIST_PAGE_SIZE)).toBe(101);
@@ -117,13 +139,17 @@ describe('Phase 6 Messenger Prisma query counts', () => {
 
   it('Client default list stays at two queries regardless of row cardinality', async () => {
     const small = instrumentPrismaDelegates(listPrisma([clientRow('a')]));
-    await listAccessibleClientConversations(small.prisma as never, 'e1', 'ALL', 'ALL', { section: 'inbox' });
+    await listAccessibleClientConversations(small.prisma as never, 'e1', 'ALL', 'ALL', {
+      section: 'inbox',
+    });
     expect(small.snapshot().total).toBe(CLIENT_DEFAULT_QUERIES);
     expect(small.snapshot().mutating).toBe(0);
     const large = instrumentPrismaDelegates(
       listPrisma(Array.from({ length: 80 }, (_, i) => clientRow(`c${i}`))),
     );
-    await listAccessibleClientConversations(large.prisma as never, 'e1', 'ALL', 'ALL', { section: 'inbox' });
+    await listAccessibleClientConversations(large.prisma as never, 'e1', 'ALL', 'ALL', {
+      section: 'inbox',
+    });
     expect(large.snapshot().total).toBe(CLIENT_DEFAULT_QUERIES);
   });
 

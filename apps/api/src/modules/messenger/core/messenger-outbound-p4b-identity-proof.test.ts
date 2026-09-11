@@ -3,9 +3,7 @@ import { WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX } from '../../integrations/whatsa
 import { applyWhatsAppAck } from './messenger-wa-lifecycle.ops';
 import { completeCoreSend } from './messenger-wa-outbound-complete.ops';
 import { repairWhatsAppRefProof } from './messenger-wa-outbound-repair.ops';
-import {
-  lockedCommandMatchesResolvedMessage,
-} from './messenger-outbound-command-lock';
+import { lockedCommandMatchesResolvedMessage } from './messenger-outbound-command-lock';
 import { MESSENGER_AUDIT_EXTERNAL_SEND_COMPLETED } from './messenger-outbound-audit';
 
 const JOB = {
@@ -44,7 +42,11 @@ function proofPrisma(input: {
   auditThrow?: boolean;
 }) {
   const live = command(input.command);
-  const message = { id: 'msg-1', conversationId: 'conv-c', status: input.messageStatus ?? 'SENDING' };
+  const message = {
+    id: 'msg-1',
+    conversationId: 'conv-c',
+    status: input.messageStatus ?? 'SENDING',
+  };
   const refs = [...(input.refs ?? [])];
   const audits: unknown[] = [];
   let rolledBack = false;
@@ -65,47 +67,54 @@ function proofPrisma(input: {
         mentions: [],
         referencesAsTarget: [],
       })),
-      updateMany: vi.fn(async ({
-        where,
-        data,
-      }: {
-        where: { id?: string; status?: { in: string[] } };
-        data: { status: string };
-      }) => {
-        if (where.id && where.id !== message.id) return { count: 0 };
-        const allowed = where.status?.in ?? [];
-        if (allowed.length && !allowed.includes(message.status)) return { count: 0 };
-        message.status = data.status;
-        return { count: 1 };
-      }),
+      updateMany: vi.fn(
+        async ({
+          where,
+          data,
+        }: {
+          where: { id?: string; status?: { in: string[] } };
+          data: { status: string };
+        }) => {
+          if (where.id && where.id !== message.id) return { count: 0 };
+          const allowed = where.status?.in ?? [];
+          if (allowed.length && !allowed.includes(message.status)) return { count: 0 };
+          message.status = data.status;
+          return { count: 1 };
+        },
+      ),
     },
     messengerMessageExternalRef: {
       findFirst: vi.fn(async () => refs[0] ?? null),
-      createMany: vi.fn(async ({
-        data,
-      }: {
-        data: Array<{ messageId: string; externalMessageId: string; externalAccountId: string }>;
-      }) => {
-        const row = data[0];
-        if (!row) return { count: 0 };
-        if (refs.some((ref) => ref.externalMessageId === row.externalMessageId)) return { count: 0 };
-        refs.push(row);
-        return { count: 1 };
-      }),
-      findUnique: vi.fn(async ({
-        where,
-      }: {
-        where: { provider_externalAccountId_externalMessageId: { externalMessageId: string } };
-      }) => {
-        if (input.ownedMessageId === null) return null;
-        if (input.ownedMessageId) return { messageId: input.ownedMessageId };
-        const row = refs.find(
-          (ref) =>
-            ref.externalMessageId ===
-            where.provider_externalAccountId_externalMessageId.externalMessageId,
-        );
-        return row ? { messageId: row.messageId } : null;
-      }),
+      createMany: vi.fn(
+        async ({
+          data,
+        }: {
+          data: Array<{ messageId: string; externalMessageId: string; externalAccountId: string }>;
+        }) => {
+          const row = data[0];
+          if (!row) return { count: 0 };
+          if (refs.some((ref) => ref.externalMessageId === row.externalMessageId))
+            return { count: 0 };
+          refs.push(row);
+          return { count: 1 };
+        },
+      ),
+      findUnique: vi.fn(
+        async ({
+          where,
+        }: {
+          where: { provider_externalAccountId_externalMessageId: { externalMessageId: string } };
+        }) => {
+          if (input.ownedMessageId === null) return null;
+          if (input.ownedMessageId) return { messageId: input.ownedMessageId };
+          const row = refs.find(
+            (ref) =>
+              ref.externalMessageId ===
+              where.provider_externalAccountId_externalMessageId.externalMessageId,
+          );
+          return row ? { messageId: row.messageId } : null;
+        },
+      ),
     },
     auditLog: {
       create: vi.fn(async (row: unknown) => {
@@ -118,7 +127,12 @@ function proofPrisma(input: {
   const prisma = {
     ...tx,
     $transaction: vi.fn(async (fn: (inner: typeof tx) => Promise<unknown>) => {
-      const snap = { live: { ...live }, message: { ...message }, refs: [...refs], audits: [...audits] };
+      const snap = {
+        live: { ...live },
+        message: { ...message },
+        refs: [...refs],
+        audits: [...audits],
+      };
       try {
         return await fn(tx);
       } catch (error) {
@@ -138,8 +152,12 @@ describe('P4B-23 exact locked command identity', () => {
   it('requires canonical key, SEND_MESSAGE, resultMessageId, and conversationId', () => {
     const live = command();
     expect(lockedCommandMatchesResolvedMessage(live, JOB)).toBe(true);
-    expect(lockedCommandMatchesResolvedMessage({ ...live, resultMessageId: 'msg-other' }, JOB)).toBe(false);
-    expect(lockedCommandMatchesResolvedMessage({ ...live, conversationId: 'conv-other' }, JOB)).toBe(false);
+    expect(
+      lockedCommandMatchesResolvedMessage({ ...live, resultMessageId: 'msg-other' }, JOB),
+    ).toBe(false);
+    expect(
+      lockedCommandMatchesResolvedMessage({ ...live, conversationId: 'conv-other' }, JOB),
+    ).toBe(false);
     expect(lockedCommandMatchesResolvedMessage({ ...live, kind: 'OTHER' }, JOB)).toBe(false);
     expect(
       lockedCommandMatchesResolvedMessage(live, { ...JOB, idempotencyKey: 'core-wa-send:forged' }),
@@ -222,7 +240,11 @@ describe('P4B-24 owned provider proof repairs FAILED', () => {
       JOB,
       'wamid-1',
       false,
-      { publish: async (event) => { published.push(event.status); } },
+      {
+        publish: async (event) => {
+          published.push(event.status);
+        },
+      },
       'tok',
     );
     expect(message.status).toBe('SENT');
@@ -237,7 +259,15 @@ describe('P4B-24 owned provider proof repairs FAILED', () => {
       command: { status: 'FAILED' },
       messageStatus: 'FAILED',
     });
-    await completeCoreSend(prisma as never, live as never, JOB, 'wamid-new', false, undefined, 'tok');
+    await completeCoreSend(
+      prisma as never,
+      live as never,
+      JOB,
+      'wamid-new',
+      false,
+      undefined,
+      'tok',
+    );
     expect(message.status).toBe('SENT');
     expect(live.status).toBe('COMPLETED');
     expect(refs).toHaveLength(1);
@@ -289,7 +319,15 @@ describe('P4B-24 owned provider proof repairs FAILED', () => {
       messageStatus: 'SENDING',
       ownedMessageId: 'msg-other',
     });
-    await completeCoreSend(prisma as never, live as never, JOB, 'wamid-stolen', false, undefined, 'tok');
+    await completeCoreSend(
+      prisma as never,
+      live as never,
+      JOB,
+      'wamid-stolen',
+      false,
+      undefined,
+      'tok',
+    );
     expect(live.status).toBe('OUTCOME_UNKNOWN');
     expect(live.invalidReason).toBe('PROVIDER_REF_CONFLICT');
     expect(message.status).toBe('OUTCOME_UNKNOWN');

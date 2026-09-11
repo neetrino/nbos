@@ -146,7 +146,10 @@ export async function enqueueWhatsAppCoreSend(
     actorEmployeeId: input.actorEmployeeId,
     allowCreate: true,
   });
-  await offerWhatsAppCoreSendJob(queue, whatsAppCoreSendJobFromMessage(input.message, input.mapping));
+  await offerWhatsAppCoreSendJob(
+    queue,
+    whatsAppCoreSendJobFromMessage(input.message, input.mapping),
+  );
 }
 
 export async function finalizeWhatsAppCoreOutbound(

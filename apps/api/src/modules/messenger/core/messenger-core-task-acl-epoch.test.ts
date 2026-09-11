@@ -20,10 +20,11 @@ vi.mock('../../tasks/tasks-scoped-access', () => ({
 describe('Messenger Task ACL epoch digest', () => {
   it('uses a constant sentinel when Task VIEW bypasses row filtering', async () => {
     const findMany = vi.fn();
-    const digest = await loadMessengerTaskAclDigest(
-      { task: { findMany } } as never,
-      { employeeId: 'e1', departmentIds: ['d1'], viewScope: 'ALL' },
-    );
+    const digest = await loadMessengerTaskAclDigest({ task: { findMany } } as never, {
+      employeeId: 'e1',
+      departmentIds: ['d1'],
+      viewScope: 'ALL',
+    });
     expect(digest).toBe(MESSENGER_TASK_ACL_BYPASS_SENTINEL);
     expect(findMany).not.toHaveBeenCalled();
     expect(digest).not.toMatch(/[0-9a-f-]{36}/);
@@ -62,7 +63,10 @@ describe('Messenger Task ACL epoch digest', () => {
   });
 
   it('does not retain a process-lifetime tasksAccess cache', () => {
-    const src = readFileSync(new URL('./messenger-core-task-acl-epoch.ts', import.meta.url), 'utf8');
+    const src = readFileSync(
+      new URL('./messenger-core-task-acl-epoch.ts', import.meta.url),
+      'utf8',
+    );
     expect(src).not.toMatch(/WeakMap|new Map|AsyncLocalStorage|TTL/);
   });
 });

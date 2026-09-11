@@ -120,13 +120,18 @@ describe('resolveInvoiceProductWhatsAppGroup', () => {
       clientServiceRecord: { productId: 'prod-csr' },
       order: { productId: 'prod-order' },
     });
-    prisma.productWhatsAppGroupBinding.findUnique.mockResolvedValue({
-      groupChatId: 'card@g.us',
-      status: 'ACTIVE',
-    });
+    prisma.productCommunicationBinding.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        conversationId: 'conv-card',
+        conversation: {
+          externalMappings: [{ externalAccountId: 'acc', externalConversationId: 'card@g.us' }],
+        },
+      });
 
     const result = await resolveInvoiceProductWhatsAppGroup(prisma as never, 'inv-1');
 
     expect(result?.productId).toBe('prod-card');
+    expect(result?.groupChatId).toBe('card@g.us');
   });
 });

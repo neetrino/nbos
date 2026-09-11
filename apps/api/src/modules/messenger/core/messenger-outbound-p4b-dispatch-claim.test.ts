@@ -70,16 +70,27 @@ function matchesWhere(row: Record<string, unknown>, where: Record<string, unknow
 function livePrisma(cmd = commandState(), messageStatus = 'QUEUED', injectRefOnClaim = false) {
   const command = { ...cmd };
   const message = { id: 'msg-1', conversationId: 'conv-c', status: messageStatus };
-  const refs: Array<{ messageId: string; externalMessageId: string; externalAccountId: string }> = [];
+  const refs: Array<{ messageId: string; externalMessageId: string; externalAccountId: string }> =
+    [];
   const audits: unknown[] = [];
   const prisma: Record<string, unknown> = {
     messengerCommand: {
       findUnique: async () => ({ ...command }),
-      updateMany: async ({ where, data }: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
+      updateMany: async ({
+        where,
+        data,
+      }: {
+        where: Record<string, unknown>;
+        data: Record<string, unknown>;
+      }) => {
         if (!matchesWhere(command, where)) return { count: 0 };
         Object.assign(command, data);
         if (injectRefOnClaim && typeof data.dispatchToken === 'string') {
-          refs.push({ messageId: 'msg-1', externalMessageId: 'wamid-1', externalAccountId: 'acc_a' });
+          refs.push({
+            messageId: 'msg-1',
+            externalMessageId: 'wamid-1',
+            externalAccountId: 'acc_a',
+          });
         }
         return { count: 1 };
       },
@@ -95,9 +106,16 @@ function livePrisma(cmd = commandState(), messageStatus = 'QUEUED', injectRefOnC
         deletedAt: null,
         conversation: { zone: 'CLIENT' },
       }),
-      updateMany: async ({ where, data }: { where: { id?: string; status?: string | { in: string[] } }; data: { status: string } }) => {
+      updateMany: async ({
+        where,
+        data,
+      }: {
+        where: { id?: string; status?: string | { in: string[] } };
+        data: { status: string };
+      }) => {
         if (where.id && where.id !== message.id) return { count: 0 };
-        const allowed = typeof where.status === 'string' ? [where.status] : (where.status?.in ?? []);
+        const allowed =
+          typeof where.status === 'string' ? [where.status] : (where.status?.in ?? []);
         if (allowed.length && !allowed.includes(message.status)) return { count: 0 };
         message.status = data.status;
         return { count: 1 };
@@ -105,10 +123,15 @@ function livePrisma(cmd = commandState(), messageStatus = 'QUEUED', injectRefOnC
     },
     messengerMessageExternalRef: {
       findFirst: async () => refs[0] ?? null,
-      createMany: async ({ data }: { data: Array<{ messageId: string; externalMessageId: string; externalAccountId: string }> }) => {
+      createMany: async ({
+        data,
+      }: {
+        data: Array<{ messageId: string; externalMessageId: string; externalAccountId: string }>;
+      }) => {
         const row = data[0];
         if (!row) return { count: 0 };
-        if (refs.some((ref) => ref.externalMessageId === row.externalMessageId)) return { count: 0 };
+        if (refs.some((ref) => ref.externalMessageId === row.externalMessageId))
+          return { count: 0 };
         refs.push(row);
         return { count: 1 };
       },
@@ -119,7 +142,8 @@ function livePrisma(cmd = commandState(), messageStatus = 'QUEUED', injectRefOnC
       }) => {
         const row = refs.find(
           (ref) =>
-            ref.externalMessageId === where.provider_externalAccountId_externalMessageId.externalMessageId,
+            ref.externalMessageId ===
+            where.provider_externalAccountId_externalMessageId.externalMessageId,
         );
         return row ? { messageId: row.messageId } : null;
       },
@@ -202,10 +226,20 @@ describe('P4B-14 dispatch lease', () => {
       commandState({ firstAttemptAt: new Date() }),
       'SENDING',
     );
-    const first = await beginWhatsAppCoreSendAttempt(prisma as never, command as never, JOB, 'SENDING');
+    const first = await beginWhatsAppCoreSendAttempt(
+      prisma as never,
+      command as never,
+      JOB,
+      'SENDING',
+    );
     expect(first.kind).toBe('proceed');
     command.nextReconcileAt = new Date(Date.now() - 1000);
-    const second = await beginWhatsAppCoreSendAttempt(prisma as never, command as never, JOB, 'SENDING');
+    const second = await beginWhatsAppCoreSendAttempt(
+      prisma as never,
+      command as never,
+      JOB,
+      'SENDING',
+    );
     expect(second.kind).toBe('proceed');
     if (first.kind !== 'proceed' || second.kind !== 'proceed') return;
     await setCoreSendStatus(
@@ -239,12 +273,32 @@ describe('P4B-14 dispatch lease', () => {
 describe('P4B-16/17 proof audit and FAILED/CANCELLED', () => {
   it('completes PENDING with the same ref after a crash (idempotent)', async () => {
     const { prisma, command, audits } = livePrisma(
-      commandState({ firstAttemptAt: new Date(), dispatchToken: 'tok', nextReconcileAt: new Date(Date.now() + 30_000) }),
+      commandState({
+        firstAttemptAt: new Date(),
+        dispatchToken: 'tok',
+        nextReconcileAt: new Date(Date.now() + 30_000),
+      }),
       'SENDING',
     );
-    await completeCoreSend(prisma as never, command as never, JOB, 'wamid-1', false, undefined, 'tok');
+    await completeCoreSend(
+      prisma as never,
+      command as never,
+      JOB,
+      'wamid-1',
+      false,
+      undefined,
+      'tok',
+    );
     const firstAudits = audits.length;
-    await completeCoreSend(prisma as never, command as never, JOB, 'wamid-1', false, undefined, 'tok');
+    await completeCoreSend(
+      prisma as never,
+      command as never,
+      JOB,
+      'wamid-1',
+      false,
+      undefined,
+      'tok',
+    );
     expect(command.status).toBe('COMPLETED');
     expect(firstAudits).toBe(1);
     expect(audits).toHaveLength(1);
@@ -256,17 +310,37 @@ describe('P4B-16/17 proof audit and FAILED/CANCELLED', () => {
       commandState({ status: 'FAILED', firstAttemptAt: new Date() }),
       'SENT',
     );
-    await completeCoreSend(prisma as never, command as never, JOB, 'wamid-1', false, undefined, 'tok');
+    await completeCoreSend(
+      prisma as never,
+      command as never,
+      JOB,
+      'wamid-1',
+      false,
+      undefined,
+      'tok',
+    );
     expect(command.status).toBe('COMPLETED');
     expect(JSON.stringify(audits[0])).toContain(MESSENGER_AUDIT_EXTERNAL_SEND_COMPLETED);
   });
 
   it('keeps CANCELLED Message, owned ref, and completes the command', async () => {
     const { prisma, command, message, refs } = livePrisma(
-      commandState({ firstAttemptAt: new Date(), dispatchToken: 'tok', nextReconcileAt: new Date(Date.now() + 30_000) }),
+      commandState({
+        firstAttemptAt: new Date(),
+        dispatchToken: 'tok',
+        nextReconcileAt: new Date(Date.now() + 30_000),
+      }),
       'CANCELLED',
     );
-    await completeCoreSend(prisma as never, command as never, JOB, 'wamid-1', false, undefined, 'tok');
+    await completeCoreSend(
+      prisma as never,
+      command as never,
+      JOB,
+      'wamid-1',
+      false,
+      undefined,
+      'tok',
+    );
     expect(message.status).toBe('CANCELLED');
     expect(command.status).toBe('COMPLETED');
     expect(refs).toHaveLength(1);
@@ -277,7 +351,15 @@ describe('P4B-16/17 proof audit and FAILED/CANCELLED', () => {
       commandState({ status: 'FAILED', firstAttemptAt: new Date() }),
       'FAILED',
     );
-    await completeCoreSend(prisma as never, command as never, JOB, 'wamid-new', false, undefined, 'tok');
+    await completeCoreSend(
+      prisma as never,
+      command as never,
+      JOB,
+      'wamid-new',
+      false,
+      undefined,
+      'tok',
+    );
     expect(command.status).toBe('COMPLETED');
     expect(message.status).toBe('SENT');
     expect(refs).toHaveLength(1);

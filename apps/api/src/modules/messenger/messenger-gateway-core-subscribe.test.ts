@@ -45,11 +45,13 @@ function prismaMock(input: {
       findFirst: vi.fn().mockResolvedValue(input.taskLink ?? null),
     },
     task: {
-      findUnique: vi.fn().mockResolvedValue(
-        input.taskFindFirst
-          ? { ...input.taskFindFirst, trashedAt: null, title: 'T', creatorId: 'e1' }
-          : null,
-      ),
+      findUnique: vi
+        .fn()
+        .mockResolvedValue(
+          input.taskFindFirst
+            ? { ...input.taskFindFirst, trashedAt: null, title: 'T', creatorId: 'e1' }
+            : null,
+        ),
       findFirst: vi.fn().mockResolvedValue(input.taskFindFirst ?? null),
     },
     employeeDepartment: { findMany: vi.fn().mockResolvedValue([]) },
@@ -90,7 +92,9 @@ describe('subscribeSocketToCoreConversation', () => {
 
   it('denies Client ACL when CLIENT_READ is NONE and the caller is not a participant', async () => {
     const join = vi.fn();
-    loadMessengerLegacyAccess.mockResolvedValue(access({ viewScope: 'ALL', clientReadScope: 'NONE' }));
+    loadMessengerLegacyAccess.mockResolvedValue(
+      access({ viewScope: 'ALL', clientReadScope: 'NONE' }),
+    );
     const prisma = prismaMock({
       conversation: { id: 'c1', zone: 'CLIENT', type: 'EXTERNAL' },
     });
@@ -136,9 +140,9 @@ describe('leaveSocketCoreConversation', () => {
   it('does not leave when the body is malformed', async () => {
     const leave = vi.fn();
     await expect(leaveSocketCoreConversation('e1', {}, leave)).resolves.toEqual({ ok: false });
-    await expect(leaveSocketCoreConversation(undefined, { conversationId: 'A' }, leave)).resolves.toEqual(
-      { ok: false },
-    );
+    await expect(
+      leaveSocketCoreConversation(undefined, { conversationId: 'A' }, leave),
+    ).resolves.toEqual({ ok: false });
     expect(leave).not.toHaveBeenCalled();
   });
 });

@@ -53,9 +53,7 @@ describe('Messenger delta hydration plan', () => {
   });
 
   it('returns a summary and thread invalidation for targeted read plus a newer global', () => {
-    const rows = [
-      change('a', '8', { changeKind: 'READ', lane: 'T', hasConversation: true }),
-    ];
+    const rows = [change('a', '8', { changeKind: 'READ', lane: 'T', hasConversation: true })];
     const assembled = assembleMessengerDeltaPage(rows, planMessengerDeltaHydration(rows), [
       { id: 'a', title: 'visible' },
     ]);

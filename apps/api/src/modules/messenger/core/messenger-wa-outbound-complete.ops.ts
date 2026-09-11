@@ -108,7 +108,8 @@ export async function publishIfChanged(
   published: MessengerMessageStatus | null | false | 'sent' | 'noop' | 'conflict',
 ): Promise<void> {
   if (!publisher || published == null || published === false || published === 'noop') return;
-  const status = published === 'sent' ? 'SENT' : published === 'conflict' ? 'OUTCOME_UNKNOWN' : published;
+  const status =
+    published === 'sent' ? 'SENT' : published === 'conflict' ? 'OUTCOME_UNKNOWN' : published;
   await publisher.publish({
     conversationId: job.conversationId,
     messageId: job.messageId,
@@ -116,4 +117,3 @@ export async function publishIfChanged(
     occurredAt: new Date().toISOString(),
   });
 }
-

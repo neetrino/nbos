@@ -44,10 +44,9 @@ export function emitCoreConversationRoomMessage(
   message: MessengerCoreMessageDto,
 ): void {
   if (!server) return;
-  server.to(messengerSocketConversationRoom(conversationId)).emit(
-    MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
-    { conversationId, message },
-  );
+  server
+    .to(messengerSocketConversationRoom(conversationId))
+    .emit(MESSENGER_WS_SERVER_CONVERSATION_MESSAGE, { conversationId, message });
 }
 
 export function publishPersistedCoreConversationMessage(
@@ -57,12 +56,9 @@ export function publishPersistedCoreConversationMessage(
   void runPersistedSummaryFanout(input);
 }
 
-async function runPersistedSummaryFanout(
-  input: PublishPersistedCoreMessageInput,
-): Promise<void> {
+async function runPersistedSummaryFanout(input: PublishPersistedCoreMessageInput): Promise<void> {
   try {
-    const facts =
-      input.knownFacts ?? (await input.loadFacts(input.message.conversationId));
+    const facts = input.knownFacts ?? (await input.loadFacts(input.message.conversationId));
     if (!facts) return;
     await input.scheduleSummaries({
       conversationId: input.message.conversationId,

@@ -56,24 +56,36 @@ async function writeUniqueLegacyWorkRow(
     where: { productId: input.productId },
     select: { id: true },
   });
-  const data = {
-    groupChatId: input.groupChatId,
-    groupName: input.groupName,
-    status: 'ACTIVE' satisfies ProductWhatsAppGroupBindingStatusEnum,
-    lastErrorCode: null,
-    lastErrorMessage: null,
-    lastSuccessfulSyncAt: new Date(),
-    createdFromDealId: input.createdFromDealId ?? undefined,
-  };
   if (existing) {
     return prisma.productWhatsAppGroupBinding.update({
       where: { id: existing.id },
-      data,
+      data: {
+        groupChatId: input.groupChatId,
+        groupName: input.groupName,
+        status: 'ACTIVE',
+        lastErrorCode: null,
+        lastErrorMessage: null,
+        lastSuccessfulSyncAt: new Date(),
+        createdFromDeal: input.createdFromDealId
+          ? { connect: { id: input.createdFromDealId } }
+          : undefined,
+      },
       select: { id: true },
     });
   }
   return prisma.productWhatsAppGroupBinding.create({
-    data: { productId: input.productId, ...data },
+    data: {
+      product: { connect: { id: input.productId } },
+      groupChatId: input.groupChatId,
+      groupName: input.groupName,
+      status: 'ACTIVE',
+      lastErrorCode: null,
+      lastErrorMessage: null,
+      lastSuccessfulSyncAt: new Date(),
+      createdFromDeal: input.createdFromDealId
+        ? { connect: { id: input.createdFromDealId } }
+        : undefined,
+    },
     select: { id: true },
   });
 }

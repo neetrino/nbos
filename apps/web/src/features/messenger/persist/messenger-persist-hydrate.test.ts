@@ -2,7 +2,10 @@ import { QueryClient } from '@tanstack/react-query';
 import { afterEach, describe, expect, it } from 'vitest';
 import { messengerQueryKeys } from '../query/messenger-query-keys';
 import { messengerTestCheckpoint } from '../query/messenger-test-checkpoint';
-import { applyMessengerPersistEnvelope, shouldApplyRestoredQuery } from './messenger-persist-hydrate';
+import {
+  applyMessengerPersistEnvelope,
+  shouldApplyRestoredQuery,
+} from './messenger-persist-hydrate';
 import {
   beginMessengerPersistHydration,
   resetMessengerPersistSessionForTests,
@@ -74,9 +77,9 @@ describe('Messenger persist hydration races', () => {
     const queryClient = createClient();
     const staleGeneration = beginMessengerPersistHydration(queryClient, IDENTITY);
     beginMessengerPersistHydration(queryClient, IDENTITY);
-    expect(applyMessengerPersistEnvelope(queryClient, restoredEnvelope(), Date.now(), staleGeneration)).toBe(
-      false,
-    );
+    expect(
+      applyMessengerPersistEnvelope(queryClient, restoredEnvelope(), Date.now(), staleGeneration),
+    ).toBe(false);
     expect(
       queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' })),
     ).toBeUndefined();

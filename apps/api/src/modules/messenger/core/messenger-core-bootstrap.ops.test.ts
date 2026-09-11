@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { loadInternalMessengerBootstrap, loadClientMessengerBootstrap } from './messenger-core-bootstrap.ops';
+import {
+  loadInternalMessengerBootstrap,
+  loadClientMessengerBootstrap,
+} from './messenger-core-bootstrap.ops';
 import type { MessengerInternalAccessSnapshot } from './messenger-core-access-snapshot';
 import type { MessengerGrantSnapshot } from './messenger-core-grant-epoch';
 

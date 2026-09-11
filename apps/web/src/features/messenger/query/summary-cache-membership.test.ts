@@ -3,7 +3,8 @@ import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import { clientSummaryMembership, internalSummaryMembership } from './summary-cache-membership';
 
 function row(
-  overrides: Partial<MessengerCoreConversationRow> & Pick<MessengerCoreConversationRow, 'type' | 'zone'>,
+  overrides: Partial<MessengerCoreConversationRow> &
+    Pick<MessengerCoreConversationRow, 'type' | 'zone'>,
 ): MessengerCoreConversationRow {
   return {
     id: 'g1',
@@ -87,16 +88,10 @@ describe('summary cache membership', () => {
   it('never guesses Client Sales, attention, provider, or search membership', () => {
     const client = row({ type: 'EXTERNAL', zone: 'CLIENT', id: 'c1' });
     expect(
-      clientSummaryMembership(
-        { section: 'inbox', q: '', filter: 'all', provider: '' },
-        client,
-      ),
+      clientSummaryMembership({ section: 'inbox', q: '', filter: 'all', provider: '' }, client),
     ).toBe('unknown');
     expect(
-      clientSummaryMembership(
-        { section: 'sales', q: '', filter: 'all', provider: '' },
-        client,
-      ),
+      clientSummaryMembership({ section: 'sales', q: '', filter: 'all', provider: '' }, client),
     ).toBe('unknown');
     expect(
       clientSummaryMembership(

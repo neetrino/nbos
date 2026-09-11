@@ -28,14 +28,16 @@ function conversation(
 
 function ids(queryClient: QueryClient, key: readonly unknown[]): string[] {
   return (
-    queryClient.getQueryData<{ items: MessengerCoreConversationRow[] }>(key)?.items.map(
-      (row) => row.id,
-    ) ?? []
+    queryClient
+      .getQueryData<{ items: MessengerCoreConversationRow[] }>(key)
+      ?.items.map((row) => row.id) ?? []
   );
 }
 
 function isInvalidated(queryClient: QueryClient, key: readonly unknown[]): boolean {
-  return Boolean(queryClient.getQueryCache().find({ queryKey: key, exact: true })?.state.isInvalidated);
+  return Boolean(
+    queryClient.getQueryCache().find({ queryKey: key, exact: true })?.state.isInvalidated,
+  );
 }
 
 describe('upsertConversationSummary membership safety', () => {

@@ -5,7 +5,10 @@ import {
   readMessengerPersistChannelIdentity,
   readMessengerPersistGate,
 } from './messenger-persist-session';
-import type { MessengerPersistEnvelope, MessengerPersistQueryRecord } from './messenger-persist-envelope';
+import type {
+  MessengerPersistEnvelope,
+  MessengerPersistQueryRecord,
+} from './messenger-persist-envelope';
 
 export function applyMessengerPersistEnvelope(
   queryClient: QueryClient,

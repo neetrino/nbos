@@ -81,7 +81,14 @@ describe('Messenger persist canonical restore keys', () => {
     expect(serialized).not.toContain('lead-');
     expect(capture.envelope.queries.map((record) => record.queryKey)).toEqual([
       [...messengerQueryKeys.internalSummaries({ source: 'all-dataset' })],
-      [...messengerQueryKeys.clientSummaries({ section: 'inbox', q: '', filter: 'all', provider: '' })],
+      [
+        ...messengerQueryKeys.clientSummaries({
+          section: 'inbox',
+          q: '',
+          filter: 'all',
+          provider: '',
+        }),
+      ],
       [...messengerQueryKeys.collections('INTERNAL')],
       [...messengerQueryKeys.collections('CLIENT')],
     ]);
@@ -100,7 +107,12 @@ describe('Messenger persist canonical restore keys', () => {
     ).toEqual(persistTestInternalPage('base-internal'));
     expect(
       queryClient.getQueryData(
-        messengerQueryKeys.clientSummaries({ section: 'inbox', q: '', filter: 'all', provider: '' }),
+        messengerQueryKeys.clientSummaries({
+          section: 'inbox',
+          q: '',
+          filter: 'all',
+          provider: '',
+        }),
       ),
     ).toEqual(persistTestClientPage('base-client'));
   });

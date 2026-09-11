@@ -125,7 +125,9 @@ function casPrisma(status: string) {
     ]),
     messengerCommand: {
       findUnique: vi.fn().mockResolvedValue(
-        canonicalCommand({ status: status === 'OUTCOME_UNKNOWN' ? 'OUTCOME_UNKNOWN' : 'PENDING' }),
+        canonicalCommand({
+          status: status === 'OUTCOME_UNKNOWN' ? 'OUTCOME_UNKNOWN' : 'PENDING',
+        }),
       ),
       updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       update: vi.fn().mockResolvedValue({}),
@@ -210,11 +212,7 @@ describe('WhatsApp OUTCOME_UNKNOWN drain (FINDING-S8-10)', () => {
     nextReconcileAt: null,
   };
 
-  function drainPrisma(
-    rows: Array<typeof pendingRow>,
-    messageStatus = 'QUEUED',
-    hasRef = false,
-  ) {
+  function drainPrisma(rows: Array<typeof pendingRow>, messageStatus = 'QUEUED', hasRef = false) {
     return {
       $queryRaw: vi.fn(async () => (rows[0] ? [{ ...rows[0] }] : [])),
       messengerCommand: {
@@ -275,13 +273,16 @@ describe('WhatsApp OUTCOME_UNKNOWN drain (FINDING-S8-10)', () => {
   });
 
   it('does not auto-submit OUTCOME_UNKNOWN after the Gateway 24h window', async () => {
-    const prisma = drainPrisma([
-      {
-        ...pendingRow,
-        status: 'OUTCOME_UNKNOWN',
-        createdAt: new Date(Date.now() - 25 * 60 * 60 * 1000),
-      },
-    ], 'OUTCOME_UNKNOWN');
+    const prisma = drainPrisma(
+      [
+        {
+          ...pendingRow,
+          status: 'OUTCOME_UNKNOWN',
+          createdAt: new Date(Date.now() - 25 * 60 * 60 * 1000),
+        },
+      ],
+      'OUTCOME_UNKNOWN',
+    );
     const queue = { isAvailable: vi.fn().mockReturnValue(true), enqueue: vi.fn() };
     const enqueued = await drainPendingWhatsAppCoreSends(prisma as never, queue);
     expect(enqueued).toBe(0);

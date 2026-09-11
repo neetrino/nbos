@@ -6,7 +6,10 @@ import type {
 } from '@nbos/shared';
 import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import { messengerQueryKeys } from './messenger-query-keys';
-import { applyMessengerRealtimeRead, applyMessengerRealtimeSummary } from './messenger-realtime-cache';
+import {
+  applyMessengerRealtimeRead,
+  applyMessengerRealtimeSummary,
+} from './messenger-realtime-cache';
 import { getReadWatermark } from './messenger-realtime-watermarks';
 
 function createClient(): QueryClient {
@@ -102,7 +105,8 @@ describe('in-session summary/read monotonicity', () => {
     applyMessengerRealtimeRead(queryClient, 'INTERNAL', readPayload());
     applyMessengerRealtimeSummary(queryClient, 'INTERNAL', payload({ unreadCount: 1 }));
     expect(
-      queryClient.getQueryData<{ items: MessengerCoreConversationRow[] }>(key)?.items[0]?.unreadCount,
+      queryClient.getQueryData<{ items: MessengerCoreConversationRow[] }>(key)?.items[0]
+        ?.unreadCount,
     ).toBe(0);
   });
 
@@ -121,7 +125,8 @@ describe('in-session summary/read monotonicity', () => {
       readPayload({ unreadCount: 1, lastReadAt: '2026-09-05T11:00:00.000Z' }),
     );
     expect(
-      queryClient.getQueryData<{ items: MessengerCoreConversationRow[] }>(key)?.items[0]?.unreadCount,
+      queryClient.getQueryData<{ items: MessengerCoreConversationRow[] }>(key)?.items[0]
+        ?.unreadCount,
     ).toBe(0);
     expect(getReadWatermark(queryClient, 'INTERNAL', 'c1')).toBe('2026-09-05T13:00:00.000Z');
   });

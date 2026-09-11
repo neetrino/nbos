@@ -74,7 +74,10 @@ export function parseChannelMessage(
   if (keys.length !== 4) return null;
   if (!keys.includes('identityId') || !keys.includes('capturedAt')) return null;
   if (!keys.includes('writtenAt') || !keys.includes('schemaVersion')) return null;
-  if (typeof value.identityId !== 'string' || !MESSENGER_PERSIST_IDENTITY_PATTERN.test(value.identityId)) {
+  if (
+    typeof value.identityId !== 'string' ||
+    !MESSENGER_PERSIST_IDENTITY_PATTERN.test(value.identityId)
+  ) {
     return null;
   }
   if (value.schemaVersion !== MESSENGER_CACHE_SCHEMA_VERSION) return null;

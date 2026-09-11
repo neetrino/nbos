@@ -1,8 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import type { Prisma } from '@nbos/database';
 
-const LIST_CURSOR_UUID =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const LIST_CURSOR_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type MessengerListCursor = {
   lastMessageAt: Date | null;
@@ -20,7 +19,10 @@ export function takeListPagePlusOne(pageSize: number): number {
   return pageSize + 1;
 }
 
-export function sliceMessengerListPage<T>(rows: T[], pageSize: number): {
+export function sliceMessengerListPage<T>(
+  rows: T[],
+  pageSize: number,
+): {
   items: T[];
   hasMore: boolean;
 } {

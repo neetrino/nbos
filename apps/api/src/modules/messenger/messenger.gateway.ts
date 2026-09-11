@@ -134,10 +134,8 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() body: unknown,
   ): Promise<{ ok: boolean }> {
-    return leaveSocketCoreConversation(
-      client.data.employeeId as string | undefined,
-      body,
-      (room) => client.leave(room),
+    return leaveSocketCoreConversation(client.data.employeeId as string | undefined, body, (room) =>
+      client.leave(room),
     );
   }
 
@@ -187,10 +185,12 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
 
   emitChannelMessage(channelId: string, message: MessengerMessageDto): void {
     if (!this.server) return;
-    this.server.to(messengerSocketChannelRoom(channelId)).emit(MESSENGER_WS_SERVER_CHANNEL_MESSAGE, {
-      channelId,
-      message,
-    });
+    this.server
+      .to(messengerSocketChannelRoom(channelId))
+      .emit(MESSENGER_WS_SERVER_CHANNEL_MESSAGE, {
+        channelId,
+        message,
+      });
   }
 
   emitCoreConversationMessage(conversationId: string, message: MessengerCoreMessageDto): void {
@@ -251,7 +251,9 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     payload: MessengerWsConversationReadUpdatedPayload,
   ): void {
     if (!this.server) return;
-    this.server.to(messengerSocketUserRoom(employeeId)).emit(MESSENGER_WS_SERVER_READ_UPDATED, payload);
+    this.server
+      .to(messengerSocketUserRoom(employeeId))
+      .emit(MESSENGER_WS_SERVER_READ_UPDATED, payload);
   }
 
   async evictEmployeeFromConversation(

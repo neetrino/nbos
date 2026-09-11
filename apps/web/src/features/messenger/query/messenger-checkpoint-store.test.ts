@@ -4,7 +4,8 @@ import {
   readMessengerHttpCheckpoint,
   restoreMessengerHttpCheckpoint,
   writeMessengerHttpCheckpoint,
-} from './messenger-checkpoint-store';import { seedInternalMessengerBootstrap } from './seed-messenger-bootstrap';
+} from './messenger-checkpoint-store';
+import { seedInternalMessengerBootstrap } from './seed-messenger-bootstrap';
 import { QueryClient } from '@tanstack/react-query';
 import { messengerTestCheckpoint, messengerTestFullRecovery } from './messenger-test-checkpoint';
 
@@ -25,7 +26,9 @@ describe('Messenger HTTP checkpoint parsing', () => {
   });
 
   it('rejects a DELTA bootstrap with a malformed checkpoint instead of seeding recovery', () => {
-    expect(parseMessengerHttpCheckpoint({ checkpoint: '-1', authorizationEpoch: 'aa'.repeat(16) })).toBeNull();
+    expect(
+      parseMessengerHttpCheckpoint({ checkpoint: '-1', authorizationEpoch: 'aa'.repeat(16) }),
+    ).toBeNull();
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     expect(() =>
       seedInternalMessengerBootstrap(queryClient, {
@@ -54,8 +57,14 @@ describe('Messenger HTTP checkpoint parsing', () => {
 
   it('restores a checkpoint only when the session does not already have one', () => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    const first = { checkpoint: '4', authorizationEpoch: messengerTestCheckpoint().authorizationEpoch };
-    const second = { checkpoint: '9', authorizationEpoch: messengerTestCheckpoint().authorizationEpoch };
+    const first = {
+      checkpoint: '4',
+      authorizationEpoch: messengerTestCheckpoint().authorizationEpoch,
+    };
+    const second = {
+      checkpoint: '9',
+      authorizationEpoch: messengerTestCheckpoint().authorizationEpoch,
+    };
     expect(restoreMessengerHttpCheckpoint(queryClient, 'INTERNAL', first)).toBe(true);
     expect(restoreMessengerHttpCheckpoint(queryClient, 'INTERNAL', second)).toBe(false);
     expect(readMessengerHttpCheckpoint(queryClient, 'INTERNAL')).toEqual(first);

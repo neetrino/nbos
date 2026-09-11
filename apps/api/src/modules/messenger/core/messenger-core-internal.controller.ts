@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   CurrentUser,
@@ -62,10 +53,7 @@ export class MessengerCoreInternalController {
   @ApiOperation({
     summary: 'Internal zone delta from an HTTP checkpoint (current authorized state only)',
   })
-  listDelta(
-    @CurrentUser() user: CurrentUserPayload,
-    @Query() query: ListMessengerDeltaQueryDto,
-  ) {
+  listDelta(@CurrentUser() user: CurrentUserPayload, @Query() query: ListMessengerDeltaQueryDto) {
     return this.internal.listDelta(user.id, query, tasksAccessFromUser(user));
   }
 

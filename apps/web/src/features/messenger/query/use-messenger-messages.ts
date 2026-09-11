@@ -4,7 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { messengerClientApi } from '@/lib/api/messenger-core-client';
 import { messengerCoreApi } from '@/lib/api/messenger-core';
 import { messengerQueryKeys, type MessengerZone } from './messenger-query-keys';
-import { MESSENGER_QUERY_GC_TIME_MS, MESSENGER_QUERY_STALE_TIME_MS } from './messenger-query-policy';
+import {
+  MESSENGER_QUERY_GC_TIME_MS,
+  MESSENGER_QUERY_STALE_TIME_MS,
+} from './messenger-query-policy';
 import type { MessengerMessagesPage } from './messenger-cache';
 
 export function useMessengerMessages(

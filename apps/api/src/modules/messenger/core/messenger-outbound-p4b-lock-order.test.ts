@@ -33,10 +33,14 @@ function command() {
 describe('P4B-19 command-first lock order', () => {
   it('documents command then ref/message then audit', () => {
     expect(MESSENGER_OUTBOUND_LOCK_ORDER[0]).toBe('messenger_commands');
-    expect(JSON.stringify(lockCanonicalWhatsAppCommandSql({
-      id: 'cmd-1',
-      idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}msg-1`,
-    }))).toMatch(/FOR UPDATE/);
+    expect(
+      JSON.stringify(
+        lockCanonicalWhatsAppCommandSql({
+          id: 'cmd-1',
+          idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}msg-1`,
+        }),
+      ),
+    ).toMatch(/FOR UPDATE/);
   });
 
   it('ACK locks the command row before the Message CAS', async () => {

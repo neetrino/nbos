@@ -29,7 +29,10 @@ function createClient(): QueryClient {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } });
 }
 
-function summary(id: string, zone: 'INTERNAL' | 'CLIENT' = 'INTERNAL'): MessengerCoreConversationRow {
+function summary(
+  id: string,
+  zone: 'INTERNAL' | 'CLIENT' = 'INTERNAL',
+): MessengerCoreConversationRow {
   return {
     id,
     zone,
@@ -113,9 +116,9 @@ describe('messenger realtime cache reducers', () => {
     const cached = queryClient.getQueryData<{ items: MessengerCoreConversationRow[] }>(key);
     expect(cached?.items[0]?.unreadCount).toBe(0);
     expect(cached?.items[1]?.unreadCount).toBe(2);
-    expect(queryClient.getQueryCache().find({ queryKey: key, exact: true })?.state.isInvalidated).toBe(
-      false,
-    );
+    expect(
+      queryClient.getQueryCache().find({ queryKey: key, exact: true })?.state.isInvalidated,
+    ).toBe(false);
   });
 
   it('rejects cross-zone summary and read payloads', () => {
@@ -152,9 +155,9 @@ describe('messenger realtime cache reducers', () => {
     applyMessengerRealtimeSummary(queryClient, 'INTERNAL', payload({ conversationId: 'missing' }));
     const cached = queryClient.getQueryData<{ items: MessengerCoreConversationRow[] }>(key);
     expect(cached?.items.map((row) => row.id)).toEqual(['other']);
-    expect(queryClient.getQueryCache().find({ queryKey: key, exact: true })?.state.isInvalidated).toBe(
-      true,
-    );
+    expect(
+      queryClient.getQueryCache().find({ queryKey: key, exact: true })?.state.isInvalidated,
+    ).toBe(true);
   });
 
   it('invalidates zone summaries and the active messages query once on reconnect recovery', () => {
@@ -211,18 +214,12 @@ describe('applyMessengerAccessChanged', () => {
       newMessage: 'draft',
       unlockedId: 'lost',
     };
-    const applied = applyMessengerAccessChanged(
-      queryClient,
-      'CLIENT',
-      'lost',
-      'CLIENT',
-      {
-        activeId: session.activeId,
-        clearActive: () => {
-          session = applyClientActiveId(session, null);
-        },
+    const applied = applyMessengerAccessChanged(queryClient, 'CLIENT', 'lost', 'CLIENT', {
+      activeId: session.activeId,
+      clearActive: () => {
+        session = applyClientActiveId(session, null);
       },
-    );
+    });
     expect(applied).toBe(true);
     expect(session.activeId).toBeNull();
     expect(session.newMessage).toBe('');

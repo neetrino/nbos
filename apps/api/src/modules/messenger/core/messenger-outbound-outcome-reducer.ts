@@ -15,7 +15,10 @@ import {
   isWhatsAppProofMessageStatus,
   MessengerOutboundOutcomeRollback,
 } from './messenger-outbound-command-claim';
-import { lockAndAuthorizeCommand, lockedCommandMatchesResolvedMessage } from './messenger-outbound-command-lock';
+import {
+  lockAndAuthorizeCommand,
+  lockedCommandMatchesResolvedMessage,
+} from './messenger-outbound-command-lock';
 import { casOutboundStatus, casOwnedProofStatus } from './messenger-wa-outbound-cas';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
@@ -213,7 +216,12 @@ function resolveNonProofCommand(intent: Exclude<OutboundReduceIntent, { type: 'c
   nextReconcileAt: Date | null;
 } {
   if (intent.type === 'failed') {
-    return { status: 'FAILED', errorCode: intent.errorCode, invalidReason: null, nextReconcileAt: null };
+    return {
+      status: 'FAILED',
+      errorCode: intent.errorCode,
+      invalidReason: null,
+      nextReconcileAt: null,
+    };
   }
   if (intent.type === 'invalid') {
     return {

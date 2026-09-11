@@ -26,11 +26,13 @@ function command(overrides?: Record<string, unknown>) {
   };
 }
 
-function malformedPrisma(input: {
-  command?: Record<string, unknown>;
-  lockCommand?: Record<string, unknown>;
-  auditThrow?: boolean;
-} = {}) {
+function malformedPrisma(
+  input: {
+    command?: Record<string, unknown>;
+    lockCommand?: Record<string, unknown>;
+    auditThrow?: boolean;
+  } = {},
+) {
   const scanned = command(input.command);
   const live = { ...scanned, ...input.lockCommand };
   const message = { id: 'msg-1', conversationId: 'conv-c', status: 'QUEUED' };
@@ -52,7 +54,11 @@ function malformedPrisma(input: {
       updateMany: vi.fn(),
     },
     messengerMessage: {
-      findUnique: vi.fn(async () => ({ ...message, deletedAt: null, conversation: { zone: 'CLIENT' } })),
+      findUnique: vi.fn(async () => ({
+        ...message,
+        deletedAt: null,
+        conversation: { zone: 'CLIENT' },
+      })),
       updateMany: vi.fn(async () => {
         throw new Error('message_must_not_mutate');
       }),

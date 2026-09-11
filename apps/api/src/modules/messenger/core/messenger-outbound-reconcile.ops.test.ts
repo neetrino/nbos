@@ -41,12 +41,15 @@ function mapping() {
   };
 }
 
-function reconcilePrisma(rows: ReturnType<typeof pendingRow>[], extras?: {
-  message?: object | null;
-  mapping?: object | null;
-  ref?: object | null;
-  poisonFirst?: boolean;
-}) {
+function reconcilePrisma(
+  rows: ReturnType<typeof pendingRow>[],
+  extras?: {
+    message?: object | null;
+    mapping?: object | null;
+    ref?: object | null;
+    poisonFirst?: boolean;
+  },
+) {
   let findUniqueCalls = 0;
   const live = rows[0] ? { ...rows[0] } : null;
   return {
@@ -54,10 +57,12 @@ function reconcilePrisma(rows: ReturnType<typeof pendingRow>[], extras?: {
     messengerCommand: {
       findMany: vi.fn().mockResolvedValue(rows),
       findUnique: vi.fn().mockResolvedValue(live),
-      updateMany: vi.fn().mockImplementation(async ({ data }: { data?: Record<string, unknown> }) => {
-        if (live && data) Object.assign(live, data);
-        return { count: 1 };
-      }),
+      updateMany: vi
+        .fn()
+        .mockImplementation(async ({ data }: { data?: Record<string, unknown> }) => {
+          if (live && data) Object.assign(live, data);
+          return { count: 1 };
+        }),
       update: vi.fn().mockImplementation(async ({ data }: { data: Record<string, unknown> }) => {
         if (live) Object.assign(live, data);
         return live;
@@ -72,7 +77,9 @@ function reconcilePrisma(rows: ReturnType<typeof pendingRow>[], extras?: {
       updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
     messengerExternalConversationMapping: {
-      findFirst: vi.fn().mockResolvedValue(extras?.mapping === undefined ? mapping() : extras.mapping),
+      findFirst: vi
+        .fn()
+        .mockResolvedValue(extras?.mapping === undefined ? mapping() : extras.mapping),
     },
     messengerMessageExternalRef: {
       findFirst: vi.fn().mockResolvedValue(extras?.ref ?? null),

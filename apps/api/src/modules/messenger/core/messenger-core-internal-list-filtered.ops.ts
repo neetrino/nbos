@@ -56,11 +56,7 @@ export function buildInternalUnreadIdSql(input: InternalFilteredListSqlInput): S
     ${sqlListOrderLimit(input.take)}`;
 }
 
-function sqlInternalAccess(
-  employeeId: string,
-  viewScope: string,
-  grantIds: string[],
-): SqlFragment {
+function sqlInternalAccess(employeeId: string, viewScope: string, grantIds: string[]): SqlFragment {
   if (viewScope === 'ALL') return sqlTrue();
   return sqlParticipantOrGrantedAccess(employeeId, grantIds);
 }

@@ -1,7 +1,10 @@
 import type { MessengerConversationZone } from '@nbos/database';
 import { sql } from '@nbos/database';
 import { takeListPagePlusOne } from './messenger-core-list-page';
-import type { MessengerDeltaChangeRow, MessengerDeltaCursor } from './messenger-core-revision.types';
+import type {
+  MessengerDeltaChangeRow,
+  MessengerDeltaCursor,
+} from './messenger-core-revision.types';
 
 export function buildMessengerDeltaChangeSql(input: {
   zone: MessengerConversationZone;
@@ -56,14 +59,16 @@ export function buildMessengerDeltaChangeSql(input: {
     LIMIT ${take}`;
 }
 
-export function mapDeltaChangeRows(rows: Array<{
-  conversationId: string;
-  revision: string | bigint;
-  changeKind: MessengerDeltaChangeRow['changeKind'];
-  lane: MessengerDeltaChangeRow['lane'];
-  hasConversation: boolean | null;
-  hasAccessRemoved: boolean | null;
-}>): MessengerDeltaChangeRow[] {
+export function mapDeltaChangeRows(
+  rows: Array<{
+    conversationId: string;
+    revision: string | bigint;
+    changeKind: MessengerDeltaChangeRow['changeKind'];
+    lane: MessengerDeltaChangeRow['lane'];
+    hasConversation: boolean | null;
+    hasAccessRemoved: boolean | null;
+  }>,
+): MessengerDeltaChangeRow[] {
   return rows.map((row) => ({
     conversationId: row.conversationId,
     revision: typeof row.revision === 'bigint' ? row.revision.toString(10) : row.revision,

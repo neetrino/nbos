@@ -13,7 +13,11 @@ import {
   assertCanCreateDealLevelWhatsAppGroup,
   assertDealLevelWhatsAppType,
 } from './deal-whatsapp-group.policy';
-import { toDealBindingView, toDealWhatsAppState } from './deal-whatsapp-group-state';
+import {
+  toDealBindingFromProductView,
+  toDealBindingView,
+  toDealWhatsAppState,
+} from './deal-whatsapp-group-state';
 import type { DealWhatsAppState } from './deal-whatsapp-group.types';
 import { ProductWhatsAppGroupService } from './product-whatsapp-group.service';
 import {
@@ -68,7 +72,7 @@ export class DealWhatsAppGroupService {
           dealId,
           productId,
           source: 'PRODUCT',
-          binding: productState.binding,
+          binding: toDealBindingFromProductView(productState.binding),
           latestOperation: productState.latestOperation,
         };
       }
@@ -90,7 +94,13 @@ export class DealWhatsAppGroupService {
         contextDealId: dealId,
         actorId,
       });
-      return { ...state, dealId, productId, source: 'PRODUCT' };
+      return {
+        dealId,
+        productId,
+        source: 'PRODUCT',
+        binding: toDealBindingFromProductView(state.binding),
+        latestOperation: state.latestOperation,
+      };
     }
     assertCanCreateDealLevelWhatsAppGroup({
       dealType: deal.type,

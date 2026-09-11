@@ -16,7 +16,10 @@ import {
   resetMessengerPersistReadyForTests,
   settleMessengerPersistReadyForTests,
 } from './messenger-persist-ready';
-import { bindMessengerPersistQueryClient, resetMessengerPersistSessionForTests } from './messenger-persist-session';
+import {
+  bindMessengerPersistQueryClient,
+  resetMessengerPersistSessionForTests,
+} from './messenger-persist-session';
 import { persistTestInternalPage } from './messenger-persist-test-dto';
 import { setMessengerPersistBackendForTests } from './messenger-persist-controller';
 import { useMessengerPersistQueriesEnabled } from './use-messenger-persist-queries-enabled';
@@ -25,7 +28,10 @@ const IDENTITY_A = 'employee-user-aaaa';
 const IDENTITY_B = 'employee-user-bbbb';
 const IDENTITY_C = 'employee-user-cccc';
 
-let session: { status: 'loading' | 'authenticated' | 'unauthenticated'; data: { user: { id: string } } | null } = {
+let session: {
+  status: 'loading' | 'authenticated' | 'unauthenticated';
+  data: { user: { id: string } } | null;
+} = {
   status: 'authenticated',
   data: { user: { id: IDENTITY_A } },
 };
@@ -106,11 +112,13 @@ describe('Messenger persist identity boundary', () => {
         preparedIdentityId: readMessengerPersistReadyState().preparedIdentityId,
       }),
     ).toBe(true);
-    expect(queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' }))).toEqual(
-      persistTestInternalPage('from-A'),
-    );
+    expect(
+      queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' })),
+    ).toEqual(persistTestInternalPage('from-A'));
     applyMessengerPersistSessionIdentity(queryClient, IDENTITY_B);
-    expect(queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' }))).toBeUndefined();
+    expect(
+      queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' })),
+    ).toBeUndefined();
     expect(getMessengerPersistQueryEnabled()).toBe(false);
     expect(readMessengerPersistReadyState().preparedIdentityId).toBe(IDENTITY_B);
   });
@@ -137,7 +145,9 @@ describe('Messenger persist identity boundary', () => {
     session = { status: 'authenticated', data: { user: { id: IDENTITY_B } } };
     await renderBoundary(root, queryClient, queryFn, frames);
     const afterSwitch = frames.slice(marked);
-    expect(afterSwitch.some((frame) => frame.sessionId === IDENTITY_B && frame.itemId === 'from-A')).toBe(false);
+    expect(
+      afterSwitch.some((frame) => frame.sessionId === IDENTITY_B && frame.itemId === 'from-A'),
+    ).toBe(false);
     expect(queryFn).not.toHaveBeenCalled();
     expect(getMessengerPersistQueryEnabled()).toBe(false);
     await act(async () => {
@@ -155,7 +165,9 @@ describe('Messenger persist identity boundary', () => {
     expect(readMessengerPersistReadyState().preparedIdentityId).toBe(IDENTITY_C);
     expect(generationB.preparedIdentityId).not.toBe(IDENTITY_C);
     expect(getMessengerPersistQueryEnabled()).toBe(false);
-    expect(queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' }))).toBeUndefined();
+    expect(
+      queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' })),
+    ).toBeUndefined();
   });
 });
 
@@ -170,21 +182,22 @@ async function renderBoundary(
       createElement(
         QueryClientProvider,
         { client: queryClient },
-        createElement(MessengerPersistProvider, null, createElement(BoundaryProbe, { queryFn, frames })),
+        createElement(
+          MessengerPersistProvider,
+          null,
+          createElement(BoundaryProbe, { queryFn, frames }),
+        ),
       ),
     );
   });
 }
 
-function BoundaryProbe(props: {
-  queryFn: () => Promise<unknown>;
-  frames: ProbeFrame[];
-}) {
+function BoundaryProbe(props: { queryFn: () => Promise<unknown>; frames: ProbeFrame[] }) {
   const queryClient = useQueryClient();
   const persistReady = useMessengerPersistQueriesEnabled();
-  const data = queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' })) as
-    | { items?: Array<{ id: string }> }
-    | undefined;
+  const data = queryClient.getQueryData(
+    messengerQueryKeys.internalSummaries({ source: 'all-dataset' }),
+  ) as { items?: Array<{ id: string }> } | undefined;
   useQuery({
     queryKey: ['messenger', 'boundary-probe'],
     queryFn: props.queryFn,

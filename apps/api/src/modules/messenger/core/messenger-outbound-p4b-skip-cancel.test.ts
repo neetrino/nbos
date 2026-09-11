@@ -65,7 +65,8 @@ function skipPrisma(messageStatus: 'CANCELLED' | 'FAILED', auditThrow = false) {
         where: { status?: string | { in: string[] } };
         data: { status: string };
       }) => {
-        const allowed = typeof where.status === 'string' ? [where.status] : (where.status?.in ?? []);
+        const allowed =
+          typeof where.status === 'string' ? [where.status] : (where.status?.in ?? []);
         if (allowed.length && !allowed.includes(message.status)) return { count: 0 };
         message.status = data.status;
         return { count: 1 };

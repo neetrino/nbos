@@ -19,7 +19,9 @@ describe('Messenger delta recovery flag', () => {
     expect(parseMessengerDeltaRecoveryEnabled(undefined)).toBe(false);
     expect(parseMessengerDeltaRecoveryEnabled('false')).toBe(false);
     expect(parseMessengerDeltaRecoveryEnabled('true')).toBe(true);
-    expect(() => parseMessengerDeltaRecoveryEnabled('maybe')).toThrow(/MESSENGER_DELTA_RECOVERY_ENABLED/);
+    expect(() => parseMessengerDeltaRecoveryEnabled('maybe')).toThrow(
+      /MESSENGER_DELTA_RECOVERY_ENABLED/,
+    );
   });
 
   it('makes delta endpoints unavailable while the flag is off', () => {

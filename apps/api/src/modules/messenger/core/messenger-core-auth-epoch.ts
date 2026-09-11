@@ -5,7 +5,10 @@ import type { MessengerZoneAccessFingerprintInput } from './messenger-core-revis
 export function messengerAuthorizationEpoch(input: MessengerZoneAccessFingerprintInput): string {
   const payload =
     input.zone === 'INTERNAL' ? internalEpochPayload(input) : clientEpochPayload(input);
-  return createHash('sha256').update(payload).digest('hex').slice(0, MESSENGER_AUTHORIZATION_EPOCH_LENGTH);
+  return createHash('sha256')
+    .update(payload)
+    .digest('hex')
+    .slice(0, MESSENGER_AUTHORIZATION_EPOCH_LENGTH);
 }
 
 export function zoneAccessFingerprint(

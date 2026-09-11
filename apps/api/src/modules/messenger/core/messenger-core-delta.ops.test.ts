@@ -165,9 +165,11 @@ describe('Messenger zone delta security', () => {
 
   it('does not hydrate Client rows on the Internal endpoint', async () => {
     const prisma = {
-      $queryRaw: vi.fn().mockResolvedValue([
-        { conversationId: 'c1', revision: '3', changeKind: 'CONVERSATION', lane: 'G' },
-      ]),
+      $queryRaw: vi
+        .fn()
+        .mockResolvedValue([
+          { conversationId: 'c1', revision: '3', changeKind: 'CONVERSATION', lane: 'G' },
+        ]),
     };
     listAccessibleInternalConversationsByIds.mockResolvedValue([]);
     const result = await loadInternalMessengerDelta(prisma as never, INTERNAL_ACCESS, undefined, {
@@ -182,9 +184,11 @@ describe('Messenger zone delta security', () => {
 
   it('does not hydrate Internal rows on the Client endpoint', async () => {
     const prisma = {
-      $queryRaw: vi.fn().mockResolvedValue([
-        { conversationId: 'i1', revision: '3', changeKind: 'CONVERSATION', lane: 'G' },
-      ]),
+      $queryRaw: vi
+        .fn()
+        .mockResolvedValue([
+          { conversationId: 'i1', revision: '3', changeKind: 'CONVERSATION', lane: 'G' },
+        ]),
     };
     listAccessibleClientConversationsByIds.mockResolvedValue([]);
     const result = await loadClientMessengerDelta(prisma as never, CLIENT_ACCESS, {
@@ -206,7 +210,12 @@ describe('Messenger zone delta security', () => {
       $queryRaw: vi.fn().mockResolvedValue([
         { conversationId: idA, revision: '4', changeKind: 'CONVERSATION', lane: 'G' },
         { conversationId: idB, revision: '4', changeKind: 'READ', lane: 'T' },
-        { conversationId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', revision: '5', changeKind: 'CONVERSATION', lane: 'G' },
+        {
+          conversationId: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+          revision: '5',
+          changeKind: 'CONVERSATION',
+          lane: 'G',
+        },
       ]),
     };
     listAccessibleInternalConversationsByIds.mockImplementation(
@@ -235,7 +244,9 @@ describe('Messenger zone delta security', () => {
       authorizationEpoch: internalEpoch(),
     });
     expect(result.removedConversationIds).toEqual([]);
-    expect(JSON.stringify(prisma.$queryRaw.mock.calls[0]?.[0] ?? '')).not.toMatch(/body|preview|title|secret/);
+    expect(JSON.stringify(prisma.$queryRaw.mock.calls[0]?.[0] ?? '')).not.toMatch(
+      /body|preview|title|secret/,
+    );
   });
 
   it('rejects after above the live checkpoint', async () => {
@@ -274,9 +285,11 @@ describe('Messenger zone delta security', () => {
   it('passes Client READ for ACL hydration and SEND only as a mapping input', async () => {
     const access = { ...CLIENT_ACCESS, clientReadScope: 'NONE', clientSendScope: 'ALL' };
     const prisma = {
-      $queryRaw: vi.fn().mockResolvedValue([
-        { conversationId: 'c1', revision: '3', changeKind: 'CONVERSATION', lane: 'G' },
-      ]),
+      $queryRaw: vi
+        .fn()
+        .mockResolvedValue([
+          { conversationId: 'c1', revision: '3', changeKind: 'CONVERSATION', lane: 'G' },
+        ]),
     };
     listAccessibleClientConversationsByIds.mockResolvedValue([]);
     await loadClientMessengerDelta(prisma as never, access, {

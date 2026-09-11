@@ -8,7 +8,10 @@ import {
   beginMessengerPersistHydration,
   resetMessengerPersistSessionForTests,
 } from './messenger-persist-session';
-import { MESSENGER_CACHE_SCHEMA_VERSION, MESSENGER_PERSISTENCE_MAX_AGE_MS } from './messenger-persist.constants';
+import {
+  MESSENGER_CACHE_SCHEMA_VERSION,
+  MESSENGER_PERSISTENCE_MAX_AGE_MS,
+} from './messenger-persist.constants';
 import { persistTestCollection, persistTestInternalPage } from './messenger-persist-test-dto';
 
 const IDENTITY = 'employee-user-aaaa';
@@ -84,11 +87,9 @@ describe('Messenger persist expired query records', () => {
           STALE,
           persistTestInternalPage('old-summary'),
         ),
-        queryRecord(
-          [...messengerQueryKeys.collections('INTERNAL')],
-          FRESH,
-          [persistTestCollection('fresh-col')],
-        ),
+        queryRecord([...messengerQueryKeys.collections('INTERNAL')], FRESH, [
+          persistTestCollection('fresh-col'),
+        ]),
       ]),
       IDENTITY,
       NOW,
@@ -137,9 +138,7 @@ describe('Messenger persist expired query records', () => {
       capturedAt,
     );
     expect(parseMessengerPersistEnvelope(value, IDENTITY, NOW)).not.toBeNull();
-    expect(
-      parseMessengerPersistEnvelope(value, IDENTITY, NOW + 2_000),
-    ).toBeNull();
+    expect(parseMessengerPersistEnvelope(value, IDENTITY, NOW + 2_000)).toBeNull();
   });
 
   it('rejects the envelope when a companion record is malformed', () => {

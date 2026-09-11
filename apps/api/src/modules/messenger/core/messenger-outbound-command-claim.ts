@@ -46,15 +46,15 @@ export function createDispatchToken(): string {
 
 export function unclaimedOrExpiredDispatchWhere(now: Date) {
   return {
-    OR: [
-      { dispatchToken: null },
-      { nextReconcileAt: null },
-      { nextReconcileAt: { lte: now } },
-    ],
+    OR: [{ dispatchToken: null }, { nextReconcileAt: null }, { nextReconcileAt: { lte: now } }],
   };
 }
 
-export function workerTokenCommandWhere(command: CanonicalWhatsAppCommand, token: string, now: Date) {
+export function workerTokenCommandWhere(
+  command: CanonicalWhatsAppCommand,
+  token: string,
+  now: Date,
+) {
   return {
     ...openCanonicalCommandWhere(command),
     dispatchToken: token,

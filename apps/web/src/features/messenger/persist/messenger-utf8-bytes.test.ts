@@ -10,7 +10,11 @@ describe('utf8ByteLength', () => {
   });
 
   it('measures JSON payloads in UTF-8 bytes', () => {
-    expect(utf8JsonByteLength({ preview: 'й' })).toBeGreaterThan(JSON.stringify({ preview: 'й' }).length);
-    expect(utf8JsonByteLength({ preview: 'hello' })).toBe(JSON.stringify({ preview: 'hello' }).length);
+    expect(utf8JsonByteLength({ preview: 'й' })).toBeGreaterThan(
+      JSON.stringify({ preview: 'й' }).length,
+    );
+    expect(utf8JsonByteLength({ preview: 'hello' })).toBe(
+      JSON.stringify({ preview: 'hello' }).length,
+    );
   });
 });

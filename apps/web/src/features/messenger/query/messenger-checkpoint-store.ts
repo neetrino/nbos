@@ -9,7 +9,10 @@ export type MessengerHttpCheckpoint = {
 const CHECKPOINT_PATTERN = /^(0|[1-9]\d{0,19})$/;
 const EPOCH_PATTERN = /^[a-f0-9]{32}$/;
 
-const checkpoints = new WeakMap<QueryClient, Partial<Record<MessengerZone, MessengerHttpCheckpoint>>>();
+const checkpoints = new WeakMap<
+  QueryClient,
+  Partial<Record<MessengerZone, MessengerHttpCheckpoint>>
+>();
 
 export function parseMessengerHttpCheckpoint(payload: {
   checkpoint?: unknown;
@@ -18,7 +21,10 @@ export function parseMessengerHttpCheckpoint(payload: {
   if (typeof payload.checkpoint !== 'string' || !CHECKPOINT_PATTERN.test(payload.checkpoint)) {
     return null;
   }
-  if (typeof payload.authorizationEpoch !== 'string' || !EPOCH_PATTERN.test(payload.authorizationEpoch)) {
+  if (
+    typeof payload.authorizationEpoch !== 'string' ||
+    !EPOCH_PATTERN.test(payload.authorizationEpoch)
+  ) {
     return null;
   }
   return { checkpoint: payload.checkpoint, authorizationEpoch: payload.authorizationEpoch };

@@ -48,11 +48,13 @@ function outcomePrisma(options?: {
     $queryRaw: vi.fn(async () => [{ ...cmd }]),
     messengerCommand: {
       findUnique: vi.fn().mockResolvedValue(cmd),
-      updateMany: vi.fn().mockImplementation(async ({ data }: { data?: Record<string, unknown> }) => {
-        if ((options?.commandUpdateCount ?? 1) === 0) return { count: 0 };
-        if (data) Object.assign(cmd, data);
-        return { count: 1 };
-      }),
+      updateMany: vi
+        .fn()
+        .mockImplementation(async ({ data }: { data?: Record<string, unknown> }) => {
+          if ((options?.commandUpdateCount ?? 1) === 0) return { count: 0 };
+          if (data) Object.assign(cmd, data);
+          return { count: 1 };
+        }),
       update: vi.fn().mockImplementation(async ({ data }: { data: Record<string, unknown> }) => {
         Object.assign(cmd, data);
         return cmd;
@@ -71,9 +73,13 @@ function outcomePrisma(options?: {
       updateMany: vi.fn().mockResolvedValue({ count: options?.messageUpdateCount ?? 1 }),
     },
     messengerMessageExternalRef: {
-      findFirst: vi.fn().mockResolvedValue(
-        options?.hasRef ? { id: 'ref-1', externalMessageId: 'wamid-1', externalAccountId: 'acc_a' } : null,
-      ),
+      findFirst: vi
+        .fn()
+        .mockResolvedValue(
+          options?.hasRef
+            ? { id: 'ref-1', externalMessageId: 'wamid-1', externalAccountId: 'acc_a' }
+            : null,
+        ),
       findUnique: vi.fn().mockResolvedValue({ messageId: 'msg-1' }),
       createMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
@@ -233,7 +239,13 @@ describe('P4B-05 outcome audits are transactional', () => {
           return;
         }
         if (kind === 'unknown') {
-          await setCoreSendStatus(prisma as never, cmd, JOB, 'OUTCOME_UNKNOWN', 'MESSAGE_OUTCOME_UNKNOWN');
+          await setCoreSendStatus(
+            prisma as never,
+            cmd,
+            JOB,
+            'OUTCOME_UNKNOWN',
+            'MESSAGE_OUTCOME_UNKNOWN',
+          );
           return;
         }
         await markWhatsAppCommandInvalid(

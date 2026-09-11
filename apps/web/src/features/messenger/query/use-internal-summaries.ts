@@ -12,7 +12,10 @@ import {
 } from './derive-internal-summaries';
 import type { InternalSummaryParams } from './messenger-query-keys';
 import { useMessengerPersistQueriesEnabled } from '../persist/use-messenger-persist-queries-enabled';
-import { MESSENGER_QUERY_GC_TIME_MS, MESSENGER_QUERY_STALE_TIME_MS } from './messenger-query-policy';
+import {
+  MESSENGER_QUERY_GC_TIME_MS,
+  MESSENGER_QUERY_STALE_TIME_MS,
+} from './messenger-query-policy';
 
 export function useInternalSummaries(input: {
   section: MessengerInternalSection;

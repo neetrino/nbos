@@ -1,7 +1,10 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { MessengerCoreConversationRow, MessengerCoreConversationType } from '@/lib/api/messenger-core';
+import type {
+  MessengerCoreConversationRow,
+  MessengerCoreConversationType,
+} from '@/lib/api/messenger-core';
 import { resolveActiveConversation } from '@/features/messenger/query/resolve-active-conversation';
 import {
   applyInternalActiveId,

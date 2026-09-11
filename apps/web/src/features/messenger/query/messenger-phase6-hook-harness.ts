@@ -19,7 +19,11 @@ export async function mountInternalMessengerQueries(
   frames: HookRequestFrame[],
   options?: { strict?: boolean },
 ): Promise<{ root: Root; container: HTMLDivElement }> {
-  return mountHookTree(queryClient, createElement(InternalProbe, { frames }), options?.strict === true);
+  return mountHookTree(
+    queryClient,
+    createElement(InternalProbe, { frames }),
+    options?.strict === true,
+  );
 }
 
 export async function mountClientMessengerQueries(
@@ -27,10 +31,17 @@ export async function mountClientMessengerQueries(
   frames: HookRequestFrame[],
   options?: { strict?: boolean },
 ): Promise<{ root: Root; container: HTMLDivElement }> {
-  return mountHookTree(queryClient, createElement(ClientProbe, { frames }), options?.strict === true);
+  return mountHookTree(
+    queryClient,
+    createElement(ClientProbe, { frames }),
+    options?.strict === true,
+  );
 }
 
-export async function unmountHookTree(mounted: { root: Root; container: HTMLDivElement }): Promise<void> {
+export async function unmountHookTree(mounted: {
+  root: Root;
+  container: HTMLDivElement;
+}): Promise<void> {
   await act(async () => {
     mounted.root.unmount();
   });

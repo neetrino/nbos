@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { allocateZoneRevisionSql, shareLockZoneRevisionSql } from './messenger-core-revision-write.ops';
+import {
+  allocateZoneRevisionSql,
+  shareLockZoneRevisionSql,
+} from './messenger-core-revision-write.ops';
 import { runMessengerWriteTx } from './messenger-core-revision-tx';
 
 function sqlText(fragment: unknown): string {

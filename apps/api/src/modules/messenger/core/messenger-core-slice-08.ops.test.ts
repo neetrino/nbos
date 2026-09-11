@@ -346,11 +346,13 @@ describe('WhatsApp outbound dispatch', () => {
       },
       messengerMessageExternalRef: {
         createMany: vi.fn(),
-        findFirst: vi.fn().mockResolvedValue(
-          hasWhatsAppRef
-            ? { id: 'ref-1', externalMessageId: 'wamid-1', externalAccountId: ACCOUNT_A }
-            : null,
-        ),
+        findFirst: vi
+          .fn()
+          .mockResolvedValue(
+            hasWhatsAppRef
+              ? { id: 'ref-1', externalMessageId: 'wamid-1', externalAccountId: ACCOUNT_A }
+              : null,
+          ),
         findUnique: vi.fn().mockResolvedValue({ messageId: 'msg-1' }),
       },
       messengerExternalConversationMapping: {
@@ -443,7 +445,8 @@ describe('WhatsApp outbound dispatch', () => {
             where: { status?: string | { in: string[] } };
             data: { status: string };
           }) => {
-            const allowed = typeof where.status === 'string' ? [where.status] : (where.status?.in ?? []);
+            const allowed =
+              typeof where.status === 'string' ? [where.status] : (where.status?.in ?? []);
             if (!allowed.includes(stored.status)) return { count: 0 };
             stored.status = data.status;
             return { count: 1 };

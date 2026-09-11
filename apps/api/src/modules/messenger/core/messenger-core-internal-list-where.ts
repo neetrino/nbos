@@ -70,7 +70,8 @@ export async function taskConversationListWhere(
   tasksAccess: TasksAccessContext | undefined,
   allowedTaskIds?: string[] | null,
 ): Promise<Prisma.MessengerConversationWhereInput> {
-  const allowed = allowedTaskIds !== undefined ? allowedTaskIds : await loadAllowedTaskIds(prisma, tasksAccess);
+  const allowed =
+    allowedTaskIds !== undefined ? allowedTaskIds : await loadAllowedTaskIds(prisma, tasksAccess);
   if (allowed === null) return {};
   return {
     OR: [

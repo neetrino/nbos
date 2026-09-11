@@ -80,13 +80,16 @@ function patchSummaryFromAbsolute(
     zone === 'CLIENT'
       ? messengerQueryKeys.clientSummariesRoot
       : messengerQueryKeys.internalSummariesRoot;
-  queryClient.setQueriesData<{ items: MessengerCoreConversationRow[] }>({ queryKey: root }, (current) => {
-    if (!current?.items) return current;
-    const assigned = assignAbsoluteSummary(current.items, payload, watermark);
-    if (!assigned) return current;
-    found = true;
-    return assigned === current.items ? current : { ...current, items: assigned };
-  });
+  queryClient.setQueriesData<{ items: MessengerCoreConversationRow[] }>(
+    { queryKey: root },
+    (current) => {
+      if (!current?.items) return current;
+      const assigned = assignAbsoluteSummary(current.items, payload, watermark);
+      if (!assigned) return current;
+      found = true;
+      return assigned === current.items ? current : { ...current, items: assigned };
+    },
+  );
   return { found };
 }
 
@@ -165,7 +168,9 @@ function stripCollectionConversation(
 }
 
 function isConversationRow(value: unknown): value is MessengerCoreConversationRow {
-  return Boolean(value && typeof value === 'object' && 'id' in value && typeof value.id === 'string');
+  return Boolean(
+    value && typeof value === 'object' && 'id' in value && typeof value.id === 'string',
+  );
 }
 
 function sortSummariesByRecent(

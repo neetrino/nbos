@@ -53,10 +53,7 @@ export class MessengerCoreClientController {
   @ApiOperation({
     summary: 'Client zone delta from an HTTP checkpoint (current authorized state only)',
   })
-  listDelta(
-    @CurrentUser() user: CurrentUserPayload,
-    @Query() query: ListMessengerDeltaQueryDto,
-  ) {
+  listDelta(@CurrentUser() user: CurrentUserPayload, @Query() query: ListMessengerDeltaQueryDto) {
     return this.client.listDelta(user.id, query);
   }
 

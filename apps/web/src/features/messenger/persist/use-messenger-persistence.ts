@@ -2,10 +2,16 @@ import { useEffect, useLayoutEffect } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
 import { openMessengerPersistChannel } from './messenger-persist-channel';
 import { applyMessengerPersistSessionIdentity } from './messenger-persist-boundary';
-import { hydrateMessengerPersistCache, persistMessengerCacheNow } from './messenger-persist-controller';
+import {
+  hydrateMessengerPersistCache,
+  persistMessengerCacheNow,
+} from './messenger-persist-controller';
 import { isPersistedMessengerQueryKey } from './messenger-persist-allowlist';
 import { isMessengerPersistenceEnabled } from './messenger-persist.constants';
-import { isMessengerPersistHydrating, registerMessengerPersistHost } from './messenger-persist-ready';
+import {
+  isMessengerPersistHydrating,
+  registerMessengerPersistHost,
+} from './messenger-persist-ready';
 import {
   bindMessengerPersistQueryClient,
   cancelMessengerPersistHost,
@@ -46,16 +52,26 @@ function startMessengerPersistSession(queryClient: QueryClient, identityId: stri
   void hydrateMessengerPersistCache(queryClient, identityId);
 
   const announce = channel
-    ? (envelope: { identityId: string; capturedAt: number; writtenAt: number; schemaVersion: number }) =>
-        channel.post(envelope)
+    ? (envelope: {
+        identityId: string;
+        capturedAt: number;
+        writtenAt: number;
+        schemaVersion: number;
+      }) => channel.post(envelope)
     : null;
 
   const flush = () => {
     if (cancelled || writing) return;
     writing = true;
-    void flushQueuedWrites(queryClient, identityId, () => queued, (value) => {
-      queued = value;
-    }, announce).finally(() => {
+    void flushQueuedWrites(
+      queryClient,
+      identityId,
+      () => queued,
+      (value) => {
+        queued = value;
+      },
+      announce,
+    ).finally(() => {
       writing = false;
       if (!cancelled && queued) flush();
     });
@@ -88,7 +104,12 @@ async function flushQueuedWrites(
   while (readQueued()) {
     setQueued(false);
     if (isMessengerPersistHydrating()) return;
-    await persistMessengerCacheNow(queryClient, identityId, readMessengerPersistGeneration(), announce);
+    await persistMessengerCacheNow(
+      queryClient,
+      identityId,
+      readMessengerPersistGeneration(),
+      announce,
+    );
   }
 }
 

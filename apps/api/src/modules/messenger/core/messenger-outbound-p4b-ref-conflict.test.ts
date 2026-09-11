@@ -43,10 +43,12 @@ function refPrisma(input: {
     $queryRaw: vi.fn(async () => [{ ...live }]),
     messengerCommand: {
       findUnique: vi.fn(async () => ({ ...live })),
-      updateMany: vi.fn().mockImplementation(async ({ data }: { data?: Record<string, unknown> }) => {
-        if (data) Object.assign(live, data);
-        return { count: 1 };
-      }),
+      updateMany: vi
+        .fn()
+        .mockImplementation(async ({ data }: { data?: Record<string, unknown> }) => {
+          if (data) Object.assign(live, data);
+          return { count: 1 };
+        }),
       update: vi.fn().mockImplementation(async ({ data }: { data: Record<string, unknown> }) => {
         Object.assign(live, data);
         return live;
@@ -58,10 +60,12 @@ function refPrisma(input: {
     },
     messengerMessageExternalRef: {
       findFirst: vi.fn().mockResolvedValue(input.existingForMessage ?? null),
-      createMany: vi.fn().mockResolvedValue({ count: input.ownedMessageId === JOB.messageId ? 1 : 0 }),
-      findUnique: vi.fn().mockResolvedValue(
-        input.ownedMessageId ? { messageId: input.ownedMessageId } : null,
-      ),
+      createMany: vi
+        .fn()
+        .mockResolvedValue({ count: input.ownedMessageId === JOB.messageId ? 1 : 0 }),
+      findUnique: vi
+        .fn()
+        .mockResolvedValue(input.ownedMessageId ? { messageId: input.ownedMessageId } : null),
     },
     auditLog: {
       create: input.auditThrow
@@ -89,7 +93,15 @@ describe('P4B-12 provider ref ownership', () => {
       existingForMessage: { externalMessageId: 'wamid-1', externalAccountId: 'acc_a' },
       ownedMessageId: 'msg-1',
     });
-    await completeCoreSend(prisma as never, command() as never, JOB, 'wamid-1', false, undefined, TOKEN);
+    await completeCoreSend(
+      prisma as never,
+      command() as never,
+      JOB,
+      'wamid-1',
+      false,
+      undefined,
+      TOKEN,
+    );
     expect(prisma.messengerCommand.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: 'COMPLETED' }) }),
     );
@@ -100,7 +112,15 @@ describe('P4B-12 provider ref ownership', () => {
       existingForMessage: null,
       ownedMessageId: 'msg-other',
     });
-    await completeCoreSend(prisma as never, command() as never, JOB, 'wamid-stolen', false, undefined, TOKEN);
+    await completeCoreSend(
+      prisma as never,
+      command() as never,
+      JOB,
+      'wamid-stolen',
+      false,
+      undefined,
+      TOKEN,
+    );
     expect(prisma.messengerCommand.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -120,7 +140,15 @@ describe('P4B-12 provider ref ownership', () => {
       existingForMessage: { externalMessageId: 'wamid-1', externalAccountId: 'acc_a' },
       ownedMessageId: 'msg-1',
     });
-    await completeCoreSend(prisma as never, command() as never, JOB, 'wamid-2', false, undefined, TOKEN);
+    await completeCoreSend(
+      prisma as never,
+      command() as never,
+      JOB,
+      'wamid-2',
+      false,
+      undefined,
+      TOKEN,
+    );
     expect(prisma.messengerCommand.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ invalidReason: 'PROVIDER_REF_CONFLICT' }),
@@ -135,7 +163,15 @@ describe('P4B-12 provider ref ownership', () => {
       auditThrow: true,
     });
     await expect(
-      completeCoreSend(prisma as never, command() as never, JOB, 'wamid-stolen', false, undefined, TOKEN),
+      completeCoreSend(
+        prisma as never,
+        command() as never,
+        JOB,
+        'wamid-stolen',
+        false,
+        undefined,
+        TOKEN,
+      ),
     ).rejects.toThrow('audit_failed');
     expect(rolledBack()).toBe(true);
   });
@@ -145,8 +181,24 @@ describe('P4B-12 provider ref ownership', () => {
       existingForMessage: { externalMessageId: 'wamid-1', externalAccountId: 'acc_a' },
       ownedMessageId: 'msg-1',
     });
-    await completeCoreSend(prisma as never, command() as never, JOB, 'wamid-1', false, undefined, TOKEN);
-    await completeCoreSend(prisma as never, command() as never, JOB, 'wamid-2', false, undefined, TOKEN);
+    await completeCoreSend(
+      prisma as never,
+      command() as never,
+      JOB,
+      'wamid-1',
+      false,
+      undefined,
+      TOKEN,
+    );
+    await completeCoreSend(
+      prisma as never,
+      command() as never,
+      JOB,
+      'wamid-2',
+      false,
+      undefined,
+      TOKEN,
+    );
     expect(prisma.messengerCommand.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: 'COMPLETED' }) }),
     );

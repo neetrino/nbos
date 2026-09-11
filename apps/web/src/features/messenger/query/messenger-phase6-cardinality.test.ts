@@ -5,10 +5,7 @@ import {
   MESSENGER_QUERY_GC_TIME_MS,
   MESSENGER_READ_WATERMARK_MAX_PER_ZONE,
 } from './messenger-query-policy';
-import {
-  advanceReadWatermark,
-  getReadWatermark,
-} from './messenger-realtime-watermarks';
+import { advanceReadWatermark, getReadWatermark } from './messenger-realtime-watermarks';
 import {
   clearAllMessengerHttpCheckpoints,
   readMessengerHttpCheckpoint,
@@ -24,7 +21,11 @@ import {
   MESSENGER_PERSIST_ROWS_PER_QUERY_MAX,
 } from '../persist/messenger-persist.constants';
 import { captureMessengerPersistSnapshot } from '../persist/messenger-persist-snapshot';
-import { persistTestClientPage, persistTestCollection, persistTestInternalPage } from '../persist/messenger-persist-test-dto';
+import {
+  persistTestClientPage,
+  persistTestCollection,
+  persistTestInternalPage,
+} from '../persist/messenger-persist-test-dto';
 
 const IDENTITY = 'employee-user-aaaa';
 
@@ -50,14 +51,24 @@ describe('Phase 6 Messenger cache cardinality', () => {
     queryClient.setQueryData(messengerQueryKeys.collections('CLIENT'), [
       { ...persistTestCollection('col-c'), zone: 'CLIENT' },
     ]);
-    queryClient.setQueryData(messengerQueryKeys.messages('thread-1'), { items: [], meta: { hasMoreOlder: false } });
+    queryClient.setQueryData(messengerQueryKeys.messages('thread-1'), {
+      items: [],
+      meta: { hasMoreOlder: false },
+    });
     queryClient.setQueryData(
-      messengerQueryKeys.internalSummaries({ source: 'section', section: 'tasks', q: 'x', filter: 'all' }),
+      messengerQueryKeys.internalSummaries({
+        source: 'section',
+        section: 'tasks',
+        q: 'x',
+        filter: 'all',
+      }),
       persistTestInternalPage('search'),
     );
     const capture = captureMessengerPersistSnapshot(queryClient, IDENTITY, Date.now());
     expect(capture?.envelope.queries).toHaveLength(4);
-    const families = capture?.envelope.queries.map((row) => persistedMessengerQueryFamily(row.queryKey));
+    const families = capture?.envelope.queries.map((row) =>
+      persistedMessengerQueryFamily(row.queryKey),
+    );
     expect(families).toEqual([...CANONICAL_PERSISTED_QUERY_FAMILIES]);
   });
 
@@ -69,9 +80,9 @@ describe('Phase 6 Messenger cache cardinality', () => {
       advanceReadWatermark(queryClient, 'INTERNAL', `c${index}`, '2026-09-05T12:00:00.000Z');
     }
     expect(getReadWatermark(queryClient, 'INTERNAL', 'c0')).toBeNull();
-    expect(getReadWatermark(queryClient, 'INTERNAL', `c${MESSENGER_READ_WATERMARK_MAX_PER_ZONE}`)).toBe(
-      '2026-09-05T12:00:00.000Z',
-    );
+    expect(
+      getReadWatermark(queryClient, 'INTERNAL', `c${MESSENGER_READ_WATERMARK_MAX_PER_ZONE}`),
+    ).toBe('2026-09-05T12:00:00.000Z');
     writeMessengerHttpCheckpoint(queryClient, 'INTERNAL', messengerTestCheckpoint('1'));
     writeMessengerHttpCheckpoint(queryClient, 'CLIENT', messengerTestCheckpoint('2'));
     expect(readMessengerHttpCheckpoint(queryClient, 'INTERNAL')?.checkpoint).toBe('1');

@@ -89,9 +89,9 @@ describe('Messenger bootstrap query-hook gating', () => {
     expect(state.settled).toBe(true);
     expect(state.isPending).toBe(false);
     assertHookGating(state, { collections: true, defaultSummaries: true, search: true });
-    expect(queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' }))).toEqual(
-      { items: [{ id: 'cached' }], mentionsAvailable: true },
-    );
+    expect(
+      queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' })),
+    ).toEqual({ items: [{ id: 'cached' }], mentionsAvailable: true });
   });
 
   it('keeps the error after only one fallback key refreshes', async () => {

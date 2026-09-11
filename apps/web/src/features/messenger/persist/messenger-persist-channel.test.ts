@@ -34,7 +34,9 @@ describe('Messenger persist channel freshness', () => {
     expect(parseChannelMessage(message({ identityId: OTHER }), NOW)?.identityId).toBe(OTHER);
     expect(parseChannelMessage(message({ schemaVersion: 1 }), NOW)).toBeNull();
     expect(parseChannelMessage(message({ schemaVersion: 3 }), NOW)).toBeNull();
-    expect(parseChannelMessage(message({ capturedAt: NOW + 1, writtenAt: NOW + 1 }), NOW)).toBeNull();
+    expect(
+      parseChannelMessage(message({ capturedAt: NOW + 1, writtenAt: NOW + 1 }), NOW),
+    ).toBeNull();
     expect(parseChannelMessage(message({ writtenAt: NOW + 1 }), NOW)).toBeNull();
     expect(parseChannelMessage({ identityId: IDENTITY }, NOW)).toBeNull();
   });
@@ -46,7 +48,13 @@ describe('Messenger persist channel freshness', () => {
     );
     expect(ingestChannelMessage(IDENTITY, message({ identityId: OTHER }), NOW)).toBeNull();
     expect(readMessengerPersistLastSeenCapturedAt(IDENTITY)).toBe(0);
-    expect(ingestChannelMessage(IDENTITY, message({ capturedAt: NOW + 5_000, writtenAt: NOW + 5_000 }), NOW)).toBeNull();
+    expect(
+      ingestChannelMessage(
+        IDENTITY,
+        message({ capturedAt: NOW + 5_000, writtenAt: NOW + 5_000 }),
+        NOW,
+      ),
+    ).toBeNull();
     expect(readMessengerPersistLastSeenCapturedAt(IDENTITY)).toBe(0);
     expect(ingestChannelMessage(IDENTITY, message(), NOW)).not.toBeNull();
     expect(readMessengerPersistLastSeenCapturedAt(IDENTITY)).toBe(NOW - 1_000);

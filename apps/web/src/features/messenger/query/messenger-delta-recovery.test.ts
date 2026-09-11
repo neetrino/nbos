@@ -117,8 +117,9 @@ describe('Messenger delta reconnect recovery', () => {
         ?.state.isInvalidated,
     ).toBe(true);
     expect(
-      queryClient.getQueryCache().find({ queryKey: messengerQueryKeys.messages(OTHER), exact: true })
-        ?.state.isInvalidated,
+      queryClient
+        .getQueryCache()
+        .find({ queryKey: messengerQueryKeys.messages(OTHER), exact: true })?.state.isInvalidated,
     ).toBeFalsy();
   });
 
@@ -194,7 +195,9 @@ describe('Messenger delta reconnect recovery', () => {
     await recoverMessengerZone(queryClient, 'INTERNAL');
     expect(bootstrapInternal).toHaveBeenCalledTimes(1);
     expect(readMessengerHttpCheckpoint(queryClient, 'INTERNAL')).toBeNull();
-    expect(queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' }))).toEqual({
+    expect(
+      queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' })),
+    ).toEqual({
       items: [row(FRESH)],
       mentionsAvailable: true,
     });

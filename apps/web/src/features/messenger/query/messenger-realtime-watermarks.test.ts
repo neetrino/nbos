@@ -1,10 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MESSENGER_READ_WATERMARK_MAX_PER_ZONE } from './messenger-query-policy';
-import {
-  advanceReadWatermark,
-  getReadWatermark,
-} from './messenger-realtime-watermarks';
+import { advanceReadWatermark, getReadWatermark } from './messenger-realtime-watermarks';
 
 const TANSTACK_DEFAULT_GC_TIME_MS = 5 * 60 * 1000;
 const STAMP = '2026-09-05T12:00:00.000Z';
@@ -31,11 +28,15 @@ describe('read watermark session lifetime', () => {
     const queryClient = createClient();
     queryClient.setQueryData(UNUSED_QUERY_KEY, { stale: true });
     expect(advanceReadWatermark(queryClient, 'INTERNAL', 'c1', STAMP)).toBe(true);
-    expect(queryClient.getQueryCache().find({ queryKey: UNUSED_QUERY_KEY, exact: true })).toBeDefined();
+    expect(
+      queryClient.getQueryCache().find({ queryKey: UNUSED_QUERY_KEY, exact: true }),
+    ).toBeDefined();
 
     await vi.advanceTimersByTimeAsync(TANSTACK_DEFAULT_GC_TIME_MS + 1);
 
-    expect(queryClient.getQueryCache().find({ queryKey: UNUSED_QUERY_KEY, exact: true })).toBeUndefined();
+    expect(
+      queryClient.getQueryCache().find({ queryKey: UNUSED_QUERY_KEY, exact: true }),
+    ).toBeUndefined();
     expect(queryClient.getQueryData(UNUSED_QUERY_KEY)).toBeUndefined();
     expect(getReadWatermark(queryClient, 'INTERNAL', 'c1')).toBe(STAMP);
   });

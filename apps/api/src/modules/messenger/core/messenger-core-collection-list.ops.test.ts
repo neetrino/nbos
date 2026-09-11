@@ -92,7 +92,9 @@ describe('Internal collection list semantics', () => {
 
   it('retries backfill after a failed initialization', async () => {
     const { prisma, createMany } = favoritesPrisma(FAVORITES);
-    createMany.mockRejectedValueOnce(new Error('backfill down')).mockResolvedValueOnce({ count: 1 });
+    createMany
+      .mockRejectedValueOnce(new Error('backfill down'))
+      .mockResolvedValueOnce({ count: 1 });
     await expect(ensureInternalFavoritesCollection(prisma as never, 'e1')).rejects.toThrow(
       'backfill down',
     );
@@ -127,11 +129,13 @@ describe('Internal collection list semantics', () => {
   });
 
   it('loads collection item ids with a stable createdAt/id order', async () => {
-    const findMany = vi.fn().mockResolvedValue([
-      { conversationId: 'third' },
-      { conversationId: 'second' },
-      { conversationId: 'first' },
-    ]);
+    const findMany = vi
+      .fn()
+      .mockResolvedValue([
+        { conversationId: 'third' },
+        { conversationId: 'second' },
+        { conversationId: 'first' },
+      ]);
     const ids = await listCollectionItemIds(
       { messengerConversationCollectionItem: { findMany } } as never,
       'col-shared',
@@ -144,11 +148,13 @@ describe('Internal collection list semantics', () => {
 
   it('backfills Favorites set-based and excludes unauthorized ids', async () => {
     const createMany = vi.fn().mockResolvedValue({ count: 2 });
-    const settingsFind = vi.fn().mockResolvedValue([
-      { conversationId: 'visible-a' },
-      { conversationId: 'hidden' },
-      { conversationId: 'visible-b' },
-    ]);
+    const settingsFind = vi
+      .fn()
+      .mockResolvedValue([
+        { conversationId: 'visible-a' },
+        { conversationId: 'hidden' },
+        { conversationId: 'visible-b' },
+      ]);
     const count = await backfillFavoritesFromSettings(
       {
         messengerUserConversationSetting: { findMany: settingsFind },

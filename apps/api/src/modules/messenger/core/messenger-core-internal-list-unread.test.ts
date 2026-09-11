@@ -30,9 +30,7 @@ function candidate(id: string, lastMessageAt = LAST_AT, createdAt = CREATED) {
 describe('Internal unread list query', () => {
   it('selects unread at the database boundary without a pageSize*5 over-fetch', async () => {
     const pageSize = 2;
-    const queryRaw = vi
-      .fn()
-      .mockResolvedValue([candidate('u1'), candidate('u2'), candidate('u3')]);
+    const queryRaw = vi.fn().mockResolvedValue([candidate('u1'), candidate('u2'), candidate('u3')]);
     const findMany = vi.fn().mockResolvedValue([listRow({ id: 'u1' }), listRow({ id: 'u2' })]);
     const result = await listAccessibleInternalConversations(
       {
@@ -98,9 +96,7 @@ describe('Internal unread list query', () => {
     const idA = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaa1';
     const idB = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaa2';
     const idC = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaa3';
-    const queryRaw = vi
-      .fn()
-      .mockResolvedValue([candidate(idA), candidate(idB), candidate(idC)]);
+    const queryRaw = vi.fn().mockResolvedValue([candidate(idA), candidate(idB), candidate(idC)]);
     const result = await listAccessibleInternalConversations(
       {
         $queryRaw: queryRaw,

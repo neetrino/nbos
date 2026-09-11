@@ -3,8 +3,7 @@ import type { MessengerDeltaPage } from '@/lib/api/messenger-core-delta';
 import { parseMessengerHttpCheckpoint } from './messenger-checkpoint-store';
 import type { MessengerZone } from './messenger-query-keys';
 
-const UUID =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CHECKPOINT = /^(0|[1-9]\d{0,19})$/;
 
 export function assertMessengerDeltaPage(
@@ -18,7 +17,11 @@ export function assertMessengerDeltaPage(
   if (!CHECKPOINT.test(page.checkpoint) || compareDecimal(page.checkpoint, storedCheckpoint) < 0) {
     throw new Error('Messenger delta checkpoint regressed');
   }
-  if (previous && (page.checkpoint !== previous.checkpoint || page.authorizationEpoch !== previous.authorizationEpoch)) {
+  if (
+    previous &&
+    (page.checkpoint !== previous.checkpoint ||
+      page.authorizationEpoch !== previous.authorizationEpoch)
+  ) {
     throw new Error('Messenger delta snapshot moved');
   }
   if (typeof page.hasMore !== 'boolean' || !Array.isArray(page.summaries)) {

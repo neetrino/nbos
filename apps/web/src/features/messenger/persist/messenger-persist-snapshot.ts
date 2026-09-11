@@ -10,7 +10,10 @@ import {
   type PersistedMessengerQueryFamily,
 } from './messenger-persist-allowlist';
 import { parsePersistedQueryData } from './messenger-persist-dto';
-import type { MessengerPersistEnvelope, MessengerPersistQueryRecord } from './messenger-persist-envelope';
+import type {
+  MessengerPersistEnvelope,
+  MessengerPersistQueryRecord,
+} from './messenger-persist-envelope';
 import {
   MESSENGER_CACHE_SCHEMA_VERSION,
   MESSENGER_PERSISTENCE_MAX_AGE_MS,
@@ -61,7 +64,13 @@ function collectCanonicalPersistedQueries(
 
 function toPersistedQueryRecord(
   queryKey: readonly unknown[],
-  state: { status: string; fetchStatus: string; data?: unknown; dataUpdatedAt: number; error: unknown },
+  state: {
+    status: string;
+    fetchStatus: string;
+    data?: unknown;
+    dataUpdatedAt: number;
+    error: unknown;
+  },
   capturedAt: number,
 ): MessengerPersistQueryRecord | null {
   if (state.status !== 'success' || state.fetchStatus !== 'idle') return null;

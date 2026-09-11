@@ -29,10 +29,12 @@ export type MessengerPersistEnvelope = {
   checkpoints: Partial<Record<MessengerZone, MessengerHttpCheckpoint>>;
 };
 
-const checkpointSchema = z.object({
-  checkpoint: z.string(),
-  authorizationEpoch: z.string(),
-}).strict();
+const checkpointSchema = z
+  .object({
+    checkpoint: z.string(),
+    authorizationEpoch: z.string(),
+  })
+  .strict();
 
 const envelopeHeaderSchema = z
   .object({
@@ -66,7 +68,8 @@ export function parseMessengerPersistEnvelope(
   if (!isValidPersistTimestamp(header.writtenAt, now)) return null;
   if (header.writtenAt < header.capturedAt) return null;
   if (now - header.capturedAt > MESSENGER_PERSISTENCE_MAX_AGE_MS) return null;
-  if (header.queries.length === 0 || header.queries.length > MESSENGER_PERSIST_QUERY_COUNT_MAX) return null;
+  if (header.queries.length === 0 || header.queries.length > MESSENGER_PERSIST_QUERY_COUNT_MAX)
+    return null;
   const queries = parseEnvelopeQueries(header.queries, header.capturedAt, now);
   if (!queries) return null;
   const checkpoints = parsePersistCheckpoints(header.checkpoints);
@@ -106,15 +109,17 @@ function classifyEnvelopeQueryRecord(
   value: unknown,
   capturedAt: number,
   now: number,
-):
-  | { kind: 'keep'; record: MessengerPersistQueryRecord }
-  | { kind: 'omit' }
-  | { kind: 'reject' } {
+): { kind: 'keep'; record: MessengerPersistQueryRecord } | { kind: 'omit' } | { kind: 'reject' } {
   if (!isPlainRecord(value)) return { kind: 'reject' };
-  const extraKeys = Object.keys(value).filter((key) => !['queryKey', 'dataUpdatedAt', 'data'].includes(key));
+  const extraKeys = Object.keys(value).filter(
+    (key) => !['queryKey', 'dataUpdatedAt', 'data'].includes(key),
+  );
   if (extraKeys.length > 0) return { kind: 'reject' };
   if (!Array.isArray(value.queryKey)) return { kind: 'reject' };
-  if (typeof value.dataUpdatedAt !== 'number' || !isValidPersistTimestamp(value.dataUpdatedAt, now)) {
+  if (
+    typeof value.dataUpdatedAt !== 'number' ||
+    !isValidPersistTimestamp(value.dataUpdatedAt, now)
+  ) {
     return { kind: 'reject' };
   }
   const dataUpdatedAt = value.dataUpdatedAt;

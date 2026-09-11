@@ -122,8 +122,7 @@ async function attachWhatsAppSendCommand(
   forceCreate = false,
 ): Promise<void> {
   if (!whatsAppSend || message.direction !== 'OUTBOUND') return;
-  const allowCreate =
-    forceCreate || (message.status === 'QUEUED' && message.deletedAt == null);
+  const allowCreate = forceCreate || (message.status === 'QUEUED' && message.deletedAt == null);
   await persistWhatsAppSendCommandInTx(prisma, {
     conversationId: message.conversationId,
     messageId: message.id,

@@ -40,7 +40,13 @@ export async function resolveCoreConversationRead(
   if (loaded.facts.conversationType !== 'TASK') {
     return { status: 'OK', access: loaded.access, facts: loaded.facts, decision };
   }
-  return authorizeTaskConversationRead(prisma, conversationId, loaded.access, loaded.facts, decision);
+  return authorizeTaskConversationRead(
+    prisma,
+    conversationId,
+    loaded.access,
+    loaded.facts,
+    decision,
+  );
 }
 
 async function authorizeTaskConversationRead(

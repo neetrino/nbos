@@ -63,18 +63,18 @@ Primary evidence mounts `useInternalMessengerQueries` /
 `useClientMessengerQueries` under QueryClient + persist-ready (jsdom):
 `messenger-phase6-hook-request-graph.test.ts`.
 
-| Scenario | Asserted operations | Result |
-| --- | --- | --- |
-| Cold Internal default (hooks) | `POST /messenger/core/internal/bootstrap` ×1; zero conversations GET; zero collections GET | automated integration |
-| Cold Client default (hooks) | `POST /messenger/core/client/bootstrap` ×1; zero Client list/collection GETs | automated integration |
-| Strict Mode remount (hooks) | one bootstrap per zone; no fallback GETs | automated integration |
-| Bootstrap failure (hooks) | 1 failed POST + 1 conversations GET + 1 collections GET; list paints from fallback; latch clears after those GETs write cache | automated integration |
-| Stale restored canonical (hooks) | persisted ids visible on first paint; one background POST bootstrap; no GET waterfall; no blanking | automated integration |
-| All ↔ Tasks after canonical cache | zero Messenger HTTP | automated unit |
-| Same-session return | fresh cache; bootstrap not pending; no blank placeholder | automated unit |
-| Realtime message/summary/read/delivery | zero `invalidateQueries` of the inbox list | automated |
-| Access revocation | local purge; zero list invalidate | automated |
-| Reconnect delta | `GET .../delta` only; only changed thread histories invalidated | automated |
+| Scenario                               | Asserted operations                                                                                                           | Result                |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| Cold Internal default (hooks)          | `POST /messenger/core/internal/bootstrap` ×1; zero conversations GET; zero collections GET                                    | automated integration |
+| Cold Client default (hooks)            | `POST /messenger/core/client/bootstrap` ×1; zero Client list/collection GETs                                                  | automated integration |
+| Strict Mode remount (hooks)            | one bootstrap per zone; no fallback GETs                                                                                      | automated integration |
+| Bootstrap failure (hooks)              | 1 failed POST + 1 conversations GET + 1 collections GET; list paints from fallback; latch clears after those GETs write cache | automated integration |
+| Stale restored canonical (hooks)       | persisted ids visible on first paint; one background POST bootstrap; no GET waterfall; no blanking                            | automated integration |
+| All ↔ Tasks after canonical cache      | zero Messenger HTTP                                                                                                           | automated unit        |
+| Same-session return                    | fresh cache; bootstrap not pending; no blank placeholder                                                                      | automated unit        |
+| Realtime message/summary/read/delivery | zero `invalidateQueries` of the inbox list                                                                                    | automated             |
+| Access revocation                      | local purge; zero list invalidate                                                                                             | automated             |
+| Reconnect delta                        | `GET .../delta` only; only changed thread histories invalidated                                                               | automated             |
 
 Unit helpers (`runMessengerBootstrap` / `ensureMessengerBootstrap`) remain in
 `messenger-phase6-request-counts.test.ts`. Realtime:
@@ -90,14 +90,14 @@ Named persist budget (from API page contract, already in code):
 No approved millisecond or bootstrap-byte SLA exists. Observed UTF-8 sizes
 from canonical fixtures (`TextEncoder`, not JS `string.length`):
 
-| Fixture | Bytes |
-| --- | ---: |
-| 1-row persist envelope (ASCII previews) | 915 |
-| Bootstrap payload fixture | 617 |
-| Summary realtime event | 147 |
-| Read realtime event | 120 |
-| 100-row short-preview list page | 32_541 |
-| Named envelope max (`2 × 100 × 8192`) | 1_638_400 |
+| Fixture                                 |     Bytes |
+| --------------------------------------- | --------: |
+| 1-row persist envelope (ASCII previews) |       915 |
+| Bootstrap payload fixture               |       617 |
+| Summary realtime event                  |       147 |
+| Read realtime event                     |       120 |
+| 100-row short-preview list page         |    32_541 |
+| Named envelope max (`2 × 100 × 8192`)   | 1_638_400 |
 
 These are fixture observations, not production latency or an SLA. ASCII
 fixtures have equal JS `string.length`; multi-byte undercount is covered by
@@ -110,14 +110,14 @@ Test: `messenger-phase6-payload-sizes.test.ts`.
 
 ### 3.3 Memory / cache cardinality
 
-| Bound | Value | Evidence |
-| --- | --- | --- |
-| Persisted families | 4 | Internal default, Client default, INTERNAL collections, CLIENT collections |
-| Rows per persisted query | 100 | API list page |
-| Read watermarks / zone | 256; oldest evicted | `MESSENGER_READ_WATERMARK_MAX_PER_ZONE` |
-| HTTP checkpoints | 2 zones on one QueryClient | WeakMap store |
-| Thread cache | `gcTime` 1 hour; not persisted | `MESSENGER_QUERY_GC_TIME_MS` |
-| Socket listeners | cleanup calls `socket.close()` | Strict Mode remount |
+| Bound                    | Value                          | Evidence                                                                   |
+| ------------------------ | ------------------------------ | -------------------------------------------------------------------------- |
+| Persisted families       | 4                              | Internal default, Client default, INTERNAL collections, CLIENT collections |
+| Rows per persisted query | 100                            | API list page                                                              |
+| Read watermarks / zone   | 256; oldest evicted            | `MESSENGER_READ_WATERMARK_MAX_PER_ZONE`                                    |
+| HTTP checkpoints         | 2 zones on one QueryClient     | WeakMap store                                                              |
+| Thread cache             | `gcTime` 1 hour; not persisted | `MESSENGER_QUERY_GC_TIME_MS`                                               |
+| Socket listeners         | cleanup calls `socket.close()` | Strict Mode remount                                                        |
 
 Test: `messenger-phase6-cardinality.test.ts`.
 
@@ -128,23 +128,23 @@ Counts are independent of returned row cardinality (2 vs 80). Nested
 
 **GET / standalone list aggregation** (Favorites ensure not invoked):
 
-| Path | Bounded queries | Mutating |
-| --- | --- | --- |
-| Internal default GET list | 2 (grants + conversations) | 0 |
-| Client default GET list | 2 | 0 |
-| Internal unread | 3 (grants + `$queryRaw` + hydrate) | 0 |
-| Client unread / needs_response | 3 | 0 |
-| Collection GET list | 1 | 0 |
+| Path                           | Bounded queries                    | Mutating |
+| ------------------------------ | ---------------------------------- | -------- |
+| Internal default GET list      | 2 (grants + conversations)         | 0        |
+| Client default GET list        | 2                                  | 0        |
+| Internal unread                | 3 (grants + `$queryRaw` + hydrate) | 0        |
+| Client unread / needs_response | 3                                  | 0        |
+| Collection GET list            | 1                                  | 0        |
 
 **POST bootstrap provisioning** (Favorites ensure unmocked, delta off).
 `$transaction` ×1; BEGIN/COMMIT not visible. Advisory `$executeRaw` counted
 in `raw` and `total`.
 
-| Scenario | Total | Raw | Mutating |
-| --- | ---: | ---: | ---: |
-| Steady-state Favorites exist, no legacy settings (Internal and Client) | 6 | 1 | 0 |
-| First initialization, collection absent (Internal and Client) | 7 | 1 | 1 |
-| Legacy favorites backfill, 2 or 80 settings (Internal and Client) | 10 | 1 | 1 |
+| Scenario                                                               | Total | Raw | Mutating |
+| ---------------------------------------------------------------------- | ----: | --: | -------: |
+| Steady-state Favorites exist, no legacy settings (Internal and Client) |     6 |   1 |        0 |
+| First initialization, collection absent (Internal and Client)          |     7 |   1 |        1 |
+| Legacy favorites backfill, 2 or 80 settings (Internal and Client)      |    10 |   1 |        1 |
 
 The previous “bootstrap = 3 reads / 0 mutation” figure is **only** the
 default-list+collections aggregation with Favorites ensure mocked. It is
@@ -237,11 +237,11 @@ path. Unrelated worker items stay deferred.
 
 Manual checklist: `34-Messenger-Phase6-Browser-Checklist.md`.
 
-| Item | Status |
-| --- | --- |
-| Automated persist/query gate (Phase 5) | cited as prior verified work |
-| Manual same-user reload / logout / IDB / two-tab / a11y | **NOT RUN** (no Playwright; no authenticated browser session in this pass) |
-| Production `next build` | **PASS** (local `pnpm --filter @nbos/web build`, Next.js 16.2.11; no `SKIP_NEXT_TYPECHECK`) |
+| Item                                                    | Status                                                                                      |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Automated persist/query gate (Phase 5)                  | cited as prior verified work                                                                |
+| Manual same-user reload / logout / IDB / two-tab / a11y | **NOT RUN** (no Playwright; no authenticated browser session in this pass)                  |
+| Production `next build`                                 | **PASS** (local `pnpm --filter @nbos/web build`, Next.js 16.2.11; no `SKIP_NEXT_TYPECHECK`) |
 
 Persisted IndexedDB remains device-local sensitive data and is **not**
 encrypted at rest (Phase 5 residual).
@@ -270,16 +270,16 @@ unless set to `0`/`false`.
 
 ## 8. Residual / deferred
 
-| Item | Status |
-| --- | --- |
-| Live `EXPLAIN` on isolated PostgreSQL | OPERATIONAL GATE |
-| Composite list index `(zone, status, lastMessageAt, …)` | not added; needs EXPLAIN |
-| Redis Socket.IO adapter | prerequisite; not deployed |
-| Production load test / live provider send | out of scope |
-| Unrelated WhatsApp worker hardening | deferred |
-| Slice 11 destructive cleanup | not started |
+| Item                                                            | Status                                                   |
+| --------------------------------------------------------------- | -------------------------------------------------------- |
+| Live `EXPLAIN` on isolated PostgreSQL                           | OPERATIONAL GATE                                         |
+| Composite list index `(zone, status, lastMessageAt, …)`         | not added; needs EXPLAIN                                 |
+| Redis Socket.IO adapter                                         | prerequisite; not deployed                               |
+| Production load test / live provider send                       | out of scope                                             |
+| Unrelated WhatsApp worker hardening                             | deferred                                                 |
+| Slice 11 destructive cleanup                                    | not started                                              |
 | Independent `90-Messenger-Final-Acceptance.md` product ACCEPTED | NOT RUN (rebuild slices 0–10 VERIFIED; Slice 11 PLANNED) |
-| Ledger Phase 6 status | not edited by implementer |
+| Ledger Phase 6 status                                           | not edited by implementer                                |
 
 ## 9. Tests added or extended (this phase)
 
@@ -296,20 +296,20 @@ A persist envelope max-size check now uses UTF-8 bytes.
 Not `VERIFIED PASS`. Independent master audit is still required.
 Product rebuild ACCEPTED / Slice 11 remain **NOT RUN** / `PLANNED`.
 
-| Check | Result |
-| --- | --- |
-| Phase 6 focused Vitest | **14 files / 51 tests PASS** |
-| Web Messenger + Internal + Client Vitest | **46 files / 178 tests PASS** |
-| API Messenger + scheduler Vitest | **118 files / 688 tests PASS**, **4 files / 11 skipped** |
-| `@nbos/shared` tests + typecheck | **48 files / 326 tests PASS**; typecheck **PASS** |
-| `@nbos/web typecheck` | **FAIL** ×2 then **PASS** (rest-spread `TS2556`; then `vi.mock` hoist of `forbidden`; factory now lazy-calls `forbidden(id)`) |
-| `@nbos/api typecheck` | **6 diagnostics**, same unrelated baseline (`product-whatsapp-group.service.ts` ×3, `product-communication-legacy-write.ops.ts` ×2, `projects.service.ts` ×1). No new Phase 6 diagnostics. Heap 8GB. |
-| ESLint changed Phase 6 paths | **PASS** |
-| `git diff --check` (this iteration paths) | **PASS** |
-| Production `next build` | **PASS** (local; Next.js 16.2.11; `SKIP_NEXT_TYPECHECK` unset; **not a production deploy**) |
-| Prisma validate/generate | **NOT RUN** (schema / `prisma.config.ts` not touched) |
-| Live isolated PostgreSQL `EXPLAIN` | **OPERATIONAL GATE** / **NOT RUN** |
-| Live browser checklist / Playwright | **NOT RUN** |
-| Live provider send / production migrate / deploy | **NOT RUN** |
+| Check                                            | Result                                                                                                                                                                                               |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Phase 6 focused Vitest                           | **14 files / 51 tests PASS**                                                                                                                                                                         |
+| Web Messenger + Internal + Client Vitest         | **46 files / 178 tests PASS**                                                                                                                                                                        |
+| API Messenger + scheduler Vitest                 | **118 files / 688 tests PASS**, **4 files / 11 skipped**                                                                                                                                             |
+| `@nbos/shared` tests + typecheck                 | **48 files / 326 tests PASS**; typecheck **PASS**                                                                                                                                                    |
+| `@nbos/web typecheck`                            | **FAIL** ×2 then **PASS** (rest-spread `TS2556`; then `vi.mock` hoist of `forbidden`; factory now lazy-calls `forbidden(id)`)                                                                        |
+| `@nbos/api typecheck`                            | **6 diagnostics**, same unrelated baseline (`product-whatsapp-group.service.ts` ×3, `product-communication-legacy-write.ops.ts` ×2, `projects.service.ts` ×1). No new Phase 6 diagnostics. Heap 8GB. |
+| ESLint changed Phase 6 paths                     | **PASS**                                                                                                                                                                                             |
+| `git diff --check` (this iteration paths)        | **PASS**                                                                                                                                                                                             |
+| Production `next build`                          | **PASS** (local; Next.js 16.2.11; `SKIP_NEXT_TYPECHECK` unset; **not a production deploy**)                                                                                                          |
+| Prisma validate/generate                         | **NOT RUN** (schema / `prisma.config.ts` not touched)                                                                                                                                                |
+| Live isolated PostgreSQL `EXPLAIN`               | **OPERATIONAL GATE** / **NOT RUN**                                                                                                                                                                   |
+| Live browser checklist / Playwright              | **NOT RUN**                                                                                                                                                                                          |
+| Live provider send / production migrate / deploy | **NOT RUN**                                                                                                                                                                                          |
 
 No fabricated millisecond improvements. Mock Prisma counts are not production latency.

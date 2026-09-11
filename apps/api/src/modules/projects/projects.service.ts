@@ -11,7 +11,10 @@ import {
   attachProductDeliveryLifecycle,
   type DeliveryStatusCarrier,
 } from './delivery-lifecycle';
-import { overlayProductWorkWhatsAppList } from './product-whatsapp-list-overlay';
+import {
+  overlayProductWorkWhatsAppList,
+  type ProductWhatsAppListFields,
+} from './product-whatsapp-list-overlay';
 import { resolveWhatsAppAccountantGroupChatId } from '../messenger/core/product-communication-account';
 import { syncEntityContactLinks } from '../crm/shared/sync-entity-contact-links.ops';
 import { clearProductMembershipsForRemovedProjectContacts } from './products/product-contacts.ops';
@@ -186,7 +189,10 @@ export class ProjectsService {
 }
 
 function attachProjectDeliveryLifecycles<
-  T extends { products?: Array<DeliveryStatusCarrier>; extensions?: Array<DeliveryStatusCarrier> },
+  T extends {
+    products?: Array<DeliveryStatusCarrier & ProductWhatsAppListFields>;
+    extensions?: Array<DeliveryStatusCarrier>;
+  },
 >(project: T, accountantGroupChatId: string | null) {
   return {
     ...project,

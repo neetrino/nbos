@@ -43,10 +43,12 @@ function attemptPrisma(live: ReturnType<typeof command>, status: string) {
     messengerCommand: {
       findUnique: vi.fn().mockResolvedValue(live),
       count: vi.fn().mockResolvedValue(1),
-      updateMany: vi.fn().mockImplementation(async ({ data }: { data?: Record<string, unknown> }) => {
-        if (data) Object.assign(live, data);
-        return { count: 1 };
-      }),
+      updateMany: vi
+        .fn()
+        .mockImplementation(async ({ data }: { data?: Record<string, unknown> }) => {
+          if (data) Object.assign(live, data);
+          return { count: 1 };
+        }),
       update: vi.fn().mockImplementation(async ({ data }: { data: Record<string, unknown> }) => {
         Object.assign(live, data);
         return live;
@@ -83,10 +85,12 @@ function reconcilePrisma(row: ReturnType<typeof pendingRow>, status = 'QUEUED') 
     $queryRaw: vi.fn(async () => [{ ...row }]),
     messengerCommand: {
       findMany: vi.fn().mockResolvedValue([row]),
-      updateMany: vi.fn().mockImplementation(async ({ data }: { data?: Record<string, unknown> }) => {
-        if (data) Object.assign(row, data);
-        return { count: 1 };
-      }),
+      updateMany: vi
+        .fn()
+        .mockImplementation(async ({ data }: { data?: Record<string, unknown> }) => {
+          if (data) Object.assign(row, data);
+          return { count: 1 };
+        }),
       update: vi.fn().mockImplementation(async ({ data }: { data: Record<string, unknown> }) => {
         Object.assign(row, data);
         return row;
@@ -119,9 +123,7 @@ function reconcilePrisma(row: ReturnType<typeof pendingRow>, status = 'QUEUED') 
 
 describe('P4B-02 Gateway window start', () => {
   it('treats 48h-old never-attempted QUEUED as still enqueueable', async () => {
-    expect(
-      isNeverAttemptedQueuedSend(null, 'QUEUED'),
-    ).toBe(true);
+    expect(isNeverAttemptedQueuedSend(null, 'QUEUED')).toBe(true);
     const createdAt = new Date(Date.now() - 48 * HOUR);
     const prisma = reconcilePrisma(pendingRow({ createdAt, firstAttemptAt: null }));
     const queue = {
@@ -200,12 +202,7 @@ describe('P4B-02 Gateway window start', () => {
     };
     const client = { sendAccountTextMessage: vi.fn() };
     const connection = { requireClientConfig: vi.fn() };
-    await dispatchWhatsAppCoreSendJob(
-      prisma as never,
-      connection as never,
-      client as never,
-      JOB,
-    );
+    await dispatchWhatsAppCoreSendJob(prisma as never, connection as never, client as never, JOB);
     expect(client.sendAccountTextMessage).not.toHaveBeenCalled();
   });
 

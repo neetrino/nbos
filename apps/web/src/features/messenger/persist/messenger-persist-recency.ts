@@ -10,7 +10,9 @@ export type MessengerPersistRecencyHeader = {
   capturedAt: number;
 };
 
-export function parseMinimalPersistHeader(raw: string | null): MessengerPersistRecencyHeader | null {
+export function parseMinimalPersistHeader(
+  raw: string | null,
+): MessengerPersistRecencyHeader | null {
   if (raw == null) return null;
   try {
     const value: unknown = JSON.parse(raw);

@@ -54,9 +54,12 @@ export function createIndexedDbMessengerPersistBackend(): MessengerPersistBacken
   return {
     read: (identityId) => withStore('readonly', (store) => requestToString(store.get(identityId))),
     write: (identityId, serialized) =>
-      withStore('readwrite', (store) => requestToVoid(store.put({ id: identityId, payload: serialized }))),
+      withStore('readwrite', (store) =>
+        requestToVoid(store.put({ id: identityId, payload: serialized })),
+      ),
     compareAndWrite: (input) => compareAndWriteIndexedDb(input),
-    delete: (identityId) => withStore('readwrite', (store) => requestToVoid(store.delete(identityId))),
+    delete: (identityId) =>
+      withStore('readwrite', (store) => requestToVoid(store.delete(identityId))),
     clear: () => withStore('readwrite', (store) => requestToVoid(store.clear())),
   };
 }
@@ -73,7 +76,9 @@ function commitMemoryCompareWrite(
   return true;
 }
 
-async function compareAndWriteIndexedDb(input: MessengerPersistCompareWriteInput): Promise<boolean> {
+async function compareAndWriteIndexedDb(
+  input: MessengerPersistCompareWriteInput,
+): Promise<boolean> {
   const db = await openMessengerPersistDb();
   try {
     return await runIndexedDbCompareAndWrite(db, input);

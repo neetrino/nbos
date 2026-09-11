@@ -28,7 +28,11 @@ describe('messengerQueryKeys', () => {
       'collections',
       'INTERNAL',
     ]);
-    expect(messengerQueryKeys.collections('CLIENT')).toEqual(['messenger', 'collections', 'CLIENT']);
+    expect(messengerQueryKeys.collections('CLIENT')).toEqual([
+      'messenger',
+      'collections',
+      'CLIENT',
+    ]);
     expect(messengerQueryKeys.messages('conv-1')).toEqual(['messenger', 'messages', 'conv-1']);
   });
 
@@ -72,7 +76,10 @@ describe('messengerQueryKeys', () => {
     expect(JSON.stringify(collections)).not.toContain('hello');
     expect(JSON.stringify(collections)).not.toContain('unread');
     const collectionsHook = readFileSync(
-      path.join(process.cwd(), 'apps/web/src/features/messenger/query/use-messenger-collections.ts'),
+      path.join(
+        process.cwd(),
+        'apps/web/src/features/messenger/query/use-messenger-collections.ts',
+      ),
       'utf8',
     );
     expect(collectionsHook).not.toMatch(/search/);

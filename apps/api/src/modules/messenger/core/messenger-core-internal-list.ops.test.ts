@@ -15,11 +15,13 @@ function listRow(overrides: Record<string, unknown> = {}) {
     canonicalKey: null,
     createdAt: new Date('2026-08-01T10:00:00.000Z'),
     lastMessageAt: new Date('2026-08-30T12:00:00.000Z'),
-    messages: [{
-      content: 'hello',
-      senderId: 'other',
-      createdAt: new Date('2026-08-30T12:00:00.000Z'),
-    }],
+    messages: [
+      {
+        content: 'hello',
+        senderId: 'other',
+        createdAt: new Date('2026-08-30T12:00:00.000Z'),
+      },
+    ],
     readStates: [],
     userSettings: [],
     participants: [],
@@ -260,21 +262,25 @@ describe('Internal conversation list', () => {
       listRow({
         id: 'mine',
         lastMessageAt: new Date('2026-09-05T12:00:00.000Z'),
-        messages: [{
-          content: 'own',
-          senderId: 'e1',
-          createdAt: new Date('2026-09-05T12:00:00.000Z'),
-        }],
+        messages: [
+          {
+            content: 'own',
+            senderId: 'e1',
+            createdAt: new Date('2026-09-05T12:00:00.000Z'),
+          },
+        ],
         readStates: [{ lastReadAt: new Date('2020-01-01T00:00:00.000Z') }],
       }),
       listRow({
         id: 'inbound',
         lastMessageAt: new Date('2026-09-05T12:00:00.000Z'),
-        messages: [{
-          content: 'wa',
-          senderId: null,
-          createdAt: new Date('2026-09-05T12:00:00.000Z'),
-        }],
+        messages: [
+          {
+            content: 'wa',
+            senderId: null,
+            createdAt: new Date('2026-09-05T12:00:00.000Z'),
+          },
+        ],
         readStates: [{ lastReadAt: new Date('2020-01-01T00:00:00.000Z') }],
       }),
     ]);

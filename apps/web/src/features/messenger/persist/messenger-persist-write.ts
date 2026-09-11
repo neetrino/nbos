@@ -1,7 +1,10 @@
 import type { QueryClient } from '@tanstack/react-query';
 import type { MessengerPersistEnvelope } from './messenger-persist-envelope';
 import type { MessengerPersistBackend } from './messenger-persist-idb';
-import { isNewerPersistCapture, type MessengerPersistRecencyHeader } from './messenger-persist-recency';
+import {
+  isNewerPersistCapture,
+  type MessengerPersistRecencyHeader,
+} from './messenger-persist-recency';
 import type { MessengerPersistCapture } from './messenger-persist-snapshot';
 import { captureMessengerPersistSnapshot } from './messenger-persist-snapshot';
 import {

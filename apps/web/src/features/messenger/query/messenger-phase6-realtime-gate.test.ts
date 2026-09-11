@@ -1,17 +1,20 @@
 import { QueryClient } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
-import type { MessengerCoreConversationRow, MessengerCoreMessageRow } from '@/lib/api/messenger-core';
-import {
-  applyMessengerRealtimeMessage,
-  applyMessengerSendResult,
-} from './messenger-cache';
+import type {
+  MessengerCoreConversationRow,
+  MessengerCoreMessageRow,
+} from '@/lib/api/messenger-core';
+import { applyMessengerRealtimeMessage, applyMessengerSendResult } from './messenger-cache';
 import { messengerQueryKeys } from './messenger-query-keys';
 import {
   applyMessengerAccessChanged,
   applyMessengerRealtimeRead,
   applyMessengerRealtimeSummary,
 } from './messenger-realtime-cache';
-import { bindMessengerRealtimeSocket, type MessengerRealtimeSocket } from '@/features/messenger-internal/messenger-realtime-bind';
+import {
+  bindMessengerRealtimeSocket,
+  type MessengerRealtimeSocket,
+} from '@/features/messenger-internal/messenger-realtime-bind';
 import { recoverMessengerZone } from './messenger-delta-recovery';
 import { seedInternalMessengerBootstrap } from './seed-messenger-bootstrap';
 import { messengerTestCheckpoint } from './messenger-test-checkpoint';
@@ -77,9 +80,9 @@ function seedInbox(queryClient: QueryClient) {
 }
 
 function expectListNotInvalidated(queryClient: QueryClient, key: readonly unknown[]) {
-  expect(queryClient.getQueryCache().find({ queryKey: key, exact: true })?.state.isInvalidated).toBe(
-    false,
-  );
+  expect(
+    queryClient.getQueryCache().find({ queryKey: key, exact: true })?.state.isInvalidated,
+  ).toBe(false);
 }
 
 describe('Phase 6 realtime final gate', () => {
@@ -117,9 +120,11 @@ describe('Phase 6 realtime final gate', () => {
     const items = queryClient.getQueryData<{ items: MessengerCoreConversationRow[] }>(key)?.items;
     expect(items?.[0]?.lastMessagePreview).toBe('hello');
     expect(items?.[0]?.unreadCount).toBe(0);
-    expect(queryClient.getQueryData<{ items: MessengerCoreMessageRow[] }>(
-      messengerQueryKeys.messages('c1'),
-    )?.items[0]?.status).toBe('DELIVERED');
+    expect(
+      queryClient.getQueryData<{ items: MessengerCoreMessageRow[] }>(
+        messengerQueryKeys.messages('c1'),
+      )?.items[0]?.status,
+    ).toBe('DELIVERED');
   });
 
   it('access revocation purges the thread without a full-list refetch', () => {
@@ -127,9 +132,11 @@ describe('Phase 6 realtime final gate', () => {
     const key = seedInbox(queryClient);
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
     applyMessengerAccessChanged(queryClient, 'INTERNAL', 'c1', 'INTERNAL');
-    expect(queryClient.getQueryData<{ items: MessengerCoreConversationRow[] }>(key)?.items.map((row) => row.id)).toEqual(
-      ['c2'],
-    );
+    expect(
+      queryClient
+        .getQueryData<{ items: MessengerCoreConversationRow[] }>(key)
+        ?.items.map((row) => row.id),
+    ).toEqual(['c2']);
     expect(queryClient.getQueryData(messengerQueryKeys.messages('c1'))).toBeUndefined();
     expectListNotInvalidated(queryClient, key);
     expect(invalidate).not.toHaveBeenCalled();
@@ -167,8 +174,9 @@ describe('Phase 6 realtime final gate', () => {
         ?.state.isInvalidated,
     ).toBe(true);
     expect(
-      queryClient.getQueryCache().find({ queryKey: messengerQueryKeys.messages(OTHER), exact: true })
-        ?.state.isInvalidated,
+      queryClient
+        .getQueryCache()
+        .find({ queryKey: messengerQueryKeys.messages(OTHER), exact: true })?.state.isInvalidated,
     ).toBeFalsy();
   });
 
@@ -209,7 +217,8 @@ describe('Phase 6 realtime final gate', () => {
     applyMessengerRealtimeMessage(queryClient, message('m2', 'c1', 'SENT'));
     expectListNotInvalidated(queryClient, key);
     expect(
-      queryClient.getQueryData<{ items: MessengerCoreMessageRow[] }>(messengerQueryKeys.messages('c1'))
+      queryClient
+        .getQueryData<{ items: MessengerCoreMessageRow[] }>(messengerQueryKeys.messages('c1'))
         ?.items.filter((row) => row.id === 'm2'),
     ).toHaveLength(1);
   });

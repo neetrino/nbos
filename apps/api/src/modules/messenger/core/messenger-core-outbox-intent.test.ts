@@ -87,11 +87,14 @@ describe('P4B-11 intent audit creator', () => {
   it('createMany loser with conflicting identity throws without audit', async () => {
     const prisma = {
       messengerCommand: {
-        findUnique: vi.fn().mockResolvedValueOnce(null).mockResolvedValue({
-          ...ROW,
-          conversationId: 'conv-other',
-          resultMessageId: 'msg-other',
-        }),
+        findUnique: vi
+          .fn()
+          .mockResolvedValueOnce(null)
+          .mockResolvedValue({
+            ...ROW,
+            conversationId: 'conv-other',
+            resultMessageId: 'msg-other',
+          }),
         createMany: vi.fn().mockResolvedValue({ count: 0 }),
       },
       auditLog: { create: vi.fn() },

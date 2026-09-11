@@ -6,9 +6,9 @@
 > Status legend: `PASS` / `NOT RUN` / `BLOCKED`.
 > Do not mark production/live items complete without exercising them.
 
-Date: ________  
-Environment: ________  
-Actor: ________
+Date: **\_\_\_\_**  
+Environment: **\_\_\_\_**  
+Actor: **\_\_\_\_**
 
 ## Preconditions
 
@@ -59,6 +59,6 @@ Actor: ________
 
 ## Recorded outcome (this implementer pass)
 
-| Check | Status | Notes |
-| --- | --- | --- |
+| Check            | Status  | Notes                                                 |
+| ---------------- | ------- | ----------------------------------------------------- |
 | A–G live browser | NOT RUN | No Playwright; login/DB session not used in this pass |

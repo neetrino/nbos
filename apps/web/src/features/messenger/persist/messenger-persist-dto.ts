@@ -94,7 +94,9 @@ const collectionRowSchema = z
   })
   .strict();
 
-export const persistInternalSummaryParamsSchema = z.object({ source: z.literal('all-dataset') }).strict();
+export const persistInternalSummaryParamsSchema = z
+  .object({ source: z.literal('all-dataset') })
+  .strict();
 
 export const persistClientSummaryParamsSchema = z
   .object({
@@ -122,7 +124,9 @@ const clientPageSchema = z
   })
   .strict();
 
-const collectionListSchema = z.array(collectionRowSchema).max(MESSENGER_PERSIST_COLLECTION_LIST_MAX);
+const collectionListSchema = z
+  .array(collectionRowSchema)
+  .max(MESSENGER_PERSIST_COLLECTION_LIST_MAX);
 
 export function parsePlainStrict<T>(schema: z.ZodType<T>, value: unknown): T | null {
   if (!areNestedObjectsPlain(value)) return null;
@@ -145,7 +149,10 @@ export function parsePersistedClientSummaryParams(value: unknown) {
   return isPlainRecord(value) ? parsePlainStrict(persistClientSummaryParamsSchema, value) : null;
 }
 
-export function parsePersistedQueryData(queryKey: readonly unknown[], data: unknown): unknown | null {
+export function parsePersistedQueryData(
+  queryKey: readonly unknown[],
+  data: unknown,
+): unknown | null {
   if (queryKey[1] === 'internal' && queryKey[2] === 'summaries') {
     return parsePlainStrict(internalPageSchema, data);
   }

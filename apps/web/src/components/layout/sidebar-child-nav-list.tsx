@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import {
-  isNavChildGroup,
-  type NavModuleDefinition,
-} from '@/lib/navigation/nav-config';
+import { isNavChildGroup, type NavModuleDefinition } from '@/lib/navigation/nav-config';
 import { isRegisteredModuleKey } from '@/lib/navigation/module-last-visit';
 import { getPathFromHref } from '@/lib/navigation/nav-route-utils';
 import { ModuleSectionNavLink } from './ModuleSectionNavLink';
-import { SIDEBAR_NAV_CHILD_LINK_CLASS, SIDEBAR_NAV_CHILD_LIST_CLASS } from './sidebar-layout-constants';
+import {
+  SIDEBAR_NAV_CHILD_LINK_CLASS,
+  SIDEBAR_NAV_CHILD_LIST_CLASS,
+} from './sidebar-layout-constants';
 
 export function SidebarChildNavList({
   item,

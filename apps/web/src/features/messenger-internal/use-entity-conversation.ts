@@ -3,10 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { usePermission } from '@/lib/permissions/PermissionContext';
-import {
-  messengerCoreApi,
-  type MessengerCoreConversationRow,
-} from '@/lib/api/messenger-core';
+import { messengerCoreApi, type MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import { useInternalMessengerRealtime } from '@/features/messenger-internal/useInternalMessengerRealtime';
 import {
   applyMessengerRealtimeMessage,
@@ -40,12 +37,8 @@ export function useEntityConversation(kind: EntityConversationKind, entityId: st
     enabled: Boolean(canView && conversation.data?.id),
     zone: 'INTERNAL',
   });
-  useEntityRealtime(
-    canView,
-    me?.id,
-    conversation.data?.id ?? null,
-    queryClient,
-    () => setNewMessage(''),
+  useEntityRealtime(canView, me?.id, conversation.data?.id ?? null, queryClient, () =>
+    setNewMessage(''),
   );
   useEffect(() => {
     if (!conversation.data?.id) return;
@@ -67,11 +60,7 @@ export function useEntityConversation(kind: EntityConversationKind, entityId: st
   });
 }
 
-function useEntityEnsureQuery(
-  kind: EntityConversationKind,
-  entityId: string,
-  enabled: boolean,
-) {
+function useEntityEnsureQuery(kind: EntityConversationKind, entityId: string, enabled: boolean) {
   return useQuery({
     queryKey: messengerQueryKeys.internalEntity(kind, entityId),
     queryFn: () => ensureEntityConversation(kind, entityId),
@@ -102,13 +91,10 @@ function useEntityRealtime(
       applyMessengerRealtimeRead(queryClient, 'INTERNAL', payload);
     },
     onAccessChanged: (payload) => {
-      applyMessengerAccessChanged(
-        queryClient,
-        'INTERNAL',
-        payload.conversationId,
-        payload.zone,
-        { activeId: conversationId, clearActive: clearComposer },
-      );
+      applyMessengerAccessChanged(queryClient, 'INTERNAL', payload.conversationId, payload.zone, {
+        activeId: conversationId,
+        clearActive: clearComposer,
+      });
     },
     onReconnect: () => {
       void recoverMessengerZone(queryClient, 'INTERNAL', {
@@ -141,14 +127,13 @@ function buildEntityConversationState(input: {
     setNewMessage: input.setNewMessage,
     loading: Boolean(
       input.canView &&
-        input.meId &&
-        input.entityId &&
-        input.conversation.isPending &&
-        input.conversation.data === undefined,
+      input.meId &&
+      input.entityId &&
+      input.conversation.isPending &&
+      input.conversation.data === undefined,
     ),
     sendBusy: input.sendBusy,
-    messagesLoading:
-      input.messagesQuery.isPending && input.messagesQuery.data === undefined,
+    messagesLoading: input.messagesQuery.isPending && input.messagesQuery.data === undefined,
     error:
       input.conversation.error || input.messagesQuery.error
         ? 'Could not open this Internal conversation.'

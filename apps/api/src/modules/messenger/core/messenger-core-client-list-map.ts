@@ -44,7 +44,9 @@ export type ClientListRow = {
   participants: Array<{ role: string }>;
   externalMappings: Array<{ provider: MessengerClientConversationListItem['provider'] }>;
   links: Array<{ entityId: string }>;
-  productCommunicationBindings: Parameters<typeof attentionsFromListRow>[0]['productCommunicationBindings'];
+  productCommunicationBindings: Parameters<
+    typeof attentionsFromListRow
+  >[0]['productCommunicationBindings'];
   attentions: Parameters<typeof attentionsFromListRow>[0]['attentions'];
 };
 

@@ -123,7 +123,13 @@ describe('P4B-10 paired transition ownership', () => {
       messageStatus: 'QUEUED',
       commandUpdateCount: 0,
     });
-    await setCoreSendStatus(prisma as never, command() as never, JOB, 'FAILED', 'WHATSAPP_NOT_CONNECTED');
+    await setCoreSendStatus(
+      prisma as never,
+      command() as never,
+      JOB,
+      'FAILED',
+      'WHATSAPP_NOT_CONNECTED',
+    );
     expect(prisma.messengerMessage.updateMany).not.toHaveBeenCalled();
     expect(prisma.auditLog.create).not.toHaveBeenCalled();
   });

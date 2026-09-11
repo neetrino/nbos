@@ -19,9 +19,7 @@ import { finalizeWhatsAppTerminalMessageSkip } from './messenger-outbound-messag
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
-export type WhatsAppSendAttemptResult =
-  | { kind: 'proceed'; token: string }
-  | { kind: 'stop' };
+export type WhatsAppSendAttemptResult = { kind: 'proceed'; token: string } | { kind: 'stop' };
 
 /**
  * Acquire an exclusive dispatch token. TX commits before Gateway HTTP.
@@ -51,7 +49,13 @@ export async function beginWhatsAppCoreSendAttempt(
       occurredAt: new Date().toISOString(),
     });
   }
-  const blocked = await revalidateAfterDispatchClaim(prisma, command, job, claimed.token, publisher);
+  const blocked = await revalidateAfterDispatchClaim(
+    prisma,
+    command,
+    job,
+    claimed.token,
+    publisher,
+  );
   if (blocked) return { kind: 'stop' };
   return { kind: 'proceed', token: claimed.token };
 }
@@ -96,15 +100,10 @@ async function revalidateAfterDispatchClaim(
     return true;
   }
   if (prepared.kind === 'invalid') {
-    await markWhatsAppCommandInvalid(
-      prisma,
-      command,
-      job,
-      prepared.reason,
-      undefined,
-      publisher,
-      { kind: 'worker', token },
-    );
+    await markWhatsAppCommandInvalid(prisma, command, job, prepared.reason, undefined, publisher, {
+      kind: 'worker',
+      token,
+    });
     return true;
   }
   if (prepared.kind === 'skip') {

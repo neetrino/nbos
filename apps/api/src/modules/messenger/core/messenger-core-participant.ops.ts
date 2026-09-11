@@ -2,7 +2,11 @@ import { NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import type { MessengerParticipantRole } from '@nbos/database';
 import type { MessengerCoreParticipantDto } from './messenger-core.types';
-import { bumpGlobalConversationRevision, bumpTargetedAccessRemovedRevision, bumpTargetedReadRevision } from './messenger-core-revision-write.ops';
+import {
+  bumpGlobalConversationRevision,
+  bumpTargetedAccessRemovedRevision,
+  bumpTargetedReadRevision,
+} from './messenger-core-revision-write.ops';
 import { runMessengerWriteTx } from './messenger-core-revision-tx';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;

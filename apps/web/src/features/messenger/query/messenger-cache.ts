@@ -1,6 +1,9 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { mergeCoreRealtimeMessage } from '@/features/messenger/merge-core-realtime-message';
-import type { MessengerCoreConversationRow, MessengerCoreMessageRow } from '@/lib/api/messenger-core';
+import type {
+  MessengerCoreConversationRow,
+  MessengerCoreMessageRow,
+} from '@/lib/api/messenger-core';
 import type { MessengerZone } from './messenger-query-keys';
 import { messengerQueryKeys } from './messenger-query-keys';
 import {
@@ -67,10 +70,7 @@ export function patchSummaryFromMessage(
   return { found };
 }
 
-export function invalidateMessengerSummaries(
-  queryClient: QueryClient,
-  zone: MessengerZone,
-): void {
+export function invalidateMessengerSummaries(queryClient: QueryClient, zone: MessengerZone): void {
   void queryClient.invalidateQueries({ queryKey: summariesRoot(zone) });
 }
 

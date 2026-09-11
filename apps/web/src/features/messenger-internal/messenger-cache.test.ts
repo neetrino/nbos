@@ -1,6 +1,9 @@
 import { QueryClient } from '@tanstack/react-query';
 import { describe, expect, it } from 'vitest';
-import type { MessengerCoreConversationRow, MessengerCoreMessageRow } from '@/lib/api/messenger-core';
+import type {
+  MessengerCoreConversationRow,
+  MessengerCoreMessageRow,
+} from '@/lib/api/messenger-core';
 import {
   applyMessengerRealtimeMessage,
   applyMessengerSendResult,
@@ -78,9 +81,7 @@ describe('messenger cache patches', () => {
     const queryClient = createClient();
     applyMessengerSendResult(queryClient, 'INTERNAL', message('m1', 'c1'));
     applyMessengerRealtimeMessage(queryClient, message('m1', 'c1', 'live'));
-    const page = queryClient.getQueryData<MessengerMessagesPage>(
-      messengerQueryKeys.messages('c1'),
-    );
+    const page = queryClient.getQueryData<MessengerMessagesPage>(messengerQueryKeys.messages('c1'));
     expect(page?.items).toHaveLength(1);
     expect(page?.items[0]?.content).toBe('live');
   });
@@ -126,9 +127,7 @@ describe('messenger cache patches', () => {
     applyMessengerRealtimeMessage(queryClient, inbound);
     const afterFirst = queryClient.getQueryData<{ items: MessengerCoreConversationRow[] }>(key);
     applyMessengerRealtimeMessage(queryClient, inbound);
-    const afterDuplicate = queryClient.getQueryData<{ items: MessengerCoreConversationRow[] }>(
-      key,
-    );
+    const afterDuplicate = queryClient.getQueryData<{ items: MessengerCoreConversationRow[] }>(key);
     expect(afterFirst?.items.map((row) => row.id)).toEqual(['inactive', 'other']);
     expect(afterFirst?.items[0]?.unreadCount).toBe(0);
     expect(afterFirst?.items[0]?.lastMessagePreview).toBe('old');

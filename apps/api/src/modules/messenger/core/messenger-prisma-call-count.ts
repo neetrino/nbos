@@ -26,7 +26,9 @@ export type PrismaCallSnapshot = PrismaCountState & {
  * Nested includes are one `findMany`, not per-row loops.
  * `$transaction` is counted separately; BEGIN/COMMIT are not visible.
  */
-export function instrumentPrismaDelegates<T extends object>(root: T): {
+export function instrumentPrismaDelegates<T extends object>(
+  root: T,
+): {
   prisma: T;
   snapshot: () => PrismaCallSnapshot;
 } {

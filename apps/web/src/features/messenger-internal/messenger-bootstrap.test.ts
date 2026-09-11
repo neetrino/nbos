@@ -8,7 +8,10 @@ import {
 } from '@/features/messenger/query/seed-messenger-bootstrap';
 import { toggleInternalFavorite } from '@/features/messenger-internal/internal-messenger-cache-ops';
 import { messengerTestCheckpoint } from '@/features/messenger/query/messenger-test-checkpoint';
-import { ensureMessengerBootstrap, runMessengerBootstrap } from '@/features/messenger/query/use-messenger-bootstrap';
+import {
+  ensureMessengerBootstrap,
+  runMessengerBootstrap,
+} from '@/features/messenger/query/use-messenger-bootstrap';
 
 const bootstrapInternal = vi.fn();
 const bootstrapClient = vi.fn();
@@ -49,10 +52,12 @@ describe('Messenger bootstrap cache seeding', () => {
     const collections = [{ id: 'col-1', name: 'Watch' }];
     bootstrapInternal.mockResolvedValue({ summaries, collections, ...messengerTestCheckpoint() });
     await runMessengerBootstrap(queryClient, 'INTERNAL');
-    expect(queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' }))).toEqual(
-      summaries,
+    expect(
+      queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' })),
+    ).toEqual(summaries);
+    expect(queryClient.getQueryData(messengerQueryKeys.collections('INTERNAL'))).toEqual(
+      collections,
     );
-    expect(queryClient.getQueryData(messengerQueryKeys.collections('INTERNAL'))).toEqual(collections);
     expect(listConversations).not.toHaveBeenCalled();
     expect(listCollections).not.toHaveBeenCalled();
   });
@@ -84,10 +89,12 @@ describe('Messenger bootstrap cache seeding', () => {
     } as never);
     bootstrapInternal.mockRejectedValue(new Error('bootstrap down'));
     await expect(runMessengerBootstrap(queryClient, 'INTERNAL')).rejects.toThrow('bootstrap down');
-    expect(queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' }))).toEqual(
-      summaries,
+    expect(
+      queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' })),
+    ).toEqual(summaries);
+    expect(queryClient.getQueryData(messengerQueryKeys.collections('INTERNAL'))).toEqual(
+      collections,
     );
-    expect(queryClient.getQueryData(messengerQueryKeys.collections('INTERNAL'))).toEqual(collections);
   });
 
   it('treats seeded keys as fresh default cache', () => {

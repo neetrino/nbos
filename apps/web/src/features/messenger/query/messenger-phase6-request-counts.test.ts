@@ -16,7 +16,10 @@ import {
   messengerDefaultQueriesEnabled,
   readMessengerBootstrapState,
 } from '@/features/messenger/query/messenger-bootstrap-state';
-import { ensureMessengerBootstrap, runMessengerBootstrap } from '@/features/messenger/query/use-messenger-bootstrap';
+import {
+  ensureMessengerBootstrap,
+  runMessengerBootstrap,
+} from '@/features/messenger/query/use-messenger-bootstrap';
 import { applyMessengerPersistEnvelope } from '@/features/messenger/persist/messenger-persist-hydrate';
 import {
   beginMessengerPersistHydration,

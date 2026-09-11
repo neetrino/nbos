@@ -5,7 +5,10 @@ import {
   offerWhatsAppCoreSendJob,
   whatsAppCoreSendJobFromMessage,
 } from './messenger-wa-outbound.ops';
-import { SCHEDULER_JOB_CATALOG, SCHEDULER_ROSTER_INTENT } from '../../scheduler/scheduler-job-catalog';
+import {
+  SCHEDULER_JOB_CATALOG,
+  SCHEDULER_ROSTER_INTENT,
+} from '../../scheduler/scheduler-job-catalog';
 import { SCHEDULER_JOB_NAMES } from '../../scheduler/scheduler-lease.constants';
 import { resolveSeedEnabled } from '../../scheduler/scheduler-job-policy.service';
 import { MESSENGER_OUTBOUND_RECONCILE_ENABLED_ENV } from './messenger-outbound-reconcile.constants';

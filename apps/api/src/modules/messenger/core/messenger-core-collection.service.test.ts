@@ -204,9 +204,9 @@ describe('Internal collection detail ACL and query shape', () => {
     expect(result.items.map((item: { conversationId: string }) => item.conversationId)).toEqual(
       result.conversations.map((row: { id: string }) => row.id),
     );
-    expect(result.items.map((item: { conversationId: string }) => item.conversationId)).not.toContain(
-      'c3',
-    );
+    expect(
+      result.items.map((item: { conversationId: string }) => item.conversationId),
+    ).not.toContain('c3');
     expect(result.conversations[0]?.id).toBe('c0');
     expect(result.conversations[2]?.id).toBe('c2');
     expect(result.conversations[3]?.id).toBe('c4');

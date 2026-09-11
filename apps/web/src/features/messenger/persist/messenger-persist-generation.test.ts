@@ -1,15 +1,24 @@
 import { QueryClient } from '@tanstack/react-query';
 import { afterEach, describe, expect, it } from 'vitest';
 import { applyMessengerPersistEnvelope } from './messenger-persist-hydrate';
-import { applyMessengerPersistSessionIdentity, shouldWithholdMessengerPersistChildren } from './messenger-persist-boundary';
+import {
+  applyMessengerPersistSessionIdentity,
+  shouldWithholdMessengerPersistChildren,
+} from './messenger-persist-boundary';
 import { ingestChannelMessage } from './messenger-persist-channel';
 import {
   hydrateMessengerPersistCache,
   persistMessengerCacheNow,
   setMessengerPersistBackendForTests,
 } from './messenger-persist-controller';
-import { MESSENGER_CACHE_SCHEMA_VERSION, setMessengerPersistenceEnabledForTests } from './messenger-persist.constants';
-import { createMemoryMessengerPersistBackend, type MessengerPersistBackend } from './messenger-persist-idb';
+import {
+  MESSENGER_CACHE_SCHEMA_VERSION,
+  setMessengerPersistenceEnabledForTests,
+} from './messenger-persist.constants';
+import {
+  createMemoryMessengerPersistBackend,
+  type MessengerPersistBackend,
+} from './messenger-persist-idb';
 import {
   getMessengerPersistQueryEnabled,
   registerMessengerPersistHost,
@@ -27,7 +36,10 @@ import {
 import { persistTestInternalPage } from './messenger-persist-test-dto';
 import { messengerQueryKeys } from '../query/messenger-query-keys';
 import { messengerTestCheckpoint } from '../query/messenger-test-checkpoint';
-import { readMessengerHttpCheckpoint, writeMessengerHttpCheckpoint } from '../query/messenger-checkpoint-store';
+import {
+  readMessengerHttpCheckpoint,
+  writeMessengerHttpCheckpoint,
+} from '../query/messenger-checkpoint-store';
 import type { MessengerPersistEnvelope } from './messenger-persist-envelope';
 
 const IDENTITY_A = 'employee-user-aaaa';
@@ -208,14 +220,24 @@ describe('Messenger persist generation revocation on identity switch', () => {
     applyMessengerPersistSessionIdentity(queryClient, IDENTITY_B_INVALID);
     applyMessengerPersistSessionIdentity(queryClient, IDENTITY_C);
     expect(
-      applyMessengerPersistEnvelope(queryClient, restoredEnvelope(IDENTITY_A, 'from-A'), Date.now(), generationA),
+      applyMessengerPersistEnvelope(
+        queryClient,
+        restoredEnvelope(IDENTITY_A, 'from-A'),
+        Date.now(),
+        generationA,
+      ),
     ).toBe(false);
     expect(
       queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' })),
     ).toBeUndefined();
     const generationC = readMessengerPersistGeneration();
     expect(
-      applyMessengerPersistEnvelope(queryClient, restoredEnvelope(IDENTITY_C, 'from-C'), Date.now(), generationC),
+      applyMessengerPersistEnvelope(
+        queryClient,
+        restoredEnvelope(IDENTITY_C, 'from-C'),
+        Date.now(),
+        generationC,
+      ),
     ).toBe(true);
     expect(
       queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' })),
@@ -286,7 +308,12 @@ describe('Messenger persist generation revocation on identity switch', () => {
     expect(getMessengerPersistQueryEnabled()).toBe(true);
     expect(await persistMessengerCacheNow(queryClient, IDENTITY_A, generationA, null)).toBe(false);
     expect(
-      await persistMessengerCacheNow(queryClient, IDENTITY_A, readMessengerPersistGeneration(), null),
+      await persistMessengerCacheNow(
+        queryClient,
+        IDENTITY_A,
+        readMessengerPersistGeneration(),
+        null,
+      ),
     ).toBe(false);
     expect(tracked.reads).not.toContain(IDENTITY_B_VALID);
     expect(tracked.writes).not.toContain(IDENTITY_B_VALID);

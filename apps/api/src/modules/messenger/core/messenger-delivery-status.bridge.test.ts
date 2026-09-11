@@ -47,7 +47,12 @@ describe('MessengerDeliveryStatusBus', () => {
     const bus = new MessengerDeliveryStatusBus();
     const received: unknown[] = [];
     bus.subscribe((event) => received.push(event));
-    await bus.publish({ conversationId: '', messageId: 'msg-1', status: 'SENT', occurredAt: VALID.occurredAt });
+    await bus.publish({
+      conversationId: '',
+      messageId: 'msg-1',
+      status: 'SENT',
+      occurredAt: VALID.occurredAt,
+    });
     expect(received).toEqual([]);
   });
 });

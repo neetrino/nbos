@@ -376,11 +376,11 @@ CMD ["node", "--import", "tsx", "dist/main.js"]
 Do not enable in the first traffic cutover unless the matching additive
 migrations are already applied and the fleet is homogeneous.
 
-| Flag | Default | Enable after | Rollback |
-| --- | --- | --- | --- |
-| `MESSENGER_DELTA_RECOVERY_ENABLED` | off | revision migration + all API instances instrumented | unset/false; clients fall back to FULL bootstrap |
-| `NEXT_PUBLIC_MESSENGER_PERSISTENCE` | on in web (`0`/`false` disables) | preferably after delta; IDB is not encryption-at-rest | set `0`; stale IDB ignored |
-| `SCHEDULER_MESSENGER_OUTBOUND_RECONCILE_ENABLED` | off (`rosterIntent=off`) | command-reconcile migration + `whatsapp.outbound-messages` worker | unset/false |
+| Flag                                             | Default                          | Enable after                                                      | Rollback                                         |
+| ------------------------------------------------ | -------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------ |
+| `MESSENGER_DELTA_RECOVERY_ENABLED`               | off                              | revision migration + all API instances instrumented               | unset/false; clients fall back to FULL bootstrap |
+| `NEXT_PUBLIC_MESSENGER_PERSISTENCE`              | on in web (`0`/`false` disables) | preferably after delta; IDB is not encryption-at-rest             | set `0`; stale IDB ignored                       |
+| `SCHEDULER_MESSENGER_OUTBOUND_RECONCILE_ENABLED` | off (`rosterIntent=off`)         | command-reconcile migration + `whatsapp.outbound-messages` worker | unset/false                                      |
 
 Order: migrations → delta → persistence (controlled) → scheduler. Monitor
 UNKNOWN/PENDING age (24h Gateway window). Socket.IO remains process-local;

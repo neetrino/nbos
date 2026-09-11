@@ -35,7 +35,10 @@ type OverdueSendInvoice = {
     name: string;
     product: { id: string; name: string } | null;
   } | null;
+  coverageMonthCount: number | null;
   subscription: {
+    name: string;
+    code: string;
     productId: string;
     notificationsEnabled: boolean;
     reminderLanguage: SubscriptionReminderLanguage;
@@ -125,9 +128,11 @@ async function ensureOverdueJob(
 
 function resolveOverdueRender(item: OverdueSendItem) {
   const resolved = resolveOverdueReminderRenderInput({
+    code: item.invoice.code,
     amount: item.invoice.amount,
     taxStatus: item.invoice.taxStatus,
     coverageStartMonth: item.invoice.coverageStartMonth,
+    coverageMonthCount: item.invoice.coverageMonthCount,
     dueDate: item.invoice.dueDate,
     wave: item.wave,
     subscription: item.invoice.subscription,

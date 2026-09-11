@@ -1,4 +1,7 @@
-import type { MessengerCoreConversationRow, MessengerInternalSection } from '@/lib/api/messenger-core';
+import type {
+  MessengerCoreConversationRow,
+  MessengerInternalSection,
+} from '@/lib/api/messenger-core';
 import type { InternalSummaryParams } from './messenger-query-keys';
 import { messengerQueryKeys } from './messenger-query-keys';
 
@@ -56,9 +59,6 @@ export function isInternalAllFamilyParams(params: InternalSummaryParams): boolea
   return params.section === 'all' || params.section === 'tasks';
 }
 
-export function showMessengerListPlaceholder(
-  data: unknown,
-  isPending: boolean,
-): boolean {
+export function showMessengerListPlaceholder(data: unknown, isPending: boolean): boolean {
   return isPending && data === undefined;
 }

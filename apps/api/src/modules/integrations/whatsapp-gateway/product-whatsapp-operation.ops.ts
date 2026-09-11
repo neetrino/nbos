@@ -5,6 +5,7 @@ import {
   WHATSAPP_AUDIT_GROUP_BOUND,
   WHATSAPP_AUDIT_GROUP_REPLACED,
 } from './whatsapp-gateway.constants';
+import type { AuditLogParams } from '../../audit/audit-log.params';
 import type { EnqueueExistingWhatsAppOp } from './product-whatsapp-ensure-work.ops';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
@@ -40,14 +41,7 @@ export async function enqueueWhatsAppGroupOperation(
 
 export async function recordSucceededBindOperation(
   prisma: PrismaLike,
-  auditLog: (entry: {
-    entityType: string;
-    entityId: string;
-    action: string;
-    userId: string;
-    projectId: string;
-    changes: Record<string, unknown>;
-  }) => Promise<unknown>,
+  auditLog: (entry: AuditLogParams) => Promise<unknown>,
   productId: string,
   bindingId: string | null,
   actorId: string,

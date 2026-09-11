@@ -7,9 +7,9 @@ import {
 const loadMessengerLegacyAccessForEmployees = vi.fn();
 
 vi.mock('../access/messenger-legacy-channel-access.op', async () => {
-  const actual = await vi.importActual<typeof import('../access/messenger-legacy-channel-access.op')>(
-    '../access/messenger-legacy-channel-access.op',
-  );
+  const actual = await vi.importActual<
+    typeof import('../access/messenger-legacy-channel-access.op')
+  >('../access/messenger-legacy-channel-access.op');
   return {
     ...actual,
     loadMessengerLegacyAccessForEmployees: (...args: unknown[]) =>
@@ -136,12 +136,18 @@ describe('deriveRecipientConversationSummaries', () => {
       lastMessagePreview: 'hello',
       connectedEmployeeIds: ['member'],
     };
-    const first = await deriveRecipientConversationSummaries(prismaForRecipients({
-      participants: [{ employeeId: 'member', role: 'MEMBER' }],
-    }) as never, input);
-    const second = await deriveRecipientConversationSummaries(prismaForRecipients({
-      participants: [{ employeeId: 'member', role: 'MEMBER' }],
-    }) as never, input);
+    const first = await deriveRecipientConversationSummaries(
+      prismaForRecipients({
+        participants: [{ employeeId: 'member', role: 'MEMBER' }],
+      }) as never,
+      input,
+    );
+    const second = await deriveRecipientConversationSummaries(
+      prismaForRecipients({
+        participants: [{ employeeId: 'member', role: 'MEMBER' }],
+      }) as never,
+      input,
+    );
     expect(first[0]?.payload.unreadCount).toBe(1);
     expect(second[0]?.payload.unreadCount).toBe(1);
   });

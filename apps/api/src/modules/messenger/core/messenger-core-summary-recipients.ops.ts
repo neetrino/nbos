@@ -78,7 +78,11 @@ async function loadRecipientAclRows(
   const accessById = await loadMessengerLegacyAccessForEmployees(prisma, connectedIds);
   const [participants, grants, readStates] = await Promise.all([
     prisma.messengerConversationParticipant.findMany({
-      where: { conversationId: input.conversationId, employeeId: { in: connectedIds }, leftAt: null },
+      where: {
+        conversationId: input.conversationId,
+        employeeId: { in: connectedIds },
+        leftAt: null,
+      },
       select: { employeeId: true, role: true },
     }),
     prisma.resourceAccessGrant.findMany({
@@ -95,7 +99,14 @@ async function loadRecipientAclRows(
       select: { employeeId: true, lastReadAt: true },
     }),
   ]);
-  return assembleRecipientAclRows(input, connectedIds, accessById, participants, grants, readStates);
+  return assembleRecipientAclRows(
+    input,
+    connectedIds,
+    accessById,
+    participants,
+    grants,
+    readStates,
+  );
 }
 
 function assembleRecipientAclRows(

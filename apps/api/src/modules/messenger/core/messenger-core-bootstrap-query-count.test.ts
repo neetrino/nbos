@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { loadClientMessengerBootstrap, loadInternalMessengerBootstrap } from './messenger-core-bootstrap.ops';
+import {
+  loadClientMessengerBootstrap,
+  loadInternalMessengerBootstrap,
+} from './messenger-core-bootstrap.ops';
 import { instrumentPrismaDelegates, type PrismaCallSnapshot } from './messenger-prisma-call-count';
 
 const INTERNAL_ACCESS = {
@@ -139,7 +142,9 @@ function bootstrapPrisma(
     employee: { findUnique: vi.fn().mockResolvedValue(EMPLOYEE_ALL) },
     resourceAccessGrant: { findMany: vi.fn().mockResolvedValue([]) },
     messengerUserConversationSetting: {
-      findMany: vi.fn().mockResolvedValue(input.settingIds.map((conversationId) => ({ conversationId }))),
+      findMany: vi
+        .fn()
+        .mockResolvedValue(input.settingIds.map((conversationId) => ({ conversationId }))),
     },
     messengerConversationCollectionItem: {
       createMany: vi.fn().mockResolvedValue({ count: input.settingIds.length }),
@@ -147,16 +152,18 @@ function bootstrapPrisma(
     messengerConversationCollection: {
       findFirst: vi.fn().mockImplementation(async () => stored),
       findMany: vi.fn().mockImplementation(async () => (stored ? [stored] : [])),
-      create: vi.fn().mockImplementation(async (args: { data: typeof FAVORITES & { zone: typeof zone } }) => {
-        stored = {
-          id: 'fav-new',
-          name: args.data.name,
-          visibility: args.data.visibility,
-          zone: args.data.zone,
-          ownerEmployeeId: args.data.ownerEmployeeId,
-        };
-        return stored;
-      }),
+      create: vi
+        .fn()
+        .mockImplementation(async (args: { data: typeof FAVORITES & { zone: typeof zone } }) => {
+          stored = {
+            id: 'fav-new',
+            name: args.data.name,
+            visibility: args.data.visibility,
+            zone: args.data.zone,
+            ownerEmployeeId: args.data.ownerEmployeeId,
+          };
+          return stored;
+        }),
     },
     messengerConversation: {
       findMany: vi.fn().mockImplementation(async (args: { where?: unknown }) => {
@@ -196,7 +203,9 @@ function conversationRow(zone: 'INTERNAL' | 'CLIENT', id: string) {
       canonicalKey: null,
       createdAt,
       lastMessageAt,
-      messages: [{ content: 'hello', direction: 'INBOUND', senderId: null, createdAt: lastMessageAt }],
+      messages: [
+        { content: 'hello', direction: 'INBOUND', senderId: null, createdAt: lastMessageAt },
+      ],
       readStates: [],
       userSettings: [],
       participants: [{ role: 'MEMBER' }],

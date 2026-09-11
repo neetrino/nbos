@@ -20,20 +20,21 @@ describe('ListMessengerDeltaQueryDto', () => {
 
   it('rejects malformed, negative, and huge revision or cursor values at the boundary', async () => {
     expect(propertyErrors(await validateQuery({ after: '-1' }), 'after').length).toBeGreaterThan(0);
-    expect(propertyErrors(await validateQuery({ after: '1e2' }), 'after').length).toBeGreaterThan(0);
+    expect(propertyErrors(await validateQuery({ after: '1e2' }), 'after').length).toBeGreaterThan(
+      0,
+    );
     expect(propertyErrors(await validateQuery({ after: '01' }), 'after').length).toBeGreaterThan(0);
     expect(
       propertyErrors(await validateQuery({ after: `${'9'.repeat(21)}` }), 'after').length,
     ).toBeGreaterThan(0);
     expect(
-      propertyErrors(
-        await validateQuery({ after: '0', cursor: 'x'.repeat(181) }),
-        'cursor',
-      ).length,
+      propertyErrors(await validateQuery({ after: '0', cursor: 'x'.repeat(181) }), 'cursor').length,
     ).toBeGreaterThan(0);
     expect(
-      propertyErrors(await validateQuery({ after: '0', authorizationEpoch: 'zz' }), 'authorizationEpoch')
-        .length,
+      propertyErrors(
+        await validateQuery({ after: '0', authorizationEpoch: 'zz' }),
+        'authorizationEpoch',
+      ).length,
     ).toBeGreaterThan(0);
   });
 });

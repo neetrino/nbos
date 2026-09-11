@@ -1,6 +1,9 @@
 import type { PrismaClient } from '@nbos/database';
 import type { TasksAccessContext } from '../../tasks/tasks-scoped-access';
-import { listInternalCollections, listClientCollections } from './messenger-core-collection-list.ops';
+import {
+  listInternalCollections,
+  listClientCollections,
+} from './messenger-core-collection-list.ops';
 import {
   ensureClientFavoritesCollection,
   ensureInternalFavoritesCollection,

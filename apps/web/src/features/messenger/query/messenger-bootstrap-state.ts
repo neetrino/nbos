@@ -17,7 +17,10 @@ type BootstrapFailure = {
   failedAt: number;
 };
 
-const bootstrapFailures = new WeakMap<QueryClient, Partial<Record<MessengerZone, BootstrapFailure>>>();
+const bootstrapFailures = new WeakMap<
+  QueryClient,
+  Partial<Record<MessengerZone, BootstrapFailure>>
+>();
 
 export function readMessengerBootstrapState(
   queryClient: QueryClient,

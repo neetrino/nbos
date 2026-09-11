@@ -9,16 +9,16 @@
 
 ## Phase status
 
-| Phase | Scope | Status |
-| --- | --- | --- |
-| 0 | Full current-state audit | `VERIFIED` |
-| 1 | Shared frontend cache foundation | `VERIFIED` |
-| 2 | Realtime inbox events, reducers and room security | `VERIFIED` |
-| 3 | Bootstrap, list/query and Collections optimization | `VERIFIED` |
-| 4 | Revision, delta sync and reconnect recovery | `VERIFIED` |
-| 4B | Atomic external-send intent and independent reconciliation | `IMPLEMENTING` |
-| 5 | Offline resilience and persistence policy | `PLANNED` |
-| 6 | Final performance, security and regression hardening | `PLANNED` |
+| Phase | Scope                                                      | Status         |
+| ----- | ---------------------------------------------------------- | -------------- |
+| 0     | Full current-state audit                                   | `VERIFIED`     |
+| 1     | Shared frontend cache foundation                           | `VERIFIED`     |
+| 2     | Realtime inbox events, reducers and room security          | `VERIFIED`     |
+| 3     | Bootstrap, list/query and Collections optimization         | `VERIFIED`     |
+| 4     | Revision, delta sync and reconnect recovery                | `VERIFIED`     |
+| 4B    | Atomic external-send intent and independent reconciliation | `IMPLEMENTING` |
+| 5     | Offline resilience and persistence policy                  | `PLANNED`      |
+| 6     | Final performance, security and regression hardening       | `PLANNED`      |
 
 ## Phase 0 — verified baseline
 

@@ -5,8 +5,7 @@ import {
 } from './messenger-core-revision.constants';
 import type { MessengerDeltaCursor } from './messenger-core-revision.types';
 
-const CURSOR_UUID =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const CURSOR_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function parseMessengerCheckpoint(raw: string): bigint {
   if (!MESSENGER_CHECKPOINT_PATTERN.test(raw)) {
@@ -19,7 +18,9 @@ export function encodeMessengerDeltaCursor(cursor: MessengerDeltaCursor): string
   return `${cursor.highWater}|${cursor.revision}|${cursor.conversationId}`;
 }
 
-export function parseMessengerDeltaCursor(raw: string | undefined): MessengerDeltaCursor | undefined {
+export function parseMessengerDeltaCursor(
+  raw: string | undefined,
+): MessengerDeltaCursor | undefined {
   if (!raw?.trim()) return undefined;
   if (raw.length > MESSENGER_DELTA_CURSOR_MAX_LENGTH) {
     throw new BadRequestException('Invalid delta cursor');
@@ -41,7 +42,10 @@ export function parseMessengerDeltaCursor(raw: string | undefined): MessengerDel
   return { highWater, revision, conversationId };
 }
 
-export function assertCursorMatchesSnapshot(cursor: MessengerDeltaCursor | undefined, highWater: string): void {
+export function assertCursorMatchesSnapshot(
+  cursor: MessengerDeltaCursor | undefined,
+  highWater: string,
+): void {
   if (!cursor) return;
   if (cursor.highWater !== highWater) {
     throw new BadRequestException('Invalid delta cursor');

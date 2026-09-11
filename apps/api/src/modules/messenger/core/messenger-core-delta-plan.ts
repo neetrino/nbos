@@ -6,7 +6,9 @@ export type MessengerDeltaHydrationPlan = {
   changedCandidateIds: string[];
 };
 
-export function planMessengerDeltaHydration(rows: MessengerDeltaChangeRow[]): MessengerDeltaHydrationPlan {
+export function planMessengerDeltaHydration(
+  rows: MessengerDeltaChangeRow[],
+): MessengerDeltaHydrationPlan {
   const orderedIds: string[] = [];
   const removedCandidateIds: string[] = [];
   const changedCandidateIds: string[] = [];

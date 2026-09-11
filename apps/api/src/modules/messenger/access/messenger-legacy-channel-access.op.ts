@@ -47,7 +47,9 @@ type EmployeeMessengerAccessRow = {
   };
 };
 
-function accessContextFromEmployee(employee: EmployeeMessengerAccessRow): MessengerLegacyAccessContext {
+function accessContextFromEmployee(
+  employee: EmployeeMessengerAccessRow,
+): MessengerLegacyAccessContext {
   const permissions: Record<string, string> = {};
   for (const rp of employee.role.permissions) {
     permissions[`${rp.permission.module}_${rp.permission.action}`] = rp.scope;

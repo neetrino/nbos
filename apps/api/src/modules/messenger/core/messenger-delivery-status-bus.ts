@@ -46,7 +46,9 @@ export class MessengerDeliveryStatusBus
     });
     void this.subscriber.subscribe(MESSENGER_DELIVERY_STATUS_CHANNEL, (err) => {
       if (err) {
-        this.logger.error(`Failed to subscribe ${MESSENGER_DELIVERY_STATUS_CHANNEL}: ${String(err)}`);
+        this.logger.error(
+          `Failed to subscribe ${MESSENGER_DELIVERY_STATUS_CHANNEL}: ${String(err)}`,
+        );
         return;
       }
       this.subscribed = true;

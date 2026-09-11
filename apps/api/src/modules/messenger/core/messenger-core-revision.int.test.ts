@@ -111,14 +111,24 @@ describe.skipIf(!DATABASE_URL)('Messenger revision commit/checkpoint ordering', 
       const first = await createConversation();
       const second = await createConversation();
       await Promise.all([
-        persistCoreMessage(prisma, { conversationId: first.id, senderId: employeeId, content: 'a' }, []),
-        persistCoreMessage(prisma, { conversationId: second.id, senderId: employeeId, content: 'b' }, []),
+        persistCoreMessage(
+          prisma,
+          { conversationId: first.id, senderId: employeeId, content: 'a' },
+          [],
+        ),
+        persistCoreMessage(
+          prisma,
+          { conversationId: second.id, senderId: employeeId, content: 'b' },
+          [],
+        ),
       ]);
       const rows = await prisma.messengerConversationRevision.findMany({
         where: { conversationId: { in: [first.id, second.id] } },
         select: { revision: true },
       });
-      const revisions = rows.map((row) => row.revision).sort((left, right) => (left < right ? -1 : 1));
+      const revisions = rows
+        .map((row) => row.revision)
+        .sort((left, right) => (left < right ? -1 : 1));
       expect(revisions).toHaveLength(2);
       expect(revisions[1]).toBeGreaterThan(revisions[0] ?? 0n);
     },

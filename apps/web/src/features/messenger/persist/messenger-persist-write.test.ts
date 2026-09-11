@@ -56,11 +56,15 @@ describe('Messenger persist writes and isolation', () => {
       collections: [persistTestCollection()],
       ...messengerTestCheckpoint(),
     });
-    queryClient.setQueryData(messengerQueryKeys.messages('c1'), { items: [{ id: 'm1', content: 'secret' }] });
+    queryClient.setQueryData(messengerQueryKeys.messages('c1'), {
+      items: [{ id: 'm1', content: 'secret' }],
+    });
     const capture = captureMessengerPersistSnapshot(queryClient, IDENTITY, Date.now() + 1);
     expect(capture).not.toBeNull();
     const keys = capture?.envelope.queries.map((record) => record.queryKey) ?? [];
-    expect(keys).toContainEqual([...messengerQueryKeys.internalSummaries({ source: 'all-dataset' })]);
+    expect(keys).toContainEqual([
+      ...messengerQueryKeys.internalSummaries({ source: 'all-dataset' }),
+    ]);
     expect(keys).toContainEqual([...messengerQueryKeys.collections('INTERNAL')]);
     expect(keys.some((key) => key[1] === 'messages')).toBe(false);
     expect(JSON.stringify(capture)).not.toContain('secret');
@@ -71,9 +75,9 @@ describe('Messenger persist writes and isolation', () => {
     const backend = createMemoryMessengerPersistBackend();
     const newer = storedEnvelope(now, 'col-new');
     await backend.write(IDENTITY, JSON.stringify(newer));
-    expect(shouldReplacePersistedEnvelope(newer, { identityId: IDENTITY, capturedAt: now - 5_000 })).toBe(
-      false,
-    );
+    expect(
+      shouldReplacePersistedEnvelope(newer, { identityId: IDENTITY, capturedAt: now - 5_000 }),
+    ).toBe(false);
     noteMessengerPersistCapturedAt(IDENTITY, now);
     const queryClient = createClient();
     const generation = beginMessengerPersistHydration(queryClient, IDENTITY);
@@ -85,7 +89,13 @@ describe('Messenger persist writes and isolation', () => {
     const capture = captureMessengerPersistSnapshot(queryClient, IDENTITY, now - 5_000);
     expect(capture).not.toBeNull();
     if (!capture) return;
-    const replaced = await commitMessengerPersistCapture(backend, capture, IDENTITY, generation, null);
+    const replaced = await commitMessengerPersistCapture(
+      backend,
+      capture,
+      IDENTITY,
+      generation,
+      null,
+    );
     expect(replaced).toBe(false);
     const stored = parseMessengerPersistEnvelope(
       JSON.parse((await backend.read(IDENTITY)) ?? 'null'),
@@ -109,7 +119,9 @@ describe('Messenger persist writes and isolation', () => {
     const capture = captureMessengerPersistSnapshot(queryClient, IDENTITY, capturedAt);
     expect(capture).not.toBeNull();
     if (!capture) return;
-    expect(await commitMessengerPersistCapture(backend, capture, IDENTITY, generation, null)).toBe(false);
+    expect(await commitMessengerPersistCapture(backend, capture, IDENTITY, generation, null)).toBe(
+      false,
+    );
     const stored = parseMessengerPersistEnvelope(
       JSON.parse((await backend.read(IDENTITY)) ?? 'null'),
       IDENTITY,

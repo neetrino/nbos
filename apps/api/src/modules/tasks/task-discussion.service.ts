@@ -70,14 +70,7 @@ export class TaskDiscussionService {
     const actorFields = discussionActorFields(actor);
     const opener = actor.actor.type === 'USER' ? actor.actor.id : undefined;
     const conversation = await ensureTaskConversation(db as never, taskId, access, opener);
-    return this.persistCoreNote(
-      db,
-      conversation.id,
-      actor,
-      actorFields,
-      body,
-      Boolean(tx),
-    );
+    return this.persistCoreNote(db, conversation.id, actor, actorFields, body, Boolean(tx));
   }
 
   async listEntries(

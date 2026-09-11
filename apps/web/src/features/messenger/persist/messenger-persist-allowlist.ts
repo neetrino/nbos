@@ -1,4 +1,7 @@
-import { clientDefaultSummaryKey, internalDefaultSummaryKey } from '../query/seed-messenger-bootstrap';
+import {
+  clientDefaultSummaryKey,
+  internalDefaultSummaryKey,
+} from '../query/seed-messenger-bootstrap';
 import { messengerQueryKeys } from '../query/messenger-query-keys';
 
 export type PersistedMessengerQueryFamily =
@@ -25,7 +28,8 @@ export function persistedMessengerQueryFamily(
   if (queryKey[0] !== 'messenger') return null;
   if (keysEqual(queryKey, internalDefaultSummaryKey())) return 'internal-default';
   if (keysEqual(queryKey, clientDefaultSummaryKey())) return 'client-default';
-  if (keysEqual(queryKey, messengerQueryKeys.collections('INTERNAL'))) return 'collections-internal';
+  if (keysEqual(queryKey, messengerQueryKeys.collections('INTERNAL')))
+    return 'collections-internal';
   if (keysEqual(queryKey, messengerQueryKeys.collections('CLIENT'))) return 'collections-client';
   return null;
 }

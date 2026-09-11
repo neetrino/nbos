@@ -33,10 +33,7 @@ function canonicalCommand(overrides?: Record<string, unknown>) {
   };
 }
 
-function dispatchPrisma(input: {
-  message?: object | null;
-  mapping?: object | null;
-}) {
+function dispatchPrisma(input: { message?: object | null; mapping?: object | null }) {
   return {
     messengerMessage: {
       findUnique: vi.fn().mockResolvedValue(input.message ?? null),
@@ -68,7 +65,9 @@ describe('WhatsApp core send adversarial prepare', () => {
     await dispatchWhatsAppCoreSendJob(prisma as never, connection as never, client as never, JOB);
     expect(client.sendAccountTextMessage).not.toHaveBeenCalled();
     expect(prisma.messengerCommand.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ invalidReason: 'MISSING_MESSAGE' }) }),
+      expect.objectContaining({
+        data: expect.objectContaining({ invalidReason: 'MISSING_MESSAGE' }),
+      }),
     );
   });
 
@@ -132,7 +131,9 @@ describe('WhatsApp core send adversarial prepare', () => {
     await dispatchWhatsAppCoreSendJob(prisma as never, connection as never, client as never, JOB);
     expect(client.sendAccountTextMessage).not.toHaveBeenCalled();
     expect(prisma.messengerCommand.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ invalidReason: 'FORGED_ROUTING' }) }),
+      expect.objectContaining({
+        data: expect.objectContaining({ invalidReason: 'FORGED_ROUTING' }),
+      }),
     );
   });
 });

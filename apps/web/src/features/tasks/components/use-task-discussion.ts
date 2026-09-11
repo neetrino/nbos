@@ -63,7 +63,11 @@ async function sendTaskDiscussionNote(
     const entry = await tasksApi.addDiscussion(taskId, body);
     const threadId = entry.conversationId ?? conversationId;
     if (!threadId) return;
-    applyMessengerSendResult(queryClient, 'INTERNAL', discussionEntryToCoreMessage(threadId, entry));
+    applyMessengerSendResult(
+      queryClient,
+      'INTERNAL',
+      discussionEntryToCoreMessage(threadId, entry),
+    );
     queryClient.setQueryData<TaskDiscussionList>(taskDiscussionLocatorKey(taskId), (current) => ({
       items: current?.items ?? [],
       meta: current?.meta ?? { total: 1, page: 1, pageSize: 20, totalPages: 1 },

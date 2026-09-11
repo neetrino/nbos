@@ -19,14 +19,20 @@ describe('Messenger delta checkpoint and cursor', () => {
 
   it('parses a stable continuation and rejects malformed or huge cursors', () => {
     const id = '11111111-1111-4111-8111-111111111111';
-    const encoded = encodeMessengerDeltaCursor({ highWater: '40', revision: '12', conversationId: id });
+    const encoded = encodeMessengerDeltaCursor({
+      highWater: '40',
+      revision: '12',
+      conversationId: id,
+    });
     expect(parseMessengerDeltaCursor(encoded)).toEqual({
       highWater: '40',
       revision: '12',
       conversationId: id,
     });
     expect(() => parseMessengerDeltaCursor('nope')).toThrow(BadRequestException);
-    expect(() => parseMessengerDeltaCursor(`${'9'.repeat(200)}|1|${id}`)).toThrow(BadRequestException);
+    expect(() => parseMessengerDeltaCursor(`${'9'.repeat(200)}|1|${id}`)).toThrow(
+      BadRequestException,
+    );
     expect(() => parseMessengerDeltaCursor(`40|12|not-a-uuid`)).toThrow(BadRequestException);
   });
 });

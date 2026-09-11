@@ -91,7 +91,11 @@ describe('Phase 6 Messenger hook request graph', () => {
     const mounted = await mountInternalMessengerQueries(createMessengerTestQueryClient(), frames);
     await flushUntil(() => frames.at(-1)?.itemIds[0] === 'live-i' && requests.length > 0);
     expect(requests).toEqual([INTERNAL.bootstrap]);
-    expect(frames.at(-1)).toMatchObject({ itemIds: ['live-i'], listPending: false, listError: null });
+    expect(frames.at(-1)).toMatchObject({
+      itemIds: ['live-i'],
+      listPending: false,
+      listError: null,
+    });
     await unmountHookTree(mounted);
   });
 
@@ -102,7 +106,11 @@ describe('Phase 6 Messenger hook request graph', () => {
     const mounted = await mountClientMessengerQueries(createMessengerTestQueryClient(), frames);
     await flushUntil(() => frames.at(-1)?.itemIds[0] === 'live-c' && requests.length > 0);
     expect(requests).toEqual([CLIENT.bootstrap]);
-    expect(frames.at(-1)).toMatchObject({ itemIds: ['live-c'], listPending: false, listError: null });
+    expect(frames.at(-1)).toMatchObject({
+      itemIds: ['live-c'],
+      listPending: false,
+      listError: null,
+    });
     await unmountHookTree(mounted);
   });
 
@@ -112,9 +120,13 @@ describe('Phase 6 Messenger hook request graph', () => {
     settleMessengerPersistReadyForTests(IDENTITY);
     const internalFrames: HookRequestFrame[] = [];
     const clientFrames: HookRequestFrame[] = [];
-    const a = await mountInternalMessengerQueries(createMessengerTestQueryClient(), internalFrames, {
-      strict: true,
-    });
+    const a = await mountInternalMessengerQueries(
+      createMessengerTestQueryClient(),
+      internalFrames,
+      {
+        strict: true,
+      },
+    );
     const b = await mountClientMessengerQueries(createMessengerTestQueryClient(), clientFrames, {
       strict: true,
     });
@@ -215,7 +227,9 @@ function trackClient(): string[] {
   return requests;
 }
 
-function restoreStaleInternal(queryClient: ReturnType<typeof createMessengerTestQueryClient>): void {
+function restoreStaleInternal(
+  queryClient: ReturnType<typeof createMessengerTestQueryClient>,
+): void {
   const generation = beginMessengerPersistHydration(queryClient, IDENTITY);
   const capturedAt = Date.now() - MESSENGER_QUERY_STALE_TIME_MS - 1_000;
   applyMessengerPersistEnvelope(

@@ -8,7 +8,10 @@ import {
   beginMessengerPersistHydration,
   resetMessengerPersistSessionForTests,
 } from './messenger-persist-session';
-import { persistMessengerCacheNow, setMessengerPersistBackendForTests } from './messenger-persist-controller';
+import {
+  persistMessengerCacheNow,
+  setMessengerPersistBackendForTests,
+} from './messenger-persist-controller';
 import { parseMessengerPersistEnvelope } from './messenger-persist-envelope';
 import { persistTestCollection } from './messenger-persist-test-dto';
 
@@ -54,7 +57,13 @@ describe('Messenger persist compare-and-write', () => {
     const newer = captureNamed('New', Date.now() - 1_000);
     const delayed = commitMessengerPersistCapture(backend, older, IDENTITY, generation, null);
     await Promise.resolve();
-    const wroteNewer = await commitMessengerPersistCapture(backend, newer, IDENTITY, generation, null);
+    const wroteNewer = await commitMessengerPersistCapture(
+      backend,
+      newer,
+      IDENTITY,
+      generation,
+      null,
+    );
     expect(wroteNewer).toBe(true);
     release();
     expect(await delayed).toBe(false);
@@ -79,7 +88,9 @@ describe('Messenger persist compare-and-write', () => {
     const capture = captureMessengerPersistSnapshot(queryClient, IDENTITY, now);
     expect(capture).not.toBeNull();
     if (!capture) return;
-    expect(await commitMessengerPersistCapture(backend, capture, IDENTITY, generation, null)).toBe(true);
+    expect(await commitMessengerPersistCapture(backend, capture, IDENTITY, generation, null)).toBe(
+      true,
+    );
     const stored = parseMessengerPersistEnvelope(
       JSON.parse((await backend.read(IDENTITY)) ?? 'null'),
       IDENTITY,
@@ -101,6 +112,8 @@ describe('Messenger persist compare-and-write', () => {
     const queryClient = createClient();
     const generation = beginMessengerPersistHydration(queryClient, IDENTITY);
     queryClient.setQueryData(messengerQueryKeys.collections('INTERNAL'), [persistTestCollection()]);
-    await expect(persistMessengerCacheNow(queryClient, IDENTITY, generation, null)).resolves.toBe(false);
+    await expect(persistMessengerCacheNow(queryClient, IDENTITY, generation, null)).resolves.toBe(
+      false,
+    );
   });
 });

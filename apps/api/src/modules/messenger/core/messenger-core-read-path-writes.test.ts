@@ -64,7 +64,12 @@ describe('Phase 6 GET/read paths do not provision', () => {
     const prisma = grantAndConversationPrisma();
     const internal = new MessengerCoreInternalService(
       prisma as never,
-      { getConversation: vi.fn(), persistAndBroadcast: vi.fn(), markRead: vi.fn(), createConversation: vi.fn() } as never,
+      {
+        getConversation: vi.fn(),
+        persistAndBroadcast: vi.fn(),
+        markRead: vi.fn(),
+        createConversation: vi.fn(),
+      } as never,
       { forwardMessages: vi.fn() } as never,
     );
     await internal.listConversations('e1', { section: 'all' });
@@ -80,9 +85,7 @@ describe('Phase 6 GET/read paths do not provision', () => {
   it('GET collection lists do not call Favorites ensure', async () => {
     ensureInternalFavoritesCollection.mockReset();
     ensureClientFavoritesCollection.mockReset();
-    const collections = new MessengerCoreCollectionService(
-      grantAndConversationPrisma() as never,
-    );
+    const collections = new MessengerCoreCollectionService(grantAndConversationPrisma() as never);
     await collections.listInternal('e1');
     await collections.listClient('e1');
     expect(ensureInternalFavoritesCollection).not.toHaveBeenCalled();

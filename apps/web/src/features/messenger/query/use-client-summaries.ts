@@ -9,7 +9,10 @@ import type {
 } from '@/lib/api/messenger-core-client';
 import { clientSummariesParams, messengerQueryKeys } from './messenger-query-keys';
 import { useMessengerPersistQueriesEnabled } from '../persist/use-messenger-persist-queries-enabled';
-import { MESSENGER_QUERY_GC_TIME_MS, MESSENGER_QUERY_STALE_TIME_MS } from './messenger-query-policy';
+import {
+  MESSENGER_QUERY_GC_TIME_MS,
+  MESSENGER_QUERY_STALE_TIME_MS,
+} from './messenger-query-policy';
 
 export function useClientSummaries(input: {
   section: MessengerClientSection;

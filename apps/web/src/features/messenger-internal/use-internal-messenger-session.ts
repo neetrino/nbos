@@ -28,24 +28,42 @@ export function useInternalMessengerSession(section: MessengerInternalSection) {
 function useInternalSessionSetters(
   setSnapshot: Dispatch<SetStateAction<InternalMessengerSessionSnapshot>>,
 ) {
-  const setActiveId = useCallback((id: string | null) => {
-    setSnapshot((current) => applyInternalActiveId(current, id));
-  }, [setSnapshot]);
-  const setOpenedConversation = useCallback((row: MessengerCoreConversationRow | null) => {
-    setSnapshot((current) => applyInternalOpenedConversation(current, row));
-  }, [setSnapshot]);
-  const setActiveCollectionId = useCallback((id: string | null) => {
-    setSnapshot((current) => ({ ...current, activeCollectionId: id }));
-  }, [setSnapshot]);
-  const setSearch = useCallback((value: string) => {
-    setSnapshot((current) => ({ ...current, search: value }));
-  }, [setSnapshot]);
-  const setFilter = useCallback((value: InternalListFilter) => {
-    setSnapshot((current) => ({ ...current, filter: value }));
-  }, [setSnapshot]);
-  const setNewMessage = useCallback((value: string) => {
-    setSnapshot((current) => ({ ...current, newMessage: value }));
-  }, [setSnapshot]);
+  const setActiveId = useCallback(
+    (id: string | null) => {
+      setSnapshot((current) => applyInternalActiveId(current, id));
+    },
+    [setSnapshot],
+  );
+  const setOpenedConversation = useCallback(
+    (row: MessengerCoreConversationRow | null) => {
+      setSnapshot((current) => applyInternalOpenedConversation(current, row));
+    },
+    [setSnapshot],
+  );
+  const setActiveCollectionId = useCallback(
+    (id: string | null) => {
+      setSnapshot((current) => ({ ...current, activeCollectionId: id }));
+    },
+    [setSnapshot],
+  );
+  const setSearch = useCallback(
+    (value: string) => {
+      setSnapshot((current) => ({ ...current, search: value }));
+    },
+    [setSnapshot],
+  );
+  const setFilter = useCallback(
+    (value: InternalListFilter) => {
+      setSnapshot((current) => ({ ...current, filter: value }));
+    },
+    [setSnapshot],
+  );
+  const setNewMessage = useCallback(
+    (value: string) => {
+      setSnapshot((current) => ({ ...current, newMessage: value }));
+    },
+    [setSnapshot],
+  );
   return {
     setActiveId,
     setOpenedConversation,

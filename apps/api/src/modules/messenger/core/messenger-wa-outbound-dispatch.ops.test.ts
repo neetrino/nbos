@@ -73,11 +73,13 @@ function prismaFor(status: string, hasWhatsAppRef = false) {
     },
     messengerMessageExternalRef: {
       createMany: vi.fn(),
-      findFirst: vi.fn().mockResolvedValue(
-        hasWhatsAppRef
-          ? { id: 'ref-1', externalMessageId: 'wamid-1', externalAccountId: 'acc_a' }
-          : null,
-      ),
+      findFirst: vi
+        .fn()
+        .mockResolvedValue(
+          hasWhatsAppRef
+            ? { id: 'ref-1', externalMessageId: 'wamid-1', externalAccountId: 'acc_a' }
+            : null,
+        ),
       findUnique: vi.fn().mockResolvedValue({ messageId: 'msg-1' }),
     },
     ...commandLockMocks(canonicalCommand()),
@@ -106,11 +108,13 @@ function casPrisma(status: string, hasWhatsAppRef = false) {
     },
     messengerMessageExternalRef: {
       createMany: vi.fn().mockResolvedValue({ count: 1 }),
-      findFirst: vi.fn().mockResolvedValue(
-        hasWhatsAppRef
-          ? { id: 'ref-1', externalMessageId: 'wamid-1', externalAccountId: 'acc_a' }
-          : null,
-      ),
+      findFirst: vi
+        .fn()
+        .mockResolvedValue(
+          hasWhatsAppRef
+            ? { id: 'ref-1', externalMessageId: 'wamid-1', externalAccountId: 'acc_a' }
+            : null,
+        ),
       findUnique: vi.fn().mockResolvedValue({ messageId: 'msg-1' }),
     },
     ...commandLockMocks(canonicalCommand()),

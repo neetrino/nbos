@@ -21,14 +21,10 @@ export function parseMessengerDeltaRecoveryEnabled(raw: unknown): boolean {
   const normalized = raw.trim().toLowerCase();
   if (ENABLED.has(normalized)) return true;
   if (DISABLED.has(normalized)) return false;
-  throw new Error(
-    `${MESSENGER_DELTA_RECOVERY_ENABLED_ENV} must be true, false, 1, 0, yes, or no`,
-  );
+  throw new Error(`${MESSENGER_DELTA_RECOVERY_ENABLED_ENV} must be true, false, 1, 0, yes, or no`);
 }
 
-export function isMessengerDeltaRecoveryEnabled(
-  env: NodeJS.ProcessEnv = process.env,
-): boolean {
+export function isMessengerDeltaRecoveryEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
   return parseMessengerDeltaRecoveryEnabled(env[MESSENGER_DELTA_RECOVERY_ENABLED_ENV]);
 }
 

@@ -1,5 +1,8 @@
 import { PrismaClient, type MessengerConversationZone } from '@nbos/database';
-import { MESSENGER_CORE_CLIENT_ZONE, MESSENGER_CORE_INTERNAL_ZONE } from './messenger-core.constants';
+import {
+  MESSENGER_CORE_CLIENT_ZONE,
+  MESSENGER_CORE_INTERNAL_ZONE,
+} from './messenger-core.constants';
 import type { MessengerCoreCollectionDto } from './messenger-core-collection.ops';
 import { evaluateMessengerCoreAccess } from './messenger-core-access';
 import { loadMessengerCoreAccessFacts } from './messenger-core-access-load';

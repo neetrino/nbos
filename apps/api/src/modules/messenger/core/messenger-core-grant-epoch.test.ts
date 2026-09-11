@@ -137,7 +137,9 @@ describe('Messenger grant ACL epoch digest', () => {
       resourceAccessGrant: { findMany: vi.fn().mockResolvedValue([]) },
       messengerConversation: { findMany: conversationFind },
     };
-    expect(await loadActiveMessengerConversationGrants(prisma as never, 'e1', 'CLIENT')).toEqual([]);
+    expect(await loadActiveMessengerConversationGrants(prisma as never, 'e1', 'CLIENT')).toEqual(
+      [],
+    );
     expect(conversationFind).not.toHaveBeenCalled();
   });
 });

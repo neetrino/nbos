@@ -11,12 +11,14 @@ function clientRow(overrides: Record<string, unknown> = {}) {
     canonicalKey: null,
     createdAt: new Date('2026-08-01T10:00:00.000Z'),
     lastMessageAt: new Date('2026-09-05T12:00:00.000Z'),
-    messages: [{
-      content: 'hello',
-      direction: 'INBOUND',
-      senderId: null,
-      createdAt: new Date('2026-09-05T12:00:00.000Z'),
-    }],
+    messages: [
+      {
+        content: 'hello',
+        direction: 'INBOUND',
+        senderId: null,
+        createdAt: new Date('2026-09-05T12:00:00.000Z'),
+      },
+    ],
     readStates: [{ lastReadAt: new Date('2020-01-01T00:00:00.000Z') }],
     userSettings: [],
     participants: [{ role: 'MEMBER' }],
@@ -33,21 +35,25 @@ describe('Client conversation list unread', () => {
     const findMany = vi.fn().mockResolvedValue([
       clientRow({
         id: 'mine',
-        messages: [{
-          content: 'own',
-          direction: 'OUTBOUND',
-          senderId: 'e1',
-          createdAt: new Date('2026-09-05T12:00:00.000Z'),
-        }],
+        messages: [
+          {
+            content: 'own',
+            direction: 'OUTBOUND',
+            senderId: 'e1',
+            createdAt: new Date('2026-09-05T12:00:00.000Z'),
+          },
+        ],
       }),
       clientRow({
         id: 'inbound',
-        messages: [{
-          content: 'wa',
-          direction: 'INBOUND',
-          senderId: null,
-          createdAt: new Date('2026-09-05T12:00:00.000Z'),
-        }],
+        messages: [
+          {
+            content: 'wa',
+            direction: 'INBOUND',
+            senderId: null,
+            createdAt: new Date('2026-09-05T12:00:00.000Z'),
+          },
+        ],
       }),
     ]);
     const result = await listAccessibleClientConversations(
@@ -75,7 +81,10 @@ describe('Client conversation list unread', () => {
     const queryRaw = vi.fn().mockResolvedValue([{ id: 'match-1' }, { id: 'match-2' }]);
     const findMany = vi.fn().mockResolvedValue([
       clientRow({ id: 'match-1' }),
-      clientRow({ id: 'match-2', messages: [{ content: 'later', direction: 'OUTBOUND', senderId: 'e1' }] }),
+      clientRow({
+        id: 'match-2',
+        messages: [{ content: 'later', direction: 'OUTBOUND', senderId: 'e1' }],
+      }),
     ]);
     const prisma = {
       $queryRaw: queryRaw,

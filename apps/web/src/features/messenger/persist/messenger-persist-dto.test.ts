@@ -1,9 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { messengerQueryKeys } from '../query/messenger-query-keys';
-import { parsePersistedClientSummaryParams, parsePersistedInternalSummaryParams, parsePersistedQueryData } from './messenger-persist-dto';
+import {
+  parsePersistedClientSummaryParams,
+  parsePersistedInternalSummaryParams,
+  parsePersistedQueryData,
+} from './messenger-persist-dto';
 import { parseMessengerPersistEnvelope } from './messenger-persist-envelope';
 import { clonePlainJson } from './messenger-persist-plain';
-import { MESSENGER_CACHE_SCHEMA_VERSION, MESSENGER_PERSIST_PREVIEW_MAX_CHARS } from './messenger-persist.constants';
+import {
+  MESSENGER_CACHE_SCHEMA_VERSION,
+  MESSENGER_PERSIST_PREVIEW_MAX_CHARS,
+} from './messenger-persist.constants';
 import {
   persistTestClientPage,
   persistTestCollection,
@@ -28,7 +35,9 @@ describe('Messenger persist exact DTO schema', () => {
       }),
     ).toBeNull();
     expect(parsePersistedInternalSummaryParams({ source: 'all-dataset', extra: true })).toBeNull();
-    expect(parsePersistedClientSummaryParams({ section: 'inbox', q: '', filter: 'all' })).toBeNull();
+    expect(
+      parsePersistedClientSummaryParams({ section: 'inbox', q: '', filter: 'all' }),
+    ).toBeNull();
   });
 
   it('rejects malformed DTO fields and collection extras', () => {
@@ -46,7 +55,10 @@ describe('Messenger persist exact DTO schema', () => {
   });
 
   it('rejects prototype-shaped rows and does not hydrate them', () => {
-    const proto = Object.assign(Object.create({ accessToken: 'proto-secret' }), persistTestInternalRow());
+    const proto = Object.assign(
+      Object.create({ accessToken: 'proto-secret' }),
+      persistTestInternalRow(),
+    );
     expect(
       parsePersistedQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' }), {
         items: [proto],
@@ -79,11 +91,16 @@ describe('Messenger persist exact DTO schema', () => {
   it('rejects oversized list pages and non-plain serialization', () => {
     const oversized = persistTestInternalRow('big');
     const huge = {
-      items: [{ ...oversized, lastMessagePreview: 'x'.repeat(MESSENGER_PERSIST_PREVIEW_MAX_CHARS + 1) }],
+      items: [
+        { ...oversized, lastMessagePreview: 'x'.repeat(MESSENGER_PERSIST_PREVIEW_MAX_CHARS + 1) },
+      ],
       mentionsAvailable: true,
     };
     expect(
-      parsePersistedQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' }), huge),
+      parsePersistedQueryData(
+        messengerQueryKeys.internalSummaries({ source: 'all-dataset' }),
+        huge,
+      ),
     ).toBeNull();
     const cyclic: { self?: unknown } = {};
     cyclic.self = cyclic;
@@ -91,12 +108,15 @@ describe('Messenger persist exact DTO schema', () => {
     expect(clonePlainJson(new Date())).toBeUndefined();
     expect(clonePlainJson({ ok: true })).toEqual({ ok: true });
     expect(
-      parsePersistedQueryData(messengerQueryKeys.clientSummaries({
-        section: 'inbox',
-        q: '',
-        filter: 'all',
-        provider: '',
-      }), persistTestClientPage()),
+      parsePersistedQueryData(
+        messengerQueryKeys.clientSummaries({
+          section: 'inbox',
+          q: '',
+          filter: 'all',
+          provider: '',
+        }),
+        persistTestClientPage(),
+      ),
     ).not.toBeNull();
   });
 });

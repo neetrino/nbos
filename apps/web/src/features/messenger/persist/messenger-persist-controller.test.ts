@@ -8,7 +8,10 @@ import {
   restoreSerializedEnvelope,
   setMessengerPersistBackendForTests,
 } from './messenger-persist-controller';
-import { MESSENGER_CACHE_SCHEMA_VERSION, MESSENGER_PERSISTENCE_MAX_AGE_MS } from './messenger-persist.constants';
+import {
+  MESSENGER_CACHE_SCHEMA_VERSION,
+  MESSENGER_PERSISTENCE_MAX_AGE_MS,
+} from './messenger-persist.constants';
 import { resetMessengerPersistSessionForTests } from './messenger-persist-session';
 import { showMessengerListPlaceholder } from '../query/derive-internal-summaries';
 import { persistTestCollection, persistTestInternalPage } from './messenger-persist-test-dto';
@@ -57,7 +60,9 @@ describe('Messenger persist controller', () => {
     setMessengerPersistBackendForTests(backend);
     const queryClient = createClient();
     await hydrateMessengerPersistCache(queryClient, IDENTITY);
-    const data = queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' }));
+    const data = queryClient.getQueryData(
+      messengerQueryKeys.internalSummaries({ source: 'all-dataset' }),
+    );
     expect(data).toEqual(persistTestInternalPage('restored'));
     expect(showMessengerListPlaceholder(data, true)).toBe(false);
   });

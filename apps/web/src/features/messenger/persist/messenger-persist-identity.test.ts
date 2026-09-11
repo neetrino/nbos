@@ -12,7 +12,11 @@ import {
   bindMessengerPersistQueryClient,
   resetMessengerPersistSessionForTests,
 } from './messenger-persist-session';
-import { hydrateMessengerPersistCache, persistMessengerCacheNow, setMessengerPersistBackendForTests } from './messenger-persist-controller';
+import {
+  hydrateMessengerPersistCache,
+  persistMessengerCacheNow,
+  setMessengerPersistBackendForTests,
+} from './messenger-persist-controller';
 import { persistTestInternalPage } from './messenger-persist-test-dto';
 
 const PERSISTABLE = 'employee-user-aaaa';
@@ -59,9 +63,7 @@ describe('Messenger persist non-persistable identity', () => {
       queryClient.getQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' })),
     ).toBeUndefined();
     await hydrateMessengerPersistCache(queryClient, NON_PERSISTABLE);
-    expect(
-      await persistMessengerCacheNow(queryClient, NON_PERSISTABLE, 1, null),
-    ).toBe(false);
+    expect(await persistMessengerCacheNow(queryClient, NON_PERSISTABLE, 1, null)).toBe(false);
     expect(reads).not.toContain(NON_PERSISTABLE);
     expect(writes).not.toContain(NON_PERSISTABLE);
     expect(await backend.read(NON_PERSISTABLE)).toBeNull();

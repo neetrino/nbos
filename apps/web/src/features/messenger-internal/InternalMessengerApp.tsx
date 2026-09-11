@@ -75,16 +75,10 @@ function InternalMessengerScreen({
       applyMessengerRealtimeRead(queryClient, 'INTERNAL', payload);
     },
     onAccessChanged: (payload) => {
-      applyMessengerAccessChanged(
-        queryClient,
-        'INTERNAL',
-        payload.conversationId,
-        payload.zone,
-        {
-          activeId: session.activeId,
-          clearActive: () => session.setActiveId(null),
-        },
-      );
+      applyMessengerAccessChanged(queryClient, 'INTERNAL', payload.conversationId, payload.zone, {
+        activeId: session.activeId,
+        clearActive: () => session.setActiveId(null),
+      });
     },
     onReconnect: () => {
       void recoverMessengerZone(queryClient, 'INTERNAL', {

@@ -47,9 +47,9 @@ describe('deriveInternalVisibleSummaries', () => {
       'task-1',
       'task-2',
     ]);
-    expect(deriveInternalVisibleSummaries(items, 'tasks', 'unread').map((item) => item.id)).toEqual([
-      'task-1',
-    ]);
+    expect(deriveInternalVisibleSummaries(items, 'tasks', 'unread').map((item) => item.id)).toEqual(
+      ['task-1'],
+    );
   });
 
   it('shows a list placeholder only when no cached data exists', () => {

@@ -5,9 +5,7 @@ import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-k
 import type { TaskDiscussionList } from '@/lib/api/tasks';
 import { discussionEntryToCoreMessage } from './discussion-entry-to-core-message';
 
-export function taskDiscussionHasMoreOlder(
-  meta: TaskDiscussionList['meta'],
-): boolean {
+export function taskDiscussionHasMoreOlder(meta: TaskDiscussionList['meta']): boolean {
   return meta.page > 1 || meta.totalPages > 1 || meta.total > meta.pageSize;
 }
 

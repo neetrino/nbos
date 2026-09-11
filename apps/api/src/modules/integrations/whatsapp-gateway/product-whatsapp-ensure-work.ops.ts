@@ -9,6 +9,7 @@ import {
 } from './whatsapp-gateway.constants';
 import { throwWhatsAppDomainError } from './whatsapp-gateway.errors';
 import { maybeHealLegacyWorkDestination } from './product-whatsapp-bind.ops';
+import type { AuditLogParams } from '../../audit/audit-log.params';
 import type { EnsureProductWhatsAppGroupInput } from './whatsapp-gateway.types';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
@@ -19,14 +20,7 @@ export type EnqueueExistingWhatsAppOp = (
   resetFailed: boolean,
 ) => Promise<void>;
 
-export type EnsureWorkAuditLog = (entry: {
-  entityType: string;
-  entityId: string;
-  action: string;
-  userId: string;
-  projectId: string;
-  changes: Record<string, unknown>;
-}) => Promise<unknown>;
+export type EnsureWorkAuditLog = (entry: AuditLogParams) => Promise<unknown>;
 
 const STALE_PROCESSING_MS = 5 * 60 * 1000;
 

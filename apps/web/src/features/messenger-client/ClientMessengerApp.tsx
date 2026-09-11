@@ -65,12 +65,7 @@ function ClientMessengerScreen({
   );
   const openConversation = useCallback(
     (id: string) =>
-      openClientConversation(
-        queryClient,
-        id,
-        session.setActiveId,
-        session.setOpenedConversation,
-      ),
+      openClientConversation(queryClient, id, session.setActiveId, session.setOpenedConversation),
     [queryClient, session.setActiveId, session.setOpenedConversation],
   );
 
@@ -90,16 +85,10 @@ function ClientMessengerScreen({
       applyMessengerRealtimeRead(queryClient, 'CLIENT', payload);
     },
     onAccessChanged: (payload) => {
-      applyMessengerAccessChanged(
-        queryClient,
-        'CLIENT',
-        payload.conversationId,
-        payload.zone,
-        {
-          activeId: session.activeId,
-          clearActive: () => session.setActiveId(null),
-        },
-      );
+      applyMessengerAccessChanged(queryClient, 'CLIENT', payload.conversationId, payload.zone, {
+        activeId: session.activeId,
+        clearActive: () => session.setActiveId(null),
+      });
     },
     onReconnect: () => {
       void recoverMessengerZone(queryClient, 'CLIENT', {

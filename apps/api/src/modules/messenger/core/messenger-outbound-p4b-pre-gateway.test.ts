@@ -39,13 +39,19 @@ function command(overrides?: Record<string, unknown>) {
   };
 }
 
-function dispatchPrisma(input: {
-  command?: Record<string, unknown>;
-  messageStatus?: string;
-  auditThrow?: boolean;
-} = {}) {
+function dispatchPrisma(
+  input: {
+    command?: Record<string, unknown>;
+    messageStatus?: string;
+    auditThrow?: boolean;
+  } = {},
+) {
   const live = command(input.command);
-  const message = { id: 'msg-1', conversationId: 'conv-c', status: input.messageStatus ?? 'QUEUED' };
+  const message = {
+    id: 'msg-1',
+    conversationId: 'conv-c',
+    status: input.messageStatus ?? 'QUEUED',
+  };
   const refs: unknown[] = [];
   const audits: unknown[] = [];
   let rolledBack = false;
@@ -70,18 +76,21 @@ function dispatchPrisma(input: {
         deletedAt: null,
         conversation: { zone: 'CLIENT' },
       })),
-      updateMany: vi.fn(async ({
-        where,
-        data,
-      }: {
-        where: { status?: string | { in: string[] } };
-        data: { status: string };
-      }) => {
-        const allowed = typeof where.status === 'string' ? [where.status] : (where.status?.in ?? []);
-        if (allowed.length && !allowed.includes(message.status)) return { count: 0 };
-        message.status = data.status;
-        return { count: 1 };
-      }),
+      updateMany: vi.fn(
+        async ({
+          where,
+          data,
+        }: {
+          where: { status?: string | { in: string[] } };
+          data: { status: string };
+        }) => {
+          const allowed =
+            typeof where.status === 'string' ? [where.status] : (where.status?.in ?? []);
+          if (allowed.length && !allowed.includes(message.status)) return { count: 0 };
+          message.status = data.status;
+          return { count: 1 };
+        },
+      ),
     },
     messengerMessageExternalRef: {
       findFirst: vi.fn().mockResolvedValue(null),
@@ -109,7 +118,12 @@ function dispatchPrisma(input: {
   const prisma = {
     ...tx,
     $transaction: vi.fn(async (fn: (inner: typeof tx) => Promise<unknown>) => {
-      const snap = { live: { ...live }, message: { ...message }, refs: [...refs], audits: [...audits] };
+      const snap = {
+        live: { ...live },
+        message: { ...message },
+        refs: [...refs],
+        audits: [...audits],
+      };
       try {
         return await fn(tx);
       } catch (error) {
@@ -125,13 +139,17 @@ function dispatchPrisma(input: {
   return { prisma, live, message, refs, audits, rolledBack: () => rolledBack };
 }
 
-const connection = { requireClientConfig: vi.fn().mockResolvedValue({ baseUrl: 'https://wa.test', apiToken: 't' }) };
+const connection = {
+  requireClientConfig: vi.fn().mockResolvedValue({ baseUrl: 'https://wa.test', apiToken: 't' }),
+};
 
 describe('P4B-25 canonical identity before Gateway HTTP', () => {
   it('rejects a matching malformed command+job key that is not core-wa-send:{messageId}', () => {
     const forged = `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}forged`;
     const row = command({ idempotencyKey: forged });
-    expect(canonicalCommandMatchesJob(row as never, { ...JOB, idempotencyKey: forged })).toBe(false);
+    expect(canonicalCommandMatchesJob(row as never, { ...JOB, idempotencyKey: forged })).toBe(
+      false,
+    );
     expect(canonicalCommandMatchesJob(command() as never, JOB)).toBe(true);
   });
 
@@ -139,12 +157,10 @@ describe('P4B-25 canonical identity before Gateway HTTP', () => {
     const forged = `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}forged`;
     const { prisma, live, refs, audits } = dispatchPrisma({ command: { idempotencyKey: forged } });
     const client = { sendAccountTextMessage: vi.fn() };
-    await dispatchWhatsAppCoreSendJob(
-      prisma as never,
-      connection as never,
-      client as never,
-      { ...JOB, idempotencyKey: forged },
-    );
+    await dispatchWhatsAppCoreSendJob(prisma as never, connection as never, client as never, {
+      ...JOB,
+      idempotencyKey: forged,
+    });
     expect(client.sendAccountTextMessage).not.toHaveBeenCalled();
     expect(live.status).toBe('PENDING');
     expect(refs).toHaveLength(0);
@@ -153,7 +169,9 @@ describe('P4B-25 canonical identity before Gateway HTTP', () => {
 
   it('scheduler terminalizes a malformed key and never enqueues', async () => {
     const forged = `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}forged`;
-    const { prisma, live, message, audits } = dispatchPrisma({ command: { idempotencyKey: forged } });
+    const { prisma, live, message, audits } = dispatchPrisma({
+      command: { idempotencyKey: forged },
+    });
     const queue = { isAvailable: vi.fn().mockReturnValue(true), enqueue: vi.fn() };
     const counts = await reconcileMessengerOutboundCommands(prisma as never, queue);
     expect(counts.enqueued).toBe(0);
@@ -174,12 +192,10 @@ describe('P4B-25 canonical identity before Gateway HTTP', () => {
   it('records conflict and skips Gateway for a forged queue job', async () => {
     const { prisma, live, refs } = dispatchPrisma();
     const client = { sendAccountTextMessage: vi.fn() };
-    await dispatchWhatsAppCoreSendJob(
-      prisma as never,
-      connection as never,
-      client as never,
-      { ...JOB, idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}other` },
-    );
+    await dispatchWhatsAppCoreSendJob(prisma as never, connection as never, client as never, {
+      ...JOB,
+      idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}other`,
+    });
     expect(client.sendAccountTextMessage).not.toHaveBeenCalled();
     expect(live.status).toBe('PENDING');
     expect(refs).toHaveLength(0);

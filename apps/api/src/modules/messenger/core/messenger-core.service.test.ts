@@ -196,10 +196,12 @@ describe('MessengerCoreService persist-before-emit', () => {
     const hanging = new Promise<void>((resolve) => {
       resolveFanout = resolve;
     });
-    gateway.publishPersistedCoreMessage.mockImplementation((message: { conversationId: string }) => {
-      gateway.emitCoreConversationMessage(message.conversationId, message as never);
-      return hanging;
-    });
+    gateway.publishPersistedCoreMessage.mockImplementation(
+      (message: { conversationId: string }) => {
+        gateway.emitCoreConversationMessage(message.conversationId, message as never);
+        return hanging;
+      },
+    );
     const resultPromise = service.persistAndBroadcast({
       conversationId: 'conv-1',
       senderId: 'e1',

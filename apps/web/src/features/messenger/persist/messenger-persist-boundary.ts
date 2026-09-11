@@ -40,8 +40,7 @@ export function applyMessengerPersistSessionIdentity(
     return;
   }
   const previousId = ready.preparedIdentityId;
-  const persistable =
-    isMessengerPersistenceEnabled() && isMessengerPersistIdentity(nextIdentity);
+  const persistable = isMessengerPersistenceEnabled() && isMessengerPersistIdentity(nextIdentity);
   revokeMessengerPersistGeneration();
   if (previousId && previousId !== nextIdentity) {
     evictMessengerIdentityMemory(queryClient, previousId);

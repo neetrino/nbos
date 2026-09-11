@@ -87,9 +87,6 @@ export const SIDEBAR_MODULE_VISUALS: Record<SidebarModuleKey, SidebarModuleVisua
   'client-messenger': {
     Icon: MessageCircle,
     iconClass: 'text-teal-800 dark:text-teal-300',
-    tileClass: 'bg-teal-800/10',
-    tileActiveClass: 'bg-teal-800/16 ring-teal-800/25 ring-1',
-    markerClass: 'bg-teal-800 dark:bg-teal-300',
   },
   calendar: {
     Icon: CalendarDays,

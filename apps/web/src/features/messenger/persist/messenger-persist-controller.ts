@@ -14,7 +14,10 @@ import {
   readMessengerPersistGeneration,
   settleMessengerPersistHydration,
 } from './messenger-persist-session';
-import { markMessengerPersistReadySettled, readMessengerPersistReadyState } from './messenger-persist-ready';
+import {
+  markMessengerPersistReadySettled,
+  readMessengerPersistReadyState,
+} from './messenger-persist-ready';
 import { writeMessengerPersistCapture } from './messenger-persist-write';
 import type { MessengerPersistEnvelope } from './messenger-persist-envelope';
 
@@ -127,7 +130,10 @@ function ensureHydrationGeneration(queryClient: QueryClient, identityId: string)
   return beginMessengerPersistHydration(queryClient, identityId);
 }
 
-function parseSerializedEnvelope(raw: string, identityId: string): ReturnType<typeof parseMessengerPersistEnvelope> {
+function parseSerializedEnvelope(
+  raw: string,
+  identityId: string,
+): ReturnType<typeof parseMessengerPersistEnvelope> {
   try {
     return parseMessengerPersistEnvelope(JSON.parse(raw), identityId, Date.now());
   } catch {

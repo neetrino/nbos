@@ -37,14 +37,32 @@ export async function listAccessibleInternalConversations(
   tasksAccess?: TasksAccessContext,
   access?: MessengerInternalAccessSnapshot,
 ): Promise<MessengerInternalListResult> {
-  const snap = access ?? (await createMessengerInternalAccessSnapshot(prisma, employeeId, tasksAccess));
+  const snap =
+    access ?? (await createMessengerInternalAccessSnapshot(prisma, employeeId, tasksAccess));
   const pageSize = query.pageSize ?? MESSENGER_CORE_INTERNAL_LIST_PAGE_SIZE;
   const unreadOnly = query.filter === 'unread' || query.unread === true;
   const cursor = parseMessengerListCursor(query.cursor);
   if (unreadOnly) {
-    return listInternalUnreadPage(prisma, employeeId, viewScope, query, pageSize, cursor, editScope, snap);
+    return listInternalUnreadPage(
+      prisma,
+      employeeId,
+      viewScope,
+      query,
+      pageSize,
+      cursor,
+      editScope,
+      snap,
+    );
   }
-  const where = await internalListWhere(prisma, employeeId, viewScope, query, tasksAccess, cursor, snap);
+  const where = await internalListWhere(
+    prisma,
+    employeeId,
+    viewScope,
+    query,
+    tasksAccess,
+    cursor,
+    snap,
+  );
   const rows = await prisma.messengerConversation.findMany({
     where,
     orderBy: MESSENGER_LIST_ORDER_BY,
@@ -53,7 +71,9 @@ export async function listAccessibleInternalConversations(
   });
   const page = sliceMessengerListPage(rows, pageSize);
   const editGrantIds = editGrantIdsFromSnapshot(snap.grants, editScope);
-  const items = page.items.map((row) => mapInternalListItem(row, employeeId, editScope, editGrantIds));
+  const items = page.items.map((row) =>
+    mapInternalListItem(row, employeeId, editScope, editGrantIds),
+  );
   return toInternalListResult(items, page);
 }
 
@@ -67,7 +87,8 @@ export async function listAccessibleInternalConversationsByIds(
   access?: MessengerInternalAccessSnapshot,
 ): Promise<MessengerInternalConversationListItem[]> {
   if (conversationIds.length === 0) return [];
-  const snap = access ?? (await createMessengerInternalAccessSnapshot(prisma, employeeId, tasksAccess));
+  const snap =
+    access ?? (await createMessengerInternalAccessSnapshot(prisma, employeeId, tasksAccess));
   const [accessWhere, taskGate] = await Promise.all([
     accessibleInternalWhere(prisma, employeeId, viewScope, snap.grants),
     taskConversationListWhere(prisma, tasksAccess, snap.tasks.allowedTaskIds),
@@ -121,7 +142,10 @@ async function listInternalUnreadPage(
 
 function toInternalListResult(
   items: MessengerInternalConversationListItem[],
-  page: { items: Array<{ id: string; lastMessageAt: Date | null; createdAt: Date }>; hasMore: boolean },
+  page: {
+    items: Array<{ id: string; lastMessageAt: Date | null; createdAt: Date }>;
+    hasMore: boolean;
+  },
 ): MessengerInternalListResult {
   return {
     items,
