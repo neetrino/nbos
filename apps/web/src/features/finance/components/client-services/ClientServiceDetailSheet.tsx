@@ -6,6 +6,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
@@ -37,13 +40,14 @@ import {
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
+import { cn } from '@/lib/utils';
 import { ClientServiceCreateDialogs } from './ClientServiceCreateDialogs';
 import { ClientServiceDetailSheetBody } from './ClientServiceDetailSheetBody';
 import { type ClientServiceDetailSheetTab } from './client-service-detail-sheet-tabs';
 import { buildClientServiceDetailSheetTabs } from './build-client-service-detail-sheet-tabs';
-import { useClientServiceProjects } from './use-client-service-projects';
 
 interface ClientServiceDetailSheetProps {
   serviceId: string | null;
@@ -82,6 +86,7 @@ export function ClientServiceDetailSheet({
   onSaved,
   onRequestCancel,
 }: ClientServiceDetailSheetProps) {
+  const isMobileViewport = useIsMobileViewport();
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(serviceId);
   const hostMounted = useSheetHostMounted(open, sheetId);
 
@@ -109,7 +114,6 @@ export function ClientServiceDetailSheet({
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [quickCreateTaskOpen, setQuickCreateTaskOpen] = useState(false);
   const dirtyRef = useRef(false);
-  const projects = useClientServiceProjects(open);
 
   useEffect(() => {
     setActiveTab('general');
@@ -253,44 +257,102 @@ export function ClientServiceDetailSheet({
           width="compact"
           sourcePageHref={sourcePageHref}
         >
-          <div className="bg-background shrink-0 px-5 pt-5 pb-3">
+          <div
+            className={cn(
+              isMobileViewport
+                ? DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS
+                : 'bg-background shrink-0 px-5 pt-5 pb-3',
+            )}
+          >
             {loading && !service ? (
-              <p className="text-muted-foreground text-sm">Loading…</p>
+              <p
+                className={cn(
+                  'text-muted-foreground text-sm',
+                  isMobileViewport && DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+                )}
+              >
+                Loading…
+              </p>
             ) : service ? (
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-                  <Layers className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                    {service.name}
-                  </h2>
-                  {typeLabel ? (
-                    <StatusBadge
-                      label={typeLabel}
-                      variant="indigo"
-                      className="shrink-0 self-center"
-                    />
+              <>
+                {isMobileViewport ? (
+                  <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>
+                    {!isCancelled && onRequestCancel ? (
+                      <DetailSheetSettingsMenu>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          disabled={saving}
+                          onClick={() => onRequestCancel({ id: service.id, name: service.name })}
+                        >
+                          <Ban />
+                          Cancel service
+                        </DropdownMenuItem>
+                      </DetailSheetSettingsMenu>
+                    ) : null}
+                  </div>
+                ) : null}
+                <div
+                  className={cn(
+                    isMobileViewport
+                      ? cn(
+                          DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+                          'flex min-w-0 items-center gap-2',
+                        )
+                      : 'flex flex-wrap items-center justify-between gap-3',
+                  )}
+                >
+                  <div className="inline-flex max-w-full min-w-0 flex-1 flex-wrap items-center gap-2 overflow-hidden">
+                    <Layers className="text-muted-foreground size-5 shrink-0" aria-hidden />
+                    <h2 className="text-foreground min-w-0 truncate text-xl font-bold tracking-tight">
+                      {service.name}
+                    </h2>
+                    {typeLabel && !isMobileViewport ? (
+                      <StatusBadge
+                        label={typeLabel}
+                        variant="indigo"
+                        className="shrink-0 self-center"
+                      />
+                    ) : null}
+                    {statusMeta && !isMobileViewport ? (
+                      <StatusBadge
+                        label={statusMeta.label}
+                        variant={statusMeta.variant}
+                        className="shrink-0 self-center"
+                      />
+                    ) : null}
+                  </div>
+                  {isMobileViewport ? (
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {typeLabel ? (
+                        <StatusBadge
+                          label={typeLabel}
+                          variant="indigo"
+                          className="shrink-0 self-center"
+                        />
+                      ) : null}
+                      {statusMeta ? (
+                        <StatusBadge
+                          label={statusMeta.label}
+                          variant={statusMeta.variant}
+                          className="shrink-0 self-center"
+                        />
+                      ) : null}
+                    </div>
                   ) : null}
-                  {statusMeta ? (
-                    <StatusBadge
-                      label={statusMeta.label}
-                      variant={statusMeta.variant}
-                      className="shrink-0 self-center"
-                    />
+                  {!isMobileViewport && !isCancelled && onRequestCancel ? (
+                    <DetailSheetSettingsMenu>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        disabled={saving}
+                        onClick={() => onRequestCancel({ id: service.id, name: service.name })}
+                      >
+                        <Ban />
+                        Cancel service
+                      </DropdownMenuItem>
+                    </DetailSheetSettingsMenu>
                   ) : null}
                 </div>
-                {!isCancelled && onRequestCancel ? (
-                  <DetailSheetSettingsMenu>
-                    <DropdownMenuItem
-                      variant="destructive"
-                      disabled={saving}
-                      onClick={() => onRequestCancel({ id: service.id, name: service.name })}
-                    >
-                      <Ban />
-                      Cancel service
-                    </DropdownMenuItem>
-                  </DetailSheetSettingsMenu>
-                ) : null}
-              </div>
+              </>
             ) : null}
           </div>
 
@@ -298,6 +360,7 @@ export function ClientServiceDetailSheet({
             tabs={detailSheetTabs}
             activeTab={activeTab}
             onTabChange={(value) => setActiveTab(value as ClientServiceDetailSheetTab)}
+            className="max-md:mt-3 max-md:px-5"
           />
 
           <ScrollArea className="min-h-0 flex-1">
@@ -314,13 +377,13 @@ export function ClientServiceDetailSheet({
                     service={service}
                     draft={draft}
                     patchDraft={patchDraft}
-                    projects={projects}
                     saving={saving}
                     readOnly={isCancelled}
                     canCreateTask={canCreateTask && !isCancelled}
                     onCreateInvoice={() => setInvoiceOpen(true)}
                     onCreateExpense={() => setExpenseOpen(true)}
                     onCreateTask={() => setQuickCreateTaskOpen(true)}
+                    onRegistryChecked={refreshAfterLinkCreated}
                   />
                 </DetailSheetTabPanel>
               ) : null}

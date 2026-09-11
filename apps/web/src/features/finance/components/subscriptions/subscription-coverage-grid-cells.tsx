@@ -1,61 +1,22 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { AmdCurrencyIcon } from '@/components/shared/AmdCurrencyIcon';
-import {
-  FINANCE_CALENDAR_CELL_AMBER,
-  FINANCE_CALENDAR_CELL_BLUE,
-  FINANCE_CALENDAR_CELL_EMPTY,
-  FINANCE_CALENDAR_CELL_GREEN,
-  FINANCE_CALENDAR_CELL_MUTED,
-  FINANCE_CALENDAR_CELL_ORANGE,
-} from '@/features/finance/constants/finance-calendar-cell-colors';
+import { FINANCE_CALENDAR_CELL_EMPTY } from '@/features/finance/constants/finance-calendar-cell-colors';
 import { formatAmount, formatAmountAbbreviated } from '@/features/finance/constants/finance';
 import type { SubscriptionGridCell, SubscriptionGridCellKind } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
+import { SubscriptionAmountHover } from './subscription-amount-hover';
+import {
+  subscriptionMonthCellStatusLabel,
+  subscriptionMonthCellVisualClass,
+} from './subscription-coverage-cell-visual';
 
 /** Same slot size as expense-plans / salary calendar cells. */
 export const SUBSCRIPTION_CALENDAR_SLOT_CLASS = 'h-16 w-full';
 
 const MONTH_CELL_BLOCK_CLASS =
   'flex w-full flex-col items-center justify-center gap-0.5 overflow-hidden rounded-md border px-1 py-1.5 text-center transition-colors';
-
-function cellVisualClasses(kind: SubscriptionGridCellKind): string {
-  switch (kind) {
-    case 'PAID':
-      return FINANCE_CALENDAR_CELL_GREEN;
-    case 'PENDING_INVOICE':
-      return FINANCE_CALENDAR_CELL_AMBER;
-    case 'OVERDUE_INVOICE':
-      return FINANCE_CALENDAR_CELL_ORANGE;
-    case 'FORECAST':
-      return FINANCE_CALENDAR_CELL_BLUE;
-    case 'SUBSCRIPTION_PENDING':
-      return FINANCE_CALENDAR_CELL_AMBER;
-    case 'MISSED':
-      return FINANCE_CALENDAR_CELL_MUTED;
-    default:
-      return 'border-border bg-muted/20 text-muted-foreground';
-  }
-}
-
-function cellStatusLabel(kind: SubscriptionGridCellKind): string {
-  switch (kind) {
-    case 'PAID':
-      return 'Paid';
-    case 'PENDING_INVOICE':
-      return 'Invoice';
-    case 'OVERDUE_INVOICE':
-      return 'Overdue';
-    case 'FORECAST':
-      return 'Forecast';
-    case 'SUBSCRIPTION_PENDING':
-      return 'Pending';
-    case 'MISSED':
-      return 'Missed';
-    default:
-      return '';
-  }
-}
 
 /** `preferFullTotal` → full; else abbreviated. */
 export function formatSubscriptionGridAmount(amount: number, preferFullTotal: boolean): string {
@@ -72,16 +33,14 @@ export function SubscriptionCompactAmount({
   size?: 'sm' | 'base';
 }) {
   const display = formatSubscriptionGridAmount(value, preferFullTotal);
-  const fullAmount = formatAmount(value);
   const isCompact = !preferFullTotal;
 
-  return (
+  const body = (
     <div
       className={cn(
         'flex w-full items-center justify-center text-center',
         size === 'sm' && SUBSCRIPTION_CALENDAR_SLOT_CLASS,
       )}
-      title={isCompact ? fullAmount : undefined}
     >
       <span
         className={cn(
@@ -105,6 +64,12 @@ export function SubscriptionCompactAmount({
       </span>
     </div>
   );
+
+  return isCompact ? (
+    <SubscriptionAmountHover amount={value}>{body}</SubscriptionAmountHover>
+  ) : (
+    body
+  );
 }
 
 export function SubscriptionEmptyMonthCell() {
@@ -115,41 +80,71 @@ export function SubscriptionEmptyMonthCell() {
   );
 }
 
-export function SubscriptionGridMonthCell({
-  cell,
-  amountMonthly,
+function MonthCellButton({
+  kind,
+  statusLabel,
   onOpen,
+  children,
 }: {
-  cell: SubscriptionGridCell;
-  amountMonthly: number;
+  kind: SubscriptionGridCellKind;
+  statusLabel: string;
   onOpen: () => void;
+  children?: ReactNode;
 }) {
-  if (cell.kind === 'NA') {
-    return <SubscriptionEmptyMonthCell />;
-  }
-
-  const fullAmount = formatAmount(amountMonthly);
-  const amountLabel = formatAmountAbbreviated(amountMonthly);
-  const statusLabel = cellStatusLabel(cell.kind);
-
   return (
     <button
       type="button"
       className={cn(
         MONTH_CELL_BLOCK_CLASS,
         SUBSCRIPTION_CALENDAR_SLOT_CLASS,
-        cellVisualClasses(cell.kind),
+        subscriptionMonthCellVisualClass(kind),
       )}
-      title={fullAmount}
-      aria-label={`${statusLabel} · ${fullAmount}`}
+      aria-label={statusLabel}
       onClick={(e) => {
         e.stopPropagation();
         onOpen();
       }}
     >
-      <span className="max-w-full truncate text-sm leading-tight font-bold tabular-nums">
-        {amountLabel}
-      </span>
+      {children}
     </button>
+  );
+}
+
+export function SubscriptionGridMonthCell({
+  cell,
+  onOpen,
+}: {
+  cell: SubscriptionGridCell;
+  onOpen: () => void;
+}) {
+  if (cell.kind === 'NA') {
+    return <SubscriptionEmptyMonthCell />;
+  }
+
+  const amount = cell.displayAmount;
+  const hasAmount = amount != null;
+  const amountLabel = hasAmount ? formatAmountAbbreviated(amount) : null;
+  const statusLabel = subscriptionMonthCellStatusLabel(cell.kind);
+  const body = amountLabel ? (
+    <span className="max-w-full truncate text-sm leading-tight font-bold tabular-nums">
+      {amountLabel}
+    </span>
+  ) : null;
+
+  if (!hasAmount) {
+    return (
+      <MonthCellButton kind={cell.kind} statusLabel={statusLabel} onOpen={onOpen}>
+        {body}
+      </MonthCellButton>
+    );
+  }
+
+  return (
+    <SubscriptionAmountHover
+      amount={amount}
+      trigger={<MonthCellButton kind={cell.kind} statusLabel={statusLabel} onOpen={onOpen} />}
+    >
+      {body}
+    </SubscriptionAmountHover>
   );
 }

@@ -1,6 +1,6 @@
 /** Shared visual tokens for Product WhatsApp settings surfaces. */
 export const WA_ACCENT_ICON_WRAP =
-  'flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400';
+  'flex size-7 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400';
 
 /** Header mark sized to match title + description block height. */
 export const WA_HEADER_ICON_WRAP =
@@ -8,8 +8,14 @@ export const WA_HEADER_ICON_WRAP =
 
 export const WA_SECTION_CARD = 'border-border bg-card rounded-xl border p-4 shadow-none';
 
+export const WA_COMPACT_SECTION_CARD = 'border-border bg-card rounded-lg border p-3 shadow-none';
+
+export const WA_COMPACT_FIELD = 'h-8 text-sm';
+
+export const WA_ACTION_STACK = 'flex flex-col gap-1.5';
+
 export const WA_ACTION_CARD =
-  'border-border bg-card hover:bg-muted/40 flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors disabled:pointer-events-none disabled:opacity-50';
+  'border-border bg-card hover:bg-muted/40 flex w-full items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left transition-colors disabled:pointer-events-none disabled:opacity-50';
 
 export const WA_OUTLINE_ACTION_BUTTON =
   'border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900 dark:text-emerald-400 dark:hover:bg-emerald-950/40';

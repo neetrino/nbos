@@ -9,10 +9,12 @@ import { SupportTicketActionOverlays } from '@/features/support/components/Suppo
 import { SupportTicketsPageBody } from '@/features/support/components/SupportTicketsPageBody';
 import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
 import { useSupportPage } from '@/features/support/hooks/use-support-page';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
 export function SupportPageView() {
   const page = useSupportPage();
   const { query, createForm, actions } = page;
+  const displayView = useMobilePreferredView(query.view, 'kanban');
 
   const filterValues = useMemo(
     () => ({
@@ -32,7 +34,7 @@ export function SupportPageView() {
   );
 
   return (
-    <div className="flex h-full flex-col gap-5">
+    <div className="flex h-full flex-col gap-5 max-md:gap-3">
       <SupportPageHero
         search={query.search}
         onSearchChange={query.setSearch}
@@ -53,7 +55,7 @@ export function SupportPageView() {
         error={query.error}
         tickets={page.displayTickets}
         boardScope={page.boardScope}
-        view={query.view}
+        view={displayView}
         kanbanColumns={page.kanbanColumns}
         actionId={actions.actionId}
         emptyIcon={Headphones}

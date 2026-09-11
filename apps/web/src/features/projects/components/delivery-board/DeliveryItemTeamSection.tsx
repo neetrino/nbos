@@ -1,11 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { User } from 'lucide-react';
-import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
+import { DetailSheetCollapsibleSection } from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
 import { employeeAvatarUrl } from '@/features/hr/utils/employee-display';
-import { cn } from '@/lib/utils';
 import { useEmployeeSearchLoader } from './delivery-item-detail-employee-search';
 import type {
   ExtensionPlanSnapshot,
@@ -37,6 +37,7 @@ export function DeliveryItemTeamSection({
   disabled = false,
   gateRequiredFields = new Set(),
 }: DeliveryItemTeamSectionProps) {
+  const [sectionOpen, setSectionOpen] = useState(true);
   const searchEmployees = useEmployeeSearchLoader();
   const seller =
     kind === 'PRODUCT'
@@ -54,12 +55,14 @@ export function DeliveryItemTeamSection({
   };
 
   return (
-    <section className="border-border bg-card rounded-xl border p-4 shadow-sm">
-      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>
-        <User size={13} aria-hidden />
-        Team
-      </h3>
-      <div className="grid grid-cols-2 items-start gap-3">
+    <DetailSheetCollapsibleSection
+      title="Team"
+      icon={<User size={12} />}
+      open={sectionOpen}
+      onOpenChange={setSectionOpen}
+      className="shadow-sm"
+    >
+      <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2">
         {kind === 'PRODUCT' && productPlan ? (
           <>
             <ProductRolePicker
@@ -202,6 +205,6 @@ export function DeliveryItemTeamSection({
           </>
         ) : null}
       </div>
-    </section>
+    </DetailSheetCollapsibleSection>
   );
 }

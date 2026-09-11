@@ -8,7 +8,8 @@ export interface CreateExpenseDto {
   frequency?: string;
   dueDate?: string;
   status?: string;
-  projectId?: string;
+  productId?: string | null;
+  credentialId?: string | null;
   /** When set, links the expense to an existing `ExpensePlan` (validated server-side). */
   expensePlanId?: string;
   /** When set, links the expense to a `ClientServiceRecord` source. */
@@ -27,7 +28,8 @@ export interface UpdateExpenseDto {
   frequency?: string;
   dueDate?: string;
   status?: string;
-  projectId?: string;
+  productId?: string | null;
+  credentialId?: string | null;
   clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: string;
@@ -43,6 +45,7 @@ export interface ExpenseQueryParams {
   status?: string;
   backlogReason?: string;
   projectId?: string;
+  productId?: string;
   /** When set, only expenses linked to this `ExpensePlan` (`expenses.expense_plan_id`). */
   expensePlanId?: string;
   frequency?: string;
@@ -69,6 +72,7 @@ export interface ExpenseStatsParams {
   dateTo?: string;
   /** When set, stats match `findAll` list filter for the same project. */
   projectId?: string;
+  productId?: string;
   /** When set, stats match `findAll` list filter for the same expense plan. */
   expensePlanId?: string;
   /** When set, aggregates are scoped to this status (list/stats parity). */

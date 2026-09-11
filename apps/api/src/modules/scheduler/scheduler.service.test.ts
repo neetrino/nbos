@@ -24,8 +24,8 @@ describe('SchedulerService', () => {
   let reportsService: { runDueSchedules: ReturnType<typeof vi.fn> };
   let supportSlaOrchestrationService: { runSlaEscalationScan: ReturnType<typeof vi.fn> };
   let clientServicesRenewalInvoice: { runDueRenewalInvoices: ReturnType<typeof vi.fn> };
-    let messengerOutboundReconcile: { reconcile: ReturnType<typeof vi.fn> };
-    let lease: { runWithLease: ReturnType<typeof vi.fn> };
+  let messengerOutboundReconcile: { reconcile: ReturnType<typeof vi.fn> };
+  let lease: { runWithLease: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     prisma = createMockPrisma();
@@ -121,6 +121,7 @@ describe('SchedulerService', () => {
         processDueTemplates: vi.fn().mockResolvedValue({ created: 0, failed: 0, taskIds: [] }),
       } as never,
       clientServicesRenewalInvoice as never,
+      { runDueLookups: vi.fn() } as never,
       { reconcileOrphans: vi.fn() } as never,
       { renewExpiringWatches: vi.fn() } as never,
       { enqueueActiveMailboxSyncs: vi.fn() } as never,

@@ -4,6 +4,7 @@ export const overdueReminderSelect = {
   amount: true,
   dueDate: true,
   coverageStartMonth: true,
+  coverageMonthCount: true,
   taxStatus: true,
   moneyStatus: true,
   officialInvoiceRequestSent: true,
@@ -15,11 +16,15 @@ export const overdueReminderSelect = {
       reminderLanguage: true,
       productId: true,
       name: true,
+      type: true,
+      registryLookupStatus: true,
       product: { select: { id: true, name: true } },
     },
   },
   subscription: {
     select: {
+      name: true,
+      code: true,
       productId: true,
       notificationsEnabled: true,
       reminderLanguage: true,

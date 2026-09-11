@@ -14,6 +14,10 @@ describe('activeCallHeroTitle', () => {
     expect(activeCallHeroTitle(null, 'Incoming call +37443729201')).toBe('New caller');
   });
 
+  it('collapses generated outbound labels to New caller', () => {
+    expect(activeCallHeroTitle(null, 'Outgoing call +37443729201')).toBe('New caller');
+  });
+
   it('keeps outbound display names', () => {
     expect(activeCallHeroTitle(null, '+37443729201')).toBe('+37443729201');
   });

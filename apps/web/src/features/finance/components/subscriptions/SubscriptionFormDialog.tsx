@@ -76,8 +76,10 @@ export function SubscriptionFormDialog({
     formError,
     canSubmit,
     billingValidationError,
-    periodConfirmOpen,
-    setPeriodConfirmOpen,
+    saveConfirmOpen,
+    saveConfirmTitle,
+    saveConfirmDescription,
+    closeSaveConfirm,
     handleSubmit,
     submitForm,
     applyPeriodChange,
@@ -246,16 +248,22 @@ export function SubscriptionFormDialog({
       </Dialog>
       {mode === 'edit' && editSnap && subscription ? (
         <SubscriptionBillingPeriodConfirmDialog
-          open={periodConfirmOpen}
+          open={saveConfirmOpen}
+          title={saveConfirmTitle}
           subscriptionTitle={getSubscriptionDisplayTitle(subscription)}
-          description={buildBillingPeriodChangeConfirmDescription(
-            editSnap,
-            form,
-            subscription.monthlyEquivalentAmount,
-          )}
+          description={
+            saveConfirmDescription ??
+            buildBillingPeriodChangeConfirmDescription(
+              editSnap,
+              form,
+              subscription.monthlyEquivalentAmount,
+            )
+          }
           isSubmitting={loading}
-          onOpenChange={setPeriodConfirmOpen}
-          onConfirm={() => void submitForm().finally(() => setPeriodConfirmOpen(false))}
+          onOpenChange={(open) => {
+            if (!open) closeSaveConfirm();
+          }}
+          onConfirm={() => void submitForm().finally(() => closeSaveConfirm())}
           forceNestedBackdrop
         />
       ) : null}

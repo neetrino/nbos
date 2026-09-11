@@ -110,14 +110,13 @@ export function DeliveryKanbanBoard({
     canScrollLeft,
     canScrollRight,
     isMobileViewport,
+    resolvedColumnWidth,
     startAutoScroll,
     stopAutoScroll,
-    scrollByOneColumn,
   } = useKanbanHorizontalScroll({
     columnWidth: DELIVERY_KANBAN_COLUMN_WIDTH_PX,
     columnMarginTotalPx: DELIVERY_KANBAN_COLUMN_GAP_PX,
     layoutKey: columns.length,
-    mobileFullWidthColumns: false,
   });
 
   const itemByKey = useMemo(() => {
@@ -238,26 +237,21 @@ export function DeliveryKanbanBoard({
         canScrollLeft={canScrollLeft}
         canScrollRight={canScrollRight}
         isMobile={isMobileViewport}
-        onStep={scrollByOneColumn}
         onHoverStart={startAutoScroll}
         onHoverEnd={stopAutoScroll}
       />
-      <div
-        ref={scrollRef}
-        className={cn(
-          DELIVERY_KANBAN_BOARD_SCROLL_CLASS,
-          isMobileViewport && 'snap-x snap-mandatory',
-          dragItem && 'pb-28',
-        )}
-      >
+      <div ref={scrollRef} className={cn(DELIVERY_KANBAN_BOARD_SCROLL_CLASS, dragItem && 'pb-28')}>
         <div
           className={DELIVERY_KANBAN_BOARD_ROW_CLASS}
-          style={{ minWidth: `${deliveryKanbanBoardMinWidthPx(columns.length)}px` }}
+          style={{
+            minWidth: `${deliveryKanbanBoardMinWidthPx(columns.length, resolvedColumnWidth)}px`,
+          }}
         >
           {columns.map((col, colIdx) => (
             <div
               key={col.stage}
-              className={cn(DELIVERY_KANBAN_COLUMN_SHELL_CLASS, isMobileViewport && 'snap-start')}
+              className={DELIVERY_KANBAN_COLUMN_SHELL_CLASS}
+              style={{ width: resolvedColumnWidth }}
             >
               <KanbanStageColumn
                 stage={col.stage}

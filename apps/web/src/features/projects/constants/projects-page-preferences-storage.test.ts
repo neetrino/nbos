@@ -46,12 +46,17 @@ describe('projects-page-preferences-storage', () => {
   });
 
   it('persists hub tab and view mode together', () => {
-    writeProjectsHubPagePreferences({ activeTab: 'active', viewMode: 'list' });
+    writeProjectsHubPagePreferences({ activeTab: 'incoming', viewMode: 'list' });
     expect(readProjectsHubPagePreferences()).toEqual({
-      activeTab: 'active',
+      activeTab: 'incoming',
       viewMode: 'list',
     });
-    expect(window.localStorage.getItem(PROJECTS_HUB_PAGE_STORAGE_KEY)).toContain('"active"');
+    expect(window.localStorage.getItem(PROJECTS_HUB_PAGE_STORAGE_KEY)).toContain('"incoming"');
+  });
+
+  it('accepts closed hub tab', () => {
+    writeProjectsHubPagePreferences({ activeTab: 'closed', viewMode: 'grid' });
+    expect(readProjectsHubPagePreferences().activeTab).toBe('closed');
   });
 
   it('reads legacy hub scalar keys when json is unset', () => {

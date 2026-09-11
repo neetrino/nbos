@@ -160,7 +160,7 @@ export function useOrdersPageState({
     (orderId: string) => {
       const params = new URLSearchParams(searchParams.toString());
       params.set(OPEN_ORDER_QUERY, orderId);
-      router.push(`${pathname}?${params.toString()}`);
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
     },
     [pathname, router, searchParams],
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -26,6 +26,7 @@ import {
   CLIENT_SERVICE_FILTER_STATUS_KEY,
   CLIENT_SERVICE_FILTER_TYPE_KEY,
 } from './build-client-service-integrated-filter-configs';
+import { subscribeClientServiceRegistryRefresh } from './client-service-registry-events';
 import { ClientServiceCreateDialog } from './ClientServiceCreateDialog';
 import { ClientServiceDetailSheet } from './ClientServiceDetailSheet';
 import { ClientServicesPageSettingsSheet } from './ClientServicesPageSettingsSheet';
@@ -38,6 +39,7 @@ import {
   type ClientServiceRecordListParams,
 } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 
 const CLIENT_SERVICE_FILTER_DEFAULTS: Record<string, string> = {
@@ -62,6 +64,7 @@ function ClientServicesPageInner() {
   const openServiceIdFromUrl = searchParams.get(OPEN_CLIENT_SERVICE_QUERY)?.trim() || null;
 
   const [view, handleViewChange] = useClientServicesViewMode();
+  const displayView = useMobilePreferredView(view, 'months');
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [reloadToken, setReloadToken] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
@@ -78,6 +81,8 @@ function ClientServicesPageInner() {
   const statusFilter = clientFilters[CLIENT_SERVICE_FILTER_STATUS_KEY] ?? 'all';
   const billingFilter = clientFilters[CLIENT_SERVICE_FILTER_BILLING_KEY] ?? 'all';
   const refreshAll = useCallback(() => setReloadToken((token) => token + 1), []);
+
+  useEffect(() => subscribeClientServiceRegistryRefresh(refreshAll), [refreshAll]);
 
   const baseParams = useMemo<ClientServiceRecordListParams>(
     () => ({
@@ -119,9 +124,19 @@ function ClientServicesPageInner() {
       setSelectedService(service);
       const params = new URLSearchParams(searchParams.toString());
       params.set(OPEN_CLIENT_SERVICE_QUERY, service.id);
-      router.push(`${pathname ?? '/finance/client-services'}?${params.toString()}`);
+      router.push(`${pathname ?? '/finance/client-services'}?${params.toString()}`, {
+        scroll: false,
+      });
     },
     [pathname, router, searchParams],
+  );
+
+  const handleCreated = useCallback(
+    (service: ClientServiceRecord) => {
+      refreshAll();
+      openServiceDetail(service);
+    },
+    [openServiceDetail, refreshAll],
   );
 
   const handleServiceSheetOpenChange = useCallback(
@@ -136,6 +151,7 @@ function ClientServicesPageInner() {
         qs
           ? `${pathname ?? '/finance/client-services'}?${qs}`
           : (pathname ?? '/finance/client-services'),
+        { scroll: false },
       );
     },
     [pathname, router, searchParams],
@@ -206,13 +222,13 @@ function ClientServicesPageInner() {
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
       <div className="flex min-h-0 flex-1 flex-col">
-        {view === 'status' ? (
+        {displayView === 'status' ? (
           <ClientServiceStatusBoardView
             baseParams={baseParams}
             reloadToken={reloadToken}
             onOpen={openServiceDetail}
           />
-        ) : view === 'months' ? (
+        ) : displayView === 'months' ? (
           <ClientServiceMonthsBoardView
             baseParams={baseParams}
             year={year}
@@ -233,7 +249,7 @@ function ClientServicesPageInner() {
       <ClientServiceCreateDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onSaved={refreshAll}
+        onSaved={handleCreated}
       />
 
       <ClientServiceDetailSheet
@@ -251,7 +267,10 @@ function ClientServicesPageInner() {
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
         title="Cancel client service?"
-        description="The service will be marked cancelled and hidden from active lists. Linked finance records and history stay intact."
+        description="The record is not deleted. Status becomes Cancelled, it leaves active lists, and domain tracking stops. Linked finance records stay intact."
+        dismissLabel="No"
+        confirmLabel="Yes"
+        submittingLabel="Cancelling…"
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;

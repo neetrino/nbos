@@ -68,7 +68,16 @@ describe('order display', () => {
     ).toBe('SUB-2026-0001');
   });
 
-  it('falls back to invoice code without order or subscription', () => {
+  it('uses client service name when invoice has no order or subscription', () => {
+    expect(
+      getInvoiceDisplayTitle({
+        code: 'INV-2026-0146',
+        clientServiceRecord: { name: 'borboraqua.am' },
+      }),
+    ).toBe('borboraqua.am');
+  });
+
+  it('falls back to invoice code without order, subscription, or client service', () => {
     expect(getInvoiceDisplayTitle({ code: 'INV-2026-0042' })).toBe('INV-2026-0042');
   });
 

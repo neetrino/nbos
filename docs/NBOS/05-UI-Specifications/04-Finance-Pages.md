@@ -57,13 +57,14 @@ Finance-модуль NBOS обеспечивает полное управлен
 
 #### 2.2.1. Каскад display title (Invoice)
 
-Коммерческое название **не копируется** на `Invoice` — UI читает его live из источника; переименование заказа/сделки или подписки обновляет заголовок всех связанных счетов.
+Коммерческое название **не копируется** на `Invoice` — UI читает его live из источника; переименование заказа/сделки, подписки или client service обновляет заголовок всех связанных счетов.
 
 1. есть `order` → display title заказа: `Deal.name` через `order.deal`, иначе `Order.code`;
 2. иначе есть `subscription` → `Subscription.name`;
-3. иначе → `Invoice.code`.
+3. иначе есть `clientServiceRecord` → `ClientServiceRecord.name`, иначе `product.name`;
+4. иначе → `Invoice.code`.
 
-`Invoice.code` всегда показывается **вторичной** строкой, когда не является заголовком.
+`Invoice.code` всегда показывается **вторичной** строкой, когда не является заголовком — в том числе в заголовке Invoice detail sheet (как у Subscription sheet).
 
 ### 2.3. Табличный вид
 
@@ -81,7 +82,7 @@ Finance-модуль NBOS обеспечивает полное управлен
 
 ### 2.5. Автоматизация (Send overdue reminders)
 
-Кнопка `Send overdue reminders` на hero Invoices (`FINANCE_INVOICES` EDIT). Не cron.
+Компактная кнопка `Remind` (иконка + `aria-label` / tooltip `Send overdue reminders`) на hero Invoices (`FINANCE_INVOICES` EDIT). По клику — confirm-диалог с preview. Не cron.
 
 - Сначала Finance отмечает оплаченных как `Paid`
 - Preview: сколько карточек получат волну 1 / волну 2, кратко skipped (нет группы, Tax gate, same-day, max wave)
@@ -126,6 +127,8 @@ Finance-модуль NBOS обеспечивает полное управлен
 - **Annual** — тот же формат `150,000֏`
 
 **В Sheet:** type label, partner, company, /mo, coverage, start/end, invoices, полное редактирование billing.
+
+**Вкладка Invoices:** список карточек подписки. Для `Active` — кнопка **Create invoice** (и hover + на табе) открывает диалог с multi-select непокрытых **подряд** месяцев покрытия (от старта биллинга до текущего месяца Еревана + 12). Одна карточка на выбор: сумма `N × amount` периода, покрытие `N` периодов; due date по правилам биллинга. На доске Invoices при drill-down `subscriptionId` та же форма вместо generic New Invoice.
 
 **Канон строки:** одна запись = одна подписка (`subscription_id`) с одним `type`; у проекта может быть несколько подписок (maintenance, email-сервис, review-widget, ежемесячная разработка и т.д.) — **различаются коммерческим `name`**, проект остаётся видимым вторичной строкой. `DEV_AND_MAINTENANCE` — один тип договора, не «две подписки в одной».
 
@@ -196,6 +199,8 @@ Default view: `Calendar Grid / Календарная сетка`.
 
 Web: переключатель **Grid | Board | List**; выбор сохраняется в `localStorage`.
 
+Статус плана: default **Active**. В карточке плана меню **Stop plan** переводит в `Cancelled` (история карточек остаётся). **Resume plan** возвращает в Active. Delete только если связанных карточек нет.
+
 ### 4.2. Expense Board / Доска расходов
 
 **Путь:** `/finance/expenses` (Finance top tab **Expense board**; sub-nav: Active / Backlog / Closed)
@@ -232,19 +237,19 @@ Backlog должен показывать отдельную сумму нако
 
 ### 4.4. Карточка расхода
 
-| Элемент                  | Описание                                             |
-| ------------------------ | ---------------------------------------------------- |
-| Название                 | Описание расхода                                     |
-| Original Amount          | Исходная сумма                                       |
-| Paid Amount              | Уже оплачено                                         |
-| Remaining Amount         | Осталось оплатить                                    |
-| Payment Status           | Unpaid / Partially Paid / Paid                       |
-| Категория бейдж          | Salary / Service / Domain / Hosting / Office / Other |
-| Ссылка на проект         | Если расход привязан к проекту                       |
-| Ссылка на Client Service | Если расход создан из сервиса клиента                |
-| Ссылка на Invoice Card   | Если это pass-through                                |
-| Дата оплаты              | Плановая дата                                        |
-| Payments                 | Список частичных оплат                               |
+| Элемент                  | Описание                                                                   |
+| ------------------------ | -------------------------------------------------------------------------- |
+| Название                 | Описание расхода                                                           |
+| Original Amount          | Исходная сумма                                                             |
+| Paid Amount              | Уже оплачено                                                               |
+| Remaining Amount         | Осталось оплатить                                                          |
+| Payment Status           | Unpaid / Partially Paid / Paid                                             |
+| Категория бейдж          | Salary / Service / Domain / Hosting / Office / Other                       |
+| Product / Credentials    | Компактный dual-connect: Product (страница) и пароль (sheet). Оба optional |
+| Ссылка на Client Service | Если расход создан из сервиса клиента                                      |
+| Ссылка на Invoice Card   | Если это pass-through                                                      |
+| Дата оплаты              | Плановая дата                                                              |
+| Payments                 | Список частичных оплат                                                     |
 
 Действие `Add Payment / Добавить оплату` создаёт частичную или полную оплату расхода.
 
@@ -256,7 +261,7 @@ Backlog должен показывать отдельную сумму нако
 - **сумма**;
 - **дата оплаты** — по умолчанию следующий рабочий день (пн–пт), пользователь может изменить.
 
-После создания карточка сразу открывается в **detail sheet**; остальные поля (категория, тип, частота, статус, проект, налог, pass-through, заметки и т.д.) заполняются там. При открытии из drill-down `?projectId=` проект подставляется на сервере без отдельного поля в модалке; при создании из backlog — статус по контексту экрана.
+После создания карточка сразу открывается в **detail sheet**; остальные поля (категория, тип, частота, статус, Product / Credentials, налог, pass-through, заметки и т.д.) заполняются там. При открытии из Product Hub Finance подставляется `productId`. Drill-down `?projectId=` остаётся агрегатом по всем продуктам проекта. При создании из backlog — статус по контексту экрана.
 
 ---
 

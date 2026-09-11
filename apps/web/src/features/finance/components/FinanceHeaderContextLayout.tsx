@@ -47,6 +47,7 @@ export function FinanceHeaderContextLayout() {
       kind: 'nav',
       ariaLabel: 'Finance areas',
       items,
+      mobileVariant: 'tabs',
     };
   }, [pathname, can]);
 

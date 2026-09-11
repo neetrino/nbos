@@ -3,6 +3,9 @@ export interface ApiFieldError {
   message: string;
 }
 
+/** Shown when the API rejects an action with HTTP 403. */
+export const PERMISSION_DENIED_MESSAGE = 'You do not have permission for this action.';
+
 /** Backend `ConflictException` body code when calendar meeting overlaps existing schedule. */
 export const CALENDAR_MEETING_CONFLICT_CODE = 'CALENDAR_MEETING_CONFLICT';
 
@@ -60,8 +63,13 @@ export function isCalendarMeetingConflictApiError(error: unknown): error is ApiE
   return error instanceof ApiError && error.code === CALENDAR_MEETING_CONFLICT_CODE;
 }
 
+export function isPermissionDeniedApiError(error: unknown): error is ApiError {
+  return error instanceof ApiError && error.statusCode === 403;
+}
+
 /** User-visible message from axios-wrapped `ApiError`; otherwise `fallback` (e.g. generic connection copy). */
 export function getApiErrorMessage(caught: unknown, fallback: string): string {
+  if (isPermissionDeniedApiError(caught)) return PERMISSION_DENIED_MESSAGE;
   return caught instanceof ApiError ? caught.message : fallback;
 }
 

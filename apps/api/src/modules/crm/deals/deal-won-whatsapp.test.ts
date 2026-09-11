@@ -4,6 +4,7 @@ import {
   getDealWonWhatsAppErrors,
   loadDealWonWhatsAppContext,
   resolveDealProductIdForWhatsApp,
+  resolveWonWhatsAppIntent,
   validateDealWonWhatsAppGate,
 } from './deal-won-whatsapp';
 
@@ -78,11 +79,34 @@ describe('deal-won-whatsapp gate', () => {
       }),
     ).toBe('p2');
   });
+
+  it('defaults Won intent to bind the existing Deal group', () => {
+    expect(
+      resolveWonWhatsAppIntent({
+        contextGroupChatId: '120363012345678901@g.us',
+      }),
+    ).toEqual({
+      action: 'bind',
+      groupChatId: '120363012345678901@g.us',
+      actorId: undefined,
+    });
+    expect(
+      resolveWonWhatsAppIntent({
+        action: 'create',
+        contextGroupChatId: '120363012345678901@g.us',
+      }),
+    ).toEqual({
+      action: 'create',
+      groupChatId: undefined,
+      actorId: undefined,
+    });
+  });
 });
 
 describe('loadDealWonWhatsAppContext', () => {
   it('prefers WORK communication destination over legacy groupChatId', async () => {
     const prisma = {
+      dealWhatsAppGroupBinding: { findUnique: async () => null },
       productWhatsAppGroupBinding: {
         findUnique: async () => ({ groupChatId: 'legacy@g.us' }),
       },
@@ -99,13 +123,17 @@ describe('loadDealWonWhatsAppContext', () => {
         }),
       },
     };
-    const ctx = await loadDealWonWhatsAppContext(prisma as never, { existingProductId: 'p1' });
+    const ctx = await loadDealWonWhatsAppContext(prisma as never, {
+      id: 'deal-1',
+      existingProductId: 'p1',
+    });
     expect(ctx.groupChatId).toBe('work@g.us');
     expect(ctx.productId).toBe('p1');
   });
 
   it('does not treat unique-legacy accountant JID as Product groupChatId', async () => {
     const prisma = {
+      dealWhatsAppGroupBinding: { findUnique: async () => null },
       productWhatsAppGroupBinding: {
         findUnique: async () => ({ groupChatId: '120363000000000000@g.us' }),
       },
@@ -115,7 +143,10 @@ describe('loadDealWonWhatsAppContext', () => {
       },
       productCommunicationBinding: { findUnique: async () => null },
     };
-    const ctx = await loadDealWonWhatsAppContext(prisma as never, { existingProductId: 'p1' });
+    const ctx = await loadDealWonWhatsAppContext(prisma as never, {
+      id: 'deal-1',
+      existingProductId: 'p1',
+    });
     expect(ctx.groupChatId).toBeNull();
     expect(ctx.groupChatId).not.toBe('120363000000000000@g.us');
     expect(ctx.productId).toBe('p1');
@@ -124,6 +155,7 @@ describe('loadDealWonWhatsAppContext', () => {
   it('returns null when WORK mapping JID equals the accountant group', async () => {
     const accountant = '120363000000000000@g.us';
     const prisma = {
+      dealWhatsAppGroupBinding: { findUnique: async () => null },
       productWhatsAppGroupBinding: {
         findUnique: async () => ({ groupChatId: accountant }),
       },
@@ -140,8 +172,34 @@ describe('loadDealWonWhatsAppContext', () => {
         }),
       },
     };
-    const ctx = await loadDealWonWhatsAppContext(prisma as never, { existingProductId: 'p1' });
+    const ctx = await loadDealWonWhatsAppContext(prisma as never, {
+      id: 'deal-1',
+      existingProductId: 'p1',
+    });
     expect(ctx.groupChatId).toBeNull();
     expect(ctx.groupChatId).not.toBe(accountant);
+  });
+
+  it('falls back to the Deal binding when Product WORK is not mapped yet', async () => {
+    const prisma = {
+      dealWhatsAppGroupBinding: {
+        findUnique: async () => ({
+          groupChatId: '120363012345678901@g.us',
+          status: 'ACTIVE',
+        }),
+      },
+      productWhatsAppGroupBinding: { findUnique: async () => null },
+      whatsAppGroupOperation: { findFirst: async () => null },
+      whatsAppGatewayConnection: {
+        findFirst: async () => ({ accountingGroupChatId: null }),
+      },
+      productCommunicationBinding: { findUnique: async () => null },
+    };
+    const ctx = await loadDealWonWhatsAppContext(prisma as never, {
+      id: 'deal-1',
+      existingProductId: 'p1',
+    });
+    expect(ctx.groupChatId).toBe('120363012345678901@g.us');
+    expect(ctx.hasCreateOperation).toBe(false);
   });
 });

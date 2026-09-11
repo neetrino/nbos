@@ -23,6 +23,7 @@ export interface InvoiceListParams extends FinanceDateRangeParams {
   moneyStatus?: string;
   type?: string;
   projectId?: string;
+  productId?: string;
   subscriptionId?: string;
   search?: string;
 }
@@ -74,6 +75,7 @@ export interface InvoiceDealSummary {
   id: string;
   name: string | null;
   code: string;
+  type?: string | null;
 }
 
 export interface InvoiceOrderSummary {
@@ -88,13 +90,21 @@ export interface InvoiceSubscriptionSummary {
   name: string;
 }
 
+export interface InvoiceClientServiceSummary {
+  id: string;
+  type: string;
+  name: string;
+}
+
 export interface Invoice {
   id: string;
   code: string;
   orderId: string | null;
   subscriptionId: string | null;
   projectId: string | null;
+  productId: string | null;
   companyId: string | null;
+  clientServiceRecordId?: string | null;
   amount: string;
   currency: string;
   taxStatus: string;
@@ -107,11 +117,14 @@ export interface Invoice {
   officialInvoiceSentAt: string | null;
   officialInvoiceCancelledAt: string | null;
   notificationsEnabled: boolean;
+  orderComment: string | null;
   description: string | null;
   createdAt: string;
   order: InvoiceOrderSummary | null;
   subscription?: InvoiceSubscriptionSummary | null;
+  clientServiceRecord?: InvoiceClientServiceSummary | null;
   company: { id: string; name: string; legalName?: string | null; taxId?: string | null } | null;
+  product: { id: string; name: string } | null;
   project: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string } | null;
   payments: Payment[];
@@ -219,7 +232,9 @@ export interface Expense {
   frequency: string;
   dueDate: string | null;
   status: string;
+  productId: string | null;
   projectId: string | null;
+  credentialId: string | null;
   isPassThrough: boolean;
   taxStatus: string;
   backlogReason: string | null;
@@ -234,6 +249,8 @@ export interface Expense {
   /** Present when this expense was created from an Expense Plan (Plan→Card). */
   linkedExpensePlan?: { id: string; name: string } | null;
   project?: { id: string; code: string; name: string } | null;
+  product?: { id: string; name: string } | null;
+  credential?: { id: string; name: string; login: string | null; url: string | null } | null;
   paidAmount?: string;
   remainingAmount?: string;
   paymentStatus?: ExpenseLedgerPaymentStatus;
@@ -259,6 +276,7 @@ export interface ExpenseStats {
 /** Query params for `expensesApi.getStats` (optional project drill-down parity). */
 export interface ExpenseStatsQueryParams extends FinanceDateRangeParams {
   projectId?: string;
+  productId?: string;
   /** When set, aggregates match expenses linked to this plan (list parity). */
   expensePlanId?: string;
   /** When set, aggregates match the same status scope as the expenses list. */
@@ -282,6 +300,7 @@ export interface ExpenseListParams extends FinanceDateRangeParams {
   category?: string;
   status?: string;
   projectId?: string;
+  productId?: string;
   /** Filter by linked expense plan (`GET /expenses?expensePlanId=`). */
   expensePlanId?: string;
   type?: string;
@@ -311,7 +330,8 @@ export interface CreateExpensePayload {
   frequency?: string;
   dueDate?: string | null;
   status?: string;
-  projectId?: string | null;
+  productId?: string | null;
+  credentialId?: string | null;
   expensePlanId?: string | null;
   clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
@@ -335,7 +355,8 @@ export interface UpdateExpensePayload {
   frequency?: string;
   dueDate?: string | null;
   status?: string;
-  projectId?: string | null;
+  productId?: string | null;
+  credentialId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: string;
   backlogReason?: string | null;
@@ -486,7 +507,8 @@ export const invoicesApi = {
       amount?: number;
       taxStatus?: string;
       companyId?: string | null;
-      projectId?: string | null;
+      productId?: string | null;
+      orderComment?: string | null;
     },
   ): Promise<Invoice> {
     const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}`, data);
@@ -498,8 +520,11 @@ export const invoicesApi = {
     });
     return resp.data;
   },
-  async sendOfficialInvoiceRequest(id: string): Promise<Invoice> {
-    const resp = await api.post<Invoice>(`/api/finance/invoices/${id}/official-request/send`);
+  async sendOfficialInvoiceRequest(id: string, options?: { resend?: boolean }): Promise<Invoice> {
+    const resp = await api.post<Invoice>(
+      `/api/finance/invoices/${id}/official-request/send`,
+      options?.resend ? { resend: true } : {},
+    );
     return resp.data;
   },
   async cancelOfficialInvoiceRequest(id: string): Promise<Invoice> {

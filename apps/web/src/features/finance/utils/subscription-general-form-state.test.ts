@@ -3,6 +3,7 @@ import type { Subscription } from '@/lib/api/finance';
 import {
   buildSubscriptionGeneralPatch,
   createSubscriptionGeneralDraft,
+  hasSubscriptionAmountChanged,
 } from './subscription-general-form-state';
 
 const baseSubscription: Subscription = {
@@ -80,5 +81,13 @@ describe('buildSubscriptionGeneralPatch billing frequency', () => {
     const patch = buildSubscriptionGeneralPatch(snap, draft);
     expect(patch).toHaveProperty('billingFrequency', 'CUSTOM');
     expect(patch).toHaveProperty('coverageMonthCount', 8);
+  });
+});
+
+describe('hasSubscriptionAmountChanged', () => {
+  it('detects a period-amount edit', () => {
+    const snap = createSubscriptionGeneralDraft(baseSubscription);
+    expect(hasSubscriptionAmountChanged(snap, { ...snap, amount: '12000' })).toBe(true);
+    expect(hasSubscriptionAmountChanged(snap, { ...snap, amount: '10 000' })).toBe(false);
   });
 });

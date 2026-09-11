@@ -10,8 +10,15 @@ import {
 } from '@/components/layout/header-context/header-module-title-constants';
 import { usePageDocumentTitle } from '@/features/account/hooks/use-page-document-title';
 import { InlineEditableEntityTitle } from '@/features/projects/components/InlineEditableEntityTitle';
+import {
+  DetailPageMobileBackLink,
+  DETAIL_PAGE_MOBILE_BACK_ROW_CLASS,
+} from '@/features/projects/components/DetailPageMobileBackLink';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
+
+const PROJECTS_DIRECTORY_HREF = '/projects';
 
 function isProjectInTrash(project: FullProject): boolean {
   return project.trashedAt != null;
@@ -27,6 +34,7 @@ export function useProjectDetailHeader({
   project,
   onProjectUpdated,
 }: UseProjectDetailHeaderOptions): void {
+  const isMobileViewport = useIsMobileViewport();
   useHeaderModuleTitle(null);
   usePageDocumentTitle(project?.name ?? '');
 
@@ -47,28 +55,49 @@ export function useProjectDetailHeader({
   const headerContext = useMemo(() => {
     if (!project) return null;
     const inTrash = isProjectInTrash(project);
+    const trashBadge = inTrash ? (
+      <StatusBadge label="In Trash" variant="zinc" className={HEADER_CONTEXT_STATUS_BADGE_CLASS} />
+    ) : null;
+    const title = (
+      <InlineEditableEntityTitle
+        value={project.name}
+        onCommit={handleCommitName}
+        editHint="Click to edit project name"
+        disabled={inTrash}
+        titleClassName={HEADER_MODULE_TITLE_LABEL}
+      />
+    );
+
+    if (isMobileViewport) {
+      return {
+        kind: 'custom' as const,
+        node: (
+          <div className="flex w-full min-w-0 flex-col gap-2.5">
+            <div className={DETAIL_PAGE_MOBILE_BACK_ROW_CLASS}>
+              <DetailPageMobileBackLink
+                href={PROJECTS_DIRECTORY_HREF}
+                ariaLabel="Back to projects"
+              />
+            </div>
+            <div className="flex w-full min-w-0 items-center gap-2">
+              <div className="min-w-0 flex-1 overflow-hidden">{title}</div>
+              {trashBadge}
+            </div>
+          </div>
+        ),
+      };
+    }
+
     return {
       kind: 'custom' as const,
       node: (
         <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
-          <InlineEditableEntityTitle
-            value={project.name}
-            onCommit={handleCommitName}
-            editHint="Click to edit project name"
-            disabled={inTrash}
-            titleClassName={HEADER_MODULE_TITLE_LABEL}
-          />
-          {inTrash ? (
-            <StatusBadge
-              label="In Trash"
-              variant="zinc"
-              className={HEADER_CONTEXT_STATUS_BADGE_CLASS}
-            />
-          ) : null}
+          {title}
+          {trashBadge}
         </div>
       ),
     };
-  }, [handleCommitName, project]);
+  }, [handleCommitName, isMobileViewport, project]);
 
   useHeaderContext(headerContext);
 }

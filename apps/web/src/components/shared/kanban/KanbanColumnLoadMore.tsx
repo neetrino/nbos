@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { KANBAN_COLUMN_LOAD_MORE_ROOT_MARGIN } from '@/features/shared/kanban/kanban-column-page';
 
 interface KanbanColumnLoadMoreProps {
   hasMore?: boolean;
@@ -25,22 +26,30 @@ export function KanbanColumnLoadMore({
   onLoadMore,
 }: KanbanColumnLoadMoreProps) {
   const anchorRef = useRef<HTMLDivElement>(null);
+  const onLoadMoreRef = useRef(onLoadMore);
+  const canLoadMore = Boolean(onLoadMore) && Boolean(hasMore) && !loadingMore;
 
   useEffect(() => {
-    if (!onLoadMore || !hasMore || loadingMore) return;
+    onLoadMoreRef.current = onLoadMore;
+  }, [onLoadMore]);
+
+  useEffect(() => {
+    if (!canLoadMore) return;
     const node = anchorRef.current;
     if (!node) return;
 
     const root = findOverflowYParent(node);
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) onLoadMore();
+        if (entries.some((entry) => entry.isIntersecting)) {
+          onLoadMoreRef.current?.();
+        }
       },
-      { root, rootMargin: '120px' },
+      { root, rootMargin: KANBAN_COLUMN_LOAD_MORE_ROOT_MARGIN },
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [hasMore, loadingMore, onLoadMore]);
+  }, [canLoadMore]);
 
   if (!onLoadMore || (!hasMore && !loadingMore)) return null;
 

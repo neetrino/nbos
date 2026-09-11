@@ -1,6 +1,10 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { buildProductWhatsAppCreateDedupeKey, toBullMqSafeJobId } from '@nbos/shared';
+import {
+  DEAL_WHATSAPP_CREATE_JOB_KIND,
+  type DealWhatsAppCreateJobPayload,
+} from './deal-whatsapp-group.types';
 import { BULLMQ_CRITICAL_JOB_OPTIONS } from '../../../runtime/bullmq-job-options';
 import { shouldRegisterQueueProducers } from '../../../runtime/process-role';
 import {
@@ -13,8 +17,14 @@ import {
   WHATSAPP_PRODUCT_GROUPS_QUEUE_NAME,
 } from './whatsapp-gateway.constants';
 
-export interface WhatsAppProductGroupJobPayload {
-  operationId: string;
+export type WhatsAppProductGroupJobPayload =
+  | { operationId: string; kind?: undefined }
+  | DealWhatsAppCreateJobPayload;
+
+export function isDealWhatsAppCreateJob(
+  data: WhatsAppProductGroupJobPayload,
+): data is DealWhatsAppCreateJobPayload {
+  return data.kind === DEAL_WHATSAPP_CREATE_JOB_KIND;
 }
 
 @Injectable()
@@ -57,8 +67,17 @@ export class WhatsAppProductGroupsQueueService implements OnModuleInit, OnModule
     // Prefer operation-scoped job id so FAILED Redis jobs do not block Retry
     // (stable business dedupe lives in DB, not BullMQ jobId).
     return this.addJob(
-      operationId,
+      { operationId },
       toBullMqSafeJobId(`whatsapp-op:${operationId}`),
+      businessDedupeKey,
+    );
+  }
+
+  async enqueueDealCreate(bindingId: string, businessDedupeKey: string): Promise<boolean> {
+    if (!this.queue) return false;
+    return this.addJob(
+      { kind: DEAL_WHATSAPP_CREATE_JOB_KIND, bindingId },
+      toBullMqSafeJobId(`whatsapp-deal-create:${bindingId}`),
       businessDedupeKey,
     );
   }
@@ -66,11 +85,11 @@ export class WhatsAppProductGroupsQueueService implements OnModuleInit, OnModule
   /** Used by scheduler when re-enqueueing without relying on create-key uniqueness. */
   async enqueueOperationById(operationId: string): Promise<boolean> {
     if (!this.queue) return false;
-    return this.addJob(operationId, toBullMqSafeJobId(`whatsapp-op:${operationId}`));
+    return this.addJob({ operationId }, toBullMqSafeJobId(`whatsapp-op:${operationId}`));
   }
 
   private async addJob(
-    operationId: string,
+    payload: WhatsAppProductGroupJobPayload,
     jobId: string,
     businessDedupeKey?: string,
   ): Promise<boolean> {
@@ -92,7 +111,7 @@ export class WhatsAppProductGroupsQueueService implements OnModuleInit, OnModule
           await existing.remove();
         }
       }
-      await this.queue.add(WHATSAPP_PRODUCT_GROUP_JOB_NAME, { operationId }, { jobId });
+      await this.queue.add(WHATSAPP_PRODUCT_GROUP_JOB_NAME, payload, { jobId });
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -100,7 +119,7 @@ export class WhatsAppProductGroupsQueueService implements OnModuleInit, OnModule
         return true;
       }
       this.logger.error(
-        `Failed to enqueue WhatsApp operation ${operationId}${businessDedupeKey ? ` (${businessDedupeKey})` : ''}`,
+        `Failed to enqueue WhatsApp job ${jobId}${businessDedupeKey ? ` (${businessDedupeKey})` : ''}`,
         error,
       );
       return false;

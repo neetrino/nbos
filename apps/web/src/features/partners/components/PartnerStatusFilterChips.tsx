@@ -18,7 +18,7 @@ export function PartnerStatusFilterChips({
 }: PartnerStatusFilterChipsProps) {
   return (
     <div
-      className="flex shrink-0 flex-nowrap items-center gap-1"
+      className="flex w-max max-w-full shrink-0 flex-nowrap items-center gap-1"
       role="group"
       aria-label="Filter by partner status"
     >

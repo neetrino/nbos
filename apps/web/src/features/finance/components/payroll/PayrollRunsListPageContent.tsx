@@ -23,6 +23,7 @@ import {
 import { PAYROLL_RUN_STATUS_LABEL } from '@/features/finance/constants/payroll-run-ui';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import {
   payrollRunsApi,
   type PayrollRunListRow,
@@ -82,13 +83,14 @@ export function PayrollRunsListPageContent() {
     searchParams.get(PAYROLL_RUNS_LIST_MONTH_TO_QUERY) ?? payrollFilters.monthTo ?? null,
   );
   const [view, handleViewChange] = usePayrollRunsListViewMode();
+  const displayView = useMobilePreferredView(view, 'board');
 
   const replaceListUrl = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
       const next = new URLSearchParams(searchParams.toString());
       mutate(next);
       const q = next.toString();
-      router.replace(q ? `${pathname}?${q}` : pathname);
+      router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
     },
     [pathname, router, searchParams],
   );
@@ -342,9 +344,9 @@ export function PayrollRunsListPageContent() {
             />
           ) : (
             <div className="flex min-h-0 flex-1 flex-col gap-4">
-              {view === 'calendar' ? (
+              {displayView === 'calendar' ? (
                 <PayrollRunsCalendarView items={items} />
-              ) : view === 'board' ? (
+              ) : displayView === 'board' ? (
                 <PayrollRunsBoardView items={items} />
               ) : (
                 <PayrollRunsListTable items={items} pageTotals={pageTotals} />

@@ -1557,7 +1557,7 @@ async function main() {
   await prisma.expense.create({
     data: {
       type: 'PLANNED',
-      category: 'HOSTING',
+      category: 'DOMAIN',
       name: 'Vercel Pro — ACME Website',
       amount: 20000,
       frequency: 'MONTHLY',
@@ -1593,7 +1593,7 @@ async function main() {
   await prisma.expense.create({
     data: {
       type: 'PLANNED',
-      category: 'HOSTING',
+      category: 'DOMAIN',
       name: 'Firebase — TechStart App',
       amount: 15000,
       frequency: 'MONTHLY',
@@ -1605,7 +1605,7 @@ async function main() {
   await prisma.expense.create({
     data: {
       type: 'PLANNED',
-      category: 'SERVICE',
+      category: 'TOOLS',
       name: 'Neon DB — MedTech',
       amount: 8000,
       frequency: 'MONTHLY',

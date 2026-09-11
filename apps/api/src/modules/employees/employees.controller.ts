@@ -147,13 +147,17 @@ export class EmployeesController {
       level?: 'JUNIOR' | 'MIDDLE' | 'SENIOR' | 'LEAD' | 'HEAD';
       notes?: string;
       hireDate?: string | null;
+      birthday?: string | null;
     },
   ) {
     await this.ownership.assertFounderNotMutatedByOthers(user.id, id);
-    const { hireDate, sipId, ...rest } = body;
+    const { hireDate, birthday, sipId, ...rest } = body;
     const data: Record<string, unknown> = { ...rest };
     if (hireDate !== undefined) {
       data.hireDate = hireDate ? new Date(hireDate) : null;
+    }
+    if (birthday !== undefined) {
+      data.birthday = birthday ? new Date(birthday) : null;
     }
     if (sipId !== undefined) {
       const trimmed = typeof sipId === 'string' ? sipId.trim() : '';

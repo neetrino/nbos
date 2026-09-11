@@ -1,8 +1,10 @@
 'use client';
 
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
-import type { ClientServiceRecord } from '@/lib/api/client-services';
-import type { Project } from '@/lib/api/projects';
+import type {
+  ClientServiceRecord,
+  ClientServiceRegistryCheckResult,
+} from '@/lib/api/client-services';
 import { ClientServiceGeneralTab } from './ClientServiceGeneralTab';
 import { ClientServiceInvoicesTab } from './ClientServiceInvoicesTab';
 import { ClientServiceExpensesTab } from './ClientServiceExpensesTab';
@@ -15,13 +17,13 @@ interface ClientServiceDetailSheetBodyProps {
   service: ClientServiceRecord;
   draft: ClientServiceFormState;
   patchDraft: (partial: Partial<ClientServiceFormState>) => void;
-  projects: Project[];
   saving: boolean;
   readOnly?: boolean;
   canCreateTask: boolean;
   onCreateInvoice: () => void;
   onCreateExpense: () => void;
   onCreateTask: () => void;
+  onRegistryChecked?: (result: ClientServiceRegistryCheckResult) => void;
 }
 
 export function ClientServiceDetailSheetBody({
@@ -30,13 +32,13 @@ export function ClientServiceDetailSheetBody({
   service,
   draft,
   patchDraft,
-  projects,
   saving,
   readOnly = false,
   canCreateTask,
   onCreateInvoice,
   onCreateExpense,
   onCreateTask,
+  onRegistryChecked,
 }: ClientServiceDetailSheetBodyProps) {
   if (activeTab === 'general') {
     return (
@@ -45,8 +47,8 @@ export function ClientServiceDetailSheetBody({
         service={service}
         draft={draft}
         patchDraft={patchDraft}
-        projects={projects}
         formDisabled={saving || readOnly}
+        onRegistryChecked={onRegistryChecked}
       />
     );
   }

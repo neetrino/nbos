@@ -45,21 +45,27 @@ export const EXPENSE_STAGES = [
   { value: 'CANCELLED', label: 'Cancelled', variant: 'gray' as StatusVariant },
 ] as const;
 
+/** Manual / plan-selectable categories after consolidation. */
 export const EXPENSE_CATEGORIES = [
-  { value: 'DOMAIN', label: 'Domain' },
-  { value: 'HOSTING', label: 'Hosting' },
-  { value: 'SERVICE', label: 'Service' },
+  { value: 'DOMAIN', label: 'Domain & Hosting' },
+  { value: 'TOOLS', label: 'Tools & services' },
   { value: 'MARKETING', label: 'Marketing' },
+  { value: 'OFFICE', label: 'Office' },
+  { value: 'TAXES', label: 'Taxes & fees' },
+  { value: 'PARTNER_PAYOUT', label: 'Partner Payout' },
+  { value: 'OTHER', label: 'Other' },
+] as const;
+
+/** System-generated on cards from payroll — not selectable on plans. */
+export const EXPENSE_SYSTEM_CATEGORIES = [
   { value: 'SALARY', label: 'Salary' },
   { value: 'BONUS', label: 'Bonus' },
-  { value: 'PARTNER_PAYOUT', label: 'Partner Payout' },
-  { value: 'TOOLS', label: 'Tools' },
-  { value: 'OFFICE', label: 'Office' },
-  { value: 'TAXES', label: 'Taxes' },
-  { value: 'BANK_FEES', label: 'Bank fees' },
-  { value: 'TRAINING', label: 'Training' },
-  { value: 'INTERNAL_INFRA', label: 'Internal infra' },
-  { value: 'OTHER', label: 'Other' },
+] as const;
+
+/** Board / list filters: manual + system categories. */
+export const EXPENSE_FILTER_CATEGORIES = [
+  ...EXPENSE_CATEGORIES,
+  ...EXPENSE_SYSTEM_CATEGORIES,
 ] as const;
 
 export const SUBSCRIPTION_TYPES = [
@@ -85,6 +91,13 @@ export const SUBSCRIPTION_REMINDER_LANGUAGES = [
   { value: 'RU', label: 'Russian' },
   { value: 'EN', label: 'English' },
 ] as const;
+
+export const SUBSCRIPTION_REMINDER_LANGUAGE_SHORT_OPTIONS = SUBSCRIPTION_REMINDER_LANGUAGES.map(
+  (language) => ({
+    value: language.value,
+    label: language.value.toLowerCase(),
+  }),
+);
 
 export const DEFAULT_SUBSCRIPTION_REMINDER_LANGUAGE = 'HY' as const;
 
@@ -132,6 +145,7 @@ export {
   formatAmountAbbreviated,
   formatAmountCompact,
   formatAmountDramSuffix,
+  formatAmountThousandsDram,
   formatGroupedNumber,
   formatMoneyDram,
   formatMoneyDramOrDash,

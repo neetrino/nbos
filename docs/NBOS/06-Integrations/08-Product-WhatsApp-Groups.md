@@ -79,7 +79,8 @@ Group creation/binding remains an explicit business action.
 
 Normal entry points:
 
-- Deal Won handoff for `PRODUCT` / `OUTSOURCE` resolves the Product `WORK` destination;
+- Deal card WhatsApp control can create or bind a client WhatsApp group before Product exists (`PRODUCT` / `OUTSOURCE`, primary Contact required);
+- Deal Won handoff for `PRODUCT` / `OUTSOURCE` resolves the Product `WORK` destination — default is bind the existing Deal group;
 - Product Client Communication Settings can create/bind/replace WORK or FINANCE destinations;
 - retry/reconciliation occurs from explicit settings/actions after failure.
 
@@ -94,10 +95,14 @@ Deal Won must consciously resolve Product client WORK communication.
 Allowed actions:
 
 ```text
-Create new WORK WhatsApp group
+Use existing Deal client group as Product WORK   # default when a Deal group exists
 or
-Select / bind existing allowed WhatsApp conversation
+Create a new WORK WhatsApp group                 # advanced / separate delivery group
+or
+Select / bind another existing allowed WhatsApp conversation
 ```
+
+The Won modal searches Gateway groups by name or ID (same directory search as Settings → Integrations) and binds the selected group. A typed/pasted `@g.us` id remains a fallback when the group is not in the current page.
 
 The existing group selector should normally show safe candidates from the current Project/client context rather than every WhatsApp group in the company.
 
@@ -341,6 +346,7 @@ The default experience remains simple for the common one-group case, while the b
 The latest `main` Product WhatsApp Settings work is useful runtime and should be **REUSE/EXTEND**, not discarded:
 
 - status, create/retry, bind/replace, sync, invitation and operation history remain visible operational tools;
+- client invitation is a single confirmed action; resend uses `forceResend` when status is `SENT` or `OUTCOME_UNKNOWN`;
 - existing-group search/select remains available when Gateway is configured;
 - paste/bind provider group id remains an operational fallback and may persist while Gateway is unavailable;
 - a stored legacy `groupChatId` remains visible from DB even when Gateway is not configured, until migration/cutover replaces that field with canonical mapping display;

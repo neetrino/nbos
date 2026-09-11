@@ -31,14 +31,14 @@ describe('ExpensePlansService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('create rejects unknown project', async () => {
-    prisma.project.findUnique = vi.fn().mockResolvedValue(null);
+  it('create rejects unknown product', async () => {
+    prisma.product.findUnique = vi.fn().mockResolvedValue(null);
     await expect(
       service.create({
         name: 'Rent',
         category: 'HOSTING',
         amount: 100,
-        projectId: 'missing',
+        productId: 'missing',
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
@@ -48,8 +48,8 @@ describe('ExpensePlansService', () => {
     await expect(service.findById('x')).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it('create persists plan when project valid', async () => {
-    prisma.project.findUnique = vi.fn().mockResolvedValue({ id: 'p1' });
+  it('create persists plan when product valid', async () => {
+    prisma.product.findUnique = vi.fn().mockResolvedValue({ projectId: 'p1' });
     prisma.expensePlan.create = vi.fn().mockResolvedValue({
       id: 'plan-1',
       name: 'Hosting',
@@ -57,13 +57,14 @@ describe('ExpensePlansService', () => {
       amount: new Decimal('99.00'),
       frequency: 'MONTHLY',
       nextDueDate: null,
-      provider: null,
+      productId: 'prod-1',
       projectId: 'p1',
       autoGenerate: false,
       notes: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       project: { id: 'p1', code: 'P1', name: 'P' },
+      product: { id: 'prod-1', name: 'Site' },
       _count: { expenses: 0 },
     });
 
@@ -71,11 +72,18 @@ describe('ExpensePlansService', () => {
       name: 'Hosting',
       category: 'HOSTING',
       amount: 99,
-      projectId: 'p1',
+      productId: 'prod-1',
     });
 
     expect(row.amount).toBe('99');
-    expect(prisma.expensePlan.create).toHaveBeenCalled();
+    expect(prisma.expensePlan.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          productId: 'prod-1',
+          projectId: 'p1',
+        }),
+      }),
+    );
   });
 
   it('create accepts WEEKLY frequency', async () => {
@@ -86,7 +94,6 @@ describe('ExpensePlansService', () => {
       amount: new Decimal('25.00'),
       frequency: 'WEEKLY',
       nextDueDate: new Date('2026-08-20T00:00:00.000Z'),
-      provider: null,
       projectId: null,
       autoGenerate: false,
       notes: null,
@@ -120,8 +127,9 @@ describe('ExpensePlansService', () => {
       amount: new Decimal('100'),
       frequency: 'MONTHLY',
       nextDueDate: new Date('2026-03-01T00:00:00.000Z'),
-      provider: null,
-      projectId: null,
+      productId: 'prod-1',
+      projectId: 'p1',
+      credentialId: 'cred-1',
       autoGenerate: false,
       notes: null,
     });
@@ -130,7 +138,12 @@ describe('ExpensePlansService', () => {
     const result = await service.generateCard('plan-1', {});
 
     expect(expensesService.create).toHaveBeenCalledWith(
-      expect.objectContaining({ expensePlanId: 'plan-1', type: 'PLANNED' }),
+      expect.objectContaining({
+        expensePlanId: 'plan-1',
+        type: 'PLANNED',
+        productId: 'prod-1',
+        credentialId: 'cred-1',
+      }),
     );
     expect(prisma.expensePlan.update).toHaveBeenCalledWith({
       where: { id: 'plan-1' },
@@ -147,7 +160,6 @@ describe('ExpensePlansService', () => {
       amount: new Decimal('10'),
       frequency: 'WEEKLY',
       nextDueDate: new Date('2026-08-15T00:00:00.000Z'),
-      provider: null,
       projectId: null,
       autoGenerate: false,
       notes: null,
@@ -171,7 +183,6 @@ describe('ExpensePlansService', () => {
       amount: new Decimal('50'),
       frequency: 'ONE_TIME',
       nextDueDate: new Date('2026-08-15T00:00:00.000Z'),
-      provider: null,
       projectId: null,
       autoGenerate: false,
       notes: null,
@@ -185,6 +196,71 @@ describe('ExpensePlansService', () => {
       where: { id: 'plan-once' },
       data: { nextDueDate: null },
     });
+  });
+
+  it('generateCard rejects a cancelled plan', async () => {
+    prisma.expensePlan.findUnique = vi.fn().mockResolvedValue({
+      id: 'plan-x',
+      status: 'CANCELLED',
+      nextDueDate: new Date('2026-09-01T00:00:00.000Z'),
+    });
+
+    await expect(service.generateCard('plan-x', {})).rejects.toBeInstanceOf(BadRequestException);
+    expect(expensesService.create).not.toHaveBeenCalled();
+  });
+
+  it('update does not rewrite issued expense cards', async () => {
+    prisma.expensePlan.count = vi.fn().mockResolvedValue(1);
+    prisma.expensePlan.findUnique = vi.fn().mockResolvedValue({
+      id: 'plan-1',
+      productId: 'prod-1',
+      credentialId: 'cred-1',
+      clientServiceRecordId: null,
+    });
+    prisma.product.findUnique = vi.fn().mockResolvedValue({ projectId: 'p1' });
+    prisma.credential.findUnique = vi.fn().mockResolvedValue({
+      id: 'cred-1',
+      productId: 'prod-1',
+      clientServiceRecordId: null,
+      trashedAt: null,
+    });
+    prisma.expensePlan.update = vi.fn().mockResolvedValue({
+      id: 'plan-1',
+      name: 'Hosting',
+      amount: new Decimal('120'),
+      productId: 'prod-2',
+      projectId: 'p1',
+    });
+
+    await service.update('plan-1', { productId: 'prod-2' });
+
+    expect(prisma.expense.updateMany).not.toHaveBeenCalled();
+    expect(prisma.expense.update).not.toHaveBeenCalled();
+  });
+
+  it('updateStatus cancels an active plan', async () => {
+    prisma.expensePlan.findUnique = vi.fn().mockResolvedValue({
+      id: 'plan-1',
+      status: 'ACTIVE',
+      amount: new Decimal('10'),
+    });
+    prisma.expensePlan.update = vi.fn().mockResolvedValue({
+      id: 'plan-1',
+      status: 'CANCELLED',
+      autoGenerate: false,
+      cancelledAt: new Date('2026-09-04T00:00:00.000Z'),
+      amount: new Decimal('10'),
+    });
+
+    const row = await service.updateStatus('plan-1', 'CANCELLED');
+
+    expect(row.status).toBe('CANCELLED');
+    expect(prisma.expensePlan.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'plan-1' },
+        data: expect.objectContaining({ status: 'CANCELLED', autoGenerate: false }),
+      }),
+    );
   });
 
   it('autoGenerateDuePlans rejects invalid asOf', async () => {
@@ -205,6 +281,11 @@ describe('ExpensePlansService', () => {
     expect(res.eligibleCount).toBe(2);
     expect(res.created).toHaveLength(2);
     expect(res.failures).toHaveLength(0);
+    expect(prisma.expensePlan.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ autoGenerate: true, status: 'ACTIVE' }),
+      }),
+    );
     spy.mockRestore();
   });
 

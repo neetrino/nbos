@@ -4,6 +4,7 @@ import {
   formatAmount,
   formatAmountAbbreviated,
   formatAmountDramSuffix,
+  formatAmountThousandsDram,
   formatGroupedNumber,
   formatMoneyDram,
   formatMoneyDramOrDash,
@@ -32,6 +33,13 @@ describe('money formatting', () => {
     expect(formatAmountAbbreviated(1_500)).toBe('1.5K');
     expect(formatAmountAbbreviated(999)).toBe('999');
     expect(formatAmountAbbreviated(-250_000)).toBe('-250K');
+  });
+
+  it('formats compact-grid hover to nearest thousand with dram', () => {
+    expect(formatAmountThousandsDram(4_862_347)).toBe(formatMoneyDram(4_862_000));
+    expect(formatAmountThousandsDram(4_862_500)).toBe(formatMoneyDram(4_863_000));
+    expect(formatAmountThousandsDram(-4_862_347)).toBe(formatMoneyDram(-4_862_000));
+    expect(formatAmountThousandsDram(97_400)).toBe(formatMoneyDram(97_000));
   });
 
   it('parses grouped input strings', () => {

@@ -8,6 +8,7 @@ import {
   DetailSheetSection,
   EntityItemList,
   useOpenEntityItemFromSummary,
+  useEntityItemMobileView,
   ViewModeSwitch,
   ENTITY_ITEM_VIEW_OPTIONS,
   type EntityItemVariant,
@@ -24,6 +25,7 @@ interface OrderInvoicesTabProps {
 export function OrderInvoicesTab({ order, onCreateInvoice }: OrderInvoicesTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
+  const displayVariant = useEntityItemMobileView(viewVariant);
   const invoices = useMemo(() => order.invoices ?? [], [order.invoices]);
 
   const itemSummaries = useMemo(
@@ -59,7 +61,7 @@ export function OrderInvoicesTab({ order, onCreateInvoice }: OrderInvoicesTabPro
     >
       <EntityItemList
         items={itemSummaries}
-        variant={viewVariant}
+        variant={displayVariant}
         onOpen={onOpenItem}
         emptyIcon={FileText}
         emptyTitle="No invoices"

@@ -1,6 +1,9 @@
 import { useCallback, useState } from 'react';
 import {
   buildSubscriptionGeneralPatch,
+  hasSubscriptionAmountChanged,
+  SUBSCRIPTION_AMOUNT_CHANGE_CONFIRM_DESCRIPTION,
+  SUBSCRIPTION_AMOUNT_CHANGE_CONFIRM_TITLE,
   type SubscriptionGeneralDraft,
 } from '@/features/finance/utils/subscription-general-form-state';
 import {
@@ -37,6 +40,7 @@ export function useSubscriptionGeneralSave({
   const [saving, setSaving] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [periodConfirmOpen, setPeriodConfirmOpen] = useState(false);
+  const [amountConfirmOpen, setAmountConfirmOpen] = useState(false);
 
   const executeSave = useCallback(async () => {
     if (!subscription || !generalDraft || !generalSnap) return;
@@ -54,6 +58,7 @@ export function useSubscriptionGeneralSave({
       onDirtyReset();
       onSaved(updated);
       setPeriodConfirmOpen(false);
+      setAmountConfirmOpen(false);
     } catch (err) {
       setGeneralSnap(snapAtSave);
       setGeneralDraft(draftAtSave);
@@ -89,6 +94,11 @@ export function useSubscriptionGeneralSave({
       return;
     }
 
+    if (hasSubscriptionAmountChanged(generalSnap, generalDraft)) {
+      setAmountConfirmOpen(true);
+      return;
+    }
+
     void executeSave();
   }, [executeSave, generalDraft, generalSnap, subscription]);
 
@@ -103,17 +113,29 @@ export function useSubscriptionGeneralSave({
 
   const handleCancel = useCallback(() => {
     setGeneralError(null);
+    setPeriodConfirmOpen(false);
+    setAmountConfirmOpen(false);
     if (generalSnap) setGeneralDraft({ ...generalSnap });
   }, [generalSnap, setGeneralDraft]);
+
+  const closeSaveConfirm = useCallback(() => {
+    setPeriodConfirmOpen(false);
+    setAmountConfirmOpen(false);
+  }, []);
 
   return {
     saving,
     generalError,
-    periodConfirmOpen,
-    setPeriodConfirmOpen,
-    periodConfirmDescription,
+    saveConfirmOpen: periodConfirmOpen || amountConfirmOpen,
+    saveConfirmTitle: amountConfirmOpen
+      ? SUBSCRIPTION_AMOUNT_CHANGE_CONFIRM_TITLE
+      : 'Confirm billing period change?',
+    saveConfirmDescription: amountConfirmOpen
+      ? SUBSCRIPTION_AMOUNT_CHANGE_CONFIRM_DESCRIPTION
+      : periodConfirmDescription,
+    closeSaveConfirm,
     handleSave,
     handleCancel,
-    confirmPeriodChangeAndSave: () => void executeSave(),
+    confirmSave: () => void executeSave(),
   };
 }

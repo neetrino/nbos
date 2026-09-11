@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { Mail, ServerCog } from 'lucide-react';
 import { toast } from 'sonner';
-import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { mailApi, type MailAccountRow } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { CorporateMailboxForm } from './CorporateMailboxForm';
 import { corporateFormStateFromAccount } from './corporate-mailbox-form-state';
+import { MailSheetPanelHeader } from './MailSheetPanelHeader';
 
 export interface ConnectMailboxSheetProps {
   enabled: boolean;
@@ -53,16 +53,16 @@ export function ConnectMailboxSheet({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <SheetHeader className="border-border shrink-0 border-b px-5 py-4">
-        <SheetTitle>{reconnectAccount ? 'Reconnect mailbox' : 'Connect mailbox'}</SheetTitle>
-        <SheetDescription>
-          {reconnectAccount
+      <MailSheetPanelHeader
+        title={reconnectAccount ? 'Reconnect mailbox' : 'Connect mailbox'}
+        description={
+          reconnectAccount
             ? 'Update the saved settings and reconnect. Password can stay blank if it is already stored.'
             : step === 'choose'
               ? 'Choose a provider to connect a mailbox to NBOS.'
-              : 'Enter the corporate mailbox IMAP and SMTP settings. A failed attempt still saves the mailbox so you can reconnect.'}
-        </SheetDescription>
-      </SheetHeader>
+              : 'Enter the corporate mailbox IMAP and SMTP settings. A failed attempt still saves the mailbox so you can reconnect.'
+        }
+      />
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
         {step === 'choose' ? (

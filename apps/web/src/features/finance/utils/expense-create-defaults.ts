@@ -20,7 +20,7 @@ export const EXPENSE_CREATE_HIDDEN_DEFAULTS = {
 export function buildCreateExpensePayload(
   form: CreateExpenseFormState,
   options: {
-    defaultProjectId?: string | null;
+    defaultProductId?: string | null;
     defaultStatus?: string;
   },
 ): CreateExpensePayload | null {
@@ -38,9 +38,9 @@ export function buildCreateExpensePayload(
     frequency: EXPENSE_CREATE_HIDDEN_DEFAULTS.frequency,
     status,
     dueDate: form.dueDate.trim() ? form.dueDate : null,
-    projectId:
-      options.defaultProjectId && options.defaultProjectId.length > 0
-        ? options.defaultProjectId
+    productId:
+      options.defaultProductId && options.defaultProductId.length > 0
+        ? options.defaultProductId
         : null,
     isPassThrough: EXPENSE_CREATE_HIDDEN_DEFAULTS.isPassThrough,
     taxStatus: EXPENSE_CREATE_HIDDEN_DEFAULTS.taxStatus,

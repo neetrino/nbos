@@ -1,5 +1,6 @@
+import { resolveInvoiceDisplayTitle } from '@nbos/shared';
 import {
-  formatCoverageMonthLabel,
+  formatCoveragePeriodLabel,
   formatDueDateLabel,
   type ClientPaymentReminderSource,
 } from './client-payment-reminder-templates';
@@ -15,6 +16,8 @@ export interface ResolvedOverdueReminderRender {
 interface OverdueReminderSubscription {
   notificationsEnabled: boolean;
   reminderLanguage: RenderOverdueReminderInput['language'];
+  name: string;
+  code: string;
   product: { name: string };
 }
 
@@ -26,29 +29,37 @@ interface OverdueReminderClientService {
 }
 
 export function resolveOverdueReminderRenderInput(input: {
+  code: string;
   amount: unknown;
   taxStatus: string;
   coverageStartMonth: string | null;
+  coverageMonthCount?: number | null;
   dueDate: Date | null;
   wave: OverdueReminderWave;
   subscription: OverdueReminderSubscription | null;
   clientServiceRecord: OverdueReminderClientService | null;
 }): ResolvedOverdueReminderRender | null {
   if (input.subscription != null) {
+    const serviceLabel = resolveInvoiceDisplayTitle({
+      code: input.code,
+      subscription: input.subscription,
+    });
     return buildResolved(input, 'subscription', input.subscription.reminderLanguage, {
-      serviceLabel: input.subscription.product.name,
-      periodLabel: formatCoverageMonthLabel(
+      serviceLabel,
+      periodLabel: formatCoveragePeriodLabel(
         input.coverageStartMonth,
+        input.coverageMonthCount,
         input.subscription.reminderLanguage,
       ),
+      coverageMonthCount: input.coverageMonthCount ?? 1,
     });
   }
   if (input.clientServiceRecord != null && input.dueDate != null) {
     const language = input.clientServiceRecord.reminderLanguage;
-    const serviceLabel =
-      input.clientServiceRecord.name.trim() ||
-      input.clientServiceRecord.product?.name.trim() ||
-      'Client service';
+    const serviceLabel = resolveInvoiceDisplayTitle({
+      code: input.code,
+      clientServiceRecord: input.clientServiceRecord,
+    });
     return buildResolved(input, 'client_service', language, {
       serviceLabel,
       periodLabel: formatDueDateLabel(input.dueDate, language),
@@ -59,13 +70,14 @@ export function resolveOverdueReminderRenderInput(input: {
 
 function buildResolved(
   input: {
+    code: string;
     amount: unknown;
     taxStatus: string;
     wave: OverdueReminderWave;
   },
   source: ClientPaymentReminderSource,
   language: RenderOverdueReminderInput['language'],
-  labels: { serviceLabel: string; periodLabel: string },
+  labels: { serviceLabel: string; periodLabel: string; coverageMonthCount?: number },
 ): ResolvedOverdueReminderRender {
   return {
     language,
@@ -76,8 +88,10 @@ function buildResolved(
       source,
       serviceLabel: labels.serviceLabel,
       periodLabel: labels.periodLabel,
+      invoiceCode: input.code,
       amount: input.amount,
       taxStatus: input.taxStatus as RenderOverdueReminderInput['taxStatus'],
+      coverageMonthCount: labels.coverageMonthCount,
     },
   };
 }

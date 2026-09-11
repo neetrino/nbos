@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
 import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
+import { CreateSubscriptionInvoiceDialog } from '@/features/finance/components/invoices/CreateSubscriptionInvoiceDialog';
+import { OverdueRemindersButton } from '@/features/finance/components/invoices/OverdueRemindersButton';
 import { OverdueRemindersDialog } from '@/features/finance/components/invoices/OverdueRemindersDialog';
 import { InvoicesPageContent } from '@/features/finance/components/invoices/InvoicesPageContent';
 import { INVOICE_VIEW_OPTIONS } from '@/features/finance/components/invoices/invoice-view-options';
@@ -26,6 +28,7 @@ import {
 import { useInvoicesCsvExport } from '@/features/finance/components/invoices/use-invoices-csv-export';
 import { useInvoicesScopeStatsCsvExport } from '@/features/finance/components/invoices/use-invoices-scope-stats-csv-export';
 import { useInvoicesPageState } from '@/features/finance/components/invoices/useInvoicesPageState';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import { invoicesListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-invoice-drilldown';
@@ -38,7 +41,7 @@ import {
 } from '@/features/finance/constants/finance-period-filter';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
-import { PermissionGate } from '@/lib/permissions';
+import { beginPermittedCreate, PermissionGate, usePermission } from '@/lib/permissions';
 
 const INVOICE_FILTER_CONFIGS_BASE = [
   {
@@ -67,6 +70,7 @@ function InvoicesPageInner() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { can } = usePermission();
   const subscriptionIdFromUrl = searchParams.get(SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY);
   const openInvoiceIdFromUrl = searchParams.get(OPEN_INVOICE_QUERY);
   const portfolioCreateInvoiceFromUrl = searchParams.get(PORTFOLIO_DEEP_LINK.createInvoice) === '1';
@@ -79,6 +83,9 @@ function InvoicesPageInner() {
     portfolioCreateInvoiceFromUrl,
     portfolioProjectIdFromUrl,
   });
+  const displayView = useMobilePreferredView(state.view, 'kanban');
+  const openCreateInvoice = () =>
+    beginPermittedCreate(can('ADD', 'FINANCE_INVOICES'), () => state.setCreateOpen(true));
   const { exportCsvSubmitting, handleExportCsv } = useInvoicesCsvExport(
     state.invoiceListExportParams,
   );
@@ -148,7 +155,7 @@ function InvoicesPageInner() {
         <IntegratedSearchFilters
           search={state.search}
           onSearchChange={state.setSearch}
-          searchPlaceholder="Search by invoice, company, order, project…"
+          searchPlaceholder="Search by invoice, company, order, product…"
           filters={invoiceFilterConfigs}
           filterValues={invoiceFilterValues}
           onFilterChange={handleFilterChange}
@@ -176,11 +183,9 @@ function InvoicesPageInner() {
             exportCsvLabel="Export invoices (CSV)"
           />
           <PermissionGate module="FINANCE_INVOICES" action="EDIT">
-            <Button type="button" variant="outline" onClick={openOverdueReminders}>
-              Send overdue reminders
-            </Button>
+            <OverdueRemindersButton onClick={openOverdueReminders} />
           </PermissionGate>
-          <Button type="button" onClick={() => state.setCreateOpen(true)}>
+          <Button type="button" onClick={openCreateInvoice}>
             <Plus size={16} aria-hidden />
             New Invoice
           </Button>
@@ -196,6 +201,7 @@ function InvoicesPageInner() {
       handleFilterChange,
       invoiceFilterConfigs,
       invoiceFilterValues,
+      openCreateInvoice,
       state,
     ],
   );
@@ -222,11 +228,11 @@ function InvoicesPageInner() {
           error={state.error}
           mutationError={state.mutationError}
           onDismissMutationError={state.clearMutationError}
-          view={state.view}
+          view={displayView}
           onRetry={state.fetchInvoices}
           onInvoiceClick={state.handleInvoiceClick}
           onMove={(itemId, _from, toColumn) => state.handleMoneyStatusChange(itemId, toColumn)}
-          onOpenQuickCreate={() => state.setCreateOpen(true)}
+          onOpenQuickCreate={openCreateInvoice}
           columnMeta={state.columnMeta}
           hasMoreAny={state.hasMoreAny}
           onColumnLoadMore={state.loadMoreColumn}
@@ -243,12 +249,20 @@ function InvoicesPageInner() {
         onPaymentRecorded={state.handlePaymentRecorded}
         stageGateHighlight={state.stageGateHighlight}
       />
-      <CreateInvoiceDialog
-        open={state.createDialogOpen}
-        onOpenChange={state.handleCreateDialogOpenChange}
-        onCreated={state.handleInvoiceCreated}
-        subscriptionId={subscriptionIdFromUrl}
-      />
+      {subscriptionIdFromUrl ? (
+        <CreateSubscriptionInvoiceDialog
+          open={state.createDialogOpen}
+          onOpenChange={state.handleCreateDialogOpenChange}
+          onCreated={state.handleInvoiceCreated}
+          subscriptionId={subscriptionIdFromUrl}
+        />
+      ) : (
+        <CreateInvoiceDialog
+          open={state.createDialogOpen}
+          onOpenChange={state.handleCreateDialogOpenChange}
+          onCreated={state.handleInvoiceCreated}
+        />
+      )}
       <OverdueRemindersDialog open={overdueRemindersOpen} onOpenChange={setOverdueRemindersOpen} />
     </div>
   );

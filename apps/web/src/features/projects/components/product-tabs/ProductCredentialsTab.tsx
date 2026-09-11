@@ -201,18 +201,19 @@ function ProductCredentialsTabContent({
             </Link>
           </div>
         }
+        secondaryTabs={
+          hasCredentials ? (
+            <CredentialQuickFilterChips
+              vaultScope="project"
+              categoryChips={filter.quickCategoryChips}
+              activeCategory={filter.quickCategory}
+              onCategoryChange={filter.setQuickCategory}
+              activeQuick={filter.quickFilters}
+              onToggleQuick={filter.toggleQuickFilter}
+            />
+          ) : undefined
+        }
       />
-
-      {hasCredentials ? (
-        <CredentialQuickFilterChips
-          vaultScope="project"
-          categoryChips={filter.quickCategoryChips}
-          activeCategory={filter.quickCategory}
-          onCategoryChange={filter.setQuickCategory}
-          activeQuick={filter.quickFilters}
-          onToggleQuick={filter.toggleQuickFilter}
-        />
-      ) : null}
 
       {!hasCredentials ? (
         <EmptyState

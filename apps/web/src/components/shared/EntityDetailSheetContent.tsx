@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { SheetContent } from '@/components/ui/sheet';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 import { EntitySheetFloatingRail } from './entity-sheet-floating-rail';
 import {
@@ -98,6 +99,7 @@ export type EntityDetailSheetContentProps = Omit<
   /**
    * When false, only floating Close is shown.
    * Defaults: `true` for `layout="full"`, `false` for `layout="auxiliary"`.
+   * On mobile viewports, rail actions are always hidden (Back only).
    */
   showRailActions?: boolean;
   children: ReactNode;
@@ -128,8 +130,10 @@ export function EntityDetailSheetContent({
   children,
   ...props
 }: EntityDetailSheetContentProps) {
+  const isMobileViewport = useIsMobileViewport();
   const preset = resolveShellPreset(layout, width);
-  const railActionsVisible = showRailActions ?? preset.defaultShowRailActions;
+  const railActionsVisible =
+    !isMobileViewport && (showRailActions ?? preset.defaultShowRailActions);
   const defaultRail =
     railActionsVisible && !floatingRailContent ? (
       <EntitySheetFloatingRail
@@ -138,6 +142,7 @@ export function EntityDetailSheetContent({
         trailing={trailingRail}
       />
     ) : undefined;
+  const floatingRail = isMobileViewport ? undefined : (floatingRailContent ?? defaultRail);
 
   return (
     <SheetContent
@@ -146,7 +151,7 @@ export function EntityDetailSheetContent({
       floatingClose
       floatingRailVisible={open}
       floatingRailAnchorClassName={railAnchorClassName ?? preset.anchorClass}
-      floatingRail={floatingRailContent ?? defaultRail}
+      floatingRail={floatingRail}
       className={cn(contentClassName ?? preset.contentClass, className)}
       {...props}
     >

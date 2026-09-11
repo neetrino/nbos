@@ -35,6 +35,7 @@ import {
 } from '@/features/tasks/work-spaces/workspace-runtime-task-filters';
 import type { UseProductWorkSpaceTabResult } from '@/features/projects/hooks/use-product-work-space-tab';
 import { SEARCH_FILTER_PAGE_ID } from '@/lib/persisted-client-state';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 
 type ProductTasksTabProps = UseProductWorkSpaceTabResult;
 
@@ -60,9 +61,11 @@ export function ProductTasksTab({
   const { boardView, handleBoardViewChange, workspaceArea, setWorkspaceArea } =
     useWorkspaceBoardViewState();
   const openQuickCreateRef = useRef<(() => void) | null>(null);
+  const isMobileViewport = useIsMobileViewport();
 
   const newTaskDisabled = creatorReady && !creatorId;
   const isPlanningArea = workspaceArea === WORKSPACE_AREA_PLANNING;
+  const effectiveBoardView = isMobileViewport && !isPlanningArea ? 'kanban' : boardView;
 
   const onWorkspaceUpdate = async (updated: Parameters<typeof handleWorkspaceUpdate>[0]) => {
     await handleWorkspaceUpdate(updated);
@@ -149,7 +152,7 @@ export function ProductTasksTab({
         mode="embedded"
         defaultTaskLink={defaultLink ?? undefined}
         taskViewFilters={taskViewFilters}
-        boardView={boardView}
+        boardView={effectiveBoardView}
         setBoardView={handleBoardViewChange}
         workspaceArea={workspaceArea}
         quickCreateRef={openQuickCreateRef}

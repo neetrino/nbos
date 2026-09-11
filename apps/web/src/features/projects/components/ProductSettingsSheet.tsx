@@ -11,9 +11,13 @@ import {
   type ProductWhatsAppState,
   type WhatsAppAvailableGroup,
 } from '@/lib/api/whatsapp';
-import { isWhatsAppCreateInFlight } from '@/features/crm/whatsapp-create-status';
+import { isWhatsAppCreateInFlightFromLatest } from '@/features/crm/whatsapp-create-status';
 import { cn } from '@/lib/utils';
 import {
+  canRefreshProductWhatsAppFromStoredId,
+  CLIENT_INVITE_CONFIRM,
+  CLIENT_INVITE_RESEND_CONFIRM,
+  clientInviteNeedsForceResend,
   loadProductWhatsAppSettings,
   nextProductWhatsAppSettingsState,
   productWhatsAppBindingView,
@@ -31,7 +35,7 @@ interface ProductSettingsSheetProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   /** Open control style. Default is the page settings gear. */
-  triggerVariant?: 'default' | 'tab' | 'inline';
+  triggerVariant?: 'default' | 'tab' | 'inline' | 'tile';
   className?: string;
 }
 
@@ -101,8 +105,34 @@ export function ProductSettingsSheet({
 
   const bindingView = productWhatsAppBindingView(state);
   const status = bindingView.status;
-  const createInFlight =
-    isWhatsAppCreateInFlight(status) || isWhatsAppCreateInFlight(state?.latestOperation?.status);
+  const createInFlight = isWhatsAppCreateInFlightFromLatest({
+    bindingStatus: status,
+    latestOperationType: state?.latestOperation?.type,
+    latestOperationStatus: state?.latestOperation?.status,
+  });
+  const canSyncFromGroupId = canRefreshProductWhatsAppFromStoredId({
+    groupChatId: bindingView.groupChatId,
+    busy,
+    gatewayConfigured,
+  });
+
+  function syncFromStoredGroupId() {
+    const groupChatId = bindingView.groupChatId;
+    if (!groupChatId) return;
+    void run(() => productWhatsAppApi.bind(productId, { groupChatId }), 'Group details synced');
+  }
+
+  function inviteClient() {
+    const forceResend = clientInviteNeedsForceResend(state?.invitation?.status);
+    const confirmed = window.confirm(
+      forceResend ? CLIENT_INVITE_RESEND_CONFIRM : CLIENT_INVITE_CONFIRM,
+    );
+    if (!confirmed) return;
+    void run(
+      () => productWhatsAppApi.clientInvite(productId, forceResend ? { forceResend: true } : {}),
+      forceResend ? 'Client invitation resend queued' : 'Client invitation queued',
+    );
+  }
 
   return (
     <PermissionGate module="PROJECTS" action="EDIT">
@@ -144,6 +174,9 @@ export function ProductSettingsSheet({
             lastErrorMessage={
               status === 'FAILED' ? (state?.binding?.lastErrorMessage ?? null) : null
             }
+            syncBusy={busy}
+            canSyncFromGroupId={canSyncFromGroupId}
+            onSyncFromGroupId={syncFromStoredGroupId}
           />
 
           <ProductWhatsAppActionGrid
@@ -158,22 +191,7 @@ export function ProductSettingsSheet({
             onSyncParticipants={() =>
               void run(() => productWhatsAppApi.sync(productId), 'Participant sync queued')
             }
-            onSendClientInvitation={() =>
-              void run(() => productWhatsAppApi.clientInvite(productId), 'Client invitation queued')
-            }
-            onResendInvitation={() => {
-              if (
-                !window.confirm(
-                  'Resend client invitation? Only confirm if the previous send is safe to retry.',
-                )
-              ) {
-                return;
-              }
-              void run(
-                () => productWhatsAppApi.clientInvite(productId, { forceResend: true }),
-                'Client invitation resend queued',
-              );
-            }}
+            onInviteClient={inviteClient}
           />
 
           <ProductWhatsAppBindControls

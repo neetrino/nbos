@@ -1,7 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Repeat } from 'lucide-react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   DetailSheetFormFooter,
   DetailSheetTabBar,
@@ -11,35 +10,39 @@ import {
   ErrorState,
   LoadingState,
 } from '@/components/shared';
+import {
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import { getSubscriptionType } from '@/features/finance/constants/finance';
+import { CreateSubscriptionInvoiceDialog } from '@/features/finance/components/invoices/CreateSubscriptionInvoiceDialog';
 import {
   subscriptionWorkspaceHref,
   subscriptionsListWithOpenSubscriptionHref,
 } from '@/features/finance/constants/subscription-deep-link';
+import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import {
   createSubscriptionGeneralDraft,
   isSubscriptionGeneralDirty,
   type SubscriptionGeneralDraft,
 } from '@/features/finance/utils/subscription-general-form-state';
-import { formatSubscriptionPeriodStatement } from '@/features/finance/utils/subscription-period-display';
-import { formatSubscriptionTermSummary } from '@/features/finance/utils/subscription-term-display';
-import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
-import { SubscriptionBillingPeriodConfirmDialog } from './SubscriptionBillingPeriodConfirmDialog';
-import { useSubscriptionGeneralSave } from './use-subscription-general-save';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
+import { usePermission } from '@/lib/permissions';
+import { cn } from '@/lib/utils';
+import { buildSubscriptionDetailSheetTabs } from './build-subscription-detail-sheet-tabs';
+import { subscriptionCanCreatePeriodInvoice } from './subscription-action-eligibility';
+import { SubscriptionBillingPeriodConfirmDialog } from './SubscriptionBillingPeriodConfirmDialog';
+import { SubscriptionDetailSheetHeader } from './SubscriptionDetailSheetHeader';
 import { SubscriptionGeneralTab } from './SubscriptionGeneralTab';
-import { SubscriptionGridStatusControl } from './SubscriptionGridStatusControl';
-import { SubscriptionInvoicesTab } from './SubscriptionInvoicesTab';
 import { SubscriptionHistoryTab } from './SubscriptionHistoryTab';
-import {
-  SUBSCRIPTION_DETAIL_SHEET_TABS,
-  type SubscriptionDetailSheetTab,
-} from './subscription-detail-sheet-tabs';
-import { useSubscriptionDetailMutations } from './use-subscription-detail-mutations';
+import { SubscriptionInvoicesTab } from './SubscriptionInvoicesTab';
+import type { SubscriptionDetailSheetTab } from './subscription-detail-sheet-tabs';
+import { useSubscriptionGeneralSave } from './use-subscription-general-save';
 
 interface SubscriptionDetailSheetProps {
   subscriptionId: string | null;
@@ -75,12 +78,14 @@ export function SubscriptionDetailSheet({
   });
   const [actionError, setActionError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<SubscriptionDetailSheetTab>('general');
+  const [createInvoiceOpen, setCreateInvoiceOpen] = useState(false);
   const [generalDraft, setGeneralDraft] = useState<SubscriptionGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<SubscriptionGeneralDraft | null>(null);
   const generalDirtyRef = useRef(false);
 
   useEffect(() => {
     setActiveTab('general');
+    setCreateInvoiceOpen(false);
   }, [subscriptionId, open]);
 
   useLayoutEffect(() => {
@@ -131,15 +136,38 @@ export function SubscriptionDetailSheet({
     [onSubscriptionUpdated, setSubscription],
   );
 
+  const handlePeriodInvoiceCreated = useCallback(async () => {
+    if (!subscription) return;
+    const updated = await subscriptionsApi.getById(subscription.id);
+    handleSubscriptionChange(updated);
+  }, [handleSubscriptionChange, subscription]);
+
+  const { can } = usePermission();
+  const canCreateInvoice = Boolean(
+    subscription &&
+    subscriptionCanCreatePeriodInvoice(subscription) &&
+    can('EDIT', 'FINANCE_INVOICES'),
+  );
+  const openCreateInvoice = useCallback(() => setCreateInvoiceOpen(true), []);
+  const detailSheetTabs = useMemo(
+    () =>
+      buildSubscriptionDetailSheetTabs({
+        canQuickCreateInvoice: canCreateInvoice,
+        onCreateInvoice: openCreateInvoice,
+      }),
+    [canCreateInvoice, openCreateInvoice],
+  );
+
   const {
     saving,
     generalError,
-    periodConfirmOpen,
-    setPeriodConfirmOpen,
-    periodConfirmDescription,
+    saveConfirmOpen,
+    saveConfirmTitle,
+    saveConfirmDescription,
+    closeSaveConfirm,
     handleSave: handleGeneralSave,
     handleCancel: handleGeneralCancel,
-    confirmPeriodChangeAndSave,
+    confirmSave,
   } = useSubscriptionGeneralSave({
     subscription,
     generalDraft,
@@ -152,12 +180,10 @@ export function SubscriptionDetailSheet({
     },
   });
 
+  const isMobileViewport = useIsMobileViewport();
+
   if (!hostMounted) return null;
 
-  const subType = subscription ? getSubscriptionType(subscription.type) : undefined;
-  const termSummary = subscription ? formatSubscriptionTermSummary(subscription) : null;
-  const displayTitle = subscription ? getSubscriptionDisplayTitle(subscription) : '';
-  const showCodeSubline = subscription ? displayTitle !== subscription.code : false;
   const sourcePageHref = subscriptionsListWithOpenSubscriptionHref(sheetId ?? '');
 
   return (
@@ -170,59 +196,43 @@ export function SubscriptionDetailSheet({
           sourcePageHref={sourcePageHref}
           workspaceHref={subscriptionWorkspaceHref(sheetId ?? '')}
         >
-          <div className="bg-background shrink-0 px-7 pt-5 pb-3">
-            {loading && !subscription ? (
-              <p className="text-muted-foreground text-sm">Loading…</p>
-            ) : subscription ? (
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-                    <Repeat className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                    <div className="min-w-0">
-                      <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                        {displayTitle}
-                      </h2>
-                      {showCodeSubline ? (
-                        <p className="text-muted-foreground mt-0.5 truncate text-xs">
-                          {subscription.code}
-                        </p>
-                      ) : null}
-                    </div>
-                    {subType ? (
-                      <span className="text-muted-foreground rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
-                        {subType.label}
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="text-muted-foreground mt-0.5 text-sm">
-                    {formatSubscriptionPeriodStatement(subscription)}
-                    {termSummary ? (
-                      <>
-                        <span className="mx-1.5">·</span>
-                        {termSummary}
-                      </>
-                    ) : null}
-                    <span className="mx-1.5">·</span>
-                    {subscription.project.name}
-                  </p>
-                </div>
-                <SubscriptionSheetStatusControl
-                  subscription={subscription}
-                  onSubscriptionChange={handleSubscriptionChange}
-                  onError={setActionError}
-                />
-              </div>
-            ) : null}
-          </div>
+          {loading && !subscription ? (
+            <div
+              className={cn(
+                isMobileViewport
+                  ? DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS
+                  : 'bg-background shrink-0 px-7 pt-5 pb-3',
+              )}
+            >
+              {isMobileViewport ? (
+                <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS} />
+              ) : null}
+              <p
+                className={cn(
+                  'text-muted-foreground text-sm',
+                  isMobileViewport && DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+                )}
+              >
+                Loading…
+              </p>
+            </div>
+          ) : subscription ? (
+            <SubscriptionDetailSheetHeader
+              subscription={subscription}
+              onSubscriptionChange={handleSubscriptionChange}
+              onError={setActionError}
+            />
+          ) : null}
 
           <DetailSheetTabBar
-            tabs={SUBSCRIPTION_DETAIL_SHEET_TABS}
+            tabs={detailSheetTabs}
             activeTab={activeTab}
             onTabChange={(value) => setActiveTab(value as SubscriptionDetailSheetTab)}
+            className="max-md:mt-3 max-md:px-4"
           />
 
           <ScrollArea className="min-h-0 flex-1">
-            <div className="px-7 py-5">
+            <div className="px-7 py-5 max-md:px-4">
               {loading && !subscription ? (
                 <LoadingState count={3} />
               ) : error ? (
@@ -239,7 +249,11 @@ export function SubscriptionDetailSheet({
                     />
                   ) : null}
                   {activeTab === 'invoice' ? (
-                    <SubscriptionInvoicesTab subscription={subscription} />
+                    <SubscriptionInvoicesTab
+                      subscription={subscription}
+                      canCreateInvoice={canCreateInvoice}
+                      onCreateInvoice={openCreateInvoice}
+                    />
                   ) : null}
                   {activeTab === 'history' ? <SubscriptionHistoryTab /> : null}
                 </DetailSheetTabPanel>
@@ -263,41 +277,26 @@ export function SubscriptionDetailSheet({
         </EntityDetailSheetContent>
       </Sheet>
       <SubscriptionBillingPeriodConfirmDialog
-        open={periodConfirmOpen}
+        open={saveConfirmOpen}
+        title={saveConfirmTitle}
         subscriptionTitle={subscription ? getSubscriptionDisplayTitle(subscription) : ''}
-        description={periodConfirmDescription}
+        description={saveConfirmDescription}
         isSubmitting={saving}
-        onOpenChange={setPeriodConfirmOpen}
-        onConfirm={confirmPeriodChangeAndSave}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) closeSaveConfirm();
+        }}
+        onConfirm={confirmSave}
         forceNestedBackdrop
       />
+      {subscription ? (
+        <CreateSubscriptionInvoiceDialog
+          open={createInvoiceOpen}
+          onOpenChange={setCreateInvoiceOpen}
+          subscription={subscription}
+          forceNestedBackdrop
+          onCreated={() => void handlePeriodInvoiceCreated()}
+        />
+      ) : null}
     </EntityItemHost>
-  );
-}
-
-function SubscriptionSheetStatusControl({
-  subscription,
-  onSubscriptionChange,
-  onError,
-}: {
-  subscription: Subscription;
-  onSubscriptionChange: (updated: Subscription) => void;
-  onError: (message: string | null) => void;
-}) {
-  const { activatingId, cancellingId, holdingId, handleActivate, handleCancel, handleHold } =
-    useSubscriptionDetailMutations(subscription, onSubscriptionChange, onError);
-
-  return (
-    <SubscriptionGridStatusControl
-      subscription={subscription}
-      activatingId={activatingId}
-      cancellingId={cancellingId}
-      holdingId={holdingId}
-      onActivate={() => void handleActivate()}
-      onCancel={handleCancel}
-      onHold={handleHold}
-      forceNestedBackdrop
-      size="sm"
-    />
   );
 }

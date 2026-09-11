@@ -35,19 +35,11 @@ export function ListPagination({ meta, onPageChange, className }: ListPagination
 
   return (
     <nav
-      className={cn('relative flex min-h-10 items-center pt-6 pb-1', className)}
+      className={cn('flex flex-col items-center gap-2 pt-6 pb-1', className)}
       aria-label="Pagination"
     >
-      <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
-        {start}–{end} of {total}
-      </span>
-
       {totalPages > 1 ? (
-        <div
-          className={cn(PAGE_HERO_PILL_GROUP, 'absolute left-1/2 -translate-x-1/2 gap-0.5')}
-          role="group"
-          aria-label="Page numbers"
-        >
+        <div className={cn(PAGE_HERO_PILL_GROUP, 'gap-0.5')} role="group" aria-label="Page numbers">
           <PaginationNavButton
             ariaLabel="Previous page"
             disabled={page <= 1}
@@ -93,6 +85,10 @@ export function ListPagination({ meta, onPageChange, className }: ListPagination
           </PaginationNavButton>
         </div>
       ) : null}
+
+      <span className="text-muted-foreground text-xs tabular-nums">
+        {start}–{end} of {total}
+      </span>
     </nav>
   );
 }

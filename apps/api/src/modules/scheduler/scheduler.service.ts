@@ -15,6 +15,7 @@ import { NotificationEnqueueReconcileService } from '../notifications/notificati
 import { AuthSessionService } from '../auth/auth-session.service';
 import { RecurringTasksService } from '../tasks/recurring-tasks.service';
 import { ClientServicesRenewalInvoiceService } from '../client-services/client-services-renewal-invoice.service';
+import { DomainRegistryService } from '../client-services/registry/domain-registry.service';
 import { MailGmailWatchRenewService } from '../mail/mail-gmail-watch-renew.service';
 import { MailOutboundReconcileService } from '../mail/mail-outbound-reconcile.service';
 import { MailSyncReconcileService } from '../mail/mail-sync-reconcile.service';
@@ -51,6 +52,7 @@ export class SchedulerService {
     private readonly authSessions: AuthSessionService,
     private readonly recurringTasks: RecurringTasksService,
     private readonly clientServicesRenewalInvoice: ClientServicesRenewalInvoiceService,
+    private readonly domainRegistry: DomainRegistryService,
     private readonly mailOutboundReconcile: MailOutboundReconcileService,
     private readonly mailGmailWatchRenew: MailGmailWatchRenewService,
     private readonly mailSyncReconcile: MailSyncReconcileService,
@@ -302,6 +304,23 @@ export class SchedulerService {
         return {
           processedCount: result.marked,
           metadata: result,
+        };
+      },
+    );
+  }
+
+  async runClientServicesDomainRegistry(trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp) {
+    return this.lease.runWithLease(
+      { jobName: SCHEDULER_JOB_NAMES.clientServicesDomainRegistry, trigger },
+      async ({ signal }) => {
+        if (signal.aborted) return;
+        const result = await this.domainRegistry.runDueLookups();
+        return {
+          processedCount: result.checked.length,
+          metadata: {
+            eligibleCount: result.eligibleCount,
+            failures: result.failures.length,
+          },
         };
       },
     );

@@ -8,6 +8,7 @@
 import { cn } from '@/lib/utils';
 import {
   SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
+  SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS,
   SHEET_VIEWPORT_MAX_HEIGHT_CLASS,
   SHEET_VIEWPORT_TOP_INSET_CLASS,
 } from '@/components/shared/detail-sheet-classes';
@@ -37,7 +38,8 @@ export const MAIL_WORKSPACE_SHEET_CONTENT_CLASS = cn(
 
 /** Floating close rail: anchor to the left edge of the mail workspace panel. */
 export const MAIL_WORKSPACE_SHEET_RAIL_ANCHOR_CLASS = cn(
-  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[calc(100vw-var(--app-sidebar-width))]',
+  SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS,
+  'sm:right-[calc(100vw-var(--app-sidebar-width))]',
   SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
 );
 
@@ -60,6 +62,7 @@ export const MAIL_NESTED_FORWARD_SHEET_CONTENT_CLASS = cn(
 
 /** Floating close rail anchor for nested forward composer width preset. */
 export const MAIL_NESTED_FORWARD_SHEET_RAIL_ANCHOR_CLASS = cn(
-  'max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[calc(85vw-var(--app-sidebar-width))]',
+  SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS,
+  'sm:right-[calc(85vw-var(--app-sidebar-width))]',
   SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
 );

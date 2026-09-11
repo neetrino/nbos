@@ -26,6 +26,7 @@ import {
   type InvoiceStats,
 } from '@/lib/api/finance';
 import { useInvoicesBoardViewMode } from '@/features/finance/constants/invoices-board-view';
+import { withOfficialAwaitingSendPending } from './official-awaiting-send-pending';
 import {
   SEARCH_FILTER_PAGE_ID,
   usePersistedSearchFilterField,
@@ -187,7 +188,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     (invoiceId: string) => {
       const p = new URLSearchParams(searchParams.toString());
       p.set(OPEN_INVOICE_QUERY, invoiceId);
-      router.push(`${pathname}?${p.toString()}`);
+      router.push(`${pathname}?${p.toString()}`, { scroll: false });
     },
     [pathname, router, searchParams],
   );
@@ -307,13 +308,14 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   );
 
   const handleInvoiceCreated = useCallback(
-    async (created?: Invoice) => {
+    async (created?: Invoice | Invoice[]) => {
       await fetchInvoices();
       setStageGateHighlight(null);
-      if (!created) return;
-      setSelectedInvoice(created);
+      const first = Array.isArray(created) ? created[0] : created;
+      if (!first) return;
+      setSelectedInvoice(first);
       setSheetOpen(true);
-      pushOpenInvoiceToUrl(created.id);
+      pushOpenInvoiceToUrl(first.id);
     },
     [fetchInvoices, pushOpenInvoiceToUrl],
   );
@@ -397,12 +399,14 @@ function useInvoiceMoneyStatusChange({
       }
 
       try {
-        const updated = await invoicesApi.updateMoneyStatus(id, moneyStatus);
-        setItems((current) => replaceInvoice(current, updated));
-        if (selectedInvoice?.id === id) {
-          setSelectedInvoice(updated);
-        }
-        onTransitionSuccess();
+        await withOfficialAwaitingSendPending(currentInvoice, moneyStatus, async () => {
+          const updated = await invoicesApi.updateMoneyStatus(id, moneyStatus);
+          setItems((current) => replaceInvoice(current, updated));
+          if (selectedInvoice?.id === id) {
+            setSelectedInvoice(updated);
+          }
+          onTransitionSuccess();
+        });
       } catch (caught) {
         setItems(() => previousInvoices);
         if (previousSelected?.id === id) {

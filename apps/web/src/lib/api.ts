@@ -2,6 +2,7 @@ import axios from 'axios';
 import { toApiError } from './api-errors';
 import { shouldSignOutForResponse } from './auth/session-state';
 import { signOutForInvalidSession } from './auth/session-sign-out';
+import { notifyPermissionDenied } from './permissions/permission-denied';
 
 export interface ApiResponse<T> {
   data: T;
@@ -38,6 +39,9 @@ api.interceptors.response.use(
     }
 
     if (axios.isAxiosError(error)) {
+      if (error.response?.status === 403) {
+        notifyPermissionDenied();
+      }
       return Promise.reject(toApiError(error.response?.data, error.message));
     }
     return Promise.reject(error);

@@ -49,6 +49,7 @@ import type {
   ClientServiceRecordQueryParams,
   UpdateClientServiceRecordBody,
 } from './client-services.types';
+import { fillCredentialContextIfEmpty } from '../expenses/expense-credential-link';
 
 @Injectable()
 export class ClientServicesService {
@@ -163,6 +164,7 @@ export class ClientServicesService {
       data,
       include: buildClientServiceDetailInclude(),
     });
+    await this.syncLinkedCredentialContext(row);
     return this.toDetailResponse(row);
   }
 
@@ -174,7 +176,19 @@ export class ClientServicesService {
       data,
       include: buildClientServiceDetailInclude(),
     });
+    await this.syncLinkedCredentialContext(row);
     return this.toDetailResponse(row);
+  }
+
+  private async syncLinkedCredentialContext(row: {
+    id: string;
+    productId: string | null;
+    providerAccountId: string | null;
+  }): Promise<void> {
+    await fillCredentialContextIfEmpty(this.prisma, row.providerAccountId, {
+      productId: row.productId,
+      clientServiceRecordId: row.id,
+    });
   }
 
   private async toDetailResponse(row: ClientServiceDetailRow) {

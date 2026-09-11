@@ -4,17 +4,11 @@ import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SIDEBAR_NAV_ITEM_CLASS } from './sidebar-layout-constants';
-import {
-  isNavChildLink,
-  type NavModuleDefinition,
-} from '@/lib/navigation/nav-config';
+import { isNavChildLink, type NavModuleDefinition } from '@/lib/navigation/nav-config';
 import { useModuleEntryHref } from '@/lib/navigation/hooks/use-module-entry-href';
-import {
-  getFirstChildHref,
-  isNavChildLinkActive,
-} from '@/lib/navigation/nav-route-utils';
+import { getFirstChildHref, isNavChildLinkActive } from '@/lib/navigation/nav-route-utils';
 import { isRegisteredModuleKey } from '@/lib/navigation/module-last-visit';
-import { SidebarModuleIcon, SidebarModuleMarker } from './SidebarModuleIcon';
+import { SidebarModuleIcon } from './SidebarModuleIcon';
 import { SidebarNavQuickActionButton } from './SidebarNavQuickActionButton';
 import { SidebarChildNavList } from './sidebar-child-nav-list';
 import { useMessengerBootstrapPrefetch } from '@/features/messenger/persist/use-messenger-bootstrap-prefetch';
@@ -117,7 +111,6 @@ function ParentModuleNavRow({
           data-sidebar-nav-active={isActive ? 'true' : undefined}
           className={navLinkClass(isActive, collapsed, muted)}
         >
-          <SidebarModuleMarker moduleKey={item.key} visible={isActive} />
           <SidebarModuleIcon moduleKey={item.key} active={isActive} muted={muted} />
         </Link>
       </li>
@@ -129,11 +122,10 @@ function ParentModuleNavRow({
       <div
         data-sidebar-nav-active={isActive ? 'true' : undefined}
         className={cn(
-          'group relative flex w-full items-center overflow-hidden rounded-md transition-colors',
-          isActive ? 'text-sidebar-foreground' : 'text-sidebar-muted',
+          'group relative flex w-full items-center overflow-hidden rounded-xl transition-colors',
+          isActive ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-muted',
         )}
       >
-        <SidebarModuleMarker moduleKey={item.key} visible={isActive} />
         <Link
           href={firstChildHref}
           onClick={onExpandOnly}
@@ -195,7 +187,6 @@ function LeafModuleNavRow({
           data-sidebar-nav-active={isActive ? 'true' : undefined}
           className={navLinkClass(isActive, collapsed, muted)}
         >
-          <SidebarModuleMarker moduleKey={item.key} visible={isActive} />
           <SidebarModuleIcon moduleKey={item.key} active={isActive} muted={muted} />
           {!collapsed && <span className="truncate">{item.label}</span>}
         </Link>
@@ -208,14 +199,13 @@ function LeafModuleNavRow({
       <div
         data-sidebar-nav-active={isActive ? 'true' : undefined}
         className={cn(
-          'group relative flex w-full items-center overflow-hidden rounded-md transition-colors',
+          'group relative flex w-full items-center overflow-hidden rounded-xl transition-colors',
           isActive
-            ? 'text-sidebar-foreground'
+            ? 'bg-sidebar-accent text-sidebar-foreground'
             : 'text-sidebar-muted hover:bg-secondary/50 hover:text-sidebar-foreground',
           muted && !isActive && 'opacity-60',
         )}
       >
-        <SidebarModuleMarker moduleKey={item.key} visible={isActive} />
         <Link
           href={moduleHref}
           title={item.label}
@@ -235,10 +225,10 @@ function LeafModuleNavRow({
 
 function navLinkClass(active: boolean, collapsed: boolean, muted: boolean): string {
   return cn(
-    'group relative flex items-center gap-2 rounded-md text-[13px] font-medium transition-colors duration-150',
+    'group relative flex items-center gap-2 rounded-xl text-[13px] font-medium transition-colors duration-150',
     SIDEBAR_NAV_ITEM_CLASS,
     active
-      ? 'text-sidebar-foreground'
+      ? 'bg-sidebar-accent text-sidebar-foreground'
       : 'text-sidebar-muted hover:bg-secondary/50 hover:text-sidebar-foreground',
     muted && !active && 'opacity-60',
     collapsed && 'justify-center px-1.5 py-1',

@@ -105,6 +105,21 @@ export function buildSubscriptionGeneralPatch(
   return out;
 }
 
+export const SUBSCRIPTION_AMOUNT_CHANGE_CONFIRM_TITLE = 'Confirm amount change?';
+
+export const SUBSCRIPTION_AMOUNT_CHANGE_CONFIRM_DESCRIPTION =
+  'The new amount applies only to future invoices. Already issued invoices stay unchanged.';
+
+export function hasSubscriptionAmountChanged(
+  snap: Pick<SubscriptionFormState, 'amount'>,
+  draft: Pick<SubscriptionFormState, 'amount'>,
+): boolean {
+  const next = parseDraftAmount(draft.amount);
+  const prev = parseDraftAmount(snap.amount);
+  if (next == null || prev == null) return false;
+  return next !== prev;
+}
+
 export function isSubscriptionGeneralDirty(
   a: SubscriptionGeneralDraft,
   b: SubscriptionGeneralDraft,

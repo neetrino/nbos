@@ -70,6 +70,7 @@ describe('ContactsService', () => {
       expect(prisma.contact.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ role: 'CLIENT' }),
+          include: expect.objectContaining({ companies: expect.anything() }),
         }),
       );
     });
@@ -101,6 +102,7 @@ describe('ContactsService', () => {
       expect(prisma.contact.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ role: 'PARTNER' }),
+          include: expect.objectContaining({ companies: expect.anything() }),
         }),
       );
     });

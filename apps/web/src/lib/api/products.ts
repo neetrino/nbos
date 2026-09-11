@@ -15,6 +15,25 @@ export interface ProductClosedByRef {
   lastName: string;
 }
 
+export type ProductHubView = 'delivery' | 'maintenance' | 'closed';
+
+export interface ProductListParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  projectId?: string;
+  companyId?: string;
+  status?: string;
+  deliveryStage?: string;
+  deliveryWorkStatus?: string;
+  deliveryResolution?: string;
+  productCategory?: string;
+  productType?: string;
+  pmId?: string;
+  hubView?: ProductHubView;
+  includeHubView?: boolean;
+}
+
 export interface Product {
   id: string;
   projectId: string;
@@ -66,6 +85,8 @@ export interface Product {
   designer?: ProductEmployee | null;
   technicalSpecialist?: ProductEmployee | null;
   qaLead?: ProductEmployee | null;
+  /** Computed Product Hub directory view. Present on company-wide list items. */
+  hubView?: ProductHubView;
   order?: {
     id: string;
     code?: string;
@@ -281,7 +302,7 @@ export type ProductAccessSlotsBindResponse = ProductAccessSlotsResponse & {
 };
 
 export const productsApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData> {
+  async getAll(params?: ProductListParams): Promise<ListData> {
     const resp = await api.get<ListData>('/api/projects/products', { params });
     return resp.data;
   },

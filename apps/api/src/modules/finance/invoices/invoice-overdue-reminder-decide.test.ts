@@ -6,6 +6,7 @@ const BASE = {
   hasProductLink: true,
   notificationsEnabled: true,
   taxBlocked: false,
+  domainRegistryDead: false,
   hasWhatsAppGroup: true,
   wave1ScheduledFor: null as Date | null,
   hasWave2: false,
@@ -81,6 +82,10 @@ describe('decideOverdueReminderAction', () => {
     expect(decideOverdueReminderAction({ ...BASE, hasProductLink: false })).toEqual({
       kind: 'skip',
       reason: 'no_product_link',
+    });
+    expect(decideOverdueReminderAction({ ...BASE, domainRegistryDead: true })).toEqual({
+      kind: 'skip',
+      reason: 'domain_not_found',
     });
   });
 });

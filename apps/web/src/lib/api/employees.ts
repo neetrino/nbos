@@ -109,6 +109,7 @@ export interface UpdateEmployeePayload {
   level?: string | null;
   notes?: string | null;
   hireDate?: string | null;
+  birthday?: string | null;
 }
 
 export interface EmployeeOffboardingInventory {

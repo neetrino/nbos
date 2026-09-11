@@ -44,6 +44,7 @@ import {
   buildScopedKanbanColumns,
   buildTerminalDropZones,
   reorderCrmKanbanColumn,
+  resolveCrmKanbanStatusFilter,
   shouldShowTerminalDropBar,
 } from '@/features/crm/hooks/buildCrmKanban';
 import {
@@ -157,11 +158,12 @@ function LeadsPipelinePageContent() {
   );
 
   const boardScope = resolveBoardLifecycleScope(filters.boardScope);
+  const statusFilter = resolveCrmKanbanStatusFilter(filters.status, isMobileViewport);
   const stageKeys = useMemo(() => {
     if (isTrashView) return [] as string[];
-    if (filters.status && filters.status !== 'all') return [filters.status];
+    if (statusFilter) return [statusFilter];
     return getBoardStageKeys(LEAD_STAGES, boardScope);
-  }, [boardScope, filters.status, isTrashView]);
+  }, [boardScope, isTrashView, statusFilter]);
 
   const fetchLeadPage = useCallback(
     (params: CrmStageColumnFetchParams) =>
@@ -207,7 +209,7 @@ function LeadsPipelinePageContent() {
         pageSize: CRM_TRASH_LIST_PAGE_SIZE,
         scope,
         search: search || undefined,
-        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+        status: statusFilter,
         source: filters.source && filters.source !== 'all' ? filters.source : undefined,
         assignedTo,
       });
@@ -218,7 +220,7 @@ function LeadsPipelinePageContent() {
     } finally {
       setTrashLoading(false);
     }
-  }, [assignedTo, filters.source, filters.status, scope, search]);
+  }, [assignedTo, filters.source, scope, search, statusFilter]);
 
   useEffect(() => {
     if (isTrashView) void fetchTrashLeads();
@@ -502,21 +504,21 @@ function LeadsPipelinePageContent() {
   );
 
   const kanbanStages = useMemo(() => {
-    if (filters.status && filters.status !== 'all') {
-      return LEAD_STAGES.filter((stage) => stage.key === filters.status);
+    if (statusFilter) {
+      return LEAD_STAGES.filter((stage) => stage.key === statusFilter);
     }
     return LEAD_STAGES;
-  }, [filters.status]);
+  }, [statusFilter]);
 
   const kanbanColumns = useMemo(
     () =>
       buildScopedKanbanColumns({
         items: leads,
         stages: kanbanStages,
-        scopeValue: filters.status && filters.status !== 'all' ? 'ALL' : boardScope,
+        scopeValue: statusFilter ? 'ALL' : boardScope,
         columnMeta: isTrashView ? undefined : columnMeta,
       }),
-    [columnMeta, boardScope, leads, filters.status, isTrashView, kanbanStages],
+    [columnMeta, boardScope, leads, isTrashView, kanbanStages, statusFilter],
   );
 
   const leadTerminalZones = useMemo(() => buildTerminalDropZones(LEAD_STAGES), []);
@@ -684,7 +686,7 @@ function LeadsPipelinePageContent() {
         }}
         onUpdate={handleUpdate}
         onStatusChange={requestStatusChange}
-        onRefresh={() => void fetchLeads()}
+        onRefresh={fetchLeads}
         onMerged={(lead) => {
           setSelectedLead(lead);
           pushOpenLeadToUrl(lead.id);

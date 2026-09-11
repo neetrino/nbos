@@ -36,6 +36,7 @@ export function parseAtsWebhookBody(body: Record<string, unknown>): AtsWebhookPa
 
   return {
     uid,
+    lid: readOptionalFormField(body, 'lid'),
     state: readOptionalFormField(body, 'state'),
     input: readOptionalFormField(body, 'input'),
     clid: readOptionalFormField(body, 'clid'),

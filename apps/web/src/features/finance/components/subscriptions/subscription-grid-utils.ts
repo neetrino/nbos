@@ -1,5 +1,10 @@
-import type { Subscription } from '@/lib/api/finance';
-import type { SubscriptionGridCell, SubscriptionGridCellKind } from '@/lib/api/finance';
+import type {
+  Subscription,
+  SubscriptionGridCell,
+  SubscriptionGridCellKind,
+  SubscriptionGridRow,
+} from '@/lib/api/finance';
+import type { SubscriptionCalendarMonthLabel } from './subscription-coverage-grid-types';
 
 export function buildSubscriptionsById(subscriptions: Subscription[]): Map<string, Subscription> {
   return new Map(subscriptions.map((sub) => [sub.id, sub]));
@@ -36,4 +41,24 @@ export function pickMonthCell(
 ): SubscriptionGridCell | null {
   if (monthIndex === null) return null;
   return months[monthIndex] ?? null;
+}
+
+export function subscriptionCalendarMonthLabels(year: number): SubscriptionCalendarMonthLabel[] {
+  return Array.from({ length: 12 }, (_, index) => {
+    const date = new Date(year, index, 1);
+    return {
+      key: index,
+      label: date.toLocaleString('en-US', { month: 'short' }),
+    };
+  });
+}
+
+export function sortSubscriptionGridRows(rows: SubscriptionGridRow[]): SubscriptionGridRow[] {
+  return [...rows].sort((a, b) => {
+    const byAmount = a.amountMonthly - b.amountMonthly;
+    if (byAmount !== 0) return byAmount;
+    return a.subscriptionName.localeCompare(b.subscriptionName, undefined, {
+      sensitivity: 'base',
+    });
+  });
 }

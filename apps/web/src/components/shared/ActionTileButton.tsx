@@ -30,6 +30,8 @@ export interface ActionTileButtonProps {
   openInNewTab?: boolean;
   /** Native button type when rendering as `<button>` (default `button`). */
   buttonType?: 'button' | 'submit' | 'reset';
+  /** Allow label to wrap onto a second line instead of truncating. */
+  wrapLabel?: boolean;
 }
 
 function ActionTileContent({
@@ -38,7 +40,8 @@ function ActionTileContent({
   tone,
   size,
   trailing,
-}: Pick<ActionTileButtonProps, 'label' | 'icon' | 'tone' | 'size' | 'trailing'>) {
+  wrapLabel = false,
+}: Pick<ActionTileButtonProps, 'label' | 'icon' | 'tone' | 'size' | 'trailing' | 'wrapLabel'>) {
   const isStack = size === 'stack';
 
   return (
@@ -47,7 +50,9 @@ function ActionTileContent({
       <span
         className={cn('flex min-w-0 items-center gap-1.5', isStack ? 'justify-center' : 'flex-1')}
       >
-        <span className="truncate">{label}</span>
+        <span className={cn(wrapLabel ? 'line-clamp-2 leading-snug break-words' : 'truncate')}>
+          {label}
+        </span>
         {trailing}
       </span>
     </>
@@ -70,6 +75,7 @@ export function ActionTileButton({
   trailing,
   openInNewTab = true,
   buttonType = 'button',
+  wrapLabel = false,
 }: ActionTileButtonProps) {
   const shellClass = cn(
     actionTileShellVariants({ tone, size }),
@@ -77,10 +83,21 @@ export function ActionTileButton({
     className,
   );
 
+  const content = (
+    <ActionTileContent
+      label={label}
+      icon={icon}
+      tone={tone}
+      size={size}
+      trailing={trailing}
+      wrapLabel={wrapLabel}
+    />
+  );
+
   if (displayOnly) {
     return (
       <div className={cn(shellClass, 'cursor-default select-none')} aria-hidden={false}>
-        <ActionTileContent label={label} icon={icon} tone={tone} size={size} trailing={trailing} />
+        {content}
       </div>
     );
   }
@@ -95,13 +112,7 @@ export function ActionTileButton({
           className={shellClass}
           title={title}
         >
-          <ActionTileContent
-            label={label}
-            icon={icon}
-            tone={tone}
-            size={size}
-            trailing={trailing}
-          />
+          {content}
         </a>
       );
     }
@@ -112,7 +123,7 @@ export function ActionTileButton({
         title={title}
         onClick={(event) => event.stopPropagation()}
       >
-        <ActionTileContent label={label} icon={icon} tone={tone} size={size} trailing={trailing} />
+        {content}
       </Link>
     );
   }
@@ -130,7 +141,7 @@ export function ActionTileButton({
       onClick={handleClick}
       className={shellClass}
     >
-      <ActionTileContent label={label} icon={icon} tone={tone} size={size} trailing={trailing} />
+      {content}
     </button>
   );
 }

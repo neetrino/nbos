@@ -81,8 +81,12 @@ export function ModuleHeroSlotProvider({
         <div className={className ?? 'flex h-full min-h-0 flex-col gap-5'}>
           <div
             className={cn(
-              'shrink-0',
-              linkToHeaderTab && [MODULE_SHELL_BRIDGE_HERO_PULL, MODULE_SHELL_BRIDGE_HERO_GAP],
+              'shrink-0 max-md:contents',
+              linkToHeaderTab && [
+                MODULE_SHELL_BRIDGE_HERO_PULL,
+                MODULE_SHELL_BRIDGE_HERO_GAP,
+                'max-md:!mt-0',
+              ],
             )}
           >
             <PageHero
@@ -96,7 +100,9 @@ export function ModuleHeroSlotProvider({
               className={linkToHeaderTab ? '!mt-0' : undefined}
             />
           </div>
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col max-md:overflow-x-hidden max-md:overflow-y-auto">
+            {children}
+          </div>
         </div>
       </ModuleHeroSlotContext.Provider>
     </HeaderModuleTitleLockedContext.Provider>

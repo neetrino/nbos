@@ -19,10 +19,9 @@ function expenseStub(overrides: Partial<Expense>): Expense {
 }
 
 describe('getLocalExpenseStatusGateErrors', () => {
-  it('blocks PAID when remaining balance is positive', () => {
+  it('allows PAID when remaining balance is positive (API settles)', () => {
     const errors = getLocalExpenseStatusGateErrors(expenseStub({}), 'PAID');
-    expect(errors).toHaveLength(1);
-    expect(errors[0]?.field).toBe('payments');
+    expect(errors).toEqual([]);
   });
 
   it('allows PAID when fully covered', () => {

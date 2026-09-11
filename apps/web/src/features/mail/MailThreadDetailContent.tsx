@@ -1,8 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Check, Forward, MailOpen, Reply, RotateCcw, ShieldAlert, Trash2 } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import {
   ErrorState,
   LoadingState,
@@ -10,12 +15,15 @@ import {
   useDeleteConfirm,
 } from '@/components/shared';
 import { MailThreadDeleteDialog } from '@/features/mail/MailThreadDeleteDialog';
+import { MailThreadDetailActions } from '@/features/mail/MailThreadDetailActions';
 import { MailThreadMessages } from '@/features/mail/MailThreadMessages';
 import { MailThreadReplyComposer } from '@/features/mail/MailThreadReplyComposer';
 import { defaultForwardSubjectFromMessages } from '@/features/mail/mail-thread-helpers';
 import type { useMailThreadDetail } from '@/features/mail/use-mail-thread-detail';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { mailApi } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { cn } from '@/lib/utils';
 
 type MailThreadDetailState = ReturnType<typeof useMailThreadDetail>;
 
@@ -41,6 +49,8 @@ export function MailThreadDetailContent({
   onRestored,
   trashView = false,
 }: MailThreadDetailContentProps) {
+  const isMobileViewport = useIsMobileViewport();
+  const useMobileSheetHeader = Boolean(compact && isMobileViewport);
   const {
     detail,
     setDetail,
@@ -154,10 +164,48 @@ export function MailThreadDetailContent({
     }
   };
 
+  const threadActionsProps = {
+    isTrashView,
+    hasUnread: detail.thread.hasUnread,
+    isSpam: detail.thread.isSpam,
+    actionsBusy,
+    deleting,
+    onReply: () => setReplyComposerOpen((open) => !open),
+    onForward: () =>
+      onForward?.({
+        mailAccountId: detail.mailAccount.id,
+        subject: defaultForwardSubjectFromMessages(detail.messages),
+      }),
+    onMarkRead: () => void markRead(),
+    onMarkUnread: () => void markUnread(),
+    onMarkSpam: () => void markSpam(),
+    onMoveToTrash: () => deleteConfirm.request({ id: threadId, name: title }),
+    onRestore: () => void confirmRestore(),
+    onDeletePermanently: () => permanentDeleteConfirm.request({ id: threadId, name: title }),
+  };
+
   return (
     <div className={`flex flex-col ${headerGap}`}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
+      <div
+        className={cn(
+          useMobileSheetHeader
+            ? cn(DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS, '-mx-5')
+            : 'flex flex-wrap items-start justify-between gap-3',
+        )}
+      >
+        {useMobileSheetHeader ? (
+          <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>
+            {canEdit ? <MailThreadDetailActions layout="settings" {...threadActionsProps} /> : null}
+          </div>
+        ) : null}
+
+        <div
+          className={cn(
+            useMobileSheetHeader
+              ? cn(DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS, 'flex min-w-0 flex-col gap-2')
+              : 'flex min-w-0 flex-1 flex-col gap-2',
+          )}
+        >
           <h2
             className={compact ? 'text-base leading-snug font-semibold' : 'text-2xl font-semibold'}
           >
@@ -167,7 +215,7 @@ export function MailThreadDetailContent({
             {detail.mailAccount.emailAddress} · {detail.mailAccount.status}
             {detail.thread.needsBusinessLink ? ' · Needs business link' : ''}
           </p>
-          {canEdit && detail.thread.hasUnread ? (
+          {!useMobileSheetHeader && canEdit && detail.thread.hasUnread ? (
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
@@ -184,103 +232,19 @@ export function MailThreadDetailContent({
           ) : null}
         </div>
 
-        {canEdit ? (
-          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-            {isTrashView ? (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
-                  className="gap-2"
-                  disabled={actionsBusy}
-                  onClick={() => void confirmRestore()}
-                >
-                  <RotateCcw size={16} aria-hidden />
-                  Restore
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
-                  className="text-destructive hover:text-destructive gap-2"
-                  disabled={actionsBusy}
-                  onClick={() => permanentDeleteConfirm.request({ id: threadId, name: title })}
-                >
-                  <Trash2 size={16} aria-hidden />
-                  Delete permanently
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
-                  className="gap-2"
-                  onClick={() => setReplyComposerOpen((open) => !open)}
-                >
-                  <Reply size={16} aria-hidden />
-                  Reply
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
-                  className="gap-2"
-                  onClick={() =>
-                    onForward?.({
-                      mailAccountId: detail.mailAccount.id,
-                      subject: defaultForwardSubjectFromMessages(detail.messages),
-                    })
-                  }
-                >
-                  <Forward size={16} aria-hidden />
-                  Forward
-                </Button>
-                {!detail.thread.hasUnread ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="lg"
-                    className="gap-2"
-                    disabled={actionsBusy}
-                    onClick={() => void markUnread()}
-                  >
-                    <MailOpen size={16} aria-hidden />
-                    Mark as unread
-                  </Button>
-                ) : null}
-                {!detail.thread.isSpam ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="lg"
-                    className="gap-2"
-                    disabled={actionsBusy}
-                    onClick={() => void markSpam()}
-                  >
-                    <ShieldAlert size={16} aria-hidden />
-                    Spam
-                  </Button>
-                ) : null}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
-                  className="text-destructive hover:text-destructive gap-2"
-                  disabled={deleting}
-                  onClick={() => deleteConfirm.request({ id: threadId, name: title })}
-                >
-                  <Trash2 size={16} aria-hidden />
-                  Move to Trash
-                </Button>
-              </>
-            )}
-          </div>
+        {canEdit && !useMobileSheetHeader ? (
+          <MailThreadDetailActions layout="buttons" {...threadActionsProps} />
         ) : null}
-        {restoreError ? <p className="text-destructive text-sm">{restoreError}</p> : null}
-        {purgeError ? <p className="text-destructive text-sm">{purgeError}</p> : null}
+        {restoreError ? (
+          <p className={cn('text-destructive text-sm', useMobileSheetHeader && 'px-4')}>
+            {restoreError}
+          </p>
+        ) : null}
+        {purgeError ? (
+          <p className={cn('text-destructive text-sm', useMobileSheetHeader && 'px-4')}>
+            {purgeError}
+          </p>
+        ) : null}
       </div>
 
       <MailThreadMessages

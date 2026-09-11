@@ -4,6 +4,12 @@ export const LEAD_MERGE_UNRESTRICTED_ROLE_SLUGS = ['ceo', 'head-sales'] as const
 /** Seller may merge only when both Leads are assigned to them. */
 export const LEAD_MERGE_SELLER_ROLE_SLUG = 'seller';
 
+export const LEAD_MERGE_SELLER_ROLE_SLUGS = ['seller', 'seller-assistant'] as const;
+
+function isLeadMergeSellerRole(roleSlug: string): boolean {
+  return (LEAD_MERGE_SELLER_ROLE_SLUGS as readonly string[]).includes(roleSlug);
+}
+
 export const LEAD_MERGE_BLOCKED_ROLE_SLUGS = ['marketing', 'head-marketing'] as const;
 
 export const LEAD_MERGE_FIELD_KEYS = [
@@ -80,7 +86,7 @@ export function canMergeLeads(params: {
 }): boolean {
   if (isLeadMergeBlockedRole(params.roleSlug)) return false;
   if (isLeadMergeUnrestrictedRole(params.roleSlug, params.isPlatformOwner === true)) return true;
-  if (params.roleSlug !== LEAD_MERGE_SELLER_ROLE_SLUG) return false;
+  if (!isLeadMergeSellerRole(params.roleSlug)) return false;
   return (
     params.survivorAssignedTo === params.actorId && params.absorbedAssignedTo === params.actorId
   );
@@ -93,7 +99,7 @@ export function canOfferLeadMerge(
   if (isPlatformOwner) return true;
   if (!roleSlug) return false;
   if (isLeadMergeBlockedRole(roleSlug)) return false;
-  return isLeadMergeUnrestrictedRole(roleSlug) || roleSlug === LEAD_MERGE_SELLER_ROLE_SLUG;
+  return isLeadMergeUnrestrictedRole(roleSlug) || isLeadMergeSellerRole(roleSlug);
 }
 
 /**
@@ -108,7 +114,7 @@ export function canAttachLeadToContact(params: {
 }): boolean {
   if (isLeadMergeBlockedRole(params.roleSlug)) return false;
   if (isLeadMergeUnrestrictedRole(params.roleSlug, params.isPlatformOwner === true)) return true;
-  if (params.roleSlug !== LEAD_MERGE_SELLER_ROLE_SLUG) return false;
+  if (!isLeadMergeSellerRole(params.roleSlug)) return false;
   return params.assignedTo === params.actorId;
 }
 

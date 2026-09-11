@@ -9,6 +9,8 @@ export interface InvoiceOfficialRequestRow {
   taxStatus: string;
   moneyStatus: string;
   companyId: string | null;
+  orderId: string | null;
+  orderComment: string | null;
   officialInvoiceRequestSent: boolean;
   officialInvoiceSentAt: Date | null;
   officialInvoiceCancelledAt: Date | null;
@@ -103,6 +105,8 @@ const officialRequestSelect = {
   taxStatus: true,
   moneyStatus: true,
   companyId: true,
+  orderId: true,
+  orderComment: true,
   officialInvoiceRequestSent: true,
   officialInvoiceSentAt: true,
   officialInvoiceCancelledAt: true,

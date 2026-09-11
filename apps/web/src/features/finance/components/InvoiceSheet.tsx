@@ -1,18 +1,21 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { FileText, Loader2, Trash2, XCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
   DetailSheetFormFooter,
-  DetailSheetSettingsMenu,
   DetailSheetTabBar,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
 } from '@/components/shared';
+import {
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { InvoiceMoneyStagesBar } from '@/features/finance/components/invoices/InvoiceMoneyStagesBar';
 import { InvoiceSheetStageGateBlockers } from '@/features/finance/components/invoices/InvoiceSheetStageGateBlockers';
@@ -24,7 +27,8 @@ import {
   INVOICE_DETAIL_SHEET_TABS,
   type InvoiceDetailSheetTab,
 } from '@/features/finance/components/invoices/invoice-detail-sheet-tabs';
-import { InvoiceSheetBadge, type InvoiceSheetInvoice } from './invoices/InvoiceSheetSections';
+import { type InvoiceSheetInvoice } from './invoices/InvoiceSheetSections';
+import { InvoiceSheetHeader } from './invoices/InvoiceSheetHeader';
 import { buildInvoiceGateRequiredFields } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import type { InvoiceSheetStageGateHighlight } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import {
@@ -36,7 +40,10 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { invoicesApi } from '@/lib/api/finance';
 import { invoiceLifecycleAction } from '@/features/finance/utils/invoice-lifecycle';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
+import { usePermission } from '@/lib/permissions';
+import { cn } from '@/lib/utils';
 
 interface InvoiceSheetProps {
   invoice: InvoiceSheetInvoice | null;
@@ -71,8 +78,11 @@ export function InvoiceSheet({
   stageGateHighlight = null,
   forceNestedBackdrop,
 }: InvoiceSheetProps) {
+  const { me } = usePermission();
   const { persistedValue: renderInvoice, onOpenChangeComplete } = useSheetPersistedValue(invoice);
   const hostMounted = useSheetHostMounted(open, renderInvoice);
+  const isPlatformOwner = me?.isPlatformOwner === true;
+  const isMobileViewport = useIsMobileViewport();
 
   const [activeTab, setActiveTab] = useState<InvoiceDetailSheetTab>('general');
   const [generalDraft, setGeneralDraft] = useState<InvoiceGeneralDraft | null>(null);
@@ -101,7 +111,7 @@ export function InvoiceSheet({
     setGeneralDraft(next);
     setGeneralSnap(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on invoice.id
-  }, [invoice?.id, invoice?.amount, invoice?.taxStatus, invoice?.companyId, invoice?.projectId]);
+  }, [invoice?.id, invoice?.amount, invoice?.taxStatus, invoice?.companyId, invoice?.productId]);
 
   const patchGeneralDraft = useCallback((partial: Partial<InvoiceGeneralDraft>) => {
     setGeneralDraft((prev) => (prev ? { ...prev, ...partial } : null));
@@ -170,15 +180,31 @@ export function InvoiceSheet({
           width="compact"
           forceNestedBackdrop={forceNestedBackdrop}
         >
-          <div className="flex flex-1 items-center gap-2 px-5 py-8 text-sm">
-            {loading ? (
-              <>
-                <Loader2 className="text-muted-foreground size-4 animate-spin" aria-hidden />
-                <span className="text-muted-foreground">Loading invoice…</span>
-              </>
-            ) : (
-              <span className="text-muted-foreground">Invoice unavailable.</span>
+          <div
+            className={cn(
+              isMobileViewport
+                ? DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS
+                : 'flex flex-1 items-center gap-2 px-5 py-8 text-sm',
             )}
+          >
+            {isMobileViewport ? (
+              <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS} />
+            ) : null}
+            <div
+              className={cn(
+                'flex items-center gap-2 text-sm',
+                isMobileViewport && DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+              )}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="text-muted-foreground size-4 animate-spin" aria-hidden />
+                  <span className="text-muted-foreground">Loading invoice…</span>
+                </>
+              ) : (
+                <span className="text-muted-foreground">Invoice unavailable.</span>
+              )}
+            </div>
           </div>
         </EntityDetailSheetContent>
       </Sheet>
@@ -186,7 +212,9 @@ export function InvoiceSheet({
   }
 
   const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(renderInvoice.id)}`;
-  const lifecycleMode = onInvoiceUpdated ? invoiceLifecycleAction(renderInvoice) : null;
+  const lifecycleMode = onInvoiceUpdated
+    ? invoiceLifecycleAction(renderInvoice, isPlatformOwner)
+    : null;
 
   return (
     <>
@@ -198,34 +226,15 @@ export function InvoiceSheet({
           sourcePageHref={sourcePageHref}
           forceNestedBackdrop={forceNestedBackdrop}
         >
-          <div className="bg-background shrink-0 px-7 pt-5 pb-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-                  <FileText className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                    {renderInvoice.code}
-                  </h2>
-                  <InvoiceSheetBadge invoice={renderInvoice} />
-                </div>
-              </div>
-              {lifecycleMode ? (
-                <DetailSheetSettingsMenu>
-                  <DropdownMenuItem
-                    variant="destructive"
-                    disabled={saving}
-                    onClick={() => setLifecycleOpen(true)}
-                  >
-                    {lifecycleMode === 'delete' ? <Trash2 /> : <XCircle />}
-                    {lifecycleMode === 'delete' ? 'Delete invoice' : 'Cancel invoice'}
-                  </DropdownMenuItem>
-                </DetailSheetSettingsMenu>
-              ) : null}
-            </div>
-          </div>
+          <InvoiceSheetHeader
+            invoice={renderInvoice}
+            lifecycleMode={lifecycleMode}
+            saving={saving}
+            onLifecycleOpen={() => setLifecycleOpen(true)}
+          />
 
           {onMoneyStatusChange ? (
-            <div className="shrink-0 pb-3">
+            <div className="shrink-0 pb-3 max-md:px-4">
               <InvoiceMoneyStagesBar
                 currentStatus={renderInvoice.moneyStatus}
                 onStageClick={(status) => void onMoneyStatusChange(renderInvoice.id, status)}
@@ -237,10 +246,11 @@ export function InvoiceSheet({
             tabs={INVOICE_DETAIL_SHEET_TABS}
             activeTab={activeTab}
             onTabChange={(value) => setActiveTab(value as InvoiceDetailSheetTab)}
+            className="max-md:mt-3 max-md:px-4"
           />
 
           <ScrollArea className="min-h-0 flex-1">
-            <div className="px-7 py-5">
+            <div className="px-7 py-5 max-md:px-4">
               <InvoiceSheetStageGateBlockers highlight={stageGateHighlight} />
 
               <DetailSheetTabPanel tabKey={activeTab}>
@@ -259,6 +269,7 @@ export function InvoiceSheet({
                     invoice={renderInvoice}
                     gateRequiredFields={gateRequiredFields}
                     onPaymentRecorded={onPaymentRecorded}
+                    onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
                   />
                 ) : null}
                 {activeTab === 'history' ? <InvoiceHistoryTab /> : null}
@@ -280,6 +291,7 @@ export function InvoiceSheet({
       {lifecycleMode && onInvoiceUpdated ? (
         <InvoiceLifecycleConfirmDialog
           invoice={renderInvoice}
+          isPlatformOwner={isPlatformOwner}
           open={lifecycleOpen}
           onOpenChange={setLifecycleOpen}
           onInvoiceUpdated={handleInvoiceChange}

@@ -1,17 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { Building2, FolderKanban } from 'lucide-react';
+import { Building2, Layers } from 'lucide-react';
 import { RelationPickerField } from '@/components/shared';
 import {
   useCompanyRelationSearch,
-  useProjectRelationSearch,
+  useProductRelationSearch,
   useRelationPickerActions,
 } from '@/components/shared/relation-picker';
 import { invoiceStageGateFieldClass } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import {
   INVOICE_GATE_FIELD_COMPANY,
-  INVOICE_GATE_FIELD_PROJECT,
+  INVOICE_GATE_FIELD_PRODUCT,
 } from '@/features/finance/constants/invoice-money-status-gate-client';
 import type { InvoiceGeneralDraft } from '@/features/finance/utils/invoice-general-form-state';
 import type { Invoice } from '@/lib/api/finance';
@@ -31,21 +31,21 @@ export function InvoiceManualContextFields({
   gateRequiredFields,
   disabled = false,
 }: InvoiceManualContextFieldsProps) {
-  const labelSeed = `${invoice.id}:${invoice.company?.name ?? ''}:${invoice.project?.name ?? ''}`;
+  const labelSeed = `${invoice.id}:${invoice.company?.name ?? ''}:${invoice.product?.name ?? ''}`;
   const [labelSeedSeen, setLabelSeedSeen] = useState(labelSeed);
   const [companyLabel, setCompanyLabel] = useState(invoice.company?.name ?? null);
-  const [projectLabel, setProjectLabel] = useState(invoice.project?.name ?? null);
+  const [productLabel, setProductLabel] = useState(invoice.product?.name ?? null);
 
   if (labelSeed !== labelSeedSeen) {
     setLabelSeedSeen(labelSeed);
     setCompanyLabel(invoice.company?.name ?? null);
-    setProjectLabel(invoice.project?.name ?? null);
+    setProductLabel(invoice.product?.name ?? null);
   }
 
   const searchCompanies = useCompanyRelationSearch();
-  const searchProjects = useProjectRelationSearch();
+  const searchProducts = useProductRelationSearch(null);
   const companyPicker = useRelationPickerActions('company');
-  const projectPicker = useRelationPickerActions('project');
+  const productPicker = useRelationPickerActions('product');
 
   if (invoice.type !== 'MANUAL') return null;
 
@@ -72,24 +72,24 @@ export function InvoiceManualContextFields({
         {...companyPicker}
       />
       <RelationPickerField
-        label="Project"
-        entityKind="project"
-        value={draft.projectId}
-        selectionLabel={projectLabel}
-        placeholder="Search projects…"
-        icon={<FolderKanban size={12} />}
-        onSearch={searchProjects}
+        label="Product"
+        entityKind="product"
+        value={draft.productId}
+        selectionLabel={productLabel}
+        placeholder="Search products…"
+        icon={<Layers size={12} />}
+        onSearch={searchProducts}
         onSelect={(id, label) => {
-          patchDraft({ projectId: id });
-          setProjectLabel(label);
+          patchDraft({ productId: id });
+          setProductLabel(label);
         }}
         onClear={() => {
-          patchDraft({ projectId: null });
-          setProjectLabel(null);
+          patchDraft({ productId: null });
+          setProductLabel(null);
         }}
         disabled={disabled}
-        className={invoiceStageGateFieldClass(gateRequiredFields, INVOICE_GATE_FIELD_PROJECT)}
-        {...projectPicker}
+        className={invoiceStageGateFieldClass(gateRequiredFields, INVOICE_GATE_FIELD_PRODUCT)}
+        {...productPicker}
       />
     </div>
   );

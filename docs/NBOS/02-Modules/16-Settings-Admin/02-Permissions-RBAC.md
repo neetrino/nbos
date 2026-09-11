@@ -49,6 +49,7 @@ Permission Role
 - Admin;
 - Finance Admin;
 - Sales Manager;
+- Seller Assistant (тот же technical permission set, что у Seller);
 - Project Manager;
 - Developer Backend;
 - Developer Frontend (тот же technical permission set, что у бывшего Developer / Delivery User);
@@ -114,15 +115,16 @@ Head of Sales может видеть Deals отдела.
 Owner может видеть все Deals.
 ```
 
-`CRM_CALL_RECORDINGS_PLAY` — extra CRM capability (module `CRM_CALL_RECORDINGS`, action `PLAY`). Runtime key `CRM_CALL_RECORDINGS_PLAY`. Default: Owner / CEO / Seller / Head of Sales. Marketing is deny. Playback additionally requires object-level Call access and Drive FileAsset policy for `visibility=RESTRICTED` / `confidentiality=CONFIDENTIAL`. Call metadata stays on ordinary CRM VIEW. Call **note** mutation uses `CRM_LEADS_EDIT` / `CRM_DEALS_EDIT` (same object-level predicates as Call VIEW, not a separate permission) and is denied for VIEW-only. Note text in Audit Log is readable only through existing `GET /audit` and `GET /audit/user/:userId` with `AUDIT_LOGS.VIEW`.
+`CRM_CALL_RECORDINGS_PLAY` — extra CRM capability (module `CRM_CALL_RECORDINGS`, action `PLAY`). Runtime key `CRM_CALL_RECORDINGS_PLAY`. Default: Owner / CEO / Seller / Seller Assistant / Head of Sales. Marketing is deny. Playback additionally requires object-level Call access and Drive FileAsset policy for `visibility=RESTRICTED` / `confidentiality=CONFIDENTIAL`. Call metadata stays on ordinary CRM VIEW. Call **note** mutation uses `CRM_LEADS_EDIT` / `CRM_DEALS_EDIT` (same object-level predicates as Call VIEW, not a separate permission) and is denied for VIEW-only. Note text in Audit Log is readable only through existing `GET /audit` and `GET /audit/user/:userId` with `AUDIT_LOGS.VIEW`.
 
 ## System roles
 
 Некоторые роли являются системными:
 
 - нельзя удалить;
-- нельзя сломать базовые permissions;
-- изменение требует дополнительного подтверждения;
+- нельзя менять сущность роли (имя / slug / system flag);
+- матрицу permissions (VIEW / EDIT / ADD / DELETE + scope) можно менять в Settings → Permissions / RBAC;
+- сохранение system-роли — strong confirm (copy / paste имени роли); кастомной роли — simple Yes;
 - изменение пишется в audit log.
 
 ## Role editing UX

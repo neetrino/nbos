@@ -8,9 +8,8 @@ import { clientServiceTaskDefaultDueDate } from './client-service-task-links';
 
 /** Mirrors API `clientServiceExpenseCategory` (`client-service-flow-helpers.ts`). */
 export function clientServiceExpenseCategory(type: string): string {
-  if (type === 'DOMAIN') return 'DOMAIN';
-  if (type === 'HOSTING') return 'HOSTING';
-  return 'SERVICE';
+  if (type === 'DOMAIN' || type === 'HOSTING') return 'DOMAIN';
+  return 'TOOLS';
 }
 
 function formatMoneyDefault(value: string | null | undefined): string {
@@ -55,7 +54,8 @@ export function buildClientServiceExpensePayload(
     frequency: 'ONE_TIME',
     status: 'PLANNED',
     dueDate: form.dueDate.trim() || null,
-    projectId: service.projectId,
+    productId: service.productId,
+    credentialId: service.providerAccountId,
     clientServiceRecordId: service.id,
     isPassThrough: service.billingModel === 'WE_PAY',
     taxStatus: service.taxStatus,

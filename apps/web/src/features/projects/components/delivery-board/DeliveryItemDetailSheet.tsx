@@ -408,7 +408,7 @@ export function DeliveryItemDetailSheet({
               />
 
               {lifecycle?.isTerminal ? (
-                <div className="bg-muted/40 shrink-0 px-7 py-2.5">
+                <div className="bg-muted/40 hidden shrink-0 px-7 py-2.5 sm:block">
                   <p className="text-muted-foreground text-sm">
                     {lifecycle.resolution === 'DONE'
                       ? 'This delivery item is done. Details are read-only; use the board or product page for history.'

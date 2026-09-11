@@ -15,3 +15,8 @@ export function subscriptionCanHold(subscription: Subscription): boolean {
 export function subscriptionCanCancel(subscription: Subscription): boolean {
   return CANCELLABLE_STATUSES.has(subscription.status);
 }
+
+/** Manual period invoice: same gate as the API (ACTIVE only). */
+export function subscriptionCanCreatePeriodInvoice(subscription: Subscription): boolean {
+  return subscription.status === 'ACTIVE';
+}

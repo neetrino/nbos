@@ -3,7 +3,9 @@ import {
   ApiError,
   getApiErrorMessage,
   isBusinessTransitionApiError,
+  isPermissionDeniedApiError,
   isStageGateApiError,
+  PERMISSION_DENIED_MESSAGE,
   toApiError,
 } from './api-errors';
 
@@ -92,5 +94,14 @@ describe('api error helpers', () => {
 
   it('getApiErrorMessage returns fallback for non-ApiError', () => {
     expect(getApiErrorMessage(new Error('x'), 'fallback')).toBe('fallback');
+  });
+
+  it('maps 403 to a permission-denied sentence', () => {
+    const error = toApiError(
+      { statusCode: 403, message: 'No permission: CLIENTS.ADD' },
+      'Request failed',
+    );
+    expect(isPermissionDeniedApiError(error)).toBe(true);
+    expect(getApiErrorMessage(error, 'fallback')).toBe(PERMISSION_DENIED_MESSAGE);
   });
 });

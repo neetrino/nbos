@@ -24,13 +24,17 @@ import { EXPENSES_VIEW_OPTIONS } from '@/features/finance/components/expenses/ex
 import { CLIENT_SERVICES_VIEW_OPTIONS } from '@/features/finance/components/client-services/client-services-view-options';
 import { projectExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
 import { useClientServicesViewMode } from '@/features/finance/constants/client-services-view';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-board-view';
 import { useOrdersBoardViewMode } from '@/features/finance/constants/orders-board-view';
+import { useInvoicesBoardViewMode } from '@/features/finance/constants/invoices-board-view';
+import { INVOICE_VIEW_OPTIONS } from '@/features/finance/components/invoices/invoice-view-options';
 import { projectOrderToFinanceOrder } from '@/features/projects/utils/project-order-finance-adapter';
 import { ProductFinanceSectionContent } from '@/features/projects/components/tabs/product-finance-section-content';
+import { useProductFinanceExpenseTotal } from '@/features/projects/hooks/use-product-finance-expense-total';
 import { PRODUCT_FINANCE_SECTION_OPTIONS } from '@/features/projects/constants/product-finance-section';
 import { useProductFinanceSection } from '@/features/projects/hooks/use-product-finance-section';
-import type { ProjectExpense, ProjectOrder, ProjectSubscription } from '@/lib/api/projects';
+import type { ProjectOrder, ProjectSubscription } from '@/lib/api/projects';
 import { buttonVariants } from '@/components/ui/button';
 import {
   formatProjectFinanceAmount,
@@ -40,24 +44,31 @@ import {
 interface FinanceTabProps {
   orders: ProjectOrder[];
   subscriptions: ProjectSubscription[];
-  expenses: ProjectExpense[];
   projectId: string;
   project: { id: string; name: string; code: string };
+  productId: string;
+  companyId?: string | null;
   productOrderId?: string | null;
 }
 
 export function FinanceTab({
   orders,
   subscriptions,
-  expenses,
   projectId,
   project,
+  productId,
+  companyId,
   productOrderId,
 }: FinanceTabProps) {
   const financeSection = useProductFinanceSection();
   const [ordersView, setOrdersView] = useOrdersBoardViewMode();
+  const [invoicesView, setInvoicesView] = useInvoicesBoardViewMode();
   const [expensesView, setExpensesView] = useExpensesBoardViewMode();
   const [clientServicesView, setClientServicesView] = useClientServicesViewMode();
+  const displayOrdersView = useMobilePreferredView(ordersView, 'board');
+  const displayInvoicesView = useMobilePreferredView(invoicesView, 'kanban');
+  const displayExpensesView = useMobilePreferredView(expensesView, 'kanban');
+  const displayClientServicesView = useMobilePreferredView(clientServicesView, 'status');
 
   const scopedOrders = useMemo(() => {
     if (!productOrderId) return orders;
@@ -74,19 +85,21 @@ export function FinanceTab({
     .flatMap((o) => o.invoices)
     .filter((i) => i.moneyStatus === 'PAID');
   const totalPaid = paidInvoices.reduce((s, i) => s + Number(i.amount), 0);
-  const totalExpenses = expenses.reduce((s, e) => s + Number(e.amount), 0);
+  const totalExpenses = useProductFinanceExpenseTotal(productId);
   const monthlyMRR = subscriptions
     .filter((s) => s.status === 'ACTIVE')
     .reduce((sum, sub) => sum + projectSubscriptionMonthlyAmount(sub), 0);
 
   const openFinanceHref =
-    financeSection.activeSection === 'subscriptions'
-      ? '/finance/subscriptions'
-      : financeSection.activeSection === 'expenses'
-        ? projectExpensesDrilldownHref(projectId)
-        : financeSection.activeSection === 'client-services'
-          ? '/finance/client-services'
-          : '/finance/orders';
+    financeSection.activeSection === 'invoices'
+      ? '/finance/invoices'
+      : financeSection.activeSection === 'subscriptions'
+        ? '/finance/subscriptions'
+        : financeSection.activeSection === 'expenses'
+          ? projectExpensesDrilldownHref(projectId)
+          : financeSection.activeSection === 'client-services'
+            ? '/finance/client-services'
+            : '/finance/orders';
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6">
@@ -147,6 +160,12 @@ export function FinanceTab({
               onChange={setOrdersView}
               options={ORDER_VIEW_OPTIONS}
             />
+          ) : financeSection.activeSection === 'invoices' ? (
+            <ViewModeSwitch
+              value={invoicesView}
+              onChange={setInvoicesView}
+              options={INVOICE_VIEW_OPTIONS}
+            />
           ) : financeSection.activeSection === 'expenses' &&
             financeSection.filters[EXPENSE_BOARD_SCOPE_FILTER_KEY] !== 'backlog' ? (
             <ViewModeSwitch
@@ -185,10 +204,11 @@ export function FinanceTab({
 
       <div
         className={
-          (financeSection.activeSection === 'orders' && ordersView === 'board') ||
-          (financeSection.activeSection === 'expenses' && expensesView === 'kanban') ||
+          (financeSection.activeSection === 'orders' && displayOrdersView === 'board') ||
+          (financeSection.activeSection === 'invoices' && displayInvoicesView === 'kanban') ||
+          (financeSection.activeSection === 'expenses' && displayExpensesView === 'kanban') ||
           (financeSection.activeSection === 'client-services' &&
-            (clientServicesView === 'status' || clientServicesView === 'months'))
+            (displayClientServicesView === 'status' || displayClientServicesView === 'months'))
             ? 'flex min-h-0 flex-1 flex-col overflow-y-auto'
             : undefined
         }
@@ -198,12 +218,15 @@ export function FinanceTab({
           search={financeSection.search}
           debouncedSearch={financeSection.debouncedSearch}
           filters={financeSection.filters}
-          ordersView={ordersView}
-          expensesView={expensesView}
-          clientServicesView={clientServicesView}
+          ordersView={displayOrdersView}
+          invoicesView={displayInvoicesView}
+          expensesView={displayExpensesView}
+          clientServicesView={displayClientServicesView}
           financeOrders={financeOrders}
           subscriptions={subscriptions}
           projectId={projectId}
+          productId={productId}
+          companyId={companyId}
         />
       </div>
     </div>

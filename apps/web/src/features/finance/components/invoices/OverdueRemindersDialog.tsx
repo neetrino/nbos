@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -76,7 +77,10 @@ export function OverdueRemindersDialog({ open, onOpenChange }: OverdueRemindersD
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg" showCloseButton={!submitting}>
         <DialogHeader>
-          <DialogTitle>Send overdue reminders?</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <BellRing className="size-5 shrink-0 text-amber-500" aria-hidden />
+            Send overdue reminders?
+          </DialogTitle>
           <DialogDescription>
             Mark paid invoices as Paid first. This run sends one WhatsApp letter per remaining
             Overdue card: wave 1 if none was sent, wave 2 if wave 1 was sent on a previous day.

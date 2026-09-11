@@ -86,6 +86,7 @@ export function ClientDetailTabBar({ activeTab, tabs, onSelect }: ClientDetailTa
       tabs={tabs.map((tab) => ({ value: tab.id, label: tab.label, icon: tab.icon }))}
       activeTab={activeTab}
       onTabChange={(value) => onSelect(value as ClientDetailTabId)}
+      className="max-md:mt-3 max-md:px-5"
       scrollClassName={CONTACT_SHEET_TAB_BAR_SCROLL_CLASS}
     />
   );

@@ -22,7 +22,7 @@ interface TaskSheetStickyFooterProps {
 }
 
 const FOOTER_SHELL_CLASS =
-  'border-border/50 bg-background/95 supports-[backdrop-filter]:bg-background/85 sticky bottom-0 z-20 shrink-0 border-t px-6 py-3 backdrop-blur-sm';
+  'border-border/50 bg-background/95 supports-[backdrop-filter]:bg-background/85 sticky bottom-0 z-20 shrink-0 border-t px-6 py-3 backdrop-blur-sm max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]';
 
 export function TaskSheetStickyFooter({
   dirty,

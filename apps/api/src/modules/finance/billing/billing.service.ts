@@ -1,18 +1,15 @@
 import { Injectable, Inject, Logger, Optional } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import { allocateInvoiceCode } from '../../../common/utils/entity-code-series';
 import { InvoiceOfficialWhatsAppService } from '../invoices/invoice-official-whatsapp.service';
-import { resolveSubscriptionInvoiceDueDate } from '../invoices/subscription-invoice-due-date';
-import { subscriptionChargeAmount } from '../subscriptions/subscription-billing-amount';
 import {
   isBillingMonthCoveredByInvoices,
   type SubscriptionCoverageInvoiceRow,
 } from '../subscriptions/subscription-coverage-window';
 import { loadCoverageInvoicesBySubscription } from './billing-coverage-invoices';
 import { subscriptionBillingPausedForLateDelivery } from './billing-subscription-delivery-pause';
-import { resolveBillingInvoiceMoneyStatus } from './billing-subscription-invoice-status';
 import { resolveTermCompletion } from './billing-subscription-term-completion';
+import { persistSubscriptionBillingInvoice } from './persist-subscription-billing-invoice';
 import {
   isSubscriptionOpenForTarget,
   resolveSubscriptionBillingTarget,
@@ -213,40 +210,15 @@ export class BillingService {
     now: Date,
     target: SubscriptionBillingTarget,
   ): Promise<number> {
-    const coverageYear = Number(target.coverageMonthKey.slice(0, 4));
-    const code = await allocateInvoiceCode(this.prisma, coverageYear);
-    const dueDate = resolveSubscriptionInvoiceDueDate({
-      expectedPayDate: target.expectedPayDate,
-      issuedOn: now,
-    });
-    const charge = subscriptionChargeAmount(Number(sub.amount), sub.coverageMonthCount);
-    const moneyStatus = resolveBillingInvoiceMoneyStatus({
-      billingDay: sub.billingDay,
-      taxStatus: sub.taxStatus,
-      company: sub.project.company,
-    });
-
-    const invoice = await this.prisma.invoice.create({
-      data: {
-        code,
-        subscriptionId: sub.id,
-        projectId: sub.projectId,
-        companyId: sub.project.companyId,
-        amount: charge.amount,
-        taxStatus: sub.taxStatus,
-        type: 'SUBSCRIPTION' as Prisma.InvoiceCreateInput['type'],
-        dueDate,
-        moneyStatus,
-        coverageStartMonth: target.coverageMonthKey,
-        coverageMonthCount: charge.coverageMonthCount,
-      },
-    });
-    if (moneyStatus === 'AWAITING_PAYMENT') {
-      await this.officialWhatsApp?.enqueueIfAwaitingEligible(invoice.id);
-    }
-
-    this.logger.log(`Generated invoice ${code} for subscription ${sub.code}`);
-    return charge.amount;
+    const created = await persistSubscriptionBillingInvoice(
+      this.prisma,
+      this.officialWhatsApp,
+      sub,
+      now,
+      target,
+    );
+    this.logger.log(`Generated invoice ${created.code} for subscription ${sub.code}`);
+    return created.amount;
   }
 }
 

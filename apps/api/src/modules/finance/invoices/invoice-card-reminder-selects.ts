@@ -1,13 +1,3 @@
-export const officialRequestSelect = {
-  id: true,
-  code: true,
-  amount: true,
-  dueDate: true,
-  taxStatus: true,
-  officialInvoiceRequestSent: true,
-  company: { select: { name: true } },
-} as const;
-
 export const paymentReminderSelect = {
   id: true,
   code: true,
@@ -15,6 +5,7 @@ export const paymentReminderSelect = {
   dueDate: true,
   createdAt: true,
   coverageStartMonth: true,
+  coverageMonthCount: true,
   taxStatus: true,
   moneyStatus: true,
   officialInvoiceRequestSent: true,
@@ -24,6 +15,8 @@ export const paymentReminderSelect = {
   company: { select: { name: true } },
   subscription: {
     select: {
+      name: true,
+      code: true,
       productId: true,
       billingDay: true,
       notificationsEnabled: true,

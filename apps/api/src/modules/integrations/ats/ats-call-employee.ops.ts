@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@nbos/database';
+import { normalizeAtsOperatorExtension } from './ats-operator.util';
 
 type EmployeeSipDb = Pick<PrismaClient, 'employee' | 'lead' | 'deal'>;
 
@@ -6,7 +7,7 @@ export async function findEmployeeIdBySip(
   db: EmployeeSipDb,
   sip: string | null,
 ): Promise<string | null> {
-  const sipId = sip?.trim() ?? '';
+  const sipId = normalizeAtsOperatorExtension(sip);
   if (!sipId) return null;
   const employee = await db.employee.findFirst({
     where: { sipId },

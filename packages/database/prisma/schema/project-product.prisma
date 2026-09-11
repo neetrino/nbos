@@ -201,6 +201,9 @@ model Product {
   messengerAttentions       MessengerConversationAttention[]
   subscriptions             Subscription[]
   partnerServiceTerms       PartnerServiceTerm[]
+  invoices                  Invoice[]
+  expensePlans              ExpensePlan[]
+  expenses                  Expense[]
 
   @@index([contactId])
   @@index([deliveryStage])

@@ -186,7 +186,10 @@ export function ProjectContactsSection({
     const contactCardsBlock =
       showContactCards && contactCards.length > 0 ? (
         <div
-          className={cn('gap-2', contactLayout === 'grid' ? 'grid grid-cols-2' : 'flex flex-col')}
+          className={cn(
+            'gap-2',
+            contactLayout === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2' : 'flex flex-col',
+          )}
         >
           {contactCards.map((contact) => (
             <ProjectContactCard

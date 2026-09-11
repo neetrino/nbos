@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { isWhatsAppGroupChatId, normalizeWhatsAppGroupChatId } from '@nbos/shared';
 import type { PrismaClient } from '@nbos/database';
+import { DEAL_WHATSAPP_CREATE_SATISFIER_STATUSES } from '../../integrations/whatsapp-gateway/deal-whatsapp-group.types';
 import { resolveClientDestination } from '../../messenger/core/product-communication-resolver';
 
 export const WHATSAPP_WON_GATE_DEAL_TYPES = new Set(['PRODUCT', 'OUTSOURCE']);
@@ -92,11 +93,27 @@ export function validateDealWonWhatsAppGate(input: DealWonWhatsAppGateInput): vo
 
 export async function loadDealWonWhatsAppContext(
   prisma: InstanceType<typeof PrismaClient>,
-  deal: { existingProductId?: string | null; orders?: Array<{ productId?: string | null }> },
+  deal: {
+    id: string;
+    existingProductId?: string | null;
+    orders?: Array<{ productId?: string | null }>;
+  },
 ): Promise<DealWonWhatsAppContext> {
   const productId = resolveDealProductIdForWhatsApp(deal);
+  const dealBinding = await prisma.dealWhatsAppGroupBinding.findUnique({
+    where: { dealId: deal.id },
+    select: { groupChatId: true, status: true },
+  });
+  const dealCreateSatisfied = Boolean(
+    dealBinding && DEAL_WHATSAPP_CREATE_SATISFIER_STATUSES.has(dealBinding.status),
+  );
+
   if (!productId) {
-    return { productId: null, groupChatId: null, hasCreateOperation: false };
+    return {
+      productId: null,
+      groupChatId: dealBinding?.groupChatId ?? null,
+      hasCreateOperation: dealCreateSatisfied,
+    };
   }
 
   const [createOp, work] = await Promise.all([
@@ -113,7 +130,30 @@ export async function loadDealWonWhatsAppContext(
 
   return {
     productId,
-    groupChatId: work?.groupChatId ?? null,
-    hasCreateOperation: Boolean(createOp),
+    groupChatId: work?.groupChatId ?? dealBinding?.groupChatId ?? null,
+    hasCreateOperation: Boolean(createOp) || dealCreateSatisfied,
   };
+}
+
+export function resolveWonWhatsAppIntent(input: {
+  action?: DealWonWhatsAppAction;
+  groupChatId?: string;
+  actorId?: string;
+  contextGroupChatId?: string | null;
+}): DealWonWhatsAppIntent | null {
+  if (input.action) {
+    return {
+      action: input.action,
+      groupChatId: input.groupChatId,
+      actorId: input.actorId,
+    };
+  }
+  if (input.contextGroupChatId) {
+    return {
+      action: 'bind',
+      groupChatId: input.contextGroupChatId,
+      actorId: input.actorId,
+    };
+  }
+  return null;
 }

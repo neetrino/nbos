@@ -30,10 +30,12 @@ function mockInvoiceFindByIdRow(
     orderId: null,
     subscriptionId: null,
     projectId: 'proj-1',
+    productId: 'prod-1',
     companyId: null,
     createdAt: new Date(),
     order: null,
     subscription: null,
+    product: { id: 'prod-1', name: 'Site' },
     company: null,
     payments,
     paidDate: new Date('2026-04-12T00:00:00.000Z'),
@@ -79,6 +81,17 @@ describe('InvoicesService', () => {
     it('returns paginated result', async () => {
       const result = await service.findAll({});
       expect(result.meta.page).toBe(1);
+    });
+
+    it('includes client service type for sheet source labels', async () => {
+      await service.findAll({});
+      expect(prisma.invoice.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            clientServiceRecord: { select: { id: true, type: true, name: true } },
+          }),
+        }),
+      );
     });
 
     it('scopes list by project participation when view scope is not ALL', async () => {
@@ -153,6 +166,18 @@ describe('InvoicesService', () => {
       );
     });
 
+    it('applies productId filter', async () => {
+      await service.findAll({ productId: 'prod-1' });
+
+      expect(prisma.invoice.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            productId: 'prod-1',
+          }),
+        }),
+      );
+    });
+
     it('applies moneyStatus filter', async () => {
       await service.findAll({ moneyStatus: 'OVERDUE' });
 
@@ -173,6 +198,18 @@ describe('InvoicesService', () => {
   describe('findById', () => {
     it('throws NotFoundException', async () => {
       await expect(service.findById('x')).rejects.toThrow(NotFoundException);
+    });
+
+    it('includes client service type for sheet source labels', async () => {
+      prisma.invoice.findUnique.mockResolvedValue(mockInvoiceFindByIdRow('1'));
+      await service.findById('1');
+      expect(prisma.invoice.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({
+          include: expect.objectContaining({
+            clientServiceRecord: { select: { id: true, type: true, name: true } },
+          }),
+        }),
+      );
     });
   });
 
@@ -286,7 +323,9 @@ describe('InvoicesService', () => {
 
       await service.updateMoneyStatus('await-1', 'AWAITING_PAYMENT');
 
-      expect(officialWhatsApp.enqueueIfAwaitingEligible).toHaveBeenCalledWith('await-1');
+      expect(officialWhatsApp.enqueueIfAwaitingEligible).toHaveBeenCalledWith('await-1', {
+        wait: true,
+      });
     });
 
     it('creates payment for outstanding then returns when marking PAID', async () => {
@@ -345,6 +384,7 @@ describe('InvoicesService', () => {
         .mockResolvedValueOnce({
           id: 'inv-1',
           orderId: 'ord-1',
+          orderComment: 'FIRST_PHASE',
           amount: 100000,
           dueDate: new Date('2026-04-20'),
           payments: [
@@ -391,6 +431,7 @@ describe('InvoicesService', () => {
         .mockResolvedValueOnce({
           id: 'inv-2',
           orderId: 'ord-2',
+          orderComment: 'FIRST_PHASE',
           amount: 50000,
           dueDate: new Date('2026-04-20'),
           payments: [{ amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') }],
@@ -464,6 +505,7 @@ describe('InvoicesService', () => {
         .mockResolvedValueOnce({
           id: 'inv-3',
           orderId: 'ord-3',
+          orderComment: 'FIRST_PHASE',
           amount: 100000,
           dueDate: new Date('2026-04-20'),
           payments: [

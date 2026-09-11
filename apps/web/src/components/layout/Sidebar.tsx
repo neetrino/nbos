@@ -9,7 +9,7 @@ import { NAV_MODULE_DEFINITIONS } from '@/lib/navigation/nav-config';
 import { applySidebarPreferences } from '@/lib/navigation/apply-sidebar-preferences';
 import { getVisibleNavModules } from '@/lib/navigation/nav-visibility';
 import { useSidebarNavigation } from '@/lib/navigation/use-sidebar-navigation';
-import { SidebarMobileSheet } from './SidebarMobileSheet';
+import { MobileAppMenu } from './MobileAppMenu';
 import { SidebarPanel } from './SidebarPanel';
 import { SIDEBAR_WIDTH_COLLAPSED_PX, SIDEBAR_WIDTH_EXPANDED_PX } from './sidebar-layout-constants';
 
@@ -69,24 +69,30 @@ export function Sidebar({
     navigation.reorderPrimaryModules(visibleKeys, primaryKeys);
   };
 
+  if (isMobileDrawer) {
+    return (
+      <>
+        <div className="w-0 shrink-0 overflow-hidden" aria-hidden />
+        <MobileAppMenu
+          open={mobileOpen}
+          onOpenChange={onMobileOpenChange}
+          items={[...layout.primary, ...layout.hidden]}
+        />
+      </>
+    );
+  }
+
   // Hover overlay is active only on /documents and only when sidebar is collapsed.
-  const isHoveringCollapsed = !isMobileDrawer && collapsed && isHovering && isDocumentsRoute;
-  // Visual expansion follows click state everywhere; hover adds to it only on /documents.
-  const visuallyExpanded = isMobileDrawer || !collapsed || isHoveringCollapsed;
+  const isHoveringCollapsed = collapsed && isHovering && isDocumentsRoute;
+  const visuallyExpanded = !collapsed || isHoveringCollapsed;
 
   const panel = (
     <SidebarPanel
       visuallyExpanded={visuallyExpanded}
       collapsedForHeader={!visuallyExpanded}
       showHeaderToggle
-      headerToggleLabel={
-        isMobileDrawer ? 'Close navigation' : collapsed ? 'Expand sidebar' : 'Collapse sidebar'
-      }
+      headerToggleLabel={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       onHeaderToggle={() => {
-        if (isMobileDrawer) {
-          onMobileOpenChange(false);
-          return;
-        }
         setIsHovering(false);
         onCollapsedChange(!collapsed);
       }}
@@ -106,17 +112,6 @@ export function Sidebar({
     />
   );
 
-  if (isMobileDrawer) {
-    return (
-      <>
-        <div className="w-0 shrink-0 overflow-hidden" aria-hidden />
-        <SidebarMobileSheet open={mobileOpen} onOpenChange={onMobileOpenChange}>
-          {panel}
-        </SidebarMobileSheet>
-      </>
-    );
-  }
-
   return (
     /*
      * Outer aside — the real layout column that AppLayout's CSS grid measures.
@@ -125,7 +120,7 @@ export function Sidebar({
      * position:relative makes it the containing block for the inner surface.
      */
     <aside
-      className="relative h-screen min-w-0 shrink-0"
+      className="relative h-dvh min-w-0 shrink-0"
       style={{ width: collapsed ? SIDEBAR_WIDTH_COLLAPSED_PX : SIDEBAR_WIDTH_EXPANDED_PX }}
     >
       {/*

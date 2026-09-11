@@ -49,7 +49,10 @@ describe('PaymentsService', () => {
   let service: PaymentsService;
   let prisma: MockPrisma;
   const salesBonusAccrual = { onInvoicePaid: vi.fn().mockResolvedValue(undefined) };
-  const operationalJournal = { appendCashPaymentLine: vi.fn().mockResolvedValue(undefined) };
+  const operationalJournal = {
+    appendCashPaymentLine: vi.fn().mockResolvedValue(undefined),
+    reverseJournalLineByIdempotencyKey: vi.fn().mockResolvedValue(undefined),
+  };
   const partnerAccrualClassic = {
     tryInboundClassicAfterClientPayment: vi.fn().mockResolvedValue(undefined),
   };
@@ -66,6 +69,7 @@ describe('PaymentsService', () => {
     prisma.financePostingPeriod.findUnique.mockResolvedValue(null);
     salesBonusAccrual.onInvoicePaid.mockClear();
     operationalJournal.appendCashPaymentLine.mockClear();
+    operationalJournal.reverseJournalLineByIdempotencyKey.mockClear();
     partnerAccrualClassic.tryInboundClassicAfterClientPayment.mockClear();
     partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment.mockClear();
     clientPaidInvoiceAutomation.onInvoiceFullyPaid.mockClear();
@@ -210,6 +214,7 @@ describe('PaymentsService', () => {
         .mockResolvedValueOnce({
           id: 'inv1',
           orderId: 'ord1',
+          orderComment: 'FIRST_PHASE',
           amount: 100000,
           moneyStatus: 'AWAITING_PAYMENT',
           dueDate: new Date('2026-03-20'),
@@ -275,6 +280,7 @@ describe('PaymentsService', () => {
           id: 'inv1',
           code: 'INV-DEP',
           orderId: 'ord1',
+          orderComment: 'FIRST_PHASE',
           projectId: 'proj-1',
           companyId: 'company-1',
           amount: 50_000,
@@ -327,6 +333,7 @@ describe('PaymentsService', () => {
           id: 'inv1',
           code: 'INV-REM',
           orderId: 'ord1',
+          orderComment: 'FIRST_PHASE',
           projectId: 'proj-1',
           companyId: 'company-1',
           amount: 100_000,
@@ -382,6 +389,7 @@ describe('PaymentsService', () => {
         .mockResolvedValueOnce({
           id: 'inv1',
           orderId: 'ord1',
+          orderComment: 'FIRST_PHASE',
           amount: 100000,
           moneyStatus: 'NEW',
           dueDate: new Date('2026-03-01'),
@@ -475,6 +483,7 @@ describe('PaymentsService', () => {
           id: 'inv1',
           code: 'INV-1',
           orderId: 'ord1',
+          orderComment: 'FIRST_PHASE',
           projectId: 'proj-1',
           companyId: 'company-1',
           amount: 100000,
@@ -528,7 +537,8 @@ describe('PaymentsService', () => {
   });
 
   describe('delete', () => {
-    it('deletes when found', async () => {
+    it('deletes when found and reverses the cash journal line', async () => {
+      prisma.partnerAccrual.findUnique.mockResolvedValue(null);
       prisma.payment.findUnique.mockResolvedValue({
         id: '1',
         invoiceId: 'inv1',
@@ -545,6 +555,10 @@ describe('PaymentsService', () => {
         { moneyStatus: 'NEW', amount: 100000, payments: [] },
       ]);
       await service.delete('1');
+      expect(operationalJournal.reverseJournalLineByIdempotencyKey).toHaveBeenCalledWith(
+        'payment:1',
+        expect.stringContaining('removed'),
+      );
       expect(prisma.payment.delete).toHaveBeenCalled();
     });
   });

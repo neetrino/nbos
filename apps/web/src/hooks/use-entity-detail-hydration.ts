@@ -114,7 +114,9 @@ export function useEntityDetailHydration<T extends { id: string }>({
     return () => {
       cancelled = true;
     };
-  }, [open, entityId, initialEntity, loadErrorMessage]);
+    // Key on seed id, not the list-row object: a silent list refetch must not re-hydrate.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- seed object is read when id/open change
+  }, [open, entityId, initialEntity?.id, loadErrorMessage]);
 
   return { entity, setEntity, loading, hydrating, error, refresh };
 }

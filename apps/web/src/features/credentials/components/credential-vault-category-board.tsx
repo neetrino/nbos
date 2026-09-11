@@ -92,26 +92,28 @@ export function CredentialVaultCategoryBoard({
   }
 
   return (
-    <KanbanBoard
-      columns={columns}
-      columnWidth={CREDENTIAL_VAULT_KANBAN_COLUMN_WIDTH}
-      emptyMessage="No credentials"
-      getItemId={(item) => item.id}
-      columnQuickCreate={quickCreate}
-      onColumnLoadMore={onColumnLoadMore}
-      renderCard={(credential) => (
-        <CredentialVaultCard
-          credential={credential}
-          variant="kanban"
-          onOpen={onOpenCredential}
-          onSetFavorite={onSetFavorite}
-          onRequestMoveToTrash={onRequestMoveToTrash}
-          canMoveToTrash={canMoveToTrash}
-          onCopyText={onCopyText}
-          onCopySecret={onCopySecret}
-          secretFlashCredentialId={secretFlashCredentialId}
-        />
-      )}
-    />
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <KanbanBoard
+        columns={columns}
+        columnWidth={CREDENTIAL_VAULT_KANBAN_COLUMN_WIDTH}
+        emptyMessage="No credentials"
+        getItemId={(item) => item.id}
+        columnQuickCreate={quickCreate}
+        onColumnLoadMore={onColumnLoadMore}
+        renderCard={(credential) => (
+          <CredentialVaultCard
+            credential={credential}
+            variant="kanban"
+            onOpen={onOpenCredential}
+            onSetFavorite={onSetFavorite}
+            onRequestMoveToTrash={onRequestMoveToTrash}
+            canMoveToTrash={canMoveToTrash}
+            onCopyText={onCopyText}
+            onCopySecret={onCopySecret}
+            secretFlashCredentialId={secretFlashCredentialId}
+          />
+        )}
+      />
+    </div>
   );
 }

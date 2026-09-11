@@ -7,6 +7,7 @@ import {
   EntityItemList,
   ENTITY_ITEM_VIEW_OPTIONS,
   useOpenEntityItemFromSummary,
+  useEntityItemMobileView,
   ViewModeSwitch,
   type EntityItemVariant,
 } from '@/components/shared';
@@ -33,6 +34,7 @@ export function BonusPoolSheetBonusesTab({
 }) {
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
+  const displayVariant = useEntityItemMobileView(viewVariant);
 
   const entryItems = useMemo(() => entries.map(bonusEntryToItemSummary), [entries]);
 
@@ -58,7 +60,7 @@ export function BonusPoolSheetBonusesTab({
         {entriesError ? <p className="text-destructive mb-3 text-sm">{entriesError}</p> : null}
         <EntityItemList
           items={entryItems}
-          variant={viewVariant}
+          variant={displayVariant}
           onOpen={onOpenItem}
           emptyIcon={Gift}
           emptyTitle="No bonus entries"

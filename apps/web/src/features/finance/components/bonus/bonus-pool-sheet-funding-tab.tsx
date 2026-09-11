@@ -9,6 +9,7 @@ import {
   EntityItemList,
   ENTITY_ITEM_VIEW_OPTIONS,
   useEntityItemHost,
+  useEntityItemMobileView,
   ViewModeSwitch,
   type EntityItemSummary,
   type EntityItemVariant,
@@ -31,6 +32,7 @@ export function BonusPoolSheetFundingTab({
 }) {
   const { openEntityItem } = useEntityItemHost();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
+  const displayVariant = useEntityItemMobileView(viewVariant);
 
   const paymentEvents = useMemo(
     () => timelineEvents.filter((event) => event.kind === 'PAYMENT_IN'),
@@ -85,7 +87,7 @@ export function BonusPoolSheetFundingTab({
         </div>
         <EntityItemList
           items={paymentItems}
-          variant={viewVariant}
+          variant={displayVariant}
           onOpen={handleOpenItem}
           emptyIcon={Banknote}
           emptyTitle="No client payments"

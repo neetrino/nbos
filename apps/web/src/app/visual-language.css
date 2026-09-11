@@ -1,0 +1,155 @@
+@layer components {
+  .nbos-app-canvas {
+    background-color: var(--background);
+  }
+
+  .nbos-desk-surface {
+    @apply border-border/70 overflow-hidden rounded-2xl border;
+    background-color: var(--desk-panel-fill);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .nbos-desk-kicker {
+    @apply text-muted-foreground text-[11px] font-semibold tracking-[0.18em] uppercase;
+  }
+
+  .nbos-display {
+    font-family: var(--font-display), var(--font-sans), ui-serif, Georgia, serif;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+
+  .nbos-folio {
+    @apply font-display text-primary/25 pointer-events-none select-none;
+    font-size: clamp(4.5rem, 12vw, 8.5rem);
+    font-weight: 600;
+    line-height: 0.8;
+  }
+
+  .nbos-state-frame {
+    @apply border-border/70 relative overflow-hidden rounded-2xl border px-6 py-16 text-center;
+    background-color: var(--desk-panel-fill);
+  }
+
+  .nbos-auth-scene {
+    @apply bg-background relative isolate min-h-dvh overflow-x-hidden;
+  }
+
+  .nbos-auth-ledger {
+    @apply relative isolate overflow-hidden;
+    background:
+      radial-gradient(
+        80% 70% at 18% 12%,
+        color-mix(in oklch, white 16%, transparent),
+        transparent 58%
+      ),
+      linear-gradient(165deg, #1a1d63 0%, #2e3192 48%, #12143c 100%);
+  }
+
+  .nbos-auth-ledger::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 71px,
+      rgb(255 255 255 / 0.06) 71px,
+      rgb(255 255 255 / 0.06) 72px
+    );
+    pointer-events: none;
+  }
+
+  .nbos-mobile-dock {
+    @apply bg-card pointer-events-auto relative z-30 w-full shrink-0 overflow-hidden border-0 shadow-none;
+    height: calc(
+      var(--nbos-mobile-dock-height) + (2 * var(--nbos-mobile-dock-pad-y)) +
+        env(safe-area-inset-bottom, 0px)
+    );
+    margin-inline: var(--nbos-mobile-dock-inset-x);
+    margin-bottom: var(--nbos-mobile-dock-inset-bottom);
+    padding-top: var(--nbos-mobile-dock-pad-y);
+    padding-bottom: calc(var(--nbos-mobile-dock-pad-y) + env(safe-area-inset-bottom, 0px));
+    border-radius: var(--nbos-mobile-dock-radius) var(--nbos-mobile-dock-radius) 0 0;
+  }
+
+  @media (max-width: 767px) {
+    .nbos-app-canvas [data-slot='card'] {
+      border-radius: 1.25rem;
+    }
+
+    .nbos-app-canvas input:not([type='checkbox']):not([type='radio']):not([type='hidden']),
+    .nbos-app-canvas select,
+    .nbos-app-canvas textarea {
+      font-size: 1rem;
+      min-height: 2.75rem;
+    }
+  }
+}
+
+/* Flatten elevation shadows below Tailwind `md`. Keep ring/inset-ring
+ * (focus) and arbitrary `[box-shadow:…]` seals (sticky table cells). */
+@media (max-width: 767px) {
+  :root,
+  .dark {
+    --shadow-panel: none;
+    --shadow-panel-hover: none;
+  }
+
+  * {
+    --tw-shadow: 0 0 #0000 !important;
+    --tw-inset-shadow: 0 0 #0000 !important;
+  }
+
+  .nbos-desk-surface,
+  .nbos-insight-panel,
+  .nbos-insight-panel:hover,
+  .nbos-metric-row-fill--peak {
+    box-shadow: none;
+  }
+}
+
+@layer utilities {
+  .nbos-sheet-swipe,
+  .nbos-sheet-swipe-overlay {
+    --nbos-sheet-swipe-snap-duration: 300ms;
+    --nbos-sheet-swipe-snap-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .nbos-sheet-swipe {
+    overscroll-behavior: contain;
+  }
+
+  .nbos-sheet-swipe[data-swiping='true'] {
+    animation: none !important;
+    transition: none;
+    touch-action: none;
+    will-change: transform;
+    transform: translate3d(0, var(--nbos-sheet-swipe-y, 0px), 0) !important;
+  }
+
+  .nbos-sheet-swipe[data-swipe-snap='true'] {
+    animation: none !important;
+    transition: transform var(--nbos-sheet-swipe-snap-duration) var(--nbos-sheet-swipe-snap-ease);
+    transform: translate3d(0, var(--nbos-sheet-swipe-y, 0px), 0) !important;
+  }
+
+  .nbos-sheet-swipe-overlay[data-swiping='true'] {
+    animation: none !important;
+    transition: none;
+    opacity: var(--nbos-sheet-swipe-overlay, 1) !important;
+  }
+
+  .nbos-sheet-swipe-overlay[data-swipe-snap='true'] {
+    animation: none !important;
+    transition: opacity var(--nbos-sheet-swipe-snap-duration) var(--nbos-sheet-swipe-snap-ease);
+    opacity: var(--nbos-sheet-swipe-overlay, 1) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nbos-sheet-swipe[data-swipe-snap='true'],
+  .nbos-sheet-swipe-overlay[data-swipe-snap='true'] {
+    transition: none;
+  }
+}

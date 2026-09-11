@@ -360,6 +360,30 @@ Business modules should not depend on one provider or on physical group ownershi
 
 ---
 
+## M-WA-06 — Deal may own a client WhatsApp group before Product exists
+
+**Decision**
+
+For `PRODUCT` / `OUTSOURCE`, Sales may create or bind a client WhatsApp group on the Deal at any stage. Product is not required. Primary Contact is required to create. Invoice, deposit, Order, and Project are not required.
+
+The physical group is a Deal-linked Client Sales conversation. On Deal Won the default handoff is:
+
+```text
+Product WORK binding -> the same External Conversation / WhatsApp group
+```
+
+Creating a second delivery group is an explicit advanced choice, not the default. EXTENSION / MAINTENANCE do not create a second group. Failed Deal does not delete the group. Create failure does not roll back the Deal.
+
+**Why**
+
+About half of commercial discussions need the client group before deposit is paid. The group is for the future Product, but it must exist early so the team can discuss scope with the client. Product is created at Won; the conversation must not wait for that.
+
+**Avoided alternative**
+
+Creating a Product/Project shell only to unlock the WhatsApp button, or treating Product as the only legal owner of a physical group.
+
+---
+
 ## M-SECURITY-01 — Client composer is locked by default
 
 **Decision**

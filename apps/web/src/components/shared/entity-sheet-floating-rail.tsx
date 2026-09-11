@@ -6,22 +6,26 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-/** Shared rail control base (close + action buttons). */
+/** Shared rail control base (Copy / Open / Dashboard — seam-attached half-pill). */
 const ENTITY_SHEET_FLOATING_RAIL_CONTROL_BASE_CLASS =
-  'group/rail-control relative h-11 w-11 shrink-0 self-end overflow-visible rounded-l-full rounded-r-none border-0 bg-primary text-primary-foreground shadow-md transition-[width,background-color] duration-150 ease-out hover:bg-primary/90 active:translate-y-0';
+  'group/rail-control relative h-11 w-11 shrink-0 self-end overflow-visible rounded-l-full rounded-r-none border-0 bg-primary text-primary-foreground shadow-md transition-[width,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/90 active:translate-y-0';
 
-/** Copy / Open / Dashboard / Close — lengthen slightly to the left on hover. */
+/** Copy / Open / Dashboard — lengthen slightly to the left on hover. */
 export const ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS = cn(
   ENTITY_SHEET_FLOATING_RAIL_CONTROL_BASE_CLASS,
   'hover:w-14 focus-visible:w-14',
 );
+
+/** Floating Back — circular on mobile; flush with page Back inset (no left pull on max-sm). */
+export const ENTITY_SHEET_FLOATING_RAIL_CLOSE_CLASS =
+  'group/rail-control relative size-9 shrink-0 self-end -translate-x-2.5 overflow-visible rounded-full border-0 bg-primary text-primary-foreground shadow-md transition-colors duration-300 ease-out hover:bg-primary/90 active:-translate-x-2.5 max-sm:translate-x-0 max-sm:active:translate-x-0';
 
 /** Vertical stack — right edges align to sheet seam; overflow visible so hover lengthens left. */
 export const ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS =
   'flex flex-col items-end gap-1.5 overflow-visible';
 
 export const ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS =
-  'pointer-events-none absolute top-1/2 right-full z-10 mr-2 -translate-y-1/2 -translate-x-1 rounded-full bg-foreground px-2.5 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-all duration-150 group-hover/rail-control:translate-x-0 group-hover/rail-control:opacity-100 group-focus-visible/rail-control:translate-x-0 group-focus-visible/rail-control:opacity-100';
+  'pointer-events-none absolute top-1/2 right-full z-10 mr-2 -translate-y-1/2 -translate-x-1.5 rounded-full bg-foreground px-2.5 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/rail-control:translate-x-0 group-hover/rail-control:opacity-100 group-focus-visible/rail-control:translate-x-0 group-focus-visible/rail-control:opacity-100';
 
 export interface EntitySheetFloatingRailProps {
   sourcePageHref: string;

@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 import { ExternalLink, File } from 'lucide-react';
 import { toast } from 'sonner';
-import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
+import { DetailSheetCollapsibleSection } from '@/components/shared';
 import { SheetFileAttachments } from '@/components/shared/SheetFileAttachments';
 import { DRIVE_LIBRARIES } from '@/features/drive/drive-options';
 import type { DriveFileCardMenuHandlers } from '@/features/drive/DriveFileCard';
@@ -13,7 +13,6 @@ import {
 } from '@/features/drive/entity-attachment-record-actions';
 import { useOptimisticEntityFileUpload } from '@/features/drive/use-optimistic-entity-file-upload';
 import { driveApi, type FileAsset } from '@/lib/api/drive';
-import { cn } from '@/lib/utils';
 
 const DELIVERY_ITEM_ATTACHMENT_PURPOSE = 'DELIVERY_FILE';
 
@@ -62,6 +61,7 @@ export function DeliveryItemFilesSection({
   contractFileUrl = null,
   disabled = false,
 }: DeliveryItemFilesSectionProps) {
+  const [sectionOpen, setSectionOpen] = useState(true);
   const [busyFileId, setBusyFileId] = useState<string | null>(null);
   const offer = offerFileUrl?.trim() || null;
   const contract = contractFileUrl?.trim() || null;
@@ -131,12 +131,13 @@ export function DeliveryItemFilesSection({
   });
 
   return (
-    <section className="border-border bg-card rounded-xl border p-4 shadow-sm">
-      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>
-        <File size={13} aria-hidden />
-        Files
-      </h3>
-
+    <DetailSheetCollapsibleSection
+      title="Files"
+      icon={<File size={12} />}
+      open={sectionOpen}
+      onOpenChange={setSectionOpen}
+      className="shadow-sm"
+    >
       <div className="flex flex-col gap-4">
         {hasDealFiles ? (
           <div className="flex flex-col gap-1.5">
@@ -164,6 +165,6 @@ export function DeliveryItemFilesSection({
           fileMenu={(file) => (disabled ? readOnlyMenu(file) : fileMenu(file))}
         />
       </div>
-    </section>
+    </DetailSheetCollapsibleSection>
   );
 }

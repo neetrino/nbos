@@ -10,6 +10,7 @@ import {
   EntityDetailSheetContent,
   StatusBadge,
 } from '@/components/shared';
+import { SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
 import { Sheet, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Table,
@@ -182,7 +183,7 @@ export function EmployeeMonthCompensationSheet({
         layout="auxiliary"
         className="gap-0"
         contentClassName="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[50vw]"
-        railAnchorClassName="max-sm:left-auto max-sm:right-[85vw] max-sm:translate-x-px sm:right-[50vw]"
+        railAnchorClassName={`${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[50vw]`}
       >
         <SheetHeader>
           <SheetTitle>

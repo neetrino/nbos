@@ -17,6 +17,7 @@ import {
   RequirePermission,
 } from '../../../common/decorators';
 import { financeInvoiceAccessFromUser } from './finance-invoice-access';
+import { assertCanDeleteInvoice } from './invoice-delete-access';
 import { InvoiceOverdueRemindersService } from './invoice-overdue-reminders.service';
 import { InvoicesService } from './invoices.service';
 
@@ -39,6 +40,7 @@ export class InvoicesController {
     @Query('moneyStatus') moneyStatus?: string,
     @Query('type') type?: string,
     @Query('projectId') projectId?: string,
+    @Query('productId') productId?: string,
     @Query('subscriptionId') subscriptionId?: string,
     @Query('search') search?: string,
     @Query('dateFrom') dateFrom?: string,
@@ -50,6 +52,7 @@ export class InvoicesController {
       moneyStatus,
       type,
       projectId,
+      productId,
       subscriptionId,
       search,
       dateFrom,
@@ -97,13 +100,14 @@ export class InvoicesController {
   }
 
   @Post()
+  @RequirePermission('FINANCE_INVOICES', 'ADD')
   @ApiOperation({ summary: 'Create invoice' })
   async create(
     @Body()
     body: {
       orderId?: string;
       subscriptionId?: string;
-      projectId?: string;
+      productId?: string;
       companyId?: string;
       clientServiceRecordId?: string;
       amount: number;
@@ -123,7 +127,8 @@ export class InvoicesController {
       amount?: number;
       taxStatus?: string;
       companyId?: string | null;
-      projectId?: string | null;
+      productId?: string | null;
+      orderComment?: string | null;
     },
   ) {
     return this.invoicesService.updateGeneral(id, body);
@@ -137,8 +142,8 @@ export class InvoicesController {
 
   @Post(':id/official-request/send')
   @ApiOperation({ summary: 'Send official invoice request to accountant (Tax)' })
-  async sendOfficialInvoiceRequest(@Param('id') id: string) {
-    return this.invoicesService.sendOfficialInvoiceRequest(id);
+  async sendOfficialInvoiceRequest(@Param('id') id: string, @Body() body?: { resend?: boolean }) {
+    return this.invoicesService.sendOfficialInvoiceRequest(id, body?.resend === true);
   }
 
   @Post(':id/official-request/cancel')
@@ -164,8 +169,9 @@ export class InvoicesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete draft invoice (NEW only, no payments)' })
-  async remove(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Delete draft invoice (platform owner, NEW only, no payments)' })
+  async remove(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    assertCanDeleteInvoice(user);
     await this.invoicesService.delete(id);
   }
 }

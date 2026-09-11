@@ -10,7 +10,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
+import { getExpensePlanStatus } from '@/features/finance/constants/expense-plan-status';
 import { expensePlanFrequencyLabel } from '@/features/finance/utils/expense-plan-display';
+import { expenseOwnerLabel } from '@/features/finance/utils/expense-owner-label';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import {
   FINANCE_LIST_BADGE_CLASS,
@@ -39,6 +41,7 @@ export function ExpensePlansListTable({ plans, onOpen }: ExpensePlansListTablePr
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Name</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Status</TableHead>
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Category</TableHead>
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Amount</TableHead>
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>Frequency</TableHead>
@@ -57,6 +60,13 @@ export function ExpensePlansListTable({ plans, onOpen }: ExpensePlansListTablePr
             >
               <TableCell className={FINANCE_LIST_CELL_CLASS}>
                 <FinanceListPrimaryCell title={plan.name} />
+              </TableCell>
+              <TableCell className={FINANCE_LIST_CELL_CLASS}>
+                <StatusBadge
+                  label={getExpensePlanStatus(plan.status)?.label ?? plan.status}
+                  variant={getExpensePlanStatus(plan.status)?.variant ?? 'gray'}
+                  className={FINANCE_LIST_BADGE_CLASS}
+                />
               </TableCell>
               <TableCell className={`${FINANCE_LIST_CELL_CLASS} ${FINANCE_LIST_TYPE_CLASS}`}>
                 {plan.category.replace(/_/g, ' ')}
@@ -82,11 +92,11 @@ export function ExpensePlansListTable({ plans, onOpen }: ExpensePlansListTablePr
                 <FinanceListDate value={plan.nextDueDate} />
               </TableCell>
               <TableCell className={FINANCE_LIST_CELL_CLASS}>
-                {plan.project ? (
+                {expenseOwnerLabel(plan) ? (
                   <FinanceListIconLabel
                     icon={FolderKanban}
                     iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
-                    label={plan.project.name}
+                    label={expenseOwnerLabel(plan)!}
                   />
                 ) : (
                   <FinanceListMutedDash />

@@ -2,7 +2,17 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { Activity, AlertTriangle, Clock3, Copy, Hash, Mail, Settings, Users } from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  Clock3,
+  Copy,
+  Hash,
+  Mail,
+  RefreshCw,
+  Settings,
+  Users,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +34,9 @@ interface ProductWhatsAppStatusCardProps {
   lastSuccessfulSyncAt: string | null | undefined;
   invitationStatus: string | null | undefined;
   lastErrorMessage: string | null | undefined;
+  syncBusy?: boolean;
+  canSyncFromGroupId?: boolean;
+  onSyncFromGroupId?: () => void;
 }
 
 export function ProductWhatsAppStatusCard({
@@ -35,6 +48,9 @@ export function ProductWhatsAppStatusCard({
   lastSuccessfulSyncAt,
   invitationStatus,
   lastErrorMessage,
+  syncBusy = false,
+  canSyncFromGroupId = false,
+  onSyncFromGroupId,
 }: ProductWhatsAppStatusCardProps) {
   const showConfigureGateway = gatewayNotice === WHATSAPP_GATEWAY_NOT_CONFIGURED_MESSAGE;
   return (
@@ -85,21 +101,26 @@ export function ProductWhatsAppStatusCard({
                 {groupChatId || '—'}
               </span>
               {groupChatId ? (
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label="Copy group ID"
-                  className="text-muted-foreground shrink-0"
-                  onClick={() => {
-                    void navigator.clipboard.writeText(groupChatId).then(
-                      () => toast.success('Group ID copied'),
-                      () => toast.error('Could not copy group ID'),
-                    );
-                  }}
-                >
-                  <Copy className="size-3.5" aria-hidden />
-                </Button>
+                <>
+                  <IconActionButton
+                    ariaLabel="Sync group details from ID"
+                    disabled={!canSyncFromGroupId}
+                    onClick={() => onSyncFromGroupId?.()}
+                  >
+                    <RefreshCw className={cn('size-3.5', syncBusy && 'animate-spin')} aria-hidden />
+                  </IconActionButton>
+                  <IconActionButton
+                    ariaLabel="Copy group ID"
+                    onClick={() => {
+                      void navigator.clipboard.writeText(groupChatId).then(
+                        () => toast.success('Group ID copied'),
+                        () => toast.error('Could not copy group ID'),
+                      );
+                    }}
+                  >
+                    <Copy className="size-3.5" aria-hidden />
+                  </IconActionButton>
+                </>
               ) : null}
             </div>
           </StatusRow>
@@ -118,6 +139,33 @@ export function ProductWhatsAppStatusCard({
         <p className="text-destructive mt-3 text-sm">{lastErrorMessage}</p>
       ) : null}
     </section>
+  );
+}
+
+function IconActionButton({
+  ariaLabel,
+  disabled,
+  onClick,
+  children,
+}: {
+  ariaLabel: string;
+  disabled?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Button
+      type="button"
+      size="icon-sm"
+      variant="ghost"
+      aria-label={ariaLabel}
+      title={ariaLabel}
+      disabled={disabled}
+      className="text-muted-foreground shrink-0"
+      onClick={onClick}
+    >
+      {children}
+    </Button>
   );
 }
 

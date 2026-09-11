@@ -6,8 +6,8 @@ export type ExpensePlanFormState = {
   category: string;
   frequency: string;
   nextDueDate: string;
-  provider: string;
-  projectId: string;
+  productId: string;
+  credentialId: string;
   autoGenerate: boolean;
   notes: string;
 };
@@ -18,11 +18,15 @@ export const EMPTY_EXPENSE_PLAN_FORM: ExpensePlanFormState = {
   category: 'OTHER',
   frequency: 'ONE_TIME',
   nextDueDate: '',
-  provider: '',
-  projectId: 'none',
+  productId: '',
+  credentialId: '',
   autoGenerate: false,
   notes: '',
 };
+
+function optionalId(value: string | null | undefined): string {
+  return value?.trim() ?? '';
+}
 
 /** Maps API plan to dialog fields (`nextDueDate` as `YYYY-MM-DD` for `<input type="date">`). */
 export function expensePlanToFormState(plan: ExpensePlan): ExpensePlanFormState {
@@ -32,8 +36,8 @@ export function expensePlanToFormState(plan: ExpensePlan): ExpensePlanFormState 
     category: plan.category,
     frequency: plan.frequency,
     nextDueDate: plan.nextDueDate ? plan.nextDueDate.slice(0, 10) : '',
-    provider: plan.provider ?? '',
-    projectId: plan.projectId ?? 'none',
+    productId: optionalId(plan.productId),
+    credentialId: optionalId(plan.credentialId),
     autoGenerate: plan.autoGenerate,
     notes: plan.notes ?? '',
   };

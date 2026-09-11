@@ -1,7 +1,15 @@
-import { Injectable, Inject, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+  Optional,
+} from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import { InvoiceOfficialWhatsAppService } from '../finance/invoices/invoice-official-whatsapp.service';
 import { ProductWhatsAppGroupService } from '../integrations/whatsapp-gateway/product-whatsapp-group.service';
 import { permanentlyDeleteProfileATrashedEntity } from '../../common/lifecycle/profile-a-permanent-delete.ops';
 import {
@@ -117,6 +125,7 @@ export class PartnersService {
     private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly auditService: AuditService,
     private readonly productWhatsApp: ProductWhatsAppGroupService,
+    @Optional() private readonly officialWhatsApp?: InvoiceOfficialWhatsAppService,
   ) {}
 
   private assertDefaultPercentInRange(value: number): number {
@@ -470,7 +479,13 @@ export class PartnersService {
     input: CreateFinanceFromServiceTermInput,
   ): Promise<PartnerServiceTermWireDto> {
     await this.assertPartnerIsActiveForMutation(partnerId);
-    const term = await createFinanceFromPartnerServiceTerm(this.prisma, partnerId, termId, input);
+    const term = await createFinanceFromPartnerServiceTerm(
+      this.prisma,
+      partnerId,
+      termId,
+      input,
+      this.officialWhatsApp,
+    );
     if (term.productId) {
       try {
         await this.productWhatsApp.ensureGroupForProduct(term.productId, {

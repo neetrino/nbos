@@ -36,6 +36,17 @@ export function isBillingMonthCoveredByInvoices(
   return false;
 }
 
+/** True when any month in `[startKey, startKey + monthCount)` is already covered. */
+export function coverageWindowOverlapsInvoices(
+  startKey: string,
+  monthCount: number,
+  invoices: readonly SubscriptionCoverageInvoiceRow[],
+): boolean {
+  return expandCoverageMonthKeys(startKey, monthCount).some((key) =>
+    isBillingMonthCoveredByInvoices(key, invoices),
+  );
+}
+
 /**
  * Distinct calendar months covered by SUBSCRIPTION invoices (union of coverage windows).
  * Overlapping invoices do not double-count. Null/invalid coverage fields fall back to the

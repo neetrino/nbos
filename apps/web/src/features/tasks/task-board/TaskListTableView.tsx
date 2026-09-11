@@ -23,6 +23,7 @@ import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { TaskUrgentFlameIndicator } from '@/features/tasks/components/TaskUrgentFlameIndicator';
 import { getTaskStatus } from '@/features/tasks/constants/tasks';
+import { TASK_LIST_URGENT_FLAME_SIZE } from './task-card-urgent';
 import { formatPlanningStatus } from '@/features/tasks/work-spaces/work-space-utils';
 import type { Task } from '@/lib/api/tasks';
 import { cn } from '@/lib/utils';
@@ -83,7 +84,7 @@ function TaskListRow({ task, onRowClick }: { task: Task; onRowClick: (task: Task
         )}
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        <TaskUrgentFlameIndicator priority={task.priority} size={14} />
+        <TaskUrgentFlameIndicator priority={task.priority} size={TASK_LIST_URGENT_FLAME_SIZE} />
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
         <StatusBadge

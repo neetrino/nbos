@@ -27,4 +27,10 @@ describe('Lead sheet EntityItemHost', () => {
     expect(leadTasksTab).toContain('EntityLinkedTasksTab');
     expect(leadTasksTab).not.toContain('EntityItemHost');
   });
+
+  it('does not call parent onRefresh from the linked-tasks tab (board refetch loop)', () => {
+    const linkedTab = readSource('EntityLinkedTasksTab.tsx');
+    expect(linkedTab).not.toContain('onRefresh');
+    expect(linkedTab).not.toMatch(/useEffect/);
+  });
 });

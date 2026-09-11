@@ -160,6 +160,7 @@ export class ContactsService {
           ? JSON.parse(JSON.stringify(data.messengerLinks))
           : undefined,
       },
+      include: CONTACT_LIST_INCLUDE,
     });
     await this.enqueueGoogleContactsSync(contact.id);
     return contact;

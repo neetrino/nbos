@@ -63,7 +63,7 @@ export function StatusBadge({
     <span
       title={title ?? label}
       className={cn(
-        'inline-flex w-fit max-w-full min-w-0 items-center gap-1 self-start rounded-md px-2 py-0.5 text-xs font-medium',
+        'inline-flex w-fit max-w-full min-w-0 items-center gap-1 self-start rounded-md px-2 py-0.5 text-[11px] font-semibold tracking-wide uppercase',
         VARIANT_STYLES[variant],
         className,
       )}

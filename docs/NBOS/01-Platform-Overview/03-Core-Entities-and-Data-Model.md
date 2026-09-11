@@ -292,10 +292,11 @@ Contact (человек)
 | ----------------------------- | ----------------- | ---------------------------------------------------------------------------------------- |
 | id                            | UUID              | Уникальный идентификатор                                                                 |
 | code                          | String            | Системный номер карточки `INV-[YEAR]-[SEQ]`; вторичная строка UI, когда не display title |
-| order_id                      | FK → Order        | Заказ                                                                                    |
-| subscription_id               | FK → Subscription | Подписка (если subscription invoice)                                                     |
-| project_id                    | FK → Project      | Проект                                                                                   |
-| company_id                    | FK → Company      | Кому выставлен (юрлицо)                                                                  |
+| order_id                      | FK → Order        | Заказ (origin, не владелец)                                                              |
+| subscription_id               | FK → Subscription | Подписка (origin, если subscription invoice)                                             |
+| product_id                    | FK → Product      | **Владелец:** продукт, за который выставлен счёт (один Invoice = один Product)           |
+| project_id                    | FK → Project      | Денормализация = `Product.projectId` (не UI; валидируется при create/update)             |
+| company_id                    | FK → Company      | Юрлицо-плательщик; обязательно для Tax (реквизиты), опционально для Free                 |
 | amount                        | Decimal           | Сумма счёта                                                                              |
 | currency                      | Enum              | AMD, USD, EUR                                                                            |
 | tax_status                    | Enum              | Tax, Free (наследуется от Order/Subscription/Domain/Service)                             |
@@ -317,13 +318,16 @@ Contact (человек)
 3. Пока `official_request_sent = false`, клиентские напоминания не должны отправляться для `Tax`.
 4. Для Tax: `Awaiting Payment` требует Company name + tax_id; `Paid` требует актуальный official request; отмена карточки с отправленным запросом сразу отменяет запрос бухгалтеру.
 5. Статус карточки отражает именно состояние денег, а не состояние уведомлений.
-6. **Display title в UI** не хранится на `Invoice`: при наличии `order` — `Deal.name` через `order.deal`, иначе `Order.code`; иначе при `subscription` — `Subscription.name`; иначе — `code`. Переименование источника обновляет заголовок всех связанных счетов.
+6. **Display title в UI** не хранится на `Invoice`: при наличии `order` — `Deal.name` через `order.deal`, иначе `Order.code`; иначе при `subscription` — `Subscription.name`; иначе при `clientServiceRecord` — `ClientServiceRecord.name` (или `product.name`); иначе — `code`. Переименование источника обновляет заголовок всех связанных счетов.
+7. **Product — владелец карточки.** Источник (Order / Subscription / Client Service / Manual) не заменяет `product_id`. `project_id` пишется только с `Product.projectId`. Для Manual вход в Awaiting / Overdue / Paid требует Product.
 
 **Связи:**
 
+- Invoice → one Product (owner; nullable только для сирот до backfill)
+- Invoice → one Project (denormalized from Product)
+- Invoice → one Company (required for Tax)
 - Invoice → one Payment (при оплате)
-- Invoice → one Order OR one Subscription
-- Invoice → one Company
+- Invoice → optional Order / Subscription / Client Service Record (origin)
 
 ---
 
@@ -406,8 +410,9 @@ Contact (человек)
 | frequency                | Enum                       | One-time, Monthly, Quarterly, Yearly, Custom                                             |
 | next_due_date            | Date                       | Следующая дата оплаты                                                                    |
 | provider                 | String                     | Поставщик                                                                                |
-| project_id               | FK → Project               | Проект, если расход проектный                                                            |
-| product_id               | FK → Product               | Продукт, если применимо                                                                  |
+| product_id               | FK → Product               | Продукт, если затрата продуктовая (optional)                                             |
+| project_id               | FK → Project               | Денормализация = Product.projectId; не UI                                                |
+| credential_id            | FK → Credential            | Карточка пароля, если нужна для оплаты (optional)                                        |
 | client_service_record_id | FK → Client Service Record | Сервис клиента, если план идёт от него                                                   |
 | auto_generate            | Boolean                    | Создавать ли карточки автоматически                                                      |
 | notes                    | Text                       | Заметки                                                                                  |
@@ -428,8 +433,9 @@ Contact (человек)
 | workflow_status          | Enum                       | Planned, Due Soon, Due Now, Overdue, On Hold, Backlog, Paid, Cancelled                   |
 | payment_status           | Enum                       | Unpaid, Partially Paid, Paid                                                             |
 | backlog_reason           | Enum                       | Debt to Pay Later, Waiting for Decision, Waiting for Client, Waiting for Provider, Other |
-| project_id               | FK → Project               | Привязка к проекту                                                                       |
-| product_id               | FK → Product               | Привязка к продукту                                                                      |
+| product_id               | FK → Product               | Продукт (снимок с Plan / Client Service при создании)                                    |
+| project_id               | FK → Project               | Денормализация = Product.projectId; не UI                                                |
+| credential_id            | FK → Credential            | Карточка пароля (снимок при создании)                                                    |
 | order_id                 | FK → Order                 | Привязка к заказу                                                                        |
 | partner_id               | FK → Partner               | Партнёр, если partner payout                                                             |
 | client_service_record_id | FK → Client Service Record | Сервис клиента                                                                           |
@@ -457,7 +463,8 @@ Contact (человек)
 - Expense Card → many Expense Payments
 - Client Service Record (`billing_model`: `WE_PAY` | `REMINDER_ONLY`) → Invoice Card → Payment → Expense Card → Task (только для `WE_PAY`)
 - Payroll Run → Expense Card
-- Expense Card → one Project / Product / Order (опционально)
+- Expense Plan / Expense Card → optional Product (owner of delivery bind); `project_id` denormalized from Product
+- Expense Plan / Expense Card → optional Credential (login for paying the vendor)
 - Expense Card → one Partner (для partner payouts)
 
 ---
@@ -1214,7 +1221,7 @@ Contact ──1:N──► Call
 
 ## 5. Ключевые правила целостности данных
 
-1. **Каждый Invoice обязательно привязан к Order ИЛИ Subscription.** Нет "свободных" счетов.
+1. **Каждый Invoice принадлежит одному Product.** Origin (Order / Subscription / Client Service) опционален. Manual без Product не входит в Awaiting / Overdue / Paid.
 2. **Каждый Bonus Entry обязательно привязан к Order.** Даже micro-extension создаёт Order.
 3. **Payment триггерит события:** смена статуса Order, создание Bonus Entry, создание Partner Payout.
 4. **Tax / Free статус наследуется:** Order/Subscription → Invoice. Определяется один раз и не меняется.

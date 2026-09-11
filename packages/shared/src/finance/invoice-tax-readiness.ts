@@ -123,6 +123,7 @@ export function shouldCancelOfficialRequestOnCardCancel(invoice: {
   return isTaxInvoiceStatus(invoice.taxStatus) && isOfficialInvoiceIssued(invoice);
 }
 
+/** Billing auto-create only. Manual deal/order invoices always start in New. */
 export function resolveDepositInvoiceMoneyStatus(input: {
   taxStatus: string;
   company: InvoiceTaxCompanyRequisites | null;

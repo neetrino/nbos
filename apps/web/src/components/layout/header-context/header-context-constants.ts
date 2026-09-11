@@ -5,7 +5,7 @@ import {
 
 /** Horizontal scroll when module context exceeds available width. */
 export const HEADER_CONTEXT_SCROLL =
-  'min-w-0 max-w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+  'min-w-0 max-w-full overflow-x-auto overscroll-x-contain touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 /** Tab row; line under inactive zones (active tab overlaps this border). */
 export const HEADER_CONTEXT_TAB_ROW =
@@ -13,7 +13,7 @@ export const HEADER_CONTEXT_TAB_ROW =
 
 /** Inactive zone tab — sits on the bar, not connected to the page shell. */
 export const HEADER_CONTEXT_TAB_INACTIVE =
-  'text-muted-foreground hover:text-foreground mb-1.5 inline-flex items-center rounded-t-lg px-3 py-2 text-[15px] font-semibold tracking-tight whitespace-nowrap transition-colors hover:bg-muted/60 sm:px-4 sm:text-base';
+  'text-muted-foreground hover:text-foreground mb-1.5 inline-flex items-center rounded-t-xl px-3 py-2 text-[15px] font-semibold tracking-tight whitespace-nowrap transition-colors hover:bg-muted/70 sm:px-4 sm:text-base';
 
 /** Active tab label row. */
 export const HEADER_CONTEXT_TAB_ACTIVE_LABEL =

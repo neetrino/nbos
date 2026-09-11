@@ -1,5 +1,6 @@
+import { resolveInvoiceDisplayTitle } from '@nbos/shared';
 import {
-  formatCoverageMonthLabel,
+  formatCoveragePeriodLabel,
   formatDueDateLabel,
   renderClientPaymentReminderMessage,
   type RenderClientPaymentReminderInput,
@@ -14,6 +15,8 @@ export interface ResolvedPaymentReminderRenderInput {
 interface PaymentReminderSubscription {
   notificationsEnabled: boolean;
   reminderLanguage: RenderClientPaymentReminderInput['language'];
+  name: string;
+  code: string;
   product: { name: string };
 }
 
@@ -25,39 +28,48 @@ interface PaymentReminderClientService {
 }
 
 export function resolvePaymentReminderRenderInput(input: {
+  code: string;
   amount: unknown;
   taxStatus: string;
   coverageStartMonth: string | null;
+  coverageMonthCount?: number | null;
   dueDate: Date;
   offsetDays?: RenderClientPaymentReminderInput['offsetDays'];
   subscription: PaymentReminderSubscription | null;
   clientServiceRecord: PaymentReminderClientService | null;
 }): ResolvedPaymentReminderRenderInput | null {
   if (input.subscription != null) {
+    const serviceLabel = resolveInvoiceDisplayTitle({
+      code: input.code,
+      subscription: input.subscription,
+    });
     return {
       language: input.subscription.reminderLanguage,
-      productName: input.subscription.product.name,
+      productName: serviceLabel,
       renderInput: {
         offsetDays: input.offsetDays,
         language: input.subscription.reminderLanguage,
         source: 'subscription',
-        serviceLabel: input.subscription.product.name,
-        periodLabel: formatCoverageMonthLabel(
+        serviceLabel,
+        periodLabel: formatCoveragePeriodLabel(
           input.coverageStartMonth,
+          input.coverageMonthCount,
           input.subscription.reminderLanguage,
         ),
+        invoiceCode: input.code,
         amount: input.amount,
         taxStatus: input.taxStatus as RenderClientPaymentReminderInput['taxStatus'],
+        coverageMonthCount: input.coverageMonthCount ?? 1,
       },
     };
   }
 
   if (input.clientServiceRecord != null) {
     const language = input.clientServiceRecord.reminderLanguage;
-    const serviceLabel =
-      input.clientServiceRecord.name.trim() ||
-      input.clientServiceRecord.product?.name.trim() ||
-      'Client service';
+    const serviceLabel = resolveInvoiceDisplayTitle({
+      code: input.code,
+      clientServiceRecord: input.clientServiceRecord,
+    });
     return {
       language,
       productName: serviceLabel,
@@ -67,6 +79,7 @@ export function resolvePaymentReminderRenderInput(input: {
         source: 'client_service',
         serviceLabel,
         periodLabel: formatDueDateLabel(input.dueDate, language),
+        invoiceCode: input.code,
         amount: input.amount,
         taxStatus: input.taxStatus as RenderClientPaymentReminderInput['taxStatus'],
       },

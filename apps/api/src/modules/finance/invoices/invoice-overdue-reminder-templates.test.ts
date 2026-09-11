@@ -15,11 +15,13 @@ describe('overdue reminder templates', () => {
       source: 'subscription',
       serviceLabel: 'Site A',
       periodLabel: formatCoverageMonthLabel('2026-06', 'HY'),
+      invoiceCode: 'INV-2026-0001',
       amount: 120000,
       taxStatus: 'TAX',
     });
     expect(message).toContain('ժամկետը լրացել է');
     expect(message).toContain('Site A');
+    expect(message).toContain('INV-2026-0001');
     expect(message).toContain('120.000 դրամ');
     expect(message).toContain('դուրս գրված հաշվի');
     expect(message).toContain('անջատումից խուսափելու համար');

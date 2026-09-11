@@ -19,6 +19,7 @@ import { searchDealExistingProducts } from './deal-existing-product-search';
 import { cn } from '@/lib/utils';
 import { DealContactTeamSection } from './DealContactTeamSection';
 import { DealFinanceActionsPanel } from './DealFinanceActionsPanel';
+import { DealClientCommunicationPanel } from './DealClientCommunicationPanel';
 import { DealHandoffPanel } from './DealHandoffPanel';
 import { DealCombinedInfoSection } from './DealCombinedInfoSection';
 import { DealNotesSection } from './DealNotesSection';
@@ -180,6 +181,7 @@ export function DealGeneralTab({
 
         <aside className="flex w-full shrink-0 flex-col gap-4 @[48rem]/deal-general:w-64">
           <DealFinanceActionsPanel deal={deal} firstOrder={firstOrder} />
+          <DealClientCommunicationPanel deal={deal} />
           <DealHandoffPanel deal={deal} onOpenDeal={onOpenDeal} />
         </aside>
       </div>

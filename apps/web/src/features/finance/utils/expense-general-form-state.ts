@@ -9,7 +9,8 @@ export interface ExpenseGeneralDraft {
   frequency: string;
   status: string;
   dueDate: string;
-  projectId: string;
+  productId: string;
+  credentialId: string;
   isPassThrough: boolean;
   taxStatus: string;
   backlogReason: string;
@@ -25,7 +26,8 @@ export function createExpenseGeneralDraft(expense: Expense): ExpenseGeneralDraft
     frequency: expense.frequency,
     status: expense.status,
     dueDate: toDateInputValue(expense.dueDate),
-    projectId: expense.projectId ?? 'none',
+    productId: expense.productId ?? '',
+    credentialId: expense.credentialId ?? '',
     isPassThrough: expense.isPassThrough,
     taxStatus: expense.taxStatus,
     backlogReason: expense.backlogReason ?? 'none',
@@ -69,9 +71,13 @@ export function buildExpenseGeneralPatch(
   const snapDue = snap.dueDate.trim();
   if (dueDate !== snapDue) out.dueDate = dueDate ? dueDate : null;
 
-  const projectId = draft.projectId !== 'none' ? draft.projectId : null;
-  const snapProjectId = snap.projectId !== 'none' ? snap.projectId : null;
-  if (projectId !== snapProjectId) out.projectId = projectId;
+  const productId = draft.productId.trim() || null;
+  const snapProductId = snap.productId.trim() || null;
+  if (productId !== snapProductId) out.productId = productId;
+
+  const credentialId = draft.credentialId.trim() || null;
+  const snapCredentialId = snap.credentialId.trim() || null;
+  if (credentialId !== snapCredentialId) out.credentialId = credentialId;
 
   if (draft.isPassThrough !== snap.isPassThrough) out.isPassThrough = draft.isPassThrough;
   if (draft.taxStatus !== snap.taxStatus) out.taxStatus = draft.taxStatus;

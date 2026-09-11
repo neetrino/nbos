@@ -3,6 +3,7 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MailThreadDetailContent } from '@/features/mail/MailThreadDetailContent';
 import type { useMailThreadDetail } from '@/features/mail/use-mail-thread-detail';
+import { cn } from '@/lib/utils';
 
 export interface MailThreadDetailPanelProps {
   threadId: string;
@@ -27,7 +28,7 @@ export function MailThreadDetailPanel({
 }: MailThreadDetailPanelProps) {
   return (
     <ScrollArea className="min-h-0 flex-1">
-      <div className="px-5 py-4">
+      <div className={cn('px-5 py-4', compact && 'max-md:pt-0')}>
         <MailThreadDetailContent
           threadId={threadId}
           canEdit={canEdit}

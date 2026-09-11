@@ -48,6 +48,7 @@ export interface AtsIngestTestState {
 export function inboundStart(overrides: Partial<AtsWebhookPayload> = {}): AtsWebhookPayload {
   return {
     uid: 'uid-1',
+    lid: null,
     state: 'start',
     calldirect: '0',
     clid: '+37499123456',
@@ -60,6 +61,16 @@ export function inboundStart(overrides: Partial<AtsWebhookPayload> = {}): AtsWeb
     recordLink: null,
     ...overrides,
   };
+}
+
+export function outboundStart(overrides: Partial<AtsWebhookPayload> = {}): AtsWebhookPayload {
+  return inboundStart({
+    calldirect: '1',
+    clid: '3103585',
+    op: '3103585',
+    input: '+37499123456',
+    ...overrides,
+  });
 }
 
 export function createAtsIngestPrismaMock() {
@@ -177,28 +188,32 @@ function createLeadMocks(state: AtsIngestTestState) {
       const row = state.leads.find((lead) => lead.id === where.id);
       return row ? { assignedTo: row.assignedTo } : null;
     }),
-    create: vi
-      .fn()
-      .mockImplementation(
-        async ({
-          data,
-        }: {
-          data: { code: string; phone: string; contactName: string; contactId?: string };
-        }) => {
-          const row: AtsIngestLeadRow = {
-            id: `lead-${state.leads.length + 1}`,
-            phone: data.phone,
-            status: 'NEW',
-            trashedAt: null,
-            mergedIntoId: null,
-            code: data.code,
-            contactId: data.contactId ?? null,
-            assignedTo: null,
-          };
-          state.leads.push(row);
-          return { id: row.id };
-        },
-      ),
+    create: vi.fn().mockImplementation(
+      async ({
+        data,
+      }: {
+        data: {
+          code: string;
+          phone: string;
+          contactName: string;
+          contactId?: string;
+          assignedTo?: string | null;
+        };
+      }) => {
+        const row: AtsIngestLeadRow = {
+          id: `lead-${state.leads.length + 1}`,
+          phone: data.phone,
+          status: 'NEW',
+          trashedAt: null,
+          mergedIntoId: null,
+          code: data.code,
+          contactId: data.contactId ?? null,
+          assignedTo: data.assignedTo ?? null,
+        };
+        state.leads.push(row);
+        return { id: row.id };
+      },
+    ),
   };
 }
 

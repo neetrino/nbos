@@ -5,10 +5,12 @@ import type { ReactNode } from 'react';
 import { ModuleHeroSlotProvider, PageHeroNavLinks } from '@/components/shared/page-hero';
 import { FinanceHeaderContextLayout } from '@/features/finance/components/FinanceHeaderContextLayout';
 import { resolveFinanceZoneNav } from '@/features/finance/finance-module-nav';
+import { resolveFinanceSectionId } from '@/lib/navigation/module-last-visit';
 
 export default function FinanceLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const zoneNav = resolveFinanceZoneNav(pathname);
+  const financeZone = resolveFinanceSectionId(pathname);
 
   return (
     <>
@@ -18,10 +20,14 @@ export default function FinanceLayout({ children }: { children: ReactNode }) {
         title="Finance"
         tabs={
           zoneNav ? (
-            <PageHeroNavLinks items={zoneNav} ariaLabel="Finance section navigation" />
+            <PageHeroNavLinks
+              items={zoneNav}
+              ariaLabel="Finance section navigation"
+              fullWidthOnMobile={financeZone === 'payroll'}
+            />
           ) : null
         }
-        className="flex h-full min-h-0 flex-col gap-5"
+        className="flex h-full min-h-0 min-w-0 flex-col gap-5"
       >
         {children}
       </ModuleHeroSlotProvider>

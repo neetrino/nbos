@@ -37,7 +37,16 @@ import {
   requireDeliveryStage,
 } from '../delivery-lifecycle';
 import { mergeActiveParentProjectScope } from '../active-project-list-scope';
-import { buildProductSearchOr } from './product-search.where';
+import {
+  applyProductHubAndSearch,
+  classifyProductHubViewFromRow,
+  shouldClassifyProductHubView,
+} from './product-list-where';
+import {
+  PRODUCT_HUB_LIST_INCLUDE,
+  PRODUCT_LIST_INCLUDE,
+  splitProductListSubscriptions,
+} from './product-list-query';
 import { batchProductOpenCounts } from './batch-product-open-counts';
 import { buildProductCurrentStageReadiness } from './product-current-stage-readiness';
 import { buildProductDoneReadiness } from './product-done-readiness';
@@ -137,6 +146,8 @@ interface ProductQueryParams {
   productType?: string;
   pmId?: string;
   search?: string;
+  hubView?: string;
+  includeHubView?: string | boolean;
 }
 
 /** Allowed ISO-like language codes for `Product.languages` (lowercase). */
@@ -241,7 +252,10 @@ export class ProductsService {
       productType,
       pmId,
       search,
+      hubView,
+      includeHubView,
     } = params;
+    const classifyHubView = shouldClassifyProductHubView(hubView, includeHubView);
     const where: Prisma.ProductWhereInput = {};
 
     if (projectId) where.projectId = projectId;
@@ -259,42 +273,14 @@ export class ProductsService {
     if (productCategory) where.productCategory = productCategory as ProductCategoryEnum;
     if (productType) where.productType = productType as ProductTypeEnum;
     if (pmId) where.pmId = pmId;
-    if (search?.trim()) {
-      where.OR = buildProductSearchOr(search.trim());
-    }
+    applyProductHubAndSearch(where, hubView, search);
 
     const scopedWhere = mergeActiveParentProjectScope(where, { projectId });
 
     const [items, total] = await Promise.all([
       this.prisma.product.findMany({
         where: scopedWhere,
-        include: {
-          project: {
-            select: {
-              id: true,
-              code: true,
-              name: true,
-              companyId: true,
-              company: { select: { id: true, name: true } },
-            },
-          },
-          pm: { select: employeePersonSelect },
-          developer: { select: employeePersonSelect },
-          frontendDeveloper: { select: employeePersonSelect },
-          designer: { select: employeePersonSelect },
-          technicalSpecialist: { select: employeePersonSelect },
-          qaLead: { select: employeePersonSelect },
-          order: {
-            select: {
-              id: true,
-              code: true,
-              status: true,
-              paymentType: true,
-              invoices: { select: { moneyStatus: true } },
-            },
-          },
-          _count: { select: { extensions: true, tasks: true, tickets: true } },
-        },
+        include: classifyHubView ? PRODUCT_HUB_LIST_INCLUDE : PRODUCT_LIST_INCLUDE,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -343,8 +329,18 @@ export class ProductsService {
           readiness,
           checklistStageProgress,
         );
+        const { listed, subscriptions: liveSubscriptions } = splitProductListSubscriptions(withLc);
         return {
-          ...withLc,
+          ...listed,
+          ...(classifyHubView
+            ? {
+                hubView: classifyProductHubViewFromRow({
+                  deliveryResolution: product.deliveryResolution,
+                  status: product.status,
+                  subscriptions: liveSubscriptions,
+                }),
+              }
+            : {}),
           deliveryLifecycle: {
             ...withLc.deliveryLifecycle,
             ...(currentStageReadiness ? { currentStageReadiness } : {}),

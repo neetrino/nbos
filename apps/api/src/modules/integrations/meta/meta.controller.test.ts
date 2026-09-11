@@ -6,6 +6,7 @@ import { MetaOAuthCallbackError } from './meta-oauth-callback.error';
 import type { MetaAccountsService } from './meta-accounts.service';
 import type { MetaOAuthService } from './meta-oauth.service';
 import type { MetaWebhookService } from './meta-webhook.service';
+import type { MetaWebhookRequest } from './meta-webhook.types';
 
 function createController(oauthService: Partial<MetaOAuthService>): MetaController {
   return new MetaController(
@@ -191,5 +192,85 @@ describe('MetaController.oauthCallback error mapping', () => {
     expect(buildErrorRedirectUrl).toHaveBeenCalledWith('unknown', expect.any(String));
     expect(res.redirectUrl).toContain('error_id=');
     expect(res.redirectUrl).not.toContain('unexpected');
+  });
+});
+
+describe('MetaController.verifyWebhook diagnostic', () => {
+  function createWebhookResponse(): Response & {
+    statusCode?: number;
+    body?: unknown;
+    headers: Record<string, string>;
+  } {
+    const res = {
+      headers: {} as Record<string, string>,
+      status(code: number) {
+        res.statusCode = code;
+        return res;
+      },
+      set(name: string, value: string) {
+        res.headers[name] = value;
+        return res;
+      },
+      send(body: unknown) {
+        res.body = body;
+        return res;
+      },
+    };
+    return res as Response & {
+      statusCode?: number;
+      body?: unknown;
+      headers: Record<string, string>;
+    };
+  }
+
+  function createWebhookController(webhookService: Partial<MetaWebhookService>): MetaController {
+    return new MetaController(
+      {} as MetaOAuthService,
+      {} as MetaAccountsService,
+      webhookService as MetaWebhookService,
+    );
+  }
+
+  it('echoes hub.challenge as plain text without calling token validation', () => {
+    const verifySubscription = vi.fn();
+    const controller = createWebhookController({ verifySubscription });
+    const res = createWebhookResponse();
+
+    controller.verifyWebhook(
+      {
+        headers: {
+          'user-agent': 'facebookplatform/1.0',
+          'cf-connecting-ip': '1.2.3.4',
+          'cf-ipcountry': 'US',
+          'x-forwarded-for': '1.2.3.4',
+        },
+      } as MetaWebhookRequest,
+      'subscribe',
+      'wrong-token',
+      'challenge-123',
+      res,
+    );
+
+    expect(verifySubscription).not.toHaveBeenCalled();
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['Content-Type']).toBe('text/plain');
+    expect(res.body).toBe('challenge-123');
+  });
+
+  it('returns HTTP 400 plain text when hub.challenge is missing', () => {
+    const controller = createWebhookController({});
+    const res = createWebhookResponse();
+
+    controller.verifyWebhook(
+      { headers: {} } as MetaWebhookRequest,
+      'subscribe',
+      'any-token',
+      undefined,
+      res,
+    );
+
+    expect(res.statusCode).toBe(400);
+    expect(res.headers['Content-Type']).toBe('text/plain');
+    expect(res.body).toBe('Missing hub.challenge');
   });
 });

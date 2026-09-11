@@ -13,6 +13,7 @@ import {
 
 interface SubscriptionBillingPeriodConfirmDialogProps {
   open: boolean;
+  title?: string;
   subscriptionTitle: string;
   description: string;
   isSubmitting: boolean;
@@ -23,6 +24,7 @@ interface SubscriptionBillingPeriodConfirmDialogProps {
 
 export function SubscriptionBillingPeriodConfirmDialog({
   open,
+  title = 'Confirm billing period change?',
   subscriptionTitle,
   description,
   isSubmitting,
@@ -40,7 +42,7 @@ export function SubscriptionBillingPeriodConfirmDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle size={18} className="text-amber-500" />
-            Confirm billing period change?
+            {title}
           </DialogTitle>
           <DialogDescription>
             For subscription{' '}

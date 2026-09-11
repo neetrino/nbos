@@ -11,8 +11,10 @@ import {
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
   DetailSheetTabPanel,
-  type DetailSheetTabItem,
   DeleteConfirmDialog,
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
   EntityDetailSheetContent,
   StatusBadge,
 } from '@/components/shared';
@@ -25,6 +27,8 @@ import {
 import { getEmployeeLevel, getEmployeeStatus } from '@/features/hr/constants/hr';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { employeeFullName, employeePrimaryDepartment } from '@/features/hr/utils/employee-display';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
+import { cn } from '@/lib/utils';
 import {
   departmentsApi,
   employeesApi,
@@ -35,12 +39,17 @@ import {
 } from '@/lib/api/employees';
 import { toast } from 'sonner';
 import {
-  buildEmployeeGeneralPatch,
   createEmployeeGeneralDraft,
-  employeeRoleChanged,
   isEmployeeGeneralDirty,
   type EmployeeGeneralDraft,
 } from './employee-general-form-state';
+import { buildEmployeeSheetTabs } from './build-employee-sheet-tabs';
+import {
+  canEditHrEmployeeFields,
+  canEditOwnAccountFields,
+  isEmployeeOwnProfileDirty,
+} from './employee-own-profile-fields';
+import { persistEmployeeGeneral } from './persist-employee-general';
 import { EmployeeDepartmentsPanel } from './EmployeeDepartmentsPanel';
 import { EmployeeOffboardingPanel } from './EmployeeOffboardingPanel';
 import { EmployeeOnboardingPanel } from './EmployeeOnboardingPanel';
@@ -91,6 +100,7 @@ export function EmployeeSheet({
   forceNestedBackdrop = false,
   onRemoveParticipant,
 }: EmployeeSheetProps) {
+  const isMobileViewport = useIsMobileViewport();
   const { persistedValue: renderEmployee, onOpenChangeComplete } = useSheetPersistedValue(employee);
   const hostMounted = useSheetHostMounted(open, renderEmployee);
 
@@ -133,7 +143,7 @@ export function EmployeeSheet({
   }, [open]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !canEdit) return;
     void rolesApi
       .getAll()
       .then((r) => setRoles(r ?? []))
@@ -142,7 +152,7 @@ export function EmployeeSheet({
       .getAll()
       .then((d) => setDepartments(d ?? []))
       .catch(() => {});
-  }, [open]);
+  }, [canEdit, open]);
 
   useEffect(() => {
     if (!open || !current || current.status === 'TERMINATED') {
@@ -171,35 +181,40 @@ export function EmployeeSheet({
   const generalDirty = draft != null && snap != null && isEmployeeGeneralDirty(draft, snap);
 
   const handleSave = useCallback(async () => {
-    if (!current || !draft || !snap || !canEdit) return;
+    if (!current || !draft || !snap) return;
+    const ownOk = canEditOwnAccountFields(selfProfile, current.status);
+    const hrOk = canEditHrEmployeeFields(canEdit, current.status);
+    if (!ownOk && !hrOk) return;
     setGeneralError(null);
-    if (!draft.firstName.trim() || !draft.lastName.trim() || !draft.email.trim()) {
+    if (!draft.firstName.trim() || !draft.lastName.trim()) {
+      setGeneralError('First name and last name are required.');
+      return;
+    }
+    if (hrOk && !draft.email.trim()) {
       setGeneralError('First name, last name, and email are required.');
       return;
     }
     setSaving(true);
     try {
-      let updated = current;
-      const patch = buildEmployeeGeneralPatch(snap, draft);
-      if (Object.keys(patch).length > 0) {
-        updated = await employeesApi.update(current.id, patch);
-      }
-      if (employeeRoleChanged(snap, draft)) {
-        updated = await employeesApi.changeRole(current.id, draft.roleId);
-      }
-      const fresh = await employeesApi.getById(updated.id);
+      const fresh = await persistEmployeeGeneral({
+        employeeId: current.id,
+        selfProfile,
+        canEditCompany: canEdit,
+        snap,
+        draft,
+      });
       setCurrent(fresh);
       const next = createEmployeeGeneralDraft(fresh);
       setDraft(next);
       setSnap(next);
-      toast.success('Employee updated');
+      toast.success(selfProfile ? 'Account updated' : 'Employee updated');
       await onSaved?.();
     } catch (err) {
       setGeneralError(saveErrorMessage(err));
     } finally {
       setSaving(false);
     }
-  }, [canEdit, current, draft, onSaved, snap]);
+  }, [canEdit, current, draft, onSaved, selfProfile, snap]);
 
   const handleCancel = useCallback(() => {
     setGeneralError(null);
@@ -267,18 +282,26 @@ export function EmployeeSheet({
   const statusInfo = getEmployeeStatus(displayEmployee.status);
   const dept = employeePrimaryDepartment(displayEmployee);
 
-  const employeeTabs: DetailSheetTabItem[] = [
-    { value: 'general', label: 'General' },
-    { value: 'departments', label: 'Departments' },
-  ];
-  if (selfProfile) {
-    employeeTabs.push({ value: 'security', label: 'Security' });
-  }
-  if (displayEmployee.status === 'TERMINATED') {
-    employeeTabs.push({ value: 'offboarding', label: 'Offboarding' });
-  } else if (hasOnboardingChecklist) {
-    employeeTabs.push({ value: 'onboarding', label: 'Onboarding' });
-  }
+  const canEditOwn = canEditOwnAccountFields(selfProfile, displayEmployee.status);
+  const canEditHr = canEditHrEmployeeFields(canEdit, displayEmployee.status);
+  const formDirty = canEditHr ? generalDirty : isEmployeeOwnProfileDirty(draft, snap);
+  const employeeTabs = buildEmployeeSheetTabs({
+    selfProfile,
+    status: displayEmployee.status,
+    hasOnboardingChecklist,
+  });
+  const rolePickerRoles =
+    roles.length > 0
+      ? roles
+      : [
+          {
+            id: displayEmployee.role.id,
+            name: displayEmployee.role.name,
+            slug: displayEmployee.role.slug,
+            level: displayEmployee.role.level,
+            isSystem: false,
+          },
+        ];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
@@ -294,8 +317,41 @@ export function EmployeeSheet({
         }
       >
         <div className="flex h-full min-h-0 flex-col">
-          <div className={TEAM_SHEET_HEADER_CLASS}>
-            <div className="flex items-start gap-3">
+          <div
+            className={cn(
+              isMobileViewport ? DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS : TEAM_SHEET_HEADER_CLASS,
+              isMobileViewport && 'border-border border-b',
+            )}
+          >
+            {isMobileViewport ? (
+              <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>
+                {!selfProfile && canEdit && displayEmployee.status !== 'TERMINATED' ? (
+                  <DetailSheetSettingsMenu>
+                    <DropdownMenuItem
+                      className="text-destructive"
+                      onClick={() => setTerminateOpen(true)}
+                    >
+                      <UserX className="mr-2 size-4" />
+                      Offboard employee
+                    </DropdownMenuItem>
+                  </DetailSheetSettingsMenu>
+                ) : null}
+                {!selfProfile && canReactivate && displayEmployee.status === 'TERMINATED' ? (
+                  <DetailSheetSettingsMenu>
+                    <DropdownMenuItem onClick={() => setReactivateOpen(true)}>
+                      <UserCheck className="mr-2 size-4" />
+                      Reactivate employee
+                    </DropdownMenuItem>
+                  </DetailSheetSettingsMenu>
+                ) : null}
+              </div>
+            ) : null}
+            <div
+              className={cn(
+                'flex items-start gap-3',
+                isMobileViewport && DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+              )}
+            >
               <EmployeePersonAvatar
                 label={fullName}
                 imageUrl={displayEmployee.avatar}
@@ -334,7 +390,10 @@ export function EmployeeSheet({
                   </Button>
                 ) : null}
               </div>
-              {!selfProfile && canEdit && displayEmployee.status !== 'TERMINATED' && (
+              {!isMobileViewport &&
+              !selfProfile &&
+              canEdit &&
+              displayEmployee.status !== 'TERMINATED' ? (
                 <DetailSheetSettingsMenu>
                   <DropdownMenuItem
                     className="text-destructive"
@@ -344,19 +403,27 @@ export function EmployeeSheet({
                     Offboard employee
                   </DropdownMenuItem>
                 </DetailSheetSettingsMenu>
-              )}
-              {!selfProfile && canReactivate && displayEmployee.status === 'TERMINATED' && (
+              ) : null}
+              {!isMobileViewport &&
+              !selfProfile &&
+              canReactivate &&
+              displayEmployee.status === 'TERMINATED' ? (
                 <DetailSheetSettingsMenu>
                   <DropdownMenuItem onClick={() => setReactivateOpen(true)}>
                     <UserCheck className="mr-2 size-4" />
                     Reactivate employee
                   </DropdownMenuItem>
                 </DetailSheetSettingsMenu>
-              )}
+              ) : null}
             </div>
           </div>
 
-          <DetailSheetTabBar tabs={employeeTabs} activeTab={activeTab} onTabChange={setActiveTab} />
+          <DetailSheetTabBar
+            tabs={employeeTabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            className="max-md:mt-3 max-md:px-5"
+          />
 
           <ScrollArea className="min-h-0 flex-1">
             <DetailSheetTabPanel tabKey={activeTab}>
@@ -366,12 +433,13 @@ export function EmployeeSheet({
                   draft={draft}
                   patchDraft={patchDraft}
                   roles={filterRolesForAssignmentPicker(
-                    roles,
+                    rolePickerRoles,
                     assignmentPickerActor(me),
                     displayEmployee.role.id,
                   )}
                   saving={saving}
-                  canEdit={canEdit && displayEmployee.status !== 'TERMINATED'}
+                  canEditPersonal={canEditOwn || canEditHr}
+                  canEditHr={canEditHr}
                   generalError={generalError}
                 />
               ) : null}
@@ -407,8 +475,8 @@ export function EmployeeSheet({
           </ScrollArea>
 
           <DetailSheetFormFooter
-            visible={canEdit && displayEmployee.status !== 'TERMINATED' && activeTab !== 'security'}
-            dirty={generalDirty}
+            visible={(canEditOwn || canEditHr) && activeTab !== 'security'}
+            dirty={formDirty}
             saving={saving}
             errorMessage={generalError}
             onSave={() => void handleSave()}

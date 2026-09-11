@@ -1,18 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Shield, Plus, Save, Users } from 'lucide-react';
+import { ChevronRight, Plus, Shield, Users } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState, ErrorState, LoadingState, PageHero } from '@/components/shared';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   Table,
   TableHeader,
@@ -21,64 +14,30 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { PermissionGate } from '@/lib/permissions';
-
-const SCOPE_OPTIONS = ['NONE', 'OWN', 'DEPARTMENT', 'ALL'] as const;
-type Scope = (typeof SCOPE_OPTIONS)[number];
-
-const ACTIONS = ['VIEW', 'EDIT', 'ADD', 'DELETE'] as const;
-
-interface RoleItem {
-  id: string;
-  name: string;
-  slug: string;
-  level: number;
-  isSystem: boolean;
-  _count?: { employees: number };
-}
-
-interface Permission {
-  id: string;
-  module: string;
-  action: string;
-  description?: string | null;
-}
-
-interface RolePermission {
-  id: string;
-  permissionId: string;
-  scope: string;
-  permission: Permission;
-}
-
-interface RoleWithPermissions extends RoleItem {
-  permissions: RolePermission[];
-}
-
-function formatModuleName(module: string): string {
-  return module.replace(/_/g, ' ');
-}
+import { CreateRoleDialog } from '@/features/settings/components/CreateRoleDialog';
+import { RolePermissionsSheet } from '@/features/settings/components/RolePermissionsSheet';
+import {
+  buildRoleMatrixScopes,
+  rolePermissionScopeKey,
+  type RoleListItem,
+  type RolePermissionDef,
+  type RolePermissionScope,
+  type RoleWithPermissions,
+} from '@/features/settings/components/role-permissions-types';
 
 export default function RolesPage() {
-  const [roles, setRoles] = useState<RoleItem[]>([]);
-  const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
+  const [roles, setRoles] = useState<RoleListItem[]>([]);
+  const [allPermissions, setAllPermissions] = useState<RolePermissionDef[]>([]);
+  const [openRoleId, setOpenRoleId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<RoleWithPermissions | null>(null);
-  const [matrixScopes, setMatrixScopes] = useState<Record<string, Scope>>({});
+  const [matrixScopes, setMatrixScopes] = useState<Record<string, RolePermissionScope>>({});
   const [loadingRoles, setLoadingRoles] = useState(true);
-  const [loadingPermissions, setLoadingPermissions] = useState(true);
   const [loadingRole, setLoadingRole] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createName, setCreateName] = useState('');
   const [createSlug, setCreateSlug] = useState('');
@@ -88,7 +47,7 @@ export default function RolesPage() {
   const fetchRoles = useCallback(async () => {
     setLoadingRoles(true);
     try {
-      const data = await api.get<RoleItem[]>('/api/roles').then((r) => r.data);
+      const data = await api.get<RoleListItem[]>('/api/roles').then((r) => r.data);
       setRoles(Array.isArray(data) ? data : []);
       setLoadError(null);
     } catch (err) {
@@ -100,59 +59,42 @@ export default function RolesPage() {
   }, []);
 
   const fetchPermissions = useCallback(async () => {
-    setLoadingPermissions(true);
     try {
-      const data = await api.get<Permission[]>('/api/permissions').then((r) => r.data);
+      const data = await api.get<RolePermissionDef[]>('/api/permissions').then((r) => r.data);
       setAllPermissions(Array.isArray(data) ? data : []);
-      setLoadError(null);
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : 'Failed to load permissions');
       setAllPermissions([]);
-    } finally {
-      setLoadingPermissions(false);
     }
   }, []);
 
-  const fetchRoleById = useCallback(
-    async (id: string) => {
-      setLoadingRole(true);
-      try {
-        const data = await api.get<RoleWithPermissions>(`/api/roles/${id}`).then((r) => r.data);
-        setSelectedRole(data);
-        setLoadError(null);
-
-        const scopes: Record<string, Scope> = {};
-        for (const rp of data.permissions ?? []) {
-          const key = `${rp.permission.module}:${rp.permission.action}`;
-          scopes[key] = (rp.scope as Scope) || 'NONE';
-        }
-        for (const p of allPermissions) {
-          const key = `${p.module}:${p.action}`;
-          if (!(key in scopes)) scopes[key] = 'NONE';
-        }
-        setMatrixScopes(scopes);
-      } catch (err) {
-        setLoadError(err instanceof Error ? err.message : 'Failed to load role');
-        setSelectedRole(null);
-      } finally {
-        setLoadingRole(false);
-      }
-    },
-    [allPermissions],
-  );
+  const fetchRoleById = useCallback(async (id: string, catalog: RolePermissionDef[]) => {
+    setLoadingRole(true);
+    try {
+      const data = await api.get<RoleWithPermissions>(`/api/roles/${id}`).then((r) => r.data);
+      setSelectedRole(data);
+      setMatrixScopes(buildRoleMatrixScopes(data.permissions ?? [], catalog));
+      setLoadError(null);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Failed to load role');
+      setSelectedRole(null);
+    } finally {
+      setLoadingRole(false);
+    }
+  }, []);
 
   useEffect(() => {
-    fetchRoles();
-    fetchPermissions();
+    void fetchRoles();
+    void fetchPermissions();
   }, [fetchRoles, fetchPermissions]);
 
   useEffect(() => {
     if (!selectedRole || allPermissions.length === 0) return;
     setMatrixScopes((prev) => {
-      let changed = false;
       const next = { ...prev };
-      for (const p of allPermissions) {
-        const key = `${p.module}:${p.action}`;
+      let changed = false;
+      for (const permission of allPermissions) {
+        const key = rolePermissionScopeKey(permission.module, permission.action);
         if (!(key in next)) {
           next[key] = 'NONE';
           changed = true;
@@ -160,47 +102,46 @@ export default function RolesPage() {
       }
       return changed ? next : prev;
     });
-  }, [selectedRole, allPermissions]);
+  }, [allPermissions, selectedRole]);
 
-  const handleSelectRole = (role: RoleItem) => {
+  const handleSelectRole = (role: RoleListItem) => {
+    setSaveConfirmOpen(false);
+    setOpenRoleId(role.id);
     setSelectedRole(null);
-    fetchRoleById(role.id);
+    void fetchRoleById(role.id, allPermissions);
   };
 
-  const handleScopeChange = (
-    permissionId: string,
-    module: string,
-    action: string,
-    scope: Scope,
-  ) => {
-    const key = `${module}:${action}`;
-    setMatrixScopes((prev) => ({ ...prev, [key]: scope }));
+  const handleSheetOpenChange = (open: boolean) => {
+    if (open) return;
+    setOpenRoleId(null);
+    setSelectedRole(null);
+    setSaveConfirmOpen(false);
   };
 
-  const handleSavePermissions = async () => {
-    if (!selectedRole) return;
+  const handleSavePermissions = async (): Promise<boolean> => {
+    if (!selectedRole) return false;
     setSaving(true);
     try {
       const permissions = allPermissions
-        .filter((p) => {
-          const key = `${p.module}:${p.action}`;
-          const scope = matrixScopes[key] ?? 'NONE';
-          return scope !== 'NONE';
+        .filter((permission) => {
+          const scope = matrixScopes[rolePermissionScopeKey(permission.module, permission.action)];
+          return scope && scope !== 'NONE';
         })
-        .map((p) => {
-          const key = `${p.module}:${p.action}`;
-          const scope = matrixScopes[key] ?? 'NONE';
-          return { permissionId: p.id, scope };
-        });
-
+        .map((permission) => ({
+          permissionId: permission.id,
+          scope:
+            matrixScopes[rolePermissionScopeKey(permission.module, permission.action)] ?? 'NONE',
+        }));
       await api.put(`/api/roles/${selectedRole.id}/permissions`, { permissions });
       toast.success('Permissions saved');
       const data = await api
         .get<RoleWithPermissions>(`/api/roles/${selectedRole.id}`)
         .then((r) => r.data);
       setSelectedRole(data);
+      return true;
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to save permissions');
+      return false;
     } finally {
       setSaving(false);
     }
@@ -221,19 +162,13 @@ export default function RolesPage() {
       setCreateName('');
       setCreateSlug('');
       setCreateLevel(10);
-      fetchRoles();
+      void fetchRoles();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to create role');
     } finally {
       setCreateSaving(false);
     }
   };
-
-  const modules = [...new Set(allPermissions.map((p) => p.module))].sort();
-  const permissionMap = new Map<string, Permission>();
-  for (const p of allPermissions) {
-    permissionMap.set(`${p.module}:${p.action}`, p);
-  }
 
   return (
     <div className="flex h-full flex-col gap-5">
@@ -249,7 +184,7 @@ export default function RolesPage() {
         }
       />
       <p className="text-muted-foreground text-sm">
-        RBAC Admin Panel — manage roles and their permissions.
+        Click a role to open its permissions and change access.
       </p>
 
       <div className="border-border bg-card flex flex-col gap-4 rounded-xl border p-4">
@@ -261,8 +196,8 @@ export default function RolesPage() {
           <ErrorState
             description={loadError}
             onRetry={() => {
-              fetchRoles();
-              fetchPermissions();
+              void fetchRoles();
+              void fetchPermissions();
             }}
           />
         ) : loadingRoles ? (
@@ -281,6 +216,7 @@ export default function RolesPage() {
                 <TableHead className="w-20">Level</TableHead>
                 <TableHead className="w-24">System</TableHead>
                 <TableHead className="w-24">Employees</TableHead>
+                <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -305,6 +241,9 @@ export default function RolesPage() {
                       {role._count?.employees ?? 0}
                     </span>
                   </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    <ChevronRight size={16} aria-hidden />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -312,134 +251,40 @@ export default function RolesPage() {
         )}
       </div>
 
-      {selectedRole && (
-        <div className="border-border bg-card flex flex-col gap-4 rounded-xl border p-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-foreground flex items-center gap-2 text-sm font-medium">
-              <Shield size={16} />
-              Permissions — {selectedRole.name}
-            </h3>
-            {!selectedRole.isSystem && (
-              <Button size="sm" onClick={handleSavePermissions} disabled={saving}>
-                <Save size={16} />
-                {saving ? 'Saving...' : 'Save'}
-              </Button>
-            )}
-          </div>
+      <RolePermissionsSheet
+        open={openRoleId !== null}
+        role={selectedRole}
+        loading={loadingRole}
+        saving={saving}
+        saveConfirmOpen={saveConfirmOpen}
+        allPermissions={allPermissions}
+        matrixScopes={matrixScopes}
+        onOpenChange={handleSheetOpenChange}
+        onScopeChange={(module, action, scope) => {
+          setMatrixScopes((prev) => ({ ...prev, [rolePermissionScopeKey(module, action)]: scope }));
+        }}
+        onSaveConfirmOpenChange={setSaveConfirmOpen}
+        onConfirmSave={async () => {
+          const saved = await handleSavePermissions();
+          if (saved) setSaveConfirmOpen(false);
+        }}
+      />
 
-          {loadingRole ? (
-            <LoadingState count={4} />
-          ) : loadingPermissions ? (
-            <LoadingState count={4} />
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="bg-background sticky left-0 z-10 min-w-[180px]">
-                      Module
-                    </TableHead>
-                    {ACTIONS.map((a) => (
-                      <TableHead key={a} className="min-w-[120px]">
-                        {a}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {modules.map((module) => (
-                    <TableRow key={module}>
-                      <TableCell className="bg-background sticky left-0 z-10 font-medium">
-                        {formatModuleName(module)}
-                      </TableCell>
-                      {ACTIONS.map((action) => {
-                        const perm = permissionMap.get(`${module}:${action}`);
-                        const key = `${module}:${action}`;
-                        const scope = (matrixScopes[key] ?? 'NONE') as Scope;
-                        return (
-                          <TableCell key={action}>
-                            {perm ? (
-                              <Select
-                                value={scope}
-                                onValueChange={(v) =>
-                                  handleScopeChange(perm.id, module, action, v as Scope)
-                                }
-                                disabled={selectedRole.isSystem}
-                              >
-                                <SelectTrigger className="h-8 text-xs">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {SCOPE_OPTIONS.map((s) => (
-                                    <SelectItem key={s} value={s}>
-                                      {s}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            ) : (
-                              <span className="text-muted-foreground text-xs">—</span>
-                            )}
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </div>
-      )}
-
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Role</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="create-name">Name</Label>
-              <Input
-                id="create-name"
-                value={createName}
-                onChange={(e) => {
-                  setCreateName(e.target.value);
-                  if (!createSlug)
-                    setCreateSlug(e.target.value.trim().toLowerCase().replace(/\s+/g, '-'));
-                }}
-                placeholder="e.g. Custom Manager"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="create-slug">Slug</Label>
-              <Input
-                id="create-slug"
-                value={createSlug}
-                onChange={(e) => setCreateSlug(e.target.value)}
-                placeholder="e.g. custom-manager"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="create-level">Level</Label>
-              <Input
-                id="create-level"
-                type="number"
-                value={createLevel}
-                onChange={(e) => setCreateLevel(parseInt(e.target.value, 10) || 0)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateRole} disabled={createSaving}>
-              {createSaving ? 'Creating...' : 'Create'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CreateRoleDialog
+        open={createDialogOpen}
+        name={createName}
+        slug={createSlug}
+        level={createLevel}
+        saving={createSaving}
+        onOpenChange={setCreateDialogOpen}
+        onNameChange={(name) => {
+          setCreateName(name);
+          if (!createSlug) setCreateSlug(name.trim().toLowerCase().replace(/\s+/g, '-'));
+        }}
+        onSlugChange={setCreateSlug}
+        onLevelChange={setCreateLevel}
+        onCreate={() => void handleCreateRole()}
+      />
     </div>
   );
 }

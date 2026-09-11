@@ -26,6 +26,7 @@ import type { UseProductSupportTabResult } from '@/features/projects/hooks/use-p
 import { useProductEntityDetailSheet } from '@/features/projects/hooks/use-product-entity-detail-sheet';
 import { usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
+import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
 interface ProductSupportTabProps extends UseProductSupportTabResult {
   projectId: string;
@@ -56,6 +57,7 @@ export function ProductSupportTab({
   const { me } = usePermission();
   const ticketSheet = useProductEntityDetailSheet();
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
+  const displayView = useMobilePreferredView(view, 'kanban');
 
   const handleOpenDetail = useCallback(
     (ticketId: string) => {
@@ -134,7 +136,7 @@ export function ProductSupportTab({
           title="No support tickets"
           description="Support tickets linked to this product will appear here."
         />
-      ) : view === 'list' ? (
+      ) : displayView === 'list' ? (
         <div className="flex min-h-0 flex-1 flex-col gap-2">
           <SupportTicketsListView
             tickets={displayTickets}

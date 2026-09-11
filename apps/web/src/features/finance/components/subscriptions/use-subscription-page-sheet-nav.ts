@@ -18,7 +18,7 @@ export function useSubscriptionPageSheetNav() {
       const params = new URLSearchParams(searchParams.toString());
       mutate(params);
       const qs = params.toString();
-      router.replace(qs ? `${listPath}?${qs}` : listPath);
+      router.replace(qs ? `${listPath}?${qs}` : listPath, { scroll: false });
     },
     [listPath, router, searchParams],
   );
@@ -27,7 +27,7 @@ export function useSubscriptionPageSheetNav() {
     (mutate: (params: URLSearchParams) => void) => {
       const params = new URLSearchParams(searchParams.toString());
       mutate(params);
-      router.push(`${listPath}?${params.toString()}`);
+      router.push(`${listPath}?${params.toString()}`, { scroll: false });
     },
     [listPath, router, searchParams],
   );

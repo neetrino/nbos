@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Mail, UserPlus } from 'lucide-react';
+import { AuthScene } from '@/components/auth/AuthScene';
 
 export const metadata: Metadata = {
   title: 'Join NBOS — Business Operation System',
@@ -9,71 +10,46 @@ export const metadata: Metadata = {
 
 export default function SignUpInfoPage() {
   return (
-    <div className="bg-background flex min-h-dvh items-center justify-center overflow-x-hidden px-4 py-8">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <div className="mb-4 flex justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element -- auth logo SVG; fixed dimensions, no next/image benefit */}
-            <img
-              src="/logo/logo.svg"
-              alt="NBOS"
-              width={168}
-              height={28}
-              fetchPriority="high"
-              className="h-6 w-auto sm:h-7"
-            />
+    <AuthScene
+      eyebrow="Invitation only"
+      title="Join your workspace"
+      description="NBOS does not offer public self-registration. Ask an administrator for an invite."
+    >
+      <div className="nbos-desk-surface space-y-4 p-4 sm:p-5">
+        <div className="flex gap-3">
+          <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+            <Mail className="size-5" aria-hidden />
           </div>
-          <h1 className="text-foreground text-lg font-semibold tracking-tight sm:text-xl">
-            Join your workspace
-          </h1>
-          <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-            NBOS uses <span className="text-foreground font-medium">invitation-only</span> access.
-            Ask your administrator for an invite link, then complete your profile on the acceptance
-            page.
-          </p>
-        </div>
-
-        <div className="border-border bg-card space-y-4 rounded-2xl border p-4 sm:p-6">
-          <div className="flex gap-3">
-            <div className="bg-accent/10 text-accent flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
-              <Mail className="size-5" aria-hidden />
-            </div>
-            <div>
-              <p className="text-foreground text-sm font-medium">Have an invitation email?</p>
-              <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                Open the link from your invite (it includes a token), or go to Accept invite and
-                paste the token if your admin shared it separately.
-              </p>
-              <Link
-                href="/accept-invite"
-                className="text-accent mt-3 inline-flex text-sm font-medium underline-offset-4 hover:underline"
-              >
-                Accept invitation
-              </Link>
-            </div>
-          </div>
-
-          <div className="border-border flex gap-3 border-t pt-4">
-            <div className="bg-muted text-muted-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
-              <UserPlus className="size-5" aria-hidden />
-            </div>
-            <div>
-              <p className="text-foreground text-sm font-medium">Already have an account?</p>
-              <Link
-                href="/sign-in"
-                className="text-accent mt-3 inline-flex text-sm font-medium underline-offset-4 hover:underline"
-              >
-                Sign in
-              </Link>
-            </div>
+          <div>
+            <p className="text-foreground text-sm font-medium">Have an invitation email?</p>
+            <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+              Open the link from your invite, or go to Accept invite and paste the token if your
+              admin shared it separately.
+            </p>
+            <Link
+              href="/accept-invite"
+              className="text-primary mt-3 inline-flex text-sm font-medium underline-offset-4 hover:underline"
+            >
+              Accept invitation
+            </Link>
           </div>
         </div>
 
-        <p className="text-muted-foreground mt-8 text-center text-xs leading-relaxed">
-          Public self-registration is not available. This keeps NBOS aligned with internal access
-          policies.
-        </p>
+        <div className="border-border flex gap-3 border-t pt-4">
+          <div className="bg-muted text-muted-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+            <UserPlus className="size-5" aria-hidden />
+          </div>
+          <div>
+            <p className="text-foreground text-sm font-medium">Already have an account?</p>
+            <Link
+              href="/sign-in"
+              className="text-primary mt-3 inline-flex text-sm font-medium underline-offset-4 hover:underline"
+            >
+              Sign in
+            </Link>
+          </div>
+        </div>
       </div>
-    </div>
+    </AuthScene>
   );
 }

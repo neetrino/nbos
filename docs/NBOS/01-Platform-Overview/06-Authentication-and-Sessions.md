@@ -246,6 +246,14 @@ Browser → Next.js BFF → Nest
 - Cookie refresh requires `Origin` / `Referer` in `CORS_ORIGIN`.
 - Public Nest JSON never includes `refreshToken`.
 
+**Single writer for the session cookie.** While the rotating refresh is carried by the encrypted
+Auth.js cookie, only the BFF refresh path may write that cookie. Auth.js re-signs and re-sets it
+from the token that arrived with the request, so any other writer can replay a superseded refresh
+and turn a normal rotation into a `reuse_detected` kill:
+
+- `src/proxy.ts` reads the token with `getToken`; it must not use the `auth()` middleware wrapper.
+- `SessionProvider` gets its session from the server, so the client never calls `/api/auth/session`.
+
 ---
 
 ## 14. Mobile

@@ -1,12 +1,9 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 import { ClipboardList, Layers, Package, Tag } from 'lucide-react';
-import {
-  EntityNotesField,
-  InlineField,
-  DETAIL_SHEET_SECTION_TITLE_CLASS,
-} from '@/components/shared';
+import { DetailSheetCollapsibleSection, EntityNotesField, InlineField } from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
 import { EXTENSION_SIZES, getProductType } from '@/features/projects/constants/projects';
 import { cn } from '@/lib/utils';
@@ -43,18 +40,21 @@ export function ExtensionPlanningSection({
   /** Stage checklists trigger — sits beside Languages. */
   stageChecklist?: ReactNode;
 }) {
+  const [sectionOpen, setSectionOpen] = useState(true);
   const patchDraft = (partial: Partial<ExtensionPlanSnapshot>) => {
     onDraftChange({ ...draft, ...partial });
   };
 
   return (
-    <section className="border-border bg-card rounded-xl border p-4 shadow-sm">
-      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>
-        <ClipboardList size={13} aria-hidden />
-        Extension plan
-      </h3>
+    <DetailSheetCollapsibleSection
+      title="Extension plan"
+      icon={<ClipboardList size={12} />}
+      open={sectionOpen}
+      onOpenChange={setSectionOpen}
+      className="shadow-sm"
+    >
       <div className="flex min-w-0 flex-col gap-3">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <InlineField
             variant="controlled"
             label="Extension name"
@@ -102,6 +102,6 @@ export function ExtensionPlanningSection({
           {stageChecklist}
         </div>
       </div>
-    </section>
+    </DetailSheetCollapsibleSection>
   );
 }

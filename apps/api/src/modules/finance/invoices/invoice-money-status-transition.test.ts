@@ -7,14 +7,33 @@ import {
 
 const readyTaxInvoice = {
   id: 'inv-1',
+  type: 'DEVELOPMENT',
   taxStatus: 'TAX' as const,
   moneyStatus: 'AWAITING_PAYMENT' as const,
   companyId: 'c1',
+  productId: 'prod-1',
   officialInvoiceRequestSent: true,
   company: { name: 'InvestOn LLC', legalName: 'InvestOn LLC', taxId: '01234567' },
 };
 
 describe('prepareInvoiceMoneyStatusTransition', () => {
+  it('blocks Manual invoice without product from entering AWAITING_PAYMENT', async () => {
+    await expect(
+      prepareInvoiceMoneyStatusTransition(
+        { invoice: { findUnique: vi.fn(), update: vi.fn() } } as never,
+        {
+          ...readyTaxInvoice,
+          type: 'MANUAL',
+          productId: null,
+          taxStatus: 'TAX_FREE',
+          moneyStatus: 'NEW',
+          officialInvoiceRequestSent: false,
+        },
+        'AWAITING_PAYMENT',
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
   it('blocks Tax Paid when official request is not sent', async () => {
     await expect(
       prepareInvoiceMoneyStatusTransition(

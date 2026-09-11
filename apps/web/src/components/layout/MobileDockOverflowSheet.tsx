@@ -1,0 +1,104 @@
+'use client';
+
+import { useCallback } from 'react';
+import Link from 'next/link';
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
+import { BottomSheetSwipeHandle } from './BottomSheetSwipeHandle';
+import { BOTTOM_SHEET_SWIPE_PANEL_CLASS } from './bottom-sheet-swipe';
+import { MOBILE_APP_MENU_SHEET_CLASS } from './mobile-app-menu-constants';
+import type { MobileDockItem, MobileDockSwitcherGroup } from './mobile-module-dock-types';
+import { useBottomSheetSwipeToClose } from './use-bottom-sheet-swipe-to-close';
+
+interface MobileDockOverflowSheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  groups: MobileDockSwitcherGroup[];
+  title: string;
+}
+
+export function MobileDockOverflowSheet({
+  open,
+  onOpenChange,
+  groups,
+  title,
+}: MobileDockOverflowSheetProps) {
+  const close = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const handleRef = useBottomSheetSwipeToClose(open, close);
+  const showGroupTitles = groups.length > 1;
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="bottom"
+        showCloseButton={false}
+        className={cn(MOBILE_APP_MENU_SHEET_CLASS, BOTTOM_SHEET_SWIPE_PANEL_CLASS)}
+      >
+        <SheetTitle className="sr-only">{title}</SheetTitle>
+        <SheetDescription className="sr-only">Places in the current module.</SheetDescription>
+        <BottomSheetSwipeHandle handleRef={handleRef} />
+        <div className="touch-none px-4 pt-3 pb-2">
+          <p className="text-foreground text-lg font-semibold tracking-tight">{title}</p>
+        </div>
+        <div
+          data-nbos-sheet-swipe-scroll=""
+          className="flex flex-col gap-4 overflow-y-auto overscroll-y-contain px-4 pb-5"
+        >
+          {groups.map((group) => (
+            <section key={group.id}>
+              {showGroupTitles ? (
+                <p className="text-muted-foreground mb-1.5 px-3 text-[11px] font-semibold tracking-[0.14em] uppercase">
+                  {group.title}
+                </p>
+              ) : null}
+              <ul className="flex flex-col gap-1">
+                {group.items.map((item) => (
+                  <li key={item.id}>
+                    <OverflowDockRow item={item} onNavigate={close} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function OverflowDockRow({ item, onNavigate }: { item: MobileDockItem; onNavigate: () => void }) {
+  const Icon = item.icon;
+  const className = cn(
+    'flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 text-sm font-semibold',
+    item.active ? 'bg-sidebar-accent text-foreground' : 'text-foreground hover:bg-muted',
+  );
+
+  if (item.href) {
+    return (
+      <Link
+        href={item.href}
+        onClick={onNavigate}
+        className={className}
+        aria-current={item.active ? 'page' : undefined}
+      >
+        {Icon ? <Icon size={18} aria-hidden /> : null}
+        {item.label}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className={className}
+      aria-current={item.active ? 'page' : undefined}
+      onClick={() => {
+        item.onSelect?.();
+        onNavigate();
+      }}
+    >
+      {Icon ? <Icon size={18} aria-hidden /> : null}
+      {item.label}
+    </button>
+  );
+}

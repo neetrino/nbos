@@ -110,6 +110,11 @@ export function buildProductWhatsAppFinanceCreateDedupeKey(productId: string): s
   return `whatsapp-product-group:create-finance:${productId}`;
 }
 
+/** Deal-level create key — must not use productId (Product may not exist yet). */
+export function buildDealWhatsAppCreateDedupeKey(dealId: string): string {
+  return `whatsapp-deal-group:create:${dealId}`;
+}
+
 export function buildProductWhatsAppParticipantDedupeKey(
   productId: string,
   employeeId: string,
@@ -133,13 +138,24 @@ export function toBullMqSafeJobId(businessKey: string): string {
 const WHATSAPP_GROUP_NAME_MAX = 100;
 
 export function buildProductWhatsAppGroupName(projectName: string, productName: string): string {
-  const project = sanitizeNamePart(projectName);
-  const product = sanitizeNamePart(productName);
-  const combined = `${project} · ${product}`.trim();
-  if (combined.length <= WHATSAPP_GROUP_NAME_MAX) {
-    return combined || 'Product';
-  }
-  return `${combined.slice(0, WHATSAPP_GROUP_NAME_MAX - 1)}…`;
+  return truncateWhatsAppGroupName(
+    `${sanitizeNamePart(projectName)} · ${sanitizeNamePart(productName)}`,
+    'Product',
+  );
+}
+
+/** Auto name for a pre-Won Deal client group. Optional parts are omitted. */
+export function buildDealWhatsAppGroupName(input: {
+  dealCode: string;
+  contactName?: string | null;
+  dealName?: string | null;
+}): string {
+  const parts = [sanitizeNamePart(input.dealCode)];
+  const contact = sanitizeNamePart(input.contactName ?? '');
+  const dealName = sanitizeNamePart(input.dealName ?? '');
+  if (contact) parts.push(contact);
+  if (dealName) parts.push(dealName);
+  return truncateWhatsAppGroupName(parts.join(' · '), input.dealCode.trim() || 'Deal');
 }
 
 function sanitizeNamePart(value: string): string {
@@ -147,4 +163,11 @@ function sanitizeNamePart(value: string): string {
     .replace(/[\u0000-\u001F\u007F]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function truncateWhatsAppGroupName(combined: string, fallback: string): string {
+  const trimmed = combined.replace(/\s·\s$/u, '').trim();
+  if (!trimmed) return fallback;
+  if (trimmed.length <= WHATSAPP_GROUP_NAME_MAX) return trimmed;
+  return `${trimmed.slice(0, WHATSAPP_GROUP_NAME_MAX - 1)}…`;
 }

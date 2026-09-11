@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Mail, Plus } from 'lucide-react';
@@ -112,6 +112,10 @@ export default function MailInboxPage() {
   );
 
   const [activePanel, setActivePanel] = useState<ActiveMailPanel>(null);
+  /** Blocks URL→panel reopen while close/`router.replace` is still in flight. */
+  const suppressThreadQueryOpenRef = useRef(false);
+  const suppressShareQueryOpenRef = useRef(false);
+  const suppressConnectQueryOpenRef = useRef(false);
 
   const [selectedThreadIds, setSelectedThreadIds] = useState<Set<string>>(() => new Set());
   const [oauthHandled, setOauthHandled] = useState(false);
@@ -191,12 +195,6 @@ export default function MailInboxPage() {
     setThreadPage(1);
   }, [threadSearchQuery, searchFilters]);
 
-  useEffect(() => {
-    setActivePanel(null);
-
-    clearThreadSelection(setSelectedThreadIds);
-  }, [filterAccountId, activeFolder, threadSearchQuery, searchFilters, threadPage]);
-
   const load = useCallback(async () => {
     setLoading(true);
 
@@ -265,6 +263,28 @@ export default function MailInboxPage() {
     },
     [pathname, router, searchParams],
   );
+  const updateMailQueryRef = useRef(updateMailQuery);
+  updateMailQueryRef.current = updateMailQuery;
+
+  const skipNextListContextPanelResetRef = useRef(true);
+  useEffect(() => {
+    // Skip mount so deep-link panel query params survive first paint.
+    if (skipNextListContextPanelResetRef.current) {
+      skipNextListContextPanelResetRef.current = false;
+      return;
+    }
+    clearThreadSelection(setSelectedThreadIds);
+    suppressThreadQueryOpenRef.current = true;
+    suppressShareQueryOpenRef.current = true;
+    suppressConnectQueryOpenRef.current = true;
+    setActivePanel(null);
+    // Use ref so this effect does not re-run when `updateMailQuery` identity changes (URL push).
+    updateMailQueryRef.current((params) => {
+      params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
+      params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
+      clearMailConnectPanelQuery(params);
+    });
+  }, [activeFolder, threadSearchQuery, searchFilters, threadPage]);
 
   const clearOauthOnlyParams = useCallback(() => {
     updateMailQuery((params) => {
@@ -284,6 +304,9 @@ export default function MailInboxPage() {
       toast.success('Mailbox disconnected.');
       setDeleteMailboxTarget(null);
       setFilterAccountId(null);
+      suppressThreadQueryOpenRef.current = true;
+      suppressShareQueryOpenRef.current = true;
+      suppressConnectQueryOpenRef.current = true;
       setActivePanel(null);
       clearThreadSelection(setSelectedThreadIds);
       updateMailQuery((params) => {
@@ -316,6 +339,18 @@ export default function MailInboxPage() {
 
   const handleActivePanelChange = useCallback(
     (panel: ActiveMailPanel) => {
+      if (panel?.type === 'thread') {
+        suppressThreadQueryOpenRef.current = false;
+      } else if (panel?.type === 'share') {
+        suppressShareQueryOpenRef.current = false;
+      } else if (panel?.type === 'connect') {
+        suppressConnectQueryOpenRef.current = false;
+      } else {
+        // Closing or compose — block URL sync reopen until matching query keys clear.
+        suppressThreadQueryOpenRef.current = true;
+        suppressShareQueryOpenRef.current = true;
+        suppressConnectQueryOpenRef.current = true;
+      }
       setActivePanel(panel);
       updateMailQuery(
         (params) => {
@@ -360,6 +395,10 @@ export default function MailInboxPage() {
     setThreadPage(1);
 
     setFilterAccountId(accountId);
+    suppressThreadQueryOpenRef.current = true;
+    suppressShareQueryOpenRef.current = true;
+    suppressConnectQueryOpenRef.current = true;
+    setActivePanel(null);
     updateMailQuery((params) => {
       if (accountId) {
         params.set(MAIL_ACCOUNT_QUERY_KEY, accountId);
@@ -494,6 +533,9 @@ export default function MailInboxPage() {
       const connectedAccount = accountHealth.find((account) => account.id === oauthAccountId);
       if (connectedAccount) {
         setFilterAccountId(connectedAccount.id);
+        suppressThreadQueryOpenRef.current = true;
+        suppressShareQueryOpenRef.current = true;
+        suppressConnectQueryOpenRef.current = true;
         setActivePanel(null);
         toast.success('Gmail mailbox connected.');
       } else {
@@ -540,48 +582,45 @@ export default function MailInboxPage() {
         setThreadPage(1);
         setFilterAccountId(null);
       }
-      if (activePanel?.type === 'thread') {
-        setActivePanel(null);
-      }
+      suppressThreadQueryOpenRef.current = true;
+      setActivePanel((prev) => (prev?.type === 'thread' ? null : prev));
       return;
     }
     if (filterAccountId !== queryAccountId) {
       setThreadPage(1);
       setFilterAccountId(queryAccountId);
     }
-  }, [
-    canView,
-    loading,
-    queryAccountId,
-    accountHealth,
-    filterAccountId,
-    updateMailQuery,
-    activePanel,
-  ]);
+  }, [canView, loading, queryAccountId, accountHealth, filterAccountId, updateMailQuery]);
 
   useEffect(() => {
     if (!canView || loading) {
       return;
     }
     if (!queryOpenThreadId) {
-      if (activePanel?.type === 'thread') {
-        setActivePanel(null);
+      // Only clear after an intentional close/list reset — never while open is awaiting URL push.
+      if (suppressThreadQueryOpenRef.current) {
+        suppressThreadQueryOpenRef.current = false;
+        setActivePanel((prev) => (prev?.type === 'thread' ? null : prev));
       }
       return;
     }
-    if (activePanel?.type === 'thread' && activePanel.threadId === queryOpenThreadId) {
+    if (suppressThreadQueryOpenRef.current) {
       return;
     }
     const inVisibleList = threads.some((thread) => thread.id === queryOpenThreadId);
     if (inVisibleList) {
-      setActivePanel({ type: 'thread', threadId: queryOpenThreadId });
+      setActivePanel((prev) =>
+        prev?.type === 'thread' && prev.threadId === queryOpenThreadId
+          ? prev
+          : { type: 'thread', threadId: queryOpenThreadId },
+      );
       return;
     }
     let cancelled = false;
     void (async () => {
       try {
         const detail = await mailApi.getThread(queryOpenThreadId);
-        if (cancelled) {
+        if (cancelled || suppressThreadQueryOpenRef.current) {
           return;
         }
         setActivePanel({ type: 'thread', threadId: queryOpenThreadId });
@@ -598,9 +637,9 @@ export default function MailInboxPage() {
         if (cancelled) {
           return;
         }
-        if (activePanel?.type === 'thread' && activePanel.threadId === queryOpenThreadId) {
-          setActivePanel(null);
-        }
+        setActivePanel((prev) =>
+          prev?.type === 'thread' && prev.threadId === queryOpenThreadId ? null : prev,
+        );
         updateMailQuery((params) => {
           params.delete(MAIL_OPEN_THREAD_QUERY_KEY);
         });
@@ -609,7 +648,7 @@ export default function MailInboxPage() {
     return () => {
       cancelled = true;
     };
-  }, [canView, loading, queryOpenThreadId, activePanel, threads, queryAccountId, updateMailQuery]);
+  }, [canView, loading, queryOpenThreadId, threads, queryAccountId, updateMailQuery]);
 
   useEffect(() => {
     if (!canView || loading) {
@@ -626,22 +665,24 @@ export default function MailInboxPage() {
         updateMailQuery((params) => {
           params.delete(MAIL_OPEN_RECONNECT_MAILBOX_QUERY_KEY);
         });
-        if (activePanel?.type === 'connect') {
-          setActivePanel(null);
-        }
+        setActivePanel((prev) => (prev?.type === 'connect' ? null : prev));
         return;
       }
-      if (activePanel?.type === 'connect' && activePanel.accountId === reconnectAccount.id) {
+      if (suppressConnectQueryOpenRef.current) {
         return;
       }
-      setActivePanel({ type: 'connect', accountId: reconnectAccount.id });
+      setActivePanel((prev) =>
+        prev?.type === 'connect' && prev.accountId === reconnectAccount.id
+          ? prev
+          : { type: 'connect', accountId: reconnectAccount.id },
+      );
       return;
     }
     if (queryOpenConnectMailbox === '1') {
-      if (activePanel?.type === 'connect') {
+      if (suppressConnectQueryOpenRef.current) {
         return;
       }
-      setActivePanel({ type: 'connect' });
+      setActivePanel((prev) => (prev?.type === 'connect' ? prev : { type: 'connect' }));
       return;
     }
     if (queryOpenConnectMailbox !== null) {
@@ -649,8 +690,9 @@ export default function MailInboxPage() {
         params.delete(MAIL_OPEN_CONNECT_MAILBOX_QUERY_KEY);
       });
     }
-    if (activePanel?.type === 'connect' && !activePanel.accountId) {
-      setActivePanel(null);
+    if (suppressConnectQueryOpenRef.current) {
+      suppressConnectQueryOpenRef.current = false;
+      setActivePanel((prev) => (prev?.type === 'connect' ? null : prev));
     }
   }, [
     canView,
@@ -658,7 +700,6 @@ export default function MailInboxPage() {
     queryOpenConnectMailbox,
     queryOpenReconnectMailboxId,
     accountHealth,
-    activePanel,
     updateMailQuery,
   ]);
 
@@ -667,9 +708,13 @@ export default function MailInboxPage() {
       return;
     }
     if (!queryOpenShareMailboxId) {
-      if (activePanel?.type === 'share') {
-        setActivePanel(null);
+      if (suppressShareQueryOpenRef.current) {
+        suppressShareQueryOpenRef.current = false;
+        setActivePanel((prev) => (prev?.type === 'share' ? null : prev));
       }
+      return;
+    }
+    if (suppressShareQueryOpenRef.current) {
       return;
     }
     const shareAccount = accountHealth.find((account) => account.id === queryOpenShareMailboxId);
@@ -677,9 +722,7 @@ export default function MailInboxPage() {
       updateMailQuery((params) => {
         params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
       });
-      if (activePanel?.type === 'share') {
-        setActivePanel(null);
-      }
+      setActivePanel((prev) => (prev?.type === 'share' ? null : prev));
       return;
     }
     if (filterAccountId !== shareAccount.id) {
@@ -689,23 +732,16 @@ export default function MailInboxPage() {
         params.set(MAIL_ACCOUNT_QUERY_KEY, shareAccount.id);
       });
     }
-    if (activePanel?.type === 'share' && activePanel.accountId === shareAccount.id) {
-      return;
-    }
-    setActivePanel({
-      type: 'share',
-      accountId: shareAccount.id,
-      accountEmail: shareAccount.emailAddress,
-    });
-  }, [
-    canView,
-    loading,
-    queryOpenShareMailboxId,
-    accountHealth,
-    activePanel,
-    filterAccountId,
-    updateMailQuery,
-  ]);
+    setActivePanel((prev) =>
+      prev?.type === 'share' && prev.accountId === shareAccount.id
+        ? prev
+        : {
+            type: 'share',
+            accountId: shareAccount.id,
+            accountEmail: shareAccount.emailAddress,
+          },
+    );
+  }, [canView, loading, queryOpenShareMailboxId, accountHealth, filterAccountId, updateMailQuery]);
 
   if (accessPhase === 'loading') {
     return (
@@ -859,7 +895,7 @@ export default function MailInboxPage() {
           toast.success('Moved to Trash.');
         }}
         onThreadRestored={(threadId) => {
-          setActivePanel(null);
+          handleActivePanelChange(null);
           setThreads((prev) => prev.filter((thread) => thread.id !== threadId));
           clearThreadSelection(setSelectedThreadIds);
           toast.success('Email restored to inbox.');

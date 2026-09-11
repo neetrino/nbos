@@ -123,6 +123,7 @@ export function createMockPrisma() {
     productWhatsAppGroupBinding: createModelMock(),
     productWhatsAppParticipantSync: createModelMock(),
     whatsAppGatewayConnection: createModelMock(),
+    dealWhatsAppGroupBinding: createModelMock(),
     productWhatsAppClientInvitation: createModelMock(),
     whatsAppGroupOperation: createModelMock(),
     calendarMeeting: createModelMock(),

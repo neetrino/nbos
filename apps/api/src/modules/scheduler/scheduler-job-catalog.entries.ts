@@ -29,6 +29,11 @@ import {
   RECURRING_TASKS_DUE_ENABLED_ENV,
 } from './recurring-tasks-due-cron.constants';
 import {
+  CLIENT_SERVICES_DOMAIN_REGISTRY_CRON_ENV,
+  CLIENT_SERVICES_DOMAIN_REGISTRY_DEFAULT_CRON,
+  CLIENT_SERVICES_DOMAIN_REGISTRY_ENABLED_ENV,
+} from './client-services-domain-registry-cron.constants';
+import {
   CLIENT_SERVICES_RENEWAL_INVOICE_CRON_ENV,
   CLIENT_SERVICES_RENEWAL_INVOICE_DEFAULT_CRON,
   CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED_ENV,
@@ -172,6 +177,18 @@ export const SCHEDULER_PLATFORM_CRON_CATALOG: readonly SchedulerJobCatalogEntry[
     enabledEnvKey: RECURRING_TASKS_DUE_ENABLED_ENV,
     cronEnvKey: RECURRING_TASKS_DUE_CRON_ENV,
     risk: SCHEDULER_JOB_RISK.medium,
+    rosterIntent: SCHEDULER_ROSTER_INTENT.on,
+  }),
+  platformCronEntry({
+    jobName: SCHEDULER_JOB_NAMES.clientServicesDomainRegistry,
+    title: 'Client Services domain registry check',
+    description: 'WHOIS/RDAP lookup for Domain cards in the 90-day window daily at 05:45.',
+    ownerModule: 'Client Services',
+    group: SCHEDULER_JOB_GROUP.money,
+    defaultExpression: CLIENT_SERVICES_DOMAIN_REGISTRY_DEFAULT_CRON,
+    enabledEnvKey: CLIENT_SERVICES_DOMAIN_REGISTRY_ENABLED_ENV,
+    cronEnvKey: CLIENT_SERVICES_DOMAIN_REGISTRY_CRON_ENV,
+    risk: SCHEDULER_JOB_RISK.low,
     rosterIntent: SCHEDULER_ROSTER_INTENT.on,
   }),
   platformCronEntry({

@@ -18,6 +18,7 @@ const EXISTING = {
   dealId: null,
   responsibleEmployeeId: null,
   answeredEmployeeId: null,
+  initiatedByEmployeeId: null,
 };
 
 describe('persistAtsCallByUid', () => {

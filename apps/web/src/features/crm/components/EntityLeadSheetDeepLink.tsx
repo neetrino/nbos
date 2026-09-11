@@ -119,7 +119,7 @@ export function EntityLeadSheetDeepLink({
       onOpenChange={handleOpenChange}
       onUpdate={handleUpdate}
       onStatusChange={handleStatusChange}
-      onRefresh={() => void handleRefresh()}
+      onRefresh={handleRefresh}
     />
   );
 }

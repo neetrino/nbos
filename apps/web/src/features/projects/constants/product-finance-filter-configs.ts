@@ -1,7 +1,7 @@
 import type { FilterConfig } from '@/components/shared';
 import { buildClientServiceIntegratedFilterConfigs } from '@/features/finance/components/client-services/build-client-service-integrated-filter-configs';
 import {
-  EXPENSE_CATEGORIES,
+  EXPENSE_FILTER_CATEGORIES,
   EXPENSE_STAGES,
   SUBSCRIPTION_STATUSES,
   SUBSCRIPTION_TYPES,
@@ -12,6 +12,7 @@ import {
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
 } from '@/features/shared/board-lifecycle';
 import { ORDER_STATUSES } from '@/features/finance/components/orders/order-statuses';
+import { INVOICE_MONEY_STAGES } from '@/features/finance/constants/finance';
 import type { ProductFinanceSection } from '@/features/projects/constants/product-finance-section';
 
 export const PRODUCT_ORDER_FILTER_CONFIGS: FilterConfig[] = [
@@ -35,6 +36,24 @@ export const PRODUCT_ORDER_FILTER_CONFIGS: FilterConfig[] = [
   },
 ];
 
+export const PRODUCT_INVOICE_FILTER_CONFIGS: FilterConfig[] = [
+  {
+    key: 'boardScope',
+    label: 'Scope',
+    includeAllOption: false,
+    defaultOptionValue: DEFAULT_BOARD_LIFECYCLE_SCOPE,
+    options: BOARD_LIFECYCLE_SCOPE_OPTIONS.map((option) => ({
+      value: option.value,
+      label: option.label,
+    })),
+  },
+  {
+    key: 'moneyStatus',
+    label: 'Money status',
+    options: INVOICE_MONEY_STAGES.map((stage) => ({ value: stage.value, label: stage.label })),
+  },
+];
+
 export const PRODUCT_SUBSCRIPTION_FILTER_CONFIGS: FilterConfig[] = [
   {
     key: 'type',
@@ -53,7 +72,7 @@ export const PRODUCT_EXPENSE_FILTER_CONFIGS: FilterConfig[] = [
   {
     key: 'category',
     label: 'Category',
-    options: EXPENSE_CATEGORIES.map((row) => ({ value: row.value, label: row.label })),
+    options: EXPENSE_FILTER_CATEGORIES.map((row) => ({ value: row.value, label: row.label })),
   },
   {
     key: 'status',
@@ -69,6 +88,8 @@ export function productFinanceFilterConfigs(section: ProductFinanceSection): Fil
   switch (section) {
     case 'orders':
       return PRODUCT_ORDER_FILTER_CONFIGS;
+    case 'invoices':
+      return PRODUCT_INVOICE_FILTER_CONFIGS;
     case 'subscriptions':
       return PRODUCT_SUBSCRIPTION_FILTER_CONFIGS;
     case 'expenses':
@@ -84,6 +105,8 @@ export function productFinanceSearchPlaceholder(section: ProductFinanceSection):
   switch (section) {
     case 'orders':
       return 'Search orders by code, type…';
+    case 'invoices':
+      return 'Search invoices by code, company…';
     case 'subscriptions':
       return 'Search subscriptions by code, type…';
     case 'expenses':

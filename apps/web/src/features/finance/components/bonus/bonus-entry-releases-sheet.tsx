@@ -3,7 +3,13 @@
 import { useMemo } from 'react';
 import { Gift, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EntityDetailSheetContent, StatusBadge } from '@/components/shared';
+import {
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+  EntityDetailSheetContent,
+  StatusBadge,
+} from '@/components/shared';
 import { Sheet } from '@/components/ui/sheet';
 import { BonusEntryAuditPanel } from '@/features/finance/components/bonus/bonus-entry-audit-panel';
 import { BonusEntryPlannedAdjustBlock } from '@/features/finance/components/bonus/bonus-entry-planned-adjust-block';
@@ -26,6 +32,8 @@ import {
 import { formatAmount } from '@/features/finance/constants/finance';
 import { computeBonusEntryReleaseTotals } from '@/features/finance/utils/bonus-entry-release-totals';
 import { bonusEntryPayableCeiling } from '@/features/finance/utils/bonus-entry-payable';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
+import { cn } from '@/lib/utils';
 import type { BonusEntryListRow } from '@/lib/api/bonus';
 
 export function BonusEntryReleasesSheet({
@@ -44,6 +52,7 @@ export function BonusEntryReleasesSheet({
   loading?: boolean;
   forceNestedBackdrop?: boolean;
 }) {
+  const isMobileViewport = useIsMobileViewport();
   const ledger = useBonusEntryReleasesLedger(entry, open, onAfterPatch);
   const plannedAdjust = useBonusEntryPlannedAdjust(entry, open, onAfterPatch);
   const payableAdjust = useBonusEntryPayableAdjust(entry, open, onAfterPatch);
@@ -55,6 +64,25 @@ export function BonusEntryReleasesSheet({
     return computeBonusEntryReleaseTotals(String(bonusEntryPayableCeiling(entry)), ledger.rows);
   }, [entry, ledger.rows]);
 
+  const subtitle = entry
+    ? `${employeeDisplayName(entry.employee)} · ${formatAmount(parseBonusAmount(entry.amount))} planned`
+    : 'Select a bonus from the board.';
+
+  const statusBadges = entry ? (
+    <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+      <span
+        className={`self-center rounded-md px-2 py-0.5 text-xs font-medium ${BONUS_BOARD_TYPE_CONFIG[entry.type].color}`}
+      >
+        {BONUS_BOARD_TYPE_CONFIG[entry.type].label}
+      </span>
+      <StatusBadge
+        label={BONUS_ENTRY_STATUS_LABEL[entry.status]}
+        variant={BONUS_ENTRY_STATUS_VARIANT[entry.status]}
+        className="self-center"
+      />
+    </div>
+  ) : null;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <EntityDetailSheetContent
@@ -63,8 +91,21 @@ export function BonusEntryReleasesSheet({
         className="gap-0"
         forceNestedBackdrop={forceNestedBackdrop}
       >
-        <div className="bg-background shrink-0 px-5 pt-5 pb-3">
-          <div className="flex items-start justify-between gap-3">
+        <div
+          className={cn(
+            isMobileViewport
+              ? DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS
+              : 'bg-background shrink-0 px-5 pt-5 pb-3',
+          )}
+        >
+          {isMobileViewport ? <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS} /> : null}
+          <div
+            className={cn(
+              isMobileViewport
+                ? cn(DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS, 'flex min-w-0 items-start gap-2')
+                : 'flex items-start justify-between gap-3',
+            )}
+          >
             <div className="min-w-0 flex-1">
               <div className="inline-flex max-w-full min-w-0 items-center gap-2">
                 <Gift className="text-muted-foreground size-5 shrink-0" aria-hidden />
@@ -72,26 +113,9 @@ export function BonusEntryReleasesSheet({
                   Bonus entry
                 </h2>
               </div>
-              <p className="text-muted-foreground mt-1 text-sm">
-                {entry
-                  ? `${employeeDisplayName(entry.employee)} · ${formatAmount(parseBonusAmount(entry.amount))} planned`
-                  : 'Select a bonus from the board.'}
-              </p>
+              <p className="text-muted-foreground mt-1 text-sm">{subtitle}</p>
             </div>
-            {entry ? (
-              <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
-                <span
-                  className={`self-center rounded-md px-2 py-0.5 text-xs font-medium ${BONUS_BOARD_TYPE_CONFIG[entry.type].color}`}
-                >
-                  {BONUS_BOARD_TYPE_CONFIG[entry.type].label}
-                </span>
-                <StatusBadge
-                  label={BONUS_ENTRY_STATUS_LABEL[entry.status]}
-                  variant={BONUS_ENTRY_STATUS_VARIANT[entry.status]}
-                  className="self-center"
-                />
-              </div>
-            ) : null}
+            {statusBadges}
           </div>
         </div>
 

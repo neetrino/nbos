@@ -1,17 +1,16 @@
 'use client';
 
-import type { LucideIcon } from 'lucide-react';
-import { Briefcase, Building2, FileText } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import { PersonContactRow, StatusBadge } from '@/components/shared';
 import { getCompanyType, getTaxStatus } from '@/features/clients/constants/clients';
 import {
   CLIENTS_DIRECTORY_METRIC_CELL_CLASS,
-  CLIENTS_DIRECTORY_METRIC_ICON_TILE_CLASS,
   COMPANY_CARD_ICON_TILE_CLASS,
   COMPANY_CARD_STATUS_BADGE_CLASS,
   COMPANY_DIRECTORY_CARD_CLASS,
 } from '@/features/clients/constants/clients-directory-card-classes';
 import type { Company } from '@/lib/api/clients';
+import { cn } from '@/lib/utils';
 
 interface CompanyCardProps {
   company: Company;
@@ -19,17 +18,13 @@ interface CompanyCardProps {
 }
 
 interface CompanyCardMetricProps {
-  icon: LucideIcon;
   value: number;
   label: string;
 }
 
-function CompanyCardMetric({ icon: Icon, value, label }: CompanyCardMetricProps) {
+function CompanyCardMetric({ value, label }: CompanyCardMetricProps) {
   return (
     <div className={CLIENTS_DIRECTORY_METRIC_CELL_CLASS}>
-      <div className={CLIENTS_DIRECTORY_METRIC_ICON_TILE_CLASS} aria-hidden>
-        <Icon size={14} />
-      </div>
       <p className="text-foreground text-base leading-none font-bold tabular-nums">{value}</p>
       <p className="text-muted-foreground text-[11px] leading-none">{label}</p>
     </div>
@@ -74,15 +69,22 @@ export function CompanyCard({ company, onOpen }: CompanyCardProps) {
         </div>
       </div>
 
-      {contactName ? (
-        <PersonContactRow name={contactName} className="mt-4" />
-      ) : (
-        <p className="text-muted-foreground mt-4 truncate text-sm">No linked contact</p>
-      )}
+      <div
+        className={cn(
+          'mt-4 flex min-h-5 flex-1 flex-col',
+          contactName ? 'justify-start' : 'justify-center',
+        )}
+      >
+        {contactName ? (
+          <PersonContactRow name={contactName} />
+        ) : (
+          <p className="text-muted-foreground truncate text-sm">No linked contact</p>
+        )}
+      </div>
 
       <div className="border-border mt-5 flex gap-2 border-t pt-4">
-        <CompanyCardMetric icon={Briefcase} value={company._count.projects} label="projects" />
-        <CompanyCardMetric icon={FileText} value={company._count.invoices} label="invoices" />
+        <CompanyCardMetric value={company._count.projects} label="projects" />
+        <CompanyCardMetric value={company._count.invoices} label="invoices" />
       </div>
     </button>
   );

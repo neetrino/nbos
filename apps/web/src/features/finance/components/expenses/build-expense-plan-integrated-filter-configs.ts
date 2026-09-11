@@ -1,4 +1,5 @@
 import type { FilterConfig } from '@/components/shared/FilterBar';
+import { buildExpensePlanStatusFilterConfig } from '@/features/finance/constants/expense-plan-status';
 import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 
 const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES;
@@ -7,6 +8,7 @@ export function buildExpensePlanIntegratedFilterConfigs(
   projects: Array<{ id: string; code: string; name: string }>,
 ): FilterConfig[] {
   const configs: FilterConfig[] = [
+    buildExpensePlanStatusFilterConfig(),
     {
       key: 'category',
       label: 'Category',

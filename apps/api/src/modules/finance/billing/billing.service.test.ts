@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import type { SubscriptionBillingFrequencyEnum } from '@nbos/database';
+import type { SubscriptionBillingFrequencyEnum, TaxStatus } from '@nbos/database';
 import { BillingService } from './billing.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 
@@ -14,11 +14,12 @@ type MockBillableSubscription = {
   id: string;
   code: string;
   projectId: string;
+  productId: string;
   type: string;
   amount: number;
   billingFrequency: SubscriptionBillingFrequencyEnum;
   coverageMonthCount: number;
-  taxStatus: string;
+  taxStatus: TaxStatus;
   billingDay: number;
   billingStartDate: Date;
   status: string;
@@ -48,6 +49,7 @@ function mockBillableSubscription(
     id: 'sub-1',
     code: 'SUB-2026-0001',
     projectId: 'proj-1',
+    productId: 'prod-1',
     type: 'MAINTENANCE_ONLY',
     amount: 5000,
     billingFrequency: 'MONTHLY',

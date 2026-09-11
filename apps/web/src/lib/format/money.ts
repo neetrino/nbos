@@ -142,6 +142,11 @@ export function formatAmountDramSuffix(amount: number): string {
 const AMOUNT_ABBREV_K = 1_000;
 const AMOUNT_ABBREV_M = 1_000_000;
 
+/** Compact-grid hover: nearest thousand + dram (`4 862 000 ֏`). */
+export function formatAmountThousandsDram(amount: number): string {
+  return formatMoneyDram(Math.round(amount / AMOUNT_ABBREV_K) * AMOUNT_ABBREV_K);
+}
+
 function formatAbbreviatedMagnitude(value: number, divisor: number, suffix: string): string {
   const scaled = value / divisor;
   if (Number.isInteger(scaled)) {

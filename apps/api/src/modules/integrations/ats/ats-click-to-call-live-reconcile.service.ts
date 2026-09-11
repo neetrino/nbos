@@ -5,7 +5,11 @@ import { AtsCallRealtimePublisher } from './ats-call-realtime.publisher';
 import { AtsCallRecordingEnqueueService } from './ats-call-recording-enqueue.service';
 import { shouldEnqueueCallRecording } from './ats-call-recording-should-enqueue';
 import { matchHistoryToPendingCall } from './ats-call-history-match';
-import { persistAtsCallByUid, CALL_ROW_SELECT } from './ats-call-uid-persist';
+import {
+  persistAtsCallByUid,
+  CALL_ROW_SELECT,
+  type AtsPersistedCallRow,
+} from './ats-call-uid-persist';
 import { shouldSyncClickToCallFromHistory } from './ats-click-to-call-live-reconcile.guard';
 import { AtsHistoryClient } from './ats-history.client';
 import type { AtsHistoryCallRow } from './ats-history.parse';
@@ -21,14 +25,7 @@ const LIVE_SELECT = {
   createdAt: true,
 } as const;
 
-type LiveCallRow = {
-  id: string;
-  uid: string;
-  leadId: string | null;
-  contactId: string | null;
-  dealId: string | null;
-  responsibleEmployeeId: string | null;
-  answeredEmployeeId: string | null;
+type LiveCallRow = AtsPersistedCallRow & {
   state: string | null;
   phone: string | null;
   clid: string | null;
@@ -112,7 +109,7 @@ export class AtsClickToCallLiveReconcileService {
   }
 }
 
-function persistRowOf(call: LiveCallRow) {
+function persistRowOf(call: LiveCallRow): AtsPersistedCallRow {
   return {
     id: call.id,
     uid: call.uid,
@@ -121,6 +118,7 @@ function persistRowOf(call: LiveCallRow) {
     dealId: call.dealId,
     responsibleEmployeeId: call.responsibleEmployeeId,
     answeredEmployeeId: call.answeredEmployeeId,
+    initiatedByEmployeeId: call.initiatedByEmployeeId,
   };
 }
 

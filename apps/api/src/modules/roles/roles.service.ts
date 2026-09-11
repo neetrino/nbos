@@ -89,9 +89,6 @@ export class RolesService {
     if (!role) {
       throw new NotFoundException(`Role ${roleId} not found`);
     }
-    if (role.isSystem) {
-      throw new BadRequestException('Cannot update permissions for system role');
-    }
 
     const before = await this.findById(roleId);
     await this.prisma.$transaction([

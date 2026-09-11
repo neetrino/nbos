@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   canAutoSendOfficialOnAwaiting,
   officialSendIdempotencyKey,
+  resolveManualOfficialSend,
 } from './invoice-official-awaiting-send';
 
 const readyCompany = { name: 'InvestOn LLC', legalName: 'InvestOn LLC', taxId: '01234567' };
@@ -33,6 +34,13 @@ describe('canAutoSendOfficialOnAwaiting', () => {
       false,
     );
     expect(canAutoSendOfficialOnAwaiting({ ...base, moneyStatus: 'NEW' })).toBe(false);
+    expect(
+      canAutoSendOfficialOnAwaiting({
+        ...base,
+        orderId: 'ord-1',
+        orderComment: null,
+      }),
+    ).toBe(false);
   });
 });
 
@@ -42,5 +50,34 @@ describe('officialSendIdempotencyKey', () => {
     expect(officialSendIdempotencyKey('inv-1', new Date('2026-04-01T00:00:00.000Z'))).toBe(
       'official_send:inv-1:2026-04-01T00:00:00.000Z',
     );
+  });
+});
+
+describe('resolveManualOfficialSend', () => {
+  it('skips a first send when the request is already marked sent', () => {
+    expect(
+      resolveManualOfficialSend(
+        { id: 'inv-1', officialInvoiceRequestSent: true, officialInvoiceCancelledAt: null },
+        false,
+      ),
+    ).toEqual({ skip: true });
+  });
+
+  it('reuses the auto-send key for the first send', () => {
+    expect(
+      resolveManualOfficialSend(
+        { id: 'inv-1', officialInvoiceRequestSent: false, officialInvoiceCancelledAt: null },
+        false,
+      ),
+    ).toEqual({ skip: false, idempotencyKey: 'official_send:inv-1:initial' });
+  });
+
+  it('allows an explicit resend after a successful send', () => {
+    expect(
+      resolveManualOfficialSend(
+        { id: 'inv-1', officialInvoiceRequestSent: true, officialInvoiceCancelledAt: null },
+        true,
+      ),
+    ).toEqual({ skip: false });
   });
 });

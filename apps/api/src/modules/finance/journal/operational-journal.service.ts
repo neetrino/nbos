@@ -44,6 +44,7 @@ interface ExpensePaymentJournalLineInput {
   amount: number;
   bookedAt: Date;
   projectId?: string | null;
+  productId?: string | null;
   companyId?: string | null;
 }
 
@@ -64,6 +65,7 @@ interface ExpenseAccrualJournalLineInput {
   amount: number;
   bookedAt: Date;
   projectId?: string | null;
+  productId?: string | null;
 }
 
 export interface ManualAdjustmentInput {
@@ -253,6 +255,7 @@ export class OperationalJournalService {
       description,
       companyId: input.companyId,
       projectId: input.projectId,
+      productId: input.productId,
     });
   }
 
@@ -297,6 +300,7 @@ export class OperationalJournalService {
       sourceId: input.expenseId,
       description,
       projectId: input.projectId,
+      productId: input.productId,
     });
   }
 

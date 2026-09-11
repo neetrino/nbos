@@ -19,11 +19,12 @@ import { credentialsApi } from '@/lib/api/credentials';
 import { isProviderRequiredForType } from '@/features/credentials/credential-field-config';
 
 export interface CredentialProviderPickerProps {
-  credentialType: string;
+  credentialType?: string;
   providerId: string | null;
   providerName: string;
   onChange: (providerId: string | null, providerName: string) => void;
   disabled?: boolean;
+  className?: string;
 }
 
 export function CredentialProviderPicker({
@@ -32,12 +33,13 @@ export function CredentialProviderPicker({
   providerName,
   onChange,
   disabled = false,
+  className,
 }: CredentialProviderPickerProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [createName, setCreateName] = useState('');
   const [creating, setCreating] = useState(false);
 
-  const required = isProviderRequiredForType(credentialType);
+  const required = credentialType ? isProviderRequiredForType(credentialType) : false;
   const brand = resolveItBrandMarkFromHints(providerName);
 
   const onSearch = useCallback(async (query: string) => {
@@ -78,6 +80,7 @@ export function CredentialProviderPicker({
         value={providerId}
         placeholder="Search providers…"
         icon={<Server size={14} />}
+        className={className}
         displayValue={
           providerName ? (
             <span className="flex min-w-0 items-center gap-2">

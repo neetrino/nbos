@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildSubscriptionGridQueryParams } from '@/features/finance/utils/build-subscription-list-query';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { subscriptionsApi, type SubscriptionGridPayload } from '@/lib/api/finance';
@@ -14,6 +14,7 @@ export function useSubscriptionGrid(params: UseSubscriptionGridParams) {
   const [data, setData] = useState<SubscriptionGridPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const dataRef = useRef(data);
 
   const query = useMemo(
     () =>
@@ -26,8 +27,12 @@ export function useSubscriptionGrid(params: UseSubscriptionGridParams) {
     [params.year, params.search, params.filters, params.partnerIdFromUrl],
   );
 
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+
   const fetchGrid = useCallback(async () => {
-    setLoading(true);
+    if (!dataRef.current) setLoading(true);
     try {
       const payload = await subscriptionsApi.getGrid(query);
       setData(payload);

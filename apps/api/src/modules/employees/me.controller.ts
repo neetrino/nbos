@@ -7,33 +7,22 @@ import {
   Delete,
   Body,
   Param,
-  Inject,
   NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
-import { PrismaClient } from '@nbos/database';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
-import { PRISMA_TOKEN } from '../../database.module';
 import { EmployeeWalletService } from './employee-wallet.service';
 import { EmployeesService } from './employees.service';
 import { DashboardService } from '../dashboard/dashboard.service';
 import { UpdateNavigationPreferenceDto } from '../dashboard/dto/update-navigation-preference.dto';
 import { CreatePersonalLinkDto } from '../dashboard/dto/create-personal-link.dto';
-
-interface UpdateProfileBody {
-  phone?: string;
-  telegram?: string;
-  sipId?: string | null;
-  avatar?: string;
-  birthday?: string | null;
-}
+import { UpdateOwnProfileDto } from './dto/update-own-profile.dto';
 
 @ApiTags('Me')
 @ApiBearerAuth()
 @Controller('me')
 export class MeController {
   constructor(
-    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly employeeWalletService: EmployeeWalletService,
     private readonly employeesService: EmployeesService,
     private readonly dashboardService: DashboardService,
@@ -134,47 +123,14 @@ export class MeController {
   }
 
   @Put('profile')
-  @ApiOperation({ summary: 'Update own profile (phone, telegram, sipId, avatar, birthday)' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        phone: { type: 'string', nullable: true },
-        telegram: { type: 'string', nullable: true },
-        sipId: { type: 'string', nullable: true },
-        avatar: { type: 'string', nullable: true },
-        birthday: { type: 'string', format: 'date-time', nullable: true },
-      },
-    },
+  @ApiOperation({
+    summary: 'Update own personal profile (name, phone, telegram, sipId, avatar, birthday)',
   })
-  async updateProfile(@CurrentUser() user: CurrentUserPayload, @Body() body: UpdateProfileBody) {
-    const data: {
-      phone?: string;
-      telegram?: string;
-      sipId?: string | null;
-      avatar?: string;
-      birthday?: Date | null;
-    } = {};
-    if (body.phone !== undefined) data.phone = body.phone;
-    if (body.telegram !== undefined) data.telegram = body.telegram;
-    if (body.sipId !== undefined) {
-      const trimmed = typeof body.sipId === 'string' ? body.sipId.trim() : '';
-      data.sipId = trimmed.length > 0 ? trimmed : null;
+  @ApiBody({ type: UpdateOwnProfileDto })
+  async updateProfile(@CurrentUser() user: CurrentUserPayload, @Body() body: UpdateOwnProfileDto) {
+    if (!user?.id) {
+      throw new NotFoundException('Employee record not found for this user');
     }
-    if (body.avatar !== undefined) data.avatar = body.avatar;
-    if (body.birthday !== undefined) {
-      data.birthday = body.birthday ? new Date(body.birthday) : null;
-    }
-
-    return this.prisma.employee.update({
-      where: { id: user.id },
-      data,
-      include: {
-        role: { select: { id: true, name: true, slug: true, level: true } },
-        departments: {
-          include: { department: { select: { id: true, name: true, slug: true } } },
-        },
-      },
-    });
+    return this.employeesService.updateOwnProfile(user.id, body);
   }
 }

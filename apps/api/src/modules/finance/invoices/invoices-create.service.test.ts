@@ -79,6 +79,37 @@ describe('InvoicesService create', () => {
     );
   });
 
+  it('writes resolved product ownership on create', async () => {
+    const createdInvoice = {
+      id: 'owned-1',
+      code: 'INV-2026-0100',
+      amount: 50000,
+      type: 'MANUAL',
+      payments: [],
+      _count: { payments: 0 },
+    };
+    prisma.product.findUnique.mockResolvedValue({ projectId: 'proj-owned' });
+    prisma.invoice.create.mockResolvedValue(createdInvoice);
+    prisma.invoice.findUnique.mockResolvedValue(createdInvoice);
+
+    await service.create({ amount: 50000, productId: 'prod-1' });
+
+    expect(prisma.invoice.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          productId: 'prod-1',
+          projectId: 'proj-owned',
+        }),
+      }),
+    );
+    expect(operationalJournal.appendInvoiceCardAccrualLine).toHaveBeenCalledWith(
+      expect.objectContaining({
+        productId: 'prod-1',
+        projectId: 'proj-owned',
+      }),
+    );
+  });
+
   it('creates manual invoice without project context', async () => {
     const createdInvoice = {
       id: 'manual-1',

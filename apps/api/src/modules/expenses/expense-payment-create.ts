@@ -75,6 +75,7 @@ export async function createExpensePaymentRecord(
       amount: input.amount,
       bookedAt: when,
       projectId: expense.projectId,
+      productId: expense.productId,
     });
   }
 

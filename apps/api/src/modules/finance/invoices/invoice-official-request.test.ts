@@ -13,6 +13,8 @@ function officialRow(overrides: Record<string, unknown> = {}) {
     taxStatus: 'TAX',
     moneyStatus: 'AWAITING_PAYMENT',
     companyId: 'c1',
+    orderId: null,
+    orderComment: null,
     officialInvoiceRequestSent: false,
     officialInvoiceSentAt: null,
     officialInvoiceCancelledAt: null,

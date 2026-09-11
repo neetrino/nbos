@@ -1,6 +1,6 @@
 'use client';
 
-import { SegmentedTabs } from '@/components/shared';
+import { PageHeroTabs } from '@/components/shared';
 import type { WorkspaceArea } from './workspace-area';
 
 const AREA_SEGMENTS = [
@@ -18,14 +18,14 @@ export function WorkSpaceAreaSegmented({
   className?: string;
 }) {
   return (
-    <SegmentedTabs
+    <PageHeroTabs
       value={value}
       onChange={onValueChange}
       options={AREA_SEGMENTS}
       ariaLabel="Work space area"
       className={className}
-      listClassName="w-full sm:w-auto"
-      buttonClassName="px-3 py-1.5 text-xs"
+      showOnMobile
+      registerMobileDock={false}
     />
   );
 }

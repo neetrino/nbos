@@ -1,6 +1,8 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import type { UpdateOwnProfileDto } from './dto/update-own-profile.dto';
+import { buildOwnProfileUpdateData } from './employee-own-profile';
 
 interface EmployeeQueryParams {
   search?: string;
@@ -89,5 +91,14 @@ export class EmployeesService {
       where: { email },
       include: EMPLOYEE_INCLUDE,
     });
+  }
+
+  async updateOwnProfile(employeeId: string, body: UpdateOwnProfileDto) {
+    const data = buildOwnProfileUpdateData(body);
+    if (Object.keys(data).length === 0) {
+      return this.findById(employeeId);
+    }
+    await this.prisma.employee.update({ where: { id: employeeId }, data });
+    return this.findById(employeeId);
   }
 }

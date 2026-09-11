@@ -557,7 +557,6 @@ function DealSheetBody({
             {activeTab === 'task' && (
               <DealTasksTab
                 deal={renderDeal}
-                onRefresh={onRefresh}
                 onCreateOpenChange={onTaskCreateOpenChange}
                 tasksRefreshSignal={taskListRefreshSignal}
               />

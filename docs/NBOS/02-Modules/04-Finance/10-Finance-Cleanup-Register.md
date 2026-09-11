@@ -174,7 +174,8 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 
 **Уже было ранее:**
 
-- `InvoiceCardRemindersService` — idempotent `NotificationEvent` / `NotificationJob` для правил Invoice Card;
+- `InvoiceCardRemindersService` — official catch-up enqueues accountant WhatsApp (no `NotificationJob`);
+  subscription 5-day window still uses idempotent `NotificationJob`;
   пропуск `ON_HOLD`, `notificationsEnabled = false`, Tax без маркера official invoice.
 
 **Сделано (срез 2026-08):** Tax readiness gates — create всегда можно; `Awaiting Payment` требует Company name + tax_id; `Paid` требует актуальный official request; cancel карточки с отправленным запросом вызывает `Cancel Previous Request`. Shared + API + invoice UI.
@@ -321,7 +322,8 @@ Remaining runtime refactor:
 
 - migrate / wrap domain logic into the general service model;
 - ~~we-pay (`WE_PAY`) automation after full invoice payment: purchase task + provider expense card (idempotent; triggered from payment create when `moneyStatus` becomes PAID)~~ — done in runtime;
-- connect to `Credential` and Drive File Assets for receipts/proofs/provider documents.
+- ~~connect Expense Plan / Expense Card / Client Service to `Credential` (password card) and Product as delivery owner (`projectId` denorm)~~ — Expense/CSR product + credential links in runtime;
+- connect Drive File Assets for receipts/proofs/provider documents.
 
 Finance runtime also needs Drive alignment:
 
@@ -416,6 +418,12 @@ Remaining refactor:
 - finish expected incoming from official invoice/payment request fields;
 - ~~expose expense `due now` separately (`DUE_NOW` workflow status bucket on dashboard summary)~~ — done in runtime;
 - replace subscription statuses and coverage fields.
+
+### C10. Invoice product ownership (2026-09-08)
+
+`Invoice.productId` is the card owner; `projectId` stays denormalized from `Product.projectId` (not dropped). Company remains the Tax legal party. Product Finance tab lists invoices by `productId`.
+
+---
 
 ### C9. Invoice / Order / Subscription codes used MAX+1 — FIXED (2026-08-23)
 

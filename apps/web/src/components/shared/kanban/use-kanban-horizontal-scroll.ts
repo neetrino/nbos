@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { KANBAN_COLUMN_X_MARGIN_TOTAL_PX, SCROLL_SPEED } from './kanban.types';
+import { useKanbanHorizontalTouchBridge } from './use-kanban-horizontal-touch-bridge';
 
 type UseKanbanHorizontalScrollOptions = {
   /** Desktop (and non–full-width mobile) column width in px. */
@@ -12,8 +13,8 @@ type UseKanbanHorizontalScrollOptions = {
   /** Re-measure when column count / layout key changes. */
   layoutKey?: number | string;
   /**
-   * When true on mobile, column width tracks the scrollport (CRM Deals).
-   * Delivery keeps fixed column width — pass false.
+   * When true (default), mobile columns fill the scrollport like CRM —
+   * one stage per swipe. Pass false only for a documented exception.
    */
   mobileFullWidthColumns?: boolean;
   /**
@@ -26,7 +27,7 @@ type UseKanbanHorizontalScrollOptions = {
 const HORIZONTAL_WHEEL_DOMINANCE_RATIO = 1;
 
 /**
- * Horizontal board scroller: edge affordances, step buttons, optional hover auto-scroll.
+ * Horizontal board scroller: edge affordances, optional hover auto-scroll.
  * Shared by `KanbanBoard` and Delivery kanban hosts.
  */
 export function useKanbanHorizontalScroll({
@@ -85,6 +86,8 @@ export function useKanbanHorizontalScroll({
     return () => window.removeEventListener('resize', measure);
   }, [isMobileViewport, mobileFullWidthColumns, columnMarginTotalPx]);
 
+  useKanbanHorizontalTouchBridge(scrollRef, isMobileViewport, layoutKey);
+
   useEffect(() => {
     if (!bridgeHorizontalWheel) return;
     const el = scrollRef.current;
@@ -132,16 +135,6 @@ export function useKanbanHorizontalScroll({
     cancelAnimationFrame(rafId.current);
   }, []);
 
-  const scrollByOneColumn = useCallback(
-    (side: 'left' | 'right') => {
-      const el = scrollRef.current;
-      if (!el) return;
-      const step = resolvedColumnWidth + columnMarginTotalPx;
-      el.scrollBy({ left: side === 'left' ? -step : step, behavior: 'auto' });
-    },
-    [resolvedColumnWidth, columnMarginTotalPx],
-  );
-
   useEffect(() => () => cancelAnimationFrame(rafId.current), []);
 
   return {
@@ -152,10 +145,5 @@ export function useKanbanHorizontalScroll({
     resolvedColumnWidth,
     startAutoScroll,
     stopAutoScroll,
-    scrollByOneColumn,
   };
 }
-
-/** Hide native scrollbar; edge controls own navigation affordance. */
-export const KANBAN_HORIZONTAL_SCROLL_HIDE_SCROLLBAR_CLASS =
-  '[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';

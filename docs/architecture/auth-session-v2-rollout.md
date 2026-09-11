@@ -34,6 +34,7 @@ AUTH_SESSION_CLEANUP_BATCH_SIZE=500
 - Cookie-based refresh requires Origin/Referer in `CORS_ORIGIN`.
 - Refresh cookie `Path=/api/auth` (Nest Set-Cookie); public JSON never includes `refreshToken`.
 - Primary storage for web is Auth.js encrypted JWT (`refreshToken` claim, not exposed to `session()`), seeded by parsing Nest `Set-Cookie` on login/refresh (server-side only).
+- Only the BFF refresh path writes that cookie (canon §13). Watch `auth.refresh_reuse_detected` and `auth_sessions.revoke_reason='reuse_detected'`: a steady stream there means a second writer is replaying superseded refresh tokens, not a real token theft.
 
 ## Stages
 

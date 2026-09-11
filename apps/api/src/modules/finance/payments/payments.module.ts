@@ -4,6 +4,7 @@ import { BonusModule } from '../../bonus/bonus.module';
 import { NotificationModule } from '../../notifications/notification.module';
 import { OperationalJournalModule } from '../journal/operational-journal.module';
 import { PartnerAccrualModule } from '../partner-accrual/partner-accrual.module';
+import { InvoiceOfficialWhatsAppModule } from '../invoices/invoice-official-whatsapp.module';
 import { PAYMENTS_SERVICE_TOKEN } from '../invoices/invoice-mark-paid-settle';
 import { PaymentsController } from './payments.controller';
 import { PaymentsService } from './payments.service';
@@ -15,6 +16,7 @@ import { PaymentsService } from './payments.service';
     NotificationModule,
     OperationalJournalModule,
     PartnerAccrualModule,
+    InvoiceOfficialWhatsAppModule,
   ],
   controllers: [PaymentsController],
   providers: [PaymentsService, { provide: PAYMENTS_SERVICE_TOKEN, useExisting: PaymentsService }],

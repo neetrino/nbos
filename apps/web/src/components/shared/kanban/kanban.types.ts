@@ -26,6 +26,8 @@ export interface KanbanColumnQuickCreateConfig<T> {
   titleAriaLabel?: string;
   createLabel?: string;
   cancelLabel?: string;
+  /** Hide the column-top button on mobile when create lives in the dock. */
+  hideOnMobile?: boolean;
   /** Inline create from title (leads, etc.). */
   onCreate?: (input: KanbanColumnQuickCreateInput) => Promise<void>;
   /** Opens a full create dialog (deals, invoices, expenses, tasks). */

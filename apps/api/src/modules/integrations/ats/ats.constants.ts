@@ -44,3 +44,6 @@ export const ATS_CLICK_TO_CALL_HISTORY_START_SKEW_MS = 2 * 60 * 1000;
 
 export const ATS_CLICK_TO_CALL_UID_PREFIX = 'ctc:';
 export const ATS_CLICK_TO_CALL_RECONCILE_WINDOW_MS = 10 * 60 * 1000;
+
+/** Optional webhook query: internal SIP so outbound orange-trunk can identify the employee. */
+export const ATS_WEBHOOK_SIP_QUERY = 'sip';

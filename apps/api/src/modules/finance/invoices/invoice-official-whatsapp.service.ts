@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { PrismaClient, type InvoiceTypeEnum } from '@nbos/database';
+import { PrismaClient } from '@nbos/database';
 import { isWhatsAppGroupChatId } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { WhatsAppGatewayConnectionService } from '../../integrations/whatsapp-gateway/whatsapp-gateway-connection.service';
@@ -11,9 +11,10 @@ import {
   canAutoSendOfficialOnAwaiting,
   OFFICIAL_SEND_CANCELLED_MESSAGE,
   officialSendIdempotencyKey,
+  resolveManualOfficialSend,
 } from './invoice-official-awaiting-send';
+import { buildOfficialInvoicePurpose } from './invoice-official-note';
 import {
-  buildOfficialInvoicePurpose,
   renderOfficialInvoiceCancelMessage,
   renderOfficialInvoiceIssueMessage,
   resolveOfficialCompanyName,
@@ -22,19 +23,23 @@ import {
 const OFFICIAL_CONTEXT_SELECT = {
   id: true,
   code: true,
-  type: true,
   amount: true,
   taxStatus: true,
   moneyStatus: true,
   officialInvoiceRequestSent: true,
   officialInvoiceCancelledAt: true,
   coverageStartMonth: true,
+  coverageMonthCount: true,
+  dueDate: true,
+  orderId: true,
+  subscriptionId: true,
+  clientServiceRecordId: true,
+  orderComment: true,
   companyId: true,
   company: { select: { name: true, legalName: true, taxId: true } },
-  project: { select: { name: true } },
-  subscription: { select: { product: { select: { name: true } } } },
-  clientServiceRecord: { select: { name: true } },
-  order: { select: { code: true } },
+  subscription: { select: { name: true, code: true, type: true } },
+  clientServiceRecord: { select: { name: true, type: true } },
+  order: { select: { code: true, deal: { select: { name: true, code: true } } } },
 } as const;
 
 @Injectable()
@@ -47,9 +52,11 @@ export class InvoiceOfficialWhatsAppService {
     private readonly outbound: WhatsAppOutboundQueueService,
   ) {}
 
-  async sendAndWait(invoiceId: string): Promise<void> {
+  async sendAndWait(invoiceId: string, resend = false): Promise<void> {
     const invoice = await this.loadReadyToSend(invoiceId);
-    await this.enqueueOfficial(invoice, 'official_send', true);
+    const plan = resolveManualOfficialSend(invoice, resend);
+    if (plan.skip) return;
+    await this.enqueueOfficial(invoice, 'official_send', true, plan.idempotencyKey);
   }
 
   async cancelAndWait(invoiceId: string): Promise<void> {
@@ -67,14 +74,14 @@ export class InvoiceOfficialWhatsAppService {
     }
   }
 
-  async enqueueIfAwaitingEligible(invoiceId: string): Promise<void> {
+  async enqueueIfAwaitingEligible(invoiceId: string, options?: { wait?: boolean }): Promise<void> {
     const invoice = await this.loadContext(invoiceId);
     if (!canAutoSendOfficialOnAwaiting(invoice)) return;
     try {
       await this.enqueueOfficial(
         invoice,
         'official_send',
-        false,
+        options?.wait === true,
         officialSendIdempotencyKey(invoice.id, invoice.officialInvoiceCancelledAt),
       );
     } catch (error) {
@@ -155,18 +162,26 @@ export class InvoiceOfficialWhatsAppService {
   private toFields(invoice: OfficialWhatsAppInvoice) {
     return {
       code: invoice.code,
-      type: invoice.type,
       amount: invoice.amount,
       companyName: resolveOfficialCompanyName(invoice.company),
       companyTaxId: invoice.company?.taxId?.trim() ?? '',
       purpose: buildOfficialInvoicePurpose({
-        type: invoice.type,
         code: invoice.code,
-        productName: invoice.subscription?.product.name,
-        coverageStartMonth: invoice.coverageStartMonth,
-        clientServiceName: invoice.clientServiceRecord?.name,
-        projectName: invoice.project?.name,
+        orderId: invoice.orderId,
+        subscriptionId: invoice.subscriptionId,
+        clientServiceRecordId: invoice.clientServiceRecordId,
+        orderComment: invoice.orderComment,
         orderCode: invoice.order?.code,
+        dealName: invoice.order?.deal?.name,
+        dealCode: invoice.order?.deal?.code,
+        subscriptionName: invoice.subscription?.name,
+        subscriptionCode: invoice.subscription?.code,
+        subscriptionType: invoice.subscription?.type,
+        coverageStartMonth: invoice.coverageStartMonth,
+        coverageMonthCount: invoice.coverageMonthCount,
+        clientServiceName: invoice.clientServiceRecord?.name,
+        clientServiceType: invoice.clientServiceRecord?.type,
+        dueDate: invoice.dueDate,
       }),
     };
   }
@@ -175,17 +190,21 @@ export class InvoiceOfficialWhatsAppService {
 type OfficialWhatsAppInvoice = {
   id: string;
   code: string;
-  type: InvoiceTypeEnum;
   amount: unknown;
   taxStatus: string;
   moneyStatus: string;
   officialInvoiceRequestSent: boolean;
   officialInvoiceCancelledAt: Date | null;
   coverageStartMonth: string | null;
+  coverageMonthCount: number | null;
+  dueDate: Date | null;
+  orderId: string | null;
+  subscriptionId: string | null;
+  clientServiceRecordId: string | null;
+  orderComment: string | null;
   companyId: string | null;
   company: { name: string; legalName: string | null; taxId: string | null } | null;
-  project: { name: string } | null;
-  subscription: { product: { name: string } } | null;
-  clientServiceRecord: { name: string } | null;
-  order: { code: string } | null;
+  subscription: { name: string; code: string; type: string } | null;
+  clientServiceRecord: { name: string; type: string } | null;
+  order: { code: string; deal: { name: string | null; code: string } | null } | null;
 };

@@ -112,9 +112,24 @@ export interface EmployeeWalletSnapshot {
   salaryHistory: EmployeeWalletSalaryRow[];
 }
 
+export interface UpdateOwnProfilePayload {
+  firstName?: string;
+  lastName?: string;
+  phone?: string | null;
+  telegram?: string | null;
+  sipId?: string | null;
+  avatar?: string | null;
+  birthday?: string | null;
+}
+
 export const meApi = {
   async getEmployee(): Promise<Employee> {
     const resp = await api.get<Employee>('/api/me/employee');
+    return resp.data;
+  },
+
+  async updateProfile(data: UpdateOwnProfilePayload): Promise<Employee> {
+    const resp = await api.put<Employee>('/api/me/profile', data);
     return resp.data;
   },
 

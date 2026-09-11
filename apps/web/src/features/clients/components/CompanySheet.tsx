@@ -1,16 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { RotateCcw, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Sheet } from '@/components/ui/sheet';
 import { DeleteConfirmDialog } from '@/components/shared/delete-confirm';
 import { DetailSheetFormFooter } from '@/components/shared/DetailSheetFormFooter';
-import { DetailSheetSettingsMenu } from '@/components/shared/DetailSheetSettingsMenu';
 import { DetailSheetTabPanel } from '@/components/shared/DetailSheetTabPanel';
 import { EntityDetailSheetContent } from '@/components/shared/EntityDetailSheetContent';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import {
+  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
+  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { getCompanyType, getTaxStatus } from '../constants/clients';
 import { useContactSearchOptions } from '../hooks/use-contact-search-options';
 import type { Company } from '@/lib/api/clients';
@@ -21,6 +22,7 @@ import {
   type CompanyGeneralDraft,
 } from './company-general-form-state';
 import { CompanySheetScrollBody } from './CompanySheetScrollBody';
+import { CompanySheetHeaderActions } from './CompanySheetHeaderActions';
 import {
   CONTACT_SHEET_BODY_SCROLL_CLASS,
   CONTACT_SHEET_CONTENT_WIDTH_CLASS,
@@ -34,12 +36,13 @@ import {
   ClientPortfolioPanel,
   useClientPortfolioData,
 } from './client-portfolio/ClientPortfolioEmbedded';
-import { ClientPortfolioQuickActionsHeader } from './client-portfolio/ClientPortfolioQuickActions';
 import type {
   ClientDetailTabId,
   ClientSheetPanelTabId,
 } from './client-portfolio/client-portfolio-tabs';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
+import { cn } from '@/lib/utils';
 
 interface CompanySheetProps {
   company: Company | null;
@@ -72,6 +75,7 @@ export function CompanySheet({
   forceNestedBackdrop = false,
   onRemoveParticipant,
 }: CompanySheetProps) {
+  const isMobileViewport = useIsMobileViewport();
   const { persistedValue: renderCompany, onOpenChangeComplete } = useSheetPersistedValue(company);
   const hostMounted = useSheetHostMounted(open, renderCompany);
 
@@ -228,8 +232,40 @@ export function CompanySheet({
           </div>
         ) : (
           <>
-            <div className="bg-background shrink-0 px-5 pt-5 pb-3">
-              <div className="flex min-h-9 min-w-0 flex-nowrap items-center gap-2">
+            <div
+              className={cn(
+                isMobileViewport
+                  ? DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS
+                  : 'bg-background shrink-0 px-5 pt-5 pb-3',
+              )}
+            >
+              {isMobileViewport ? (
+                <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>
+                  <CompanySheetHeaderActions
+                    company={renderCompany}
+                    isTrashView={isTrashView}
+                    saving={saving}
+                    removingFromProject={removingFromProject}
+                    portfolioData={portfolio.data}
+                    portfolioLoading={portfolio.loading}
+                    onRemoveParticipant={onRemoveParticipant}
+                    onRestore={onRestore}
+                    onPermanentDelete={onPermanentDelete}
+                    onMoveToTrash={onMoveToTrash}
+                    onRequestRemoveFromProject={() => setRemoveFromProjectOpen(true)}
+                  />
+                </div>
+              ) : null}
+              <div
+                className={cn(
+                  isMobileViewport
+                    ? cn(
+                        DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+                        'flex min-w-0 flex-wrap items-center gap-2',
+                      )
+                    : 'flex min-h-9 min-w-0 flex-nowrap items-center gap-2',
+                )}
+              >
                 <div className="min-w-0 flex-1">
                   <div className="inline-flex max-w-full min-w-0 flex-nowrap items-center gap-2">
                     {editingName ? (
@@ -267,57 +303,21 @@ export function CompanySheet({
                     ) : null}
                   </div>
                 </div>
-                <div className="flex h-9 shrink-0 items-center gap-1.5">
-                  {onRemoveParticipant ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive shrink-0"
-                      disabled={removingFromProject || saving}
-                      onClick={() => setRemoveFromProjectOpen(true)}
-                      aria-label="Remove company from project"
-                    >
-                      <Trash2 className="size-4" />
-                      Remove
-                    </Button>
-                  ) : null}
-                  {!isTrashView ? (
-                    <ClientPortfolioQuickActionsHeader
-                      variant="company"
-                      entityId={renderCompany.id}
-                      data={portfolio.data}
-                      loading={portfolio.loading}
-                    />
-                  ) : null}
-                  {isTrashView && onRestore ? (
-                    <DetailSheetSettingsMenu>
-                      <DropdownMenuItem onClick={() => onRestore(renderCompany.id)}>
-                        <RotateCcw />
-                        Restore
-                      </DropdownMenuItem>
-                      {onPermanentDelete ? (
-                        <DropdownMenuItem
-                          variant="destructive"
-                          onClick={() => onPermanentDelete(renderCompany.id)}
-                        >
-                          <Trash2 />
-                          Delete permanently
-                        </DropdownMenuItem>
-                      ) : null}
-                    </DetailSheetSettingsMenu>
-                  ) : onMoveToTrash ? (
-                    <DetailSheetSettingsMenu>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => onMoveToTrash(renderCompany.id)}
-                      >
-                        <Trash2 />
-                        Move to Trash
-                      </DropdownMenuItem>
-                    </DetailSheetSettingsMenu>
-                  ) : null}
-                </div>
+                {!isMobileViewport ? (
+                  <CompanySheetHeaderActions
+                    company={renderCompany}
+                    isTrashView={isTrashView}
+                    saving={saving}
+                    removingFromProject={removingFromProject}
+                    portfolioData={portfolio.data}
+                    portfolioLoading={portfolio.loading}
+                    onRemoveParticipant={onRemoveParticipant}
+                    onRestore={onRestore}
+                    onPermanentDelete={onPermanentDelete}
+                    onMoveToTrash={onMoveToTrash}
+                    onRequestRemoveFromProject={() => setRemoveFromProjectOpen(true)}
+                  />
+                ) : null}
               </div>
             </div>
 

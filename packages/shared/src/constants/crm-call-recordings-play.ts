@@ -16,6 +16,7 @@ export const CRM_CALL_RECORDINGS_PLAY_DEFAULT_ROLE_IDS = [
   'role-owner',
   'role-ceo',
   'role-seller',
+  'role-seller-assistant',
   'role-head-sales',
 ] as const;
 
@@ -23,5 +24,6 @@ export const CRM_CALL_RECORDINGS_PLAY_DEFAULT_ROLE_SLUGS = [
   'owner',
   'ceo',
   'seller',
+  'seller-assistant',
   'head-sales',
 ] as const;

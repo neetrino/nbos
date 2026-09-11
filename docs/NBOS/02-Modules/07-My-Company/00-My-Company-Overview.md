@@ -210,6 +210,7 @@ Reusable checklist template - практическое руководство п
 | SOP                    | Security defaults          |
 
 `My Account` не находится в Settings. Он открывается из header user menu.
+Вкладка **General** позволяет сотруднику править свои личные поля (имя, телефон, Telegram, день рождения, ATS SIP ID) **без** права `COMPANY:EDIT`. Рабочий email, найм, роль, уровень, статус и отделы меняет только HR. Канон полей: `02-Team-Employees.md`.
 Вкладка **Security** в My Account позволяет сотруднику сменить свой пароль входа в платформу.
 
 ---

@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CheckSquare, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   ENTITY_ITEM_VIEW_OPTIONS,
   EntityItemList,
   useOpenEntityItemFromSummary,
+  useEntityItemMobileView,
   ViewModeSwitch,
   type EntityItemVariant,
 } from '@/components/shared';
@@ -17,7 +18,6 @@ import { useEntityLinkedTasks } from '../hooks/use-entity-linked-tasks';
 interface EntityLinkedTasksTabProps {
   entityType: string;
   entityId: string;
-  onRefresh?: () => void;
   emptyDescription: string;
   onCreateOpenChange: (open: boolean) => void;
   /** Increment from parent after task create so the list refetches while the tab is open. */
@@ -27,21 +27,15 @@ interface EntityLinkedTasksTabProps {
 export function EntityLinkedTasksTab({
   entityType,
   entityId,
-  onRefresh,
   emptyDescription,
   onCreateOpenChange,
   tasksRefreshSignal = 0,
 }: EntityLinkedTasksTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
+  const displayVariant = useEntityItemMobileView(viewVariant);
   const { creatorId, creatorReady } = useTaskCreatorId();
-  const { tasks, loading, fetchTasks } = useEntityLinkedTasks(entityType, entityId);
-
-  useEffect(() => {
-    if (tasksRefreshSignal === 0) return;
-    void fetchTasks();
-    onRefresh?.();
-  }, [tasksRefreshSignal, fetchTasks, onRefresh]);
+  const { tasks, loading } = useEntityLinkedTasks(entityType, entityId, tasksRefreshSignal);
 
   const itemSummaries = tasks.map(taskToItemSummary);
 
@@ -57,7 +51,7 @@ export function EntityLinkedTasksTab({
       <EntityLinkedTasksList
         loading={loading}
         items={itemSummaries}
-        viewVariant={viewVariant}
+        viewVariant={displayVariant}
         emptyDescription={emptyDescription}
         onOpenItem={onOpenItem}
       />

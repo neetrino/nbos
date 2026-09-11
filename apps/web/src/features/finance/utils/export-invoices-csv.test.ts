@@ -9,6 +9,7 @@ function minimalInvoice(overrides: Partial<Invoice>): Invoice {
     orderId: null,
     subscriptionId: null,
     projectId: 'p1',
+    productId: 'prod-1',
     companyId: null,
     amount: '100.00',
     currency: 'USD',
@@ -22,10 +23,12 @@ function minimalInvoice(overrides: Partial<Invoice>): Invoice {
     officialInvoiceSentAt: null,
     officialInvoiceCancelledAt: null,
     notificationsEnabled: true,
+    orderComment: null,
     description: null,
     createdAt: '2026-04-28T12:00:00.000Z',
     order: null,
     company: null,
+    product: { id: 'prod-1', name: 'Site' },
     project: { id: 'p1', name: 'Alpha' },
     contact: null,
     payments: [],
@@ -46,6 +49,7 @@ describe('buildInvoicesCsvContent', () => {
     expect(csv.split('\r\n')).toHaveLength(1);
     expect(csv).toContain('coveragePaidAmount');
     expect(csv).toContain('moneyStatus');
+    expect(csv).toContain('displayTitle');
   });
 
   it('escapes commas in description', () => {

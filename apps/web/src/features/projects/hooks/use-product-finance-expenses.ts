@@ -23,7 +23,7 @@ function resolveExpensePageVariant(filters: Record<string, string>): ExpensesPag
 }
 
 export function useProductFinanceExpenses(
-  projectId: string,
+  productId: string,
   search: string,
   filters: Record<string, string>,
 ) {
@@ -41,16 +41,16 @@ export function useProductFinanceExpenses(
         search,
         filters,
         period: FINANCE_DEFAULT_LIST_PERIOD,
-        effectiveProjectId: projectId,
+        effectiveProductId: productId,
         sortBy: EXPENSE_LIST_DEFAULT_SORT_BY,
         sortOrder: EXPENSE_LIST_DEFAULT_SORT_ORDER,
         pageVariant,
       }),
-    [search, filters, projectId, pageVariant],
+    [search, filters, productId, pageVariant],
   );
 
   const fetchExpenses = useCallback(async () => {
-    if (!projectId) return;
+    if (!productId) return;
     setLoading(true);
     try {
       const { items } = await expensesApi.getAll({
@@ -65,7 +65,7 @@ export function useProductFinanceExpenses(
     } finally {
       setLoading(false);
     }
-  }, [projectId, listApiParams]);
+  }, [productId, listApiParams]);
 
   useEffect(() => {
     void fetchExpenses();

@@ -1,4 +1,4 @@
-import { EXPENSE_CATEGORIES, EXPENSE_STAGES } from '@/features/finance/constants/finance';
+import { EXPENSE_FILTER_CATEGORIES, EXPENSE_STAGES } from '@/features/finance/constants/finance';
 
 export type ExpenseFilterBarConfig = {
   key: string;
@@ -14,7 +14,7 @@ export function buildExpenseFilterConfigs(
     {
       key: 'category',
       label: 'Category',
-      options: EXPENSE_CATEGORIES.map((c) => ({ value: c.value, label: c.label })),
+      options: EXPENSE_FILTER_CATEGORIES.map((c) => ({ value: c.value, label: c.label })),
     },
   ];
   if (!options?.omitStatus) {

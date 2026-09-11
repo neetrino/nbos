@@ -124,21 +124,21 @@
 
 ## 8. DevOps и хостинг
 
-| #    | Параметр         | Решение                      | Статус | Примечание                                              |
-| ---- | ---------------- | ---------------------------- | ------ | ------------------------------------------------------- |
-| 8.1  | Хостинг frontend | Hetzner + Coolify `nbos-web` | ✅     | Cloudflare DNS/TLS/WAF                                  |
-| 8.2  | Хостинг backend  | Hetzner + Coolify            | ✅     | `nbos-api` / `nbos-worker` / `nbos-scheduler`           |
-| 8.3  | CI/CD            | GitHub Actions + manual CD   | ✅     | CI на PR/`main`; production migration/deploy — вручную  |
-| 8.4  | Docker           | `Dockerfile.web` / `.api`    | ✅     | Coolify Dockerfile apps; Auto Deploy OFF                |
-| 8.5  | WAF              | Cloudflare                   | ✅     |                                                         |
-| 8.6  | Мониторинг       | Sentry + Coolify             | ✅     |                                                         |
-| 8.7  | Логирование      | Pino (production)            | ✅     | структурированные JSON                                  |
-| 8.8  | Окружения        | dev + staging + prod         | ✅     | Neon branches                                           |
-| 8.9  | Домен            | кастомный                    | ✅     | nbos.\* или аналог                                      |
-| 8.10 | Бэкапы БД        | Neon PITR (авто)             | ✅     |                                                         |
-| 8.11 | Обновление deps  | Dependabot (monthly)         | ✅     | minor/patch авто; major — вручную по roadmap (см. ниже) |
+| #    | Параметр         | Решение                      | Статус | Примечание                                                   |
+| ---- | ---------------- | ---------------------------- | ------ | ------------------------------------------------------------ |
+| 8.1  | Хостинг frontend | Hetzner + Coolify `nbos-web` | ✅     | Cloudflare DNS/TLS/WAF                                       |
+| 8.2  | Хостинг backend  | Hetzner + Coolify            | ✅     | `nbos-api` / `nbos-worker` / `nbos-scheduler`                |
+| 8.3  | CI/CD            | GitHub Actions + manual CD   | ✅     | CI на PR/`main`; production migration/deploy — вручную       |
+| 8.4  | Docker           | `Dockerfile.web` / `.api`    | ✅     | Coolify Dockerfile apps; Auto Deploy OFF                     |
+| 8.5  | WAF              | Cloudflare                   | ✅     |                                                              |
+| 8.6  | Мониторинг       | Sentry + Coolify             | ✅     |                                                              |
+| 8.7  | Логирование      | Pino (production)            | ✅     | структурированные JSON                                       |
+| 8.8  | Окружения        | dev + staging + prod         | ✅     | Neon branches                                                |
+| 8.9  | Домен            | кастомный                    | ✅     | nbos.\* или аналог                                           |
+| 8.10 | Бэкапы БД        | Neon PITR (авто)             | ✅     |                                                              |
+| 8.11 | Обновление deps  | Dependabot (paused)          | ✅     | version updates off; security alerts remain; major — вручную |
 
-**Политика зависимостей (8.11).** Dependabot: раз в месяц, до 3 npm + 2 Actions PR. Security alerts GitHub — отдельно. **Major не через бота:** TypeScript 6+, Zod 4+, ESLint 10+, `@types/node` 25+ (пока Node 22 LTS), lucide-react 1.x, commitlint 21+ — отдельная миграция с CI и обновлением этой карты. Текущий зафиксированный стек: **TS 5.9**, **Zod 3**, **ESLint 9**, **Node 22**.
+**Политика зависимостей (8.11).** Dependabot version updates приостановлены (`open-pull-requests-limit: 0`) — бот не открывает PR. Security alerts GitHub — отдельно. **Major не через бота.** Чтобы снова включить monthly minor/patch: поднять limit до 1 и оставить ignore `semver-major`. Зафиксированный стек: **TS 5.9**, **Zod 3**, **ESLint 9**, **Node 22**. TypeScript 6+, Zod 4+, ESLint 10+, `@types/node` 25+ (пока Node 22 LTS), lucide-react 1.x, commitlint 21+ — отдельная миграция с CI и обновлением этой карты.
 
 ---
 

@@ -1,5 +1,10 @@
 import { CalendarDays, Clock } from 'lucide-react';
 import type { CalendarEventProjection } from '@/lib/api/calendar';
+import { CalendarDayCreateMenu } from './calendar-day-create-menu';
+import {
+  CALENDAR_DAY_CELL_MIN_HEIGHT_CLASS,
+  type CalendarCreateKind,
+} from './calendar-ui-constants';
 
 export const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 
@@ -22,51 +27,76 @@ export const LAYER_STYLES: Record<
   },
 };
 
+function dayCellSurfaceClass(isSelected: boolean): string {
+  return `group relative flex ${CALENDAR_DAY_CELL_MIN_HEIGHT_CLASS} flex-col items-start rounded-xl p-2 transition-colors ${
+    isSelected ? 'bg-primary/5 ring-primary ring-1' : 'hover:bg-secondary'
+  }`;
+}
+
+function DayCellEventDots({ events }: { events: CalendarEventProjection[] }) {
+  if (events.length === 0) return null;
+  return (
+    <div className="mt-1 flex gap-1">
+      {events.slice(0, 3).map((event) => (
+        <div
+          key={event.id}
+          className={`h-1.5 w-1.5 rounded-full ${LAYER_STYLES[event.layer].dot}`}
+        />
+      ))}
+      {events.length > 3 && (
+        <span className="text-muted-foreground text-[10px] leading-none">+{events.length - 3}</span>
+      )}
+    </div>
+  );
+}
+
 export function DayCell({
   date,
   events,
   isToday,
   isSelected,
   onSelect,
+  onCreate,
 }: {
   date: Date | null;
   events: CalendarEventProjection[];
   isToday: boolean;
   isSelected: boolean;
   onSelect: (date: Date) => void;
+  onCreate: (date: Date, kind: CalendarCreateKind) => void;
 }) {
-  if (!date) return <div className="min-h-[4.5rem] rounded-xl p-2" />;
+  if (!date) return <div className={`${CALENDAR_DAY_CELL_MIN_HEIGHT_CLASS} rounded-xl p-2`} />;
+
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(date)}
-      className={`flex min-h-[4.5rem] flex-col items-start rounded-xl p-2 text-left transition-colors ${
-        isSelected ? 'bg-primary/5 ring-primary ring-1' : 'hover:bg-secondary'
-      }`}
-    >
-      <span
-        className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium ${
-          isToday ? 'bg-primary text-primary-foreground' : 'text-foreground'
-        }`}
-      >
-        {date.getDate()}
-      </span>
-      {events.length > 0 && (
-        <div className="mt-1 flex gap-1">
-          {events.slice(0, 3).map((event) => (
-            <div
-              key={event.id}
-              className={`h-1.5 w-1.5 rounded-full ${LAYER_STYLES[event.layer].dot}`}
-            />
-          ))}
-          {events.length > 3 && (
-            <span className="text-muted-foreground text-[10px] leading-none">
-              +{events.length - 3}
-            </span>
-          )}
-        </div>
-      )}
-    </button>
+    <div className={dayCellSurfaceClass(isSelected)}>
+      <button
+        type="button"
+        onClick={() => onSelect(date)}
+        aria-pressed={isSelected}
+        aria-label={date.toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+        })}
+        className="absolute inset-0 z-0 rounded-xl"
+      />
+      <div className="pointer-events-none relative z-[1] flex flex-col items-start">
+        <span
+          className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium ${
+            isToday ? 'bg-primary text-primary-foreground' : 'text-foreground'
+          }`}
+        >
+          {date.getDate()}
+        </span>
+        <DayCellEventDots events={events} />
+      </div>
+      <CalendarDayCreateMenu
+        date={date}
+        persistVisible={isSelected}
+        onSelectDate={onSelect}
+        onCreate={onCreate}
+      />
+    </div>
   );
 }
 

@@ -37,11 +37,8 @@ import {
 import { deriveBaseInvoiceMoneyStatus, parseInvoiceMoneyStatus } from './invoice-money-status';
 import { DealWonHandler } from '../../crm/deals/deal-won.handler';
 import { dealDetailInclude } from '../../crm/deals/deal.includes';
-import {
-  cancelOfficialInvoiceRequest,
-  sendOfficialInvoiceRequest,
-  updateOfficialInvoiceGovId,
-} from './invoice-official-request';
+import { updateOfficialInvoiceGovId } from './invoice-official-request';
+import { persistInvoiceCreate, notifyOfficialAfterInvoiceWrite } from './invoice-card-persist';
 import { InvoiceOfficialWhatsAppService } from './invoice-official-whatsapp.service';
 import {
   INVOICE_MONEY_STATUS_TRANSITION_SELECT,
@@ -58,13 +55,18 @@ import {
 import { resolveCreateInvoiceType } from './invoice-create-resolver';
 import { resolveInvoiceCreateSchedule } from './invoice-subscription-create-schedule';
 import { resolveInvoiceProjectRow } from './invoice-project-resolve';
-import { INVOICE_ORDER_DETAIL_INCLUDE, INVOICE_ORDER_SELECT } from './invoice-order-select';
+import {
+  INVOICE_CLIENT_SERVICE_SELECT,
+  INVOICE_ORDER_DETAIL_INCLUDE,
+  INVOICE_ORDER_SELECT,
+} from './invoice-order-select';
 import type { FinanceInvoiceAccessContext } from './finance-invoice-access';
 import {
   mergeInvoiceWhere,
   resolveInvoiceParticipationWhere,
 } from './finance-invoice-participation.where';
 import { buildInvoiceSearchOr } from './invoice-search.where';
+import { resolveInvoiceProductOwnership } from './invoice-product-ownership';
 import { allocateInvoiceCode } from '../../../common/utils/entity-code-series';
 import {
   assertInvoiceCancellable,
@@ -75,7 +77,7 @@ import {
 interface CreateInvoiceDto {
   orderId?: string;
   subscriptionId?: string;
-  projectId?: string;
+  productId?: string;
   companyId?: string;
   clientServiceRecordId?: string;
   amount: number;
@@ -90,6 +92,7 @@ interface InvoiceQueryParams {
   moneyStatus?: string;
   type?: string;
   projectId?: string;
+  productId?: string;
   subscriptionId?: string;
   search?: string;
   dateFrom?: string;
@@ -125,6 +128,7 @@ export class InvoicesService {
       moneyStatus,
       type,
       projectId,
+      productId,
       subscriptionId,
       search,
       dateFrom,
@@ -139,23 +143,31 @@ export class InvoicesService {
     if (money) where.moneyStatus = money;
     if (type) where.type = type as InvoiceTypeEnum;
     if (projectId) where.projectId = projectId;
+    if (productId) where.productId = productId;
     if (subscriptionId) where.subscriptionId = subscriptionId;
 
     const searchTrimmed = search?.trim();
     if (searchTrimmed) {
-      const projectMatches = await this.prisma.project.findMany({
-        where: {
-          OR: [
-            { name: { contains: searchTrimmed, mode: 'insensitive' } },
-            { code: { contains: searchTrimmed, mode: 'insensitive' } },
-          ],
-        },
-        select: { id: true },
-      });
+      const [projectMatches, productMatches] = await Promise.all([
+        this.prisma.project.findMany({
+          where: {
+            OR: [
+              { name: { contains: searchTrimmed, mode: 'insensitive' } },
+              { code: { contains: searchTrimmed, mode: 'insensitive' } },
+            ],
+          },
+          select: { id: true },
+        }),
+        this.prisma.product.findMany({
+          where: { name: { contains: searchTrimmed, mode: 'insensitive' } },
+          select: { id: true },
+        }),
+      ]);
       const matchedProjectIds = projectMatches.map((p) => p.id);
+      const matchedProductIds = productMatches.map((p) => p.id);
       where.AND = [
         ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
-        buildInvoiceSearchOr(searchTrimmed, matchedProjectIds),
+        buildInvoiceSearchOr(searchTrimmed, matchedProjectIds, matchedProductIds),
       ];
     }
 
@@ -172,6 +184,7 @@ export class InvoicesService {
         where: listWhere,
         include: {
           project: { select: { id: true, name: true } },
+          product: { select: { id: true, name: true } },
           order: {
             select: INVOICE_ORDER_SELECT,
           },
@@ -184,6 +197,7 @@ export class InvoicesService {
             },
           },
           company: { select: { id: true, name: true, legalName: true, taxId: true } },
+          clientServiceRecord: { select: INVOICE_CLIENT_SERVICE_SELECT },
           payments: { select: { id: true, amount: true, paymentDate: true } },
           _count: { select: { payments: true } },
         },
@@ -210,9 +224,11 @@ export class InvoicesService {
       where: { id },
       include: {
         project: true,
+        product: { select: { id: true, name: true } },
         order: { include: INVOICE_ORDER_DETAIL_INCLUDE },
         subscription: { include: { project: true } },
         company: true,
+        clientServiceRecord: { select: INVOICE_CLIENT_SERVICE_SELECT },
         payments: true,
       },
     });
@@ -241,12 +257,21 @@ export class InvoicesService {
     const bookedAt = schedule.dueDate;
     await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAt);
 
-    const invoice = await this.prisma.invoice.create({
-      data: {
+    const ownership = await resolveInvoiceProductOwnership(this.prisma, {
+      productId: data.productId,
+      orderId: data.orderId,
+      subscriptionId: data.subscriptionId,
+      clientServiceRecordId: data.clientServiceRecordId,
+    });
+
+    const invoice = await persistInvoiceCreate(
+      this.prisma,
+      {
         code,
         orderId: data.orderId,
         subscriptionId: data.subscriptionId,
-        projectId: data.projectId?.trim() || null,
+        productId: ownership.productId,
+        projectId: ownership.projectId,
         companyId: data.companyId,
         clientServiceRecordId: data.clientServiceRecordId,
         amount: data.amount,
@@ -260,14 +285,8 @@ export class InvoicesService {
             }
           : {}),
       },
-    });
-
-    const order = data.orderId
-      ? await this.prisma.order.findUnique({
-          where: { id: data.orderId },
-          select: { productId: true },
-        })
-      : null;
+      this.officialWhatsApp,
+    );
 
     await this.operationalJournal.appendInvoiceCardAccrualLine({
       invoiceId: invoice.id,
@@ -275,8 +294,8 @@ export class InvoicesService {
       amount: data.amount,
       bookedAt,
       companyId: data.companyId ?? null,
-      projectId: data.projectId?.trim() || null,
-      productId: order?.productId ?? null,
+      projectId: ownership.projectId,
+      productId: ownership.productId,
       orderId: data.orderId ?? null,
     });
 
@@ -331,9 +350,11 @@ export class InvoicesService {
     }
 
     await this.writeManualMoneyStatus(invoice, moneyStatus, amount, paid, now);
-    if (moneyStatus === 'AWAITING_PAYMENT') {
-      await this.officialWhatsApp?.enqueueIfAwaitingEligible(id);
-    }
+    await notifyOfficialAfterInvoiceWrite(
+      this.officialWhatsApp,
+      { id, moneyStatus },
+      { wait: true },
+    );
     return this.findById(id);
   }
 
@@ -440,22 +461,21 @@ export class InvoicesService {
     return this.prisma.invoice.delete({ where: { id } });
   }
 
-  async sendOfficialInvoiceRequest(id: string) {
-    if (this.officialWhatsApp) {
-      await this.officialWhatsApp.sendAndWait(id);
-    } else {
-      await sendOfficialInvoiceRequest(this.prisma, id);
-    }
+  async sendOfficialInvoiceRequest(id: string, resend = false) {
+    await this.requireOfficialWhatsApp().sendAndWait(id, resend);
     return this.findById(id);
   }
 
   async cancelOfficialInvoiceRequest(id: string) {
-    if (this.officialWhatsApp) {
-      await this.officialWhatsApp.cancelAndWait(id);
-    } else {
-      await cancelOfficialInvoiceRequest(this.prisma, id);
-    }
+    await this.requireOfficialWhatsApp().cancelAndWait(id);
     return this.findById(id);
+  }
+
+  private requireOfficialWhatsApp(): InvoiceOfficialWhatsAppService {
+    if (!this.officialWhatsApp) {
+      throw new BadRequestException('Official invoice WhatsApp is not available');
+    }
+    return this.officialWhatsApp;
   }
 
   async updateOfficialInvoiceGovId(id: string, govInvoiceId: string | null) {

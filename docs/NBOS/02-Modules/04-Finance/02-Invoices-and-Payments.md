@@ -67,9 +67,9 @@ Payment confirmed
 | `code`                  | Системный номер карточки `INV-[YEAR]-[SEQ]`; вторичная строка UI, когда не display title |
 | `type`                  | Development / Extension / Subscription / Domain / Service / Other                        |
 | `source_entity`         | Из чего создана карточка                                                                 |
-| `project`               | Проект                                                                                   |
-| `product`               | Продукт, если применимо                                                                  |
-| `company`               | Компания-плательщик                                                                      |
+| `product`               | Продукт-владелец (за что выставлен; один Invoice = один Product)                         |
+| `project`               | Денормализация с `Product.projectId`; в UI карточки не показывать                        |
+| `company`               | Юрлицо-плательщик; обязательно для Tax, опционально для Free                             |
 | `contact`               | Контактное лицо                                                                          |
 | `amount`                | Сумма                                                                                    |
 | `currency`              | Валюта                                                                                   |
@@ -78,6 +78,7 @@ Payment confirmed
 | `created_at`            | Дата создания                                                                            |
 | `due_date`              | Крайняя дата оплаты                                                                      |
 | `money_status`          | Статус денег                                                                             |
+| `order_comment`         | Назначение для бухгалтера (только deal/order). Enum, не свободный текст                  |
 | `notes`                 | Заметки                                                                                  |
 
 ### Display title (UI)
@@ -88,9 +89,12 @@ Payment confirmed
 
 1. есть `order` → display title заказа: `Deal.name` через `order.deal`, иначе `Order.code`;
 2. иначе есть `subscription` → `Subscription.name`;
-3. иначе → `Invoice.code`.
+3. иначе есть `clientServiceRecord` → `ClientServiceRecord.name`, иначе `product.name`;
+4. иначе → `Invoice.code`.
 
-`Invoice.code` всегда показывается **вторичной** строкой, когда не является заголовком. На kanban-карточке **сумма остаётся доминирующим элементом**; display title — меньшая строка над суммой (см. `05-UI-Specifications/04-Finance-Pages.md` §2.2).
+`Invoice.code` всегда показывается **вторичной** строкой, когда не является заголовком (kanban, list, **detail sheet**, CSV `displayTitle`, исходящие письма). На kanban-карточке **сумма остаётся доминирующим элементом**; display title — меньшая строка над суммой (см. `05-UI-Specifications/04-Finance-Pages.md` §2.2).
+
+Каскад живёт в `@nbos/shared` (`resolveInvoiceDisplayTitle`). На `Invoice` название не копируется.
 
 ### Что наследуется из источника
 
@@ -98,9 +102,9 @@ Payment confirmed
 
 - `tax_status`
 - `notifications_enabled`
-- проектный контекст
+- продукт (владелец) и денорм проекта с `Product.projectId`
 - source link
-- при необходимости контакт / компания / продукт
+- при необходимости контакт / компания
 
 Примеры:
 
@@ -136,15 +140,16 @@ Payment confirmed
 
 ### Правила переходов
 
-| Из                                                 | В                  | Как происходит                                                                                      |
-| -------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------- |
-| `New`                                              | `Awaiting Payment` | вручную или автоматикой, если карточка готова к ожиданию оплаты                                     |
-| `Awaiting Payment`                                 | `Overdue`          | автоматически по due date                                                                           |
-| `Overdue`                                          | `On Hold`          | вручную                                                                                             |
-| `On Hold`                                          | `Awaiting Payment` | вручную                                                                                             |
-| `Awaiting Payment` / `Overdue` / `On Hold`         | `Paid`             | вручную (Mark Paid) или после записи Payment; Mark Paid при outstanding создаёт Payment на остаток  |
-| `New` / `Awaiting Payment` / `Overdue` / `On Hold` | `Cancelled`        | вручную                                                                                             |
-| `Cancelled`                                        | `Awaiting Payment` | вручную; новый цикл взыскания (письмо «оплатите в течение 5 дней» и overdue-волны могут уйти снова) |
+| Из                                                 | В                                                  | Как происходит                                                                                                          |
+| -------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `New`                                              | `Awaiting Payment`                                 | вручную или автоматикой, если карточка готова к ожиданию оплаты                                                         |
+| `Awaiting Payment`                                 | `Overdue`                                          | автоматически по due date                                                                                               |
+| `Overdue`                                          | `On Hold`                                          | вручную                                                                                                                 |
+| `On Hold`                                          | `Awaiting Payment`                                 | вручную                                                                                                                 |
+| `Awaiting Payment` / `Overdue` / `On Hold`         | `Paid`                                             | вручную (Mark Paid) или после записи Payment; Mark Paid при outstanding создаёт Payment на остаток                      |
+| `Paid`                                             | `New` / `Awaiting Payment` / `Overdue` / `On Hold` | только после удаления Payment; статус пересчитывается из оставшихся платежей. Пока outstanding = 0, уйти из Paid нельзя |
+| `New` / `Awaiting Payment` / `Overdue` / `On Hold` | `Cancelled`                                        | вручную                                                                                                                 |
+| `Cancelled`                                        | `Awaiting Payment`                                 | вручную; новый цикл взыскания (письмо «оплатите в течение 5 дней» и overdue-волны могут уйти снова)                     |
 
 ### Tax readiness gates
 
@@ -167,11 +172,17 @@ Payment confirmed
 
 `Mark Paid` и запись `Payment`, которая перевела бы карточку в `Paid`, используют тот же Paid-gate.
 
-Автосоздание (подписка, client services) без готовности к сбору денег остаётся в `New`. Deal deposit: Tax без реквизитов → `New`; иначе → `Awaiting Payment`.
+### Deal/order comment gate
+
+Только карточки с `orderId`. Список фраз по **Deal Type** (не `Invoice.type`): PRODUCT / EXTENSION — четыре фазы; MAINTENANCE — `տեխսպասարկում`; OUTSOURCE — как минимум EXECUTION (+ фазы). Поле `order_comment` nullable; New может быть пустым.
+
+Вход в `Awaiting Payment` / `Overdue` / `Paid` без comment → отказ (тот же shared gate, что Tax readiness). Уже живущие Awaiting без comment не ломаем; Paid, official send и повторный вход в Awaiting требуют выбор. UI-селект только на order-linked.
+
+Автосоздание (подписка, client services) без готовности к сбору денег остаётся в `New`. Ручное создание из deal / order всегда в `New`: Finance двигает карточку в `Awaiting Payment`, когда готовы ждать деньги (после сверки с клиентом).
 
 Подписка `billing_day = 1` (раннее окно): карточка сразу в `Awaiting Payment`, если Tax-gate пропускает. Days 2–31 по-прежнему создаются в `New`.
 
-Вход в `Awaiting Payment` (billing, ручной drag, API): если Tax, запрос ещё не отправлен и реквизиты есть — система сама шлёт official request в бухгалтерскую WhatsApp-группу. Кнопка `Send to accountant` остаётся для повтора на всех этапах кроме `Cancelled`. С `Cancelled` send запрещён (UI скрыт, API отказ).
+Вход в `Awaiting Payment` с любого пути (create сразу в этап или переход статуса; deal / order / billing / drag не важны): если Tax, запрос ещё не отправлен и реквизиты есть — система сама шлёт official request в бухгалтерскую WhatsApp-группу. Один persist-хук (`persistInvoiceCreate` / `notifyOfficialAfterInvoiceWrite`); origin в условии не участвует. Ручной переход статуса **ждёт** успешную отправку (тот же idempotency key, что и кнопка `Send to accountant`), затем карточка возвращается уже с `request_sent`. Пока письмо в очереди, UI показывает `Sending to accountant` и кнопку блокирует — повторный клик не создаёт второе WhatsApp. `Send` без `resend` после успешной автоотправки — no-op. Кнопка `Send again` — явный повтор на всех этапах кроме `Cancelled`. С `Cancelled` send запрещён (UI скрыт, API отказ). Catch-up cron остаётся fire-and-forget, если автоотправка при входе не прошла.
 
 ### Важное правило для `Tax`
 
@@ -217,7 +228,19 @@ Payment confirmed
 - если запрос отменён (кнопка или отмена карточки), система шлёт сторно в ту же группу, затем снимает `request_sent`;
 - после отмены можно отправить заново.
 
-Клиентские WhatsApp-напоминания (подписка / client service, HY/RU/EN, сумма и реквизиты) — **срез 2**, не этот блок. Клиентам по Deal/Order не пишем.
+Клиентские WhatsApp-напоминания (подписка / client service, HY/RU/EN, сумма и реквизиты) — **срез 2**, не этот блок. Клиентам по Deal/Order не пишем. В клиентском письме: display title как `serviceLabel`, `INV-…` вторичной строкой. `order_comment` в клиентское письмо не тащить.
+
+### «Նշում» бухгалтеру (source, не бейдж)
+
+Конверт письма не менять (галочки, юрблок, сумма). Резать по источнику карточки, не по `Invoice.type`:
+
+| Источник            | Как узнать                                | Նշում                                                                                               |
+| ------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Ручной deal/order   | `orderId`                                 | display title + выбранный comment + `INV-…`                                                         |
+| Авто-подписка       | `subscriptionId`, без ручного deal-create | `Subscription.name` + фраза от `Subscription.type` + период покрытия (месяц или диапазон) + `INV-…` |
+| Авто client service | `clientServiceRecordId`                   | `ClientServiceRecord.name` + фраза от `ClientServiceType` + `մինչև {due}` + `INV-…`                 |
+
+Не писать `IDINV-…`. Отмена — тот же «Նշում», сверху չեղարկել.
 
 ### Кнопки
 
@@ -330,6 +353,16 @@ Payment confirmed
 3. карточка становится `Paid` с coverage = 0.
 
 Так статус денег и факт оплаты не расходятся: `Payment` остаётся источником правды для cash / P&L / bonus.
+
+### Remove Payment
+
+На вкладке Payments карточки можно снять записанный платёж (в том числе auto-created Mark Paid). Система:
+
+1. сторнирует cash-проводку платежа;
+2. снимает inbound Partner Accrual по этому платежу, если он ещё не в payout batch (`IN_BATCH` / `PAID` — отказ);
+3. удаляет `Payment` и пересчитывает money status из оставшихся платежей.
+
+После этого карточку снова можно поставить в `On Hold` / `Awaiting Payment` / `Cancelled`.
 
 ---
 

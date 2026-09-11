@@ -19,20 +19,24 @@ import {
   EntityListMutedDash,
   EntityListPrimaryCell,
 } from '@/components/shared/entity-list-table';
+import { ProjectHubStatusBadge } from '@/features/projects/components/ProjectHubStatusBadge';
+import type { ProjectsHubTab } from '@/features/projects/constants/projects-page-preferences-storage';
 import type { Project } from '@/lib/api/projects';
 
 interface ProjectsListTableProps {
   projects: Project[];
   onProjectClick: (project: Project) => void;
+  tabHint?: ProjectsHubTab;
 }
 
-export function ProjectsListTable({ projects, onProjectClick }: ProjectsListTableProps) {
+export function ProjectsListTable({ projects, onProjectClick, tabHint }: ProjectsListTableProps) {
   return (
     <div className={ENTITY_LIST_SHELL_CLASS}>
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>Project</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Status</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>Client</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>Company</TableHead>
             <TableHead className={`${ENTITY_LIST_HEAD_CLASS} text-center`}>Products</TableHead>
@@ -60,6 +64,9 @@ export function ProjectsListTable({ projects, onProjectClick }: ProjectsListTabl
                     />
                     <EntityListPrimaryCell title={project.name} />
                   </span>
+                </TableCell>
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  <ProjectHubStatusBadge project={project} tabHint={tabHint} />
                 </TableCell>
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
                   {clientName ? (

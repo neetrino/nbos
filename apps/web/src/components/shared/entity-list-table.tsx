@@ -2,18 +2,23 @@ import type { ReactNode } from 'react';
 import { AlertTriangle, Calendar, type LucideIcon } from 'lucide-react';
 import { AMD_CURRENCY_SYMBOL, formatGroupedNumber, parseMoneyAmount } from '@/lib/format/money';
 import { cn } from '@/lib/utils';
+import { resolveEntityListDateParts } from './entity-list-date';
+
+export { formatEntityListDate, formatFinanceListDate } from './entity-list-date';
 
 /** Shared shell for module list/table views (board|list dual views). */
-export const ENTITY_LIST_SHELL_CLASS = 'border-border bg-card rounded-xl border';
+export const ENTITY_LIST_SHELL_CLASS =
+  'border-border/70 bg-card overflow-hidden rounded-2xl border shadow-[var(--shadow-panel)] max-md:rounded-[1.25rem]';
 
 /**
  * Scrollable list shell — fills remaining height.
  * Do not pair with `overflow-hidden` (breaks end-of-list scrolling).
  */
 export const ENTITY_LIST_SCROLL_SHELL_CLASS =
-  'border-border bg-card min-h-0 flex-1 overflow-auto rounded-xl border';
+  'border-border/70 bg-card min-h-0 flex-1 overflow-auto rounded-2xl border shadow-[var(--shadow-panel)] max-md:rounded-[1.25rem]';
 
-export const ENTITY_LIST_HEAD_CLASS = 'px-4';
+export const ENTITY_LIST_HEAD_CLASS =
+  'text-muted-foreground px-4 text-[11px] font-semibold tracking-[0.14em] uppercase';
 
 export const ENTITY_LIST_CELL_CLASS = 'px-4 py-3';
 
@@ -22,7 +27,7 @@ export const ENTITY_LIST_BADGE_CLASS = 'rounded-full px-2.5 text-[11px]';
 export const ENTITY_LIST_TYPE_CLASS =
   'text-muted-foreground text-xs font-medium tracking-wide uppercase';
 
-export const ENTITY_LIST_ROW_HOVER_CLASS = 'hover:bg-muted/40';
+export const ENTITY_LIST_ROW_HOVER_CLASS = 'hover:bg-primary/[0.04]';
 
 /** @deprecated Prefer {@link ENTITY_LIST_SHELL_CLASS}. */
 export const FINANCE_LIST_SHELL_CLASS = ENTITY_LIST_SHELL_CLASS;
@@ -37,18 +42,8 @@ export const FINANCE_LIST_TYPE_CLASS = ENTITY_LIST_TYPE_CLASS;
 /** @deprecated Prefer {@link ENTITY_LIST_ROW_HOVER_CLASS}. */
 export const FINANCE_LIST_ROW_HOVER_CLASS = ENTITY_LIST_ROW_HOVER_CLASS;
 
-const LIST_DATE_FORMATTER = new Intl.DateTimeFormat('ru-RU', {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-});
-
-export function formatEntityListDate(value: string): string {
-  return LIST_DATE_FORMATTER.format(new Date(value));
-}
-
-/** @deprecated Prefer {@link formatEntityListDate}. */
-export const formatFinanceListDate = formatEntityListDate;
+const ENTITY_LIST_DATE_DAY_CLASS = 'text-foreground text-base leading-none font-bold tabular-nums';
+const ENTITY_LIST_DATE_MONTH_YEAR_CLASS = 'text-muted-foreground mt-0.5 text-[10px] leading-tight';
 
 export function EntityListAmount({
   amount,
@@ -152,11 +147,19 @@ export function EntityListDate({
     return <span className="text-muted-foreground text-xs">{emptyLabel}</span>;
   }
 
+  const parts = resolveEntityListDateParts(value);
+  if (!parts) {
+    return <span className="text-muted-foreground text-xs">{emptyLabel}</span>;
+  }
+
   return (
     <div className="space-y-1">
-      <div className="text-foreground flex items-center gap-1.5 text-xs">
-        <Calendar size={12} className="text-muted-foreground shrink-0" aria-hidden />
-        <span>{formatEntityListDate(value)}</span>
+      <div className="flex items-start gap-1.5">
+        <Calendar size={12} className="text-muted-foreground mt-1 shrink-0" aria-hidden />
+        <div className="min-w-0">
+          <p className={ENTITY_LIST_DATE_DAY_CLASS}>{parts.day}</p>
+          <p className={ENTITY_LIST_DATE_MONTH_YEAR_CLASS}>{parts.monthYear}</p>
+        </div>
       </div>
       {overdueDays > 0 ? (
         <div className="flex items-center gap-1 text-xs font-medium text-red-500">

@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  Archive,
   Building2,
   Calendar,
   FolderKanban,
@@ -17,7 +17,6 @@ import {
   EntityLinkedSheetsHoverActions,
   NavigableEntityCard,
   StatusBadge,
-  type NavigableEntityCardBadge,
   type NavigableEntityCardMetaLine,
 } from '@/components/shared';
 import {
@@ -27,18 +26,18 @@ import {
   PROJECT_HUB_CARD_ORDERS_PILL_CLASS,
   PROJECT_HUB_CARD_SHELL_CLASS,
 } from '@/components/shared/navigable-entity-card.constants';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 import {
   buildProductDetailPageHref,
   PRODUCT_DETAIL_TAB,
 } from '@/features/projects/constants/product-detail-tab';
-import {
-  formatDeliveryLifecycleLabel,
-  getProductStatus,
-  getProductType,
-} from '@/features/projects/constants/projects';
+import { getProductType } from '@/features/projects/constants/projects';
+import { getProductDirectoryBadge } from '@/features/projects/utils/products-hub-directory-badge';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
+import { ProjectHubStatusBadge } from '@/features/projects/components/ProjectHubStatusBadge';
+import type { ProjectsHubTab } from '@/features/projects/constants/projects-page-preferences-storage';
 import type { Project, ProjectProductSummary } from '@/lib/api/projects';
 import type { WorkSpace } from '@/lib/api/tasks';
 import {
@@ -56,18 +55,46 @@ interface WorkSpaceNavigableCardProps {
 interface ProductNavigableCardProps {
   projectId: string;
   product: ProjectProductSummary;
+  showProjectContext?: boolean;
 }
 
-function buildProductCardMeta(product: ProjectProductSummary): NavigableEntityCardMetaLine[] {
+/** Mobile: stack in the top-right; desktop: compact horizontal cluster. */
+const WORK_SPACE_CARD_STATUS_STACK_CLASS =
+  'flex shrink-0 flex-col items-end gap-1 md:flex-row md:flex-wrap md:items-center';
+
+const WORK_SPACE_CARD_STATUS_BADGE_CLASS = 'shrink-0 self-end md:self-auto';
+
+function WorkSpaceModeBadge({ scrumEnabled }: { scrumEnabled: boolean }) {
+  return (
+    <StatusBadge
+      label={scrumEnabled ? 'Scrum' : 'Kanban'}
+      variant={scrumEnabled ? 'blue' : 'gray'}
+      className={WORK_SPACE_CARD_STATUS_BADGE_CLASS}
+    />
+  );
+}
+
+function buildProductCardMeta(
+  product: ProjectProductSummary,
+  showProjectContext: boolean,
+): NavigableEntityCardMetaLine[] {
   const lines: NavigableEntityCardMetaLine[] = [];
+  if (showProjectContext && product.project) {
+    lines.push({ id: 'project', icon: FolderKanban, text: product.project.name });
+    if (product.project.company?.name) {
+      lines.push({ id: 'company', icon: Building2, text: product.project.company.name });
+    }
+  }
   if (product.pm) {
     lines.push({
+      id: 'pm',
       icon: User,
       text: `${product.pm.firstName} ${product.pm.lastName}`,
     });
   }
   if (product.deadline) {
     lines.push({
+      id: 'deadline',
       icon: Calendar,
       text: new Date(product.deadline).toLocaleDateString(),
     });
@@ -75,17 +102,14 @@ function buildProductCardMeta(product: ProjectProductSummary): NavigableEntityCa
   return lines;
 }
 
-function buildProductStatusBadge(product: ProjectProductSummary): NavigableEntityCardBadge | null {
-  const status = getProductStatus(product.status);
-  const statusLabel = product.deliveryLifecycle
-    ? formatDeliveryLifecycleLabel(product.deliveryLifecycle)
-    : status?.label;
-  if (!status || !statusLabel) return null;
-  return { label: statusLabel, variant: status.variant };
-}
-
 /** Project Hub directory card. */
-export function ProjectNavigableCard({ project }: { project: Project }) {
+export function ProjectNavigableCard({
+  project,
+  tabHint,
+}: {
+  project: Project;
+  tabHint?: ProjectsHubTab;
+}) {
   const contactName =
     `${project.contact?.firstName ?? ''} ${project.contact?.lastName ?? ''}`.trim();
   const productCount = project._count.products ?? 0;
@@ -104,18 +128,12 @@ export function ProjectNavigableCard({ project }: { project: Project }) {
             <FolderKanban className="size-5" aria-hidden />
           </div>
           <div className="min-w-0 flex-1">
-            {project.trashedAt != null ? (
-              <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                <Archive
-                  size={14}
-                  className="text-muted-foreground shrink-0"
-                  aria-label="In Trash"
-                />
-              </div>
-            ) : null}
-            <h3 className="text-foreground line-clamp-2 text-base font-bold tracking-tight">
-              {project.name}
-            </h3>
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="text-foreground line-clamp-2 text-base font-bold tracking-tight">
+                {project.name}
+              </h3>
+              <ProjectHubStatusBadge project={project} tabHint={tabHint} />
+            </div>
             {project.company || contactName ? (
               <div className="mt-3 flex flex-col gap-1.5">
                 {project.company ? (
@@ -178,17 +196,125 @@ function workSpaceHubMetaRows(workspace: WorkSpace): Array<{ icon: LucideIcon; t
   return rows.slice(0, 2);
 }
 
+function WorkSpaceCardMetaRows({ rows }: { rows: Array<{ icon: LucideIcon; text: string }> }) {
+  return (
+    <>
+      {rows.map((row, index) => {
+        const RowIcon = row.icon;
+        return (
+          <span key={`${index}-${row.text}`} className={PROJECT_HUB_CARD_META_ROW_CLASS}>
+            <RowIcon className="size-3.5 shrink-0" aria-hidden />
+            <span className="truncate">{row.text}</span>
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
+function WorkSpaceCardTasksPill({ label }: { label: string }) {
+  return (
+    <span className={PROJECT_HUB_CARD_ORDERS_PILL_CLASS}>
+      <ListChecks className="size-3.5 text-indigo-600 dark:text-indigo-400" aria-hidden />
+      {label}
+    </span>
+  );
+}
+
+function useWorkSpaceCardMobileActions() {
+  const isMobileViewport = useIsMobileViewport();
+  const [actionsRevealed, setActionsRevealed] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isMobileViewport || !actionsRevealed) return;
+    function onPointerDown(event: PointerEvent) {
+      if (!cardRef.current?.contains(event.target as Node)) {
+        setActionsRevealed(false);
+      }
+    }
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, [actionsRevealed, isMobileViewport]);
+
+  if (!isMobileViewport && actionsRevealed) {
+    setActionsRevealed(false);
+  }
+
+  function handleBodyClick(event: MouseEvent<HTMLAnchorElement>) {
+    if (!isMobileViewport) return;
+    if (!actionsRevealed) {
+      event.preventDefault();
+      setActionsRevealed(true);
+    }
+  }
+
+  return { isMobileViewport, actionsRevealed, cardRef, handleBodyClick };
+}
+
+function WorkSpaceCardActionFooter({
+  tasksLabel,
+  actionsRevealed,
+  isMobileViewport,
+  hasDesktopHoverReveal,
+  actions,
+}: {
+  tasksLabel: string;
+  actionsRevealed: boolean;
+  isMobileViewport: boolean;
+  hasDesktopHoverReveal: boolean;
+  actions: ReactNode;
+}) {
+  const showActions = isMobileViewport ? actionsRevealed : false;
+  const hideTasksOnDesktopHover = hasDesktopHoverReveal && !isMobileViewport;
+
+  return (
+    <div className="relative min-h-9 px-4 pt-1 pb-4 sm:px-5">
+      <div
+        className={cn(
+          'flex justify-end transition-opacity duration-150',
+          hideTasksOnDesktopHover &&
+            'group-focus-within/project-hub-card:opacity-0 group-hover/project-hub-card:opacity-0',
+          isMobileViewport && actionsRevealed && 'opacity-0',
+        )}
+      >
+        <WorkSpaceCardTasksPill label={tasksLabel} />
+      </div>
+      <div
+        className={cn(
+          'absolute inset-x-4 top-1 bottom-4 flex items-center justify-end gap-2 sm:inset-x-5',
+          'transition-opacity duration-150',
+          isMobileViewport
+            ? showActions
+              ? 'pointer-events-auto opacity-100'
+              : 'pointer-events-none opacity-0'
+            : cn(
+                'pointer-events-none opacity-0',
+                hasDesktopHoverReveal &&
+                  'group-focus-within/project-hub-card:pointer-events-auto group-focus-within/project-hub-card:opacity-100 group-hover/project-hub-card:pointer-events-auto group-hover/project-hub-card:opacity-100',
+              ),
+        )}
+      >
+        {actions}
+      </div>
+    </div>
+  );
+}
+
 /** Work Spaces directory card — aligned with {@link ProjectNavigableCard}. */
 export function WorkSpaceNavigableCard({
   workspace,
   onOpenProductDelivery,
   onOpenProductDeal,
 }: WorkSpaceNavigableCardProps) {
+  const { isMobileViewport, actionsRevealed, cardRef, handleBodyClick } =
+    useWorkSpaceCardMobileActions();
   const taskCount = workspace._count?.tasks ?? workspace.tasks?.length ?? 0;
   const tasksLabel = `${taskCount} task${taskCount === 1 ? '' : 's'}`;
   const isProductDelivery = workspace.type === 'PRODUCT_DELIVERY';
   const CardIcon = isProductDelivery ? Layers : FolderKanban;
   const metaRows = workSpaceHubMetaRows(workspace);
+  const workspaceHref = `/work-spaces/${workspace.id}`;
   const dealId = workspace.product ? getEntityOrderDealId(workspace.product.order) : null;
   const contextHref =
     workspace.productId && workspace.projectId
@@ -199,7 +325,7 @@ export function WorkSpaceNavigableCard({
         )
       : undefined;
 
-  const hoverActions =
+  const productHoverActions =
     isProductDelivery && workspace.productId && onOpenProductDelivery ? (
       <EntityLinkedSheetsHoverActions
         contextHref={contextHref}
@@ -209,135 +335,96 @@ export function WorkSpaceNavigableCard({
       />
     ) : null;
 
-  if (isProductDelivery) {
-    return (
-      <div
-        className={cn(
-          PROJECT_HUB_CARD_SHELL_CLASS,
-          NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
-          'relative h-auto self-start',
-        )}
-      >
-        <Link
-          href={`/work-spaces/${workspace.id}`}
-          className="block p-4 focus-visible:outline-none"
-        >
-          <div className="flex items-start gap-2.5">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
-              <CardIcon className="size-4" aria-hidden />
-            </div>
-            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                <h3 className="text-foreground line-clamp-2 min-w-0 text-sm font-bold tracking-tight">
-                  {workspace.name}
-                </h3>
-                <StatusBadge
-                  label={workspace.scrumEnabled ? 'Scrum' : 'Kanban'}
-                  variant={workspace.scrumEnabled ? 'blue' : 'gray'}
-                  className="shrink-0"
-                />
-              </div>
-              {metaRows.map((row) => {
-                const RowIcon = row.icon;
-                return (
-                  <span key={row.text} className={PROJECT_HUB_CARD_META_ROW_CLASS}>
-                    <RowIcon className="size-3.5 shrink-0" aria-hidden />
-                    <span className="truncate">{row.text}</span>
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-        </Link>
-        <div className="relative min-h-9 px-4 pt-1 pb-4">
-          <div
-            className={cn(
-              'flex justify-end transition-opacity duration-150',
-              hoverActions &&
-                'group-focus-within/project-hub-card:opacity-0 group-hover/project-hub-card:opacity-0',
-            )}
-          >
-            <span className={PROJECT_HUB_CARD_ORDERS_PILL_CLASS}>
-              <ListChecks className="size-3.5 text-indigo-600 dark:text-indigo-400" aria-hidden />
-              {tasksLabel}
-            </span>
-          </div>
-          {hoverActions ? (
-            <div
-              className={cn(
-                'absolute inset-x-4 top-1 bottom-4 flex items-center justify-end gap-2',
-                'pointer-events-none opacity-0 transition-opacity duration-150',
-                'group-hover/project-hub-card:pointer-events-auto group-hover/project-hub-card:opacity-100',
-                'group-focus-within/project-hub-card:pointer-events-auto group-focus-within/project-hub-card:opacity-100',
-              )}
-            >
-              {hoverActions}
-            </div>
-          ) : null}
-        </div>
-      </div>
-    );
-  }
+  const footerActions = productHoverActions;
+  const hasDesktopHoverReveal = Boolean(productHoverActions);
+
+  const statusBadges = isProductDelivery ? (
+    <div className={WORK_SPACE_CARD_STATUS_STACK_CLASS}>
+      <WorkSpaceModeBadge scrumEnabled={workspace.scrumEnabled} />
+    </div>
+  ) : (
+    <div className={WORK_SPACE_CARD_STATUS_STACK_CLASS}>
+      <StatusBadge
+        label={getWorkSpaceTypeLabel(workspace.type)}
+        variant={getWorkSpaceTypeVariant(workspace.type)}
+        className={WORK_SPACE_CARD_STATUS_BADGE_CLASS}
+      />
+      <WorkSpaceModeBadge scrumEnabled={workspace.scrumEnabled} />
+    </div>
+  );
 
   return (
-    <div className={cn(PROJECT_HUB_CARD_SHELL_CLASS, NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS)}>
+    <div
+      ref={cardRef}
+      className={cn(
+        PROJECT_HUB_CARD_SHELL_CLASS,
+        NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
+        'relative h-auto self-start',
+      )}
+    >
       <Link
-        href={`/work-spaces/${workspace.id}`}
-        className="flex min-h-0 flex-1 flex-col p-5 focus-visible:outline-none"
+        href={workspaceHref}
+        onClick={footerActions ? handleBodyClick : undefined}
+        className={cn('block focus-visible:outline-none', isProductDelivery ? 'p-4' : 'p-5 pb-1')}
       >
-        <div className="flex items-start gap-3">
-          <div className={PROJECT_HUB_CARD_ICON_TILE_CLASS}>
-            <CardIcon className="size-5" aria-hidden />
+        <div className={cn('flex items-start', isProductDelivery ? 'gap-2.5' : 'gap-3')}>
+          <div
+            className={cn(
+              isProductDelivery
+                ? 'flex size-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400'
+                : PROJECT_HUB_CARD_ICON_TILE_CLASS,
+            )}
+          >
+            <CardIcon className={isProductDelivery ? 'size-4' : 'size-5'} aria-hidden />
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <h3 className="text-foreground min-w-0 text-base font-bold tracking-tight">
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <div className="flex min-w-0 items-start justify-between gap-2">
+              <h3
+                className={cn(
+                  'text-foreground min-w-0 flex-1 font-bold tracking-tight',
+                  isProductDelivery ? 'line-clamp-2 text-sm' : 'text-base',
+                )}
+              >
                 {workspace.name}
               </h3>
-              <StatusBadge
-                label={getWorkSpaceTypeLabel(workspace.type)}
-                variant={getWorkSpaceTypeVariant(workspace.type)}
-                className="shrink-0"
-              />
-              <StatusBadge
-                label={workspace.scrumEnabled ? 'Scrum' : 'Kanban'}
-                variant={workspace.scrumEnabled ? 'blue' : 'gray'}
-                className="shrink-0"
-              />
+              {statusBadges}
             </div>
             {metaRows.length > 0 ? (
-              <div className="mt-3 flex flex-col gap-1.5">
-                {metaRows.map((row) => {
-                  const RowIcon = row.icon;
-                  return (
-                    <span key={row.text} className={PROJECT_HUB_CARD_META_ROW_CLASS}>
-                      <RowIcon className="size-3.5 shrink-0" aria-hidden />
-                      <span className="truncate">{row.text}</span>
-                    </span>
-                  );
-                })}
+              <div className={cn('flex flex-col gap-1.5', !isProductDelivery && 'mt-1.5')}>
+                <WorkSpaceCardMetaRows rows={metaRows} />
               </div>
             ) : null}
           </div>
         </div>
-
-        <div className="mt-auto flex justify-end pt-4">
-          <span className={PROJECT_HUB_CARD_ORDERS_PILL_CLASS}>
-            <ListChecks className="size-3.5 text-indigo-600 dark:text-indigo-400" aria-hidden />
-            {tasksLabel}
-          </span>
-        </div>
       </Link>
+
+      {footerActions ? (
+        <WorkSpaceCardActionFooter
+          tasksLabel={tasksLabel}
+          actionsRevealed={actionsRevealed}
+          isMobileViewport={isMobileViewport}
+          hasDesktopHoverReveal={hasDesktopHoverReveal}
+          actions={footerActions}
+        />
+      ) : (
+        <div className="mt-auto flex justify-end px-5 pt-4 pb-5">
+          <WorkSpaceCardTasksPill label={tasksLabel} />
+        </div>
+      )}
     </div>
   );
 }
 
 /** Project detail product card. */
-export function ProductNavigableCard({ projectId, product }: ProductNavigableCardProps) {
+export function ProductNavigableCard({
+  projectId,
+  product,
+  showProjectContext = false,
+}: ProductNavigableCardProps) {
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const dealId = getEntityOrderDealId(product.order);
   const productType = getProductType(product.productType);
-  const statusBadge = buildProductStatusBadge(product);
+  const statusBadge = getProductDirectoryBadge(product);
 
   return (
     <NavigableEntityCard
@@ -346,7 +433,7 @@ export function ProductNavigableCard({ projectId, product }: ProductNavigableCar
       eyebrow={productType?.label}
       title={product.name}
       badges={statusBadge ? [statusBadge] : undefined}
-      metaLines={buildProductCardMeta(product)}
+      metaLines={buildProductCardMeta(product, showProjectContext)}
       stats={[
         { value: product._count.tasks, label: 'Tasks' },
         { value: product._count.extensions, label: 'Ext.' },

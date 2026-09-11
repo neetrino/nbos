@@ -158,6 +158,8 @@ export function DeliveryBoardPageHero({
           onChange={onPipelineTabChange}
           options={PIPELINE_TABS}
           ariaLabel="Delivery pipeline"
+          showOnMobile
+          registerMobileDock={false}
         />
       }
       search={

@@ -1,11 +1,11 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Calendar, ClipboardList, Layers, Tag, Wallet } from 'lucide-react';
 import {
-  DETAIL_SHEET_SECTION_TITLE_CLASS,
-  DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
+  DetailSheetCollapsibleSection,
+  DetailSheetCollapsibleSubsection,
   EntityNotesField,
   InlineField,
 } from '@/components/shared';
@@ -40,6 +40,7 @@ export function ProductPlanningSection({
   /** Stage checklists trigger — sits beside Languages. */
   stageChecklist?: ReactNode;
 }) {
+  const [sectionOpen, setSectionOpen] = useState(true);
   const typeOptions = useMemo(() => {
     const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
     const set = new Set(allowed);
@@ -56,14 +57,15 @@ export function ProductPlanningSection({
   const paymentLabel = paymentType?.replace(/_/g, ' ') ?? '—';
 
   return (
-    <section className="border-border bg-card w-full max-w-full min-w-0 rounded-xl border p-4 shadow-sm">
-      <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>
-        <ClipboardList size={13} aria-hidden />
-        Delivery plan
-      </h3>
+    <DetailSheetCollapsibleSection
+      title="Delivery plan"
+      icon={<ClipboardList size={12} />}
+      open={sectionOpen}
+      onOpenChange={setSectionOpen}
+      className="w-full max-w-full min-w-0 shadow-sm"
+    >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-        <div className="min-w-0 space-y-3">
-          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Project</p>
+        <DetailSheetCollapsibleSubsection title="Project">
           <InlineField
             label="Payment"
             value={paymentLabel}
@@ -82,9 +84,11 @@ export function ProductPlanningSection({
             className={deliveryStageGateFieldClass(gateRequiredFields, 'deadline')}
             onValueChange={(v) => patchDraft({ deadline: v })}
           />
-        </div>
-        <div className="border-border min-w-0 space-y-3 border-t pt-4 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5">
-          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Product</p>
+        </DetailSheetCollapsibleSubsection>
+        <DetailSheetCollapsibleSubsection
+          title="Product"
+          className={cn('border-border border-t pt-4 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5')}
+        >
           <InlineField
             variant="controlled"
             label="Product category"
@@ -115,7 +119,7 @@ export function ProductPlanningSection({
               if (v) patchDraft({ productType: v });
             }}
           />
-        </div>
+        </DetailSheetCollapsibleSubsection>
       </div>
       <div
         className={cn('mt-3', deliveryStageGateFieldClass(gateRequiredFields, 'description', ''))}
@@ -142,6 +146,6 @@ export function ProductPlanningSection({
         />
         {stageChecklist}
       </div>
-    </section>
+    </DetailSheetCollapsibleSection>
   );
 }

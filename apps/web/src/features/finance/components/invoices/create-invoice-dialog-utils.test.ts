@@ -38,7 +38,6 @@ describe('create invoice dialog utils', () => {
     const payload = buildCreateInvoicePayload({ amount: '80000', dueDate: '2026-04-30' }, order);
 
     expect(payload).toEqual({
-      projectId: 'project-1',
       orderId: 'ord-1',
       companyId: 'company-1',
       amount: 80000,
@@ -84,8 +83,8 @@ describe('create invoice dialog utils', () => {
     );
 
     expect(payload).toEqual({
-      projectId: 'project-1',
       subscriptionId: 'sub-1',
+      productId: 'product-1',
       companyId: 'company-1',
       amount: 50000,
       type: 'SUBSCRIPTION',
@@ -98,6 +97,25 @@ describe('create invoice dialog utils', () => {
       amount: 12000,
       dueDate: undefined,
     });
+  });
+
+  it('builds manual payload with hidden product and company', () => {
+    expect(
+      buildCreateInvoicePayload({ amount: '12000', dueDate: '' }, undefined, undefined, {
+        productId: 'prod-1',
+        companyId: 'company-1',
+      }),
+    ).toEqual({
+      productId: 'prod-1',
+      companyId: 'company-1',
+      amount: 12000,
+      dueDate: undefined,
+    });
+    expect(
+      buildCreateInvoicePayload({ amount: '12000', dueDate: '' }, undefined, undefined, {
+        productId: 'prod-1',
+      }),
+    ).not.toHaveProperty('projectId');
   });
 
   it('requires positive amount before submit', () => {

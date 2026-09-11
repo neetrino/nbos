@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import {
   FINANCE_DEFAULT_LIST_PERIOD,
@@ -40,6 +40,7 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
   const [activatingId, setActivatingId] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [holdingId, setHoldingId] = useState<string | null>(null);
+  const subscriptionsRef = useRef(subscriptions);
   const [filters, setFilters] = usePersistedSearchFilters(
     SEARCH_FILTER_PAGE_ID.financeSubscriptions,
   );
@@ -77,6 +78,10 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
     setMutationError(null);
   }, []);
 
+  useEffect(() => {
+    subscriptionsRef.current = subscriptions;
+  }, [subscriptions]);
+
   const fetchSubscriptions = useSubscriptionFetch({
     search,
     filters,
@@ -87,6 +92,7 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
     setLoading,
     setError,
     setMutationError,
+    subscriptionsRef,
   });
 
   const handleActivate = useSubscriptionActivation(
@@ -179,6 +185,7 @@ function useSubscriptionFetch({
   setLoading,
   setError,
   setMutationError,
+  subscriptionsRef,
 }: {
   search: string;
   filters: Record<string, string>;
@@ -189,9 +196,10 @@ function useSubscriptionFetch({
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setMutationError: (message: string | null) => void;
+  subscriptionsRef: MutableRefObject<Subscription[]>;
 }) {
   return useCallback(async () => {
-    setLoading(true);
+    if (subscriptionsRef.current.length === 0) setLoading(true);
     try {
       const { listQuery, statsParams } = buildSubscriptionPageQueries(
         { filters, search, partnerIdFromUrl },
@@ -220,6 +228,7 @@ function useSubscriptionFetch({
     partnerIdFromUrl,
     period,
     search,
+    subscriptionsRef,
     setError,
     setLoading,
     setMutationError,

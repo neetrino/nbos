@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckSquare, FileText, Plus, Rocket, type LucideIcon } from 'lucide-react';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
@@ -11,14 +11,13 @@ import {
 } from '@/features/crm/utils/deal-invoice-eligibility';
 import type { Deal } from '@/lib/api/deals';
 import { dealsApi } from '@/lib/api/deals';
-import { dealWhatsAppApi, productWhatsAppApi, type ProductWhatsAppState } from '@/lib/api/whatsapp';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
+import { usePermission } from '@/lib/permissions';
+import { dealInvoiceCreateDeniedMessage } from '@/features/crm/utils/deal-invoice-create-guard';
+import { useDealWhatsAppHeaderActions } from '../hooks/use-deal-whatsapp-header-actions';
 import { DealSheetActionsMenu } from './DealSheetActionsMenu';
-import { WhatsAppGroupMissingBadge } from './WhatsAppGroupMissingBadge';
-import { isMissingActiveWhatsAppGroup } from '../deal-won-whatsapp-gate';
-import { buildDealWhatsAppQuickAction } from '../deal-whatsapp-quick-action';
-import { isWhatsAppCreateInFlight } from '../whatsapp-create-status';
+import { DealWhatsAppHeaderControl } from './DealWhatsAppHeaderControl';
 
 interface DealSheetQuickActionsProps {
   deal: Deal;
@@ -36,12 +35,6 @@ interface QuickActionItem {
   onClick?: () => void;
 }
 
-function resolveDealProductId(deal: Deal): string | null {
-  if (deal.existingProductId) return deal.existingProductId;
-  const orderWithProduct = deal.orders?.find((order) => Boolean(order.productId));
-  return orderWithProduct?.productId ?? null;
-}
-
 export function DealSheetQuickActions({
   deal,
   onRefresh,
@@ -49,38 +42,94 @@ export function DealSheetQuickActions({
   onCreateTask,
 }: DealSheetQuickActionsProps) {
   const router = useRouter();
-  const [startingEarly, setStartingEarly] = useState(false);
-  const [whatsappBusy, setWhatsappBusy] = useState(false);
-  const [whatsappState, setWhatsappState] = useState<ProductWhatsAppState | null>(null);
+  const { can } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
-
-  const firstOrder = deal.orders?.[0];
-  const projectId = deal.projectId ?? firstOrder?.projectId;
-  const productId = resolveDealProductId(deal);
+  const whatsapp = useDealWhatsAppHeaderActions(deal, onRefresh);
   const taxStatus = deal.taxStatus ?? 'TAX';
   const canCreateInvoice = canOpenDealCreateInvoiceDialog(deal, taxStatus);
-  const depositBootstrap = canCreateDepositInvoice(deal, taxStatus);
-
-  useEffect(() => {
-    if (!productId) {
-      setWhatsappState(null);
+  const canAddInvoice = can('ADD', 'FINANCE_INVOICES');
+  const requestCreateInvoice = useCallback(() => {
+    const denied = dealInvoiceCreateDeniedMessage(canAddInvoice, canCreateInvoice);
+    if (denied) {
+      toast.error(denied);
       return;
     }
-    let cancelled = false;
-    void productWhatsAppApi
-      .getState(productId)
-      .then((state) => {
-        if (!cancelled) setWhatsappState(state);
-      })
-      .catch(() => {
-        if (!cancelled) setWhatsappState(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [productId]);
+    onCreateInvoice();
+  }, [canAddInvoice, canCreateInvoice, onCreateInvoice]);
+  const depositBootstrap = canCreateDepositInvoice(deal, taxStatus);
+  const canStartEarlyDelivery = canStartDealEarlyDelivery(deal, deal.orders?.[0]);
+  const { startingEarly, handleStartEarlyDelivery } = useStartEarlyDelivery(
+    deal.id,
+    canStartEarlyDelivery,
+    onRefresh,
+  );
 
-  const canStartEarlyDelivery = Boolean(
+  const actions = useMemo(
+    () =>
+      buildDealSheetMenuActions({
+        canCreateInvoice: true,
+        canStartEarlyDelivery,
+        creatorId,
+        creatorReady,
+        depositBootstrap,
+        onCreateInvoice: requestCreateInvoice,
+        onCreateTask,
+        onOpenDrive: () => router.push(buildDriveHrefWithDeal(deal.id)),
+        onStartEarlyDelivery: () => void handleStartEarlyDelivery(),
+        startingEarly,
+      }),
+    [
+      canStartEarlyDelivery,
+      creatorId,
+      creatorReady,
+      deal.id,
+      depositBootstrap,
+      handleStartEarlyDelivery,
+      onCreateTask,
+      requestCreateInvoice,
+      router,
+      startingEarly,
+    ],
+  );
+
+  return (
+    <>
+      <DealWhatsAppHeaderControl
+        dealId={deal.id}
+        actions={whatsapp.whatsappActions}
+        bindOpen={whatsapp.bindOpen}
+        busy={whatsapp.whatsappBusy}
+        onBindOpenChange={whatsapp.setBindOpen}
+        onBindSubmit={whatsapp.handleBindWhatsApp}
+      />
+      <DealSheetActionsMenu actions={actions} />
+    </>
+  );
+}
+
+function useStartEarlyDelivery(
+  dealId: string,
+  canStartEarlyDelivery: boolean,
+  onRefresh?: () => void,
+) {
+  const [startingEarly, setStartingEarly] = useState(false);
+  const handleStartEarlyDelivery = useCallback(async () => {
+    if (!canStartEarlyDelivery) return;
+    setStartingEarly(true);
+    try {
+      await dealsApi.startEarlyDelivery(dealId);
+      onRefresh?.();
+    } catch (caught) {
+      toast.error(getApiErrorMessage(caught, 'Could not start early delivery.'));
+    } finally {
+      setStartingEarly(false);
+    }
+  }, [canStartEarlyDelivery, dealId, onRefresh]);
+  return { handleStartEarlyDelivery, startingEarly };
+}
+
+function canStartDealEarlyDelivery(deal: Deal, firstOrder: Deal['orders'][number] | undefined) {
+  return Boolean(
     firstOrder &&
     firstOrder.invoices.length > 0 &&
     firstOrder.deliveryStartMode !== 'EARLY_START' &&
@@ -89,131 +138,55 @@ export function DealSheetQuickActions({
     deal.status !== 'WON' &&
     deal.status !== 'FAILED',
   );
+}
 
-  const handleStartEarlyDelivery = useCallback(async () => {
-    if (!canStartEarlyDelivery) return;
-    setStartingEarly(true);
-    try {
-      await dealsApi.startEarlyDelivery(deal.id);
-      onRefresh?.();
-    } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not start early delivery.'));
-    } finally {
-      setStartingEarly(false);
-    }
-  }, [canStartEarlyDelivery, deal.id, onRefresh]);
-
-  const handleEnsureWhatsApp = useCallback(async () => {
-    if (!productId || whatsappBusy) return;
-    setWhatsappBusy(true);
-    try {
-      const state = await dealWhatsAppApi.ensure(deal.id);
-      setWhatsappState(state);
-      toast.success('WhatsApp group creation started.');
-      onRefresh?.();
-    } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not start WhatsApp group creation.'));
-    } finally {
-      setWhatsappBusy(false);
-    }
-  }, [deal.id, onRefresh, productId, whatsappBusy]);
-
-  const bindingStatus = whatsappState?.binding?.status ?? null;
-
-  const actions = useMemo(() => {
-    const items: QuickActionItem[] = [
-      {
-        id: 'create-invoice',
-        label: depositBootstrap ? 'Create deposit invoice' : 'Create invoice',
-        icon: Plus,
-        enabled: canCreateInvoice,
-        disabledTitle:
-          'Fill required: Cost, Payment Type, Contact, Deal Type, Tax Status; if Tax then Company',
-        onClick: onCreateInvoice,
-      },
-    ];
-
-    if (canStartEarlyDelivery) {
-      items.push({
-        id: 'start-early-delivery',
-        label: 'Start delivery before payment',
-        icon: Rocket,
-        enabled: !startingEarly,
-        disabledTitle: startingEarly ? 'Starting delivery…' : undefined,
-        onClick: () => void handleStartEarlyDelivery(),
-      });
-    }
-
-    items.push(
-      buildDealWhatsAppQuickAction({
-        productId,
-        projectId,
-        bindingStatus,
-        latestOperationStatus: whatsappState?.latestOperation?.status,
-        whatsappBusy,
-        onEnsure: () => void handleEnsureWhatsApp(),
-        onOpenSettings: (id) => {
-          router.push(
-            projectId ? `/projects/${projectId}/products/${id}?settings=whatsapp` : '/projects',
-          );
-        },
-      }),
-    );
-
+function buildDealSheetMenuActions(input: {
+  canCreateInvoice: boolean;
+  canStartEarlyDelivery: boolean;
+  creatorId: string | null;
+  creatorReady: boolean;
+  depositBootstrap: boolean;
+  onCreateInvoice: () => void;
+  onCreateTask: () => void;
+  onOpenDrive: () => void;
+  onStartEarlyDelivery: () => void;
+  startingEarly: boolean;
+}): QuickActionItem[] {
+  const items: QuickActionItem[] = [
+    {
+      id: 'create-invoice',
+      label: input.depositBootstrap ? 'Create deposit invoice' : 'Create invoice',
+      icon: Plus,
+      enabled: input.canCreateInvoice,
+      disabledTitle:
+        'Fill required: Cost, Payment Type, Contact, Deal Type, Tax Status; if Tax then Company',
+      onClick: input.onCreateInvoice,
+    },
+  ];
+  if (input.canStartEarlyDelivery) {
     items.push({
-      id: 'create-task',
-      label: 'Create task',
-      icon: CheckSquare,
-      enabled: !creatorReady || Boolean(creatorId),
-      disabledTitle: creatorReady && !creatorId ? 'Employee profile required' : undefined,
-      onClick: onCreateTask,
+      id: 'start-early-delivery',
+      label: 'Start delivery before payment',
+      icon: Rocket,
+      enabled: !input.startingEarly,
+      disabledTitle: input.startingEarly ? 'Starting delivery…' : undefined,
+      onClick: input.onStartEarlyDelivery,
     });
-
-    items.push({
-      id: 'open-drive',
-      label: 'Open drive',
-      icon: FileText,
-      enabled: true,
-      onClick: () => router.push(buildDriveHrefWithDeal(deal.id)),
-    });
-
-    return items;
-  }, [
-    bindingStatus,
-    canCreateInvoice,
-    canStartEarlyDelivery,
-    creatorId,
-    creatorReady,
-    deal.id,
-    depositBootstrap,
-    handleEnsureWhatsApp,
-    handleStartEarlyDelivery,
-    onCreateInvoice,
-    onCreateTask,
-    productId,
-    projectId,
-    router,
-    startingEarly,
-    whatsappBusy,
-    whatsappState,
-  ]);
-
-  const showWhatsAppMissing =
-    Boolean(productId) &&
-    isMissingActiveWhatsAppGroup({
-      bindingStatus,
-      groupChatId: whatsappState?.binding?.groupChatId,
-    });
-
-  return (
-    <>
-      {showWhatsAppMissing ? (
-        <WhatsAppGroupMissingBadge
-          bindingStatus={bindingStatus}
-          groupChatId={whatsappState?.binding?.groupChatId}
-        />
-      ) : null}
-      <DealSheetActionsMenu actions={actions} />
-    </>
-  );
+  }
+  items.push({
+    id: 'create-task',
+    label: 'Create task',
+    icon: CheckSquare,
+    enabled: !input.creatorReady || Boolean(input.creatorId),
+    disabledTitle: input.creatorReady && !input.creatorId ? 'Employee profile required' : undefined,
+    onClick: input.onCreateTask,
+  });
+  items.push({
+    id: 'open-drive',
+    label: 'Open drive',
+    icon: FileText,
+    enabled: true,
+    onClick: input.onOpenDrive,
+  });
+  return items;
 }

@@ -116,6 +116,8 @@ describe('InvoiceOverdueRemindersService', () => {
       overdueCandidate({
         id: 'inv-sub-off',
         subscription: {
+          name: 'Acme Site',
+          code: 'SUB-1',
           productId: 'prod-1',
           notificationsEnabled: false,
           reminderLanguage: 'HY',
@@ -213,6 +215,8 @@ describe('InvoiceOverdueRemindersService', () => {
           reminderLanguage: 'RU',
           productId: 'prod-1',
           name: 'example.com',
+          type: 'DOMAIN',
+          registryLookupStatus: 'OBSERVED',
           product: { id: 'prod-1', name: 'Example' },
         },
       },
@@ -249,6 +253,7 @@ function baseOverdue() {
     amount: 120000,
     dueDate: new Date('2026-08-05T00:00:00+04:00'),
     coverageStartMonth: '2026-07',
+    coverageMonthCount: 1,
     taxStatus: 'TAX_FREE',
     moneyStatus: 'OVERDUE',
     officialInvoiceRequestSent: false,
@@ -257,6 +262,8 @@ function baseOverdue() {
     company: { name: 'ACME' },
     clientServiceRecord: null,
     subscription: {
+      name: 'Acme Site',
+      code: 'SUB-1',
       productId: 'prod-1',
       notificationsEnabled: true,
       reminderLanguage: 'HY' as const,

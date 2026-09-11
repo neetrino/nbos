@@ -12,7 +12,7 @@ export function PageHeader({ title, description, children }: PageHeaderProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0 flex-1">
-        <h1 className="text-foreground text-2xl font-semibold tracking-tight">{title}</h1>
+        <h1 className="nbos-display text-foreground text-3xl">{title}</h1>
         {description != null ? (
           <div className="mt-1.5">
             {typeof description === 'string' ? (

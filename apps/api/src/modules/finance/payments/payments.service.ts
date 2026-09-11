@@ -1,10 +1,18 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  Optional,
+} from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { NotificationService } from '../../notifications/notification.service';
 import { SalesBonusAccrualService } from '../../bonus/sales-bonus-accrual.service';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { getLatestPaymentDate, resolveOrderStatus, sumAmounts } from '../finance-status.utils';
+import { notifyOfficialAfterInvoiceWrite } from '../invoices/invoice-card-persist';
+import { InvoiceOfficialWhatsAppService } from '../invoices/invoice-official-whatsapp.service';
 import { syncInvoiceMoneyStatusFromPayments } from '../invoices/invoice-money-status';
 import { assertInvoiceTaxMoneyStatusGate } from '../invoices/invoice-tax-readiness-assert';
 import { OperationalJournalService } from '../journal/operational-journal.service';
@@ -17,6 +25,8 @@ import { mergeFinanceWhere } from '../finance-scoped-access';
 import type { FinanceScopedAccessContext } from '../finance-scoped-access';
 import { resolvePaymentParticipationWhere } from '../finance-module-participation.where';
 import { buildPaymentSearchWhere } from './payment-search.where';
+import { PAYMENT_REMOVED_JOURNAL_NOTE, paymentCashJournalKey } from './payment-cash-journal';
+import { voidPartnerAccrualForRemovedPayment } from './void-partner-accrual-for-payment';
 
 interface CreatePaymentDto {
   invoiceId: string;
@@ -48,6 +58,7 @@ export class PaymentsService {
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
     private readonly partnerAccrualSubscription: PartnerAccrualSubscriptionService,
     private readonly clientPaidInvoiceAutomation: ClientPaidInvoiceAutomationService,
+    @Optional() private readonly officialWhatsApp?: InvoiceOfficialWhatsAppService,
   ) {}
 
   async findAll(params: PaymentQueryParams) {
@@ -171,6 +182,7 @@ export class PaymentsService {
         moneyStatus: true,
         taxStatus: true,
         officialInvoiceRequestSent: true,
+        orderComment: true,
         dueDate: true,
         payments: { select: { amount: true } },
         company: { select: { name: true, legalName: true, taxId: true } },
@@ -211,6 +223,8 @@ export class PaymentsService {
       companyId: invoice.companyId,
       company: invoice.company,
       officialInvoiceRequestSent: invoice.officialInvoiceRequestSent,
+      orderId: invoice.orderId,
+      orderComment: invoice.orderComment,
     });
     await assertPostingPeriodOpenForBookedAt(this.prisma, paymentDate);
     const created = await this.prisma.payment.create({
@@ -280,6 +294,11 @@ export class PaymentsService {
   async delete(id: string) {
     const payment = await this.findById(id);
     await assertPostingPeriodOpenForBookedAt(this.prisma, payment.paymentDate);
+    await voidPartnerAccrualForRemovedPayment(this.prisma, this.operationalJournal, id);
+    await this.operationalJournal.reverseJournalLineByIdempotencyKey(
+      paymentCashJournalKey(id),
+      PAYMENT_REMOVED_JOURNAL_NOTE,
+    );
     await this.prisma.payment.delete({ where: { id } });
 
     await this.syncInvoiceStatus(payment.invoiceId);
@@ -380,6 +399,7 @@ export class PaymentsService {
         paidDate: moneyStatus === 'PAID' ? getLatestPaymentDate(invoice.payments) : null,
       },
     });
+    await notifyOfficialAfterInvoiceWrite(this.officialWhatsApp, { id: invoiceId, moneyStatus });
   }
 
   private async syncOrderStatus(orderId: string) {

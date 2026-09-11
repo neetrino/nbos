@@ -12,10 +12,11 @@ interface PriorityFeedProps {
 
 export function PriorityFeed({ priorities }: PriorityFeedProps) {
   return (
-    <div className="border-border bg-card rounded-2xl border p-3 shadow-sm">
-      <div className="flex items-center gap-2">
+    <div className="nbos-desk-surface p-4">
+      <p className="nbos-desk-kicker">Now</p>
+      <div className="mt-2 flex items-center gap-2">
         <AlertTriangle className="h-4 w-4 text-amber-600" />
-        <h2 className="text-sm font-semibold">Priority feed</h2>
+        <h2 className="text-base font-semibold">Priority feed</h2>
       </div>
       {priorities.length === 0 ? (
         <p className="text-muted-foreground mt-3 text-sm">

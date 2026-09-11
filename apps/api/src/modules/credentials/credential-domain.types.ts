@@ -32,6 +32,7 @@ export interface CredentialQueryParams {
   page?: number;
   pageSize?: number;
   projectId?: string;
+  productId?: string;
   category?: string;
   credentialType?: string;
   accessLevel?: string;

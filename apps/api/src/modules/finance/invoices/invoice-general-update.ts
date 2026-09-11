@@ -1,6 +1,8 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import type { Prisma, PrismaClient } from '@nbos/database';
+import type { InvoiceOrderCommentEnum, Prisma, PrismaClient } from '@nbos/database';
+import { isInvoiceOrderComment } from '@nbos/shared';
 import { sumAmounts } from '../finance-status.utils';
+import { resolveInvoiceProductOwnership } from './invoice-product-ownership';
 
 const TAX_STATUSES = new Set(['TAX', 'TAX_FREE']);
 
@@ -8,7 +10,8 @@ export type UpdateInvoiceGeneralInput = {
   amount?: number;
   taxStatus?: string;
   companyId?: string | null;
-  projectId?: string | null;
+  productId?: string | null;
+  orderComment?: string | null;
 };
 
 export function parseUpdateInvoiceGeneralInput(
@@ -34,15 +37,26 @@ export function parseUpdateInvoiceGeneralInput(
     out.companyId = body.companyId?.trim() ? body.companyId.trim() : null;
   }
 
-  if (body.projectId !== undefined) {
-    out.projectId = body.projectId?.trim() ? body.projectId.trim() : null;
+  if (body.productId !== undefined) {
+    out.productId = body.productId?.trim() ? body.productId.trim() : null;
+  }
+
+  if (body.orderComment !== undefined) {
+    if (body.orderComment == null || body.orderComment.trim() === '') {
+      out.orderComment = null;
+    } else if (isInvoiceOrderComment(body.orderComment)) {
+      out.orderComment = body.orderComment;
+    } else {
+      throw new BadRequestException(`Unknown orderComment: ${body.orderComment}`);
+    }
   }
 
   if (
     out.amount === undefined &&
     out.taxStatus === undefined &&
     out.companyId === undefined &&
-    out.projectId === undefined
+    out.productId === undefined &&
+    out.orderComment === undefined
   ) {
     throw new BadRequestException('No fields to update');
   }
@@ -60,6 +74,7 @@ export async function applyInvoiceGeneralUpdate(
     select: {
       id: true,
       type: true,
+      orderId: true,
       amount: true,
       taxStatus: true,
       payments: { select: { amount: true } },
@@ -70,10 +85,10 @@ export async function applyInvoiceGeneralUpdate(
   }
 
   if (
-    (input.companyId !== undefined || input.projectId !== undefined) &&
+    (input.companyId !== undefined || input.productId !== undefined) &&
     invoice.type !== 'MANUAL'
   ) {
-    throw new BadRequestException('Company and project can only be linked on manual invoices');
+    throw new BadRequestException('Company and product can only be linked on manual invoices');
   }
 
   const paid = sumAmounts(invoice.payments);
@@ -101,8 +116,23 @@ export async function applyInvoiceGeneralUpdate(
     data.company = input.companyId ? { connect: { id: input.companyId } } : { disconnect: true };
   }
 
-  if (input.projectId !== undefined) {
-    data.project = input.projectId ? { connect: { id: input.projectId } } : { disconnect: true };
+  if (input.productId !== undefined) {
+    const ownership = await resolveInvoiceProductOwnership(prisma, {
+      productId: input.productId,
+    });
+    data.product = ownership.productId
+      ? { connect: { id: ownership.productId } }
+      : { disconnect: true };
+    data.project = ownership.projectId
+      ? { connect: { id: ownership.projectId } }
+      : { disconnect: true };
+  }
+
+  if (input.orderComment !== undefined) {
+    if (!invoice.orderId) {
+      throw new BadRequestException('Accountant note applies only to deal/order invoices');
+    }
+    data.orderComment = input.orderComment as InvoiceOrderCommentEnum | null;
   }
 
   if (Object.keys(data).length === 0) return;
