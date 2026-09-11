@@ -6,6 +6,7 @@ import type {
 } from '@/lib/api/messenger-core';
 import type { MessengerZone } from './messenger-query-keys';
 import { messengerQueryKeys } from './messenger-query-keys';
+import { compareIsoInstants } from './messenger-realtime-watermarks';
 import {
   clientSummaryMembership,
   internalSummaryMembership,
@@ -34,14 +35,24 @@ export function patchMessengerMessages(
   }));
 }
 
+/**
+ * Reconciles a successful send into thread cache and inbox summaries.
+ * Pass the canonical conversation row when the mutation can create a thread
+ * that is not yet in the inbox snapshot. Without it, only an existing row is patched.
+ */
 export function applyMessengerSendResult(
   queryClient: QueryClient,
   zone: MessengerZone,
   message: MessengerCoreMessageRow,
+  conversation?: MessengerCoreConversationRow,
 ): void {
   patchMessengerMessages(queryClient, message.conversationId, message, {
     createIfMissing: true,
   });
+  if (conversation && conversation.id === message.conversationId) {
+    upsertConversationSummary(queryClient, zone, conversation);
+    return;
+  }
   patchSummaryFromMessage(queryClient, zone, message);
 }
 
@@ -212,8 +223,28 @@ function replaceExistingAndSort(
   conversation: MessengerCoreConversationRow,
 ): MessengerCoreConversationRow[] {
   return sortSummariesByRecent(
-    items.map((row) => (row.id === conversation.id ? { ...row, ...conversation } : row)),
+    items.map((row) =>
+      row.id === conversation.id ? mergeConversationSummaryRow(row, conversation) : row,
+    ),
   );
+}
+
+function mergeConversationSummaryRow(
+  current: MessengerCoreConversationRow,
+  incoming: MessengerCoreConversationRow,
+): MessengerCoreConversationRow {
+  const currentAt = current.lastMessageAt;
+  const incomingAt = incoming.lastMessageAt;
+  if (currentAt && (!incomingAt || compareIsoInstants(incomingAt, currentAt) < 0)) {
+    return {
+      ...current,
+      ...incoming,
+      lastMessageAt: current.lastMessageAt,
+      lastMessagePreview: current.lastMessagePreview,
+      unreadCount: current.unreadCount,
+    };
+  }
+  return { ...current, ...incoming };
 }
 
 function sortSummariesByRecent(

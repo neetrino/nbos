@@ -52,7 +52,7 @@ export function useTaskDiscussion(taskId: string | null, open: boolean) {
   };
 }
 
-async function sendTaskDiscussionNote(
+export async function sendTaskDiscussionNote(
   queryClient: ReturnType<typeof useQueryClient>,
   taskId: string | null,
   conversationId: string | null,
@@ -67,6 +67,7 @@ async function sendTaskDiscussionNote(
       queryClient,
       'INTERNAL',
       discussionEntryToCoreMessage(threadId, entry),
+      entry.conversation,
     );
     queryClient.setQueryData<TaskDiscussionList>(taskDiscussionLocatorKey(taskId), (current) => ({
       items: current?.items ?? [],

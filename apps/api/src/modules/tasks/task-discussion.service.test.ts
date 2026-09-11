@@ -8,6 +8,7 @@ import { TASK_DISCUSSION_LEGACY_WRITES_DISABLED } from './task-discussion.consta
 
 const ensureTaskConversation = vi.fn();
 const persistCoreMessage = vi.fn();
+const loadAccessibleInternalConversationSummary = vi.fn();
 
 vi.mock('../messenger/core/messenger-core-task-ensure.ops', () => ({
   ensureTaskConversation: (...args: unknown[]) => ensureTaskConversation(...args),
@@ -16,6 +17,28 @@ vi.mock('../messenger/core/messenger-core-task-ensure.ops', () => ({
 vi.mock('../messenger/core/messenger-core-message.ops', () => ({
   persistCoreMessage: (...args: unknown[]) => persistCoreMessage(...args),
 }));
+
+vi.mock('../messenger/core/messenger-core-internal-summary-for-viewer.ops', () => ({
+  loadAccessibleInternalConversationSummary: (...args: unknown[]) =>
+    loadAccessibleInternalConversationSummary(...args),
+}));
+
+const TASK_INBOX_SUMMARY = {
+  id: 'conv-task',
+  zone: 'INTERNAL' as const,
+  type: 'TASK' as const,
+  title: 'Ship cache fix',
+  status: 'ACTIVE',
+  canonicalKey: taskCanonicalKey('task-1'),
+  createdAt: new Date('2026-08-21T00:00:00.000Z'),
+  lastMessageAt: new Date('2026-08-21T00:00:00.000Z'),
+  lastMessagePreview: 'Looks good',
+  unreadCount: 0,
+  peerEmployeeId: null,
+  peerName: null,
+  isFavorite: false,
+  canWrite: true,
+};
 
 describe('TaskDiscussionService', () => {
   let prisma: MockPrisma;
@@ -46,6 +69,7 @@ describe('TaskDiscussionService', () => {
       senderName: 'Cursor Agent',
       createdAt: new Date('2026-08-21T00:00:00.000Z'),
     });
+    loadAccessibleInternalConversationSummary.mockReset().mockResolvedValue(TASK_INBOX_SUMMARY);
     service = new TaskDiscussionService(prisma as never, core as never);
   });
 
@@ -71,6 +95,8 @@ describe('TaskDiscussionService', () => {
       [],
     );
     expect(core.persistAndBroadcast).not.toHaveBeenCalled();
+    expect(loadAccessibleInternalConversationSummary).not.toHaveBeenCalled();
+    expect(entry.conversation).toBeUndefined();
     expect(prisma.taskDiscussionEntry.create).not.toHaveBeenCalled();
   });
 
@@ -98,6 +124,35 @@ describe('TaskDiscussionService', () => {
       'Looks good',
     );
     expect(entry.conversationId).toBe('conv-task');
+  });
+
+  it('returns the canonical inbox summary after a human note so the client can upsert', async () => {
+    const access = { employeeId: 'emp-1', departmentIds: [], viewScope: 'ALL' };
+    const entry = await service.addEntry(
+      'task-1',
+      actorContextFromEmployee({ id: 'emp-1', firstName: 'Ada', lastName: 'Lovelace' }),
+      'Looks good',
+      access,
+    );
+    expect(entry.conversation).toEqual(TASK_INBOX_SUMMARY);
+    expect(entry.conversation?.unreadCount).toBe(0);
+    expect(loadAccessibleInternalConversationSummary).toHaveBeenCalledWith(
+      prisma,
+      'emp-1',
+      'conv-task',
+      access,
+    );
+  });
+
+  it('omits conversation when the writer cannot see the thread in Messenger', async () => {
+    loadAccessibleInternalConversationSummary.mockResolvedValue(null);
+    const entry = await service.addEntry(
+      'task-1',
+      actorContextFromEmployee({ id: 'emp-1', firstName: 'Ada', lastName: 'Lovelace' }),
+      'Looks good',
+    );
+    expect(entry.conversationId).toBe('conv-task');
+    expect(entry.conversation).toBeUndefined();
   });
 
   it('rejects an empty body', async () => {
