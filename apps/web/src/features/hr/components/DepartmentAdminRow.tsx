@@ -116,7 +116,10 @@ function DepartmentAdminMembers({
       {members.length > 0 ? (
         <div className="flex flex-col gap-1 py-3 pr-4">
           {members.map((m) => (
-            <div key={m.id} className="hover:bg-muted/50 flex items-center gap-3 rounded-md px-3 py-2">
+            <div
+              key={m.id}
+              className="hover:bg-muted/50 flex items-center gap-3 rounded-md px-3 py-2"
+            >
               <Users className="text-muted-foreground size-4 shrink-0" />
               <span className="min-w-0 flex-1 truncate">
                 {m.employee.firstName} {m.employee.lastName}

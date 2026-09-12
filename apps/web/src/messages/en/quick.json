@@ -1,0 +1,9 @@
+{
+  "task": {
+    "appName": "NBOS Task",
+    "shortName": "+ Task",
+    "created": "Task created",
+    "open": "Open",
+    "backgroundLoading": "Loading tasks…"
+  }
+}

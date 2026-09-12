@@ -220,7 +220,7 @@ export function WorkSpaceRuntime({
         setActionError(getApiErrorMessage(caught, t('taskActionFailed')));
       }
     },
-    [handleAction],
+    [handleAction, t],
   );
 
   const handleTaskUpdate = useCallback(

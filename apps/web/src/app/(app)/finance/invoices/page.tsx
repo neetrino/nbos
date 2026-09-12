@@ -141,11 +141,7 @@ function InvoicesPageInner() {
         />
       ),
       viewMode: (
-        <ViewModeSwitch
-          value={state.view}
-          onChange={state.setView}
-          options={invoiceViewOptions}
-        />
+        <ViewModeSwitch value={state.view} onChange={state.setView} options={invoiceViewOptions} />
       ),
       trailing: (
         <>
@@ -193,9 +189,7 @@ function InvoicesPageInner() {
     <div className="flex h-full min-h-0 flex-col gap-5">
       {subscriptionIdFromUrl ? (
         <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
-          <p className="text-foreground max-w-prose">
-            {t('page.subscriptionFilter')}
-          </p>
+          <p className="text-foreground max-w-prose">{t('page.subscriptionFilter')}</p>
           <Button variant="outline" size="sm" type="button" onClick={clearSubscriptionDrilldown}>
             {t('page.clearFilter')}
           </Button>

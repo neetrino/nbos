@@ -21,10 +21,7 @@ import {
   StatusBadge,
 } from '@/components/shared';
 import { getLeadSource, getLeadStage } from '@/features/crm/constants/leadPipeline';
-import {
-  translateLeadSourceLabel,
-  translateLeadStageLabel,
-} from '@/features/crm/i18n/crm-copy';
+import { translateLeadSourceLabel, translateLeadStageLabel } from '@/features/crm/i18n/crm-copy';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import type { Lead } from '@/lib/api/leads';
 import { cn } from '@/lib/utils';
@@ -108,11 +105,7 @@ function LeadListRow({
         {lead.email ? <span className="text-sm">{lead.email}</span> : <EntityListMutedDash />}
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        <StatusBadge
-          label={sourceLabel}
-          variant="default"
-          className={ENTITY_LIST_BADGE_CLASS}
-        />
+        <StatusBadge label={sourceLabel} variant="default" className={ENTITY_LIST_BADGE_CLASS} />
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
         {stage ? (

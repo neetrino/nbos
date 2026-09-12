@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  PAYROLL_RUN_STATUS_MESSAGE_KEY,
-  payrollRunActionOptions,
-} from './payroll-run-ui';
+import { PAYROLL_RUN_STATUS_MESSAGE_KEY, payrollRunActionOptions } from './payroll-run-ui';
 
 describe('payroll-run-ui i18n keys', () => {
   it('keeps status value codes and exposes message keys', () => {

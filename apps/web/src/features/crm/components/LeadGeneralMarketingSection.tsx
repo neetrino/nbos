@@ -22,10 +22,7 @@ import { marketingApi } from '@/lib/api/marketing';
 import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
 import type { LeadGeneralDraft } from './lead-general-form-state';
 import { leadStageGateFieldClass } from '@/features/crm/lead-stage-gate-highlight';
-import {
-  translateLeadSourceLabel,
-  translateSalesChannelLabel,
-} from '@/features/crm/i18n/crm-copy';
+import { translateLeadSourceLabel, translateSalesChannelLabel } from '@/features/crm/i18n/crm-copy';
 
 export interface LeadMarketingFieldsProps {
   lead: Lead;

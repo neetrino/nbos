@@ -3,7 +3,15 @@
 import { useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronRight, FileText, Folder, FolderPlus, HardDrive, Loader2, Upload } from 'lucide-react';
+import {
+  ChevronRight,
+  FileText,
+  Folder,
+  FolderPlus,
+  HardDrive,
+  Loader2,
+  Upload,
+} from 'lucide-react';
 import { resolveDatePickerLocale } from '@/components/shared/date-picker/date-picker-locale';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';

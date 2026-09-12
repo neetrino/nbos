@@ -65,8 +65,7 @@ export function LeadMergeDialog({
   const absorbed = currentIsSurvivor ? other : currentLead;
   const fieldLabels = useMemo(() => translateLeadMergeFieldLabels(t), [t]);
   const conflicts = useMemo(
-    () =>
-      survivor && absorbed ? buildLeadMergeConflicts(survivor, absorbed, fieldLabels) : [],
+    () => (survivor && absorbed ? buildLeadMergeConflicts(survivor, absorbed, fieldLabels) : []),
     [survivor, absorbed, fieldLabels],
   );
 
@@ -308,9 +307,7 @@ export function LeadMergeDialog({
                 absorbedCode: absorbed.code,
               })}
             </li>
-            <li>
-              {t('merge.previewStage', { stage: translateLeadStageLabel(t, status) })}
-            </li>
+            <li>{t('merge.previewStage', { stage: translateLeadStageLabel(t, status) })}</li>
             <li>{t('merge.previewNotes')}</li>
             <li>{t('merge.previewSource')}</li>
           </ul>

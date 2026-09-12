@@ -202,13 +202,7 @@ function InvoiceContextSummary({
   return null;
 }
 
-function OrderInvoiceContext({
-  order,
-  t,
-}: {
-  order: Order;
-  t: InvoiceCreateTranslator;
-}) {
+function OrderInvoiceContext({ order, t }: { order: Order; t: InvoiceCreateTranslator }) {
   return (
     <div className="bg-muted/40 rounded-lg border p-3 text-sm">
       <p className="font-medium">{getOrderDisplayTitle(order)}</p>

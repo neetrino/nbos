@@ -37,8 +37,7 @@ export function DeliveryItemDetailHeader({
   const [nameValue, setNameValue] = useState('');
   const [savingName, setSavingName] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const entityLabel =
-    entityKind === 'PRODUCT' ? t('kindLabel.product') : t('kindLabel.extension');
+  const entityLabel = entityKind === 'PRODUCT' ? t('kindLabel.product') : t('kindLabel.extension');
   const EntityIcon = entityKind === 'PRODUCT' ? Box : Puzzle;
   const entityColorClass =
     entityKind === 'PRODUCT'

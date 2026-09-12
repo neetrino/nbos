@@ -85,17 +85,13 @@ export function PayrollRunSalaryLinesView({
 
   if (lines.length === 0) {
     return (
-      <p className="text-muted-foreground py-12 text-center text-sm">
-        {t('salaryLines.empty')}
-      </p>
+      <p className="text-muted-foreground py-12 text-center text-sm">{t('salaryLines.empty')}</p>
     );
   }
 
   if (filtered.length === 0) {
     return (
-      <p className="text-muted-foreground py-12 text-center text-sm">
-        {t('salaryLines.noMatch')}
-      </p>
+      <p className="text-muted-foreground py-12 text-center text-sm">{t('salaryLines.noMatch')}</p>
     );
   }
 
@@ -106,13 +102,19 @@ export function PayrollRunSalaryLinesView({
           <TableRow className="bg-muted/40 hover:bg-muted/40">
             <TableHead className={HEAD_CELL}>{t('salaryLines.employee')}</TableHead>
             <TableHead className={HEAD_CELL}>{t('salaryLines.status')}</TableHead>
-            <TableHead className={cn(HEAD_CELL, 'text-right')}>{t('salaryLines.baseSalary')}</TableHead>
-            <TableHead className={cn(HEAD_CELL, 'text-right')}>{t('salaryLines.bonuses')}</TableHead>
+            <TableHead className={cn(HEAD_CELL, 'text-right')}>
+              {t('salaryLines.baseSalary')}
+            </TableHead>
+            <TableHead className={cn(HEAD_CELL, 'text-right')}>
+              {t('salaryLines.bonuses')}
+            </TableHead>
             <TableHead className={cn(HEAD_CELL, 'text-right')}>
               {t('salaryLines.totalPayable')}
             </TableHead>
             <TableHead className={cn(HEAD_CELL, 'text-right')}>{t('salaryLines.paid')}</TableHead>
-            <TableHead className={cn(HEAD_CELL, 'text-right')}>{t('salaryLines.remaining')}</TableHead>
+            <TableHead className={cn(HEAD_CELL, 'text-right')}>
+              {t('salaryLines.remaining')}
+            </TableHead>
             <TableHead className={cn(HEAD_CELL, 'w-10')} aria-hidden />
           </TableRow>
         </TableHeader>

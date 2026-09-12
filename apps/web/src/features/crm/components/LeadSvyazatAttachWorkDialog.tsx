@@ -63,10 +63,7 @@ export function LeadSvyazatAttachWorkDialog(props: LeadSvyazatAttachWorkDialogPr
   );
 }
 
-function searchLabelFor(
-  kind: WorkKind,
-  t: ReturnType<typeof useTranslations<'crm'>>,
-): string {
+function searchLabelFor(kind: WorkKind, t: ReturnType<typeof useTranslations<'crm'>>): string {
   if (kind === 'deal') return t('svyazat.searchDeal');
   if (kind === 'project') return t('svyazat.searchProject');
   if (kind === 'product') return t('svyazat.searchProduct');

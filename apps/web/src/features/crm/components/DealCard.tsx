@@ -162,9 +162,7 @@ function DealCardMeta({
       {linkLabel ? (
         <DealMetaLine icon={LinkIcon} label={linkLabel} metaIconClass={metaIconClass} />
       ) : null}
-      {deal.paymentType ? (
-        <DealPaymentTypeLabel paymentType={deal.paymentType} />
-      ) : null}
+      {deal.paymentType ? <DealPaymentTypeLabel paymentType={deal.paymentType} /> : null}
     </div>
   );
 }

@@ -26,10 +26,7 @@ import {
 } from '../utils/search-task-delivery-context';
 import { addTaskEntityLink, removeTaskEntityLink } from '../utils/sync-task-entity-links';
 import { TaskDeliveryContextSearch } from './TaskDeliveryContextSearch';
-import {
-  LinkedContextChip,
-  LinkedToNotchCaption,
-} from './TaskLinkedContextChip';
+import { LinkedContextChip, LinkedToNotchCaption } from './TaskLinkedContextChip';
 import {
   TASK_SHEET_CARD_CLASS,
   TASK_SHEET_META_BLOCK_CLASS,

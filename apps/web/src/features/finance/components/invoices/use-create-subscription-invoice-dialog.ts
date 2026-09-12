@@ -172,13 +172,7 @@ function useHydrateSubscriptionInvoiceDialog(args: {
     };
     // Re-hydrate when the dialog opens or the target subscription changes, not on object identity.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    open,
-    subscriptionId,
-    subscriptionProp?.id,
-    args.subscriptionRequired,
-    args.loadFailed,
-  ]);
+  }, [open, subscriptionId, subscriptionProp?.id, args.subscriptionRequired, args.loadFailed]);
 }
 
 function pickDefaultMonths(subscription: Subscription | null): string[] {

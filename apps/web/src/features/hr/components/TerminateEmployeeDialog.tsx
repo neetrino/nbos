@@ -72,11 +72,7 @@ export function TerminateEmployeeDialog({
         <DialogHeader>
           <DialogTitle>{t('offboardDialog.title')}</DialogTitle>
         </DialogHeader>
-        <OffboardDialogBody
-          loading={loading}
-          preview={preview}
-          employeeName={employeeName}
-        />
+        <OffboardDialogBody loading={loading} preview={preview} employeeName={employeeName} />
         <DialogFooter>
           <Button
             type="button"

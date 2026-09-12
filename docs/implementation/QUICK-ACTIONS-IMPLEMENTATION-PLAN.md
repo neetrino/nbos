@@ -1,7 +1,7 @@
 # NBOS Quick Actions — Implementation Plan
 
 Date: 2026-09-12  
-Status: **canon approved; implementation not started**.  
+Status: **implemented on `feat/quick-task-fast-entry`; live iOS/Android install QA not run**.  
 First slice: `Quick Task` at `/quick/task`.
 
 Product canon:
@@ -395,21 +395,21 @@ No production deployment or production migration is part of this slice.
 
 Test at least:
 
-| Case | Expected |
-| --- | --- |
-| warm launch | form first, title focused |
-| cold launch | form becomes usable before full Tasks |
-| slow network | draft usable; background honest loading |
-| expired session | normal sign-in/recovery; callback returns to Quick Task |
-| current-user task | creator/current assignee correct |
-| assign colleague | search/select/create works |
-| type before identity | no draft reset |
-| close without create | Tasks surface available/loading honestly |
-| create then open | created Task opens existing detail/edit |
-| create then close | task appears when in visible scope |
-| iOS install/shortcut | opens `/quick/task` |
-| Android install/shortcut | opens `/quick/task` |
-| main NBOS icon | still opens normal NBOS |
+| Case                     | Expected                                                |
+| ------------------------ | ------------------------------------------------------- |
+| warm launch              | form first, title focused                               |
+| cold launch              | form becomes usable before full Tasks                   |
+| slow network             | draft usable; background honest loading                 |
+| expired session          | normal sign-in/recovery; callback returns to Quick Task |
+| current-user task        | creator/current assignee correct                        |
+| assign colleague         | search/select/create works                              |
+| type before identity     | no draft reset                                          |
+| close without create     | Tasks surface available/loading honestly                |
+| create then open         | created Task opens existing detail/edit                 |
+| create then close        | task appears when in visible scope                      |
+| iOS install/shortcut     | opens `/quick/task`                                     |
+| Android install/shortcut | opens `/quick/task`                                     |
+| main NBOS icon           | still opens normal NBOS                                 |
 
 Capture launch timings for warm/cold runs.
 
@@ -447,3 +447,24 @@ The slice is done only when:
 - targeted tests, typecheck/lint and relevant build/security checks are reported;
 - performance measurements are reported, not assumed;
 - implementation status docs are updated to actual results.
+
+## 17. Verification record
+
+Date: 2026-09-12. Branch: `feat/quick-task-fast-entry`.
+
+| Check                                                                                                                   | Result                                                                                                                                       |
+| ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| targeted vitest (draft, access, composition, manifests, prepend/sync, proxy `/quick/task`, SW no cache, catalog-parity) | passed (27 after review fixes)                                                                                                               |
+| `pnpm --filter @nbos/web` eslint on changed Quick Task files                                                            | passed                                                                                                                                       |
+| `pnpm --filter @nbos/web typecheck`                                                                                     | failed: pre-existing `desk-line-armenian.test.ts` / missing `dashboardDeskLine` in Messages on this snapshot. No errors in Quick Task files. |
+| `pnpm run build:web`                                                                                                    | compile succeeded; failed at TypeScript step on the same pre-existing test file                                                              |
+| proxy `/quick/task` guest → `callbackUrl=/quick/task`                                                                   | passed                                                                                                                                       |
+| main `manifest.webmanifest` `start_url`                                                                                 | unchanged `/`                                                                                                                                |
+| `quick-task.webmanifest`                                                                                                | `id`/`start_url` `/quick/task`, `scope` `/quick`                                                                                             |
+| `sw.js` Cache Storage                                                                                                   | still absent                                                                                                                                 |
+| browser `/quick/task` warm path                                                                                         | not run in this environment                                                                                                                  |
+| iOS/Android Add to Home Screen                                                                                          | not run                                                                                                                                      |
+
+Independent Sonnet reviews (code + security) after implementation: no medium+ remaining findings after fix round. Security: `/quick/task` stays authenticated; no extra RBAC; `callbackUrl` pathname-only; main manifest/`sw.js` unchanged. Code-review fixes applied: list-settled background mark, `applyLateIdentityArrival` draft tests used by the hook, dead access helper removed, unused `quick` keys trimmed, real `prependCreatedTask` helper tested.
+
+Do not treat this slice as IMPLEMENTATION_DONE until live install QA is recorded.

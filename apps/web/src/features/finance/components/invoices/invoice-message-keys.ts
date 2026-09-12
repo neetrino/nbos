@@ -54,7 +54,10 @@ export const INVOICE_REMINDER_SKIP_MESSAGE_KEYS = {
   max_wave: 'reminders.skip.max_wave',
   no_product_link: 'reminders.skip.no_product_link',
   already_sent: 'reminders.skip.already_sent',
-} as const satisfies Record<OverdueReminderSkipReason, `reminders.skip.${OverdueReminderSkipReason}`>;
+} as const satisfies Record<
+  OverdueReminderSkipReason,
+  `reminders.skip.${OverdueReminderSkipReason}`
+>;
 
 export type InvoiceStageMessageKey =
   (typeof INVOICE_STAGE_MESSAGE_KEYS)[keyof typeof INVOICE_STAGE_MESSAGE_KEYS];

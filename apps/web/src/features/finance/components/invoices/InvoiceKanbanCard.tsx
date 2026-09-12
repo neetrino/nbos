@@ -126,7 +126,11 @@ function InvoiceCardAmountRow({
           {amountLabel}
         </p>
         {showTax ? (
-          <StatusBadge label={taxLabel} variant="green" className={cn('shrink-0', CARD_BADGE_CLASS)} />
+          <StatusBadge
+            label={taxLabel}
+            variant="green"
+            className={cn('shrink-0', CARD_BADGE_CLASS)}
+          />
         ) : null}
       </div>
       {paidPercent !== null ? (

@@ -70,9 +70,7 @@ describe('expenses catalogs', () => {
 
   it('interpolates a payment amount without translating it', () => {
     const t = createTranslator({ locale: 'ru', messages: ruExpenses });
-    expect(t('payments.removeAria', { amount: '12 000 AMD' })).toBe(
-      'Удалить платёж 12 000 AMD',
-    );
+    expect(t('payments.removeAria', { amount: '12 000 AMD' })).toBe('Удалить платёж 12 000 AMD');
   });
 
   it('leaves unknown category VALUES unchanged', () => {

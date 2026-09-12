@@ -24,20 +24,20 @@ describe('employeeTenure', () => {
     const t = createTranslator({ locale: 'ru', messages: { hr: ruHr } });
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-06-01T00:00:00.000Z'));
-    expect(employeeTenure('2026-03-01T00:00:00.000Z', (key, values) => t(`hr.${key}`, values))).toBe(
-      '3 мес',
-    );
-    expect(employeeTenure('2024-01-01T00:00:00.000Z', (key, values) => t(`hr.${key}`, values))).toBe(
-      '2 г 4 мес',
-    );
+    expect(
+      employeeTenure('2026-03-01T00:00:00.000Z', (key, values) => t(`hr.${key}`, values)),
+    ).toBe('3 мес');
+    expect(
+      employeeTenure('2024-01-01T00:00:00.000Z', (key, values) => t(`hr.${key}`, values)),
+    ).toBe('2 г 4 мес');
   });
 
   it('formats English catalog years without leftover months', () => {
     const t = createTranslator({ locale: 'en', messages: { hr: enHr } });
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
-    expect(employeeTenure('2024-01-01T00:00:00.000Z', (key, values) => t(`hr.${key}`, values))).toBe(
-      '2y',
-    );
+    expect(
+      employeeTenure('2024-01-01T00:00:00.000Z', (key, values) => t(`hr.${key}`, values)),
+    ).toBe('2y');
   });
 });

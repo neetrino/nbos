@@ -35,7 +35,9 @@ export function DealClientCommunicationPanel({ deal }: DealClientCommunicationPa
         {t('dealSheet.clientCommunication')}
       </h4>
       <p className="text-foreground text-xs font-semibold">
-        {ready ? (binding?.groupName ?? t('dealSheet.whatsappGroupReady')) : t('dealSheet.whatsappGroup')}
+        {ready
+          ? (binding?.groupName ?? t('dealSheet.whatsappGroupReady'))
+          : t('dealSheet.whatsappGroup')}
       </p>
       <p className="text-muted-foreground text-[11px] leading-snug">{hint}</p>
     </section>

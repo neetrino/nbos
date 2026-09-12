@@ -91,12 +91,15 @@ export function translateReadinessLabel(label: string, t: DeliveryBoardTranslate
 
 export function translateReadinessDetail(
   rowKey: string,
-  checklist: {
-    completedChecklists?: number | null;
-    totalChecklists?: number | null;
-    completed: number;
-    total: number;
-  } | null | undefined,
+  checklist:
+    | {
+        completedChecklists?: number | null;
+        totalChecklists?: number | null;
+        completed: number;
+        total: number;
+      }
+    | null
+    | undefined,
   t: DeliveryBoardTranslate,
   fallback?: string,
 ): string | undefined {
@@ -117,10 +120,7 @@ export function translateReadinessDetail(
   });
 }
 
-export function translateClosedDeadlineLabel(
-  label: string,
-  t: DeliveryBoardTranslate,
-): string {
+export function translateClosedDeadlineLabel(label: string, t: DeliveryBoardTranslate): string {
   if (label === 'On time') return t('deadline.onTime');
   if (label === 'Late') return t('deadline.late');
   return label;

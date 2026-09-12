@@ -21,9 +21,7 @@ import {
   financeCalendarCurrentMonthIndex,
 } from '@/features/finance/constants/finance-calendar-mobile';
 import { formatAmountAbbreviated } from '@/features/finance/constants/finance';
-import {
-  salaryLineCalendarCellClass,
-} from '@/features/finance/constants/salary-board-line-status';
+import { salaryLineCalendarCellClass } from '@/features/finance/constants/salary-board-line-status';
 import {
   formatPayrollMonthAbbrev,
   parseSalaryBoardAmount,

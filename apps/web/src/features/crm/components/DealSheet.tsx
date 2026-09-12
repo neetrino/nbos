@@ -434,7 +434,14 @@ function DealSheetBody({
         createInvoiceAria: t('dealSheet.createInvoiceAria'),
         createTaskAria: t('common.createTask'),
       }),
-    [canCreateInvoice, canCreateTask, dealSheetTabs, onInvoiceCreateOpenChange, onTaskCreateOpenChange, t],
+    [
+      canCreateInvoice,
+      canCreateTask,
+      dealSheetTabs,
+      onInvoiceCreateOpenChange,
+      onTaskCreateOpenChange,
+      t,
+    ],
   );
   const headerTitle = generalDraft?.name?.trim() || getDealDisplayTitle(renderDeal);
   const TypeIcon = typeVisual.Icon;
@@ -547,7 +554,9 @@ function DealSheetBody({
       <DetailSheetTabBar
         tabs={detailSheetTabs}
         activeTab={activeTab}
-        onTabChange={(value) => setActiveTab(value as (typeof DEAL_SHEET_TAB_DEFS)[number]['value'])}
+        onTabChange={(value) =>
+          setActiveTab(value as (typeof DEAL_SHEET_TAB_DEFS)[number]['value'])
+        }
       />
 
       <ScrollArea className="min-h-0 flex-1">

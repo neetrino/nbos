@@ -41,9 +41,7 @@ export function LeadSvyazatSearchDialog(props: LeadSvyazatSearchDialogProps) {
       <DialogContent className="sm:max-w-[440px]" forceNestedBackdrop>
         <DialogHeader>
           <DialogTitle>{props.title}</DialogTitle>
-          <DialogDescription>
-            {props.description ?? t('svyazat.searchHint')}
-          </DialogDescription>
+          <DialogDescription>{props.description ?? t('svyazat.searchHint')}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           {props.children}

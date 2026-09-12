@@ -47,7 +47,7 @@
 
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
-- **NBOS Quick Actions / Quick Task:** общий fast-entry foundation + `/quick/task`; переиспользовать существующий `QuickCreateTaskDialog` и mobile bottom sheet; форма интерактивна раньше списка задач; current Employee = creator, assignee можно менять; Tasks подгружается в фоне и доступен после закрытия; отдельная install/shortcut metadata без кэша authenticated HTML/BFF/API; draft-safe identity bootstrap; performance marks и live iOS/Android QA. Канон: `[13-Quick-Actions.md](NBOS/05-UI-Specifications/13-Quick-Actions.md)`, `[06-Quick-Task-Entry.md](NBOS/02-Modules/05-Tasks/06-Quick-Task-Entry.md)`. План: `[QUICK-ACTIONS-IMPLEMENTATION-PLAN.md](implementation/QUICK-ACTIONS-IMPLEMENTATION-PLAN.md)` — **M**
+- **NBOS Quick Actions / Quick Task:** код среза на `feat/quick-task-fast-entry` — `/quick/task` вне `(app)`, тот же `QuickCreateTaskDialog` + mobile bottom sheet, draft-safe `/api/me`, lazy `TasksSurface`, `dispatchTaskCreated`, dedicated `quick-task.webmanifest`, marks, EN/RU `quick`. Targeted tests + lint зелёные. `pnpm --filter @nbos/web typecheck` / `build:web` падают на **предсуществующем** `desk-line-armenian.test.ts` (`dashboardDeskLine` нет в Messages на этом snapshot). Live iOS/Android install QA не прогонялась. Канон: `[13-Quick-Actions.md](NBOS/05-UI-Specifications/13-Quick-Actions.md)`, `[06-Quick-Task-Entry.md](NBOS/02-Modules/05-Tasks/06-Quick-Task-Entry.md)`. План: `[QUICK-ACTIONS-IMPLEMENTATION-PLAN.md](implementation/QUICK-ACTIONS-IMPLEMENTATION-PLAN.md)` — **M** (код есть; не в DONE до live install QA)
 
 Блок 2B — Внутренний фонд интеграций: можно готовить сейчас, без внешних кредов
 

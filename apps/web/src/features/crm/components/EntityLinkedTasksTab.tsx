@@ -81,9 +81,7 @@ function EntityLinkedTasksToolbar({
         size="sm"
         className="gap-1.5 border-sky-200 text-sky-600 hover:bg-sky-50 hover:text-sky-700 dark:border-sky-800 dark:text-sky-400"
         disabled={creatorReady && !creatorId}
-        title={
-          creatorReady && !creatorId ? t('common.employeeProfileRequired') : undefined
-        }
+        title={creatorReady && !creatorId ? t('common.employeeProfileRequired') : undefined}
         onClick={onCreate}
       >
         <Plus size={14} />

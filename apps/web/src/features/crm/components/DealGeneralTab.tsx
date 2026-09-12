@@ -213,7 +213,8 @@ function DealEntityMetaLine({ createdAt, updatedAt }: DealEntityMetaLineProps) {
   return (
     <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-1 px-1 text-xs tabular-nums">
       <span>
-        <span className="font-medium">{t('dealSheet.created')}</span> {formatDealMetaDate(createdAt)}
+        <span className="font-medium">{t('dealSheet.created')}</span>{' '}
+        {formatDealMetaDate(createdAt)}
       </span>
       <span aria-hidden className="text-muted-foreground/40">
         |

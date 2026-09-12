@@ -251,7 +251,9 @@ function LeadCardFooter({
     <div className={LEAD_CARD_FOOTER_CLASS}>
       <div className="flex min-w-0 items-center gap-2">
         <LeadCardAssigneeAvatar assigneeName={assigneeName} assigneeAvatar={assigneeAvatar} />
-        {isOverdue ? <StatusBadge label={overdueLabel} variant="red" className="text-[9px]" /> : null}
+        {isOverdue ? (
+          <StatusBadge label={overdueLabel} variant="red" className="text-[9px]" />
+        ) : null}
       </div>
       <div className="flex justify-center">
         {onCreateTask ? (

@@ -154,9 +154,7 @@ export function DealPartnerReferralTermsSection(props: {
               </form>
             </div>
           ) : (
-            <p className="text-muted-foreground text-xs">
-              {t('dealSheet.partnerTerms.locked')}
-            </p>
+            <p className="text-muted-foreground text-xs">{t('dealSheet.partnerTerms.locked')}</p>
           )}
           {error ? <p className="text-destructive text-xs">{error}</p> : null}
         </div>

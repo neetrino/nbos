@@ -219,7 +219,10 @@ export function PayrollRunsListPageContent() {
     [replaceListUrl, setPayrollFilters],
   );
 
-  const payrollFilterConfigs = useMemo(() => buildPayrollIntegratedFilterConfigs((key) => t(key)), [t]);
+  const payrollFilterConfigs = useMemo(
+    () => buildPayrollIntegratedFilterConfigs((key) => t(key)),
+    [t],
+  );
 
   const payrollFilterValues = useMemo(
     () => ({
@@ -268,9 +271,7 @@ export function PayrollRunsListPageContent() {
           onClearAll={handleClearPayrollFilters}
         />
       ),
-      viewMode: (
-        <ViewModeSwitch value={view} onChange={handleViewChange} options={viewOptions} />
-      ),
+      viewMode: <ViewModeSwitch value={view} onChange={handleViewChange} options={viewOptions} />,
       trailing: (
         <>
           <Link

@@ -219,9 +219,7 @@ export function DeliveryStageChecklistPanel({
               <ChecklistWorkbenchStatusIcon variant={statusVariant} className="size-5 shrink-0" />
             )}
             <span className="truncate">
-              {loading
-                ? t('checklist.loading')
-                : t('checklist.progress', { reviewed, total })}
+              {loading ? t('checklist.loading') : t('checklist.progress', { reviewed, total })}
             </span>
           </span>
           <ChevronRight className="text-muted-foreground size-4 shrink-0 opacity-70" aria-hidden />

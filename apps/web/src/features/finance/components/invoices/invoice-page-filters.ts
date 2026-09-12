@@ -12,10 +12,7 @@ import {
   BOARD_LIFECYCLE_SCOPE_OPTIONS,
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
 } from '@/features/shared/board-lifecycle';
-import {
-  INVOICE_STAGE_MESSAGE_KEYS,
-  INVOICE_TYPE_MESSAGE_KEYS,
-} from './invoice-message-keys';
+import { INVOICE_STAGE_MESSAGE_KEYS, INVOICE_TYPE_MESSAGE_KEYS } from './invoice-message-keys';
 
 type InvoicePageTranslator = (key: string) => string;
 

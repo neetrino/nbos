@@ -49,7 +49,9 @@ export function CreateSubscriptionInvoiceDialog(props: CreateSubscriptionInvoice
             onToggle={state.toggleCoverageMonth}
           />
           {state.coverageMonths.length > 1 && !state.isConsecutive ? (
-            <p className="text-muted-foreground text-sm">{t('createSubscription.selectConsecutive')}</p>
+            <p className="text-muted-foreground text-sm">
+              {t('createSubscription.selectConsecutive')}
+            </p>
           ) : null}
           {state.error ? (
             <p className="text-destructive text-sm" role="alert">

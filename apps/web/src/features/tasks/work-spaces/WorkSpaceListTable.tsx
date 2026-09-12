@@ -24,10 +24,7 @@ import {
 } from '@/components/shared/entity-list-table';
 import type { WorkSpace } from '@/lib/api/tasks';
 import { cn } from '@/lib/utils';
-import {
-  buildWorkSpaceContextHref,
-  getWorkSpaceContextLabel,
-} from './work-space-utils';
+import { buildWorkSpaceContextHref, getWorkSpaceContextLabel } from './work-space-utils';
 
 interface WorkSpaceListTableProps {
   workspaces: WorkSpace[];

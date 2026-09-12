@@ -42,7 +42,9 @@ export function WonWhatsAppGatePanel({ deal, open, onSatisfiedChange }: WonWhats
           size="sm"
           onClick={() => setShowAdvanced((open) => !open)}
         >
-          {showAdvanced ? t('dealSheet.whatsapp.hideOptions') : t('dealSheet.whatsapp.needDifferent')}
+          {showAdvanced
+            ? t('dealSheet.whatsapp.hideOptions')
+            : t('dealSheet.whatsapp.needDifferent')}
         </Button>
       ) : null}
       {pickerOpen ? (

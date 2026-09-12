@@ -106,9 +106,7 @@ export function EmployeeDepartmentsPanel({
         className={TEAM_SHEET_SECTION_CLASS}
       >
         {employee.departments.length === 0 ? (
-          <p className="text-muted-foreground py-4 text-center text-sm">
-            {t('departments.empty')}
-          </p>
+          <p className="text-muted-foreground py-4 text-center text-sm">{t('departments.empty')}</p>
         ) : (
           <ul className="space-y-2">
             {employee.departments.map((ed) => (

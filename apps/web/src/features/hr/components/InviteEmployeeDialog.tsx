@@ -177,7 +177,9 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
               <SelectTrigger className="w-full">
                 <SelectValue
                   placeholder={
-                    departmentsLoading ? t('invite.loadingDepartments') : t('invite.selectDepartment')
+                    departmentsLoading
+                      ? t('invite.loadingDepartments')
+                      : t('invite.selectDepartment')
                   }
                 />
               </SelectTrigger>

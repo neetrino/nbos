@@ -33,14 +33,16 @@ export const WORKSPACE_KANBAN_COLUMN_DEFS = [
   { key: 'Completed', label: 'Completed', color: '#16A34A', hexColor: '#16A34A', sortOrder: 4 },
 ] as const;
 
-const WORKSPACE_COLUMN_STATUS: Record<(typeof WORKSPACE_KANBAN_COLUMN_DEFS)[number]['key'], string> =
-  {
-    Open: 'OPEN',
-    'In Progress': 'IN_PROGRESS',
-    Review: 'REVIEW',
-    'On hold': 'ON_HOLD',
-    Completed: 'COMPLETED',
-  };
+const WORKSPACE_COLUMN_STATUS: Record<
+  (typeof WORKSPACE_KANBAN_COLUMN_DEFS)[number]['key'],
+  string
+> = {
+  Open: 'OPEN',
+  'In Progress': 'IN_PROGRESS',
+  Review: 'REVIEW',
+  'On hold': 'ON_HOLD',
+  Completed: 'COMPLETED',
+};
 
 const KANBAN_COLUMN_BY_STAGE_KEY: Record<
   string,

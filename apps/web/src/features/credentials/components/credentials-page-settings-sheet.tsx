@@ -48,9 +48,7 @@ export function CredentialsPageSettingsSheet({
     <>
       <PageSettingsSheet
         title={t('settings.title', { module: t('title') })}
-        description={
-          isTrashList ? t('settings.descriptionTrash') : t('settings.descriptionActive')
-        }
+        description={isTrashList ? t('settings.descriptionTrash') : t('settings.descriptionActive')}
         triggerAriaLabel={t('settings.triggerAria')}
         open={sheetOpen}
         onOpenChange={setSheetOpen}

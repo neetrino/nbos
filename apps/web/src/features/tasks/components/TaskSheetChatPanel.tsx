@@ -199,9 +199,7 @@ function buildTaskActivity(
   const events = [
     { id: 'created', label: labels.createdBy, at: task.createdAt },
     { id: 'updated', label: labels.lastUpdate, at: task.updatedAt },
-    task.completedAt
-      ? { id: 'completed', label: labels.completed, at: task.completedAt }
-      : null,
+    task.completedAt ? { id: 'completed', label: labels.completed, at: task.completedAt } : null,
   ].filter(Boolean) as Array<{ id: string; label: string; at: string }>;
 
   return events.map((event) => ({

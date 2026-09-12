@@ -161,9 +161,7 @@ export default function CrmDashboardPage() {
                             <div className="flex items-center justify-between text-sm">
                               <span className="font-medium">
                                 {source?.icon}{' '}
-                                {source
-                                  ? translateLeadSourceLabel(t, source.value)
-                                  : item.source}
+                                {source ? translateLeadSourceLabel(t, source.value) : item.source}
                               </span>
                               <span className="text-muted-foreground">
                                 {item._count} ({pct}%)
@@ -222,8 +220,7 @@ export default function CrmDashboardPage() {
                         <CheckCircle2 size={14} className="text-green-600" />
                         <span className="font-medium text-green-600">
                           {t('dashboard.wonLabel', {
-                            count:
-                              dealStats.byStatus.find((s) => s.status === 'WON')?._count ?? 0,
+                            count: dealStats.byStatus.find((s) => s.status === 'WON')?._count ?? 0,
                           })}
                         </span>
                       </div>
@@ -294,7 +291,9 @@ export default function CrmDashboardPage() {
                       <p className="mt-1 text-2xl font-bold">{dealStats?.total ?? 0}</p>
                     </div>
                     <div className="bg-secondary/50 rounded-lg p-4 text-center">
-                      <p className="text-muted-foreground text-xs">{t('dashboard.pipelineValue')}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {t('dashboard.pipelineValue')}
+                      </p>
                       <p className="text-accent mt-1 text-lg font-bold">
                         {formatAmount(dealPipelineAmount)}
                       </p>

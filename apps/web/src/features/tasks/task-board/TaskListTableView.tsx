@@ -52,7 +52,10 @@ export function TaskListTableView({
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>
               {boardScope === 'CLOSED' ? t('table.closed') : t('table.status')}
             </TableHead>
-            <TableHead className={cn(ENTITY_LIST_HEAD_CLASS, 'w-12')} aria-label={t('table.urgent')} />
+            <TableHead
+              className={cn(ENTITY_LIST_HEAD_CLASS, 'w-12')}
+              aria-label={t('table.urgent')}
+            />
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.planning')}</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.due')}</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.assignee')}</TableHead>

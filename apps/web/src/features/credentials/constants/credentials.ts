@@ -55,9 +55,7 @@ export function getCredentialCriticality(value: string) {
 }
 
 export function credentialCategoryMessageKey(value: string): `categories.${string}` | null {
-  return CREDENTIAL_CATEGORIES.some((item) => item.value === value)
-    ? `categories.${value}`
-    : null;
+  return CREDENTIAL_CATEGORIES.some((item) => item.value === value) ? `categories.${value}` : null;
 }
 
 export function credentialTypeMessageKey(value: string): `types.${string}` | null {

@@ -75,7 +75,10 @@ export function InvoiceKanban({
   const invoiceStatusLabels = useMemo(
     () =>
       Object.fromEntries(
-        INVOICE_MONEY_STAGES.map((stage) => [stage.value, t(INVOICE_STAGE_MESSAGE_KEYS[stage.value])]),
+        INVOICE_MONEY_STAGES.map((stage) => [
+          stage.value,
+          t(INVOICE_STAGE_MESSAGE_KEYS[stage.value]),
+        ]),
       ) as Record<string, string>,
     [t],
   );

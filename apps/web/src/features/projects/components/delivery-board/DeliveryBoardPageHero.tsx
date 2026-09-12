@@ -31,7 +31,6 @@ import {
   useDeliveryBoardClosedHeroFilterConfigs,
 } from './use-delivery-board-closed-hero-filters';
 
-
 const DEFAULT_CLOSED_FILTERS: DeliveryBoardClosedFiltersInput = {
   search: '',
   projectId: '',
