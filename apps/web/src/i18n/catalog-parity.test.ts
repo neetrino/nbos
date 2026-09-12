@@ -16,6 +16,7 @@ import enCredentials from '../messages/en/credentials.json';
 import enExpenses from '../messages/en/expenses.json';
 import enSearch from '../messages/en/search.json';
 import enTasks from '../messages/en/tasks.json';
+import enQuick from '../messages/en/quick.json';
 import ruAccount from '../messages/ru/account.json';
 import ruCommon from '../messages/ru/common.json';
 import ruDashboard from '../messages/ru/dashboard.json';
@@ -33,6 +34,7 @@ import ruCredentials from '../messages/ru/credentials.json';
 import ruExpenses from '../messages/ru/expenses.json';
 import ruSearch from '../messages/ru/search.json';
 import ruTasks from '../messages/ru/tasks.json';
+import ruQuick from '../messages/ru/quick.json';
 import { flattenMessageKeys } from './flatten-messages';
 import { mergeMessages } from './merge-messages';
 
@@ -65,6 +67,7 @@ describe('completed i18n catalogs', () => {
       flattenMessageKeys(ruCredentials).sort(),
     );
     expect(flattenMessageKeys(enExpenses).sort()).toEqual(flattenMessageKeys(ruExpenses).sort());
+    expect(flattenMessageKeys(enQuick).sort()).toEqual(flattenMessageKeys(ruQuick).sort());
   });
 
   it('falls back to English when a Russian string is missing', () => {

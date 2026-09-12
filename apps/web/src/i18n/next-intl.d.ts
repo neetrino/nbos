@@ -15,6 +15,7 @@ import type enDeliveryBoard from '../messages/en/delivery-board.json';
 import type enPayroll from '../messages/en/payroll.json';
 import type enCredentials from '../messages/en/credentials.json';
 import type enExpenses from '../messages/en/expenses.json';
+import type enQuick from '../messages/en/quick.json';
 
 type Messages = {
   common: typeof enCommon;
@@ -34,6 +35,7 @@ type Messages = {
   payroll: typeof enPayroll;
   credentials: typeof enCredentials;
   expenses: typeof enExpenses;
+  quick: typeof enQuick;
 };
 
 declare module 'next-intl' {

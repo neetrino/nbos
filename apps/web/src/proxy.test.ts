@@ -45,6 +45,17 @@ describe('proxy', () => {
     expect(location.searchParams.get('callbackUrl')).toBe('/projects/42');
   });
 
+  it('sends guests on Quick Task to sign-in with the original destination', async () => {
+    vi.mocked(getToken).mockResolvedValue(null);
+
+    const response = await proxy(request('/quick/task'));
+
+    expect(response.status).toBe(307);
+    const location = new URL(response.headers.get('location') ?? '');
+    expect(location.pathname).toBe('/sign-in');
+    expect(location.searchParams.get('callbackUrl')).toBe('/quick/task');
+  });
+
   it('keeps guests on public paths and moves signed-in visitors off the landing page', async () => {
     vi.mocked(getToken).mockResolvedValue(null);
     const guestLanding = await proxy(request('/'));
