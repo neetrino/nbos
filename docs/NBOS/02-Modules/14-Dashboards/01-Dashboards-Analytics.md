@@ -47,20 +47,20 @@ Dashboard
 - открыть список всех доступных действий;
 - вернуть default layout по роли.
 
-Примеры действий:
+Два типа кнопок:
 
-- `New Lead`;
-- `New Task`;
+- **Create** — открывает существующий dialog/sheet на Dashboard (`New Task`, `New Meeting`, `New Lead`, `New Expense`). Знак плюса.
+- **Open** — переход на страницу или personal link. Стрелка `ArrowUpRight`.
+
+Примеры Open:
+
 - `Open My Work Space`;
 - `Open Delivery Board`;
 - `Open Invoices`;
 - `Open Salary Board`;
 - `Open Messenger`;
 - `Open Calendar`;
-- `Open Credentials Vault`;
-- `Create Support Ticket`;
-- `Open Client Services`;
-- `Open Partner Payouts`.
+- `Open Credentials Vault`.
 
 Доступные действия фильтруются RBAC и feature flags.
 

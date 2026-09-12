@@ -1,9 +1,11 @@
-export const DASHBOARD_PINNED_ACTION_MAX_COUNT = 12;
+export const DASHBOARD_PINNED_ACTION_MAX_COUNT = 20;
 export const DASHBOARD_WIDGET_MAX_COUNT = 12;
 
 export const DASHBOARD_PINNED_ACTION_KEYS = [
   'new-lead',
   'new-task',
+  'new-meeting',
+  'new-expense',
   'open-deals',
   'open-my-workspaces',
   'open-products',

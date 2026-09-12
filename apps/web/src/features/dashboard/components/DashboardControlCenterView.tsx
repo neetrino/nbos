@@ -11,6 +11,7 @@ import type {
   PinnedAction,
   PriorityCard,
 } from '../dashboard-control-registry';
+import { DashboardCreateActionsProvider } from './DashboardCreateActionsProvider';
 import { DashboardDeskHeader } from './DashboardDeskHeader';
 import { MiniAnalytics, PriorityFeed } from './DashboardInsightPanels';
 import { DashboardNotesPanel } from './DashboardNotesPanel';
@@ -83,17 +84,19 @@ export function DashboardControlCenterView({
       {error ? <DashboardError message={error} /> : null}
       <section className={DASHBOARD_GRID_CLASS}>
         <div className="min-w-0 lg:col-span-2 xl:col-span-2 xl:row-start-1">
-          <PinnedActions
-            actions={actions}
-            editMode={editMode}
-            hiddenActions={hiddenActions}
-            onApplyPinnedLayout={applyPinnedLayout}
-            onCreatePersonalLink={createPersonalLink}
-            onDeletePersonalLink={deletePersonalLink}
-            onToggleEdit={() => setEditMode((current) => !current)}
-            personalLinks={personalLinks}
-            saving={savingPreference}
-          />
+          <DashboardCreateActionsProvider>
+            <PinnedActions
+              actions={actions}
+              editMode={editMode}
+              hiddenActions={hiddenActions}
+              onApplyPinnedLayout={applyPinnedLayout}
+              onCreatePersonalLink={createPersonalLink}
+              onDeletePersonalLink={deletePersonalLink}
+              onToggleEdit={() => setEditMode((current) => !current)}
+              personalLinks={personalLinks}
+              saving={savingPreference}
+            />
+          </DashboardCreateActionsProvider>
         </div>
 
         <div className="min-w-0 xl:col-start-1 xl:row-start-2">

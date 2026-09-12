@@ -68,6 +68,8 @@ Runtime `Topbar` no longer contains a permanent global `Create` button. It keeps
 Current behavior:
 
 - frequently used open/create paths live in Dashboard pinned actions;
+- Create tiles open the same in-place dialogs as Tasks / Calendar / CRM / Expenses;
+- Open tiles and personal links navigate; personal-link CRUD is unchanged;
 - module-level create buttons stay inside concrete modules.
 
 ### B3. Dashboard does not support user preferences

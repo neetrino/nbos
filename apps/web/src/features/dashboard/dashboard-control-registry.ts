@@ -1,15 +1,18 @@
 import {
   Calendar,
+  CalendarPlus,
   CheckSquare,
   FileText,
   FolderKanban,
   Handshake,
   Headphones,
   KeyRound,
+  ListPlus,
   Mail,
   MessageCircle,
   Plus,
   ReceiptText,
+  UserPlus,
 } from 'lucide-react';
 import type {
   DashboardMetricProjection,
@@ -19,15 +22,20 @@ import type {
   DashboardPriorityProjection,
 } from '@/lib/api/dashboard';
 
-export interface PinnedAction {
+export type PinnedActionKind = 'create' | 'open';
+
+interface PinnedActionBase {
   key: DashboardPinnedActionKey;
   label: string;
-  href: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   module: string;
   action: string;
   description: string;
 }
+
+export type PinnedAction =
+  | (PinnedActionBase & { kind: 'create' })
+  | (PinnedActionBase & { kind: 'open'; href: string });
 
 export type DashboardPersonalLink = ApiDashboardPersonalLink;
 export type DashboardNote = ApiDashboardNote;
@@ -36,6 +44,8 @@ export type DashboardPreference = DashboardPreferenceProjection;
 export type DashboardPinnedActionKey =
   | 'new-lead'
   | 'new-task'
+  | 'new-meeting'
+  | 'new-expense'
   | 'open-deals'
   | 'open-my-workspaces'
   | 'open-products'
@@ -53,25 +63,44 @@ export type PriorityCard = DashboardPriorityProjection;
 
 export const PINNED_ACTIONS: PinnedAction[] = [
   {
-    key: 'new-lead',
-    label: 'New lead',
-    href: '/crm/leads',
-    icon: Plus,
-    module: 'CRM_LEADS',
-    action: 'ADD',
-    description: 'Capture an incoming opportunity.',
-  },
-  {
     key: 'new-task',
+    kind: 'create',
     label: 'New task',
-    href: '/tasks',
-    icon: CheckSquare,
+    icon: ListPlus,
     module: 'TASKS',
     action: 'ADD',
     description: 'Create work for yourself or a teammate.',
   },
   {
+    key: 'new-meeting',
+    kind: 'create',
+    label: 'New meeting',
+    icon: CalendarPlus,
+    module: 'CALENDAR',
+    action: 'ADD',
+    description: 'Schedule a client meeting without leaving the desk.',
+  },
+  {
+    key: 'new-lead',
+    kind: 'create',
+    label: 'New lead',
+    icon: UserPlus,
+    module: 'CRM_LEADS',
+    action: 'ADD',
+    description: 'Capture an incoming opportunity.',
+  },
+  {
+    key: 'new-expense',
+    kind: 'create',
+    label: 'New expense',
+    icon: ReceiptText,
+    module: 'FINANCE_EXPENSES',
+    action: 'ADD',
+    description: 'Log an expense from the desk.',
+  },
+  {
     key: 'open-deals',
+    kind: 'open',
     label: 'Open deals',
     href: '/crm/deals',
     icon: Handshake,
@@ -81,6 +110,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-my-workspaces',
+    kind: 'open',
     label: 'My Work Spaces',
     href: '/work-spaces',
     icon: FolderKanban,
@@ -90,6 +120,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-products',
+    kind: 'open',
     label: 'Delivery Board',
     href: '/delivery-board',
     icon: FolderKanban,
@@ -99,6 +130,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-invoices',
+    kind: 'open',
     label: 'Open invoices',
     href: '/finance/invoices',
     icon: FileText,
@@ -108,6 +140,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-expenses',
+    kind: 'open',
     label: 'Pay now',
     href: '/finance/expenses',
     icon: ReceiptText,
@@ -117,6 +150,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-payroll',
+    kind: 'open',
     label: 'Salary',
     href: '/finance/payroll',
     icon: FileText,
@@ -126,6 +160,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-tasks',
+    kind: 'open',
     label: 'My tasks',
     href: '/tasks',
     icon: CheckSquare,
@@ -135,6 +170,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-support',
+    kind: 'open',
     label: 'Support queue',
     href: '/support',
     icon: Headphones,
@@ -144,6 +180,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-calendar',
+    kind: 'open',
     label: 'Open calendar',
     href: '/calendar',
     icon: Calendar,
@@ -153,6 +190,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-credentials',
+    kind: 'open',
     label: 'Credentials vault',
     href: '/credentials',
     icon: KeyRound,
@@ -162,6 +200,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-messenger',
+    kind: 'open',
     label: 'Open messenger',
     href: '/messenger',
     icon: MessageCircle,
@@ -171,6 +210,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'mail-inbox',
+    kind: 'open',
     label: 'Mail inbox',
     href: '/mail',
     icon: Mail,

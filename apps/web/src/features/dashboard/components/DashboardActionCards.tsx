@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { ExternalLink, Eye, Trash2 } from 'lucide-react';
+import { Eye, Trash2 } from 'lucide-react';
 import { ActionTileButton } from '@/components/shared';
 import { PersonalLinkMark } from '@/components/shared/it-brand-mark/PersonalLinkMark';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,10 @@ import {
   getPinnedActionTone,
 } from '../dashboard-pinned-action-tones';
 import type { DashboardPersonalLink, PinnedAction } from '../dashboard-control-registry';
+import { isPinnedOpenAction } from '../dashboard-pinned-action-kind';
 import { cn } from '@/lib/utils';
+import { PinnedActionKindMark } from './PinnedActionKindMark';
+import { useDashboardCreateAction } from './DashboardCreateActionsProvider';
 
 function DashboardPinnedTileShell({
   children,
@@ -39,8 +42,11 @@ interface PersonalLinkCardProps {
 }
 
 export function PinnedActionCard({ action, variant = 'visible', editMode }: PinnedActionCardProps) {
+  const openCreateAction = useDashboardCreateAction();
   const isHidden = variant === 'hidden';
   const Icon = isHidden ? Eye : action.icon;
+  const isInteractive = !editMode && !isHidden;
+  const openHref = isInteractive && isPinnedOpenAction(action) ? action.href : undefined;
 
   return (
     <DashboardPinnedTileShell>
@@ -52,8 +58,12 @@ export function PinnedActionCard({ action, variant = 'visible', editMode }: Pinn
         fullWidth
         wrapLabel
         className="h-full"
-        href={!editMode && !isHidden ? action.href : undefined}
+        href={openHref}
+        onClick={
+          isInteractive && action.kind === 'create' ? () => openCreateAction(action.key) : undefined
+        }
         displayOnly={editMode || isHidden}
+        trailing={<PinnedActionKindMark kind={action.kind} />}
       />
     </DashboardPinnedTileShell>
   );
@@ -65,11 +75,7 @@ export function PersonalLinkCard({ editMode, link, onDelete }: PersonalLinkCardP
       <ActionTileButton
         label={link.label}
         icon={<PersonalLinkMark url={link.url} label={link.label} />}
-        trailing={
-          link.isExternal ? (
-            <ExternalLink className="text-muted-foreground size-3.5 shrink-0" aria-hidden />
-          ) : null
-        }
+        trailing={<PinnedActionKindMark kind="open" />}
         tone="secondary"
         size="lg"
         fullWidth

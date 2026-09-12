@@ -210,12 +210,14 @@ export function TaskLinkedEntitiesSection({
             ))}
           </ul>
         ) : (
-          <div
-            className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, 'pointer-events-none italic')}
-            aria-hidden
+          <button
+            type="button"
+            disabled={locked}
+            onClick={() => setSearchOpen(true)}
+            className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, 'italic')}
           >
             {TASK_LINKED_TO_PLACEHOLDER}
-          </div>
+          </button>
         )}
       </div>
 

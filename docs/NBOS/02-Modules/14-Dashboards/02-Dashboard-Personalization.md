@@ -20,30 +20,34 @@
 - открыть список доступных действий;
 - сбросить к default layout по роли.
 
-## Available Actions Drawer
+Pinned actions split into two visible groups:
 
-Закрытый список всех доступных действий:
+- **Create** — in-place dialogs (sheet/dialog already used in the module). Plus mark. Does not navigate away.
+- **Open** — internal routes and personal links. Arrow mark.
 
 ```text
-Add action
-  CRM
-    New Lead
-    Open Deals
-    Open CRM Client Chats
-  Delivery
-    Open Delivery Board
-    Open My Work Spaces
-  Finance
-    Open Invoices
-    Open Salary Board
-    Open Expense Board
-  System
-    Open Drive
-    Open Credentials
-    Open Calendar
+Create
+  New Task
+  New Meeting
+  New Lead
+  New Expense
+Open
+  Open Deals
+  My Work Spaces
+  Delivery Board
+  Open Invoices
+  Pay now
+  Salary
+  My tasks
+  Support queue
+  Open Calendar
+  Credentials vault
+  Open Messenger
+  Mail inbox
+  Personal links
 ```
 
-Список фильтруется по правам пользователя.
+Список фильтруется по правам пользователя. Пользователь скрывает лишние кнопки в edit mode; personal links не входят в hide/show каталог.
 
 ## Personal Links as Pinned Actions
 
