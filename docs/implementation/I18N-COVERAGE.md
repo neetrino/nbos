@@ -206,4 +206,4 @@ Additive migration is in the repo and applied to the authorized Neon database. P
 | 2     | Shell + remaining Dashboard                    | en_ru (desktop RU + light/dark/system sampled live; mobile 390px menu sampled)                                      |
 | 3     | Four create flows                              | en_ru (date-picker chrome sampled live in RU; Meeting 403/conflict/network copy sampled live via request intercept) |
 | 4     | Automated + visual acceptance                  | partial (web typecheck + lint 0 errors; live token-expiry and two-user logout/login still open)                     |
-| 5     | Review, docs, report                           | in_progress (report + conflict parser; two-user login, live token-expiry, production rollout open)                  |
+| 5     | Review, docs, report                           | in_progress (logout cookie clear unit-tested; live two-user login, token-expiry, production rollout open)           |
