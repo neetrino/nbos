@@ -30,10 +30,7 @@ export function DashboardDeskHeader() {
             now,
           )
         : deskCopy(null);
-    const catalog = readDeskLineCatalogTemplates(
-      messages.dashboardDeskLine,
-      resolution.templateId,
-    );
+    const catalog = readDeskLineCatalogTemplates(messages.dashboardDeskLine, resolution.templateId);
     const localized = localizeDeskLineCopy(resolution, {
       title: catalog.title ?? resolution.titleTemplate,
       subline: catalog.subline ?? resolution.sublineTemplate,

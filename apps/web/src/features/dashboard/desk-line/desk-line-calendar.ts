@@ -14,11 +14,7 @@ import {
   DESK_LINE_WINTER_START_MONTH,
   DESK_LINE_YEREVAN_OFFSET_HOURS,
 } from './desk-line.constants';
-import type {
-  DeskLineCalendarDay,
-  DeskLineCalendarEvent,
-  DeskLineSeason,
-} from './desk-line.types';
+import type { DeskLineCalendarDay, DeskLineCalendarEvent, DeskLineSeason } from './desk-line.types';
 
 const ISO_DATE_PREFIX = /^(\d{4})-(\d{2})-(\d{2})/u;
 const YEREVAN_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
@@ -158,8 +154,10 @@ export function isMemorialDay(monthDay: string): boolean {
 }
 
 export function eventOnMonthDay(monthDay: string): DeskLineCalendarEvent | null {
-  return DESK_LINE_EVENTS.find((event) => event.monthDay === monthDay && event.kind !== 'memorial') ??
-    null;
+  return (
+    DESK_LINE_EVENTS.find((event) => event.monthDay === monthDay && event.kind !== 'memorial') ??
+    null
+  );
 }
 
 /** Next 00:00 in Asia/Yerevan. Yerevan is UTC+4 without DST. */

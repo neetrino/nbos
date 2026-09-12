@@ -1,4 +1,9 @@
-import type { DeskLineIconKey, DeskLinePoolId, DeskLineTemplate, DeskLineTone } from './desk-line.types';
+import type {
+  DeskLineIconKey,
+  DeskLinePoolId,
+  DeskLineTemplate,
+  DeskLineTone,
+} from './desk-line.types';
 
 export function deskPair(
   id: string,

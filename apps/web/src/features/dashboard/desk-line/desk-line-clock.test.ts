@@ -17,11 +17,7 @@ describe('subscribeYerevanDeskClock', () => {
       removeDocumentListener: vi.fn(),
       isDocumentVisible: () => true,
     };
-    const stop = subscribeYerevanDeskClock(
-      tick,
-      host,
-      () => new Date('2026-09-16T06:00:00.000Z'),
-    );
+    const stop = subscribeYerevanDeskClock(tick, host, () => new Date('2026-09-16T06:00:00.000Z'));
     expect(host.addWindowListener).toHaveBeenCalledWith('focus', tick);
     expect(delays[0]).toBe(50_400_000);
     stop();

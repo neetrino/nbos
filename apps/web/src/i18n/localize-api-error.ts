@@ -16,10 +16,7 @@ export type LocalizedApiErrorCopy = {
  * Maps first-release API failures to catalog copy by status/code.
  * Does not return raw server English or substitute message strings.
  */
-export function localizeCaughtApiError(
-  caught: unknown,
-  copy: LocalizedApiErrorCopy,
-): string {
+export function localizeCaughtApiError(caught: unknown, copy: LocalizedApiErrorCopy): string {
   if (isPermissionDeniedApiError(caught)) {
     return copy.permissionDenied;
   }

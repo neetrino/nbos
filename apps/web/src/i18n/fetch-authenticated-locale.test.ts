@@ -43,7 +43,10 @@ describe('fetchAuthenticatedLocale', () => {
       'fetch',
       vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({ data: { interfaceLocale: 'ru' }, timestamp: '2026-09-12T00:00:00.000Z' }),
+        json: async () => ({
+          data: { interfaceLocale: 'ru' },
+          timestamp: '2026-09-12T00:00:00.000Z',
+        }),
       }),
     );
 

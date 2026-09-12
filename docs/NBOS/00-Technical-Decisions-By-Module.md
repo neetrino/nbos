@@ -245,14 +245,14 @@ Planning authority: `02-Modules/21-AI-Platform/42-Phase-2-Project-Intelligence-a
 
 ### Dashboard And Reports
 
-| Area         | Decision                                                                                        |
-| ------------ | ----------------------------------------------------------------------------------------------- |
-| Dashboard    | Dashboard is a lightweight control center, not a BI system.                                     |
+| Area         | Decision                                                                                                                                  |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Dashboard    | Dashboard is a lightweight control center, not a BI system.                                                                               |
 | Desk line    | Local catalog wish for the Yerevan day: personal dates, curated calendar, seasons, everyday decks. No daily LLM, weather, or new storage. |
-| Reports      | Reports read module projections and must not duplicate business logic.                          |
-| Exports      | Heavy exports and scheduled reports use BullMQ and Drive snapshots.                             |
-| Missing data | Show data-quality warnings or missing state; never fake zero values.                            |
-| Cache        | Use simple refresh/cache in MVP; live widgets are later unless required by a specific workflow. |
+| Reports      | Reports read module projections and must not duplicate business logic.                                                                    |
+| Exports      | Heavy exports and scheduled reports use BullMQ and Drive snapshots.                                                                       |
+| Missing data | Show data-quality warnings or missing state; never fake zero values.                                                                      |
+| Cache        | Use simple refresh/cache in MVP; live widgets are later unless required by a specific workflow.                                           |
 
 ### Documents
 

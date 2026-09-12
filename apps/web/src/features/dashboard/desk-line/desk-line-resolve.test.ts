@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { nextYerevanMidnightUtc, parseValidCalendarDate, yerevanCalendarDay } from './desk-line-calendar';
+import {
+  nextYerevanMidnightUtc,
+  parseValidCalendarDate,
+  yerevanCalendarDay,
+} from './desk-line-calendar';
 import { DESK_LINE_REPEAT_WINDOW_DAYS } from './desk-line.constants';
 import { deskLinePool } from './desk-line-catalog';
 import { isSeasonSlot, seasonPhase } from './desk-line-deck';
@@ -74,19 +78,16 @@ describe('stability', () => {
     const later = resolveDeskLineDetails({ employeeId: 'emp-later', firstName: 'Levon' }, now);
     const first = resolveDeskLineDetails(SIPAN, now);
     expect(resolveDeskLineDetails(SIPAN, now).templateId).toBe(first.templateId);
-    expect(resolveDeskLineDetails({ employeeId: 'emp-later', firstName: 'Levon' }, now).templateId).toBe(
-      later.templateId,
-    );
+    expect(
+      resolveDeskLineDetails({ employeeId: 'emp-later', firstName: 'Levon' }, now).templateId,
+    ).toBe(later.templateId);
   });
 });
 
 describe('personal events', () => {
   it('prefers birthday over a cultural date', () => {
     const now = atYerevan('2026-04-22T20:30:00.000Z');
-    const resolved = resolveDeskLineDetails(
-      { ...SIPAN, birthday: '1994-04-23' },
-      now,
-    );
+    const resolved = resolveDeskLineDetails({ ...SIPAN, birthday: '1994-04-23' }, now);
     expect(resolved.pool).toBe('birthday');
     expect(resolved.icon).toBe('Cake');
     expect(resolved.title).not.toMatch(/World Book/iu);
@@ -157,10 +158,7 @@ describe('memorial 24 April', () => {
   });
 
   it('keeps a birthday restrained', () => {
-    const resolved = resolveDeskLineDetails(
-      { ...SIPAN, birthday: '1990-04-24' },
-      memorialInstant,
-    );
+    const resolved = resolveDeskLineDetails({ ...SIPAN, birthday: '1990-04-24' }, memorialInstant);
     expect(resolved.pool).toBe('birthday_memorial');
     expect(resolved.icon).not.toBe('PartyPopper');
     expect(resolved.title + resolved.subline).not.toMatch(/confetti|celebrate/iu);
@@ -178,10 +176,7 @@ describe('memorial 24 April', () => {
   });
 
   it('does not thank a first-year anniversary for several years', () => {
-    const resolved = resolveDeskLineDetails(
-      { ...SIPAN, hireDate: '2025-04-24' },
-      memorialInstant,
-    );
+    const resolved = resolveDeskLineDetails({ ...SIPAN, hireDate: '2025-04-24' }, memorialInstant);
     expect(resolved.pool).toBe('anniversary_memorial');
     expect(resolved.title + resolved.subline).not.toMatch(/years here|1 years/iu);
     expect(resolved.title + resolved.subline).toMatch(/thank you for being here/iu);
@@ -192,10 +187,7 @@ describe('diversity and decks', () => {
   it('varies template ids across thirty people', () => {
     const now = atYerevan('2026-09-16T08:00:00.000Z');
     const ids = Array.from({ length: 30 }, (_, index) =>
-      resolveDeskLineDetails(
-        { employeeId: `emp-${index}`, firstName: 'Alex' },
-        now,
-      ),
+      resolveDeskLineDetails({ employeeId: `emp-${index}`, firstName: 'Alex' }, now),
     );
     const uniqueIds = new Set(ids.map((item) => item.templateId));
     const uniqueThemes = new Set(ids.map((item) => item.theme));

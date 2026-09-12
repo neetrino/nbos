@@ -44,7 +44,9 @@ export function MobileAppMenu({ open, onOpenChange, items }: MobileAppMenuProps)
         <div className="flex min-h-0 flex-1 flex-col">
           <BottomSheetSwipeHandle handleRef={handleRef} />
           <div className="touch-none px-4 pt-3 pb-2">
-            <p className="text-foreground text-lg font-semibold tracking-tight">{t('mobileMenu.title')}</p>
+            <p className="text-foreground text-lg font-semibold tracking-tight">
+              {t('mobileMenu.title')}
+            </p>
           </div>
           <div
             data-nbos-sheet-swipe-scroll=""

@@ -15,8 +15,7 @@ export interface InterfaceLocalePreference {
 
 export function isWritableInterfaceLocale(value: unknown): value is WritableInterfaceLocale {
   return (
-    typeof value === 'string' &&
-    (WRITABLE_INTERFACE_LOCALES as readonly string[]).includes(value)
+    typeof value === 'string' && (WRITABLE_INTERFACE_LOCALES as readonly string[]).includes(value)
   );
 }
 

@@ -10,7 +10,8 @@ export type NavigationMessageKey = MessageLeafKeys<typeof enNavigation>;
 export type NavigationTranslator = (key: NavigationMessageKey) => string;
 
 /** Stable next-intl key for the sidebar Tasks quick-create affordance. */
-export const NAV_QUICK_ACTION_CREATE_TASK_LABEL_KEY = 'quickAction.createTask' satisfies NavigationMessageKey;
+export const NAV_QUICK_ACTION_CREATE_TASK_LABEL_KEY =
+  'quickAction.createTask' satisfies NavigationMessageKey;
 
 function getMessageByDotPath(messages: Record<string, unknown>, path: string): string | undefined {
   const value = path.split('.').reduce<unknown>((current, part) => {

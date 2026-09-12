@@ -1,4 +1,9 @@
-import { catalogSeed, compareByPersonalOrder, positiveModulo, unsignedHash } from './desk-line-hash';
+import {
+  catalogSeed,
+  compareByPersonalOrder,
+  positiveModulo,
+  unsignedHash,
+} from './desk-line-hash';
 import type { DeskLinePoolId, DeskLineTemplate } from './desk-line.types';
 
 export function orderDeck(

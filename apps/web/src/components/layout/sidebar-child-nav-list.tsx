@@ -19,9 +19,9 @@ export function SidebarChildNavList({
   item: NavModuleDefinition;
   pathname: string;
 }) {
-  if (!item.children) return null;
-
   const t = useTranslations('navigation');
+
+  if (!item.children) return null;
 
   return (
     <ul className={SIDEBAR_NAV_CHILD_LIST_CLASS}>

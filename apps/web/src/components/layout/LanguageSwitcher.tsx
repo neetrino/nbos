@@ -22,8 +22,14 @@ export function LanguageSwitcher() {
 
   return (
     <div className="border-border border-t px-3 py-3">
-      <p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide">{t('language')}</p>
-      <div role="radiogroup" aria-label={t('language')} className="bg-muted flex gap-0.5 rounded-lg p-0.5">
+      <p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide">
+        {t('language')}
+      </p>
+      <div
+        role="radiogroup"
+        aria-label={t('language')}
+        className="bg-muted flex gap-0.5 rounded-lg p-0.5"
+      >
         {ENABLED_INTERFACE_LOCALES.map((value) => {
           const selected = locale === value;
           return (

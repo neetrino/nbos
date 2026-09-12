@@ -1,9 +1,6 @@
 import type { AbstractIntlMessages } from 'next-intl';
 
-export function flattenMessageKeys(
-  messages: AbstractIntlMessages,
-  prefix = '',
-): string[] {
+export function flattenMessageKeys(messages: AbstractIntlMessages, prefix = ''): string[] {
   const keys: string[] = [];
   for (const [key, value] of Object.entries(messages)) {
     const path = prefix ? `${prefix}.${key}` : key;

@@ -64,7 +64,11 @@ export function NbosTimePicker({
         sideOffset={6}
         className="border-border bg-popover w-auto min-w-0 rounded-xl p-1 shadow-xl"
       >
-        <div className="flex items-center gap-0.5" role="group" aria-label={t('datePicker.selectTime')}>
+        <div
+          className="flex items-center gap-0.5"
+          role="group"
+          aria-label={t('datePicker.selectTime')}
+        >
           <TimeColumn
             label={t('datePicker.hours')}
             options={HOUR_OPTIONS}

@@ -17,10 +17,7 @@ interface MobilePageSearchSheetProps {
   label?: string;
 }
 
-export function MobilePageSearchSheet({
-  search,
-  label,
-}: MobilePageSearchSheetProps) {
+export function MobilePageSearchSheet({ search, label }: MobilePageSearchSheetProps) {
   const t = useTranslations('navigation');
   const resolvedLabel = label ?? t('mobileDock.search');
   const [open, setOpen] = useState(false);

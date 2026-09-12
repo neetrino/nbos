@@ -72,7 +72,10 @@ export function PinnedActions({
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor),
   );
-  const visibleKeys = [...actions.map((action) => action.key), ...visibleLinks.map((link) => link.id)];
+  const visibleKeys = [
+    ...actions.map((action) => action.key),
+    ...visibleLinks.map((link) => link.id),
+  ];
   const hiddenKeys = [
     ...hiddenActions.map((action) => action.key),
     ...hiddenLinks.map((link) => link.id),
@@ -205,7 +208,9 @@ function PinnedActionsEdit({
       ? null
       : ([...actions, ...hiddenActions].find((action) => action.key === activeDragId) ?? null);
   const activeDragLink =
-    activeDragId === null ? null : (dashboardLinks.find((link) => link.id === activeDragId) ?? null);
+    activeDragId === null
+      ? null
+      : (dashboardLinks.find((link) => link.id === activeDragId) ?? null);
 
   return (
     <>

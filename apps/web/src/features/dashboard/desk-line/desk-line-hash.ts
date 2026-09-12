@@ -17,10 +17,7 @@ export function positiveModulo(value: number, modulo: number): number {
   return ((value % modulo) + modulo) % modulo;
 }
 
-export function catalogSeed(
-  employeeId: string,
-  ...parts: readonly string[]
-): string {
+export function catalogSeed(employeeId: string, ...parts: readonly string[]): string {
   return [DESK_LINE_CATALOG_VERSION, employeeId, ...parts].join('|');
 }
 

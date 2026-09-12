@@ -41,7 +41,28 @@ const MEETING_TYPE_VALUES = [
 
 const LOCATION_TYPE_VALUES = ['ONLINE', 'OFFLINE'] as const;
 
-function meetingDefaults(selectedDate: Date) {
+type MeetingTypeValue = (typeof MEETING_TYPE_VALUES)[number];
+type LocationTypeValue = (typeof LOCATION_TYPE_VALUES)[number];
+
+type MeetingCreateForm = {
+  title: string;
+  startsLocal: string;
+  endsLocal: string;
+  meetingType: MeetingTypeValue;
+  locationType: LocationTypeValue;
+  locationOrLink: string;
+  agenda: string;
+};
+
+function isMeetingTypeValue(value: string | null): value is MeetingTypeValue {
+  return value !== null && (MEETING_TYPE_VALUES as readonly string[]).includes(value);
+}
+
+function isLocationTypeValue(value: string | null): value is LocationTypeValue {
+  return value !== null && (LOCATION_TYPE_VALUES as readonly string[]).includes(value);
+}
+
+function meetingDefaults(selectedDate: Date): MeetingCreateForm {
   return {
     title: '',
     startsLocal: toDatetimeLocalValue(selectedDate, 9, 0),
@@ -222,7 +243,7 @@ export function CreateMeetingCalendarDialog({
               <Select
                 value={form.meetingType}
                 onValueChange={(v) => {
-                  if (v) setForm((p) => ({ ...p, meetingType: v }));
+                  if (isMeetingTypeValue(v)) setForm((p) => ({ ...p, meetingType: v }));
                 }}
               >
                 <SelectTrigger className="mt-1.5">
@@ -242,7 +263,7 @@ export function CreateMeetingCalendarDialog({
               <Select
                 value={form.locationType}
                 onValueChange={(v) => {
-                  if (v) setForm((p) => ({ ...p, locationType: v }));
+                  if (isLocationTypeValue(v)) setForm((p) => ({ ...p, locationType: v }));
                 }}
               >
                 <SelectTrigger className="mt-1.5">

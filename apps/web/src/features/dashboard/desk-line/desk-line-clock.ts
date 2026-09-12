@@ -40,7 +40,10 @@ export function subscribeYerevanDeskClock(
 
   let timeoutId = 0;
   const arm = (): void => {
-    const wait = Math.min(Math.max(nextYerevanMidnightUtc(now()).getTime() - now().getTime(), 1), MAX_TIMEOUT_MS);
+    const wait = Math.min(
+      Math.max(nextYerevanMidnightUtc(now()).getTime() - now().getTime(), 1),
+      MAX_TIMEOUT_MS,
+    );
     timeoutId = host.setTimeout(() => {
       tick();
       arm();

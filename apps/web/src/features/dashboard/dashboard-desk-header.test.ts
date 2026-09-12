@@ -72,9 +72,9 @@ describe('desk-line catalog messages', () => {
 
 describe('priority card localization', () => {
   it('maps API codes and prefers API count', () => {
-    expect(
-      getPriorityCardCode(priorityCard({ code: 'critical_tickets', source: 'Other' })),
-    ).toBe(DASHBOARD_PRIORITY_CARD_CODES.criticalSupportTicket);
+    expect(getPriorityCardCode(priorityCard({ code: 'critical_tickets', source: 'Other' }))).toBe(
+      DASHBOARD_PRIORITY_CARD_CODES.criticalSupportTicket,
+    );
     expect(resolvePriorityCardCount(priorityCard({ count: 7, title: '1 leftover' }))).toBe(7);
   });
 

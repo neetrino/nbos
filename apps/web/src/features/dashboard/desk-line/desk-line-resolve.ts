@@ -64,7 +64,9 @@ export function pickDeskLineTemplate(
   const personal = detectPersonalOccasion(person, today);
   if (personal) {
     const pool = memorial ? memorialPersonalPool(personal.pool) : personal.pool;
-    return pickPersonal(person.employeeId, pool, today) ?? memorialOrEveryday(person, today, memorial);
+    return (
+      pickPersonal(person.employeeId, pool, today) ?? memorialOrEveryday(person, today, memorial)
+    );
   }
   if (memorial) return pickMemorial(person.employeeId, today);
   const cultural = pickCultural(person.employeeId, today);
@@ -80,10 +82,7 @@ function pickPersonal(
   return pickFromDeck(employeeId, pool, deskLinePool(pool), today.dayOrdinal);
 }
 
-function pickCultural(
-  employeeId: string,
-  today: DeskLineCalendarDay,
-): DeskLineTemplate | null {
+function pickCultural(employeeId: string, today: DeskLineCalendarDay): DeskLineTemplate | null {
   const event = eventOnMonthDay(today.monthDay);
   if (!event) return null;
   if (!participatesInEvent(employeeId, today.dateKey, event.id, DESK_LINE_CULTURAL_HALF)) {
@@ -107,14 +106,18 @@ function pickSeasonOrEveryday(employeeId: string, today: DeskLineCalendarDay): D
     if (seasonal) return seasonal;
   }
   return (
-    pickEveryday(employeeId, today.dayOrdinal, deskLinePool('everyday')) ??
-    DESK_LINE_CATALOG[0]!
+    pickEveryday(employeeId, today.dayOrdinal, deskLinePool('everyday')) ?? DESK_LINE_CATALOG[0]!
   );
 }
 
 function pickMemorial(employeeId: string, today: DeskLineCalendarDay): DeskLineTemplate {
   return (
-    pickFromDeck(employeeId, 'memorial_neutral', deskLinePool('memorial_neutral'), today.dayOrdinal) ??
+    pickFromDeck(
+      employeeId,
+      'memorial_neutral',
+      deskLinePool('memorial_neutral'),
+      today.dayOrdinal,
+    ) ??
     DESK_LINE_CATALOG.find((line) => line.id === 'memorial-plain') ??
     DESK_LINE_CATALOG[0]!
   );

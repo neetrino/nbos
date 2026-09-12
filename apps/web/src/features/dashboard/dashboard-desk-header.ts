@@ -2,7 +2,11 @@ import type { PriorityCard } from './dashboard-control-registry';
 import { DESK_LINE_NEUTRAL_FALLBACK } from './desk-line/desk-line.constants';
 import { fillDeskLineSlots } from './desk-line/desk-line-slots';
 import { resolveDeskLineDetails } from './desk-line/desk-line-resolve';
-import type { DeskLinePerson, DeskLineResolution, DeskLineSlots } from './desk-line/desk-line.types';
+import type {
+  DeskLinePerson,
+  DeskLineResolution,
+  DeskLineSlots,
+} from './desk-line/desk-line.types';
 
 export const DASHBOARD_PRIORITY_CARD_CODES = {
   criticalSupportTicket: 'criticalSupportTicket',

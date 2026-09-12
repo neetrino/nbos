@@ -13,10 +13,7 @@ export const DESK_LINE_CATALOG: readonly DeskLineTemplate[] = [
   ...DESK_LINE_EVENTS_CATALOG,
 ];
 
-export function deskLinePool(
-  pool: DeskLinePoolId,
-  eventId?: string,
-): DeskLineTemplate[] {
+export function deskLinePool(pool: DeskLinePoolId, eventId?: string): DeskLineTemplate[] {
   return DESK_LINE_CATALOG.filter((line) => {
     if (line.pool !== pool) return false;
     if (eventId) return line.eventId === eventId;

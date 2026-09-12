@@ -62,7 +62,9 @@ describe('desk-line catalog', () => {
       for (const banned of BANNED) {
         expect(`${line.title} ${line.subline}`).not.toMatch(banned);
       }
-      expect(`${line.title} ${line.subline}`).not.toMatch(/promise about work|season’s mood|season's mood/iu);
+      expect(`${line.title} ${line.subline}`).not.toMatch(
+        /promise about work|season’s mood|season's mood/iu,
+      );
       const key = normalizePair(line.title, line.subline);
       expect(seen.has(key), line.id).toBe(false);
       seen.add(key);

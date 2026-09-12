@@ -18,7 +18,9 @@ describe('completed i18n catalogs', () => {
   it('keeps EN/RU keys aligned for finished namespaces', () => {
     expect(flattenMessageKeys(enCommon).sort()).toEqual(flattenMessageKeys(ruCommon).sort());
     expect(flattenMessageKeys(enAccount).sort()).toEqual(flattenMessageKeys(ruAccount).sort());
-    expect(flattenMessageKeys(enNavigation).sort()).toEqual(flattenMessageKeys(ruNavigation).sort());
+    expect(flattenMessageKeys(enNavigation).sort()).toEqual(
+      flattenMessageKeys(ruNavigation).sort(),
+    );
     expect(flattenMessageKeys(enDashboard).sort()).toEqual(flattenMessageKeys(ruDashboard).sort());
     expect(flattenMessageKeys(enDashboardDeskLine).sort()).toEqual(
       flattenMessageKeys(ruDashboardDeskLine).sort(),

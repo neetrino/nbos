@@ -1,9 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsIn } from 'class-validator';
-import {
-  WRITABLE_INTERFACE_LOCALES,
-  type WritableInterfaceLocale,
-} from '@nbos/shared';
+import { WRITABLE_INTERFACE_LOCALES, type WritableInterfaceLocale } from '@nbos/shared';
 
 export class UpdateInterfaceLocaleDto {
   @ApiProperty({ enum: WRITABLE_INTERFACE_LOCALES, example: 'en' })

@@ -19,10 +19,7 @@ import {
 } from './dashboard.constants';
 import { DASHBOARD_NOTE_LIMIT, DASHBOARD_NOTE_MAX_LENGTH } from './dashboard-note.constants';
 import type { CreateDashboardNoteDto } from './dto/create-dashboard-note.dto';
-import type {
-  CreatePersonalLinkDto,
-  UpdatePersonalLinkDto,
-} from './dto/create-personal-link.dto';
+import type { CreatePersonalLinkDto, UpdatePersonalLinkDto } from './dto/create-personal-link.dto';
 import type { UpdateDashboardNoteDto } from './dto/update-dashboard-note.dto';
 import type { UpdateDashboardPreferenceDto } from './dto/update-dashboard-preference.dto';
 import type { UpdateNavigationPreferenceDto } from './dto/update-navigation-preference.dto';
@@ -511,8 +508,7 @@ function sanitizePinnedActions(values: string[]): DashboardPinnedActionKey[] {
   return sanitizeKeys(values, DASHBOARD_PINNED_ACTION_KEYS);
 }
 
-const PERSONAL_LINK_ID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const PERSONAL_LINK_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function sanitizeHiddenPinnedActions(values: string[]): string[] {
   const allowed = new Set<string>(DASHBOARD_PINNED_ACTION_KEYS);

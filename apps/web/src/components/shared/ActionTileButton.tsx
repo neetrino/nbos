@@ -50,9 +50,7 @@ function ActionTileContent({
       <span
         className={cn('flex min-w-0 items-center gap-1.5', isStack ? 'justify-center' : 'flex-1')}
       >
-        <span className={cn(wrapLabel ? 'line-clamp-2 leading-snug' : 'truncate')}>
-          {label}
-        </span>
+        <span className={cn(wrapLabel ? 'line-clamp-2 leading-snug' : 'truncate')}>{label}</span>
         {trailing}
       </span>
     </>

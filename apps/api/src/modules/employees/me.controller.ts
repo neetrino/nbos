@@ -111,7 +111,8 @@ export class MeController {
 
   @Get()
   @ApiOperation({
-    summary: 'Get current employee profile with role, permissions, departments, and own desk-line fields',
+    summary:
+      'Get current employee profile with role, permissions, departments, and own desk-line fields',
   })
   async getMe(@CurrentUser() user: CurrentUserPayload) {
     if (!user?.id || !user.meProfile) {

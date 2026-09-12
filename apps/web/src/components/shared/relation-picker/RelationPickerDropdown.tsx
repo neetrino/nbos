@@ -205,7 +205,9 @@ function RelationPickerResultsPanel({
         ) : null}
 
         {!loading && results.length === 0 && query ? (
-          <div className="text-muted-foreground px-3 py-2.5 text-xs">{t('relationPicker.noResults')}</div>
+          <div className="text-muted-foreground px-3 py-2.5 text-xs">
+            {t('relationPicker.noResults')}
+          </div>
         ) : null}
 
         {!loading &&

@@ -3,10 +3,7 @@
 import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import {
-  getPriorityCardCode,
-  resolvePriorityCardCount,
-} from '../dashboard-desk-header';
+import { getPriorityCardCode, resolvePriorityCardCount } from '../dashboard-desk-header';
 import { priorityClass, type PriorityCard } from '../dashboard-control-registry';
 
 export { MiniAnalytics } from './MiniAnalyticsPanel';
@@ -41,12 +38,8 @@ function PriorityFeedItem({ priority }: { priority: PriorityCard }) {
   const t = useTranslations('dashboard');
   const code = getPriorityCardCode(priority);
   const count = resolvePriorityCardCount(priority);
-  const title =
-    code !== null
-      ? t(`priorityFeed.cards.${code}.title`, { count })
-      : priority.title;
-  const context =
-    code !== null ? t(`priorityFeed.cards.${code}.context`) : priority.context;
+  const title = code !== null ? t(`priorityFeed.cards.${code}.title`, { count }) : priority.title;
+  const context = code !== null ? t(`priorityFeed.cards.${code}.context`) : priority.context;
 
   return (
     <Link

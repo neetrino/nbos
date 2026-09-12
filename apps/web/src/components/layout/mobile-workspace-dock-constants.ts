@@ -14,7 +14,10 @@ export const MOBILE_DOCK_SWITCHER_GROUP_TITLE_KEYS = {
   section: 'mobileDock.section',
   category: 'mobileDock.category',
   view: 'mobileDock.view',
-} as const satisfies Record<string, import('@/lib/navigation/nav-message-keys').NavigationMessageKey>;
+} as const satisfies Record<
+  string,
+  import('@/lib/navigation/nav-message-keys').NavigationMessageKey
+>;
 
 export type MobileDockSwitcherGroupId = keyof typeof MOBILE_DOCK_SWITCHER_GROUP_TITLE_KEYS;
 

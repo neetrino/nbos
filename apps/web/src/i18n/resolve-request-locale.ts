@@ -13,5 +13,8 @@ export const resolveRequestLocale = cache(async (): Promise<WritableInterfaceLoc
     return stored ?? DEFAULT_INTERFACE_LOCALE;
   }
   const cookieStore = await cookies();
-  return parseLocaleCookieValue(cookieStore.get(INTERFACE_LOCALE_COOKIE)?.value) ?? DEFAULT_INTERFACE_LOCALE;
+  return (
+    parseLocaleCookieValue(cookieStore.get(INTERFACE_LOCALE_COOKIE)?.value) ??
+    DEFAULT_INTERFACE_LOCALE
+  );
 });

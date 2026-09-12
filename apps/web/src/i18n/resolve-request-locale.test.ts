@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('react', async () => {
   const actual = await vi.importActual<typeof import('react')>('react');
-  return { ...actual, cache: <Fn,>(fn: Fn) => fn };
+  return { ...actual, cache: <Fn>(fn: Fn) => fn };
 });
 
 vi.mock('./cached-auth-session', () => ({

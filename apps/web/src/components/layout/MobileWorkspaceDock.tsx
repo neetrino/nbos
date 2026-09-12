@@ -71,7 +71,12 @@ function WorkspaceMenuButton({ open, onClick }: { open: boolean; onClick: () => 
   const t = useTranslations('navigation');
 
   return (
-    <MobileDockItem label={t('mobileDock.menu')} active={open} aria-expanded={open} onClick={onClick}>
+    <MobileDockItem
+      label={t('mobileDock.menu')}
+      active={open}
+      aria-expanded={open}
+      onClick={onClick}
+    >
       <LayoutGrid size={MOBILE_DOCK_ICON_SIZE_PX} aria-hidden />
     </MobileDockItem>
   );
