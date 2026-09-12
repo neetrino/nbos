@@ -8,7 +8,7 @@ import {
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { assertEntityIsActive } from '../../../common/lifecycle/entity-lifecycle-guards';
-import { normalizeAtsCallerPhone } from '../../integrations/ats/ats-phone.util';
+import { formatAtsDialNumber, normalizeAtsCallerPhone } from '../../integrations/ats/ats-phone.util';
 import type { CallAccessActor } from './call-access.types';
 import { assertCallCreatePermission } from './click-to-call-access';
 import { ClickToCallAccessPolicyService } from './click-to-call-access-policy.service';
@@ -162,8 +162,8 @@ function requireAuthorized<T>(row: T | null): T {
 
 function requirePhone(raw: string | null | undefined): { phoneE164: string; to: string } {
   const phone = normalizeAtsCallerPhone(raw);
-  if (!phone.success) {
+  if (!phone.success || raw == null) {
     throw new BadRequestException(CLICK_TO_CALL_MISSING_PHONE_MESSAGE);
   }
-  return { phoneE164: phone.e164, to: phone.digits };
+  return { phoneE164: phone.e164, to: formatAtsDialNumber(raw) };
 }

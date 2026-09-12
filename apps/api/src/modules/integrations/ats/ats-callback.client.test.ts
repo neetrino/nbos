@@ -56,6 +56,23 @@ describe('AtsCallbackClient.startCallbackCall', () => {
     vi.unstubAllGlobals();
   });
 
+  it('encodes ATS # dial prefix in the query string', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { status: 'success' }));
+    vi.stubGlobal('fetch', fetchMock);
+    const client = new AtsCallbackClient({
+      apiKey: 'test-key',
+      isConfigured: () => true,
+    } as AtsProviderConfig);
+
+    await expect(client.startCallbackCall({ from: '3126107', to: '#099123456' })).resolves.toEqual({
+      kind: 'accepted',
+    });
+    const calledUrl = String(fetchMock.mock.calls[0]?.[0]);
+    expect(calledUrl).toContain('to=%23099123456');
+    expect(calledUrl).not.toContain('#099123456');
+    vi.unstubAllGlobals();
+  });
+
   it('returns rejected on ATS HTTP error', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(500, { status: 'error' })));
     const client = new AtsCallbackClient({

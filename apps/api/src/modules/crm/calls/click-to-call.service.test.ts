@@ -121,7 +121,7 @@ describe('ClickToCallService', () => {
 
     expect(callback.startCallbackCall).toHaveBeenCalledWith({
       from: '3126107',
-      to: '37499123456',
+      to: '#37499123456',
     });
     expect(prisma.atsCallEvent.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -152,6 +152,20 @@ describe('ClickToCallService', () => {
     expect(prisma.lead.findFirst.mock.invocationCallOrder[0]).toBeLessThan(
       vi.mocked(callback.startCallbackCall).mock.invocationCallOrder[0],
     );
+  });
+
+  it('dials a stored national 0… number without rewriting to 374', async () => {
+    const { service, prisma, callback, user } = createService();
+    const nationalLead = { ...LEAD, phone: '099 12 34 56' };
+    prisma.lead.findUnique.mockResolvedValue(nationalLead);
+    prisma.lead.findFirst.mockResolvedValue(nationalLead);
+
+    await service.start({ targetType: 'LEAD', targetId: 'lead-1' }, user, CLICK_TO_CALL_TEST_KEY);
+
+    expect(callback.startCallbackCall).toHaveBeenCalledWith({
+      from: '3126107',
+      to: '#099123456',
+    });
   });
 
   it('returns the accepted Call when post-accept audit logging fails', async () => {

@@ -104,7 +104,7 @@ ATS даёт `record_link` и `GET call-record?uid`. Ссылка ATS может
 Кнопка «Позвонить» на Lead / Contact / Deal.
 
 1. Браузер зовёт **внутренний** NBOS API (не `account.ats.am` из клиента) с заголовком `Idempotency-Key` (UUID, один на user action; retry того же action повторяет тот же key; новый click — новый key).
-2. API: object-level CRM EDIT → проверка ключа/fingerprint (actor + target) → durable `AtsCallIntent` → только владелец execution вызывает ATS `callback` (`from` = SIP текущего employee, `to` = номер).
+2. API: object-level CRM EDIT → проверка ключа/fingerprint (actor + target) → durable `AtsCallIntent` → только владелец execution вызывает ATS `callback` (`from` = SIP текущего employee, `to` = `#` + цифры как записаны: `077 96 17 18` → `#077961718`, `+374 77 961718` → `#37477961718`; национальный `0…` не переписывается в `374`). CRM `phoneE164` остаётся E.164 для матчинга.
 3. ATS accepted → Call создаётся сразу; окно — инициатору. Повтор того же key возвращает существующий результат без второго callback и без второго Audit.
 4. Нет `sipId` у звонящего → 4xx, не тихий fail. Нет intent и нет ATS.
 5. Crash window: documented ATS `callback` принимает только `key`/`from`/`to` (нет provider idempotency token). Intent в `PROCESSING` **не** ретраится автоматически (at-most-once: возможен пропущенный звонок в NBOS, не двойной ATS на тот же key). `ATS_NOT_CONFIGURED` — детерминированный `FAILED`, не `PROCESSING`. Frontend сохраняет `Idempotency-Key` на 202 и неоднозначных 5xx. Явный UI **«Новый звонок»** очищает ключ после предупреждения о возможном повторном звонке.

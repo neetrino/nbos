@@ -29,6 +29,8 @@ export const ATS_CALL_SOURCE_CLICK_TO_CALL = 'CLICK_TO_CALL';
 
 export const ATS_CALLBACK_ENDPOINT = 'https://account.ats.am/docs/api/v1/callback';
 export const ATS_CALLBACK_TIMEOUT_MS = 15_000;
+/** ATS.am click-to-call `to` prefix. National `0…` stays `0…`; country code stays as written. */
+export const ATS_DIAL_PREFIX = '#';
 
 export const ATS_HISTORY_ENDPOINT = 'https://account.ats.am/docs/api/v1/history';
 export const ATS_HISTORY_TIMEOUT_MS = 8_000;
