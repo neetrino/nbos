@@ -1,6 +1,6 @@
 # I18N coverage — first EN/RU release
 
-Date: 2026-09-12. Status: first EN/RU slice plus review fixes are in the working tree. Migration `employees.interface_locale` applied to the authorized Neon database. Desktop EN↔RU shell/dashboard/four create flows and mobile 390px menu were sampled live. Live token-expiry restore, live 403/conflict/network toasts, full light/dark sign-off, and production rollout remain open.
+Date: 2026-09-12. Status: first EN/RU slice is in the working tree. Desktop EN↔RU, light/dark, four create flows, mobile menu, and live Meeting 403/conflict/network copy were sampled. A hidden Armenian font probe is in the root layout without enabling HY. Live token-expiry restore (httpOnly session) and production rollout remain open.
 
 Canon: [07-Interface-Localization.md](../NBOS/01-Platform-Overview/07-Interface-Localization.md). Plan: [I18N-IMPLEMENTATION-PLAN.md](./I18N-IMPLEMENTATION-PLAN.md).
 
@@ -140,11 +140,11 @@ Not run as part of ordinary i18n slices: `pnpm format`, `pnpm db:push`, `pnpm db
 
 ## Stage journal
 
-| Stage | Coverage note                                  | Status                                                                                                                                                    |
-| ----- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | This register                                  | complete                                                                                                                                                  |
-| 1     | Foundation + Save/Cancel + language + New task | en_ru (reference verified by tests)                                                                                                                       |
-| 2     | Shell + remaining Dashboard                    | en_ru (desktop RU sampled live; mobile viewport and full visual sign-off open)                                                                            |
-| 3     | Four create flows                              | en_ru (date-picker chrome sampled live in RU; create-flow error strings asserted in tests, not live 403/conflict/network)                                 |
-| 4     | Automated + visual acceptance                  | partial (89 targeted tests; desktop EN↔RU + four create flows + mobile menu sampled live; live token-expiry / 403 / full light-dark / HY font probe open) |
-| 5     | Review, docs, report                           | in_progress (owner-cookie removed; visual/login acceptance not marked complete)                                                                           |
+| Stage | Coverage note                                  | Status                                                                                                                  |
+| ----- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 0     | This register                                  | complete                                                                                                                |
+| 1     | Foundation + Save/Cancel + language + New task | en_ru (reference verified by tests)                                                                                     |
+| 2     | Shell + remaining Dashboard                    | en_ru (desktop RU + light/dark/system sampled live; mobile 390px menu sampled)                                          |
+| 3     | Four create flows                              | en_ru (date-picker chrome sampled live in RU; Meeting 403/conflict/network copy sampled live via request intercept)     |
+| 4     | Automated + visual acceptance                  | partial (light/dark + HY font probe + live Meeting errors done; live token-expiry and two-user logout/login still open) |
+| 5     | Review, docs, report                           | in_progress (journals updated after this live pass; two-user login and production rollout not done)                     |

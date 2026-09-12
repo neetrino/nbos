@@ -4,6 +4,7 @@ import { SessionProvider } from 'next-auth/react';
 import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
 import { getCachedAuthSession } from '@/i18n/cached-auth-session';
+import { ArmenianFontProbe } from '@/i18n/ArmenianFontProbe';
 import { InterfaceLocaleProvider } from '@/i18n/interface-locale-provider';
 import { parseWritableInterfaceLocale } from '@nbos/shared';
 import { cn } from '@/lib/utils';
@@ -99,6 +100,7 @@ export default async function RootLayout({
             <ThemeProvider>
               <InterfaceLocaleProvider initialLocale={locale} initialMessages={messages}>
                 {children}
+                <ArmenianFontProbe />
                 <PwaRegister />
                 <Toaster richColors closeButton position="top-center" />
               </InterfaceLocaleProvider>
