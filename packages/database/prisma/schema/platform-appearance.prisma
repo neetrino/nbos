@@ -1,0 +1,25 @@
+// Singleton platform chrome (wallpaper). Not a Drive FileAsset.
+
+model PlatformAppearance {
+  id String @id
+
+  lightStorageKey       String? @map("light_storage_key")
+  lightVersion          Int     @default(0) @map("light_version")
+  lightOriginalFileName String? @map("light_original_file_name")
+  lightBytes            Int?    @map("light_bytes")
+  lightWidth            Int?    @map("light_width")
+  lightHeight           Int?    @map("light_height")
+
+  darkStorageKey       String? @map("dark_storage_key")
+  darkVersion          Int     @default(0) @map("dark_version")
+  darkOriginalFileName String? @map("dark_original_file_name")
+  darkBytes            Int?    @map("dark_bytes")
+  darkWidth            Int?    @map("dark_width")
+  darkHeight           Int?    @map("dark_height")
+
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  updatedByEmployeeId String?   @map("updated_by_employee_id")
+  updatedBy           Employee? @relation("PlatformAppearanceUpdatedBy", fields: [updatedByEmployeeId], references: [id], onDelete: SetNull)
+
+  @@map("platform_appearance")
+}

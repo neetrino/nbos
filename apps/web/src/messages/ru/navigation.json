@@ -48,6 +48,7 @@
     },
     "settings": {
       "general": "Общие",
+      "appearance": "Оформление",
       "systemLists": "Системные списки",
       "permissionsRbac": "Права / RBAC",
       "moduleSettings": "Настройки модулей",
