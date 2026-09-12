@@ -1,6 +1,6 @@
 # План реализации мультиязычности NBOS
 
-Дата: 2026-09-12. Статус: первый EN/RU срез в рабочем дереве. Этап 5 в работе: отчёт в coverage, web typecheck зелёный, web lint 0 errors. Не принято и не задеплоено. Live token-expiry, два пользователя и production rollout открыты.
+Дата: 2026-09-12. Статус: первый EN/RU срез в рабочем дереве. Этап 5 в работе: отчёт в coverage, web typecheck зелёный, web lint 0 errors. Не принято и не задеплоено. Live два пользователя закрыты. Открыты live token-expiry и production rollout.
 
 Источник решений: [канон локализации](../NBOS/01-Platform-Overview/07-Interface-Localization.md). Этот план описывает продуктовую реализацию; распределение моделей находится в [инструкции Cursor](./I18N-CURSOR-HANDOFF.md).
 
@@ -94,13 +94,13 @@ Task, Meeting, Lead, Expense: поля, placeholder, статусы, relation pi
 
 ## Журнал исполнения
 
-| Этап      | Статус                   | Доказательства / следующий шаг                                                                                                                                                                                                         |
-| --------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Документы | Подготовлены, 2026-09-12 | Реализация не начата                                                                                                                                                                                                                   |
-| 0         | Завершён                 | `docs/implementation/I18N-COVERAGE.md`                                                                                                                                                                                                 |
-| 1         | Завершён                 | next-intl 4.14.4, `Employee.interfaceLocale`, GET/PATCH `/api/v1/me/preferences`, cookie `nbos-interface-locale`, SSR. Миграция `20260912120000_employee_interface_locale` применена к dev Neon 2026-09-12                             |
-| 2         | Завершён                 | Оболочка + Dashboard Control Center EN/RU                                                                                                                                                                                              |
-| 3         | Завершён                 | Task/Meeting/Lead/Expense + date/relation picker chrome (`forms`)                                                                                                                                                                      |
-| 4         | Частично                 | Desktop/mobile live + Meeting 403/conflict/network. `pnpm --filter @nbos/web typecheck` зелёный; `lint` 0 errors (16 чужих warning). Не закрыты: live истечение access token, logout/login двух пользователей. Auth-страницы вне scope |
-| 5         | В работе                 | Отчёт в coverage. Logout чистит locale cookie (unit). Parser 409 conflicts. Не в IMPLEMENTATION_DONE. Открыты: live два пользователя, token-expiry, production rollout                                                                 |
-| 6–7       | Отложены                 | Вне текущего поручения                                                                                                                                                                                                                 |
+| Этап      | Статус                   | Доказательства / следующий шаг                                                                                                                                                                                                  |
+| --------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Документы | Подготовлены, 2026-09-12 | Реализация не начата                                                                                                                                                                                                            |
+| 0         | Завершён                 | `docs/implementation/I18N-COVERAGE.md`                                                                                                                                                                                          |
+| 1         | Завершён                 | next-intl 4.14.4, `Employee.interfaceLocale`, GET/PATCH `/api/v1/me/preferences`, cookie `nbos-interface-locale`, SSR. Миграция `20260912120000_employee_interface_locale` применена к dev Neon 2026-09-12                      |
+| 2         | Завершён                 | Оболочка + Dashboard Control Center EN/RU                                                                                                                                                                                       |
+| 3         | Завершён                 | Task/Meeting/Lead/Expense + date/relation picker chrome (`forms`)                                                                                                                                                               |
+| 4         | Частично                 | Desktop/mobile live + Meeting 403/conflict/network. Web typecheck/lint 0 errors. Live два пользователя: ru-tester → en-tester, язык из БД, cookie не протекла. Не закрыто: live истечение access token. Auth-страницы вне scope |
+| 5         | В работе                 | Отчёт в coverage. Live два пользователя закрыты. Не в IMPLEMENTATION_DONE. Открыты: token-expiry, production rollout                                                                                                            |
+| 6–7       | Отложены                 | Вне текущего поручения                                                                                                                                                                                                          |
