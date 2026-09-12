@@ -1,0 +1,18 @@
+{
+  "save": "Save",
+  "cancel": "Cancel",
+  "close": "Close",
+  "create": "Create",
+  "creating": "Creating…",
+  "saving": "Saving…",
+  "genericError": "Something went wrong. Try again.",
+  "permissionDenied": "You do not have permission for this action.",
+  "unavailable": "Unavailable",
+  "accessDenied": {
+    "kicker": "Restricted folio",
+    "title": "Access restricted",
+    "description": "You do not have permission to view this section. Contact your administrator if you need access.",
+    "goToDashboard": "Go to Dashboard",
+    "signIn": "Sign in"
+  }
+}

@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { DETAIL_SHEET_TAB_PANEL_TRANSITION_CLASS } from './detail-sheet-classes';
+import { shouldFreezeOutgoingTabPanel } from './detail-sheet-tab-panel';
 import { cn } from '@/lib/utils';
 
 /** Outgoing fade completes before tab body swaps (see transition duration in globals.css). */
 const DETAIL_SHEET_TAB_PANEL_SWAP_MS = 280;
 
-type DisplayedTabPanel = {
+type FrozenTabPanel = {
   key: string;
   node: ReactNode;
 };
@@ -19,46 +20,56 @@ export interface DetailSheetTabPanelProps {
   className?: string;
 }
 
-/** Crossfades sheet tab bodies (fade out → swap → fade in). */
+/**
+ * Crossfades sheet tab bodies (fade out → swap → fade in).
+ * On the active tab, `children` render live. A deferred snapshot would reset
+ * the caret in controlled inputs after every keystroke.
+ */
 export function DetailSheetTabPanel({ tabKey, children, className }: DetailSheetTabPanelProps) {
-  const [displayed, setDisplayed] = useState<DisplayedTabPanel>({ key: tabKey, node: children });
-  const swapTimerRef = useRef<number | null>(null);
-  const isFading = displayed.key !== tabKey;
-
-  useEffect(() => {
-    if (tabKey === displayed.key) {
-      queueMicrotask(() => {
-        setDisplayed((prev) => (prev.key === tabKey ? { key: tabKey, node: children } : prev));
-      });
-      return;
-    }
-
-    if (swapTimerRef.current !== null) {
-      window.clearTimeout(swapTimerRef.current);
-    }
-
-    swapTimerRef.current = window.setTimeout(() => {
-      setDisplayed({ key: tabKey, node: children });
-      swapTimerRef.current = null;
-    }, DETAIL_SHEET_TAB_PANEL_SWAP_MS);
-
-    return () => {
-      if (swapTimerRef.current !== null) {
-        window.clearTimeout(swapTimerRef.current);
-        swapTimerRef.current = null;
-      }
-    };
-  }, [tabKey, children, displayed.key]);
+  const outgoing = useOutgoingTabSnapshot(tabKey, children);
 
   return (
     <div
       className={cn(
         DETAIL_SHEET_TAB_PANEL_TRANSITION_CLASS,
-        isFading && 'detail-sheet-tab-panel-fading',
+        outgoing != null && 'detail-sheet-tab-panel-fading',
         className,
       )}
     >
-      {displayed.node}
+      {outgoing != null ? outgoing.node : children}
     </div>
   );
+}
+
+function useOutgoingTabSnapshot(tabKey: string, children: ReactNode): FrozenTabPanel | null {
+  const shownTabRef = useRef(tabKey);
+  const lastLiveChildrenRef = useRef(children);
+  const [outgoing, setOutgoing] = useState<FrozenTabPanel | null>(null);
+
+  useLayoutEffect(() => {
+    if (shouldFreezeOutgoingTabPanel(shownTabRef.current, tabKey, outgoing != null)) {
+      setOutgoing({ key: shownTabRef.current, node: lastLiveChildrenRef.current });
+      return;
+    }
+    if (outgoing == null) {
+      lastLiveChildrenRef.current = children;
+    }
+  }, [tabKey, children, outgoing]);
+
+  useEffect(() => {
+    if (outgoing == null) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      shownTabRef.current = tabKey;
+      setOutgoing(null);
+    }, DETAIL_SHEET_TAB_PANEL_SWAP_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [outgoing, tabKey]);
+
+  return outgoing;
 }

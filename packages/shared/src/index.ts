@@ -1,4 +1,5 @@
 export * from './constants';
+export * from './i18n';
 export * from './rbac/sales-roles';
 export * from './types';
 export * from './actor';

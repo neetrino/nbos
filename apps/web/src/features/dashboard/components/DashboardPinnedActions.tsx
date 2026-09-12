@@ -6,41 +6,36 @@ import {
   DragOverlay,
   KeyboardSensor,
   PointerSensor,
-  useDroppable,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { Check, Save, SlidersHorizontal } from 'lucide-react';
-import { ActionTileButton } from '@/components/shared';
-import { type FormEvent, useState } from 'react';
-import { DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS } from '../dashboard-dnd.constants';
+import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { dashboardPointerCollisionDetection } from '../dashboard-dnd-collision';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
 import { resolveTwoColumnSortMove } from '../dashboard-two-column-dnd';
 import { PersonalLinkCard, PinnedActionCard } from './DashboardActionCards';
-import { DASHBOARD_PINNED_TILE_MIN_HEIGHT_CLASS } from '../dashboard-pinned-action-tones';
+import {
+  EmptyPinnedActions,
+  PinnedActionsTitle,
+  PinnedDropColumn,
+  PinnedLinkComposer,
+  PinnedTileGrid,
+  SortablePinnedTile,
+} from './DashboardPinnedActionsChrome';
+import { DashboardPinnedActionsView } from './DashboardPinnedActionsView';
+import { PINNED_DROP_HIDDEN, PINNED_DROP_VISIBLE } from '../dashboard-pinned-actions.constants';
 import type { DashboardPersonalLink, PinnedAction } from '../dashboard-control-registry';
-
-const PINNED_DROP_VISIBLE = 'pinned-drop-visible';
-const PINNED_DROP_HIDDEN = 'pinned-drop-hidden';
-
-const GRID_CLASS = 'grid grid-cols-2 gap-3 sm:grid-cols-3 [&>*]:min-w-0';
 
 interface PinnedActionsProps {
   actions: PinnedAction[];
   editMode: boolean;
   hiddenActions: PinnedAction[];
-  onApplyPinnedLayout: (
-    visibleKeys: PinnedAction['key'][],
-    hiddenKeys: PinnedAction['key'][],
-  ) => void;
+  hiddenPersonalLinkIds: string[];
+  onApplyPinnedLayout: (visibleIds: string[], hiddenIds: string[]) => void;
   onCreatePersonalLink: (label: string, url: string) => Promise<void>;
   onDeletePersonalLink: (id: string) => Promise<void>;
+  onUpdatePersonalLink: (id: string, label: string, url: string) => Promise<void>;
   onToggleEdit: () => void;
   personalLinks: DashboardPersonalLink[];
   saving: boolean;
@@ -50,37 +45,46 @@ export function PinnedActions({
   actions,
   editMode,
   hiddenActions,
+  hiddenPersonalLinkIds,
   onApplyPinnedLayout,
   onCreatePersonalLink,
   onDeletePersonalLink,
+  onUpdatePersonalLink,
   onToggleEdit,
   personalLinks,
   saving,
 }: PinnedActionsProps) {
-  const [activeDragKey, setActiveDragKey] = useState<PinnedAction['key'] | null>(null);
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const dashboardLinks = personalLinks.filter((link) =>
     link.placement.includes('DASHBOARD_PINNED_ACTIONS'),
   );
-  const hasPinned = actions.length > 0 || dashboardLinks.length > 0 || hiddenActions.length > 0;
+  const hiddenLinkIdSet = new Set(hiddenPersonalLinkIds);
+  const visibleLinks = dashboardLinks.filter((link) => !hiddenLinkIdSet.has(link.id));
+  const hiddenLinks = dashboardLinks.filter((link) => hiddenLinkIdSet.has(link.id));
+  const hasPinned =
+    actions.length > 0 ||
+    visibleLinks.length > 0 ||
+    hiddenActions.length > 0 ||
+    hiddenLinks.length > 0;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor),
   );
-
-  const visibleKeys = actions.map((a) => a.key);
-  const hiddenKeys = hiddenActions.map((a) => a.key);
-  const activeDragAction =
-    activeDragKey !== null
-      ? ([...actions, ...hiddenActions].find((a) => a.key === activeDragKey) ?? null)
-      : null;
-
-  function handleDragStart(event: DragStartEvent) {
-    setActiveDragKey(event.active.id as PinnedAction['key']);
-  }
+  const visibleKeys = [
+    ...actions.map((action) => action.key),
+    ...visibleLinks.map((link) => link.id),
+  ];
+  const hiddenKeys = [
+    ...hiddenActions.map((action) => action.key),
+    ...hiddenLinks.map((link) => link.id),
+  ];
+  const editingLink = dashboardLinks.find((link) => link.id === editingLinkId) ?? null;
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    setActiveDragKey(null);
+    setActiveDragId(null);
     if (!over) return;
     const next = resolveTwoColumnSortMove(
       String(active.id),
@@ -94,243 +98,201 @@ export function PinnedActions({
     onApplyPinnedLayout(next.left, next.right);
   }
 
-  function handleDragCancel() {
-    setActiveDragKey(null);
-  }
-
   return (
     <section className="nbos-desk-surface p-4 sm:p-5">
-      <PinnedActionsTitle editMode={editMode} onToggleEdit={onToggleEdit} />
-
       {hasPinned ? (
         editMode ? (
-          <>
-            <p className="text-muted-foreground mt-2 text-xs">
-              Drag tiles between Shown and Hidden. Changes save automatically.
-            </p>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={dashboardPointerCollisionDetection}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-              onDragCancel={handleDragCancel}
-            >
-              <div className="mt-4 flex flex-col gap-4">
-                <SortableContext items={visibleKeys} strategy={rectSortingStrategy}>
-                  <PinnedDropColumn id={PINNED_DROP_VISIBLE} title="Shown on dashboard">
-                    <div className={`${GRID_CLASS} ${DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS}`}>
-                      {actions.map((action) => (
-                        <SortablePinnedTile key={action.key} action={action} variant="visible" />
-                      ))}
-                    </div>
-                  </PinnedDropColumn>
-                </SortableContext>
-                <SortableContext items={hiddenKeys} strategy={rectSortingStrategy}>
-                  <PinnedDropColumn id={PINNED_DROP_HIDDEN} title="Hidden">
-                    <div className={`${GRID_CLASS} ${DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS}`}>
-                      {hiddenActions.map((action) => (
-                        <SortablePinnedTile key={action.key} action={action} variant="hidden" />
-                      ))}
-                    </div>
-                  </PinnedDropColumn>
-                </SortableContext>
-              </div>
-              <DragOverlay dropAnimation={null}>
-                {activeDragAction ? (
-                  <PinnedActionCard
-                    action={activeDragAction}
-                    variant={visibleKeys.includes(activeDragAction.key) ? 'visible' : 'hidden'}
-                    editMode={false}
-                  />
-                ) : null}
-              </DragOverlay>
-            </DndContext>
-            {dashboardLinks.length > 0 ? (
-              <div className={`${GRID_CLASS} mt-4`}>
-                {dashboardLinks.map((link) => (
-                  <PersonalLinkCard
-                    key={link.id}
-                    editMode
-                    link={link}
-                    onDelete={() => onDeletePersonalLink(link.id)}
-                  />
-                ))}
-              </div>
-            ) : null}
-            <CreateLinkInline onCreate={onCreatePersonalLink} saving={saving} />
-          </>
+          <PinnedActionsEdit
+            actions={actions}
+            activeDragId={activeDragId}
+            dashboardLinks={dashboardLinks}
+            editingLink={editingLink}
+            hiddenActions={hiddenActions}
+            hiddenKeys={hiddenKeys}
+            hiddenLinks={hiddenLinks}
+            isCreating={isCreating}
+            saving={saving}
+            sensors={sensors}
+            visibleKeys={visibleKeys}
+            visibleLinks={visibleLinks}
+            onCancelComposer={() => {
+              setEditingLinkId(null);
+              setIsCreating(false);
+            }}
+            onDeletePersonalLink={onDeletePersonalLink}
+            onDragCancel={() => setActiveDragId(null)}
+            onDragEnd={handleDragEnd}
+            onDragStart={(event: DragStartEvent) => setActiveDragId(String(event.active.id))}
+            onEditLink={(id) => {
+              setIsCreating(false);
+              setEditingLinkId(id);
+            }}
+            onOpenCreate={() => {
+              setEditingLinkId(null);
+              setIsCreating(true);
+            }}
+            onSubmitLink={async (label, url) => {
+              if (editingLink) {
+                await onUpdatePersonalLink(editingLink.id, label, url);
+                setEditingLinkId(null);
+                return;
+              }
+              await onCreatePersonalLink(label, url);
+              setIsCreating(false);
+            }}
+          />
         ) : (
-          <div className={`${GRID_CLASS} mt-4`}>
-            {actions.map((action) => (
-              <PinnedActionCard key={action.key} action={action} editMode={false} />
-            ))}
-            {dashboardLinks.map((link) => (
-              <PersonalLinkCard
-                key={link.id}
-                editMode={false}
-                link={link}
-                onDelete={() => onDeletePersonalLink(link.id)}
-              />
-            ))}
-          </div>
+          <DashboardPinnedActionsView actions={actions} personalLinks={visibleLinks} />
         )
       ) : (
         <EmptyPinnedActions />
       )}
+      <PinnedActionsTitle
+        editMode={editMode}
+        onToggleEdit={() => {
+          setEditingLinkId(null);
+          setIsCreating(false);
+          onToggleEdit();
+        }}
+      />
     </section>
   );
 }
 
-function PinnedDropColumn({
-  id,
-  title,
-  children,
-}: {
-  id: string;
-  title: string;
-  children: React.ReactNode;
-}) {
-  const { setNodeRef, isOver } = useDroppable({ id });
-  return (
-    <div
-      ref={setNodeRef}
-      className={cn(
-        'border-border/80 bg-muted/10 rounded-lg border border-dashed p-3',
-        isOver && 'border-primary/50 bg-muted/25',
-      )}
-    >
-      <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-        {title}
-      </h3>
-      {children}
-    </div>
-  );
-}
-
-function SortablePinnedTile({
-  action,
-  variant,
-}: {
-  action: PinnedAction;
-  variant: 'visible' | 'hidden';
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: action.key,
-  });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: isDragging ? 1 : 0,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        'focus-visible:ring-ring touch-none rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-        'cursor-grab active:cursor-grabbing',
-        DASHBOARD_PINNED_TILE_MIN_HEIGHT_CLASS,
-        'w-full',
-        isDragging && 'opacity-55',
-      )}
-      {...attributes}
-      {...listeners}
-    >
-      <PinnedActionCard action={action} variant={variant} editMode />
-    </div>
-  );
-}
-
-function CreateLinkInline({
-  onCreate,
+function PinnedActionsEdit({
+  actions,
+  activeDragId,
+  dashboardLinks,
+  editingLink,
+  hiddenActions,
+  hiddenKeys,
+  hiddenLinks,
+  isCreating,
   saving,
+  sensors,
+  visibleKeys,
+  visibleLinks,
+  onCancelComposer,
+  onDeletePersonalLink,
+  onDragCancel,
+  onDragEnd,
+  onDragStart,
+  onEditLink,
+  onOpenCreate,
+  onSubmitLink,
 }: {
-  onCreate: (label: string, url: string) => Promise<void>;
+  actions: PinnedAction[];
+  activeDragId: string | null;
+  dashboardLinks: DashboardPersonalLink[];
+  editingLink: DashboardPersonalLink | null;
+  hiddenActions: PinnedAction[];
+  hiddenKeys: string[];
+  hiddenLinks: DashboardPersonalLink[];
+  isCreating: boolean;
   saving: boolean;
+  sensors: ReturnType<typeof useSensors>;
+  visibleKeys: string[];
+  visibleLinks: DashboardPersonalLink[];
+  onCancelComposer: () => void;
+  onDeletePersonalLink: (id: string) => Promise<void>;
+  onDragCancel: () => void;
+  onDragEnd: (event: DragEndEvent) => void;
+  onDragStart: (event: DragStartEvent) => void;
+  onEditLink: (id: string) => void;
+  onOpenCreate: () => void;
+  onSubmitLink: (label: string, url: string) => Promise<void>;
 }) {
-  const [label, setLabel] = useState('');
-  const [url, setUrl] = useState('');
-  const canSubmit = Boolean(label.trim() && url.trim());
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!canSubmit) return;
-    await onCreate(label.trim(), url.trim());
-    setLabel('');
-    setUrl('');
-  }
+  const t = useTranslations('dashboard');
+  const activeDragAction =
+    activeDragId === null
+      ? null
+      : ([...actions, ...hiddenActions].find((action) => action.key === activeDragId) ?? null);
+  const activeDragLink =
+    activeDragId === null
+      ? null
+      : (dashboardLinks.find((link) => link.id === activeDragId) ?? null);
 
   return (
-    <div className="border-border/80 bg-muted/20 mt-5 rounded-xl border border-dashed p-4">
-      <h3 className="text-sm font-semibold">New shortcut button</h3>
-      <p className="text-muted-foreground mt-1 text-xs">
-        Label and link are saved to your dashboard pinned area.
-      </p>
-      <form
-        className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end"
-        onSubmit={(e) => void submit(e)}
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={dashboardPointerCollisionDetection}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onDragCancel={onDragCancel}
       >
-        <div className="grid flex-1 gap-2 sm:grid-cols-2">
-          <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Label" />
-          <Input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="/path or example.com (https added)"
-          />
+        <div className="flex flex-col gap-4">
+          <SortableContext items={visibleKeys} strategy={rectSortingStrategy}>
+            <PinnedDropColumn id={PINNED_DROP_VISIBLE} title={t('pinned.shownOnDashboard')}>
+              <PinnedTileGrid>
+                {actions.map((action) => (
+                  <SortablePinnedTile key={action.key} id={action.key}>
+                    <PinnedActionCard action={action} variant="visible" editMode />
+                  </SortablePinnedTile>
+                ))}
+                {visibleLinks.map((link) => (
+                  <SortablePinnedTile key={link.id} id={link.id}>
+                    <PersonalLinkCard
+                      editMode
+                      link={link}
+                      onDelete={() => onDeletePersonalLink(link.id)}
+                      onEdit={() => onEditLink(link.id)}
+                    />
+                  </SortablePinnedTile>
+                ))}
+                <div className={editingLink || isCreating ? 'col-span-2 min-w-0' : 'min-w-0'}>
+                  <PinnedLinkComposer
+                    key={editingLink?.id ?? 'create'}
+                    editing={editingLink}
+                    open={Boolean(editingLink || isCreating)}
+                    saving={saving}
+                    onCancel={onCancelComposer}
+                    onOpen={onOpenCreate}
+                    onSubmit={onSubmitLink}
+                  />
+                </div>
+              </PinnedTileGrid>
+            </PinnedDropColumn>
+          </SortableContext>
+          <SortableContext items={hiddenKeys} strategy={rectSortingStrategy}>
+            <PinnedDropColumn id={PINNED_DROP_HIDDEN} title={t('pinned.hidden')}>
+              <PinnedTileGrid>
+                {hiddenActions.map((action) => (
+                  <SortablePinnedTile key={action.key} id={action.key}>
+                    <PinnedActionCard action={action} variant="hidden" editMode />
+                  </SortablePinnedTile>
+                ))}
+                {hiddenLinks.map((link) => (
+                  <SortablePinnedTile key={link.id} id={link.id}>
+                    <PersonalLinkCard
+                      editMode
+                      hidden
+                      link={link}
+                      onDelete={() => onDeletePersonalLink(link.id)}
+                      onEdit={() => onEditLink(link.id)}
+                    />
+                  </SortablePinnedTile>
+                ))}
+              </PinnedTileGrid>
+            </PinnedDropColumn>
+          </SortableContext>
         </div>
-        <ActionTileButton
-          label={saving ? 'Saving…' : 'Save'}
-          icon={<Save aria-hidden />}
-          tone="emerald"
-          size="sm"
-          buttonType="submit"
-          disabled={!canSubmit || saving}
-          className="shrink-0"
-        />
-      </form>
-    </div>
-  );
-}
-
-function PinnedActionsTitle({
-  editMode,
-  onToggleEdit,
-}: {
-  editMode: boolean;
-  onToggleEdit: () => void;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="flex min-w-0 items-center gap-2">
-        <div>
-          <p className="nbos-desk-kicker">Shortcuts</p>
-          <h2 className="mt-1 text-base font-semibold">Pinned actions</h2>
-        </div>
-        {editMode ? <Badge variant="outline">Editing</Badge> : null}
-      </div>
-      <Button
-        type="button"
-        variant={editMode ? 'default' : 'secondary'}
-        size="icon"
-        className="h-8 w-8 shrink-0"
-        onClick={onToggleEdit}
-        aria-label={editMode ? 'Done editing layout' : 'Edit layout'}
-      >
-        {editMode ? (
-          <Check className="h-4 w-4" aria-hidden />
-        ) : (
-          <SlidersHorizontal className="h-4 w-4" aria-hidden />
-        )}
-      </Button>
-    </div>
-  );
-}
-
-function EmptyPinnedActions() {
-  return (
-    <p className="text-muted-foreground mt-4 rounded-xl border border-dashed p-4 text-sm">
-      No pinned actions are available for your current permissions.
-    </p>
+        <DragOverlay dropAnimation={null}>
+          {activeDragAction ? (
+            <PinnedActionCard
+              action={activeDragAction}
+              variant={visibleKeys.includes(activeDragAction.key) ? 'visible' : 'hidden'}
+              editMode
+            />
+          ) : activeDragLink ? (
+            <PersonalLinkCard
+              editMode
+              hidden={hiddenKeys.includes(activeDragLink.id)}
+              link={activeDragLink}
+            />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+    </>
   );
 }

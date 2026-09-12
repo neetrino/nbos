@@ -3,9 +3,9 @@ import { applySidebarPreferences, placeAiAgentsBeforeReports } from './apply-sid
 import type { NavModuleDefinition } from './nav-config';
 
 const modules: NavModuleDefinition[] = [
-  { key: 'dashboard', label: 'Dashboard', href: '/dashboard' },
-  { key: 'crm', label: 'CRM', href: '/crm' },
-  { key: 'mail', label: 'Mail', href: '/mail' },
+  { key: 'dashboard', label: 'modules.dashboard', href: '/dashboard' },
+  { key: 'crm', label: 'modules.crm', href: '/crm' },
+  { key: 'mail', label: 'modules.mail', href: '/mail' },
 ];
 
 describe('applySidebarPreferences', () => {

@@ -2,6 +2,7 @@
 
 import { startTransition, useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import type { SidebarModuleKey } from '@nbos/shared/constants';
 import { cn } from '@/lib/utils';
 import { usePermission } from '@/lib/permissions';
@@ -34,6 +35,7 @@ export function Sidebar({
   const [isHovering, setIsHovering] = useState(false);
   const navigation = useSidebarNavigation();
   const pathname = usePathname();
+  const t = useTranslations('navigation');
   // Hover-expand overlay is only meaningful on /documents where the sidebar
   // is auto-collapsed to give the editor more space.  On all other routes
   // the sidebar is expanded by default; hover should have no special effect.
@@ -91,7 +93,7 @@ export function Sidebar({
       visuallyExpanded={visuallyExpanded}
       collapsedForHeader={!visuallyExpanded}
       showHeaderToggle
-      headerToggleLabel={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      headerToggleLabel={collapsed ? t('sidebar.expandSidebar') : t('sidebar.collapseSidebar')}
       onHeaderToggle={() => {
         setIsHovering(false);
         onCollapsedChange(!collapsed);

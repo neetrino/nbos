@@ -10,6 +10,7 @@ import {
   SIDEBAR_NAV_CHILD_LINK_CLASS,
   SIDEBAR_NAV_CHILD_LIST_CLASS,
 } from './sidebar-layout-constants';
+import { useTranslations } from 'next-intl';
 
 export function SidebarChildNavList({
   item,
@@ -18,11 +19,15 @@ export function SidebarChildNavList({
   item: NavModuleDefinition;
   pathname: string;
 }) {
+  const t = useTranslations('navigation');
+
   if (!item.children) return null;
 
   return (
     <ul className={SIDEBAR_NAV_CHILD_LIST_CLASS}>
       {item.children.map((child) => {
+        const childLabel = t(child.label);
+
         if (isNavChildGroup(child)) {
           return (
             <li key={`group-${child.label}`}>
@@ -32,7 +37,7 @@ export function SidebarChildNavList({
                   'text-sidebar-muted pointer-events-none pt-2 text-xs font-semibold tracking-wide uppercase',
                 )}
               >
-                {child.label}
+                {childLabel}
               </span>
             </li>
           );
@@ -43,7 +48,7 @@ export function SidebarChildNavList({
               key={`${item.key}-${child.navSection}`}
               moduleKey={item.key}
               sectionId={child.navSection}
-              label={child.label}
+              label={childLabel}
               fallbackHref={child.href}
               pathname={pathname}
             />
@@ -62,7 +67,7 @@ export function SidebarChildNavList({
                   : 'text-sidebar-muted hover:text-sidebar-foreground',
               )}
             >
-              {child.label}
+              {childLabel}
             </Link>
           </li>
         );

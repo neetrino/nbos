@@ -2,8 +2,10 @@
 
 import type { MouseEvent } from 'react';
 import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { NAV_QUICK_ACTION_CREATE_TASK_LABEL_KEY } from '@/lib/navigation/nav-message-keys';
 
-export const SIDEBAR_CREATE_TASK_ARIA_LABEL = 'Create task';
+export const SIDEBAR_CREATE_TASK_ARIA_LABEL = NAV_QUICK_ACTION_CREATE_TASK_LABEL_KEY;
 
 /** Sidebar-scale plus glyph — larger than module icons for quick-add affordance. */
 export const SIDEBAR_NAV_QUICK_ACTION_ICON_SIZE_PX = 22;
@@ -29,11 +31,14 @@ interface SidebarNavQuickActionButtonProps {
 }
 
 export function SidebarNavQuickActionButton({ onAction }: SidebarNavQuickActionButtonProps) {
+  const t = useTranslations('navigation');
+  const ariaLabel = t(NAV_QUICK_ACTION_CREATE_TASK_LABEL_KEY);
+
   return (
     <button
       type="button"
-      aria-label={SIDEBAR_CREATE_TASK_ARIA_LABEL}
-      title={SIDEBAR_CREATE_TASK_ARIA_LABEL}
+      aria-label={ariaLabel}
+      title={ariaLabel}
       className={SIDEBAR_NAV_QUICK_ACTION_BUTTON_CLASS}
       onClick={(event) => stopSidebarNavQuickActionClick(event, onAction)}
     >

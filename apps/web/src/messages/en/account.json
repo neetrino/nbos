@@ -1,0 +1,16 @@
+{
+  "myAccount": "My Account",
+  "myWallet": "My wallet",
+  "signOut": "Sign Out",
+  "appearance": "Appearance",
+  "language": "Language",
+  "languageEnglish": "English",
+  "languageRussian": "Русский",
+  "languageSaveFailed": "Language could not be saved. Try again.",
+  "accountMenuAria": "Account menu: {name}",
+  "profilePhotoAlt": "{name} profile photo",
+  "fallbackAccountName": "My Account",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System"
+}

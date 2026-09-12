@@ -4,18 +4,15 @@ import type { DashboardPinnedActionKey } from './dashboard-control-registry';
 const PINNED_ACTION_TONE_BY_KEY: Record<DashboardPinnedActionKey, ActionTileTone> = {
   'new-lead': 'emerald',
   'new-task': 'sky',
+  'new-meeting': 'primary',
+  'new-expense': 'emerald',
   'open-deals': 'violet',
-  'open-my-workspaces': 'sky',
   'open-products': 'amber',
   'open-invoices': 'amber',
   'open-expenses': 'emerald',
   'open-payroll': 'emerald',
-  'open-tasks': 'primary',
   'open-support': 'amber',
-  'open-calendar': 'primary',
-  'open-messenger': 'secondary',
   'open-credentials': 'secondary',
-  'mail-inbox': 'neutral',
 };
 
 export function getPinnedActionTone(key: DashboardPinnedActionKey): ActionTileTone {

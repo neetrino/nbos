@@ -1,8 +1,12 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, JetBrains_Mono, Source_Serif_4 } from 'next/font/google';
+import { Inter, JetBrains_Mono, Noto_Sans_Armenian, Source_Serif_4 } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
+import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
-import { auth } from '@/auth';
+import { getCachedAuthSession } from '@/i18n/cached-auth-session';
+import { ArmenianFontProbe } from '@/i18n/ArmenianFontProbe';
+import { InterfaceLocaleProvider } from '@/i18n/interface-locale-provider';
+import { parseWritableInterfaceLocale } from '@nbos/shared';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/theme/theme-provider';
@@ -11,7 +15,13 @@ import { QueryProvider } from '@/lib/query/query-provider';
 
 const inter = Inter({
   variable: '--font-inter',
-  subsets: ['latin'],
+  subsets: ['latin', 'cyrillic', 'cyrillic-ext'],
+  preload: false,
+});
+
+const notoSansArmenian = Noto_Sans_Armenian({
+  variable: '--font-noto-sans-armenian',
+  subsets: ['armenian'],
   preload: false,
 });
 
@@ -23,7 +33,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 const sourceSerif = Source_Serif_4({
   variable: '--font-source-serif',
-  subsets: ['latin'],
+  subsets: ['latin', 'cyrillic', 'cyrillic-ext'],
   preload: false,
 });
 
@@ -67,23 +77,33 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
+  const session = await getCachedAuthSession();
+  const locale = parseWritableInterfaceLocale(await getLocale());
+  const messages = await getMessages();
 
   return (
     <SessionProvider session={session} refetchOnWindowFocus={false}>
       <QueryProvider>
         <html
-          lang="en"
+          lang={locale}
           suppressHydrationWarning
-          className={cn('font-sans', inter.variable, sourceSerif.variable)}
+          className={cn(
+            'font-sans',
+            inter.variable,
+            sourceSerif.variable,
+            notoSansArmenian.variable,
+          )}
         >
           <body
-            className={`${inter.variable} ${sourceSerif.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+            className={`${inter.variable} ${sourceSerif.variable} ${jetbrainsMono.variable} ${notoSansArmenian.variable} font-sans antialiased`}
           >
             <ThemeProvider>
-              {children}
-              <PwaRegister />
-              <Toaster richColors closeButton position="top-center" />
+              <InterfaceLocaleProvider initialLocale={locale} initialMessages={messages}>
+                {children}
+                <ArmenianFontProbe />
+                <PwaRegister />
+                <Toaster richColors closeButton position="top-center" />
+              </InterfaceLocaleProvider>
             </ThemeProvider>
           </body>
         </html>

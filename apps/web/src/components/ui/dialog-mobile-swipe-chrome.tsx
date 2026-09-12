@@ -2,6 +2,7 @@
 
 import { useRef, type ComponentProps, type Ref, type RefObject } from 'react';
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
+import { useTranslations } from 'next-intl';
 import { BottomSheetSwipeHandle } from '@/components/layout/BottomSheetSwipeHandle';
 import { useBottomSheetSwipeToClose } from '@/components/layout/use-bottom-sheet-swipe-to-close';
 
@@ -27,6 +28,7 @@ function HiddenDialogSwipeClose({
   ref,
   ...props
 }: ComponentProps<'button'> & { closeRef: RefObject<HTMLButtonElement | null> }) {
+  const t = useTranslations('common');
   return (
     <button
       {...props}
@@ -34,7 +36,7 @@ function HiddenDialogSwipeClose({
       className="sr-only"
       ref={(node) => assignButtonRefs(node, closeRef, ref)}
     >
-      Close
+      {t('close')}
     </button>
   );
 }

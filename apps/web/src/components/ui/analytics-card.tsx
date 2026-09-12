@@ -24,6 +24,9 @@ export interface AnalyticsCardProps {
   icon: ReactNode;
   data: AnalyticsBarItem[];
   className?: string;
+  locale?: string;
+  kicker?: string;
+  chartAriaLabel?: string;
 }
 
 const GRID_COLS_CLASS: Record<number, string> = {
@@ -41,9 +44,9 @@ function barHeightPercent(item: AnalyticsBarItem, maxQuantity: number): number {
   return Math.max(MIN_QUANTITY_BAR_HEIGHT_PERCENT, (item.quantity / basis) * 100);
 }
 
-function barDisplayValue(item: AnalyticsBarItem): string {
+function barDisplayValue(item: AnalyticsBarItem, locale?: string): string {
   if (item.displayValue !== undefined) return item.displayValue;
-  return item.quantity.toLocaleString();
+  return item.quantity.toLocaleString(locale);
 }
 
 /**
@@ -55,6 +58,9 @@ export function AnalyticsCard({
   icon,
   data = [],
   className,
+  locale,
+  kicker,
+  chartAriaLabel,
 }: AnalyticsCardProps) {
   const numericItems = data.filter((item) => item.displayValue === undefined);
   const maxQuantity = Math.max(...numericItems.map((item) => item.quantity), 0);
@@ -64,7 +70,7 @@ export function AnalyticsCard({
     <div className={cn('nbos-desk-surface text-card-foreground w-full p-5 sm:p-6', className)}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="nbos-desk-kicker">Pulse</p>
+          {kicker ? <p className="nbos-desk-kicker">{kicker}</p> : null}
           <h3 className="mt-1 text-base font-semibold">{title}</h3>
         </div>
         <div className="bg-primary/10 text-primary flex h-9 w-9 items-center justify-center rounded-xl">
@@ -76,7 +82,7 @@ export function AnalyticsCard({
         <h2 className="nbos-display text-4xl tabular-nums sm:text-5xl">{totalAmount}</h2>
       </div>
 
-      <div className={cn('grid gap-4', colClass)} aria-label="Mini analytics chart">
+      <div className={cn('grid gap-4', colClass)} aria-label={chartAriaLabel}>
         {data.map((item, index) => {
           const height = barHeightPercent(item, maxQuantity);
           const isPeak =
@@ -108,7 +114,7 @@ export function AnalyticsCard({
                     delay: index * ANALYTICS_BAR_STAGGER_S,
                     ease: ANALYTICS_BAR_EASE,
                   }}
-                  aria-label={`${item.label}: ${barDisplayValue(item)}`}
+                  aria-label={`${item.label}: ${barDisplayValue(item, locale)}`}
                   aria-valuenow={item.quantity}
                   aria-valuemin={0}
                   aria-valuemax={maxQuantity}
@@ -122,7 +128,7 @@ export function AnalyticsCard({
                           item.displayValue !== undefined && 'text-[10px]',
                         )}
                       >
-                        {barDisplayValue(item)}
+                        {barDisplayValue(item, locale)}
                       </span>
                     </>
                   ) : null}

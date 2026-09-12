@@ -1,0 +1,131 @@
+{
+  "modules": {
+    "dashboard": "Dashboard",
+    "crm": "CRM",
+    "marketing": "Marketing",
+    "project-hub": "Project Hub",
+    "delivery-board": "Delivery",
+    "tasks": "Tasks",
+    "work-spaces": "Work Spaces",
+    "finance": "Finance",
+    "support": "Support",
+    "clients": "Clients",
+    "partners": "Partners",
+    "my-company": "My Company",
+    "messenger": "Messenger",
+    "client-messenger": "Client Messenger",
+    "calendar": "Calendar",
+    "drive": "Drive",
+    "documents": "Documents",
+    "mail": "Mail",
+    "credentials": "Password",
+    "ai-agents": "AI & Agents",
+    "reports": "Analytics",
+    "settings": "Platform Admin"
+  },
+  "children": {
+    "myCompany": {
+      "compensation": "Compensation",
+      "kpi": "KPI / Scorecard",
+      "kpiPolicies": "KPI gate policies",
+      "sop": "SOP & Templates"
+    },
+    "messenger": {
+      "all": "All",
+      "products": "Products",
+      "tasks": "Tasks",
+      "deals": "Deals",
+      "workSpaces": "Work Spaces",
+      "groups": "Groups",
+      "direct": "Direct",
+      "collections": "Collections"
+    },
+    "clientMessenger": {
+      "inbox": "Inbox",
+      "sales": "Sales",
+      "clients": "Clients",
+      "collections": "Collections"
+    },
+    "settings": {
+      "general": "General",
+      "systemLists": "System Lists",
+      "permissionsRbac": "Permissions / RBAC",
+      "moduleSettings": "Module Settings",
+      "integrations": "Integrations",
+      "security": "Security",
+      "featureFlags": "Feature Flags",
+      "scheduler": "Scheduler",
+      "auditLog": "Audit Log"
+    }
+  },
+  "sidebar": {
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSubmenu": "Expand submenu",
+    "collapseSubmenu": "Collapse submenu",
+    "moreHidden": "More / Hidden",
+    "myLinks": "My Links",
+    "settings": "Settings",
+    "customizeLeftMenu": "Customize left menu",
+    "platformSettings": "Platform settings"
+  },
+  "customize": {
+    "title": "Left menu",
+    "description": "Drag modules to reorder. Hidden items stay available under More in the sidebar.",
+    "shownInMenu": "Shown in menu",
+    "hidden": "Hidden ({count})",
+    "show": "Show",
+    "linkTitlePlaceholder": "Title",
+    "linkUrlPlaceholder": "URL or /path",
+    "addLink": "Add link",
+    "dragToReorder": "Drag to reorder {label}",
+    "hideModule": "Hide {label}",
+    "removeLink": "Remove {label}"
+  },
+  "quickAction": {
+    "createTask": "Create task"
+  },
+  "mobileMenu": {
+    "title": "Menu",
+    "description": "Open a module. Items are arranged as large buttons."
+  },
+  "mobileDock": {
+    "settings": "Settings",
+    "defaultScope": "All",
+    "menu": "Menu",
+    "search": "Search",
+    "new": "New",
+    "toolsAria": "Workspace tools",
+    "goTo": "Go to",
+    "zone": "Zone",
+    "section": "Section",
+    "category": "Category",
+    "view": "View",
+    "placesDescription": "Places in the current module.",
+    "searchDescription": "Search and filter this list."
+  },
+  "search": {
+    "trigger": "Search",
+    "openAria": "Open global search"
+  },
+  "notifications": {
+    "trigger": "Notifications"
+  },
+  "pwa": {
+    "install": "Install app",
+    "addToHomeScreen": "Add to Home Screen",
+    "iosHint": "Tap Share, then Add to Home Screen to keep NBOS with your apps.",
+    "bannerTitle": "Install NBOS",
+    "bannerPromptBody": "Open it from your home screen or app list.",
+    "bannerIosBody": "On iPhone: Share, then Add to Home Screen.",
+    "bannerBrowserBody": "Use the install icon in the address bar, or the browser menu.",
+    "bannerInstall": "Install",
+    "bannerDismiss": "Not now"
+  },
+  "headerQuickNote": {
+    "placeholder": "Write a note and press Enter...",
+    "saveHint": "↵ Enter or",
+    "saveFailed": "Note could not be saved."
+  },
+  "moduleTitleAria": "Module: {title}"
+}

@@ -30,6 +30,9 @@ export interface CurrentUserPayload {
     telegram: string | null;
     avatar: string | null;
     position: string | null;
+    birthday: string | null;
+    hireDate: string | null;
+    status: 'ACTIVE' | 'PROBATION' | 'ON_LEAVE' | 'TERMINATED';
     isPlatformOwner: boolean;
     role: {
       id: string;

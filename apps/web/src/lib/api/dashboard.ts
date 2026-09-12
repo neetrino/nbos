@@ -16,6 +16,8 @@ export interface DashboardPriorityProjection {
   href: string;
   severity: 'critical' | 'high' | 'normal';
   source: string;
+  code?: string;
+  count?: number;
 }
 
 export interface DashboardControlCenterMeta {
@@ -123,6 +125,17 @@ export const dashboardApi = {
   async createPersonalLink(payload: CreatePersonalLinkPayload): Promise<DashboardPersonalLink> {
     const response = await api.post<DashboardPersonalLink>(
       '/api/dashboard/personal-links',
+      payload,
+    );
+    return response.data;
+  },
+
+  async updatePersonalLink(
+    id: string,
+    payload: Pick<CreatePersonalLinkPayload, 'label' | 'url' | 'openInNewTab'>,
+  ): Promise<DashboardPersonalLink> {
+    const response = await api.patch<DashboardPersonalLink>(
+      `/api/dashboard/personal-links/${id}`,
       payload,
     );
     return response.data;

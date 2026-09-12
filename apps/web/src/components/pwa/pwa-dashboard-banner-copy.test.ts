@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { pwaDashboardBannerBody } from './pwa-dashboard-banner-copy';
+import { pwaDashboardBannerBodyKey } from './pwa-dashboard-banner-copy';
 
-describe('pwaDashboardBannerBody', () => {
+describe('pwaDashboardBannerBodyKey', () => {
   it('uses the iOS Share steps on iPhone', () => {
-    expect(pwaDashboardBannerBody('ios-manual')).toContain('Share');
+    expect(pwaDashboardBannerBodyKey('ios-manual')).toBe('pwa.bannerIosBody');
   });
 
   it('uses the native-install copy when Chrome can prompt', () => {
-    expect(pwaDashboardBannerBody('prompt')).toContain('home screen');
+    expect(pwaDashboardBannerBodyKey('prompt')).toBe('pwa.bannerPromptBody');
   });
 
   it('falls back to the browser-menu hint', () => {
-    expect(pwaDashboardBannerBody('browser-manual')).toContain('browser menu');
+    expect(pwaDashboardBannerBodyKey('browser-manual')).toBe('pwa.bannerBrowserBody');
   });
 });

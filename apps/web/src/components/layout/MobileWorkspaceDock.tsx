@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { LayoutGrid } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 import { MobileDockOverflowSheet } from './MobileDockOverflowSheet';
@@ -16,7 +17,7 @@ import {
   MOBILE_DOCK_ICON_SIZE_PX,
   MOBILE_DOCK_ROW_CLASS,
 } from './mobile-bottom-nav-constants';
-import { MOBILE_WORKSPACE_SWITCHER_MULTI_TITLE } from './mobile-workspace-dock-constants';
+import { resolveMobileDockSwitcherTitle } from './mobile-dock-switcher-title';
 
 interface MobileWorkspaceDockProps {
   menuOpen?: boolean;
@@ -31,13 +32,11 @@ export function MobileWorkspaceDock({ menuOpen = false, onMoreClick }: MobileWor
   const trailingHostRef = useRef<HTMLDivElement>(null);
   const resolvedCreate = usePageHeroDockCreate(trailingHostRef, create);
   const [switcherOpen, setSwitcherOpen] = useState(false);
-  const switcherTitle =
-    switcherGroups.length > 1
-      ? MOBILE_WORKSPACE_SWITCHER_MULTI_TITLE
-      : (switcherGroups[0]?.title ?? MOBILE_WORKSPACE_SWITCHER_MULTI_TITLE);
+  const t = useTranslations('navigation');
+  const switcherTitle = resolveMobileDockSwitcherTitle(switcherGroups, t);
 
   return (
-    <nav className="nbos-mobile-dock md:hidden" aria-label="Workspace tools">
+    <nav className="nbos-mobile-dock md:hidden" aria-label={t('mobileDock.toolsAria')}>
       <div className={cn(MOBILE_DOCK_ROW_CLASS, MOBILE_DOCK_HEIGHT_CLASS)}>
         <WorkspaceMenuButton open={menuOpen} onClick={onMoreClick} />
         {hasSearch && tools.search ? <MobilePageSearchSheet search={tools.search} /> : null}
@@ -69,8 +68,15 @@ export function MobileWorkspaceDock({ menuOpen = false, onMoreClick }: MobileWor
 }
 
 function WorkspaceMenuButton({ open, onClick }: { open: boolean; onClick: () => void }) {
+  const t = useTranslations('navigation');
+
   return (
-    <MobileDockItem label="Menu" active={open} aria-expanded={open} onClick={onClick}>
+    <MobileDockItem
+      label={t('mobileDock.menu')}
+      active={open}
+      aria-expanded={open}
+      onClick={onClick}
+    >
       <LayoutGrid size={MOBILE_DOCK_ICON_SIZE_PX} aria-hidden />
     </MobileDockItem>
   );

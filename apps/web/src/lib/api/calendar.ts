@@ -55,13 +55,25 @@ export function parseCalendarMeetingConflicts(
   error: unknown,
 ): CalendarMeetingConflictPayload[] | null {
   if (!isCalendarMeetingConflictApiError(error)) return null;
-  const raw = error.details?.conflicts;
+  const raw = readConflictList(error.details);
   if (!Array.isArray(raw)) return null;
   const out: CalendarMeetingConflictPayload[] = [];
   for (const item of raw) {
     if (isConflictPayload(item)) out.push(item);
   }
   return out.length > 0 ? out : null;
+}
+
+/** Accept top-level `conflicts` or a nested `details.conflicts` envelope. */
+function readConflictList(details: Record<string, unknown>): unknown {
+  if (Array.isArray(details.conflicts)) return details.conflicts;
+  const nested = details.details;
+  if (!isRecord(nested)) return undefined;
+  return nested.conflicts;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function isConflictPayload(v: unknown): v is CalendarMeetingConflictPayload {

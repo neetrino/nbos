@@ -4,6 +4,7 @@ import type { AnalyticsBarItem } from '@/components/ui/analytics-card';
 export function buildMiniAnalyticsChart(
   visibleMetrics: MiniMetricDefinition[],
   data: DashboardData | null,
+  locale: string,
 ): { bars: AnalyticsBarItem[]; totalAmount: string } {
   const bars: AnalyticsBarItem[] = visibleMetrics.map((metric) => {
     const raw = data?.[metric.key];
@@ -19,6 +20,6 @@ export function buildMiniAnalyticsChart(
 
   return {
     bars,
-    totalAmount: total.toLocaleString(),
+    totalAmount: total.toLocaleString(locale),
   };
 }

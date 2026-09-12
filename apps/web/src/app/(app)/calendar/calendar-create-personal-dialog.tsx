@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { toDatetimeLocalValue } from './calendar-datetime-helpers';
+import { toDatetimeLocalValue } from '@/features/calendar/calendar-datetime-helpers';
 
 function personalDefaults(selectedDate: Date) {
   return {

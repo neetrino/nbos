@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { NAV_QUICK_ACTION_CREATE_TASK_LABEL_KEY } from '@/lib/navigation/nav-message-keys';
 import {
   SIDEBAR_CREATE_TASK_ARIA_LABEL,
   SIDEBAR_NAV_QUICK_ACTION_BUTTON_CLASS,
@@ -23,7 +24,7 @@ describe('SidebarNavQuickActionButton helpers', () => {
     expect(SIDEBAR_NAV_QUICK_ACTION_BUTTON_CLASS).toContain('opacity-0');
     expect(SIDEBAR_NAV_QUICK_ACTION_BUTTON_CLASS).toContain('group-hover:opacity-100');
     expect(SIDEBAR_NAV_QUICK_ACTION_BUTTON_CLASS).toContain('focus-visible:opacity-100');
-    expect(SIDEBAR_CREATE_TASK_ARIA_LABEL).toBe('Create task');
+    expect(SIDEBAR_CREATE_TASK_ARIA_LABEL).toBe(NAV_QUICK_ACTION_CREATE_TASK_LABEL_KEY);
   });
 
   it('uses a larger glyph, 32px hit target, and inset from the row edge', () => {

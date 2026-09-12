@@ -1,5 +1,7 @@
 # Dashboard Personalization
 
+**Локализация, решение 2026-09-12 (ещё не реализовано):** Dashboard и его create-flow входят в первый EN/RU релиз. Язык персональный, хранится в Employee, а не DashboardPreference; persisted action/widget IDs сохраняются. См. [канон локализации](../../01-Platform-Overview/07-Interface-Localization.md).
+
 > NBOS Dashboard - персональный пульт пользователя, pinned actions, widgets и настройки отображения.
 
 ## Назначение
@@ -20,30 +22,29 @@
 - открыть список доступных действий;
 - сбросить к default layout по роли.
 
-## Available Actions Drawer
+Pinned actions split into two visible groups:
 
-Закрытый список всех доступных действий:
+- **Create** — in-place dialogs (sheet/dialog already used in the module). Plus mark. Does not navigate away.
+- **Open** — internal routes and personal links. Arrow mark.
 
 ```text
-Add action
-  CRM
-    New Lead
-    Open Deals
-    Open CRM Client Chats
-  Delivery
-    Open Delivery Board
-    Open My Work Spaces
-  Finance
-    Open Invoices
-    Open Salary Board
-    Open Expense Board
-  System
-    Open Drive
-    Open Credentials
-    Open Calendar
+Create
+  New Task
+  New Meeting
+  New Lead
+  New Expense
+Open
+  Open Deals
+  Delivery Board
+  Open Invoices
+  Pay now
+  Salary
+  Support queue
+  Credentials vault
+  Personal links
 ```
 
-Список фильтруется по правам пользователя.
+Список фильтруется по правам пользователя. Пользователь скрывает лишние кнопки в edit mode; personal links не входят в hide/show каталог.
 
 ## Personal Links as Pinned Actions
 
@@ -75,8 +76,8 @@ IT-бренд (GitHub, Slack, Figma и т.д.) подбирается по URL �
 | Role / Seat | Default pinned actions                                         |
 | ----------- | -------------------------------------------------------------- |
 | Seller      | `New Lead`, `Open Deals`, `CRM Client Chats`, `Offers Pending` |
-| PM          | `Delivery Board`, `My Work Spaces`, `Tasks Review`, `Calendar` |
-| Developer   | `My Tasks`, `My Work Spaces`, `Messenger`, `Credentials`       |
+| PM          | `Delivery Board`, `New Task`, `New Meeting`, `Credentials`     |
+| Developer   | `New Task`, `New Meeting`, `Credentials`, `Open Deals`         |
 | Finance     | `Invoices`, `Subscriptions`, `Expense Board`, `Salary Board`   |
 | Owner       | `Company Focus`, `Finance`, `Delivery Risks`, `Approvals`      |
 

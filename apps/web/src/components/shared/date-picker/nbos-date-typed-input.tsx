@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, type KeyboardEvent, type RefObject } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { NBOS_TYPED_DATE_PART_PLACEHOLDERS } from './date-picker-constants';
 import {
@@ -9,12 +10,6 @@ import {
   type TypedDatePartKey,
   type TypedDateParts,
 } from './date-picker-typed';
-
-const PART_LABEL: Record<TypedDatePartKey, string> = {
-  day: 'Day',
-  month: 'Month',
-  year: 'Year',
-};
 
 export interface NbosDateTypedInputProps {
   value: TypedDateParts;
@@ -32,10 +27,16 @@ export function NbosDateTypedInput({
   disabled = false,
   className,
 }: NbosDateTypedInputProps) {
+  const t = useTranslations('forms');
   const dayRef = useRef<HTMLInputElement>(null);
   const monthRef = useRef<HTMLInputElement>(null);
   const yearRef = useRef<HTMLInputElement>(null);
   const refs = { day: dayRef, month: monthRef, year: yearRef };
+  const partLabels: Record<TypedDatePartKey, string> = {
+    day: t('datePicker.day'),
+    month: t('datePicker.month'),
+    year: t('datePicker.year'),
+  };
 
   const focusPart = (part: TypedDatePartKey | undefined) => {
     if (part) refs[part].current?.focus();
@@ -48,7 +49,7 @@ export function NbosDateTypedInput({
   return (
     <div
       role="group"
-      aria-label="Type date as day, month, year"
+      aria-label={t('datePicker.typeDateGroup')}
       className={cn(
         'border-border/50 flex h-10 w-full overflow-hidden rounded-xl border',
         disabled && 'pointer-events-none opacity-60',
@@ -66,6 +67,7 @@ export function NbosDateTypedInput({
           onChange={handleChange}
           onCommit={onCommit}
           onMove={(direction) => focusPart(adjacentTypedDatePart(part, direction))}
+          partLabel={partLabels[part]}
         />
       ))}
     </div>
@@ -81,6 +83,7 @@ function TypedDatePartCell({
   onChange,
   onCommit,
   onMove,
+  partLabel,
 }: {
   part: TypedDatePartKey;
   inputRef: RefObject<HTMLInputElement | null>;
@@ -90,6 +93,7 @@ function TypedDatePartCell({
   onChange: (part: TypedDatePartKey, raw: string) => void;
   onCommit: () => void;
   onMove: (direction: -1 | 1) => void;
+  partLabel: string;
 }) {
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
@@ -128,7 +132,7 @@ function TypedDatePartCell({
         disabled={disabled}
         value={value}
         placeholder={NBOS_TYPED_DATE_PART_PLACEHOLDERS[part]}
-        aria-label={PART_LABEL[part]}
+        aria-label={partLabel}
         onFocus={(event) => event.currentTarget.select()}
         onChange={(event) => onChange(part, event.target.value)}
         onKeyDown={handleKeyDown}

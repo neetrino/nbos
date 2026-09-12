@@ -1,15 +1,15 @@
 import {
-  Calendar,
+  CalendarPlus,
   CheckSquare,
   FileText,
   FolderKanban,
   Handshake,
   Headphones,
   KeyRound,
-  Mail,
-  MessageCircle,
+  ListPlus,
   Plus,
   ReceiptText,
+  UserPlus,
 } from 'lucide-react';
 import type {
   DashboardMetricProjection,
@@ -19,15 +19,20 @@ import type {
   DashboardPriorityProjection,
 } from '@/lib/api/dashboard';
 
-export interface PinnedAction {
+export type PinnedActionKind = 'create' | 'open';
+
+interface PinnedActionBase {
   key: DashboardPinnedActionKey;
   label: string;
-  href: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   module: string;
   action: string;
   description: string;
 }
+
+export type PinnedAction =
+  | (PinnedActionBase & { kind: 'create' })
+  | (PinnedActionBase & { kind: 'open'; href: string });
 
 export type DashboardPersonalLink = ApiDashboardPersonalLink;
 export type DashboardNote = ApiDashboardNote;
@@ -36,42 +41,58 @@ export type DashboardPreference = DashboardPreferenceProjection;
 export type DashboardPinnedActionKey =
   | 'new-lead'
   | 'new-task'
+  | 'new-meeting'
+  | 'new-expense'
   | 'open-deals'
-  | 'open-my-workspaces'
   | 'open-products'
   | 'open-invoices'
   | 'open-expenses'
   | 'open-payroll'
-  | 'open-tasks'
   | 'open-support'
-  | 'open-calendar'
-  | 'open-messenger'
-  | 'open-credentials'
-  | 'mail-inbox';
+  | 'open-credentials';
 export type DashboardWidgetKey = 'leads' | 'open-deals' | 'open-tasks' | 'open-support-tickets';
 export type PriorityCard = DashboardPriorityProjection;
 
 export const PINNED_ACTIONS: PinnedAction[] = [
   {
-    key: 'new-lead',
-    label: 'New lead',
-    href: '/crm/leads',
-    icon: Plus,
-    module: 'CRM_LEADS',
-    action: 'ADD',
-    description: 'Capture an incoming opportunity.',
-  },
-  {
     key: 'new-task',
+    kind: 'create',
     label: 'New task',
-    href: '/tasks',
-    icon: CheckSquare,
+    icon: ListPlus,
     module: 'TASKS',
     action: 'ADD',
     description: 'Create work for yourself or a teammate.',
   },
   {
+    key: 'new-meeting',
+    kind: 'create',
+    label: 'New meeting',
+    icon: CalendarPlus,
+    module: 'CALENDAR',
+    action: 'ADD',
+    description: 'Schedule a client meeting without leaving the desk.',
+  },
+  {
+    key: 'new-lead',
+    kind: 'create',
+    label: 'New lead',
+    icon: UserPlus,
+    module: 'CRM_LEADS',
+    action: 'ADD',
+    description: 'Capture an incoming opportunity.',
+  },
+  {
+    key: 'new-expense',
+    kind: 'create',
+    label: 'New expense',
+    icon: ReceiptText,
+    module: 'FINANCE_EXPENSES',
+    action: 'ADD',
+    description: 'Log an expense from the desk.',
+  },
+  {
     key: 'open-deals',
+    kind: 'open',
     label: 'Open deals',
     href: '/crm/deals',
     icon: Handshake,
@@ -80,16 +101,8 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'Review active sales pipeline.',
   },
   {
-    key: 'open-my-workspaces',
-    label: 'My Work Spaces',
-    href: '/work-spaces',
-    icon: FolderKanban,
-    module: 'TASKS',
-    action: 'VIEW',
-    description: 'Jump into active delivery spaces.',
-  },
-  {
     key: 'open-products',
+    kind: 'open',
     label: 'Delivery Board',
     href: '/delivery-board',
     icon: FolderKanban,
@@ -99,6 +112,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-invoices',
+    kind: 'open',
     label: 'Open invoices',
     href: '/finance/invoices',
     icon: FileText,
@@ -108,6 +122,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-expenses',
+    kind: 'open',
     label: 'Pay now',
     href: '/finance/expenses',
     icon: ReceiptText,
@@ -117,6 +132,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-payroll',
+    kind: 'open',
     label: 'Salary',
     href: '/finance/payroll',
     icon: FileText,
@@ -125,16 +141,8 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'Review salary and payroll runs.',
   },
   {
-    key: 'open-tasks',
-    label: 'My tasks',
-    href: '/tasks',
-    icon: CheckSquare,
-    module: 'TASKS',
-    action: 'VIEW',
-    description: 'Open task board for work in progress.',
-  },
-  {
     key: 'open-support',
+    kind: 'open',
     label: 'Support queue',
     href: '/support',
     icon: Headphones,
@@ -143,54 +151,50 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'Open tickets waiting for action.',
   },
   {
-    key: 'open-calendar',
-    label: 'Open calendar',
-    href: '/calendar',
-    icon: Calendar,
-    module: 'CALENDAR',
-    action: 'VIEW',
-    description: 'See meetings, personal items and deadlines.',
-  },
-  {
     key: 'open-credentials',
-    label: 'Credentials vault',
+    kind: 'open',
+    label: 'Password',
     href: '/credentials',
     icon: KeyRound,
     module: 'CREDENTIALS',
     action: 'VIEW',
     description: 'Open shared credentials you can access.',
   },
-  {
-    key: 'open-messenger',
-    label: 'Open messenger',
-    href: '/messenger',
-    icon: MessageCircle,
-    module: 'MESSENGER',
-    action: 'VIEW',
-    description: 'Jump into internal communication.',
-  },
-  {
-    key: 'mail-inbox',
-    label: 'Mail inbox',
-    href: '/mail',
-    icon: Mail,
-    module: 'MAIL',
-    action: 'VIEW',
-    description: 'Check mailbox threads requiring context.',
-  },
 ];
 
 export const MINI_METRICS = [
-  { id: 'leads', icon: Plus, label: 'Leads', key: 'leads', href: '/crm/leads' },
-  { id: 'open-deals', icon: Handshake, label: 'Open deals', key: 'openDeals', href: '/crm/deals' },
+  {
+    id: 'leads',
+    icon: Plus,
+    labelKey: 'widgets.metrics.leads',
+    label: 'Leads',
+    key: 'leads',
+    href: '/crm/leads',
+  },
+  {
+    id: 'open-deals',
+    icon: Handshake,
+    labelKey: 'widgets.metrics.openDeals',
+    label: 'Open deals',
+    key: 'openDeals',
+    href: '/crm/deals',
+  },
   {
     id: 'open-support-tickets',
     icon: Headphones,
+    labelKey: 'widgets.metrics.openTickets',
     label: 'Open tickets',
     key: 'openTickets',
     href: '/support',
   },
-  { id: 'open-tasks', icon: CheckSquare, label: 'Open tasks', key: 'openTasks', href: '/tasks' },
+  {
+    id: 'open-tasks',
+    icon: CheckSquare,
+    labelKey: 'widgets.metrics.openTasks',
+    label: 'Open tasks',
+    key: 'openTasks',
+    href: '/tasks',
+  },
 ] as const;
 
 export type MiniMetricDefinition = (typeof MINI_METRICS)[number];
@@ -225,6 +229,10 @@ export function partitionMiniMetrics(
   for (const metric of MINI_METRICS) pushIfVisible(metric.id);
 
   return { visible, hidden };
+}
+
+export function isPinnedActionKey(value: string): value is DashboardPinnedActionKey {
+  return PINNED_ACTIONS.some((action) => action.key === value);
 }
 
 export function priorityClass(severity: PriorityCard['severity']): string {

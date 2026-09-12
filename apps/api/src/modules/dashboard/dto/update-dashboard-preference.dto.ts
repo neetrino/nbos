@@ -1,4 +1,4 @@
-import { ArrayMaxSize, IsArray, IsIn, IsOptional } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsIn, IsOptional, IsString } from 'class-validator';
 import {
   DASHBOARD_PINNED_ACTION_KEYS,
   DASHBOARD_PINNED_ACTION_MAX_COUNT,
@@ -17,7 +17,7 @@ export class UpdateDashboardPreferenceDto {
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(DASHBOARD_PINNED_ACTION_MAX_COUNT)
-  @IsIn(DASHBOARD_PINNED_ACTION_KEYS, { each: true })
+  @IsString({ each: true })
   hiddenPinnedActions?: string[];
 
   @IsOptional()

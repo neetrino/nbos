@@ -1,0 +1,125 @@
+{
+  "task": {
+    "title": "Создать задачу",
+    "namePlaceholder": "Название задачи",
+    "descriptionPlaceholder": "Описание",
+    "assignee": "Исполнитель",
+    "dueDate": "Срок",
+    "dueDateAria": "Срок",
+    "urgent": "Срочная",
+    "markAsUrgent": "Отметить как срочную",
+    "fullForm": "Полная форма",
+    "createError": "Не удалось создать задачу. Попробуйте снова.",
+    "employeeNotLinked": "Ваш аккаунт не связан с записью сотрудника, поэтому задачи создавать нельзя."
+  },
+  "meeting": {
+    "title": "Новая встреча с клиентом",
+    "fields": {
+      "title": "Название *",
+      "titlePlaceholder": "например, Discovery с Acme",
+      "start": "Начало *",
+      "startAria": "Начало встречи",
+      "end": "Окончание *",
+      "endAria": "Окончание встречи",
+      "meetingType": "Тип встречи",
+      "location": "Место",
+      "linkOrAddress": "Ссылка или адрес",
+      "linkPlaceholder": "Ссылка на Meet или адрес",
+      "agenda": "Повестка",
+      "agendaPlaceholder": "Необязательно"
+    },
+    "types": {
+      "SALES_CALL": "Звонок по продажам",
+      "OFFER_PRESENTATION": "Презентация предложения",
+      "DEMO": "Демо",
+      "KICKOFF": "Kickoff / передача",
+      "SUPPORT_CALL": "Звонок поддержки",
+      "MAINTENANCE_CALL": "Звонок по сопровождению",
+      "OTHER": "Другое"
+    },
+    "locationTypes": {
+      "ONLINE": "Онлайн",
+      "OFFLINE": "Офлайн"
+    },
+    "validation": {
+      "titleRequired": "Укажите название.",
+      "endAfterStart": "Время окончания должно быть позже начала.",
+      "overlapReason": "Этот интервал пересекается с другой встречей. Укажите причину, чтобы всё равно запланировать."
+    },
+    "conflicts": {
+      "title": "Конфликты",
+      "overrideReason": "Причина игнорирования",
+      "overridePlaceholder": "Почему запланировать несмотря на пересечение?"
+    },
+    "submit": {
+      "scheduleAnyway": "Запланировать всё равно"
+    },
+    "createError": "Не удалось создать встречу"
+  },
+  "lead": {
+    "title": "Новый лид",
+    "fields": {
+      "title": "Название *",
+      "phone": "Телефон",
+      "email": "Email"
+    },
+    "full": "Полная",
+    "createLead": "Создать лид",
+    "createError": "Не удалось создать лид. Попробуйте снова."
+  },
+  "expense": {
+    "title": "Новый расход",
+    "fields": {
+      "name": "Название *",
+      "amount": "Сумма *",
+      "dueDate": "Срок оплаты",
+      "dueDateAria": "Срок оплаты",
+      "namePlaceholder": "Название расхода"
+    },
+    "createError": "Не удалось создать расход. Проверьте соединение и попробуйте снова."
+  },
+  "errors": {
+    "validation": "Проверьте выделенные поля и попробуйте снова.",
+    "network": "Не удалось связаться с сервером. Проверьте соединение и попробуйте снова."
+  },
+  "datePicker": {
+    "today": "Сегодня",
+    "clear": "Очистить",
+    "selectDate": "Выберите дату…",
+    "clearDate": "Очистить дату",
+    "selectMonth": "Выберите месяц…",
+    "thisMonth": "Этот месяц",
+    "selectExpiryDate": "Выберите дату окончания",
+    "previousMonth": "Предыдущий месяц",
+    "nextMonth": "Следующий месяц",
+    "previousYear": "Предыдущий год",
+    "nextYear": "Следующий год",
+    "typeDateGroup": "Введите дату: день, месяц, год",
+    "day": "День",
+    "month": "Месяц",
+    "year": "Год",
+    "time": "Время {time}",
+    "selectTime": "Выберите время",
+    "hours": "Часы",
+    "minutes": "Минуты",
+    "presets": {
+      "today": "Сегодня",
+      "tomorrow": "Завтра",
+      "endOfWeek": "Конец недели",
+      "inOneWeek": "Через неделю",
+      "endOfMonth": "Конец месяца"
+    }
+  },
+  "relationPicker": {
+    "choose": "Выберите…",
+    "searchEmployees": "Поиск сотрудников…",
+    "searching": "Поиск…",
+    "noResults": "Ничего не найдено",
+    "clearSearch": "Очистить поиск",
+    "employee": "Сотрудник",
+    "addEmployee": "Добавить сотрудника",
+    "openNamed": "Открыть {label}",
+    "changeNamed": "Изменить {label}",
+    "removeNamed": "Удалить {label}"
+  }
+}

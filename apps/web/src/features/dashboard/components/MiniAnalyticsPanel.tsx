@@ -14,6 +14,8 @@ import { useMemo, useState, type ComponentType } from 'react';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { BarChart3, Eye } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { resolveDatePickerLocale } from '@/components/shared/date-picker/date-picker-locale';
 import { AnalyticsCard } from '@/components/ui/analytics-card';
 import { cn } from '@/lib/utils';
 import { DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS } from '../dashboard-dnd.constants';
@@ -40,16 +42,24 @@ export function MiniAnalytics({
   onApplyWidgetLayout,
   visibleMetrics,
 }: MiniAnalyticsProps) {
+  const t = useTranslations('dashboard');
+  const numberLocale = resolveDatePickerLocale(useLocale());
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor),
   );
 
-  const { bars, totalAmount } = useMemo(
-    () => buildMiniAnalyticsChart(visibleMetrics, data),
-    [visibleMetrics, data],
-  );
+  const { bars, totalAmount } = useMemo(() => {
+    const chart = buildMiniAnalyticsChart(visibleMetrics, data, numberLocale);
+    return {
+      totalAmount: chart.totalAmount,
+      bars: chart.bars.map((bar, index) => ({
+        ...bar,
+        label: t(visibleMetrics[index]?.labelKey ?? 'widgets.metrics.leads'),
+      })),
+    };
+  }, [visibleMetrics, data, numberLocale, t]);
   const visibleIds = visibleMetrics.map((m) => m.id);
   const hiddenIds = hiddenMetrics.map((m) => m.id);
   const activeDragMetric =
@@ -86,14 +96,14 @@ export function MiniAnalytics({
     return (
       <div className="nbos-desk-surface text-card-foreground w-full p-6">
         <div className="flex items-start justify-between">
-          <h3 className="text-muted-foreground text-lg font-medium">Mini analytics</h3>
+          <h3 className="text-muted-foreground text-lg font-medium">
+            {t('widgets.miniAnalyticsTitle')}
+          </h3>
           <div className="bg-muted/50 flex h-8 w-8 items-center justify-center rounded-full">
             <BarChart3 className="text-muted-foreground h-4 w-4" aria-hidden />
           </div>
         </div>
-        <p className="text-muted-foreground mt-4 text-xs">
-          Drag rows between Shown and Hidden. Changes save automatically.
-        </p>
+        <p className="text-muted-foreground mt-4 text-xs">{t('widgets.editHint')}</p>
         <DndContext
           sensors={sensors}
           collisionDetection={dashboardPointerCollisionDetection}
@@ -103,7 +113,7 @@ export function MiniAnalytics({
         >
           <div className="mt-4 flex flex-col gap-4">
             <SortableContext items={visibleIds} strategy={verticalListSortingStrategy}>
-              <WidgetDropColumn id={WIDGET_DROP_VISIBLE} title="Shown">
+              <WidgetDropColumn id={WIDGET_DROP_VISIBLE} title={t('widgets.shown')}>
                 <div className={`mt-2 grid gap-2 ${DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS}`}>
                   {visibleMetrics.map((metric) => (
                     <SortableWidgetRow
@@ -117,7 +127,7 @@ export function MiniAnalytics({
               </WidgetDropColumn>
             </SortableContext>
             <SortableContext items={hiddenIds} strategy={verticalListSortingStrategy}>
-              <WidgetDropColumn id={WIDGET_DROP_HIDDEN} title="Hidden">
+              <WidgetDropColumn id={WIDGET_DROP_HIDDEN} title={t('widgets.hidden')}>
                 <div className={`mt-2 grid gap-2 ${DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS}`}>
                   {hiddenMetrics.map((metric) => (
                     <SortableWidgetRow
@@ -135,7 +145,7 @@ export function MiniAnalytics({
             {activeDragMetric ? (
               <MiniMetricEditRow
                 icon={activeDragMetric.icon}
-                label={activeDragMetric.label}
+                labelKey={activeDragMetric.labelKey}
                 value={activeDragValue}
                 variant="visible"
               />
@@ -148,10 +158,13 @@ export function MiniAnalytics({
 
   return (
     <AnalyticsCard
-      title="Mini analytics"
+      title={t('widgets.miniAnalyticsTitle')}
+      kicker={t('widgets.pulseKicker')}
+      chartAriaLabel={t('widgets.chartAria')}
       totalAmount={totalAmount}
       icon={<BarChart3 className="text-muted-foreground h-4 w-4" />}
       data={bars}
+      locale={numberLocale}
     />
   );
 }
@@ -213,22 +226,29 @@ function SortableWidgetRow({
       {...attributes}
       {...listeners}
     >
-      <MiniMetricEditRow icon={metric.icon} label={metric.label} value={value} variant={variant} />
+      <MiniMetricEditRow
+        icon={metric.icon}
+        labelKey={metric.labelKey}
+        value={value}
+        variant={variant}
+      />
     </div>
   );
 }
 
 function MiniMetricEditRow({
   icon: Icon,
-  label,
+  labelKey,
   value,
   variant,
 }: {
   icon: ComponentType<{ size?: number; className?: string }>;
-  label: string;
+  labelKey: MiniMetricDefinition['labelKey'];
   value: number | string;
   variant: 'visible' | 'hidden';
 }) {
+  const t = useTranslations('dashboard');
+  const label = t(labelKey);
   const isHidden = variant === 'hidden';
 
   return (

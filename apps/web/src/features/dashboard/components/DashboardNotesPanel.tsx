@@ -20,15 +20,11 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { AnimatePresence, motion } from 'framer-motion';
 import { GripVertical, Loader2, Trash2 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { DashboardNote } from '../dashboard-control-registry';
-
-const NOTE_TIME_FORMAT = new Intl.DateTimeFormat('en', {
-  hour: '2-digit',
-  minute: '2-digit',
-});
 
 /** Stacking: editing card must sit above neighbors when lifted / overlapping hover. */
 const NOTE_CARD_Z_INDEX_EDITING = 50;
@@ -45,9 +41,6 @@ const NOTE_CORNER_SAVE_PRIMARY_CLASS = cn(
   NOTE_CORNER_PILL_CLASS,
   'border-amber-800/30 bg-amber-900 text-amber-50 hover:bg-amber-800 disabled:border-amber-300 disabled:bg-amber-200/90 disabled:text-amber-900/30',
 );
-
-/** Shown next to the composer Save control when the draft is non-empty. */
-const NOTE_COMPOSER_SAVE_ACTION_HINT = '↵ Enter or';
 
 interface DashboardNotesPanelProps {
   className?: string;
@@ -66,6 +59,7 @@ export function DashboardNotesPanel({
   onReorderNotes,
   onUpdateNote,
 }: DashboardNotesPanelProps) {
+  const t = useTranslations('dashboard');
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
   const canSave = draft.trim().length > 0 && !saving;
@@ -103,7 +97,7 @@ export function DashboardNotesPanel({
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Write a note and press Enter..."
+            placeholder={t('notes.placeholder')}
             className={cn(
               'min-h-36 resize-none border-0 bg-transparent px-4 py-4 text-sm leading-7 shadow-none',
               'placeholder:text-amber-900/40 focus-visible:ring-0',
@@ -113,7 +107,7 @@ export function DashboardNotesPanel({
           {showComposerSave ? (
             <div className="absolute right-2 bottom-2 z-10 flex max-w-[calc(100%-1rem)] items-center justify-end gap-2">
               <p className="min-w-0 text-right text-[10px] leading-snug font-medium text-amber-900/50 select-none">
-                {NOTE_COMPOSER_SAVE_ACTION_HINT}
+                {t('notes.saveHint')}
               </p>
               <Button
                 type="button"
@@ -122,7 +116,7 @@ export function DashboardNotesPanel({
                 disabled={!canSave}
                 onClick={() => void saveDraft()}
               >
-                Save
+                {t('notes.save')}
               </Button>
             </div>
           ) : null}
@@ -157,10 +151,12 @@ function NoteStack({
   const noteIds = notes.map((note) => note.id);
   const activeDragNote = activeDragId ? notes.find((note) => note.id === activeDragId) : null;
 
+  const t = useTranslations('dashboard');
+
   if (notes.length === 0) {
     return (
       <div className="border-border bg-muted/20 text-muted-foreground rounded-xl border border-dashed p-4 text-sm">
-        Your saved notes will collect here.
+        {t('notes.empty')}
       </div>
     );
   }
@@ -249,7 +245,12 @@ function NoteCard({
   onSaveEdit: (id: string) => Promise<void>;
   onStartEdit: (note: DashboardNote) => void;
 }) {
-  const savedTime = useMemo(() => formatNoteTime(note.createdAt), [note.createdAt]);
+  const t = useTranslations('dashboard');
+  const locale = useLocale();
+  const savedTime = useMemo(
+    () => formatNoteTime(note.createdAt, t('notes.justNow'), locale),
+    [locale, note.createdAt, t],
+  );
   const tiltDegrees = useMemo(() => stableTiltDegreesFromNoteId(note.id), [note.id]);
   const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -315,13 +316,23 @@ function NoteCard({
             disabled={isEditing}
             dragAttributes={attributes}
             dragListeners={listeners}
+            dragAria={t('notes.dragAria')}
+            dragLockedAria={t('notes.dragLockedAria')}
           />
-          {!isEditing ? <NoteActions note={note} onDeleteNote={onDeleteNote} /> : null}
+          {!isEditing ? (
+            <NoteActions
+              deleteAria={t('notes.deleteAria')}
+              note={note}
+              onDeleteNote={onDeleteNote}
+            />
+          ) : null}
           {isEditing ? (
             <NoteEditActions
               canSave={editDraft.trim().length > 0}
+              cancelLabel={t('notes.cancel')}
               onCancel={onCancelEdit}
               onSave={() => void onSaveEdit(note.id)}
+              saveLabel={t('notes.save')}
             />
           ) : null}
           {isEditing ? (
@@ -346,10 +357,14 @@ function NoteCard({
 
 function NoteDragCorner({
   disabled,
+  dragAria,
+  dragLockedAria,
   dragAttributes,
   dragListeners,
 }: {
   disabled?: boolean;
+  dragAria: string;
+  dragLockedAria: string;
   dragAttributes: ReturnType<typeof useSortable>['attributes'];
   dragListeners: ReturnType<typeof useSortable>['listeners'];
 }) {
@@ -362,7 +377,7 @@ function NoteDragCorner({
           ? 'pointer-events-none cursor-default opacity-25'
           : 'cursor-grab text-amber-900/0 group-hover:text-amber-900/45 active:cursor-grabbing',
       )}
-      aria-label={disabled ? 'Reorder locked while editing' : 'Drag note'}
+      aria-label={disabled ? dragLockedAria : dragAria}
       onClick={(event) => event.stopPropagation()}
       {...dragAttributes}
       {...(disabled ? {} : dragListeners)}
@@ -374,12 +389,16 @@ function NoteDragCorner({
 
 function NoteEditActions({
   canSave,
+  cancelLabel,
   onCancel,
   onSave,
+  saveLabel,
 }: {
   canSave: boolean;
+  cancelLabel: string;
   onCancel: () => void;
   onSave: () => void;
+  saveLabel: string;
 }) {
   return (
     <div className="absolute right-2 bottom-2 z-10 flex items-center gap-1">
@@ -393,7 +412,7 @@ function NoteEditActions({
           onCancel();
         }}
       >
-        Cancel
+        {cancelLabel}
       </Button>
       <Button
         type="button"
@@ -405,16 +424,18 @@ function NoteEditActions({
           onSave();
         }}
       >
-        Save
+        {saveLabel}
       </Button>
     </div>
   );
 }
 
 function NoteActions({
+  deleteAria,
   note,
   onDeleteNote,
 }: {
+  deleteAria: string;
   note: DashboardNote;
   onDeleteNote: (id: string) => Promise<void>;
 }) {
@@ -428,7 +449,7 @@ function NoteActions({
           event.stopPropagation();
           void onDeleteNote(note.id);
         }}
-        aria-label="Delete note"
+        aria-label={deleteAria}
       >
         <Trash2 className="h-3.5 w-3.5" />
       </Button>
@@ -437,6 +458,7 @@ function NoteActions({
 }
 
 function NoteDragPreview({ note }: { note: DashboardNote }) {
+  const t = useTranslations('dashboard');
   const tilt = stableTiltDegreesFromNoteId(note.id);
   return (
     <div
@@ -445,7 +467,7 @@ function NoteDragPreview({ note }: { note: DashboardNote }) {
     >
       <div className="mb-2 flex items-center gap-1.5">
         <GripVertical className="h-3.5 w-3.5 text-amber-900/50" />
-        <span className="text-xs font-semibold text-amber-900/70">Moving note</span>
+        <span className="text-xs font-semibold text-amber-900/70">{t('notes.movingNote')}</span>
       </div>
       <p className="line-clamp-4 text-sm leading-6 whitespace-pre-wrap text-amber-950">
         {note.content}
@@ -464,8 +486,11 @@ function stableTiltDegreesFromNoteId(noteId: string): number {
   return sign * magnitude;
 }
 
-function formatNoteTime(value: string): string {
+function formatNoteTime(value: string, justNowLabel: string, locale: string): string {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return 'Just now';
-  return NOTE_TIME_FORMAT.format(date);
+  if (Number.isNaN(date.getTime())) return justNowLabel;
+  return new Intl.DateTimeFormat(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
 }

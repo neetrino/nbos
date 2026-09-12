@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Clock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
@@ -32,6 +33,7 @@ export function NbosTimePicker({
   disabled = false,
   className,
 }: NbosTimePickerProps) {
+  const t = useTranslations('forms');
   const [open, setOpen] = useState(false);
   const { hour, minute } = useMemo(() => parseTimeParts(value), [value]);
 
@@ -49,7 +51,7 @@ export function NbosTimePicker({
           disabled && 'pointer-events-none opacity-50',
           className,
         )}
-        aria-label={`Time ${hour}:${minute}`}
+        aria-label={t('datePicker.time', { time: `${hour}:${minute}` })}
       >
         <Clock size={16} className="text-primary shrink-0" aria-hidden />
         <span className="tabular-nums">
@@ -62,15 +64,19 @@ export function NbosTimePicker({
         sideOffset={6}
         className="border-border bg-popover w-auto min-w-0 rounded-xl p-1 shadow-xl"
       >
-        <div className="flex items-center gap-0.5" role="group" aria-label="Select time">
+        <div
+          className="flex items-center gap-0.5"
+          role="group"
+          aria-label={t('datePicker.selectTime')}
+        >
           <TimeColumn
-            label="Hours"
+            label={t('datePicker.hours')}
             options={HOUR_OPTIONS}
             selected={hour}
             onSelect={(nextHour) => commit(nextHour, minute)}
           />
           <TimeColumn
-            label="Minutes"
+            label={t('datePicker.minutes')}
             options={MINUTE_OPTIONS}
             selected={minute}
             onSelect={(nextMinute) => commit(hour, nextMinute)}

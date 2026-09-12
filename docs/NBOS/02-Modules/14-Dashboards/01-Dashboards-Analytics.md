@@ -35,6 +35,22 @@ Dashboard
   Customize Panel
 ```
 
+### Desk welcome line
+
+Control Center opens with one personal wish for the Yerevan calendar day: a short heading, a quieter continuation, and a small Lucide icon. The internal name of the concept is not shown. This is not analytics, not a work queue, and not a clock.
+
+A deterministic catalog resolver picks one pair for `employeeId + date + catalog version`:
+
+- personal dates first: birthday, first hire day, work anniversary, then onboarding on days 3 / 10 / 21 only;
+- then a curated cultural or celebration date for about half of employees that day;
+- otherwise a seasonal card every fourth personal day, or the shared everyday deck.
+
+`ON_LEAVE` and `PROBATION` do not change the copy. 24 April is a memorial tone filter: no festive icons or Friday jokes; a birthday that day stays quiet. 29 February personal dates are observed on 28 February in common years (product convention). `GET /me` exposes own `birthday`, `hireDate`, and `status`. No daily LLM, no weather, no new database.
+
+Everyday and seasonal cards do not repeat for the same person within 45 days while the catalog version is unchanged. Rare annual events have smaller pools and do not make that promise. Changing the catalog can reassign future days.
+
+Work stays in Pinned Actions and Priority Feed.
+
 ### 1. Pinned Actions / Быстрые закреплённые действия
 
 Верхняя зона Dashboard.
@@ -47,20 +63,17 @@ Dashboard
 - открыть список всех доступных действий;
 - вернуть default layout по роли.
 
-Примеры действий:
+Два типа кнопок:
 
-- `New Lead`;
-- `New Task`;
-- `Open My Work Space`;
+- **Create** — открывает существующий dialog/sheet на Dashboard (`New Task`, `New Meeting`, `New Lead`, `New Expense`). Знак плюса.
+- **Open** — переход на страницу или personal link. Стрелка `ArrowUpRight`.
+
+Примеры Open:
+
 - `Open Delivery Board`;
 - `Open Invoices`;
 - `Open Salary Board`;
-- `Open Messenger`;
-- `Open Calendar`;
-- `Open Credentials Vault`;
-- `Create Support Ticket`;
-- `Open Client Services`;
-- `Open Partner Payouts`.
+- `Open Credentials Vault`.
 
 Доступные действия фильтруются RBAC и feature flags.
 

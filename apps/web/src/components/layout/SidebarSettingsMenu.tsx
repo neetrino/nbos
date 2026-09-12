@@ -12,6 +12,7 @@ import {
 import { useMyAccountSheet } from '@/features/account/components/my-account-sheet-provider';
 import { cn } from '@/lib/utils';
 import { SIDEBAR_NAV_ITEM_CLASS } from './sidebar-layout-constants';
+import { useTranslations } from 'next-intl';
 
 type SidebarSettingsMenuProps = {
   collapsed: boolean;
@@ -21,6 +22,8 @@ type SidebarSettingsMenuProps = {
 export function SidebarSettingsMenu({ collapsed, onCustomizeMenu }: SidebarSettingsMenuProps) {
   const router = useRouter();
   const { openMyAccountSheet } = useMyAccountSheet();
+  const tNav = useTranslations('navigation');
+  const tAccount = useTranslations('account');
 
   return (
     <DropdownMenu>
@@ -32,7 +35,7 @@ export function SidebarSettingsMenu({ collapsed, onCustomizeMenu }: SidebarSetti
         )}
       >
         <Settings size={16} className="shrink-0" />
-        {!collapsed && <span className="flex-1 text-left">Settings</span>}
+        {!collapsed && <span className="flex-1 text-left">{tNav('sidebar.settings')}</span>}
       </DropdownMenuTrigger>
       <DropdownMenuContent
         side={collapsed ? 'right' : 'top'}
@@ -42,17 +45,17 @@ export function SidebarSettingsMenu({ collapsed, onCustomizeMenu }: SidebarSetti
       >
         <DropdownMenuItem onClick={onCustomizeMenu}>
           <PanelLeft size={16} className="opacity-70" />
-          Customize left menu
+          {tNav('sidebar.customizeLeftMenu')}
           <ChevronRight size={14} className="ml-auto opacity-50" />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => router.push('/settings')}>
           <Settings size={16} className="opacity-70" />
-          Platform settings
+          {tNav('sidebar.platformSettings')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => void openMyAccountSheet()}>
           <UserCircle2 size={16} className="opacity-70" />
-          My account
+          {tAccount('myAccount')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

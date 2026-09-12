@@ -19,17 +19,17 @@ describe('hasNavPermission', () => {
 describe('getVisibleNavModules', () => {
   const aiModule: NavModuleDefinition = {
     key: 'ai-agents',
-    label: 'AI & Agents',
+    label: 'modules.ai-agents',
     href: '/ai-agents',
     permission: { module: 'AI_PLATFORM', action: 'VIEW' },
   };
 
   it('hides permissioned modules while permissions are loading', () => {
     const definitions: NavModuleDefinition[] = [
-      { key: 'dashboard', label: 'Dashboard', href: '/dashboard' },
+      { key: 'dashboard', label: 'modules.dashboard', href: '/dashboard' },
       {
         key: 'clients',
-        label: 'Clients',
+        label: 'modules.clients',
         href: '/clients',
         permission: { module: 'CLIENTS', action: 'VIEW' },
       },
@@ -54,7 +54,7 @@ describe('getVisibleNavModules', () => {
     const definitions: NavModuleDefinition[] = [
       {
         key: 'clients',
-        label: 'Clients',
+        label: 'modules.clients',
         href: '/clients',
         permission: { module: 'CLIENTS', action: 'VIEW' },
       },

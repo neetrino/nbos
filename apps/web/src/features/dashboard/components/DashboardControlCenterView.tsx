@@ -12,6 +12,8 @@ import type {
   PinnedAction,
   PriorityCard,
 } from '../dashboard-control-registry';
+import { DASHBOARD_PINNED_GRID_CLASS } from '../dashboard-pinned-actions.constants';
+import { DashboardCreateActionsProvider } from './DashboardCreateActionsProvider';
 import { DashboardDeskHeader } from './DashboardDeskHeader';
 import { MiniAnalytics, PriorityFeed } from './DashboardInsightPanels';
 import { DashboardNotesPanel } from './DashboardNotesPanel';
@@ -34,10 +36,7 @@ const DASHBOARD_GRID_CLASS = cn(
 
 interface DashboardControlCenterViewProps {
   actions: PinnedAction[];
-  applyPinnedLayout: (
-    visibleKeys: PinnedAction['key'][],
-    hiddenKeys: PinnedAction['key'][],
-  ) => void;
+  applyPinnedLayout: (visibleIds: string[], hiddenIds: string[]) => void;
   applyWidgetLayout: (visibleIds: string[], hiddenIds: string[]) => void;
   createDashboardNote: (content: string) => Promise<void>;
   data: DashboardData | null;
@@ -52,6 +51,8 @@ interface DashboardControlCenterViewProps {
   visibleMiniMetrics: MiniMetricDefinition[];
   createPersonalLink: (label: string, url: string) => Promise<void>;
   deletePersonalLink: (id: string) => Promise<void>;
+  hiddenPersonalLinkIds: string[];
+  updatePersonalLink: (id: string, label: string, url: string) => Promise<void>;
   reorderDashboardNotes: (noteIds: string[]) => Promise<void>;
   updateDashboardNote: (id: string, content: string) => Promise<void>;
 }
@@ -73,6 +74,8 @@ export function DashboardControlCenterView({
   visibleMiniMetrics,
   createPersonalLink,
   deletePersonalLink,
+  hiddenPersonalLinkIds,
+  updatePersonalLink,
   reorderDashboardNotes,
   updateDashboardNote,
 }: DashboardControlCenterViewProps) {
@@ -85,17 +88,21 @@ export function DashboardControlCenterView({
       {error ? <DashboardError message={error} /> : null}
       <section className={DASHBOARD_GRID_CLASS}>
         <div className="min-w-0 lg:col-span-2 xl:col-span-2 xl:row-start-1">
-          <PinnedActions
-            actions={actions}
-            editMode={editMode}
-            hiddenActions={hiddenActions}
-            onApplyPinnedLayout={applyPinnedLayout}
-            onCreatePersonalLink={createPersonalLink}
-            onDeletePersonalLink={deletePersonalLink}
-            onToggleEdit={() => setEditMode((current) => !current)}
-            personalLinks={personalLinks}
-            saving={savingPreference}
-          />
+          <DashboardCreateActionsProvider>
+            <PinnedActions
+              actions={actions}
+              editMode={editMode}
+              hiddenActions={hiddenActions}
+              onApplyPinnedLayout={applyPinnedLayout}
+              hiddenPersonalLinkIds={hiddenPersonalLinkIds}
+              onCreatePersonalLink={createPersonalLink}
+              onDeletePersonalLink={deletePersonalLink}
+              onUpdatePersonalLink={updatePersonalLink}
+              onToggleEdit={() => setEditMode((current) => !current)}
+              personalLinks={personalLinks}
+              saving={savingPreference}
+            />
+          </DashboardCreateActionsProvider>
         </div>
 
         <div className="min-w-0 xl:col-start-1 xl:row-start-2">
@@ -140,7 +147,7 @@ export function DashboardLoadingSkeleton() {
       <Skeleton className="h-36 w-full rounded-2xl" />
       <div className={DASHBOARD_GRID_CLASS}>
         <div className="min-w-0 lg:col-span-2 xl:col-span-2 xl:row-start-1">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className={DASHBOARD_PINNED_GRID_CLASS}>
             {Array.from({ length: PINNED_SKELETON_COUNT }).map((_, index) => (
               <Skeleton key={index} className="min-h-[4.75rem] rounded-xl" />
             ))}

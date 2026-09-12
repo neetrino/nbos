@@ -15,8 +15,11 @@ describe('Client Messenger web surface', () => {
     const internal = readWeb('features/messenger-internal/InternalMessengerApp.tsx');
     expect(nav).toMatch(/key: 'client-messenger'/);
     expect(nav).toMatch(/href: '\/client-messenger'/);
-    expect(nav).toMatch(/label: 'Client Messenger'/);
+    expect(nav).toMatch(/label: 'modules\.client-messenger'/);
     expect(nav).toMatch(/href: '\/clients'/);
+    expect(readWeb('messages/en/navigation.json')).toMatch(
+      /"client-messenger": "Client Messenger"/,
+    );
     expect(app).toMatch(/Client Messenger/);
     expect(app).not.toMatch(/Internal Messenger/);
     expect(internal).toMatch(/Internal Messenger/);

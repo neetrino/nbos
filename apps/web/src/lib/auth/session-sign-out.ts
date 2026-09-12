@@ -1,10 +1,12 @@
 import { scheduleMessengerPersistStoreClear } from '@/features/messenger/persist/messenger-persist-controller';
 import { purgeMessengerPersistForSignOut } from '@/features/messenger/persist/messenger-persist-session';
+import { clearLocaleCookie } from '@/i18n/cookie';
 
 let sessionSignOutInFlight: Promise<void> | null = null;
 
 /** Central client sign-out: purge Messenger memory, then NextAuth. Storage clear is best-effort. */
 export async function signOutClient(callbackUrl = '/sign-in'): Promise<void> {
+  clearLocaleCookie();
   purgeMessengerPersistForSignOut();
   if (!sessionSignOutInFlight) {
     scheduleMessengerPersistStoreClear();

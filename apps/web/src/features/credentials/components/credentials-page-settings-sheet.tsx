@@ -45,13 +45,13 @@ export function CredentialsPageSettingsSheet({
   return (
     <>
       <PageSettingsSheet
-        title="Credentials — settings"
+        title="Password — settings"
         description={
           isTrashList
             ? 'Trash view. Return to the active vault or restore items from the list.'
             : 'Encrypted vault export and access to Trash.'
         }
-        triggerAriaLabel="Credentials settings"
+        triggerAriaLabel="Password settings"
         open={sheetOpen}
         onOpenChange={setSheetOpen}
       >

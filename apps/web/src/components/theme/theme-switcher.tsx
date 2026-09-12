@@ -2,8 +2,8 @@
 
 import { useSyncExternalStore } from 'react';
 import { useTheme } from 'next-themes';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-import { ACCOUNT_MENU_APPEARANCE_LABEL } from '@/components/layout/account-menu-dropdown-constants';
 import {
   THEME_SWITCHER_OPTIONS,
   parseThemePreference,
@@ -22,20 +22,25 @@ function ThemeSwitcherSegment({
   value,
   onChange,
   mounted,
+  appearanceLabel,
+  optionLabels,
 }: {
   value: ThemePreference;
   onChange: (next: ThemePreference) => void;
   mounted: boolean;
+  appearanceLabel: string;
+  optionLabels: Record<ThemePreference, string>;
 }) {
   return (
     <div
       role="radiogroup"
-      aria-label={ACCOUNT_MENU_APPEARANCE_LABEL}
+      aria-label={appearanceLabel}
       className="bg-muted flex gap-0.5 rounded-lg p-0.5"
     >
       {THEME_SWITCHER_OPTIONS.map((option) => {
         const selected = value === option.value;
         const Icon = option.icon;
+        const label = optionLabels[option.value];
 
         return (
           <button
@@ -43,7 +48,7 @@ function ThemeSwitcherSegment({
             type="button"
             role="radio"
             aria-checked={selected}
-            aria-label={option.label}
+            aria-label={label}
             disabled={!mounted}
             onClick={() => onChange(option.value)}
             className={cn(
@@ -56,7 +61,7 @@ function ThemeSwitcherSegment({
             )}
           >
             <Icon className="size-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
-            <span>{option.label}</span>
+            <span>{label}</span>
           </button>
         );
       })}
@@ -65,6 +70,7 @@ function ThemeSwitcherSegment({
 }
 
 export function ThemeSwitcher() {
+  const t = useTranslations('account');
   const { theme, setTheme } = useTheme();
   const mounted = useClientMounted();
   const activeTheme = mounted ? parseThemePreference(theme) : 'system';
@@ -72,11 +78,17 @@ export function ThemeSwitcher() {
   return (
     <div className="border-border border-t px-3 py-3">
       <p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide">
-        {ACCOUNT_MENU_APPEARANCE_LABEL}
+        {t('appearance')}
       </p>
       <ThemeSwitcherSegment
         value={activeTheme}
         mounted={mounted}
+        appearanceLabel={t('appearance')}
+        optionLabels={{
+          light: t('themeLight'),
+          dark: t('themeDark'),
+          system: t('themeSystem'),
+        }}
         onChange={(next) => setTheme(next)}
       />
     </div>

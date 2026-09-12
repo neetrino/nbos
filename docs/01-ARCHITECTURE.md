@@ -92,6 +92,12 @@ NBOS объединяет все операционные процессы IT-к
 - **Расположение:** `apps/web/`
 - **Особенности:** 14 разделов в сайдбаре (RBAC скрывает недоступное), Kanban/List/Grid представления, глобальный поиск, центр уведомлений, install-only PWA (домашний экран, без offline-кеша страниц/API)
 
+### Локализация интерфейса — первый EN/RU срез реализован
+
+Решение от 2026-09-12, код в рабочем дереве: next-intl 4.14.4 без языковых префиксов URL, каталоги `common` / `account` / `navigation` / `dashboard` / `dashboardDeskLine` / `forms`. Язык хранится в `Employee.interfaceLocale` (`employees.interface_locale`, default `en`). Контракт: `GET|PATCH /api/v1/me/preferences` → `{ interfaceLocale }`. Cookie `nbos-interface-locale` (SameSite=Lax) вспомогательная; у вошедшего пользователя приоритет у БД, при недоступном API — EN без записи fallback. HY зарезервирован и отклоняется на записи. DashboardPreference остаётся раскладкой, не языком. Production rollout остаётся отдельным шагом.
+
+Полные правила, fallback, границы релиза и будущий HY: [канон локализации](NBOS/01-Platform-Overview/07-Interface-Localization.md). Журнал: [план реализации](implementation/I18N-IMPLEMENTATION-PLAN.md).
+
 ### Backend (apps/api)
 
 - **Технологии:** NestJS 11, Prisma 7, Socket.io (Gateway), BullMQ, class-validator, Zod

@@ -31,6 +31,8 @@ export function DashboardControlCenter() {
       createDashboardNote={dashboard.createDashboardNote}
       createPersonalLink={dashboard.createPersonalLink}
       deletePersonalLink={dashboard.deletePersonalLink}
+      hiddenPersonalLinkIds={dashboard.hiddenPersonalLinkIds}
+      updatePersonalLink={dashboard.updatePersonalLink}
       reorderDashboardNotes={dashboard.reorderDashboardNotes}
       updateDashboardNote={dashboard.updateDashboardNote}
     />

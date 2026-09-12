@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { buildDatePickerPresets, type DatePickerPreset } from './date-picker-presets';
 import { isSameDay } from './date-picker-grid';
@@ -19,6 +20,7 @@ export function NbosDatePresetsPanel({
   onSelectPreset,
   className,
 }: NbosDatePresetsPanelProps) {
+  const t = useTranslations('forms');
   const presets = buildDatePickerPresets(anchorDate, locale);
 
   return (
@@ -32,6 +34,7 @@ export function NbosDatePresetsPanel({
         <PresetButton
           key={preset.id}
           preset={preset}
+          label={t(`datePicker.presets.${preset.id}`)}
           active={selectedDate ? isSameDay(preset.date, selectedDate) : false}
           onSelect={() => onSelectPreset(preset.date)}
         />
@@ -42,10 +45,12 @@ export function NbosDatePresetsPanel({
 
 function PresetButton({
   preset,
+  label,
   active,
   onSelect,
 }: {
   preset: DatePickerPreset;
+  label: string;
   active: boolean;
   onSelect: () => void;
 }) {
@@ -58,7 +63,7 @@ function PresetButton({
         active && 'border-primary/40 bg-primary/5 ring-primary/20 ring-1',
       )}
     >
-      <span className="text-foreground text-sm leading-tight font-semibold">{preset.label}</span>
+      <span className="text-foreground text-sm leading-tight font-semibold">{label}</span>
       <span className="text-muted-foreground mt-0.5 text-xs leading-snug">{preset.subtitle}</span>
     </button>
   );

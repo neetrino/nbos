@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { leadsApi, type Lead } from '@/lib/api/leads';
 import { toast } from 'sonner';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { firstReleaseFormErrorCopy, localizeCaughtApiError } from '@/i18n/localize-api-error';
 
 interface CreateLeadDialogProps {
   open: boolean;
@@ -22,6 +23,8 @@ interface CreateLeadDialogProps {
 }
 
 export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDialogProps) {
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', email: '' });
   const canSubmit = form.name.trim().length > 0;
@@ -39,7 +42,18 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
       onOpenChange(false);
       setForm({ name: '', phone: '', email: '' });
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Could not create lead. Try again.'));
+      toast.error(
+        localizeCaughtApiError(
+          err,
+          firstReleaseFormErrorCopy(
+            tCommon('permissionDenied'),
+            t('lead.createError'),
+            t('errors.validation'),
+            t('lead.createError'),
+            t('errors.network'),
+          ),
+        ),
+      );
     } finally {
       setLoading(false);
     }
@@ -49,7 +63,7 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle>New Lead</DialogTitle>
+          <DialogTitle>{t('lead.title')}</DialogTitle>
         </DialogHeader>
         <LeadCreateFormFields
           form={form}
@@ -79,6 +93,9 @@ function LeadCreateFormFields({
   onCancel: () => void;
   onCreate: (openFull: boolean) => Promise<void>;
 }) {
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
+
   return (
     <form
       onSubmit={(e) => {
@@ -88,7 +105,7 @@ function LeadCreateFormFields({
       className="space-y-4"
     >
       <div className="space-y-1.5">
-        <Label htmlFor="create-lead-title">Title *</Label>
+        <Label htmlFor="create-lead-title">{t('lead.fields.title')}</Label>
         <Input
           id="create-lead-title"
           value={form.name}
@@ -98,7 +115,7 @@ function LeadCreateFormFields({
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="create-lead-phone">Phone</Label>
+          <Label htmlFor="create-lead-phone">{t('lead.fields.phone')}</Label>
           <Input
             id="create-lead-phone"
             value={form.phone}
@@ -106,7 +123,7 @@ function LeadCreateFormFields({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="create-lead-email">Email</Label>
+          <Label htmlFor="create-lead-email">{t('lead.fields.email')}</Label>
           <Input
             id="create-lead-email"
             type="email"
@@ -117,7 +134,7 @@ function LeadCreateFormFields({
       </div>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          {tCommon('cancel')}
         </Button>
         <Button
           type="button"
@@ -125,10 +142,10 @@ function LeadCreateFormFields({
           disabled={loading || !canSubmit}
           onClick={() => void onCreate(true)}
         >
-          Full
+          {t('lead.full')}
         </Button>
         <Button type="submit" disabled={loading || !canSubmit}>
-          {loading ? 'Creating...' : 'Create Lead'}
+          {loading ? tCommon('creating') : t('lead.createLead')}
         </Button>
       </DialogFooter>
     </form>

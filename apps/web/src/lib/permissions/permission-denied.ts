@@ -7,9 +7,18 @@ import {
 
 export const PERMISSION_DENIED_TOAST_ID = 'nbos-permission-denied';
 
+let permissionDeniedCopy = PERMISSION_DENIED_MESSAGE;
+
+/** Keeps the global 403 toast on the active interface locale. */
+export function setPermissionDeniedCopy(message: string): void {
+  const trimmed = message.trim();
+  if (trimmed.length === 0) return;
+  permissionDeniedCopy = trimmed;
+}
+
 export function notifyPermissionDenied(): void {
   if (typeof window === 'undefined') return;
-  toast.error(PERMISSION_DENIED_MESSAGE, { id: PERMISSION_DENIED_TOAST_ID });
+  toast.error(permissionDeniedCopy, { id: PERMISSION_DENIED_TOAST_ID });
 }
 
 export function beginPermittedCreate(allowed: boolean, open: () => void): void {

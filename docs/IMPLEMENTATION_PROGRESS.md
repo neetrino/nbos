@@ -1,5 +1,9 @@
 # NBOS Implementation Progress
 
+## Мультиязычность — первый EN/RU срез, 2026-09-12
+
+Статус: этапы 0–5 первого EN/RU среза закрыты как реализация и отчёт — live два пользователя и live token-expiry пройдены. Срез не в IMPLEMENTATION_DONE. Production rollout отдельный. [Канон](NBOS/01-Platform-Overview/07-Interface-Localization.md), [план](implementation/I18N-IMPLEMENTATION-PLAN.md). Этапы 6–7 не начаты.
+
 > **Активный бэклог** до полного канона: что делаем и что отложено. Закрытые срезы и история — `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
 **Обновлено:** 2026-05-09

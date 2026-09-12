@@ -14,6 +14,9 @@ export interface DashboardPriorityProjection {
   href: string;
   severity: 'critical' | 'high' | 'normal';
   source: string;
+  /** Stable code for UI localization. Older clients ignore this field. */
+  code?: string;
+  count?: number;
 }
 
 export interface DashboardControlCenterMeta {

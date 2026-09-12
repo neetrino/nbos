@@ -5,6 +5,7 @@
  */
 import { getAuthenticatedRootRedirect } from '@/lib/auth/authenticated-root-redirect';
 import { readAuthJsSessionToken } from '@/lib/auth/authjs-session-token';
+import { persistRotatedAccessCookie } from '@/lib/auth/persist-rotated-access-cookie';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -27,14 +28,14 @@ function isPublicPath(pathname: string): boolean {
 /**
  * Auth-aware proxy: named export `proxy` is the convention expected by Next.js.
  *
- * The session cookie is read, never re-issued. The Auth.js `auth()` wrapper re-signs and
- * re-sets the cookie on every matched request, which would replay the refresh token captured
- * when the request started and roll back a rotation performed concurrently by the BFF —
- * the backend then treats the stale token as reuse and kills the session family.
+ * The incoming session cookie is never re-signed. A usable access JWT is left alone.
+ * When access is expired, the existing BFF helper may persist a freshly rotated cookie
+ * so RSC can read preferences without inventing a second refresh mechanism.
  */
 export async function proxy(req: NextRequest): Promise<NextResponse> {
   const { pathname } = req.nextUrl;
-  const isAuthenticated = (await readAuthJsSessionToken(req)) !== null;
+  const sessionToken = await readAuthJsSessionToken(req);
+  const isAuthenticated = sessionToken !== null;
 
   const authenticatedRootRedirect = getAuthenticatedRootRedirect(pathname, isAuthenticated);
   if (authenticatedRootRedirect) {
@@ -51,7 +52,9 @@ export async function proxy(req: NextRequest): Promise<NextResponse> {
     return NextResponse.redirect(signInUrl);
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  await persistRotatedAccessCookie(req, sessionToken, response);
+  return response;
 }
 
 export const config = {

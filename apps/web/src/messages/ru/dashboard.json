@@ -1,0 +1,107 @@
+{
+  "actions": {
+    "newTask": "Задача",
+    "newTaskDescription": "Создать работу для себя или коллеги.",
+    "newTaskError": "Не удалось открыть новую задачу. Попробуйте ещё раз.",
+    "newMeeting": "Встреча",
+    "newMeetingDescription": "Назначить встречу с клиентом, не уходя со стола.",
+    "newLead": "Лид",
+    "newLeadDescription": "Зафиксировать входящую возможность.",
+    "newExpense": "Расход",
+    "newExpenseDescription": "Записать расход со стола.",
+    "openDeals": "Сделки",
+    "openDealsDescription": "Просмотреть активную воронку продаж.",
+    "openProducts": "Доска поставки",
+    "openProductsDescription": "Следить за жизненным циклом продуктов и расширений.",
+    "openInvoices": "Счета",
+    "openInvoicesDescription": "Просмотреть счета, которые требуют внимания.",
+    "openExpenses": "Оплатить",
+    "openExpensesDescription": "Открыть расходы, ожидающие оплаты.",
+    "openPayroll": "Зарплата",
+    "openPayrollDescription": "Открыть зарплату и расчёт.",
+    "openSupport": "Очередь поддержки",
+    "openSupportDescription": "Открыть тикеты, которые ждут действия.",
+    "openCredentials": "Пароли",
+    "openCredentialsDescription": "Открыть доступные вам пароли и секреты."
+  },
+  "create": {
+    "meetingCreated": "Встреча создана",
+    "leadCreated": "Лид создан",
+    "expenseCreated": "Расход создан"
+  },
+  "pinned": {
+    "editing": "Редактирование",
+    "editLayoutAria": "Изменить раскладку",
+    "doneEditingLayoutAria": "Завершить редактирование раскладки",
+    "empty": "Для ваших текущих прав нет доступных закреплённых действий.",
+    "shownOnDashboard": "Показано на обзоре",
+    "shown": "Показано",
+    "hidden": "Скрыто",
+    "createGroupTitle": "Создать",
+    "openGroupTitle": "Открыть"
+  },
+  "personalLink": {
+    "add": "Добавить",
+    "formTitle": "Новая кнопка-ярлык",
+    "formTitleEdit": "Изменить кнопку-ярлык",
+    "formDescription": "Подпись и ссылка сохраняются в закреплённой области обзора.",
+    "labelPlaceholder": "Подпись",
+    "urlPlaceholder": "/путь или example.com (https добавится)",
+    "deleteAria": "Удалить ссылку",
+    "deleteNamedAria": "Удалить {label}",
+    "editNamedAria": "Изменить {label}"
+  },
+  "notes": {
+    "placeholder": "Напишите заметку и нажмите Enter...",
+    "saveHint": "↵ Enter или",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "empty": "Здесь будут собираться ваши сохранённые заметки.",
+    "deleteAria": "Удалить заметку",
+    "dragAria": "Перетащить заметку",
+    "dragLockedAria": "Порядок заблокирован во время редактирования",
+    "movingNote": "Перемещение заметки",
+    "justNow": "Только что"
+  },
+  "widgets": {
+    "miniAnalyticsTitle": "Мини-аналитика",
+    "pulseKicker": "Пульс",
+    "chartAria": "График мини-аналитики",
+    "editHint": "Перетаскивайте строки между «Показано» и «Скрыто». Изменения сохраняются автоматически.",
+    "shown": "Показано",
+    "hidden": "Скрыто",
+    "metrics": {
+      "leads": "Лиды",
+      "openDeals": "Открытые сделки",
+      "openTickets": "Открытые тикеты",
+      "openTasks": "Открытые задачи"
+    }
+  },
+  "priorityFeed": {
+    "kicker": "Сейчас",
+    "title": "Лента приоритетов",
+    "empty": "В текущей лёгкой ленте ничего критичного не ждёт.",
+    "cards": {
+      "criticalSupportTicket": {
+        "title": "{count, plural, one {# критичный тикет поддержки} few {# критичных тикета поддержки} many {# критичных тикетов поддержки} other {# критичных тикетов поддержки}}",
+        "context": "В поддержке есть работа, которая ждёт действия."
+      },
+      "taskDueToday": {
+        "title": "{count, plural, one {# задача на сегодня} few {# задачи на сегодня} many {# задач на сегодня} other {# задач на сегодня}}",
+        "context": "В задачах есть работа, которая ждёт действия."
+      },
+      "pendingInvoice": {
+        "title": "{count, plural, one {# неоплаченный счёт} few {# неоплаченных счёта} many {# неоплаченных счетов} other {# неоплаченных счетов}}",
+        "context": "В финансах есть работа, которая ждёт действия."
+      }
+    }
+  },
+  "errors": {
+    "loadFailed": "Не удалось загрузить данные обзора.",
+    "layoutSaveFailed": "Не удалось сохранить раскладку обзора. Попробуйте ещё раз.",
+    "noteSaveFailed": "Не удалось сохранить заметку.",
+    "noteDeleteFailed": "Не удалось удалить заметку.",
+    "noteUpdateFailed": "Не удалось обновить заметку.",
+    "notesReorderFailed": "Не удалось сохранить порядок заметок."
+  }
+}

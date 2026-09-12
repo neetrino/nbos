@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Bell } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { usePermission } from '@/lib/permissions';
 import type { NotificationDto } from '@/lib/api/notifications';
 import { notificationsApi } from '@/lib/api/notifications';
@@ -28,6 +29,7 @@ function formatRelativeTime(dateStr: string): string {
 export function NotificationDropdown() {
   const { me } = usePermission();
   const employeeId = me?.id;
+  const t = useTranslations('navigation');
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const {
@@ -70,7 +72,7 @@ export function NotificationDropdown() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="text-muted-foreground hover:bg-secondary hover:text-foreground relative rounded-lg p-2 transition-colors"
-        aria-label="Notifications"
+        aria-label={t('notifications.trigger')}
       >
         <Bell size={20} />
         {employeeId && unreadCount > 0 && (

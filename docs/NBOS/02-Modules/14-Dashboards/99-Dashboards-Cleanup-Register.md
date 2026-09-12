@@ -30,6 +30,12 @@
 
 Остаток: привести его к control-center логике вместо статического набора KPI cards.
 
+### A1b. Desk welcome line is personal, not operational
+
+Статус: `DONE` (2026-09-12)
+
+Runtime desk card is a catalog wish for the Yerevan day (personal dates, curated cultural calendar, seasons, everyday deck) with a small Lucide icon. Time-of-day and `ON_LEAVE` copy are gone. No daily LLM.
+
 ### A2. Finance and CRM dashboards exist as module dashboards
 
 Статус: `PARTIAL UI`
@@ -68,6 +74,8 @@ Runtime `Topbar` no longer contains a permanent global `Create` button. It keeps
 Current behavior:
 
 - frequently used open/create paths live in Dashboard pinned actions;
+- Create tiles open the same in-place dialogs as Tasks / Calendar / CRM / Expenses;
+- Open tiles and personal links navigate; personal-link CRUD is unchanged;
 - module-level create buttons stay inside concrete modules.
 
 ### B3. Dashboard does not support user preferences

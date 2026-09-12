@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -29,9 +30,14 @@ export function CreateExpenseDialogForm({
   canSubmit,
   onSubmit,
   onCancel,
-  submitIdleLabel = 'Create',
-  submitLoadingLabel = 'Creating…',
+  submitIdleLabel,
+  submitLoadingLabel,
 }: CreateExpenseDialogFormProps) {
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
+  const idleLabel = submitIdleLabel ?? tCommon('create');
+  const loadingLabel = submitLoadingLabel ?? tCommon('creating');
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       {formError ? (
@@ -41,18 +47,18 @@ export function CreateExpenseDialogForm({
       ) : null}
 
       <div className="space-y-2">
-        <Label>Name *</Label>
+        <Label>{t('expense.fields.name')}</Label>
         <Input
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
-          placeholder="Expense name"
+          placeholder={t('expense.fields.namePlaceholder')}
           autoFocus
         />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Amount *</Label>
+          <Label>{t('expense.fields.amount')}</Label>
           <Input
             inputMode="decimal"
             value={form.amount}
@@ -61,21 +67,21 @@ export function CreateExpenseDialogForm({
           />
         </div>
         <div className="space-y-2">
-          <Label>Due date</Label>
+          <Label>{t('expense.fields.dueDate')}</Label>
           <NbosDatePicker
             value={form.dueDate}
             onChange={(dueDate) => setForm({ ...form, dueDate })}
-            aria-label="Due date"
+            aria-label={t('expense.fields.dueDateAria')}
           />
         </div>
       </div>
 
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          {tCommon('cancel')}
         </Button>
         <Button type="submit" disabled={loading || !canSubmit}>
-          {loading ? submitLoadingLabel : submitIdleLabel}
+          {loading ? loadingLabel : idleLabel}
         </Button>
       </DialogFooter>
     </form>

@@ -2,11 +2,13 @@
 
 import { useCallback } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { BottomSheetSwipeHandle } from './BottomSheetSwipeHandle';
 import { BOTTOM_SHEET_SWIPE_PANEL_CLASS } from './bottom-sheet-swipe';
 import { MOBILE_APP_MENU_SHEET_CLASS } from './mobile-app-menu-constants';
+import { resolveMobileDockGroupTitle } from './mobile-dock-switcher-title';
 import type { MobileDockItem, MobileDockSwitcherGroup } from './mobile-module-dock-types';
 import { useBottomSheetSwipeToClose } from './use-bottom-sheet-swipe-to-close';
 
@@ -26,6 +28,7 @@ export function MobileDockOverflowSheet({
   const close = useCallback(() => onOpenChange(false), [onOpenChange]);
   const handleRef = useBottomSheetSwipeToClose(open, close);
   const showGroupTitles = groups.length > 1;
+  const t = useTranslations('navigation');
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -35,7 +38,7 @@ export function MobileDockOverflowSheet({
         className={cn(MOBILE_APP_MENU_SHEET_CLASS, BOTTOM_SHEET_SWIPE_PANEL_CLASS)}
       >
         <SheetTitle className="sr-only">{title}</SheetTitle>
-        <SheetDescription className="sr-only">Places in the current module.</SheetDescription>
+        <SheetDescription className="sr-only">{t('mobileDock.placesDescription')}</SheetDescription>
         <BottomSheetSwipeHandle handleRef={handleRef} />
         <div className="touch-none px-4 pt-3 pb-2">
           <p className="text-foreground text-lg font-semibold tracking-tight">{title}</p>
@@ -48,7 +51,7 @@ export function MobileDockOverflowSheet({
             <section key={group.id}>
               {showGroupTitles ? (
                 <p className="text-muted-foreground mb-1.5 px-3 text-[11px] font-semibold tracking-[0.14em] uppercase">
-                  {group.title}
+                  {resolveMobileDockGroupTitle(group, t)}
                 </p>
               ) : null}
               <ul className="flex flex-col gap-1">

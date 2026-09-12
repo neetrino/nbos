@@ -15,9 +15,11 @@ import {
   GlobalSearchMobileTrigger,
   GlobalSearchTrigger,
 } from '@/features/global-search/GlobalSearchTrigger';
+import { resolveLocalizedModuleTitle } from '@/lib/navigation/nav-message-keys';
 import { resolveSidebarModuleKeyFromPathname } from '@/lib/navigation/nav-route-utils';
 import type { MeResponse } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface AppChromeHeaderProps {
   moduleTitle: string | null;
@@ -33,12 +35,14 @@ export function AppChromeHeader({
   me,
 }: AppChromeHeaderProps) {
   const pathname = usePathname();
+  const tNav = useTranslations('navigation');
   const headerContext = useHeaderContextResolved();
+  const displayModuleTitle = resolveLocalizedModuleTitle(moduleTitle, pathname, tNav);
   const showMobileEntityHeader =
     isMobileViewport && (headerContext?.kind === 'custom' || headerContext?.kind === 'actions');
   const showMobileNav = isMobileViewport && headerContext?.kind === 'nav';
   const mobileNavAsTabs = headerContext?.kind === 'nav' && headerContext.mobileVariant === 'tabs';
-  const showModuleTitle = Boolean(moduleTitle) && !showMobileEntityHeader;
+  const showModuleTitle = Boolean(displayModuleTitle) && !showMobileEntityHeader;
   const moduleKey = isMobileViewport ? resolveSidebarModuleKeyFromPathname(pathname) : null;
 
   return (
@@ -49,12 +53,13 @@ export function AppChromeHeader({
       )}
     >
       <AppChromeHeaderPrimaryRow
-        moduleTitle={moduleTitle}
+        moduleTitle={displayModuleTitle}
         isMobileViewport={isMobileViewport}
         showQuickNote={showQuickNote}
         showMobileEntityHeader={showMobileEntityHeader}
         showModuleTitle={showModuleTitle}
         moduleKey={moduleKey}
+        moduleTitleAria={tNav('moduleTitleAria', { title: displayModuleTitle ?? '' })}
         me={me}
       />
       {showMobileNav ? <AppChromeHeaderMobileNav asTabs={Boolean(mobileNavAsTabs)} /> : null}
@@ -69,6 +74,7 @@ function AppChromeHeaderPrimaryRow({
   showMobileEntityHeader,
   showModuleTitle,
   moduleKey,
+  moduleTitleAria,
   me,
 }: {
   moduleTitle: string | null;
@@ -77,6 +83,7 @@ function AppChromeHeaderPrimaryRow({
   showMobileEntityHeader: boolean;
   showModuleTitle: boolean;
   moduleKey: ReturnType<typeof resolveSidebarModuleKeyFromPathname>;
+  moduleTitleAria: string;
   me: MeResponse | null | undefined;
 }) {
   const trailing = (
@@ -112,7 +119,7 @@ function AppChromeHeaderPrimaryRow({
         {showModuleTitle && moduleTitle ? (
           <div
             className="mr-1 flex min-w-0 shrink items-center self-stretch sm:mr-2"
-            aria-label={`Module: ${moduleTitle}`}
+            aria-label={moduleTitleAria}
           >
             <HeaderModuleTitle
               leadingIcon={

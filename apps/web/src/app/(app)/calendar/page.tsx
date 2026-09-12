@@ -5,7 +5,7 @@ import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PageHero, PageHeroTabs, type PageHeroTabOption } from '@/components/shared';
 import { calendarApi, type CalendarEventProjection, type CalendarLayer } from '@/lib/api/calendar';
 import { CalendarCreateHeroButton } from './calendar-create-options';
-import { CreateMeetingCalendarDialog } from './calendar-create-meeting-dialog';
+import { CreateMeetingCalendarDialog } from '@/features/calendar/CreateMeetingCalendarDialog';
 import { CreatePersonalCalendarDialog } from './calendar-create-personal-dialog';
 import { CalendarEventDetailSheet } from './calendar-event-detail-sheet';
 import {

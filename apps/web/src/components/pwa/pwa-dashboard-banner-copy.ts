@@ -1,12 +1,13 @@
-import {
-  PWA_BANNER_BROWSER_BODY,
-  PWA_BANNER_IOS_BODY,
-  PWA_BANNER_PROMPT_BODY,
-} from './pwa-constants';
 import type { PwaDashboardBannerOffer } from './pwa-runtime';
 
-export function pwaDashboardBannerBody(offer: Exclude<PwaDashboardBannerOffer, 'hidden'>): string {
-  if (offer === 'ios-manual') return PWA_BANNER_IOS_BODY;
-  if (offer === 'prompt') return PWA_BANNER_PROMPT_BODY;
-  return PWA_BANNER_BROWSER_BODY;
+export const PWA_DASHBOARD_BANNER_BODY_KEYS = {
+  'ios-manual': 'pwa.bannerIosBody',
+  prompt: 'pwa.bannerPromptBody',
+  'browser-manual': 'pwa.bannerBrowserBody',
+} as const;
+
+export function pwaDashboardBannerBodyKey(
+  offer: Exclude<PwaDashboardBannerOffer, 'hidden'>,
+): (typeof PWA_DASHBOARD_BANNER_BODY_KEYS)[typeof offer] {
+  return PWA_DASHBOARD_BANNER_BODY_KEYS[offer];
 }

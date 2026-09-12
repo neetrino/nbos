@@ -1,0 +1,16 @@
+{
+  "myAccount": "Мой аккаунт",
+  "myWallet": "Мой кошелёк",
+  "signOut": "Выйти",
+  "appearance": "Оформление",
+  "language": "Язык",
+  "languageEnglish": "English",
+  "languageRussian": "Русский",
+  "languageSaveFailed": "Не удалось сохранить язык. Попробуйте ещё раз.",
+  "accountMenuAria": "Меню аккаунта: {name}",
+  "profilePhotoAlt": "Фото профиля {name}",
+  "fallbackAccountName": "Мой аккаунт",
+  "themeLight": "Светлая",
+  "themeDark": "Тёмная",
+  "themeSystem": "Система"
+}

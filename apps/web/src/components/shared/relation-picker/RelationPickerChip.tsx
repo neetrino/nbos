@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { ChevronDown, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import {
   DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
@@ -61,6 +62,7 @@ export function RelationPickerChip({
   onClear,
   imageUrl,
 }: RelationPickerChipProps) {
+  const t = useTranslations('forms.relationPicker');
   const canOpen = Boolean(onOpen);
   const canReplace = Boolean(onReplace) && !disabled;
   const personLeading = usesPersonAvatar(entityKind);
@@ -126,7 +128,7 @@ export function RelationPickerChip({
         RELATION_PICKER_REPLACE_ZONE_CLASS,
         personLeading ? 'flex-none' : RELATION_PICKER_REPLACE_ZONE_GROW_CLASS,
       )}
-      aria-label={`Change ${label}`}
+      aria-label={t('changeNamed', { label })}
     >
       <ChevronDown size={16} className="shrink-0 opacity-80" aria-hidden />
     </button>
@@ -159,7 +161,7 @@ export function RelationPickerChip({
         'shrink-0',
         !trailing && !canReplace && 'ml-auto',
       )}
-      aria-label={`Remove ${label}`}
+      aria-label={t('removeNamed', { label })}
     >
       <X size={14} />
     </button>
@@ -194,7 +196,7 @@ export function RelationPickerChip({
                 RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS,
                 'flex w-full min-w-0 items-center gap-2.5 overflow-hidden text-left',
               )}
-              aria-label={`Open ${label}`}
+              aria-label={t('openNamed', { label })}
             >
               {personOpenBody}
             </button>
@@ -225,7 +227,7 @@ export function RelationPickerChip({
             disabled={!canOpen}
             onClick={onOpen}
             className={cn(RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS, 'flex shrink-0 items-center')}
-            aria-label={`Open ${label}`}
+            aria-label={t('openNamed', { label })}
           >
             {leading}
           </button>
@@ -237,7 +239,7 @@ export function RelationPickerChip({
               RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS,
               'min-w-0 shrink cursor-pointer text-left',
             )}
-            aria-label={`Open ${label}`}
+            aria-label={t('openNamed', { label })}
           >
             {sheetLabel}
           </button>
