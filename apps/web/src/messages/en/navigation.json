@@ -48,6 +48,7 @@
     },
     "settings": {
       "general": "General",
+      "appearance": "Appearance",
       "systemLists": "System Lists",
       "permissionsRbac": "Permissions / RBAC",
       "moduleSettings": "Module Settings",

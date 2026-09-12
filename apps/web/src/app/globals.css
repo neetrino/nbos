@@ -54,6 +54,8 @@
   --desk-wash: color-mix(in oklch, var(--primary) 8%, transparent);
   --desk-wash-soft: color-mix(in oklch, var(--primary) 4%, transparent);
   --desk-panel-fill: color-mix(in oklch, var(--primary) 3.5%, var(--card));
+  --nbos-wallpaper-wash: color-mix(in oklch, var(--background) 42%, transparent);
+  --nbos-wallpaper-image: none;
   --nbos-mobile-dock-height: 3.5rem;
   --nbos-mobile-dock-inset-x: 0px;
   --nbos-mobile-dock-inset-bottom: 0px;
@@ -116,6 +118,7 @@
   --desk-wash: color-mix(in oklch, var(--primary) 14%, transparent);
   --desk-wash-soft: color-mix(in oklch, var(--primary) 8%, transparent);
   --desk-panel-fill: color-mix(in oklch, var(--primary) 5%, var(--card));
+  --nbos-wallpaper-wash: color-mix(in oklch, var(--background) 52%, transparent);
 }
 
 @theme inline {

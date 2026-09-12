@@ -151,6 +151,7 @@ model Employee {
   whatsappParticipantSyncs           ProductWhatsAppParticipantSync[]    @relation("ProductWhatsAppParticipantSyncEmployee")
   platformOwnership                  PlatformOwnership[]                 @relation("PlatformOwnerEmployee")
   platformOwnershipTransfers         PlatformOwnership[]                 @relation("PlatformOwnershipTransferredBy")
+  platformAppearancesUpdated         PlatformAppearance[]                @relation("PlatformAppearanceUpdatedBy")
   emergencyAccessRequestsMade        CredentialEmergencyAccessRequest[]  @relation("EmergencyAccessRequester")
   emergencyAccessRequestsDecided     CredentialEmergencyAccessRequest[]  @relation("EmergencyAccessDecider")
   atsCallsResponsible                AtsCallEvent[]                      @relation("AtsCallResponsible")

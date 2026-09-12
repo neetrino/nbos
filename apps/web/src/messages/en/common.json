@@ -14,5 +14,17 @@
     "description": "You do not have permission to view this section. Contact your administrator if you need access.",
     "goToDashboard": "Go to Dashboard",
     "signIn": "Sign in"
+  },
+  "platformAppearance": {
+    "title": "Appearance",
+    "description": "One company wallpaper for every authenticated screen. Cards and chrome stay solid so work stays fast.",
+    "rules": "WebP only, up to 400 KB, long edge at most 2560 px, short edge at least 1280 px. No animation.",
+    "light": "Light theme",
+    "dark": "Dark theme",
+    "empty": "Solid color (current theme background)",
+    "replace": "Upload WebP",
+    "remove": "Remove",
+    "uploading": "Uploading…",
+    "previewAlt": "{slot} wallpaper preview"
   }
 }

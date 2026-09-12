@@ -4,6 +4,10 @@
 
 Статус: этапы 0–5 закрыты как реализация и отчёт. Prod-миграция `interface_locale` применена. Этап 6 начат (аккаунт/кошелёк). Этап 7 — черновик HY-пилота, язык выключен. Срез не в IMPLEMENTATION_DONE. [Канон](NBOS/01-Platform-Overview/07-Interface-Localization.md), [план](implementation/I18N-IMPLEMENTATION-PLAN.md).
 
+## Platform Appearance — общий фон из админки, 2026-09-12
+
+Статус: реализовано на ветке `feature/platform-appearance-wallpaper` (не влито в `sipan`). Settings `/settings/appearance`, WebP light/dark, CSS-фон на `.nbos-app-canvas`. Канон: [Settings / Admin](NBOS/02-Modules/16-Settings-Admin/00-Settings-Admin-Overview.md).
+
 > **Активный бэклог** до полного канона: что делаем и что отложено. Закрытые срезы и история — `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
 **Обновлено:** 2026-05-09

@@ -1,6 +1,10 @@
 @layer components {
   .nbos-app-canvas {
     background-color: var(--background);
+    background-image: var(--nbos-wallpaper-image, none);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
   }
 
   .nbos-desk-surface {
