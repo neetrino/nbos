@@ -1,6 +1,12 @@
-import { PWA_SERVICE_WORKER_PATH, PWA_SERVICE_WORKER_SCOPE } from './pwa-constants';
+import {
+  PWA_BANNER_DISMISSED_VALUE,
+  PWA_SERVICE_WORKER_PATH,
+  PWA_SERVICE_WORKER_SCOPE,
+} from './pwa-constants';
 
 export type PwaInstallOffer = 'hidden' | 'prompt' | 'ios-manual';
+
+export type PwaDashboardBannerOffer = 'hidden' | 'prompt' | 'ios-manual' | 'browser-manual';
 
 export type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -30,6 +36,23 @@ export function resolvePwaInstallOffer(input: {
   if (input.canPrompt) return 'prompt';
   if (input.iosWebKit) return 'ios-manual';
   return 'hidden';
+}
+
+export function isPwaBannerDismissed(raw: string | null): boolean {
+  return raw === PWA_BANNER_DISMISSED_VALUE;
+}
+
+export function resolvePwaDashboardBannerOffer(input: {
+  standalone: boolean;
+  canPrompt: boolean;
+  iosWebKit: boolean;
+  installedThisSession: boolean;
+  dismissed: boolean;
+}): PwaDashboardBannerOffer {
+  if (input.standalone || input.installedThisSession || input.dismissed) return 'hidden';
+  if (input.canPrompt) return 'prompt';
+  if (input.iosWebKit) return 'ios-manual';
+  return 'browser-manual';
 }
 
 export async function registerNbosServiceWorker(

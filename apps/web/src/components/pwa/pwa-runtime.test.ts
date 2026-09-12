@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   isIosWebKit,
+  isPwaBannerDismissed,
   isStandaloneDisplay,
   readSafariStandalone,
   registerNbosServiceWorker,
+  resolvePwaDashboardBannerOffer,
   resolvePwaInstallOffer,
 } from './pwa-runtime';
 
@@ -71,6 +73,38 @@ describe('resolvePwaInstallOffer', () => {
         installedThisSession: false,
       }),
     ).toBe('ios-manual');
+  });
+});
+
+describe('isPwaBannerDismissed', () => {
+  it('treats only the stored dismissed flag as dismissed', () => {
+    expect(isPwaBannerDismissed('1')).toBe(true);
+    expect(isPwaBannerDismissed('0')).toBe(false);
+    expect(isPwaBannerDismissed(null)).toBe(false);
+  });
+});
+
+describe('resolvePwaDashboardBannerOffer', () => {
+  const visible = {
+    standalone: false,
+    canPrompt: false,
+    iosWebKit: false,
+    installedThisSession: false,
+    dismissed: false,
+  };
+
+  it('hides after dismiss, install, or standalone', () => {
+    expect(resolvePwaDashboardBannerOffer({ ...visible, dismissed: true })).toBe('hidden');
+    expect(resolvePwaDashboardBannerOffer({ ...visible, standalone: true })).toBe('hidden');
+    expect(resolvePwaDashboardBannerOffer({ ...visible, installedThisSession: true })).toBe(
+      'hidden',
+    );
+  });
+
+  it('prefers the native prompt, then iOS, then a browser-menu hint', () => {
+    expect(resolvePwaDashboardBannerOffer({ ...visible, canPrompt: true })).toBe('prompt');
+    expect(resolvePwaDashboardBannerOffer({ ...visible, iosWebKit: true })).toBe('ios-manual');
+    expect(resolvePwaDashboardBannerOffer(visible)).toBe('browser-manual');
   });
 });
 
