@@ -17,6 +17,7 @@ import { loadCurrentEmployeeRecord } from '@/features/account/load-current-emplo
 import { getApiErrorMessage } from '@/lib/api-errors';
 import type { Employee } from '@/lib/api/employees';
 import { usePermission } from '@/lib/permissions';
+import { useTranslations } from 'next-intl';
 
 interface MyAccountSheetContextValue {
   openMyAccountSheet: () => Promise<void>;
@@ -46,6 +47,7 @@ export function MyAccountSheetProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { me, can, isLoading: permissionsLoading } = usePermission();
+  const t = useTranslations('account');
 
   const canEdit = can('EDIT', 'COMPANY');
   const canViewCompany = can('VIEW', 'COMPANY');
@@ -66,10 +68,10 @@ export function MyAccountSheetProvider({ children }: { children: ReactNode }) {
       return record;
     } catch (caught) {
       setEmployee(null);
-      toast.error(getApiErrorMessage(caught, 'Profile could not be loaded.'));
+      toast.error(getApiErrorMessage(caught, t('profileLoadFailed')));
       return null;
     }
-  }, [canViewCompany, me]);
+  }, [canViewCompany, me, t]);
 
   const openMyAccountSheet = useCallback(async () => {
     if (!me?.id || permissionsLoading) return;

@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useTranslations } from 'next-intl';
 
 interface WalletSheetHeaderProps {
   bonusSubmitting: boolean;
@@ -32,16 +33,15 @@ export function WalletSheetHeader({
   onExportSalaryCsv,
   onExportProjectBreakdownCsv,
 }: WalletSheetHeaderProps) {
+  const t = useTranslations('account.wallet');
   const anyExport = canExportBonuses || canExportSalary || canExportProjects;
 
   return (
     <div className="border-border shrink-0 border-b px-5 py-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-foreground text-lg font-semibold tracking-tight">My wallet</h2>
-          <p className="text-muted-foreground mt-0.5 text-xs leading-snug">
-            Your digital compensation hub — outlook, bonuses, and payroll in one place.
-          </p>
+          <h2 className="text-foreground text-lg font-semibold tracking-tight">{t('title')}</h2>
+          <p className="text-muted-foreground mt-0.5 text-xs leading-snug">{t('subtitle')}</p>
         </div>
         {anyExport ? (
           <DropdownMenu>
@@ -55,7 +55,7 @@ export function WalletSheetHeader({
                   className="size-9 shrink-0"
                 >
                   <MoreHorizontal size={16} aria-hidden />
-                  <span className="sr-only">Export wallet data</span>
+                  <span className="sr-only">{t('exportAria')}</span>
                 </Button>
               )}
             />
@@ -69,7 +69,7 @@ export function WalletSheetHeader({
                 ) : (
                   <Download size={14} className="mr-2 opacity-70" aria-hidden />
                 )}
-                Bonuses CSV
+                {t('exportBonusesCsv')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={salarySubmitting || !canExportSalary}
@@ -80,7 +80,7 @@ export function WalletSheetHeader({
                 ) : (
                   <Download size={14} className="mr-2 opacity-70" aria-hidden />
                 )}
-                Payroll CSV
+                {t('exportPayrollCsv')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={projectBreakdownSubmitting || !canExportProjects}
@@ -91,7 +91,7 @@ export function WalletSheetHeader({
                 ) : (
                   <Download size={14} className="mr-2 opacity-70" aria-hidden />
                 )}
-                Projects CSV
+                {t('exportProjectsCsv')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

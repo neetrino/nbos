@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   Table,
   TableBody,
@@ -10,7 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { WALLET_PROJECT_PAYOUT_EXPLANATION } from '@/features/finance/constants/employee-wallet-explanations';
+import { WALLET_PAYOUT_EXPLAIN_KEYS } from '@/features/account/constants/wallet-ui';
 import type { EmployeeWalletProjectBreakdownRow } from '@/lib/api/me';
 
 function parseAmount(value: string | null): number {
@@ -24,32 +25,31 @@ export function WalletProjectBreakdownSection({
 }: {
   rows: readonly EmployeeWalletProjectBreakdownRow[];
 }) {
+  const t = useTranslations('account.wallet.projects');
+  const tp = useTranslations('account.wallet.payout');
   return (
     <section>
-      <h2 className="text-foreground mb-3 text-sm font-semibold">Project breakdown</h2>
-      <p className="text-muted-foreground mb-3 text-xs leading-snug">
-        Per-order roll-up with product pool funding (read-only). Payout column explains unpaid,
-        partial, or paid bonus on your entries.
-      </p>
+      <h2 className="text-foreground mb-3 text-sm font-semibold">{t('title')}</h2>
+      <p className="text-muted-foreground mb-3 text-xs leading-snug">{t('hint')}</p>
       <div className="border-border overflow-x-auto rounded-xl border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Project</TableHead>
-              <TableHead>Order</TableHead>
-              <TableHead>Product scope</TableHead>
-              <TableHead className="text-right">Planned</TableHead>
-              <TableHead className="text-right">Paid</TableHead>
-              <TableHead className="text-right">Remaining</TableHead>
-              <TableHead>Funding</TableHead>
-              <TableHead>Payout</TableHead>
+              <TableHead>{t('project')}</TableHead>
+              <TableHead>{t('order')}</TableHead>
+              <TableHead>{t('productScope')}</TableHead>
+              <TableHead className="text-right">{t('planned')}</TableHead>
+              <TableHead className="text-right">{t('paid')}</TableHead>
+              <TableHead className="text-right">{t('remaining')}</TableHead>
+              <TableHead>{t('funding')}</TableHead>
+              <TableHead>{t('payout')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-muted-foreground py-8 text-center text-sm">
-                  No bonus orders yet.
+                  {t('empty')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -78,9 +78,9 @@ export function WalletProjectBreakdownSection({
                     {row.fundingStatusLabels.join(' · ') || '—'}
                   </TableCell>
                   <TableCell className="max-w-[10rem] text-[11px] leading-snug">
-                    <span className="text-foreground font-medium">{row.payoutState}</span>
+                    <span className="text-foreground font-medium">{tp(row.payoutState)}</span>
                     <p className="text-muted-foreground mt-0.5">
-                      {WALLET_PROJECT_PAYOUT_EXPLANATION[row.payoutState]}
+                      {tp(WALLET_PAYOUT_EXPLAIN_KEYS[row.payoutState])}
                     </p>
                   </TableCell>
                 </TableRow>

@@ -1,6 +1,6 @@
 # I18N coverage — first EN/RU release
 
-Date: 2026-09-12. Status: first EN/RU slice is in the working tree. Stage 5 report is below. Web typecheck is green; web lint has 0 errors. Two-user logout/login and live token-expiry restore were sampled. The slice is not moved to IMPLEMENTATION_DONE. Production rollout remains a separate step.
+Date: 2026-09-12. Status: first EN/RU slice is in the working tree. Production schema has `employees.interface_locale` (migrate deploy on `ep-sweet-dew`, 17 rows default `en`). Stage 6 started with My Account / My Wallet chrome. HY is not enabled. The slice is not moved to IMPLEMENTATION_DONE.
 
 Canon: [07-Interface-Localization.md](../NBOS/01-Platform-Overview/07-Interface-Localization.md). Plan: [I18N-IMPLEMENTATION-PLAN.md](./I18N-IMPLEMENTATION-PLAN.md).
 
@@ -169,7 +169,7 @@ Live sampled (one user, RU): EN↔RU shell/dashboard/four creates, light/dark/sy
 
 ### Still English by first-release scope
 
-Notification inbox body, Global Search panel, Open destination pages, Lead sheet behind Full, non-employee `Search {kind}s…`, feature-module dock item labels. User data (names, notes, personal-link titles such as Cost OPS). Auth pages, emails, PDF, remaining modules, HY — stages 6–7.
+Notification inbox body, Global Search panel, Open destination pages, Lead sheet behind Full, non-employee `Search {kind}s…`, feature-module dock item labels, EmployeeSheet HR chrome. User data (names, notes, personal-link titles such as Cost OPS). Auth reset page, emails, PDF, remaining modules. HY switcher still off — stage 7 pilot only.
 
 ### Checks run
 
@@ -206,4 +206,6 @@ Additive migration is in the repo and applied to the authorized Neon database. P
 | 2     | Shell + remaining Dashboard                    | en_ru (desktop RU + light/dark/system sampled live; mobile 390px menu sampled)                                                                                |
 | 3     | Four create flows                              | en_ru (date-picker chrome sampled live in RU; Meeting 403/conflict/network copy sampled live via request intercept)                                           |
 | 4     | Automated + visual acceptance                  | complete for first-release checks (web typecheck + lint 0 errors; two-user and token-expiry sampled live; auth pages out of scope; production builds not run) |
-| 5     | Review, docs, report                           | report ready; slice not in IMPLEMENTATION_DONE; production rollout is a separate step                                                                         |
+| 5     | Review, docs, report                           | report ready; prod schema migrated on ep-sweet-dew; slice not in IMPLEMENTATION_DONE                                                                          |
+| 6     | Rest of platform                               | in_progress (My Account password/sessions + My Wallet EN/RU)                                                                                                  |
+| 7     | HY pilot                                       | draft I18N-HY-PILOT.md; switcher still EN/RU only                                                                                                             |

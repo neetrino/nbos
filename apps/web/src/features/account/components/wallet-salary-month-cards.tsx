@@ -2,11 +2,11 @@
 
 import { useMemo } from 'react';
 import { StatusBadge } from '@/components/shared';
-import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compensation-payout-phase-ui';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { EmployeeWalletSalaryRow } from '@/lib/api/me';
 import type { CompensationPayoutPhase } from '@/lib/api/payroll-runs';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 const WALLET_PHASE_ORDER: readonly CompensationPayoutPhase[] = [
   'active_payout',
@@ -47,25 +47,37 @@ export function WalletSalaryMonthCards({
     return map;
   }, [rows]);
 
+  const t = useTranslations('account.wallet.payroll');
   if (rows.length === 0) {
-    return <p className="text-muted-foreground text-sm">No payroll months on your record yet.</p>;
+    return <p className="text-muted-foreground text-sm">{t('emptyMonths')}</p>;
   }
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       {WALLET_PHASE_ORDER.map((phase) => {
         const phaseRows = byPhase.get(phase) ?? [];
-        const ui = COMPENSATION_PAYOUT_PHASE_UI[phase];
         return (
           <div key={phase} className="border-border bg-card flex flex-col rounded-xl border p-4">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-foreground text-xs font-semibold">{ui.label}</h3>
+              <h3 className="text-foreground text-xs font-semibold">
+                {phase === 'active_payout'
+                  ? t('phaseActive')
+                  : phase === 'accumulating'
+                    ? t('phaseAccumulating')
+                    : t('phasePaid')}
+              </h3>
               <StatusBadge label={String(phaseRows.length)} variant="gray" />
             </div>
-            <p className="text-muted-foreground mt-1 text-[11px] leading-snug">{ui.description}</p>
+            <p className="text-muted-foreground mt-1 text-[11px] leading-snug">
+              {phase === 'active_payout'
+                ? t('phaseActiveHint')
+                : phase === 'accumulating'
+                  ? t('phaseAccumulatingHint')
+                  : t('phasePaidHint')}
+            </p>
             <ul className="mt-3 flex flex-1 flex-col gap-2">
               {phaseRows.length === 0 ? (
-                <li className="text-muted-foreground text-xs">No months in this group</li>
+                <li className="text-muted-foreground text-xs">{t('emptyPhase')}</li>
               ) : (
                 phaseRows.map((row) => (
                   <li key={row.id}>
@@ -84,7 +96,7 @@ export function WalletSalaryMonthCards({
                         {progressLabel(row.paidAmount, row.totalPayable)}
                       </div>
                       <div className="text-muted-foreground mt-0.5">
-                        Remaining {formatAmount(parseAmount(row.remainingAmount))}
+                        {t('remaining', { amount: formatAmount(parseAmount(row.remainingAmount)) })}
                       </div>
                     </button>
                   </li>

@@ -1,6 +1,6 @@
 # План реализации мультиязычности NBOS
 
-Дата: 2026-09-12. Статус: первый EN/RU срез в рабочем дереве. Этапы 0–5 по поручению закрыты как реализация и отчёт. Не принято и не задеплоено. Live два пользователя и live token-expiry закрыты. Production rollout — отдельный шаг.
+Дата: 2026-09-12. Статус: этапы 0–5 закрыты как реализация и отчёт. Prod Neon (`ep-sweet-dew`) получил `20260912120000_employee_interface_locale`. Этап 6 начат: My Account / My Wallet EN/RU. Этап 7: черновик HY-пилота, язык не включён. Код на production не деплоился.
 
 Источник решений: [канон локализации](../NBOS/01-Platform-Overview/07-Interface-Localization.md). Этот план описывает продуктовую реализацию; распределение моделей находится в [инструкции Cursor](./I18N-CURSOR-HANDOFF.md).
 
@@ -103,4 +103,5 @@ Task, Meeting, Lead, Expense: поля, placeholder, статусы, relation pi
 | 3         | Завершён                 | Task/Meeting/Lead/Expense + date/relation picker chrome (`forms`)                                                                                                                                                                 |
 | 4         | Завершён                 | Desktop/mobile live + Meeting 403/conflict/network. Web typecheck/lint 0 errors. Live два пользователя и live token-expiry (API/BFF, тестер, cookie владельца не трогали). Auth-страницы вне scope. Production builds не гонялись |
 | 5         | Отчёт готов              | Coverage обновлён. Не в IMPLEMENTATION_DONE. Production rollout не входит в поручение                                                                                                                                             |
-| 6–7       | Отложены                 | Вне текущего поручения                                                                                                                                                                                                            |
+| 6         | В работе                 | My Account (пароль, сессии) и My Wallet EN/RU. EmployeeSheet HR-хром и остальные модули ещё английские                                                                                                                            |
+| 7         | Пилот                    | `docs/implementation/I18N-HY-PILOT.md`. HY не в переключателе                                                                                                                                                                     |

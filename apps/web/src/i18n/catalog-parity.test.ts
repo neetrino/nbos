@@ -48,5 +48,9 @@ describe('completed i18n catalogs', () => {
     expect(ruAccount.accountMenuAria).toContain('{name}');
     expect(enDashboard.actions.newTaskDescription.length).toBeGreaterThan(0);
     expect(ruDashboard.actions.newTaskDescription.length).toBeGreaterThan(0);
+    expect(enAccount.wallet.hero.nextLabel).toContain('{month}');
+    expect(ruAccount.wallet.hero.nextLabel).toContain('{month}');
+    expect(enAccount.sessions.minutesAgo).toContain('count');
+    expect(ruAccount.sessions.minutesAgo).toContain('count');
   });
 });

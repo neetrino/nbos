@@ -1,4 +1,7 @@
+'use client';
+
 import { Sparkles, TrendingUp, Wallet } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { WalletOverviewMetrics } from '@/features/account/utils/wallet-overview-metrics';
 import { cn } from '@/lib/utils';
@@ -32,7 +35,18 @@ function StatPill({
 }
 
 export function WalletHeroCard({ metrics }: WalletHeroCardProps) {
+  const t = useTranslations('account.wallet.hero');
   const progress = metrics.nextPayrollProgress;
+  const heroLabel =
+    metrics.heroKind === 'earned'
+      ? t('earned')
+      : t('nextLabel', { month: metrics.heroMonth ?? '' });
+  const heroSublabel =
+    metrics.heroKind === 'earned'
+      ? t('earnedHint')
+      : metrics.heroKind === 'nextRemaining'
+        ? t('nextRemainingHint')
+        : t('nextTotalHint');
 
   return (
     <div className="from-primary via-primary to-primary/85 text-primary-foreground relative overflow-hidden rounded-2xl bg-gradient-to-br p-5 shadow-lg">
@@ -49,7 +63,7 @@ export function WalletHeroCard({ metrics }: WalletHeroCardProps) {
         <div className="min-w-0">
           <div className="text-primary-foreground/75 flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
             <Wallet size={14} aria-hidden />
-            NBOS Wallet
+            {t('brand')}
           </div>
           <p className="mt-2 truncate text-sm font-medium opacity-90">{metrics.displayName}</p>
           {metrics.roleLine ? (
@@ -62,19 +76,19 @@ export function WalletHeroCard({ metrics }: WalletHeroCardProps) {
       </div>
 
       <div className="relative mt-6">
-        <p className="text-primary-foreground/75 text-xs font-medium">{metrics.heroLabel}</p>
+        <p className="text-primary-foreground/75 text-xs font-medium">{heroLabel}</p>
         <p className="mt-1 text-4xl font-semibold tracking-tight tabular-nums">
           {formatAmount(metrics.heroAmount)}
         </p>
         <p className="text-primary-foreground/65 mt-2 max-w-md text-xs leading-relaxed">
-          {metrics.heroSublabel}
+          {heroSublabel}
         </p>
       </div>
 
       {progress != null ? (
         <div className="relative mt-5">
           <div className="mb-1.5 flex items-center justify-between text-[10px] font-medium tracking-wide uppercase opacity-80">
-            <span>Payroll progress</span>
+            <span>{t('payrollProgress')}</span>
             <span className="tabular-nums">{progress}%</span>
           </div>
           <div className="bg-primary-foreground/20 flex h-1.5 overflow-hidden rounded-full">
@@ -93,12 +107,12 @@ export function WalletHeroCard({ metrics }: WalletHeroCardProps) {
 
       <div className="relative mt-5 grid grid-cols-3 gap-2">
         <StatPill
-          label="Base"
+          label={t('base')}
           value={metrics.baseSalary > 0 ? formatAmount(metrics.baseSalary) : '—'}
         />
-        <StatPill label="Incoming" value={formatAmount(metrics.incomingTotal)} />
+        <StatPill label={t('incoming')} value={formatAmount(metrics.incomingTotal)} />
         <StatPill
-          label="Paid"
+          label={t('paid')}
           value={formatAmount(metrics.paidFromPayroll)}
           className="col-span-1"
         />
@@ -106,7 +120,7 @@ export function WalletHeroCard({ metrics }: WalletHeroCardProps) {
 
       <div className="text-primary-foreground/60 relative mt-4 flex items-center gap-1.5 text-[10px]">
         <TrendingUp size={12} aria-hidden />
-        Read-only compensation view — not a bank account.
+        {t('readOnly')}
       </div>
     </div>
   );

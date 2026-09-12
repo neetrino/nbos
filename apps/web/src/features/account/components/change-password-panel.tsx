@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, type ComponentProps } from 'react';
+import { useMemo, useState, type ComponentProps } from 'react';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,37 +24,44 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import {
   ACCOUNT_PASSWORD_COMPLEXITY,
-  ACCOUNT_PASSWORD_HINT,
   ACCOUNT_PASSWORD_MAX_LENGTH,
   ACCOUNT_PASSWORD_MIN_LENGTH,
 } from '@/features/account/constants/account-password-policy';
 
-const changePasswordSchema = z
-  .object({
-    currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: z
-      .string()
-      .min(ACCOUNT_PASSWORD_MIN_LENGTH, `At least ${ACCOUNT_PASSWORD_MIN_LENGTH} characters`)
-      .max(ACCOUNT_PASSWORD_MAX_LENGTH)
-      .regex(ACCOUNT_PASSWORD_COMPLEXITY, 'Must include at least one letter and one number'),
-    confirmPassword: z.string().min(1, 'Confirm your new password'),
-  })
-  .refine((values) => values.newPassword === values.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  })
-  .refine((values) => values.newPassword !== values.currentPassword, {
-    message: 'New password must be different from the current password',
-    path: ['newPassword'],
-  });
-
-type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
+type ChangePasswordFormValues = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
 
 export function ChangePasswordPanel({ accountEmail }: { accountEmail?: string }) {
+  const t = useTranslations('account.password');
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [forgotOpen, setForgotOpen] = useState(false);
+  const schema = useMemo(
+    () =>
+      z
+        .object({
+          currentPassword: z.string().min(1, t('currentRequired')),
+          newPassword: z
+            .string()
+            .min(ACCOUNT_PASSWORD_MIN_LENGTH, t('minLength', { min: ACCOUNT_PASSWORD_MIN_LENGTH }))
+            .max(ACCOUNT_PASSWORD_MAX_LENGTH)
+            .regex(ACCOUNT_PASSWORD_COMPLEXITY, t('complexity')),
+          confirmPassword: z.string().min(1, t('confirmRequired')),
+        })
+        .refine((values) => values.newPassword === values.confirmPassword, {
+          message: t('mismatch'),
+          path: ['confirmPassword'],
+        })
+        .refine((values) => values.newPassword !== values.currentPassword, {
+          message: t('mustDiffer'),
+          path: ['newPassword'],
+        }),
+    [t],
+  );
 
   const {
     register,
@@ -61,7 +69,7 @@ export function ChangePasswordPanel({ accountEmail }: { accountEmail?: string })
     formState: { errors, isSubmitting },
     reset,
   } = useForm<ChangePasswordFormValues>({
-    resolver: zodResolver(changePasswordSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       currentPassword: '',
       newPassword: '',
@@ -77,10 +85,10 @@ export function ChangePasswordPanel({ accountEmail }: { accountEmail?: string })
         newPassword: values.newPassword,
       });
       reset();
-      toast.success('Password updated. Sign in again with your new password.');
+      toast.success(t('updated'));
       await signOutClient();
     } catch (caught) {
-      setFormError(getApiErrorMessage(caught, 'Could not change password.'));
+      setFormError(getApiErrorMessage(caught, t('changeFailed')));
     }
   }
 
@@ -91,11 +99,8 @@ export function ChangePasswordPanel({ accountEmail }: { accountEmail?: string })
           <KeyRound className="size-4" aria-hidden />
         </div>
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold tracking-tight">Change password</h3>
-          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-            Updates your NBOS sign-in password. All other sessions will be signed out, and you will
-            need to sign in again on this device.
-          </p>
+          <h3 className="text-sm font-semibold tracking-tight">{t('title')}</h3>
+          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{t('description')}</p>
         </div>
       </div>
 
@@ -106,7 +111,9 @@ export function ChangePasswordPanel({ accountEmail }: { accountEmail?: string })
       >
         <PasswordField
           id="current-password"
-          label="Current password"
+          label={t('current')}
+          hideLabel={t('hide')}
+          showLabel={t('show')}
           autoComplete="current-password"
           show={showCurrent}
           onToggleShow={() => setShowCurrent((value) => !value)}
@@ -115,17 +122,21 @@ export function ChangePasswordPanel({ accountEmail }: { accountEmail?: string })
         />
         <PasswordField
           id="new-password"
-          label="New password"
+          label={t('new')}
+          hideLabel={t('hide')}
+          showLabel={t('show')}
           autoComplete="new-password"
           show={showNew}
           onToggleShow={() => setShowNew((value) => !value)}
-          hint={ACCOUNT_PASSWORD_HINT}
+          hint={t('hint', { min: ACCOUNT_PASSWORD_MIN_LENGTH })}
           error={errors.newPassword?.message}
           {...register('newPassword')}
         />
         <PasswordField
           id="confirm-password"
-          label="Confirm new password"
+          label={t('confirm')}
+          hideLabel={t('hide')}
+          showLabel={t('show')}
           autoComplete="new-password"
           show={showNew}
           onToggleShow={() => setShowNew((value) => !value)}
@@ -141,10 +152,10 @@ export function ChangePasswordPanel({ accountEmail }: { accountEmail?: string })
             className="text-muted-foreground hover:text-foreground text-left text-sm font-medium underline-offset-4 hover:underline"
             onClick={() => setForgotOpen(true)}
           >
-            Forgot password?
+            {t('forgot')}
           </button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Updating…' : 'Update password'}
+            {isSubmitting ? t('updating') : t('update')}
           </Button>
         </div>
       </form>
@@ -167,18 +178,18 @@ function ForgotPasswordResetDialog({
   accountEmail?: string;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useTranslations('account.password');
+  const tCommon = useTranslations('common');
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent forceNestedBackdrop className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Forgot password</DialogTitle>
-          <DialogDescription>
-            We will email a reset link. You can set a new password without the current one.
-          </DialogDescription>
+          <DialogTitle>{t('forgotTitle')}</DialogTitle>
+          <DialogDescription>{t('forgotDescription')}</DialogDescription>
         </DialogHeader>
         <ForgotPasswordForm
           defaultEmail={accountEmail}
-          backLabel="Close"
+          backLabel={tCommon('close')}
           onBack={() => onOpenChange(false)}
         />
       </DialogContent>
@@ -192,6 +203,8 @@ type PasswordFieldProps = {
   autoComplete: string;
   show: boolean;
   onToggleShow: () => void;
+  hideLabel: string;
+  showLabel: string;
   hint?: string;
   error?: string;
 } & ComponentProps<'input'>;
@@ -202,6 +215,8 @@ function PasswordField({
   autoComplete,
   show,
   onToggleShow,
+  hideLabel,
+  showLabel,
   hint,
   error,
   className,
@@ -224,7 +239,7 @@ function PasswordField({
           type="button"
           className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2"
           onClick={onToggleShow}
-          aria-label={show ? 'Hide password' : 'Show password'}
+          aria-label={show ? hideLabel : showLabel}
         >
           {show ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
