@@ -43,6 +43,8 @@
 
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
+- **NBOS Quick Actions / Quick Task:** общий fast-entry foundation + `/quick/task`; переиспользовать существующий `QuickCreateTaskDialog` и mobile bottom sheet; форма интерактивна раньше списка задач; current Employee = creator, assignee можно менять; Tasks подгружается в фоне и доступен после закрытия; отдельная install/shortcut metadata без кэша authenticated HTML/BFF/API; draft-safe identity bootstrap; performance marks и live iOS/Android QA. Канон: `[13-Quick-Actions.md](NBOS/05-UI-Specifications/13-Quick-Actions.md)`, `[06-Quick-Task-Entry.md](NBOS/02-Modules/05-Tasks/06-Quick-Task-Entry.md)`. План: `[QUICK-ACTIONS-IMPLEMENTATION-PLAN.md](implementation/QUICK-ACTIONS-IMPLEMENTATION-PLAN.md)` — **M**
+
 Блок 2B — Внутренний фонд интеграций: можно готовить сейчас, без внешних кредов
 
 Эти задачи не подключают реальные внешние сервисы. Они создают безопасный каркас: реестр, статусы, аудит, адаптеры, required setup и документацию для владельца.
