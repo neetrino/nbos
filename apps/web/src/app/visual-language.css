@@ -1,10 +1,15 @@
 @layer components {
   .nbos-app-canvas {
+    --nbos-wallpaper-wash: color-mix(in oklch, var(--background) 42%, transparent);
     background-color: var(--background);
     background-image: var(--nbos-wallpaper-image, none);
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
+  }
+
+  .dark .nbos-app-canvas {
+    --nbos-wallpaper-wash: color-mix(in oklch, var(--background) 52%, transparent);
   }
 
   .nbos-desk-surface {

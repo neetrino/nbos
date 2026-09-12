@@ -21,7 +21,7 @@ describe('wallpaper CSS', () => {
       },
       dark: null,
     });
-    expect(css).toContain('--nbos-wallpaper-image:linear-gradient');
-    expect(css).toContain('.dark{--nbos-wallpaper-image:none}');
+    expect(css).toContain('.nbos-app-canvas{--nbos-wallpaper-image:linear-gradient');
+    expect(css).toContain('.dark .nbos-app-canvas{--nbos-wallpaper-image:none}');
   });
 });
