@@ -90,6 +90,31 @@ describe('PlatformAppearanceService', () => {
     expect(view.light?.url).toBe('/api/v1/platform/appearance/wallpaper/light?v=1');
   });
 
+  it('keeps a successful write if cleanup of the old key fails', async () => {
+    prisma.platformAppearance.upsert.mockResolvedValue({
+      ...EMPTY_ROW,
+      lightStorageKey: 'old-key',
+      lightVersion: 0,
+    });
+    prisma.platformAppearance.update.mockResolvedValue({
+      ...EMPTY_ROW,
+      lightStorageKey: 'key-light-1',
+      lightVersion: 1,
+      lightOriginalFileName: 'desk.webp',
+      lightBytes: 30,
+      lightWidth: 1920,
+      lightHeight: 1280,
+    });
+    storage.deleteWallpaper.mockRejectedValue(new Error('r2 unavailable'));
+    const service = new PlatformAppearanceService(prisma as never, storage as never);
+    const view = await service.uploadWallpaper(
+      'light',
+      { originalName: 'desk.webp', mimeType: 'image/webp', bytes: buildVp8x(1920, 1280) },
+      'emp-1',
+    );
+    expect(view.light?.version).toBe(1);
+  });
+
   it('rejects a missing wallpaper file on read', async () => {
     const service = new PlatformAppearanceService(prisma as never, storage as never);
     await expect(service.readWallpaperBytes('dark')).rejects.toBeInstanceOf(NotFoundException);

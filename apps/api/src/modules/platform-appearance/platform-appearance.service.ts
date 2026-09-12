@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PLATFORM_APPEARANCE_ID, type WallpaperSlot } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
@@ -10,6 +10,8 @@ import type { PlatformAppearanceView } from './platform-appearance.types';
 
 @Injectable()
 export class PlatformAppearanceService {
+  private readonly logger = new Logger(PlatformAppearanceService.name);
+
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly storage: PlatformAppearanceStorageService,
@@ -66,7 +68,14 @@ export class PlatformAppearanceService {
 
   private async deleteReplacedKey(key: string | null): Promise<void> {
     if (!key) return;
-    await this.storage.deleteWallpaper(key);
+    try {
+      await this.storage.deleteWallpaper(key);
+    } catch (error) {
+      this.logger.warn(
+        `Superseded wallpaper ${key} was left in storage after a successful write.`,
+        error instanceof Error ? error.message : error,
+      );
+    }
   }
 }
 
