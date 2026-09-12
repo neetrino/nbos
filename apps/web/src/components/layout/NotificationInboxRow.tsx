@@ -6,6 +6,7 @@ import { getNotificationVisual } from '@/lib/notifications/notification-type-vis
 import { resolveNotificationInboxRowModel } from './notification-inbox-row-model';
 import {
   NOTIFICATION_INBOX_BODY_TEXT_CLASS,
+  NOTIFICATION_INBOX_CLOCK_CLASS,
   NOTIFICATION_INBOX_ICON_WRAP_CLASS,
   NOTIFICATION_INBOX_TIME_CLASS,
   NOTIFICATION_INBOX_TITLE_TEXT_CLASS,
@@ -14,13 +15,15 @@ import {
 
 export interface NotificationInboxRowProps {
   notification: NotificationDto;
-  timeLabel: string;
+  relativeLabel: string;
+  clockLabel: string;
   onOpen: (notification: NotificationDto) => void;
 }
 
 export function NotificationInboxRow({
   notification,
-  timeLabel,
+  relativeLabel,
+  clockLabel,
   onOpen,
 }: NotificationInboxRowProps) {
   const { Icon, iconClassName } = getNotificationVisual(notification.type);
@@ -38,7 +41,10 @@ export function NotificationInboxRow({
           ) : null}
         </div>
         {model.body ? <p className={NOTIFICATION_INBOX_BODY_TEXT_CLASS}>{model.body}</p> : null}
-        <p className={NOTIFICATION_INBOX_TIME_CLASS}>{timeLabel}</p>
+      </div>
+      <div className={NOTIFICATION_INBOX_TIME_CLASS}>
+        <span>{relativeLabel}</span>
+        {clockLabel ? <span className={NOTIFICATION_INBOX_CLOCK_CLASS}>{clockLabel}</span> : null}
       </div>
     </>
   );

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { DetailSheetFieldSegmented, RelationPickerField } from '@/components/shared';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { Input } from '@/components/ui/input';
@@ -23,46 +24,47 @@ export function RecurringTaskIdentityFields({
   disabled,
   onPatch,
 }: RecurringTaskIdentityFieldsProps) {
+  const t = useTranslations('tasks');
   const assigneePicker = useRelationPickerActions('employee');
 
   return (
     <div className="grid gap-4">
       <div className="grid gap-2">
-        <Label htmlFor="recurring-title">Title</Label>
+        <Label htmlFor="recurring-title">{t('recurring.titleLabel')}</Label>
         <Input
           id="recurring-title"
           value={draft.title}
           disabled={disabled}
-          placeholder="e.g. Check domains"
+          placeholder={t('recurring.titlePlaceholder')}
           onChange={(event) => onPatch({ title: event.target.value })}
         />
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="recurring-description">Description</Label>
+        <Label htmlFor="recurring-description">{t('recurring.descriptionLabel')}</Label>
         <Textarea
           id="recurring-description"
           value={draft.description}
           disabled={disabled}
           rows={3}
-          placeholder="What should the spawned task include?"
+          placeholder={t('recurring.descriptionPlaceholder')}
           onChange={(event) => onPatch({ description: event.target.value })}
         />
       </div>
 
       <DetailSheetFieldSegmented
-        label="Priority"
+        label={t('recurring.priority')}
         value={draft.priority}
         disabled={disabled}
         options={[
-          { value: 'NORMAL', label: 'Normal' },
-          { value: 'HIGH', label: 'Urgent' },
+          { value: 'NORMAL', label: t('priority.NORMAL') },
+          { value: 'HIGH', label: t('priority.HIGH') },
         ]}
         onValueChange={(value) => onPatch({ priority: value as RecurringPriority })}
       />
 
       <RelationPickerField
-        label="Assignee"
+        label={t('sheet.assignee')}
         entityKind="employee"
         value={draft.assigneeId}
         selectionLabel={draft.assigneeLabel}

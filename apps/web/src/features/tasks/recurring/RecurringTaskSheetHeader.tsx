@@ -1,6 +1,7 @@
 'use client';
 
 import { Pause, Play, Repeat, Trash2, Zap } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { DetailSheetSettingsMenu, StatusBadge } from '@/components/shared';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
@@ -27,6 +28,7 @@ export function RecurringTaskSheetHeader({
   onToggleActive,
   onDelete,
 }: RecurringTaskSheetHeaderProps) {
+  const t = useTranslations('tasks');
   return (
     <div className="bg-background flex shrink-0 items-start justify-between gap-3 px-5 pt-5 pb-3">
       <div className="min-w-0">
@@ -35,13 +37,13 @@ export function RecurringTaskSheetHeader({
           <h2 className="text-foreground truncate text-xl font-bold tracking-tight">{title}</h2>
           {!isCreate ? (
             <StatusBadge
-              label={isActive ? 'Active' : 'Paused'}
+              label={isActive ? t('recurring.active') : t('recurring.paused')}
               variant={isActive ? 'green' : 'gray'}
             />
           ) : null}
         </div>
         <p className="text-muted-foreground mt-1 text-sm">
-          Template only. Tasks are created on the schedule, or immediately with Create task now.
+          {t('recurring.sheetHint')}
         </p>
       </div>
       {!isCreate && (canEdit || canDelete) ? (
@@ -49,19 +51,19 @@ export function RecurringTaskSheetHeader({
           {canEdit ? (
             <DropdownMenuItem disabled={running} onClick={onRunNow}>
               <Zap />
-              Create task now
+              {t('recurring.runNow')}
             </DropdownMenuItem>
           ) : null}
           {canEdit ? (
             <DropdownMenuItem onClick={onToggleActive}>
               {isActive ? <Pause /> : <Play />}
-              {isActive ? 'Pause schedule' : 'Resume schedule'}
+              {isActive ? t('recurring.pause') : t('recurring.resume')}
             </DropdownMenuItem>
           ) : null}
           {canDelete ? (
             <DropdownMenuItem variant="destructive" onClick={onDelete}>
               <Trash2 />
-              Delete
+              {t('recurring.delete')}
             </DropdownMenuItem>
           ) : null}
         </DetailSheetSettingsMenu>

@@ -8,6 +8,10 @@
   "genericError": "Something went wrong. Try again.",
   "permissionDenied": "You do not have permission for this action.",
   "unavailable": "Unavailable",
+  "settings": "Settings",
+  "tryAgain": "Try again",
+  "errorTitle": "Something went wrong",
+  "errorKicker": "Needs attention",
   "accessDenied": {
     "kicker": "Restricted folio",
     "title": "Access restricted",

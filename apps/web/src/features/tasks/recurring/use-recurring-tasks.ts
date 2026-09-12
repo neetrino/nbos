@@ -1,12 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { recurringTasksApi, type RecurringTaskTemplate } from '@/lib/api/recurring-tasks';
 import type { RecurringStatusFilter } from './recurring-task-constants';
 
 export function useRecurringTasks() {
+  const t = useTranslations('tasks');
   const [templates, setTemplates] = useState<RecurringTaskTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,11 +23,11 @@ export function useRecurringTasks() {
       setTemplates(rows);
       setError(null);
     } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Recurring templates could not be loaded.'));
+      setError(getApiErrorMessage(caught, t('recurring.loadFailed')));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void fetchTemplates();
@@ -49,20 +51,16 @@ export function useRecurringTasks() {
       const result = await recurringTasksApi.processDue();
       await fetchTemplates();
       if (result.created === 0) {
-        toast.message('No due templates right now.');
+        toast.message(t('recurring.noDue'));
         return;
       }
-      toast.success(
-        result.created === 1
-          ? 'Created 1 task from due templates.'
-          : `Created ${result.created} tasks from due templates.`,
-      );
+      toast.success(t('recurring.createdDue', { count: result.created }));
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Due templates could not be processed.'));
+      toast.error(getApiErrorMessage(caught, t('recurring.processFailed')));
     } finally {
       setProcessingDue(false);
     }
-  }, [fetchTemplates]);
+  }, [fetchTemplates, t]);
 
   const upsert = useCallback((row: RecurringTaskTemplate) => {
     setTemplates((current) => {

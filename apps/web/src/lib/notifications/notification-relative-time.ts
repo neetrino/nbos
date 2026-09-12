@@ -34,3 +34,14 @@ export function formatNotificationAbsoluteDate(dateStr: string, locale: string):
   if (Number.isNaN(date.getTime())) return '';
   return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
 }
+
+/** Clock time when the notification arrived, e.g. `14:32`. */
+export function formatNotificationInboxClockTime(dateStr: string, locale: string): string {
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleTimeString(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+}

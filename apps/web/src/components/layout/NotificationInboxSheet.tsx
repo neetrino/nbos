@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import { Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { EntityDetailSheetContent } from '@/components/shared';
 import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import type { NotificationDto } from '@/lib/api/notifications';
 import { formatNotificationInboxTime } from '@/lib/notifications/notification-inbox-time';
+import { formatNotificationInboxClockTime } from '@/lib/notifications/notification-relative-time';
 import { NotificationInboxLoadMoreSentinel } from './NotificationInboxLoadMoreSentinel';
 import { NotificationInboxRow } from './NotificationInboxRow';
 import {
@@ -14,6 +16,7 @@ import {
   NOTIFICATION_INBOX_HEADER_ACTIONS_CLASS,
   NOTIFICATION_INBOX_HEADER_CLASS,
   NOTIFICATION_INBOX_LIST_CLASS,
+  NOTIFICATION_INBOX_SETTINGS_BUTTON_CLASS,
   NOTIFICATION_INBOX_SHEET_CONTENT_CLASS,
   NOTIFICATION_INBOX_SHEET_RAIL_ANCHOR_CLASS,
   NOTIFICATION_INBOX_STATUS_CLASS,
@@ -94,7 +97,7 @@ function NotificationInboxSheetHeader({
 
   return (
     <SheetHeader className={NOTIFICATION_INBOX_HEADER_CLASS}>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <SheetTitle className={NOTIFICATION_INBOX_TITLE_CLASS}>{t('title')}</SheetTitle>
         <SheetDescription className="sr-only">{t('title')}</SheetDescription>
       </div>
@@ -110,10 +113,11 @@ function NotificationInboxSheetHeader({
         ) : null}
         <Link
           href="/notifications"
-          className={NOTIFICATION_INBOX_HEADER_ACTION_CLASS}
+          className={NOTIFICATION_INBOX_SETTINGS_BUTTON_CLASS}
           onClick={onOpenCenter}
+          aria-label={t('openCenter')}
         >
-          {t('openCenter')}
+          <Settings size={18} aria-hidden />
         </Link>
       </div>
     </SheetHeader>
@@ -163,7 +167,8 @@ function NotificationInboxSheetBody({
         <NotificationInboxRow
           key={notification.id}
           notification={notification}
-          timeLabel={inboxRowTimeLabel(notification.createdAt, locale, t)}
+          relativeLabel={inboxRowRelativeLabel(notification.createdAt, locale, t)}
+          clockLabel={formatNotificationInboxClockTime(notification.createdAt, locale)}
           onOpen={onRowOpen}
         />
       ))}
@@ -179,7 +184,7 @@ function NotificationInboxSheetBody({
   );
 }
 
-function inboxRowTimeLabel(
+function inboxRowRelativeLabel(
   createdAt: string,
   locale: string,
   t: ReturnType<typeof useTranslations<'notifications'>>,

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
@@ -28,10 +29,11 @@ export function DetailSheetFormFooter({
   errorMessage,
   onSave,
   onCancel,
-  saveLabel = 'Save',
-  cancelLabel = 'Cancel',
+  saveLabel,
+  cancelLabel,
   className,
 }: DetailSheetFormFooterProps) {
+  const t = useTranslations('common');
   if (!visible || (!dirty && !saving)) {
     return null;
   }
@@ -56,7 +58,7 @@ export function DetailSheetFormFooter({
             disabled={saving}
             onClick={onSave}
           >
-            {saving ? 'Saving…' : saveLabel}
+            {saving ? t('saving') : (saveLabel ?? t('save'))}
           </Button>
           <Button
             type="button"
@@ -65,7 +67,7 @@ export function DetailSheetFormFooter({
             disabled={saving}
             onClick={onCancel}
           >
-            {cancelLabel}
+            {cancelLabel ?? t('cancel')}
           </Button>
         </div>
       </div>
