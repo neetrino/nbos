@@ -275,7 +275,10 @@ export function PayrollRunDetailPageContent({
           <ArrowLeft size={14} />
           {t('detail.back')}
         </Link>
-        <ErrorState description={error ?? t('detail.notFound')} onRetry={() => void handleReload()} />
+        <ErrorState
+          description={error ?? t('detail.notFound')}
+          onRetry={() => void handleReload()}
+        />
       </div>
     );
   }

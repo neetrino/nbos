@@ -723,9 +723,7 @@ function DealsPipelinePageContent() {
         <EmptyState
           icon={Handshake}
           title={isTrashView ? t('deals.emptyTrashTitle') : t('deals.emptyTitle')}
-          description={
-            isTrashView ? t('deals.emptyTrashDescription') : t('deals.emptyDescription')
-          }
+          description={isTrashView ? t('deals.emptyTrashDescription') : t('deals.emptyDescription')}
           action={
             isTrashView ? undefined : (
               <Button onClick={() => setShowCreate(true)}>

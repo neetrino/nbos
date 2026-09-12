@@ -18,7 +18,11 @@ import {
   LoadingState,
   useModuleHeroSlots,
 } from '@/components/shared';
-import { EMPLOYEE_LEVELS, EMPLOYEE_STATUSES, isEmployeeLevelValue } from '@/features/hr/constants/hr';
+import {
+  EMPLOYEE_LEVELS,
+  EMPLOYEE_STATUSES,
+  isEmployeeLevelValue,
+} from '@/features/hr/constants/hr';
 import { CreateEmployeeSheet } from '@/features/hr/components/CreateEmployeeSheet';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
 import { InviteEmployeeDialog } from '@/features/hr/components/InviteEmployeeDialog';

@@ -42,9 +42,7 @@ export function RecurringTaskSheetHeader({
             />
           ) : null}
         </div>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {t('recurring.sheetHint')}
-        </p>
+        <p className="text-muted-foreground mt-1 text-sm">{t('recurring.sheetHint')}</p>
       </div>
       {!isCreate && (canEdit || canDelete) ? (
         <DetailSheetSettingsMenu>

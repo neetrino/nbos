@@ -48,7 +48,11 @@ export function DealWhatsAppHeaderControl({
   const triggerLabel = t('dealSheet.whatsapp.header');
   const triggerTitle =
     translateDealWhatsAppDisabledTitle(t, presentation.triggerTitle) ??
-    translateDealWhatsAppActionTitle(t, presentation.directAction?.id ?? '', presentation.triggerTitle) ??
+    translateDealWhatsAppActionTitle(
+      t,
+      presentation.directAction?.id ?? '',
+      presentation.triggerTitle,
+    ) ??
     triggerLabel;
   return (
     <>

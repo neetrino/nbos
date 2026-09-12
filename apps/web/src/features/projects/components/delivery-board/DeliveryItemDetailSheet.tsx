@@ -421,7 +421,9 @@ export function DeliveryItemDetailSheet({
               {lifecycle?.isTerminal ? (
                 <div className="bg-muted/40 hidden shrink-0 px-7 py-2.5 sm:block">
                   <p className="text-muted-foreground text-sm">
-                    {lifecycle.resolution === 'DONE' ? t('sheet.doneBanner') : t('sheet.cancelledBanner')}
+                    {lifecycle.resolution === 'DONE'
+                      ? t('sheet.doneBanner')
+                      : t('sheet.cancelledBanner')}
                   </p>
                 </div>
               ) : null}
@@ -516,7 +518,9 @@ export function DeliveryItemDetailSheet({
                       }
                     />
                   ) : (
-                    <p className="text-muted-foreground px-7 py-6 text-sm">{t('sheet.loadFailed')}</p>
+                    <p className="text-muted-foreground px-7 py-6 text-sm">
+                      {t('sheet.loadFailed')}
+                    </p>
                   )}
                 </DetailSheetTabPanel>
               </ScrollArea>

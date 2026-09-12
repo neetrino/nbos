@@ -107,7 +107,9 @@ export function SalaryBoardListView({
             <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>
               {t('salary.payable')}
             </TableHead>
-            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>{t('salary.paid')}</TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>
+              {t('salary.paid')}
+            </TableHead>
             <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>
               {t('salary.remaining')}
             </TableHead>

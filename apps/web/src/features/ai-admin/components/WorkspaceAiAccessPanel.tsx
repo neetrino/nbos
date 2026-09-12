@@ -61,10 +61,7 @@ export function WorkspaceAiAccessPanel({ workspaceId }: { workspaceId: string })
 
   return (
     <section className="space-y-3">
-      <AiAdminPageToolbar
-        icon={BotMessageSquare}
-        description={t('aiAccess.description')}
-      />
+      <AiAdminPageToolbar icon={BotMessageSquare} description={t('aiAccess.description')} />
       {rows.length === 0 ? (
         <p className="text-muted-foreground text-xs">{t('aiAccess.empty')}</p>
       ) : (

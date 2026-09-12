@@ -16,7 +16,11 @@ export function DealSourceLeadSection({ deal, className }: DealSourceLeadSection
   if (!deal.lead) return null;
 
   return (
-    <DetailSheetSection title={t('dealSheet.sectionSourceLead')} icon={<Link2 size={12} />} className={className}>
+    <DetailSheetSection
+      title={t('dealSheet.sectionSourceLead')}
+      icon={<Link2 size={12} />}
+      className={className}
+    >
       <div className="border-border bg-muted/20 hover:bg-muted/40 flex items-center gap-3 rounded-xl border p-3 transition-colors">
         <div className={cn(DETAIL_SHEET_PERSON_AVATAR_CLASS, 'size-10 rounded-xl')}>
           <User size={16} />

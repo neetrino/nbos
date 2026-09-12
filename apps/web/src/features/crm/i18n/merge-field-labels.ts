@@ -1,9 +1,7 @@
 import type { LeadMergeFieldKey } from '@nbos/shared';
 import type { CrmTranslate } from './crm-copy';
 
-export function translateLeadMergeFieldLabels(
-  t: CrmTranslate,
-): Record<LeadMergeFieldKey, string> {
+export function translateLeadMergeFieldLabels(t: CrmTranslate): Record<LeadMergeFieldKey, string> {
   return {
     name: t('merge.fields.name'),
     contactName: t('merge.fields.contactName'),

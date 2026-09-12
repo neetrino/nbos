@@ -51,7 +51,11 @@ export function NotificationInboxRow({
 
   if (model.href) {
     return (
-      <Link href={model.href} className={model.surfaceClassName} onClick={() => onOpen(notification)}>
+      <Link
+        href={model.href}
+        className={model.surfaceClassName}
+        onClick={() => onOpen(notification)}
+      >
         {inner}
       </Link>
     );

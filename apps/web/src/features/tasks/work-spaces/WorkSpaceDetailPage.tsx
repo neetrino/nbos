@@ -131,7 +131,10 @@ export function WorkSpaceDetailPage() {
               <WorkSpaceScrumPlanningEnable workspace={workspace} onUpdated={onWorkspaceUpdate} />
             ) : null}
             <WorkSpaceDiscussionTrigger onClick={() => setDiscussionOpen(true)} />
-            <EntityDriveNavAction label={tNav('modules.drive')} onClick={() => setDriveOpen(true)} />
+            <EntityDriveNavAction
+              label={tNav('modules.drive')}
+              onClick={() => setDriveOpen(true)}
+            />
             <WorkSpaceDetailSettingsSheet
               workspaceId={workspace.id}
               workspaceName={workspace.name}

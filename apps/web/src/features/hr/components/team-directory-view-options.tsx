@@ -4,7 +4,9 @@ import type { ViewModeOption } from '@/components/shared';
 export type TeamDirectoryViewMode = 'list' | 'grid';
 
 export function buildTeamDirectoryViewOptions(
-  t: (key: 'directory.grid' | 'directory.list' | 'directory.gridAria' | 'directory.listAria') => string,
+  t: (
+    key: 'directory.grid' | 'directory.list' | 'directory.gridAria' | 'directory.listAria',
+  ) => string,
 ): ViewModeOption<TeamDirectoryViewMode>[] {
   return [
     {

@@ -16,7 +16,10 @@ import type { SearchLoader } from './deal-general-tab.types';
 import { buildDealProjectChangePatch, type DealGeneralDraft } from './deal-general-form-state';
 import { TAX_STATUS_OPTIONS } from './deal-general-tab.helpers';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
-import { DealSubscriptionTermField, showDealSubscriptionTermFields } from './DealSubscriptionTermField';
+import {
+  DealSubscriptionTermField,
+  showDealSubscriptionTermFields,
+} from './DealSubscriptionTermField';
 
 export { DealInfoDealProductFields } from './DealInfoDealProductFields';
 

@@ -180,9 +180,7 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
                   onRequested={() => void loadDetail()}
                 />
               ) : (
-                <p className="text-muted-foreground px-6 py-8 text-sm">
-                  {t('form.noAccess')}
-                </p>
+                <p className="text-muted-foreground px-6 py-8 text-sm">{t('form.noAccess')}</p>
               )}
             </ScrollArea>
           ) : (
@@ -237,9 +235,7 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
         onOpenChange={(o) => {
           if (!o) setStepUpField(null);
         }}
-        title={
-          stepUpMode === 'copy' ? t('form.unlockCopy') : t('form.unlockReveal')
-        }
+        title={stepUpMode === 'copy' ? t('form.unlockCopy') : t('form.unlockReveal')}
         onConfirm={runStepUp}
       />
     </>

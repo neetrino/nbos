@@ -510,10 +510,7 @@ export function useCredentialsVaultPage() {
     [stripOpenCredentialFromUrl],
   );
 
-  const filterCopy = useMemo(
-    () => buildCredentialsVaultFilterCopy((key) => t(key as never)),
-    [t],
-  );
+  const filterCopy = useMemo(() => buildCredentialsVaultFilterCopy((key) => t(key as never)), [t]);
   const quickCategoryChips = useMemo(
     () =>
       quickCategoryChipsForVaultScope(activeTab).map((chip) => {

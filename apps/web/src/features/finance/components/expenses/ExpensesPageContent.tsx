@@ -285,9 +285,7 @@ export function ExpensesPageContent({
       setStats(expenseStats);
       setError(null);
     } catch (caught) {
-      setError(
-        getApiErrorMessage(caught, t('errors.loadList')),
-      );
+      setError(getApiErrorMessage(caught, t('errors.loadList')));
     } finally {
       setLoading(false);
     }
@@ -467,11 +465,7 @@ export function ExpensesPageContent({
       ),
       viewMode:
         pageVariant === 'backlog' ? undefined : (
-          <ViewModeSwitch
-            value={view}
-            onChange={handleViewChange}
-            options={viewOptions}
-          />
+          <ViewModeSwitch value={view} onChange={handleViewChange} options={viewOptions} />
         ),
       trailing: (
         <>

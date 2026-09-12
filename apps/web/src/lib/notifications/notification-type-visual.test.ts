@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  Handshake,
-  LifeBuoy,
-  ListTodo,
-  Mail,
-  Shield,
-  Wallet,
-} from 'lucide-react';
+import { Handshake, LifeBuoy, ListTodo, Mail, Shield, Wallet } from 'lucide-react';
 import { getNotificationVisual } from './notification-type-visual';
 
 describe('getNotificationVisual prefixes', () => {

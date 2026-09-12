@@ -285,9 +285,7 @@ export function SalaryBoardPageContent() {
           onClearAll={handleClearSalaryFilters}
         />
       ),
-      viewMode: (
-        <ViewModeSwitch value={view} onChange={handleViewChange} options={viewOptions} />
-      ),
+      viewMode: <ViewModeSwitch value={view} onChange={handleViewChange} options={viewOptions} />,
     }),
     [
       handleClearSalaryFilters,

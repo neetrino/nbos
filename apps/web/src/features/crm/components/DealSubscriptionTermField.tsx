@@ -86,7 +86,9 @@ export function DealSubscriptionTermField({
       </div>
       {contractTotal != null ? (
         <div className="text-sm">
-          <div className="text-foreground/85 mb-1.5 font-medium">{t('dealSheet.contractTotal')}</div>
+          <div className="text-foreground/85 mb-1.5 font-medium">
+            {t('dealSheet.contractTotal')}
+          </div>
           <div className="text-muted-foreground bg-muted/30 border-border rounded-md border px-3 py-2 tabular-nums">
             {formatAmount(contractTotal)}
           </div>

@@ -40,9 +40,7 @@ export function getTaskStatus(value: string) {
   return TASK_STATUSES.find((s) => s.value === value);
 }
 
-export function isTaskStatusValue(
-  value: string,
-): value is (typeof TASK_STATUSES)[number]['value'] {
+export function isTaskStatusValue(value: string): value is (typeof TASK_STATUSES)[number]['value'] {
   return TASK_STATUSES.some((status) => status.value === value);
 }
 

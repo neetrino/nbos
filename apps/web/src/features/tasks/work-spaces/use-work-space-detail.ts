@@ -114,9 +114,7 @@ export function useWorkSpaceDetail(workspaceId: string): UseWorkSpaceDetailResul
     }
   }, [data, patchDetailData]);
 
-  const error = query.error
-    ? getApiErrorMessage(query.error, t('detailLoadFailed'))
-    : null;
+  const error = query.error ? getApiErrorMessage(query.error, t('detailLoadFailed')) : null;
 
   return {
     workspace,

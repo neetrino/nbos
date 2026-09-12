@@ -46,7 +46,9 @@ export function TeamEmployeeTable({ employees, onOpen }: TeamEmployeeTableProps)
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('directory.columns.employee')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>
+              {t('directory.columns.employee')}
+            </TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>
               {t('directory.columns.primarySeat')}
             </TableHead>
@@ -54,8 +56,12 @@ export function TeamEmployeeTable({ employees, onOpen }: TeamEmployeeTableProps)
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>
               {t('directory.columns.department')}
             </TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('directory.columns.status')}</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('directory.columns.tenure')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>
+              {t('directory.columns.status')}
+            </TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>
+              {t('directory.columns.tenure')}
+            </TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('directory.columns.email')}</TableHead>
           </TableRow>
         </TableHeader>

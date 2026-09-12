@@ -11,7 +11,9 @@ describe('notification preference channels', () => {
   });
 
   it('turns the last channel off by disabling the row', () => {
-    expect(nextNotificationPreferenceState({ enabled: true, channels: ['IN_APP'] }, 'IN_APP')).toEqual({
+    expect(
+      nextNotificationPreferenceState({ enabled: true, channels: ['IN_APP'] }, 'IN_APP'),
+    ).toEqual({
       enabled: false,
       channels: ['IN_APP'],
     });

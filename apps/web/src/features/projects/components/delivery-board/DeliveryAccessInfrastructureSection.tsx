@@ -78,11 +78,7 @@ export function DeliveryAccessInfrastructureSection({
       );
     }
     if (slots.length === 0) {
-      return (
-        <p className="text-muted-foreground text-sm">
-          {t('access.empty')}
-        </p>
-      );
+      return <p className="text-muted-foreground text-sm">{t('access.empty')}</p>;
     }
     return (
       <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2">

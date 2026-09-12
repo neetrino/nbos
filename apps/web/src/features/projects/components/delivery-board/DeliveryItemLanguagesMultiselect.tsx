@@ -97,7 +97,9 @@ export function DeliveryItemLanguagesMultiselect({
         >
           <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
             {ordered.length === 0 ? (
-              <span className="text-muted-foreground px-1 text-xs">{t('languageField.select')}</span>
+              <span className="text-muted-foreground px-1 text-xs">
+                {t('languageField.select')}
+              </span>
             ) : (
               ordered.map((code) => (
                 <span

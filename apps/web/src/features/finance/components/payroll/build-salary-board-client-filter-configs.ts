@@ -1,10 +1,7 @@
 import type { FilterConfig } from '@/components/shared/FilterBar';
 import { SALARY_BOARD_KANBAN_PHASE_ORDER } from '@/features/finance/constants/compensation-payout-phase-ui';
 import type { CompensationPayoutPhase, SalaryLineStatus } from '@/lib/api/payroll-runs';
-import {
-  PAYOUT_PHASE_MESSAGE_KEY,
-  SALARY_LINE_STATUS_MESSAGE_KEY,
-} from './payroll-i18n-keys';
+import { PAYOUT_PHASE_MESSAGE_KEY, SALARY_LINE_STATUS_MESSAGE_KEY } from './payroll-i18n-keys';
 import { SALARY_LINE_STATUS_FILTER_OPTIONS } from './salary-board-entries';
 
 export const SALARY_BOARD_EMPLOYEE_FILTER_KEY = 'employee' as const;
@@ -54,7 +51,9 @@ export function buildSalaryBoardClientFilterConfigs(
       label: t('salaryFilters.lineStatus'),
       allOptionLabel: t('salaryFilters.allLineStatuses'),
       options: SALARY_LINE_STATUS_FILTER_OPTIONS.filter(
-        (o): o is (typeof SALARY_LINE_STATUS_FILTER_OPTIONS)[number] & {
+        (
+          o,
+        ): o is (typeof SALARY_LINE_STATUS_FILTER_OPTIONS)[number] & {
           value: SalaryLineStatus;
         } => o.value !== 'all',
       ).map((o) => ({

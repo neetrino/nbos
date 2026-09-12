@@ -14,9 +14,7 @@ export default function SupportLayout({ children }: { children: ReactNode }) {
   return (
     <ModuleHeroSlotProvider
       title={t('title')}
-      tabs={
-        <PageHeroNavLinks items={navItems} ariaLabel={t('nav.ariaLabel')} fullWidthOnMobile />
-      }
+      tabs={<PageHeroNavLinks items={navItems} ariaLabel={t('nav.ariaLabel')} fullWidthOnMobile />}
       className="flex h-full min-h-0 flex-col gap-5 max-md:gap-3"
     >
       {children}

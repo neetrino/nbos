@@ -30,8 +30,7 @@ export const PAYROLL_RUN_STATUS_MESSAGE_KEY = {
   CLOSED: 'status.CLOSED',
 } as const;
 
-export type PayrollRunStatusMessageKey =
-  (typeof PAYROLL_RUN_STATUS_MESSAGE_KEY)[PayrollRunStatus];
+export type PayrollRunStatusMessageKey = (typeof PAYROLL_RUN_STATUS_MESSAGE_KEY)[PayrollRunStatus];
 
 export type PayrollRunActionMessageKey =
   | 'actions.sendToReview'

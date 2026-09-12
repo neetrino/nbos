@@ -627,9 +627,7 @@ function LeadsPipelinePageContent() {
         <EmptyState
           icon={Users}
           title={isTrashView ? t('leads.emptyTrashTitle') : t('leads.emptyTitle')}
-          description={
-            isTrashView ? t('leads.emptyTrashDescription') : t('leads.emptyDescription')
-          }
+          description={isTrashView ? t('leads.emptyTrashDescription') : t('leads.emptyDescription')}
           action={
             isTrashView ? undefined : (
               <Button onClick={() => setShowCreate(true)}>
@@ -653,11 +651,14 @@ function LeadsPipelinePageContent() {
             onColumnLoadMore={loadMoreColumn}
             columnWidth={270}
             emptyMessage={t('leads.emptyColumn')}
-            columnQuickCreate={createLeadKanbanQuickCreateConfig((lead) => handleLeadCreated(lead), {
-              buttonLabel: t('leads.quickCreateButton'),
-              titlePlaceholder: t('leads.quickCreatePlaceholder'),
-              titleAriaLabel: t('leads.quickCreateAria'),
-            })}
+            columnQuickCreate={createLeadKanbanQuickCreateConfig(
+              (lead) => handleLeadCreated(lead),
+              {
+                buttonLabel: t('leads.quickCreateButton'),
+                titlePlaceholder: t('leads.quickCreatePlaceholder'),
+                titleAriaLabel: t('leads.quickCreateAria'),
+              },
+            )}
             terminalDropZones={
               shouldShowTerminalDropBar(boardScope) ? leadTerminalZones : undefined
             }

@@ -55,9 +55,7 @@ export function NotificationCenterPreferences({
                       type="button"
                       onClick={() => onToggleChannel(pref, channel.id)}
                       className={`${NOTIFICATION_CENTER_CHIP_BASE_CLASS} ${
-                        on
-                          ? NOTIFICATION_CENTER_CHIP_ON_CLASS
-                          : NOTIFICATION_CENTER_CHIP_OFF_CLASS
+                        on ? NOTIFICATION_CENTER_CHIP_ON_CLASS : NOTIFICATION_CENTER_CHIP_OFF_CLASS
                       }`}
                     >
                       {t(channel.labelKey)}

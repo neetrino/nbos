@@ -28,9 +28,7 @@ function ExpensesClosedPageInner() {
   const projectIdFromUrl = searchParams.get(PROJECT_EXPENSES_DRILLDOWN_QUERY);
   const expensePlanIdFromUrl = searchParams.get(EXPENSE_PLAN_DRILLDOWN_QUERY);
 
-  useFinanceDocumentTitle(
-    projectIdFromUrl?.trim() ? t('title.closedProject') : t('title.closed'),
-  );
+  useFinanceDocumentTitle(projectIdFromUrl?.trim() ? t('title.closedProject') : t('title.closed'));
 
   const replaceExpensesUrl = useCallback(
     (mutate: (params: URLSearchParams) => void) => {

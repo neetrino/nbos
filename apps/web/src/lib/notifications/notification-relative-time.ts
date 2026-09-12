@@ -12,7 +12,10 @@ export type NotificationRelativeKind =
   | { type: 'absolute' };
 
 /** Classify inbox age without formatting. Absolute dates stay locale-specific at render. */
-export function classifyNotificationAge(dateStr: string, now = new Date()): NotificationRelativeKind {
+export function classifyNotificationAge(
+  dateStr: string,
+  now = new Date(),
+): NotificationRelativeKind {
   const date = new Date(dateStr);
   if (Number.isNaN(date.getTime())) return { type: 'absolute' };
 

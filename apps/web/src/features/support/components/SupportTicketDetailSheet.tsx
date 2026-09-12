@@ -323,11 +323,7 @@ export function SupportTicketDetailSheet({
                       ) : null}
                       {cov && ticket.coverageDecision ? (
                         <StatusBadge
-                          label={translateSupportCoverage(
-                            t,
-                            ticket.coverageDecision,
-                            cov.label,
-                          )}
+                          label={translateSupportCoverage(t, ticket.coverageDecision, cov.label)}
                           variant={cov.variant}
                           className="shrink-0 self-center"
                         />

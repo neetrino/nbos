@@ -70,9 +70,7 @@ export function AddExpensePaymentDialog({
       onRecorded(updated);
       onOpenChange(false);
     } catch (caught) {
-      setError(
-        getApiErrorMessage(caught, t('errors.recordPayment')),
-      );
+      setError(getApiErrorMessage(caught, t('errors.recordPayment')));
     } finally {
       setLoading(false);
     }
