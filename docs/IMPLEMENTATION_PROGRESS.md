@@ -1,5 +1,9 @@
 # NBOS Implementation Progress
 
+## Мультиязычность — новый согласованный срез, 2026-09-12
+
+Статус: документы подготовлены, код не реализован. Первый релиз: EN/RU для общей навигации, меню аккаунта, Dashboard и четырёх create-flow. [Канон](NBOS/01-Platform-Overview/07-Interface-Localization.md), [план с журналом этапов](implementation/I18N-IMPLEMENTATION-PLAN.md). Полная платформа и HY — последующие этапы. Не отмечать завершённым до приёмки.
+
 > **Активный бэклог** до полного канона: что делаем и что отложено. Закрытые срезы и история — `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
 **Обновлено:** 2026-05-09

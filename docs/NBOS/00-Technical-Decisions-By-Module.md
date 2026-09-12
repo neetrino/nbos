@@ -1,5 +1,7 @@
 # NBOS Technical Decisions By Module
 
+**Cross-module i18n, 2026-09-12:** утверждён next-intl без изменения URL, персональная Employee.interfaceLocale и поэтапный EN/RU → HY. Реализация ещё не начата. Обязательный [канон локализации](01-Platform-Overview/07-Interface-Localization.md).
+
 > Mandatory technical decision index for implementing NBOS modules.
 
 ## Purpose

@@ -1,5 +1,7 @@
 # Dashboard Personalization
 
+**Локализация, решение 2026-09-12 (ещё не реализовано):** Dashboard и его create-flow входят в первый EN/RU релиз. Язык персональный, хранится в Employee, а не DashboardPreference; persisted action/widget IDs сохраняются. См. [канон локализации](../../01-Platform-Overview/07-Interface-Localization.md).
+
 > NBOS Dashboard - персональный пульт пользователя, pinned actions, widgets и настройки отображения.
 
 ## Назначение
