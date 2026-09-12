@@ -25,6 +25,8 @@ export interface AnalyticsCardProps {
   data: AnalyticsBarItem[];
   className?: string;
   locale?: string;
+  kicker?: string;
+  chartAriaLabel?: string;
 }
 
 const GRID_COLS_CLASS: Record<number, string> = {
@@ -57,6 +59,8 @@ export function AnalyticsCard({
   data = [],
   className,
   locale,
+  kicker,
+  chartAriaLabel,
 }: AnalyticsCardProps) {
   const numericItems = data.filter((item) => item.displayValue === undefined);
   const maxQuantity = Math.max(...numericItems.map((item) => item.quantity), 0);
@@ -66,7 +70,7 @@ export function AnalyticsCard({
     <div className={cn('nbos-desk-surface text-card-foreground w-full p-5 sm:p-6', className)}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="nbos-desk-kicker">Pulse</p>
+          {kicker ? <p className="nbos-desk-kicker">{kicker}</p> : null}
           <h3 className="mt-1 text-base font-semibold">{title}</h3>
         </div>
         <div className="bg-primary/10 text-primary flex h-9 w-9 items-center justify-center rounded-xl">
@@ -78,7 +82,7 @@ export function AnalyticsCard({
         <h2 className="nbos-display text-4xl tabular-nums sm:text-5xl">{totalAmount}</h2>
       </div>
 
-      <div className={cn('grid gap-4', colClass)} aria-label="Mini analytics chart">
+      <div className={cn('grid gap-4', colClass)} aria-label={chartAriaLabel}>
         {data.map((item, index) => {
           const height = barHeightPercent(item, maxQuantity);
           const isPeak =

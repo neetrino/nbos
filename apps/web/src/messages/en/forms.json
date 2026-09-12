@@ -115,6 +115,9 @@
     "noResults": "No results found",
     "clearSearch": "Clear search",
     "employee": "Employee",
-    "addEmployee": "Add employee"
+    "addEmployee": "Add employee",
+    "openNamed": "Open {label}",
+    "changeNamed": "Change {label}",
+    "removeNamed": "Remove {label}"
   }
 }

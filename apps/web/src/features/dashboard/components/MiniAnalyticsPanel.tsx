@@ -159,6 +159,8 @@ export function MiniAnalytics({
   return (
     <AnalyticsCard
       title={t('widgets.miniAnalyticsTitle')}
+      kicker={t('widgets.pulseKicker')}
+      chartAriaLabel={t('widgets.chartAria')}
       totalAmount={totalAmount}
       icon={<BarChart3 className="text-muted-foreground h-4 w-4" />}
       data={bars}

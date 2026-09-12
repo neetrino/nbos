@@ -21,8 +21,8 @@
     "openPayrollDescription": "Открыть зарплату и расчёт.",
     "openSupport": "Очередь поддержки",
     "openSupportDescription": "Открыть тикеты, которые ждут действия.",
-    "openCredentials": "Хранилище доступов",
-    "openCredentialsDescription": "Открыть доступные вам учётные данные."
+    "openCredentials": "Пароли",
+    "openCredentialsDescription": "Открыть доступные вам пароли и секреты."
   },
   "create": {
     "meetingCreated": "Встреча создана",
@@ -41,6 +41,7 @@
     "openGroupTitle": "Открыть"
   },
   "personalLink": {
+    "add": "Добавить",
     "formTitle": "Новая кнопка-ярлык",
     "formTitleEdit": "Изменить кнопку-ярлык",
     "formDescription": "Подпись и ссылка сохраняются в закреплённой области обзора.",
@@ -64,6 +65,8 @@
   },
   "widgets": {
     "miniAnalyticsTitle": "Мини-аналитика",
+    "pulseKicker": "Пульс",
+    "chartAria": "График мини-аналитики",
     "editHint": "Перетаскивайте строки между «Показано» и «Скрыто». Изменения сохраняются автоматически.",
     "shown": "Показано",
     "hidden": "Скрыто",

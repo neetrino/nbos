@@ -1,7 +1,7 @@
 'use client';
 
 import { type FormEvent, useState, type ReactNode } from 'react';
-import { Check, Save, SlidersHorizontal } from 'lucide-react';
+import { Check, Plus, Save, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { ActionTileButton } from '@/components/shared';
 import { Badge } from '@/components/ui/badge';
@@ -77,14 +77,18 @@ export function PinnedDropColumn({
   );
 }
 
-export function CreateLinkInline({
+export function PinnedLinkComposer({
   editing,
-  onCancelEdit,
+  open,
+  onCancel,
+  onOpen,
   onSubmit,
   saving,
 }: {
   editing?: { label: string; url: string } | null;
-  onCancelEdit?: () => void;
+  open: boolean;
+  onCancel: () => void;
+  onOpen: () => void;
   onSubmit: (label: string, url: string) => Promise<void>;
   saving: boolean;
 }) {
@@ -98,39 +102,43 @@ export function CreateLinkInline({
     event.preventDefault();
     if (!canSubmit) return;
     await onSubmit(label.trim(), url.trim());
-    if (!editing) {
-      setLabel('');
-      setUrl('');
-    }
+  }
+
+  if (!open) {
+    return (
+      <div className={DASHBOARD_PINNED_TILE_MIN_HEIGHT_CLASS}>
+        <ActionTileButton
+          label={t('personalLink.add')}
+          icon={<Plus aria-hidden />}
+          tone="secondary"
+          size="lg"
+          fullWidth
+          className="h-full"
+          onClick={onOpen}
+        />
+      </div>
+    );
   }
 
   return (
-    <div className="border-border/80 bg-muted/20 mt-5 rounded-xl border border-dashed p-4">
-      <h3 className="text-sm font-semibold">
-        {editing ? t('personalLink.formTitleEdit') : t('personalLink.formTitle')}
-      </h3>
-      <p className="text-muted-foreground mt-1 text-xs">{t('personalLink.formDescription')}</p>
-      <form
-        className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end"
-        onSubmit={(e) => void submit(e)}
-      >
-        <div className="grid flex-1 gap-2 sm:grid-cols-2">
-          <Input
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            placeholder={t('personalLink.labelPlaceholder')}
-          />
-          <Input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder={t('personalLink.urlPlaceholder')}
-          />
-        </div>
-        {editing ? (
-          <Button type="button" variant="ghost" size="sm" onClick={onCancelEdit}>
-            {tCommon('cancel')}
-          </Button>
-        ) : null}
+    <form
+      className="border-border bg-card flex h-full flex-col justify-center gap-2 rounded-xl border px-3 py-2"
+      onSubmit={(event) => void submit(event)}
+    >
+      <Input
+        value={label}
+        onChange={(event) => setLabel(event.target.value)}
+        placeholder={t('personalLink.labelPlaceholder')}
+      />
+      <Input
+        value={url}
+        onChange={(event) => setUrl(event.target.value)}
+        placeholder={t('personalLink.urlPlaceholder')}
+      />
+      <div className="flex justify-end gap-1">
+        <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+          {tCommon('cancel')}
+        </Button>
         <ActionTileButton
           label={saving ? tCommon('saving') : t('notes.save')}
           icon={<Save aria-hidden />}
@@ -138,10 +146,9 @@ export function CreateLinkInline({
           size="sm"
           buttonType="submit"
           disabled={!canSubmit || saving}
-          className="shrink-0"
         />
-      </form>
-    </div>
+      </div>
+    </form>
   );
 }
 

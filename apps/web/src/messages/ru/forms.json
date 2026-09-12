@@ -115,6 +115,9 @@
     "noResults": "Ничего не найдено",
     "clearSearch": "Очистить поиск",
     "employee": "Сотрудник",
-    "addEmployee": "Добавить сотрудника"
+    "addEmployee": "Добавить сотрудника",
+    "openNamed": "Открыть {label}",
+    "changeNamed": "Изменить {label}",
+    "removeNamed": "Удалить {label}"
   }
 }

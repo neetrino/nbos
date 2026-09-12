@@ -226,7 +226,7 @@ export function CreateMeetingCalendarDialog({
                 }}
               >
                 <SelectTrigger className="mt-1.5">
-                  <SelectValue />
+                  <SelectValue>{t(`meeting.types.${form.meetingType}`)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {MEETING_TYPE_VALUES.map((value) => (
@@ -246,7 +246,7 @@ export function CreateMeetingCalendarDialog({
                 }}
               >
                 <SelectTrigger className="mt-1.5">
-                  <SelectValue />
+                  <SelectValue>{t(`meeting.locationTypes.${form.locationType}`)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {LOCATION_TYPE_VALUES.map((value) => (

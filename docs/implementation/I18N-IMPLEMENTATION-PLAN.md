@@ -1,6 +1,6 @@
 # План реализации мультиязычности NBOS
 
-Дата: 2026-09-12. Статус: первый EN/RU срез и исправления независимого ревью в рабочем дереве; визуальная приёмка и production rollout открыты.
+Дата: 2026-09-12. Статус: первый EN/RU срез в рабочем дереве; этап 4 частично закрыт live-проходом desktop/mobile; live token-expiry/403 и production rollout открыты.
 
 Источник решений: [канон локализации](../NBOS/01-Platform-Overview/07-Interface-Localization.md). Этот план описывает продуктовую реализацию; распределение моделей находится в [инструкции Cursor](./I18N-CURSOR-HANDOFF.md).
 
@@ -101,6 +101,6 @@ Task, Meeting, Lead, Expense: поля, placeholder, статусы, relation pi
 | 1         | Завершён                 | next-intl 4.14.4, `Employee.interfaceLocale`, GET/PATCH `/api/v1/me/preferences`, cookie `nbos-interface-locale`, SSR. Миграция `20260912120000_employee_interface_locale` применена к dev Neon 2026-09-12 |
 | 2         | Завершён                 | Оболочка + Dashboard Control Center EN/RU |
 | 3         | Завершён                 | Task/Meeting/Lead/Expense + date/relation picker chrome (`forms`) |
-| 4         | Частично                 | После review-фиксов: `pnpm --filter @nbos/web typecheck` зелёный; focused eslint по затронутым путям зелёный; 77 targeted tests зелёные; `pnpm run build:web` зелёный. Полный `web lint` не повторялся. Desktop RU shell/dashboard/date-picker видели в живой сессии. Mobile viewport, live истечение access token, live 403/conflict/network и полная визуальная приёмка не закрыты. Auth-страницы вне scope, лендинг остаётся EN |
-| 5         | В работе                 | Замечания независимого ревью исправлены в рабочем дереве; журналы coverage/плана согласованы. Visual/login acceptance не отмечена завершённой. Production rollout не делался |
+| 4         | Частично                 | Targeted: 89 tests зелёные (shared/api/web i18n + auth/BFF + desk-line). Desktop live: EN↔RU оболочка, Обзор, Task/Meeting/Lead/Expense, date picker. Mobile 390px: dock «Меню» и пункты модулей на RU. Закрыты живые дефекты: kicker Pulse, сырые `SALES_CALL`/`ONLINE`, Dialog Close, assignee Open/Change/Remove. Не закрыты: live истечение access token, live 403/conflict/network, light/dark полный проход, псевдолокализация/армянский шрифт, полный `web lint`. Auth-страницы вне scope |
+| 5         | В работе                 | Owner-cookie удалён. Журналы обновлены после visual pass. Visual/login acceptance не отмечена завершённой. Production rollout не делался |
 | 6–7       | Отложены                 | Вне текущего поручения              |

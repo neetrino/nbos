@@ -16,10 +16,10 @@ import { dashboardPointerCollisionDetection } from '../dashboard-dnd-collision';
 import { resolveTwoColumnSortMove } from '../dashboard-two-column-dnd';
 import { PersonalLinkCard, PinnedActionCard } from './DashboardActionCards';
 import {
-  CreateLinkInline,
   EmptyPinnedActions,
   PinnedActionsTitle,
   PinnedDropColumn,
+  PinnedLinkComposer,
   PinnedTileGrid,
   SortablePinnedTile,
 } from './DashboardPinnedActionsChrome';
@@ -56,6 +56,7 @@ export function PinnedActions({
 }: PinnedActionsProps) {
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const dashboardLinks = personalLinks.filter((link) =>
     link.placement.includes('DASHBOARD_PINNED_ACTIONS'),
   );
@@ -106,16 +107,27 @@ export function PinnedActions({
             hiddenActions={hiddenActions}
             hiddenKeys={hiddenKeys}
             hiddenLinks={hiddenLinks}
+            isCreating={isCreating}
             saving={saving}
             sensors={sensors}
             visibleKeys={visibleKeys}
             visibleLinks={visibleLinks}
-            onCancelEdit={() => setEditingLinkId(null)}
+            onCancelComposer={() => {
+              setEditingLinkId(null);
+              setIsCreating(false);
+            }}
             onDeletePersonalLink={onDeletePersonalLink}
             onDragCancel={() => setActiveDragId(null)}
             onDragEnd={handleDragEnd}
             onDragStart={(event: DragStartEvent) => setActiveDragId(String(event.active.id))}
-            onEditLink={setEditingLinkId}
+            onEditLink={(id) => {
+              setIsCreating(false);
+              setEditingLinkId(id);
+            }}
+            onOpenCreate={() => {
+              setEditingLinkId(null);
+              setIsCreating(true);
+            }}
             onSubmitLink={async (label, url) => {
               if (editingLink) {
                 await onUpdatePersonalLink(editingLink.id, label, url);
@@ -123,6 +135,7 @@ export function PinnedActions({
                 return;
               }
               await onCreatePersonalLink(label, url);
+              setIsCreating(false);
             }}
           />
         ) : (
@@ -131,7 +144,14 @@ export function PinnedActions({
       ) : (
         <EmptyPinnedActions />
       )}
-      <PinnedActionsTitle editMode={editMode} onToggleEdit={onToggleEdit} />
+      <PinnedActionsTitle
+        editMode={editMode}
+        onToggleEdit={() => {
+          setEditingLinkId(null);
+          setIsCreating(false);
+          onToggleEdit();
+        }}
+      />
     </section>
   );
 }
@@ -144,16 +164,18 @@ function PinnedActionsEdit({
   hiddenActions,
   hiddenKeys,
   hiddenLinks,
+  isCreating,
   saving,
   sensors,
   visibleKeys,
   visibleLinks,
-  onCancelEdit,
+  onCancelComposer,
   onDeletePersonalLink,
   onDragCancel,
   onDragEnd,
   onDragStart,
   onEditLink,
+  onOpenCreate,
   onSubmitLink,
 }: {
   actions: PinnedAction[];
@@ -163,16 +185,18 @@ function PinnedActionsEdit({
   hiddenActions: PinnedAction[];
   hiddenKeys: string[];
   hiddenLinks: DashboardPersonalLink[];
+  isCreating: boolean;
   saving: boolean;
   sensors: ReturnType<typeof useSensors>;
   visibleKeys: string[];
   visibleLinks: DashboardPersonalLink[];
-  onCancelEdit: () => void;
+  onCancelComposer: () => void;
   onDeletePersonalLink: (id: string) => Promise<void>;
   onDragCancel: () => void;
   onDragEnd: (event: DragEndEvent) => void;
   onDragStart: (event: DragStartEvent) => void;
   onEditLink: (id: string) => void;
+  onOpenCreate: () => void;
   onSubmitLink: (label: string, url: string) => Promise<void>;
 }) {
   const t = useTranslations('dashboard');
@@ -211,6 +235,17 @@ function PinnedActionsEdit({
                     />
                   </SortablePinnedTile>
                 ))}
+                <div className={editingLink || isCreating ? 'col-span-2 min-w-0' : 'min-w-0'}>
+                  <PinnedLinkComposer
+                    key={editingLink?.id ?? 'create'}
+                    editing={editingLink}
+                    open={Boolean(editingLink || isCreating)}
+                    saving={saving}
+                    onCancel={onCancelComposer}
+                    onOpen={onOpenCreate}
+                    onSubmit={onSubmitLink}
+                  />
+                </div>
               </PinnedTileGrid>
             </PinnedDropColumn>
           </SortableContext>
@@ -253,13 +288,6 @@ function PinnedActionsEdit({
           ) : null}
         </DragOverlay>
       </DndContext>
-      <CreateLinkInline
-        key={editingLink?.id ?? 'create'}
-        editing={editingLink}
-        saving={saving}
-        onCancelEdit={onCancelEdit}
-        onSubmit={onSubmitLink}
-      />
     </>
   );
 }

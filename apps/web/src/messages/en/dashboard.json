@@ -21,8 +21,8 @@
     "openPayrollDescription": "Open payroll and salary.",
     "openSupport": "Support queue",
     "openSupportDescription": "Open tickets waiting for action.",
-    "openCredentials": "Credentials vault",
-    "openCredentialsDescription": "Open shared credentials you can access."
+    "openCredentials": "Password",
+    "openCredentialsDescription": "Open shared passwords and secrets you can access."
   },
   "create": {
     "meetingCreated": "Meeting created",
@@ -41,6 +41,7 @@
     "openGroupTitle": "Open"
   },
   "personalLink": {
+    "add": "Add",
     "formTitle": "New shortcut button",
     "formTitleEdit": "Edit shortcut button",
     "formDescription": "Label and link are saved to your dashboard pinned area.",
@@ -64,6 +65,8 @@
   },
   "widgets": {
     "miniAnalyticsTitle": "Mini analytics",
+    "pulseKicker": "Pulse",
+    "chartAria": "Mini analytics chart",
     "editHint": "Drag rows between Shown and Hidden. Changes save automatically.",
     "shown": "Shown",
     "hidden": "Hidden",
