@@ -1,6 +1,7 @@
 'use client';
 
 import type { CSSProperties, ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { TASK_SHEET_CHAT_COLUMN_CLASS, TASK_SHEET_DETAIL_COLUMN_CLASS } from './task-sheet-classes';
 import {
@@ -41,6 +42,7 @@ function chatColumnStyle(isSplitRow: boolean): CSSProperties {
 }
 
 export function TaskSheetSplitLayout({ detail, chat }: TaskSheetSplitLayoutProps) {
+  const t = useTranslations('tasks');
   const {
     containerRef,
     detailRatioPercent,
@@ -77,7 +79,7 @@ export function TaskSheetSplitLayout({ detail, chat }: TaskSheetSplitLayoutProps
           aria-valuemin={30}
           aria-valuemax={70}
           aria-valuenow={Math.round(detailRatioPercent)}
-          aria-label="Resize task detail and chat"
+          aria-label={t('sheet.resizeAria')}
           tabIndex={0}
           onPointerDown={handlePointerDown}
           onKeyDown={(event) => {
@@ -100,7 +102,7 @@ export function TaskSheetSplitLayout({ detail, chat }: TaskSheetSplitLayoutProps
               isDragging && 'bg-primary/20 ring-primary/30 opacity-100',
             )}
           />
-          <span className="sr-only">Drag to resize</span>
+          <span className="sr-only">{t('sheet.resizeDrag')}</span>
         </div>
       ) : null}
 

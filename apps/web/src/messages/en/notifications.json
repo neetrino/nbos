@@ -7,6 +7,37 @@
   "empty": "No notifications yet.",
   "loadMore": "Load more",
   "openCenter": "Open Notification Center",
+  "center": {
+    "kicker": "Notifications",
+    "title": "Notification Center",
+    "refresh": "Refresh",
+    "markAllRead": "Mark all read",
+    "prefsTitle": "Your Notification Preferences",
+    "prefsDescription": "Enable or disable event types and preferred delivery channels.",
+    "prefsLoading": "Loading preferences…",
+    "channels": "Channels: {list}",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "loadingList": "Loading notifications…",
+    "emptyTitle": "No notifications",
+    "emptyDescription": "This category has no active notifications.",
+    "markReadAria": "Mark as read",
+    "archiveAria": "Archive"
+  },
+  "category": {
+    "all": "All",
+    "informational": "Info",
+    "action_required": "Action required",
+    "system_health": "System health",
+    "audit_security": "Security"
+  },
+  "priority": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "normal": "Normal"
+  },
   "relative": {
     "justNow": "just now",
     "minutesAgo": "{count, plural, one {# min ago} other {# min ago}}",

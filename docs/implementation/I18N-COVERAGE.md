@@ -33,9 +33,9 @@ This file is the working register for stages 0–5. It does not expand scope to 
 | `dashboardDeskLine` | `messages/{en,ru}/dashboard-desk-line.json` | Composer stage 2                             |
 | `forms`             | `messages/{en,ru}/forms.json`               | Composer stage 3 (Task/Meeting/Lead/Expense) |
 | `hr`                | `messages/{en,ru}/hr.json`                  | Stage 6 employee sheet / My Account profile  |
-| `tasks`             | `messages/{en,ru}/tasks.json`               | Stage 6 Tasks list / filters chrome          |
+| `tasks`             | `messages/{en,ru}/tasks.json`               | Stage 6 Tasks list / filters / sheet chrome  |
 | `search`            | `messages/{en,ru}/search.json`              | Stage 6 Global Search panel                  |
-| `notifications`     | `messages/{en,ru}/notifications.json`       | Stage 6 notification inbox dropdown          |
+| `notifications`     | `messages/{en,ru}/notifications.json`       | Stage 6 inbox dropdown + Notification Center |
 
 Completed-namespace key parity (EN/RU) is enforced only for finished slices.
 
@@ -55,7 +55,7 @@ Status: `pending` → `in_progress` → `en_ru` → `verified`.
 | Theme switcher                   | `theme-switcher.tsx`, `theme-switcher-constants.ts`                                                                                                                                 | System UI                                             | `account`               | en_ru                                                                                      |
 | Language switcher                | `LanguageSwitcher.tsx`, under theme                                                                                                                                                 | System UI                                             | `account`               | en_ru                                                                                      |
 | Sign out / errors                | `session-sign-out.ts` (cookie clear), account menu labels                                                                                                                           | System UI                                             | `account` / `common`    | en_ru                                                                                      |
-| Search / notifications triggers  | `GlobalSearchTrigger.tsx`, NotificationDropdown header trigger only                                                                                                                 | System chrome; full search/inbox later                | `navigation` / `common` | en_ru (triggers); dropdown/inbox body and GlobalSearch panel remain English                |
+| Search / notifications triggers  | `GlobalSearchTrigger.tsx`, NotificationDropdown header trigger only                                                                                                                 | System chrome; inbox/search bodies in their namespaces | `navigation` / `common` | en_ru (triggers); inbox/search chrome is `notifications` / `search`                        |
 | PWA install tile                 | `components/pwa/PwaInstallTile.tsx`, `pwa-constants.ts`                                                                                                                             | System UI                                             | `navigation`            | en_ru                                                                                      |
 | PWA dashboard install banner     | `components/pwa/PwaInstallBanner.tsx`, `pwa-dashboard-banner-copy.ts`                                                                                                               | System UI; dismiss flag stays in localStorage         | `navigation`            | en_ru                                                                                      |
 | Access denied chrome             | `ModuleAccessGate.tsx`, `components/shared/AccessDeniedScreen.tsx`                                                                                                                  | System UI                                             | `common`                | en_ru                                                                                      |
@@ -154,7 +154,7 @@ Matches canon. Do not treat this as a behaviour change.
 - **Restore:** after the client session is authenticated, GET preferences; if it differs from SSR, refresh. Catch does not write `en`.
 - **Cache:** React `cache()` per request only. Preference is not a process-wide query key. Business query keys are unchanged.
 
-Still English on purpose inside first-release chrome: notification inbox body, Global Search panel, destination pages of Open, Lead sheet behind Full, non-employee relation-picker search placeholders, feature-module dock item labels. Auth pages, emails, PDF, and the rest of the platform are stages 6–7.
+Still English on purpose inside first-release chrome: destination pages of Open, Lead sheet behind Full, non-employee relation-picker search placeholders, feature-module dock item labels. Auth pages, emails, PDF, and remaining stage-6 modules are later.
 
 ## Stage 5 report — 2026-09-12
 
@@ -173,7 +173,7 @@ Live sampled (one user, RU): EN↔RU shell/dashboard/four creates, light/dark/sy
 
 ### Still English by first-release scope
 
-Open destination pages, Lead sheet behind Full, Task sheet, Recurring/Automation pages, Work Spaces, Notification Center page, non-employee `Search {kind}s…`, feature-module dock item labels, EmployeeSheet departments/lifecycle panels. User data (names, notes, notification titles/bodies, personal-link titles such as Cost OPS). Auth reset page, emails, PDF, remaining modules. HY switcher still off — stage 7 pilot only.
+Open destination pages, Lead sheet behind Full, Task chat/checklist chrome, Recurring/Automation pages, Work Spaces, non-employee `Search {kind}s…`, feature-module dock item labels, EmployeeSheet departments/lifecycle panels. User data (names, notes, notification titles/bodies, personal-link titles such as Cost OPS). Auth reset page, emails, PDF, remaining modules. HY switcher still off — stage 7 pilot only.
 
 ### Checks run
 
@@ -211,5 +211,5 @@ Additive migration is in the repo and applied to the authorized Neon database. P
 | 3     | Four create flows                              | en_ru (date-picker chrome sampled live in RU; Meeting 403/conflict/network copy sampled live via request intercept)                                           |
 | 4     | Automated + visual acceptance                  | complete for first-release checks (web typecheck + lint 0 errors; two-user and token-expiry sampled live; auth pages out of scope; production builds not run) |
 | 5     | Review, docs, report                           | report ready; prod schema migrated on ep-sweet-dew; slice not in IMPLEMENTATION_DONE                                                                          |
-| 6     | Rest of platform                               | in_progress (account, wallet, employee sheet, Tasks, search, inbox) |
+| 6     | Rest of platform                               | in_progress (account, wallet, employee sheet, Tasks list+sheet, search, inbox+center) |
 | 7     | HY pilot                                       | draft I18N-HY-PILOT.md; switcher still EN/RU only                                                                                                             |

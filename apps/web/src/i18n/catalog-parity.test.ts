@@ -72,5 +72,7 @@ describe('completed i18n catalogs', () => {
     expect(ruTasks.loadMore.of).toContain('{total}');
     expect(enNotifications.relative.minutesAgo).toContain('count');
     expect(ruNotifications.relative.minutesAgo).toContain('count');
+    expect(enNotifications.center.channels).toContain('{list}');
+    expect(ruNotifications.center.channels).toContain('{list}');
   });
 });

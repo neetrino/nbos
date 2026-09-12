@@ -7,6 +7,37 @@
   "empty": "Пока нет уведомлений.",
   "loadMore": "Показать ещё",
   "openCenter": "Открыть центр уведомлений",
+  "center": {
+    "kicker": "Уведомления",
+    "title": "Центр уведомлений",
+    "refresh": "Обновить",
+    "markAllRead": "Отметить все прочитанными",
+    "prefsTitle": "Настройки уведомлений",
+    "prefsDescription": "Включайте типы событий и каналы доставки.",
+    "prefsLoading": "Загрузка настроек…",
+    "channels": "Каналы: {list}",
+    "enabled": "Вкл.",
+    "disabled": "Выкл.",
+    "loadingList": "Загрузка уведомлений…",
+    "emptyTitle": "Нет уведомлений",
+    "emptyDescription": "В этой категории нет активных уведомлений.",
+    "markReadAria": "Отметить прочитанным",
+    "archiveAria": "В архив"
+  },
+  "category": {
+    "all": "Все",
+    "informational": "Инфо",
+    "action_required": "Нужно действие",
+    "system_health": "Состояние системы",
+    "audit_security": "Безопасность"
+  },
+  "priority": {
+    "critical": "Критичный",
+    "high": "Высокий",
+    "medium": "Средний",
+    "low": "Низкий",
+    "normal": "Обычный"
+  },
   "relative": {
     "justNow": "только что",
     "minutesAgo": "{count, plural, one {# мин назад} few {# мин назад} many {# мин назад} other {# мин назад}}",

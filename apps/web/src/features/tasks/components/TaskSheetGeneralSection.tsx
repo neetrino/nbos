@@ -1,4 +1,6 @@
 import { Copy } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { resolveDatePickerLocale } from '@/components/shared/date-picker/date-picker-locale';
 import {
   DetailSheetOptionalDescriptionField,
   InlineField,
@@ -56,6 +58,8 @@ export function TaskSheetGeneralSection({
   onTaskChange,
   onSearchEmployees,
 }: TaskSheetGeneralSectionProps) {
+  const t = useTranslations('tasks');
+  const dateLocale = resolveDatePickerLocale(useLocale());
   const creatorPicker = useRelationPickerActions('employee', 'task-creator');
   const assigneePicker = useRelationPickerActions('employee', 'task-assignee');
   const assistantPicker = useRelationPickerActions('employee', 'task-assistant');
@@ -69,7 +73,7 @@ export function TaskSheetGeneralSection({
     }
   }
 
-  const createdAtLabel = formatTaskSheetDateTime(task.createdAt);
+  const createdAtLabel = formatTaskSheetDateTime(task.createdAt, dateLocale);
 
   return (
     <>
@@ -80,7 +84,7 @@ export function TaskSheetGeneralSection({
         onChange={(description) => onPatchDraft({ description })}
         disabled={disabled}
         label={null}
-        placeholder="Description"
+        placeholder={t('sheet.description')}
         shellClassName="[&_.entity-notes-prosemirror]:text-sm"
       />
 
@@ -88,9 +92,9 @@ export function TaskSheetGeneralSection({
         <div className={TASK_SHEET_META_BLOCK_CLASS}>
           <div className={TASK_SHEET_TEAM_COLUMNS_CLASS}>
             <div className={cn(TASK_SHEET_TEAM_COLUMN_CLASS, TASK_SHEET_TEAM_META_GRID_CLASS)}>
-              <TaskSheetCompactRow hideLabel label="Creator">
+              <TaskSheetCompactRow hideLabel label={t('sheet.creator')}>
                 <RelationPickerField
-                  label="Creator"
+                  label={t('sheet.creator')}
                   entityKind="employee"
                   value={draft.creatorId}
                   selectionLabel={draft.creatorLabel}
@@ -111,9 +115,9 @@ export function TaskSheetGeneralSection({
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow hideLabel label="Assignee">
+              <TaskSheetCompactRow hideLabel label={t('sheet.assignee')}>
                 <RelationPickerField
-                  label="Assignee"
+                  label={t('sheet.assignee')}
                   entityKind="employee"
                   value={draft.assigneeId}
                   selectionLabel={draft.assigneeLabel}
@@ -141,10 +145,10 @@ export function TaskSheetGeneralSection({
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow hideLabel label="Deadline">
+              <TaskSheetCompactRow hideLabel label={t('sheet.deadline')}>
                 <InlineField
                   variant="controlled"
-                  label="Deadline"
+                  label={t('sheet.deadline')}
                   value={draft.dueDate}
                   type="date"
                   datePickerVariant="extended"
@@ -165,9 +169,9 @@ export function TaskSheetGeneralSection({
                 TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS,
               )}
             >
-              <TaskSheetCompactRow hideLabel label="Assistant">
+              <TaskSheetCompactRow hideLabel label={t('sheet.assistant')}>
                 <RelationPickerField
-                  label="Assistant"
+                  label={t('sheet.assistant')}
                   entityKind="employee"
                   multiple
                   value={draft.coAssigneeIds}
@@ -189,9 +193,9 @@ export function TaskSheetGeneralSection({
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow hideLabel label="Observer">
+              <TaskSheetCompactRow hideLabel label={t('sheet.observer')}>
                 <RelationPickerField
-                  label="Observer"
+                  label={t('sheet.observer')}
                   entityKind="employee"
                   multiple
                   value={draft.observerIds}
@@ -213,7 +217,7 @@ export function TaskSheetGeneralSection({
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow label="Created">
+              <TaskSheetCompactRow label={t('sheet.created')}>
                 <div className={TASK_SHEET_OUTLINED_STATIC_SHELL_CLASS}>
                   <span className="min-w-0 flex-1 truncate" title={createdAtLabel}>
                     {createdAtLabel}
@@ -230,7 +234,7 @@ export function TaskSheetGeneralSection({
                     variant="ghost"
                     size="icon-xs"
                     className="text-muted-foreground hover:text-foreground shrink-0"
-                    title="Copy task code"
+                    title={t('sheet.copyCode')}
                     onClick={() => void copyTaskCode()}
                   >
                     <Copy size={12} aria-hidden />

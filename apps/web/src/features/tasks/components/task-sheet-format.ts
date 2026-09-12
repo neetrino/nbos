@@ -1,9 +1,9 @@
 /** Locale-aware short date + time for task sheet meta rows. */
-export function formatTaskSheetDateTime(value: string): string {
+export function formatTaskSheetDateTime(value: string, locale?: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
   const includeYear = date.getFullYear() !== new Date().getFullYear();
-  return date.toLocaleString(undefined, {
+  return date.toLocaleString(locale, {
     day: 'numeric',
     month: 'short',
     ...(includeYear ? { year: 'numeric' as const } : {}),

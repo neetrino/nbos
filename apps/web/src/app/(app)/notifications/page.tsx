@@ -3,35 +3,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Archive, Bell, CheckCheck, RefreshCw } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { resolveDatePickerLocale } from '@/components/shared/date-picker/date-picker-locale';
 import type { NotificationDto, NotificationPreferenceDto } from '@/lib/api/notifications';
 import { notificationsApi } from '@/lib/api/notifications';
+import {
+  formatNotificationCenterDate,
+  localizeNotificationCategory,
+  localizeNotificationPriority,
+  NOTIFICATION_CATEGORY_FILTERS,
+  type NotificationCategoryFilter,
+} from '@/lib/notifications/notification-center-labels';
 import { getNotificationVisual } from '@/lib/notifications/notification-type-visual';
 
 const PAGE_SIZE = 30;
-
-const CATEGORY_FILTERS = [
-  { value: undefined, label: 'All' },
-  { value: 'informational', label: 'Info' },
-  { value: 'action_required', label: 'Action required' },
-  { value: 'system_health', label: 'System health' },
-  { value: 'audit_security', label: 'Security' },
-] as const;
-
-type CategoryFilter = (typeof CATEGORY_FILTERS)[number]['value'];
-
-function formatDate(value: string): string {
-  return new Date(value).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-function categoryLabel(category: string): string {
-  const known = CATEGORY_FILTERS.find((item) => item.value === category);
-  return known?.label ?? category.replaceAll('_', ' ');
-}
 
 function priorityClass(priority: string): string {
   if (priority === 'critical') return 'border-red-500/40 bg-red-500/10 text-red-700';
@@ -40,8 +25,10 @@ function priorityClass(priority: string): string {
 }
 
 export default function NotificationsPage() {
+  const t = useTranslations('notifications');
+  const dateLocale = resolveDatePickerLocale(useLocale());
   const [items, setItems] = useState<NotificationDto[]>([]);
-  const [category, setCategory] = useState<CategoryFilter>();
+  const [category, setCategory] = useState<NotificationCategoryFilter>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [preferences, setPreferences] = useState<NotificationPreferenceDto[]>([]);
@@ -129,8 +116,8 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-muted-foreground text-sm">Notifications</p>
-          <h1 className="text-foreground text-2xl font-semibold">Notification Center</h1>
+          <p className="text-muted-foreground text-sm">{t('center.kicker')}</p>
+          <h1 className="text-foreground text-2xl font-semibold">{t('center.title')}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -139,7 +126,7 @@ export default function NotificationsPage() {
             className="border-border bg-card text-muted-foreground hover:bg-secondary inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm"
           >
             <RefreshCw size={16} />
-            Refresh
+            {t('center.refresh')}
           </button>
           <button
             type="button"
@@ -148,16 +135,16 @@ export default function NotificationsPage() {
             className="bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm disabled:cursor-not-allowed"
           >
             <CheckCheck size={16} />
-            Mark all read
+            {t('center.markAllRead')}
           </button>
         </div>
       </div>
 
       <div className="border-border bg-card rounded-2xl border p-4">
         <div className="flex flex-wrap gap-2">
-          {CATEGORY_FILTERS.map((filter) => (
+          {NOTIFICATION_CATEGORY_FILTERS.map((filter) => (
             <button
-              key={filter.label}
+              key={filter.key}
               type="button"
               onClick={() => setCategory(filter.value)}
               className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
@@ -166,7 +153,7 @@ export default function NotificationsPage() {
                   : 'bg-secondary text-muted-foreground hover:text-foreground'
               }`}
             >
-              {filter.label}
+              {t(`category.${filter.key}`)}
             </button>
           ))}
         </div>
@@ -174,13 +161,11 @@ export default function NotificationsPage() {
 
       <div className="border-border bg-card rounded-2xl border p-4">
         <div className="mb-3">
-          <h2 className="text-foreground text-sm font-semibold">Your Notification Preferences</h2>
-          <p className="text-muted-foreground text-xs">
-            Enable or disable event types and preferred delivery channels.
-          </p>
+          <h2 className="text-foreground text-sm font-semibold">{t('center.prefsTitle')}</h2>
+          <p className="text-muted-foreground text-xs">{t('center.prefsDescription')}</p>
         </div>
         {prefsLoading ? (
-          <p className="text-muted-foreground text-sm">Loading preferences…</p>
+          <p className="text-muted-foreground text-sm">{t('center.prefsLoading')}</p>
         ) : (
           <div className="space-y-2">
             {preferences.map((pref) => (
@@ -191,7 +176,7 @@ export default function NotificationsPage() {
                 <div className="min-w-0">
                   <p className="text-foreground truncate text-sm font-medium">{pref.eventType}</p>
                   <p className="text-muted-foreground text-xs">
-                    Channels: {pref.channels.join(', ')}
+                    {t('center.channels', { list: pref.channels.join(', ') })}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -204,7 +189,7 @@ export default function NotificationsPage() {
                         : 'bg-secondary text-muted-foreground'
                     }`}
                   >
-                    {pref.enabled ? 'Enabled' : 'Disabled'}
+                    {pref.enabled ? t('center.enabled') : t('center.disabled')}
                   </button>
                   {(['IN_APP', 'EMAIL', 'TELEGRAM', 'WHATSAPP'] as const).map((channel) => (
                     <button
@@ -228,18 +213,14 @@ export default function NotificationsPage() {
       </div>
 
       <div className="border-border bg-card overflow-hidden rounded-2xl border">
-        {loading && <p className="text-muted-foreground p-6 text-sm">Loading notifications…</p>}
-        {error && (
-          <p className="text-muted-foreground p-6 text-sm">Could not load notifications.</p>
-        )}
+        {loading && <p className="text-muted-foreground p-6 text-sm">{t('center.loadingList')}</p>}
+        {error && <p className="text-muted-foreground p-6 text-sm">{t('loadFailed')}</p>}
         {!loading && !error && items.length === 0 && (
           <div className="flex flex-col items-center gap-3 p-10 text-center">
             <Bell className="text-muted-foreground" size={28} />
             <div>
-              <h2 className="text-foreground text-sm font-medium">No notifications</h2>
-              <p className="text-muted-foreground mt-1 text-xs">
-                This category has no active notifications.
-              </p>
+              <h2 className="text-foreground text-sm font-medium">{t('center.emptyTitle')}</h2>
+              <p className="text-muted-foreground mt-1 text-xs">{t('center.emptyDescription')}</p>
             </div>
           </div>
         )}
@@ -257,16 +238,18 @@ export default function NotificationsPage() {
                     <h2 className="text-foreground text-sm font-semibold">{item.title}</h2>
                     {!item.isRead && <span className="bg-accent h-2 w-2 rounded-full" />}
                     <span className="border-border text-muted-foreground rounded-full border px-2 py-0.5 text-[11px]">
-                      {categoryLabel(item.category)}
+                      {localizeNotificationCategory(item.category, t)}
                     </span>
                     <span
                       className={`rounded-full border px-2 py-0.5 text-[11px] ${priorityClass(item.priority)}`}
                     >
-                      {item.priority}
+                      {localizeNotificationPriority(item.priority, t)}
                     </span>
                   </div>
                   <p className="text-muted-foreground mt-1 text-sm">{item.body}</p>
-                  <p className="text-muted-foreground mt-2 text-xs">{formatDate(item.createdAt)}</p>
+                  <p className="text-muted-foreground mt-2 text-xs">
+                    {formatNotificationCenterDate(item.createdAt, dateLocale)}
+                  </p>
                 </div>
               </div>
             );
@@ -286,7 +269,7 @@ export default function NotificationsPage() {
                       type="button"
                       onClick={() => void markRead(item.id)}
                       className="text-muted-foreground hover:bg-secondary rounded-lg p-2"
-                      aria-label="Mark as read"
+                      aria-label={t('center.markReadAria')}
                     >
                       <CheckCheck size={16} />
                     </button>
@@ -295,7 +278,7 @@ export default function NotificationsPage() {
                     type="button"
                     onClick={() => void archive(item.id)}
                     className="text-muted-foreground hover:bg-secondary rounded-lg p-2"
-                    aria-label="Archive"
+                    aria-label={t('center.archiveAria')}
                   >
                     <Archive size={16} />
                   </button>
