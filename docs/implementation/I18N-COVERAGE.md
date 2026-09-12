@@ -1,6 +1,6 @@
 # I18N coverage — first EN/RU release
 
-Date: 2026-09-12. Status: first EN/RU slice is in the working tree. Stage 5 review is in progress: GET/PATCH/cookie/SSR contract is recorded below; month-picker year chrome is catalogued. Live token-expiry restore, two-user logout/login, and production rollout remain open.
+Date: 2026-09-12. Status: first EN/RU slice is in the working tree. Stage 5 report is below. The slice is not moved to IMPLEMENTATION_DONE. Live token-expiry, two-user logout/login, full web lint/typecheck/build, and production rollout remain open.
 
 Canon: [07-Interface-Localization.md](../NBOS/01-Platform-Overview/07-Interface-Localization.md). Plan: [I18N-IMPLEMENTATION-PLAN.md](./I18N-IMPLEMENTATION-PLAN.md).
 
@@ -152,13 +152,59 @@ Matches canon. Do not treat this as a behaviour change.
 
 Still English on purpose inside first-release chrome: notification inbox body, Global Search panel, destination pages of Open, Lead sheet behind Full, non-employee relation-picker search placeholders, feature-module dock item labels. Auth pages, emails, PDF, and the rest of the platform are stages 6–7.
 
+## Stage 5 report — 2026-09-12
+
+First-release EN/RU is implemented on `sipan`. This report does not declare the slice accepted or deployed.
+
+### Works
+
+- Shell: desktop sidebar, account/theme/language, search/notification **triggers**, PWA install chrome, access-denied chrome.
+- Dashboard Control Center: pinned create/open, widgets/Pulse, notes chrome, personal-link chrome, priority cards by `code`, desk header + desk-line catalog.
+- Four Dashboard creates: Task, Meeting, Lead, Expense, plus shared date/relation picker chrome.
+- Preference: `GET|PATCH /api/v1/me/preferences`, cookie `nbos-interface-locale`, authenticated DB locale over cookie, EN fallback without writing EN, logout clears cookie.
+- Language switch: PATCH → cookie → `router.refresh()`, no `key={locale}` remount, failed save keeps previous locale.
+- Hidden Armenian font probe in root layout. HY is not in the switcher.
+
+Live sampled (one user, RU): EN↔RU shell/dashboard/four creates, light/dark/system, mobile 390px menu, Meeting 409 overlap copy, network copy, 403 copy, Noto Sans Armenian `document.fonts.check`.
+
+### Still English by first-release scope
+
+Notification inbox body, Global Search panel, Open destination pages, Lead sheet behind Full, non-employee `Search {kind}s…`, feature-module dock item labels. User data (names, notes, personal-link titles such as Cost OPS). Auth pages, emails, PDF, remaining modules, HY — stages 6–7.
+
+### Checks run
+
+`pnpm exec vitest run` on shared locales, employee preference service + HTTP test, `apps/web/src/i18n`, BFF/auth refresh + sign-out, desk-line + dashboard header/action-key tests.
+
+Result: **22 files, 87 tests, all passed** (2026-09-12).
+
+### Not run
+
+| Check                                                      | Reason                                                                             |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `pnpm --filter @nbos/web lint` / `typecheck` / `build:web` | Full web lint previously OOM/SIGTERM; not re-run this pass                         |
+| `pnpm --filter @nbos/api typecheck` / `build:api`          | No backend change in this report pass                                              |
+| Live expired access-token restore                          | Access JWT is httpOnly; mutating it risks killing the session                      |
+| Logout/login two users                                     | Needs a second account and would sign out the current session                      |
+| Production deploy / production migration                   | Out of this slice. Dev Neon already has `20260912120000_employee_interface_locale` |
+
+### Risks
+
+- Authenticated SSR falls back to EN when preference GET/refresh fails; next successful load restores DB locale. Cookie is not applied for a signed-in user in that failure path (canon).
+- Meeting conflict **list** was not proven live (stub may have omitted `conflicts`); overlap **copy** was. Real API puts `conflicts` on the 409 body.
+- Desk-line RU is editorial and still wants a native review.
+- Double BFF/RSC refresh is unchanged; do not touch unless logs show `auth.refresh_reuse_detected`.
+
+### Rollout
+
+Additive migration is in the repo and applied to the authorized Neon database. Production rollout is a separate step. Do not treat this report as deployment.
+
 ## Stage journal
 
-| Stage | Coverage note                                  | Status                                                                                                                  |
-| ----- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| 0     | This register                                  | complete                                                                                                                |
-| 1     | Foundation + Save/Cancel + language + New task | en_ru (reference verified by tests)                                                                                     |
-| 2     | Shell + remaining Dashboard                    | en_ru (desktop RU + light/dark/system sampled live; mobile 390px menu sampled)                                          |
-| 3     | Four create flows                              | en_ru (date-picker chrome sampled live in RU; Meeting 403/conflict/network copy sampled live via request intercept)     |
-| 4     | Automated + visual acceptance                  | partial (light/dark + HY font probe + live Meeting errors done; live token-expiry and two-user logout/login still open) |
-| 5     | Review, docs, report                           | in_progress (contract documented; month-picker year aria localized; two-user login and production rollout not done)     |
+| Stage | Coverage note                                  | Status                                                                                                                           |
+| ----- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | This register                                  | complete                                                                                                                         |
+| 1     | Foundation + Save/Cancel + language + New task | en_ru (reference verified by tests)                                                                                              |
+| 2     | Shell + remaining Dashboard                    | en_ru (desktop RU + light/dark/system sampled live; mobile 390px menu sampled)                                                   |
+| 3     | Four create flows                              | en_ru (date-picker chrome sampled live in RU; Meeting 403/conflict/network copy sampled live via request intercept)              |
+| 4     | Automated + visual acceptance                  | partial (light/dark + HY font probe + live Meeting errors done; live token-expiry and two-user logout/login still open)          |
+| 5     | Review, docs, report                           | in_progress (report written; 87 targeted tests green; two-user login, live token-expiry, full web lint, production rollout open) |
