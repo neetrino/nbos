@@ -1,6 +1,6 @@
 # I18N coverage — first EN/RU release
 
-Date: 2026-09-12. Status: first EN/RU slice is in the working tree. Stage 5 report is below. Web typecheck is green; web lint has 0 errors. The slice is not moved to IMPLEMENTATION_DONE. Two-user logout/login was sampled live. Live token-expiry and production rollout remain open.
+Date: 2026-09-12. Status: first EN/RU slice is in the working tree. Stage 5 report is below. Web typecheck is green; web lint has 0 errors. Two-user logout/login and live token-expiry restore were sampled. The slice is not moved to IMPLEMENTATION_DONE. Production rollout remains a separate step.
 
 Canon: [07-Interface-Localization.md](../NBOS/01-Platform-Overview/07-Interface-Localization.md). Plan: [I18N-IMPLEMENTATION-PLAN.md](./I18N-IMPLEMENTATION-PLAN.md).
 
@@ -179,12 +179,12 @@ Result: **22 files, 87 tests, all passed** (2026-09-12). Follow-up: web `typeche
 
 ### Not run
 
-| Check                                    | Reason                                                                                                                            |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm run build:web` / `build:api`       | Not required for this parser/typecheck pass                                                                                       |
-| Live expired access-token restore        | Access JWT is httpOnly; mutating it risks killing the session                                                                     |
-| Logout/login two users                   | Done live 2026-09-12: `i18n.tester@nbos.test` (ru) → `i18n.tester.en@nbos.test` (en); DB locale won, leftover cookie did not leak |
-| Production deploy / production migration | Out of this slice. Dev Neon already has `20260912120000_employee_interface_locale`                                                |
+| Check                                    | Reason                                                                                                                                                                                                                                   |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm run build:web` / `build:api`       | Not required for this parser/typecheck pass                                                                                                                                                                                              |
+| Live expired access-token restore        | Done live 2026-09-12 on `i18n.tester@nbos.test` via API/BFF path (owner browser cookie not mutated): expired access → 401; `POST /api/v1/auth/refresh` with `X-Nbos-Bff: 1` → 200; `GET /me/preferences` stayed `ru`; EN was not written |
+| Logout/login two users                   | Done live 2026-09-12: `i18n.tester@nbos.test` (ru) → `i18n.tester.en@nbos.test` (en); DB locale won, leftover cookie did not leak                                                                                                        |
+| Production deploy / production migration | Out of this slice. Dev Neon already has `20260912120000_employee_interface_locale`                                                                                                                                                       |
 
 ### Risks
 
@@ -199,11 +199,11 @@ Additive migration is in the repo and applied to the authorized Neon database. P
 
 ## Stage journal
 
-| Stage | Coverage note                                  | Status                                                                                                              |
-| ----- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 0     | This register                                  | complete                                                                                                            |
-| 1     | Foundation + Save/Cancel + language + New task | en_ru (reference verified by tests)                                                                                 |
-| 2     | Shell + remaining Dashboard                    | en_ru (desktop RU + light/dark/system sampled live; mobile 390px menu sampled)                                      |
-| 3     | Four create flows                              | en_ru (date-picker chrome sampled live in RU; Meeting 403/conflict/network copy sampled live via request intercept) |
-| 4     | Automated + visual acceptance                  | partial (web typecheck + lint 0 errors; two-user logout/login sampled live; live token-expiry still open)           |
-| 5     | Review, docs, report                           | in_progress (two-user live done; token-expiry and production rollout open)                                          |
+| Stage | Coverage note                                  | Status                                                                                                                                                        |
+| ----- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | This register                                  | complete                                                                                                                                                      |
+| 1     | Foundation + Save/Cancel + language + New task | en_ru (reference verified by tests)                                                                                                                           |
+| 2     | Shell + remaining Dashboard                    | en_ru (desktop RU + light/dark/system sampled live; mobile 390px menu sampled)                                                                                |
+| 3     | Four create flows                              | en_ru (date-picker chrome sampled live in RU; Meeting 403/conflict/network copy sampled live via request intercept)                                           |
+| 4     | Automated + visual acceptance                  | complete for first-release checks (web typecheck + lint 0 errors; two-user and token-expiry sampled live; auth pages out of scope; production builds not run) |
+| 5     | Review, docs, report                           | report ready; slice not in IMPLEMENTATION_DONE; production rollout is a separate step                                                                         |
