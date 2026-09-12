@@ -25,17 +25,20 @@ export function workSpacesDirectorySearch(
   return params.toString();
 }
 
-export function workSpacesDirectoryHeaderItems(activeTab: WorkSpaceDirectoryTab): HeaderNavItem[] {
+export function workSpacesDirectoryHeaderItems(
+  activeTab: WorkSpaceDirectoryTab,
+  labels: { standalone: string; product: string },
+): HeaderNavItem[] {
   return [
     {
       href: workSpacesDirectoryHref('standalone'),
-      label: 'Standalone',
+      label: labels.standalone,
       icon: FolderKanban,
       isActive: () => activeTab === 'standalone',
     },
     {
       href: workSpacesDirectoryHref('product'),
-      label: 'Product',
+      label: labels.product,
       icon: Package,
       isActive: () => activeTab === 'product',
     },
@@ -44,11 +47,12 @@ export function workSpacesDirectoryHeaderItems(activeTab: WorkSpaceDirectoryTab)
 
 export function workSpacesDirectoryHeaderContent(
   activeTab: WorkSpaceDirectoryTab,
+  copy: { standalone: string; product: string; ariaLabel: string },
 ): HeaderContextContent {
   return {
     kind: 'nav',
-    ariaLabel: 'Work space type',
-    items: workSpacesDirectoryHeaderItems(activeTab),
+    ariaLabel: copy.ariaLabel,
+    items: workSpacesDirectoryHeaderItems(activeTab, copy),
     fullWidthOnMobile: true,
   };
 }

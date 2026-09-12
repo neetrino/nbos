@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import type { LucideIcon } from 'lucide-react';
 import {
   Building2,
@@ -42,7 +43,6 @@ import type { Project, ProjectProductSummary } from '@/lib/api/projects';
 import type { WorkSpace } from '@/lib/api/tasks';
 import {
   getWorkSpaceContextLabel,
-  getWorkSpaceTypeLabel,
   getWorkSpaceTypeVariant,
 } from '@/features/tasks/work-spaces/work-space-utils';
 
@@ -65,9 +65,10 @@ const WORK_SPACE_CARD_STATUS_STACK_CLASS =
 const WORK_SPACE_CARD_STATUS_BADGE_CLASS = 'shrink-0 self-end md:self-auto';
 
 function WorkSpaceModeBadge({ scrumEnabled }: { scrumEnabled: boolean }) {
+  const t = useTranslations('workSpaces');
   return (
     <StatusBadge
-      label={scrumEnabled ? 'Scrum' : 'Kanban'}
+      label={scrumEnabled ? t('mode.scrum') : t('mode.kanban')}
       variant={scrumEnabled ? 'blue' : 'gray'}
       className={WORK_SPACE_CARD_STATUS_BADGE_CLASS}
     />
@@ -168,7 +169,10 @@ export function ProjectNavigableCard({
   );
 }
 
-function workSpaceHubMetaRows(workspace: WorkSpace): Array<{ icon: LucideIcon; text: string }> {
+function workSpaceHubMetaRows(
+  workspace: WorkSpace,
+  standaloneFallback: string,
+): Array<{ icon: LucideIcon; text: string }> {
   const rows: Array<{ icon: LucideIcon; text: string }> = [];
 
   if (workspace.type === 'PRODUCT_DELIVERY') {
@@ -188,7 +192,7 @@ function workSpaceHubMetaRows(workspace: WorkSpace): Array<{ icon: LucideIcon; t
     if (workspace.description?.trim()) {
       rows.push({ icon: FolderKanban, text: workspace.description.trim() });
     } else {
-      const context = getWorkSpaceContextLabel(workspace);
+      const context = getWorkSpaceContextLabel(workspace, standaloneFallback);
       if (context) rows.push({ icon: FolderKanban, text: context });
     }
   }
@@ -307,13 +311,14 @@ export function WorkSpaceNavigableCard({
   onOpenProductDelivery,
   onOpenProductDeal,
 }: WorkSpaceNavigableCardProps) {
+  const t = useTranslations('workSpaces');
   const { isMobileViewport, actionsRevealed, cardRef, handleBodyClick } =
     useWorkSpaceCardMobileActions();
   const taskCount = workspace._count?.tasks ?? workspace.tasks?.length ?? 0;
-  const tasksLabel = `${taskCount} task${taskCount === 1 ? '' : 's'}`;
+  const tasksLabel = t('tasksCount', { count: taskCount });
   const isProductDelivery = workspace.type === 'PRODUCT_DELIVERY';
   const CardIcon = isProductDelivery ? Layers : FolderKanban;
-  const metaRows = workSpaceHubMetaRows(workspace);
+  const metaRows = workSpaceHubMetaRows(workspace, t('standaloneContext'));
   const workspaceHref = `/work-spaces/${workspace.id}`;
   const dealId = workspace.product ? getEntityOrderDealId(workspace.product.order) : null;
   const contextHref =
@@ -345,7 +350,7 @@ export function WorkSpaceNavigableCard({
   ) : (
     <div className={WORK_SPACE_CARD_STATUS_STACK_CLASS}>
       <StatusBadge
-        label={getWorkSpaceTypeLabel(workspace.type)}
+        label={t(`type.${workspace.type}`)}
         variant={getWorkSpaceTypeVariant(workspace.type)}
         className={WORK_SPACE_CARD_STATUS_BADGE_CLASS}
       />

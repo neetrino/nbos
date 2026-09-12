@@ -15,6 +15,7 @@ export type InterfaceMessages = {
   tasks: AbstractIntlMessages;
   search: AbstractIntlMessages;
   notifications: AbstractIntlMessages;
+  workSpaces: AbstractIntlMessages;
 };
 
 async function loadMessagesUncached(locale: WritableInterfaceLocale): Promise<InterfaceMessages> {
@@ -35,6 +36,7 @@ async function loadMessagesUncached(locale: WritableInterfaceLocale): Promise<In
     tasks: mergeMessages(en.tasks, localized.tasks),
     search: mergeMessages(en.search, localized.search),
     notifications: mergeMessages(en.notifications, localized.notifications),
+    workSpaces: mergeMessages(en.workSpaces, localized.workSpaces),
   };
 }
 
@@ -60,6 +62,7 @@ async function readLocaleCatalogs(locale: 'en' | 'ru'): Promise<InterfaceMessage
     tasks,
     search,
     notifications,
+    workSpaces,
   ] =
     await Promise.all([
       import(`../messages/${locale}/common.json`),
@@ -72,6 +75,7 @@ async function readLocaleCatalogs(locale: 'en' | 'ru'): Promise<InterfaceMessage
       import(`../messages/${locale}/tasks.json`),
       import(`../messages/${locale}/search.json`),
       import(`../messages/${locale}/notifications.json`),
+      import(`../messages/${locale}/work-spaces.json`),
     ]);
   return {
     common: common.default,
@@ -84,5 +88,6 @@ async function readLocaleCatalogs(locale: 'en' | 'ru'): Promise<InterfaceMessage
     tasks: tasks.default,
     search: search.default,
     notifications: notifications.default,
+    workSpaces: workSpaces.default,
   };
 }

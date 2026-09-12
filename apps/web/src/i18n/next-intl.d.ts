@@ -8,6 +8,7 @@ import type enHr from '../messages/en/hr.json';
 import type enTasks from '../messages/en/tasks.json';
 import type enSearch from '../messages/en/search.json';
 import type enNotifications from '../messages/en/notifications.json';
+import type enWorkSpaces from '../messages/en/work-spaces.json';
 
 type Messages = {
   common: typeof enCommon;
@@ -20,6 +21,7 @@ type Messages = {
   tasks: typeof enTasks;
   search: typeof enSearch;
   notifications: typeof enNotifications;
+  workSpaces: typeof enWorkSpaces;
 };
 
 declare module 'next-intl' {

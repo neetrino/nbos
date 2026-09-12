@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
+import { useTranslations } from 'next-intl';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
@@ -31,6 +32,7 @@ export type UseWorkSpaceDetailResult = {
 };
 
 export function useWorkSpaceDetail(workspaceId: string): UseWorkSpaceDetailResult {
+  const t = useTranslations('workSpaces');
   const queryClient = useQueryClient();
   const queryKey = workSpaceQueryKeys.detail(workspaceId);
   const [loadingMoreTasks, setLoadingMoreTasks] = useState(false);
@@ -113,7 +115,7 @@ export function useWorkSpaceDetail(workspaceId: string): UseWorkSpaceDetailResul
   }, [data, patchDetailData]);
 
   const error = query.error
-    ? getApiErrorMessage(query.error, 'Work Space could not be loaded.')
+    ? getApiErrorMessage(query.error, t('detailLoadFailed'))
     : null;
 
   return {

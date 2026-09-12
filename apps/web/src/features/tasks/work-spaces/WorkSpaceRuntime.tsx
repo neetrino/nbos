@@ -10,6 +10,7 @@ import {
   type SetStateAction,
 } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { KanbanBoard } from '@/components/shared';
 import { TaskMiniCard, TaskListTableView, type TaskBoardAction } from '@/features/tasks/task-board';
@@ -82,6 +83,8 @@ export function WorkSpaceRuntime({
   onLoadMoreTasks,
   loadingMoreTasks = false,
 }: WorkSpaceRuntimeProps) {
+  const t = useTranslations('workSpaces');
+  const tTasks = useTranslations('tasks');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -98,9 +101,9 @@ export function WorkSpaceRuntime({
   const taskTerminalDropZones = useMemo(
     () =>
       buildTerminalDropZonesFromBoard(TASK_BOARD_STAGES, {
-        COMPLETED: 'Completed',
+        COMPLETED: tTasks('status.COMPLETED'),
       }),
-    [],
+    [tTasks],
   );
 
   const controlledBoard = { boardView: boardViewProp, setBoardView: setBoardViewProp };
@@ -214,7 +217,7 @@ export function WorkSpaceRuntime({
         await handleAction(taskId, action);
         setActionError(null);
       } catch (caught) {
-        setActionError(getApiErrorMessage(caught, 'Task action could not be completed.'));
+        setActionError(getApiErrorMessage(caught, t('taskActionFailed')));
       }
     },
     [handleAction],
@@ -279,7 +282,7 @@ export function WorkSpaceRuntime({
             onReorderWithinColumn={handleDeadlineReorder}
             columnQuickCreate={taskQuickCreate}
             columnWidth={240}
-            emptyMessage="No tasks"
+            emptyMessage={tTasks('kanban.empty')}
           />
         </div>
       );
@@ -296,7 +299,7 @@ export function WorkSpaceRuntime({
             onReorderWithinColumn={handleKanbanReorder}
             columnQuickCreate={taskQuickCreate}
             columnWidth={boardScope === 'CLOSED' ? 288 : 270}
-            emptyMessage="No tasks"
+            emptyMessage={tTasks('kanban.empty')}
             terminalDropZones={
               shouldShowTerminalDropBar(boardScope) ? taskTerminalDropZones : undefined
             }
@@ -318,7 +321,7 @@ export function WorkSpaceRuntime({
           onDeleteColumn={handleDeleteMyPlanStage}
           columnQuickCreate={taskQuickCreate}
           columnWidth={270}
-          emptyMessage="No tasks"
+          emptyMessage={tTasks('kanban.empty')}
         />
       </div>
     );

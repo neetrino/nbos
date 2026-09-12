@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,8 @@ export function EditWorkSpaceDialog({
   onOpenChange,
   onUpdated,
 }: EditWorkSpaceDialogProps) {
+  const t = useTranslations('workSpaces');
+  const tCommon = useTranslations('common');
   const [name, setName] = useState(workspace.name);
   const [description, setDescription] = useState(workspace.description ?? '');
   const [saving, setSaving] = useState(false);
@@ -51,7 +54,7 @@ export function EditWorkSpaceDialog({
       onUpdated(updated);
       onOpenChange(false);
     } catch {
-      setError('Work Space metadata could not be updated.');
+      setError(t('edit.failed'));
     } finally {
       setSaving(false);
     }
@@ -61,11 +64,11 @@ export function EditWorkSpaceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit Work Space</DialogTitle>
+          <DialogTitle>{t('edit.title')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="edit-workspace-name">Name *</Label>
+            <Label htmlFor="edit-workspace-name">{t('edit.name')}</Label>
             <Input
               id="edit-workspace-name"
               value={name}
@@ -73,7 +76,7 @@ export function EditWorkSpaceDialog({
             />
           </div>
           <div>
-            <Label htmlFor="edit-workspace-description">Description</Label>
+            <Label htmlFor="edit-workspace-description">{t('edit.description')}</Label>
             <Textarea
               id="edit-workspace-description"
               value={description}
@@ -85,10 +88,10 @@ export function EditWorkSpaceDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button onClick={handleUpdate} disabled={saving || !name.trim()}>
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? tCommon('saving') : t('edit.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

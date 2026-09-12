@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { ArrowUpRight, Plus } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -12,7 +13,7 @@ import {
   StatusBadge,
   ViewModeSwitch,
 } from '@/components/shared';
-import { WORKSPACE_BOARD_VIEW_OPTIONS } from '@/features/tasks/tasks-board-view-segments';
+import { useWorkspaceBoardViewOptions } from '@/features/tasks/tasks-board-view-segments';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { EditWorkSpaceDialog } from '@/features/tasks/work-spaces/EditWorkSpaceDialog';
 import { WorkSpaceDetailSettingsSheet } from '@/features/tasks/work-spaces/WorkSpaceDetailSettingsSheet';
@@ -31,7 +32,7 @@ import {
 } from '@/features/tasks/work-spaces/workspace-area';
 import {
   useWorkspaceRuntimeTaskFilters,
-  WORKSPACE_TASK_FILTER_CONFIGS,
+  useWorkspaceTaskFilterConfigs,
 } from '@/features/tasks/work-spaces/workspace-runtime-task-filters';
 import type { UseProductWorkSpaceTabResult } from '@/features/projects/hooks/use-product-work-space-tab';
 import { SEARCH_FILTER_PAGE_ID } from '@/lib/persisted-client-state';
@@ -54,7 +55,11 @@ export function ProductTasksTab({
   loadingMoreTasks,
   taskMeta,
 }: ProductTasksTabProps) {
+  const t = useTranslations('workSpaces');
+  const tTasks = useTranslations('tasks');
   const { creatorReady, creatorId } = useTaskCreatorId();
+  const taskFilterConfigs = useWorkspaceTaskFilterConfigs();
+  const boardViewOptions = useWorkspaceBoardViewOptions();
   const taskViewFilters = useWorkspaceRuntimeTaskFilters(SEARCH_FILTER_PAGE_ID.productTasks);
   const [editOpen, setEditOpen] = useState(false);
   const [discussionOpen, setDiscussionOpen] = useState(false);
@@ -90,8 +95,8 @@ export function ProductTasksTab({
           <IntegratedSearchFilters
             search={taskViewFilters.search}
             onSearchChange={taskViewFilters.onSearchChange}
-            searchPlaceholder="Search by task, project, product, workspace…"
-            filters={WORKSPACE_TASK_FILTER_CONFIGS}
+            searchPlaceholder={tTasks('searchPlaceholder')}
+            filters={taskFilterConfigs}
             filterValues={taskViewFilters.heroFilterValues}
             onFilterChange={taskViewFilters.onFilterChange}
             onClearAll={taskViewFilters.onClearFilters}
@@ -102,7 +107,7 @@ export function ProductTasksTab({
             <ViewModeSwitch
               value={boardView}
               onChange={handleBoardViewChange}
-              options={WORKSPACE_BOARD_VIEW_OPTIONS}
+              options={boardViewOptions}
             />
           )
         }
@@ -115,7 +120,7 @@ export function ProductTasksTab({
               href={`/work-spaces/${workspace.id}`}
               className={buttonVariants({ variant: 'outline' })}
             >
-              Work Space <ArrowUpRight size={14} aria-hidden />
+              {t('openSpace')} <ArrowUpRight size={14} aria-hidden />
             </Link>
             <WorkSpaceDiscussionTrigger onClick={() => setDiscussionOpen(true)} />
             <WorkSpaceDetailSettingsSheet
@@ -128,17 +133,17 @@ export function ProductTasksTab({
               <Button
                 onClick={() => openQuickCreateRef.current?.()}
                 disabled={newTaskDisabled}
-                title={newTaskDisabled ? 'Employee profile required' : undefined}
+                title={newTaskDisabled ? tTasks('employeeProfileRequired') : undefined}
               >
                 <Plus size={16} aria-hidden />
-                New Task
+                {tTasks('newTask')}
               </Button>
             ) : null}
           </>
         }
         secondaryTabs={
           legacyTaskCount > 0 ? (
-            <StatusBadge label={`${legacyTaskCount} legacy linked`} variant="amber" />
+            <StatusBadge label={t('legacyLinked', { count: legacyTaskCount })} variant="amber" />
           ) : undefined
         }
       />

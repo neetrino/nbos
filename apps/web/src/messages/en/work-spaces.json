@@ -1,0 +1,87 @@
+{
+  "title": "Work Spaces",
+  "openSpace": "Work Space",
+  "typeAria": "Work space type",
+  "searchPlaceholder": "Search by name, project, product…",
+  "createAria": "Create new work space",
+  "createShort": "Space",
+  "context": "Context",
+  "discussion": "Discussion",
+  "filterMode": "Mode",
+  "viewGrid": "Grid",
+  "viewGridAria": "Card grid view",
+  "viewList": "List",
+  "viewListAria": "List view",
+  "tabStandalone": "Standalone ({count})",
+  "tabProduct": "Product ({count})",
+  "tabStandaloneShort": "Standalone",
+  "tabProductShort": "Product",
+  "emptyTitle": "No Work Spaces found",
+  "emptyStandalone": "Try another search or create a standalone space for internal planning.",
+  "emptyProduct": "Product delivery spaces appear when a product has an ensured work space. Open a product from Projects to connect tasks.",
+  "loadFailed": "Work Spaces could not be loaded. Check your connection and try again.",
+  "detailLoadFailed": "Work Space could not be loaded.",
+  "productLoadFailed": "Product could not be loaded.",
+  "taskActionFailed": "Task action could not be completed.",
+  "standaloneContext": "Standalone operational space",
+  "tasksCount": "{count, plural, one {# task} other {# tasks}}",
+  "legacyLinked": "{count} legacy linked",
+  "backToList": "Back to work spaces",
+  "areaAria": "Work space area",
+  "area": {
+    "active": "Active",
+    "planning": "Planning"
+  },
+  "mode": {
+    "scrum": "Scrum",
+    "kanban": "Kanban"
+  },
+  "type": {
+    "PRODUCT_DELIVERY": "Product Delivery",
+    "EXTENSION_DELIVERY": "Legacy Extension Delivery",
+    "STANDALONE_OPERATIONAL": "Standalone"
+  },
+  "table": {
+    "workSpace": "Work space",
+    "type": "Type",
+    "mode": "Mode",
+    "context": "Context",
+    "tasks": "Tasks"
+  },
+  "settings": {
+    "title": "Work Spaces — settings",
+    "description": "Options for this directory. The CSV is built from spaces currently loaded on this page.",
+    "triggerAria": "Work Spaces settings",
+    "exportCsv": "Download visible list (CSV)"
+  },
+  "detailSettings": {
+    "title": "Work space — settings",
+    "description": "Edit this space, manage AI Access, or export the tasks currently loaded on this page as CSV.",
+    "triggerAria": "Work space settings",
+    "edit": "Edit work space",
+    "exportTasks": "Export tasks (CSV)"
+  },
+  "create": {
+    "title": "New Standalone Work Space",
+    "name": "Name *",
+    "namePlaceholder": "Marketing strategy, Finance operations...",
+    "description": "Description",
+    "descriptionPlaceholder": "What process or team does this Work Space organize?",
+    "scrum": "Scrum planning",
+    "scrumHint": "Enable backlog and sprint planning views for this space.",
+    "submit": "Create Work Space",
+    "failed": "Work Space could not be created. Check the fields and try again."
+  },
+  "edit": {
+    "title": "Edit Work Space",
+    "name": "Name *",
+    "description": "Description",
+    "save": "Save Changes",
+    "failed": "Work Space metadata could not be updated."
+  },
+  "scrumEnable": {
+    "label": "Scrum planning",
+    "aria": "Enable Scrum planning",
+    "title": "Backlog, sprint blocks, and drag-and-drop between planning and execution."
+  }
+}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { tasksApi, type WorkSpace, type WorkSpaceListPayload } from '@/lib/api/tasks';
 import {
   WORK_SPACES_PAGE_SIZE,
@@ -35,6 +36,7 @@ const emptyMeta = () => ({
 });
 
 export function useWorkSpacesDirectory() {
+  const t = useTranslations('workSpaces');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -88,11 +90,11 @@ export function useWorkSpacesDirectory() {
       setPayload(data);
       setError(null);
     } catch {
-      setError('Work Spaces could not be loaded. Check your connection and try again.');
+      setError(t('loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [tab, page, debouncedSearch, mode]);
+  }, [tab, page, debouncedSearch, mode, t]);
 
   useEffect(() => {
     void fetchList();

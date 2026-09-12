@@ -9,7 +9,8 @@
     "myPlan": "My Plan",
     "board": "Board",
     "list": "List",
-    "planning": "Planning"
+    "planning": "Planning",
+    "workspacePlan": "Workspace Plan"
   },
   "empty": {
     "noTasks": "No tasks in this view",

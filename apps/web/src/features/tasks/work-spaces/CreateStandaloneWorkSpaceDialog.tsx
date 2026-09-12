@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,8 @@ export function CreateStandaloneWorkSpaceDialog({
   onOpenChange,
   onCreated,
 }: CreateStandaloneWorkSpaceDialogProps) {
+  const t = useTranslations('workSpaces');
+  const tCommon = useTranslations('common');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [scrumEnabled, setScrumEnabled] = useState(false);
@@ -58,7 +61,7 @@ export function CreateStandaloneWorkSpaceDialog({
       onCreated(workspace);
       handleOpenChange(false);
     } catch {
-      setError('Work Space could not be created. Check the fields and try again.');
+      setError(t('create.failed'));
     } finally {
       setSaving(false);
     }
@@ -68,36 +71,34 @@ export function CreateStandaloneWorkSpaceDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>New Standalone Work Space</DialogTitle>
+          <DialogTitle>{t('create.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="workspace-name">Name *</Label>
+            <Label htmlFor="workspace-name">{t('create.name')}</Label>
             <Input
               id="workspace-name"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Marketing strategy, Finance operations..."
+              placeholder={t('create.namePlaceholder')}
               onKeyDown={(event) => event.key === 'Enter' && handleCreate()}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="workspace-description">Description</Label>
+            <Label htmlFor="workspace-description">{t('create.description')}</Label>
             <Textarea
               id="workspace-description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="What process or team does this Work Space organize?"
+              placeholder={t('create.descriptionPlaceholder')}
               rows={3}
             />
           </div>
           <div className="border-border flex items-center justify-between rounded-lg border p-3">
             <div>
-              <p className="text-sm font-medium">Scrum planning</p>
-              <p className="text-muted-foreground text-xs">
-                Enable backlog and sprint planning views for this space.
-              </p>
+              <p className="text-sm font-medium">{t('create.scrum')}</p>
+              <p className="text-muted-foreground text-xs">{t('create.scrumHint')}</p>
             </div>
             <Switch checked={scrumEnabled} onCheckedChange={setScrumEnabled} />
           </div>
@@ -106,10 +107,10 @@ export function CreateStandaloneWorkSpaceDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button onClick={handleCreate} disabled={saving || !name.trim()}>
-            {saving ? 'Creating...' : 'Create Work Space'}
+            {saving ? tCommon('creating') : t('create.submit')}
           </Button>
         </DialogFooter>
       </DialogContent>

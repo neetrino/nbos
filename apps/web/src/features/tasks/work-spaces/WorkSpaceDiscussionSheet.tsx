@@ -1,6 +1,7 @@
 'use client';
 
 import { MessageSquare } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Sheet } from '@/components/ui/sheet';
 import { EntityDetailSheetContent } from '@/components/shared';
@@ -23,6 +24,7 @@ export function WorkSpaceDiscussionSheet({
   workspaceId: string;
   workspaceName: string;
 }) {
+  const t = useTranslations('workSpaces');
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <EntityDetailSheetContent
@@ -36,7 +38,7 @@ export function WorkSpaceDiscussionSheet({
         showRailActions={false}
       >
         <header className="border-border bg-background shrink-0 border-b px-5 pt-4 pb-3">
-          <p className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0.5')}>Discussion</p>
+          <p className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0.5')}>{t('discussion')}</p>
           <h2 className="text-foreground truncate text-lg font-semibold tracking-tight">
             {workspaceName}
           </h2>
@@ -50,10 +52,11 @@ export function WorkSpaceDiscussionSheet({
 }
 
 export function WorkSpaceDiscussionTrigger({ onClick }: { onClick: () => void }) {
+  const t = useTranslations('workSpaces');
   return (
     <Button type="button" variant="outline" onClick={onClick}>
       <MessageSquare size={16} aria-hidden />
-      Discussion
+      {t('discussion')}
     </Button>
   );
 }

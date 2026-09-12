@@ -7,6 +7,7 @@ import enForms from '../messages/en/forms.json';
 import enHr from '../messages/en/hr.json';
 import enNavigation from '../messages/en/navigation.json';
 import enNotifications from '../messages/en/notifications.json';
+import enWorkSpaces from '../messages/en/work-spaces.json';
 import enSearch from '../messages/en/search.json';
 import enTasks from '../messages/en/tasks.json';
 import ruAccount from '../messages/ru/account.json';
@@ -17,6 +18,7 @@ import ruForms from '../messages/ru/forms.json';
 import ruHr from '../messages/ru/hr.json';
 import ruNavigation from '../messages/ru/navigation.json';
 import ruNotifications from '../messages/ru/notifications.json';
+import ruWorkSpaces from '../messages/ru/work-spaces.json';
 import ruSearch from '../messages/ru/search.json';
 import ruTasks from '../messages/ru/tasks.json';
 import { flattenMessageKeys } from './flatten-messages';
@@ -40,6 +42,7 @@ describe('completed i18n catalogs', () => {
     expect(flattenMessageKeys(enNotifications).sort()).toEqual(
       flattenMessageKeys(ruNotifications).sort(),
     );
+    expect(flattenMessageKeys(enWorkSpaces).sort()).toEqual(flattenMessageKeys(ruWorkSpaces).sort());
   });
 
   it('falls back to English when a Russian string is missing', () => {
@@ -98,5 +101,13 @@ describe('completed i18n catalogs', () => {
     expect(ruTasks.recurring.itemPlaceholder).toContain('{n}');
     expect(enTasks.recurring.createdDue).toContain('count');
     expect(ruTasks.recurring.createdDue).toContain('count');
+    expect(enWorkSpaces.tabStandalone).toContain('{count}');
+    expect(ruWorkSpaces.tabStandalone).toContain('{count}');
+    expect(enWorkSpaces.tabProduct).toContain('{count}');
+    expect(ruWorkSpaces.tabProduct).toContain('{count}');
+    expect(enWorkSpaces.tasksCount).toContain('count');
+    expect(ruWorkSpaces.tasksCount).toContain('count');
+    expect(enWorkSpaces.legacyLinked).toContain('{count}');
+    expect(ruWorkSpaces.legacyLinked).toContain('{count}');
   });
 });
