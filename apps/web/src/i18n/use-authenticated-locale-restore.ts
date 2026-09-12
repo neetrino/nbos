@@ -33,7 +33,7 @@ export function useAuthenticatedLocaleRestore(
     void getMyInterfaceLocale()
       .then((preference) => {
         if (cancelled) return;
-        writeLocaleCookie(preference.interfaceLocale, userId);
+        writeLocaleCookie(preference.interfaceLocale);
         if (preference.interfaceLocale !== localeRef.current) {
           router.refresh();
         }

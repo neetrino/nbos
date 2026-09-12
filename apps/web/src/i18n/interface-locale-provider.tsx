@@ -10,7 +10,6 @@ import {
   type ReactNode,
 } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import { NextIntlClientProvider, type AbstractIntlMessages } from 'next-intl';
 import type { WritableInterfaceLocale } from '@nbos/shared';
 import { patchMyInterfaceLocale } from '@/lib/api/me-preferences';
@@ -45,7 +44,6 @@ export function InterfaceLocaleProvider({
   initialMessages: AbstractIntlMessages;
 }) {
   const router = useRouter();
-  const { data: session } = useSession();
   const [locale, setLocale] = useState(initialLocale);
   const [messages, setMessages] = useState(initialMessages);
   const [saving, setSaving] = useState(false);
@@ -65,7 +63,7 @@ export function InterfaceLocaleProvider({
       try {
         const saved = await patchMyInterfaceLocale(next);
         if (requestId !== requestIdRef.current) return;
-        writeLocaleCookie(saved.interfaceLocale, session?.user?.id);
+        writeLocaleCookie(saved.interfaceLocale);
         router.refresh();
       } finally {
         if (requestId === requestIdRef.current) {
@@ -73,13 +71,10 @@ export function InterfaceLocaleProvider({
         }
       }
     },
-    [router, session?.user?.id],
+    [router],
   );
 
-  const value = useMemo(
-    () => ({ locale, saving, changeLocale }),
-    [locale, saving, changeLocale],
-  );
+  const value = useMemo(() => ({ locale, saving, changeLocale }), [locale, saving, changeLocale]);
 
   return (
     <InterfaceLocaleContext.Provider value={value}>

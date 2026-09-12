@@ -1,32 +1,25 @@
 import { isWritableInterfaceLocale, type WritableInterfaceLocale } from '@nbos/shared';
-import {
-  INTERFACE_LOCALE_COOKIE,
-  INTERFACE_LOCALE_COOKIE_MAX_AGE_SECONDS,
-  INTERFACE_LOCALE_OWNER_COOKIE,
-} from './constants';
+import { INTERFACE_LOCALE_COOKIE, INTERFACE_LOCALE_COOKIE_MAX_AGE_SECONDS } from './constants';
 
-export function parseLocaleCookieValue(value: string | undefined | null): WritableInterfaceLocale | undefined {
+/** Removed owner-binding cookie; expire leftovers on write/logout. */
+const LEGACY_INTERFACE_LOCALE_OWNER_COOKIE = 'nbos-interface-locale-owner';
+
+export function parseLocaleCookieValue(
+  value: string | undefined | null,
+): WritableInterfaceLocale | undefined {
   return isWritableInterfaceLocale(value) ? value : undefined;
 }
 
-export function parseLocaleOwnerCookieValue(value: string | undefined | null): string | undefined {
-  if (typeof value !== 'string') return undefined;
-  const owner = value.trim();
-  return owner.length > 0 ? owner : undefined;
-}
-
-export function writeLocaleCookie(locale: WritableInterfaceLocale, ownerUserId?: string): void {
+export function writeLocaleCookie(locale: WritableInterfaceLocale): void {
   if (typeof document === 'undefined') return;
   document.cookie = serializeBrowserCookie(INTERFACE_LOCALE_COOKIE, locale);
-  if (ownerUserId?.trim()) {
-    document.cookie = serializeBrowserCookie(INTERFACE_LOCALE_OWNER_COOKIE, ownerUserId.trim());
-  }
+  document.cookie = expireBrowserCookie(LEGACY_INTERFACE_LOCALE_OWNER_COOKIE);
 }
 
 export function clearLocaleCookie(): void {
   if (typeof document === 'undefined') return;
   document.cookie = expireBrowserCookie(INTERFACE_LOCALE_COOKIE);
-  document.cookie = expireBrowserCookie(INTERFACE_LOCALE_OWNER_COOKIE);
+  document.cookie = expireBrowserCookie(LEGACY_INTERFACE_LOCALE_OWNER_COOKIE);
 }
 
 function serializeBrowserCookie(name: string, value: string): string {

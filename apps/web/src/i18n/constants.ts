@@ -5,7 +5,6 @@ import {
 } from '@nbos/shared';
 
 export const INTERFACE_LOCALE_COOKIE = 'nbos-interface-locale';
-export const INTERFACE_LOCALE_OWNER_COOKIE = 'nbos-interface-locale-owner';
 export const INTERFACE_LOCALE_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 export const INTERFACE_TIME_ZONE = 'Asia/Yerevan';
 
