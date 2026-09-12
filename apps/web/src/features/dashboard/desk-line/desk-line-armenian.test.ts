@@ -37,13 +37,16 @@ function render(locale: 'en' | 'ru'): string {
     },
   };
   return renderToStaticMarkup(
-    createElement(NextIntlClientProvider, {
-      locale,
-      timeZone: 'Asia/Yerevan',
-      // A stale locale overlay must never replace the Armenian card.
-      messages: messages as never,
-      children: createElement(DashboardDeskHeader),
-    }),
+    createElement(
+      NextIntlClientProvider,
+      {
+        locale,
+        timeZone: 'Asia/Yerevan',
+        // A stale locale overlay must never replace the Armenian card.
+        messages: messages as never,
+      },
+      createElement(DashboardDeskHeader),
+    ),
   );
 }
 
