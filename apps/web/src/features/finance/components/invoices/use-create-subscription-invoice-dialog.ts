@@ -1,4 +1,7 @@
+'use client';
+
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import type { Invoice } from '@/lib/api/finance';
@@ -28,11 +31,14 @@ export function useCreateSubscriptionInvoiceDialog({
   subscription: subscriptionProp,
   subscriptionId,
 }: CreateSubscriptionInvoiceDialogProps) {
+  const t = useTranslations('invoices');
   const state = usePeriodInvoiceDialogState(subscriptionProp ?? null);
   useHydrateSubscriptionInvoiceDialog({
     open,
     subscriptionProp: subscriptionProp ?? null,
     subscriptionId,
+    subscriptionRequired: t('createSubscription.required'),
+    loadFailed: t('create.loadSubscriptionError'),
     ...state,
   });
   const selection = resolvePeriodInvoiceSelection(state.subscription, state.coverageMonths);
@@ -58,6 +64,9 @@ export function useCreateSubscriptionInvoiceDialog({
       canSubmit: selection.canSubmit,
       onCreated,
       onOpenChange,
+      createErrorFallback: t('create.createError'),
+      createdOne: (code) => t('createSubscription.createdOne', { code }),
+      createdMany: (count) => t('createSubscription.createdMany', { count }),
     }),
   };
 }
@@ -121,6 +130,8 @@ function useHydrateSubscriptionInvoiceDialog(args: {
   open: boolean;
   subscriptionProp: Subscription | null;
   subscriptionId?: string | null;
+  subscriptionRequired: string;
+  loadFailed: string;
   submittingRef: { current: boolean };
   setSubscription: (value: Subscription | null) => void;
   setCoverageMonths: (value: string[]) => void;
@@ -141,6 +152,8 @@ function useHydrateSubscriptionInvoiceDialog(args: {
     void hydrateDialogSubscription({
       subscriptionProp,
       subscriptionId,
+      subscriptionRequired: args.subscriptionRequired,
+      loadFailed: args.loadFailed,
       onStart: () => {
         args.setLoading(true);
         args.setLoadError(null);
@@ -159,7 +172,13 @@ function useHydrateSubscriptionInvoiceDialog(args: {
     };
     // Re-hydrate when the dialog opens or the target subscription changes, not on object identity.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, subscriptionId, subscriptionProp?.id]);
+  }, [
+    open,
+    subscriptionId,
+    subscriptionProp?.id,
+    args.subscriptionRequired,
+    args.loadFailed,
+  ]);
 }
 
 function pickDefaultMonths(subscription: Subscription | null): string[] {
@@ -174,6 +193,8 @@ function pickDefaultMonths(subscription: Subscription | null): string[] {
 async function hydrateDialogSubscription(args: {
   subscriptionProp: Subscription | null;
   subscriptionId?: string | null;
+  subscriptionRequired: string;
+  loadFailed: string;
   onStart: () => void;
   onDone: (subscription: Subscription | null, loadError: string | null) => void;
 }): Promise<void> {
@@ -183,14 +204,14 @@ async function hydrateDialogSubscription(args: {
   }
   const id = args.subscriptionId?.trim();
   if (!id) {
-    args.onDone(null, 'Subscription is required.');
+    args.onDone(null, args.subscriptionRequired);
     return;
   }
   args.onStart();
   try {
     args.onDone(await subscriptionsApi.getById(id), null);
   } catch (caught) {
-    args.onDone(null, getApiErrorMessage(caught, 'Subscription could not be loaded.'));
+    args.onDone(null, getApiErrorMessage(caught, args.loadFailed));
   }
 }
 
@@ -203,6 +224,9 @@ type PeriodInvoiceSubmitArgs = {
   submittingRef: { current: boolean };
   setSubmitting: (value: boolean) => void;
   setError: (value: string | null) => void;
+  createErrorFallback: string;
+  createdOne: (code: string) => string;
+  createdMany: (count: number) => string;
 };
 
 function bindPeriodInvoiceSubmit(args: PeriodInvoiceSubmitArgs) {
@@ -222,20 +246,24 @@ async function submitSubscriptionPeriodInvoice(
     const created = await subscriptionsApi.createInvoice(args.subscription.id, {
       coverageMonths: args.coverageMonths,
     });
-    toast.success(periodInvoiceCreatedToast(created));
+    toast.success(periodInvoiceCreatedToast(created, args.createdOne, args.createdMany));
     await args.onCreated(created);
     args.onOpenChange(false);
   } catch (caught) {
-    args.setError(getApiErrorMessage(caught, 'Invoice could not be created.'));
+    args.setError(getApiErrorMessage(caught, args.createErrorFallback));
   } finally {
     args.submittingRef.current = false;
     args.setSubmitting(false);
   }
 }
 
-function periodInvoiceCreatedToast(invoices: readonly Invoice[]): string {
+function periodInvoiceCreatedToast(
+  invoices: readonly Invoice[],
+  createdOne: (code: string) => string,
+  createdMany: (count: number) => string,
+): string {
   if (invoices.length === 1) {
-    return `Invoice ${invoices[0]?.code ?? ''} created`;
+    return createdOne(invoices[0]?.code ?? '');
   }
-  return `${invoices.length} invoices created`;
+  return createdMany(invoices.length);
 }

@@ -1,15 +1,20 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { PipelineStagesBar } from '@/components/shared';
 import { toSheetPipelineStages } from '@/components/shared/pipeline-stage-config';
+import {
+  INVOICE_STAGE_MESSAGE_KEYS,
+  INVOICE_STAGE_SHORT_MESSAGE_KEYS,
+} from './invoice-message-keys';
 
-const INVOICE_PIPELINE_MONEY_STAGES = [
-  { key: 'NEW', label: 'New', shortLabel: 'New' },
-  { key: 'AWAITING_PAYMENT', label: 'Awaiting payment', shortLabel: 'Awaiting' },
-  { key: 'OVERDUE', label: 'Overdue', shortLabel: 'Overdue' },
-  { key: 'ON_HOLD', label: 'On hold', shortLabel: 'Hold' },
-  { key: 'CANCELLED', label: 'Cancelled', shortLabel: 'Cancelled' },
-  { key: 'PAID', label: 'Paid', shortLabel: 'Paid' },
+const INVOICE_PIPELINE_STAGE_KEYS = [
+  'NEW',
+  'AWAITING_PAYMENT',
+  'OVERDUE',
+  'ON_HOLD',
+  'CANCELLED',
+  'PAID',
 ] as const;
 
 const STAGE_HEX: Record<string, string> = {
@@ -20,8 +25,6 @@ const STAGE_HEX: Record<string, string> = {
   PAID: '#22c55e',
   CANCELLED: '#ef4444',
 };
-
-const SHEET_STAGES = toSheetPipelineStages(INVOICE_PIPELINE_MONEY_STAGES);
 
 /** Slight open gap between chevrons (same rhythm as expense sheet pipeline). */
 const INVOICE_PIPELINE_SEGMENT_GAP_PX = 4;
@@ -37,9 +40,18 @@ export function InvoiceMoneyStagesBar({
   disabled = false,
   onStageClick,
 }: InvoiceMoneyStagesBarProps) {
+  const t = useTranslations('invoices');
+  const stages = toSheetPipelineStages(
+    INVOICE_PIPELINE_STAGE_KEYS.map((key) => ({
+      key,
+      label: t(INVOICE_STAGE_MESSAGE_KEYS[key]),
+      shortLabel: t(INVOICE_STAGE_SHORT_MESSAGE_KEYS[key]),
+    })),
+  );
+
   return (
     <PipelineStagesBar
-      stages={SHEET_STAGES}
+      stages={stages}
       stageColors={STAGE_HEX}
       currentStatus={currentStatus}
       fillToEndStatuses={['PAID']}

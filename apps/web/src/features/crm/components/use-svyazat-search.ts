@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
 import { contactsApi } from '@/lib/api/clients';
 import { dealsApi } from '@/lib/api/deals';
@@ -33,6 +34,7 @@ export function useSvyazatEntitySearch(
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations('crm');
   const debouncedQuery = useDebouncedValue(query, SEARCH_DEBOUNCE_MS).trim();
 
   useEffect(() => {
@@ -51,7 +53,7 @@ export function useSvyazatEntitySearch(
         const next = await loadSvyazatHits(kind, debouncedQuery, excludeLeadId);
         if (!cancelled) setHits(next);
       } catch (err) {
-        if (!cancelled) setError(getApiErrorMessage(err, 'Could not search.'));
+        if (!cancelled) setError(getApiErrorMessage(err, t('svyazat.searchError')));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -60,7 +62,7 @@ export function useSvyazatEntitySearch(
     return () => {
       cancelled = true;
     };
-  }, [open, kind, debouncedQuery, excludeLeadId]);
+  }, [open, kind, debouncedQuery, excludeLeadId, t]);
 
   return { query, setQuery, hits, selectedId, setSelectedId, loading, error, setError };
 }

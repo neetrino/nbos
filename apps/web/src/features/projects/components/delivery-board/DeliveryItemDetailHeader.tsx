@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Box, Check, ExternalLink, LoaderCircle, Puzzle } from 'lucide-react';
 import {
   DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
@@ -29,13 +30,15 @@ export function DeliveryItemDetailHeader({
   loading,
   onCommitTitle,
 }: DeliveryItemDetailHeaderProps) {
+  const t = useTranslations('deliveryBoard');
   const router = useRouter();
   const isMobileViewport = useIsMobileViewport();
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const [savingName, setSavingName] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const entityLabel = entityKind === 'PRODUCT' ? 'Product' : 'Extension';
+  const entityLabel =
+    entityKind === 'PRODUCT' ? t('kindLabel.product') : t('kindLabel.extension');
   const EntityIcon = entityKind === 'PRODUCT' ? Box : Puzzle;
   const entityColorClass =
     entityKind === 'PRODUCT'
@@ -102,7 +105,7 @@ export function DeliveryItemDetailHeader({
       <DetailSheetSettingsMenu>
         <DropdownMenuItem onClick={() => router.push(workspaceHref)}>
           <ExternalLink />
-          Open workspace
+          {t('sheet.openWorkspace')}
         </DropdownMenuItem>
       </DetailSheetSettingsMenu>
     ) : null;
@@ -130,7 +133,7 @@ export function DeliveryItemDetailHeader({
             onChange={(e) => setNameValue(e.target.value)}
             onBlur={() => void saveName()}
             onKeyDown={handleNameKeyDown}
-            placeholder="Name…"
+            placeholder={t('sheet.namePlaceholder')}
             disabled={savingName}
             className="border-primary text-foreground placeholder:text-muted-foreground/70 max-w-full min-w-0 flex-1 border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none disabled:cursor-wait disabled:opacity-70"
           />
@@ -142,8 +145,8 @@ export function DeliveryItemDetailHeader({
             disabled={savingName}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => void saveName()}
-            aria-label="Save name"
-            title="Save name"
+            aria-label={t('sheet.saveName')}
+            title={t('sheet.saveName')}
           >
             {savingName ? (
               <LoaderCircle className="size-4 animate-spin" />
@@ -160,7 +163,7 @@ export function DeliveryItemDetailHeader({
             isMobileViewport ? 'line-clamp-2 leading-snug break-words' : 'truncate',
             loading ? 'cursor-default' : 'hover:bg-stone-100 dark:hover:bg-stone-800',
           )}
-          title={loading ? undefined : 'Click to edit name'}
+          title={loading ? undefined : t('sheet.editNameTitle')}
         >
           {loading && !title.trim() ? '…' : title}
         </h2>
@@ -198,7 +201,7 @@ export function DeliveryItemDetailHeader({
               onChange={(e) => setNameValue(e.target.value)}
               onBlur={() => void saveName()}
               onKeyDown={handleNameKeyDown}
-              placeholder="Name…"
+              placeholder={t('sheet.namePlaceholder')}
               disabled={savingName}
               className="border-primary text-foreground placeholder:text-muted-foreground/70 max-w-full min-w-0 flex-1 border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none disabled:cursor-wait disabled:opacity-70"
             />
@@ -210,8 +213,8 @@ export function DeliveryItemDetailHeader({
               disabled={savingName}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => void saveName()}
-              aria-label="Save name"
-              title="Save name"
+              aria-label={t('sheet.saveName')}
+              title={t('sheet.saveName')}
             >
               {savingName ? (
                 <LoaderCircle className="size-4 animate-spin" />
@@ -227,7 +230,7 @@ export function DeliveryItemDetailHeader({
               'text-foreground -mx-1 min-w-0 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors',
               loading ? 'cursor-default' : 'hover:bg-stone-100 dark:hover:bg-stone-800',
             )}
-            title={loading ? undefined : 'Click to edit name'}
+            title={loading ? undefined : t('sheet.editNameTitle')}
           >
             {loading && !title.trim() ? '…' : title}
           </h2>

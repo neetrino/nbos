@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,7 +16,6 @@ import { leadsApi, type Lead } from '@/lib/api/leads';
 import { LeadMergeDialog } from './LeadMergeDialog';
 import { LeadSvyazatAttachWorkDialog } from './LeadSvyazatAttachWorkDialog';
 import { LeadSvyazatSearchDialog } from './LeadSvyazatSearchDialog';
-import { LEAD_SVYAZAT_LABELS } from './lead-svyazat-labels';
 import type { SvyazatMenuMode } from './lead-svyazat-menu-items';
 import { useSvyazatEntitySearch } from './use-svyazat-search';
 
@@ -40,11 +40,12 @@ type SvyazatRun = (
 ) => Promise<void>;
 
 export function LeadSvyazatDialogs(props: LeadSvyazatDialogsProps) {
+  const t = useTranslations('crm');
   const close = () => {
     props.setMode(null);
     props.onConsumedInitialAbsorbed?.();
   };
-  const run = createSvyazatRun(props, close);
+  const run = createSvyazatRun(props, close, t('svyazat.completeError'));
 
   return (
     <>
@@ -73,6 +74,7 @@ export function LeadSvyazatDialogs(props: LeadSvyazatDialogsProps) {
 function createSvyazatRun(
   props: Pick<LeadSvyazatDialogsProps, 'setApplying' | 'onTrashed' | 'onUpdated'>,
   close: () => void,
+  completeError: string,
 ): SvyazatRun {
   return async (work, trashedMessage, keptMessage) => {
     props.setApplying(true);
@@ -87,7 +89,7 @@ function createSvyazatRun(
       }
       close();
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Could not complete Связать.'));
+      toast.error(getApiErrorMessage(err, completeError));
     } finally {
       props.setApplying(false);
     }
@@ -102,6 +104,7 @@ function SvyazatActionDialogs(props: {
   close: () => void;
   run: SvyazatRun;
 }) {
+  const t = useTranslations('crm');
   return (
     <>
       <PourContactDialog
@@ -118,8 +121,8 @@ function SvyazatActionDialogs(props: {
         onApply={() =>
           void props.run(
             () => leadsApi.createContact(props.leadId),
-            'Contact created.',
-            'Contact saved. Lead kept.',
+            t('svyazat.contactCreated'),
+            t('svyazat.contactSavedLeadKept'),
           )
         }
       />
@@ -131,8 +134,8 @@ function SvyazatActionDialogs(props: {
         onApply={(attach) =>
           void props.run(
             () => leadsApi.createContact(props.leadId, { attach }),
-            'Contact added to work. Lead moved to Trash.',
-            'Contact added to work.',
+            t('svyazat.contactAddedToWorkTrashed'),
+            t('svyazat.contactAddedToWork'),
           )
         }
       />
@@ -147,14 +150,15 @@ function PourContactDialog(props: {
   onOpenChange: (open: boolean) => void;
   onRun: (work: () => Promise<Lead>, trashedMessage: string, keptMessage: string) => Promise<void>;
 }) {
+  const t = useTranslations('crm');
   const pour = useSvyazatEntitySearch(props.open, 'contact');
   return (
     <LeadSvyazatSearchDialog
       open={props.open}
-      title={LEAD_SVYAZAT_LABELS.pourTitle}
-      description={LEAD_SVYAZAT_LABELS.pourHint}
-      searchLabel={LEAD_SVYAZAT_LABELS.searchContact}
-      placeholder="Name, phone, email…"
+      title={t('svyazat.pourTitle')}
+      description={t('svyazat.pourHint')}
+      searchLabel={t('svyazat.searchContact')}
+      placeholder={t('svyazat.searchPlaceholder')}
       query={pour.query}
       hits={pour.hits}
       selectedId={pour.selectedId}
@@ -167,8 +171,8 @@ function PourContactDialog(props: {
         if (!pour.selectedId) return;
         void props.onRun(
           () => leadsApi.pourIntoContact(props.leadId, { contactId: pour.selectedId as string }),
-          'Lead poured into Contact and moved to Trash.',
-          'Lead poured into Contact.',
+          t('svyazat.pouredTrashed'),
+          t('svyazat.pouredKept'),
         );
       }}
     />
@@ -181,19 +185,21 @@ function CreateContactConfirmDialog(props: {
   onOpenChange: (open: boolean) => void;
   onApply: () => void;
 }) {
+  const t = useTranslations('crm');
+  const tCommon = useTranslations('common');
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent className="sm:max-w-[440px]" forceNestedBackdrop>
         <DialogHeader>
-          <DialogTitle>{LEAD_SVYAZAT_LABELS.createContactTitle}</DialogTitle>
-          <DialogDescription>{LEAD_SVYAZAT_LABELS.createContactBody}</DialogDescription>
+          <DialogTitle>{t('svyazat.createContactTitle')}</DialogTitle>
+          <DialogDescription>{t('svyazat.createContactBody')}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => props.onOpenChange(false)}>
-            {LEAD_SVYAZAT_LABELS.cancel}
+            {tCommon('cancel')}
           </Button>
           <Button type="button" disabled={props.applying} onClick={props.onApply}>
-            {LEAD_SVYAZAT_LABELS.createContactApply}
+            {t('svyazat.createContactApply')}
           </Button>
         </DialogFooter>
       </DialogContent>

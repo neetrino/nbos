@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import type { FilterConfig } from '@/components/shared';
 import {
   DELIVERY_BOARD_KIND_FILTER_CONFIG,
@@ -12,29 +13,38 @@ import type {
 } from './delivery-board-active-filters';
 import type { DeliveryBoardKindFilter } from './project-delivery-board-model';
 
-const WORK_STATUS_OPTIONS: FilterConfig['options'] = [
-  { value: 'ACTIVE', label: 'In progress' },
-  { value: 'ON_HOLD', label: 'On hold' },
-];
-
 export function useDeliveryBoardActiveHeroFilterConfigs(
   options: ActiveFilterOptions,
 ): FilterConfig[] {
+  const t = useTranslations('deliveryBoard');
   return useMemo(
     () => [
-      DELIVERY_BOARD_KIND_FILTER_CONFIG,
+      {
+        ...DELIVERY_BOARD_KIND_FILTER_CONFIG,
+        label: t('kind.filterLabel'),
+        allOptionLabel: t('kind.allOption'),
+        options: [
+          { value: 'PRODUCT', label: t('kind.products') },
+          { value: 'EXTENSION', label: t('kind.extensions') },
+        ],
+      },
       {
         key: 'owner',
-        label: 'Owner',
+        label: t('filters.owner'),
+        allOptionLabel: t('filters.allOwner'),
         options: options.owners.map((o) => ({ value: o.id, label: o.label })),
       },
       {
         key: 'workStatus',
-        label: 'Status',
-        options: WORK_STATUS_OPTIONS,
+        label: t('filters.status'),
+        allOptionLabel: t('filters.allStatus'),
+        options: [
+          { value: 'ACTIVE', label: t('filters.inProgress') },
+          { value: 'ON_HOLD', label: t('filters.onHold') },
+        ],
       },
     ],
-    [options],
+    [options, t],
   );
 }
 

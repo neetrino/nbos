@@ -2,14 +2,15 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { ErrorState } from '@/components/shared';
 import { PayrollRunDetailPageContent } from '@/features/finance/components/payroll/PayrollRunDetailPageContent';
-import { payrollRunDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { payrollRunsApi, type PayrollRunDetail } from '@/lib/api/payroll-runs';
 
 export default function PayrollRunDetailPage() {
+  const t = useTranslations('payroll');
   const params = useParams();
   const id = typeof params.id === 'string' ? params.id : '';
 
@@ -17,7 +18,11 @@ export default function PayrollRunDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useFinanceDocumentTitle(payrollRunDetailPageTitle(run?.payrollMonth));
+  useFinanceDocumentTitle(
+    run?.payrollMonth
+      ? t('detail.pageTitleMonth', { month: run.payrollMonth })
+      : t('detail.pageTitle'),
+  );
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -37,7 +42,7 @@ export default function PayrollRunDetailPage() {
       } catch (caught) {
         if (cancelled) return;
         setRun(null);
-        setError(getApiErrorMessage(caught, 'Payroll run could not be loaded.'));
+        setError(getApiErrorMessage(caught, t('detail.loadError')));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -46,10 +51,10 @@ export default function PayrollRunDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [id, load]);
+  }, [id, load, t]);
 
   if (!id) {
-    return <ErrorState description="Invalid payroll run." />;
+    return <ErrorState description={t('detail.invalid')} />;
   }
 
   return (

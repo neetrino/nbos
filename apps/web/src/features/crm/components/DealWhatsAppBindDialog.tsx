@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -28,6 +29,8 @@ export function DealWhatsAppBindDialog({
   onOpenChange,
   onSubmit,
 }: DealWhatsAppBindDialogProps) {
+  const t = useTranslations('crm');
+  const tCommon = useTranslations('common');
   const [search, setSearch] = useState('');
   const bindId = resolveDealWhatsAppBindId(search);
 
@@ -44,10 +47,10 @@ export function DealWhatsAppBindDialog({
         className="min-w-0 [grid-template-columns:minmax(0,1fr)] sm:max-w-md"
       >
         <DialogHeader>
-          <DialogTitle>Bind existing WhatsApp group</DialogTitle>
+          <DialogTitle>{t('dealSheet.whatsapp.bindTitle')}</DialogTitle>
         </DialogHeader>
         <div className="min-w-0 space-y-1.5">
-          <Label htmlFor="wa-directory-search">Find existing group</Label>
+          <Label htmlFor="wa-directory-search">{t('dealSheet.whatsapp.findGroup')}</Label>
           <WhatsAppGroupSearchPicker
             dealId={dealId}
             open={open}
@@ -60,7 +63,7 @@ export function DealWhatsAppBindDialog({
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
@@ -70,7 +73,7 @@ export function DealWhatsAppBindDialog({
               void onSubmit(bindId);
             }}
           >
-            Bind group
+            {t('dealSheet.whatsapp.bindGroup')}
           </Button>
         </DialogFooter>
       </DialogContent>

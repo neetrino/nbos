@@ -1,6 +1,7 @@
 'use client';
 
 import { FileText, Trash2, XCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DetailSheetSettingsMenu } from '@/components/shared';
 import {
@@ -29,13 +30,14 @@ export function InvoiceSheetHeader({
   saving,
   onLifecycleOpen,
 }: InvoiceSheetHeaderProps) {
+  const t = useTranslations('invoices');
   const isMobileViewport = useIsMobileViewport();
   const subtitle = getInvoiceDisplaySubtitle(invoice);
   const settingsMenu = lifecycleMode ? (
     <DetailSheetSettingsMenu>
       <DropdownMenuItem variant="destructive" disabled={saving} onClick={onLifecycleOpen}>
         {lifecycleMode === 'delete' ? <Trash2 /> : <XCircle />}
-        {lifecycleMode === 'delete' ? 'Delete invoice' : 'Cancel invoice'}
+        {lifecycleMode === 'delete' ? t('sheet.deleteInvoice') : t('sheet.cancelInvoice')}
       </DropdownMenuItem>
     </DetailSheetSettingsMenu>
   ) : null;

@@ -1,0 +1,212 @@
+{
+  "list": {
+    "pageTitle": "Ведомости",
+    "searchPlaceholder": "Фильтр ведомостей…",
+    "payNow": "Выплатить",
+    "newRun": "Новая ведомость",
+    "loadError": "Не удалось загрузить ведомости.",
+    "emptyTitle": "В этой выборке нет ведомостей",
+    "emptyDescription": "Создайте ведомость за календарный месяц. Строки оклада можно заполнить из базовых окладов сотрудников.",
+    "emptyStatus": "Нет ведомостей со статусом «{status}». Смените фильтр или создайте новую ведомость."
+  },
+  "view": {
+    "list": "Список",
+    "board": "Доска",
+    "calendar": "Календарь",
+    "listAria": "Таблица ведомостей",
+    "boardAria": "Канбан по статусу ведомости",
+    "calendarAria": "Сетка год × месяц"
+  },
+  "filters": {
+    "status": "Статус",
+    "monthFrom": "Месяц с",
+    "monthTo": "Месяц по",
+    "allStatus": "Все статусы",
+    "allMonths": "Все месяцы"
+  },
+  "status": {
+    "DRAFT": "Черновик",
+    "REVIEW": "Проверка",
+    "APPROVED": "Утверждена",
+    "PAYING": "Выплата",
+    "CLOSED": "Закрыта"
+  },
+  "actions": {
+    "sendToReview": "На проверку",
+    "approve": "Утвердить",
+    "returnToDraft": "Вернуть в черновик",
+    "markPaying": "К выплате",
+    "closeRun": "Закрыть ведомость"
+  },
+  "table": {
+    "month": "Месяц",
+    "status": "Статус",
+    "progress": "Прогресс",
+    "lines": "Строки",
+    "expenseCards": "Карточки расходов",
+    "totalPayable": "Сумма к выплате",
+    "paid": "Оплачено",
+    "remaining": "Остаток",
+    "totalRuns": "Итого ({count, plural, one {# ведомость} few {# ведомости} many {# ведомостей} other {# ведомости}})",
+    "openAria": "Открыть ведомость за {month}"
+  },
+  "board": {
+    "payable": "{amount} к выплате",
+    "noRuns": "Нет ведомостей",
+    "laneMeta": "{count} · {amount} к выплате",
+    "openAria": "Открыть ведомость {month}",
+    "cards": "Карточки"
+  },
+  "calendar": {
+    "year": "Год",
+    "cellAria": "{status} ведомость {amount}"
+  },
+  "progress": {
+    "paidAria": "{pct}% оплачено"
+  },
+  "create": {
+    "title": "Новая ведомость",
+    "monthLabel": "Месяц расчёта (YYYY-MM)",
+    "monthAria": "Месяц расчёта",
+    "seedLines": "Создать строки оклада из активных сотрудников (текущий базовый оклад)",
+    "createError": "Не удалось создать ведомость."
+  },
+  "settings": {
+    "title": "Ведомости — настройки",
+    "description": "Обновить список и выгрузить CSV по текущим фильтрам.",
+    "aria": "Настройки ведомостей",
+    "refresh": "Обновить ведомости",
+    "exportStats": "Выгрузить сводку (CSV)",
+    "exportRuns": "Выгрузить ведомости (CSV)"
+  },
+  "detail": {
+    "pageTitle": "Ведомость",
+    "pageTitleMonth": "Ведомость · {month}",
+    "title": "Ведомость",
+    "backAria": "Назад к списку ведомостей",
+    "back": "К ведомостям",
+    "loadError": "Не удалось загрузить ведомость.",
+    "invalid": "Некорректная ведомость.",
+    "notFound": "Не найдено",
+    "statusUpdateError": "Не удалось обновить статус.",
+    "searchSalaryLines": "Поиск сотрудника…",
+    "searchBonusHistory": "Поиск проекта…",
+    "searchMatrix": "Поиск проекта, заказа или сотрудника…",
+    "viewAria": "Вид ведомости",
+    "fullscreenAria": "Открыть матрицу на весь экран",
+    "exitFullscreenAria": "Выйти из полного экрана",
+    "expenseHint": "Карточки расходов появляются после утверждения.",
+    "payNowLink": "Выплатить · оклад",
+    "settingsTitle": "Ведомость — настройки",
+    "settingsDescription": "Обновить данные, сбросить макет матрицы и выгрузить файлы ведомости.",
+    "settingsAria": "Настройки ведомости",
+    "refresh": "Обновить ведомость",
+    "resetLayout": "Сбросить макет матрицы",
+    "exportLines": "Выгрузить строки оклада (CSV)",
+    "exportJournal": "Выгрузить журнал ведомости (CSV)",
+    "exportAudit": "Выгрузить журнал аудита (CSV)"
+  },
+  "detailView": {
+    "salaryLines": "Строки оклада",
+    "salaryLinesAria": "Строки оклада сотрудников в этой ведомости",
+    "employeeMatrix": "Сотрудник × заказ",
+    "employeeMatrixAria": "Сотрудники в строках, заказы в колонках",
+    "orderMatrix": "Заказ × сотрудники",
+    "orderMatrixAria": "Заказы в строках, сотрудники в колонках",
+    "employeeHistory": "История сотрудника",
+    "employeeHistoryAria": "Проекты сотрудника за последние двенадцать месяцев расчёта"
+  },
+  "salaryLines": {
+    "empty": "В этой ведомости нет строк оклада.",
+    "noMatch": "Нет сотрудников по этому поиску.",
+    "employee": "Сотрудник",
+    "status": "Статус",
+    "baseSalary": "Оклад",
+    "bonuses": "Бонусы",
+    "totalPayable": "Сумма к выплате",
+    "paid": "Оплачено",
+    "remaining": "Остаток",
+    "totals": "Итого ({count})",
+    "openAria": "{name} · {status}"
+  },
+  "salary": {
+    "pageTitle": "Зарплата",
+    "searchPlaceholder": "Поиск сотрудников…",
+    "payNow": "Выплатить",
+    "loadError": "Не удалось загрузить доску зарплаты",
+    "emptyDataTitle": "Нет данных",
+    "emptyDataDescription": "Ответ по зарплате пуст.",
+    "emptyEmployeesTitle": "Нет сотрудников",
+    "emptyEmployeesDescription": "Для зарплатной доски нет неуволенных сотрудников.",
+    "emptyMatchTitle": "Нет подходящих строк",
+    "emptyMatchDescription": "Измените поиск или фильтры, чтобы увидеть строки оклада.",
+    "settingsTitle": "Зарплата — настройки",
+    "settingsDescription": "Выгрузить видимые строки оклада (текущие фильтры и диапазон месяцев).",
+    "settingsAria": "Настройки зарплаты",
+    "exportCsv": "Выгрузить видимые строки (CSV)",
+    "listEmpty": "Нет строк оклада по фильтрам.",
+    "employee": "Сотрудник",
+    "status": "Статус",
+    "payable": "К выплате",
+    "paid": "Оплачено",
+    "remaining": "Остаток",
+    "filtered": "Отфильтровано ({count})",
+    "openAria": "{name} · {status}",
+    "boardEmpty": "Нет строк оклада",
+    "left": "Осталось",
+    "calendarAria": "Календарь зарплаты {year}",
+    "boardAria": "Доска зарплаты {year}",
+    "employeesCount": "{count, plural, one {# сотрудник} few {# сотрудника} many {# сотрудников} other {# сотрудника}}",
+    "monthTotals": "Итого по месяцам",
+    "monthTotal": "Итого за месяц",
+    "total": "Итого",
+    "noRun": "Нет ведомости",
+    "cellAria": "{status} · {amount}"
+  },
+  "salaryView": {
+    "calendar": "Календарь",
+    "calendarAria": "Календарь окладов по месяцам",
+    "list": "Список",
+    "listAria": "Плоский список",
+    "board": "Доска",
+    "boardAria": "Доска по фазе выплаты"
+  },
+  "salaryFilters": {
+    "department": "Отдел",
+    "employee": "Сотрудник",
+    "lineStatus": "Статус строки",
+    "payoutPhase": "Фаза выплаты",
+    "allDepartments": "Все отделы",
+    "allEmployees": "Все сотрудники",
+    "allLineStatuses": "Все статусы",
+    "allPhases": "Все фазы"
+  },
+  "lineStatus": {
+    "PENDING": "Ожидает",
+    "APPROVED": "Утверждена",
+    "PARTIALLY_PAID": "Частично",
+    "PAID": "Оплачена",
+    "HELD": "Удержана"
+  },
+  "payoutPhase": {
+    "past_paid": "Выплачено",
+    "active_payout": "Идёт выплата",
+    "accumulating": "Накапливается"
+  },
+  "matrix": {
+    "loadError": "Не удалось загрузить матрицу распределения.",
+    "notFound": "Не найдено",
+    "layoutSaveError": "Не удалось сохранить макет.",
+    "layoutReset": "Макет сброшен",
+    "layoutResetError": "Не удалось сбросить макет.",
+    "emptySearch": "Нет строк по этому поиску. Очистите поиск, чтобы увидеть всю матрицу.",
+    "validationTitle": "Исправьте до проверки или утверждения",
+    "updating": "Обновление…",
+    "lines": "Строки",
+    "expenses": "Расходы",
+    "bonusReleases": "Выпуски бонусов",
+    "payable": "К выплате",
+    "paid": "Оплачено",
+    "remaining": "Остаток"
+  }
+}

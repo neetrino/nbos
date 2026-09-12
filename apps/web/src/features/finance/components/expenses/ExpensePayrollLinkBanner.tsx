@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Banknote } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { buttonVariants } from '@/components/ui/button';
 import { salaryBoardMonthSheetHref } from '@/features/finance/constants/expense-payroll-deep-link';
 import { cn } from '@/lib/utils';
@@ -18,13 +19,16 @@ export function ExpensePayrollLinkBanner({
   payrollMonth,
   salaryLineId,
 }: ExpensePayrollLinkBannerProps) {
-  const label = payrollMonth?.trim() || 'Payroll run';
+  const t = useTranslations('expenses');
+  const label = payrollMonth?.trim() || t('banners.payrollRunFallback');
   const lineId = salaryLineId?.trim() || null;
 
   return (
     <div className="border-border/80 bg-muted/25 flex flex-wrap items-center gap-2 rounded-lg border px-2 py-1.5 text-xs">
       <Banknote size={12} className="text-muted-foreground shrink-0" aria-hidden />
-      <span className="text-muted-foreground min-w-0 flex-1 truncate">Payroll · {label}</span>
+      <span className="text-muted-foreground min-w-0 flex-1 truncate">
+        {t('banners.payrollLine', { label })}
+      </span>
       {lineId ? (
         <Link
           href={salaryBoardMonthSheetHref(lineId)}
@@ -33,7 +37,7 @@ export function ExpensePayrollLinkBanner({
             'h-6 shrink-0 px-2 text-xs',
           )}
         >
-          Month
+          {t('banners.month')}
         </Link>
       ) : null}
       <Link
@@ -43,7 +47,7 @@ export function ExpensePayrollLinkBanner({
           'h-6 shrink-0 px-2 text-xs',
         )}
       >
-        Run
+        {t('banners.run')}
       </Link>
     </div>
   );

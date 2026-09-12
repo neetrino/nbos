@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { FolderKanban, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
@@ -9,6 +10,12 @@ import {
   getTicketSlaState,
 } from '@/features/support/constants/support';
 import { isSupportInteractiveTarget } from '@/features/support/utils/is-support-interactive-target';
+import {
+  translateSupportCategory,
+  translateSupportPriority,
+  translateSupportSla,
+  type SupportTranslator,
+} from '@/features/support/support-message-keys';
 import type { SupportTicket } from '@/lib/api/support';
 
 export interface SupportTicketCardProps {
@@ -26,6 +33,7 @@ export function SupportTicketCard({
   onReopen,
   showProject = true,
 }: SupportTicketCardProps) {
+  const t = useTranslations('support') as SupportTranslator;
   const category = getTicketCategory(ticket.category);
   const priority = getTicketPriority(ticket.priority);
   const sla = getTicketSlaState(ticket.slaState.state);
@@ -45,12 +53,27 @@ export function SupportTicketCard({
         <span className="text-muted-foreground shrink-0 text-[10px] font-medium">
           {ticket.code}
         </span>
-        {priority ? <StatusBadge label={priority.label} variant={priority.variant} /> : null}
+        {priority ? (
+          <StatusBadge
+            label={translateSupportPriority(t, ticket.priority, priority.label)}
+            variant={priority.variant}
+          />
+        ) : null}
       </div>
       <p className="line-clamp-2 text-sm leading-snug font-medium">{ticket.title}</p>
       <div className="flex flex-wrap items-center gap-1.5">
-        {category ? <StatusBadge label={category.label} variant={category.variant} /> : null}
-        {sla ? <StatusBadge label={sla.label} variant={sla.variant} /> : null}
+        {category ? (
+          <StatusBadge
+            label={translateSupportCategory(t, ticket.category, category.label)}
+            variant={category.variant}
+          />
+        ) : null}
+        {sla ? (
+          <StatusBadge
+            label={translateSupportSla(t, ticket.slaState.state, sla.label)}
+            variant={sla.variant}
+          />
+        ) : null}
       </div>
       {showProject && ticket.project ? (
         <div className="text-muted-foreground border-border flex min-w-0 items-center gap-1 border-t pt-2 text-[11px]">
@@ -71,7 +94,7 @@ export function SupportTicketCard({
           }}
         >
           <RotateCcw size={12} aria-hidden />
-          Reopen
+          {t('actions.reopen')}
         </Button>
       ) : null}
     </KanbanCardShell>

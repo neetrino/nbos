@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ExternalLink, File } from 'lucide-react';
 import { toast } from 'sonner';
 import { DetailSheetCollapsibleSection } from '@/components/shared';
@@ -26,7 +27,15 @@ function resolveProductsLibrary() {
 
 const PRODUCTS_FILES_LIBRARY = resolveProductsLibrary();
 
-function DealFileButton({ label, href }: { label: string; href: string }) {
+function DealFileButton({
+  label,
+  href,
+  openHint,
+}: {
+  label: string;
+  href: string;
+  openHint: string;
+}) {
   return (
     <a
       href={href}
@@ -39,7 +48,7 @@ function DealFileButton({ label, href }: { label: string; href: string }) {
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{label}</p>
-        <p className="text-muted-foreground truncate text-xs">Open in new tab</p>
+        <p className="text-muted-foreground truncate text-xs">{openHint}</p>
       </div>
       <ExternalLink className="text-muted-foreground size-4 shrink-0" aria-hidden />
     </a>
@@ -61,6 +70,7 @@ export function DeliveryItemFilesSection({
   contractFileUrl = null,
   disabled = false,
 }: DeliveryItemFilesSectionProps) {
+  const t = useTranslations('deliveryBoard');
   const [sectionOpen, setSectionOpen] = useState(true);
   const [busyFileId, setBusyFileId] = useState<string | null>(null);
   const offer = offerFileUrl?.trim() || null;
@@ -132,7 +142,7 @@ export function DeliveryItemFilesSection({
 
   return (
     <DetailSheetCollapsibleSection
-      title="Files"
+      title={t('files.title')}
       icon={<File size={12} />}
       open={sectionOpen}
       onOpenChange={setSectionOpen}
@@ -141,8 +151,20 @@ export function DeliveryItemFilesSection({
       <div className="flex flex-col gap-4">
         {hasDealFiles ? (
           <div className="flex flex-col gap-1.5">
-            {offer ? <DealFileButton label="Approved offer" href={offer} /> : null}
-            {contract ? <DealFileButton label="Contract" href={contract} /> : null}
+            {offer ? (
+              <DealFileButton
+                label={t('files.approvedOffer')}
+                href={offer}
+                openHint={t('files.openInNewTab')}
+              />
+            ) : null}
+            {contract ? (
+              <DealFileButton
+                label={t('files.contract')}
+                href={contract}
+                openHint={t('files.openInNewTab')}
+              />
+            ) : null}
           </div>
         ) : null}
 
@@ -152,7 +174,7 @@ export function DeliveryItemFilesSection({
           loading={loading}
           denseTiles
           embedded
-          sectionTitle="Attachments"
+          sectionTitle={t('files.attachments')}
           emptyHint="You can drag a file here or click + to browse"
           onUpload={async (picked) => {
             if (disabled) return;

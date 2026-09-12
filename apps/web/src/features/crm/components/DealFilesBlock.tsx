@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { SheetFileAttachments } from '@/components/shared/SheetFileAttachments';
 import { driveApi, type FileAsset } from '@/lib/api/drive';
@@ -38,6 +39,7 @@ export function DealFilesBlock({
   outlinedLabel,
   onFilesChanged,
 }: DealFilesBlockProps) {
+  const t = useTranslations('crm');
   const [busyFileId, setBusyFileId] = useState<string | null>(null);
 
   const listFiles = useCallback(async () => {
@@ -73,11 +75,11 @@ export function DealFilesBlock({
     setBusyFileId(file.id);
     try {
       await unlinkFileFromEntityRecord(file, 'DEAL', dealId);
-      toast.success('Unlinked — file stays in the deal folder on Drive');
+      toast.success(t('dealSheet.files.unlinked'));
       await refresh();
       onFilesChanged?.();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not unlink file');
+      toast.error(err instanceof Error ? err.message : t('dealSheet.files.unlinkError'));
     } finally {
       setBusyFileId(null);
     }
@@ -87,11 +89,11 @@ export function DealFilesBlock({
     setBusyFileId(file.id);
     try {
       await moveToTrashAndUnlinkFileFromEntityRecord(file, 'DEAL', dealId);
-      toast.success('File moved to Trash and unlinked from deal');
+      toast.success(t('dealSheet.files.movedToTrash'));
       await refresh();
       onFilesChanged?.();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not move file to Trash');
+      toast.error(err instanceof Error ? err.message : t('dealSheet.files.trashError'));
     } finally {
       setBusyFileId(null);
     }
@@ -114,7 +116,7 @@ export function DealFilesBlock({
       pendingUploads={pending}
       loading={loading}
       outlinedLabel={outlinedLabel}
-      emptyHint="You can drag a file here or click + to browse"
+      emptyHint={t('dealSheet.files.emptyHint')}
       onUpload={uploadFiles}
       onOpenFile={(file) => {
         const url = file.externalUrl;

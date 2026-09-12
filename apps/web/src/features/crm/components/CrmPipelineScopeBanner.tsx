@@ -1,11 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
-
-const CLOSED_SCOPE_HINT: Record<'lead' | 'deal', string> = {
-  lead: 'Showing terminal outcomes only: Lead Won and Spam. Same board and list views as the active pipeline.',
-  deal: 'Showing terminal outcomes only: Won and Failed. Same board and list views as the active pipeline.',
-};
 
 export function CrmPipelineScopeBanner({
   scope,
@@ -14,7 +10,12 @@ export function CrmPipelineScopeBanner({
   scope: BoardLifecycleScope;
   pipeline: 'lead' | 'deal';
 }) {
+  const t = useTranslations('crm');
   if (scope !== 'CLOSED') return null;
 
-  return <p className="text-muted-foreground shrink-0 text-xs">{CLOSED_SCOPE_HINT[pipeline]}</p>;
+  return (
+    <p className="text-muted-foreground shrink-0 text-xs">
+      {pipeline === 'lead' ? t('leads.closedScopeHint') : t('deals.closedScopeHint')}
+    </p>
+  );
 }

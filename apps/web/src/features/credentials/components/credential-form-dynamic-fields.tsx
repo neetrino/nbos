@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { credentialFormFieldIcon } from '@/features/credentials/utils/credential-vault-card-meta';
 import { CredentialEnvTableEditor } from './credential-env-table-editor';
 import { CredentialVaultSecretField } from './credential-vault-secret-field';
@@ -8,6 +9,7 @@ import {
   CredentialFormPlainTextField,
 } from './credential-form-text-fields';
 import {
+  dynamicFieldLabelMessageKey,
   dynamicFieldSpecsForType,
   type DynamicFieldSpec,
 } from '@/features/credentials/credential-field-config';
@@ -65,7 +67,11 @@ export interface CredentialFormDynamicFieldsProps {
 }
 
 export function CredentialFormDynamicFields(props: CredentialFormDynamicFieldsProps) {
-  const specs = dynamicFieldSpecsForType(props.credentialType);
+  const t = useTranslations('credentials');
+  const specs = dynamicFieldSpecsForType(props.credentialType).map((spec) => ({
+    ...spec,
+    label: t(dynamicFieldLabelMessageKey(props.credentialType, spec.field) as never),
+  }));
   const rows = groupDynamicFieldRows(specs);
   const guardScope = props.credentialId ?? 'create';
   const isExisting = Boolean(props.credentialId);

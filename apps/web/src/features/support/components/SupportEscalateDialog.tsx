@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,6 +31,9 @@ export function SupportEscalateDialog({
   onConfirm,
   submitting,
 }: SupportEscalateDialogProps) {
+  const t = useTranslations('support');
+  const tCommon = useTranslations('common');
+
   return (
     <Dialog
       open={Boolean(ticket)}
@@ -41,29 +45,26 @@ export function SupportEscalateDialog({
     >
       <DialogContent className="sm:max-w-md" forceNestedBackdrop>
         <DialogHeader>
-          <DialogTitle>Managerial escalation</DialogTitle>
-          <DialogDescription>
-            Sends in-app notifications to the assignee and users with global Support ticket access.
-            The ticket is marked Escalated and the SLA clock pauses until the overlay is cleared.
-          </DialogDescription>
+          <DialogTitle>{t('escalate.title')}</DialogTitle>
+          <DialogDescription>{t('escalate.description')}</DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
-          <Label htmlFor="support-escalate-reason">Reason</Label>
+          <Label htmlFor="support-escalate-reason">{t('escalate.reason')}</Label>
           <Textarea
             id="support-escalate-reason"
             value={reason}
             onChange={(event) => onReasonChange(event.target.value)}
             rows={3}
-            placeholder="Business risk, needs another specialist, client urgency…"
+            placeholder={t('escalate.reasonPlaceholder')}
             className="resize-y"
           />
         </div>
         <DialogFooter className="gap-2 sm:gap-0">
           <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button type="button" disabled={!ticket || submitting} onClick={() => void onConfirm()}>
-            Confirm escalation
+            {t('escalate.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

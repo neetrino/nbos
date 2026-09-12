@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Building2, Calendar, Link2, MoreHorizontal, Puzzle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ import { useCurrentTimeSnapshot } from '@/hooks/use-current-time-snapshot';
 import { formatBoardCardDate } from '@/lib/format/board-card-date';
 import { getDealTypeCardChrome } from '@/lib/deal-type-card-chrome';
 import { formatAmount, AMD_CURRENCY_SYMBOL } from '../constants/dealPipeline';
+import { translatePaymentTypeLabel } from '../i18n/crm-copy';
 import type { Deal, DealEmployeeRef } from '@/lib/api/deals';
 import { getDealTypePresentation, type DealTypePresentation } from '@/lib/deal-type-visual';
 import { getDealCardMetaLabel, getDealDisplayTitle } from '../utils/crm-entity-display';
@@ -161,7 +163,7 @@ function DealCardMeta({
         <DealMetaLine icon={LinkIcon} label={linkLabel} metaIconClass={metaIconClass} />
       ) : null}
       {deal.paymentType ? (
-        <p className="text-muted-foreground text-xs">{deal.paymentType.replace(/_/g, ' ')}</p>
+        <DealPaymentTypeLabel paymentType={deal.paymentType} />
       ) : null}
     </div>
   );
@@ -197,11 +199,11 @@ function DealCardTeamAvatars({ deal, onCreateTask }: { deal: Deal; onCreateTask?
     <div className="mt-2.5 flex items-end gap-2">
       <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
         <div className="flex shrink-0 -space-x-1.5">
-          <DealCardPersonAvatar person={deal.seller} roleLabel="Seller" tone="seller" />
+          <DealCardPersonAvatar person={deal.seller} roleKey="seller" tone="seller" />
           {deal.sellerAssistant ? (
             <DealCardPersonAvatar
               person={deal.sellerAssistant}
-              roleLabel="Assistant"
+              roleKey="assistant"
               tone="assistant"
             />
           ) : null}
@@ -212,15 +214,24 @@ function DealCardTeamAvatars({ deal, onCreateTask }: { deal: Deal; onCreateTask?
   );
 }
 
+function DealPaymentTypeLabel({ paymentType }: { paymentType: string }) {
+  const t = useTranslations('crm');
+  return (
+    <p className="text-muted-foreground text-xs">{translatePaymentTypeLabel(t, paymentType)}</p>
+  );
+}
+
 function DealCardPersonAvatar({
   person,
-  roleLabel,
+  roleKey,
   tone,
 }: {
   person: DealEmployeeRef;
-  roleLabel: string;
+  roleKey: 'seller' | 'assistant';
   tone: keyof typeof DEAL_CARD_AVATAR_TONE_CLASS;
 }) {
+  const t = useTranslations('crm');
+  const roleLabel = roleKey === 'seller' ? t('leadSheet.seller') : t('dealSheet.salesAssistant');
   const name = employeeFullName(person);
   return (
     <span title={`${roleLabel}: ${name}`}>
@@ -242,6 +253,7 @@ function DealCardMenu({
   onClick: (deal: Deal) => void;
   onStatusChange: (id: string, status: string) => void;
 }) {
+  const t = useTranslations('crm');
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -261,16 +273,16 @@ function DealCardMenu({
         )}
       />
       <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-        <DropdownMenuItem onClick={() => onClick(deal)}>View details</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onClick(deal)}>{t('deals.viewDetails')}</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="text-green-600" onClick={() => onStatusChange(deal.id, 'WON')}>
-          Mark as won
+          {t('deals.markAsWon')}
         </DropdownMenuItem>
         <DropdownMenuItem
           className="text-destructive"
           onClick={() => onStatusChange(deal.id, 'FAILED')}
         >
-          Mark as failed
+          {t('deals.markAsFailed')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

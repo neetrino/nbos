@@ -1,0 +1,182 @@
+{
+  "page": {
+    "searchPlaceholder": "Поиск по счёту, компании, заказу, продукту…",
+    "settingsTitle": "Счета — настройки",
+    "settingsDescription": "Экспорт для текущего списка. Период и фильтры как в строке поиска.",
+    "settingsAria": "Настройки счетов",
+    "exportCsv": "Экспорт счетов (CSV)",
+    "exportScopeStats": "Экспорт статистики среза (CSV)",
+    "newInvoice": "Новый счёт",
+    "subscriptionFilter": "Показаны счета этой подписки (фильтр сервера).",
+    "clearFilter": "Сбросить фильтр"
+  },
+  "view": {
+    "board": "Доска",
+    "list": "Список",
+    "boardAria": "Вид канбан-доски",
+    "listAria": "Вид списком"
+  },
+  "filters": {
+    "status": "Статус",
+    "moneyStatus": "Статус оплаты",
+    "type": "Тип",
+    "period": "Период",
+    "periodOptions": {
+      "month": "Месяц",
+      "quarter": "Квартал",
+      "year": "Год",
+      "all": "Все"
+    }
+  },
+  "boardScope": {
+    "ALL": "Все статусы",
+    "ACTIVE": "Активные",
+    "CLOSED": "Закрытые"
+  },
+  "empty": {
+    "title": "Пока нет счетов",
+    "description": "Создайте первый счёт, чтобы учитывать платежи",
+    "createFirst": "Создать первый счёт"
+  },
+  "kanban": {
+    "empty": "Нет счетов",
+    "quickCreate": "Быстрый счёт"
+  },
+  "table": {
+    "invoice": "Счёт",
+    "company": "Компания",
+    "type": "Тип",
+    "amount": "Сумма",
+    "status": "Статус",
+    "closed": "Закрыт",
+    "tax": "Налог",
+    "dueDate": "Срок",
+    "paidDate": "Дата оплаты"
+  },
+  "stage": {
+    "NEW": "Новый",
+    "AWAITING_PAYMENT": "Ожидает оплаты",
+    "OVERDUE": "Просрочен",
+    "ON_HOLD": "На паузе",
+    "PAID": "Оплачен",
+    "CANCELLED": "Отменён"
+  },
+  "stageShort": {
+    "NEW": "Новый",
+    "AWAITING_PAYMENT": "Ожидает",
+    "OVERDUE": "Просрочен",
+    "ON_HOLD": "Пауза",
+    "PAID": "Оплачен",
+    "CANCELLED": "Отменён"
+  },
+  "type": {
+    "DEVELOPMENT": "Разработка",
+    "EXTENSION": "Расширение",
+    "SUBSCRIPTION": "Подписка",
+    "DOMAIN": "Домен",
+    "SERVICE": "Услуга",
+    "MANUAL": "Ручной"
+  },
+  "tax": {
+    "TAX": "Налог",
+    "TAX_FREE": "Без налога"
+  },
+  "paymentMethod": {
+    "TRANSACTION": "Перевод",
+    "CASH": "Наличные"
+  },
+  "source": {
+    "deal": "Сделка",
+    "order": "Заказ",
+    "subscription": "Подписка",
+    "manual": "Ручной",
+    "service": "Услуга"
+  },
+  "card": {
+    "tax": "Налог",
+    "paid": "Оплачено",
+    "overdue": "просрочен"
+  },
+  "tabs": {
+    "general": "Общее",
+    "payments": "Платежи",
+    "history": "История"
+  },
+  "sheet": {
+    "loading": "Загрузка счёта…",
+    "unavailable": "Счёт недоступен.",
+    "updated": "Счёт обновлён",
+    "saveFailed": "Не удалось сохранить изменения счёта.",
+    "deleteInvoice": "Удалить счёт",
+    "cancelInvoice": "Отменить счёт",
+    "clientContext": "Контекст клиента",
+    "proofs": "Подтверждения",
+    "fullyPaid": "Полностью оплачен",
+    "paymentProofs": "Подтверждения оплаты"
+  },
+  "create": {
+    "titleNew": "Новый счёт",
+    "titleOrder": "Создать счёт по заказу",
+    "titleSubscription": "Создать счёт по подписке",
+    "titleGeneric": "Создать счёт",
+    "descriptionOrder": "Сформировать счёт для {title}.",
+    "descriptionSubscription": "Выставить счёт по подписке {title}.",
+    "descriptionClientService": "Счёт для {name} · {project}",
+    "loadingSubscription": "Загрузка подписки…",
+    "loadingSubscriptionContext": "Загрузка контекста подписки…",
+    "noCompany": "Нет компании",
+    "orderTotal": "Сумма заказа: {amount}",
+    "periodAmount": "Сумма периода: {amount}",
+    "amount": "Сумма *",
+    "dueDate": "Срок оплаты",
+    "dueDateAria": "Срок оплаты",
+    "dueDateHint": "Если пусто — 10 дней с даты создания.",
+    "submit": "Создать счёт",
+    "createError": "Не удалось создать счёт.",
+    "loadSubscriptionError": "Не удалось загрузить подписку."
+  },
+  "createSubscription": {
+    "title": "Создать счёт по подписке",
+    "description": "Выберите подряд идущие месяцы. Один счёт покрывает все выбранные месяцы.",
+    "selectConsecutive": "Выберите подряд идущие месяцы.",
+    "total": "Итого",
+    "required": "Укажите подписку.",
+    "createdOne": "Счёт {code} создан",
+    "createdMany": "{count, plural, one {# счёт создан} few {# счёта созданы} many {# счетов создано} other {# счёта созданы}}",
+    "coverageMonths": "Месяцы покрытия",
+    "noUncoveredMonth": "Нет доступного непокрытого месяца. Только активные подписки могут выставлять счета за непокрытые месяцы с начала биллинга на ближайшие 12 месяцев.",
+    "eachStartCovers": "Каждое выбранное начало покрывает {count, plural, one {# месяц} few {# месяца} many {# месяцев} other {# месяца}}. Пересекающиеся начала остаются недоступны.",
+    "selectAtLeastOne": "Выберите хотя бы один месяц.",
+    "covering": "1 счёт покрывает {count, plural, one {# месяц} few {# месяца} many {# месяцев} other {# месяца}}",
+    "kindPast": "Прошлый",
+    "kindCurrent": "Текущий",
+    "kindFuture": "Будущий"
+  },
+  "reminders": {
+    "button": "Напомнить",
+    "action": "Отправить напоминания о просрочке",
+    "title": "Отправить напоминания о просрочке?",
+    "description": "Сначала отметьте оплаченные счета как Оплачен. Этот запуск отправит одно письмо WhatsApp на каждую оставшуюся карточку Просрочен: волна 1, если ещё не отправляли, волна 2, если волна 1 ушла в другой день.",
+    "loading": "Загрузка предпросмотра…",
+    "loadFailed": "Не удалось загрузить предпросмотр напоминаний о просрочке.",
+    "sendFailed": "Не удалось отправить напоминания о просрочке.",
+    "sending": "Отправка…",
+    "send": "Отправить напоминания",
+    "empty": "Сейчас нет просроченных клиентских напоминаний для отправки.",
+    "skipped": "Пропущены",
+    "sent": "Отправлено {count, plural, one {# напоминание} few {# напоминания} many {# напоминаний} other {# напоминания}} о просрочке ({wave1} волна 1, {wave2} волна 2).",
+    "wave1": "{count, plural, one {# счёт} few {# счёта} many {# счетов} other {# счёта}} → волна 1",
+    "wave2": "{count, plural, one {# счёт} few {# счёта} many {# счетов} other {# счёта}} → волна 2",
+    "skip": {
+      "not_overdue": "Не просрочен",
+      "notifications_off": "Уведомления выключены",
+      "tax_gate": "Официальный запрос счёта не отправлен",
+      "no_whatsapp": "Нет группы WhatsApp продукта",
+      "same_day": "Волна 1 уже отправлена сегодня",
+      "too_soon": "Волна 2 только через 2 календарных дня",
+      "max_wave": "Обе волны уже отправлены",
+      "no_product_link": "Нет подписки или клиентской услуги",
+      "already_sent": "Эта волна уже отправлена"
+    }
+  }
+}

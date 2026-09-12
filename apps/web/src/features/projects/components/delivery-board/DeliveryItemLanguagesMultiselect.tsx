@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ChevronDown, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,6 +17,7 @@ import {
   languageLabel,
   sortLanguageCodesForDisplay,
 } from './delivery-product-language-options';
+import { translateProductLanguageName } from './delivery-board-message-keys';
 
 interface DeliveryItemLanguagesMultiselectProps {
   value: string[];
@@ -36,9 +38,11 @@ export function DeliveryItemLanguagesMultiselect({
   disabled = false,
   readOnly = false,
 }: DeliveryItemLanguagesMultiselectProps) {
+  const t = useTranslations('deliveryBoard');
   const [open, setOpen] = useState(false);
   const selected = new Set(value.map((c) => c.trim().toLowerCase()).filter(Boolean));
   const ordered = sortLanguageCodesForDisplay(Array.from(selected));
+  const displayName = (code: string) => translateProductLanguageName(code, t, languageLabel(code));
 
   function toggle(code: string) {
     if (readOnly || disabled || !onChange) return;
@@ -67,12 +71,12 @@ export function DeliveryItemLanguagesMultiselect({
   if (readOnly) {
     return (
       <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
-        <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>Languages</span>
+        <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{t('languageField.label')}</span>
         <div className={LANGUAGES_OUTLINED_SHELL_CLASS}>
           <p className="text-muted-foreground text-xs">
             {ordered.length > 0
-              ? ordered.map((c) => languageLabel(c)).join(', ')
-              : 'Inherited from parent product — not set.'}
+              ? ordered.map((c) => displayName(c)).join(', ')
+              : t('languageField.inheritedEmpty')}
           </p>
         </div>
       </div>
@@ -81,7 +85,7 @@ export function DeliveryItemLanguagesMultiselect({
 
   return (
     <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
-      <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>Languages</span>
+      <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{t('languageField.label')}</span>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           disabled={disabled}
@@ -93,19 +97,19 @@ export function DeliveryItemLanguagesMultiselect({
         >
           <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
             {ordered.length === 0 ? (
-              <span className="text-muted-foreground px-1 text-xs">Select…</span>
+              <span className="text-muted-foreground px-1 text-xs">{t('languageField.select')}</span>
             ) : (
               ordered.map((code) => (
                 <span
                   key={code}
                   className="bg-primary/12 text-primary border-primary/15 inline-flex max-w-full items-center gap-0.5 rounded-md border px-1.5 py-0.5 text-xs font-medium"
                 >
-                  <span className="truncate">{languageLabel(code)}</span>
+                  <span className="truncate">{displayName(code)}</span>
                   <span
                     role="button"
                     tabIndex={0}
                     className="text-primary/70 hover:text-primary focus-visible:ring-ring/50 inline-flex shrink-0 cursor-pointer rounded p-0.5 outline-none focus-visible:ring-2"
-                    aria-label={`Remove ${languageLabel(code)}`}
+                    aria-label={t('languageField.remove', { language: displayName(code) })}
                     onClick={(e) => removeChip(code, e)}
                     onKeyDown={(e) => chipRemoveKeyDown(code, e)}
                   >
@@ -132,7 +136,7 @@ export function DeliveryItemLanguagesMultiselect({
                       onCheckedChange={() => toggle(opt.value)}
                       disabled={disabled}
                     />
-                    <span>{opt.label}</span>
+                    <span>{displayName(opt.value)}</span>
                   </label>
                 </li>
               );

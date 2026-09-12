@@ -5,6 +5,8 @@ interface BuildDealDetailSheetTabsOptions {
   canCreateTask: boolean;
   onCreateInvoice: () => void;
   onCreateTask: () => void;
+  createInvoiceAria?: string;
+  createTaskAria?: string;
 }
 
 /** Adds hover + on Deal Invoice / Task tabs when create is allowed. */
@@ -18,7 +20,7 @@ export function buildDealDetailSheetTabs(
         ...tab,
         quickCreate: {
           onCreate: options.onCreateInvoice,
-          ariaLabel: 'Create invoice',
+          ariaLabel: options.createInvoiceAria ?? 'Create invoice',
         },
       };
     }
@@ -27,7 +29,7 @@ export function buildDealDetailSheetTabs(
         ...tab,
         quickCreate: {
           onCreate: options.onCreateTask,
-          ariaLabel: 'Create task',
+          ariaLabel: options.createTaskAria ?? 'Create task',
         },
       };
     }

@@ -1,6 +1,7 @@
 'use client';
 
 import { Plus, KeyRound } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { CredentialVaultTableRow } from '@/features/credentials/components/credential-vault-table-row';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -55,6 +56,7 @@ export function CredentialVaultTable({
   showCreate,
   selection,
 }: CredentialVaultTableProps) {
+  const t = useTranslations('credentials');
   const isTrashList = listScope === 'trash';
   const pageIds = selection?.pageIds ?? [];
   const allPageSelected = Boolean(
@@ -76,13 +78,13 @@ export function CredentialVaultTable({
     return (
       <EmptyState
         icon={KeyRound}
-        title="No credentials"
-        description="No credentials match the current filters"
+        title={t('emptyTitle')}
+        description={t('emptyDescription')}
         action={
           showCreate ? (
             <PermissionGate module="CREDENTIALS" action="ADD">
               <Button onClick={onCreateOpen}>
-                <Plus size={16} /> Add Credential
+                <Plus size={16} /> {t('addCredential')}
               </Button>
             </PermissionGate>
           ) : undefined
@@ -110,22 +112,22 @@ export function CredentialVaultTable({
                   <CredentialVaultSelectCheckbox
                     checked={Boolean(allPageSelected)}
                     indeterminate={somePageSelected}
-                    ariaLabel="Select all on page"
+                    ariaLabel={t('table.selectAllOnPage')}
                     onToggle={() => selection.onTogglePage()}
                   />
                 </div>
               </TableHead>
             ) : null}
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Name</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Login</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Password</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Category</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Type</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Risk</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Access</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Project</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>Rotation</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>URL</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.name')}</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.login')}</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.password')}</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.category')}</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.type')}</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.risk')}</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.access')}</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.project')}</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.rotation')}</TableHead>
+            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.url')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

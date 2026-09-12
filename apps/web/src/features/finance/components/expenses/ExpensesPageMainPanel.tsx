@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { Plus, Receipt } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   EmptyState,
@@ -20,6 +21,7 @@ import {
   buildExpenseKanbanColumns,
 } from './expense-kanban-columns';
 import { ExpensesTableSection } from './ExpensesTableSection';
+import { translateExpenseStage } from './expense-i18n-labels';
 
 export type ExpensesViewMode = 'kanban' | 'list';
 
@@ -53,22 +55,33 @@ export function ExpensesPageMainPanel({
   onKanbanMove,
   onOpenQuickCreate,
 }: ExpensesPageMainPanelProps) {
+  const t = useTranslations('expenses');
   const expenseTerminalDropZones = useMemo(
-    () => buildTerminalDropZones(EXPENSE_ACTIVE_TERMINAL_DROP_STAGES),
-    [],
+    () =>
+      buildTerminalDropZones(EXPENSE_ACTIVE_TERMINAL_DROP_STAGES).map((zone) => ({
+        ...zone,
+        label: translateExpenseStage(zone.key, t),
+      })),
+    [t],
   );
 
-  const kanbanColumns =
-    kanbanScope === 'closed'
-      ? buildExpenseClosedKanbanColumns(expenses)
-      : buildExpenseKanbanColumns(expenses);
+  const kanbanColumns = useMemo(() => {
+    const columns =
+      kanbanScope === 'closed'
+        ? buildExpenseClosedKanbanColumns(expenses)
+        : buildExpenseKanbanColumns(expenses);
+    return columns.map((column) => ({
+      ...column,
+      label: translateExpenseStage(column.key, t),
+    }));
+  }, [expenses, kanbanScope, t]);
 
   const expenseQuickCreate = useMemo(
     () =>
       kanbanScope === 'active' && onOpenQuickCreate
-        ? createExpenseKanbanQuickCreateConfig(() => onOpenQuickCreate())
+        ? createExpenseKanbanQuickCreateConfig(() => onOpenQuickCreate(), t('actions.quickExpense'))
         : undefined,
-    [kanbanScope, onOpenQuickCreate],
+    [kanbanScope, onOpenQuickCreate, t],
   );
 
   if (loading) {
@@ -81,16 +94,12 @@ export function ExpensesPageMainPanel({
     return (
       <EmptyState
         icon={Receipt}
-        title={fromBacklog ? 'No deferred expenses' : 'No expenses yet'}
-        description={
-          fromBacklog
-            ? 'Nothing matches this backlog scope for the selected period.'
-            : 'Track company expenses here'
-        }
+        title={fromBacklog ? t('empty.backlogTitle') : t('empty.title')}
+        description={fromBacklog ? t('empty.backlogDescription') : t('empty.description')}
         action={
           <Button type="button" onClick={onAddFirstExpense}>
             <Plus size={16} />
-            Add First Expense
+            {t('actions.addFirst')}
           </Button>
         }
       />

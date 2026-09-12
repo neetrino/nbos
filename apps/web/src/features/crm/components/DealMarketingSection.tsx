@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Building2, ExternalLink, Megaphone, User } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
@@ -21,6 +22,7 @@ import type { SearchLoader } from './deal-general-tab.types';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 import { DealPartnerReferralTermsSection } from './DealPartnerReferralTermsSection';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
+import { translateLeadSourceLabel, translateSalesChannelLabel } from '../i18n/crm-copy';
 import { DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 
@@ -49,6 +51,7 @@ export function DealMarketingSection({
   sectionClassName,
   gateRequiredFields = new Set(),
 }: DealMarketingSectionProps) {
+  const t = useTranslations('crm');
   const partnerPicker = useRelationPickerActions('partner');
   const sourceContactPicker = useRelationPickerActions('contact', 'deal-source-contact');
   const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
@@ -65,7 +68,7 @@ export function DealMarketingSection({
   return (
     <DetailSheetSection
       id={DEAL_SHEET_SECTION.MARKETING}
-      title="Marketing"
+      title={t('leadSheet.marketing')}
       icon={<Megaphone size={12} />}
       className={sectionClassName}
     >
@@ -74,11 +77,14 @@ export function DealMarketingSection({
           <div className="min-w-0">
             <InlineField
               variant="controlled"
-              label="From"
+              label={t('leadSheet.from')}
               value={draft.source ?? ''}
               type="select"
-              options={LEAD_SOURCES.map((source) => ({ value: source.value, label: source.label }))}
-              placeholder="Select source..."
+              options={LEAD_SOURCES.map((source) => ({
+                value: source.value,
+                label: translateLeadSourceLabel(t, source.value),
+              }))}
+              placeholder={t('leadSheet.fromPlaceholder')}
               icon={<Megaphone size={12} />}
               disabled={disabled || attributionLocked}
               clearable={!attributionLocked}
@@ -103,11 +109,17 @@ export function DealMarketingSection({
             <div className="min-w-0">
               <InlineField
                 variant="controlled"
-                label="Where?"
+                label={t('leadSheet.where')}
                 value={draft.sourceDetail ?? ''}
                 type="select"
-                options={whereOptions}
-                placeholder="Select channel..."
+                options={whereOptions.map((option) => ({
+                  value: option.value,
+                  label:
+                    draft.source === 'SALES'
+                      ? translateSalesChannelLabel(t, option.value)
+                      : option.label,
+                }))}
+                placeholder={t('leadSheet.wherePlaceholder')}
                 icon={<ExternalLink size={12} />}
                 disabled={disabled || attributionLocked}
                 clearable={!attributionLocked}
@@ -128,7 +140,7 @@ export function DealMarketingSection({
             <div className="min-w-0">
               <SearchField
                 selectionMode="stage"
-                label="Which one?"
+                label={t('leadSheet.whichOne')}
                 value={draft.marketingAccountId ?? draft.marketingActivityId ?? null}
                 className={dealStageGateFieldClass(gateRequiredFields, 'whichOne')}
                 displayValue={
@@ -138,7 +150,7 @@ export function DealMarketingSection({
                     </span>
                   ) : undefined
                 }
-                placeholder="Search accounts or activities..."
+                placeholder={t('leadSheet.whichOnePlaceholder')}
                 icon={<ExternalLink size={12} />}
                 disabled={disabled || attributionLocked}
                 onSearch={searchAttributionOptions}
@@ -167,12 +179,12 @@ export function DealMarketingSection({
           {draft.source === 'PARTNER' && (
             <div className="min-w-0">
               <RelationPickerField
-                label="Which Partner?"
+                label={t('leadSheet.whichPartner')}
                 entityKind="partner"
                 value={draft.sourcePartnerId}
                 selectionLabel={draft.partnerPickLabel}
                 className={dealStageGateFieldClass(gateRequiredFields, 'sourcePartnerId')}
-                placeholder="Search partners…"
+                placeholder={t('leadSheet.whichPartnerPlaceholder')}
                 icon={<Building2 size={12} />}
                 disabled={disabled || attributionLocked}
                 onSearch={searchPartners}
@@ -192,12 +204,12 @@ export function DealMarketingSection({
           {draft.source === 'CLIENT' && (
             <div className="min-w-0">
               <RelationPickerField
-                label="Which Client?"
+                label={t('leadSheet.whichClient')}
                 entityKind="contact"
                 value={draft.sourceContactId}
                 selectionLabel={draft.clientPickLabel}
                 className={dealStageGateFieldClass(gateRequiredFields, 'sourceContactId')}
-                placeholder="Search contacts…"
+                placeholder={t('leadSheet.whichClientPlaceholder')}
                 icon={<User size={12} />}
                 disabled={disabled || attributionLocked}
                 onSearch={searchContacts}

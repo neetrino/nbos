@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ArrowLeft, Download, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
@@ -19,6 +20,7 @@ export function CredentialsPageSettingsSheet({
   vaultListScope,
   onVaultListScopeChange,
 }: CredentialsPageSettingsSheetProps) {
+  const t = useTranslations('credentials');
   const [sheetOpen, setSheetOpen] = useState(false);
   const [stepUpOpen, setStepUpOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -29,9 +31,9 @@ export function CredentialsPageSettingsSheet({
     try {
       const file = await credentialsApi.exportEncryptedFile({ stepUpPassword });
       downloadBase64File(file.filename, file.mimeType, file.contentBase64);
-      toast.success(`Exported ${file.count} credentials`);
+      toast.success(t('settings.exportSuccess', { count: file.count }));
     } catch {
-      toast.error('Export failed');
+      toast.error(t('settings.exportFailed'));
     } finally {
       setExporting(false);
     }
@@ -45,13 +47,11 @@ export function CredentialsPageSettingsSheet({
   return (
     <>
       <PageSettingsSheet
-        title="Password — settings"
+        title={t('settings.title', { module: t('title') })}
         description={
-          isTrashList
-            ? 'Trash view. Return to the active vault or restore items from the list.'
-            : 'Encrypted vault export and access to Trash.'
+          isTrashList ? t('settings.descriptionTrash') : t('settings.descriptionActive')
         }
-        triggerAriaLabel="Password settings"
+        triggerAriaLabel={t('settings.triggerAria')}
         open={sheetOpen}
         onOpenChange={setSheetOpen}
       >
@@ -63,7 +63,7 @@ export function CredentialsPageSettingsSheet({
             onClick={() => handleVaultListScopeChange('active')}
           >
             <ArrowLeft className="size-4 shrink-0" aria-hidden />
-            Back to vault
+            {t('settings.backToVault')}
           </Button>
         ) : (
           <>
@@ -79,7 +79,7 @@ export function CredentialsPageSettingsSheet({
               ) : (
                 <Download className="size-4 shrink-0" aria-hidden />
               )}
-              Export file
+              {t('settings.exportFile')}
             </Button>
             <Button
               type="button"
@@ -88,7 +88,7 @@ export function CredentialsPageSettingsSheet({
               onClick={() => handleVaultListScopeChange('trash')}
             >
               <Trash2 className="text-destructive size-4 shrink-0" aria-hidden />
-              View Trash
+              {t('settings.viewTrash')}
             </Button>
           </>
         )}
@@ -96,7 +96,7 @@ export function CredentialsPageSettingsSheet({
       <CredentialStepUpDialog
         open={stepUpOpen}
         onOpenChange={setStepUpOpen}
-        title="Confirm to export credentials"
+        title={t('settings.exportConfirm')}
         onConfirm={runExport}
       />
     </>

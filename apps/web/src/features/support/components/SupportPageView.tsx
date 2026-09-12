@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Headphones } from 'lucide-react';
 import { SupportCreateTicketDialog } from '@/features/support/components/SupportCreateTicketDialog';
 import { SupportPageHero } from '@/features/support/components/SupportPageHero';
@@ -12,6 +13,7 @@ import { useSupportPage } from '@/features/support/hooks/use-support-page';
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
 export function SupportPageView() {
+  const t = useTranslations('support');
   const page = useSupportPage();
   const { query, createForm, actions } = page;
   const displayView = useMobilePreferredView(query.view, 'kanban');
@@ -59,9 +61,9 @@ export function SupportPageView() {
         kanbanColumns={page.kanbanColumns}
         actionId={actions.actionId}
         emptyIcon={Headphones}
-        emptyTitle="No tickets yet"
-        emptyDescription="Support tickets will appear here"
-        emptyActionLabel="Create First Ticket"
+        emptyTitle={t('empty.noTickets')}
+        emptyDescription={t('empty.noTicketsDescription')}
+        emptyActionLabel={t('empty.createFirst')}
         onRetry={() => void query.fetchTickets()}
         onCreateFirst={handleNewTicket}
         onKanbanMove={actions.handleKanbanMove}

@@ -1,14 +1,16 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { IntegratedSearchFilters, useModuleHeroSlots, ViewModeSwitch } from '@/components/shared';
-import { SUPPORT_CHANGE_CONTROL_FILTER_CONFIGS } from '@/features/support/constants/support-change-control-filter-configs';
+import { getSupportChangeControlFilterConfigs } from '@/features/support/constants/support-change-control-filter-configs';
 import {
-  SUPPORT_PAGE_VIEW_OPTIONS,
+  getSupportPageViewOptions,
   type SupportPageViewMode,
 } from '@/features/support/constants/support-page-view-options';
+import type { SupportTranslator } from '@/features/support/support-message-keys';
 
 export interface SupportChangeControlHeroProps {
   search: string;
@@ -31,26 +33,28 @@ export function SupportChangeControlHero({
   onViewChange,
   onNewChangeRequest,
 }: SupportChangeControlHeroProps) {
+  const t = useTranslations('support') as SupportTranslator;
+  const filters = useMemo(() => getSupportChangeControlFilterConfigs(t), [t]);
+  const viewOptions = useMemo(() => getSupportPageViewOptions(t), [t]);
+
   const moduleHeroSlots = useMemo(
     () => ({
       search: (
         <IntegratedSearchFilters
           search={search}
           onSearchChange={onSearchChange}
-          searchPlaceholder="Search change requests, project, product…"
-          filters={SUPPORT_CHANGE_CONTROL_FILTER_CONFIGS}
+          searchPlaceholder={t('changeControl.searchPlaceholder')}
+          filters={filters}
           filterValues={filterValues}
           onFilterChange={onFilterChange}
           onClearAll={onClearFilters}
         />
       ),
-      viewMode: (
-        <ViewModeSwitch value={view} onChange={onViewChange} options={SUPPORT_PAGE_VIEW_OPTIONS} />
-      ),
+      viewMode: <ViewModeSwitch value={view} onChange={onViewChange} options={viewOptions} />,
       trailing: (
         <Button type="button" onClick={onNewChangeRequest}>
           <Plus size={16} aria-hidden />
-          New Change Request
+          {t('changeControl.newRequest')}
         </Button>
       ),
     }),
@@ -63,6 +67,9 @@ export function SupportChangeControlHero({
       view,
       onViewChange,
       onNewChangeRequest,
+      filters,
+      viewOptions,
+      t,
     ],
   );
 

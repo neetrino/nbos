@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import type { FilterConfig } from '@/components/shared';
 import {
   DELIVERY_BOARD_KIND_FILTER_CONFIG,
@@ -15,24 +16,35 @@ import type { DeliveryBoardKindFilter } from './project-delivery-board-model';
 export function useDeliveryBoardClosedHeroFilterConfigs(
   options: ClosedFilterOptions,
 ): FilterConfig[] {
+  const t = useTranslations('deliveryBoard');
   return useMemo(
     () => [
-      DELIVERY_BOARD_KIND_FILTER_CONFIG,
+      {
+        ...DELIVERY_BOARD_KIND_FILTER_CONFIG,
+        label: t('kind.filterLabel'),
+        allOptionLabel: t('kind.allOption'),
+        options: [
+          { value: 'PRODUCT', label: t('kind.products') },
+          { value: 'EXTENSION', label: t('kind.extensions') },
+        ],
+      },
       {
         key: 'projectId',
-        label: 'Project',
+        label: t('filters.project'),
+        allOptionLabel: t('filters.allProject'),
         options: options.projects.map((p) => ({ value: p.id, label: p.label })),
       },
       {
         key: 'result',
-        label: 'Result',
+        label: t('filters.result'),
+        allOptionLabel: t('filters.allResult'),
         options: [
-          { value: 'CANCELLED', label: 'Cancelled' },
-          { value: 'DONE', label: 'Done' },
+          { value: 'CANCELLED', label: t('filters.cancelled') },
+          { value: 'DONE', label: t('filters.done') },
         ],
       },
     ],
-    [options],
+    [options, t],
   );
 }
 

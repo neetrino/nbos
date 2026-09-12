@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { DeleteConfirmDialog } from '@/components/shared';
 
 export type ExpenseLifecycleDialogMode = 'delete' | 'cancel';
@@ -16,23 +17,6 @@ interface DeleteExpenseDialogProps {
   forceNestedBackdrop?: boolean;
 }
 
-const COPY: Record<
-  ExpenseLifecycleDialogMode,
-  { title: string; description: string; confirmLabel: string }
-> = {
-  delete: {
-    title: 'Delete expense?',
-    description: 'This draft expense will be removed. Use only for mistaken PLANNED cards.',
-    confirmLabel: 'Delete',
-  },
-  cancel: {
-    title: 'Cancel expense?',
-    description:
-      'The expense will move to Cancelled and stay in history. Payments and journal lines are preserved.',
-    confirmLabel: 'Cancel expense',
-  },
-};
-
 export function DeleteExpenseDialog({
   expenseName,
   mode,
@@ -43,7 +27,19 @@ export function DeleteExpenseDialog({
   onConfirm,
   forceNestedBackdrop = false,
 }: DeleteExpenseDialogProps) {
-  const copy = COPY[mode];
+  const t = useTranslations('expenses');
+  const copy =
+    mode === 'delete'
+      ? {
+          title: t('dialogs.deleteTitle'),
+          description: t('dialogs.deleteDescription'),
+          confirmLabel: t('dialogs.deleteConfirm'),
+        }
+      : {
+          title: t('dialogs.cancelTitle'),
+          description: t('dialogs.cancelDescription'),
+          confirmLabel: t('dialogs.cancelConfirm'),
+        };
   return (
     <DeleteConfirmDialog
       level="simple"

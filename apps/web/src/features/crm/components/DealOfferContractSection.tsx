@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { FileText } from 'lucide-react';
 import { DetailSheetCollapsibleSection } from '@/components/shared';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
@@ -23,6 +24,7 @@ export function DealOfferContractSection({
   gateRequiredFields = new Set(),
   onFilesChanged,
 }: DealOfferContractSectionProps) {
+  const t = useTranslations('crm');
   const offerRequired = gateRequiredFields.has('offerProof');
   const contractRequired = gateRequiredFields.has('contractProof');
   const { open, onOpenChange } = useDealSheetSectionCollapse(
@@ -36,7 +38,7 @@ export function DealOfferContractSection({
   return (
     <DetailSheetCollapsibleSection
       id={DEAL_SHEET_SECTION.OFFER_CONTRACT}
-      title="Offer & contract"
+      title={t('dealSheet.sectionOfferContract')}
       icon={<FileText size={12} />}
       open={open}
       onOpenChange={onOpenChange}
@@ -48,7 +50,7 @@ export function DealOfferContractSection({
           <DealFilesBlock
             dealId={dealId}
             purpose="OFFER"
-            outlinedLabel="Offer"
+            outlinedLabel={t('dealSheet.files.offer')}
             onFilesChanged={onFilesChanged}
           />
         </div>
@@ -61,7 +63,7 @@ export function DealOfferContractSection({
           <DealFilesBlock
             dealId={dealId}
             purpose="CONTRACT"
-            outlinedLabel="Contract"
+            outlinedLabel={t('dealSheet.files.contract')}
             onFilesChanged={onFilesChanged}
           />
         </div>

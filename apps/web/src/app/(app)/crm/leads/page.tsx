@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Plus, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -70,24 +71,14 @@ import { CrmPipelineScopeBanner } from '@/features/crm/components/CrmPipelineSco
 import { getLocalLeadStageGateErrors } from '@/features/crm/lead-stage-gate';
 import { CRM_OPEN_LEAD_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
+import {
+  localizeLeadPipelineFilterConfigs,
+  translateLeadStageLabel,
+} from '@/features/crm/i18n/crm-copy';
+import { getLeadSpamOrSqlConfirmCopy } from '@/features/crm/i18n/lead-stage-confirm-copy';
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
-
-const LEAD_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
-  {
-    value: 'kanban',
-    label: 'Board',
-    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'Kanban board view',
-  },
-  {
-    value: 'list',
-    label: 'List',
-    icon: <List className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'List view',
-  },
-];
 
 interface PendingLeadTransition {
   id: string;
@@ -99,9 +90,27 @@ interface PendingLeadTransition {
 }
 
 function LeadsPipelinePageContent() {
+  const t = useTranslations('crm');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const leadViewOptions: ViewModeOption<ViewMode>[] = useMemo(
+    () => [
+      {
+        value: 'kanban',
+        label: t('leads.viewBoard'),
+        icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+        ariaLabel: t('leads.viewBoardAria'),
+      },
+      {
+        value: 'list',
+        label: t('leads.viewList'),
+        icon: <List className="size-3.5 shrink-0" aria-hidden />,
+        ariaLabel: t('leads.viewListAria'),
+      },
+    ],
+    [t],
+  );
   const [trashLeads, setTrashLeads] = useState<Lead[]>([]);
   const [trashLoading, setTrashLoading] = useState(false);
   const [trashError, setTrashError] = useState<string | null>(null);
@@ -216,11 +225,11 @@ function LeadsPipelinePageContent() {
       setTrashLeads(data.items);
       setTrashError(null);
     } catch {
-      setTrashError('Leads could not be loaded. Check your connection and try again.');
+      setTrashError(t('leads.loadError'));
     } finally {
       setTrashLoading(false);
     }
-  }, [assignedTo, filters.source, scope, search, statusFilter]);
+  }, [assignedTo, filters.source, scope, search, statusFilter, t]);
 
   useEffect(() => {
     if (isTrashView) void fetchTrashLeads();
@@ -289,7 +298,7 @@ function LeadsPipelinePageContent() {
         setSheetOpen(true);
       } catch {
         if (!cancelled) {
-          toast.error('Lead not found or you cannot open it.');
+          toast.error(t('leads.notFound'));
           stripOpenLeadFromUrl();
         }
       }
@@ -297,7 +306,7 @@ function LeadsPipelinePageContent() {
     return () => {
       cancelled = true;
     };
-  }, [openLeadId, loading, leads, setLeads, stripOpenLeadFromUrl]);
+  }, [openLeadId, loading, leads, setLeads, stripOpenLeadFromUrl, t]);
 
   const handleLeadCreated = async (lead: Lead, options?: { openFull?: boolean }) => {
     if (!isTrashView) upsertBoardItem(lead);
@@ -364,10 +373,10 @@ function LeadsPipelinePageContent() {
         }
       }
       if (isBusinessTransitionApiError(err)) {
-        toast.error(getApiErrorMessage(err, 'Lead stage change is not available.'));
+        toast.error(getApiErrorMessage(err, t('leads.stageUnavailable')));
         return;
       }
-      toast.error(err instanceof Error ? err.message : 'Lead stage change was blocked.');
+      toast.error(err instanceof Error ? err.message : t('leads.stageBlocked'));
     }
   };
 
@@ -376,37 +385,24 @@ function LeadsPipelinePageContent() {
     if (!lead || lead.status === status) return;
 
     if (lead.status === 'SQL') {
-      toast.error('Lead Won is closed. Create a new Lead if this was closed by mistake.');
+      toast.error(t('leads.wonClosed'));
       return;
     }
 
     if (lead.status === 'SPAM' && status === 'SQL') {
-      toast.error('Restore the Lead to an active stage before qualifying it as Lead Won.');
+      toast.error(t('leads.restoreBeforeWon'));
       return;
     }
 
-    if (status === 'SPAM') {
+    const confirmCopy = getLeadSpamOrSqlConfirmCopy(t, status);
+    if (confirmCopy) {
       setPendingTransition({
         id,
         status,
-        title: 'Mark Lead as Spam?',
-        description:
-          'This will close the Lead as spam. You can restore it later if it was moved by mistake.',
-        confirmLabel: 'Mark as Spam',
-        variant: 'danger',
-      });
-      return;
-    }
-
-    if (status === 'SQL') {
-      setPendingTransition({
-        id,
-        status,
-        title: 'Qualify Lead as Won?',
-        description:
-          'This will close the Lead as a qualified Lead and create a Deal when required fields pass validation.',
-        confirmLabel: 'Qualify Lead',
-        variant: 'success',
+        title: confirmCopy.title,
+        description: confirmCopy.description,
+        confirmLabel: confirmCopy.confirmLabel,
+        variant: confirmCopy.variant,
       });
       return;
     }
@@ -444,21 +440,21 @@ function LeadsPipelinePageContent() {
 
     try {
       await leadsApi.moveToTrash(id);
-      toast.success('Lead moved to Trash');
+      toast.success(t('leads.movedToTrash'));
     } catch {
       setLeads(() => previousLeads);
-      toast.error('Could not move lead to Trash');
+      toast.error(t('leads.moveToTrashError'));
     }
   };
 
   const handleRestore = async (id: string) => {
     try {
       const restored = await leadsApi.restore(id);
-      toast.success('Lead restored');
+      toast.success(t('leads.restored'));
       setSelectedLead(restored);
       await fetchLeads();
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Could not restore lead'));
+      toast.error(getApiErrorMessage(err, t('leads.restoreError')));
     }
   };
 
@@ -468,14 +464,14 @@ function LeadsPipelinePageContent() {
     setPurging(true);
     try {
       await leadsApi.permanentDelete(id);
-      toast.success('Lead permanently deleted');
+      toast.success(t('leads.permanentlyDeleted'));
       permanentDeleteConfirm.clear();
       setSheetOpen(false);
       setSelectedLead(null);
       stripOpenLeadFromUrl();
       await fetchLeads();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not delete lead');
+      toast.error(err instanceof Error ? err.message : t('leads.deleteError'));
     } finally {
       setPurging(false);
     }
@@ -504,11 +500,15 @@ function LeadsPipelinePageContent() {
   );
 
   const kanbanStages = useMemo(() => {
-    if (statusFilter) {
-      return LEAD_STAGES.filter((stage) => stage.key === statusFilter);
-    }
-    return LEAD_STAGES;
-  }, [statusFilter]);
+    const stages = statusFilter
+      ? LEAD_STAGES.filter((stage) => stage.key === statusFilter)
+      : LEAD_STAGES;
+    return stages.map((stage) => ({
+      ...stage,
+      label: translateLeadStageLabel(t, stage.key),
+      shortLabel: translateLeadStageLabel(t, stage.key, 'short'),
+    }));
+  }, [statusFilter, t]);
 
   const kanbanColumns = useMemo(
     () =>
@@ -521,11 +521,24 @@ function LeadsPipelinePageContent() {
     [columnMeta, boardScope, leads, isTrashView, kanbanStages, statusFilter],
   );
 
-  const leadTerminalZones = useMemo(() => buildTerminalDropZones(LEAD_STAGES), []);
+  const leadTerminalZones = useMemo(
+    () =>
+      buildTerminalDropZones(
+        LEAD_STAGES.map((stage) => ({
+          ...stage,
+          label: translateLeadStageLabel(t, stage.key),
+        })),
+      ),
+    [t],
+  );
 
   const filterConfigs = useMemo(
-    () => buildLeadPipelineFilterConfigs(responsibleEmployees, meId),
-    [meId, responsibleEmployees],
+    () =>
+      localizeLeadPipelineFilterConfigs(
+        buildLeadPipelineFilterConfigs(responsibleEmployees, meId),
+        t,
+      ),
+    [meId, responsibleEmployees, t],
   );
 
   const moduleHeroSlots = useMemo(
@@ -534,7 +547,7 @@ function LeadsPipelinePageContent() {
         <IntegratedSearchFilters
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search leads by name, email, phone…"
+          searchPlaceholder={t('leads.searchPlaceholder')}
           filters={showDesktopBoardChrome ? filterConfigs : undefined}
           filterValues={
             showDesktopBoardChrome
@@ -561,19 +574,19 @@ function LeadsPipelinePageContent() {
         />
       ),
       viewMode: showDesktopBoardChrome ? (
-        <ViewModeSwitch value={view} onChange={setView} options={LEAD_VIEW_OPTIONS} />
+        <ViewModeSwitch value={view} onChange={setView} options={leadViewOptions} />
       ) : null,
       trailing: (
         <div className="flex items-center gap-2">
           <ClientsDirectorySettingsSheet
             listScope={scope}
             onListScopeChange={setScope}
-            entityLabel="leads"
+            entityLabel={t('leads.entityPlural')}
           />
           {!isTrashView ? (
             <Button onClick={() => setShowCreate(true)}>
               <Plus size={16} aria-hidden />
-              New Lead
+              {t('leads.newLead')}
             </Button>
           ) : null}
         </div>
@@ -583,11 +596,13 @@ function LeadsPipelinePageContent() {
       filterConfigs,
       filters,
       isTrashView,
+      leadViewOptions,
       scope,
       search,
       setFilters,
       setScope,
       showDesktopBoardChrome,
+      t,
       view,
     ],
   );
@@ -598,7 +613,9 @@ function LeadsPipelinePageContent() {
     <div className="flex h-full min-w-0 flex-col gap-5">
       {isTrashView ? (
         <ClientsDirectoryTrashBanner
-          entityLabel="leads"
+          entityLabel={t('leads.entityPlural')}
+          message={t('leads.trashBanner')}
+          backLabel={t('leads.backToActive')}
           onBackToActive={() => setScope('active')}
         />
       ) : null}
@@ -609,17 +626,15 @@ function LeadsPipelinePageContent() {
       ) : leads.length === 0 ? (
         <EmptyState
           icon={Users}
-          title={isTrashView ? 'Trash is empty' : 'No leads yet'}
+          title={isTrashView ? t('leads.emptyTrashTitle') : t('leads.emptyTitle')}
           description={
-            isTrashView
-              ? 'Removed leads will appear here until restored or purged.'
-              : 'Add your first lead to start building your pipeline'
+            isTrashView ? t('leads.emptyTrashDescription') : t('leads.emptyDescription')
           }
           action={
             isTrashView ? undefined : (
               <Button onClick={() => setShowCreate(true)}>
                 <Plus size={16} />
-                Create First Lead
+                {t('leads.createFirstLead')}
               </Button>
             )
           }
@@ -637,8 +652,12 @@ function LeadsPipelinePageContent() {
             onReorderWithinColumn={handleReorder}
             onColumnLoadMore={loadMoreColumn}
             columnWidth={270}
-            emptyMessage="No leads"
-            columnQuickCreate={createLeadKanbanQuickCreateConfig((lead) => handleLeadCreated(lead))}
+            emptyMessage={t('leads.emptyColumn')}
+            columnQuickCreate={createLeadKanbanQuickCreateConfig((lead) => handleLeadCreated(lead), {
+              buttonLabel: t('leads.quickCreateButton'),
+              titlePlaceholder: t('leads.quickCreatePlaceholder'),
+              titleAriaLabel: t('leads.quickCreateAria'),
+            })}
             terminalDropZones={
               shouldShowTerminalDropBar(boardScope) ? leadTerminalZones : undefined
             }
@@ -700,7 +719,7 @@ function LeadsPipelinePageContent() {
                 const lead =
                   selectedLead?.id === id ? selectedLead : leads.find((item) => item.id === id);
                 if (!lead) return;
-                deleteConfirm.request({ id, name: lead.name ?? 'Lead' });
+                deleteConfirm.request({ id, name: lead.name ?? t('common.entityLead') });
               }
         }
         onRestore={isTrashView ? (id) => void handleRestore(id) : undefined}
@@ -710,7 +729,7 @@ function LeadsPipelinePageContent() {
                 const lead =
                   selectedLead?.id === id ? selectedLead : leads.find((item) => item.id === id);
                 if (!lead) return;
-                permanentDeleteConfirm.request({ id, name: lead.name ?? 'Lead' });
+                permanentDeleteConfirm.request({ id, name: lead.name ?? t('common.entityLead') });
               }
             : undefined
         }
@@ -723,7 +742,7 @@ function LeadsPipelinePageContent() {
         open={Boolean(pendingTransition)}
         title={pendingTransition?.title ?? ''}
         description={pendingTransition?.description ?? ''}
-        confirmLabel={pendingTransition?.confirmLabel ?? 'Confirm'}
+        confirmLabel={pendingTransition?.confirmLabel ?? t('common.confirm')}
         variant={pendingTransition?.variant ?? 'success'}
         onOpenChange={(open) => {
           if (!open) setPendingTransition(null);
@@ -741,8 +760,8 @@ function LeadsPipelinePageContent() {
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
-        title="Move lead to Trash?"
-        description="The lead will be removed from the active pipeline. You can restore it from Trash later."
+        title={t('leads.moveToTrashTitle')}
+        description={t('leads.moveToTrashDescription')}
         forceNestedBackdrop
         onConfirm={() => {
           const id = deleteConfirm.target?.id;

@@ -41,7 +41,7 @@ export function DashboardDeskHeader() {
           />
         ) : null}
         <div className="min-w-0">
-          <h1 className="nbos-display text-foreground min-w-0 text-2xl leading-snug text-balance break-words sm:text-3xl md:text-4xl">
+          <h1 className="nbos-display text-foreground min-w-0 text-xl leading-snug text-balance break-words sm:text-2xl md:text-3xl">
             {copy.title}
           </h1>
           <p className="text-muted-foreground mt-2 min-w-0 text-sm leading-relaxed break-words">

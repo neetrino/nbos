@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { FileText, Building2, User, Layers, Repeat, Handshake } from 'lucide-react';
 import {
   DetailSheetEntityLinkCard,
@@ -10,6 +11,7 @@ import {
 } from '@/components/shared';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { getInvoiceSourceLabel } from '@/features/finance/utils/invoice-source-label';
+import { invoiceSourceMessageKey } from './invoice-message-keys';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
 import { subscriptionsListWithOpenSubscriptionHref } from '@/features/finance/constants/subscription-deep-link';
 import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
@@ -25,8 +27,14 @@ import { INVOICE_GATE_FIELD_COMPANY } from '@/features/finance/constants/invoice
 export type InvoiceSheetInvoice = Invoice;
 
 export function InvoiceSheetBadge({ invoice }: { invoice: InvoiceSheetInvoice }) {
+  const t = useTranslations('invoices');
+  const sourceKey = invoiceSourceMessageKey(invoice);
   return (
-    <StatusBadge label={getInvoiceSourceLabel(invoice)} variant="blue" className="self-center" />
+    <StatusBadge
+      label={sourceKey ? t(sourceKey) : getInvoiceSourceLabel(invoice)}
+      variant="blue"
+      className="self-center"
+    />
   );
 }
 

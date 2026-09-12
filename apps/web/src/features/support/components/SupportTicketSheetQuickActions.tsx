@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -51,20 +52,21 @@ export function SupportTicketSheetQuickActions({
   onReloadTicket,
   onListInvalidate,
 }: SupportTicketSheetQuickActionsProps) {
+  const t = useTranslations('support');
   const terminal = ticket.status === 'RESOLVED' || ticket.status === 'CLOSED';
 
   const actions = useMemo((): QuickActionItem[] => {
     const items: QuickActionItem[] = [
       {
         id: 'escalate',
-        label: 'Escalate',
+        label: t('actions.escalate'),
         icon: AlertTriangle,
         enabled: !terminal,
         onClick: () => onRequestEscalate(ticket),
       },
       {
         id: 'technical',
-        label: 'Technical',
+        label: t('actions.technical'),
         icon: Server,
         enabled: !terminal,
         onClick: () => onRequestTechnical(ticket),
@@ -74,7 +76,7 @@ export function SupportTicketSheetQuickActions({
     if (terminal) {
       items.push({
         id: 'reopen',
-        label: 'Reopen',
+        label: t('actions.reopen'),
         icon: RotateCcw,
         enabled: true,
         onClick: () => {
@@ -84,7 +86,7 @@ export function SupportTicketSheetQuickActions({
               await onReloadTicket();
               onListInvalidate();
             } catch (caught) {
-              toast.error(getApiErrorMessage(caught, 'Ticket could not be reopened.'));
+              toast.error(getApiErrorMessage(caught, t('actions.reopenFailed')));
             }
           })();
         },
@@ -92,7 +94,7 @@ export function SupportTicketSheetQuickActions({
     } else {
       items.push({
         id: 'resolve',
-        label: 'Mark resolved',
+        label: t('actions.markResolved'),
         icon: CheckCircle2,
         enabled: true,
         onClick: () => onRequestResolve(ticket),
@@ -102,7 +104,7 @@ export function SupportTicketSheetQuickActions({
     if (ticket.status === 'RESOLVED') {
       items.push({
         id: 'close',
-        label: 'Close',
+        label: t('actions.close'),
         icon: XCircle,
         enabled: true,
         onClick: () => onRequestClose(ticket),
@@ -117,6 +119,7 @@ export function SupportTicketSheetQuickActions({
     onRequestEscalate,
     onRequestResolve,
     onRequestTechnical,
+    t,
     terminal,
     ticket,
   ]);
@@ -133,7 +136,7 @@ export function SupportTicketSheetQuickActions({
             className={cn(DROPDOWN_TRIGGER_CHEVRON_ROTATE_CLASS, 'gap-1.5', props.className)}
           >
             <Zap size={14} aria-hidden />
-            Quick actions
+            {t('actions.quickActions')}
             <ChevronDown size={14} className="opacity-60" aria-hidden />
           </Button>
         )}

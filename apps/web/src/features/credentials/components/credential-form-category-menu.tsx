@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Select,
   SelectContent,
@@ -35,18 +36,19 @@ export function CredentialFormCategoryMenu({
   categoryLocked,
   onCategoryChange,
 }: CredentialFormCategoryMenuProps) {
+  const t = useTranslations('credentials');
   const CategoryIcon = credentialCategoryIcon(category);
 
   return (
     <div className="grid gap-2">
-      <CredentialFormFieldLabel label="Category" icon={CategoryIcon} />
+      <CredentialFormFieldLabel label={t('form.category')} icon={CategoryIcon} />
       <Select
         value={category}
         onValueChange={(value) => onCategoryChange(value ?? category)}
         disabled={categoryLocked}
       >
         <SelectTrigger>
-          <SelectValue placeholder="Select category">
+          <SelectValue placeholder={t('form.selectCategory')}>
             {(value: string | null) =>
               value ? (
                 <CredentialFormSelectOption

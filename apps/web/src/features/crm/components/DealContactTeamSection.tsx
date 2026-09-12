@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Building2, User, UserCog } from 'lucide-react';
 import {
   DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
@@ -35,6 +36,7 @@ export function DealContactTeamSection({
   sectionClassName,
   gateRequiredFields = new Set(),
 }: DealContactTeamSectionProps) {
+  const t = useTranslations('crm');
   const contactsPicker = useRelationPickerActions('contact', 'deal-contacts');
   const contactRelationSearch = useContactRelationSearch();
   const employeePicker = useRelationPickerActions('employee');
@@ -42,14 +44,14 @@ export function DealContactTeamSection({
   return (
     <DetailSheetSection
       id={DEAL_SHEET_SECTION.CONTACT_TEAM}
-      title="Contact & team"
+      title={t('dealSheet.sectionContactTeam')}
       icon={<User size={12} />}
       className={sectionClassName}
     >
       <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2 sm:items-stretch sm:gap-0">
         <div className="min-w-0 space-y-4 sm:pr-5">
           <RelationPickerField
-            label="Seller"
+            label={t('leadSheet.seller')}
             entityKind="employee"
             value={draft.sellerId}
             selectionLabel={
@@ -71,7 +73,7 @@ export function DealContactTeamSection({
           />
 
           <RelationPickerField
-            label="Sales assistant"
+            label={t('dealSheet.salesAssistant')}
             entityKind="employee"
             value={draft.sellerAssistantId}
             selectionLabel={
@@ -102,7 +104,7 @@ export function DealContactTeamSection({
           />
 
           <RelationPickerField
-            label="PM assigned"
+            label={t('dealSheet.pmAssigned')}
             entityKind="employee"
             value={draft.pmId}
             selectionLabel={
@@ -127,13 +129,13 @@ export function DealContactTeamSection({
 
         <div className={`min-w-0 space-y-4 sm:h-full ${DETAIL_SHEET_COLUMN_DIVIDER_CLASS}`}>
           <RelationPickerField
-            label="Contacts"
+            label={t('leadSheet.contacts')}
             entityKind="contact"
             multiple
             value={draft.contactIds}
             selectionLabels={draft.contactLabels}
             className={dealStageGateFieldClass(gateRequiredFields, 'contactId')}
-            placeholder="Search or create contact…"
+            placeholder={t('dealSheet.searchOrCreateContact')}
             icon={<User size={12} />}
             disabled={disabled}
             onSearch={contactRelationSearch}

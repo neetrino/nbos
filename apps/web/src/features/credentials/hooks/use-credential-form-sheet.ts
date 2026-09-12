@@ -71,7 +71,7 @@ export function useCredentialFormSheet(props: CredentialFormSheetProps) {
     requestSecretAction: actions.requestSecretAction,
     copySecretField: actions.copySecretField,
     downloadEnvBundle: actions.downloadEnvBundle,
-    submitLabel: props.submitLabel ?? 'Save',
+    submitLabel: props.submitLabel,
     folderOptions: state.scopedFolderOptions,
     onOpenChange: props.onOpenChange,
   };

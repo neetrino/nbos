@@ -6,3 +6,9 @@ export const CRM_MODULE_NAV: PageHeroNavLinkItem[] = [
   { href: '/crm/leads', label: 'Leads', icon: Megaphone },
   { href: '/crm/deals', label: 'Deals', icon: Handshake },
 ];
+
+export const CRM_MODULE_NAV_LABEL_KEYS = {
+  '/crm/dashboard': 'nav.dashboard',
+  '/crm/leads': 'nav.leads',
+  '/crm/deals': 'nav.deals',
+} as const;

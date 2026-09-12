@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { RelationPickerField } from '@/components/shared';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import type { ProductEmployee } from '@/lib/api/products';
@@ -11,18 +12,19 @@ function personName(p: ProductEmployee | null | undefined): string {
 }
 
 export function SellerReadOnlyRow({ seller }: { seller: ProductEmployee | null | undefined }) {
+  const t = useTranslations('deliveryBoard');
   const employeePicker = useRelationPickerActions('employee');
   const name = personName(seller);
 
   return (
     <RelationPickerField
-      label="Seller"
+      label={t('team.seller')}
       entityKind="employee"
       value={seller?.id ?? null}
       selectionLabel={name || null}
       selectionAvatar={seller?.avatar}
       selectionSubtitle={seller?.email ?? null}
-      placeholder="Not assigned"
+      placeholder={t('team.notAssigned')}
       readOnly
       onSearch={async () => []}
       onSelect={() => {}}

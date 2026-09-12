@@ -10,9 +10,19 @@ const TAB_ICONS = {
   history: History,
 } as const;
 
+export interface DeliveryDetailSheetTabLabels {
+  general: string;
+  workspace: string;
+  calls: string;
+  bonus: string;
+  history: string;
+  createTask: string;
+}
+
 interface BuildDeliveryDetailSheetTabsOptions {
   canQuickCreateTask: boolean;
   onQuickCreateTask: () => void;
+  labels: DeliveryDetailSheetTabLabels;
 }
 
 /** Adds hover + on Work Space when task create is allowed. */
@@ -22,7 +32,7 @@ export function buildDeliveryDetailSheetTabs(
   return DELIVERY_DETAIL_TABS.map((tab) => {
     const item: DetailSheetTabItem = {
       value: tab.id,
-      label: tab.label,
+      label: options.labels[tab.id],
       icon: TAB_ICONS[tab.id],
     };
     if (tab.id === 'workspace' && options.canQuickCreateTask) {
@@ -30,7 +40,7 @@ export function buildDeliveryDetailSheetTabs(
         ...item,
         quickCreate: {
           onCreate: options.onQuickCreateTask,
-          ariaLabel: 'Create task',
+          ariaLabel: options.labels.createTask,
         },
       };
     }

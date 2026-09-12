@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useSyncExternalStore } from 'react';
+import { useTranslations } from 'next-intl';
 import { Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -8,10 +9,9 @@ import { usePermission } from '@/lib/permissions';
 import type { ClickToCallTargetType } from '@/lib/api/calls';
 import {
   canShowClickToCallButton,
-  CLICK_TO_CALL_NEW_CALL_LABEL,
-  clickToCallButtonLabel,
   clickToCallButtonVariant,
   hasClickToCallPermission,
+  type ClickToCallUiState,
 } from './click-to-call-status';
 import {
   hasStoredClickToCallIdempotencyKey,
@@ -46,9 +46,12 @@ function useClickToCallVisibility(params: ClickToCallButtonProps) {
 }
 
 export function ClickToCallButton(props: ClickToCallButtonProps) {
+  const t = useTranslations('crm');
   const { visible, state, start, startNewCall, hasPendingKey, targetType, targetId } =
     useClickToCallVisibility(props);
   if (!visible) return null;
+  const label = localizeClickToCallLabel(t, state);
+  const newCallLabel = t('call.newCall');
 
   return (
     <span className="inline-flex items-center gap-1">
@@ -59,7 +62,7 @@ export function ClickToCallButton(props: ClickToCallButtonProps) {
         variant={clickToCallButtonVariant(state)}
         disabled={state === 'loading'}
         aria-busy={state === 'loading'}
-        aria-label={clickToCallButtonLabel(state)}
+        aria-label={label}
         onClick={() => void start({ targetType, targetId })}
       >
         <Phone
@@ -68,7 +71,7 @@ export function ClickToCallButton(props: ClickToCallButtonProps) {
             state === 'success' || state === 'loading' ? 'nbos-animate-pulse-soft' : undefined
           }
         />
-        {clickToCallButtonLabel(state)}
+        {label}
       </Button>
       {hasPendingKey ? (
         <Button
@@ -76,10 +79,10 @@ export function ClickToCallButton(props: ClickToCallButtonProps) {
           size="sm"
           variant="ghost"
           disabled={state === 'loading'}
-          aria-label={CLICK_TO_CALL_NEW_CALL_LABEL}
+          aria-label={newCallLabel}
           onClick={() => void startNewCall({ targetType, targetId })}
         >
-          {CLICK_TO_CALL_NEW_CALL_LABEL}
+          {newCallLabel}
         </Button>
       ) : null}
     </span>
@@ -88,6 +91,7 @@ export function ClickToCallButton(props: ClickToCallButtonProps) {
 
 /** Settings-menu items for the same click-to-call actions as {@link ClickToCallButton}. */
 export function ClickToCallMenuItems(props: ClickToCallButtonProps) {
+  const t = useTranslations('crm');
   const { visible, state, start, startNewCall, hasPendingKey, targetType, targetId } =
     useClickToCallVisibility(props);
   if (!visible) return null;
@@ -99,7 +103,7 @@ export function ClickToCallMenuItems(props: ClickToCallButtonProps) {
         onClick={() => void start({ targetType, targetId })}
       >
         <Phone />
-        {clickToCallButtonLabel(state)}
+        {localizeClickToCallLabel(t, state)}
       </DropdownMenuItem>
       {hasPendingKey ? (
         <DropdownMenuItem
@@ -107,11 +111,21 @@ export function ClickToCallMenuItems(props: ClickToCallButtonProps) {
           onClick={() => void startNewCall({ targetType, targetId })}
         >
           <Phone />
-          {CLICK_TO_CALL_NEW_CALL_LABEL}
+          {t('call.newCall')}
         </DropdownMenuItem>
       ) : null}
     </>
   );
+}
+
+function localizeClickToCallLabel(
+  t: ReturnType<typeof useTranslations<'crm'>>,
+  state: ClickToCallUiState,
+): string {
+  if (state === 'loading') return t('call.loading');
+  if (state === 'success') return t('call.success');
+  if (state === 'error') return t('call.error');
+  return t('call.idle');
 }
 
 function serverPendingKeySnapshot(): boolean {

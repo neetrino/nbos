@@ -13,6 +13,7 @@ export function payrollAuditActionLabel(action: string): string {
   return action;
 }
 
+/** English fallback labels. Prefer `PAYROLL_RUN_STATUS_MESSAGE_KEY` at render. */
 export const PAYROLL_RUN_STATUS_LABEL: Record<PayrollRunStatus, string> = {
   DRAFT: 'Draft',
   REVIEW: 'Review',
@@ -21,22 +22,40 @@ export const PAYROLL_RUN_STATUS_LABEL: Record<PayrollRunStatus, string> = {
   CLOSED: 'Closed',
 };
 
+export const PAYROLL_RUN_STATUS_MESSAGE_KEY = {
+  DRAFT: 'status.DRAFT',
+  REVIEW: 'status.REVIEW',
+  APPROVED: 'status.APPROVED',
+  PAYING: 'status.PAYING',
+  CLOSED: 'status.CLOSED',
+} as const;
+
+export type PayrollRunStatusMessageKey =
+  (typeof PAYROLL_RUN_STATUS_MESSAGE_KEY)[PayrollRunStatus];
+
+export type PayrollRunActionMessageKey =
+  | 'actions.sendToReview'
+  | 'actions.approve'
+  | 'actions.returnToDraft'
+  | 'actions.markPaying'
+  | 'actions.closeRun';
+
 /** Workflow actions (must stay aligned with API `canTransitionPayrollRun`). */
 export function payrollRunActionOptions(
   status: PayrollRunStatus,
-): readonly { label: string; to: PayrollRunStatus }[] {
+): readonly { labelKey: PayrollRunActionMessageKey; to: PayrollRunStatus }[] {
   switch (status) {
     case 'DRAFT':
-      return [{ label: 'Send to review', to: 'REVIEW' }];
+      return [{ labelKey: 'actions.sendToReview', to: 'REVIEW' }];
     case 'REVIEW':
       return [
-        { label: 'Approve', to: 'APPROVED' },
-        { label: 'Return to draft', to: 'DRAFT' },
+        { labelKey: 'actions.approve', to: 'APPROVED' },
+        { labelKey: 'actions.returnToDraft', to: 'DRAFT' },
       ];
     case 'APPROVED':
-      return [{ label: 'Mark paying', to: 'PAYING' }];
+      return [{ labelKey: 'actions.markPaying', to: 'PAYING' }];
     case 'PAYING':
-      return [{ label: 'Close run', to: 'CLOSED' }];
+      return [{ labelKey: 'actions.closeRun', to: 'CLOSED' }];
     default:
       return [];
   }

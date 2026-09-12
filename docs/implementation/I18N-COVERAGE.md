@@ -36,7 +36,14 @@ This file is the working register for stages 0–5. It does not expand scope to 
 | `tasks`             | `messages/{en,ru}/tasks.json`               | Stage 6 Tasks list / filters / sheet chrome  |
 | `search`            | `messages/{en,ru}/search.json`              | Stage 6 Global Search panel                  |
 | `notifications`     | `messages/{en,ru}/notifications.json`       | Stage 6 inbox sheet + Notification Center |
-| `workSpaces`        | `messages/{en,ru}/work-spaces.json`         | Stage 6 Work Spaces directory + detail chrome |
+| `workSpaces`        | `messages/{en,ru}/work-spaces.json`         | Stage 6 Work Spaces directory + detail + scrum/drive/AI |
+| `crm`               | `messages/{en,ru}/crm.json`                 | Stage 6 Leads + Deals + CRM nav/dashboard |
+| `support`           | `messages/{en,ru}/support.json`             | Stage 6 Support tickets + Change Control chrome |
+| `invoices`          | `messages/{en,ru}/invoices.json`            | Stage 6 Finance invoices list/sheet/create |
+| `deliveryBoard`     | `messages/{en,ru}/delivery-board.json`      | Stage 6 Delivery Board list/hero + sheet chrome |
+| `payroll`           | `messages/{en,ru}/payroll.json`             | Stage 6 Payroll runs + salary board chrome |
+| `credentials`       | `messages/{en,ru}/credentials.json`         | Stage 6 Credentials vault + form chrome |
+| `expenses`          | `messages/{en,ru}/expenses.json`            | Stage 6 Pay Now / expense list + sheet |
 
 Completed-namespace key parity (EN/RU) is enforced only for finished slices.
 
@@ -97,7 +104,17 @@ Lead **Full** button label is in scope; the Lead sheet it opens is not. Task `Fu
 | Recurring list / cards / sheet | `RecurringTasksPageView.tsx`, `RecurringTaskCard.tsx`, `RecurringTaskSheet*.tsx`, `RecurringTask*Fields.tsx`, `use-recurring-tasks.ts` | System chrome; template title/description/checklist item text stay user data; persisted default checklist title stays `Checklist` | `tasks.recurring` / `common` | en_ru |
 | Automation catalog page | `app/(app)/tasks/automation/page.tsx` | Page chrome only; rule `code` / `module` / `trigger` / `description` and blueprint type codes stay API data | `tasks.automation` / `common` | en_ru |
 | Work Spaces directory / cards / table / create | `WorkSpacesPage.tsx`, `WorkSpaceListTable.tsx`, `WorkSpaceNavigableCard`, `CreateStandaloneWorkSpaceDialog.tsx` | System chrome; space name/description and linked project/product names stay user data; type/mode **codes** stay codes | `workSpaces` / `common` | en_ru |
-| Work Spaces detail chrome | `WorkSpaceDetailPage.tsx`, area tabs, settings, edit, discussion trigger/header, runtime empty/filters | System chrome; task titles stay user data; Scrum planner / Drive sheet / AI Access stay English | `workSpaces` / `tasks` / `common` | en_ru |
+| Work Spaces detail chrome | `WorkSpaceDetailPage.tsx`, area tabs, settings, edit, discussion trigger/header, runtime empty/filters | System chrome; task titles stay user data | `workSpaces` / `tasks` / `common` | en_ru |
+| Work Spaces scrum / Drive / AI Access | `workspace-scrum-planner/*`, `WorkSpaceDriveSheet.tsx`, `WorkspaceAiAccessPanel.tsx` | System chrome; sprint/task/file/agent names stay user data; shared Drive create-folder dialog still English | `workSpaces` / `common` | en_ru |
+| EmployeeSheet departments / lifecycle / directory | `EmployeeDepartmentsPanel`, onboarding/offboarding, terminate/reactivate, Team directory, create/invite, departments admin | System chrome; names/emails/dept names stay user data; shared checklist item row and My Company hub still English | `hr` / `common` | en_ru |
+| CRM Leads + Lead sheet | leads page, Lead sheet, Связать/merge, CreateDeal, CRM nav/dashboard | System chrome; lead names/contacts stay user data; Active Call overlay still English | `crm` / `common` | en_ru |
+| CRM Deals + Deal sheet | deals page, Deal sheet (commercial/handoff/WhatsApp/files) | System chrome; deal names/amounts stay user data | `crm` / `common` | en_ru |
+| Support tickets | Support page, board/list, sheet header/actions, create/escalate/status, Change Control chrome | System chrome; ticket titles/messages stay user data; sheet body / technical dialog still English | `support` / `common` | en_ru |
+| Invoices | invoices page, kanban/table, sheet header/general/payments chrome, create, overdue reminders | System chrome; amounts/company names stay user data; record-payment form / history tab still English | `invoices` / `common` | en_ru |
+| Delivery Board | list/hero/filters, pipeline, detail sheet general chrome | System chrome; product/project names stay user data; Pause/Cancel dialog and secondary tabs still English | `deliveryBoard` / `common` | en_ru |
+| Payroll / Salary | payroll runs list/detail, salary board chrome | System chrome; employee names/amounts stay user data; matrix cells / audit trail still English | `payroll` / `common` | en_ru |
+| Credentials vault | vault list/filters/form chrome, delete, emergency panel chrome | System chrome; titles/secrets/URLs stay user data; tiles/bulk/ENV table leftovers still English | `credentials` / `common` | en_ru |
+| Expenses Pay Now | expenses active/backlog/closed, sheet, stages/categories | System chrome; expense names/amounts stay user data; expense plans and client services still English | `expenses` / `common` | en_ru |
 
 ### Nested create flows — out of first release
 
@@ -164,7 +181,7 @@ Matches canon. Do not treat this as a behaviour change.
 - **Restore:** after the client session is authenticated, GET preferences; if it differs from SSR, refresh. Catch does not write `en`.
 - **Cache:** React `cache()` per request only. Preference is not a process-wide query key. Business query keys are unchanged.
 
-Still English on purpose inside first-release chrome: destination pages of Open, Lead sheet behind Full, non-employee relation-picker search placeholders, feature-module dock item labels. Auth pages, emails, PDF, and remaining stage-6 modules are later. Recurring + Automation + Work Spaces directory/detail chrome is EN/RU. Scrum planner, Drive sheet, and AI Access panel stay English.
+Still English on purpose or leftover inside stage 6: My Company hub page, shared checklist item row, Support ticket body/technical dialog, invoice record-payment/history, Delivery Pause/Cancel + secondary tabs, payroll matrix cells/audit, credentials tiles/bulk/ENV, expense plans, client services, Marketing module, Active Call overlay, nested create dialogs, non-employee `Search {kind}s…`, feature-module dock item labels. Auth pages, emails, PDF. HY switcher still off.
 
 ## Stage 5 report — 2026-09-12
 
@@ -221,5 +238,5 @@ Additive migration is in the repo and applied to the authorized Neon database. P
 | 3     | Four create flows                              | en_ru (date-picker chrome sampled live in RU; Meeting 403/conflict/network copy sampled live via request intercept)                                           |
 | 4     | Automated + visual acceptance                  | complete for first-release checks (web typecheck + lint 0 errors; two-user and token-expiry sampled live; auth pages out of scope; production builds not run) |
 | 5     | Review, docs, report                           | report ready; prod schema migrated on ep-sweet-dew; slice not in IMPLEMENTATION_DONE                                                                          |
-| 6     | Rest of platform                               | in_progress (account, wallet, employee sheet, Tasks list+sheet+chat/checklist, Recurring, Automation, Work Spaces directory+detail, search, inbox+center) |
+| 6     | Rest of platform                               | in_progress (account, wallet, HR directory/sheet leftover, Tasks, Recurring, Automation, Work Spaces + scrum/drive/AI, CRM leads/deals, Support, Invoices, Delivery Board, Payroll, Credentials, Expenses Pay Now) |
 | 7     | HY pilot                                       | draft I18N-HY-PILOT.md; switcher still EN/RU only                                                                                                             |

@@ -2,11 +2,10 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { formatAmount } from '@/features/finance/constants/finance';
-import {
-  payrollRunCalendarCellClass,
-  payrollRunStatusUi,
-} from '@/features/finance/constants/payroll-run-status-ui';
+import { PAYROLL_RUN_STATUS_MESSAGE_KEY } from '@/features/finance/constants/payroll-run-ui';
+import { payrollRunCalendarCellClass } from '@/features/finance/constants/payroll-run-status-ui';
 import {
   buildPayrollRunsCalendarModel,
   PAYROLL_CALENDAR_MONTH_NUMBERS,
@@ -48,6 +47,7 @@ const PAYROLL_CALENDAR_MONTH_CELL_CLASS = cn(
 );
 
 export function PayrollRunsCalendarView({ items }: { items: PayrollRunListRow[] }) {
+  const t = useTranslations('payroll');
   const { years, runsByMonthKey } = useMemo(() => buildPayrollRunsCalendarModel(items), [items]);
 
   const monthHeaders = useMemo(
@@ -70,7 +70,7 @@ export function PayrollRunsCalendarView({ items }: { items: PayrollRunListRow[] 
         </colgroup>
         <thead>
           <tr className="bg-muted/40">
-            <th className={STICKY_YEAR_HEADER_CLASS}>Year</th>
+            <th className={STICKY_YEAR_HEADER_CLASS}>{t('calendar.year')}</th>
             {monthHeaders.map(({ monthNum, label }) => (
               <th key={monthNum} className={PAYROLL_CALENDAR_MONTH_HEAD_CLASS}>
                 {label}
@@ -118,7 +118,8 @@ function PayrollCalendarEmptyMonthCell() {
 }
 
 function PayrollCalendarMonthCell({ run }: { run: PayrollRunListRow }) {
-  const statusUi = payrollRunStatusUi(run.status);
+  const t = useTranslations('payroll');
+  const statusLabel = t(PAYROLL_RUN_STATUS_MESSAGE_KEY[run.status]);
   const payable = formatAmount(parseAmount(run.totalPayable));
 
   return (
@@ -129,10 +130,10 @@ function PayrollCalendarMonthCell({ run }: { run: PayrollRunListRow }) {
         PAYROLL_CALENDAR_SLOT_CLASS,
         payrollRunCalendarCellClass(run.status),
       )}
-      aria-label={`${statusUi.label} payroll ${payable}`}
+      aria-label={t('calendar.cellAria', { status: statusLabel, amount: payable })}
     >
       <span className="max-w-full truncate text-[9px] font-semibold tracking-wide uppercase opacity-90">
-        {statusUi.label}
+        {statusLabel}
       </span>
       <span className="max-w-full truncate text-sm leading-tight font-bold tabular-nums">
         {payable}

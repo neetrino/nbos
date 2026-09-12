@@ -1,6 +1,7 @@
 'use client';
 
 import type { KeyboardEvent, ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { Building2, FolderKanban, type LucideIcon } from 'lucide-react';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import {
@@ -10,21 +11,22 @@ import {
 import { formatAmount } from '@/features/finance/constants/finance';
 import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
 import { getInvoiceSourceLabel } from '@/features/finance/utils/invoice-source-label';
+import { invoiceSourceMessageKey } from './invoice-message-keys';
 import { getInvoiceDisplayTitle } from '@/features/finance/utils/order-display';
 import { parseMoneyAmount } from '@/lib/format/money';
 import type { Invoice } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
 
 const COVERAGE_FULL_PERCENT = 100;
-const CARD_DATE_DAY_MONTH_CLASS = 'text-base leading-none font-bold tabular-nums';
-const CARD_DATE_YEAR_CLASS = 'mt-0.5 text-[10px] leading-tight';
-const CARD_DATE_DUE_TONE_CLASS = 'text-orange-500 dark:text-orange-400';
-const CARD_DATE_DUE_YEAR_TONE_CLASS = 'text-orange-500/70 dark:text-orange-400/70';
-const CARD_DATE_OVERDUE_TONE_CLASS = 'text-red-600 dark:text-red-400';
-const CARD_DATE_OVERDUE_YEAR_TONE_CLASS = 'text-red-600/70 dark:text-red-400/70';
-const CARD_DATE_OVERDUE_LABEL = 'overdue';
 const CARD_BADGE_CLASS = 'rounded-full px-2.5 text-[10px] font-semibold tracking-wide';
-
+const CARD_DATE_CLASS = {
+  dayMonth: 'text-base leading-none font-bold tabular-nums',
+  year: 'mt-0.5 text-[10px] leading-tight',
+  due: 'text-orange-500 dark:text-orange-400',
+  dueYear: 'text-orange-500/70 dark:text-orange-400/70',
+  overdue: 'text-red-600 dark:text-red-400',
+  overdueYear: 'text-red-600/70 dark:text-red-400/70',
+} as const;
 const INVOICE_CARD_RELATION_VISUAL: Record<
   'company' | 'project',
   { icon: LucideIcon; iconClassName: string }
@@ -43,9 +45,10 @@ interface InvoiceKanbanCardProps {
   invoice: Invoice;
   onInvoiceClick: (invoice: Invoice) => void;
 }
-
 export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCardProps) {
-  const sourceLabel = getInvoiceSourceLabel(invoice);
+  const t = useTranslations('invoices');
+  const sourceKey = invoiceSourceMessageKey(invoice);
+  const sourceLabel = sourceKey ? t(sourceKey) : getInvoiceSourceLabel(invoice);
   const title = getInvoiceDisplayTitle(invoice);
   const overdueDays = resolveInvoiceOverdueDays(invoice);
   const paidPercent = resolveInvoiceCardPartialPaidPercent(invoice);
@@ -81,6 +84,8 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
           amountLabel={formatAmount(amount, invoice.currency)}
           paidPercent={paidPercent}
           showTax={invoice.taxStatus === 'TAX'}
+          taxLabel={t('card.tax')}
+          paidLabel={t('card.paid')}
         />
 
         {hasMeta ? (
@@ -89,6 +94,7 @@ export function InvoiceKanbanCard({ invoice, onInvoiceClick }: InvoiceKanbanCard
             projectName={invoice.project?.name}
             dueDate={invoice.dueDate}
             overdue={overdueDays > 0}
+            overdueLabel={t('card.overdue')}
           />
         ) : null}
       </div>
@@ -104,10 +110,14 @@ function InvoiceCardAmountRow({
   amountLabel,
   paidPercent,
   showTax,
+  taxLabel,
+  paidLabel,
 }: {
   amountLabel: string;
   paidPercent: number | null;
   showTax: boolean;
+  taxLabel: string;
+  paidLabel: string;
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
@@ -116,11 +126,11 @@ function InvoiceCardAmountRow({
           {amountLabel}
         </p>
         {showTax ? (
-          <StatusBadge label="Tax" variant="green" className={cn('shrink-0', CARD_BADGE_CLASS)} />
+          <StatusBadge label={taxLabel} variant="green" className={cn('shrink-0', CARD_BADGE_CLASS)} />
         ) : null}
       </div>
       {paidPercent !== null ? (
-        <CoveragePill label="Paid" percent={paidPercent} tone="blue" />
+        <CoveragePill label={paidLabel} percent={paidPercent} tone="blue" />
       ) : null}
     </div>
   );
@@ -152,11 +162,13 @@ function InvoiceCardMeta({
   projectName,
   dueDate,
   overdue,
+  overdueLabel,
 }: {
   companyName?: string;
   projectName?: string;
   dueDate?: string | null;
   overdue: boolean;
+  overdueLabel: string;
 }) {
   const relation = resolveInvoiceCardRelation(companyName, projectName);
 
@@ -172,7 +184,9 @@ function InvoiceCardMeta({
           <InvoiceCardRelationRow relation={relation} />
         </div>
       ) : null}
-      {dueDate ? <InvoiceCardDueDate value={dueDate} overdue={overdue} /> : null}
+      {dueDate ? (
+        <InvoiceCardDueDate value={dueDate} overdue={overdue} overdueLabel={overdueLabel} />
+      ) : null}
     </div>
   );
 }
@@ -200,27 +214,35 @@ function InvoiceCardRelationRow({ relation }: { relation: InvoiceCardRelation })
   );
 }
 
-function InvoiceCardDueDate({ value, overdue }: { value: string; overdue: boolean }) {
+function InvoiceCardDueDate({
+  value,
+  overdue,
+  overdueLabel,
+}: {
+  value: string;
+  overdue: boolean;
+  overdueLabel: string;
+}) {
   const parts = resolveEntityCardDateParts(value);
   if (!parts) return null;
 
   const formatted = formatEntityListDate(value) || parts.dayMonth;
-  const label = overdue ? `${formatted} ${CARD_DATE_OVERDUE_LABEL}` : formatted;
+  const label = overdue ? `${formatted} ${overdueLabel}` : formatted;
 
   return (
     <time dateTime={value} aria-label={label} className="shrink-0 text-right">
       <p
         className={cn(
-          CARD_DATE_DAY_MONTH_CLASS,
-          overdue ? CARD_DATE_OVERDUE_TONE_CLASS : CARD_DATE_DUE_TONE_CLASS,
+          CARD_DATE_CLASS.dayMonth,
+          overdue ? CARD_DATE_CLASS.overdue : CARD_DATE_CLASS.due,
         )}
       >
         {parts.dayMonth}
       </p>
       <p
         className={cn(
-          CARD_DATE_YEAR_CLASS,
-          overdue ? CARD_DATE_OVERDUE_YEAR_TONE_CLASS : CARD_DATE_DUE_YEAR_TONE_CLASS,
+          CARD_DATE_CLASS.year,
+          overdue ? CARD_DATE_CLASS.overdueYear : CARD_DATE_CLASS.dueYear,
         )}
       >
         {parts.year}
@@ -256,10 +278,8 @@ function MetaRow({
 function getInvoicePaidPercent(invoice: Invoice): number | null {
   const total = parseMoneyAmount(invoice.amount);
   if (total <= 0) return null;
-
   const paid = invoice.paymentCoverage?.paidAmount;
   if (paid == null) return null;
-
   return Math.min(COVERAGE_FULL_PERCENT, Math.round((paid / total) * 100));
 }
 

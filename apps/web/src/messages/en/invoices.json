@@ -1,0 +1,182 @@
+{
+  "page": {
+    "searchPlaceholder": "Search by invoice, company, order, product…",
+    "settingsTitle": "Invoices — settings",
+    "settingsDescription": "Exports for the current list scope. Period and filters follow the search bar.",
+    "settingsAria": "Invoices settings",
+    "exportCsv": "Export invoices (CSV)",
+    "exportScopeStats": "Export scope stats (CSV)",
+    "newInvoice": "New Invoice",
+    "subscriptionFilter": "Showing invoices linked to this subscription (server filter).",
+    "clearFilter": "Clear filter"
+  },
+  "view": {
+    "board": "Board",
+    "list": "List",
+    "boardAria": "Kanban board view",
+    "listAria": "List view"
+  },
+  "filters": {
+    "status": "Status",
+    "moneyStatus": "Money status",
+    "type": "Type",
+    "period": "Period",
+    "periodOptions": {
+      "month": "Month",
+      "quarter": "Quarter",
+      "year": "Year",
+      "all": "All"
+    }
+  },
+  "boardScope": {
+    "ALL": "All statuses",
+    "ACTIVE": "Active",
+    "CLOSED": "Closed"
+  },
+  "empty": {
+    "title": "No invoices yet",
+    "description": "Create your first invoice to start tracking payments",
+    "createFirst": "Create First Invoice"
+  },
+  "kanban": {
+    "empty": "No invoices",
+    "quickCreate": "Quick Invoice"
+  },
+  "table": {
+    "invoice": "Invoice",
+    "company": "Company",
+    "type": "Type",
+    "amount": "Amount",
+    "status": "Status",
+    "closed": "Closed",
+    "tax": "Tax",
+    "dueDate": "Due Date",
+    "paidDate": "Paid Date"
+  },
+  "stage": {
+    "NEW": "New",
+    "AWAITING_PAYMENT": "Awaiting payment",
+    "OVERDUE": "Overdue",
+    "ON_HOLD": "On hold",
+    "PAID": "Paid",
+    "CANCELLED": "Cancelled"
+  },
+  "stageShort": {
+    "NEW": "New",
+    "AWAITING_PAYMENT": "Awaiting",
+    "OVERDUE": "Overdue",
+    "ON_HOLD": "Hold",
+    "PAID": "Paid",
+    "CANCELLED": "Cancelled"
+  },
+  "type": {
+    "DEVELOPMENT": "Development",
+    "EXTENSION": "Extension",
+    "SUBSCRIPTION": "Subscription",
+    "DOMAIN": "Domain",
+    "SERVICE": "Service",
+    "MANUAL": "Manual"
+  },
+  "tax": {
+    "TAX": "Tax",
+    "TAX_FREE": "Free"
+  },
+  "paymentMethod": {
+    "TRANSACTION": "Transaction",
+    "CASH": "Cash"
+  },
+  "source": {
+    "deal": "Deal",
+    "order": "Order",
+    "subscription": "Subscription",
+    "manual": "Manual",
+    "service": "Service"
+  },
+  "card": {
+    "tax": "Tax",
+    "paid": "Paid",
+    "overdue": "overdue"
+  },
+  "tabs": {
+    "general": "General",
+    "payments": "Payments",
+    "history": "History"
+  },
+  "sheet": {
+    "loading": "Loading invoice…",
+    "unavailable": "Invoice unavailable.",
+    "updated": "Invoice updated",
+    "saveFailed": "Could not save invoice changes.",
+    "deleteInvoice": "Delete invoice",
+    "cancelInvoice": "Cancel invoice",
+    "clientContext": "Client context",
+    "proofs": "Proofs",
+    "fullyPaid": "Fully paid",
+    "paymentProofs": "Payment proofs"
+  },
+  "create": {
+    "titleNew": "New Invoice",
+    "titleOrder": "Create Order Invoice",
+    "titleSubscription": "Create Subscription Invoice",
+    "titleGeneric": "Create invoice",
+    "descriptionOrder": "Generate an invoice for {title}.",
+    "descriptionSubscription": "Bill against subscription {title}.",
+    "descriptionClientService": "Invoice for {name} · {project}",
+    "loadingSubscription": "Loading subscription…",
+    "loadingSubscriptionContext": "Loading subscription context…",
+    "noCompany": "No company",
+    "orderTotal": "Order total: {amount}",
+    "periodAmount": "Period amount: {amount}",
+    "amount": "Amount *",
+    "dueDate": "Due date",
+    "dueDateAria": "Due date",
+    "dueDateHint": "Defaults to 10 days from creation when left empty.",
+    "submit": "Create Invoice",
+    "createError": "Invoice could not be created.",
+    "loadSubscriptionError": "Subscription could not be loaded."
+  },
+  "createSubscription": {
+    "title": "Create Subscription Invoice",
+    "description": "Select consecutive months. One invoice covers all selected months.",
+    "selectConsecutive": "Select consecutive months.",
+    "total": "Total",
+    "required": "Subscription is required.",
+    "createdOne": "Invoice {code} created",
+    "createdMany": "{count, plural, one {# invoice created} other {# invoices created}}",
+    "coverageMonths": "Coverage months",
+    "noUncoveredMonth": "No uncovered month is available. Only active subscriptions can invoice uncovered months from the billing start through the next 12 months.",
+    "eachStartCovers": "Each selected start covers {count, plural, one {# month} other {# months}}. Overlapping starts stay disabled.",
+    "selectAtLeastOne": "Select at least one month.",
+    "covering": "1 invoice covering {count, plural, one {# month} other {# months}}",
+    "kindPast": "Past",
+    "kindCurrent": "Current",
+    "kindFuture": "Future"
+  },
+  "reminders": {
+    "button": "Remind",
+    "action": "Send overdue reminders",
+    "title": "Send overdue reminders?",
+    "description": "Mark paid invoices as Paid first. This run sends one WhatsApp letter per remaining Overdue card: wave 1 if none was sent, wave 2 if wave 1 was sent on a previous day.",
+    "loading": "Loading preview…",
+    "loadFailed": "Could not load overdue reminder preview.",
+    "sendFailed": "Overdue reminders could not be sent.",
+    "sending": "Sending…",
+    "send": "Send reminders",
+    "empty": "No overdue client reminders to send right now.",
+    "skipped": "Skipped",
+    "sent": "Sent {count, plural, one {# overdue reminder} other {# overdue reminders}} ({wave1} wave 1, {wave2} wave 2).",
+    "wave1": "{count, plural, one {# invoice} other {# invoices}} → wave 1",
+    "wave2": "{count, plural, one {# invoice} other {# invoices}} → wave 2",
+    "skip": {
+      "not_overdue": "Not overdue",
+      "notifications_off": "Notifications off",
+      "tax_gate": "Official invoice request not sent",
+      "no_whatsapp": "No Product WhatsApp group",
+      "same_day": "Wave 1 already sent today",
+      "too_soon": "Wave 2 is only after 2 calendar days",
+      "max_wave": "Both waves already sent",
+      "no_product_link": "No subscription or client service",
+      "already_sent": "Already sent this wave"
+    }
+  }
+}

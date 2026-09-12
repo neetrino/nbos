@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Sheet } from '@/components/ui/sheet';
 import {
   DetailSheetTabBar,
@@ -14,6 +15,13 @@ import {
   getTicketPriority,
   getTicketSlaState,
 } from '@/features/support/constants/support';
+import {
+  translateSupportCategory,
+  translateSupportCoverage,
+  translateSupportPriority,
+  translateSupportSla,
+  type SupportTranslator,
+} from '@/features/support/support-message-keys';
 import { auditApi, type AuditLogEntry } from '@/lib/api/audit';
 import { contactsApi, type Contact } from '@/lib/api/clients';
 import { employeesApi, type Employee } from '@/lib/api/employees';
@@ -67,6 +75,7 @@ export function SupportTicketDetailSheet({
   onRequestEscalate,
   onRequestTechnical,
 }: SupportTicketDetailSheetProps) {
+  const t = useTranslations('support') as SupportTranslator;
   const [ticket, setTicket] = useState<SupportTicket | null>(null);
   const [snap, setSnap] = useState<SupportTriageDraft | null>(null);
   const [draft, setDraft] = useState<SupportTriageDraft | null>(null);
@@ -86,10 +95,14 @@ export function SupportTicketDetailSheet({
   const [taskBusy, setTaskBusy] = useState(false);
   const [activeTab, setActiveTab] = useState<'general' | 'activity'>('general');
 
-  const supportTicketTabs = [
-    { value: 'general', label: 'General' },
-    { value: 'activity', label: 'Activity' },
-  ] as const;
+  const supportTicketTabs = useMemo(
+    () =>
+      [
+        { value: 'general', label: t('sheet.general') },
+        { value: 'activity', label: t('sheet.activity') },
+      ] as const,
+    [t],
+  );
 
   const loadTicket = useCallback(async () => {
     if (!ticketId) return;
@@ -103,7 +116,7 @@ export function SupportTicketDetailSheet({
         setDraft(d);
       }
     } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Ticket could not be loaded.'));
+      setError(getApiErrorMessage(caught, t('sheet.loadFailed')));
       if (!initialTicket || initialTicket.id !== ticketId) {
         setTicket(null);
         setSnap(null);
@@ -112,7 +125,7 @@ export function SupportTicketDetailSheet({
     } finally {
       setLoading(false);
     }
-  }, [initialTicket, ticketId]);
+  }, [initialTicket, t, ticketId]);
 
   useEffect(() => {
     if (!open || !ticketId) {
@@ -217,11 +230,11 @@ export function SupportTicketDetailSheet({
       setDraft(next);
       onListInvalidate();
     } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Could not save ticket.'));
+      setError(getApiErrorMessage(caught, t('sheet.saveFailed')));
     } finally {
       setSaving(false);
     }
-  }, [draft, onListInvalidate, snap, ticketId]);
+  }, [draft, onListInvalidate, snap, t, ticketId]);
 
   const handleCancel = useCallback(() => {
     if (snap) setDraft({ ...snap });
@@ -246,11 +259,11 @@ export function SupportTicketDetailSheet({
       await loadTicket();
       onListInvalidate();
     } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Execution task could not be created.'));
+      setError(getApiErrorMessage(caught, t('sheet.taskCreateFailed')));
     } finally {
       setTaskBusy(false);
     }
-  }, [loadTicket, meId, onListInvalidate, taskDescription, taskDue, taskTitle, ticketId]);
+  }, [loadTicket, meId, onListInvalidate, t, taskDescription, taskDue, taskTitle, ticketId]);
 
   const cat = ticket ? getTicketCategory(ticket.category) : undefined;
   const pri = ticket ? getTicketPriority(ticket.priority) : undefined;
@@ -286,7 +299,7 @@ export function SupportTicketDetailSheet({
           <div className="border-border flex min-h-0 flex-1 flex-col overflow-hidden border-l">
             <div className="bg-background shrink-0 px-7 pt-5 pb-3">
               {loading && !ticket ? (
-                <p className="text-muted-foreground text-sm">Loading…</p>
+                <p className="text-muted-foreground text-sm">{t('sheet.loading')}</p>
               ) : ticket ? (
                 <div className="min-w-0">
                   <div className="flex h-8 min-w-0 flex-nowrap items-center gap-3">
@@ -296,28 +309,32 @@ export function SupportTicketDetailSheet({
                     <div className="ml-auto flex shrink-0 items-center gap-1.5">
                       {cat ? (
                         <StatusBadge
-                          label={cat.label}
+                          label={translateSupportCategory(t, ticket.category, cat.label)}
                           variant={cat.variant}
                           className="shrink-0 self-center"
                         />
                       ) : null}
                       {pri ? (
                         <StatusBadge
-                          label={pri.label}
+                          label={translateSupportPriority(t, ticket.priority, pri.label)}
                           variant={pri.variant}
                           className="shrink-0 self-center"
                         />
                       ) : null}
-                      {cov ? (
+                      {cov && ticket.coverageDecision ? (
                         <StatusBadge
-                          label={cov.label}
+                          label={translateSupportCoverage(
+                            t,
+                            ticket.coverageDecision,
+                            cov.label,
+                          )}
                           variant={cov.variant}
                           className="shrink-0 self-center"
                         />
                       ) : null}
                       {sla ? (
                         <StatusBadge
-                          label={sla.label}
+                          label={translateSupportSla(t, ticket.slaState.state, sla.label)}
                           variant={sla.variant}
                           className="shrink-0 self-center"
                         />
@@ -344,7 +361,7 @@ export function SupportTicketDetailSheet({
                   </p>
                 </div>
               ) : (
-                <p className="text-muted-foreground text-sm">No ticket</p>
+                <p className="text-muted-foreground text-sm">{t('sheet.noTicket')}</p>
               )}
             </div>
 

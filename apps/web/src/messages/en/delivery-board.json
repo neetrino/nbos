@@ -1,0 +1,211 @@
+{
+  "title": "Delivery Board",
+  "pipelineAria": "Delivery pipeline",
+  "loading": "Loading board…",
+  "loadError": "Could not load delivery board data.",
+  "pipelineTabs": {
+    "active": "Active",
+    "closed": "Closed"
+  },
+  "view": {
+    "board": "Board",
+    "list": "List",
+    "boardAria": "Board view",
+    "listAria": "List view"
+  },
+  "search": {
+    "activePlaceholder": "Search by name, project, or code…",
+    "closedPlaceholder": "Search closed items…"
+  },
+  "count": "{filtered, plural, one {# of {total} card} other {# of {total} cards}}",
+  "clearProjectFilter": "Clear project filter",
+  "kind": {
+    "all": "All",
+    "products": "Products",
+    "extensions": "Extensions",
+    "aria": "Delivery board kind",
+    "filterLabel": "Type",
+    "allOption": "All types"
+  },
+  "filters": {
+    "owner": "Owner",
+    "status": "Status",
+    "project": "Project",
+    "result": "Result",
+    "allOwner": "All owners",
+    "allStatus": "All statuses",
+    "allProject": "All projects",
+    "allResult": "All results",
+    "inProgress": "In progress",
+    "onHold": "On hold",
+    "cancelled": "Cancelled",
+    "done": "Done"
+  },
+  "table": {
+    "entity": "Entity",
+    "name": "Name",
+    "project": "Project",
+    "owner": "PM / owner",
+    "result": "Result",
+    "closed": "Closed",
+    "deadline": "Deadline",
+    "stage": "Stage",
+    "status": "Status",
+    "details": "Details"
+  },
+  "empty": {
+    "closedBoard": "No closed delivery items.",
+    "noCards": "No cards",
+    "closedTable": "No closed delivery items match.",
+    "activeTable": "No active delivery items match."
+  },
+  "kindLabel": {
+    "product": "Product",
+    "extension": "Extension"
+  },
+  "stages": {
+    "STARTING": "Starting",
+    "DEVELOPMENT": "Development",
+    "QA": "QA",
+    "TRANSFER": "Transfer"
+  },
+  "pipeline": {
+    "start": "Start",
+    "dev": "Dev",
+    "qa": "QA",
+    "transfer": "Transfer",
+    "cancel": "Cancel",
+    "done": "Done"
+  },
+  "resolution": {
+    "done": "Done",
+    "cancelled": "Cancelled"
+  },
+  "deadline": {
+    "onTime": "On time",
+    "late": "Late"
+  },
+  "lifecycle": {
+    "holdExpired": "Hold expired",
+    "onHold": "On Hold",
+    "notStaged": "Not staged",
+    "stageHoldExpired": "{stage} · Hold expired",
+    "stageOnHold": "{stage} · On Hold"
+  },
+  "entityFallback": "delivery item",
+  "sheet": {
+    "doneBanner": "This delivery item is done. Details are read-only; use the board or product page for history.",
+    "cancelledBanner": "This delivery item is cancelled. Details are read-only; use the board for audit history.",
+    "paused": "Delivery is paused.",
+    "resume": "Resume",
+    "loadFailed": "Could not load details.",
+    "saveFailed": "Could not save changes.",
+    "nothingToEdit": "Nothing to edit yet.",
+    "openWorkspace": "Open workspace",
+    "namePlaceholder": "Name…",
+    "saveName": "Save name",
+    "editNameTitle": "Click to edit name"
+  },
+  "tabs": {
+    "general": "General",
+    "workspace": "Work Space",
+    "calls": "Calls",
+    "bonus": "Bonus",
+    "history": "History",
+    "createTask": "Create task"
+  },
+  "readiness": {
+    "title": "Stage readiness",
+    "empty": "No stage requirement rows for this state.",
+    "deadlineSet": "Deadline set",
+    "noOpenWorkSpaceTasks": "No open Work Space tasks",
+    "noOpenExtensions": "No open extensions",
+    "noOpenTasks": "No open tasks",
+    "noOpenTickets": "No open tickets",
+    "clientAcceptance": "Client acceptance recorded",
+    "orderClosed": "Order financially closed",
+    "noUnpaidInvoices": "No unpaid invoices",
+    "scopeFilled": "Scope & notes filled",
+    "ownerAssigned": "Owner assigned",
+    "stageChecklist": "Stage checklist",
+    "checklistDetailFull": "{completedChecklists}/{totalChecklists} complete, {reviewed}/{total} reviewed",
+    "checklistDetailReviewed": "{reviewed}/{total} reviewed"
+  },
+  "plan": {
+    "deliveryTitle": "Delivery plan",
+    "extensionTitle": "Extension plan",
+    "project": "Project",
+    "product": "Product",
+    "payment": "Payment",
+    "deadline": "Deadline",
+    "productCategory": "Product category",
+    "productType": "Product type",
+    "extensionName": "Extension name",
+    "size": "Size",
+    "productLine": "Product line:",
+    "pickDate": "Pick date…",
+    "productNotesPlaceholder": "Plan, milestones, client context…",
+    "extensionNotesPlaceholder": "Plan, acceptance criteria…"
+  },
+  "commercial": {
+    "title": "Client & order",
+    "client": "Client",
+    "company": "Company",
+    "deal": "Deal",
+    "project": "Project",
+    "product": "Product",
+    "credentials": "Credentials",
+    "noClient": "No client linked on project.",
+    "openDeal": "Open deal {title}",
+    "linksAria": "Commercial links"
+  },
+  "team": {
+    "title": "Team",
+    "projectManager": "Project manager",
+    "developerBackend": "Developer Backend",
+    "developerFrontend": "Developer Frontend",
+    "designer": "Designer",
+    "technicalSpecialist": "Technical specialist",
+    "qa": "QA",
+    "owner": "Owner",
+    "seller": "Seller",
+    "notAssigned": "Not assigned"
+  },
+  "files": {
+    "title": "Files",
+    "attachments": "Attachments",
+    "approvedOffer": "Approved offer",
+    "contract": "Contract",
+    "openInNewTab": "Open in new tab"
+  },
+  "access": {
+    "title": "Access & infrastructure",
+    "loading": "Loading…",
+    "empty": "No access slots are configured for this product profile."
+  },
+  "checklist": {
+    "title": "Stage checklists",
+    "loading": "Stage checklists …",
+    "progress": "Stage checklists {reviewed}/{total}"
+  },
+  "languages": {
+    "hy": "Armenian",
+    "en": "English",
+    "ru": "Russian",
+    "de": "German",
+    "fr": "French",
+    "es": "Spanish",
+    "it": "Italian",
+    "ar": "Arabic",
+    "tr": "Turkish",
+    "zh": "Chinese",
+    "ja": "Japanese",
+    "ko": "Korean"
+  },
+  "languageField": {
+    "label": "Languages",
+    "select": "Select…",
+    "inheritedEmpty": "Inherited from parent product — not set.",
+    "remove": "Remove {language}"
+  }
+}

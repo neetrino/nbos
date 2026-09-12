@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Banknote, Ban, Receipt, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   DetailSheetFormFooter,
@@ -86,6 +87,7 @@ export function ExpenseDetailSheet({
   sourcePageHref: sourcePageHrefOverride,
   forceNestedBackdrop = false,
 }: ExpenseDetailSheetProps) {
+  const t = useTranslations('expenses');
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(expenseId);
   const hostMounted = useSheetHostMounted(open, sheetId);
   const activeExpenseId = open && sheetId ? sheetId : '';
@@ -93,6 +95,7 @@ export function ExpenseDetailSheet({
     open,
     initialExpense,
     isDirty: () => generalDirtyRef.current,
+    loadErrorMessage: t('errors.loadDetail'),
   });
   const [activeTab, setActiveTab] = useState<ExpenseDetailSheetTab>('general');
   const [generalDraft, setGeneralDraft] = useState<ExpenseGeneralDraft | null>(null);
@@ -217,16 +220,16 @@ export function ExpenseDetailSheet({
         const updated = await expensesApi.update(expense.id, patch);
         generalDirtyRef.current = false;
         handleExpenseChange(updated);
-        toast.success('Expense updated');
+        toast.success(t('toasts.updated'));
       } catch (caught) {
         setGeneralSnap(snapAtSave);
         setGeneralDraft(draftAtSave);
-        setGeneralError(getApiErrorMessage(caught, 'Could not save expense changes.'));
+        setGeneralError(getApiErrorMessage(caught, t('errors.save')));
       } finally {
         setSaving(false);
       }
     })();
-  }, [expense, generalDraft, generalSnap, handleExpenseChange]);
+  }, [expense, generalDraft, generalSnap, handleExpenseChange, t]);
 
   const handleGeneralCancel = useCallback(() => {
     setGeneralError(null);
@@ -244,26 +247,24 @@ export function ExpenseDetailSheet({
         await expensesApi.delete(expense.id);
         onExpenseDeleted?.(expense.id);
         onOpenChange(false);
-        toast.success('Expense deleted');
+        toast.success(t('toasts.deleted'));
       } else {
         const updated = await expensesApi.cancel(expense.id);
         handleExpenseChange(updated);
         setDeleteOpen(false);
-        toast.success('Expense cancelled');
+        toast.success(t('toasts.cancelled'));
       }
     } catch (caught) {
       setDeleteError(
         getApiErrorMessage(
           caught,
-          lifecycleMode === 'delete'
-            ? 'Expense could not be deleted. Check your connection and try again.'
-            : 'Expense could not be cancelled. Check your connection and try again.',
+          lifecycleMode === 'delete' ? t('errors.delete') : t('errors.cancel'),
         ),
       );
     } finally {
       setDeleteSubmitting(false);
     }
-  }, [expense, handleExpenseChange, lifecycleMode, onExpenseDeleted, onOpenChange]);
+  }, [expense, handleExpenseChange, lifecycleMode, onExpenseDeleted, onOpenChange, t]);
 
   if (!hostMounted) return null;
 
@@ -282,7 +283,7 @@ export function ExpenseDetailSheet({
         >
           <div className="bg-background shrink-0 px-5 pt-5 pb-3">
             {loading && !expense ? (
-              <p className="text-muted-foreground text-sm">Loading…</p>
+              <p className="text-muted-foreground text-sm">{t('sheet.loading')}</p>
             ) : expense ? (
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
@@ -304,7 +305,9 @@ export function ExpenseDetailSheet({
                       }}
                     >
                       {lifecycleMode === 'delete' ? <Trash2 /> : <Ban />}
-                      {lifecycleMode === 'delete' ? 'Delete expense' : 'Cancel expense'}
+                      {lifecycleMode === 'delete'
+                        ? t('actions.deleteExpense')
+                        : t('actions.cancelExpense')}
                     </DropdownMenuItem>
                   </DetailSheetSettingsMenu>
                 ) : null}
@@ -323,7 +326,10 @@ export function ExpenseDetailSheet({
           ) : null}
 
           <DetailSheetTabBar
-            tabs={EXPENSE_DETAIL_SHEET_TABS}
+            tabs={EXPENSE_DETAIL_SHEET_TABS.map((tab) => ({
+              ...tab,
+              label: t(`sheet.tabs.${tab.value}`),
+            }))}
             activeTab={activeTab}
             onTabChange={(value) => setActiveTab(value as ExpenseDetailSheetTab)}
           />
@@ -355,7 +361,7 @@ export function ExpenseDetailSheet({
                         onClick={() => setPaymentOpen(true)}
                       >
                         <Banknote size={14} aria-hidden />
-                        Add payment
+                        {t('actions.addPayment')}
                       </Button>
                       <ExpenseDetailPaymentSection
                         expense={expense}

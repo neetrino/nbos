@@ -23,6 +23,7 @@ import {
 } from '@/features/crm/constants/lead-sheet-layout';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import type { ApiFieldError } from '@/lib/api-errors';
+import { useTranslations } from 'next-intl';
 
 export interface LeadSheetBlockerNavigation {
   token: number;
@@ -51,9 +52,9 @@ interface LeadSheetProps {
   stageGateHighlight?: LeadSheetStageGateHighlight | null;
 }
 
-function leadGeneralSaveErrorMessage(err: unknown): string {
+function leadGeneralSaveErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof Error && err.message) return err.message;
-  return 'Could not save changes.';
+  return fallback;
 }
 
 export function LeadSheet({
@@ -73,6 +74,7 @@ export function LeadSheet({
   onBlockerNavigationConsumed,
   stageGateHighlight = null,
 }: LeadSheetProps) {
+  const t = useTranslations('crm');
   const { persistedValue: renderLead, onOpenChangeComplete } = useSheetPersistedValue(lead);
   const hostMounted = useSheetHostMounted(open, renderLead);
 
@@ -139,10 +141,10 @@ export function LeadSheet({
       } catch (err) {
         setGeneralSnap(snapAtSave);
         setGeneralDraft(draftAtSave);
-        setGeneralError(leadGeneralSaveErrorMessage(err));
+        setGeneralError(leadGeneralSaveErrorMessage(err, t('leadSheet.saveError')));
       }
     })();
-  }, [lead, generalDraft, generalSnap, onUpdate, onRefresh]);
+  }, [lead, generalDraft, generalSnap, onUpdate, onRefresh, t]);
 
   const handleGeneralCancel = useCallback(() => {
     setGeneralError(null);
@@ -206,7 +208,7 @@ export function LeadSheet({
           >
             <div className="text-muted-foreground flex items-center gap-2 p-5 text-sm">
               <Loader2 className="size-4 animate-spin" aria-hidden />
-              Loading lead…
+              {t('leadSheet.loading')}
             </div>
           </EntityDetailSheetContent>
         ) : (

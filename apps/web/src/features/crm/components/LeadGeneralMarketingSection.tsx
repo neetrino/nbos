@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { User, Megaphone, ExternalLink, Building2 } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
@@ -21,6 +22,10 @@ import { marketingApi } from '@/lib/api/marketing';
 import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
 import type { LeadGeneralDraft } from './lead-general-form-state';
 import { leadStageGateFieldClass } from '@/features/crm/lead-stage-gate-highlight';
+import {
+  translateLeadSourceLabel,
+  translateSalesChannelLabel,
+} from '@/features/crm/i18n/crm-copy';
 
 export interface LeadMarketingFieldsProps {
   lead: Lead;
@@ -37,6 +42,7 @@ export function LeadMarketingFields({
   formDisabled,
   gateRequiredFields = new Set(),
 }: LeadMarketingFieldsProps) {
+  const t = useTranslations('crm');
   const partnerPicker = useRelationPickerActions('partner');
   const sourceContactPicker = useRelationPickerActions('contact', 'lead-source-contact');
   const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
@@ -83,7 +89,10 @@ export function LeadMarketingFields({
 
   const whereOptions =
     draft.source === 'SALES'
-      ? SALES_CHANNELS.map((c) => ({ value: c.value, label: c.label }))
+      ? SALES_CHANNELS.map((c) => ({
+          value: c.value,
+          label: translateSalesChannelLabel(t, c.value),
+        }))
       : draft.source === 'MARKETING'
         ? marketingWhereOptions
         : [];
@@ -92,15 +101,15 @@ export function LeadMarketingFields({
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
       <InlineField
         variant="controlled"
-        label="From"
+        label={t('leadSheet.from')}
         type="select"
         value={draft.source ?? ''}
         options={LEAD_SOURCES.map((s) => ({
           value: s.value,
-          label: s.label,
+          label: translateLeadSourceLabel(t, s.value),
           icon: <span>{s.icon}</span>,
         }))}
-        placeholder="Select source…"
+        placeholder={t('leadSheet.fromPlaceholder')}
         icon={<Megaphone size={12} />}
         disabled={formDisabled || attributionLocked}
         clearable={!attributionLocked}
@@ -123,11 +132,11 @@ export function LeadMarketingFields({
       {(draft.source === 'SALES' || draft.source === 'MARKETING') && (
         <InlineField
           variant="controlled"
-          label="Where?"
+          label={t('leadSheet.where')}
           type="select"
           value={draft.sourceDetail ?? ''}
           options={whereOptions}
-          placeholder="Select channel…"
+          placeholder={t('leadSheet.wherePlaceholder')}
           icon={<ExternalLink size={12} />}
           disabled={formDisabled || attributionLocked}
           clearable={!attributionLocked}
@@ -146,7 +155,7 @@ export function LeadMarketingFields({
       {showMarketingWhichOne ? (
         <SearchField
           selectionMode="stage"
-          label="Which one?"
+          label={t('leadSheet.whichOne')}
           className={leadStageGateFieldClass(gateRequiredFields, 'whichOne')}
           value={draft.marketingAccountId ?? draft.marketingActivityId ?? null}
           displayValue={
@@ -156,7 +165,7 @@ export function LeadMarketingFields({
               </span>
             ) : undefined
           }
-          placeholder="Search accounts or activities…"
+          placeholder={t('leadSheet.whichOnePlaceholder')}
           icon={<ExternalLink size={12} />}
           disabled={formDisabled || attributionLocked}
           onSearch={searchAttributionOptions}
@@ -183,12 +192,12 @@ export function LeadMarketingFields({
 
       {draft.source === 'PARTNER' ? (
         <RelationPickerField
-          label="Which partner?"
+          label={t('leadSheet.whichPartner')}
           entityKind="partner"
           className={leadStageGateFieldClass(gateRequiredFields, 'sourcePartnerId')}
           value={draft.sourcePartnerId}
           selectionLabel={draft.partnerPickLabel}
-          placeholder="Search partners…"
+          placeholder={t('leadSheet.whichPartnerPlaceholder')}
           icon={<Building2 size={12} />}
           disabled={formDisabled || attributionLocked}
           onSearch={searchPartners}
@@ -206,12 +215,12 @@ export function LeadMarketingFields({
 
       {draft.source === 'CLIENT' ? (
         <RelationPickerField
-          label="Which client?"
+          label={t('leadSheet.whichClient')}
           entityKind="contact"
           className={leadStageGateFieldClass(gateRequiredFields, 'sourceContactId')}
           value={draft.sourceContactId}
           selectionLabel={draft.clientPickLabel}
-          placeholder="Search contacts…"
+          placeholder={t('leadSheet.whichClientPlaceholder')}
           icon={<User size={12} />}
           disabled={formDisabled || attributionLocked}
           onSearch={searchContacts}

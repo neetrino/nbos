@@ -2,6 +2,7 @@
 
 import { useMemo, type KeyboardEvent } from 'react';
 import { ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   Table,
   TableBody,
@@ -12,6 +13,8 @@ import {
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { SALARY_LINE_STATUS_MESSAGE_KEY } from '@/features/finance/components/payroll/payroll-i18n-keys';
+import type { SalaryLineStatus } from '@/lib/api/payroll-runs';
 import {
   salaryLineListRowClass,
   salaryLineStatusBoardUi,
@@ -52,7 +55,10 @@ export function PayrollRunSalaryLinesView({
   search: string;
   onOpenSalaryLine: (salaryLineId: string) => void;
 }) {
+  const t = useTranslations('payroll');
   const query = search.trim().toLowerCase();
+
+  const lineStatusLabel = (status: SalaryLineStatus) => t(SALARY_LINE_STATUS_MESSAGE_KEY[status]);
 
   const filtered = useMemo(() => {
     const sorted = [...lines].sort((a, b) =>
@@ -80,7 +86,7 @@ export function PayrollRunSalaryLinesView({
   if (lines.length === 0) {
     return (
       <p className="text-muted-foreground py-12 text-center text-sm">
-        No salary lines in this payroll run.
+        {t('salaryLines.empty')}
       </p>
     );
   }
@@ -88,7 +94,7 @@ export function PayrollRunSalaryLinesView({
   if (filtered.length === 0) {
     return (
       <p className="text-muted-foreground py-12 text-center text-sm">
-        No employees match this search.
+        {t('salaryLines.noMatch')}
       </p>
     );
   }
@@ -98,13 +104,15 @@ export function PayrollRunSalaryLinesView({
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/40 hover:bg-muted/40">
-            <TableHead className={HEAD_CELL}>Employee</TableHead>
-            <TableHead className={HEAD_CELL}>Status</TableHead>
-            <TableHead className={cn(HEAD_CELL, 'text-right')}>Base salary</TableHead>
-            <TableHead className={cn(HEAD_CELL, 'text-right')}>Bonuses</TableHead>
-            <TableHead className={cn(HEAD_CELL, 'text-right')}>Total payable</TableHead>
-            <TableHead className={cn(HEAD_CELL, 'text-right')}>Paid</TableHead>
-            <TableHead className={cn(HEAD_CELL, 'text-right')}>Remaining</TableHead>
+            <TableHead className={HEAD_CELL}>{t('salaryLines.employee')}</TableHead>
+            <TableHead className={HEAD_CELL}>{t('salaryLines.status')}</TableHead>
+            <TableHead className={cn(HEAD_CELL, 'text-right')}>{t('salaryLines.baseSalary')}</TableHead>
+            <TableHead className={cn(HEAD_CELL, 'text-right')}>{t('salaryLines.bonuses')}</TableHead>
+            <TableHead className={cn(HEAD_CELL, 'text-right')}>
+              {t('salaryLines.totalPayable')}
+            </TableHead>
+            <TableHead className={cn(HEAD_CELL, 'text-right')}>{t('salaryLines.paid')}</TableHead>
+            <TableHead className={cn(HEAD_CELL, 'text-right')}>{t('salaryLines.remaining')}</TableHead>
             <TableHead className={cn(HEAD_CELL, 'w-10')} aria-hidden />
           </TableRow>
         </TableHeader>
@@ -119,7 +127,10 @@ export function PayrollRunSalaryLinesView({
                 onKeyDown={(event) => handleRowKeyDown(event, line.id, onOpenSalaryLine)}
                 tabIndex={0}
                 role="button"
-                aria-label={`${employeeName(line.employee)} · ${lineUi.label}`}
+                aria-label={t('salaryLines.openAria', {
+                  name: employeeName(line.employee),
+                  status: lineStatusLabel(line.status),
+                })}
               >
                 <TableCell className={ROW_CELL}>
                   <p className="text-foreground text-sm font-semibold">
@@ -130,7 +141,7 @@ export function PayrollRunSalaryLinesView({
                   </p>
                 </TableCell>
                 <TableCell className={ROW_CELL}>
-                  <StatusBadge label={lineUi.label} variant={lineUi.variant} />
+                  <StatusBadge label={lineStatusLabel(line.status)} variant={lineUi.variant} />
                 </TableCell>
                 <TableCell className={cn(ROW_CELL, 'text-right tabular-nums')}>
                   {formatAmount(parseAmount(line.baseSalary))}
@@ -165,7 +176,7 @@ export function PayrollRunSalaryLinesView({
               colSpan={2}
               className="text-muted-foreground px-4 py-3 text-xs font-semibold uppercase"
             >
-              Totals ({filtered.length})
+              {t('salaryLines.totals', { count: filtered.length })}
             </TableCell>
             <TableCell className={cn(FOOTER_CELL, 'text-right')}>
               {formatAmount(totals.base)}

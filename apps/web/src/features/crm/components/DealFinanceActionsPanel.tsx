@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { TrendingUp } from 'lucide-react';
 import { AmdCurrencyIcon, DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import { cn } from '@/lib/utils';
@@ -23,6 +24,7 @@ interface DealFinanceActionsPanelProps {
 }
 
 export function DealFinanceActionsPanel({ deal, firstOrder }: DealFinanceActionsPanelProps) {
+  const t = useTranslations('crm');
   const finance = computeFinance(deal);
 
   return (
@@ -30,30 +32,30 @@ export function DealFinanceActionsPanel({ deal, firstOrder }: DealFinanceActions
       <div className="flex flex-col gap-4">
         <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>
           <TrendingUp size={12} />
-          Finance
+          {t('dealSheet.finance')}
         </h4>
         {firstOrder ? <DealOrderCommercialBadges order={firstOrder} /> : null}
       </div>
       <div className="space-y-2.5 text-sm">
         <FinanceRow
-          label="Total"
+          label={t('dealSheet.total')}
           value={finance.total > 0 ? formatAmount(finance.total) : '—'}
           valueClassName={FINANCE_VALUE_TOTAL_CLASS}
         />
         {finance.isFromPartner && (
           <FinanceRow
-            label={`Partner ${finance.commissionPercentUsed}%`}
+            label={t('dealSheet.partnerPercent', { percent: finance.commissionPercentUsed })}
             value={`-${formatAmount(finance.partnerAmount)}`}
             valueClassName={FINANCE_VALUE_PARTNER_CLASS}
           />
         )}
         <FinanceRow
-          label="Revenue"
+          label={t('dealSheet.revenue')}
           value={finance.revenue > 0 ? formatAmount(finance.revenue) : '—'}
           valueClassName={FINANCE_VALUE_REVENUE_CLASS}
         />
         <FinanceRow
-          label="To Receive"
+          label={t('dealSheet.toReceive')}
           value={formatAmount(finance.toReceive)}
           valueClassName={
             finance.toReceive > 0

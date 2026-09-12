@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,13 +11,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { IntegrationBrandIcon } from '@/features/integrations/components/IntegrationBrandIcon';
 import {
-  DEAL_WHATSAPP_HEADER_LABEL,
   type DealWhatsAppHeaderPresentation,
   type DealWhatsAppHeaderTone,
   resolveDealWhatsAppHeaderPresentation,
 } from '../deal-whatsapp-header-control';
 import type { DealWhatsAppQuickAction } from '../deal-whatsapp-quick-action';
 import { DealWhatsAppBindDialog } from './DealWhatsAppBindDialog';
+import {
+  translateDealWhatsAppActionLabel,
+  translateDealWhatsAppActionTitle,
+  translateDealWhatsAppDisabledTitle,
+} from '../i18n/crm-whatsapp-copy';
 
 const HEADER_BUTTON_CLASS = 'rounded-full shadow-sm';
 const WHATSAPP_MENU_WIDTH_CLASS = 'w-max min-w-0';
@@ -38,10 +43,20 @@ export function DealWhatsAppHeaderControl({
   onBindOpenChange,
   onBindSubmit,
 }: DealWhatsAppHeaderControlProps) {
+  const t = useTranslations('crm');
   const presentation = resolveDealWhatsAppHeaderPresentation(actions);
+  const triggerLabel = t('dealSheet.whatsapp.header');
+  const triggerTitle =
+    translateDealWhatsAppDisabledTitle(t, presentation.triggerTitle) ??
+    translateDealWhatsAppActionTitle(t, presentation.directAction?.id ?? '', presentation.triggerTitle) ??
+    triggerLabel;
   return (
     <>
-      <DealWhatsAppHeaderTrigger presentation={presentation} />
+      <DealWhatsAppHeaderTrigger
+        presentation={presentation}
+        triggerLabel={triggerLabel}
+        triggerTitle={triggerTitle}
+      />
       <DealWhatsAppBindDialog
         dealId={dealId}
         open={bindOpen}
@@ -55,15 +70,27 @@ export function DealWhatsAppHeaderControl({
 
 function DealWhatsAppHeaderTrigger({
   presentation,
+  triggerLabel,
+  triggerTitle,
 }: {
   presentation: DealWhatsAppHeaderPresentation;
+  triggerLabel: string;
+  triggerTitle: string;
 }) {
   if (presentation.mode === 'menu') {
-    return <DealWhatsAppMenuButton presentation={presentation} />;
+    return (
+      <DealWhatsAppMenuButton
+        presentation={presentation}
+        triggerLabel={triggerLabel}
+        triggerTitle={triggerTitle}
+      />
+    );
   }
   return (
     <DealWhatsAppFaceButton
       presentation={presentation}
+      triggerLabel={triggerLabel}
+      triggerTitle={triggerTitle}
       disabled={presentation.mode === 'disabled'}
     />
   );
@@ -71,9 +98,13 @@ function DealWhatsAppHeaderTrigger({
 
 function DealWhatsAppFaceButton({
   presentation,
+  triggerLabel,
+  triggerTitle,
   disabled = false,
 }: {
   presentation: DealWhatsAppHeaderPresentation;
+  triggerLabel: string;
+  triggerTitle: string;
   disabled?: boolean;
 }) {
   const blocked = disabled || !presentation.directAction?.enabled;
@@ -84,20 +115,24 @@ function DealWhatsAppFaceButton({
       variant={headerButtonVariant(presentation.tone)}
       className={HEADER_BUTTON_CLASS}
       disabled={blocked}
-      title={presentation.triggerTitle}
-      aria-label={presentation.triggerTitle ?? presentation.triggerLabel}
+      title={triggerTitle}
+      aria-label={triggerTitle}
       onClick={() => presentation.directAction?.onClick?.()}
     >
       <WhatsAppHeaderIcon />
-      {presentation.triggerLabel}
+      {triggerLabel}
     </Button>
   );
 }
 
 function DealWhatsAppMenuButton({
   presentation,
+  triggerLabel,
+  triggerTitle,
 }: {
   presentation: DealWhatsAppHeaderPresentation;
+  triggerLabel: string;
+  triggerTitle: string;
 }) {
   return (
     <DropdownMenu>
@@ -109,11 +144,11 @@ function DealWhatsAppMenuButton({
             size="sm"
             variant={headerButtonVariant(presentation.tone)}
             className={HEADER_BUTTON_CLASS}
-            title={presentation.triggerTitle ?? DEAL_WHATSAPP_HEADER_LABEL}
-            aria-label={presentation.triggerTitle ?? DEAL_WHATSAPP_HEADER_LABEL}
+            title={triggerTitle}
+            aria-label={triggerTitle}
           >
             <WhatsAppHeaderIcon />
-            {presentation.triggerLabel}
+            {triggerLabel}
             <ChevronDown size={14} className="opacity-60" aria-hidden />
           </Button>
         )}
@@ -128,16 +163,21 @@ function DealWhatsAppMenuButton({
 }
 
 function DealWhatsAppMenuItem({ action }: { action: DealWhatsAppQuickAction }) {
+  const t = useTranslations('crm');
   const Icon = action.icon;
+  const label = translateDealWhatsAppActionLabel(t, action.id, action.label);
+  const title =
+    translateDealWhatsAppDisabledTitle(t, action.disabledTitle) ??
+    translateDealWhatsAppActionTitle(t, action.id, action.title);
   return (
     <DropdownMenuItem
       disabled={!action.enabled}
-      title={action.disabledTitle ?? action.title}
+      title={title}
       onClick={() => action.onClick?.()}
       className="whitespace-nowrap"
     >
       <Icon />
-      {action.label}
+      {label}
     </DropdownMenuItem>
   );
 }

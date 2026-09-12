@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
 import { WhatsAppGatewayDirectoryPicker } from '@/features/integrations/components/WhatsAppGatewayDirectoryPicker';
 import { groupsPageToDirectoryPage } from '@/features/integrations/whatsapp-gateway-directory';
@@ -25,6 +26,7 @@ export function WhatsAppGroupSearchPicker({
   onSearchChange,
   onSelect,
 }: WhatsAppGroupSearchPickerProps) {
+  const t = useTranslations('crm');
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
   const loadPage = useCallback(
     async (params: { limit: number; offset: number; search: string }) => {
@@ -46,7 +48,7 @@ export function WhatsAppGroupSearchPicker({
       selectedId={selectedId}
       loadPage={loadPage}
       onSelect={(item) => onSelect(item.id)}
-      emptyMessage="No groups match this search."
+      emptyMessage={t('dealSheet.whatsapp.emptyGroups')}
     />
   );
 }

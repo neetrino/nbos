@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { LeadSheet } from '@/features/crm/components/LeadSheet';
 import { leadsApi, type Lead } from '@/lib/api/leads';
@@ -24,6 +25,7 @@ export function EntityLeadSheetDeepLink({
   onOpenChange,
   onEntityChanged,
 }: EntityLeadSheetDeepLinkProps) {
+  const t = useTranslations('crm');
   const { persistedValue: renderLeadId, onOpenChangeComplete: clearRenderLeadId } =
     useSheetPersistedValue(leadId);
   const hostMounted = useSheetHostMounted(open, renderLeadId);
@@ -47,7 +49,7 @@ export function EntityLeadSheetDeepLink({
       })
       .catch(() => {
         if (!cancelled) {
-          toast.error('Lead not found or you cannot open it.');
+          toast.error(t('leads.notFound'));
           onOpenChange(false);
         }
       });
@@ -55,7 +57,7 @@ export function EntityLeadSheetDeepLink({
     return () => {
       cancelled = true;
     };
-  }, [renderLeadId, onOpenChange, open]);
+  }, [renderLeadId, onOpenChange, open, t]);
 
   const handleUpdate = useCallback(
     async (id: string, data: Partial<Lead>) => {
@@ -64,11 +66,11 @@ export function EntityLeadSheetDeepLink({
         setLead(updated);
         onEntityChanged?.();
       } catch (err) {
-        toast.error(getApiErrorMessage(err, 'Could not save lead.'));
+        toast.error(getApiErrorMessage(err, t('leadSheet.deepLinkSaveError')));
         throw err;
       }
     },
-    [onEntityChanged],
+    [onEntityChanged, t],
   );
 
   const handleStatusChange = useCallback(
@@ -80,13 +82,13 @@ export function EntityLeadSheetDeepLink({
         onEntityChanged?.();
       } catch (err) {
         if (isStageGateApiError(err)) {
-          toast.error('Complete required fields in the lead sheet before changing stage.');
+          toast.error(t('leadSheet.deepLinkStageGate'));
           return;
         }
-        toast.error(getApiErrorMessage(err, 'Lead stage change was blocked.'));
+        toast.error(getApiErrorMessage(err, t('leads.stageBlocked')));
       }
     },
-    [lead, onEntityChanged],
+    [lead, onEntityChanged, t],
   );
 
   const handleRefresh = useCallback(async () => {
@@ -95,9 +97,9 @@ export function EntityLeadSheetDeepLink({
       const loaded = await leadsApi.getById(renderLeadId);
       setLead(loaded);
     } catch {
-      toast.error('Lead could not be refreshed.');
+      toast.error(t('leadSheet.deepLinkRefreshError'));
     }
-  }, [renderLeadId]);
+  }, [renderLeadId, t]);
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {

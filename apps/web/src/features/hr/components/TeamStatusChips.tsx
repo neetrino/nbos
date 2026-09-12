@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { EMPLOYEE_STATUSES } from '@/features/hr/constants/hr';
@@ -21,6 +22,8 @@ export function TeamStatusChips({
   onToggleTerminated,
   terminatedCount,
 }: TeamStatusChipsProps) {
+  const t = useTranslations('hr');
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Button
@@ -30,7 +33,7 @@ export function TeamStatusChips({
         className={cn('h-7 rounded-full px-3 text-xs')}
         onClick={() => onStatusChange(null)}
       >
-        All
+        {t('directory.all')}
       </Button>
       {EMPLOYEE_STATUSES.filter((s) => s.value !== 'TERMINATED').map((status) => {
         const active = activeStatus === status.value;
@@ -44,7 +47,7 @@ export function TeamStatusChips({
             className={cn('h-7 rounded-full px-3 text-xs tabular-nums')}
             onClick={() => onStatusChange(active ? null : status.value)}
           >
-            {status.label}
+            {t(`status.${status.value}`)}
             {count > 0 ? ` · ${count}` : ''}
           </Button>
         );
@@ -57,7 +60,7 @@ export function TeamStatusChips({
           className={cn('h-7 rounded-full px-3 text-xs tabular-nums')}
           onClick={onToggleTerminated}
         >
-          Terminated · {terminatedCount}
+          {t('directory.terminatedChip', { count: terminatedCount })}
         </Button>
       )}
     </div>

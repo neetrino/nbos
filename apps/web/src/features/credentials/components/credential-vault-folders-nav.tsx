@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import type { CredentialFolder } from '@/lib/api/credentials';
 
@@ -21,10 +22,11 @@ export function CredentialVaultFoldersNav({
   onNavigateProject,
   onNavigateFolder,
 }: CredentialVaultFoldersNavProps) {
+  const t = useTranslations('credentials');
   if (!project && folderPath.length === 0) return null;
 
   return (
-    <nav aria-label="Folder path" className="flex flex-wrap items-center gap-0.5">
+    <nav aria-label={t('folders.pathAria')} className="flex flex-wrap items-center gap-0.5">
       <Button
         type="button"
         variant="ghost"

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { DeliveryLifecycleActionDialog } from '../DeliveryLifecycleActionDialog';
 import { DeliveryBoardClosedBoard } from './DeliveryBoardClosedBoard';
@@ -61,6 +62,7 @@ export function DeliveryBoardView({
   onKindFilterChange: onKindFilterChangeProp,
   activePipelineFilters,
 }: DeliveryBoardViewProps) {
+  const t = useTranslations('deliveryBoard');
   const [internalKind, setInternalKind] = useState<DeliveryBoardKindFilter>('ALL');
   const isKindControlled = kindFilterProp !== undefined && onKindFilterChangeProp !== undefined;
   const kindFilter = isKindControlled ? kindFilterProp : internalKind;
@@ -149,7 +151,7 @@ export function DeliveryBoardView({
       </div>
       <DeliveryLifecycleActionDialog
         action={cancelItem ? 'cancel' : null}
-        entityLabel={cancelItem ? getItemLabel(cancelItem) : 'delivery item'}
+        entityLabel={cancelItem ? getItemLabel(cancelItem) : t('entityFallback')}
         isSubmitting={cancelItem ? busyItemId === getItemId(cancelItem) : false}
         error={actionError}
         onOpenChange={(open) => {

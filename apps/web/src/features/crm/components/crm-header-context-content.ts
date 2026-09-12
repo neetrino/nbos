@@ -8,14 +8,20 @@ export function isCrmHeaderContextPath(pathname: string): boolean {
   return config.kind === 'sections' && config.resolveSection(pathname) !== null;
 }
 
+export type CrmHeaderCopy = {
+  ariaLabel: string;
+  labels: Record<CrmSectionId, string>;
+};
+
 export function crmHeaderContent(
   pathname: string,
   hrefByZone: Record<CrmSectionId, string>,
+  copy?: CrmHeaderCopy,
 ): HeaderContextContent | null {
   if (!isCrmHeaderContextPath(pathname)) return null;
 
   const items: HeaderNavItem[] = CRM_HEADER_ZONES.map((zone) => ({
-    label: zone.label,
+    label: copy?.labels[zone.zone] ?? zone.label,
     href: hrefByZone[zone.zone],
     icon: zone.icon,
     isActive: (path) => isPathInModuleSection('crm', path, zone.zone),
@@ -24,7 +30,7 @@ export function crmHeaderContent(
 
   return {
     kind: 'nav',
-    ariaLabel: 'CRM areas',
+    ariaLabel: copy?.ariaLabel ?? 'CRM areas',
     items,
     fullWidthOnMobile: true,
   };

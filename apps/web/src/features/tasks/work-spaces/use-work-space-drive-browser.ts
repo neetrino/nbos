@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { resolveDriveEntityFolderScope } from '@/features/drive/drive-entity-folder-scope';
 import { getDriveClientUploadDisplayName } from '@/features/drive/drive-client-upload-display-name';
@@ -20,6 +21,7 @@ import {
 } from './work-space-drive-constants';
 
 export function useWorkSpaceDriveBrowser(workSpaceId: string, enabled: boolean) {
+  const t = useTranslations('workSpaces');
   const folderScope = useMemo(
     () => resolveDriveEntityFolderScope(WORK_SPACE_DRIVE_ENTITY_TYPE, workSpaceId),
     [workSpaceId],
@@ -72,12 +74,12 @@ export function useWorkSpaceDriveBrowser(workSpaceId: string, enabled: boolean) 
       }
     } catch (err) {
       if (requestId !== listingRequestId.current) return;
-      toast.error(err instanceof Error ? err.message : 'Failed to load workspace files');
+      toast.error(err instanceof Error ? err.message : t('drive.loadFailed'));
       setListing(null);
     } finally {
       if (requestId === listingRequestId.current) setLoading(false);
     }
-  }, [activeFolderId, enabled, folderScope]);
+  }, [activeFolderId, enabled, folderScope, t]);
 
   const refresh = useCallback(async () => {
     await Promise.all([loadFolders(), loadRootLinkedFiles()]);
@@ -161,15 +163,15 @@ export function useWorkSpaceDriveBrowser(workSpaceId: string, enabled: boolean) 
           });
           await driveApi.completeUploadSession(session.sessionId, { sizeBytes: file.size });
         }
-        toast.success(uploadedFiles.length === 1 ? 'File uploaded' : 'Files uploaded');
+        toast.success(t('drive.filesUploaded', { count: uploadedFiles.length }));
         await refresh();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Upload failed');
+        toast.error(err instanceof Error ? err.message : t('drive.uploadFailed'));
       } finally {
         setBusy(false);
       }
     },
-    [folderScope, placementFolderId, refresh, workSpaceId],
+    [folderScope, placementFolderId, refresh, t, workSpaceId],
   );
 
   const createFolder = useCallback(
@@ -181,10 +183,10 @@ export function useWorkSpaceDriveBrowser(workSpaceId: string, enabled: boolean) 
         scopeEntityId: folderScope.scopeEntityId,
         parentId: activeFolderId,
       });
-      toast.success('Folder created');
+      toast.success(t('drive.folderCreated'));
       await refresh();
     },
-    [activeFolderId, folderScope, refresh],
+    [activeFolderId, folderScope, refresh, t],
   );
 
   return {

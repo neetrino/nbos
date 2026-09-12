@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { Sheet } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
@@ -43,6 +44,7 @@ export interface CreateEmployeeSheetProps {
 }
 
 export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmployeeSheetProps) {
+  const t = useTranslations('hr');
   const { me } = usePermission();
   const [saving, setSaving] = useState(false);
   const [roles, setRoles] = useState<RoleItem[]>([]);
@@ -67,9 +69,9 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
         setRoles(r ?? []);
         setDepartments(d ?? []);
       })
-      .catch(() => toast.error('Could not load roles or departments'))
+      .catch(() => toast.error(t('create.metaFailed')))
       .finally(() => setLoadingMeta(false));
-  }, [open]);
+  }, [open, t]);
 
   useEffect(() => {
     if (!open) {
@@ -117,11 +119,11 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
         });
         result = await employeesApi.getById(created.id);
       }
-      toast.success('Employee created');
+      toast.success(t('create.created'));
       onCreated(result);
       onOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not create employee');
+      toast.error(err instanceof Error ? err.message : t('create.failed'));
     } finally {
       setSaving(false);
     }
@@ -132,22 +134,20 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
       <EntityDetailSheetContent open={open} layout="full" width={TEAM_SHEET_WIDTH}>
         <div className="flex h-full min-h-0 flex-col">
           <div className={TEAM_SHEET_HEADER_CLASS}>
-            <h2 className="text-base font-semibold">Add employee</h2>
-            <p className="text-muted-foreground mt-0.5 text-xs">
-              Create a profile directly. Use Invite when the person should set their own password.
-            </p>
+            <h2 className="text-base font-semibold">{t('create.title')}</h2>
+            <p className="text-muted-foreground mt-0.5 text-xs">{t('create.description')}</p>
           </div>
 
           {loadingMeta ? (
             <div className="text-muted-foreground flex flex-1 items-center justify-center gap-2 p-8 text-sm">
               <Loader2 className="size-4 animate-spin" />
-              Loading…
+              {t('sheet.loading')}
             </div>
           ) : (
             <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">
               <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
                 <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label htmlFor="emp-first">First name *</Label>
+                  <Label htmlFor="emp-first">{t('form.firstName')} *</Label>
                   <Input
                     id="emp-first"
                     value={form.firstName}
@@ -156,7 +156,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                   />
                 </div>
                 <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label htmlFor="emp-last">Last name *</Label>
+                  <Label htmlFor="emp-last">{t('form.lastName')} *</Label>
                   <Input
                     id="emp-last"
                     value={form.lastName}
@@ -167,7 +167,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
               </div>
               <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
                 <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label htmlFor="emp-email">Work email *</Label>
+                  <Label htmlFor="emp-email">{t('create.workEmail')} *</Label>
                   <Input
                     id="emp-email"
                     type="email"
@@ -177,7 +177,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                   />
                 </div>
                 <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label htmlFor="emp-phone">Phone</Label>
+                  <Label htmlFor="emp-phone">{t('form.phone')}</Label>
                   <Input
                     id="emp-phone"
                     value={form.phone}
@@ -188,14 +188,14 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
               </div>
               <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
                 <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label>Platform role *</Label>
+                  <Label>{t('employment.platformRole')} *</Label>
                   <Select
                     value={form.roleId}
                     onValueChange={(v) => setForm((p) => ({ ...p, roleId: v ?? '' }))}
                     disabled={saving}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select role" />
+                      <SelectValue placeholder={t('create.selectRole')} />
                     </SelectTrigger>
                     <SelectContent>
                       {filterRolesForAssignmentPicker(roles, assignmentPickerActor(me)).map(
@@ -209,7 +209,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                   </Select>
                 </div>
                 <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label>Level</Label>
+                  <Label>{t('form.level')}</Label>
                   <Select
                     value={form.level || 'none'}
                     onValueChange={(v) =>
@@ -218,13 +218,13 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                     disabled={saving}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select level" />
+                      <SelectValue placeholder={t('form.selectLevel')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Not set</SelectItem>
+                      <SelectItem value="none">{t('create.notSet')}</SelectItem>
                       {EMPLOYEE_LEVELS.map((lvl) => (
                         <SelectItem key={lvl.value} value={lvl.value}>
-                          {lvl.label}
+                          {t(`level.${lvl.value}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -233,7 +233,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
               </div>
               <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
                 <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label>Primary department</Label>
+                  <Label>{t('departments.primaryCheckbox')}</Label>
                   <Select
                     value={form.departmentId || 'none'}
                     onValueChange={(v) =>
@@ -245,10 +245,10 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                     disabled={saving}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Optional" />
+                      <SelectValue placeholder={t('create.optional')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="none">{t('create.none')}</SelectItem>
                       {departments.map((dept) => (
                         <SelectItem key={dept.id} value={dept.id}>
                           {dept.name}
@@ -258,7 +258,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
                   </Select>
                 </div>
                 <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label htmlFor="emp-position">Position / seat</Label>
+                  <Label htmlFor="emp-position">{t('create.positionSeat')}</Label>
                   <Input
                     id="emp-position"
                     value={form.position}
@@ -276,7 +276,7 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
             saving={saving}
             onSave={() => void handleSave()}
             onCancel={() => onOpenChange(false)}
-            saveLabel="Create employee"
+            saveLabel={t('create.submit')}
             className={TEAM_SHEET_FOOTER_CLASS}
           />
         </div>

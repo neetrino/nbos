@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DeleteConfirmDialog } from '@/components/shared';
 import { credentialsApi } from '@/lib/api/credentials';
 import { toast } from 'sonner';
@@ -20,6 +21,8 @@ export function DeleteCredentialDialog({
   onOpenChange,
   onDeleted,
 }: DeleteCredentialDialogProps) {
+  const t = useTranslations('credentials');
+  const tCommon = useTranslations('common');
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -27,11 +30,11 @@ export function DeleteCredentialDialog({
     setDeleting(true);
     try {
       await credentialsApi.delete(credentialId);
-      toast.success('Credential moved to Trash');
+      toast.success(t('delete.success'));
       onOpenChange(false);
       onDeleted();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to archive');
+      toast.error(err instanceof Error ? err.message : tCommon('genericError'));
     } finally {
       setDeleting(false);
     }
@@ -43,9 +46,9 @@ export function DeleteCredentialDialog({
       open={open}
       onOpenChange={onOpenChange}
       itemName={credentialName ?? ''}
-      title="Move credential to Trash?"
-      description="Moved to Trash and removed from folders. You can restore it from Trash (returns unfiled)."
-      confirmLabel="Move to Trash"
+      title={t('delete.title')}
+      description={t('delete.description')}
+      confirmLabel={t('delete.confirm')}
       isSubmitting={deleting}
       onConfirm={handleDelete}
     />

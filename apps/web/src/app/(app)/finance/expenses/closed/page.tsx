@@ -2,6 +2,7 @@
 
 import { Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { LoadingState } from '@/components/shared';
 import {
   EXPENSE_LIST_SORT_BY_QUERY,
@@ -10,7 +11,6 @@ import {
   parseExpenseListSortOrderParam,
   setExpenseListSortParams,
 } from '@/features/finance/constants/expenses-list-query';
-import { expenseClosedPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import {
   EXPENSE_CLOSED_LIST_PATH,
   EXPENSE_PLAN_DRILLDOWN_QUERY,
@@ -21,13 +21,16 @@ import { ExpensesPageContent } from '@/features/finance/components/expenses/Expe
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 
 function ExpensesClosedPageInner() {
+  const t = useTranslations('expenses');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const projectIdFromUrl = searchParams.get(PROJECT_EXPENSES_DRILLDOWN_QUERY);
   const expensePlanIdFromUrl = searchParams.get(EXPENSE_PLAN_DRILLDOWN_QUERY);
 
-  useFinanceDocumentTitle(expenseClosedPageTitle(Boolean(projectIdFromUrl?.trim())));
+  useFinanceDocumentTitle(
+    projectIdFromUrl?.trim() ? t('title.closedProject') : t('title.closed'),
+  );
 
   const replaceExpensesUrl = useCallback(
     (mutate: (params: URLSearchParams) => void) => {

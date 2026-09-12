@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -25,11 +26,15 @@ import {
   type WorkSpaceSprint,
 } from '@/lib/api/work-space-sprints';
 
-const ACTIONS: { value: UnfinishedSprintTaskAction; label: string }[] = [
-  { value: 'BACKLOG', label: 'Move unfinished to backlog' },
-  { value: 'NEXT_SPRINT', label: 'Move unfinished to next planning sprint' },
-  { value: 'KEEP', label: 'Keep on closed sprint' },
-];
+const UNFINISHED_ACTIONS: UnfinishedSprintTaskAction[] = ['BACKLOG', 'NEXT_SPRINT', 'KEEP'];
+
+function unfinishedActionKey(
+  action: UnfinishedSprintTaskAction,
+): 'scrum.unfinished.BACKLOG' | 'scrum.unfinished.NEXT_SPRINT' | 'scrum.unfinished.KEEP' {
+  if (action === 'NEXT_SPRINT') return 'scrum.unfinished.NEXT_SPRINT';
+  if (action === 'KEEP') return 'scrum.unfinished.KEEP';
+  return 'scrum.unfinished.BACKLOG';
+}
 
 export function CloseWorkSpaceSprintDialog({
   open,
@@ -46,6 +51,8 @@ export function CloseWorkSpaceSprintDialog({
   planningSprints: WorkSpaceSprint[];
   onClosed: (sprint: WorkSpaceSprint) => void;
 }) {
+  const t = useTranslations('workSpaces');
+  const tCommon = useTranslations('common');
   const [action, setAction] = useState<UnfinishedSprintTaskAction>('BACKLOG');
   const [nextSprintId, setNextSprintId] = useState('');
   const [saving, setSaving] = useState(false);
@@ -59,9 +66,9 @@ export function CloseWorkSpaceSprintDialog({
       });
       onClosed(closed);
       onOpenChange(false);
-      toast.success('Sprint closed.');
+      toast.success(t('scrum.closed'));
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not close sprint.'));
+      toast.error(getApiErrorMessage(caught, t('scrum.closeFailed')));
     } finally {
       setSaving(false);
     }
@@ -71,24 +78,24 @@ export function CloseWorkSpaceSprintDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Finish {sprint.name}</DialogTitle>
+          <DialogTitle>{t('scrum.closeTitle', { name: sprint.name })}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-3 py-2">
           <div className="grid gap-2">
-            <Label>Unfinished tasks</Label>
+            <Label>{t('scrum.unfinishedTasks')}</Label>
             <Select
               value={action}
-              onValueChange={(v) => {
-                if (v) setAction(v as UnfinishedSprintTaskAction);
+              onValueChange={(value) => {
+                if (value) setAction(value as UnfinishedSprintTaskAction);
               }}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {ACTIONS.map((a) => (
-                  <SelectItem key={a.value} value={a.value}>
-                    {a.label}
+                {UNFINISHED_ACTIONS.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {t(unfinishedActionKey(value))}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -96,15 +103,15 @@ export function CloseWorkSpaceSprintDialog({
           </div>
           {action === 'NEXT_SPRINT' && planningSprints.length > 0 ? (
             <div className="grid gap-2">
-              <Label>Target sprint</Label>
-              <Select value={nextSprintId} onValueChange={(v) => setNextSprintId(v ?? '')}>
+              <Label>{t('scrum.targetSprint')}</Label>
+              <Select value={nextSprintId} onValueChange={(value) => setNextSprintId(value ?? '')}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select sprint" />
+                  <SelectValue placeholder={t('scrum.selectSprint')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {planningSprints.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.name}
+                  {planningSprints.map((planningSprint) => (
+                    <SelectItem key={planningSprint.id} value={planningSprint.id}>
+                      {planningSprint.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -119,10 +126,10 @@ export function CloseWorkSpaceSprintDialog({
             onClick={() => onOpenChange(false)}
             disabled={saving}
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button type="button" onClick={() => void handleClose()} disabled={saving}>
-            {saving ? 'Closing…' : 'Finish sprint'}
+            {saving ? t('scrum.closing') : t('scrum.finishSprint')}
           </Button>
         </DialogFooter>
       </DialogContent>

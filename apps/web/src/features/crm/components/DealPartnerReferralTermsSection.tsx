@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Percent } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,7 @@ export function DealPartnerReferralTermsSection(props: {
   attributionLocked: boolean;
   onTermsUpdated?: () => void;
 }) {
+  const t = useTranslations('crm');
   const { deal, attributionLocked, onTermsUpdated } = props;
   const [percentDraft, setPercentDraft] = useState('');
   const [reasonDraft, setReasonDraft] = useState('');
@@ -36,7 +38,7 @@ export function DealPartnerReferralTermsSection(props: {
       await dealsApi.patchPartnerReferralTerms(deal.id, { mode: 'RESET' });
       onTermsUpdated?.();
     } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Could not reset referral terms.'));
+      setError(getApiErrorMessage(caught, t('dealSheet.partnerTerms.resetError')));
     } finally {
       setBusy(false);
     }
@@ -47,12 +49,12 @@ export function DealPartnerReferralTermsSection(props: {
     setError(null);
     const pct = Number.parseFloat(percentDraft.replace(',', '.'));
     if (Number.isNaN(pct) || pct < 0 || pct > 100) {
-      setError('Partner percent must be a number from 0 to 100.');
+      setError(t('dealSheet.partnerTerms.percentInvalid'));
       return;
     }
     const reason = reasonDraft.trim();
     if (reason.length < OVERRIDE_REASON_MIN) {
-      setError(`Reason must be at least ${OVERRIDE_REASON_MIN} characters.`);
+      setError(t('dealSheet.partnerTerms.reasonMin', { min: OVERRIDE_REASON_MIN }));
       return;
     }
     setBusy(true);
@@ -66,7 +68,7 @@ export function DealPartnerReferralTermsSection(props: {
       setReasonDraft('');
       onTermsUpdated?.();
     } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Could not save override.'));
+      setError(getApiErrorMessage(caught, t('dealSheet.partnerTerms.saveError')));
     } finally {
       setBusy(false);
     }
@@ -76,13 +78,10 @@ export function DealPartnerReferralTermsSection(props: {
     <div className="border-border col-span-2 mt-2 rounded-xl border border-dashed p-4">
       <h5 className="text-muted-foreground mb-3 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
         <Percent size={12} />
-        Partner referral terms
+        {t('dealSheet.partnerTerms.title')}
       </h5>
       {!terms ? (
-        <p className="text-muted-foreground text-sm">
-          Frozen commission terms will appear after you save the deal with this partner and deal
-          type.
-        </p>
+        <p className="text-muted-foreground text-sm">{t('dealSheet.partnerTerms.pending')}</p>
       ) : (
         <div className="space-y-3 text-sm">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -90,20 +89,23 @@ export function DealPartnerReferralTermsSection(props: {
               {formatPercent(terms.partnerPercent)}%
             </span>
             <span className="text-muted-foreground">
-              source: <span className="text-foreground font-medium">{terms.sourcePolicy}</span>
+              {t('dealSheet.partnerTerms.source')}{' '}
+              <span className="text-foreground font-medium">{terms.sourcePolicy}</span>
             </span>
             <span className="text-muted-foreground">
-              deal type: <span className="text-foreground font-medium">{terms.dealType}</span>
+              {t('dealSheet.partnerTerms.dealType')}{' '}
+              <span className="text-foreground font-medium">{terms.dealType}</span>
             </span>
             {terms.paymentType ? (
               <span className="text-muted-foreground">
-                payment: <span className="text-foreground font-medium">{terms.paymentType}</span>
+                {t('dealSheet.partnerTerms.payment')}{' '}
+                <span className="text-foreground font-medium">{terms.paymentType}</span>
               </span>
             ) : null}
           </div>
           {terms.sourcePolicy === 'OVERRIDE' && terms.overrideReason ? (
             <p className="text-muted-foreground text-xs leading-relaxed">
-              Override reason: {terms.overrideReason}
+              {t('dealSheet.partnerTerms.overrideReasonLabel')} {terms.overrideReason}
             </p>
           ) : null}
           {!attributionLocked ? (
@@ -115,7 +117,7 @@ export function DealPartnerReferralTermsSection(props: {
                 disabled={busy}
                 onClick={() => void handleReset()}
               >
-                Recalculate from policy
+                {t('dealSheet.partnerTerms.reset')}
               </Button>
               <form
                 className="flex min-w-0 flex-1 flex-col gap-2 sm:max-w-md"
@@ -124,12 +126,12 @@ export function DealPartnerReferralTermsSection(props: {
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
                     <Label htmlFor={`partner-ref-pct-${deal.id}`} className="text-xs">
-                      Override %
+                      {t('dealSheet.partnerTerms.overridePercent')}
                     </Label>
                     <Input
                       id={`partner-ref-pct-${deal.id}`}
                       inputMode="decimal"
-                      placeholder="e.g. 12.5"
+                      placeholder={t('dealSheet.partnerTerms.overridePercentPlaceholder')}
                       value={percentDraft}
                       onChange={(ev) => setPercentDraft(ev.target.value)}
                     />
@@ -137,23 +139,23 @@ export function DealPartnerReferralTermsSection(props: {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor={`partner-ref-reason-${deal.id}`} className="text-xs">
-                    Reason (required)
+                    {t('dealSheet.partnerTerms.reasonRequired')}
                   </Label>
                   <Input
                     id={`partner-ref-reason-${deal.id}`}
-                    placeholder="Why this % differs from policy"
+                    placeholder={t('dealSheet.partnerTerms.reasonPlaceholder')}
                     value={reasonDraft}
                     onChange={(ev) => setReasonDraft(ev.target.value)}
                   />
                 </div>
                 <Button type="submit" size="sm" disabled={busy}>
-                  Save override
+                  {t('dealSheet.partnerTerms.saveOverride')}
                 </Button>
               </form>
             </div>
           ) : (
             <p className="text-muted-foreground text-xs">
-              Referral terms are locked while the deal is in a closed pipeline stage.
+              {t('dealSheet.partnerTerms.locked')}
             </p>
           )}
           {error ? <p className="text-destructive text-xs">{error}</p> : null}

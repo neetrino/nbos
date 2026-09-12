@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +11,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { LEAD_SVYAZAT_LABELS } from './lead-svyazat-labels';
 import { LeadSvyazatPickerList } from './LeadSvyazatPickerList';
 import type { SvyazatSearchHit } from './lead-svyazat-search';
 
@@ -34,13 +34,15 @@ interface LeadSvyazatSearchDialogProps {
 }
 
 export function LeadSvyazatSearchDialog(props: LeadSvyazatSearchDialogProps) {
+  const t = useTranslations('crm');
+  const tCommon = useTranslations('common');
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent className="sm:max-w-[440px]" forceNestedBackdrop>
         <DialogHeader>
           <DialogTitle>{props.title}</DialogTitle>
           <DialogDescription>
-            {props.description ?? LEAD_SVYAZAT_LABELS.searchHint}
+            {props.description ?? t('svyazat.searchHint')}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
@@ -60,14 +62,14 @@ export function LeadSvyazatSearchDialog(props: LeadSvyazatSearchDialogProps) {
         {props.error ? <p className="text-destructive text-sm">{props.error}</p> : null}
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => props.onOpenChange(false)}>
-            {LEAD_SVYAZAT_LABELS.cancel}
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
             disabled={!props.selectedId || props.loading}
             onClick={props.onApply}
           >
-            {props.applyLabel ?? LEAD_SVYAZAT_LABELS.apply}
+            {props.applyLabel ?? t('svyazat.apply')}
           </Button>
         </DialogFooter>
       </DialogContent>

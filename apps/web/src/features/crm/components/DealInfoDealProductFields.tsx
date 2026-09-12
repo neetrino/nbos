@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Calendar, Layers, Tag } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
@@ -10,6 +11,11 @@ import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { DEAL_TYPES, PRODUCT_CATEGORIES } from '../constants/dealPipeline';
+import {
+  translateDealTypeLabel,
+  translateProductCategoryLabel,
+  translateProductTypeLabel,
+} from '../i18n/crm-copy';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 import { buildDealExistingProductSelectPatch } from './deal-existing-product-search';
 import {
@@ -41,14 +47,18 @@ export function DealInfoDealProductFields({
   outsourceToggleLocked = false,
   gateRequiredFields = new Set(),
 }: DealInfoDealProductFieldsProps) {
+  const t = useTranslations('crm');
   return (
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
       <InlineField
         variant="controlled"
-        label="Deal Type"
+        label={t('dealSheet.dealType')}
         type="select"
         value={draft.type}
-        options={DEAL_TYPES.map((type) => ({ value: type.value, label: type.label }))}
+        options={DEAL_TYPES.map((type) => ({
+          value: type.value,
+          label: translateDealTypeLabel(t, type.value),
+        }))}
         icon={<Layers size={12} />}
         disabled={disabled}
         className={dealStageGateFieldClass(gateRequiredFields, 'type')}
@@ -96,20 +106,21 @@ function DealInfoProductTaxonomyFields({
   outsourceToggleLocked = false,
   gateRequiredFields = new Set(),
 }: Omit<DealInfoDealProductFieldsProps, 'searchProducts'>) {
+  const t = useTranslations('crm');
   const outsourceToggleDisabled = Boolean(disabled || outsourceToggleLocked);
 
   return (
     <>
       <InlineField
         variant="controlled"
-        label="Product Category"
+        label={t('dealSheet.productCategory')}
         type="select"
         value={draft.productCategory ?? ''}
         options={PRODUCT_CATEGORIES.map((category) => ({
           value: category.value,
-          label: category.label,
+          label: translateProductCategoryLabel(t, category.value),
         }))}
-        placeholder="Select category..."
+        placeholder={t('dealSheet.selectCategory')}
         icon={<Layers size={12} />}
         clearable
         disabled={disabled}
@@ -126,11 +137,14 @@ function DealInfoProductTaxonomyFields({
       {draft.productCategory ? (
         <InlineField
           variant="controlled"
-          label="Product Type"
+          label={t('dealSheet.productType')}
           type="select"
           value={draft.productType ?? ''}
-          options={filteredProductTypeOptions}
-          placeholder="Select product type..."
+          options={filteredProductTypeOptions.map((option) => ({
+            value: option.value,
+            label: translateProductTypeLabel(t, option.value),
+          }))}
+          placeholder={t('dealSheet.selectProductType')}
           icon={<Tag size={12} />}
           clearable
           disabled={disabled}
@@ -159,6 +173,7 @@ function DealInfoOutsourceToggle({
   disabled: boolean;
   onCheckedChange: (checked: boolean) => void;
 }) {
+  const t = useTranslations('crm');
   return (
     <div className="flex items-start gap-2 pt-1">
       <Checkbox
@@ -169,12 +184,9 @@ function DealInfoOutsourceToggle({
       />
       <div className="min-w-0">
         <Label htmlFor="deal-outsource-goes-to-delivery" className="text-sm font-medium">
-          Goes to Delivery Board
+          {t('dealSheet.outsourceToDelivery')}
         </Label>
-        <p className="text-muted-foreground text-xs">
-          OFF (default): Product in Hub / Finance / WhatsApp without active Starting…Transfer. ON:
-          full delivery lifecycle after Won. Locked after Won.
-        </p>
+        <p className="text-muted-foreground text-xs">{t('dealSheet.outsourceToDeliveryHint')}</p>
       </div>
     </div>
   );
@@ -195,17 +207,18 @@ function DealInfoExistingProductField({
     'deal-existing-product',
     draft.projectId ? { projectId: draft.projectId } : undefined,
   );
+  const t = useTranslations('crm');
 
   return (
     <RelationPickerField
-      label="Product"
+      label={t('common.entityProduct')}
       entityKind="product"
       value={draft.existingProductId}
       selectionLabel={draft.existingProductPickLabel}
       selectionSubtitle={draft.linkedProjectLabel}
       className={dealStageGateFieldClass(gateRequiredFields, 'existingProductId')}
       disabled={disabled}
-      placeholder="Search products…"
+      placeholder={t('dealSheet.searchProducts')}
       icon={<Layers size={12} />}
       onSearch={searchProducts}
       onSelect={(id, label) => {
@@ -227,14 +240,15 @@ function DealInfoScheduleFields({
   DealInfoDealProductFieldsProps,
   'draft' | 'patchDraft' | 'disabled' | 'gateRequiredFields'
 >) {
+  const t = useTranslations('crm');
   if (draft.type === 'MAINTENANCE') {
     return (
       <InlineField
         variant="controlled"
-        label="Planned Maintenance Start"
+        label={t('dealSheet.plannedMaintenanceStart')}
         type="date"
         value={draft.maintenanceStartAt ?? ''}
-        placeholder="Select start date..."
+        placeholder={t('dealSheet.selectStartDate')}
         icon={<Calendar size={12} />}
         disabled={disabled}
         onValueChange={(v) => patchDraft({ maintenanceStartAt: v || null })}
@@ -245,11 +259,11 @@ function DealInfoScheduleFields({
   return (
     <InlineField
       variant="controlled"
-      label="Deadline"
+      label={t('dealSheet.deadline')}
       type="date"
       datePickerVariant="extended"
       value={draft.deadline ?? ''}
-      placeholder="Select delivery deadline…"
+      placeholder={t('dealSheet.selectDeadline')}
       icon={<Calendar size={12} />}
       disabled={disabled}
       className={dealStageGateFieldClass(gateRequiredFields, 'deadline')}

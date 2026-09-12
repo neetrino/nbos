@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { DepartmentItem, Employee, RoleItem } from '@/lib/api/employees';
 import {
   loadTeamFilterMeta,
@@ -34,13 +35,14 @@ export function useTeamDirectory(
     [search, filters, effectiveStatus],
   );
 
+  const t = useTranslations('hr');
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [total, setTotal] = useState(0);
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,7 +53,7 @@ export function useTeamDirectory(
       setTotal(cached.total);
       setLoading(false);
       setRefreshing(true);
-      setError(null);
+      setFailed(false);
     } else {
       setLoading(true);
       setRefreshing(false);
@@ -62,12 +64,12 @@ export function useTeamDirectory(
         if (cancelled) return;
         setEmployees(entry.items);
         setTotal(entry.total);
-        setError(null);
+        setFailed(false);
       })
       .catch(() => {
         if (cancelled) return;
         if (!cached) {
-          setError('Employees could not be loaded. Check your connection and try again.');
+          setFailed(true);
         }
       })
       .finally(() => {
@@ -105,9 +107,9 @@ export function useTeamDirectory(
       const entry = await loadTeamList(listQuery);
       setEmployees(entry.items);
       setTotal(entry.total);
-      setError(null);
+      setFailed(false);
     } catch {
-      setError('Employees could not be loaded. Check your connection and try again.');
+      setFailed(true);
     } finally {
       setRefreshing(false);
       setLoading(false);
@@ -121,7 +123,7 @@ export function useTeamDirectory(
     departments,
     loading,
     refreshing,
-    error,
+    error: failed ? t('directory.loadFailed') : null,
     refetch,
   };
 }

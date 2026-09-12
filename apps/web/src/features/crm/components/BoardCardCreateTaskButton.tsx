@@ -1,6 +1,7 @@
 'use client';
 
 import type { MouseEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -38,6 +39,7 @@ export function BoardCardCreateTaskButton({
   className,
   showLabel = false,
 }: BoardCardCreateTaskButtonProps) {
+  const t = useTranslations('crm');
   return (
     <Button
       type="button"
@@ -48,11 +50,11 @@ export function BoardCardCreateTaskButton({
         'opacity-0 group-hover:opacity-100',
         className,
       )}
-      aria-label={BOARD_CARD_CREATE_TASK_ARIA_LABEL}
+      aria-label={t('common.createTask')}
       onClick={(event) => stopBoardCardCreateTaskClick(event, onCreateTask)}
     >
       <BOARD_CARD_CREATE_TASK_ICON size={BOARD_CARD_CREATE_TASK_ICON_SIZE} />
-      {showLabel ? BOARD_CARD_CREATE_TASK_LABEL : null}
+      {showLabel ? t('common.task') : null}
     </Button>
   );
 }

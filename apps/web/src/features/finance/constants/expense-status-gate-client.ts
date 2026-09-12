@@ -5,6 +5,9 @@ import {
   EXPENSE_GATE_FIELD_STATUS,
 } from './expense-stage-gate-highlight';
 
+export const EXPENSE_PAID_LOCKED_GATE_MESSAGE =
+  'Fully paid expenses stay in Paid until cancelled or adjusted via payments.';
+
 /** Local pre-check before kanban status move. Mark Paid settles remaining on the API. */
 export function getLocalExpenseStatusGateErrors(
   expense: Expense,
@@ -14,7 +17,7 @@ export function getLocalExpenseStatusGateErrors(
   if (expense.status === 'PAID' && targetStatus !== 'PAID' && targetStatus !== 'CANCELLED') {
     errors.push({
       field: EXPENSE_GATE_FIELD_STATUS,
-      message: 'Fully paid expenses stay in Paid until cancelled or adjusted via payments.',
+      message: EXPENSE_PAID_LOCKED_GATE_MESSAGE,
     });
   }
 

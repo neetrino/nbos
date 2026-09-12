@@ -33,6 +33,18 @@ export const LEAD_SVYAZAT_MENU_GROUPS: readonly SvyazatMenuGroup[] = [
   },
 ];
 
+export const SVYAZAT_GROUP_LABEL_KEYS = {
+  merge: 'svyazat.merge',
+  add: 'svyazat.add',
+} as const;
+
+export const SVYAZAT_ITEM_LABEL_KEYS = {
+  merge: 'svyazat.mergeLead',
+  pour: 'svyazat.mergeContact',
+  create: 'svyazat.newContact',
+  attach: 'svyazat.contactToWork',
+} as const;
+
 export function svyazatMenuItemDisabled(item: SvyazatMenuItem, hasContact: boolean): boolean {
   return Boolean(item.requiresNoContact && hasContact);
 }

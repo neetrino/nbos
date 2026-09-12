@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { dealsApi, type Deal } from '@/lib/api/deals';
 import { toast } from 'sonner';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { firstReleaseFormErrorCopy, localizeCaughtApiError } from '@/i18n/localize-api-error';
 
 interface CreateDealDialogProps {
   open: boolean;
@@ -34,10 +35,13 @@ export function CreateDealDialog({
   prefill,
   forceNestedBackdrop = false,
 }: CreateDealDialogProps) {
+  const t = useTranslations('crm');
+  const tCommon = useTranslations('common');
+  const tForms = useTranslations('forms');
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState('');
   const canSubmit = name.trim().length > 0;
-  const title = prefill?.leadId ? 'Convert Lead to Deal' : 'New Deal';
+  const title = prefill?.leadId ? t('createDeal.convertTitle') : t('createDeal.title');
 
   useEffect(() => {
     if (!open) return;
@@ -57,7 +61,18 @@ export function CreateDealDialog({
       onOpenChange(false);
       setName('');
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Could not create deal. Try again.'));
+      toast.error(
+        localizeCaughtApiError(
+          err,
+          firstReleaseFormErrorCopy(
+            tCommon('permissionDenied'),
+            t('createDeal.createError'),
+            tForms('errors.validation'),
+            t('createDeal.createError'),
+            tForms('errors.network'),
+          ),
+        ),
+      );
     } finally {
       setLoading(false);
     }
@@ -71,7 +86,8 @@ export function CreateDealDialog({
         </DialogHeader>
         {prefill?.contactName ? (
           <p className="text-muted-foreground text-sm">
-            Lead: <span className="text-foreground font-medium">{prefill.contactName}</span>
+            {t('createDeal.leadPrefix')}{' '}
+            <span className="text-foreground font-medium">{prefill.contactName}</span>
           </p>
         ) : null}
         <DealCreateForm
@@ -102,6 +118,8 @@ function DealCreateForm({
   onCancel: () => void;
   onCreate: (openFull: boolean) => Promise<void>;
 }) {
+  const t = useTranslations('crm');
+  const tCommon = useTranslations('common');
   return (
     <form
       onSubmit={(e) => {
@@ -111,7 +129,7 @@ function DealCreateForm({
       className="space-y-4"
     >
       <div className="space-y-2.5">
-        <Label htmlFor="create-deal-title">Title *</Label>
+        <Label htmlFor="create-deal-title">{t('createDeal.titleLabel')}</Label>
         <Input
           id="create-deal-title"
           value={name}
@@ -121,7 +139,7 @@ function DealCreateForm({
       </div>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          {tCommon('cancel')}
         </Button>
         <Button
           type="button"
@@ -129,10 +147,10 @@ function DealCreateForm({
           disabled={loading || !canSubmit}
           onClick={() => void onCreate(true)}
         >
-          Full
+          {t('createDeal.full')}
         </Button>
         <Button type="submit" disabled={loading || !canSubmit}>
-          {loading ? 'Creating…' : 'Create Deal'}
+          {loading ? tCommon('creating') : t('createDeal.createDeal')}
         </Button>
       </DialogFooter>
     </form>

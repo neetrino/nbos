@@ -7,11 +7,13 @@ import { CRM_HEADER_SECTION_DEFAULTS } from '@/features/crm/constants/crm-header
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useModuleSectionHref } from '@/lib/navigation/hooks/use-module-section-href';
 import { writeModuleLastVisitFromPathname } from '@/lib/navigation/module-last-visit';
+import { useTranslations } from 'next-intl';
 import { crmHeaderContent } from './crm-header-context-content';
 
 export function CrmHeaderContextLayout() {
   const pathname = usePathname();
   const isMobileViewport = useIsMobileViewport();
+  const t = useTranslations('crm');
 
   useLayoutEffect(() => {
     writeModuleLastVisitFromPathname(pathname);
@@ -39,13 +41,24 @@ export function CrmHeaderContextLayout() {
   const content = useMemo(
     () =>
       isMobileViewport
-        ? crmHeaderContent(pathname, {
-            dashboard: dashboardHref,
-            leads: leadsHref,
-            deals: dealsHref,
-          })
+        ? crmHeaderContent(
+            pathname,
+            {
+              dashboard: dashboardHref,
+              leads: leadsHref,
+              deals: dealsHref,
+            },
+            {
+              ariaLabel: t('nav.areasAria'),
+              labels: {
+                dashboard: t('nav.dashboard'),
+                leads: t('nav.leads'),
+                deals: t('nav.deals'),
+              },
+            },
+          )
         : null,
-    [dashboardHref, dealsHref, isMobileViewport, leadsHref, pathname],
+    [dashboardHref, dealsHref, isMobileViewport, leadsHref, pathname, t],
   );
 
   useHeaderContextLayout(content);

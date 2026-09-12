@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { GitPullRequest } from 'lucide-react';
 import { SupportChangeControlHero } from '@/features/support/components/SupportChangeControlHero';
 import { SupportCreateTicketDialog } from '@/features/support/components/SupportCreateTicketDialog';
@@ -12,6 +13,7 @@ import { useSupportChangeControlPage } from '@/features/support/hooks/use-suppor
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
 export function SupportChangeControlView() {
+  const t = useTranslations('support');
   const page = useSupportChangeControlPage();
   const { query, createForm, actions } = page;
   const displayView = useMobilePreferredView(query.view, 'kanban');
@@ -57,9 +59,9 @@ export function SupportChangeControlView() {
         kanbanColumns={page.kanbanColumns}
         actionId={actions.actionId}
         emptyIcon={GitPullRequest}
-        emptyTitle="No change requests"
-        emptyDescription="Create a change request or classify an existing ticket as Change Request."
-        emptyActionLabel="New Change Request"
+        emptyTitle={t('changeControl.emptyTitle')}
+        emptyDescription={t('changeControl.emptyDescription')}
+        emptyActionLabel={t('changeControl.newRequest')}
         onRetry={() => void query.fetchTickets()}
         onCreateFirst={handleNewChangeRequest}
         onKanbanMove={actions.handleKanbanMove}
@@ -85,8 +87,8 @@ export function SupportChangeControlView() {
       <SupportCreateTicketDialog
         open={createForm.createOpen}
         onOpenChange={createForm.setCreateOpen}
-        dialogTitle="New change request"
-        submitLabel="Create request"
+        dialogTitle={t('changeControl.createTitle')}
+        submitLabel={t('changeControl.createSubmit')}
         title={createForm.createTitle}
         projectId={createForm.createProjectId}
         productId={createForm.createProductId}

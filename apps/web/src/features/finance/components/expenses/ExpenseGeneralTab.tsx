@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { DollarSign, Layers, LayoutGrid } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
@@ -35,6 +36,15 @@ import {
   resolveExpensePayrollRunId,
   resolveExpenseSalaryLineId,
 } from '@/features/finance/utils/parse-payroll-expense-notes';
+import {
+  buildExpenseSelectOptions,
+  translateExpenseBacklogReason,
+  translateExpenseCategory,
+  translateExpenseFrequency,
+  translateExpensePaymentStatus,
+  translateExpenseTaxStatus,
+  translateExpenseType,
+} from './expense-i18n-labels';
 
 interface ExpenseGeneralTabProps {
   expense: Expense;
@@ -49,6 +59,7 @@ export function ExpenseGeneralTab({
   patchDraft,
   formDisabled = false,
 }: ExpenseGeneralTabProps) {
+  const t = useTranslations('expenses');
   const productLabelSeed = expense.product?.name ?? null;
   const credentialLabelSeed = expense.credential?.name ?? null;
   const [productLabel, setProductLabel] = useState(productLabelSeed);
@@ -61,27 +72,20 @@ export function ExpenseGeneralTab({
     setCredentialLabel(credentialLabelSeed);
   }
 
-  const categoryOptions = useMemo((): Array<{ value: string; label: string }> => {
-    const items: Array<{ value: string; label: string }> = EXPENSE_CATEGORIES.map((c) => ({
-      value: c.value,
-      label: c.label,
-    }));
-    if (!items.some((c) => c.value === expense.category)) {
-      items.push({ value: expense.category, label: expense.category });
-    }
-    return items;
-  }, [expense.category]);
-
-  const frequencyOptions = useMemo((): Array<{ value: string; label: string }> => {
-    const items: Array<{ value: string; label: string }> = EXPENSE_FREQUENCIES.map((f) => ({
-      value: f.value,
-      label: f.label,
-    }));
-    if (!items.some((f) => f.value === expense.frequency)) {
-      items.push({ value: expense.frequency, label: expense.frequency });
-    }
-    return items;
-  }, [expense.frequency]);
+  const categoryOptions = useMemo(
+    () =>
+      buildExpenseSelectOptions(EXPENSE_CATEGORIES, expense.category, (value) =>
+        translateExpenseCategory(value, t),
+      ),
+    [expense.category, t],
+  );
+  const frequencyOptions = useMemo(
+    () =>
+      buildExpenseSelectOptions(EXPENSE_FREQUENCIES, expense.frequency, (value) =>
+        translateExpenseFrequency(value, t),
+      ),
+    [expense.frequency, t],
+  );
 
   const payrollRunId = resolveExpensePayrollRunId(expense);
   const payrollMonth = resolveExpensePayrollMonthLabel(expense);
@@ -99,7 +103,10 @@ export function ExpenseGeneralTab({
           {formatAmount(parseFloat(expense.paidAmount!))} /{' '}
           {formatAmount(parseFloat(expense.remainingAmount!))}
         </span>
-        <StatusBadge label={ledgerPresentation.label} variant={ledgerPresentation.variant} />
+        <StatusBadge
+          label={translateExpensePaymentStatus(expense.paymentStatus!, t)}
+          variant={ledgerPresentation.variant}
+        />
       </div>
     ) : null;
 
@@ -120,22 +127,22 @@ export function ExpenseGeneralTab({
         />
       ) : null}
 
-      <DetailSheetSection title="General" icon={<LayoutGrid size={12} />}>
+      <DetailSheetSection title={t('sheet.sections.general')} icon={<LayoutGrid size={12} />}>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
           {ledgerSummary}
           <InlineField
             variant="controlled"
-            label="Name"
+            label={t('fields.name')}
             type="text"
             value={draft.name}
-            placeholder="Expense name…"
+            placeholder={t('fields.namePlaceholder')}
             disabled={formDisabled}
             onValueChange={(v) => patchDraft({ name: v })}
           />
           <div className={EXPENSE_SHEET_FIELD_ROW_3_CLASS}>
             <InlineField
               variant="controlled"
-              label="Amount"
+              label={t('fields.amount')}
               type="money"
               value={draft.amount}
               placeholder="0"
@@ -146,7 +153,7 @@ export function ExpenseGeneralTab({
             />
             <InlineField
               variant="controlled"
-              label="Due date"
+              label={t('fields.dueDate')}
               type="date"
               value={draft.dueDate}
               disabled={formDisabled}
@@ -155,10 +162,13 @@ export function ExpenseGeneralTab({
             />
             <InlineField
               variant="controlled"
-              label="Type"
+              label={t('fields.type')}
               type="select"
               value={draft.type}
-              options={EXPENSE_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+              options={EXPENSE_TYPES.map((item) => ({
+                value: item.value,
+                label: translateExpenseType(item.value, t),
+              }))}
               disabled={formDisabled}
               selectMenuTone="highlight"
               className={EXPENSE_SHEET_FIELD_CELL_CLASS}
@@ -168,7 +178,7 @@ export function ExpenseGeneralTab({
           <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
             <InlineField
               variant="controlled"
-              label="Category"
+              label={t('fields.category')}
               type="select"
               value={draft.category}
               options={categoryOptions}
@@ -179,7 +189,7 @@ export function ExpenseGeneralTab({
             />
             <InlineField
               variant="controlled"
-              label="Frequency"
+              label={t('fields.frequency')}
               type="select"
               value={draft.frequency}
               options={frequencyOptions}
@@ -192,12 +202,15 @@ export function ExpenseGeneralTab({
           {expense.status === 'BACKLOG' || draft.status === 'BACKLOG' ? (
             <InlineField
               variant="controlled"
-              label="Backlog reason"
+              label={t('fields.backlogReason')}
               type="select"
               value={draft.backlogReason}
               options={[
-                { value: 'none', label: 'None' },
-                ...EXPENSE_BACKLOG_REASONS.map((r) => ({ value: r.value, label: r.label })),
+                { value: 'none', label: translateExpenseBacklogReason('none', t) },
+                ...EXPENSE_BACKLOG_REASONS.map((r) => ({
+                  value: r.value,
+                  label: translateExpenseBacklogReason(r.value, t),
+                })),
               ]}
               disabled={formDisabled}
               onValueChange={(v) => v && patchDraft({ backlogReason: v })}
@@ -206,10 +219,13 @@ export function ExpenseGeneralTab({
           <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
             <InlineField
               variant="controlled"
-              label="Tax status"
+              label={t('fields.taxStatus')}
               type="select"
               value={draft.taxStatus}
-              options={TAX_STATUSES.map((t) => ({ value: t.value, label: t.label }))}
+              options={TAX_STATUSES.map((item) => ({
+                value: item.value,
+                label: translateExpenseTaxStatus(item.value, t),
+              }))}
               disabled={formDisabled}
               selectMenuTone="highlight"
               className={EXPENSE_SHEET_FIELD_CELL_CLASS}
@@ -248,13 +264,13 @@ export function ExpenseGeneralTab({
               onCheckedChange={(v) => patchDraft({ isPassThrough: v === true })}
             />
             <Label htmlFor={`expense-pass-${expense.id}`} className="text-sm font-normal">
-              Pass-through
+              {t('fields.passThrough')}
             </Label>
           </div>
         </div>
       </DetailSheetSection>
 
-      <DetailSheetSection title="Proofs" icon={<Layers size={12} />}>
+      <DetailSheetSection title={t('sheet.sections.proofs')} icon={<Layers size={12} />}>
         <FinanceProofAttachments
           entityType="EXPENSE"
           entityId={expense.id}
@@ -267,6 +283,8 @@ export function ExpenseGeneralTab({
         entityType="expense"
         entityId={expense.id}
         value={draft.notes}
+        label={t('fields.notes')}
+        placeholder={t('fields.notesPlaceholder')}
         onChange={(notes) => patchDraft({ notes: notes ?? '' })}
         disabled={formDisabled}
       />

@@ -2,20 +2,9 @@
 
 import { useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import Link from 'next/link';
-import {
-  ChevronRight,
-  FileText,
-  Folder,
-  FolderPlus,
-  HardDrive,
-  Link2,
-  Loader2,
-  Upload,
-} from 'lucide-react';
-import {
-  ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,
-  ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS,
-} from '@/components/shared/entity-sheet-floating-rail';
+import { useLocale, useTranslations } from 'next-intl';
+import { ChevronRight, FileText, Folder, FolderPlus, HardDrive, Loader2, Upload } from 'lucide-react';
+import { resolveDatePickerLocale } from '@/components/shared/date-picker/date-picker-locale';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { EntityDetailSheetContent, DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
@@ -24,10 +13,10 @@ import { Sheet } from '@/components/ui/sheet';
 import { DriveCreateFolderDialog } from '@/features/drive/DriveFolderActionDialogs';
 import { buildDriveHrefWithWorkSpace } from '@/features/drive/drive-deep-link';
 import { buildDriveFileHref } from '@/features/drive/drive-file-links';
-import { formatDriveDate, formatFileSize } from '@/features/drive/drive-format';
+import { formatFileSize } from '@/features/drive/drive-format';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 import type { DriveFolder, FileAsset } from '@/lib/api/drive';
+import { WorkSpaceDriveFloatingRail } from './WorkSpaceDriveFloatingRail';
 import { useWorkSpaceDriveBrowser } from './use-work-space-drive-browser';
 
 /** Matches `SheetContent` width and `floatingRailAnchorClassName`. */
@@ -45,6 +34,7 @@ export function WorkSpaceDriveSheet({
   workSpaceId: string;
   workSpaceName: string;
 }) {
+  const t = useTranslations('workSpaces');
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const browser = useWorkSpaceDriveBrowser(workSpaceId, open);
@@ -77,7 +67,7 @@ export function WorkSpaceDriveSheet({
           showRailActions={false}
         >
           <header className="border-border bg-background shrink-0 border-b px-5 pt-4 pb-3">
-            <p className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0.5')}>Drive</p>
+            <p className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0.5')}>{t('drive.title')}</p>
             <h2 className="text-foreground truncate text-lg font-semibold tracking-tight">
               {workSpaceName}
             </h2>
@@ -85,14 +75,14 @@ export function WorkSpaceDriveSheet({
 
           <div className="border-border bg-muted/25 flex items-center gap-1 border-b px-3 py-2">
             <WorkSpaceDriveToolbarButton
-              label="New folder"
+              label={t('drive.newFolder')}
               disabled={browser.busy || !browser.folderScope}
               onClick={() => setCreateFolderOpen(true)}
             >
               <FolderPlus className="size-4" aria-hidden />
             </WorkSpaceDriveToolbarButton>
             <WorkSpaceDriveToolbarButton
-              label="Upload files"
+              label={t('drive.uploadFiles')}
               disabled={browser.busy || !browser.folderScope}
               onClick={() => uploadInputRef.current?.click()}
             >
@@ -118,13 +108,13 @@ export function WorkSpaceDriveSheet({
               {browser.loading ? (
                 <p className="text-muted-foreground flex items-center justify-center gap-2 py-10 text-sm">
                   <Loader2 className="size-4 animate-spin" aria-hidden />
-                  Loading…
+                  {t('drive.loading')}
                 </p>
               ) : browser.folders.length === 0 && browser.files.length === 0 ? (
                 <div className="border-border/80 bg-muted/15 text-muted-foreground rounded-2xl border border-dashed px-4 py-10 text-center text-sm">
                   <HardDrive className="text-muted-foreground/70 mx-auto mb-3 size-8" aria-hidden />
-                  <p className="text-foreground font-medium">No files yet</p>
-                  <p className="mt-1 text-xs">Upload or create a folder for this work space.</p>
+                  <p className="text-foreground font-medium">{t('drive.emptyTitle')}</p>
+                  <p className="mt-1 text-xs">{t('drive.emptyDescription')}</p>
                 </div>
               ) : (
                 <ul className="space-y-1.5">
@@ -150,7 +140,7 @@ export function WorkSpaceDriveSheet({
               onClick={() => window.open(driveHref, '_blank', 'noopener,noreferrer')}
             >
               <HardDrive className="size-4" aria-hidden />
-              Open in Drive
+              {t('drive.openInDrive')}
             </Button>
           </footer>
         </EntityDetailSheetContent>
@@ -161,61 +151,6 @@ export function WorkSpaceDriveSheet({
         onOpenChange={setCreateFolderOpen}
         onSubmit={browser.createFolder}
       />
-    </>
-  );
-}
-
-function WorkSpaceDriveFloatingRail({
-  workSpacePageHref,
-  driveHref,
-}: {
-  workSpacePageHref: string;
-  driveHref: string;
-}) {
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(
-        new URL(workSpacePageHref, window.location.origin).toString(),
-      );
-      toast.success('Link copied');
-    } catch {
-      toast.error('Could not copy link');
-    }
-  };
-
-  const openDrive = () => {
-    window.open(driveHref, '_blank', 'noopener,noreferrer');
-  };
-
-  return (
-    <>
-      <Button
-        type="button"
-        variant="default"
-        size="icon"
-        className={ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS}
-        aria-label="Copy work space link"
-        title="Copy link"
-        onClick={() => void handleCopyLink()}
-      >
-        <Link2 className="size-4" aria-hidden />
-        <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Copy link</span>
-      </Button>
-      <Button
-        type="button"
-        variant="default"
-        size="icon"
-        className={cn(
-          ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,
-          'ring-primary-foreground/25 size-11 ring-2',
-        )}
-        aria-label="Open in Drive"
-        title="Open in Drive"
-        onClick={openDrive}
-      >
-        <HardDrive className="size-4" aria-hidden />
-        <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Open in Drive</span>
-      </Button>
     </>
   );
 }
@@ -256,17 +191,18 @@ function WorkSpaceDriveBreadcrumb({
   onRoot: () => void;
   onTrailIndex: (index: number) => void;
 }) {
+  const t = useTranslations('workSpaces');
   return (
     <nav
       className="border-border text-muted-foreground flex flex-wrap items-center gap-1 border-b px-4 py-2 text-xs"
-      aria-label="Folder path"
+      aria-label={t('drive.folderPathAria')}
     >
       <button
         type="button"
         className="hover:text-foreground rounded-md px-1 py-0.5 font-medium transition-colors"
         onClick={onRoot}
       >
-        Workspace
+        {t('drive.root')}
       </button>
       {trail.map((folder, index) => (
         <span key={folder.id} className="flex min-w-0 items-center gap-1">
@@ -303,6 +239,15 @@ function WorkSpaceDriveFolderRow({ folder, onOpen }: { folder: DriveFolder; onOp
 }
 
 function WorkSpaceDriveFileRow({ file }: { file: FileAsset }) {
+  const locale = useLocale();
+  const updatedAt = file.updatedAt
+    ? new Date(file.updatedAt).toLocaleDateString(resolveDatePickerLocale(locale), {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : '–';
+
   return (
     <li>
       <Link
@@ -315,7 +260,7 @@ function WorkSpaceDriveFileRow({ file }: { file: FileAsset }) {
         <span className="min-w-0 flex-1">
           <span className="block truncate font-medium">{file.displayName}</span>
           <span className="text-muted-foreground mt-0.5 block text-xs">
-            {formatFileSize(file.sizeBytes)} · {formatDriveDate(file.updatedAt)}
+            {formatFileSize(file.sizeBytes)} · {updatedAt}
           </span>
         </span>
       </Link>

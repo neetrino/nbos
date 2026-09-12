@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { filterPayrollAllocationMatrix } from '@/features/finance/components/payroll/allocation-matrix/filter-payroll-allocation-matrix';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
@@ -57,6 +58,7 @@ export function PayrollAllocationMatrixWorkspace({
   onOpenSalaryLine?: (salaryLineId: string) => void;
   onSalaryLinesStale?: () => void;
 }) {
+  const t = useTranslations('payroll');
   const [matrix, setMatrix] = useState<PayrollAllocationMatrix | null>(() =>
     matrixMatchesView(initialMatrix, payrollRunId, viewMode) ? initialMatrix : null,
   );
@@ -100,11 +102,11 @@ export function PayrollAllocationMatrixWorkspace({
       applyMatrix(data);
     } catch (caught) {
       setMatrix(null);
-      setError(getApiErrorMessage(caught, 'Allocation matrix could not be loaded.'));
+      setError(getApiErrorMessage(caught, t('matrix.loadError')));
     } finally {
       setLoading(false);
     }
-  }, [applyMatrix, payrollRunId, viewMode]);
+  }, [applyMatrix, payrollRunId, t, viewMode]);
 
   useEffect(() => {
     if (matrixMatchesView(initialMatrix, payrollRunId, viewMode)) {
@@ -164,7 +166,7 @@ export function PayrollAllocationMatrixWorkspace({
       });
       applyMatrix(updated);
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Layout could not be saved.'));
+      toast.error(getApiErrorMessage(caught, t('matrix.layoutSaveError')));
     } finally {
       setLayoutBusy(false);
     }
@@ -230,14 +232,14 @@ export function PayrollAllocationMatrixWorkspace({
         applyMatrix(updated);
         setActiveRowId(null);
         setActiveColumnId(null);
-        toast.success('Layout reset');
+        toast.success(t('matrix.layoutReset'));
       } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Layout could not be reset.'));
+        toast.error(getApiErrorMessage(caught, t('matrix.layoutResetError')));
       } finally {
         setLayoutBusy(false);
       }
     })();
-  }, [applyMatrix, payrollRunId, viewMode]);
+  }, [applyMatrix, payrollRunId, t, viewMode]);
 
   const layoutDisabled = !matrix?.editable || layoutBusy;
 
@@ -255,7 +257,7 @@ export function PayrollAllocationMatrixWorkspace({
 
   if (loading && !matrix) return <LoadingState />;
   if (error || !matrix || !displayMatrix) {
-    return <ErrorState description={error ?? 'Not found'} onRetry={() => void load()} />;
+    return <ErrorState description={error ?? t('matrix.notFound')} onRetry={() => void load()} />;
   }
 
   const employeeLabel = (id: string) => {
@@ -276,7 +278,7 @@ export function PayrollAllocationMatrixWorkspace({
           className="border-destructive/40 bg-destructive/5 text-destructive border-b px-4 py-2 text-xs"
           role="alert"
         >
-          <p className="font-semibold">Resolve before review/approval</p>
+          <p className="font-semibold">{t('matrix.validationTitle')}</p>
           <ul className="mt-1 list-inside list-disc">
             {validationIssues.map((issue) => (
               <li key={`${issue.code}-${issue.releaseId ?? issue.employeeId ?? issue.message}`}>
@@ -289,7 +291,7 @@ export function PayrollAllocationMatrixWorkspace({
 
       {displayMatrix.employees.length === 0 && displayMatrix.deliveryUnits.length === 0 ? (
         <p className="text-muted-foreground min-h-0 flex-1 px-2 py-8 text-center text-sm">
-          No rows match this search. Clear the search bar to see the full matrix.
+          {t('matrix.emptySearch')}
         </p>
       ) : (
         <PayrollAllocationMatrixGrid
@@ -326,7 +328,7 @@ export function PayrollAllocationMatrixWorkspace({
       {loading || layoutBusy ? (
         <p className="text-muted-foreground border-border flex items-center gap-2 border-t px-4 py-2 text-xs">
           <Loader2 className="size-3 animate-spin" aria-hidden />
-          Updating…
+          {t('matrix.updating')}
         </p>
       ) : null}
 

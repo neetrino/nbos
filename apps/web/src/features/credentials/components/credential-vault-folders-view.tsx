@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { FolderKanban, FolderOpen, KeyRound, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -116,6 +117,7 @@ export function CredentialVaultFoldersView({
   onOpenProject,
   onNavigateProject,
 }: CredentialVaultFoldersViewProps) {
+  const t = useTranslations('credentials');
   const [dropTargetFolderId, setDropTargetFolderId] = useState<string | null>(null);
 
   const buildFolderDropHandlers = useCallback(
@@ -207,7 +209,7 @@ export function CredentialVaultFoldersView({
 
   const nav = (
     <CredentialVaultFoldersNav
-      rootLabel={projectShellsMode ? 'Projects' : 'Folders'}
+      rootLabel={projectShellsMode ? t('folders.projects') : t('folders.root')}
       project={insideProject ? activeProject : null}
       folderPath={folderPath}
       onNavigateRoot={() => {

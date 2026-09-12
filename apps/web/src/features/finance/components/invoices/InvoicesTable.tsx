@@ -1,4 +1,7 @@
+'use client';
+
 import { Building2, FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   Table,
   TableHeader,
@@ -10,6 +13,11 @@ import {
 import { StatusBadge } from '@/components/shared';
 import { getInvoiceMoneyStage } from '@/features/finance/constants/finance';
 import { getInvoiceSourceLabel } from '@/features/finance/utils/invoice-source-label';
+import {
+  INVOICE_STAGE_MESSAGE_KEYS,
+  INVOICE_TAX_MESSAGE_KEYS,
+  invoiceSourceMessageKey,
+} from './invoice-message-keys';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
 import { getInvoiceDisplayTitle } from '@/features/finance/utils/order-display';
@@ -36,21 +44,22 @@ interface InvoicesTableProps {
 }
 
 export function InvoicesTable({ invoices, boardScope, onInvoiceClick }: InvoicesTableProps) {
+  const t = useTranslations('invoices');
   return (
     <div className={FINANCE_LIST_SHELL_CLASS}>
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Invoice</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Company</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Type</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Amount</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.invoice')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.company')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.type')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.amount')}</TableHead>
             <TableHead className={FINANCE_LIST_HEAD_CLASS}>
-              {boardScope === 'CLOSED' ? 'Closed' : 'Status'}
+              {boardScope === 'CLOSED' ? t('table.closed') : t('table.status')}
             </TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Tax</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Due Date</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Paid Date</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.tax')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.dueDate')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.paidDate')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -70,9 +79,14 @@ function InvoiceTableRow({
   invoice: Invoice;
   onInvoiceClick: (invoice: Invoice) => void;
 }) {
+  const t = useTranslations('invoices');
   const money = getInvoiceMoneyStage(invoice.moneyStatus);
-  const sourceLabel = getInvoiceSourceLabel(invoice);
+  const sourceKey = invoiceSourceMessageKey(invoice);
+  const sourceLabel = sourceKey ? t(sourceKey) : getInvoiceSourceLabel(invoice);
   const title = getInvoiceDisplayTitle(invoice);
+  const moneyLabel = money ? t(INVOICE_STAGE_MESSAGE_KEYS[money.value]) : null;
+  const taxKey =
+    invoice.taxStatus === 'TAX' ? INVOICE_TAX_MESSAGE_KEYS.TAX : INVOICE_TAX_MESSAGE_KEYS.TAX_FREE;
 
   return (
     <TableRow className={FINANCE_LIST_ROW_HOVER_CLASS} onClick={() => onInvoiceClick(invoice)}>
@@ -97,9 +111,9 @@ function InvoiceTableRow({
         <FinanceListAmount amount={invoice.amount} currency={invoice.currency} />
       </TableCell>
       <TableCell className={FINANCE_LIST_CELL_CLASS}>
-        {money ? (
+        {money && moneyLabel ? (
           <StatusBadge
-            label={money.label}
+            label={moneyLabel}
             variant={money.variant}
             className={FINANCE_LIST_BADGE_CLASS}
           />
@@ -107,7 +121,7 @@ function InvoiceTableRow({
       </TableCell>
       <TableCell className={FINANCE_LIST_CELL_CLASS}>
         <StatusBadge
-          label={invoice.taxStatus === 'TAX' ? 'Tax' : 'Free'}
+          label={t(taxKey)}
           variant={invoice.taxStatus === 'TAX' ? 'green' : 'gray'}
           className={FINANCE_LIST_BADGE_CLASS}
         />

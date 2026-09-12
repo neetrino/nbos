@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import {
   Building2,
@@ -141,6 +142,7 @@ export function DeliveryItemCommercialSection({
   credentialsTabHref,
   gateRequiredFields = new Set(),
 }: DeliveryItemCommercialSectionProps) {
+  const t = useTranslations('deliveryBoard');
   const relations = useEntityRelations();
   const [dealSheetOpen, setDealSheetOpen] = useState(false);
   const [orderSheetOpen, setOrderSheetOpen] = useState(false);
@@ -158,7 +160,9 @@ export function DeliveryItemCommercialSection({
   const orderStatusMeta = order ? ORDER_STATUSES[order.status] : undefined;
   const dealId = deal?.id ?? null;
   const orderId = order?.id ?? null;
-  const dealButtonTitle = deal ? `Open deal ${getDealDisplayTitle(deal)}` : 'Deal';
+  const dealButtonTitle = deal
+    ? t('commercial.openDeal', { title: getDealDisplayTitle(deal) })
+    : t('commercial.deal');
 
   return (
     <>
@@ -170,7 +174,7 @@ export function DeliveryItemCommercialSection({
       >
         <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>
           <Package size={13} aria-hidden />
-          Client & order
+          {t('commercial.title')}
         </h3>
 
         <div className="flex flex-col gap-4">
@@ -178,19 +182,19 @@ export function DeliveryItemCommercialSection({
             {contact ? (
               <CommercialInfoRow
                 icon={<UserCircle size={16} aria-hidden />}
-                label="Client"
+                label={t('commercial.client')}
                 value={`${contact.firstName} ${contact.lastName}`.trim()}
                 onOpen={() => relations.openEntity('contact', contact.id)}
               />
             ) : (
               <p className="text-muted-foreground border-border border-b py-3 text-xs">
-                No client linked on project.
+                {t('commercial.noClient')}
               </p>
             )}
             {company ? (
               <CommercialInfoRow
                 icon={<Building2 size={16} aria-hidden />}
-                label="Company"
+                label={t('commercial.company')}
                 value={company.name}
                 onOpen={() => relations.openEntity('company', company.id)}
               />
@@ -224,9 +228,9 @@ export function DeliveryItemCommercialSection({
             ) : null}
           </div>
 
-          <nav className={COMMERCIAL_ACTIONS_GRID_CLASS} aria-label="Commercial links">
+          <nav className={COMMERCIAL_ACTIONS_GRID_CLASS} aria-label={t('commercial.linksAria')}>
             <CommercialNavButton
-              label="Deal"
+              label={t('commercial.deal')}
               icon={<FileText size={13} aria-hidden />}
               onClick={() => setDealSheetOpen(true)}
               disabled={!dealId}
@@ -234,17 +238,17 @@ export function DeliveryItemCommercialSection({
             />
             <CommercialNavLink
               href={projectHubHref}
-              label="Project"
+              label={t('commercial.project')}
               icon={<FolderKanban size={13} aria-hidden />}
             />
             <CommercialNavLink
               href={sourcePageHref}
-              label="Product"
+              label={t('commercial.product')}
               icon={<Package size={13} aria-hidden />}
             />
             <CommercialNavLink
               href={credentialsTabHref}
-              label="Credentials"
+              label={t('commercial.credentials')}
               icon={<KeyRound size={13} aria-hidden />}
             />
           </nav>

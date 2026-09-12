@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,25 +31,6 @@ import {
   useDeliveryBoardClosedHeroFilterConfigs,
 } from './use-delivery-board-closed-hero-filters';
 
-const PIPELINE_TABS = [
-  { value: 'active' as const, label: 'Active' },
-  { value: 'closed' as const, label: 'Closed' },
-];
-
-const PIPELINE_VIEW_OPTIONS: ViewModeOption<'LIST' | 'BOARD'>[] = [
-  {
-    value: 'BOARD',
-    label: 'Board',
-    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'Board view',
-  },
-  {
-    value: 'LIST',
-    label: 'List',
-    icon: <List className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'List view',
-  },
-];
 
 const DEFAULT_CLOSED_FILTERS: DeliveryBoardClosedFiltersInput = {
   search: '',
@@ -107,10 +89,35 @@ export function DeliveryBoardPageHero({
   projectFilterId,
   onClearProjectFilter,
 }: DeliveryBoardPageHeroProps) {
+  const t = useTranslations('deliveryBoard');
   const isMobileViewport = useIsMobileViewport();
   const showDesktopBoardChrome = !isMobileViewport;
   const activeHeroFilterConfigs = useDeliveryBoardActiveHeroFilterConfigs(activeFilterOptions);
   const closedHeroFilterConfigs = useDeliveryBoardClosedHeroFilterConfigs(closedFilterOptions);
+  const pipelineTabs = useMemo(
+    () => [
+      { value: 'active' as const, label: t('pipelineTabs.active') },
+      { value: 'closed' as const, label: t('pipelineTabs.closed') },
+    ],
+    [t],
+  );
+  const pipelineViewOptions = useMemo<ViewModeOption<'LIST' | 'BOARD'>[]>(
+    () => [
+      {
+        value: 'BOARD',
+        label: t('view.board'),
+        icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+        ariaLabel: t('view.boardAria'),
+      },
+      {
+        value: 'LIST',
+        label: t('view.list'),
+        icon: <List className="size-3.5 shrink-0" aria-hidden />,
+        ariaLabel: t('view.listAria'),
+      },
+    ],
+    [t],
+  );
 
   const handleHeroFilterChange = useCallback(
     (key: string, value: string) => {
@@ -146,18 +153,18 @@ export function DeliveryBoardPageHero({
 
   const countLabel =
     pipelineTab === 'active'
-      ? `${activeFilteredCount} of ${activeTotalCount} cards`
-      : `${closedFilteredCount} of ${closedTotalCount} cards`;
+      ? t('count', { filtered: activeFilteredCount, total: activeTotalCount })
+      : t('count', { filtered: closedFilteredCount, total: closedTotalCount });
 
   return (
     <PageHero
-      title="Delivery Board"
+      title={t('title')}
       tabs={
         <PageHeroTabs
           value={pipelineTab}
           onChange={onPipelineTabChange}
-          options={PIPELINE_TABS}
-          ariaLabel="Delivery pipeline"
+          options={pipelineTabs}
+          ariaLabel={t('pipelineAria')}
           showOnMobile
           registerMobileDock={false}
         />
@@ -167,7 +174,7 @@ export function DeliveryBoardPageHero({
           <IntegratedSearchFilters
             search={activeFilters.search}
             onSearchChange={(value) => onActiveFiltersChange({ ...activeFilters, search: value })}
-            searchPlaceholder="Search by name, project, or code…"
+            searchPlaceholder={t('search.activePlaceholder')}
             filters={showDesktopBoardChrome ? activeHeroFilterConfigs : undefined}
             filterValues={
               showDesktopBoardChrome
@@ -181,7 +188,7 @@ export function DeliveryBoardPageHero({
           <IntegratedSearchFilters
             search={closedFilters.search}
             onSearchChange={(value) => onClosedFiltersChange({ ...closedFilters, search: value })}
-            searchPlaceholder="Search closed items…"
+            searchPlaceholder={t('search.closedPlaceholder')}
             filters={showDesktopBoardChrome ? closedHeroFilterConfigs : undefined}
             filterValues={
               showDesktopBoardChrome
@@ -198,7 +205,7 @@ export function DeliveryBoardPageHero({
           <ViewModeSwitch
             value={pipelineTab === 'active' ? activeViewMode : closedViewMode}
             onChange={pipelineTab === 'active' ? onActiveViewModeChange : onClosedViewModeChange}
-            options={PIPELINE_VIEW_OPTIONS}
+            options={pipelineViewOptions}
           />
         ) : null
       }
@@ -215,7 +222,7 @@ export function DeliveryBoardPageHero({
               className="shrink-0"
               onClick={onClearProjectFilter}
             >
-              Clear project filter
+              {t('clearProjectFilter')}
             </Button>
           ) : null}
         </div>

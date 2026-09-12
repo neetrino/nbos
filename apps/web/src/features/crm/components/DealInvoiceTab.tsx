@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { FileText, Plus } from 'lucide-react';
 import {
   EntityItemList,
@@ -12,7 +13,10 @@ import {
 } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { dealInvoiceToItemSummary } from '@/features/finance/entity-item/invoice-item-summary';
-import { dealInvoiceCreateDeniedMessage } from '@/features/crm/utils/deal-invoice-create-guard';
+import {
+  DEAL_INVOICE_FIELDS_REQUIRED_MESSAGE,
+  dealInvoiceCreateDeniedMessage,
+} from '@/features/crm/utils/deal-invoice-create-guard';
 import {
   canOpenDealCreateInvoiceDialog,
   canCreateDepositInvoice,
@@ -27,6 +31,7 @@ interface DealInvoiceTabProps {
 }
 
 export function DealInvoiceTab({ deal, onCreateOpenChange }: DealInvoiceTabProps) {
+  const t = useTranslations('crm');
   const { can } = usePermission();
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
@@ -38,7 +43,11 @@ export function DealInvoiceTab({ deal, onCreateOpenChange }: DealInvoiceTabProps
   const requestCreate = () => {
     const denied = dealInvoiceCreateDeniedMessage(can('ADD', 'FINANCE_INVOICES'), canCreate);
     if (denied) {
-      toast.error(denied);
+      toast.error(
+        denied === DEAL_INVOICE_FIELDS_REQUIRED_MESSAGE
+          ? t('dealSheet.invoiceFieldsRequired')
+          : denied,
+      );
       return;
     }
     onCreateOpenChange(true);
@@ -61,9 +70,9 @@ export function DealInvoiceTab({ deal, onCreateOpenChange }: DealInvoiceTabProps
 
   const emptyDescription = canCreate
     ? isDepositBootstrap
-      ? 'No invoices yet. Create a deposit invoice to start billing.'
-      : 'No invoices yet. Create one to track payments.'
-    : 'Fill deal finance fields on General, then create a deposit invoice from Actions.';
+      ? t('dealSheet.invoicesEmptyDeposit')
+      : t('dealSheet.invoicesEmptyAdd')
+    : t('dealSheet.invoicesEmptyFillFields');
 
   return (
     <div className="space-y-4">
@@ -74,7 +83,7 @@ export function DealInvoiceTab({ deal, onCreateOpenChange }: DealInvoiceTabProps
         onClick={requestCreate}
       >
         <Plus size={14} />
-        Create Invoice
+        {t('dealSheet.createInvoice')}
       </Button>
 
       {allInvoices.length > 0 ? (
@@ -83,7 +92,7 @@ export function DealInvoiceTab({ deal, onCreateOpenChange }: DealInvoiceTabProps
             value={viewVariant}
             onChange={setViewVariant}
             options={ENTITY_ITEM_VIEW_OPTIONS}
-            ariaLabel="Invoice list view"
+            ariaLabel={t('dealSheet.invoiceListAria')}
           />
         </div>
       ) : null}
@@ -93,7 +102,7 @@ export function DealInvoiceTab({ deal, onCreateOpenChange }: DealInvoiceTabProps
         variant={displayVariant}
         onOpen={onOpenItem}
         emptyIcon={FileText}
-        emptyTitle="Invoices"
+        emptyTitle={t('dealSheet.invoicesEmptyTitle')}
         emptyDescription={emptyDescription}
       />
     </div>

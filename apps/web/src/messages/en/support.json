@@ -1,0 +1,158 @@
+{
+  "title": "Support",
+  "nav": {
+    "tickets": "Tickets",
+    "changeControl": "Change Control",
+    "ariaLabel": "Support sections"
+  },
+  "searchPlaceholder": "Search tickets, project code, project name, product…",
+  "newTicket": "New Ticket",
+  "views": {
+    "board": "Board",
+    "boardAria": "Board view",
+    "list": "List",
+    "listAria": "List view"
+  },
+  "filters": {
+    "status": "Status",
+    "category": "Category",
+    "priority": "Priority",
+    "waiting": "Waiting"
+  },
+  "scope": {
+    "ALL": "All statuses",
+    "ACTIVE": "Active",
+    "CLOSED": "Closed"
+  },
+  "empty": {
+    "noTickets": "No tickets yet",
+    "noTicketsDescription": "Support tickets will appear here",
+    "createFirst": "Create First Ticket"
+  },
+  "banner": {
+    "closedHint": "Showing terminal outcomes only: Resolved and Closed. Same board and list views as the active pipeline."
+  },
+  "settings": {
+    "title": "Support — settings",
+    "description": "Data exports and page options. Scope stats are workspace-wide from the API; list filters are not applied to the export.",
+    "triggerAria": "Support settings",
+    "exportCsv": "Export scope stats (CSV)"
+  },
+  "changeControl": {
+    "searchPlaceholder": "Search change requests, project, product…",
+    "newRequest": "New Change Request",
+    "createTitle": "New change request",
+    "createSubmit": "Create request",
+    "emptyTitle": "No change requests",
+    "emptyDescription": "Create a change request or classify an existing ticket as Change Request."
+  },
+  "create": {
+    "title": "New support ticket",
+    "titleLabel": "Title *",
+    "titlePlaceholder": "Short description of the issue or request",
+    "description": "Description",
+    "project": "Project",
+    "projectPlaceholder": "Search projects…",
+    "product": "Product",
+    "productPlaceholder": "Search products…"
+  },
+  "list": {
+    "ticket": "Ticket",
+    "category": "Category",
+    "priority": "Priority",
+    "status": "Status",
+    "sla": "SLA",
+    "assignee": "Assignee",
+    "project": "Project",
+    "details": "Details",
+    "detailsTitle": "Open ticket details",
+    "statusAria": "Ticket status"
+  },
+  "sheet": {
+    "loading": "Loading…",
+    "noTicket": "No ticket",
+    "general": "General",
+    "activity": "Activity",
+    "loadFailed": "Ticket could not be loaded.",
+    "saveFailed": "Could not save ticket.",
+    "taskCreateFailed": "Execution task could not be created."
+  },
+  "actions": {
+    "quickActions": "Quick actions",
+    "escalate": "Escalate",
+    "technical": "Technical",
+    "reopen": "Reopen",
+    "markResolved": "Mark resolved",
+    "close": "Close",
+    "reopenFailed": "Ticket could not be reopened."
+  },
+  "escalate": {
+    "title": "Managerial escalation",
+    "description": "Sends in-app notifications to the assignee and users with global Support ticket access. The ticket is marked Escalated and the SLA clock pauses until the overlay is cleared.",
+    "reason": "Reason",
+    "reasonPlaceholder": "Business risk, needs another specialist, client urgency…",
+    "confirm": "Confirm escalation"
+  },
+  "resolve": {
+    "title": "Mark resolved",
+    "description": "Resolution summary is required ({min}+ characters).",
+    "summary": "Resolution summary",
+    "placeholder": "What was done, verification, client communication…",
+    "save": "Save resolved"
+  },
+  "closeTicket": {
+    "title": "Close ticket",
+    "description": "Record why the case left the active queue (audit). Default is client confirmation.",
+    "reason": "Close reason",
+    "submit": "Close ticket"
+  },
+  "category": {
+    "UNCLASSIFIED": "Unclassified",
+    "INCIDENT": "Incident",
+    "SERVICE_REQUEST": "Service Request",
+    "CHANGE_REQUEST": "Change Request",
+    "PROBLEM": "Problem"
+  },
+  "priority": {
+    "P1": "P1 Critical",
+    "P2": "P2 High",
+    "P3": "P3 Normal"
+  },
+  "status": {
+    "NEW": "New",
+    "TRIAGED": "Triaged",
+    "ASSIGNED": "Assigned",
+    "IN_PROGRESS": "In Progress",
+    "RESOLVED": "Resolved",
+    "CLOSED": "Closed"
+  },
+  "coverage": {
+    "COVERED_BY_MAINTENANCE": "Maintenance",
+    "FREE_GOODWILL": "Goodwill",
+    "BILLABLE_SMALL_WORK": "Billable small work",
+    "EXTENSION_REQUIRED": "Extension required",
+    "NOT_COVERED_REJECTED": "Rejected"
+  },
+  "sla": {
+    "ON_TRACK": "On track",
+    "AT_RISK": "At risk",
+    "HIGH_RISK": "High risk",
+    "BREACHED": "Breached",
+    "PAUSED": "SLA paused",
+    "CLOSED": "Closed"
+  },
+  "waiting": {
+    "all": "All waiting states",
+    "NONE": "Not waiting",
+    "WAITING_FOR_CLIENT": "Waiting for client",
+    "WAITING_FOR_THIRD_PARTY": "Waiting for third party",
+    "ESCALATED": "Escalated"
+  },
+  "closeReason": {
+    "CLIENT_CONFIRMED": "Client confirmed",
+    "MANUAL": "Manual / management",
+    "DUPLICATE": "Duplicate",
+    "AUTO_TIMED_OUT": "Auto timed out",
+    "EXTENSION_DELIVERED": "Extension delivered"
+  }
+}

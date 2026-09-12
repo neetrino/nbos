@@ -1,7 +1,13 @@
 'use client';
 
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { PipelineStagesBar } from '@/components/shared';
 import { toSheetPipelineStages } from '@/components/shared/pipeline-stage-config';
+import {
+  translateSupportStatus,
+  type SupportTranslator,
+} from '@/features/support/support-message-keys';
 
 const SUPPORT_ACTIVE_STAGES = ['NEW', 'TRIAGED', 'ASSIGNED', 'IN_PROGRESS'] as const;
 
@@ -19,22 +25,12 @@ const STAGE_HEX: Record<string, string> = {
   [SUPPORT_PIPELINE_CLOSED_KEY]: '#737373',
 };
 
-const ACTIVE_SHORT: Record<SupportActiveStage, string> = {
+const ACTIVE_SHORT_FALLBACK: Record<SupportActiveStage, string> = {
   NEW: 'New',
   TRIAGED: 'Triaged',
   ASSIGNED: 'Assigned',
   IN_PROGRESS: 'Progress',
 };
-
-const SHEET_STAGES = toSheetPipelineStages([
-  ...SUPPORT_ACTIVE_STAGES.map((key) => ({
-    key,
-    label: ACTIVE_SHORT[key],
-    shortLabel: ACTIVE_SHORT[key],
-  })),
-  { key: SUPPORT_PIPELINE_RESOLVED_KEY, label: 'Resolved', shortLabel: 'Resolved' },
-  { key: SUPPORT_PIPELINE_CLOSED_KEY, label: 'Closed', shortLabel: 'Closed' },
-]);
 
 function canClickSupportStage(stageKey: string, currentStatus: string): boolean {
   if (!currentStatus || currentStatus === SUPPORT_PIPELINE_CLOSED_KEY) {
@@ -66,9 +62,32 @@ export function SupportTicketPipelineStages({
   disabled = false,
   onSelect,
 }: SupportTicketPipelineStagesProps) {
+  const t = useTranslations('support') as SupportTranslator;
+
+  const stages = useMemo(
+    () =>
+      toSheetPipelineStages([
+        ...SUPPORT_ACTIVE_STAGES.map((key) => {
+          const label = translateSupportStatus(t, key, ACTIVE_SHORT_FALLBACK[key]);
+          return { key, label, shortLabel: label };
+        }),
+        {
+          key: SUPPORT_PIPELINE_RESOLVED_KEY,
+          label: translateSupportStatus(t, SUPPORT_PIPELINE_RESOLVED_KEY, 'Resolved'),
+          shortLabel: translateSupportStatus(t, SUPPORT_PIPELINE_RESOLVED_KEY, 'Resolved'),
+        },
+        {
+          key: SUPPORT_PIPELINE_CLOSED_KEY,
+          label: translateSupportStatus(t, SUPPORT_PIPELINE_CLOSED_KEY, 'Closed'),
+          shortLabel: translateSupportStatus(t, SUPPORT_PIPELINE_CLOSED_KEY, 'Closed'),
+        },
+      ]),
+    [t],
+  );
+
   return (
     <PipelineStagesBar
-      stages={SHEET_STAGES}
+      stages={stages}
       stageColors={STAGE_HEX}
       currentStatus={currentStatus}
       fillToEndStatuses={[SUPPORT_PIPELINE_RESOLVED_KEY]}

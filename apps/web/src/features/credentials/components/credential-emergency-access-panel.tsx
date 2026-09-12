@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +20,8 @@ export function CredentialEmergencyAccessPanel({
   credentialId,
   onRequested,
 }: CredentialEmergencyAccessPanelProps) {
+  const t = useTranslations('credentials');
+  const tCommon = useTranslations('common');
   const [reason, setReason] = useState('');
   const [stepUpOpen, setStepUpOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -32,11 +35,11 @@ export function CredentialEmergencyAccessPanel({
         reason: reason.trim(),
         stepUpPassword,
       });
-      toast.success('Emergency access request sent to the platform owner');
+      toast.success(t('emergency.success'));
       setStepUpOpen(false);
       onRequested();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Emergency request failed');
+      toast.error(err instanceof Error ? err.message : tCommon('genericError'));
     } finally {
       setSubmitting(false);
     }
@@ -45,20 +48,17 @@ export function CredentialEmergencyAccessPanel({
   return (
     <div className="grid gap-4 px-6 py-8">
       <div>
-        <h3 className="text-sm font-medium">Emergency access</h3>
-        <p className="text-muted-foreground mt-1 text-xs">
-          You cannot view this credential. Submit a request with a reason. The platform owner must
-          approve a temporary VIEW grant (24h). OWNER_ONLY secrets cannot be requested.
-        </p>
+        <h3 className="text-sm font-medium">{t('emergency.title')}</h3>
+        <p className="text-muted-foreground mt-1 text-xs">{t('emergency.description')}</p>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="emergency-reason">Reason (required)</Label>
+        <Label htmlFor="emergency-reason">{t('emergency.reason')}</Label>
         <Textarea
           id="emergency-reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           className="min-h-[88px] text-sm"
-          placeholder="Describe why emergency access is required…"
+          placeholder={t('emergency.reasonPlaceholder')}
         />
       </div>
       <Button
@@ -66,12 +66,12 @@ export function CredentialEmergencyAccessPanel({
         disabled={!reasonValid || submitting}
         onClick={() => setStepUpOpen(true)}
       >
-        Request emergency access
+        {t('emergency.request')}
       </Button>
       <CredentialStepUpDialog
         open={stepUpOpen}
         onOpenChange={setStepUpOpen}
-        title="Confirm emergency request"
+        title={t('emergency.confirm')}
         onConfirm={submit}
       />
     </div>

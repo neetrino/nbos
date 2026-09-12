@@ -1,6 +1,7 @@
 'use client';
 
 import { BookOpen, ClipboardList, Download, LayoutGrid, Loader2, RefreshCcw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
 import type { PayrollRunDetail } from '@/lib/api/payroll-runs';
@@ -30,11 +31,12 @@ export function PayrollRunDetailPageSettingsSheet({
   resetLayoutDisabled,
   onResetLayout,
 }: PayrollRunDetailPageSettingsSheetProps) {
+  const t = useTranslations('payroll');
   return (
     <PageSettingsSheet
-      title="Payroll run — settings"
-      description="Refresh data, reset matrix layout, and export run artifacts."
-      triggerAriaLabel="Payroll run settings"
+      title={t('detail.settingsTitle')}
+      description={t('detail.settingsDescription')}
+      triggerAriaLabel={t('detail.settingsAria')}
     >
       <Button
         type="button"
@@ -43,7 +45,7 @@ export function PayrollRunDetailPageSettingsSheet({
         onClick={() => void onRefresh()}
       >
         <RefreshCcw className="size-4 shrink-0" aria-hidden />
-        Refresh run
+        {t('detail.refresh')}
       </Button>
       <Button
         type="button"
@@ -53,7 +55,7 @@ export function PayrollRunDetailPageSettingsSheet({
         onClick={() => onResetLayout()}
       >
         <LayoutGrid className="size-4 shrink-0" aria-hidden />
-        Reset allocation layout
+        {t('detail.resetLayout')}
       </Button>
       <Button
         type="button"
@@ -67,7 +69,7 @@ export function PayrollRunDetailPageSettingsSheet({
         ) : (
           <Download className="size-4 shrink-0" aria-hidden />
         )}
-        Export salary lines (CSV)
+        {t('detail.exportLines')}
       </Button>
       <Button
         type="button"
@@ -81,7 +83,7 @@ export function PayrollRunDetailPageSettingsSheet({
         ) : (
           <BookOpen className="size-4 shrink-0" aria-hidden />
         )}
-        Export run journal (CSV)
+        {t('detail.exportJournal')}
       </Button>
       <Button
         type="button"
@@ -95,7 +97,7 @@ export function PayrollRunDetailPageSettingsSheet({
         ) : (
           <ClipboardList className="size-4 shrink-0" aria-hidden />
         )}
-        Export audit trail (CSV)
+        {t('detail.exportAudit')}
       </Button>
     </PageSettingsSheet>
   );

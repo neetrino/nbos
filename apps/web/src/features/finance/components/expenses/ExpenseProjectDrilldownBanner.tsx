@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -16,14 +17,13 @@ export function ExpenseProjectDrilldownBanner({
   projectBannerLabel,
   onClearProjectFilter,
 }: ExpenseProjectDrilldownBannerProps) {
+  const t = useTranslations('expenses');
   return (
     <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
       <p className="text-foreground max-w-prose">
-        Showing expenses for this project (server filter)
-        {projectBannerLabel ? (
-          <span className="text-muted-foreground"> — {projectBannerLabel}</span>
-        ) : null}
-        .
+        {projectBannerLabel
+          ? t('banners.projectFilterNamed', { label: projectBannerLabel })
+          : t('banners.projectFilter')}
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <Link
@@ -33,11 +33,11 @@ export function ExpenseProjectDrilldownBanner({
             'inline-flex items-center gap-1',
           )}
         >
-          Project
+          {t('banners.projectLink')}
           <ExternalLink size={12} className="opacity-70" aria-hidden />
         </Link>
         <Button variant="outline" size="sm" type="button" onClick={onClearProjectFilter}>
-          Clear filter
+          {t('actions.clearFilter')}
         </Button>
       </div>
     </div>

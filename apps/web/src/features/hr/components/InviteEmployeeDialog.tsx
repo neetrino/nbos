@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,8 @@ interface InviteEmployeeDialogProps {
 }
 
 export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEmployeeDialogProps) {
+  const t = useTranslations('hr');
+  const tCommon = useTranslations('common');
   const { me } = usePermission();
   const [loading, setLoading] = useState(false);
   const [rolesLoading, setRolesLoading] = useState(false);
@@ -64,7 +67,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
         const data = await rolesApi.getAll();
         setRoles(Array.isArray(data) ? data : []);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Failed to load roles';
+        const msg = err instanceof Error ? err.message : t('invite.rolesFailed');
         setRolesError(msg);
         toast.error(msg);
       } finally {
@@ -79,7 +82,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
         const data = await departmentsApi.getAll();
         setDepartments(Array.isArray(data) ? data : []);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Failed to load departments';
+        const msg = err instanceof Error ? err.message : t('invite.departmentsFailed');
         setDepartmentsError(msg);
         toast.error(msg);
       } finally {
@@ -89,7 +92,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
 
     void loadRoles();
     void loadDepartments();
-  }, [open]);
+  }, [open, t]);
 
   const reset = () => {
     setForm({ email: '', roleId: '', departmentId: '' });
@@ -108,12 +111,12 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
         roleId: form.roleId,
         departmentId: form.departmentId || undefined,
       });
-      toast.success('Invitation sent successfully');
+      toast.success(t('invite.sent'));
       onSuccess();
       onOpenChange(false);
       reset();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to send invitation';
+      const msg = err instanceof Error ? err.message : t('invite.failed');
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -124,32 +127,34 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle>Invite Employee</DialogTitle>
+          <DialogTitle>{t('invite.title')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className={TEAM_SHEET_FIELD_CLASS}>
-            <Label htmlFor="invite-email">Email *</Label>
+            <Label htmlFor="invite-email">{t('form.email')} *</Label>
             <Input
               id="invite-email"
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="employee@company.com"
+              placeholder={t('invite.emailPlaceholder')}
               autoFocus
               disabled={loading}
             />
           </div>
 
           <div className={TEAM_SHEET_FIELD_CLASS}>
-            <Label>Role *</Label>
+            <Label>{t('invite.role')} *</Label>
             <Select
               value={form.roleId}
               onValueChange={(v) => setForm({ ...form, roleId: v ?? '' })}
               disabled={rolesLoading || loading}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder={rolesLoading ? 'Loading roles...' : 'Select role'} />
+                <SelectValue
+                  placeholder={rolesLoading ? t('invite.loadingRoles') : t('invite.selectRole')}
+                />
               </SelectTrigger>
               <SelectContent>
                 {filterRolesForAssignmentPicker(roles, assignmentPickerActor(me)).map((role) => (
@@ -163,7 +168,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
           </div>
 
           <div className={TEAM_SHEET_FIELD_CLASS}>
-            <Label>Department (optional)</Label>
+            <Label>{t('invite.departmentOptional')}</Label>
             <Select
               value={form.departmentId || 'none'}
               onValueChange={(v) => setForm({ ...form, departmentId: v === 'none' || !v ? '' : v })}
@@ -171,11 +176,13 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
             >
               <SelectTrigger className="w-full">
                 <SelectValue
-                  placeholder={departmentsLoading ? 'Loading departments...' : 'Select department'}
+                  placeholder={
+                    departmentsLoading ? t('invite.loadingDepartments') : t('invite.selectDepartment')
+                  }
                 />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="none">{t('invite.none')}</SelectItem>
                 {departments.map((dept) => (
                   <SelectItem key={dept.id} value={dept.id}>
                     {dept.name}
@@ -195,10 +202,10 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? 'Sending...' : 'Send Invitation'}
+              {loading ? t('invite.sending') : t('invite.send')}
             </Button>
           </DialogFooter>
         </form>

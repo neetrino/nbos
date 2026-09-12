@@ -1,9 +1,21 @@
-import { Building2, Network, ShieldCheck, Users2 } from 'lucide-react';
-import type { PageHeroNavLinkItem } from '@/components/shared/page-hero/PageHeroNavLinks';
+import { Building2, Network, ShieldCheck, Users2, type LucideIcon } from 'lucide-react';
 
-export const MY_COMPANY_MODULE_NAV: PageHeroNavLinkItem[] = [
-  { href: '/my-company', label: 'Org Structure', icon: Network, exactMatch: true },
-  { href: '/my-company/team', label: 'Team', icon: Users2 },
-  { href: '/my-company/departments', label: 'Departments', icon: Building2 },
-  { href: '/my-company/roles-seats', label: 'Roles & Seats', icon: ShieldCheck },
+export type MyCompanyNavLabelKey =
+  | 'companyNav.orgStructure'
+  | 'companyNav.team'
+  | 'companyNav.departments'
+  | 'companyNav.rolesSeats';
+
+export type MyCompanyModuleNavItem = {
+  href: string;
+  labelKey: MyCompanyNavLabelKey;
+  icon: LucideIcon;
+  exactMatch?: boolean;
+};
+
+export const MY_COMPANY_MODULE_NAV: MyCompanyModuleNavItem[] = [
+  { href: '/my-company', labelKey: 'companyNav.orgStructure', icon: Network, exactMatch: true },
+  { href: '/my-company/team', labelKey: 'companyNav.team', icon: Users2 },
+  { href: '/my-company/departments', labelKey: 'companyNav.departments', icon: Building2 },
+  { href: '/my-company/roles-seats', labelKey: 'companyNav.rolesSeats', icon: ShieldCheck },
 ];

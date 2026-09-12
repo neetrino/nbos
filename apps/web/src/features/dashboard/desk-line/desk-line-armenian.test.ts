@@ -23,23 +23,25 @@ const state = vi.hoisted(() => ({
 vi.mock('@/lib/permissions', () => ({ usePermission: () => state }));
 vi.mock('./desk-line-clock', () => ({ useYerevanDeskClock: () => state.now }));
 
-function render(locale: string): string {
+function render(locale: 'en' | 'ru'): string {
   const resolution = deskCopy(
     state.me ? { employeeId: state.me.id, ...state.me } : null,
     state.now ?? undefined,
   );
+  const messages = {
+    common: {},
+    dashboardDeskLine: {
+      templates: {
+        [resolution.templateId]: { title: 'WRONG LANGUAGE', subline: 'НЕ ПОКАЗЫВАТЬ' },
+      },
+    },
+  };
   return renderToStaticMarkup(
     createElement(NextIntlClientProvider, {
       locale,
       timeZone: 'Asia/Yerevan',
       // A stale locale overlay must never replace the Armenian card.
-      messages: {
-        dashboardDeskLine: {
-          templates: {
-            [resolution.templateId]: { title: 'WRONG LANGUAGE', subline: 'НЕ ПОКАЗЫВАТЬ' },
-          },
-        },
-      },
+      messages: messages as never,
       children: createElement(DashboardDeskHeader),
     }),
   );
@@ -58,7 +60,7 @@ beforeEach(() => {
 });
 
 describe('Armenian desk content in every interface language', () => {
-  it.each(['en', 'ru', 'hy'])('renders identical Armenian content under %s', (locale) => {
+  it.each(['en', 'ru'] as const)('renders identical Armenian content under %s', (locale) => {
     const html = render(locale);
     expect(html).toBe(render('en'));
     expect(html).toContain('lang="hy"');
@@ -66,7 +68,7 @@ describe('Armenian desk content in every interface language', () => {
     expect(html).not.toMatch(/WRONG LANGUAGE|НЕ ПОКАЗЫВАТЬ|\{\{/u);
   });
 
-  it.each(['en', 'ru', 'hy'])(
+  it.each(['en', 'ru'] as const)(
     'keeps hydration/loading and missing profile Armenian under %s',
     (locale) => {
       state.now = null;
@@ -84,11 +86,20 @@ describe('Armenian desk content in every interface language', () => {
   it('keeps birthday and memorial copy Armenian across locale changes', () => {
     state.me!.birthday = '1994-09-16';
     expect(render('ru')).toBe(render('en'));
-    expect(render('hy')).toMatch(/ծնունդ|Ծնունդ|ծննդ/u);
+    expect(render('en')).toMatch(/ծնունդ|Ծնունդ|ծննդ/u);
     state.now = new Date('2026-04-24T08:00:00Z');
     state.me!.birthday = '1994-04-24';
-    expect(render('en')).toBe(render('hy'));
+    expect(render('en')).toBe(render('ru'));
     expect(render('ru')).toContain('խաղաղ');
+  });
+
+  it('works in an Armenian host without any interface translation provider', () => {
+    // HY is reserved in the platform locale type; this block must not depend on enabling it.
+    const html = renderToStaticMarkup(
+      createElement('div', { lang: 'hy' }, createElement(DashboardDeskHeader)),
+    );
+    expect(html).toContain(render('en'));
+    expect(html).toContain('Աննա');
   });
 });
 

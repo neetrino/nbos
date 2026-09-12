@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { PayrollRunStatusHeroBadge } from '@/features/finance/components/payroll/PayrollRunStatusHeroBadge';
 import type { PayrollRunDetail } from '@/lib/api/payroll-runs';
 import { cn } from '@/lib/utils';
@@ -15,6 +16,7 @@ export function PayrollRunDetailHeroBar({
   backHref: string;
   className?: string;
 }) {
+  const t = useTranslations('payroll');
   return (
     <div className={cn('flex min-w-0 flex-1 items-center gap-3', className)}>
       <Link
@@ -23,13 +25,13 @@ export function PayrollRunDetailHeroBar({
           'border-border bg-background text-muted-foreground hover:text-foreground hover:bg-muted/60',
           'inline-flex size-9 shrink-0 items-center justify-center rounded-full border shadow-sm transition-colors',
         )}
-        aria-label="Back to payroll list"
+        aria-label={t('detail.backAria')}
       >
         <ArrowLeft className="size-4" aria-hidden />
       </Link>
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
         <h2 className="text-foreground text-lg font-semibold tracking-tight">
-          Payroll
+          {t('detail.title')}
           <span className="text-muted-foreground font-medium"> · {run.payrollMonth}</span>
         </h2>
         <PayrollRunStatusHeroBadge status={run.status} />

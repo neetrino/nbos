@@ -18,6 +18,7 @@ import {
   type ChecklistInstance,
 } from '@/lib/api/checklist-templates';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface EmployeeLifecycleChecklistPanelProps {
   employeeId: string;
@@ -38,6 +39,7 @@ export function EmployeeLifecycleChecklistPanel({
   completeToast,
   canEdit,
 }: EmployeeLifecycleChecklistPanelProps) {
+  const t = useTranslations('hr');
   const [instances, setInstances] = useState<ChecklistInstance[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState<string | null>(null);
@@ -70,7 +72,7 @@ export function EmployeeLifecycleChecklistPanel({
       });
       setInstances((prev) => prev.map((row) => (row.id === updated.id ? updated : row)));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not update checklist item');
+      toast.error(err instanceof Error ? err.message : t('lifecycle.updateItemFailed'));
     } finally {
       setBusyKey(null);
     }
@@ -84,7 +86,7 @@ export function EmployeeLifecycleChecklistPanel({
       setInstances((prev) => prev.map((row) => (row.id === updated.id ? updated : row)));
       toast.success(completeToast);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not complete checklist');
+      toast.error(err instanceof Error ? err.message : t('lifecycle.completeFailed'));
     } finally {
       setBusyKey(null);
     }
@@ -113,8 +115,8 @@ export function EmployeeLifecycleChecklistPanel({
         return (
           <DetailSheetSection key={instance.id} title={title} className={TEAM_SHEET_SECTION_CLASS}>
             <p className="text-muted-foreground mb-3 text-xs tabular-nums">
-              {reviewed}/{items.length} items reviewed
-              {instance.completedAt ? ' · Completed' : ''}
+              {t('lifecycle.itemsReviewed', { reviewed, count: items.length })}
+              {instance.completedAt ? t('lifecycle.completedSuffix') : ''}
             </p>
             <ul className="space-y-2">
               {items.map((item, index) => (
@@ -137,7 +139,7 @@ export function EmployeeLifecycleChecklistPanel({
                   disabled={busyKey === `${instance.id}:complete`}
                   onClick={() => void handleComplete(instance)}
                 >
-                  Complete checklist
+                  {t('lifecycle.complete')}
                 </Button>
               </div>
             ) : null}

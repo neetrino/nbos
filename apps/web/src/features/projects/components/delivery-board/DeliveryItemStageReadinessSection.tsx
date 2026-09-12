@@ -5,7 +5,12 @@ import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
 import type { ChecklistStageProgress, DeliveryLifecycleProjection } from '@/lib/api/projects';
-import { formatDeliveryLifecycleLabel } from '@/features/projects/constants/projects';
+import { useTranslations } from 'next-intl';
+import {
+  translateDeliveryLifecycleLabel,
+  translateReadinessDetail,
+  translateReadinessLabel,
+} from './delivery-board-message-keys';
 import type { ApiFieldError } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import {
@@ -33,6 +38,7 @@ export function DeliveryItemStageReadinessSection({
   gateRequiredFields = new Set(),
   stageGateActionBlockers = [],
 }: DeliveryItemStageReadinessSectionProps) {
+  const t = useTranslations('deliveryBoard');
   const rows =
     kind === 'PRODUCT' && product
       ? buildProductStageReadinessRows(product, lifecycle, checklistProgress)
@@ -45,8 +51,8 @@ export function DeliveryItemStageReadinessSection({
   if (!lifecycle || rows.length === 0) {
     return (
       <section className="border-border bg-card rounded-xl border p-4 shadow-sm">
-        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2')}>Stage readiness</h3>
-        <p className="text-muted-foreground text-sm">No stage requirement rows for this state.</p>
+        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2')}>{t('readiness.title')}</h3>
+        <p className="text-muted-foreground text-sm">{t('readiness.empty')}</p>
       </section>
     );
   }
@@ -62,9 +68,9 @@ export function DeliveryItemStageReadinessSection({
       )}
     >
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>Stage readiness</h3>
+        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>{t('readiness.title')}</h3>
         <p className="text-muted-foreground text-xs">
-          {formatDeliveryLifecycleLabel(lifecycle)}
+          {translateDeliveryLifecycleLabel(lifecycle, t)}
           {readiness
             ? ` · ${readiness.completed}/${readiness.total}`
             : ` · ${doneCount}/${rows.length}`}
@@ -80,11 +86,11 @@ export function DeliveryItemStageReadinessSection({
             )}
             <div className="min-w-0 flex-1">
               <p className={row.done ? 'text-muted-foreground' : 'text-foreground font-medium'}>
-                {row.label}
+                {translateReadinessLabel(row.label, t)}
               </p>
               {row.detail ? (
                 <p className="text-muted-foreground mt-0.5 text-xs whitespace-nowrap">
-                  {row.detail}
+                  {translateReadinessDetail(row.key, checklistProgress, t, row.detail)}
                 </p>
               ) : null}
             </div>

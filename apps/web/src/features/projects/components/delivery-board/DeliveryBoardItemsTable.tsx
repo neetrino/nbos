@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { FolderKanban } from 'lucide-react';
 import {
   Table,
@@ -23,14 +24,15 @@ import {
   EntityListPrimaryCell,
   StatusBadge,
 } from '@/components/shared';
-import {
-  formatDeliveryLifecycleLabel,
-  getDeliveryLifecycleVariant,
-} from '@/features/projects/constants/projects';
+import { getDeliveryLifecycleVariant } from '@/features/projects/constants/projects';
 import { cn } from '@/lib/utils';
 import { getClosedDeadlineOutcomeLabel } from './delivery-board-closed-filters';
 import {
-  DELIVERY_STAGE_LABELS,
+  deliveryStageMessageKey,
+  translateClosedDeadlineLabel,
+  translateDeliveryLifecycleLabel,
+} from './delivery-board-message-keys';
+import {
   getItemKey,
   getItemLabel,
   getItemLifecycle,
@@ -59,11 +61,6 @@ function getClosedAt(item: DeliveryBoardItem): string | null {
   return iso ?? null;
 }
 
-function getActiveStageLabel(item: DeliveryBoardItem): string | null {
-  const stage = getItemLifecycle(item)?.stage;
-  return stage ? DELIVERY_STAGE_LABELS[stage] : null;
-}
-
 export interface DeliveryBoardItemsTableProps {
   mode: 'active' | 'closed';
   items: DeliveryBoardItem[];
@@ -75,6 +72,7 @@ export function DeliveryBoardItemsTable({
   items,
   onOpenDetails,
 }: DeliveryBoardItemsTableProps) {
+  const t = useTranslations('deliveryBoard');
   const isClosed = mode === 'closed';
 
   return (
@@ -82,20 +80,20 @@ export function DeliveryBoardItemsTable({
       <Table>
         <TableHeader className="bg-card sticky top-0 z-10">
           <TableRow className="hover:bg-transparent">
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Entity</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Name</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Project</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>PM / owner</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.entity')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.name')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.project')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.owner')}</TableHead>
             {isClosed ? (
               <>
-                <TableHead className={ENTITY_LIST_HEAD_CLASS}>Result</TableHead>
-                <TableHead className={ENTITY_LIST_HEAD_CLASS}>Closed</TableHead>
-                <TableHead className={ENTITY_LIST_HEAD_CLASS}>Deadline</TableHead>
+                <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.result')}</TableHead>
+                <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.closed')}</TableHead>
+                <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.deadline')}</TableHead>
               </>
             ) : (
               <>
-                <TableHead className={ENTITY_LIST_HEAD_CLASS}>Stage</TableHead>
-                <TableHead className={ENTITY_LIST_HEAD_CLASS}>Status</TableHead>
+                <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.stage')}</TableHead>
+                <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.status')}</TableHead>
               </>
             )}
             <TableHead className={cn(ENTITY_LIST_HEAD_CLASS, 'w-[100px]')} />
@@ -108,7 +106,7 @@ export function DeliveryBoardItemsTable({
                 colSpan={isClosed ? 8 : 7}
                 className={cn(ENTITY_LIST_CELL_CLASS, 'text-muted-foreground py-8 text-center')}
               >
-                {isClosed ? 'No closed delivery items match.' : 'No active delivery items match.'}
+                {isClosed ? t('empty.closedTable') : t('empty.activeTable')}
               </TableCell>
             </TableRow>
           ) : (
@@ -136,16 +134,18 @@ function DeliveryBoardItemRow({
   isClosed: boolean;
   onOpenDetails: (item: DeliveryBoardItem) => void;
 }) {
+  const t = useTranslations('deliveryBoard');
   const lc = getItemLifecycle(item);
   const projectLabel = getProjectLabel(item);
   const ownerLabel = getOwnerLabel(item);
-  const stageLabel = getActiveStageLabel(item);
-  const deadlineLabel = getClosedDeadlineOutcomeLabel(item);
+  const stageKey = deliveryStageMessageKey(lc?.stage);
+  const stageLabel = stageKey ? t(stageKey) : null;
+  const deadlineLabel = translateClosedDeadlineLabel(getClosedDeadlineOutcomeLabel(item), t);
 
   return (
     <TableRow className={ENTITY_LIST_ROW_HOVER_CLASS}>
       <TableCell className={cn(ENTITY_LIST_CELL_CLASS, ENTITY_LIST_TYPE_CLASS)}>
-        {item.kind === 'PRODUCT' ? 'Product' : 'Extension'}
+        {item.kind === 'PRODUCT' ? t('kindLabel.product') : t('kindLabel.extension')}
       </TableCell>
       <TableCell className={cn(ENTITY_LIST_CELL_CLASS, 'max-w-[200px]')}>
         <EntityListPrimaryCell title={getItemLabel(item)} />
@@ -173,7 +173,7 @@ function DeliveryBoardItemRow({
           <TableCell className={ENTITY_LIST_CELL_CLASS}>
             {lc ? (
               <StatusBadge
-                label={formatDeliveryLifecycleLabel(lc)}
+                label={translateDeliveryLifecycleLabel(lc, t)}
                 variant={getDeliveryLifecycleVariant(lc)}
                 className={ENTITY_LIST_BADGE_CLASS}
               />
@@ -200,7 +200,7 @@ function DeliveryBoardItemRow({
           <TableCell className={ENTITY_LIST_CELL_CLASS}>
             {lc ? (
               <StatusBadge
-                label={formatDeliveryLifecycleLabel(lc)}
+                label={translateDeliveryLifecycleLabel(lc, t)}
                 variant={getDeliveryLifecycleVariant(lc)}
                 className={ENTITY_LIST_BADGE_CLASS}
               />
@@ -218,7 +218,7 @@ function DeliveryBoardItemRow({
           className="h-7 text-xs"
           onClick={() => onOpenDetails(item)}
         >
-          Details
+          {t('table.details')}
         </Button>
       </TableCell>
     </TableRow>

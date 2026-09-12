@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Plus, LayoutGrid, List, Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -80,27 +81,15 @@ import { toast } from 'sonner';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
+import {
+  localizeDealPipelineFilterConfigs,
+  translateDealStageLabel,
+} from '@/features/crm/i18n/crm-copy';
+import { getDealWonOrFailedConfirmCopy } from '@/features/crm/i18n/deal-stage-confirm-copy';
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
 
-const DEAL_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
-  {
-    value: 'kanban',
-    label: 'Board',
-    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'Kanban board view',
-  },
-  {
-    value: 'list',
-    label: 'List',
-    icon: <List className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'List view',
-  },
-];
-
-const DEAL_SEARCH_PLACEHOLDER = 'Search deals by code, name, contact, company, orders, marketing…';
-const DEAL_SEARCH_PLACEHOLDER_MOBILE = 'Search deals by code…';
 const DEAL_SEARCH_MOBILE_CLASS = '[&>div]:min-h-9';
 
 interface PendingDealTransition {
@@ -113,9 +102,27 @@ interface PendingDealTransition {
 }
 
 function DealsPipelinePageContent() {
+  const t = useTranslations('crm');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const dealViewOptions: ViewModeOption<ViewMode>[] = useMemo(
+    () => [
+      {
+        value: 'kanban',
+        label: t('deals.viewBoard'),
+        icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+        ariaLabel: t('deals.viewBoardAria'),
+      },
+      {
+        value: 'list',
+        label: t('deals.viewList'),
+        icon: <List className="size-3.5 shrink-0" aria-hidden />,
+        ariaLabel: t('deals.viewListAria'),
+      },
+    ],
+    [t],
+  );
   const [trashDeals, setTrashDeals] = useState<Deal[]>([]);
   const [trashLoading, setTrashLoading] = useState(false);
   const [trashError, setTrashError] = useState<string | null>(null);
@@ -248,11 +255,11 @@ function DealsPipelinePageContent() {
       setTrashDeals(data.items);
       setTrashError(null);
     } catch {
-      setTrashError('Deals could not be loaded. Check your connection and try again.');
+      setTrashError(t('deals.loadError'));
     } finally {
       setTrashLoading(false);
     }
-  }, [dealResponsibility, filters.type, scope, search, statusFilter]);
+  }, [dealResponsibility, filters.type, scope, search, statusFilter, t]);
 
   useEffect(() => {
     if (isTrashView) void fetchTrashDeals();
@@ -347,7 +354,7 @@ function DealsPipelinePageContent() {
         setSheetOpen(true);
       } catch {
         if (!cancelled) {
-          toast.error('Deal not found or you cannot open it.');
+          toast.error(t('deals.notFound'));
           stripOpenDealFromUrl();
         }
       }
@@ -355,7 +362,7 @@ function DealsPipelinePageContent() {
     return () => {
       cancelled = true;
     };
-  }, [openDealId, loading, deals, setDeals, stripOpenDealFromUrl]);
+  }, [openDealId, loading, deals, setDeals, stripOpenDealFromUrl, t]);
 
   const showStageGateRequirements = useCallback(
     (deal: Deal, errors: ReturnType<typeof getLocalDealStageGateErrors>) => {
@@ -416,10 +423,10 @@ function DealsPipelinePageContent() {
         }
       }
       if (isBusinessTransitionApiError(err)) {
-        toast.error(getApiErrorMessage(err, 'Deal stage change is not available.'));
+        toast.error(getApiErrorMessage(err, t('deals.stageUnavailable')));
         return;
       }
-      toast.error(err instanceof Error ? err.message : 'Deal stage change was blocked.');
+      toast.error(err instanceof Error ? err.message : t('deals.stageBlocked'));
     }
   };
 
@@ -428,36 +435,25 @@ function DealsPipelinePageContent() {
     if (!deal || deal.status === status) return;
 
     if (deal.status === 'WON') {
-      toast.error('Deal Won is closed and cannot be moved back.');
+      toast.error(t('deals.wonClosed'));
       return;
     }
 
-    if (status === 'WON') {
-      setWonWhatsApp({
-        satisfied: !isWhatsAppWonGateDealType(deal.type),
-        payload: null,
-      });
+    const confirmCopy = getDealWonOrFailedConfirmCopy(t, status);
+    if (confirmCopy) {
+      if (status === 'WON') {
+        setWonWhatsApp({
+          satisfied: !isWhatsAppWonGateDealType(deal.type),
+          payload: null,
+        });
+      }
       setPendingTransition({
         id,
         status,
-        title: 'Mark Deal as Won?',
-        description:
-          'This can create or update downstream Order, Project and Finance records after backend gates pass.',
-        confirmLabel: 'Mark as Won',
-        variant: 'success',
-      });
-      return;
-    }
-
-    if (status === 'FAILED') {
-      setPendingTransition({
-        id,
-        status,
-        title: 'Mark Deal as Failed?',
-        description:
-          'This will close the Deal as failed. Confirm only if the sales opportunity is over.',
-        confirmLabel: 'Mark as Failed',
-        variant: 'danger',
+        title: confirmCopy.title,
+        description: confirmCopy.description,
+        confirmLabel: confirmCopy.confirmLabel,
+        variant: confirmCopy.variant,
       });
       return;
     }
@@ -495,21 +491,21 @@ function DealsPipelinePageContent() {
 
     try {
       await dealsApi.moveToTrash(id);
-      toast.success('Deal moved to Trash');
+      toast.success(t('deals.movedToTrash'));
     } catch {
       setDeals(() => previousDeals);
-      toast.error('Could not move deal to Trash');
+      toast.error(t('deals.moveToTrashError'));
     }
   };
 
   const handleRestore = async (id: string) => {
     try {
       const restored = await dealsApi.restore(id);
-      toast.success('Deal restored');
+      toast.success(t('deals.restored'));
       setSelectedDeal(restored);
       await fetchDeals();
     } catch {
-      toast.error('Could not restore deal');
+      toast.error(t('deals.restoreError'));
     }
   };
 
@@ -519,14 +515,14 @@ function DealsPipelinePageContent() {
     setPurging(true);
     try {
       await dealsApi.permanentDelete(id);
-      toast.success('Deal permanently deleted');
+      toast.success(t('deals.permanentlyDeleted'));
       permanentDeleteConfirm.clear();
       setSheetOpen(false);
       setSelectedDeal(null);
       stripOpenDealFromUrl();
       await fetchDeals();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not delete deal');
+      toast.error(err instanceof Error ? err.message : t('deals.deleteError'));
     } finally {
       setPurging(false);
     }
@@ -579,11 +575,15 @@ function DealsPipelinePageContent() {
   );
 
   const kanbanStages = useMemo(() => {
-    if (statusFilter) {
-      return DEAL_STAGES.filter((stage) => stage.key === statusFilter);
-    }
-    return DEAL_STAGES;
-  }, [statusFilter]);
+    const stages = statusFilter
+      ? DEAL_STAGES.filter((stage) => stage.key === statusFilter)
+      : DEAL_STAGES;
+    return stages.map((stage) => ({
+      ...stage,
+      label: translateDealStageLabel(t, stage.key),
+      shortLabel: translateDealStageLabel(t, stage.key, 'short'),
+    }));
+  }, [statusFilter, t]);
 
   const kanbanColumns = useMemo(
     () =>
@@ -596,16 +596,32 @@ function DealsPipelinePageContent() {
     [columnMeta, boardScope, deals, isTrashView, kanbanStages, statusFilter],
   );
 
-  const dealTerminalZones = useMemo(() => buildTerminalDropZones(DEAL_STAGES), []);
+  const dealTerminalZones = useMemo(
+    () =>
+      buildTerminalDropZones(
+        DEAL_STAGES.map((stage) => ({
+          ...stage,
+          label: translateDealStageLabel(t, stage.key),
+        })),
+      ),
+    [t],
+  );
 
   const dealKanbanQuickCreate = useMemo(
-    () => createDealKanbanQuickCreateConfig(() => setShowCreate(true)),
-    [],
+    () =>
+      createDealKanbanQuickCreateConfig(() => setShowCreate(true), {
+        buttonLabel: t('deals.quickCreateButton'),
+      }),
+    [t],
   );
 
   const filterConfigs = useMemo(
-    () => buildDealPipelineFilterConfigs(responsibleEmployees, meId),
-    [meId, responsibleEmployees],
+    () =>
+      localizeDealPipelineFilterConfigs(
+        buildDealPipelineFilterConfigs(responsibleEmployees, meId),
+        t,
+      ),
+    [meId, responsibleEmployees, t],
   );
 
   const moduleHeroSlots = useMemo(
@@ -615,7 +631,7 @@ function DealsPipelinePageContent() {
           search={search}
           onSearchChange={setSearch}
           searchPlaceholder={
-            isMobileViewport ? DEAL_SEARCH_PLACEHOLDER_MOBILE : DEAL_SEARCH_PLACEHOLDER
+            isMobileViewport ? t('deals.searchPlaceholderMobile') : t('deals.searchPlaceholder')
           }
           className={isMobileViewport ? DEAL_SEARCH_MOBILE_CLASS : undefined}
           filters={showDesktopBoardChrome ? filterConfigs : undefined}
@@ -644,29 +660,30 @@ function DealsPipelinePageContent() {
         />
       ),
       viewMode: showDesktopBoardChrome ? (
-        <ViewModeSwitch value={view} onChange={setView} options={DEAL_VIEW_OPTIONS} />
+        <ViewModeSwitch value={view} onChange={setView} options={dealViewOptions} />
       ) : null,
       trailing: (
         <div className="flex shrink-0 items-center gap-1.5">
           <ClientsDirectorySettingsSheet
             listScope={scope}
             onListScopeChange={setScope}
-            entityLabel="deals"
+            entityLabel={t('deals.entityPlural')}
           />
           {!isTrashView ? (
             <Button
               onClick={() => setShowCreate(true)}
               size={isMobileViewport ? 'icon-sm' : 'default'}
-              aria-label="New Deal"
+              aria-label={t('deals.newDeal')}
             >
               <Plus size={16} aria-hidden />
-              {isMobileViewport ? null : 'New Deal'}
+              {isMobileViewport ? null : t('deals.newDeal')}
             </Button>
           ) : null}
         </div>
       ),
     }),
     [
+      dealViewOptions,
       filterConfigs,
       filters,
       isMobileViewport,
@@ -676,6 +693,7 @@ function DealsPipelinePageContent() {
       setFilters,
       setScope,
       showDesktopBoardChrome,
+      t,
       view,
     ],
   );
@@ -691,7 +709,9 @@ function DealsPipelinePageContent() {
     <div className="flex h-full min-w-0 flex-col gap-5">
       {isTrashView ? (
         <ClientsDirectoryTrashBanner
-          entityLabel="deals"
+          entityLabel={t('deals.entityPlural')}
+          message={t('deals.trashBanner')}
+          backLabel={t('deals.backToActive')}
           onBackToActive={() => setScope('active')}
         />
       ) : null}
@@ -702,17 +722,15 @@ function DealsPipelinePageContent() {
       ) : deals.length === 0 ? (
         <EmptyState
           icon={Handshake}
-          title={isTrashView ? 'Trash is empty' : 'No deals yet'}
+          title={isTrashView ? t('deals.emptyTrashTitle') : t('deals.emptyTitle')}
           description={
-            isTrashView
-              ? 'Removed deals will appear here until restored or purged.'
-              : 'Create your first deal or convert a qualified lead'
+            isTrashView ? t('deals.emptyTrashDescription') : t('deals.emptyDescription')
           }
           action={
             isTrashView ? undefined : (
               <Button onClick={() => setShowCreate(true)}>
                 <Plus size={16} />
-                Create First Deal
+                {t('deals.createFirstDeal')}
               </Button>
             )
           }
@@ -735,7 +753,7 @@ function DealsPipelinePageContent() {
             onReorderWithinColumn={handleReorder}
             onColumnLoadMore={loadMoreColumn}
             columnWidth={270}
-            emptyMessage="No deals"
+            emptyMessage={t('deals.emptyColumn')}
             terminalDropZones={
               shouldShowTerminalDropBar(boardScope) ? dealTerminalZones : undefined
             }
@@ -797,7 +815,7 @@ function DealsPipelinePageContent() {
                 const deal =
                   selectedDeal?.id === id ? selectedDeal : deals.find((item) => item.id === id);
                 if (!deal) return;
-                deleteConfirm.request({ id, name: deal.name ?? 'Deal' });
+                deleteConfirm.request({ id, name: deal.name ?? t('common.entityDeal') });
               }
         }
         onRestore={isTrashView ? (id) => void handleRestore(id) : undefined}
@@ -807,7 +825,7 @@ function DealsPipelinePageContent() {
                 const deal =
                   selectedDeal?.id === id ? selectedDeal : deals.find((item) => item.id === id);
                 if (!deal) return;
-                permanentDeleteConfirm.request({ id, name: deal.name ?? 'Deal' });
+                permanentDeleteConfirm.request({ id, name: deal.name ?? t('common.entityDeal') });
               }
             : undefined
         }
@@ -822,7 +840,7 @@ function DealsPipelinePageContent() {
         open={Boolean(pendingTransition)}
         title={pendingTransition?.title ?? ''}
         description={pendingTransition?.description ?? ''}
-        confirmLabel={pendingTransition?.confirmLabel ?? 'Confirm'}
+        confirmLabel={pendingTransition?.confirmLabel ?? t('common.confirm')}
         variant={pendingTransition?.variant ?? 'success'}
         confirmDisabled={
           pendingTransition?.status === 'WON' &&
@@ -859,8 +877,8 @@ function DealsPipelinePageContent() {
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
-        title="Move deal to Trash?"
-        description="The deal will be removed from the active pipeline. Type the deal name to confirm. You can restore it from Trash later."
+        title={t('deals.moveToTrashTitle')}
+        description={t('deals.moveToTrashDescription')}
         forceNestedBackdrop
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
@@ -874,7 +892,7 @@ function DealsPipelinePageContent() {
         open={permanentDeleteConfirm.open}
         onOpenChange={permanentDeleteConfirm.onOpenChange}
         itemName={permanentDeleteConfirm.target?.name ?? ''}
-        entityLabel="deal"
+        entityLabel={t('deals.entitySingular')}
         isSubmitting={purging}
         onConfirm={() => void runPermanentDelete()}
       />

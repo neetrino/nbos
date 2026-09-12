@@ -2,6 +2,7 @@
 
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Plus } from 'lucide-react';
 import {
   IntegratedSearchFilters,
@@ -17,10 +18,9 @@ import { CreateSubscriptionInvoiceDialog } from '@/features/finance/components/i
 import { OverdueRemindersButton } from '@/features/finance/components/invoices/OverdueRemindersButton';
 import { OverdueRemindersDialog } from '@/features/finance/components/invoices/OverdueRemindersDialog';
 import { InvoicesPageContent } from '@/features/finance/components/invoices/InvoicesPageContent';
-import { INVOICE_VIEW_OPTIONS } from '@/features/finance/components/invoices/invoice-view-options';
-import { INVOICE_MONEY_STAGES, INVOICE_TYPES } from '@/features/finance/constants/finance';
+import { useInvoiceViewOptions } from '@/features/finance/components/invoices/invoice-view-options';
+import { buildInvoicePageFilterConfigs } from '@/features/finance/components/invoices/invoice-page-filters';
 import {
-  BOARD_LIFECYCLE_SCOPE_OPTIONS,
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
   resolveBoardLifecycleScope,
   type BoardLifecycleScope,
@@ -34,7 +34,6 @@ import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-li
 import { SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-invoice-drilldown';
 import { getFinancePeriodParams } from '@/features/finance/constants/finance';
 import {
-  buildFinancePeriodFilterConfig,
   FINANCE_DEFAULT_LIST_PERIOD,
   FINANCE_PERIOD_FILTER_KEY,
   parseFinancePeriodFilterValue,
@@ -43,30 +42,9 @@ import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-do
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 import { beginPermittedCreate, PermissionGate, usePermission } from '@/lib/permissions';
 
-const INVOICE_FILTER_CONFIGS_BASE = [
-  {
-    key: 'boardScope',
-    label: 'Status',
-    includeAllOption: false,
-    defaultOptionValue: DEFAULT_BOARD_LIFECYCLE_SCOPE,
-    options: BOARD_LIFECYCLE_SCOPE_OPTIONS.map((option) => ({
-      value: option.value,
-      label: option.label,
-    })),
-  },
-  {
-    key: 'moneyStatus',
-    label: 'Money status',
-    options: INVOICE_MONEY_STAGES.map((stage) => ({ value: stage.value, label: stage.label })),
-  },
-  {
-    key: 'type',
-    label: 'Type',
-    options: INVOICE_TYPES.map((type) => ({ value: type.value, label: type.label })),
-  },
-];
-
 function InvoicesPageInner() {
+  const t = useTranslations('invoices');
+  const invoiceViewOptions = useInvoiceViewOptions();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -136,8 +114,8 @@ function InvoicesPageInner() {
   }, [setOverdueRemindersOpen]);
 
   const invoiceFilterConfigs = useMemo(
-    () => [buildFinancePeriodFilterConfig(), ...INVOICE_FILTER_CONFIGS_BASE],
-    [],
+    () => buildInvoicePageFilterConfigs((key) => t(key as never)),
+    [t],
   );
 
   const invoiceFilterValues = useMemo(
@@ -155,7 +133,7 @@ function InvoicesPageInner() {
         <IntegratedSearchFilters
           search={state.search}
           onSearchChange={state.setSearch}
-          searchPlaceholder="Search by invoice, company, order, product…"
+          searchPlaceholder={t('page.searchPlaceholder')}
           filters={invoiceFilterConfigs}
           filterValues={invoiceFilterValues}
           onFilterChange={handleFilterChange}
@@ -166,28 +144,29 @@ function InvoicesPageInner() {
         <ViewModeSwitch
           value={state.view}
           onChange={state.setView}
-          options={INVOICE_VIEW_OPTIONS}
+          options={invoiceViewOptions}
         />
       ),
       trailing: (
         <>
           <FinanceListPageSettingsSheet
-            title="Invoices — settings"
-            description="Exports for the current list scope. Period and filters follow the search bar."
-            triggerAriaLabel="Invoices settings"
+            title={t('page.settingsTitle')}
+            description={t('page.settingsDescription')}
+            triggerAriaLabel={t('page.settingsAria')}
             statsExportDisabled={state.loading || !state.stats}
             exportCsvDisabled={state.loading || exportCsvSubmitting}
             exportCsvInProgress={exportCsvSubmitting}
             onExportScopeStatsCsv={handleExportScopeStatsCsv}
             onExportCsv={handleExportCsv}
-            exportCsvLabel="Export invoices (CSV)"
+            exportScopeStatsLabel={t('page.exportScopeStats')}
+            exportCsvLabel={t('page.exportCsv')}
           />
           <PermissionGate module="FINANCE_INVOICES" action="EDIT">
             <OverdueRemindersButton onClick={openOverdueReminders} />
           </PermissionGate>
           <Button type="button" onClick={openCreateInvoice}>
             <Plus size={16} aria-hidden />
-            New Invoice
+            {t('page.newInvoice')}
           </Button>
         </>
       ),
@@ -201,8 +180,10 @@ function InvoicesPageInner() {
       handleFilterChange,
       invoiceFilterConfigs,
       invoiceFilterValues,
+      invoiceViewOptions,
       openCreateInvoice,
       state,
+      t,
     ],
   );
 
@@ -213,10 +194,10 @@ function InvoicesPageInner() {
       {subscriptionIdFromUrl ? (
         <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
           <p className="text-foreground max-w-prose">
-            Showing invoices linked to this subscription (server filter).
+            {t('page.subscriptionFilter')}
           </p>
           <Button variant="outline" size="sm" type="button" onClick={clearSubscriptionDrilldown}>
-            Clear filter
+            {t('page.clearFilter')}
           </Button>
         </div>
       ) : null}

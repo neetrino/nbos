@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslations } from 'next-intl';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensesApi, type AddExpensePaymentPayload, type Expense } from '@/lib/api/finance';
 
@@ -34,6 +35,8 @@ export function AddExpensePaymentDialog({
   onOpenChange,
   onRecorded,
 }: AddExpensePaymentDialogProps) {
+  const t = useTranslations('expenses');
+  const tCommon = useTranslations('common');
   const [amount, setAmount] = useState('');
   const [paymentDate, setPaymentDate] = useState(todayDateInputValue());
   const [notes, setNotes] = useState('');
@@ -68,10 +71,7 @@ export function AddExpensePaymentDialog({
       onOpenChange(false);
     } catch (caught) {
       setError(
-        getApiErrorMessage(
-          caught,
-          'Payment could not be recorded. Check the amount and try again.',
-        ),
+        getApiErrorMessage(caught, t('errors.recordPayment')),
       );
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ export function AddExpensePaymentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[440px]" forceNestedBackdrop>
         <DialogHeader>
-          <DialogTitle>Add payment</DialogTitle>
+          <DialogTitle>{t('dialogs.addPaymentTitle')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error ? (
@@ -92,7 +92,7 @@ export function AddExpensePaymentDialog({
           ) : null}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Amount *</Label>
+              <Label>{t('payments.amountRequired')}</Label>
               <Input
                 inputMode="decimal"
                 value={amount}
@@ -102,29 +102,29 @@ export function AddExpensePaymentDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>Payment date *</Label>
+              <Label>{t('payments.dateRequired')}</Label>
               <NbosDatePicker
                 value={paymentDate}
                 onChange={setPaymentDate}
-                aria-label="Payment date"
+                aria-label={t('payments.dateAria')}
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Notes</Label>
+            <Label>{t('payments.notes')}</Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              placeholder="Optional"
+              placeholder={t('payments.notesOptional')}
             />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? 'Saving…' : 'Record payment'}
+              {loading ? tCommon('saving') : t('actions.recordPayment')}
             </Button>
           </DialogFooter>
         </form>

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -12,6 +13,7 @@ import {
 import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS } from '@/components/shared/detail-sheet-classes';
 import {
   CREDENTIAL_FORM_SHEET_TABS,
+  CREDENTIAL_FORM_SHEET_TAB_MESSAGE_KEYS,
   type CredentialFormSheetTab,
 } from '@/features/credentials/constants/credential-form-sheet-tabs';
 import { buildCredentialVaultHref } from '@/features/credentials/constants/credential-vault-deep-link';
@@ -21,7 +23,10 @@ import { CredentialFormSheetBody } from './credential-form-sheet-body';
 import { CredentialFormSheetHeader } from './credential-form-sheet-header';
 import { CredentialStepUpDialog } from './credential-step-up-dialog';
 import { CredentialTypeChangeDialog } from './credential-type-change-dialog';
-import { CREDENTIAL_TYPES } from '@/features/credentials/constants/credentials';
+import {
+  CREDENTIAL_TYPES,
+  credentialTypeMessageKey,
+} from '@/features/credentials/constants/credentials';
 import {
   CredentialVaultSessionProvider,
   useCredentialVaultSessionContext,
@@ -54,6 +59,8 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
     onRestore,
   } = props;
   const { me } = usePermission();
+  const t = useTranslations('credentials');
+  const tCommon = useTranslations('common');
   const form = useCredentialFormSheet(props);
   const {
     isCreate,
@@ -97,6 +104,16 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
   const sourcePageHref = credentialId ? buildCredentialVaultHref(credentialId) : '/credentials';
   const [activeTab, setActiveTab] = useState<CredentialFormSheetTab>('general');
   const [trackedHeaderResetKey, setTrackedHeaderResetKey] = useState(headerResetKey);
+  const sheetTabs = useMemo(
+    () =>
+      CREDENTIAL_FORM_SHEET_TABS.map((tab) => ({
+        ...tab,
+        label: t(CREDENTIAL_FORM_SHEET_TAB_MESSAGE_KEYS[tab.value]),
+      })),
+    [t],
+  );
+  const fromTypeKey = credentialTypeMessageKey(credentialType);
+  const toTypeKey = pendingTypeChange ? credentialTypeMessageKey(pendingTypeChange) : null;
 
   if (open && trackedHeaderResetKey !== headerResetKey) {
     setTrackedHeaderResetKey(headerResetKey);
@@ -143,7 +160,7 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
 
           {!loading && !accessDenied && credentialId ? (
             <DetailSheetTabBar
-              tabs={CREDENTIAL_FORM_SHEET_TABS}
+              tabs={sheetTabs}
               activeTab={activeTab}
               onTabChange={(value) => setActiveTab(value as CredentialFormSheetTab)}
               className="border-border shrink-0 border-b px-6"
@@ -153,7 +170,7 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
           {loading ? (
             <div className="text-muted-foreground flex min-h-0 flex-1 items-center justify-center gap-2 p-8 text-sm">
               <Loader2 className="size-4 animate-spin" />
-              Loading…
+              {t('loading')}
             </div>
           ) : accessDenied ? (
             <ScrollArea className="min-h-0 flex-1">
@@ -164,7 +181,7 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
                 />
               ) : (
                 <p className="text-muted-foreground px-6 py-8 text-sm">
-                  You do not have access to this credential.
+                  {t('form.noAccess')}
                 </p>
               )}
             </ScrollArea>
@@ -189,7 +206,7 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
             saving={saving}
             onSave={() => void handleSave()}
             onCancel={() => (isCreate ? onOpenChange(false) : void loadDetail())}
-            saveLabel={isCreate ? submitLabel : 'Save'}
+            saveLabel={isCreate ? (submitLabel ?? tCommon('create')) : tCommon('save')}
           />
         </EntityDetailSheetContent>
       </Sheet>
@@ -200,12 +217,17 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
           if (!open) setPendingTypeChange(null);
         }}
         fromLabel={
-          CREDENTIAL_TYPES.find((t) => t.value === credentialType)?.label ?? credentialType
+          fromTypeKey
+            ? t(fromTypeKey as never)
+            : (CREDENTIAL_TYPES.find((item) => item.value === credentialType)?.label ??
+              credentialType)
         }
         toLabel={
-          CREDENTIAL_TYPES.find((t) => t.value === pendingTypeChange)?.label ??
-          pendingTypeChange ??
-          ''
+          toTypeKey
+            ? t(toTypeKey as never)
+            : (CREDENTIAL_TYPES.find((item) => item.value === pendingTypeChange)?.label ??
+              pendingTypeChange ??
+              '')
         }
         onConfirm={confirmPendingTypeChange}
       />
@@ -216,9 +238,7 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
           if (!o) setStepUpField(null);
         }}
         title={
-          stepUpMode === 'copy'
-            ? 'Unlock vault to copy critical secret'
-            : 'Unlock vault to reveal critical secret'
+          stepUpMode === 'copy' ? t('form.unlockCopy') : t('form.unlockReveal')
         }
         onConfirm={runStepUp}
       />

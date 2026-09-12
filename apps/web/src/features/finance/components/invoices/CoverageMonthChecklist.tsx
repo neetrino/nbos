@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Label } from '@/components/ui/label';
 import { isCoverageMonthBlockedBySelection } from '@/features/finance/utils/subscription-invoice-months';
 import { CoverageMonthTile } from './CoverageMonthTile';
@@ -19,17 +20,15 @@ export function CoverageMonthChecklist({
   disabled: boolean;
   onToggle: (monthKey: string) => void;
 }) {
+  const t = useTranslations('invoices');
   if (eligibleMonths.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
-        No uncovered month is available. Only active subscriptions can invoice uncovered months from
-        the billing start through the next 12 months.
-      </p>
+      <p className="text-muted-foreground text-sm">{t('createSubscription.noUncoveredMonth')}</p>
     );
   }
   return (
     <div className="space-y-3">
-      <Label>Coverage months</Label>
+      <Label>{t('createSubscription.coverageMonths')}</Label>
       <div className="max-h-80 overflow-y-auto pr-0.5">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {eligibleMonths.map((monthKey) => (
@@ -64,19 +63,20 @@ function CoverageMonthSummary({
   selectedCount: number;
   coverageMonthCount: number;
 }) {
+  const t = useTranslations('invoices');
+  const coveredMonths = selectedCount * coverageMonthCount;
   return (
     <div className="space-y-1">
       {coverageMonthCount > 1 ? (
         <p className="text-muted-foreground text-xs">
-          Each selected start covers {coverageMonthCount} months. Overlapping starts stay disabled.
+          {t('createSubscription.eachStartCovers', { count: coverageMonthCount })}
         </p>
       ) : null}
       {selectedCount === 0 ? (
-        <p className="text-muted-foreground text-xs">Select at least one month.</p>
+        <p className="text-muted-foreground text-xs">{t('createSubscription.selectAtLeastOne')}</p>
       ) : (
         <p className="text-muted-foreground text-xs">
-          1 invoice covering {selectedCount * coverageMonthCount}{' '}
-          {selectedCount * coverageMonthCount === 1 ? 'month' : 'months'}
+          {t('createSubscription.covering', { count: coveredMonths })}
         </p>
       )}
     </div>

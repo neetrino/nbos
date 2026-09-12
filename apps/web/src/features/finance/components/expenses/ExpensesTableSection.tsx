@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Banknote, FolderKanban } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   Table,
   TableHeader,
@@ -13,10 +14,12 @@ import {
 import { StatusBadge } from '@/components/shared';
 import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { getExpenseStage } from '@/features/finance/constants/finance';
+import { getExpenseCategoryVisual } from '@/features/finance/constants/expense-category-visual';
 import {
-  getExpenseCategoryLabel,
-  getExpenseCategoryVisual,
-} from '@/features/finance/constants/expense-category-visual';
+  translateExpenseCategory,
+  translateExpensePaymentStatus,
+  translateExpenseStage,
+} from './expense-i18n-labels';
 import type { Expense } from '@/lib/api/finance';
 import { expenseOwnerLabel } from '@/features/finance/utils/expense-owner-label';
 import {
@@ -38,7 +41,6 @@ import {
 } from '@/features/finance/components/shared/finance-list-table';
 
 const UNPLANNED_EXPENSE_TYPE = 'UNPLANNED';
-const EXPENSE_MANUAL_LIST_LABEL = 'Manual';
 
 interface ExpensesTableSectionProps {
   expenses: Expense[];
@@ -46,19 +48,20 @@ interface ExpensesTableSectionProps {
 }
 
 export function ExpensesTableSection({ expenses, onOpen }: ExpensesTableSectionProps) {
+  const t = useTranslations('expenses');
   return (
     <div className={FINANCE_LIST_SHELL_CLASS}>
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Expense</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Amount</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Due Date</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Category</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Paid</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Status</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Project</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Payroll</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.expense')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.amount')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.dueDate')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.category')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.paid')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.status')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.project')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.payroll')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -78,9 +81,10 @@ function ExpenseTableRow({
   expense: Expense;
   onOpen: (expense: Expense) => void;
 }) {
+  const t = useTranslations('expenses');
   const stage = getExpenseStage(expense.status);
   const categoryVisual = getExpenseCategoryVisual(expense.category);
-  const categoryLabel = getExpenseCategoryLabel(expense.category);
+  const categoryLabel = translateExpenseCategory(expense.category, t);
   const payrollRunId = resolveExpensePayrollRunId(expense);
   const payrollMonth = resolveExpensePayrollMonthLabel(expense);
   const ledgerPresentation =
@@ -115,7 +119,7 @@ function ExpenseTableRow({
           <div className="flex flex-col gap-1">
             <FinanceListAmount amount={expense.paidAmount!} />
             <StatusBadge
-              label={ledgerPresentation.label}
+              label={translateExpensePaymentStatus(expense.paymentStatus!, t)}
               variant={ledgerPresentation.variant}
               className={FINANCE_LIST_BADGE_CLASS}
             />
@@ -127,7 +131,7 @@ function ExpenseTableRow({
       <TableCell className={FINANCE_LIST_CELL_CLASS}>
         {stage ? (
           <StatusBadge
-            label={stage.label}
+            label={translateExpenseStage(stage.value, t)}
             variant={stage.variant}
             className={FINANCE_LIST_BADGE_CLASS}
           />
@@ -155,7 +159,7 @@ function ExpenseTableRow({
               icon={Banknote}
               className="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400"
             />
-            <span>{payrollMonth ?? 'Run'}</span>
+            <span>{payrollMonth ?? t('table.run')}</span>
           </Link>
         ) : (
           <FinanceListMutedDash />
@@ -166,6 +170,7 @@ function ExpenseTableRow({
 }
 
 function ExpenseNameCell({ name, type }: { name: string; type: string }) {
+  const t = useTranslations('expenses');
   return (
     <span className="flex min-w-0 items-center gap-2">
       <span className="min-w-0 flex-1">
@@ -173,7 +178,7 @@ function ExpenseNameCell({ name, type }: { name: string; type: string }) {
       </span>
       {type === UNPLANNED_EXPENSE_TYPE ? (
         <StatusBadge
-          label={EXPENSE_MANUAL_LIST_LABEL}
+          label={t('type.manual')}
           variant="orange"
           className={FINANCE_LIST_BADGE_CLASS}
         />

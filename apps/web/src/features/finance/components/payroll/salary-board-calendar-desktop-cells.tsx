@@ -1,14 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { AmdCurrencyIcon } from '@/components/shared/AmdCurrencyIcon';
+import { SALARY_LINE_STATUS_MESSAGE_KEY } from '@/features/finance/components/payroll/payroll-i18n-keys';
+import { PAYROLL_RUN_STATUS_MESSAGE_KEY } from '@/features/finance/constants/payroll-run-ui';
 import { FINANCE_CALENDAR_CELL_EMPTY } from '@/features/finance/constants/finance-calendar-cell-colors';
 import { formatAmount, formatAmountAbbreviated } from '@/features/finance/constants/finance';
-import { payrollRunStatusUi } from '@/features/finance/constants/payroll-run-status-ui';
-import {
-  salaryLineCalendarCellClass,
-  salaryLineStatusBoardUi,
-} from '@/features/finance/constants/salary-board-line-status';
+import { salaryLineCalendarCellClass } from '@/features/finance/constants/salary-board-line-status';
 import {
   formatPayrollMonthAbbrev,
   parseSalaryBoardAmount,
@@ -83,7 +82,8 @@ export function SalaryBoardCalendarMonthCell({
   cell: SalaryBoardCell;
   onOpen: (salaryLineId: string) => void;
 }) {
-  const statusUi = salaryLineStatusBoardUi(cell.lineStatus);
+  const t = useTranslations('payroll');
+  const statusLabel = t(SALARY_LINE_STATUS_MESSAGE_KEY[cell.lineStatus]);
   const payableValue = parseSalaryBoardAmount(cell.totalPayable);
   const payable = formatAmountAbbreviated(payableValue);
 
@@ -96,10 +96,13 @@ export function SalaryBoardCalendarMonthCell({
         SALARY_CALENDAR_SLOT_CLASS,
         salaryLineCalendarCellClass(cell.lineStatus),
       )}
-      aria-label={`${statusUi.label} · ${formatAmount(payableValue)}`}
+      aria-label={t('salary.cellAria', {
+        status: statusLabel,
+        amount: formatAmount(payableValue),
+      })}
     >
       <span className="max-w-full truncate text-[9px] font-semibold tracking-wide uppercase opacity-90">
-        {statusUi.label}
+        {statusLabel}
       </span>
       <span className="max-w-full truncate text-sm leading-tight font-bold tabular-nums">
         {payable}
@@ -109,8 +112,9 @@ export function SalaryBoardCalendarMonthCell({
 }
 
 export function SalaryBoardCalendarMonthHeader({ column }: { column: SalaryBoardColumn }) {
+  const t = useTranslations('payroll');
   const label = formatPayrollMonthAbbrev(column.payrollMonth);
-  const runUi = column.runStatus ? payrollRunStatusUi(column.runStatus) : null;
+  const runLabel = column.runStatus ? t(PAYROLL_RUN_STATUS_MESSAGE_KEY[column.runStatus]) : null;
 
   return (
     <div className="flex flex-col items-center gap-1">
@@ -124,12 +128,12 @@ export function SalaryBoardCalendarMonthHeader({ column }: { column: SalaryBoard
       ) : (
         <span className="text-muted-foreground text-xs font-semibold">{label}</span>
       )}
-      {runUi ? (
+      {runLabel ? (
         <span className="text-muted-foreground max-w-full truncate text-[8px] leading-tight">
-          {runUi.label}
+          {runLabel}
         </span>
       ) : (
-        <span className="text-muted-foreground text-[8px]">No run</span>
+        <span className="text-muted-foreground text-[8px]">{t('salary.noRun')}</span>
       )}
     </div>
   );

@@ -1,8 +1,11 @@
 'use client';
 
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { PipelineStagesBar } from '@/components/shared';
 import { toSheetPipelineStages } from '@/components/shared/pipeline-stage-config';
 import type { DeliveryLifecycleProjection } from '@/lib/api/projects';
+import { DELIVERY_PIPELINE_SHORT_MESSAGE_KEYS } from './delivery-board-message-keys';
 import { ACTIVE_DELIVERY_STAGES } from './project-delivery-board-model';
 
 /** UI keys for terminal actions (not API stage enums). */
@@ -22,23 +25,6 @@ const STAGE_HEX: Record<string, string> = {
   [DELIVERY_PIPELINE_DONE_KEY]: '#22c55e',
   [DELIVERY_PIPELINE_CANCEL_KEY]: '#ef4444',
 };
-
-const ACTIVE_SHORT: Record<(typeof ACTIVE_DELIVERY_STAGES)[number], string> = {
-  STARTING: 'Start',
-  DEVELOPMENT: 'Dev',
-  QA: 'QA',
-  TRANSFER: 'Transfer',
-};
-
-const SHEET_STAGES = toSheetPipelineStages([
-  ...ACTIVE_DELIVERY_STAGES.map((key) => ({
-    key,
-    label: ACTIVE_SHORT[key],
-    shortLabel: ACTIVE_SHORT[key],
-  })),
-  { key: DELIVERY_PIPELINE_CANCEL_KEY, label: 'Cancel', shortLabel: 'Cancel' },
-  { key: DELIVERY_PIPELINE_DONE_KEY, label: 'Done', shortLabel: 'Done' },
-]);
 
 function resolveSheetCurrentStatus(lifecycle: DeliveryLifecycleProjection | undefined): string {
   if (!lifecycle) return '';
@@ -79,9 +65,32 @@ export function DeliveryPipelineStages({
   disabled = false,
   onSelect,
 }: DeliveryPipelineStagesProps) {
+  const t = useTranslations('deliveryBoard');
+  const stages = useMemo(
+    () =>
+      toSheetPipelineStages([
+        ...ACTIVE_DELIVERY_STAGES.map((key) => ({
+          key,
+          label: t(DELIVERY_PIPELINE_SHORT_MESSAGE_KEYS[key]),
+          shortLabel: t(DELIVERY_PIPELINE_SHORT_MESSAGE_KEYS[key]),
+        })),
+        {
+          key: DELIVERY_PIPELINE_CANCEL_KEY,
+          label: t('pipeline.cancel'),
+          shortLabel: t('pipeline.cancel'),
+        },
+        {
+          key: DELIVERY_PIPELINE_DONE_KEY,
+          label: t('pipeline.done'),
+          shortLabel: t('pipeline.done'),
+        },
+      ]),
+    [t],
+  );
+
   return (
     <PipelineStagesBar
-      stages={SHEET_STAGES}
+      stages={stages}
       stageColors={STAGE_HEX}
       currentStatus={resolveSheetCurrentStatus(lifecycle)}
       fillToEndStatuses={[DELIVERY_PIPELINE_DONE_KEY]}

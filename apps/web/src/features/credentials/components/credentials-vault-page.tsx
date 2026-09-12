@@ -1,6 +1,8 @@
 'use client';
 
 import { Plus } from 'lucide-react';
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   PageHero,
@@ -9,9 +11,9 @@ import {
   ViewModeSwitch,
   ListPagination,
 } from '@/components/shared';
-import { CREDENTIAL_VAULT_VIEW_OPTIONS } from '@/features/credentials/constants/credential-vault';
+import { localizeCredentialVaultViewOptions } from '@/features/credentials/constants/credential-vault';
 import { CREDENTIAL_VAULT_COPY_FEEDBACK_MS } from '@/features/credentials/constants/credential-vault-copy';
-import { CREDENTIAL_VAULT_TAB_OPTIONS } from '@/features/credentials/constants/credentials-vault-page-constants';
+import { localizeCredentialVaultTabOptions } from '@/features/credentials/constants/credentials-vault-page-constants';
 import { CredentialVaultTrashBanner } from '@/features/credentials/components/credential-vault-trash-banner';
 import { CredentialQuickFilterChips } from '@/features/credentials/components/credential-quick-filter-chips';
 import { CredentialFolderCreateButton } from '@/features/credentials/components/credential-folder-create-button';
@@ -35,8 +37,18 @@ export function CredentialsVaultPage() {
 }
 
 function CredentialsVaultPageContent() {
+  const t = useTranslations('credentials');
   const vault = useCredentialsVaultPage();
   const viewMode = useMobilePreferredView(vault.viewMode, 'tiles');
+  const moduleTitle = t('title');
+  const tabOptions = useMemo(
+    () => localizeCredentialVaultTabOptions((key) => t(key as never)),
+    [t],
+  );
+  const viewOptions = useMemo(
+    () => localizeCredentialVaultViewOptions((key) => t(key as never)),
+    [t],
+  );
 
   const handleSecretCopied = (flashId: string) => {
     vault.setPasswordFlashCredentialId(flashId);
@@ -58,14 +70,18 @@ function CredentialsVaultPageContent() {
     <div className="flex h-full min-h-0 flex-col gap-5">
       <div className="shrink-0 max-md:contents">
         <PageHero
-          title={vault.vaultListScope === 'trash' ? 'Password — Trash' : 'Password'}
+          title={
+            vault.vaultListScope === 'trash'
+              ? t('titleTrash', { module: moduleTitle })
+              : moduleTitle
+          }
           create={{ onSelect: vault.openCreate, disabled: !vault.showCreate }}
           tabs={
             <PageHeroTabs
               value={vault.activeTab}
               onChange={vault.handleTabChange}
-              options={CREDENTIAL_VAULT_TAB_OPTIONS}
-              ariaLabel="Credential scope"
+              options={tabOptions}
+              ariaLabel={t('scopeAria')}
               showOnMobile
               registerMobileDock={false}
             />
@@ -74,7 +90,7 @@ function CredentialsVaultPageContent() {
             <IntegratedSearchFilters
               search={vault.search}
               onSearchChange={vault.setSearch}
-              searchPlaceholder="Search by name, provider…"
+              searchPlaceholder={t('searchPlaceholder')}
               filters={vault.filterConfigs}
               filterValues={vault.filterValuesForUi}
               onFilterChange={(key, value) =>
@@ -87,7 +103,7 @@ function CredentialsVaultPageContent() {
             <ViewModeSwitch
               value={vault.viewMode}
               onChange={vault.setViewMode}
-              options={CREDENTIAL_VAULT_VIEW_OPTIONS}
+              options={viewOptions}
             />
           }
           trailing={
@@ -102,7 +118,7 @@ function CredentialsVaultPageContent() {
                 <PermissionGate module="CREDENTIALS" action="ADD">
                   <Button type="button" onClick={() => vault.openCreate()}>
                     <Plus size={16} aria-hidden />
-                    New Credential
+                    {t('newCredential')}
                   </Button>
                 </PermissionGate>
               )}

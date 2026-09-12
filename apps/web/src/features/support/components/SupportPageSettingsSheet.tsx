@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { TableProperties } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
@@ -13,11 +14,13 @@ export function SupportPageSettingsSheet({
   exportDisabled,
   onExportScopeStatsCsv,
 }: SupportPageSettingsSheetProps) {
+  const t = useTranslations('support');
+
   return (
     <PageSettingsSheet
-      title="Support — settings"
-      description="Data exports and page options. Scope stats are workspace-wide from the API; list filters are not applied to the export."
-      triggerAriaLabel="Support settings"
+      title={t('settings.title')}
+      description={t('settings.description')}
+      triggerAriaLabel={t('settings.triggerAria')}
     >
       <Button
         type="button"
@@ -27,7 +30,7 @@ export function SupportPageSettingsSheet({
         onClick={() => onExportScopeStatsCsv()}
       >
         <TableProperties className="size-4 shrink-0" aria-hidden />
-        Export scope stats (CSV)
+        {t('settings.exportCsv')}
       </Button>
     </PageSettingsSheet>
   );

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { BotMessageSquare, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import { AiAdminEntityRow } from './AiAdminEntityRow';
 import { AiAdminPageToolbar } from './AiAdminPageToolbar';
 
 export function WorkspaceAiAccessPanel({ workspaceId }: { workspaceId: string }) {
+  const t = useTranslations('workSpaces');
   const [rows, setRows] = useState<WorkspaceAccessRow[]>([]);
   const [agents, setAgents] = useState<ExternalAgentBundle[]>([]);
   const [agentId, setAgentId] = useState('');
@@ -39,11 +41,11 @@ export function WorkspaceAiAccessPanel({ workspaceId }: { workspaceId: string })
       setAgents(nextAgents);
       setError(null);
     } catch {
-      setError('AI Access could not be loaded.');
+      setError(t('aiAccess.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [workspaceId]);
+  }, [t, workspaceId]);
 
   useEffect(() => {
     void load();
@@ -61,25 +63,29 @@ export function WorkspaceAiAccessPanel({ workspaceId }: { workspaceId: string })
     <section className="space-y-3">
       <AiAdminPageToolbar
         icon={BotMessageSquare}
-        description="Same Work Space grants as Settings → AI & Agents. Token rotation lives only in the central External Agent page."
+        description={t('aiAccess.description')}
       />
       {rows.length === 0 ? (
-        <p className="text-muted-foreground text-xs">
-          No External Agents are scoped to this Work Space.
-        </p>
+        <p className="text-muted-foreground text-xs">{t('aiAccess.empty')}</p>
       ) : (
         <ul className="space-y-2">
           {rows.map((row) => (
             <li key={row.scope.id}>
               <AiAdminEntityRow
                 icon={BotMessageSquare}
-                title={row.agent?.name ?? 'Unknown agent'}
+                title={row.agent?.name ?? t('aiAccess.unknownAgent')}
                 description={
-                  row.capabilities.map((item) => item.capabilityKey).join(', ') || 'No capabilities'
+                  row.capabilities.map((item) => item.capabilityKey).join(', ') ||
+                  t('aiAccess.noCapabilities')
                 }
                 statusLabel={row.agent?.state}
                 statusVariant={row.agent ? agentStateVariant(row.agent.state) : undefined}
-                pills={[{ icon: KeyRound, text: `${row.capabilities.length} capabilities` }]}
+                pills={[
+                  {
+                    icon: KeyRound,
+                    text: t('aiAccess.capabilities', { count: row.capabilities.length }),
+                  },
+                ]}
                 footer={
                   <div className="flex flex-wrap gap-2">
                     {row.agent ? (
@@ -87,7 +93,7 @@ export function WorkspaceAiAccessPanel({ workspaceId }: { workspaceId: string })
                         href={`${AI_ADMIN_BASE_PATH}/external-agents/${row.agent.id}`}
                         className="text-xs underline"
                       >
-                        Open central detail
+                        {t('aiAccess.openDetail')}
                       </Link>
                     ) : null}
                     <Button
@@ -98,10 +104,10 @@ export function WorkspaceAiAccessPanel({ workspaceId }: { workspaceId: string })
                         void aiAdminApi
                           .revokeWorkspaceAccess(workspaceId, row.scope.id)
                           .then(load)
-                          .catch(() => toast.error('Revoke failed.'))
+                          .catch(() => toast.error(t('aiAccess.revokeFailed')))
                       }
                     >
-                      Revoke Work Space access
+                      {t('aiAccess.revoke')}
                     </Button>
                   </div>
                 }
@@ -113,7 +119,7 @@ export function WorkspaceAiAccessPanel({ workspaceId }: { workspaceId: string })
       <div className="flex gap-2">
         <Select value={agentId} onValueChange={(value) => applySelectValue(value, setAgentId)}>
           <SelectTrigger size="sm" className="min-w-[12rem]">
-            <SelectValue placeholder="Existing External Agent" />
+            <SelectValue placeholder={t('aiAccess.agentPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
             {available.map((bundle) => (
@@ -134,10 +140,10 @@ export function WorkspaceAiAccessPanel({ workspaceId }: { workspaceId: string })
                 setAgentId('');
                 return load();
               })
-              .catch(() => toast.error('Grant failed.'))
+              .catch(() => toast.error(t('aiAccess.grantFailed')))
           }
         >
-          Grant access
+          {t('aiAccess.grant')}
         </Button>
       </div>
     </section>

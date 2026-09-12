@@ -3,6 +3,7 @@ import type { DetailSheetTabItem } from '@/components/shared';
 interface BuildLeadDetailSheetTabsOptions {
   canCreateTask: boolean;
   onCreateTask: () => void;
+  createTaskAria?: string;
 }
 
 /** Adds hover + on Lead Task tab when create is allowed. */
@@ -16,7 +17,7 @@ export function buildLeadDetailSheetTabs(
         ...tab,
         quickCreate: {
           onCreate: options.onCreateTask,
-          ariaLabel: 'Create task',
+          ariaLabel: options.createTaskAria ?? 'Create task',
         },
       };
     }

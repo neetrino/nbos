@@ -1,9 +1,15 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { FileText, Mail, Phone } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
-import { getEmployeeLevel, getEmployeeStatus } from '@/features/hr/constants/hr';
+import {
+  getEmployeeLevel,
+  getEmployeeStatus,
+  isEmployeeLevelValue,
+  isEmployeeStatusValue,
+} from '@/features/hr/constants/hr';
 import { employeeFullName } from '@/features/hr/utils/employee-display';
 import type { Employee } from '@/lib/api/employees';
 
@@ -22,19 +28,26 @@ const TEAM_EMPLOYEE_CARD_CLASS = [
 ].join(' ');
 
 export function TeamEmployeeCard({ employee, onOpen }: TeamEmployeeCardProps) {
+  const t = useTranslations('hr');
   const name = employeeFullName(employee);
   const lvl = employee.level ? getEmployeeLevel(employee.level) : null;
   const st = getEmployeeStatus(employee.status);
   const roleLabel = employee.position || employee.role?.name || null;
   const hasMeta = Boolean(lvl || employee.email || employee.phone);
+  const statusLabel =
+    st && isEmployeeStatusValue(employee.status) ? t(`status.${employee.status}`) : st?.label;
+  const levelLabel =
+    lvl && employee.level && isEmployeeLevelValue(employee.level)
+      ? t(`level.${employee.level}`)
+      : lvl?.label;
 
   return (
     <button type="button" onClick={() => onOpen(employee)} className={TEAM_EMPLOYEE_CARD_CLASS}>
       <div className="flex w-full flex-col items-center">
         <EmployeePersonAvatar label={name} imageUrl={employee.avatar} className="size-16 text-lg" />
-        {st ? (
+        {st && statusLabel ? (
           <StatusBadge
-            label={st.label}
+            label={statusLabel}
             variant={st.variant}
             dot
             className="mt-3 self-center rounded-full px-2.5 py-0.5 text-xs"
@@ -50,11 +63,11 @@ export function TeamEmployeeCard({ employee, onOpen }: TeamEmployeeCardProps) {
 
       {hasMeta ? (
         <div className="border-border mt-5 w-full space-y-2.5 border-t pt-4 text-left">
-          {lvl ? (
+          {lvl && levelLabel ? (
             <div className="flex min-w-0 items-center gap-2">
               <FileText size={14} className="text-muted-foreground shrink-0" aria-hidden />
               <StatusBadge
-                label={lvl.label}
+                label={levelLabel}
                 variant={lvl.variant}
                 className="rounded-full px-2.5 py-0.5 text-xs"
               />

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { DeleteConfirmDialog } from '@/components/shared';
 
 interface DeleteExpensePaymentDialogProps {
@@ -19,15 +20,16 @@ export function DeleteExpensePaymentDialog({
   onOpenChange,
   onConfirm,
 }: DeleteExpensePaymentDialogProps) {
+  const t = useTranslations('expenses');
   return (
     <DeleteConfirmDialog
       level="simple"
       open={open}
       onOpenChange={onOpenChange}
       itemName={paymentSummary}
-      title="Remove payment?"
-      description="This payment line will be removed from the expense. You can record it again later."
-      confirmLabel="Remove"
+      title={t('dialogs.removePaymentTitle')}
+      description={t('dialogs.removePaymentDescription')}
+      confirmLabel={t('dialogs.removePaymentConfirm')}
       isSubmitting={isSubmitting}
       forceNestedBackdrop
       errorMessage={errorMessage}

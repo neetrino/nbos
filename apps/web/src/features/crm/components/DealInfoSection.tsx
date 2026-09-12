@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Building2, FolderKanban } from 'lucide-react';
 import {
   AmdCurrencyIcon,
@@ -10,15 +11,12 @@ import {
 } from '@/components/shared';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { PAYMENT_TYPES } from '../constants/dealPipeline';
+import { translatePaymentTypeLabel, translateTaxStatusLabel } from '../i18n/crm-copy';
 import type { SearchLoader } from './deal-general-tab.types';
 import { buildDealProjectChangePatch, type DealGeneralDraft } from './deal-general-form-state';
 import { TAX_STATUS_OPTIONS } from './deal-general-tab.helpers';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
-import {
-  DealSubscriptionTermField,
-  dealAmountFieldLabel,
-  showDealSubscriptionTermFields,
-} from './DealSubscriptionTermField';
+import { DealSubscriptionTermField, showDealSubscriptionTermFields } from './DealSubscriptionTermField';
 
 export { DealInfoDealProductFields } from './DealInfoDealProductFields';
 
@@ -72,16 +70,19 @@ function DealInfoCommercialFields({
   disabled = false,
   gateRequiredFields = new Set(),
 }: Omit<DealInfoProjectBillingFieldsProps, 'searchProjects' | 'searchCompanies'>) {
+  const t = useTranslations('crm');
   const showSubscriptionTerm = showDealSubscriptionTermFields(draft);
 
   return (
     <>
       <InlineField
         variant="controlled"
-        label={dealAmountFieldLabel(draft.paymentType)}
+        label={
+          draft.paymentType === 'SUBSCRIPTION' ? t('dealSheet.amountPerMonth') : t('dealSheet.cost')
+        }
         type="money"
         value={draft.amount ?? ''}
-        placeholder="Enter amount..."
+        placeholder={t('dealSheet.amountPlaceholder')}
         icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
         disabled={disabled}
         className={dealStageGateFieldClass(gateRequiredFields, 'amount')}
@@ -89,10 +90,13 @@ function DealInfoCommercialFields({
       />
 
       <DetailSheetFieldSegmented
-        label="Payment Type"
+        label={t('dealSheet.paymentType')}
         hideLabel
         value={draft.paymentType}
-        options={PAYMENT_TYPES}
+        options={PAYMENT_TYPES.map((option) => ({
+          value: option.value,
+          label: translatePaymentTypeLabel(t, option.value),
+        }))}
         disabled={disabled}
         className={dealStageGateFieldClass(gateRequiredFields, 'paymentType')}
         onValueChange={(paymentType) => patchDraft({ paymentType })}
@@ -108,10 +112,13 @@ function DealInfoCommercialFields({
       ) : null}
 
       <DetailSheetFieldSegmented
-        label="Tax Status"
+        label={t('dealSheet.taxStatus')}
         hideLabel
         value={draft.taxStatus}
-        options={TAX_STATUS_OPTIONS}
+        options={TAX_STATUS_OPTIONS.map((option) => ({
+          value: option.value,
+          label: translateTaxStatusLabel(t, option.value),
+        }))}
         disabled={disabled}
         className={dealStageGateFieldClass(gateRequiredFields, 'taxStatus')}
         onValueChange={(taxStatus) => patchDraft({ taxStatus })}
@@ -127,17 +134,18 @@ function DealInfoProjectField({
   disabled = false,
   gateRequiredFields = new Set(),
 }: Omit<DealInfoProjectBillingFieldsProps, 'searchCompanies'>) {
+  const t = useTranslations('crm');
   const projectPicker = useRelationPickerActions('project');
 
   return (
     <RelationPickerField
-      label="Project"
+      label={t('dealSheet.project')}
       entityKind="project"
       value={draft.projectId}
       selectionLabel={draft.linkedProjectLabel}
       className={dealStageGateFieldClass(gateRequiredFields, 'projectId')}
       disabled={disabled}
-      placeholder="Search projects…"
+      placeholder={t('dealSheet.searchProjects')}
       icon={<FolderKanban size={12} />}
       onSearch={searchProjects}
       onSelect={(id, label) => patchDraft(buildDealProjectChangePatch(id, label))}
@@ -154,17 +162,18 @@ function DealInfoCompanyField({
   disabled = false,
   gateRequiredFields = new Set(),
 }: Omit<DealInfoProjectBillingFieldsProps, 'searchProjects'>) {
+  const t = useTranslations('crm');
   const companyPicker = useRelationPickerActions('company');
 
   return (
     <RelationPickerField
-      label="Company"
+      label={t('dealSheet.company')}
       entityKind="company"
       value={draft.companyId}
       selectionLabel={draft.companyPickLabel}
       className={dealStageGateFieldClass(gateRequiredFields, 'companyId')}
       disabled={disabled}
-      placeholder="Search company…"
+      placeholder={t('dealSheet.searchCompany')}
       icon={<Building2 size={12} />}
       onSearch={searchCompanies}
       onSelect={(id, label) => patchDraft({ companyId: id, companyPickLabel: label })}

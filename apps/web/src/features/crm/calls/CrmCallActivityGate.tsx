@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { usePermission } from '@/lib/permissions';
 
 export function CrmCallActivityGate(props: {
@@ -15,11 +16,10 @@ export function CrmCallActivityGate(props: {
         ? can('VIEW', 'CRM_LEADS')
         : can('VIEW', 'CRM_LEADS') || can('VIEW', 'CRM_DEALS');
 
+  const t = useTranslations('crm');
   if (!allowed) {
     return (
-      <p className="text-muted-foreground py-8 text-center text-sm">
-        You do not have permission to view call activities.
-      </p>
+      <p className="text-muted-foreground py-8 text-center text-sm">{t('call.noPermission')}</p>
     );
   }
 

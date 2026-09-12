@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import {
   Check,
@@ -21,6 +22,7 @@ import {
   COMMERCIAL_DEAL_TYPES,
   HANDOFF_VISIBLE_DEAL_STATUSES,
 } from '../constants/deal-handoff.constants';
+import type { CrmTranslate } from '../i18n/crm-copy';
 
 interface DealHandoffPanelProps {
   deal: Deal;
@@ -39,7 +41,7 @@ function hasPaidInvoice(deal: Deal) {
   );
 }
 
-function getReadinessItems(deal: Deal): ReadinessItem[] {
+function getReadinessItems(deal: Deal, t: CrmTranslate): ReadinessItem[] {
   const hasOfferProof = Boolean(
     (deal.linkedOfferAssetCount ?? 0) > 0 ||
     deal.offerLink ||
@@ -54,56 +56,64 @@ function getReadinessItems(deal: Deal): ReadinessItem[] {
 
   return [
     {
-      label: 'PM assigned',
+      label: t('dealSheet.handoff.pmAssigned'),
       ready: Boolean(deal.pmId || deal.pm),
       hint:
         deal.type === 'MAINTENANCE'
-          ? 'Not required yet for maintenance'
-          : 'Assign PM before delivery',
+          ? t('dealSheet.handoff.pmHintMaintenance')
+          : t('dealSheet.handoff.pmHint'),
     },
     {
-      label: 'Deadline',
+      label: t('dealSheet.handoff.deadline'),
       ready: Boolean(deal.deadline),
       hint:
         deal.type === 'MAINTENANCE'
-          ? 'Maintenance start is tracked separately'
-          : 'Set delivery deadline',
+          ? t('dealSheet.handoff.deadlineHintMaintenance')
+          : t('dealSheet.handoff.deadlineHint'),
     },
-    { label: 'Offer file', ready: hasOfferProof, hint: 'Attach offer in Drive (Offer section)' },
     {
-      label: 'Contract file',
+      label: t('dealSheet.handoff.offerFile'),
+      ready: hasOfferProof,
+      hint: t('dealSheet.handoff.offerHint'),
+    },
+    {
+      label: t('dealSheet.handoff.contractFile'),
       ready: !isClassic || hasContractProof,
       hint: isClassic
-        ? 'Attach contract in Drive (Contract section)'
-        : 'Not required for subscription',
+        ? t('dealSheet.handoff.contractHint')
+        : t('dealSheet.handoff.contractHintSubscription'),
     },
-    { label: 'Invoice exists', ready: hasInvoice, hint: 'Create invoice from Quick actions' },
     {
-      label: 'Payment received',
+      label: t('dealSheet.handoff.invoiceExists'),
+      ready: hasInvoice,
+      hint: t('dealSheet.handoff.invoiceHint'),
+    },
+    {
+      label: t('dealSheet.handoff.paymentReceived'),
       ready: hasPaidInvoice(deal) || deal.wonMode === 'EXCEPTION_FREE',
-      hint: 'Finance should mark invoice as paid',
+      hint: t('dealSheet.handoff.paymentHint'),
     },
     {
-      label: 'WhatsApp group',
+      label: t('dealSheet.handoff.whatsappGroup'),
       ready:
         deal.whatsappGroupBinding?.status === 'ACTIVE' &&
         Boolean(deal.whatsappGroupBinding.groupChatId),
       hint:
         deal.whatsappGroupBinding?.status === 'FAILED'
-          ? 'Retry from Actions. Deal Won stays available.'
-          : 'Create or bind from Actions; attaches on Won',
+          ? t('dealSheet.handoff.whatsappHintFailed')
+          : t('dealSheet.handoff.whatsappHint'),
     },
     {
-      label: 'Project linked',
+      label: t('dealSheet.handoff.projectLinked'),
       ready: Boolean(deal.projectId || deal.handoff?.project),
-      hint: 'Link a project in Deal & project, or auto-created when delivery starts',
+      hint: t('dealSheet.handoff.projectHint'),
     },
     {
-      label: 'Delivery shell',
+      label: t('dealSheet.handoff.deliveryShell'),
       ready:
         Boolean(deal.handoff?.product) ||
         (deal.orders ?? []).some((order) => order.deliveryStartMode === 'EARLY_START'),
-      hint: 'Product or extension appears after Won or early delivery start',
+      hint: t('dealSheet.handoff.deliveryHint'),
     },
   ];
 }
@@ -143,6 +153,7 @@ function ReadinessRow({ item }: { item: ReadinessItem }) {
 }
 
 export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
+  const t = useTranslations('crm');
   const handoff = deal.handoff;
   const project = handoff?.project ?? null;
   const product = handoff?.product ?? null;
@@ -150,7 +161,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
   const maintenanceDeal = handoff?.maintenanceDeal ?? null;
   if (!shouldShowHandoffPanel(deal)) return null;
 
-  const readinessItems = getReadinessItems(deal);
+  const readinessItems = getReadinessItems(deal, t);
   const projectHref = project ? `/projects/${project.id}` : null;
   const productHref = project && product ? `/projects/${project.id}/products/${product.id}` : null;
   const subscriptionHref = subscription
@@ -161,7 +172,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
     <section className={DETAIL_SHEET_SECTION_SURFACE_CLASS}>
       <h4 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>
         <ShieldCheck size={12} />
-        Handoff
+        {t('dealSheet.handoff.title')}
       </h4>
 
       <div className="space-y-2">
@@ -178,7 +189,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
           </Link>
         ) : (
           <p className="text-muted-foreground border-border rounded-lg border border-dashed px-3 py-2 text-xs">
-            Link a project in Deal &amp; project, or it will be created when delivery starts.
+            {t('dealSheet.handoff.emptyProject')}
           </p>
         )}
 
@@ -195,7 +206,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
           </Link>
         ) : (
           <p className="text-muted-foreground border-border rounded-lg border border-dashed px-3 py-2 text-xs">
-            Product link is missing or not applicable yet.
+            {t('dealSheet.handoff.emptyProduct')}
           </p>
         )}
 
@@ -214,7 +225,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
           </Link>
         ) : (
           <p className="text-muted-foreground border-border rounded-lg border border-dashed px-3 py-2 text-xs">
-            Subscription link is missing or not applicable for this deal.
+            {t('dealSheet.handoff.emptySubscription')}
           </p>
         )}
 
@@ -225,13 +236,15 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
             className="w-full justify-between text-xs"
             onClick={() => onOpenDeal?.(maintenanceDeal.id)}
           >
-            <span className="truncate">Open {maintenanceDeal.code}</span>
+            <span className="truncate">
+              {t('dealSheet.handoff.openMaintenance', { code: maintenanceDeal.code })}
+            </span>
             <ExternalLink className="size-3.5" />
           </Button>
         ) : (
           deal.type === 'PRODUCT' && (
             <p className="text-muted-foreground border-border rounded-lg border border-dashed px-3 py-2 text-xs">
-              Maintenance Deal is created after the Product handoff runs.
+              {t('dealSheet.handoff.maintenancePending')}
             </p>
           )
         )}
@@ -239,7 +252,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
 
       <div className="mt-4 space-y-2">
         <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-          Readiness
+          {t('dealSheet.handoff.readiness')}
         </p>
         {readinessItems.map((item) => (
           <ReadinessRow key={item.label} item={item} />

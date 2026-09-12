@@ -1,6 +1,7 @@
 'use client';
 
 import { Check } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import {
   classifyCoverageMonth,
@@ -10,11 +11,11 @@ import {
   type CoverageMonthKind,
 } from '@/features/finance/utils/subscription-invoice-months';
 
-const KIND_LABEL: Record<CoverageMonthKind, string> = {
-  past: 'Past',
-  current: 'Current',
-  future: 'Future',
-};
+const KIND_MESSAGE_KEYS = {
+  past: 'createSubscription.kindPast',
+  current: 'createSubscription.kindCurrent',
+  future: 'createSubscription.kindFuture',
+} as const;
 
 export function CoverageMonthTile({
   monthKey,
@@ -31,15 +32,17 @@ export function CoverageMonthTile({
   disabled: boolean;
   onToggle: (monthKey: string) => void;
 }) {
+  const t = useTranslations('invoices');
+  const locale = useLocale();
   const kind = classifyCoverageMonth(monthKey);
   const rowDisabled = disabled || blocked || (!checked && !canAddMonth);
-  const name = formatSubscriptionInvoiceMonthName(monthKey);
+  const name = formatSubscriptionInvoiceMonthName(monthKey, locale);
   const year = formatSubscriptionInvoiceMonthYear(monthKey);
   return (
     <button
       type="button"
       aria-pressed={checked}
-      aria-label={formatSubscriptionInvoiceMonthLabel(monthKey)}
+      aria-label={formatSubscriptionInvoiceMonthLabel(monthKey, locale)}
       disabled={rowDisabled}
       onClick={() => onToggle(monthKey)}
       className={cn(
@@ -51,7 +54,7 @@ export function CoverageMonthTile({
     >
       <TileCheckmark checked={checked} />
       <span className={cn('text-xs font-medium tracking-wide uppercase', kindLabelClass(kind))}>
-        {KIND_LABEL[kind]}
+        {t(KIND_MESSAGE_KEYS[kind])}
       </span>
       <span className="text-foreground mt-1 text-base leading-tight font-semibold">{name}</span>
       <span className="text-muted-foreground mt-0.5 text-sm tabular-nums">{year}</span>

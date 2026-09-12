@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { employeeDisplayName } from '@/features/finance/components/payroll/salary-board-entries';
 import {
@@ -90,11 +91,12 @@ export function SalaryBoardCalendarDesktopGrid({
   const sidebarCollapsed = useAppSidebarCollapsed();
   const preferFullTotal = useFinanceCalendarPreferFullTotal(sidebarCollapsed);
   const totalColClass = financeCalendarTotalColClass(preferFullTotal);
+  const t = useTranslations('payroll');
 
   return (
     <div
       className={FINANCE_CALENDAR_SCROLL_SHELL_CLASS}
-      aria-label={`Salary calendar ${calendarYear}`}
+      aria-label={t('salary.calendarAria', { year: calendarYear })}
     >
       <table className="w-full table-fixed border-collapse text-sm">
         <colgroup>
@@ -108,7 +110,9 @@ export function SalaryBoardCalendarDesktopGrid({
           <tr className={STICKY_SURFACE_CLASS}>
             <th className={cn(STICKY_EMPLOYEE_HEADER_CLASS, 'py-2 normal-case')}>
               <div className={FINANCE_CALENDAR_LABEL_HEADER_INNER_CLASS}>
-                <span className="text-[10px] font-semibold tracking-wide uppercase">Employee</span>
+                <span className="text-[10px] font-semibold tracking-wide uppercase">
+                  {t('salary.employee')}
+                </span>
                 <FinanceCalendarYearControl
                   year={calendarYear}
                   onYearChange={onCalendarYearChange}
@@ -123,7 +127,7 @@ export function SalaryBoardCalendarDesktopGrid({
               </th>
             ))}
             <th className={cn(STICKY_TOTAL_HEADER_CLASS, STICKY_SURFACE_CLASS, totalColClass)}>
-              Total
+              {t('salary.total')}
             </th>
           </tr>
         </thead>
@@ -182,7 +186,7 @@ export function SalaryBoardCalendarDesktopGrid({
                 SALARY_CALENDAR_EMPLOYEE_COL_CLASS,
               )}
             >
-              Month total
+              {t('salary.monthTotal')}
             </td>
             {data.columns.map((col, idx) => {
               const columnTotal = sumSalaryBoardColumn(rows, idx);
