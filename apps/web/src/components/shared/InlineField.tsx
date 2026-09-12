@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { Check, X, Pencil } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -99,6 +100,8 @@ function InlineFieldUncontrolled({
   className,
   clearable = false,
 }: InlineFieldInlineProps) {
+  const tForms = useTranslations('forms');
+  const datePlaceholder = placeholder ?? tForms('datePicker.selectDate');
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [saving, setSaving] = useState(false);
@@ -251,7 +254,7 @@ function InlineFieldUncontrolled({
             <NbosDatePicker
               value={editValue}
               onChange={setEditValue}
-              placeholder={placeholder ?? 'Select date…'}
+              placeholder={datePlaceholder}
               className="min-w-0 flex-1"
               aria-label={label}
             />

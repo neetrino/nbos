@@ -26,5 +26,17 @@
     "remove": "Remove",
     "uploading": "Uploading…",
     "previewAlt": "{slot} wallpaper preview"
+  },
+  "sheet": {
+    "closePanel": "Close panel",
+    "back": "Back",
+    "copyLink": "Copy link",
+    "copyPageLink": "Copy page link",
+    "linkCopied": "Link copied",
+    "copyFailed": "Could not copy link",
+    "open": "Open",
+    "openRecord": "Open record in new tab",
+    "openWorkspace": "Open workspace in new tab",
+    "dashboard": "Dashboard"
   }
 }

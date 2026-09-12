@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
@@ -96,6 +97,8 @@ export function ControlledInlineField({
   selectContentClassName,
   displayValue,
 }: ControlledInlineFieldProps) {
+  const tForms = useTranslations('forms');
+  const datePlaceholder = placeholder ?? tForms('datePicker.selectDate');
   const str = value != null && value !== '' ? String(value) : '';
   const showClear = clearable && str !== '' && !disabled;
   const showOutlinedLabel = !hideLabel && Boolean(label.trim());
@@ -240,7 +243,7 @@ export function ControlledInlineField({
                 alwaysShowYear={datePickerAlwaysShowYear}
                 disabled={disabled}
                 clearable={clearable}
-                placeholder={placeholder ?? 'Select date…'}
+                placeholder={datePlaceholder}
                 embedded
                 className="flex w-full min-w-0 flex-1"
                 aria-label={label}
@@ -259,7 +262,7 @@ export function ControlledInlineField({
               alwaysShowYear={datePickerAlwaysShowYear}
               disabled={disabled}
               clearable={clearable}
-              placeholder={placeholder ?? 'Select date…'}
+              placeholder={datePlaceholder}
               embedded
               className="flex w-full min-w-0 flex-1"
               aria-label={label}

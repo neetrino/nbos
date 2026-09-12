@@ -5,6 +5,7 @@ import { ExternalLink, LayoutDashboard, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useSheetChromeCopy } from './use-sheet-chrome-copy';
 
 /** Shared rail control base (Copy / Open / Dashboard — seam-attached half-pill). */
 const ENTITY_SHEET_FLOATING_RAIL_CONTROL_BASE_CLASS =
@@ -40,12 +41,13 @@ export function EntitySheetFloatingRail({
   workspaceHref,
   trailing,
 }: EntitySheetFloatingRailProps) {
+  const copy = useSheetChromeCopy();
   const handleCopyPageLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      toast.success('Link copied');
+      toast.success(copy.linkCopied);
     } catch {
-      toast.error('Could not copy link');
+      toast.error(copy.copyFailed);
     }
   };
 
@@ -63,25 +65,25 @@ export function EntitySheetFloatingRail({
         variant="default"
         size="icon"
         className={cn(ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS)}
-        aria-label="Copy page link"
-        title="Copy link"
+        aria-label={copy.copyPageLink}
+        title={copy.copyLink}
         onClick={() => void handleCopyPageLink()}
       >
         <Link2 className="size-4" aria-hidden />
-        <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Copy link</span>
+        <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>{copy.copyLink}</span>
       </Button>
       <Button
         type="button"
         variant="default"
         size="icon"
         className={cn(ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS)}
-        aria-label="Open record in new tab"
-        title="Open"
+        aria-label={copy.openRecord}
+        title={copy.open}
         onClick={() => openHref(sourcePageHref)}
         disabled={!sourcePageHref || sourcePageHref === '#'}
       >
         <ExternalLink className="size-4" aria-hidden />
-        <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Open</span>
+        <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>{copy.open}</span>
       </Button>
       {showWorkspace && workspaceHref ? (
         <Button
@@ -89,12 +91,12 @@ export function EntitySheetFloatingRail({
           variant="default"
           size="icon"
           className={cn(ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS)}
-          aria-label="Open workspace in new tab"
-          title="Dashboard"
+          aria-label={copy.openWorkspace}
+          title={copy.dashboard}
           onClick={() => openHref(workspaceHref)}
         >
           <LayoutDashboard className="size-4" aria-hidden />
-          <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Dashboard</span>
+          <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>{copy.dashboard}</span>
         </Button>
       ) : null}
       {trailing}

@@ -1,6 +1,7 @@
 'use client';
 
 import { FolderKanban, Layers, LayoutGrid, Plus, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
   DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS,
@@ -20,8 +21,9 @@ export const TASK_LINKED_TO_LABEL = 'Linked to';
 export const TASK_LINKED_TO_PLACEHOLDER = 'Link project, product or work space…';
 
 export function LinkedToNotchCaption({ locked, onAdd }: { locked: boolean; onAdd: () => void }) {
+  const t = useTranslations('tasks');
   if (locked) {
-    return <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{TASK_LINKED_TO_LABEL}</span>;
+    return <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{t('sheet.linked.label')}</span>;
   }
 
   return (
@@ -29,10 +31,10 @@ export function LinkedToNotchCaption({ locked, onAdd }: { locked: boolean; onAdd
       type="button"
       onClick={onAdd}
       className={DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS}
-      aria-label={TASK_LINKED_TO_PLACEHOLDER}
+      aria-label={t('sheet.linked.placeholder')}
     >
       <Plus size={12} aria-hidden className={DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS} />
-      {TASK_LINKED_TO_LABEL}
+      {t('sheet.linked.label')}
     </button>
   );
 }
@@ -52,6 +54,7 @@ export function LinkedContextChip({
   onOpen: () => void;
   onUnlink: () => void;
 }) {
+  const t = useTranslations('tasks');
   const Icon = kind === 'PRODUCT' ? Layers : kind === 'WORK_SPACE' ? LayoutGrid : FolderKanban;
 
   return (
@@ -61,7 +64,7 @@ export function LinkedContextChip({
           type="button"
           onClick={onOpen}
           className={cn(RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS, 'flex shrink-0 items-center')}
-          aria-label={`Open ${label}`}
+          aria-label={t('sheet.linked.openAria', { label })}
         >
           <Icon size={16} className={RELATION_PICKER_ENTITY_ICON_INLINE_CLASS} aria-hidden />
         </button>
@@ -69,7 +72,7 @@ export function LinkedContextChip({
           type="button"
           onClick={onOpen}
           className={cn(RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS, 'min-w-0 flex-1 text-left')}
-          aria-label={`Open ${label}`}
+          aria-label={t('sheet.linked.openAria', { label })}
         >
           <span className="block w-full min-w-0">
             {contextLabel ? (
@@ -84,8 +87,8 @@ export function LinkedContextChip({
           type="button"
           onClick={onUnlink}
           className={cn(DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS, 'shrink-0')}
-          title="Unlink"
-          aria-label={`Unlink ${label}`}
+          title={t('sheet.linked.unlink')}
+          aria-label={t('sheet.linked.unlinkAria', { label })}
         >
           <X size={14} />
         </button>

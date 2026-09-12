@@ -134,7 +134,66 @@
     "created": "Created",
     "copyCode": "Copy task code",
     "resizeAria": "Resize task detail and chat",
-    "resizeDrag": "Drag to resize"
+    "resizeDrag": "Drag to resize",
+    "chat": {
+      "participants": "{count, plural, one {# participant} other {# participants}}",
+      "addNote": "Add a note…",
+      "createdBy": "Created by {name}",
+      "lastUpdate": "Last update on the card",
+      "completed": "Task marked completed",
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "checklist": {
+      "new": "New checklist",
+      "addItem": "Add item",
+      "itemPlaceholder": "Item",
+      "titleAria": "Checklist title",
+      "itemAria": "Checklist item",
+      "actionsAria": "Checklist actions",
+      "more": "More",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "expandAria": "Expand checklist",
+      "collapseAria": "Collapse checklist",
+      "showCompleted": "Show completed",
+      "hideCompleted": "Hide completed",
+      "delete": "Delete",
+      "deleteItem": "Delete item",
+      "progress": "{done}/{total} done"
+    },
+    "linked": {
+      "label": "Linked to",
+      "placeholder": "Link project, product or work space…",
+      "unlink": "Unlink",
+      "unlinkAria": "Unlink {label}",
+      "openAria": "Open {label}",
+      "openEntity": "Open linked entity",
+      "sectionAria": "Linked entities",
+      "productOpenFailed": "Product could not be opened.",
+      "noPage": "No page for this linked entity yet.",
+      "workspaceUpdateFailed": "Could not update work space.",
+      "linkFailed": "Could not link entity.",
+      "unlinkFailed": "Could not unlink entity."
+    },
+    "entity": {
+      "PROJECT": "Project",
+      "PRODUCT": "Product",
+      "EXTENSION": "Extension",
+      "ORDER": "Order",
+      "DEAL": "Deal",
+      "LEAD": "Lead",
+      "INVOICE": "Invoice",
+      "SUPPORT_TICKET": "Ticket",
+      "WORK_SPACE": "Work Space"
+    },
+    "files": {
+      "emptyHint": "You can drag a file here or click + to browse",
+      "unlinked": "Unlinked — file stays in the task folder on Drive",
+      "unlinkFailed": "Could not unlink file",
+      "trashed": "File moved to Trash and unlinked from task",
+      "trashFailed": "Could not move file to Trash"
+    }
   },
   "pipeline": {
     "OPEN": "Open",

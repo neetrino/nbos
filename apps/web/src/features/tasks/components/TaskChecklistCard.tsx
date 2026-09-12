@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ChevronUp, Eye, EyeOff, ListChecks, MoreHorizontal, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -14,7 +15,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import type { Task, TaskChecklistItem } from '@/lib/api/tasks';
-import { checklistProgressLabel, visibleChecklistItems } from './task-checklist-helpers';
+import { visibleChecklistItems } from './task-checklist-helpers';
 import { TaskChecklistInlineAdd } from './TaskChecklistInlineAdd';
 import { TaskChecklistInlineText } from './TaskChecklistInlineText';
 
@@ -48,6 +49,7 @@ export function TaskChecklistCard({
   onRenameItem,
   disabled = false,
 }: TaskChecklistCardProps) {
+  const t = useTranslations('tasks');
   const [collapsed, setCollapsed] = useState(false);
   const [hideCompleted, setHideCompleted] = useState(false);
   const done = checklist.items.filter((item) => item.checked).length;
@@ -90,8 +92,8 @@ export function TaskChecklistCard({
           ) : null}
           {disabled ? null : (
             <TaskChecklistInlineAdd
-              label="Add item"
-              placeholder="Item"
+              label={t('sheet.checklist.addItem')}
+              placeholder={t('sheet.checklist.itemPlaceholder')}
               value={newItemText}
               autoStart={autoStartItem}
               stayOpenOnSubmit
@@ -130,6 +132,7 @@ function ChecklistHeader({
   onRenameTitle,
   disabled,
 }: ChecklistHeaderProps) {
+  const t = useTranslations('tasks');
   return (
     <div className="flex items-start gap-2">
       <ListChecks size={16} className="text-primary mt-0.5 shrink-0" aria-hidden />
@@ -137,13 +140,13 @@ function ChecklistHeader({
         <TaskChecklistInlineText
           value={title}
           onCommit={onRenameTitle}
-          ariaLabel="Checklist title"
+          ariaLabel={t('sheet.checklist.titleAria')}
           disabled={disabled}
           className="text-sm font-medium"
         />
         {total > 0 ? (
           <p className="text-muted-foreground mt-0.5 text-xs">
-            {checklistProgressLabel(done, total)}
+            {t('sheet.checklist.progress', { done, total })}
           </p>
         ) : null}
       </div>
@@ -158,8 +161,8 @@ function ChecklistHeader({
         type="button"
         className={HEADER_ICON_BTN_CLASS}
         aria-expanded={!collapsed}
-        aria-label={collapsed ? 'Expand checklist' : 'Collapse checklist'}
-        title={collapsed ? 'Expand' : 'Collapse'}
+        aria-label={collapsed ? t('sheet.checklist.expandAria') : t('sheet.checklist.collapseAria')}
+        title={collapsed ? t('sheet.checklist.expand') : t('sheet.checklist.collapse')}
         onClick={onToggleCollapsed}
       >
         <ChevronUp
@@ -181,6 +184,7 @@ function ChecklistMenu({
   onHideCompleted: () => void;
   onDelete: () => void;
 }) {
+  const t = useTranslations('tasks');
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -190,8 +194,8 @@ function ChecklistMenu({
             type="button"
             variant="ghost"
             size="icon-xs"
-            aria-label="Checklist actions"
-            title="More"
+            aria-label={t('sheet.checklist.actionsAria')}
+            title={t('sheet.checklist.more')}
             className={cn(HEADER_ICON_BTN_CLASS, props.className)}
           >
             <MoreHorizontal size={16} aria-hidden />
@@ -200,12 +204,12 @@ function ChecklistMenu({
       />
       <DropdownMenuContent align="end" className="min-w-[13rem]">
         <DropdownMenuItem className="justify-between" onClick={onHideCompleted}>
-          {hideCompleted ? 'Show completed' : 'Hide completed'}
+          {hideCompleted ? t('sheet.checklist.showCompleted') : t('sheet.checklist.hideCompleted')}
           {hideCompleted ? <Eye size={14} aria-hidden /> : <EyeOff size={14} aria-hidden />}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" className="justify-between" onClick={onDelete}>
-          Delete
+          {t('sheet.checklist.delete')}
           <Trash2 size={14} aria-hidden />
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -226,6 +230,7 @@ function ChecklistItem({
   onDeleteItem: (itemId: string) => void;
   onRenameItem: (itemId: string, text: string) => Promise<void>;
 }) {
+  const t = useTranslations('tasks');
   return (
     <div className="group hover:bg-muted/60 flex items-center gap-2 rounded-md px-0.5 py-1">
       <Checkbox
@@ -236,7 +241,7 @@ function ChecklistItem({
       <TaskChecklistInlineText
         value={item.text}
         onCommit={(text) => onRenameItem(item.id, text)}
-        ariaLabel="Checklist item"
+        ariaLabel={t('sheet.checklist.itemAria')}
         disabled={disabled}
         strike={item.checked}
         className="min-w-0 flex-1 text-sm"
@@ -247,7 +252,7 @@ function ChecklistItem({
           size="icon-xs"
           variant="ghost"
           className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-          title="Delete item"
+          title={t('sheet.checklist.deleteItem')}
           onClick={() => onDeleteItem(item.id)}
         >
           <Trash2 size={12} />

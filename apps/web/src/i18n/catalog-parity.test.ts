@@ -74,5 +74,13 @@ describe('completed i18n catalogs', () => {
     expect(ruNotifications.relative.minutesAgo).toContain('count');
     expect(enNotifications.center.channels).toContain('{list}');
     expect(ruNotifications.center.channels).toContain('{list}');
+    expect(enTasks.sheet.chat.participants).toContain('count');
+    expect(ruTasks.sheet.chat.participants).toContain('count');
+    expect(enTasks.sheet.chat.createdBy).toContain('{name}');
+    expect(ruTasks.sheet.chat.createdBy).toContain('{name}');
+    expect(enTasks.sheet.checklist.progress).toContain('{done}');
+    expect(ruTasks.sheet.checklist.progress).toContain('{done}');
+    expect(enTasks.sheet.linked.openAria).toContain('{label}');
+    expect(ruTasks.sheet.linked.openAria).toContain('{label}');
   });
 });
