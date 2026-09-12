@@ -1,0 +1,824 @@
+{
+  "templates": {
+    "everyday-better-than-expected": {
+      "title": "{{firstName}}, may something go better than expected.",
+      "subline": "Even a small, unexpected yes would do."
+    },
+    "everyday-little-surprise": {
+      "title": "Here’s to a good little surprise.",
+      "subline": "A kind message. A favourite song. Something just for you, {{firstName}}."
+    },
+    "everyday-easy-thing": {
+      "title": "{{firstName}}, may one thing be easier than expected.",
+      "subline": "A small favour from the day."
+    },
+    "everyday-pleasant-detour": {
+      "title": "{{firstName}}, here’s to a pleasant detour.",
+      "subline": "Sometimes the unplanned bit makes the best story."
+    },
+    "everyday-new-favourite": {
+      "title": "{{firstName}}, perhaps today brings a new favourite.",
+      "subline": "A song, a place, or something you weren’t looking for."
+    },
+    "everyday-looking-forward": {
+      "title": "Here’s to having something to look forward to.",
+      "subline": "Something small is more than enough, {{firstName}}."
+    },
+    "everyday-idea": {
+      "title": "May your best idea arrive without a struggle.",
+      "subline": "Preferably while the coffee is still warm, {{firstName}}."
+    },
+    "everyday-click": {
+      "title": "{{firstName}}, here’s to something finally making sense.",
+      "subline": "That lovely moment when the pieces fit."
+    },
+    "everyday-fresh-thought": {
+      "title": "{{firstName}}, hope a fresh thought finds you today.",
+      "subline": "Perhaps from somewhere you wouldn’t normally look."
+    },
+    "everyday-right-words": {
+      "title": "Here’s to finding just the right words.",
+      "subline": "And someone who understands what you mean, {{firstName}}."
+    },
+    "everyday-good-conversation": {
+      "title": "Hope a good conversation finds you today.",
+      "subline": "One that leaves you with something to think about, {{firstName}}."
+    },
+    "everyday-good-story": {
+      "title": "{{firstName}}, hope today gives you a good story.",
+      "subline": "The kind you want to tell someone later."
+    },
+    "everyday-kindness": {
+      "title": "A little unexpected kindness would be nice today.",
+      "subline": "Hope some finds its way to you, {{firstName}}."
+    },
+    "everyday-small-pleasure": {
+      "title": "{{firstName}}, hope there’s something lovely in the ordinary.",
+      "subline": "A good lunch counts. So does an unexpectedly good song."
+    },
+    "everyday-laugh": {
+      "title": "Hope something makes you laugh today, {{firstName}}.",
+      "subline": "The sort of laugh that’s hard to explain afterwards."
+    },
+    "everyday-music": {
+      "title": "Hope today comes with a good soundtrack.",
+      "subline": "And at least one song worth playing twice, {{firstName}}."
+    },
+    "everyday-quiet-yes": {
+      "title": "Some good news would be lovely, {{firstName}}.",
+      "subline": "Especially the kind you weren’t expecting to hear."
+    },
+    "everyday-window": {
+      "title": "{{firstName}}, wishing you a day with something to discover.",
+      "subline": "A place nearby that you’ve walked past a hundred times, perhaps."
+    },
+    "everyday-soft-landing": {
+      "title": "A familiar face can make a day, {{firstName}}.",
+      "subline": "Hope you get to see someone you’re always happy to meet."
+    },
+    "everyday-second-look": {
+      "title": "{{firstName}}, hope you notice something you like today.",
+      "subline": "A detail you’ve missed before, right there in the everyday."
+    },
+    "everyday-shared-joke": {
+      "title": "Here’s to laughing at the same thing, {{firstName}}.",
+      "subline": "Even when neither of you can quite explain why."
+    },
+    "everyday-warm-plate": {
+      "title": "{{firstName}}, hope lunch is worth looking forward to.",
+      "subline": "Something delicious would make a very welcome highlight."
+    },
+    "everyday-clear-sentence": {
+      "title": "Wishing you an answer that clears things up.",
+      "subline": "A simple explanation can be such a relief, {{firstName}}."
+    },
+    "everyday-unfinished-song": {
+      "title": "{{firstName}}, hope a tune follows you around.",
+      "subline": "The pleasant kind you do not mind humming twice."
+    },
+    "everyday-tiny-win": {
+      "title": "A small stroke of luck for you, {{firstName}}.",
+      "subline": "Finding exactly what you need, just when you need it."
+    },
+    "everyday-good-timing": {
+      "title": "{{firstName}}, here’s to unusually good timing.",
+      "subline": "Arriving just as the queue gets shorter would be a start."
+    },
+    "everyday-honest-chat": {
+      "title": "{{firstName}}, hope someone shares a good recommendation.",
+      "subline": "The sort you’re glad you took a chance on."
+    },
+    "everyday-page-turns": {
+      "title": "Something worth reading would be nice today.",
+      "subline": "Hope you find a story you want to stay with, {{firstName}}."
+    },
+    "everyday-light-pocket": {
+      "title": "{{firstName}}, hope you find a little treat today.",
+      "subline": "Perhaps something from that bakery you keep walking past."
+    },
+    "everyday-gentle-weather": {
+      "title": "{{firstName}}, wishing you a day that goes smoothly.",
+      "subline": "A few things falling into place would be lovely."
+    },
+    "everyday-better-question": {
+      "title": "Here’s to a question that gets you curious.",
+      "subline": "The answer might take you somewhere interesting, {{firstName}}."
+    },
+    "everyday-old-favourite": {
+      "title": "{{firstName}}, here’s to an old favourite returning.",
+      "subline": "The song or snack you forgot you missed."
+    },
+    "everyday-unexpected-colour": {
+      "title": "{{firstName}}, hope something catches your eye today.",
+      "subline": "A lovely colour combination or a particularly good shop window."
+    },
+    "everyday-two-minutes": {
+      "title": "Here’s to two unhurried minutes.",
+      "subline": "Long enough for the first sip to count, {{firstName}}."
+    },
+    "everyday-kind-mirror": {
+      "title": "{{firstName}}, may someone meet you kindly today.",
+      "subline": "Even a small, ordinary courtesy would do."
+    },
+    "everyday-map-unfolds": {
+      "title": "A new place to try, {{firstName}}?",
+      "subline": "Hope you find somewhere you’d happily go back to."
+    },
+    "everyday-name-remembered": {
+      "title": "It’s lovely when someone remembers you, {{firstName}}.",
+      "subline": "Wishing you a warm welcome somewhere today."
+    },
+    "everyday-clean-thought": {
+      "title": "{{firstName}}, wishing you one of those ‘of course!’ moments.",
+      "subline": "When an idea suddenly seems much simpler than it did."
+    },
+    "everyday-shared-silence": {
+      "title": "{{firstName}}, here’s to feeling comfortable in good company.",
+      "subline": "Whether the conversation flows or you just enjoy being there."
+    },
+    "everyday-street-music": {
+      "title": "Hope you hear something you want to save.",
+      "subline": "An unexpected song in a café can do that, {{firstName}}."
+    },
+    "everyday-good-crumb": {
+      "title": "{{firstName}}, wishing you a delicious little discovery.",
+      "subline": "Something you’d order again before you’ve even finished it."
+    },
+    "everyday-story-seed": {
+      "title": "Hope someone tells you a story worth hearing.",
+      "subline": "One you’re still thinking about on the way home, {{firstName}}."
+    },
+    "everyday-right-tool": {
+      "title": "{{firstName}}, hope a useful little tip finds you.",
+      "subline": "The kind that makes you wonder why nobody mentioned it before."
+    },
+    "everyday-open-window": {
+      "title": "Here’s to finding something interesting by chance.",
+      "subline": "One link leading to a very good read, perhaps, {{firstName}}."
+    },
+    "everyday-warm-hello": {
+      "title": "{{firstName}}, hope you hear from someone you’ve missed.",
+      "subline": "Even a quick hello can make the distance feel smaller."
+    },
+    "everyday-half-smile": {
+      "title": "A very silly joke might be just the thing.",
+      "subline": "Hope someone has a good one for you, {{firstName}}."
+    },
+    "everyday-fresh-air": {
+      "title": "{{firstName}}, wishing you a pleasant moment outdoors.",
+      "subline": "A little change of scenery can be lovely."
+    },
+    "everyday-puzzle-click": {
+      "title": "Hope you remember that thing you nearly had.",
+      "subline": "The name, the word, the tune — there it is, {{firstName}}."
+    },
+    "everyday-good-company": {
+      "title": "{{firstName}}, here’s to people you can be yourself around.",
+      "subline": "Hope there’s a chance for a proper catch-up."
+    },
+    "everyday-saved-song": {
+      "title": "An old playlist might have a surprise for you.",
+      "subline": "Hope you rediscover a song you still love, {{firstName}}."
+    },
+    "everyday-small-invite": {
+      "title": "{{firstName}}, hope a lovely invitation comes your way.",
+      "subline": "Something that makes you think, ‘Yes, that sounds good.’"
+    },
+    "everyday-lost-and-found": {
+      "title": "Here’s to finding something you thought you’d lost.",
+      "subline": "Especially if it turns up in the first place you look, {{firstName}}."
+    },
+    "everyday-neat-ending": {
+      "title": "{{firstName}}, wishing you a satisfying answer today.",
+      "subline": "The kind that leaves you with one less thing to wonder about."
+    },
+    "everyday-kind-weather-inside": {
+      "title": "Hope you meet a little patience today, {{firstName}}.",
+      "subline": "Someone taking the time to listen can make a difference."
+    },
+    "everyday-new-route": {
+      "title": "{{firstName}}, here’s to a slightly different route.",
+      "subline": "Same destination, better scenery."
+    },
+    "everyday-notebook": {
+      "title": "Hope you come across an idea worth keeping.",
+      "subline": "Something you’ll be glad you wrote down, {{firstName}}."
+    },
+    "everyday-shared-table": {
+      "title": "{{firstName}}, here’s to a meal with good conversation.",
+      "subline": "The sort where you’re happy to stay a little longer."
+    },
+    "everyday-light-remark": {
+      "title": "Hope someone makes you smile with one sentence.",
+      "subline": "A perfectly timed comment can do a lot, {{firstName}}."
+    },
+    "everyday-hidden-door": {
+      "title": "{{firstName}}, there might be a new favourite nearby.",
+      "subline": "Hope you find a little place that feels like a good discovery."
+    },
+    "everyday-steady-hand": {
+      "title": "Wishing you a helping hand when it’s useful.",
+      "subline": "Someone who knows just where to start, {{firstName}}."
+    },
+    "everyday-bright-object": {
+      "title": "{{firstName}}, hope you spot something worth a photo.",
+      "subline": "Even if you only keep it for yourself."
+    },
+    "everyday-good-pause": {
+      "title": "A moment to enjoy the view would be nice.",
+      "subline": "Hope there’s a good one somewhere in your day, {{firstName}}."
+    },
+    "everyday-echo": {
+      "title": "{{firstName}}, hope you feel understood today.",
+      "subline": "It’s lovely when someone knows exactly what you mean."
+    },
+    "everyday-later-smile": {
+      "title": "Here’s to a moment you’ll smile about later.",
+      "subline": "Something worth remembering from an otherwise ordinary day, {{firstName}}."
+    },
+    "everyday-first-light": {
+      "title": "{{firstName}}, wishing you something good at the right moment.",
+      "subline": "A little encouragement just when it would be welcome."
+    },
+    "everyday-borrowed-luck": {
+      "title": "Hope the thing you want is still available.",
+      "subline": "The last slice, the right size, the good seat, {{firstName}}."
+    },
+    "everyday-clear-path": {
+      "title": "{{firstName}}, may a decision turn out to be easy.",
+      "subline": "It’s nice when one option simply feels right."
+    },
+    "everyday-warm-mug": {
+      "title": "Wishing you a very good cup of something.",
+      "subline": "Made just the way you like it, {{firstName}}."
+    },
+    "everyday-unread-joy": {
+      "title": "{{firstName}}, hope you find your next good read.",
+      "subline": "Perhaps from someone whose taste you’ve never tried before."
+    },
+    "everyday-easy-yes": {
+      "title": "Hope a plan comes together easily, {{firstName}}.",
+      "subline": "Everyone free on the same day? That would be something."
+    },
+    "everyday-good-margin": {
+      "title": "{{firstName}}, hope there’s time for something you enjoy.",
+      "subline": "A small plan that’s just for you."
+    },
+    "everyday-sharp-joke": {
+      "title": "Wishing you a laugh you can share, {{firstName}}.",
+      "subline": "Something funny enough to send to a friend."
+    },
+    "everyday-found-rhythm": {
+      "title": "{{firstName}}, hope you discover a musician you like.",
+      "subline": "And find out there’s a whole album to explore."
+    },
+    "everyday-kind-edit": {
+      "title": "Hope a message arrives just as you need it.",
+      "subline": "A kind word can stay with you all day, {{firstName}}."
+    },
+    "everyday-nearby-yes": {
+      "title": "{{firstName}}, wishing you something to get excited about.",
+      "subline": "A date in the diary you’ll be glad to see coming."
+    },
+    "everyday-small-ceremony": {
+      "title": "Here’s to enjoying the little rituals, {{firstName}}.",
+      "subline": "A favourite cup or a song on the way home."
+    },
+    "everyday-new-name": {
+      "title": "{{firstName}}, hope you learn something delightfully unexpected.",
+      "subline": "A new word, perhaps, that you’ll want to use straight away."
+    },
+    "everyday-gentle-nudge": {
+      "title": "Here’s to a suggestion you’re glad you heard.",
+      "subline": "Sometimes someone else knows a lovely shortcut, {{firstName}}."
+    },
+    "everyday-bright-aside": {
+      "title": "{{firstName}}, hope an ordinary chat takes a funny turn.",
+      "subline": "Those are often the conversations you remember."
+    },
+    "everyday-open-circle": {
+      "title": "Hope you meet someone you enjoy talking to.",
+      "subline": "Finding a shared interest is a good beginning, {{firstName}}."
+    },
+    "everyday-quiet-spark": {
+      "title": "{{firstName}}, here’s to seeing a familiar thing differently.",
+      "subline": "A fresh perspective can make it interesting all over again."
+    },
+    "everyday-sweet-ordinary": {
+      "title": "Something sweet would be lovely today, {{firstName}}.",
+      "subline": "Hope your favourite is on the menu."
+    },
+    "everyday-next-chapter": {
+      "title": "{{firstName}}, hope a story leaves you wanting more.",
+      "subline": "With a sequel ready whenever you are."
+    },
+    "everyday-good-signal": {
+      "title": "Hope the answer is a happy one, {{firstName}}.",
+      "subline": "Especially if you’ve been looking forward to hearing it."
+    },
+    "everyday-held-door": {
+      "title": "{{firstName}}, here’s to the small kindnesses people notice.",
+      "subline": "A held door, a thoughtful gesture, a friendly hello."
+    },
+    "everyday-late-sun": {
+      "title": "Wishing you a lovely end to the day.",
+      "subline": "Something as simple as a favourite meal, {{firstName}}."
+    },
+    "everyday-curious-turn": {
+      "title": "{{firstName}}, hope you get to ask ‘how does that work?’",
+      "subline": "And hear an explanation that’s worth the question."
+    },
+    "everyday-human-pace": {
+      "title": "Hope a queue moves faster than you expected.",
+      "subline": "A little time back is always welcome, {{firstName}}."
+    },
+    "everyday-found-lyric": {
+      "title": "{{firstName}}, hope a song says it just right.",
+      "subline": "There’s something lovely about finding the words in music."
+    },
+    "everyday-small-return": {
+      "title": "An old favourite might be worth another try.",
+      "subline": "Hope it’s just as good as you remember, {{firstName}}."
+    },
+    "everyday-open-hand": {
+      "title": "{{firstName}}, wishing you a little generosity today.",
+      "subline": "Someone sharing a good idea or the last biscuit."
+    },
+    "everyday-clean-joke": {
+      "title": "Hope you catch a wonderfully funny moment.",
+      "subline": "The completely unplanned kind, {{firstName}}."
+    },
+    "everyday-useful-wonder": {
+      "title": "{{firstName}}, here’s to discovering a new way to do something.",
+      "subline": "Even a tiny improvement can be surprisingly satisfying."
+    },
+    "everyday-quiet-treat": {
+      "title": "Something freshly baked would be a nice surprise.",
+      "subline": "Hope you happen to arrive at the right time, {{firstName}}."
+    },
+    "everyday-good-thread": {
+      "title": "{{firstName}}, hope a conversation carries on a little longer.",
+      "subline": "Because you’re both enjoying where it’s going."
+    },
+    "everyday-evening-note": {
+      "title": "Here’s to a day you’re glad you had.",
+      "subline": "With at least one part you’d happily do again, {{firstName}}."
+    },
+    "spring-new": {
+      "title": "{{firstName}}, here’s to something new this spring.",
+      "subline": "A small discovery you’ll be glad you made."
+    },
+    "spring-room": {
+      "title": "Hope spring brings room for something you enjoy.",
+      "subline": "An old favourite or a new curiosity, {{firstName}}."
+    },
+    "spring-window": {
+      "title": "{{firstName}}, wishing you a lovely spring outing.",
+      "subline": "Somewhere familiar or somewhere you’ve been meaning to try."
+    },
+    "spring-colour": {
+      "title": "A little spring colour would be lovely.",
+      "subline": "Hope you spot something that makes you smile, {{firstName}}."
+    },
+    "spring-return": {
+      "title": "{{firstName}}, hope you rediscover something you enjoy this spring.",
+      "subline": "A favourite walk or a recipe you haven’t made in ages."
+    },
+    "spring-light": {
+      "title": "Here’s to spring evenings with something to enjoy.",
+      "subline": "A little walk after dinner, perhaps, {{firstName}}."
+    },
+    "spring-start": {
+      "title": "{{firstName}}, wishing you a lovely first attempt this spring.",
+      "subline": "At something you’ve wanted to try for a while."
+    },
+    "spring-air": {
+      "title": "A spring picnic could be a good plan.",
+      "subline": "Hope the right day and some good company come together, {{firstName}}."
+    },
+    "spring-curiosity": {
+      "title": "{{firstName}}, hope this spring gives you something to explore.",
+      "subline": "A neighbourhood, a new interest, a different way home."
+    },
+    "spring-green": {
+      "title": "Here’s to the little things growing this spring.",
+      "subline": "Hope there’s something lovely to notice nearby, {{firstName}}."
+    },
+    "spring-plans": {
+      "title": "{{firstName}}, wishing you a spring plan to look forward to.",
+      "subline": "Something simple that you’ll be happy you arranged."
+    },
+    "spring-market": {
+      "title": "Hope you find something delicious this spring.",
+      "subline": "A new ingredient or an old favourite back in season, {{firstName}}."
+    },
+    "spring-letter": {
+      "title": "{{firstName}}, here’s to catching up with someone this spring.",
+      "subline": "And finding you still have plenty to talk about."
+    },
+    "spring-walk": {
+      "title": "Hope a spring walk brings a nice discovery.",
+      "subline": "A little café or a path you haven’t taken before, {{firstName}}."
+    },
+    "spring-fresh": {
+      "title": "{{firstName}}, wishing you a fresh idea this spring.",
+      "subline": "Something you’re curious enough to give a go."
+    },
+    "spring-keep": {
+      "title": "Here’s to one spring thing worth keeping.",
+      "subline": "A habit, a song, a place, {{firstName}}."
+    },
+    "summer-room": {
+      "title": "{{firstName}}, leave a little room for summer.",
+      "subline": "Here’s to long evenings with no particular plan."
+    },
+    "summer-evening": {
+      "title": "Hope there’s a lovely evening ahead, {{firstName}}.",
+      "subline": "The summer kind you’d happily make a little longer."
+    },
+    "summer-flavour": {
+      "title": "{{firstName}}, here’s to a little taste of summer.",
+      "subline": "Something fresh, something cold, something you really like."
+    },
+    "summer-memory": {
+      "title": "Hope this summer gives you a good memory.",
+      "subline": "An ordinary day can become one too, {{firstName}}."
+    },
+    "summer-shade": {
+      "title": "{{firstName}}, here’s to a comfortable spot in the shade.",
+      "subline": "With a good drink and something interesting to read."
+    },
+    "summer-late": {
+      "title": "Hope there’s a summer evening worth lingering over.",
+      "subline": "With a conversation you’re in no hurry to finish, {{firstName}}."
+    },
+    "summer-street": {
+      "title": "{{firstName}}, wishing you a lovely summer discovery.",
+      "subline": "A small café with a table you’d happily stay at."
+    },
+    "summer-cold": {
+      "title": "Hope your next ice cream is a good one.",
+      "subline": "An old favourite or a brave new flavour, {{firstName}}."
+    },
+    "summer-window": {
+      "title": "{{firstName}}, here’s to a good summer playlist.",
+      "subline": "A few songs that will remind you of this season later."
+    },
+    "summer-slow": {
+      "title": "A summer afternoon with no plans sounds lovely.",
+      "subline": "Hope one comes your way, {{firstName}}."
+    },
+    "summer-outside": {
+      "title": "{{firstName}}, hope you enjoy a little time outdoors this summer.",
+      "subline": "A park bench and a pleasant view would do nicely."
+    },
+    "summer-peach": {
+      "title": "Here’s to a flavour that tastes like the season.",
+      "subline": "Ripe, simple, and worth repeating, {{firstName}}."
+    },
+    "summer-light-clothes": {
+      "title": "{{firstName}}, wishing you a few lovely summer plans.",
+      "subline": "The kind that are easy to arrange and hard to forget."
+    },
+    "summer-gather": {
+      "title": "Here’s to a summer meal with good company.",
+      "subline": "Something to share and plenty to talk about, {{firstName}}."
+    },
+    "summer-horizon": {
+      "title": "{{firstName}}, hope you find a view worth stopping for.",
+      "subline": "A little summer memory, even close to home."
+    },
+    "summer-keep": {
+      "title": "Hope you keep one summer thing for later.",
+      "subline": "A photo, a joke, a place, {{firstName}}."
+    },
+    "autumn-favourite": {
+      "title": "{{firstName}}, may this season bring a new favourite.",
+      "subline": "A place, a book, a small habit worth keeping."
+    },
+    "autumn-pages": {
+      "title": "Here’s to a book that draws you in.",
+      "subline": "Something for an autumn evening, {{firstName}} — if that sounds like your kind of plan."
+    },
+    "autumn-colour": {
+      "title": "{{firstName}}, hope autumn brings a little colour.",
+      "subline": "To the everyday things as much as the trees."
+    },
+    "autumn-comfort": {
+      "title": "Here’s to the small comforts of autumn.",
+      "subline": "Whatever yours happen to be, {{firstName}}."
+    },
+    "autumn-lamp": {
+      "title": "{{firstName}}, here’s to a cosy autumn evening.",
+      "subline": "A favourite chair and a good story would be lovely."
+    },
+    "autumn-pocket": {
+      "title": "Hope autumn brings a pleasant little surprise.",
+      "subline": "Finding something in a coat pocket is a good start, {{firstName}}."
+    },
+    "autumn-return": {
+      "title": "{{firstName}}, perhaps there’s a book worth returning to this autumn.",
+      "subline": "Hope it’s even better than you remember."
+    },
+    "autumn-kitchen": {
+      "title": "Wishing you something delicious from the kitchen this autumn.",
+      "subline": "A familiar recipe or a new one that turns out well, {{firstName}}."
+    },
+    "autumn-walk": {
+      "title": "{{firstName}}, hope you enjoy the colours of autumn.",
+      "subline": "A little detour on foot might be worth it."
+    },
+    "autumn-evening": {
+      "title": "Here’s to an autumn evening with a good film.",
+      "subline": "One you’ll be recommending afterwards, {{firstName}}."
+    },
+    "autumn-layer": {
+      "title": "{{firstName}}, wishing you a comfortable start to an autumn day.",
+      "subline": "A favourite jumper and something warm to drink."
+    },
+    "autumn-quiet": {
+      "title": "Hope you find a lovely autumn read, {{firstName}}.",
+      "subline": "Something you’re pleased to pick up again each evening."
+    },
+    "autumn-market": {
+      "title": "{{firstName}}, here’s to a good find at the market.",
+      "subline": "Something seasonal you’ll enjoy bringing home."
+    },
+    "autumn-story": {
+      "title": "An autumn catch-up would be lovely, {{firstName}}.",
+      "subline": "Hope you get to hear what someone’s been up to."
+    },
+    "autumn-gold": {
+      "title": "{{firstName}}, hope this autumn gives you a favourite photo.",
+      "subline": "Something that reminds you of a good day."
+    },
+    "autumn-keep": {
+      "title": "Here’s to an autumn habit you look forward to.",
+      "subline": "A weekly walk or a favourite place for tea, {{firstName}}."
+    },
+    "winter-warmth": {
+      "title": "{{firstName}}, wishing you a little winter warmth.",
+      "subline": "A good meal and good company would be a lovely start."
+    },
+    "winter-bright": {
+      "title": "Hope something brightens your winter day, {{firstName}}.",
+      "subline": "A message from someone you’re always glad to hear from, perhaps."
+    },
+    "winter-table": {
+      "title": "{{firstName}}, wishing you a welcoming table this winter.",
+      "subline": "Something warm to eat and someone good to talk to."
+    },
+    "winter-light": {
+      "title": "Here’s to a comfortable evening indoors, {{firstName}}.",
+      "subline": "With a film you’ve been meaning to watch."
+    },
+    "winter-coat": {
+      "title": "{{firstName}}, hope winter has its little comforts for you.",
+      "subline": "A favourite scarf, a warm room, a familiar voice."
+    },
+    "winter-broth": {
+      "title": "A bowl of something warm sounds good.",
+      "subline": "Hope you find a winter recipe worth making again, {{firstName}}."
+    },
+    "winter-early": {
+      "title": "{{firstName}}, wishing you a winter evening to enjoy.",
+      "subline": "A board game and good company could be a lovely plan."
+    },
+    "winter-message": {
+      "title": "Hope you hear from a friend this winter.",
+      "subline": "A proper catch-up, however far apart you are, {{firstName}}."
+    },
+    "winter-window": {
+      "title": "{{firstName}}, here’s to a little winter daydreaming.",
+      "subline": "Perhaps a place you’d like to visit when the time is right."
+    },
+    "winter-return": {
+      "title": "Coming home to something warm is a winter pleasure.",
+      "subline": "Hope there’s a good cup of tea in it for you, {{firstName}}."
+    },
+    "winter-slow": {
+      "title": "{{firstName}}, hope a good book keeps you company this winter.",
+      "subline": "The sort you look forward to getting back to."
+    },
+    "winter-company": {
+      "title": "Here’s to a winter get-together worth arranging.",
+      "subline": "Even a simple lunch with someone you’ve missed, {{firstName}}."
+    },
+    "winter-citrus": {
+      "title": "{{firstName}}, wishing you a little winter sweetness.",
+      "subline": "A really good mandarin would do nicely."
+    },
+    "winter-quiet": {
+      "title": "Hope you find a winter afternoon to yourself.",
+      "subline": "For a little of whatever you enjoy, {{firstName}}."
+    },
+    "winter-glove": {
+      "title": "{{firstName}}, here’s to a cheerful hello on a winter day.",
+      "subline": "It’s lovely when someone is pleased to see you."
+    },
+    "winter-keep": {
+      "title": "Wishing you a new winter favourite, {{firstName}}.",
+      "subline": "A dish, a film, or somewhere you’ll want to go again."
+    },
+    "birthday-yours": {
+      "title": "{{firstName}}, may today feel unmistakably yours.",
+      "subline": "Happy birthday — with your favourite people and your kind of plans."
+    },
+    "birthday-year": {
+      "title": "Happy birthday, {{firstName}}. Here’s to a lovely year.",
+      "subline": "With good surprises and plenty to look forward to."
+    },
+    "birthday-table": {
+      "title": "{{firstName}}, wishing you a birthday full of your favourites.",
+      "subline": "Good food, lovely company, and plans that suit you."
+    },
+    "birthday-story": {
+      "title": "Happy birthday, {{firstName}}. Hope it’s one to remember.",
+      "subline": "For the lovely moments, both planned and unexpected."
+    },
+    "birthday-memorial-quiet": {
+      "title": "{{firstName}}, wishing you a gentle birthday.",
+      "subline": "A quiet day can still be unmistakably yours."
+    },
+    "birthday-memorial-kind": {
+      "title": "Happy birthday, {{firstName}}. Wishing you a peaceful one.",
+      "subline": "With the people and the pace that suit you."
+    },
+    "first-day-welcome": {
+      "title": "{{firstName}}, it’s good to have you here.",
+      "subline": "Here’s to unfamiliar faces becoming familiar ones."
+    },
+    "first-day-names": {
+      "title": "Welcome, {{firstName}}. It’s lovely to meet you.",
+      "subline": "Wishing you a good first day with the team."
+    },
+    "first-day-corner": {
+      "title": "{{firstName}}, here’s to a good beginning together.",
+      "subline": "Hope your first day brings a few friendly conversations."
+    },
+    "first-day-memorial": {
+      "title": "{{firstName}}, it’s good to have you here.",
+      "subline": "Take the day as it comes. We are glad you arrived."
+    },
+    "anniversary-one": {
+      "title": "A year together, {{firstName}}. Thank you.",
+      "subline": "Happy first work anniversary. It’s good to have you here."
+    },
+    "anniversary-one-quiet": {
+      "title": "{{firstName}}, one year together. Glad you’re here.",
+      "subline": "Happy first work anniversary, and thank you for being part of the team."
+    },
+    "anniversary-one-company": {
+      "title": "A year of good company, {{firstName}}. Thank you.",
+      "subline": "Happy first work anniversary."
+    },
+    "anniversary-many": {
+      "title": "{{years}} years together, {{firstName}}. Thank you.",
+      "subline": "Happy work anniversary. Here’s to good company along the way."
+    },
+    "anniversary-many-kept": {
+      "title": "{{firstName}}, {{years}} years here. That is no small thing.",
+      "subline": "Happy work anniversary — and thank you."
+    },
+    "anniversary-many-along": {
+      "title": "{{firstName}}, thank you for {{years}} years together.",
+      "subline": "Wishing you a happy work anniversary and good things ahead."
+    },
+    "anniversary-memorial": {
+      "title": "{{firstName}}, thank you for being here.",
+      "subline": "A quiet note for a work anniversary. We are glad you are with us."
+    },
+    "onboarding-3": {
+      "title": "{{firstName}}, hope each day feels a little more familiar.",
+      "subline": "A few more names, a few more friendly faces."
+    },
+    "onboarding-3-map": {
+      "title": "{{firstName}}, wishing you a good start with the team.",
+      "subline": "Hope there’s a friendly face whenever you have a question."
+    },
+    "onboarding-3-faces": {
+      "title": "Here’s to getting to know each other, {{firstName}}.",
+      "subline": "Hope your first few days bring some easy conversations."
+    },
+    "onboarding-10": {
+      "title": "Here’s to finding your own way, {{firstName}}.",
+      "subline": "And having someone to ask when you need a hand."
+    },
+    "onboarding-10-ask": {
+      "title": "{{firstName}}, hope you’re finding your feet here.",
+      "subline": "Wishing you helpful answers and people you feel comfortable asking."
+    },
+    "onboarding-10-shape": {
+      "title": "{{firstName}}, it’s good to be getting to know you.",
+      "subline": "Hope the introductions are turning into familiar faces."
+    },
+    "onboarding-21": {
+      "title": "{{firstName}}, hope there have been some good surprises.",
+      "subline": "It’s good to have you as part of the team."
+    },
+    "onboarding-21-team": {
+      "title": "Three weeks with us, {{firstName}}. Glad you’re here.",
+      "subline": "Here’s to more good conversations with the team."
+    },
+    "onboarding-21-keep": {
+      "title": "{{firstName}}, hope it’s starting to feel familiar here.",
+      "subline": "A few people to turn to and a few things to look forward to."
+    },
+    "book-hard-to-leave": {
+      "title": "{{firstName}}, may your next book be hard to put down.",
+      "subline": "It’s World Book Day. Here’s to “just one more page.”"
+    },
+    "book-evening": {
+      "title": "Here’s to a book you’ll want to recommend.",
+      "subline": "World Book Day is a lovely occasion to find one, {{firstName}}."
+    },
+    "book-finds-you": {
+      "title": "{{firstName}}, hope a book finds you at the right time.",
+      "subline": "World Book Day — even one good page would do."
+    },
+    "music-soundtrack": {
+      "title": "{{firstName}}, wishing you a day with a great soundtrack.",
+      "subline": "It’s International Music Day. Hope an old favourite gets a play."
+    },
+    "music-twice": {
+      "title": "Here’s to a song worth playing twice.",
+      "subline": "Happy International Music Day, {{firstName}}. Maybe three times, if it’s that good."
+    },
+    "music-finds-you": {
+      "title": "{{firstName}}, hope you discover a song you love today.",
+      "subline": "A little something to remember International Music Day by."
+    },
+    "new-year-surprises": {
+      "title": "{{firstName}}, here’s to a year with good surprises.",
+      "subline": "Happy New Year. Hope there’s plenty in it for you."
+    },
+    "new-year-pages": {
+      "title": "Happy New Year, {{firstName}}. Here’s to good things ahead.",
+      "subline": "New places to discover and familiar people to enjoy them with."
+    },
+    "new-year-kind": {
+      "title": "{{firstName}}, wishing you a year with plenty of happy moments.",
+      "subline": "Happy New Year. Hope it gives you some lovely memories."
+    },
+    "new-year-eve-close": {
+      "title": "{{firstName}}, wishing you a lovely end to the year.",
+      "subline": "And something to look forward to in the next one."
+    },
+    "new-year-eve-light": {
+      "title": "One last day of the year, {{firstName}}.",
+      "subline": "Hope there’s still a pleasant surprise in it for you."
+    },
+    "new-year-eve-forward": {
+      "title": "{{firstName}}, here’s to welcoming a new year.",
+      "subline": "Wishing you a good evening, whatever your plans."
+    },
+    "independence-quiet": {
+      "title": "{{firstName}}, wishing you a lovely Independence Day.",
+      "subline": "Hope there’s time for something you enjoy today."
+    },
+    "independence-company": {
+      "title": "Here’s to good company this Independence Day, {{firstName}}.",
+      "subline": "A shared meal or a friendly conversation would be lovely."
+    },
+    "independence-here": {
+      "title": "{{firstName}}, warm wishes for Independence Day.",
+      "subline": "Hope the day brings a few moments you’ll be glad to remember."
+    },
+    "memorial-peaceful": {
+      "title": "Wishing you a peaceful day, {{firstName}}.",
+      "subline": "A little room for what matters to you."
+    },
+    "memorial-room": {
+      "title": "{{firstName}}, wishing you a peaceful day ahead.",
+      "subline": "With time for the people and things that matter to you."
+    },
+    "memorial-plain": {
+      "title": "Wishing you a quiet moment today.",
+      "subline": "And a little space for what matters most."
+    },
+    "fallback-peaceful": {
+      "title": "Wishing you a peaceful day.",
+      "subline": "A little room for what matters to you."
+    }
+  }
+}

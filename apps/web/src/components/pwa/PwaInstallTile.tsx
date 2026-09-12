@@ -1,17 +1,13 @@
 'use client';
 
 import { Download } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   MOBILE_APP_MENU_GRID_CLASS,
   MOBILE_APP_MENU_TILE_CLASS,
 } from '@/components/layout/mobile-app-menu-constants';
 import { cn } from '@/lib/utils';
-import {
-  IOS_ADD_TO_HOME_SCREEN_HINT,
-  PWA_ADD_TO_HOME_SCREEN_LABEL,
-  PWA_INSTALL_LABEL,
-} from './pwa-constants';
 import { usePwaInstall } from './use-pwa-install';
 
 const PWA_INSTALL_TILE_ICON_SIZE_PX = 20;
@@ -22,10 +18,11 @@ type PwaInstallTileProps = {
 
 export function PwaInstallTile({ onClose }: PwaInstallTileProps) {
   const { offer, promptInstall } = usePwaInstall();
+  const t = useTranslations('navigation');
 
   if (offer === 'hidden') return null;
 
-  const label = offer === 'ios-manual' ? PWA_ADD_TO_HOME_SCREEN_LABEL : PWA_INSTALL_LABEL;
+  const label = offer === 'ios-manual' ? t('pwa.addToHomeScreen') : t('pwa.install');
 
   return (
     <div className={cn(MOBILE_APP_MENU_GRID_CLASS, 'mt-2.5')}>
@@ -35,7 +32,7 @@ export function PwaInstallTile({ onClose }: PwaInstallTileProps) {
         onClick={() => {
           onClose();
           if (offer === 'ios-manual') {
-            toast.message(IOS_ADD_TO_HOME_SCREEN_HINT);
+            toast.message(t('pwa.iosHint'));
             return;
           }
           void promptInstall();

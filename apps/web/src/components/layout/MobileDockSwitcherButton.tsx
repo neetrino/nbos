@@ -1,8 +1,10 @@
+'use client';
+
 import { ChevronDown, Layers, type LucideIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { MobileDockItem } from './MobileDockItem';
 import { MOBILE_DOCK_ICON_SIZE_PX } from './mobile-bottom-nav-constants';
 import {
-  MOBILE_WORKSPACE_DEFAULT_SCOPE_LABEL,
   MOBILE_WORKSPACE_SCOPE_CARET_CLASS,
   MOBILE_WORKSPACE_SCOPE_CARET_SIZE,
   MOBILE_WORKSPACE_SCOPE_LABEL_CLASS,
@@ -21,7 +23,8 @@ export function MobileDockSwitcherButton({
   expanded,
   onClick,
 }: MobileDockSwitcherButtonProps) {
-  const resolvedLabel = label ?? MOBILE_WORKSPACE_DEFAULT_SCOPE_LABEL;
+  const t = useTranslations('navigation');
+  const resolvedLabel = label ?? t('mobileDock.defaultScope');
   const ResolvedIcon = Icon ?? Layers;
 
   return (

@@ -1,8 +1,8 @@
 # NBOS Implementation Progress
 
-## Мультиязычность — новый согласованный срез, 2026-09-12
+## Мультиязычность — первый EN/RU срез, 2026-09-12
 
-Статус: документы подготовлены, код не реализован. Первый релиз: EN/RU для общей навигации, меню аккаунта, Dashboard и четырёх create-flow. [Канон](NBOS/01-Platform-Overview/07-Interface-Localization.md), [план с журналом этапов](implementation/I18N-IMPLEMENTATION-PLAN.md). Полная платформа и HY — последующие этапы. Не отмечать завершённым до приёмки.
+Статус: этапы 0–3 в рабочем дереве; миграция `employees.interface_locale` применена к dev Neon по явному запросу. Автотесты targeted — зелёные. Визуальная приёмка desktop/mobile и production rollout ещё не закрыты. [Канон](NBOS/01-Platform-Overview/07-Interface-Localization.md), [план](implementation/I18N-IMPLEMENTATION-PLAN.md), [coverage](implementation/I18N-COVERAGE.md). Остальная платформа и HY — этапы 6–7.
 
 > **Активный бэклог** до полного канона: что делаем и что отложено. Закрытые срезы и история — `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 

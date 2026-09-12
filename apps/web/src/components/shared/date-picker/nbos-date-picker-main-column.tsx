@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { NbosCalendarGrid } from './nbos-calendar-grid';
 import { NbosDateTypedInput } from './nbos-date-typed-input';
@@ -80,6 +81,8 @@ function PickerFooter({
   onToday: () => void;
   showToday: boolean;
 }) {
+  const t = useTranslations('forms');
+
   return (
     <div className="border-border/50 mt-3 flex items-center justify-between gap-2 border-t pt-2">
       <button
@@ -87,7 +90,7 @@ function PickerFooter({
         onClick={onClear}
         className="text-primary hover:text-primary/80 text-sm font-medium"
       >
-        Clear
+        {t('datePicker.clear')}
       </button>
       {showToday ? (
         <button
@@ -95,7 +98,7 @@ function PickerFooter({
           onClick={onToday}
           className="text-primary hover:text-primary/80 text-sm font-medium"
         >
-          Today
+          {t('datePicker.today')}
         </button>
       ) : null}
     </div>

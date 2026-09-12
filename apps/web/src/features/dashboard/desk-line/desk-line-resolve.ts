@@ -42,11 +42,15 @@ export function resolveDeskLineDetails(
   const today = yerevanCalendarDay(now);
   const template = pickDeskLineTemplate(person, today);
   const firstName = person.firstName?.trim() || null;
+  const slots = { firstName, years: yearsFrom(person, today) };
   return {
     templateId: template.id,
     theme: template.theme,
-    title: fillDeskLineSlots(template.title, { firstName, years: yearsFrom(person, today) }),
-    subline: fillDeskLineSlots(template.subline, { firstName, years: yearsFrom(person, today) }),
+    title: fillDeskLineSlots(template.title, slots),
+    subline: fillDeskLineSlots(template.subline, slots),
+    titleTemplate: template.title,
+    sublineTemplate: template.subline,
+    slots,
     icon: template.icon,
     pool: template.pool,
   };

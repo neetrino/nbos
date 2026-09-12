@@ -11,6 +11,7 @@ import type {
   PinnedAction,
   PriorityCard,
 } from '../dashboard-control-registry';
+import { DASHBOARD_PINNED_GRID_CLASS } from '../dashboard-pinned-actions.constants';
 import { DashboardCreateActionsProvider } from './DashboardCreateActionsProvider';
 import { DashboardDeskHeader } from './DashboardDeskHeader';
 import { MiniAnalytics, PriorityFeed } from './DashboardInsightPanels';
@@ -141,7 +142,7 @@ export function DashboardLoadingSkeleton() {
       <Skeleton className="h-36 w-full rounded-2xl" />
       <div className={DASHBOARD_GRID_CLASS}>
         <div className="min-w-0 lg:col-span-2 xl:col-span-2 xl:row-start-1">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className={DASHBOARD_PINNED_GRID_CLASS}>
             {Array.from({ length: PINNED_SKELETON_COUNT }).map((_, index) => (
               <Skeleton key={index} className="min-h-[4.75rem] rounded-xl" />
             ))}

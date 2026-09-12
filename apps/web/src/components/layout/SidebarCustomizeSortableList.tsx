@@ -22,6 +22,7 @@ import type { NavModuleDefinition } from '@/lib/navigation/nav-config';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { SidebarModuleIcon } from './SidebarModuleIcon';
+import { useTranslations } from 'next-intl';
 
 type SidebarCustomizeSortableListProps = {
   items: NavModuleDefinition[];
@@ -81,6 +82,8 @@ function SortableModuleRow({
   canHide: boolean;
   onHide: () => void;
 }) {
+  const t = useTranslations('navigation');
+  const moduleLabel = t(item.label);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.key,
   });
@@ -101,7 +104,7 @@ function SortableModuleRow({
       <button
         type="button"
         className="text-muted-foreground hover:text-foreground cursor-grab touch-none rounded p-1 active:cursor-grabbing"
-        aria-label={`Drag to reorder ${item.label}`}
+        aria-label={t('customize.dragToReorder', { label: moduleLabel })}
         disabled={isSaving}
         {...attributes}
         {...listeners}
@@ -109,14 +112,14 @@ function SortableModuleRow({
         <GripVertical size={18} />
       </button>
       <SidebarModuleIcon moduleKey={item.key} />
-      <span className="min-w-0 flex-1 truncate text-sm font-medium">{item.label}</span>
+      <span className="min-w-0 flex-1 truncate text-sm font-medium">{moduleLabel}</span>
       {canHide && (
         <Button
           type="button"
           variant="ghost"
           size="icon-sm"
           disabled={isSaving}
-          aria-label={`Hide ${item.label}`}
+          aria-label={t('customize.hideModule', { label: moduleLabel })}
           onClick={onHide}
         >
           <EyeOff size={16} />

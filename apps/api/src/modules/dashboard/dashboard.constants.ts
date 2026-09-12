@@ -24,3 +24,12 @@ export const DASHBOARD_WIDGET_KEYS = [
 
 export type DashboardPinnedActionKey = (typeof DASHBOARD_PINNED_ACTION_KEYS)[number];
 export type DashboardWidgetKey = (typeof DASHBOARD_WIDGET_KEYS)[number];
+
+/** Stable codes for dashboard priority cards. English title/context remain for older clients. */
+export const DASHBOARD_PRIORITY_CODES = [
+  'critical_tickets',
+  'tasks_due_today',
+  'pending_invoices',
+] as const;
+
+export type DashboardPriorityCode = (typeof DASHBOARD_PRIORITY_CODES)[number];

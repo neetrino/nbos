@@ -18,6 +18,7 @@ import {
 import { cn } from '@/lib/utils';
 import { SidebarCustomizeSortableList } from './SidebarCustomizeSortableList';
 import { SidebarModuleIcon } from './SidebarModuleIcon';
+import { useTranslations } from 'next-intl';
 
 interface SidebarNavigationCustomizeSheetProps {
   open: boolean;
@@ -51,6 +52,7 @@ export function SidebarNavigationCustomizeSheet({
   const [linkLabel, setLinkLabel] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [linkSaving, setLinkSaving] = useState(false);
+  const t = useTranslations('navigation');
 
   const handleCreateLink = async () => {
     if (!linkLabel.trim() || !linkUrl.trim()) return;
@@ -69,16 +71,14 @@ export function SidebarNavigationCustomizeSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="flex w-full max-w-md flex-col gap-0 p-0">
         <SheetHeader className="border-border border-b px-5 py-4 text-left">
-          <SheetTitle>Left menu</SheetTitle>
-          <SheetDescription>
-            Drag modules to reorder. Hidden items stay available under More in the sidebar.
-          </SheetDescription>
+          <SheetTitle>{t('customize.title')}</SheetTitle>
+          <SheetDescription>{t('customize.description')}</SheetDescription>
         </SheetHeader>
 
         <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
           <section>
             <p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-              Shown in menu
+              {t('customize.shownInMenu')}
             </p>
             <SidebarCustomizeSortableList
               items={primaryItems}
@@ -95,7 +95,7 @@ export function SidebarNavigationCustomizeSheet({
                 onClick={() => setHiddenOpen((value) => !value)}
                 className="text-foreground hover:bg-muted/60 flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm font-medium"
               >
-                <span>Hidden ({hiddenItems.length})</span>
+                <span>{t('customize.hidden', { count: hiddenItems.length })}</span>
                 <ChevronRight
                   size={16}
                   className={cn('transition-transform', hiddenOpen && 'rotate-90')}
@@ -110,7 +110,7 @@ export function SidebarNavigationCustomizeSheet({
                     >
                       <span className="flex min-w-0 flex-1 items-center gap-2.5">
                         <SidebarModuleIcon moduleKey={item.key} muted />
-                        <span className="truncate text-sm">{item.label}</span>
+                        <span className="truncate text-sm">{t(item.label)}</span>
                       </span>
                       <Button
                         type="button"
@@ -120,7 +120,7 @@ export function SidebarNavigationCustomizeSheet({
                         onClick={() => onRestore(item.key)}
                       >
                         <Eye size={14} className="mr-1" />
-                        Show
+                        {t('customize.show')}
                       </Button>
                     </li>
                   ))}
@@ -137,7 +137,7 @@ export function SidebarNavigationCustomizeSheet({
             >
               <span className="flex items-center gap-2">
                 <Link2 size={16} className="text-muted-foreground" />
-                My Links
+                {t('sidebar.myLinks')}
                 {personalLinks.length > 0 ? (
                   <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
                     {personalLinks.length}
@@ -191,6 +191,8 @@ function MyLinksPanel({
   onLinkUrlChange: (value: string) => void;
   onCreateLink: () => Promise<void>;
 }) {
+  const t = useTranslations('navigation');
+
   return (
     <div className="mt-2 space-y-3 pl-1">
       {personalLinks.length > 0 && (
@@ -208,7 +210,7 @@ function MyLinksPanel({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label={`Remove ${link.label}`}
+                aria-label={t('customize.removeLink', { label: link.label })}
                 onClick={() => void onDeleteLink(link.id)}
               >
                 <Trash2 size={14} />
@@ -221,14 +223,14 @@ function MyLinksPanel({
         <Input
           value={linkLabel}
           onChange={(event) => onLinkLabelChange(event.target.value)}
-          placeholder="Title"
+          placeholder={t('customize.linkTitlePlaceholder')}
           maxLength={60}
           className="h-9"
         />
         <Input
           value={linkUrl}
           onChange={(event) => onLinkUrlChange(event.target.value)}
-          placeholder="URL or /path"
+          placeholder={t('customize.linkUrlPlaceholder')}
           maxLength={500}
           className="h-9"
         />
@@ -239,7 +241,7 @@ function MyLinksPanel({
           disabled={linkSaving || isSaving || !linkLabel.trim() || !linkUrl.trim()}
           onClick={() => void onCreateLink()}
         >
-          Add link
+          {t('customize.addLink')}
         </Button>
       </div>
     </div>

@@ -15,6 +15,7 @@ import type { DashboardPersonalLink } from '@/lib/api/dashboard';
 import { writeModuleLastVisitFromPathname } from '@/lib/navigation/module-last-visit';
 import { isNavChildLinkActive } from '@/lib/navigation/nav-route-utils';
 import { useUnsortedTaskCreate } from '@/features/tasks/components/UnsortedTaskCreateProvider';
+import { useTranslations } from 'next-intl';
 import { SidebarModuleNavRow } from './SidebarModuleNavRow';
 
 interface SidebarNavListProps {
@@ -36,6 +37,7 @@ export function SidebarNavList({
 }: SidebarNavListProps) {
   const pathname = usePathname();
   const { openUnsortedTaskCreate } = useUnsortedTaskCreate();
+  const t = useTranslations('navigation');
 
   useLayoutEffect(() => {
     writeModuleLastVisitFromPathname(pathname);
@@ -99,7 +101,7 @@ export function SidebarNavList({
           >
             <span className="flex items-center gap-2">
               <Link2 size={16} className="shrink-0 opacity-80" />
-              My Links
+              {t('sidebar.myLinks')}
             </span>
             <ChevronLeft
               size={14}
@@ -121,7 +123,7 @@ export function SidebarNavList({
           {collapsed ? (
             <button
               type="button"
-              title="More / Hidden"
+              title={t('sidebar.moreHidden')}
               onClick={onToggleMore}
               className="text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground flex w-full justify-center rounded-md px-2 py-1 text-sm"
             >
@@ -134,7 +136,7 @@ export function SidebarNavList({
                 onClick={onToggleMore}
                 className="text-sidebar-muted hover:text-sidebar-foreground flex w-full items-center justify-between rounded-md px-2 py-1 text-[11px] font-semibold tracking-wide uppercase"
               >
-                <span>More / Hidden</span>
+                <span>{t('sidebar.moreHidden')}</span>
                 <ChevronLeft
                   size={14}
                   className={cn('transition-transform', moreExpanded && '-rotate-90')}

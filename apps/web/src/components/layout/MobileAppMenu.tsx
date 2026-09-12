@@ -17,6 +17,7 @@ import {
 } from './mobile-app-menu-constants';
 import { BOTTOM_SHEET_SWIPE_PANEL_CLASS } from './bottom-sheet-swipe';
 import { useBottomSheetSwipeToClose } from './use-bottom-sheet-swipe-to-close';
+import { useTranslations } from 'next-intl';
 
 const MOBILE_APP_MENU_FOOTER_ICON_SIZE_PX = 20;
 
@@ -29,6 +30,7 @@ interface MobileAppMenuProps {
 export function MobileAppMenu({ open, onOpenChange, items }: MobileAppMenuProps) {
   const close = useCallback(() => onOpenChange(false), [onOpenChange]);
   const handleRef = useBottomSheetSwipeToClose(open, close);
+  const t = useTranslations('navigation');
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -37,14 +39,12 @@ export function MobileAppMenu({ open, onOpenChange, items }: MobileAppMenuProps)
         showCloseButton={false}
         className={cn(MOBILE_APP_MENU_SHEET_CLASS, BOTTOM_SHEET_SWIPE_PANEL_CLASS)}
       >
-        <SheetTitle className="sr-only">Menu</SheetTitle>
-        <SheetDescription className="sr-only">
-          Open a module. Items are arranged as large buttons.
-        </SheetDescription>
+        <SheetTitle className="sr-only">{t('mobileMenu.title')}</SheetTitle>
+        <SheetDescription className="sr-only">{t('mobileMenu.description')}</SheetDescription>
         <div className="flex min-h-0 flex-1 flex-col">
           <BottomSheetSwipeHandle handleRef={handleRef} />
           <div className="touch-none px-4 pt-3 pb-2">
-            <p className="text-foreground text-lg font-semibold tracking-tight">Menu</p>
+            <p className="text-foreground text-lg font-semibold tracking-tight">{t('mobileMenu.title')}</p>
           </div>
           <div
             data-nbos-sheet-swipe-scroll=""
@@ -67,6 +67,8 @@ export function MobileAppMenu({ open, onOpenChange, items }: MobileAppMenuProps)
 function MobileAppMenuAccountRow({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const { openMyAccountSheet } = useMyAccountSheet();
+  const tNav = useTranslations('navigation');
+  const tAccount = useTranslations('account');
 
   return (
     <div className={cn(MOBILE_APP_MENU_GRID_CLASS, 'mt-3')}>
@@ -83,7 +85,7 @@ function MobileAppMenuAccountRow({ onClose }: { onClose: () => void }) {
           className="text-zinc-600"
           aria-hidden
         />
-        <span className="text-sm font-semibold tracking-tight">Settings</span>
+        <span className="text-sm font-semibold tracking-tight">{tNav('sidebar.settings')}</span>
       </button>
       <button
         type="button"
@@ -98,7 +100,7 @@ function MobileAppMenuAccountRow({ onClose }: { onClose: () => void }) {
           className="text-indigo-600"
           aria-hidden
         />
-        <span className="text-sm font-semibold tracking-tight">My account</span>
+        <span className="text-sm font-semibold tracking-tight">{tAccount('myAccount')}</span>
       </button>
     </div>
   );

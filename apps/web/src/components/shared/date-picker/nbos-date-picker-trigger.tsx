@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Calendar, X } from 'lucide-react';
 import {
   NBOS_DATE_PICKER_ICON_BUTTON_ICON_ONLY_CLASS,
@@ -37,6 +38,7 @@ export function NbosDatePickerTrigger({
   id,
   'aria-label': ariaLabel,
 }: NbosDatePickerTriggerProps) {
+  const t = useTranslations('forms');
   const calendarIcon = (
     <Calendar size={16} className="text-muted-foreground shrink-0" aria-hidden />
   );
@@ -56,7 +58,7 @@ export function NbosDatePickerTrigger({
     </span>
   ) : (
     <span id={id} className="sr-only">
-      {ariaLabel ?? 'Select expiry date'}
+      {ariaLabel ?? t('datePicker.selectExpiryDate')}
     </span>
   );
   const clearControl =
@@ -64,7 +66,7 @@ export function NbosDatePickerTrigger({
       <span
         role="button"
         tabIndex={-1}
-        aria-label="Clear date"
+        aria-label={t('datePicker.clearDate')}
         className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 shrink-0 cursor-pointer rounded-md p-0.5 outline-none focus-visible:ring-2"
         onPointerDown={(event) => event.stopPropagation()}
         onClick={(event) => {

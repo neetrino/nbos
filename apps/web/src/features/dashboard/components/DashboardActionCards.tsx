@@ -13,6 +13,8 @@ import type { DashboardPersonalLink, PinnedAction } from '../dashboard-control-r
 import { isPinnedOpenAction } from '../dashboard-pinned-action-kind';
 import { cn } from '@/lib/utils';
 import { PinnedActionKindMark } from './PinnedActionKindMark';
+import { useTranslations } from 'next-intl';
+import { DASHBOARD_ACTION_MESSAGE_KEYS } from '../dashboard-action-message-keys';
 import { useDashboardCreateAction } from './DashboardCreateActionsProvider';
 
 function DashboardPinnedTileShell({
@@ -42,16 +44,19 @@ interface PersonalLinkCardProps {
 }
 
 export function PinnedActionCard({ action, variant = 'visible', editMode }: PinnedActionCardProps) {
+  const t = useTranslations('dashboard');
   const openCreateAction = useDashboardCreateAction();
   const isHidden = variant === 'hidden';
   const Icon = isHidden ? Eye : action.icon;
   const isInteractive = !editMode && !isHidden;
   const openHref = isInteractive && isPinnedOpenAction(action) ? action.href : undefined;
+  const messageKeys = DASHBOARD_ACTION_MESSAGE_KEYS[action.key];
 
   return (
     <DashboardPinnedTileShell>
       <ActionTileButton
-        label={action.label}
+        label={t(messageKeys.label)}
+        title={t(messageKeys.description)}
         icon={<Icon aria-hidden />}
         tone={isHidden ? 'muted' : getPinnedActionTone(action.key)}
         size="lg"
@@ -70,6 +75,7 @@ export function PinnedActionCard({ action, variant = 'visible', editMode }: Pinn
 }
 
 export function PersonalLinkCard({ editMode, link, onDelete }: PersonalLinkCardProps) {
+  const t = useTranslations('dashboard');
   return (
     <DashboardPinnedTileShell className="items-stretch gap-2">
       <ActionTileButton
@@ -88,7 +94,7 @@ export function PersonalLinkCard({ editMode, link, onDelete }: PersonalLinkCardP
       />
       {editMode ? (
         <Button
-          aria-label={`Delete ${link.label}`}
+          aria-label={t('personalLink.deleteNamedAria', { label: link.label })}
           variant="ghost"
           size="icon-xs"
           className="shrink-0 self-center"

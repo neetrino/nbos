@@ -13,16 +13,18 @@ import { useMyAccountSheet } from '@/features/account/components/my-account-shee
 import { useMyWalletSheet } from '@/features/account/components/my-wallet-sheet-provider';
 import type { MeResponse } from '@/lib/permissions/types';
 import { ThemeSwitcher } from '@/components/theme/theme-switcher';
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
+import { useTranslations } from 'next-intl';
 import {
   ACCOUNT_MENU_SIDE_OFFSET,
   ACCOUNT_MENU_WIDTH_CLASS,
 } from './account-menu-dropdown-constants';
 
-function displayNameFromMe(me: MeResponse | null | undefined): string {
+function displayNameFromMe(me: MeResponse | null | undefined, fallback: string): string {
   if (me?.firstName && me?.lastName) {
     return `${me.firstName} ${me.lastName}`;
   }
-  return me?.firstName ?? me?.email ?? 'My Account';
+  return me?.firstName ?? me?.email ?? fallback;
 }
 
 function initialsFromMe(me: MeResponse | null | undefined): string {
@@ -38,9 +40,10 @@ type ProfileHeaderProps = {
   me: MeResponse | null | undefined;
   displayName: string;
   initials: string;
+  photoAlt: string;
 };
 
-function AccountMenuProfileHeader({ me, displayName, initials }: ProfileHeaderProps) {
+function AccountMenuProfileHeader({ me, displayName, initials, photoAlt }: ProfileHeaderProps) {
   const photo = me?.avatar?.trim();
   const subtitle = me?.position?.trim() || me?.email?.trim();
 
@@ -48,7 +51,7 @@ function AccountMenuProfileHeader({ me, displayName, initials }: ProfileHeaderPr
     <div className="border-border from-muted/50 rounded-t-2xl border-b bg-gradient-to-b to-transparent px-4 pt-5 pb-4">
       <div className="flex gap-3">
         <Avatar size="lg" className="size-12 shadow-sm">
-          {photo ? <AvatarImage src={photo} alt={`${displayName} profile photo`} /> : null}
+          {photo ? <AvatarImage src={photo} alt={photoAlt} /> : null}
           <AvatarFallback className="text-base font-semibold uppercase">{initials}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1 pt-0.5">
@@ -75,10 +78,18 @@ function AccountMenuProfileHeader({ me, displayName, initials }: ProfileHeaderPr
   );
 }
 
+type AccountMenuLabels = {
+  myAccount: string;
+  myWallet: string;
+  signOut: string;
+};
+
 type AccountMenuPanelProps = {
   me: MeResponse | null | undefined;
   displayName: string;
   initials: string;
+  photoAlt: string;
+  labels: AccountMenuLabels;
   onMyAccount: () => void;
   onMyWallet: () => void;
   onSignOut: () => void;
@@ -88,6 +99,8 @@ function AccountMenuPanel({
   me,
   displayName,
   initials,
+  photoAlt,
+  labels,
   onMyAccount,
   onMyWallet,
   onSignOut,
@@ -98,24 +111,30 @@ function AccountMenuPanel({
       sideOffset={ACCOUNT_MENU_SIDE_OFFSET}
       className={`bg-card text-card-foreground ${ACCOUNT_MENU_WIDTH_CLASS} rounded-2xl border p-0 shadow-xl ring-0`}
     >
-      <AccountMenuProfileHeader me={me} displayName={displayName} initials={initials} />
+      <AccountMenuProfileHeader
+        me={me}
+        displayName={displayName}
+        initials={initials}
+        photoAlt={photoAlt}
+      />
       <div className="p-2">
         <DropdownMenuItem
           className="focus:bg-accent h-11 cursor-pointer rounded-xl px-3"
           onClick={onMyAccount}
         >
           <UserCircle2 className="size-[18px] shrink-0" strokeWidth={1.75} />
-          <span>My Account</span>
+          <span>{labels.myAccount}</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           className="focus:bg-accent h-11 cursor-pointer rounded-xl px-3"
           onClick={onMyWallet}
         >
           <Wallet className="size-[18px] shrink-0" strokeWidth={1.75} />
-          <span>My wallet</span>
+          <span>{labels.myWallet}</span>
         </DropdownMenuItem>
       </div>
       <ThemeSwitcher />
+      <LanguageSwitcher />
       <div className="border-border bg-muted/25 rounded-b-2xl border-t p-2">
         <DropdownMenuItem
           variant="destructive"
@@ -123,7 +142,7 @@ function AccountMenuPanel({
           onClick={onSignOut}
         >
           <LogOut className="size-[18px] shrink-0" strokeWidth={1.75} />
-          <span>Sign Out</span>
+          <span>{labels.signOut}</span>
         </DropdownMenuItem>
       </div>
     </DropdownMenuContent>
@@ -135,27 +154,24 @@ type AccountMenuDropdownProps = {
 };
 
 export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
+  const t = useTranslations('account');
   const { openMyAccountSheet } = useMyAccountSheet();
   const { openMyWalletSheet } = useMyWalletSheet();
-  const displayName = displayNameFromMe(me);
+  const displayName = displayNameFromMe(me, t('fallbackAccountName'));
   const initials = initialsFromMe(me);
   const photo = me?.avatar?.trim();
+  const photoAlt = t('profilePhotoAlt', { name: displayName });
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         type="button"
-        aria-label={`Account menu: ${displayName}`}
+        aria-label={t('accountMenuAria', { name: displayName })}
         className="border-border bg-muted/30 text-foreground hover:bg-muted/55 focus-visible:ring-ring flex size-9 shrink-0 items-center justify-center rounded-full border p-0 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         <Avatar className="size-8 shadow-sm" size="default">
           {photo ? (
-            <AvatarImage
-              src={photo}
-              alt={`${displayName} profile photo`}
-              loading="eager"
-              decoding="async"
-            />
+            <AvatarImage src={photo} alt={photoAlt} loading="eager" decoding="async" />
           ) : null}
           <AvatarFallback className="text-foreground text-xs font-semibold uppercase">
             {initials}
@@ -166,6 +182,12 @@ export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
         me={me}
         displayName={displayName}
         initials={initials}
+        photoAlt={photoAlt}
+        labels={{
+          myAccount: t('myAccount'),
+          myWallet: t('myWallet'),
+          signOut: t('signOut'),
+        }}
         onMyAccount={() => void openMyAccountSheet()}
         onMyWallet={() => openMyWalletSheet()}
         onSignOut={() => void signOutClient()}

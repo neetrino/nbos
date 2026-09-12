@@ -1,4 +1,5 @@
 import type { SidebarModuleKey } from '@nbos/shared/constants';
+import type { NavigationMessageKey } from './nav-message-keys';
 
 export interface PermissionRequirement {
   module: string;
@@ -8,12 +9,14 @@ export interface PermissionRequirement {
 /** Non-clickable section label inside a module submenu (e.g. Revenue under Finance). */
 export type NavChildGroupDefinition = {
   kind: 'group';
-  label: string;
+  /** next-intl key under the navigation namespace */
+  label: NavigationMessageKey;
 };
 
 export type NavChildLinkDefinition = {
   kind?: 'link';
-  label: string;
+  /** next-intl key under the navigation namespace */
+  label: NavigationMessageKey;
   href: string;
   /** Section id for modules with visit registry (href from last visited path). */
   navSection?: string;
@@ -35,7 +38,8 @@ export function isNavChildLink(child: NavChildDefinition): child is NavChildLink
 
 export interface NavModuleDefinition {
   key: SidebarModuleKey;
-  label: string;
+  /** next-intl key under the navigation namespace */
+  label: NavigationMessageKey;
   href: string;
   permission?: PermissionRequirement;
   children?: NavChildDefinition[];
@@ -46,94 +50,94 @@ export interface NavModuleDefinition {
 export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
   {
     key: 'dashboard',
-    label: 'Dashboard',
+    label: 'modules.dashboard',
     href: '/dashboard',
     permission: { module: 'DASHBOARDS', action: 'VIEW' },
   },
   {
     key: 'crm',
-    label: 'CRM',
+    label: 'modules.crm',
     href: '/crm',
     permission: { module: 'CRM_LEADS', action: 'VIEW' },
   },
   {
     key: 'marketing',
-    label: 'Marketing',
+    label: 'modules.marketing',
     href: '/marketing',
     permission: { module: 'CRM_LEADS', action: 'VIEW' },
   },
   {
     key: 'project-hub',
-    label: 'Project Hub',
+    label: 'modules.project-hub',
     href: '/projects',
     permission: { module: 'PROJECTS', action: 'VIEW' },
   },
   {
     key: 'delivery-board',
-    label: 'Delivery',
+    label: 'modules.delivery-board',
     href: '/delivery-board',
     permission: { module: 'PROJECTS', action: 'VIEW' },
   },
   {
     key: 'tasks',
-    label: 'Tasks',
+    label: 'modules.tasks',
     href: '/tasks',
     permission: { module: 'TASKS', action: 'VIEW' },
     quickAction: 'create-unsorted-task',
   },
   {
     key: 'work-spaces',
-    label: 'Work Spaces',
+    label: 'modules.work-spaces',
     href: '/work-spaces',
     permission: { module: 'TASKS', action: 'VIEW' },
   },
   {
     key: 'finance',
-    label: 'Finance',
+    label: 'modules.finance',
     href: '/finance',
     permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
   },
   {
     key: 'support',
-    label: 'Support',
+    label: 'modules.support',
     href: '/support',
     permission: { module: 'SUPPORT_TICKETS', action: 'VIEW' },
   },
   {
     key: 'clients',
-    label: 'Clients',
+    label: 'modules.clients',
     href: '/clients',
     permission: { module: 'CLIENTS', action: 'VIEW' },
   },
   {
     key: 'partners',
-    label: 'Partners',
+    label: 'modules.partners',
     href: '/partners',
     permission: { module: 'PARTNERS', action: 'VIEW' },
   },
   {
     key: 'my-company',
-    label: 'My Company',
+    label: 'modules.my-company',
     href: '/my-company',
     permission: { module: 'COMPANY', action: 'VIEW' },
     children: [
       {
-        label: 'Compensation',
+        label: 'children.myCompany.compensation',
         href: '/my-company/compensation',
         permission: { module: 'FINANCE_SALARY', action: 'VIEW' },
       },
       {
-        label: 'KPI / Scorecard',
+        label: 'children.myCompany.kpi',
         href: '/my-company/kpi',
         permission: { module: 'DASHBOARDS', action: 'VIEW' },
       },
       {
-        label: 'KPI gate policies',
+        label: 'children.myCompany.kpiPolicies',
         href: '/my-company/kpi-policies',
         permission: { module: 'COMPANY', action: 'VIEW' },
       },
       {
-        label: 'SOP & Templates',
+        label: 'children.myCompany.sop',
         href: '/my-company/sop',
         permission: { module: 'COMPANY', action: 'VIEW' },
       },
@@ -141,117 +145,121 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
   },
   {
     key: 'messenger',
-    label: 'Messenger',
+    label: 'modules.messenger',
     href: '/messenger',
     permission: { module: 'MESSENGER', action: 'VIEW' },
     children: [
-      { label: 'All', href: '/messenger' },
-      { label: 'Products', href: '/messenger/products' },
-      { label: 'Tasks', href: '/messenger/tasks' },
-      { label: 'Deals', href: '/messenger/deals' },
-      { label: 'Work Spaces', href: '/messenger/work-spaces' },
-      { label: 'Groups', href: '/messenger/groups' },
-      { label: 'Direct', href: '/messenger/direct' },
-      { label: 'Collections', href: '/messenger/collections' },
+      { label: 'children.messenger.all', href: '/messenger' },
+      { label: 'children.messenger.products', href: '/messenger/products' },
+      { label: 'children.messenger.tasks', href: '/messenger/tasks' },
+      { label: 'children.messenger.deals', href: '/messenger/deals' },
+      { label: 'children.messenger.workSpaces', href: '/messenger/work-spaces' },
+      { label: 'children.messenger.groups', href: '/messenger/groups' },
+      { label: 'children.messenger.direct', href: '/messenger/direct' },
+      { label: 'children.messenger.collections', href: '/messenger/collections' },
     ],
   },
   {
     key: 'client-messenger',
-    label: 'Client Messenger',
+    label: 'modules.client-messenger',
     href: '/client-messenger',
     permission: { module: 'MESSENGER', action: 'VIEW' },
     children: [
-      { label: 'Inbox', href: '/client-messenger' },
-      { label: 'Sales', href: '/client-messenger/sales' },
-      { label: 'Clients', href: '/client-messenger/clients' },
-      { label: 'Collections', href: '/client-messenger/collections' },
+      { label: 'children.clientMessenger.inbox', href: '/client-messenger' },
+      { label: 'children.clientMessenger.sales', href: '/client-messenger/sales' },
+      { label: 'children.clientMessenger.clients', href: '/client-messenger/clients' },
+      { label: 'children.clientMessenger.collections', href: '/client-messenger/collections' },
     ],
   },
   {
     key: 'calendar',
-    label: 'Calendar',
+    label: 'modules.calendar',
     href: '/calendar',
     permission: { module: 'CALENDAR', action: 'VIEW' },
   },
   {
     key: 'drive',
-    label: 'Drive',
+    label: 'modules.drive',
     href: '/drive',
     permission: { module: 'DRIVE', action: 'VIEW' },
   },
   {
     key: 'documents',
-    label: 'Documents',
+    label: 'modules.documents',
     href: '/documents',
     permission: { module: 'DOCUMENTS', action: 'VIEW' },
   },
   {
     key: 'mail',
-    label: 'Mail',
+    label: 'modules.mail',
     href: '/mail',
     permission: { module: 'MAIL', action: 'VIEW' },
   },
   {
     key: 'credentials',
-    label: 'Credentials',
+    label: 'modules.credentials',
     href: '/credentials',
     permission: { module: 'CREDENTIALS', action: 'VIEW' },
   },
   {
     key: 'ai-agents',
-    label: 'AI & Agents',
+    label: 'modules.ai-agents',
     href: '/ai-agents',
     permission: { module: 'AI_PLATFORM', action: 'VIEW' },
   },
   {
     key: 'reports',
-    label: 'Analytics',
+    label: 'modules.reports',
     href: '/reports',
     permission: { module: 'DASHBOARDS', action: 'VIEW' },
   },
   {
     key: 'settings',
-    label: 'Platform Admin',
+    label: 'modules.settings',
     href: '/settings',
     children: [
-      { label: 'General', href: '/settings', permission: { module: 'COMPANY', action: 'EDIT' } },
       {
-        label: 'System Lists',
+        label: 'children.settings.general',
+        href: '/settings',
+        permission: { module: 'COMPANY', action: 'EDIT' },
+      },
+      {
+        label: 'children.settings.systemLists',
         href: '/settings/lists',
         permission: { module: 'COMPANY', action: 'EDIT' },
       },
       {
-        label: 'Permissions / RBAC',
+        label: 'children.settings.permissionsRbac',
         href: '/settings/roles',
         permission: { module: 'COMPANY', action: 'ADD' },
       },
       {
-        label: 'Module Settings',
+        label: 'children.settings.moduleSettings',
         href: '/settings/module-settings',
         permission: { module: 'COMPANY', action: 'EDIT' },
       },
       {
-        label: 'Integrations',
+        label: 'children.settings.integrations',
         href: '/settings/integrations',
         permission: { module: 'COMPANY', action: 'EDIT' },
       },
       {
-        label: 'Security',
+        label: 'children.settings.security',
         href: '/settings/security',
         permission: { module: 'COMPANY', action: 'EDIT' },
       },
       {
-        label: 'Feature Flags',
+        label: 'children.settings.featureFlags',
         href: '/settings/feature-flags',
         permission: { module: 'COMPANY', action: 'EDIT' },
       },
       {
-        label: 'Scheduler',
+        label: 'children.settings.scheduler',
         href: '/settings/scheduler',
         permission: { module: 'COMPANY', action: 'VIEW' },
       },
       {
-        label: 'Audit Log',
+        label: 'children.settings.auditLog',
         href: '/settings/audit-log',
         permission: { module: 'AUDIT_LOGS', action: 'VIEW' },
       },

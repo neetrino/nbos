@@ -1,12 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   calendarApi,
   parseCalendarMeetingConflicts,
   type CalendarMeetingConflictPayload,
 } from '@/lib/api/calendar';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { firstReleaseFormErrorCopy, localizeCaughtApiError } from '@/i18n/localize-api-error';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -28,20 +29,17 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { toDatetimeLocalValue } from './calendar-datetime-helpers';
 
-const MEETING_TYPES: Array<{ value: string; label: string }> = [
-  { value: 'SALES_CALL', label: 'Sales call' },
-  { value: 'OFFER_PRESENTATION', label: 'Offer presentation' },
-  { value: 'DEMO', label: 'Demo' },
-  { value: 'KICKOFF', label: 'Kickoff / handoff' },
-  { value: 'SUPPORT_CALL', label: 'Support call' },
-  { value: 'MAINTENANCE_CALL', label: 'Maintenance call' },
-  { value: 'OTHER', label: 'Other' },
-];
+const MEETING_TYPE_VALUES = [
+  'SALES_CALL',
+  'OFFER_PRESENTATION',
+  'DEMO',
+  'KICKOFF',
+  'SUPPORT_CALL',
+  'MAINTENANCE_CALL',
+  'OTHER',
+] as const;
 
-const LOCATION_TYPES: Array<{ value: string; label: string }> = [
-  { value: 'ONLINE', label: 'Online' },
-  { value: 'OFFLINE', label: 'Offline' },
-];
+const LOCATION_TYPE_VALUES = ['ONLINE', 'OFFLINE'] as const;
 
 function meetingDefaults(selectedDate: Date) {
   return {
@@ -68,6 +66,8 @@ export function CreateMeetingCalendarDialog({
   selectedDate,
   onCreated,
 }: CreateMeetingCalendarDialogProps) {
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [conflicts, setConflicts] = useState<CalendarMeetingConflictPayload[] | null>(null);
@@ -90,13 +90,13 @@ export function CreateMeetingCalendarDialog({
   const submit = useCallback(async () => {
     const title = form.title.trim();
     if (!title) {
-      setFormError('Title is required.');
+      setFormError(t('meeting.validation.titleRequired'));
       return;
     }
     const startsAt = new Date(form.startsLocal).toISOString();
     const endsAt = new Date(form.endsLocal).toISOString();
     if (new Date(endsAt) <= new Date(startsAt)) {
-      setFormError('End time must be after start time.');
+      setFormError(t('meeting.validation.endAfterStart'));
       return;
     }
     setLoading(true);
@@ -120,20 +120,31 @@ export function CreateMeetingCalendarDialog({
       const parsed = parseCalendarMeetingConflicts(err);
       if (parsed?.length) {
         setConflicts(parsed);
-        setFormError('This slot overlaps another meeting. Add a reason to schedule anyway.');
+        setFormError(t('meeting.validation.overlapReason'));
         return;
       }
-      setFormError(getApiErrorMessage(err, 'Could not create meeting'));
+      setFormError(
+        localizeCaughtApiError(
+          err,
+          firstReleaseFormErrorCopy(
+            tCommon('permissionDenied'),
+            t('meeting.createError'),
+            t('errors.validation'),
+            t('meeting.validation.overlapReason'),
+            t('errors.network'),
+          ),
+        ),
+      );
     } finally {
       setLoading(false);
     }
-  }, [form, conflicts, overrideReason, onOpenChange, onCreated]);
+  }, [conflicts, form, onCreated, onOpenChange, overrideReason, t, tCommon]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle>New client meeting</DialogTitle>
+          <DialogTitle>{t('meeting.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -145,42 +156,42 @@ export function CreateMeetingCalendarDialog({
 
           {conflicts?.length ? (
             <div className="bg-secondary/60 space-y-2 rounded-xl border p-3 text-sm">
-              <p className="text-foreground font-medium">Conflicts</p>
+              <p className="text-foreground font-medium">{t('meeting.conflicts.title')}</p>
               <ul className="text-muted-foreground list-inside list-disc space-y-1">
                 {conflicts.map((c) => (
                   <li key={`${c.code}-${c.meetingId}`}>
-                    <span className="text-foreground">{c.meetingTitle}</span> — {c.detail}
+                    <span className="text-foreground">{c.meetingTitle}</span>
                   </li>
                 ))}
               </ul>
               <div>
-                <Label htmlFor="cal-meet-override">Override reason</Label>
+                <Label htmlFor="cal-meet-override">{t('meeting.conflicts.overrideReason')}</Label>
                 <Textarea
                   id="cal-meet-override"
                   className="mt-1.5"
                   rows={2}
                   value={overrideReason}
                   onChange={(e) => setOverrideReason(e.target.value)}
-                  placeholder="Why schedule despite overlap?"
+                  placeholder={t('meeting.conflicts.overridePlaceholder')}
                 />
               </div>
             </div>
           ) : null}
 
           <div>
-            <Label htmlFor="cal-meet-title">Title *</Label>
+            <Label htmlFor="cal-meet-title">{t('meeting.fields.title')}</Label>
             <Input
               id="cal-meet-title"
               className="mt-1.5"
               value={form.title}
               onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-              placeholder="e.g. Discovery with Acme"
+              placeholder={t('meeting.fields.titlePlaceholder')}
             />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <Label htmlFor="cal-meet-start">Start *</Label>
+              <Label htmlFor="cal-meet-start">{t('meeting.fields.start')}</Label>
               <NbosDatePicker
                 id="cal-meet-start"
                 mode="datetime"
@@ -188,11 +199,11 @@ export function CreateMeetingCalendarDialog({
                 className="mt-1.5"
                 value={form.startsLocal}
                 onChange={(startsLocal) => setForm((p) => ({ ...p, startsLocal }))}
-                aria-label="Meeting start"
+                aria-label={t('meeting.fields.startAria')}
               />
             </div>
             <div>
-              <Label htmlFor="cal-meet-end">End *</Label>
+              <Label htmlFor="cal-meet-end">{t('meeting.fields.end')}</Label>
               <NbosDatePicker
                 id="cal-meet-end"
                 mode="datetime"
@@ -200,14 +211,14 @@ export function CreateMeetingCalendarDialog({
                 className="mt-1.5"
                 value={form.endsLocal}
                 onChange={(endsLocal) => setForm((p) => ({ ...p, endsLocal }))}
-                aria-label="Meeting end"
+                aria-label={t('meeting.fields.endAria')}
               />
             </div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <Label>Meeting type</Label>
+              <Label>{t('meeting.fields.meetingType')}</Label>
               <Select
                 value={form.meetingType}
                 onValueChange={(v) => {
@@ -218,16 +229,16 @@ export function CreateMeetingCalendarDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {MEETING_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
+                  {MEETING_TYPE_VALUES.map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {t(`meeting.types.${value}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Location</Label>
+              <Label>{t('meeting.fields.location')}</Label>
               <Select
                 value={form.locationType}
                 onValueChange={(v) => {
@@ -238,9 +249,9 @@ export function CreateMeetingCalendarDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {LOCATION_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
+                  {LOCATION_TYPE_VALUES.map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {t(`meeting.locationTypes.${value}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -249,32 +260,32 @@ export function CreateMeetingCalendarDialog({
           </div>
 
           <div>
-            <Label htmlFor="cal-meet-link">Link or address</Label>
+            <Label htmlFor="cal-meet-link">{t('meeting.fields.linkOrAddress')}</Label>
             <Input
               id="cal-meet-link"
               className="mt-1.5"
               value={form.locationOrLink}
               onChange={(e) => setForm((p) => ({ ...p, locationOrLink: e.target.value }))}
-              placeholder="Meet link or street address"
+              placeholder={t('meeting.fields.linkPlaceholder')}
             />
           </div>
 
           <div>
-            <Label htmlFor="cal-meet-agenda">Agenda</Label>
+            <Label htmlFor="cal-meet-agenda">{t('meeting.fields.agenda')}</Label>
             <Textarea
               id="cal-meet-agenda"
               className="mt-1.5"
               rows={2}
               value={form.agenda}
               onChange={(e) => setForm((p) => ({ ...p, agenda: e.target.value }))}
-              placeholder="Optional"
+              placeholder={t('meeting.fields.agendaPlaceholder')}
             />
           </div>
         </div>
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
@@ -283,7 +294,11 @@ export function CreateMeetingCalendarDialog({
               loading || Boolean(conflicts?.length && !overrideReason.trim()) || !form.title.trim()
             }
           >
-            {loading ? 'Saving…' : conflicts?.length ? 'Schedule anyway' : 'Create'}
+            {loading
+              ? tCommon('saving')
+              : conflicts?.length
+                ? t('meeting.submit.scheduleAnyway')
+                : tCommon('create')}
           </Button>
         </DialogFooter>
       </DialogContent>

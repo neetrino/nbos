@@ -40,6 +40,8 @@ model Employee {
   status       EmployeeStatusEnum   @default(PROBATION)
   /** Bumped on password reset / disable so refresh rejects stale access claims. */
   authVersion  Int                  @default(1) @map("auth_version")
+  /** Personal UI locale. Writable allowlist is application-level (`en` | `ru`). */
+  interfaceLocale String            @default("en") @map("interface_locale")
   createdAt    DateTime             @default(now()) @map("created_at")
   updatedAt    DateTime             @updatedAt @map("updated_at")
 

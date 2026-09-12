@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, type CSSProperties, type KeyboardEvent, type RefObject } from 'react';
+import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
 import { Check, Loader2, Plus, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -120,6 +121,8 @@ function RelationPickerSearchInput({
   onQueryClear: () => void;
   onKeyDown: (event: KeyboardEvent) => void;
 }) {
+  const t = useTranslations('forms');
+
   return (
     <div ref={anchorRef} className="relative">
       <Search
@@ -143,7 +146,7 @@ function RelationPickerSearchInput({
           }}
           onClick={onQueryClear}
           className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-md"
-          aria-label="Clear search"
+          aria-label={t('relationPicker.clearSearch')}
         >
           <X size={16} />
         </button>
@@ -183,6 +186,7 @@ function RelationPickerResultsPanel({
   onCreateClick: () => void;
   onSelect: (value: string, label: string, avatar?: string) => void;
 }) {
+  const t = useTranslations('forms');
   const boxStyle: CSSProperties = {
     top: box.top,
     left: box.left,
@@ -196,12 +200,12 @@ function RelationPickerResultsPanel({
         {loading ? (
           <div className="text-muted-foreground flex items-center gap-2 px-3 py-2.5 text-xs">
             <Loader2 size={13} className="animate-spin" />
-            Searching…
+            {t('relationPicker.searching')}
           </div>
         ) : null}
 
         {!loading && results.length === 0 && query ? (
-          <div className="text-muted-foreground px-3 py-2.5 text-xs">No results found</div>
+          <div className="text-muted-foreground px-3 py-2.5 text-xs">{t('relationPicker.noResults')}</div>
         ) : null}
 
         {!loading &&

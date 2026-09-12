@@ -1,0 +1,102 @@
+{
+  "actions": {
+    "newTask": "Task",
+    "newTaskDescription": "Create work for yourself or a teammate.",
+    "newTaskError": "Could not open a new task. Try again.",
+    "newMeeting": "Meeting",
+    "newMeetingDescription": "Schedule a client meeting without leaving the desk.",
+    "newLead": "Lead",
+    "newLeadDescription": "Capture an incoming opportunity.",
+    "newExpense": "Expense",
+    "newExpenseDescription": "Log an expense from the desk.",
+    "openDeals": "Deals",
+    "openDealsDescription": "Review active sales pipeline.",
+    "openProducts": "Delivery Board",
+    "openProductsDescription": "Track Product and Extension delivery lifecycle and stage gates.",
+    "openInvoices": "Invoices",
+    "openInvoicesDescription": "Review invoices that still need attention.",
+    "openExpenses": "Pay now",
+    "openExpensesDescription": "Open expenses waiting for payment.",
+    "openPayroll": "Salary",
+    "openPayrollDescription": "Open payroll and salary.",
+    "openSupport": "Support queue",
+    "openSupportDescription": "Open tickets waiting for action.",
+    "openCredentials": "Credentials vault",
+    "openCredentialsDescription": "Open shared credentials you can access."
+  },
+  "create": {
+    "meetingCreated": "Meeting created",
+    "leadCreated": "Lead created",
+    "expenseCreated": "Expense created"
+  },
+  "pinned": {
+    "editing": "Editing",
+    "editLayoutAria": "Edit layout",
+    "doneEditingLayoutAria": "Done editing layout",
+    "empty": "No pinned actions are available for your current permissions.",
+    "shownOnDashboard": "Shown on dashboard",
+    "shown": "Shown",
+    "hidden": "Hidden",
+    "createGroupTitle": "Create",
+    "openGroupTitle": "Open"
+  },
+  "personalLink": {
+    "formTitle": "New shortcut button",
+    "formDescription": "Label and link are saved to your dashboard pinned area.",
+    "labelPlaceholder": "Label",
+    "urlPlaceholder": "/path or example.com (https added)",
+    "deleteAria": "Delete link",
+    "deleteNamedAria": "Delete {label}"
+  },
+  "notes": {
+    "placeholder": "Write a note and press Enter...",
+    "saveHint": "↵ Enter or",
+    "save": "Save",
+    "cancel": "Cancel",
+    "empty": "Your saved notes will collect here.",
+    "deleteAria": "Delete note",
+    "dragAria": "Drag note",
+    "dragLockedAria": "Reorder locked while editing",
+    "movingNote": "Moving note",
+    "justNow": "Just now"
+  },
+  "widgets": {
+    "miniAnalyticsTitle": "Mini analytics",
+    "editHint": "Drag rows between Shown and Hidden. Changes save automatically.",
+    "shown": "Shown",
+    "hidden": "Hidden",
+    "metrics": {
+      "leads": "Leads",
+      "openDeals": "Open deals",
+      "openTickets": "Open tickets",
+      "openTasks": "Open tasks"
+    }
+  },
+  "priorityFeed": {
+    "kicker": "Now",
+    "title": "Priority feed",
+    "empty": "Nothing critical is waiting in the current lightweight feed.",
+    "cards": {
+      "criticalSupportTicket": {
+        "title": "{count, plural, one {# critical support ticket} other {# critical support tickets}}",
+        "context": "Support has work waiting for action."
+      },
+      "taskDueToday": {
+        "title": "{count, plural, one {# task due today} other {# tasks due today}}",
+        "context": "Tasks has work waiting for action."
+      },
+      "pendingInvoice": {
+        "title": "{count, plural, one {# pending invoice} other {# pending invoices}}",
+        "context": "Finance has work waiting for action."
+      }
+    }
+  },
+  "errors": {
+    "loadFailed": "Dashboard data could not be loaded.",
+    "layoutSaveFailed": "Dashboard layout could not be saved. Please try again.",
+    "noteSaveFailed": "Dashboard note could not be saved.",
+    "noteDeleteFailed": "Dashboard note could not be deleted.",
+    "noteUpdateFailed": "Dashboard note could not be updated.",
+    "notesReorderFailed": "Dashboard notes order could not be saved."
+  }
+}

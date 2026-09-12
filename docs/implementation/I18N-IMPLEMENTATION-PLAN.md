@@ -1,6 +1,6 @@
 # План реализации мультиязычности NBOS
 
-Дата: 2026-09-12. Статус: готов к исполнению; реализация не начата.
+Дата: 2026-09-12. Статус: первый EN/RU срез и исправления независимого ревью в рабочем дереве; визуальная приёмка и production rollout открыты.
 
 Источник решений: [канон локализации](../NBOS/01-Platform-Overview/07-Interface-Localization.md). Этот план описывает продуктовую реализацию; распределение моделей находится в [инструкции Cursor](./I18N-CURSOR-HANDOFF.md).
 
@@ -97,10 +97,10 @@ Task, Meeting, Lead, Expense: поля, placeholder, статусы, relation pi
 | Этап      | Статус                   | Доказательства / следующий шаг      |
 | --------- | ------------------------ | ----------------------------------- |
 | Документы | Подготовлены, 2026-09-12 | Реализация не начата                |
-| 0         | Не начат                 | Составить coverage и baseline       |
-| 1         | Не начат                 | Основа + проверенный эталон         |
-| 2         | Не начат                 | Оболочка и Dashboard                |
-| 3         | Не начат                 | Четыре create-flow                  |
-| 4         | Не начат                 | Автоматическая и визуальная приёмка |
-| 5         | Не начат                 | Review и отчёт                      |
+| 0         | Завершён                 | `docs/implementation/I18N-COVERAGE.md` |
+| 1         | Завершён                 | next-intl 4.14.4, `Employee.interfaceLocale`, GET/PATCH `/api/v1/me/preferences`, cookie `nbos-interface-locale`, SSR. Миграция `20260912120000_employee_interface_locale` применена к dev Neon 2026-09-12 |
+| 2         | Завершён                 | Оболочка + Dashboard Control Center EN/RU |
+| 3         | Завершён                 | Task/Meeting/Lead/Expense + date/relation picker chrome (`forms`) |
+| 4         | Частично                 | После review-фиксов: `pnpm --filter @nbos/web typecheck` зелёный; focused eslint по затронутым путям зелёный; 77 targeted tests зелёные; `pnpm run build:web` зелёный. Полный `web lint` не повторялся. Desktop RU shell/dashboard/date-picker видели в живой сессии. Mobile viewport, live истечение access token, live 403/conflict/network и полная визуальная приёмка не закрыты. Auth-страницы вне scope, лендинг остаётся EN |
+| 5         | В работе                 | Замечания независимого ревью исправлены в рабочем дереве; журналы coverage/плана согласованы. Visual/login acceptance не отмечена завершённой. Production rollout не делался |
 | 6–7       | Отложены                 | Вне текущего поручения              |

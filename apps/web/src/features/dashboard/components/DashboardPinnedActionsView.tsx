@@ -1,4 +1,7 @@
+'use client';
+
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { partitionPinnedActionsByKind } from '../dashboard-pinned-action-kind';
 import { DASHBOARD_PINNED_GRID_CLASS } from '../dashboard-pinned-actions.constants';
 import type { DashboardPersonalLink, PinnedAction } from '../dashboard-control-registry';
@@ -15,20 +18,21 @@ export function DashboardPinnedActionsView({
   personalLinks,
   onDeletePersonalLink,
 }: DashboardPinnedActionsViewProps) {
+  const t = useTranslations('dashboard');
   const { create, open } = partitionPinnedActionsByKind(actions);
   const hasOpen = open.length > 0 || personalLinks.length > 0;
 
   return (
-    <div className="mt-4 flex flex-col gap-5">
+    <div className="flex flex-col gap-5">
       {create.length > 0 ? (
-        <PinnedActionGroup title="Create" hint="Opens a form here. Nothing leaves the desk.">
+        <PinnedActionGroup title={t('pinned.createGroupTitle')}>
           {create.map((action) => (
             <PinnedActionCard key={action.key} action={action} editMode={false} />
           ))}
         </PinnedActionGroup>
       ) : null}
       {hasOpen ? (
-        <PinnedActionGroup title="Open" hint="Go to a page or a saved link.">
+        <PinnedActionGroup title={t('pinned.openGroupTitle')}>
           {open.map((action) => (
             <PinnedActionCard key={action.key} action={action} editMode={false} />
           ))}
@@ -46,21 +50,10 @@ export function DashboardPinnedActionsView({
   );
 }
 
-function PinnedActionGroup({
-  title,
-  hint,
-  children,
-}: {
-  title: string;
-  hint: string;
-  children: ReactNode;
-}) {
+function PinnedActionGroup({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div>
-      <div className="mb-2.5">
-        <h3 className="text-sm font-semibold">{title}</h3>
-        <p className="text-muted-foreground mt-0.5 text-xs">{hint}</p>
-      </div>
+      <h3 className="mb-2.5 text-sm font-semibold">{title}</h3>
       <div className={DASHBOARD_PINNED_GRID_CLASS}>{children}</div>
     </div>
   );

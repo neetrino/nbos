@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { Calendar, Flame, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,8 @@ import {
 export type { QuickCreateTaskDialogProps };
 
 export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
   const { me } = usePermission();
   const { onOpenFull, open, onOpenChange } = props;
   const form = useQuickCreateTaskForm({ ...props, me });
@@ -46,7 +49,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
         className={QUICK_CREATE_TASK_DIALOG_CLASS}
         forceNestedBackdrop={props.forceNestedBackdrop}
       >
-        <DialogTitle className="sr-only">Create task</DialogTitle>
+        <DialogTitle className="sr-only">{t('task.title')}</DialogTitle>
 
         <form
           className={QUICK_CREATE_TASK_BODY_CLASS}
@@ -55,7 +58,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
         >
           {form.creatorBlocked ? (
             <p className="text-destructive mb-3 text-sm" role="alert">
-              Your account is not linked to an employee record, so tasks cannot be created.
+              {t('task.employeeNotLinked')}
             </p>
           ) : null}
 
@@ -65,7 +68,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
               name="quick-create-task-title"
               value={form.title}
               onChange={(event) => form.setTitle(event.target.value)}
-              placeholder="Task name"
+              placeholder={t('task.namePlaceholder')}
               autoFocus
               disabled={form.saving || form.creatorBlocked}
               minHeightPx={QUICK_CREATE_TASK_TITLE_MIN_HEIGHT_PX}
@@ -81,8 +84,8 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
                   form.isHighPriority && TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
                 )}
                 aria-pressed={form.isHighPriority}
-                aria-label={form.isHighPriority ? 'Urgent' : 'Mark as urgent'}
-                title={form.isHighPriority ? 'Urgent' : 'Mark as urgent'}
+                aria-label={form.isHighPriority ? t('task.urgent') : t('task.markAsUrgent')}
+                title={form.isHighPriority ? t('task.urgent') : t('task.markAsUrgent')}
                 disabled={form.saving}
                 onClick={() => form.setIsHighPriority((value) => !value)}
               >
@@ -93,7 +96,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
                 variant="ghost"
                 size="icon-sm"
                 className="text-muted-foreground/75 size-8 rounded-full"
-                aria-label="Close"
+                aria-label={tCommon('close')}
                 disabled={form.saving}
                 onClick={() => onOpenChange(false)}
               >
@@ -108,7 +111,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
               name="quick-create-task-description"
               value={form.description}
               onChange={(event) => form.setDescription(event.target.value)}
-              placeholder="Description"
+              placeholder={t('task.descriptionPlaceholder')}
               disabled={form.saving || form.creatorBlocked}
               className={QUICK_CREATE_TASK_DESCRIPTION_INPUT_CLASS}
               onSubmitShortcut={() => void form.handleCreate()}
@@ -117,7 +120,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
 
           <div className="border-border/70 mt-3 space-y-2 border-t pt-3">
             <RelationPickerField
-              label="Assignee"
+              label={t('task.assignee')}
               entityKind="employee"
               value={form.assigneeId || null}
               selectionLabel={form.assigneeLabel || null}
@@ -130,7 +133,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
             />
 
             <div className="flex min-h-9 items-center gap-3">
-              <span className={QUICK_CREATE_TASK_ROW_LABEL_CLASS}>Due date</span>
+              <span className={QUICK_CREATE_TASK_ROW_LABEL_CLASS}>{t('task.dueDate')}</span>
               <div
                 ref={dueDateFieldRef}
                 className="relative flex min-w-0 flex-1 items-center gap-2"
@@ -145,7 +148,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
                   clearable
                   embedded
                   className="min-w-0 flex-1"
-                  aria-label="Due date"
+                  aria-label={t('task.dueDateAria')}
                   popoverAnchorRef={dueDateFieldRef}
                   popoverAlign="start"
                 />
@@ -163,7 +166,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
               className="text-muted-foreground mr-auto h-9 px-0 text-sm font-normal"
               onClick={onOpenFull}
             >
-              Full form
+              {t('task.fullForm')}
             </Button>
           ) : null}
           <div className="ml-auto flex flex-wrap items-center gap-3">
@@ -174,7 +177,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
               onClick={() => void form.handleCreate()}
               disabled={form.saving || !form.canCreate}
             >
-              {form.saving ? 'Creating…' : 'Create'}
+              {form.saving ? tCommon('creating') : tCommon('create')}
             </Button>
             <Button
               type="button"
@@ -184,7 +187,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
               onClick={() => onOpenChange(false)}
               disabled={form.saving}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
           </div>
         </div>

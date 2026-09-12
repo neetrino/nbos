@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { EmployeesController } from './employees.controller';
 import { MeController } from './me.controller';
+import { MePreferencesController } from './me-preferences.controller';
 import { EmployeesService } from './employees.service';
+import { EmployeeInterfaceLocaleService } from './employee-interface-locale.service';
 import { EmployeeWalletService } from './employee-wallet.service';
 import { EmployeeOffboardingService } from './employee-offboarding.service';
 import { EmployeeReactivationService } from './employee-reactivation.service';
@@ -12,9 +14,10 @@ import { NotificationModule } from '../notifications/notification.module';
 
 @Module({
   imports: [DashboardModule, AuditModule, NotificationModule],
-  controllers: [EmployeesController, MeController],
+  controllers: [EmployeesController, MeController, MePreferencesController],
   providers: [
     EmployeesService,
+    EmployeeInterfaceLocaleService,
     EmployeeWalletService,
     EmployeeOffboardingService,
     EmployeeReactivationService,
@@ -22,6 +25,7 @@ import { NotificationModule } from '../notifications/notification.module';
   ],
   exports: [
     EmployeesService,
+    EmployeeInterfaceLocaleService,
     EmployeeWalletService,
     EmployeeOffboardingService,
     EmployeeReactivationService,

@@ -37,7 +37,7 @@
 | 2.4  | State management | Zustand + TanStack Query 5   | ✅     | клиент + серверный кеш                                                            |
 | 2.5  | Формы            | React Hook Form + Zod        | ✅     | Zod shared с backend                                                              |
 | 2.6  | Data fetching    | TanStack Query + REST        | ✅     |                                                                                   |
-| 2.7  | i18n             | next-intl; EN/RU, затем HY    | ⬜     | Утверждено 2026-09-12, ещё не реализовано. [Канон локализации](NBOS/01-Platform-Overview/07-Interface-Localization.md); без locale-prefix URL |
+| 2.7  | i18n             | next-intl 4.14.4; EN/RU, затем HY | ✅     | Первый EN/RU срез в рабочем дереве (навигация, аккаунт, Dashboard, 4 create-flow). HY выключен. Без locale-prefix URL. Production rollout — отдельно. [Канон](NBOS/01-Platform-Overview/07-Interface-Localization.md) |
 | 2.8  | SEO              | не требуется                 | ➖     | внутренняя система                                                                |
 | 2.9  | Тёмная тема      | next-themes + CSS variables  | ✅     | Phase 2+                                                                          |
 | 2.10 | Анимации         | Framer Motion                | ✅     | Kanban, переходы                                                                  |

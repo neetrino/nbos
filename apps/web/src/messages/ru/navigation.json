@@ -1,0 +1,125 @@
+{
+  "modules": {
+    "dashboard": "Обзор",
+    "crm": "CRM",
+    "marketing": "Маркетинг",
+    "project-hub": "Хаб проектов",
+    "delivery-board": "Поставка",
+    "tasks": "Задачи",
+    "work-spaces": "Рабочие пространства",
+    "finance": "Финансы",
+    "support": "Поддержка",
+    "clients": "Клиенты",
+    "partners": "Партнёры",
+    "my-company": "Моя компания",
+    "messenger": "Мессенджер",
+    "client-messenger": "Клиентский мессенджер",
+    "calendar": "Календарь",
+    "drive": "Диск",
+    "documents": "Документы",
+    "mail": "Почта",
+    "credentials": "Учётные данные",
+    "ai-agents": "ИИ и агенты",
+    "reports": "Аналитика",
+    "settings": "Администрирование платформы"
+  },
+  "children": {
+    "myCompany": {
+      "compensation": "Компенсация",
+      "kpi": "KPI / Сводка показателей",
+      "kpiPolicies": "Политики KPI",
+      "sop": "SOP и шаблоны"
+    },
+    "messenger": {
+      "all": "Все",
+      "products": "Продукты",
+      "tasks": "Задачи",
+      "deals": "Сделки",
+      "workSpaces": "Рабочие пространства",
+      "groups": "Группы",
+      "direct": "Личные",
+      "collections": "Подборки"
+    },
+    "clientMessenger": {
+      "inbox": "Входящие",
+      "sales": "Продажи",
+      "clients": "Клиенты",
+      "collections": "Подборки"
+    },
+    "settings": {
+      "general": "Общие",
+      "systemLists": "Системные списки",
+      "permissionsRbac": "Права / RBAC",
+      "moduleSettings": "Настройки модулей",
+      "integrations": "Интеграции",
+      "security": "Безопасность",
+      "featureFlags": "Флаги функций",
+      "scheduler": "Планировщик",
+      "auditLog": "Журнал аудита"
+    }
+  },
+  "sidebar": {
+    "expandSidebar": "Развернуть боковую панель",
+    "collapseSidebar": "Свернуть боковую панель",
+    "expandSubmenu": "Развернуть подменю",
+    "collapseSubmenu": "Свернуть подменю",
+    "moreHidden": "Ещё / Скрытые",
+    "myLinks": "Мои ссылки",
+    "settings": "Настройки",
+    "customizeLeftMenu": "Настроить левое меню",
+    "platformSettings": "Настройки платформы"
+  },
+  "customize": {
+    "title": "Левое меню",
+    "description": "Перетащите модули, чтобы изменить порядок. Скрытые пункты остаются доступны в разделе «Ещё» на боковой панели.",
+    "shownInMenu": "Показаны в меню",
+    "hidden": "Скрытые ({count})",
+    "show": "Показать",
+    "linkTitlePlaceholder": "Название",
+    "linkUrlPlaceholder": "URL или /путь",
+    "addLink": "Добавить ссылку",
+    "dragToReorder": "Перетащите, чтобы изменить порядок: {label}",
+    "hideModule": "Скрыть {label}",
+    "removeLink": "Удалить {label}"
+  },
+  "quickAction": {
+    "createTask": "Создать задачу"
+  },
+  "mobileMenu": {
+    "title": "Меню",
+    "description": "Откройте модуль. Пункты отображаются крупными кнопками."
+  },
+  "mobileDock": {
+    "settings": "Настройки",
+    "defaultScope": "Все",
+    "menu": "Меню",
+    "search": "Поиск",
+    "new": "Создать",
+    "toolsAria": "Инструменты рабочего пространства",
+    "goTo": "Перейти",
+    "zone": "Зона",
+    "section": "Раздел",
+    "category": "Категория",
+    "view": "Вид",
+    "placesDescription": "Разделы текущего модуля.",
+    "searchDescription": "Поиск и фильтр в этом списке."
+  },
+  "search": {
+    "trigger": "Поиск",
+    "openAria": "Открыть глобальный поиск"
+  },
+  "notifications": {
+    "trigger": "Уведомления"
+  },
+  "pwa": {
+    "install": "Установить приложение",
+    "addToHomeScreen": "На экран «Домой»",
+    "iosHint": "Нажмите «Поделиться», затем «На экран Домой», чтобы оставить NBOS среди приложений."
+  },
+  "headerQuickNote": {
+    "placeholder": "Напишите заметку и нажмите Enter…",
+    "saveHint": "↵ Enter или",
+    "saveFailed": "Не удалось сохранить заметку."
+  },
+  "moduleTitleAria": "Модуль: {title}"
+}

@@ -91,8 +91,13 @@ export interface DeskLineSlots {
 export interface DeskLineResolution {
   templateId: string;
   theme: string;
+  /** English filled copy — stable for resolve tests and algorithm checks. */
   title: string;
   subline: string;
+  /** Catalog template before slot fill — used for locale lookup at render. */
+  titleTemplate: string;
+  sublineTemplate: string;
+  slots: DeskLineSlots;
   icon: DeskLineIconKey;
   pool: DeskLinePoolId;
 }

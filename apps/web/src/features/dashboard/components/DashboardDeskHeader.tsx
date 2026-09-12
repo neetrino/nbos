@@ -1,27 +1,45 @@
 'use client';
 
+import { useMemo } from 'react';
+import { useMessages } from 'next-intl';
 import { usePermission } from '@/lib/permissions';
-import { deskCopy } from '../dashboard-desk-header';
+import {
+  deskCopy,
+  localizeDeskLineCopy,
+  readDeskLineCatalogTemplates,
+} from '../dashboard-desk-header';
 import { useYerevanDeskClock } from '../desk-line/desk-line-clock';
 import { DESK_LINE_ICON_MAP } from '../desk-line/desk-line-icons';
 
 export function DashboardDeskHeader() {
+  const messages = useMessages();
   const { me, isLoading } = usePermission();
   const now = useYerevanDeskClock();
   const ready = now != null && !isLoading && me?.id;
-  const copy =
-    ready && now
-      ? deskCopy(
-          {
-            employeeId: me.id,
-            firstName: me.firstName,
-            birthday: me.birthday,
-            hireDate: me.hireDate,
-            status: me.status,
-          },
-          now,
-        )
-      : deskCopy(null);
+  const copy = useMemo(() => {
+    const resolution =
+      ready && now
+        ? deskCopy(
+            {
+              employeeId: me.id,
+              firstName: me.firstName,
+              birthday: me.birthday,
+              hireDate: me.hireDate,
+              status: me.status,
+            },
+            now,
+          )
+        : deskCopy(null);
+    const catalog = readDeskLineCatalogTemplates(
+      messages.dashboardDeskLine,
+      resolution.templateId,
+    );
+    const localized = localizeDeskLineCopy(resolution, {
+      title: catalog.title ?? resolution.titleTemplate,
+      subline: catalog.subline ?? resolution.sublineTemplate,
+    });
+    return { ...resolution, ...localized };
+  }, [me, messages.dashboardDeskLine, now, ready]);
   const Icon = DESK_LINE_ICON_MAP[copy.icon];
 
   return (

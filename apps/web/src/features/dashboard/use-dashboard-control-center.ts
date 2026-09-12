@@ -10,8 +10,10 @@ import {
   type SetStateAction,
 } from 'react';
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { dashboardApi } from '@/lib/api/dashboard';
+import { firstReleaseFormErrorCopy, localizeCaughtApiError } from '@/i18n/localize-api-error';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import {
@@ -38,6 +40,9 @@ import {
 const TEMP_NOTE_ID_PREFIX = 'temp-dashboard-note';
 
 export function useDashboardControlCenter() {
+  const t = useTranslations('dashboard');
+  const tCommon = useTranslations('common');
+  const tForms = useTranslations('forms');
   const { data: session, status } = useSession();
   const userId = session?.user?.id;
   const { can } = usePermission();
@@ -98,14 +103,25 @@ export function useDashboardControlCenter() {
         setPersonalLinks([]);
         setNotes([]);
         setPriorities([]);
-        setError(caught instanceof Error ? caught.message : 'Dashboard data could not be loaded.');
+        setError(
+          localizeCaughtApiError(
+            caught,
+            firstReleaseFormErrorCopy(
+              tCommon('permissionDenied'),
+              t('errors.loadFailed'),
+              t('errors.loadFailed'),
+              t('errors.loadFailed'),
+              tForms('errors.network'),
+            ),
+          ),
+        );
       } finally {
         if (generation === fetchGenerationRef.current && showLoading) {
           setLoading(false);
         }
       }
     },
-    [applyProjection, userId],
+    [applyProjection, t, tCommon, tForms, userId],
   );
 
   useEffect(() => {
@@ -148,7 +164,7 @@ export function useDashboardControlCenter() {
     });
   }, [userId]);
 
-  const preferenceControls = usePreferenceControls(preference, setPreference);
+  const preferenceControls = usePreferenceControls(preference, setPreference, t);
 
   return {
     actions,
@@ -192,7 +208,7 @@ export function useDashboardControlCenter() {
         setNotes((current) => current.map((note) => (note.id === temporaryId ? saved : note)));
       } catch (caught) {
         setNotes((current) => current.filter((note) => note.id !== temporaryId));
-        toast.error(getApiErrorMessage(caught, 'Dashboard note could not be saved.'));
+        toast.error(getApiErrorMessage(caught, t('errors.noteSaveFailed')));
         throw caught;
       }
     },
@@ -203,7 +219,7 @@ export function useDashboardControlCenter() {
         await dashboardApi.deleteNote(id);
       } catch (caught) {
         setNotes(previousNotes);
-        toast.error(getApiErrorMessage(caught, 'Dashboard note could not be deleted.'));
+        toast.error(getApiErrorMessage(caught, t('errors.noteDeleteFailed')));
       }
     },
     updateDashboardNote: async (id: string, content: string) => {
@@ -219,7 +235,7 @@ export function useDashboardControlCenter() {
         setNotes((current) => current.map((note) => (note.id === id ? saved : note)));
       } catch (caught) {
         setNotes(previousNotes);
-        toast.error(getApiErrorMessage(caught, 'Dashboard note could not be updated.'));
+        toast.error(getApiErrorMessage(caught, t('errors.noteUpdateFailed')));
         throw caught;
       }
     },
@@ -231,7 +247,7 @@ export function useDashboardControlCenter() {
         setNotes(saved);
       } catch (caught) {
         setNotes(previousNotes);
-        toast.error(getApiErrorMessage(caught, 'Dashboard notes order could not be saved.'));
+        toast.error(getApiErrorMessage(caught, t('errors.notesReorderFailed')));
       }
     },
   };
@@ -248,6 +264,7 @@ function orderNotesByIds(notes: DashboardNote[], noteIds: string[]): DashboardNo
 function usePreferenceControls(
   preference: DashboardPreference | null,
   setPreference: Dispatch<SetStateAction<DashboardPreference | null>>,
+  t: ReturnType<typeof useTranslations<'dashboard'>>,
 ) {
   const [savingPreference, setSavingPreference] = useState(false);
   const preferenceRef = useRef(preference);
@@ -277,9 +294,7 @@ function usePreferenceControls(
         if (generation === saveGenerationRef.current) {
           preferenceRef.current = previous;
           setPreference(previous);
-          toast.error(
-            getApiErrorMessage(caught, 'Dashboard layout could not be saved. Please try again.'),
-          );
+          toast.error(getApiErrorMessage(caught, t('errors.layoutSaveFailed')));
         }
       } finally {
         saveInflightRef.current -= 1;
@@ -289,7 +304,7 @@ function usePreferenceControls(
         }
       }
     },
-    [setPreference],
+    [setPreference, t],
   );
 
   const applyPinnedLayout = useCallback(

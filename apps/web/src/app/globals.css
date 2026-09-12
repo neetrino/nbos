@@ -163,7 +163,8 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-inter), var(--font-noto-sans-armenian), ui-sans-serif, system-ui,
+    sans-serif;
   --font-display: var(--font-source-serif);
   --font-mono: var(--font-jetbrains-mono);
 }

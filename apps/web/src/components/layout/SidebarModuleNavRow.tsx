@@ -12,6 +12,7 @@ import { SidebarModuleIcon } from './SidebarModuleIcon';
 import { SidebarNavQuickActionButton } from './SidebarNavQuickActionButton';
 import { SidebarChildNavList } from './sidebar-child-nav-list';
 import { useMessengerBootstrapPrefetch } from '@/features/messenger/persist/use-messenger-bootstrap-prefetch';
+import { useTranslations } from 'next-intl';
 
 interface SidebarModuleNavRowProps {
   item: NavModuleDefinition;
@@ -101,13 +102,16 @@ function ParentModuleNavRow({
   onExpandOnly: () => void;
   onPrefetch: () => void;
 }) {
+  const t = useTranslations('navigation');
+  const moduleLabel = t(item.label);
+
   if (collapsed) {
     return (
       <li className="relative z-[1]" onPointerEnter={onPrefetch} onFocusCapture={onPrefetch}>
         <Link
           href={firstChildHref}
           onClick={onExpandOnly}
-          title={item.label}
+          title={moduleLabel}
           data-sidebar-nav-active={isActive ? 'true' : undefined}
           className={navLinkClass(isActive, collapsed, muted)}
         >
@@ -137,12 +141,12 @@ function ParentModuleNavRow({
           )}
         >
           <SidebarModuleIcon moduleKey={item.key} active={isActive} muted={muted} />
-          <span className="truncate">{item.label}</span>
+          <span className="truncate">{moduleLabel}</span>
         </Link>
         <button
           type="button"
           aria-expanded={expanded}
-          aria-label={expanded ? 'Collapse submenu' : 'Expand submenu'}
+          aria-label={expanded ? t('sidebar.collapseSubmenu') : t('sidebar.expandSubmenu')}
           onClick={(event) => {
             event.preventDefault();
             onToggleExpanded();
@@ -177,18 +181,20 @@ function LeafModuleNavRow({
   onQuickAction?: (action: NonNullable<NavModuleDefinition['quickAction']>) => void;
   onPrefetch: () => void;
 }) {
+  const t = useTranslations('navigation');
+  const moduleLabel = t(item.label);
   const quickAction = item.quickAction;
   if (!quickAction || !onQuickAction || collapsed) {
     return (
       <li className="relative z-[1]" onPointerEnter={onPrefetch} onFocusCapture={onPrefetch}>
         <Link
           href={moduleHref}
-          title={item.label}
+          title={moduleLabel}
           data-sidebar-nav-active={isActive ? 'true' : undefined}
           className={navLinkClass(isActive, collapsed, muted)}
         >
           <SidebarModuleIcon moduleKey={item.key} active={isActive} muted={muted} />
-          {!collapsed && <span className="truncate">{item.label}</span>}
+          {!collapsed && <span className="truncate">{moduleLabel}</span>}
         </Link>
       </li>
     );
@@ -208,14 +214,14 @@ function LeafModuleNavRow({
       >
         <Link
           href={moduleHref}
-          title={item.label}
+          title={moduleLabel}
           className={cn(
             `${SIDEBAR_NAV_ITEM_CLASS} flex min-w-0 flex-1 items-center gap-2 text-[13px] font-medium transition-colors`,
             isActive ? 'text-sidebar-foreground' : 'hover:text-sidebar-foreground',
           )}
         >
           <SidebarModuleIcon moduleKey={item.key} active={isActive} muted={muted} />
-          <span className="truncate">{item.label}</span>
+          <span className="truncate">{moduleLabel}</span>
         </Link>
         <SidebarNavQuickActionButton onAction={() => onQuickAction(quickAction)} />
       </div>

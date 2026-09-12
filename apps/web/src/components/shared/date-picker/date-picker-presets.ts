@@ -14,7 +14,6 @@ export type DatePickerPresetId = 'today' | 'tomorrow' | 'endOfWeek' | 'inOneWeek
 
 export interface DatePickerPreset {
   id: DatePickerPresetId;
-  label: string;
   date: Date;
   subtitle: string;
 }
@@ -34,17 +33,16 @@ export function buildDatePickerPresets(anchor: Date, locale: string): DatePicker
     month: 'long',
   });
 
-  const entries: Array<{ id: DatePickerPresetId; label: string; date: Date }> = [
-    { id: 'today', label: 'Today', date: today },
-    { id: 'tomorrow', label: 'Tomorrow', date: addDays(today, 1) },
-    { id: 'endOfWeek', label: 'End of week', date: endOfBusinessWeek(today) },
-    { id: 'inOneWeek', label: 'In one week', date: addWeeks(today, 1) },
-    { id: 'endOfMonth', label: 'End of month', date: endOfMonth(today) },
+  const entries: Array<{ id: DatePickerPresetId; date: Date }> = [
+    { id: 'today', date: today },
+    { id: 'tomorrow', date: addDays(today, 1) },
+    { id: 'endOfWeek', date: endOfBusinessWeek(today) },
+    { id: 'inOneWeek', date: addWeeks(today, 1) },
+    { id: 'endOfMonth', date: endOfMonth(today) },
   ];
 
   return entries.map((entry) => ({
     id: entry.id,
-    label: entry.label,
     date: entry.date,
     subtitle: intlSubtitle.format(entry.date),
   }));

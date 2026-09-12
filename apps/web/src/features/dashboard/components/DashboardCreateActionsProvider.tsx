@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { CreateMeetingCalendarDialog } from '@/features/calendar/CreateMeetingCalendarDialog';
 import { CreateLeadDialog } from '@/features/crm/components/CreateLeadDialog';
@@ -21,6 +22,7 @@ export function useDashboardCreateAction(): OpenDashboardCreateAction {
 }
 
 export function DashboardCreateActionsProvider({ children }: { children: ReactNode }) {
+  const t = useTranslations('dashboard');
   const { openUnsortedTaskCreate } = useUnsortedTaskCreate();
   const [meetingOpen, setMeetingOpen] = useState(false);
   const [meetingDate, setMeetingDate] = useState(() => new Date());
@@ -30,7 +32,11 @@ export function DashboardCreateActionsProvider({ children }: { children: ReactNo
   const openCreateAction = useCallback<OpenDashboardCreateAction>(
     (key) => {
       if (key === 'new-task') {
-        openUnsortedTaskCreate();
+        try {
+          openUnsortedTaskCreate();
+        } catch {
+          toast.error(t('actions.newTaskError'));
+        }
         return;
       }
       if (key === 'new-meeting') {
@@ -46,7 +52,7 @@ export function DashboardCreateActionsProvider({ children }: { children: ReactNo
         setExpenseOpen(true);
       }
     },
-    [openUnsortedTaskCreate],
+    [openUnsortedTaskCreate, t],
   );
 
   const value = useMemo(() => openCreateAction, [openCreateAction]);
@@ -84,6 +90,7 @@ function DashboardCreateActionDialogs({
   onLeadOpenChange: (open: boolean) => void;
   onMeetingOpenChange: (open: boolean) => void;
 }) {
+  const t = useTranslations('dashboard');
   return (
     <>
       <CreateMeetingCalendarDialog
@@ -91,21 +98,21 @@ function DashboardCreateActionDialogs({
         onOpenChange={onMeetingOpenChange}
         selectedDate={meetingDate}
         onCreated={() => {
-          toast.success('Meeting created');
+          toast.success(t('create.meetingCreated'));
         }}
       />
       <CreateLeadDialog
         open={leadOpen}
         onOpenChange={onLeadOpenChange}
         onCreated={() => {
-          toast.success('Lead created');
+          toast.success(t('create.leadCreated'));
         }}
       />
       <CreateExpenseDialog
         open={expenseOpen}
         onOpenChange={onExpenseOpenChange}
         onCreated={() => {
-          toast.success('Expense created');
+          toast.success(t('create.expenseCreated'));
         }}
       />
     </>

@@ -16,8 +16,8 @@ import {
   HEADER_QUICK_NOTE_WIDTH_COLLAPSED_REM,
   HEADER_QUICK_NOTE_WIDTH_EXPANDED_REM,
 } from '@/components/layout/header-quick-note-constants';
-const QUICK_NOTE_PLACEHOLDER = 'Write a note and press Enter...';
-const QUICK_NOTE_SAVE_HINT = '↵ Enter or';
+import { useTranslations } from 'next-intl';
+
 const QUICK_NOTE_CORNER_SAVE_CLASS =
   'h-7 rounded-full border border-amber-800/30 bg-amber-900 px-2.5 text-xs font-medium text-amber-50 shadow-sm hover:bg-amber-800 disabled:border-amber-300 disabled:bg-amber-200/90 disabled:text-amber-900/30';
 
@@ -25,6 +25,8 @@ const QUICK_NOTE_MAX_WIDTH = 'min(22rem, calc(100vw - 10rem))';
 
 export function HeaderQuickNote() {
   const { data: session } = useSession();
+  const tNav = useTranslations('navigation');
+  const tCommon = useTranslations('common');
   const userId = session?.user?.id;
   const [expanded, setExpanded] = useState(false);
   const [draft, setDraft] = useState('');
@@ -80,7 +82,7 @@ export function HeaderQuickNote() {
       if (userId) prependDashboardControlCacheNote(userId, saved);
       dispatchDashboardNoteCreated(saved);
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Note could not be saved.'));
+      toast.error(getApiErrorMessage(caught, tNav('headerQuickNote.saveFailed')));
     } finally {
       setSaving(false);
     }
@@ -118,6 +120,9 @@ export function HeaderQuickNote() {
         saving={saving}
         showSave={showSave}
         textareaRef={textareaRef}
+        saveLabel={tCommon('save')}
+        placeholder={tNav('headerQuickNote.placeholder')}
+        saveHint={tNav('headerQuickNote.saveHint')}
       />
     </div>
   );
@@ -134,6 +139,9 @@ function QuickNoteComposer({
   saving,
   showSave,
   textareaRef,
+  saveLabel,
+  placeholder,
+  saveHint,
 }: {
   canSave: boolean;
   draft: string;
@@ -145,6 +153,9 @@ function QuickNoteComposer({
   saving: boolean;
   showSave: boolean;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  saveLabel: string;
+  placeholder: string;
+  saveHint: string;
 }) {
   return (
     <div
@@ -170,7 +181,7 @@ function QuickNoteComposer({
         onFocus={onExpand}
         onClick={onExpand}
         onKeyDown={onKeyDown}
-        placeholder={QUICK_NOTE_PLACEHOLDER}
+        placeholder={placeholder}
         rows={expanded ? 5 : 1}
         style={expanded ? { minHeight: HEADER_QUICK_NOTE_EXPANDED_MIN_HEIGHT_PX } : undefined}
         className={cn(
@@ -182,7 +193,7 @@ function QuickNoteComposer({
       {showSave ? (
         <div className="absolute right-2 bottom-2 z-10 flex max-w-[calc(100%-1rem)] items-center justify-end gap-2">
           <p className="min-w-0 text-right text-[10px] leading-snug font-medium text-amber-900/50 select-none">
-            {QUICK_NOTE_SAVE_HINT}
+            {saveHint}
           </p>
           <Button
             type="button"
@@ -191,7 +202,7 @@ function QuickNoteComposer({
             disabled={!canSave}
             onClick={onSave}
           >
-            Save
+            {saveLabel}
           </Button>
         </div>
       ) : null}

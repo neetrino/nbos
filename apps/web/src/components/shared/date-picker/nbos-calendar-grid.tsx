@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { NBOS_DATE_PICKER_DAY_CELL_CLASS } from './date-picker-constants';
@@ -33,6 +34,7 @@ export function NbosCalendarGrid({
   onHeaderClick,
   className,
 }: NbosCalendarGridProps) {
+  const t = useTranslations('forms');
   const weekdays = getWeekdayLabels(locale);
   const cells = buildMonthGrid(viewMonth);
 
@@ -44,7 +46,7 @@ export function NbosCalendarGrid({
           variant="ghost"
           size="icon"
           className="text-muted-foreground hover:text-foreground size-8 shrink-0 rounded-lg"
-          aria-label="Previous month"
+          aria-label={t('datePicker.previousMonth')}
           onClick={() => onViewMonthChange(navigateViewMonth(viewMonth, -1))}
         >
           <ChevronLeft size={18} />
@@ -64,7 +66,7 @@ export function NbosCalendarGrid({
           variant="ghost"
           size="icon"
           className="text-muted-foreground hover:text-foreground size-8 shrink-0 rounded-lg"
-          aria-label="Next month"
+          aria-label={t('datePicker.nextMonth')}
           onClick={() => onViewMonthChange(navigateViewMonth(viewMonth, 1))}
         >
           <ChevronRight size={18} />

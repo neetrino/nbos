@@ -163,16 +163,38 @@ export const PINNED_ACTIONS: PinnedAction[] = [
 ];
 
 export const MINI_METRICS = [
-  { id: 'leads', icon: Plus, label: 'Leads', key: 'leads', href: '/crm/leads' },
-  { id: 'open-deals', icon: Handshake, label: 'Open deals', key: 'openDeals', href: '/crm/deals' },
+  {
+    id: 'leads',
+    icon: Plus,
+    labelKey: 'widgets.metrics.leads',
+    label: 'Leads',
+    key: 'leads',
+    href: '/crm/leads',
+  },
+  {
+    id: 'open-deals',
+    icon: Handshake,
+    labelKey: 'widgets.metrics.openDeals',
+    label: 'Open deals',
+    key: 'openDeals',
+    href: '/crm/deals',
+  },
   {
     id: 'open-support-tickets',
     icon: Headphones,
+    labelKey: 'widgets.metrics.openTickets',
     label: 'Open tickets',
     key: 'openTickets',
     href: '/support',
   },
-  { id: 'open-tasks', icon: CheckSquare, label: 'Open tasks', key: 'openTasks', href: '/tasks' },
+  {
+    id: 'open-tasks',
+    icon: CheckSquare,
+    labelKey: 'widgets.metrics.openTasks',
+    label: 'Open tasks',
+    key: 'openTasks',
+    href: '/tasks',
+  },
 ] as const;
 
 export type MiniMetricDefinition = (typeof MINI_METRICS)[number];

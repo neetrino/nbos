@@ -1,12 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import {
-  NBOS_DATE_PICKER_COMPACT_WIDTH_PX,
-  NBOS_DATE_PICKER_DEFAULT_LOCALE,
-} from './date-picker-constants';
+import { NBOS_DATE_PICKER_COMPACT_WIDTH_PX } from './date-picker-constants';
+import { resolveDatePickerLocale } from './date-picker-locale';
 import { formatIsoMonthValue, parseIsoMonthValue } from './date-picker-format';
 import { formatMonthYearHeader } from './date-picker-presets';
 import { monthDateFromParts, NbosMonthPickerGrid } from './nbos-month-picker-grid';
@@ -27,14 +26,18 @@ export interface NbosMonthPickerProps {
 export function NbosMonthPicker({
   value,
   onChange,
-  locale = NBOS_DATE_PICKER_DEFAULT_LOCALE,
+  locale: localeProp,
   disabled = false,
   clearable = false,
-  placeholder = 'Select month…',
+  placeholder: placeholderProp,
   className,
   id,
   'aria-label': ariaLabel,
 }: NbosMonthPickerProps) {
+  const interfaceLocale = useLocale();
+  const locale = resolveDatePickerLocale(interfaceLocale, localeProp);
+  const t = useTranslations('forms');
+  const placeholder = placeholderProp ?? t('datePicker.selectMonth');
   const parsed = useMemo(() => parseIsoMonthValue(value), [value]);
   const [open, setOpen] = useState(false);
   const [viewYear, setViewYear] = useState(() => parsed?.getFullYear() ?? new Date().getFullYear());
@@ -82,7 +85,7 @@ export function NbosMonthPicker({
             onClick={() => onChange('')}
             className="text-primary text-sm font-medium"
           >
-            Clear
+            {t('datePicker.clear')}
           </button>
           <button
             type="button"
@@ -94,7 +97,7 @@ export function NbosMonthPicker({
             }}
             className="text-primary text-sm font-medium"
           >
-            This month
+            {t('datePicker.thisMonth')}
           </button>
         </div>
       </PopoverContent>

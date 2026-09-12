@@ -24,6 +24,7 @@ export interface AnalyticsCardProps {
   icon: ReactNode;
   data: AnalyticsBarItem[];
   className?: string;
+  locale?: string;
 }
 
 const GRID_COLS_CLASS: Record<number, string> = {
@@ -41,9 +42,9 @@ function barHeightPercent(item: AnalyticsBarItem, maxQuantity: number): number {
   return Math.max(MIN_QUANTITY_BAR_HEIGHT_PERCENT, (item.quantity / basis) * 100);
 }
 
-function barDisplayValue(item: AnalyticsBarItem): string {
+function barDisplayValue(item: AnalyticsBarItem, locale?: string): string {
   if (item.displayValue !== undefined) return item.displayValue;
-  return item.quantity.toLocaleString();
+  return item.quantity.toLocaleString(locale);
 }
 
 /**
@@ -55,6 +56,7 @@ export function AnalyticsCard({
   icon,
   data = [],
   className,
+  locale,
 }: AnalyticsCardProps) {
   const numericItems = data.filter((item) => item.displayValue === undefined);
   const maxQuantity = Math.max(...numericItems.map((item) => item.quantity), 0);
@@ -108,7 +110,7 @@ export function AnalyticsCard({
                     delay: index * ANALYTICS_BAR_STAGGER_S,
                     ease: ANALYTICS_BAR_EASE,
                   }}
-                  aria-label={`${item.label}: ${barDisplayValue(item)}`}
+                  aria-label={`${item.label}: ${barDisplayValue(item, locale)}`}
                   aria-valuenow={item.quantity}
                   aria-valuemin={0}
                   aria-valuemax={maxQuantity}
@@ -122,7 +124,7 @@ export function AnalyticsCard({
                           item.displayValue !== undefined && 'text-[10px]',
                         )}
                       >
-                        {barDisplayValue(item)}
+                        {barDisplayValue(item, locale)}
                       </span>
                     </>
                   ) : null}

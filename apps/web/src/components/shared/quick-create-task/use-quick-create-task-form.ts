@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { firstReleaseFormErrorCopy, localizeCaughtApiError } from '@/i18n/localize-api-error';
 import { employeesApi, type Employee } from '@/lib/api/employees';
 import { tasksApi, type Task } from '@/lib/api/tasks';
 import type { MeResponse } from '@/lib/permissions/types';
@@ -42,6 +43,8 @@ export function useQuickCreateTaskForm({
   onCreated,
   me,
 }: QuickCreateTaskDialogProps & { me: MeResponse | null | undefined }) {
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [assigneeId, setAssigneeId] = useState('');
@@ -106,7 +109,18 @@ export function useQuickCreateTaskForm({
       applyDefaults();
       onOpenChange(false);
     } catch (caught: unknown) {
-      toast.error(getApiErrorMessage(caught, 'Could not create task. Try again.'));
+      toast.error(
+        localizeCaughtApiError(
+          caught,
+          firstReleaseFormErrorCopy(
+            tCommon('permissionDenied'),
+            t('task.createError'),
+            t('errors.validation'),
+            t('task.createError'),
+            t('errors.network'),
+          ),
+        ),
+      );
     } finally {
       setSaving(false);
     }

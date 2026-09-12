@@ -31,6 +31,9 @@ export const DESK_LINE_NEUTRAL_FALLBACK: DeskLineResolution = {
   theme: 'peaceful',
   title: 'Wishing you a peaceful day.',
   subline: 'A little room for what matters to you.',
+  titleTemplate: 'Wishing you a peaceful day.',
+  sublineTemplate: 'A little room for what matters to you.',
+  slots: { firstName: null },
   icon: 'None',
   pool: 'memorial_neutral',
 };

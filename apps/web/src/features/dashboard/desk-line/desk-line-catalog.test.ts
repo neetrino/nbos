@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import enDeskLine from '../../../messages/en/dashboard-desk-line.json';
+import ruDeskLine from '../../../messages/ru/dashboard-desk-line.json';
 import { DESK_LINE_CATALOG, deskLinePool } from './desk-line-catalog';
 import {
   DESK_LINE_EVERYDAY_MIN_SIZE,
+  DESK_LINE_NEUTRAL_FALLBACK,
   DESK_LINE_SEASON_MIN_SIZE,
 } from './desk-line.constants';
 import { DESK_LINE_ICON_KEYS, type DeskLinePoolId } from './desk-line.types';
@@ -76,4 +79,29 @@ describe('desk-line catalog', () => {
       expect(count, eventId).toBeGreaterThanOrEqual(3);
     }
   });
+
+  it('has EN/RU templates and matching slots for every catalog id', () => {
+    const ids = [
+      ...DESK_LINE_CATALOG.map((line) => line.id),
+      DESK_LINE_NEUTRAL_FALLBACK.templateId,
+    ];
+    for (const id of ids) {
+      const en = enDeskLine.templates[id as keyof typeof enDeskLine.templates];
+      const ru = ruDeskLine.templates[id as keyof typeof ruDeskLine.templates];
+      expect(en, id).toBeTruthy();
+      expect(ru, id).toBeTruthy();
+      if (!en || !ru) continue;
+      const catalog = DESK_LINE_CATALOG.find((line) => line.id === id);
+      const sourceTitle = catalog?.title ?? DESK_LINE_NEUTRAL_FALLBACK.titleTemplate;
+      const sourceSubline = catalog?.subline ?? DESK_LINE_NEUTRAL_FALLBACK.sublineTemplate;
+      expect(slotTokens(en.title), `${id} en title`).toEqual(slotTokens(sourceTitle));
+      expect(slotTokens(ru.title), `${id} ru title`).toEqual(slotTokens(sourceTitle));
+      expect(slotTokens(en.subline), `${id} en subline`).toEqual(slotTokens(sourceSubline));
+      expect(slotTokens(ru.subline), `${id} ru subline`).toEqual(slotTokens(sourceSubline));
+    }
+  });
 });
+
+function slotTokens(value: string): string[] {
+  return [...value.matchAll(/\{\{[^}]+\}\}/gu)].map((match) => match[0]).sort();
+}

@@ -11,6 +11,7 @@ import {
   MOBILE_APP_MENU_TILE_CLASS,
   isMobileAppMenuItemActive,
 } from './mobile-app-menu-constants';
+import { useTranslations } from 'next-intl';
 
 const MOBILE_APP_MENU_ICON_SIZE_PX = 22;
 
@@ -24,6 +25,7 @@ export function MobileAppMenuTile({ item, onNavigate }: MobileAppMenuTileProps) 
   const href = useModuleEntryHref(item.key, item.href, pathname);
   const active = isMobileAppMenuItemActive(pathname, item.href, href);
   const { Icon, iconClass } = SIDEBAR_MODULE_VISUALS[item.key];
+  const t = useTranslations('navigation');
 
   return (
     <Link
@@ -33,7 +35,7 @@ export function MobileAppMenuTile({ item, onNavigate }: MobileAppMenuTileProps) 
       className={cn(MOBILE_APP_MENU_TILE_CLASS, active && MOBILE_APP_MENU_TILE_ACTIVE_CLASS)}
     >
       <Icon className={iconClass} size={MOBILE_APP_MENU_ICON_SIZE_PX} strokeWidth={2} aria-hidden />
-      <span className="text-sm leading-tight font-semibold tracking-tight">{item.label}</span>
+      <span className="text-sm leading-tight font-semibold tracking-tight">{t(item.label)}</span>
     </Link>
   );
 }

@@ -286,9 +286,24 @@ export class DashboardService {
         'Support',
         '/support',
         'critical',
+        'critical_tickets',
       ),
-      this.card(metrics.dueTodayTasks, 'task due today', 'Tasks', '/tasks', 'high'),
-      this.card(metrics.pendingInvoices, 'pending invoice', 'Finance', '/finance/invoices', 'high'),
+      this.card(
+        metrics.dueTodayTasks,
+        'task due today',
+        'Tasks',
+        '/tasks',
+        'high',
+        'tasks_due_today',
+      ),
+      this.card(
+        metrics.pendingInvoices,
+        'pending invoice',
+        'Finance',
+        '/finance/invoices',
+        'high',
+        'pending_invoices',
+      ),
     ].filter((item): item is DashboardPriorityProjection => item !== null);
   }
 
@@ -312,10 +327,19 @@ export class DashboardService {
     source: string,
     href: string,
     severity: DashboardPriorityProjection['severity'],
+    code: string,
   ): DashboardPriorityProjection | null {
     if (count === 0) return null;
     const title = `${count} ${singular}${count === 1 ? '' : 's'}`;
-    return { title, source, href, severity, context: `${source} has work waiting for action.` };
+    return {
+      title,
+      source,
+      href,
+      severity,
+      context: `${source} has work waiting for action.`,
+      code,
+      count,
+    };
   }
 }
 

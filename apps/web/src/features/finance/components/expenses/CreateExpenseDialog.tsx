@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { firstReleaseFormErrorCopy, localizeCaughtApiError } from '@/i18n/localize-api-error';
 import { expensesApi, type Expense } from '@/lib/api/finance';
 import { getNextBusinessDay } from '@/lib/date/business-days';
 import { formatIsoDateValue } from '@/components/shared/date-picker/date-picker-format';
@@ -51,6 +52,8 @@ export function CreateExpenseDialog({
   submitOverride,
   forceNestedBackdrop = false,
 }: CreateExpenseDialogProps) {
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState<CreateExpenseFormState>(createEmptyForm);
@@ -87,9 +90,15 @@ export function CreateExpenseDialog({
       onOpenChange(false);
     } catch (caught) {
       setFormError(
-        getApiErrorMessage(
+        localizeCaughtApiError(
           caught,
-          'Expense could not be created. Check your connection and try again.',
+          firstReleaseFormErrorCopy(
+            tCommon('permissionDenied'),
+            t('expense.createError'),
+            t('errors.validation'),
+            t('expense.createError'),
+            t('errors.network'),
+          ),
         ),
       );
     } finally {
@@ -101,7 +110,7 @@ export function CreateExpenseDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
-          <DialogTitle>New expense</DialogTitle>
+          <DialogTitle>{t('expense.title')}</DialogTitle>
         </DialogHeader>
 
         <CreateExpenseDialogForm

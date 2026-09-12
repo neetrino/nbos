@@ -92,11 +92,11 @@ NBOS объединяет все операционные процессы IT-к
 - **Расположение:** `apps/web/`
 - **Особенности:** 14 разделов в сайдбаре (RBAC скрывает недоступное), Kanban/List/Grid представления, глобальный поиск, центр уведомлений, install-only PWA (домашний экран, без offline-кеша страниц/API)
 
-### Локализация интерфейса — утверждено, реализация ожидается
+### Локализация интерфейса — первый EN/RU срез реализован
 
-Решение от 2026-09-12: next-intl без языковых префиксов URL, каталоги по модулям, исходный EN и первый релиз EN/RU. Язык хранится в Employee.interfaceLocale; планируются GET/PATCH me/preferences. Cookie вспомогательная, сохранённая настройка пользователя имеет приоритет; SSR и клиент получают согласованную локаль. Смена языка сохраняет черновики, auth/session flow и бизнес-данные. DashboardPreference сохраняет своё назначение настроек расположения, а не языка платформы.
+Решение от 2026-09-12, код в рабочем дереве: next-intl 4.14.4 без языковых префиксов URL, каталоги `common` / `account` / `navigation` / `dashboard` / `dashboardDeskLine` / `forms`. Язык хранится в `Employee.interfaceLocale` (`employees.interface_locale`, default `en`). Контракт: `GET|PATCH /api/v1/me/preferences` → `{ interfaceLocale }`. Cookie `nbos-interface-locale` (SameSite=Lax) вспомогательная; у вошедшего пользователя приоритет у БД, при недоступном API — EN без записи fallback. HY зарезервирован и отклоняется на записи. DashboardPreference остаётся раскладкой, не языком. Production rollout остаётся отдельным шагом.
 
-Полные правила, fallback, границы релиза и будущий HY: [канон локализации](NBOS/01-Platform-Overview/07-Interface-Localization.md). Последовательность и приёмка: [план реализации](implementation/I18N-IMPLEMENTATION-PLAN.md). Этот раздел описывает целевое решение, не текущее наличие i18n в коде.
+Полные правила, fallback, границы релиза и будущий HY: [канон локализации](NBOS/01-Platform-Overview/07-Interface-Localization.md). Журнал: [план реализации](implementation/I18N-IMPLEMENTATION-PLAN.md).
 
 ### Backend (apps/api)
 

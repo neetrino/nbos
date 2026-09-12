@@ -1,13 +1,12 @@
 'use client';
 
 import { useCallback, useMemo, useState, type RefObject } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { format } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import {
-  NBOS_DATE_PICKER_DEFAULT_LOCALE,
-  NBOS_DATE_PICKER_EXTENDED_WIDTH_PX,
-} from './date-picker-constants';
+import { NBOS_DATE_PICKER_EXTENDED_WIDTH_PX } from './date-picker-constants';
+import { resolveDatePickerLocale } from './date-picker-locale';
 import {
   formatDateDisplay,
   formatDateDisplayShort,
@@ -52,10 +51,10 @@ export function NbosDatePicker({
   onChange,
   variant = 'compact',
   mode = 'date',
-  locale = NBOS_DATE_PICKER_DEFAULT_LOCALE,
+  locale: localeProp,
   disabled = false,
   clearable = false,
-  placeholder = 'Select date…',
+  placeholder: placeholderProp,
   className,
   id,
   'aria-label': ariaLabel,
@@ -65,6 +64,10 @@ export function NbosDatePicker({
   popoverAnchorRef,
   popoverAlign = 'end',
 }: NbosDatePickerProps) {
+  const interfaceLocale = useLocale();
+  const locale = resolveDatePickerLocale(interfaceLocale, localeProp);
+  const t = useTranslations('forms');
+  const placeholder = placeholderProp ?? t('datePicker.selectDate');
   const parsed = useMemo(
     () => (mode === 'datetime' ? parseDatetimeLocalValue(value) : parseIsoDateValue(value)),
     [mode, value],

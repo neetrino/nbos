@@ -16,6 +16,8 @@ export interface DashboardPriorityProjection {
   href: string;
   severity: 'critical' | 'high' | 'normal';
   source: string;
+  code?: string;
+  count?: number;
 }
 
 export interface DashboardControlCenterMeta {

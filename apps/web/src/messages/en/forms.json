@@ -1,0 +1,120 @@
+{
+  "task": {
+    "title": "Create task",
+    "namePlaceholder": "Task name",
+    "descriptionPlaceholder": "Description",
+    "assignee": "Assignee",
+    "dueDate": "Due date",
+    "dueDateAria": "Due date",
+    "urgent": "Urgent",
+    "markAsUrgent": "Mark as urgent",
+    "fullForm": "Full form",
+    "createError": "Could not create task. Try again.",
+    "employeeNotLinked": "Your account is not linked to an employee record, so tasks cannot be created."
+  },
+  "meeting": {
+    "title": "New client meeting",
+    "fields": {
+      "title": "Title *",
+      "titlePlaceholder": "e.g. Discovery with Acme",
+      "start": "Start *",
+      "startAria": "Meeting start",
+      "end": "End *",
+      "endAria": "Meeting end",
+      "meetingType": "Meeting type",
+      "location": "Location",
+      "linkOrAddress": "Link or address",
+      "linkPlaceholder": "Meet link or street address",
+      "agenda": "Agenda",
+      "agendaPlaceholder": "Optional"
+    },
+    "types": {
+      "SALES_CALL": "Sales call",
+      "OFFER_PRESENTATION": "Offer presentation",
+      "DEMO": "Demo",
+      "KICKOFF": "Kickoff / handoff",
+      "SUPPORT_CALL": "Support call",
+      "MAINTENANCE_CALL": "Maintenance call",
+      "OTHER": "Other"
+    },
+    "locationTypes": {
+      "ONLINE": "Online",
+      "OFFLINE": "Offline"
+    },
+    "validation": {
+      "titleRequired": "Title is required.",
+      "endAfterStart": "End time must be after start time.",
+      "overlapReason": "This slot overlaps another meeting. Add a reason to schedule anyway."
+    },
+    "conflicts": {
+      "title": "Conflicts",
+      "overrideReason": "Override reason",
+      "overridePlaceholder": "Why schedule despite overlap?"
+    },
+    "submit": {
+      "scheduleAnyway": "Schedule anyway"
+    },
+    "createError": "Could not create meeting"
+  },
+  "lead": {
+    "title": "New Lead",
+    "fields": {
+      "title": "Title *",
+      "phone": "Phone",
+      "email": "Email"
+    },
+    "full": "Full",
+    "createLead": "Create Lead",
+    "createError": "Could not create lead. Try again."
+  },
+  "expense": {
+    "title": "New expense",
+    "fields": {
+      "name": "Name *",
+      "amount": "Amount *",
+      "dueDate": "Due date",
+      "dueDateAria": "Due date",
+      "namePlaceholder": "Expense name"
+    },
+    "createError": "Expense could not be created. Check your connection and try again."
+  },
+  "errors": {
+    "validation": "Check the highlighted fields and try again.",
+    "network": "Could not reach the server. Check your connection and try again."
+  },
+  "datePicker": {
+    "today": "Today",
+    "clear": "Clear",
+    "selectDate": "Select date…",
+    "clearDate": "Clear date",
+    "selectMonth": "Select month…",
+    "thisMonth": "This month",
+    "selectExpiryDate": "Select expiry date",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "typeDateGroup": "Type date as day, month, year",
+    "day": "Day",
+    "month": "Month",
+    "year": "Year",
+    "time": "Time {time}",
+    "selectTime": "Select time",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "presets": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "endOfWeek": "End of week",
+      "inOneWeek": "In one week",
+      "endOfMonth": "End of month"
+    }
+  },
+  "relationPicker": {
+    "choose": "Choose…",
+    "searchEmployees": "Search employees…",
+    "searching": "Searching…",
+    "noResults": "No results found",
+    "clearSearch": "Clear search",
+    "employee": "Employee",
+    "addEmployee": "Add employee"
+  }
+}

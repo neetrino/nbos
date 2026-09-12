@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState, type KeyboardEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -24,17 +25,17 @@ import {
 import {
   RELATION_CREATE_LABELS,
   RELATION_KIND_LABELS,
-  RELATION_PICKER_EMPLOYEE_PLACEHOLDER,
   type RelationPickerFieldProps,
   type RelationPickerOption,
 } from './relation-picker.types';
 
 export function RelationPickerField(props: RelationPickerFieldProps) {
+  const t = useTranslations('forms');
   const {
     label,
     placeholder,
     entityKind,
-    kindLabel = RELATION_KIND_LABELS[entityKind],
+    kindLabel: kindLabelProp,
     createLabel = RELATION_CREATE_LABELS[entityKind],
     disabled = false,
     readOnly = false,
@@ -63,6 +64,10 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
   const employeeDirectoryReadyRef = useRef(false);
   const { knownAvatars, rememberAvatar } = useMergedPickerAvatars(selectionAvatars, results);
 
+  const resolvedKindLabel =
+    entityKind === 'employee'
+      ? t('relationPicker.employee')
+      : (kindLabelProp ?? RELATION_KIND_LABELS[entityKind]);
   const interactionLocked = disabled || readOnly;
   const selectedIds = new Set<string>(multiple ? props.value : props.value ? [props.value] : []);
 
@@ -161,11 +166,14 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     }
   };
 
-  const searchPlaceholder =
+  const defaultEmptyPlaceholder =
+    entityKind === 'employee'
+      ? t('relationPicker.choose')
+      : `Search ${resolvedKindLabel.toLowerCase()}s…`;
+  const emptyPlaceholder = placeholder ?? defaultEmptyPlaceholder;
+  const searchInputPlaceholder =
     placeholder ??
-    (entityKind === 'employee'
-      ? RELATION_PICKER_EMPLOYEE_PLACEHOLDER
-      : `Search ${kindLabel.toLowerCase()}s…`);
+    (entityKind === 'employee' ? t('relationPicker.searchEmployees') : defaultEmptyPlaceholder);
   const multiChipCount = multiple && isMultiProps(props) ? props.value.length : 0;
   const showSelectionChips = selectionDisplay === 'chips';
   const showOutlinedAdd = multiple && multiChipCount > 0 && !open && showSelectionChips;
@@ -181,7 +189,11 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
             type="button"
             onClick={() => setOpen(true)}
             className={DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS}
-            aria-label={`Add ${kindLabel.toLowerCase()}`}
+            aria-label={
+              entityKind === 'employee'
+                ? t('relationPicker.addEmployee')
+                : `Add ${resolvedKindLabel.toLowerCase()}`
+            }
           >
             <Plus size={12} aria-hidden className={DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS} />
             {label}
@@ -203,14 +215,14 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
             doSearch('');
             inputRef.current?.focus();
           }}
-          placeholder={searchPlaceholder}
+          placeholder={searchInputPlaceholder}
           loading={loading}
           results={results}
           highlightIdx={highlightIdx}
           selectedIds={selectedIds}
           multiple={multiple}
           entityKind={entityKind}
-          kindLabel={kindLabel}
+          kindLabel={resolvedKindLabel}
           createLabel={createLabel}
           createEnabled={Boolean(onCreate)}
           onCreateClick={handleCreate}
@@ -225,7 +237,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
           multiple={multiple}
           disabled={disabled}
           readOnly={readOnly}
-          placeholder={searchPlaceholder}
+          placeholder={emptyPlaceholder}
           onOpen={() => setOpen(true)}
           onOpenSelected={onOpenSelected}
           entityKind={entityKind}

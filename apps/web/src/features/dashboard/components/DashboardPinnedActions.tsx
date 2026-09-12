@@ -12,6 +12,7 @@ import {
 import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS } from '../dashboard-dnd.constants';
 import { dashboardPointerCollisionDetection } from '../dashboard-dnd-collision';
 import { cn } from '@/lib/utils';
@@ -92,7 +93,6 @@ export function PinnedActions({
 
   return (
     <section className="nbos-desk-surface p-4 sm:p-5">
-      <PinnedActionsTitle editMode={editMode} onToggleEdit={onToggleEdit} />
       {hasPinned ? (
         editMode ? (
           <PinnedActionsEdit
@@ -122,6 +122,7 @@ export function PinnedActions({
       ) : (
         <EmptyPinnedActions />
       )}
+      <PinnedActionsTitle editMode={editMode} onToggleEdit={onToggleEdit} />
     </section>
   );
 }
@@ -155,11 +156,9 @@ function PinnedActionsEdit({
   onDragEnd: (event: DragEndEvent) => void;
   onDragStart: (event: DragStartEvent) => void;
 }) {
+  const t = useTranslations('dashboard');
   return (
     <>
-      <p className="text-muted-foreground mt-2 text-xs">
-        Drag tiles between Shown and Hidden. Plus creates in place. Arrow opens a page.
-      </p>
       <DndContext
         sensors={sensors}
         collisionDetection={dashboardPointerCollisionDetection}
@@ -167,9 +166,9 @@ function PinnedActionsEdit({
         onDragEnd={onDragEnd}
         onDragCancel={onDragCancel}
       >
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           <SortableContext items={visibleKeys} strategy={rectSortingStrategy}>
-            <PinnedDropColumn id={PINNED_DROP_VISIBLE} title="Shown on dashboard">
+            <PinnedDropColumn id={PINNED_DROP_VISIBLE} title={t('pinned.shownOnDashboard')}>
               <div
                 className={`${DASHBOARD_PINNED_GRID_CLASS} ${DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS}`}
               >
@@ -180,7 +179,7 @@ function PinnedActionsEdit({
             </PinnedDropColumn>
           </SortableContext>
           <SortableContext items={hiddenKeys} strategy={rectSortingStrategy}>
-            <PinnedDropColumn id={PINNED_DROP_HIDDEN} title="Hidden">
+            <PinnedDropColumn id={PINNED_DROP_HIDDEN} title={t('pinned.hidden')}>
               <div
                 className={`${DASHBOARD_PINNED_GRID_CLASS} ${DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS}`}
               >
