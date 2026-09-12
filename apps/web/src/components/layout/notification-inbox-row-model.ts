@@ -1,3 +1,4 @@
+import { clampNotificationBody, clampNotificationTitle } from '@nbos/shared';
 import { cn } from '@/lib/utils';
 import {
   NOTIFICATION_INBOX_ROW_BASE_CLASS,
@@ -25,8 +26,8 @@ export function resolveNotificationInboxRowModel(
 ): NotificationInboxRowModel {
   const unread = !notification.isRead;
   return {
-    title: notification.title,
-    body: notification.body,
+    title: clampNotificationTitle(notification.title),
+    body: clampNotificationBody(notification.body),
     unread,
     href: notification.link,
     surfaceClassName: cn(

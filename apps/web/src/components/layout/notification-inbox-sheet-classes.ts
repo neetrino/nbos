@@ -38,7 +38,7 @@ export const NOTIFICATION_INBOX_ICON_WRAP_CLASS =
 export const NOTIFICATION_INBOX_TITLE_TEXT_CLASS = 'text-foreground truncate text-sm font-semibold';
 
 export const NOTIFICATION_INBOX_BODY_TEXT_CLASS =
-  'text-muted-foreground mt-1 line-clamp-2 text-xs leading-relaxed';
+  'text-muted-foreground mt-1 truncate text-xs leading-relaxed';
 
 export const NOTIFICATION_INBOX_TIME_CLASS =
   'text-muted-foreground flex shrink-0 flex-col items-end gap-0.5 text-right text-xs tabular-nums';

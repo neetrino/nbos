@@ -21,14 +21,20 @@ export function isNotificationPreferenceChannelOn(
   return enabled && channels.includes(channelId);
 }
 
-export function nextNotificationPreferenceChannels(
-  channels: readonly string[],
+export function nextNotificationPreferenceState(
+  pref: { enabled: boolean; channels: readonly string[] },
   channelId: string,
-  turnOn: boolean,
-): string[] {
-  if (turnOn) {
-    return channels.includes(channelId) ? [...channels] : [...channels, channelId];
+): { enabled: boolean; channels: string[] } {
+  const isOn = isNotificationPreferenceChannelOn(pref.enabled, pref.channels, channelId);
+  if (isOn) {
+    const remaining = pref.channels.filter((channel) => channel !== channelId);
+    if (remaining.length === 0) {
+      return { enabled: false, channels: [FALLBACK_CHANNEL] };
+    }
+    return { enabled: true, channels: remaining };
   }
-  const next = channels.filter((channel) => channel !== channelId);
-  return next.length > 0 ? next : [FALLBACK_CHANNEL];
+  const channels = pref.channels.includes(channelId)
+    ? [...pref.channels]
+    : [...pref.channels, channelId];
+  return { enabled: true, channels };
 }
