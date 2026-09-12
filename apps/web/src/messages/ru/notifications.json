@@ -1,0 +1,17 @@
+{
+  "title": "Уведомления",
+  "markAllRead": "Отметить все прочитанными",
+  "signIn": "Войдите, чтобы видеть уведомления.",
+  "loading": "Загрузка…",
+  "loadFailed": "Не удалось загрузить уведомления.",
+  "empty": "Пока нет уведомлений.",
+  "loadMore": "Показать ещё",
+  "openCenter": "Открыть центр уведомлений",
+  "relative": {
+    "justNow": "только что",
+    "minutesAgo": "{count, plural, one {# мин назад} few {# мин назад} many {# мин назад} other {# мин назад}}",
+    "hoursAgo": "{count, plural, one {# ч назад} few {# ч назад} many {# ч назад} other {# ч назад}}",
+    "yesterday": "Вчера",
+    "daysAgo": "{count, plural, one {# дн. назад} few {# дн. назад} many {# дн. назад} other {# дн. назад}}"
+  }
+}

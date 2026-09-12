@@ -1,0 +1,22 @@
+{
+  "title": "Global search",
+  "description": "Search across modules you can access.",
+  "placeholder": "Search…",
+  "clear": "Clear",
+  "closeAria": "Close search",
+  "shortHint": "Type at least 2 characters to search.",
+  "hint": "Search leads, deals, products, finance records, and credentials you can access.",
+  "recent": "Recent",
+  "searching": "Searching…",
+  "updating": "Updating results…",
+  "empty": "No results found.",
+  "failed": "Search failed. Try again.",
+  "groups": {
+    "all": "All",
+    "leads": "Leads",
+    "deals": "Deals",
+    "products": "Products",
+    "finance": "Finance",
+    "credentials": "Credentials"
+  }
+}

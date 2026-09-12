@@ -3,33 +3,38 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Bell } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { resolveDatePickerLocale } from '@/components/shared/date-picker/date-picker-locale';
 import { usePermission } from '@/lib/permissions';
 import type { NotificationDto } from '@/lib/api/notifications';
 import { notificationsApi } from '@/lib/api/notifications';
 import { getNotificationVisual } from '@/lib/notifications/notification-type-visual';
+import {
+  classifyNotificationAge,
+  formatNotificationAbsoluteDate,
+} from '@/lib/notifications/notification-relative-time';
 import { useNotificationFeed } from '@/lib/notifications/use-notification-feed';
 
-function formatRelativeTime(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now.getTime() - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  const diffHr = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHr / 24);
-
-  if (diffMin < 1) return 'just now';
-  if (diffMin < 60) return `${diffMin}m ago`;
-  if (diffHr < 24) return `${diffHr}h ago`;
-  if (diffDay === 1) return 'Yesterday';
-  if (diffDay < 7) return `${diffDay}d ago`;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+function formatNotificationInboxTime(
+  dateStr: string,
+  locale: string,
+  t: ReturnType<typeof useTranslations<'notifications'>>,
+): string {
+  const kind = classifyNotificationAge(dateStr);
+  if (kind.type === 'justNow') return t('relative.justNow');
+  if (kind.type === 'minutes') return t('relative.minutesAgo', { count: kind.count });
+  if (kind.type === 'hours') return t('relative.hoursAgo', { count: kind.count });
+  if (kind.type === 'yesterday') return t('relative.yesterday');
+  if (kind.type === 'days') return t('relative.daysAgo', { count: kind.count });
+  return formatNotificationAbsoluteDate(dateStr, locale);
 }
 
 export function NotificationDropdown() {
   const { me } = usePermission();
   const employeeId = me?.id;
-  const t = useTranslations('navigation');
+  const tNav = useTranslations('navigation');
+  const t = useTranslations('notifications');
+  const locale = resolveDatePickerLocale(useLocale());
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const {
@@ -72,7 +77,7 @@ export function NotificationDropdown() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="text-muted-foreground hover:bg-secondary hover:text-foreground relative rounded-lg p-2 transition-colors"
-        aria-label={t('notifications.trigger')}
+        aria-label={tNav('notifications.trigger')}
       >
         <Bell size={20} />
         {employeeId && unreadCount > 0 && (
@@ -85,14 +90,14 @@ export function NotificationDropdown() {
       {open && (
         <div className="border-border bg-card absolute top-full right-0 z-40 mt-2 w-80 rounded-2xl border shadow-xl">
           <div className="border-border flex items-center justify-between border-b px-4 py-3">
-            <h3 className="text-foreground text-sm font-semibold">Notifications</h3>
+            <h3 className="text-foreground text-sm font-semibold">{t('title')}</h3>
             {employeeId && unreadCount > 0 && (
               <button
                 type="button"
                 onClick={() => void markAllRead()}
                 className="text-accent hover:text-accent/80 text-xs font-medium transition-colors"
               >
-                Mark all as read
+                {t('markAllRead')}
               </button>
             )}
           </div>
@@ -100,20 +105,20 @@ export function NotificationDropdown() {
           <div className="max-h-80 overflow-y-auto">
             {!employeeId && (
               <p className="text-muted-foreground px-4 py-6 text-center text-xs">
-                Sign in to see notifications.
+                {t('signIn')}
               </p>
             )}
             {employeeId && listLoading && (
-              <p className="text-muted-foreground px-4 py-6 text-center text-xs">Loading…</p>
+              <p className="text-muted-foreground px-4 py-6 text-center text-xs">{t('loading')}</p>
             )}
             {employeeId && listError && (
               <p className="text-muted-foreground px-4 py-6 text-center text-xs">
-                Could not load notifications.
+                {t('loadFailed')}
               </p>
             )}
             {employeeId && !listLoading && !listError && items.length === 0 && (
               <p className="text-muted-foreground px-4 py-6 text-center text-xs">
-                No notifications yet.
+                {t('empty')}
               </p>
             )}
             {employeeId &&
@@ -137,7 +142,7 @@ export function NotificationDropdown() {
                         {n.body}
                       </p>
                       <p className="text-muted-foreground mt-1 text-[10px]">
-                        {formatRelativeTime(n.createdAt)}
+                        {formatNotificationInboxTime(n.createdAt, locale, t)}
                       </p>
                     </div>
                   </>
@@ -175,7 +180,7 @@ export function NotificationDropdown() {
                 disabled={listLoadingMore}
                 onClick={() => void loadMore()}
               >
-                {listLoadingMore ? 'Loading…' : 'Load more'}
+                {listLoadingMore ? t('loading') : t('loadMore')}
               </button>
             )}
           </div>
@@ -185,7 +190,7 @@ export function NotificationDropdown() {
               href="/notifications"
               className="text-accent hover:text-accent/80 text-xs font-medium"
             >
-              Open Notification Center
+              {t('openCenter')}
             </Link>
           </div>
         </div>

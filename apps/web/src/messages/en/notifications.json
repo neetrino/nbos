@@ -1,0 +1,17 @@
+{
+  "title": "Notifications",
+  "markAllRead": "Mark all as read",
+  "signIn": "Sign in to see notifications.",
+  "loading": "Loading…",
+  "loadFailed": "Could not load notifications.",
+  "empty": "No notifications yet.",
+  "loadMore": "Load more",
+  "openCenter": "Open Notification Center",
+  "relative": {
+    "justNow": "just now",
+    "minutesAgo": "{count, plural, one {# min ago} other {# min ago}}",
+    "hoursAgo": "{count, plural, one {#h ago} other {#h ago}}",
+    "yesterday": "Yesterday",
+    "daysAgo": "{count, plural, one {#d ago} other {#d ago}}"
+  }
+}

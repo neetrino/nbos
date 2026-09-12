@@ -5,7 +5,6 @@ import { createPersistedJsonStore } from '@/lib/persisted-client-state';
 
 export const GLOBAL_SEARCH_RECENT_STORAGE_KEY = 'nbos.globalSearch.recentHits';
 export const GLOBAL_SEARCH_RECENT_LIMIT = 8;
-export const GLOBAL_SEARCH_RECENT_HEADING = 'Recent';
 
 type GlobalSearchRecentState = {
   items: SearchHit[];
