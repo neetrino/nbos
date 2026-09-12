@@ -59,7 +59,7 @@ function CredentialsVaultPageContent() {
       <div className="shrink-0 max-md:contents">
         <PageHero
           title={
-            vault.vaultListScope === 'trash' ? 'Credentials Vault — Trash' : 'Credentials Vault'
+            vault.vaultListScope === 'trash' ? 'Password — Trash' : 'Password'
           }
           create={{ onSelect: vault.openCreate, disabled: !vault.showCreate }}
           tabs={

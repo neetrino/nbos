@@ -2,7 +2,7 @@
 
 ## Мультиязычность — первый EN/RU срез, 2026-09-12
 
-Статус: этапы 0–3 в рабочем дереве; миграция `employees.interface_locale` применена к dev Neon по явному запросу. Автотесты targeted — зелёные. Визуальная приёмка desktop/mobile и production rollout ещё не закрыты. [Канон](NBOS/01-Platform-Overview/07-Interface-Localization.md), [план](implementation/I18N-IMPLEMENTATION-PLAN.md), [coverage](implementation/I18N-COVERAGE.md). Остальная платформа и HY — этапы 6–7.
+Статус: этапы 0–3 в рабочем дереве; этап 4 частично (desktop EN↔RU + четыре create-flow + mobile меню пройдены live; live token-expiry/403 и полный visual sign-off открыты). Миграция `employees.interface_locale` применена к dev Neon. [Канон](NBOS/01-Platform-Overview/07-Interface-Localization.md), [план](implementation/I18N-IMPLEMENTATION-PLAN.md), [coverage](implementation/I18N-COVERAGE.md). Остальная платформа и HY — этапы 6–7. Production rollout не делался.
 
 > **Активный бэклог** до полного канона: что делаем и что отложено. Закрытые срезы и история — `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 

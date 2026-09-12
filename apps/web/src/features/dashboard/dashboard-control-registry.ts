@@ -153,7 +153,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   {
     key: 'open-credentials',
     kind: 'open',
-    label: 'Credentials vault',
+    label: 'Password',
     href: '/credentials',
     icon: KeyRound,
     module: 'CREDENTIALS',

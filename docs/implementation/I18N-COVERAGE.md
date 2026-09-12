@@ -1,6 +1,6 @@
 # I18N coverage — first EN/RU release
 
-Date: 2026-09-12. Status: first EN/RU slice plus independent-review fixes are in the working tree. Migration `employees.interface_locale` applied to the authorized Neon database earlier this day. Desktop RU shell/dashboard/date-picker chrome was sampled in a live logged-in session. Full visual/mobile acceptance, live token-expiry restore, live 403/conflict/network toasts, and production rollout remain open.
+Date: 2026-09-12. Status: first EN/RU slice plus review fixes are in the working tree. Migration `employees.interface_locale` applied to the authorized Neon database. Desktop EN↔RU shell/dashboard/four create flows and mobile 390px menu were sampled live. Live token-expiry restore, live 403/conflict/network toasts, full light/dark sign-off, and production rollout remain open.
 
 Canon: [07-Interface-Localization.md](../NBOS/01-Platform-Overview/07-Interface-Localization.md). Plan: [I18N-IMPLEMENTATION-PLAN.md](./I18N-IMPLEMENTATION-PLAN.md).
 
@@ -60,7 +60,7 @@ Status: `pending` → `in_progress` → `en_ru` → `verified`.
 | Surface                    | Files                                                                                         | Text kind | Namespace | Status  |
 | -------------------------- | --------------------------------------------------------------------------------------------- | --------- | --------- | ------- |
 | Pinned actions registry    | `dashboard-control-registry.ts`, `DashboardActionCards.tsx`, `DashboardPinnedActions*.tsx`, `PinnedActionKindMark.tsx` | System labels/tooltips; persisted action keys unchanged | `dashboard` | en_ru |
-| Widgets / mini metrics     | `dashboard-control-registry.ts` `MINI_METRICS`, `MiniAnalyticsPanel.tsx`                      | System labels; numeric values not translated | `dashboard` | en_ru |
+| Widgets / mini metrics     | `dashboard-control-registry.ts` `MINI_METRICS`, `MiniAnalyticsPanel.tsx`, `analytics-card.tsx` | System labels; numeric values not translated | `dashboard` | en_ru (kicker `Пульс` / `Pulse`) |
 | Layout edit / DnD chrome   | `DashboardPinnedActionsChrome.tsx`, `use-dashboard-control-center.ts`                         | System UI / save errors | `dashboard` | en_ru |
 | Notes chrome               | `DashboardNotesPanel.tsx`                                                                     | System UI; note **content** is user data | `dashboard` | en_ru (time format follows interface locale) |
 | Personal links chrome      | `DashboardActionCards.tsx`, chrome create fields                                              | System UI; link **label/url** are user data | `dashboard` | en_ru |
@@ -80,7 +80,7 @@ Status: `pending` → `in_progress` → `en_ru` → `verified`.
 | Lead    | `new-lead`                    | `apps/web/src/features/crm/components/CreateLeadDialog.tsx`                                                                                         | Title, name/phone/email, create/cancel, errors | en_ru (Full label only; destination sheet still English) |
 | Expense | `new-expense`                 | `CreateExpenseDialog.tsx`, `CreateExpenseDialogForm.tsx`                                                                                            | Name/amount/due date, create/cancel, errors | en_ru |
 
-Shared date picker follows the interface locale (`en`→`en-US`, `ru`→`ru-RU`) for display chrome, including Previous/Next month, typed Day/Month/Year, and Time/Hours/Minutes. Week-start and Yerevan calendar math are unchanged. Relation picker employee kind label and add-employee aria are EN/RU; chip Open/Change/Remove aria and non-employee `Search {kind}s…` placeholders remain English. Mini-analytics totals format with the active locale. First-release Task/Meeting/Lead/Expense/Dashboard load errors map by status/code to catalog copy; unknown and network failures use a safe localized fallback. Persisted IDs, amounts, ISO dates, and user-entered values are not translated.
+Shared date picker follows the interface locale (`en`→`en-US`, `ru`→`ru-RU`) for display chrome, including Previous/Next month, typed Day/Month/Year, and Time/Hours/Minutes. Week-start and Yerevan calendar math are unchanged. Relation picker employee kind, add-employee aria, and chip Open/Change/Remove aria are EN/RU; non-employee `Search {kind}s…` placeholders remain English. Mini-analytics kicker/chart aria and totals follow the interface locale. Meeting type/location closed selects render catalog labels, not raw enum codes. Shared dialog close uses `common.close`. First-release Task/Meeting/Lead/Expense/Dashboard load errors map by status/code to catalog copy; unknown and network failures use a safe localized fallback. Persisted IDs, amounts, ISO dates, and user-entered values are not translated.
 
 Lead **Full** button label is in scope; the Lead sheet it opens is not. Task `Full form` is unused from Dashboard (`onOpenFull` is not passed).
 
@@ -145,5 +145,5 @@ Not run as part of ordinary i18n slices: `pnpm format`, `pnpm db:push`, `pnpm db
 | 1     | Foundation + Save/Cancel + language + New task     | en_ru (reference verified by tests) |
 | 2     | Shell + remaining Dashboard                        | en_ru (desktop RU sampled live; mobile viewport and full visual sign-off open) |
 | 3     | Four create flows                                  | en_ru (date-picker chrome sampled live in RU; create-flow error strings asserted in tests, not live 403/conflict/network) |
-| 4     | Automated + visual acceptance                      | partial (web typecheck, focused eslint, 77 targeted tests, `build:web` green; live token-expiry and mobile not closed) |
-| 5     | Review, docs, report                               | in_progress (independent-review defects fixed in the working tree; visual/login acceptance not marked complete) |
+| 4     | Automated + visual acceptance                      | partial (89 targeted tests; desktop EN↔RU + four create flows + mobile menu sampled live; live token-expiry / 403 / full light-dark / HY font probe open) |
+| 5     | Review, docs, report                               | in_progress (owner-cookie removed; visual/login acceptance not marked complete) |
