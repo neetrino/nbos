@@ -1,5 +1,4 @@
 import { normalizePhoneToWhatsAppJid } from '@nbos/shared';
-import { ATS_DIAL_PREFIX } from './ats.constants';
 
 export type AtsPhoneNormalizeResult =
   | { success: true; e164: string; digits: string }
@@ -19,14 +18,6 @@ export function normalizeAtsCallerPhone(clid: string | null | undefined): AtsPho
     digits: result.digits,
     e164: `+${result.digits}`,
   };
-}
-
-/**
- * ATS click-to-call `to`: `#` plus digits as stored, not rewritten to E.164.
- * `077 96 17 18` → `#077961718`. `+374 77 961718` → `#37477961718`.
- */
-export function formatAtsDialNumber(raw: string): string {
-  return `${ATS_DIAL_PREFIX}${raw.replace(/\D/g, '')}`;
 }
 
 /** Candidate phone strings for Lead dedupe lookups. */

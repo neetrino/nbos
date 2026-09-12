@@ -129,7 +129,7 @@ describe('ClickToCallService Contact object-level access', () => {
     const where = JSON.stringify(h.prisma.contact.findFirst.mock.calls[0]?.[0]?.where);
     expect(where).toContain(relation);
     expect(where).toContain(ACTOR_ID);
-    expect(h.callback.startCallbackCall).toHaveBeenCalledWith({ from: SIP, to: '#37499111000' });
+    expect(h.callback.startCallbackCall).toHaveBeenCalledWith({ from: SIP, to: '37499111000' });
     expect(h.prisma.contact.findFirst.mock.invocationCallOrder[0]).toBeLessThan(
       h.callback.startCallbackCall.mock.invocationCallOrder[0],
     );
