@@ -10,13 +10,11 @@ import { PersonalLinkCard, PinnedActionCard } from './DashboardActionCards';
 interface DashboardPinnedActionsViewProps {
   actions: PinnedAction[];
   personalLinks: DashboardPersonalLink[];
-  onDeletePersonalLink: (id: string) => Promise<void>;
 }
 
 export function DashboardPinnedActionsView({
   actions,
   personalLinks,
-  onDeletePersonalLink,
 }: DashboardPinnedActionsViewProps) {
   const t = useTranslations('dashboard');
   const { create, open } = partitionPinnedActionsByKind(actions);
@@ -37,12 +35,7 @@ export function DashboardPinnedActionsView({
             <PinnedActionCard key={action.key} action={action} editMode={false} />
           ))}
           {personalLinks.map((link) => (
-            <PersonalLinkCard
-              key={link.id}
-              editMode={false}
-              link={link}
-              onDelete={() => onDeletePersonalLink(link.id)}
-            />
+            <PersonalLinkCard key={link.id} editMode={false} link={link} />
           ))}
         </PinnedActionGroup>
       ) : null}

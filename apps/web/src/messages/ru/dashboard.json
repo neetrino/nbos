@@ -42,11 +42,13 @@
   },
   "personalLink": {
     "formTitle": "Новая кнопка-ярлык",
+    "formTitleEdit": "Изменить кнопку-ярлык",
     "formDescription": "Подпись и ссылка сохраняются в закреплённой области обзора.",
     "labelPlaceholder": "Подпись",
     "urlPlaceholder": "/путь или example.com (https добавится)",
     "deleteAria": "Удалить ссылку",
-    "deleteNamedAria": "Удалить {label}"
+    "deleteNamedAria": "Удалить {label}",
+    "editNamedAria": "Изменить {label}"
   },
   "notes": {
     "placeholder": "Напишите заметку и нажмите Enter...",

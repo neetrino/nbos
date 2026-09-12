@@ -231,6 +231,10 @@ export function partitionMiniMetrics(
   return { visible, hidden };
 }
 
+export function isPinnedActionKey(value: string): value is DashboardPinnedActionKey {
+  return PINNED_ACTIONS.some((action) => action.key === value);
+}
+
 export function priorityClass(severity: PriorityCard['severity']): string {
   if (severity === 'critical') return 'border-red-200 bg-red-50 text-red-800';
   if (severity === 'high') return 'border-amber-200 bg-amber-50 text-amber-800';

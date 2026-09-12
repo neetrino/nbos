@@ -42,11 +42,13 @@
   },
   "personalLink": {
     "formTitle": "New shortcut button",
+    "formTitleEdit": "Edit shortcut button",
     "formDescription": "Label and link are saved to your dashboard pinned area.",
     "labelPlaceholder": "Label",
     "urlPlaceholder": "/path or example.com (https added)",
     "deleteAria": "Delete link",
-    "deleteNamedAria": "Delete {label}"
+    "deleteNamedAria": "Delete {label}",
+    "editNamedAria": "Edit {label}"
   },
   "notes": {
     "placeholder": "Write a note and press Enter...",

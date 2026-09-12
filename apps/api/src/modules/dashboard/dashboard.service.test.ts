@@ -151,6 +151,82 @@ describe('DashboardService', () => {
     });
   });
 
+  it('updates only current owner personal links', async () => {
+    const prisma = createMockPrisma();
+    prisma.personalLink.findFirst.mockResolvedValueOnce({
+      id: 'link-1',
+      ownerId: 'employee-1',
+      label: 'Old',
+      url: '/old',
+      placement: ['DASHBOARD_PINNED_ACTIONS'],
+      openInNewTab: false,
+      sortOrder: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    prisma.personalLink.update.mockResolvedValueOnce({
+      id: 'link-1',
+      ownerId: 'employee-1',
+      label: 'GitHub',
+      url: 'https://github.com',
+      placement: ['DASHBOARD_PINNED_ACTIONS'],
+      openInNewTab: true,
+      sortOrder: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    const service = new DashboardService(prisma as unknown as InstanceType<typeof PrismaClient>);
+
+    const result = await service.updatePersonalLink('employee-1', 'link-1', {
+      label: 'GitHub',
+      url: 'github.com',
+    });
+
+    expect(prisma.personalLink.findFirst).toHaveBeenCalledWith({
+      where: { id: 'link-1', ownerId: 'employee-1' },
+    });
+    expect(prisma.personalLink.update).toHaveBeenCalledWith({
+      where: { id: 'link-1' },
+      data: {
+        label: 'GitHub',
+        url: 'https://github.com',
+        openInNewTab: true,
+      },
+    });
+    expect(result).toEqual(
+      expect.objectContaining({ label: 'GitHub', url: 'https://github.com', isExternal: true }),
+    );
+  });
+
+  it('keeps personal link ids in hidden pinned actions', async () => {
+    const prisma = createMockPrisma();
+    const linkId = '2c1b0a9e-8d7c-4b3a-91f0-123456789abc';
+    prisma.employee.findUnique.mockResolvedValueOnce({
+      id: 'employee-1',
+      role: { slug: 'seller', name: 'Seller' },
+    });
+    prisma.dashboardPreference.upsert.mockResolvedValueOnce({
+      id: 'pref-1',
+      employeeId: 'employee-1',
+      pinnedActionOrder: [],
+      hiddenPinnedActions: ['new-task', linkId, 'not-a-key'],
+      visibleWidgets: [],
+      hiddenWidgets: [],
+      compactWidgets: [],
+      sidebarModuleOrder: [],
+      hiddenSidebarModules: [],
+      defaultDashboardMode: 'control_center',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    prisma.personalLink.findMany.mockResolvedValueOnce([]);
+    const service = new DashboardService(prisma as unknown as InstanceType<typeof PrismaClient>);
+
+    const projection = await service.getControlCenterProjection('employee-1');
+
+    expect(projection.preference.hiddenPinnedActions).toEqual(['new-task', linkId]);
+  });
+
   it('lists dashboard notes newest first', async () => {
     const prisma = createMockPrisma();
     const createdAt = new Date('2026-05-02T10:00:00.000Z');

@@ -35,10 +35,7 @@ const DASHBOARD_GRID_CLASS = cn(
 
 interface DashboardControlCenterViewProps {
   actions: PinnedAction[];
-  applyPinnedLayout: (
-    visibleKeys: PinnedAction['key'][],
-    hiddenKeys: PinnedAction['key'][],
-  ) => void;
+  applyPinnedLayout: (visibleIds: string[], hiddenIds: string[]) => void;
   applyWidgetLayout: (visibleIds: string[], hiddenIds: string[]) => void;
   createDashboardNote: (content: string) => Promise<void>;
   data: DashboardData | null;
@@ -53,6 +50,8 @@ interface DashboardControlCenterViewProps {
   visibleMiniMetrics: MiniMetricDefinition[];
   createPersonalLink: (label: string, url: string) => Promise<void>;
   deletePersonalLink: (id: string) => Promise<void>;
+  hiddenPersonalLinkIds: string[];
+  updatePersonalLink: (id: string, label: string, url: string) => Promise<void>;
   reorderDashboardNotes: (noteIds: string[]) => Promise<void>;
   updateDashboardNote: (id: string, content: string) => Promise<void>;
 }
@@ -74,6 +73,8 @@ export function DashboardControlCenterView({
   visibleMiniMetrics,
   createPersonalLink,
   deletePersonalLink,
+  hiddenPersonalLinkIds,
+  updatePersonalLink,
   reorderDashboardNotes,
   updateDashboardNote,
 }: DashboardControlCenterViewProps) {
@@ -91,8 +92,10 @@ export function DashboardControlCenterView({
               editMode={editMode}
               hiddenActions={hiddenActions}
               onApplyPinnedLayout={applyPinnedLayout}
+              hiddenPersonalLinkIds={hiddenPersonalLinkIds}
               onCreatePersonalLink={createPersonalLink}
               onDeletePersonalLink={deletePersonalLink}
+              onUpdatePersonalLink={updatePersonalLink}
               onToggleEdit={() => setEditMode((current) => !current)}
               personalLinks={personalLinks}
               saving={savingPreference}

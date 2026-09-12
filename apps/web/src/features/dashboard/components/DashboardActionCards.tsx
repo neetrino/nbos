@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Eye, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { ActionTileButton } from '@/components/shared';
 import { PersonalLinkMark } from '@/components/shared/it-brand-mark/PersonalLinkMark';
 import { Button } from '@/components/ui/button';
@@ -39,8 +39,10 @@ interface PinnedActionCardProps {
 
 interface PersonalLinkCardProps {
   editMode: boolean;
+  hidden?: boolean;
   link: DashboardPersonalLink;
-  onDelete: () => Promise<void>;
+  onDelete?: () => Promise<void>;
+  onEdit?: () => void;
 }
 
 export function PinnedActionCard({ action, variant = 'visible', editMode }: PinnedActionCardProps) {
@@ -74,35 +76,78 @@ export function PinnedActionCard({ action, variant = 'visible', editMode }: Pinn
   );
 }
 
-export function PersonalLinkCard({ editMode, link, onDelete }: PersonalLinkCardProps) {
-  const t = useTranslations('dashboard');
+export function PersonalLinkCard({
+  editMode,
+  hidden = false,
+  link,
+  onDelete,
+  onEdit,
+}: PersonalLinkCardProps) {
   return (
-    <DashboardPinnedTileShell className="items-stretch gap-2">
+    <DashboardPinnedTileShell>
       <ActionTileButton
         label={link.label}
         icon={<PersonalLinkMark url={link.url} label={link.label} />}
-        trailing={<PinnedActionKindMark kind="open" />}
-        tone="secondary"
+        trailing={
+          editMode && onEdit && onDelete ? (
+            <PersonalLinkTileActions label={link.label} onDelete={onDelete} onEdit={onEdit} />
+          ) : (
+            <PinnedActionKindMark kind="open" />
+          )
+        }
+        tone={hidden ? 'muted' : 'secondary'}
         size="lg"
         fullWidth
         wrapLabel
-        className="h-full min-w-0 flex-1"
-        href={link.url}
+        className="h-full min-w-0"
+        href={editMode ? undefined : link.url}
         external={link.isExternal}
         openInNewTab={link.openInNewTab}
         title={link.isExternal ? link.url : undefined}
+        displayOnly={editMode}
       />
-      {editMode ? (
-        <Button
-          aria-label={t('personalLink.deleteNamedAria', { label: link.label })}
-          variant="ghost"
-          size="icon-xs"
-          className="shrink-0 self-center"
-          onClick={() => void onDelete()}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
-      ) : null}
     </DashboardPinnedTileShell>
+  );
+}
+
+function PersonalLinkTileActions({
+  label,
+  onDelete,
+  onEdit,
+}: {
+  label: string;
+  onDelete: () => Promise<void>;
+  onEdit: () => void;
+}) {
+  const t = useTranslations('dashboard');
+  return (
+    <span className="flex shrink-0 items-center">
+      <Button
+        type="button"
+        aria-label={t('personalLink.editNamedAria', { label })}
+        variant="ghost"
+        size="icon-xs"
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          onEdit();
+        }}
+      >
+        <Pencil className="h-3.5 w-3.5" />
+      </Button>
+      <Button
+        type="button"
+        aria-label={t('personalLink.deleteNamedAria', { label })}
+        variant="ghost"
+        size="icon-xs"
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          void onDelete();
+        }}
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </Button>
+    </span>
   );
 }

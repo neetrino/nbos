@@ -130,6 +130,17 @@ export const dashboardApi = {
     return response.data;
   },
 
+  async updatePersonalLink(
+    id: string,
+    payload: Pick<CreatePersonalLinkPayload, 'label' | 'url' | 'openInNewTab'>,
+  ): Promise<DashboardPersonalLink> {
+    const response = await api.patch<DashboardPersonalLink>(
+      `/api/dashboard/personal-links/${id}`,
+      payload,
+    );
+    return response.data;
+  },
+
   async deletePersonalLink(id: string): Promise<void> {
     await api.delete(`/api/dashboard/personal-links/${id}`);
   },

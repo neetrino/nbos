@@ -9,6 +9,47 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useDroppable } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS } from '../dashboard-dnd.constants';
+import { DASHBOARD_PINNED_TILE_MIN_HEIGHT_CLASS } from '../dashboard-pinned-action-tones';
+import { DASHBOARD_PINNED_GRID_CLASS } from '../dashboard-pinned-actions.constants';
+
+export function PinnedTileGrid({ children }: { children: ReactNode }) {
+  return (
+    <div className={`${DASHBOARD_PINNED_GRID_CLASS} ${DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS}`}>
+      {children}
+    </div>
+  );
+}
+
+export function SortablePinnedTile({ id, children }: { id: string; children: ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 1 : 0,
+      }}
+      className={cn(
+        'focus-visible:ring-ring touch-none rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+        'cursor-grab active:cursor-grabbing',
+        DASHBOARD_PINNED_TILE_MIN_HEIGHT_CLASS,
+        'w-full',
+        isDragging && 'opacity-55',
+      )}
+      {...attributes}
+      {...listeners}
+    >
+      {children}
+    </div>
+  );
+}
 
 export function PinnedDropColumn({
   id,
@@ -37,29 +78,37 @@ export function PinnedDropColumn({
 }
 
 export function CreateLinkInline({
-  onCreate,
+  editing,
+  onCancelEdit,
+  onSubmit,
   saving,
 }: {
-  onCreate: (label: string, url: string) => Promise<void>;
+  editing?: { label: string; url: string } | null;
+  onCancelEdit?: () => void;
+  onSubmit: (label: string, url: string) => Promise<void>;
   saving: boolean;
 }) {
   const t = useTranslations('dashboard');
   const tCommon = useTranslations('common');
-  const [label, setLabel] = useState('');
-  const [url, setUrl] = useState('');
+  const [label, setLabel] = useState(editing?.label ?? '');
+  const [url, setUrl] = useState(editing?.url ?? '');
   const canSubmit = Boolean(label.trim() && url.trim());
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canSubmit) return;
-    await onCreate(label.trim(), url.trim());
-    setLabel('');
-    setUrl('');
+    await onSubmit(label.trim(), url.trim());
+    if (!editing) {
+      setLabel('');
+      setUrl('');
+    }
   }
 
   return (
     <div className="border-border/80 bg-muted/20 mt-5 rounded-xl border border-dashed p-4">
-      <h3 className="text-sm font-semibold">{t('personalLink.formTitle')}</h3>
+      <h3 className="text-sm font-semibold">
+        {editing ? t('personalLink.formTitleEdit') : t('personalLink.formTitle')}
+      </h3>
       <p className="text-muted-foreground mt-1 text-xs">{t('personalLink.formDescription')}</p>
       <form
         className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end"
@@ -77,6 +126,11 @@ export function CreateLinkInline({
             placeholder={t('personalLink.urlPlaceholder')}
           />
         </div>
+        {editing ? (
+          <Button type="button" variant="ghost" size="sm" onClick={onCancelEdit}>
+            {tCommon('cancel')}
+          </Button>
+        ) : null}
         <ActionTileButton
           label={saving ? tCommon('saving') : t('notes.save')}
           icon={<Save aria-hidden />}

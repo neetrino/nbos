@@ -19,7 +19,10 @@ import {
 } from './dashboard.constants';
 import { DASHBOARD_NOTE_LIMIT, DASHBOARD_NOTE_MAX_LENGTH } from './dashboard-note.constants';
 import type { CreateDashboardNoteDto } from './dto/create-dashboard-note.dto';
-import type { CreatePersonalLinkDto } from './dto/create-personal-link.dto';
+import type {
+  CreatePersonalLinkDto,
+  UpdatePersonalLinkDto,
+} from './dto/create-personal-link.dto';
 import type { UpdateDashboardNoteDto } from './dto/update-dashboard-note.dto';
 import type { UpdateDashboardPreferenceDto } from './dto/update-dashboard-preference.dto';
 import type { UpdateNavigationPreferenceDto } from './dto/update-navigation-preference.dto';
@@ -73,7 +76,7 @@ export class DashboardService {
         pinnedActionOrder: sanitizePinnedActions(
           data.pinnedActionOrder ?? current.pinnedActionOrder,
         ),
-        hiddenPinnedActions: sanitizePinnedActions(
+        hiddenPinnedActions: sanitizeHiddenPinnedActions(
           data.hiddenPinnedActions ?? current.hiddenPinnedActions,
         ),
         visibleWidgets: sanitizeWidgets(data.visibleWidgets ?? current.visibleWidgets),
@@ -150,6 +153,33 @@ export class DashboardService {
       take: PERSONAL_LINK_LIMIT,
     });
     return links.map(toPersonalLinkProjection);
+  }
+
+  async updatePersonalLink(
+    employeeId: string,
+    id: string,
+    data: UpdatePersonalLinkDto,
+  ): Promise<DashboardPersonalLinkProjection> {
+    const existing = await this.prisma.personalLink.findFirst({
+      where: { id, ownerId: employeeId },
+    });
+    if (!existing) {
+      throw new BadRequestException('Personal link was not found.');
+    }
+    const label = data.label !== undefined ? data.label.trim() : existing.label;
+    if (!label) {
+      throw new BadRequestException('Personal link label cannot be empty.');
+    }
+    const url = data.url !== undefined ? sanitizePersonalLinkUrl(data.url) : existing.url;
+    const updated = await this.prisma.personalLink.update({
+      where: { id },
+      data: {
+        label,
+        url,
+        openInNewTab: data.openInNewTab ?? isExternalUrl(url),
+      },
+    });
+    return toPersonalLinkProjection(updated);
   }
 
   async deletePersonalLink(employeeId: string, id: string): Promise<{ deleted: boolean }> {
@@ -467,7 +497,7 @@ function sanitizePersonalLinkUrl(value: string): string {
 function toPreferenceProjection(model: DashboardPreferenceModel): DashboardPreferenceProjection {
   return {
     pinnedActionOrder: sanitizePinnedActions(model.pinnedActionOrder),
-    hiddenPinnedActions: sanitizePinnedActions(model.hiddenPinnedActions),
+    hiddenPinnedActions: sanitizeHiddenPinnedActions(model.hiddenPinnedActions),
     visibleWidgets: sanitizeWidgets(model.visibleWidgets),
     hiddenWidgets: sanitizeWidgets(model.hiddenWidgets),
     compactWidgets: sanitizeWidgets(model.compactWidgets),
@@ -479,6 +509,17 @@ function toPreferenceProjection(model: DashboardPreferenceModel): DashboardPrefe
 
 function sanitizePinnedActions(values: string[]): DashboardPinnedActionKey[] {
   return sanitizeKeys(values, DASHBOARD_PINNED_ACTION_KEYS);
+}
+
+const PERSONAL_LINK_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function sanitizeHiddenPinnedActions(values: string[]): string[] {
+  const allowed = new Set<string>(DASHBOARD_PINNED_ACTION_KEYS);
+  const uniqueValues = new Set(values);
+  return [...uniqueValues].filter(
+    (value) => allowed.has(value) || PERSONAL_LINK_ID_PATTERN.test(value),
+  );
 }
 
 const LEGACY_WIDGET_KEY_ALIASES: Record<string, DashboardWidgetKey> = {

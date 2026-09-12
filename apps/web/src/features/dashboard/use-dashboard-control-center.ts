@@ -28,6 +28,7 @@ import {
 import { subscribeDashboardNoteCreated } from './dashboard-note-sync';
 import {
   PINNED_ACTIONS,
+  isPinnedActionKey,
   partitionMiniMetrics,
   type DashboardData,
   type DashboardNote,
@@ -188,10 +189,17 @@ export function useDashboardControlCenter() {
       });
       setPersonalLinks((current) => [...current, link]);
     },
+    updatePersonalLink: async (id: string, label: string, url: string) => {
+      const link = await dashboardApi.updatePersonalLink(id, { label, url });
+      setPersonalLinks((current) => current.map((entry) => (entry.id === id ? link : entry)));
+    },
     deletePersonalLink: async (id: string) => {
       await dashboardApi.deletePersonalLink(id);
       setPersonalLinks((current) => current.filter((link) => link.id !== id));
     },
+    hiddenPersonalLinkIds: (preference?.hiddenPinnedActions ?? []).filter(
+      (id) => !isPinnedActionKey(id),
+    ),
     createDashboardNote: async (content: string) => {
       const temporaryId = `${TEMP_NOTE_ID_PREFIX}-${Date.now()}`;
       const createdAt = new Date().toISOString();
@@ -308,10 +316,10 @@ function usePreferenceControls(
   );
 
   const applyPinnedLayout = useCallback(
-    (visibleKeys: PinnedAction['key'][], hiddenKeys: PinnedAction['key'][]) => {
+    (visibleIds: string[], hiddenIds: string[]) => {
       void savePreference({
-        pinnedActionOrder: visibleKeys,
-        hiddenPinnedActions: hiddenKeys,
+        pinnedActionOrder: visibleIds.filter(isPinnedActionKey),
+        hiddenPinnedActions: hiddenIds,
       });
     },
     [savePreference],
