@@ -15,6 +15,7 @@ import {
 } from '@/features/hr/constants/team-sheet-layout';
 import type { RoleItem } from '@/lib/api/employees';
 import type { EmployeeGeneralDraft } from './employee-general-form-state';
+import { useTranslations } from 'next-intl';
 
 export interface EmployeeSheetScrollBodyProps {
   employeeId: string;
@@ -37,10 +38,18 @@ export function EmployeeSheetScrollBody({
   canEditHr,
   generalError,
 }: EmployeeSheetScrollBodyProps) {
-  const levelOptions = EMPLOYEE_LEVELS.map((l) => ({ value: l.value, label: l.label }));
+  const t = useTranslations('hr.form');
+  const tEmp = useTranslations('hr.employment');
+  const tStatus = useTranslations('hr.status');
+  const tLevel = useTranslations('hr.level');
+  const tForms = useTranslations('forms');
+  const levelOptions = EMPLOYEE_LEVELS.map((l) => ({
+    value: l.value,
+    label: tLevel(l.value),
+  }));
   const statusOptions = EMPLOYEE_STATUSES.filter(
     (s) => s.value !== 'TERMINATED' || draft.status === 'TERMINATED',
-  ).map((s) => ({ value: s.value, label: s.label }));
+  ).map((s) => ({ value: s.value, label: tStatus(s.value) }));
   const roleOptions = roles.map((r) => ({ value: r.id, label: r.name }));
   const lockPersonal = saving || !canEditPersonal;
   const lockHr = saving || !canEditHr;
@@ -54,34 +63,34 @@ export function EmployeeSheetScrollBody({
       ) : null}
 
       <DetailSheetSection
-        title="Profile"
+        title={t('profile')}
         icon={<User size={12} />}
         className={TEAM_SHEET_SECTION_CLASS}
       >
         <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
           <InlineField
             variant="controlled"
-            label="First name"
+            label={t('firstName')}
             type="text"
             value={draft.firstName}
-            placeholder="First name"
+            placeholder={t('firstName')}
             icon={<User size={12} />}
             disabled={lockPersonal}
             onValueChange={(v) => patchDraft({ firstName: v })}
           />
           <InlineField
             variant="controlled"
-            label="Last name"
+            label={t('lastName')}
             type="text"
             value={draft.lastName}
-            placeholder="Last name"
+            placeholder={t('lastName')}
             icon={<User size={12} />}
             disabled={lockPersonal}
             onValueChange={(v) => patchDraft({ lastName: v })}
           />
           <InlineField
             variant="controlled"
-            label="Birthday"
+            label={t('birthday')}
             type="date"
             value={draft.birthday || null}
             icon={<Calendar size={12} />}
@@ -90,20 +99,20 @@ export function EmployeeSheetScrollBody({
           />
           <InlineField
             variant="controlled"
-            label="Level"
+            label={t('level')}
             type="select"
             value={draft.level || undefined}
             options={levelOptions}
-            placeholder="Select level"
+            placeholder={t('selectLevel')}
             disabled={lockHr}
             onValueChange={(v) => patchDraft({ level: v ?? '' })}
           />
           <InlineField
             variant="controlled"
-            label="Position / seat"
+            label={t('position')}
             type="text"
             value={draft.position}
-            placeholder="e.g. Senior Developer"
+            placeholder={t('positionPlaceholder')}
             icon={<Building2 size={12} />}
             disabled={lockHr}
             className="col-span-2"
@@ -113,17 +122,17 @@ export function EmployeeSheetScrollBody({
       </DetailSheetSection>
 
       <DetailSheetSection
-        title="Contacts"
+        title={t('contacts')}
         icon={<Mail size={12} />}
         className={TEAM_SHEET_SECTION_CLASS}
       >
         <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
           <InlineField
             variant="controlled"
-            label="Email"
+            label={t('email')}
             type="email"
             value={draft.email}
-            placeholder="name@company.com"
+            placeholder={t('emailPlaceholder')}
             icon={<Mail size={12} />}
             disabled={lockHr}
             className="col-span-2"
@@ -131,7 +140,7 @@ export function EmployeeSheetScrollBody({
           />
           <InlineField
             variant="controlled"
-            label="Phone"
+            label={t('phone')}
             type="phone"
             value={draft.phone}
             placeholder="+1 …"
@@ -141,7 +150,7 @@ export function EmployeeSheetScrollBody({
           />
           <InlineField
             variant="controlled"
-            label="ATS SIP ID"
+            label={t('sipId')}
             type="text"
             value={draft.sipId}
             placeholder="3126107"
@@ -151,7 +160,7 @@ export function EmployeeSheetScrollBody({
           />
           <InlineField
             variant="controlled"
-            label="Telegram"
+            label={t('telegram')}
             type="text"
             value={draft.telegram}
             placeholder="@username"
@@ -164,14 +173,14 @@ export function EmployeeSheetScrollBody({
       </DetailSheetSection>
 
       <DetailSheetSection
-        title="Employment"
+        title={t('employment')}
         icon={<Calendar size={12} />}
         className={TEAM_SHEET_SECTION_CLASS}
       >
         <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
           <InlineField
             variant="controlled"
-            label="Status"
+            label={tEmp('status')}
             type="select"
             value={draft.status}
             options={statusOptions}
@@ -180,16 +189,17 @@ export function EmployeeSheetScrollBody({
           />
           <InlineField
             variant="controlled"
-            label="Hire date"
+            label={tEmp('hireDate')}
             type="date"
             value={draft.hireDate || null}
+            placeholder={tForms('datePicker.selectDate')}
             icon={<Calendar size={12} />}
             disabled={lockHr}
             onValueChange={(v) => patchDraft({ hireDate: v ?? '' })}
           />
           <InlineField
             variant="controlled"
-            label="Platform role"
+            label={tEmp('platformRole')}
             type="select"
             value={draft.roleId}
             options={roleOptions}

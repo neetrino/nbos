@@ -1,12 +1,11 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 
-const CLOSED_HINT =
-  'Showing terminal outcomes only: Completed. Same board and list views as the active pipeline.';
-
 export function TasksWorkflowScopeBanner({ scope }: { scope: BoardLifecycleScope }) {
+  const t = useTranslations('tasks');
   if (scope !== 'CLOSED') return null;
 
-  return <p className="text-muted-foreground shrink-0 text-xs">{CLOSED_HINT}</p>;
+  return <p className="text-muted-foreground shrink-0 text-xs">{t('banner.closedHint')}</p>;
 }

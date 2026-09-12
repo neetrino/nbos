@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 
 const TASK_LIST_LOAD_MORE_ROOT_MARGIN = '240px';
@@ -21,6 +22,7 @@ export function TaskListLoadMoreBanner({
   loading = false,
   hasMorePages = false,
 }: TaskListLoadMoreBannerProps) {
+  const t = useTranslations('tasks');
   const showCount = totalCount > loadedCount;
   if (!showCount && !hasMorePages && !loading) return null;
 
@@ -28,10 +30,10 @@ export function TaskListLoadMoreBanner({
     <div className="flex flex-col items-end gap-1">
       {showCount ? (
         <p className="text-muted-foreground text-xs tabular-nums">
-          {loadedCount} of {totalCount}
+          {t('loadMore.of', { loaded: loadedCount, total: totalCount })}
         </p>
       ) : null}
-      {loading ? <p className="text-muted-foreground text-xs">Loading…</p> : null}
+      {loading ? <p className="text-muted-foreground text-xs">{t('loadMore.loading')}</p> : null}
       {hasMorePages ? (
         <InfiniteScrollSentinel
           onReach={onLoadMore}

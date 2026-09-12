@@ -11,6 +11,8 @@ export type InterfaceMessages = {
   dashboard: AbstractIntlMessages;
   dashboardDeskLine: AbstractIntlMessages;
   forms: AbstractIntlMessages;
+  hr: AbstractIntlMessages;
+  tasks: AbstractIntlMessages;
 };
 
 async function loadMessagesUncached(locale: WritableInterfaceLocale): Promise<InterfaceMessages> {
@@ -27,6 +29,8 @@ async function loadMessagesUncached(locale: WritableInterfaceLocale): Promise<In
     dashboard: mergeMessages(en.dashboard, localized.dashboard),
     dashboardDeskLine: mergeMessages(en.dashboardDeskLine, localized.dashboardDeskLine),
     forms: mergeMessages(en.forms, localized.forms),
+    hr: mergeMessages(en.hr, localized.hr),
+    tasks: mergeMessages(en.tasks, localized.tasks),
   };
 }
 
@@ -41,14 +45,17 @@ async function loadLocaleMessages(locale: WritableInterfaceLocale): Promise<Inte
 }
 
 async function readLocaleCatalogs(locale: 'en' | 'ru'): Promise<InterfaceMessages> {
-  const [common, account, navigation, dashboard, dashboardDeskLine, forms] = await Promise.all([
-    import(`../messages/${locale}/common.json`),
-    import(`../messages/${locale}/account.json`),
-    import(`../messages/${locale}/navigation.json`),
-    import(`../messages/${locale}/dashboard.json`),
-    import(`../messages/${locale}/dashboard-desk-line.json`),
-    import(`../messages/${locale}/forms.json`),
-  ]);
+  const [common, account, navigation, dashboard, dashboardDeskLine, forms, hr, tasks] =
+    await Promise.all([
+      import(`../messages/${locale}/common.json`),
+      import(`../messages/${locale}/account.json`),
+      import(`../messages/${locale}/navigation.json`),
+      import(`../messages/${locale}/dashboard.json`),
+      import(`../messages/${locale}/dashboard-desk-line.json`),
+      import(`../messages/${locale}/forms.json`),
+      import(`../messages/${locale}/hr.json`),
+      import(`../messages/${locale}/tasks.json`),
+    ]);
   return {
     common: common.default,
     account: account.default,
@@ -56,5 +63,7 @@ async function readLocaleCatalogs(locale: 'en' | 'ru'): Promise<InterfaceMessage
     dashboard: dashboard.default,
     dashboardDeskLine: dashboardDeskLine.default,
     forms: forms.default,
+    hr: hr.default,
+    tasks: tasks.default,
   };
 }

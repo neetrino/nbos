@@ -5,12 +5,13 @@ import { sortTasksByBoardOrder } from './sort-tasks-by-board-order';
 export function buildMyPlanColumns(
   tasks: Task[],
   myPlanStages: TaskBoardStage[],
+  unassignedLabel = 'Unassigned',
 ): KanbanColumn<Task>[] {
   if (myPlanStages.length === 0) {
     return [
       {
         key: '__unassigned',
-        label: 'Unassigned',
+        label: unassignedLabel,
         color: '#6B7280',
         hexColor: '#6B7280',
         items: tasks,
@@ -34,7 +35,7 @@ export function buildMyPlanColumns(
   if (unassigned.length > 0) {
     columns.unshift({
       key: '__unassigned',
-      label: 'Unassigned',
+      label: unassignedLabel,
       color: '#6B7280',
       hexColor: '#6B7280',
       items: unassigned,

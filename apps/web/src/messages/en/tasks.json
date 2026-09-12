@@ -1,0 +1,102 @@
+{
+  "pageTitle": "Tasks",
+  "searchPlaceholder": "Search by task, project, product, workspace…",
+  "newTask": "New Task",
+  "newTaskTrashTitle": "Create tasks from the active list",
+  "employeeProfileRequired": "Employee profile required",
+  "views": {
+    "deadline": "Deadline",
+    "myPlan": "My Plan",
+    "board": "Board",
+    "list": "List",
+    "planning": "Planning"
+  },
+  "empty": {
+    "noTasks": "No tasks in this view",
+    "noTasksDescription": "Try another status scope or clear filters.",
+    "trashEmpty": "Trash is empty",
+    "trashEmptyDescription": "Removed tasks appear here. Restore from the detail sheet.",
+    "profileTitle": "Employee profile required",
+    "profileDescription": "Complete your employee profile to load tasks you participate in and use My Plan.",
+    "openMyAccount": "Open My Account"
+  },
+  "settings": {
+    "title": "Tasks — settings",
+    "description": "Exports, related tools, and Trash. Scope stats reflect workspace-wide aggregates.",
+    "trashDescription": "Trash view. Restore tasks from the detail sheet or return to the active list.",
+    "triggerAria": "Tasks settings",
+    "backToActive": "Back to active list",
+    "viewTrash": "View Trash",
+    "recurring": "Recurring tasks",
+    "automation": "Automation",
+    "exportCsv": "Export scope stats (CSV)"
+  },
+  "banner": {
+    "closedHint": "Showing terminal outcomes only: Completed. Same board and list views as the active pipeline."
+  },
+  "trash": {
+    "viewing": "Viewing Trash — restore from the detail sheet, or delete permanently (name confirmation).",
+    "backToActive": "Back to active"
+  },
+  "loadMore": {
+    "of": "{loaded} of {total}",
+    "loading": "Loading…"
+  },
+  "filters": {
+    "status": "Status",
+    "stage": "Stage",
+    "urgency": "Urgency",
+    "allStage": "All stages",
+    "allUrgency": "All urgency"
+  },
+  "scope": {
+    "ALL": "All statuses",
+    "ACTIVE": "Active",
+    "CLOSED": "Closed"
+  },
+  "status": {
+    "OPEN": "Open",
+    "IN_PROGRESS": "In Progress",
+    "REVIEW": "Review",
+    "ON_HOLD": "On hold",
+    "COMPLETED": "Completed"
+  },
+  "priority": {
+    "NORMAL": "Normal",
+    "HIGH": "Urgent"
+  },
+  "planning": {
+    "UNPLANNED": "Unplanned",
+    "BACKLOG": "Backlog",
+    "FUTURE_SPRINT": "Future sprint",
+    "ACTIVE_SPRINT": "Active sprint"
+  },
+  "deadline": {
+    "overdue": "Overdue",
+    "today": "Today",
+    "this-week": "This Week",
+    "next-week": "Next Week",
+    "later": "2+ Weeks",
+    "no-date": "No Due Date",
+    "done": "Completed"
+  },
+  "table": {
+    "task": "Task",
+    "status": "Status",
+    "closed": "Closed",
+    "urgent": "Urgent",
+    "planning": "Planning",
+    "due": "Due",
+    "assignee": "Assignee"
+  },
+  "kanban": {
+    "empty": "No tasks",
+    "unassigned": "Unassigned",
+    "quick": "Quick"
+  },
+  "card": {
+    "start": "Start task",
+    "finish": "Finish task",
+    "reopen": "Reopen task"
+  }
+}

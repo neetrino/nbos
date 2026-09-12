@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import { Plus, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OpenMyAccountButton } from '@/features/account/components/open-my-account-button';
@@ -11,9 +11,7 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
-  type ViewModeOption,
 } from '@/components/shared';
-import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
 import { TasksWorkflowScopeBanner } from '@/features/tasks/components/TasksWorkflowScopeBanner';
 import { useTasksListPage } from '@/features/tasks/use-tasks-list-page';
 import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
@@ -23,16 +21,9 @@ import { ClientsDirectoryTrashBanner } from '@/features/clients/components/clien
 import { TasksPageSettingsSheet } from '@/features/tasks/components/TasksPageSettingsSheet';
 import { TaskListLoadMoreBanner } from '@/features/tasks/components/TaskListLoadMoreBanner';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
+import { buildTasksListViewOptions } from '@/features/tasks/tasks-list-view-options';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
-
-const TASKS_VIEW_OPTIONS: ViewModeOption<TasksListBoardView>[] = TASKS_BOARD_VIEW_SEGMENTS.map(
-  (segment) => ({
-    value: segment.value,
-    label: typeof segment.label === 'string' ? segment.label : String(segment.value),
-    icon: segment.icon,
-    ariaLabel: segment.ariaLabel,
-  }),
-);
+import { useTranslations } from 'next-intl';
 
 function TasksPageContent() {
   const {
@@ -74,7 +65,9 @@ function TasksPageContent() {
     loadingMore,
     renderBoard,
   } = useTasksListPage();
+  const t = useTranslations('tasks');
   const isMobileViewport = useIsMobileViewport();
+  const tasksViewOptions = useMemo(() => buildTasksListViewOptions(t), [t]);
   const newTaskDisabled = creatorReady && !creatorId;
   const showDesktopBoardChrome = !isMobileViewport && !isTrashView;
   const displayBoardView: TasksListBoardView = isTrashView
@@ -86,12 +79,12 @@ function TasksPageContent() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHero
-        title="Tasks"
+        title={t('pageTitle')}
         search={
           <IntegratedSearchFilters
             search={search}
             onSearchChange={setSearch}
-            searchPlaceholder="Search by task, project, product, workspace…"
+            searchPlaceholder={t('searchPlaceholder')}
             filters={showDesktopBoardChrome ? filterConfigs : undefined}
             filterValues={
               showDesktopBoardChrome
@@ -110,7 +103,7 @@ function TasksPageContent() {
             <ViewModeSwitch
               value={boardView}
               onChange={setBoardView}
-              options={TASKS_VIEW_OPTIONS}
+              options={tasksViewOptions}
             />
           ) : null
         }
@@ -127,14 +120,14 @@ function TasksPageContent() {
               disabled={newTaskDisabled || isTrashView}
               title={
                 isTrashView
-                  ? 'Create tasks from the active list'
+                  ? t('newTaskTrashTitle')
                   : newTaskDisabled
-                    ? 'Employee profile required'
+                    ? t('employeeProfileRequired')
                     : undefined
               }
             >
               <Plus size={16} aria-hidden />
-              New Task
+              {t('newTask')}
             </Button>
           </>
         }
@@ -143,6 +136,8 @@ function TasksPageContent() {
       {isTrashView ? (
         <ClientsDirectoryTrashBanner
           entityLabel="tasks"
+          message={t('trash.viewing')}
+          backLabel={t('trash.backToActive')}
           onBackToActive={() => setListScope('active')}
         />
       ) : (
@@ -156,18 +151,16 @@ function TasksPageContent() {
       ) : creatorReady && !creatorId ? (
         <EmptyState
           icon={CheckSquare}
-          title="Employee profile required"
-          description="Complete your employee profile to load tasks you participate in and use My Plan."
-          action={<OpenMyAccountButton>Open My Account</OpenMyAccountButton>}
+          title={t('empty.profileTitle')}
+          description={t('empty.profileDescription')}
+          action={<OpenMyAccountButton>{t('empty.openMyAccount')}</OpenMyAccountButton>}
         />
       ) : displayTasks.length === 0 ? (
         <EmptyState
           icon={CheckSquare}
-          title={isTrashView ? 'Trash is empty' : 'No tasks in this view'}
+          title={isTrashView ? t('empty.trashEmpty') : t('empty.noTasks')}
           description={
-            isTrashView
-              ? 'Removed tasks appear here. Restore from the detail sheet.'
-              : 'Try another status scope or clear filters.'
+            isTrashView ? t('empty.trashEmptyDescription') : t('empty.noTasksDescription')
           }
         />
       ) : (

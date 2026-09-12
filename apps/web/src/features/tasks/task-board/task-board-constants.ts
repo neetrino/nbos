@@ -10,6 +10,8 @@ export const DEADLINE_COLUMNS_DEF = [
   { key: 'done', label: 'Completed', color: '#10B981', hexColor: '#10B981' },
 ] as const;
 
+export type DeadlineColumnKey = (typeof DEADLINE_COLUMNS_DEF)[number]['key'];
+
 /** Maps Kanban column titles (UI) to persisted task.status values. */
 export const KANBAN_STATUS_MAP: Record<string, string> = {
   New: 'OPEN',

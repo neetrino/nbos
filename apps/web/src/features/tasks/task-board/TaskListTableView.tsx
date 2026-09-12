@@ -22,7 +22,12 @@ import {
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { TaskUrgentFlameIndicator } from '@/features/tasks/components/TaskUrgentFlameIndicator';
-import { getTaskStatus } from '@/features/tasks/constants/tasks';
+import {
+  getTaskStatus,
+  isTaskPlanningStatusValue,
+  isTaskStatusValue,
+} from '@/features/tasks/constants/tasks';
+import { useTranslations } from 'next-intl';
 import { TASK_LIST_URGENT_FLAME_SIZE } from './task-card-urgent';
 import { formatPlanningStatus } from '@/features/tasks/work-spaces/work-space-utils';
 import type { Task } from '@/lib/api/tasks';
@@ -37,19 +42,20 @@ export function TaskListTableView({
   boardScope?: BoardLifecycleScope;
   onRowClick: (task: Task) => void;
 }) {
+  const t = useTranslations('tasks');
   return (
     <div className={ENTITY_LIST_SHELL_CLASS}>
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Task</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.task')}</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>
-              {boardScope === 'CLOSED' ? 'Closed' : 'Status'}
+              {boardScope === 'CLOSED' ? t('table.closed') : t('table.status')}
             </TableHead>
-            <TableHead className={cn(ENTITY_LIST_HEAD_CLASS, 'w-12')} aria-label="Urgent" />
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Planning</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Due</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Assignee</TableHead>
+            <TableHead className={cn(ENTITY_LIST_HEAD_CLASS, 'w-12')} aria-label={t('table.urgent')} />
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.planning')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.due')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.assignee')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -63,6 +69,7 @@ export function TaskListTableView({
 }
 
 function TaskListRow({ task, onRowClick }: { task: Task; onRowClick: (task: Task) => void }) {
+  const t = useTranslations('tasks');
   const st = getTaskStatus(task.status);
   const assigneeLabel = task.assignee
     ? `${task.assignee.firstName} ${task.assignee.lastName}`
@@ -78,7 +85,11 @@ function TaskListRow({ task, onRowClick }: { task: Task; onRowClick: (task: Task
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
         {st ? (
-          <StatusBadge label={st.label} variant={st.variant} className={ENTITY_LIST_BADGE_CLASS} />
+          <StatusBadge
+            label={isTaskStatusValue(st.value) ? t(`status.${st.value}`) : st.label}
+            variant={st.variant}
+            className={ENTITY_LIST_BADGE_CLASS}
+          />
         ) : (
           <EntityListMutedDash />
         )}
@@ -88,7 +99,11 @@ function TaskListRow({ task, onRowClick }: { task: Task; onRowClick: (task: Task
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
         <StatusBadge
-          label={formatPlanningStatus(task.planningStatus)}
+          label={
+            isTaskPlanningStatusValue(task.planningStatus)
+              ? t(`planning.${task.planningStatus}`)
+              : formatPlanningStatus(task.planningStatus)
+          }
           variant="gray"
           className={ENTITY_LIST_BADGE_CLASS}
         />

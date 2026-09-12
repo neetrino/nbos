@@ -1,0 +1,58 @@
+{
+  "tabs": {
+    "general": "Общее",
+    "departments": "Отделы",
+    "security": "Безопасность",
+    "offboarding": "Оффбординг",
+    "onboarding": "Онбординг"
+  },
+  "status": {
+    "ACTIVE": "Активен",
+    "PROBATION": "Испытательный срок",
+    "ON_LEAVE": "В отпуске",
+    "TERMINATED": "Уволен"
+  },
+  "level": {
+    "JUNIOR": "Junior",
+    "MIDDLE": "Middle",
+    "SENIOR": "Senior",
+    "LEAD": "Lead",
+    "HEAD": "Head"
+  },
+  "form": {
+    "profile": "Профиль",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "birthday": "Дата рождения",
+    "level": "Уровень",
+    "selectLevel": "Выберите уровень",
+    "position": "Должность",
+    "positionPlaceholder": "Должность",
+    "contacts": "Контакты",
+    "email": "Email",
+    "emailPlaceholder": "name@company.com",
+    "phone": "Телефон",
+    "sipId": "SIP ID",
+    "telegram": "Telegram",
+    "employment": "Трудоустройство"
+  },
+  "employment": {
+    "status": "Статус",
+    "hireDate": "Дата найма",
+    "platformRole": "Роль на платформе"
+  },
+  "sheet": {
+    "loading": "Загрузка…",
+    "namesRequired": "Укажите имя и фамилию.",
+    "namesEmailRequired": "Укажите email.",
+    "accountUpdated": "Аккаунт обновлён",
+    "employeeUpdated": "Сотрудник обновлён",
+    "saveFailed": "Не удалось сохранить изменения.",
+    "offboard": "Оффбординг",
+    "reactivate": "Восстановить",
+    "remove": "Убрать",
+    "removeAria": "Убрать участника",
+    "removeTitle": "Убрать участника?",
+    "removeDescription": "Этот человек потеряет доступ к команде проекта с этой карточки."
+  }
+}

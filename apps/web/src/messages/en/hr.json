@@ -1,0 +1,58 @@
+{
+  "tabs": {
+    "general": "General",
+    "departments": "Departments",
+    "security": "Security",
+    "offboarding": "Offboarding",
+    "onboarding": "Onboarding"
+  },
+  "status": {
+    "ACTIVE": "Active",
+    "PROBATION": "Probation",
+    "ON_LEAVE": "On Leave",
+    "TERMINATED": "Terminated"
+  },
+  "level": {
+    "JUNIOR": "Junior",
+    "MIDDLE": "Middle",
+    "SENIOR": "Senior",
+    "LEAD": "Lead",
+    "HEAD": "Head"
+  },
+  "form": {
+    "profile": "Profile",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "birthday": "Birthday",
+    "level": "Level",
+    "selectLevel": "Select level",
+    "position": "Position",
+    "positionPlaceholder": "Position",
+    "contacts": "Contacts",
+    "email": "Email",
+    "emailPlaceholder": "name@company.com",
+    "phone": "Phone",
+    "sipId": "SIP ID",
+    "telegram": "Telegram",
+    "employment": "Employment"
+  },
+  "employment": {
+    "status": "Status",
+    "hireDate": "Hire date",
+    "platformRole": "Platform role"
+  },
+  "sheet": {
+    "loading": "Loading…",
+    "namesRequired": "First and last name are required.",
+    "namesEmailRequired": "Email is required.",
+    "accountUpdated": "Account updated",
+    "employeeUpdated": "Employee updated",
+    "saveFailed": "Could not save changes.",
+    "offboard": "Offboard",
+    "reactivate": "Reactivate",
+    "remove": "Remove",
+    "removeAria": "Remove participant",
+    "removeTitle": "Remove participant?",
+    "removeDescription": "This person will lose access to the project team from this card."
+  }
+}
