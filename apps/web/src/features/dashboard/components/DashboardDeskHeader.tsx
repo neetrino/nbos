@@ -1,18 +1,12 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useMessages } from 'next-intl';
 import { usePermission } from '@/lib/permissions';
-import {
-  deskCopy,
-  localizeDeskLineCopy,
-  readDeskLineCatalogTemplates,
-} from '../dashboard-desk-header';
+import { deskCopy } from '../dashboard-desk-header';
 import { useYerevanDeskClock } from '../desk-line/desk-line-clock';
 import { DESK_LINE_ICON_MAP } from '../desk-line/desk-line-icons';
 
 export function DashboardDeskHeader() {
-  const messages = useMessages();
   const { me, isLoading } = usePermission();
   const now = useYerevanDeskClock();
   const ready = now != null && !isLoading && me?.id;
@@ -30,17 +24,15 @@ export function DashboardDeskHeader() {
             now,
           )
         : deskCopy(null);
-    const catalog = readDeskLineCatalogTemplates(messages.dashboardDeskLine, resolution.templateId);
-    const localized = localizeDeskLineCopy(resolution, {
-      title: catalog.title ?? resolution.titleTemplate,
-      subline: catalog.subline ?? resolution.sublineTemplate,
-    });
-    return { ...resolution, ...localized };
-  }, [me, messages.dashboardDeskLine, now, ready]);
+    return resolution;
+  }, [me, now, ready]);
   const Icon = DESK_LINE_ICON_MAP[copy.icon];
 
   return (
-    <header className="nbos-desk-surface min-w-0 shrink-0 overflow-visible px-5 py-5 sm:px-6 sm:py-6">
+    <header
+      lang="hy"
+      className="nbos-desk-surface min-w-0 shrink-0 overflow-visible px-5 py-5 sm:px-6 sm:py-6"
+    >
       <div className="flex min-w-0 items-start gap-3">
         {Icon ? (
           <Icon

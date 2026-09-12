@@ -2,7 +2,6 @@ import type enCommon from '../messages/en/common.json';
 import type enAccount from '../messages/en/account.json';
 import type enNavigation from '../messages/en/navigation.json';
 import type enDashboard from '../messages/en/dashboard.json';
-import type enDashboardDeskLine from '../messages/en/dashboard-desk-line.json';
 import type enForms from '../messages/en/forms.json';
 import type enHr from '../messages/en/hr.json';
 import type enTasks from '../messages/en/tasks.json';
@@ -15,7 +14,6 @@ type Messages = {
   account: typeof enAccount;
   navigation: typeof enNavigation;
   dashboard: typeof enDashboard;
-  dashboardDeskLine: typeof enDashboardDeskLine;
   forms: typeof enForms;
   hr: typeof enHr;
   tasks: typeof enTasks;

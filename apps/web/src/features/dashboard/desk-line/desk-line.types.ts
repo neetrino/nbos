@@ -91,10 +91,10 @@ export interface DeskLineSlots {
 export interface DeskLineResolution {
   templateId: string;
   theme: string;
-  /** English filled copy — stable for resolve tests and algorithm checks. */
+  /** Armenian copy, independent of the interface locale. Names retain their profile spelling. */
   title: string;
   subline: string;
-  /** Catalog template before slot fill — used for locale lookup at render. */
+  /** Armenian catalog template before slot fill. */
   titleTemplate: string;
   sublineTemplate: string;
   slots: DeskLineSlots;

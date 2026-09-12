@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import enAccount from '../messages/en/account.json';
 import enCommon from '../messages/en/common.json';
 import enDashboard from '../messages/en/dashboard.json';
-import enDashboardDeskLine from '../messages/en/dashboard-desk-line.json';
 import enForms from '../messages/en/forms.json';
 import enHr from '../messages/en/hr.json';
 import enNavigation from '../messages/en/navigation.json';
@@ -13,7 +12,6 @@ import enTasks from '../messages/en/tasks.json';
 import ruAccount from '../messages/ru/account.json';
 import ruCommon from '../messages/ru/common.json';
 import ruDashboard from '../messages/ru/dashboard.json';
-import ruDashboardDeskLine from '../messages/ru/dashboard-desk-line.json';
 import ruForms from '../messages/ru/forms.json';
 import ruHr from '../messages/ru/hr.json';
 import ruNavigation from '../messages/ru/navigation.json';
@@ -32,9 +30,6 @@ describe('completed i18n catalogs', () => {
       flattenMessageKeys(ruNavigation).sort(),
     );
     expect(flattenMessageKeys(enDashboard).sort()).toEqual(flattenMessageKeys(ruDashboard).sort());
-    expect(flattenMessageKeys(enDashboardDeskLine).sort()).toEqual(
-      flattenMessageKeys(ruDashboardDeskLine).sort(),
-    );
     expect(flattenMessageKeys(enForms).sort()).toEqual(flattenMessageKeys(ruForms).sort());
     expect(flattenMessageKeys(enHr).sort()).toEqual(flattenMessageKeys(ruHr).sort());
     expect(flattenMessageKeys(enTasks).sort()).toEqual(flattenMessageKeys(ruTasks).sort());
@@ -42,7 +37,9 @@ describe('completed i18n catalogs', () => {
     expect(flattenMessageKeys(enNotifications).sort()).toEqual(
       flattenMessageKeys(ruNotifications).sort(),
     );
-    expect(flattenMessageKeys(enWorkSpaces).sort()).toEqual(flattenMessageKeys(ruWorkSpaces).sort());
+    expect(flattenMessageKeys(enWorkSpaces).sort()).toEqual(
+      flattenMessageKeys(ruWorkSpaces).sort(),
+    );
   });
 
   it('falls back to English when a Russian string is missing', () => {

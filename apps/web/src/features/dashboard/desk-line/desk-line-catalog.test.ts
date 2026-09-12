@@ -1,6 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import enDeskLine from '../../../messages/en/dashboard-desk-line.json';
-import ruDeskLine from '../../../messages/ru/dashboard-desk-line.json';
 import { DESK_LINE_CATALOG, deskLinePool } from './desk-line-catalog';
 import {
   DESK_LINE_EVERYDAY_MIN_SIZE,
@@ -27,7 +25,7 @@ function normalizePair(title: string, subline: string): string {
     .toLowerCase()
     .replaceAll('{{firstname}}', '')
     .replaceAll('{{years}}', '')
-    .replace(/[^a-z0-9\s]/gu, ' ')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
     .replace(/\s+/gu, ' ')
     .trim();
 }
@@ -82,28 +80,13 @@ describe('desk-line catalog', () => {
     }
   });
 
-  it('has EN/RU templates and matching slots for every catalog id', () => {
-    const ids = [
-      ...DESK_LINE_CATALOG.map((line) => line.id),
-      DESK_LINE_NEUTRAL_FALLBACK.templateId,
-    ];
-    for (const id of ids) {
-      const en = enDeskLine.templates[id as keyof typeof enDeskLine.templates];
-      const ru = ruDeskLine.templates[id as keyof typeof ruDeskLine.templates];
-      expect(en, id).toBeTruthy();
-      expect(ru, id).toBeTruthy();
-      if (!en || !ru) continue;
-      const catalog = DESK_LINE_CATALOG.find((line) => line.id === id);
-      const sourceTitle = catalog?.title ?? DESK_LINE_NEUTRAL_FALLBACK.titleTemplate;
-      const sourceSubline = catalog?.subline ?? DESK_LINE_NEUTRAL_FALLBACK.sublineTemplate;
-      expect(slotTokens(en.title), `${id} en title`).toEqual(slotTokens(sourceTitle));
-      expect(slotTokens(ru.title), `${id} ru title`).toEqual(slotTokens(sourceTitle));
-      expect(slotTokens(en.subline), `${id} en subline`).toEqual(slotTokens(sourceSubline));
-      expect(slotTokens(ru.subline), `${id} ru subline`).toEqual(slotTokens(sourceSubline));
+  it('keeps every wish and fallback Armenian with only supported slots', () => {
+    for (const line of [...DESK_LINE_CATALOG, DESK_LINE_NEUTRAL_FALLBACK]) {
+      for (const value of [line.title, line.subline]) {
+        const prose = value.replaceAll('{{firstName}}', '').replaceAll('{{years}}', '');
+        expect(prose).toMatch(/\p{Script=Armenian}/u);
+        expect(prose).not.toMatch(/[A-Za-zА-Яа-яЁё]|\{\{/u);
+      }
     }
   });
 });
-
-function slotTokens(value: string): string[] {
-  return [...value.matchAll(/\{\{[^}]+\}\}/gu)].map((match) => match[0]).sort();
-}

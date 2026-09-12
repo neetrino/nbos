@@ -104,7 +104,7 @@ describe('personal events', () => {
       atYerevan('2026-09-16T08:00:00.000Z'),
     );
     expect(one.pool).toBe('anniversary_one');
-    expect(one.title + one.subline).toMatch(/year/iu);
+    expect(one.title + one.subline).toMatch(/տարի|տարվա/u);
     expect(one.title + one.subline).not.toMatch(/1 years/u);
     const many = resolveDeskLineDetails(
       { ...SIPAN, hireDate: '2023-09-16' },
@@ -153,7 +153,7 @@ describe('memorial 24 April', () => {
     const resolved = resolveDeskLineDetails(SIPAN, memorialInstant);
     expect(resolved.pool).toBe('memorial_neutral');
     expect(resolved.icon).toBe('None');
-    expect(resolved.title + resolved.subline).toMatch(/peaceful|quiet|decent/iu);
+    expect(resolved.title + resolved.subline).toMatch(/Խաղաղ|խաղաղ|հիշելու/u);
     expect(resolved.title + resolved.subline).not.toMatch(/Friday|Party|celebrate|Book Day/iu);
   });
 
@@ -179,7 +179,7 @@ describe('memorial 24 April', () => {
     const resolved = resolveDeskLineDetails({ ...SIPAN, hireDate: '2025-04-24' }, memorialInstant);
     expect(resolved.pool).toBe('anniversary_memorial');
     expect(resolved.title + resolved.subline).not.toMatch(/years here|1 years/iu);
-    expect(resolved.title + resolved.subline).toMatch(/thank you for being here/iu);
+    expect(resolved.title + resolved.subline).toMatch(/շնորհակալ ենք/u);
   });
 });
 

@@ -9,7 +9,6 @@ export type InterfaceMessages = {
   account: AbstractIntlMessages;
   navigation: AbstractIntlMessages;
   dashboard: AbstractIntlMessages;
-  dashboardDeskLine: AbstractIntlMessages;
   forms: AbstractIntlMessages;
   hr: AbstractIntlMessages;
   tasks: AbstractIntlMessages;
@@ -30,7 +29,6 @@ async function loadMessagesUncached(locale: WritableInterfaceLocale): Promise<In
     account: mergeMessages(en.account, localized.account),
     navigation: mergeMessages(en.navigation, localized.navigation),
     dashboard: mergeMessages(en.dashboard, localized.dashboard),
-    dashboardDeskLine: mergeMessages(en.dashboardDeskLine, localized.dashboardDeskLine),
     forms: mergeMessages(en.forms, localized.forms),
     hr: mergeMessages(en.hr, localized.hr),
     tasks: mergeMessages(en.tasks, localized.tasks),
@@ -56,33 +54,29 @@ async function readLocaleCatalogs(locale: 'en' | 'ru'): Promise<InterfaceMessage
     account,
     navigation,
     dashboard,
-    dashboardDeskLine,
     forms,
     hr,
     tasks,
     search,
     notifications,
     workSpaces,
-  ] =
-    await Promise.all([
-      import(`../messages/${locale}/common.json`),
-      import(`../messages/${locale}/account.json`),
-      import(`../messages/${locale}/navigation.json`),
-      import(`../messages/${locale}/dashboard.json`),
-      import(`../messages/${locale}/dashboard-desk-line.json`),
-      import(`../messages/${locale}/forms.json`),
-      import(`../messages/${locale}/hr.json`),
-      import(`../messages/${locale}/tasks.json`),
-      import(`../messages/${locale}/search.json`),
-      import(`../messages/${locale}/notifications.json`),
-      import(`../messages/${locale}/work-spaces.json`),
-    ]);
+  ] = await Promise.all([
+    import(`../messages/${locale}/common.json`),
+    import(`../messages/${locale}/account.json`),
+    import(`../messages/${locale}/navigation.json`),
+    import(`../messages/${locale}/dashboard.json`),
+    import(`../messages/${locale}/forms.json`),
+    import(`../messages/${locale}/hr.json`),
+    import(`../messages/${locale}/tasks.json`),
+    import(`../messages/${locale}/search.json`),
+    import(`../messages/${locale}/notifications.json`),
+    import(`../messages/${locale}/work-spaces.json`),
+  ]);
   return {
     common: common.default,
     account: account.default,
     navigation: navigation.default,
     dashboard: dashboard.default,
-    dashboardDeskLine: dashboardDeskLine.default,
     forms: forms.default,
     hr: hr.default,
     tasks: tasks.default,
