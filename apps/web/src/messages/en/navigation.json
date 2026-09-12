@@ -114,7 +114,13 @@
   "pwa": {
     "install": "Install app",
     "addToHomeScreen": "Add to Home Screen",
-    "iosHint": "Tap Share, then Add to Home Screen to keep NBOS with your apps."
+    "iosHint": "Tap Share, then Add to Home Screen to keep NBOS with your apps.",
+    "bannerTitle": "Install NBOS",
+    "bannerPromptBody": "Open it from your home screen or app list.",
+    "bannerIosBody": "On iPhone: Share, then Add to Home Screen.",
+    "bannerBrowserBody": "Use the install icon in the address bar, or the browser menu.",
+    "bannerInstall": "Install",
+    "bannerDismiss": "Not now"
   },
   "headerQuickNote": {
     "placeholder": "Write a note and press Enter...",

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { PwaInstallBanner } from '@/components/pwa/PwaInstallBanner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type {
@@ -83,6 +84,7 @@ export function DashboardControlCenterView({
   return (
     <div className="flex min-h-0 w-full max-w-none flex-col gap-5 max-md:gap-4">
       <DashboardDeskHeader />
+      <PwaInstallBanner />
       {error ? <DashboardError message={error} /> : null}
       <section className={DASHBOARD_GRID_CLASS}>
         <div className="min-w-0 lg:col-span-2 xl:col-span-2 xl:row-start-1">
