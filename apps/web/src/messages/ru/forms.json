@@ -92,6 +92,8 @@
     "selectExpiryDate": "Выберите дату окончания",
     "previousMonth": "Предыдущий месяц",
     "nextMonth": "Следующий месяц",
+    "previousYear": "Предыдущий год",
+    "nextYear": "Следующий год",
     "typeDateGroup": "Введите дату: день, месяц, год",
     "day": "День",
     "month": "Месяц",

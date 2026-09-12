@@ -92,6 +92,8 @@
     "selectExpiryDate": "Select expiry date",
     "previousMonth": "Previous month",
     "nextMonth": "Next month",
+    "previousYear": "Previous year",
+    "nextYear": "Next year",
     "typeDateGroup": "Type date as day, month, year",
     "day": "Day",
     "month": "Month",

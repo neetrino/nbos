@@ -78,6 +78,8 @@ export function NbosMonthPicker({
           locale={locale}
           onViewYearChange={setViewYear}
           onSelectMonth={handleSelectMonth}
+          previousYearLabel={t('datePicker.previousYear')}
+          nextYearLabel={t('datePicker.nextYear')}
         />
         <div className="border-border/50 mt-3 flex justify-between border-t pt-2">
           <button

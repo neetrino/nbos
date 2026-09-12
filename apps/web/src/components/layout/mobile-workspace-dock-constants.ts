@@ -1,13 +1,7 @@
-export const MOBILE_WORKSPACE_SEARCH_LABEL = 'Search';
-export const MOBILE_WORKSPACE_CREATE_LABEL = 'New';
-export const MOBILE_WORKSPACE_SETTINGS_LABEL = 'Settings';
-export const MOBILE_WORKSPACE_DEFAULT_SCOPE_LABEL = 'All';
-
 export const MOBILE_WORKSPACE_SWITCHER_ZONE_TITLE = 'Zone';
 export const MOBILE_WORKSPACE_SWITCHER_SECTION_TITLE = 'Section';
 export const MOBILE_WORKSPACE_SWITCHER_CATEGORY_TITLE = 'Category';
 export const MOBILE_WORKSPACE_SWITCHER_VIEW_TITLE = 'View';
-export const MOBILE_WORKSPACE_SWITCHER_MULTI_TITLE = 'Go to';
 
 export const MOBILE_DOCK_SWITCHER_GROUP_TITLE_KEYS = {
   zone: 'mobileDock.zone',

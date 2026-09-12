@@ -12,6 +12,8 @@ export interface NbosMonthPickerGridProps {
   locale: string;
   onViewYearChange: (year: number) => void;
   onSelectMonth: (monthIndex: number) => void;
+  previousYearLabel: string;
+  nextYearLabel: string;
   className?: string;
 }
 
@@ -21,6 +23,8 @@ export function NbosMonthPickerGrid({
   locale,
   onViewYearChange,
   onSelectMonth,
+  previousYearLabel,
+  nextYearLabel,
   className,
 }: NbosMonthPickerGridProps) {
   const labels = buildMonthPickerMonthLabels(locale);
@@ -35,7 +39,7 @@ export function NbosMonthPickerGrid({
           variant="ghost"
           size="icon"
           className="text-muted-foreground size-8 rounded-lg"
-          aria-label="Previous year"
+          aria-label={previousYearLabel}
           onClick={() => onViewYearChange(viewYear - 1)}
         >
           <ChevronLeft size={18} />
@@ -46,7 +50,7 @@ export function NbosMonthPickerGrid({
           variant="ghost"
           size="icon"
           className="text-muted-foreground size-8 rounded-lg"
-          aria-label="Next year"
+          aria-label={nextYearLabel}
           onClick={() => onViewYearChange(viewYear + 1)}
         >
           <ChevronRight size={18} />

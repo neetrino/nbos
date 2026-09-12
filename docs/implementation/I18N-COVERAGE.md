@@ -1,6 +1,6 @@
 # I18N coverage — first EN/RU release
 
-Date: 2026-09-12. Status: first EN/RU slice is in the working tree. Desktop EN↔RU, light/dark, four create flows, mobile menu, and live Meeting 403/conflict/network copy were sampled. A hidden Armenian font probe is in the root layout without enabling HY. Live token-expiry restore (httpOnly session) and production rollout remain open.
+Date: 2026-09-12. Status: first EN/RU slice is in the working tree. Stage 5 review is in progress: GET/PATCH/cookie/SSR contract is recorded below; month-picker year chrome is catalogued. Live token-expiry restore, two-user logout/login, and production rollout remain open.
 
 Canon: [07-Interface-Localization.md](../NBOS/01-Platform-Overview/07-Interface-Localization.md). Plan: [I18N-IMPLEMENTATION-PLAN.md](./I18N-IMPLEMENTATION-PLAN.md).
 
@@ -81,7 +81,7 @@ Status: `pending` → `in_progress` → `en_ru` → `verified`.
 | Lead    | `new-lead`                                | `apps/web/src/features/crm/components/CreateLeadDialog.tsx`                                   | Title, name/phone/email, create/cancel, errors                                                  | en_ru (Full label only; destination sheet still English) |
 | Expense | `new-expense`                             | `CreateExpenseDialog.tsx`, `CreateExpenseDialogForm.tsx`                                      | Name/amount/due date, create/cancel, errors                                                     | en_ru                                                    |
 
-Shared date picker follows the interface locale (`en`→`en-US`, `ru`→`ru-RU`) for display chrome, including Previous/Next month, typed Day/Month/Year, and Time/Hours/Minutes. Week-start and Yerevan calendar math are unchanged. Relation picker employee kind, add-employee aria, and chip Open/Change/Remove aria are EN/RU; non-employee `Search {kind}s…` placeholders remain English. Mini-analytics kicker/chart aria and totals follow the interface locale. Meeting type/location closed selects render catalog labels, not raw enum codes. Shared dialog close uses `common.close`. First-release Task/Meeting/Lead/Expense/Dashboard load errors map by status/code to catalog copy; unknown and network failures use a safe localized fallback. Persisted IDs, amounts, ISO dates, and user-entered values are not translated.
+Shared date picker follows the interface locale (`en`→`en-US`, `ru`→`ru-RU`) for display chrome, including Previous/Next month, Previous/Next year, typed Day/Month/Year, and Time/Hours/Minutes. Week-start and Yerevan calendar math are unchanged. Relation picker employee kind, add-employee aria, and chip Open/Change/Remove aria are EN/RU; non-employee `Search {kind}s…` placeholders remain English. Mini-analytics kicker/chart aria and totals follow the interface locale. Meeting type/location closed selects render catalog labels, not raw enum codes. Shared dialog close uses `common.close`. First-release Task/Meeting/Lead/Expense/Dashboard load errors map by status/code to catalog copy; unknown and network failures use a safe localized fallback. Persisted IDs, amounts, ISO dates, and user-entered values are not translated.
 
 Lead **Full** button label is in scope; the Lead sheet it opens is not. Task `Full form` is unused from Dashboard (`onOpenFull` is not passed).
 
@@ -138,6 +138,20 @@ Targeted test paths to add/run for this release:
 
 Not run as part of ordinary i18n slices: `pnpm format`, `pnpm db:push`, `pnpm db:migrate` against unknown/shared/prod DBs, production deploy.
 
+## Implemented contract (stage 5)
+
+Matches canon. Do not treat this as a behaviour change.
+
+- **Allowlist:** writable `en` | `ru`. `hy` is reserved and rejected on write (`400`). Stored junk/`hy` reads as `en` without writing that fallback.
+- **API:** `GET|PATCH /api/v1/me/preferences`. Body/response `{ interfaceLocale }`. Envelope from the existing interceptor is `{ data, timestamp }`. Employee is taken from the session; the client does not send `employeeId`. Invalid locale → `400` and no write. Any authenticated employee may change their own locale.
+- **SSR:** `resolveRequestLocale` — if the session has a user, `fetchAuthenticatedLocale` via `ensureBackendAccessToken` + backend GET; stored locale beats the cookie. Token/API/timeout failure → `en`, no DB write, cookie is not applied. Anonymous: valid cookie or `en`.
+- **Cookie:** `nbos-interface-locale`, `Path=/`, `Max-Age=1y`, `SameSite=Lax`, not identity. Client write after a successful PATCH or client restore. Logout expires it and leftover `nbos-interface-locale-owner`.
+- **Change:** PATCH → cookie → `router.refresh()`. No `key={locale}` remount. Failed save keeps the previous locale and toasts `account.languageSaveFailed`. In-flight switches are ignored via a request id.
+- **Restore:** after the client session is authenticated, GET preferences; if it differs from SSR, refresh. Catch does not write `en`.
+- **Cache:** React `cache()` per request only. Preference is not a process-wide query key. Business query keys are unchanged.
+
+Still English on purpose inside first-release chrome: notification inbox body, Global Search panel, destination pages of Open, Lead sheet behind Full, non-employee relation-picker search placeholders, feature-module dock item labels. Auth pages, emails, PDF, and the rest of the platform are stages 6–7.
+
 ## Stage journal
 
 | Stage | Coverage note                                  | Status                                                                                                                  |
@@ -147,4 +161,4 @@ Not run as part of ordinary i18n slices: `pnpm format`, `pnpm db:push`, `pnpm db
 | 2     | Shell + remaining Dashboard                    | en_ru (desktop RU + light/dark/system sampled live; mobile 390px menu sampled)                                          |
 | 3     | Four create flows                              | en_ru (date-picker chrome sampled live in RU; Meeting 403/conflict/network copy sampled live via request intercept)     |
 | 4     | Automated + visual acceptance                  | partial (light/dark + HY font probe + live Meeting errors done; live token-expiry and two-user logout/login still open) |
-| 5     | Review, docs, report                           | in_progress (journals updated after this live pass; two-user login and production rollout not done)                     |
+| 5     | Review, docs, report                           | in_progress (contract documented; month-picker year aria localized; two-user login and production rollout not done)     |

@@ -1,4 +1,4 @@
-import type { PinnedAction, PinnedActionKind } from './dashboard-control-registry';
+import type { PinnedAction } from './dashboard-control-registry';
 
 export function isPinnedCreateAction(
   action: PinnedAction,
@@ -23,8 +23,4 @@ export function partitionPinnedActionsByKind(actions: readonly PinnedAction[]): 
     else open.push(action);
   }
   return { create, open };
-}
-
-export function pinnedActionKindLabel(kind: PinnedActionKind): string {
-  return kind === 'create' ? 'Create' : 'Open';
 }
