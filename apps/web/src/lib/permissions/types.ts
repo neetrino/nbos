@@ -4,6 +4,8 @@ export interface PermissionMap {
   [moduleAction: string]: PermissionScope;
 }
 
+export type MeEmployeeStatus = 'ACTIVE' | 'PROBATION' | 'ON_LEAVE' | 'TERMINATED';
+
 export interface MeResponse {
   id: string;
   firstName: string;
@@ -13,6 +15,9 @@ export interface MeResponse {
   telegram?: string;
   avatar?: string;
   position?: string;
+  birthday?: string | null;
+  hireDate?: string | null;
+  status?: MeEmployeeStatus;
   role: {
     id: string;
     name: string;

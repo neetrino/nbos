@@ -31,6 +31,9 @@ interface CachedEmployee {
     telegram: string | null;
     avatar: string | null;
     position: string | null;
+    birthday: string | null;
+    hireDate: string | null;
+    status: 'ACTIVE' | 'PROBATION' | 'ON_LEAVE' | 'TERMINATED';
     isPlatformOwner: boolean;
     role: {
       id: string;
@@ -172,6 +175,9 @@ export class EmployeeGuard implements CanActivate {
         telegram: employee.telegram,
         avatar: employee.avatar,
         position: employee.position,
+        birthday: employee.birthday?.toISOString() ?? null,
+        hireDate: employee.hireDate?.toISOString() ?? null,
+        status: employee.status,
         isPlatformOwner,
         role: {
           id: employee.role.id,

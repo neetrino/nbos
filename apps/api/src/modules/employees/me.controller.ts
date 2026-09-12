@@ -110,7 +110,9 @@ export class MeController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get current employee profile with role, permissions, and departments' })
+  @ApiOperation({
+    summary: 'Get current employee profile with role, permissions, departments, and own desk-line fields',
+  })
   async getMe(@CurrentUser() user: CurrentUserPayload) {
     if (!user?.id || !user.meProfile) {
       throw new NotFoundException('Employee record not found for this user');

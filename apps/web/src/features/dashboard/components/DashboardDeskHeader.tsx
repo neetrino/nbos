@@ -1,25 +1,47 @@
 'use client';
 
 import { usePermission } from '@/lib/permissions';
-import {
-  DASHBOARD_DESK_KICKER,
-  DASHBOARD_DESK_SUBLINE,
-  deskHeading,
-} from '../dashboard-desk-header';
+import { deskCopy } from '../dashboard-desk-header';
+import { useYerevanDeskClock } from '../desk-line/desk-line-clock';
+import { DESK_LINE_ICON_MAP } from '../desk-line/desk-line-icons';
 
 export function DashboardDeskHeader() {
-  const { me } = usePermission();
-  const heading = deskHeading(me?.firstName);
+  const { me, isLoading } = usePermission();
+  const now = useYerevanDeskClock();
+  const ready = now != null && !isLoading && me?.id;
+  const copy =
+    ready && now
+      ? deskCopy(
+          {
+            employeeId: me.id,
+            firstName: me.firstName,
+            birthday: me.birthday,
+            hireDate: me.hireDate,
+            status: me.status,
+          },
+          now,
+        )
+      : deskCopy(null);
+  const Icon = DESK_LINE_ICON_MAP[copy.icon];
 
   return (
     <header className="nbos-desk-surface min-w-0 shrink-0 overflow-visible px-5 py-5 sm:px-6 sm:py-6">
-      <p className="nbos-desk-kicker">{DASHBOARD_DESK_KICKER}</p>
-      <h1 className="nbos-display text-foreground mt-2 min-w-0 text-2xl leading-snug text-balance break-words sm:text-3xl md:text-4xl">
-        {heading}
-      </h1>
-      <p className="text-muted-foreground mt-2 min-w-0 text-sm leading-relaxed break-words">
-        {DASHBOARD_DESK_SUBLINE}
-      </p>
+      <div className="flex min-w-0 items-start gap-3">
+        {Icon ? (
+          <Icon
+            aria-hidden
+            className="text-muted-foreground mt-1 size-5 shrink-0 sm:mt-1.5 sm:size-6"
+          />
+        ) : null}
+        <div className="min-w-0">
+          <h1 className="nbos-display text-foreground min-w-0 text-2xl leading-snug text-balance break-words sm:text-3xl md:text-4xl">
+            {copy.title}
+          </h1>
+          <p className="text-muted-foreground mt-2 min-w-0 text-sm leading-relaxed break-words">
+            {copy.subline}
+          </p>
+        </div>
+      </div>
     </header>
   );
 }

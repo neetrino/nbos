@@ -1,0 +1,38 @@
+import {
+  BookOpen,
+  Cake,
+  Coffee,
+  Compass,
+  Hand,
+  Leaf,
+  Lightbulb,
+  MessageCircle,
+  Music,
+  PartyPopper,
+  Smile,
+  Sparkles,
+  Sprout,
+  Sun,
+  Sunset,
+  type LucideIcon,
+} from 'lucide-react';
+import type { DeskLineIconKey } from './desk-line.types';
+
+export const DESK_LINE_ICON_MAP = {
+  None: null,
+  Sparkles,
+  Smile,
+  Coffee,
+  MessageCircle,
+  Lightbulb,
+  Compass,
+  Music,
+  Sun,
+  Sunset,
+  Leaf,
+  BookOpen,
+  Sprout,
+  Cake,
+  PartyPopper,
+  Hand,
+} as const satisfies Record<DeskLineIconKey, LucideIcon | null>;
