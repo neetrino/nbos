@@ -2,7 +2,7 @@
 
 ## Мультиязычность — первый EN/RU срез, 2026-09-12
 
-Статус: этапы 0–3 готовы; 4 почти закрыт; 5 в работе — отчёт в [coverage](implementation/I18N-COVERAGE.md), 87 targeted tests зелёные, срез не в IMPLEMENTATION_DONE. Открыты live token-expiry, два пользователя, полный web lint, production rollout. [Канон](NBOS/01-Platform-Overview/07-Interface-Localization.md), [план](implementation/I18N-IMPLEMENTATION-PLAN.md). Этапы 6–7 не начаты.
+Статус: этапы 0–3 готовы; 4 почти закрыт (web typecheck + lint 0 errors); 5 в работе — отчёт в [coverage](implementation/I18N-COVERAGE.md), parser конфликтов встречи укреплён. Срез не в IMPLEMENTATION_DONE. Открыты live token-expiry, два пользователя, production rollout. [Канон](NBOS/01-Platform-Overview/07-Interface-Localization.md), [план](implementation/I18N-IMPLEMENTATION-PLAN.md). Этапы 6–7 не начаты.
 
 > **Активный бэклог** до полного канона: что делаем и что отложено. Закрытые срезы и история — `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 

@@ -8,11 +8,13 @@ const layoutSource = readFileSync(resolve(__dirname, '../app/layout.tsx'), 'utf8
 
 describe('Armenian font probe', () => {
   it('keeps Inter ahead of Noto Sans Armenian on the sans stack', () => {
-    const sansBlock = globalsCss.match(/--font-sans:\s*([^;]+);/);
-    expect(sansBlock?.[1]).toContain('var(--font-inter)');
-    expect(sansBlock?.[1]).toContain('var(--font-noto-sans-armenian)');
-    expect(sansBlock?.[1].indexOf('--font-inter')).toBeLessThan(
-      sansBlock?.[1].indexOf('--font-noto-sans-armenian') ?? Number.POSITIVE_INFINITY,
+    const sansStack = globalsCss.match(/--font-sans:\s*([^;]+);/)?.[1];
+    expect(sansStack).toBeDefined();
+    if (!sansStack) return;
+    expect(sansStack).toContain('var(--font-inter)');
+    expect(sansStack).toContain('var(--font-noto-sans-armenian)');
+    expect(sansStack.indexOf('--font-inter')).toBeLessThan(
+      sansStack.indexOf('--font-noto-sans-armenian'),
     );
   });
 

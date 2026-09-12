@@ -1,6 +1,6 @@
 # I18N coverage — first EN/RU release
 
-Date: 2026-09-12. Status: first EN/RU slice is in the working tree. Stage 5 report is below. The slice is not moved to IMPLEMENTATION_DONE. Live token-expiry, two-user logout/login, full web lint/typecheck/build, and production rollout remain open.
+Date: 2026-09-12. Status: first EN/RU slice is in the working tree. Stage 5 report is below. Web typecheck is green; web lint has 0 errors. The slice is not moved to IMPLEMENTATION_DONE. Live token-expiry, two-user logout/login, and production rollout remain open.
 
 Canon: [07-Interface-Localization.md](../NBOS/01-Platform-Overview/07-Interface-Localization.md). Plan: [I18N-IMPLEMENTATION-PLAN.md](./I18N-IMPLEMENTATION-PLAN.md).
 
@@ -175,22 +175,21 @@ Notification inbox body, Global Search panel, Open destination pages, Lead sheet
 
 `pnpm exec vitest run` on shared locales, employee preference service + HTTP test, `apps/web/src/i18n`, BFF/auth refresh + sign-out, desk-line + dashboard header/action-key tests.
 
-Result: **22 files, 87 tests, all passed** (2026-09-12).
+Result: **22 files, 87 tests, all passed** (2026-09-12). Follow-up: web `typecheck` green; web `lint` 0 errors / 16 pre-existing warnings outside i18n. Meeting conflict parser now reads top-level and nested `conflicts` (3 new tests).
 
 ### Not run
 
-| Check                                                      | Reason                                                                             |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `pnpm --filter @nbos/web lint` / `typecheck` / `build:web` | Full web lint previously OOM/SIGTERM; not re-run this pass                         |
-| `pnpm --filter @nbos/api typecheck` / `build:api`          | No backend change in this report pass                                              |
-| Live expired access-token restore                          | Access JWT is httpOnly; mutating it risks killing the session                      |
-| Logout/login two users                                     | Needs a second account and would sign out the current session                      |
-| Production deploy / production migration                   | Out of this slice. Dev Neon already has `20260912120000_employee_interface_locale` |
+| Check                                    | Reason                                                                             |
+| ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| `pnpm run build:web` / `build:api`       | Not required for this parser/typecheck pass                                        |
+| Live expired access-token restore        | Access JWT is httpOnly; mutating it risks killing the session                      |
+| Logout/login two users                   | Needs a second account and would sign out the current session                      |
+| Production deploy / production migration | Out of this slice. Dev Neon already has `20260912120000_employee_interface_locale` |
 
 ### Risks
 
 - Authenticated SSR falls back to EN when preference GET/refresh fails; next successful load restores DB locale. Cookie is not applied for a signed-in user in that failure path (canon).
-- Meeting conflict **list** was not proven live (stub may have omitted `conflicts`); overlap **copy** was. Real API puts `conflicts` on the 409 body.
+- Meeting conflict **list** was not proven live (the intercept stub may have omitted `conflicts`); overlap **copy** was. Parser now accepts top-level and nested `conflicts`; the real API puts the list on the 409 body.
 - Desk-line RU is editorial and still wants a native review.
 - Double BFF/RSC refresh is unchanged; do not touch unless logs show `auth.refresh_reuse_detected`.
 
@@ -200,11 +199,11 @@ Additive migration is in the repo and applied to the authorized Neon database. P
 
 ## Stage journal
 
-| Stage | Coverage note                                  | Status                                                                                                                           |
-| ----- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | This register                                  | complete                                                                                                                         |
-| 1     | Foundation + Save/Cancel + language + New task | en_ru (reference verified by tests)                                                                                              |
-| 2     | Shell + remaining Dashboard                    | en_ru (desktop RU + light/dark/system sampled live; mobile 390px menu sampled)                                                   |
-| 3     | Four create flows                              | en_ru (date-picker chrome sampled live in RU; Meeting 403/conflict/network copy sampled live via request intercept)              |
-| 4     | Automated + visual acceptance                  | partial (light/dark + HY font probe + live Meeting errors done; live token-expiry and two-user logout/login still open)          |
-| 5     | Review, docs, report                           | in_progress (report written; 87 targeted tests green; two-user login, live token-expiry, full web lint, production rollout open) |
+| Stage | Coverage note                                  | Status                                                                                                              |
+| ----- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| 0     | This register                                  | complete                                                                                                            |
+| 1     | Foundation + Save/Cancel + language + New task | en_ru (reference verified by tests)                                                                                 |
+| 2     | Shell + remaining Dashboard                    | en_ru (desktop RU + light/dark/system sampled live; mobile 390px menu sampled)                                      |
+| 3     | Four create flows                              | en_ru (date-picker chrome sampled live in RU; Meeting 403/conflict/network copy sampled live via request intercept) |
+| 4     | Automated + visual acceptance                  | partial (web typecheck + lint 0 errors; live token-expiry and two-user logout/login still open)                     |
+| 5     | Review, docs, report                           | in_progress (report + conflict parser; two-user login, live token-expiry, production rollout open)                  |
