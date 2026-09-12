@@ -381,21 +381,21 @@ function sanitizeDashboardNoteContent(value: string): string {
 function getDefaultPinnedActions(role: string | null): DashboardPinnedActionKey[] {
   const normalized = (role ?? '').toUpperCase();
   if (normalized.includes('FINANCE')) {
-    return ['open-invoices', 'open-expenses', 'open-payroll', 'open-calendar'];
+    return ['open-invoices', 'open-expenses', 'open-payroll', 'new-expense'];
   }
   if (normalized.includes('PM') || normalized.includes('PROJECT')) {
-    return ['open-products', 'open-my-workspaces', 'open-tasks', 'open-calendar'];
+    return ['open-products', 'new-task', 'new-meeting', 'open-credentials'];
   }
   if (normalized.includes('DEVELOPER')) {
-    return ['open-tasks', 'open-my-workspaces', 'open-messenger', 'open-credentials'];
+    return ['new-task', 'new-meeting', 'open-credentials', 'open-deals'];
   }
   if (normalized.includes('SUPPORT')) {
-    return ['open-support', 'new-task', 'open-messenger', 'open-calendar'];
+    return ['open-support', 'new-task', 'new-meeting', 'open-deals'];
   }
   if (normalized.includes('SELLER') || normalized.includes('SALES')) {
-    return ['new-lead', 'open-deals', 'open-messenger', 'mail-inbox'];
+    return ['new-lead', 'open-deals', 'new-meeting', 'new-expense'];
   }
-  return ['open-invoices', 'open-products', 'open-support', 'open-calendar'];
+  return ['open-invoices', 'open-products', 'open-support', 'open-credentials'];
 }
 
 function sanitizePlacements(values?: string[]): string[] {

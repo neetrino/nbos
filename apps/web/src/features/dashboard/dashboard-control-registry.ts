@@ -1,5 +1,4 @@
 import {
-  Calendar,
   CalendarPlus,
   CheckSquare,
   FileText,
@@ -8,8 +7,6 @@ import {
   Headphones,
   KeyRound,
   ListPlus,
-  Mail,
-  MessageCircle,
   Plus,
   ReceiptText,
   UserPlus,
@@ -47,17 +44,12 @@ export type DashboardPinnedActionKey =
   | 'new-meeting'
   | 'new-expense'
   | 'open-deals'
-  | 'open-my-workspaces'
   | 'open-products'
   | 'open-invoices'
   | 'open-expenses'
   | 'open-payroll'
-  | 'open-tasks'
   | 'open-support'
-  | 'open-calendar'
-  | 'open-messenger'
-  | 'open-credentials'
-  | 'mail-inbox';
+  | 'open-credentials';
 export type DashboardWidgetKey = 'leads' | 'open-deals' | 'open-tasks' | 'open-support-tickets';
 export type PriorityCard = DashboardPriorityProjection;
 
@@ -109,16 +101,6 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'Review active sales pipeline.',
   },
   {
-    key: 'open-my-workspaces',
-    kind: 'open',
-    label: 'My Work Spaces',
-    href: '/work-spaces',
-    icon: FolderKanban,
-    module: 'TASKS',
-    action: 'VIEW',
-    description: 'Jump into active delivery spaces.',
-  },
-  {
     key: 'open-products',
     kind: 'open',
     label: 'Delivery Board',
@@ -159,16 +141,6 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'Review salary and payroll runs.',
   },
   {
-    key: 'open-tasks',
-    kind: 'open',
-    label: 'My tasks',
-    href: '/tasks',
-    icon: CheckSquare,
-    module: 'TASKS',
-    action: 'VIEW',
-    description: 'Open task board for work in progress.',
-  },
-  {
     key: 'open-support',
     kind: 'open',
     label: 'Support queue',
@@ -179,16 +151,6 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'Open tickets waiting for action.',
   },
   {
-    key: 'open-calendar',
-    kind: 'open',
-    label: 'Open calendar',
-    href: '/calendar',
-    icon: Calendar,
-    module: 'CALENDAR',
-    action: 'VIEW',
-    description: 'See meetings, personal items and deadlines.',
-  },
-  {
     key: 'open-credentials',
     kind: 'open',
     label: 'Credentials vault',
@@ -197,26 +159,6 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     module: 'CREDENTIALS',
     action: 'VIEW',
     description: 'Open shared credentials you can access.',
-  },
-  {
-    key: 'open-messenger',
-    kind: 'open',
-    label: 'Open messenger',
-    href: '/messenger',
-    icon: MessageCircle,
-    module: 'MESSENGER',
-    action: 'VIEW',
-    description: 'Jump into internal communication.',
-  },
-  {
-    key: 'mail-inbox',
-    kind: 'open',
-    label: 'Mail inbox',
-    href: '/mail',
-    icon: Mail,
-    module: 'MAIL',
-    action: 'VIEW',
-    description: 'Check mailbox threads requiring context.',
   },
 ];
 

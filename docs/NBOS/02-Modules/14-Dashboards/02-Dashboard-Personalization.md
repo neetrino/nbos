@@ -33,17 +33,12 @@ Create
   New Expense
 Open
   Open Deals
-  My Work Spaces
   Delivery Board
   Open Invoices
   Pay now
   Salary
-  My tasks
   Support queue
-  Open Calendar
   Credentials vault
-  Open Messenger
-  Mail inbox
   Personal links
 ```
 
@@ -79,8 +74,8 @@ IT-бренд (GitHub, Slack, Figma и т.д.) подбирается по URL �
 | Role / Seat | Default pinned actions                                         |
 | ----------- | -------------------------------------------------------------- |
 | Seller      | `New Lead`, `Open Deals`, `CRM Client Chats`, `Offers Pending` |
-| PM          | `Delivery Board`, `My Work Spaces`, `Tasks Review`, `Calendar` |
-| Developer   | `My Tasks`, `My Work Spaces`, `Messenger`, `Credentials`       |
+| PM          | `Delivery Board`, `New Task`, `New Meeting`, `Credentials`     |
+| Developer   | `New Task`, `New Meeting`, `Credentials`, `Open Deals`         |
 | Finance     | `Invoices`, `Subscriptions`, `Expense Board`, `Salary Board`   |
 | Owner       | `Company Focus`, `Finance`, `Delivery Risks`, `Approvals`      |
 

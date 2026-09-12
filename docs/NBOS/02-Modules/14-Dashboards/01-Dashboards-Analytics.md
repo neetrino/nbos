@@ -54,12 +54,9 @@ Dashboard
 
 Примеры Open:
 
-- `Open My Work Space`;
 - `Open Delivery Board`;
 - `Open Invoices`;
 - `Open Salary Board`;
-- `Open Messenger`;
-- `Open Calendar`;
 - `Open Credentials Vault`.
 
 Доступные действия фильтруются RBAC и feature flags.

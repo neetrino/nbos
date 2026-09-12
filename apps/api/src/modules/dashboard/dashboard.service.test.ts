@@ -33,7 +33,7 @@ describe('DashboardService', () => {
       'open-invoices',
       'open-expenses',
       'open-payroll',
-      'open-calendar',
+      'new-expense',
     ]);
     expect(projection.personalLinks).toEqual([
       expect.objectContaining({
