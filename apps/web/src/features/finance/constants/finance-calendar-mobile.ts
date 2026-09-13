@@ -27,12 +27,15 @@ export interface FinanceCalendarMonthLabel {
   label: string;
 }
 
-export function financeCalendarMonthLabels(year: number): FinanceCalendarMonthLabel[] {
+export function financeCalendarMonthLabels(
+  year: number,
+  locale = 'en-US',
+): FinanceCalendarMonthLabel[] {
   return Array.from({ length: 12 }, (_, index) => {
     const date = new Date(year, index, 1);
     return {
       key: index,
-      label: date.toLocaleString('en-US', { month: 'short' }),
+      label: date.toLocaleString(locale, { month: 'short' }),
     };
   });
 }

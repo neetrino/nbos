@@ -44,6 +44,51 @@ export const INVOICE_PAYMENT_METHOD_MESSAGE_KEYS = {
   CASH: 'paymentMethod.CASH',
 } as const;
 
+export type InvoicePaymentMethodMessageKey =
+  (typeof INVOICE_PAYMENT_METHOD_MESSAGE_KEYS)[keyof typeof INVOICE_PAYMENT_METHOD_MESSAGE_KEYS];
+
+export const INVOICE_OFFICIAL_STATUS_MESSAGE_KEYS = {
+  sent: 'official.status.sent',
+  sending: 'official.status.sending',
+  cancelled: 'official.status.cancelled',
+  notSent: 'official.status.notSent',
+} as const;
+
+export type InvoiceOfficialStatusMessageKey =
+  (typeof INVOICE_OFFICIAL_STATUS_MESSAGE_KEYS)[keyof typeof INVOICE_OFFICIAL_STATUS_MESSAGE_KEYS];
+
+export function invoiceTaxMessageKey(taxStatus: string): 'tax.TAX' | 'tax.TAX_FREE' | null {
+  if (taxStatus === 'TAX' || taxStatus === 'TAX_FREE') {
+    return INVOICE_TAX_MESSAGE_KEYS[taxStatus];
+  }
+  return null;
+}
+
+export function invoicePaymentMethodMessageKey(
+  value: string,
+): InvoicePaymentMethodMessageKey | null {
+  if (value === 'TRANSACTION' || value === 'CASH') {
+    return INVOICE_PAYMENT_METHOD_MESSAGE_KEYS[value];
+  }
+  return null;
+}
+
+export function officialInvoiceRequestStatusKey(
+  invoice: { officialInvoiceRequestSent: boolean; officialInvoiceCancelledAt: string | null },
+  awaitingSend: boolean,
+): { key: InvoiceOfficialStatusMessageKey; variant: 'green' | 'amber' | 'gray' } {
+  if (invoice.officialInvoiceRequestSent) {
+    return { key: INVOICE_OFFICIAL_STATUS_MESSAGE_KEYS.sent, variant: 'green' };
+  }
+  if (awaitingSend) {
+    return { key: INVOICE_OFFICIAL_STATUS_MESSAGE_KEYS.sending, variant: 'amber' };
+  }
+  if (invoice.officialInvoiceCancelledAt) {
+    return { key: INVOICE_OFFICIAL_STATUS_MESSAGE_KEYS.cancelled, variant: 'amber' };
+  }
+  return { key: INVOICE_OFFICIAL_STATUS_MESSAGE_KEYS.notSent, variant: 'gray' };
+}
+
 export const INVOICE_REMINDER_SKIP_MESSAGE_KEYS = {
   not_overdue: 'reminders.skip.not_overdue',
   notifications_off: 'reminders.skip.notifications_off',

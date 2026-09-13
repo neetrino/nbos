@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Layers, User, UserCog } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -12,19 +12,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { RelationPickerField } from '@/components/shared';
-import {
-  useContactRelationSearch,
-  useProductRelationSearch,
-} from '@/components/shared/relation-picker/relation-search-loaders';
-import { useRelationPickerActions } from '@/components/shared/relation-picker';
-import { useEmployeeSearchLoader } from '@/features/projects/components/delivery-board/delivery-item-detail-employee-search';
 import {
   TICKET_CATEGORIES,
   TICKET_COVERAGE_DECISIONS,
   TICKET_PRIORITIES,
 } from '@/features/support/constants/support';
+import {
+  translateSupportCategory,
+  translateSupportCoverage,
+  translateSupportPriority,
+  type SupportTranslator,
+} from '@/features/support/support-message-keys';
 import type { SupportTriageDraft } from './support-ticket-detail-helpers';
+import { SupportTicketTriageRelations } from './support-ticket-detail-triage-relations';
 
 export interface SupportTicketDetailTriageFieldsProps {
   draft: SupportTriageDraft;
@@ -52,180 +52,189 @@ export function SupportTicketDetailTriageFields({
   const [productLabel, setProductLabel] = useState(productLabelProp ?? '');
   const [contactLabel, setContactLabel] = useState(contactLabelProp ?? '');
 
-  const searchEmployees = useEmployeeSearchLoader();
-  const searchProducts = useProductRelationSearch(projectId || null);
-  const searchContacts = useContactRelationSearch();
-  const employeePicker = useRelationPickerActions('employee');
-  const productPicker = useRelationPickerActions('product');
-  const contactPicker = useRelationPickerActions('contact');
-
   return (
     <>
-      <div className="space-y-3">
-        <div className="space-y-1">
-          <Label htmlFor="st-title">Title</Label>
-          <Input
-            id="st-title"
-            value={draft.title}
-            onChange={(e) => onPatchDraft({ title: e.target.value })}
-            disabled={terminal}
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="st-desc">Description</Label>
-          <Textarea
-            id="st-desc"
-            value={draft.description}
-            onChange={(e) => onPatchDraft({ description: e.target.value })}
-            rows={4}
-            className="resize-y"
-            disabled={terminal}
-          />
-        </div>
-      </div>
-
+      <SupportTicketTriageTextFields
+        draft={draft}
+        terminal={terminal}
+        onPatchDraft={onPatchDraft}
+      />
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1">
-          <Label htmlFor="st-cat">Category</Label>
-          <Select
-            value={draft.category}
-            onValueChange={(v) => {
-              if (v) onPatchDraft({ category: v });
-            }}
-            disabled={terminal}
-          >
-            <SelectTrigger id="st-cat" className="w-full">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              {TICKET_CATEGORIES.map((c) => (
-                <SelectItem key={c.value} value={c.value}>
-                  {c.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="st-pri">Priority</Label>
-          <Select
-            value={draft.priority}
-            onValueChange={(v) => {
-              if (v) onPatchDraft({ priority: v });
-            }}
-            disabled={terminal}
-          >
-            <SelectTrigger id="st-pri" className="w-full">
-              <SelectValue placeholder="Priority" />
-            </SelectTrigger>
-            <SelectContent>
-              {TICKET_PRIORITIES.map((p) => (
-                <SelectItem key={p.value} value={p.value}>
-                  {p.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1 sm:col-span-2">
-          <Label htmlFor="st-cov">Coverage decision</Label>
-          <Select
-            value={draft.coverageDecision || 'none'}
-            onValueChange={(v) => {
-              if (!v) return;
-              onPatchDraft({ coverageDecision: v === 'none' ? '' : v });
-            }}
-            disabled={terminal}
-          >
-            <SelectTrigger id="st-cov" className="w-full">
-              <SelectValue placeholder="Not decided" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Not decided</SelectItem>
-              {TICKET_COVERAGE_DECISIONS.map((c) => (
-                <SelectItem key={c.value} value={c.value}>
-                  {c.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="min-w-0">
-          <RelationPickerField
-            label="Assignee"
-            entityKind="employee"
-            value={draft.assignedTo || null}
-            selectionLabel={assigneeLabel || null}
-            selectionAvatar={assigneeAvatar}
-            icon={<UserCog size={12} />}
-            disabled={terminal}
-            onSearch={searchEmployees}
-            onSelect={(id, label, avatar) => {
-              onPatchDraft({ assignedTo: id });
-              setAssigneeLabel(label);
-              setAssigneeAvatar(avatar?.trim() || null);
-            }}
-            onClear={() => {
-              onPatchDraft({ assignedTo: '' });
-              setAssigneeLabel('');
-              setAssigneeAvatar(null);
-            }}
-            {...employeePicker}
-          />
-        </div>
-        <div className="min-w-0">
-          <RelationPickerField
-            label="Product"
-            entityKind="product"
-            value={draft.productId || null}
-            selectionLabel={productLabel || null}
-            placeholder="Search products…"
-            icon={<Layers size={12} />}
-            disabled={terminal}
-            onSearch={searchProducts}
-            onSelect={(id, label) => {
-              onPatchDraft({ productId: id });
-              setProductLabel(label);
-            }}
-            onClear={() => {
-              onPatchDraft({ productId: '' });
-              setProductLabel('');
-            }}
-            {...productPicker}
-          />
-        </div>
-        <div className="min-w-0 sm:col-span-2">
-          <RelationPickerField
-            label="Contact"
-            entityKind="contact"
-            value={draft.contactId || null}
-            selectionLabel={contactLabel || null}
-            placeholder="Search contacts…"
-            icon={<User size={12} />}
-            disabled={terminal}
-            onSearch={searchContacts}
-            onSelect={(id, label) => {
-              onPatchDraft({ contactId: id });
-              setContactLabel(label);
-            }}
-            onClear={() => {
-              onPatchDraft({ contactId: '' });
-              setContactLabel('');
-            }}
-            {...contactPicker}
-          />
-        </div>
-        <label className="flex items-center gap-2 text-sm sm:col-span-2">
-          <input
-            type="checkbox"
-            checked={draft.billable}
-            onChange={(e) => onPatchDraft({ billable: e.target.checked })}
-            disabled={terminal}
-            className="size-4 rounded border"
-          />
-          Billable
-        </label>
+        <SupportTicketTriageSelects draft={draft} terminal={terminal} onPatchDraft={onPatchDraft} />
+        <SupportTicketTriageRelations
+          draft={draft}
+          terminal={terminal}
+          projectId={projectId}
+          assigneeLabel={assigneeLabel}
+          assigneeAvatar={assigneeAvatar}
+          productLabel={productLabel}
+          contactLabel={contactLabel}
+          onPatchDraft={onPatchDraft}
+          onAssigneeChange={(id, label, avatar) => {
+            onPatchDraft({ assignedTo: id });
+            setAssigneeLabel(label);
+            setAssigneeAvatar(avatar);
+          }}
+          onProductChange={(id, label) => {
+            onPatchDraft({ productId: id });
+            setProductLabel(label);
+          }}
+          onContactChange={(id, label) => {
+            onPatchDraft({ contactId: id });
+            setContactLabel(label);
+          }}
+        />
       </div>
     </>
+  );
+}
+
+function SupportTicketTriageTextFields({
+  draft,
+  terminal,
+  onPatchDraft,
+}: {
+  draft: SupportTriageDraft;
+  terminal: boolean;
+  onPatchDraft: (partial: Partial<SupportTriageDraft>) => void;
+}) {
+  const t = useTranslations('support');
+  return (
+    <div className="space-y-3">
+      <div className="space-y-1">
+        <Label htmlFor="st-title">{t('sheet.title')}</Label>
+        <Input
+          id="st-title"
+          value={draft.title}
+          onChange={(e) => onPatchDraft({ title: e.target.value })}
+          disabled={terminal}
+        />
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor="st-desc">{t('sheet.description')}</Label>
+        <Textarea
+          id="st-desc"
+          value={draft.description}
+          onChange={(e) => onPatchDraft({ description: e.target.value })}
+          rows={4}
+          className="resize-y"
+          disabled={terminal}
+        />
+      </div>
+    </div>
+  );
+}
+
+function SupportTicketTriageSelects({
+  draft,
+  terminal,
+  onPatchDraft,
+}: {
+  draft: SupportTriageDraft;
+  terminal: boolean;
+  onPatchDraft: (partial: Partial<SupportTriageDraft>) => void;
+}) {
+  const t = useTranslations('support') as SupportTranslator;
+  return (
+    <>
+      <SupportTicketCodeSelect
+        id="st-cat"
+        label={t('filters.category')}
+        value={draft.category}
+        disabled={terminal}
+        options={TICKET_CATEGORIES}
+        translateOption={(value, fallback) => translateSupportCategory(t, value, fallback)}
+        onChange={(value) => onPatchDraft({ category: value })}
+      />
+      <SupportTicketCodeSelect
+        id="st-pri"
+        label={t('filters.priority')}
+        value={draft.priority}
+        disabled={terminal}
+        options={TICKET_PRIORITIES}
+        translateOption={(value, fallback) => translateSupportPriority(t, value, fallback)}
+        onChange={(value) => onPatchDraft({ priority: value })}
+      />
+      <SupportTicketCoverageSelect draft={draft} terminal={terminal} onPatchDraft={onPatchDraft} />
+    </>
+  );
+}
+
+function SupportTicketCodeSelect({
+  id,
+  label,
+  value,
+  disabled,
+  options,
+  translateOption,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  disabled: boolean;
+  options: ReadonlyArray<{ value: string; label: string }>;
+  translateOption: (value: string, fallback: string) => string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <Label htmlFor={id}>{label}</Label>
+      <Select
+        value={value}
+        onValueChange={(next) => {
+          if (next) onChange(next);
+        }}
+        disabled={disabled}
+      >
+        <SelectTrigger id={id} className="w-full">
+          <SelectValue placeholder={label} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {translateOption(option.value, option.label)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function SupportTicketCoverageSelect({
+  draft,
+  terminal,
+  onPatchDraft,
+}: {
+  draft: SupportTriageDraft;
+  terminal: boolean;
+  onPatchDraft: (partial: Partial<SupportTriageDraft>) => void;
+}) {
+  const t = useTranslations('support') as SupportTranslator;
+  return (
+    <div className="space-y-1 sm:col-span-2">
+      <Label htmlFor="st-cov">{t('sheet.coverageDecision')}</Label>
+      <Select
+        value={draft.coverageDecision || 'none'}
+        onValueChange={(v) => {
+          if (!v) return;
+          onPatchDraft({ coverageDecision: v === 'none' ? '' : v });
+        }}
+        disabled={terminal}
+      >
+        <SelectTrigger id="st-cov" className="w-full">
+          <SelectValue placeholder={t('sheet.notDecided')} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">{t('sheet.notDecided')}</SelectItem>
+          {TICKET_COVERAGE_DECISIONS.map((c) => (
+            <SelectItem key={c.value} value={c.value}>
+              {translateSupportCoverage(t, c.value, c.label)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

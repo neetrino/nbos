@@ -11,6 +11,7 @@ import {
 } from '@/features/finance/constants/client-service-create-defaults';
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
 import { expensesApi } from '@/lib/api/finance';
+import { useClientServicesT } from './client-service-message-keys';
 
 interface ClientServiceCreateDialogsProps {
   service: ClientServiceRecord;
@@ -31,6 +32,7 @@ export function ClientServiceCreateDialogs({
   onInvoiceCreated,
   onExpenseCreated,
 }: ClientServiceCreateDialogsProps) {
+  const t = useClientServicesT();
   const invoiceDefaultForm = useMemo(() => getClientServiceInvoiceFormDefaults(service), [service]);
 
   const expenseDefaultForm = useMemo(() => getClientServiceExpenseFormDefaults(service), [service]);
@@ -56,21 +58,21 @@ export function ClientServiceCreateDialogs({
   const submitExpense = useCallback(
     async (form: ReturnType<typeof getClientServiceExpenseFormDefaults>) => {
       const payload = buildClientServiceExpensePayload(form, service);
-      if (!payload) throw new Error('Expense form is incomplete.');
+      if (!payload) throw new Error(t('errors.expenseIncomplete'));
       return expensesApi.create(payload);
     },
-    [service],
+    [service, t],
   );
 
   const handleInvoiceCreated = useCallback(() => {
-    toast.success('Linked invoice card created.');
+    toast.success(t('toasts.invoiceCreated'));
     onInvoiceCreated();
-  }, [onInvoiceCreated]);
+  }, [onInvoiceCreated, t]);
 
   const handleExpenseCreated = useCallback(() => {
-    toast.success('Linked expense card created.');
+    toast.success(t('toasts.expenseCreated'));
     onExpenseCreated();
-  }, [onExpenseCreated]);
+  }, [onExpenseCreated, t]);
 
   if (service.billingModel !== 'WE_PAY') return null;
 

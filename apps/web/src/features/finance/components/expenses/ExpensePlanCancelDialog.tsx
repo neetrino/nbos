@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
+import { useExpensePlansT } from './expense-plan-message-keys';
 
 interface ExpensePlanCancelDialogProps {
   plan: ExpensePlan | null;
@@ -29,6 +30,7 @@ export function ExpensePlanCancelDialog({
   onConfirm,
   forceNestedBackdrop = false,
 }: ExpensePlanCancelDialogProps) {
+  const t = useExpensePlansT();
   const title = plan?.name ?? '';
 
   return (
@@ -41,13 +43,9 @@ export function ExpensePlanCancelDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle size={18} className="text-amber-500" />
-            Stop this plan?
+            {t('stop.title')}
           </DialogTitle>
-          <DialogDescription>
-            Future cards and calendar forecast stop for{' '}
-            <span className="text-foreground font-medium">{title}</span>. Existing expense cards
-            stay as they are. You can resume the plan later.
-          </DialogDescription>
+          <DialogDescription>{t('stop.description', { name: title })}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:justify-end">
           <Button
@@ -56,7 +54,7 @@ export function ExpensePlanCancelDialog({
             disabled={isSubmitting}
             onClick={() => onOpenChange(false)}
           >
-            Keep plan
+            {t('stop.keep')}
           </Button>
           <Button
             type="button"
@@ -64,7 +62,7 @@ export function ExpensePlanCancelDialog({
             disabled={isSubmitting || !plan}
             onClick={() => void onConfirm()}
           >
-            {isSubmitting ? 'Stopping…' : 'Stop plan'}
+            {isSubmitting ? t('stop.submitting') : t('stop.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -175,7 +175,7 @@ export function DeliveryItemFilesSection({
           denseTiles
           embedded
           sectionTitle={t('files.attachments')}
-          emptyHint="You can drag a file here or click + to browse"
+          emptyHint={t('files.emptyHint')}
           onUpload={async (picked) => {
             if (disabled) return;
             await uploadFiles(picked);

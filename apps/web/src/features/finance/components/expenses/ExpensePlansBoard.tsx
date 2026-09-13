@@ -4,6 +4,7 @@ import { KanbanBoard, KanbanColumnMoneyTotal } from '@/components/shared';
 import { buildExpensePlansKanbanColumns } from '@/features/finance/constants/expense-plans-board-columns';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import { ExpensePlanBoardCard } from './ExpensePlanBoardCard';
+import { translateExpensePlanFrequency, useExpensePlansT } from './expense-plan-message-keys';
 
 export interface ExpensePlansBoardProps {
   plans: ExpensePlan[];
@@ -11,7 +12,10 @@ export interface ExpensePlansBoardProps {
 }
 
 export function ExpensePlansBoard({ plans, onOpen }: ExpensePlansBoardProps) {
-  const columns = buildExpensePlansKanbanColumns(plans);
+  const t = useExpensePlansT();
+  const columns = buildExpensePlansKanbanColumns(plans, (key) =>
+    translateExpensePlanFrequency(t, key),
+  );
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -19,7 +23,7 @@ export function ExpensePlansBoard({ plans, onOpen }: ExpensePlansBoardProps) {
         columns={columns}
         getItemId={(p) => p.id}
         columnWidth={270}
-        emptyMessage="No plans in this frequency column."
+        emptyMessage={t('empty.boardColumn')}
         renderColumnHeader={(column) => (
           <KanbanColumnMoneyTotal column={column} getAmount={(plan) => plan.amount} />
         )}

@@ -8,6 +8,7 @@ import {
   type ClientServiceRecordListParams,
 } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { useClientServicesT } from './client-service-message-keys';
 
 const BOARD_PAGE_SIZE = 20;
 
@@ -34,6 +35,7 @@ export function useClientServiceBoard({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const requestIdRef = useRef(0);
+  const t = useClientServicesT();
 
   const fetchKey = useMemo(
     () => JSON.stringify({ view, baseParams, year, reloadToken }),
@@ -59,12 +61,12 @@ export function useClientServiceBoard({
       .catch((caught) => {
         if (requestId !== requestIdRef.current) return;
         setBoard(null);
-        setError(getApiErrorMessage(caught, 'Client services board could not be loaded.'));
+        setError(getApiErrorMessage(caught, t('errors.loadBoard')));
       })
       .finally(() => {
         if (requestId === requestIdRef.current) setLoading(false);
       });
-  }, [fetchKey, view, baseParams, year]);
+  }, [fetchKey, view, baseParams, year, t]);
 
   return { board, loading, error };
 }

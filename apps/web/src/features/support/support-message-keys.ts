@@ -1,5 +1,6 @@
 import type enSupport from '@/messages/en/support.json';
 import type { MessageLeafKeys } from '@/i18n/message-leaf-keys';
+import type { AuditLogEntry } from '@/lib/api/audit';
 import {
   SUPPORT_TICKET_CLOSE_REASON_OPTIONS,
   TICKET_CATEGORIES,
@@ -81,6 +82,14 @@ export const SUPPORT_CLOSE_REASON_MESSAGE_KEYS = {
   EXTENSION_DELIVERED: 'closeReason.EXTENSION_DELIVERED',
 } as const satisfies Record<CloseReasonValue | 'EXTENSION_DELIVERED', SupportMessageKey>;
 
+export const SUPPORT_AUDIT_ACTION_MESSAGE_KEYS = {
+  'support.status_changed': 'audit.actions.statusChanged',
+  'support.closed_extension_delivered': 'audit.actions.closedExtensionDelivered',
+  'support.reopened': 'audit.actions.reopened',
+  'support.waiting_changed': 'audit.actions.waitingChanged',
+  'support.escalation_manager': 'audit.actions.escalationManager',
+} as const satisfies Record<string, SupportMessageKey>;
+
 function translateMappedLabel(
   translate: SupportTranslator,
   keys: Record<string, SupportMessageKey>,
@@ -145,4 +154,47 @@ export function translateSupportCloseReason(
   fallback: string,
 ): string {
   return translateMappedLabel(translate, SUPPORT_CLOSE_REASON_MESSAGE_KEYS, value, fallback);
+}
+
+function translateSupportAuditValue(
+  translate: SupportTranslator,
+  action: string,
+  value: string,
+): string {
+  if (action === 'support.waiting_changed') {
+    return translateSupportWaiting(translate, value, value);
+  }
+  if (
+    action === 'support.status_changed' ||
+    action === 'support.closed_extension_delivered' ||
+    action === 'support.reopened'
+  ) {
+    return translateSupportStatus(translate, value, value);
+  }
+  return value;
+}
+
+export function formatSupportAuditLine(
+  entry: AuditLogEntry,
+  translate: SupportTranslator,
+): string {
+  const actionLabel = translateMappedLabel(
+    translate,
+    SUPPORT_AUDIT_ACTION_MESSAGE_KEYS,
+    entry.action,
+    entry.action,
+  );
+  const changes = entry.changes;
+  if (!isRecord(changes) || typeof changes.from !== 'string' || typeof changes.to !== 'string') {
+    return actionLabel;
+  }
+  return translate('audit.change', {
+    action: actionLabel,
+    from: translateSupportAuditValue(translate, entry.action, changes.from),
+    to: translateSupportAuditValue(translate, entry.action, changes.to),
+  });
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

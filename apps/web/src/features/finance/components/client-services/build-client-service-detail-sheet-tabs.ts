@@ -8,6 +8,10 @@ interface BuildClientServiceDetailSheetTabsOptions {
   onCreateInvoice: () => void;
   onCreateExpense: () => void;
   onCreateTask: () => void;
+  tabLabel: (value: (typeof CLIENT_SERVICE_DETAIL_SHEET_TABS)[number]['value']) => string;
+  createInvoiceAria: string;
+  createExpenseAria: string;
+  createTaskAria: string;
 }
 
 /** Adds hover + shortcuts for tabs that already expose in-panel Create actions. */
@@ -15,33 +19,34 @@ export function buildClientServiceDetailSheetTabs(
   options: BuildClientServiceDetailSheetTabsOptions,
 ): DetailSheetTabItem[] {
   return CLIENT_SERVICE_DETAIL_SHEET_TABS.map((tab) => {
+    const labeled = { ...tab, label: options.tabLabel(tab.value) };
     if (tab.value === 'invoices' && options.canCreateInvoice) {
       return {
-        ...tab,
+        ...labeled,
         quickCreate: {
           onCreate: options.onCreateInvoice,
-          ariaLabel: 'Create invoice',
+          ariaLabel: options.createInvoiceAria,
         },
       };
     }
     if (tab.value === 'expenses' && options.canCreateExpense) {
       return {
-        ...tab,
+        ...labeled,
         quickCreate: {
           onCreate: options.onCreateExpense,
-          ariaLabel: 'Create expense',
+          ariaLabel: options.createExpenseAria,
         },
       };
     }
     if (tab.value === 'tasks' && options.canCreateTask) {
       return {
-        ...tab,
+        ...labeled,
         quickCreate: {
           onCreate: options.onCreateTask,
-          ariaLabel: 'Create task',
+          ariaLabel: options.createTaskAria,
         },
       };
     }
-    return tab;
+    return labeled;
   });
 }

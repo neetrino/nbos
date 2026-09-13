@@ -7,10 +7,12 @@ import { expensePlanListHasActiveFilters } from '@/features/finance/utils/build-
 import { downloadExpensePlansCsv } from '@/features/finance/utils/export-expense-plans-csv';
 import { fetchAllExpensePlansForExport } from '@/features/finance/utils/fetch-all-expense-plans-for-export';
 import type { ExpensePlanListParams } from '@/lib/api/expense-plans';
+import { useExpensePlansT } from './expense-plan-message-keys';
 
 export function useExpensePlansCsvExport(
   listParams: Omit<ExpensePlanListParams, 'page' | 'pageSize'>,
 ) {
+  const t = useExpensePlansT();
   const [exportCsvSubmitting, setExportCsvSubmitting] = useState(false);
 
   const handleExportCsv = useCallback(async () => {
@@ -29,18 +31,13 @@ export function useExpensePlansCsvExport(
           projectId: listParams.projectId,
         },
       });
-      toast.success(`Exported ${rows.length} expense plan${rows.length === 1 ? '' : 's'}`);
+      toast.success(t('toasts.exported', { count: rows.length }));
     } catch (caught) {
-      toast.error(
-        getApiErrorMessage(
-          caught,
-          'Could not export expense plans. Check your connection and try again.',
-        ),
-      );
+      toast.error(getApiErrorMessage(caught, t('errors.export')));
     } finally {
       setExportCsvSubmitting(false);
     }
-  }, [listParams]);
+  }, [listParams, t]);
 
   return { exportCsvSubmitting, handleExportCsv };
 }

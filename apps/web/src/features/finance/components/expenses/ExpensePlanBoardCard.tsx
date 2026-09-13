@@ -9,10 +9,14 @@ import {
 } from '@/features/finance/constants/expense-category-visual';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getExpensePlanStatus } from '@/features/finance/constants/expense-plan-status';
+import { formatExpensePlanShortDate } from '@/features/finance/utils/expense-plan-display';
 import {
-  expensePlanFrequencyLabel,
-  formatExpensePlanShortDate,
-} from '@/features/finance/utils/expense-plan-display';
+  translateExpensePlanCategory,
+  translateExpensePlanFrequency,
+  translateExpensePlanStatus,
+  useExpensePlansT,
+} from './expense-plan-message-keys';
+import { useLocale } from 'next-intl';
 import { expensePlanIsCancelled } from '@/features/finance/utils/expense-plan-status-eligibility';
 import { expenseOwnerLabel } from '@/features/finance/utils/expense-owner-label';
 import { parseMoneyAmount } from '@/lib/format/money';
@@ -26,12 +30,18 @@ export interface ExpensePlanBoardCardProps {
 
 /** Kanban card — invoice/orders shell; original plan fields preserved. */
 export function ExpensePlanBoardCard({ plan, onOpen }: ExpensePlanBoardCardProps) {
-  const frequencyLabel = expensePlanFrequencyLabel(plan.frequency);
+  const t = useExpensePlansT();
+  const locale = useLocale();
+  const frequencyLabel = translateExpensePlanFrequency(t, plan.frequency);
   const categoryVisual = getExpenseCategoryVisual(plan.category);
   const CategoryIcon = categoryVisual.icon;
-  const categoryLabel = getExpenseCategoryLabel(plan.category);
+  const categoryLabel = translateExpensePlanCategory(
+    t,
+    plan.category,
+    getExpenseCategoryLabel(plan.category),
+  );
   const linkedCount = plan._count.expenses;
-  const linkedCardsLabel = `${linkedCount} linked card${linkedCount === 1 ? '' : 's'}`;
+  const linkedCardsLabel = t('card.linkedCards', { count: linkedCount });
   const statusMeta = getExpensePlanStatus(plan.status);
   const cancelled = expensePlanIsCancelled(plan);
   const ownerLabel = expenseOwnerLabel(plan);
@@ -56,7 +66,7 @@ export function ExpensePlanBoardCard({ plan, onOpen }: ExpensePlanBoardCardProps
             <div className="flex shrink-0 flex-wrap justify-end gap-1">
               {statusMeta && cancelled ? (
                 <StatusBadge
-                  label={statusMeta.label}
+                  label={translateExpensePlanStatus(t, plan.status, statusMeta.label)}
                   variant={statusMeta.variant}
                   className="rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
                 />
@@ -82,7 +92,7 @@ export function ExpensePlanBoardCard({ plan, onOpen }: ExpensePlanBoardCardProps
             />
             {plan.autoGenerate && !cancelled ? (
               <StatusBadge
-                label="Auto-generate"
+                label={t('card.autoGenerate')}
                 variant="blue"
                 className="rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
               />
@@ -100,7 +110,7 @@ export function ExpensePlanBoardCard({ plan, onOpen }: ExpensePlanBoardCardProps
             icon={<Calendar size={14} aria-hidden />}
             iconClassName="bg-orange-100 text-orange-600 dark:bg-orange-950/50 dark:text-orange-400"
             labelClassName="font-bold text-orange-500 dark:text-orange-400"
-            label={`Due ${formatExpensePlanShortDate(plan.nextDueDate)}`}
+            label={t('card.dueOn', { date: formatExpensePlanShortDate(plan.nextDueDate, locale) })}
           />
           {ownerLabel ? (
             <MetaRow

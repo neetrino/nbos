@@ -7,6 +7,7 @@ import {
   type ClientServiceRecordListParams,
 } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { useClientServicesT } from './client-service-message-keys';
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -41,6 +42,7 @@ export function useClientServiceList(
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useClientServicesT();
 
   const requestIdRef = useRef(0);
   const itemsRef = useRef(items);
@@ -68,7 +70,7 @@ export function useClientServiceList(
         setError(null);
       } catch (caught) {
         if (requestId !== requestIdRef.current) return;
-        setError(getApiErrorMessage(caught, 'Client services could not be loaded.'));
+        setError(getApiErrorMessage(caught, t('errors.loadList')));
       } finally {
         if (requestId === requestIdRef.current) {
           setLoading(false);
@@ -76,7 +78,7 @@ export function useClientServiceList(
         }
       }
     },
-    [paramsKey, pageSize],
+    [paramsKey, pageSize, t],
   );
 
   useEffect(() => {

@@ -11,6 +11,10 @@ import {
 } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { notifyClientServiceRegistryRefresh } from './client-service-registry-events';
+import {
+  translateClientServiceRegistryToast,
+  useClientServicesT,
+} from './client-service-message-keys';
 
 export function ClientServiceRegistryCheckButton(props: {
   serviceId: string;
@@ -20,6 +24,7 @@ export function ClientServiceRegistryCheckButton(props: {
   disabled?: boolean;
   onChecked?: (result: ClientServiceRegistryCheckResult) => void;
 }) {
+  const t = useClientServicesT();
   const [checking, setChecking] = useState(false);
 
   async function handleClick(event: MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -30,13 +35,14 @@ export function ClientServiceRegistryCheckButton(props: {
     try {
       const result = await clientServicesApi.checkRegistry(props.serviceId);
       const notice = clientServiceRegistryToast(result.outcome);
-      if (notice.kind === 'success') toast.success(notice.message);
-      else if (notice.kind === 'warning') toast.warning(notice.message);
-      else toast.error(notice.message);
+      const message = translateClientServiceRegistryToast(t, result.outcome);
+      if (notice.kind === 'success') toast.success(message);
+      else if (notice.kind === 'warning') toast.warning(message);
+      else toast.error(message);
       props.onChecked?.(result);
       notifyClientServiceRegistryRefresh();
     } catch (error: unknown) {
-      toast.error(getApiErrorMessage(error, 'Registry check failed'));
+      toast.error(getApiErrorMessage(error, t('errors.registryCheck')));
     } finally {
       setChecking(false);
     }
@@ -49,12 +55,12 @@ export function ClientServiceRegistryCheckButton(props: {
       size={props.compact ? 'icon' : props.matchFieldHeight ? 'lg' : 'sm'}
       className={props.matchFieldHeight ? 'rounded-xl' : undefined}
       disabled={checking || props.disabled}
-      aria-label="Check domain registry"
-      title="Check domain registry"
+      aria-label={t('registry.checkAria')}
+      title={t('registry.checkAria')}
       onClick={(event) => void handleClick(event)}
     >
       {checking ? <Loader2 className="size-3.5 animate-spin" /> : <Radar className="size-3.5" />}
-      {props.compact ? null : <span className="ml-1.5">Check</span>}
+      {props.compact ? null : <span className="ml-1.5">{t('registry.check')}</span>}
     </Button>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
 import { projectsApi, type Project } from '@/lib/api/projects';
 import { useSupportChangeControlPageViewMode } from '@/features/support/constants/support-change-control-page-view-storage';
@@ -15,6 +16,7 @@ import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persiste
 import { supportApi, type SupportTicket } from '@/lib/api/support';
 
 export function useSupportChangeControlQuery() {
+  const t = useTranslations('support');
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
   const [filters, setFilters] = usePersistedSearchFilters(
@@ -50,7 +52,7 @@ export function useSupportChangeControlQuery() {
     stageKeys,
     getStageKey: (ticket) => ticket.status,
     fetchPage,
-    loadErrorMessage: 'Change control tickets could not be loaded.',
+    loadErrorMessage: t('errors.loadChangeControl'),
   });
 
   const {

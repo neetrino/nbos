@@ -6,6 +6,7 @@ import {
   useProductRelationSearch,
   useRelationPickerActions,
 } from '@/components/shared/relation-picker';
+import { useClientServicesT } from './client-service-message-keys';
 
 interface ClientServiceProductFieldProps {
   productId: string;
@@ -26,17 +27,18 @@ export function ClientServiceProductField({
   required = false,
   onSelect,
 }: ClientServiceProductFieldProps) {
+  const t = useClientServicesT();
   const searchProducts = useProductRelationSearch(null);
   const productPicker = useRelationPickerActions('product');
 
   return (
     <div className="flex flex-col gap-1">
       <RelationPickerField
-        label={required ? 'Product *' : 'Product'}
+        label={required ? t('fields.productRequired') : t('fields.product')}
         entityKind="product"
         value={productId || null}
         selectionLabel={productLabel}
-        placeholder={resolving ? 'Resolving product…' : 'Search products…'}
+        placeholder={resolving ? t('fields.productResolving') : t('fields.productSearch')}
         icon={<Layers size={12} />}
         disabled={disabled || resolving}
         className="w-full min-w-0"
@@ -45,7 +47,9 @@ export function ClientServiceProductField({
         {...productPicker}
       />
       {projectLabel ? (
-        <p className="text-muted-foreground text-xs">Project · {projectLabel}</p>
+        <p className="text-muted-foreground text-xs">
+          {t('fields.projectHint', { label: projectLabel })}
+        </p>
       ) : null}
     </div>
   );

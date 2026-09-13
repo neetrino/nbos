@@ -1,5 +1,8 @@
+'use client';
+
 import { Calendar, FolderKanban, Layers } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type {
   DeliveryLifecycleProjection,
   ProjectExtensionSummary,
@@ -9,6 +12,10 @@ import {
   formatDeliveryHoldUntil,
   isDeliveryHoldExpired,
 } from '@/features/projects/constants/projects';
+import {
+  translateDeliveryHoldCopy,
+  type DeliveryBoardTranslate,
+} from './delivery-board-message-keys';
 import type { DealTypePresentation } from '@/lib/deal-type-visual';
 import { getDeliveryBoardCardChrome } from './delivery-board-card-chrome';
 import {
@@ -65,7 +72,8 @@ function ProductBoardMeta({
   product: ProjectProductSummary;
   metaIconClass: string;
 }) {
-  const holdCopy = getHoldCopy(product.deliveryLifecycle);
+  const t = useTranslations('deliveryBoard');
+  const holdCopy = resolveHoldCopy(product.deliveryLifecycle, t);
   return (
     <div className={DELIVERY_BOARD_CARD_BODY_STACK_CLASS}>
       {product.project ? (
@@ -98,7 +106,8 @@ function ExtensionBoardMeta({
   extension: ProjectExtensionSummary;
   metaIconClass: string;
 }) {
-  const holdCopy = getHoldCopy(extension.deliveryLifecycle);
+  const t = useTranslations('deliveryBoard');
+  const holdCopy = resolveHoldCopy(extension.deliveryLifecycle, t);
   return (
     <div className={DELIVERY_BOARD_CARD_BODY_STACK_CLASS}>
       {extension.project ? (
@@ -125,7 +134,8 @@ function ProductCardMeta({
   product: ProjectProductSummary;
   metaDensity: Exclude<DeliveryBoardCardMetaDensity, 'board'>;
 }) {
-  const holdCopy = getHoldCopy(product.deliveryLifecycle);
+  const t = useTranslations('deliveryBoard');
+  const holdCopy = resolveHoldCopy(product.deliveryLifecycle, t);
   const minimal = metaDensity === 'minimal';
   return (
     <div className="mt-3 space-y-1.5 text-left">
@@ -155,7 +165,8 @@ function ExtensionCardMeta({
   extension: ProjectExtensionSummary;
   metaDensity: Exclude<DeliveryBoardCardMetaDensity, 'board'>;
 }) {
-  const holdCopy = getHoldCopy(extension.deliveryLifecycle);
+  const t = useTranslations('deliveryBoard');
+  const holdCopy = resolveHoldCopy(extension.deliveryLifecycle, t);
   const minimal = metaDensity === 'minimal';
   return (
     <div className="mt-3 space-y-1.5 text-left">
@@ -175,11 +186,12 @@ function ExtensionCardMeta({
   );
 }
 
-function getHoldCopy(lifecycle: DeliveryLifecycleProjection | undefined) {
-  if (lifecycle?.workStatus !== 'ON_HOLD') return null;
-  const date = formatDeliveryHoldUntil(lifecycle.onHoldUntil);
-  if (isDeliveryHoldExpired(lifecycle)) return date ? `Hold expired on ${date}` : 'Hold expired';
-  return date ? `On hold until ${date}` : 'On hold';
+function resolveHoldCopy(
+  lifecycle: DeliveryLifecycleProjection | undefined,
+  t: DeliveryBoardTranslate,
+) {
+  const date = formatDeliveryHoldUntil(lifecycle?.onHoldUntil ?? null);
+  return translateDeliveryHoldCopy(lifecycle, date, t);
 }
 
 function getHoldCopyClassName(lifecycle: DeliveryLifecycleProjection | undefined) {

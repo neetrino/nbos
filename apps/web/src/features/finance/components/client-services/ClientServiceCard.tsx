@@ -15,24 +15,29 @@ import { isClientServiceDomain } from '@/features/finance/constants/client-servi
 import { ClientServiceRegistryBadge } from './ClientServiceRegistryBadge';
 import { ClientServiceRegistryCheckButton } from './ClientServiceRegistryCheckButton';
 import { ClientServiceStageBadge } from './ClientServiceStageBadge';
+import { translateClientServiceBilling, useClientServicesT } from './client-service-message-keys';
+import { useLocale } from 'next-intl';
 
 interface ClientServiceCardProps {
   service: ClientServiceRecord;
   onOpen: (service: ClientServiceRecord) => void;
 }
 
-function formatShortDate(value: string | null): string {
-  if (!value) return 'No renewal date';
-  return new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit' }).format(
+function formatShortDate(value: string | null, locale: string, emptyLabel: string): string {
+  if (!value) return emptyLabel;
+  return new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'short', day: '2-digit' }).format(
     new Date(value),
   );
 }
 
 /** Kanban card — invoice/orders shell; original client-service fields preserved. */
 export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
-  const billingLabel = clientServiceOptionLabel(
-    CLIENT_SERVICE_BILLING_MODELS,
+  const t = useClientServicesT();
+  const locale = useLocale();
+  const billingLabel = translateClientServiceBilling(
+    t,
     service.billingModel,
+    clientServiceOptionLabel(CLIENT_SERVICE_BILLING_MODELS, service.billingModel),
   );
   const amountLabel = service.ourCost ? formatAmount(parseMoneyAmount(service.ourCost)) : '—';
 
@@ -88,7 +93,7 @@ export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
             labelClassName={
               service.renewalDate ? 'font-bold text-orange-500 dark:text-orange-400' : undefined
             }
-            label={formatShortDate(service.renewalDate)}
+            label={formatShortDate(service.renewalDate, locale, t('card.noRenewal'))}
             trailing={
               isClientServiceDomain(service) ? (
                 <ClientServiceRegistryCheckButton serviceId={service.id} compact />

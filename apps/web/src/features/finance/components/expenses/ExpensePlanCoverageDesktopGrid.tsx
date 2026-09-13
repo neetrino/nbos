@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useLocale } from 'next-intl';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { ExpensePlanGridPayload } from '@/lib/api/expense-plans';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,7 @@ import {
 } from './expense-plan-coverage-grid-cells';
 import { sortExpensePlanGridRows } from './expense-plan-coverage-cell-visual';
 import { ExpensePlanGridRowLabel } from './ExpensePlanGridRowLabel';
+import { useExpensePlansT } from './expense-plan-message-keys';
 import {
   FINANCE_CALENDAR_LABEL_HEADER_INNER_CLASS,
   FinanceCalendarYearControl,
@@ -82,16 +84,18 @@ export function ExpensePlanCoverageDesktopGrid({
   onOpenPlan,
   onOpenExpense,
 }: ExpensePlanCoverageDesktopGridProps) {
+  const t = useExpensePlansT();
+  const locale = useLocale();
   const sidebarCollapsed = useAppSidebarCollapsed();
   const preferFullTotal = useFinanceCalendarPreferFullTotal(sidebarCollapsed);
   const totalColClass = financeCalendarTotalColClass(preferFullTotal);
-  const months = financeCalendarMonthLabels(year);
+  const months = financeCalendarMonthLabels(year, locale);
   const sortedRows = useMemo(() => sortExpensePlanGridRows(payload.rows), [payload.rows]);
 
   return (
     <div
       className={FINANCE_CALENDAR_SCROLL_SHELL_CLASS}
-      aria-label={`Expense plan calendar ${year}`}
+      aria-label={t('grid.calendarAria', { year })}
     >
       <table className="w-full table-fixed border-collapse text-sm">
         <colgroup>
@@ -119,7 +123,7 @@ export function ExpensePlanCoverageDesktopGrid({
               </th>
             ))}
             <th className={cn(STICKY_TOTAL_HEADER_CLASS, STICKY_SURFACE_CLASS, totalColClass)}>
-              Total
+              {t('grid.total')}
             </th>
           </tr>
         </thead>
@@ -168,7 +172,7 @@ export function ExpensePlanCoverageDesktopGrid({
                 PLAN_LABEL_COL_CLASS,
               )}
             >
-              Month total
+              {t('grid.monthTotal')}
             </td>
             {payload.monthTotals.map((total, idx) => (
               <td

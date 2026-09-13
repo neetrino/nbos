@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -41,27 +42,28 @@ export function SupportTicketCreateExecutionTaskDialog({
   onDueDateChange,
   onSubmit,
 }: SupportTicketCreateExecutionTaskDialogProps) {
+  const t = useTranslations('support');
+  const tCommon = useTranslations('common');
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md" forceNestedBackdrop>
         <DialogHeader>
-          <DialogTitle>Linked execution task</DialogTitle>
-          <DialogDescription>
-            Creates a task in the product workspace (when set) with links back to this ticket.
-          </DialogDescription>
+          <DialogTitle>{t('sheet.taskDialogTitle')}</DialogTitle>
+          <DialogDescription>{t('sheet.taskDialogDescription')}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="st-task-title">Title (optional)</Label>
+            <Label htmlFor="st-task-title">{t('sheet.taskTitleOptional')}</Label>
             <Input
               id="st-task-title"
               value={title}
               onChange={(e) => onTitleChange(e.target.value)}
-              placeholder="Defaults to ticket title"
+              placeholder={t('sheet.taskTitlePlaceholder')}
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="st-task-desc">Description (optional)</Label>
+            <Label htmlFor="st-task-desc">{t('sheet.taskDescriptionOptional')}</Label>
             <Textarea
               id="st-task-desc"
               value={description}
@@ -71,7 +73,7 @@ export function SupportTicketCreateExecutionTaskDialog({
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="st-task-due">Due date (optional)</Label>
+            <Label htmlFor="st-task-due">{t('sheet.taskDueOptional')}</Label>
             <NbosDatePicker
               id="st-task-due"
               mode="datetime"
@@ -79,16 +81,16 @@ export function SupportTicketCreateExecutionTaskDialog({
               value={dueDate}
               onChange={onDueDateChange}
               clearable
-              aria-label="Due date"
+              aria-label={t('sheet.taskDueAria')}
             />
           </div>
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button type="button" disabled={busy || !meId} onClick={onSubmit}>
-            Create task
+            {t('sheet.createTask')}
           </Button>
         </DialogFooter>
       </DialogContent>

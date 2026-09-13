@@ -6,10 +6,14 @@ import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { getExpensePlanStatus } from '@/features/finance/constants/expense-plan-status';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getExpenseCategoryLabel } from '@/features/finance/constants/expense-category-visual';
+import { formatExpensePlanShortDate } from '@/features/finance/utils/expense-plan-display';
 import {
-  expensePlanFrequencyLabel,
-  formatExpensePlanShortDate,
-} from '@/features/finance/utils/expense-plan-display';
+  translateExpensePlanCategory,
+  translateExpensePlanFrequency,
+  translateExpensePlanStatus,
+  useExpensePlansT,
+} from './expense-plan-message-keys';
+import { useLocale } from 'next-intl';
 import {
   expensePlanCanCancel,
   expensePlanCanResume,
@@ -27,11 +31,15 @@ interface ExpensePlanDetailSheetHeaderProps {
   onDeleteClick: () => void;
 }
 
-function buildExpensePlanHeaderSubline(plan: ExpensePlan): string {
+function buildExpensePlanHeaderSubline(
+  plan: ExpensePlan,
+  frequencyLabel: string,
+  dueLabel: string | null,
+): string {
   const parts = [
     formatAmount(parseMoneyAmount(plan.amount)),
-    expensePlanFrequencyLabel(plan.frequency),
-    plan.nextDueDate ? `Due ${formatExpensePlanShortDate(plan.nextDueDate)}` : null,
+    frequencyLabel,
+    dueLabel,
     expenseOwnerLabel(plan),
   ].filter(Boolean);
   return parts.join(' · ');
@@ -45,8 +53,21 @@ export function ExpensePlanDetailSheetHeader({
   onResumeClick,
   onDeleteClick,
 }: ExpensePlanDetailSheetHeaderProps) {
-  const categoryLabel = getExpenseCategoryLabel(plan.category);
-  const subline = buildExpensePlanHeaderSubline(plan);
+  const t = useExpensePlansT();
+  const locale = useLocale();
+  const categoryLabel = translateExpensePlanCategory(
+    t,
+    plan.category,
+    getExpenseCategoryLabel(plan.category),
+  );
+  const dueLabel = plan.nextDueDate
+    ? t('sheet.dueOn', { date: formatExpensePlanShortDate(plan.nextDueDate, locale) })
+    : null;
+  const subline = buildExpensePlanHeaderSubline(
+    plan,
+    translateExpensePlanFrequency(t, plan.frequency),
+    dueLabel,
+  );
   const statusMeta = getExpensePlanStatus(plan.status);
 
   return (
@@ -64,7 +85,7 @@ export function ExpensePlanDetailSheetHeader({
           </span>
           {statusMeta ? (
             <StatusBadge
-              label={statusMeta.label}
+              label={translateExpensePlanStatus(t, plan.status, statusMeta.label)}
               variant={statusMeta.variant}
               className="rounded-full px-2.5 text-[10px] font-semibold tracking-wide"
             />
@@ -76,18 +97,18 @@ export function ExpensePlanDetailSheetHeader({
         {expensePlanCanCancel(plan) ? (
           <DropdownMenuItem disabled={actionsDisabled} onClick={onCancelClick}>
             <Ban />
-            Stop plan
+            {t('sheet.stopPlan')}
           </DropdownMenuItem>
         ) : null}
         {expensePlanCanResume(plan) ? (
           <DropdownMenuItem disabled={actionsDisabled} onClick={onResumeClick}>
             <RotateCcw />
-            Resume plan
+            {t('sheet.resumePlan')}
           </DropdownMenuItem>
         ) : null}
         <DropdownMenuItem variant="destructive" disabled={actionsDisabled} onClick={onDeleteClick}>
           <Trash2 />
-          Delete plan
+          {t('sheet.deletePlan')}
         </DropdownMenuItem>
       </DetailSheetSettingsMenu>
     </div>

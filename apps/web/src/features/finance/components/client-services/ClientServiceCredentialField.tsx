@@ -6,6 +6,7 @@ import {
   useCredentialRelationSearch,
   useRelationPickerActions,
 } from '@/components/shared/relation-picker';
+import { useClientServicesT } from './client-service-message-keys';
 
 interface ClientServiceCredentialFieldProps {
   credentialId: string;
@@ -22,16 +23,17 @@ export function ClientServiceCredentialField({
   onSelect,
   onClear,
 }: ClientServiceCredentialFieldProps) {
+  const t = useClientServicesT();
   const searchCredentials = useCredentialRelationSearch(null);
   const credentialPicker = useRelationPickerActions('credential');
 
   return (
     <RelationPickerField
-      label="Credentials"
+      label={t('fields.credentials')}
       entityKind="credential"
       value={credentialId || null}
       selectionLabel={credentialLabel}
-      placeholder="Connect credentials"
+      placeholder={t('fields.credentialsPlaceholder')}
       icon={<KeyRound size={12} />}
       disabled={disabled}
       className="w-full min-w-0"

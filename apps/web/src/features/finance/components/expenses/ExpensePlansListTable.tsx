@@ -11,7 +11,13 @@ import {
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
 import { getExpensePlanStatus } from '@/features/finance/constants/expense-plan-status';
-import { expensePlanFrequencyLabel } from '@/features/finance/utils/expense-plan-display';
+import { getExpenseCategoryLabel } from '@/features/finance/constants/expense-category-visual';
+import {
+  translateExpensePlanCategory,
+  translateExpensePlanFrequency,
+  translateExpensePlanStatus,
+  useExpensePlansT,
+} from './expense-plan-message-keys';
 import { expenseOwnerLabel } from '@/features/finance/utils/expense-owner-label';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import {
@@ -35,20 +41,23 @@ interface ExpensePlansListTableProps {
 
 /** List rows open the detail sheet on click (invoice list parity). */
 export function ExpensePlansListTable({ plans, onOpen }: ExpensePlansListTableProps) {
+  const t = useExpensePlansT();
   return (
     <div className={FINANCE_LIST_SHELL_CLASS}>
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Name</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Status</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Category</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Amount</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Frequency</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Auto</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Next due</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Project</TableHead>
-            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>Linked cards</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.name')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.status')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.category')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.amount')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.frequency')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.auto')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.nextDue')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('table.project')}</TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>
+              {t('table.linkedCards')}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -63,27 +72,31 @@ export function ExpensePlansListTable({ plans, onOpen }: ExpensePlansListTablePr
               </TableCell>
               <TableCell className={FINANCE_LIST_CELL_CLASS}>
                 <StatusBadge
-                  label={getExpensePlanStatus(plan.status)?.label ?? plan.status}
+                  label={translateExpensePlanStatus(
+                    t,
+                    plan.status,
+                    getExpensePlanStatus(plan.status)?.label ?? plan.status,
+                  )}
                   variant={getExpensePlanStatus(plan.status)?.variant ?? 'gray'}
                   className={FINANCE_LIST_BADGE_CLASS}
                 />
               </TableCell>
               <TableCell className={`${FINANCE_LIST_CELL_CLASS} ${FINANCE_LIST_TYPE_CLASS}`}>
-                {plan.category.replace(/_/g, ' ')}
+                {translateExpensePlanCategory(t, plan.category, getExpenseCategoryLabel(plan.category))}
               </TableCell>
               <TableCell className={FINANCE_LIST_CELL_CLASS}>
                 <FinanceListAmount amount={plan.amount} />
               </TableCell>
               <TableCell className={FINANCE_LIST_CELL_CLASS}>
                 <StatusBadge
-                  label={expensePlanFrequencyLabel(plan.frequency)}
+                  label={translateExpensePlanFrequency(t, plan.frequency)}
                   variant="blue"
                   className={FINANCE_LIST_BADGE_CLASS}
                 />
               </TableCell>
               <TableCell className={FINANCE_LIST_CELL_CLASS}>
                 {plan.autoGenerate ? (
-                  <StatusBadge label="Yes" variant="green" className={FINANCE_LIST_BADGE_CLASS} />
+                  <StatusBadge label={t('table.yes')} variant="green" className={FINANCE_LIST_BADGE_CLASS} />
                 ) : (
                   <FinanceListMutedDash />
                 )}

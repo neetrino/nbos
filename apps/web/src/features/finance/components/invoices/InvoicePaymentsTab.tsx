@@ -1,8 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { DetailSheetSection } from '@/components/shared';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
+import { formatInvoiceSheetDate } from './format-invoice-sheet-date';
 import { InvoiceRecordedPaymentsList } from './InvoiceRecordedPaymentsList';
 import { RecordPaymentForm } from './RecordPaymentForm';
 import type { InvoiceSheetInvoice } from './InvoiceSheetSections';
@@ -27,6 +28,7 @@ export function InvoicePaymentsTab({
   onInvoiceUpdated,
 }: InvoicePaymentsTabProps) {
   const t = useTranslations('invoices');
+  const locale = useLocale();
   return (
     <div className="space-y-4">
       {invoice.paymentCoverage?.isFullyPaid ? (
@@ -49,7 +51,7 @@ export function InvoicePaymentsTab({
                 entityType="PAYMENT"
                 entityId={payment.id}
                 purpose="PAYMENT_PROOF"
-                title={new Date(payment.paymentDate).toLocaleDateString()}
+                title={formatInvoiceSheetDate(payment.paymentDate, locale)}
               />
             ))}
           </div>

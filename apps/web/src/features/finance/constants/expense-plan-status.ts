@@ -15,16 +15,25 @@ export function getExpensePlanStatus(value: string | undefined) {
   return EXPENSE_PLAN_STATUSES.find((status) => status.value === value);
 }
 
-export function buildExpensePlanStatusFilterConfig(): FilterConfig {
+export interface ExpensePlanStatusFilterLabels {
+  status: string;
+  active: string;
+  cancelled: string;
+  all: string;
+}
+
+export function buildExpensePlanStatusFilterConfig(
+  labels?: ExpensePlanStatusFilterLabels,
+): FilterConfig {
   return {
     key: EXPENSE_PLAN_STATUS_FILTER_KEY,
-    label: 'Status',
+    label: labels?.status ?? 'Status',
     includeAllOption: false,
     defaultOptionValue: EXPENSE_PLAN_STATUS_FILTER_ACTIVE,
     options: [
-      { value: EXPENSE_PLAN_STATUS_FILTER_ACTIVE, label: 'Active' },
-      { value: 'CANCELLED', label: 'Cancelled' },
-      { value: EXPENSE_PLAN_STATUS_FILTER_ALL, label: 'All statuses' },
+      { value: EXPENSE_PLAN_STATUS_FILTER_ACTIVE, label: labels?.active ?? 'Active' },
+      { value: 'CANCELLED', label: labels?.cancelled ?? 'Cancelled' },
+      { value: EXPENSE_PLAN_STATUS_FILTER_ALL, label: labels?.all ?? 'All statuses' },
     ],
   };
 }

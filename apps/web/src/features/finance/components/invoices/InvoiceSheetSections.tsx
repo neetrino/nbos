@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { FileText, Building2, User, Layers, Repeat, Handshake } from 'lucide-react';
 import {
   DetailSheetEntityLinkCard,
@@ -11,7 +11,8 @@ import {
 } from '@/components/shared';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { getInvoiceSourceLabel } from '@/features/finance/utils/invoice-source-label';
-import { invoiceSourceMessageKey } from './invoice-message-keys';
+import { formatInvoiceSheetDate } from './format-invoice-sheet-date';
+import { invoiceSourceMessageKey, officialInvoiceRequestStatusKey } from './invoice-message-keys';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
 import { subscriptionsListWithOpenSubscriptionHref } from '@/features/finance/constants/subscription-deep-link';
 import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
@@ -47,9 +48,10 @@ export function InvoiceOfficialSection({
   onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
   gateRequiredFields?: ReadonlySet<string>;
 }) {
+  const t = useTranslations('invoices');
   return (
     <DetailSheetSection
-      title="Official invoice"
+      title={t('official.title')}
       className={invoiceStageGateSectionClass(gateRequiredFields, 'officialInvoice')}
     >
       <InvoiceTaxReadinessBanner invoice={invoice} />
@@ -69,6 +71,7 @@ export function InvoiceLinkedEntitiesSection({
   invoice: InvoiceSheetInvoice;
   gateRequiredFields?: ReadonlySet<string>;
 }) {
+  const t = useTranslations('invoices');
   const relations = useEntityRelations();
   const [dealSheetOpen, setDealSheetOpen] = useState(false);
   const deal = invoice.order?.deal ?? null;
@@ -124,7 +127,7 @@ export function InvoiceLinkedEntitiesSection({
 
   return (
     <>
-      <DetailSheetSection title="Linked">
+      <DetailSheetSection title={t('sheet.linked')}>
         <DetailSheetEntityLinkGrid>
           {hasDeal && dealTitle ? (
             <DetailSheetEntityLinkCard
@@ -188,9 +191,10 @@ export function InvoiceLinkedEntitiesSection({
 }
 
 export function InvoiceDescriptionSection({ description }: { description: string | null }) {
+  const t = useTranslations('invoices');
   if (!description) return null;
   return (
-    <DetailSheetSection title="Description">
+    <DetailSheetSection title={t('sheet.description')}>
       <p className="text-foreground text-sm leading-relaxed">{description}</p>
     </DetailSheetSection>
   );
@@ -211,10 +215,12 @@ export function InvoicePaymentsSection({
   }) => Promise<void>;
   gateRequiredFields?: ReadonlySet<string>;
 }) {
+  const t = useTranslations('invoices');
+  const locale = useLocale();
   return (
     <div className="space-y-4">
       {invoice.paymentCoverage?.isFullyPaid ? (
-        <p className="text-sm font-medium text-green-600">Fully paid</p>
+        <p className="text-sm font-medium text-green-600">{t('sheet.fullyPaid')}</p>
       ) : null}
       <RecordPaymentForm
         invoice={invoice}
@@ -222,7 +228,7 @@ export function InvoicePaymentsSection({
         gateRequiredFields={gateRequiredFields}
       />
       {invoice.payments.length > 0 ? (
-        <DetailSheetSection title="Payment proofs">
+        <DetailSheetSection title={t('sheet.paymentProofs')}>
           <div className="space-y-4">
             {invoice.payments.map((payment) => (
               <FinanceProofAttachments
@@ -230,7 +236,9 @@ export function InvoicePaymentsSection({
                 entityType="PAYMENT"
                 entityId={payment.id}
                 purpose="PAYMENT_PROOF"
-                title={`Payment proof · ${new Date(payment.paymentDate).toLocaleDateString()}`}
+                title={t('payments.proofTitle', {
+                  date: formatInvoiceSheetDate(payment.paymentDate, locale),
+                })}
               />
             ))}
           </div>
@@ -252,26 +260,14 @@ function companyGateFields(required: ReadonlySet<string>): ReadonlySet<string> {
 }
 
 function OfficialInvoiceReadOnly({ invoice }: { invoice: InvoiceSheetInvoice }) {
+  const t = useTranslations('invoices');
   if (invoice.taxStatus !== 'TAX') {
-    return (
-      <p className="text-muted-foreground text-sm">
-        Free invoice — accountant request is not required.
-      </p>
-    );
+    return <p className="text-muted-foreground text-sm">{t('official.freeNotRequired')}</p>;
   }
-  const status = invoice.officialInvoiceRequestSent
-    ? 'Sent to accountant'
-    : invoice.officialInvoiceCancelledAt
-      ? 'Cancelled'
-      : 'Not sent';
-  const variant = invoice.officialInvoiceRequestSent
-    ? 'green'
-    : invoice.officialInvoiceCancelledAt
-      ? 'amber'
-      : 'gray';
+  const status = officialInvoiceRequestStatusKey(invoice, false);
   return (
     <div className="space-y-2">
-      <StatusBadge label={status} variant={variant} />
+      <StatusBadge label={t(status.key)} variant={status.variant} />
     </div>
   );
 }

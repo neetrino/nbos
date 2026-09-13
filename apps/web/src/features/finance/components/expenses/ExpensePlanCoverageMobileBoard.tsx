@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useLocale } from 'next-intl';
 import { KanbanCardShell } from '@/components/shared';
 import { FinanceCalendarMobileEmptyMonthCell } from '@/features/finance/components/finance-calendar-mobile-month-cell';
 import { FinanceCalendarMobileMonthCell } from '@/features/finance/components/finance-calendar-mobile-month-cell';
@@ -27,10 +28,14 @@ import type {
 } from '@/lib/api/expense-plans';
 import { cn } from '@/lib/utils';
 import {
-  expensePlanMonthCellStatusLabel,
   expensePlanMonthCellVisualClass,
   sortExpensePlanGridRows,
 } from './expense-plan-coverage-cell-visual';
+import {
+  translateExpensePlanCellStatus,
+  translateExpensePlanFrequency,
+  useExpensePlansT,
+} from './expense-plan-message-keys';
 
 interface ExpensePlanCoverageMobileBoardProps {
   year: number;
@@ -47,14 +52,16 @@ export function ExpensePlanCoverageMobileBoard({
   onOpenPlan,
   onOpenExpense,
 }: ExpensePlanCoverageMobileBoardProps) {
-  const months = financeCalendarMonthLabels(year);
+  const t = useExpensePlansT();
+  const locale = useLocale();
+  const months = financeCalendarMonthLabels(year, locale);
   const currentMonthIndex = financeCalendarCurrentMonthIndex(year);
   const sortedRows = useMemo(() => sortExpensePlanGridRows(payload.rows), [payload.rows]);
 
   return (
     <div
       className="flex min-h-0 min-w-0 flex-1 flex-col gap-3"
-      aria-label={`Expense plan board ${year}`}
+      aria-label={t('grid.boardAria', { year })}
     >
       <div className="flex shrink-0 items-center gap-3">
         <div
@@ -72,7 +79,7 @@ export function ExpensePlanCoverageMobileBoard({
         </div>
         <div className="min-w-0 flex-1 text-right">
           <p className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
-            {sortedRows.length} plans
+            {t('grid.planCount', { count: sortedRows.length })}
           </p>
           <p className="text-foreground truncate text-base font-bold tabular-nums">
             {formatAmountAbbreviated(payload.grandAnnualTotal)}
@@ -82,7 +89,7 @@ export function ExpensePlanCoverageMobileBoard({
       <div className={FINANCE_CALENDAR_MOBILE_BOARD_SCROLL_CLASS}>
         <section className="border-border bg-card space-y-2 rounded-2xl border p-4">
           <h3 className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
-            Month totals
+            {t('grid.monthTotals')}
           </h3>
           <FinanceCalendarMobileTotalsGrid
             months={months}
@@ -121,9 +128,13 @@ function ExpensePlanCoverageMobileCard({
   onOpenPlan: (planId: string) => void;
   onOpenExpense: (expenseId: string) => void;
 }) {
+  const t = useExpensePlansT();
+  const locale = useLocale();
   const subtitle = formatExpensePlanGridRowSubtitle({
     frequency: row.frequency,
+    frequencyLabel: translateExpensePlanFrequency(t, row.frequency),
     projectLabel: row.projectLabel,
+    locale,
   });
 
   return (
@@ -191,7 +202,8 @@ function ExpensePlanMobileMonthCell({
       <FinanceCalendarMobileEmptyMonthCell caption={caption} isCurrentMonth={isCurrentMonth} />
     );
   }
-  const statusLabel = expensePlanMonthCellStatusLabel(cell.kind);
+  const t = useExpensePlansT();
+  const statusLabel = translateExpensePlanCellStatus(t, cell.kind);
   const amountLabel = formatAmountAbbreviated(cell.amount);
   return (
     <FinanceCalendarMobileMonthCell

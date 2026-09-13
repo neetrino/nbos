@@ -112,7 +112,74 @@
     "clientContext": "Client context",
     "proofs": "Proofs",
     "fullyPaid": "Fully paid",
-    "paymentProofs": "Payment proofs"
+    "paymentProofs": "Payment proofs",
+    "linked": "Linked",
+    "description": "Description",
+    "stageGateTitle": "Complete before moving status"
+  },
+  "payments": {
+    "recordTitle": "Record Payment",
+    "outstanding": "Outstanding",
+    "amount": "Amount",
+    "paymentDate": "Payment date",
+    "method": "Method",
+    "notes": "Notes",
+    "notesPlaceholder": "Optional",
+    "submit": "Record payment",
+    "recordFailed": "Payment could not be recorded.",
+    "recordedTitle": "Recorded payments",
+    "removeAria": "Remove payment {amount}",
+    "removeFailed": "Payment could not be removed. Try again.",
+    "removeTitle": "Remove payment?",
+    "removeDescription": "This payment will be removed from the invoice. Money status will recalculate from remaining payments, and you can record the payment again later.",
+    "removeConfirm": "Remove",
+    "proofTitle": "Payment proof · {date}"
+  },
+  "history": {
+    "comingSoonTitle": "History coming soon",
+    "comingSoonDescription": "Money status changes, payments, and official invoice actions will be listed here."
+  },
+  "money": {
+    "title": "Money",
+    "amount": "Amount",
+    "taxStatus": "Tax Status",
+    "outstanding": "Outstanding",
+    "paid": "Paid",
+    "due": "Due",
+    "created": "Created",
+    "paidOn": "Paid on"
+  },
+  "official": {
+    "title": "Official invoice",
+    "freeNotRequired": "Free invoice — accountant request is not required.",
+    "actionFailed": "Action failed. Try again.",
+    "sentAgain": "Request sent again",
+    "sentToAccountant": "Request sent to accountant",
+    "requestCancelled": "Request cancelled",
+    "sending": "Sending to accountant",
+    "send": "Send to accountant",
+    "cancelRequest": "Cancel request",
+    "sendAgain": "Send again",
+    "sentAt": "Sent {date}",
+    "cancelledAt": "on {date}",
+    "taxReadiness": "Fill company requisites before issuing this Tax invoice",
+    "status": {
+      "sent": "Sent to accountant",
+      "sending": "Sending to accountant",
+      "cancelled": "Cancelled",
+      "notSent": "Not sent"
+    }
+  },
+  "lifecycle": {
+    "deleteTitle": "Delete draft invoice?",
+    "cancelTitle": "Cancel invoice?",
+    "deleteDescription": "Only the platform owner can delete a NEW invoice without payments. Accrual journal line will be reversed.",
+    "cancelDescription": "The invoice will move to Cancelled and stay in history. Payments are preserved.",
+    "deleteConfirm": "Delete",
+    "deleted": "Invoice deleted",
+    "cancelled": "Invoice cancelled",
+    "deleteFailed": "Invoice could not be deleted.",
+    "cancelFailed": "Invoice could not be cancelled."
   },
   "create": {
     "titleNew": "New Invoice",

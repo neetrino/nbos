@@ -30,13 +30,25 @@ export function resolveExpensePlanBoardColumn(frequency: string): ExpensePlanBoa
   return 'OTHER';
 }
 
-export function buildExpensePlansKanbanColumns(plans: ExpensePlan[]) {
+export function expensePlanBoardColumnLabel(
+  key: ExpensePlanBoardColumnKey,
+  translate?: (key: ExpensePlanBoardColumnKey) => string,
+): string {
+  if (translate) return translate(key);
+  if (key === 'OTHER') return 'Other';
+  return expensePlanFrequencyLabel(key);
+}
+
+export function buildExpensePlansKanbanColumns(
+  plans: ExpensePlan[],
+  translate?: (key: ExpensePlanBoardColumnKey) => string,
+) {
   const columnDefs: Array<{ key: ExpensePlanBoardColumnKey; label: string }> = [
     ...EXPENSE_PLAN_BOARD_COLUMN_ORDER.map((key) => ({
       key,
-      label: expensePlanFrequencyLabel(key),
+      label: expensePlanBoardColumnLabel(key, translate),
     })),
-    { key: 'OTHER' as const, label: 'Other' },
+    { key: 'OTHER' as const, label: expensePlanBoardColumnLabel('OTHER', translate) },
   ];
 
   return columnDefs.map((col) => ({

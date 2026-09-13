@@ -48,6 +48,11 @@ import { ClientServiceCreateDialogs } from './ClientServiceCreateDialogs';
 import { ClientServiceDetailSheetBody } from './ClientServiceDetailSheetBody';
 import { type ClientServiceDetailSheetTab } from './client-service-detail-sheet-tabs';
 import { buildClientServiceDetailSheetTabs } from './build-client-service-detail-sheet-tabs';
+import {
+  translateClientServiceStatus,
+  translateClientServiceType,
+  useClientServicesT,
+} from './client-service-message-keys';
 
 interface ClientServiceDetailSheetProps {
   serviceId: string | null;
@@ -86,6 +91,7 @@ export function ClientServiceDetailSheet({
   onSaved,
   onRequestCancel,
 }: ClientServiceDetailSheetProps) {
+  const t = useClientServicesT();
   const isMobileViewport = useIsMobileViewport();
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(serviceId);
   const hostMounted = useSheetHostMounted(open, sheetId);
@@ -103,7 +109,7 @@ export function ClientServiceDetailSheet({
     initialEntity: initialService,
     fetchById: clientServicesApi.getById,
     isDirty: () => dirtyRef.current,
-    loadErrorMessage: 'Client service could not be loaded.',
+    loadErrorMessage: t('errors.loadDetail'),
   });
   const [draft, setDraft] = useState<ClientServiceFormState | null>(null);
   const [snap, setSnap] = useState<ClientServiceFormState | null>(null);
@@ -211,12 +217,12 @@ export function ClientServiceDetailSheet({
       } catch (caught) {
         setSnap(snapAtSave);
         setDraft(draftAtSave);
-        setFormError(getApiErrorMessage(caught, 'Client service could not be saved.'));
+        setFormError(getApiErrorMessage(caught, t('errors.save')));
       } finally {
         setSaving(false);
       }
     })();
-  }, [serviceId, draft, snap, handleServiceChange]);
+  }, [serviceId, draft, snap, handleServiceChange, t]);
 
   const handleCancel = useCallback(() => {
     setFormError(null);
@@ -236,14 +242,22 @@ export function ClientServiceDetailSheet({
         onCreateInvoice: () => setInvoiceOpen(true),
         onCreateExpense: () => setExpenseOpen(true),
         onCreateTask: () => setQuickCreateTaskOpen(true),
+        tabLabel: (value) => t(`sheet.tabs.${value}`),
+        createInvoiceAria: t('sheet.createInvoiceAria'),
+        createExpenseAria: t('sheet.createExpenseAria'),
+        createTaskAria: t('sheet.createTaskAria'),
       }),
-    [canCreateTask, canCreateWePayFinance, isCancelled],
+    [canCreateTask, canCreateWePayFinance, isCancelled, t],
   );
 
   if (!hostMounted) return null;
 
   const typeLabel = service
-    ? clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type)
+    ? translateClientServiceType(
+        t,
+        service.type,
+        clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type),
+      )
     : undefined;
   const statusMeta = service ? getClientServiceStatus(service.status) : undefined;
   const sourcePageHref = clientServicesListWithOpenServiceHref(sheetId ?? '');
@@ -271,7 +285,7 @@ export function ClientServiceDetailSheet({
                   isMobileViewport && DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
                 )}
               >
-                Loading…
+                {t('sheet.loading')}
               </p>
             ) : service ? (
               <>
@@ -285,7 +299,7 @@ export function ClientServiceDetailSheet({
                           onClick={() => onRequestCancel({ id: service.id, name: service.name })}
                         >
                           <Ban />
-                          Cancel service
+                          {t('sheet.cancelService')}
                         </DropdownMenuItem>
                       </DetailSheetSettingsMenu>
                     ) : null}
@@ -315,7 +329,7 @@ export function ClientServiceDetailSheet({
                     ) : null}
                     {statusMeta && !isMobileViewport ? (
                       <StatusBadge
-                        label={statusMeta.label}
+                        label={translateClientServiceStatus(t, service.status, statusMeta.label)}
                         variant={statusMeta.variant}
                         className="shrink-0 self-center"
                       />
@@ -332,7 +346,7 @@ export function ClientServiceDetailSheet({
                       ) : null}
                       {statusMeta ? (
                         <StatusBadge
-                          label={statusMeta.label}
+                          label={translateClientServiceStatus(t, service.status, statusMeta.label)}
                           variant={statusMeta.variant}
                           className="shrink-0 self-center"
                         />
@@ -347,7 +361,7 @@ export function ClientServiceDetailSheet({
                         onClick={() => onRequestCancel({ id: service.id, name: service.name })}
                       >
                         <Ban />
-                        Cancel service
+                        {t('sheet.cancelService')}
                       </DropdownMenuItem>
                     </DetailSheetSettingsMenu>
                   ) : null}

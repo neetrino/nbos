@@ -16,6 +16,7 @@ import {
 import { clientServiceTaskLinkToItemSummary } from '@/features/finance/entity-item/client-service-finance-item-summary';
 import type { ClientServiceFinanceLinks } from '@/lib/api/client-services';
 import { cn } from '@/lib/utils';
+import { useClientServicesT } from './client-service-message-keys';
 
 interface ClientServiceTasksTabProps {
   links: ClientServiceFinanceLinks | undefined;
@@ -35,6 +36,7 @@ export function ClientServiceTasksTab({
   canCreateTask,
   onCreateTask,
 }: ClientServiceTasksTabProps) {
+  const t = useClientServicesT();
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
   const displayVariant = useEntityItemMobileView(viewVariant);
@@ -47,17 +49,17 @@ export function ClientServiceTasksTab({
   );
 
   return (
-    <DetailSheetSection title="Tasks" icon={<CheckSquare size={12} />}>
+    <DetailSheetSection title={t('tasksTab.title')} icon={<CheckSquare size={12} />}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <Button type="button" size="sm" disabled={!canCreateTask} onClick={onCreateTask}>
           <Plus size={14} aria-hidden />
-          Create task
+          {t('tasksTab.create')}
         </Button>
         <ViewModeSwitch
           value={viewVariant}
           onChange={setViewVariant}
           options={ENTITY_ITEM_VIEW_OPTIONS}
-          ariaLabel="Task list view"
+          ariaLabel={t('tasksTab.viewAria')}
         />
       </div>
 
@@ -66,8 +68,8 @@ export function ClientServiceTasksTab({
         variant={displayVariant}
         onOpen={onOpenItem}
         emptyIcon={CheckSquare}
-        emptyTitle="No tasks"
-        emptyDescription="No tasks linked to this service yet."
+        emptyTitle={t('tasksTab.emptyTitle')}
+        emptyDescription={t('tasksTab.emptyDescription')}
       />
 
       {firstTask ? (
@@ -76,7 +78,7 @@ export function ClientServiceTasksTab({
           className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'mt-4 gap-1.5')}
         >
           <CheckSquare size={14} aria-hidden />
-          Open workspace
+          {t('tasksTab.openWorkspace')}
           <ExternalLink size={12} className="opacity-70" aria-hidden />
         </Link>
       ) : null}

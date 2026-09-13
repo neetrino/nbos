@@ -1,8 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH } from '@/features/support/constants/support';
 import type { SupportStatusDialogState } from '@/features/support/types/support-status-dialog';
+import { type SupportTranslator } from '@/features/support/support-message-keys';
 import { technicalApi, type TechnicalProductProfileResponse } from '@/lib/api/technical';
 import { supportApi, type SupportTicket } from '@/lib/api/support';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -18,6 +20,7 @@ export function useSupportTicketActions({
   refreshSupportViews,
   setError,
 }: UseSupportTicketActionsParams) {
+  const t = useTranslations('support') as SupportTranslator;
   const [actionId, setActionId] = useState<string | null>(null);
   const [escalateTicket, setEscalateTicket] = useState<SupportTicket | null>(null);
   const [escalateReason, setEscalateReason] = useState('');
@@ -74,13 +77,13 @@ export function useSupportTicketActions({
         await refreshSupportViews();
         return true;
       } catch (caught) {
-        setError(getApiErrorMessage(caught, 'Status could not be updated.'));
+        setError(getApiErrorMessage(caught, t('errors.statusUpdateFailed')));
         return false;
       } finally {
         setActionId(null);
       }
     },
-    [refreshSupportViews, setError],
+    [refreshSupportViews, setError, t],
   );
 
   const handleStatusSelect = useCallback(
@@ -95,9 +98,7 @@ export function useSupportTicketActions({
       }
       if (next === 'CLOSED') {
         if (ticket.status !== 'RESOLVED') {
-          setError(
-            'Move the ticket to Resolved before Closed (extension delivery may close it automatically).',
-          );
+          setError(t('errors.closeBeforeResolved'));
           return;
         }
         setStatusCloseReason('CLIENT_CONFIRMED');
@@ -106,7 +107,7 @@ export function useSupportTicketActions({
       }
       void patchTicketStatus(ticket.id, next);
     },
-    [patchTicketStatus, setError],
+    [patchTicketStatus, setError, t],
   );
 
   const submitResolveDialog = useCallback(async () => {
@@ -115,9 +116,7 @@ export function useSupportTicketActions({
     }
     const text = statusResolutionDraft.trim();
     if (text.length < MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH) {
-      setError(
-        `Resolution summary must be at least ${MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH} characters.`,
-      );
+      setError(t('errors.resolutionMinLength', { min: MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH }));
       return;
     }
     const ok = await patchTicketStatus(statusDialog.ticket.id, 'RESOLVED', {
@@ -126,7 +125,7 @@ export function useSupportTicketActions({
     if (ok) {
       setStatusDialog(null);
     }
-  }, [statusDialog, statusResolutionDraft, patchTicketStatus, setError]);
+  }, [statusDialog, statusResolutionDraft, patchTicketStatus, setError, t]);
 
   const submitCloseDialog = useCallback(async () => {
     if (!statusDialog || statusDialog.mode !== 'CLOSED') {
@@ -163,11 +162,11 @@ export function useSupportTicketActions({
       await refreshSupportViews();
       setError(null);
     } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Escalation could not be recorded.'));
+      setError(getApiErrorMessage(caught, t('errors.escalateFailed')));
     } finally {
       setActionId(null);
     }
-  }, [escalateTicket, escalateReason, refreshSupportViews, setError]);
+  }, [escalateTicket, escalateReason, refreshSupportViews, setError, t]);
 
   const handleReopenTicket = useCallback(
     async (ticket: SupportTicket) => {
@@ -177,12 +176,12 @@ export function useSupportTicketActions({
         await refreshSupportViews();
         setError(null);
       } catch (caught) {
-        setError(getApiErrorMessage(caught, 'Ticket could not be reopened.'));
+        setError(getApiErrorMessage(caught, t('actions.reopenFailed')));
       } finally {
         setActionId(null);
       }
     },
-    [refreshSupportViews, setError],
+    [refreshSupportViews, setError, t],
   );
 
   const saveTechnicalContext = useCallback(async () => {
@@ -199,11 +198,18 @@ export function useSupportTicketActions({
       await refreshSupportViews();
       setError(null);
     } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Technical context could not be saved.'));
+      setError(getApiErrorMessage(caught, t('errors.technicalSaveFailed')));
     } finally {
       setActionId(null);
     }
-  }, [technicalTicket, draftTechnicalAssetId, draftTechnicalEnvId, refreshSupportViews, setError]);
+  }, [
+    technicalTicket,
+    draftTechnicalAssetId,
+    draftTechnicalEnvId,
+    refreshSupportViews,
+    setError,
+    t,
+  ]);
 
   const openEscalateDialog = useCallback((ticket: SupportTicket) => {
     setEscalateTicket(ticket);
@@ -224,15 +230,13 @@ export function useSupportTicketActions({
   const openCloseDialog = useCallback(
     (ticket: SupportTicket) => {
       if (ticket.status !== 'RESOLVED') {
-        setError(
-          'Move the ticket to Resolved before Closed (extension delivery may close it automatically).',
-        );
+        setError(t('errors.closeBeforeResolved'));
         return;
       }
       setStatusCloseReason('CLIENT_CONFIRMED');
       setStatusDialog({ ticket, mode: 'CLOSED' });
     },
-    [setError],
+    [setError, t],
   );
 
   return {

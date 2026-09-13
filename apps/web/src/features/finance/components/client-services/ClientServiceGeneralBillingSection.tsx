@@ -19,6 +19,14 @@ import {
   EXPENSE_SHEET_FIELD_ROW_2_CLASS,
 } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
+import {
+  CLIENT_SERVICE_BILLING_SHORT_MESSAGE_KEYS,
+  CLIENT_SERVICE_FREQUENCY_MESSAGE_KEYS,
+  CLIENT_SERVICE_PRICING_SHORT_MESSAGE_KEYS,
+  CLIENT_SERVICE_TAX_MESSAGE_KEYS,
+  localizeOptionLabels,
+  useClientServicesT,
+} from './client-service-message-keys';
 
 interface ClientServiceGeneralBillingSectionProps {
   draft: ClientServiceFormState;
@@ -31,11 +39,12 @@ export function ClientServiceGeneralBillingSection({
   patchDraft,
   formDisabled,
 }: ClientServiceGeneralBillingSectionProps) {
+  const t = useClientServicesT();
   const [open, setOpen] = useState(true);
 
   return (
     <DetailSheetCollapsibleSection
-      title="Billing"
+      title={t('sheet.billing')}
       icon={<DollarSign size={12} />}
       open={open}
       onOpenChange={setOpen}
@@ -66,20 +75,29 @@ function ClientServiceBillingModelRow({
   formDisabled,
   patchDraft,
 }: ClientServiceGeneralBillingSectionProps) {
+  const t = useClientServicesT();
   return (
     <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
       <DetailSheetFieldSegmented
-        label="Billing model"
+        label={t('fields.billingModel')}
         value={draft.billingModel}
-        options={CLIENT_SERVICE_BILLING_MODEL_SEGMENTED_OPTIONS}
+        options={localizeOptionLabels(
+          CLIENT_SERVICE_BILLING_MODEL_SEGMENTED_OPTIONS,
+          t,
+          CLIENT_SERVICE_BILLING_SHORT_MESSAGE_KEYS,
+        )}
         disabled={formDisabled}
         className={EXPENSE_SHEET_FIELD_CELL_CLASS}
         onValueChange={(billingModel) => patchDraft({ billingModel })}
       />
       <DetailSheetFieldSegmented
-        label="Pricing"
+        label={t('fields.pricing')}
         value={draft.pricingModel}
-        options={CLIENT_SERVICE_PRICING_MODEL_SEGMENTED_OPTIONS}
+        options={localizeOptionLabels(
+          CLIENT_SERVICE_PRICING_MODEL_SEGMENTED_OPTIONS,
+          t,
+          CLIENT_SERVICE_PRICING_SHORT_MESSAGE_KEYS,
+        )}
         disabled={formDisabled}
         className={EXPENSE_SHEET_FIELD_CELL_CLASS}
         onValueChange={(pricingModel) => patchDraft({ pricingModel })}
@@ -93,11 +111,12 @@ function ClientServiceBillingAmountsRow({
   formDisabled,
   patchDraft,
 }: ClientServiceGeneralBillingSectionProps) {
+  const t = useClientServicesT();
   return (
     <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
       <InlineField
         variant="controlled"
-        label="Our cost"
+        label={t('fields.ourCost')}
         type="money"
         value={draft.ourCost}
         icon={<DollarSign size={12} />}
@@ -107,7 +126,7 @@ function ClientServiceBillingAmountsRow({
       />
       <InlineField
         variant="controlled"
-        label="Client charge"
+        label={t('fields.clientCharge')}
         type="money"
         value={draft.clientCharge}
         icon={<DollarSign size={12} />}
@@ -124,26 +143,28 @@ function ClientServiceBillingFrequencyRow({
   formDisabled,
   patchDraft,
 }: ClientServiceGeneralBillingSectionProps) {
+  const t = useClientServicesT();
   return (
     <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
       <InlineField
         variant="controlled"
-        label="Frequency"
+        label={t('fields.frequency')}
         type="select"
         value={draft.frequency}
-        options={CLIENT_SERVICE_FREQUENCIES.map((option) => ({
-          value: option.value,
-          label: option.label,
-        }))}
+        options={localizeOptionLabels(
+          CLIENT_SERVICE_FREQUENCIES,
+          t,
+          CLIENT_SERVICE_FREQUENCY_MESSAGE_KEYS,
+        )}
         icon={<CalendarDays size={12} />}
         disabled={formDisabled}
         className={EXPENSE_SHEET_FIELD_CELL_CLASS}
         onValueChange={(frequency) => frequency && patchDraft({ frequency })}
       />
       <DetailSheetFieldSegmented
-        label="Tax"
+        label={t('fields.tax')}
         value={draft.taxStatus}
-        options={INVOICE_TAX_STATUS_OPTIONS}
+        options={localizeOptionLabels(INVOICE_TAX_STATUS_OPTIONS, t, CLIENT_SERVICE_TAX_MESSAGE_KEYS)}
         disabled={formDisabled}
         className={EXPENSE_SHEET_FIELD_CELL_CLASS}
         onValueChange={(taxStatus) => patchDraft({ taxStatus })}

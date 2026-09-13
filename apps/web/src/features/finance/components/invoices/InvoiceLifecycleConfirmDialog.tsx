@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DeleteConfirmDialog } from '@/components/shared';
 import { invoiceLifecycleAction } from '@/features/finance/utils/invoice-lifecycle';
 import { getInvoiceDisplayTitle } from '@/features/finance/utils/order-display';
@@ -27,6 +28,8 @@ export function InvoiceLifecycleConfirmDialog({
   onInvoiceDeleted,
   forceNestedBackdrop,
 }: InvoiceLifecycleConfirmDialogProps) {
+  const t = useTranslations('invoices');
+  const tCommon = useTranslations('common');
   const action = invoiceLifecycleAction(invoice, isPlatformOwner);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,18 +49,18 @@ export function InvoiceLifecycleConfirmDialog({
         await invoicesApi.delete(invoice.id);
         onInvoiceDeleted?.(invoice.id);
         onOpenChange(false);
-        toast.success('Invoice deleted');
+        toast.success(t('lifecycle.deleted'));
       } else {
         const updated = await invoicesApi.cancel(invoice.id);
         onInvoiceUpdated(updated);
         onOpenChange(false);
-        toast.success('Invoice cancelled');
+        toast.success(t('lifecycle.cancelled'));
       }
     } catch (caught) {
       setError(
         getApiErrorMessage(
           caught,
-          isDelete ? 'Invoice could not be deleted.' : 'Invoice could not be cancelled.',
+          isDelete ? t('lifecycle.deleteFailed') : t('lifecycle.cancelFailed'),
         ),
       );
     } finally {
@@ -74,13 +77,11 @@ export function InvoiceLifecycleConfirmDialog({
         if (!next) setError(null);
       }}
       itemName={itemName}
-      title={isDelete ? 'Delete draft invoice?' : 'Cancel invoice?'}
-      description={
-        isDelete
-          ? 'Only the platform owner can delete a NEW invoice without payments. Accrual journal line will be reversed.'
-          : 'The invoice will move to Cancelled and stay in history. Payments are preserved.'
-      }
-      confirmLabel={isDelete ? 'Delete' : 'Cancel invoice'}
+      title={isDelete ? t('lifecycle.deleteTitle') : t('lifecycle.cancelTitle')}
+      description={isDelete ? t('lifecycle.deleteDescription') : t('lifecycle.cancelDescription')}
+      confirmLabel={isDelete ? t('lifecycle.deleteConfirm') : t('sheet.cancelInvoice')}
+      dismissLabel={tCommon('cancel')}
+      submittingLabel={tCommon('saving')}
       isSubmitting={submitting}
       errorMessage={error}
       forceNestedBackdrop={forceNestedBackdrop}

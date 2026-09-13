@@ -36,6 +36,12 @@ import {
   expensePlanToFormState,
   type ExpensePlanFormState,
 } from '@/features/finance/utils/expense-plan-form-state';
+import { useTranslations } from 'next-intl';
+import {
+  translateExpensePlanCategory,
+  translateExpensePlanFrequency,
+  useExpensePlansT,
+} from './expense-plan-message-keys';
 
 const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES;
 
@@ -63,6 +69,8 @@ export function CreateExpensePlanDialog({
   onCreated,
   onUpdated,
 }: CreateExpensePlanDialogProps) {
+  const t = useExpensePlansT();
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState<ExpensePlanFormState>({ ...EMPTY_EXPENSE_PLAN_FORM });
@@ -120,9 +128,7 @@ export function CreateExpensePlanDialog({
       setFormError(
         getApiErrorMessage(
           caught,
-          isEdit
-            ? 'Expense plan could not be saved. Check your connection.'
-            : 'Expense plan could not be created. Check your connection.',
+          isEdit ? t('errors.save') : t('errors.create'),
         ),
       );
     } finally {
@@ -134,7 +140,7 @@ export function CreateExpensePlanDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
-          <DialogTitle>{planToEdit ? 'Edit expense plan' : 'New expense plan'}</DialogTitle>
+          <DialogTitle>{planToEdit ? t('create.editTitle') : t('create.title')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
           {formError ? (
@@ -143,17 +149,17 @@ export function CreateExpensePlanDialog({
             </p>
           ) : null}
           <div className="space-y-2">
-            <Label>Name *</Label>
+            <Label>{t('create.name')}</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="e.g. Office rent"
+              placeholder={t('create.namePlaceholder')}
               autoFocus
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Category *</Label>
+              <Label>{t('create.category')}</Label>
               <Select
                 value={form.category}
                 onValueChange={(v) => {
@@ -166,25 +172,25 @@ export function CreateExpensePlanDialog({
                 <SelectContent>
                   {PLAN_CATEGORY_OPTIONS.map((c) => (
                     <SelectItem key={c.value} value={c.value}>
-                      {c.label}
+                      {translateExpensePlanCategory(t, c.value, c.label)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Expected amount *</Label>
+              <Label>{t('create.amount')}</Label>
               <Input
                 inputMode="decimal"
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                placeholder="0"
+                placeholder={t('create.amountPlaceholder')}
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Frequency</Label>
+              <Label>{t('create.frequency')}</Label>
               <Select
                 value={form.frequency}
                 onValueChange={(v) => {
@@ -197,18 +203,18 @@ export function CreateExpensePlanDialog({
                 <SelectContent>
                   {EXPENSE_FREQUENCIES.map((f) => (
                     <SelectItem key={f.value} value={f.value}>
-                      {f.label}
+                      {translateExpensePlanFrequency(t, f.value)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Next due</Label>
+              <Label>{t('create.nextDue')}</Label>
               <NbosDatePicker
                 value={form.nextDueDate}
                 onChange={(nextDueDate) => setForm({ ...form, nextDueDate })}
-                aria-label="Next due"
+                aria-label={t('create.nextDueAria')}
               />
             </div>
           </div>
@@ -242,11 +248,11 @@ export function CreateExpensePlanDialog({
               onCheckedChange={(v) => setForm({ ...form, autoGenerate: v === true })}
             />
             <Label htmlFor="auto-gen" className="text-sm font-normal">
-              Auto-generate expense cards (future)
+              {t('create.autoGenerate')}
             </Label>
           </div>
           <div className="space-y-2">
-            <Label>Notes</Label>
+            <Label>{t('create.notes')}</Label>
             <Textarea
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
@@ -255,10 +261,14 @@ export function CreateExpensePlanDialog({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? 'Saving…' : planToEdit ? 'Save changes' : 'Create plan'}
+              {loading
+                ? tCommon('saving')
+                : planToEdit
+                  ? tCommon('save')
+                  : t('create.submit')}
             </Button>
           </DialogFooter>
         </form>

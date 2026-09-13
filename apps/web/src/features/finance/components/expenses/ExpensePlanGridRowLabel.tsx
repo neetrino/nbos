@@ -1,6 +1,8 @@
 'use client';
 
+import { useLocale } from 'next-intl';
 import { formatExpensePlanGridRowSubtitle } from '@/features/finance/utils/expense-plan-display';
+import { translateExpensePlanFrequency, useExpensePlansT } from './expense-plan-message-keys';
 
 interface ExpensePlanGridRowLabelProps {
   rowNumber: number;
@@ -15,7 +17,14 @@ export function ExpensePlanGridRowLabel({
   frequency,
   projectLabel,
 }: ExpensePlanGridRowLabelProps) {
-  const subtitle = formatExpensePlanGridRowSubtitle({ frequency, projectLabel });
+  const t = useExpensePlansT();
+  const locale = useLocale();
+  const subtitle = formatExpensePlanGridRowSubtitle({
+    frequency,
+    frequencyLabel: translateExpensePlanFrequency(t, frequency),
+    projectLabel,
+    locale,
+  });
 
   return (
     <div className="flex items-center gap-2.5">

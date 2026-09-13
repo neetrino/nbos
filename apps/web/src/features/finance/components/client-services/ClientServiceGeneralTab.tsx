@@ -14,6 +14,7 @@ import type {
 import { ClientServiceGeneralBasicsSection } from './ClientServiceGeneralBasicsSection';
 import { ClientServiceGeneralBillingSection } from './ClientServiceGeneralBillingSection';
 import { ClientServiceGeneralDatesSection } from './ClientServiceGeneralDatesSection';
+import { useClientServicesT } from './client-service-message-keys';
 
 interface ClientServiceGeneralTabProps {
   serviceId: string;
@@ -32,6 +33,7 @@ export function ClientServiceGeneralTab({
   formDisabled = false,
   onRegistryChecked,
 }: ClientServiceGeneralTabProps) {
+  const t = useClientServicesT();
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} w-full max-w-none gap-4`}>
       <ClientServiceGeneralBasicsSection
@@ -54,7 +56,7 @@ export function ClientServiceGeneralTab({
         formDisabled={formDisabled}
         onRegistryChecked={onRegistryChecked}
       />
-      <DetailSheetSection title="Proofs">
+      <DetailSheetSection title={t('sheet.proofs')}>
         <FinanceProofAttachments
           entityType="CLIENT_SERVICE_RECORD"
           entityId={serviceId}

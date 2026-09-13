@@ -2,20 +2,16 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import type { LucideIcon } from 'lucide-react';
-import {
-  BadgeDollarSign,
-  Building2,
-  ClipboardList,
-  ListChecks,
-  Network,
-  Waypoints,
-  Percent,
-  ShieldCheck,
-  Target,
-  Users2,
-} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Network } from 'lucide-react';
 import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import {
+  DepartmentFoundationCard,
+  FoundationMetric,
+  HubEmptyDepartments,
+  HubEmployeeStatusBadge,
+} from '@/features/hr/components/MyCompanyHubCards';
+import { MY_COMPANY_HUB_SECTIONS } from '@/features/hr/constants/my-company-hub-sections';
 import {
   departmentsApi,
   employeesApi,
@@ -25,96 +21,6 @@ import {
   type RoleItem,
 } from '@/lib/api/employees';
 import { usePermission } from '@/lib/permissions';
-
-type HubSection = {
-  title: string;
-  href: string;
-  description: string;
-  icon: LucideIcon;
-  require?: { module: string; action: string };
-};
-
-const MY_COMPANY_SECTIONS: HubSection[] = [
-  {
-    title: 'Team',
-    href: '/my-company/team',
-    description: 'Employees, profiles, invites, roles, and department membership.',
-    icon: Users2,
-  },
-  {
-    title: 'Departments',
-    href: '/my-company/departments',
-    description: 'Company departments, hierarchy, owners, and members.',
-    icon: Building2,
-  },
-  {
-    title: 'Roles & Seats',
-    href: '/my-company/roles-seats',
-    description: 'Business seats and accountabilities, separated from technical permissions.',
-    icon: ShieldCheck,
-  },
-  {
-    title: 'Compensation',
-    href: '/my-company/compensation',
-    description: 'Compensation profiles, bonus policies, and payroll-facing rules.',
-    icon: BadgeDollarSign,
-  },
-  {
-    title: 'Bonus policies',
-    href: '/my-company/bonus-policies',
-    description: 'Bonus rule bundles (sales, delivery, manual) for compensation profiles.',
-    icon: BadgeDollarSign,
-    require: { module: 'COMPANY', action: 'VIEW' },
-  },
-  {
-    title: 'Sales bonus policies',
-    href: '/my-company/sales-bonus-policies',
-    description:
-      'Seller and assistant rates by From category and Classic vs subscription first invoice.',
-    icon: Percent,
-  },
-  {
-    title: 'KPI / Scorecard',
-    href: '/my-company/kpi',
-    description: 'Company, department, and employee KPI policies and scorecards.',
-    icon: Target,
-  },
-  {
-    title: 'KPI gate policies',
-    href: '/my-company/kpi-policies',
-    description:
-      'Attainment thresholds and payout % for payroll (linked via compensation profiles).',
-    icon: Target,
-    require: { module: 'COMPANY', action: 'VIEW' },
-  },
-  {
-    title: 'SOP & Templates',
-    href: '/my-company/sop',
-    description: 'SOP documents, process templates, and operational runs.',
-    icon: ClipboardList,
-  },
-  {
-    title: 'Checklist templates',
-    href: '/my-company/checklist-templates',
-    description: 'Versioned checklist builders for delivery, QA, maintenance, and SOP.',
-    icon: ListChecks,
-    require: { module: 'CHECKLIST_TEMPLATES', action: 'VIEW' },
-  },
-  {
-    title: 'Delivery checklist rules',
-    href: '/my-company/checklist-stage-rules',
-    description:
-      'Bind published templates to Product / Extension stages; instances on stage entry.',
-    icon: Waypoints,
-    require: { module: 'CHECKLIST_TEMPLATES', action: 'VIEW' },
-  },
-];
-
-const FOUNDATION_GAPS = [
-  'Seat assignments are not modelled separately from technical permission roles yet.',
-  'Compensation, KPI and bonus policies are visible as module areas but not payroll sources yet.',
-  'The full org chart canvas with zoom, search and department drawers remains a dedicated follow-up.',
-] as const;
 
 function getPrimaryDepartment(employee: Employee): string | null {
   const primary = employee.departments.find((membership) => membership.isPrimary);
@@ -126,6 +32,7 @@ function countActiveEmployees(employees: Employee[]): number {
 }
 
 export default function MyCompanyPage() {
+  const t = useTranslations('hr');
   const { can, isLoading: permsLoading } = usePermission();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
@@ -146,13 +53,11 @@ export default function MyCompanyPage() {
       setRoles(rolesData);
       setError(null);
     } catch {
-      setError(
-        'My Company foundation data could not be loaded. Check your connection and try again.',
-      );
+      setError(t('hub.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchFoundation();
@@ -161,192 +66,171 @@ export default function MyCompanyPage() {
   const activeEmployees = countActiveEmployees(employees);
   const assignedEmployees = employees.filter((employee) => employee.departments.length > 0).length;
   const systemRoles = roles.filter((role) => role.isSystem).length;
-
-  const visibleHubSections = MY_COMPANY_SECTIONS.filter(
+  const visibleHubSections = MY_COMPANY_HUB_SECTIONS.filter(
     (section) =>
       permsLoading || !section.require || can(section.require.action, section.require.module),
   );
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-muted-foreground text-sm">
-        Org Structure is the company control center for departments, seats, employees, KPI,
-        compensation, and SOP.
-      </p>
-
+      <p className="text-muted-foreground text-sm">{t('hub.intro')}</p>
       {loading ? (
         <LoadingState variant="cards" count={6} />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchFoundation} />
       ) : (
-        <>
-          <div className="grid gap-4 md:grid-cols-3">
-            <FoundationMetric
-              label="Active employees"
-              value={activeEmployees}
-              helper="Can work in platform modules"
-            />
-            <FoundationMetric
-              label="Departments"
-              value={departments.length}
-              helper="Org units used for access context"
-            />
-            <FoundationMetric
-              label="Permission roles"
-              value={roles.length}
-              helper={`${systemRoles} protected system roles`}
-            />
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="border-border bg-card rounded-2xl border p-6">
-              <div className="mb-5 flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
-                    <Network size={20} />
-                  </div>
-                  <div>
-                    <h2 className="text-foreground text-lg font-semibold">
-                      Org Structure Foundation
-                    </h2>
-                    <p className="text-muted-foreground text-sm">
-                      Current department hierarchy and employee assignment coverage.
-                    </p>
-                  </div>
-                </div>
-                <StatusBadge
-                  label={`${assignedEmployees}/${employees.length} assigned`}
-                  variant={assignedEmployees === employees.length ? 'emerald' : 'amber'}
-                />
-              </div>
-
-              {departments.length === 0 ? (
-                <div className="border-border rounded-xl border border-dashed p-6 text-center">
-                  <Building2 size={32} className="text-muted-foreground/40 mx-auto" />
-                  <p className="text-foreground mt-3 text-sm font-medium">
-                    No departments configured
-                  </p>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    Add departments before using Org Structure as an accountability map.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid gap-3 md:grid-cols-2">
-                  {departments.map((department) => (
-                    <DepartmentFoundationCard key={department.id} department={department} />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="grid gap-3">
-              {visibleHubSections.map((section) => {
-                const Icon = section.icon;
-                return (
-                  <Link
-                    key={section.href}
-                    href={section.href}
-                    className="border-border bg-card hover:bg-muted/40 block rounded-2xl border p-4 transition-colors"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="bg-secondary text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
-                        <Icon size={17} />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="text-foreground text-sm font-semibold">{section.title}</h3>
-                        <p className="text-muted-foreground mt-1 text-sm">{section.description}</p>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="border-border bg-card rounded-2xl border p-5">
-            <h2 className="text-foreground text-base font-semibold">Foundation guardrails</h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              These are intentionally explicit so Finance, KPI and RBAC do not rely on incomplete
-              data.
-            </p>
-            <div className="mt-4 grid gap-3 lg:grid-cols-3">
-              {FOUNDATION_GAPS.map((gap) => (
-                <div key={gap} className="bg-muted/40 rounded-xl p-4">
-                  <p className="text-muted-foreground text-sm">{gap}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="border-border bg-card rounded-2xl border p-5">
-            <h2 className="text-foreground text-base font-semibold">Recent team context</h2>
-            {employees.length === 0 ? (
-              <p className="text-muted-foreground mt-2 text-sm">
-                No employees found. Invite employees before using My Company as a control center.
-              </p>
-            ) : (
-              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {employees.slice(0, 6).map((employee) => (
-                  <div key={employee.id} className="border-border rounded-xl border p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-foreground text-sm font-medium">
-                          {employee.firstName} {employee.lastName}
-                        </p>
-                        <p className="text-muted-foreground mt-1 text-xs">
-                          {employee.role.name} · {getPrimaryDepartment(employee) ?? 'No department'}
-                        </p>
-                      </div>
-                      <StatusBadge
-                        label={employee.status.replace(/_/g, ' ')}
-                        variant={employee.status === 'ACTIVE' ? 'emerald' : 'amber'}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
+        <MyCompanyHubLoaded
+          employees={employees}
+          departments={departments}
+          activeEmployees={activeEmployees}
+          assignedEmployees={assignedEmployees}
+          rolesCount={roles.length}
+          systemRoles={systemRoles}
+          visibleHubSections={visibleHubSections}
+        />
       )}
     </div>
   );
 }
 
-function FoundationMetric({
-  label,
-  value,
-  helper,
+function MyCompanyHubLoaded({
+  employees,
+  departments,
+  activeEmployees,
+  assignedEmployees,
+  rolesCount,
+  systemRoles,
+  visibleHubSections,
 }: {
-  label: string;
-  value: number;
-  helper: string;
+  employees: Employee[];
+  departments: DepartmentItem[];
+  activeEmployees: number;
+  assignedEmployees: number;
+  rolesCount: number;
+  systemRoles: number;
+  visibleHubSections: typeof MY_COMPANY_HUB_SECTIONS;
 }) {
+  const t = useTranslations('hr');
   return (
-    <div className="border-border bg-card rounded-2xl border p-5">
-      <p className="text-muted-foreground text-sm">{label}</p>
-      <p className="text-foreground mt-2 text-3xl font-semibold">{value}</p>
-      <p className="text-muted-foreground mt-1 text-xs">{helper}</p>
-    </div>
+    <>
+      <div className="grid gap-4 md:grid-cols-3">
+        <FoundationMetric
+          label={t('hub.metrics.activeEmployees')}
+          value={activeEmployees}
+          helper={t('hub.metrics.activeHelper')}
+        />
+        <FoundationMetric
+          label={t('hub.metrics.departments')}
+          value={departments.length}
+          helper={t('hub.metrics.departmentsHelper')}
+        />
+        <FoundationMetric
+          label={t('hub.metrics.roles')}
+          value={rolesCount}
+          helper={t('hub.metrics.rolesHelper', { count: systemRoles })}
+        />
+      </div>
+      <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="border-border bg-card rounded-2xl border p-6">
+          <div className="mb-5 flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
+                <Network size={20} />
+              </div>
+              <div>
+                <h2 className="text-foreground text-lg font-semibold">
+                  {t('hub.foundation.title')}
+                </h2>
+                <p className="text-muted-foreground text-sm">{t('hub.foundation.subtitle')}</p>
+              </div>
+            </div>
+            <StatusBadge
+              label={t('hub.foundation.assigned', {
+                assigned: assignedEmployees,
+                total: employees.length,
+              })}
+              variant={assignedEmployees === employees.length ? 'emerald' : 'amber'}
+            />
+          </div>
+          {departments.length === 0 ? (
+            <HubEmptyDepartments />
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2">
+              {departments.map((department) => (
+                <DepartmentFoundationCard key={department.id} department={department} />
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="grid gap-3">
+          {visibleHubSections.map((section) => {
+            const Icon = section.icon;
+            return (
+              <Link
+                key={section.href}
+                href={section.href}
+                className="border-border bg-card hover:bg-muted/40 block rounded-2xl border p-4 transition-colors"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="bg-secondary text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
+                    <Icon size={17} />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-foreground text-sm font-semibold">
+                      {t(`hub.sections.${section.key}.title` as never)}
+                    </h3>
+                    <p className="text-muted-foreground mt-1 text-sm">
+                      {t(`hub.sections.${section.key}.description` as never)}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+      <div className="border-border bg-card rounded-2xl border p-5">
+        <h2 className="text-foreground text-base font-semibold">{t('hub.guardrails.title')}</h2>
+        <p className="text-muted-foreground mt-1 text-sm">{t('hub.guardrails.subtitle')}</p>
+        <div className="mt-4 grid gap-3 lg:grid-cols-3">
+          {(['seats', 'compensation', 'orgChart'] as const).map((gap) => (
+            <div key={gap} className="bg-muted/40 rounded-xl p-4">
+              <p className="text-muted-foreground text-sm">{t(`hub.guardrails.${gap}` as never)}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      <RecentTeamContext employees={employees} />
+    </>
   );
 }
 
-function DepartmentFoundationCard({ department }: { department: DepartmentItem }) {
+function RecentTeamContext({ employees }: { employees: Employee[] }) {
+  const t = useTranslations('hr');
   return (
-    <div className="border-border rounded-xl border p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-foreground text-sm font-medium">{department.name}</p>
-          <p className="text-muted-foreground mt-1 text-xs">
-            {department.parent?.name
-              ? `Reports to ${department.parent.name}`
-              : 'Top-level department'}
-          </p>
+    <div className="border-border bg-card rounded-2xl border p-5">
+      <h2 className="text-foreground text-base font-semibold">{t('hub.recent.title')}</h2>
+      {employees.length === 0 ? (
+        <p className="text-muted-foreground mt-2 text-sm">{t('hub.recent.empty')}</p>
+      ) : (
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {employees.slice(0, 6).map((employee) => (
+            <div key={employee.id} className="border-border rounded-xl border p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-foreground text-sm font-medium">
+                    {employee.firstName} {employee.lastName}
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    {employee.role.name} ·{' '}
+                    {getPrimaryDepartment(employee) ?? t('hub.recent.noDepartment')}
+                  </p>
+                </div>
+                <HubEmployeeStatusBadge status={employee.status} />
+              </div>
+            </div>
+          ))}
         </div>
-        <StatusBadge label={`${department._count?.members ?? 0} members`} variant="default" />
-      </div>
-      {department.description && (
-        <p className="text-muted-foreground mt-3 line-clamp-2 text-xs">{department.description}</p>
       )}
     </div>
   );

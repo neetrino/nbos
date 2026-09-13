@@ -9,6 +9,7 @@ import type { ClientServiceRecord, ClientServiceRecordListParams } from '@/lib/a
 import { ClientServiceCard } from './ClientServiceCard';
 import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { useClientServiceList, type ClientServiceListSeed } from './use-client-service-list';
+import { useClientServicesT } from './client-service-message-keys';
 
 interface ClientServiceBoardColumnProps {
   label: string;
@@ -66,6 +67,7 @@ export function ClientServiceBoardColumn({
   seed,
   columnWidth = CLIENT_SERVICE_BOARD_COLUMN_WIDTH,
 }: ClientServiceBoardColumnProps) {
+  const t = useClientServicesT();
   const { items, loading, loadingMore, error, hasMore, loadMore } = useClientServiceList(
     params,
     20,
@@ -95,7 +97,7 @@ export function ClientServiceBoardColumn({
 
           {!loading && items.length === 0 && !error ? (
             <div className="border-border rounded-xl border border-dashed p-6 text-center">
-              <p className="text-muted-foreground text-xs">No services</p>
+              <p className="text-muted-foreground text-xs">{t('empty.boardColumn')}</p>
             </div>
           ) : null}
 

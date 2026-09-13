@@ -14,6 +14,8 @@ import enDeliveryBoard from '../messages/en/delivery-board.json';
 import enPayroll from '../messages/en/payroll.json';
 import enCredentials from '../messages/en/credentials.json';
 import enExpenses from '../messages/en/expenses.json';
+import enExpensePlans from '../messages/en/expense-plans.json';
+import enClientServices from '../messages/en/client-services.json';
 import enSearch from '../messages/en/search.json';
 import enTasks from '../messages/en/tasks.json';
 import enQuick from '../messages/en/quick.json';
@@ -32,6 +34,8 @@ import ruDeliveryBoard from '../messages/ru/delivery-board.json';
 import ruPayroll from '../messages/ru/payroll.json';
 import ruCredentials from '../messages/ru/credentials.json';
 import ruExpenses from '../messages/ru/expenses.json';
+import ruExpensePlans from '../messages/ru/expense-plans.json';
+import ruClientServices from '../messages/ru/client-services.json';
 import ruSearch from '../messages/ru/search.json';
 import ruTasks from '../messages/ru/tasks.json';
 import ruQuick from '../messages/ru/quick.json';
@@ -67,6 +71,12 @@ describe('completed i18n catalogs', () => {
       flattenMessageKeys(ruCredentials).sort(),
     );
     expect(flattenMessageKeys(enExpenses).sort()).toEqual(flattenMessageKeys(ruExpenses).sort());
+    expect(flattenMessageKeys(enExpensePlans).sort()).toEqual(
+      flattenMessageKeys(ruExpensePlans).sort(),
+    );
+    expect(flattenMessageKeys(enClientServices).sort()).toEqual(
+      flattenMessageKeys(ruClientServices).sort(),
+    );
     expect(flattenMessageKeys(enQuick).sort()).toEqual(flattenMessageKeys(ruQuick).sort());
   });
 
@@ -156,5 +166,11 @@ describe('completed i18n catalogs', () => {
     expect(ruExpenses.nav.payNow.length).toBeGreaterThan(0);
     expect(enCrm.stages.deal.WON.label.length).toBeGreaterThan(0);
     expect(ruCrm.stages.deal.WON.label.length).toBeGreaterThan(0);
+    expect(enHr.hub.foundation.assigned).toContain('{assigned}');
+    expect(ruHr.hub.foundation.assigned).toContain('{assigned}');
+    expect(enExpensePlans.page.title.length).toBeGreaterThan(0);
+    expect(ruExpensePlans.page.title.length).toBeGreaterThan(0);
+    expect(enClientServices.page.title.length).toBeGreaterThan(0);
+    expect(ruClientServices.page.title.length).toBeGreaterThan(0);
   });
 });

@@ -14,6 +14,8 @@ import { Label } from '@/components/ui/label';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import { expensePlansApi } from '@/lib/api/expense-plans';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { useTranslations } from 'next-intl';
+import { useExpensePlansT } from './expense-plan-message-keys';
 
 interface GenerateExpenseCardFromPlanDialogProps {
   plan: ExpensePlan | null;
@@ -38,6 +40,8 @@ export function GenerateExpenseCardFromPlanDialog({
   onOpenChange,
   onGenerated,
 }: GenerateExpenseCardFromPlanDialogProps) {
+  const t = useExpensePlansT();
+  const tCommon = useTranslations('common');
   const [dueDate, setDueDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,10 +65,7 @@ export function GenerateExpenseCardFromPlanDialog({
       onOpenChange(false);
     } catch (caught) {
       setError(
-        getApiErrorMessage(
-          caught,
-          'Could not generate expense from plan. Check dates and try again.',
-        ),
+        getApiErrorMessage(caught, t('errors.generateCard')),
       );
     } finally {
       setLoading(false);
@@ -77,7 +78,7 @@ export function GenerateExpenseCardFromPlanDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md" forceNestedBackdrop>
         <DialogHeader>
-          <DialogTitle>Generate expense card</DialogTitle>
+          <DialogTitle>{t('generate.title')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3">
           {error ? (
@@ -86,25 +87,23 @@ export function GenerateExpenseCardFromPlanDialog({
             </p>
           ) : null}
           <p className="text-muted-foreground text-sm">
-            Creates a Board expense linked to{' '}
-            <span className="text-foreground font-medium">{plan.name}</span>. Recurring plans update
-            the plan&apos;s next due date after generation.
+            {t('generate.description', { name: plan.name })}
           </p>
           <div>
-            <Label htmlFor="card-due">Due date</Label>
+            <Label htmlFor="card-due">{t('generate.dueDate')}</Label>
             <NbosDatePicker
               id="card-due"
               value={dueDate}
               onChange={setDueDate}
-              aria-label="Due date"
+              aria-label={t('generate.dueDateAria')}
             />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={loading || !dueDate.trim()}>
-              {loading ? 'Generating…' : 'Generate'}
+              {loading ? t('generate.submitting') : t('generate.submit')}
             </Button>
           </DialogFooter>
         </form>

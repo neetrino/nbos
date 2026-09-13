@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { projectsApi, type Project, type ProjectProductSummary } from '@/lib/api/projects';
 import { supportApi } from '@/lib/api/support';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -24,6 +25,7 @@ export function useSupportCreateTicketForm({
   setError,
   defaultCategory = 'UNCLASSIFIED',
 }: UseSupportCreateTicketFormParams) {
+  const t = useTranslations('support');
   const [createOpen, setCreateOpen] = useState(false);
   const [createTitle, setCreateTitle] = useState('');
   const [createProjectId, setCreateProjectId] = useState('');
@@ -90,7 +92,7 @@ export function useSupportCreateTicketForm({
   const submitCreateTicket = useCallback(async () => {
     const title = createTitle.trim();
     if (!title) {
-      setError('Title is required to create a ticket.');
+      setError(t('errors.titleRequired'));
       return;
     }
     setActionId('create-ticket');
@@ -107,7 +109,7 @@ export function useSupportCreateTicketForm({
       setError(null);
       await refreshSupportViews();
     } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Ticket could not be created.'));
+      setError(getApiErrorMessage(caught, t('errors.createFailed')));
     } finally {
       setActionId(null);
     }
@@ -120,6 +122,7 @@ export function useSupportCreateTicketForm({
     createProductId,
     refreshSupportViews,
     setError,
+    t,
   ]);
 
   return {

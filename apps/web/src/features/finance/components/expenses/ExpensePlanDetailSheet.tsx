@@ -30,6 +30,7 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensePlansApi, type ExpensePlan } from '@/lib/api/expense-plans';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
+import { useExpensePlansT } from './expense-plan-message-keys';
 
 export interface ExpensePlanDetailSheetProps {
   planId: string | null;
@@ -48,6 +49,7 @@ export function ExpensePlanDetailSheet({
   onPlanUpdated,
   onPlanDeleted,
 }: ExpensePlanDetailSheetProps) {
+  const t = useExpensePlansT();
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(planId);
   const hostMounted = useSheetHostMounted(open, sheetId);
   const activePlanId = open && sheetId ? sheetId : '';
@@ -55,6 +57,7 @@ export function ExpensePlanDetailSheet({
     open,
     initialPlan,
     isDirty: () => generalDirtyRef.current,
+    loadErrorMessage: t('errors.loadDetail'),
   });
   const [activeTab, setActiveTab] = useState<ExpensePlanDetailSheetTab>('general');
   const [generalDraft, setGeneralDraft] = useState<ExpensePlanGeneralDraft | null>(null);
@@ -137,16 +140,16 @@ export function ExpensePlanDetailSheet({
         const updated = await expensePlansApi.update(plan.id, patch);
         generalDirtyRef.current = false;
         handlePlanChange(updated);
-        toast.success('Expense plan updated');
+        toast.success(t('toasts.updated'));
       } catch (caught) {
         setGeneralSnap(snapAtSave);
         setGeneralDraft(draftAtSave);
-        setGeneralError(getApiErrorMessage(caught, 'Could not save expense plan changes.'));
+        setGeneralError(getApiErrorMessage(caught, t('errors.saveChanges')));
       } finally {
         setSaving(false);
       }
     })();
-  }, [generalDraft, generalSnap, handlePlanChange, plan]);
+  }, [generalDraft, generalSnap, handlePlanChange, plan, t]);
 
   const handleGeneralCancel = useCallback(() => {
     setGeneralError(null);
@@ -160,8 +163,10 @@ export function ExpensePlanDetailSheet({
       buildExpensePlanDetailSheetTabs({
         canGenerateCard: plan != null && !saving && plan.status === 'ACTIVE',
         onGenerateCard: openGenerate,
+        tabLabel: (value) => t(`sheet.tabs.${value}`),
+        generateAriaLabel: t('sheet.generateAria'),
       }),
-    [openGenerate, plan, saving],
+    [openGenerate, plan, saving, t],
   );
 
   if (!hostMounted) return null;
@@ -180,7 +185,7 @@ export function ExpensePlanDetailSheet({
         >
           <div className="bg-background shrink-0 px-7 pt-5 pb-3">
             {loading && !plan ? (
-              <p className="text-muted-foreground text-sm">Loading…</p>
+              <p className="text-muted-foreground text-sm">{t('sheet.loading')}</p>
             ) : plan ? (
               <ExpensePlanDetailSheetLifecycle
                 plan={plan}
