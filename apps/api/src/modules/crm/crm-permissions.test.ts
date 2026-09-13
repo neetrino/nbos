@@ -11,8 +11,8 @@ import { DealsController } from './deals/deals.controller';
 /**
  * Both controllers shipped without permission decorators, which the global `PermissionGuard`
  * treats as open: any authenticated employee could read, edit and permanently delete leads and
- * deals. This test pins the closed surface and, just as importantly, the handlers still left open
- * on purpose — so the remaining debt cannot grow silently.
+ * deals. This test pins the closed surface and fails as soon as a new handler arrives without a
+ * requirement.
  *
  * Canon: docs/NBOS/04-Roles-and-Access/02-Access-Matrix.md.
  */
@@ -26,6 +26,7 @@ function handlerNames(controller: { prototype: object }): string[] {
 
 const LEAD_EXPECTATIONS: Record<string, RequiredPermission> = {
   findAll: { module: CRM_LEADS_MODULE, action: 'VIEW' },
+  getStats: { module: CRM_LEADS_MODULE, action: 'VIEW' },
   findDuplicates: { module: CRM_LEADS_MODULE, action: 'VIEW' },
   findOne: { module: CRM_LEADS_MODULE, action: 'VIEW' },
   create: { module: CRM_LEADS_MODULE, action: 'ADD' },
@@ -44,6 +45,9 @@ const LEAD_EXPECTATIONS: Record<string, RequiredPermission> = {
 
 const DEAL_EXPECTATIONS: Record<string, RequiredPermission> = {
   findAll: { module: CRM_DEALS_MODULE, action: 'VIEW' },
+  getStats: { module: CRM_DEALS_MODULE, action: 'VIEW' },
+  findOne: { module: CRM_DEALS_MODULE, action: 'VIEW' },
+  getWhatsAppGroup: { module: CRM_DEALS_MODULE, action: 'VIEW' },
   create: { module: CRM_DEALS_MODULE, action: 'ADD' },
   update: { module: CRM_DEALS_MODULE, action: 'EDIT' },
   updateStatus: { module: CRM_DEALS_MODULE, action: 'EDIT' },
@@ -60,10 +64,6 @@ const DEAL_EXPECTATIONS: Record<string, RequiredPermission> = {
   createDepositOrder: { module: 'FINANCE_INVOICES', action: 'ADD' },
 };
 
-/** Handlers still reachable without a CRM permission, each for a documented consumer. */
-const KNOWN_OPEN_LEAD_HANDLERS = ['getStats'] as const;
-const KNOWN_OPEN_DEAL_HANDLERS = ['getStats', 'findOne', 'getWhatsAppGroup'] as const;
-
 describe('CRM lead permission wiring', () => {
   it.each(Object.entries(LEAD_EXPECTATIONS))('requires %s', (name, expected) => {
     const handler = (LeadsController.prototype as Record<string, unknown>)[name];
@@ -71,11 +71,11 @@ describe('CRM lead permission wiring', () => {
     expect(permissionOf(handler)).toEqual(expected);
   });
 
-  it('leaves only the documented handlers open', () => {
+  it('leaves no handler open', () => {
     const open = handlerNames(LeadsController).filter(
       (name) => !permissionOf((LeadsController.prototype as Record<string, unknown>)[name]),
     );
-    expect(open).toEqual([...KNOWN_OPEN_LEAD_HANDLERS]);
+    expect(open).toEqual([]);
   });
 });
 
@@ -86,10 +86,10 @@ describe('CRM deal permission wiring', () => {
     expect(permissionOf(handler)).toEqual(expected);
   });
 
-  it('leaves only the documented handlers open', () => {
+  it('leaves no handler open', () => {
     const open = handlerNames(DealsController).filter(
       (name) => !permissionOf((DealsController.prototype as Record<string, unknown>)[name]),
     );
-    expect(open).toEqual([...KNOWN_OPEN_DEAL_HANDLERS]);
+    expect(open).toEqual([]);
   });
 });

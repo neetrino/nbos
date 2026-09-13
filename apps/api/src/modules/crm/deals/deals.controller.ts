@@ -31,12 +31,12 @@ import { BindDealWhatsAppGroupDto } from './dto/bind-deal-whatsapp-group.dto';
 import { UpdateDealStatusDto } from './dto/update-deal-status.dto';
 
 /**
- * Writes require `CRM_DEALS`; the deal card read does not yet, because Finance opens it from an
- * invoice or order and delivery roles open it from a project, Delivery Board or Work Space. Those
- * surfaces need a scoped commercial projection before the read can close, so a class-level floor
- * would break them. Handlers therefore declare their own requirement.
+ * The permission matrix is the only source of deal access. Standing on the card grants nothing:
+ * `pmId` records who receives the project for delivery, so a PM without `CRM_DEALS` in the matrix
+ * cannot open the deal. Cross-module surfaces (Finance invoices and orders, projects, Delivery
+ * Board, Work Spaces) therefore hide their "Deal" button instead of relying on an open endpoint.
  *
- * Canon: docs/NBOS/04-Roles-and-Access/02-Access-Matrix.md (PM and Marketing are Limited on deals).
+ * Canon: docs/NBOS/04-Roles-and-Access/02-Access-Matrix.md.
  */
 @ApiTags('CRM / Deals')
 @ApiBearerAuth()
@@ -87,15 +87,15 @@ export class DealsController {
     });
   }
 
-  /** Open for the same Reports Sales reason as `GET /crm/leads/stats`. */
   @Get('stats')
+  @RequirePermission(CRM_DEALS_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Get deals statistics' })
   async getStats() {
     return this.dealsService.getStats();
   }
 
-  /** Open until Finance, Projects, Delivery Board and Work Spaces read a scoped projection. */
   @Get(':id')
+  @RequirePermission(CRM_DEALS_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Get deal by ID' })
   async findOne(@Param('id') id: string) {
     return this.dealsService.findById(id);
@@ -274,6 +274,7 @@ export class DealsController {
 
   /** Fetched automatically whenever a deal sheet opens, so it follows the deal card read. */
   @Get(':id/whatsapp-group')
+  @RequirePermission(CRM_DEALS_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Get Deal client WhatsApp group state (Deal-level or Product WORK)' })
   getWhatsAppGroup(@Param('id') id: string) {
     return this.dealsService.getWhatsAppGroupState(id);

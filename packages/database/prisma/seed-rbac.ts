@@ -274,7 +274,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
   },
   'role-finance-director': {
     CRM_LEADS: N,
-    CRM_DEALS: N,
+    // Read-only: the deal card opens from an invoice or order, where the amount, payment type and
+    // contract are the invoice's own context. Writes stay with sales.
+    CRM_DEALS: R,
     ORDERS: F,
     FINANCE_INVOICES: F,
     FINANCE_PAYMENTS: F,

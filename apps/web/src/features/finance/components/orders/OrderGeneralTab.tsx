@@ -12,6 +12,7 @@ import {
 } from '@/components/shared';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
+import { useCanViewDeal } from '@/features/crm/hooks/use-can-view-deal';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Order } from '@/lib/api/finance';
@@ -64,6 +65,7 @@ export function OrderGeneralTab({ order }: OrderGeneralTabProps) {
 
 function OrderLinkedPanel({ order }: { order: Order }) {
   const relations = useEntityRelations();
+  const canViewDeal = useCanViewDeal();
   const [dealSheetOpen, setDealSheetOpen] = useState(false);
   const contactName = order.contact
     ? `${order.contact.firstName} ${order.contact.lastName}`.trim()
@@ -96,7 +98,7 @@ function OrderLinkedPanel({ order }: { order: Order }) {
               onOpen={() => relations.openEntity('contact', order.contact!.id)}
             />
           ) : null}
-          {dealId && order.deal ? (
+          {dealId && order.deal && canViewDeal ? (
             <DetailSheetEntityLinkCard
               label="Deal"
               title={order.deal.name?.trim() || order.deal.code}

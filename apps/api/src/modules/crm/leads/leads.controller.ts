@@ -27,9 +27,8 @@ import { PourLeadIntoContactDto } from './dto/pour-lead-into-contact.dto';
 import { CreateLeadContactDto } from './dto/create-lead-contact.dto';
 
 /**
- * Every handler declares its own `CRM_LEADS` requirement instead of a class-level floor, because
- * `GET stats` still has to serve the Reports Sales tab, which non-CRM roles open with
- * `DASHBOARDS VIEW`. A floor would silently close that surface.
+ * Access follows the permission matrix only. Being named on a record grants nothing on its own:
+ * `assignedTo` on a lead, like `pmId` on a deal, is a routing field, not a grant.
  *
  * Canon: docs/NBOS/04-Roles-and-Access/02-Access-Matrix.md (Marketing reads leads, never writes).
  */
@@ -78,12 +77,8 @@ export class LeadsController {
     });
   }
 
-  /**
-   * Left open on purpose: the Reports Sales tab loads this for every role holding
-   * `DASHBOARDS VIEW`, including PM, Head of Delivery and Finance, who have no `CRM_LEADS`.
-   * Closing it needs a scoped Reports projection first; tracked in the CRM cleanup register.
-   */
   @Get('stats')
+  @RequirePermission(CRM_LEADS_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Get leads statistics' })
   async getStats() {
     return this.leadsService.getStats();

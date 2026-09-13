@@ -23,6 +23,7 @@ import {
   orderStatusLabel,
 } from '@/features/finance/components/orders/order-statuses';
 import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
+import { useCanViewDeal } from '@/features/crm/hooks/use-can-view-deal';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
 import { deliveryStageGateSectionClass } from './delivery-stage-gate-highlight';
@@ -143,6 +144,7 @@ export function DeliveryItemCommercialSection({
   gateRequiredFields = new Set(),
 }: DeliveryItemCommercialSectionProps) {
   const t = useTranslations('deliveryBoard');
+  const canViewDeal = useCanViewDeal();
   const relations = useEntityRelations();
   const [dealSheetOpen, setDealSheetOpen] = useState(false);
   const [orderSheetOpen, setOrderSheetOpen] = useState(false);
@@ -158,7 +160,8 @@ export function DeliveryItemCommercialSection({
   const contact = project?.contact;
   const company = project?.company;
   const orderStatusMeta = order ? ORDER_STATUSES[order.status] : undefined;
-  const dealId = deal?.id ?? null;
+  // Delivery roles see the order, not the deal: the deal card is a CRM record.
+  const dealId = canViewDeal ? (deal?.id ?? null) : null;
   const orderId = order?.id ?? null;
   const dealButtonTitle = deal
     ? t('commercial.openDeal', { title: getDealDisplayTitle(deal) })
@@ -229,13 +232,15 @@ export function DeliveryItemCommercialSection({
           </div>
 
           <nav className={COMMERCIAL_ACTIONS_GRID_CLASS} aria-label={t('commercial.linksAria')}>
-            <CommercialNavButton
-              label={t('commercial.deal')}
-              icon={<FileText size={13} aria-hidden />}
-              onClick={() => setDealSheetOpen(true)}
-              disabled={!dealId}
-              title={dealButtonTitle}
-            />
+            {canViewDeal ? (
+              <CommercialNavButton
+                label={t('commercial.deal')}
+                icon={<FileText size={13} aria-hidden />}
+                onClick={() => setDealSheetOpen(true)}
+                disabled={!dealId}
+                title={dealButtonTitle}
+              />
+            ) : null}
             <CommercialNavLink
               href={projectHubHref}
               label={t('commercial.project')}

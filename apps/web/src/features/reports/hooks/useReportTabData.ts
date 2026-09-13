@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import {
   financeReportsApi,
   type CashFlowReport,
@@ -27,9 +28,18 @@ export interface FinanceReportsTabData {
   projectPnl: ProjectPnlReport;
 }
 
+/**
+ * Either half can be absent: lead and deal statistics are separate permissions, and roles such as
+ * Head of Delivery reach deals without leads. `null` means "not permitted", not "empty".
+ */
 export interface SalesReportsTabData {
-  leads: LeadStats;
-  deals: DealStats;
+  leads: LeadStats | null;
+  deals: DealStats | null;
+}
+
+export interface SalesReportsAccess {
+  leads: boolean;
+  deals: boolean;
 }
 
 export interface ProjectsReportsTabData {
@@ -46,8 +56,20 @@ export function useFinanceReportsTabData(enabled: boolean, filters: ReportFilter
   );
 }
 
-export function useSalesReportsTabData(enabled: boolean, filters: ReportFilterState) {
-  return useLazyReportTabData(enabled, filters, loadSalesReports, 'Sales reports could not load.');
+export function useSalesReportsTabData(
+  enabled: boolean,
+  filters: ReportFilterState,
+  access: SalesReportsAccess,
+) {
+  const { leads, deals } = access;
+  const loader = useCallback(() => loadSalesReports({ leads, deals }), [leads, deals]);
+
+  return useLazyReportTabData(
+    enabled && (leads || deals),
+    filters,
+    loader,
+    'Sales reports could not load.',
+  );
 }
 
 export function useMarketingReportsTabData(enabled: boolean, filters: ReportFilterState) {
@@ -103,8 +125,11 @@ async function loadFinanceReports(filters: Record<string, string>): Promise<Fina
   };
 }
 
-async function loadSalesReports(): Promise<SalesReportsTabData> {
-  const [leads, deals] = await Promise.all([leadsApi.getStats(), dealsApi.getStats()]);
+async function loadSalesReports(access: SalesReportsAccess): Promise<SalesReportsTabData> {
+  const [leads, deals] = await Promise.all([
+    access.leads ? leadsApi.getStats() : null,
+    access.deals ? dealsApi.getStats() : null,
+  ]);
   return { leads, deals };
 }
 

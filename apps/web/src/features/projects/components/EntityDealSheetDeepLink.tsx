@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { DealSheet } from '@/features/crm/components/DealSheet';
+import { useCanViewDeal } from '@/features/crm/hooks/use-can-view-deal';
 import { dealsApi, type Deal } from '@/lib/api/deals';
 import { getApiErrorMessage, isStageGateApiError } from '@/lib/api-errors';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
@@ -26,6 +27,7 @@ export function EntityDealSheetDeepLink({
   forceNestedBackdrop = false,
   onEntityChanged,
 }: EntityDealSheetDeepLinkProps) {
+  const canViewDeal = useCanViewDeal();
   const { persistedValue: renderDealId, onOpenChangeComplete: clearRenderDealId } =
     useSheetPersistedValue(dealId);
   const hostMounted = useSheetHostMounted(open, renderDealId);
@@ -40,6 +42,14 @@ export function EntityDealSheetDeepLink({
 
   useEffect(() => {
     if (!open || !renderDealId) return;
+
+    // Hosts outside CRM (search history, project and delivery relations) can still ask for a deal
+    // the reader has no rights to. Refuse here instead of sending a request that returns 403.
+    if (!canViewDeal) {
+      toast.error('You do not have access to deals.');
+      onOpenChange(false);
+      return;
+    }
 
     let cancelled = false;
     void dealsApi
@@ -57,7 +67,7 @@ export function EntityDealSheetDeepLink({
     return () => {
       cancelled = true;
     };
-  }, [renderDealId, onOpenChange, open]);
+  }, [canViewDeal, renderDealId, onOpenChange, open]);
 
   const handleOpenChangeComplete = useCallback(
     (nextOpen: boolean) => {

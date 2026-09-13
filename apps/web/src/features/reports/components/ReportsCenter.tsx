@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { CRM_DEALS_MODULE, CRM_LEADS_MODULE } from '@nbos/shared';
 import { ErrorState, LoadingState } from '@/components/shared';
+import { usePermission } from '@/lib/permissions';
 import { useModuleHeroSlots } from '@/components/shared/page-hero';
 import {
   reportsApi,
@@ -59,6 +61,7 @@ function reportFiltersToRecord(filters: ReportFilterState): SearchFilterRecord {
 export function ReportsCenter() {
   const pathname = usePathname();
   const router = useRouter();
+  const { can } = usePermission();
   const parsedPath = parseReportsPathname(pathname);
   const view = parsedPath?.viewId ?? 'FINANCE';
 
@@ -96,8 +99,15 @@ export function ReportsCenter() {
   const [creatingExportToken, setCreatingExportToken] = useState<string | null>(null);
 
   const exportFilters = useMemo(() => buildReportFilters(filters), [filters]);
+  const salesAccess = useMemo(
+    () => ({
+      leads: can('VIEW', CRM_LEADS_MODULE),
+      deals: can('VIEW', CRM_DEALS_MODULE),
+    }),
+    [can],
+  );
   const finance = useFinanceReportsTabData(view === 'FINANCE', filters);
-  const sales = useSalesReportsTabData(view === 'SALES', filters);
+  const sales = useSalesReportsTabData(view === 'SALES', filters, salesAccess);
   const marketing = useMarketingReportsTabData(view === 'MARKETING', filters);
   const projects = useProjectsReportsTabData(view === 'PROJECTS', filters);
   const specialists = useSpecialistsReportsTabData(view === 'SPECIALISTS', filters);

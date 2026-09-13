@@ -16,6 +16,7 @@ import { invoiceSourceMessageKey, officialInvoiceRequestStatusKey } from './invo
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
 import { subscriptionsListWithOpenSubscriptionHref } from '@/features/finance/constants/subscription-deep-link';
 import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
+import { useCanViewDeal } from '@/features/crm/hooks/use-can-view-deal';
 import type { Invoice } from '@/lib/api/finance';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
@@ -73,13 +74,15 @@ export function InvoiceLinkedEntitiesSection({
 }) {
   const t = useTranslations('invoices');
   const relations = useEntityRelations();
+  const canViewDeal = useCanViewDeal();
   const [dealSheetOpen, setDealSheetOpen] = useState(false);
   const deal = invoice.order?.deal ?? null;
   const dealId = deal?.id ?? null;
   const dealTitle = getInvoiceDealTitle(invoice.order);
-  const hasDeal = Boolean(dealId && dealTitle);
+  // Without deal rights the invoice falls back to its order, which carries the same amounts.
+  const showsDeal = Boolean(dealId && dealTitle) && canViewDeal;
   const cards = [
-    invoice.order && !hasDeal
+    invoice.order && !showsDeal
       ? {
           key: `order-${invoice.order.id}`,
           icon: FileText,
@@ -121,7 +124,7 @@ export function InvoiceLinkedEntitiesSection({
   const hasCompany = Boolean(invoice.company);
   const hasContact = Boolean(invoice.contact);
   const hasUnlinkedProduct = Boolean(invoice.product && !invoice.projectId);
-  if (cards.length === 0 && !hasDeal && !hasCompany && !hasContact && !hasUnlinkedProduct) {
+  if (cards.length === 0 && !showsDeal && !hasCompany && !hasContact && !hasUnlinkedProduct) {
     return null;
   }
 
@@ -129,7 +132,7 @@ export function InvoiceLinkedEntitiesSection({
     <>
       <DetailSheetSection title={t('sheet.linked')}>
         <DetailSheetEntityLinkGrid>
-          {hasDeal && dealTitle ? (
+          {showsDeal && dealTitle ? (
             <DetailSheetEntityLinkCard
               icon={Handshake}
               label="Deal"
