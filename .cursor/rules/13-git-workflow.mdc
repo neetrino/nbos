@@ -10,6 +10,7 @@ alwaysApply: false
 - **NBOS working branch:** long-lived `sipan`. Land work with a PR `sipan` → `main` and a **merge commit** (not squash, not rebase). After merge, **leave `sipan` on its own commits** — do not fast-forward `sipan` onto `main`. `main` stays on the merge commit, `sipan` stays on the work line, so the graph shows two branches.
 - **Conventional Commits** — `feat:`, `fix:`, `chore:`, `docs:` …
 - **PRs** — small, focused, green CI, description template, self-review first.
+- **Hooks:** do not skip with `--no-verify`. `pre-commit` auto-formats staged files with Prettier via lint-staged. `pre-push` fails if pushed files would fail `prettier --check` (same gate as CI).
 - **No force-push** to `main`/`develop`; no secrets in commits.
 - **CHANGELOG** maintained if project ships versions.
 
