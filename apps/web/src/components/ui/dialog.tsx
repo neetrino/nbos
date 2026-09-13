@@ -64,6 +64,7 @@ function DialogContent({
   children,
   showCloseButton = true,
   forceNestedBackdrop = false,
+  mobileSheet = true,
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean;
@@ -72,12 +73,18 @@ function DialogContent({
    * Set true so the dimmed overlay still renders above the parent surface.
    */
   forceNestedBackdrop?: boolean;
+  /**
+   * When true (default), viewports below `md` use the shared bottom sheet.
+   * Set false to keep a centered floating card on every viewport.
+   */
+  mobileSheet?: boolean;
 }) {
   const isMobileViewport = useIsMobileViewport();
+  const useSheet = mobileSheet && isMobileViewport;
   const popupRef = React.useRef<HTMLDivElement>(null);
-  useDialogKeyboardInset(popupRef, isMobileViewport);
+  useDialogKeyboardInset(popupRef, useSheet);
   const nestedStackClass = forceNestedBackdrop ? DIALOG_ABOVE_SHEET_Z_CLASS : 'z-50';
-  const scrollAttr = isMobileViewport ? { [BOTTOM_SHEET_SWIPE_SCROLL_ATTR]: '' } : undefined;
+  const scrollAttr = useSheet ? { [BOTTOM_SHEET_SWIPE_SCROLL_ATTR]: '' } : undefined;
 
   return (
     <DialogPortal>
@@ -86,16 +93,16 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           DIALOG_POPUP_SURFACE_CLASS,
-          DIALOG_MOBILE_SHEET_POPUP_CLASS,
-          isMobileViewport && BOTTOM_SHEET_SWIPE_PANEL_CLASS,
+          mobileSheet && DIALOG_MOBILE_SHEET_POPUP_CLASS,
+          useSheet && BOTTOM_SHEET_SWIPE_PANEL_CLASS,
           nestedStackClass,
           className,
         )}
         {...props}
         ref={popupRef}
       >
-        {isMobileViewport ? <DialogMobileSwipeChrome /> : null}
-        <div className={DIALOG_MOBILE_SHEET_BODY_CLASS} {...scrollAttr}>
+        {useSheet ? <DialogMobileSwipeChrome /> : null}
+        <div className={mobileSheet ? DIALOG_MOBILE_SHEET_BODY_CLASS : 'contents'} {...scrollAttr}>
           {children}
         </div>
         {showCloseButton ? <DialogAbsoluteCloseButton /> : null}

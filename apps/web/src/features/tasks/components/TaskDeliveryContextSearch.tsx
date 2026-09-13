@@ -56,6 +56,12 @@ interface TaskDeliveryContextSearchProps {
   trigger?: 'button' | 'none';
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** `flow` keeps results in layout (popover / create dialog). Default overlays. */
+  resultsPlacement?: 'absolute' | 'flow';
+  /** Parent-owned surfaces (quick create) toggle open themselves. */
+  closeOnOutside?: boolean;
+  /** Overrides the default `max-h-64` results scroller. */
+  resultsListClassName?: string;
 }
 
 /** Unified project / product / work space typeahead with nested rows. */
@@ -67,6 +73,9 @@ export function TaskDeliveryContextSearch({
   trigger = 'button',
   open: openProp,
   onOpenChange,
+  resultsPlacement = 'absolute',
+  closeOnOutside = true,
+  resultsListClassName,
 }: TaskDeliveryContextSearchProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = openProp !== undefined;
@@ -113,7 +122,7 @@ export function TaskDeliveryContextSearch({
   }, [disabled, setOpen]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !closeOnOutside) return;
     const onPointerDown = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setOpen(false);
@@ -121,7 +130,7 @@ export function TaskDeliveryContextSearch({
     };
     document.addEventListener('mousedown', onPointerDown);
     return () => document.removeEventListener('mousedown', onPointerDown);
-  }, [open, setOpen]);
+  }, [open, setOpen, closeOnOutside]);
 
   useEffect(
     () => () => {
@@ -214,8 +223,13 @@ export function TaskDeliveryContextSearch({
         </button>
       </div>
 
-      <div className="border-border bg-popover absolute inset-x-0 top-full z-50 mt-1 overflow-hidden rounded-xl border shadow-lg">
-        <div className="max-h-64 overflow-y-auto">
+      <div
+        className={cn(
+          'border-border bg-popover mt-1 overflow-hidden rounded-xl border shadow-lg',
+          resultsPlacement === 'absolute' && 'absolute inset-x-0 top-full z-50',
+        )}
+      >
+        <div className={cn('max-h-64 overflow-y-auto', resultsListClassName)}>
           {loading ? (
             <div className="text-muted-foreground flex items-center gap-2 px-3 py-2.5 text-xs">
               <Loader2 size={13} className="animate-spin" />
