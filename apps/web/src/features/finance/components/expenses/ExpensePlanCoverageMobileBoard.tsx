@@ -197,12 +197,13 @@ function ExpensePlanMobileMonthCell({
   isCurrentMonth: boolean;
   onOpen: () => void;
 }) {
+  const t = useExpensePlansT();
+
   if (cell.kind === 'NA') {
     return (
       <FinanceCalendarMobileEmptyMonthCell caption={caption} isCurrentMonth={isCurrentMonth} />
     );
   }
-  const t = useExpensePlansT();
   const statusLabel = translateExpensePlanCellStatus(t, cell.kind);
   const amountLabel = formatAmountAbbreviated(cell.amount);
   return (
