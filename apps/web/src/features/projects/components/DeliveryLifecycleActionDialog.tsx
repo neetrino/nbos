@@ -48,12 +48,7 @@ export function DeliveryLifecycleActionDialog({
   const [onHoldUntil, setOnHoldUntil] = useState(getTomorrowDateInput());
   const isPause = action === 'pause';
   const canSubmit = reason.trim().length > 0 && (!isPause || onHoldUntil.length > 0);
-  const copy = translateLifecycleActionDialogCopy(
-    action ?? 'cancel',
-    entityLabel,
-    isSubmitting,
-    t,
-  );
+  const copy = translateLifecycleActionDialogCopy(action ?? 'cancel', entityLabel, isSubmitting, t);
 
   return (
     <Dialog
@@ -64,7 +59,11 @@ export function DeliveryLifecycleActionDialog({
       }}
     >
       <DialogContent className="sm:max-w-md" showCloseButton={false} forceNestedBackdrop>
-        <LifecycleActionHeader isPause={isPause} title={copy.title} description={copy.description} />
+        <LifecycleActionHeader
+          isPause={isPause}
+          title={copy.title}
+          description={copy.description}
+        />
         <LifecycleActionFields
           isPause={isPause}
           isSubmitting={isSubmitting}

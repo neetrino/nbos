@@ -56,7 +56,11 @@ export function RecordPaymentForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const methodOptions = useMemo(
-    () => invoicePaymentMethodSelectOptions((key) => t(key), (key) => t.has(key)),
+    () =>
+      invoicePaymentMethodSelectOptions(
+        (key) => t(key),
+        (key) => t.has(key),
+      ),
     [t],
   );
 

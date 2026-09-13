@@ -95,8 +95,12 @@ export function ClientServiceListView({
             <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>
               {t('table.renewal')}
             </TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>{t('table.cost')}</TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[88px]`}>{t('table.stage')}</TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>
+              {t('table.cost')}
+            </TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[88px]`}>
+              {t('table.stage')}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

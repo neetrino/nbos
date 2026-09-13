@@ -225,7 +225,12 @@ export function SupportTicketExecutionTasksSection({
   return (
     <DetailSheetSection title={t('sheet.executionTasks')} icon={<CheckSquare size={12} />}>
       <div className="mb-3 flex justify-end">
-        <Button type="button" size="sm" disabled={!meId || terminal || taskBusy} onClick={onOpenCreateTask}>
+        <Button
+          type="button"
+          size="sm"
+          disabled={!meId || terminal || taskBusy}
+          onClick={onOpenCreateTask}
+        >
           <CheckSquare size={14} />
           {t('sheet.newTask')}
         </Button>

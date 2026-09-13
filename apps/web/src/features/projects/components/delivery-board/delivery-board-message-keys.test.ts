@@ -90,9 +90,9 @@ describe('translateDeliveryHoldCopy', () => {
     expect(translateDeliveryHoldCopy(expired, '1 Jan 2020', en)).toBe('Hold expired on 1 Jan 2020');
     expect(translateDeliveryHoldCopy(expired, '1 Jan 2020', ru)).toBe('Пауза истекла 1 Jan 2020');
     expect(translateDeliveryHoldCopy(hold, null, en)).toBe('On Hold');
-    expect(translateDeliveryHoldCopy({ workStatus: 'IN_PROGRESS', resolution: null }, null, en)).toBe(
-      null,
-    );
+    expect(
+      translateDeliveryHoldCopy({ workStatus: 'IN_PROGRESS', resolution: null }, null, en),
+    ).toBe(null);
   });
 });
 

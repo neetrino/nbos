@@ -125,12 +125,7 @@ export function CreateExpensePlanDialog({
       }
       onOpenChange(false);
     } catch (caught) {
-      setFormError(
-        getApiErrorMessage(
-          caught,
-          isEdit ? t('errors.save') : t('errors.create'),
-        ),
-      );
+      setFormError(getApiErrorMessage(caught, isEdit ? t('errors.save') : t('errors.create')));
     } finally {
       setLoading(false);
     }
@@ -264,11 +259,7 @@ export function CreateExpensePlanDialog({
               {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={loading || !canSubmit}>
-              {loading
-                ? tCommon('saving')
-                : planToEdit
-                  ? tCommon('save')
-                  : t('create.submit')}
+              {loading ? tCommon('saving') : planToEdit ? tCommon('save') : t('create.submit')}
             </Button>
           </DialogFooter>
         </form>

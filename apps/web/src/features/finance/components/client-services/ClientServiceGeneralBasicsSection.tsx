@@ -143,7 +143,11 @@ function ClientServiceBasicsTypeStatusRow({
         label={t('fields.status')}
         type="select"
         value={draft.status}
-        options={localizeOptionLabels(CLIENT_SERVICE_STATUSES, t, CLIENT_SERVICE_STATUS_MESSAGE_KEYS)}
+        options={localizeOptionLabels(
+          CLIENT_SERVICE_STATUSES,
+          t,
+          CLIENT_SERVICE_STATUS_MESSAGE_KEYS,
+        )}
         icon={<CircleDot size={12} />}
         disabled={formDisabled}
         className={EXPENSE_SHEET_FIELD_CELL_CLASS}
