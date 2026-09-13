@@ -13,6 +13,7 @@ import {
   displayNameFromMe,
   isOpenRisingEdge,
   isQuickCreateCreatorBlocked,
+  shouldCloseQuickCreateAfterSuccess,
 } from './quick-create-task-draft';
 import { persistQuickCreateTaskExtras } from './persist-quick-create-task-extras';
 import { pickedWorkspaceId, useQuickCreateTaskExtras } from './use-quick-create-task-extras';
@@ -37,6 +38,8 @@ export interface QuickCreateTaskDialogProps {
   forceNestedBackdrop?: boolean;
   onSubmitStart?: () => void;
   onSubmitSettled?: (result: 'success' | 'failure') => void;
+  /** Keep a blank form open after create (Quick Task PWA). Ordinary Tasks omit this. */
+  stayOpenOnCreate?: boolean;
 }
 
 export function useQuickCreateTaskForm({
@@ -52,6 +55,7 @@ export function useQuickCreateTaskForm({
   onCreated,
   onSubmitStart,
   onSubmitSettled,
+  stayOpenOnCreate = false,
   me,
 }: QuickCreateTaskDialogProps & { me: MeResponse | null | undefined }) {
   const t = useTranslations('forms');
@@ -66,6 +70,7 @@ export function useQuickCreateTaskForm({
   const extras = useQuickCreateTaskExtras();
   const { resetExtras } = extras;
   const [saving, setSaving] = useState(false);
+  const [draftCycle, setDraftCycle] = useState(0);
   const wasOpenRef = useRef(false);
   const assigneeTouchedRef = useRef(false);
 
@@ -141,6 +146,7 @@ export function useQuickCreateTaskForm({
     }
     onSubmitStart?.();
     setSaving(true);
+    let keepOpenAfterCreate = false;
     try {
       const task = await tasksApi.create({
         title: title.trim(),
@@ -166,7 +172,11 @@ export function useQuickCreateTaskForm({
       }
       onCreated?.(task);
       applyDefaults();
-      onOpenChange(false);
+      if (shouldCloseQuickCreateAfterSuccess(stayOpenOnCreate)) {
+        onOpenChange(false);
+      } else {
+        keepOpenAfterCreate = true;
+      }
       onSubmitSettled?.('success');
     } catch (caught: unknown) {
       onSubmitSettled?.('failure');
@@ -184,6 +194,9 @@ export function useQuickCreateTaskForm({
       );
     } finally {
       setSaving(false);
+      if (keepOpenAfterCreate) {
+        setDraftCycle((cycle) => cycle + 1);
+      }
     }
   };
 
@@ -202,6 +215,7 @@ export function useQuickCreateTaskForm({
     dueDate,
     setDueDate,
     saving,
+    draftCycle,
     handleCreate,
     canCreate: canSubmitQuickCreateTask(title, creatorId),
     creatorBlocked: isQuickCreateCreatorBlocked(creatorReady, creatorId),

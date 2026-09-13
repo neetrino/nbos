@@ -186,10 +186,12 @@ Background surface должен быть **reuse**, а не копией `/tasks
 - созданная задача должна появиться в уже открытом/background Tasks state без полного reload;
 - можно использовать существующий task-created synchronization contract;
 - пользователь получает понятное success state;
-- action `Open` / эквивалент может сразу открыть созданную задачу через существующий Task detail flow;
-- если пользователь просто закрывает success/form state, он остаётся в Tasks context.
+- форма сбрасывается в чистый черновик и **остаётся открытой**, чтобы сразу создать следующую задачу;
+- Cancel / Close по-прежнему открывает Tasks surface;
+- action `Open` / эквивалент закрывает форму и сразу открывает созданную задачу через существующий Task detail flow;
+- если пользователь закрывает форму, он остаётся в Tasks context.
 
-Quick Task не закрывает приложение автоматически после submit.
+Quick Task не закрывает ни форму, ни приложение автоматически после submit. Обычный create на `/tasks` по-прежнему закрывает диалог.
 
 ---
 
@@ -356,8 +358,9 @@ Quick Task считается продуктово правильным, есл�
 5. creator = current Employee, default assignee = current Employee, assignee можно изменить;
 6. create использует существующий Tasks API/RBAC;
 7. созданная задача появляется в background Tasks surface;
-8. закрытие формы даёт доступ к Tasks и существующему Task detail/edit flow;
-9. основной NBOS PWA продолжает работать как раньше;
-10. dynamic authenticated data не кэшируется service worker;
-11. performance marks и live measurements выполнены на согласованных iOS/Android устройствах;
-12. новая архитектура позволяет добавить следующий Quick Action без копирования общей launch infrastructure.
+8. после create форма сбрасывается и остаётся открытой для следующей задачи;
+9. закрытие формы даёт доступ к Tasks и существующему Task detail/edit flow;
+10. основной NBOS PWA продолжает работать как раньше;
+11. dynamic authenticated data не кэшируется service worker;
+12. performance marks и live measurements выполнены на согласованных iOS/Android устройствах;
+13. новая архитектура позволяет добавить следующий Quick Action без копирования общей launch infrastructure.

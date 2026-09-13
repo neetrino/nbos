@@ -30,6 +30,7 @@ export function QuickTaskPage() {
           onCreated={page.handleCreated}
           onSubmitStart={page.markSubmitStart}
           onSubmitSettled={page.markSubmitSettled}
+          stayOpenOnCreate
         />
       }
       showBackground={!page.createOpen}

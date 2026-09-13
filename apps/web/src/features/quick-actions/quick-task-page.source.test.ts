@@ -18,6 +18,7 @@ describe('Quick Task composition', () => {
     expect(page).toContain("from '@/components/shared/quick-create-task/QuickCreateTaskDialog'");
     expect(page).not.toMatch(/function QuickCreateTaskForm/);
     expect(page).toContain('hostedCreateDialog={false}');
+    expect(page).toContain('stayOpenOnCreate');
   });
 
   it('does not inherit the main NBOS apple-touch icon on /quick/task', () => {
