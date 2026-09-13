@@ -39,14 +39,17 @@
       },
       "browser": {
         "title": "Տեղադրեք բրաուզերից",
-        "body": "Android կամ համակարգիչ՝ բրաուզերի ընտրացանկ → Install app։ iPhone կամ iPad՝ Share → Add to Home Screen։"
+        "body": "Android-ում և iPhone-ում բրաուզերի ընտրացանկը տարբեր է։"
       }
     },
     "art": {
       "phoneAlt": "Հեռախոսի նախադիտում NBOS splash-ով",
-      "menu": "Բրաուզերի ընտրացանկ",
       "installItem": "Install app",
-      "homeItem": "Add to Home Screen"
+      "homeItem": "Add to Home Screen",
+      "android": "Android",
+      "ios": "iOS",
+      "androidHint": "Menu → Install app",
+      "iosHint": "Share → Add to Home Screen"
     }
   }
 }

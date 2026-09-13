@@ -37,19 +37,3 @@ export function AppInstallPhoneArt() {
     </div>
   );
 }
-
-export function AppInstallMenuArt() {
-  const t = useTranslations('quick');
-  return (
-    <div className="border-border bg-background relative w-36 rounded-2xl border p-2 shadow-sm">
-      <p className="text-muted-foreground mb-1.5 text-[10px] font-medium">{t('install.art.menu')}</p>
-      <ul className="space-y-1" aria-hidden>
-        <li className="text-muted-foreground px-2 py-1 text-[10px]">⋯</li>
-        <li className="bg-primary/10 text-primary rounded-md px-2 py-1 text-[10px] font-semibold">
-          {t('install.art.installItem')}
-        </li>
-        <li className="text-muted-foreground px-2 py-1 text-[10px]">{t('install.art.homeItem')}</li>
-      </ul>
-    </div>
-  );
-}

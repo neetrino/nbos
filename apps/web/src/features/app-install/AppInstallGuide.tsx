@@ -1,18 +1,20 @@
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { APP_INSTALL_STEP_ROW_CLASS } from './app-install-classes';
-import { AppInstallCopyArt, AppInstallMenuArt, AppInstallPhoneArt } from './AppInstallStepArt';
+import { AppInstallOsCards } from './AppInstallOsCards';
+import { AppInstallCopyArt, AppInstallPhoneArt } from './AppInstallStepArt';
 
 export function AppInstallGuide() {
   const t = useTranslations('quick');
 
   return (
     <ol className="relative">
-      <span
-        className="bg-border absolute top-3 bottom-3 left-[0.85rem] w-px"
-        aria-hidden
-      />
-      <GuideStep index={1} title={t('install.steps.copy.title')} body={t('install.steps.copy.body')}>
+      <span className="bg-border absolute top-3 bottom-3 left-[0.85rem] w-px" aria-hidden />
+      <GuideStep
+        index={1}
+        title={t('install.steps.copy.title')}
+        body={t('install.steps.copy.body')}
+      >
         <AppInstallCopyArt />
       </GuideStep>
       <GuideStep
@@ -27,7 +29,7 @@ export function AppInstallGuide() {
         title={t('install.steps.browser.title')}
         body={t('install.steps.browser.body')}
       >
-        <AppInstallMenuArt />
+        <AppInstallOsCards />
       </GuideStep>
     </ol>
   );

@@ -20,8 +20,19 @@ describe('App install guide page', () => {
     expect(route).toContain("from '@/features/app-install/AppInstallPage'");
     expect(page).toContain('AppInstallAppList');
     expect(page).toContain('AppInstallGuide');
-    expect(catalog).toContain('kind: \'mini\'');
-    expect(catalog).toContain('kind: \'main\'');
-    expect(catalog.indexOf('kind: \'mini\'')).toBeLessThan(catalog.indexOf('kind: \'main\''));
+    expect(catalog).toContain("kind: 'mini'");
+    expect(catalog).toContain("kind: 'main'");
+    expect(catalog.indexOf("kind: 'mini'")).toBeLessThan(catalog.indexOf("kind: 'main'"));
+  });
+
+  it('shows Android and iOS install cards side by side', () => {
+    const guide = readSource('src/features/app-install/AppInstallGuide.tsx');
+    const cards = readSource('src/features/app-install/AppInstallOsCards.tsx');
+    expect(guide).toContain('AppInstallOsCards');
+    expect(guide).not.toContain('AppInstallMenuArt');
+    expect(cards).toContain('AndroidOsMark');
+    expect(cards).toContain('IosOsMark');
+    expect(cards).toContain('AndroidInstallShot');
+    expect(cards).toContain('IosInstallShot');
   });
 });

@@ -1,5 +1,8 @@
 import { PWA_MAIN_ICON_CACHE } from '@/components/pwa/pwa-constants';
-import { QUICK_TASK_ICON_CACHE, QUICK_TASK_ROUTE } from '@/features/quick-actions/quick-action-constants';
+import {
+  QUICK_TASK_ICON_CACHE,
+  QUICK_TASK_ROUTE,
+} from '@/features/quick-actions/quick-action-constants';
 
 export type AppInstallKind = 'mini' | 'main';
 

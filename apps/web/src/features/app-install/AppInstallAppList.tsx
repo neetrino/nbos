@@ -35,7 +35,9 @@ export function AppInstallAppList({ apps, copiedId, onCopy }: AppInstallAppListP
             />
             <div className="min-w-0 flex-1">
               <h3 className="text-foreground text-sm leading-5 font-semibold">{t(app.nameKey)}</h3>
-              <p className="text-muted-foreground mt-0.5 text-[11px] leading-4">{t(app.blurbKey)}</p>
+              <p className="text-muted-foreground mt-0.5 text-[11px] leading-4">
+                {t(app.blurbKey)}
+              </p>
             </div>
             <Button
               type="button"

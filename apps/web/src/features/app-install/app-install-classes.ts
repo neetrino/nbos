@@ -13,3 +13,8 @@ export const APP_INSTALL_APP_CARD_CLASS =
   'border-border/80 bg-background flex items-center gap-3 rounded-2xl border px-3 py-2.5';
 
 export const APP_INSTALL_STEP_ROW_CLASS = 'relative flex gap-4 pb-8 last:pb-0';
+
+export const APP_INSTALL_OS_GRID_CLASS = 'grid grid-cols-2 gap-3';
+
+export const APP_INSTALL_OS_CARD_CLASS =
+  'border-border/80 bg-background flex flex-col gap-2 rounded-2xl border p-2.5';

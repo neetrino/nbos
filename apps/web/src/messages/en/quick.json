@@ -39,14 +39,17 @@
       },
       "browser": {
         "title": "Install from the browser",
-        "body": "Android or computer: browser menu → Install app. iPhone or iPad: Share → Add to Home Screen."
+        "body": "Android and iPhone use different browser menus."
       }
     },
     "art": {
       "phoneAlt": "Phone preview with the NBOS splash",
-      "menu": "Browser menu",
       "installItem": "Install app",
-      "homeItem": "Add to Home Screen"
+      "homeItem": "Add to Home Screen",
+      "android": "Android",
+      "ios": "iOS",
+      "androidHint": "Menu → Install app",
+      "iosHint": "Share → Add to Home Screen"
     }
   }
 }

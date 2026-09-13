@@ -58,6 +58,7 @@ Understand the ask → inspect existing code → align with `docs/NBOS` + roadma
 - **Validate** external input at boundaries.
 - **Handle errors** with logging; no silent swallow in production paths.
 - **JSDoc** on exported public APIs where non-obvious.
+- **Format:** Prettier on touched files before done — same gate as husky `pre-commit` and CI Format. Typecheck/lint/tests do not cover this.
 
 ## Structure
 
