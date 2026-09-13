@@ -61,6 +61,23 @@ Main sections:
 
 Статус: `DONE` (RBAC/visibility как у остальных модулей; см. IMPLEMENTATION_PROGRESS Marketing slices)
 
+### B2a. Marketing API не имел проверки прав
+
+Статус: `DONE` (2026-09-13)
+
+`MarketingController` не имел ни одного `@RequirePermission`, а глобальный `PermissionGuard` пропускает хендлеры без метаданных. Любой аутентифицированный сотрудник мог читать и менять marketing accounts, activities и справочник CRM `Where`, включая запуск активности, который предлагает расход в финансах. Сайдбар при этом показывал модуль по `CRM_LEADS VIEW`, то есть UI и API расходились.
+
+Заведён отдельный модуль прав `MARKETING` (VIEW / EDIT / ADD / DELETE) вместо привязки к `CRM_LEADS`: иначе бюджеты кампаний получил бы каждый Seller с правом на лиды, а Marketing Specialist с `CRM_LEADS` только на чтение остался бы read-only в своём же модуле.
+
+- floor контроллера — `MARKETING VIEW` на уровне класса, поэтому новый хендлер закрыт по умолчанию;
+- мутации — `MARKETING EDIT`, создание — `MARKETING ADD`;
+- `GET crm-where-options` и `GET attribution-options` остаются на `CRM_LEADS VIEW`: это справочники для форм лида и сделки;
+- сайдбар `/marketing` переведён на `MARKETING VIEW`;
+- по умолчанию полный доступ у `role-owner`, `role-ceo`, `role-head-marketing`; остальные роли — `NONE` и выдаются через матрицу;
+- контрактный тест `apps/api/src/modules/marketing/marketing.permissions.test.ts` падает, если хендлер снова останется без права.
+
+Матрица: `../../04-Roles-and-Access/02-Access-Matrix.md`.
+
 ### B3. Lead/Deal attribution is too shallow
 
 Статус: `FOUNDATION DONE / NEEDS POPUP POLISH`

@@ -144,7 +144,7 @@ Query param standard: `?scope=active|trash` (not ad-hoc `includeArchived` withou
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------- |
 | API inventory      | `GET /platform/lifecycle/trash-inventory` (`COMPANY VIEW`)                                                                  |
 | Retention registry | `GET /platform/lifecycle/retention-rules` — env: `PLATFORM_TRASH_RETENTION_DAYS_DEFAULT`, `PLATFORM_TRASH_RETENTION_DAYS_*` |
-| Unified purge      | `POST /platform/lifecycle/purge/run` (`COMPANY EDIT`) · `POST /scheduler/platform-trash-purge`                              |
+| Unified purge      | `POST /platform/lifecycle/purge/run` (`SETTINGS DELETE`) · `POST /scheduler/platform-trash-purge`                           |
 | Web admin          | Settings → **Trash inventory** (`/settings/trash-inventory`)                                                                |
 
 Inventory aggregates Profile A/B/C modules plus Mail with shipped trash lifecycle. Automated purge runs Credentials + Drive + Mail threads + Profile A (Lead, Deal, Partner, Contact, Company, Project) past resolved retention TTL (relation guards on Profile A) with platform audit (`platform.trash_retention_purge_run`).

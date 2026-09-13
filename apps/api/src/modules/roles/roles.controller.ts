@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { SETTINGS_RBAC_MODULE } from '@nbos/shared';
 import { RolesService } from './roles.service';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 
@@ -9,20 +10,23 @@ import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../c
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
+  // Role names populate My Company employee/invitation forms, so the list stays on COMPANY.
   @Get()
+  @RequirePermission('COMPANY', 'VIEW')
   @ApiOperation({ summary: 'Get all roles' })
   findAll() {
     return this.rolesService.findAll();
   }
 
   @Get(':id')
+  @RequirePermission(SETTINGS_RBAC_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Get role by ID with permissions' })
   findById(@Param('id') id: string) {
     return this.rolesService.findById(id);
   }
 
   @Post()
-  @RequirePermission('COMPANY', 'ADD')
+  @RequirePermission(SETTINGS_RBAC_MODULE, 'ADD')
   @ApiOperation({ summary: 'Create role' })
   create(
     @CurrentUser() user: CurrentUserPayload,
@@ -38,7 +42,7 @@ export class RolesController {
   }
 
   @Put(':id')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_RBAC_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Update role' })
   update(
     @CurrentUser() user: CurrentUserPayload,
@@ -55,7 +59,7 @@ export class RolesController {
   }
 
   @Put(':id/permissions')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_RBAC_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Update role permissions' })
   updatePermissions(
     @CurrentUser() user: CurrentUserPayload,
@@ -67,7 +71,7 @@ export class RolesController {
   }
 
   @Delete(':id')
-  @RequirePermission('COMPANY', 'DELETE')
+  @RequirePermission(SETTINGS_RBAC_MODULE, 'DELETE')
   @ApiOperation({ summary: 'Delete role' })
   remove(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
     return this.rolesService.remove(id, user.id);

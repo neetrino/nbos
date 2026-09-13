@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SETTINGS_SCHEDULER_MODULE } from '@nbos/shared';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { PlatformSchedulerJobsService } from './platform-scheduler-jobs.service';
 
@@ -15,7 +16,7 @@ export class PlatformSchedulerJobsController {
   constructor(private readonly jobsService: PlatformSchedulerJobsService) {}
 
   @Get('jobs')
-  @RequirePermission('COMPANY', 'VIEW')
+  @RequirePermission(SETTINGS_SCHEDULER_MODULE, 'VIEW')
   @ApiOperation({
     summary: 'List platform scheduler job catalog (Settings / Admin)',
     description:
@@ -26,7 +27,7 @@ export class PlatformSchedulerJobsController {
   }
 
   @Patch('jobs/:jobName')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_SCHEDULER_MODULE, 'EDIT')
   @ApiOperation({
     summary: 'Enable or disable a platform scheduler job',
     description:
@@ -46,7 +47,7 @@ export class PlatformSchedulerJobsController {
   }
 
   @Post('jobs/:jobName/run')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_SCHEDULER_MODULE, 'EDIT')
   @ApiOperation({
     summary: 'Run a scheduler job now from Settings',
     description: 'Uses lease + trigger manual_admin. Audited as scheduler.job_run_now.',

@@ -253,6 +253,8 @@ export * from './auth-session-client';
 export * from './sidebar-navigation';
 export * from './crm-attribution';
 export * from './crm-call-recordings-play';
+export * from './settings-permissions';
+export * from './marketing-permissions';
 export * from './messenger-client-permissions';
 export * from './messenger-ws';
 export * from './checklist-template-item-evidence';

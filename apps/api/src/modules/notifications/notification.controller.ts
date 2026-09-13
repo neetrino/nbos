@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Patch, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
+import { SETTINGS_MODULE } from '@nbos/shared';
+import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { NotificationService } from './notification.service';
 
 @ApiTags('Notifications')
@@ -78,12 +79,14 @@ export class NotificationController {
   }
 
   @Get('admin/rules')
+  @RequirePermission(SETTINGS_MODULE, 'VIEW')
   @ApiOperation({ summary: 'List admin-managed notification rules (excluding per-user overrides)' })
   async listAdminRules() {
     return this.notificationService.listAdminRules();
   }
 
   @Patch('admin/rules/:code')
+  @RequirePermission(SETTINGS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Patch admin-managed notification rule fields' })
   async patchAdminRule(
     @Param('code') code: string,

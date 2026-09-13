@@ -4,6 +4,7 @@ import {
   type NavModuleDefinition,
   type PermissionRequirement,
 } from './nav-config';
+import { EXPLICIT_ROUTE_PERMISSIONS } from './route-permissions';
 
 function matchesPath(pathname: string, href: string): boolean {
   if (href === '/') return pathname === '/';
@@ -30,9 +31,13 @@ function collectRoutePermissions(definitions: NavModuleDefinition[]): Array<{
   return routes;
 }
 
-/** Longest matching nav href wins (covers Settings children and nested module paths). */
+/**
+ * Longest matching href wins (covers Settings children and nested module paths).
+ * `EXPLICIT_ROUTE_PERMISSIONS` is checked first, so a route keeps its gate even when
+ * the sidebar has no link for it or a parent module link carries no permission.
+ */
 export function resolveNavPermission(pathname: string): PermissionRequirement | undefined {
-  const routes = collectRoutePermissions(NAV_MODULE_DEFINITIONS)
+  const routes = [...EXPLICIT_ROUTE_PERMISSIONS, ...collectRoutePermissions(NAV_MODULE_DEFINITIONS)]
     .filter((route) => matchesPath(pathname, route.href))
     .sort((a, b) => b.href.length - a.href.length);
 

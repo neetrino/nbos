@@ -18,6 +18,12 @@ Never use username, display name, or profile URL for identity resolution. Instag
 
 Message uniqueness includes `metaConnectedAccountId` because provider message IDs are scoped to the receiving business asset connection.
 
+## Webhook verification
+
+`GET /integrations/meta/webhook` отвечает только на handshake, прошедший проверку: `hub.mode = subscribe`, настроенный `META_WEBHOOK_VERIFY_TOKEN` и сравнение токена в constant-time. `hub.challenge` эхом уходит только тот, который вернула валидация, и в plain text с `X-Content-Type-Options: nosniff`. Токен никогда не попадает в логи.
+
+С 2026-09-02 по 2026-09-13 проверка была временно отключена ради диагностики handshake, а токен писался в лог (`TEMPORARY META WEBHOOK DIAGNOSTIC`). Восстановлено; если верификация в Meta App падает, причина в незаданном или разошедшемся `META_WEBHOOK_VERIFY_TOKEN`, а не в проверке.
+
 ## Ingest flow
 
 1. Resolve `MetaConnectedAccount` and require linked SMM `MarketingAccount`

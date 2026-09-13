@@ -15,6 +15,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
+import { SETTINGS_RBAC_MODULE } from '@nbos/shared/constants';
 import { PermissionGate } from '@/lib/permissions';
 import { CreateRoleDialog } from '@/features/settings/components/CreateRoleDialog';
 import { RolePermissionsSheet } from '@/features/settings/components/RolePermissionsSheet';
@@ -175,7 +176,7 @@ export default function RolesPage() {
       <PageHero
         title="Roles"
         trailing={
-          <PermissionGate module="COMPANY" action="ADD">
+          <PermissionGate module={SETTINGS_RBAC_MODULE} action="ADD">
             <Button type="button" size="sm" onClick={() => setCreateDialogOpen(true)}>
               <Plus size={16} aria-hidden />
               Create Role

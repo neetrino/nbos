@@ -1,4 +1,5 @@
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { timingSafeEqualStr } from '../../../common/utils/crypto';
 import { MetaLeadIngestService } from './meta-lead-ingest.service';
 import { MetaProviderConfig } from './meta-provider.config';
 import type { MetaMessagingWebhookBody } from './meta.types';
@@ -34,7 +35,7 @@ export class MetaWebhookService {
     if (!this.config.isWebhookVerifyConfigured()) {
       throw new ForbiddenException('Webhook verify token is not configured');
     }
-    if (normalizedToken !== this.config.webhookVerifyToken) {
+    if (!normalizedToken || !timingSafeEqualStr(normalizedToken, this.config.webhookVerifyToken)) {
       throw new ForbiddenException('Invalid verify token');
     }
     try {

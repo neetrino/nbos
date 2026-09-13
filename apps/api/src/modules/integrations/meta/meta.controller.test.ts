@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import type { Response } from 'express';
 import { MetaController } from './meta.controller';
@@ -6,7 +6,6 @@ import { MetaOAuthCallbackError } from './meta-oauth-callback.error';
 import type { MetaAccountsService } from './meta-accounts.service';
 import type { MetaOAuthService } from './meta-oauth.service';
 import type { MetaWebhookService } from './meta-webhook.service';
-import type { MetaWebhookRequest } from './meta-webhook.types';
 
 function createController(oauthService: Partial<MetaOAuthService>): MetaController {
   return new MetaController(
@@ -195,7 +194,7 @@ describe('MetaController.oauthCallback error mapping', () => {
   });
 });
 
-describe('MetaController.verifyWebhook diagnostic', () => {
+describe('MetaController.verifyWebhook', () => {
   function createWebhookResponse(): Response & {
     statusCode?: number;
     body?: unknown;
@@ -231,46 +230,29 @@ describe('MetaController.verifyWebhook diagnostic', () => {
     );
   }
 
-  it('echoes hub.challenge as plain text without calling token validation', () => {
-    const verifySubscription = vi.fn();
+  it('echoes only the challenge that token validation returned', () => {
+    const verifySubscription = vi.fn().mockReturnValue('challenge-123');
     const controller = createWebhookController({ verifySubscription });
     const res = createWebhookResponse();
 
-    controller.verifyWebhook(
-      {
-        headers: {
-          'user-agent': 'facebookplatform/1.0',
-          'cf-connecting-ip': '1.2.3.4',
-          'cf-ipcountry': 'US',
-          'x-forwarded-for': '1.2.3.4',
-        },
-      } as MetaWebhookRequest,
-      'subscribe',
-      'wrong-token',
-      'challenge-123',
-      res,
-    );
+    controller.verifyWebhook('subscribe', 'right-token', 'challenge-123', res);
 
-    expect(verifySubscription).not.toHaveBeenCalled();
+    expect(verifySubscription).toHaveBeenCalledWith('subscribe', 'right-token', 'challenge-123');
     expect(res.statusCode).toBe(200);
-    expect(res.headers['Content-Type']).toBe('text/plain');
+    expect(res.headers['Content-Type']).toBe('text/plain; charset=utf-8');
     expect(res.body).toBe('challenge-123');
   });
 
-  it('returns HTTP 400 plain text when hub.challenge is missing', () => {
-    const controller = createWebhookController({});
+  it('never echoes the challenge when the verify token is rejected', () => {
+    const verifySubscription = vi.fn().mockImplementation(() => {
+      throw new ForbiddenException('Invalid verify token');
+    });
+    const controller = createWebhookController({ verifySubscription });
     const res = createWebhookResponse();
 
-    controller.verifyWebhook(
-      { headers: {} } as MetaWebhookRequest,
-      'subscribe',
-      'any-token',
-      undefined,
-      res,
-    );
-
-    expect(res.statusCode).toBe(400);
-    expect(res.headers['Content-Type']).toBe('text/plain');
-    expect(res.body).toBe('Missing hub.challenge');
+    expect(() =>
+      controller.verifyWebhook('subscribe', 'wrong-token', 'challenge-123', res),
+    ).toThrow(ForbiddenException);
+    expect(res.body).toBeUndefined();
   });
 });

@@ -2,9 +2,10 @@
 
 import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Settings, UserCircle2 } from 'lucide-react';
+import { Settings, Smartphone, UserCircle2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
 import { useMyAccountSheet } from '@/features/account/components/my-account-sheet-provider';
+import { APP_INSTALL_ROUTE } from '@/features/app-install/app-install-constants';
 import { cn } from '@/lib/utils';
 import type { NavModuleDefinition } from '@/lib/navigation/nav-config';
 import { BottomSheetSwipeHandle } from './BottomSheetSwipeHandle';
@@ -76,6 +77,7 @@ function MobileAppMenuAccountRow({
   const { openMyAccountSheet } = useMyAccountSheet();
   const tNav = useTranslations('navigation');
   const tAccount = useTranslations('account');
+  const tQuick = useTranslations('quick');
 
   return (
     <div className={cn(MOBILE_APP_MENU_GRID_CLASS, 'mt-3')}>
@@ -110,6 +112,21 @@ function MobileAppMenuAccountRow({
           aria-hidden
         />
         <span className="text-sm font-semibold tracking-tight">{tAccount('myAccount')}</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          onClose();
+          router.push(APP_INSTALL_ROUTE);
+        }}
+        className={MOBILE_APP_MENU_TILE_CLASS}
+      >
+        <Smartphone
+          size={MOBILE_APP_MENU_FOOTER_ICON_SIZE_PX}
+          className="text-emerald-600"
+          aria-hidden
+        />
+        <span className="text-sm font-semibold tracking-tight">{tQuick('install.title')}</span>
       </button>
     </div>
   );

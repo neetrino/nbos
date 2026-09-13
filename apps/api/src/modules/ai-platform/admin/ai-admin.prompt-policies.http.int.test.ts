@@ -35,13 +35,13 @@ describe('AI admin Prompt Policy HTTP authorization', () => {
     });
   });
 
-  it('lists Prompt Policies for an employee with COMPANY EDIT', async () => {
+  it('lists Prompt Policies for an employee with AI_PLATFORM EDIT', async () => {
     const response = await harness.employeeFetch('/ai-admin/prompt-policies');
     expect(response.status).toBe(200);
     expect(harness.services.prompts.listAll).toHaveBeenCalledOnce();
   });
 
-  it('returns 403 when the employee lacks COMPANY EDIT', async () => {
+  it('returns 403 when the employee lacks AI_PLATFORM EDIT', async () => {
     const response = await harness.employeeFetch('/ai-admin/prompt-policies', {
       employeeId: 'employee-no-edit',
     });

@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, RequirePermission, type CurrentUserPayload } from '../../common/decorators';
-import type { PlatformResourceFamily } from '@nbos/shared';
+import { SETTINGS_RBAC_MODULE, type PlatformResourceFamily } from '@nbos/shared';
 import { RoleAccessPolicyService } from './role-access-policy.service';
 import { EmployeeAccessOverrideService } from './employee-access-override.service';
 
@@ -25,13 +25,14 @@ export class AccessPoliciesController {
   ) {}
 
   @Get('roles/:roleId/policies')
+  @RequirePermission(SETTINGS_RBAC_MODULE, 'VIEW')
   @ApiOperation({ summary: 'List role access level policies (with defaults)' })
   listRolePolicies(@Param('roleId') roleId: string) {
     return this.rolePolicies.listByRole(roleId);
   }
 
   @Put('roles/:roleId/policies')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_RBAC_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Upsert role access level policies' })
   upsertRolePolicies(
     @CurrentUser() user: CurrentUserPayload,
@@ -50,14 +51,14 @@ export class AccessPoliciesController {
   }
 
   @Get('employees/:employeeId/overrides')
-  @RequirePermission('COMPANY', 'VIEW')
+  @RequirePermission(SETTINGS_RBAC_MODULE, 'VIEW')
   @ApiOperation({ summary: 'List personal access level overrides for an employee' })
   listEmployeeOverrides(@Param('employeeId') employeeId: string) {
     return this.employeeOverrides.listByEmployee(employeeId);
   }
 
   @Put('employees/:employeeId/overrides')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_RBAC_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Upsert personal access level override' })
   upsertEmployeeOverride(
     @CurrentUser() user: CurrentUserPayload,
@@ -76,7 +77,7 @@ export class AccessPoliciesController {
   }
 
   @Delete('employees/:employeeId/overrides/:resourceFamily')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_RBAC_MODULE, 'EDIT')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove personal access level override' })
   async removeEmployeeOverride(

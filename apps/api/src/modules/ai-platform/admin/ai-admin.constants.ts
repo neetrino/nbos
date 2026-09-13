@@ -1,7 +1,11 @@
 import { AI_AUDIT_ENTITY } from '../ai-platform.constants';
 
-/** Employee RBAC used by Settings → AI & Agents (same as Integrations). */
-export const AI_ADMIN_PERMISSION_MODULE = 'COMPANY' as const;
+/**
+ * Employee RBAC for AI & Agents administration. Owned by the AI Platform module, not by
+ * COMPANY: administering agents, providers and capabilities is not a My Company right.
+ * Canon: `docs/NBOS/04-Roles-and-Access/02-Access-Matrix.md` (AI & Agents admin = CEO only).
+ */
+export const AI_ADMIN_PERMISSION_MODULE = 'AI_PLATFORM' as const;
 export const AI_ADMIN_PERMISSION_ACTION = 'EDIT' as const;
 
 export const AI_ADMIN_ROUTE_PREFIX = 'ai-admin';

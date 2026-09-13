@@ -25,7 +25,7 @@ describe('AI admin HTTP authorization', () => {
     harness.services.grants.listActiveWorkspaceScopes.mockResolvedValue([]);
   });
 
-  it('serves an employee admin route with COMPANY EDIT', async () => {
+  it('serves an employee admin route with AI_PLATFORM EDIT', async () => {
     const response = await harness.employeeFetch('/ai-admin/overview');
 
     expect(response.status).toBe(200);
@@ -33,14 +33,14 @@ describe('AI admin HTTP authorization', () => {
     expect(body.data.pendingApprovals).toBe(0);
   });
 
-  it('returns 403 when the employee lacks COMPANY EDIT', async () => {
+  it('returns 403 when the employee lacks AI_PLATFORM EDIT', async () => {
     const response = await harness.employeeFetch('/ai-admin/overview', {
       employeeId: 'employee-no-edit',
     });
 
     expect(response.status).toBe(403);
     const body = (await response.json()) as { message: string };
-    expect(body.message).toContain('COMPANY.EDIT');
+    expect(body.message).toContain('AI_PLATFORM.EDIT');
   });
 
   it('refuses an External Agent token on admin routes', async () => {
@@ -82,7 +82,7 @@ describe('AI admin HTTP authorization', () => {
     expect(harness.services.audit.findRecentByEntityTypes).not.toHaveBeenCalled();
   });
 
-  it('returns 403 for Work Space access without COMPANY EDIT', async () => {
+  it('returns 403 for Work Space access without AI_PLATFORM EDIT', async () => {
     const response = await harness.employeeFetch('/ai-admin/workspaces/ws-1/access', {
       employeeId: 'employee-no-edit',
     });

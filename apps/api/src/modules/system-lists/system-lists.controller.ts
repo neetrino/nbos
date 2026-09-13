@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { SETTINGS_MODULE } from '@nbos/shared';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import {
   SystemListsService,
@@ -25,6 +26,7 @@ export class SystemListsController {
   constructor(private readonly systemListsService: SystemListsService) {}
 
   @Get('keys')
+  @RequirePermission(SETTINGS_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Get all list keys (for admin UI)' })
   async getListKeys() {
     return this.systemListsService.getListKeys();
@@ -63,14 +65,14 @@ export class SystemListsController {
   }
 
   @Post()
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Create a new list option' })
   async create(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateSystemListOptionDto) {
     return this.systemListsService.create(body, user.id);
   }
 
   @Patch(':id')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Update a list option' })
   async update(
     @CurrentUser() user: CurrentUserPayload,
@@ -82,7 +84,7 @@ export class SystemListsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Deactivate a list option' })
   async delete(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
     return this.systemListsService.delete(id, user.id);

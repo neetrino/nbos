@@ -138,7 +138,9 @@ Chat 8 ran the AP walk with a real OpenAI key supplied by the developer: connect
 
 ### C21. AI & Agents was a Settings sub-page — OK
 
-Chat 8 promoted it to a first-class sidebar module at `/ai-agents` (`SIDEBAR_MODULE_KEYS`, `NAV_MODULE_DEFINITIONS` with the nine section children, module visual). `/settings/ai-agents/*` now issues a temporary redirect so existing links and the runbooks keep working. RBAC is unchanged: `COMPANY:EDIT`, the same permission the `ai-admin` controllers require.
+Chat 8 promoted it to a first-class sidebar module at `/ai-agents` (`SIDEBAR_MODULE_KEYS`, `NAV_MODULE_DEFINITIONS` with the nine section children, module visual). `/settings/ai-agents/*` now issues a temporary redirect so existing links and the runbooks keep working. RBAC at that time was `COMPANY:EDIT`, the same permission the `ai-admin` controllers required.
+
+**Update 2026-09-13:** every `ai-admin` controller now requires `AI_PLATFORM:EDIT`. `COMPANY` belongs to My Company, so reusing it let Finance Director reach AI administration by API even though the sidebar was already gated by `AI_PLATFORM:VIEW`. Default holders of `AI_PLATFORM` remain Platform Owner / Founder and CEO. Canon: `../../04-Roles-and-Access/02-Access-Matrix.md`.
 
 ### C22. Phase 1 exit criterion 9 — RESOLVED
 

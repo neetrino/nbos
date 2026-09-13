@@ -2,7 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Save, Shield } from 'lucide-react';
-import type { AccessScopeMode, PlatformAccessAction } from '@nbos/shared';
+import {
+  SETTINGS_RBAC_MODULE,
+  type AccessScopeMode,
+  type PlatformAccessAction,
+} from '@nbos/shared';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import {
@@ -154,7 +158,7 @@ export function RoleAccessPoliciesPanel({
               <span className="text-foreground font-medium">{selectedRole.name}</span>. Affects{' '}
               {selectedRole._count?.employees ?? 0} employees unless personal override applies.
             </p>
-            <PermissionGate module="COMPANY" action="EDIT">
+            <PermissionGate module={SETTINGS_RBAC_MODULE} action="EDIT">
               <Button
                 type="button"
                 size="sm"

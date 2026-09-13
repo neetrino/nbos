@@ -83,6 +83,36 @@ Scope определяет границу доступа:
 
 Эти technical scopes описывают общий RBAC уровень. Для project/product-scoped resources требуется entity-level foundation:
 
+## Settings modules (2026-09)
+
+`Settings / Admin` больше не использует `COMPANY`. `COMPANY` остаётся за `My Company` (departments, employees, seats, KPI/bonus/compensation). Платформенная админка живёт в отдельных модулях, поэтому Finance Director больше не получает admin-доступ «в подарок» вместе с правами на сотрудников и зарплаты.
+
+| Модуль               | Покрывает                                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `SETTINGS`           | General, Appearance, System Lists, Module Settings, Integrations, Security, Feature Flags, Trash inventory |
+| `SETTINGS_RBAC`      | Permission roles, permission matrix, Role/Personal access levels (Platform Access Foundation)              |
+| `SETTINGS_SCHEDULER` | Каталог платформенных cron jobs: enable, disable, run now                                                  |
+| `AUDIT_LOGS`         | Audit Log (без изменений)                                                                                  |
+
+Правила:
+
+- `SETTINGS.VIEW` — входной билет в админку. Без него `/settings` отдаёт Access Denied, даже если отдельная секция делегирована роли.
+- `SETTINGS.DELETE` — только деструктивные платформенные действия (retention purge), не удаление списков.
+- По умолчанию все четыре action выданы **только** Platform Owner / Founder (legacy `owner`) и CEO. Остальные роли начинают с `NONE` и получают доступ явно через Settings → Permissions / RBAC.
+- Матрица в UI строится из `GET /permissions`, поэтому новые модули появляются в ней автоматически.
+
+Одно сознательное исключение: `GET /roles` остаётся на `COMPANY VIEW`, потому что список ролей нужен формам сотрудников и приглашений в `My Company`. Он возвращает полные строки роли (slug, level, флаги, счётчик сотрудников), но не права: начинка роли (`GET /roles/:id`) и каталог прав (`GET /permissions`) закрыты `SETTINGS_RBAC VIEW`, поэтому scope и матрица по `COMPANY VIEW` недоступны.
+
+Весь контроллер WhatsApp-шлюза (`GET` / `PUT` / `POST test` / `DELETE`, а также `GET /chats` и `GET /groups`) требует `SETTINGS EDIT`. `chats` / `groups` отдают company-wide directory, включая личные чаты, и используются только листалкой в Settings → Integrations. Привязка чата к сделке и к продукту идёт через собственные scoped-эндпоинты (`/crm/deals/:id/whatsapp-group/available-groups`, `/projects/products/:productId/whatsapp/available-groups`), поэтому расширять эти два на CRM-роли нельзя.
+
+### Route-level enforcement
+
+Скрытие пункта в сайдбаре не является защитой. Каждый маршрут `/settings/*` перечислен в web route registry (`apps/web/src/lib/navigation/route-permissions.ts`) и проверяется `ModuleAccessGate` по URL, включая страницы без ссылки в меню (`access-policies`, `trash-inventory`). Неперечисленный подпуть наследует гейт `/settings` (`SETTINGS VIEW`) через prefix-матч, то есть новая страница по умолчанию закрыта, а не открыта. Плитки на хабе фильтруются тем же реестром, поэтому карточка не показывается, если страница откажет в доступе.
+
+Кнопки и панели внутри страниц должны проверять ровно то право, которое требует их API (`PermissionGate`), иначе делегированная роль увидит контрол, который вернёт 403, или наоборот потеряет доступный ей контрол.
+
+Клиентский гейт — это UX. Source of truth остаётся `RequirePermission` на API.
+
 ```text
 Permission Role says: can view/edit module/resource family.
 Platform Access Foundation says: which project/product/resource this employee can access.
