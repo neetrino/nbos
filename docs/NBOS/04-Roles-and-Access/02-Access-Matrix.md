@@ -42,6 +42,8 @@
 - **Marketing** — чтение Leads (для аналитики источников), ограниченный доступ к Deals (только статус и сумма для расчёта ROI)
 - **Call recordings (play)** — capability `CRM_CALL_RECORDINGS_PLAY`. Факт звонка (Call VIEW) не даёт playback. Seller 🔶 = свой Call (object-level) + Drive `CONFIDENTIAL` FileAsset. Marketing — deny. Head of Sales / CEO / Owner — capability по умолчанию; запись остаётся `CONFIDENTIAL`.
 - **Call note** — `CRM_LEADS_EDIT` / `CRM_DEALS_EDIT` (не VIEW): object-level как у Call VIEW; только после `finish`/`end`; optimistic `noteVersion`. Чтение old/new note через Audit API — `AUDIT_LOGS.VIEW`.
+- **Enforcement (2026-09-13)** — все эндпоинты лидов и сделок требуют `CRM_LEADS` / `CRM_DEALS`; до этого контроллеры не проверяли права вообще. Финдиректор получил `CRM_DEALS` 👁 (read-only): карточку сделки он открывает из инвойса и заказа. Delivery- и технические роли доступа не получили — их экраны показывают заказ и скрывают кнопку «Deal». Исключение: deposit order остаётся на `FINANCE_INVOICES ADD`. Детали — `02-Modules/01-CRM/06-CRM-Cleanup-Register.md` §C7.
+- **Присутствие на карточке ≠ право.** Доступ к сделке определяет только матрица. `pmId` на сделке фиксирует, кому передаём проект в delivery, и сам по себе не даёт ни чтения, ни правки. Поэтому «own» для сделки считается по `sellerId` и `sellerAssistantId` и не включает `pmId`. Row-level scope на списках лидов и сделок пока не применяется.
 
 ### Финансы
 

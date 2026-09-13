@@ -21,6 +21,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { PageHero, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { SETTINGS_MODULE } from '@nbos/shared/constants';
+import { PermissionGate } from '@/lib/permissions';
 import { systemListsApi, type SystemListOption } from '@/lib/api/systemLists';
 
 const LIST_KEY_LABELS: Record<string, string> = {
@@ -257,14 +259,16 @@ export function SystemListsPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => openEdit(opt)}
-                          >
-                            <Pencil size={14} />
-                          </Button>
+                          <PermissionGate module={SETTINGS_MODULE} action="EDIT">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => openEdit(opt)}
+                            >
+                              <Pencil size={14} />
+                            </Button>
+                          </PermissionGate>
                         </TableCell>
                       </TableRow>
                     ))}

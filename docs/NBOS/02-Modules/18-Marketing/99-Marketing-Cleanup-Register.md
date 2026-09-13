@@ -75,7 +75,8 @@ Main sections:
 - сайдбар `/marketing` переведён на `MARKETING VIEW`;
 - отчёт `marketing-source-performance` в Reports Center требует `MARKETING VIEW` вместо `CRM_LEADS VIEW`: он читает `/api/marketing/dashboard`, иначе Seller видел бы карточку отчёта и получал 403 при открытии;
 - по умолчанию полный доступ у `role-owner`, `role-ceo`, `role-head-marketing`; остальные роли — `NONE` и выдаются через матрицу;
-- контрактный тест `apps/api/src/modules/marketing/marketing.permissions.test.ts` падает, если хендлер снова останется без права.
+- контрактный тест `apps/api/src/modules/marketing/marketing.permissions.test.ts` падает, если хендлер снова останется без права;
+- UI приведён к тем же правам: форма создания активности и аккаунта — `MARKETING ADD`, `Launch`, редактор справочника `Where` и привязка к плану расходов — `MARKETING EDIT`. Иначе роль с `MARKETING VIEW` видела бы контролы, которые API отклоняет 403.
 
 Матрица: `../../04-Roles-and-Access/02-Access-Matrix.md`.
 

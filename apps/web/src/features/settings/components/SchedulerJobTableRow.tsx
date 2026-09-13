@@ -1,6 +1,8 @@
 'use client';
 
 import { Play } from 'lucide-react';
+import { SETTINGS_SCHEDULER_MODULE } from '@nbos/shared/constants';
+import { PermissionGate } from '@/lib/permissions';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -37,6 +39,9 @@ export const SCHEDULER_STATUS_VARIANT: Record<SchedulerCatalogStatus, StatusVari
   manual: 'violet',
   disabledByCanon: 'zinc',
 };
+
+/** Shown when the job cannot be controlled, or when the viewer has read-only scheduler access. */
+const NO_SCHEDULER_CONTROL = <span className="text-muted-foreground text-xs">—</span>;
 
 const RISK_VARIANT: Record<PlatformSchedulerJobRow['risk'], StatusVariant> = {
   low: 'gray',
@@ -117,14 +122,20 @@ export function SchedulerJobTableRow(props: {
       </TableCell>
       <TableCell className="align-top">
         {row.canToggle ? (
-          <Switch
-            checked={enabled}
-            disabled={busy}
-            onCheckedChange={(checked) => onToggle(checked)}
-            aria-label={`${enabled ? 'Disable' : 'Enable'} ${row.title}`}
-          />
+          <PermissionGate
+            module={SETTINGS_SCHEDULER_MODULE}
+            action="EDIT"
+            fallback={NO_SCHEDULER_CONTROL}
+          >
+            <Switch
+              checked={enabled}
+              disabled={busy}
+              onCheckedChange={(checked) => onToggle(checked)}
+              aria-label={`${enabled ? 'Disable' : 'Enable'} ${row.title}`}
+            />
+          </PermissionGate>
         ) : (
-          <span className="text-muted-foreground text-xs">—</span>
+          NO_SCHEDULER_CONTROL
         )}
       </TableCell>
       <TableCell className="align-top">
@@ -155,12 +166,18 @@ export function SchedulerJobTableRow(props: {
       </TableCell>
       <TableCell className="align-top">
         {row.canRunNow ? (
-          <Button type="button" variant="outline" size="sm" disabled={busy} onClick={onRunNow}>
-            <Play className="mr-1 size-3.5" aria-hidden />
-            Run
-          </Button>
+          <PermissionGate
+            module={SETTINGS_SCHEDULER_MODULE}
+            action="EDIT"
+            fallback={NO_SCHEDULER_CONTROL}
+          >
+            <Button type="button" variant="outline" size="sm" disabled={busy} onClick={onRunNow}>
+              <Play className="mr-1 size-3.5" aria-hidden />
+              Run
+            </Button>
+          </PermissionGate>
         ) : (
-          <span className="text-muted-foreground text-xs">—</span>
+          NO_SCHEDULER_CONTROL
         )}
       </TableCell>
     </TableRow>

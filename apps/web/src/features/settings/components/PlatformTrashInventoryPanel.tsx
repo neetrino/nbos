@@ -14,6 +14,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { SETTINGS_MODULE } from '@nbos/shared/constants';
+import { PermissionGate } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import {
   platformLifecycleApi,
@@ -99,16 +101,18 @@ export function PlatformTrashInventoryPanel() {
         </div>
         <div className="flex flex-wrap gap-2">
           {inventory.totalPurgeEligible > 0 ? (
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              disabled={loading || purging}
-              onClick={() => void handleRunPurge()}
-            >
-              <Eraser className={cn('mr-1.5 size-3.5', purging && 'animate-pulse')} aria-hidden />
-              Run retention purge
-            </Button>
+            <PermissionGate module={SETTINGS_MODULE} action="DELETE">
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                disabled={loading || purging}
+                onClick={() => void handleRunPurge()}
+              >
+                <Eraser className={cn('mr-1.5 size-3.5', purging && 'animate-pulse')} aria-hidden />
+                Run retention purge
+              </Button>
+            </PermissionGate>
           ) : null}
           <Button
             type="button"

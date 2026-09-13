@@ -36,7 +36,7 @@ Quick Task uses the same:
 - RBAC and record rules;
 - current Employee identity;
 - `QuickCreateTaskDialog`;
-- mobile bottom-sheet behavior;
+- centered floating create card (`DialogContent` with `mobileSheet={false}`);
 - assignee relation picker;
 - due-date component;
 - priority behavior;
@@ -54,7 +54,7 @@ The current web runtime already provides important building blocks:
 
 - shared `apps/web/src/components/shared/quick-create-task/QuickCreateTaskDialog.tsx`;
 - task feature re-export at `apps/web/src/features/tasks/components/QuickCreateTaskDialog.tsx`;
-- responsive `DialogContent` that becomes the standard mobile bottom sheet;
+- centered `DialogContent` card (the Project search is a portaled overlay above the card, not in-flow);
 - `useTaskCreatorId()` using current `/api/me` Employee identity;
 - `tasksApi.create()` → normal `POST /api/tasks`;
 - `/tasks` list/detail flow;
@@ -134,7 +134,12 @@ This applies to:
 - description;
 - priority;
 - due date;
-- manually selected assignee.
+- manually selected assignee;
+- staged files;
+- checklist drafts;
+- project / product / work space links.
+
+Quick create keeps the same outlined Assignee and Deadline fields as the Task card (caption on the border, value inside the shell). Files, Checklists and Project sit in the footer next to Create/Cancel. Project search opens as a floating overlay above the card so the form height does not grow. Checklists open as a separate stacked card on top of the create card (the task card keeps its size and stays inert under the dimmer, including the create-card close control). Click the dimmed area, the checklist close control, or Save to hide the layer without losing the draft; opening Checklists again continues the same draft. Files upload and checklists persist after `POST /api/tasks` succeeds.
 
 The implementation must explicitly test the case where the user types before `/api/me` settles.
 

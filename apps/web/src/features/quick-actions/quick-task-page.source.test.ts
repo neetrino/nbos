@@ -41,10 +41,11 @@ describe('Quick Task composition', () => {
     expect(layout).toContain('PermissionProvider');
   });
 
-  it('keeps the standard mobile Dialog bottom-sheet contract', () => {
+  it('keeps a centered shared DialogContent card rather than a second create form', () => {
     const dialog = readSource('src/components/shared/quick-create-task/QuickCreateTaskDialog.tsx');
     expect(dialog).toContain("from '@/components/ui/dialog'");
     expect(dialog).toContain('<DialogContent');
+    expect(dialog).toContain('mobileSheet={false}');
     expect(dialog).toContain('initialFocus={titleInputRef}');
   });
 });

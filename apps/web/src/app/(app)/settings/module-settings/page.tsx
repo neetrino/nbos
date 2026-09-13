@@ -10,12 +10,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { SETTINGS_MODULE } from '@nbos/shared/constants';
+import { usePermission } from '@/lib/permissions';
 import { notificationsApi, type NotificationAdminRuleDto } from '@/lib/api/notifications';
 
 const RULE_CHANNELS = ['IN_APP', 'EMAIL', 'TELEGRAM', 'WHATSAPP'] as const;
 const RULE_PRIORITIES = ['critical', 'high', 'normal', 'low'] as const;
+/** The page opens on SETTINGS VIEW, so the controls stay visible but inert without EDIT. */
+const READ_ONLY_CONTROL = 'disabled:cursor-not-allowed disabled:opacity-60';
 
 export default function ModuleSettingsPage() {
+  const { can } = usePermission();
+  const canEdit = can('EDIT', SETTINGS_MODULE);
   const [rules, setRules] = useState<NotificationAdminRuleDto[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -81,8 +87,9 @@ export default function ModuleSettingsPage() {
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
+                disabled={!canEdit}
                 onClick={() => void patchRule(rule.code, { enabled: !rule.enabled })}
-                className={`rounded-full px-3 py-1 text-xs ${
+                className={`rounded-full px-3 py-1 text-xs ${READ_ONLY_CONTROL} ${
                   rule.enabled
                     ? 'bg-emerald-600/15 text-emerald-700'
                     : 'bg-secondary text-muted-foreground'
@@ -92,6 +99,7 @@ export default function ModuleSettingsPage() {
               </button>
               <Select
                 value={rule.priority}
+                disabled={!canEdit}
                 onValueChange={(v) => {
                   if (v) void patchRule(rule.code, { priority: v });
                 }}
@@ -117,8 +125,9 @@ export default function ModuleSettingsPage() {
                   <button
                     key={channel}
                     type="button"
+                    disabled={!canEdit}
                     onClick={() => void patchRule(rule.code, { channels: normalized })}
-                    className={`rounded-full px-3 py-1 text-xs ${
+                    className={`rounded-full px-3 py-1 text-xs ${READ_ONLY_CONTROL} ${
                       on ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground'
                     }`}
                   >

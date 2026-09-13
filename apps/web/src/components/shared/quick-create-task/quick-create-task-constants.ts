@@ -1,9 +1,10 @@
-/** Wide modal — closer to Bitrix quick-task width. */
+/** Centered floating card — not a bottom-docked sheet. Body scrolls; footer stays put. */
 export const QUICK_CREATE_TASK_DIALOG_CLASS =
-  'min-w-0 w-full gap-0 overflow-hidden p-0 sm:max-w-[min(42rem,calc(100vw-1.5rem))]';
+  'flex min-h-0 w-full max-h-[min(90dvh,calc(100dvh-2rem))] flex-col gap-0 overflow-hidden p-0 sm:max-w-[min(42rem,calc(100vw-1.5rem))]';
 
 /** Minimal top/right inset — Bitrix-style header alignment. */
-export const QUICK_CREATE_TASK_BODY_CLASS = 'min-w-0 w-full px-3 pb-4 pt-1 sm:px-4 sm:pt-1';
+export const QUICK_CREATE_TASK_BODY_CLASS =
+  'min-h-0 min-w-0 w-full flex-1 overflow-y-auto px-3 pb-4 pt-1 sm:px-4 sm:pt-1';
 
 /** Title row — flex keeps long titles from overlapping header actions. */
 export const QUICK_CREATE_TASK_TITLE_ROW_CLASS = 'flex min-w-0 w-full items-start gap-3 sm:gap-4';
@@ -50,8 +51,44 @@ export const QUICK_CREATE_TASK_AUTOCOMPLETE_OFF = {
   'data-form-type': 'other',
 } as const;
 
-export const QUICK_CREATE_TASK_ROW_LABEL_CLASS =
-  'text-muted-foreground w-[8.25rem] shrink-0 text-sm';
+/** Assignee + deadline share one row of outlined Task-card fields. */
+export const QUICK_CREATE_TASK_META_GRID_CLASS =
+  'grid w-full min-w-0 grid-cols-1 gap-x-3 gap-y-3 sm:grid-cols-2';
+
+/** Border-notch captions match the create-card surface, not a white pill. */
+export const QUICK_CREATE_TASK_OUTLINED_LABEL_SURFACE_CLASS =
+  '[&>span]:bg-background [&>button]:bg-background';
+
+/** Files / Checklists / Project — same outline language as NBOS secondary actions. */
+export const QUICK_CREATE_TASK_ACTION_BTN_CLASS = 'h-9 rounded-xl px-3 font-normal text-foreground';
+
+export const QUICK_CREATE_TASK_ACTION_ROW_CLASS = 'flex min-w-0 flex-wrap items-center gap-2';
+
+/** Footer: Files / Checklists / Project on the left, Create / Cancel on the right. */
+export const QUICK_CREATE_TASK_FOOTER_CLASS =
+  'flex min-w-0 shrink-0 flex-wrap items-center gap-2 px-3 py-3 sm:px-4';
+
+/** Project overlay — a bit wider and taller than the default popover. */
+export const QUICK_CREATE_TASK_PROJECT_POPOVER_CLASS =
+  'w-[min(28rem,calc(100vw-2.5rem))] min-w-[min(24rem,calc(100vw-2.5rem))] gap-0 p-2';
+
+export const QUICK_CREATE_TASK_PROJECT_RESULTS_CLASS = 'max-h-80';
+
+/** Lets the checklist card sit on top of the compact task card without stretching it. */
+export const QUICK_CREATE_TASK_DIALOG_STACKED_CLASS = 'overflow-visible';
+
+export const QUICK_CREATE_TASK_STACK_CLASS = 'relative flex min-h-0 flex-1 flex-col';
+
+/** Dims the whole task card; the checklist layer sits on top and does not restyle the form. */
+export const QUICK_CREATE_TASK_LAYER_SCRIM_CLASS =
+  'absolute inset-0 z-10 rounded-2xl bg-foreground/35';
+
+/** Same width as the task card, covering it from the header down. */
+export const QUICK_CREATE_TASK_CHECKLIST_LAYER_CLASS =
+  'absolute inset-x-0 top-12 z-20 flex min-h-[min(28rem,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl bg-background shadow-2xl ring-1 ring-foreground/15';
+
+/** Dunked task chrome stays under the scrim — no hover, no clicks. */
+export const QUICK_CREATE_TASK_UNDER_LAYER_CLASS = 'pointer-events-none';
 
 /** After the 150ms sheet enter so the title can take focus on the phone. */
 export const QUICK_CREATE_TITLE_FOCUS_DELAY_MS = 180;

@@ -14,7 +14,12 @@ import {
   isOpenRisingEdge,
   isQuickCreateCreatorBlocked,
 } from './quick-create-task-draft';
-import { resolveQuickCreateTaskLinks } from './resolve-quick-create-task-links';
+import { persistQuickCreateTaskExtras } from './persist-quick-create-task-extras';
+import { pickedWorkspaceId, useQuickCreateTaskExtras } from './use-quick-create-task-extras';
+import {
+  resolveQuickCreateTaskLinks,
+  resolveQuickCreateWorkspaceId,
+} from './resolve-quick-create-task-links';
 
 export interface QuickCreateTaskDialogProps {
   open: boolean;
@@ -58,6 +63,8 @@ export function useQuickCreateTaskForm({
   const [assigneeAvatar, setAssigneeAvatar] = useState<string | undefined>();
   const [isHighPriority, setIsHighPriority] = useState(false);
   const [dueDate, setDueDate] = useState('');
+  const extras = useQuickCreateTaskExtras();
+  const { resetExtras } = extras;
   const [saving, setSaving] = useState(false);
   const wasOpenRef = useRef(false);
   const assigneeTouchedRef = useRef(false);
@@ -68,6 +75,7 @@ export function useQuickCreateTaskForm({
     setDescription('');
     setIsHighPriority(false);
     setDueDate(defaultDueDate ?? '');
+    resetExtras();
     if (creatorId && me) {
       setAssigneeId(creatorId);
       setAssigneeLabel(displayNameFromMe(me));
@@ -77,7 +85,7 @@ export function useQuickCreateTaskForm({
     setAssigneeId('');
     setAssigneeLabel('');
     setAssigneeAvatar(undefined);
-  }, [creatorId, defaultDueDate, me]);
+  }, [creatorId, defaultDueDate, me, resetExtras]);
 
   useEffect(() => {
     if (isOpenRisingEdge(wasOpenRef.current, open)) {
@@ -115,7 +123,7 @@ export function useQuickCreateTaskForm({
     return data.items.map((employee: Employee) => ({
       value: employee.id,
       label: `${employee.firstName} ${employee.lastName}`.trim(),
-      subtitle: employee.position ?? employee.email,
+      subtitle: employee.position ?? employee.email ?? undefined,
       avatar: employee.avatar?.trim() || undefined,
     }));
   }, []);
@@ -141,10 +149,21 @@ export function useQuickCreateTaskForm({
         assigneeId: assigneeId || undefined,
         priority: isHighPriority ? 'HIGH' : 'NORMAL',
         dueDate: dueDate || undefined,
-        workspaceId: defaultWorkspaceId,
+        workspaceId: resolveQuickCreateWorkspaceId(
+          defaultWorkspaceId,
+          pickedWorkspaceId(extras.pickedLinks),
+        ),
         planningStatus: defaultPlanningStatus,
-        links: resolveQuickCreateTaskLinks(defaultLinks, defaultLink),
+        links: resolveQuickCreateTaskLinks(defaultLinks, defaultLink, extras.pickedLinks),
       });
+      try {
+        await persistQuickCreateTaskExtras(task.id, {
+          checklists: extras.checklists,
+          files: extras.stagedFiles,
+        });
+      } catch {
+        toast.error(t('task.extrasError'));
+      }
       onCreated?.(task);
       applyDefaults();
       onOpenChange(false);
@@ -186,5 +205,14 @@ export function useQuickCreateTaskForm({
     handleCreate,
     canCreate: canSubmitQuickCreateTask(title, creatorId),
     creatorBlocked: isQuickCreateCreatorBlocked(creatorReady, creatorId),
+    stagedFiles: extras.stagedFiles,
+    checklists: extras.checklists,
+    pickedLinks: extras.pickedLinks,
+    addFiles: extras.addFiles,
+    removeFile: extras.removeFile,
+    setChecklists: extras.setChecklists,
+    openChecklists: extras.openChecklists,
+    selectContext: extras.selectContext,
+    unlink: extras.unlink,
   };
 }

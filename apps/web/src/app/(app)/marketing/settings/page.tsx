@@ -20,6 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { MARKETING_MODULE } from '@nbos/shared';
+import { PermissionGate } from '@/lib/permissions';
 import {
   marketingApi,
   type MarketingAccount,
@@ -187,75 +189,79 @@ export default function MarketingSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <MarketingCrmWhereSettingsSection
-        rows={crmWhereRows}
-        draft={crmWhereDraft}
-        onDraftChange={handleCrmWhereDraftChange}
-        onSaveRow={handleSaveCrmWhereRow}
-        savingChannel={savingWhereChannel}
-      />
+      <PermissionGate module={MARKETING_MODULE} action="EDIT">
+        <MarketingCrmWhereSettingsSection
+          rows={crmWhereRows}
+          draft={crmWhereDraft}
+          onDraftChange={handleCrmWhereDraftChange}
+          onSaveRow={handleSaveCrmWhereRow}
+          savingChannel={savingWhereChannel}
+        />
+      </PermissionGate>
 
-      <form
-        onSubmit={handleCreate}
-        className="border-border bg-card grid gap-4 rounded-2xl border p-5 md:grid-cols-5"
-      >
-        <div className="space-y-1.5">
-          <Label>{t('settings.channel')}</Label>
-          <Select
-            value={form.channel}
-            onValueChange={(channel) => setForm({ ...form, channel: channel ?? form.channel })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {MARKETING_CHANNELS.map((channel) => (
-                <SelectItem key={channel.value} value={channel.value}>
-                  {getMarketingLabel('channels', channel.value, t)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label>{t('settings.name')}</Label>
-          <Input
-            value={form.name}
-            onChange={(event) => setForm({ ...form, name: event.target.value })}
-            placeholder={t('settings.namePlaceholder')}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label>{t('settings.identifier')}</Label>
-          <Input
-            value={form.identifier}
-            onChange={(event) => setForm({ ...form, identifier: event.target.value })}
-            placeholder={t('settings.identifierPlaceholder')}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label>{t('settings.phone')}</Label>
-          <Input
-            value={form.phone}
-            onChange={(event) => setForm({ ...form, phone: event.target.value })}
-            placeholder={t('settings.phonePlaceholder')}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="invisible select-none" aria-hidden>
-            {t('settings.add')}
-          </Label>
-          <Button
-            type="submit"
-            size="form"
-            disabled={saving || !form.name.trim()}
-            className="w-full"
-          >
-            <Plus size={16} />
-            {saving ? t('settings.adding') : t('settings.add')}
-          </Button>
-        </div>
-      </form>
+      <PermissionGate module={MARKETING_MODULE} action="ADD">
+        <form
+          onSubmit={handleCreate}
+          className="border-border bg-card grid gap-4 rounded-2xl border p-5 md:grid-cols-5"
+        >
+          <div className="space-y-1.5">
+            <Label>{t('settings.channel')}</Label>
+            <Select
+              value={form.channel}
+              onValueChange={(channel) => setForm({ ...form, channel: channel ?? form.channel })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MARKETING_CHANNELS.map((channel) => (
+                  <SelectItem key={channel.value} value={channel.value}>
+                    {getMarketingLabel('channels', channel.value, t)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t('settings.name')}</Label>
+            <Input
+              value={form.name}
+              onChange={(event) => setForm({ ...form, name: event.target.value })}
+              placeholder={t('settings.namePlaceholder')}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t('settings.identifier')}</Label>
+            <Input
+              value={form.identifier}
+              onChange={(event) => setForm({ ...form, identifier: event.target.value })}
+              placeholder={t('settings.identifierPlaceholder')}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t('settings.phone')}</Label>
+            <Input
+              value={form.phone}
+              onChange={(event) => setForm({ ...form, phone: event.target.value })}
+              placeholder={t('settings.phonePlaceholder')}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="invisible select-none" aria-hidden>
+              {t('settings.add')}
+            </Label>
+            <Button
+              type="submit"
+              size="form"
+              disabled={saving || !form.name.trim()}
+              className="w-full"
+            >
+              <Plus size={16} />
+              {saving ? t('settings.adding') : t('settings.add')}
+            </Button>
+          </div>
+        </form>
+      </PermissionGate>
 
       {loading ? (
         <LoadingState variant="list" count={4} />
@@ -302,17 +308,19 @@ export default function MarketingSettingsPage() {
                 </p>
                 <p>{t('settings.noFinanceLinkHint')}</p>
               </div>
-              <MarketingAccountExpensePlanLink
-                account={account}
-                expensePlans={expensePlans}
-                selectedPlanId={financeLinks[account.id] ?? ''}
-                onSelectedPlanIdChange={(planId) =>
-                  setFinanceLinks({ ...financeLinks, [account.id]: planId })
-                }
-                onSave={() => handleSaveFinanceLink(account)}
-                saving={savingLinkId === account.id}
-                plansLoading={plansLoading}
-              />
+              <PermissionGate module={MARKETING_MODULE} action="EDIT">
+                <MarketingAccountExpensePlanLink
+                  account={account}
+                  expensePlans={expensePlans}
+                  selectedPlanId={financeLinks[account.id] ?? ''}
+                  onSelectedPlanIdChange={(planId) =>
+                    setFinanceLinks({ ...financeLinks, [account.id]: planId })
+                  }
+                  onSave={() => handleSaveFinanceLink(account)}
+                  saving={savingLinkId === account.id}
+                  plansLoading={plansLoading}
+                />
+              </PermissionGate>
             </div>
           ))}
         </div>

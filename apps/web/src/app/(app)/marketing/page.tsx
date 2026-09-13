@@ -22,6 +22,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { MARKETING_MODULE } from '@nbos/shared';
+import { PermissionGate } from '@/lib/permissions';
 import { marketingApi, type MarketingActivity } from '@/lib/api/marketing';
 import {
   MARKETING_ACTIVITY_STATUSES,
@@ -137,85 +139,87 @@ export default function MarketingPage() {
 
   return (
     <div className="space-y-6">
-      <form
-        onSubmit={handleCreate}
-        className="border-border bg-card grid gap-4 rounded-2xl border p-5 lg:grid-cols-6"
-      >
-        <div className="space-y-1.5 lg:col-span-2">
-          <Label>{t('board.title')}</Label>
-          <Input
-            value={form.title}
-            onChange={(event) => setForm({ ...form, title: event.target.value })}
-            placeholder={t('board.titlePlaceholder')}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label>{t('board.channel')}</Label>
-          <Select
-            value={form.channel}
-            onValueChange={(channel) => setForm({ ...form, channel: channel ?? form.channel })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {MARKETING_CHANNELS.map((channel) => (
-                <SelectItem key={channel.value} value={channel.value}>
-                  {getMarketingLabel('channels', channel.value, t)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label>{t('board.type')}</Label>
-          <Select
-            value={form.type}
-            onValueChange={(type) => setForm({ ...form, type: type ?? form.type })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {MARKETING_ACTIVITY_TYPES.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {getMarketingLabel('activityType', type.value, t)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <NbosMoneyInput
-            label={t('board.budget')}
-            value={form.budget}
-            onChange={(budget) => setForm({ ...form, budget })}
-            placeholder={t('board.budgetPlaceholder')}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="invisible select-none" aria-hidden>
-            {t('board.add')}
-          </Label>
-          <Button
-            type="submit"
-            size="form"
-            disabled={saving || !form.title.trim()}
-            className="w-full"
-          >
-            <Plus size={16} />
-            {saving ? t('board.adding') : t('board.add')}
-          </Button>
-        </div>
-        <div className="space-y-1.5 lg:col-span-6">
-          <Label>{t('board.description')}</Label>
-          <Textarea
-            value={form.description}
-            onChange={(event) => setForm({ ...form, description: event.target.value })}
-            placeholder={t('board.descriptionPlaceholder')}
-          />
-        </div>
-      </form>
+      <PermissionGate module={MARKETING_MODULE} action="ADD">
+        <form
+          onSubmit={handleCreate}
+          className="border-border bg-card grid gap-4 rounded-2xl border p-5 lg:grid-cols-6"
+        >
+          <div className="space-y-1.5 lg:col-span-2">
+            <Label>{t('board.title')}</Label>
+            <Input
+              value={form.title}
+              onChange={(event) => setForm({ ...form, title: event.target.value })}
+              placeholder={t('board.titlePlaceholder')}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t('board.channel')}</Label>
+            <Select
+              value={form.channel}
+              onValueChange={(channel) => setForm({ ...form, channel: channel ?? form.channel })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MARKETING_CHANNELS.map((channel) => (
+                  <SelectItem key={channel.value} value={channel.value}>
+                    {getMarketingLabel('channels', channel.value, t)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t('board.type')}</Label>
+            <Select
+              value={form.type}
+              onValueChange={(type) => setForm({ ...form, type: type ?? form.type })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MARKETING_ACTIVITY_TYPES.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {getMarketingLabel('activityType', type.value, t)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <NbosMoneyInput
+              label={t('board.budget')}
+              value={form.budget}
+              onChange={(budget) => setForm({ ...form, budget })}
+              placeholder={t('board.budgetPlaceholder')}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="invisible select-none" aria-hidden>
+              {t('board.add')}
+            </Label>
+            <Button
+              type="submit"
+              size="form"
+              disabled={saving || !form.title.trim()}
+              className="w-full"
+            >
+              <Plus size={16} />
+              {saving ? t('board.adding') : t('board.add')}
+            </Button>
+          </div>
+          <div className="space-y-1.5 lg:col-span-6">
+            <Label>{t('board.description')}</Label>
+            <Textarea
+              value={form.description}
+              onChange={(event) => setForm({ ...form, description: event.target.value })}
+              placeholder={t('board.descriptionPlaceholder')}
+            />
+          </div>
+        </form>
+      </PermissionGate>
 
       {loading ? (
         <LoadingState variant="cards" count={4} />
@@ -310,11 +314,13 @@ export default function MarketingPage() {
                             ? t('board.financeProposed')
                             : t('board.financeMissing')}
                         </p>
-                        <MarketingLaunchDialog
-                          activity={activity}
-                          accounts={accounts}
-                          onLaunched={fetchActivities}
-                        />
+                        <PermissionGate module={MARKETING_MODULE} action="EDIT">
+                          <MarketingLaunchDialog
+                            activity={activity}
+                            accounts={accounts}
+                            onLaunched={fetchActivities}
+                          />
+                        </PermissionGate>
                       </div>
                     </div>
                   ))

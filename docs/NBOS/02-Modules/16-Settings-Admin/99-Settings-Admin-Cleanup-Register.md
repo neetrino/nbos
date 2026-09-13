@@ -184,6 +184,24 @@ Settings и `My Company` использовали один модуль прав
 
 Departments переехали из Settings в `My Company`: страница теперь живёт в `app/(app)/my-company/departments/page.tsx`, а `/settings/departments` — серверный redirect. Это закрывает последний `/settings` URL, который открывался по `COMPANY VIEW`. Канон: `02-Permissions-RBAC.md`.
 
+### C2c. VIEW-страницы Settings рисовали контролы записи
+
+Статус: `DONE (2026-09-13)`
+
+Делегировать роли `SETTINGS VIEW` было можно, но страницы всё равно показывали кнопки записи, которые API отклоняет 403: карандаш в System Lists, тумблеры и селекты в Module Settings, тумблер и `Run` в Scheduler, `Run retention purge` в Trash inventory. То же было в Marketing: форма создания активности и `Launch` не проверяли `ADD` / `EDIT`.
+
+Сделано:
+
+- контролы закрыты своим правом: System Lists и Trash — `SETTINGS EDIT` / `SETTINGS DELETE`, Scheduler — `SETTINGS_SCHEDULER EDIT`, Marketing — `MARKETING ADD` / `MARKETING EDIT`;
+- Module Settings оставляет состояние правил видимым, но контролы неактивны без `SETTINGS EDIT`: страница открывается по VIEW, скрывать сами правила незачем;
+- `ModuleAccessGate` больше не открывает закрытый маршрут, когда `/api/me` не загрузился. Права в этот момент неизвестны, а не пусты, поэтому гейт показывает ошибку с повтором (`reloadMe`), а не контент и не Access Denied. Решение вынесено в `resolveModuleAccessDecision` и покрыто тестом.
+
+### C2d. seed-rbac стирал права ролей, созданных админом
+
+Статус: `DONE (2026-09-13)`
+
+`seed-rbac.ts` вызывал `rolePermission.deleteMany({})` перед вставкой дефолтов. Это стирало и права ролей, которые CEO создал через Settings → Permissions / RBAC: роль оставалась в системе, но без прав и без следа причины. Теперь сброс ограничен ролями, которыми владеет сам seed (`roleId in seededRoleIds`).
+
 ### C3. RBAC scope enforcement is incomplete
 
 Статус: `FOUNDATION HARDENED / ENTITY SCOPE PENDING`

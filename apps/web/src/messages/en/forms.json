@@ -9,7 +9,12 @@
     "urgent": "Urgent",
     "markAsUrgent": "Mark as urgent",
     "fullForm": "Full form",
+    "files": "Files",
+    "checklists": "Checklists",
+    "project": "Project",
+    "removeFileAria": "Remove {name}",
     "createError": "Could not create task. Try again.",
+    "extrasError": "Task created, but files or checklists could not be saved. Open the task to finish.",
     "employeeNotLinked": "Your account is not linked to an employee record, so tasks cannot be created."
   },
   "meeting": {

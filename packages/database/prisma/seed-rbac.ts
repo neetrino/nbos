@@ -274,7 +274,9 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
   },
   'role-finance-director': {
     CRM_LEADS: N,
-    CRM_DEALS: N,
+    // Read-only: the deal card opens from an invoice or order, where the amount, payment type and
+    // contract are the invoice's own context. Writes stay with sales.
+    CRM_DEALS: R,
     ORDERS: F,
     FINANCE_INVOICES: F,
     FINANCE_PAYMENTS: F,
@@ -611,7 +613,10 @@ async function main() {
     });
   }
 
-  await prisma.rolePermission.deleteMany({});
+  // Reset only the roles this seed owns. A blanket deleteMany would also wipe the grants of
+  // roles an admin created in Settings -> Permissions / RBAC, leaving them silently powerless.
+  const seededRoleIds = [...new Set(rolePermissionData.map((row) => row.roleId))];
+  await prisma.rolePermission.deleteMany({ where: { roleId: { in: seededRoleIds } } });
   await prisma.rolePermission.createMany({
     data: rolePermissionData,
     skipDuplicates: true,

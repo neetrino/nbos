@@ -293,6 +293,36 @@ Instagram + звонок без общего телефона по-прежне�
 
 `L-` and `D-` now allocate from `entity_code_counters` (`LEAD`, `DEAL`). Writers moved together: `LeadsService`, ATS/Meta ingest (reserve on the committed client, C26), `DealsService`, `LeadConversionService`, `SupportService.createExtensionDeal`, `DealWonHandler` maintenance Deal. Seed + write-pause rollout is in AI C25 / Chat 2 handoff. CRM ownership/stage gates unchanged.
 
+### C7. Lead и Deal API не проверяли права — записи закрыты (2026-09-13), чтения частично
+
+`LeadsController` и `DealsController` не имели ни одного `@RequirePermission`, кроме создания deposit order. Глобальный `PermissionGuard` пропускает хендлер без метаданных, поэтому любой аутентифицированный сотрудник — разработчик, дизайнер, QA — мог править, объединять, отправлять в корзину и удалять навсегда любой лид и любую сделку. Сайдбар это не защищал: `/crm` закрыт `CRM_LEADS VIEW`, но карточки открываются из Projects, Delivery Board, Work Spaces, Finance и глобального поиска мимо `/crm`.
+
+Закрыто:
+
+- лиды: список, `duplicates`, карточка, создание (`ADD`), правки, статус, merge, pour-into-contact, create-contact, attach-contact, restore (`EDIT`), корзина и удаление навсегда (`DELETE`);
+- сделки: список (`VIEW`), создание (`ADD`), правки, статус, partner referral terms, early delivery, exception order, WhatsApp `available-groups` / `ensure` / `bind`, restore (`EDIT`), корзина и удаление навсегда (`DELETE`);
+- `POST /crm/leads/:id/convert` — `CRM_DEALS ADD`: результат действия — новая сделка;
+- контрактный тест `apps/api/src/modules/crm/crm-permissions.test.ts` фиксирует и закрытую поверхность, и список сознательно открытых хендлеров.
+
+Сознательное исключение: `POST /crm/deals/:id/actions/create-deposit-order` остаётся только на `FINANCE_INVOICES ADD`. Finance Director создаёт deposit order из сделки, открытой из инвойса, и прав на сделки у него нет.
+
+Чтения закрыты тем же днём, вторым шагом:
+
+| Эндпоинт                            | Требование       | Что сделано на клиенте                                   |
+| ----------------------------------- | ---------------- | -------------------------------------------------------- |
+| `GET /crm/leads/stats`              | `CRM_LEADS VIEW` | вкладка Reports → Sales грузит только доступную половину |
+| `GET /crm/deals/stats`              | `CRM_DEALS VIEW` | пилюля Sales скрыта, если нет ни лидов, ни сделок        |
+| `GET /crm/deals/:id`                | `CRM_DEALS VIEW` | кнопка «Deal» скрыта в инвойсе, заказе и Delivery Board  |
+| `GET /crm/deals/:id/whatsapp-group` | `CRM_DEALS VIEW` | следует за карточкой сделки                              |
+
+Чтобы финансовый handoff не сломался, финдиректор получил `CRM_DEALS VIEW` со scope `ALL` (миграция `20260913183000_crm_deals_view_finance_director`, в seed — `R`): карточку сделки он открывает из инвойса и заказа, где сумма, тип оплаты и договор — контекст самого инвойса. Записей по сделкам у него по-прежнему нет, deposit order остаётся на `FINANCE_INVOICES ADD`.
+
+Delivery- и технические роли доступа не получают: их экраны показывают заказ, а не сделку. `EntityDealSheetDeepLink` дополнительно отказывается открывать карточку без права — иначе история глобального поиска и связи проекта отправляли бы запрос, обречённый на 403.
+
+**Решение по модели доступа (2026-09-13):** доступ к сделке определяет только матрица. Присутствие сотрудника на карточке не даёт ничего: `pmId` фиксирует, кому передаём проект в delivery, а не право смотреть сделку. Поэтому, когда будем включать row-level scope, «own» для сделки считается по `sellerId` и `sellerAssistantId` и **не включает `pmId`**.
+
+Row-level scope на списках ещё не применяется: `PermissionGuard` определяет scope, но `findAll` его не использует.
+
 ---
 
 ## Очерёдность зачистки

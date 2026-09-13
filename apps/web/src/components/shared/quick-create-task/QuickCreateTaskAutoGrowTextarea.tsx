@@ -6,6 +6,7 @@ import {
   QUICK_CREATE_TASK_AUTOCOMPLETE_OFF,
   QUICK_CREATE_TASK_GHOST_INPUT_CLASS,
 } from './quick-create-task-constants';
+import { resolveQuickCreateTextareaEnter } from './quick-create-task-enter';
 import { useAutoGrowTextarea } from './use-auto-grow-textarea';
 
 const TITLE_MIN_HEIGHT_PX = 44;
@@ -18,6 +19,9 @@ interface QuickCreateTaskAutoGrowTextareaProps extends Omit<
   minHeightPx?: number;
   inputRef?: Ref<HTMLTextAreaElement>;
   onSubmitShortcut?: () => void;
+  /** Title only: Enter moves to the description instead of inserting a newline. */
+  enterMode?: 'title' | 'description';
+  onAdvance?: () => void;
 }
 
 export function QuickCreateTaskAutoGrowTextarea({
@@ -26,6 +30,8 @@ export function QuickCreateTaskAutoGrowTextarea({
   minHeightPx = DESCRIPTION_MIN_HEIGHT_PX,
   inputRef,
   onSubmitShortcut,
+  enterMode = 'description',
+  onAdvance,
   onChange,
   onKeyDown,
   ...props
@@ -36,9 +42,15 @@ export function QuickCreateTaskAutoGrowTextarea({
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     onKeyDown?.(event);
     if (event.defaultPrevented) return;
-    if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+    const action = resolveQuickCreateTextareaEnter(event, enterMode);
+    if (action === 'submit') {
       event.preventDefault();
       onSubmitShortcut?.();
+      return;
+    }
+    if (action === 'advance') {
+      event.preventDefault();
+      onAdvance?.();
     }
   };
 
