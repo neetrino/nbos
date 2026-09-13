@@ -20,6 +20,12 @@ describe('Quick Task composition', () => {
     expect(page).toContain('hostedCreateDialog={false}');
   });
 
+  it('provides HeaderContext so background TasksSurface/PageHero cannot crash the route', () => {
+    const layout = readSource('src/app/(quick)/layout.tsx');
+    expect(layout).toContain('HeaderContextProvider');
+    expect(layout).toContain('PermissionProvider');
+  });
+
   it('keeps the standard mobile Dialog bottom-sheet contract', () => {
     const dialog = readSource('src/components/shared/quick-create-task/QuickCreateTaskDialog.tsx');
     expect(dialog).toContain("from '@/components/ui/dialog'");

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
+import { HeaderContextProvider } from '@/components/layout/header-context';
 import { PermissionProvider } from '@/lib/permissions';
 import { QUICK_TASK_MANIFEST_PATH } from '@/features/quick-actions/quick-action-constants';
 
@@ -26,6 +27,11 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/** Slim providers only. Tasks PageHero registers a header title and throws without this. */
 export default function QuickLayout({ children }: { children: ReactNode }) {
-  return <PermissionProvider>{children}</PermissionProvider>;
+  return (
+    <PermissionProvider>
+      <HeaderContextProvider>{children}</HeaderContextProvider>
+    </PermissionProvider>
+  );
 }
