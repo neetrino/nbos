@@ -89,6 +89,15 @@ ADMIN_PASSWORD="Admin1234!"
 ENV
 fi
 
+# ── 4b. Share env with the Next.js web app ───────────────────────────
+# The API (NestJS) loads ../../.env.local explicitly, but Next.js only reads
+# env files from apps/web. Symlink so the web app shares the single root
+# .env.local (AUTH_SECRET, BACKEND_URL, NEXT_PUBLIC_BACKEND_URL, ...).
+if [ ! -e apps/web/.env.local ]; then
+  log "Linking apps/web/.env.local -> root .env.local"
+  ln -sf ../../.env.local apps/web/.env.local
+fi
+
 # ── 5. Dependencies + Prisma client ──────────────────────────────────
 log "Installing workspace dependencies"
 pnpm install --frozen-lockfile
