@@ -1,12 +1,32 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef, type Ref } from 'react';
+
+function assignRef<T>(ref: Ref<T> | undefined, value: T | null): void {
+  if (!ref) return;
+  if (typeof ref === 'function') {
+    ref(value);
+    return;
+  }
+  ref.current = value;
+}
 
 /**
  * Keeps a textarea height in sync with wrapped content (Bitrix-style growing fields).
  */
-export function useAutoGrowTextarea(value: string, minHeightPx: number) {
+export function useAutoGrowTextarea(
+  value: string,
+  minHeightPx: number,
+  forwardedRef?: Ref<HTMLTextAreaElement>,
+) {
   const ref = useRef<HTMLTextAreaElement>(null);
+  const setRefs = useCallback(
+    (node: HTMLTextAreaElement | null) => {
+      ref.current = node;
+      assignRef(forwardedRef, node);
+    },
+    [forwardedRef],
+  );
 
   const syncHeight = useCallback(() => {
     const element = ref.current;
@@ -34,5 +54,5 @@ export function useAutoGrowTextarea(value: string, minHeightPx: number) {
     return () => observer.disconnect();
   }, [value, syncHeight]);
 
-  return { ref, syncHeight };
+  return { ref: setRefs, syncHeight };
 }

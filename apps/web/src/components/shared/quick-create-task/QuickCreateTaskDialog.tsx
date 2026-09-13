@@ -18,10 +18,12 @@ import {
   QUICK_CREATE_TASK_ROW_LABEL_CLASS,
   QUICK_CREATE_TASK_TITLE_INPUT_CLASS,
   QUICK_CREATE_TASK_DESCRIPTION_INPUT_CLASS,
+  QUICK_CREATE_TITLE_FOCUS_DELAY_MS,
   TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
   TASK_PRIORITY_FLAME_BUTTON_CLASS,
   TASK_PRIORITY_FLAME_ICON_SIZE,
 } from './quick-create-task-constants';
+import { useFocusElementWhenOpen } from './use-focus-element-when-open';
 import {
   QuickCreateTaskAutoGrowTextarea,
   QUICK_CREATE_TASK_TITLE_MIN_HEIGHT_PX,
@@ -41,6 +43,8 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
   const form = useQuickCreateTaskForm({ ...props, me });
   const assigneePicker = useRelationPickerActions('employee');
   const dueDateFieldRef = useRef<HTMLDivElement>(null);
+  const titleInputRef = useRef<HTMLTextAreaElement>(null);
+  useFocusElementWhenOpen(open, titleInputRef, QUICK_CREATE_TITLE_FOCUS_DELAY_MS);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -48,6 +52,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
         showCloseButton={false}
         className={QUICK_CREATE_TASK_DIALOG_CLASS}
         forceNestedBackdrop={props.forceNestedBackdrop}
+        initialFocus={titleInputRef}
       >
         <DialogTitle className="sr-only">{t('task.title')}</DialogTitle>
 
@@ -70,6 +75,9 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
               onChange={(event) => form.setTitle(event.target.value)}
               placeholder={t('task.namePlaceholder')}
               autoFocus
+              inputMode="text"
+              enterKeyHint="enter"
+              inputRef={titleInputRef}
               disabled={form.saving || form.creatorBlocked}
               minHeightPx={QUICK_CREATE_TASK_TITLE_MIN_HEIGHT_PX}
               className={cn(QUICK_CREATE_TASK_TITLE_INPUT_CLASS, 'min-w-0 flex-1')}

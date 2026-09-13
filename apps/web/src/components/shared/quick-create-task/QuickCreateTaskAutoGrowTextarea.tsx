@@ -1,6 +1,6 @@
 'use client';
 
-import type { KeyboardEvent, TextareaHTMLAttributes } from 'react';
+import type { KeyboardEvent, Ref, TextareaHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 import {
   QUICK_CREATE_TASK_AUTOCOMPLETE_OFF,
@@ -16,6 +16,7 @@ interface QuickCreateTaskAutoGrowTextareaProps extends Omit<
   'rows'
 > {
   minHeightPx?: number;
+  inputRef?: Ref<HTMLTextAreaElement>;
   onSubmitShortcut?: () => void;
 }
 
@@ -23,13 +24,14 @@ export function QuickCreateTaskAutoGrowTextarea({
   className,
   value,
   minHeightPx = DESCRIPTION_MIN_HEIGHT_PX,
+  inputRef,
   onSubmitShortcut,
   onChange,
   onKeyDown,
   ...props
 }: QuickCreateTaskAutoGrowTextareaProps) {
   const text = typeof value === 'string' ? value : '';
-  const { ref, syncHeight } = useAutoGrowTextarea(text, minHeightPx);
+  const { ref, syncHeight } = useAutoGrowTextarea(text, minHeightPx, inputRef);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     onKeyDown?.(event);

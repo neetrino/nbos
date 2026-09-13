@@ -17,6 +17,7 @@ import {
   DIALOG_MOBILE_SHEET_POPUP_CLASS,
 } from './dialog-mobile-sheet';
 import { DialogMobileSwipeChrome } from './dialog-mobile-swipe-chrome';
+import { useDialogKeyboardInset } from './use-dialog-keyboard-inset';
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
@@ -73,6 +74,8 @@ function DialogContent({
   forceNestedBackdrop?: boolean;
 }) {
   const isMobileViewport = useIsMobileViewport();
+  const popupRef = React.useRef<HTMLDivElement>(null);
+  useDialogKeyboardInset(popupRef, isMobileViewport);
   const nestedStackClass = forceNestedBackdrop ? DIALOG_ABOVE_SHEET_Z_CLASS : 'z-50';
   const scrollAttr = isMobileViewport ? { [BOTTOM_SHEET_SWIPE_SCROLL_ATTR]: '' } : undefined;
 
@@ -89,6 +92,7 @@ function DialogContent({
           className,
         )}
         {...props}
+        ref={popupRef}
       >
         {isMobileViewport ? <DialogMobileSwipeChrome /> : null}
         <div className={DIALOG_MOBILE_SHEET_BODY_CLASS} {...scrollAttr}>
