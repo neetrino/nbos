@@ -12,7 +12,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { hasCompanyExecutiveOpsFromUser } from '@nbos/shared';
+import { CRM_DEALS_MODULE, hasCompanyExecutiveOpsFromUser } from '@nbos/shared';
 import {
   CurrentUser,
   RequirePermission,
@@ -30,6 +30,14 @@ import { ListWhatsAppGatewayGroupsQueryDto } from '../../integrations/whatsapp-g
 import { BindDealWhatsAppGroupDto } from './dto/bind-deal-whatsapp-group.dto';
 import { UpdateDealStatusDto } from './dto/update-deal-status.dto';
 
+/**
+ * Writes require `CRM_DEALS`; the deal card read does not yet, because Finance opens it from an
+ * invoice or order and delivery roles open it from a project, Delivery Board or Work Space. Those
+ * surfaces need a scoped commercial projection before the read can close, so a class-level floor
+ * would break them. Handlers therefore declare their own requirement.
+ *
+ * Canon: docs/NBOS/04-Roles-and-Access/02-Access-Matrix.md (PM and Marketing are Limited on deals).
+ */
 @ApiTags('CRM / Deals')
 @ApiBearerAuth()
 @Controller('crm/deals')
@@ -40,6 +48,7 @@ export class DealsController {
   ) {}
 
   @Get()
+  @RequirePermission(CRM_DEALS_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Get all deals with filters and pagination' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
@@ -78,12 +87,14 @@ export class DealsController {
     });
   }
 
+  /** Open for the same Reports Sales reason as `GET /crm/leads/stats`. */
   @Get('stats')
   @ApiOperation({ summary: 'Get deals statistics' })
   async getStats() {
     return this.dealsService.getStats();
   }
 
+  /** Open until Finance, Projects, Delivery Board and Work Spaces read a scoped projection. */
   @Get(':id')
   @ApiOperation({ summary: 'Get deal by ID' })
   async findOne(@Param('id') id: string) {
@@ -91,6 +102,7 @@ export class DealsController {
   }
 
   @Post()
+  @RequirePermission(CRM_DEALS_MODULE, 'ADD')
   @ApiOperation({ summary: 'Create a new deal (with or without prior lead)' })
   async create(
     @CurrentUser() user: CurrentUserPayload | undefined,
@@ -132,6 +144,7 @@ export class DealsController {
   }
 
   @Patch(':id/partner-referral-terms')
+  @RequirePermission(CRM_DEALS_MODULE, 'EDIT')
   @ApiOperation({
     summary: 'Update partner referral terms (frozen % on deal when source is Partner)',
   })
@@ -143,6 +156,7 @@ export class DealsController {
   }
 
   @Put(':id')
+  @RequirePermission(CRM_DEALS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Update deal' })
   async update(
     @Param('id') id: string,
@@ -185,6 +199,7 @@ export class DealsController {
   }
 
   @Patch(':id/status')
+  @RequirePermission(CRM_DEALS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Update deal status (pipeline move)' })
   async updateStatus(
     @Param('id') id: string,
@@ -198,6 +213,11 @@ export class DealsController {
     });
   }
 
+  /**
+   * Stays on `FINANCE_INVOICES ADD` only: the Finance Director creates the deposit order from a
+   * deal opened out of an invoice, and has no `CRM_DEALS`. Adding a CRM requirement here would
+   * close the finance handoff.
+   */
   @Post(':id/actions/create-deposit-order')
   @RequirePermission('FINANCE_INVOICES', 'ADD')
   @ApiOperation({ summary: 'Create standard prepay order + deposit invoice for a deal' })
@@ -207,6 +227,7 @@ export class DealsController {
   }
 
   @Post(':id/actions/start-early-delivery')
+  @RequirePermission(CRM_DEALS_MODULE, 'EDIT')
   @ApiOperation({
     summary: 'Start delivery before deposit invoice is paid (standard prepay order)',
   })
@@ -224,6 +245,7 @@ export class DealsController {
   }
 
   @Post(':id/actions/create-exception-order')
+  @RequirePermission(CRM_DEALS_MODULE, 'EDIT')
   @ApiOperation({
     summary: 'Close deal via FREE or POSTPAID exception order (replaces Won override)',
   })
@@ -241,6 +263,7 @@ export class DealsController {
   }
 
   @Get(':id/whatsapp-group/available-groups')
+  @RequirePermission(CRM_DEALS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Search WhatsApp groups from Gateway to bind to this Deal' })
   listWhatsAppAvailableGroups(
     @Param('id') id: string,
@@ -249,6 +272,7 @@ export class DealsController {
     return this.dealsService.listWhatsAppAvailableGroups(id, query);
   }
 
+  /** Fetched automatically whenever a deal sheet opens, so it follows the deal card read. */
   @Get(':id/whatsapp-group')
   @ApiOperation({ summary: 'Get Deal client WhatsApp group state (Deal-level or Product WORK)' })
   getWhatsAppGroup(@Param('id') id: string) {
@@ -256,6 +280,7 @@ export class DealsController {
   }
 
   @Post(':id/whatsapp-group/ensure')
+  @RequirePermission(CRM_DEALS_MODULE, 'EDIT')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Create or retry Deal client WhatsApp group (no Product required)' })
   ensureWhatsAppGroup(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
@@ -263,6 +288,7 @@ export class DealsController {
   }
 
   @Post(':id/whatsapp-group/bind')
+  @RequirePermission(CRM_DEALS_MODULE, 'EDIT')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Bind an existing WhatsApp group to this Deal' })
   bindWhatsAppGroup(
@@ -279,12 +305,14 @@ export class DealsController {
   }
 
   @Post(':id/restore')
+  @RequirePermission(CRM_DEALS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Restore deal from Trash' })
   async restore(@Param('id') id: string) {
     return this.dealsService.restoreFromTrash(id).then(() => this.dealsService.findById(id));
   }
 
   @Delete(':id/permanent')
+  @RequirePermission(CRM_DEALS_MODULE, 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Permanently delete trashed deal (cannot be undone)' })
   async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
@@ -292,6 +320,7 @@ export class DealsController {
   }
 
   @Delete(':id')
+  @RequirePermission(CRM_DEALS_MODULE, 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Move deal to Trash' })
   async remove(@Param('id') id: string) {

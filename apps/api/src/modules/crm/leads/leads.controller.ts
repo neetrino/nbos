@@ -12,8 +12,12 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { hasCompanyExecutiveOpsFromUser } from '@nbos/shared';
-import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
+import { CRM_DEALS_MODULE, CRM_LEADS_MODULE, hasCompanyExecutiveOpsFromUser } from '@nbos/shared';
+import {
+  CurrentUser,
+  RequirePermission,
+  type CurrentUserPayload,
+} from '../../../common/decorators';
 import { LeadsService } from './leads.service';
 import { LeadConversionService } from './lead-conversion.service';
 import { FindLeadDuplicatesDto } from './dto/find-lead-duplicates.dto';
@@ -22,6 +26,13 @@ import { AttachLeadContactDto } from './dto/attach-lead-contact.dto';
 import { PourLeadIntoContactDto } from './dto/pour-lead-into-contact.dto';
 import { CreateLeadContactDto } from './dto/create-lead-contact.dto';
 
+/**
+ * Every handler declares its own `CRM_LEADS` requirement instead of a class-level floor, because
+ * `GET stats` still has to serve the Reports Sales tab, which non-CRM roles open with
+ * `DASHBOARDS VIEW`. A floor would silently close that surface.
+ *
+ * Canon: docs/NBOS/04-Roles-and-Access/02-Access-Matrix.md (Marketing reads leads, never writes).
+ */
 @ApiTags('CRM / Leads')
 @ApiBearerAuth()
 @Controller('crm/leads')
@@ -32,6 +43,7 @@ export class LeadsController {
   ) {}
 
   @Get()
+  @RequirePermission(CRM_LEADS_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Get all leads with filters and pagination' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
@@ -66,6 +78,11 @@ export class LeadsController {
     });
   }
 
+  /**
+   * Left open on purpose: the Reports Sales tab loads this for every role holding
+   * `DASHBOARDS VIEW`, including PM, Head of Delivery and Finance, who have no `CRM_LEADS`.
+   * Closing it needs a scoped Reports projection first; tracked in the CRM cleanup register.
+   */
   @Get('stats')
   @ApiOperation({ summary: 'Get leads statistics' })
   async getStats() {
@@ -73,6 +90,7 @@ export class LeadsController {
   }
 
   @Get('duplicates')
+  @RequirePermission(CRM_LEADS_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Find duplicate / attach-candidate leads by identity or search' })
   async findDuplicates(@Query() query: FindLeadDuplicatesDto) {
     return this.leadsService.findDuplicates({
@@ -85,12 +103,14 @@ export class LeadsController {
   }
 
   @Get(':id')
+  @RequirePermission(CRM_LEADS_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Get lead by ID' })
   async findOne(@Param('id') id: string) {
     return this.leadsService.findById(id);
   }
 
   @Post()
+  @RequirePermission(CRM_LEADS_MODULE, 'ADD')
   @ApiOperation({ summary: 'Create a new lead' })
   async create(
     @CurrentUser() user: CurrentUserPayload | undefined,
@@ -118,6 +138,7 @@ export class LeadsController {
   }
 
   @Put(':id')
+  @RequirePermission(CRM_LEADS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Update lead' })
   async update(
     @Param('id') id: string,
@@ -146,6 +167,7 @@ export class LeadsController {
   }
 
   @Patch(':id/status')
+  @RequirePermission(CRM_LEADS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Update lead status' })
   async updateStatus(
     @Param('id') id: string,
@@ -163,6 +185,7 @@ export class LeadsController {
   }
 
   @Post(':id/convert')
+  @RequirePermission(CRM_DEALS_MODULE, 'ADD')
   @ApiOperation({ summary: 'Convert lead to deal (CRM-03 automation)' })
   async convertToDeal(
     @Param('id') id: string,
@@ -181,6 +204,7 @@ export class LeadsController {
   }
 
   @Post(':id/merge')
+  @RequirePermission(CRM_LEADS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Merge another Lead into this survivor Lead' })
   async merge(
     @Param('id') id: string,
@@ -195,6 +219,7 @@ export class LeadsController {
   }
 
   @Post(':id/pour-into-contact')
+  @RequirePermission(CRM_LEADS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Pour this Lead onto an existing Contact and trash the Lead' })
   async pourIntoContact(
     @Param('id') id: string,
@@ -208,6 +233,7 @@ export class LeadsController {
   }
 
   @Post(':id/create-contact')
+  @RequirePermission(CRM_LEADS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Create a Contact from this Lead; optionally attach to work and trash' })
   async createContact(
     @Param('id') id: string,
@@ -222,6 +248,7 @@ export class LeadsController {
   }
 
   @Post(':id/attach-contact')
+  @RequirePermission(CRM_LEADS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Attach a stray Lead to an existing Contact (optional open Deal)' })
   async attachContact(
     @Param('id') id: string,
@@ -236,6 +263,7 @@ export class LeadsController {
   }
 
   @Post(':id/restore')
+  @RequirePermission(CRM_LEADS_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Restore lead from Trash' })
   async restore(@Param('id') id: string) {
     await this.leadsService.restoreFromTrash(id);
@@ -243,6 +271,7 @@ export class LeadsController {
   }
 
   @Delete(':id/permanent')
+  @RequirePermission(CRM_LEADS_MODULE, 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Permanently delete trashed lead (cannot be undone)' })
   async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
@@ -250,6 +279,7 @@ export class LeadsController {
   }
 
   @Delete(':id')
+  @RequirePermission(CRM_LEADS_MODULE, 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Move lead to Trash' })
   async remove(@Param('id') id: string) {

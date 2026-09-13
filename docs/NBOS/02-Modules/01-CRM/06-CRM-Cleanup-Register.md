@@ -293,6 +293,31 @@ Instagram + звонок без общего телефона по-прежне�
 
 `L-` and `D-` now allocate from `entity_code_counters` (`LEAD`, `DEAL`). Writers moved together: `LeadsService`, ATS/Meta ingest (reserve on the committed client, C26), `DealsService`, `LeadConversionService`, `SupportService.createExtensionDeal`, `DealWonHandler` maintenance Deal. Seed + write-pause rollout is in AI C25 / Chat 2 handoff. CRM ownership/stage gates unchanged.
 
+### C7. Lead и Deal API не проверяли права — записи закрыты (2026-09-13), чтения частично
+
+`LeadsController` и `DealsController` не имели ни одного `@RequirePermission`, кроме создания deposit order. Глобальный `PermissionGuard` пропускает хендлер без метаданных, поэтому любой аутентифицированный сотрудник — разработчик, дизайнер, QA — мог править, объединять, отправлять в корзину и удалять навсегда любой лид и любую сделку. Сайдбар это не защищал: `/crm` закрыт `CRM_LEADS VIEW`, но карточки открываются из Projects, Delivery Board, Work Spaces, Finance и глобального поиска мимо `/crm`.
+
+Закрыто:
+
+- лиды: список, `duplicates`, карточка, создание (`ADD`), правки, статус, merge, pour-into-contact, create-contact, attach-contact, restore (`EDIT`), корзина и удаление навсегда (`DELETE`);
+- сделки: список (`VIEW`), создание (`ADD`), правки, статус, partner referral terms, early delivery, exception order, WhatsApp `available-groups` / `ensure` / `bind`, restore (`EDIT`), корзина и удаление навсегда (`DELETE`);
+- `POST /crm/leads/:id/convert` — `CRM_DEALS ADD`: результат действия — новая сделка;
+- контрактный тест `apps/api/src/modules/crm/crm-permissions.test.ts` фиксирует и закрытую поверхность, и список сознательно открытых хендлеров.
+
+Сознательное исключение: `POST /crm/deals/:id/actions/create-deposit-order` остаётся только на `FINANCE_INVOICES ADD`. Finance Director создаёт deposit order из сделки, открытой из инвойса, и прав на сделки у него нет.
+
+Остаётся открытым (нужно решение по проекции, а не декоратор):
+
+| Эндпоинт                                       | Кто читает без прав CRM                                          |
+| ---------------------------------------------- | ---------------------------------------------------------------- |
+| `GET /crm/leads/stats`, `GET /crm/deals/stats` | вкладка Reports → Sales, доступна по `DASHBOARDS VIEW`           |
+| `GET /crm/deals/:id`                           | Finance (инвойсы, заказы), Projects, Delivery Board, Work Spaces |
+| `GET /crm/deals/:id/whatsapp-group`            | тянется автоматически при открытии карточки сделки               |
+
+Повесить на них `CRM_DEALS VIEW` нельзя: это молча сломает финансовый и delivery-контекст. Нужна отдельная scoped-проекция коммерческих полей плюс read-only режим `DealSheet` в этих хостах. До этого роль без `CRM_DEALS EDIT`, открывшая сделку из Finance или Projects, увидит Save, который вернёт 403.
+
+Row-level scope (OWN / DEPARTMENT / ALL) на списках тоже ещё не применяется: `PermissionGuard` определяет scope, но `findAll` его не использует. Отдельная сложность — «own» для сделки: у PM это `pmId`, а не `sellerId` / `sellerAssistantId`, поэтому готовый хелпер из `crm/calls` подходит только для продавцов.
+
 ---
 
 ## Очерёдность зачистки

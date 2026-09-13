@@ -42,6 +42,7 @@
 - **Marketing** — чтение Leads (для аналитики источников), ограниченный доступ к Deals (только статус и сумма для расчёта ROI)
 - **Call recordings (play)** — capability `CRM_CALL_RECORDINGS_PLAY`. Факт звонка (Call VIEW) не даёт playback. Seller 🔶 = свой Call (object-level) + Drive `CONFIDENTIAL` FileAsset. Marketing — deny. Head of Sales / CEO / Owner — capability по умолчанию; запись остаётся `CONFIDENTIAL`.
 - **Call note** — `CRM_LEADS_EDIT` / `CRM_DEALS_EDIT` (не VIEW): object-level как у Call VIEW; только после `finish`/`end`; optimistic `noteVersion`. Чтение old/new note через Audit API — `AUDIT_LOGS.VIEW`.
+- **Enforcement (2026-09-13)** — записи по лидам и сделкам требуют `CRM_LEADS` / `CRM_DEALS` на API, до этого контроллеры вообще не проверяли права. Три чтения пока открыты, потому что их вызывают не-CRM поверхности: `stats` (вкладка Reports → Sales), карточка сделки и её WhatsApp-состояние (Finance, Projects, Delivery Board, Work Spaces). Им нужна scoped-проекция, статус — `06-CRM-Cleanup-Register.md` §C7. Row-level scope на списках тоже ещё не применяется; «own» у сделки для PM — это `pmId`, а не продавец.
 
 ### Финансы
 
