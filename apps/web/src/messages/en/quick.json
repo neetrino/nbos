@@ -21,11 +21,11 @@
     "apps": {
       "quickTask": {
         "name": "+ Task",
-        "blurb": "Create a task in one tap"
+        "blurb": "Create fast task"
       },
       "nbos": {
         "name": "NBOS",
-        "blurb": "Full workspace"
+        "blurb": "Full app"
       }
     },
     "steps": {

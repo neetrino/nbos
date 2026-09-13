@@ -1,6 +1,6 @@
 export const APP_INSTALL_ROUTE = '/install';
 
-export const APP_INSTALL_ICON_SIZE_PX = 56;
+export const APP_INSTALL_ICON_SIZE_PX = 48;
 
 export const APP_INSTALL_COPY_FEEDBACK_MS = 2000;
 
