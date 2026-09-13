@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { HeaderContextProvider } from '@/components/layout/header-context';
+import { MyAccountSheetProvider } from '@/features/account/components/my-account-sheet-provider';
 import { PermissionProvider } from '@/lib/permissions';
 import {
   QUICK_TASK_ICON_CACHE,
@@ -47,11 +49,15 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-/** Slim providers only. Tasks PageHero registers a header title and throws without this. */
+/** Slim providers only. Tasks PageHero and empty-state account CTA need these. */
 export default function QuickLayout({ children }: { children: ReactNode }) {
   return (
     <PermissionProvider>
-      <HeaderContextProvider>{children}</HeaderContextProvider>
+      <HeaderContextProvider>
+        <Suspense fallback={null}>
+          <MyAccountSheetProvider>{children}</MyAccountSheetProvider>
+        </Suspense>
+      </HeaderContextProvider>
     </PermissionProvider>
   );
 }

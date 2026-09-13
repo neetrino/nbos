@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Check, FolderKanban, Layers, LayoutGrid, Loader2, Plus, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -62,6 +62,13 @@ interface TaskDeliveryContextSearchProps {
   closeOnOutside?: boolean;
   /** Overrides the default `max-h-64` results scroller. */
   resultsListClassName?: string;
+  placeholder?: string;
+  showInputClose?: boolean;
+  resultsFrame?: 'card' | 'plain';
+  inputClassName?: string;
+  resultsScrollAttr?: string;
+  headerAccessory?: ReactNode;
+  fillAvailable?: boolean;
 }
 
 /** Unified project / product / work space typeahead with nested rows. */
@@ -76,6 +83,13 @@ export function TaskDeliveryContextSearch({
   resultsPlacement = 'absolute',
   closeOnOutside = true,
   resultsListClassName,
+  placeholder = 'Search projects, products & work spaces…',
+  showInputClose = true,
+  resultsFrame = 'card',
+  inputClassName,
+  resultsScrollAttr,
+  headerAccessory,
+  fillAvailable = false,
 }: TaskDeliveryContextSearchProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = openProp !== undefined;
@@ -192,44 +206,69 @@ export function TaskDeliveryContextSearch({
   }
 
   return (
-    <div ref={containerRef} className={cn('relative w-full min-w-0', className)}>
-      <div className="relative">
-        <Search
-          size={14}
-          className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
-        />
-        <Input
-          ref={inputRef}
-          value={query}
-          disabled={disabled}
-          placeholder="Search projects, products & work spaces…"
-          className="border-border rounded-xl pr-9 pl-9 text-sm"
-          onChange={(event) => {
-            setQuery(event.target.value);
-            runSearch(event.target.value);
-          }}
-          onKeyDown={onKeyDown}
-        />
-        <button
-          type="button"
-          className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-md"
-          aria-label="Close search"
-          onClick={() => {
-            setOpen(false);
-            setQuery('');
-          }}
-        >
-          <X size={16} />
-        </button>
+    <div
+      ref={containerRef}
+      className={cn(
+        'relative w-full min-w-0',
+        fillAvailable && 'flex min-h-0 flex-1 flex-col',
+        className,
+      )}
+    >
+      <div className={cn('flex items-center gap-2', fillAvailable && 'shrink-0 px-3 pt-1')}>
+        <div className="relative min-w-0 flex-1">
+          <Search
+            size={14}
+            className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
+          />
+          <Input
+            ref={inputRef}
+            value={query}
+            disabled={disabled}
+            placeholder={placeholder}
+            className={cn(
+              'border-border rounded-xl pl-9 text-sm',
+              showInputClose ? 'pr-9' : 'pr-3',
+              inputClassName,
+            )}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              runSearch(event.target.value);
+            }}
+            onKeyDown={onKeyDown}
+          />
+          {showInputClose ? (
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-md"
+              aria-label="Close search"
+              onClick={() => {
+                setOpen(false);
+                setQuery('');
+              }}
+            >
+              <X size={16} />
+            </button>
+          ) : null}
+        </div>
+        {headerAccessory}
       </div>
 
       <div
         className={cn(
-          'border-border bg-popover mt-1 overflow-hidden rounded-xl border shadow-lg',
+          resultsFrame === 'card' &&
+            'border-border bg-popover mt-1 overflow-hidden rounded-xl border shadow-lg',
+          resultsFrame === 'plain' && 'mt-2',
+          fillAvailable && 'mt-1 min-h-0 flex-1',
           resultsPlacement === 'absolute' && 'absolute inset-x-0 top-full z-50',
         )}
       >
-        <div className={cn('max-h-64 overflow-y-auto', resultsListClassName)}>
+        <div
+          className={cn(
+            fillAvailable ? 'h-full min-h-0 overflow-y-auto' : 'max-h-64 overflow-y-auto',
+            resultsListClassName,
+          )}
+          {...(resultsScrollAttr ? { [resultsScrollAttr]: '' } : undefined)}
+        >
           {loading ? (
             <div className="text-muted-foreground flex items-center gap-2 px-3 py-2.5 text-xs">
               <Loader2 size={13} className="animate-spin" />

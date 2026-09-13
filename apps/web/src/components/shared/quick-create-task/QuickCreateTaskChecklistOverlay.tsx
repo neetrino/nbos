@@ -4,6 +4,11 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  BOTTOM_SHEET_LAYER_ATTR,
+  BOTTOM_SHEET_LAYER_CLOSE_ATTR,
+  BOTTOM_SHEET_SWIPE_SCROLL_ATTR,
+} from '@/components/layout/bottom-sheet-swipe';
 import { TaskChecklistAddTrigger } from '@/features/tasks/components/TaskChecklistInlineAdd';
 import { TaskChecklistCard } from '@/features/tasks/components/TaskChecklistCard';
 import type { TaskChecklist } from '@/lib/api/tasks';
@@ -41,6 +46,7 @@ export function QuickCreateTaskChecklistOverlay({
       className={QUICK_CREATE_TASK_CHECKLIST_LAYER_CLASS}
       role="region"
       aria-label={tForms('task.checklists')}
+      {...{ [BOTTOM_SHEET_LAYER_ATTR]: '' }}
     >
       <div className="flex shrink-0 items-center justify-end px-3 pt-2">
         <Button
@@ -50,12 +56,16 @@ export function QuickCreateTaskChecklistOverlay({
           className="text-muted-foreground/75 size-8 rounded-full"
           aria-label={tCommon('close')}
           disabled={disabled}
+          {...{ [BOTTOM_SHEET_LAYER_CLOSE_ATTR]: '' }}
           onClick={onClose}
         >
           <X size={19} strokeWidth={1.75} aria-hidden />
         </Button>
       </div>
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 sm:px-4">
+      <div
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 sm:px-4"
+        {...{ [BOTTOM_SHEET_SWIPE_SCROLL_ATTR]: '' }}
+      >
         {checklists.map((list, index) => (
           <ChecklistDraftCard
             key={list.localId}

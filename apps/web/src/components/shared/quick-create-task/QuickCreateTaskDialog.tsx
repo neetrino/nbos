@@ -2,15 +2,20 @@
 
 import { useRef, useState, type RefObject } from 'react';
 import { useTranslations } from 'next-intl';
+import { resetBottomSheetSwipeStyles } from '@/components/layout/bottom-sheet-swipe';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import {
   QUICK_CREATE_TASK_BODY_CLASS,
   QUICK_CREATE_TASK_DESCRIPTION_INPUT_CLASS,
   QUICK_CREATE_TASK_DIALOG_CLASS,
+  QUICK_CREATE_TASK_DIALOG_LAYER_OPEN_CLASS,
   QUICK_CREATE_TASK_DIALOG_STACKED_CLASS,
   QUICK_CREATE_TASK_LAYER_SCRIM_CLASS,
+  QUICK_CREATE_TASK_MOBILE_LAYER_BODY_CLASS,
+  QUICK_CREATE_TASK_MOBILE_LAYER_STACK_CLASS,
   QUICK_CREATE_TASK_STACK_CLASS,
   QUICK_CREATE_TASK_UNDER_LAYER_CLASS,
   QUICK_CREATE_TITLE_FOCUS_DELAY_MS,
@@ -26,8 +31,9 @@ import {
   encodeQuickCreateDraftLinkValue,
 } from './quick-create-task-extras';
 import { QuickCreateTaskChecklistOverlay } from './QuickCreateTaskChecklistOverlay';
-import { consumeQuickCreateChecklistDismiss } from './quick-create-task-layer';
+import { consumeQuickCreateLayerDismiss } from './quick-create-task-layer';
 import { QuickCreateTaskFooter, QuickCreateTaskTitleRow } from './QuickCreateTaskChrome';
+import { QuickCreateTaskProjectOverlay } from './QuickCreateTaskProjectOverlay';
 import { QuickCreateTaskMetaRow } from './QuickCreateTaskMetaRow';
 import {
   useQuickCreateTaskForm,
@@ -41,6 +47,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
   const tCommon = useTranslations('common');
   const { me } = usePermission();
   const { onOpenFull, open, onOpenChange } = props;
+  const isMobileViewport = useIsMobileViewport();
   const form = useQuickCreateTaskForm({ ...props, me });
   const [checklistOpen, setChecklistOpen] = useState(false);
   const [projectOpen, setProjectOpen] = useState(false);
@@ -56,33 +63,49 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
   }
 
   function handleDialogOpenChange(nextOpen: boolean) {
-    if (!nextOpen && consumeQuickCreateChecklistDismiss(checklistOpen)) {
+    const layerOpen = checklistOpen || (projectOpen && isMobileViewport);
+    if (!nextOpen && consumeQuickCreateLayerDismiss(layerOpen)) {
+      const popup = titleInputRef.current?.closest('[data-slot="dialog-content"]');
+      if (popup instanceof HTMLElement) resetBottomSheetSwipeStyles(popup);
       setChecklistOpen(false);
+      setProjectOpen(false);
       return;
     }
     onOpenChange(nextOpen);
   }
 
+  const mobileProjectOpen = projectOpen && isMobileViewport;
+  const layerOpen = checklistOpen || mobileProjectOpen;
+  const linkedValues = new Set(
+    form.pickedLinks.map((link) => encodeQuickCreateDraftLinkValue(link)),
+  );
+
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogContent
         showCloseButton={false}
-        mobileSheet={false}
         className={cn(
           QUICK_CREATE_TASK_DIALOG_CLASS,
           checklistOpen && QUICK_CREATE_TASK_DIALOG_STACKED_CLASS,
+          layerOpen && QUICK_CREATE_TASK_DIALOG_LAYER_OPEN_CLASS,
         )}
+        mobileBodyClassName={layerOpen ? QUICK_CREATE_TASK_MOBILE_LAYER_BODY_CLASS : undefined}
         forceNestedBackdrop={props.forceNestedBackdrop}
         initialFocus={titleInputRef}
       >
         <DialogTitle className="sr-only">{t('task.title')}</DialogTitle>
-        <div className={QUICK_CREATE_TASK_STACK_CLASS}>
+        <div
+          className={cn(
+            QUICK_CREATE_TASK_STACK_CLASS,
+            layerOpen && QUICK_CREATE_TASK_MOBILE_LAYER_STACK_CLASS,
+          )}
+        >
           <div
             className={cn(
               'flex min-h-0 flex-1 flex-col',
-              checklistOpen && QUICK_CREATE_TASK_UNDER_LAYER_CLASS,
+              layerOpen && QUICK_CREATE_TASK_UNDER_LAYER_CLASS,
             )}
-            inert={checklistOpen || undefined}
+            inert={layerOpen || undefined}
           >
             <form
               className={QUICK_CREATE_TASK_BODY_CLASS}
@@ -121,14 +144,17 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
                   projectOpen={projectOpen}
                   fileInputRef={fileInputRef}
                   onFilesPicked={form.addFiles}
+                  projectPicker={isMobileViewport ? 'sheet' : 'popover'}
                   onOpenChecklists={() => {
+                    setProjectOpen(false);
                     form.openChecklists();
                     setChecklistOpen(true);
                   }}
-                  onProjectOpenChange={setProjectOpen}
-                  linkedValues={
-                    new Set(form.pickedLinks.map((link) => encodeQuickCreateDraftLinkValue(link)))
-                  }
+                  onProjectOpenChange={(nextOpen) => {
+                    if (nextOpen) setChecklistOpen(false);
+                    setProjectOpen(nextOpen);
+                  }}
+                  linkedValues={linkedValues}
                   onSelectContext={form.selectContext}
                 />
               }
@@ -153,6 +179,14 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
               disabled={fieldsLocked}
               onChange={form.setChecklists}
               onClose={() => setChecklistOpen(false)}
+            />
+          ) : null}
+          {mobileProjectOpen ? (
+            <QuickCreateTaskProjectOverlay
+              linkedValues={linkedValues}
+              disabled={fieldsLocked}
+              onSelect={form.selectContext}
+              onClose={() => setProjectOpen(false)}
             />
           ) : null}
         </div>

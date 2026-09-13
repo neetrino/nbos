@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState, type RefObject } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { format } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 import { NBOS_DATE_PICKER_EXTENDED_WIDTH_PX } from './date-picker-constants';
 import { resolveDatePickerLocale } from './date-picker-locale';
@@ -65,7 +66,9 @@ export function NbosDatePicker({
   popoverAlign = 'end',
 }: NbosDatePickerProps) {
   const interfaceLocale = useLocale();
+  const isMobileViewport = useIsMobileViewport();
   const locale = resolveDatePickerLocale(interfaceLocale, localeProp);
+  const showPresets = variant === 'extended' && !isMobileViewport;
   const t = useTranslations('forms');
   const placeholder = placeholderProp ?? t('datePicker.selectDate');
   const parsed = useMemo(
@@ -150,12 +153,10 @@ export function NbosDatePicker({
         anchor={popoverAnchorRef}
         className={cn(
           'gap-0 rounded-2xl p-4 shadow-xl',
-          variant === 'extended'
-            ? 'flex flex-row'
-            : 'flex w-(--anchor-width) min-w-[17.5rem] flex-col',
+          showPresets ? 'flex flex-row' : 'flex w-(--anchor-width) min-w-[17.5rem] flex-col',
         )}
         style={
-          variant === 'extended'
+          showPresets
             ? {
                 width: NBOS_DATE_PICKER_EXTENDED_WIDTH_PX,
                 maxWidth: 'min(100vw - 2rem, 100%)',
@@ -180,9 +181,9 @@ export function NbosDatePicker({
           onTimeChange={handleTimeChange}
           onClear={handleClear}
           onToday={() => applyDate(new Date())}
-          extended={variant === 'extended'}
+          extended={showPresets}
         />
-        {variant === 'extended' ? (
+        {showPresets ? (
           <NbosDatePresetsPanel
             anchorDate={anchor}
             selectedDate={parsed}

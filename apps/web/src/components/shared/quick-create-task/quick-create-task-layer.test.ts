@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { consumeQuickCreateChecklistDismiss } from './quick-create-task-layer';
+import { consumeQuickCreateLayerDismiss } from './quick-create-task-layer';
 
-describe('consumeQuickCreateChecklistDismiss', () => {
-  it('keeps the create dialog open while the checklist layer is showing', () => {
-    expect(consumeQuickCreateChecklistDismiss(true)).toBe(true);
+describe('consumeQuickCreateLayerDismiss', () => {
+  it('keeps the create dialog open while a layer is showing', () => {
+    expect(consumeQuickCreateLayerDismiss(true)).toBe(true);
   });
 
-  it('lets the create dialog close when no checklist layer is showing', () => {
-    expect(consumeQuickCreateChecklistDismiss(false)).toBe(false);
+  it('lets the create dialog close when no layer is showing', () => {
+    expect(consumeQuickCreateLayerDismiss(false)).toBe(false);
   });
 });

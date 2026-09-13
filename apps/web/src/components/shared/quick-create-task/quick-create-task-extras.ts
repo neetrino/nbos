@@ -19,8 +19,12 @@ export type QuickCreateDraftChecklist = {
   items: QuickCreateDraftChecklistItem[];
 };
 
+let nextQuickCreateDraftId = 0;
+
+/** Session-local React keys for draft checklists. Not persisted and not a UUID. */
 export function newQuickCreateDraftId(): string {
-  return crypto.randomUUID();
+  nextQuickCreateDraftId += 1;
+  return `qc-draft-${nextQuickCreateDraftId}`;
 }
 
 export function encodeQuickCreateDraftLinkValue(link: QuickCreateDraftLink): string {
