@@ -51,6 +51,8 @@
     "auth:legacy-retirement-check": "tsx apps/api/scripts/auth-legacy-retirement-check.ts",
     "deploy:prod": "node scripts/coolify-sequential-deploy.mjs",
     "deploy:prod:status": "node scripts/coolify-sequential-deploy.mjs --status",
+    "release:prod": "node scripts/release-prod.mjs",
+    "release:prod:status": "node scripts/release-prod.mjs --status",
     "prepare": "husky"
   },
   "devDependencies": {

@@ -309,7 +309,7 @@ nbos/
 - **БД:** Neon PostgreSQL (branch для staging при необходимости).
 - **Redis:** Upstash.
 - **Файлы:** Cloudflare R2.
-- **CI/CD:** GitHub Actions выполняет CI; production migration и выборочный Coolify deploy выполняются вручную после зелёного CI. Sequential deploy с машины оператора: `pnpm deploy:prod` (`docs/deploy.md` §5.3). Auto Deploy остаётся OFF.
+- **CI/CD:** GitHub Actions выполняет CI; production migration и выборочный Coolify deploy выполняются вручную после зелёного CI. С машины оператора: `pnpm deploy:prod`, цепочка migrate+deploy — `pnpm release:prod` (`docs/deploy.md` §5.3–5.4). Auto Deploy остаётся OFF.
 
 ---
 

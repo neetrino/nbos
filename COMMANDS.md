@@ -107,3 +107,15 @@ pnpm deploy:prod -- backend
 ```bash
 pnpm deploy:prod -- web
 ```
+
+# PRODUCTION RELEASE (DB + DEPLOY)
+
+DB MIGRATE FIRST. DEPLOY ONLY IF MIGRATE SUCCEEDS.
+
+```bash
+pnpm release:prod:status
+```
+
+```bash
+pnpm release:prod
+```
