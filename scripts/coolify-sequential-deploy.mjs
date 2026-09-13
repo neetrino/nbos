@@ -105,11 +105,7 @@ async function readDeploymentStatus(api, appUuid, deploymentUuid) {
   } catch (error) {
     if (error.status !== 404) throw error;
   }
-  const list = await coolifyRequest(
-    api,
-    'GET',
-    `/deployments/applications/${appUuid}?take=10`,
-  );
+  const list = await coolifyRequest(api, 'GET', `/deployments/applications/${appUuid}?take=10`);
   const match = pickDeployment(extractDeploymentRecords(list), deploymentUuid);
   return typeof match?.status === 'string' ? match.status : undefined;
 }
