@@ -27,22 +27,64 @@
   },
   "stages": {
     "lead": {
-      "NEW": { "label": "Նոր", "short": "Նոր" },
-      "DIDNT_GET_THROUGH": { "label": "Չհասանք կապի", "short": "Չհասանք…" },
-      "CONTACT_ESTABLISHED": { "label": "Կապը հաստատված է", "short": "Կապ" },
-      "MQL": { "label": "Որակավորում (MQL)", "short": "MQL" },
-      "ON_HOLD": { "label": "Սպասման մեջ", "short": "Սպասում" },
-      "SPAM": { "label": "Սպամ", "short": "Սպամ" },
-      "SQL": { "label": "Լիդը շահված է", "short": "Շահված" }
+      "NEW": {
+        "label": "Նոր",
+        "short": "Նոր"
+      },
+      "DIDNT_GET_THROUGH": {
+        "label": "Չհասանք կապի",
+        "short": "Չհասանք…"
+      },
+      "CONTACT_ESTABLISHED": {
+        "label": "Կապը հաստատված է",
+        "short": "Կապ"
+      },
+      "MQL": {
+        "label": "Որակավորում (MQL)",
+        "short": "MQL"
+      },
+      "ON_HOLD": {
+        "label": "Սպասման մեջ",
+        "short": "Սպասում"
+      },
+      "SPAM": {
+        "label": "Սպամ",
+        "short": "Սպամ"
+      },
+      "SQL": {
+        "label": "Լիդը շահված է",
+        "short": "Շահված"
+      }
     },
     "deal": {
-      "START_CONVERSATION": { "label": "Սկսել զրույց", "short": "Սկիզբ" },
-      "DISCUSS_NEEDS": { "label": "Քննարկել կարիքը", "short": "Քննարկում" },
-      "SEND_OFFER": { "label": "Ուղարկել առաջարկ", "short": "Առաջարկ" },
-      "GET_ANSWER": { "label": "Ստանալ պատասխան", "short": "Պատասխան" },
-      "DEPOSIT_AND_CONTRACT": { "label": "Կանխավճար և պայմանագիր", "short": "Կանխավճար" },
-      "FAILED": { "label": "Ձախողված", "short": "Ձախողված" },
-      "WON": { "label": "Գործարքը հաղթել է", "short": "Հաղթել է" }
+      "START_CONVERSATION": {
+        "label": "Սկսել զրույց",
+        "short": "Սկիզբ"
+      },
+      "DISCUSS_NEEDS": {
+        "label": "Քննարկել կարիքը",
+        "short": "Քննարկում"
+      },
+      "SEND_OFFER": {
+        "label": "Ուղարկել առաջարկ",
+        "short": "Առաջարկ"
+      },
+      "GET_ANSWER": {
+        "label": "Ստանալ պատասխան",
+        "short": "Պատասխան"
+      },
+      "DEPOSIT_AND_CONTRACT": {
+        "label": "Կանխավճար և պայմանագիր",
+        "short": "Կանխավճար"
+      },
+      "FAILED": {
+        "label": "Ձախողված",
+        "short": "Ձախողված"
+      },
+      "WON": {
+        "label": "Գործարքը հաղթել է",
+        "short": "Հաղթել է"
+      }
     }
   },
   "catalogs": {
@@ -474,7 +516,7 @@
     "restore": "Վերականգնել",
     "deletePermanently": "Ջնջել ընդմիշտ",
     "moveToTrash": "Տեղափոխել Աղբարկղ",
-    "exceptionOrder": "Exception order",
+    "exceptionOrder": "Բացառիկ պատվեր",
     "created": "Ստեղծվել է",
     "lastUpdated": "Վերջին թարմացումը",
     "sectionDealProject": "Գործարք և նախագիծ",
@@ -571,10 +613,10 @@
       "emptyProduct": "Արտադրանքի կապը բացակայում է կամ դեռ կիրառելի չէ։",
       "emptySubscription": "Բաժանորդագրության կապը բացակայում է կամ այս գործարքի համար կիրառելի չէ։",
       "openMaintenance": "Բացել {code}",
-      "maintenancePending": "Maintenance Գործարքը ստեղծվում է Product handoff-ի ընթացքում։"
+      "maintenancePending": "Maintenance գործարծը ստեղծվում է արտադրանքի փոխանցումից հետ։"
     },
     "exception": {
-      "title": "Exception order",
+      "title": "Բացառիկ պատվեր",
       "description": "Փակել առանց կանխավճարի հաշվի։ FREE կամ POSTPAID դեպքերում բոնուսները ձեռքով են։",
       "type": "Տեսակ",
       "free": "Անվճար",
@@ -583,8 +625,8 @@
       "reasonPlaceholder": "Ինչո՞ւ է սա բացառություն և ի՞նչ պայմաններով։",
       "expectedPaymentDate": "Սպասվող վճարման ամսաթիվ (ընտրովի)",
       "expectedPaymentPlaceholder": "Ընտրեք սպասվող վճարման ամսաթիվը…",
-      "create": "Ստեղծել exception order",
-      "createError": "Չհաջողվեց ստեղծել exception order-ը։"
+      "create": "Ստեղծել բացառիկ պատվեր",
+      "createError": "Չհաջողվեց ստեղծել բացառիկ պատվերը։"
     },
     "files": {
       "offer": "Առաջարկ",

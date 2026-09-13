@@ -33,6 +33,7 @@ tmp/
 tmp_*
 temp/
 .cache/
+.venv/
 
 # IDE
 .idea/
