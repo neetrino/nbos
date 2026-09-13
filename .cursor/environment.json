@@ -1,0 +1,20 @@
+{
+  "name": "NBOS",
+  "user": "ubuntu",
+  "install": "bash .cursor/scripts/cloud-install.sh",
+  "start": "bash .cursor/scripts/cloud-start.sh",
+  "terminals": [
+    {
+      "name": "api",
+      "command": "pnpm dev:api"
+    },
+    {
+      "name": "web",
+      "command": "pnpm dev:web"
+    }
+  ],
+  "ports": [
+    { "name": "web", "port": 3000 },
+    { "name": "api", "port": 4000 }
+  ]
+}
