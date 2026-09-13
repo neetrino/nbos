@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import {
   FileText,
@@ -61,6 +62,7 @@ function evidenceHintGlyph(type: ChecklistTemplateItemEvidenceType) {
 
 /** Minimal icons for collapsed row (no network). */
 export function ChecklistEvidenceCollapsedHints({ item }: { item: EvidenceFields }) {
+  const t = useTranslations('checklist');
   if (item.evidenceType === 'TEXT_ONLY' || !item.evidenceValue?.trim()) {
     return null;
   }
@@ -73,7 +75,7 @@ export function ChecklistEvidenceCollapsedHints({ item }: { item: EvidenceFields
     return (
       <span
         className="text-muted-foreground inline-flex items-center gap-0.5"
-        title={`${n} attachment${n === 1 ? '' : 's'}`}
+        title={t('evidence.attachments', { count: n })}
       >
         {evidenceHintGlyph(item.evidenceType)}
         {n > 1 ? (
@@ -88,7 +90,7 @@ export function ChecklistEvidenceCollapsedHints({ item }: { item: EvidenceFields
     isHttpUrlString(raw)
   ) {
     return (
-      <span className="text-muted-foreground inline-flex" title="Link">
+      <span className="text-muted-foreground inline-flex" title={t('evidence.link')}>
         {evidenceHintGlyph(item.evidenceType)}
       </span>
     );
@@ -96,7 +98,7 @@ export function ChecklistEvidenceCollapsedHints({ item }: { item: EvidenceFields
 
   if (item.evidenceType === 'FREE_TEXT') {
     return (
-      <span className="text-muted-foreground inline-flex" title="Text">
+      <span className="text-muted-foreground inline-flex" title={t('evidence.text')}>
         {evidenceHintGlyph('FREE_TEXT')}
       </span>
     );

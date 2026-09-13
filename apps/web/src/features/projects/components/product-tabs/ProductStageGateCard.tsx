@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { FullProduct } from '@/lib/api/products';
 import { productsApi } from '@/lib/api/products';
 import {
@@ -22,6 +23,7 @@ export function ProductStageGateCard({
   gateRequiredFields,
   onStatusChange,
 }: ProductStageGateCardProps) {
+  const t = useTranslations('deliveryBoard');
   const [updating, setUpdating] = useState(false);
   const [dialogAction, setDialogAction] = useState<DeliveryLifecycleAction | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -34,7 +36,7 @@ export function ProductStageGateCard({
       await productsApi.resume(product.id);
       onStatusChange();
     } catch (error) {
-      setActionError(toActionError(error, 'Failed to resume product.'));
+      setActionError(toActionError(error, t('errors.resumeFailed')));
     } finally {
       setUpdating(false);
     }
@@ -47,7 +49,7 @@ export function ProductStageGateCard({
       await productsApi.confirmAcceptance(product.id, {});
       onStatusChange();
     } catch (error) {
-      setAcceptanceError(toActionError(error, 'Failed to record client acceptance.'));
+      setAcceptanceError(toActionError(error, t('errors.acceptanceFailed')));
     } finally {
       setUpdating(false);
     }
@@ -69,7 +71,7 @@ export function ProductStageGateCard({
       setDialogAction(null);
       onStatusChange();
     } catch (error) {
-      setActionError(toActionError(error, 'Failed to update product delivery.'));
+      setActionError(toActionError(error, t('errors.updateFailed')));
     } finally {
       setUpdating(false);
     }

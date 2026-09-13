@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ExternalLink, Link2, Star, Trash2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
@@ -88,6 +89,7 @@ export function useCredentialVaultCardActions({
   onSetFavorite,
   onRequestMoveToTrash,
 }: CredentialVaultCardActionsProps) {
+  const t = useTranslations('credentials');
   const hasUrl = Boolean(url?.trim());
   const showMoveToTrash = canMoveToTrash && Boolean(onRequestMoveToTrash);
 
@@ -97,7 +99,7 @@ export function useCredentialVaultCardActions({
         const { url: openUrl } = await credentialsApi.recordUrlOpened(credentialId);
         window.open(openUrl, '_blank', 'noopener,noreferrer');
       } catch {
-        toast.error('Could not open URL');
+        toast.error(t('tiles.openUrlFailed'));
       }
     })();
   };
@@ -107,9 +109,9 @@ export function useCredentialVaultCardActions({
       try {
         const href = `${window.location.origin}${buildCredentialVaultHref(credentialId)}`;
         await navigator.clipboard.writeText(href);
-        toast.success('Link copied');
+        toast.success(t('tiles.linkCopied'));
       } catch {
-        toast.error('Could not copy link');
+        toast.error(t('tiles.copyLinkFailed'));
       }
     })();
   };
@@ -144,13 +146,14 @@ export function CredentialVaultCardActionButtons({
   handleCopyLink: () => void;
   onRequestMoveToTrash?: () => void;
 }) {
+  const t = useTranslations('credentials');
   const iconClass = compact ? 'size-3' : 'size-3.5';
 
   return (
     <>
       {onSetFavorite ? (
         <VaultActionButton
-          label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          label={isFavorite ? t('tiles.removeFavorite') : t('tiles.addFavorite')}
           tone="favorite"
           active={isFavorite}
           activeClassName="border-amber-400 bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
@@ -161,16 +164,26 @@ export function CredentialVaultCardActionButtons({
         </VaultActionButton>
       ) : null}
       {hasUrl ? (
-        <VaultActionButton label="Open URL" tone="url" compact={compact} onClick={handleOpenUrl}>
+        <VaultActionButton
+          label={t('tiles.openUrl')}
+          tone="url"
+          compact={compact}
+          onClick={handleOpenUrl}
+        >
           <ExternalLink className={iconClass} aria-hidden />
         </VaultActionButton>
       ) : null}
-      <VaultActionButton label="Copy link" tone="link" compact={compact} onClick={handleCopyLink}>
+      <VaultActionButton
+        label={t('tiles.copyLink')}
+        tone="link"
+        compact={compact}
+        onClick={handleCopyLink}
+      >
         <Link2 className={iconClass} aria-hidden />
       </VaultActionButton>
       {showMoveToTrash ? (
         <VaultActionButton
-          label="Move to Trash"
+          label={t('delete.confirm')}
           tone="destructive"
           compact={compact}
           onClick={() => onRequestMoveToTrash?.()}

@@ -1,10 +1,17 @@
+import { createTranslator } from 'next-intl';
 import { ApiError } from '@/lib/api-errors';
 import type {
   PayrollAllocationMatrix,
   PayrollAllocationMatrixCell,
 } from '@/lib/api/payroll-allocation-matrix';
 import { describe, expect, it } from 'vitest';
+import enPayroll from '@/messages/en/payroll.json';
 import { formatPayrollMatrixCellError } from './format-payroll-matrix-cell-error';
+
+const t = createTranslator({
+  locale: 'en',
+  messages: enPayroll,
+});
 
 const cell: PayrollAllocationMatrixCell = {
   employeeId: 'emp1',
@@ -68,7 +75,7 @@ describe('formatPayrollMatrixCellError', () => {
       'Sales bonus c5b7af1c-b8a6-4736-9e66-12b3abfcc5ec has no payable snapshot for earned period 2026-05',
     );
 
-    expect(formatPayrollMatrixCellError(caught, 'Could not update release.')).toBe(
+    expect(formatPayrollMatrixCellError(caught, t)).toBe(
       'Sales bonus is not ready for payroll (earned month 2026-05). Sync Sales KPI for that month, then retry.',
     );
   });
@@ -79,7 +86,7 @@ describe('formatPayrollMatrixCellError', () => {
     );
 
     expect(
-      formatPayrollMatrixCellError(caught, 'Could not update release.', {
+      formatPayrollMatrixCellError(caught, t, {
         cell,
         matrix: matrix as PayrollAllocationMatrix,
       }),

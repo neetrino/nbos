@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { AtSign, Braces, KeyRound, Lock, Shield, Terminal } from 'lucide-react';
 import {
   ApplePlatformIcon,
@@ -123,12 +124,13 @@ function renderPreviewItem(
   credential: CredentialListItem,
   secretFlashCredentialId: string | null | undefined,
   interactive: boolean,
+  t: (key: never) => string,
   onCopyText?: (text: string) => void,
   onCopySecret?: (credentialId: string, criticality: string, field: CredentialSecretField) => void,
   pillClassName?: string,
 ) {
   if (item.type === 'info') {
-    return <CredentialVaultInfoPreview icon={item.icon} label={item.label} />;
+    return <CredentialVaultInfoPreview icon={item.icon} label={t(item.labelKey as never)} />;
   }
 
   if (item.type === 'copy-text') {
@@ -146,7 +148,7 @@ function renderPreviewItem(
       <CredentialVaultSecretPill
         icon={<VaultPreviewIcon icon={item.icon} />}
         value={item.value}
-        copyLabel={item.copyLabel}
+        copyLabel={t(item.copyLabelKey as never)}
         className={pillClassName}
         onCopy={() => onCopyText(item.value)}
       />
@@ -170,7 +172,7 @@ function renderPreviewItem(
     <CredentialVaultSecretPill
       icon={<VaultPreviewIcon icon={item.icon} />}
       value={PASSWORD_MASK}
-      copyLabel={item.copyLabel}
+      copyLabel={t(item.copyLabelKey as never)}
       copied={secretFlashCredentialId === credential.id}
       mono
       className={pillClassName}
@@ -192,6 +194,7 @@ export function CredentialVaultPreviewStrip({
   itemIndex,
   className,
 }: CredentialVaultPreviewStripProps) {
+  const t = useTranslations('credentials');
   const model = buildCredentialVaultPreview(credential);
 
   if (itemIndex !== undefined) {
@@ -204,6 +207,7 @@ export function CredentialVaultPreviewStrip({
           credential,
           secretFlashCredentialId,
           interactive,
+          t,
           onCopyText,
           onCopySecret,
           VAULT_LIST_PREVIEW_PILL_CLASS,
@@ -219,7 +223,7 @@ export function CredentialVaultPreviewStrip({
     if (item?.type !== 'info') return null;
     return (
       <div className={cn('flex flex-1 flex-col items-center justify-center', className)}>
-        <CredentialVaultInfoPreview icon={item.icon} label={item.label} />
+        <CredentialVaultInfoPreview icon={item.icon} label={t(item.labelKey as never)} />
       </div>
     );
   }
@@ -243,6 +247,7 @@ export function CredentialVaultPreviewStrip({
                 credential,
                 secretFlashCredentialId,
                 interactive,
+                t,
                 onCopyText,
                 onCopySecret,
               )}
@@ -259,6 +264,7 @@ export function CredentialVaultPreviewStrip({
                 credential,
                 secretFlashCredentialId,
                 interactive,
+                t,
                 onCopyText,
                 onCopySecret,
               )}

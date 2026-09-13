@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   PAYROLL_MATRIX_EXPANSION_CELL_CLASS,
@@ -49,36 +50,52 @@ function ExpansionMetricStack({ items }: { items: MetricItem[] }) {
   );
 }
 
-function orderPoolMetrics(unit: DeliveryPayableUnit): MetricItem[] {
+function orderPoolMetrics(
+  unit: DeliveryPayableUnit,
+  plannedLabel: string,
+  paidLabel: string,
+): MetricItem[] {
   return [
-    { label: 'Planned', value: fmt(unit.totalPlannedBonus) },
-    { label: 'Paid', value: fmt(unit.totalPaidBonus) },
+    { label: plannedLabel, value: fmt(unit.totalPlannedBonus) },
+    { label: paidLabel, value: fmt(unit.totalPaidBonus) },
   ];
 }
 
-function employeeRunMetrics(employee: PayrollAllocationMatrixEmployee): MetricItem[] {
+function employeeRunMetrics(
+  employee: PayrollAllocationMatrixEmployee,
+  salaryLabel: string,
+  bonusLabel: string,
+): MetricItem[] {
   return [
-    { label: 'Salary', value: fmt(employee.baseSalary) },
-    { label: 'Bonus', value: fmt(employee.bonusTotalThisRun) },
+    { label: salaryLabel, value: fmt(employee.baseSalary) },
+    { label: bonusLabel, value: fmt(employee.bonusTotalThisRun) },
   ];
 }
 
-function intersectionMetrics(cell: PayrollAllocationMatrixCell): MetricItem[] {
+function intersectionMetrics(
+  cell: PayrollAllocationMatrixCell,
+  payableLabel: string,
+  dueLabel: string,
+  paidLabel: string,
+): MetricItem[] {
   return [
-    { label: 'Payable', value: fmt(cell.plannedAmount) },
-    { label: 'Due', value: fmt(cell.remaining) },
-    { label: 'Paid', value: fmt(cell.paidBefore) },
+    { label: payableLabel, value: fmt(cell.plannedAmount) },
+    { label: dueLabel, value: fmt(cell.remaining) },
+    { label: paidLabel, value: fmt(cell.paidBefore) },
   ];
 }
 
 /** Column expansion — pool summary header (thead). */
 export function MatrixOrderDetailHeader({ unit }: { unit: DeliveryPayableUnit }) {
+  const t = useTranslations('payroll');
   return (
     <th
       style={PAYROLL_MATRIX_DETAIL_COL_STYLE}
       className={PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS}
     >
-      <ExpansionMetricStack items={orderPoolMetrics(unit)} />
+      <ExpansionMetricStack
+        items={orderPoolMetrics(unit, t('matrix.header.planned'), t('matrix.paid'))}
+      />
     </th>
   );
 }
@@ -88,24 +105,30 @@ export function MatrixEmployeeDetailHeader({
 }: {
   employee: PayrollAllocationMatrixEmployee;
 }) {
+  const t = useTranslations('payroll');
   return (
     <th
       style={PAYROLL_MATRIX_DETAIL_COL_STYLE}
       className={PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS}
     >
-      <ExpansionMetricStack items={employeeRunMetrics(employee)} />
+      <ExpansionMetricStack
+        items={employeeRunMetrics(employee, t('matrix.header.salary'), t('matrix.header.bonus'))}
+      />
     </th>
   );
 }
 
 /** Row expansion — pool summary in sticky edge (Planned/Paid or Payable/Bonus). */
 export function MatrixOrderRowDetailSticky({ unit }: { unit: DeliveryPayableUnit }) {
+  const t = useTranslations('payroll');
   return (
     <th
       style={PAYROLL_MATRIX_EXPANSION_ROW_STICKY_STYLE}
       className={PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS}
     >
-      <ExpansionMetricStack items={orderPoolMetrics(unit)} />
+      <ExpansionMetricStack
+        items={orderPoolMetrics(unit, t('matrix.header.planned'), t('matrix.paid'))}
+      />
     </th>
   );
 }
@@ -115,12 +138,15 @@ export function MatrixEmployeeRowDetailSticky({
 }: {
   employee: PayrollAllocationMatrixEmployee;
 }) {
+  const t = useTranslations('payroll');
   return (
     <th
       style={PAYROLL_MATRIX_EXPANSION_ROW_STICKY_STYLE}
       className={PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS}
     >
-      <ExpansionMetricStack items={employeeRunMetrics(employee)} />
+      <ExpansionMetricStack
+        items={employeeRunMetrics(employee, t('matrix.header.salary'), t('matrix.header.bonus'))}
+      />
     </th>
   );
 }
@@ -133,6 +159,7 @@ export function MatrixCellDetailPanel({
   cell: PayrollAllocationMatrixCell | undefined;
   layout?: 'column' | 'row';
 }) {
+  const t = useTranslations('payroll');
   const cellClass =
     layout === 'row'
       ? PAYROLL_MATRIX_EXPANSION_ROW_CELL_CLASS
@@ -154,7 +181,14 @@ export function MatrixCellDetailPanel({
       style={layout === 'row' ? PAYROLL_MATRIX_DATA_COL_STYLE : PAYROLL_MATRIX_DETAIL_COL_STYLE}
       className={cellClass}
     >
-      <ExpansionMetricStack items={intersectionMetrics(cell)} />
+      <ExpansionMetricStack
+        items={intersectionMetrics(
+          cell,
+          t('matrix.payable'),
+          t('matrix.header.due'),
+          t('matrix.paid'),
+        )}
+      />
     </td>
   );
 }

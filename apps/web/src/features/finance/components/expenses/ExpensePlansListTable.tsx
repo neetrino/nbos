@@ -82,7 +82,11 @@ export function ExpensePlansListTable({ plans, onOpen }: ExpensePlansListTablePr
                 />
               </TableCell>
               <TableCell className={`${FINANCE_LIST_CELL_CLASS} ${FINANCE_LIST_TYPE_CLASS}`}>
-                {translateExpensePlanCategory(t, plan.category, getExpenseCategoryLabel(plan.category))}
+                {translateExpensePlanCategory(
+                  t,
+                  plan.category,
+                  getExpenseCategoryLabel(plan.category),
+                )}
               </TableCell>
               <TableCell className={FINANCE_LIST_CELL_CLASS}>
                 <FinanceListAmount amount={plan.amount} />
@@ -96,7 +100,11 @@ export function ExpensePlansListTable({ plans, onOpen }: ExpensePlansListTablePr
               </TableCell>
               <TableCell className={FINANCE_LIST_CELL_CLASS}>
                 {plan.autoGenerate ? (
-                  <StatusBadge label={t('table.yes')} variant="green" className={FINANCE_LIST_BADGE_CLASS} />
+                  <StatusBadge
+                    label={t('table.yes')}
+                    variant="green"
+                    className={FINANCE_LIST_BADGE_CLASS}
+                  />
                 ) : (
                   <FinanceListMutedDash />
                 )}

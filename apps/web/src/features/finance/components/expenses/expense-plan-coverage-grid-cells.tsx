@@ -5,9 +5,7 @@ import { FINANCE_CALENDAR_CELL_EMPTY } from '@/features/finance/constants/financ
 import { formatAmount, formatAmountAbbreviated } from '@/features/finance/constants/finance';
 import type { ExpensePlanGridCell } from '@/lib/api/expense-plans';
 import { cn } from '@/lib/utils';
-import {
-  expensePlanMonthCellVisualClass,
-} from './expense-plan-coverage-cell-visual';
+import { expensePlanMonthCellVisualClass } from './expense-plan-coverage-cell-visual';
 import { translateExpensePlanCellStatus, useExpensePlansT } from './expense-plan-message-keys';
 
 /** Same slot size as `/finance/salary` calendar cells. */
@@ -81,11 +79,12 @@ export function ExpensePlanGridMonthCell({
   cell: ExpensePlanGridCell;
   onOpen: () => void;
 }) {
+  const t = useExpensePlansT();
+
   if (cell.kind === 'NA') {
     return <ExpensePlanEmptyMonthCell />;
   }
 
-  const t = useExpensePlansT();
   const fullAmount = formatAmount(cell.amount);
   const amountLabel = formatAmountAbbreviated(cell.amount);
   const statusLabel = translateExpensePlanCellStatus(t, cell.kind);

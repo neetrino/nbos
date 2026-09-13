@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { FolderKanban, KeyRound, Star } from 'lucide-react';
 import { TableCell } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
@@ -11,7 +12,10 @@ import {
 } from '@/components/shared/entity-list-table';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { getAccessLevel } from '@/features/credentials/constants/credentials';
+import {
+  credentialTypeMessageKey,
+  getAccessLevel,
+} from '@/features/credentials/constants/credentials';
 import {
   VAULT_LIST_CENTER_CELL_CLASS,
   VAULT_LIST_CENTER_INLINE_CLASS,
@@ -27,7 +31,10 @@ import { CredentialVaultPreviewStrip } from '@/features/credentials/components/c
 import { buildCredentialVaultPreview } from '@/features/credentials/utils/credential-vault-preview';
 import { CredentialBrandMark } from '@/features/credentials/components/credential-brand-mark';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
-import { credentialHealthBadge } from '@/features/credentials/utils/credential-health-badge';
+import {
+  CREDENTIAL_HEALTH_STATUS_KEYS,
+  credentialHealthBadge,
+} from '@/features/credentials/utils/credential-health-badge';
 import { formatCredentialTypeLabel } from '@/features/credentials/utils/credential-type-display';
 import type { CredentialSecretField } from '@/lib/api/credentials';
 
@@ -58,6 +65,7 @@ export function CredentialVaultTableRowCells({
   onCopySecret,
   onSetFavorite,
 }: CredentialVaultTableRowCellsProps) {
+  const t = useTranslations('credentials');
   const access = getAccessLevel(cred.accessLevel);
   const category = getCredentialCategoryMeta(cred.category);
   const metaBadges = buildCredentialVaultCardMetaBadges(cred);
@@ -68,6 +76,8 @@ export function CredentialVaultTableRowCells({
   const healthBadge = credentialHealthBadge(cred.health);
   const preview = buildCredentialVaultPreview(cred);
   const primaryFolder = resolvePrimaryCredentialFolder(cred);
+  const typeKey = credentialTypeMessageKey(cred.credentialType);
+  const typeLabel = typeKey ? t(typeKey as never) : formatCredentialTypeLabel(cred.credentialType);
 
   const renderPreviewCell = (itemIndex: number) => {
     const item = preview.items[itemIndex];
@@ -127,7 +137,7 @@ export function CredentialVaultTableRowCells({
               size="icon"
               variant="ghost"
               data-credential-vault-action
-              aria-label={cred.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              aria-label={cred.isFavorite ? t('tiles.removeFavorite') : t('tiles.addFavorite')}
               className={cn(
                 'size-7 shrink-0 self-center transition-opacity',
                 cred.isFavorite
@@ -166,7 +176,7 @@ export function CredentialVaultTableRowCells({
         </div>
       </TableCell>
       <TableCell className={`${VAULT_LIST_CENTER_CELL_CLASS} text-muted-foreground text-xs`}>
-        {formatCredentialTypeLabel(cred.credentialType)}
+        {typeLabel}
       </TableCell>
       <TableCell className={VAULT_LIST_CENTER_CELL_CLASS}>
         <div className={VAULT_LIST_CENTER_INLINE_CLASS}>
@@ -194,10 +204,10 @@ export function CredentialVaultTableRowCells({
       </TableCell>
       <TableCell className={VAULT_LIST_CENTER_CELL_CLASS}>
         <div className={VAULT_LIST_CENTER_STACK_CLASS}>
-          <EntityListDate value={cred.nextRotationAt} emptyLabel="No date" />
+          <EntityListDate value={cred.nextRotationAt} emptyLabel={t('table.noDate')} />
           {healthBadge ? (
             <StatusBadge
-              label={healthBadge.label}
+              label={t(CREDENTIAL_HEALTH_STATUS_KEYS[healthBadge.status] as never)}
               variant={healthBadge.variant}
               className={cn(ENTITY_LIST_BADGE_CLASS, 'self-center')}
             />

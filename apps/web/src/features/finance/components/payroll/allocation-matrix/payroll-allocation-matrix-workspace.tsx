@@ -183,10 +183,10 @@ export function PayrollAllocationMatrixWorkspace({
       });
       applyMatrix(updated);
       setManualCell(null);
-      toast.success('Manual bonus created and attached');
+      toast.success(t('matrix.manual.created'));
       void refreshValidation();
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not create manual bonus.'));
+      toast.error(getApiErrorMessage(caught, t('matrix.manual.createError')));
     } finally {
       setManualBusy(false);
     }
@@ -211,7 +211,7 @@ export function PayrollAllocationMatrixWorkspace({
         void refreshValidation();
       } catch (caught) {
         toast.error(
-          formatPayrollMatrixCellError(caught, 'Could not update release.', {
+          formatPayrollMatrixCellError(caught, t, {
             cell,
             matrix,
           }),
@@ -221,7 +221,7 @@ export function PayrollAllocationMatrixWorkspace({
         setSavingCellKey(null);
       }
     },
-    [applyMatrix, matrix, onSalaryLinesStale, payrollRunId, refreshValidation],
+    [applyMatrix, matrix, onSalaryLinesStale, payrollRunId, refreshValidation, t],
   );
 
   const handleResetLayout = useCallback(() => {

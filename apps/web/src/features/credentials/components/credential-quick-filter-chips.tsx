@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { PAGE_HERO_TAB_SCROLL } from '@/components/shared/page-hero/page-hero-constants';
@@ -28,6 +29,7 @@ export function CredentialQuickFilterChips({
   onToggleQuick,
   trailing,
 }: CredentialQuickFilterChipsProps) {
+  const t = useTranslations('credentials');
   const showMineChip = vaultScope === 'all';
 
   return (
@@ -57,7 +59,7 @@ export function CredentialQuickFilterChips({
               className="h-7 shrink-0 rounded-full px-3 text-xs"
               onClick={() => onToggleQuick('mine')}
             >
-              Mine
+              {t('filters.mine')}
             </Button>
           )}
           <Button
@@ -68,7 +70,7 @@ export function CredentialQuickFilterChips({
             onClick={() => onToggleQuick('favorites')}
           >
             <Star size={12} className={activeQuick.has('favorites') ? 'fill-current' : undefined} />
-            Favorites
+            {t('filters.favorites')}
           </Button>
           <Button
             type="button"
@@ -77,7 +79,7 @@ export function CredentialQuickFilterChips({
             className="h-7 shrink-0 rounded-full px-3 text-xs"
             onClick={() => onToggleQuick('needsRotation')}
           >
-            Needs rotation
+            {t('filters.needsRotation')}
           </Button>
         </div>
       </div>

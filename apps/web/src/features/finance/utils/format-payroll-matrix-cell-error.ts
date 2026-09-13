@@ -14,14 +14,21 @@ const LEGACY_SALES_SNAPSHOT_RE = new RegExp(
 
 const LEGACY_BONUS_ENTRY_RE = new RegExp(`Bonus entry ${UUID}`, 'gi');
 
-function sanitizePayrollMatrixApiMessage(message: string): string {
+export type PayrollMatrixCellErrorKey = 'matrix.cell.updateError' | 'matrix.cell.salesNotReady';
+
+export type PayrollMatrixCellErrorTranslate = (
+  key: PayrollMatrixCellErrorKey,
+  values?: { period: string },
+) => string;
+
+function sanitizePayrollMatrixApiMessage(
+  message: string,
+  t: PayrollMatrixCellErrorTranslate,
+): string {
   const legacySnapshot = LEGACY_SALES_SNAPSHOT_RE.exec(message);
   if (legacySnapshot) {
     const period = legacySnapshot[1]?.trim() ?? '—';
-    return (
-      `Sales bonus is not ready for payroll (earned month ${period}). ` +
-      'Sync Sales KPI for that month, then retry.'
-    );
+    return t('matrix.cell.salesNotReady', { period });
   }
 
   return message.replace(LEGACY_BONUS_ENTRY_RE, 'Bonus entry');
@@ -44,14 +51,15 @@ function matrixCellContextLabel(
 /** User-facing toast copy for allocation matrix cell save failures. */
 export function formatPayrollMatrixCellError(
   caught: unknown,
-  fallback: string,
+  t: PayrollMatrixCellErrorTranslate,
   context?: {
     cell: PayrollAllocationMatrixCell;
     matrix: PayrollAllocationMatrix | null;
   },
 ): string {
+  const fallback = t('matrix.cell.updateError');
   const raw = getApiErrorMessage(caught, fallback);
-  const message = sanitizePayrollMatrixApiMessage(raw);
+  const message = sanitizePayrollMatrixApiMessage(raw, t);
 
   if (!context?.matrix) {
     return message;

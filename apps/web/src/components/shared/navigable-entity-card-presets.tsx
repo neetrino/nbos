@@ -426,10 +426,11 @@ export function ProductNavigableCard({
   product,
   showProjectContext = false,
 }: ProductNavigableCardProps) {
+  const t = useTranslations('deliveryBoard');
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const dealId = getEntityOrderDealId(product.order);
   const productType = getProductType(product.productType);
-  const statusBadge = getProductDirectoryBadge(product);
+  const statusBadge = getProductDirectoryBadge(product, t);
 
   return (
     <NavigableEntityCard

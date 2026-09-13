@@ -25,9 +25,11 @@ interface ClientServiceCardProps {
 
 function formatShortDate(value: string | null, locale: string, emptyLabel: string): string {
   if (!value) return emptyLabel;
-  return new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'short', day: '2-digit' }).format(
-    new Date(value),
-  );
+  return new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+  }).format(new Date(value));
 }
 
 /** Kanban card — invoice/orders shell; original client-service fields preserved. */

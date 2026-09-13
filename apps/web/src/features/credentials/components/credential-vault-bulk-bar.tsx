@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Archive, Download, FolderMinus, FolderPlus, ListChecks, RotateCcw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DeleteConfirmDialog } from '@/components/shared';
@@ -37,6 +38,8 @@ export function CredentialVaultBulkBar({
   onClear,
   onCompleted,
 }: CredentialVaultBulkBarProps) {
+  const t = useTranslations('credentials');
+  const tCommon = useTranslations('common');
   const [confirmArchiveOpen, setConfirmArchiveOpen] = useState(false);
   const [confirmRemoveFolderOpen, setConfirmRemoveFolderOpen] = useState(false);
   const [folderPickerOpen, setFolderPickerOpen] = useState(false);
@@ -48,15 +51,13 @@ export function CredentialVaultBulkBar({
     setActing(true);
     try {
       const result = await credentialsApi.bulkArchive(selectedIds);
-      const skipped = result.skipped > 0 ? ` (${result.skipped} skipped)` : '';
-      toast.success(
-        `Moved ${result.succeeded} credential${result.succeeded === 1 ? '' : 's'} to Trash${skipped}`,
-      );
+      const skipped = result.skipped > 0 ? ` ${t('bulk.skipped', { count: result.skipped })}` : '';
+      toast.success(`${t('bulk.archiveSuccess', { count: result.succeeded })}${skipped}`);
       setConfirmArchiveOpen(false);
       onClear();
       onCompleted();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Bulk archive failed');
+      toast.error(err instanceof Error ? err.message : t('bulk.archiveFailed'));
     } finally {
       setActing(false);
     }
@@ -66,14 +67,12 @@ export function CredentialVaultBulkBar({
     setActing(true);
     try {
       const result = await credentialsApi.bulkRestore(selectedIds);
-      const skipped = result.skipped > 0 ? ` (${result.skipped} skipped)` : '';
-      toast.success(
-        `Returned ${result.succeeded} credential${result.succeeded === 1 ? '' : 's'} to vault (unfiled)${skipped}`,
-      );
+      const skipped = result.skipped > 0 ? ` ${t('bulk.skipped', { count: result.skipped })}` : '';
+      toast.success(`${t('bulk.restoreSuccess', { count: result.succeeded })}${skipped}`);
       onClear();
       onCompleted();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Bulk restore failed');
+      toast.error(err instanceof Error ? err.message : t('bulk.restoreFailed'));
     } finally {
       setActing(false);
     }
@@ -83,15 +82,13 @@ export function CredentialVaultBulkBar({
     setActing(true);
     try {
       const result = await credentialsApi.bulkAddToFolder({ credentialIds: selectedIds, folderId });
-      const skipped = result.skipped > 0 ? ` (${result.skipped} skipped)` : '';
-      toast.success(
-        `Moved ${result.succeeded} credential${result.succeeded === 1 ? '' : 's'}${skipped}`,
-      );
+      const skipped = result.skipped > 0 ? ` ${t('bulk.skipped', { count: result.skipped })}` : '';
+      toast.success(`${t('bulk.moveSuccess', { count: result.succeeded })}${skipped}`);
       setFolderPickerOpen(false);
       onClear();
       onCompleted();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Move to folder failed');
+      toast.error(err instanceof Error ? err.message : t('bulk.moveFailed'));
     } finally {
       setActing(false);
     }
@@ -104,16 +101,16 @@ export function CredentialVaultBulkBar({
         credentialIds: selectedIds,
         folderId: activeFolderId ?? undefined,
       });
-      const skipped = result.skipped > 0 ? ` (${result.skipped} skipped)` : '';
-      const scope = activeFolderId ? 'folder' : 'all folders';
-      toast.success(
-        `Removed ${result.succeeded} credential${result.succeeded === 1 ? '' : 's'} from ${scope}${skipped}`,
-      );
+      const skipped = result.skipped > 0 ? ` ${t('bulk.skipped', { count: result.skipped })}` : '';
+      const success = activeFolderId
+        ? t('bulk.removeSuccessFolder', { count: result.succeeded })
+        : t('bulk.removeSuccessAll', { count: result.succeeded });
+      toast.success(`${success}${skipped}`);
       setConfirmRemoveFolderOpen(false);
       onClear();
       onCompleted();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Remove from folder failed');
+      toast.error(err instanceof Error ? err.message : t('bulk.removeFailed'));
     } finally {
       setActing(false);
     }
@@ -127,10 +124,10 @@ export function CredentialVaultBulkBar({
         stepUpPassword,
       });
       downloadBase64File(file.filename, file.mimeType, file.contentBase64);
-      toast.success(`Exported ${file.count} credentials`);
+      toast.success(t('settings.exportSuccess', { count: file.count }));
       setStepUpOpen(false);
     } catch {
-      toast.error('Export failed');
+      toast.error(t('settings.exportFailed'));
     } finally {
       setActing(false);
     }
@@ -141,7 +138,7 @@ export function CredentialVaultBulkBar({
   return (
     <>
       <div className="border-border/70 bg-card flex flex-col gap-3 rounded-2xl border p-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm font-medium tabular-nums">{count} selected</p>
+        <p className="text-sm font-medium tabular-nums">{t('bulk.selected', { count })}</p>
         <div className="flex flex-wrap gap-2">
           {showSelectAll ? (
             <Button
@@ -152,7 +149,7 @@ export function CredentialVaultBulkBar({
               onClick={onSelectAll}
             >
               <ListChecks className="size-4" aria-hidden />
-              Select page
+              {t('bulk.selectPage')}
             </Button>
           ) : null}
           {!trashList ? (
@@ -167,7 +164,7 @@ export function CredentialVaultBulkBar({
                     onClick={() => setFolderPickerOpen(true)}
                   >
                     <FolderPlus className="size-4" aria-hidden />
-                    Move to folder
+                    {t('bulk.moveToFolder')}
                   </Button>
                   <Button
                     type="button"
@@ -177,7 +174,7 @@ export function CredentialVaultBulkBar({
                     onClick={() => setConfirmRemoveFolderOpen(true)}
                   >
                     <FolderMinus className="size-4" aria-hidden />
-                    {activeFolderId ? 'Remove from folder' : 'Remove from folders'}
+                    {activeFolderId ? t('bulk.removeFromFolder') : t('bulk.removeFromFolders')}
                   </Button>
                 </PermissionGate>
               ) : null}
@@ -190,7 +187,7 @@ export function CredentialVaultBulkBar({
                   onClick={() => setStepUpOpen(true)}
                 >
                   <Download className="size-4" aria-hidden />
-                  Export selected
+                  {t('bulk.exportSelected')}
                 </Button>
               </PermissionGate>
               <PermissionGate module="CREDENTIALS" action="DELETE">
@@ -202,7 +199,7 @@ export function CredentialVaultBulkBar({
                   onClick={() => setConfirmArchiveOpen(true)}
                 >
                   <Archive className="size-4" aria-hidden />
-                  Move to Trash
+                  {t('delete.confirm')}
                 </Button>
               </PermissionGate>
             </>
@@ -216,13 +213,13 @@ export function CredentialVaultBulkBar({
                 onClick={() => void runBulkRestore()}
               >
                 <RotateCcw className="size-4" aria-hidden />
-                Restore
+                {t('bulk.restore')}
               </Button>
             </PermissionGate>
           )}
           <Button type="button" variant="ghost" size="sm" disabled={disabled} onClick={onClear}>
             <X className="size-4" aria-hidden />
-            Clear
+            {t('bulk.clear')}
           </Button>
         </div>
       </div>
@@ -231,10 +228,11 @@ export function CredentialVaultBulkBar({
         level="simple"
         open={confirmArchiveOpen}
         onOpenChange={setConfirmArchiveOpen}
-        itemName={`${count} credentials`}
-        title="Move selected credentials to Trash?"
-        description="Removed from active lists and folders. Restore from Trash returns them unfiled."
-        confirmLabel="Move to Trash"
+        itemName={t('bulk.itemName', { count })}
+        title={t('bulk.archiveTitle')}
+        description={t('bulk.archiveDescription')}
+        confirmLabel={t('delete.confirm')}
+        dismissLabel={tCommon('cancel')}
         isSubmitting={acting}
         onConfirm={() => void runBulkArchive()}
       />
@@ -242,7 +240,7 @@ export function CredentialVaultBulkBar({
       <CredentialStepUpDialog
         open={stepUpOpen}
         onOpenChange={setStepUpOpen}
-        title="Confirm to export selected credentials"
+        title={t('bulk.exportConfirm')}
         onConfirm={runBulkExport}
       />
 
@@ -258,14 +256,13 @@ export function CredentialVaultBulkBar({
         level="simple"
         open={confirmRemoveFolderOpen}
         onOpenChange={setConfirmRemoveFolderOpen}
-        itemName={`${count} credentials`}
-        title={activeFolderId ? 'Remove from this folder?' : 'Remove from all folders?'}
+        itemName={t('bulk.itemName', { count })}
+        title={activeFolderId ? t('bulk.removeThisFolderTitle') : t('bulk.removeAllFoldersTitle')}
         description={
-          activeFolderId
-            ? 'Credentials stay in the vault but are no longer in this folder.'
-            : 'Credentials stay in the vault but lose all folder memberships.'
+          activeFolderId ? t('bulk.removeThisFolderBody') : t('bulk.removeAllFoldersBody')
         }
-        confirmLabel="Remove"
+        confirmLabel={t('bulk.removeConfirm')}
+        dismissLabel={tCommon('cancel')}
         isSubmitting={acting}
         onConfirm={() => void runBulkRemoveFromFolder()}
       />

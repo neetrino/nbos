@@ -1,16 +1,28 @@
 import type { PayrollJournalKind, PayrollRunStatus } from '@/lib/api/payroll-runs';
 
-export const PAYROLL_JOURNAL_KIND_LABEL: Record<PayrollJournalKind, string> = {
-  CREATED: 'Created',
-  APPROVED: 'Approved',
-  CLOSED: 'Closed',
-};
+export const PAYROLL_JOURNAL_KIND_MESSAGE_KEY = {
+  CREATED: 'audit.journalKind.CREATED',
+  APPROVED: 'audit.journalKind.APPROVED',
+  CLOSED: 'audit.journalKind.CLOSED',
+} as const;
 
-/** Labels for `audit_logs.action` values written by the payroll API. */
-export function payrollAuditActionLabel(action: string): string {
-  if (action === 'CREATED') return 'Created';
-  if (action === 'STATUS_CHANGED') return 'Status changed';
-  return action;
+export type PayrollJournalKindMessageKey =
+  (typeof PAYROLL_JOURNAL_KIND_MESSAGE_KEY)[PayrollJournalKind];
+
+export const PAYROLL_AUDIT_ACTION_MESSAGE_KEY = {
+  CREATED: 'audit.action.CREATED',
+  STATUS_CHANGED: 'audit.action.STATUS_CHANGED',
+} as const;
+
+export type PayrollAuditActionMessageKey =
+  (typeof PAYROLL_AUDIT_ACTION_MESSAGE_KEY)[keyof typeof PAYROLL_AUDIT_ACTION_MESSAGE_KEY];
+
+/** Message keys for `audit_logs.action` values written by the payroll API. */
+export function payrollAuditActionMessageKey(action: string): PayrollAuditActionMessageKey | null {
+  if (action === 'CREATED' || action === 'STATUS_CHANGED') {
+    return PAYROLL_AUDIT_ACTION_MESSAGE_KEY[action];
+  }
+  return null;
 }
 
 /** English fallback labels. Prefer `PAYROLL_RUN_STATUS_MESSAGE_KEY` at render. */

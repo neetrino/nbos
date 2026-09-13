@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Check, Copy, Eye, EyeOff, Lock } from 'lucide-react';
+import { Check, Copy, Eye, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { CredentialFormFieldLabel } from '@/features/credentials/components/credential-form-field-label';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +18,45 @@ import { useCredentialVaultCopyFeedback } from '@/features/credentials/hooks/use
 
 /** Shown when a secret exists in vault but is not loaded into the field yet. */
 const STORED_SECRET_MASK = '••••••••';
+
+const PEEK_HINT_EYE_SIZE = 14;
+
+function SecretFieldPeekHint({
+  visible,
+  spacer,
+  discMask,
+  kind,
+  insetEnd,
+}: {
+  visible: boolean;
+  spacer: string;
+  discMask: boolean;
+  kind: 'password' | 'textarea';
+  insetEnd: boolean;
+}) {
+  if (!visible) return null;
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        'pointer-events-none absolute left-3 z-[1] flex items-center overflow-hidden',
+        insetEnd ? 'right-10' : 'right-3',
+        kind === 'textarea' ? 'top-2.5' : 'top-1/2 -translate-y-1/2',
+      )}
+    >
+      <span
+        className={cn(
+          'invisible whitespace-pre',
+          kind === 'textarea' ? 'font-mono text-xs' : 'text-base md:text-sm',
+          discMask ? CREDENTIAL_VAULT_SECRET_DISC_CLASS : null,
+        )}
+      >
+        {spacer}
+      </span>
+      <Eye size={PEEK_HINT_EYE_SIZE} className="text-muted-foreground ml-1 shrink-0" />
+    </span>
+  );
+}
 
 /** Keeps focus on the control when using adjacent icon buttons (avoids autofill flashes). */
 function preventControlBlur(event: MouseEvent<HTMLButtonElement>) {
@@ -74,7 +113,8 @@ export function CredentialVaultSecretField({
 
   const inputValue = showMaskPlaceholder ? STORED_SECRET_MASK : secretText;
   const showCopy = hasStoredSecret;
-  const actionPadding = showCopy ? 'pr-20' : 'pr-10';
+  const showPeekHint = !showPlain && (hasStoredSecret || secretText.length > 0);
+  const actionPadding = showCopy || showPeekHint ? 'pr-10' : null;
   const fieldCopiedClass = copied ? CREDENTIAL_VAULT_COPY_FEEDBACK_CLASS : null;
 
   const revealSecret = useCallback(() => {
@@ -118,14 +158,6 @@ export function CredentialVaultSecretField({
     guard.onFocus();
   };
 
-  const toggleVisibility = () => {
-    if (!showPlain) {
-      revealSecret();
-      return;
-    }
-    setShowPlain(false);
-  };
-
   const handleCopy = async () => {
     if (!onCopy) return;
     const result = await onCopy();
@@ -142,10 +174,20 @@ export function CredentialVaultSecretField({
 
   const applyDiscMask = !showPlain && secretText.length > 0;
 
-  const actionButtons = (
+  const peekHint = (
+    <SecretFieldPeekHint
+      visible={showPeekHint}
+      spacer={inputValue}
+      discMask={applyDiscMask}
+      kind={kind}
+      insetEnd={showCopy}
+    />
+  );
+
+  const actionButtons = showCopy ? (
     <div
       className={cn(
-        'absolute z-10 flex items-center gap-0.5',
+        'absolute z-10 flex items-center',
         kind === 'textarea' ? 'top-2 right-2' : 'top-1/2 right-1 -translate-y-1/2',
       )}
     >
@@ -154,31 +196,20 @@ export function CredentialVaultSecretField({
         variant="ghost"
         size="icon-sm"
         onMouseDown={preventControlBlur}
-        onClick={toggleVisibility}
-        aria-label={showPlain ? `Hide ${label}` : `Show ${label}`}
+        onClick={() => void handleCopy()}
+        aria-label={`Copy ${label}`}
       >
-        {showPlain ? <EyeOff size={14} /> : <Eye size={14} />}
+        {copied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
       </Button>
-      {showCopy ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onMouseDown={preventControlBlur}
-          onClick={() => void handleCopy()}
-          aria-label={`Copy ${label}`}
-        >
-          {copied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
-        </Button>
-      ) : null}
     </div>
-  );
+  ) : null;
 
   if (kind === 'textarea') {
     return (
       <div className="grid gap-2">
         <CredentialFormFieldLabel htmlFor={fieldId} label={label} icon={Icon} />
         <div className="relative">
+          {peekHint}
           {actionButtons}
           <Textarea
             ref={textareaRef}
@@ -191,6 +222,7 @@ export function CredentialVaultSecretField({
             className={cn(
               'min-h-[120px] font-mono text-xs',
               actionPadding,
+              showPeekHint ? 'cursor-pointer' : null,
               applyDiscMask ? CREDENTIAL_VAULT_SECRET_DISC_CLASS : null,
               fieldCopiedClass,
             )}
@@ -206,6 +238,7 @@ export function CredentialVaultSecretField({
     <div className="grid gap-2">
       <CredentialFormFieldLabel htmlFor={fieldId} label={label} icon={Icon} />
       <div className="relative">
+        {peekHint}
         {actionButtons}
         <Input
           ref={inputRef}
@@ -218,6 +251,7 @@ export function CredentialVaultSecretField({
           onChange={(e) => handleChange(e.target.value)}
           className={cn(
             actionPadding,
+            showPeekHint ? 'cursor-pointer' : null,
             applyDiscMask ? CREDENTIAL_VAULT_SECRET_DISC_CLASS : null,
             fieldCopiedClass,
           )}

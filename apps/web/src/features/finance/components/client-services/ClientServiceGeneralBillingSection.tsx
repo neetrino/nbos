@@ -164,7 +164,11 @@ function ClientServiceBillingFrequencyRow({
       <DetailSheetFieldSegmented
         label={t('fields.tax')}
         value={draft.taxStatus}
-        options={localizeOptionLabels(INVOICE_TAX_STATUS_OPTIONS, t, CLIENT_SERVICE_TAX_MESSAGE_KEYS)}
+        options={localizeOptionLabels(
+          INVOICE_TAX_STATUS_OPTIONS,
+          t,
+          CLIENT_SERVICE_TAX_MESSAGE_KEYS,
+        )}
         disabled={formDisabled}
         className={EXPENSE_SHEET_FIELD_CELL_CLASS}
         onValueChange={(taxStatus) => patchDraft({ taxStatus })}

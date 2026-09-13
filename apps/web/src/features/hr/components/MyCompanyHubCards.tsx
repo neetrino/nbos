@@ -38,7 +38,10 @@ export function DepartmentFoundationCard({ department }: { department: Departmen
               : t('hub.foundation.topLevel')}
           </p>
         </div>
-        <StatusBadge label={t('deptAdmin.membersCount', { count: memberCount })} variant="default" />
+        <StatusBadge
+          label={t('deptAdmin.membersCount', { count: memberCount })}
+          variant="default"
+        />
       </div>
       {department.description ? (
         <p className="text-muted-foreground mt-3 line-clamp-2 text-xs">{department.description}</p>

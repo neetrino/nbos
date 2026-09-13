@@ -1,4 +1,7 @@
+'use client';
+
 import { ArrowRight, CheckCircle2, Play, XCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import type { DeliveryLifecycleProjection } from '@/lib/api/projects';
 import {
@@ -33,6 +36,7 @@ export function DeliveryStageActionBar({
   onCancel,
   onOpenProduct,
 }: DeliveryStageActionBarProps) {
+  const t = useTranslations('deliveryBoard');
   const terminal = Boolean(lifecycle?.isTerminal);
   const disabled = busyItemId === getItemId(item);
 
@@ -43,7 +47,7 @@ export function DeliveryStageActionBar({
     return (
       <div className="border-border mt-3 flex justify-end border-t pt-2">
         <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onOpenProduct}>
-          Open <ArrowRight size={12} className="ml-1" />
+          {t('stageBar.open')} <ArrowRight size={12} className="ml-1" />
         </Button>
       </div>
     );
@@ -66,7 +70,7 @@ export function DeliveryStageActionBar({
           disabled={disabled}
           onClick={onResume}
         >
-          <Play size={12} /> Resume
+          <Play size={12} /> {t('sheet.resume')}
         </Button>
       ) : (
         <NextStageButton
@@ -85,7 +89,7 @@ export function DeliveryStageActionBar({
         disabled={disabled}
         onClick={onCancel}
       >
-        <XCircle size={12} /> Cancel
+        <XCircle size={12} /> {t('pipeline.cancel')}
       </Button>
       <Button
         variant="ghost"
@@ -94,7 +98,7 @@ export function DeliveryStageActionBar({
         disabled={disabled}
         onClick={onComplete}
       >
-        <CheckCircle2 size={12} /> Done
+        <CheckCircle2 size={12} /> {t('pipeline.done')}
       </Button>
     </div>
   );
@@ -111,6 +115,7 @@ function NextStageButton({
   disabled: boolean;
   onMoveNext: () => void;
 }) {
+  const t = useTranslations('deliveryBoard');
   const nextStage = lifecycle?.stage ? NEXT_DELIVERY_STAGE[lifecycle.stage] : null;
   if (!nextStage) return null;
 
@@ -124,7 +129,7 @@ function NextStageButton({
       disabled={disabled}
       onClick={onMoveNext}
     >
-      Move next
+      {t('stageBar.moveNext')}
     </Button>
   );
 }

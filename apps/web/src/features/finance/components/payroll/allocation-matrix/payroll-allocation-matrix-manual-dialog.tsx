@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,6 +23,8 @@ export function PayrollAllocationMatrixManualDialog(props: {
   onSubmit: (payload: { title: string; amount: string; reason: string }) => void;
 }) {
   const { open, employeeLabel, unitLabel, busy, onOpenChange, onSubmit } = props;
+  const t = useTranslations('payroll');
+  const tCommon = useTranslations('common');
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
@@ -39,23 +42,23 @@ export function PayrollAllocationMatrixManualDialog(props: {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Manual bonus</DialogTitle>
+          <DialogTitle>{t('matrix.manual.title')}</DialogTitle>
         </DialogHeader>
         <p className="text-muted-foreground text-sm">
           {employeeLabel} · {unitLabel}
         </p>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="manual-bonus-title">Title</Label>
+            <Label htmlFor="manual-bonus-title">{t('matrix.manual.fieldTitle')}</Label>
             <Input
               id="manual-bonus-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Bonus title"
+              placeholder={t('matrix.manual.titlePlaceholder')}
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="manual-bonus-amount">Amount</Label>
+            <Label htmlFor="manual-bonus-amount">{t('matrix.manual.fieldAmount')}</Label>
             <Input
               id="manual-bonus-amount"
               inputMode="decimal"
@@ -64,7 +67,7 @@ export function PayrollAllocationMatrixManualDialog(props: {
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="manual-bonus-reason">Reason</Label>
+            <Label htmlFor="manual-bonus-reason">{t('matrix.manual.fieldReason')}</Label>
             <Textarea
               id="manual-bonus-reason"
               value={reason}
@@ -75,7 +78,7 @@ export function PayrollAllocationMatrixManualDialog(props: {
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
@@ -84,7 +87,7 @@ export function PayrollAllocationMatrixManualDialog(props: {
               onSubmit({ title: title.trim(), amount: amount.trim(), reason: reason.trim() })
             }
           >
-            Create bonus
+            {t('matrix.manual.submit')}
           </Button>
         </DialogFooter>
       </DialogContent>

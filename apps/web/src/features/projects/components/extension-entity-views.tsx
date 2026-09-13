@@ -1,6 +1,7 @@
 'use client';
 
 import { Calendar, Puzzle, User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   NAVIGABLE_ENTITY_CARD_SOFT_ELEVATED_CLASS,
   PRODUCT_DETAIL_CARD_GRID_CLASS,
@@ -13,11 +14,8 @@ import {
   DeliveryDealCardHoverActions,
   DeliveryDealRowHoverActions,
 } from '@/features/projects/components/delivery-deal-action-tiles';
-import {
-  formatDeliveryLifecycleLabel,
-  getExtensionSize,
-  getExtensionStatus,
-} from '@/features/projects/constants/projects';
+import { translateDeliveryLifecycleLabel } from '@/features/projects/components/delivery-board/delivery-board-message-keys';
+import { getExtensionSize, getExtensionStatus } from '@/features/projects/constants/projects';
 import {
   PROJECT_ENTITY_LIST_CLASS,
   PROJECT_ENTITY_LIST_ROW_CLASS,
@@ -80,10 +78,11 @@ export function ExtensionEntityListRow({
   onOpenDeliveryCard: () => void;
   onOpenDeal?: () => void;
 }) {
+  const t = useTranslations('deliveryBoard');
   const status = getExtensionStatus(extension.status);
   const size = getExtensionSize(extension.size);
   const statusLabel = extension.deliveryLifecycle
-    ? formatDeliveryLifecycleLabel(extension.deliveryLifecycle)
+    ? translateDeliveryLifecycleLabel(extension.deliveryLifecycle, t)
     : status?.label;
 
   return (
@@ -134,10 +133,11 @@ export function ExtensionEntityCard({
   onOpenDeal?: () => void;
   onOpenProduct?: (productId: string) => void;
 }) {
+  const t = useTranslations('deliveryBoard');
   const status = getExtensionStatus(extension.status);
   const size = getExtensionSize(extension.size);
   const statusLabel = extension.deliveryLifecycle
-    ? formatDeliveryLifecycleLabel(extension.deliveryLifecycle)
+    ? translateDeliveryLifecycleLabel(extension.deliveryLifecycle, t)
     : status?.label;
   const assigneeName = extension.assignee
     ? `${extension.assignee.firstName} ${extension.assignee.lastName}`

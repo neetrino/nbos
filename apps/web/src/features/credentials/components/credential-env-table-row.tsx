@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { type ClipboardEvent, type MouseEvent } from 'react';
 import { Check, Copy, Trash2 } from 'lucide-react';
 import type { EnvBundleEntry } from '@nbos/shared';
@@ -35,6 +36,7 @@ export function CredentialEnvTableRow({
   onRemove: () => void;
   onCopy: () => void;
 }) {
+  const t = useTranslations('credentials');
   const { copied, markCopied } = useCredentialVaultCopyFeedback();
 
   const handleCopy = () => {
@@ -50,7 +52,7 @@ export function CredentialEnvTableRow({
         value={row.key}
         onChange={(e) => onKeyChange(e.target.value)}
         onPaste={onPaste}
-        placeholder="KEY or paste .env"
+        placeholder={t('env.keyPlaceholder')}
         className={cn('font-mono text-xs', copiedFieldClass)}
       />
       <Input
@@ -74,7 +76,7 @@ export function CredentialEnvTableRow({
           onMouseDown={preventCopyButtonBlur}
           onClick={handleCopy}
           disabled={maskValue && !row.key.trim()}
-          aria-label="Copy line"
+          aria-label={t('env.copyLine')}
         >
           {copied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
         </Button>
@@ -83,7 +85,7 @@ export function CredentialEnvTableRow({
           variant="ghost"
           size="icon-sm"
           onClick={onRemove}
-          aria-label="Remove line"
+          aria-label={t('env.removeLine')}
         >
           <Trash2 size={14} />
         </Button>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -28,6 +29,8 @@ export function CredentialVaultBulkFolderPickerDialog({
   onOpenChange,
   onConfirm,
 }: CredentialVaultBulkFolderPickerDialogProps) {
+  const t = useTranslations('credentials');
+  const tCommon = useTranslations('common');
   const [folderId, setFolderId] = useState<string | null>(null);
 
   return (
@@ -40,10 +43,8 @@ export function CredentialVaultBulkFolderPickerDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Move to folder</DialogTitle>
-          <DialogDescription>
-            Credentials will be placed in the selected folder (one folder per credential).
-          </DialogDescription>
+          <DialogTitle>{t('bulk.pickerTitle')}</DialogTitle>
+          <DialogDescription>{t('bulk.pickerDescription')}</DialogDescription>
         </DialogHeader>
         <CredentialFolderTreePicker folders={folders} value={folderId} onChange={setFolderId} />
         <DialogFooter>
@@ -53,14 +54,14 @@ export function CredentialVaultBulkFolderPickerDialog({
             onClick={() => onOpenChange(false)}
             disabled={busy}
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
             disabled={busy || !folderId}
             onClick={() => folderId && onConfirm(folderId)}
           >
-            Move
+            {t('bulk.pickerMove')}
           </Button>
         </DialogFooter>
       </DialogContent>

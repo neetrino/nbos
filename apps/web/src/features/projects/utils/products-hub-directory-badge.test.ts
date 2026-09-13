@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { DeliveryBoardTranslate } from '@/features/projects/components/delivery-board/delivery-board-message-keys';
 import type { ProjectProductSummary } from '@/lib/api/projects';
 import { getProductDirectoryBadge } from './products-hub-directory-badge';
 
@@ -16,10 +17,12 @@ function product(partial: Partial<ProjectProductSummary>): ProjectProductSummary
   };
 }
 
+const t = ((key: string) => key) as unknown as DeliveryBoardTranslate;
+
 describe('getProductDirectoryBadge', () => {
   it('labels maintenance and closed buckets', () => {
-    expect(getProductDirectoryBadge(product({ hubView: 'maintenance' }))).toEqual({
-      label: 'Maintenance',
+    expect(getProductDirectoryBadge(product({ hubView: 'maintenance' }), t)).toEqual({
+      label: 'hub.maintenance',
       variant: 'green',
     });
     expect(
@@ -40,7 +43,8 @@ describe('getProductDirectoryBadge', () => {
             isTerminal: true,
           },
         }),
+        t,
       ),
-    ).toEqual({ label: 'Done', variant: 'green' });
+    ).toEqual({ label: 'resolution.done', variant: 'green' });
   });
 });

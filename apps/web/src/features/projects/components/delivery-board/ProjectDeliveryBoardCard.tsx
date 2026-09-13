@@ -301,8 +301,6 @@ function getExtensionMeta(extension: ProjectExtensionSummary) {
   return getExtensionSize(extension.size)?.label ?? extension.size;
 }
 
-const QUICK_TASK_DISABLED_TITLE = 'Employee profile required to create tasks';
-
 function DeliveryKanbanCardHoverActions({
   projectId,
   revealed,
@@ -318,6 +316,7 @@ function DeliveryKanbanCardHoverActions({
   onOpenQuickTaskForProject?: (projectId: string) => void;
   quickTaskDisabled: boolean;
 }) {
+  const t = useTranslations('deliveryBoard');
   const router = useRouter();
 
   return (
@@ -325,12 +324,12 @@ function DeliveryKanbanCardHoverActions({
       <ActionTileHoverBar variant="kanban-card" revealed={revealed}>
         {onOpenQuickTaskForProject ? (
           <ActionTileButton
-            label="Task"
+            label={t('cardHover.task')}
             icon={<ListChecks aria-hidden />}
             tone="primary"
             size="card"
             disabled={quickTaskDisabled}
-            title={quickTaskDisabled ? QUICK_TASK_DISABLED_TITLE : undefined}
+            title={quickTaskDisabled ? t('cardHover.quickTaskDisabled') : undefined}
             onClick={() => {
               onHide();
               onOpenQuickTaskForProject(projectId);
@@ -338,7 +337,7 @@ function DeliveryKanbanCardHoverActions({
           />
         ) : null}
         <ActionTileButton
-          label="Project"
+          label={t('filters.project')}
           icon={<FolderKanban aria-hidden />}
           tone="neutral"
           size="card"

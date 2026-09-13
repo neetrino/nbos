@@ -1,26 +1,38 @@
-const CREDENTIAL_AUDIT_LABELS: Record<string, string> = {
-  'credential.view': 'Viewed',
-  'credential.create': 'Created',
-  'credential.update': 'Updated',
-  'credential.archived': 'Moved to Trash',
-  'credential.restored': 'Restored',
-  'credential.permanently_deleted': 'Permanently deleted',
-  'credential.secret_revealed': 'Secret revealed',
-  'credential.secret_copied': 'Secret copied',
-  'credential.url_opened': 'URL opened',
-  'credential.exported': 'Exported',
-  'credential.manual_access_updated': 'Manual access updated',
-  'credential.access_revoked': 'Access revoked',
-  'credential.emergency_access_used': 'Emergency access granted',
-  'credential.emergency_access_requested': 'Emergency access requested',
-  'credential.emergency_access_approved': 'Emergency access approved',
-  'credential.emergency_access_denied': 'Emergency access denied',
-  'credential.secret_version_revealed': 'Historical secret revealed',
-  'credential.step_up_verified': 'Step-up verified',
-  'credential.vault_unlocked': 'Vault unlocked',
-  'credential.vault_locked': 'Vault locked',
-};
+export const CREDENTIAL_AUDIT_ACTION_KEYS = {
+  'credential.view': 'audit.viewed',
+  'credential.create': 'audit.created',
+  'credential.update': 'audit.updated',
+  'credential.archived': 'audit.archived',
+  'credential.restored': 'audit.restored',
+  'credential.permanently_deleted': 'audit.permanentlyDeleted',
+  'credential.secret_revealed': 'audit.secretRevealed',
+  'credential.secret_copied': 'audit.secretCopied',
+  'credential.url_opened': 'audit.urlOpened',
+  'credential.exported': 'audit.exported',
+  'credential.manual_access_updated': 'audit.manualAccessUpdated',
+  'credential.access_revoked': 'audit.accessRevoked',
+  'credential.emergency_access_used': 'audit.emergencyAccessGranted',
+  'credential.emergency_access_requested': 'audit.emergencyAccessRequested',
+  'credential.emergency_access_approved': 'audit.emergencyAccessApproved',
+  'credential.emergency_access_denied': 'audit.emergencyAccessDenied',
+  'credential.secret_version_revealed': 'audit.secretVersionRevealed',
+  'credential.step_up_verified': 'audit.stepUpVerified',
+  'credential.vault_unlocked': 'audit.vaultUnlocked',
+  'credential.vault_locked': 'audit.vaultLocked',
+} as const;
 
-export function labelCredentialAuditAction(action: string): string {
-  return CREDENTIAL_AUDIT_LABELS[action] ?? action.replaceAll('_', ' ');
+export type CredentialAuditActionKey =
+  (typeof CREDENTIAL_AUDIT_ACTION_KEYS)[keyof typeof CREDENTIAL_AUDIT_ACTION_KEYS];
+
+/** Maps a persisted audit action code to a catalog key. Unknown codes stay untranslated. */
+export function credentialAuditActionMessageKey(action: string): CredentialAuditActionKey | null {
+  if (Object.prototype.hasOwnProperty.call(CREDENTIAL_AUDIT_ACTION_KEYS, action)) {
+    return CREDENTIAL_AUDIT_ACTION_KEYS[action as keyof typeof CREDENTIAL_AUDIT_ACTION_KEYS];
+  }
+  return null;
+}
+
+export function labelCredentialAuditAction(action: string, t: (key: never) => string): string {
+  const key = credentialAuditActionMessageKey(action);
+  return key ? t(key as never) : action;
 }

@@ -129,10 +129,7 @@ function ClientServiceDateFieldsRow(props: {
   );
 }
 
-function formatRegistryCheckedAt(
-  value: string | null | undefined,
-  locale?: string,
-): string | null {
+function formatRegistryCheckedAt(value: string | null | undefined, locale?: string): string | null {
   if (!value) return null;
   return new Intl.DateTimeFormat(locale ?? 'en', {
     year: 'numeric',

@@ -222,9 +222,7 @@ export function ExpensePlansPageContent() {
       setTotalInScope(res.meta.total);
       setError(null);
     } catch (caught) {
-      setError(
-        getApiErrorMessage(caught, t('errors.loadList')),
-      );
+      setError(getApiErrorMessage(caught, t('errors.loadList')));
     } finally {
       setLoading(false);
     }
@@ -237,9 +235,7 @@ export function ExpensePlansPageContent() {
       setGridPayload(payload);
       setGridError(null);
     } catch (caught) {
-      setGridError(
-        getApiErrorMessage(caught, t('errors.loadGrid')),
-      );
+      setGridError(getApiErrorMessage(caught, t('errors.loadGrid')));
     } finally {
       setGridLoading(false);
     }
@@ -292,12 +288,7 @@ export function ExpensePlansPageContent() {
       );
       await refreshAll();
     } catch (caught) {
-      toast.error(
-        getApiErrorMessage(
-          caught,
-          t('errors.autoGenerate'),
-        ),
-      );
+      toast.error(getApiErrorMessage(caught, t('errors.autoGenerate')));
     } finally {
       setAutoRunning(false);
     }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   downloadPayrollAuditTrailCsv,
@@ -10,6 +11,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import type { PayrollRunDetail } from '@/lib/api/payroll-runs';
 
 export function usePayrollRunJournalAuditCsvExport(run: PayrollRunDetail | null) {
+  const t = useTranslations('payroll');
   const [journalSubmitting, setJournalSubmitting] = useState(false);
   const [auditSubmitting, setAuditSubmitting] = useState(false);
 
@@ -23,15 +25,13 @@ export function usePayrollRunJournalAuditCsvExport(run: PayrollRunDetail | null)
         payrollRunId: run.id,
         payrollMonth: run.payrollMonth,
       });
-      toast.success(
-        `Exported ${run.journal.length} journal row${run.journal.length === 1 ? '' : 's'}`,
-      );
+      toast.success(t('audit.exportJournalSuccess', { count: run.journal.length }));
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not export journal CSV.'));
+      toast.error(getApiErrorMessage(caught, t('audit.exportJournalError')));
     } finally {
       setJournalSubmitting(false);
     }
-  }, [run]);
+  }, [run, t]);
 
   const handleExportAuditCsv = useCallback(() => {
     if (!run || run.auditTrail.length === 0) {
@@ -43,15 +43,13 @@ export function usePayrollRunJournalAuditCsvExport(run: PayrollRunDetail | null)
         payrollRunId: run.id,
         payrollMonth: run.payrollMonth,
       });
-      toast.success(
-        `Exported ${run.auditTrail.length} audit row${run.auditTrail.length === 1 ? '' : 's'}`,
-      );
+      toast.success(t('audit.exportAuditSuccess', { count: run.auditTrail.length }));
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not export audit trail CSV.'));
+      toast.error(getApiErrorMessage(caught, t('audit.exportAuditError')));
     } finally {
       setAuditSubmitting(false);
     }
-  }, [run]);
+  }, [run, t]);
 
   return {
     journalSubmitting,

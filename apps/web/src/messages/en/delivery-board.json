@@ -179,7 +179,39 @@
     "approvedOffer": "Approved offer",
     "contract": "Contract",
     "openInNewTab": "Open in new tab",
-    "emptyHint": "You can drag a file here or click + to browse"
+    "emptyHint": "You can drag a file here or click + to browse",
+    "unlinkSuccess": "Unlinked — file stays in the product folder on Drive",
+    "unlinkError": "Could not unlink file",
+    "trashSuccess": "File moved to Trash and unlinked",
+    "trashError": "Could not move file to Trash"
+  },
+  "stageBar": {
+    "open": "Open",
+    "moveNext": "Move next"
+  },
+  "cardHover": {
+    "task": "Task",
+    "quickTaskDisabled": "Employee profile required to create tasks"
+  },
+  "closedCard": {
+    "closedOn": "Closed {date}",
+    "clientAccepted": "Client accepted",
+    "cancelledPrefix": "Cancelled:"
+  },
+  "hub": {
+    "maintenance": "Maintenance"
+  },
+  "acceptance": {
+    "title": "Client acceptance",
+    "description": "Record acceptance after the client approves transfer results.",
+    "record": "Record acceptance",
+    "recorded": "Client acceptance recorded",
+    "recordedBy": "Client acceptance recorded by {name}."
+  },
+  "errors": {
+    "resumeFailed": "Failed to resume product.",
+    "acceptanceFailed": "Failed to record client acceptance.",
+    "updateFailed": "Failed to update product delivery."
   },
   "access": {
     "title": "Access & infrastructure",

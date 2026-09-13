@@ -207,6 +207,70 @@
     "bonusReleases": "Выпуски бонусов",
     "payable": "К выплате",
     "paid": "Оплачено",
-    "remaining": "Остаток"
+    "remaining": "Остаток",
+    "cell": {
+      "state": {
+        "READY": "Готово",
+        "PARTIALLY_FUNDED": "Частично профинансировано",
+        "PROGRESS": "В работе",
+        "MANUAL_BONUS": "Ручная премия"
+      },
+      "warning": {
+        "EXTRA": "Доп. премия",
+        "OVER_FUNDING": "Перефинансирование"
+      },
+      "placeholder": "Введите премию",
+      "releaseAria": "Выпуск премии в этом месяце",
+      "createManualAria": "Создать ручную премию",
+      "updateError": "Не удалось обновить выпуск.",
+      "salesNotReady": "Премия продаж не готова к ведомости (месяц начисления {period}). Синхронизируйте Sales KPI за этот месяц и повторите."
+    },
+    "axis": {
+      "employee": "Сотрудник",
+      "order": "Заказ"
+    },
+    "header": {
+      "salary": "Оклад",
+      "bonus": "Премия",
+      "role": "Роль",
+      "avail": "Доступно",
+      "planned": "План",
+      "due": "К выплате",
+      "openDetail": "Открыть карточку зарплаты",
+      "openDetailNamed": "Открыть карточку зарплаты: {name}",
+      "dragColumn": "Перетащите, чтобы поменять порядок колонки",
+      "dragRow": "Перетащите, чтобы поменять порядок строки"
+    },
+    "history": {
+      "current": "Текущий",
+      "available": "Доступно"
+    },
+    "manual": {
+      "title": "Ручная премия",
+      "fieldTitle": "Название",
+      "fieldAmount": "Сумма",
+      "fieldReason": "Причина",
+      "titlePlaceholder": "Название премии",
+      "submit": "Создать премию",
+      "created": "Ручная премия создана и привязана",
+      "createError": "Не удалось создать ручную премию."
+    }
+  },
+  "audit": {
+    "action": {
+      "CREATED": "Создано",
+      "STATUS_CHANGED": "Статус изменён"
+    },
+    "journalKind": {
+      "CREATED": "Создано",
+      "APPROVED": "Утверждено",
+      "CLOSED": "Закрыто"
+    },
+    "materializedExpenses": "Материализованные расходы",
+    "openExpense": "Открыть расход",
+    "exportJournalSuccess": "{count, plural, one {Экспортирована # строка журнала} few {Экспортированы # строки журнала} many {Экспортировано # строк журнала} other {Экспортировано # строк журнала}}",
+    "exportAuditSuccess": "{count, plural, one {Экспортирована # строка аудита} few {Экспортированы # строки аудита} many {Экспортировано # строк аудита} other {Экспортировано # строк аудита}}",
+    "exportJournalError": "Не удалось экспортировать журнал CSV.",
+    "exportAuditError": "Не удалось экспортировать журнал аудита CSV."
   }
 }

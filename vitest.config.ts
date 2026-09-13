@@ -26,7 +26,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['apps/**/*.test.ts', 'packages/**/*.test.ts'],
+    include: ['apps/**/*.test.ts', 'packages/**/*.test.ts', 'scripts/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       include: ['apps/api/src/**/*.ts', 'packages/shared/src/**/*.ts'],

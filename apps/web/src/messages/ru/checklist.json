@@ -1,0 +1,23 @@
+{
+  "row": {
+    "markDone": "Отметить выполненным",
+    "clearDone": "Снять отметку",
+    "required": "Обязательно",
+    "notDone": "Не выполнено",
+    "saveNotDone": "Сохранить «не выполнено»",
+    "saveNotDoneHint": "Сохранить «не выполнено» (или Enter в комментарии)",
+    "clearNotDone": "Снять «не выполнено»",
+    "commentPlaceholder": "Комментарий или причина «не выполнено»"
+  },
+  "evidence": {
+    "attachments": "{count, plural, one {# вложение} few {# вложения} many {# вложений} other {# вложения}}",
+    "link": "Ссылка",
+    "text": "Текст"
+  },
+  "sheet": {
+    "loading": "Загрузка",
+    "empty": "Нет чеклистов.",
+    "completing": "Завершение…",
+    "complete": "Завершить чеклист"
+  }
+}

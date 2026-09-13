@@ -174,10 +174,7 @@ function translateSupportAuditValue(
   return value;
 }
 
-export function formatSupportAuditLine(
-  entry: AuditLogEntry,
-  translate: SupportTranslator,
-): string {
+export function formatSupportAuditLine(entry: AuditLogEntry, translate: SupportTranslator): string {
   const actionLabel = translateMappedLabel(
     translate,
     SUPPORT_AUDIT_ACTION_MESSAGE_KEYS,

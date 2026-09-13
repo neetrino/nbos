@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { KeyRound, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -52,6 +53,8 @@ export function CredentialVaultTiles({
   onCopySecret,
   secretFlashCredentialId,
 }: CredentialVaultTilesProps) {
+  const t = useTranslations('credentials');
+
   if (loading) {
     return (
       <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
@@ -66,13 +69,13 @@ export function CredentialVaultTiles({
     return (
       <EmptyState
         icon={KeyRound}
-        title="No credentials"
-        description="No credentials match the current filters"
+        title={t('emptyTitle')}
+        description={t('emptyDescription')}
         action={
           showCreate ? (
             <PermissionGate module="CREDENTIALS" action="ADD">
               <Button onClick={onCreateOpen}>
-                <Plus size={16} /> Add Credential
+                <Plus size={16} /> {t('addCredential')}
               </Button>
             </PermissionGate>
           ) : undefined

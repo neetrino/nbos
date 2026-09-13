@@ -1,10 +1,11 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { PayrollAllocationMatrixCellInput } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-cell-input';
 import { ExpansionMetricStack } from '@/features/finance/components/payroll/employee-bonus-history/payroll-employee-bonus-history-metrics';
 import { payrollMatrixCellBoxClass } from '@/features/finance/components/payroll/payroll-matrix-shared/payroll-matrix-cell-box';
-import { payrollRunStatusUi } from '@/features/finance/constants/payroll-run-status-ui';
+import { PAYROLL_RUN_STATUS_MESSAGE_KEY } from '@/features/finance/constants/payroll-run-ui';
 import { matrixCellNeedsManualBonus } from '@/features/finance/utils/payroll-matrix-cell-actions';
 import { formatPayrollMonthAbbrev } from '@/features/finance/utils/salary-board-month-utils';
 import type {
@@ -48,8 +49,13 @@ export function HistoryMonthHeader({
   monthBonusTotal: string;
   historyLoading: boolean;
 }) {
+  const t = useTranslations('payroll');
   const statusLabel =
-    runStatus != null ? payrollRunStatusUi(runStatus).label : isFocusMonth ? 'Current' : null;
+    runStatus != null
+      ? t(PAYROLL_RUN_STATUS_MESSAGE_KEY[runStatus])
+      : isFocusMonth
+        ? t('matrix.history.current')
+        : null;
   const showTotalSkeleton = historyLoading && !isFocusMonth;
 
   return (
@@ -101,6 +107,7 @@ export function HistoryMonthCell({
   onSave: (payload: { releaseThisMonth: string; reason?: string }) => Promise<void>;
   onManualBonus: () => void;
 }) {
+  const t = useTranslations('payroll');
   if (historyLoading && !isFocusMonth) {
     return (
       <div
@@ -121,7 +128,7 @@ export function HistoryMonthCell({
     return (
       <button
         type="button"
-        aria-label="Create manual bonus"
+        aria-label={t('matrix.cell.createManualAria')}
         className={cn(boxClass, 'cursor-pointer transition-colors hover:bg-sky-500/10')}
         onClick={onManualBonus}
       />
@@ -152,12 +159,19 @@ export function HistoryMonthCell({
 }
 
 export function ProjectDetailMetrics({ project }: { project: PayrollEmployeeBonusHistoryProject }) {
+  const t = useTranslations('payroll');
   return (
     <ExpansionMetricStack
       items={[
-        { label: 'Available', value: formatAmount(parseMoney(project.availableFunding)) },
-        { label: 'Due', value: formatAmount(parseMoney(project.totalRemainingBonus)) },
-        { label: 'Paid', value: formatAmount(parseMoney(project.totalPaidBonus)) },
+        {
+          label: t('matrix.history.available'),
+          value: formatAmount(parseMoney(project.availableFunding)),
+        },
+        {
+          label: t('matrix.header.due'),
+          value: formatAmount(parseMoney(project.totalRemainingBonus)),
+        },
+        { label: t('matrix.paid'), value: formatAmount(parseMoney(project.totalPaidBonus)) },
       ]}
     />
   );

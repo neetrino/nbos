@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   PAYROLL_MATRIX_DATA_COL_STYLE,
@@ -26,6 +27,7 @@ const MATRIX_TOTALS_LABEL_CLASS =
   'text-foreground block w-full text-center text-[10px] font-bold tracking-wide uppercase';
 
 export function MatrixEmployeeTotalsHeader() {
+  const t = useTranslations('payroll');
   return (
     <th
       style={PAYROLL_MATRIX_TOTALS_COL_STYLE}
@@ -35,7 +37,7 @@ export function MatrixEmployeeTotalsHeader() {
         'border-border sticky top-0 right-0 z-30 border-b border-l px-2 py-1.5 text-center align-middle',
       )}
     >
-      <span className={MATRIX_TOTALS_LABEL_CLASS}>Total</span>
+      <span className={MATRIX_TOTALS_LABEL_CLASS}>{t('salary.total')}</span>
     </th>
   );
 }
@@ -77,6 +79,7 @@ export function MatrixEmployeeTotalsSpacerCell() {
 
 /** Sticky bottom-left corner for Order × Employees totals row. */
 export function MatrixEmployeeTotalsFooterCorner() {
+  const t = useTranslations('payroll');
   return (
     <th
       style={PAYROLL_MATRIX_STICKY_EDGE_STYLE}
@@ -87,7 +90,7 @@ export function MatrixEmployeeTotalsFooterCorner() {
         'border-border sticky bottom-0 left-0 z-40 border-t border-r px-2.5 py-1.5 text-center align-middle',
       )}
     >
-      <span className={MATRIX_TOTALS_LABEL_CLASS}>Total</span>
+      <span className={MATRIX_TOTALS_LABEL_CLASS}>{t('salary.total')}</span>
     </th>
   );
 }

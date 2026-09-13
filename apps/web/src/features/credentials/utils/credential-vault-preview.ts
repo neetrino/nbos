@@ -1,6 +1,6 @@
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialSecretField } from '@/lib/api/credentials';
-import { formatCredentialTypeLabel } from '@/features/credentials/utils/credential-type-display';
+import { credentialTypeMessageKey } from '@/features/credentials/constants/credentials';
 
 export type VaultPreviewIconKey =
   | 'at-sign'
@@ -13,13 +13,13 @@ export type VaultPreviewIconKey =
   | 'google';
 
 export type VaultPreviewItem =
-  | { type: 'info'; icon: VaultPreviewIconKey; label: string }
-  | { type: 'copy-text'; icon: VaultPreviewIconKey; value: string; copyLabel: string }
+  | { type: 'info'; icon: VaultPreviewIconKey; labelKey: string }
+  | { type: 'copy-text'; icon: VaultPreviewIconKey; value: string; copyLabelKey: string }
   | {
       type: 'copy-secret';
       icon: VaultPreviewIconKey;
       secret: CredentialSecretField;
-      copyLabel: string;
+      copyLabelKey: string;
     };
 
 export function partitionVaultPreviewItems(items: VaultPreviewItem[]): {
@@ -51,6 +51,10 @@ function appStoreIcon(platform: CredentialListItem['appStorePlatform']): VaultPr
   return platform === 'GOOGLE' ? 'google' : 'apple';
 }
 
+function typeInfoLabelKey(credentialType: string): string {
+  return credentialTypeMessageKey(credentialType) ?? `types.${credentialType}`;
+}
+
 function loginPasswordPreview(credential: CredentialListItem): VaultPreviewModel {
   const items: VaultPreviewItem[] = [];
   const login = credential.login?.trim();
@@ -60,7 +64,7 @@ function loginPasswordPreview(credential: CredentialListItem): VaultPreviewModel
       type: 'copy-text',
       icon: 'at-sign',
       value: login,
-      copyLabel: 'Copy login',
+      copyLabelKey: 'tiles.copyLogin',
     });
   }
   if (credential.secretsPresent?.password) {
@@ -68,16 +72,14 @@ function loginPasswordPreview(credential: CredentialListItem): VaultPreviewModel
       type: 'copy-secret',
       icon: 'lock',
       secret: 'password',
-      copyLabel: 'Copy password',
+      copyLabelKey: 'tiles.copyPassword',
     });
   }
 
   if (items.length === 0) {
     return {
       infoOnly: true,
-      items: [
-        { type: 'info', icon: 'key', label: formatCredentialTypeLabel(credential.credentialType) },
-      ],
+      items: [{ type: 'info', icon: 'key', labelKey: typeInfoLabelKey(credential.credentialType) }],
     };
   }
 
@@ -90,12 +92,15 @@ export function buildCredentialVaultPreview(credential: CredentialListItem): Vau
 
   switch (credentialType) {
     case 'ENV_BUNDLE':
-      return { infoOnly: true, items: [{ type: 'info', icon: 'braces', label: 'ENV' }] };
+      return {
+        infoOnly: true,
+        items: [{ type: 'info', icon: 'braces', labelKey: 'tiles.infoEnv' }],
+      };
 
     case 'RECOVERY_CODES':
       return {
         infoOnly: true,
-        items: [{ type: 'info', icon: 'shield', label: 'Recovery codes' }],
+        items: [{ type: 'info', icon: 'shield', labelKey: 'types.RECOVERY_CODES' }],
       };
 
     case 'SSH_PRIVATE_KEY': {
@@ -109,18 +114,21 @@ export function buildCredentialVaultPreview(credential: CredentialListItem): Vau
               type: 'copy-text',
               icon: 'at-sign',
               value: username,
-              copyLabel: 'Copy username',
+              copyLabelKey: 'tiles.copyUsername',
             },
             {
               type: 'copy-secret',
               icon: 'lock',
               secret: 'password',
-              copyLabel: 'Copy private key',
+              copyLabelKey: 'tiles.copyPrivateKey',
             },
           ],
         };
       }
-      return { infoOnly: true, items: [{ type: 'info', icon: 'terminal', label: 'SSH' }] };
+      return {
+        infoOnly: true,
+        items: [{ type: 'info', icon: 'terminal', labelKey: 'tiles.infoSsh' }],
+      };
     }
 
     case 'API_KEY':
@@ -128,17 +136,20 @@ export function buildCredentialVaultPreview(credential: CredentialListItem): Vau
         return {
           infoOnly: false,
           items: [
-            { type: 'info', icon: 'key', label: 'API key' },
+            { type: 'info', icon: 'key', labelKey: 'tiles.infoApiKey' },
             {
               type: 'copy-secret',
               icon: 'key',
               secret: 'apiKey',
-              copyLabel: 'Copy API key',
+              copyLabelKey: 'tiles.copyApiKey',
             },
           ],
         };
       }
-      return { infoOnly: true, items: [{ type: 'info', icon: 'key', label: 'API key' }] };
+      return {
+        infoOnly: true,
+        items: [{ type: 'info', icon: 'key', labelKey: 'tiles.infoApiKey' }],
+      };
 
     case 'APP_STORE_ACCOUNT': {
       const platformIcon = appStoreIcon(credential.appStorePlatform);
@@ -150,7 +161,7 @@ export function buildCredentialVaultPreview(credential: CredentialListItem): Vau
           type: 'copy-text',
           icon: platformIcon,
           value: account,
-          copyLabel: 'Copy account',
+          copyLabelKey: 'tiles.copyAccount',
         });
       }
       if (sp?.password) {
@@ -158,13 +169,13 @@ export function buildCredentialVaultPreview(credential: CredentialListItem): Vau
           type: 'copy-secret',
           icon: 'lock',
           secret: 'password',
-          copyLabel: 'Copy password',
+          copyLabelKey: 'tiles.copyPassword',
         });
       }
       if (items.length === 0) {
         return {
           infoOnly: true,
-          items: [{ type: 'info', icon: platformIcon, label: 'App Store' }],
+          items: [{ type: 'info', icon: platformIcon, labelKey: 'tiles.infoAppStore' }],
         };
       }
       return { infoOnly: false, items };

@@ -64,9 +64,7 @@ export function GenerateExpenseCardFromPlanDialog({
       onGenerated();
       onOpenChange(false);
     } catch (caught) {
-      setError(
-        getApiErrorMessage(caught, t('errors.generateCard')),
-      );
+      setError(getApiErrorMessage(caught, t('errors.generateCard')));
     } finally {
       setLoading(false);
     }

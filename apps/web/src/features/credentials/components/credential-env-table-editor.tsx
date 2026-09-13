@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, type ClipboardEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { ChevronDown, Copy, Download, Eye, Plus } from 'lucide-react';
 import {
   entriesFromEnvBundleSerialized,
@@ -17,7 +18,7 @@ import {
 import { useEnvTableConfirm } from '@/features/credentials/hooks/use-env-table-confirm';
 import { CREDENTIAL_ENV_TABLE_PREVIEW_ROWS } from '@/features/credentials/constants/credential-env-table';
 import {
-  ENV_TABLE_VALUE_EMPTY_PLACEHOLDER,
+  ENV_TABLE_VALUE_EMPTY_PLACEHOLDER_KEY,
   ENV_TABLE_VALUE_MASK_DISPLAY,
 } from '@/features/credentials/constants/credential-env-table';
 import {
@@ -64,6 +65,7 @@ export function CredentialEnvTableEditor({
   isExisting,
   storedKeysBaseline = '',
 }: CredentialEnvTableEditorProps) {
+  const t = useTranslations('credentials');
   const [localEntries, setLocalEntries] = useState<EnvBundleEntry[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [pendingPasteEntries, setPendingPasteEntries] = useState<EnvBundleEntry[]>([]);
@@ -168,7 +170,7 @@ export function CredentialEnvTableEditor({
   const tryApplyBulk = (text: string) => {
     const parsed = parseEnvBundleText(text);
     if (parsed.entries.length === 0) {
-      toast.error('No valid KEY=value lines found');
+      toast.error(t('env.invalidPaste'));
       return;
     }
     if (hasStoredKeys) {
@@ -176,7 +178,7 @@ export function CredentialEnvTableEditor({
       confirm.openPasteChoice();
       return;
     }
-    applyRowsWithToast(parsed.entries, `Applied ${parsed.entries.length} variables`);
+    applyRowsWithToast(parsed.entries, t('env.applied', { count: parsed.entries.length }));
   };
 
   const handleCellPaste = (index: number, event: ClipboardEvent<HTMLInputElement>) => {
@@ -209,7 +211,7 @@ export function CredentialEnvTableEditor({
     if (!row.key.trim()) return;
     const secret = row.value.trim() || revealedByKey.get(row.key) || '';
     await navigator.clipboard.writeText(`${row.key}=${secret}`);
-    toast.success('Copied line');
+    toast.success(t('env.copiedLine'));
   };
 
   const handleRevealAll = () => {
@@ -224,7 +226,7 @@ export function CredentialEnvTableEditor({
     }
     if (exportEntries.length === 0) return;
     await navigator.clipboard.writeText(serializeEnvBundle(exportEntries));
-    toast.success('Copied');
+    toast.success(t('env.copied'));
   };
 
   const handleDownloadBundle = async () => {
@@ -234,7 +236,7 @@ export function CredentialEnvTableEditor({
     }
     if (exportEntries.length === 0) return;
     downloadEnvBundleFile(exportEntries);
-    toast.success('Downloaded .env');
+    toast.success(t('env.downloaded'));
   };
 
   return (
@@ -243,7 +245,7 @@ export function CredentialEnvTableEditor({
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" size="sm" onClick={addRow}>
             <Plus className="mr-1 size-3.5" />
-            Add Variable
+            {t('env.addVariable')}
           </Button>
           {isExisting ? (
             <Button
@@ -252,7 +254,7 @@ export function CredentialEnvTableEditor({
               size="icon-sm"
               disabled={!hasStoredBundle || Boolean(revealedValue)}
               onClick={handleRevealAll}
-              aria-label="Reveal all values"
+              aria-label={t('env.revealAll')}
             >
               <Eye className="size-3.5" />
             </Button>
@@ -267,7 +269,7 @@ export function CredentialEnvTableEditor({
             onClick={() => void handleCopyBundle()}
           >
             <Copy className="mr-1 size-3.5" />
-            Copy
+            {t('env.copy')}
           </Button>
           <Button
             type="button"
@@ -277,16 +279,16 @@ export function CredentialEnvTableEditor({
             onClick={() => void handleDownloadBundle()}
           >
             <Download className="mr-1 size-3.5" />
-            Download
+            {t('env.download')}
           </Button>
         </div>
       </div>
 
       <div className="border-border overflow-hidden rounded-lg border">
         <div className="bg-muted/40 text-muted-foreground grid grid-cols-[1fr_1fr_auto] gap-2 px-3 py-2 text-xs font-medium">
-          <span>Key</span>
-          <span>Value</span>
-          <span className="text-right">Actions</span>
+          <span>{t('env.headerKey')}</span>
+          <span>{t('env.headerValue')}</span>
+          <span className="text-right">{t('env.headerActions')}</span>
         </div>
         {visibleRowRefs.map(({ row, index }) => (
           <CredentialEnvTableRow
@@ -294,7 +296,7 @@ export function CredentialEnvTableEditor({
             row={row}
             maskValue={envRowValueIsMasked(row, showMasked, serverKeySet)}
             valueMaskDisplay={ENV_TABLE_VALUE_MASK_DISPLAY}
-            valueEmptyPlaceholder={ENV_TABLE_VALUE_EMPTY_PLACEHOLDER}
+            valueEmptyPlaceholder={t(ENV_TABLE_VALUE_EMPTY_PLACEHOLDER_KEY)}
             onKeyChange={(key) => confirm.requestKeyChange(index, key)}
             onValueChange={(val) => updateRow(index, { value: val })}
             onPaste={(event) => handleCellPaste(index, event)}
@@ -312,7 +314,7 @@ export function CredentialEnvTableEditor({
               onClick={() => setExpanded(true)}
             >
               <ChevronDown className="size-3.5" />
-              Show all ({rowsForTable.length} variables)
+              {t('env.showAll', { count: rowsForTable.length })}
             </Button>
           </div>
         ) : null}

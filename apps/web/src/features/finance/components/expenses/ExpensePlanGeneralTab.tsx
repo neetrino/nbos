@@ -21,7 +21,11 @@ import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 import type { ExpensePlanGeneralDraft } from '@/features/finance/utils/expense-plan-general-form-state';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import { projectDisplayName } from '@/lib/format/project-product-display';
-import { translateExpensePlanCategory, translateExpensePlanFrequency, useExpensePlansT } from './expense-plan-message-keys';
+import {
+  translateExpensePlanCategory,
+  translateExpensePlanFrequency,
+  useExpensePlansT,
+} from './expense-plan-message-keys';
 
 const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES;
 
@@ -77,11 +81,7 @@ export function ExpensePlanGeneralTab({
 
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} mx-auto w-full max-w-none gap-4`}>
-      {cancelled ? (
-        <p className="text-muted-foreground text-sm">
-          {t('sheet.stoppedHint')}
-        </p>
-      ) : null}
+      {cancelled ? <p className="text-muted-foreground text-sm">{t('sheet.stoppedHint')}</p> : null}
       <DetailSheetSection title={t('sheet.sectionPlan')} icon={<Layers size={12} />}>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
           <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
