@@ -5,7 +5,9 @@ import {
 import { cn } from '@/lib/utils';
 
 /** Shown when employee is linked and a bonus entry exists — empty release field. */
-export const PAYROLL_MATRIX_CELL_RELEASE_PLACEHOLDER = 'Enter bonus';
+export const PAYROLL_MATRIX_CELL_RELEASE_PLACEHOLDER_KEY = 'matrix.cell.placeholder' as const;
+
+export const PAYROLL_MATRIX_CELL_RELEASE_ARIA_KEY = 'matrix.cell.releaseAria' as const;
 
 /** Finance field shell — same hover/focus treatment as detail sheet money fields. */
 export const PAYROLL_MATRIX_CELL_FIELD_SHELL_CLASS = cn(

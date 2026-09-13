@@ -1,6 +1,7 @@
 'use client';
 
 import { Building2, FolderKanban, Package } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   Table,
   TableBody,
@@ -29,6 +30,7 @@ interface ProductsHubListTableProps {
 }
 
 export function ProductsHubListTable({ products, onProductClick }: ProductsHubListTableProps) {
+  const t = useTranslations('deliveryBoard');
   return (
     <div className={ENTITY_LIST_SHELL_CLASS}>
       <Table>
@@ -43,7 +45,7 @@ export function ProductsHubListTable({ products, onProductClick }: ProductsHubLi
         </TableHeader>
         <TableBody>
           {products.map((product) => {
-            const badge = getProductDirectoryBadge(product);
+            const badge = getProductDirectoryBadge(product, t);
             const pmName = product.pm
               ? `${product.pm.firstName} ${product.pm.lastName}`.trim()
               : null;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { PayrollAllocationMatrixCellInput } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-cell-input';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { payrollMatrixCellBoxClass } from '@/features/finance/components/payroll/payroll-matrix-shared/payroll-matrix-cell-box';
@@ -100,6 +101,7 @@ export function PayrollAllocationMatrixGrid(props: {
     onOpenSalaryLine,
     fullscreen = false,
   } = props;
+  const t = useTranslations('payroll');
 
   const cellsByKey = useMemo(() => cellMap(matrix.cells), [matrix.cells]);
   const fundingByOrderId = useMemo(
@@ -162,7 +164,8 @@ export function PayrollAllocationMatrixGrid(props: {
     return cellsByKey.get(`${employeeId}:${orderId}`);
   };
 
-  const cornerLabel = viewMode === 'EMPLOYEE_MATRIX' ? 'Employee' : 'Order';
+  const cornerLabel =
+    viewMode === 'EMPLOYEE_MATRIX' ? t('salaryLines.employee') : t('matrix.axis.order');
 
   const renderAfterColumn = (columnId: string) => {
     if (viewMode === 'EMPLOYEE_MATRIX') {
@@ -219,7 +222,7 @@ export function PayrollAllocationMatrixGrid(props: {
         <td key={colId} style={PAYROLL_MATRIX_DATA_COL_STYLE} className={tdClass}>
           <button
             type="button"
-            aria-label="Create manual bonus"
+            aria-label={t('matrix.cell.createManualAria')}
             className={cn(
               payrollMatrixCellBoxClass(cell.state, false),
               'cursor-pointer transition-colors hover:bg-sky-500/10',

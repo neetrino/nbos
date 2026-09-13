@@ -1,4 +1,7 @@
+'use client';
+
 import { Building2, Calendar, CheckCircle2, FolderKanban } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { ActionTileButton } from '@/components/shared';
 import {
   DELIVERY_BOARD_CARD_DATE_ICON_SIZE,
@@ -11,6 +14,7 @@ import { getItemLifecycle } from './project-delivery-board-model';
 const CANCELLATION_PREVIEW_LEN = 72;
 
 export function ClosedCompactCardMeta({ item }: { item: DeliveryBoardItem }) {
+  const t = useTranslations('deliveryBoard');
   const lc = getItemLifecycle(item);
   const closedIso = item.kind === 'PRODUCT' ? item.product.updatedAt : item.extension.updatedAt;
   const closedLabel = closedIso ? formatDeliveryBoardCardDate(closedIso) : '—';
@@ -31,17 +35,17 @@ export function ClosedCompactCardMeta({ item }: { item: DeliveryBoardItem }) {
       )}
       <p className={DELIVERY_BOARD_CARD_DATE_ROW_CLASS}>
         <Calendar size={DELIVERY_BOARD_CARD_DATE_ICON_SIZE} aria-hidden />
-        <span>Closed {closedLabel}</span>
+        <span>{t('closedCard.closedOn', { date: closedLabel })}</span>
       </p>
       {lc?.resolution === 'DONE' && item.kind === 'PRODUCT' && item.product.clientAcceptedAt && (
         <p className="flex items-center gap-1 text-xs text-emerald-600">
           <CheckCircle2 size={12} />
-          Client accepted
+          {t('closedCard.clientAccepted')}
         </p>
       )}
       {lc?.resolution === 'CANCELLED' && lc.cancellationReason && (
         <p className="text-muted-foreground text-xs leading-snug">
-          Cancelled:{' '}
+          {t('closedCard.cancelledPrefix')}{' '}
           {lc.cancellationReason.length > CANCELLATION_PREVIEW_LEN
             ? `${lc.cancellationReason.slice(0, CANCELLATION_PREVIEW_LEN)}…`
             : lc.cancellationReason}
@@ -58,11 +62,12 @@ export function ClosedCompactCardActions({
   onOpenDetails?: () => void;
   onOpenProduct: () => void;
 }) {
+  const t = useTranslations('deliveryBoard');
   return (
     <div className="border-border mt-3 flex flex-wrap justify-end gap-1.5 border-t pt-2">
       {onOpenDetails ? (
         <ActionTileButton
-          label="Details"
+          label={t('table.details')}
           icon={<CheckCircle2 size={12} aria-hidden />}
           tone="sky"
           size="card"
@@ -70,7 +75,7 @@ export function ClosedCompactCardActions({
         />
       ) : null}
       <ActionTileButton
-        label="Open"
+        label={t('stageBar.open')}
         icon={<Building2 size={12} aria-hidden />}
         tone="neutral"
         size="card"

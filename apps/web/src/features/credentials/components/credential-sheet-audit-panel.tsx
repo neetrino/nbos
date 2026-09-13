@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
 import {
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
   DETAIL_SHEET_TAB_LIST_CLASS,
@@ -10,8 +11,8 @@ import { cn } from '@/lib/utils';
 import { labelCredentialAuditAction } from '@/features/credentials/utils/credential-audit-label';
 import type { AuditLogEntry } from '@/lib/api/audit';
 
-function actorLabel(entry: AuditLogEntry): string {
-  if (!entry.actor) return 'System';
+function actorLabel(entry: AuditLogEntry, systemLabel: string): string {
+  if (!entry.actor) return systemLabel;
   return `${entry.actor.firstName} ${entry.actor.lastName}`.trim();
 }
 
@@ -29,6 +30,9 @@ export function CredentialSheetAuditPanel({
   onReload,
   embedded = false,
 }: CredentialSheetAuditPanelProps) {
+  const t = useTranslations('credentials');
+  const locale = useLocale();
+
   return (
     <section
       className={
@@ -36,23 +40,23 @@ export function CredentialSheetAuditPanel({
           ? cn(DETAIL_SHEET_SECTION_STRETCH_CLASS, 'gap-3 pt-3')
           : 'border-border grid gap-3 border-t pt-5'
       }
-      aria-label="Audit log"
+      aria-label={t('audit.aria')}
     >
       <div className="flex items-center justify-between gap-2">
         {embedded ? (
-          <span className="sr-only">Activity</span>
+          <span className="sr-only">{t('form.tabs.activity')}</span>
         ) : (
-          <h3 className="text-sm font-medium">Activity</h3>
+          <h3 className="text-sm font-medium">{t('form.tabs.activity')}</h3>
         )}
         <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={onReload}>
-          Refresh
+          {t('audit.refresh')}
         </Button>
       </div>
 
       {loading ? (
         <Skeleton className={cn('w-full rounded-lg', embedded ? 'min-h-32 flex-1' : 'h-24')} />
       ) : entries.length === 0 ? (
-        <p className="text-muted-foreground text-xs">No activity recorded yet.</p>
+        <p className="text-muted-foreground text-xs">{t('audit.empty')}</p>
       ) : (
         <ul
           className={cn(
@@ -63,10 +67,11 @@ export function CredentialSheetAuditPanel({
           {entries.map((entry) => (
             <li key={entry.id}>
               <span className="text-foreground font-medium">
-                {labelCredentialAuditAction(entry.action)}
+                {labelCredentialAuditAction(entry.action, t)}
               </span>
               {' · '}
-              {actorLabel(entry)} · {new Date(entry.createdAt).toLocaleString()}
+              {actorLabel(entry, t('audit.system'))} ·{' '}
+              {new Date(entry.createdAt).toLocaleString(locale)}
             </li>
           ))}
         </ul>

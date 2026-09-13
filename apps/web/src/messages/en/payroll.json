@@ -207,6 +207,70 @@
     "bonusReleases": "Bonus releases",
     "payable": "Payable",
     "paid": "Paid",
-    "remaining": "Remaining"
+    "remaining": "Remaining",
+    "cell": {
+      "state": {
+        "READY": "Ready",
+        "PARTIALLY_FUNDED": "Partially funded",
+        "PROGRESS": "Progress",
+        "MANUAL_BONUS": "Manual bonus"
+      },
+      "warning": {
+        "EXTRA": "Extra bonus",
+        "OVER_FUNDING": "Over funding"
+      },
+      "placeholder": "Enter bonus",
+      "releaseAria": "Bonus release this month",
+      "createManualAria": "Create manual bonus",
+      "updateError": "Could not update release.",
+      "salesNotReady": "Sales bonus is not ready for payroll (earned month {period}). Sync Sales KPI for that month, then retry."
+    },
+    "axis": {
+      "employee": "Employee",
+      "order": "Order"
+    },
+    "header": {
+      "salary": "Salary",
+      "bonus": "Bonus",
+      "role": "Role",
+      "avail": "Avail",
+      "planned": "Planned",
+      "due": "Due",
+      "openDetail": "Open salary detail",
+      "openDetailNamed": "Open salary detail for {name}",
+      "dragColumn": "Drag to reorder column",
+      "dragRow": "Drag to reorder row"
+    },
+    "history": {
+      "current": "Current",
+      "available": "Available"
+    },
+    "manual": {
+      "title": "Manual bonus",
+      "fieldTitle": "Title",
+      "fieldAmount": "Amount",
+      "fieldReason": "Reason",
+      "titlePlaceholder": "Bonus title",
+      "submit": "Create bonus",
+      "created": "Manual bonus created and attached",
+      "createError": "Could not create manual bonus."
+    }
+  },
+  "audit": {
+    "action": {
+      "CREATED": "Created",
+      "STATUS_CHANGED": "Status changed"
+    },
+    "journalKind": {
+      "CREATED": "Created",
+      "APPROVED": "Approved",
+      "CLOSED": "Closed"
+    },
+    "materializedExpenses": "Materialized expenses",
+    "openExpense": "Open expense",
+    "exportJournalSuccess": "{count, plural, one {Exported # journal row} other {Exported # journal rows}}",
+    "exportAuditSuccess": "{count, plural, one {Exported # audit row} other {Exported # audit rows}}",
+    "exportJournalError": "Could not export journal CSV.",
+    "exportAuditError": "Could not export audit trail CSV."
   }
 }

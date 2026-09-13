@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { payrollAuditActionLabel } from '@/features/finance/constants/payroll-run-ui';
+import { useTranslations } from 'next-intl';
+import { payrollAuditActionMessageKey } from '@/features/finance/constants/payroll-run-ui';
 import {
   extractMaterializedExpenseIds,
   formatPayrollAuditChangesBody,
@@ -15,15 +16,16 @@ export interface PayrollAuditTrailEntryProps {
 }
 
 export function PayrollAuditTrailEntry({ row, actorLabel, formatAt }: PayrollAuditTrailEntryProps) {
+  const t = useTranslations('payroll');
   const expenseIds = extractMaterializedExpenseIds(row.changes);
+  const actionKey = payrollAuditActionMessageKey(row.action);
+  const actionLabel = actionKey ? t(actionKey) : row.action;
 
   return (
     <li className="border-border border-t py-3 first:border-t-0 first:pt-0">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-foreground text-sm font-medium">
-            {payrollAuditActionLabel(row.action)}
-          </p>
+          <p className="text-foreground text-sm font-medium">{actionLabel}</p>
           <p className="text-muted-foreground mt-0.5 text-xs">{actorLabel}</p>
         </div>
         <time
@@ -38,7 +40,9 @@ export function PayrollAuditTrailEntry({ row, actorLabel, formatAt }: PayrollAud
       </pre>
       {expenseIds.length > 0 ? (
         <div className="mt-2">
-          <p className="text-muted-foreground text-xs font-medium">Materialized expenses</p>
+          <p className="text-muted-foreground text-xs font-medium">
+            {t('audit.materializedExpenses')}
+          </p>
           <ul className="mt-1.5 flex flex-col gap-1.5 sm:flex-row sm:flex-wrap">
             {expenseIds.map((expenseId) => (
               <li key={expenseId}>
@@ -47,7 +51,7 @@ export function PayrollAuditTrailEntry({ row, actorLabel, formatAt }: PayrollAud
                   className="text-primary inline-flex max-w-full items-baseline gap-1 text-xs font-medium hover:underline"
                   title={expenseId}
                 >
-                  <span>Open expense</span>
+                  <span>{t('audit.openExpense')}</span>
                   <span className="text-muted-foreground font-mono text-[11px] font-normal break-all">
                     {expenseId.length > 14 ? `${expenseId.slice(0, 14)}…` : expenseId}
                   </span>

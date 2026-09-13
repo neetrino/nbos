@@ -96,10 +96,10 @@ export function DeliveryItemFilesSection({
     setBusyFileId(file.id);
     try {
       await unlinkFileFromEntityRecord(file, kind, entityId);
-      toast.success('Unlinked — file stays in the product folder on Drive');
+      toast.success(t('files.unlinkSuccess'));
       await refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not unlink file');
+      toast.error(err instanceof Error ? err.message : t('files.unlinkError'));
     } finally {
       setBusyFileId(null);
     }
@@ -109,10 +109,10 @@ export function DeliveryItemFilesSection({
     setBusyFileId(file.id);
     try {
       await moveToTrashAndUnlinkFileFromEntityRecord(file, kind, entityId);
-      toast.success('File moved to Trash and unlinked');
+      toast.success(t('files.trashSuccess'));
       await refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not move file to Trash');
+      toast.error(err instanceof Error ? err.message : t('files.trashError'));
     } finally {
       setBusyFileId(null);
     }

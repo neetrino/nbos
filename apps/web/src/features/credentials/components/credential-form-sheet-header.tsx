@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { RotateCcw, Star, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -77,6 +78,7 @@ export function CredentialFormSheetHeader({
   onRestore,
   resetKey,
 }: CredentialFormSheetHeaderProps) {
+  const t = useTranslations('credentials');
   const isMobileViewport = useIsMobileViewport();
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(name);
@@ -115,8 +117,8 @@ export function CredentialFormSheetHeader({
           'text-muted-foreground hover:text-foreground shrink-0',
           isFavorite && 'text-amber-500 hover:text-amber-600',
         )}
-        aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-        title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        aria-label={isFavorite ? t('tiles.removeFavorite') : t('tiles.addFavorite')}
+        title={isFavorite ? t('tiles.removeFavorite') : t('tiles.addFavorite')}
         onClick={onToggleFavorite}
       >
         <Star className={cn('size-4', isFavorite && 'fill-current')} aria-hidden />

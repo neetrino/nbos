@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type KeyboardEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { ChevronDown, Sparkles, XCircle } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -115,6 +116,7 @@ export function ChecklistWorkbenchItemRow({
   /** Red frame when checklist complete was blocked on these items. */
   completionBlocked?: boolean;
 }) {
+  const t = useTranslations('checklist');
   const [expanded, setExpanded] = useState(false);
   const ui = useChecklistItemMarkUi(instance, item, disabled, busy, onMark);
 
@@ -136,7 +138,7 @@ export function ChecklistWorkbenchItemRow({
             onCheckedChange={(v) => ui.onDoneToggle(v === true)}
             onClick={(event) => event.stopPropagation()}
             className="size-5 shrink-0 rounded-[5px] border-2 data-checked:border-emerald-600 data-checked:bg-emerald-600 data-checked:text-white"
-            aria-label={ui.doneChecked ? 'Clear done' : 'Mark done'}
+            aria-label={ui.doneChecked ? t('row.clearDone') : t('row.markDone')}
           />
           <CollapsibleTrigger
             type="button"
@@ -158,7 +160,7 @@ export function ChecklistWorkbenchItemRow({
               <Sparkles
                 className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400"
                 strokeWidth={2}
-                aria-label="Required"
+                aria-label={t('row.required')}
               />
             ) : null}
             <span className="flex shrink-0 items-center gap-1">
@@ -178,14 +180,18 @@ export function ChecklistWorkbenchItemRow({
               ui.notDoneArm && !ui.notDoneActive && 'ring-1 ring-amber-500/40',
             )}
             aria-label={
-              ui.notDoneActive ? 'Clear not done' : ui.notDoneArm ? 'Save not done' : 'Not done'
+              ui.notDoneActive
+                ? t('row.clearNotDone')
+                : ui.notDoneArm
+                  ? t('row.saveNotDone')
+                  : t('row.notDone')
             }
             title={
               ui.notDoneActive
-                ? 'Clear not done'
+                ? t('row.clearNotDone')
                 : ui.notDoneArm
-                  ? 'Save not done (or Enter in comment)'
-                  : 'Not done'
+                  ? t('row.saveNotDoneHint')
+                  : t('row.notDone')
             }
           >
             <XCircle className="size-4" strokeWidth={2} aria-hidden />
@@ -203,7 +209,7 @@ export function ChecklistWorkbenchItemRow({
         <div className="border-border border-t px-3 py-2">
           <Textarea
             className="min-h-[4.5rem] resize-y text-xs"
-            placeholder="Comment or Not Done reason"
+            placeholder={t('row.commentPlaceholder')}
             value={ui.comment}
             disabled={disabled}
             onChange={(e) => ui.setComment(e.target.value)}

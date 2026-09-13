@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Calendar, LayoutGrid, List, Package, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,8 +15,8 @@ import {
   type ViewModeOption,
 } from '@/components/shared';
 import type { FullProject, ProjectProductSummary } from '@/lib/api/projects';
+import { translateDeliveryLifecycleLabel } from '@/features/projects/components/delivery-board/delivery-board-message-keys';
 import {
-  formatDeliveryLifecycleLabel,
   getProductStatus,
   getProductType,
   PRODUCT_STATUSES,
@@ -176,12 +177,13 @@ function ProductListRow({
   projectId: string;
   product: ProjectProductSummary;
 }) {
+  const t = useTranslations('deliveryBoard');
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const dealId = getEntityOrderDealId(product.order);
   const status = getProductStatus(product.status);
   const productType = getProductType(product.productType);
   const statusLabel = product.deliveryLifecycle
-    ? formatDeliveryLifecycleLabel(product.deliveryLifecycle)
+    ? translateDeliveryLifecycleLabel(product.deliveryLifecycle, t)
     : status?.label;
 
   return (

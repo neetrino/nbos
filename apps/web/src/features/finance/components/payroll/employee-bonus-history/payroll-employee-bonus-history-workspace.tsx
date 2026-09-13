@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Users } from 'lucide-react';
 import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { PayrollEmployeeBonusHistoryGrid } from '@/features/finance/components/payroll/employee-bonus-history/payroll-employee-bonus-history-grid';
@@ -40,6 +41,7 @@ export function PayrollEmployeeBonusHistoryWorkspace({
   onTotalsChange?: (bonusTotal: string | null) => void;
   onSalaryLinesStale?: () => void;
 }) {
+  const t = useTranslations('payroll');
   const {
     meta,
     matrix,
@@ -105,12 +107,12 @@ export function PayrollEmployeeBonusHistoryWorkspace({
         applyMatrixUpdate(updated);
         onSalaryLinesStale?.();
       } catch (caught) {
-        toast.error(formatPayrollMatrixCellError(caught, 'Could not update release.'));
+        toast.error(formatPayrollMatrixCellError(caught, t));
       } finally {
         setSavingCellKey(null);
       }
     },
-    [applyMatrixUpdate, onSalaryLinesStale, payrollRunId],
+    [applyMatrixUpdate, onSalaryLinesStale, payrollRunId, t],
   );
 
   const handleManualSubmit = useCallback(
@@ -126,14 +128,14 @@ export function PayrollEmployeeBonusHistoryWorkspace({
         applyMatrixUpdate(updated);
         setManualCell(null);
         onSalaryLinesStale?.();
-        toast.success('Manual bonus created and attached');
+        toast.success(t('matrix.manual.created'));
       } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Could not create manual bonus.'));
+        toast.error(getApiErrorMessage(caught, t('matrix.manual.createError')));
       } finally {
         setManualBusy(false);
       }
     },
-    [applyMatrixUpdate, manualCell, onSalaryLinesStale, payrollRunId],
+    [applyMatrixUpdate, manualCell, onSalaryLinesStale, payrollRunId, t],
   );
 
   if (bootstrapLoading && !displayData) {

@@ -1,6 +1,7 @@
 'use client';
 
 import { Fragment, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import type { DragEndEvent, DraggableAttributes } from '@dnd-kit/core';
 import {
   DndContext,
@@ -85,10 +86,11 @@ function MatrixLabeledAmount({ label, value }: { label: string; value: string })
 }
 
 function MatrixEmployeeAmountStack({ amounts }: { amounts: MatrixEmployeeAmounts }) {
+  const t = useTranslations('payroll');
   return (
     <>
-      <MatrixLabeledAmount label="Salary" value={amounts.baseSalary} />
-      <MatrixLabeledAmount label="Bonus" value={amounts.bonusTotal} />
+      <MatrixLabeledAmount label={t('matrix.header.salary')} value={amounts.baseSalary} />
+      <MatrixLabeledAmount label={t('matrix.header.bonus')} value={amounts.bonusTotal} />
     </>
   );
 }
@@ -136,7 +138,7 @@ function MatrixHeaderDragShell({
   dragAttributes: DraggableAttributes;
   dragListeners: SortableDragListeners;
   onOpenDetail?: () => void;
-  detailAriaLabel?: string;
+  detailAriaLabel: string;
   children: ReactNode;
 }) {
   return (
@@ -152,7 +154,7 @@ function MatrixHeaderDragShell({
         <button
           type="button"
           className={cn(MATRIX_HEADER_HOVER_ACTION_CLASS, 'right-5')}
-          aria-label={detailAriaLabel ?? 'Open salary detail'}
+          aria-label={detailAriaLabel}
           onClick={(event) => {
             event.stopPropagation();
             onOpenDetail();
@@ -331,6 +333,7 @@ function SortableMatrixColumnHeader(props: {
   onOpenSalaryLine?: (salaryLineId: string) => void;
 }) {
   const { col, expanded, disabled, onActivate, onOpenSalaryLine } = props;
+  const t = useTranslations('payroll');
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: col.id,
     disabled,
@@ -353,7 +356,7 @@ function SortableMatrixColumnHeader(props: {
       >
         <MatrixHeaderDragShell
           disabled={disabled}
-          dragLabel="Drag to reorder column"
+          dragLabel={t('matrix.header.dragColumn')}
           onActivate={onActivate}
           dragAttributes={attributes}
           dragListeners={listeners}
@@ -363,7 +366,9 @@ function SortableMatrixColumnHeader(props: {
               : undefined
           }
           detailAriaLabel={
-            col.kind === 'employee' ? `Open salary detail for ${col.primary}` : undefined
+            col.kind === 'employee'
+              ? t('matrix.header.openDetailNamed', { name: col.primary })
+              : t('matrix.header.openDetail')
           }
         >
           <p className={MATRIX_PRIMARY_NAME_CLASS}>
@@ -375,14 +380,18 @@ function SortableMatrixColumnHeader(props: {
               <MatrixEmployeeAmountStack amounts={col.employeeAmounts} />
             ) : (
               <>
-                {col.secondary ? <MatrixLabeledAmount label="Role" value={col.secondary} /> : null}
-                <MatrixLabeledAmount label="Bonus" value={col.meta} />
+                {col.secondary ? (
+                  <MatrixLabeledAmount label={t('matrix.header.role')} value={col.secondary} />
+                ) : null}
+                <MatrixLabeledAmount label={t('matrix.header.bonus')} value={col.meta} />
               </>
             )
           ) : (
             <>
-              <MatrixLabeledAmount label="Remaining" value={col.meta} />
-              {col.funding ? <MatrixLabeledAmount label="Avail" value={col.funding} /> : null}
+              <MatrixLabeledAmount label={t('matrix.remaining')} value={col.meta} />
+              {col.funding ? (
+                <MatrixLabeledAmount label={t('matrix.header.avail')} value={col.funding} />
+              ) : null}
             </>
           )}
         </MatrixHeaderDragShell>
@@ -399,6 +408,7 @@ function SortableMatrixRowHeader(props: {
   onOpenSalaryLine?: (salaryLineId: string) => void;
 }) {
   const { row, expanded, disabled, onActivate, onOpenSalaryLine } = props;
+  const t = useTranslations('payroll');
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: row.id,
     disabled,
@@ -422,7 +432,7 @@ function SortableMatrixRowHeader(props: {
       >
         <MatrixHeaderDragShell
           disabled={disabled}
-          dragLabel="Drag to reorder row"
+          dragLabel={t('matrix.header.dragRow')}
           onActivate={onActivate}
           dragAttributes={attributes}
           dragListeners={listeners}
@@ -432,7 +442,9 @@ function SortableMatrixRowHeader(props: {
               : undefined
           }
           detailAriaLabel={
-            row.kind === 'employee' ? `Open salary detail for ${row.primary}` : undefined
+            row.kind === 'employee'
+              ? t('matrix.header.openDetailNamed', { name: row.primary })
+              : t('matrix.header.openDetail')
           }
         >
           <p className={MATRIX_PRIMARY_NAME_CLASS}>
@@ -444,14 +456,16 @@ function SortableMatrixRowHeader(props: {
               <MatrixEmployeeAmountStack amounts={row.employeeAmounts} />
             ) : (
               <>
-                <MatrixLabeledAmount label="Salary" value={row.secondary} />
-                <MatrixLabeledAmount label="Bonus" value={row.meta} />
+                <MatrixLabeledAmount label={t('matrix.header.salary')} value={row.secondary} />
+                <MatrixLabeledAmount label={t('matrix.header.bonus')} value={row.meta} />
               </>
             )
           ) : (
             <>
-              <MatrixLabeledAmount label="Remaining" value={row.meta} />
-              {row.funding ? <MatrixLabeledAmount label="Avail" value={row.funding} /> : null}
+              <MatrixLabeledAmount label={t('matrix.remaining')} value={row.meta} />
+              {row.funding ? (
+                <MatrixLabeledAmount label={t('matrix.header.avail')} value={row.funding} />
+              ) : null}
             </>
           )}
         </MatrixHeaderDragShell>

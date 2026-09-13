@@ -1,0 +1,23 @@
+{
+  "row": {
+    "markDone": "Mark done",
+    "clearDone": "Clear done",
+    "required": "Required",
+    "notDone": "Not done",
+    "saveNotDone": "Save not done",
+    "saveNotDoneHint": "Save not done (or Enter in comment)",
+    "clearNotDone": "Clear not done",
+    "commentPlaceholder": "Comment or Not Done reason"
+  },
+  "evidence": {
+    "attachments": "{count, plural, one {# attachment} other {# attachments}}",
+    "link": "Link",
+    "text": "Text"
+  },
+  "sheet": {
+    "loading": "Loading",
+    "empty": "No checklists.",
+    "completing": "Completing…",
+    "complete": "Complete checklist"
+  }
+}

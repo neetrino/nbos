@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { AlertCircle, CheckCircle2, ClipboardCheck, Loader2 } from 'lucide-react';
 import { EntityDetailSheetContent } from '@/components/shared';
 import { SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS } from '@/components/shared/detail-sheet-classes';
@@ -132,6 +133,7 @@ function ChecklistWorkbenchSheetBody({
   onComplete: ChecklistInstanceWorkbenchSheetProps['onComplete'];
   completionBlockHighlight: ChecklistInstanceWorkbenchSheetProps['completionBlockHighlight'];
 }) {
+  const t = useTranslations('checklist');
   return (
     <>
       <SheetHeader className="border-border shrink-0 space-y-3 border-b px-5 py-4">
@@ -160,7 +162,7 @@ function ChecklistWorkbenchSheetBody({
         {loading ? (
           <p className="text-muted-foreground flex items-center gap-2 text-[11px]">
             <Loader2 className="size-3 animate-spin" aria-hidden />
-            Loading
+            {t('sheet.loading')}
           </p>
         ) : null}
         {error ? <p className="text-destructive text-[11px]">{error}</p> : null}
@@ -169,7 +171,7 @@ function ChecklistWorkbenchSheetBody({
       <ScrollArea className="min-h-0 flex-1">
         <div className="space-y-5 px-5 py-4">
           {instances.length === 0 && !loading ? (
-            <p className="text-muted-foreground text-sm">No checklists.</p>
+            <p className="text-muted-foreground text-sm">{t('sheet.empty')}</p>
           ) : (
             instances.map((instance, index) => (
               <div key={instance.id}>
@@ -207,6 +209,7 @@ function WorkbenchInstanceBlock({
   onComplete: ChecklistInstanceWorkbenchSheetProps['onComplete'];
   completionBlockItemIds: readonly string[] | null;
 }) {
+  const t = useTranslations('checklist');
   const items = parseChecklistInstanceItems(instance.snapshotItems);
   const complete = Boolean(instance.completedAt);
   const reviewedCount = items.filter((item) => isItemReviewed(item)).length;
@@ -251,10 +254,10 @@ function WorkbenchInstanceBlock({
         {busyKey === `${instance.id}:complete` ? (
           <>
             <Loader2 className="mr-1.5 size-3.5 animate-spin" aria-hidden />
-            Completing…
+            {t('sheet.completing')}
           </>
         ) : (
-          'Complete checklist'
+          t('sheet.complete')
         )}
       </Button>
     </section>

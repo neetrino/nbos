@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { DeleteConfirmDialog, type DeleteConfirmDialogProps } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,25 +28,27 @@ export function EnvTablePasteChoiceDialog({
   onMerge,
   onReplace,
 }: EnvTablePasteChoiceDialogProps) {
+  const t = useTranslations('credentials');
+  const tCommon = useTranslations('common');
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Apply pasted variables?</DialogTitle>
+          <DialogTitle>{t('env.pasteTitle')}</DialogTitle>
         </DialogHeader>
         <p className="text-muted-foreground text-sm">
-          The table already has {existingCount} variable{existingCount === 1 ? '' : 's'}. Paste adds{' '}
-          {incomingCount} parsed line{incomingCount === 1 ? '' : 's'}.
+          {t('env.pasteBody', { existing: existingCount, incoming: incomingCount })}
         </p>
         <DialogFooter className="gap-2 sm:gap-0">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button type="button" variant="outline" onClick={onMerge}>
-            Merge
+            {t('env.merge')}
           </Button>
           <Button type="button" onClick={onReplace}>
-            Replace all
+            {t('env.replaceAll')}
           </Button>
         </DialogFooter>
       </DialogContent>

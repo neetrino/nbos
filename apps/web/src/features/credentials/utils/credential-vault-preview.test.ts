@@ -42,7 +42,7 @@ describe('buildCredentialVaultPreview', () => {
       }),
     );
     expect(model.infoOnly).toBe(true);
-    expect(model.items).toEqual([{ type: 'info', icon: 'braces', label: 'ENV' }]);
+    expect(model.items).toEqual([{ type: 'info', icon: 'braces', labelKey: 'tiles.infoEnv' }]);
   });
 
   it('shows SSH info when username or key is missing', () => {
@@ -89,8 +89,8 @@ describe('buildCredentialVaultPreview', () => {
 
   it('keeps login with secrets in the bottom cluster', () => {
     const parts = partitionVaultPreviewItems([
-      { type: 'copy-text', icon: 'at-sign', value: 'user', copyLabel: 'Copy login' },
-      { type: 'copy-secret', icon: 'lock', secret: 'password', copyLabel: 'Copy password' },
+      { type: 'copy-text', icon: 'at-sign', value: 'user', copyLabelKey: 'tiles.copyLogin' },
+      { type: 'copy-secret', icon: 'lock', secret: 'password', copyLabelKey: 'tiles.copyPassword' },
     ]);
     expect(parts.top).toEqual([]);
     expect(parts.bottom.map((item) => item.type)).toEqual(['copy-text', 'copy-secret']);

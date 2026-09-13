@@ -240,10 +240,13 @@ export function useCredentialsVaultPage() {
     [pushOpenCredentialToUrl],
   );
 
-  const copyToClipboard = useCallback((text: string) => {
-    void navigator.clipboard.writeText(text);
-    toast.success('Copied');
-  }, []);
+  const copyToClipboard = useCallback(
+    (text: string) => {
+      void navigator.clipboard.writeText(text);
+      toast.success(t('tiles.copied'));
+    },
+    [t],
+  );
 
   const toggleQuickFilter = useCallback((key: CredentialQuickFilterKey) => {
     setQuickFilters((prev) => {
@@ -429,16 +432,16 @@ export function useCredentialsVaultPage() {
       );
       try {
         await credentialsApi.setFavorite(id, favorite);
-        toast.success(favorite ? 'Added to favorites' : 'Removed from favorites');
+        toast.success(favorite ? t('tiles.favoriteAdded') : t('tiles.favoriteRemoved'));
         void refetch({ silent: true });
       } catch {
         listQuery.setCredentials((items) =>
           items.map((item) => (item.id === id ? { ...item, isFavorite: previous } : item)),
         );
-        toast.error('Favorite could not be updated');
+        toast.error(t('tiles.favoriteFailed'));
       }
     },
-    [credentials, listQuery, refetch],
+    [credentials, listQuery, refetch, t],
   );
 
   const handleTabChange = useCallback(

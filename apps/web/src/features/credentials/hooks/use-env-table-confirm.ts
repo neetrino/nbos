@@ -1,17 +1,18 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { EnvBundleEntry } from '@nbos/shared';
 import type { DeleteConfirmDialogProps } from '@/components/shared';
 import {
-  ENV_TABLE_CONFIRM_KEY_OVERWRITE_DESCRIPTION,
-  ENV_TABLE_CONFIRM_KEY_OVERWRITE_TITLE,
-  ENV_TABLE_CONFIRM_PASTE_MERGE_DESCRIPTION,
-  ENV_TABLE_CONFIRM_PASTE_MERGE_TITLE,
-  ENV_TABLE_CONFIRM_PASTE_REPLACE_DESCRIPTION,
-  ENV_TABLE_CONFIRM_PASTE_REPLACE_TITLE,
-  ENV_TABLE_CONFIRM_REMOVE_DESCRIPTION,
-  ENV_TABLE_CONFIRM_REMOVE_TITLE,
+  ENV_TABLE_CONFIRM_KEY_OVERWRITE_DESCRIPTION_KEY,
+  ENV_TABLE_CONFIRM_KEY_OVERWRITE_TITLE_KEY,
+  ENV_TABLE_CONFIRM_PASTE_MERGE_DESCRIPTION_KEY,
+  ENV_TABLE_CONFIRM_PASTE_MERGE_TITLE_KEY,
+  ENV_TABLE_CONFIRM_PASTE_REPLACE_DESCRIPTION_KEY,
+  ENV_TABLE_CONFIRM_PASTE_REPLACE_TITLE_KEY,
+  ENV_TABLE_CONFIRM_REMOVE_DESCRIPTION_KEY,
+  ENV_TABLE_CONFIRM_REMOVE_TITLE_KEY,
 } from '@/features/credentials/constants/credential-env-table';
 import {
   countEnvMergeOverwrites,
@@ -49,6 +50,8 @@ export function useEnvTableConfirm({
   onResolveKeyOverwrite,
   onClearPastePending,
 }: UseEnvTableConfirmParams) {
+  const t = useTranslations('credentials');
+  const tCommon = useTranslations('common');
   const [action, setAction] = useState<EnvTableConfirmAction | null>(null);
   const [pasteChoiceOpen, setPasteChoiceOpen] = useState(false);
 
@@ -64,12 +67,12 @@ export function useEnvTableConfirm({
         onResolveKeyOverwrite(action.index, action.newKey);
         break;
       case 'paste-replace':
-        onApplyRows(pendingPasteEntries, `Replaced with ${pendingPasteEntries.length} variables`);
+        onApplyRows(pendingPasteEntries, t('env.replaced', { count: pendingPasteEntries.length }));
         onClearPastePending();
         break;
       case 'paste-merge': {
         const merged = mergeEnvBundleEntries(tableRows, pendingPasteEntries);
-        onApplyRows(merged, `Merged to ${merged.length} variables`);
+        onApplyRows(merged, t('env.merged', { count: merged.length }));
         onClearPastePending();
         break;
       }
@@ -85,6 +88,7 @@ export function useEnvTableConfirm({
     onClearPastePending,
     onRemoveIndex,
     pendingPasteEntries,
+    t,
     tableRows,
   ]);
 
@@ -95,7 +99,7 @@ export function useEnvTableConfirm({
         onRemoveIndex(index);
         return;
       }
-      setAction({ kind: 'remove', index, key: row.key.trim() || 'variable' });
+      setAction({ kind: 'remove', index, key: row.key.trim() });
     },
     [onRemoveIndex, revealedByKey, serverKeySet, tableRows],
   );
@@ -139,7 +143,7 @@ export function useEnvTableConfirm({
       return;
     }
     const merged = mergeEnvBundleEntries(tableRows, pendingPasteEntries);
-    onApplyRows(merged, `Merged to ${merged.length} variables`);
+    onApplyRows(merged, t('env.merged', { count: merged.length }));
     onClearPastePending();
   }, [
     onApplyRows,
@@ -147,6 +151,7 @@ export function useEnvTableConfirm({
     pendingPasteEntries,
     revealedByKey,
     serverKeySet,
+    t,
     tableRows,
   ]);
 
@@ -165,40 +170,50 @@ export function useEnvTableConfirm({
       },
       isSubmitting: false,
       errorMessage: null,
+      dismissLabel: tCommon('cancel'),
       onConfirm: executeConfirm,
     };
     switch (action.kind) {
       case 'remove':
         return {
           ...base,
-          itemName: action.key,
-          title: ENV_TABLE_CONFIRM_REMOVE_TITLE,
-          description: ENV_TABLE_CONFIRM_REMOVE_DESCRIPTION,
-          confirmLabel: 'Remove',
+          itemName: action.key || t('env.variableFallback'),
+          title: t(ENV_TABLE_CONFIRM_REMOVE_TITLE_KEY),
+          description: t(ENV_TABLE_CONFIRM_REMOVE_DESCRIPTION_KEY),
+          confirmLabel: t('env.remove'),
         };
       case 'key-overwrite':
         return {
           ...base,
           itemName: action.newKey.trim(),
-          title: ENV_TABLE_CONFIRM_KEY_OVERWRITE_TITLE,
-          description: ENV_TABLE_CONFIRM_KEY_OVERWRITE_DESCRIPTION,
-          confirmLabel: 'Replace',
+          title: t(ENV_TABLE_CONFIRM_KEY_OVERWRITE_TITLE_KEY),
+          description: t(ENV_TABLE_CONFIRM_KEY_OVERWRITE_DESCRIPTION_KEY),
+          confirmLabel: t('env.replace'),
         };
       case 'paste-replace':
         return {
           ...base,
-          itemName: `${tableRows.filter((r) => r.key.trim()).length} variables`,
-          title: ENV_TABLE_CONFIRM_PASTE_REPLACE_TITLE,
-          description: ENV_TABLE_CONFIRM_PASTE_REPLACE_DESCRIPTION,
-          confirmLabel: 'Replace all',
+          itemName: t('env.variablesCount', {
+            count: tableRows.filter((row) => row.key.trim()).length,
+          }),
+          title: t(ENV_TABLE_CONFIRM_PASTE_REPLACE_TITLE_KEY),
+          description: t(ENV_TABLE_CONFIRM_PASTE_REPLACE_DESCRIPTION_KEY),
+          confirmLabel: t('env.replaceAll'),
         };
       case 'paste-merge':
         return {
           ...base,
-          itemName: `${countEnvMergeOverwrites(tableRows, pendingPasteEntries, serverKeySet, revealedByKey)} keys`,
-          title: ENV_TABLE_CONFIRM_PASTE_MERGE_TITLE,
-          description: ENV_TABLE_CONFIRM_PASTE_MERGE_DESCRIPTION,
-          confirmLabel: 'Merge',
+          itemName: t('env.keysCount', {
+            count: countEnvMergeOverwrites(
+              tableRows,
+              pendingPasteEntries,
+              serverKeySet,
+              revealedByKey,
+            ),
+          }),
+          title: t(ENV_TABLE_CONFIRM_PASTE_MERGE_TITLE_KEY),
+          description: t(ENV_TABLE_CONFIRM_PASTE_MERGE_DESCRIPTION_KEY),
+          confirmLabel: t('env.merge'),
         };
       default:
         return null;
@@ -210,6 +225,8 @@ export function useEnvTableConfirm({
     pendingPasteEntries,
     revealedByKey,
     serverKeySet,
+    t,
+    tCommon,
     tableRows,
   ]);
 
