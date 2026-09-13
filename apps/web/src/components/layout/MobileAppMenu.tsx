@@ -24,9 +24,10 @@ interface MobileAppMenuProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   items: NavModuleDefinition[];
+  showSettings: boolean;
 }
 
-export function MobileAppMenu({ open, onOpenChange, items }: MobileAppMenuProps) {
+export function MobileAppMenu({ open, onOpenChange, items, showSettings }: MobileAppMenuProps) {
   const close = useCallback(() => onOpenChange(false), [onOpenChange]);
   const handleRef = useBottomSheetSwipeToClose(open, close);
   const t = useTranslations('navigation');
@@ -56,7 +57,7 @@ export function MobileAppMenu({ open, onOpenChange, items }: MobileAppMenuProps)
                 <MobileAppMenuTile key={item.key} item={item} onNavigate={close} />
               ))}
             </div>
-            <MobileAppMenuAccountRow onClose={close} />
+            <MobileAppMenuAccountRow onClose={close} showSettings={showSettings} />
           </div>
         </div>
       </SheetContent>
@@ -64,7 +65,13 @@ export function MobileAppMenu({ open, onOpenChange, items }: MobileAppMenuProps)
   );
 }
 
-function MobileAppMenuAccountRow({ onClose }: { onClose: () => void }) {
+function MobileAppMenuAccountRow({
+  onClose,
+  showSettings,
+}: {
+  onClose: () => void;
+  showSettings: boolean;
+}) {
   const router = useRouter();
   const { openMyAccountSheet } = useMyAccountSheet();
   const tNav = useTranslations('navigation');
@@ -72,21 +79,23 @@ function MobileAppMenuAccountRow({ onClose }: { onClose: () => void }) {
 
   return (
     <div className={cn(MOBILE_APP_MENU_GRID_CLASS, 'mt-3')}>
-      <button
-        type="button"
-        onClick={() => {
-          onClose();
-          router.push('/settings');
-        }}
-        className={MOBILE_APP_MENU_TILE_CLASS}
-      >
-        <Settings
-          size={MOBILE_APP_MENU_FOOTER_ICON_SIZE_PX}
-          className="text-zinc-600"
-          aria-hidden
-        />
-        <span className="text-sm font-semibold tracking-tight">{tNav('sidebar.settings')}</span>
-      </button>
+      {showSettings ? (
+        <button
+          type="button"
+          onClick={() => {
+            onClose();
+            router.push('/settings');
+          }}
+          className={MOBILE_APP_MENU_TILE_CLASS}
+        >
+          <Settings
+            size={MOBILE_APP_MENU_FOOTER_ICON_SIZE_PX}
+            className="text-zinc-600"
+            aria-hidden
+          />
+          <span className="text-sm font-semibold tracking-tight">{tNav('sidebar.settings')}</span>
+        </button>
+      ) : null}
       <button
         type="button"
         onClick={() => {

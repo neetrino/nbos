@@ -59,7 +59,7 @@ App Shell
 
 ## Sidebar canon
 
-Sidebar содержит top-level модули, а не все возможные действия.
+Sidebar содержит top-level модули, а не все возможные действия. Пункты списка — листья: секции модуля открываются на его экране, не выпадашкой в sidebar.
 
 Канонический порядок по умолчанию:
 
@@ -81,8 +81,9 @@ Credentials
 My Company
 AI & Agents
 Reports / Analytics
-Settings / Admin
 ```
+
+`Settings` не стоит в этом списке. Это закреплённый пункт внизу sidebar под именем Settings (путь `/settings`). Секции админки открываются с хаба, не выпадашкой в меню.
 
 ### Dashboard
 
@@ -332,11 +333,14 @@ Default page: `Org Structure`.
 
 ### Settings / Admin
 
-Settings - системная админка платформы.
+Settings — системная админка платформы. В sidebar это один закреплённый пункт внизу, имя `Settings`, без подпунктов.
+
+Секции живут на хабе `/settings` и во внутренних табах модуля:
 
 ```text
-Settings / Admin
+Settings
   General
+  Appearance
   System Lists
   Permissions / RBAC
   Module Settings
@@ -349,7 +353,7 @@ Settings / Admin
 
 Settings не содержит:
 
-- My Account;
+- My Account (header user menu);
 - Departments;
 - Team;
 - Compensation;

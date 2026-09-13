@@ -5,10 +5,11 @@ import { Menu } from 'lucide-react';
 import type { SidebarModuleKey } from '@nbos/shared/constants';
 import { cn } from '@/lib/utils';
 import type { DashboardPersonalLink } from '@/lib/api/dashboard';
+import type { NavModuleDefinition } from '@/lib/navigation/nav-config';
 import { applySidebarPreferences } from '@/lib/navigation/apply-sidebar-preferences';
 import { SidebarNavList } from './SidebarNavList';
+import { SidebarFooterNav } from './SidebarFooterNav';
 import { SidebarNavigationCustomizeSheet } from './SidebarNavigationCustomizeSheet';
-import { SidebarSettingsMenu } from './SidebarSettingsMenu';
 import {
   SIDEBAR_HEADER_CLASS,
   SIDEBAR_HEADER_HEIGHT_CLASS,
@@ -35,6 +36,7 @@ export type SidebarPanelProps = {
   onCreateLink: (label: string, url: string) => Promise<void>;
   onDeleteLink: (id: string) => Promise<void>;
   onOpenCustomize: () => void;
+  settingsItem: NavModuleDefinition | null;
 };
 
 export function SidebarPanel({
@@ -56,6 +58,7 @@ export function SidebarPanel({
   onCreateLink,
   onDeleteLink,
   onOpenCustomize,
+  settingsItem,
 }: SidebarPanelProps) {
   return (
     <>
@@ -77,9 +80,11 @@ export function SidebarPanel({
         />
       </nav>
 
-      <div className="border-sidebar-border border-t p-1.5">
-        <SidebarSettingsMenu collapsed={!visuallyExpanded} onCustomizeMenu={onOpenCustomize} />
-      </div>
+      <SidebarFooterNav
+        collapsed={!visuallyExpanded}
+        settingsItem={settingsItem}
+        onCustomizeMenu={onOpenCustomize}
+      />
 
       <SidebarNavigationCustomizeSheet
         open={customizeOpen}
