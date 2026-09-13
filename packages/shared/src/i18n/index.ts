@@ -25,3 +25,5 @@ export type {
   ReportExportEmailCopy,
   SystemEmailLocale,
 } from './system-email-copy';
+export { reportExportFileCopy } from './system-export-copy';
+export type { ReportExportFileCopy } from './system-export-copy';
