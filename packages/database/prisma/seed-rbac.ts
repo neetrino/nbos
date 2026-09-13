@@ -611,7 +611,10 @@ async function main() {
     });
   }
 
-  await prisma.rolePermission.deleteMany({});
+  // Reset only the roles this seed owns. A blanket deleteMany would also wipe the grants of
+  // roles an admin created in Settings -> Permissions / RBAC, leaving them silently powerless.
+  const seededRoleIds = [...new Set(rolePermissionData.map((row) => row.roleId))];
+  await prisma.rolePermission.deleteMany({ where: { roleId: { in: seededRoleIds } } });
   await prisma.rolePermission.createMany({
     data: rolePermissionData,
     skipDuplicates: true,

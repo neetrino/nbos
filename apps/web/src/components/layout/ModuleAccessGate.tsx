@@ -3,9 +3,11 @@
 import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { AccessDeniedScreen } from '@/components/shared/AccessDeniedScreen';
+import { ErrorState } from '@/components/shared/ErrorState';
 import { LoadingState } from '@/components/shared/LoadingState';
 import { resolveNavPermission } from '@/lib/navigation/resolve-nav-permission';
 import { usePermission } from '@/lib/permissions';
+import { resolveModuleAccessDecision } from './module-access-decision';
 
 interface ModuleAccessGateProps {
   children: ReactNode;
@@ -13,14 +15,17 @@ interface ModuleAccessGateProps {
 
 export function ModuleAccessGate({ children }: ModuleAccessGateProps) {
   const pathname = usePathname();
-  const { can, isLoading, meLoadError } = usePermission();
+  const { can, isLoading, meLoadError, reloadMe } = usePermission();
   const required = resolveNavPermission(pathname);
 
-  if (!required) {
-    return <>{children}</>;
-  }
+  const decision = resolveModuleAccessDecision({
+    hasRequirement: Boolean(required),
+    isLoading,
+    meLoadError,
+    isPermitted: required ? can(required.action, required.module) : false,
+  });
 
-  if (isLoading) {
+  if (decision === 'LOADING') {
     return (
       <div className="flex min-h-[calc(100dvh-8rem)] items-center justify-center px-6 py-16">
         <LoadingState />
@@ -28,11 +33,15 @@ export function ModuleAccessGate({ children }: ModuleAccessGateProps) {
     );
   }
 
-  if (meLoadError) {
-    return <>{children}</>;
+  if (decision === 'ERROR') {
+    return (
+      <div className="px-6 py-16">
+        <ErrorState description={meLoadError ?? ''} onRetry={reloadMe} />
+      </div>
+    );
   }
 
-  if (!can(required.action, required.module)) {
+  if (decision === 'DENY') {
     return <AccessDeniedScreen showDashboardLink={can('VIEW', 'DASHBOARDS')} />;
   }
 

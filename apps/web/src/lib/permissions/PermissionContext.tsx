@@ -1,6 +1,14 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useRef, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  type ReactNode,
+} from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import type { MeResponse, PermissionMap, PermissionScope } from './types';
@@ -16,6 +24,8 @@ interface PermissionContextValue {
   isLoading: boolean;
   /** Set when `/api/me` fails after sign-in; empty permissions alone are ambiguous. */
   meLoadError: string | null;
+  /** Retries the `/api/me` fetch so a transport failure does not require a full reload. */
+  reloadMe: () => void;
   can: (action: string, module: string) => boolean;
   scope: (action: string, module: string) => PermissionScope | null;
 }
@@ -25,6 +35,7 @@ const PermissionCtx = createContext<PermissionContextValue>({
   permissions: {},
   isLoading: true,
   meLoadError: null,
+  reloadMe: () => {},
   can: () => false,
   scope: () => null,
 });
@@ -34,10 +45,16 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [meLoadError, setMeLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [reloadToken, setReloadToken] = useState(0);
   /** One `/api/me` fetch per signed-in user; avoids refetch loops when `me` stays null. */
   const fetchedUserIdRef = useRef<string | null>(null);
 
   const userId = session?.user?.id;
+
+  const reloadMe = useCallback(() => {
+    fetchedUserIdRef.current = null;
+    setReloadToken((token) => token + 1);
+  }, []);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -92,7 +109,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
         fetchedUserIdRef.current = null;
       }
     };
-  }, [userId, status]);
+  }, [userId, status, reloadToken]);
 
   const permissions = me?.permissions ?? {};
 
@@ -108,7 +125,9 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <PermissionCtx.Provider value={{ me, permissions, isLoading, meLoadError, can, scope }}>
+    <PermissionCtx.Provider
+      value={{ me, permissions, isLoading, meLoadError, reloadMe, can, scope }}
+    >
       {children}
     </PermissionCtx.Provider>
   );
