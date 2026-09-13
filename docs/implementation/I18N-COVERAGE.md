@@ -189,7 +189,7 @@ Matches canon. Do not treat this as a behaviour change.
 - **Restore:** after the client session is authenticated, GET preferences; if it differs from SSR, refresh. Catch does not write `en`.
 - **Cache:** React `cache()` per request only. Preference is not a process-wide query key. Business query keys are unchanged.
 
-Still English: non-employee `Search {kind}s…`, feature-module dock item labels, some credential form-sheet leftovers. Auth pages, emails, PDF. HY switcher still off. Nested create dialogs, month compensation / KPI sheet, Marketing chrome, Active Call overlay, shared checklist workbench, Delivery leftovers, payroll matrix, and credentials tiles/bulk/ENV are now EN/RU.
+Still English: non-employee `Search {kind}s…`, feature-module dock item labels, some credential form-sheet leftovers. Auth pages, emails, PDF. HY switcher still off. Marketing reports tab, nested creates, month compensation / KPI, Marketing chrome, Active Call overlay, shared checklist, Delivery leftovers, payroll matrix, and credentials tiles/bulk/ENV are now EN/RU.
 
 ## Stage 5 report — 2026-09-12
 

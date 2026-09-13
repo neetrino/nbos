@@ -216,5 +216,34 @@
       "saveLink": "Save link",
       "missingPlanWarning": "This account points to a plan that is missing or inaccessible. Pick a current plan or clear the link."
     }
+  },
+  "reports": {
+    "loading": "Loading report data…",
+    "unavailable": "Report data unavailable",
+    "tryAgain": "Try again",
+    "loadedAt": "Loaded at {time} · data refreshes per active tab.",
+    "spendVsRevenue": "Paid spend vs revenue",
+    "readiness": "Attribution readiness",
+    "readinessHint": "Marketing signal health.",
+    "activities": "Activities",
+    "paidRevenue": "Paid revenue",
+    "roas": "ROAS",
+    "cpl": "CPL (attrib. leads)",
+    "cplRoas": "CPL / ROAS",
+    "cplHint": "Shown only after Finance records paid spend on linked marketing expense plans and activity cards.",
+    "warnings": "Warnings",
+    "qualityTitle": "Data quality warnings",
+    "qualityHint": "Reports never convert missing data into zeroes.",
+    "noWarnings": "No marketing data-quality warnings.",
+    "affected": "Affected records: {count}",
+    "spendBase": "Paid marketing spend uses Finance payments on linked plans and activity expense cards (not budgets).",
+    "spendHidden": "CPL/ROI and net return stay hidden until at least one payment is recorded.",
+    "spendNet": "Net return uses paid spend and paid attributed revenue.",
+    "seriesSpend": "Paid marketing spend",
+    "seriesRevenue": "Paid revenue",
+    "seriesNet": "Net return",
+    "seriesLinked": "Linked",
+    "seriesMissing": "Missing links",
+    "seriesWon": "Won attributed"
   }
 }
