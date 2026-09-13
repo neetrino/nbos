@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   classifyDeploymentStatus,
   extractDeploymentRecords,
+  formatDeployAppLine,
+  formatDeployReadyReport,
   normalizeCoolifyUrl,
   parseCliArgs,
   parseDotEnv,
@@ -71,6 +73,18 @@ EMPTY=
       pickDeployment(extractDeploymentRecords([{ uuid: 'dep-1', status: 'finished' }]), 'dep-1')
         ?.status,
     ).toBe('finished');
+  });
+
+  it('prints a colored deploy check without starting Coolify', () => {
+    const report = formatDeployReadyReport({
+      apps: ['api', 'web'],
+      force: false,
+      checkOnly: true,
+      color: false,
+    });
+    expect(report).toContain('api → web');
+    expect(report).toContain('Check only');
+    expect(formatDeployAppLine('api', 'success', undefined, false)).toBe('✓ api finished');
   });
 
   it('normalizes the Coolify base URL', () => {

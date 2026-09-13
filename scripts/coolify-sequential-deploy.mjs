@@ -3,6 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ANSI, colorEnabled, paint } from './cli-style.mjs';
 import {
   APP_ENV_KEYS,
   DEPLOY_TIMEOUT_MS,
@@ -11,6 +12,8 @@ import {
   QUEUE_RETRY_DEFAULT_MS,
   classifyDeploymentStatus,
   extractDeploymentRecords,
+  formatDeployAppLine,
+  formatDeployReadyReport,
   parseCliArgs,
   parseDotEnv,
   parseQueuedDeploymentUuid,
@@ -91,7 +94,9 @@ async function queueDeploy(api, appUuid, force) {
       return parseQueuedDeploymentUuid(payload, appUuid);
     } catch (error) {
       if (error.status !== 429 || attempt === MAX_QUEUE_RETRIES) throw error;
-      process.stderr.write(`Coolify queue full, retry ${attempt}/${MAX_QUEUE_RETRIES}\n`);
+      process.stderr.write(
+        `${paint(colorEnabled(), ANSI.yellow, `⚠ Coolify queue full, retry ${attempt}/${MAX_QUEUE_RETRIES}`)}\n`,
+      );
       await sleep(error.retryAfterMs ?? QUEUE_RETRY_DEFAULT_MS);
     }
   }
@@ -120,18 +125,21 @@ async function waitForDeployment(api, appName, appUuid, deploymentUuid) {
     if (outcome === 'failed') {
       throw new Error(`${appName} deploy ended with status ${status ?? 'unknown'}`);
     }
-    process.stdout.write(`  ${appName}: ${status ?? 'pending'}\n`);
+    process.stdout.write(
+      `${formatDeployAppLine(appName, 'running', status ?? 'pending', colorEnabled())}\n`,
+    );
     await sleep(POLL_INTERVAL_MS);
   }
   throw new Error(`${appName} deploy timed out after ${DEPLOY_TIMEOUT_MS / 60000} minutes`);
 }
 
 async function deployApp(api, appName, appUuid, force) {
-  process.stdout.write(`Deploy ${appName}\n`);
+  const color = colorEnabled();
+  process.stdout.write(`${formatDeployAppLine(appName, 'start', undefined, color)}\n`);
   const deploymentUuid = await queueDeploy(api, appUuid, force);
-  process.stdout.write(`  queued ${deploymentUuid}\n`);
+  process.stdout.write(`${formatDeployAppLine(appName, 'queued', deploymentUuid, color)}\n`);
   await waitForDeployment(api, appName, appUuid, deploymentUuid);
-  process.stdout.write(`  ${appName} finished\n`);
+  process.stdout.write(`${formatDeployAppLine(appName, 'success', undefined, color)}\n`);
 }
 
 async function main() {
@@ -141,20 +149,24 @@ async function main() {
     return;
   }
   const config = resolveCoolifyConfig(loadEnv(), options.apps);
+  const color = colorEnabled();
   process.stdout.write(
-    `Coolify sequential deploy: ${options.apps.join(' → ')}${options.force ? ' (force)' : ''}\n`,
+    formatDeployReadyReport({
+      apps: options.apps,
+      force: options.force,
+      checkOnly: options.dryRun,
+      color,
+    }),
   );
-  if (options.dryRun) {
-    process.stdout.write('Status only. No deploy started.\n');
-    return;
-  }
+  if (options.dryRun) return;
   for (const app of options.apps) {
     await deployApp(config, app, config.uuids[app], options.force);
   }
-  process.stdout.write('All selected apps finished.\n');
+  process.stdout.write(`${paint(color, ANSI.green, '✓ All selected apps finished.')}\n`);
 }
 
 main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.message : error}\n`);
+  const message = error instanceof Error ? error.message : String(error);
+  process.stderr.write(`${paint(colorEnabled(), ANSI.red, `✕ ${message}`)}\n`);
   process.exitCode = 1;
 });

@@ -1,3 +1,5 @@
+import { ANSI, paint } from './cli-style.mjs';
+
 /**
  * @param {string[]} argv
  * @returns {{ statusOnly: boolean, help: boolean, deployArgs: string[] }}
@@ -17,4 +19,37 @@ export function parseReleaseProdArgs(argv) {
  */
 export function shouldStartDeploy(migrateExitCode) {
   return migrateExitCode === 0;
+}
+
+/**
+ * @param {boolean} statusOnly
+ * @param {boolean} [color]
+ * @returns {string}
+ */
+export function formatReleaseBanner(statusOnly, color = true) {
+  if (statusOnly) {
+    return `${paint(color, ANSI.cyan, 'Release status')} — migrate check, then deploy check\n`;
+  }
+  return `${paint(color, ANSI.cyan, 'Release')} — migrate first, deploy only if migrate succeeds\n`;
+}
+
+/**
+ * @param {'migrate' | 'deploy'} step
+ * @param {boolean} [color]
+ * @returns {string}
+ */
+export function formatReleaseStopped(step, color = true) {
+  const reason =
+    step === 'migrate'
+      ? 'production migrate did not succeed. Coolify was not touched.'
+      : 'Coolify deploy did not succeed.';
+  return `${paint(color, ANSI.red, `✕ Release stopped: ${reason}`)}\n`;
+}
+
+/**
+ * @param {boolean} [color]
+ * @returns {string}
+ */
+export function formatReleaseFinished(color = true) {
+  return `${paint(color, ANSI.green, '✓ Release finished.')}\n`;
 }

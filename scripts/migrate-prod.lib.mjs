@@ -94,3 +94,64 @@ export function classifyMigrateStatusOutput(output) {
   }
   return 'unknown';
 }
+
+/**
+ * @param {string} output
+ * @returns {string[]}
+ */
+export function extractPendingMigrations(output) {
+  const pending = [];
+  let collecting = false;
+  for (const rawLine of output.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (/have not yet been applied/i.test(line)) {
+      collecting = true;
+      continue;
+    }
+    if (!collecting) continue;
+    if (!line || /^to apply/i.test(line) || /^loaded prisma/i.test(line)) break;
+    if (/^\d{8,}/.test(line)) pending.push(line.split(/\s+/)[0]);
+  }
+  return pending;
+}
+
+import { ANSI, paint } from './cli-style.mjs';
+
+export { ANSI, colorEnabled, paint } from './cli-style.mjs';
+
+/**
+ * @param {{
+ *   host: string,
+ *   status: 'up_to_date' | 'pending' | 'blocked' | 'unknown',
+ *   pending: string[],
+ *   checkOnly: boolean,
+ *   color?: boolean,
+ * }} report
+ * @returns {string}
+ */
+export function formatMigrateStatusReport(report) {
+  const color = report.color ?? true;
+  const lines = [`Production DB: ${paint(color, ANSI.cyan, report.host)}`, ''];
+  if (report.status === 'up_to_date') {
+    lines.push(paint(color, ANSI.green, '✓ Up to date. Nothing to apply.'));
+  } else if (report.status === 'pending') {
+    const count = report.pending.length || 1;
+    lines.push(paint(color, ANSI.yellow, `⚠ Pending — ${count} migration(s) not applied yet`));
+    for (const name of report.pending) {
+      lines.push(`  ${paint(color, ANSI.yellow, '•')} ${name}`);
+    }
+  } else if (report.status === 'blocked') {
+    lines.push(
+      paint(color, ANSI.red, '✕ Blocked. Migration history needs a person. Do not deploy.'),
+    );
+  } else {
+    lines.push(paint(color, ANSI.yellow, '? Could not read a clear Prisma status.'));
+  }
+  if (report.checkOnly) {
+    lines.push('', 'Check only. Database was not changed.');
+    if (report.status === 'pending') {
+      lines.push(`Next, to apply: ${paint(color, ANSI.cyan, 'pnpm db:migrate:prod')}`);
+    }
+  }
+  return `${lines.join('\n')}\n`;
+}
