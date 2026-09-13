@@ -99,7 +99,15 @@ My Company -> Departments
 ```
 
 Settings не должен быть местом для оргструктуры.
-Sidebar now routes Departments through `My Company -> Departments`. The old `/settings/departments` route still exists as a compatibility route until a dedicated My Company implementation can own the page component directly.
+Sidebar now routes Departments through `My Company -> Departments`. Done as of 2026-09-13: the page component lives in `app/(app)/my-company/departments/page.tsx` and `/settings/departments` is a server redirect, so no Settings URL renders org structure any more.
+
+### B3a. Install apps was advertised from the Settings hub
+
+Статус: `DONE` (2026-09-13)
+
+`/install` — инструкция по установке PWA для сотрудника, а не админка: секретов нет, права ей не нужны, гейта у неё нет и не должно быть (достаточно аутентификации). Плитка на хабе `/settings` после закрытия админки под Owner / CEO делала вход в инструкцию невидимым для остальных, поэтому плитка убрана.
+
+Входы, доступные каждому сотруднику: pinned action на дашборде (`DASHBOARDS VIEW`, есть у всех ролей), пункт в header user menu и плитка в мобильном меню.
 
 ### B4. Settings navigation lacks complete admin structure
 
@@ -156,7 +164,25 @@ Phase 1 runtime now protects current managed lists at the API/UI level: protecte
 - запретить изменение code для business-bound values;
 - показывать warning в UI.
 
-Runtime now removes public write access, uses `COMPANY.EDIT` for mutations, blocks protected code edits, deactivates instead of deleting, and shows protected-list warnings in UI.
+Runtime now removes public write access, uses `SETTINGS.EDIT` for mutations, blocks protected code edits, deactivates instead of deleting, and shows protected-list warnings in UI.
+
+### C2b. Settings shared the COMPANY permission with My Company
+
+Статус: `DONE (2026-09-13)`
+
+Settings и `My Company` использовали один модуль прав `COMPANY`, поэтому Finance Director вместе с правами на сотрудников и зарплаты получал Appearance, System Lists, RBAC, Integrations, Module Settings, Scheduler и Trash purge. Хаб `/settings` и страницы без ссылки в сайдбаре (`access-policies`, `trash-inventory`, compat `departments`) не проверяли доступ по URL, а часть admin-чтений вообще шла без guard (`GET /roles/:id`, `GET /permissions`, `GET /system-lists/keys`, role access policies, notification admin rules).
+
+Сделано:
+
+- новые модули `SETTINGS`, `SETTINGS_RBAC`, `SETTINGS_SCHEDULER` (`@nbos/shared/constants`), миграция `20260913120000_settings_admin_permissions`;
+- default grant только Platform Owner / Founder (legacy `owner`) и CEO; остальные роли `NONE` и делегируются из матрицы;
+- каждый `/settings/*` маршрут закрыт по URL через web route registry; плитки хаба фильтруются тем же реестром;
+- ранее незащищённые admin-чтения получили `RequirePermission`;
+- добавлен `@RequireAnyPermission` для общих справочников: guard пускает по любому праву из списка и отдаёт scope первого совпавшего (см. §«Общие справочники» в `02-Permissions-RBAC.md`).
+
+Сознательное исключение: `GET /roles` остаётся на `COMPANY VIEW`, потому что список ролей нужен формам сотрудников и приглашений в `My Company`.
+
+Departments переехали из Settings в `My Company`: страница теперь живёт в `app/(app)/my-company/departments/page.tsx`, а `/settings/departments` — серверный redirect. Это закрывает последний `/settings` URL, который открывался по `COMPANY VIEW`. Канон: `02-Permissions-RBAC.md`.
 
 ### C3. RBAC scope enforcement is incomplete
 
@@ -269,7 +295,7 @@ Phase 1 keeps technical permission roles in Settings/RBAC and exposes business-s
 
 Рекомендуемый порядок:
 
-1. Очистить навигацию: убрать My Account и Departments из Settings.
+1. Очистить навигацию: убрать My Account и Departments из Settings (Departments и Install apps — сделано, см. §B3, §B3a).
 2. Добавить `My Company` routes для Departments/Team/Org Structure, если ещё не сделано.
 3. Усилить System Lists protection model.
 4. Усилить RBAC entity-level scope enforcement.

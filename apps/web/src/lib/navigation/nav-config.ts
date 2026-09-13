@@ -1,4 +1,10 @@
-import type { SidebarModuleKey } from '@nbos/shared/constants';
+import {
+  MARKETING_MODULE,
+  SETTINGS_MODULE,
+  SETTINGS_RBAC_MODULE,
+  SETTINGS_SCHEDULER_MODULE,
+  type SidebarModuleKey,
+} from '@nbos/shared/constants';
 import type { NavigationMessageKey } from './nav-message-keys';
 
 export interface PermissionRequirement {
@@ -72,7 +78,7 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     key: 'marketing',
     label: 'modules.marketing',
     href: '/marketing',
-    permission: { module: 'CRM_LEADS', action: 'VIEW' },
+    permission: { module: MARKETING_MODULE, action: 'VIEW' },
   },
   {
     key: 'project-hub',
@@ -230,47 +236,47 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
       {
         label: 'children.settings.general',
         href: '/settings',
-        permission: { module: 'COMPANY', action: 'EDIT' },
+        permission: { module: SETTINGS_MODULE, action: 'VIEW' },
       },
       {
         label: 'children.settings.appearance',
         href: '/settings/appearance',
-        permission: { module: 'COMPANY', action: 'EDIT' },
+        permission: { module: SETTINGS_MODULE, action: 'EDIT' },
       },
       {
         label: 'children.settings.systemLists',
         href: '/settings/lists',
-        permission: { module: 'COMPANY', action: 'EDIT' },
+        permission: { module: SETTINGS_MODULE, action: 'VIEW' },
       },
       {
         label: 'children.settings.permissionsRbac',
         href: '/settings/roles',
-        permission: { module: 'COMPANY', action: 'ADD' },
+        permission: { module: SETTINGS_RBAC_MODULE, action: 'VIEW' },
       },
       {
         label: 'children.settings.moduleSettings',
         href: '/settings/module-settings',
-        permission: { module: 'COMPANY', action: 'EDIT' },
+        permission: { module: SETTINGS_MODULE, action: 'VIEW' },
       },
       {
         label: 'children.settings.integrations',
         href: '/settings/integrations',
-        permission: { module: 'COMPANY', action: 'EDIT' },
+        permission: { module: SETTINGS_MODULE, action: 'EDIT' },
       },
       {
         label: 'children.settings.security',
         href: '/settings/security',
-        permission: { module: 'COMPANY', action: 'EDIT' },
+        permission: { module: SETTINGS_MODULE, action: 'EDIT' },
       },
       {
         label: 'children.settings.featureFlags',
         href: '/settings/feature-flags',
-        permission: { module: 'COMPANY', action: 'EDIT' },
+        permission: { module: SETTINGS_MODULE, action: 'EDIT' },
       },
       {
         label: 'children.settings.scheduler',
         href: '/settings/scheduler',
-        permission: { module: 'COMPANY', action: 'VIEW' },
+        permission: { module: SETTINGS_SCHEDULER_MODULE, action: 'VIEW' },
       },
       {
         label: 'children.settings.auditLog',

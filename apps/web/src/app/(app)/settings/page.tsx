@@ -8,12 +8,13 @@ import {
   ListChecks,
   ShieldCheck,
   SlidersHorizontal,
-  Smartphone,
   Timer,
   ToggleLeft,
   Trash2,
 } from 'lucide-react';
 import { PageHero } from '@/components/shared';
+import { resolveNavPermission } from '@/lib/navigation/resolve-nav-permission';
+import { usePermission } from '@/lib/permissions';
 
 const SETTINGS_SECTIONS = [
   {
@@ -82,15 +83,16 @@ const SETTINGS_SECTIONS = [
     description: 'Cross-module recoverable Trash counts and retention purge eligibility.',
     icon: Trash2,
   },
-  {
-    title: 'Install apps',
-    href: '/install',
-    description: 'Copy PWA URLs and install from the browser. Small apps first, main NBOS last.',
-    icon: Smartphone,
-  },
 ] as const;
 
 export default function SettingsPage() {
+  const { can } = usePermission();
+  // Tiles reuse the route gates, so a card is never shown for a page that would deny access.
+  const visibleSections = SETTINGS_SECTIONS.filter((section) => {
+    const required = resolveNavPermission(section.href);
+    return !required || can(required.action, required.module);
+  });
+
   return (
     <div className="space-y-6">
       <PageHero title="Settings / Admin" />
@@ -100,7 +102,7 @@ export default function SettingsPage() {
       </p>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {SETTINGS_SECTIONS.map((section) => {
+        {visibleSections.map((section) => {
           const Icon = section.icon;
           return (
             <Link

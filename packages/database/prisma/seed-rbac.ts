@@ -43,6 +43,14 @@ const MODULES = [
   'MAIL',
   'CALENDAR',
   'COMPANY',
+  // Settings / Admin is deliberately separate from COMPANY (My Company).
+  // Only role-owner and role-ceo receive these below; every other role stays NONE.
+  'SETTINGS',
+  'SETTINGS_RBAC',
+  'SETTINGS_SCHEDULER',
+  // Marketing owns campaign budgets, so it is separate from CRM_LEADS. Besides
+  // role-owner / role-ceo only role-head-marketing receives it below.
+  'MARKETING',
   'CHECKLIST_TEMPLATES',
   'PARTNERS',
   'DASHBOARDS',
@@ -370,6 +378,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
   },
   'role-head-marketing': {
     CRM_LEADS: F,
+    MARKETING: F,
     CRM_DEALS: D,
     ORDERS: N,
     FINANCE_INVOICES: VA_OWN,

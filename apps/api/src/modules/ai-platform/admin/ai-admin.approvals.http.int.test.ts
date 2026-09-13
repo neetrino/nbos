@@ -26,13 +26,13 @@ describe('AI admin approval HTTP authorization', () => {
     harness.services.approvals.cancel.mockResolvedValue({ id: APPROVAL_ID, status: 'CANCELLED' });
   });
 
-  it('lists pending approvals for an employee with COMPANY EDIT', async () => {
+  it('lists pending approvals for an employee with AI_PLATFORM EDIT', async () => {
     const response = await harness.employeeFetch('/ai-admin/approvals');
     expect(response.status).toBe(200);
     expect(harness.services.approvals.listPending).toHaveBeenCalledOnce();
   });
 
-  it('returns 403 when the employee lacks COMPANY EDIT', async () => {
+  it('returns 403 when the employee lacks AI_PLATFORM EDIT', async () => {
     const response = await harness.employeeFetch('/ai-admin/approvals', {
       employeeId: 'employee-no-edit',
     });

@@ -1,7 +1,9 @@
 'use client';
 
-import { ChevronRight, LogOut, UserCircle2, Wallet } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ChevronRight, LogOut, Smartphone, UserCircle2, Wallet } from 'lucide-react';
 import { signOutClient } from '@/lib/auth/session-sign-out';
+import { APP_INSTALL_ROUTE } from '@/features/app-install/app-install-constants';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,6 +83,7 @@ function AccountMenuProfileHeader({ me, displayName, initials, photoAlt }: Profi
 type AccountMenuLabels = {
   myAccount: string;
   myWallet: string;
+  installApps: string;
   signOut: string;
 };
 
@@ -92,6 +95,7 @@ type AccountMenuPanelProps = {
   labels: AccountMenuLabels;
   onMyAccount: () => void;
   onMyWallet: () => void;
+  onInstallApps: () => void;
   onSignOut: () => void;
 };
 
@@ -103,6 +107,7 @@ function AccountMenuPanel({
   labels,
   onMyAccount,
   onMyWallet,
+  onInstallApps,
   onSignOut,
 }: AccountMenuPanelProps) {
   return (
@@ -132,6 +137,13 @@ function AccountMenuPanel({
           <Wallet className="size-[18px] shrink-0" strokeWidth={1.75} />
           <span>{labels.myWallet}</span>
         </DropdownMenuItem>
+        <DropdownMenuItem
+          className="focus:bg-accent h-11 cursor-pointer rounded-xl px-3"
+          onClick={onInstallApps}
+        >
+          <Smartphone className="size-[18px] shrink-0" strokeWidth={1.75} />
+          <span>{labels.installApps}</span>
+        </DropdownMenuItem>
       </div>
       <ThemeSwitcher />
       <LanguageSwitcher />
@@ -155,6 +167,8 @@ type AccountMenuDropdownProps = {
 
 export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
   const t = useTranslations('account');
+  const tQuick = useTranslations('quick');
+  const router = useRouter();
   const { openMyAccountSheet } = useMyAccountSheet();
   const { openMyWalletSheet } = useMyWalletSheet();
   const displayName = displayNameFromMe(me, t('fallbackAccountName'));
@@ -186,10 +200,12 @@ export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
         labels={{
           myAccount: t('myAccount'),
           myWallet: t('myWallet'),
+          installApps: tQuick('install.title'),
           signOut: t('signOut'),
         }}
         onMyAccount={() => void openMyAccountSheet()}
         onMyWallet={() => openMyWalletSheet()}
+        onInstallApps={() => router.push(APP_INSTALL_ROUTE)}
         onSignOut={() => void signOutClient()}
       />
     </DropdownMenu>

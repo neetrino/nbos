@@ -11,14 +11,15 @@ export class PermissionGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requirement = this.reflector.getAllAndOverride<RequiredPermission | undefined>(
-      PERMISSION_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requirement = this.reflector.getAllAndOverride<
+      RequiredPermission | RequiredPermission[] | undefined
+    >(PERMISSION_KEY, [context.getHandler(), context.getClass()]);
 
     if (!requirement) {
       return true;
     }
+
+    const candidates = Array.isArray(requirement) ? requirement : [requirement];
 
     const request = context.switchToHttp().getRequest<{
       user?: CurrentUserPayload;
@@ -30,14 +31,18 @@ export class PermissionGuard implements CanActivate {
       throw new ForbiddenException('No permissions loaded');
     }
 
-    const key = `${requirement.module}_${requirement.action}`;
-    const scope = user.permissions[key];
+    for (const candidate of candidates) {
+      const scope = user.permissions[`${candidate.module}_${candidate.action}`];
 
-    if (!scope || scope === 'NONE') {
-      throw new ForbiddenException(`No permission: ${requirement.module}.${requirement.action}`);
+      if (scope && scope !== 'NONE') {
+        request.permissionScope = scope;
+        return true;
+      }
     }
 
-    request.permissionScope = scope;
-    return true;
+    const missing = candidates
+      .map((candidate) => `${candidate.module}.${candidate.action}`)
+      .join(' or ');
+    throw new ForbiddenException(`No permission: ${missing}`);
   }
 }

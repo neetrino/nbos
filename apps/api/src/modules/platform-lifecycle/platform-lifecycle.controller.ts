@@ -1,5 +1,6 @@
 import { Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SETTINGS_MODULE } from '@nbos/shared';
 import { RequirePermission } from '../../common/decorators';
 import { PlatformTrashInventoryService } from './platform-trash-inventory.service';
 import { PlatformTrashPurgeService } from './platform-trash-purge.service';
@@ -13,7 +14,7 @@ export class PlatformLifecycleController {
   ) {}
 
   @Get('trash-inventory')
-  @RequirePermission('COMPANY', 'VIEW')
+  @RequirePermission(SETTINGS_MODULE, 'VIEW')
   @ApiOperation({
     summary: 'Cross-module trash inventory (admin)',
     description:
@@ -24,7 +25,7 @@ export class PlatformLifecycleController {
   }
 
   @Get('retention-rules')
-  @RequirePermission('COMPANY', 'VIEW')
+  @RequirePermission(SETTINGS_MODULE, 'VIEW')
   @ApiOperation({
     summary: 'Platform trash retention rules registry',
     description: 'Per-entity retention defaults and scheduled purge job references (Phase 7.3).',
@@ -34,7 +35,7 @@ export class PlatformLifecycleController {
   }
 
   @Post('purge/run')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_MODULE, 'DELETE')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Run automated trash retention purge (Credentials + Drive)',

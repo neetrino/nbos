@@ -25,6 +25,7 @@ import { AiModelCatalogService } from '../models/ai-model-catalog.service';
 import { AiModelSyncService } from '../models/ai-model-sync.service';
 import { AiModelPolicyService } from '../policies/ai-model-policy.service';
 import { AiProviderConnectionService } from '../providers/ai-provider-connection.service';
+import { AI_ADMIN_PERMISSION_ACTION, AI_ADMIN_PERMISSION_MODULE } from './ai-admin.constants';
 import { AiAdminExternalAgentAccessController } from './ai-admin-external-agent-access.controller';
 import { AiAdminExternalAgentsController } from './ai-admin-external-agents.controller';
 import { AiAdminOverviewController } from './ai-admin-overview.controller';
@@ -58,7 +59,7 @@ export function signAdminEmployeeToken(employeeId = EMPLOYEE_ID): string {
   );
 }
 
-export function employeeRecord(hasCompanyEdit: boolean, employeeId = EMPLOYEE_ID) {
+export function employeeRecord(hasAiAdminAccess: boolean, employeeId = EMPLOYEE_ID) {
   return {
     id: employeeId,
     email: `${employeeId}@nbos.test`,
@@ -74,8 +75,16 @@ export function employeeRecord(hasCompanyEdit: boolean, employeeId = EMPLOYEE_ID
       name: 'Admin',
       slug: 'admin',
       level: 100,
-      permissions: hasCompanyEdit
-        ? [{ permission: { module: 'COMPANY', action: 'EDIT' }, scope: 'ALL' }]
+      permissions: hasAiAdminAccess
+        ? [
+            {
+              permission: {
+                module: AI_ADMIN_PERMISSION_MODULE,
+                action: AI_ADMIN_PERMISSION_ACTION,
+              },
+              scope: 'ALL',
+            },
+          ]
         : [],
     },
     departments: [],
@@ -85,7 +94,7 @@ export function employeeRecord(hasCompanyEdit: boolean, employeeId = EMPLOYEE_ID
 export interface AiAdminHarness {
   baseUrl: string;
   services: ReturnType<typeof createServiceMocks>;
-  setEmployeeAccess(hasCompanyEdit: boolean, employeeId?: string): void;
+  setEmployeeAccess(hasAiAdminAccess: boolean, employeeId?: string): void;
   employeeFetch(path: string, init?: RequestInit & { employeeId?: string }): Promise<Response>;
   rawFetch(path: string, init?: RequestInit): Promise<Response>;
   close(): Promise<void>;
@@ -230,9 +239,9 @@ export async function startAiAdminHarness(): Promise<AiAdminHarness> {
   return {
     baseUrl,
     services,
-    setEmployeeAccess: (hasCompanyEdit, employeeId = EMPLOYEE_ID) => {
+    setEmployeeAccess: (hasAiAdminAccess, employeeId = EMPLOYEE_ID) => {
       employeeFindUnique.mockImplementation(async (args: { where: { id: string } }) =>
-        employeeRecord(hasCompanyEdit && args.where.id === EMPLOYEE_ID, args.where.id),
+        employeeRecord(hasAiAdminAccess && args.where.id === EMPLOYEE_ID, args.where.id),
       );
       void employeeId;
     },

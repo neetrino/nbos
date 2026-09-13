@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Trash2, User } from 'lucide-react';
-import type { AccessScopeMode, PlatformAccessAction, PlatformResourceFamily } from '@nbos/shared';
+import {
+  SETTINGS_RBAC_MODULE,
+  type AccessScopeMode,
+  type PlatformAccessAction,
+  type PlatformResourceFamily,
+} from '@nbos/shared';
 import { employeesApi } from '@/lib/api/employees';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -222,7 +227,7 @@ export function PersonalAccessOverridesPanel() {
                       {row.reason ?? '—'}
                     </TableCell>
                     <TableCell>
-                      <PermissionGate module="COMPANY" action="EDIT">
+                      <PermissionGate module={SETTINGS_RBAC_MODULE} action="EDIT">
                         <Button
                           type="button"
                           size="icon"
@@ -240,7 +245,7 @@ export function PersonalAccessOverridesPanel() {
             </TableBody>
           </Table>
 
-          <PermissionGate module="COMPANY" action="EDIT">
+          <PermissionGate module={SETTINGS_RBAC_MODULE} action="EDIT">
             <PersonalAccessOverrideAddForm
               addFamily={addFamily}
               addLevel={addLevel}

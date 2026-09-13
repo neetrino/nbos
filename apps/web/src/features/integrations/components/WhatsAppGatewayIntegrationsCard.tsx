@@ -12,6 +12,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { SETTINGS_MODULE } from '@nbos/shared/constants';
 import { PermissionGate } from '@/lib/permissions/PermissionGate';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { whatsappGatewayApi, type WhatsAppGatewayConnectionView } from '@/lib/api/whatsapp';
@@ -106,7 +107,7 @@ export function WhatsAppGatewayIntegrationsCard() {
       : GATEWAY_DESCRIPTION;
 
   return (
-    <PermissionGate module="COMPANY" action="EDIT">
+    <PermissionGate module={SETTINGS_MODULE} action="EDIT">
       <div className="min-w-0">
         <section className="border-border bg-card rounded-xl border p-4">
           <div className="flex items-start gap-3">

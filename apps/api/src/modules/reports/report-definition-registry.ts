@@ -1,3 +1,4 @@
+import { MARKETING_MODULE } from '@nbos/shared';
 import { FINANCE_REPORT_DEFINITIONS } from '../finance/reports/finance-report-definitions';
 import type { ReportDefinition } from './reports.types';
 
@@ -34,7 +35,7 @@ const CROSS_MODULE_REPORT_DEFINITIONS: ReportDefinition[] = [
     visualizations: ['kpi_cards', 'efficiency_table', 'data_quality'],
     sourceEndpoints: ['/api/marketing/dashboard'],
     drillDownHrefs: ['/marketing/dashboard', '/marketing/attribution'],
-    requiredPermissions: [{ module: 'CRM_LEADS', action: 'VIEW' }],
+    requiredPermissions: [{ module: MARKETING_MODULE, action: 'VIEW' }],
     status: 'READY',
     dataQualityNotes: ['ROI is hidden when linked spend or paid attribution is incomplete.'],
   },

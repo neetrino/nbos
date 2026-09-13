@@ -112,6 +112,16 @@ Credentials rows below are a high-level role reference. Exact access is resolved
 | Clients (directory)  | ✅  | 🔶     | 🔶  | ❌  | ❌     | ❌       | ❌  | ❌       | 🔶      | 🔶        | 🔶         | 🔶            |
 | AI & Agents (admin)  | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ❌      | ❌        | ❌         | ❌            |
 | Audit Logs           | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | 👁      | ❌        | ❌         | ❌            |
+| Settings (platform)  | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ❌      | ❌        | ❌         | ❌            |
+| Settings (RBAC)      | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ❌      | ❌        | ❌         | ❌            |
+| Settings (scheduler) | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ❌      | ❌        | ❌         | ❌            |
+| Marketing            | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ❌      | ❌        | ❌         | ❌            |
+
+**Пояснения:**
+
+- **Marketing (2026-09)** — модуль `MARKETING`: борд, активности, аккаунты, attribution review, дашборд. Отдельно от `CRM_LEADS`, потому что запуск активности предлагает расход в финансах: на `CRM_LEADS EDIT` бюджеты получил бы каждый Seller, а Marketing Specialist остался бы read-only. По умолчанию полный доступ у Platform Owner / Founder, CEO и Head of Marketing (в таблице колонка Marketing = Marketing Specialist, у него ❌ до явной выдачи). Справочники `Where` и `Which one` остаются на `CRM_LEADS VIEW`, их читают формы лидов и сделок. Канон: `../02-Modules/18-Marketing/00-Marketing-Overview.md`.
+- **Settings (2026-09)** — платформенная админка использует `SETTINGS`, `SETTINGS_RBAC` и `SETTINGS_SCHEDULER`, а не `COMPANY`. По умолчанию доступ есть только у Platform Owner / Founder и CEO; остальные роли получают его явно через Settings → Permissions / RBAC. Finance Director сохраняет `COMPANY` Full для `My Company`, но админку платформы больше не открывает. Канон: `../02-Modules/16-Settings-Admin/02-Permissions-RBAC.md`.
+- **My Company vs Settings** — `COMPANY` = оргструктура, сотрудники, seats, KPI/bonus/compensation. `SETTINGS*` = конфигурация платформы, технические права, интеграции, cron jobs.
 
 ---
 

@@ -73,7 +73,7 @@ export function WorkSpaceDetailSettingsSheet({
         <Download className="size-4 shrink-0" aria-hidden />
         {t('detailSettings.exportTasks')}
       </Button>
-      <PermissionGate module="COMPANY" action="EDIT">
+      <PermissionGate module="AI_PLATFORM" action="EDIT">
         <WorkspaceAiAccessPanel workspaceId={workspaceId} />
       </PermissionGate>
     </PageSettingsSheet>

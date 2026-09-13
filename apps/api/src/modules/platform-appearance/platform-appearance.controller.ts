@@ -15,6 +15,7 @@ import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagg
 import {
   MAX_WALLPAPER_BYTES,
   parseWallpaperSlot,
+  SETTINGS_MODULE,
   WALLPAPER_CACHE_CONTROL,
   WALLPAPER_MIME,
 } from '@nbos/shared';
@@ -57,7 +58,7 @@ export class PlatformAppearanceController {
   }
 
   @Put('wallpaper/:slot')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_MODULE, 'EDIT')
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_WALLPAPER_BYTES } }))
@@ -70,7 +71,7 @@ export class PlatformAppearanceController {
   }
 
   @Delete('wallpaper/:slot')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_MODULE, 'EDIT')
   @ApiBearerAuth()
   clearWallpaper(@Param('slot') slotParam: string, @CurrentUser() user: CurrentUserPayload) {
     return this.appearance.clearWallpaper(requireSlot(slotParam), user.id);

@@ -36,7 +36,7 @@ class TestAuthGuard implements CanActivate {
   }
 }
 
-function userWithCompanyEdit(scope: string | undefined): CurrentUserPayload {
+function userWithSettingsEdit(scope: string | undefined): CurrentUserPayload {
   return {
     id: 'emp-1',
     email: 'admin@nbos.test',
@@ -45,7 +45,7 @@ function userWithCompanyEdit(scope: string | undefined): CurrentUserPayload {
     departmentIds: [],
     firstName: 'Ada',
     lastName: 'Admin',
-    permissions: scope === undefined ? {} : { COMPANY_EDIT: scope },
+    permissions: scope === undefined ? {} : { SETTINGS_EDIT: scope },
   };
 }
 
@@ -100,21 +100,21 @@ describe('Platform appearance HTTP', () => {
   });
 
   it('returns metadata for an authenticated employee', async () => {
-    currentUser = userWithCompanyEdit('ALL');
+    currentUser = userWithSettingsEdit('ALL');
     const response = await fetch(new URL(APPEARANCE_URL, baseUrl));
     expect(response.status).toBe(HttpStatus.OK);
     expect(service.getAppearance).toHaveBeenCalledOnce();
   });
 
-  it('forbids wallpaper writes without COMPANY.EDIT', async () => {
-    currentUser = userWithCompanyEdit(undefined);
+  it('forbids wallpaper writes without SETTINGS.EDIT', async () => {
+    currentUser = userWithSettingsEdit(undefined);
     const denied = await fetch(new URL(LIGHT_URL, baseUrl), { method: 'DELETE' });
     expect(denied.status).toBe(HttpStatus.FORBIDDEN);
     expect(service.clearWallpaper).not.toHaveBeenCalled();
   });
 
-  it('clears a slot when COMPANY.EDIT is granted', async () => {
-    currentUser = userWithCompanyEdit('ALL');
+  it('clears a slot when SETTINGS.EDIT is granted', async () => {
+    currentUser = userWithSettingsEdit('ALL');
     const response = await fetch(new URL(LIGHT_URL, baseUrl), { method: 'DELETE' });
     expect(response.status).toBe(HttpStatus.OK);
     expect(service.clearWallpaper).toHaveBeenCalledWith('light', 'emp-1');
@@ -131,7 +131,7 @@ describe('Platform appearance HTTP', () => {
   });
 
   it('rejects an unknown slot', async () => {
-    currentUser = userWithCompanyEdit('ALL');
+    currentUser = userWithSettingsEdit('ALL');
     const response = await fetch(new URL(`${APPEARANCE_URL}/wallpaper/sepia`, baseUrl), {
       method: 'DELETE',
     });

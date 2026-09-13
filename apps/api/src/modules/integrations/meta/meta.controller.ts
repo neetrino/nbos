@@ -17,6 +17,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SETTINGS_MODULE } from '@nbos/shared';
 import type { Response } from 'express';
 import {
   CurrentUser,
@@ -32,13 +33,8 @@ import { MetaOAuthService } from './meta-oauth.service';
 import { parseMetaOAuthPlatform } from './meta-oauth.platform';
 import type { MetaMessagingWebhookBody, MetaOAuthErrorReason } from './meta.types';
 import { MetaWebhookService } from './meta-webhook.service';
-import { normalizeHttpRequestParam, type HttpRequestParam } from './meta-webhook.helpers';
+import type { HttpRequestParam } from './meta-webhook.helpers';
 import type { MetaWebhookRequest } from './meta-webhook.types';
-
-function readHeaderValue(headers: MetaWebhookRequest['headers'], name: string): string | undefined {
-  const value = headers[name];
-  return Array.isArray(value) ? value[0] : value;
-}
 
 @ApiTags('Integrations / Meta')
 @Controller('integrations/meta')
@@ -52,7 +48,7 @@ export class MetaController {
   ) {}
 
   @Get('oauth/start')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_MODULE, 'EDIT')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Start Meta OAuth: returns Facebook or Instagram consent URL to open',
@@ -97,7 +93,7 @@ export class MetaController {
   }
 
   @Get('accounts')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_MODULE, 'EDIT')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List connected Meta accounts (Instagram / Facebook)' })
   listAccounts() {
@@ -105,7 +101,7 @@ export class MetaController {
   }
 
   @Patch('accounts/:id/marketing-account')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_MODULE, 'EDIT')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Link or unlink a MarketingAccount for Meta DM lead attribution' })
   linkMarketingAccount(@Param('id') id: string, @Body() body: LinkMetaMarketingAccountDto) {
@@ -114,42 +110,30 @@ export class MetaController {
 
   @Delete('accounts/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(SETTINGS_MODULE, 'EDIT')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Disconnect a Meta connected account and delete stored secrets' })
   async disconnect(@Param('id') id: string) {
     await this.accountsService.disconnect(id);
   }
 
-  // TEMPORARY META WEBHOOK DIAGNOSTIC — RESTORE TOKEN VALIDATION AFTER TEST
   @Public()
   @SkipTransform()
   @Get('webhook')
   @ApiOperation({ summary: 'Meta webhook verification (hub.challenge)' })
   verifyWebhook(
-    @Req() req: MetaWebhookRequest,
     @Query('hub.mode') mode: HttpRequestParam,
     @Query('hub.verify_token') token: HttpRequestParam,
     @Query('hub.challenge') challenge: HttpRequestParam,
     @Res() res: Response,
   ) {
-    this.logTemporaryMetaWebhookDiagnostic(req, mode, token, challenge);
-
-    const challengeValue = normalizeHttpRequestParam(challenge);
-    if (!challengeValue) {
-      res
-        .status(HttpStatus.BAD_REQUEST)
-        .set('Content-Type', 'text/plain')
-        .set('X-Content-Type-Options', 'nosniff')
-        .send('Missing hub.challenge');
-      return;
-    }
+    const verifiedChallenge = this.webhookService.verifySubscription(mode, token, challenge);
 
     res
       .status(HttpStatus.OK)
-      .set('Content-Type', 'text/plain')
+      .set('Content-Type', 'text/plain; charset=utf-8')
       .set('X-Content-Type-Options', 'nosniff')
-      .send(challengeValue);
+      .send(verifiedChallenge);
   }
 
   @Public()
@@ -165,25 +149,6 @@ export class MetaController {
     const signatureHeader = typeof signature === 'string' ? signature : signature?.[0];
     await this.webhookService.handleWebhook(req, signatureHeader, body);
     res.sendStatus(HttpStatus.OK);
-  }
-
-  // TEMPORARY META WEBHOOK DIAGNOSTIC — RESTORE TOKEN VALIDATION AFTER TEST
-  private logTemporaryMetaWebhookDiagnostic(
-    req: MetaWebhookRequest,
-    mode: HttpRequestParam,
-    token: HttpRequestParam,
-    challenge: HttpRequestParam,
-  ): void {
-    this.logger.warn({
-      event: 'TEMPORARY META WEBHOOK DIAGNOSTIC — RESTORE TOKEN VALIDATION AFTER TEST',
-      hubMode: normalizeHttpRequestParam(mode) ?? mode,
-      hubVerifyToken: normalizeHttpRequestParam(token) ?? token,
-      hubChallenge: normalizeHttpRequestParam(challenge) ?? challenge,
-      userAgent: readHeaderValue(req.headers, 'user-agent'),
-      cfConnectingIp: readHeaderValue(req.headers, 'cf-connecting-ip'),
-      cfIpCountry: readHeaderValue(req.headers, 'cf-ipcountry'),
-      xForwardedFor: readHeaderValue(req.headers, 'x-forwarded-for'),
-    });
   }
 
   private mapMetaOAuthError(
