@@ -33,6 +33,13 @@ const NOTE_CARD_Z_INDEX_DRAGGING = 20;
 /** Very subtle tilt (degrees), direction still flips by id — barely visible “pile”. */
 const NOTE_TILT_MAGNITUDES = [0.7, 0.9, 1.1, 1.3, 1.5, 1.8] as const;
 
+/** Sticky-note paper: rest amber-200, hover/focus the same bright amber-300. */
+const NOTE_STICKY_SURFACE_CLASS = 'border border-amber-300 bg-amber-200 hover:bg-amber-300';
+
+/** Kill shared Textarea wash (`bg-muted`, `dark:bg-input`) on yellow paper. */
+const NOTE_STICKY_TEXTAREA_CLASS =
+  'border-0 bg-transparent shadow-none hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent';
+
 /** Corner controls on sticky-note cards (composer + saved notes). */
 const NOTE_CORNER_PILL_CLASS =
   'h-7 rounded-full border border-amber-300 bg-amber-200/90 px-2.5 text-xs font-medium text-amber-900/75 shadow-sm backdrop-blur hover:bg-amber-300/90';
@@ -92,14 +99,21 @@ export function DashboardNotesPanel({
         {saving ? (
           <Loader2 className="absolute top-3 right-3 z-10 h-4 w-4 animate-spin text-amber-900/45" />
         ) : null}
-        <div className="relative overflow-hidden rounded-2xl border border-amber-300 bg-amber-200 shadow-inner transition-colors duration-200">
+        <div
+          className={cn(
+            'relative overflow-hidden rounded-2xl shadow-inner transition-colors duration-200',
+            NOTE_STICKY_SURFACE_CLASS,
+            'focus-within:bg-amber-300',
+          )}
+        >
           <Textarea
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t('notes.placeholder')}
             className={cn(
-              'min-h-36 resize-none border-0 bg-transparent px-4 py-4 text-sm leading-7 shadow-none',
+              NOTE_STICKY_TEXTAREA_CLASS,
+              'min-h-36 resize-none px-4 py-4 text-sm leading-7',
               'placeholder:text-amber-900/40 focus-visible:ring-0',
               showComposerSave && 'pb-14',
             )}
@@ -304,7 +318,8 @@ function NoteCard({
       >
         <div
           className={cn(
-            'relative rounded-xl border border-amber-300 bg-amber-200 px-3 pt-3 pb-7 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md hover:bg-amber-300',
+            'relative rounded-xl px-3 pt-3 pb-7 shadow-sm transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-md',
+            NOTE_STICKY_SURFACE_CLASS,
             !isEditing && 'cursor-text',
             isEditing && 'bg-amber-300 group-hover:translate-y-0',
           )}
@@ -341,7 +356,10 @@ function NoteCard({
               value={editDraft}
               onChange={(event) => onChangeEditDraft(event.target.value)}
               onKeyDown={handleEditKeyDown}
-              className="min-h-20 w-full resize-none border-0 bg-transparent p-0 text-sm leading-6 text-amber-950 shadow-none focus-visible:border-0 focus-visible:ring-1 focus-visible:ring-amber-400/45"
+              className={cn(
+                NOTE_STICKY_TEXTAREA_CLASS,
+                'min-h-20 w-full resize-none p-0 text-sm leading-6 text-amber-950 focus-visible:border-0 focus-visible:ring-1 focus-visible:ring-amber-400/45',
+              )}
             />
           ) : (
             <p className="text-sm leading-6 whitespace-pre-wrap text-amber-950">{note.content}</p>
