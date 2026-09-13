@@ -1,5 +1,7 @@
 /** Local Coolify sequential deploy helpers. Keep secrets out of this file. */
 
+import { ANSI, paint } from './cli-style.mjs';
+
 export const APP_ORDER = ['api', 'worker', 'scheduler', 'web'];
 
 export const APP_ENV_KEYS = {
@@ -190,4 +192,44 @@ export function pickDeployment(records, deploymentUuid) {
  */
 function isRecord(value) {
   return typeof value === 'object' && value !== null;
+}
+
+/**
+ * @param {{
+ *   apps: string[],
+ *   force: boolean,
+ *   checkOnly: boolean,
+ *   color?: boolean,
+ * }} report
+ * @returns {string}
+ */
+export function formatDeployReadyReport(report) {
+  const color = report.color ?? true;
+  const order = report.apps.join(' → ');
+  const lines = [
+    `Coolify deploy: ${paint(color, ANSI.cyan, order)}${report.force ? ' (force)' : ''}`,
+    '',
+  ];
+  if (report.checkOnly) {
+    lines.push(paint(color, ANSI.yellow, '⚠ Check only. No deploy started.'));
+    lines.push(`Next: ${paint(color, ANSI.cyan, 'pnpm deploy:prod')}`);
+  } else {
+    lines.push(paint(color, ANSI.cyan, '▶ Starting sequential deploy'));
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+/**
+ * @param {string} appName
+ * @param {'start' | 'queued' | 'running' | 'success' | 'failed'} phase
+ * @param {string} [detail]
+ * @param {boolean} [color]
+ * @returns {string}
+ */
+export function formatDeployAppLine(appName, phase, detail, color = true) {
+  if (phase === 'start') return paint(color, ANSI.cyan, `▶ Deploy ${appName}`);
+  if (phase === 'queued') return `  ${paint(color, ANSI.yellow, '•')} queued ${detail ?? ''}`;
+  if (phase === 'running') return `  ${appName}: ${paint(color, ANSI.yellow, detail ?? 'pending')}`;
+  if (phase === 'success') return paint(color, ANSI.green, `✓ ${appName} finished`);
+  return paint(color, ANSI.red, `✕ ${appName} failed${detail ? ` — ${detail}` : ''}`);
 }

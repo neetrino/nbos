@@ -65,83 +65,42 @@ import hyTasks from '../messages/hy/tasks.json';
 import hyQuick from '../messages/hy/quick.json';
 import hyChecklist from '../messages/hy/checklist.json';
 import hyMarketing from '../messages/hy/marketing.json';
-import { flattenMessageKeys } from './flatten-messages';
+import { extractIcuArgNames } from './extract-icu-arg-names';
+import { flattenMessageEntries, flattenMessageKeys } from './flatten-messages';
 import { mergeMessages } from './merge-messages';
 
+const COMPLETED_CATALOG_TRIPLES = [
+  [enCommon, ruCommon, hyCommon],
+  [enAccount, ruAccount, hyAccount],
+  [enNavigation, ruNavigation, hyNavigation],
+  [enDashboard, ruDashboard, hyDashboard],
+  [enForms, ruForms, hyForms],
+  [enHr, ruHr, hyHr],
+  [enTasks, ruTasks, hyTasks],
+  [enSearch, ruSearch, hySearch],
+  [enNotifications, ruNotifications, hyNotifications],
+  [enWorkSpaces, ruWorkSpaces, hyWorkSpaces],
+  [enCrm, ruCrm, hyCrm],
+  [enSupport, ruSupport, hySupport],
+  [enInvoices, ruInvoices, hyInvoices],
+  [enDeliveryBoard, ruDeliveryBoard, hyDeliveryBoard],
+  [enPayroll, ruPayroll, hyPayroll],
+  [enCredentials, ruCredentials, hyCredentials],
+  [enExpenses, ruExpenses, hyExpenses],
+  [enExpensePlans, ruExpensePlans, hyExpensePlans],
+  [enClientServices, ruClientServices, hyClientServices],
+  [enQuick, ruQuick, hyQuick],
+  [enChecklist, ruChecklist, hyChecklist],
+  [enMarketing, ruMarketing, hyMarketing],
+] as const;
+
 describe('completed i18n catalogs', () => {
-  it('keeps EN/RU keys aligned for finished namespaces', () => {
-    expect(flattenMessageKeys(enCommon).sort()).toEqual(flattenMessageKeys(ruCommon).sort());
-    expect(flattenMessageKeys(enAccount).sort()).toEqual(flattenMessageKeys(ruAccount).sort());
-    expect(flattenMessageKeys(enNavigation).sort()).toEqual(
-      flattenMessageKeys(ruNavigation).sort(),
-    );
-    expect(flattenMessageKeys(enDashboard).sort()).toEqual(flattenMessageKeys(ruDashboard).sort());
-    expect(flattenMessageKeys(enForms).sort()).toEqual(flattenMessageKeys(ruForms).sort());
-    expect(flattenMessageKeys(enHr).sort()).toEqual(flattenMessageKeys(ruHr).sort());
-    expect(flattenMessageKeys(enTasks).sort()).toEqual(flattenMessageKeys(ruTasks).sort());
-    expect(flattenMessageKeys(enSearch).sort()).toEqual(flattenMessageKeys(ruSearch).sort());
-    expect(flattenMessageKeys(enNotifications).sort()).toEqual(
-      flattenMessageKeys(ruNotifications).sort(),
-    );
-    expect(flattenMessageKeys(enWorkSpaces).sort()).toEqual(
-      flattenMessageKeys(ruWorkSpaces).sort(),
-    );
-    expect(flattenMessageKeys(enCrm).sort()).toEqual(flattenMessageKeys(ruCrm).sort());
-    expect(flattenMessageKeys(enSupport).sort()).toEqual(flattenMessageKeys(ruSupport).sort());
-    expect(flattenMessageKeys(enInvoices).sort()).toEqual(flattenMessageKeys(ruInvoices).sort());
-    expect(flattenMessageKeys(enDeliveryBoard).sort()).toEqual(
-      flattenMessageKeys(ruDeliveryBoard).sort(),
-    );
-    expect(flattenMessageKeys(enPayroll).sort()).toEqual(flattenMessageKeys(ruPayroll).sort());
-    expect(flattenMessageKeys(enCredentials).sort()).toEqual(
-      flattenMessageKeys(ruCredentials).sort(),
-    );
-    expect(flattenMessageKeys(enExpenses).sort()).toEqual(flattenMessageKeys(ruExpenses).sort());
-    expect(flattenMessageKeys(enExpensePlans).sort()).toEqual(
-      flattenMessageKeys(ruExpensePlans).sort(),
-    );
-    expect(flattenMessageKeys(enClientServices).sort()).toEqual(
-      flattenMessageKeys(ruClientServices).sort(),
-    );
-    expect(flattenMessageKeys(enQuick).sort()).toEqual(flattenMessageKeys(ruQuick).sort());
-    expect(flattenMessageKeys(enChecklist).sort()).toEqual(flattenMessageKeys(ruChecklist).sort());
-    expect(flattenMessageKeys(enMarketing).sort()).toEqual(flattenMessageKeys(ruMarketing).sort());
-    expect(flattenMessageKeys(enCommon).sort()).toEqual(flattenMessageKeys(hyCommon).sort());
-    expect(flattenMessageKeys(enAccount).sort()).toEqual(flattenMessageKeys(hyAccount).sort());
-    expect(flattenMessageKeys(enNavigation).sort()).toEqual(
-      flattenMessageKeys(hyNavigation).sort(),
-    );
-    expect(flattenMessageKeys(enDashboard).sort()).toEqual(flattenMessageKeys(hyDashboard).sort());
-    expect(flattenMessageKeys(enForms).sort()).toEqual(flattenMessageKeys(hyForms).sort());
-    expect(flattenMessageKeys(enHr).sort()).toEqual(flattenMessageKeys(hyHr).sort());
-    expect(flattenMessageKeys(enTasks).sort()).toEqual(flattenMessageKeys(hyTasks).sort());
-    expect(flattenMessageKeys(enSearch).sort()).toEqual(flattenMessageKeys(hySearch).sort());
-    expect(flattenMessageKeys(enNotifications).sort()).toEqual(
-      flattenMessageKeys(hyNotifications).sort(),
-    );
-    expect(flattenMessageKeys(enWorkSpaces).sort()).toEqual(
-      flattenMessageKeys(hyWorkSpaces).sort(),
-    );
-    expect(flattenMessageKeys(enCrm).sort()).toEqual(flattenMessageKeys(hyCrm).sort());
-    expect(flattenMessageKeys(enSupport).sort()).toEqual(flattenMessageKeys(hySupport).sort());
-    expect(flattenMessageKeys(enInvoices).sort()).toEqual(flattenMessageKeys(hyInvoices).sort());
-    expect(flattenMessageKeys(enDeliveryBoard).sort()).toEqual(
-      flattenMessageKeys(hyDeliveryBoard).sort(),
-    );
-    expect(flattenMessageKeys(enPayroll).sort()).toEqual(flattenMessageKeys(hyPayroll).sort());
-    expect(flattenMessageKeys(enCredentials).sort()).toEqual(
-      flattenMessageKeys(hyCredentials).sort(),
-    );
-    expect(flattenMessageKeys(enExpenses).sort()).toEqual(flattenMessageKeys(hyExpenses).sort());
-    expect(flattenMessageKeys(enExpensePlans).sort()).toEqual(
-      flattenMessageKeys(hyExpensePlans).sort(),
-    );
-    expect(flattenMessageKeys(enClientServices).sort()).toEqual(
-      flattenMessageKeys(hyClientServices).sort(),
-    );
-    expect(flattenMessageKeys(enQuick).sort()).toEqual(flattenMessageKeys(hyQuick).sort());
-    expect(flattenMessageKeys(enChecklist).sort()).toEqual(flattenMessageKeys(hyChecklist).sort());
-    expect(flattenMessageKeys(enMarketing).sort()).toEqual(flattenMessageKeys(hyMarketing).sort());
+  it('keeps EN/RU/HY keys aligned for finished namespaces', () => {
+    for (const [enCatalog, ruCatalog, hyCatalog] of COMPLETED_CATALOG_TRIPLES) {
+      const enKeys = flattenMessageKeys(enCatalog).sort();
+      expect(flattenMessageKeys(ruCatalog).sort()).toEqual(enKeys);
+      expect(flattenMessageKeys(hyCatalog).sort()).toEqual(enKeys);
+    }
   });
 
   it('falls back to English when a Russian string is missing', () => {
@@ -159,90 +118,19 @@ describe('completed i18n catalogs', () => {
     expect(merged.accessDenied.signIn).toBe(enCommon.accessDenied.signIn);
   });
 
-  it('keeps ICU placeholders aligned for account interpolation', () => {
-    expect(enAccount.accountMenuAria).toContain('{name}');
-    expect(ruAccount.accountMenuAria).toContain('{name}');
-    expect(enDashboard.actions.newTaskDescription.length).toBeGreaterThan(0);
-    expect(ruDashboard.actions.newTaskDescription.length).toBeGreaterThan(0);
-    expect(enAccount.wallet.hero.nextLabel).toContain('{month}');
-    expect(ruAccount.wallet.hero.nextLabel).toContain('{month}');
-    expect(enAccount.sessions.minutesAgo).toContain('count');
-    expect(ruAccount.sessions.minutesAgo).toContain('count');
-    expect(enTasks.loadMore.of).toContain('{loaded}');
-    expect(enTasks.loadMore.of).toContain('{total}');
-    expect(ruTasks.loadMore.of).toContain('{loaded}');
-    expect(ruTasks.loadMore.of).toContain('{total}');
-    expect(enNotifications.relative.minutesAgo).toContain('count');
-    expect(ruNotifications.relative.minutesAgo).toContain('count');
-    expect(enNotifications.center.channel.web).toBe('Web');
-    expect(ruNotifications.center.channel.web.length).toBeGreaterThan(0);
-    expect(enTasks.sheet.chat.participants).toContain('count');
-    expect(ruTasks.sheet.chat.participants).toContain('count');
-    expect(enTasks.sheet.chat.createdBy).toContain('{name}');
-    expect(ruTasks.sheet.chat.createdBy).toContain('{name}');
-    expect(enTasks.sheet.checklist.progress).toContain('{done}');
-    expect(ruTasks.sheet.checklist.progress).toContain('{done}');
-    expect(enTasks.sheet.linked.openAria).toContain('{label}');
-    expect(ruTasks.sheet.linked.openAria).toContain('{label}');
-    expect(enTasks.recurring.schedule.everyDay).toContain('{time}');
-    expect(ruTasks.recurring.schedule.everyDay).toContain('{time}');
-    expect(enTasks.recurring.schedule.everyNDays).toContain('{n}');
-    expect(ruTasks.recurring.schedule.everyNDays).toContain('{n}');
-    expect(enTasks.recurring.schedule.onDaysAt).toContain('{cadence}');
-    expect(enTasks.recurring.schedule.onDaysAt).toContain('{days}');
-    expect(enTasks.recurring.schedule.onDaysAt).toContain('{time}');
-    expect(ruTasks.recurring.schedule.onDaysAt).toContain('{cadence}');
-    expect(ruTasks.recurring.schedule.onDaysAt).toContain('{days}');
-    expect(ruTasks.recurring.schedule.onDaysAt).toContain('{time}');
-    expect(enTasks.recurring.runCreated).toContain('{code}');
-    expect(ruTasks.recurring.runCreated).toContain('{code}');
-    expect(enTasks.recurring.itemPlaceholder).toContain('{n}');
-    expect(ruTasks.recurring.itemPlaceholder).toContain('{n}');
-    expect(enTasks.recurring.createdDue).toContain('count');
-    expect(ruTasks.recurring.createdDue).toContain('count');
-    expect(enWorkSpaces.tabStandalone).toContain('{count}');
-    expect(ruWorkSpaces.tabStandalone).toContain('{count}');
-    expect(enWorkSpaces.tabProduct).toContain('{count}');
-    expect(ruWorkSpaces.tabProduct).toContain('{count}');
-    expect(enWorkSpaces.tasksCount).toContain('count');
-    expect(ruWorkSpaces.tasksCount).toContain('count');
-    expect(enWorkSpaces.legacyLinked).toContain('{count}');
-    expect(ruWorkSpaces.legacyLinked).toContain('{count}');
-    expect(enCrm.merge.keepAbsorb).toContain('{keep}');
-    expect(ruCrm.merge.keepAbsorb).toContain('{keep}');
-    expect(enCrm.merge.keepAbsorb).toContain('{absorb}');
-    expect(ruCrm.merge.keepAbsorb).toContain('{absorb}');
-    expect(enHr.directory.counts).toContain('{active}');
-    expect(ruHr.directory.counts).toContain('{active}');
-    expect(enSupport.create.title.length).toBeGreaterThan(0);
-    expect(ruSupport.create.title.length).toBeGreaterThan(0);
-    expect(enInvoices.createSubscription.createdMany).toContain('count');
-    expect(ruInvoices.createSubscription.createdMany).toContain('count');
-    expect(enDeliveryBoard.count).toContain('filtered');
-    expect(ruDeliveryBoard.count).toContain('filtered');
-    expect(enDeliveryBoard.count).toContain('{total}');
-    expect(ruDeliveryBoard.count).toContain('{total}');
-    expect(enPayroll.list.emptyStatus).toContain('{status}');
-    expect(ruPayroll.list.emptyStatus).toContain('{status}');
-    expect(enCredentials.titleTrash).toContain('{module}');
-    expect(ruCredentials.titleTrash).toContain('{module}');
-    expect(enExpenses.nav.payNow.length).toBeGreaterThan(0);
-    expect(ruExpenses.nav.payNow.length).toBeGreaterThan(0);
-    expect(enCrm.stages.deal.WON.label.length).toBeGreaterThan(0);
-    expect(ruCrm.stages.deal.WON.label.length).toBeGreaterThan(0);
-    expect(enHr.hub.foundation.assigned).toContain('{assigned}');
-    expect(ruHr.hub.foundation.assigned).toContain('{assigned}');
-    expect(enExpensePlans.page.title.length).toBeGreaterThan(0);
-    expect(ruExpensePlans.page.title.length).toBeGreaterThan(0);
-    expect(enClientServices.page.title.length).toBeGreaterThan(0);
-    expect(ruClientServices.page.title.length).toBeGreaterThan(0);
-    expect(enChecklist.evidence.attachments).toContain('count');
-    expect(ruChecklist.evidence.attachments).toContain('count');
-    expect(enChecklist.sheet.complete.length).toBeGreaterThan(0);
-    expect(ruChecklist.sheet.complete.length).toBeGreaterThan(0);
-    expect(enMarketing.title.length).toBeGreaterThan(0);
-    expect(ruMarketing.title.length).toBeGreaterThan(0);
-    expect(enCrm.calls.incomingCall).toContain('{phone}');
-    expect(ruCrm.calls.incomingCall).toContain('{phone}');
+  it('keeps ICU argument names aligned across EN/RU/HY', () => {
+    for (const [enCatalog, ruCatalog, hyCatalog] of COMPLETED_CATALOG_TRIPLES) {
+      const ruValues = new Map(
+        flattenMessageEntries(ruCatalog).map((entry) => [entry.path, entry.value]),
+      );
+      const hyValues = new Map(
+        flattenMessageEntries(hyCatalog).map((entry) => [entry.path, entry.value]),
+      );
+      for (const { path, value } of flattenMessageEntries(enCatalog)) {
+        const expected = extractIcuArgNames(value);
+        expect(extractIcuArgNames(ruValues.get(path) ?? ''), path).toEqual(expected);
+        expect(extractIcuArgNames(hyValues.get(path) ?? ''), path).toEqual(expected);
+      }
+    }
   });
 });

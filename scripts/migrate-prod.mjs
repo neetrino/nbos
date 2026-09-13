@@ -6,7 +6,12 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseDotEnv } from './coolify-sequential-deploy.lib.mjs';
 import {
+  ANSI,
   classifyMigrateStatusOutput,
+  colorEnabled,
+  extractPendingMigrations,
+  formatMigrateStatusReport,
+  paint,
   parseMigrateProdArgs,
   redactSecrets,
   resolveProdDirectUrl,
@@ -61,21 +66,28 @@ function runPnpm(args, prodUrl) {
   });
 }
 
-function printOutput(output) {
+function printRawIfNeeded(status, output) {
+  if (status !== 'unknown' && status !== 'blocked') return;
   const text = redactSecrets(output).trim();
   if (text) process.stdout.write(`${text}\n`);
 }
 
 async function readStatus(prodUrl) {
   const result = await runPnpm(['db:migrate:status'], prodUrl);
-  printOutput(result.output);
-  return classifyMigrateStatusOutput(result.output);
+  const status = classifyMigrateStatusOutput(result.output);
+  return {
+    status,
+    pending: extractPendingMigrations(result.output),
+    output: result.output,
+  };
 }
 
 async function applyMigrations(prodUrl) {
   const result = await runPnpm(['db:migrate:deploy'], prodUrl);
-  printOutput(result.output);
-  if (result.code !== 0) throw new Error('pnpm db:migrate:deploy failed');
+  if (result.code === 0) return;
+  const text = redactSecrets(result.output).trim();
+  if (text) process.stderr.write(`${text}\n`);
+  throw new Error('pnpm db:migrate:deploy failed');
 }
 
 async function main() {
@@ -85,39 +97,56 @@ async function main() {
     return;
   }
   const { url, host } = resolveProdDirectUrl(loadEnv());
-  process.stdout.write(`Production migrate host: ${host}\n`);
   if (options.dryRun) {
+    process.stdout.write(`Production DB: ${host}\n`);
     process.stdout.write(
       options.statusOnly
-        ? 'Dry run. Would run status only.\n'
-        : 'Dry run. Would run status → deploy → status.\n',
+        ? 'Dry run. Would check status only.\n'
+        : 'Dry run. Would apply pending migrations.\n',
     );
     return;
   }
   const before = await readStatus(url);
-  if (before === 'blocked') {
+  const color = colorEnabled();
+  process.stdout.write(
+    formatMigrateStatusReport({
+      host,
+      status: before.status,
+      pending: before.pending,
+      checkOnly: options.statusOnly,
+      color,
+    }),
+  );
+  printRawIfNeeded(before.status, before.output);
+  if (before.status === 'blocked') {
     throw new Error('Production migration history is blocked. Stop and inspect.');
   }
-  if (options.statusOnly) {
-    process.stdout.write('Status only. Nothing applied.\n');
-    return;
+  if (options.statusOnly) return;
+  if (before.status === 'up_to_date') return;
+  if (before.status !== 'pending' && before.status !== 'unknown') {
+    throw new Error(`Cannot apply from status "${before.status}".`);
   }
-  if (before === 'up_to_date') {
-    process.stdout.write('No pending production migrations.\n');
-    return;
-  }
-  if (before !== 'pending' && before !== 'unknown') {
-    throw new Error(`Cannot apply from status "${before}".`);
-  }
+  process.stdout.write(`${paint(color, ANSI.cyan, 'Applying pending migrations…')}\n`);
   await applyMigrations(url);
   const after = await readStatus(url);
-  if (after !== 'up_to_date') {
-    throw new Error(`Production migrate finished, but status is ${after}.`);
+  process.stdout.write(
+    formatMigrateStatusReport({
+      host,
+      status: after.status,
+      pending: after.pending,
+      checkOnly: false,
+      color,
+    }),
+  );
+  printRawIfNeeded(after.status, after.output);
+  if (after.status !== 'up_to_date') {
+    throw new Error(`Production migrate finished, but status is ${after.status}.`);
   }
-  process.stdout.write('Production migrations applied.\n');
+  process.stdout.write(`${paint(color, ANSI.green, '✓ Production migrations applied.')}\n`);
 }
 
 main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.message : error}\n`);
+  const message = error instanceof Error ? error.message : String(error);
+  process.stderr.write(`${paint(colorEnabled(), ANSI.red, `✕ ${message}`)}\n`);
   process.exitCode = 1;
 });

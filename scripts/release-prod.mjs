@@ -3,7 +3,14 @@
 import { spawn } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseReleaseProdArgs, shouldStartDeploy } from './release-prod.lib.mjs';
+import { ANSI, colorEnabled, paint } from './cli-style.mjs';
+import {
+  formatReleaseBanner,
+  formatReleaseFinished,
+  formatReleaseStopped,
+  parseReleaseProdArgs,
+  shouldStartDeploy,
+} from './release-prod.lib.mjs';
 
 const scriptsDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptsDir, '..');
@@ -41,28 +48,26 @@ async function main() {
     printHelp();
     return;
   }
-  process.stdout.write(
-    options.statusOnly
-      ? 'Release status: migrate then deploy check\n'
-      : 'Release: migrate, then deploy if migrate succeeds\n',
-  );
+  const color = colorEnabled();
+  process.stdout.write(formatReleaseBanner(options.statusOnly, color));
   const migrateCode = await runScript(migrateScript, options.statusOnly ? ['--status'] : []);
   if (!shouldStartDeploy(migrateCode)) {
-    process.stderr.write('Release stopped: production migrate did not succeed.\n');
+    process.stderr.write(formatReleaseStopped('migrate', color));
     process.exitCode = migrateCode;
     return;
   }
   const deployArgs = options.statusOnly ? ['--status', ...options.deployArgs] : options.deployArgs;
   const deployCode = await runScript(deployScript, deployArgs);
   if (deployCode !== 0) {
-    process.stderr.write('Release stopped: Coolify deploy did not succeed.\n');
+    process.stderr.write(formatReleaseStopped('deploy', color));
     process.exitCode = deployCode;
     return;
   }
-  if (!options.statusOnly) process.stdout.write('Release finished.\n');
+  if (!options.statusOnly) process.stdout.write(formatReleaseFinished(color));
 }
 
 main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.message : error}\n`);
+  const message = error instanceof Error ? error.message : String(error);
+  process.stderr.write(`${paint(colorEnabled(), ANSI.red, `✕ ${message}`)}\n`);
   process.exitCode = 1;
 });

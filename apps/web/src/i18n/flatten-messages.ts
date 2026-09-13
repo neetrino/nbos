@@ -1,18 +1,30 @@
 import type { AbstractIntlMessages } from 'next-intl';
 
+export type FlattenedMessage = {
+  path: string;
+  value: string;
+};
+
 export function flattenMessageKeys(messages: AbstractIntlMessages, prefix = ''): string[] {
-  const keys: string[] = [];
+  return flattenMessageEntries(messages, prefix).map((entry) => entry.path);
+}
+
+export function flattenMessageEntries(
+  messages: AbstractIntlMessages,
+  prefix = '',
+): FlattenedMessage[] {
+  const entries: FlattenedMessage[] = [];
   for (const [key, value] of Object.entries(messages)) {
     const path = prefix ? `${prefix}.${key}` : key;
     if (typeof value === 'string') {
-      keys.push(path);
+      entries.push({ path, value });
       continue;
     }
     if (isMessageRecord(value)) {
-      keys.push(...flattenMessageKeys(value, path));
+      entries.push(...flattenMessageEntries(value, path));
     }
   }
-  return keys;
+  return entries;
 }
 
 function isMessageRecord(value: unknown): value is AbstractIntlMessages {
