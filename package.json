@@ -40,6 +40,8 @@
     "db:migrate": "pnpm --filter @nbos/database migrate:dev",
     "db:migrate:status": "pnpm --filter @nbos/database migrate:status",
     "db:migrate:deploy": "pnpm --filter @nbos/database migrate:deploy",
+    "db:migrate:prod": "node scripts/migrate-prod.mjs",
+    "db:migrate:prod:status": "node scripts/migrate-prod.mjs --status",
     "db:push": "pnpm --filter @nbos/database push",
     "db:seed": "pnpm --filter @nbos/database seed",
     "db:studio": "pnpm --filter @nbos/database studio",
@@ -48,6 +50,7 @@
     "notifications:inbox:repair": "tsx apps/api/scripts/inbox-state-cli.ts --repair",
     "auth:legacy-retirement-check": "tsx apps/api/scripts/auth-legacy-retirement-check.ts",
     "deploy:prod": "node scripts/coolify-sequential-deploy.mjs",
+    "deploy:prod:status": "node scripts/coolify-sequential-deploy.mjs --status",
     "prepare": "husky"
   },
   "devDependencies": {

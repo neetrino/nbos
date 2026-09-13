@@ -25,6 +25,7 @@ function printHelp() {
   process.stdout.write(`Sequential Coolify production deploy (manual CD).
 
 Usage:
+  pnpm deploy:prod:status
   pnpm deploy:prod
   pnpm deploy:prod -- backend
   pnpm deploy:prod -- web
@@ -144,7 +145,7 @@ async function main() {
     `Coolify sequential deploy: ${options.apps.join(' → ')}${options.force ? ' (force)' : ''}\n`,
   );
   if (options.dryRun) {
-    process.stdout.write('Dry run only. No deploy started.\n');
+    process.stdout.write('Status only. No deploy started.\n');
     return;
   }
   for (const app of options.apps) {

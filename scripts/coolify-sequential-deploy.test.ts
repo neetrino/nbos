@@ -29,6 +29,8 @@ EMPTY=
     expect(resolveApps([])).toEqual(['api', 'worker', 'scheduler', 'web']);
     expect(parseCliArgs(['--force', 'web']).apps).toEqual(['web']);
     expect(parseCliArgs(['--force', 'web']).force).toBe(true);
+    expect(parseCliArgs(['--status']).dryRun).toBe(true);
+    expect(parseCliArgs(['--dry-run']).dryRun).toBe(true);
   });
 
   it('reads either Coolify token name and requires app UUIDs', () => {

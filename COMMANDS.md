@@ -13,6 +13,10 @@ pnpm db:generate
 ```
 
 ```bash
+pnpm dev
+```
+
+```bash
 pnpm dev:web
 ```
 
@@ -74,20 +78,22 @@ NOT ON PRODUCTION:
 pnpm db:push
 ```
 
-# PRODUCTION
+# PRODUCTION DB
 
-MIGRATE FIRST IF SCHEMA CHANGED. DO NOT STORE DIRECT URL IN THIS FILE.
+PUT DIRECT_URL_PROD IN .ENV.LOCAL. SCRIPT NEVER PRINTS THE URL.
 
 ```bash
-read -rsp "Neon DIRECT_URL: " NBOS_RELEASE_DIRECT_URL; printf '\n'; DIRECT_URL="$NBOS_RELEASE_DIRECT_URL" pnpm db:migrate:status; unset NBOS_RELEASE_DIRECT_URL
+pnpm db:migrate:prod:status
 ```
 
 ```bash
-read -rsp "Neon DIRECT_URL: " NBOS_RELEASE_DIRECT_URL; printf '\n'; DIRECT_URL="$NBOS_RELEASE_DIRECT_URL" pnpm db:migrate:deploy; unset NBOS_RELEASE_DIRECT_URL
+pnpm db:migrate:prod
 ```
 
+# PRODUCTION DEPLOY
+
 ```bash
-pnpm deploy:prod -- --dry-run
+pnpm deploy:prod:status
 ```
 
 ```bash

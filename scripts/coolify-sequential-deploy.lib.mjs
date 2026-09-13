@@ -75,7 +75,7 @@ export function parseCliArgs(argv) {
   const tokens = [];
   for (const arg of argv) {
     if (arg === '--force') flags.force = true;
-    else if (arg === '--dry-run') flags.dryRun = true;
+    else if (arg === '--dry-run' || arg === '--status') flags.dryRun = true;
     else if (arg === '--help' || arg === '-h') flags.help = true;
     else tokens.push(arg);
   }
