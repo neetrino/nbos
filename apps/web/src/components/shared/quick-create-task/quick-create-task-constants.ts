@@ -52,3 +52,6 @@ export const QUICK_CREATE_TASK_AUTOCOMPLETE_OFF = {
 
 export const QUICK_CREATE_TASK_ROW_LABEL_CLASS =
   'text-muted-foreground w-[8.25rem] shrink-0 text-sm';
+
+/** After the 150ms sheet enter so the title can take focus on the phone. */
+export const QUICK_CREATE_TITLE_FOCUS_DELAY_MS = 180;

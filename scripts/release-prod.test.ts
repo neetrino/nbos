@@ -19,6 +19,7 @@ describe('release prod helpers', () => {
       help: false,
       deployArgs: ['backend'],
     });
+    expect(parseReleaseProdArgs(['--', 'web']).deployArgs).toEqual(['web']);
   });
 
   it('starts Coolify deploy only after a successful migrate', () => {

@@ -20,6 +20,9 @@ describe('Quick Task and main PWA manifests', () => {
     };
     expect(manifest.id).toBe('/');
     expect(manifest.start_url).toBe('/');
+    expect(JSON.stringify(manifest)).toContain('/icons/icon-192.png?v=wordmark2');
+    expect(JSON.stringify(manifest)).not.toContain('/logo/icon.svg');
+    expect(JSON.stringify(manifest)).not.toContain('nbos-app.svg');
   });
 
   it('starts Quick Task at /quick/task with a distinct identity', () => {
@@ -28,6 +31,7 @@ describe('Quick Task and main PWA manifests', () => {
       start_url: string;
       scope: string;
       display: string;
+      icons: ReadonlyArray<{ src: string }>;
     };
     expect(manifest.id).toBe('/quick/task');
     expect(manifest.start_url).toBe('/quick/task');

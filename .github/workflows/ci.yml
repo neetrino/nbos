@@ -17,42 +17,51 @@ env:
   NODE_OPTIONS: --max-old-space-size=6144
 
 jobs:
-  quality:
-    name: Quality checks
+  quality-task:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Format
+            command: pnpm format:check
+          - name: Lint
+            command: pnpm lint
+          - name: Type check
+            command: pnpm typecheck
+          - name: Tests
+            command: pnpm test
+          - name: Build
+            command: pnpm build
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - name: Setup CI
+        uses: ./.github/actions/setup-ci
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: ${{ matrix.name }}
+        run: ${{ matrix.command }}
 
-      - name: Generate Prisma client
-        run: pnpm db:generate
-
-      - name: Format check
-        run: pnpm format:check
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Type check
-        run: pnpm typecheck
-
-      - name: Tests
-        run: pnpm test
-
-      - name: Build
-        run: pnpm build
+  # Same required check name as before so the main ruleset stays valid.
+  # always() so a failed matrix job cannot skip this and look like a pass.
+  quality:
+    name: Quality checks
+    if: ${{ always() && !cancelled() }}
+    needs: [quality-task]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm all quality jobs passed
+        env:
+          QUALITY_TASK_RESULT: ${{ needs.quality-task.result }}
+        run: |
+          if [ "$QUALITY_TASK_RESULT" != 'success' ]; then
+            echo "Quality task matrix result: $QUALITY_TASK_RESULT"
+            exit 1
+          fi
 
   audit:
     name: Dependency audit (blocking)

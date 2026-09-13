@@ -28,6 +28,8 @@ describe('Quick Task composition', () => {
     expect(root).not.toContain('apple-touch-icon.png');
     expect(root).not.toContain('/icons/icon-192.png');
     expect(app).toContain('apple-touch-icon.png');
+    expect(app).toContain('/icons/splash.png');
+    expect(app).toContain('splash-ipad.png');
     expect(app).not.toContain('/icons/icon-192.png');
     expect(quick).toContain('quick-task-apple-touch.png');
     expect(quick).not.toContain('/icons/apple-touch-icon.png');
@@ -43,5 +45,6 @@ describe('Quick Task composition', () => {
     const dialog = readSource('src/components/shared/quick-create-task/QuickCreateTaskDialog.tsx');
     expect(dialog).toContain("from '@/components/ui/dialog'");
     expect(dialog).toContain('<DialogContent');
+    expect(dialog).toContain('initialFocus={titleInputRef}');
   });
 });

@@ -1,8 +1,9 @@
 /** Mobile Dialog chrome — same bottom sheet as Search / Menu. */
 export const DIALOG_MOBILE_SHEET_POPUP_CLASS = [
-  'max-md:top-auto max-md:right-0 max-md:bottom-0 max-md:left-0',
+  'max-md:top-auto max-md:right-0 max-md:left-0',
+  'max-md:bottom-[var(--nbos-dialog-keyboard-inset,0px)]',
   'max-md:flex max-md:min-h-0 max-md:flex-col',
-  'max-md:max-h-[min(88dvh,calc(100dvh-0.5rem))]',
+  'max-md:max-h-[min(88dvh,calc(100dvh-0.5rem-var(--nbos-dialog-keyboard-inset,0px)))]',
   'max-md:w-full max-md:max-w-none max-md:translate-x-0 max-md:translate-y-0',
   'max-md:gap-0 max-md:overflow-hidden max-md:border-x-0 max-md:border-t max-md:p-0',
   'max-md:rounded-t-3xl max-md:rounded-b-none max-md:shadow-xl',

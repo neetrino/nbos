@@ -42,6 +42,7 @@ const NBOS_BRAND_COLOR = '#2e3192';
 export const viewport: Viewport = {
   themeColor: NBOS_BRAND_COLOR,
   viewportFit: 'cover',
+  interactiveWidget: 'resizes-content',
 };
 
 export const metadata: Metadata = {
