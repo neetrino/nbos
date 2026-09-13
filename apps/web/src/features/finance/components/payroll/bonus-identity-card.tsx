@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Box, FolderKanban } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 export function BonusSourceIdentityCard({
@@ -17,10 +18,12 @@ export function BonusSourceIdentityCard({
   productLabel: string;
   orderCode: string;
 }) {
+  const t = useTranslations('payroll');
+
   return (
     <BonusIdentityShell icon={FolderKanban}>
       <IdentityField
-        label="Project"
+        label={t('compensation.bonus.identity.project')}
         value={
           <Link href={projectHref} className="text-primary font-semibold hover:underline">
             {projectName}
@@ -29,12 +32,12 @@ export function BonusSourceIdentityCard({
       />
       <div className="border-border border-t" />
       <IdentityField
-        label="Product"
+        label={t('compensation.bonus.identity.product')}
         value={
           <span className="text-foreground font-semibold">
             {productLabel}
             <span className="text-muted-foreground mt-0.5 block text-xs font-normal">
-              Order {orderCode}
+              {t('compensation.bonus.identity.order', { code: orderCode })}
             </span>
           </span>
         }
@@ -52,21 +55,23 @@ export function BonusReleaseIdentityCard({
   orderCode: string;
   releaseBadge: ReactNode;
 }) {
+  const t = useTranslations('payroll');
+
   return (
     <BonusIdentityShell icon={Box}>
       <IdentityField
-        label="Product"
+        label={t('compensation.bonus.identity.product')}
         value={
           <span className="text-foreground font-semibold">
             {productLabel}
             <span className="text-muted-foreground mt-0.5 block text-xs font-normal">
-              Order {orderCode}
+              {t('compensation.bonus.identity.order', { code: orderCode })}
             </span>
           </span>
         }
       />
       <div className="border-border border-t" />
-      <IdentityField label="Release" value={releaseBadge} />
+      <IdentityField label={t('compensation.bonus.identity.release')} value={releaseBadge} />
     </BonusIdentityShell>
   );
 }

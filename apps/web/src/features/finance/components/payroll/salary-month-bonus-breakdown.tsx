@@ -15,10 +15,12 @@ import {
   ShieldCheck,
   Upload,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { bonusBoardHref } from '@/features/finance/constants/bonus-board-url';
 import { BONUS_RELEASE_TYPE_UI } from '@/features/finance/constants/bonus-release-type-ui';
+import { translateBonusReleaseType } from '@/features/finance/components/payroll/payroll-compensation-i18n';
 import {
   groupSalaryBonusBreakdownBySource,
   POLICY_PENDING_LABEL,
@@ -50,17 +52,14 @@ type MetricDef = {
 const METRIC_GRID_CLASS = 'grid grid-cols-3 gap-2';
 
 export function SalaryMonthBonusBreakdown({ detail }: { detail: SalaryLineMonthDetail }) {
+  const t = useTranslations('payroll');
   const sourceGroups = useMemo(
     () => groupSalaryBonusBreakdownBySource(detail.bonusBreakdown),
     [detail.bonusBreakdown],
   );
 
   if (detail.bonusBreakdown.length === 0) {
-    return (
-      <p className="text-muted-foreground text-sm">
-        No bonus releases included in this payroll month.
-      </p>
-    );
+    return <p className="text-muted-foreground text-sm">{t('compensation.bonus.empty')}</p>;
   }
 
   return (
@@ -68,14 +67,14 @@ export function SalaryMonthBonusBreakdown({ detail }: { detail: SalaryLineMonthD
       <BonusBreakdownSummaryStrip detail={detail} />
       <BonusSection
         icon={Layers}
-        title="By bonus source"
+        title={t('compensation.bonus.bySource')}
         cards={sourceGroups.map((group) => (
           <SourceBonusCard key={group.key} group={group} />
         ))}
       />
       <BonusSection
         icon={CalendarDays}
-        title="Releases this month"
+        title={t('compensation.bonus.releasesThisMonth')}
         cards={detail.bonusBreakdown.map((row) => (
           <ReleaseBonusCard key={row.bonusReleaseId} row={row} />
         ))}
@@ -105,64 +104,65 @@ function BonusSection({
 }
 
 function SourceBonusCard({ group }: { group: SalaryBonusBreakdownSourceGroup }) {
+  const t = useTranslations('payroll');
   const metrics: MetricDef[] = [
     {
       icon: CircleDollarSign,
       iconShellClassName:
         'bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300',
-      label: 'Full',
+      label: t('compensation.bonus.metrics.full'),
       value: formatAmount(group.planned),
     },
     {
       icon: FileText,
       iconShellClassName: 'bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-300',
-      label: 'Payable',
+      label: t('compensation.bonus.metrics.payable'),
       value: group.payable > 0 ? formatAmount(group.payable) : POLICY_PENDING_LABEL,
     },
     {
       icon: ChartPie,
       iconShellClassName:
         'bg-indigo-100 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300',
-      label: 'KPI %',
+      label: t('compensation.bonus.metrics.kpiPct'),
       value: POLICY_PENDING_LABEL,
     },
     {
       icon: Upload,
       iconShellClassName: 'bg-teal-100 text-teal-600 dark:bg-teal-950/50 dark:text-teal-300',
-      label: 'Released',
+      label: t('compensation.bonus.metrics.released'),
       value: formatAmount(group.released),
     },
     {
       icon: Flame,
       iconShellClassName:
         'bg-orange-100 text-orange-600 dark:bg-orange-950/50 dark:text-orange-300',
-      label: 'Burned',
+      label: t('compensation.bonus.metrics.burned'),
       value: group.burned > 0 ? formatAmount(group.burned) : POLICY_PENDING_LABEL,
     },
     {
       icon: RefreshCw,
       iconShellClassName: 'bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-300',
-      label: 'Carry-over',
+      label: t('compensation.bonus.metrics.carryOver'),
       value: group.carryOver > 0 ? formatAmount(group.carryOver) : POLICY_PENDING_LABEL,
     },
     {
       icon: ShieldCheck,
       iconShellClassName: 'bg-blue-100 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300',
-      label: 'Included',
+      label: t('compensation.bonus.metrics.included'),
       value: formatAmount(group.included),
     },
     {
       icon: CheckCircle2,
       iconShellClassName:
         'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300',
-      label: 'Paid',
+      label: t('matrix.paid'),
       value: formatAmount(group.paid),
       tone: 'paid',
     },
     {
       icon: Clock3,
       iconShellClassName: 'bg-rose-100 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300',
-      label: 'Remaining',
+      label: t('matrix.remaining'),
       value: formatAmount(group.remaining),
     },
   ];
@@ -187,6 +187,7 @@ function SourceBonusCard({ group }: { group: SalaryBonusBreakdownSourceGroup }) 
 }
 
 function ReleaseBonusCard({ row }: { row: SalaryLineMonthBonusRow }) {
+  const t = useTranslations('payroll');
   const releaseUi = BONUS_RELEASE_TYPE_UI[row.releaseType as BonusReleaseType];
   const isSales = row.type === 'SALES';
   const fullLabel = row.fullAmount != null ? formatAmount(parseAmount(row.fullAmount)) : '—';
@@ -206,61 +207,61 @@ function ReleaseBonusCard({ row }: { row: SalaryLineMonthBonusRow }) {
       icon: CircleDollarSign,
       iconShellClassName:
         'bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300',
-      label: 'Full',
+      label: t('compensation.bonus.metrics.full'),
       value: isSales ? fullLabel : formatAmount(parseAmount(row.plannedAmount)),
     },
     {
       icon: FileText,
       iconShellClassName: 'bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-300',
-      label: 'Payable',
+      label: t('compensation.bonus.metrics.payable'),
       value: isSales ? payableLabel : '—',
     },
     {
       icon: ChartPie,
       iconShellClassName:
         'bg-indigo-100 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300',
-      label: 'KPI %',
+      label: t('compensation.bonus.metrics.kpiPct'),
       value: isSales ? kpiPctLabel : '—',
       title: row.earnedPeriod ?? undefined,
     },
     {
       icon: Upload,
       iconShellClassName: 'bg-teal-100 text-teal-600 dark:bg-teal-950/50 dark:text-teal-300',
-      label: 'Released',
+      label: t('compensation.bonus.metrics.released'),
       value: formatAmount(parseAmount(row.releaseAmount)),
     },
     {
       icon: ShieldCheck,
       iconShellClassName: 'bg-blue-100 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300',
-      label: 'Included',
+      label: t('compensation.bonus.metrics.included'),
       value: formatAmount(included),
     },
     {
       icon: Flame,
       iconShellClassName:
         'bg-orange-100 text-orange-600 dark:bg-orange-950/50 dark:text-orange-300',
-      label: 'Burned KPI',
+      label: t('compensation.bonus.metrics.burnedKpi'),
       value: burned > 0 ? formatAmount(burned) : '—',
       title: row.kpiBurnedReason ?? undefined,
     },
     {
       icon: RefreshCw,
       iconShellClassName: 'bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-300',
-      label: 'Carry-over',
+      label: t('compensation.bonus.metrics.carryOver'),
       value: carry > 0 ? formatAmount(carry) : '—',
     },
     {
       icon: CheckCircle2,
       iconShellClassName:
         'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300',
-      label: 'Paid',
+      label: t('matrix.paid'),
       value: formatAmount(paid),
       tone: 'paid',
     },
     {
       icon: Clock3,
       iconShellClassName: 'bg-rose-100 text-rose-600 dark:bg-rose-950/50 dark:text-rose-300',
-      label: 'Remaining',
+      label: t('matrix.remaining'),
       value: formatAmount(remaining),
     },
   ];
@@ -273,7 +274,10 @@ function ReleaseBonusCard({ row }: { row: SalaryLineMonthBonusRow }) {
           orderCode={row.orderCode}
           releaseBadge={
             releaseUi ? (
-              <StatusBadge label={releaseUi.label} variant={releaseUi.variant} />
+              <StatusBadge
+                label={translateBonusReleaseType(row.releaseType as BonusReleaseType, t)}
+                variant={releaseUi.variant}
+              />
             ) : (
               <span className="text-muted-foreground text-xs">{row.releaseType}</span>
             )

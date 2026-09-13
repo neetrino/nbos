@@ -1,21 +1,41 @@
+import type { PayrollTranslator } from '@/features/finance/components/payroll/payroll-compensation-i18n';
+
+export type SalesKpiPayoutScaleMessageKey =
+  | 'compensation.kpi.scale.full'
+  | 'compensation.kpi.scale.half'
+  | 'compensation.kpi.scale.zero'
+  | 'compensation.kpi.scale.planNotSet';
+
 /** Read-only mirror of API `computeSalesKpiPayoutFactor` for month-sheet copy. */
-export function salesKpiPayoutScaleLabel(plan: number, actual: number): string {
+export function salesKpiPayoutScaleMessageKey(
+  plan: number,
+  actual: number,
+): SalesKpiPayoutScaleMessageKey {
   if (plan <= 0) {
-    return '100% (KPI plan not set)';
+    return 'compensation.kpi.scale.planNotSet';
   }
   const ratio = actual / plan;
   if (ratio >= 0.7) {
-    return '100%';
+    return 'compensation.kpi.scale.full';
   }
   if (ratio >= 0.5) {
-    return '50%';
+    return 'compensation.kpi.scale.half';
   }
-  return '0%';
+  return 'compensation.kpi.scale.zero';
+}
+
+export function salesKpiPayoutScaleLabel(
+  plan: number,
+  actual: number,
+  t: PayrollTranslator,
+): string {
+  return t(salesKpiPayoutScaleMessageKey(plan, actual));
 }
 
 export function buildSalesKpiGateSummary(
   planRaw: string | null,
   actualRaw: string | null,
+  t: PayrollTranslator,
 ): string | null {
   if (planRaw == null && actualRaw == null) {
     return null;
@@ -28,9 +48,9 @@ export function buildSalesKpiGateSummary(
     return null;
   }
   if (!hasPlan || !hasActual || plan < 0 || actual < 0) {
-    return 'Sales KPI plan/actual are incomplete in the synced snapshot. Included Sales bonuses scale at attach per KPI policy.';
+    return t('compensation.kpi.gateSummary.incomplete');
   }
   const pct = plan > 0 ? Math.round((actual / plan) * 100) : 0;
-  const scale = salesKpiPayoutScaleLabel(plan, actual);
-  return `Sales KPI gate: actual ${pct}% of plan → ${scale} payout scale for included sales bonuses at attach.`;
+  const scale = salesKpiPayoutScaleLabel(plan, actual, t);
+  return t('compensation.kpi.gateSummary.complete', { pct, scale });
 }

@@ -1,6 +1,10 @@
 'use client';
 
-import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compensation-payout-phase-ui';
+import { useTranslations } from 'next-intl';
+import {
+  translateCompensationPayoutPhaseDescription,
+  translateCompensationPayoutPhaseLabel,
+} from '@/features/finance/components/payroll/payroll-compensation-i18n';
 import type { SalaryLineMonthDetail } from '@/lib/api/payroll-runs';
 
 function parseAmount(value: string): number {
@@ -10,25 +14,28 @@ function parseAmount(value: string): number {
 
 /** Read-only copy for wallet month detail sheet (NBOS Employee Wallet). */
 export function WalletMonthSheetHints({ detail }: { detail: SalaryLineMonthDetail }) {
-  const phaseUi = COMPENSATION_PAYOUT_PHASE_UI[detail.payoutPhase];
+  const t = useTranslations('payroll');
+  const phaseLabel = translateCompensationPayoutPhaseLabel(detail.payoutPhase, t);
   const paid = parseAmount(detail.salaryLine.paidAmount);
   const remaining = parseAmount(detail.salaryLine.remainingAmount);
   const partial = paid > 0 && remaining > 0;
 
   return (
     <div className="border-border bg-muted/20 rounded-lg border px-3 py-2.5 text-xs">
-      <p className="text-foreground font-medium">Payout phase: {phaseUi.label}</p>
-      <p className="text-muted-foreground mt-1 leading-snug">{phaseUi.description}</p>
+      <p className="text-foreground font-medium">
+        {t('compensation.walletHints.payoutPhase', { phase: phaseLabel })}
+      </p>
+      <p className="text-muted-foreground mt-1 leading-snug">
+        {translateCompensationPayoutPhaseDescription(detail.payoutPhase, t)}
+      </p>
       {partial ? (
         <p className="text-muted-foreground mt-2 leading-snug">
-          Partial pay this month — {phaseUi.label} does not mean the full amount is in your bank
-          yet; see payments below when an expense card exists.
+          {t('compensation.walletHints.partialPay', { phase: phaseLabel })}
         </p>
       ) : null}
       {detail.bonusBreakdown.some((row) => row.type === 'SALES') ? (
         <p className="text-muted-foreground mt-2 leading-snug">
-          Sales bonuses may be reduced at payroll attach when KPI is below target (burned amount
-          detail will appear here after policy engine ships).
+          {t('compensation.walletHints.salesBonusReduction')}
         </p>
       ) : null}
     </div>
