@@ -6,6 +6,7 @@ import {
   isOpenRisingEdge,
   isQuickCreateCreatorBlocked,
   shouldApplyDefaultAssignee,
+  shouldCloseQuickCreateAfterSuccess,
   applyLateIdentityArrival,
 } from './quick-create-task-draft';
 
@@ -28,6 +29,12 @@ describe('quick-create-task-draft', () => {
     expect(canSubmitQuickCreateTask('Ship it', '')).toBe(false);
     expect(canSubmitQuickCreateTask('Ship it', 'emp-1')).toBe(true);
     expect(canSubmitQuickCreateTask('   ', 'emp-1')).toBe(false);
+  });
+
+  it('closes ordinary create and keeps Quick Task open after success', () => {
+    expect(shouldCloseQuickCreateAfterSuccess()).toBe(true);
+    expect(shouldCloseQuickCreateAfterSuccess(false)).toBe(true);
+    expect(shouldCloseQuickCreateAfterSuccess(true)).toBe(false);
   });
 
   it('blocks create after identity is ready without an employee', () => {

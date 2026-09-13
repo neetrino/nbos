@@ -64,6 +64,7 @@ export function useQuickTaskPage() {
       action: {
         label: t('task.open'),
         onClick: () => {
+          setCreateOpen(false);
           const params = new URLSearchParams(window.location.search);
           params.set(TASK_OPEN_QUERY, task.id);
           router.replace(`${pathname}?${params.toString()}`);
