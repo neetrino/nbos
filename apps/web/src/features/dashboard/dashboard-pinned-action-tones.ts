@@ -6,6 +6,7 @@ const PINNED_ACTION_TONE_BY_KEY: Record<DashboardPinnedActionKey, ActionTileTone
   'new-task': 'sky',
   'new-meeting': 'primary',
   'new-expense': 'emerald',
+  'open-install': 'primary',
   'open-deals': 'violet',
   'open-products': 'amber',
   'open-invoices': 'amber',

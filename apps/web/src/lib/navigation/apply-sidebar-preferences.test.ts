@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { applySidebarPreferences, placeAiAgentsBeforeReports } from './apply-sidebar-preferences';
+import {
+  applySidebarPreferences,
+  getSidebarFooterModule,
+  placeAiAgentsBeforeReports,
+} from './apply-sidebar-preferences';
 import type { NavModuleDefinition } from './nav-config';
 
 const modules: NavModuleDefinition[] = [
@@ -14,6 +18,48 @@ describe('applySidebarPreferences', () => {
 
     expect(layout.primary.map((item) => item.key)).toEqual(['crm', 'dashboard']);
     expect(layout.hidden.map((item) => item.key)).toEqual(['mail']);
+  });
+
+  it('keeps footer modules out of the reorderable list and strips children', () => {
+    const withFooter: NavModuleDefinition[] = [
+      ...modules,
+      {
+        key: 'settings',
+        label: 'modules.settings',
+        href: '/settings',
+        sidebarSlot: 'footer',
+        children: [{ label: 'children.settings.general', href: '/settings' }],
+      },
+      {
+        key: 'messenger',
+        label: 'modules.messenger',
+        href: '/messenger',
+        children: [{ label: 'children.messenger.all', href: '/messenger' }],
+      },
+    ];
+
+    const layout = applySidebarPreferences(withFooter, [], []);
+
+    expect(layout.primary.map((item) => item.key)).toEqual([
+      'dashboard',
+      'crm',
+      'messenger',
+      'mail',
+    ]);
+    expect(layout.primary.every((item) => item.children === undefined)).toBe(true);
+    expect(layout.hidden).toEqual([]);
+  });
+
+  it('returns the pinned footer module for the Settings row', () => {
+    const settings: NavModuleDefinition = {
+      key: 'settings',
+      label: 'modules.settings',
+      href: '/settings',
+      sidebarSlot: 'footer',
+    };
+
+    expect(getSidebarFooterModule([...modules, settings])?.key).toBe('settings');
+    expect(getSidebarFooterModule(modules)).toBeNull();
   });
 });
 

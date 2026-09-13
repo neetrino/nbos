@@ -36,6 +36,8 @@ export function isNavChildLink(child: NavChildDefinition): child is NavChildLink
   return !isNavChildGroup(child);
 }
 
+export type SidebarSlot = 'main' | 'footer';
+
 export interface NavModuleDefinition {
   key: SidebarModuleKey;
   /** next-intl key under the navigation namespace */
@@ -45,6 +47,12 @@ export interface NavModuleDefinition {
   children?: NavChildDefinition[];
   /** Optional hover action on the module row (only Tasks today). */
   quickAction?: NavQuickAction;
+  /** Pinned outside the reorderable module list. Default is the main list. */
+  sidebarSlot?: SidebarSlot;
+}
+
+export function isFooterSidebarModule(item: NavModuleDefinition): boolean {
+  return item.sidebarSlot === 'footer';
 }
 
 export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
@@ -217,6 +225,7 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     key: 'settings',
     label: 'modules.settings',
     href: '/settings',
+    sidebarSlot: 'footer',
     children: [
       {
         label: 'children.settings.general',

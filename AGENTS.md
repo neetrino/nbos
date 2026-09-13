@@ -59,7 +59,7 @@ Preserve the existing implementation unless the approved task, TECH_CARD, or NBO
 - Do not hide or bypass test, lint, build, or validation failures.
 - Do not weaken security controls to make a check pass.
 - Preserve unrelated user changes and keep edits scoped.
-- After meaningful changes, run project-appropriate validation and use [`.agents/skills/verify-before-completion/`](.agents/skills/verify-before-completion/).
+- After meaningful changes, run project-appropriate validation and use [`.agents/skills/verify-before-completion/`](.agents/skills/verify-before-completion/). Include Prettier on touched files (same gate as husky `pre-commit` and CI Format); do not wait for the hook or CI.
 
 For auth, payments, tenants, webhooks, or other security-sensitive changes, use [`.agents/skills/security-review/`](.agents/skills/security-review/). For PR/diff review, use [`.agents/skills/code-review/`](.agents/skills/code-review/).
 

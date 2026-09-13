@@ -8,6 +8,7 @@ import {
   ListChecks,
   ShieldCheck,
   SlidersHorizontal,
+  Smartphone,
   Timer,
   ToggleLeft,
   Trash2,
@@ -80,6 +81,12 @@ const SETTINGS_SECTIONS = [
     href: '/settings/trash-inventory',
     description: 'Cross-module recoverable Trash counts and retention purge eligibility.',
     icon: Trash2,
+  },
+  {
+    title: 'Install apps',
+    href: '/install',
+    description: 'Copy PWA URLs and install from the browser. Small apps first, main NBOS last.',
+    icon: Smartphone,
   },
 ] as const;
 

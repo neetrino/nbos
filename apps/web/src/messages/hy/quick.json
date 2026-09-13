@@ -5,5 +5,51 @@
     "created": "Առաջադրանքը ստեղծվեց",
     "open": "Բացել",
     "backgroundLoading": "Առաջադրանքներ բեռնվում են…"
+  },
+  "install": {
+    "kicker": "Գլխավոր էկրան",
+    "title": "Հավելվածների տեղադրում",
+    "subtitle": "Սկզբում փոքր հավելվածները, հետո հիմնական NBOS-ը։ Պատճենեք URL-ը, տեղադրեք հեռախոսի կամ համակարգչի բրաուզերում և տեղադրեք բրաուզերի ընտրացանկից՝ ոչ կայքի պաստառից։",
+    "orderNote": "Հերթականությունը կարևոր է։ Եթե հիմնական հավելվածը տեղադրեք առաջինը, բրաուզերը կարող է արգելել մյուսները։",
+    "appsHeading": "Հավելվածներ",
+    "guideHeading": "Ինչպես տեղադրել",
+    "copyUrl": "Պատճենել URL",
+    "copied": "Պատճենվեց",
+    "then": "Ապա",
+    "firstApps": "Սկզբում",
+    "lastApp": "Վերջում",
+    "apps": {
+      "quickTask": {
+        "name": "+ Task",
+        "blurb": "Արագ առաջադրանք"
+      },
+      "nbos": {
+        "name": "NBOS",
+        "blurb": "Ամբողջական հավելված"
+      }
+    },
+    "steps": {
+      "copy": {
+        "title": "Պատճենեք URL-ը",
+        "body": "Սեղմեք «Պատճենել URL» հաջորդ հավելվածի վրա։ Սկսեք + Task-ից։ Ավարտեք NBOS-ով։"
+      },
+      "paste": {
+        "title": "Տեղադրեք բրաուզերում",
+        "body": "Բացեք Chrome կամ Safari հեռախոսում կամ համակարգչում, տեղադրեք հղումը և սպասեք էջի բացմանը։"
+      },
+      "browser": {
+        "title": "Տեղադրեք բրաուզերից",
+        "body": "Android-ում և iPhone-ում բրաուզերի ընտրացանկը տարբեր է։"
+      }
+    },
+    "art": {
+      "phoneAlt": "Հեռախոսի նախադիտում NBOS splash-ով",
+      "installItem": "Install app",
+      "homeItem": "Add to Home Screen",
+      "android": "Android",
+      "ios": "iOS",
+      "androidHint": "Menu → Install app",
+      "iosHint": "Share → Add to Home Screen"
+    }
   }
 }

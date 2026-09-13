@@ -11,6 +11,7 @@ alwaysApply: false
 - **Conventional Commits** — `feat:`, `fix:`, `chore:`, `docs:` …
 - **PRs** — small, focused, green CI, description template, self-review first.
 - **Hooks:** do not skip with `--no-verify`. `pre-commit` auto-formats staged files with Prettier via lint-staged. `pre-push` fails if pushed files would fail `prettier --check` (same gate as CI).
+- **Agent format (do not wait for the hook or CI):** before reporting done, and before any commit, run Prettier on touched `ts/tsx/js/jsx/json/md/css` files: `pnpm exec prettier --write --ignore-path .prettierignore -- <files>`. If files are already staged, `pnpm lint-staged` is enough. Husky only runs on `git commit`; skipping that step leaves CI Format red.
 - **No force-push** to `main`/`develop`; no secrets in commits.
 - **CHANGELOG** maintained if project ships versions.
 

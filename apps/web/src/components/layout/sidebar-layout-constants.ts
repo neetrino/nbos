@@ -20,6 +20,10 @@ export const SIDEBAR_NAV_LIST_CLASS = 'px-2 py-3';
 /** Standard top-level nav link padding. */
 export const SIDEBAR_NAV_ITEM_CLASS = 'px-2.5 py-1.5';
 
+/** Compact footer control next to the pinned Settings row. */
+export const SIDEBAR_FOOTER_CUSTOMIZE_BUTTON_CLASS =
+  'text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground flex size-9 shrink-0 items-center justify-center rounded-md transition-colors';
+
 /** Child link indent under expandable modules. */
 export const SIDEBAR_NAV_CHILD_LIST_CLASS = 'mt-0.5 ml-9 space-y-0';
 

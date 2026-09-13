@@ -5,5 +5,51 @@
     "created": "Task created",
     "open": "Open",
     "backgroundLoading": "Loading tasks…"
+  },
+  "install": {
+    "kicker": "Home screen",
+    "title": "Install apps",
+    "subtitle": "Install the small apps first, then the main NBOS. Copy a URL, paste it in the phone or computer browser, and install from the browser menu — not from a banner on the site.",
+    "orderNote": "Order matters. If the main app is installed first, the browser may refuse the others.",
+    "appsHeading": "Apps",
+    "guideHeading": "How to install",
+    "copyUrl": "Copy URL",
+    "copied": "Copied",
+    "then": "Then",
+    "firstApps": "Install first",
+    "lastApp": "Install last",
+    "apps": {
+      "quickTask": {
+        "name": "+ Task",
+        "blurb": "Create fast task"
+      },
+      "nbos": {
+        "name": "NBOS",
+        "blurb": "Full app"
+      }
+    },
+    "steps": {
+      "copy": {
+        "title": "Copy the URL",
+        "body": "Press Copy URL on the next app in the list. Start with + Task. Finish with NBOS."
+      },
+      "paste": {
+        "title": "Paste in the browser",
+        "body": "Open Chrome or Safari on the phone or computer, paste the link, and wait for the page to open."
+      },
+      "browser": {
+        "title": "Install from the browser",
+        "body": "Android and iPhone use different browser menus."
+      }
+    },
+    "art": {
+      "phoneAlt": "Phone preview with the NBOS splash",
+      "installItem": "Install app",
+      "homeItem": "Add to Home Screen",
+      "android": "Android",
+      "ios": "iOS",
+      "androidHint": "Menu → Install app",
+      "iosHint": "Share → Add to Home Screen"
+    }
   }
 }

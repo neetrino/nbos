@@ -9,6 +9,7 @@ import {
   ListPlus,
   Plus,
   ReceiptText,
+  Smartphone,
   UserPlus,
 } from 'lucide-react';
 import type {
@@ -49,7 +50,8 @@ export type DashboardPinnedActionKey =
   | 'open-expenses'
   | 'open-payroll'
   | 'open-support'
-  | 'open-credentials';
+  | 'open-credentials'
+  | 'open-install';
 export type DashboardWidgetKey = 'leads' | 'open-deals' | 'open-tasks' | 'open-support-tickets';
 export type PriorityCard = DashboardPriorityProjection;
 
@@ -89,6 +91,16 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     module: 'FINANCE_EXPENSES',
     action: 'ADD',
     description: 'Log an expense from the desk.',
+  },
+  {
+    key: 'open-install',
+    kind: 'open',
+    label: 'Install apps',
+    href: '/install',
+    icon: Smartphone,
+    module: 'DASHBOARDS',
+    action: 'VIEW',
+    description: 'Add NBOS and mini apps to the home screen.',
   },
   {
     key: 'open-deals',

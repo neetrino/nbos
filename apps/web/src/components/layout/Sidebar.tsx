@@ -7,7 +7,10 @@ import type { SidebarModuleKey } from '@nbos/shared/constants';
 import { cn } from '@/lib/utils';
 import { usePermission } from '@/lib/permissions';
 import { NAV_MODULE_DEFINITIONS } from '@/lib/navigation/nav-config';
-import { applySidebarPreferences } from '@/lib/navigation/apply-sidebar-preferences';
+import {
+  applySidebarPreferences,
+  getSidebarFooterModule,
+} from '@/lib/navigation/apply-sidebar-preferences';
 import { getVisibleNavModules } from '@/lib/navigation/nav-visibility';
 import { useSidebarNavigation } from '@/lib/navigation/use-sidebar-navigation';
 import { MobileAppMenu } from './MobileAppMenu';
@@ -71,6 +74,8 @@ export function Sidebar({
     navigation.reorderPrimaryModules(visibleKeys, primaryKeys);
   };
 
+  const settingsItem = getSidebarFooterModule(visibleModules);
+
   if (isMobileDrawer) {
     return (
       <>
@@ -79,6 +84,7 @@ export function Sidebar({
           open={mobileOpen}
           onOpenChange={onMobileOpenChange}
           items={[...layout.primary, ...layout.hidden]}
+          showSettings={settingsItem !== null}
         />
       </>
     );
@@ -111,6 +117,7 @@ export function Sidebar({
       onCreateLink={navigation.createPersonalLink}
       onDeleteLink={navigation.deletePersonalLink}
       onOpenCustomize={() => setCustomizeOpen(true)}
+      settingsItem={settingsItem}
     />
   );
 

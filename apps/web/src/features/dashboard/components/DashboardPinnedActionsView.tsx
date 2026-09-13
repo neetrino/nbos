@@ -18,7 +18,6 @@ export function DashboardPinnedActionsView({
 }: DashboardPinnedActionsViewProps) {
   const t = useTranslations('dashboard');
   const { create, open } = partitionPinnedActionsByKind(actions);
-  const hasOpen = open.length > 0 || personalLinks.length > 0;
 
   return (
     <div className="flex flex-col gap-5">
@@ -29,7 +28,7 @@ export function DashboardPinnedActionsView({
           ))}
         </PinnedActionGroup>
       ) : null}
-      {hasOpen ? (
+      {open.length > 0 || personalLinks.length > 0 ? (
         <PinnedActionGroup title={t('pinned.openGroupTitle')}>
           {open.map((action) => (
             <PinnedActionCard key={action.key} action={action} editMode={false} />

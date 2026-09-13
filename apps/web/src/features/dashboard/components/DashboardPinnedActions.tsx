@@ -16,7 +16,6 @@ import { dashboardPointerCollisionDetection } from '../dashboard-dnd-collision';
 import { resolveTwoColumnSortMove } from '../dashboard-two-column-dnd';
 import { PersonalLinkCard, PinnedActionCard } from './DashboardActionCards';
 import {
-  EmptyPinnedActions,
   PinnedActionsTitle,
   PinnedDropColumn,
   PinnedLinkComposer,
@@ -100,52 +99,48 @@ export function PinnedActions({
 
   return (
     <section className="nbos-desk-surface p-4 sm:p-5">
-      {hasPinned ? (
-        editMode ? (
-          <PinnedActionsEdit
-            actions={actions}
-            activeDragId={activeDragId}
-            dashboardLinks={dashboardLinks}
-            editingLink={editingLink}
-            hiddenActions={hiddenActions}
-            hiddenKeys={hiddenKeys}
-            hiddenLinks={hiddenLinks}
-            isCreating={isCreating}
-            saving={saving}
-            sensors={sensors}
-            visibleKeys={visibleKeys}
-            visibleLinks={visibleLinks}
-            onCancelComposer={() => {
+      {editMode && hasPinned ? (
+        <PinnedActionsEdit
+          actions={actions}
+          activeDragId={activeDragId}
+          dashboardLinks={dashboardLinks}
+          editingLink={editingLink}
+          hiddenActions={hiddenActions}
+          hiddenKeys={hiddenKeys}
+          hiddenLinks={hiddenLinks}
+          isCreating={isCreating}
+          saving={saving}
+          sensors={sensors}
+          visibleKeys={visibleKeys}
+          visibleLinks={visibleLinks}
+          onCancelComposer={() => {
+            setEditingLinkId(null);
+            setIsCreating(false);
+          }}
+          onDeletePersonalLink={onDeletePersonalLink}
+          onDragCancel={() => setActiveDragId(null)}
+          onDragEnd={handleDragEnd}
+          onDragStart={(event: DragStartEvent) => setActiveDragId(String(event.active.id))}
+          onEditLink={(id) => {
+            setIsCreating(false);
+            setEditingLinkId(id);
+          }}
+          onOpenCreate={() => {
+            setEditingLinkId(null);
+            setIsCreating(true);
+          }}
+          onSubmitLink={async (label, url) => {
+            if (editingLink) {
+              await onUpdatePersonalLink(editingLink.id, label, url);
               setEditingLinkId(null);
-              setIsCreating(false);
-            }}
-            onDeletePersonalLink={onDeletePersonalLink}
-            onDragCancel={() => setActiveDragId(null)}
-            onDragEnd={handleDragEnd}
-            onDragStart={(event: DragStartEvent) => setActiveDragId(String(event.active.id))}
-            onEditLink={(id) => {
-              setIsCreating(false);
-              setEditingLinkId(id);
-            }}
-            onOpenCreate={() => {
-              setEditingLinkId(null);
-              setIsCreating(true);
-            }}
-            onSubmitLink={async (label, url) => {
-              if (editingLink) {
-                await onUpdatePersonalLink(editingLink.id, label, url);
-                setEditingLinkId(null);
-                return;
-              }
-              await onCreatePersonalLink(label, url);
-              setIsCreating(false);
-            }}
-          />
-        ) : (
-          <DashboardPinnedActionsView actions={actions} personalLinks={visibleLinks} />
-        )
+              return;
+            }
+            await onCreatePersonalLink(label, url);
+            setIsCreating(false);
+          }}
+        />
       ) : (
-        <EmptyPinnedActions />
+        <DashboardPinnedActionsView actions={actions} personalLinks={visibleLinks} />
       )}
       <PinnedActionsTitle
         editMode={editMode}

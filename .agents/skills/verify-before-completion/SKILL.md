@@ -28,12 +28,13 @@ Use the changed files, affected behavior, repository instructions, package manif
 3. Select the smallest meaningful validation set; run targeted checks first and broader checks when impact requires them.
 4. For typed code, run the relevant typecheck when available.
 5. For source changes, run lint or the repository equivalent when available.
-6. For business logic and regressions, run targeted tests.
-7. For API changes, exercise or validate the affected endpoint and contract.
-8. For database changes, validate the schema, generated client, and migration as applicable.
-9. For UI changes, verify rendered behavior when tools are available, including relevant responsive, loading, empty, and error states; inspect the browser console.
-10. Run a production build for broad, integration-heavy, or release-relevant changes.
-11. Record every failure honestly. Do not weaken or bypass checks to obtain a green result.
+6. For files Prettier owns (`ts/tsx/js/jsx/json/md/css`), run Prettier on the touched paths (write or `--check`). This is the same gate as husky `pre-commit` / CI Format. Do not skip it because lint or typecheck passed, and do not wait for a git hook — hooks run only on commit.
+7. For business logic and regressions, run targeted tests.
+8. For API changes, exercise or validate the affected endpoint and contract.
+9. For database changes, validate the schema, generated client, and migration as applicable.
+10. For UI changes, verify rendered behavior when tools are available, including relevant responsive, loading, empty, and error states; inspect the browser console.
+11. Run a production build for broad, integration-heavy, or release-relevant changes.
+12. Record every failure honestly. Do not weaken or bypass checks to obtain a green result.
 
 ## Verification
 

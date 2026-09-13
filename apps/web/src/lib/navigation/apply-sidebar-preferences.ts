@@ -3,11 +3,28 @@ import {
   SIDEBAR_MODULE_KEYS_NON_HIDABLE,
   type SidebarModuleKey,
 } from '@nbos/shared/constants';
-import type { NavModuleDefinition } from './nav-config';
+import { isFooterSidebarModule, type NavModuleDefinition } from './nav-config';
 
 export interface SidebarNavigationLayout {
   primary: NavModuleDefinition[];
   hidden: NavModuleDefinition[];
+}
+
+/** Settings stays pinned in the footer; child routes are for access gates only. */
+export function toSidebarListModule(item: NavModuleDefinition): NavModuleDefinition {
+  return {
+    key: item.key,
+    label: item.label,
+    href: item.href,
+    permission: item.permission,
+    quickAction: item.quickAction,
+  };
+}
+
+export function getSidebarFooterModule(
+  visibleModules: NavModuleDefinition[],
+): NavModuleDefinition | null {
+  return visibleModules.find(isFooterSidebarModule) ?? null;
 }
 
 export function applySidebarPreferences(
@@ -15,8 +32,9 @@ export function applySidebarPreferences(
   sidebarModuleOrder: string[],
   hiddenSidebarModules: string[],
 ): SidebarNavigationLayout {
-  const visibleByKey = new Map(visibleModules.map((item) => [item.key, item]));
-  const visibleKeys = visibleModules.map((item) => item.key);
+  const listModules = visibleModules.filter((item) => !isFooterSidebarModule(item));
+  const visibleByKey = new Map(listModules.map((item) => [item.key, toSidebarListModule(item)]));
+  const visibleKeys = listModules.map((item) => item.key);
   const orderedKeys = resolveSidebarModuleOrder(sidebarModuleOrder, visibleKeys);
   const hiddenSet = new Set(
     hiddenSidebarModules.filter(

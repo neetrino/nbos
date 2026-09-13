@@ -22,7 +22,9 @@
     "openSupport": "Support queue",
     "openSupportDescription": "Open tickets waiting for action.",
     "openCredentials": "Password",
-    "openCredentialsDescription": "Open shared passwords and secrets you can access."
+    "openCredentialsDescription": "Open shared passwords and secrets you can access.",
+    "installApps": "Install apps",
+    "installAppsDescription": "Add NBOS and mini apps to the home screen."
   },
   "create": {
     "meetingCreated": "Meeting created",

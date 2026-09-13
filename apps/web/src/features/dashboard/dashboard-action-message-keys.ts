@@ -3,6 +3,10 @@ export const DASHBOARD_ACTION_MESSAGE_KEYS = {
   'new-meeting': { label: 'actions.newMeeting', description: 'actions.newMeetingDescription' },
   'new-lead': { label: 'actions.newLead', description: 'actions.newLeadDescription' },
   'new-expense': { label: 'actions.newExpense', description: 'actions.newExpenseDescription' },
+  'open-install': {
+    label: 'actions.installApps',
+    description: 'actions.installAppsDescription',
+  },
   'open-deals': { label: 'actions.openDeals', description: 'actions.openDealsDescription' },
   'open-products': {
     label: 'actions.openProducts',
