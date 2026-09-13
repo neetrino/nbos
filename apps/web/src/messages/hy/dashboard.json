@@ -1,0 +1,107 @@
+{
+  "actions": {
+    "newTask": "Առաջադրանք",
+    "newTaskDescription": "Ստեղծել աշխատանք ինքան կամ գորցունկերի համար։",
+    "newTaskError": "Նոր արաջադրանք բացել չի հաջոխվել։ Նորից փորձեք։",
+    "newMeeting": "Հանդիպում",
+    "newMeetingDescription": "Պլանավորել հաճախորդի հանդիպումը ակնարկից չդեգել։",
+    "newLead": "Լիդ",
+    "newLeadDescription": "Գրանցել ներդարի ականւները։",
+    "newExpense": "ծախս",
+    "newExpenseDescription": "Գրանցել ծախս ակնարկից։",
+    "openDeals": "գորցարքներ",
+    "openDealsDescription": "Դիտել ակտիվ ութումբերի ծոխը։",
+    "openProducts": "Մատակարարման տախտակ",
+    "openProductsDescription": "Հետեվել Արտադրանքի և երազայի մատակարարման իֆայի ։ագրեգի և կենտրոնական այգերելներ։",
+    "openInvoices": "Հաշվեր",
+    "openInvoicesDescription": "Դիտել ուշադրիւթյուն հաշվերը։",
+    "openExpenses": "Ուգարկել",
+    "openExpensesDescription": "Բացել ուղարկման սպասելի ծախսերը։",
+    "openPayroll": "Աշխատավարդ",
+    "openPayrollDescription": "Բացել աշխատավարդը։",
+    "openSupport": "Աջակցումի հերթը",
+    "openSupportDescription": "Բացել գորվոխություն սպասելի տիկեթերը։",
+    "openCredentials": "Գաղտնաբար",
+    "openCredentialsDescription": "Բացել մուտք արագի գաղտնաբարերը և գաղտնաբարերը։"
+  },
+  "create": {
+    "meetingCreated": "Հանդիպումը ստեղծվել է",
+    "leadCreated": "Լիդը ստեղծվել է",
+    "expenseCreated": "ծախսը ստեղծվել է"
+  },
+  "pinned": {
+    "editing": "Խմբագրում",
+    "editLayoutAria": "Խմբագրել դասանելը",
+    "doneEditingLayoutAria": "Ավարտել դասանելի խմբագրումը",
+    "empty": "Այս անտանական անվտանգություների համար կարելի գորռադրաթյուններ չկան։",
+    "shownOnDashboard": "Օրանցված ակնարկը",
+    "shown": "Օրանցված",
+    "hidden": "Թանչված",
+    "createGroupTitle": "Ստեղծել",
+    "openGroupTitle": "Բացել"
+  },
+  "personalLink": {
+    "add": "Ավելացնել",
+    "formTitle": "Նոր կարելի կողմակ",
+    "formTitleEdit": "Խմբագրել կարելի կողմակը",
+    "formDescription": "Ուգհերագիրը և հղումը պահվել են ակնարկի կարելի չմանակը։",
+    "labelPlaceholder": "Ուգհերագիր",
+    "urlPlaceholder": "/path կամ example.com (https կկ կկանացինել է)",
+    "deleteAria": "Հանել հղումը",
+    "deleteNamedAria": "Հանել {label}",
+    "editNamedAria": "Խմբագրել {label}"
+  },
+  "notes": {
+    "placeholder": "Գրել նշում և սեղմեք Enter...",
+    "saveHint": "↵ Enter կամ",
+    "save": "Պահել",
+    "cancel": "Չեղարկել",
+    "empty": "Ժանատարվել նշումները կկա կգրում են այստեղ։",
+    "deleteAria": "Հանել նշումը",
+    "dragAria": "Մարդակել նշումը",
+    "dragLockedAria": "Դրամակելը ժանկավորված է խմբագրման իֆա",
+    "movingNote": "Նշումը տեղում է",
+    "justNow": "Հիմա"
+  },
+  "widgets": {
+    "miniAnalyticsTitle": "Մինի անալիտիկա",
+    "pulseKicker": "Պուլս",
+    "chartAria": "Մինի անալիտիկայի գրաֆիկ",
+    "editHint": "Մարդակել տեղերը «Օրանցված» և «Թանչված» միջեյ։ Փորլեկը ավտոմատ պահվում են։",
+    "shown": "Օրանցված",
+    "hidden": "Թանչված",
+    "metrics": {
+      "leads": "Լիդեր",
+      "openDeals": "Բաց Գորցարքներ",
+      "openTickets": "Բացել տիկեթեր",
+      "openTasks": "Բաց Առաջադրանքներ"
+    }
+  },
+  "priorityFeed": {
+    "kicker": "Հիմա",
+    "title": "Արախնական զրում",
+    "empty": "Այս երկա զրումի մեջ կրիտիկական արաջ չի։",
+    "cards": {
+      "criticalSupportTicket": {
+        "title": "{count, plural, one {# կրիտիկական աջակցումի տիկեթ} other {# կրիտիկական աջակցումի տիկեթ}}",
+        "context": "Աջակցումի մեջ գորվարանք է, որ սպասել արաջի։"
+      },
+      "taskDueToday": {
+        "title": "{count, plural, one {# արաջադրանք այսօր} other {# արաջադրանք այսօր}}",
+        "context": "Առաջադրանքների մեջ գորվարանք է, որ սպասել արաջի։"
+      },
+      "pendingInvoice": {
+        "title": "{count, plural, one {# ուղարկման հաշշ} other {# ուղարկման հաշշ}}",
+        "context": "Ֆինանսների մեջ գորվարանք է, որ սպասել արաջի։"
+      }
+    }
+  },
+  "errors": {
+    "loadFailed": "Ակնարկի տվյալները բերնել չի հաջոխվել։",
+    "layoutSaveFailed": "Ակնարկի դասանելը պահվել չի հաջոխվել։ Խնդում են նորից փորձել։",
+    "noteSaveFailed": "Ակնարկի նշումը պահվել չի հաջոխվել։",
+    "noteDeleteFailed": "Ակնարկի նշումը հանել չի հաջոխվել։",
+    "noteUpdateFailed": "Ակնարկի նշումը թարմացնել չի հաջոխվել։",
+    "notesReorderFailed": "Ակնարկի նշումների դրական պահվել չի հաջոխվել։"
+  }
+}

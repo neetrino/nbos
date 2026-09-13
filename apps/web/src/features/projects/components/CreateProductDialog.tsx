@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -45,6 +46,8 @@ export function CreateProductDialog({
   defaultName = '',
   forceNestedBackdrop = false,
 }: CreateProductDialogProps) {
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -54,14 +57,20 @@ export function CreateProductDialog({
     deadline: '',
   });
 
-  const filteredProductTypes = (() => {
+  const filteredProductTypes = useMemo(() => {
     if (!form.productCategory) return [];
     const allowed = PRODUCT_TYPES_BY_CATEGORY[form.productCategory] ?? [];
-    if (allowed.length === 0) return PRODUCT_TYPES.map((t) => ({ value: t.value, label: t.label }));
-    return PRODUCT_TYPES.filter((t) => allowed.includes(t.value) || t.value === 'OTHER').map(
-      (t) => ({ value: t.value, label: t.label }),
-    );
-  })();
+    const types =
+      allowed.length === 0
+        ? PRODUCT_TYPES
+        : PRODUCT_TYPES.filter(
+            (productType) => allowed.includes(productType.value) || productType.value === 'OTHER',
+          );
+    return types.map((productType) => ({
+      value: productType.value,
+      label: t(`product.types.${productType.value}` as never),
+    }));
+  }, [form.productCategory, t]);
 
   const canSubmit = form.name.trim() && form.productCategory && form.productType;
 
@@ -96,22 +105,22 @@ export function CreateProductDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
-          <DialogTitle>New Product</DialogTitle>
+          <DialogTitle>{t('product.title')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Product Name *</Label>
+            <Label>{t('product.fields.name')}</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="e.g. Company Website, Mobile App"
+              placeholder={t('product.placeholders.name')}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Product Category *</Label>
+              <Label>{t('product.fields.category')}</Label>
               <Select
                 value={form.productCategory || undefined}
                 onValueChange={(v) =>
@@ -119,12 +128,16 @@ export function CreateProductDialog({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder={t('product.placeholders.selectCategory')}>
+                    {form.productCategory
+                      ? t(`product.categories.${form.productCategory}` as never)
+                      : null}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {PRODUCT_CATEGORIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {c.label}
+                  {PRODUCT_CATEGORIES.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {t(`product.categories.${category.value}` as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -132,18 +145,20 @@ export function CreateProductDialog({
             </div>
             {form.productCategory && (
               <div className="space-y-2">
-                <Label>Product Type *</Label>
+                <Label>{t('product.fields.type')}</Label>
                 <Select
                   value={form.productType || undefined}
                   onValueChange={(v) => setForm({ ...form, productType: v ?? '' })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder={t('product.placeholders.selectType')}>
+                      {form.productType ? t(`product.types.${form.productType}` as never) : null}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {filteredProductTypes.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
+                    {filteredProductTypes.map((productType) => (
+                      <SelectItem key={productType.value} value={productType.value}>
+                        {productType.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -153,31 +168,31 @@ export function CreateProductDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Deadline</Label>
+            <Label>{t('product.fields.deadline')}</Label>
             <NbosDatePicker
               value={form.deadline}
               onChange={(deadline) => setForm({ ...form, deadline })}
               variant="extended"
-              aria-label="Deadline"
+              aria-label={t('product.fields.deadlineAria')}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label>{t('product.fields.description')}</Label>
             <Textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={3}
-              placeholder="Product requirements, scope..."
+              placeholder={t('product.placeholders.description')}
             />
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? 'Creating...' : 'Create Product'}
+              {loading ? tCommon('creating') : tCommon('create')}
             </Button>
           </DialogFooter>
         </form>

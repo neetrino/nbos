@@ -1,0 +1,233 @@
+{
+  "page": {
+    "title": "Հաճախորդական ծառայություններ",
+    "searchPlaceholder": "Որոնել անունով կամ մատակարարով…",
+    "viewAria": "Հաճախորդական ծառայությունների տեսք",
+    "newService": "Նոր ծառայություն",
+    "createService": "Ստեղծել ծառայություն"
+  },
+  "view": {
+    "list": "Ցանկ",
+    "listAria": "Հաճախորդական ծառայությունների աղյուսակ",
+    "status": "Կարգավիճակ",
+    "statusAria": "Տախտակ ըստ վճարման փուլի",
+    "months": "Ամիսներ",
+    "monthsAria": "Տախտակ ըստ տարվա երկարացման ամիսների"
+  },
+  "filters": {
+    "type": "Տեսակ",
+    "status": "Կարգավիճակ",
+    "billing": "Վճարում"
+  },
+  "type": {
+    "DOMAIN": "Domain",
+    "HOSTING": "Hosting",
+    "SERVICE": "Ծառայություն",
+    "ACCOUNT": "Հաշիվ",
+    "LICENSE": "Լիցenzիա"
+  },
+  "status": {
+    "PENDING": "Սպասման",
+    "ACTIVE": "Ակտիվ",
+    "SUSPENDED": "Կասեցված",
+    "EXPIRING_SOON": "Շուտով ավարտվում է",
+    "EXPIRED": "Ավարտված",
+    "CANCELLED": "Չեղարկված"
+  },
+  "statusShort": {
+    "PENDING": "Սպաս.",
+    "ACTIVE": "Ակտիվ",
+    "SUSPENDED": "Կասեց.",
+    "EXPIRING_SOON": "Ավարտվում",
+    "EXPIRED": "Ավարտ.",
+    "CANCELLED": "Չեղարկ."
+  },
+  "billing": {
+    "WE_PAY": "We Pay",
+    "REMINDER_ONLY": "Reminder Only"
+  },
+  "billingShort": {
+    "WE_PAY": "Մենք ենք վճարում",
+    "REMINDER_ONLY": "Հիշեցում"
+  },
+  "pricing": {
+    "FIXED": "Ֆիքսված",
+    "USAGE_BASED": "Օգտագործման հիման վրա"
+  },
+  "pricingShort": {
+    "FIXED": "Ֆիքս.",
+    "USAGE_BASED": "Օգտ."
+  },
+  "frequency": {
+    "ONE_TIME": "Մեկանգամյա",
+    "MONTHLY": "Ամսական",
+    "QUARTERLY": "Եռամսյա",
+    "YEARLY": "Տարեկան",
+    "MULTI_YEAR": "Բազմամյա"
+  },
+  "frequencyShort": {
+    "ONE_TIME": "Մեկ անգ.",
+    "MONTHLY": "Ամս.",
+    "QUARTERLY": "Եռամս.",
+    "YEARLY": "Տար.",
+    "MULTI_YEAR": "Բազմամյա"
+  },
+  "tax": {
+    "TAX": "Հարկով",
+    "TAX_FREE": "Ազատ"
+  },
+  "stage": {
+    "pay_now": "Pay Now",
+    "invoice": "Հաշիվ",
+    "upcoming": "Շուտով",
+    "active": "Ակտիվ",
+    "overdue": "Ժամկետանց"
+  },
+  "empty": {
+    "listTitle": "Համընկնող հաճախորդական ծառայություններ չկան",
+    "listDescription": "Փոխեք որոնումը կամ զտիչները, կամ ստեղծեք domain, hosting, SaaS, հաշիվ կամ լիցenzիայի գրառում։",
+    "boardColumn": "Ծառայություններ չկան",
+    "unavailable": "Հաճախորդական ծառայություններն անհասանելի են"
+  },
+  "errors": {
+    "loadList": "Հաճախորդական ծառայությունները բեռնել չհաջողվեց։",
+    "loadBoard": "Հաճախորդական ծառայությունների տախտակը բեռնել չհաջողվեց։",
+    "loadDetail": "Հաճախորդական ծառայությունը բեռնել չհաջողվեց։",
+    "create": "Հաճախորդական ծառայությունը ստեղծել չհաջողվեց։",
+    "save": "Հաճախորդական ծառայությունը պահել չհաջողվեց։",
+    "cancel": "Հաճախորդական ծառայությունը չեղարկել չհաջողվեց։",
+    "productProject": "Արտադրանքի նախագիծը բեռնել չհաջողվեց։",
+    "expenseIncomplete": "Ծախսի ձևը լրացված չէ։",
+    "registryCheck": "Ռեգիստրի ստուգումը ձախողվեց"
+  },
+  "create": {
+    "title": "Նոր հաճախորդական ծառայություն",
+    "submit": "Ստեղծել ծառայություն",
+    "name": "Անուն *",
+    "type": "Տեսակ",
+    "billing": "Վճարում",
+    "frequency": "Պարբերություն",
+    "ourCost": "Մեր արժեքը",
+    "clientCharge": "Հաճախորդի գումարը",
+    "renewalDue": "Երկարացում / ժամկետ",
+    "namePlaceholder": {
+      "DOMAIN": "example.com",
+      "HOSTING": "Production hosting",
+      "SERVICE": "Google Workspace",
+      "ACCOUNT": "Apple Developer",
+      "LICENSE": "Լիցenzիայի անուն",
+      "default": "Ծառայության անուն"
+    }
+  },
+  "fields": {
+    "product": "Արտադրանք",
+    "productRequired": "Արտադրանք *",
+    "productSearch": "Որոնել արտադրանք…",
+    "productResolving": "Արտադրանքը բեռնվում է…",
+    "projectHint": "Նախագիծ · {label}",
+    "credentials": "Գաղտնաբարեր",
+    "credentialsPlaceholder": "Կապել գաղտնաբարեր",
+    "type": "Տեսակ",
+    "status": "Կարգավիճակ",
+    "billingModel": "Վճարման մոդել",
+    "pricing": "Գին",
+    "ourCost": "Մեր արժեքը",
+    "clientCharge": "Հաճախորդի գումարը",
+    "frequency": "Պարբերություն",
+    "tax": "Հարկ",
+    "startDate": "Սկզբի ամսաթիվ",
+    "renewalDate": "Երկարացման ամսաթիվ"
+  },
+  "sheet": {
+    "loading": "Բեռնվում է…",
+    "tabs": {
+      "general": "Ընդհանուր",
+      "invoices": "Հաշիվներ",
+      "expenses": "Ծախսեր",
+      "tasks": "Առաջադրանքներ"
+    },
+    "createInvoiceAria": "Ստեղծել հաշիվ",
+    "createExpenseAria": "Ստեղծել ծախս",
+    "createTaskAria": "Ստեղծել առաջադրանք",
+    "cancelService": "Չեղարկել ծառայությունը",
+    "basics": "Հիմնական",
+    "billing": "Վճարում",
+    "dates": "Ամսաթվեր",
+    "proofs": "Հաստատումներ"
+  },
+  "invoicesTab": {
+    "title": "Հաշվի քարտեր",
+    "create": "Ստեղծել հաշիվ",
+    "wePayOnly": "Ընկերության կողմից վճարվող ծառայությունները հաշիվ չեն օգտագործում։",
+    "viewAria": "Հաշիվների ցանկի տեսք",
+    "emptyTitle": "Հաշիվներ չկան",
+    "emptyDescription": "Այս ծառայությանը դեռ կապված հաշվի քարտեր չկան։",
+    "openFinance": "Բացել ֆինանսներում"
+  },
+  "expensesTab": {
+    "title": "Ծախսի քարտեր",
+    "create": "Ստեղծել ծախս",
+    "reminderOnly": "Միայն հիշեցման ծառայությունները ծախս չեն օգտագործում։",
+    "viewAria": "Ծախսերի ցանկի տեսք",
+    "emptyTitle": "Ծախսի քարտեր չկան",
+    "emptyDescription": "Այս ծառայությանը դեռ կապված ծախսի քարտեր չկան։",
+    "openFinance": "Բացել ֆինանսներում"
+  },
+  "tasksTab": {
+    "title": "Առաջադրանքներ",
+    "create": "Ստեղծել առաջադրանք",
+    "viewAria": "Առաջադրանքների ցանկի տեսք",
+    "emptyTitle": "Առաջադրանքներ չկան",
+    "emptyDescription": "Այս ծառայությանը դեռ կապված առաջադրանքներ չկան։",
+    "openWorkspace": "Բացել աշխատատարածք"
+  },
+  "table": {
+    "service": "Ծառայություն",
+    "kind": "Տեսակ",
+    "project": "Նախագիծ",
+    "renewal": "Երկարացում",
+    "cost": "Արժեք",
+    "stage": "Փուլ",
+    "charge": "Հաճախորդին {amount}"
+  },
+  "card": {
+    "noRenewal": "Երկարացման ամսաթիվ չկա"
+  },
+  "months": {
+    "previousYear": "Նախորդ տարի",
+    "nextYear": "Հաջորդ տարի"
+  },
+  "settings": {
+    "title": "Հաճախորդական ծառայություններ — կարգավորումներ",
+    "description": "Թարմացնել ծառայությունների կատալոգը սերվերից։",
+    "triggerAria": "Հաճախորդական ծառայությունների կարգավորումներ",
+    "refresh": "Թարմացնել ցանկը"
+  },
+  "cancel": {
+    "title": "Չեղարկե՞լ հաճախորդական ծառայությունը",
+    "description": "Գրառումը չի ջնջվում։ Կարգավիճակը կդառնա «Չեղարկված», այն կհեռանա ակտիվ ցանկերից, domain-ի հետևումը կկանգնի։ Կապված ֆինանսական գրառումները մնում են։",
+    "dismiss": "Ոչ",
+    "confirm": "Այո",
+    "submitting": "Չեղարկվում է…"
+  },
+  "registry": {
+    "dead": "Dead",
+    "noData": "Տվյալ չկա",
+    "check": "Ստուգել",
+    "checkAria": "Ստուգել domain-ը ռեգիստրում",
+    "lastChecked": "Ստուգվել է {date}",
+    "lastCheckedSource": "Ստուգվել է {date} · {source}",
+    "toast": {
+      "updated": "Ռեգիստրում ավարտի ժամկետը գտնվեց։ Երկարացման ամսաթիվը թարմացվեց։",
+      "unchanged": "Ռեգիստրի ամսաթիվը համընկնում է ընթացիկ երկարացման ամսաթվի հետ։",
+      "not_found": "Domain-ը ռեգիստրում չկա (dead / չի գտնվել)։",
+      "no_expiry": "Domain-ը գրանցված է, բայց ռեգիստրը թաքցրել է ավարտի ժամկետը։",
+      "failed": "Ռեգիստրի հարցումը ձախողվեց։ Վճարման հոսքը չի փոխվել։"
+    }
+  },
+  "toasts": {
+    "cancelled": "Հաճախորդական ծառայությունը չեղարկվեց",
+    "invoiceCreated": "Կապված հաշվի քարտը ստեղծվեց։",
+    "expenseCreated": "Կապված ծախսի քարտը ստեղծվեց։"
+  }
+}

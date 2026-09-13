@@ -1,0 +1,393 @@
+{
+  "list": {
+    "pageTitle": "Աշխատավարձ",
+    "searchPlaceholder": "Զտել աշխատավարձի հաշվարկները…",
+    "payNow": "Վճարել հիմա",
+    "newRun": "Նոր հաշվարկ",
+    "loadError": "Չհաջողվեց բեռնել աշխատավարձի հաշվարկները։",
+    "emptyTitle": "Այս շրջանակում աշխատավարձի հաշվարկներ չկան",
+    "emptyDescription": "Ստեղծեք հաշվարկ օրացուցային ամսվա համար։ Աշխատավարձի տողերը կարող են լրացվել աշխատակիցների հիմնական աշխատավարձերից։",
+    "emptyStatus": "«{status}» կարգավիճակով հաշվարկներ չկան։ Փորձեք այլ ֆիլտր կամ ստեղծեք նոր հաշվարկ։"
+  },
+  "view": {
+    "list": "Ցանկ",
+    "board": "Տախտակ",
+    "calendar": "Օրացույց",
+    "listAria": "Աշխատավարձի հաշվարկների աղյուսակային ցանկ",
+    "boardAria": "Kanban տախտակ՝ ըստ հաշվարկի կարգավիճակի",
+    "calendarAria": "Տարի ըստ ամիսների օրացուցային ցանց"
+  },
+  "filters": {
+    "status": "Կարգավիճակ",
+    "monthFrom": "Ամսից",
+    "monthTo": "Ամիս մինչև",
+    "allStatus": "Բոլոր կարգավիճակները",
+    "allMonths": "Բոլոր ամիսները"
+  },
+  "status": {
+    "DRAFT": "Սևագիր",
+    "REVIEW": "Ստուգում",
+    "APPROVED": "Հաստատված",
+    "PAYING": "Վճարման մեջ",
+    "CLOSED": "Փակված"
+  },
+  "actions": {
+    "sendToReview": "Ուղարկել ստուգման",
+    "approve": "Հաստատել",
+    "returnToDraft": "Վերադարձնել սևագիր",
+    "markPaying": "Նշել որպես վճարման մեջ",
+    "closeRun": "Փակել հաշվարկը"
+  },
+  "table": {
+    "month": "Ամիս",
+    "status": "Կարգավիճակ",
+    "progress": "Առաջընթաց",
+    "lines": "Տողեր",
+    "expenseCards": "Ծախսի քարտեր",
+    "totalPayable": "Ընդհանուր վճարման ենթակա",
+    "paid": "Վճարված",
+    "remaining": "Մնացորդ",
+    "totalRuns": "Ընդամենը ({count, plural, one {# հաշվարկ} other {# հաշվարկ}})",
+    "openAria": "Բացել աշխատավարձը՝ {month}-ի համար"
+  },
+  "board": {
+    "payable": "{amount} վճարման ենթակա",
+    "noRuns": "Հաշվարկներ չկան",
+    "laneMeta": "{count} · {amount} վճարման ենթակա",
+    "openAria": "Բացել աշխատավարձի հաշվարկը՝ {month}",
+    "cards": "Քարտեր"
+  },
+  "calendar": {
+    "year": "Տարի",
+    "cellAria": "{status} աշխատավարձ {amount}"
+  },
+  "progress": {
+    "paidAria": "{pct}% վճարված"
+  },
+  "create": {
+    "title": "Նոր աշխատավարձի հաշվարկ",
+    "monthLabel": "Աշխատավարձի ամիս (YYYY-MM)",
+    "monthAria": "Աշխատավարձի ամիս",
+    "seedLines": "Լրացնել աշխատավարձի տողերը ակտիվ աշխատակիցներից (օգտագործվում է ընթացիկ հիմնական աշխատավարձը)",
+    "createError": "Չհաջողվեց ստեղծել աշխատավարձի հաշվարկը։"
+  },
+  "settings": {
+    "title": "Աշխատավարձ — կարգավորումներ",
+    "description": "Թարմացնել ցանկի տվյալները և արտահանել CSV ընթացիկ ֆիլտրի շրջանակի համար։",
+    "aria": "Աշխատավարձի կարգավորումներ",
+    "refresh": "Թարմացնել հաշվարկները",
+    "exportStats": "Արտահանել շրջանակի վիճակագրությունը (CSV)",
+    "exportRuns": "Արտահանել աշխատավարձի հաշվարկները (CSV)"
+  },
+  "detail": {
+    "pageTitle": "Աշխատավարձի հաշվարկ",
+    "pageTitleMonth": "Աշխատավարձ · {month}",
+    "title": "Աշխատավարձ",
+    "backAria": "Վերադառնալ աշխատավարձի ցանկին",
+    "back": "Վերադառնալ աշխատավարձին",
+    "loadError": "Չհաջողվեց բեռնել աշխատավարձի հաշվարկը։",
+    "invalid": "Անվավեր աշխատավարձի հաշվարկ։",
+    "notFound": "Չի գտնվել",
+    "statusUpdateError": "Չհաջողվեց թարմացնել կարգավիճակը։",
+    "searchSalaryLines": "Որոնել աշխատակցին…",
+    "searchBonusHistory": "Որոնել նախագիծ…",
+    "searchMatrix": "Որոնել նախագիծ, պատվեր կամ աշխատակից…",
+    "viewAria": "Աշխատավարձի հաշվարկի դիտում",
+    "fullscreenAria": "Բացել բաշխման մատրիցը ամբողջ էկրանով",
+    "exitFullscreenAria": "Դուրս գալ ամբողջ էկրանից",
+    "expenseHint": "Ծախսի քարտերը ստեղծվում են հաստատումից հետո։",
+    "payNowLink": "Վճարել հիմա · աշխատավարձ",
+    "settingsTitle": "Աշխատավարձի հաշվարկ — կարգավորումներ",
+    "settingsDescription": "Թարմացնել տվյալները, վերակայել մատրիցի դասավորությունը և արտահանել հաշվարկի արտեֆակտները։",
+    "settingsAria": "Աշխատավարձի հաշվարկի կարգավորումներ",
+    "refresh": "Թարմացնել հաշվարկը",
+    "resetLayout": "Վերակայել բաշխման դասավորությունը",
+    "exportLines": "Արտահանել աշխատավարձի տողերը (CSV)",
+    "exportJournal": "Արտահանել հաշվարկի մատյանը (CSV)",
+    "exportAudit": "Արտահանել audit trail-ը (CSV)"
+  },
+  "detailView": {
+    "salaryLines": "Աշխատավարձի տողեր",
+    "salaryLinesAria": "Այս հաշվարկի աշխատակիցների աշխատավարձի տողերը",
+    "employeeMatrix": "Աշխատակից × Պատվեր",
+    "employeeMatrixAria": "Աշխատակիցները՝ տողերում, պատվերները՝ սյունակներում",
+    "orderMatrix": "Պատվեր × Աշխատակիցներ",
+    "orderMatrixAria": "Պատվերները՝ տողերում, աշխատակիցները՝ սյունակներում",
+    "employeeHistory": "Աշխատակցի պատմություն",
+    "employeeHistoryAria": "Աշխատակցի նախագծերը վերջին տասներկու աշխատավարձային ամիսների ընթացքում"
+  },
+  "salaryLines": {
+    "empty": "Այս աշխատավարձի հաշվարկում աշխատավարձի տողեր չկան։",
+    "noMatch": "Այս որոնմանը համապատասխան աշխատակիցներ չկան։",
+    "employee": "Աշխատակից",
+    "status": "Կարգավիճակ",
+    "baseSalary": "Հիմնական աշխատավարձ",
+    "bonuses": "Բոնուսներ",
+    "totalPayable": "Ընդհանուր վճարման ենթակա",
+    "paid": "Վճարված",
+    "remaining": "Մնացորդ",
+    "totals": "Ընդամենը ({count})",
+    "openAria": "{name} · {status}"
+  },
+  "salary": {
+    "pageTitle": "Աշխատավարձ",
+    "searchPlaceholder": "Որոնել աշխատակիցներ…",
+    "payNow": "Վճարել հիմա",
+    "loadError": "Չհաջողվեց բեռնել աշխատավարձի տախտակը",
+    "emptyDataTitle": "Տվյալներ չկան",
+    "emptyDataDescription": "Աշխատավարձի տվյալների պատասխանը դատարկ էր։",
+    "emptyEmployeesTitle": "Աշխատակիցներ չկան",
+    "emptyEmployeesDescription": "Աշխատավարձի դիտման համար չդադարեցված աշխատակիցներ չկան։",
+    "emptyMatchTitle": "Համընկնող տողեր չկան",
+    "emptyMatchDescription": "Աշխատավարձի տողերը տեսնելու համար փոխեք որոնումը կամ ֆիլտրերը։",
+    "settingsTitle": "Աշխատավարձ — կարգավորումներ",
+    "settingsDescription": "Արտահանել տեսանելի աշխատավարձի տողերը (ընթացիկ ֆիլտրերն ու ամիսների միջակայքը)։",
+    "settingsAria": "Աշխատավարձի կարգավորումներ",
+    "exportCsv": "Արտահանել տեսանելի տողերը (CSV)",
+    "listEmpty": "Ֆիլտրերին համապատասխան աշխատավարձի տողեր չկան։",
+    "employee": "Աշխատակից",
+    "status": "Կարգավիճակ",
+    "payable": "Վճարման ենթակա",
+    "paid": "Վճարված",
+    "remaining": "Մնացորդ",
+    "filtered": "Զտված ({count})",
+    "openAria": "{name} · {status}",
+    "boardEmpty": "Աշխատավարձի տողեր չկան",
+    "left": "Մնացել է",
+    "calendarAria": "Աշխատավարձի օրացույց {year}",
+    "boardAria": "Աշխատավարձի տախտակ {year}",
+    "employeesCount": "{count, plural, one {# աշխատակից} other {# աշխատակից}}",
+    "monthTotals": "Ամսվա ընդհանուր գումարներ",
+    "monthTotal": "Ամսվա ընդհանուր",
+    "total": "Ընդամենը",
+    "noRun": "Հաշվարկ չկա",
+    "cellAria": "{status} · {amount}"
+  },
+  "salaryView": {
+    "calendar": "Օրացույց",
+    "calendarAria": "Աշխատակիցների աշխատավարձի օրացույցը՝ ըստ ամիսների",
+    "list": "Ցանկ",
+    "listAria": "Հարթ ցանկի դիտում",
+    "board": "Տախտակ",
+    "boardAria": "Տախտակ՝ ըստ վճարման փուլի"
+  },
+  "salaryFilters": {
+    "department": "Բաժին",
+    "employee": "Աշխատակից",
+    "lineStatus": "Տողի կարգավիճակ",
+    "payoutPhase": "Վճարման փուլ",
+    "allDepartments": "Բոլոր բաժինները",
+    "allEmployees": "Բոլոր աշխատակիցները",
+    "allLineStatuses": "Բոլոր կարգավիճակները",
+    "allPhases": "Բոլոր փուլերը"
+  },
+  "lineStatus": {
+    "PENDING": "Սպասվող",
+    "APPROVED": "Հաստատված",
+    "PARTIALLY_PAID": "Մասնակի",
+    "PAID": "Վճարված",
+    "HELD": "Պահված"
+  },
+  "payoutPhase": {
+    "past_paid": "Ամբողջությամբ վճարված",
+    "active_payout": "Ակտիվ վճարում",
+    "accumulating": "Կուտակվում է"
+  },
+  "matrix": {
+    "loadError": "Չհաջողվեց բեռնել բաշխման մատրիցը։",
+    "notFound": "Չի գտնվել",
+    "layoutSaveError": "Չհաջողվեց պահել դասավորությունը։",
+    "layoutReset": "Դասավորությունը վերակայվել է",
+    "layoutResetError": "Չհաջողվեց վերակայել դասավորությունը։",
+    "emptySearch": "Այս որոնմանը համապատասխան տողեր չկան։ Մաքրեք որոնման տողը՝ ամբողջ մատրիցը տեսնելու համար։",
+    "validationTitle": "Լուծեք նախքան ստուգումը կամ հաստատումը",
+    "updating": "Թարմացվում է…",
+    "lines": "Տողեր",
+    "expenses": "Ծախսեր",
+    "bonusReleases": "Բոնուսների թողարկումներ",
+    "payable": "Վճարման ենթակա",
+    "paid": "Վճարված",
+    "remaining": "Մնացորդ",
+    "cell": {
+      "state": {
+        "READY": "Պատրաստ",
+        "PARTIALLY_FUNDED": "Մասամբ ֆինանսավորված",
+        "PROGRESS": "Ընթացք",
+        "MANUAL_BONUS": "Ձեռքով բոնուս"
+      },
+      "warning": {
+        "EXTRA": "Լրացուցիչ բոնուս",
+        "OVER_FUNDING": "Գերֆինանսավորում"
+      },
+      "placeholder": "Մուտքագրեք բոնուսը",
+      "releaseAria": "Այս ամսվա բոնուսի թողարկումը",
+      "createManualAria": "Ստեղծել ձեռքով բոնուս",
+      "updateError": "Չհաջողվեց թարմացնել թողարկումը։",
+      "salesNotReady": "Վաճառքի բոնուսը դեռ պատրաստ չէ Payroll-ի համար (վաստակած ամիս՝ {period})։ Համաժամացրեք Sales KPI-ն այդ ամսվա համար, հետո կրկին փորձեք։"
+    },
+    "axis": {
+      "employee": "Աշխատակից",
+      "order": "Պատվեր"
+    },
+    "header": {
+      "salary": "Աշխատավարձ",
+      "bonus": "Բոնուս",
+      "role": "Դեր",
+      "avail": "Հասանելի",
+      "planned": "Պլանավորված",
+      "due": "Վճարման ենթակա",
+      "openDetail": "Բացել աշխատավարձի մանրամասները",
+      "openDetailNamed": "Բացել {name}-ի աշխատավարձի մանրամասները",
+      "dragColumn": "Քաշեք՝ սյունակի հերթականությունը փոխելու համար",
+      "dragRow": "Քաշեք՝ տողի հերթականությունը փոխելու համար"
+    },
+    "history": {
+      "current": "Ընթացիկ",
+      "available": "Հասանելի"
+    },
+    "manual": {
+      "title": "Ձեռքով բոնուս",
+      "fieldTitle": "Վերնագիր",
+      "fieldAmount": "Գումար",
+      "fieldReason": "Պատճառ",
+      "titlePlaceholder": "Բոնուսի վերնագիր",
+      "submit": "Ստեղծել բոնուս",
+      "created": "Ձեռքով բոնուսը ստեղծվել և կցվել է",
+      "createError": "Չհաջողվեց ստեղծել ձեռքով բոնուսը։"
+    }
+  },
+  "compensation": {
+    "sheet": {
+      "titleEmployee": "Աշխատակցի ամսական փոխհատուցում",
+      "titleWallet": "Ձեր ամսական փոխհատուցումը",
+      "emptyHintFinance": "Ընտրեք ամիսը աշխատավարձի տախտակի վրա։",
+      "emptyHintWallet": "Ընտրեք ամիսը ձեր wallet-ում։",
+      "loading": "Բեռնվում է փոխհատուցումը…",
+      "loadError": "Չհաջողվեց բեռնել ամսական փոխհատուցումը։",
+      "tabs": {
+        "general": "Ընդհանուր",
+        "bonuses": "Բոնուսներ",
+        "kpi": "KPI"
+      },
+      "sections": {
+        "paymentsWallet": "Վճարումներ",
+        "paymentsFinance": "Վճարել հիմա / վճարումներ",
+        "bonusBreakdown": "Բոնուսների կառուցվածք"
+      }
+    },
+    "expense": {
+      "noCard": "Ծախսի քարտ դեռ չկա։ Այն կստեղծվի, երբ աշխատավարձի հաշվարկը հաստատվի։",
+      "openCard": "Բացել ծախսի քարտը",
+      "payNowEmployee": "Վճարել հիմա (այս աշխատակցին)",
+      "noPayments": "Վճարումներ դեռ գրանցված չեն։",
+      "tableDate": "Ամսաթիվ",
+      "tableAmount": "Գումար",
+      "tableNotes": "Նշումներ"
+    },
+    "paymentStatus": {
+      "PAID": "Վճարված",
+      "PARTIAL": "Մասնակի վճարված",
+      "UNPAID": "Չվճարված"
+    },
+    "summary": {
+      "title": "Ամսվա ամփոփում",
+      "totalPayable": "Ընդհանուր վճարման ենթակա",
+      "pendingCarryOver": "Սպասվող carry-over",
+      "payrollMonth": "Աշխատավարձի ամիս",
+      "payrollRun": "Աշխատավարձի հաշվարկ"
+    },
+    "walletHints": {
+      "payoutPhase": "Վճարման փուլ՝ {phase}",
+      "partialPay": "Այս ամսվա մասնակի վճարում է. «{phase}»-ը չի նշանակում, որ ամբողջ գումարն արդեն ձեր բանկում է. երբ ծախսի քարտ լինի, ներքևում կտեսնեք վճարումները։",
+      "salesBonusReduction": "Վաճառքի բոնուսները կարող են նվազել payroll attach-ի պահին, եթե KPI-ն թիրախից ցածր է (այրված գումարի մանրամասները կերևան այստեղ, երբ policy engine-ը հասանելի լինի)։"
+    },
+    "payoutPhaseDescription": {
+      "past_paid": "Աշխատավարձի տողը ամբողջությամբ վճարված է ծախսի վճարումներով։",
+      "active_payout": "Նախորդ ամիսը հաստատված է. վճարեք ծախսի քարտի միջոցով (սովորաբար 1-15)։",
+      "accumulating": "Ընթացիկ կամ ապագա ամիս. բոնուսներն ու աշխատավարձը դեռ կուտակվում են։"
+    },
+    "kpi": {
+      "title": "Sales KPI",
+      "earnedPayoutMonths": "Վաստակած ամիս՝ {earned} · վճարման ամիս՝ {payout}",
+      "source": {
+        "KPI_RESULT": "Համաժամացված KPI արդյունքի snapshot",
+        "NO_KPI_POLICY": "Փոխհատուցման պրոֆիլում KPI քաղաքականություն չկա",
+        "NOT_SYNCED": "Այս ամսվա KPI snapshot-ը համաժամացված չէ"
+      },
+      "policyManagedPrefix": "KPI քաղաքականությունը կառավարվում է",
+      "policyManagedLink": "Իմ ընկերությունը → Փոխհատուցում",
+      "policyManagedSuffix": ". Snapshot-ները ինքնաբար թարմացվում են հաճախորդների վճարումների, բոնուսների կուտակման և payroll attach-ի դեպքում։",
+      "notSyncedDetail": "Վաստակած ամսվա՝ {earned}, KPI snapshot դեռ չկա։ Ներառված Sales բոնուսները կսանդղակվեն attach-ի պահին, երբ ամսվա արդյունքը հասանելի լինի։",
+      "notSyncedSummary": "Վաստակած ամսվա՝ {earned}, Sales KPI-ն դեռ վերջնական չէ։ Այս վճարման ամսվա բոնուսները կսանդղակվեն attach-ի պահին, երբ snapshot-ը հայտնվի։",
+      "attainment": "Կատարում՝ {pct}%",
+      "earnedScale": "Վաստակած {earned}՝ {scale}",
+      "gateSummary": {
+        "incomplete": "Համաժամացված snapshot-ում Sales KPI-ի պլանը կամ փաստացի արդյունքը թերի է։ Ներառված Sales բոնուսները attach-ի պահին կսանդղակվեն KPI քաղաքականությամբ։",
+        "complete": "Sales KPI gate՝ փաստացի {pct}% պլանից → {scale} վճարման սանդղակ ներառված վաճառքի բոնուսների համար attach-ի պահին։"
+      },
+      "scale": {
+        "full": "100%",
+        "half": "50%",
+        "zero": "0%",
+        "planNotSet": "100% (KPI պլանը սահմանված չէ)"
+      }
+    },
+    "bonus": {
+      "empty": "Այս աշխատավարձի ամսում ներառված բոնուսների թողարկումներ չկան։",
+      "bySource": "Ըստ բոնուսի աղբյուրի",
+      "releasesThisMonth": "Այս ամսվա թողարկումներ",
+      "metrics": {
+        "full": "Ամբողջական",
+        "payable": "Վճարման ենթակա",
+        "kpiPct": "KPI %",
+        "released": "Թողարկված",
+        "burned": "Այրված",
+        "burnedKpi": "Այրված KPI",
+        "carryOver": "Carry-over",
+        "included": "Ներառված"
+      },
+      "identity": {
+        "project": "Նախագիծ",
+        "product": "Արտադրանք",
+        "release": "Թողարկում",
+        "order": "Պատվեր {code}"
+      },
+      "policyBreakdown": "Քաղաքականության կառուցվածք",
+      "burnedTotal": "Այրված՝ {amount}",
+      "carryOverTotal": "Carry-over՝ {amount}",
+      "appliedThisMonth": "Այս ամսում կիրառված՝ {amount}",
+      "pendingPriorMonths": "Նախորդ ամիսներից սպասվող՝ {amount}",
+      "breakdownStatus": {
+        "INCOMING": "Մուտքային",
+        "BURNED": "Այրված KPI",
+        "CARRY_OVER": "Carry-over",
+        "CLAWBACK": "Clawback"
+      },
+      "releaseType": {
+        "AUTO": "Ավտոմատ",
+        "MANUAL": "Ձեռքով",
+        "EARLY": "Վաղ",
+        "EXTRA": "Լրացուցիչ",
+        "OVER_FUNDING": "Գերֆինանսավորում",
+        "CORRECTION": "Ուղղում"
+      }
+    }
+  },
+  "audit": {
+    "action": {
+      "CREATED": "Ստեղծվել է",
+      "STATUS_CHANGED": "Կարգավիճակը փոխվել է"
+    },
+    "journalKind": {
+      "CREATED": "Ստեղծվել է",
+      "APPROVED": "Հաստատվել է",
+      "CLOSED": "Փակվել է"
+    },
+    "materializedExpenses": "Ստեղծված ծախսեր",
+    "openExpense": "Բացել ծախսը",
+    "exportJournalSuccess": "{count, plural, one {Արտահանվել է # մատյանի տող} other {Արտահանվել է # մատյանի տող}}",
+    "exportAuditSuccess": "{count, plural, one {Արտահանվել է # audit-ի տող} other {Արտահանվել է # audit-ի տող}}",
+    "exportJournalError": "Չհաջողվեց արտահանել մատյանի CSV-ը։",
+    "exportAuditError": "Չհաջողվեց արտահանել audit trail-ի CSV-ը։"
+  }
+}

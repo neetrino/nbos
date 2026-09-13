@@ -1,0 +1,132 @@
+{
+  "modules": {
+    "dashboard": "Ակնարկ",
+    "crm": "CRM",
+    "marketing": "Մարքեթինգ",
+    "project-hub": "Նախագծերի կենտրոն",
+    "delivery-board": "Մատակարարում",
+    "tasks": "Առաջադրանքներ",
+    "work-spaces": "Աշխատատարածքներ",
+    "finance": "Ֆինանսներ",
+    "support": "Աջակցություն",
+    "clients": "Հաճախորդներ",
+    "partners": "Գործընկերներ",
+    "my-company": "Իմ ընկերությունը",
+    "messenger": "Մեսենջեր",
+    "client-messenger": "Հաճախորդի Մեսենջեր",
+    "calendar": "Օրացույց",
+    "drive": "Drive",
+    "documents": "Փաստաթղթեր",
+    "mail": "Փոստ",
+    "credentials": "Գաղտնաբառ",
+    "ai-agents": "AI և գործակալներ",
+    "reports": "Անալիտիկա",
+    "settings": "Հարթակի կառավարում"
+  },
+  "children": {
+    "myCompany": {
+      "compensation": "Փոխհատուցում",
+      "kpi": "KPI / ցուցանիշներ",
+      "kpiPolicies": "KPI կանոններ",
+      "sop": "SOP և ձևանմուշներ"
+    },
+    "messenger": {
+      "all": "Բոլորը",
+      "products": "Արտադրանքներ",
+      "tasks": "Առաջադրանքներ",
+      "deals": "Գործարքներ",
+      "workSpaces": "Աշխատատարածքներ",
+      "groups": "Խմբեր",
+      "direct": "Անձնական",
+      "collections": "Հավաքածուներ"
+    },
+    "clientMessenger": {
+      "inbox": "Մուտքային",
+      "sales": "Վաճառք",
+      "clients": "Հաճախորդներ",
+      "collections": "Հավաքածուներ"
+    },
+    "settings": {
+      "general": "Ընդհանուր",
+      "appearance": "Տեսք",
+      "systemLists": "Համակարգի ցուցակներ",
+      "permissionsRbac": "Իրավունքներ / RBAC",
+      "moduleSettings": "Մոդուլների կարգավորումներ",
+      "integrations": "Ինտեգրումներ",
+      "security": "Անվտանգություն",
+      "featureFlags": "Ֆունկցիաների դրոշներ",
+      "scheduler": "Պլանավորիչ",
+      "auditLog": "Աուդիտի մատյան"
+    }
+  },
+  "sidebar": {
+    "expandSidebar": "Ծավալել կողային վահանակը",
+    "collapseSidebar": "Ծալել կողային վահանակը",
+    "expandSubmenu": "Ծավալել ենթամենյուն",
+    "collapseSubmenu": "Ծալել ենթամենյուն",
+    "moreHidden": "Ավելին / թաքնված",
+    "myLinks": "Իմ հղումները",
+    "settings": "Կարգավորումներ",
+    "customizeLeftMenu": "Կարգավորել ձախ մենյուն",
+    "platformSettings": "Հարթակի կարգավորումներ"
+  },
+  "customize": {
+    "title": "Ձախ մենյու",
+    "description": "Քաշեք մոդուլները՝ հերթականությունը փոխելու համար։ Թաքնված կետերը մնում են «Ավելին» բաժնում։",
+    "shownInMenu": "Ցուցադրված են մենյուում",
+    "hidden": "Թաքնված ({count})",
+    "show": "Ցուցադրել",
+    "linkTitlePlaceholder": "Անվանում",
+    "linkUrlPlaceholder": "URL կամ /path",
+    "addLink": "Ավելացնել հղում",
+    "dragToReorder": "Քաշեք՝ {label} հերթականությունը փոխելու համար",
+    "hideModule": "Թաքցնել {label}",
+    "removeLink": "Հեռացնել {label}"
+  },
+  "quickAction": {
+    "createTask": "Ստեղծել առաջադրանք"
+  },
+  "mobileMenu": {
+    "title": "Մենյու",
+    "description": "Բացեք մոդուլը։ Կետերը մեծ կոճակներ են։"
+  },
+  "mobileDock": {
+    "settings": "Կարգավորումներ",
+    "defaultScope": "Բոլորը",
+    "menu": "Մենյու",
+    "search": "Որոնել",
+    "new": "Նոր",
+    "toolsAria": "Աշխատատարածքի գործիքներ",
+    "goTo": "Անցնել",
+    "zone": "Գոտի",
+    "section": "Բաժին",
+    "category": "Կատեգորիա",
+    "view": "Տեսք",
+    "placesDescription": "Ընթացիկ մոդուլի տեղերը։",
+    "searchDescription": "Որոնել և զտել այս ցուցակը։"
+  },
+  "search": {
+    "trigger": "Որոնել",
+    "openAria": "Բացել գլոբալ որոնումը"
+  },
+  "notifications": {
+    "trigger": "Ծանուցումներ"
+  },
+  "pwa": {
+    "install": "Տեղադրել հավելվածը",
+    "addToHomeScreen": "Ավելացնել գլխավոր էկրանին",
+    "iosHint": "Հպեք Share, ապա Add to Home Screen, որ NBOS-ը մնա հավելվածների հետ։",
+    "bannerTitle": "Տեղադրել NBOS",
+    "bannerPromptBody": "Բացեք գլխավոր էկրանից կամ հավելվածների ցանկից։",
+    "bannerIosBody": "iPhone-ում՝ Share, ապա Add to Home Screen։",
+    "bannerBrowserBody": "Օգտագործեք տեղադրման Պատկերակը հասցեի տողում կամ բրաուզերի մենյուն։",
+    "bannerInstall": "Տեղադրել",
+    "bannerDismiss": "Ոչ հիմա"
+  },
+  "headerQuickNote": {
+    "placeholder": "Գրեք նշում և սեղմեք Enter…",
+    "saveHint": "↵ Enter կամ",
+    "saveFailed": "Նշումը չհաջողվեց Պահել։"
+  },
+  "moduleTitleAria": "Մոդուլ՝ {title}"
+}

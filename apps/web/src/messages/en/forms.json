@@ -78,6 +78,142 @@
     },
     "createError": "Expense could not be created. Check your connection and try again."
   },
+  "contact": {
+    "title": "New Contact",
+    "fields": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "phone": "Phone",
+      "contactType": "Contact type",
+      "contactTypeAria": "Contact type"
+    },
+    "placeholders": {
+      "firstName": "John",
+      "lastName": "Smith",
+      "phone": "+374 XX XXXXXX"
+    },
+    "roles": {
+      "CLIENT": "Client",
+      "PARTNER": "Partner",
+      "CONTRACTOR": "Contractor",
+      "OTHER": "Other"
+    },
+    "createError": "Contact could not be created."
+  },
+  "company": {
+    "title": "New Company",
+    "fields": {
+      "name": "Name",
+      "type": "Type",
+      "taxStatus": "Tax status",
+      "taxStatusAria": "Tax status"
+    },
+    "placeholders": {
+      "name": "Short name for lists and search"
+    },
+    "types": {
+      "LEGAL": "Legal Entity",
+      "SOLE_PROPRIETOR": "Sole Proprietor",
+      "INDIVIDUAL": "Individual"
+    },
+    "taxStatuses": {
+      "TAX": "Tax",
+      "TAX_FREE": "Free"
+    },
+    "createError": "Company could not be created."
+  },
+  "project": {
+    "title": "New project",
+    "fields": {
+      "name": "Name *",
+      "description": "Description",
+      "clientContact": "Client contact",
+      "company": "Company"
+    },
+    "placeholders": {
+      "name": "e.g. Logistics Pro Dashboard",
+      "description": "Short context for the team",
+      "contactSearch": "Search contacts…",
+      "companySearch": "Optional — search company…"
+    },
+    "createError": "Project could not be created. Check the fields and try again."
+  },
+  "partner": {
+    "title": "New Partner",
+    "fields": {
+      "name": "Name *",
+      "level": "Level",
+      "direction": "Direction",
+      "defaultPercent": "Default %",
+      "status": "Status",
+      "primaryContact": "Primary contact",
+      "notes": "Notes",
+      "partnerSince": "Partner since",
+      "partnerSinceAria": "Partner since"
+    },
+    "placeholders": {
+      "name": "Partner name",
+      "contactSearch": "Optional — search contacts…",
+      "notes": "Optional internal notes"
+    },
+    "levels": {
+      "REGULAR": "Regular",
+      "PREMIUM": "Premium"
+    },
+    "directions": {
+      "INBOUND": "Inbound",
+      "OUTBOUND": "Outbound",
+      "BOTH": "Both"
+    },
+    "statuses": {
+      "ACTIVE": "Active",
+      "PAUSED": "Paused",
+      "TERMINATED": "Terminated"
+    },
+    "createError": "Partner could not be created. Check your connection and try again."
+  },
+  "product": {
+    "title": "New Product",
+    "fields": {
+      "name": "Product Name *",
+      "category": "Product Category *",
+      "type": "Product Type *",
+      "deadline": "Deadline",
+      "deadlineAria": "Deadline",
+      "description": "Description"
+    },
+    "placeholders": {
+      "name": "e.g. Company Website, Mobile App",
+      "selectCategory": "Select category",
+      "selectType": "Select type",
+      "description": "Product requirements, scope..."
+    },
+    "categories": {
+      "CODE": "Code",
+      "WORDPRESS": "WordPress",
+      "SHOPIFY": "Shopify",
+      "MARKETING": "Marketing",
+      "OTHER": "Other"
+    },
+    "types": {
+      "BUSINESS_CARD_WEBSITE": "Business Card Website",
+      "COMPANY_WEBSITE": "Company Website",
+      "MOBILE_APP": "Mobile App",
+      "WEB_APP": "Web Application",
+      "CRM": "CRM System",
+      "ECOMMERCE": "E-Commerce",
+      "SAAS": "SaaS Platform",
+      "LANDING": "Landing Page",
+      "ERP": "ERP System",
+      "LOGO": "Logo",
+      "BRANDING": "Branding",
+      "DESIGN": "Design",
+      "SEO": "SEO",
+      "PPC": "PPC",
+      "SMM": "SMM",
+      "OTHER": "Other"
+    }
+  },
   "errors": {
     "validation": "Check the highlighted fields and try again.",
     "network": "Could not reach the server. Check your connection and try again."

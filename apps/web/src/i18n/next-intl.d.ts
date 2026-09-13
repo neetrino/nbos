@@ -19,6 +19,7 @@ import type enExpensePlans from '../messages/en/expense-plans.json';
 import type enClientServices from '../messages/en/client-services.json';
 import type enQuick from '../messages/en/quick.json';
 import type enChecklist from '../messages/en/checklist.json';
+import type enMarketing from '../messages/en/marketing.json';
 
 type Messages = {
   common: typeof enCommon;
@@ -42,11 +43,12 @@ type Messages = {
   clientServices: typeof enClientServices;
   quick: typeof enQuick;
   checklist: typeof enChecklist;
+  marketing: typeof enMarketing;
 };
 
 declare module 'next-intl' {
   interface AppConfig {
-    Locale: 'en' | 'ru';
+    Locale: 'en' | 'ru' | 'hy';
     Messages: Messages;
   }
 }

@@ -1,14 +1,16 @@
 import type { ActiveCallPhase } from './active-call.types';
 import type { ActiveCallSession } from './active-call-session';
 
-export function activeCallDirectionLabel(direction: ActiveCallSession['direction'] | null): string {
-  if (direction === 'OUTBOUND') return 'Outgoing';
-  if (direction === 'INBOUND') return 'Incoming';
-  return 'Call';
+export function activeCallDirectionLabelKey(
+  direction: ActiveCallSession['direction'] | null,
+): string {
+  if (direction === 'OUTBOUND') return 'calls.outgoing';
+  if (direction === 'INBOUND') return 'calls.incoming';
+  return 'calls.call';
 }
 
-export function activeCallPhaseLabel(phase: ActiveCallPhase): string {
-  if (phase === 'answered') return 'Answered';
-  if (phase === 'ended') return 'Ended';
-  return 'Ringing';
+export function activeCallPhaseLabelKey(phase: ActiveCallPhase): string {
+  if (phase === 'answered') return 'calls.phase.answered';
+  if (phase === 'ended') return 'calls.phase.ended';
+  return 'calls.phase.ringing';
 }

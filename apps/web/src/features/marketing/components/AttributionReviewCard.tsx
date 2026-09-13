@@ -1,6 +1,7 @@
 'use client';
 
 import { Handshake, User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { StatusBadge } from '@/components/shared';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 import { getDealStage } from '@/features/crm/constants/dealPipeline';
@@ -41,10 +42,13 @@ export function AttributionReviewCard({
   issueDescription,
   onOpen,
 }: AttributionReviewCardProps) {
+  const t = useTranslations('marketing');
+  const tCrm = useTranslations('crm');
   const title = isLead(item, kind) ? getLeadDisplayTitle(item) : getDealDisplayTitle(item);
   const MetaIcon = kind === 'Lead' ? User : Handshake;
-  const statusLabel = resolveAttributionStatusLabel(item.status);
+  const statusLabel = resolveAttributionStatusLabel(tCrm, item.status);
   const statusVariant = resolveStatusVariant(kind, item.status);
+  const entityLabel = kind === 'Lead' ? tCrm('common.entityLead') : tCrm('common.entityDeal');
 
   return (
     <button type="button" onClick={() => onOpen(item)} className={CARD_SURFACE_CLASS}>
@@ -62,7 +66,7 @@ export function AttributionReviewCard({
       <div className="text-muted-foreground mt-3 flex min-w-0 items-center gap-1.5 text-xs">
         <MetaIcon className="size-3.5 shrink-0" aria-hidden />
         <p className="truncate">
-          {kind} · {item.code} · {item.source ?? 'Missing source'}
+          {entityLabel} · {item.code} · {item.source ?? t('attribution.cardMissingSource')}
         </p>
       </div>
 

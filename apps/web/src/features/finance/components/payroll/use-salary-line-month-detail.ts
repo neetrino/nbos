@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { meApi } from '@/lib/api/me';
 import { payrollRunsApi, type SalaryLineMonthDetail } from '@/lib/api/payroll-runs';
@@ -17,6 +18,7 @@ export function useSalaryLineMonthDetail(
   scope: SalaryLineMonthDetailScope = 'finance',
   initialDetail: SalaryLineMonthDetail | null = null,
 ) {
+  const t = useTranslations('payroll');
   const [detail, setDetail] = useState<SalaryLineMonthDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [hydrating, setHydrating] = useState(false);
@@ -42,11 +44,11 @@ export function useSalaryLineMonthDetail(
       const result = await fetchDetail(salaryLineId);
       setDetail(result);
     } catch (caught) {
-      setLoadError(getApiErrorMessage(caught, 'Could not load month compensation.'));
+      setLoadError(getApiErrorMessage(caught, t('compensation.sheet.loadError')));
     } finally {
       setHydrating(false);
     }
-  }, [fetchDetail, salaryLineId]);
+  }, [fetchDetail, salaryLineId, t]);
 
   useEffect(() => {
     if (!open || !salaryLineId) {
@@ -82,7 +84,7 @@ export function useSalaryLineMonthDetail(
         setLoadError(null);
       } catch (caught) {
         if (cancelled) return;
-        const message = getApiErrorMessage(caught, 'Could not load month compensation.');
+        const message = getApiErrorMessage(caught, t('compensation.sheet.loadError'));
         if (!seed) setDetail(null);
         setLoadError(message);
       } finally {
@@ -96,7 +98,7 @@ export function useSalaryLineMonthDetail(
     return () => {
       cancelled = true;
     };
-  }, [fetchDetail, initialDetail, open, salaryLineId]);
+  }, [fetchDetail, initialDetail, open, salaryLineId, t]);
 
   return { detail, loading, hydrating, loadError, reload, setDetail };
 }

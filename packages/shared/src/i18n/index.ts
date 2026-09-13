@@ -2,7 +2,9 @@ export {
   DEFAULT_INTERFACE_LOCALE,
   RESERVED_INTERFACE_LOCALES,
   WRITABLE_INTERFACE_LOCALES,
+  isKnownInterfaceLocale,
   isWritableInterfaceLocale,
+  parseKnownInterfaceLocale,
   parseWritableInterfaceLocale,
 } from './locales';
 export type {
@@ -11,3 +13,17 @@ export type {
   ReservedInterfaceLocale,
   WritableInterfaceLocale,
 } from './locales';
+export {
+  interpolateSystemCopy,
+  invitationEmailCopy,
+  passwordResetEmailCopy,
+  reportExportEmailCopy,
+} from './system-email-copy';
+export type {
+  InvitationEmailCopy,
+  PasswordResetEmailCopy,
+  ReportExportEmailCopy,
+  SystemEmailLocale,
+} from './system-email-copy';
+export { reportExportFileCopy } from './system-export-copy';
+export type { ReportExportFileCopy } from './system-export-copy';

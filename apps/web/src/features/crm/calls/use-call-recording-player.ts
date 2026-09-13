@@ -8,13 +8,15 @@ import {
   DEFAULT_CALL_PLAYBACK_SPEED,
 } from './call-recording-player.constants';
 
+export const CALL_RECORDING_PLAY_FAILED_KEY = 'calls.playFailed';
+
 export function useCallRecordingPlayer(callId: string, durationHint: number | null) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [currentSec, setCurrentSec] = useState(0);
   const [durationSec, setDurationSec] = useState(durationHint ?? 0);
   const [speed, setSpeed] = useState(DEFAULT_CALL_PLAYBACK_SPEED);
-  const [error, setError] = useState<string | null>(null);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
 
   useEffect(() => subscribePeerPause(callId, audioRef, setPlaying), [callId]);
 
@@ -38,7 +40,7 @@ export function useCallRecordingPlayer(callId: string, durationHint: number | nu
 
   const onError = useCallback(() => {
     setPlaying(false);
-    setError('Could not play recording');
+    setErrorKey(CALL_RECORDING_PLAY_FAILED_KEY);
   }, []);
 
   return {
@@ -47,12 +49,12 @@ export function useCallRecordingPlayer(callId: string, durationHint: number | nu
     currentSec,
     durationSec,
     speed,
-    error,
+    errorKey,
     onTimeUpdate,
     onEnded,
     onError,
     togglePlay: () =>
-      void togglePlayback({ audioRef, callId, playing, speed, setPlaying, setError }),
+      void togglePlayback({ audioRef, callId, playing, speed, setPlaying, setErrorKey }),
     seekTo: (seconds: number) => seekPlayback(audioRef.current, seconds, setCurrentSec),
     cycleSpeed: () => cyclePlaybackSpeed(audioRef.current, speed, setSpeed),
   };
@@ -79,7 +81,7 @@ async function togglePlayback(params: {
   playing: boolean;
   speed: number;
   setPlaying: (playing: boolean) => void;
-  setError: (message: string | null) => void;
+  setErrorKey: (messageKey: string | null) => void;
 }): Promise<void> {
   const audio = params.audioRef.current;
   if (!audio) return;
@@ -93,10 +95,10 @@ async function togglePlayback(params: {
   try {
     await audio.play();
     params.setPlaying(true);
-    params.setError(null);
+    params.setErrorKey(null);
   } catch {
     params.setPlaying(false);
-    params.setError('Could not play recording');
+    params.setErrorKey(CALL_RECORDING_PLAY_FAILED_KEY);
   }
 }
 

@@ -2,30 +2,32 @@
 
 import { useRouter } from 'next/navigation';
 import { Handshake, LayoutGrid, User, type LucideIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import type { ActiveCallScreenSnapshot } from '@/lib/api/calls';
 import { incomingCallCrmHref } from './incoming-call-href';
 
 export function ActiveCallEntityLinks({ snapshot }: { snapshot: ActiveCallScreenSnapshot | null }) {
+  const t = useTranslations('crm');
   const router = useRouter();
   if (!snapshot) return null;
 
   return (
     <div className="border-border/60 bg-muted/40 flex flex-wrap gap-2 border-t px-5 py-3 sm:px-6">
       <EntityLink
-        label="Open Lead"
+        label={t('calls.openLead')}
         icon={LayoutGrid}
         href={incomingCallCrmHref({ leadId: snapshot.leadId, contactId: null, dealId: null })}
         onOpen={router.push}
       />
       <EntityLink
-        label="Open Contact"
+        label={t('calls.openContact')}
         icon={User}
         href={incomingCallCrmHref({ leadId: null, contactId: snapshot.contact.id, dealId: null })}
         onOpen={router.push}
       />
       <EntityLink
-        label="Open Deal"
+        label={t('calls.openDeal')}
         icon={Handshake}
         href={incomingCallCrmHref({ leadId: null, contactId: null, dealId: snapshot.deal.id })}
         onOpen={router.push}

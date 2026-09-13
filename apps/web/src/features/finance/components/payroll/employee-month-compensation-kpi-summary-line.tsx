@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { SalaryLineMonthDetail } from '@/lib/api/payroll-runs';
 import { buildSalesKpiGateSummary } from '@/features/finance/utils/sales-kpi-gate-summary';
 import { formatPayrollMonthShort } from '@/features/finance/utils/salary-board-month-utils';
@@ -9,19 +10,20 @@ export function EmployeeMonthCompensationKpiSummaryLine({
 }: {
   detail: SalaryLineMonthDetail;
 }) {
+  const t = useTranslations('payroll');
+
   if (!detail.hasKpiPolicy) {
     return null;
   }
 
   const kpi = detail.employeeSalesKpi;
   const earned = detail.earnedPeriod != null ? formatPayrollMonthShort(detail.earnedPeriod) : null;
-  const summary = buildSalesKpiGateSummary(kpi.planAmount, kpi.actualAmount);
+  const summary = buildSalesKpiGateSummary(kpi.planAmount, kpi.actualAmount, t);
 
   if (kpi.source === 'NOT_SYNCED') {
     return (
       <p className="text-muted-foreground text-xs leading-snug">
-        Sales KPI for earned month {earned ?? '—'} is not finalized yet. Bonuses in this payout
-        month scale at attach once the snapshot exists.
+        {t('compensation.kpi.notSyncedSummary', { earned: earned ?? '—' })}
       </p>
     );
   }
@@ -33,7 +35,10 @@ export function EmployeeMonthCompensationKpiSummaryLine({
   if (kpi.effectivePayoutScaleLabel != null) {
     return (
       <p className="text-muted-foreground text-xs leading-snug">
-        Earned {earned}: {kpi.effectivePayoutScaleLabel}
+        {t('compensation.kpi.earnedScale', {
+          earned: earned ?? '—',
+          scale: kpi.effectivePayoutScaleLabel,
+        })}
       </p>
     );
   }

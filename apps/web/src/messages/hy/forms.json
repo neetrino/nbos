@@ -1,0 +1,261 @@
+{
+  "task": {
+    "title": "Ստեղծել առաջարանք",
+    "namePlaceholder": "առաջարանքի անուն",
+    "descriptionPlaceholder": "Նկարագրություն",
+    "assignee": "Կատարոբ",
+    "dueDate": "Ոչարման ամիսեր",
+    "dueDateAria": "Ոչարման ամիսեր",
+    "urgent": "Արտակարգ",
+    "markAsUrgent": "Նշել որպես արտակարգ",
+    "fullForm": "Լրիվ ձեվ",
+    "createError": "առաջարանքը չհաջուներ նախագիցել։ Նորից փորձել։",
+    "employeeNotLinked": "Դուք հաշիվը կապված չէ աշխատակիցի գրազանումի հետ, որապես առաջարանքներ չի հանգար նախագիցել։"
+  },
+  "meeting": {
+    "title": "New client meeting",
+    "fields": {
+      "title": "Title *",
+      "titlePlaceholder": "e.g. Discovery with Acme",
+      "start": "Start *",
+      "startAria": "Meeting start",
+      "end": "End *",
+      "endAria": "Meeting end",
+      "meetingType": "Meeting type",
+      "location": "Տեղ",
+      "linkOrAddress": "հղում կամ հասցե",
+      "linkPlaceholder": "Meet հղում կամ հասցե",
+      "agenda": "Agenda",
+      "agendaPlaceholder": "Optional"
+    },
+    "types": {
+      "SALES_CALL": "Որագրի զանգ",
+      "OFFER_PRESENTATION": "Արաջարկի ներկայացում",
+      "DEMO": "Demo",
+      "KICKOFF": "Kickoff / հանդանդանակ",
+      "SUPPORT_CALL": "Աջակածության զանգ",
+      "MAINTENANCE_CALL": "Սպասարկային զանգ",
+      "OTHER": "Other"
+    },
+    "locationTypes": {
+      "ONLINE": "Online",
+      "OFFLINE": "Offline"
+    },
+    "validation": {
+      "titleRequired": "Ովերնագիրը պարտադիր է։",
+      "endAfterStart": "Ավարտի զամանակը պետք է լինել նախագիցի զամանակը։",
+      "overlapReason": "Այս զամանակը գերակում այլ հանդիպման հետ։ Ավելացրեք պատչար նախագիցակ պլանավորելության։"
+    },
+    "conflicts": {
+      "title": "Կերժակումներ",
+      "overrideReason": "Անձել պատչար",
+      "overridePlaceholder": "Ինռhեա պլանավորել գերակումի դեպքումը։"
+    },
+    "submit": {
+      "scheduleAnyway": "Անձել պլանավորել"
+    },
+    "createError": "Հանդիպումը չհաջուներ նախագիցել"
+  },
+  "lead": {
+    "title": "Նոր Լիդ",
+    "fields": {
+      "title": "Ովերնագիր *",
+      "phone": "Հերախոս",
+      "email": "Email"
+    },
+    "full": "Լրիվ",
+    "createLead": "Ստեղծել Լիդ",
+    "createError": "Լիդը չհաջուներ նախագիցել։ Նորից փորձել։"
+  },
+  "expense": {
+    "title": "Նոր Ըախս",
+    "fields": {
+      "name": "Անուն *",
+      "amount": "Գորար *",
+      "dueDate": "Ոչարման ամիսեր",
+      "dueDateAria": "Ոչարման ամիսեր",
+      "namePlaceholder": "Ըախսի անուն"
+    },
+    "createError": "Ըախսը չհաջուներ նախագիցել։ Ստուգեք կապը և Նորից փորձել։"
+  },
+  "contact": {
+    "title": "Նոր կոնտակտ",
+    "fields": {
+      "firstName": "Անուն",
+      "lastName": "Ազգանուն",
+      "phone": "Հերախոս",
+      "contactType": "Կոնտակտի տեսակ",
+      "contactTypeAria": "Կոնտակտի տեսակ"
+    },
+    "placeholders": {
+      "firstName": "John",
+      "lastName": "Smith",
+      "phone": "+374 XX XXXXXX"
+    },
+    "roles": {
+      "CLIENT": "Հաչախորդ",
+      "PARTNER": "Գորկածություն",
+      "CONTRACTOR": "Կապալիստ",
+      "OTHER": "Այլ"
+    },
+    "createError": "Կոնտակտը չհաջուներ նախագիցել։"
+  },
+  "company": {
+    "title": "Նոր կագակածություն",
+    "fields": {
+      "name": "Անուն",
+      "type": "Չեսակ",
+      "taxStatus": "Հարկային կարգավիչակ",
+      "taxStatusAria": "Հարկային կարգավիչակ"
+    },
+    "placeholders": {
+      "name": "Կարգ անուն ցուցակների և որոնակի համար"
+    },
+    "types": {
+      "LEGAL": "Իրավաբան անուն",
+      "SOLE_PROPRIETOR": "Անմատ իրական",
+      "INDIVIDUAL": "Ֆիզիկական անուն"
+    },
+    "taxStatuses": {
+      "TAX": "Tax",
+      "TAX_FREE": "Free"
+    },
+    "createError": "Կագակածությունը չհաջուներ նախագիցել։"
+  },
+  "project": {
+    "title": "Նոր Նախագից",
+    "fields": {
+      "name": "Անուն *",
+      "description": "Նկարագրություն",
+      "clientContact": "Հաչախորդի կոնտակտ",
+      "company": "Կագակածություն"
+    },
+    "placeholders": {
+      "name": "օր. Logistics Pro Dashboard",
+      "description": "Կարգ կոնտեկստ թիմի համար",
+      "contactSearch": "Որոնել կոնտակտներ…",
+      "companySearch": "Ընտրովի — որոնել կագակածություն…"
+    },
+    "createError": "Նախագիցը չհաջուներ նախագիցել։ Ստուգեք դաշտերը և Նորից փորձել։"
+  },
+  "partner": {
+    "title": "Նոր Գորկածություն",
+    "fields": {
+      "name": "Անուն *",
+      "level": "Միջին",
+      "direction": "Ողտայը",
+      "defaultPercent": "Default %",
+      "status": "Կարգավիչակ",
+      "primaryContact": "԰նհային կոնտակտ",
+      "notes": "Նշումներ",
+      "partnerSince": "Գորկածություն ե",
+      "partnerSinceAria": "Գորկածություն ե"
+    },
+    "placeholders": {
+      "name": "Գորկածությունի անուն",
+      "contactSearch": "Ընտրովի — որոնել կոնտակտներ…",
+      "notes": "Ընտրովի ներկային նշումներ"
+    },
+    "levels": {
+      "REGULAR": "Ստանդարտ",
+      "PREMIUM": "Premium"
+    },
+    "directions": {
+      "INBOUND": "Inbound",
+      "OUTBOUND": "Outbound",
+      "BOTH": "Երկեության"
+    },
+    "statuses": {
+      "ACTIVE": "Ակտիվ",
+      "PAUSED": "Դադարյած",
+      "TERMINATED": "Ավարտված"
+    },
+    "createError": "Գորկածությունը չհաջուներ նախագիցել։ Ստուգեք կապը և Նորից փորձել։"
+  },
+  "product": {
+    "title": "Նոր Արտադրանք",
+    "fields": {
+      "name": "Արտադրանքի անուն *",
+      "category": "Արտադրանքի կատեգորիա *",
+      "type": "Արտադրանքի տեսակ *",
+      "deadline": "Ոսեկալին ամիսեր",
+      "deadlineAria": "Ոսեկալին ամիսեր",
+      "description": "Նկարագրություն"
+    },
+    "placeholders": {
+      "name": "օր. Company Website, Mobile App",
+      "selectCategory": "Երկրանել կատեգորիա",
+      "selectType": "Երկրանել տեսակ",
+      "description": "Արտադրանքի պահանագումներ, սախման…"
+    },
+    "categories": {
+      "CODE": "Code",
+      "WORDPRESS": "WordPress",
+      "SHOPIFY": "Shopify",
+      "MARKETING": "Marketing",
+      "OTHER": "Այլ"
+    },
+    "types": {
+      "BUSINESS_CARD_WEBSITE": "Business Card Website",
+      "COMPANY_WEBSITE": "Company Website",
+      "MOBILE_APP": "Mobile App",
+      "WEB_APP": "Web Application",
+      "CRM": "CRM System",
+      "ECOMMERCE": "E-Commerce",
+      "SAAS": "SaaS Platform",
+      "LANDING": "Landing Page",
+      "ERP": "ERP System",
+      "LOGO": "Logo",
+      "BRANDING": "Branding",
+      "DESIGN": "Design",
+      "SEO": "SEO",
+      "PPC": "PPC",
+      "SMM": "SMM",
+      "OTHER": "Այլ"
+    }
+  },
+  "errors": {
+    "validation": "Ստուգեք զեղվածել դաշտերը և Նորից փորձել։",
+    "network": "Չհաջուներ կապ հաստատել ժամարկի հետ։ Ստուգեք կապը և Նորից փորձել։"
+  },
+  "datePicker": {
+    "today": "Այսոր",
+    "clear": "Մակրել",
+    "selectDate": "Երկրանել ամիսեր…",
+    "clearDate": "Մակրել ամիսերը",
+    "selectMonth": "Երկրանել ամիս…",
+    "thisMonth": "Այս ամիս",
+    "selectExpiryDate": "Երկրանել ավարտի ամիսերը",
+    "previousMonth": "Նախորդ ամիս",
+    "nextMonth": "Հաջորդ ամիս",
+    "previousYear": "Նախորդ Ոարի",
+    "nextYear": "Հաջորդ Ոարի",
+    "typeDateGroup": "Գրել ամիսերը օր, ամիս, Ոարի տեսակեր։",
+    "day": "Որ",
+    "month": "Ամիս",
+    "year": "Ոարի",
+    "time": "Զամանակ {time}",
+    "selectTime": "Երկրանել զամանակ",
+    "hours": "Համ",
+    "minutes": "Րոպեր",
+    "presets": {
+      "today": "Այսոր",
+      "tomorrow": "Որվա",
+      "endOfWeek": "Շաբաթի ոնել",
+      "inOneWeek": "Մի շաբաթ հետ։",
+      "endOfMonth": "Ամիսի ոնել"
+    }
+  },
+  "relationPicker": {
+    "choose": "Երկրանել…",
+    "searchEmployees": "Որոնել աշխատակիցներ…",
+    "searching": "Որոնվում է…",
+    "noResults": "Արդյունք չկա",
+    "clearSearch": "Մակրել որոնումը",
+    "employee": "Աշխատակից",
+    "addEmployee": "Ավելացրել աշխատակից",
+    "openNamed": "Բացել {label}",
+    "changeNamed": "Փոխել {label}",
+    "removeNamed": "Հանել {label}"
+  }
+}

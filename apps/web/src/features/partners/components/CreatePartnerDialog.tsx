@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -53,6 +54,8 @@ export function CreatePartnerDialog({
   defaultName = '',
   forceNestedBackdrop = false,
 }: CreatePartnerDialogProps) {
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [contactLabel, setContactLabel] = useState<string | null>(null);
@@ -116,12 +119,7 @@ export function CreatePartnerDialog({
       onOpenChange(false);
       reset();
     } catch (caught) {
-      setFormError(
-        getApiErrorMessage(
-          caught,
-          'Partner could not be created. Check your connection and try again.',
-        ),
-      );
+      setFormError(getApiErrorMessage(caught, t('partner.createError')));
     } finally {
       setLoading(false);
     }
@@ -140,7 +138,7 @@ export function CreatePartnerDialog({
         forceNestedBackdrop={forceNestedBackdrop}
       >
         <DialogHeader>
-          <DialogTitle>New Partner</DialogTitle>
+          <DialogTitle>{t('partner.title')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -151,18 +149,18 @@ export function CreatePartnerDialog({
           ) : null}
 
           <div className="space-y-1.5">
-            <Label>Name *</Label>
+            <Label>{t('partner.fields.name')}</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Partner name"
+              placeholder={t('partner.placeholders.name')}
               autoFocus
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Level</Label>
+              <Label>{t('partner.fields.level')}</Label>
               <Select
                 value={form.level}
                 onValueChange={(v) => {
@@ -170,19 +168,19 @@ export function CreatePartnerDialog({
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>{t(`partner.levels.${form.level}` as never)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {PARTNER_LEVELS.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
+                  {PARTNER_LEVELS.map((level) => (
+                    <SelectItem key={level.value} value={level.value}>
+                      {t(`partner.levels.${level.value}` as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Direction</Label>
+              <Label>{t('partner.fields.direction')}</Label>
               <Select
                 value={form.direction}
                 onValueChange={(v) => {
@@ -190,12 +188,12 @@ export function CreatePartnerDialog({
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>{t(`partner.directions.${form.direction}` as never)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {PARTNER_DIRECTIONS.map((d) => (
-                    <SelectItem key={d.value} value={d.value}>
-                      {d.label}
+                  {PARTNER_DIRECTIONS.map((direction) => (
+                    <SelectItem key={direction.value} value={direction.value}>
+                      {t(`partner.directions.${direction.value}` as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -205,7 +203,7 @@ export function CreatePartnerDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Default %</Label>
+              <Label>{t('partner.fields.defaultPercent')}</Label>
               <Input
                 inputMode="decimal"
                 value={form.defaultPercent}
@@ -217,7 +215,7 @@ export function CreatePartnerDialog({
               </p>
             </div>
             <div className="space-y-1.5">
-              <Label>Status</Label>
+              <Label>{t('partner.fields.status')}</Label>
               <Select
                 value={form.status}
                 onValueChange={(v) => {
@@ -225,12 +223,12 @@ export function CreatePartnerDialog({
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>{t(`partner.statuses.${form.status}` as never)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {PARTNER_STATUSES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
+                  {PARTNER_STATUSES.map((status) => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {t(`partner.statuses.${status.value}` as never)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -246,11 +244,11 @@ export function CreatePartnerDialog({
           />
 
           <RelationPickerField
-            label="Primary contact"
+            label={t('partner.fields.primaryContact')}
             entityKind="contact"
             value={contactValue}
             selectionLabel={contactLabel}
-            placeholder="Optional — search contacts…"
+            placeholder={t('partner.placeholders.contactSearch')}
             icon={<User size={12} />}
             onSearch={searchContacts}
             onSelect={(id, label) => {
@@ -266,10 +264,10 @@ export function CreatePartnerDialog({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? 'Creating…' : 'Create Partner'}
+              {loading ? tCommon('creating') : tCommon('create')}
             </Button>
           </DialogFooter>
         </form>

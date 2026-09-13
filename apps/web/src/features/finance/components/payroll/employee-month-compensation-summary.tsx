@@ -4,11 +4,17 @@ import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { Briefcase, CalendarDays, ChartPie, Check, Gift, TrendingUp, Wallet } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { DETAIL_SHEET_SECTION_SURFACE_CLASS, StatusBadge } from '@/components/shared';
 import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compensation-payout-phase-ui';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { payrollRunStatusUi } from '@/features/finance/constants/payroll-run-status-ui';
 import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
+import {
+  translateCompensationPayoutPhaseLabel,
+  translatePayrollRunStatus,
+  translateSalaryLineStatus,
+} from '@/features/finance/components/payroll/payroll-compensation-i18n';
 import type { SalaryLineMonthDetail } from '@/lib/api/payroll-runs';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +30,7 @@ export function EmployeeMonthCompensationSummary({
   detail: SalaryLineMonthDetail;
   readOnly: boolean;
 }) {
+  const t = useTranslations('payroll');
   const phaseUi = COMPENSATION_PAYOUT_PHASE_UI[detail.payoutPhase];
   const lineUi = salaryLineStatusBoardUi(detail.salaryLine.status);
   const base = parseAmount(detail.salaryLine.baseSalary);
@@ -40,11 +47,19 @@ export function EmployeeMonthCompensationSummary({
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">
             <Wallet size={18} aria-hidden />
           </div>
-          <h3 className="text-foreground text-base font-semibold tracking-tight">Month summary</h3>
+          <h3 className="text-foreground text-base font-semibold tracking-tight">
+            {t('compensation.summary.title')}
+          </h3>
         </div>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-          <StatusBadge label={phaseUi.label} variant={phaseUi.variant} />
-          <StatusBadge label={lineUi.label} variant={lineUi.variant} />
+          <StatusBadge
+            label={translateCompensationPayoutPhaseLabel(detail.payoutPhase, t)}
+            variant={phaseUi.variant}
+          />
+          <StatusBadge
+            label={translateSalaryLineStatus(detail.salaryLine.status, t)}
+            variant={lineUi.variant}
+          />
         </div>
       </div>
 
@@ -68,12 +83,14 @@ function TotalPayableHero({
   paid: number;
   remaining: number;
 }) {
+  const t = useTranslations('payroll');
+
   return (
     <div className="rounded-2xl border border-violet-100 bg-violet-50/70 p-4 dark:border-violet-900/40 dark:bg-violet-950/30">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.14em] uppercase">
-            Total payable
+            {t('compensation.summary.totalPayable')}
           </p>
           <p className="text-foreground mt-1 text-2xl font-bold tracking-tight tabular-nums">
             {formatAmount(total)}
@@ -87,14 +104,14 @@ function TotalPayableHero({
         <HeroMetric
           icon={Check}
           iconShellClassName="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300"
-          label="Paid"
+          label={t('matrix.paid')}
           value={formatAmount(paid)}
           valueClassName="text-emerald-600 dark:text-emerald-400"
         />
         <HeroMetric
           icon={ChartPie}
           iconShellClassName="bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-300"
-          label="Remaining"
+          label={t('matrix.remaining')}
           value={formatAmount(remaining)}
           valueClassName="text-amber-600 dark:text-amber-400"
           bordered
@@ -151,23 +168,29 @@ function BreakdownList({
   bonuses: number;
   carry: number | null;
 }) {
+  const t = useTranslations('payroll');
+
   return (
     <div className="flex min-w-0 flex-col">
       <BreakdownRow
         icon={Briefcase}
         iconShellClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300"
-        label="Base salary"
+        label={t('salaryLines.baseSalary')}
         value={formatAmount(base)}
       />
       <BreakdownRow
         icon={Gift}
         iconShellClassName="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300"
-        label="Bonuses"
+        label={t('salaryLines.bonuses')}
         value={formatAmount(bonuses)}
         last={carry == null || carry <= 0}
       />
       {carry != null && carry > 0 ? (
-        <BreakdownRow label="Pending carry-over" value={formatAmount(carry)} last />
+        <BreakdownRow
+          label={t('compensation.summary.pendingCarryOver')}
+          value={formatAmount(carry)}
+          last
+        />
       ) : null}
     </div>
   );
@@ -224,6 +247,7 @@ function PayrollRunFooter({
   detail: SalaryLineMonthDetail;
   readOnly: boolean;
 }) {
+  const t = useTranslations('payroll');
   const runStatus = payrollRunStatusUi(detail.payrollRun.status);
   const monthValue: ReactNode = readOnly ? (
     <span className="text-foreground font-semibold tabular-nums">{detail.payrollMonth}</span>
@@ -243,12 +267,12 @@ function PayrollRunFooter({
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-          {readOnly ? 'Payroll month' : 'Payroll run'}
+          {readOnly ? t('compensation.summary.payrollMonth') : t('compensation.summary.payrollRun')}
         </p>
         <div className="mt-0.5 text-sm">{monthValue}</div>
       </div>
       <StatusBadge
-        label={runStatus.label}
+        label={translatePayrollRunStatus(detail.payrollRun.status, t)}
         variant={runStatus.variant}
         dot
         className="self-center rounded-full"

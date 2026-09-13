@@ -260,13 +260,13 @@ Production release выполняется вручную. Merge в `main` зап
 1. Cloudflare DNS + SSL Full (strict) (§2).
 2. Выбрать точный SHA с зелёным CI и проверить migration diff/совместимость.
 3. Если migrations менялись: вручную доказать их на Neon dev, затем один раз выполнить `prisma migrate deploy` на production direct connection.
-4. Вручную deploy только затронутую группу Coolify apps на том же SHA; backend group (`api` → `worker` → `scheduler`) держать синхронным.
+4. Вручную deploy только затронутую группу Coolify apps на том же SHA; backend group (`api` → `worker` → `scheduler`) держать синхронным. Локальный оркестратор: `pnpm deploy:prod` (§5.3).
 5. После каждого app дождаться health/readiness; затем выполнить API/Web smoke tests.
 
 ### 5.1 Ограничения ручного release
 
 - В production не использовать `prisma migrate dev`, `db push` или `migrate reset`.
-- Production `DIRECT_URL` не хранить в репозитории, `.env.local` или Coolify runtime apps.
+- Production `DIRECT_URL` не хранить в репозитории и не класть в Coolify runtime apps. Для локального `pnpm db:migrate:prod` допустим только gitignored `.env.local` ключ `DIRECT_URL_PROD`.
 - Обычный порядок migration-first допустим только для backward-compatible schema changes; breaking changes требуют expand/contract rollout.
 - Messenger delta recovery (`MESSENGER_DELTA_RECOVERY_ENABLED`) stays **false** until the additive revision migration is applied and every API/worker instance runs instrumented writers. Then set the flag and roll all instances; clients take a fresh bootstrap before trusting checkpoints. Do not enable the flag in repository defaults.
 - Messenger browser list persistence is **on by default** in the web client (`schemaVersion` `2`, `capturedAt` compare-and-write, 24h IndexedDB envelope for summaries/collections/safe checkpoints only). It does not change API/DB behavior. Logout does not wait for IndexedDB clear. To disable without data migration, set `NEXT_PUBLIC_MESSENGER_PERSISTENCE=0` on `nbos-web` and redeploy web. Stale IndexedDB is ignored and deleted on the next valid session or logout. This is not encryption-at-rest.
@@ -278,7 +278,14 @@ Rollback: Coolify → Deployments → предыдущий зелёный SHA (�
 
 ### 5.2 Ручной запуск migration
 
-Сначала выполнить migration на Neon dev и проверить затронутое поведение. Только после успешной проверки повторить те же команды для production, находясь на точном release SHA. Direct connection string брать из password manager и не вводить прямо в команду или файл:
+Сначала выполнить migration на Neon dev и проверить затронутое поведение. Только после успешной проверки, находясь на точном release SHA:
+
+```bash
+pnpm db:migrate:prod:status   # только проверка
+pnpm db:migrate:prod          # накатывает pending, как deploy:prod всегда деплоит
+```
+
+Скрипт берёт **только** `DIRECT_URL_PROD` из `.env.local`, не использует локальный `DIRECT_URL` и не печатает connection string. Если `DIRECT_URL_PROD` нет в `.env.local`, вставить из password manager в сессию:
 
 ```bash
 read -rsp "Neon DIRECT_URL: " NBOS_RELEASE_DIRECT_URL; printf '\n'
@@ -298,6 +305,47 @@ unset NBOS_RELEASE_DIRECT_URL
 | Только документация/CI без влияния на production runtime | ничего                                        |
 
 После каждого сервиса дождаться health/readiness. Если проверка не прошла, следующий сервис не запускать.
+
+### 5.3 Локальный sequential deploy
+
+Один запуск с вашей машины, не GitHub и не Auto Deploy. Скрипт деплоит приложения **по одному** и ждёт `finished` перед следующим.
+
+1. Coolify → Servers → ваш сервер → Configuration → Advanced → **Number of concurrent builds = 1**.
+2. В корневой `.env.local` (файл в `.gitignore`) заполнить:
+
+```bash
+COOLIFY_API_URL=https://coolify.neetrino.com
+COOLIFY_API_TOKEN=          # или уже существующий COOLIFY_TOKEN
+COOLIFY_APP_API_UUID=       # Coolify → nbos-api → Configuration → Webhooks
+COOLIFY_APP_WORKER_UUID=
+COOLIFY_APP_SCHEDULER_UUID=
+COOLIFY_APP_WEB_UUID=
+```
+
+UUID — кусок `uuid=` из **Deploy Webhook**. Токен: Coolify → Keys & Tokens → API Tokens, право `deploy`.
+
+```bash
+pnpm deploy:prod:status                # проверить env, ничего не деплоить
+pnpm deploy:prod                       # api → worker → scheduler → web
+pnpm deploy:prod -- backend            # api → worker → scheduler
+pnpm deploy:prod -- web
+pnpm deploy:prod -- --force api        # rebuild без cache, только api
+```
+
+Скрипт не запускает Prisma migration сам. Если schema менялась — сначала `pnpm db:migrate:prod` (§5.2), потом `pnpm deploy:prod`. Или одна цепочка §5.4. При падении следующего app не трогает. Rollback по-прежнему §9.
+
+### 5.4 Локальный release
+
+`pnpm release:prod` сначала применяет production migration, и **только при успехе** запускает sequential Coolify deploy. Если migrate упал, приложения не трогает.
+
+```bash
+pnpm release:prod:status
+pnpm release:prod
+pnpm release:prod -- backend
+pnpm release:prod -- web
+```
+
+Отдельные `pnpm db:migrate:prod` и `pnpm deploy:prod` остаются. Release — когда нужна вся цепочка одним запуском.
 
 ---
 

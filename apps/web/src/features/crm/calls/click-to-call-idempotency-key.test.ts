@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   clearClickToCallIdempotencyKey,
-  CLICK_TO_CALL_NEW_CALL_WARNING,
+  CLICK_TO_CALL_NEW_CALL_WARNING_KEY,
   nextClickToCallIdempotencyKey,
   requestNewClickToCallKey,
   shouldKeepClickToCallIdempotencyKey,
@@ -51,13 +51,27 @@ describe('click-to-call idempotency key', () => {
   it('clears the stored key only after the user confirms a new call', () => {
     const store = memoryStore();
     nextClickToCallIdempotencyKey(store, 'LEAD', 'lead-1', () => 'uuid-1');
-    expect(requestNewClickToCallKey(store, 'LEAD', 'lead-1', () => false)).toBe(false);
+    expect(
+      requestNewClickToCallKey(
+        store,
+        'LEAD',
+        'lead-1',
+        () => false,
+        CLICK_TO_CALL_NEW_CALL_WARNING_KEY,
+      ),
+    ).toBe(false);
     expect(store.getItem('nbos.click-to-call:LEAD:lead-1')).toBe('uuid-1');
     expect(
-      requestNewClickToCallKey(store, 'LEAD', 'lead-1', (message) => {
-        expect(message).toBe(CLICK_TO_CALL_NEW_CALL_WARNING);
-        return true;
-      }),
+      requestNewClickToCallKey(
+        store,
+        'LEAD',
+        'lead-1',
+        (message) => {
+          expect(message).toBe(CLICK_TO_CALL_NEW_CALL_WARNING_KEY);
+          return true;
+        },
+        CLICK_TO_CALL_NEW_CALL_WARNING_KEY,
+      ),
     ).toBe(true);
     expect(store.getItem('nbos.click-to-call:LEAD:lead-1')).toBeNull();
   });

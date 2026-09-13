@@ -1,0 +1,227 @@
+{
+  "title": "Աջակցություն",
+  "nav": {
+    "tickets": "Տիկետներ",
+    "changeControl": "Change Control",
+    "ariaLabel": "Աջակցության բաժիններ"
+  },
+  "searchPlaceholder": "Որոնել տիկետներ, նախագծի կոդ, անուն, արտադրանք…",
+  "newTicket": "Նոր տիկետ",
+  "views": {
+    "board": "Տախտակ",
+    "boardAria": "Տախտակի տեսք",
+    "list": "Ցանկ",
+    "listAria": "Ցանկի տեսք"
+  },
+  "filters": {
+    "status": "Կարգավիճակ",
+    "category": "Կատեգորիա",
+    "priority": "Առաջնահերթություն",
+    "waiting": "Սպասում"
+  },
+  "scope": {
+    "ALL": "Բոլոր կարգավիճակները",
+    "ACTIVE": "Ակտիվ",
+    "CLOSED": "Փակված"
+  },
+  "empty": {
+    "noTickets": "Դեռ տիկետներ չկան",
+    "noTicketsDescription": "Աջակցության տիկետները կհայտնվեն այստեղ",
+    "createFirst": "Ստեղծել առաջին տիկետը"
+  },
+  "banner": {
+    "closedHint": "Ցուցադրվում են միայն վերջնական արդյունքները՝ Resolved և Closed։ Տախտակն ու ցանկը նույնն են, ինչ ակտիվ հոսքում։"
+  },
+  "settings": {
+    "title": "Աջակցություն — կարգավորումներ",
+    "description": "Տվյալների արտահանում և էջի ընտրանքներ։ Տիրույթի վիճակagrutyun@ API-ic galis e amboxj ashxatataracqov, canki ztichner@ artahanman vra chen azdum.",
+    "triggerAria": "Աջակցության կարգավորումներ",
+    "exportCsv": "Արտահանել տիրույթի վիճակagrutyun@ (CSV)"
+  },
+  "changeControl": {
+    "searchPlaceholder": "Որոնել փոփոխության հարցումներ, նախագիծ, արտադրանք…",
+    "newRequest": "Նոր Change Request",
+    "createTitle": "Նոր փոփոխության հարցում",
+    "createSubmit": "Ստեղծել հարցում",
+    "emptyTitle": "Փոփոխության հարցումներ չկան",
+    "emptyDescription": "Ստեղծեք փոփոխության հարցում կամ առկա տիկետին նշեք Change Request կատեգորիա։"
+  },
+  "create": {
+    "title": "Նոր աջակցության տիկետ",
+    "titleLabel": "Վերնagir *",
+    "titlePlaceholder": "Խնդրի կամ հարցման կարճ նկարագրություն",
+    "description": "Նկարագրություն",
+    "project": "Նախագիծ",
+    "projectPlaceholder": "Որոնել նախագծեր…",
+    "product": "Արտադրանք",
+    "productPlaceholder": "Որոնել արտադրանք…"
+  },
+  "list": {
+    "ticket": "Տիկետ",
+    "category": "Կատեգորիա",
+    "priority": "Առաջնահերթություն",
+    "status": "Կargavijak",
+    "sla": "SLA",
+    "assignee": "Կատarող",
+    "project": "Նaxagits",
+    "details": "Մanramasn",
+    "detailsTitle": "Բacel tiketi manramasn@",
+    "statusAria": "Տiketi kargavijak"
+  },
+  "sheet": {
+    "loading": "Բerenvum e…",
+    "noTicket": "Տiket chka",
+    "general": "Ըndhanur",
+    "activity": "Gortunyutyun",
+    "loadFailed": "Տiket@ berel chi hajoxvel.",
+    "saveFailed": "Տiket@ pahvel chi hajoxvel.",
+    "taskCreateFailed": "Katarman arajadrank@ steghtsel chi hajoxvel.",
+    "caseAndTriage": "Depk ev nakhaznnum",
+    "waitingOverlay": "Spasman vijak",
+    "changeControl": "Change control",
+    "extensionDeal": "Gortsarq {code}",
+    "extensionDealNeedProduct": "Endrapakman gortsarq steghtselu hamar tiketum nshakay artadranq.",
+    "extensionDealHint": "Vcharovi zhami poxpoxutyun — steghtsum e gortsarq hachakhordi hastatman hamar.",
+    "extensionDealButton": "Endrapakman gortsarq",
+    "notChangeRequest": "Sa Change Request che.",
+    "executionTasks": "Katarman arajadrankner",
+    "newTask": "Nor arajadrank",
+    "noLinkedTasks": "Kapvac arajadrankner der chkan.",
+    "activityLoading": "Gortunyutyun@ berennum e…",
+    "noAudit": "Audit grancumner der chkan.",
+    "title": "Vernagir",
+    "description": "Nkaragrutyun",
+    "coverageDecision": "Zhami voroshum",
+    "notDecided": "Chi voroshel",
+    "contact": "Kontakt",
+    "contactPlaceholder": "Oronel kontaktner…",
+    "billable": "Vcharovi",
+    "sourceMessages": "Hachakhordi skzbunkayin haghordagrutyunner",
+    "sourceLoading": "Agbyurneri hghumner@ berennum en…",
+    "noSourceMessages": "Hachakhordi haghordagrutyunner kapvac chen. Tiketi chat@-@ chi patgenum hachakhordi patmutyun@.",
+    "emptyMessage": "Datark haghordagrutyun",
+    "noClientAccess": "Ays agbyurin Client-um mutq chka",
+    "openOriginal": "Bacel original@",
+    "taskDialogTitle": "Kapvac katarman arajadrank",
+    "taskDialogDescription": "Steghtsum e arajadrank artadranqi ashxatataracqum (ete nshvac e) hetadardz kapov ays tiketin.",
+    "taskTitleOptional": "Vernagir (yntrovi)",
+    "taskTitlePlaceholder": "Llelbyayin — tiketi vernagir",
+    "taskDescriptionOptional": "Nkaragrutyun (yntrovi)",
+    "taskDueOptional": "Verjin jamket (yntrovi)",
+    "taskDueAria": "Verjin jamket",
+    "createTask": "Steghtsel arajadrank"
+  },
+  "technical": {
+    "title": "Tekhnikakan kontekst",
+    "description": "Kapakcneq ays insident@ Technical Asset-i ev/kam Environment-i het, vor grancvac en nuyn artadranqi hamar (Nakhagits → Artadranq → Technical).",
+    "noProduct": "Tiketum artadranqi kontekst chka. Naxkach nshakay artadranq, apa kapiq aktivner ev mijerner.",
+    "loading": "Tekhnikakan profil@ berennum e…",
+    "asset": "Asset",
+    "environment": "Environment",
+    "none": "Chka",
+    "namedOption": "{kind} — {name}"
+  },
+  "audit": {
+    "change": "{action}: {from} → {to}",
+    "actions": {
+      "statusChanged": "Kargavijak@ poxvel e",
+      "closedExtensionDelivered": "Pakvel e extension-i matakarumic heto",
+      "reopened": "Noric bacvel e",
+      "waitingChanged": "Spasman vijak@ poxvel e",
+      "escalationManager": "Eskalacvel e karavarchin"
+    }
+  },
+  "errors": {
+    "waitingUpdateFailed": "Spasman vijak@ tarmacnel chi hajoxvel.",
+    "extensionDealFailed": "Endrapakman gortsarq@ steghtsel chi hajoxvel.",
+    "statusUpdateFailed": "Kargavijak@ tarmacnel chi hajoxvel.",
+    "closeBeforeResolved": "Naxkard tarmacreq Resolved, heto Closed (extension-i matakarum@ karox e avtomat pakel).",
+    "resolutionMinLength": "Lucman nkaragrutyun@ petq e lini kamag {min} nish.",
+    "escalateFailed": "Eskalacum@ grancvel chi hajoxvel.",
+    "technicalSaveFailed": "Tekhnikakan kontekst@ pahvel chi hajoxvel.",
+    "loadTickets": "Ajakcutyan tiketner@ berel chi hajoxvel. Stugeq kap@ ev noric pordzeq.",
+    "loadChangeControl": "Change control tiketner@ berel chi hajoxvel.",
+    "titleRequired": "Tiket steghtselu hamar petq e vernagir.",
+    "createFailed": "Tiket@ steghtsel chi hajoxvel.",
+    "statsNotLoaded": "Ajakcutyan vichakagrutyun@ der che berel.",
+    "exportCsvSuccess": "Ajakcutyan tiruyti vichakagrutyun@ artahanvel e (CSV)"
+  },
+  "actions": {
+    "quickActions": "Arag gorcoxutyunner",
+    "escalate": "Eskalacnel",
+    "technical": "Tekhnikakan",
+    "reopen": "Noric bacel",
+    "markResolved": "Nshvel lucvac",
+    "close": "Pakel",
+    "reopenFailed": "Tiket@ noric bacel chi hajoxvel."
+  },
+  "escalate": {
+    "title": "Karavarchi eskalacia",
+    "description": "Kuxarkum e tsankanumner kataroxin ev ogtagortoxnerin, voronq unen global Support tiketneri mutq. Tiket@ nshvum e eskalacvac, SLA jamat@ kasum e minchev vijak@ hanvel e.",
+    "reason": "Patjar",
+    "reasonPlaceholder": "Biznes risk, petq e ayl masnatig, hachakhordi arachnutyun…",
+    "confirm": "Hastatel eskalacia@n"
+  },
+  "resolve": {
+    "title": "Nshvel lucvac",
+    "description": "Lucman nkaragrutyun@ petq e ({min}+ nish).",
+    "summary": "Lucman nkaragrutyun",
+    "placeholder": "Inch e arvel, stugum, hachakhordi kap…",
+    "save": "Pahvel lucvac"
+  },
+  "closeTicket": {
+    "title": "Pakel tiket@",
+    "description": "Granceq, inchu depk@ lkerav aktiv hert-ic (audit). Lumenyayn@ hachakhordi hastatumn e.",
+    "reason": "Pakman patjar",
+    "submit": "Pakel tiket@"
+  },
+  "category": {
+    "UNCLASSIFIED": "Chdasavorel",
+    "INCIDENT": "Incident",
+    "SERVICE_REQUEST": "Service Request",
+    "CHANGE_REQUEST": "Change Request",
+    "PROBLEM": "Problem"
+  },
+  "priority": {
+    "P1": "P1 Critical",
+    "P2": "P2 High",
+    "P3": "P3 Normal"
+  },
+  "status": {
+    "NEW": "NEW",
+    "TRIAGED": "TRIAGED",
+    "ASSIGNED": "ASSIGNED",
+    "IN_PROGRESS": "IN_PROGRESS",
+    "RESOLVED": "RESOLVED",
+    "CLOSED": "CLOSED"
+  },
+  "coverage": {
+    "COVERED_BY_MAINTENANCE": "Maintenance",
+    "FREE_GOODWILL": "Goodwill",
+    "BILLABLE_SMALL_WORK": "Billable small work",
+    "EXTENSION_REQUIRED": "Extension required",
+    "NOT_COVERED_REJECTED": "Rejected"
+  },
+  "sla": {
+    "ON_TRACK": "On track",
+    "AT_RISK": "At risk",
+    "HIGH_RISK": "High risk",
+    "BREACHED": "Breached",
+    "PAUSED": "SLA paused",
+    "CLOSED": "Closed"
+  },
+  "waiting": {
+    "all": "Bolor spasman vijakner",
+    "NONE": "Che spasum",
+    "WAITING_FOR_CLIENT": "Spasum e hachakhordin",
+    "WAITING_FOR_THIRD_PARTY": "Spasum e erord koghnaki",
+    "ESCALATED": "Escalated"
+  },
+  "closeReason": {
+    "CLIENT_CONFIRMED": "Hachakhord@ hastatel e",
+    "MANUAL": "Manual / karavarchum",
+    "DUPLICATE": "Duplicate",
+    "AUTO_TIMED_OUT": "Auto timed out",
+    "EXTENSION_DELIVERED": "Extension delivered"
+  }
+}

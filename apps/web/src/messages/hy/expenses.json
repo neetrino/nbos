@@ -1,0 +1,244 @@
+{
+  "nav": {
+    "payNow": "Վճարել հիմա",
+    "scopeAria": "Ծախսերի Pay Now տիրույթ",
+    "active": "Ակտիվ",
+    "backlog": "Հետանկում",
+    "closed": "Փակված"
+  },
+  "title": {
+    "payNow": "Վճարել հիմա",
+    "payNowProject": "Վճարել հիմա · նախագծի զտիչ",
+    "backlog": "Ծախսերի հետանկում",
+    "backlogProject": "Ծախսերի հետանկում · նախագծի զտիչ",
+    "closed": "Փակված ծախսեր",
+    "closedProject": "Փակված ծախսեր · նախագծի զտիչ"
+  },
+  "stage": {
+    "PLANNED": "Պլանավորված",
+    "DUE_SOON": "Շուտով",
+    "DUE_NOW": "Հիմա",
+    "OVERDUE": "Ժամկետանց",
+    "ON_HOLD": "Կասեցված",
+    "BACKLOG": "Հետանկում",
+    "PAID": "Վճարված",
+    "CANCELLED": "Չեղարկված"
+  },
+  "stageShort": {
+    "PLANNED": "Պլան",
+    "DUE_SOON": "Շուտով",
+    "DUE_NOW": "Հիմա",
+    "OVERDUE": "Ժամկետանց",
+    "ON_HOLD": "Կասեց.",
+    "PAID": "Վճարված",
+    "CANCELLED": "Չեղարկ."
+  },
+  "category": {
+    "DOMAIN": "Domain & Hosting",
+    "TOOLS": "Գործիքներ և ծառայություններ",
+    "MARKETING": "Մարքեթինգ",
+    "OFFICE": "Գրասենյակ",
+    "TAXES": "Հարկեր և վճարներ",
+    "PARTNER_PAYOUT": "Partner Payout",
+    "OTHER": "Այլ",
+    "SALARY": "Աշխատավարձ",
+    "BONUS": "Բոնուս"
+  },
+  "type": {
+    "PLANNED": "Պլանավորված",
+    "UNPLANNED": "Անպլան",
+    "manual": "Manual"
+  },
+  "frequency": {
+    "ONE_TIME": "Մեկանգամյա",
+    "WEEKLY": "Շաբաթական",
+    "MONTHLY": "Ամսական",
+    "QUARTERLY": "Եռամսյա",
+    "YEARLY": "Տարեկան",
+    "MULTI_YEAR": "Բազմամյա"
+  },
+  "tax": {
+    "TAX": "Հարկով",
+    "TAX_FREE": "Ազատ"
+  },
+  "backlogReason": {
+    "none": "Չկա",
+    "DEBT_PAY_LATER": "Պարտք՝ հետո վճարել",
+    "WAITING_DECISION": "Սպասում է որոշման",
+    "WAITING_CLIENT": "Սպասում է հաճախորդին",
+    "WAITING_PROVIDER": "Սպասում է մատակարարին",
+    "OTHER": "Այլ"
+  },
+  "paymentStatus": {
+    "PAID": "Վճարված",
+    "PARTIAL": "Մասնակի վճարված",
+    "UNPAID": "Չվճարված"
+  },
+  "period": {
+    "month": "Ամիս",
+    "quarter": "Եռամսյա",
+    "year": "Տարի",
+    "all": "Բոլորը"
+  },
+  "scope": {
+    "active": "Pay Now",
+    "backlog": "Հետանկում",
+    "closed": "Փակված"
+  },
+  "filters": {
+    "scope": "Տիրույթ",
+    "period": "ժամանակահատված",
+    "category": "Կատեգորիա",
+    "status": "Կարգավիճակ",
+    "project": "Նախագիծ",
+    "source": "Աղբյուր",
+    "sourceAll": "Բոլոր ծախսերը",
+    "sourcePayroll": "Աշխատավարձ",
+    "payrollMonth": "Աշխատավարձի ամիս",
+    "employee": "Աշխատակից",
+    "sortBy": "Դասավորել ըստ",
+    "order": "Կարգ"
+  },
+  "sort": {
+    "createdAt": "Ստեղծման",
+    "dueDate": "Վճարման ժամկետ",
+    "amount": "Գումար",
+    "name": "Անուն",
+    "status": "Կարգավիճակ",
+    "desc": "Նվազման",
+    "asc": "Աճման"
+  },
+  "view": {
+    "kanban": "Տախտակ",
+    "kanbanAria": "Kanban տեսք",
+    "list": "Ցանկ",
+    "listAria": "Ցանկի տեսք"
+  },
+  "searchPlaceholder": "Որոնել անունով, նշումներով, նախագծով, պլանով…",
+  "actions": {
+    "newExpense": "Նոր ծախս",
+    "addFirst": "Ավելացնել առաջին ծախսը",
+    "quickExpense": "Արագ ծախս",
+    "addPayment": "Ավելացնել վճարում",
+    "recordPayment": "Գրանցել վճարում",
+    "deleteExpense": "Ջնջել ծախսը",
+    "cancelExpense": "Չեղարկել ծախսը",
+    "clearFilter": "Մաքրել զտիչը",
+    "exportStats": "Արտահանել տիրույթի վիճակագրությունը (CSV)",
+    "exportCsv": "Արտահանել ծախսերը (CSV)"
+  },
+  "empty": {
+    "title": "Դեռ ծախսեր չկան",
+    "description": "Հաշվի առնեք ընկերության ծախսերը այստեղ",
+    "backlogTitle": "Հետանկված ծախսեր չկան",
+    "backlogDescription": "Ընտրված ժամանակահատվածում այս տիրույթի համար համընկնող հետանկում չկա։"
+  },
+  "card": {
+    "paid": "Վճարված",
+    "due": "Ժամկետ",
+    "noDate": "Ամսաթիվ չկա",
+    "payrollMark": " · Աշխատավարձ"
+  },
+  "table": {
+    "expense": "Ծախս",
+    "amount": "Գումար",
+    "dueDate": "Վճարման ժամկետ",
+    "category": "Կատեգորիա",
+    "paid": "Վճարված",
+    "status": "Կարգավիճակ",
+    "project": "Նախագիծ",
+    "payroll": "Աշխատավարձ",
+    "run": "Հաշվարկ"
+  },
+  "sheet": {
+    "loading": "Բեռնվում է…",
+    "tabs": {
+      "general": "Ընդհանուր",
+      "payments": "Վճարումներ"
+    },
+    "sections": {
+      "general": "Ընդհանուր",
+      "proofs": "Հաստատումներ",
+      "paymentHistory": "Վճարումների պատմություն"
+    }
+  },
+  "fields": {
+    "name": "Անուն",
+    "namePlaceholder": "Ծախսի անուն…",
+    "amount": "Գումար",
+    "dueDate": "Վճարման ժամկետ",
+    "type": "Տեսակ",
+    "category": "Կատեգորիա",
+    "frequency": "Պարբերություն",
+    "backlogReason": "Հետանկման պատճառ",
+    "taxStatus": "Հարկային կարգավիճակ",
+    "passThrough": "Տարանցիկ",
+    "notes": "Նկարագրություն",
+    "notesPlaceholder": "Ավելացրեք նշում այս ծախսի մասին…"
+  },
+  "payments": {
+    "empty": "Դեռ վճարումներ գրանցված չեն։",
+    "date": "Ամսաթիվ",
+    "amount": "Գումար",
+    "notes": "Նշումներ",
+    "actions": "Գործողություններ",
+    "removeAria": "Հանել {amount} վճարումը",
+    "amountRequired": "Գումար *",
+    "dateRequired": "Վճարման ամսաթիվ *",
+    "dateAria": "Վճարման ամսաթիվ",
+    "notesOptional": "Ընտրովի"
+  },
+  "dialogs": {
+    "addPaymentTitle": "Ավելացնել վճարում",
+    "deleteTitle": "Ջնջե՞լ ծախսը",
+    "deleteDescription": "Սևագիրը կհեռացվի։ Օգտագործեք միայն սխալ PLANNED քարտերի համար։",
+    "deleteConfirm": "Ջնջել",
+    "cancelTitle": "Չեղարկե՞լ ծախսը",
+    "cancelDescription": "Ծախսը կանցնի «Չեղարկված» և կմնա պատմության մեջ։ Վճարումներն ու գրառումները պահպանվում են։",
+    "cancelConfirm": "Չեղարկել ծախսը",
+    "removePaymentTitle": "Հանե՞լ վճարումը",
+    "removePaymentDescription": "Վճարման տողը կհանվի ծախսից։ Ավել ուշ կարող եք նորից գրանցել։",
+    "removePaymentConfirm": "Հանել"
+  },
+  "banners": {
+    "projectFilter": "Ցուցադրվում են այս նախագծի ծախսերը (սերվերի զտիչ)։",
+    "projectFilterNamed": "Ցուցադրվում են այս նախագծի ծախսերը (սերվերի զտիչ) — {label}։",
+    "planFilter": "Ցուցադրվում են այս պլանին կապված ծախսի քարտերը (սերվերի զտիչ)։",
+    "planFilterNamed": "Ցուցադրվում են այս պլանին կապված ծախսի քարտերը (սերվերի զտիչ) — {label}։",
+    "projectLink": "Նախագիծ",
+    "boardFiltered": "Տախտակ (զտված)",
+    "planDetail": "Պլանի մանրամասներ",
+    "payrollLine": "Աշխատավարձ · {label}",
+    "payrollRunFallback": "Աշխատավարձի հաշվարկ",
+    "month": "Ամիս",
+    "run": "Հաշվարկ",
+    "plans": "Պլաններ"
+  },
+  "settings": {
+    "title": "Pay Now — կարգավորումներ",
+    "description": "Արտահանում և տիրույթի վիճակագրություն։ ժամանակահատվածն ու Pay Now տիրույթը հետևում են որոնման տողի զտիչներին։",
+    "triggerAria": "Pay Now կարգավորումներ"
+  },
+  "toasts": {
+    "updated": "Ծախսը թարմացվեց",
+    "deleted": "Ծախսը ջնջվեց",
+    "cancelled": "Ծախսը չեղարկվեց",
+    "statusUpdated": "Ծախսի կարգավիճակը թարմացվեց"
+  },
+  "errors": {
+    "loadList": "Ծախսերը բեռնել չհաջողվեց։ Ստուգեք կապը և նորից փորձեք։",
+    "openLink": "Հղումից ծախսը բացել չհաջողվեց։",
+    "save": "Ծախսի փոփոխությունները պահել չհաջողվեց։",
+    "delete": "Ծախսը ջնջել չհաջողվեց։ Ստուգեք կապը և նորից փորձեք։",
+    "cancel": "Ծախսը չեղարկել չհաջողվեց։ Ստուգեք կապը և նորից փորձեք։",
+    "loadDetail": "Ծախսը բեռնել չհաջողվեց։",
+    "statusUpdate": "Ծախսի կարգավիճակը թարմացնել չհաջողվեց։ Նորից փորձեք։",
+    "statusUpdateKanban": "Ծախսի կարգավիճակը թարմացնել չհաջողվեց։ Բացեք քարտը կամ նորից փորձեք։",
+    "recordPayment": "Վճարումը գրանցել չհաջողվեց։ Ստուգեք գումարը և նորից փորձեք։",
+    "removePayment": "Վճարումը հանել չհաջողվեց։ Նորից փորձեք։"
+  },
+  "gate": {
+    "completeBefore": "Կարգավիճակը փոխելուց առաջ լրացրեք դաշտերը",
+    "paidLocked": "Ամբողջությամբ վճարված ծախսը մնում է «Վճարված», մինչև չեղարկվի կամ չփոխվի վճարումներով։"
+  }
+}

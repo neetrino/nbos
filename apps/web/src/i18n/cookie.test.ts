@@ -9,10 +9,10 @@ describe('locale cookie', () => {
     vi.unstubAllGlobals();
   });
 
-  it('accepts writable values and ignores reserved or junk', () => {
+  it('accepts writable values and ignores junk', () => {
     expect(parseLocaleCookieValue('en')).toBe('en');
     expect(parseLocaleCookieValue('ru')).toBe('ru');
-    expect(parseLocaleCookieValue('hy')).toBeUndefined();
+    expect(parseLocaleCookieValue('hy')).toBe('hy');
     expect(parseLocaleCookieValue('de')).toBeUndefined();
     expect(parseLocaleCookieValue('')).toBeUndefined();
   });

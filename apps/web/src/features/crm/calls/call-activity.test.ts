@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { CallActivity } from '@/lib/api/calls';
-import { callActivityPartyName, isMissedCall, readAudioDuration } from './call-activity-status';
+import {
+  CALL_ACTIVITY_NEW_CALLER_KEY,
+  callActivityPartyName,
+  isMissedCall,
+  readAudioDuration,
+} from './call-activity-status';
 import { formatPlaybackSpeedLabel, nextCallPlaybackSpeed } from './call-recording-playback';
 import { formatCallDuration, formatCallPlaybackClock } from './format-call-duration';
-import { callActivityTitle, groupCallActivitiesByDay } from './group-call-activities';
+import { callActivityTitleKey, groupCallActivitiesByDay } from './group-call-activities';
 
 const SAMPLE: CallActivity = {
   type: 'CALL',
@@ -52,9 +57,9 @@ describe('call activity card helpers', () => {
     expect(isMissedCall({ direction: 'OUTBOUND', disposition: 'NO ANSWER' })).toBe(false);
   });
 
-  it('falls back to New caller when Contact is missing', () => {
-    expect(callActivityPartyName({ contactName: null })).toBe('New caller');
-    expect(callActivityPartyName({ contactName: '  ' })).toBe('New caller');
+  it('falls back to New caller key when Contact is missing', () => {
+    expect(callActivityPartyName({ contactName: null })).toBe(CALL_ACTIVITY_NEW_CALLER_KEY);
+    expect(callActivityPartyName({ contactName: '  ' })).toBe(CALL_ACTIVITY_NEW_CALLER_KEY);
     expect(callActivityPartyName({ contactName: 'Movses' })).toBe('Movses');
   });
 
@@ -72,10 +77,10 @@ describe('call activity card helpers', () => {
 });
 
 describe('call activity timeline helpers', () => {
-  it('labels inbound and outbound CALL items', () => {
-    expect(callActivityTitle('INBOUND')).toBe('Incoming Call');
-    expect(callActivityTitle('OUTBOUND')).toBe('Outgoing Call');
-    expect(callActivityTitle(null)).toBe('Call');
+  it('labels inbound and outbound CALL items with message keys', () => {
+    expect(callActivityTitleKey('INBOUND')).toBe('calls.incomingCallTitle');
+    expect(callActivityTitleKey('OUTBOUND')).toBe('calls.outgoingCallTitle');
+    expect(callActivityTitleKey(null)).toBe('calls.call');
   });
 
   it('groups CALL activities by day without crashing when Contact is missing', () => {

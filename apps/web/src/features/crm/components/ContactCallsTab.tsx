@@ -1,16 +1,18 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { CrmCallActivityGate } from '@/features/crm/calls/CrmCallActivityGate';
 import { CallActivityTimeline } from '@/features/crm/calls/CallActivityTimeline';
 
 export function ContactCallsTab({ contactId }: { contactId: string }) {
+  const t = useTranslations('crm');
   return (
     <CrmCallActivityGate parent="contact">
       <CallActivityTimeline
         key={contactId}
         scope={{ parent: 'contact', id: contactId }}
-        emptyTitle="No calls yet"
-        emptyDescription="Phone calls with this contact will appear here, organized by date."
+        emptyTitle={t('calls.noCallsYet')}
+        emptyDescription={t('calls.noCallsDescription')}
       />
     </CrmCallActivityGate>
   );

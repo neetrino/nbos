@@ -21,8 +21,13 @@ describe('EmployeeInterfaceLocaleService', () => {
     });
   });
 
-  it('falls back to en when stored value is not writable', async () => {
+  it('returns a stored Armenian locale', async () => {
     prisma.employee.findUnique.mockResolvedValue({ interfaceLocale: 'hy' });
+    await expect(service.getPreferences('emp-1')).resolves.toEqual({ interfaceLocale: 'hy' });
+  });
+
+  it('falls back to en when stored value is not writable', async () => {
+    prisma.employee.findUnique.mockResolvedValue({ interfaceLocale: 'de' });
     await expect(service.getPreferences('emp-1')).resolves.toEqual({ interfaceLocale: 'en' });
   });
 

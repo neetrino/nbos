@@ -34,7 +34,7 @@ export async function requestPasswordReset(params: {
   const email = params.email.toLowerCase().trim();
   const employee = await params.prisma.employee.findUnique({
     where: { email },
-    select: { id: true, email: true, passwordHash: true, status: true },
+    select: { id: true, email: true, passwordHash: true, status: true, interfaceLocale: true },
   });
 
   if (!employee?.passwordHash || employee.status === 'TERMINATED') {
@@ -60,6 +60,7 @@ export async function requestPasswordReset(params: {
     resetUrl,
     expiresAt,
     logger: params.logger,
+    locale: employee.interfaceLocale,
   });
 
   params.logger.log(

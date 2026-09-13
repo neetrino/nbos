@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { Banknote, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   DetailSheetSection,
   DetailSheetTabBar,
@@ -21,13 +22,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
 import { EmployeeMonthCompensationKpiSection } from '@/features/finance/components/payroll/employee-month-compensation-kpi-section';
 import { EmployeeMonthCompensationKpiSummaryLine } from '@/features/finance/components/payroll/employee-month-compensation-kpi-summary-line';
 import { EmployeeMonthCompensationSummary } from '@/features/finance/components/payroll/employee-month-compensation-summary';
 import { SalaryMonthBonusBreakdown } from '@/features/finance/components/payroll/salary-month-bonus-breakdown';
 import { WalletMonthSheetHints } from '@/features/finance/components/payroll/wallet-month-sheet-hints';
+import { translateExpenseLedgerPaymentStatusPresentation } from '@/features/finance/components/payroll/payroll-compensation-i18n';
 import {
   useSalaryLineMonthDetail,
   type SalaryLineMonthDetailScope,
@@ -59,17 +60,15 @@ function ExpensePaymentsSection({
   detail: SalaryLineMonthDetail;
   readOnly: boolean;
 }) {
+  const t = useTranslations('payroll');
   const expense = detail.expense;
   if (!expense) {
-    return (
-      <p className="text-muted-foreground text-sm">
-        No expense card yet. Materializes when the payroll run is approved.
-      </p>
-    );
+    return <p className="text-muted-foreground text-sm">{t('compensation.expense.noCard')}</p>;
   }
 
-  const ledgerPresentation = expenseLedgerPaymentStatusPresentation(
+  const ledgerPresentation = translateExpenseLedgerPaymentStatusPresentation(
     expense.paymentStatus as ExpenseLedgerPaymentStatus,
+    t,
   );
 
   return (
@@ -86,7 +85,7 @@ function ExpensePaymentsSection({
               href={`/finance/expenses/${expense.id}`}
               className="text-primary text-sm hover:underline"
             >
-              Open expense card
+              {t('compensation.expense.openCard')}
             </Link>
             <Link
               href={expensesPayrollPresetHref({
@@ -95,20 +94,20 @@ function ExpensePaymentsSection({
               })}
               className="text-primary text-sm hover:underline"
             >
-              Pay Now (this employee)
+              {t('compensation.expense.payNowEmployee')}
             </Link>
           </>
         )}
       </div>
       {expense.payments.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No payments recorded yet.</p>
+        <p className="text-muted-foreground text-sm">{t('compensation.expense.noPayments')}</p>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead>Notes</TableHead>
+              <TableHead>{t('compensation.expense.tableDate')}</TableHead>
+              <TableHead className="text-right">{t('compensation.expense.tableAmount')}</TableHead>
+              <TableHead>{t('compensation.expense.tableNotes')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -147,6 +146,7 @@ export function EmployeeMonthCompensationSheet({
   readOnly?: boolean;
   detailScope?: SalaryLineMonthDetailScope;
 }) {
+  const t = useTranslations('payroll');
   const { detail, loading, loadError } = useSalaryLineMonthDetail(
     salaryLineId,
     open,
@@ -155,8 +155,8 @@ export function EmployeeMonthCompensationSheet({
   );
 
   const emptyHint = readOnly
-    ? 'Select a month on your wallet.'
-    : 'Select a month cell on the salary board.';
+    ? t('compensation.sheet.emptyHintWallet')
+    : t('compensation.sheet.emptyHintFinance');
 
   const showKpiTab = detail?.hasKpiPolicy === true;
   const [activeTab, setActiveTab] = useState('general');
@@ -164,12 +164,12 @@ export function EmployeeMonthCompensationSheet({
 
   const compensationTabs = useMemo(() => {
     const tabs = [
-      { value: 'general', label: 'General' },
-      { value: 'bonuses', label: 'Bonuses' },
+      { value: 'general', label: t('compensation.sheet.tabs.general') },
+      { value: 'bonuses', label: t('compensation.sheet.tabs.bonuses') },
     ];
-    if (showKpiTab) tabs.push({ value: 'kpi', label: 'KPI' });
+    if (showKpiTab) tabs.push({ value: 'kpi', label: t('compensation.sheet.tabs.kpi') });
     return tabs;
-  }, [showKpiTab]);
+  }, [showKpiTab, t]);
 
   const handleOpenChange = (next: boolean) => {
     if (!next) setActiveTab('general');
@@ -187,7 +187,7 @@ export function EmployeeMonthCompensationSheet({
       >
         <SheetHeader>
           <SheetTitle>
-            {readOnly ? 'Your month compensation' : 'Employee month compensation'}
+            {readOnly ? t('compensation.sheet.titleWallet') : t('compensation.sheet.titleEmployee')}
           </SheetTitle>
           <SheetDescription>{detail ? employeeName(detail) : emptyHint}</SheetDescription>
         </SheetHeader>
@@ -196,7 +196,7 @@ export function EmployeeMonthCompensationSheet({
           {loading && !detail ? (
             <div className="text-muted-foreground flex items-center gap-2 text-sm">
               <Loader2 className="size-4 animate-spin" aria-hidden />
-              Loading compensation…
+              {t('compensation.sheet.loading')}
             </div>
           ) : null}
           {loadError ? <p className="text-destructive text-sm">{loadError}</p> : null}
@@ -219,7 +219,11 @@ export function EmployeeMonthCompensationSheet({
                       <EmployeeMonthCompensationSummary detail={detail} readOnly={readOnly} />
                       <EmployeeMonthCompensationKpiSummaryLine detail={detail} />
                       <DetailSheetSection
-                        title={readOnly ? 'Payments' : 'Pay Now / payments'}
+                        title={
+                          readOnly
+                            ? t('compensation.sheet.sections.paymentsWallet')
+                            : t('compensation.sheet.sections.paymentsFinance')
+                        }
                         icon={<Banknote className="size-4" aria-hidden />}
                       >
                         <ExpensePaymentsSection detail={detail} readOnly={readOnly} />
@@ -229,7 +233,7 @@ export function EmployeeMonthCompensationSheet({
                   {resolvedActiveTab === 'bonuses' ? (
                     <div className="pt-2">
                       <DetailSheetSection
-                        title="Bonus breakdown"
+                        title={t('compensation.sheet.sections.bonusBreakdown')}
                         icon={<Banknote className="size-4" aria-hidden />}
                       >
                         <SalaryMonthBonusBreakdown detail={detail} />

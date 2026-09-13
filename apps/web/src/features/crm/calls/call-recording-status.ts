@@ -1,10 +1,10 @@
 import type { CallRecordingStatus } from '@/lib/api/calls';
 
-export function callRecordingLabel(status: CallRecordingStatus | null): string {
-  if (status == null) return 'No recording available';
-  if (status === 'FAILED') return 'Recording unavailable';
-  if (status === 'READY') return 'Ready';
-  return 'Downloading...';
+export function callRecordingLabelKey(status: CallRecordingStatus | null): string {
+  if (status == null) return 'calls.noRecording';
+  if (status === 'FAILED') return 'calls.recordingUnavailable';
+  if (status === 'READY') return 'calls.recordingReady';
+  return 'calls.recordingDownloading';
 }
 
 export function canPlayCallRecording(status: CallRecordingStatus | null): boolean {

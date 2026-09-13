@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { activeCallDirectionLabel, activeCallPhaseLabel } from './active-call-labels';
+import { activeCallDirectionLabelKey, activeCallPhaseLabelKey } from './active-call-labels';
 
-describe('activeCallDirectionLabel', () => {
+describe('activeCallDirectionLabelKey', () => {
   it('uses full words instead of IN/OUT', () => {
-    expect(activeCallDirectionLabel('INBOUND')).toBe('Incoming');
-    expect(activeCallDirectionLabel('OUTBOUND')).toBe('Outgoing');
-    expect(activeCallDirectionLabel(null)).toBe('Call');
+    expect(activeCallDirectionLabelKey('INBOUND')).toBe('calls.incoming');
+    expect(activeCallDirectionLabelKey('OUTBOUND')).toBe('calls.outgoing');
+    expect(activeCallDirectionLabelKey(null)).toBe('calls.call');
   });
 });
 
-describe('activeCallPhaseLabel', () => {
-  it('capitalizes the live phase', () => {
-    expect(activeCallPhaseLabel('ringing')).toBe('Ringing');
-    expect(activeCallPhaseLabel('answered')).toBe('Answered');
-    expect(activeCallPhaseLabel('ended')).toBe('Ended');
+describe('activeCallPhaseLabelKey', () => {
+  it('maps live phases to message keys', () => {
+    expect(activeCallPhaseLabelKey('ringing')).toBe('calls.phase.ringing');
+    expect(activeCallPhaseLabelKey('answered')).toBe('calls.phase.answered');
+    expect(activeCallPhaseLabelKey('ended')).toBe('calls.phase.ended');
   });
 });

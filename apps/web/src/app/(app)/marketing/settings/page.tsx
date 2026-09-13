@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Plus, SlidersHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   EmptyState,
   ErrorState,
@@ -37,6 +38,7 @@ import type { ExpensePlan } from '@/lib/api/expense-plans';
 import { loadExpensePlansForMarketingAccounts } from '@/features/marketing/utils/load-expense-plans-for-marketing-accounts';
 
 export default function MarketingSettingsPage() {
+  const t = useTranslations('marketing');
   const [accounts, setAccounts] = useState<MarketingAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -89,7 +91,7 @@ export default function MarketingSettingsPage() {
       );
       setError(null);
     } catch {
-      setError('Marketing accounts could not be loaded.');
+      setError(t('settings.loadError'));
     } finally {
       setLoading(false);
       setPlansLoading(false);
@@ -163,11 +165,11 @@ export default function MarketingSettingsPage() {
           account.name,
           account.identifier,
           account.phone,
-          getMarketingLabel(MARKETING_CHANNELS, account.channel),
-          getMarketingLabel(MARKETING_ACCOUNT_STATUSES, account.status),
+          getMarketingLabel('channels', account.channel, t),
+          getMarketingLabel('accountStatus', account.status, t),
         ),
       ),
-    [accounts, search],
+    [accounts, search, t],
   );
 
   const moduleHeroSlots = useMemo(
@@ -175,10 +177,10 @@ export default function MarketingSettingsPage() {
       search: buildMarketingHeroSearch({
         search,
         onSearchChange: setSearch,
-        searchPlaceholder: 'Search accounts by name, channel, identifier…',
+        searchPlaceholder: t('settings.searchPlaceholder'),
       }),
     }),
-    [search],
+    [search, t],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -198,7 +200,7 @@ export default function MarketingSettingsPage() {
         className="border-border bg-card grid gap-4 rounded-2xl border p-5 md:grid-cols-5"
       >
         <div className="space-y-1.5">
-          <Label>Channel</Label>
+          <Label>{t('settings.channel')}</Label>
           <Select
             value={form.channel}
             onValueChange={(channel) => setForm({ ...form, channel: channel ?? form.channel })}
@@ -209,39 +211,39 @@ export default function MarketingSettingsPage() {
             <SelectContent>
               {MARKETING_CHANNELS.map((channel) => (
                 <SelectItem key={channel.value} value={channel.value}>
-                  {channel.label}
+                  {getMarketingLabel('channels', channel.value, t)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label>Account name</Label>
+          <Label>{t('settings.name')}</Label>
           <Input
             value={form.name}
             onChange={(event) => setForm({ ...form, name: event.target.value })}
-            placeholder="List.am Account 1"
+            placeholder={t('settings.namePlaceholder')}
           />
         </div>
         <div className="space-y-1.5">
-          <Label>Identifier</Label>
+          <Label>{t('settings.identifier')}</Label>
           <Input
             value={form.identifier}
             onChange={(event) => setForm({ ...form, identifier: event.target.value })}
-            placeholder="@page or account id"
+            placeholder={t('settings.identifierPlaceholder')}
           />
         </div>
         <div className="space-y-1.5">
-          <Label>Phone</Label>
+          <Label>{t('settings.phone')}</Label>
           <Input
             value={form.phone}
             onChange={(event) => setForm({ ...form, phone: event.target.value })}
-            placeholder="+374..."
+            placeholder={t('settings.phonePlaceholder')}
           />
         </div>
         <div className="space-y-1.5">
           <Label className="invisible select-none" aria-hidden>
-            Add
+            {t('settings.add')}
           </Label>
           <Button
             type="submit"
@@ -250,7 +252,7 @@ export default function MarketingSettingsPage() {
             className="w-full"
           >
             <Plus size={16} />
-            {saving ? 'Adding...' : 'Add account'}
+            {saving ? t('settings.adding') : t('settings.add')}
           </Button>
         </div>
       </form>
@@ -262,14 +264,14 @@ export default function MarketingSettingsPage() {
       ) : accounts.length === 0 ? (
         <EmptyState
           icon={SlidersHorizontal}
-          title="No marketing accounts yet"
-          description="Add List.am accounts, social pages, or website sources to unlock Which one attribution."
+          title={t('settings.emptyTitle')}
+          description={t('settings.emptyDescription')}
         />
       ) : filteredAccounts.length === 0 ? (
         <EmptyState
           icon={SlidersHorizontal}
-          title="No matching accounts"
-          description="Try a different search term."
+          title={t('settings.noMatchTitle')}
+          description={t('settings.noMatchDescription')}
         />
       ) : (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -279,18 +281,26 @@ export default function MarketingSettingsPage() {
                 <div>
                   <p className="font-semibold">{account.name}</p>
                   <p className="text-muted-foreground text-sm">
-                    {getMarketingLabel(MARKETING_CHANNELS, account.channel)}
+                    {getMarketingLabel('channels', account.channel, t)}
                   </p>
                 </div>
                 <StatusBadge
-                  label={getMarketingLabel(MARKETING_ACCOUNT_STATUSES, account.status)}
+                  label={getMarketingLabel('accountStatus', account.status, t)}
                   variant={account.status === 'ACTIVE' ? 'green' : 'gray'}
                 />
               </div>
               <div className="text-muted-foreground mt-4 space-y-1 text-sm">
-                <p>Identifier: {account.identifier ?? 'Not set'}</p>
-                <p>Phone: {account.phone ?? 'Not set'}</p>
-                <p>Attribution works without a Finance link; spend analytics stay incomplete.</p>
+                <p>
+                  {t('settings.identifierValue', {
+                    value: account.identifier ?? t('board.notSet'),
+                  })}
+                </p>
+                <p>
+                  {t('settings.phoneValue', {
+                    value: account.phone ?? t('board.notSet'),
+                  })}
+                </p>
+                <p>{t('settings.noFinanceLinkHint')}</p>
               </div>
               <MarketingAccountExpensePlanLink
                 account={account}

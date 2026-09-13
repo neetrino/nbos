@@ -9,6 +9,7 @@ import { usePermission } from '@/lib/permissions';
 import type { ClickToCallTargetType } from '@/lib/api/calls';
 import {
   canShowClickToCallButton,
+  clickToCallButtonLabelKey,
   clickToCallButtonVariant,
   hasClickToCallPermission,
   type ClickToCallUiState,
@@ -50,8 +51,8 @@ export function ClickToCallButton(props: ClickToCallButtonProps) {
   const { visible, state, start, startNewCall, hasPendingKey, targetType, targetId } =
     useClickToCallVisibility(props);
   if (!visible) return null;
-  const label = localizeClickToCallLabel(t, state);
-  const newCallLabel = t('call.newCall');
+  const label = t(clickToCallButtonLabelKey(state) as never);
+  const newCallLabel = t('calls.newCall');
 
   return (
     <span className="inline-flex items-center gap-1">
@@ -103,7 +104,7 @@ export function ClickToCallMenuItems(props: ClickToCallButtonProps) {
         onClick={() => void start({ targetType, targetId })}
       >
         <Phone />
-        {localizeClickToCallLabel(t, state)}
+        {t(clickToCallButtonLabelKey(state) as never)}
       </DropdownMenuItem>
       {hasPendingKey ? (
         <DropdownMenuItem
@@ -111,21 +112,11 @@ export function ClickToCallMenuItems(props: ClickToCallButtonProps) {
           onClick={() => void startNewCall({ targetType, targetId })}
         >
           <Phone />
-          {t('call.newCall')}
+          {t('calls.newCall')}
         </DropdownMenuItem>
       ) : null}
     </>
   );
-}
-
-function localizeClickToCallLabel(
-  t: ReturnType<typeof useTranslations<'crm'>>,
-  state: ClickToCallUiState,
-): string {
-  if (state === 'loading') return t('call.loading');
-  if (state === 'success') return t('call.success');
-  if (state === 'error') return t('call.error');
-  return t('call.idle');
 }
 
 function serverPendingKeySnapshot(): boolean {

@@ -1,0 +1,9 @@
+{
+  "task": {
+    "appName": "NBOS Task",
+    "shortName": "+ Առաջադրանք",
+    "created": "Առաջադրանքը ստեղծվեց",
+    "open": "Բացել",
+    "backgroundLoading": "Առաջադրանքներ բեռնվում են…"
+  }
+}

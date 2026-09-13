@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ACTIVE_CALL_NEW_CALLER_KEY,
   activeCallHeroInitials,
   activeCallHeroTitle,
   shouldShowHeroPhone,
@@ -10,12 +11,20 @@ describe('activeCallHeroTitle', () => {
     expect(activeCallHeroTitle('Anna', 'Incoming call +374')).toBe('Anna');
   });
 
-  it('collapses generated inbound labels to New caller', () => {
-    expect(activeCallHeroTitle(null, 'Incoming call +37443729201')).toBe('New caller');
+  it('collapses generated inbound labels to New caller key', () => {
+    expect(activeCallHeroTitle(null, 'Incoming call +37443729201')).toBe(
+      ACTIVE_CALL_NEW_CALLER_KEY,
+    );
   });
 
-  it('collapses generated outbound labels to New caller', () => {
-    expect(activeCallHeroTitle(null, 'Outgoing call +37443729201')).toBe('New caller');
+  it('collapses generated outbound labels to New caller key', () => {
+    expect(activeCallHeroTitle(null, 'Outgoing call +37443729201')).toBe(
+      ACTIVE_CALL_NEW_CALLER_KEY,
+    );
+  });
+
+  it('collapses localized generated inbound labels to New caller key', () => {
+    expect(activeCallHeroTitle(null, 'Входящий +37443729201')).toBe(ACTIVE_CALL_NEW_CALLER_KEY);
   });
 
   it('keeps outbound display names', () => {
@@ -29,6 +38,7 @@ describe('activeCallHeroInitials', () => {
   });
 
   it('hides initials for generic caller titles', () => {
+    expect(activeCallHeroInitials(ACTIVE_CALL_NEW_CALLER_KEY)).toBeNull();
     expect(activeCallHeroInitials('New caller')).toBeNull();
   });
 });

@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { marketingApi } from '@/lib/api/marketing';
 import { MARKETING_CHANNELS } from '@/features/marketing/constants';
+import { translateMarketingChannelLabel } from '@/features/marketing/i18n/marketing-copy';
 
 export interface CrmWhereSelectOption {
   value: string;
@@ -10,6 +12,7 @@ export interface CrmWhereSelectOption {
 }
 
 export function useCrmMarketingWhereOptions(enabled: boolean) {
+  const tMarketing = useTranslations('marketing');
   const [fetchedOptions, setFetchedOptions] = useState<CrmWhereSelectOption[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +32,12 @@ export function useCrmMarketingWhereOptions(enabled: boolean) {
         }
       } catch {
         if (!cancelled) {
-          setFetchedOptions(MARKETING_CHANNELS.map((c) => ({ value: c.value, label: c.label })));
+          setFetchedOptions(
+            MARKETING_CHANNELS.map((channel) => ({
+              value: channel.value,
+              label: translateMarketingChannelLabel(tMarketing, channel.value),
+            })),
+          );
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -38,7 +46,7 @@ export function useCrmMarketingWhereOptions(enabled: boolean) {
     return () => {
       cancelled = true;
     };
-  }, [enabled]);
+  }, [enabled, tMarketing]);
 
   return {
     options: enabled ? fetchedOptions : [],

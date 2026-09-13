@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Rocket } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -41,6 +42,8 @@ export function MarketingLaunchDialog({
   accounts,
   onLaunched,
 }: MarketingLaunchDialogProps) {
+  const t = useTranslations('marketing');
+  const tCommon = useTranslations('common');
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +79,7 @@ export function MarketingLaunchDialog({
       setOpen(false);
       await onLaunched();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Activity could not be launched.');
+      setError(err instanceof Error ? err.message : t('launch.failed'));
     } finally {
       setSaving(false);
     }
@@ -97,17 +100,13 @@ export function MarketingLaunchDialog({
         render={<Button size="sm" variant="outline" disabled={activity.status === 'LAUNCHED'} />}
       >
         <Rocket size={14} />
-        Launch
+        {t('launch.trigger')}
       </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <form onSubmit={handleLaunch} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Launch: {activity.title}</DialogTitle>
-            <DialogDescription>
-              Required fields match Marketing canon before an activity becomes a CRM &quot;Which
-              one&quot; source. Paid launches propose a Finance expense card; Finance owns payment
-              status.
-            </DialogDescription>
+            <DialogTitle>{t('launch.titleWithName', { title: activity.title })}</DialogTitle>
+            <DialogDescription>{t('launch.canonDescription')}</DialogDescription>
           </DialogHeader>
 
           {error && (
@@ -118,52 +117,49 @@ export function MarketingLaunchDialog({
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <Label>Start date</Label>
+              <Label>{t('launch.startDate')}</Label>
               <NbosDatePicker
                 value={form.startDate}
                 onChange={(startDate) => setForm({ ...form, startDate })}
-                aria-label="Start date"
+                aria-label={t('launch.startDate')}
               />
             </div>
             <div>
-              <Label>End date</Label>
+              <Label>{t('launch.endDate')}</Label>
               <NbosDatePicker
                 value={form.endDate}
                 onChange={(endDate) => setForm({ ...form, endDate })}
                 clearable
-                aria-label="End date"
+                aria-label={t('launch.endDate')}
               />
-              <p className="text-muted-foreground mt-1 text-xs">
-                For Meta-style ads, expected payment often follows the flight; set end date
-                accordingly.
-              </p>
+              <p className="text-muted-foreground mt-1 text-xs">{t('launch.endDateHint')}</p>
             </div>
             <NbosMoneyInput
-              label="Budget"
+              label={t('board.budget')}
               value={form.budget}
               onChange={(budget) => setForm({ ...form, budget })}
-              placeholder="AMD"
+              placeholder={t('board.budgetPlaceholder')}
             />
             <div>
-              <Label>Expected payment date</Label>
+              <Label>{t('launch.expectedPaymentDate')}</Label>
               <NbosDatePicker
                 value={form.expectedPayAt}
                 onChange={(expectedPayAt) => setForm({ ...form, expectedPayAt })}
                 clearable
-                aria-label="Expected payment date"
+                aria-label={t('launch.expectedPaymentDate')}
               />
             </div>
           </div>
 
           {activity.channel === 'LIST_AM' && (
             <div>
-              <Label>List.am account</Label>
+              <Label>{t('launch.listAmAccount')}</Label>
               <Select
                 value={form.accountId}
                 onValueChange={(accountId) => setForm({ ...form, accountId: accountId ?? '' })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select account" />
+                  <SelectValue placeholder={t('launch.selectAccount')} />
                 </SelectTrigger>
                 <SelectContent>
                   {channelAccounts.map((account) => (
@@ -173,28 +169,25 @@ export function MarketingLaunchDialog({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-muted-foreground mt-1 text-xs">
-                List.am requires a Marketing account. Link the account to a Finance expense plan in
-                Marketing Settings for spend tracking.
-              </p>
+              <p className="text-muted-foreground mt-1 text-xs">{t('launch.listAmAccountHint')}</p>
             </div>
           )}
 
           <div>
-            <Label>No-expense reason</Label>
+            <Label>{t('launch.noExpenseReason')}</Label>
             <Textarea
               value={form.noExpenseReason}
               onChange={(event) => setForm({ ...form, noExpenseReason: event.target.value })}
-              placeholder="Required when there is no expected payment date for a paid activity."
+              placeholder={t('launch.noExpenseReasonPlaceholder')}
             />
           </div>
 
           <DialogFooter className="gap-2 sm:justify-end">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? 'Launching...' : 'Launch activity'}
+              {saving ? t('launch.launching') : t('launch.launchActivity')}
             </Button>
           </DialogFooter>
         </form>

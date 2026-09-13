@@ -1,5 +1,5 @@
-import { DEAL_STAGES } from '@/features/crm/constants/dealPipeline';
-import { LEAD_STAGES } from '@/features/crm/constants/leadPipeline';
+import type { CrmTranslate } from '@/features/crm/i18n/crm-copy';
+import { resolveAttributionStatusLabel } from '@/features/marketing/i18n/marketing-copy';
 
 export const ATTRIBUTION_STATUS_FILTER_ALL = 'all';
 
@@ -8,21 +8,17 @@ export type AttributionStatusOption = {
   label: string;
 };
 
-const STATUS_LABELS = new Map<string, string>([
-  ...LEAD_STAGES.map((stage) => [stage.key, stage.label] as const),
-  ...DEAL_STAGES.map((stage) => [stage.key, stage.label] as const),
-]);
-
-export function resolveAttributionStatusLabel(status: string): string {
-  return STATUS_LABELS.get(status) ?? status.replace(/_/g, ' ');
-}
+export { resolveAttributionStatusLabel };
 
 /** Status options from rows currently on the attribution review. */
-export function buildAttributionStatusOptions(statuses: string[]): AttributionStatusOption[] {
+export function buildAttributionStatusOptions(
+  statuses: string[],
+  tCrm: CrmTranslate,
+): AttributionStatusOption[] {
   return [...new Set(statuses)]
     .map((status) => ({
       value: status,
-      label: resolveAttributionStatusLabel(status),
+      label: resolveAttributionStatusLabel(tCrm, status),
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 }

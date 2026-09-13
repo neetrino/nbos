@@ -19,4 +19,5 @@ export type EnabledInterfaceLocale = WritableInterfaceLocale;
 export const INTERFACE_LOCALE_NATIVE_NAMES: Record<EnabledInterfaceLocale, string> = {
   en: 'English',
   ru: 'Русский',
+  hy: 'Հայերեն',
 };

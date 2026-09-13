@@ -1,5 +1,7 @@
 import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
+import { interpolateSystemCopy, reportExportFileCopy } from '@nbos/shared';
+import { resolveReportExportFontPath } from './reports-export-font';
 import type { ReportExportFormat } from './reports.types';
 
 export interface ReportExportFile {
@@ -12,10 +14,12 @@ export interface ReportExportFile {
 export async function renderReportExportFile(
   format: ReportExportFormat,
   payload: unknown,
+  locale?: unknown,
 ): Promise<ReportExportFile> {
+  const copy = reportExportFileCopy(locale);
   if (format === 'CSV') {
     return {
-      content: Buffer.from(toCsvRows(payload), 'utf8'),
+      content: Buffer.from(toCsvRows(payload, copy), 'utf8'),
       contentType: 'text/csv; charset=utf-8',
       extension: 'csv',
       fileType: 'SPREADSHEET',
@@ -23,24 +27,27 @@ export async function renderReportExportFile(
   }
   if (format === 'XLSX') {
     return {
-      content: await renderXlsx(payload),
+      content: await renderXlsx(payload, copy),
       contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       extension: 'xlsx',
       fileType: 'SPREADSHEET',
     };
   }
   return {
-    content: await renderPdf(payload),
+    content: await renderPdf(payload, copy),
     contentType: 'application/pdf',
     extension: 'pdf',
     fileType: 'DOCUMENT',
   };
 }
 
-async function renderXlsx(payload: unknown): Promise<Uint8Array> {
-  const rows = [['path', 'value'], ...flattenPayload(payload)];
+async function renderXlsx(
+  payload: unknown,
+  copy: ReturnType<typeof reportExportFileCopy>,
+): Promise<Uint8Array> {
+  const rows = [[copy.path, copy.value], ...flattenPayload(payload)];
   const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet('Report');
+  const worksheet = workbook.addWorksheet(copy.sheetName);
   rows.forEach((row, rowIndex) => {
     worksheet.getRow(rowIndex + 1).values = row;
   });
@@ -48,8 +55,13 @@ async function renderXlsx(payload: unknown): Promise<Uint8Array> {
   return new Uint8Array(buffer);
 }
 
-async function renderPdf(payload: unknown): Promise<Uint8Array> {
+async function renderPdf(
+  payload: unknown,
+  copy: ReturnType<typeof reportExportFileCopy>,
+): Promise<Uint8Array> {
   const rows = flattenPayload(payload);
+  const fontPath = resolveReportExportFontPath();
+  const generated = interpolateSystemCopy(copy.generatedAt, { iso: new Date().toISOString() });
   return new Promise((resolve, reject) => {
     const chunks: Uint8Array[] = [];
     const document = new PDFDocument({ size: 'A4', margin: 40 });
@@ -57,9 +69,10 @@ async function renderPdf(payload: unknown): Promise<Uint8Array> {
     document.on('end', () => resolve(Buffer.concat(chunks)));
     document.on('error', reject);
 
-    document.fontSize(16).text('Report Export', { underline: true });
+    document.font(fontPath);
+    document.fontSize(16).text(copy.title, { underline: true });
     document.moveDown(0.6);
-    document.fontSize(10).text(`Generated at: ${new Date().toISOString()}`);
+    document.fontSize(10).text(generated);
     document.moveDown(1);
     document.fontSize(9);
     for (const [path, value] of rows) {
@@ -69,8 +82,8 @@ async function renderPdf(payload: unknown): Promise<Uint8Array> {
   });
 }
 
-function toCsvRows(payload: unknown): string {
-  const rows = [['path', 'value'], ...flattenPayload(payload)];
+function toCsvRows(payload: unknown, copy: ReturnType<typeof reportExportFileCopy>): string {
+  const rows = [[copy.path, copy.value], ...flattenPayload(payload)];
   return rows.map((row) => row.map(escapeCsvCell).join(',')).join('\n') + '\n';
 }
 

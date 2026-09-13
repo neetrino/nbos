@@ -1,17 +1,19 @@
 'use client';
 
 import { PhoneIncoming, PhoneOutgoing } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { ActiveCallScreenSnapshot } from '@/lib/api/calls';
-import { activeCallDirectionLabel, activeCallPhaseLabel } from './active-call-labels';
+import { activeCallDirectionLabelKey, activeCallPhaseLabelKey } from './active-call-labels';
 import { formatCallDuration } from './format-call-duration';
 
 export function ActiveCallRecentCalls({ snapshot }: { snapshot: ActiveCallScreenSnapshot | null }) {
+  const t = useTranslations('crm');
   const items = snapshot?.recentCalls ?? [];
 
   return (
     <section>
       <h2 className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-wide uppercase">
-        Recent calls
+        {t('calls.recentCalls')}
       </h2>
       {items.length === 0 ? (
         <p className="text-muted-foreground text-xs">—</p>
@@ -27,6 +29,7 @@ export function ActiveCallRecentCalls({ snapshot }: { snapshot: ActiveCallScreen
 }
 
 function RecentCallRow({ item }: { item: ActiveCallScreenSnapshot['recentCalls'][number] }) {
+  const t = useTranslations('crm');
   const Icon = item.direction === 'OUTBOUND' ? PhoneOutgoing : PhoneIncoming;
   return (
     <li className="flex items-start gap-2.5 py-1">
@@ -36,7 +39,8 @@ function RecentCallRow({ item }: { item: ActiveCallScreenSnapshot['recentCalls']
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-3">
           <p className="text-foreground min-w-0 truncate text-xs font-medium">
-            {activeCallDirectionLabel(item.direction)} · {activeCallPhaseLabel(item.phase)}
+            {t(activeCallDirectionLabelKey(item.direction) as never)} ·{' '}
+            {t(activeCallPhaseLabelKey(item.phase) as never)}
           </p>
           <p className="text-muted-foreground shrink-0 text-[11px] tabular-nums">
             {formatCallDuration(item.durationSec)}

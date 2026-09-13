@@ -20,6 +20,7 @@ import enSearch from '../messages/en/search.json';
 import enTasks from '../messages/en/tasks.json';
 import enQuick from '../messages/en/quick.json';
 import enChecklist from '../messages/en/checklist.json';
+import enMarketing from '../messages/en/marketing.json';
 import ruAccount from '../messages/ru/account.json';
 import ruCommon from '../messages/ru/common.json';
 import ruDashboard from '../messages/ru/dashboard.json';
@@ -41,6 +42,29 @@ import ruSearch from '../messages/ru/search.json';
 import ruTasks from '../messages/ru/tasks.json';
 import ruQuick from '../messages/ru/quick.json';
 import ruChecklist from '../messages/ru/checklist.json';
+import ruMarketing from '../messages/ru/marketing.json';
+import hyAccount from '../messages/hy/account.json';
+import hyCommon from '../messages/hy/common.json';
+import hyDashboard from '../messages/hy/dashboard.json';
+import hyForms from '../messages/hy/forms.json';
+import hyHr from '../messages/hy/hr.json';
+import hyNavigation from '../messages/hy/navigation.json';
+import hyNotifications from '../messages/hy/notifications.json';
+import hyWorkSpaces from '../messages/hy/work-spaces.json';
+import hyCrm from '../messages/hy/crm.json';
+import hySupport from '../messages/hy/support.json';
+import hyInvoices from '../messages/hy/invoices.json';
+import hyDeliveryBoard from '../messages/hy/delivery-board.json';
+import hyPayroll from '../messages/hy/payroll.json';
+import hyCredentials from '../messages/hy/credentials.json';
+import hyExpenses from '../messages/hy/expenses.json';
+import hyExpensePlans from '../messages/hy/expense-plans.json';
+import hyClientServices from '../messages/hy/client-services.json';
+import hySearch from '../messages/hy/search.json';
+import hyTasks from '../messages/hy/tasks.json';
+import hyQuick from '../messages/hy/quick.json';
+import hyChecklist from '../messages/hy/checklist.json';
+import hyMarketing from '../messages/hy/marketing.json';
 import { flattenMessageKeys } from './flatten-messages';
 import { mergeMessages } from './merge-messages';
 
@@ -81,6 +105,43 @@ describe('completed i18n catalogs', () => {
     );
     expect(flattenMessageKeys(enQuick).sort()).toEqual(flattenMessageKeys(ruQuick).sort());
     expect(flattenMessageKeys(enChecklist).sort()).toEqual(flattenMessageKeys(ruChecklist).sort());
+    expect(flattenMessageKeys(enMarketing).sort()).toEqual(flattenMessageKeys(ruMarketing).sort());
+    expect(flattenMessageKeys(enCommon).sort()).toEqual(flattenMessageKeys(hyCommon).sort());
+    expect(flattenMessageKeys(enAccount).sort()).toEqual(flattenMessageKeys(hyAccount).sort());
+    expect(flattenMessageKeys(enNavigation).sort()).toEqual(
+      flattenMessageKeys(hyNavigation).sort(),
+    );
+    expect(flattenMessageKeys(enDashboard).sort()).toEqual(flattenMessageKeys(hyDashboard).sort());
+    expect(flattenMessageKeys(enForms).sort()).toEqual(flattenMessageKeys(hyForms).sort());
+    expect(flattenMessageKeys(enHr).sort()).toEqual(flattenMessageKeys(hyHr).sort());
+    expect(flattenMessageKeys(enTasks).sort()).toEqual(flattenMessageKeys(hyTasks).sort());
+    expect(flattenMessageKeys(enSearch).sort()).toEqual(flattenMessageKeys(hySearch).sort());
+    expect(flattenMessageKeys(enNotifications).sort()).toEqual(
+      flattenMessageKeys(hyNotifications).sort(),
+    );
+    expect(flattenMessageKeys(enWorkSpaces).sort()).toEqual(
+      flattenMessageKeys(hyWorkSpaces).sort(),
+    );
+    expect(flattenMessageKeys(enCrm).sort()).toEqual(flattenMessageKeys(hyCrm).sort());
+    expect(flattenMessageKeys(enSupport).sort()).toEqual(flattenMessageKeys(hySupport).sort());
+    expect(flattenMessageKeys(enInvoices).sort()).toEqual(flattenMessageKeys(hyInvoices).sort());
+    expect(flattenMessageKeys(enDeliveryBoard).sort()).toEqual(
+      flattenMessageKeys(hyDeliveryBoard).sort(),
+    );
+    expect(flattenMessageKeys(enPayroll).sort()).toEqual(flattenMessageKeys(hyPayroll).sort());
+    expect(flattenMessageKeys(enCredentials).sort()).toEqual(
+      flattenMessageKeys(hyCredentials).sort(),
+    );
+    expect(flattenMessageKeys(enExpenses).sort()).toEqual(flattenMessageKeys(hyExpenses).sort());
+    expect(flattenMessageKeys(enExpensePlans).sort()).toEqual(
+      flattenMessageKeys(hyExpensePlans).sort(),
+    );
+    expect(flattenMessageKeys(enClientServices).sort()).toEqual(
+      flattenMessageKeys(hyClientServices).sort(),
+    );
+    expect(flattenMessageKeys(enQuick).sort()).toEqual(flattenMessageKeys(hyQuick).sort());
+    expect(flattenMessageKeys(enChecklist).sort()).toEqual(flattenMessageKeys(hyChecklist).sort());
+    expect(flattenMessageKeys(enMarketing).sort()).toEqual(flattenMessageKeys(hyMarketing).sort());
   });
 
   it('falls back to English when a Russian string is missing', () => {
@@ -179,5 +240,9 @@ describe('completed i18n catalogs', () => {
     expect(ruChecklist.evidence.attachments).toContain('count');
     expect(enChecklist.sheet.complete.length).toBeGreaterThan(0);
     expect(ruChecklist.sheet.complete.length).toBeGreaterThan(0);
+    expect(enMarketing.title.length).toBeGreaterThan(0);
+    expect(ruMarketing.title.length).toBeGreaterThan(0);
+    expect(enCrm.calls.incomingCall).toContain('{phone}');
+    expect(ruCrm.calls.incomingCall).toContain('{phone}');
   });
 });

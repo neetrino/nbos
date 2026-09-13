@@ -256,6 +256,123 @@
       "createError": "Could not create manual bonus."
     }
   },
+  "compensation": {
+    "sheet": {
+      "titleEmployee": "Employee month compensation",
+      "titleWallet": "Your month compensation",
+      "emptyHintFinance": "Select a month cell on the salary board.",
+      "emptyHintWallet": "Select a month on your wallet.",
+      "loading": "Loading compensation…",
+      "loadError": "Could not load month compensation.",
+      "tabs": {
+        "general": "General",
+        "bonuses": "Bonuses",
+        "kpi": "KPI"
+      },
+      "sections": {
+        "paymentsWallet": "Payments",
+        "paymentsFinance": "Pay Now / payments",
+        "bonusBreakdown": "Bonus breakdown"
+      }
+    },
+    "expense": {
+      "noCard": "No expense card yet. Materializes when the payroll run is approved.",
+      "openCard": "Open expense card",
+      "payNowEmployee": "Pay Now (this employee)",
+      "noPayments": "No payments recorded yet.",
+      "tableDate": "Date",
+      "tableAmount": "Amount",
+      "tableNotes": "Notes"
+    },
+    "paymentStatus": {
+      "PAID": "Paid",
+      "PARTIAL": "Partially paid",
+      "UNPAID": "Unpaid"
+    },
+    "summary": {
+      "title": "Month summary",
+      "totalPayable": "Total payable",
+      "pendingCarryOver": "Pending carry-over",
+      "payrollMonth": "Payroll month",
+      "payrollRun": "Payroll run"
+    },
+    "walletHints": {
+      "payoutPhase": "Payout phase: {phase}",
+      "partialPay": "Partial pay this month — {phase} does not mean the full amount is in your bank yet; see payments below when an expense card exists.",
+      "salesBonusReduction": "Sales bonuses may be reduced at payroll attach when KPI is below target (burned amount detail will appear here after policy engine ships)."
+    },
+    "payoutPhaseDescription": {
+      "past_paid": "Salary line fully paid through expense payments.",
+      "active_payout": "Prior month approved — pay via expense card (typically 1–15).",
+      "accumulating": "Current or future month — bonuses and salary still building."
+    },
+    "kpi": {
+      "title": "Sales KPI",
+      "earnedPayoutMonths": "Earned month {earned} · payout month {payout}",
+      "source": {
+        "KPI_RESULT": "Synced KPI result snapshot",
+        "NO_KPI_POLICY": "No KPI policy on compensation profile",
+        "NOT_SYNCED": "KPI snapshot not synced for this month"
+      },
+      "policyManagedPrefix": "KPI policy is managed in",
+      "policyManagedLink": "My Company → Compensation",
+      "policyManagedSuffix": ". Snapshots refresh automatically on client payments, bonus accrual, and payroll attach.",
+      "notSyncedDetail": "No KPI snapshot for earned month {earned} yet. Included Sales bonuses will scale at attach once the month result is available.",
+      "notSyncedSummary": "Sales KPI for earned month {earned} is not finalized yet. Bonuses in this payout month scale at attach once the snapshot exists.",
+      "attainment": "Attainment: {pct}%",
+      "earnedScale": "Earned {earned}: {scale}",
+      "gateSummary": {
+        "incomplete": "Sales KPI plan/actual are incomplete in the synced snapshot. Included Sales bonuses scale at attach per KPI policy.",
+        "complete": "Sales KPI gate: actual {pct}% of plan → {scale} payout scale for included sales bonuses at attach."
+      },
+      "scale": {
+        "full": "100%",
+        "half": "50%",
+        "zero": "0%",
+        "planNotSet": "100% (KPI plan not set)"
+      }
+    },
+    "bonus": {
+      "empty": "No bonus releases included in this payroll month.",
+      "bySource": "By bonus source",
+      "releasesThisMonth": "Releases this month",
+      "metrics": {
+        "full": "Full",
+        "payable": "Payable",
+        "kpiPct": "KPI %",
+        "released": "Released",
+        "burned": "Burned",
+        "burnedKpi": "Burned KPI",
+        "carryOver": "Carry-over",
+        "included": "Included"
+      },
+      "identity": {
+        "project": "Project",
+        "product": "Product",
+        "release": "Release",
+        "order": "Order {code}"
+      },
+      "policyBreakdown": "Policy breakdown",
+      "burnedTotal": "Burned {amount}",
+      "carryOverTotal": "Carry-over {amount}",
+      "appliedThisMonth": "Applied this month {amount}",
+      "pendingPriorMonths": "Pending prior months {amount}",
+      "breakdownStatus": {
+        "INCOMING": "Incoming",
+        "BURNED": "Burned KPI",
+        "CARRY_OVER": "Carry-over",
+        "CLAWBACK": "Clawback"
+      },
+      "releaseType": {
+        "AUTO": "Auto",
+        "MANUAL": "Manual",
+        "EARLY": "Early",
+        "EXTRA": "Extra",
+        "OVER_FUNDING": "Over funding",
+        "CORRECTION": "Correction"
+      }
+    }
+  },
   "audit": {
     "action": {
       "CREATED": "Created",

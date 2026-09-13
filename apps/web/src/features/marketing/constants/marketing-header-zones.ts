@@ -2,13 +2,12 @@ export type MarketingSectionId = 'board' | 'attribution' | 'dashboard' | 'settin
 
 export type MarketingHeaderZoneDefinition = {
   zone: MarketingSectionId;
-  label: string;
 };
 
-/** Header zones for Marketing (Finance/Reports-style top nav). */
+/** Header zones for Marketing (Finance/Reports-style top nav). Labels resolve via `marketing.nav.*`. */
 export const MARKETING_HEADER_ZONES: MarketingHeaderZoneDefinition[] = [
-  { zone: 'board', label: 'Board' },
-  { zone: 'attribution', label: 'Attribution' },
-  { zone: 'dashboard', label: 'Dashboard' },
-  { zone: 'settings', label: 'Settings' },
+  { zone: 'board' },
+  { zone: 'attribution' },
+  { zone: 'dashboard' },
+  { zone: 'settings' },
 ];

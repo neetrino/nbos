@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import type { MarketingAccount } from '@/lib/api/marketing';
@@ -39,6 +40,8 @@ export function MarketingAccountExpensePlanLink({
   saving,
   plansLoading,
 }: MarketingAccountExpensePlanLinkProps) {
+  const t = useTranslations('marketing');
+  const tCommon = useTranslations('common');
   const trimmedId = selectedPlanId.trim();
   const knownIds = new Set(expensePlans.map((p) => p.id));
   const selectValue = trimmedId ? trimmedId : NO_PLAN_VALUE;
@@ -47,29 +50,26 @@ export function MarketingAccountExpensePlanLink({
   return (
     <div className="mt-4 space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Label>Finance expense plan</Label>
+        <Label>{t('settings.expensePlan.title')}</Label>
         <div className="flex flex-wrap gap-x-3 text-sm">
           <Link
             href="/finance/expenses/plans"
             className="text-primary underline-offset-4 hover:underline"
           >
-            All plans
+            {t('settings.expensePlan.allPlans')}
           </Link>
           {selectedPlanId.trim() ? (
             <Link
               href={expensePlansListWithOpenPlanHref(selectedPlanId.trim())}
               className="text-primary underline-offset-4 hover:underline"
             >
-              Open selected plan
+              {t('settings.expensePlan.openSelected')}
             </Link>
           ) : null}
         </div>
       </div>
       {account.channel === 'LIST_AM' ? (
-        <p className="text-muted-foreground text-xs">
-          List.am spend is tracked per marketing account. Link the recurring subscription (or
-          equivalent) expense plan so paid and planned amounts flow into marketing analytics.
-        </p>
+        <p className="text-muted-foreground text-xs">{t('settings.expensePlan.listAmHint')}</p>
       ) : null}
       <div className="flex gap-2">
         <Select
@@ -81,12 +81,20 @@ export function MarketingAccountExpensePlanLink({
           disabled={plansLoading}
         >
           <SelectTrigger className="min-w-0 flex-1">
-            <SelectValue placeholder={plansLoading ? 'Loading plans…' : 'Choose a plan'} />
+            <SelectValue
+              placeholder={
+                plansLoading
+                  ? t('settings.expensePlan.loadingPlans')
+                  : t('settings.expensePlan.choosePlan')
+              }
+            />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={NO_PLAN_VALUE}>No plan linked</SelectItem>
+            <SelectItem value={NO_PLAN_VALUE}>{t('settings.expensePlan.noPlanLinked')}</SelectItem>
             {linkedMissingFromList ? (
-              <SelectItem value={trimmedId}>Linked plan (not in Marketing list)</SelectItem>
+              <SelectItem value={trimmedId}>
+                {t('settings.expensePlan.linkedMissingFromList')}
+              </SelectItem>
             ) : null}
             {expensePlans.map((plan) => (
               <SelectItem key={plan.id} value={plan.id}>
@@ -96,14 +104,11 @@ export function MarketingAccountExpensePlanLink({
           </SelectContent>
         </Select>
         <Button variant="outline" onClick={() => void onSave()} disabled={saving || plansLoading}>
-          {saving ? 'Saving…' : 'Save link'}
+          {saving ? tCommon('saving') : t('settings.expensePlan.saveLink')}
         </Button>
       </div>
       {linkedMissingFromList ? (
-        <p className="text-destructive text-xs">
-          This account points to a plan that is missing or inaccessible. Pick a current plan or
-          clear the link.
-        </p>
+        <p className="text-destructive text-xs">{t('settings.expensePlan.missingPlanWarning')}</p>
       ) : null}
     </div>
   );

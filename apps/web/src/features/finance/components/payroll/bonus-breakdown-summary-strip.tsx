@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { SalaryLineMonthDetail } from '@/lib/api/payroll-runs';
 import { BonusPolicyBreakdownBadges } from './bonus-policy-breakdown-badges';
@@ -22,6 +23,7 @@ function activeSummaryTags(
 }
 
 export function BonusBreakdownSummaryStrip({ detail }: { detail: SalaryLineMonthDetail }) {
+  const t = useTranslations('payroll');
   const summary = detail.bonusBreakdownSummary;
   const tags = activeSummaryTags(summary);
   if (tags.length === 0 && detail.bonusBreakdown.length === 0) {
@@ -30,27 +32,36 @@ export function BonusBreakdownSummaryStrip({ detail }: { detail: SalaryLineMonth
 
   return (
     <div className="border-border bg-muted/30 mb-4 flex flex-wrap items-center gap-3 rounded-lg border px-3 py-2 text-xs">
-      <span className="text-muted-foreground font-medium">Policy breakdown</span>
+      <span className="text-muted-foreground font-medium">
+        {t('compensation.bonus.policyBreakdown')}
+      </span>
       <BonusPolicyBreakdownBadges statuses={tags} />
       {parseAmount(summary.burnedTotal) > 0 ? (
         <span className="text-muted-foreground tabular-nums">
-          Burned {formatAmount(parseAmount(summary.burnedTotal))}
+          {t('compensation.bonus.burnedTotal', {
+            amount: formatAmount(parseAmount(summary.burnedTotal)),
+          })}
         </span>
       ) : null}
       {parseAmount(summary.carryOverTotal) > 0 ? (
         <span className="text-muted-foreground tabular-nums">
-          Carry-over {formatAmount(parseAmount(summary.carryOverTotal))}
+          {t('compensation.bonus.carryOverTotal', {
+            amount: formatAmount(parseAmount(summary.carryOverTotal)),
+          })}
         </span>
       ) : null}
       {detail.salaryLine.payrollCarryAppliedAmount ? (
         <span className="text-muted-foreground tabular-nums">
-          Applied this month{' '}
-          {formatAmount(parseAmount(detail.salaryLine.payrollCarryAppliedAmount))}
+          {t('compensation.bonus.appliedThisMonth', {
+            amount: formatAmount(parseAmount(detail.salaryLine.payrollCarryAppliedAmount)),
+          })}
         </span>
       ) : null}
       {detail.pendingPayrollCarryOver ? (
         <span className="text-muted-foreground tabular-nums">
-          Pending prior months {formatAmount(parseAmount(detail.pendingPayrollCarryOver))}
+          {t('compensation.bonus.pendingPriorMonths', {
+            amount: formatAmount(parseAmount(detail.pendingPayrollCarryOver)),
+          })}
         </span>
       ) : null}
     </div>

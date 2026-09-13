@@ -1,7 +1,9 @@
 import { Injectable, Inject, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
+import { DEFAULT_INTERFACE_LOCALE } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import { PlatformOwnershipService } from '../platform-ownership/platform-ownership.service';
+import { buildInvitationEmail } from './invitation-email';
 
 const INVITATION_EXPIRY_DAYS = 7;
 const RESEND_API_URL = 'https://api.resend.com/emails';
@@ -60,7 +62,12 @@ export class InvitationsService {
       },
     });
 
-    await this.sendInvitationEmail(invitation.email, invitation.id, invitation.expiresAt);
+    await this.sendInvitationEmail({
+      email: invitation.email,
+      invitationId: invitation.id,
+      expiresAt: invitation.expiresAt,
+      invitedById: invitation.invitedById,
+    });
 
     return invitation;
   }
@@ -115,12 +122,22 @@ export class InvitationsService {
       },
     });
 
-    await this.sendInvitationEmail(invitation.email, invitation.id, invitation.expiresAt);
+    await this.sendInvitationEmail({
+      email: invitation.email,
+      invitationId: invitation.id,
+      expiresAt: invitation.expiresAt,
+      invitedById: invitation.invitedById,
+    });
 
     return invitation;
   }
 
-  private async sendInvitationEmail(email: string, invitationId: string, expiresAt: Date) {
+  private async sendInvitationEmail(params: {
+    email: string;
+    invitationId: string;
+    expiresAt: Date;
+    invitedById: string;
+  }) {
     const apiKey = process.env.RESEND_API_KEY;
     const fromEmail = process.env.RESEND_FROM_EMAIL;
 
@@ -129,9 +146,11 @@ export class InvitationsService {
     }
 
     const appUrl = process.env.APP_URL ?? 'http://localhost:3000';
-    const inviteLink = `${appUrl}/accept-invite?invitationId=${invitationId}`;
+    const inviteLink = `${appUrl}/accept-invite?invitationId=${params.invitationId}`;
     const replyTo = process.env.RESEND_ADMIN_EMAIL;
-    const expiresAtDate = expiresAt.toISOString().split('T')[0] ?? '';
+    const expiresAtDate = params.expiresAt.toISOString().split('T')[0] ?? '';
+    const locale = await this.readInviterLocale(params.invitedById);
+    const { subject, html } = buildInvitationEmail({ locale, inviteLink, expiresAtDate });
 
     try {
       const response = await fetch(RESEND_API_URL, {
@@ -142,20 +161,28 @@ export class InvitationsService {
         },
         body: JSON.stringify({
           from: fromEmail,
-          to: [email],
+          to: [params.email],
           reply_to: replyTo ? [replyTo] : undefined,
-          subject: 'You are invited to NBOS',
-          html: `<p>You have been invited to NBOS.</p><p>Accept invitation: <a href="${inviteLink}">${inviteLink}</a></p><p>Invitation expires on: ${expiresAtDate}</p>`,
+          subject,
+          html,
         }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        this.logger.warn(`Failed to send invitation email to ${email}: ${errorText}`);
+        this.logger.warn(`Failed to send invitation email to ${params.email}: ${errorText}`);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.warn(`Resend request failed for ${email}: ${message}`);
+      this.logger.warn(`Resend request failed for ${params.email}: ${message}`);
     }
+  }
+
+  private async readInviterLocale(invitedById: string): Promise<string> {
+    const inviter = await this.prisma.employee.findUnique({
+      where: { id: invitedById },
+      select: { interfaceLocale: true },
+    });
+    return inviter?.interfaceLocale ?? DEFAULT_INTERFACE_LOCALE;
   }
 }

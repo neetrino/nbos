@@ -1,0 +1,23 @@
+{
+  "row": {
+    "markDone": "Նշել ավարտված",
+    "clearDone": "Հանել ավարտված",
+    "required": "Պարտադիր",
+    "notDone": "Չի արվել",
+    "saveNotDone": "Պահել «չի արվել»",
+    "saveNotDoneHint": "Պահել «չի արվել» (կամ Enter մեկնաբանությունում)",
+    "clearNotDone": "Մաքրել «չի արվել»",
+    "commentPlaceholder": "Մեկնաբանություն կամ «չի արվել» պատճառ"
+  },
+  "evidence": {
+    "attachments": "{count, plural, one {# կցորդ} other {# կցորդ}}",
+    "link": "Հղում",
+    "text": "Տեքստ"
+  },
+  "sheet": {
+    "loading": "Բեռնվում է…",
+    "empty": "Ստուգաթերթիկներ չկան։",
+    "completing": "Ավարտվում է…",
+    "complete": "Ավարտել ստուգաթերթիկը"
+  }
+}

@@ -1,9 +1,9 @@
 import type { CallActivity, CallDirection } from '@/lib/api/calls';
 
-export function callActivityTitle(direction: CallDirection | null): string {
-  if (direction === 'OUTBOUND') return 'Outgoing Call';
-  if (direction === 'INBOUND') return 'Incoming Call';
-  return 'Call';
+export function callActivityTitleKey(direction: CallDirection | null): string {
+  if (direction === 'OUTBOUND') return 'calls.outgoingCallTitle';
+  if (direction === 'INBOUND') return 'calls.incomingCallTitle';
+  return 'calls.call';
 }
 
 export function formatCallActivityDay(iso: string): string {

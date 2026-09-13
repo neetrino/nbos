@@ -4,6 +4,7 @@ import { NBOS_DATE_PICKER_DEFAULT_LOCALE } from './date-picker-constants';
 export function resolveDatePickerLocale(interfaceLocale: string, explicitLocale?: string): string {
   if (explicitLocale) return explicitLocale;
   if (interfaceLocale === 'ru') return 'ru-RU';
+  if (interfaceLocale === 'hy') return 'hy-AM';
   if (interfaceLocale === 'en') return 'en-US';
   return NBOS_DATE_PICKER_DEFAULT_LOCALE;
 }

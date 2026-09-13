@@ -8,6 +8,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
+import { DEFAULT_INTERFACE_LOCALE } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { DriveService } from '../drive/drive.service';
@@ -454,7 +455,11 @@ export class ReportsService {
 
     try {
       const payload = await this.getReportPayload(job.reportKey, job.ownerModule, job.filters);
-      const exportFile = await renderReportExportFile(job.format, payload);
+      const exportFile = await renderReportExportFile(
+        job.format,
+        payload,
+        await this.readExporterLocale(job.requestedById),
+      );
       const driveFile = await this.driveService.createGeneratedFileAsset({
         displayName: buildExportFileName(job.reportKey, job.id, exportFile.extension),
         fileType: exportFile.fileType,
@@ -473,6 +478,14 @@ export class ReportsService {
     } catch (caught) {
       return this.failExportJob(job.id, actorId, errorMessage(caught));
     }
+  }
+
+  private async readExporterLocale(employeeId: string): Promise<string> {
+    const row = await this.prisma.employee.findUnique({
+      where: { id: employeeId },
+      select: { interfaceLocale: true },
+    });
+    return row?.interfaceLocale ?? DEFAULT_INTERFACE_LOCALE;
   }
 
   private buildAuditChanges(

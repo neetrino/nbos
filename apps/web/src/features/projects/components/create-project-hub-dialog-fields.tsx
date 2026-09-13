@@ -1,6 +1,7 @@
 'use client';
 
 import { User, Building2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -42,6 +43,7 @@ export function CreateProjectHubDialogFields({
   saving,
   error,
 }: CreateProjectHubDialogFieldsProps) {
+  const t = useTranslations('forms');
   const searchContacts = useContactRelationSearch(25);
   const searchCompanies = useCompanyRelationSearch(25);
   const contactPicker = useRelationPickerActions('contact', 'project-hub-create');
@@ -50,32 +52,32 @@ export function CreateProjectHubDialogFields({
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="project-hub-name">Name *</Label>
+        <Label htmlFor="project-hub-name">{t('project.fields.name')}</Label>
         <Input
           id="project-hub-name"
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
-          placeholder="e.g. Logistics Pro Dashboard"
+          placeholder={t('project.placeholders.name')}
           disabled={saving}
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="project-hub-description">Description</Label>
+        <Label htmlFor="project-hub-description">{t('project.fields.description')}</Label>
         <Textarea
           id="project-hub-description"
           value={description}
           onChange={(e) => onDescriptionChange(e.target.value)}
-          placeholder="Short context for the team"
+          placeholder={t('project.placeholders.description')}
           rows={3}
           disabled={saving}
         />
       </div>
       <RelationPickerField
-        label="Client contact"
+        label={t('project.fields.clientContact')}
         entityKind="contact"
         value={contactId || null}
         selectionLabel={contactLabel || null}
-        placeholder="Search contacts…"
+        placeholder={t('project.placeholders.contactSearch')}
         icon={<User size={12} />}
         disabled={saving}
         onSearch={searchContacts}
@@ -84,11 +86,11 @@ export function CreateProjectHubDialogFields({
         {...contactPicker}
       />
       <RelationPickerField
-        label="Company"
+        label={t('project.fields.company')}
         entityKind="company"
         value={companyId || null}
         selectionLabel={companyLabel || null}
-        placeholder="Optional — search company…"
+        placeholder={t('project.placeholders.companySearch')}
         icon={<Building2 size={12} />}
         disabled={saving}
         onSearch={searchCompanies}

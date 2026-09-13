@@ -1,19 +1,22 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { callsApi, type ClickToCallTargetType } from '@/lib/api/calls';
 import { ApiError, getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
 import { useActiveCall } from './ActiveCallProvider';
-import { CLICK_TO_CALL_ERROR_LABEL, type ClickToCallUiState } from './click-to-call-status';
+import { CLICK_TO_CALL_ERROR_LABEL_KEY, type ClickToCallUiState } from './click-to-call-status';
 import {
   clearClickToCallIdempotencyKey,
+  CLICK_TO_CALL_NEW_CALL_WARNING_KEY,
   nextClickToCallIdempotencyKey,
   requestNewClickToCallKey,
   shouldKeepClickToCallIdempotencyKey,
 } from './click-to-call-idempotency-key';
 
 export function useClickToCall() {
+  const t = useTranslations('crm');
   const [state, setState] = useState<ClickToCallUiState>('idle');
   const { openCall } = useActiveCall();
 
@@ -42,10 +45,10 @@ export function useClickToCall() {
           clearClickToCallIdempotencyKey(sessionStorage, input.targetType, input.targetId);
         }
         setState('error');
-        toast.error(getApiErrorMessage(caught, CLICK_TO_CALL_ERROR_LABEL));
+        toast.error(getApiErrorMessage(caught, t(CLICK_TO_CALL_ERROR_LABEL_KEY as never)));
       }
     },
-    [openCall],
+    [openCall, t],
   );
 
   const startNewCall = useCallback(
@@ -55,11 +58,12 @@ export function useClickToCall() {
         input.targetType,
         input.targetId,
         (message) => window.confirm(message),
+        t(CLICK_TO_CALL_NEW_CALL_WARNING_KEY as never),
       );
       if (!confirmed) return;
       await start(input);
     },
-    [start],
+    [start, t],
   );
 
   return { state, start, startNewCall };
