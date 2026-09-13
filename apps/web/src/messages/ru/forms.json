@@ -78,6 +78,142 @@
     },
     "createError": "Не удалось создать расход. Проверьте соединение и попробуйте снова."
   },
+  "contact": {
+    "title": "Новый контакт",
+    "fields": {
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "phone": "Телефон",
+      "contactType": "Тип контакта",
+      "contactTypeAria": "Тип контакта"
+    },
+    "placeholders": {
+      "firstName": "John",
+      "lastName": "Smith",
+      "phone": "+374 XX XXXXXX"
+    },
+    "roles": {
+      "CLIENT": "Клиент",
+      "PARTNER": "Партнёр",
+      "CONTRACTOR": "Подрядчик",
+      "OTHER": "Другое"
+    },
+    "createError": "Не удалось создать контакт."
+  },
+  "company": {
+    "title": "Новая компания",
+    "fields": {
+      "name": "Название",
+      "type": "Тип",
+      "taxStatus": "Налоговый статус",
+      "taxStatusAria": "Налоговый статус"
+    },
+    "placeholders": {
+      "name": "Краткое название для списков и поиска"
+    },
+    "types": {
+      "LEGAL": "Юридическое лицо",
+      "SOLE_PROPRIETOR": "ИП",
+      "INDIVIDUAL": "Физлицо"
+    },
+    "taxStatuses": {
+      "TAX": "С налогом",
+      "TAX_FREE": "Без налога"
+    },
+    "createError": "Не удалось создать компанию."
+  },
+  "project": {
+    "title": "Новый проект",
+    "fields": {
+      "name": "Название *",
+      "description": "Описание",
+      "clientContact": "Контакт клиента",
+      "company": "Компания"
+    },
+    "placeholders": {
+      "name": "например, Logistics Pro Dashboard",
+      "description": "Краткий контекст для команды",
+      "contactSearch": "Поиск контактов…",
+      "companySearch": "Необязательно — поиск компании…"
+    },
+    "createError": "Не удалось создать проект. Проверьте поля и попробуйте снова."
+  },
+  "partner": {
+    "title": "Новый партнёр",
+    "fields": {
+      "name": "Название *",
+      "level": "Уровень",
+      "direction": "Направление",
+      "defaultPercent": "Процент по умолчанию",
+      "status": "Статус",
+      "primaryContact": "Основной контакт",
+      "notes": "Заметки",
+      "partnerSince": "Партнёр с",
+      "partnerSinceAria": "Партнёр с"
+    },
+    "placeholders": {
+      "name": "Название партнёра",
+      "contactSearch": "Необязательно — поиск контактов…",
+      "notes": "Необязательные внутренние заметки"
+    },
+    "levels": {
+      "REGULAR": "Обычный",
+      "PREMIUM": "Премиум"
+    },
+    "directions": {
+      "INBOUND": "Входящий",
+      "OUTBOUND": "Исходящий",
+      "BOTH": "Оба"
+    },
+    "statuses": {
+      "ACTIVE": "Активный",
+      "PAUSED": "Приостановлен",
+      "TERMINATED": "Завершён"
+    },
+    "createError": "Не удалось создать партнёра. Проверьте соединение и попробуйте снова."
+  },
+  "product": {
+    "title": "Новый продукт",
+    "fields": {
+      "name": "Название продукта *",
+      "category": "Категория продукта *",
+      "type": "Тип продукта *",
+      "deadline": "Дедлайн",
+      "deadlineAria": "Дедлайн",
+      "description": "Описание"
+    },
+    "placeholders": {
+      "name": "например, Company Website, Mobile App",
+      "selectCategory": "Выберите категорию",
+      "selectType": "Выберите тип",
+      "description": "Требования к продукту, объём работ…"
+    },
+    "categories": {
+      "CODE": "Code",
+      "WORDPRESS": "WordPress",
+      "SHOPIFY": "Shopify",
+      "MARKETING": "Marketing",
+      "OTHER": "Другое"
+    },
+    "types": {
+      "BUSINESS_CARD_WEBSITE": "Сайт-визитка",
+      "COMPANY_WEBSITE": "Корпоративный сайт",
+      "MOBILE_APP": "Мобильное приложение",
+      "WEB_APP": "Веб-приложение",
+      "CRM": "CRM-система",
+      "ECOMMERCE": "E-Commerce",
+      "SAAS": "SaaS-платформа",
+      "LANDING": "Лендинг",
+      "ERP": "ERP-система",
+      "LOGO": "Логотип",
+      "BRANDING": "Брендинг",
+      "DESIGN": "Дизайн",
+      "SEO": "SEO",
+      "PPC": "PPC",
+      "SMM": "SMM",
+      "OTHER": "Другое"
+    }
+  },
   "errors": {
     "validation": "Проверьте выделенные поля и попробуйте снова.",
     "network": "Не удалось связаться с сервером. Проверьте соединение и попробуйте снова."

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -29,9 +30,6 @@ const EMPTY_FORM = {
   taxStatus: 'TAX',
 };
 
-const COMPANY_TYPE_OPTIONS = COMPANY_TYPES.map((t) => ({ value: t.value, label: t.label }));
-const TAX_STATUS_OPTIONS = TAX_STATUSES.map((s) => ({ value: s.value, label: s.label }));
-
 export function CreateCompanyDialog({
   open,
   onOpenChange,
@@ -39,8 +37,28 @@ export function CreateCompanyDialog({
   defaultName = '',
   forceNestedBackdrop = false,
 }: CreateCompanyDialogProps) {
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+
+  const companyTypeOptions = useMemo(
+    () =>
+      COMPANY_TYPES.map((companyType) => ({
+        value: companyType.value,
+        label: t(`company.types.${companyType.value}` as never),
+      })),
+    [t],
+  );
+
+  const taxStatusOptions = useMemo(
+    () =>
+      TAX_STATUSES.map((taxStatus) => ({
+        value: taxStatus.value,
+        label: t(`company.taxStatuses.${taxStatus.value}` as never),
+      })),
+    [t],
+  );
 
   useEffect(() => {
     if (!open || !defaultName.trim()) return;
@@ -67,7 +85,7 @@ export function CreateCompanyDialog({
       onOpenChange(false);
       reset();
     } catch (caught: unknown) {
-      toastApiError(caught, 'Company could not be created.');
+      toastApiError(caught, t('company.createError'));
     } finally {
       setLoading(false);
     }
@@ -77,16 +95,16 @@ export function CreateCompanyDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card sm:max-w-[540px]" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
-          <DialogTitle>New Company</DialogTitle>
+          <DialogTitle>{t('company.title')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <InlineField
             variant="controlled"
-            label="Name"
+            label={t('company.fields.name')}
             type="text"
             value={form.name}
-            placeholder="Short name for lists and search"
+            placeholder={t('company.placeholders.name')}
             disabled={loading}
             onValueChange={(name) => setForm((prev) => ({ ...prev, name }))}
           />
@@ -94,31 +112,31 @@ export function CreateCompanyDialog({
           <div className="grid grid-cols-2 gap-4">
             <InlineField
               variant="controlled"
-              label="Type"
+              label={t('company.fields.type')}
               type="select"
               value={form.type}
-              options={COMPANY_TYPE_OPTIONS}
+              options={companyTypeOptions}
               disabled={loading}
               onValueChange={(type) => {
                 if (type) setForm((prev) => ({ ...prev, type }));
               }}
             />
             <DetailSheetFieldSegmented
-              label="Tax status"
+              label={t('company.fields.taxStatus')}
               value={form.taxStatus}
-              options={TAX_STATUS_OPTIONS}
+              options={taxStatusOptions}
               onValueChange={(taxStatus) => setForm((prev) => ({ ...prev, taxStatus }))}
               disabled={loading}
-              ariaLabel="Tax status"
+              ariaLabel={t('company.fields.taxStatusAria')}
             />
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? 'Creating...' : 'Create Company'}
+              {loading ? tCommon('creating') : tCommon('create')}
             </Button>
           </DialogFooter>
         </form>

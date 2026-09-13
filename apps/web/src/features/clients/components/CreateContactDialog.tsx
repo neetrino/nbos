@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { RelationCreatePrefill } from '@/components/shared/relation-picker';
 import { DetailSheetFieldSegmented, InlineField } from '@/components/shared';
 import {
@@ -31,11 +32,6 @@ const EMPTY_FORM = {
   role: 'CLIENT',
 };
 
-const CONTACT_ROLE_OPTIONS = CONTACT_ROLES.map((role) => ({
-  value: role.value,
-  label: role.label,
-}));
-
 export function CreateContactDialog({
   open,
   onOpenChange,
@@ -43,8 +39,19 @@ export function CreateContactDialog({
   forceNestedBackdrop = false,
   prefill = null,
 }: CreateContactDialogProps) {
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+
+  const contactRoleOptions = useMemo(
+    () =>
+      CONTACT_ROLES.map((role) => ({
+        value: role.value,
+        label: t(`contact.roles.${role.value}` as never),
+      })),
+    [t],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -80,7 +87,7 @@ export function CreateContactDialog({
       onOpenChange(false);
       reset();
     } catch (caught: unknown) {
-      toastApiError(caught, 'Contact could not be created.');
+      toastApiError(caught, t('contact.createError'));
     } finally {
       setLoading(false);
     }
@@ -90,26 +97,26 @@ export function CreateContactDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card sm:max-w-[540px]" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
-          <DialogTitle>New Contact</DialogTitle>
+          <DialogTitle>{t('contact.title')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <InlineField
               variant="controlled"
-              label="First name"
+              label={t('contact.fields.firstName')}
               type="text"
               value={form.firstName}
-              placeholder="John"
+              placeholder={t('contact.placeholders.firstName')}
               disabled={loading}
               onValueChange={(firstName) => setForm((prev) => ({ ...prev, firstName }))}
             />
             <InlineField
               variant="controlled"
-              label="Last name"
+              label={t('contact.fields.lastName')}
               type="text"
               value={form.lastName}
-              placeholder="Smith"
+              placeholder={t('contact.placeholders.lastName')}
               disabled={loading}
               onValueChange={(lastName) => setForm((prev) => ({ ...prev, lastName }))}
             />
@@ -117,29 +124,29 @@ export function CreateContactDialog({
 
           <InlineField
             variant="controlled"
-            label="Phone"
+            label={t('contact.fields.phone')}
             type="phone"
             value={form.phone}
-            placeholder="+374 XX XXXXXX"
+            placeholder={t('contact.placeholders.phone')}
             disabled={loading}
             onValueChange={(phone) => setForm((prev) => ({ ...prev, phone }))}
           />
 
           <DetailSheetFieldSegmented
-            label="Contact type"
+            label={t('contact.fields.contactType')}
             value={form.role}
-            options={CONTACT_ROLE_OPTIONS}
+            options={contactRoleOptions}
             onValueChange={(role) => setForm((prev) => ({ ...prev, role }))}
             disabled={loading}
-            ariaLabel="Contact type"
+            ariaLabel={t('contact.fields.contactTypeAria')}
           />
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? 'Creating...' : 'Create Contact'}
+              {loading ? tCommon('creating') : tCommon('create')}
             </Button>
           </DialogFooter>
         </form>

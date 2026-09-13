@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -46,6 +47,8 @@ export function CreateProjectHubDialog({
   defaultName = '',
   forceNestedBackdrop = false,
 }: CreateProjectHubDialogProps) {
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [contactId, setContactId] = useState('');
@@ -109,7 +112,7 @@ export function CreateProjectHubDialog({
       onCreated(project);
       handleOpenChange(false);
     } catch {
-      setSubmitError('Project could not be created. Check the fields and try again.');
+      setSubmitError(t('project.createError'));
     } finally {
       setSaving(false);
     }
@@ -121,7 +124,7 @@ export function CreateProjectHubDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
-          <DialogTitle>New project</DialogTitle>
+          <DialogTitle>{t('project.title')}</DialogTitle>
         </DialogHeader>
 
         <CreateProjectHubDialogFields
@@ -151,10 +154,10 @@ export function CreateProjectHubDialog({
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button type="button" onClick={() => void submit()} disabled={!canSubmit}>
-            {saving ? 'Creating…' : 'Create project'}
+            {saving ? tCommon('creating') : tCommon('create')}
           </Button>
         </DialogFooter>
       </DialogContent>
