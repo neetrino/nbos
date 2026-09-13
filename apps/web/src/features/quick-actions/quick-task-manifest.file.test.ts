@@ -28,6 +28,7 @@ describe('Quick Task and main PWA manifests', () => {
       start_url: string;
       scope: string;
       display: string;
+      icons: ReadonlyArray<{ src: string }>;
     };
     expect(manifest.id).toBe('/quick/task');
     expect(manifest.start_url).toBe('/quick/task');
