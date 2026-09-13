@@ -260,7 +260,7 @@ Production release выполняется вручную. Merge в `main` зап
 1. Cloudflare DNS + SSL Full (strict) (§2).
 2. Выбрать точный SHA с зелёным CI и проверить migration diff/совместимость.
 3. Если migrations менялись: вручную доказать их на Neon dev, затем один раз выполнить `prisma migrate deploy` на production direct connection.
-4. Вручную deploy только затронутую группу Coolify apps на том же SHA; backend group (`api` → `worker` → `scheduler`) держать синхронным.
+4. Вручную deploy только затронутую группу Coolify apps на том же SHA; backend group (`api` → `worker` → `scheduler`) держать синхронным. Локальный оркестратор: `pnpm deploy:prod` (§5.3).
 5. После каждого app дождаться health/readiness; затем выполнить API/Web smoke tests.
 
 ### 5.1 Ограничения ручного release
@@ -298,6 +298,34 @@ unset NBOS_RELEASE_DIRECT_URL
 | Только документация/CI без влияния на production runtime | ничего                                        |
 
 После каждого сервиса дождаться health/readiness. Если проверка не прошла, следующий сервис не запускать.
+
+### 5.3 Локальный sequential deploy
+
+Один запуск с вашей машины, не GitHub и не Auto Deploy. Скрипт деплоит приложения **по одному** и ждёт `finished` перед следующим.
+
+1. Coolify → Servers → ваш сервер → Configuration → Advanced → **Number of concurrent builds = 1**.
+2. В корневой `.env.local` (файл в `.gitignore`) заполнить:
+
+```bash
+COOLIFY_API_URL=https://coolify.neetrino.com
+COOLIFY_API_TOKEN=          # или уже существующий COOLIFY_TOKEN
+COOLIFY_APP_API_UUID=       # Coolify → nbos-api → Configuration → Webhooks
+COOLIFY_APP_WORKER_UUID=
+COOLIFY_APP_SCHEDULER_UUID=
+COOLIFY_APP_WEB_UUID=
+```
+
+UUID — кусок `uuid=` из **Deploy Webhook**. Токен: Coolify → Keys & Tokens → API Tokens, право `deploy`.
+
+```bash
+pnpm deploy:prod -- --dry-run          # проверить env, ничего не деплоить
+pnpm deploy:prod                       # api → worker → scheduler → web
+pnpm deploy:prod -- backend            # api → worker → scheduler
+pnpm deploy:prod -- web
+pnpm deploy:prod -- --force api        # rebuild без cache, только api
+```
+
+Скрипт не запускает Prisma migration. Если schema менялась — сначала §5.2, потом `pnpm deploy:prod`. При падении следующего app не трогает. Rollback по-прежнему §9.
 
 ---
 
