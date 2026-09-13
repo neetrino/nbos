@@ -17,10 +17,11 @@ export interface RoutePermissionEntry {
  * route is listed here so a direct address cannot reach an admin screen. Entries take
  * precedence over sidebar-derived permissions, and the longest matching path wins.
  *
- * `SETTINGS.VIEW` is the entry ticket to the admin area: without it `/settings` itself
- * is denied, even when a single inner section is delegated to a role. Any `/settings`
- * subpath that is not listed inherits that gate through prefix matching, so a new page
- * fails closed rather than open.
+ * Every route is checked against its own module, so a delegated section opens on its own
+ * right: `/settings/audit-log` needs `AUDIT_LOGS VIEW` and the RBAC screens need
+ * `SETTINGS_RBAC VIEW`. `SETTINGS.VIEW` gates the hub plus every section without a dedicated
+ * module, and any `/settings` subpath that is not listed inherits it through prefix matching,
+ * so a new page fails closed rather than open.
  */
 export const EXPLICIT_ROUTE_PERMISSIONS: RoutePermissionEntry[] = [
   { href: '/settings', permission: { module: SETTINGS_MODULE, action: 'VIEW' } },

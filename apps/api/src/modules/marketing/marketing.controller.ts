@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { MARKETING_MODULE } from '@nbos/shared';
-import { RequirePermission } from '../../common/decorators';
+import { RequireAnyPermission, RequirePermission } from '../../common/decorators';
 import { MarketingService } from './marketing.service';
 import {
   CreateMarketingAccountDto,
@@ -15,9 +15,16 @@ import {
 /**
  * Marketing reads and writes require the `MARKETING` module. The class-level requirement is
  * the floor, so a new handler fails closed instead of inheriting the previously unguarded
- * state. Two dictionary reads are overridden to `CRM_LEADS VIEW` because CRM lead and deal
- * forms depend on them.
+ * state. The two CRM dictionary reads accept any of leads, deals or marketing view rights,
+ * because lead forms, deal forms and marketing settings all render them.
  */
+/** Modules whose forms render the CRM Where and Which one dictionaries owned by Marketing. */
+const CRM_DICTIONARY_READERS = [
+  { module: 'CRM_LEADS', action: 'VIEW' },
+  { module: 'CRM_DEALS', action: 'VIEW' },
+  { module: MARKETING_MODULE, action: 'VIEW' },
+] as const;
+
 @ApiTags('Marketing')
 @ApiBearerAuth()
 @RequirePermission(MARKETING_MODULE, 'VIEW')
@@ -26,7 +33,7 @@ export class MarketingController {
   constructor(private readonly marketingService: MarketingService) {}
 
   @Get('crm-where-options')
-  @RequirePermission('CRM_LEADS', 'VIEW')
+  @RequireAnyPermission(...CRM_DICTIONARY_READERS)
   @ApiOperation({ summary: 'CRM Marketing Where options (active only, or all for settings)' })
   @ApiQuery({ name: 'includeInactive', required: false, type: Boolean })
   async getCrmWhereOptions(@Query('includeInactive') includeInactive?: string) {
@@ -119,7 +126,7 @@ export class MarketingController {
   }
 
   @Get('attribution-options')
-  @RequirePermission('CRM_LEADS', 'VIEW')
+  @RequireAnyPermission(...CRM_DICTIONARY_READERS)
   @ApiOperation({ summary: 'Get dynamic Which one options for CRM attribution' })
   @ApiQuery({ name: 'where', required: true, type: String })
   async getAttributionOptions(@Query('where') where: string) {

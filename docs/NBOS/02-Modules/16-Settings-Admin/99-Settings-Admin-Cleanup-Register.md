@@ -177,7 +177,8 @@ Settings и `My Company` использовали один модуль прав
 - новые модули `SETTINGS`, `SETTINGS_RBAC`, `SETTINGS_SCHEDULER` (`@nbos/shared/constants`), миграция `20260913120000_settings_admin_permissions`;
 - default grant только Platform Owner / Founder (legacy `owner`) и CEO; остальные роли `NONE` и делегируются из матрицы;
 - каждый `/settings/*` маршрут закрыт по URL через web route registry; плитки хаба фильтруются тем же реестром;
-- ранее незащищённые admin-чтения получили `RequirePermission`.
+- ранее незащищённые admin-чтения получили `RequirePermission`;
+- добавлен `@RequireAnyPermission` для общих справочников: guard пускает по любому праву из списка и отдаёт scope первого совпавшего (см. §«Общие справочники» в `02-Permissions-RBAC.md`).
 
 Сознательное исключение: `GET /roles` остаётся на `COMPANY VIEW`, потому что список ролей нужен формам сотрудников и приглашений в `My Company`.
 

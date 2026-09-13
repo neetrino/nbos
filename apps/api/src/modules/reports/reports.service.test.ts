@@ -51,6 +51,7 @@ const FINANCE_PERMISSIONS = {
 const CROSS_MODULE_PERMISSIONS = {
   ...FINANCE_PERMISSIONS,
   CRM_LEADS_VIEW: 'ALL',
+  MARKETING_VIEW: 'ALL',
 };
 
 describe('ReportsService', () => {

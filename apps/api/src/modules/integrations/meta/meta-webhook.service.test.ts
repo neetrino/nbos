@@ -1,4 +1,4 @@
-import { UnauthorizedException } from '@nestjs/common';
+import { ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { createHmac } from 'crypto';
 import { describe, expect, it, vi } from 'vitest';
 import { MetaWebhookService } from './meta-webhook.service';
@@ -176,11 +176,20 @@ describe('MetaWebhookService.handleWebhook', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
-  it('skips signature verification when no webhook secrets are configured', async () => {
+  it('rejects with 503 when no webhook secret is configured', async () => {
     const service = createService({ appSecret: '', instagramAppSecret: '' });
+    const rawBody = Buffer.from('{"object":"page","entry":[]}');
 
     await expect(
       service.handleWebhook(createRequest(undefined), undefined, EMPTY_WEBHOOK_BODY),
-    ).resolves.toBeUndefined();
+    ).rejects.toMatchObject({
+      response: { message: 'Webhook signature verification is not configured', statusCode: 503 },
+    });
+    await expect(
+      service.handleWebhook(createRequest(rawBody), signBody(rawBody, FACEBOOK_APP_SECRET), {
+        object: 'page',
+        entry: [],
+      }),
+    ).rejects.toBeInstanceOf(ServiceUnavailableException);
   });
 });

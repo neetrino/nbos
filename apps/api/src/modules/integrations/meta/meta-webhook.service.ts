@@ -1,4 +1,10 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { timingSafeEqualStr } from '../../../common/utils/crypto';
 import { MetaLeadIngestService } from './meta-lead-ingest.service';
 import { MetaProviderConfig } from './meta-provider.config';
@@ -15,6 +21,8 @@ import type { MetaWebhookRequest } from './meta-webhook.types';
 
 @Injectable()
 export class MetaWebhookService {
+  private readonly logger = new Logger(MetaWebhookService.name);
+
   constructor(
     private readonly config: MetaProviderConfig,
     private readonly leadIngestService: MetaLeadIngestService,
@@ -55,12 +63,18 @@ export class MetaWebhookService {
       this.config.instagramAppSecret,
     ]);
 
-    // Optional in local dev when Meta env is unset; verify when any secret is configured.
-    if (configuredSecrets.length > 0) {
-      const rawBody = req.rawBody;
-      if (!rawBody || !verifyMetaWebhookSignatureAny(rawBody, signatureHeader, configuredSecrets)) {
-        throw new UnauthorizedException('Invalid webhook signature');
-      }
+    // Fail closed: an unset app secret must not turn this public endpoint into an unauthenticated
+    // lead ingest. Meta retries 503, so a fixed configuration recovers the missed deliveries.
+    if (configuredSecrets.length === 0) {
+      this.logger.error(
+        'Rejecting Meta webhook delivery: neither META_APP_SECRET nor META_INSTAGRAM_APP_SECRET is configured',
+      );
+      throw new ServiceUnavailableException('Webhook signature verification is not configured');
+    }
+
+    const rawBody = req.rawBody;
+    if (!rawBody || !verifyMetaWebhookSignatureAny(rawBody, signatureHeader, configuredSecrets)) {
+      throw new UnauthorizedException('Invalid webhook signature');
     }
 
     const messages = parseMetaInboundMessages(body);

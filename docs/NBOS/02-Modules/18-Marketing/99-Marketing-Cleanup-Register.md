@@ -71,8 +71,9 @@ Main sections:
 
 - floor контроллера — `MARKETING VIEW` на уровне класса, поэтому новый хендлер закрыт по умолчанию;
 - мутации — `MARKETING EDIT`, создание — `MARKETING ADD`;
-- `GET crm-where-options` и `GET attribution-options` остаются на `CRM_LEADS VIEW`: это справочники для форм лида и сделки;
+- `GET crm-where-options` и `GET attribution-options` открыты по **любому** из `CRM_LEADS VIEW`, `CRM_DEALS VIEW`, `MARKETING VIEW` (`@RequireAnyPermission`): справочник рисуют форма лида, форма сделки и настройки маркетинга, а PM держит права на сделки без прав на лиды. Scope запроса берётся от первого совпавшего права;
 - сайдбар `/marketing` переведён на `MARKETING VIEW`;
+- отчёт `marketing-source-performance` в Reports Center требует `MARKETING VIEW` вместо `CRM_LEADS VIEW`: он читает `/api/marketing/dashboard`, иначе Seller видел бы карточку отчёта и получал 403 при открытии;
 - по умолчанию полный доступ у `role-owner`, `role-ceo`, `role-head-marketing`; остальные роли — `NONE` и выдаются через матрицу;
 - контрактный тест `apps/api/src/modules/marketing/marketing.permissions.test.ts` падает, если хендлер снова останется без права.
 

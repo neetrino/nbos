@@ -4,6 +4,7 @@ export { SkipTransform, SKIP_TRANSFORM_KEY } from './skip-transform.decorator';
 export { Public, IS_PUBLIC_KEY } from './public.decorator';
 export {
   RequirePermission,
+  RequireAnyPermission,
   PERMISSION_KEY,
   type RequiredPermission,
 } from './require-permission.decorator';

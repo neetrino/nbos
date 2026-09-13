@@ -14,8 +14,11 @@ import { MarketingController } from './marketing.controller';
  *
  * Canon: docs/NBOS/02-Modules/18-Marketing/00-Marketing-Overview.md.
  */
-function permissionOf(target: unknown): RequiredPermission | undefined {
-  return Reflect.getMetadata(PERMISSION_KEY, target as object) as RequiredPermission | undefined;
+function permissionOf(target: unknown): RequiredPermission | RequiredPermission[] | undefined {
+  return Reflect.getMetadata(PERMISSION_KEY, target as object) as
+    | RequiredPermission
+    | RequiredPermission[]
+    | undefined;
 }
 
 /** Handler names that intentionally do not use the MARKETING module. */
@@ -38,12 +41,13 @@ describe('Marketing permission wiring', () => {
     });
   });
 
-  it('keeps the CRM form dictionaries readable with CRM_LEADS VIEW', () => {
+  it('keeps the CRM form dictionaries readable by leads, deals or marketing', () => {
     for (const name of CRM_FORM_DICTIONARY_READS) {
-      expect(permissionOf(MarketingController.prototype[name])).toEqual({
-        module: 'CRM_LEADS',
-        action: 'VIEW',
-      });
+      expect(permissionOf(MarketingController.prototype[name])).toEqual([
+        { module: 'CRM_LEADS', action: 'VIEW' },
+        { module: 'CRM_DEALS', action: 'VIEW' },
+        { module: MARKETING_MODULE, action: 'VIEW' },
+      ]);
     }
   });
 

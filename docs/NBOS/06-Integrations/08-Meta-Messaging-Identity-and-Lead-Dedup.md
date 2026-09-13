@@ -24,6 +24,8 @@ Message uniqueness includes `metaConnectedAccountId` because provider message ID
 
 С 2026-09-02 по 2026-09-13 проверка была временно отключена ради диагностики handshake, а токен писался в лог (`TEMPORARY META WEBHOOK DIAGNOSTIC`). Восстановлено; если верификация в Meta App падает, причина в незаданном или разошедшемся `META_WEBHOOK_VERIFY_TOKEN`, а не в проверке.
 
+`POST /integrations/meta/webhook` проверяет подпись `X-Hub-Signature-256` по `META_APP_SECRET` и `META_INSTAGRAM_APP_SECRET` (подходит любой из настроенных). Если не задан ни один секрет, доставка отклоняется с `503`, а не принимается без подписи: эндпоинт публичный, и раньше пустой секрет превращал его в неаутентифицированный приём лидов. Meta повторяет `503`, поэтому после настройки секрета пропущенные доставки приходят повторно.
+
 ## Ingest flow
 
 1. Resolve `MetaConnectedAccount` and require linked SMM `MarketingAccount`
