@@ -4,7 +4,6 @@ import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Settings, UserCircle2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
-import { PwaInstallTile } from '@/components/pwa/PwaInstallTile';
 import { useMyAccountSheet } from '@/features/account/components/my-account-sheet-provider';
 import { cn } from '@/lib/utils';
 import type { NavModuleDefinition } from '@/lib/navigation/nav-config';
@@ -58,7 +57,6 @@ export function MobileAppMenu({ open, onOpenChange, items }: MobileAppMenuProps)
               ))}
             </div>
             <MobileAppMenuAccountRow onClose={close} />
-            <PwaInstallTile onClose={close} />
           </div>
         </div>
       </SheetContent>
