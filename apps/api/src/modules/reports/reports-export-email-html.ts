@@ -1,3 +1,5 @@
+import { interpolateSystemCopy, reportExportEmailCopy } from '@nbos/shared';
+
 const APP_FALLBACK_URL = 'http://localhost:3000';
 
 export function escapeReportEmailHtml(value: string): string {
@@ -9,8 +11,30 @@ export function escapeReportEmailHtml(value: string): string {
     .replaceAll("'", '&#39;');
 }
 
-export function buildReportExportEmailSubject(reportTitle: string, format: string): string {
-  return `${reportTitle} — ${format} report is ready`;
+export function buildReportExportPeriodLabel(filters: unknown, locale: unknown): string {
+  const copy = reportExportEmailCopy(locale);
+  if (!filters || Array.isArray(filters) || typeof filters !== 'object') {
+    return copy.currentDates;
+  }
+  const record = filters as Record<string, unknown>;
+  const from = typeof record.dateFrom === 'string' ? record.dateFrom : '';
+  const to = typeof record.dateTo === 'string' ? record.dateTo : '';
+  if (from && to) return `${from} – ${to}`;
+  if (typeof record.asOf === 'string' && record.asOf) {
+    return interpolateSystemCopy(copy.asOf, { date: record.asOf });
+  }
+  return copy.currentDates;
+}
+
+export function buildReportExportEmailSubject(
+  reportTitle: string,
+  format: string,
+  locale?: unknown,
+): string {
+  return interpolateSystemCopy(reportExportEmailCopy(locale).subject, {
+    title: reportTitle,
+    format,
+  });
 }
 
 export function buildReportExportEmailHtml(input: {
@@ -20,7 +44,9 @@ export function buildReportExportEmailHtml(input: {
   generatedAt: Date;
   periodLabel: string;
   filesHref: string;
+  locale?: unknown;
 }): string {
+  const copy = reportExportEmailCopy(input.locale);
   const title = escapeReportEmailHtml(input.reportTitle);
   const format = escapeReportEmailHtml(input.format);
   const fileName = escapeReportEmailHtml(input.fileName);
@@ -29,19 +55,20 @@ export function buildReportExportEmailHtml(input: {
     input.generatedAt.toISOString().replace('T', ' ').slice(0, 16),
   );
   const href = escapeReportEmailHtml(input.filesHref);
+  const body = escapeReportEmailHtml(interpolateSystemCopy(copy.body, { format: input.format }));
   return [
     '<div style="margin:0;padding:24px;background:#f4f4f5;font-family:Inter,Helvetica,Arial,sans-serif;color:#18181b;">',
     '<div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e4e4e7;border-radius:16px;padding:28px 28px 24px;">',
-    '<p style="margin:0 0 4px;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#71717a;">NBOS Reports</p>',
+    `<p style="margin:0 0 4px;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#71717a;">${escapeReportEmailHtml(copy.kicker)}</p>`,
     `<h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;">${title}</h1>`,
-    `<p style="margin:0 0 20px;font-size:15px;line-height:1.5;color:#3f3f46;">The ${format} file is attached. Owner and CEO can also download it from Report files.</p>`,
+    `<p style="margin:0 0 20px;font-size:15px;line-height:1.5;color:#3f3f46;">${body}</p>`,
     '<table style="width:100%;border-collapse:collapse;font-size:14px;">',
-    row('Format', format),
-    row('Period', period),
-    row('Generated', `${generated} UTC`),
-    row('Attachment', fileName),
+    row(copy.format, format),
+    row(copy.period, period),
+    row(copy.generated, `${generated} UTC`),
+    row(copy.attachment, fileName),
     '</table>',
-    `<p style="margin:24px 0 0;font-size:14px;"><a href="${href}" style="color:#18181b;font-weight:600;">Open Report files</a></p>`,
+    `<p style="margin:24px 0 0;font-size:14px;"><a href="${href}" style="color:#18181b;font-weight:600;">${escapeReportEmailHtml(copy.openFiles)}</a></p>`,
     '</div></div>',
   ].join('');
 }
@@ -54,7 +81,7 @@ export function buildReportFilesHref(appUrl = process.env.APP_URL): string {
 function row(label: string, value: string): string {
   return [
     '<tr>',
-    `<td style="padding:8px 0;color:#71717a;width:120px;vertical-align:top;">${label}</td>`,
+    `<td style="padding:8px 0;color:#71717a;width:120px;vertical-align:top;">${escapeReportEmailHtml(label)}</td>`,
     `<td style="padding:8px 0;font-weight:500;">${value}</td>`,
     '</tr>',
   ].join('');

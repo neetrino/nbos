@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { PrismaClient, type InputJsonValue } from '@nbos/database';
+import { PrismaClient } from '@nbos/database';
+import { DEFAULT_INTERFACE_LOCALE } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { DriveR2Client } from '../drive/drive-r2.client';
@@ -8,6 +9,7 @@ import { loadReportExportAttachment } from './reports-export-email-file';
 import {
   buildReportExportEmailHtml,
   buildReportExportEmailSubject,
+  buildReportExportPeriodLabel,
   buildReportFilesHref,
 } from './reports-export-email-html';
 import type { ReportExportEmailJob } from './reports-export-email.types';
@@ -66,7 +68,8 @@ export class ReportsExportEmailService {
       );
       return;
     }
-    const sent = await this.sendResend(job, recipients, attachment);
+    const locale = await this.readOwnerLocale(schedule.ownerId);
+    const sent = await this.sendResend(job, recipients, attachment, locale);
     if (!sent) return;
     await this.auditService.log({
       entityType: REPORT_EXPORT_AUDIT_ENTITY,
@@ -82,10 +85,19 @@ export class ReportsExportEmailService {
     });
   }
 
+  private async readOwnerLocale(ownerId: string): Promise<string> {
+    const owner = await this.prisma.employee.findUnique({
+      where: { id: ownerId },
+      select: { interfaceLocale: true },
+    });
+    return owner?.interfaceLocale ?? DEFAULT_INTERFACE_LOCALE;
+  }
+
   private async sendResend(
     job: ReportExportEmailJob,
     recipients: string[],
     attachment: { filename: string; content: string; contentType: string },
+    locale: string,
   ): Promise<boolean> {
     const apiKey = process.env.RESEND_API_KEY;
     const fromEmail = process.env.RESEND_FROM_EMAIL;
@@ -99,8 +111,9 @@ export class ReportsExportEmailService {
       format: job.format,
       fileName: attachment.filename,
       generatedAt: new Date(),
-      periodLabel: periodLabel(job.filters),
+      periodLabel: buildReportExportPeriodLabel(job.filters, locale),
       filesHref: buildReportFilesHref(),
+      locale,
     });
     const response = await fetch(RESEND_API_URL, {
       method: 'POST',
@@ -109,7 +122,7 @@ export class ReportsExportEmailService {
         from: fromEmail,
         to: recipients,
         reply_to: replyTo ? [replyTo] : undefined,
-        subject: buildReportExportEmailSubject(job.reportTitle, job.format),
+        subject: buildReportExportEmailSubject(job.reportTitle, job.format, locale),
         html,
         attachments: [
           {
@@ -132,15 +145,4 @@ function hasCompletedDriveFile(job: ReportExportEmailJob): boolean {
   return (
     job.status === 'COMPLETED' && Boolean(job.fileAssetId) && Boolean(job.fileAsset?.storageKey)
   );
-}
-
-function periodLabel(filters: InputJsonValue | null): string {
-  if (!filters || Array.isArray(filters) || typeof filters !== 'object')
-    return 'Current report dates';
-  const record = filters as Record<string, unknown>;
-  const from = typeof record.dateFrom === 'string' ? record.dateFrom : '';
-  const to = typeof record.dateTo === 'string' ? record.dateTo : '';
-  if (from && to) return `${from} – ${to}`;
-  if (typeof record.asOf === 'string' && record.asOf) return `As of ${record.asOf}`;
-  return 'Current report dates';
 }

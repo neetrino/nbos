@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_INTERFACE_LOCALE,
+  isKnownInterfaceLocale,
   isWritableInterfaceLocale,
+  parseKnownInterfaceLocale,
   parseWritableInterfaceLocale,
 } from './locales';
 
@@ -20,5 +22,11 @@ describe('interface locale allowlist', () => {
     expect(parseWritableInterfaceLocale('hy')).toBe(DEFAULT_INTERFACE_LOCALE);
     expect(parseWritableInterfaceLocale('EN')).toBe(DEFAULT_INTERFACE_LOCALE);
     expect(parseWritableInterfaceLocale(undefined)).toBe(DEFAULT_INTERFACE_LOCALE);
+  });
+
+  it('honors reserved locales for system copy without making them writable', () => {
+    expect(isKnownInterfaceLocale('hy')).toBe(true);
+    expect(parseKnownInterfaceLocale('hy')).toBe('hy');
+    expect(parseKnownInterfaceLocale('de')).toBe(DEFAULT_INTERFACE_LOCALE);
   });
 });

@@ -1,16 +1,37 @@
 import { Logger } from '@nestjs/common';
+import { interpolateSystemCopy, passwordResetEmailCopy } from '@nbos/shared';
 
 const RESEND_API_URL = 'https://api.resend.com/emails';
+
+export function buildPasswordResetEmail(params: {
+  locale: unknown;
+  resetUrl: string;
+  expiresAt: Date;
+}): { subject: string; html: string } {
+  const copy = passwordResetEmailCopy(params.locale);
+  const expiresLabel = params.expiresAt.toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
+  const safeUrl = escapeHtml(params.resetUrl);
+  return {
+    subject: copy.subject,
+    html: [
+      `<p>${escapeHtml(copy.intro)}</p>`,
+      `<p><a href="${safeUrl}">${escapeHtml(copy.action)}</a></p>`,
+      `<p>${escapeHtml(interpolateSystemCopy(copy.expires, { expiresLabel }))}</p>`,
+      `<p>${escapeHtml(copy.ignore)}</p>`,
+    ].join(''),
+  };
+}
 
 export async function sendPasswordResetEmail(params: {
   email: string;
   resetUrl: string;
   expiresAt: Date;
   logger: Logger;
+  locale?: unknown;
 }): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.RESEND_FROM_EMAIL;
-  const { email, resetUrl, expiresAt, logger } = params;
+  const { email, resetUrl, expiresAt, logger, locale } = params;
 
   if (!apiKey || !fromEmail) {
     if (process.env.NODE_ENV !== 'production') {
@@ -22,8 +43,7 @@ export async function sendPasswordResetEmail(params: {
   }
 
   const replyTo = process.env.RESEND_ADMIN_EMAIL;
-  const expiresLabel = expiresAt.toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
-  const safeUrl = escapeHtml(resetUrl);
+  const { subject, html } = buildPasswordResetEmail({ locale, resetUrl, expiresAt });
 
   try {
     const response = await fetch(RESEND_API_URL, {
@@ -36,13 +56,8 @@ export async function sendPasswordResetEmail(params: {
         from: fromEmail,
         to: [email],
         reply_to: replyTo ? [replyTo] : undefined,
-        subject: 'Reset your NBOS password',
-        html: [
-          '<p>We received a request to reset your NBOS password.</p>',
-          `<p><a href="${safeUrl}">Set a new password</a></p>`,
-          `<p>This link expires at ${escapeHtml(expiresLabel)}.</p>`,
-          '<p>If you did not request this, you can ignore this email.</p>',
-        ].join(''),
+        subject,
+        html,
       }),
     });
 

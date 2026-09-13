@@ -189,7 +189,7 @@ Matches canon. Do not treat this as a behaviour change.
 - **Restore:** after the client session is authenticated, GET preferences; if it differs from SSR, refresh. Catch does not write `en`.
 - **Cache:** React `cache()` per request only. Preference is not a process-wide query key. Business query keys are unchanged.
 
-Still English: non-employee `Search {kind}s…`, feature-module dock item labels, some credential form-sheet leftovers. Auth pages, emails, PDF. HY switcher still off. Marketing reports tab, nested creates, month compensation / KPI, Marketing chrome, Active Call overlay, shared checklist, Delivery leftovers, payroll matrix, and credentials tiles/bulk/ENV are now EN/RU.
+Still English: non-employee `Search {kind}s…`, feature-module dock item labels, some credential form-sheet leftovers. Auth pages, PDF. HY switcher still off. System emails (password reset, invitation, report export chrome), Marketing reports tab, nested creates, month compensation / KPI, Marketing chrome, Active Call overlay, shared checklist, Delivery leftovers, payroll matrix, and credentials tiles/bulk/ENV are now EN/RU. Recipient mailbox content stays user data.
 
 ## Stage 5 report — 2026-09-12
 
@@ -208,7 +208,7 @@ Live sampled (one user, RU): EN↔RU shell/dashboard/four creates, light/dark/sy
 
 ### Still English by first-release scope
 
-Open destination pages, Lead sheet behind Full, Work Space Scrum planner / Drive sheet / AI Access, non-employee `Search {kind}s…`, feature-module dock item labels, EmployeeSheet departments/lifecycle panels. User data (names, notes, notification titles/bodies, personal-link titles such as Cost OPS). Auth reset page, emails, PDF, remaining modules. HY switcher still off — stage 7 pilot only.
+Open destination pages, Lead sheet behind Full, Work Space Scrum planner / Drive sheet / AI Access, non-employee `Search {kind}s…`, feature-module dock item labels, EmployeeSheet departments/lifecycle panels. User data (names, notes, notification titles/bodies, personal-link titles such as Cost OPS). Auth reset page, PDF, remaining modules. System email chrome is localized from the employee/inviter/schedule-owner locale. HY switcher still off — stage 7 pilot only.
 
 ### Checks run
 

@@ -9,6 +9,7 @@ import {
   requestPasswordReset,
 } from './auth-password-reset';
 import { FORGOT_PASSWORD_GENERIC_MESSAGE } from './auth-password-reset.constants';
+import { sendPasswordResetEmail } from './auth-password-reset.email';
 
 vi.mock('argon2', () => ({
   verify: vi.fn(),
@@ -69,6 +70,7 @@ describe('password reset', () => {
       email: 'owner@company.com',
       passwordHash: 'hash',
       status: 'ACTIVE',
+      interfaceLocale: 'ru',
     });
 
     const result = await requestPasswordReset({
@@ -83,6 +85,9 @@ describe('password reset', () => {
       expect.objectContaining({
         data: expect.objectContaining({ employeeId: 'e1', tokenHash: expect.any(String) }),
       }),
+    );
+    expect(sendPasswordResetEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'owner@company.com', locale: 'ru' }),
     );
   });
 

@@ -23,3 +23,16 @@ export function isWritableInterfaceLocale(value: unknown): value is WritableInte
 export function parseWritableInterfaceLocale(value: unknown): WritableInterfaceLocale {
   return isWritableInterfaceLocale(value) ? value : DEFAULT_INTERFACE_LOCALE;
 }
+
+export function isKnownInterfaceLocale(value: unknown): value is KnownInterfaceLocale {
+  return (
+    typeof value === 'string' &&
+    ((WRITABLE_INTERFACE_LOCALES as readonly string[]).includes(value) ||
+      (RESERVED_INTERFACE_LOCALES as readonly string[]).includes(value))
+  );
+}
+
+/** Email/PDF chrome may honor a reserved locale that is not yet writable. */
+export function parseKnownInterfaceLocale(value: unknown): KnownInterfaceLocale {
+  return isKnownInterfaceLocale(value) ? value : DEFAULT_INTERFACE_LOCALE;
+}
