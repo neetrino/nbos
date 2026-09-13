@@ -1,0 +1,233 @@
+{
+  "page": {
+    "title": "Client services",
+    "searchPlaceholder": "Search by name or provider…",
+    "viewAria": "Client services view mode",
+    "newService": "New service",
+    "createService": "Create service"
+  },
+  "view": {
+    "list": "List",
+    "listAria": "Client services table list",
+    "status": "Status",
+    "statusAria": "Board by payment stage",
+    "months": "Months",
+    "monthsAria": "Board by renewal month across the year"
+  },
+  "filters": {
+    "type": "Type",
+    "status": "Status",
+    "billing": "Billing"
+  },
+  "type": {
+    "DOMAIN": "Domain",
+    "HOSTING": "Hosting",
+    "SERVICE": "Service",
+    "ACCOUNT": "Account",
+    "LICENSE": "License"
+  },
+  "status": {
+    "PENDING": "Pending",
+    "ACTIVE": "Active",
+    "SUSPENDED": "Suspended",
+    "EXPIRING_SOON": "Expiring soon",
+    "EXPIRED": "Expired",
+    "CANCELLED": "Cancelled"
+  },
+  "statusShort": {
+    "PENDING": "Pending",
+    "ACTIVE": "Active",
+    "SUSPENDED": "Suspended",
+    "EXPIRING_SOON": "Expiring",
+    "EXPIRED": "Expired",
+    "CANCELLED": "Cancelled"
+  },
+  "billing": {
+    "WE_PAY": "We Pay",
+    "REMINDER_ONLY": "Reminder Only"
+  },
+  "billingShort": {
+    "WE_PAY": "We pay",
+    "REMINDER_ONLY": "Reminder"
+  },
+  "pricing": {
+    "FIXED": "Fixed",
+    "USAGE_BASED": "Usage-based"
+  },
+  "pricingShort": {
+    "FIXED": "Fixed",
+    "USAGE_BASED": "Usage"
+  },
+  "frequency": {
+    "ONE_TIME": "One-time",
+    "MONTHLY": "Monthly",
+    "QUARTERLY": "Quarterly",
+    "YEARLY": "Yearly",
+    "MULTI_YEAR": "Multi-year"
+  },
+  "frequencyShort": {
+    "ONE_TIME": "Once",
+    "MONTHLY": "Monthly",
+    "QUARTERLY": "Quarter",
+    "YEARLY": "Yearly",
+    "MULTI_YEAR": "Multi-yr"
+  },
+  "tax": {
+    "TAX": "Tax",
+    "TAX_FREE": "Free"
+  },
+  "stage": {
+    "pay_now": "Pay now",
+    "invoice": "Invoice",
+    "upcoming": "Upcoming",
+    "active": "Active",
+    "overdue": "Overdue"
+  },
+  "empty": {
+    "listTitle": "No client services match",
+    "listDescription": "Adjust search or filters, or create a new domain, hosting, SaaS, account or license record.",
+    "boardColumn": "No services",
+    "unavailable": "Client services unavailable"
+  },
+  "errors": {
+    "loadList": "Client services could not be loaded.",
+    "loadBoard": "Client services board could not be loaded.",
+    "loadDetail": "Client service could not be loaded.",
+    "create": "Client service could not be created.",
+    "save": "Client service could not be saved.",
+    "cancel": "Client service could not be cancelled.",
+    "productProject": "Could not load the product project.",
+    "expenseIncomplete": "Expense form is incomplete.",
+    "registryCheck": "Registry check failed"
+  },
+  "create": {
+    "title": "New client service",
+    "submit": "Create service",
+    "name": "Name *",
+    "type": "Type",
+    "billing": "Billing",
+    "frequency": "Frequency",
+    "ourCost": "Our cost",
+    "clientCharge": "Client charge",
+    "renewalDue": "Renewal / due date",
+    "namePlaceholder": {
+      "DOMAIN": "example.com",
+      "HOSTING": "Production hosting",
+      "SERVICE": "Google Workspace",
+      "ACCOUNT": "Apple Developer",
+      "LICENSE": "License name",
+      "default": "Service name"
+    }
+  },
+  "fields": {
+    "product": "Product",
+    "productRequired": "Product *",
+    "productSearch": "Search products…",
+    "productResolving": "Resolving product…",
+    "projectHint": "Project · {label}",
+    "credentials": "Credentials",
+    "credentialsPlaceholder": "Connect credentials",
+    "type": "Type",
+    "status": "Status",
+    "billingModel": "Billing model",
+    "pricing": "Pricing",
+    "ourCost": "Our cost",
+    "clientCharge": "Client charge",
+    "frequency": "Frequency",
+    "tax": "Tax",
+    "startDate": "Start date",
+    "renewalDate": "Renewal date"
+  },
+  "sheet": {
+    "loading": "Loading…",
+    "tabs": {
+      "general": "General",
+      "invoices": "Invoices",
+      "expenses": "Expenses",
+      "tasks": "Tasks"
+    },
+    "createInvoiceAria": "Create invoice",
+    "createExpenseAria": "Create expense",
+    "createTaskAria": "Create task",
+    "cancelService": "Cancel service",
+    "basics": "Basics",
+    "billing": "Billing",
+    "dates": "Dates",
+    "proofs": "Proofs"
+  },
+  "invoicesTab": {
+    "title": "Invoice cards",
+    "create": "Create invoice",
+    "wePayOnly": "Company-paid services do not use invoices.",
+    "viewAria": "Invoice list view",
+    "emptyTitle": "No invoices",
+    "emptyDescription": "No invoice cards linked to this service yet.",
+    "openFinance": "Open in Finance"
+  },
+  "expensesTab": {
+    "title": "Expense cards",
+    "create": "Create expense",
+    "reminderOnly": "Reminder-only services do not use expenses.",
+    "viewAria": "Expense list view",
+    "emptyTitle": "No expense cards",
+    "emptyDescription": "No expense cards linked to this service yet.",
+    "openFinance": "Open in Finance"
+  },
+  "tasksTab": {
+    "title": "Tasks",
+    "create": "Create task",
+    "viewAria": "Task list view",
+    "emptyTitle": "No tasks",
+    "emptyDescription": "No tasks linked to this service yet.",
+    "openWorkspace": "Open workspace"
+  },
+  "table": {
+    "service": "Service",
+    "kind": "Kind",
+    "project": "Project",
+    "renewal": "Renewal",
+    "cost": "Cost",
+    "stage": "Stage",
+    "charge": "Charge {amount}"
+  },
+  "card": {
+    "noRenewal": "No renewal date"
+  },
+  "months": {
+    "previousYear": "Previous year",
+    "nextYear": "Next year"
+  },
+  "settings": {
+    "title": "Client services — settings",
+    "description": "Reload the service catalog from the server.",
+    "triggerAria": "Client services settings",
+    "refresh": "Refresh list"
+  },
+  "cancel": {
+    "title": "Cancel client service?",
+    "description": "The record is not deleted. Status becomes Cancelled, it leaves active lists, and domain tracking stops. Linked finance records stay intact.",
+    "dismiss": "No",
+    "confirm": "Yes",
+    "submitting": "Cancelling…"
+  },
+  "registry": {
+    "dead": "Dead",
+    "noData": "No data",
+    "check": "Check",
+    "checkAria": "Check domain registry",
+    "lastChecked": "Last checked {date}",
+    "lastCheckedSource": "Last checked {date} · {source}",
+    "toast": {
+      "updated": "Registry expiry found. Renewal date updated.",
+      "unchanged": "Registry date matches the current renewal date.",
+      "not_found": "Domain is not in the registry (dead / not found).",
+      "no_expiry": "Domain is registered, but the registry hid the expiry.",
+      "failed": "Registry lookup failed. Payment flow is unchanged."
+    }
+  },
+  "toasts": {
+    "cancelled": "Client service cancelled",
+    "invoiceCreated": "Linked invoice card created.",
+    "expenseCreated": "Linked expense card created."
+  }
+}

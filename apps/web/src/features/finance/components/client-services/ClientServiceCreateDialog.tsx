@@ -23,6 +23,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { projectDisplayName } from '@/lib/format/project-product-display';
 import { ClientServiceCreateDialogFields } from './ClientServiceCreateDialogFields';
 import { ClientServiceFormFooter } from './client-service-form-controls';
+import { useClientServicesT } from './client-service-message-keys';
 
 interface ClientServiceCreateDialogProps {
   open: boolean;
@@ -35,6 +36,7 @@ export function ClientServiceCreateDialog({
   onOpenChange,
   onSaved,
 }: ClientServiceCreateDialogProps) {
+  const t = useClientServicesT();
   const [form, setForm] = useState<ClientServiceFormState>({ ...EMPTY_CLIENT_SERVICE_FORM });
   const [productLabel, setProductLabel] = useState<string | null>(null);
   const [projectLabel, setProjectLabel] = useState<string | null>(null);
@@ -65,7 +67,7 @@ export function ClientServiceCreateDialog({
     } catch {
       setForm((prev) => ({ ...prev, productId, projectId: '' }));
       setProjectLabel(null);
-      setFormError('Could not load the product project.');
+      setFormError(t('errors.productProject'));
     } finally {
       setProductResolving(false);
     }
@@ -81,7 +83,7 @@ export function ClientServiceCreateDialog({
       onSaved(saved);
       onOpenChange(false);
     } catch (caught) {
-      setFormError(getApiErrorMessage(caught, 'Client service could not be created.'));
+      setFormError(getApiErrorMessage(caught, t('errors.create')));
     } finally {
       setSubmitting(false);
     }
@@ -91,7 +93,7 @@ export function ClientServiceCreateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New client service</DialogTitle>
+          <DialogTitle>{t('create.title')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-4">
           {formError ? (
@@ -123,7 +125,7 @@ export function ClientServiceCreateDialog({
               onCancel={() => onOpenChange(false)}
               submitting={submitting}
               canSubmit={canSubmit}
-              submitLabel="Create service"
+              submitLabel={t('create.submit')}
             />
           </DialogFooter>
         </form>

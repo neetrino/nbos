@@ -7,6 +7,7 @@ import { ExpensePlanCancelDialog } from '@/features/finance/components/expenses/
 import { ExpensePlanDetailSheetHeader } from '@/features/finance/components/expenses/ExpensePlanDetailSheetHeader';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensePlansApi, type ExpensePlan } from '@/lib/api/expense-plans';
+import { useExpensePlansT } from './expense-plan-message-keys';
 
 interface ExpensePlanDetailSheetLifecycleProps {
   plan: ExpensePlan;
@@ -25,6 +26,7 @@ export function ExpensePlanDetailSheetLifecycle({
   onPlanDeleted,
   onClose,
 }: ExpensePlanDetailSheetLifecycleProps) {
+  const t = useExpensePlansT();
   const [cancelOpen, setCancelOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [statusSaving, setStatusSaving] = useState(false);
@@ -33,40 +35,40 @@ export function ExpensePlanDetailSheetLifecycle({
   const handleDeletePlan = useCallback(async () => {
     try {
       await expensePlansApi.delete(plan.id);
-      toast.success('Expense plan deleted.');
+      toast.success(t('toasts.deleted'));
       onPlanDeleted?.(plan.id);
       onClose();
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not delete expense plan.'));
+      toast.error(getApiErrorMessage(caught, t('errors.delete')));
     }
-  }, [onClose, onPlanDeleted, plan.id]);
+  }, [onClose, onPlanDeleted, plan.id, t]);
 
   const handleCancelPlan = useCallback(async () => {
     setStatusSaving(true);
     try {
       const updated = await expensePlansApi.updateStatus(plan.id, 'CANCELLED');
       onPlanUpdated?.(updated);
-      toast.success('Expense plan stopped. Future cards will not be created.');
+      toast.success(t('toasts.stopped'));
       setCancelOpen(false);
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not stop expense plan.'));
+      toast.error(getApiErrorMessage(caught, t('errors.stop')));
     } finally {
       setStatusSaving(false);
     }
-  }, [onPlanUpdated, plan.id]);
+  }, [onPlanUpdated, plan.id, t]);
 
   const handleResumePlan = useCallback(async () => {
     setStatusSaving(true);
     try {
       const updated = await expensePlansApi.updateStatus(plan.id, 'ACTIVE');
       onPlanUpdated?.(updated);
-      toast.success('Expense plan resumed.');
+      toast.success(t('toasts.resumed'));
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not resume expense plan.'));
+      toast.error(getApiErrorMessage(caught, t('errors.resume')));
     } finally {
       setStatusSaving(false);
     }
-  }, [onPlanUpdated, plan.id]);
+  }, [onPlanUpdated, plan.id, t]);
 
   return (
     <>
@@ -91,8 +93,8 @@ export function ExpensePlanDetailSheetLifecycle({
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         itemName={plan.name}
-        title="Delete plan?"
-        description="Only unused plans can be deleted. Linked cards keep running; stop the plan instead when history must stay."
+        title={t('delete.title')}
+        description={t('delete.description')}
         forceNestedBackdrop
         onConfirm={async () => {
           setDeleteOpen(false);

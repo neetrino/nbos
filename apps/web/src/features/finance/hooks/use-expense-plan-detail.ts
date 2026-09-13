@@ -6,6 +6,7 @@ interface UseExpensePlanDetailOptions {
   open: boolean;
   initialPlan?: ExpensePlan | null;
   isDirty?: () => boolean;
+  loadErrorMessage?: string;
 }
 
 export function useExpensePlanDetail(planId: string, options?: UseExpensePlanDetailOptions) {
@@ -16,7 +17,7 @@ export function useExpensePlanDetail(planId: string, options?: UseExpensePlanDet
     initialEntity: options?.initialPlan,
     fetchById: expensePlansApi.getById,
     isDirty: options?.isDirty,
-    loadErrorMessage: 'Expense plan could not be loaded.',
+    loadErrorMessage: options?.loadErrorMessage ?? 'Expense plan could not be loaded.',
   });
 
   const fetchPlan = useCallback(async () => {

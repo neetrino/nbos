@@ -6,9 +6,9 @@ import { formatAmount, formatAmountAbbreviated } from '@/features/finance/consta
 import type { ExpensePlanGridCell } from '@/lib/api/expense-plans';
 import { cn } from '@/lib/utils';
 import {
-  expensePlanMonthCellStatusLabel,
   expensePlanMonthCellVisualClass,
 } from './expense-plan-coverage-cell-visual';
+import { translateExpensePlanCellStatus, useExpensePlansT } from './expense-plan-message-keys';
 
 /** Same slot size as `/finance/salary` calendar cells. */
 export const EXPENSE_PLAN_CALENDAR_SLOT_CLASS = 'h-16 w-full';
@@ -85,9 +85,10 @@ export function ExpensePlanGridMonthCell({
     return <ExpensePlanEmptyMonthCell />;
   }
 
+  const t = useExpensePlansT();
   const fullAmount = formatAmount(cell.amount);
   const amountLabel = formatAmountAbbreviated(cell.amount);
-  const statusLabel = expensePlanMonthCellStatusLabel(cell.kind);
+  const statusLabel = translateExpensePlanCellStatus(t, cell.kind);
 
   return (
     <button
@@ -98,7 +99,7 @@ export function ExpensePlanGridMonthCell({
         expensePlanMonthCellVisualClass(cell.kind),
       )}
       title={fullAmount}
-      aria-label={`${statusLabel} · ${fullAmount}`}
+      aria-label={t('grid.cellAria', { status: statusLabel, amount: fullAmount })}
       onClick={(e) => {
         e.stopPropagation();
         onOpen();

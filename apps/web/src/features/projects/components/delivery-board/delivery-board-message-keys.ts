@@ -1,5 +1,8 @@
 import { isDeliveryHoldExpired } from '@/features/projects/constants/projects';
-import { DELIVERY_STAGE_LABELS } from './project-delivery-board-model';
+import {
+  DELIVERY_STAGE_LABELS,
+  type DeliveryBoardStatusFilter,
+} from './project-delivery-board-model';
 import { PRODUCT_LANGUAGE_OPTIONS } from './delivery-product-language-options';
 import { STAGE_READINESS_LABELS } from './delivery-stage-readiness-rows';
 
@@ -148,6 +151,75 @@ export function translateDeliveryLifecycleLabel(
     return stageLabel ? t('lifecycle.stageOnHold', { stage: stageLabel }) : t('lifecycle.onHold');
   }
   return stageLabel ?? t('lifecycle.notStaged');
+}
+
+export type DeliveryHoldLifecycle = {
+  workStatus: string;
+  resolution: string | null;
+  onHoldUntil?: string | null;
+};
+
+export function translateDeliveryHoldCopy(
+  lifecycle: DeliveryHoldLifecycle | undefined,
+  date: string | null,
+  t: DeliveryBoardTranslate,
+): string | null {
+  if (lifecycle?.workStatus !== 'ON_HOLD') return null;
+  if (isDeliveryHoldExpired(lifecycle)) {
+    return date ? t('lifecycle.holdExpiredOn', { date }) : t('lifecycle.holdExpired');
+  }
+  return date ? t('lifecycle.onHoldUntil', { date }) : t('lifecycle.onHold');
+}
+
+export function translateDeliveryHoldStatusLabel(
+  lifecycle: DeliveryHoldLifecycle,
+  t: DeliveryBoardTranslate,
+): string | null {
+  if (lifecycle.workStatus !== 'ON_HOLD') return null;
+  return isDeliveryHoldExpired(lifecycle) ? t('lifecycle.holdExpired') : t('lifecycle.onHold');
+}
+
+export type DeliveryLifecycleActionKind = 'pause' | 'cancel';
+
+export function translateLifecycleActionDialogCopy(
+  action: DeliveryLifecycleActionKind,
+  entityLabel: string,
+  isSubmitting: boolean,
+  t: DeliveryBoardTranslate,
+): {
+  title: string;
+  description: string;
+  submitLabel: string;
+  reasonPlaceholder: string;
+} {
+  if (action === 'pause') {
+    return {
+      title: t('actions.pauseTitle'),
+      description: t('actions.pauseDescription', { entity: entityLabel }),
+      submitLabel: isSubmitting ? t('actions.pausing') : t('actions.pause'),
+      reasonPlaceholder: t('actions.pauseReasonPlaceholder'),
+    };
+  }
+  return {
+    title: t('actions.cancelTitle'),
+    description: t('actions.cancelDescription', { entity: entityLabel }),
+    submitLabel: isSubmitting ? t('actions.cancelling') : t('actions.cancel'),
+    reasonPlaceholder: t('actions.cancelReasonPlaceholder'),
+  };
+}
+
+export const DELIVERY_STATUS_FILTER_MESSAGE_KEYS = {
+  ACTIVE: 'pipelineTabs.active',
+  ON_HOLD: 'lifecycle.onHold',
+  CLOSED: 'pipelineTabs.closed',
+  ALL: 'kind.all',
+} as const satisfies Record<DeliveryBoardStatusFilter, string>;
+
+export function translateDeliveryStatusFilter(
+  value: DeliveryBoardStatusFilter,
+  t: DeliveryBoardTranslate,
+): string {
+  return t(DELIVERY_STATUS_FILTER_MESSAGE_KEYS[value]);
 }
 
 export const PRODUCT_LANGUAGE_CODES = PRODUCT_LANGUAGE_OPTIONS.map((option) => option.value);

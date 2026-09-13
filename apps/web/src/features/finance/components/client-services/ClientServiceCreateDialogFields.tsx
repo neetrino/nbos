@@ -9,7 +9,13 @@ import {
   CLIENT_SERVICE_FREQUENCY_SEGMENTED_OPTIONS,
   CLIENT_SERVICE_TYPES,
 } from '@/features/finance/constants/client-services';
-import { clientServiceNamePlaceholder } from '@/features/finance/utils/client-service-create-form';
+import {
+  CLIENT_SERVICE_BILLING_SHORT_MESSAGE_KEYS,
+  CLIENT_SERVICE_FREQUENCY_SHORT_MESSAGE_KEYS,
+  CLIENT_SERVICE_TYPE_MESSAGE_KEYS,
+  localizeOptionLabels,
+  useClientServicesT,
+} from './client-service-message-keys';
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
 import {
   ClientServiceDateInput,
@@ -43,6 +49,12 @@ export function ClientServiceCreateDialogFields({
   onCredentialClear,
   onFormChange,
 }: ClientServiceCreateDialogFieldsProps) {
+  const t = useClientServicesT();
+  const namePlaceholderKey = `create.namePlaceholder.${form.type}`;
+  const namePlaceholder =
+    form.type in CLIENT_SERVICE_TYPE_MESSAGE_KEYS
+      ? t(namePlaceholderKey as never)
+      : t('create.namePlaceholder.default');
   return (
     <div className="flex flex-col gap-4">
       <ClientServiceProductField
@@ -55,46 +67,54 @@ export function ClientServiceCreateDialogFields({
       />
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="client-service-name">Name *</Label>
+        <Label htmlFor="client-service-name">{t('create.name')}</Label>
         <Input
           id="client-service-name"
           value={form.name}
-          placeholder={clientServiceNamePlaceholder(form.type)}
+          placeholder={namePlaceholder}
           autoComplete="off"
           onChange={(event) => onFormChange({ name: event.target.value })}
         />
       </div>
 
       <ClientServiceSelectField
-        label="Type"
+        label={t('create.type')}
         value={form.type}
-        options={CLIENT_SERVICE_TYPES}
+        options={localizeOptionLabels(CLIENT_SERVICE_TYPES, t, CLIENT_SERVICE_TYPE_MESSAGE_KEYS)}
         onChange={(type) => type && onFormChange({ type })}
       />
 
       <DetailSheetFieldSegmented
-        label="Billing"
+        label={t('create.billing')}
         value={form.billingModel}
-        options={CLIENT_SERVICE_BILLING_MODEL_SEGMENTED_OPTIONS}
+        options={localizeOptionLabels(
+          CLIENT_SERVICE_BILLING_MODEL_SEGMENTED_OPTIONS,
+          t,
+          CLIENT_SERVICE_BILLING_SHORT_MESSAGE_KEYS,
+        )}
         onValueChange={(billingModel) => onFormChange({ billingModel })}
       />
 
       <DetailSheetFieldSegmented
-        label="Frequency"
+        label={t('create.frequency')}
         icon={<CalendarDays size={12} />}
         value={form.frequency}
-        options={CLIENT_SERVICE_FREQUENCY_SEGMENTED_OPTIONS}
+        options={localizeOptionLabels(
+          CLIENT_SERVICE_FREQUENCY_SEGMENTED_OPTIONS,
+          t,
+          CLIENT_SERVICE_FREQUENCY_SHORT_MESSAGE_KEYS,
+        )}
         onValueChange={(frequency) => onFormChange({ frequency })}
       />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <ClientServiceMoneyInput
-          label="Our cost"
+          label={t('create.ourCost')}
           value={form.ourCost}
           onChange={(ourCost) => onFormChange({ ourCost })}
         />
         <ClientServiceMoneyInput
-          label="Client charge"
+          label={t('create.clientCharge')}
           value={form.clientCharge}
           onChange={(clientCharge) => onFormChange({ clientCharge })}
         />
@@ -102,7 +122,7 @@ export function ClientServiceCreateDialogFields({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <ClientServiceDateInput
-          label="Renewal / due date"
+          label={t('create.renewalDue')}
           value={form.renewalDate}
           onChange={(renewalDate) => onFormChange({ renewalDate })}
         />

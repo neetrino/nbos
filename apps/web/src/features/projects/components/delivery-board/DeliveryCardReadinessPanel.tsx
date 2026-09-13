@@ -1,13 +1,11 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import type { DeliveryLifecycleProjection } from '@/lib/api/projects';
 import type { DealTypePresentation } from '@/lib/deal-type-visual';
-import { isDeliveryHoldExpired } from '@/features/projects/constants/projects';
 import { getDeliveryBoardCardChrome } from './delivery-board-card-chrome';
+import { translateDeliveryHoldStatusLabel } from './delivery-board-message-keys';
 import { cn } from '@/lib/utils';
-
-function readinessHoldLabel(lifecycle: DeliveryLifecycleProjection): string | null {
-  if (lifecycle.workStatus !== 'ON_HOLD') return null;
-  return isDeliveryHoldExpired(lifecycle) ? 'Hold expired' : 'On hold';
-}
 
 export function DeliveryCardReadinessPanel({
   lifecycle,
@@ -16,6 +14,7 @@ export function DeliveryCardReadinessPanel({
   lifecycle: DeliveryLifecycleProjection;
   visual: DealTypePresentation;
 }) {
+  const t = useTranslations('deliveryBoard');
   if (lifecycle.isTerminal || !lifecycle.stage) return null;
 
   const chrome = getDeliveryBoardCardChrome(visual);
@@ -24,7 +23,7 @@ export function DeliveryCardReadinessPanel({
   const total = readiness?.total ?? 0;
   const hasCounts = readiness != null && total > 0;
   const fractionLabel = hasCounts ? `${completed}/${total}` : '—';
-  const holdLabel = readinessHoldLabel(lifecycle);
+  const holdLabel = translateDeliveryHoldStatusLabel(lifecycle, t);
 
   return (
     <div className="flex shrink-0 flex-col items-end gap-0.5">

@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 import type { Project } from '@/lib/api/projects';
+import { translateExpensePlanCategory, useExpensePlansT } from './expense-plan-message-keys';
 
 const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES;
 
@@ -42,70 +43,76 @@ export function ExpensePlansListToolbar(props: {
     onClearFilters,
     hasActiveFilters,
   } = props;
+  const t = useExpensePlansT();
 
   const categorySelectItems = useMemo(
     () => [
-      { value: 'ALL', label: 'All categories' },
-      ...PLAN_CATEGORY_OPTIONS.map((c) => ({ value: c.value, label: c.label })),
+      { value: 'ALL', label: t('filters.allCategories') },
+      ...PLAN_CATEGORY_OPTIONS.map((c) => ({
+        value: c.value,
+        label: translateExpensePlanCategory(t, c.value, c.label),
+      })),
     ],
-    [],
+    [t],
   );
 
   const projectSelectItems = useMemo(
     () => [
-      { value: 'ALL', label: 'All projects' },
+      { value: 'ALL', label: t('filters.allProjects') },
       ...projects.map((p) => ({ value: p.id, label: p.name })),
     ],
-    [projects],
+    [projects, t],
   );
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
       <div className="flex max-w-md min-w-[12rem] flex-1 flex-col gap-1">
-        <span className="text-muted-foreground text-xs font-medium">Search</span>
+        <span className="text-muted-foreground text-xs font-medium">{t('filters.search')}</span>
         <Input
           id="expense-plans-search"
           type="search"
-          placeholder="Search by name"
+          placeholder={t('page.searchPlaceholder')}
           value={searchDraft}
           onChange={(e) => onSearchDraftChange(e.target.value)}
           className={TOOLBAR_CONTROL_CLASS}
-          aria-label="Search expense plans by name"
+          aria-label={t('filters.searchAria')}
         />
       </div>
       <div className="flex min-w-[10rem] flex-col gap-1">
-        <span className="text-muted-foreground text-xs font-medium">Category</span>
+        <span className="text-muted-foreground text-xs font-medium">{t('filters.category')}</span>
         <Select
           value={category ?? 'ALL'}
           onValueChange={(v) => onCategoryChange(!v || v === 'ALL' ? '' : v)}
           items={categorySelectItems}
         >
-          <SelectTrigger className={TOOLBAR_CONTROL_CLASS} aria-label="Filter by category">
-            <SelectValue placeholder="All categories" />
+          <SelectTrigger className={TOOLBAR_CONTROL_CLASS} aria-label={t('filters.categoryAria')}>
+            <SelectValue placeholder={t('filters.allCategories')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="ALL">All categories</SelectItem>
+            <SelectItem value="ALL">{t('filters.allCategories')}</SelectItem>
             {PLAN_CATEGORY_OPTIONS.map((c) => (
               <SelectItem key={c.value} value={c.value}>
-                {c.label}
+                {translateExpensePlanCategory(t, c.value, c.label)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
       <div className="flex min-w-[12rem] flex-col gap-1">
-        <span className="text-muted-foreground text-xs font-medium">Project</span>
+        <span className="text-muted-foreground text-xs font-medium">{t('filters.project')}</span>
         <Select
           value={projectId ?? 'ALL'}
           onValueChange={(v) => onProjectIdChange(!v || v === 'ALL' ? '' : v)}
           disabled={projectsLoading}
           items={projectSelectItems}
         >
-          <SelectTrigger className={TOOLBAR_CONTROL_CLASS} aria-label="Filter by project">
-            <SelectValue placeholder={projectsLoading ? 'Loading…' : 'All projects'} />
+          <SelectTrigger className={TOOLBAR_CONTROL_CLASS} aria-label={t('filters.projectAria')}>
+            <SelectValue
+              placeholder={projectsLoading ? t('sheet.loading') : t('filters.allProjects')}
+            />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="ALL">All projects</SelectItem>
+            <SelectItem value="ALL">{t('filters.allProjects')}</SelectItem>
             {projects.map((p) => (
               <SelectItem key={p.id} value={p.id}>
                 {p.name}
@@ -116,7 +123,7 @@ export function ExpensePlansListToolbar(props: {
       </div>
       {hasActiveFilters ? (
         <Button type="button" variant="outline" size="sm" className="h-9" onClick={onClearFilters}>
-          Clear filters
+          {t('page.clearFilters')}
         </Button>
       ) : null}
     </div>

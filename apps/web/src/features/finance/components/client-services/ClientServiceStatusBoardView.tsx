@@ -5,10 +5,10 @@ import { ErrorState, LoadingState } from '@/components/shared';
 import {
   CLIENT_SERVICE_STAGE_ORDER,
   clientServiceStageHex,
-  clientServiceStageLabel,
 } from '@/features/finance/constants/client-service-payment-stage';
 import type { ClientServiceRecord, ClientServiceRecordListParams } from '@/lib/api/client-services';
 import { ClientServiceBoardScroll } from './ClientServiceBoardScroll';
+import { translateClientServiceStage, useClientServicesT } from './client-service-message-keys';
 import { useClientServiceBoard } from './use-client-service-board';
 
 interface ClientServiceStatusBoardViewProps {
@@ -22,6 +22,7 @@ export function ClientServiceStatusBoardView({
   reloadToken,
   onOpen,
 }: ClientServiceStatusBoardViewProps) {
+  const t = useClientServicesT();
   const year = new Date().getUTCFullYear();
   const { board, loading, error } = useClientServiceBoard({
     view: 'status',
@@ -36,7 +37,7 @@ export function ClientServiceStatusBoardView({
       const column = byKey.get(stage);
       return {
         key: stage,
-        label: clientServiceStageLabel(stage),
+        label: translateClientServiceStage(t, stage),
         hex: clientServiceStageHex(stage),
         count: column?.count ?? 0,
         sum: column?.sum ?? '0',
@@ -44,7 +45,7 @@ export function ClientServiceStatusBoardView({
         seed: column ? { items: column.items, total: column.meta.total } : { items: [], total: 0 },
       };
     });
-  }, [baseParams, board]);
+  }, [baseParams, board, t]);
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState description={error} />;

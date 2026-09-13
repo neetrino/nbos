@@ -1,4 +1,3 @@
-import type { AuditLogEntry } from '@/lib/api/audit';
 import type { SupportTicket } from '@/lib/api/support';
 
 export interface SupportTriageDraft {
@@ -41,13 +40,11 @@ export function isSupportTriageDirty(a: SupportTriageDraft, b: SupportTriageDraf
   );
 }
 
-export function formatSupportAuditLine(entry: AuditLogEntry): string {
-  const ch = entry.changes as Record<string, unknown> | null;
-  if (!ch) return entry.action;
-  if (typeof ch.from === 'string' && typeof ch.to === 'string') {
-    return `${entry.action}: ${ch.from} → ${ch.to}`;
-  }
-  return entry.action;
+export function formatSupportAuditTimestamp(iso: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  }).format(new Date(iso));
 }
 
 export function buildSupportTicketTriageUpdatePatch(

@@ -90,7 +90,9 @@
     "onHold": "На паузе",
     "notStaged": "Без этапа",
     "stageHoldExpired": "{stage} · пауза истекла",
-    "stageOnHold": "{stage} · на паузе"
+    "stageOnHold": "{stage} · на паузе",
+    "holdExpiredOn": "Пауза истекла {date}",
+    "onHoldUntil": "На паузе до {date}"
   },
   "entityFallback": "позиция поставки",
   "sheet": {
@@ -176,7 +178,8 @@
     "attachments": "Вложения",
     "approvedOffer": "Утверждённое предложение",
     "contract": "Договор",
-    "openInNewTab": "Открыть в новой вкладке"
+    "openInNewTab": "Открыть в новой вкладке",
+    "emptyHint": "Перетащите файл сюда или нажмите +, чтобы выбрать"
   },
   "access": {
     "title": "Доступ и инфраструктура",
@@ -207,5 +210,29 @@
     "select": "Выберите…",
     "inheritedEmpty": "Наследуется от родительского продукта — не задано.",
     "remove": "Убрать {language}"
+  },
+  "actions": {
+    "pauseTitle": "Приостановить поставку?",
+    "cancelTitle": "Отменить поставку?",
+    "pauseDescription": "Приостановить {entity} и указать ожидаемую дату возобновления.",
+    "cancelDescription": "Отменить {entity} с обязательной причиной.",
+    "resumeTargetDate": "Дата возобновления",
+    "reason": "Причина",
+    "pauseReasonPlaceholder": "Ожидаем ответ клиента…",
+    "cancelReasonPlaceholder": "Клиент отменил объём работ…",
+    "keepActive": "Оставить активной",
+    "pause": "Приостановить поставку",
+    "pausing": "Приостановка…",
+    "cancel": "Отменить поставку",
+    "cancelling": "Отмена…",
+    "resume": "Возобновить поставку"
+  },
+  "header": {
+    "description": "Карточки продуктов и Extension по каноническим этапам поставки.",
+    "statusAria": "Статус доски поставки"
+  },
+  "counts": {
+    "active": "{count, plural, one {# активная} few {# активные} many {# активных} other {# активные}}",
+    "closed": "{count, plural, one {# закрытая} few {# закрытые} many {# закрытых} other {# закрытые}}"
   }
 }

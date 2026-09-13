@@ -9,6 +9,8 @@ import { clientServiceStageHex } from '@/features/finance/constants/client-servi
 import type { ClientServiceRecord, ClientServiceRecordListParams } from '@/lib/api/client-services';
 import { ClientServiceBoardScroll } from './ClientServiceBoardScroll';
 import { useClientServiceBoard } from './use-client-service-board';
+import { useClientServicesT } from './client-service-message-keys';
+import { useLocale } from 'next-intl';
 
 interface ClientServiceMonthsBoardViewProps {
   baseParams: ClientServiceRecordListParams;
@@ -17,21 +19,6 @@ interface ClientServiceMonthsBoardViewProps {
   reloadToken: number;
   onOpen: (service: ClientServiceRecord) => void;
 }
-
-const MONTH_LABELS = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
 
 const MONTH_HEX = resolveKanbanStageHex('bg-cyan-600') ?? '#0891B2';
 const CURRENT_MONTH_HEX = clientServiceStageHex('active');
@@ -54,6 +41,8 @@ export function ClientServiceMonthsBoardView({
   reloadToken,
   onOpen,
 }: ClientServiceMonthsBoardViewProps) {
+  const t = useClientServicesT();
+  const locale = useLocale();
   const { board, loading, error } = useClientServiceBoard({
     view: 'months',
     baseParams,
@@ -63,7 +52,8 @@ export function ClientServiceMonthsBoardView({
 
   const columns = useMemo(() => {
     const byKey = new Map(board?.columns.map((column) => [column.key, column]));
-    return MONTH_LABELS.map((label, month) => {
+    return Array.from({ length: 12 }, (_, month) => {
+      const label = new Date(year, month, 1).toLocaleString(locale, { month: 'short' });
       const key = `${year}-${month}`;
       const column = byKey.get(key);
       const { from, to } = monthRange(year, month);
@@ -77,7 +67,7 @@ export function ClientServiceMonthsBoardView({
         seed: column ? { items: column.items, total: column.meta.total } : { items: [], total: 0 },
       };
     });
-  }, [baseParams, board, year]);
+  }, [baseParams, board, locale, year]);
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
@@ -87,7 +77,7 @@ export function ClientServiceMonthsBoardView({
           variant="outline"
           size="icon"
           onClick={() => onYearChange(year - 1)}
-          aria-label="Previous year"
+          aria-label={t('months.previousYear')}
         >
           <ChevronLeft className="size-4" aria-hidden />
         </Button>
@@ -97,7 +87,7 @@ export function ClientServiceMonthsBoardView({
           variant="outline"
           size="icon"
           onClick={() => onYearChange(year + 1)}
-          aria-label="Next year"
+          aria-label={t('months.nextYear')}
         >
           <ChevronRight className="size-4" aria-hidden />
         </Button>

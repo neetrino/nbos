@@ -21,6 +21,7 @@ import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 import type { ExpensePlanGeneralDraft } from '@/features/finance/utils/expense-plan-general-form-state';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import { projectDisplayName } from '@/lib/format/project-product-display';
+import { translateExpensePlanCategory, translateExpensePlanFrequency, useExpensePlansT } from './expense-plan-message-keys';
 
 const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES;
 
@@ -37,6 +38,7 @@ export function ExpensePlanGeneralTab({
   patchDraft,
   formDisabled = false,
 }: ExpensePlanGeneralTabProps) {
+  const t = useExpensePlansT();
   const productLabelSeed = plan.product?.name ?? null;
   const credentialLabelSeed = plan.credential?.name ?? null;
   const [productLabel, setProductLabel] = useState(productLabelSeed);
@@ -52,24 +54,24 @@ export function ExpensePlanGeneralTab({
   const categoryOptions = useMemo((): Array<{ value: string; label: string }> => {
     const items: Array<{ value: string; label: string }> = PLAN_CATEGORY_OPTIONS.map((c) => ({
       value: c.value,
-      label: c.label,
+      label: translateExpensePlanCategory(t, c.value, c.label),
     }));
     if (!items.some((c) => c.value === plan.category)) {
       items.push({ value: plan.category, label: plan.category });
     }
     return items;
-  }, [plan.category]);
+  }, [plan.category, t]);
 
   const frequencyOptions = useMemo((): Array<{ value: string; label: string }> => {
     const items: Array<{ value: string; label: string }> = EXPENSE_FREQUENCIES.map((f) => ({
       value: f.value,
-      label: f.label,
+      label: translateExpensePlanFrequency(t, f.value),
     }));
     if (!items.some((f) => f.value === plan.frequency)) {
       items.push({ value: plan.frequency, label: plan.frequency });
     }
     return items;
-  }, [plan.frequency]);
+  }, [plan.frequency, t]);
 
   const cancelled = expensePlanIsCancelled(plan);
 
@@ -77,15 +79,15 @@ export function ExpensePlanGeneralTab({
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} mx-auto w-full max-w-none gap-4`}>
       {cancelled ? (
         <p className="text-muted-foreground text-sm">
-          This plan is stopped. Resume it from the menu to create cards or change the schedule.
+          {t('sheet.stoppedHint')}
         </p>
       ) : null}
-      <DetailSheetSection title="Plan" icon={<Layers size={12} />}>
+      <DetailSheetSection title={t('sheet.sectionPlan')} icon={<Layers size={12} />}>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
           <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
             <InlineField
               variant="controlled"
-              label="Expected amount"
+              label={t('sheet.amount')}
               type="money"
               value={draft.amount}
               placeholder="0"
@@ -96,7 +98,7 @@ export function ExpensePlanGeneralTab({
             />
             <InlineField
               variant="controlled"
-              label="Category"
+              label={t('sheet.category')}
               type="select"
               value={draft.category}
               options={categoryOptions}
@@ -109,7 +111,7 @@ export function ExpensePlanGeneralTab({
           <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
             <InlineField
               variant="controlled"
-              label="Frequency"
+              label={t('sheet.frequency')}
               type="select"
               value={draft.frequency}
               options={frequencyOptions}
@@ -120,7 +122,7 @@ export function ExpensePlanGeneralTab({
             />
             <InlineField
               variant="controlled"
-              label="Next due"
+              label={t('sheet.nextDue')}
               type="date"
               value={draft.nextDueDate}
               disabled={formDisabled}

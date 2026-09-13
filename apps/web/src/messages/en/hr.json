@@ -238,5 +238,88 @@
     "team": "Team",
     "departments": "Departments",
     "rolesSeats": "Roles & Seats"
+  },
+  "rolesSeats": {
+    "title": "Roles & Seats",
+    "description": "Business seats, accountabilities, vacancies, assignments, and default permission role mapping."
+  },
+  "hub": {
+    "intro": "Org Structure is the company control center for departments, seats, employees, KPI, compensation, and SOP.",
+    "loadFailed": "My Company foundation data could not be loaded. Check your connection and try again.",
+    "metrics": {
+      "activeEmployees": "Active employees",
+      "activeHelper": "Can work in platform modules",
+      "departments": "Departments",
+      "departmentsHelper": "Org units used for access context",
+      "roles": "Permission roles",
+      "rolesHelper": "{count, plural, one {# protected system role} other {# protected system roles}}"
+    },
+    "foundation": {
+      "title": "Org Structure Foundation",
+      "subtitle": "Current department hierarchy and employee assignment coverage.",
+      "assigned": "{assigned}/{total} assigned",
+      "emptyTitle": "No departments configured",
+      "emptyDescription": "Add departments before using Org Structure as an accountability map.",
+      "reportsTo": "Reports to {name}",
+      "topLevel": "Top-level department"
+    },
+    "guardrails": {
+      "title": "Foundation guardrails",
+      "subtitle": "These are intentionally explicit so Finance, KPI and RBAC do not rely on incomplete data.",
+      "seats": "Seat assignments are not modelled separately from technical permission roles yet.",
+      "compensation": "Compensation, KPI and bonus policies are visible as module areas but not payroll sources yet.",
+      "orgChart": "The full org chart canvas with zoom, search and department drawers remains a dedicated follow-up."
+    },
+    "recent": {
+      "title": "Recent team context",
+      "empty": "No employees found. Invite employees before using My Company as a control center.",
+      "noDepartment": "No department"
+    },
+    "sections": {
+      "team": {
+        "title": "Team",
+        "description": "Employees, profiles, invites, roles, and department membership."
+      },
+      "departments": {
+        "title": "Departments",
+        "description": "Company departments, hierarchy, owners, and members."
+      },
+      "rolesSeats": {
+        "title": "Roles & Seats",
+        "description": "Business seats and accountabilities, separated from technical permissions."
+      },
+      "compensation": {
+        "title": "Compensation",
+        "description": "Compensation profiles, bonus policies, and payroll-facing rules."
+      },
+      "bonusPolicies": {
+        "title": "Bonus policies",
+        "description": "Bonus rule bundles (sales, delivery, manual) for compensation profiles."
+      },
+      "salesBonus": {
+        "title": "Sales bonus policies",
+        "description": "Seller and assistant rates by From category and Classic vs subscription first invoice."
+      },
+      "kpi": {
+        "title": "KPI / Scorecard",
+        "description": "Company, department, and employee KPI policies and scorecards."
+      },
+      "kpiGate": {
+        "title": "KPI gate policies",
+        "description": "Attainment thresholds and payout % for payroll (linked via compensation profiles)."
+      },
+      "sop": {
+        "title": "SOP & Templates",
+        "description": "SOP documents, process templates, and operational runs."
+      },
+      "checklists": {
+        "title": "Checklist templates",
+        "description": "Versioned checklist builders for delivery, QA, maintenance, and SOP."
+      },
+      "checklistRules": {
+        "title": "Delivery checklist rules",
+        "description": "Bind published templates to Product / Extension stages; instances on stage entry."
+      }
+    }
   }
 }

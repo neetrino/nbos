@@ -17,6 +17,7 @@ import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-li
 import { clientServiceInvoiceLinkToItemSummary } from '@/features/finance/entity-item/client-service-finance-item-summary';
 import type { ClientServiceFinanceLinks } from '@/lib/api/client-services';
 import { cn } from '@/lib/utils';
+import { useClientServicesT } from './client-service-message-keys';
 
 interface ClientServiceInvoicesTabProps {
   links: ClientServiceFinanceLinks | undefined;
@@ -29,6 +30,7 @@ export function ClientServiceInvoicesTab({
   canCreateInvoice,
   onCreate,
 }: ClientServiceInvoicesTabProps) {
+  const t = useClientServicesT();
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
   const displayVariant = useEntityItemMobileView(viewVariant);
@@ -41,23 +43,21 @@ export function ClientServiceInvoicesTab({
   );
 
   return (
-    <DetailSheetSection title="Invoice cards" icon={<FileText size={12} />}>
+    <DetailSheetSection title={t('invoicesTab.title')} icon={<FileText size={12} />}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         {canCreateInvoice ? (
           <Button type="button" size="sm" disabled={!canCreateInvoice} onClick={onCreate}>
             <Plus size={14} aria-hidden />
-            Create invoice
+            {t('invoicesTab.create')}
           </Button>
         ) : (
-          <p className="text-muted-foreground text-sm">
-            Company-paid services do not use invoices.
-          </p>
+          <p className="text-muted-foreground text-sm">{t('invoicesTab.wePayOnly')}</p>
         )}
         <ViewModeSwitch
           value={viewVariant}
           onChange={setViewVariant}
           options={ENTITY_ITEM_VIEW_OPTIONS}
-          ariaLabel="Invoice list view"
+          ariaLabel={t('invoicesTab.viewAria')}
         />
       </div>
 
@@ -66,8 +66,8 @@ export function ClientServiceInvoicesTab({
         variant={displayVariant}
         onOpen={onOpenItem}
         emptyIcon={FileText}
-        emptyTitle="No invoices"
-        emptyDescription="No invoice cards linked to this service yet."
+        emptyTitle={t('invoicesTab.emptyTitle')}
+        emptyDescription={t('invoicesTab.emptyDescription')}
       />
 
       {firstInvoice ? (
@@ -76,7 +76,7 @@ export function ClientServiceInvoicesTab({
           className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'mt-4 gap-1.5')}
         >
           <FileText size={14} aria-hidden />
-          Open in Finance
+          {t('invoicesTab.openFinance')}
           <ExternalLink size={12} className="opacity-70" aria-hidden />
         </Link>
       ) : null}

@@ -16,9 +16,14 @@ import {
   useModuleHeroSlots,
 } from '@/components/shared';
 import { useClientServicesViewMode } from '@/features/finance/constants/client-services-view';
-import { CLIENT_SERVICES_VIEW_OPTIONS } from './client-services-view-options';
+import { buildClientServicesViewOptions } from './client-services-view-options';
+import {
+  translateClientServiceBilling,
+  translateClientServiceStatus,
+  translateClientServiceType,
+  useClientServicesT,
+} from './client-service-message-keys';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
-import { clientServicesPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { OPEN_CLIENT_SERVICE_QUERY } from '@/features/finance/constants/client-service-deep-link';
 import {
   buildClientServiceIntegratedFilterConfigs,
@@ -57,7 +62,8 @@ export function ClientServicesPageContent() {
 }
 
 function ClientServicesPageInner() {
-  useFinanceDocumentTitle(clientServicesPageTitle());
+  const t = useClientServicesT();
+  useFinanceDocumentTitle(t('page.title'));
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -94,7 +100,18 @@ function ClientServicesPageInner() {
     [billingFilter, debouncedSearch, statusFilter, typeFilter],
   );
 
-  const clientServiceFilterConfigs = useMemo(() => buildClientServiceIntegratedFilterConfigs(), []);
+  const clientServiceFilterConfigs = useMemo(
+    () =>
+      buildClientServiceIntegratedFilterConfigs({
+        type: t('filters.type'),
+        status: t('filters.status'),
+        billing: t('filters.billing'),
+        typeLabel: (value, fallback) => translateClientServiceType(t, value, fallback),
+        statusLabel: (value, fallback) => translateClientServiceStatus(t, value, fallback),
+        billingLabel: (value, fallback) => translateClientServiceBilling(t, value, fallback),
+      }),
+    [t],
+  );
 
   const clientServiceFilterValues = useMemo(
     () => ({
@@ -161,16 +178,16 @@ function ClientServicesPageInner() {
     async (id: string) => {
       try {
         await clientServicesApi.cancel(id);
-        toast.success('Client service cancelled');
+        toast.success(t('toasts.cancelled'));
         if (openServiceIdFromUrl === id) {
           handleServiceSheetOpenChange(false);
         }
         refreshAll();
       } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Client service could not be cancelled.'));
+        toast.error(getApiErrorMessage(caught, t('errors.cancel')));
       }
     },
-    [handleServiceSheetOpenChange, openServiceIdFromUrl, refreshAll],
+    [handleServiceSheetOpenChange, openServiceIdFromUrl, refreshAll, t],
   );
 
   const moduleHeroSlots = useMemo(
@@ -179,7 +196,7 @@ function ClientServicesPageInner() {
         <IntegratedSearchFilters
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search by name or provider…"
+          searchPlaceholder={t('page.searchPlaceholder')}
           filters={clientServiceFilterConfigs}
           filterValues={clientServiceFilterValues}
           onFilterChange={handleClientServiceFilterChange}
@@ -190,8 +207,8 @@ function ClientServicesPageInner() {
         <ViewModeSwitch
           value={view}
           onChange={handleViewChange}
-          options={CLIENT_SERVICES_VIEW_OPTIONS}
-          ariaLabel="Client services view mode"
+          options={buildClientServicesViewOptions(t)}
+          ariaLabel={t('page.viewAria')}
         />
       ),
       trailing: (
@@ -199,7 +216,7 @@ function ClientServicesPageInner() {
           <ClientServicesPageSettingsSheet refreshDisabled={false} onRefresh={refreshAll} />
           <Button type="button" onClick={openCreate}>
             <Plus className="mr-2 h-4 w-4" aria-hidden />
-            New service
+            {t('page.newService')}
           </Button>
         </>
       ),
@@ -213,6 +230,7 @@ function ClientServicesPageInner() {
       openCreate,
       refreshAll,
       search,
+      t,
       view,
     ],
   );
@@ -266,11 +284,11 @@ function ClientServicesPageInner() {
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
-        title="Cancel client service?"
-        description="The record is not deleted. Status becomes Cancelled, it leaves active lists, and domain tracking stops. Linked finance records stay intact."
-        dismissLabel="No"
-        confirmLabel="Yes"
-        submittingLabel="Cancelling…"
+        title={t('cancel.title')}
+        description={t('cancel.description')}
+        dismissLabel={t('cancel.dismiss')}
+        confirmLabel={t('cancel.confirm')}
+        submittingLabel={t('cancel.submitting')}
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;

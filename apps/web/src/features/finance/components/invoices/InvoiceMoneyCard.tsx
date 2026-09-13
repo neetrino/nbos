@@ -2,6 +2,7 @@
 
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Calendar, FileCheck, Wallet } from 'lucide-react';
 import {
   AmdCurrencyIcon,
@@ -9,10 +10,12 @@ import {
   DetailSheetMetaDate,
   InlineField,
 } from '@/components/shared';
-import { formatAmount, INVOICE_TAX_STATUS_OPTIONS } from '@/features/finance/constants/finance';
+import { formatAmount } from '@/features/finance/constants/finance';
 import { invoiceStageGateSectionClass } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import { INVOICE_GATE_FIELD_PAYMENTS } from '@/features/finance/constants/invoice-money-status-gate-client';
 import { cn } from '@/lib/utils';
+import { formatInvoiceSheetDate } from './format-invoice-sheet-date';
+import { invoiceTaxMessageKey } from './invoice-message-keys';
 import type { InvoiceSheetInvoice } from './InvoiceSheetSections';
 
 const MONEY_METRIC_DIVIDER_CLASS = 'border-border';
@@ -28,12 +31,14 @@ export function InvoiceMoneyCard({
   gateRequiredFields = new Set(),
   billingFields = null,
 }: InvoiceMoneyCardProps) {
+  const t = useTranslations('invoices');
+  const locale = useLocale();
   const coverage = invoice.paymentCoverage;
   const outstanding = coverage?.outstandingAmount ?? parseFloat(invoice.amount);
   const isOverdue = isInvoiceOverdue(invoice);
-  const taxLabel =
-    INVOICE_TAX_STATUS_OPTIONS.find((option) => option.value === invoice.taxStatus)?.label ??
-    invoice.taxStatus;
+  const taxKey = invoiceTaxMessageKey(invoice.taxStatus);
+  const taxLabel = taxKey ? t(taxKey) : invoice.taxStatus;
+  const dueValue = invoice.dueDate ? formatInvoiceSheetDate(invoice.dueDate, locale) : '—';
 
   return (
     <section
@@ -47,29 +52,16 @@ export function InvoiceMoneyCard({
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">
           <Wallet size={18} aria-hidden />
         </div>
-        <h3 className="text-base font-semibold tracking-tight">Money</h3>
+        <h3 className="text-base font-semibold tracking-tight">{t('money.title')}</h3>
       </div>
 
       {billingFields ?? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <InlineField
-            variant="controlled"
-            label="Amount"
-            type="money"
-            value={invoice.amount}
-            icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
-            disabled
-            onValueChange={() => undefined}
-          />
-          <InlineField
-            variant="controlled"
-            label="Tax Status"
-            type="text"
-            value={taxLabel}
-            disabled
-            onValueChange={() => undefined}
-          />
-        </div>
+        <InvoiceMoneyReadonlyFields
+          amount={invoice.amount}
+          amountLabel={t('money.amount')}
+          taxLabel={taxLabel}
+          taxStatusLabel={t('money.taxStatus')}
+        />
       )}
 
       <div className={cn('mt-4 border-t pt-4', MONEY_METRIC_DIVIDER_CLASS)}>
@@ -83,22 +75,22 @@ export function InvoiceMoneyCard({
             <InvoiceMoneyMetric
               icon={FileCheck}
               iconClassName="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300"
-              label="Outstanding"
+              label={t('money.outstanding')}
               value={formatAmount(outstanding, invoice.currency)}
               valueClassName="text-emerald-600 dark:text-emerald-400"
             />
             <InvoiceMoneyMetric
               icon={Wallet}
               iconClassName="bg-sky-100 text-sky-600 dark:bg-sky-950/40 dark:text-sky-300"
-              label="Paid"
+              label={t('money.paid')}
               value={formatAmount(coverage?.paidAmount ?? 0, invoice.currency)}
             />
           </div>
           <InvoiceMoneyMetric
             icon={Calendar}
             iconClassName="bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-300"
-            label="Due"
-            value={invoice.dueDate ? formatShortDate(invoice.dueDate) : '—'}
+            label={t('money.due')}
+            value={dueValue}
             valueClassName={
               isOverdue && invoice.dueDate ? 'text-red-600 dark:text-red-400' : undefined
             }
@@ -108,13 +100,53 @@ export function InvoiceMoneyCard({
 
       <div className={cn('mt-4 border-t pt-4', MONEY_METRIC_DIVIDER_CLASS)}>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <DetailSheetMetaDate label="Created" value={formatShortDate(invoice.createdAt)} />
+          <DetailSheetMetaDate
+            label={t('money.created')}
+            value={formatInvoiceSheetDate(invoice.createdAt, locale)}
+          />
           {invoice.paidDate ? (
-            <DetailSheetMetaDate label="Paid on" value={formatShortDate(invoice.paidDate)} />
+            <DetailSheetMetaDate
+              label={t('money.paidOn')}
+              value={formatInvoiceSheetDate(invoice.paidDate, locale)}
+            />
           ) : null}
         </div>
       </div>
     </section>
+  );
+}
+
+function InvoiceMoneyReadonlyFields({
+  amount,
+  amountLabel,
+  taxLabel,
+  taxStatusLabel,
+}: {
+  amount: string;
+  amountLabel: string;
+  taxLabel: string;
+  taxStatusLabel: string;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <InlineField
+        variant="controlled"
+        label={amountLabel}
+        type="money"
+        value={amount}
+        icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
+        disabled
+        onValueChange={() => undefined}
+      />
+      <InlineField
+        variant="controlled"
+        label={taxStatusLabel}
+        type="text"
+        value={taxLabel}
+        disabled
+        onValueChange={() => undefined}
+      />
+    </div>
   );
 }
 
@@ -144,14 +176,6 @@ function InvoiceMoneyMetric({
       </p>
     </div>
   );
-}
-
-function formatShortDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 }
 
 function isInvoiceOverdue(invoice: InvoiceSheetInvoice) {

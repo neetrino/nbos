@@ -90,7 +90,9 @@
     "onHold": "On Hold",
     "notStaged": "Not staged",
     "stageHoldExpired": "{stage} · Hold expired",
-    "stageOnHold": "{stage} · On Hold"
+    "stageOnHold": "{stage} · On Hold",
+    "holdExpiredOn": "Hold expired on {date}",
+    "onHoldUntil": "On hold until {date}"
   },
   "entityFallback": "delivery item",
   "sheet": {
@@ -176,7 +178,8 @@
     "attachments": "Attachments",
     "approvedOffer": "Approved offer",
     "contract": "Contract",
-    "openInNewTab": "Open in new tab"
+    "openInNewTab": "Open in new tab",
+    "emptyHint": "You can drag a file here or click + to browse"
   },
   "access": {
     "title": "Access & infrastructure",
@@ -207,5 +210,29 @@
     "select": "Select…",
     "inheritedEmpty": "Inherited from parent product — not set.",
     "remove": "Remove {language}"
+  },
+  "actions": {
+    "pauseTitle": "Pause delivery?",
+    "cancelTitle": "Cancel delivery?",
+    "pauseDescription": "Pause {entity} and set the expected resume date.",
+    "cancelDescription": "Cancel {entity} with a required reason.",
+    "resumeTargetDate": "Resume target date",
+    "reason": "Reason",
+    "pauseReasonPlaceholder": "Waiting for client feedback…",
+    "cancelReasonPlaceholder": "Client cancelled scope…",
+    "keepActive": "Keep active",
+    "pause": "Pause delivery",
+    "pausing": "Pausing…",
+    "cancel": "Cancel delivery",
+    "cancelling": "Cancelling…",
+    "resume": "Resume delivery"
+  },
+  "header": {
+    "description": "Product and Extension cards grouped by canonical delivery stage.",
+    "statusAria": "Delivery board status"
+  },
+  "counts": {
+    "active": "{count, plural, one {# active} other {# active}}",
+    "closed": "{count, plural, one {# closed} other {# closed}}"
   }
 }

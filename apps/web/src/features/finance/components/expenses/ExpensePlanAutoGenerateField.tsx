@@ -7,6 +7,7 @@ import {
 } from '@/components/shared/detail-sheet-classes';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
+import { useExpensePlansT } from './expense-plan-message-keys';
 
 interface ExpensePlanAutoGenerateFieldProps {
   checked: boolean;
@@ -20,6 +21,7 @@ export function ExpensePlanAutoGenerateField({
   disabled = false,
   onCheckedChange,
 }: ExpensePlanAutoGenerateFieldProps) {
+  const t = useExpensePlansT();
   return (
     <div
       className={cn(
@@ -27,13 +29,13 @@ export function ExpensePlanAutoGenerateField({
         disabled && 'pointer-events-none opacity-60',
       )}
     >
-      <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>Auto-generate</span>
+      <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{t('sheet.autoGenerate')}</span>
       <div className={cn(DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS, 'gap-2 pr-1.5')}>
         <Switch
           size="lg"
           checked={checked}
           disabled={disabled}
-          aria-label="Auto-generate expense cards"
+          aria-label={t('sheet.autoGenerateAria')}
           onCheckedChange={(value) => onCheckedChange(Boolean(value))}
         />
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Calendar, CreditCard, FileText, Loader2, Save, Wallet } from 'lucide-react';
 import {
   AmdCurrencyIcon,
@@ -12,13 +13,13 @@ import { Button } from '@/components/ui/button';
 import {
   DEFAULT_INVOICE_PAYMENT_METHOD,
   formatAmount,
-  INVOICE_PAYMENT_METHOD_OPTIONS,
   type InvoicePaymentMethod,
 } from '@/features/finance/constants/finance';
 import { invoiceStageGateSectionClass } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import { INVOICE_GATE_FIELD_PAYMENTS } from '@/features/finance/constants/invoice-money-status-gate-client';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import type { Invoice } from '@/lib/api/finance';
+import { invoicePaymentMethodSelectOptions } from './invoice-payment-method-options';
 
 const FIELD_ICON_CLASS = 'text-emerald-600 dark:text-emerald-400';
 
@@ -43,6 +44,8 @@ export function RecordPaymentForm({
   onRecordPayment,
   gateRequiredFields = new Set(),
 }: RecordPaymentFormProps) {
+  const t = useTranslations('invoices');
+  const tCommon = useTranslations('common');
   const outstanding = invoice.paymentCoverage?.outstandingAmount ?? parseFloat(invoice.amount);
   const [amount, setAmount] = useState(String(outstanding || ''));
   const [paymentDate, setPaymentDate] = useState(todayDateInputValue);
@@ -52,6 +55,10 @@ export function RecordPaymentForm({
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const methodOptions = useMemo(
+    () => invoicePaymentMethodSelectOptions((key) => t(key), (key) => t.has(key)),
+    [t],
+  );
 
   useEffect(() => {
     const nextOutstanding =
@@ -77,7 +84,7 @@ export function RecordPaymentForm({
       setNotes('');
       setPaymentDate(todayDateInputValue());
     } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Payment could not be recorded.'));
+      setError(getApiErrorMessage(caught, t('payments.recordFailed')));
     } finally {
       setSubmitting(false);
     }
@@ -96,9 +103,9 @@ export function RecordPaymentForm({
           <Wallet size={18} aria-hidden />
         </div>
         <div className="min-w-0">
-          <h3 className="text-base font-semibold tracking-tight">Record Payment</h3>
+          <h3 className="text-base font-semibold tracking-tight">{t('payments.recordTitle')}</h3>
           <p className="text-muted-foreground mt-0.5 text-sm">
-            Outstanding{' '}
+            {t('payments.outstanding')}{' '}
             <span className="font-semibold text-emerald-600 tabular-nums dark:text-emerald-400">
               {formatAmount(outstanding, invoice.currency)}
             </span>
@@ -110,7 +117,7 @@ export function RecordPaymentForm({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <InlineField
             variant="controlled"
-            label="Amount"
+            label={t('payments.amount')}
             type="money"
             value={amount}
             icon={<AmdCurrencyIcon className={FIELD_ICON_CLASS} />}
@@ -118,7 +125,7 @@ export function RecordPaymentForm({
           />
           <InlineField
             variant="controlled"
-            label="Payment date"
+            label={t('payments.paymentDate')}
             type="date"
             value={paymentDate}
             icon={<Calendar size={14} className={FIELD_ICON_CLASS} />}
@@ -127,18 +134,18 @@ export function RecordPaymentForm({
           />
         </div>
         <DetailSheetFieldSegmented
-          label="Method"
+          label={t('payments.method')}
           icon={<CreditCard size={14} className={FIELD_ICON_CLASS} />}
           value={paymentMethod}
-          options={INVOICE_PAYMENT_METHOD_OPTIONS}
+          options={methodOptions}
           onValueChange={setPaymentMethod}
         />
         <InlineField
           variant="controlled"
-          label="Notes"
+          label={t('payments.notes')}
           type="textarea"
           value={notes}
-          placeholder="Optional"
+          placeholder={t('payments.notesPlaceholder')}
           icon={<FileText size={14} className={FIELD_ICON_CLASS} />}
           onValueChange={setNotes}
         />
@@ -153,7 +160,7 @@ export function RecordPaymentForm({
           ) : (
             <Save className="mr-2 size-4" aria-hidden />
           )}
-          Record payment
+          {submitting ? tCommon('saving') : t('payments.submit')}
         </Button>
       </form>
     </section>

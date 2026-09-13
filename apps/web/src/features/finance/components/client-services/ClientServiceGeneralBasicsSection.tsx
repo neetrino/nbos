@@ -21,6 +21,12 @@ import { productDisplayName, projectDisplayName } from '@/lib/format/project-pro
 import { ClientServiceCredentialField } from './ClientServiceCredentialField';
 import { ClientServiceProductField } from './ClientServiceProductField';
 import { ClientServiceProviderField } from './ClientServiceProviderField';
+import {
+  CLIENT_SERVICE_STATUS_MESSAGE_KEYS,
+  CLIENT_SERVICE_TYPE_MESSAGE_KEYS,
+  localizeOptionLabels,
+  useClientServicesT,
+} from './client-service-message-keys';
 
 interface ClientServiceGeneralBasicsSectionProps {
   draft: ClientServiceFormState;
@@ -39,6 +45,7 @@ export function ClientServiceGeneralBasicsSection({
   credentialName,
   formDisabled,
 }: ClientServiceGeneralBasicsSectionProps) {
+  const t = useClientServicesT();
   const [open, setOpen] = useState(true);
   const [productLabel, setProductLabel] = useState(productName);
   const [projectLabel, setProjectLabel] = useState(projectName);
@@ -68,7 +75,7 @@ export function ClientServiceGeneralBasicsSection({
 
   return (
     <DetailSheetCollapsibleSection
-      title="Basics"
+      title={t('sheet.basics')}
       icon={<Tag size={12} />}
       open={open}
       onOpenChange={setOpen}
@@ -117,17 +124,15 @@ function ClientServiceBasicsTypeStatusRow({
   formDisabled,
   patchDraft,
 }: Pick<ClientServiceGeneralBasicsSectionProps, 'draft' | 'formDisabled' | 'patchDraft'>) {
+  const t = useClientServicesT();
   return (
     <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
       <InlineField
         variant="controlled"
-        label="Type"
+        label={t('fields.type')}
         type="select"
         value={draft.type}
-        options={CLIENT_SERVICE_TYPES.map((option) => ({
-          value: option.value,
-          label: option.label,
-        }))}
+        options={localizeOptionLabels(CLIENT_SERVICE_TYPES, t, CLIENT_SERVICE_TYPE_MESSAGE_KEYS)}
         icon={<Layers size={12} />}
         disabled={formDisabled}
         className={EXPENSE_SHEET_FIELD_CELL_CLASS}
@@ -135,13 +140,10 @@ function ClientServiceBasicsTypeStatusRow({
       />
       <InlineField
         variant="controlled"
-        label="Status"
+        label={t('fields.status')}
         type="select"
         value={draft.status}
-        options={CLIENT_SERVICE_STATUSES.map((option) => ({
-          value: option.value,
-          label: option.label,
-        }))}
+        options={localizeOptionLabels(CLIENT_SERVICE_STATUSES, t, CLIENT_SERVICE_STATUS_MESSAGE_KEYS)}
         icon={<CircleDot size={12} />}
         disabled={formDisabled}
         className={EXPENSE_SHEET_FIELD_CELL_CLASS}

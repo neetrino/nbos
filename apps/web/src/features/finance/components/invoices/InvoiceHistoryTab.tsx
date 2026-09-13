@@ -1,14 +1,16 @@
 'use client';
 
 import { History } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { DetailSheetPlaceholderTab } from '@/components/shared';
 
 export function InvoiceHistoryTab() {
+  const t = useTranslations('invoices');
   return (
     <DetailSheetPlaceholderTab
       icon={History}
-      title="History coming soon"
-      description="Money status changes, payments, and official invoice actions will be listed here."
+      title={t('history.comingSoonTitle')}
+      description={t('history.comingSoonDescription')}
     />
   );
 }

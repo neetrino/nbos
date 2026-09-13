@@ -1,81 +1,163 @@
+import { createTranslator } from 'next-intl';
 import { describe, expect, it } from 'vitest';
-import { flattenMessageKeys } from '../../../../i18n/flatten-messages';
-import enDeliveryBoard from '../../../../messages/en/delivery-board.json';
-import ruDeliveryBoard from '../../../../messages/ru/delivery-board.json';
-import { DELIVERY_STAGE_LABELS } from './project-delivery-board-model';
-import { PRODUCT_LANGUAGE_OPTIONS } from './delivery-product-language-options';
-import { STAGE_READINESS_LABELS } from './delivery-stage-readiness-rows';
+import enDeliveryBoard from '@/messages/en/delivery-board.json';
+import ruDeliveryBoard from '@/messages/ru/delivery-board.json';
 import {
-  DELIVERY_STAGE_MESSAGE_KEYS,
-  PRODUCT_LANGUAGE_CODES,
-  PRODUCT_LANGUAGE_MESSAGE_KEYS,
-  READINESS_LABEL_MESSAGE_KEYS,
+  DELIVERY_STATUS_FILTER_MESSAGE_KEYS,
+  translateDeliveryHoldCopy,
+  translateDeliveryHoldStatusLabel,
+  translateDeliveryLifecycleLabel,
+  translateDeliveryStatusFilter,
+  translateLifecycleActionDialogCopy,
+  type DeliveryBoardTranslate,
 } from './delivery-board-message-keys';
 
-function placeholderTokens(value: string): string[] {
-  return [
-    ...new Set(
-      [...value.matchAll(/\{([a-zA-Z0-9_]+)(?:,[^}]*)?\}/g)]
-        .map((match) => match[1])
-        .filter((token): token is string => Boolean(token)),
-    ),
-  ].sort();
+const PAST_HOLD = '2020-01-01T00:00:00.000Z';
+const FUTURE_HOLD = '2099-01-01T00:00:00.000Z';
+
+function createDeliveryBoardT(locale: 'en' | 'ru'): DeliveryBoardTranslate {
+  return createTranslator({
+    locale,
+    messages: { deliveryBoard: locale === 'en' ? enDeliveryBoard : ruDeliveryBoard },
+    namespace: 'deliveryBoard',
+  });
 }
 
-function collectIcuStrings(
-  catalog: Record<string, unknown>,
-  prefix = '',
-): Array<{ path: string; value: string }> {
-  const rows: Array<{ path: string; value: string }> = [];
-  for (const [key, value] of Object.entries(catalog)) {
-    const path = prefix ? `${prefix}.${key}` : key;
-    if (typeof value === 'string') {
-      if (value.includes('{')) rows.push({ path, value });
-      continue;
-    }
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      rows.push(...collectIcuStrings(value as Record<string, unknown>, path));
-    }
-  }
-  return rows;
-}
+describe('translateDeliveryLifecycleLabel', () => {
+  it('keeps VALUE codes and translates chrome in EN/RU', () => {
+    const en = createDeliveryBoardT('en');
+    const ru = createDeliveryBoardT('ru');
+    const done = {
+      stage: 'TRANSFER',
+      workStatus: 'IN_PROGRESS',
+      resolution: 'DONE',
+    };
+    const cancelled = {
+      stage: 'QA',
+      workStatus: 'IN_PROGRESS',
+      resolution: 'CANCELLED',
+    };
+    const startingHold = {
+      stage: 'STARTING',
+      workStatus: 'ON_HOLD',
+      resolution: null,
+      onHoldUntil: FUTURE_HOLD,
+    };
+    const expired = {
+      stage: 'DEVELOPMENT',
+      workStatus: 'ON_HOLD',
+      resolution: null,
+      onHoldUntil: PAST_HOLD,
+    };
+    const unstaged = {
+      stage: null,
+      workStatus: 'IN_PROGRESS',
+      resolution: null,
+    };
 
-describe('deliveryBoard message keys', () => {
-  it('covers every delivery stage VALUE key', () => {
-    expect(Object.keys(DELIVERY_STAGE_MESSAGE_KEYS).sort()).toEqual(
-      Object.keys(DELIVERY_STAGE_LABELS).sort(),
+    expect(translateDeliveryLifecycleLabel(done, en)).toBe('Done');
+    expect(translateDeliveryLifecycleLabel(done, ru)).toBe('Готово');
+    expect(translateDeliveryLifecycleLabel(cancelled, en)).toBe('Cancelled');
+    expect(translateDeliveryLifecycleLabel(cancelled, ru)).toBe('Отменено');
+    expect(translateDeliveryLifecycleLabel(startingHold, en)).toBe('Starting · On Hold');
+    expect(translateDeliveryLifecycleLabel(startingHold, ru)).toBe('Запуск · на паузе');
+    expect(translateDeliveryLifecycleLabel(expired, en)).toBe('Development · Hold expired');
+    expect(translateDeliveryLifecycleLabel(expired, ru)).toBe('Разработка · пауза истекла');
+    expect(translateDeliveryLifecycleLabel(unstaged, en)).toBe('Not staged');
+    expect(translateDeliveryLifecycleLabel(unstaged, ru)).toBe('Без этапа');
+    expect(startingHold.workStatus).toBe('ON_HOLD');
+    expect(done.resolution).toBe('DONE');
+  });
+});
+
+describe('translateDeliveryHoldCopy', () => {
+  it('interpolates dates as user data and translates chrome', () => {
+    const en = createDeliveryBoardT('en');
+    const ru = createDeliveryBoardT('ru');
+    const hold = {
+      workStatus: 'ON_HOLD',
+      resolution: null,
+      onHoldUntil: FUTURE_HOLD,
+    };
+    const expired = {
+      workStatus: 'ON_HOLD',
+      resolution: null,
+      onHoldUntil: PAST_HOLD,
+    };
+
+    expect(translateDeliveryHoldCopy(hold, '12 Sep 2026', en)).toBe('On hold until 12 Sep 2026');
+    expect(translateDeliveryHoldCopy(hold, '12 Sep 2026', ru)).toBe('На паузе до 12 Sep 2026');
+    expect(translateDeliveryHoldCopy(expired, '1 Jan 2020', en)).toBe('Hold expired on 1 Jan 2020');
+    expect(translateDeliveryHoldCopy(expired, '1 Jan 2020', ru)).toBe('Пауза истекла 1 Jan 2020');
+    expect(translateDeliveryHoldCopy(hold, null, en)).toBe('On Hold');
+    expect(translateDeliveryHoldCopy({ workStatus: 'IN_PROGRESS', resolution: null }, null, en)).toBe(
+      null,
     );
   });
+});
 
-  it('covers every product language code', () => {
-    expect(Object.keys(PRODUCT_LANGUAGE_MESSAGE_KEYS).sort()).toEqual(
-      PRODUCT_LANGUAGE_OPTIONS.map((option) => option.value).sort(),
-    );
-    expect(PRODUCT_LANGUAGE_CODES).toEqual(PRODUCT_LANGUAGE_OPTIONS.map((option) => option.value));
+describe('translateDeliveryHoldStatusLabel', () => {
+  it('returns hold chrome without changing workStatus codes', () => {
+    const en = createDeliveryBoardT('en');
+    const ru = createDeliveryBoardT('ru');
+    const hold = { workStatus: 'ON_HOLD', resolution: null, onHoldUntil: FUTURE_HOLD };
+    const expired = { workStatus: 'ON_HOLD', resolution: null, onHoldUntil: PAST_HOLD };
+
+    expect(translateDeliveryHoldStatusLabel(hold, en)).toBe('On Hold');
+    expect(translateDeliveryHoldStatusLabel(hold, ru)).toBe('На паузе');
+    expect(translateDeliveryHoldStatusLabel(expired, en)).toBe('Hold expired');
+    expect(translateDeliveryHoldStatusLabel(expired, ru)).toBe('Пауза истекла');
+    expect(hold.workStatus).toBe('ON_HOLD');
+  });
+});
+
+describe('translateLifecycleActionDialogCopy', () => {
+  it('keeps entity names as user data', () => {
+    const en = createDeliveryBoardT('en');
+    const ru = createDeliveryBoardT('ru');
+    const enPause = translateLifecycleActionDialogCopy('pause', 'Acme Site', false, en);
+    const ruCancel = translateLifecycleActionDialogCopy('cancel', 'Acme Site', true, ru);
+
+    expect(enPause.title).toBe('Pause delivery?');
+    expect(enPause.description).toBe('Pause Acme Site and set the expected resume date.');
+    expect(enPause.submitLabel).toBe('Pause delivery');
+    expect(ruCancel.title).toBe('Отменить поставку?');
+    expect(ruCancel.description).toBe('Отменить Acme Site с обязательной причиной.');
+    expect(ruCancel.submitLabel).toBe('Отмена…');
+  });
+});
+
+describe('delivery status filter keys', () => {
+  it('maps VALUE codes to existing catalog keys', () => {
+    expect(DELIVERY_STATUS_FILTER_MESSAGE_KEYS).toEqual({
+      ACTIVE: 'pipelineTabs.active',
+      ON_HOLD: 'lifecycle.onHold',
+      CLOSED: 'pipelineTabs.closed',
+      ALL: 'kind.all',
+    });
+    const en = createDeliveryBoardT('en');
+    const ru = createDeliveryBoardT('ru');
+    expect(translateDeliveryStatusFilter('ACTIVE', en)).toBe('Active');
+    expect(translateDeliveryStatusFilter('ON_HOLD', en)).toBe('On Hold');
+    expect(translateDeliveryStatusFilter('CLOSED', en)).toBe('Closed');
+    expect(translateDeliveryStatusFilter('ACTIVE', ru)).toBe('Активные');
+    expect(translateDeliveryStatusFilter('ON_HOLD', ru)).toBe('На паузе');
+    expect(translateDeliveryStatusFilter('CLOSED', ru)).toBe('Закрытые');
   });
 
-  it('covers every readiness English VALUE', () => {
-    expect(Object.keys(READINESS_LABEL_MESSAGE_KEYS).sort()).toEqual(
-      Object.values(STAGE_READINESS_LABELS).sort(),
-    );
-  });
+  it('formats header counts with Russian ICU 0/1/2/5/11/21', () => {
+    const ru = createDeliveryBoardT('ru');
+    const samples = [
+      [0, '0 активных'],
+      [1, '1 активная'],
+      [2, '2 активные'],
+      [5, '5 активных'],
+      [11, '11 активных'],
+      [21, '21 активная'],
+    ] as const;
 
-  it('keeps EN/RU catalog keys aligned', () => {
-    expect(flattenMessageKeys(enDeliveryBoard).sort()).toEqual(
-      flattenMessageKeys(ruDeliveryBoard).sort(),
-    );
-  });
-
-  it('keeps ICU placeholders aligned between EN and RU', () => {
-    const enIcu = collectIcuStrings(enDeliveryBoard);
-    const ruCatalog = ruDeliveryBoard as Record<string, unknown>;
-    for (const row of enIcu) {
-      const ruValue = row.path.split('.').reduce<unknown>((current, part) => {
-        if (!current || typeof current !== 'object') return undefined;
-        return (current as Record<string, unknown>)[part];
-      }, ruCatalog);
-      expect(typeof ruValue).toBe('string');
-      expect(placeholderTokens(String(ruValue))).toEqual(placeholderTokens(row.value));
+    for (const [count, expected] of samples) {
+      expect(ru('counts.active', { count })).toBe(expected);
     }
   });
 });

@@ -44,6 +44,8 @@ This file is the working register for stages 0–5. It does not expand scope to 
 | `payroll`           | `messages/{en,ru}/payroll.json`             | Stage 6 Payroll runs + salary board chrome              |
 | `credentials`       | `messages/{en,ru}/credentials.json`         | Stage 6 Credentials vault + form chrome                 |
 | `expenses`          | `messages/{en,ru}/expenses.json`            | Stage 6 Pay Now / expense list + sheet                  |
+| `expensePlans`      | `messages/{en,ru}/expense-plans.json`       | Stage 6 Expense plans                                   |
+| `clientServices`    | `messages/{en,ru}/client-services.json`     | Stage 6 Client services                                 |
 | `quick`             | `messages/{en,ru}/quick.json`               | Quick Actions shell / Quick Task install copy           |
 
 Completed-namespace key parity (EN/RU) is enforced only for finished slices.
@@ -182,7 +184,7 @@ Matches canon. Do not treat this as a behaviour change.
 - **Restore:** after the client session is authenticated, GET preferences; if it differs from SSR, refresh. Catch does not write `en`.
 - **Cache:** React `cache()` per request only. Preference is not a process-wide query key. Business query keys are unchanged.
 
-Still English on purpose or leftover inside stage 6: My Company hub page, shared checklist item row, Support ticket body/technical dialog, invoice record-payment/history, Delivery Pause/Cancel + secondary tabs, payroll matrix cells/audit, credentials tiles/bulk/ENV, expense plans, client services, Marketing module, Active Call overlay, nested create dialogs, non-employee `Search {kind}s…`, feature-module dock item labels. Auth pages, emails, PDF. HY switcher still off.
+Still English: shared checklist item row, Delivery action-bar/toasts and product-hub lifecycle labels, payroll matrix cells/audit, credentials tiles/bulk/ENV, Marketing module, Active Call overlay, nested create dialogs, non-employee `Search {kind}s…`, feature-module dock item labels. Auth pages, emails, PDF. HY switcher still off. My Company hub, Support sheet body, invoice payments/history, Delivery pause/cancel, expense plans, and client services are now EN/RU.
 
 ## Stage 5 report — 2026-09-12
 

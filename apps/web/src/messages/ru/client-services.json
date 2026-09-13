@@ -1,0 +1,233 @@
+{
+  "page": {
+    "title": "Клиентские сервисы",
+    "searchPlaceholder": "Поиск по названию или провайдеру…",
+    "viewAria": "Вид клиентских сервисов",
+    "newService": "Новый сервис",
+    "createService": "Создать сервис"
+  },
+  "view": {
+    "list": "Список",
+    "listAria": "Таблица клиентских сервисов",
+    "status": "Статус",
+    "statusAria": "Доска по стадии оплаты",
+    "months": "Месяцы",
+    "monthsAria": "Доска по месяцу продления за год"
+  },
+  "filters": {
+    "type": "Тип",
+    "status": "Статус",
+    "billing": "Оплата"
+  },
+  "type": {
+    "DOMAIN": "Домен",
+    "HOSTING": "Хостинг",
+    "SERVICE": "Сервис",
+    "ACCOUNT": "Аккаунт",
+    "LICENSE": "Лицензия"
+  },
+  "status": {
+    "PENDING": "Ожидает",
+    "ACTIVE": "Активный",
+    "SUSPENDED": "Приостановлен",
+    "EXPIRING_SOON": "Скоро истекает",
+    "EXPIRED": "Истёк",
+    "CANCELLED": "Отменён"
+  },
+  "statusShort": {
+    "PENDING": "Ожидает",
+    "ACTIVE": "Активный",
+    "SUSPENDED": "Пауза",
+    "EXPIRING_SOON": "Истекает",
+    "EXPIRED": "Истёк",
+    "CANCELLED": "Отменён"
+  },
+  "billing": {
+    "WE_PAY": "Платим мы",
+    "REMINDER_ONLY": "Только напоминание"
+  },
+  "billingShort": {
+    "WE_PAY": "Платим мы",
+    "REMINDER_ONLY": "Напоминание"
+  },
+  "pricing": {
+    "FIXED": "Фиксированная",
+    "USAGE_BASED": "По использованию"
+  },
+  "pricingShort": {
+    "FIXED": "Фикс.",
+    "USAGE_BASED": "По исп."
+  },
+  "frequency": {
+    "ONE_TIME": "Разовый",
+    "MONTHLY": "Ежемесячно",
+    "QUARTERLY": "Ежеквартально",
+    "YEARLY": "Ежегодно",
+    "MULTI_YEAR": "Многолетний"
+  },
+  "frequencyShort": {
+    "ONE_TIME": "Разово",
+    "MONTHLY": "Месяц",
+    "QUARTERLY": "Квартал",
+    "YEARLY": "Год",
+    "MULTI_YEAR": "Неск. лет"
+  },
+  "tax": {
+    "TAX": "Налог",
+    "TAX_FREE": "Без налога"
+  },
+  "stage": {
+    "pay_now": "К оплате",
+    "invoice": "Счёт",
+    "upcoming": "Скоро",
+    "active": "Активный",
+    "overdue": "Просрочен"
+  },
+  "empty": {
+    "listTitle": "Нет подходящих клиентских сервисов",
+    "listDescription": "Измените поиск или фильтры либо создайте запись домена, хостинга, SaaS, аккаунта или лицензии.",
+    "boardColumn": "Нет сервисов",
+    "unavailable": "Клиентские сервисы недоступны"
+  },
+  "errors": {
+    "loadList": "Не удалось загрузить клиентские сервисы.",
+    "loadBoard": "Не удалось загрузить доску клиентских сервисов.",
+    "loadDetail": "Не удалось загрузить клиентский сервис.",
+    "create": "Не удалось создать клиентский сервис.",
+    "save": "Не удалось сохранить клиентский сервис.",
+    "cancel": "Не удалось отменить клиентский сервис.",
+    "productProject": "Не удалось загрузить проект продукта.",
+    "expenseIncomplete": "Форма расхода заполнена не полностью.",
+    "registryCheck": "Проверка реестра не удалась"
+  },
+  "create": {
+    "title": "Новый клиентский сервис",
+    "submit": "Создать сервис",
+    "name": "Название *",
+    "type": "Тип",
+    "billing": "Оплата",
+    "frequency": "Периодичность",
+    "ourCost": "Наша стоимость",
+    "clientCharge": "Сумма клиенту",
+    "renewalDue": "Продление / срок",
+    "namePlaceholder": {
+      "DOMAIN": "example.com",
+      "HOSTING": "Продакшен-хостинг",
+      "SERVICE": "Google Workspace",
+      "ACCOUNT": "Apple Developer",
+      "LICENSE": "Название лицензии",
+      "default": "Название сервиса"
+    }
+  },
+  "fields": {
+    "product": "Продукт",
+    "productRequired": "Продукт *",
+    "productSearch": "Поиск продуктов…",
+    "productResolving": "Загрузка продукта…",
+    "projectHint": "Проект · {label}",
+    "credentials": "Учётные данные",
+    "credentialsPlaceholder": "Подключить учётные данные",
+    "type": "Тип",
+    "status": "Статус",
+    "billingModel": "Модель оплаты",
+    "pricing": "Тариф",
+    "ourCost": "Наша стоимость",
+    "clientCharge": "Сумма клиенту",
+    "frequency": "Периодичность",
+    "tax": "Налог",
+    "startDate": "Дата начала",
+    "renewalDate": "Дата продления"
+  },
+  "sheet": {
+    "loading": "Загрузка…",
+    "tabs": {
+      "general": "Общее",
+      "invoices": "Счета",
+      "expenses": "Расходы",
+      "tasks": "Задачи"
+    },
+    "createInvoiceAria": "Создать счёт",
+    "createExpenseAria": "Создать расход",
+    "createTaskAria": "Создать задачу",
+    "cancelService": "Отменить сервис",
+    "basics": "Основное",
+    "billing": "Оплата",
+    "dates": "Даты",
+    "proofs": "Подтверждения"
+  },
+  "invoicesTab": {
+    "title": "Карточки счетов",
+    "create": "Создать счёт",
+    "wePayOnly": "Сервисы, которые оплачивает компания, не используют счета.",
+    "viewAria": "Вид списка счетов",
+    "emptyTitle": "Нет счетов",
+    "emptyDescription": "К этому сервису ещё не привязаны карточки счетов.",
+    "openFinance": "Открыть в финансах"
+  },
+  "expensesTab": {
+    "title": "Карточки расходов",
+    "create": "Создать расход",
+    "reminderOnly": "Сервисы только с напоминанием не используют расходы.",
+    "viewAria": "Вид списка расходов",
+    "emptyTitle": "Нет карточек расходов",
+    "emptyDescription": "К этому сервису ещё не привязаны карточки расходов.",
+    "openFinance": "Открыть в финансах"
+  },
+  "tasksTab": {
+    "title": "Задачи",
+    "create": "Создать задачу",
+    "viewAria": "Вид списка задач",
+    "emptyTitle": "Нет задач",
+    "emptyDescription": "К этому сервису ещё не привязаны задачи.",
+    "openWorkspace": "Открыть пространство"
+  },
+  "table": {
+    "service": "Сервис",
+    "kind": "Тип",
+    "project": "Проект",
+    "renewal": "Продление",
+    "cost": "Стоимость",
+    "stage": "Стадия",
+    "charge": "Клиенту {amount}"
+  },
+  "card": {
+    "noRenewal": "Нет даты продления"
+  },
+  "months": {
+    "previousYear": "Предыдущий год",
+    "nextYear": "Следующий год"
+  },
+  "settings": {
+    "title": "Клиентские сервисы — настройки",
+    "description": "Обновить каталог сервисов с сервера.",
+    "triggerAria": "Настройки клиентских сервисов",
+    "refresh": "Обновить список"
+  },
+  "cancel": {
+    "title": "Отменить клиентский сервис?",
+    "description": "Запись не удаляется. Статус станет «Отменён», сервис исчезнет из активных списков, отслеживание домена остановится. Связанные финансовые записи сохранятся.",
+    "dismiss": "Нет",
+    "confirm": "Да",
+    "submitting": "Отмена…"
+  },
+  "registry": {
+    "dead": "Мёртвый",
+    "noData": "Нет данных",
+    "check": "Проверить",
+    "checkAria": "Проверить домен в реестре",
+    "lastChecked": "Проверено {date}",
+    "lastCheckedSource": "Проверено {date} · {source}",
+    "toast": {
+      "updated": "Срок в реестре найден. Дата продления обновлена.",
+      "unchanged": "Дата в реестре совпадает с текущей датой продления.",
+      "not_found": "Домена нет в реестре (мёртвый / не найден).",
+      "no_expiry": "Домен зарегистрирован, но реестр скрыл срок истечения.",
+      "failed": "Запрос в реестр не удался. Оплата не изменилась."
+    }
+  },
+  "toasts": {
+    "cancelled": "Клиентский сервис отменён",
+    "invoiceCreated": "Создана связанная карточка счёта.",
+    "expenseCreated": "Создана связанная карточка расхода."
+  }
+}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -45,6 +46,9 @@ export function SupportTechnicalContextDialog({
   onSave,
   saving,
 }: SupportTechnicalContextDialogProps) {
+  const t = useTranslations('support');
+  const tCommon = useTranslations('common');
+
   return (
     <Dialog
       open={Boolean(ticket)}
@@ -56,80 +60,124 @@ export function SupportTechnicalContextDialog({
     >
       <DialogContent className="sm:max-w-md" forceNestedBackdrop>
         <DialogHeader>
-          <DialogTitle>Technical context</DialogTitle>
-          <DialogDescription>
-            Link this incident to a Technical Asset and/or Environment registered for the same
-            product (Projects → Product → Technical).
-          </DialogDescription>
+          <DialogTitle>{t('technical.title')}</DialogTitle>
+          <DialogDescription>{t('technical.description')}</DialogDescription>
         </DialogHeader>
-        {!ticket?.productId ? (
-          <p className="text-muted-foreground text-sm">
-            This ticket has no product context. Set a product on the ticket before linking assets or
-            environments.
-          </p>
-        ) : profileLoading ? (
-          <p className="text-muted-foreground text-sm">Loading technical profile…</p>
-        ) : (
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <Label htmlFor="support-tech-asset">Asset</Label>
-              <Select
-                value={assetId || 'none'}
-                onValueChange={(v) => {
-                  if (!v) return;
-                  onAssetIdChange(v === 'none' ? '' : v);
-                }}
-              >
-                <SelectTrigger id="support-tech-asset" className="w-full">
-                  <SelectValue placeholder="None" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {profile?.assets.map((asset) => (
-                    <SelectItem key={asset.id} value={asset.id}>
-                      {asset.type} — {asset.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="support-tech-env">Environment</Label>
-              <Select
-                value={environmentId || 'none'}
-                onValueChange={(v) => {
-                  if (!v) return;
-                  onEnvironmentIdChange(v === 'none' ? '' : v);
-                }}
-              >
-                <SelectTrigger id="support-tech-env" className="w-full">
-                  <SelectValue placeholder="None" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {profile?.environments.map((env) => (
-                    <SelectItem key={env.id} value={env.id}>
-                      {env.kind} — {env.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        )}
+        <SupportTechnicalContextFields
+          ticket={ticket}
+          profile={profile}
+          profileLoading={profileLoading}
+          assetId={assetId}
+          environmentId={environmentId}
+          onAssetIdChange={onAssetIdChange}
+          onEnvironmentIdChange={onEnvironmentIdChange}
+        />
         <DialogFooter className="gap-2 sm:gap-0">
           <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
             disabled={!ticket?.productId || saving || profileLoading}
             onClick={() => void onSave()}
           >
-            Save
+            {tCommon('save')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function SupportTechnicalContextFields({
+  ticket,
+  profile,
+  profileLoading,
+  assetId,
+  environmentId,
+  onAssetIdChange,
+  onEnvironmentIdChange,
+}: Pick<
+  SupportTechnicalContextDialogProps,
+  | 'ticket'
+  | 'profile'
+  | 'profileLoading'
+  | 'assetId'
+  | 'environmentId'
+  | 'onAssetIdChange'
+  | 'onEnvironmentIdChange'
+>) {
+  const t = useTranslations('support');
+  if (!ticket?.productId) {
+    return <p className="text-muted-foreground text-sm">{t('technical.noProduct')}</p>;
+  }
+  if (profileLoading) {
+    return <p className="text-muted-foreground text-sm">{t('technical.loading')}</p>;
+  }
+  return (
+    <div className="space-y-3">
+      <SupportTechnicalNamedSelect
+        id="support-tech-asset"
+        label={t('technical.asset')}
+        value={assetId}
+        onChange={onAssetIdChange}
+        options={(profile?.assets ?? []).map((asset) => ({
+          id: asset.id,
+          kind: asset.type,
+          name: asset.name,
+        }))}
+      />
+      <SupportTechnicalNamedSelect
+        id="support-tech-env"
+        label={t('technical.environment')}
+        value={environmentId}
+        onChange={onEnvironmentIdChange}
+        options={(profile?.environments ?? []).map((env) => ({
+          id: env.id,
+          kind: env.kind,
+          name: env.name,
+        }))}
+      />
+    </div>
+  );
+}
+
+function SupportTechnicalNamedSelect({
+  id,
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: ReadonlyArray<{ id: string; kind: string; name: string }>;
+}) {
+  const t = useTranslations('support');
+  return (
+    <div className="space-y-1">
+      <Label htmlFor={id}>{label}</Label>
+      <Select
+        value={value || 'none'}
+        onValueChange={(next) => {
+          if (!next) return;
+          onChange(next === 'none' ? '' : next);
+        }}
+      >
+        <SelectTrigger id={id} className="w-full">
+          <SelectValue placeholder={t('technical.none')} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">{t('technical.none')}</SelectItem>
+          {options.map((option) => (
+            <SelectItem key={option.id} value={option.id}>
+              {t('technical.namedOption', { kind: option.kind, name: option.name })}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,8 @@ import {
   getOfficialInvoiceRequestSendErrors,
 } from '@nbos/shared';
 import { invoicesApi, type Invoice } from '@/lib/api/finance';
+import { formatInvoiceSheetDate } from './format-invoice-sheet-date';
+import { officialInvoiceRequestStatusKey } from './invoice-message-keys';
 import { useOfficialAwaitingSendPending } from './use-official-awaiting-send-pending';
 
 interface InvoiceOfficialRequestPanelProps {
@@ -23,16 +26,13 @@ export function InvoiceOfficialRequestPanel({
   invoice,
   onUpdated,
 }: InvoiceOfficialRequestPanelProps) {
+  const t = useTranslations('invoices');
   const [busy, setBusy] = useState(false);
   const awaitingSend = useOfficialAwaitingSendPending(invoice);
-  const runAction = useOfficialRequestAction(onUpdated, setBusy);
+  const runAction = useOfficialRequestAction(onUpdated, setBusy, t('official.actionFailed'));
 
   if (invoice.taxStatus !== 'TAX') {
-    return (
-      <p className="text-muted-foreground text-sm">
-        Free invoice — accountant request is not required.
-      </p>
-    );
+    return <p className="text-muted-foreground text-sm">{t('official.freeNotRequired')}</p>;
   }
 
   return (
@@ -48,6 +48,7 @@ export function InvoiceOfficialRequestPanel({
 function useOfficialRequestAction(
   onUpdated: (invoice: Invoice) => void,
   setBusy: (busy: boolean) => void,
+  failedMessage: string,
 ) {
   return useCallback(
     async (action: () => Promise<Invoice>, successMessage: string) => {
@@ -57,12 +58,12 @@ function useOfficialRequestAction(
         onUpdated(updated);
         toast.success(successMessage);
       } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Action failed. Try again.'));
+        toast.error(getApiErrorMessage(caught, failedMessage));
       } finally {
         setBusy(false);
       }
     },
-    [onUpdated, setBusy],
+    [failedMessage, onUpdated, setBusy],
   );
 }
 
@@ -77,33 +78,41 @@ function TaxOfficialRequestPanel({
   awaitingSend: boolean;
   runAction: (action: () => Promise<Invoice>, successMessage: string) => Promise<void>;
 }) {
-  const status = officialRequestStatus(invoice, awaitingSend);
+  const t = useTranslations('invoices');
+  const locale = useLocale();
+  const copy = officialRequestCopy(invoice, awaitingSend, locale, t);
   const sendDisabled = busy || awaitingSend || !canSendOfficialRequest(invoice);
 
   return (
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-      <OfficialRequestStatusRow invoice={invoice} status={status} />
+      <OfficialRequestStatusRow
+        statusLabel={copy.statusLabel}
+        statusVariant={copy.statusVariant}
+        sentAtLabel={copy.sentAtLabel}
+        cancelledAtLabel={copy.cancelledAtLabel}
+      />
       {invoice.moneyStatus === 'CANCELLED' ? null : (
         <OfficialRequestActions
-          invoice={invoice}
+          requestSent={invoice.officialInvoiceRequestSent}
           busy={busy}
           awaitingSend={awaitingSend}
           sendDisabled={sendDisabled}
+          sendLabel={copy.sendLabel}
+          cancelLabel={copy.cancelLabel}
+          sendAgainLabel={copy.sendAgainLabel}
           onSend={() =>
             void runAction(
               () =>
                 invoicesApi.sendOfficialInvoiceRequest(invoice.id, {
                   resend: invoice.officialInvoiceRequestSent,
                 }),
-              invoice.officialInvoiceRequestSent
-                ? 'Request sent again'
-                : 'Request sent to accountant',
+              copy.successMessage,
             )
           }
           onCancel={() =>
             void runAction(
               () => invoicesApi.cancelOfficialInvoiceRequest(invoice.id),
-              'Request cancelled',
+              copy.requestCancelled,
             )
           }
         />
@@ -112,27 +121,65 @@ function TaxOfficialRequestPanel({
   );
 }
 
+function officialRequestCopy(
+  invoice: Invoice,
+  awaitingSend: boolean,
+  locale: string,
+  t: ReturnType<typeof useTranslations<'invoices'>>,
+) {
+  const status = officialInvoiceRequestStatusKey(invoice, awaitingSend);
+  return {
+    statusLabel: t(status.key),
+    statusVariant: status.variant,
+    sentAtLabel:
+      invoice.officialInvoiceRequestSent && invoice.officialInvoiceSentAt
+        ? t('official.sentAt', {
+            date: formatInvoiceSheetDate(invoice.officialInvoiceSentAt, locale),
+          })
+        : null,
+    cancelledAtLabel:
+      invoice.officialInvoiceCancelledAt && !invoice.officialInvoiceRequestSent
+        ? t('official.cancelledAt', {
+            date: formatInvoiceSheetDate(invoice.officialInvoiceCancelledAt, locale),
+          })
+        : null,
+    successMessage: invoice.officialInvoiceRequestSent
+      ? t('official.sentAgain')
+      : t('official.sentToAccountant'),
+    sendLabel: awaitingSend ? t('official.sending') : t('official.send'),
+    cancelLabel: t('official.cancelRequest'),
+    sendAgainLabel: t('official.sendAgain'),
+    requestCancelled: t('official.requestCancelled'),
+  };
+}
+
 function OfficialRequestActions({
-  invoice,
+  requestSent,
   busy,
   awaitingSend,
   sendDisabled,
+  sendLabel,
+  cancelLabel,
+  sendAgainLabel,
   onSend,
   onCancel,
 }: {
-  invoice: Invoice;
+  requestSent: boolean;
   busy: boolean;
   awaitingSend: boolean;
   sendDisabled: boolean;
+  sendLabel: string;
+  cancelLabel: string;
+  sendAgainLabel: string;
   onSend: () => void;
   onCancel: () => void;
 }) {
-  if (!invoice.officialInvoiceRequestSent) {
+  if (!requestSent) {
     return (
       <div className="flex flex-wrap gap-2">
         <Button type="button" size="sm" disabled={sendDisabled} onClick={onSend}>
           {busy || awaitingSend ? <Loader2 className="mr-1 size-3.5 animate-spin" /> : null}
-          {awaitingSend ? 'Sending to accountant' : 'Send to accountant'}
+          {sendLabel}
         </Button>
       </div>
     );
@@ -141,10 +188,10 @@ function OfficialRequestActions({
   return (
     <div className="flex flex-wrap gap-2">
       <Button type="button" size="sm" variant="outline" disabled={busy} onClick={onCancel}>
-        Cancel request
+        {cancelLabel}
       </Button>
       <Button type="button" size="sm" variant="secondary" disabled={sendDisabled} onClick={onSend}>
-        Send again
+        {sendAgainLabel}
       </Button>
     </div>
   );
@@ -165,52 +212,23 @@ function canSendOfficialRequest(invoice: Invoice): boolean {
 }
 
 function OfficialRequestStatusRow({
-  invoice,
-  status,
+  statusLabel,
+  statusVariant,
+  sentAtLabel,
+  cancelledAtLabel,
 }: {
-  invoice: Invoice;
-  status: { label: string; variant: 'green' | 'amber' | 'gray' };
+  statusLabel: string;
+  statusVariant: 'green' | 'amber' | 'gray';
+  sentAtLabel: string | null;
+  cancelledAtLabel: string | null;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <StatusBadge label={status.label} variant={status.variant} />
-      {invoice.officialInvoiceRequestSent && invoice.officialInvoiceSentAt ? (
-        <span className="text-muted-foreground text-xs">
-          Sent {formatOfficialDate(invoice.officialInvoiceSentAt)}
-        </span>
-      ) : null}
-      {invoice.officialInvoiceCancelledAt && !invoice.officialInvoiceRequestSent ? (
-        <span className="text-muted-foreground text-xs">
-          on {formatOfficialDate(invoice.officialInvoiceCancelledAt)}
-        </span>
+      <StatusBadge label={statusLabel} variant={statusVariant} />
+      {sentAtLabel ? <span className="text-muted-foreground text-xs">{sentAtLabel}</span> : null}
+      {cancelledAtLabel ? (
+        <span className="text-muted-foreground text-xs">{cancelledAtLabel}</span>
       ) : null}
     </div>
   );
-}
-
-function officialRequestStatus(
-  invoice: Invoice,
-  awaitingSend: boolean,
-): {
-  label: string;
-  variant: 'green' | 'amber' | 'gray';
-} {
-  if (invoice.officialInvoiceRequestSent) {
-    return { label: 'Sent to accountant', variant: 'green' };
-  }
-  if (awaitingSend) {
-    return { label: 'Sending to accountant', variant: 'amber' };
-  }
-  if (invoice.officialInvoiceCancelledAt) {
-    return { label: 'Cancelled', variant: 'amber' };
-  }
-  return { label: 'Not sent', variant: 'gray' };
-}
-
-function formatOfficialDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 }

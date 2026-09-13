@@ -1,0 +1,196 @@
+{
+  "page": {
+    "title": "Expense plans",
+    "searchPlaceholder": "Search by name…",
+    "viewAria": "Expense plans view",
+    "newPlan": "New plan",
+    "clearFilters": "Clear filters"
+  },
+  "view": {
+    "grid": "Grid",
+    "gridAria": "Calendar grid view",
+    "board": "Board",
+    "boardAria": "Board by frequency",
+    "list": "List",
+    "listAria": "List view"
+  },
+  "filters": {
+    "status": "Status",
+    "category": "Category",
+    "project": "Project",
+    "search": "Search",
+    "searchAria": "Search expense plans by name",
+    "categoryAria": "Filter by category",
+    "projectAria": "Filter by project",
+    "allStatuses": "All statuses",
+    "allCategories": "All categories",
+    "allProjects": "All projects"
+  },
+  "status": {
+    "ACTIVE": "Active",
+    "CANCELLED": "Cancelled"
+  },
+  "frequency": {
+    "ONE_TIME": "One-time",
+    "WEEKLY": "Weekly",
+    "MONTHLY": "Monthly",
+    "QUARTERLY": "Quarterly",
+    "YEARLY": "Yearly",
+    "MULTI_YEAR": "Multi-year",
+    "OTHER": "Other"
+  },
+  "category": {
+    "DOMAIN": "Domain & Hosting",
+    "TOOLS": "Tools & services",
+    "MARKETING": "Marketing",
+    "OFFICE": "Office",
+    "TAXES": "Taxes & fees",
+    "PARTNER_PAYOUT": "Partner Payout",
+    "OTHER": "Other",
+    "SALARY": "Salary",
+    "BONUS": "Bonus"
+  },
+  "empty": {
+    "title": "No expense plans yet",
+    "description": "Create a plan for rent, SaaS, or other recurring spend; cards appear on pay now when due.",
+    "filteredTitle": "No matching plans",
+    "filteredDescription": "Try clearing filters or switch to the calendar grid.",
+    "boardColumn": "No plans in this frequency column."
+  },
+  "errors": {
+    "loadList": "Expense plans could not be loaded. Check your connection.",
+    "loadGrid": "Plan calendar could not be loaded. Check your connection.",
+    "loadDetail": "Expense plan could not be loaded.",
+    "create": "Expense plan could not be created. Check your connection.",
+    "save": "Expense plan could not be saved. Check your connection.",
+    "saveChanges": "Could not save expense plan changes.",
+    "delete": "Could not delete expense plan.",
+    "stop": "Could not stop expense plan.",
+    "resume": "Could not resume expense plan.",
+    "autoGenerate": "Auto-generate for due plans failed. Check your connection and try again.",
+    "export": "Could not export expense plans. Check your connection and try again.",
+    "generateCard": "Could not generate expense from plan. Check dates and try again."
+  },
+  "create": {
+    "title": "New expense plan",
+    "editTitle": "Edit expense plan",
+    "name": "Name *",
+    "namePlaceholder": "e.g. Office rent",
+    "category": "Category *",
+    "amount": "Expected amount *",
+    "amountPlaceholder": "0",
+    "frequency": "Frequency",
+    "nextDue": "Next due",
+    "nextDueAria": "Next due",
+    "autoGenerate": "Auto-generate expense cards (future)",
+    "notes": "Notes",
+    "submit": "Create plan"
+  },
+  "sheet": {
+    "loading": "Loading…",
+    "tabs": {
+      "general": "General",
+      "cards": "Cards",
+      "history": "History"
+    },
+    "generateAria": "Generate expense card",
+    "sectionPlan": "Plan",
+    "amount": "Expected amount",
+    "category": "Category",
+    "frequency": "Frequency",
+    "nextDue": "Next due",
+    "autoGenerate": "Auto-generate",
+    "autoGenerateAria": "Auto-generate expense cards",
+    "stoppedHint": "This plan is stopped. Resume it from the menu to create cards or change the schedule.",
+    "dueOn": "Due {date}",
+    "stopPlan": "Stop plan",
+    "resumePlan": "Resume plan",
+    "deletePlan": "Delete plan"
+  },
+  "cardsTab": {
+    "title": "Expense cards",
+    "generate": "Generate card",
+    "stopped": "This plan is stopped. Existing cards stay on the pay now board; resume the plan to generate new ones.",
+    "empty": "No cards generated yet. Use Generate to create an expense card from this plan.",
+    "linked": "{count, plural, one {# card linked to this plan. Open the pay now board to review or pay it.} other {# cards linked to this plan. Open the pay now board to review or pay them.}}"
+  },
+  "history": {
+    "title": "History coming soon",
+    "description": "Plan edits, generated cards, and auto-generate runs will be listed here."
+  },
+  "table": {
+    "name": "Name",
+    "status": "Status",
+    "category": "Category",
+    "amount": "Amount",
+    "frequency": "Frequency",
+    "auto": "Auto",
+    "nextDue": "Next due",
+    "project": "Project",
+    "linkedCards": "Linked cards",
+    "yes": "Yes"
+  },
+  "card": {
+    "autoGenerate": "Auto-generate",
+    "linkedCards": "{count, plural, one {# linked card} other {# linked cards}}",
+    "dueOn": "Due {date}"
+  },
+  "grid": {
+    "calendarAria": "Expense plan calendar {year}",
+    "boardAria": "Expense plan board {year}",
+    "empty": "No expense plans for this year with the current filters.",
+    "total": "Total",
+    "monthTotal": "Month total",
+    "planCount": "{count, plural, one {# plan} other {# plans}}",
+    "monthTotals": "Month totals",
+    "cell": {
+      "PAID": "Paid",
+      "PARTIAL": "Partial",
+      "OVERDUE": "Overdue",
+      "OPEN": "Open",
+      "FORECAST": "Forecast"
+    },
+    "cellAria": "{status} · {amount}"
+  },
+  "settings": {
+    "title": "Expense plans — settings",
+    "description": "Bulk tools and exports for recurring expense plans.",
+    "triggerAria": "Expense plans settings",
+    "exportCsv": "Export plans (CSV)",
+    "runAutoGenerate": "Run auto-generate (due)"
+  },
+  "generate": {
+    "title": "Generate expense card",
+    "description": "Creates a Board expense linked to {name}. Recurring plans update the plan’s next due date after generation.",
+    "dueDate": "Due date",
+    "dueDateAria": "Due date",
+    "submit": "Generate",
+    "submitting": "Generating…"
+  },
+  "stop": {
+    "title": "Stop this plan?",
+    "description": "Future cards and calendar forecast stop for {name}. Existing expense cards stay as they are. You can resume the plan later.",
+    "keep": "Keep plan",
+    "confirm": "Stop plan",
+    "submitting": "Stopping…"
+  },
+  "delete": {
+    "title": "Delete plan?",
+    "description": "Only unused plans can be deleted. Linked cards keep running; stop the plan instead when history must stay."
+  },
+  "toasts": {
+    "updated": "Expense plan updated",
+    "deleted": "Expense plan deleted.",
+    "stopped": "Expense plan stopped. Future cards will not be created.",
+    "resumed": "Expense plan resumed.",
+    "autoGenerateDone": "Processed {eligibleCount, plural, one {# due plan} other {# due plans}}: {createdCount, plural, one {# card created} other {# cards created}}.",
+    "autoGenerateFailures": " {count, plural, one {Failures: # (see server logs).} other {Failures: # (see server logs).}}",
+    "exported": "{count, plural, one {Exported # expense plan} other {Exported # expense plans}}"
+  },
+  "banner": {
+    "plansBody": "Plans define recurring or expected spend. Generated expense cards appear on the live board when due.",
+    "plansLink": "Open pay now",
+    "boardBody": "This board shows expense cards to pay now. Create or edit recurring rules under Expense plans.",
+    "boardLink": "Open expense plans"
+  }
+}

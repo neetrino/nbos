@@ -3,6 +3,7 @@
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
+import { useClientServicesT } from './client-service-message-keys';
 
 export interface ClientServicesPageSettingsSheetProps {
   refreshDisabled: boolean;
@@ -13,11 +14,12 @@ export function ClientServicesPageSettingsSheet({
   refreshDisabled,
   onRefresh,
 }: ClientServicesPageSettingsSheetProps) {
+  const t = useClientServicesT();
   return (
     <PageSettingsSheet
-      title="Client services — settings"
-      description="Reload the service catalog from the server."
-      triggerAriaLabel="Client services settings"
+      title={t('settings.title')}
+      description={t('settings.description')}
+      triggerAriaLabel={t('settings.triggerAria')}
     >
       <Button
         type="button"
@@ -27,7 +29,7 @@ export function ClientServicesPageSettingsSheet({
         onClick={() => void onRefresh()}
       >
         <RefreshCw className="size-4 shrink-0" aria-hidden />
-        Refresh list
+        {t('settings.refresh')}
       </Button>
     </PageSettingsSheet>
   );

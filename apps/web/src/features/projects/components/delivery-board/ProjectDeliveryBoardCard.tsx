@@ -2,6 +2,7 @@
 
 import { useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { FolderKanban, ListChecks } from 'lucide-react';
 import {
   ActionTileButton,
@@ -16,11 +17,11 @@ import type {
   ProjectProductSummary,
 } from '@/lib/api/projects';
 import {
-  formatDeliveryLifecycleLabel,
   getExtensionSize,
   getDeliveryLifecycleVariant,
   getProductType,
 } from '@/features/projects/constants/projects';
+import { translateDeliveryLifecycleLabel } from './delivery-board-message-keys';
 import { DeliveryStageActionBar } from './DeliveryStageActionBar';
 import { DeliveryBoardKanbanCardHeader } from './DeliveryBoardKanbanCardHeader';
 import {
@@ -283,9 +284,10 @@ function CardKindIcon({ visual }: { visual: DealTypePresentation }) {
 }
 
 function LifecycleBadge({ lifecycle }: { lifecycle: DeliveryLifecycleProjection }) {
+  const t = useTranslations('deliveryBoard');
   return (
     <StatusBadge
-      label={formatDeliveryLifecycleLabel(lifecycle)}
+      label={translateDeliveryLifecycleLabel(lifecycle, t)}
       variant={getDeliveryLifecycleVariant(lifecycle)}
     />
   );

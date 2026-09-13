@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useTranslations } from 'next-intl';
 
 export function ClientServiceSelectField(props: {
   label: string;
@@ -64,13 +65,14 @@ export function ClientServiceFormFooter(props: {
   canSubmit: boolean;
   submitLabel: string;
 }) {
+  const tCommon = useTranslations('common');
   return (
     <div className="flex justify-end gap-4 pt-2">
       <Button type="button" variant="outline" size="form" onClick={props.onCancel}>
-        Cancel
+        {tCommon('cancel')}
       </Button>
       <Button type="submit" size="form" disabled={!props.canSubmit || props.submitting}>
-        {props.submitting ? 'Saving…' : props.submitLabel}
+        {props.submitting ? tCommon('saving') : props.submitLabel}
       </Button>
     </div>
   );

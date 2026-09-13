@@ -20,6 +20,8 @@ import type {
 } from '@/lib/api/client-services';
 import { ClientServiceRegistryBadge } from './ClientServiceRegistryBadge';
 import { ClientServiceRegistryCheckButton } from './ClientServiceRegistryCheckButton';
+import { useClientServicesT } from './client-service-message-keys';
+import { useLocale } from 'next-intl';
 
 const DATES_ROW_WITH_CHECK_CLASS =
   'grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-3';
@@ -31,14 +33,16 @@ export function ClientServiceGeneralDatesSection(props: {
   formDisabled: boolean;
   onRegistryChecked?: (result: ClientServiceRegistryCheckResult) => void;
 }) {
+  const t = useClientServicesT();
+  const locale = useLocale();
   const [open, setOpen] = useState(true);
   const { draft, patchDraft, formDisabled, service } = props;
   const isDomain = isClientServiceDomain(service);
-  const checkedLabel = formatRegistryCheckedAt(service.registryCheckedAt);
+  const checkedLabel = formatRegistryCheckedAt(service.registryCheckedAt, locale);
 
   return (
     <DetailSheetCollapsibleSection
-      title="Dates"
+      title={t('sheet.dates')}
       icon={<Calendar size={12} />}
       open={open}
       onOpenChange={setOpen}
@@ -57,8 +61,12 @@ export function ClientServiceGeneralDatesSection(props: {
             <ClientServiceRegistryBadge status={service.registryLookupStatus} />
             {checkedLabel ? (
               <p className="text-muted-foreground text-xs">
-                Last checked {checkedLabel}
-                {service.registryLookupSource ? ` · ${service.registryLookupSource}` : ''}
+                {service.registryLookupSource
+                  ? t('registry.lastCheckedSource', {
+                      date: checkedLabel,
+                      source: service.registryLookupSource,
+                    })
+                  : t('registry.lastChecked', { date: checkedLabel })}
               </p>
             ) : null}
           </div>
@@ -85,11 +93,12 @@ function ClientServiceDateFieldsRow(props: {
   serviceId: string;
   onRegistryChecked?: (result: ClientServiceRegistryCheckResult) => void;
 }) {
+  const t = useClientServicesT();
   return (
     <div className={props.isDomain ? DATES_ROW_WITH_CHECK_CLASS : EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
       <InlineField
         variant="controlled"
-        label="Start date"
+        label={t('fields.startDate')}
         type="date"
         value={props.draft.startDate}
         icon={<Calendar size={12} />}
@@ -99,7 +108,7 @@ function ClientServiceDateFieldsRow(props: {
       />
       <InlineField
         variant="controlled"
-        label="Renewal date"
+        label={t('fields.renewalDate')}
         type="date"
         value={props.draft.renewalDate}
         icon={<RefreshCw size={12} />}
@@ -120,9 +129,12 @@ function ClientServiceDateFieldsRow(props: {
   );
 }
 
-function formatRegistryCheckedAt(value: string | null | undefined): string | null {
+function formatRegistryCheckedAt(
+  value: string | null | undefined,
+  locale?: string,
+): string | null {
   if (!value) return null;
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat(locale ?? 'en', {
     year: 'numeric',
     month: 'short',
     day: '2-digit',

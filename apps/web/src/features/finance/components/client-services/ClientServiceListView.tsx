@@ -38,6 +38,11 @@ import { ClientServiceRegistryBadge } from './ClientServiceRegistryBadge';
 import { ClientServiceRegistryCheckButton } from './ClientServiceRegistryCheckButton';
 import { ClientServiceStageBadge } from './ClientServiceStageBadge';
 import { useClientServiceList } from './use-client-service-list';
+import {
+  translateClientServiceBilling,
+  translateClientServiceType,
+  useClientServicesT,
+} from './client-service-message-keys';
 
 interface ClientServiceListViewProps {
   baseParams: ClientServiceRecordListParams;
@@ -52,6 +57,7 @@ export function ClientServiceListView({
   onOpen,
   onCreate,
 }: ClientServiceListViewProps) {
+  const t = useClientServicesT();
   const { items, loading, loadingMore, error, hasMore, loadMore } = useClientServiceList(
     baseParams,
     30,
@@ -60,14 +66,14 @@ export function ClientServiceListView({
   const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null);
 
   if (loading) return <LoadingState />;
-  if (error) return <ErrorState title="Client services unavailable" description={error} />;
+  if (error) return <ErrorState title={t('empty.unavailable')} description={error} />;
   if (items.length === 0) {
     return (
       <EmptyState
         icon={ServerCog}
-        title="No client services match"
-        description="Adjust search or filters, or create a new domain, hosting, SaaS, account or license record."
-        action={<Button onClick={onCreate}>Create service</Button>}
+        title={t('empty.listTitle')}
+        description={t('empty.listDescription')}
+        action={<Button onClick={onCreate}>{t('page.createService')}</Button>}
       />
     );
   }
@@ -77,12 +83,20 @@ export function ClientServiceListView({
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[180px]`}>Service</TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>Kind</TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[120px]`}>Project</TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>Renewal</TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>Cost</TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[88px]`}>Stage</TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[180px]`}>
+              {t('table.service')}
+            </TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>
+              {t('table.kind')}
+            </TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[120px]`}>
+              {t('table.project')}
+            </TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>
+              {t('table.renewal')}
+            </TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>{t('table.cost')}</TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[88px]`}>{t('table.stage')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -107,10 +121,18 @@ export function ClientServiceListView({
 
               <TableCell className={`${ENTITY_LIST_CELL_CLASS} max-w-[140px]`}>
                 <p className="truncate text-sm font-bold">
-                  {clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type)}
+                  {translateClientServiceType(
+                    t,
+                    service.type,
+                    clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type),
+                  )}
                 </p>
                 <p className={`${ENTITY_LIST_TYPE_CLASS} mt-1 normal-case`}>
-                  {clientServiceOptionLabel(CLIENT_SERVICE_BILLING_MODELS, service.billingModel)}
+                  {translateClientServiceBilling(
+                    t,
+                    service.billingModel,
+                    clientServiceOptionLabel(CLIENT_SERVICE_BILLING_MODELS, service.billingModel),
+                  )}
                 </p>
               </TableCell>
 
@@ -138,7 +160,9 @@ export function ClientServiceListView({
                     <EntityListAmount amount={service.ourCost} />
                     {service.clientCharge ? (
                       <p className="text-muted-foreground text-xs tabular-nums">
-                        Charge {formatGroupedNumber(parseMoneyAmount(service.clientCharge))}
+                        {t('table.charge', {
+                          amount: formatGroupedNumber(parseMoneyAmount(service.clientCharge)),
+                        })}
                       </p>
                     ) : null}
                   </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
 import { projectsApi, type Project } from '@/lib/api/projects';
 import { supportApi, type SupportStats, type SupportTicket } from '@/lib/api/support';
@@ -17,6 +18,7 @@ import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persiste
 const CHANGE_REQUEST_CATEGORY = 'CHANGE_REQUEST';
 
 export function useSupportTicketsQuery() {
+  const t = useTranslations('support');
   const [stats, setStats] = useState<SupportStats | null>(null);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
@@ -60,7 +62,7 @@ export function useSupportTicketsQuery() {
     stageKeys,
     getStageKey: (ticket) => ticket.status,
     fetchPage,
-    loadErrorMessage: 'Support tickets could not be loaded. Check your connection and try again.',
+    loadErrorMessage: t('errors.loadTickets'),
   });
 
   const {
