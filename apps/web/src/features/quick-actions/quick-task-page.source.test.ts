@@ -20,6 +20,19 @@ describe('Quick Task composition', () => {
     expect(page).toContain('hostedCreateDialog={false}');
   });
 
+  it('does not inherit the main NBOS apple-touch icon on /quick/task', () => {
+    const root = readSource('src/app/layout.tsx');
+    const app = readSource('src/app/(app)/layout.tsx');
+    const quick = readSource('src/app/(quick)/layout.tsx');
+    expect(root).toContain('/logo/icon.svg');
+    expect(root).not.toContain('apple-touch-icon.png');
+    expect(root).not.toContain('/icons/icon-192.png');
+    expect(app).toContain('apple-touch-icon.png');
+    expect(app).not.toContain('/icons/icon-192.png');
+    expect(quick).toContain('quick-task-apple-touch.png');
+    expect(quick).not.toContain('/icons/apple-touch-icon.png');
+  });
+
   it('provides HeaderContext so background TasksSurface/PageHero cannot crash the route', () => {
     const layout = readSource('src/app/(quick)/layout.tsx');
     expect(layout).toContain('HeaderContextProvider');

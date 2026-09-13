@@ -33,5 +33,7 @@ describe('Quick Task and main PWA manifests', () => {
     expect(manifest.start_url).toBe('/quick/task');
     expect(manifest.scope).toBe('/quick');
     expect(manifest.display).toBe('standalone');
+    expect(JSON.stringify(manifest.icons)).toContain('quick-task-192.png?v=plus1');
+    expect(JSON.stringify(manifest.icons)).not.toContain('/icons/icon-192.png');
   });
 });
