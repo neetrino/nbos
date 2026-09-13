@@ -1,0 +1,270 @@
+{
+  "title": "Մատակարարման տախտակ",
+  "pipelineAria": "Առաքման խողովակաշար",
+  "loading": "Բեռնվում է տախտակը…",
+  "loadError": "Չհաջողվեց բեռնել առաքման տախտակի տվյալները:",
+  "pipelineTabs": {
+    "active": "Ակտիվ",
+    "closed": "Փակված"
+  },
+  "view": {
+    "board": "Տախտակ",
+    "list": "Ցանկ",
+    "boardAria": "Տախտակի տեսարան",
+    "listAria": "Ցուցակի տեսք"
+  },
+  "search": {
+    "activePlaceholder": "Որոնել ըստ անվան, նախագծի կամ կոդի…",
+    "closedPlaceholder": "Որոնել փակ տարրեր…"
+  },
+  "count": "{filtered, plural, one {ի {total} քարտ} other {ի {total} քարտեր}}",
+  "clearProjectFilter": "Ջնջել նախագծի զտիչը",
+  "kind": {
+    "all": "Բոլորը",
+    "products": "Արտադրանքներ",
+    "extensions": "Տեսակներ",
+    "aria": "Առաքման տախտակի տեսակ",
+    "filterLabel": "Տեսակ",
+    "allOption": "Բոլոր առաքումները"
+  },
+  "filters": {
+    "owner": "Պատասխանատու",
+    "status": "Կարգավիճակ",
+    "project": "Նախագիծ",
+    "result": "Աշխատանքի գնահատման չափանիշը",
+    "allOwner": "Բոլոր սեփականատերերը",
+    "allStatus": "Բոլոր կարգավիճակները",
+    "allProject": "Բոլոր նախագծերը",
+    "allResult": "«Բոլոր արդյունքները»,",
+    "inProgress": "Ընթացքում",
+    "onHold": "Սպասում",
+    "cancelled": "Չեղարկված",
+    "done": "Կատարված է"
+  },
+  "table": {
+    "entity": "Կազմակերպություն",
+    "name": "Անվանում",
+    "project": "Նախագիծ",
+    "owner": "PM / սեփականատեր",
+    "result": "Աշխատանքի գնահատման չափանիշը",
+    "closed": "Փակված",
+    "deadline": "Վերջնաժամկետ",
+    "stage": "Փուլ",
+    "status": "Կարգավիճակ",
+    "details": "Մանրամասներ"
+  },
+  "empty": {
+    "closedBoard": "Փակ առաքման կետեր չկան ։",
+    "noCards": "Քարտեր չկան",
+    "closedTable": "Փակ առաքման տարրեր չեն համընկնում ։",
+    "activeTable": "Առաքման ակտիվ տարրեր չեն համընկնում:"
+  },
+  "kindLabel": {
+    "product": "Արտադրանք",
+    "extension": "Ընդլայնումը"
+  },
+  "stages": {
+    "STARTING": "Մեկնարկը",
+    "DEVELOPMENT": "Զարգացում",
+    "QA": "QA",
+    "TRANSFER": "Փոխանցում"
+  },
+  "pipeline": {
+    "start": "Սկսել",
+    "dev": "ԴԵՎ",
+    "qa": "QA",
+    "transfer": "Փոխանցում",
+    "cancel": "Չեղարկել",
+    "done": "Կատարված է"
+  },
+  "resolution": {
+    "done": "Կատարված է",
+    "cancelled": "Չեղարկված"
+  },
+  "deadline": {
+    "onTime": "Ժամկետին",
+    "late": "Baylus ap vonces"
+  },
+  "lifecycle": {
+    "holdExpired": "Պահել ժամկետանց",
+    "onHold": "Սպասում",
+    "notStaged": "Բեմադրված չէ",
+    "stageHoldExpired": "{stage} · Պահել ժամկետանց",
+    "stageOnHold": "{stage} Սպասում",
+    "holdExpiredOn": "Սպասման ժամկետը սպառվել է {date}",
+    "onHoldUntil": "Մինչև {date}"
+  },
+  "entityFallback": "առաքման կետ",
+  "sheet": {
+    "doneBanner": "Առաքման այս տարրը պատրաստ է ։ Մանրամասները միայն ընթերցվում են. պատմության համար օգտագործեք տախտակը կամ ապրանքի էջը:",
+    "cancelledBanner": "Առաքման այս տարրը չեղարկված է: Մանրամասները կարդացվում են միայն ընթերցմամբ. օգտագործեք խորհուրդը աուդիտի պատմության համար:",
+    "paused": "Առաքումը դադարեցված է:",
+    "resume": "Վերսկսել",
+    "loadFailed": "Չհաջողվեց բեռնել մանրամասները ։",
+    "saveFailed": "Չհաջողվեց պահպանել փոփոխությունները:",
+    "nothingToEdit": "Դեռ խմբագրելու ոչինչ չկա ։",
+    "openWorkspace": "Բացել աշխատանքային տարածքը",
+    "namePlaceholder": "Պայմանանիշ",
+    "saveName": "Պահել անունը",
+    "editNameTitle": "Սեղմեք անունը խմբագրելու համար"
+  },
+  "tabs": {
+    "general": "Ընդհանուր",
+    "workspace": "Աշխատանքային տարածք",
+    "calls": "Զանգեր",
+    "bonus": "Բոնուս",
+    "history": "Պատմություն",
+    "createTask": "Ստեղծել գործ"
+  },
+  "readiness": {
+    "title": "Փուլային պատրաստություն",
+    "empty": "Այս նահանգի համար փուլային պահանջի տողեր չկան:",
+    "deadlineSet": "Սահմանվել է վերջնաժամկետ",
+    "noOpenWorkSpaceTasks": "Բաց աշխատանքային տարածքի առաջադրանքներ չկան",
+    "noOpenExtensions": "Բաց երկարացումներ չկան",
+    "noOpenTasks": "Բաց առաջադրանքներ չկան",
+    "noOpenTickets": "Բաց տոմսեր չկան",
+    "clientAcceptance": "Հաճախորդի ընդունումը գրանցված է",
+    "orderClosed": "Պատվերը ֆինանսապես փակ է",
+    "noUnpaidInvoices": "Չվճարված հաշիվ - ապրանքագրեր չկան",
+    "scopeFilled": "Ծավալը և նշումները լրացված են",
+    "ownerAssigned": "Սեփականատիրոջ կողմից նշանակված",
+    "stageChecklist": "Փուլային ստուգացանկ",
+    "checklistDetailFull": "{completedChecklists}/{totalChecklists} Ավարտել {reviewed}/{total} վերանայված է",
+    "checklistDetailReviewed": "{reviewed}/{total} վերանայված է"
+  },
+  "plan": {
+    "deliveryTitle": "Առաքման պլան",
+    "extensionTitle": "Երկարաձգման պլան",
+    "project": "Նախագիծ",
+    "product": "Արտադրանք",
+    "payment": "Վճարում",
+    "deadline": "Վերջնաժամկետ",
+    "productCategory": "product-category",
+    "productType": "Ապրանքի տեսակը",
+    "extensionName": "Երկարաձգման անվանումը",
+    "size": "Ölçüsü",
+    "productLine": "Արտադրանքի գիծ ՝",
+    "pickDate": "Ընտրեք ամսաթիվը…",
+    "productNotesPlaceholder": "Պլան, հանգրվաններ, հաճախորդների համատեքստ…",
+    "extensionNotesPlaceholder": "Պլան, ընդունման չափանիշներ..."
+  },
+  "commercial": {
+    "title": "Հաճախորդ և պատվեր",
+    "client": "Հաճախորդ",
+    "company": "Ընկերություն",
+    "deal": "Գործարք",
+    "project": "Նախագիծ",
+    "product": "Արտադրանք",
+    "credentials": "Հավատարմագրեր",
+    "noClient": "Նախագծի վրա կապակցված հաճախորդ չկա:",
+    "openDeal": "Բացել գործարքը {title}",
+    "linksAria": "Կոմերցիոն հղումներ"
+  },
+  "team": {
+    "title": "Թիմ",
+    "projectManager": "Ծրագրի ղեկավար",
+    "developerBackend": "Ծրագրավորողի դարձերես",
+    "developerFrontend": "Ծրագրավորողի դիմային մաս",
+    "designer": "Դիզայներ",
+    "technicalSpecialist": "Տեխնիկական մասնագետ",
+    "qa": "QA",
+    "owner": "Պատասխանատու",
+    "seller": "Վաճառող ՝",
+    "notAssigned": "Նշանակված չէ"
+  },
+  "files": {
+    "title": "Կից նյութեր",
+    "attachments": "Կցորդներ",
+    "approvedOffer": "Հաստատված առաջարկ",
+    "contract": "Պայմանագիր",
+    "openInNewTab": "Բացել նոր ներդիրում",
+    "emptyHint": "Դուք կարող եք քաշել ֆայլը այստեղ կամ սեղմել +՝ թերթելու համար",
+    "unlinkSuccess": "Unlinked — Drive — ում գտնվող ապրանքի թղթապանակում մնալու տներ",
+    "unlinkError": "Չհաջողվեց անջատել ֆայլը",
+    "trashSuccess": "Ֆայլը տեղափոխվել է Աղբարկղ և չի կապակցվել",
+    "trashError": "Չհաջողվեց ֆայլը տեղափոխել աղբարկղ"
+  },
+  "stageBar": {
+    "open": "Բացել",
+    "moveNext": "Տեղափոխել հաջորդը"
+  },
+  "cardHover": {
+    "task": "Առաջադրանք",
+    "quickTaskDisabled": "Առաջադրանքներ ստեղծելու համար պահանջվում է աշխատակցի պրոֆիլ"
+  },
+  "closedCard": {
+    "closedOn": "Փակված {date}",
+    "clientAccepted": "Հաճախորդն ընդունեց",
+    "cancelledPrefix": "Չեղարկված"
+  },
+  "hub": {
+    "maintenance": "Տեխնիկական սպասարկում "
+  },
+  "acceptance": {
+    "title": "Հաճախորդի ընդունում",
+    "description": "Գրանցել ընդունումը հաճախորդի կողմից փոխանցման արդյունքների հաստատումից հետո:",
+    "record": "Արձանագրությունների ընդունում",
+    "recorded": "Հաճախորդի ընդունումը գրանցված է",
+    "recordedBy": "Հաճախորդի ընդունումն արձանագրվել է {name}."
+  },
+  "errors": {
+    "resumeFailed": "Չհաջողվեց վերսկսել ապրանքը ։",
+    "acceptanceFailed": "Չհաջողվեց գրանցել հաճախորդի ընդունումը:",
+    "updateFailed": "Չհաջողվեց թարմացնել ապրանքի առաքումը ։"
+  },
+  "access": {
+    "title": "Մուտք և ենթակառուցվածքներ",
+    "loading": "Բեռնվում է…",
+    "empty": "Այս ապրանքի պրոֆիլի համար մուտքի ժամանակահատվածներ չեն կարգավորվում:"
+  },
+  "checklist": {
+    "title": "Փուլային ստուգացանկեր",
+    "loading": "Փուլային ստուգացանկեր …",
+    "progress": "Փուլային ստուգացանկեր {reviewed}/{total}"
+  },
+  "languages": {
+    "hy": "Armenian",
+    "en": "English ",
+    "ru": "Ռուսերեն ",
+    "de": "Գերմաներեն",
+    "fr": "Ֆրանսերեն",
+    "es": "Իսպաներեն ",
+    "it": "Իտալերեն",
+    "ar": "Արաբերեն",
+    "tr": "Թուրքերեն ",
+    "zh": "Name",
+    "ja": "Ճապոներեն",
+    "ko": "Կորեերեն"
+  },
+  "languageField": {
+    "label": "Լեզուններ",
+    "select": "Ընտրել",
+    "inheritedEmpty": "Ժառանգվել է ծնողական արտադրանքից ՝ սահմանված չէ:",
+    "remove": "Հեռացնել {language}"
+  },
+  "actions": {
+    "pauseTitle": "Դադարեցնե ՞ լ առաքումը",
+    "cancelTitle": "Չեղարկե ՞ լ առաքումը",
+    "pauseDescription": "Դադար {entity} և սահմանեք ռեզյումեի ակնկալվող ամսաթիվը:",
+    "cancelDescription": "Չեղարկել {entity} պահանջվող պատճառաբանությամբ:",
+    "resumeTargetDate": "Վերսկսել նպատակային ամսաթիվը",
+    "reason": "Պատճառը",
+    "pauseReasonPlaceholder": "Սպասում ենք հաճախորդի արձագանքին…",
+    "cancelReasonPlaceholder": "Հաճախորդը չեղարկել է շրջանակը…",
+    "keepActive": "Պահպանեք ակտիվությունը",
+    "pause": "Դադարեցնել առաքումը",
+    "pausing": "Դադարեցվում է...",
+    "cancel": "Չեղարկել առաքումը",
+    "cancelling": "Չեղարկում...",
+    "resume": "Վերսկսել առաքումը"
+  },
+  "header": {
+    "description": "Ապրանքի և երկարացման քարտերը խմբավորված են ըստ կանոնական առաքման փուլի:",
+    "statusAria": "Առաքման խորհրդի կարգավիճակ"
+  },
+  "counts": {
+    "active": "{count, plural, one {Առկա գույքը} other {Առկա գույքը}}",
+    "closed": "{count, plural, one {Փակ է} other {Փակ է}}"
+  }
+}

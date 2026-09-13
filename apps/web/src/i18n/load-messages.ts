@@ -66,13 +66,13 @@ async function loadMessagesUncached(locale: WritableInterfaceLocale): Promise<In
 export const loadMessages = cache(loadMessagesUncached);
 
 async function loadLocaleMessages(locale: WritableInterfaceLocale): Promise<InterfaceMessages> {
-  if (locale === 'ru') {
-    return readLocaleCatalogs('ru');
+  if (locale === 'en') {
+    return readLocaleCatalogs('en');
   }
-  return readLocaleCatalogs('en');
+  return readLocaleCatalogs(locale);
 }
 
-async function readLocaleCatalogs(locale: 'en' | 'ru'): Promise<InterfaceMessages> {
+async function readLocaleCatalogs(locale: WritableInterfaceLocale): Promise<InterfaceMessages> {
   const [
     common,
     account,

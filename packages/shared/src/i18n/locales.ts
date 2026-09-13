@@ -1,9 +1,9 @@
 export const DEFAULT_INTERFACE_LOCALE = 'en' as const;
 
-/** Locales the employee may persist. `hy` is reserved and rejected on write. */
-export const WRITABLE_INTERFACE_LOCALES = ['en', 'ru'] as const;
+/** Locales the employee may persist. */
+export const WRITABLE_INTERFACE_LOCALES = ['en', 'ru', 'hy'] as const;
 
-export const RESERVED_INTERFACE_LOCALES = ['hy'] as const;
+export const RESERVED_INTERFACE_LOCALES = [] as const;
 
 export type WritableInterfaceLocale = (typeof WRITABLE_INTERFACE_LOCALES)[number];
 export type ReservedInterfaceLocale = (typeof RESERVED_INTERFACE_LOCALES)[number];

@@ -48,7 +48,7 @@ type Messages = {
 
 declare module 'next-intl' {
   interface AppConfig {
-    Locale: 'en' | 'ru';
+    Locale: 'en' | 'ru' | 'hy';
     Messages: Messages;
   }
 }

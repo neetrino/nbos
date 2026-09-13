@@ -1,6 +1,6 @@
 # I18N HY terminology pilot
 
-Date: 2026-09-12. Status: draft for owner review. HY is **not** in the language switcher and is still rejected by `PATCH /me/preferences`.
+Date: 2026-09-13. Status: catalogs + switcher enabled. Machine Armenian needs a native review. `hy` is writable in `PATCH /me/preferences`.
 
 Canon: [07-Interface-Localization.md](../NBOS/01-Platform-Overview/07-Interface-Localization.md). Stage 7 of [I18N-IMPLEMENTATION-PLAN.md](./I18N-IMPLEMENTATION-PLAN.md).
 

@@ -101,18 +101,23 @@ describe('GET|PATCH /api/v1/me/preferences HTTP contract', () => {
     expect(updatePreferences).toHaveBeenCalledWith('emp-1', 'ru');
   });
 
-  it('rejects reserved and unknown locales without writing', async () => {
-    const reserved = await fetch(new URL(PREFERENCES_URL, baseUrl), {
+  it('saves Armenian as a writable locale', async () => {
+    updatePreferences.mockResolvedValue({ interfaceLocale: 'hy' });
+    const response = await fetch(new URL(PREFERENCES_URL, baseUrl), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ interfaceLocale: 'hy' }),
     });
+    expect(response.status).toBe(HttpStatus.OK);
+    expect(updatePreferences).toHaveBeenCalledWith('emp-1', 'hy');
+  });
+
+  it('rejects unknown locales without writing', async () => {
     const unknown = await fetch(new URL(PREFERENCES_URL, baseUrl), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ interfaceLocale: 'de' }),
     });
-    expect(reserved.status).toBe(HttpStatus.BAD_REQUEST);
     expect(unknown.status).toBe(HttpStatus.BAD_REQUEST);
     expect(updatePreferences).not.toHaveBeenCalled();
   });

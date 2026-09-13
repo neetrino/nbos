@@ -1,0 +1,325 @@
+{
+  "tabs": {
+    "general": "Ընդհանուր",
+    "departments": "Բաժիններ",
+    "security": "Անվտանգություն",
+    "offboarding": "Աշխատանքից դուրսբերում",
+    "onboarding": "Ներգրավում"
+  },
+  "status": {
+    "ACTIVE": "Ակտիվ",
+    "PROBATION": "Փորձաշրջան",
+    "ON_LEAVE": "Արձակուրդում",
+    "TERMINATED": "Դադարեցված"
+  },
+  "level": {
+    "JUNIOR": "Կրտսեր",
+    "MIDDLE": "Միջին",
+    "SENIOR": "Ավագ",
+    "LEAD": "Լիդ",
+    "HEAD": "Ղեկավար"
+  },
+  "form": {
+    "profile": "Պրոֆիլ",
+    "firstName": "Անուն",
+    "lastName": "Ազգանուն",
+    "birthday": "Ծննդյան օր",
+    "level": "Մակարդակ",
+    "selectLevel": "Ընտրել մակարդակը",
+    "position": "Պաշտոն",
+    "positionPlaceholder": "Պաշտոն",
+    "contacts": "Կոնտակտներ",
+    "email": "Email",
+    "emailPlaceholder": "name@company.com",
+    "phone": "Հեռախոս",
+    "sipId": "SIP ID",
+    "telegram": "Telegram",
+    "employment": "Աշխատանքային կարգավիճակ"
+  },
+  "employment": {
+    "status": "Կարգավիճակ",
+    "hireDate": "Աշխատանքի ընդունման ամսաթիվ",
+    "platformRole": "Պլատֆորմի դեր"
+  },
+  "sheet": {
+    "loading": "Բեռնվում է…",
+    "namesRequired": "Անունն ու ազգանունը պարտադիր են։",
+    "namesEmailRequired": "Email-ը պարտադիր է։",
+    "accountUpdated": "Հաշիվը թարմացվել է",
+    "employeeUpdated": "Աշխատակիցը թարմացվել է",
+    "saveFailed": "Չհաջողվեց պահել փոփոխությունները։",
+    "offboard": "Դուրսբերում",
+    "reactivate": "Վերակտիվացնել",
+    "remove": "Հեռացնել",
+    "removeAria": "Հեռացնել մասնակցին",
+    "removeTitle": "Հեռացնե՞լ մասնակցին",
+    "removeDescription": "Այս անձը այս քարտից կկորցնի նախագծի թիմի հասանելիությունը։"
+  },
+  "departments": {
+    "title": "Բաժնի նշանակումներ",
+    "empty": "Բաժիններ դեռ նշանակված չեն",
+    "primary": "Հիմնական",
+    "setPrimaryAria": "Սահմանել որպես հիմնական",
+    "removeAria": "Հեռացնել նշանակումը",
+    "add": "Ավելացնել բաժին",
+    "selectDepartment": "Ընտրել բաժինը",
+    "selectRole": "Բաժնի դեր",
+    "primaryCheckbox": "Հիմնական բաժին",
+    "adding": "Ավելացվում է…",
+    "addConfirm": "Ավելացնել",
+    "added": "Բաժնի նշանակումն ավելացվել է",
+    "addFailed": "Չհաջողվեց ավելացնել բաժինը",
+    "removed": "Բաժնի նշանակումը հեռացվել է",
+    "removeFailed": "Չհաջողվեց հեռացնել բաժինը",
+    "primaryUpdated": "Հիմնական բաժինը թարմացվել է",
+    "updateFailed": "Չհաջողվեց թարմացնել բաժինը"
+  },
+  "deptRole": {
+    "HEAD": "Ղեկավար",
+    "DEPUTY": "Փոխղեկավար",
+    "MEMBER": "Անդամ"
+  },
+  "lifecycle": {
+    "updateItemFailed": "Չհաջողվեց թարմացնել checklist-ի կետը",
+    "completeFailed": "Չհաջողվեց ավարտել checklist-ը",
+    "itemsReviewed": "{reviewed}/{count} կետ ստուգված է",
+    "completedSuffix": " · Ավարտված",
+    "complete": "Ավարտել checklist-ը"
+  },
+  "onboarding": {
+    "title": "Ներգրավման checklist",
+    "loading": "Բեռնվում է ներգրավման checklist-ը…",
+    "empty": "Ներգրավման checklist դեռ չկա։",
+    "completedToast": "Ներգրավման checklist-ը ավարտված է"
+  },
+  "offboarding": {
+    "title": "Դուրսբերման checklist",
+    "loading": "Բեռնվում է դուրսբերման checklist-ը…",
+    "empty": "Դուրսբերման checklist դեռ չկա։",
+    "completedToast": "Դուրսբերման checklist-ը ավարտված է"
+  },
+  "offboardDialog": {
+    "title": "Դուրս բերել աշխատակցին",
+    "loading": "Բեռնվում է ազդեցության նախադիտումը…",
+    "loadFailed": "Չհաջողվեց բեռնել դուրսբերման նախադիտումը",
+    "alreadyTerminated": "Այս աշխատակիցն արդեն դադարեցված է։",
+    "confirmLead": "Դուրս բերել {name}-ի՞ն։ Սա՝",
+    "bulletStatus": "կսահմանի կարգավիճակը որպես Դադարեցված և կգրանցի դադարեցման ամսաթիվը",
+    "bulletLogin": "անմիջապես կփակի NBOS մուտքը",
+    "bulletRevoke": "կչեղարկի նախագծի/արտադրանքի թիմերի անդամակցությունը, հավատարմագրերի grant-ները և SECRET allow-list-ի գրառումները (յուրաքանչյուր հավատարմագրի audit-ով)",
+    "bulletChecklist": "կստեղծի դուրսբերման checklist HR / Operations / Finance-ի համար",
+    "bulletFinance": "կտեղեկացնի Ֆինանսների թիմին վերջնական աշխատավարձի մասին",
+    "footprint": "Ընթացիկ footprint",
+    "openTasks": "Բաց առաջադրանքներ",
+    "projectTeams": "Նախագծերի թիմեր",
+    "productTeams": "Արտադրանքի թիմեր",
+    "credentialAccess": "Հավատարմագրերի հասանելիություն",
+    "driveGrants": "Drive grant-ներ",
+    "manualHandoff": "Առաջադրանքներն ու արտաքին գործիքները (Git, email, Telegram) մնում են checklist-ում՝ ձեռքով փոխանցման համար։",
+    "success": "Աշխատակիցը դուրս է բերվել",
+    "failed": "Դուրսբերումը ձախողվեց",
+    "confirm": "Հաստատել դուրսբերումը",
+    "submitting": "Դուրսբերվում է…"
+  },
+  "reactivateDialog": {
+    "title": "Վերակտիվացնել աշխատակցին",
+    "confirmLead": "Վերականգնե՞լ {name}-ին և վերադարձնե՞լ NBOS մուտքը։",
+    "bulletStatus": "կմաքրի դադարեցման ամսաթիվը և կսահմանի աշխատանքի կարգավիճակը",
+    "bulletLogin": "կվերականգնի պլատֆորմի մուտքը (դերի իրավունքները նորից կգործեն)",
+    "bulletChecklist": "կստեղծի նոր ներգրավման checklist HR / Operations-ի համար",
+    "bulletAccess": "նախագծերի, հավատարմագրերի և Drive-ի հասանելիությունը կմնա փակ, մինչև նորից տրվի",
+    "statusLabel": "Աշխատանքային կարգավիճակ",
+    "selectStatus": "Ընտրել կարգավիճակը",
+    "probationRehire": "Փորձաշրջան (վերադարձ աշխատանքի)",
+    "hint": "Դադարեցված պրոֆիլները կարող են վերակտիվացնել միայն Owner-ը, CEO-ն կամ HR բաժնի անդամները։",
+    "success": "Աշխատակիցը վերակտիվացվել է",
+    "failed": "Վերակտիվացումը ձախողվեց",
+    "confirm": "Հաստատել վերակտիվացումը",
+    "submitting": "Վերակտիվացվում է…"
+  },
+  "directory": {
+    "grid": "Ցանց",
+    "list": "Ցանկ",
+    "gridAria": "Ցանցային դիտում",
+    "listAria": "Ցանկի դիտում",
+    "search": "Որոնել ըստ անվան, email-ի…",
+    "counts": "{active} ակտիվ · {total} ընդհանուր",
+    "add": "Ավելացնել",
+    "createEmployee": "Ստեղծել աշխատակցի պրոֆիլ",
+    "sendInvitation": "Ուղարկել հրավեր",
+    "emptyTitle": "Աշխատակիցներ դեռ չկան",
+    "emptyDescription": "Ստեղծեք պրոֆիլ կամ ուղարկեք հրավեր, որպեսզի մեծացնեք թիմի directory-ն։",
+    "loadFailed": "Չհաջողվեց բեռնել աշխատակիցներին։ Ստուգեք կապը և փորձեք նորից։",
+    "notFound": "Աշխատակիցը չի գտնվել կամ այս պրոֆիլը ձեզ հասանելի չէ։",
+    "all": "Բոլորը",
+    "terminatedChip": "Դադարեցված · {count}",
+    "filters": {
+      "department": "Բաժին",
+      "role": "Դեր",
+      "level": "Մակարդակ",
+      "status": "Կարգավիճակ"
+    },
+    "columns": {
+      "employee": "Աշխատակից",
+      "primarySeat": "Հիմնական seat",
+      "level": "Մակարդակ",
+      "department": "Բաժին",
+      "status": "Կարգավիճակ",
+      "tenure": "Ստաժ",
+      "email": "Email"
+    }
+  },
+  "create": {
+    "title": "Ավելացնել աշխատակից",
+    "description": "Ստեղծեք պրոֆիլը անմիջապես։ Օգտագործեք Invite-ը, եթե անձը պետք է ինքնուրույն սահմանի իր գաղտնաբառը։",
+    "metaFailed": "Չհաջողվեց բեռնել դերերը կամ բաժինները",
+    "workEmail": "Աշխատանքային email",
+    "selectRole": "Ընտրել դերը",
+    "notSet": "Սահմանված չէ",
+    "optional": "Ընտրովի",
+    "none": "Չկա",
+    "positionSeat": "Պաշտոն / seat",
+    "created": "Աշխատակիցը ստեղծվել է",
+    "failed": "Չհաջողվեց ստեղծել աշխատակցին",
+    "submit": "Ստեղծել աշխատակցի պրոֆիլ"
+  },
+  "invite": {
+    "title": "Հրավիրել աշխատակցի",
+    "emailPlaceholder": "employee@company.com",
+    "role": "Դեր",
+    "selectRole": "Ընտրել դերը",
+    "loadingRoles": "Բեռնվում են դերերը…",
+    "rolesFailed": "Չհաջողվեց բեռնել դերերը",
+    "departmentOptional": "Բաժին (ընտրովի)",
+    "selectDepartment": "Ընտրել բաժինը",
+    "loadingDepartments": "Բեռնվում են բաժինները…",
+    "departmentsFailed": "Չհաջողվեց բեռնել բաժինները",
+    "none": "Չկա",
+    "sent": "Հրավերը հաջողությամբ ուղարկվել է",
+    "failed": "Չհաջողվեց ուղարկել հրավերը",
+    "send": "Ուղարկել հրավեր",
+    "sending": "Ուղարկվում է…"
+  },
+  "tenure": {
+    "new": "Նոր",
+    "months": "{n} ամիս",
+    "years": "{n} տ",
+    "yearsMonths": "{years} տ {months} ամ"
+  },
+  "deptAdmin": {
+    "title": "Բաժիններ",
+    "subtitle": "Կառավարեք ընկերության բաժիններն ու դրանց անդամներին",
+    "create": "Ստեղծել բաժին",
+    "loading": "Բեռնվում են բաժինները…",
+    "empty": "Բաժիններ դեռ չկան",
+    "loadFailed": "Չհաջողվեց բեռնել բաժինները",
+    "membersLoadFailed": "Չհաջողվեց բեռնել անդամներին",
+    "nameSlugRequired": "Անունն ու slug-ը պարտադիր են",
+    "created": "Բաժինը ստեղծվել է",
+    "createFailed": "Չհաջողվեց ստեղծել բաժինը",
+    "dialogTitle": "Ստեղծել բաժին",
+    "name": "Անուն",
+    "namePlaceholder": "օր. Engineering",
+    "slug": "Slug",
+    "slugPlaceholder": "օր. engineering",
+    "description": "Նկարագրություն (ընտրովի)",
+    "descriptionPlaceholder": "Կարճ նկարագրություն",
+    "parent": "Վերին բաժին (ընտրովի)",
+    "none": "Չկա",
+    "parentOf": "Վերին բաժին՝ {name}",
+    "membersCount": "{count, plural, one {# անդամ} other {# անդամ}}",
+    "loadingMembers": "Բեռնվում են անդամները…",
+    "emptyMembers": "Այս բաժնում անդամներ չկան"
+  },
+  "companyNav": {
+    "title": "Իմ ընկերությունը",
+    "aria": "«Իմ ընկերությունը» բաժիններ",
+    "orgStructure": "Կազմակերպական կառուցվածք",
+    "team": "Թիմ",
+    "departments": "Բաժիններ",
+    "rolesSeats": "Դերեր և seats"
+  },
+  "rolesSeats": {
+    "title": "Դերեր և seats",
+    "description": "Բիզնես seats, պատասխանատվություններ, թափուր հաստիքներ, նշանակումներ և լռելյայն permission role mapping։"
+  },
+  "hub": {
+    "intro": "Org Structure-ը ընկերության կառավարման կենտրոնն է բաժինների, seats-երի, աշխատակիցների, KPI-ի, փոխհատուցման և SOP-ի համար։",
+    "loadFailed": "Չհաջողվեց բեռնել «Իմ ընկերությունը» հիմքային տվյալները։ Ստուգեք կապը և փորձեք նորից։",
+    "metrics": {
+      "activeEmployees": "Ակտիվ աշխատակիցներ",
+      "activeHelper": "Կարող են աշխատել պլատֆորմի մոդուլներում",
+      "departments": "Բաժիններ",
+      "departmentsHelper": "Կազմակերպական միավորներ՝ հասանելիության համատեքստի համար",
+      "roles": "Permission դերեր",
+      "rolesHelper": "{count, plural, one {# պաշտպանված համակարգային դեր} other {# պաշտպանված համակարգային դերեր}}"
+    },
+    "foundation": {
+      "title": "Org Structure հիմք",
+      "subtitle": "Բաժինների ընթացիկ հիերարխիան և աշխատակիցների նշանակումների ծածկույթը։",
+      "assigned": "{assigned}/{total} նշանակված",
+      "emptyTitle": "Բաժիններ դեռ կարգավորված չեն",
+      "emptyDescription": "Ավելացրեք բաժիններ, նախքան Org Structure-ը պատասխանատվությունների քարտեզ դարձնելը։",
+      "reportsTo": "Ենթակա է՝ {name}",
+      "topLevel": "Վերին մակարդակի բաժին"
+    },
+    "guardrails": {
+      "title": "Հիմքի սահմանափակումներ",
+      "subtitle": "Սրանք դիտմամբ հստակ նշված են, որպեսզի Finance-ը, KPI-ն և RBAC-ը չհենվեն թերի տվյալների վրա։",
+      "seats": "Seat նշանակումները դեռ առանձին չեն մոդելավորվում տեխնիկական permission role-երից։",
+      "compensation": "Փոխհատուցումը, KPI-ն և բոնուսային քաղաքականությունները տեսանելի են որպես մոդուլի բաժիններ, բայց դեռ Payroll-ի աղբյուրներ չեն։",
+      "orgChart": "Լիարժեք org chart canvas-ը՝ խոշորացմամբ, որոնմամբ և բաժինների drawer-ներով, մնում է առանձին հաջորդ քայլ։"
+    },
+    "recent": {
+      "title": "Թիմի վերջին համատեքստը",
+      "empty": "Աշխատակիցներ չեն գտնվել։ Հրավիրեք աշխատակիցների, նախքան «Իմ ընկերությունը»-ն օգտագործելը որպես կառավարման կենտրոն։",
+      "noDepartment": "Առանց բաժնի"
+    },
+    "sections": {
+      "team": {
+        "title": "Թիմ",
+        "description": "Աշխատակիցներ, պրոֆիլներ, հրավերներ, դերեր և բաժնի անդամակցություն։"
+      },
+      "departments": {
+        "title": "Բաժիններ",
+        "description": "Ընկերության բաժիններ, հիերարխիա, ղեկավարներ և անդամներ։"
+      },
+      "rolesSeats": {
+        "title": "Դերեր և seats",
+        "description": "Բիզնես seats և պատասխանատվություններ՝ առանձնացված տեխնիկական թույլտվություններից։"
+      },
+      "compensation": {
+        "title": "Փոխհատուցում",
+        "description": "Փոխհատուցման պրոֆիլներ, բոնուսային քաղաքականություններ և աշխատավարձի կանոններ։"
+      },
+      "bonusPolicies": {
+        "title": "Բոնուսային քաղաքականություններ",
+        "description": "Բոնուսային կանոնների փաթեթներ (վաճառք, առաքում, ձեռքով) փոխհատուցման պրոֆիլների համար։"
+      },
+      "salesBonus": {
+        "title": "Վաճառքի բոնուսային քաղաքականություններ",
+        "description": "Վաճառողի և օգնականի տոկոսադրույքներ՝ ըստ «Որտեղից» կատեգորիայի և Classic-ի ընդդեմ subscription-ի առաջին հաշվի։"
+      },
+      "kpi": {
+        "title": "KPI / Scorecard",
+        "description": "Ընկերության, բաժնի և աշխատակցի KPI քաղաքականություններ և scorecard-ներ։"
+      },
+      "kpiGate": {
+        "title": "KPI gate քաղաքականություններ",
+        "description": "Կատարման շեմեր և վճարման %՝ Payroll-ի համար (կապված փոխհատուցման պրոֆիլների միջոցով)։"
+      },
+      "sop": {
+        "title": "SOP և կաղապարներ",
+        "description": "SOP փաստաթղթեր, գործընթացների կաղապարներ և գործառնական run-եր։"
+      },
+      "checklists": {
+        "title": "Checklist-ի կաղապարներ",
+        "description": "Version-ավորված checklist builder-ներ առաքման, QA-ի, սպասարկման և SOP-ի համար։"
+      },
+      "checklistRules": {
+        "title": "Առաքման checklist-ի կանոններ",
+        "description": "Հրապարակված կաղապարները կապում է Product / Extension փուլերին, իսկ օրինակը ստեղծում է փուլ մտնելիս։"
+      }
+    }
+  }
+}

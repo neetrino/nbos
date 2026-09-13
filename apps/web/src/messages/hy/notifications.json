@@ -1,0 +1,83 @@
+{
+  "title": "Ծանուցումներ",
+  "markAllRead": "Նշել բոլորը կարդացված",
+  "signIn": "Ծանուցումները տեսնելու համար մուտք գորցեք։",
+  "loading": "Բերնվում է…",
+  "loadFailed": "Ծանուցումները բերնել չի հաջոխվել։",
+  "empty": "Դեռ թանուցումներ չկան։",
+  "loadMore": "Բերնել ավելի",
+  "openCenter": "Ծանուցումների կարգավորումներ",
+  "center": {
+    "kicker": "Ծանուցումներ",
+    "title": "Ծանուցումների կենտրոն",
+    "refresh": "Թարմացնել",
+    "markAllRead": "Նշել բոլորը կարդացված",
+    "prefsTitle": "Ծանուցումների նախնդիրներ",
+    "prefsDescription": "Ընտրեք, թե որ տրեվոգը հասնի։",
+    "prefsLoading": "Նախնդիրները բերնվում են…",
+    "channel": {
+      "web": "Web",
+      "email": "Email",
+      "telegram": "Telegram",
+      "whatsapp": "WhatsApp"
+    },
+    "loadingList": "Ծանուցումները բերնվում են…",
+    "emptyTitle": "Ծանուցումներ չկան",
+    "emptyDescription": "Այս կատեգորիան ակտիվ թանուցումներ չկան։",
+    "markReadAria": "Նշել կարդացված",
+    "archiveAria": "Արխիվացնել"
+  },
+  "category": {
+    "all": "Բոլորը",
+    "informational": "Տեծեկանկ",
+    "action_required": "Գորվոխություն է պահանջում է",
+    "system_health": "Համակարգի վիչակ",
+    "audit_security": "Անվտանգություն"
+  },
+  "priority": {
+    "critical": "Կրիտիկական",
+    "high": "Բարռր",
+    "medium": "Միջին",
+    "low": "Չադր",
+    "normal": "Նորմալ"
+  },
+  "relative": {
+    "justNow": "հիմա",
+    "minutesAgo": "{count, plural, one {# ր արաջ} other {# ր արաջ}}",
+    "hoursAgo": "{count, plural, one {# դ արաջ} other {# դ արաջ}}",
+    "yesterday": "Երեկ",
+    "daysAgo": "{count, plural, one {# օր արաջ} other {# օր արաջ}}"
+  },
+  "eventTypes": {
+    "financeWalletBonusActive": "Բոնուսը դարլ ակտիվ",
+    "financeWalletBonusPaid": "Բոնուսը ուղարկվել է",
+    "financeWalletBonusCorrected": "Բոնուսը ոււգալուածվել է",
+    "financeWalletBonusKpiReduced": "Բոնուսը նպատվել է KPI-ով",
+    "financeWalletBonusCarryApplied": "Գործուած բոնուսը կիրարկվել է",
+    "financeWalletBonusCarryDeferred": "Գործուած բոնուսը հետադարկվել է",
+    "financeWalletPayrollCreated": "Աշխատավարդը ստեղծվել է",
+    "financeWalletPayrollClosed": "Աշխատավարդը պակվել է",
+    "financeWalletSalaryPayment": "Աշխատավարդը ուղարկվել է",
+    "financeInvoiceOfficialRequestDue": "Պատանական հաշվի հայտարարություն է պահանջում է",
+    "financeInvoicePaymentReminderDue": "Հաշվի ուղարկման հայտարարություն",
+    "financeInvoicePaymentReminderD10": "Հաշվի հայտարարություն · 10 օր",
+    "financeInvoicePaymentReminderD2": "Հաշվի հայտարարություն · 2 օր",
+    "financeInvoiceOverdueReminderW1": "Գաղում հաշվ · 1-ին շաբաթ",
+    "financeInvoiceOverdueReminderW2": "Գաղում հաշվ · 2-ին շաբաթ",
+    "financeExpenseBacklogWeeklyDigest": "Շաբաթական ծախսերի կող",
+    "financeExpenseBacklogDueOverdue": "Զախսը պահանջում է կամ գաղում է",
+    "taskOverdue": "Առաջադրանքը գաղում է",
+    "financeOverdue": "Ֆինանսական գրանիցը գաղում է",
+    "mailHealthDegraded": "Փոստային վիչակը նպատվել է",
+    "mailSendFailed": "Փոստան ուղարկման չի հաջոխվել",
+    "opsSchedulerRunFailed": "Պլանորը չի հաջոխվել",
+    "opsBullmqJobFailed": "Ներքի աշխատանքը չի հաջոխվել",
+    "documentAccessChanged": "Փաստաթղի մուտքը ոււգալուածվել է",
+    "credentialsHighRiskAction": "Բարռր րիսկի գաղտնաբարի գորվ",
+    "supportSlaResolveWarning": "Աջակցումի SLA նախարդ",
+    "supportSlaResponseBreached": "Աջակցումի պատասխանի SLA-ն լանել է",
+    "supportSlaResolveBreached": "Աջակցումի լուածման SLA-ն լանել է",
+    "supportEscalationManager": "Աջակցումի եսկալացիա",
+    "tasksReviewRequested": "Առաջադրանքի ստուգումը հայտարարվել է"
+  }
+}

@@ -1,0 +1,249 @@
+{
+  "page": {
+    "searchPlaceholder": "Որոնել հաշիվ, ընկերություն, պատվեր, արտադրանք…",
+    "settingsTitle": "Հաշիվներ — կարգավորումներ",
+    "settingsDescription": "Արտահանումներ ընթացիկ ցանկի տիրույթի համար։ Ժամանակահատվածն ու զտիչները հետևում են որոնման տողին։",
+    "settingsAria": "Հաշիվների կարգավորումներ",
+    "exportCsv": "Արտահանել հաշիվները (CSV)",
+    "exportScopeStats": "Արտահանել տիրույթի վիճակագրությունը (CSV)",
+    "newInvoice": "Նոր հաշիվ",
+    "subscriptionFilter": "Ցուցադրվում են այս բաժանորդագրությանը կապված հաշիվները (server filter)։",
+    "clearFilter": "Մաքրել զտիչը"
+  },
+  "view": {
+    "board": "Տախտակ",
+    "list": "Ցանկ",
+    "boardAria": "Kanban տախտակի տեսք",
+    "listAria": "Ցանկի տեսք"
+  },
+  "filters": {
+    "status": "Կարգավիճակ",
+    "moneyStatus": "Վճարման կարգավիճակ",
+    "type": "Տեսակ",
+    "period": "Ժամանակահատված",
+    "periodOptions": {
+      "month": "Ամիս",
+      "quarter": "Եռամսյա",
+      "year": "Տարի",
+      "all": "Բոլորը"
+    }
+  },
+  "boardScope": {
+    "ALL": "Բոլոր կարգավիճակները",
+    "ACTIVE": "Ակտիվ",
+    "CLOSED": "Փակված"
+  },
+  "empty": {
+    "title": "Դեռ հաշիվներ չկան",
+    "description": "Ստեղծեք առաջին հաշիվը՝ վճարումները հաշվառելու համար",
+    "createFirst": "Ստեղծել առաջին հաշիվը"
+  },
+  "kanban": {
+    "empty": "Հաշիվներ չկան",
+    "quickCreate": "Արագ հաշիվ"
+  },
+  "table": {
+    "invoice": "Հաշիվ",
+    "company": "Ընկերություն",
+    "type": "Տեսակ",
+    "amount": "Գումար",
+    "status": "Կարգավիճակ",
+    "closed": "Փակված",
+    "tax": "Հարկ",
+    "dueDate": "ժամկետ",
+    "paidDate": "Վճարման ամսաթիվ"
+  },
+  "stage": {
+    "NEW": "Նոր",
+    "AWAITING_PAYMENT": "Սպասում է վճարման",
+    "OVERDUE": "Ժամկետանց",
+    "ON_HOLD": "Կասեցված",
+    "PAID": "Վճարված",
+    "CANCELLED": "Չեղարկված"
+  },
+  "stageShort": {
+    "NEW": "Նոր",
+    "AWAITING_PAYMENT": "Սպասում",
+    "OVERDUE": "Ժամկետանց",
+    "ON_HOLD": "Կասեց.",
+    "PAID": "Վճարված",
+    "CANCELLED": "Չեղարկ."
+  },
+  "type": {
+    "DEVELOPMENT": "Զարգացում",
+    "EXTENSION": "Ընդլայնում",
+    "SUBSCRIPTION": "Բաժանորդագրություն",
+    "DOMAIN": "Domain",
+    "SERVICE": "Ծառայություն",
+    "MANUAL": "Manual"
+  },
+  "tax": {
+    "TAX": "Հարկով",
+    "TAX_FREE": "Ազատ"
+  },
+  "paymentMethod": {
+    "TRANSACTION": "Փոխանցում",
+    "CASH": "Կանխիկ"
+  },
+  "source": {
+    "deal": "Գործարք",
+    "order": "Պատվեր",
+    "subscription": "Բաժանորդագրություն",
+    "manual": "Manual",
+    "service": "Ծառայություն"
+  },
+  "card": {
+    "tax": "Հարկ",
+    "paid": "Վճարված",
+    "overdue": "ժամկետանց"
+  },
+  "tabs": {
+    "general": "Ընդհանուր",
+    "payments": "Վճարումներ",
+    "history": "Պատմություն"
+  },
+  "sheet": {
+    "loading": "Հաշիվը բեռնվում է…",
+    "unavailable": "Հաշիվը անհասանելի է։",
+    "updated": "Հաշիվը թարմացվեց",
+    "saveFailed": "Հաշվի փոփոխությունները չհաջողվեց պահել։",
+    "deleteInvoice": "Ջնջել հաշիվը",
+    "cancelInvoice": "Չեղարկել հաշիվը",
+    "clientContext": "Հաճախորդի համատեկստ",
+    "proofs": "Հաստատումներ",
+    "fullyPaid": "Ամբողջությամբ վճարված",
+    "paymentProofs": "Վճարման հաստատումներ",
+    "linked": "Կապված",
+    "description": "Նկարագրություն",
+    "stageGateTitle": "Լրացրեք կարգավիճակը փոխելուց առաջ"
+  },
+  "payments": {
+    "recordTitle": "Գրանցել վճարում",
+    "outstanding": "Մնացորդ",
+    "amount": "Գումար",
+    "paymentDate": "Վճարման ամսաթիվ",
+    "method": "Մեթոդ",
+    "notes": "Նշումներ",
+    "notesPlaceholder": "Ընտրովի",
+    "submit": "Գրանցել վճարում",
+    "recordFailed": "Վճարումը չհաջողվեց գրանցել։",
+    "recordedTitle": "Գրանցված վճարումներ",
+    "removeAria": "Հեռացնել {amount} վճարումը",
+    "removeFailed": "Վճարումը չհաջողվեց հեռացնել։ Նորից փորձեք։",
+    "removeTitle": "Հեռացնե՞լ վճարումը",
+    "removeDescription": "Վճարումը կհեռացվի հաշվից։ Վճարման կարգավիճակը կվերահաշվարկվի մնացած վճարումներից, և հետո կարող եք նորից գրանցել։",
+    "removeConfirm": "Հեռացնել",
+    "proofTitle": "Վճարման հաստատում · {date}"
+  },
+  "history": {
+    "comingSoonTitle": "Պատմությունը շուտով",
+    "comingSoonDescription": "Վճարման կարգավիճակի փոփոխությունները, վճարումներն ու պաշտոնական հաշվի գործողությունները կցուցադրվեն այստեղ։"
+  },
+  "money": {
+    "title": "Գումար",
+    "amount": "Գումար",
+    "taxStatus": "Հարկային կարգավիճակ",
+    "outstanding": "Մնացորդ",
+    "paid": "Վճարված",
+    "due": "ժամկետ",
+    "created": "Ստեղծվել է",
+    "paidOn": "Վճարվել է"
+  },
+  "official": {
+    "title": "Պաշտոնական հաշիվ",
+    "freeNotRequired": "Ազատ հաշիվ — հաշվապահի հարցումը պարտադիր չէ։",
+    "actionFailed": "Գործողությունը ձախողվեց։ Նորից փորձեք։",
+    "sentAgain": "Հարցումը նորից ուղարկվեց",
+    "sentToAccountant": "Հարցումը ուղարկվեց հաշվապահին",
+    "requestCancelled": "Հարցումը չեղարկվեց",
+    "sending": "Ուղարկվում է հաշվապահին",
+    "send": "Ուղարկել հաշվապահին",
+    "cancelRequest": "Չեղարկել հարցումը",
+    "sendAgain": "Նորից ուղարկել",
+    "sentAt": "Ուղարկվել է {date}",
+    "cancelledAt": "{date}-ին",
+    "taxReadiness": "Հարկով հաշիվ տալուց առաջ լրացրեք ընկերության տվյալները",
+    "status": {
+      "sent": "Ուղարկվել է հաշվապահին",
+      "sending": "Ուղարկվում է հաշվապահին",
+      "cancelled": "Չեղարկված",
+      "notSent": "Չի ուղարկվել"
+    }
+  },
+  "lifecycle": {
+    "deleteTitle": "Ջնջե՞լ նախնական հաշիվը",
+    "cancelTitle": "Չեղարկե՞լ հաշիվը",
+    "deleteDescription": "Միայն platform owner-ը կարող է ջնջել NEW հաշիվը առանց վճարումների։ Accrual journal line-ը կվերադարձվի։",
+    "cancelDescription": "Հաշիվը կանցնի Cancelled և կմնա պատմության մեջ։ Վճարումները պահպանվում են։",
+    "deleteConfirm": "Ջնջել",
+    "deleted": "Հաշիվը ջնջվեց",
+    "cancelled": "Հաշիվը չեղարկվեց",
+    "deleteFailed": "Հաշիվը չհաջողվեց ջնջել։",
+    "cancelFailed": "Հաշիվը չհաջողվեց չեղարկել։"
+  },
+  "create": {
+    "titleNew": "Նոր հաշիվ",
+    "titleOrder": "Ստեղծել պատվերի հաշիվ",
+    "titleSubscription": "Ստեղծել բաժանորդագրության հաշիվ",
+    "titleGeneric": "Ստեղծել հաշիվ",
+    "descriptionOrder": "Ստեղծել հաշիվ {title}-ի համար։",
+    "descriptionSubscription": "Հաշվարկել բաժանորդագրության {title} դեմ։",
+    "descriptionClientService": "Հաշիվ {name} · {project}-ի համար",
+    "loadingSubscription": "Բաժանորդագրությունը բեռնվում է…",
+    "loadingSubscriptionContext": "Բառանորդագրության համատեկստը բեռնվսում է…",
+    "noCompany": "Ընկերություն չկա",
+    "orderTotal": "Պատվերի ընդամենը։ {amount}",
+    "periodAmount": "Ժամանակահատվածի գումար՝ {amount}",
+    "amount": "Գումար *",
+    "dueDate": "ժամկետ",
+    "dueDateAria": "ժամկետ",
+    "dueDateHint": "Դատարկ թողնելու դեպքում լռելյայն՝ ստեղծումից 10 օր հետո։",
+    "submit": "Ստեղծել հաշիվ",
+    "createError": "Հաշիվը չհաջողվեց ստեղծել։",
+    "loadSubscriptionError": "Բաժանորդագրությունը չհաջողվեց բեռնել։"
+  },
+  "createSubscription": {
+    "title": "Ստեղծել բաժանորդագրության հաշիվ",
+    "description": "Ընտրեք հաջորդական ամիսները։ Մեկ հաշիվը ծածկում է բոլոր ընտրված ամիսները։",
+    "selectConsecutive": "Ընտրեք հաջորդական ամիսները։",
+    "total": "Ընդամենը",
+    "required": "Բաժանորդագրությունը պարտադիր է։",
+    "createdOne": "Ստեղծվել է {code} հաշիվ",
+    "createdMany": "{count, plural, one {Ստեղծվել է # հաշիվ} other {Ստեղծվել են # հաշիվ}}",
+    "coverageMonths": "Ծածկող ամիսներ",
+    "noUncoveredMonth": "Չծածկված ամիս չկա։ Միայն ակտիվ բաժանորդագրություններից կարելի է հաշվարկել չծածկված ամիսները billing start-ից մինչև հաջորդ 12 ամիսը։",
+    "eachStartCovers": "Յուրաքանչյուր ընտրված սկիզբը ծածկում է {count, plural, one {# ամիս} other {# ամիս}}։ Ծանրօրենակ սկիզբները անջատված են մնում։",
+    "selectAtLeastOne": "Ընտրեք առնվազն մեկ ամիս։",
+    "covering": "1 հաշիվ՝ {count, plural, one {# ամիս} other {# ամիս}} ծածկելով",
+    "kindPast": "Անցյալ",
+    "kindCurrent": "Ընթացիկ",
+    "kindFuture": "Ապագա"
+  },
+  "reminders": {
+    "button": "Հիշեցնել",
+    "action": "Ուղարկել ժամկետանց հիշեցումներ",
+    "title": "Ուղարկե՞լ ժամկետանց հիշեցումներ",
+    "description": "Նախ վճարված հաշիվները նշեք Paid։ Այս գործարկումը ուղարկում է մեկ WhatsApp նամակ յուրաքանչյուր մնացած Overdue քարտի համար՝ wave 1, եթե նախկինում չի ուղարկվել, wave 2՝ եթե wave 1-ը ուղարկվել էր նախորդ օրը։",
+    "loading": "Նախադիտումը բեռնվում է…",
+    "loadFailed": "ժամկետանց հիշեցումների նախադիտումը չհաջողվեց բեռնել։",
+    "sendFailed": "ժամկետանց հիշեցումները չհաջողվեց ուղարկել։",
+    "sending": "Ուղարկվում է…",
+    "send": "Ուղարկել հիշեցումներ",
+    "empty": "Այս պահին ուղարկելու ժամկետանց հաճախորդային հիշեցումներ չկան։",
+    "skipped": "Բաց թողնված",
+    "sent": "Ուղարկվել է {count, plural, one {# ժամկետանց հիշեցում} other {# ժամկետանց հիշեցում}} ({wave1} wave 1, {wave2} wave 2)։",
+    "wave1": "{count, plural, one {# հաշիվ} other {# հաշիվ}} → wave 1",
+    "wave2": "{count, plural, one {# հաշիվ} other {# հաշիվ}} → wave 2",
+    "skip": {
+      "not_overdue": "Չի ժամկետանց",
+      "notifications_off": "Ծանուցումներն անջատված են",
+      "tax_gate": "Պաշտոնական հաշվի հարցումը չի ուղարկվել",
+      "no_whatsapp": "Product WhatsApp խումբ չկա",
+      "same_day": "Wave 1-ը արդեն ուղարկվել է այսօր",
+      "too_soon": "Wave 2-ը միայն 2 օրացույցային օր հետո",
+      "max_wave": "Երկու wave-ն էլ արդեն ուղարկվել են",
+      "no_product_link": "Բաժանորդագրություն կամ client service չկա",
+      "already_sent": "Այս wave-ը արդեն ուղարկվել է"
+    }
+  }
+}

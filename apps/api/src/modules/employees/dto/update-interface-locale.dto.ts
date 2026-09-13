@@ -5,7 +5,7 @@ import { WRITABLE_INTERFACE_LOCALES, type WritableInterfaceLocale } from '@nbos/
 export class UpdateInterfaceLocaleDto {
   @ApiProperty({ enum: WRITABLE_INTERFACE_LOCALES, example: 'en' })
   @IsIn([...WRITABLE_INTERFACE_LOCALES], {
-    message: 'interfaceLocale must be one of: en, ru',
+    message: 'interfaceLocale must be one of: en, ru, hy',
   })
   interfaceLocale!: WritableInterfaceLocale;
 }
