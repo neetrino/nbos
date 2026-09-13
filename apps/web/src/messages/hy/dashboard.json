@@ -22,7 +22,9 @@
     "openSupport": "Աջակցումի հերթը",
     "openSupportDescription": "Բացել գորվոխություն սպասելի տիկեթերը։",
     "openCredentials": "Գաղտնաբար",
-    "openCredentialsDescription": "Բացել մուտք արագի գաղտնաբարերը և գաղտնաբարերը։"
+    "openCredentialsDescription": "Բացել մուտք արագի գաղտնաբարերը և գաղտնաբարերը։",
+    "installApps": "Հավելվածների տեղադրում",
+    "installAppsDescription": "Ավելացնել NBOS-ը և փոքր հավելվածները գլխավոր էկրանին։"
   },
   "create": {
     "meetingCreated": "Հանդիպումը ստեղծվել է",

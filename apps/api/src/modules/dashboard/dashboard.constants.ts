@@ -13,6 +13,7 @@ export const DASHBOARD_PINNED_ACTION_KEYS = [
   'open-payroll',
   'open-support',
   'open-credentials',
+  'open-install',
 ] as const;
 
 export const DASHBOARD_WIDGET_KEYS = [

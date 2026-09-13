@@ -30,6 +30,7 @@ describe('DashboardService', () => {
     const projection = await service.getControlCenterProjection('employee-1');
 
     expect(projection.preference.pinnedActionOrder).toEqual([
+      'open-install',
       'open-invoices',
       'open-expenses',
       'open-payroll',

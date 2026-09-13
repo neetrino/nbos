@@ -22,7 +22,9 @@
     "openSupport": "Очередь поддержки",
     "openSupportDescription": "Открыть тикеты, которые ждут действия.",
     "openCredentials": "Пароли",
-    "openCredentialsDescription": "Открыть доступные вам пароли и секреты."
+    "openCredentialsDescription": "Открыть доступные вам пароли и секреты.",
+    "installApps": "Установка приложений",
+    "installAppsDescription": "Поставить NBOS и мини-приложения на домашний экран."
   },
   "create": {
     "meetingCreated": "Встреча создана",
