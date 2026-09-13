@@ -12,6 +12,7 @@
     "files": "Files",
     "checklists": "Checklists",
     "project": "Project",
+    "projectSearch": "Search project…",
     "removeFileAria": "Remove {name}",
     "createError": "Could not create task. Try again.",
     "extrasError": "Task created, but files or checklists could not be saved. Open the task to finish.",

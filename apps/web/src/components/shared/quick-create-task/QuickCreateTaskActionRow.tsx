@@ -33,6 +33,7 @@ interface QuickCreateTaskActionButtonsProps {
   filesCount: number;
   checklistCount: number;
   projectOpen: boolean;
+  projectPicker: 'popover' | 'sheet';
   fileInputRef: RefObject<HTMLInputElement | null>;
   onFilesPicked: (files: File[]) => void;
   onOpenChecklists: () => void;
@@ -46,6 +47,7 @@ export function QuickCreateTaskActionButtons({
   filesCount,
   checklistCount,
   projectOpen,
+  projectPicker,
   fileInputRef,
   onFilesPicked,
   onOpenChecklists,
@@ -93,13 +95,28 @@ export function QuickCreateTaskActionButtons({
         <ListChecks size={16} aria-hidden />
         {checklistLabel}
       </Button>
-      <ProjectSearchPopover
-        disabled={disabled}
-        open={projectOpen}
-        linkedValues={linkedValues}
-        onOpenChange={onProjectOpenChange}
-        onSelect={onSelectContext}
-      />
+      {projectPicker === 'sheet' ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className={QUICK_CREATE_TASK_ACTION_BTN_CLASS}
+          disabled={disabled}
+          aria-expanded={projectOpen}
+          onClick={() => onProjectOpenChange(true)}
+        >
+          <FolderKanban size={16} aria-hidden />
+          {t('task.project')}
+        </Button>
+      ) : (
+        <ProjectSearchPopover
+          disabled={disabled}
+          open={projectOpen}
+          linkedValues={linkedValues}
+          onOpenChange={onProjectOpenChange}
+          onSelect={onSelectContext}
+        />
+      )}
     </div>
   );
 }

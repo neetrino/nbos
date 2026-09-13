@@ -4,6 +4,8 @@ export const BOTTOM_SHEET_SWIPE_PANEL_CLASS = 'nbos-sheet-swipe';
 export const BOTTOM_SHEET_SWIPE_OVERLAY_CLASS = 'nbos-sheet-swipe-overlay';
 export const BOTTOM_SHEET_SWIPE_HANDLE_ATTR = 'data-nbos-sheet-swipe-handle';
 export const BOTTOM_SHEET_SWIPE_SCROLL_ATTR = 'data-nbos-sheet-swipe-scroll';
+export const BOTTOM_SHEET_LAYER_ATTR = 'data-nbos-sheet-layer';
+export const BOTTOM_SHEET_LAYER_CLOSE_ATTR = 'data-nbos-sheet-layer-close';
 
 export const BOTTOM_SHEET_SWIPE_ACTIVATE_DISTANCE_PX = 8;
 /** Match Vaul / iOS sheet: dismiss after a quarter of the panel. */

@@ -4,6 +4,8 @@ import {
   BOTTOM_SHEET_SWIPE_HANDLE_ATTR,
   BOTTOM_SHEET_SWIPE_OVERLAY_CLASS,
   BOTTOM_SHEET_SWIPE_OVERLAY_VAR,
+  BOTTOM_SHEET_LAYER_ATTR,
+  BOTTOM_SHEET_LAYER_CLOSE_ATTR,
   BOTTOM_SHEET_SWIPE_SCROLL_ATTR,
   BOTTOM_SHEET_SWIPE_SNAP_MS,
   BOTTOM_SHEET_SWIPE_TOP_SETTLE_MS,
@@ -17,6 +19,8 @@ import {
 } from './bottom-sheet-swipe-motion';
 
 export {
+  BOTTOM_SHEET_LAYER_ATTR,
+  BOTTOM_SHEET_LAYER_CLOSE_ATTR,
   BOTTOM_SHEET_SWIPE_PANEL_CLASS,
   BOTTOM_SHEET_SWIPE_HANDLE_ATTR,
   BOTTOM_SHEET_SWIPE_SCROLL_ATTR,
@@ -35,21 +39,51 @@ type SwipeSession = {
   lastScrollAwayAt: number;
   dismissTimer: number | null;
   overlay: HTMLElement | null;
+  pointerTarget: EventTarget | null;
+  fromLayer: boolean;
 };
+
+/** Prefer the innermost marked scroller under the pointer (overlay lists, not the sheet body). */
+export function resolveBottomSheetScrollRegion(
+  panel: HTMLElement,
+  target: EventTarget | null,
+): HTMLElement | null {
+  if (target instanceof Element) {
+    const nested = target.closest(`[${BOTTOM_SHEET_SWIPE_SCROLL_ATTR}]`);
+    if (nested instanceof HTMLElement && panel.contains(nested)) return nested;
+  }
+  const fallback = panel.querySelector(`[${BOTTOM_SHEET_SWIPE_SCROLL_ATTR}]`);
+  return fallback instanceof HTMLElement ? fallback : null;
+}
 
 export function isBottomSheetChromeTarget(panel: HTMLElement, target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false;
-  const scroll = panel.querySelector(`[${BOTTOM_SHEET_SWIPE_SCROLL_ATTR}]`);
-  if (!(scroll instanceof HTMLElement)) {
+  const scroll = resolveBottomSheetScrollRegion(panel, target);
+  if (!scroll) {
     return Boolean(target.closest(`[${BOTTOM_SHEET_SWIPE_HANDLE_ATTR}]`));
   }
   return !scroll.contains(target);
 }
 
-export function isBottomSheetScrollAtTop(panel: HTMLElement): boolean {
-  const scroll = panel.querySelector(`[${BOTTOM_SHEET_SWIPE_SCROLL_ATTR}]`);
-  if (!(scroll instanceof HTMLElement)) return true;
+export function isBottomSheetScrollAtTop(
+  panel: HTMLElement,
+  target: EventTarget | null = null,
+): boolean {
+  const scroll = resolveBottomSheetScrollRegion(panel, target);
+  if (!scroll) return true;
   return scroll.scrollTop <= 0;
+}
+
+export function isBottomSheetLayerTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && Boolean(target.closest(`[${BOTTOM_SHEET_LAYER_ATTR}]`));
+}
+
+export function findBottomSheetLayerClose(target: EventTarget | null): HTMLElement | null {
+  if (!(target instanceof Element)) return null;
+  const layer = target.closest(`[${BOTTOM_SHEET_LAYER_ATTR}]`);
+  if (!(layer instanceof HTMLElement)) return null;
+  const close = layer.querySelector(`[${BOTTOM_SHEET_LAYER_CLOSE_ATTR}]`);
+  return close instanceof HTMLElement ? close : null;
 }
 
 export function resetBottomSheetSwipeStyles(
@@ -123,6 +157,8 @@ function createSwipeSession(panel: HTMLElement): SwipeSession {
     lastScrollAwayAt: 0,
     dismissTimer: null,
     overlay,
+    pointerTarget: null,
+    fromLayer: false,
   };
 }
 
@@ -141,19 +177,22 @@ function findSheetOverlay(panel: HTMLElement): HTMLElement | null {
 }
 
 function attachScrollSettleTracking(panel: HTMLElement, session: SwipeSession): () => void {
-  const scroll = panel.querySelector(`[${BOTTOM_SHEET_SWIPE_SCROLL_ATTR}]`);
-  if (!(scroll instanceof HTMLElement)) return () => undefined;
-  const onScroll = () => {
-    if (scroll.scrollTop > 0) session.lastScrollAwayAt = performance.now();
+  const scrolls = panel.querySelectorAll(`[${BOTTOM_SHEET_SWIPE_SCROLL_ATTR}]`);
+  if (scrolls.length === 0) return () => undefined;
+  const onScroll = (event: Event) => {
+    const scroll = event.currentTarget;
+    if (scroll instanceof HTMLElement && scroll.scrollTop > 0) {
+      session.lastScrollAwayAt = performance.now();
+    }
   };
-  scroll.addEventListener('scroll', onScroll, { passive: true });
-  return () => scroll.removeEventListener('scroll', onScroll);
+  scrolls.forEach((scroll) => scroll.addEventListener('scroll', onScroll, { passive: true }));
+  return () => scrolls.forEach((scroll) => scroll.removeEventListener('scroll', onScroll));
 }
 
 function isScrollReadyForSwipe(panel: HTMLElement, session: SwipeSession): boolean {
-  if (!isBottomSheetScrollAtTop(panel)) return false;
-  const scroll = panel.querySelector(`[${BOTTOM_SHEET_SWIPE_SCROLL_ATTR}]`);
-  if (!(scroll instanceof HTMLElement)) return true;
+  if (!isBottomSheetScrollAtTop(panel, session.pointerTarget)) return false;
+  const scroll = resolveBottomSheetScrollRegion(panel, session.pointerTarget);
+  if (!scroll) return true;
   return performance.now() - session.lastScrollAwayAt >= BOTTOM_SHEET_SWIPE_TOP_SETTLE_MS;
 }
 
@@ -172,6 +211,8 @@ function handleSwipePointerDown(
   session.dragging = false;
   session.tracking = true;
   session.fromChrome = isBottomSheetChromeTarget(panel, event.target);
+  session.pointerTarget = event.target;
+  session.fromLayer = isBottomSheetLayerTarget(event.target);
 }
 
 function handleSwipePointerMove(
@@ -185,6 +226,7 @@ function handleSwipePointerMove(
   event.preventDefault();
   session.lastY = event.clientY;
   session.lastTime = event.timeStamp;
+  if (session.fromLayer) return;
   setBottomSheetSwipeVisuals(panel, session.overlay, clampSwipeOffset(deltaY));
 }
 
@@ -207,7 +249,9 @@ function tryBeginSwipe(
     return false;
   }
   session.dragging = true;
-  markSwipeState(panel, session.overlay, 'swiping');
+  if (!session.fromLayer) {
+    markSwipeState(panel, session.overlay, 'swiping');
+  }
   return true;
 }
 
@@ -229,13 +273,20 @@ function handleSwipePointerUp(
   session.tracking = false;
   session.dragging = false;
   session.pointerId = null;
+  const fromLayer = session.fromLayer;
+  session.fromLayer = false;
   if (!wasDragging) return;
   suppressNextClick(panel);
   const height = panel.getBoundingClientRect().height;
   if (shouldDismissBottomSheet(offsetY, velocityY, height)) {
+    if (fromLayer) {
+      findBottomSheetLayerClose(session.pointerTarget)?.click();
+      return;
+    }
     dismissBottomSheet(session, panel, onClose);
     return;
   }
+  if (fromLayer) return;
   snapBottomSheetClosed(panel, session.overlay);
 }
 

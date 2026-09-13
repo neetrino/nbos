@@ -6,7 +6,10 @@ import { Flame, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
+  QUICK_CREATE_TASK_CREATE_BTN_CLASS,
+  QUICK_CREATE_TASK_FOOTER_ACTIONS_CLASS,
   QUICK_CREATE_TASK_FOOTER_CLASS,
+  QUICK_CREATE_TASK_FOOTER_SECONDARY_CLASS,
   QUICK_CREATE_TASK_HEADER_ICONS_CLASS,
   QUICK_CREATE_TASK_TITLE_INPUT_CLASS,
   QUICK_CREATE_TASK_TITLE_ROW_CLASS,
@@ -115,37 +118,41 @@ export function QuickCreateTaskFooter({
   return (
     <div className={QUICK_CREATE_TASK_FOOTER_CLASS}>
       {actions}
-      <div className="ml-auto flex flex-wrap items-center gap-3">
+      <div className={QUICK_CREATE_TASK_FOOTER_ACTIONS_CLASS}>
         <Button
           type="button"
           size="sm"
-          className="h-9 rounded-lg px-5"
+          className={QUICK_CREATE_TASK_CREATE_BTN_CLASS}
           onClick={onCreate}
           disabled={saving || !canCreate}
         >
           {saving ? tCommon('creating') : tCommon('create')}
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="text-foreground h-9 px-2"
-          onClick={onCancel}
-          disabled={saving}
+        <div
+          className={cn(QUICK_CREATE_TASK_FOOTER_SECONDARY_CLASS, !onOpenFull && 'max-md:hidden')}
         >
-          {tCommon('cancel')}
-        </Button>
-        {onOpenFull ? (
           <Button
             type="button"
-            variant="link"
+            variant="ghost"
             size="sm"
-            className="text-muted-foreground h-9 px-0 text-sm font-normal"
-            onClick={onOpenFull}
+            className="text-foreground h-9 px-2 max-md:hidden"
+            onClick={onCancel}
+            disabled={saving}
           >
-            {t('task.fullForm')}
+            {tCommon('cancel')}
           </Button>
-        ) : null}
+          {onOpenFull ? (
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              className="text-muted-foreground h-9 px-0 text-sm font-normal"
+              onClick={onOpenFull}
+            >
+              {t('task.fullForm')}
+            </Button>
+          ) : null}
+        </div>
       </div>
     </div>
   );

@@ -65,6 +65,7 @@ function DialogContent({
   showCloseButton = true,
   forceNestedBackdrop = false,
   mobileSheet = true,
+  mobileBodyClassName,
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean;
@@ -78,6 +79,8 @@ function DialogContent({
    * Set false to keep a centered floating card on every viewport.
    */
   mobileSheet?: boolean;
+  /** Extra classes on the mobile sheet body (padding / overflow overrides). */
+  mobileBodyClassName?: string;
 }) {
   const isMobileViewport = useIsMobileViewport();
   const useSheet = mobileSheet && isMobileViewport;
@@ -102,7 +105,13 @@ function DialogContent({
         ref={popupRef}
       >
         {useSheet ? <DialogMobileSwipeChrome /> : null}
-        <div className={mobileSheet ? DIALOG_MOBILE_SHEET_BODY_CLASS : 'contents'} {...scrollAttr}>
+        <div
+          className={cn(
+            mobileSheet ? DIALOG_MOBILE_SHEET_BODY_CLASS : 'contents',
+            mobileBodyClassName,
+          )}
+          {...scrollAttr}
+        >
           {children}
         </div>
         {showCloseButton ? <DialogAbsoluteCloseButton /> : null}
