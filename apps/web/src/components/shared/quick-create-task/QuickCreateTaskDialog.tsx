@@ -54,7 +54,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const titleInputRef = useRef<HTMLTextAreaElement>(null);
   const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
-  useFocusElementWhenOpen(open, titleInputRef, QUICK_CREATE_TITLE_FOCUS_DELAY_MS);
+  useFocusElementWhenOpen(open, titleInputRef, QUICK_CREATE_TITLE_FOCUS_DELAY_MS, form.draftCycle);
   const fieldsLocked = form.saving || form.creatorBlocked;
 
   if (!open && (checklistOpen || projectOpen)) {

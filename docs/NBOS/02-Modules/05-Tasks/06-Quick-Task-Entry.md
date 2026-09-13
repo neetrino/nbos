@@ -172,11 +172,13 @@ After create:
 2. update the background Tasks view without a full reload;
 3. preserve existing ordering/filter rules as far as the created task belongs to the current scope;
 4. show success feedback;
-5. allow immediate `Open` / equivalent to inspect the created Task using the existing Task detail flow.
+5. reset the shared form and keep it open so the next task can be entered immediately;
+6. allow immediate `Open` / equivalent to close the form and inspect the created Task using the existing Task detail flow;
+7. Cancel / Close still reveals the Tasks surface.
+
+`/quick/task` must not close the create form after submit. Ordinary Tasks create still closes the dialog after success.
 
 Existing task-created synchronization should be reused or extended instead of inventing another page-specific event mechanism.
-
-The form should not silently close the whole installed Quick Action after submit.
 
 ---
 
@@ -251,6 +253,7 @@ Quick Task acceptance requires:
 - late identity/background data does not reset draft;
 - create uses normal API/RBAC;
 - newly created task reaches the background Tasks state;
+- after create the form resets and stays open for the next task;
 - close reveals Tasks and existing edit/detail behavior;
 - normal `/tasks` behavior has no regression;
 - normal NBOS PWA/install behavior has no regression;
