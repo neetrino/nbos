@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   useHeaderContextLayout,
   type HeaderContextContent,
@@ -9,6 +10,7 @@ import {
 } from '@/components/layout/header-context';
 import { MARKETING_HEADER_ZONE_ACCENTS } from '@/features/marketing/constants/marketing-header-zone-accents';
 import { MARKETING_HEADER_ZONES } from '@/features/marketing/constants/marketing-header-zones';
+import { marketingMessage } from '@/features/marketing/i18n/marketing-copy';
 import {
   isPathInModuleSection,
   MODULE_VISIT_REGISTRY,
@@ -23,6 +25,7 @@ function isMarketingHeaderContextPath(pathname: string): boolean {
 
 export function MarketingHeaderContextLayout() {
   const pathname = usePathname();
+  const t = useTranslations('marketing');
 
   useLayoutEffect(() => {
     writeModuleLastVisitFromPathname(pathname);
@@ -34,7 +37,7 @@ export function MarketingHeaderContextLayout() {
     }
 
     const items: HeaderNavItem[] = MARKETING_HEADER_ZONES.map((zone) => ({
-      label: zone.label,
+      label: marketingMessage(t, `nav.${zone.zone}`),
       href: readModuleSectionHref('marketing', zone.zone),
       isActive: (path) => isPathInModuleSection('marketing', path, zone.zone),
       accent: MARKETING_HEADER_ZONE_ACCENTS[zone.zone],
@@ -42,11 +45,11 @@ export function MarketingHeaderContextLayout() {
 
     return {
       kind: 'nav',
-      ariaLabel: 'Marketing areas',
+      ariaLabel: t('areasAria'),
       items,
       mobileVariant: 'tabs',
     };
-  }, [pathname]);
+  }, [pathname, t]);
 
   useHeaderContextLayout(content);
 

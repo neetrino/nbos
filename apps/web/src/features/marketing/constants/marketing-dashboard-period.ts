@@ -1,6 +1,14 @@
 /** Preset aligned with `04-Marketing-Analytics-and-KPI.md` time periods. */
 export type MarketingDashboardPeriodPreset = 'all' | 'week' | 'month' | 'prev_month' | 'custom';
 
+export const MARKETING_DASHBOARD_PERIOD_PRESETS: MarketingDashboardPeriodPreset[] = [
+  'all',
+  'week',
+  'month',
+  'prev_month',
+  'custom',
+];
+
 function startOfWeekMonday(d: Date): Date {
   const day = d.getDay();
   const diff = day === 0 ? -6 : 1 - day;
@@ -69,11 +77,3 @@ export function getMarketingDashboardQueryRange(
   const to = endOfDay(lastPrev);
   return { dateFrom: from.toISOString(), dateTo: to.toISOString() };
 }
-
-export const MARKETING_DASHBOARD_PERIOD_LABELS: Record<MarketingDashboardPeriodPreset, string> = {
-  all: 'All time',
-  week: 'This week',
-  month: 'This month',
-  prev_month: 'Previous month',
-  custom: 'Custom range',
-};

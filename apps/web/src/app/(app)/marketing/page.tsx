@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Megaphone, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   EmptyState,
   ErrorState,
@@ -34,6 +35,7 @@ import { matchesMarketingSearch } from '@/features/marketing/utils/matches-marke
 import type { MarketingAccount } from '@/lib/api/marketing';
 
 export default function MarketingPage() {
+  const t = useTranslations('marketing');
   const [activities, setActivities] = useState<MarketingActivity[]>([]);
   const [accounts, setAccounts] = useState<MarketingAccount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +61,7 @@ export default function MarketingPage() {
       setAccounts(nextAccounts);
       setError(null);
     } catch {
-      setError('Marketing activities could not be loaded.');
+      setError(t('board.loadError'));
     } finally {
       setLoading(false);
     }
@@ -77,11 +79,11 @@ export default function MarketingPage() {
           activity.title,
           activity.description,
           activity.account?.name,
-          getMarketingLabel(MARKETING_CHANNELS, activity.channel),
-          getMarketingLabel(MARKETING_ACTIVITY_TYPES, activity.type),
+          getMarketingLabel('channels', activity.channel, t),
+          getMarketingLabel('activityType', activity.type, t),
         ),
       ),
-    [activities, search],
+    [activities, search, t],
   );
 
   const columns = useMemo(() => {
@@ -96,20 +98,20 @@ export default function MarketingPage() {
     }
     return MARKETING_ACTIVITY_STATUSES.map((row) => ({
       status: row.value,
-      label: row.label,
+      label: getMarketingLabel('activityStatus', row.value, t),
       items: byStatus.get(row.value) ?? [],
     }));
-  }, [filteredActivities]);
+  }, [filteredActivities, t]);
 
   const moduleHeroSlots = useMemo(
     () => ({
       search: buildMarketingHeroSearch({
         search,
         onSearchChange: setSearch,
-        searchPlaceholder: 'Search activities by title, channel, type…',
+        searchPlaceholder: t('board.searchPlaceholder'),
       }),
     }),
-    [search],
+    [search, t],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -140,15 +142,15 @@ export default function MarketingPage() {
         className="border-border bg-card grid gap-4 rounded-2xl border p-5 lg:grid-cols-6"
       >
         <div className="space-y-1.5 lg:col-span-2">
-          <Label>Activity title</Label>
+          <Label>{t('board.title')}</Label>
           <Input
             value={form.title}
             onChange={(event) => setForm({ ...form, title: event.target.value })}
-            placeholder="Instagram Spring Promo"
+            placeholder={t('board.titlePlaceholder')}
           />
         </div>
         <div className="space-y-1.5">
-          <Label>Channel</Label>
+          <Label>{t('board.channel')}</Label>
           <Select
             value={form.channel}
             onValueChange={(channel) => setForm({ ...form, channel: channel ?? form.channel })}
@@ -159,14 +161,14 @@ export default function MarketingPage() {
             <SelectContent>
               {MARKETING_CHANNELS.map((channel) => (
                 <SelectItem key={channel.value} value={channel.value}>
-                  {channel.label}
+                  {getMarketingLabel('channels', channel.value, t)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label>Type</Label>
+          <Label>{t('board.type')}</Label>
           <Select
             value={form.type}
             onValueChange={(type) => setForm({ ...form, type: type ?? form.type })}
@@ -177,7 +179,7 @@ export default function MarketingPage() {
             <SelectContent>
               {MARKETING_ACTIVITY_TYPES.map((type) => (
                 <SelectItem key={type.value} value={type.value}>
-                  {type.label}
+                  {getMarketingLabel('activityType', type.value, t)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -185,15 +187,15 @@ export default function MarketingPage() {
         </div>
         <div className="space-y-1.5">
           <NbosMoneyInput
-            label="Budget"
+            label={t('board.budget')}
             value={form.budget}
             onChange={(budget) => setForm({ ...form, budget })}
-            placeholder="AMD"
+            placeholder={t('board.budgetPlaceholder')}
           />
         </div>
         <div className="space-y-1.5">
           <Label className="invisible select-none" aria-hidden>
-            Add
+            {t('board.add')}
           </Label>
           <Button
             type="submit"
@@ -202,15 +204,15 @@ export default function MarketingPage() {
             className="w-full"
           >
             <Plus size={16} />
-            {saving ? 'Adding...' : 'Add'}
+            {saving ? t('board.adding') : t('board.add')}
           </Button>
         </div>
         <div className="space-y-1.5 lg:col-span-6">
-          <Label>Description</Label>
+          <Label>{t('board.description')}</Label>
           <Textarea
             value={form.description}
             onChange={(event) => setForm({ ...form, description: event.target.value })}
-            placeholder="Campaign goal, creative notes, audience, expected launch..."
+            placeholder={t('board.descriptionPlaceholder')}
           />
         </div>
       </form>
@@ -222,14 +224,14 @@ export default function MarketingPage() {
       ) : activities.length === 0 ? (
         <EmptyState
           icon={Megaphone}
-          title="No marketing activities yet"
-          description="Create the first activity to start building the Marketing Board."
+          title={t('board.emptyTitle')}
+          description={t('board.emptyDescription')}
         />
       ) : filteredActivities.length === 0 ? (
         <EmptyState
           icon={Megaphone}
-          title="No matching activities"
-          description="Try a different search term."
+          title={t('board.noMatchTitle')}
+          description={t('board.noMatchDescription')}
         />
       ) : (
         <div className="flex gap-4 overflow-x-auto pb-2">
@@ -244,7 +246,7 @@ export default function MarketingPage() {
               </div>
               <div className="flex flex-col gap-3 p-3">
                 {column.items.length === 0 ? (
-                  <p className="text-muted-foreground px-1 text-xs">No activities in this stage.</p>
+                  <p className="text-muted-foreground px-1 text-xs">{t('board.emptyColumn')}</p>
                 ) : (
                   column.items.map((activity) => (
                     <div
@@ -255,35 +257,58 @@ export default function MarketingPage() {
                         <div>
                           <p className="font-semibold">{activity.title}</p>
                           <p className="text-muted-foreground text-sm">
-                            {getMarketingLabel(MARKETING_CHANNELS, activity.channel)}
+                            {getMarketingLabel('channels', activity.channel, t)}
                           </p>
                         </div>
                         <StatusBadge
-                          label={getMarketingLabel(MARKETING_ACTIVITY_STATUSES, activity.status)}
+                          label={getMarketingLabel('activityStatus', activity.status, t)}
                           variant={activity.status === 'LAUNCHED' ? 'green' : 'blue'}
                         />
                       </div>
                       <p className="text-muted-foreground mt-3 line-clamp-3 text-sm">
-                        {activity.description ?? 'No description yet.'}
+                        {activity.description ?? t('board.noDescription')}
                       </p>
                       <div className="text-muted-foreground mt-4 grid grid-cols-2 gap-2 text-xs">
                         <span>
-                          Type: {getMarketingLabel(MARKETING_ACTIVITY_TYPES, activity.type)}
+                          {t('board.typeLabel', {
+                            type: getMarketingLabel('activityType', activity.type, t),
+                          })}
                         </span>
                         <span>
-                          Budget:{' '}
-                          {activity.budget ? `${activity.budget} ${activity.currency}` : '—'}
+                          {t('board.budgetLabel', {
+                            amount: activity.budget
+                              ? `${activity.budget} ${activity.currency}`
+                              : '—',
+                          })}
                         </span>
-                        <span>Account: {activity.account?.name ?? 'Not linked'}</span>
-                        <span>Expense: {activity.expenseCardId ? 'Linked' : 'Missing link'}</span>
-                        <span>Start: {activity.startDate?.slice(0, 10) ?? 'Not scheduled'}</span>
-                        <span>Pay by: {activity.expectedPayAt?.slice(0, 10) ?? 'Not set'}</span>
+                        <span>
+                          {t('board.accountLabel', {
+                            name: activity.account?.name ?? t('board.notLinked'),
+                          })}
+                        </span>
+                        <span>
+                          {t('board.expense', {
+                            status: activity.expenseCardId
+                              ? t('board.expenseLinked')
+                              : t('board.expenseMissing'),
+                          })}
+                        </span>
+                        <span>
+                          {t('board.start', {
+                            date: activity.startDate?.slice(0, 10) ?? t('board.notScheduled'),
+                          })}
+                        </span>
+                        <span>
+                          {t('board.payBy', {
+                            date: activity.expectedPayAt?.slice(0, 10) ?? t('board.notSet'),
+                          })}
+                        </span>
                       </div>
                       <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-muted-foreground text-xs">
                           {activity.expenseCardId
-                            ? 'Finance expense proposed. Payment is controlled in Finance.'
-                            : 'Without a Finance expense link, paid spend analytics stay incomplete.'}
+                            ? t('board.financeProposed')
+                            : t('board.financeMissing')}
                         </p>
                         <MarketingLaunchDialog
                           activity={activity}

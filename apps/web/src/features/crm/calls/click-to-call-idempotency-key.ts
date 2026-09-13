@@ -59,8 +59,7 @@ export function subscribeClickToCallKeyChanges(listener: () => void): () => void
   };
 }
 
-export const CLICK_TO_CALL_NEW_CALL_WARNING =
-  'The previous call may still be in progress. A new call may dial again. Continue?';
+export const CLICK_TO_CALL_NEW_CALL_WARNING_KEY = 'calls.confirmRedial';
 
 /** Clears the stored key after the user confirms a new conscious click. */
 export function requestNewClickToCallKey(
@@ -68,8 +67,9 @@ export function requestNewClickToCallKey(
   targetType: string,
   targetId: string,
   confirm: (message: string) => boolean,
+  warningMessage: string,
 ): boolean {
-  if (!confirm(CLICK_TO_CALL_NEW_CALL_WARNING)) return false;
+  if (!confirm(warningMessage)) return false;
   clearClickToCallIdempotencyKey(store, targetType, targetId);
   return true;
 }

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { GitBranch, Handshake, Megaphone } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   EmptyState,
   ErrorState,
@@ -18,11 +19,9 @@ import type { Lead } from '@/lib/api/leads';
 import { EntityLeadSheetDeepLink } from '@/features/crm/components/EntityLeadSheetDeepLink';
 import { AttributionHeroSearch } from '@/features/marketing/components/AttributionHeroSearch';
 import { AttributionReviewCard } from '@/features/marketing/components/AttributionReviewCard';
-import {
-  buildAttributionStatusOptions,
-  resolveAttributionStatusLabel,
-} from '@/features/marketing/constants/marketing-attribution-filters';
+import { buildAttributionStatusOptions } from '@/features/marketing/constants/marketing-attribution-filters';
 import { matchesMarketingSearch } from '@/features/marketing/utils/matches-marketing-search';
+import { resolveAttributionStatusLabel } from '@/features/marketing/i18n/marketing-copy';
 import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilterField } from '@/lib/persisted-client-state';
 
@@ -33,12 +32,9 @@ interface AttributionReview {
   deals: Deal[];
 }
 
-const ATTRIBUTION_ENTITY_TABS = [
-  { value: 'leads' as const, label: 'Leads', icon: Megaphone },
-  { value: 'deals' as const, label: 'Deals', icon: Handshake },
-];
-
 export default function AttributionReviewPage() {
+  const t = useTranslations('marketing');
+  const tCrm = useTranslations('crm');
   const [review, setReview] = useState<AttributionReview>({ leads: [], deals: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,11 +54,11 @@ export default function AttributionReviewPage() {
       setReview((await marketingApi.getAttributionReview()) as AttributionReview);
       setError(null);
     } catch {
-      setError('Attribution review could not be loaded.');
+      setError(t('attribution.loadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   const refreshReviewQuiet = useCallback(async () => {
     try {
@@ -82,8 +78,8 @@ export default function AttributionReviewPage() {
       activeTab === 'leads'
         ? review.leads.map((lead) => lead.status)
         : review.deals.map((deal) => deal.status);
-    return buildAttributionStatusOptions(statuses);
-  }, [activeTab, review]);
+    return buildAttributionStatusOptions(statuses, tCrm);
+  }, [activeTab, review, tCrm]);
 
   useEffect(() => {
     if (!statusFilter) return;
@@ -101,25 +97,32 @@ export default function AttributionReviewPage() {
         item.code,
         item.source,
         item.sourceDetail,
-        resolveAttributionStatusLabel(item.status),
+        resolveAttributionStatusLabel(tCrm, item.status),
       );
     };
     return {
       leads: review.leads.filter(filterItem),
       deals: review.deals.filter(filterItem),
     };
-  }, [review, search, statusFilter]);
+  }, [review, search, statusFilter, tCrm]);
 
   const activeItems = activeTab === 'leads' ? filteredReview.leads : filteredReview.deals;
   const activeTotal = activeTab === 'leads' ? review.leads.length : review.deals.length;
 
   const tabOptions = useMemo(
-    () =>
-      ATTRIBUTION_ENTITY_TABS.map((tab) => ({
-        ...tab,
-        label: `${tab.label} (${tab.value === 'leads' ? review.leads.length : review.deals.length})`,
-      })),
-    [review.deals.length, review.leads.length],
+    () => [
+      {
+        value: 'leads' as const,
+        label: `${t('attribution.leads')} (${review.leads.length})`,
+        icon: Megaphone,
+      },
+      {
+        value: 'deals' as const,
+        label: `${t('attribution.deals')} (${review.deals.length})`,
+        icon: Handshake,
+      },
+    ],
+    [review.deals.length, review.leads.length, t],
   );
 
   const handleOpenItem = useCallback(
@@ -142,7 +145,7 @@ export default function AttributionReviewPage() {
           value={activeTab}
           onChange={setActiveTab}
           options={tabOptions}
-          ariaLabel="Attribution entity"
+          ariaLabel={t('attribution.entityAria')}
         />
       ),
       search: (
@@ -159,23 +162,23 @@ export default function AttributionReviewPage() {
           <Link
             href="/crm/deals"
             className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'h-10 gap-1.5 px-3')}
-            aria-label="Deals pipeline"
+            aria-label={t('attribution.dealsPipelineAria')}
           >
             <Handshake size={16} aria-hidden />
-            Deals
+            {t('attribution.deals')}
           </Link>
           <Link
             href="/crm/leads"
             className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'h-10 gap-1.5 px-3')}
-            aria-label="Leads pipeline"
+            aria-label={t('attribution.leadsPipelineAria')}
           >
             <Megaphone size={16} aria-hidden />
-            Leads
+            {t('attribution.leads')}
           </Link>
         </div>
       ),
     }),
-    [activeTab, search, setStatusFilter, statusFilter, statusOptions, tabOptions],
+    [activeTab, search, setStatusFilter, statusFilter, statusOptions, tabOptions, t],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -191,26 +194,26 @@ export default function AttributionReviewPage() {
       ) : totalIssues === 0 ? (
         <EmptyState
           icon={GitBranch}
-          title="Attribution is clean"
-          description="No leads or deals currently need manual source cleanup."
+          title={t('attribution.cleanTitle')}
+          description={t('attribution.cleanDescription')}
         />
       ) : activeTotal === 0 ? (
         <EmptyState
           icon={activeTab === 'leads' ? Megaphone : Handshake}
           title={
-            activeTab === 'leads' ? 'No lead attribution issues' : 'No deal attribution issues'
+            activeTab === 'leads'
+              ? t('attribution.noLeadIssuesTitle')
+              : t('attribution.noDealIssuesTitle')
           }
           description={
-            activeTab === 'leads'
-              ? 'Leads look clean. Check the Deals tab for remaining issues.'
-              : 'Deals look clean. Check the Leads tab for remaining issues.'
+            activeTab === 'leads' ? t('attribution.checkDealsTab') : t('attribution.checkLeadsTab')
           }
         />
       ) : activeItems.length === 0 ? (
         <EmptyState
           icon={GitBranch}
-          title="No matching attribution issues"
-          description="Try a different search or status filter."
+          title={t('attribution.noMatchTitle')}
+          description={t('attribution.noMatchDescription')}
         />
       ) : (
         <ReviewList
@@ -218,6 +221,7 @@ export default function AttributionReviewPage() {
           kind={activeTab === 'leads' ? 'Lead' : 'Deal'}
           cardsPerRow={2}
           onOpenItem={handleOpenItem}
+          describeIssue={describeIssue}
         />
       )}
 
@@ -254,12 +258,16 @@ function ReviewList({
   kind,
   onOpenItem,
   cardsPerRow = 1,
+  describeIssue,
 }: {
   items: Array<Lead | Deal>;
   kind: 'Lead' | 'Deal';
   onOpenItem: (item: Lead | Deal) => void;
   cardsPerRow?: 1 | 2;
+  describeIssue: (item: Lead | Deal, t: ReturnType<typeof useTranslations<'marketing'>>) => string;
 }) {
+  const t = useTranslations('marketing');
+
   return (
     <div
       className={cn(
@@ -272,7 +280,7 @@ function ReviewList({
           key={item.id}
           item={item}
           kind={kind}
-          issueDescription={describeIssue(item)}
+          issueDescription={describeIssue(item, t)}
           onOpen={onOpenItem}
         />
       ))}
@@ -280,11 +288,15 @@ function ReviewList({
   );
 }
 
-function describeIssue(item: Lead | Deal): string {
-  if (!item.source) return 'From is missing.';
-  if (item.source === 'MARKETING' && !item.sourceDetail) return 'Where is missing.';
-  if (item.source === 'MARKETING') return 'Which one is missing for this marketing channel.';
-  if (item.source === 'PARTNER') return 'Partner source is missing.';
-  if (item.source === 'CLIENT') return 'Client/referral source is missing.';
-  return 'Attribution needs review.';
+function describeIssue(
+  item: Lead | Deal,
+  t: ReturnType<typeof useTranslations<'marketing'>>,
+): string {
+  if (!item.source) return t('attribution.issues.fromMissing');
+  if (item.source === 'MARKETING' && !item.sourceDetail)
+    return t('attribution.issues.whereMissing');
+  if (item.source === 'MARKETING') return t('attribution.issues.whichOneMissing');
+  if (item.source === 'PARTNER') return t('attribution.issues.partnerMissing');
+  if (item.source === 'CLIENT') return t('attribution.issues.clientMissing');
+  return t('attribution.issues.needsReview');
 }

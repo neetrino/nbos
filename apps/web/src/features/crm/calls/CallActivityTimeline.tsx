@@ -1,6 +1,7 @@
 'use client';
 
 import { Phone } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { CallActivityItem } from './CallActivityItem';
 import { groupCallActivitiesByDay } from './group-call-activities';
 import { useCallActivities, type CallActivityScope } from './use-call-activities';
@@ -10,14 +11,19 @@ export function CallActivityTimeline(props: {
   emptyTitle?: string;
   emptyDescription: string;
 }) {
-  const { items, loading, error } = useCallActivities(props.scope);
+  const t = useTranslations('crm');
+  const { items, loading, errorKey } = useCallActivities(props.scope);
 
   if (loading) {
-    return <p className="text-muted-foreground py-8 text-center text-sm">Loading activities…</p>;
+    return (
+      <p className="text-muted-foreground py-8 text-center text-sm">
+        {t('calls.loadingActivities')}
+      </p>
+    );
   }
 
-  if (error) {
-    return <p className="text-destructive py-8 text-center text-sm">{error}</p>;
+  if (errorKey) {
+    return <p className="text-destructive py-8 text-center text-sm">{t(errorKey as never)}</p>;
   }
 
   if (items.length === 0) {
@@ -27,7 +33,7 @@ export function CallActivityTimeline(props: {
           <Phone size={24} className="text-stone-400" />
         </div>
         <h3 className="text-foreground mb-1.5 text-sm font-semibold">
-          {props.emptyTitle ?? 'No activities yet'}
+          {props.emptyTitle ?? t('calls.noActivities')}
         </h3>
         <p className="text-muted-foreground max-w-[280px] text-xs leading-relaxed">
           {props.emptyDescription}

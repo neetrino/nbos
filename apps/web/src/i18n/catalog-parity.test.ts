@@ -20,6 +20,7 @@ import enSearch from '../messages/en/search.json';
 import enTasks from '../messages/en/tasks.json';
 import enQuick from '../messages/en/quick.json';
 import enChecklist from '../messages/en/checklist.json';
+import enMarketing from '../messages/en/marketing.json';
 import ruAccount from '../messages/ru/account.json';
 import ruCommon from '../messages/ru/common.json';
 import ruDashboard from '../messages/ru/dashboard.json';
@@ -41,6 +42,7 @@ import ruSearch from '../messages/ru/search.json';
 import ruTasks from '../messages/ru/tasks.json';
 import ruQuick from '../messages/ru/quick.json';
 import ruChecklist from '../messages/ru/checklist.json';
+import ruMarketing from '../messages/ru/marketing.json';
 import { flattenMessageKeys } from './flatten-messages';
 import { mergeMessages } from './merge-messages';
 
@@ -81,6 +83,7 @@ describe('completed i18n catalogs', () => {
     );
     expect(flattenMessageKeys(enQuick).sort()).toEqual(flattenMessageKeys(ruQuick).sort());
     expect(flattenMessageKeys(enChecklist).sort()).toEqual(flattenMessageKeys(ruChecklist).sort());
+    expect(flattenMessageKeys(enMarketing).sort()).toEqual(flattenMessageKeys(ruMarketing).sort());
   });
 
   it('falls back to English when a Russian string is missing', () => {
@@ -179,5 +182,9 @@ describe('completed i18n catalogs', () => {
     expect(ruChecklist.evidence.attachments).toContain('count');
     expect(enChecklist.sheet.complete.length).toBeGreaterThan(0);
     expect(ruChecklist.sheet.complete.length).toBeGreaterThan(0);
+    expect(enMarketing.title.length).toBeGreaterThan(0);
+    expect(ruMarketing.title.length).toBeGreaterThan(0);
+    expect(enCrm.calls.incomingCall).toContain('{phone}');
+    expect(ruCrm.calls.incomingCall).toContain('{phone}');
   });
 });

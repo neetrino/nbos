@@ -5,6 +5,8 @@ import { callsApi, type CallActivity } from '@/lib/api/calls';
 
 const CALL_ACTIVITY_PAGE_SIZE = 50;
 
+export const CALL_ACTIVITIES_LOAD_FAILED_KEY = 'calls.loadActivitiesFailed';
+
 export type CallActivityScope =
   | { parent: 'lead'; id: string }
   | { parent: 'contact'; id: string }
@@ -13,7 +15,7 @@ export type CallActivityScope =
 export function useCallActivities(scope: CallActivityScope) {
   const [items, setItems] = useState<CallActivity[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
   const { parent, id } = scope;
 
   useEffect(() => {
@@ -30,11 +32,11 @@ export function useCallActivities(scope: CallActivityScope) {
         const data = await callsApi.list({ ...query, page: 1, pageSize: CALL_ACTIVITY_PAGE_SIZE });
         if (cancelled) return;
         setItems(data.items);
-        setError(null);
+        setErrorKey(null);
       } catch {
         if (cancelled) return;
         setItems([]);
-        setError('Could not load call activities.');
+        setErrorKey(CALL_ACTIVITIES_LOAD_FAILED_KEY);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -45,5 +47,5 @@ export function useCallActivities(scope: CallActivityScope) {
     };
   }, [id, parent]);
 
-  return { items, loading, error };
+  return { items, loading, errorKey };
 }

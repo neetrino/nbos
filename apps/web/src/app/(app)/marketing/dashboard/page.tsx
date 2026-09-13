@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AreaChart, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
 import { marketingApi, type MarketingDashboardSummary } from '@/lib/api/marketing';
 import { MarketingDashboardHeroSearch } from '@/features/marketing/components/MarketingDashboardHeroSearch';
@@ -10,9 +11,11 @@ import {
   type MarketingDashboardPeriodPreset,
 } from '@/features/marketing/constants/marketing-dashboard-period';
 import { matchesMarketingSearch } from '@/features/marketing/utils/matches-marketing-search';
+import type { MarketingTranslate } from '@/features/marketing/i18n/marketing-copy';
 import { AMD_CURRENCY_SYMBOL, formatGroupedNumber, formatMoneyDram } from '@/lib/format/money';
 
 export default function MarketingDashboardPage() {
+  const t = useTranslations('marketing');
   const [summary, setSummary] = useState<MarketingDashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +31,7 @@ export default function MarketingDashboardPage() {
 
   const fetchDashboard = useCallback(async () => {
     if (periodPreset === 'custom' && !queryRange) {
-      setError('Choose a valid custom date range (from and to).');
+      setError(t('dashboard.customRangeError'));
       setSummary(null);
       setLoading(false);
       return;
@@ -38,11 +41,11 @@ export default function MarketingDashboardPage() {
       setSummary(await marketingApi.getDashboardSummary(queryRange));
       setError(null);
     } catch {
-      setError('Marketing dashboard could not be loaded.');
+      setError(t('dashboard.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [periodPreset, queryRange]);
+  }, [periodPreset, queryRange, t]);
 
   useEffect(() => {
     void fetchDashboard();
@@ -77,12 +80,9 @@ export default function MarketingDashboardPage() {
       ) : error ? (
         <ErrorState description={error} onRetry={() => void fetchDashboard()} />
       ) : summary ? (
-        <MarketingDashboardContent summary={summary} search={search} />
+        <MarketingDashboardContent summary={summary} search={search} t={t} />
       ) : (
-        <ErrorState
-          description="Marketing dashboard returned no summary."
-          onRetry={() => void fetchDashboard()}
-        />
+        <ErrorState description={t('dashboard.noSummary')} onRetry={() => void fetchDashboard()} />
       )}
     </div>
   );
@@ -91,30 +91,43 @@ export default function MarketingDashboardPage() {
 function MarketingDashboardContent({
   summary,
   search,
+  t,
 }: {
   summary: MarketingDashboardSummary;
   search: string;
+  t: MarketingTranslate;
 }) {
   const metrics: Array<{ label: string; value: number | string; money?: boolean }> = [
-    { label: 'Activities', value: summary.totals.activities },
-    { label: 'Launched now', value: summary.totals.launchedActivities },
+    { label: t('dashboard.metrics.activities'), value: summary.totals.activities },
+    { label: t('dashboard.metrics.launchedNow'), value: summary.totals.launchedActivities },
     {
-      label: 'Finance-linked activities',
+      label: t('dashboard.metrics.financeLinked'),
       value: summary.totals.activitiesWithFinanceExpense,
     },
-    { label: 'Attributed leads', value: summary.totals.attributedLeads },
-    { label: 'Attributed deals', value: summary.totals.attributedDeals },
-    { label: 'Won attributed deals', value: summary.totals.wonAttributedDeals },
+    { label: t('dashboard.metrics.attributedLeads'), value: summary.totals.attributedLeads },
+    { label: t('dashboard.metrics.attributedDeals'), value: summary.totals.attributedDeals },
+    { label: t('dashboard.metrics.wonAttributedDeals'), value: summary.totals.wonAttributedDeals },
     {
-      label: 'Paid attributed revenue',
+      label: t('dashboard.metrics.paidAttributedRevenue'),
       value: summary.money.paidRevenue,
       money: true,
     },
   ].filter((metric) => matchesMarketingSearch(search, metric.label));
 
-  const showSpend = matchesMarketingSearch(search, 'Spend and revenue signals', 'spend', 'revenue');
-  const showEfficiency = matchesMarketingSearch(search, 'CPL', 'ROI', 'ROAS', 'CAC', 'efficiency');
-  const showQuality = matchesMarketingSearch(search, 'Data quality', 'warnings', 'finance');
+  const spendTitle = t('dashboard.spend.title');
+  const efficiencyTitle = t('dashboard.efficiency.title');
+  const qualityTitle = t('dashboard.quality.title');
+  const showSpend = matchesMarketingSearch(search, spendTitle, 'spend', 'revenue');
+  const showEfficiency = matchesMarketingSearch(
+    search,
+    efficiencyTitle,
+    'CPL',
+    'ROI',
+    'ROAS',
+    'CAC',
+    'efficiency',
+  );
+  const showQuality = matchesMarketingSearch(search, qualityTitle, 'warnings', 'finance');
 
   return (
     <>
@@ -132,9 +145,9 @@ function MarketingDashboardContent({
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        {showSpend ? <SpendReadinessCard summary={summary} /> : null}
-        {showEfficiency ? <EfficiencyCard summary={summary} /> : null}
-        {showQuality ? <DataQualityCard summary={summary} /> : null}
+        {showSpend ? <SpendReadinessCard summary={summary} t={t} /> : null}
+        {showEfficiency ? <EfficiencyCard summary={summary} t={t} /> : null}
+        {showQuality ? <DataQualityCard summary={summary} t={t} /> : null}
       </div>
     </>
   );
@@ -174,57 +187,68 @@ function MetricCard({
   );
 }
 
-function SpendReadinessCard({ summary }: { summary: MarketingDashboardSummary }) {
+function SpendReadinessCard({
+  summary,
+  t,
+}: {
+  summary: MarketingDashboardSummary;
+  t: MarketingTranslate;
+}) {
   return (
     <div className="border-border bg-card rounded-2xl border p-5">
       <h2 className="mb-3 flex items-center gap-2 font-semibold">
         <AreaChart size={18} />
-        Spend and revenue signals
+        {t('dashboard.spend.title')}
       </h2>
       <div className="space-y-2 text-sm">
         <SummaryRow
-          label="Planned budgets (activities)"
+          label={t('dashboard.spend.plannedBudgets')}
           value={formatMoney(summary.money.plannedSpend)}
         />
         <SummaryRow
-          label="Paid marketing spend (Finance)"
+          label={t('dashboard.spend.paidMarketingSpend')}
           value={
             summary.money.roiMetricsAvailable
               ? formatMoney(summary.money.paidMarketingSpend)
-              : 'No spend data'
+              : t('dashboard.spend.noSpendData')
           }
         />
         <SummaryRow
-          label="Paid attributed revenue"
+          label={t('dashboard.spend.paidAttributedRevenue')}
           value={formatMoney(summary.money.paidRevenue)}
         />
-        <SummaryRow label="Missing finance links" value={summary.totals.missingFinanceLinks} />
+        <SummaryRow
+          label={t('dashboard.spend.missingFinanceLinks')}
+          value={summary.totals.missingFinanceLinks}
+        />
       </div>
       <p className="text-muted-foreground mt-3 text-xs">
-        Paid marketing spend sums Finance expense payments for cards and plans linked from
-        Marketing. Revenue uses real invoice payments on attributed deals.
-        {summary.period
-          ? ' For this period: leads (by creation), deals created in range, won deals with payments in range, revenue, and spend follow the applied dates. Planned budgets and missing Finance link counts stay workspace-wide.'
-          : null}
+        {t('dashboard.spend.footnote')}
+        {summary.period ? t('dashboard.spend.footnotePeriod') : null}
       </p>
     </div>
   );
 }
 
-function EfficiencyCard({ summary }: { summary: MarketingDashboardSummary }) {
+function EfficiencyCard({
+  summary,
+  t,
+}: {
+  summary: MarketingDashboardSummary;
+  t: MarketingTranslate;
+}) {
   if (!summary.money.roiMetricsAvailable) {
     return (
       <div className="border-border bg-card rounded-2xl border p-5">
         <h2 className="mb-3 flex items-center gap-2 font-semibold">
           <AreaChart size={18} />
-          CPL / ROI snapshot
+          {t('dashboard.efficiency.title')}
         </h2>
         <p className="text-muted-foreground text-sm">
-          Cost metrics (CPL, ROAS, net return) are hidden until Finance records paid marketing spend
-          on linked expense cards or expense plans.
+          {t('dashboard.efficiency.hiddenUntilSpend')}
         </p>
         <p className="text-muted-foreground mt-3 text-xs">
-          Planned budgets alone are not used as spend for ROI.
+          {t('dashboard.efficiency.plannedBudgetsNote')}
         </p>
       </div>
     );
@@ -235,14 +259,13 @@ function EfficiencyCard({ summary }: { summary: MarketingDashboardSummary }) {
       <div className="border-border bg-card rounded-2xl border p-5">
         <h2 className="mb-3 flex items-center gap-2 font-semibold">
           <AreaChart size={18} />
-          CPL / ROI snapshot
+          {t('dashboard.efficiency.title')}
         </h2>
         <p className="text-muted-foreground text-sm">
-          {summary.efficiency.reason ??
-            'ROI and CPL stay hidden until marketing spend coverage is complete in Finance.'}
+          {summary.efficiency.reason ?? t('dashboard.efficiency.hiddenUntilSpend')}
         </p>
         <p className="text-muted-foreground mt-3 text-xs">
-          Partial payment totals are not shown as CPL or ROI.
+          {t('dashboard.efficiency.partialPaymentsNote')}
         </p>
       </div>
     );
@@ -252,59 +275,79 @@ function EfficiencyCard({ summary }: { summary: MarketingDashboardSummary }) {
     <div className="border-border bg-card rounded-2xl border p-5">
       <h2 className="mb-3 flex items-center gap-2 font-semibold">
         <AreaChart size={18} />
-        CPL / ROI snapshot
+        {t('dashboard.efficiency.title')}
       </h2>
       <div className="space-y-2 text-sm">
-        <SummaryRow label="ROAS" value={formatRatio(summary.money.roas)} />
-        <SummaryRow label="Net return" value={formatOptionalMoney(summary.money.netReturn)} />
         <SummaryRow
-          label="Cost per attributed lead (CPL)"
-          value={formatOptionalMoney(summary.money.costPerAttributedLead)}
+          label={t('dashboard.efficiency.roas')}
+          value={formatRatio(summary.money.roas, t)}
         />
         <SummaryRow
-          label="Cost per won attributed deal (CAC)"
-          value={formatOptionalMoney(summary.money.costPerWonDeal)}
+          label={t('dashboard.efficiency.netReturn')}
+          value={formatOptionalMoney(summary.money.netReturn, t)}
+        />
+        <SummaryRow
+          label={t('dashboard.efficiency.cpl')}
+          value={formatOptionalMoney(summary.money.costPerAttributedLead, t)}
+        />
+        <SummaryRow
+          label={t('dashboard.efficiency.cac')}
+          value={formatOptionalMoney(summary.money.costPerWonDeal, t)}
         />
       </div>
       <p className="text-muted-foreground mt-3 text-xs">
-        Metrics use paid marketing spend from Finance and paid attributed revenue.
+        {t('dashboard.efficiency.metricsFootnote')}
       </p>
     </div>
   );
 }
 
-function DataQualityCard({ summary }: { summary: MarketingDashboardSummary }) {
+function DataQualityCard({
+  summary,
+  t,
+}: {
+  summary: MarketingDashboardSummary;
+  t: MarketingTranslate;
+}) {
   const hasWarnings = summary.warnings.length > 0;
   return (
     <div className="border-border bg-card rounded-2xl border p-5">
       <h2 className="mb-3 flex items-center gap-2 font-semibold">
         {hasWarnings ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}
-        Data quality
+        {t('dashboard.quality.title')}
       </h2>
-      {hasWarnings ? <WarningList warnings={summary.warnings} /> : <HealthyDataMessage />}
+      {hasWarnings ? (
+        <WarningList warnings={summary.warnings} t={t} />
+      ) : (
+        <HealthyDataMessage t={t} />
+      )}
     </div>
   );
 }
 
-function WarningList({ warnings }: { warnings: MarketingDashboardSummary['warnings'] }) {
+function WarningList({
+  warnings,
+  t,
+}: {
+  warnings: MarketingDashboardSummary['warnings'];
+  t: MarketingTranslate;
+}) {
   return (
     <div className="space-y-2">
       {warnings.map((warning) => (
         <div key={warning.code} className="rounded-lg border border-amber-200 bg-amber-50 p-3">
           <p className="text-sm font-medium text-amber-900">{warning.message}</p>
-          <p className="text-xs text-amber-700">Affected records: {warning.count}</p>
+          <p className="text-xs text-amber-700">
+            {t('dashboard.quality.affectedRecords', { count: warning.count })}
+          </p>
         </div>
       ))}
     </div>
   );
 }
 
-function HealthyDataMessage() {
-  return (
-    <p className="text-muted-foreground text-sm">
-      No missing Finance links detected for marketing accounts or paid activities.
-    </p>
-  );
+function HealthyDataMessage({ t }: { t: MarketingTranslate }) {
+  return <p className="text-muted-foreground text-sm">{t('dashboard.quality.healthy')}</p>;
 }
 
 function SummaryRow({ label, value }: { label: string; value: number | string }) {
@@ -320,13 +363,13 @@ function formatMoney(value: number) {
   return formatMoneyDram(value);
 }
 
-function formatOptionalMoney(value: number | null) {
-  return value === null ? 'Not enough data' : formatMoneyDram(value);
+function formatOptionalMoney(value: number | null, t: MarketingTranslate) {
+  return value === null ? t('dashboard.notEnoughData') : formatMoneyDram(value);
 }
 
-function formatRatio(value: number | null) {
+function formatRatio(value: number | null, t: MarketingTranslate) {
   if (value === null) {
-    return 'Not enough data';
+    return t('dashboard.notEnoughData');
   }
 
   return `${value.toFixed(2)}x`;

@@ -1,5 +1,7 @@
 import type { CallActivity } from '@/lib/api/calls';
 
+export const CALL_ACTIVITY_NEW_CALLER_KEY = 'calls.newCaller';
+
 export function isMissedCall(call: Pick<CallActivity, 'direction' | 'disposition'>): boolean {
   if (call.direction !== 'INBOUND' || !call.disposition) return false;
   const normalized = call.disposition.trim().toUpperCase().replace(/_/g, ' ');
@@ -8,7 +10,7 @@ export function isMissedCall(call: Pick<CallActivity, 'direction' | 'disposition
 
 export function callActivityPartyName(call: Pick<CallActivity, 'contactName'>): string {
   const name = call.contactName?.trim();
-  return name && name.length > 0 ? name : 'New caller';
+  return name && name.length > 0 ? name : CALL_ACTIVITY_NEW_CALLER_KEY;
 }
 
 export function formatCallActivityTime(iso: string): string {

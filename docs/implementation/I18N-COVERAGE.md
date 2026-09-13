@@ -24,30 +24,31 @@ This file is the working register for stages 0–5. It does not expand scope to 
 
 ## Namespace map
 
-| Namespace           | Catalog files                               | Owner after stage 1                                     |
-| ------------------- | ------------------------------------------- | ------------------------------------------------------- |
-| `common`            | `messages/{en,ru}/common.json`              | Grok (reference) then shared reads                      |
-| `account`           | `messages/{en,ru}/account.json`             | Grok (language) + Composer (menu/theme)                 |
-| `navigation`        | `messages/{en,ru}/navigation.json`          | Composer stage 2                                        |
-| `dashboard`         | `messages/{en,ru}/dashboard.json`           | Grok (one action) + Composer stage 2                    |
-| `dashboardDeskLine` | `messages/{en,ru}/dashboard-desk-line.json` | Composer stage 2                                        |
-| `forms`             | `messages/{en,ru}/forms.json`               | Composer stage 3 (Task/Meeting/Lead/Expense)            |
-| `hr`                | `messages/{en,ru}/hr.json`                  | Stage 6 employee sheet / My Account profile             |
-| `tasks`             | `messages/{en,ru}/tasks.json`               | Stage 6 Tasks list / filters / sheet chrome             |
-| `search`            | `messages/{en,ru}/search.json`              | Stage 6 Global Search panel                             |
-| `notifications`     | `messages/{en,ru}/notifications.json`       | Stage 6 inbox sheet + Notification Center               |
-| `workSpaces`        | `messages/{en,ru}/work-spaces.json`         | Stage 6 Work Spaces directory + detail + scrum/drive/AI |
-| `crm`               | `messages/{en,ru}/crm.json`                 | Stage 6 Leads + Deals + CRM nav/dashboard               |
-| `support`           | `messages/{en,ru}/support.json`             | Stage 6 Support tickets + Change Control chrome         |
-| `invoices`          | `messages/{en,ru}/invoices.json`            | Stage 6 Finance invoices list/sheet/create              |
-| `deliveryBoard`     | `messages/{en,ru}/delivery-board.json`      | Stage 6 Delivery Board list/hero + sheet chrome         |
-| `payroll`           | `messages/{en,ru}/payroll.json`             | Stage 6 Payroll runs + salary board chrome              |
-| `credentials`       | `messages/{en,ru}/credentials.json`         | Stage 6 Credentials vault + form chrome                 |
-| `expenses`          | `messages/{en,ru}/expenses.json`            | Stage 6 Pay Now / expense list + sheet                  |
-| `expensePlans`      | `messages/{en,ru}/expense-plans.json`       | Stage 6 Expense plans                                   |
-| `clientServices`    | `messages/{en,ru}/client-services.json`     | Stage 6 Client services                                 |
-| `quick`             | `messages/{en,ru}/quick.json`               | Quick Actions shell / Quick Task install copy           |
-| `checklist`         | `messages/{en,ru}/checklist.json`           | Shared checklist workbench row / sheet / evidence hints |
+| Namespace           | Catalog files                               | Owner after stage 1                                          |
+| ------------------- | ------------------------------------------- | ------------------------------------------------------------ |
+| `common`            | `messages/{en,ru}/common.json`              | Grok (reference) then shared reads                           |
+| `account`           | `messages/{en,ru}/account.json`             | Grok (language) + Composer (menu/theme)                      |
+| `navigation`        | `messages/{en,ru}/navigation.json`          | Composer stage 2                                             |
+| `dashboard`         | `messages/{en,ru}/dashboard.json`           | Grok (one action) + Composer stage 2                         |
+| `dashboardDeskLine` | `messages/{en,ru}/dashboard-desk-line.json` | Composer stage 2                                             |
+| `forms`             | `messages/{en,ru}/forms.json`               | Composer stage 3 (Task/Meeting/Lead/Expense)                 |
+| `hr`                | `messages/{en,ru}/hr.json`                  | Stage 6 employee sheet / My Account profile                  |
+| `tasks`             | `messages/{en,ru}/tasks.json`               | Stage 6 Tasks list / filters / sheet chrome                  |
+| `search`            | `messages/{en,ru}/search.json`              | Stage 6 Global Search panel                                  |
+| `notifications`     | `messages/{en,ru}/notifications.json`       | Stage 6 inbox sheet + Notification Center                    |
+| `workSpaces`        | `messages/{en,ru}/work-spaces.json`         | Stage 6 Work Spaces directory + detail + scrum/drive/AI      |
+| `crm`               | `messages/{en,ru}/crm.json`                 | Stage 6 Leads + Deals + CRM nav/dashboard                    |
+| `support`           | `messages/{en,ru}/support.json`             | Stage 6 Support tickets + Change Control chrome              |
+| `invoices`          | `messages/{en,ru}/invoices.json`            | Stage 6 Finance invoices list/sheet/create                   |
+| `deliveryBoard`     | `messages/{en,ru}/delivery-board.json`      | Stage 6 Delivery Board list/hero + sheet chrome              |
+| `payroll`           | `messages/{en,ru}/payroll.json`             | Stage 6 Payroll runs + salary board chrome                   |
+| `credentials`       | `messages/{en,ru}/credentials.json`         | Stage 6 Credentials vault + form chrome                      |
+| `expenses`          | `messages/{en,ru}/expenses.json`            | Stage 6 Pay Now / expense list + sheet                       |
+| `expensePlans`      | `messages/{en,ru}/expense-plans.json`       | Stage 6 Expense plans                                        |
+| `clientServices`    | `messages/{en,ru}/client-services.json`     | Stage 6 Client services                                      |
+| `quick`             | `messages/{en,ru}/quick.json`               | Quick Actions shell / Quick Task install copy                |
+| `checklist`         | `messages/{en,ru}/checklist.json`           | Shared checklist workbench row / sheet / evidence hints      |
+| `marketing`         | `messages/{en,ru}/marketing.json`           | Stage 6 Marketing board / attribution / dashboard / settings |
 
 Completed-namespace key parity (EN/RU) is enforced only for finished slices.
 
@@ -113,6 +114,8 @@ Lead **Full** button label is in scope; the Lead sheet it opens is not. Task `Fu
 | EmployeeSheet departments / lifecycle / directory | `EmployeeDepartmentsPanel`, onboarding/offboarding, terminate/reactivate, Team directory, create/invite, departments admin             | System chrome; names/emails/dept names stay user data; shared checklist row uses `checklist`                                      | `hr` / `checklist` / `common`     | en_ru  |
 | CRM Leads + Lead sheet                            | leads page, Lead sheet, Связать/merge, CreateDeal, CRM nav/dashboard                                                                   | System chrome; lead names/contacts stay user data; Active Call overlay still English                                              | `crm` / `common`                  | en_ru  |
 | CRM Deals + Deal sheet                            | deals page, Deal sheet (commercial/handoff/WhatsApp/files)                                                                             | System chrome; deal names/amounts stay user data                                                                                  | `crm` / `common`                  | en_ru  |
+| CRM calls                                         | Active Call overlay, click-to-call, activity timeline, recording player, contact calls tab                                             | System chrome; names/phones stay user data                                                                                        | `crm.calls` / `common`            | en_ru  |
+| Marketing                                         | board, attribution, dashboard, settings, launch dialog, header zones                                                                   | System chrome; activity titles/account names stay user data; reports Marketing tab still English                                  | `marketing` / `crm` / `common`    | en_ru  |
 | Support tickets                                   | Support page, board/list, sheet header/actions, create/escalate/status, Change Control chrome                                          | System chrome; ticket titles/messages stay user data; sheet body / technical dialog still English                                 | `support` / `common`              | en_ru  |
 | Invoices                                          | invoices page, kanban/table, sheet header/general/payments chrome, create, overdue reminders                                           | System chrome; amounts/company names stay user data; record-payment form / history tab still English                              | `invoices` / `common`             | en_ru  |
 | Delivery Board                                    | list/hero/filters, pipeline, detail sheet general chrome, action-bar, files toasts, hub lifecycle badges                               | System chrome; product/project names stay user data; product section chrome (Cards/List/counts) still English                     | `deliveryBoard` / `common`        | en_ru  |
@@ -186,7 +189,7 @@ Matches canon. Do not treat this as a behaviour change.
 - **Restore:** after the client session is authenticated, GET preferences; if it differs from SSR, refresh. Catch does not write `en`.
 - **Cache:** React `cache()` per request only. Preference is not a process-wide query key. Business query keys are unchanged.
 
-Still English: Marketing module, Active Call overlay, nested create dialogs, payroll month-compensation sheet / KPI essays, non-employee `Search {kind}s…`, feature-module dock item labels, some credential form-sheet leftovers. Auth pages, emails, PDF. HY switcher still off. Shared checklist workbench, Delivery action-bar/file toasts/hub lifecycle badges, payroll matrix cells/audit export, and credentials tiles/bulk/ENV are now EN/RU.
+Still English: nested create dialogs, payroll month-compensation sheet / KPI essays, non-employee `Search {kind}s…`, feature-module dock item labels, some credential form-sheet leftovers. Auth pages, emails, PDF. HY switcher still off. Marketing module chrome, Active Call overlay / click-to-call / call activity, shared checklist workbench, Delivery leftovers, payroll matrix, and credentials tiles/bulk/ENV are now EN/RU.
 
 ## Stage 5 report — 2026-09-12
 

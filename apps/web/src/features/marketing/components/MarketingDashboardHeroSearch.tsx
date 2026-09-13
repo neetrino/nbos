@@ -10,12 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { formatMarketingDashboardPeriodCaption } from '@/features/marketing/utils/format-marketing-dashboard-period-caption';
 import {
-  MARKETING_DASHBOARD_PERIOD_LABELS,
+  MARKETING_DASHBOARD_PERIOD_PRESETS,
   type MarketingDashboardPeriodPreset,
 } from '@/features/marketing/constants/marketing-dashboard-period';
+import { formatMarketingDashboardPeriodCaption } from '@/features/marketing/utils/format-marketing-dashboard-period-caption';
+import { translateMarketingDashboardPeriodLabel } from '@/features/marketing/i18n/marketing-copy';
 import type { MarketingDashboardSummary } from '@/lib/api/marketing';
+import { useTranslations } from 'next-intl';
 
 const PERIOD_SELECT_CLASS = 'h-10 w-[11.5rem] shrink-0';
 
@@ -44,8 +46,9 @@ export function MarketingDashboardHeroSearch({
   summary,
   disabled,
 }: MarketingDashboardHeroSearchProps) {
-  const periodLabel = MARKETING_DASHBOARD_PERIOD_LABELS[preset];
-  const caption = summary ? formatMarketingDashboardPeriodCaption(summary) : null;
+  const t = useTranslations('marketing');
+  const periodLabel = translateMarketingDashboardPeriodLabel(t, preset);
+  const caption = summary ? formatMarketingDashboardPeriodCaption(summary, t) : null;
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -54,7 +57,7 @@ export function MarketingDashboardHeroSearch({
           <IntegratedSearchFilters
             search={search}
             onSearchChange={onSearchChange}
-            searchPlaceholder="Search dashboard metrics…"
+            searchPlaceholder={t('dashboard.searchPlaceholder')}
           />
         </div>
         <Select
@@ -67,16 +70,14 @@ export function MarketingDashboardHeroSearch({
           <SelectTrigger
             id="marketing-dashboard-period"
             className={PERIOD_SELECT_CLASS}
-            aria-label="Dashboard period"
+            aria-label={t('dashboard.periodAria')}
           >
-            <SelectValue placeholder="Period">{periodLabel}</SelectValue>
+            <SelectValue placeholder={t('dashboard.period.custom')}>{periodLabel}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {(
-              Object.keys(MARKETING_DASHBOARD_PERIOD_LABELS) as MarketingDashboardPeriodPreset[]
-            ).map((key) => (
+            {MARKETING_DASHBOARD_PERIOD_PRESETS.map((key) => (
               <SelectItem key={key} value={key}>
-                {MARKETING_DASHBOARD_PERIOD_LABELS[key]}
+                {translateMarketingDashboardPeriodLabel(t, key)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -87,26 +88,26 @@ export function MarketingDashboardHeroSearch({
         <div className="flex flex-wrap items-center gap-2">
           <div className="space-y-1">
             <Label htmlFor="marketing-custom-from" className="text-xs">
-              From
+              {t('dashboard.customFrom')}
             </Label>
             <NbosDatePicker
               id="marketing-custom-from"
               value={customFrom}
               onChange={onCustomFromChange}
               disabled={disabled}
-              aria-label="Custom period from"
+              aria-label={t('dashboard.customFromAria')}
             />
           </div>
           <div className="space-y-1">
             <Label htmlFor="marketing-custom-to" className="text-xs">
-              To
+              {t('dashboard.customTo')}
             </Label>
             <NbosDatePicker
               id="marketing-custom-to"
               value={customTo}
               onChange={onCustomToChange}
               disabled={disabled}
-              aria-label="Custom period to"
+              aria-label={t('dashboard.customToAria')}
             />
           </div>
         </div>
@@ -114,7 +115,8 @@ export function MarketingDashboardHeroSearch({
 
       {caption ? (
         <p className="text-muted-foreground text-xs">
-          <span className="text-foreground font-medium">Applied range:</span> {caption}
+          <span className="text-foreground font-medium">{t('dashboard.appliedRange')}</span>{' '}
+          {caption}
         </p>
       ) : null}
     </div>

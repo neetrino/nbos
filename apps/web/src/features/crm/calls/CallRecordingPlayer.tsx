@@ -1,6 +1,7 @@
 'use client';
 
 import { Pause, Play } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { callRecordingSrc } from '@/lib/api/calls';
 import { cn } from '@/lib/utils';
@@ -18,6 +19,7 @@ export function CallRecordingPlayer(props: {
   durationSec?: number | null;
   preload?: 'none' | 'metadata';
 }) {
+  const t = useTranslations('crm');
   const { callId, durationSec, preload = 'none' } = props;
   const {
     audioRef,
@@ -25,7 +27,7 @@ export function CallRecordingPlayer(props: {
     currentSec,
     durationSec: resolvedDuration,
     speed,
-    error,
+    errorKey,
     onTimeUpdate,
     onEnded,
     onError,
@@ -46,26 +48,29 @@ export function CallRecordingPlayer(props: {
         onEnded={onEnded}
         onError={onError}
       >
-        Play
+        {t('calls.play')}
       </audio>
       <RecordingPlayButton playing={playing} onToggle={togglePlay} />
       <RecordingClock seconds={currentSec} align="end" />
       <RecordingSeeker currentSec={currentSec} durationSec={resolvedDuration} onSeek={seekTo} />
       <RecordingClock seconds={resolvedDuration} align="start" />
       <RecordingSpeedButton speed={speed} onCycle={cycleSpeed} />
-      {error ? <p className="text-destructive basis-full text-[11px]">{error}</p> : null}
+      {errorKey ? (
+        <p className="text-destructive basis-full text-[11px]">{t(errorKey as never)}</p>
+      ) : null}
     </div>
   );
 }
 
 function RecordingPlayButton(props: { playing: boolean; onToggle: () => void }) {
+  const t = useTranslations('crm');
   return (
     <Button
       type="button"
       size="icon-xs"
       variant="default"
       className="rounded-full"
-      aria-label={props.playing ? 'Pause recording' : 'Play recording'}
+      aria-label={props.playing ? t('calls.pause') : t('calls.play')}
       onClick={props.onToggle}
     >
       {props.playing ? <Pause className="size-3" /> : <Play className="size-3" />}
@@ -91,6 +96,7 @@ function RecordingSeeker(props: {
   durationSec: number;
   onSeek: (seconds: number) => void;
 }) {
+  const t = useTranslations('crm');
   const canSeek = props.durationSec > 0;
   return (
     <input
@@ -100,7 +106,7 @@ function RecordingSeeker(props: {
       step={CALL_RECORDING_SEEK_STEP}
       value={canSeek ? Math.min(props.currentSec, props.durationSec) : 0}
       disabled={!canSeek}
-      aria-label="Recording progress"
+      aria-label={t('calls.progressAria')}
       className={CALL_RECORDING_SEEKER_CLASS}
       onChange={(event) => props.onSeek(Number(event.target.value))}
     />
@@ -108,6 +114,7 @@ function RecordingSeeker(props: {
 }
 
 function RecordingSpeedButton(props: { speed: number; onCycle: () => void }) {
+  const t = useTranslations('crm');
   const label = formatPlaybackSpeedLabel(props.speed);
   return (
     <Button
@@ -115,7 +122,7 @@ function RecordingSpeedButton(props: { speed: number; onCycle: () => void }) {
       size="xs"
       variant="ghost"
       className="text-primary min-w-9 px-1.5 font-semibold"
-      aria-label={`Playback speed ${label}`}
+      aria-label={t('calls.playbackSpeedAria', { speed: label })}
       onClick={props.onCycle}
     >
       {label}

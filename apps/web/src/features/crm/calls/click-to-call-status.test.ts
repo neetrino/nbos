@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   canShowClickToCallButton,
-  CLICK_TO_CALL_NEW_CALL_LABEL,
-  clickToCallButtonLabel,
+  CLICK_TO_CALL_NEW_CALL_LABEL_KEY,
+  clickToCallButtonLabelKey,
   clickToCallButtonVariant,
   hasClickToCallPermission,
 } from './click-to-call-status';
@@ -14,12 +14,12 @@ describe('click-to-call button', () => {
     expect(canShowClickToCallButton({ hidden: false, canCreate: false })).toBe(false);
   });
 
-  it('uses the idle, loading, success, and error labels', () => {
-    expect(clickToCallButtonLabel('idle')).toBe('Call');
-    expect(clickToCallButtonLabel('loading')).toBe('Calling...');
-    expect(clickToCallButtonLabel('success')).toBe('Call started');
-    expect(clickToCallButtonLabel('error')).toBe('Could not start call');
-    expect(CLICK_TO_CALL_NEW_CALL_LABEL).toBe('New call');
+  it('uses the idle, loading, success, and error label keys', () => {
+    expect(clickToCallButtonLabelKey('idle')).toBe('calls.clickCall');
+    expect(clickToCallButtonLabelKey('loading')).toBe('calls.clickCalling');
+    expect(clickToCallButtonLabelKey('success')).toBe('calls.clickStarted');
+    expect(clickToCallButtonLabelKey('error')).toBe('calls.clickFailed');
+    expect(CLICK_TO_CALL_NEW_CALL_LABEL_KEY).toBe('calls.newCall');
   });
 
   it('uses filled color variants so the action stays visible', () => {

@@ -26,6 +26,7 @@ export type InterfaceMessages = {
   clientServices: AbstractIntlMessages;
   quick: AbstractIntlMessages;
   checklist: AbstractIntlMessages;
+  marketing: AbstractIntlMessages;
 };
 
 async function loadMessagesUncached(locale: WritableInterfaceLocale): Promise<InterfaceMessages> {
@@ -57,6 +58,7 @@ async function loadMessagesUncached(locale: WritableInterfaceLocale): Promise<In
     clientServices: mergeMessages(en.clientServices, localized.clientServices),
     quick: mergeMessages(en.quick, localized.quick),
     checklist: mergeMessages(en.checklist, localized.checklist),
+    marketing: mergeMessages(en.marketing, localized.marketing),
   };
 }
 
@@ -93,6 +95,7 @@ async function readLocaleCatalogs(locale: 'en' | 'ru'): Promise<InterfaceMessage
     clientServices,
     quick,
     checklist,
+    marketing,
   ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/account.json`),
@@ -115,6 +118,7 @@ async function readLocaleCatalogs(locale: 'en' | 'ru'): Promise<InterfaceMessage
     import(`../messages/${locale}/client-services.json`),
     import(`../messages/${locale}/quick.json`),
     import(`../messages/${locale}/checklist.json`),
+    import(`../messages/${locale}/marketing.json`),
   ]);
   return {
     common: common.default,
@@ -138,5 +142,6 @@ async function readLocaleCatalogs(locale: 'en' | 'ru'): Promise<InterfaceMessage
     clientServices: clientServices.default,
     quick: quick.default,
     checklist: checklist.default,
+    marketing: marketing.default,
   };
 }

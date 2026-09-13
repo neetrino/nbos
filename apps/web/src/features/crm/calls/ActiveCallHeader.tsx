@@ -1,21 +1,24 @@
 'use client';
 
 import { Phone, PhoneIncoming, PhoneOutgoing, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ACTIVE_CALL_PHASE_BADGE_CLASS } from './active-call.constants';
 import { activeCallHeroInitials, shouldShowHeroPhone } from './active-call-hero';
-import { activeCallDirectionLabel, activeCallPhaseLabel } from './active-call-labels';
+import { activeCallDirectionLabelKey, activeCallPhaseLabelKey } from './active-call-labels';
 import type { ActiveCallSession } from './active-call-session';
 import type { ActiveCallPhase } from './active-call.types';
 
 export function ActiveCallHeader(props: {
   session: ActiveCallSession;
   displayName: string;
+  heroTitle: string;
   onClose: () => void;
 }) {
-  const { session, displayName, onClose } = props;
+  const t = useTranslations('crm');
+  const { session, displayName, heroTitle, onClose } = props;
   return (
     <header className="relative mb-4">
       <Button
@@ -23,13 +26,13 @@ export function ActiveCallHeader(props: {
         variant="ghost"
         size="icon-sm"
         className="absolute top-0 right-0"
-        aria-label="Close call screen"
+        aria-label={t('calls.close')}
         onClick={onClose}
       >
         <X />
       </Button>
       <div className="flex flex-col items-center px-8 pt-3 text-center">
-        <HeroAvatar title={displayName} direction={session.direction} phase={session.phase} />
+        <HeroAvatar title={heroTitle} direction={session.direction} phase={session.phase} />
         <HeroStatus direction={session.direction} phase={session.phase} />
         <h1 className="text-foreground mt-2.5 max-w-full text-2xl font-semibold tracking-tight sm:text-3xl">
           {displayName}
@@ -67,6 +70,7 @@ function HeroAvatar(props: {
 }
 
 function HeroStatus(props: { direction: ActiveCallSession['direction']; phase: ActiveCallPhase }) {
+  const t = useTranslations('crm');
   return (
     <p
       role="status"
@@ -78,7 +82,8 @@ function HeroStatus(props: { direction: ActiveCallSession['direction']; phase: A
       {props.phase === 'ringing' ? (
         <span className="nbos-animate-pulse-soft size-1.5 rounded-full bg-current" aria-hidden />
       ) : null}
-      {activeCallDirectionLabel(props.direction)} · {activeCallPhaseLabel(props.phase)}
+      {t(activeCallDirectionLabelKey(props.direction) as never)} ·{' '}
+      {t(activeCallPhaseLabelKey(props.phase) as never)}
     </p>
   );
 }
