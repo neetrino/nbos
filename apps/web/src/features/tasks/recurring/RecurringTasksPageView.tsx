@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Plus } from 'lucide-react';
 import {
   EmptyState,
@@ -23,6 +24,8 @@ import { RECURRING_STATUS_TABS } from './recurring-task-constants';
 import { useRecurringTasks } from './use-recurring-tasks';
 
 export function RecurringTasksPageView() {
+  const t = useTranslations('tasks');
+  const tCommon = useTranslations('common');
   const { can } = usePermission();
   const { creatorId } = useTaskCreatorId();
   const list = useRecurringTasks();
@@ -46,26 +49,29 @@ export function RecurringTasksPageView() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHero
-        title="Recurring tasks"
+        title={t('recurring.title')}
         tabs={
           <PageHeroTabs
             value={list.status}
             onChange={list.setStatus}
-            options={[...RECURRING_STATUS_TABS]}
-            ariaLabel="Recurring status"
+            options={RECURRING_STATUS_TABS.map((tab) => ({
+              value: tab.value,
+              label: t(`recurring.status.${tab.value}`),
+            }))}
+            ariaLabel={t('recurring.statusAria')}
           />
         }
         search={
           <PageHeroSearch
             value={list.search}
             onChange={list.setSearch}
-            placeholder="Search templates…"
+            placeholder={t('recurring.searchPlaceholder')}
           />
         }
         trailing={
           <>
             <Link href="/tasks" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-              Back to Tasks
+              {t('recurring.backToTasks')}
             </Link>
             {canEdit ? (
               <Button
@@ -75,12 +81,12 @@ export function RecurringTasksPageView() {
                 disabled={list.processingDue}
                 onClick={() => void list.processDue()}
               >
-                {list.processingDue ? 'Creating…' : 'Create due tasks'}
+                {list.processingDue ? tCommon('creating') : t('recurring.createDue')}
               </Button>
             ) : null}
             {canAdd ? (
               <PageHeroPrimaryAction
-                label="New recurring task"
+                label={t('recurring.new')}
                 disabled={!creatorId}
                 onClick={openCreate}
               />
@@ -92,21 +98,26 @@ export function RecurringTasksPageView() {
       {list.loading ? (
         <LoadingState />
       ) : list.error ? (
-        <ErrorState description={list.error} onRetry={list.fetchTemplates} />
+        <ErrorState
+          description={list.error}
+          title={tCommon('errorTitle')}
+          actionLabel={tCommon('tryAgain')}
+          onRetry={list.fetchTemplates}
+        />
       ) : list.visible.length === 0 ? (
         <EmptyState
           icon={Plus}
-          title={list.templates.length === 0 ? 'No recurring tasks' : 'No matches'}
+          title={list.templates.length === 0 ? t('recurring.emptyTitle') : t('recurring.noMatches')}
           description={
             list.templates.length === 0
-              ? 'Create a schedule. The template is not a task — it creates ordinary tasks when due.'
-              : 'Try another search or status filter.'
+              ? t('recurring.emptyDescription')
+              : t('recurring.noMatchesDescription')
           }
           action={
             canAdd && list.templates.length === 0 ? (
               <Button disabled={!creatorId} onClick={openCreate}>
                 <Plus size={16} aria-hidden />
-                New template
+                {t('recurring.newTemplate')}
               </Button>
             ) : undefined
           }

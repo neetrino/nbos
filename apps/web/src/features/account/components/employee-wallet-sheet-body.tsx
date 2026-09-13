@@ -8,7 +8,11 @@ import { WalletBonusesTab } from '@/features/account/components/wallet-bonuses-t
 import { WalletOverviewTab } from '@/features/account/components/wallet-overview-tab';
 import { WalletPayrollTab } from '@/features/account/components/wallet-payroll-tab';
 import { WalletSheetHeader } from '@/features/account/components/wallet-sheet-header';
-import { WALLET_SHEET_TABS, type WalletSheetTab } from '@/features/account/constants/wallet-ui';
+import {
+  WALLET_SHEET_TAB_VALUES,
+  type WalletSheetTab,
+} from '@/features/account/constants/wallet-ui';
+import { useTranslations } from 'next-intl';
 import type { EmployeeWalletSnapshot } from '@/lib/api/me';
 
 interface EmployeeWalletSheetBodyProps {
@@ -35,6 +39,8 @@ export function EmployeeWalletSheetBody({
   onExportProjectBreakdownCsv,
 }: EmployeeWalletSheetBodyProps) {
   const [activeTab, setActiveTab] = useState<WalletSheetTab>('overview');
+  const t = useTranslations('account.wallet.tabs');
+  const tabs = WALLET_SHEET_TAB_VALUES.map((value) => ({ value, label: t(value) }));
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -51,7 +57,7 @@ export function EmployeeWalletSheetBody({
       />
 
       <DetailSheetTabBar
-        tabs={WALLET_SHEET_TABS}
+        tabs={tabs}
         activeTab={activeTab}
         onTabChange={(value) => setActiveTab(value as WalletSheetTab)}
       />

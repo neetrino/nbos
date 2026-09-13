@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type MouseEvent, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { CheckCircle2, Play, RotateCcw } from 'lucide-react';
 import { KanbanCardShell } from '@/components/shared';
 import { TaskUrgentFlameIndicator } from '@/features/tasks/components/TaskUrgentFlameIndicator';
@@ -38,6 +39,7 @@ export function TaskMiniCard({
   onDueDateChange?: (taskId: string, dueDate: string) => void | Promise<void>;
   hideWorkspaceContext?: boolean;
 }) {
+  const t = useTranslations('tasks');
   const contextChips = pickTaskCardContextChips(task, {
     hideWorkspace: hideWorkspaceContext,
   });
@@ -132,7 +134,7 @@ export function TaskMiniCard({
         <div className={TASK_CARD_HOVER_ACTIONS_CLASS}>
           {canStart ? (
             <QuickActionButton
-              label="Start task"
+              label={t('card.start')}
               className="bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:bg-blue-950/60"
               onClick={(event) => {
                 void runAction('start', event);
@@ -143,7 +145,7 @@ export function TaskMiniCard({
           ) : null}
           {canComplete ? (
             <QuickActionButton
-              label="Finish task"
+              label={t('card.finish')}
               className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400"
               onClick={(event) => {
                 void runAction('complete', event);
@@ -154,7 +156,7 @@ export function TaskMiniCard({
           ) : null}
           {canReopen ? (
             <QuickActionButton
-              label="Reopen task"
+              label={t('card.reopen')}
               className="bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-400"
               onClick={(event) => {
                 void runAction('reopen', event);

@@ -14,6 +14,7 @@ import {
   DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
 } from '@/components/shared/detail-sheet-classes';
 import { Flame, MessageCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
 import { isTaskUrgentPriority } from '../constants/tasks';
@@ -48,6 +49,7 @@ export function TaskSheetHeader({
   onOpenChat,
   moreActions = null,
 }: TaskSheetHeaderProps) {
+  const t = useTranslations('tasks');
   const isMobileViewport = useIsMobileViewport();
   const urgent = isTaskUrgentPriority(draft.priority);
   const [editing, setEditing] = useState(false);
@@ -85,7 +87,7 @@ export function TaskSheetHeader({
     }
   };
 
-  const displayTitle = draft.title.trim() || 'Untitled task';
+  const displayTitle = draft.title.trim() || t('sheet.untitled');
 
   const titleControl =
     editing && !disabled ? (
@@ -95,8 +97,8 @@ export function TaskSheetHeader({
         onChange={(e) => setTitleValue(e.target.value)}
         onBlur={commitTitle}
         onKeyDown={handleTitleKeyDown}
-        placeholder="Task title…"
-        aria-label="Task title"
+        placeholder={t('sheet.titlePlaceholder')}
+        aria-label={t('sheet.titleAria')}
         className="border-primary text-foreground placeholder:text-muted-foreground/55 w-full min-w-0 border-0 border-b-2 bg-transparent py-0 text-lg leading-snug font-bold tracking-tight outline-none sm:text-[1.65rem]"
       />
     ) : (
@@ -108,7 +110,7 @@ export function TaskSheetHeader({
             ? 'cursor-default opacity-60'
             : 'cursor-text transition-colors hover:bg-stone-100 dark:hover:bg-stone-800',
         )}
-        title={disabled ? displayTitle : 'Click to edit task title'}
+        title={disabled ? displayTitle : t('sheet.editTitle')}
       >
         {displayTitle}
       </h2>
@@ -120,8 +122,8 @@ export function TaskSheetHeader({
         <button
           type="button"
           className={cn(TASK_PRIORITY_FLAME_BUTTON_CLASS, 'hover:text-foreground')}
-          aria-label="Open task chat"
-          title="Task chat"
+          aria-label={t('sheet.openChatAria')}
+          title={t('sheet.openChat')}
           onClick={onOpenChat}
         >
           <MessageCircle
@@ -139,8 +141,8 @@ export function TaskSheetHeader({
           urgent && TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
         )}
         aria-pressed={urgent}
-        aria-label={urgent ? 'Urgent' : 'Mark as urgent'}
-        title={urgent ? 'Urgent' : 'Mark as urgent'}
+        aria-label={urgent ? t('sheet.urgent') : t('sheet.markUrgent')}
+        title={urgent ? t('sheet.urgent') : t('sheet.markUrgent')}
         disabled={disabled}
         onClick={onToggleUrgent}
       >

@@ -5,8 +5,6 @@ import {
   DASHBOARD_PRIORITY_CARD_CODES,
   deskCopy,
   getPriorityCardCode,
-  localizeDeskLineCopy,
-  readDeskLineCatalogTemplates,
   resolvePriorityCardCount,
 } from './dashboard-desk-header';
 import type { PriorityCard } from './dashboard-control-registry';
@@ -40,35 +38,6 @@ function priorityCard(overrides: Partial<PriorityCard>): PriorityCard {
     ...overrides,
   };
 }
-
-describe('desk-line catalog messages', () => {
-  it('keeps {{firstName}} slots instead of treating them as ICU', () => {
-    const catalog = readDeskLineCatalogTemplates(
-      {
-        templates: {
-          'season-autumn-conversation': {
-            title: 'Осенний разговор наверстать было бы здорово, {{firstName}}.',
-            subline: 'Даже короткий.',
-          },
-        },
-      },
-      'season-autumn-conversation',
-    );
-    const localized = localizeDeskLineCopy(
-      {
-        ...deskCopy(null),
-        templateId: 'season-autumn-conversation',
-        titleTemplate: catalog.title ?? '',
-        sublineTemplate: catalog.subline ?? '',
-        slots: { firstName: 'Анна' },
-      },
-      { title: catalog.title ?? '', subline: catalog.subline ?? '' },
-    );
-
-    expect(localized.title).toBe('Осенний разговор наверстать было бы здорово, Анна.');
-    expect(localized.title).not.toContain('{{');
-  });
-});
 
 describe('priority card localization', () => {
   it('maps API codes and prefers API count', () => {

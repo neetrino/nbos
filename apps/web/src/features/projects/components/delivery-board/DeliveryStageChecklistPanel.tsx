@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -50,11 +51,6 @@ function aggregateReviewed(instances: ChecklistInstance[]): { reviewed: number; 
   return { reviewed, total };
 }
 
-function stageChecklistButtonLabel(loading: boolean, reviewed: number, total: number): string {
-  if (loading) return 'Stage checklists …';
-  return `Stage checklists ${reviewed}/${total}`;
-}
-
 export function DeliveryStageChecklistPanel({
   ownerEntityType,
   ownerEntityId,
@@ -63,6 +59,7 @@ export function DeliveryStageChecklistPanel({
   floatingNav,
   className,
 }: DeliveryStageChecklistPanelProps) {
+  const t = useTranslations('deliveryBoard');
   const [instances, setInstances] = useState<ChecklistInstance[]>([]);
   const [loading, setLoading] = useState(false);
   const [busyKey, setBusyKey] = useState<string | null>(null);
@@ -221,7 +218,9 @@ export function DeliveryStageChecklistPanel({
             ) : (
               <ChecklistWorkbenchStatusIcon variant={statusVariant} className="size-5 shrink-0" />
             )}
-            <span className="truncate">{stageChecklistButtonLabel(loading, reviewed, total)}</span>
+            <span className="truncate">
+              {loading ? t('checklist.loading') : t('checklist.progress', { reviewed, total })}
+            </span>
           </span>
           <ChevronRight className="text-muted-foreground size-4 shrink-0 opacity-70" aria-hidden />
         </Button>
@@ -235,7 +234,7 @@ export function DeliveryStageChecklistPanel({
             setCompletionBlockHighlight(null);
           }
         }}
-        title="Stage checklists"
+        title={t('checklist.title')}
         instances={stageInstances}
         loading={loading}
         error={error}

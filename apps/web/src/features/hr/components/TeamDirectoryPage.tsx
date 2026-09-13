@@ -1,8 +1,8 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { ChevronDown, LayoutGrid, List, Plus, UserPlus, Users2 } from 'lucide-react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { ChevronDown, Plus, UserPlus, Users2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,48 +17,35 @@ import {
   ErrorState,
   LoadingState,
   useModuleHeroSlots,
-  type ViewModeOption,
 } from '@/components/shared';
-import { EMPLOYEE_LEVELS, EMPLOYEE_STATUSES } from '@/features/hr/constants/hr';
+import {
+  EMPLOYEE_LEVELS,
+  EMPLOYEE_STATUSES,
+  isEmployeeLevelValue,
+} from '@/features/hr/constants/hr';
 import { CreateEmployeeSheet } from '@/features/hr/components/CreateEmployeeSheet';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
 import { InviteEmployeeDialog } from '@/features/hr/components/InviteEmployeeDialog';
 import { TeamEmployeeCard } from '@/features/hr/components/TeamEmployeeCard';
 import { TeamEmployeeTable } from '@/features/hr/components/TeamEmployeeTable';
 import { TeamStatusChips } from '@/features/hr/components/TeamStatusChips';
+import {
+  buildTeamDirectoryViewOptions,
+  type TeamDirectoryViewMode,
+} from '@/features/hr/components/team-directory-view-options';
 import { teamDirectoryCardGridClass } from '@/features/hr/constants/team-directory';
-import { TEAM_OPEN_EMPLOYEE_QUERY } from '@/features/hr/constants/team-open-query';
 import { useTeamDirectory } from '@/features/hr/hooks/use-team-directory';
+import { useTeamEmployeeDeepLink } from '@/features/hr/hooks/use-team-employee-deep-link';
 import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
-import { employeesApi, type Employee } from '@/lib/api/employees';
+import type { Employee } from '@/lib/api/employees';
 import { invalidateEmployeeDirectoryCaches } from '@/lib/employees';
 import { PermissionGate, usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 
-type ViewMode = 'list' | 'grid';
-
-const TEAM_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
-  {
-    value: 'grid',
-    label: 'Grid',
-    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'Grid view',
-  },
-  {
-    value: 'list',
-    label: 'List',
-    icon: <List className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'List view',
-  },
-];
-
 function TeamDirectoryPageContent() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const t = useTranslations('hr');
   const sidebarCollapsed = useAppSidebarCollapsed();
   const { can } = usePermission();
   const canEdit = can('EDIT', 'COMPANY');
@@ -67,7 +54,7 @@ function TeamDirectoryPageContent() {
   const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.hrTeam);
   const [quickStatus, setQuickStatus] = useState<string | null>(null);
   const [showTerminated, setShowTerminated] = useState(false);
-  const [view, setView] = useState<ViewMode>('grid');
+  const [view, setView] = useState<TeamDirectoryViewMode>('grid');
   const displayView = useMobilePreferredView(view, 'grid');
   const [inviteOpen, setInviteOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -84,60 +71,15 @@ function TeamDirectoryPageContent() {
   const { employees, total, roles, departments, loading, refreshing, error, refetch } =
     useTeamDirectory(search, filters, effectiveStatus);
 
-  const openEmployeeId = searchParams.get(TEAM_OPEN_EMPLOYEE_QUERY)?.trim() || null;
-  const deepLinkEmployeeAttemptedRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    deepLinkEmployeeAttemptedRef.current = null;
-  }, [openEmployeeId]);
-
-  const stripOpenEmployeeFromUrl = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (!params.has(TEAM_OPEN_EMPLOYEE_QUERY)) return;
-    params.delete(TEAM_OPEN_EMPLOYEE_QUERY);
-    const q = params.toString();
-    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
-  }, [pathname, router, searchParams]);
-
-  const pushOpenEmployeeToUrl = useCallback(
-    (id: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set(TEAM_OPEN_EMPLOYEE_QUERY, id);
-      router.push(`${pathname}?${params.toString()}`);
-    },
-    [pathname, router, searchParams],
+  const openFromLink = useCallback((emp: Employee) => {
+    setSelectedEmployee(emp);
+    setSheetOpen(true);
+  }, []);
+  const { stripOpenEmployeeFromUrl, pushOpenEmployeeToUrl } = useTeamEmployeeDeepLink(
+    employees,
+    loading,
+    openFromLink,
   );
-
-  useEffect(() => {
-    if (!openEmployeeId || (loading && employees.length === 0)) return;
-    const match = employees.find((e) => e.id === openEmployeeId);
-    if (match) {
-      queueMicrotask(() => {
-        setSelectedEmployee(match);
-        setSheetOpen(true);
-      });
-      return;
-    }
-    if (deepLinkEmployeeAttemptedRef.current === openEmployeeId) return;
-    deepLinkEmployeeAttemptedRef.current = openEmployeeId;
-    let cancelled = false;
-    void (async () => {
-      try {
-        const emp = await employeesApi.getById(openEmployeeId);
-        if (cancelled) return;
-        setSelectedEmployee(emp);
-        setSheetOpen(true);
-      } catch {
-        if (!cancelled) {
-          toast.error('Employee not found or you cannot open this profile.');
-          stripOpenEmployeeFromUrl();
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [openEmployeeId, loading, employees, stripOpenEmployeeFromUrl]);
 
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -148,31 +90,38 @@ function TeamDirectoryPageContent() {
   }, [employees]);
 
   const activeCount = statusCounts.ACTIVE ?? 0;
+  const viewOptions = useMemo(() => buildTeamDirectoryViewOptions(t), [t]);
 
   const filterConfigs = useMemo(
     () => [
       {
         key: 'department',
-        label: 'Department',
+        label: t('directory.filters.department'),
         options: departments.map((d) => ({ value: d.id, label: d.name })),
       },
       {
         key: 'role',
-        label: 'Role',
+        label: t('directory.filters.role'),
         options: roles.map((r) => ({ value: r.id, label: r.name })),
       },
       {
         key: 'level',
-        label: 'Level',
-        options: EMPLOYEE_LEVELS.map((l) => ({ value: l.value, label: l.label })),
+        label: t('directory.filters.level'),
+        options: EMPLOYEE_LEVELS.map((l) => ({
+          value: l.value,
+          label: isEmployeeLevelValue(l.value) ? t(`level.${l.value}`) : l.label,
+        })),
       },
       {
         key: 'status',
-        label: 'Status',
-        options: EMPLOYEE_STATUSES.map((s) => ({ value: s.value, label: s.label })),
+        label: t('directory.filters.status'),
+        options: EMPLOYEE_STATUSES.map((s) => ({
+          value: s.value,
+          label: t(`status.${s.value}`),
+        })),
       },
     ],
-    [roles, departments],
+    [roles, departments, t],
   );
 
   const handleDirectoryRefresh = useCallback(async () => {
@@ -186,7 +135,7 @@ function TeamDirectoryPageContent() {
         <IntegratedSearchFilters
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search by name, email…"
+          searchPlaceholder={t('directory.search')}
           filters={filterConfigs}
           filterValues={filters}
           onFilterChange={(key, value) => {
@@ -200,11 +149,11 @@ function TeamDirectoryPageContent() {
           }}
         />
       ),
-      viewMode: <ViewModeSwitch value={view} onChange={setView} options={TEAM_VIEW_OPTIONS} />,
+      viewMode: <ViewModeSwitch value={view} onChange={setView} options={viewOptions} />,
       trailing: (
         <>
           <span className="text-muted-foreground hidden text-xs tabular-nums sm:inline">
-            {activeCount} active · {total} total
+            {t('directory.counts', { active: activeCount, total })}
           </span>
           <PermissionGate module="COMPANY" action="ADD">
             <DropdownMenu>
@@ -212,7 +161,7 @@ function TeamDirectoryPageContent() {
                 render={(props) => (
                   <Button {...props} type="button">
                     <Plus size={16} aria-hidden />
-                    Add
+                    {t('directory.add')}
                     <ChevronDown className="ml-1 size-4 opacity-70" aria-hidden />
                   </Button>
                 )}
@@ -220,11 +169,11 @@ function TeamDirectoryPageContent() {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setCreateOpen(true)}>
                   <Users2 className="mr-2 size-4" />
-                  Create employee
+                  {t('directory.createEmployee')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setInviteOpen(true)}>
                   <UserPlus className="mr-2 size-4" />
-                  Send invitation
+                  {t('directory.sendInvitation')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -232,14 +181,13 @@ function TeamDirectoryPageContent() {
         </>
       ),
     }),
-    [activeCount, filterConfigs, filters, search, setFilters, total, view],
+    [activeCount, filterConfigs, filters, search, setFilters, t, total, view, viewOptions],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
 
   function openSheet(emp: Employee) {
-    setSelectedEmployee(emp);
-    setSheetOpen(true);
+    openFromLink(emp);
     pushOpenEmployeeToUrl(emp.id);
   }
 
@@ -277,16 +225,16 @@ function TeamDirectoryPageContent() {
       ) : employees.length === 0 ? (
         <EmptyState
           icon={Users2}
-          title="No employees yet"
-          description="Create a profile or send an invitation to grow your team directory."
+          title={t('directory.emptyTitle')}
+          description={t('directory.emptyDescription')}
           action={
             <PermissionGate module="COMPANY" action="ADD">
               <div className="flex flex-wrap justify-center gap-2">
                 <Button onClick={() => setCreateOpen(true)}>
-                  <Plus size={16} /> Create employee
+                  <Plus size={16} /> {t('directory.createEmployee')}
                 </Button>
                 <Button variant="outline" onClick={() => setInviteOpen(true)}>
-                  <UserPlus size={16} /> Send invitation
+                  <UserPlus size={16} /> {t('directory.sendInvitation')}
                 </Button>
               </div>
             </PermissionGate>

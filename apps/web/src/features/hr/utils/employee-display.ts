@@ -41,13 +41,28 @@ export function employeePrimaryDepartment(emp: Employee): string | null {
   return primary?.department?.name ?? emp.departments?.[0]?.department?.name ?? null;
 }
 
-export function employeeTenure(hireDate: string | null): string {
+export type EmployeeTenureTranslator = (
+  key: 'tenure.new' | 'tenure.months' | 'tenure.years' | 'tenure.yearsMonths',
+  values?: Record<string, string | number>,
+) => string;
+
+const AVERAGE_DAYS_PER_MONTH = 30.44;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const MS_PER_MONTH = AVERAGE_DAYS_PER_MONTH * MS_PER_DAY;
+const MONTHS_PER_YEAR = 12;
+
+export function employeeTenure(hireDate: string | null, t?: EmployeeTenureTranslator): string {
   if (!hireDate) return '—';
   const diff = Date.now() - new Date(hireDate).getTime();
-  const months = Math.floor(diff / (30.44 * 24 * 60 * 60 * 1000));
-  if (months < 1) return 'New';
-  if (months < 12) return `${months} mo`;
-  const years = Math.floor(months / 12);
-  const rem = months % 12;
-  return rem > 0 ? `${years}y ${rem}m` : `${years}y`;
+  const months = Math.floor(diff / MS_PER_MONTH);
+  if (months < 1) return t ? t('tenure.new') : 'New';
+  if (months < MONTHS_PER_YEAR) {
+    return t ? t('tenure.months', { n: months }) : `${months} mo`;
+  }
+  const years = Math.floor(months / MONTHS_PER_YEAR);
+  const rem = months % MONTHS_PER_YEAR;
+  if (rem > 0) {
+    return t ? t('tenure.yearsMonths', { years, months: rem }) : `${years}y ${rem}m`;
+  }
+  return t ? t('tenure.years', { n: years }) : `${years}y`;
 }

@@ -32,12 +32,13 @@ import { LeadSheetHeaderActions } from './LeadSheetHeaderActions';
 import { LeadHistoryTab } from './LeadHistoryTab';
 import { LeadCallsTab } from './LeadCallsTab';
 import { LeadTasksTab } from './LeadTasksTab';
+import { useTranslations } from 'next-intl';
 
-export const LEAD_SHEET_TABS = [
-  { value: 'general', label: 'General', icon: LayoutGrid },
-  { value: 'calls', label: 'Calls', icon: Phone },
-  { value: 'history', label: 'History', icon: History },
-  { value: 'task', label: 'Task', icon: CheckSquare },
+const LEAD_SHEET_TAB_DEFS = [
+  { value: 'general', labelKey: 'leadSheet.tabGeneral', icon: LayoutGrid },
+  { value: 'calls', labelKey: 'leadSheet.tabCalls', icon: Phone },
+  { value: 'history', labelKey: 'leadSheet.tabHistory', icon: History },
+  { value: 'task', labelKey: 'leadSheet.tabTask', icon: CheckSquare },
 ] as const;
 
 export interface LeadSheetLoadedContentProps {
@@ -72,16 +73,27 @@ export interface LeadSheetLoadedContentProps {
 }
 
 export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
+  const t = useTranslations('crm');
   const { creatorId, creatorReady } = useTaskCreatorId();
   const { renderLead, isTrashView, generalDraft, gateRequiredFields } = props;
   const canCreateTask = !isTrashView && (!creatorReady || Boolean(creatorId));
+  const leadSheetTabs = useMemo(
+    () =>
+      LEAD_SHEET_TAB_DEFS.map((tab) => ({
+        value: tab.value,
+        label: t(tab.labelKey),
+        icon: tab.icon,
+      })),
+    [t],
+  );
   const detailSheetTabs = useMemo(
     () =>
-      buildLeadDetailSheetTabs(LEAD_SHEET_TABS, {
+      buildLeadDetailSheetTabs(leadSheetTabs, {
         canCreateTask,
         onCreateTask: () => props.onTaskCreateOpenChange(true),
+        createTaskAria: t('common.createTask'),
       }),
-    [canCreateTask, props],
+    [canCreateTask, leadSheetTabs, props, t],
   );
   const currentStage = LEAD_STAGES.find((s) => s.key === renderLead.status);
   const isTerminal = currentStage ? 'terminal' in currentStage : false;
@@ -122,7 +134,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
     >
       <CrmSheetEntityHeader
         title={headerTitle}
-        entityLabel={leadVisual.label}
+        entityLabel={t('common.entityLead')}
         EntityIcon={LeadIcon}
         headerIconClassName={leadVisual.headerIconClassName}
         headerBadgeClassName={leadVisual.headerBadgeClassName}
@@ -132,8 +144,8 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
         onCommitName={commitNameToDraft}
         onNameKeyDown={handleNameKeyDown}
         nameInputRef={props.nameInputRef}
-        namePlaceholder="Inquiry title (product / service)…"
-        titleEditHint="Click to edit inquiry title (product / service)"
+        namePlaceholder={t('leadSheet.namePlaceholder')}
+        titleEditHint={t('leadSheet.nameEditHint')}
         onStartEditing={startEditingName}
         titleClassName={cn(
           nameGateRequired && DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS,
@@ -167,7 +179,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
         tabs={detailSheetTabs}
         activeTab={props.activeTab}
         onTabChange={(value) =>
-          props.setActiveTab(value as (typeof LEAD_SHEET_TABS)[number]['value'])
+          props.setActiveTab(value as (typeof LEAD_SHEET_TAB_DEFS)[number]['value'])
         }
       />
 

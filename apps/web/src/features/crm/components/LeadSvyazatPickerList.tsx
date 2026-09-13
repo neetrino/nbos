@@ -13,12 +13,8 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { LEAD_SVYAZAT_LABELS } from './lead-svyazat-labels';
-import {
-  SVYAZAT_KIND_LABELS,
-  type SvyazatSearchHit,
-  type SvyazatSearchKind,
-} from './lead-svyazat-search';
+import { useTranslations } from 'next-intl';
+import { type SvyazatSearchHit, type SvyazatSearchKind } from './lead-svyazat-search';
 
 const KIND_ICONS = {
   contact: User,
@@ -27,6 +23,14 @@ const KIND_ICONS = {
   product: Layers,
   lead: UserRound,
 } as const satisfies Record<SvyazatSearchKind, typeof User>;
+
+const KIND_LABEL_KEYS = {
+  contact: 'svyazat.targetContact',
+  deal: 'svyazat.targetDeal',
+  project: 'svyazat.targetProject',
+  product: 'svyazat.targetProduct',
+  lead: 'svyazat.targetLead',
+} as const satisfies Record<SvyazatSearchKind, string>;
 
 const HIT_LIST_CLASS =
   'border-border/60 bg-popover max-h-64 overflow-y-auto rounded-xl border shadow-sm';
@@ -44,6 +48,7 @@ interface LeadSvyazatPickerListProps {
 }
 
 export function LeadSvyazatPickerList(props: LeadSvyazatPickerListProps) {
+  const t = useTranslations('crm');
   return (
     <div className="space-y-3">
       <LeadSvyazatSearchField
@@ -55,7 +60,7 @@ export function LeadSvyazatPickerList(props: LeadSvyazatPickerListProps) {
       {props.loading ? (
         <p className="text-muted-foreground flex items-center gap-2 text-xs">
           <Loader2 size={13} className="animate-spin" />
-          {LEAD_SVYAZAT_LABELS.searching}
+          {t('svyazat.searching')}
         </p>
       ) : null}
       <div className={HIT_LIST_CLASS} role="listbox" aria-label={props.searchLabel}>
@@ -78,6 +83,7 @@ function LeadSvyazatSearchField(props: {
   searchLabel: string;
   onQueryChange: (value: string) => void;
 }) {
+  const t = useTranslations('crm');
   return (
     <div className="relative">
       <Search
@@ -98,7 +104,7 @@ function LeadSvyazatSearchField(props: {
           type="button"
           onClick={() => props.onQueryChange('')}
           className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-md"
-          aria-label="Clear search"
+          aria-label={t('svyazat.clearSearch')}
         >
           <X size={16} />
         </button>
@@ -115,10 +121,11 @@ function LeadSvyazatHitList(props: {
   onSelect: (id: string) => void;
   onApply: () => void;
 }) {
+  const t = useTranslations('crm');
   if (!props.loading && props.hits.length === 0) {
     return (
       <p className="text-muted-foreground px-3 py-6 text-center text-xs">
-        {props.query.trim() ? LEAD_SVYAZAT_LABELS.emptySearch : LEAD_SVYAZAT_LABELS.emptyRecent}
+        {props.query.trim() ? t('svyazat.emptySearch') : t('svyazat.emptyRecent')}
       </p>
     );
   }
@@ -144,7 +151,9 @@ function LeadSvyazatHitButton(props: {
   onSelect: (id: string) => void;
   onApply: () => void;
 }) {
+  const t = useTranslations('crm');
   const Icon = KIND_ICONS[props.hit.kind];
+  const kindLabel = t(KIND_LABEL_KEYS[props.hit.kind]);
   return (
     <button
       type="button"
@@ -162,7 +171,7 @@ function LeadSvyazatHitButton(props: {
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-          {SVYAZAT_KIND_LABELS[props.hit.kind]}
+          {kindLabel}
         </p>
         <p className="text-foreground truncate text-sm font-medium">{props.hit.title}</p>
         {props.hit.subtitle ? (

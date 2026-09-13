@@ -20,7 +20,12 @@ import {
   canCreateInVaultScope,
   type CredentialVaultScope,
 } from '@/features/credentials/vault-scope';
-import { buildCredentialsVaultFilterConfigs } from '@/features/credentials/utils/build-credentials-vault-filter-configs';
+import {
+  buildCredentialsVaultFilterConfigs,
+  buildCredentialsVaultFilterCopy,
+} from '@/features/credentials/utils/build-credentials-vault-filter-configs';
+import { credentialCategoryMessageKey } from '@/features/credentials/constants/credentials';
+import { useTranslations } from 'next-intl';
 import { useCredentialTrashProjectFilterOptions } from '@/features/credentials/hooks/use-credential-trash-project-filter-options';
 import { useCredentialVaultSelection } from '@/features/credentials/hooks/use-credential-vault-selection';
 import { useCredentialVaultSheetUrlSync } from '@/features/credentials/hooks/use-credential-vault-sheet-url-sync';
@@ -54,6 +59,7 @@ export interface CredentialTileCopyTarget {
 }
 
 export function useCredentialsVaultPage() {
+  const t = useTranslations('credentials');
   const { me } = usePermission();
   const [preferences, setPreferences] = useCredentialVaultPagePreferences();
   const { viewMode, activeTab, vaultListScope, pageSize } = preferences;
@@ -504,10 +510,27 @@ export function useCredentialsVaultPage() {
     [stripOpenCredentialFromUrl],
   );
 
-  const quickCategoryChips = useMemo(() => quickCategoryChipsForVaultScope(activeTab), [activeTab]);
+  const filterCopy = useMemo(() => buildCredentialsVaultFilterCopy((key) => t(key as never)), [t]);
+  const quickCategoryChips = useMemo(
+    () =>
+      quickCategoryChipsForVaultScope(activeTab).map((chip) => {
+        const messageKey = credentialCategoryMessageKey(chip.value);
+        return {
+          ...chip,
+          label: messageKey ? t(messageKey as never) : chip.label,
+        };
+      }),
+    [activeTab, t],
+  );
   const filterConfigs = useMemo(
-    () => buildCredentialsVaultFilterConfigs(activeTab, vaultListScope, projectFilterOptions),
-    [activeTab, projectFilterOptions, vaultListScope],
+    () =>
+      buildCredentialsVaultFilterConfigs(
+        activeTab,
+        vaultListScope,
+        projectFilterOptions,
+        filterCopy,
+      ),
+    [activeTab, filterCopy, projectFilterOptions, vaultListScope],
   );
   const showCreate = vaultListScope === 'active' && canCreateInVaultScope(activeTab);
   const showPagedFooter = viewMode === 'list' || viewMode === 'tiles' || viewMode === 'folders';

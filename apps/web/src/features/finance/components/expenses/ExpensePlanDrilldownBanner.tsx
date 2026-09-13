@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ClipboardList, LayoutGrid } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
 import { planExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
@@ -18,14 +19,13 @@ export function ExpensePlanDrilldownBanner({
   planBannerLabel,
   onClearPlanFilter,
 }: ExpensePlanDrilldownBannerProps) {
+  const t = useTranslations('expenses');
   return (
     <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
       <p className="text-foreground max-w-prose">
-        Showing expense cards linked to this plan (server filter)
-        {planBannerLabel ? (
-          <span className="text-muted-foreground"> — {planBannerLabel}</span>
-        ) : null}
-        .
+        {planBannerLabel
+          ? t('banners.planFilterNamed', { label: planBannerLabel })
+          : t('banners.planFilter')}
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <Link
@@ -36,7 +36,7 @@ export function ExpensePlanDrilldownBanner({
           )}
         >
           <LayoutGrid size={14} className="opacity-70" aria-hidden />
-          Board (filtered)
+          {t('banners.boardFiltered')}
         </Link>
         <Link
           href={expensePlansListWithOpenPlanHref(expensePlanId)}
@@ -46,10 +46,10 @@ export function ExpensePlanDrilldownBanner({
           )}
         >
           <ClipboardList size={14} className="opacity-70" aria-hidden />
-          Plan detail
+          {t('banners.planDetail')}
         </Link>
         <Button variant="outline" size="sm" type="button" onClick={onClearPlanFilter}>
-          Clear filter
+          {t('actions.clearFilter')}
         </Button>
       </div>
     </div>

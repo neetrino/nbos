@@ -5,6 +5,7 @@ import { ArrowLeft, Repeat, TableProperties, Trash2, Workflow } from 'lucide-rea
 import type { EntityLifecycleScope } from '@nbos/shared';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
+import { useTranslations } from 'next-intl';
 
 export type TasksPageSettingsSheetProps = {
   listScope: EntityLifecycleScope;
@@ -19,17 +20,14 @@ export function TasksPageSettingsSheet({
   exportDisabled,
   onExportScopeStatsCsv,
 }: TasksPageSettingsSheetProps) {
+  const t = useTranslations('tasks');
   const isTrashList = listScope === 'trash';
 
   return (
     <PageSettingsSheet
-      title="Tasks — settings"
-      description={
-        isTrashList
-          ? 'Trash view. Restore tasks from the detail sheet or return to the active list.'
-          : 'Exports, related tools, and Trash. Scope stats reflect workspace-wide aggregates.'
-      }
-      triggerAriaLabel="Tasks settings"
+      title={t('settings.title')}
+      description={isTrashList ? t('settings.trashDescription') : t('settings.description')}
+      triggerAriaLabel={t('settings.triggerAria')}
     >
       {isTrashList ? (
         <Button
@@ -39,7 +37,7 @@ export function TasksPageSettingsSheet({
           onClick={() => onListScopeChange('active')}
         >
           <ArrowLeft className="size-4 shrink-0" aria-hidden />
-          Back to active list
+          {t('settings.backToActive')}
         </Button>
       ) : (
         <Button
@@ -49,7 +47,7 @@ export function TasksPageSettingsSheet({
           onClick={() => onListScopeChange('trash')}
         >
           <Trash2 className="text-destructive size-4 shrink-0" aria-hidden />
-          View Trash
+          {t('settings.viewTrash')}
         </Button>
       )}
       <Link
@@ -57,14 +55,14 @@ export function TasksPageSettingsSheet({
         className={buttonVariants({ variant: 'outline', className: 'justify-start gap-2' })}
       >
         <Repeat className="size-4 shrink-0" aria-hidden />
-        Recurring tasks
+        {t('settings.recurring')}
       </Link>
       <Link
         href="/tasks/automation"
         className={buttonVariants({ variant: 'outline', className: 'justify-start gap-2' })}
       >
         <Workflow className="size-4 shrink-0" aria-hidden />
-        Automation
+        {t('settings.automation')}
       </Link>
       <Button
         type="button"
@@ -74,7 +72,7 @@ export function TasksPageSettingsSheet({
         onClick={() => onExportScopeStatsCsv()}
       >
         <TableProperties className="size-4 shrink-0" aria-hidden />
-        Export scope stats (CSV)
+        {t('settings.exportCsv')}
       </Button>
     </PageSettingsSheet>
   );

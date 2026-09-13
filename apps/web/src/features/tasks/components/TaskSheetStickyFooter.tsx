@@ -1,6 +1,7 @@
 'use client';
 
 import { CheckCircle2, Play, RotateCcw, Undo2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE } from '@/components/shared/detail-sheet-classes';
 import { Button } from '@/components/ui/button';
 import { resolveTaskWorkflowFooterMode } from './task-sheet-workflow-footer';
@@ -36,6 +37,8 @@ export function TaskSheetStickyFooter({
   isTrashed,
   onRestore,
 }: TaskSheetStickyFooterProps) {
+  const t = useTranslations('tasks');
+  const tCommon = useTranslations('common');
   const effectiveStatus = workflowFooterStatus ?? taskStatus;
   const showSaveBar =
     !isTrashed && (dirty || Boolean(errorMessage)) && workflowFooterStatus == null;
@@ -46,7 +49,7 @@ export function TaskSheetStickyFooter({
         <div className="flex justify-center">
           <Button type="button" size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE} onClick={onRestore}>
             <Undo2 size={14} aria-hidden />
-            Restore
+            {t('sheet.restore')}
           </Button>
         </div>
       </div>
@@ -69,7 +72,7 @@ export function TaskSheetStickyFooter({
               disabled={!dirty}
               onClick={onSave}
             >
-              Save
+              {tCommon('save')}
             </Button>
             <Button
               type="button"
@@ -77,7 +80,7 @@ export function TaskSheetStickyFooter({
               size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
               onClick={onCancel}
             >
-              Cancel
+              {tCommon('cancel')}
             </Button>
           </div>
         </div>
@@ -107,6 +110,7 @@ function TaskSheetWorkflowActions({
   workflowSaving,
   onTaskAction,
 }: TaskSheetWorkflowActionsProps) {
+  const t = useTranslations('tasks');
   const mode = resolveTaskWorkflowFooterMode(taskStatus);
 
   return (
@@ -118,7 +122,7 @@ function TaskSheetWorkflowActions({
           disabled={workflowSaving}
           onClick={() => onTaskAction('start')}
         >
-          <Play size={14} aria-hidden /> Start
+          <Play size={14} aria-hidden /> {t('sheet.start')}
         </Button>
       ) : null}
       {mode === 'start-and-complete' || mode === 'complete-only' ? (
@@ -129,7 +133,7 @@ function TaskSheetWorkflowActions({
           disabled={workflowSaving}
           onClick={() => onTaskAction('complete')}
         >
-          <CheckCircle2 size={14} aria-hidden /> Complete
+          <CheckCircle2 size={14} aria-hidden /> {t('sheet.complete')}
         </Button>
       ) : null}
       {mode === 'resume-only' ? (
@@ -140,7 +144,7 @@ function TaskSheetWorkflowActions({
           disabled={workflowSaving}
           onClick={() => onTaskAction('reopen')}
         >
-          <RotateCcw size={14} aria-hidden /> Resume
+          <RotateCcw size={14} aria-hidden /> {t('sheet.resume')}
         </Button>
       ) : null}
     </div>

@@ -5,12 +5,32 @@ function parseAmount(value: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+export type WalletBonusHintKey =
+  | 'clawback'
+  | 'paidTiming'
+  | 'paid'
+  | 'pendingEligibility'
+  | 'potential'
+  | 'partial'
+  | 'kpiBurnedAmount'
+  | 'includedInPayroll'
+  | 'releasedUnpaid'
+  | 'carryOverHint'
+  | 'queued'
+  | 'salesInProgress';
+
+export type WalletBonusExplanation =
+  | { source: 'message'; key: WalletBonusHintKey; values?: { amount?: string; month?: string } }
+  | { source: 'raw'; text: string };
+
 /**
- * Short plain-language line for one wallet bonus card (from existing snapshot fields).
+ * Short help line for one wallet bonus card. Copy is resolved at render.
  */
-export function walletBonusEntryExplanation(row: EmployeeWalletBonusRow): string | null {
+export function resolveWalletBonusEntryExplanation(
+  row: EmployeeWalletBonusRow,
+): WalletBonusExplanation | null {
   if (row.status === 'CLAWBACK') {
-    return 'Clawback — this bonus was reversed or reduced. Check Corrections or ask Finance.';
+    return { source: 'message', key: 'clawback' };
   }
 
   const planned = parseAmount(row.amount);
@@ -20,46 +40,54 @@ export function walletBonusEntryExplanation(row: EmployeeWalletBonusRow): string
 
   if (row.walletGroup === 'PAID' || row.status === 'PAID') {
     if (remaining > 0) {
-      return 'Marked paid; a small remaining amount may reflect timing between release and entry totals.';
+      return { source: 'message', key: 'paidTiming' };
     }
-    return 'Paid through payroll — releases on this entry are recorded as paid.';
+    return { source: 'message', key: 'paid' };
   }
 
   if (row.status === 'PENDING_ELIGIBILITY') {
-    return 'Waiting on eligibility (e.g. product delivered, KPI, or funding) before payroll release.';
+    return { source: 'message', key: 'pendingEligibility' };
   }
 
   if (row.status === 'INCOMING' || row.status === 'EARNED') {
-    return 'Potential accrual — bonus grows with client payments or project progress, not paid yet.';
+    return { source: 'message', key: 'potential' };
   }
 
   if (paid > 0 && remaining > 0) {
-    return 'Partially paid — part went through payroll; the rest is still planned or awaiting release.';
+    return { source: 'message', key: 'partial' };
   }
 
   const burned = row.kpiBurnedAmount ? parseAmount(row.kpiBurnedAmount) : 0;
   if (burned > 0) {
     if (row.kpiBurnedReason?.trim()) {
-      return row.kpiBurnedReason.trim();
+      return { source: 'raw', text: row.kpiBurnedReason.trim() };
     }
-    return `Sales KPI reduced payroll by ${burned.toFixed(2)} on a prior attach — see included vs released amounts.`;
+    return { source: 'message', key: 'kpiBurnedAmount', values: { amount: burned.toFixed(2) } };
   }
 
   if (released > 0 && paid === 0 && row.payrollMonth) {
-    return `Included in payroll ${row.payrollMonth} — payout when Finance records expense payments.`;
+    return {
+      source: 'message',
+      key: 'includedInPayroll',
+      values: { month: row.payrollMonth },
+    };
   }
 
   if (released > 0 && paid === 0) {
-    return 'Released to payroll but not paid yet — follows Pay Now / expense payment timing.';
+    return { source: 'message', key: 'releasedUnpaid' };
   }
 
   const carryOver = row.payrollCarryOverAmount ? parseAmount(row.payrollCarryOverAmount) : 0;
   if (carryOver > 0) {
-    return `${carryOver.toFixed(2)} deferred to a later payroll month — monthly bonus cap was reached at attach.`;
+    return {
+      source: 'message',
+      key: 'carryOverHint',
+      values: { amount: carryOver.toFixed(2) },
+    };
   }
 
   if (row.walletGroup === 'NEXT_PAYROLL' && planned > 0) {
-    return 'Queued for payroll — amount may change if KPI or funding rules apply at attach.';
+    return { source: 'message', key: 'queued' };
   }
 
   if (row.type === 'SALES' && row.salesAccrualHint) {
@@ -67,7 +95,7 @@ export function walletBonusEntryExplanation(row: EmployeeWalletBonusRow): string
   }
 
   if (row.type === 'SALES' && row.walletGroup === 'IN_PROGRESS') {
-    return 'Sales bonus — payout may depend on KPI when the release is attached to payroll.';
+    return { source: 'message', key: 'salesInProgress' };
   }
 
   return null;

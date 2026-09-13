@@ -1,6 +1,7 @@
 'use client';
 
-import { KanbanCardShell, StatusBadge } from '@/components/shared';
+import { useTranslations } from 'next-intl';
+import { KanbanCardShell } from '@/components/shared';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { FinanceCalendarMobileEmptyMonthCell } from '@/features/finance/components/finance-calendar-mobile-month-cell';
 import { FinanceCalendarMobileMonthCell } from '@/features/finance/components/finance-calendar-mobile-month-cell';
@@ -10,6 +11,7 @@ import {
   FinanceCalendarYearControl,
 } from '@/features/finance/components/finance-calendar-year-control';
 import { employeeDisplayName } from '@/features/finance/components/payroll/salary-board-entries';
+import { SALARY_LINE_STATUS_MESSAGE_KEY } from '@/features/finance/components/payroll/payroll-i18n-keys';
 import {
   FINANCE_CALENDAR_MOBILE_BOARD_SCROLL_CLASS,
   FINANCE_CALENDAR_MOBILE_MAX_YEAR_OFFSET,
@@ -19,10 +21,7 @@ import {
   financeCalendarCurrentMonthIndex,
 } from '@/features/finance/constants/finance-calendar-mobile';
 import { formatAmountAbbreviated } from '@/features/finance/constants/finance';
-import {
-  salaryLineCalendarCellClass,
-  salaryLineStatusBoardUi,
-} from '@/features/finance/constants/salary-board-line-status';
+import { salaryLineCalendarCellClass } from '@/features/finance/constants/salary-board-line-status';
 import {
   formatPayrollMonthAbbrev,
   parseSalaryBoardAmount,
@@ -52,6 +51,7 @@ export function SalaryBoardCalendarMobileBoard({
   onCalendarYearChange,
   onOpenMonth,
 }: SalaryBoardCalendarMobileBoardProps) {
+  const t = useTranslations('payroll');
   const columnCount = data.columns.length;
   const grandTotal = sumSalaryBoardRowsTotal(rows, columnCount);
   const currentMonthIndex = financeCalendarCurrentMonthIndex(calendarYear);
@@ -64,7 +64,7 @@ export function SalaryBoardCalendarMobileBoard({
   return (
     <div
       className="flex min-h-0 min-w-0 flex-1 flex-col gap-3"
-      aria-label={`Salary board ${calendarYear}`}
+      aria-label={t('salary.boardAria', { year: calendarYear })}
     >
       <div className="flex shrink-0 items-center gap-3">
         <div
@@ -82,7 +82,7 @@ export function SalaryBoardCalendarMobileBoard({
         </div>
         <div className="min-w-0 flex-1 text-right">
           <p className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
-            {rows.length} employees
+            {t('salary.employeesCount', { count: rows.length })}
           </p>
           <p className="text-foreground truncate text-base font-bold tabular-nums">
             {formatAmountAbbreviated(grandTotal)}
@@ -92,7 +92,7 @@ export function SalaryBoardCalendarMobileBoard({
       <div className={FINANCE_CALENDAR_MOBILE_BOARD_SCROLL_CLASS}>
         <section className="border-border bg-card space-y-2 rounded-2xl border p-4">
           <h3 className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
-            Month totals
+            {t('salary.monthTotals')}
           </h3>
           <FinanceCalendarMobileTotalsGrid
             months={months}
@@ -178,19 +178,20 @@ function SalaryBoardMobileMonthCell({
   isCurrentMonth: boolean;
   onOpenMonth: (salaryLineId: string) => void;
 }) {
+  const t = useTranslations('payroll');
   if (!cell) {
     return (
       <FinanceCalendarMobileEmptyMonthCell caption={caption} isCurrentMonth={isCurrentMonth} />
     );
   }
-  const statusUi = salaryLineStatusBoardUi(cell.lineStatus);
+  const statusLabel = t(SALARY_LINE_STATUS_MESSAGE_KEY[cell.lineStatus]);
   const amount = formatAmountAbbreviated(parseSalaryBoardAmount(cell.totalPayable));
   return (
     <FinanceCalendarMobileMonthCell
       caption={caption}
       isCurrentMonth={isCurrentMonth}
       visualClassName={salaryLineCalendarCellClass(cell.lineStatus)}
-      ariaLabel={[caption, statusUi.label, amount].join(', ')}
+      ariaLabel={[caption, statusLabel, amount].join(', ')}
       amountOrStatus={amount}
       onOpen={() => onOpenMonth(cell.salaryLineId)}
     />

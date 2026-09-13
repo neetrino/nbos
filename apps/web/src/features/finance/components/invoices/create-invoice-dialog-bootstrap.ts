@@ -19,6 +19,7 @@ interface BootstrapCtx {
   setForm: (f: CreateInvoiceFormState) => void;
   setSubscriptionDetail: (s: Subscription | null) => void;
   setSubscriptionLoading: (v: boolean) => void;
+  loadErrorFallback?: string;
 }
 
 export function bootstrapCreateInvoiceDialog(ctx: BootstrapCtx): void {
@@ -42,6 +43,7 @@ export function bootstrapCreateInvoiceDialog(ctx: BootstrapCtx): void {
       ctx.setForm,
       ctx.setLoadError,
       ctx.setSubscriptionLoading,
+      ctx.loadErrorFallback,
     );
     return;
   }
@@ -56,6 +58,7 @@ async function loadSubscriptionById(
   setForm: (f: CreateInvoiceFormState) => void,
   setLoadError: (e: string | null) => void,
   setSubscriptionLoading: (v: boolean) => void,
+  loadErrorFallback = 'Subscription could not be loaded.',
 ) {
   setSubscriptionLoading(true);
   try {
@@ -65,7 +68,7 @@ async function loadSubscriptionById(
     setLoadError(null);
   } catch (caught) {
     setSubscriptionDetail(null);
-    setLoadError(getApiErrorMessage(caught, 'Subscription could not be loaded.'));
+    setLoadError(getApiErrorMessage(caught, loadErrorFallback));
   } finally {
     setSubscriptionLoading(false);
   }

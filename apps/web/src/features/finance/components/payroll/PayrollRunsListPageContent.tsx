@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Banknote, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   EmptyState,
@@ -20,7 +21,7 @@ import {
   parsePayrollRunsListMonthParam,
   parsePayrollRunsListStatusParam,
 } from '@/features/finance/constants/payroll-runs-list-url';
-import { PAYROLL_RUN_STATUS_LABEL } from '@/features/finance/constants/payroll-run-ui';
+import { PAYROLL_RUN_STATUS_MESSAGE_KEY } from '@/features/finance/constants/payroll-run-ui';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
@@ -31,12 +32,11 @@ import {
   type PayrollRunStatus,
 } from '@/lib/api/payroll-runs';
 import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
-import { payrollRunsListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PayrollRunsBoardView } from '@/features/finance/components/payroll/PayrollRunsBoardView';
 import { PayrollRunsCalendarView } from '@/features/finance/components/payroll/PayrollRunsCalendarView';
 import { PayrollRunsCreateRunDialog } from '@/features/finance/components/payroll/PayrollRunsCreateRunDialog';
 import { PayrollRunsListTable } from '@/features/finance/components/payroll/PayrollRunsListTable';
-import { PAYROLL_RUNS_VIEW_OPTIONS } from '@/features/finance/components/payroll/payroll-runs-view-options';
+import { usePayrollRunsViewOptions } from '@/features/finance/components/payroll/payroll-runs-view-options';
 import { usePayrollRunsListViewMode } from '@/features/finance/constants/payroll-runs-list-view';
 import {
   buildPayrollIntegratedFilterConfigs,
@@ -58,7 +58,9 @@ function defaultPayrollMonth(): string {
 }
 
 export function PayrollRunsListPageContent() {
-  useFinanceDocumentTitle(payrollRunsListPageTitle());
+  const t = useTranslations('payroll');
+  const viewOptions = usePayrollRunsViewOptions();
+  useFinanceDocumentTitle(t('list.pageTitle'));
 
   const router = useRouter();
   const pathname = usePathname();
@@ -122,11 +124,11 @@ export function PayrollRunsListPageContent() {
     } catch (caught) {
       setStats(null);
       setItems([]);
-      setError(getApiErrorMessage(caught, 'Payroll runs could not be loaded.'));
+      setError(getApiErrorMessage(caught, t('list.loadError')));
     } finally {
       setLoading(false);
     }
-  }, [listScope]);
+  }, [listScope, t]);
 
   useEffect(() => {
     void load();
@@ -217,7 +219,10 @@ export function PayrollRunsListPageContent() {
     [replaceListUrl, setPayrollFilters],
   );
 
-  const payrollFilterConfigs = useMemo(() => buildPayrollIntegratedFilterConfigs(), []);
+  const payrollFilterConfigs = useMemo(
+    () => buildPayrollIntegratedFilterConfigs((key) => t(key)),
+    [t],
+  );
 
   const payrollFilterValues = useMemo(
     () => ({
@@ -259,20 +264,14 @@ export function PayrollRunsListPageContent() {
         <IntegratedSearchFilters
           search=""
           onSearchChange={() => undefined}
-          searchPlaceholder="Filter payroll runs…"
+          searchPlaceholder={t('list.searchPlaceholder')}
           filters={payrollFilterConfigs}
           filterValues={payrollFilterValues}
           onFilterChange={handlePayrollFilterChange}
           onClearAll={handleClearPayrollFilters}
         />
       ),
-      viewMode: (
-        <ViewModeSwitch
-          value={view}
-          onChange={handleViewChange}
-          options={PAYROLL_RUNS_VIEW_OPTIONS}
-        />
-      ),
+      viewMode: <ViewModeSwitch value={view} onChange={handleViewChange} options={viewOptions} />,
       trailing: (
         <>
           <Link
@@ -280,7 +279,7 @@ export function PayrollRunsListPageContent() {
             className={buttonVariants({ variant: 'outline', size: 'sm' })}
           >
             <Banknote className="mr-1.5 size-4" aria-hidden />
-            Pay Now
+            {t('list.payNow')}
           </Link>
           <PayrollRunsPageSettingsSheet
             refreshDisabled={loading}
@@ -293,7 +292,7 @@ export function PayrollRunsListPageContent() {
           />
           <Button type="button" onClick={openDialog}>
             <Plus size={16} className="mr-1.5" aria-hidden />
-            New run
+            {t('list.newRun')}
           </Button>
         </>
       ),
@@ -312,7 +311,9 @@ export function PayrollRunsListPageContent() {
       payrollFilterConfigs,
       payrollFilterValues,
       stats,
+      t,
       view,
+      viewOptions,
       handleViewChange,
     ],
   );
@@ -330,15 +331,17 @@ export function PayrollRunsListPageContent() {
           {items.length === 0 ? (
             <EmptyState
               icon={Plus}
-              title="No payroll runs in this scope"
+              title={t('list.emptyTitle')}
               description={
                 statusFilter === 'ALL'
-                  ? 'Create a run for a calendar month. Salary lines can be seeded from employee base salaries.'
-                  : `No runs with status “${PAYROLL_RUN_STATUS_LABEL[statusFilter]}”. Try another filter or create a new run.`
+                  ? t('list.emptyDescription')
+                  : t('list.emptyStatus', {
+                      status: t(PAYROLL_RUN_STATUS_MESSAGE_KEY[statusFilter]),
+                    })
               }
               action={
                 <Button type="button" onClick={openDialog}>
-                  New run
+                  {t('list.newRun')}
                 </Button>
               }
             />

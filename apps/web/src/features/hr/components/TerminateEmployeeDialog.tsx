@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import {
   Dialog,
@@ -28,6 +29,8 @@ export function TerminateEmployeeDialog({
   onOpenChange,
   onTerminated,
 }: TerminateEmployeeDialogProps) {
+  const t = useTranslations('hr');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [preview, setPreview] = useState<EmployeeOffboardingPreview | null>(null);
@@ -42,82 +45,34 @@ export function TerminateEmployeeDialog({
       .offboardPreview(employeeId)
       .then(setPreview)
       .catch((err) => {
-        toast.error(err instanceof Error ? err.message : 'Could not load offboarding preview');
+        toast.error(err instanceof Error ? err.message : t('offboardDialog.loadFailed'));
         onOpenChange(false);
       })
       .finally(() => setLoading(false));
-  }, [open, employeeId, onOpenChange]);
+  }, [open, employeeId, onOpenChange, t]);
 
   async function handleConfirm() {
     if (!employeeId || preview?.alreadyTerminated) return;
     setSubmitting(true);
     try {
       await employeesApi.offboard(employeeId);
-      toast.success('Employee offboarded');
+      toast.success(t('offboardDialog.success'));
       onOpenChange(false);
       await onTerminated();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Offboarding failed');
+      toast.error(err instanceof Error ? err.message : t('offboardDialog.failed'));
     } finally {
       setSubmitting(false);
     }
   }
 
-  const inventory = preview?.inventory;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]" forceNestedBackdrop>
         <DialogHeader>
-          <DialogTitle>Offboard employee</DialogTitle>
+          <DialogTitle>{t('offboardDialog.title')}</DialogTitle>
         </DialogHeader>
-
-        {loading ? (
-          <div className="text-muted-foreground flex items-center justify-center gap-2 py-8 text-sm">
-            <Loader2 className="size-4 animate-spin" />
-            Loading impact preview…
-          </div>
-        ) : preview?.alreadyTerminated ? (
-          <p className="text-muted-foreground text-sm">This employee is already terminated.</p>
-        ) : (
-          <div className="space-y-4 text-sm">
-            <p>
-              Offboard <span className="font-medium">{employeeName}</span>? This will:
-            </p>
-            <ul className="text-muted-foreground list-disc space-y-1 pl-5">
-              <li>Set status to Terminated and record termination date</li>
-              <li>Block NBOS login immediately</li>
-              <li>
-                Revoke project/product team membership, credential grants, and SECRET allow-list
-                entries (audited per credential)
-              </li>
-              <li>Create the offboarding checklist for HR / Operations / Finance</li>
-              <li>Notify Finance team about final payroll</li>
-            </ul>
-            {inventory ? (
-              <div className="border-border bg-muted/30 rounded-lg border px-4 py-3 text-xs">
-                <p className="text-foreground mb-2 font-medium">Current footprint</p>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1 tabular-nums">
-                  <span>Open tasks</span>
-                  <span>{inventory.activeTaskCount}</span>
-                  <span>Project teams</span>
-                  <span>{inventory.projectTeamCount}</span>
-                  <span>Product teams</span>
-                  <span>{inventory.productTeamCount}</span>
-                  <span>Credential access</span>
-                  <span>{inventory.credentialIds.length}</span>
-                  <span>Drive grants</span>
-                  <span>{inventory.fileGrantCount}</span>
-                </div>
-              </div>
-            ) : null}
-            <p className="text-muted-foreground text-xs">
-              Tasks and external tooling (Git, email, Telegram) remain on the checklist for manual
-              handoff.
-            </p>
-          </div>
-        )}
-
+        <OffboardDialogBody loading={loading} preview={preview} employeeName={employeeName} />
         <DialogFooter>
           <Button
             type="button"
@@ -125,7 +80,7 @@ export function TerminateEmployeeDialog({
             onClick={() => onOpenChange(false)}
             disabled={submitting}
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
@@ -133,10 +88,67 @@ export function TerminateEmployeeDialog({
             disabled={loading || submitting || preview?.alreadyTerminated}
             onClick={() => void handleConfirm()}
           >
-            {submitting ? 'Offboarding…' : 'Confirm offboard'}
+            {submitting ? t('offboardDialog.submitting') : t('offboardDialog.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function OffboardDialogBody({
+  loading,
+  preview,
+  employeeName,
+}: {
+  loading: boolean;
+  preview: EmployeeOffboardingPreview | null;
+  employeeName: string;
+}) {
+  const t = useTranslations('hr');
+  const inventory = preview?.inventory;
+
+  if (loading) {
+    return (
+      <div className="text-muted-foreground flex items-center justify-center gap-2 py-8 text-sm">
+        <Loader2 className="size-4 animate-spin" />
+        {t('offboardDialog.loading')}
+      </div>
+    );
+  }
+
+  if (preview?.alreadyTerminated) {
+    return <p className="text-muted-foreground text-sm">{t('offboardDialog.alreadyTerminated')}</p>;
+  }
+
+  return (
+    <div className="space-y-4 text-sm">
+      <p>{t('offboardDialog.confirmLead', { name: employeeName })}</p>
+      <ul className="text-muted-foreground list-disc space-y-1 pl-5">
+        <li>{t('offboardDialog.bulletStatus')}</li>
+        <li>{t('offboardDialog.bulletLogin')}</li>
+        <li>{t('offboardDialog.bulletRevoke')}</li>
+        <li>{t('offboardDialog.bulletChecklist')}</li>
+        <li>{t('offboardDialog.bulletFinance')}</li>
+      </ul>
+      {inventory ? (
+        <div className="border-border bg-muted/30 rounded-lg border px-4 py-3 text-xs">
+          <p className="text-foreground mb-2 font-medium">{t('offboardDialog.footprint')}</p>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 tabular-nums">
+            <span>{t('offboardDialog.openTasks')}</span>
+            <span>{inventory.activeTaskCount}</span>
+            <span>{t('offboardDialog.projectTeams')}</span>
+            <span>{inventory.projectTeamCount}</span>
+            <span>{t('offboardDialog.productTeams')}</span>
+            <span>{inventory.productTeamCount}</span>
+            <span>{t('offboardDialog.credentialAccess')}</span>
+            <span>{inventory.credentialIds.length}</span>
+            <span>{t('offboardDialog.driveGrants')}</span>
+            <span>{inventory.fileGrantCount}</span>
+          </div>
+        </div>
+      ) : null}
+      <p className="text-muted-foreground text-xs">{t('offboardDialog.manualHandoff')}</p>
+    </div>
   );
 }

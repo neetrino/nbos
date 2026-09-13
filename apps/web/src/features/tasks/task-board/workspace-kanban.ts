@@ -2,7 +2,11 @@ import type { KanbanColumn } from '@/components/shared';
 import { getBoardStageKeys, type BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { TASK_BOARD_STAGES } from '@/features/tasks/constants/task-board-lifecycle';
 import type { Task } from '@/lib/api/tasks';
-import { DEADLINE_COLUMNS_DEF, getDeadlineColumn } from './task-board-constants';
+import {
+  DEADLINE_COLUMNS_DEF,
+  getDeadlineColumn,
+  type DeadlineColumnKey,
+} from './task-board-constants';
 import { sortTasksByBoardOrder } from './sort-tasks-by-board-order';
 
 /**
@@ -29,6 +33,17 @@ export const WORKSPACE_KANBAN_COLUMN_DEFS = [
   { key: 'Completed', label: 'Completed', color: '#16A34A', hexColor: '#16A34A', sortOrder: 4 },
 ] as const;
 
+const WORKSPACE_COLUMN_STATUS: Record<
+  (typeof WORKSPACE_KANBAN_COLUMN_DEFS)[number]['key'],
+  string
+> = {
+  Open: 'OPEN',
+  'In Progress': 'IN_PROGRESS',
+  Review: 'REVIEW',
+  'On hold': 'ON_HOLD',
+  Completed: 'COMPLETED',
+};
+
 const KANBAN_COLUMN_BY_STAGE_KEY: Record<
   string,
   (typeof WORKSPACE_KANBAN_COLUMN_DEFS)[number]['key']
@@ -43,6 +58,7 @@ const KANBAN_COLUMN_BY_STAGE_KEY: Record<
 export function buildWorkspaceKanbanColumns(
   tasks: Task[],
   scope: BoardLifecycleScope = 'ALL',
+  translateStatus?: (status: string) => string,
 ): KanbanColumn<Task>[] {
   const stageKeys = getBoardStageKeys(TASK_BOARD_STAGES, scope);
   const visibleColumnKeys = stageKeys
@@ -52,7 +68,7 @@ export function buildWorkspaceKanbanColumns(
   return WORKSPACE_KANBAN_COLUMN_DEFS.filter((def) => visibleColumnKeys.includes(def.key)).map(
     (def) => ({
       key: def.key,
-      label: def.label,
+      label: translateStatus?.(WORKSPACE_COLUMN_STATUS[def.key]) ?? def.label,
       color: def.color,
       hexColor: def.hexColor,
       items: sortTasksByBoardOrder(
@@ -66,6 +82,7 @@ export function buildWorkspaceKanbanColumns(
 export function buildDeadlineKanbanColumns(
   tasks: Task[],
   scope: BoardLifecycleScope = 'ALL',
+  translateDeadline?: (key: DeadlineColumnKey) => string,
 ): KanbanColumn<Task>[] {
   const defs =
     scope === 'CLOSED'
@@ -76,7 +93,7 @@ export function buildDeadlineKanbanColumns(
 
   return defs.map((col) => ({
     key: col.key,
-    label: col.label,
+    label: translateDeadline?.(col.key) ?? col.label,
     color: col.color,
     hexColor: col.hexColor,
     items: tasks.filter((t) => getDeadlineColumn(t) === col.key),

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ClipboardList, Layers, Package, Tag } from 'lucide-react';
 import { DetailSheetCollapsibleSection, EntityNotesField, InlineField } from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
@@ -12,12 +13,13 @@ import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
 import { DeliveryItemLanguagesMultiselect } from './DeliveryItemLanguagesMultiselect';
 
 function ExtensionPlanProductLine({ extension }: { extension: FullExtension }) {
+  const t = useTranslations('deliveryBoard');
   const line = extension.product.productType ?? '';
   return (
     <div className="text-muted-foreground flex items-start gap-2 text-sm">
       <Tag size={14} className="mt-0.5 shrink-0 opacity-70" />
       <span>
-        <span className="text-foreground font-medium">Product line: </span>
+        <span className="text-foreground font-medium">{t('plan.productLine')} </span>
         {(getProductType(line)?.label ?? line) || extension.product.name}
       </span>
     </div>
@@ -40,6 +42,7 @@ export function ExtensionPlanningSection({
   /** Stage checklists trigger — sits beside Languages. */
   stageChecklist?: ReactNode;
 }) {
+  const t = useTranslations('deliveryBoard');
   const [sectionOpen, setSectionOpen] = useState(true);
   const patchDraft = (partial: Partial<ExtensionPlanSnapshot>) => {
     onDraftChange({ ...draft, ...partial });
@@ -47,7 +50,7 @@ export function ExtensionPlanningSection({
 
   return (
     <DetailSheetCollapsibleSection
-      title="Extension plan"
+      title={t('plan.extensionTitle')}
       icon={<ClipboardList size={12} />}
       open={sectionOpen}
       onOpenChange={setSectionOpen}
@@ -57,16 +60,16 @@ export function ExtensionPlanningSection({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <InlineField
             variant="controlled"
-            label="Extension name"
+            label={t('plan.extensionName')}
             value={draft.name}
             icon={<Package size={12} />}
-            placeholder="Name…"
+            placeholder={t('sheet.namePlaceholder')}
             disabled={disabled}
             onValueChange={(v) => patchDraft({ name: v })}
           />
           <InlineField
             variant="controlled"
-            label="Size"
+            label={t('plan.size')}
             type="select"
             value={draft.size}
             options={EXTENSION_SIZES.map((s) => ({ value: s.value, label: s.label }))}
@@ -84,7 +87,7 @@ export function ExtensionPlanningSection({
             entityId={extension.id}
             value={draft.description}
             onChange={(description) => patchDraft({ description: description ?? '' })}
-            placeholder="Plan, acceptance criteria…"
+            placeholder={t('plan.extensionNotesPlaceholder')}
             disabled={disabled}
           />
         </div>

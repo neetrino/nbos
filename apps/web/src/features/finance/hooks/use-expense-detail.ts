@@ -6,7 +6,10 @@ interface UseExpenseDetailOptions {
   open: boolean;
   initialExpense?: Expense | null;
   isDirty?: () => boolean;
+  loadErrorMessage?: string;
 }
+
+const DEFAULT_EXPENSE_LOAD_ERROR = 'Expense could not be loaded.';
 
 export function useExpenseDetail(expenseId: string, options?: UseExpenseDetailOptions) {
   const open = options?.open ?? Boolean(expenseId);
@@ -16,7 +19,7 @@ export function useExpenseDetail(expenseId: string, options?: UseExpenseDetailOp
     initialEntity: options?.initialExpense,
     fetchById: expensesApi.getById,
     isDirty: options?.isDirty,
-    loadErrorMessage: 'Expense could not be loaded.',
+    loadErrorMessage: options?.loadErrorMessage ?? DEFAULT_EXPENSE_LOAD_ERROR,
   });
 
   const fetchExpense = useCallback(async () => {

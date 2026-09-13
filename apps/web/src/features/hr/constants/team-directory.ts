@@ -24,3 +24,9 @@ export function teamDirectoryCardGridClass(sidebarCollapsed: boolean): string {
 export function getDeptRoleLabel(role: string): string {
   return TEAM_DEPT_ROLE_OPTIONS.find((option) => option.value === role)?.label ?? role;
 }
+
+export function isDeptRoleValue(
+  value: string,
+): value is (typeof TEAM_DEPT_ROLE_OPTIONS)[number]['value'] {
+  return TEAM_DEPT_ROLE_OPTIONS.some((option) => option.value === value);
+}

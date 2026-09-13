@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +15,8 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { invoicesApi, type OverdueReminderPreview } from '@/lib/api/finance';
 import { toast } from 'sonner';
-import { countSkippedByReason, overdueReminderSkipLabel } from './overdue-reminder-skip-labels';
+import { INVOICE_REMINDER_SKIP_MESSAGE_KEYS } from './invoice-message-keys';
+import { countSkippedByReason } from './overdue-reminder-skip-labels';
 
 interface OverdueRemindersDialogProps {
   open: boolean;
@@ -22,6 +24,8 @@ interface OverdueRemindersDialogProps {
 }
 
 export function OverdueRemindersDialog({ open, onOpenChange }: OverdueRemindersDialogProps) {
+  const t = useTranslations('invoices');
+  const tCommon = useTranslations('common');
   const [preview, setPreview] = useState<OverdueReminderPreview | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -43,7 +47,7 @@ export function OverdueRemindersDialog({ open, onOpenChange }: OverdueRemindersD
       })
       .catch((caught: unknown) => {
         if (!cancelled) {
-          setError(getApiErrorMessage(caught, 'Could not load overdue reminder preview.'));
+          setError(getApiErrorMessage(caught, t('reminders.loadFailed')));
         }
       })
       .finally(() => {
@@ -52,7 +56,7 @@ export function OverdueRemindersDialog({ open, onOpenChange }: OverdueRemindersD
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, t]);
 
   const sendableCount = (preview?.wave1Count ?? 0) + (preview?.wave2Count ?? 0);
   const skippedGroups = preview ? countSkippedByReason(preview.skipped) : [];
@@ -62,12 +66,12 @@ export function OverdueRemindersDialog({ open, onOpenChange }: OverdueRemindersD
     setError(null);
     try {
       const result = await invoicesApi.runOverdueReminders();
-      toast.success(
-        `Sent ${result.sent.length} overdue reminder${result.sent.length === 1 ? '' : 's'} (${result.sent.filter((row) => row.wave === 1).length} wave 1, ${result.sent.filter((row) => row.wave === 2).length} wave 2).`,
-      );
+      const wave1 = result.sent.filter((row) => row.wave === 1).length;
+      const wave2 = result.sent.filter((row) => row.wave === 2).length;
+      toast.success(t('reminders.sent', { count: result.sent.length, wave1, wave2 }));
       onOpenChange(false);
     } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Overdue reminders could not be sent.'));
+      setError(getApiErrorMessage(caught, t('reminders.sendFailed')));
     } finally {
       setSubmitting(false);
     }
@@ -79,12 +83,9 @@ export function OverdueRemindersDialog({ open, onOpenChange }: OverdueRemindersD
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BellRing className="size-5 shrink-0 text-amber-500" aria-hidden />
-            Send overdue reminders?
+            {t('reminders.title')}
           </DialogTitle>
-          <DialogDescription>
-            Mark paid invoices as Paid first. This run sends one WhatsApp letter per remaining
-            Overdue card: wave 1 if none was sent, wave 2 if wave 1 was sent on a previous day.
-          </DialogDescription>
+          <DialogDescription>{t('reminders.description')}</DialogDescription>
         </DialogHeader>
         <OverdueRemindersPreviewBody
           loading={loading}
@@ -100,14 +101,14 @@ export function OverdueRemindersDialog({ open, onOpenChange }: OverdueRemindersD
             disabled={submitting}
             onClick={() => onOpenChange(false)}
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
             disabled={loading || submitting || sendableCount === 0}
             onClick={() => void handleConfirm()}
           >
-            {submitting ? 'Sending…' : 'Send reminders'}
+            {submitting ? t('reminders.sending') : t('reminders.send')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -128,8 +129,9 @@ function OverdueRemindersPreviewBody({
   sendableCount: number;
   skippedGroups: ReturnType<typeof countSkippedByReason>;
 }) {
+  const t = useTranslations('invoices');
   if (loading) {
-    return <p className="text-muted-foreground text-sm">Loading preview…</p>;
+    return <p className="text-muted-foreground text-sm">{t('reminders.loading')}</p>;
   }
   if (!preview && error) {
     return <p className="text-destructive text-sm">{error}</p>;
@@ -139,24 +141,20 @@ function OverdueRemindersPreviewBody({
     <div className="space-y-3 text-sm">
       {error ? <p className="text-destructive">{error}</p> : null}
       {sendableCount === 0 ? (
-        <p className="text-muted-foreground">No overdue client reminders to send right now.</p>
+        <p className="text-muted-foreground">{t('reminders.empty')}</p>
       ) : (
         <ul className="text-foreground list-inside list-disc space-y-1">
-          <li>
-            {preview.wave1Count} invoice{preview.wave1Count === 1 ? '' : 's'} → wave 1
-          </li>
-          <li>
-            {preview.wave2Count} invoice{preview.wave2Count === 1 ? '' : 's'} → wave 2
-          </li>
+          <li>{t('reminders.wave1', { count: preview.wave1Count })}</li>
+          <li>{t('reminders.wave2', { count: preview.wave2Count })}</li>
         </ul>
       )}
       {skippedGroups.length > 0 ? (
         <div>
-          <p className="text-muted-foreground mb-1">Skipped</p>
+          <p className="text-muted-foreground mb-1">{t('reminders.skipped')}</p>
           <ul className="text-muted-foreground list-inside list-disc space-y-1">
             {skippedGroups.map((row) => (
               <li key={row.reason}>
-                {overdueReminderSkipLabel(row.reason)}: {row.count}
+                {t(INVOICE_REMINDER_SKIP_MESSAGE_KEYS[row.reason])}: {row.count}
               </li>
             ))}
           </ul>

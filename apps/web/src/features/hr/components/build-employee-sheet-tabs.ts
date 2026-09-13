@@ -1,21 +1,23 @@
-import type { DetailSheetTabItem } from '@/components/shared';
+export type EmployeeSheetTabValue =
+  | 'general'
+  | 'departments'
+  | 'security'
+  | 'offboarding'
+  | 'onboarding';
 
-export function buildEmployeeSheetTabs(input: {
+export function buildEmployeeSheetTabValues(input: {
   selfProfile: boolean;
   status: string;
   hasOnboardingChecklist: boolean;
-}): DetailSheetTabItem[] {
-  const tabs: DetailSheetTabItem[] = [
-    { value: 'general', label: 'General' },
-    { value: 'departments', label: 'Departments' },
-  ];
+}): EmployeeSheetTabValue[] {
+  const tabs: EmployeeSheetTabValue[] = ['general', 'departments'];
   if (input.selfProfile) {
-    tabs.push({ value: 'security', label: 'Security' });
+    tabs.push('security');
   }
   if (input.status === 'TERMINATED') {
-    tabs.push({ value: 'offboarding', label: 'Offboarding' });
+    tabs.push('offboarding');
   } else if (input.hasOnboardingChecklist) {
-    tabs.push({ value: 'onboarding', label: 'Onboarding' });
+    tabs.push('onboarding');
   }
   return tabs;
 }

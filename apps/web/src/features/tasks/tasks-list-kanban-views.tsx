@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { KanbanBoard } from '@/components/shared';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import {
@@ -8,6 +9,7 @@ import {
   shouldShowTerminalDropBar,
 } from '@/features/shared/kanban-terminal-drop';
 import { TASK_BOARD_STAGES } from '@/features/tasks/constants/task-board-lifecycle';
+import { isTaskStatusValue } from '@/features/tasks/constants/tasks';
 import {
   TaskMiniCard,
   TaskListTableView,
@@ -58,16 +60,32 @@ export function TasksListKanbanViews({
   onRenameMyPlanStage,
   onDeleteMyPlanStage,
 }: TasksListKanbanViewsProps) {
+  const t = useTranslations('tasks');
   const taskTerminalDropZones = useMemo(
     () =>
       buildTerminalDropZonesFromBoard(TASK_BOARD_STAGES, {
-        COMPLETED: 'Completed',
+        COMPLETED: t('status.COMPLETED'),
       }),
-    [],
+    [t],
   );
   const taskQuickCreate = useMemo(
-    () => createTaskKanbanQuickCreateConfig(onAddTaskInColumn),
-    [onAddTaskInColumn],
+    () => createTaskKanbanQuickCreateConfig(onAddTaskInColumn, t('kanban.quick')),
+    [onAddTaskInColumn, t],
+  );
+  const deadlineColumns = useMemo(
+    () => buildDeadlineKanbanColumns(tasks, boardScope, (key) => t(`deadline.${key}`)),
+    [boardScope, t, tasks],
+  );
+  const workspaceColumns = useMemo(
+    () =>
+      buildWorkspaceKanbanColumns(tasks, boardScope, (status) =>
+        isTaskStatusValue(status) ? t(`status.${status}`) : status,
+      ),
+    [boardScope, t, tasks],
+  );
+  const myPlanColumns = useMemo(
+    () => buildMyPlanColumns(tasks, myPlanStages, t('kanban.unassigned')),
+    [myPlanStages, t, tasks],
   );
 
   const renderCard = (task: Task) => (
@@ -91,14 +109,14 @@ export function TasksListKanbanViews({
     return (
       <div className="min-h-0 flex-1">
         <KanbanBoard
-          columns={buildDeadlineKanbanColumns(tasks, boardScope)}
+          columns={deadlineColumns}
           renderCard={renderCard}
           getItemId={(t) => t.id}
           onMove={onDeadlineMove}
           onReorderWithinColumn={onDeadlineReorder}
           columnQuickCreate={taskQuickCreate}
           columnWidth={240}
-          emptyMessage="No tasks"
+          emptyMessage={t('kanban.empty')}
         />
       </div>
     );
@@ -109,14 +127,14 @@ export function TasksListKanbanViews({
       <div className="flex min-h-0 flex-1 flex-col gap-4">
         <div className="min-h-0 flex-1">
           <KanbanBoard
-            columns={buildWorkspaceKanbanColumns(tasks, boardScope)}
+            columns={workspaceColumns}
             columnWidth={boardScope === 'CLOSED' ? 288 : 270}
             renderCard={renderCard}
             getItemId={(t) => t.id}
             onMove={onKanbanMove}
             onReorderWithinColumn={onKanbanReorder}
             columnQuickCreate={taskQuickCreate}
-            emptyMessage="No tasks"
+            emptyMessage={t('kanban.empty')}
             terminalDropZones={
               shouldShowTerminalDropBar(boardScope) ? taskTerminalDropZones : undefined
             }
@@ -129,7 +147,7 @@ export function TasksListKanbanViews({
   return (
     <div className="min-h-0 flex-1">
       <KanbanBoard
-        columns={buildMyPlanColumns(tasks, myPlanStages)}
+        columns={myPlanColumns}
         renderCard={renderCard}
         getItemId={(t) => t.id}
         onMove={onMyPlanMove}
@@ -139,7 +157,7 @@ export function TasksListKanbanViews({
         onDeleteColumn={onDeleteMyPlanStage}
         columnQuickCreate={taskQuickCreate}
         columnWidth={270}
-        emptyMessage="No tasks"
+        emptyMessage={t('kanban.empty')}
       />
     </div>
   );

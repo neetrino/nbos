@@ -1,6 +1,7 @@
 'use client';
 
 import { Download, Loader2, TableProperties } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
 
@@ -19,11 +20,12 @@ export function ExpensesPageSettingsSheet({
   onExportScopeStatsCsv,
   onExportCsv,
 }: ExpensesPageSettingsSheetProps) {
+  const t = useTranslations('expenses');
   return (
     <PageSettingsSheet
-      title="Pay now — settings"
-      description="Exports and scope statistics. Period and pay-now scope follow the filters in the search bar."
-      triggerAriaLabel="Pay now settings"
+      title={t('settings.title')}
+      description={t('settings.description')}
+      triggerAriaLabel={t('settings.triggerAria')}
     >
       <Button
         type="button"
@@ -33,7 +35,7 @@ export function ExpensesPageSettingsSheet({
         onClick={() => onExportScopeStatsCsv()}
       >
         <TableProperties className="size-4 shrink-0" aria-hidden />
-        Export scope stats (CSV)
+        {t('actions.exportStats')}
       </Button>
       <Button
         type="button"
@@ -49,7 +51,7 @@ export function ExpensesPageSettingsSheet({
         ) : (
           <Download className="size-4 shrink-0" aria-hidden />
         )}
-        Export expenses (CSV)
+        {t('actions.exportCsv')}
       </Button>
     </PageSettingsSheet>
   );

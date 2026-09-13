@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { Settings } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ export interface DetailSheetSettingsMenuProps {
 
 /** Gear trigger aligned for detail sheet headers (settings / overflow actions). */
 export function DetailSheetSettingsMenu({ children, align = 'end' }: DetailSheetSettingsMenuProps) {
+  const t = useTranslations('common');
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -27,7 +29,7 @@ export function DetailSheetSettingsMenu({ children, align = 'end' }: DetailSheet
             variant="ghost"
             size="icon-sm"
             className="text-muted-foreground hover:text-foreground shrink-0"
-            aria-label="Settings"
+            aria-label={t('settings')}
           >
             <Settings className="size-4" />
           </Button>

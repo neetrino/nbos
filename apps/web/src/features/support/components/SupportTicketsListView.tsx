@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { FolderKanban, PanelRight, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,6 +36,13 @@ import {
   getTicketSlaState,
 } from '@/features/support/constants/support';
 import { isSupportInteractiveTarget } from '@/features/support/utils/is-support-interactive-target';
+import {
+  translateSupportCategory,
+  translateSupportPriority,
+  translateSupportSla,
+  translateSupportStatus,
+  type SupportTranslator,
+} from '@/features/support/support-message-keys';
 import type { SupportTicket } from '@/lib/api/support';
 import { cn } from '@/lib/utils';
 
@@ -56,19 +64,23 @@ export function SupportTicketsListView({
   onStatusSelect,
   onReopen,
 }: SupportTicketsListViewProps) {
+  const t = useTranslations('support');
+
   return (
     <div className={ENTITY_LIST_SCROLL_SHELL_CLASS}>
       <Table>
         <TableHeader className="bg-card sticky top-0 z-10">
           <TableRow className="hover:bg-transparent">
-            <TableHead className={cn(ENTITY_LIST_HEAD_CLASS, 'min-w-[200px]')}>Ticket</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Category</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Priority</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Status</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>SLA</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Assignee</TableHead>
+            <TableHead className={cn(ENTITY_LIST_HEAD_CLASS, 'min-w-[200px]')}>
+              {t('list.ticket')}
+            </TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('list.category')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('list.priority')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('list.status')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('list.sla')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('list.assignee')}</TableHead>
             <TableHead className={cn(ENTITY_LIST_HEAD_CLASS, 'hidden lg:table-cell')}>
-              Project
+              {t('list.project')}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -102,6 +114,7 @@ function SupportTicketListRow({
   onStatusSelect: (ticket: SupportTicket, status: string) => void;
   onReopen: (ticket: SupportTicket) => void;
 }) {
+  const t = useTranslations('support') as SupportTranslator;
   const category = getTicketCategory(ticket.category);
   const priority = getTicketPriority(ticket.priority);
   const sla = getTicketSlaState(ticket.slaState.state);
@@ -127,21 +140,21 @@ function SupportTicketListRow({
             variant="outline"
             size="sm"
             className="h-7 shrink-0 gap-1 px-2 text-xs"
-            title="Open ticket details"
+            title={t('list.detailsTitle')}
             onClick={(event) => {
               event.stopPropagation();
               onOpenDetail(ticket.id);
             }}
           >
             <PanelRight size={14} aria-hidden />
-            Details
+            {t('list.details')}
           </Button>
         </div>
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
         {category ? (
           <StatusBadge
-            label={category.label}
+            label={translateSupportCategory(t, ticket.category, category.label)}
             variant={category.variant}
             className={ENTITY_LIST_BADGE_CLASS}
           />
@@ -152,7 +165,7 @@ function SupportTicketListRow({
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
         {priority ? (
           <StatusBadge
-            label={priority.label}
+            label={translateSupportPriority(t, ticket.priority, priority.label)}
             variant={priority.variant}
             className={ENTITY_LIST_BADGE_CLASS}
           />
@@ -168,13 +181,13 @@ function SupportTicketListRow({
           }}
           disabled={Boolean(actionId?.startsWith('status:'))}
         >
-          <SelectTrigger size="sm" className="max-w-[168px]" aria-label="Ticket status">
-            <SelectValue placeholder="Status" />
+          <SelectTrigger size="sm" className="max-w-[168px]" aria-label={t('list.statusAria')}>
+            <SelectValue placeholder={t('list.status')} />
           </SelectTrigger>
           <SelectContent>
             {TICKET_STATUSES.map((status) => (
               <SelectItem key={status.value} value={status.value}>
-                {status.label}
+                {translateSupportStatus(t, status.value, status.label)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -190,7 +203,7 @@ function SupportTicketListRow({
               onClick={() => void onReopen(ticket)}
             >
               <RotateCcw size={10} aria-hidden />
-              Reopen
+              {t('actions.reopen')}
             </Button>
           </div>
         ) : null}
@@ -198,7 +211,7 @@ function SupportTicketListRow({
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
         {sla ? (
           <StatusBadge
-            label={sla.label}
+            label={translateSupportSla(t, ticket.slaState.state, sla.label)}
             variant={sla.variant}
             className={ENTITY_LIST_BADGE_CLASS}
           />

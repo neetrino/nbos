@@ -2,7 +2,11 @@
 
 ## Мультиязычность — первый EN/RU срез, 2026-09-12
 
-Статус: этапы 0–5 первого EN/RU среза закрыты как реализация и отчёт — live два пользователя и live token-expiry пройдены. Срез не в IMPLEMENTATION_DONE. Production rollout отдельный. [Канон](NBOS/01-Platform-Overview/07-Interface-Localization.md), [план](implementation/I18N-IMPLEMENTATION-PLAN.md). Этапы 6–7 не начаты.
+Статус: этапы 0–5 закрыты как реализация и отчёт. Prod-миграция `interface_locale` применена. Этап 6 начат (аккаунт/кошелёк). Этап 7 — черновик HY-пилота, язык выключен. Срез не в IMPLEMENTATION_DONE. [Канон](NBOS/01-Platform-Overview/07-Interface-Localization.md), [план](implementation/I18N-IMPLEMENTATION-PLAN.md).
+
+## Platform Appearance — общий фон из админки, 2026-09-12
+
+Статус: реализовано на ветке `feature/platform-appearance-wallpaper` (не влито в `sipan`). Settings `/settings/appearance`, WebP light/dark, CSS-фон на `.nbos-app-canvas`. Канон: [Settings / Admin](NBOS/02-Modules/16-Settings-Admin/00-Settings-Admin-Overview.md).
 
 > **Активный бэклог** до полного канона: что делаем и что отложено. Закрытые срезы и история — `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
@@ -42,6 +46,8 @@
 ## Блок 2A — Реализуем сейчас: внутренний канон без внешних факторов
 
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
+
+- **NBOS Quick Actions / Quick Task:** код среза на `feat/quick-task-fast-entry` — `/quick/task` вне `(app)`, тот же `QuickCreateTaskDialog` + mobile bottom sheet, draft-safe `/api/me`, lazy `TasksSurface`, `dispatchTaskCreated`, dedicated `quick-task.webmanifest`, marks, EN/RU `quick`. Targeted tests + lint зелёные. `pnpm --filter @nbos/web typecheck` / `build:web` падают на **предсуществующем** `desk-line-armenian.test.ts` (`dashboardDeskLine` нет в Messages на этом snapshot). Live iOS/Android install QA не прогонялась. Канон: `[13-Quick-Actions.md](NBOS/05-UI-Specifications/13-Quick-Actions.md)`, `[06-Quick-Task-Entry.md](NBOS/02-Modules/05-Tasks/06-Quick-Task-Entry.md)`. План: `[QUICK-ACTIONS-IMPLEMENTATION-PLAN.md](implementation/QUICK-ACTIONS-IMPLEMENTATION-PLAN.md)` — **M** (код есть; не в DONE до live install QA)
 
 Блок 2B — Внутренний фонд интеграций: можно готовить сейчас, без внешних кредов
 

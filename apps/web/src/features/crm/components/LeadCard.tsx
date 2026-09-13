@@ -1,6 +1,7 @@
 'use client';
 
 import { Calendar, Mail, Phone, User, type LucideIcon } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useCurrentTimeSnapshot } from '@/hooks/use-current-time-snapshot';
 import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
@@ -16,9 +17,9 @@ import {
   TYPE_TINTED_BOARD_CARD_SHELL_CLASS,
 } from '@/components/shared/kanban/type-tinted-board-card-ui.constants';
 import { employeeFullName } from '@/features/hr/utils/employee-display';
-import { formatBoardCardDate } from '@/lib/format/board-card-date';
 import { cn } from '@/lib/utils';
 import { getLeadSource } from '../constants/leadPipeline';
+import { translateLeadSourceLabel, type CrmTranslate } from '../i18n/crm-copy';
 import type { Lead } from '@/lib/api/leads';
 import { LEAD_ENTITY_VISUAL } from '@/lib/lead-entity-visual';
 import {
@@ -44,9 +45,11 @@ interface LeadCardProps {
 }
 
 export function LeadCard({ lead, onClick, onCreateTask }: LeadCardProps) {
+  const t = useTranslations('crm');
+  const locale = useLocale();
   const leadVisual = LEAD_ENTITY_VISUAL;
   const currentTime = useCurrentTimeSnapshot();
-  const view = getLeadCardView(lead, currentTime);
+  const view = getLeadCardView(lead, currentTime, t);
 
   return (
     <KanbanCardShell
@@ -67,7 +70,7 @@ export function LeadCard({ lead, onClick, onCreateTask }: LeadCardProps) {
         metaLabel={view.metaLabel}
         Icon={leadVisual.Icon}
         iconWrapClassName={leadVisual.iconWrapClassName}
-        entityLabel={leadVisual.label}
+        entityLabel={t('common.entityLead')}
       />
       <div
         className={cn(TYPE_TINTED_BOARD_CARD_DIVIDER_BASE_CLASS, 'border-border/50 mt-3')}
@@ -78,27 +81,28 @@ export function LeadCard({ lead, onClick, onCreateTask }: LeadCardProps) {
         phone={lead.phone}
         email={lead.email}
         createdAt={lead.createdAt}
+        locale={locale}
       />
       <LeadCardFooter
         assigneeName={view.assigneeName}
         assigneeAvatar={lead.assignee?.avatar}
         sourceLabel={view.sourceLabel}
         isOverdue={view.isOverdue}
-        daysSinceCreation={view.daysSinceCreation}
+        overdueLabel={t('leads.overdueDays', { count: view.daysSinceCreation })}
         onCreateTask={onCreateTask ? () => onCreateTask(lead) : undefined}
       />
     </KanbanCardShell>
   );
 }
 
-function getLeadCardView(lead: Lead, currentTime: number) {
+function getLeadCardView(lead: Lead, currentTime: number, t: CrmTranslate) {
   const source = getLeadSource(lead.source);
   const daysSinceCreation = Math.floor((currentTime - new Date(lead.createdAt).getTime()) / DAY_MS);
   return {
     title: getLeadDisplayTitle(lead),
     metaLabel: getLeadCardMetaLabel(lead),
     latestMessage: getLeadLatestMessagePreview(lead),
-    sourceLabel: source ? `${source.icon} ${source.label}` : null,
+    sourceLabel: source ? `${source.icon} ${translateLeadSourceLabel(t, source.value)}` : null,
     daysSinceCreation,
     isOverdue: lead.status === 'NEW' && daysSinceCreation >= 1,
     assigneeName: lead.assignee ? employeeFullName(lead.assignee) : null,
@@ -142,11 +146,13 @@ function LeadCardBody({
   phone,
   email,
   createdAt,
+  locale,
 }: {
   latestMessage: string | null;
   phone: string | null;
   email: string | null;
   createdAt: string;
+  locale: string;
 }) {
   return (
     <div className={TYPE_TINTED_BOARD_CARD_BODY_STACK_CLASS}>
@@ -160,11 +166,21 @@ function LeadCardBody({
       <LeadCardMetaLine
         icon={Calendar}
         iconSize={TYPE_TINTED_BOARD_CARD_DATE_ICON_SIZE}
-        label={formatBoardCardDate(createdAt)}
+        label={formatLeadCardDate(createdAt, locale)}
         labelClassName={TYPE_TINTED_BOARD_CARD_DATE_LABEL_CLASS}
       />
     </div>
   );
+}
+
+function formatLeadCardDate(iso: string, locale: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
 }
 
 function LeadCardMetaLine({
@@ -221,14 +237,14 @@ function LeadCardFooter({
   assigneeAvatar,
   sourceLabel,
   isOverdue,
-  daysSinceCreation,
+  overdueLabel,
   onCreateTask,
 }: {
   assigneeName: string | null;
   assigneeAvatar?: string | null;
   sourceLabel: string | null;
   isOverdue: boolean;
-  daysSinceCreation: number;
+  overdueLabel: string;
   onCreateTask?: () => void;
 }) {
   return (
@@ -236,7 +252,7 @@ function LeadCardFooter({
       <div className="flex min-w-0 items-center gap-2">
         <LeadCardAssigneeAvatar assigneeName={assigneeName} assigneeAvatar={assigneeAvatar} />
         {isOverdue ? (
-          <StatusBadge label={`${daysSinceCreation}d`} variant="red" className="text-[9px]" />
+          <StatusBadge label={overdueLabel} variant="red" className="text-[9px]" />
         ) : null}
       </div>
       <div className="flex justify-center">

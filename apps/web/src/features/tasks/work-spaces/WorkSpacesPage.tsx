@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { FolderKanban, LayoutGrid, List, Package, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,22 +35,8 @@ import { WorkSpacesDirectoryHeaderNav } from './WorkSpacesDirectoryHeaderNav';
 
 type WorkSpaceView = 'grid' | 'list';
 
-const WORKSPACE_VIEW_OPTIONS: ViewModeOption<WorkSpaceView>[] = [
-  {
-    value: 'grid',
-    label: 'Grid',
-    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'Card grid view',
-  },
-  {
-    value: 'list',
-    label: 'List',
-    icon: <List className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'List view',
-  },
-];
-
 export function WorkSpacesPage() {
+  const t = useTranslations('workSpaces');
   const [createOpen, setCreateOpen] = useState(false);
   const [sheetProduct, setSheetProduct] = useState<FullProduct | null>(null);
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
@@ -82,10 +69,10 @@ export function WorkSpacesPage() {
         setSheetProduct(loaded);
         openDeliveryItem(`product-${productId}`);
       } catch {
-        toast.error('Product could not be loaded.');
+        toast.error(t('productLoadFailed'));
       }
     },
-    [openDeliveryItem],
+    [openDeliveryItem, t],
   );
 
   const handleOpenProductDeal = useCallback(
@@ -99,38 +86,60 @@ export function WorkSpacesPage() {
     return [
       {
         key: 'mode',
-        label: 'Mode',
+        label: t('filterMode'),
         options: [
-          { value: 'scrum', label: 'Scrum' },
-          { value: 'kanban', label: 'Kanban' },
+          { value: 'scrum', label: t('mode.scrum') },
+          { value: 'kanban', label: t('mode.kanban') },
         ],
       },
     ];
-  }, []);
+  }, [t]);
 
   const tabOptions = useMemo(
     () => [
       {
         value: 'standalone' as const,
-        label: `Standalone (${counts.standalone})`,
+        label: t('tabStandalone', { count: counts.standalone }),
         icon: FolderKanban,
       },
-      { value: 'product' as const, label: `Product (${counts.product})`, icon: Package },
+      {
+        value: 'product' as const,
+        label: t('tabProduct', { count: counts.product }),
+        icon: Package,
+      },
     ],
-    [counts.product, counts.standalone],
+    [counts.product, counts.standalone, t],
+  );
+
+  const viewOptions = useMemo(
+    (): ViewModeOption<WorkSpaceView>[] => [
+      {
+        value: 'grid',
+        label: t('viewGrid'),
+        icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+        ariaLabel: t('viewGridAria'),
+      },
+      {
+        value: 'list',
+        label: t('viewList'),
+        icon: <List className="size-3.5 shrink-0" aria-hidden />,
+        ariaLabel: t('viewListAria'),
+      },
+    ],
+    [t],
   );
 
   return (
     <div className="flex h-full flex-col gap-5">
       <WorkSpacesDirectoryHeaderNav tab={tab} />
       <PageHero
-        title="Work Spaces"
+        title={t('title')}
         tabs={
           <PageHeroTabs
             value={tab}
             onChange={setTab}
             options={tabOptions}
-            ariaLabel="Work space type"
+            ariaLabel={t('typeAria')}
             registerMobileDock={false}
           />
         }
@@ -138,7 +147,7 @@ export function WorkSpacesPage() {
           <IntegratedSearchFilters
             search={searchInput}
             onSearchChange={setSearchInput}
-            searchPlaceholder="Search by name, project, product…"
+            searchPlaceholder={t('searchPlaceholder')}
             filters={showDesktopDirectoryChrome ? workSpaceFilterConfigs : undefined}
             filterValues={showDesktopDirectoryChrome ? { mode } : undefined}
             onFilterChange={
@@ -162,7 +171,7 @@ export function WorkSpacesPage() {
         }
         viewMode={
           showDesktopDirectoryChrome ? (
-            <ViewModeSwitch value={view} onChange={setView} options={WORKSPACE_VIEW_OPTIONS} />
+            <ViewModeSwitch value={view} onChange={setView} options={viewOptions} />
           ) : null
         }
         trailing={
@@ -172,11 +181,11 @@ export function WorkSpacesPage() {
               <Button
                 type="button"
                 className="shrink-0 gap-2"
-                aria-label="Create new work space"
+                aria-label={t('createAria')}
                 onClick={() => setCreateOpen(true)}
               >
                 <Plus size={16} aria-hidden />
-                Space
+                {t('createShort')}
               </Button>
             ) : null}
           </>
@@ -190,21 +199,17 @@ export function WorkSpacesPage() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={FolderKanban}
-          title="No Work Spaces found"
-          description={
-            tab === 'standalone'
-              ? 'Try another search or create a standalone space for internal planning.'
-              : 'Product delivery spaces appear when a product has an ensured work space. Open a product from Projects to connect tasks.'
-          }
+          title={t('emptyTitle')}
+          description={tab === 'standalone' ? t('emptyStandalone') : t('emptyProduct')}
           action={
             tab === 'standalone' ? (
               <Button
                 type="button"
-                aria-label="Create new work space"
+                aria-label={t('createAria')}
                 onClick={() => setCreateOpen(true)}
               >
                 <Plus size={16} aria-hidden />
-                Space
+                {t('createShort')}
               </Button>
             ) : undefined
           }

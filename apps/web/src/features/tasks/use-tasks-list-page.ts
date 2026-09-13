@@ -2,11 +2,11 @@
 
 import { createElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useListScope } from '@/hooks/use-list-scope';
-import { TASK_STATUSES, TASK_PRIORITIES } from '@/features/tasks/constants/tasks';
 import { taskMatchesTaskBoardScope } from '@/features/tasks/constants/task-board-lifecycle';
+import { buildTasksFilterConfigs } from '@/features/tasks/build-tasks-filter-configs';
 import {
-  BOARD_LIFECYCLE_SCOPE_OPTIONS,
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
   resolveBoardLifecycleScope,
   type BoardLifecycleScope,
@@ -29,30 +29,9 @@ import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persiste
 
 export type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 
-const FILTER_CONFIGS = [
-  {
-    key: 'boardScope',
-    label: 'Status',
-    includeAllOption: false,
-    defaultOptionValue: DEFAULT_BOARD_LIFECYCLE_SCOPE,
-    options: BOARD_LIFECYCLE_SCOPE_OPTIONS.map((option) => ({
-      value: option.value,
-      label: option.label,
-    })),
-  },
-  {
-    key: 'status',
-    label: 'Stage',
-    options: TASK_STATUSES.map((s) => ({ value: s.value, label: s.label })),
-  },
-  {
-    key: 'priority',
-    label: 'Urgency',
-    options: TASK_PRIORITIES.map((p) => ({ value: p.value, label: p.label })),
-  },
-];
-
 export function useTasksListPage() {
+  const t = useTranslations('tasks');
+  const filterConfigs = useMemo(() => buildTasksFilterConfigs(t), [t]);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -322,7 +301,7 @@ export function useTasksListPage() {
     boardView,
     setBoardView,
     fetchTasks,
-    filterConfigs: FILTER_CONFIGS,
+    filterConfigs,
     handleExportScopeStatsCsv,
     selectedTaskId: openTaskId,
     initialTask,

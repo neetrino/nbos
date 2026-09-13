@@ -26,8 +26,8 @@ export type WalletOverviewMetrics = {
   earnedTotal: number;
   paidFromPayroll: number;
   heroAmount: number;
-  heroLabel: string;
-  heroSublabel: string;
+  heroKind: 'earned' | 'nextRemaining' | 'nextTotal';
+  heroMonth: string | null;
   pipelineSegments: WalletPipelineSegment[];
   nextPayrollProgress: number | null;
 };
@@ -67,17 +67,17 @@ export function computeWalletOverviewMetrics(data: EmployeeWalletSnapshot): Wall
   const nextPaid = data.nextPayroll ? parseAmount(data.nextPayroll.paidAmount) : 0;
 
   let heroAmount = earnedTotal;
-  let heroLabel = 'Earned & in payout';
-  let heroSublabel = 'Released bonuses and payroll queue — not a bank balance.';
+  let heroKind: WalletOverviewMetrics['heroKind'] = 'earned';
+  let heroMonth: string | null = null;
 
   if (data.nextPayroll && nextRemaining > 0) {
     heroAmount = nextRemaining;
-    heroLabel = `Next payroll · ${data.nextPayroll.payrollMonth}`;
-    heroSublabel = 'Remaining on your open salary line this cycle.';
+    heroKind = 'nextRemaining';
+    heroMonth = data.nextPayroll.payrollMonth;
   } else if (data.nextPayroll && nextTotal > 0) {
     heroAmount = nextTotal;
-    heroLabel = `Next payroll · ${data.nextPayroll.payrollMonth}`;
-    heroSublabel = 'Total payable on your upcoming salary line.';
+    heroKind = 'nextTotal';
+    heroMonth = data.nextPayroll.payrollMonth;
   }
 
   const nextPayrollProgress =
@@ -96,8 +96,8 @@ export function computeWalletOverviewMetrics(data: EmployeeWalletSnapshot): Wall
     earnedTotal,
     paidFromPayroll,
     heroAmount,
-    heroLabel,
-    heroSublabel,
+    heroKind,
+    heroMonth,
     pipelineSegments: pipelineSegmentsFromSummary(bonusSummary),
     nextPayrollProgress,
   };

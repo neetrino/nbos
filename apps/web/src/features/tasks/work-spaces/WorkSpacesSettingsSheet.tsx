@@ -1,6 +1,7 @@
 'use client';
 
 import { Download } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
 import type { WorkSpace } from '@/lib/api/tasks';
@@ -14,11 +15,12 @@ function downloadWorkSpacesListCsv(items: WorkSpace[]): void {
 }
 
 export function WorkSpacesSettingsSheet({ items }: { items: WorkSpace[] }) {
+  const t = useTranslations('workSpaces');
   return (
     <PageSettingsSheet
-      title="Work Spaces — settings"
-      description="Options for this directory. The CSV is built from spaces currently loaded on this page."
-      triggerAriaLabel="Work Spaces settings"
+      title={t('settings.title')}
+      description={t('settings.description')}
+      triggerAriaLabel={t('settings.triggerAria')}
     >
       <Button
         type="button"
@@ -28,7 +30,7 @@ export function WorkSpacesSettingsSheet({ items }: { items: WorkSpace[] }) {
         onClick={() => downloadWorkSpacesListCsv(items)}
       >
         <Download className="size-4 shrink-0" aria-hidden />
-        Download visible list (CSV)
+        {t('settings.exportCsv')}
       </Button>
     </PageSettingsSheet>
   );

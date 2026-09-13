@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { EmployeeWalletSnapshot } from '@/lib/api/me';
 
 interface WalletRecentActivitySectionProps {
@@ -6,14 +9,13 @@ interface WalletRecentActivitySectionProps {
 }
 
 export function WalletRecentActivitySection({ activity }: WalletRecentActivitySectionProps) {
+  const t = useTranslations('account.wallet.activity');
   return (
     <section className="border-border bg-card rounded-2xl border p-5">
-      <h2 className="text-foreground text-sm font-semibold">Recent activity</h2>
-      <p className="text-muted-foreground mt-1 text-xs leading-snug">
-        Latest payroll and bonus events tied to you (read-only).
-      </p>
+      <h2 className="text-foreground text-sm font-semibold">{t('title')}</h2>
+      <p className="text-muted-foreground mt-1 text-xs leading-snug">{t('hint')}</p>
       {activity.length === 0 ? (
-        <p className="text-muted-foreground mt-3 text-xs">No recent events yet.</p>
+        <p className="text-muted-foreground mt-3 text-xs">{t('empty')}</p>
       ) : (
         <ul className="mt-4 space-y-3">
           {activity.map((item) => (
@@ -38,7 +40,7 @@ export function WalletRecentActivitySection({ activity }: WalletRecentActivitySe
                   href={item.linkHref}
                   className="text-primary w-fit text-[11px] font-medium hover:underline"
                 >
-                  Open
+                  {t('open')}
                 </Link>
               ) : null}
             </li>

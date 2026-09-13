@@ -1,6 +1,7 @@
 'use client';
 
 import { Download, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
 
@@ -13,11 +14,12 @@ export function SalaryBoardPageSettingsSheet({
   exportCsvInProgress: boolean;
   onExportCsv: () => void;
 }) {
+  const t = useTranslations('payroll');
   return (
     <PageSettingsSheet
-      title="Salary — settings"
-      description="Export visible salary lines (current filters and month range)."
-      triggerAriaLabel="Salary settings"
+      title={t('salary.settingsTitle')}
+      description={t('salary.settingsDescription')}
+      triggerAriaLabel={t('salary.settingsAria')}
     >
       <Button
         type="button"
@@ -31,7 +33,7 @@ export function SalaryBoardPageSettingsSheet({
         ) : (
           <Download className="size-4 shrink-0" aria-hidden />
         )}
-        Export visible lines (CSV)
+        {t('salary.exportCsv')}
       </Button>
     </PageSettingsSheet>
   );

@@ -7,6 +7,11 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue, type Prisma } from '@nbos/database';
+import {
+  clampNotificationBody,
+  clampNotificationFields,
+  clampNotificationTitle,
+} from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import { NotificationRealtimePublisher } from '../realtime/notification-realtime.publisher';
 import {
@@ -172,8 +177,8 @@ function toNotificationRow(row: InAppNotificationRow): NotificationRow {
     recipientId: row.recipientEmployeeId,
     category: row.category,
     priority: row.priority,
-    title: row.title,
-    body: row.body,
+    title: clampNotificationTitle(row.title),
+    body: clampNotificationBody(row.body),
     link: row.link,
     actionLabel: row.actionLabel,
     entityType: row.entityType,
@@ -196,42 +201,44 @@ export class NotificationService {
   ) {}
 
   async create(params: CreateNotificationParams): Promise<NotificationRow> {
+    const next = clampNotificationFields(params);
     if (isNotificationCommandV2Enabled() && this.commands) {
-      return this.commands.createOne(params);
+      return this.commands.createOne(next);
     }
-    return this.createLegacy(params);
+    return this.createLegacy(next);
   }
 
   /** Multi-recipient create — uses V2/bulk path when flags enabled. */
   async createMany(
     command: import('./notification-command.service').CreateManyNotificationCommand,
   ): Promise<import('./notification-command.service').CreateManyResult> {
+    const next = clampNotificationFields(command);
     if (isNotificationCommandV2Enabled() && this.commands) {
-      return this.commands.createMany(command);
+      return this.commands.createMany(next);
     }
-    const uniqueRecipients = [...new Set(command.recipientIds.filter(Boolean))];
+    const uniqueRecipients = [...new Set(next.recipientIds.filter(Boolean))];
     const rows: NotificationRow[] = [];
     let inserted = 0;
     let filtered = 0;
     for (const recipientId of uniqueRecipients) {
-      const dedupeKey = command.dedupeKeySuffix
-        ? `${command.dedupeKeyPrefix}:${recipientId}:${command.dedupeKeySuffix}`
-        : `${command.dedupeKeyPrefix}:${recipientId}`;
+      const dedupeKey = next.dedupeKeySuffix
+        ? `${next.dedupeKeyPrefix}:${recipientId}:${next.dedupeKeySuffix}`
+        : `${next.dedupeKeyPrefix}:${recipientId}`;
       const row = await this.createLegacy({
-        type: command.type,
+        type: next.type,
         recipientId,
-        title: command.title,
-        body: command.body,
-        link: command.link,
-        actionLabel: command.actionLabel,
-        category: command.category,
-        priority: command.priority,
-        entityType: command.entityType,
-        entityId: command.entityId,
-        sourceModule: command.sourceModule,
+        title: next.title,
+        body: next.body,
+        link: next.link,
+        actionLabel: next.actionLabel,
+        category: next.category,
+        priority: next.priority,
+        entityType: next.entityType,
+        entityId: next.entityId,
+        sourceModule: next.sourceModule,
         dedupeKey,
         idempotencyKey: dedupeKey,
-        payload: command.payload,
+        payload: next.payload,
       });
       if (row.id.startsWith('skipped:')) filtered += 1;
       else inserted += 1;

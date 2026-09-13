@@ -2,9 +2,9 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { AppWindow, Calendar, Clock3 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { KanbanCardShell } from '@/components/shared';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
-import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
 import {
   employeeDisplayName,
   type SalaryBoardEntry,
@@ -14,6 +14,7 @@ import {
   formatPayrollMonthAbbrev,
   parseSalaryBoardAmount,
 } from '@/features/finance/utils/salary-board-month-utils';
+import { SALARY_LINE_STATUS_MESSAGE_KEY } from '@/features/finance/components/payroll/payroll-i18n-keys';
 import { SalaryBoardSalesKpiStrip } from '@/features/finance/components/payroll/salary-board-sales-kpi-strip';
 import { cn } from '@/lib/utils';
 
@@ -57,11 +58,11 @@ export function SalaryBoardPayoutLineCard({
 }
 
 function SalaryCardHeader({ entry }: { entry: SalaryBoardEntry }) {
-  const lineUi = salaryLineStatusBoardUi(entry.cell.lineStatus);
+  const t = useTranslations('payroll');
   const name = employeeDisplayName(entry.employee);
   const hideStatusInPaidColumn = entry.cell.payoutPhase === 'past_paid';
   const eyebrowParts = [
-    hideStatusInPaidColumn ? null : lineUi.label,
+    hideStatusInPaidColumn ? null : t(SALARY_LINE_STATUS_MESSAGE_KEY[entry.cell.lineStatus]),
     entry.employee.position,
   ].filter((part): part is string => Boolean(part && part.trim()));
 
@@ -87,6 +88,7 @@ function SalaryCardHeader({ entry }: { entry: SalaryBoardEntry }) {
 }
 
 function SalaryCardMetrics({ entry }: { entry: SalaryBoardEntry }) {
+  const t = useTranslations('payroll');
   const payable = parseSalaryBoardAmount(entry.cell.totalPayable);
   const paidAmount = parseSalaryBoardAmount(entry.cell.paidAmount);
   const remainingAmount = parseSalaryBoardAmount(entry.cell.remainingAmount);
@@ -106,13 +108,13 @@ function SalaryCardMetrics({ entry }: { entry: SalaryBoardEntry }) {
         <SalaryMetric
           icon={AppWindow}
           iconShellClassName="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300"
-          label="Paid"
+          label={t('salary.paid')}
           value={formatAmount(paidAmount)}
         />
         <SalaryMetric
           icon={Clock3}
           iconShellClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300"
-          label="Left"
+          label={t('salary.left')}
           value={formatAmount(remainingAmount)}
           bordered
         />

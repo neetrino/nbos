@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
 import type { DeliveryLifecycleProjection } from '@/lib/api/projects';
@@ -62,6 +63,7 @@ export function DeliveryItemDetailGeneralTab({
   gateRequiredFields = new Set(),
   stageGateActionBlockers = [],
 }: DeliveryItemDetailGeneralTabProps) {
+  const t = useTranslations('deliveryBoard');
   const projectId =
     item.kind === 'PRODUCT'
       ? (item.product.projectId ?? item.product.project?.id ?? '')
@@ -90,7 +92,9 @@ export function DeliveryItemDetailGeneralTab({
   );
 
   if (!product && !extension) {
-    return <p className="text-muted-foreground px-5 py-8 text-sm sm:px-7">Nothing to edit yet.</p>;
+    return (
+      <p className="text-muted-foreground px-5 py-8 text-sm sm:px-7">{t('sheet.nothingToEdit')}</p>
+    );
   }
 
   return (

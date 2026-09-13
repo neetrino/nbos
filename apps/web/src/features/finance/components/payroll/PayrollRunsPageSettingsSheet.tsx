@@ -1,6 +1,7 @@
 'use client';
 
 import { Download, Loader2, RefreshCcw, TableProperties } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
 
@@ -23,11 +24,12 @@ export function PayrollRunsPageSettingsSheet({
   onExportScopeStatsCsv,
   onExportCsv,
 }: PayrollRunsPageSettingsSheetProps) {
+  const t = useTranslations('payroll');
   return (
     <PageSettingsSheet
-      title="Payroll — settings"
-      description="Refresh list data and export CSV for the current filter scope."
-      triggerAriaLabel="Payroll settings"
+      title={t('settings.title')}
+      description={t('settings.description')}
+      triggerAriaLabel={t('settings.aria')}
     >
       <Button
         type="button"
@@ -37,7 +39,7 @@ export function PayrollRunsPageSettingsSheet({
         onClick={() => void onRefresh()}
       >
         <RefreshCcw className="size-4 shrink-0" aria-hidden />
-        Refresh runs
+        {t('settings.refresh')}
       </Button>
       <Button
         type="button"
@@ -47,7 +49,7 @@ export function PayrollRunsPageSettingsSheet({
         onClick={() => onExportScopeStatsCsv()}
       >
         <TableProperties className="size-4 shrink-0" aria-hidden />
-        Export scope stats (CSV)
+        {t('settings.exportStats')}
       </Button>
       <Button
         type="button"
@@ -63,7 +65,7 @@ export function PayrollRunsPageSettingsSheet({
         ) : (
           <Download className="size-4 shrink-0" aria-hidden />
         )}
-        Export payroll runs (CSV)
+        {t('settings.exportRuns')}
       </Button>
     </PageSettingsSheet>
   );

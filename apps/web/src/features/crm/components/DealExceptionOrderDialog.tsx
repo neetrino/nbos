@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,8 @@ export function DealExceptionOrderDialog({
   onOpenChange,
   onSuccess,
 }: DealExceptionOrderDialogProps) {
+  const t = useTranslations('crm');
+  const tCommon = useTranslations('common');
   const [exceptionType, setExceptionType] = useState<DealExceptionType>('POSTPAID');
   const [reason, setReason] = useState('');
   const [paymentExpectedAt, setPaymentExpectedAt] = useState('');
@@ -63,7 +66,7 @@ export function DealExceptionOrderDialog({
       reset();
       onSuccess?.();
     } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Could not create exception order.'));
+      setError(getApiErrorMessage(caught, t('dealSheet.exception.createError')));
     } finally {
       setSubmitting(false);
     }
@@ -79,15 +82,13 @@ export function DealExceptionOrderDialog({
     >
       <DialogContent className="sm:max-w-md" forceNestedBackdrop>
         <DialogHeader>
-          <DialogTitle>Exception order</DialogTitle>
-          <DialogDescription>
-            Close without deposit invoice. FREE or POSTPAID — bonuses are manual.
-          </DialogDescription>
+          <DialogTitle>{t('dealSheet.exception.title')}</DialogTitle>
+          <DialogDescription>{t('dealSheet.exception.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="exception-type">Type</Label>
+            <Label htmlFor="exception-type">{t('dealSheet.exception.type')}</Label>
             <Select
               value={exceptionType}
               onValueChange={(value) => setExceptionType(value as DealExceptionType)}
@@ -96,26 +97,26 @@ export function DealExceptionOrderDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="FREE">Free</SelectItem>
-                <SelectItem value="POSTPAID">Postpaid</SelectItem>
+                <SelectItem value="FREE">{t('dealSheet.exception.free')}</SelectItem>
+                <SelectItem value="POSTPAID">{t('dealSheet.exception.postpaid')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="exception-reason">Reason</Label>
+            <Label htmlFor="exception-reason">{t('dealSheet.exception.reason')}</Label>
             <Textarea
               id="exception-reason"
               value={reason}
               onChange={(event) => setReason(event.target.value)}
-              placeholder="Why is this an exception and what are the terms?"
+              placeholder={t('dealSheet.exception.reasonPlaceholder')}
               rows={4}
             />
           </div>
 
           {exceptionType === 'POSTPAID' ? (
             <label className="block space-y-2 text-sm font-medium" htmlFor="payment-expected-at">
-              Expected payment date (optional)
+              {t('dealSheet.exception.expectedPaymentDate')}
               <NbosDatePicker
                 id="payment-expected-at"
                 value={paymentExpectedAt}
@@ -123,8 +124,8 @@ export function DealExceptionOrderDialog({
                 disabled={submitting}
                 variant="extended"
                 clearable
-                placeholder="Select expected payment date…"
-                aria-label="Expected payment date"
+                placeholder={t('dealSheet.exception.expectedPaymentPlaceholder')}
+                aria-label={t('dealSheet.exception.expectedPaymentDate')}
               />
             </label>
           ) : null}
@@ -134,10 +135,10 @@ export function DealExceptionOrderDialog({
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={submitting || reason.trim().length < 10}>
-            Create exception order
+            {t('dealSheet.exception.create')}
           </Button>
         </DialogFooter>
       </DialogContent>

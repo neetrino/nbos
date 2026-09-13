@@ -87,6 +87,22 @@ export function commentLabelForType(credentialType: string): string {
   return credentialType === 'RECOVERY_CODES' ? 'Recovery codes' : 'Comment';
 }
 
+export function commentLabelMessageKey(
+  credentialType: string,
+): 'form.recoveryCodes' | 'form.comment' {
+  return credentialType === 'RECOVERY_CODES' ? 'form.recoveryCodes' : 'form.comment';
+}
+
+export function dynamicFieldLabelMessageKey(
+  credentialType: string,
+  field: CredentialFormField,
+): string {
+  if (FIELD_LABELS[credentialType]?.[field]) {
+    return `fields.${credentialType}.${field}`;
+  }
+  return `fields.defaults.${field}`;
+}
+
 const PROVIDER_REQUIRED_TYPES = ['DOMAIN_REGISTRAR', 'HOSTING_SERVER', 'MAIL_SMTP'] as const;
 
 export function isProviderRequiredForType(credentialType: string): boolean {

@@ -1,8 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { SearchHit } from '@/lib/api/search';
-import { GLOBAL_SEARCH_HINT, GLOBAL_SEARCH_SHORT_QUERY_HINT } from './global-search-constants';
-import { GLOBAL_SEARCH_RECENT_HEADING } from './global-search-recent-storage';
 import { GlobalSearchResults } from './GlobalSearchResults';
 
 interface GlobalSearchOverlayPanelProps {
@@ -28,6 +27,7 @@ export function GlobalSearchOverlayPanel({
   onSelect,
   onHover,
 }: GlobalSearchOverlayPanelProps) {
+  const t = useTranslations('search');
   if (error && !showHint) {
     return (
       <div className="text-destructive flex h-full items-center justify-center px-5 text-center text-sm">
@@ -44,15 +44,15 @@ export function GlobalSearchOverlayPanel({
         selectedIndex={selectedIndex}
         onSelect={onSelect}
         onHover={onHover}
-        heading={GLOBAL_SEARCH_RECENT_HEADING}
+        heading={t('recent')}
       />
     );
   }
   if (showHint) {
     return (
       <div className="text-muted-foreground flex h-full flex-col items-center justify-center px-5 text-center text-sm">
-        <p>{GLOBAL_SEARCH_SHORT_QUERY_HINT}</p>
-        <p className="mt-2 text-xs">{GLOBAL_SEARCH_HINT}</p>
+        <p>{t('shortHint')}</p>
+        <p className="mt-2 text-xs">{t('hint')}</p>
       </div>
     );
   }

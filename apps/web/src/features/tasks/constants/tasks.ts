@@ -40,6 +40,24 @@ export function getTaskStatus(value: string) {
   return TASK_STATUSES.find((s) => s.value === value);
 }
 
+export function isTaskStatusValue(value: string): value is (typeof TASK_STATUSES)[number]['value'] {
+  return TASK_STATUSES.some((status) => status.value === value);
+}
+
+export function isTaskPriorityValue(
+  value: string,
+): value is (typeof TASK_PRIORITIES)[number]['value'] {
+  return TASK_PRIORITIES.some((priority) => priority.value === value);
+}
+
+const TASK_PLANNING_STATUSES = ['UNPLANNED', 'BACKLOG', 'FUTURE_SPRINT', 'ACTIVE_SPRINT'] as const;
+
+export function isTaskPlanningStatusValue(
+  value: string,
+): value is (typeof TASK_PLANNING_STATUSES)[number] {
+  return TASK_PLANNING_STATUSES.some((status) => status === value);
+}
+
 export function isTaskUrgentPriority(priority: string): boolean {
   return TASK_URGENT_PRIORITIES.has(priority);
 }

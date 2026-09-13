@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { CheckSquare, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -72,6 +73,7 @@ function EntityLinkedTasksToolbar({
   onViewVariantChange: (value: EntityItemVariant) => void;
   onCreate: () => void;
 }) {
+  const t = useTranslations('crm');
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
       <Button
@@ -79,17 +81,17 @@ function EntityLinkedTasksToolbar({
         size="sm"
         className="gap-1.5 border-sky-200 text-sky-600 hover:bg-sky-50 hover:text-sky-700 dark:border-sky-800 dark:text-sky-400"
         disabled={creatorReady && !creatorId}
-        title={creatorReady && !creatorId ? 'Employee profile required' : undefined}
+        title={creatorReady && !creatorId ? t('common.employeeProfileRequired') : undefined}
         onClick={onCreate}
       >
         <Plus size={14} />
-        Create Task
+        {t('common.createTask')}
       </Button>
       <ViewModeSwitch
         value={viewVariant}
         onChange={onViewVariantChange}
         options={ENTITY_ITEM_VIEW_OPTIONS}
-        ariaLabel="Task list view"
+        ariaLabel={t('common.taskListViewAria')}
       />
     </div>
   );
@@ -108,8 +110,11 @@ function EntityLinkedTasksList({
   emptyDescription: string;
   onOpenItem: ReturnType<typeof useOpenEntityItemFromSummary>;
 }) {
+  const t = useTranslations('crm');
   if (loading) {
-    return <p className="text-muted-foreground py-8 text-center text-sm">Loading tasks...</p>;
+    return (
+      <p className="text-muted-foreground py-8 text-center text-sm">{t('common.loadingTasks')}</p>
+    );
   }
   return (
     <EntityItemList
@@ -117,7 +122,7 @@ function EntityLinkedTasksList({
       variant={viewVariant}
       onOpen={onOpenItem}
       emptyIcon={CheckSquare}
-      emptyTitle="Tasks"
+      emptyTitle={t('common.tasks')}
       emptyDescription={emptyDescription}
     />
   );

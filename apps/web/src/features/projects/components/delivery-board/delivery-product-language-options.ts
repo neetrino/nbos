@@ -1,4 +1,4 @@
-/** ISO-like codes used with `Product.languages` and delivery UI ordering. */
+/** ISO-like codes used with `Product.languages` and delivery UI ordering. English `label` VALUES stay here; translate display names at render. */
 export const PRODUCT_LANGUAGE_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
   { value: 'hy', label: 'Armenian' },
   { value: 'en', label: 'English' },

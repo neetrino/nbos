@@ -6,7 +6,7 @@ const YEARS_TOKEN = '{{years}}';
 export function fillDeskLineSlots(template: string, slots: DeskLineSlots): string {
   const withYears = fillYears(template, slots.years);
   const filled = slots.firstName
-    ? withYears.replaceAll(NAME_TOKEN, slots.firstName)
+    ? withYears.replaceAll(NAME_TOKEN, () => slots.firstName ?? '')
     : dropNameToken(withYears);
   return collapseSpaces(filled);
 }
@@ -19,6 +19,7 @@ function fillYears(template: string, years?: number): string {
 function dropNameToken(template: string): string {
   const stripped = template
     .replaceAll(`${NAME_TOKEN}, `, '')
+    .replaceAll(`, ${NAME_TOKEN}։`, '։')
     .replaceAll(`, ${NAME_TOKEN}.`, '.')
     .replaceAll(`, ${NAME_TOKEN}`, '')
     .replaceAll(` ${NAME_TOKEN}`, '')

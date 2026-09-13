@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   DeleteConfirmDialog,
@@ -48,6 +49,8 @@ export function RecurringTaskSheet({
   onSaved,
   onDeleted,
 }: RecurringTaskSheetProps) {
+  const t = useTranslations('tasks');
+  const tCommon = useTranslations('common');
   const isCreate = template === null;
   const [draft, setDraft] = useState<RecurringTaskFormDraft>(createEmptyRecurringDraft);
   const [snap, setSnap] = useState<RecurringTaskFormDraft>(createEmptyRecurringDraft);
@@ -82,7 +85,7 @@ export function RecurringTaskSheet({
           sourcePageHref="/tasks/recurring"
         >
           <RecurringTaskSheetHeader
-            title={draft.title.trim() || template?.title || 'New recurring task'}
+            title={draft.title.trim() || template?.title || t('recurring.new')}
             isCreate={isCreate}
             isActive={draft.isActive}
             canEdit={canEdit}
@@ -101,21 +104,21 @@ export function RecurringTaskSheet({
                   onCheckedChange={(isActive) => patchDraft({ isActive })}
                 />
               ) : null}
-              <DetailSheetSection title="Task">
+              <DetailSheetSection title={t('recurring.sectionTask')}>
                 <RecurringTaskIdentityFields
                   draft={draft}
                   disabled={disabled}
                   onPatch={patchDraft}
                 />
               </DetailSheetSection>
-              <DetailSheetSection title="Schedule">
+              <DetailSheetSection title={t('recurring.sectionSchedule')}>
                 <RecurringTaskScheduleFields
                   draft={draft}
                   disabled={disabled}
                   onPatch={patchDraft}
                 />
               </DetailSheetSection>
-              <DetailSheetSection title="Defaults">
+              <DetailSheetSection title={t('recurring.sectionDefaults')}>
                 <RecurringTaskChecklistFields
                   draft={draft}
                   disabled={disabled}
@@ -129,7 +132,8 @@ export function RecurringTaskSheet({
             dirty={isCreate || dirty}
             saving={saving}
             errorMessage={formError}
-            saveLabel={isCreate ? 'Create' : 'Save'}
+            saveLabel={isCreate ? tCommon('create') : tCommon('save')}
+            cancelLabel={tCommon('cancel')}
             onSave={() => void handleSave()}
             onCancel={() => (isCreate ? onOpenChange(false) : setDraft(snap))}
           />
@@ -141,8 +145,10 @@ export function RecurringTaskSheet({
           onOpenChange={setDeleteOpen}
           level="simple"
           itemName={template.title}
-          title="Delete this recurring template?"
-          description="Existing spawned tasks stay. The schedule will stop creating new ones."
+          title={t('recurring.deleteTitle')}
+          description={t('recurring.deleteDescription')}
+          confirmLabel={t('recurring.delete')}
+          dismissLabel={tCommon('cancel')}
           forceNestedBackdrop
           onConfirm={() => void handleDelete(template.id)}
         />
@@ -152,11 +158,11 @@ export function RecurringTaskSheet({
 
   async function handleSave() {
     if (!draft.title.trim()) {
-      setFormError('Title is required.');
+      setFormError(t('recurring.titleRequired'));
       return;
     }
     if (isCreate && !creatorId) {
-      setFormError('Your account is not linked to an employee record.');
+      setFormError(t('recurring.employeeRequired'));
       return;
     }
     setSaving(true);
@@ -169,9 +175,9 @@ export function RecurringTaskSheet({
           : await recurringTasksApi.update(template?.id ?? '', payload);
       onSaved(saved);
       onOpenChange(false);
-      toast.success(isCreate ? 'Recurring task created.' : 'Recurring task updated.');
+      toast.success(isCreate ? t('recurring.created') : t('recurring.updated'));
     } catch (caught) {
-      setFormError(getApiErrorMessage(caught, 'Recurring task could not be saved.'));
+      setFormError(getApiErrorMessage(caught, t('recurring.saveFailed')));
     } finally {
       setSaving(false);
     }
@@ -183,9 +189,9 @@ export function RecurringTaskSheet({
       onDeleted(id);
       setDeleteOpen(false);
       onOpenChange(false);
-      toast.success('Recurring template deleted.');
+      toast.success(t('recurring.deleted'));
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Template could not be deleted.'));
+      toast.error(getApiErrorMessage(caught, t('recurring.deleteFailed')));
     }
   }
 
@@ -195,16 +201,16 @@ export function RecurringTaskSheet({
     try {
       const result = await recurringTasksApi.runNow(template.id);
       onSaved(result.template);
-      toast.success(`Created ${result.task.code}`, {
+      toast.success(t('recurring.runCreated', { code: result.task.code }), {
         action: {
-          label: 'Open',
+          label: tCommon('sheet.open'),
           onClick: () => {
             window.location.href = `/tasks?${TASK_OPEN_QUERY}=${encodeURIComponent(result.task.id)}`;
           },
         },
       });
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Task could not be created.'));
+      toast.error(getApiErrorMessage(caught, t('recurring.runFailed')));
     } finally {
       setRunning(false);
     }
@@ -220,11 +226,12 @@ function ActiveSwitch({
   disabled: boolean;
   onCheckedChange: (checked: boolean) => void;
 }) {
+  const t = useTranslations('tasks');
   return (
     <div className="border-border bg-card flex items-center justify-between rounded-2xl border px-4 py-3">
       <div>
-        <Label htmlFor="recurring-active">Active schedule</Label>
-        <p className="text-muted-foreground text-xs">Paused templates do not create new tasks.</p>
+        <Label htmlFor="recurring-active">{t('recurring.activeSchedule')}</Label>
+        <p className="text-muted-foreground text-xs">{t('recurring.pausedHint')}</p>
       </div>
       <Switch
         id="recurring-active"

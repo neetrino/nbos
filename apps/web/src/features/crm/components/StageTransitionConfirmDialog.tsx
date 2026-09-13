@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,6 +37,7 @@ export function StageTransitionConfirmDialog({
   onOpenChange,
   onConfirm,
 }: StageTransitionConfirmDialogProps) {
+  const tCommon = useTranslations('common');
   const Icon = variant === 'success' ? CheckCircle2 : AlertTriangle;
 
   return (
@@ -59,7 +61,7 @@ export function StageTransitionConfirmDialog({
         {children}
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"

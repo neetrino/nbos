@@ -1,6 +1,7 @@
 'use client';
 
 import { CalendarRange, LayoutGrid, List, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { ViewModeOption } from '@/components/shared';
 import { createPersistedScalarStore } from '@/lib/persisted-client-state';
 import type { PayrollMatrixViewMode } from '@/lib/api/payroll-allocation-matrix';
@@ -12,32 +13,65 @@ export type PayrollRunDetailViewMode =
 
 const DEFAULT_VIEW_MODE: PayrollRunDetailViewMode = 'EMPLOYEE_MATRIX';
 
-export const PAYROLL_RUN_DETAIL_VIEW_OPTIONS: ViewModeOption<PayrollRunDetailViewMode>[] = [
-  {
-    value: 'SALARY_LINES',
-    label: 'Salary lines',
-    icon: <List className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'Employee salary lines for this payroll run',
-  },
-  {
-    value: 'EMPLOYEE_MATRIX',
-    label: 'Employee × Order',
-    icon: <Users className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'Employees as rows, orders as columns',
-  },
-  {
-    value: 'ORDER_MATRIX',
-    label: 'Order × Employees',
-    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'Orders as rows, employees as columns',
-  },
-  {
-    value: 'EMPLOYEE_BONUS_HISTORY',
-    label: 'Employee history',
-    icon: <CalendarRange className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'Employee projects across last twelve payroll months',
-  },
-];
+const DETAIL_VIEW_ICONS = {
+  salaryLines: <List className="size-3.5 shrink-0" aria-hidden />,
+  employeeMatrix: <Users className="size-3.5 shrink-0" aria-hidden />,
+  orderMatrix: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+  employeeHistory: <CalendarRange className="size-3.5 shrink-0" aria-hidden />,
+} as const;
+
+const DETAIL_VIEW_OPTION_EN = {
+  'detailView.salaryLines': 'Salary lines',
+  'detailView.salaryLinesAria': 'Employee salary lines for this payroll run',
+  'detailView.employeeMatrix': 'Employee × Order',
+  'detailView.employeeMatrixAria': 'Employees as rows, orders as columns',
+  'detailView.orderMatrix': 'Order × Employees',
+  'detailView.orderMatrixAria': 'Orders as rows, employees as columns',
+  'detailView.employeeHistory': 'Employee history',
+  'detailView.employeeHistoryAria': 'Employee projects across last twelve payroll months',
+} as const;
+
+type DetailViewLabelKey = keyof typeof DETAIL_VIEW_OPTION_EN;
+
+export function getPayrollRunDetailViewOptions(
+  t: (key: DetailViewLabelKey) => string,
+): ViewModeOption<PayrollRunDetailViewMode>[] {
+  return [
+    {
+      value: 'SALARY_LINES',
+      label: t('detailView.salaryLines'),
+      icon: DETAIL_VIEW_ICONS.salaryLines,
+      ariaLabel: t('detailView.salaryLinesAria'),
+    },
+    {
+      value: 'EMPLOYEE_MATRIX',
+      label: t('detailView.employeeMatrix'),
+      icon: DETAIL_VIEW_ICONS.employeeMatrix,
+      ariaLabel: t('detailView.employeeMatrixAria'),
+    },
+    {
+      value: 'ORDER_MATRIX',
+      label: t('detailView.orderMatrix'),
+      icon: DETAIL_VIEW_ICONS.orderMatrix,
+      ariaLabel: t('detailView.orderMatrixAria'),
+    },
+    {
+      value: 'EMPLOYEE_BONUS_HISTORY',
+      label: t('detailView.employeeHistory'),
+      icon: DETAIL_VIEW_ICONS.employeeHistory,
+      ariaLabel: t('detailView.employeeHistoryAria'),
+    },
+  ];
+}
+
+export function usePayrollRunDetailViewOptions(): ViewModeOption<PayrollRunDetailViewMode>[] {
+  const t = useTranslations('payroll');
+  return getPayrollRunDetailViewOptions((key) => t(key));
+}
+
+/** English fallback for surfaces that are not yet on the payroll namespace. */
+export const PAYROLL_RUN_DETAIL_VIEW_OPTIONS: ViewModeOption<PayrollRunDetailViewMode>[] =
+  getPayrollRunDetailViewOptions((key) => DETAIL_VIEW_OPTION_EN[key]);
 
 export function isPayrollMatrixViewMode(
   mode: PayrollRunDetailViewMode,

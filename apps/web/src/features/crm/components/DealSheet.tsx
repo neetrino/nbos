@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useLayoutEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   RotateCcw,
   Trash2,
@@ -58,16 +59,17 @@ import { buildDealDetailSheetTabs } from './build-deal-detail-sheet-tabs';
 import { canOpenDealCreateInvoiceDialog } from '@/features/crm/utils/deal-invoice-eligibility';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { getDealDisplayTitle } from '../utils/crm-entity-display';
+import { translateDealTypeLabel } from '../i18n/crm-copy';
 import { getDealTypePresentation } from '@/lib/deal-type-visual';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 
-const TABS = [
-  { value: 'general', label: 'General', icon: LayoutGrid },
-  { value: 'internal', label: 'Internal', icon: MessageSquare },
-  { value: 'history', label: 'History', icon: History },
-  { value: 'invoice', label: 'Invoice', icon: FileText },
-  { value: 'task', label: 'Task', icon: CheckSquare },
-  { value: 'calls', label: 'Calls', icon: Phone },
+const DEAL_SHEET_TAB_DEFS = [
+  { value: 'general', labelKey: 'dealSheet.tabGeneral', icon: LayoutGrid },
+  { value: 'internal', labelKey: 'dealSheet.tabInternal', icon: MessageSquare },
+  { value: 'history', labelKey: 'dealSheet.tabHistory', icon: History },
+  { value: 'invoice', labelKey: 'dealSheet.tabInvoice', icon: FileText },
+  { value: 'task', labelKey: 'dealSheet.tabTask', icon: CheckSquare },
+  { value: 'calls', labelKey: 'dealSheet.tabCalls', icon: Phone },
 ] as const;
 
 export interface DealSheetBlockerNavigation {
@@ -100,9 +102,9 @@ interface DealSheetProps {
   forceNestedBackdrop?: boolean;
 }
 
-function dealGeneralSaveErrorMessage(err: unknown): string {
+function dealGeneralSaveErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof Error && err.message) return err.message;
-  return 'Could not save changes.';
+  return fallback;
 }
 
 export function DealSheet({
@@ -123,6 +125,7 @@ export function DealSheet({
   onOpenChangeComplete,
   forceNestedBackdrop = false,
 }: DealSheetProps) {
+  const t = useTranslations('crm');
   const { persistedValue: renderDeal, onOpenChangeComplete: clearRenderDeal } =
     useSheetPersistedValue(deal);
   const hostMounted = useSheetHostMounted(open, renderDeal);
@@ -210,10 +213,10 @@ export function DealSheet({
       } catch (err) {
         setGeneralSnap(snapAtSave);
         setGeneralDraft(draftAtSave);
-        setGeneralError(dealGeneralSaveErrorMessage(err));
+        setGeneralError(dealGeneralSaveErrorMessage(err, t('dealSheet.saveError')));
       }
     })();
-  }, [deal, generalDraft, generalSnap, onUpdate, onRefresh]);
+  }, [deal, generalDraft, generalSnap, onUpdate, onRefresh, t]);
 
   const handleGeneralCancel = useCallback(() => {
     setGeneralError(null);
@@ -283,7 +286,7 @@ export function DealSheet({
           >
             <div className="text-muted-foreground flex items-center gap-2 p-5 text-sm">
               <Loader2 className="size-4 animate-spin" aria-hidden />
-              Loading deal…
+              {t('dealSheet.loading')}
             </div>
           </EntityDetailSheetContent>
         ) : (
@@ -406,20 +409,39 @@ function DealSheetBody({
   handleGeneralCancel: () => void;
   onOpenExceptionDialog: () => void;
 }) {
+  const t = useTranslations('crm');
   const { creatorId, creatorReady } = useTaskCreatorId();
   const typeVisual = getDealTypePresentation(renderDeal.type);
   const taxStatus = renderDeal.taxStatus ?? 'TAX';
   const canCreateInvoice = !isTrashView && canOpenDealCreateInvoiceDialog(renderDeal, taxStatus);
   const canCreateTask = !isTrashView && (!creatorReady || Boolean(creatorId));
+  const dealSheetTabs = useMemo(
+    () =>
+      DEAL_SHEET_TAB_DEFS.map((tab) => ({
+        value: tab.value,
+        label: t(tab.labelKey),
+        icon: tab.icon,
+      })),
+    [t],
+  );
   const detailSheetTabs = useMemo(
     () =>
-      buildDealDetailSheetTabs(TABS, {
+      buildDealDetailSheetTabs(dealSheetTabs, {
         canCreateInvoice,
         canCreateTask,
         onCreateInvoice: () => onInvoiceCreateOpenChange(true),
         onCreateTask: () => onTaskCreateOpenChange(true),
+        createInvoiceAria: t('dealSheet.createInvoiceAria'),
+        createTaskAria: t('common.createTask'),
       }),
-    [canCreateInvoice, canCreateTask, onInvoiceCreateOpenChange, onTaskCreateOpenChange],
+    [
+      canCreateInvoice,
+      canCreateTask,
+      dealSheetTabs,
+      onInvoiceCreateOpenChange,
+      onTaskCreateOpenChange,
+      t,
+    ],
   );
   const headerTitle = generalDraft?.name?.trim() || getDealDisplayTitle(renderDeal);
   const TypeIcon = typeVisual.Icon;
@@ -459,7 +481,7 @@ function DealSheetBody({
     <>
       <CrmSheetEntityHeader
         title={headerTitle}
-        entityLabel={typeVisual.label}
+        entityLabel={translateDealTypeLabel(t, renderDeal.type)}
         EntityIcon={TypeIcon}
         headerIconClassName={typeVisual.headerIconClassName}
         headerBadgeClassName={typeVisual.headerBadgeClassName}
@@ -469,8 +491,8 @@ function DealSheetBody({
         onCommitName={commitNameToDraft}
         onNameKeyDown={handleNameKeyDown}
         nameInputRef={nameInputRef}
-        namePlaceholder="Deal name..."
-        titleEditHint="Click to edit deal name"
+        namePlaceholder={t('dealSheet.namePlaceholder')}
+        titleEditHint={t('dealSheet.nameEditHint')}
         onStartEditing={startEditing}
         actions={
           <div className="flex shrink-0 flex-wrap items-center gap-1.5">
@@ -487,7 +509,7 @@ function DealSheetBody({
               <DetailSheetSettingsMenu>
                 <DropdownMenuItem onClick={() => onRestore(renderDeal.id)}>
                   <RotateCcw />
-                  Restore
+                  {t('dealSheet.restore')}
                 </DropdownMenuItem>
                 {onPermanentDelete ? (
                   <DropdownMenuItem
@@ -495,7 +517,7 @@ function DealSheetBody({
                     onClick={() => onPermanentDelete(renderDeal.id)}
                   >
                     <Trash2 />
-                    Delete permanently
+                    {t('dealSheet.deletePermanently')}
                   </DropdownMenuItem>
                 ) : null}
               </DetailSheetSettingsMenu>
@@ -504,7 +526,7 @@ function DealSheetBody({
                 {canCreateExceptionOrder ? (
                   <DropdownMenuItem onClick={onOpenExceptionDialog}>
                     <AlertTriangle />
-                    Exception order
+                    {t('dealSheet.exceptionOrder')}
                   </DropdownMenuItem>
                 ) : null}
                 {onMoveToTrash ? (
@@ -513,7 +535,7 @@ function DealSheetBody({
                     onClick={() => onMoveToTrash(renderDeal.id)}
                   >
                     <Trash2 />
-                    Move to Trash
+                    {t('dealSheet.moveToTrash')}
                   </DropdownMenuItem>
                 ) : null}
               </DetailSheetSettingsMenu>
@@ -532,7 +554,9 @@ function DealSheetBody({
       <DetailSheetTabBar
         tabs={detailSheetTabs}
         activeTab={activeTab}
-        onTabChange={(value) => setActiveTab(value as (typeof TABS)[number]['value'])}
+        onTabChange={(value) =>
+          setActiveTab(value as (typeof DEAL_SHEET_TAB_DEFS)[number]['value'])
+        }
       />
 
       <ScrollArea className="min-h-0 flex-1">

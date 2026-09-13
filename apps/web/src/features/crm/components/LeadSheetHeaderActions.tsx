@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ArrowRight, Ban, RotateCcw, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -23,6 +24,7 @@ export interface LeadSheetHeaderActionsProps {
 }
 
 export function LeadSheetHeaderActions(props: LeadSheetHeaderActionsProps) {
+  const t = useTranslations('crm');
   const { renderLead, isTrashView } = props;
   return (
     <>
@@ -39,7 +41,7 @@ export function LeadSheetHeaderActions(props: LeadSheetHeaderActionsProps) {
       {!isTrashView && !props.isTerminal && renderLead.status === 'MQL' && props.onConvertToDeal ? (
         <Button type="button" size="sm" onClick={() => props.onConvertToDeal?.(renderLead)}>
           <ArrowRight size={14} className="mr-1" />
-          Convert to Deal
+          {t('leadSheet.convertToDeal')}
         </Button>
       ) : null}
       {isTrashView && props.onRestore ? (
@@ -72,6 +74,7 @@ function LeadSheetTrashMenu({
   onRestore: (id: string) => void;
   onPermanentDelete?: (id: string) => void;
 }) {
+  const t = useTranslations('crm');
   return (
     <DetailSheetSettingsMenu>
       <DropdownMenuItem
@@ -82,12 +85,12 @@ function LeadSheetTrashMenu({
         }}
       >
         <RotateCcw />
-        {mergedIntoId ? 'Restore blocked (merged)' : 'Restore'}
+        {mergedIntoId ? t('leadSheet.restoreBlockedMerged') : t('leadSheet.restore')}
       </DropdownMenuItem>
       {onPermanentDelete ? (
         <DropdownMenuItem variant="destructive" onClick={() => onPermanentDelete(leadId)}>
           <Trash2 />
-          Delete permanently
+          {t('leadSheet.deletePermanently')}
         </DropdownMenuItem>
       ) : null}
     </DetailSheetSettingsMenu>
@@ -105,16 +108,17 @@ function LeadSheetActiveMenu({
   onMoveToTrash: (id: string) => void;
   onStatusChange: (id: string, status: string) => Promise<void>;
 }) {
+  const t = useTranslations('crm');
   return (
     <DetailSheetSettingsMenu>
       <DropdownMenuItem variant="destructive" onClick={() => onMoveToTrash(leadId)}>
         <Trash2 />
-        Move to Trash
+        {t('leadSheet.moveToTrash')}
       </DropdownMenuItem>
       {status !== 'SPAM' ? (
         <DropdownMenuItem onClick={() => void onStatusChange(leadId, 'SPAM')}>
           <Ban />
-          Mark as Spam
+          {t('leadSheet.markAsSpam')}
         </DropdownMenuItem>
       ) : null}
     </DetailSheetSettingsMenu>

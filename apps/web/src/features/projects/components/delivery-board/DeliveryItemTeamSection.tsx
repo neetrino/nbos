@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { User } from 'lucide-react';
 import { DetailSheetCollapsibleSection } from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
@@ -37,6 +38,7 @@ export function DeliveryItemTeamSection({
   disabled = false,
   gateRequiredFields = new Set(),
 }: DeliveryItemTeamSectionProps) {
+  const t = useTranslations('deliveryBoard');
   const [sectionOpen, setSectionOpen] = useState(true);
   const searchEmployees = useEmployeeSearchLoader();
   const seller =
@@ -56,7 +58,7 @@ export function DeliveryItemTeamSection({
 
   return (
     <DetailSheetCollapsibleSection
-      title="Team"
+      title={t('team.title')}
       icon={<User size={12} />}
       open={sectionOpen}
       onOpenChange={setSectionOpen}
@@ -66,7 +68,7 @@ export function DeliveryItemTeamSection({
         {kind === 'PRODUCT' && productPlan ? (
           <>
             <ProductRolePicker
-              label="Project manager"
+              label={t('team.projectManager')}
               employeeId={productPlan.pmId}
               employeeLabel={productPlan.pmLabel}
               employeeAvatar={productPlan.pmAvatar}
@@ -79,7 +81,7 @@ export function DeliveryItemTeamSection({
             />
             <SellerReadOnlyRow seller={seller} />
             <ProductRolePicker
-              label="Developer Backend"
+              label={t('team.developerBackend')}
               employeeId={productPlan.developerId}
               employeeLabel={productPlan.developerLabel}
               employeeAvatar={productPlan.developerAvatar}
@@ -97,7 +99,7 @@ export function DeliveryItemTeamSection({
               disabled={disabled}
             />
             <ProductRolePicker
-              label="Developer Frontend"
+              label={t('team.developerFrontend')}
               employeeId={productPlan.frontendDeveloperId}
               employeeLabel={productPlan.frontendDeveloperLabel}
               employeeAvatar={productPlan.frontendDeveloperAvatar}
@@ -119,7 +121,7 @@ export function DeliveryItemTeamSection({
               disabled={disabled}
             />
             <ProductRolePicker
-              label="Designer"
+              label={t('team.designer')}
               employeeId={productPlan.designerId}
               employeeLabel={productPlan.designerLabel}
               employeeAvatar={productPlan.designerAvatar}
@@ -137,7 +139,7 @@ export function DeliveryItemTeamSection({
               disabled={disabled}
             />
             <ProductRolePicker
-              label="Technical specialist"
+              label={t('team.technicalSpecialist')}
               employeeId={productPlan.technicalSpecialistId}
               employeeLabel={productPlan.technicalSpecialistLabel}
               employeeAvatar={productPlan.technicalSpecialistAvatar}
@@ -159,7 +161,7 @@ export function DeliveryItemTeamSection({
               disabled={disabled}
             />
             <ProductRolePicker
-              label="QA"
+              label={t('team.qa')}
               employeeId={productPlan.qaLeadId}
               employeeLabel={productPlan.qaLeadLabel}
               employeeAvatar={productPlan.qaLeadAvatar}
@@ -180,7 +182,7 @@ export function DeliveryItemTeamSection({
         {kind === 'EXTENSION' && extensionPlan ? (
           <>
             <ProductRolePicker
-              label="Owner"
+              label={t('team.owner')}
               employeeId={extensionPlan.assignedTo}
               employeeLabel={extensionPlan.assigneeLabel}
               employeeAvatar={extensionPlan.assigneeAvatar}

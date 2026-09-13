@@ -224,6 +224,11 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         permission: { module: 'COMPANY', action: 'EDIT' },
       },
       {
+        label: 'children.settings.appearance',
+        href: '/settings/appearance',
+        permission: { module: 'COMPANY', action: 'EDIT' },
+      },
+      {
         label: 'children.settings.systemLists',
         href: '/settings/lists',
         permission: { module: 'COMPANY', action: 'EDIT' },

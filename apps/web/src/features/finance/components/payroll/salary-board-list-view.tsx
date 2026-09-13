@@ -1,6 +1,8 @@
 'use client';
 
 import { Fragment, useMemo, type KeyboardEvent } from 'react';
+import { useTranslations } from 'next-intl';
+import { SALARY_LINE_STATUS_MESSAGE_KEY } from '@/features/finance/components/payroll/payroll-i18n-keys';
 import {
   Table,
   TableBody,
@@ -79,13 +81,12 @@ export function SalaryBoardListView({
   totals?: SalaryBoardFilteredTotals;
   onOpenMonth: (salaryLineId: string) => void;
 }) {
+  const t = useTranslations('payroll');
   const monthGroups = useMemo(() => groupEntriesByPayrollMonth(entries), [entries]);
 
   if (entries.length === 0) {
     return (
-      <p className="text-muted-foreground py-8 text-center text-sm">
-        No salary lines match filters.
-      </p>
+      <p className="text-muted-foreground py-8 text-center text-sm">{t('salary.listEmpty')}</p>
     );
   }
 
@@ -101,11 +102,17 @@ export function SalaryBoardListView({
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Employee</TableHead>
-            <TableHead className={FINANCE_LIST_HEAD_CLASS}>Status</TableHead>
-            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>Payable</TableHead>
-            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>Paid</TableHead>
-            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>Remaining</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('salary.employee')}</TableHead>
+            <TableHead className={FINANCE_LIST_HEAD_CLASS}>{t('salary.status')}</TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>
+              {t('salary.payable')}
+            </TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>
+              {t('salary.paid')}
+            </TableHead>
+            <TableHead className={`${FINANCE_LIST_HEAD_CLASS} text-right`}>
+              {t('salary.remaining')}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -125,7 +132,7 @@ export function SalaryBoardListView({
         <tfoot>
           <TableRow className="bg-muted/30 font-medium">
             <TableCell colSpan={2} className={SALARY_LIST_FOOTER_LABEL_CLASS}>
-              Filtered ({footerTotals.lineCount})
+              {t('salary.filtered', { count: footerTotals.lineCount })}
             </TableCell>
             <TableCell className={`${SALARY_LIST_FOOTER_CELL_CLASS} text-right`}>
               <FinanceListAmount amount={footerTotals.payable} className="justify-end" />
@@ -169,7 +176,9 @@ function SalaryBoardListEntryRow({
   entry: SalaryBoardEntry;
   onOpenMonth: (salaryLineId: string) => void;
 }) {
+  const t = useTranslations('payroll');
   const lineUi = salaryLineStatusBoardUi(entry.cell.lineStatus);
+  const statusLabel = t(SALARY_LINE_STATUS_MESSAGE_KEY[entry.cell.lineStatus]);
   const payable = parseSalaryBoardAmount(entry.cell.totalPayable);
   const paid = parseSalaryBoardAmount(entry.cell.paidAmount);
   const remaining = parseSalaryBoardAmount(entry.cell.remainingAmount);
@@ -184,7 +193,10 @@ function SalaryBoardListEntryRow({
       onKeyDown={(event) => handleSalaryListRowKeyDown(event, entry.salaryLineId, onOpenMonth)}
       tabIndex={0}
       role="button"
-      aria-label={`${employeeDisplayName(entry.employee)} · ${lineUi.label}`}
+      aria-label={t('salary.openAria', {
+        name: employeeDisplayName(entry.employee),
+        status: statusLabel,
+      })}
     >
       <TableCell className={FINANCE_LIST_CELL_CLASS}>
         <FinanceListPrimaryCell
@@ -194,7 +206,7 @@ function SalaryBoardListEntryRow({
       </TableCell>
       <TableCell className={FINANCE_LIST_CELL_CLASS}>
         <StatusBadge
-          label={lineUi.label}
+          label={statusLabel}
           variant={lineUi.variant}
           className={FINANCE_LIST_BADGE_CLASS}
         />

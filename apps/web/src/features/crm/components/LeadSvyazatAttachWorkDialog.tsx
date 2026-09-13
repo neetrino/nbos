@@ -1,20 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DetailSheetFieldSegmented } from '@/components/shared';
 import { LeadSvyazatSearchDialog } from './LeadSvyazatSearchDialog';
-import { LEAD_SVYAZAT_LABELS } from './lead-svyazat-labels';
 import { useSvyazatEntitySearch } from './use-svyazat-search';
 import type { SvyazatSearchKind } from './lead-svyazat-search';
 
 type WorkKind = Exclude<SvyazatSearchKind, 'contact'>;
-
-const WORK_KIND_OPTIONS: ReadonlyArray<{ value: WorkKind; label: string }> = [
-  { value: 'deal', label: LEAD_SVYAZAT_LABELS.targetDeal },
-  { value: 'project', label: LEAD_SVYAZAT_LABELS.targetProject },
-  { value: 'product', label: LEAD_SVYAZAT_LABELS.targetProduct },
-  { value: 'lead', label: LEAD_SVYAZAT_LABELS.targetLead },
-];
 
 interface LeadSvyazatAttachWorkDialogProps {
   open: boolean;
@@ -25,16 +18,23 @@ interface LeadSvyazatAttachWorkDialogProps {
 }
 
 export function LeadSvyazatAttachWorkDialog(props: LeadSvyazatAttachWorkDialogProps) {
+  const t = useTranslations('crm');
   const [kind, setKind] = useState<WorkKind>('deal');
   const search = useSvyazatEntitySearch(props.open, kind, props.excludeLeadId);
+  const workKindOptions: ReadonlyArray<{ value: WorkKind; label: string }> = [
+    { value: 'deal', label: t('svyazat.targetDeal') },
+    { value: 'project', label: t('svyazat.targetProject') },
+    { value: 'product', label: t('svyazat.targetProduct') },
+    { value: 'lead', label: t('svyazat.targetLead') },
+  ];
 
   return (
     <LeadSvyazatSearchDialog
       open={props.open}
-      title={LEAD_SVYAZAT_LABELS.attachWorkTitle}
-      description={LEAD_SVYAZAT_LABELS.attachWorkHint}
-      searchLabel={searchLabelFor(kind)}
-      placeholder={searchLabelFor(kind)}
+      title={t('svyazat.attachWorkTitle')}
+      description={t('svyazat.attachWorkHint')}
+      searchLabel={searchLabelFor(kind, t)}
+      placeholder={searchLabelFor(kind, t)}
       query={search.query}
       hits={search.hits}
       selectedId={search.selectedId}
@@ -51,9 +51,9 @@ export function LeadSvyazatAttachWorkDialog(props: LeadSvyazatAttachWorkDialogPr
       <DetailSheetFieldSegmented
         label=""
         hideLabel
-        ariaLabel={LEAD_SVYAZAT_LABELS.attachWorkTitle}
+        ariaLabel={t('svyazat.attachWorkTitle')}
         value={kind}
-        options={WORK_KIND_OPTIONS}
+        options={workKindOptions}
         onValueChange={(value) => {
           setKind(value);
           search.setSelectedId(null);
@@ -63,9 +63,9 @@ export function LeadSvyazatAttachWorkDialog(props: LeadSvyazatAttachWorkDialogPr
   );
 }
 
-function searchLabelFor(kind: WorkKind): string {
-  if (kind === 'deal') return LEAD_SVYAZAT_LABELS.searchDeal;
-  if (kind === 'project') return LEAD_SVYAZAT_LABELS.searchProject;
-  if (kind === 'product') return LEAD_SVYAZAT_LABELS.searchProduct;
-  return LEAD_SVYAZAT_LABELS.searchLead;
+function searchLabelFor(kind: WorkKind, t: ReturnType<typeof useTranslations<'crm'>>): string {
+  if (kind === 'deal') return t('svyazat.searchDeal');
+  if (kind === 'project') return t('svyazat.searchProject');
+  if (kind === 'product') return t('svyazat.searchProduct');
+  return t('svyazat.searchLead');
 }

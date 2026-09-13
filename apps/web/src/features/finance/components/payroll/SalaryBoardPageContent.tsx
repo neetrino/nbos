@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Banknote, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { buttonVariants } from '@/components/ui/button';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
 import { SALARY_BOARD_OPEN_LINE_QUERY } from '@/features/finance/constants/salary-board-url';
@@ -16,7 +17,6 @@ import {
   useModuleHeroSlots,
   ViewModeSwitch,
 } from '@/components/shared';
-import { salaryBoardPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import {
   PAYROLL_RUNS_LIST_MONTH_FROM_QUERY,
   PAYROLL_RUNS_LIST_MONTH_TO_QUERY,
@@ -53,7 +53,7 @@ import {
 import { SalaryBoardCalendarView } from '@/features/finance/components/payroll/salary-board-calendar-view';
 import { SalaryBoardListView } from '@/features/finance/components/payroll/salary-board-list-view';
 import { SalaryBoardPayoutBoardView } from '@/features/finance/components/payroll/salary-board-payout-board-view';
-import { SALARY_BOARD_VIEW_OPTIONS } from '@/features/finance/components/payroll/salary-board-view-options';
+import { useSalaryBoardViewOptions } from '@/features/finance/components/payroll/salary-board-view-options';
 import { SalaryBoardPageSettingsSheet } from '@/features/finance/components/payroll/SalaryBoardPageSettingsSheet';
 import { useSalaryBoardCsvExport } from '@/features/finance/components/payroll/use-salary-board-csv-export';
 import { computeSalaryBoardFilteredTotals } from '@/features/finance/utils/salary-board-filtered-totals';
@@ -71,7 +71,9 @@ const INITIAL_CLIENT_FILTERS: Record<string, string> = {
 };
 
 export function SalaryBoardPageContent() {
-  useFinanceDocumentTitle(salaryBoardPageTitle());
+  const t = useTranslations('payroll');
+  const viewOptions = useSalaryBoardViewOptions();
+  useFinanceDocumentTitle(t('salary.pageTitle'));
 
   const router = useRouter();
   const pathname = usePathname();
@@ -115,12 +117,12 @@ export function SalaryBoardPageContent() {
       });
       setData(board);
     } catch (e) {
-      setError(getApiErrorMessage(e, 'Could not load salary board'));
+      setError(getApiErrorMessage(e, t('salary.loadError')));
       setData(null);
     } finally {
       setLoading(false);
     }
-  }, [calendarYear, displayView, monthFrom, monthTo]);
+  }, [calendarYear, displayView, monthFrom, monthTo, t]);
 
   useEffect(() => {
     void load();
@@ -181,10 +183,10 @@ export function SalaryBoardPageContent() {
 
   const salaryFilterConfigs = useMemo(
     () => [
-      ...buildPayrollMonthRangeFilterConfigs(),
-      ...buildSalaryBoardClientFilterConfigs(employeeOptions, departmentOptions),
+      ...buildPayrollMonthRangeFilterConfigs((key) => t(key)),
+      ...buildSalaryBoardClientFilterConfigs(employeeOptions, departmentOptions, (key) => t(key)),
     ],
-    [departmentOptions, employeeOptions],
+    [departmentOptions, employeeOptions, t],
   );
 
   const salaryFilterValues = useMemo(
@@ -276,20 +278,14 @@ export function SalaryBoardPageContent() {
         <IntegratedSearchFilters
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search employees…"
+          searchPlaceholder={t('salary.searchPlaceholder')}
           filters={salaryFilterConfigs}
           filterValues={salaryFilterValues}
           onFilterChange={handleSalaryFilterChange}
           onClearAll={handleClearSalaryFilters}
         />
       ),
-      viewMode: (
-        <ViewModeSwitch
-          value={view}
-          onChange={handleViewChange}
-          options={SALARY_BOARD_VIEW_OPTIONS}
-        />
-      ),
+      viewMode: <ViewModeSwitch value={view} onChange={handleViewChange} options={viewOptions} />,
     }),
     [
       handleClearSalaryFilters,
@@ -298,7 +294,9 @@ export function SalaryBoardPageContent() {
       salaryFilterConfigs,
       salaryFilterValues,
       search,
+      t,
       view,
+      viewOptions,
     ],
   );
 
@@ -328,7 +326,7 @@ export function SalaryBoardPageContent() {
             className={buttonVariants({ variant: 'outline', size: 'sm' })}
           >
             <Banknote className="mr-1.5 size-4" aria-hidden />
-            Pay Now
+            {t('salary.payNow')}
           </Link>
           <SalaryBoardPageSettingsSheet
             exportCsvDisabled={exportCsvSubmitting || filteredEntries.length === 0}
@@ -344,6 +342,7 @@ export function SalaryBoardPageContent() {
       handleExportCsv,
       moduleHeroSlots,
       payNowPresetHref,
+      t,
     ],
   );
 
@@ -359,7 +358,11 @@ export function SalaryBoardPageContent() {
 
   if (!data) {
     return (
-      <EmptyState icon={Users} title="No data" description="Salary data response was empty." />
+      <EmptyState
+        icon={Users}
+        title={t('salary.emptyDataTitle')}
+        description={t('salary.emptyDataDescription')}
+      />
     );
   }
 
@@ -376,14 +379,14 @@ export function SalaryBoardPageContent() {
       {data.rows.length === 0 ? (
         <EmptyState
           icon={Users}
-          title="No employees"
-          description="No non-terminated employees are available for the salary view."
+          title={t('salary.emptyEmployeesTitle')}
+          description={t('salary.emptyEmployeesDescription')}
         />
       ) : !hasVisibleLines ? (
         <EmptyState
           icon={Users}
-          title="No matching lines"
-          description="Adjust search or filters to see salary lines."
+          title={t('salary.emptyMatchTitle')}
+          description={t('salary.emptyMatchDescription')}
         />
       ) : (
         <>
@@ -402,7 +405,7 @@ export function SalaryBoardPageContent() {
               onOpenMonth={openMonthSheet}
             />
           ) : (
-            <div className="flex min-h-0 flex-1 flex-col" style={{ minHeight: '28rem' }}>
+            <div className="flex min-h-[28rem] flex-1 flex-col">
               <SalaryBoardPayoutBoardView entries={filteredEntries} onOpenMonth={openMonthSheet} />
             </div>
           )}

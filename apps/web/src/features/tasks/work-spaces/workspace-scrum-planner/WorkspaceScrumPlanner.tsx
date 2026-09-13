@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { useTranslations } from 'next-intl';
 import { ChevronDown, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -8,12 +9,14 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { tasksApi, type Task } from '@/lib/api/tasks';
 import { fetchWorkspaceTaskPage } from '@/features/tasks/work-spaces/work-space-task-fetch';
 import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
-import { groupTasksForScrumPlanner, sprintCompletionPercent } from '../workspace-scrum-groups';
+import { groupTasksForScrumPlanner } from '../workspace-scrum-groups';
 import { WorkspaceScrumTaskRow } from './WorkspaceScrumTaskRow';
+import { WorkspaceScrumSprintBlock } from './WorkspaceScrumSprintBlock';
 import { useScrumDropTarget } from './use-scrum-drop-target';
 import { CreateWorkSpaceSprintDialog } from './CreateWorkSpaceSprintDialog';
 import { CloseWorkSpaceSprintDialog } from './CloseWorkSpaceSprintDialog';
 import { WorkspaceScrumBacklogQuickAdd } from './WorkspaceScrumBacklogQuickAdd';
+
 export function WorkspaceScrumPlanner({
   workspaceId,
   tasks,
@@ -39,6 +42,7 @@ export function WorkspaceScrumPlanner({
   creatorReady: boolean;
   refreshTasksFromServer?: () => Promise<void>;
 }) {
+  const t = useTranslations('workSpaces');
   const [createOpen, setCreateOpen] = useState(false);
   const [closeSprint, setCloseSprint] = useState<WorkSpaceSprint | null>(null);
   const [closedOpen, setClosedOpen] = useState(false);
@@ -60,10 +64,10 @@ export function WorkspaceScrumPlanner({
     async (taskId: string, sprintId: string | null) => {
       const prev = tasks;
       setTasks((cur) =>
-        cur.map((t) =>
-          t.id === taskId
+        cur.map((task) =>
+          task.id === taskId
             ? {
-                ...t,
+                ...task,
                 sprintId,
                 planningStatus: sprintId
                   ? sprintId === grouped.active?.id
@@ -71,21 +75,21 @@ export function WorkspaceScrumPlanner({
                     : 'FUTURE_SPRINT'
                   : 'BACKLOG',
               }
-            : t,
+            : task,
         ),
       );
       try {
         const updated = await workSpaceSprintsApi.moveTask(workspaceId, taskId, sprintId);
         const full = await tasksApi.getById(updated.id);
-        setTasks((cur) => cur.map((t) => (t.id === full.id ? full : t)));
+        setTasks((cur) => cur.map((task) => (task.id === full.id ? full : task)));
         const nextSprints = await workSpaceSprintsApi.list(workspaceId);
         setSprints(nextSprints);
       } catch (caught) {
         setTasks(prev);
-        toast.error(getApiErrorMessage(caught, 'Could not move task.'));
+        toast.error(getApiErrorMessage(caught, t('scrum.moveFailed')));
       }
     },
-    [tasks, workspaceId, setTasks, setSprints, grouped.active?.id],
+    [tasks, workspaceId, setTasks, setSprints, grouped.active?.id, t],
   );
 
   const backlogDrop = useScrumDropTarget((taskId) => void moveTask(taskId, null));
@@ -99,9 +103,9 @@ export function WorkspaceScrumPlanner({
       ]);
       setSprints(nextSprints);
       await applyServerTaskList(taskList.items);
-      toast.success('Sprint started.');
+      toast.success(t('scrum.started'));
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not start sprint.'));
+      toast.error(getApiErrorMessage(caught, t('scrum.startFailed')));
     }
   };
 
@@ -113,12 +117,14 @@ export function WorkspaceScrumPlanner({
       >
         <header className="mb-2 flex items-center justify-between gap-2">
           <div>
-            <h3 className="text-sm font-semibold">Backlog</h3>
-            <p className="text-muted-foreground text-xs">Tasks: {grouped.backlog.length}</p>
+            <h3 className="text-sm font-semibold">{t('scrum.backlog')}</h3>
+            <p className="text-muted-foreground text-xs">
+              {t('scrum.backlogTasks', { count: grouped.backlog.length })}
+            </p>
           </div>
           <Button type="button" size="sm" variant="outline" onClick={onAddBacklogTask}>
             <Plus className="size-4" aria-hidden />
-            More fields
+            {t('scrum.moreFields')}
           </Button>
         </header>
         <WorkspaceScrumBacklogQuickAdd
@@ -130,7 +136,7 @@ export function WorkspaceScrumPlanner({
         <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
           {grouped.backlog.length === 0 ? (
             <p className="text-muted-foreground border-border rounded-lg border border-dashed p-4 text-center text-xs">
-              Type a title above and press Enter, or drag tasks here.
+              {t('scrum.backlogEmpty')}
             </p>
           ) : (
             grouped.backlog.map((task) => (
@@ -142,7 +148,7 @@ export function WorkspaceScrumPlanner({
 
       <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-y-auto">
         {grouped.active ? (
-          <SprintBlock
+          <WorkspaceScrumSprintBlock
             sprint={grouped.active}
             tasks={grouped.bySprint.get(grouped.active.id) ?? []}
             variant="active"
@@ -152,12 +158,12 @@ export function WorkspaceScrumPlanner({
           />
         ) : (
           <div className="border-border text-muted-foreground rounded-xl border border-dashed p-6 text-center text-sm">
-            No active sprint. Start a planning sprint to begin execution on the Board tab.
+            {t('scrum.noActiveSprint')}
           </div>
         )}
 
         {grouped.planning.map((sprint) => (
-          <SprintBlock
+          <WorkspaceScrumSprintBlock
             key={sprint.id}
             sprint={sprint}
             tasks={grouped.bySprint.get(sprint.id) ?? []}
@@ -175,7 +181,7 @@ export function WorkspaceScrumPlanner({
           onClick={() => setCreateOpen(true)}
         >
           <Plus className="size-4" aria-hidden />
-          Create sprint
+          {t('scrum.createSprint')}
         </Button>
 
         {grouped.closed.length > 0 ? (
@@ -185,7 +191,7 @@ export function WorkspaceScrumPlanner({
               className="flex w-full items-center justify-between px-3 py-2 text-left text-sm font-medium"
               onClick={() => setClosedOpen((v) => !v)}
             >
-              Completed sprints
+              {t('scrum.completedSprints')}
               <ChevronDown
                 className={`size-4 transition ${closedOpen ? 'rotate-180' : ''}`}
                 aria-hidden
@@ -194,7 +200,7 @@ export function WorkspaceScrumPlanner({
             {closedOpen ? (
               <div className="space-y-2 border-t px-3 py-2">
                 {grouped.closed.map((sprint) => (
-                  <SprintBlock
+                  <WorkspaceScrumSprintBlock
                     key={sprint.id}
                     sprint={sprint}
                     tasks={grouped.bySprint.get(sprint.id) ?? []}
@@ -213,12 +219,12 @@ export function WorkspaceScrumPlanner({
         open={createOpen}
         onOpenChange={setCreateOpen}
         workspaceId={workspaceId}
-        onCreated={(s) => setSprints((prev) => [...prev, s])}
+        onCreated={(sprint) => setSprints((prev) => [...prev, sprint])}
       />
       {closeSprint ? (
         <CloseWorkSpaceSprintDialog
           open={Boolean(closeSprint)}
-          onOpenChange={(o) => !o && setCloseSprint(null)}
+          onOpenChange={(open) => !open && setCloseSprint(null)}
           workspaceId={workspaceId}
           sprint={closeSprint}
           planningSprints={grouped.planning}
@@ -234,68 +240,5 @@ export function WorkspaceScrumPlanner({
         />
       ) : null}
     </div>
-  );
-}
-
-function SprintBlock({
-  sprint,
-  tasks,
-  variant,
-  onDropTask,
-  onOpenTask,
-  onStart,
-  onFinish,
-}: {
-  sprint: WorkSpaceSprint;
-  tasks: Task[];
-  variant: 'active' | 'planning' | 'closed';
-  onDropTask: (taskId: string) => void;
-  onOpenTask: (task: Task) => void;
-  onStart?: () => void;
-  onFinish?: () => void;
-}) {
-  const drop = useScrumDropTarget(onDropTask);
-  const pct = sprintCompletionPercent(tasks);
-  const disabled = variant === 'closed';
-
-  return (
-    <article
-      className={`border-border rounded-xl border p-3 ${variant === 'active' ? 'bg-primary/5' : 'bg-card/30'}`}
-      {...(disabled ? {} : drop)}
-    >
-      <header className="mb-2 flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h4 className="text-sm font-semibold">{sprint.name}</h4>
-          <p className="text-muted-foreground text-xs">
-            {pct}% done · {tasks.length} tasks
-            {sprint.endDate ? ` · due ${new Date(sprint.endDate).toLocaleDateString()}` : ''}
-          </p>
-          {sprint.goal ? <p className="text-muted-foreground mt-1 text-xs">{sprint.goal}</p> : null}
-        </div>
-        <div className="flex gap-1">
-          {variant === 'planning' && onStart ? (
-            <Button type="button" size="sm" onClick={onStart}>
-              Start
-            </Button>
-          ) : null}
-          {variant === 'active' && onFinish ? (
-            <Button type="button" size="sm" onClick={onFinish}>
-              Finish
-            </Button>
-          ) : null}
-        </div>
-      </header>
-      <div className="space-y-2">
-        {tasks.length === 0 ? (
-          <p className="text-muted-foreground border-border rounded-lg border border-dashed p-3 text-center text-xs">
-            {disabled ? 'No tasks' : 'Drag tasks from backlog or add new work.'}
-          </p>
-        ) : (
-          tasks.map((task) => (
-            <WorkspaceScrumTaskRow key={task.id} task={task} onOpen={onOpenTask} />
-          ))
-        )}
-      </div>
-    </article>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import type { ExpenseDetailSheetTab } from '@/features/finance/components/expenses/expense-detail-sheet-tabs';
 import type { ExpenseDetailStageGateHighlight } from '@/features/finance/constants/expense-stage-gate-highlight';
@@ -30,6 +31,7 @@ export function useExpenseSheetStatusChange({
   setActiveTab,
   syncDraftStatus,
 }: UseExpenseSheetStatusChangeParams) {
+  const t = useTranslations('expenses');
   const [statusBusy, setStatusBusy] = useState(false);
 
   const handleStatusChange = useCallback(
@@ -52,7 +54,7 @@ export function useExpenseSheetStatusChange({
         onExpenseUpdated?.(updated);
         syncDraftStatus(updated.status);
         setLocalStageGate(null);
-        toast.success('Expense status updated');
+        toast.success(t('toasts.statusUpdated'));
       } catch (caught) {
         if (isStageGateApiError(caught)) {
           setLocalStageGate({ errors: caught.errors });
@@ -69,7 +71,7 @@ export function useExpenseSheetStatusChange({
             return;
           }
         }
-        toast.error(getApiErrorMessage(caught, 'Expense status could not be updated. Try again.'));
+        toast.error(getApiErrorMessage(caught, t('errors.statusUpdate')));
       } finally {
         setStatusBusy(false);
       }
@@ -82,6 +84,7 @@ export function useExpenseSheetStatusChange({
       setLocalStageGate,
       statusBusy,
       syncDraftStatus,
+      t,
     ],
   );
 

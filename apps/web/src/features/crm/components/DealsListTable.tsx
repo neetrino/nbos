@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Table,
   TableBody,
@@ -22,8 +23,8 @@ import {
   StatusBadge,
 } from '@/components/shared';
 import { getDealStage } from '@/features/crm/constants/dealPipeline';
+import { translateDealStageLabel, translateDealTypeLabel } from '@/features/crm/i18n/crm-copy';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
-import { getDealTypePresentation } from '@/lib/deal-type-visual';
 import type { Deal } from '@/lib/api/deals';
 import { cn } from '@/lib/utils';
 
@@ -34,21 +35,22 @@ export interface DealsListTableProps {
 }
 
 export function DealsListTable({ deals, boardScope, onDealClick }: DealsListTableProps) {
+  const t = useTranslations('crm');
   return (
     <div className={ENTITY_LIST_SCROLL_SHELL_CLASS}>
       <Table>
         <TableHeader className="bg-card sticky top-0 z-10">
           <TableRow className="hover:bg-transparent">
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Name</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Contact</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Amount</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Type</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Stage</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('deals.table.name')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('deals.table.contact')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('deals.table.amount')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('deals.table.type')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('deals.table.stage')}</TableHead>
             {boardScope === 'CLOSED' ? (
-              <TableHead className={ENTITY_LIST_HEAD_CLASS}>Closed</TableHead>
+              <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('deals.table.closed')}</TableHead>
             ) : null}
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Seller</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Created</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('deals.table.seller')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('deals.table.created')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -75,8 +77,8 @@ function DealListRow({
   boardScope: BoardLifecycleScope;
   onDealClick: (deal: Deal) => void;
 }) {
+  const t = useTranslations('crm');
   const stage = getDealStage(deal.status);
-  const dealTypeVisual = getDealTypePresentation(deal.type);
   const contactLabel = deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : null;
   const sellerLabel = deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : null;
   const amount = deal.amount;
@@ -100,12 +102,12 @@ function DealListRow({
         )}
       </TableCell>
       <TableCell className={cn(ENTITY_LIST_CELL_CLASS, ENTITY_LIST_TYPE_CLASS)}>
-        {dealTypeVisual.label}
+        {translateDealTypeLabel(t, deal.type)}
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
         {stage ? (
           <StatusBadge
-            label={stage.label}
+            label={translateDealStageLabel(t, deal.status)}
             variant={stage.variant}
             className={ENTITY_LIST_BADGE_CLASS}
             dot

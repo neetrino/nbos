@@ -37,6 +37,8 @@ Dashboard
 
 ### Desk welcome line
 
+The entire welcome block always uses original Eastern Armenian copy (`lang="hy"`), including loading and missing-profile fallback, regardless of the interface language (EN/RU/HY). The desk-line catalog is not an interface translation namespace. Employee names retain their profile spelling. Armenian everyday and seasonal references are editorial themes, not inferred interests, location, or weather. Existing template IDs and daily selection remain unchanged.
+
 Control Center opens with one personal wish for the Yerevan calendar day: a short heading, a quieter continuation, and a small Lucide icon. The internal name of the concept is not shown. This is not analytics, not a work queue, and not a clock.
 
 A deterministic catalog resolver picks one pair for `employeeId + date + catalog version`:

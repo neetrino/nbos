@@ -1,6 +1,8 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { resolveDatePickerLocale } from '@/components/shared/date-picker/date-picker-locale';
 import { cn } from '@/lib/utils';
 import type { SearchHit } from '@/lib/api/search';
 import { GlobalSearchHighlightText } from './GlobalSearchHighlightText';
@@ -24,6 +26,7 @@ export function GlobalSearchResultRow({
   onHover,
   index,
 }: GlobalSearchResultRowProps) {
+  const locale = resolveDatePickerLocale(useLocale());
   return (
     <button
       type="button"
@@ -44,7 +47,7 @@ export function GlobalSearchResultRow({
         <span className="text-muted-foreground mt-0.5 block truncate text-xs">{hit.subtitle}</span>
       </span>
       <span className="text-muted-foreground/80 shrink-0 text-xs tabular-nums">
-        {formatGlobalSearchDate(hit.occurredAt)}
+        {formatGlobalSearchDate(hit.occurredAt, locale)}
       </span>
     </button>
   );
@@ -69,11 +72,12 @@ export function GlobalSearchResults({
   onHover,
   heading,
 }: GlobalSearchResultsProps) {
+  const t = useTranslations('search');
   if (loading && items.length === 0) {
     return (
       <div className="text-muted-foreground flex h-full min-h-full items-center justify-center gap-2 text-sm">
         <Loader2 className="size-4 animate-spin" aria-hidden />
-        Searching…
+        {t('searching')}
       </div>
     );
   }
@@ -81,7 +85,7 @@ export function GlobalSearchResults({
   if (items.length === 0) {
     return (
       <div className="text-muted-foreground flex h-full min-h-full items-center justify-center text-sm">
-        No results found.
+        {t('empty')}
       </div>
     );
   }

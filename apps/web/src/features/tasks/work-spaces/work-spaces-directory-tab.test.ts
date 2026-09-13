@@ -24,7 +24,11 @@ describe('work spaces directory tab', () => {
   });
 
   it('marks the active header pill from the current tab', () => {
-    const content = workSpacesDirectoryHeaderContent('product');
+    const content = workSpacesDirectoryHeaderContent('product', {
+      standalone: 'Standalone',
+      product: 'Product',
+      ariaLabel: 'Work space type',
+    });
     expect(content.kind).toBe('nav');
     if (content.kind !== 'nav') return;
     expect(content.fullWidthOnMobile).toBe(true);

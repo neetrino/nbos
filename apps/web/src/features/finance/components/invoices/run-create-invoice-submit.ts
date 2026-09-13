@@ -21,6 +21,7 @@ export async function runCreateInvoiceSubmit(
     setError: (e: string | null) => void;
     onCreated: (invoice?: Invoice) => Promise<void> | void;
     onOpenChange: (open: boolean) => void;
+    createErrorFallback?: string;
   },
 ): Promise<void> {
   event.preventDefault();
@@ -43,7 +44,9 @@ export async function runCreateInvoiceSubmit(
     }
     params.onOpenChange(false);
   } catch (err) {
-    params.setError(getApiErrorMessage(err, 'Invoice could not be created.'));
+    params.setError(
+      getApiErrorMessage(err, params.createErrorFallback ?? 'Invoice could not be created.'),
+    );
   } finally {
     params.setLoading(false);
   }

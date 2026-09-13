@@ -11,6 +11,21 @@ export interface StageReadinessRow {
   done: boolean;
 }
 
+/** English VALUES kept here; translate at render via `READINESS_LABEL_MESSAGE_KEYS`. */
+export const STAGE_READINESS_LABELS = {
+  deadlineSet: 'Deadline set',
+  noOpenWorkSpaceTasks: 'No open Work Space tasks',
+  noOpenExtensions: 'No open extensions',
+  noOpenTasks: 'No open tasks',
+  noOpenTickets: 'No open tickets',
+  clientAcceptance: 'Client acceptance recorded',
+  orderClosed: 'Order financially closed',
+  noUnpaidInvoices: 'No unpaid invoices',
+  scopeFilled: 'Scope & notes filled',
+  ownerAssigned: 'Owner assigned',
+  stageChecklist: 'Stage checklist',
+} as const;
+
 function checklistReadinessDetail(checklist: ChecklistStageProgress): {
   label: string;
   detail: string;
@@ -20,13 +35,13 @@ function checklistReadinessDetail(checklist: ChecklistStageProgress): {
   const totalChecklists = checklist.totalChecklists ?? 0;
   if (totalChecklists > 0) {
     return {
-      label: 'Stage checklist',
+      label: STAGE_READINESS_LABELS.stageChecklist,
       detail: `${completedChecklists}/${totalChecklists} complete, ${checklist.completed}/${checklist.total} reviewed`,
       done: completedChecklists >= totalChecklists,
     };
   }
   return {
-    label: 'Stage checklist',
+    label: STAGE_READINESS_LABELS.stageChecklist,
     detail: `${checklist.completed}/${checklist.total} reviewed`,
     done: checklist.completed >= checklist.total,
   };
@@ -54,10 +69,18 @@ export function buildProductStageReadinessRows(
   const rows: StageReadinessRow[] = [];
 
   if (stage === 'STARTING') {
-    rows.push({ key: 'deadline', label: 'Deadline set', done: Boolean(product.deadline) });
+    rows.push({
+      key: 'deadline',
+      label: STAGE_READINESS_LABELS.deadlineSet,
+      done: Boolean(product.deadline),
+    });
   } else if (stage === 'DEVELOPMENT' || stage === 'QA') {
     const open = countOpenTasks(product.tasks ?? []);
-    rows.push({ key: 'tasks', label: 'No open Work Space tasks', done: open === 0 });
+    rows.push({
+      key: 'tasks',
+      label: STAGE_READINESS_LABELS.noOpenWorkSpaceTasks,
+      done: open === 0,
+    });
   } else if (stage === 'TRANSFER') {
     const invoices = product.order?.invoices ?? [];
     const unpaid = invoices.filter((i) => i.moneyStatus !== 'PAID').length;
@@ -66,20 +89,24 @@ export function buildProductStageReadinessRows(
       (e) => !CLOSED_EXTENSION.has(e.status),
     ).length;
     rows.push(
-      { key: 'ext', label: 'No open extensions', done: extOpen === 0 },
-      { key: 'tasks', label: 'No open tasks', done: countOpenTasks(product.tasks ?? []) === 0 },
+      { key: 'ext', label: STAGE_READINESS_LABELS.noOpenExtensions, done: extOpen === 0 },
+      {
+        key: 'tasks',
+        label: STAGE_READINESS_LABELS.noOpenTasks,
+        done: countOpenTasks(product.tasks ?? []) === 0,
+      },
       {
         key: 'tickets',
-        label: 'No open tickets',
+        label: STAGE_READINESS_LABELS.noOpenTickets,
         done: countOpenTickets(product.tickets ?? []) === 0,
       },
       {
         key: 'accept',
-        label: 'Client acceptance recorded',
+        label: STAGE_READINESS_LABELS.clientAcceptance,
         done: Boolean(product.clientAcceptedAt),
       },
-      { key: 'order', label: 'Order financially closed', done: orderOk },
-      { key: 'inv', label: 'No unpaid invoices', done: unpaid === 0 },
+      { key: 'order', label: STAGE_READINESS_LABELS.orderClosed, done: orderOk },
+      { key: 'inv', label: STAGE_READINESS_LABELS.noUnpaidInvoices, done: unpaid === 0 },
     );
   }
 
@@ -104,22 +131,34 @@ export function buildExtensionStageReadinessRows(
     rows.push(
       {
         key: 'desc',
-        label: 'Scope & notes filled',
+        label: STAGE_READINESS_LABELS.scopeFilled,
         done: Boolean(extension.description?.trim()),
       },
-      { key: 'owner', label: 'Owner assigned', done: Boolean(extension.assignedTo) },
+      {
+        key: 'owner',
+        label: STAGE_READINESS_LABELS.ownerAssigned,
+        done: Boolean(extension.assignedTo),
+      },
     );
   } else if (stage === 'DEVELOPMENT' || stage === 'QA') {
     const open = countOpenTasks(extension.tasks ?? []);
-    rows.push({ key: 'tasks', label: 'No open Work Space tasks', done: open === 0 });
+    rows.push({
+      key: 'tasks',
+      label: STAGE_READINESS_LABELS.noOpenWorkSpaceTasks,
+      done: open === 0,
+    });
   } else if (stage === 'TRANSFER') {
     const invoices = extension.order?.invoices ?? [];
     const unpaid = invoices.filter((i) => i.moneyStatus !== 'PAID').length;
     const orderOk = isOrderPaymentGateSatisfied(extension.order);
     rows.push(
-      { key: 'tasks', label: 'No open tasks', done: countOpenTasks(extension.tasks ?? []) === 0 },
-      { key: 'order', label: 'Order financially closed', done: orderOk },
-      { key: 'inv', label: 'No unpaid invoices', done: unpaid === 0 },
+      {
+        key: 'tasks',
+        label: STAGE_READINESS_LABELS.noOpenTasks,
+        done: countOpenTasks(extension.tasks ?? []) === 0,
+      },
+      { key: 'order', label: STAGE_READINESS_LABELS.orderClosed, done: orderOk },
+      { key: 'inv', label: STAGE_READINESS_LABELS.noUnpaidInvoices, done: unpaid === 0 },
     );
   }
 

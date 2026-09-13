@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Briefcase } from 'lucide-react';
 import {
   DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
@@ -37,12 +38,13 @@ export function DealCombinedInfoSection({
   outsourceToggleLocked = false,
   gateRequiredFields = new Set(),
 }: DealCombinedInfoSectionProps) {
+  const t = useTranslations('crm');
   const { open, onOpenChange } = useDealSheetSectionCollapse(DEAL_SHEET_COLLAPSE_KEY.DEAL_PROJECT);
 
   return (
     <DetailSheetCollapsibleSection
       id={DEAL_SHEET_SECTION.INFO}
-      title="Deal & project"
+      title={t('dealSheet.sectionDealProject')}
       icon={<Briefcase size={12} />}
       open={open}
       onOpenChange={onOpenChange}

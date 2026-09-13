@@ -19,6 +19,7 @@ import { measureKanbanCardRowHeight } from '@/components/shared/kanban/kanban-dr
 import { KanbanScrollEdgeControls } from '@/components/shared/kanban/KanbanScrollEdgeControls';
 import { KanbanTerminalDropBar } from '@/components/shared/kanban/KanbanTerminalDropBar';
 import { useKanbanHorizontalScroll } from '@/components/shared/kanban/use-kanban-horizontal-scroll';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
@@ -29,9 +30,9 @@ import {
 } from './delivery-kanban-board.constants';
 import { DELIVERY_TERMINAL_DROP_ZONES } from './delivery-terminal-drop-zones';
 import type { BoardAction, DeliveryActiveStage } from './project-delivery-board-actions';
+import { DELIVERY_STAGE_MESSAGE_KEYS } from './delivery-board-message-keys';
 import {
   ACTIVE_DELIVERY_STAGES,
-  DELIVERY_STAGE_LABELS,
   getItemId,
   getItemKey,
   getItemLifecycle,
@@ -73,6 +74,7 @@ export function DeliveryKanbanBoard({
   onOpenDetails,
   onMoveToStage,
 }: DeliveryKanbanBoardProps) {
+  const t = useTranslations('deliveryBoard');
   const [dragItem, setDragItem] = useState<DeliveryDragItem | null>(null);
   const [dragCardHeightPx, setDragCardHeightPx] = useState<number | null>(null);
   const [dropTarget, setDropTarget] = useState<DeliveryActiveStage | null>(null);
@@ -100,10 +102,17 @@ export function DeliveryKanbanBoard({
   const columns = useMemo(() => {
     return ACTIVE_DELIVERY_STAGES.map((stage) => ({
       stage,
-      label: DELIVERY_STAGE_LABELS[stage],
       items: displayItems.filter((item) => getItemLifecycle(item)?.stage === stage),
     }));
   }, [displayItems]);
+  const terminalZones = useMemo(
+    () =>
+      DELIVERY_TERMINAL_DROP_ZONES.map((zone) => ({
+        ...zone,
+        label: zone.key === 'DONE' ? t('resolution.done') : t('resolution.cancelled'),
+      })),
+    [t],
+  );
 
   const {
     scrollRef,
@@ -255,7 +264,8 @@ export function DeliveryKanbanBoard({
             >
               <KanbanStageColumn
                 stage={col.stage}
-                title={col.label}
+                title={t(DELIVERY_STAGE_MESSAGE_KEYS[col.stage])}
+                emptyLabel={t('empty.noCards')}
                 count={col.items.length}
                 showLeftRule={colIdx > 0}
                 dragCardHeightPx={dragCardHeightPx}
@@ -312,7 +322,7 @@ export function DeliveryKanbanBoard({
       </div>
       {dragItem ? (
         <KanbanTerminalDropBar
-          zones={DELIVERY_TERMINAL_DROP_ZONES}
+          zones={terminalZones}
           activeZoneKey={terminalDropTarget}
           onDragOver={setTerminalDropTarget}
           onDragLeave={() => setTerminalDropTarget(null)}
@@ -355,6 +365,7 @@ function withOptimisticDeliveryStage(
 function KanbanStageColumn({
   stage,
   title,
+  emptyLabel,
   count,
   showLeftRule,
   dragCardHeightPx,
@@ -366,6 +377,7 @@ function KanbanStageColumn({
 }: {
   stage: DeliveryActiveStage;
   title: string;
+  emptyLabel: string;
   count: number;
   showLeftRule: boolean;
   dragCardHeightPx: number | null;
@@ -428,7 +440,7 @@ function KanbanStageColumn({
             heightPx={dragCardHeightPx}
           />
           {count === 0 && !isDropTarget ? (
-            <p className="text-muted-foreground py-8 text-center text-xs">No cards</p>
+            <p className="text-muted-foreground py-8 text-center text-xs">{emptyLabel}</p>
           ) : null}
         </div>
       </div>

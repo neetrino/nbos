@@ -1,0 +1,211 @@
+{
+  "title": "Доска поставки",
+  "pipelineAria": "Конвейер поставки",
+  "loading": "Загрузка доски…",
+  "loadError": "Не удалось загрузить данные доски поставки.",
+  "pipelineTabs": {
+    "active": "Активные",
+    "closed": "Закрытые"
+  },
+  "view": {
+    "board": "Доска",
+    "list": "Список",
+    "boardAria": "Вид доски",
+    "listAria": "Вид списка"
+  },
+  "search": {
+    "activePlaceholder": "Поиск по названию, проекту или коду…",
+    "closedPlaceholder": "Поиск закрытых позиций…"
+  },
+  "count": "{filtered, plural, one {# карточка из {total}} few {# карточки из {total}} many {# карточек из {total}} other {# карточки из {total}}}",
+  "clearProjectFilter": "Сбросить фильтр проекта",
+  "kind": {
+    "all": "Все",
+    "products": "Продукты",
+    "extensions": "Extensions",
+    "aria": "Тип на доске поставки",
+    "filterLabel": "Тип",
+    "allOption": "Все типы"
+  },
+  "filters": {
+    "owner": "Владелец",
+    "status": "Статус",
+    "project": "Проект",
+    "result": "Результат",
+    "allOwner": "Все владельцы",
+    "allStatus": "Все статусы",
+    "allProject": "Все проекты",
+    "allResult": "Все результаты",
+    "inProgress": "В работе",
+    "onHold": "На паузе",
+    "cancelled": "Отменено",
+    "done": "Готово"
+  },
+  "table": {
+    "entity": "Сущность",
+    "name": "Название",
+    "project": "Проект",
+    "owner": "PM / владелец",
+    "result": "Результат",
+    "closed": "Закрыто",
+    "deadline": "Срок",
+    "stage": "Этап",
+    "status": "Статус",
+    "details": "Подробнее"
+  },
+  "empty": {
+    "closedBoard": "Нет закрытых позиций поставки.",
+    "noCards": "Нет карточек",
+    "closedTable": "Нет закрытых позиций по фильтру.",
+    "activeTable": "Нет активных позиций по фильтру."
+  },
+  "kindLabel": {
+    "product": "Продукт",
+    "extension": "Extension"
+  },
+  "stages": {
+    "STARTING": "Запуск",
+    "DEVELOPMENT": "Разработка",
+    "QA": "QA",
+    "TRANSFER": "Передача"
+  },
+  "pipeline": {
+    "start": "Старт",
+    "dev": "Dev",
+    "qa": "QA",
+    "transfer": "Передача",
+    "cancel": "Отмена",
+    "done": "Готово"
+  },
+  "resolution": {
+    "done": "Готово",
+    "cancelled": "Отменено"
+  },
+  "deadline": {
+    "onTime": "Вовремя",
+    "late": "С опозданием"
+  },
+  "lifecycle": {
+    "holdExpired": "Пауза истекла",
+    "onHold": "На паузе",
+    "notStaged": "Без этапа",
+    "stageHoldExpired": "{stage} · пауза истекла",
+    "stageOnHold": "{stage} · на паузе"
+  },
+  "entityFallback": "позиция поставки",
+  "sheet": {
+    "doneBanner": "Эта позиция поставки завершена. Данные только для чтения; история — на доске или странице продукта.",
+    "cancelledBanner": "Эта позиция поставки отменена. Данные только для чтения; история — на доске.",
+    "paused": "Поставка на паузе.",
+    "resume": "Продолжить",
+    "loadFailed": "Не удалось загрузить детали.",
+    "saveFailed": "Не удалось сохранить изменения.",
+    "nothingToEdit": "Пока нечего редактировать.",
+    "openWorkspace": "Открыть рабочее пространство",
+    "namePlaceholder": "Название…",
+    "saveName": "Сохранить название",
+    "editNameTitle": "Нажмите, чтобы изменить название"
+  },
+  "tabs": {
+    "general": "Общее",
+    "workspace": "Рабочее пространство",
+    "calls": "Звонки",
+    "bonus": "Бонус",
+    "history": "История",
+    "createTask": "Создать задачу"
+  },
+  "readiness": {
+    "title": "Готовность этапа",
+    "empty": "Для этого состояния нет требований этапа.",
+    "deadlineSet": "Срок указан",
+    "noOpenWorkSpaceTasks": "Нет открытых задач рабочего пространства",
+    "noOpenExtensions": "Нет открытых Extension",
+    "noOpenTasks": "Нет открытых задач",
+    "noOpenTickets": "Нет открытых тикетов",
+    "clientAcceptance": "Приёмка клиента зафиксирована",
+    "orderClosed": "Заказ финансово закрыт",
+    "noUnpaidInvoices": "Нет неоплаченных счетов",
+    "scopeFilled": "Описание и заметки заполнены",
+    "ownerAssigned": "Владелец назначен",
+    "stageChecklist": "Чек-лист этапа",
+    "checklistDetailFull": "{completedChecklists}/{totalChecklists} готово, {reviewed}/{total} проверено",
+    "checklistDetailReviewed": "{reviewed}/{total} проверено"
+  },
+  "plan": {
+    "deliveryTitle": "План поставки",
+    "extensionTitle": "План Extension",
+    "project": "Проект",
+    "product": "Продукт",
+    "payment": "Оплата",
+    "deadline": "Срок",
+    "productCategory": "Категория продукта",
+    "productType": "Тип продукта",
+    "extensionName": "Название Extension",
+    "size": "Размер",
+    "productLine": "Линейка продукта:",
+    "pickDate": "Выберите дату…",
+    "productNotesPlaceholder": "План, вехи, контекст клиента…",
+    "extensionNotesPlaceholder": "План, критерии приёмки…"
+  },
+  "commercial": {
+    "title": "Клиент и заказ",
+    "client": "Клиент",
+    "company": "Компания",
+    "deal": "Сделка",
+    "project": "Проект",
+    "product": "Продукт",
+    "credentials": "Доступы",
+    "noClient": "К проекту не привязан клиент.",
+    "openDeal": "Открыть сделку {title}",
+    "linksAria": "Коммерческие ссылки"
+  },
+  "team": {
+    "title": "Команда",
+    "projectManager": "Руководитель проекта",
+    "developerBackend": "Backend-разработчик",
+    "developerFrontend": "Frontend-разработчик",
+    "designer": "Дизайнер",
+    "technicalSpecialist": "Технический специалист",
+    "qa": "QA",
+    "owner": "Владелец",
+    "seller": "Продавец",
+    "notAssigned": "Не назначен"
+  },
+  "files": {
+    "title": "Файлы",
+    "attachments": "Вложения",
+    "approvedOffer": "Утверждённое предложение",
+    "contract": "Договор",
+    "openInNewTab": "Открыть в новой вкладке"
+  },
+  "access": {
+    "title": "Доступ и инфраструктура",
+    "loading": "Загрузка…",
+    "empty": "Для этого профиля продукта слоты доступа не настроены."
+  },
+  "checklist": {
+    "title": "Чек-листы этапа",
+    "loading": "Чек-листы этапа…",
+    "progress": "Чек-листы этапа {reviewed}/{total}"
+  },
+  "languages": {
+    "hy": "Армянский",
+    "en": "Английский",
+    "ru": "Русский",
+    "de": "Немецкий",
+    "fr": "Французский",
+    "es": "Испанский",
+    "it": "Итальянский",
+    "ar": "Арабский",
+    "tr": "Турецкий",
+    "zh": "Китайский",
+    "ja": "Японский",
+    "ko": "Корейский"
+  },
+  "languageField": {
+    "label": "Языки",
+    "select": "Выберите…",
+    "inheritedEmpty": "Наследуется от родительского продукта — не задано.",
+    "remove": "Убрать {language}"
+  }
+}

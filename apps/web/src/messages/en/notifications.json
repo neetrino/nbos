@@ -1,0 +1,83 @@
+{
+  "title": "Notifications",
+  "markAllRead": "Mark all as read",
+  "signIn": "Sign in to see notifications.",
+  "loading": "Loading…",
+  "loadFailed": "Could not load notifications.",
+  "empty": "No notifications yet.",
+  "loadMore": "Load more",
+  "openCenter": "Notification settings",
+  "center": {
+    "kicker": "Notifications",
+    "title": "Notification Center",
+    "refresh": "Refresh",
+    "markAllRead": "Mark all read",
+    "prefsTitle": "Notification preferences",
+    "prefsDescription": "Choose where each alert should arrive.",
+    "prefsLoading": "Loading preferences…",
+    "channel": {
+      "web": "Web",
+      "email": "Email",
+      "telegram": "Telegram",
+      "whatsapp": "WhatsApp"
+    },
+    "loadingList": "Loading notifications…",
+    "emptyTitle": "No notifications",
+    "emptyDescription": "This category has no active notifications.",
+    "markReadAria": "Mark as read",
+    "archiveAria": "Archive"
+  },
+  "category": {
+    "all": "All",
+    "informational": "Info",
+    "action_required": "Action required",
+    "system_health": "System health",
+    "audit_security": "Security"
+  },
+  "priority": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "normal": "Normal"
+  },
+  "relative": {
+    "justNow": "just now",
+    "minutesAgo": "{count, plural, one {# min ago} other {# min ago}}",
+    "hoursAgo": "{count, plural, one {#h ago} other {#h ago}}",
+    "yesterday": "Yesterday",
+    "daysAgo": "{count, plural, one {#d ago} other {#d ago}}"
+  },
+  "eventTypes": {
+    "financeWalletBonusActive": "Bonus became active",
+    "financeWalletBonusPaid": "Bonus paid",
+    "financeWalletBonusCorrected": "Bonus corrected",
+    "financeWalletBonusKpiReduced": "Bonus reduced by KPI",
+    "financeWalletBonusCarryApplied": "Carried bonus applied",
+    "financeWalletBonusCarryDeferred": "Carried bonus deferred",
+    "financeWalletPayrollCreated": "Payroll created",
+    "financeWalletPayrollClosed": "Payroll closed",
+    "financeWalletSalaryPayment": "Salary paid",
+    "financeInvoiceOfficialRequestDue": "Official invoice request due",
+    "financeInvoicePaymentReminderDue": "Invoice payment reminder",
+    "financeInvoicePaymentReminderD10": "Invoice reminder · 10 days",
+    "financeInvoicePaymentReminderD2": "Invoice reminder · 2 days",
+    "financeInvoiceOverdueReminderW1": "Overdue invoice · week 1",
+    "financeInvoiceOverdueReminderW2": "Overdue invoice · week 2",
+    "financeExpenseBacklogWeeklyDigest": "Weekly expense backlog",
+    "financeExpenseBacklogDueOverdue": "Expense due or overdue",
+    "taskOverdue": "Task overdue",
+    "financeOverdue": "Finance item overdue",
+    "mailHealthDegraded": "Mail health degraded",
+    "mailSendFailed": "Mail send failed",
+    "opsSchedulerRunFailed": "Scheduler failed",
+    "opsBullmqJobFailed": "Background job failed",
+    "documentAccessChanged": "Document access changed",
+    "credentialsHighRiskAction": "High-risk credential action",
+    "supportSlaResolveWarning": "Support SLA warning",
+    "supportSlaResponseBreached": "Support response SLA breached",
+    "supportSlaResolveBreached": "Support resolve SLA breached",
+    "supportEscalationManager": "Support escalation",
+    "tasksReviewRequested": "Task review requested"
+  }
+}

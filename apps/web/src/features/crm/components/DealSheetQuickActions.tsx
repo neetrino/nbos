@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { CheckSquare, FileText, Plus, Rocket, type LucideIcon } from 'lucide-react';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
@@ -14,10 +15,14 @@ import { dealsApi } from '@/lib/api/deals';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
 import { usePermission } from '@/lib/permissions';
-import { dealInvoiceCreateDeniedMessage } from '@/features/crm/utils/deal-invoice-create-guard';
+import {
+  DEAL_INVOICE_FIELDS_REQUIRED_MESSAGE,
+  dealInvoiceCreateDeniedMessage,
+} from '@/features/crm/utils/deal-invoice-create-guard';
 import { useDealWhatsAppHeaderActions } from '../hooks/use-deal-whatsapp-header-actions';
 import { DealSheetActionsMenu } from './DealSheetActionsMenu';
 import { DealWhatsAppHeaderControl } from './DealWhatsAppHeaderControl';
+import type { CrmTranslate } from '../i18n/crm-copy';
 
 interface DealSheetQuickActionsProps {
   deal: Deal;
@@ -41,6 +46,7 @@ export function DealSheetQuickActions({
   onCreateInvoice,
   onCreateTask,
 }: DealSheetQuickActionsProps) {
+  const t = useTranslations('crm');
   const router = useRouter();
   const { can } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
@@ -51,11 +57,15 @@ export function DealSheetQuickActions({
   const requestCreateInvoice = useCallback(() => {
     const denied = dealInvoiceCreateDeniedMessage(canAddInvoice, canCreateInvoice);
     if (denied) {
-      toast.error(denied);
+      toast.error(
+        denied === DEAL_INVOICE_FIELDS_REQUIRED_MESSAGE
+          ? t('dealSheet.invoiceFieldsRequired')
+          : denied,
+      );
       return;
     }
     onCreateInvoice();
-  }, [canAddInvoice, canCreateInvoice, onCreateInvoice]);
+  }, [canAddInvoice, canCreateInvoice, onCreateInvoice, t]);
   const depositBootstrap = canCreateDepositInvoice(deal, taxStatus);
   const canStartEarlyDelivery = canStartDealEarlyDelivery(deal, deal.orders?.[0]);
   const { startingEarly, handleStartEarlyDelivery } = useStartEarlyDelivery(
@@ -77,6 +87,7 @@ export function DealSheetQuickActions({
         onOpenDrive: () => router.push(buildDriveHrefWithDeal(deal.id)),
         onStartEarlyDelivery: () => void handleStartEarlyDelivery(),
         startingEarly,
+        t,
       }),
     [
       canStartEarlyDelivery,
@@ -89,6 +100,7 @@ export function DealSheetQuickActions({
       requestCreateInvoice,
       router,
       startingEarly,
+      t,
     ],
   );
 
@@ -112,6 +124,7 @@ function useStartEarlyDelivery(
   canStartEarlyDelivery: boolean,
   onRefresh?: () => void,
 ) {
+  const t = useTranslations('crm');
   const [startingEarly, setStartingEarly] = useState(false);
   const handleStartEarlyDelivery = useCallback(async () => {
     if (!canStartEarlyDelivery) return;
@@ -120,11 +133,11 @@ function useStartEarlyDelivery(
       await dealsApi.startEarlyDelivery(dealId);
       onRefresh?.();
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not start early delivery.'));
+      toast.error(getApiErrorMessage(caught, t('dealSheet.startEarlyDeliveryError')));
     } finally {
       setStartingEarly(false);
     }
-  }, [canStartEarlyDelivery, dealId, onRefresh]);
+  }, [canStartEarlyDelivery, dealId, onRefresh, t]);
   return { handleStartEarlyDelivery, startingEarly };
 }
 
@@ -151,39 +164,44 @@ function buildDealSheetMenuActions(input: {
   onOpenDrive: () => void;
   onStartEarlyDelivery: () => void;
   startingEarly: boolean;
+  t: CrmTranslate;
 }): QuickActionItem[] {
   const items: QuickActionItem[] = [
     {
       id: 'create-invoice',
-      label: input.depositBootstrap ? 'Create deposit invoice' : 'Create invoice',
+      label: input.depositBootstrap
+        ? input.t('dealSheet.createDepositInvoice')
+        : input.t('dealSheet.createInvoice'),
       icon: Plus,
       enabled: input.canCreateInvoice,
-      disabledTitle:
-        'Fill required: Cost, Payment Type, Contact, Deal Type, Tax Status; if Tax then Company',
+      disabledTitle: input.t('dealSheet.invoiceFieldsRequired'),
       onClick: input.onCreateInvoice,
     },
   ];
   if (input.canStartEarlyDelivery) {
     items.push({
       id: 'start-early-delivery',
-      label: 'Start delivery before payment',
+      label: input.t('dealSheet.startEarlyDelivery'),
       icon: Rocket,
       enabled: !input.startingEarly,
-      disabledTitle: input.startingEarly ? 'Starting delivery…' : undefined,
+      disabledTitle: input.startingEarly ? input.t('dealSheet.startingDelivery') : undefined,
       onClick: input.onStartEarlyDelivery,
     });
   }
   items.push({
     id: 'create-task',
-    label: 'Create task',
+    label: input.t('common.createTask'),
     icon: CheckSquare,
     enabled: !input.creatorReady || Boolean(input.creatorId),
-    disabledTitle: input.creatorReady && !input.creatorId ? 'Employee profile required' : undefined,
+    disabledTitle:
+      input.creatorReady && !input.creatorId
+        ? input.t('common.employeeProfileRequired')
+        : undefined,
     onClick: input.onCreateTask,
   });
   items.push({
     id: 'open-drive',
-    label: 'Open drive',
+    label: input.t('dealSheet.openDrive'),
     icon: FileText,
     enabled: true,
     onClick: input.onOpenDrive,

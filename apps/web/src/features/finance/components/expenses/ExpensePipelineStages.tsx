@@ -1,11 +1,14 @@
 'use client';
 
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { PipelineStagesBar } from '@/components/shared';
 import { toSheetPipelineStages } from '@/components/shared/pipeline-stage-config';
 import {
   EXPENSE_BOARD_COLUMN_KEYS,
   type ExpenseBoardColumnKey,
 } from '@/features/finance/constants/expense-board';
+import { translateExpenseStageShort } from './expense-i18n-labels';
 
 const EXPENSE_PIPELINE_PAID_KEY = 'PAID';
 const EXPENSE_PIPELINE_CANCEL_KEY = 'CANCELLED';
@@ -21,24 +24,6 @@ const STAGE_HEX: Record<string, string> = {
   [EXPENSE_PIPELINE_PAID_KEY]: '#22c55e',
   [EXPENSE_PIPELINE_CANCEL_KEY]: '#ef4444',
 };
-
-const ACTIVE_SHORT: Record<ExpenseBoardColumnKey, string> = {
-  PLANNED: 'Planned',
-  DUE_SOON: 'Soon',
-  DUE_NOW: 'Now',
-  OVERDUE: 'Overdue',
-  ON_HOLD: 'Hold',
-};
-
-const SHEET_STAGES = toSheetPipelineStages([
-  ...EXPENSE_BOARD_COLUMN_KEYS.map((key) => ({
-    key,
-    label: ACTIVE_SHORT[key],
-    shortLabel: ACTIVE_SHORT[key],
-  })),
-  { key: EXPENSE_PIPELINE_CANCEL_KEY, label: 'Cancel', shortLabel: 'Cancel' },
-  { key: EXPENSE_PIPELINE_PAID_KEY, label: 'Paid', shortLabel: 'Paid' },
-]);
 
 function canClickExpenseStage(stageKey: string, currentStatus: string): boolean {
   if (
@@ -71,9 +56,31 @@ export function ExpensePipelineStages({
   disabled = false,
   onSelect,
 }: ExpensePipelineStagesProps) {
+  const t = useTranslations('expenses');
+  const stages = useMemo(
+    () =>
+      toSheetPipelineStages([
+        ...EXPENSE_BOARD_COLUMN_KEYS.map((key) => {
+          const label = translateExpenseStageShort(key, t);
+          return { key, label, shortLabel: label };
+        }),
+        {
+          key: EXPENSE_PIPELINE_CANCEL_KEY,
+          label: translateExpenseStageShort(EXPENSE_PIPELINE_CANCEL_KEY, t),
+          shortLabel: translateExpenseStageShort(EXPENSE_PIPELINE_CANCEL_KEY, t),
+        },
+        {
+          key: EXPENSE_PIPELINE_PAID_KEY,
+          label: translateExpenseStageShort(EXPENSE_PIPELINE_PAID_KEY, t),
+          shortLabel: translateExpenseStageShort(EXPENSE_PIPELINE_PAID_KEY, t),
+        },
+      ]),
+    [t],
+  );
+
   return (
     <PipelineStagesBar
-      stages={SHEET_STAGES}
+      stages={stages}
       stageColors={STAGE_HEX}
       currentStatus={currentStatus}
       fillToEndStatuses={[EXPENSE_PIPELINE_PAID_KEY]}

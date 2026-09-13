@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { PRODUCT_TYPES, PRODUCT_TYPES_BY_CATEGORY } from '../constants/dealPipeline';
 import type { Deal } from '@/lib/api/deals';
 import { contactsApi, companiesApi } from '@/lib/api/clients';
@@ -208,16 +209,19 @@ interface DealEntityMetaLineProps {
 }
 
 function DealEntityMetaLine({ createdAt, updatedAt }: DealEntityMetaLineProps) {
+  const t = useTranslations('crm');
   return (
     <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-1 px-1 text-xs tabular-nums">
       <span>
-        <span className="font-medium">Created</span> {formatDealMetaDate(createdAt)}
+        <span className="font-medium">{t('dealSheet.created')}</span>{' '}
+        {formatDealMetaDate(createdAt)}
       </span>
       <span aria-hidden className="text-muted-foreground/40">
         |
       </span>
       <span>
-        <span className="font-medium">Last updated</span> {formatDealMetaDate(updatedAt)}
+        <span className="font-medium">{t('dealSheet.lastUpdated')}</span>{' '}
+        {formatDealMetaDate(updatedAt)}
       </span>
     </p>
   );

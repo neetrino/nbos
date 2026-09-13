@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { User, Phone, Mail, Link2, LayoutGrid } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
@@ -43,6 +44,7 @@ export function LeadCombinedInfoSection({
   gateRequiredFields = new Set(),
   sectionIds,
 }: LeadCombinedInfoSectionProps) {
+  const t = useTranslations('crm');
   const [open, setOpen] = useState(true);
 
   const contactsPicker = useRelationPickerActions('contact', 'lead-contacts');
@@ -56,24 +58,24 @@ export function LeadCombinedInfoSection({
 
   return (
     <DetailSheetCollapsibleSection
-      title="Lead details"
+      title={t('leadSheet.detailsTitle')}
       icon={<LayoutGrid size={12} />}
       open={open}
       onOpenChange={setOpen}
     >
       <div className="grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2 md:gap-0">
         <div id={sectionIds.contact} className="min-w-0 md:pr-5">
-          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Contact</p>
+          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>{t('leadSheet.contact')}</p>
           <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
             {!hideIdentityFields ? (
               <>
                 <InlineField
                   variant="controlled"
-                  label="Contact name"
+                  label={t('leadSheet.contactName')}
                   hideLabel
                   type="text"
                   value={draft.contactName}
-                  placeholder="Contact name…"
+                  placeholder={t('leadSheet.contactNamePlaceholder')}
                   icon={<User size={18} />}
                   disabled={formDisabled}
                   className={leadStageGateFieldClass(gateRequiredFields, 'contactName')}
@@ -81,11 +83,11 @@ export function LeadCombinedInfoSection({
                 />
                 <InlineField
                   variant="controlled"
-                  label="Phone"
+                  label={t('leadSheet.phone')}
                   hideLabel
                   type="phone"
                   value={draft.phone ?? ''}
-                  placeholder="+374…"
+                  placeholder={t('leadSheet.phonePlaceholder')}
                   icon={<Phone size={18} />}
                   disabled={formDisabled}
                   className={leadStageGateFieldClass(gateRequiredFields, 'phone')}
@@ -93,11 +95,11 @@ export function LeadCombinedInfoSection({
                 />
                 <InlineField
                   variant="controlled"
-                  label="Email"
+                  label={t('leadSheet.email')}
                   hideLabel
                   type="email"
                   value={draft.email ?? ''}
-                  placeholder="email@example.com"
+                  placeholder={t('leadSheet.emailPlaceholder')}
                   icon={<Mail size={18} />}
                   disabled={formDisabled}
                   className={leadStageGateFieldClass(gateRequiredFields, 'email')}
@@ -106,12 +108,12 @@ export function LeadCombinedInfoSection({
               </>
             ) : null}
             <RelationPickerField
-              label="Contacts"
+              label={t('leadSheet.contacts')}
               entityKind="contact"
               multiple
               value={draft.contactIds}
               selectionLabels={draft.contactLabels}
-              placeholder="Link CRM contacts…"
+              placeholder={t('leadSheet.contactsPlaceholder')}
               icon={<User size={12} />}
               disabled={formDisabled}
               onSearch={contactRelationSearch}
@@ -120,7 +122,7 @@ export function LeadCombinedInfoSection({
             />
             <div id={sectionIds.assignment}>
               <RelationPickerField
-                label="Seller"
+                label={t('leadSheet.seller')}
                 entityKind="employee"
                 className={leadStageGateFieldClass(gateRequiredFields, 'assignedTo')}
                 value={draft.assignedTo}
@@ -155,7 +157,7 @@ export function LeadCombinedInfoSection({
           </div>
         </div>
         <div id={sectionIds.marketing} className="border-border min-w-0 md:border-l md:pl-5">
-          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Marketing</p>
+          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>{t('leadSheet.marketing')}</p>
           <LeadMarketingFields
             lead={lead}
             draft={draft}
@@ -168,7 +170,7 @@ export function LeadCombinedInfoSection({
 
       {lead.deal ? (
         <div className="mt-10">
-          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Linked deal</p>
+          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>{t('leadSheet.linkedDeal')}</p>
           <div className="border-border bg-muted/20 flex items-center gap-3 rounded-xl border p-3 shadow-sm">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">
               <Link2 size={16} />

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -23,6 +24,10 @@ import {
   SUPPORT_TICKET_CLOSE_REASON_OPTIONS,
 } from '@/features/support/constants/support';
 import type { SupportStatusDialogState } from '@/features/support/types/support-status-dialog';
+import {
+  translateSupportCloseReason,
+  type SupportTranslator,
+} from '@/features/support/support-message-keys';
 
 export interface SupportStatusDialogsProps {
   statusDialog: SupportStatusDialogState | null;
@@ -47,6 +52,9 @@ export function SupportStatusDialogs({
   onSubmitClose,
   statusSubmitting,
 }: SupportStatusDialogsProps) {
+  const t = useTranslations('support') as SupportTranslator;
+  const tCommon = useTranslations('common');
+
   return (
     <>
       <Dialog
@@ -59,32 +67,32 @@ export function SupportStatusDialogs({
       >
         <DialogContent className="sm:max-w-md" forceNestedBackdrop>
           <DialogHeader>
-            <DialogTitle>Mark resolved</DialogTitle>
+            <DialogTitle>{t('resolve.title')}</DialogTitle>
             <DialogDescription>
-              Resolution summary is required ({MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH}+ characters).
+              {t('resolve.description', { min: MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="support-resolve-summary">Resolution summary</Label>
+            <Label htmlFor="support-resolve-summary">{t('resolve.summary')}</Label>
             <Textarea
               id="support-resolve-summary"
               value={resolutionDraft}
               onChange={(event) => onResolutionDraftChange(event.target.value)}
               rows={4}
               className="resize-y"
-              placeholder="What was done, verification, client communication…"
+              placeholder={t('resolve.placeholder')}
             />
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={onDismiss}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
               type="button"
               disabled={statusSubmitting}
               onClick={() => void onSubmitResolve()}
             >
-              Save resolved
+              {t('resolve.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -100,13 +108,11 @@ export function SupportStatusDialogs({
       >
         <DialogContent className="sm:max-w-md" forceNestedBackdrop>
           <DialogHeader>
-            <DialogTitle>Close ticket</DialogTitle>
-            <DialogDescription>
-              Record why the case left the active queue (audit). Default is client confirmation.
-            </DialogDescription>
+            <DialogTitle>{t('closeTicket.title')}</DialogTitle>
+            <DialogDescription>{t('closeTicket.description')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-1">
-            <Label htmlFor="support-close-reason">Close reason</Label>
+            <Label htmlFor="support-close-reason">{t('closeTicket.reason')}</Label>
             <Select
               value={closeReason}
               onValueChange={(v) => {
@@ -114,12 +120,12 @@ export function SupportStatusDialogs({
               }}
             >
               <SelectTrigger id="support-close-reason" className="w-full">
-                <SelectValue placeholder="Close reason" />
+                <SelectValue placeholder={t('closeTicket.reason')} />
               </SelectTrigger>
               <SelectContent>
                 {SUPPORT_TICKET_CLOSE_REASON_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                    {translateSupportCloseReason(t, option.value, option.label)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -127,10 +133,10 @@ export function SupportStatusDialogs({
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={onDismiss}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="button" disabled={statusSubmitting} onClick={() => void onSubmitClose()}>
-              Close ticket
+              {t('closeTicket.submit')}
             </Button>
           </DialogFooter>
         </DialogContent>

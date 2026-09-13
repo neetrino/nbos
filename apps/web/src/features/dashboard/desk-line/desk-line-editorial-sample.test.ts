@@ -20,7 +20,7 @@ describe('desk-line editorial sample', () => {
       }
       expect(new Set(ids).size).toBeGreaterThan(8);
     }
-    const coffeeHits = titles.filter((title) => /coffee/iu.test(title)).length;
+    const coffeeHits = titles.filter((title) => /սուրճ/u.test(title)).length;
     expect(coffeeHits).toBeLessThan(8);
   });
 });

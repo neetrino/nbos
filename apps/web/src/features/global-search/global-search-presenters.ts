@@ -67,12 +67,11 @@ export const GLOBAL_SEARCH_ENTITY_VISUALS: Record<
   },
 };
 
-export function formatGlobalSearchDate(iso: string): string {
+export function formatGlobalSearchDate(iso: string, locale: string, now = new Date()): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '';
-  const now = new Date();
   const sameYear = date.getFullYear() === now.getFullYear();
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(locale, {
     month: 'short',
     day: 'numeric',
     ...(sameYear ? {} : { year: 'numeric' }),

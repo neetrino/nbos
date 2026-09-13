@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   EXPENSE_BACKLOG_LIST_PATH,
   EXPENSE_CLOSED_LIST_PATH,
@@ -11,9 +12,9 @@ import { cn } from '@/lib/utils';
 
 /** Active expense cards only; plans live on `/finance/expenses/plans` (Finance top tab). */
 const LINKS = [
-  { href: EXPENSE_LIST_PATH, label: 'Active' },
-  { href: EXPENSE_BACKLOG_LIST_PATH, label: 'Backlog' },
-  { href: EXPENSE_CLOSED_LIST_PATH, label: 'Closed' },
+  { href: EXPENSE_LIST_PATH, labelKey: 'nav.active' },
+  { href: EXPENSE_BACKLOG_LIST_PATH, labelKey: 'nav.backlog' },
+  { href: EXPENSE_CLOSED_LIST_PATH, labelKey: 'nav.closed' },
 ] as const;
 
 function isBoardSection(pathname: string): boolean {
@@ -26,9 +27,10 @@ function isBoardSection(pathname: string): boolean {
 
 export function ExpenseFinanceSubNav() {
   const pathname = usePathname();
+  const t = useTranslations('expenses');
 
   return (
-    <nav className="flex flex-wrap gap-1.5" aria-label="Expense pay-now scope">
+    <nav className="flex flex-wrap gap-1.5" aria-label={t('nav.scopeAria')}>
       {LINKS.map((link) => {
         const active =
           link.href === EXPENSE_LIST_PATH
@@ -45,7 +47,7 @@ export function ExpenseFinanceSubNav() {
                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
             )}
           >
-            {link.label}
+            {t(link.labelKey)}
           </Link>
         );
       })}

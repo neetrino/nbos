@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -27,6 +28,8 @@ export function CreateWorkSpaceSprintDialog({
   workspaceId: string;
   onCreated: (sprint: WorkSpaceSprint) => void;
 }) {
+  const t = useTranslations('workSpaces');
+  const tCommon = useTranslations('common');
   const [name, setName] = useState('');
   const [goal, setGoal] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -49,9 +52,9 @@ export function CreateWorkSpaceSprintDialog({
       setStartDate('');
       setEndDate('');
       onOpenChange(false);
-      toast.success('Sprint created.');
+      toast.success(t('scrum.created'));
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not create sprint.'));
+      toast.error(getApiErrorMessage(caught, t('scrum.createFailed')));
     } finally {
       setSaving(false);
     }
@@ -61,44 +64,44 @@ export function CreateWorkSpaceSprintDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>New sprint</DialogTitle>
+          <DialogTitle>{t('scrum.createTitle')}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-3 py-2">
           <div className="grid gap-2">
-            <Label htmlFor="sprint-name">Name</Label>
+            <Label htmlFor="sprint-name">{t('scrum.name')}</Label>
             <Input
               id="sprint-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Sprint 6"
+              placeholder={t('scrum.namePlaceholder')}
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="sprint-goal">Goal</Label>
+            <Label htmlFor="sprint-goal">{t('scrum.goal')}</Label>
             <Input
               id="sprint-goal"
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
-              placeholder="Ship checkout flow"
+              placeholder={t('scrum.goalPlaceholder')}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
-              <Label htmlFor="sprint-start">Start</Label>
+              <Label htmlFor="sprint-start">{t('scrum.startDate')}</Label>
               <NbosDatePicker
                 id="sprint-start"
                 value={startDate}
                 onChange={setStartDate}
-                aria-label="Sprint start"
+                aria-label={t('scrum.startDateAria')}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="sprint-end">End</Label>
+              <Label htmlFor="sprint-end">{t('scrum.endDate')}</Label>
               <NbosDatePicker
                 id="sprint-end"
                 value={endDate}
                 onChange={setEndDate}
-                aria-label="Sprint end"
+                aria-label={t('scrum.endDateAria')}
               />
             </div>
           </div>
@@ -110,14 +113,14 @@ export function CreateWorkSpaceSprintDialog({
             onClick={() => onOpenChange(false)}
             disabled={saving}
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
             onClick={() => void handleCreate()}
             disabled={saving || !name.trim()}
           >
-            {saving ? 'Creating…' : 'Create'}
+            {saving ? tCommon('creating') : tCommon('create')}
           </Button>
         </DialogFooter>
       </DialogContent>

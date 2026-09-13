@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -8,7 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CREDENTIAL_TYPES } from '@/features/credentials/constants/credentials';
+import {
+  CREDENTIAL_TYPES,
+  credentialCategoryMessageKey,
+  credentialTypeMessageKey,
+} from '@/features/credentials/constants/credentials';
 import { CredentialFormFieldLabel } from '@/features/credentials/components/credential-form-field-label';
 import { CredentialFormSelectOption } from '@/features/credentials/components/credential-form-select-option';
 import {
@@ -18,7 +23,7 @@ import {
 } from '@/features/credentials/utils/credential-vault-card-meta';
 import {
   CREDENTIAL_TYPES_FOR_CREATE,
-  commentLabelForType,
+  commentLabelMessageKey,
   showsProviderPicker,
 } from '@/features/credentials/credential-field-config';
 import { formatCredentialTypeLabel } from '@/features/credentials/utils/credential-type-display';
@@ -46,21 +51,26 @@ function TypeSelect({
   onTypeChange: (value: string) => void;
   isCreate: boolean;
 }) {
+  const t = useTranslations('credentials');
   const types = isCreate ? CREDENTIAL_TYPES_FOR_CREATE : CREDENTIAL_TYPES;
   const TypeIcon = credentialTypeIcon(credentialType);
+  const typeLabel = (value: string, fallback: string) => {
+    const key = credentialTypeMessageKey(value);
+    return key ? t(key as never) : fallback;
+  };
 
   return (
     <div className="grid gap-2">
-      <CredentialFormFieldLabel label="What is stored?" icon={TypeIcon} />
+      <CredentialFormFieldLabel label={t('form.whatIsStored')} icon={TypeIcon} />
       <Select value={credentialType} onValueChange={(v) => onTypeChange(v ?? credentialType)}>
         <SelectTrigger>
-          <SelectValue placeholder="Select type">
+          <SelectValue placeholder={t('form.selectType')}>
             {(value: string | null) =>
               value ? (
                 <CredentialFormSelectOption
                   kind="type"
                   value={value}
-                  label={formatCredentialTypeLabel(value)}
+                  label={typeLabel(value, formatCredentialTypeLabel(value))}
                 />
               ) : null
             }
@@ -69,7 +79,11 @@ function TypeSelect({
         <SelectContent>
           {types.map((type) => (
             <SelectItem key={type.value} value={type.value}>
-              <CredentialFormSelectOption kind="type" value={type.value} label={type.label} />
+              <CredentialFormSelectOption
+                kind="type"
+                value={type.value}
+                label={typeLabel(type.value, type.label)}
+              />
             </SelectItem>
           ))}
         </SelectContent>
@@ -126,6 +140,16 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     categoryLabel,
     contextLinks,
   } = form;
+  const t = useTranslations('credentials');
+  const translatedCategoryOptions = categoryOptions.map((option) => {
+    const key = credentialCategoryMessageKey(option.value);
+    return { ...option, label: key ? t(key as never) : option.label };
+  });
+  const translatedCategoryKey = credentialCategoryMessageKey(category);
+  const translatedCategoryLabel = translatedCategoryKey
+    ? t(translatedCategoryKey as never)
+    : categoryLabel;
+  const commentKey = commentLabelMessageKey(credentialType);
 
   const providerBlock = showsProviderPicker(credentialType) ? (
     <CredentialProviderPicker
@@ -159,8 +183,8 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
   const categoryBlock = (
     <CredentialFormCategoryMenu
       category={category}
-      categoryLabel={categoryLabel}
-      categoryOptions={categoryOptions}
+      categoryLabel={translatedCategoryLabel}
+      categoryOptions={translatedCategoryOptions}
       categoryLocked={categoryLocked}
       onCategoryChange={setCategory}
     />
@@ -176,7 +200,7 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
         {folderOptions.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
-              <CredentialFormFieldLabel label="Folder" icon={CREDENTIAL_FOLDER_ICON} />
+              <CredentialFormFieldLabel label={t('form.folder')} icon={CREDENTIAL_FOLDER_ICON} />
               <CredentialFolderTreePicker
                 folders={folderOptions}
                 value={folderId}
@@ -216,7 +240,7 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
         <div className="grid gap-2">
           <CredentialFormFieldLabel
             htmlFor="cred-comment"
-            label={commentLabelForType(credentialType)}
+            label={t(commentKey)}
             icon={CREDENTIAL_COMMENT_ICON}
           />
           <Textarea
@@ -224,14 +248,14 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             className="min-h-[120px] font-mono text-sm"
-            placeholder="One code per line"
+            placeholder={t('form.recoveryPlaceholder')}
           />
         </div>
       ) : (
         <div className="grid gap-2">
           <CredentialFormFieldLabel
             htmlFor="cred-comment"
-            label={commentLabelForType(credentialType)}
+            label={t(commentKey)}
             icon={CREDENTIAL_COMMENT_ICON}
           />
           <Textarea
@@ -239,7 +263,7 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             className="min-h-[80px] text-sm"
-            placeholder="Private notes (encrypted)"
+            placeholder={t('form.commentPlaceholder')}
           />
         </div>
       )}

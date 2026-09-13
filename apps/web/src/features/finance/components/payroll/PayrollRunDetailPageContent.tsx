@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   ErrorState,
@@ -16,7 +17,7 @@ import { PayrollAllocationMatrixStatsStrip } from '@/features/finance/components
 import { PayrollAllocationMatrixWorkspace } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-workspace';
 import { PAYROLL_MATRIX_FULLSCREEN_Z } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import {
-  PAYROLL_RUN_DETAIL_VIEW_OPTIONS,
+  usePayrollRunDetailViewOptions,
   isPayrollMatrixViewMode,
   isPayrollRunFullscreenViewMode,
   usePayrollRunDetailViewMode,
@@ -57,6 +58,8 @@ export function PayrollRunDetailPageContent({
   initialLoading: boolean;
   onReload: () => Promise<void>;
 }) {
+  const t = useTranslations('payroll');
+  const detailViewOptions = usePayrollRunDetailViewOptions();
   const [run, setRun] = useState<PayrollRunDetail | null>(initialRun);
   const [loading, setLoading] = useState(initialLoading);
   const [error, setError] = useState<string | null>(initialError);
@@ -106,12 +109,12 @@ export function PayrollRunDetailPageContent({
         const updated = await payrollRunsApi.updateStatus(payrollRunId, next);
         setRun(updated);
       } catch (caught) {
-        setActionError(getApiErrorMessage(caught, 'Status could not be updated.'));
+        setActionError(getApiErrorMessage(caught, t('detail.statusUpdateError')));
       } finally {
         setStatusBusy(false);
       }
     },
-    [payrollRunId],
+    [payrollRunId, t],
   );
 
   const handleReload = useCallback(async () => {
@@ -124,11 +127,11 @@ export function PayrollRunDetailPageContent({
       setRun(data);
     } catch (caught) {
       setRun(null);
-      setError(getApiErrorMessage(caught, 'Payroll run could not be loaded.'));
+      setError(getApiErrorMessage(caught, t('detail.loadError')));
     } finally {
       setLoading(false);
     }
-  }, [matrixCache, onReload, payrollRunId]);
+  }, [matrixCache, onReload, payrollRunId, t]);
 
   const statsTotals = useMemo((): PayrollAllocationMatrix['totals'] | null => {
     if (matrixTotals) return matrixTotals;
@@ -187,10 +190,10 @@ export function PayrollRunDetailPageContent({
           onSearchChange={setMatrixSearch}
           searchPlaceholder={
             detailViewMode === 'SALARY_LINES'
-              ? 'Search employee…'
+              ? t('detail.searchSalaryLines')
               : detailViewMode === 'EMPLOYEE_BONUS_HISTORY'
-                ? 'Search project…'
-                : 'Search project, order, or employee…'
+                ? t('detail.searchBonusHistory')
+                : t('detail.searchMatrix')
           }
           onClearAll={() => setMatrixSearch('')}
         />
@@ -199,8 +202,8 @@ export function PayrollRunDetailPageContent({
         <ViewModeSwitch
           value={detailViewMode}
           onChange={handleDetailViewModeChange}
-          options={PAYROLL_RUN_DETAIL_VIEW_OPTIONS}
-          ariaLabel="Payroll run view"
+          options={detailViewOptions}
+          ariaLabel={t('detail.viewAria')}
         />
       ),
       trailing: (
@@ -210,7 +213,7 @@ export function PayrollRunDetailPageContent({
             variant="outline"
             size="icon"
             className="size-8 shrink-0"
-            aria-label="Open allocation matrix full screen"
+            aria-label={t('detail.fullscreenAria')}
             onClick={() => setMatrixFullscreen(true)}
             disabled={!isPayrollRunFullscreenViewMode(detailViewMode)}
           >
@@ -250,8 +253,10 @@ export function PayrollRunDetailPageContent({
     matrixFullscreen,
     matrixSearch,
     detailViewMode,
+    detailViewOptions,
     run,
     statusBusy,
+    t,
   ]);
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -268,9 +273,12 @@ export function PayrollRunDetailPageContent({
           className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
         >
           <ArrowLeft size={14} />
-          Back to payroll
+          {t('detail.back')}
         </Link>
-        <ErrorState description={error ?? 'Not found'} onRetry={() => void handleReload()} />
+        <ErrorState
+          description={error ?? t('detail.notFound')}
+          onRetry={() => void handleReload()}
+        />
       </div>
     );
   }
@@ -281,15 +289,14 @@ export function PayrollRunDetailPageContent({
 
       {run.status === 'APPROVED' || run.status === 'PAYING' || run.status === 'CLOSED' ? (
         <p className="text-muted-foreground text-sm">
-          Expense cards materialize on approval.{' '}
+          {t('detail.expenseHint')}{' '}
           {run.status === 'APPROVED' || run.status === 'PAYING' ? (
             <>
-              Record payments in{' '}
               <Link
                 href={expensesPayrollPresetHref({ payrollMonth: run.payrollMonth })}
                 className="text-primary font-medium hover:underline"
               >
-                Pay now · payroll salary
+                {t('detail.payNowLink')}
               </Link>
               .
             </>
@@ -321,15 +328,15 @@ export function PayrollRunDetailPageContent({
             <ViewModeSwitch
               value={detailViewMode}
               onChange={handleDetailViewModeChange}
-              options={PAYROLL_RUN_DETAIL_VIEW_OPTIONS}
-              ariaLabel="Payroll run view"
+              options={detailViewOptions}
+              ariaLabel={t('detail.viewAria')}
             />
             <Button
               type="button"
               variant="outline"
               size="icon"
               className="size-8 shrink-0"
-              aria-label="Exit full screen"
+              aria-label={t('detail.exitFullscreenAria')}
               onClick={() => setMatrixFullscreen(false)}
             >
               <Minimize2 className="size-4" aria-hidden />

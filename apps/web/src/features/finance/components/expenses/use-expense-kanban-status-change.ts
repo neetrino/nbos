@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   expenseDetailHref,
@@ -42,6 +43,7 @@ function openExpenseWithStageGate(
 
 export function useExpenseKanbanStatusChange(options: UseExpenseKanbanStatusChangeOptions) {
   const router = useRouter();
+  const t = useTranslations('expenses');
 
   return useCallback(
     async (expenseId: string, toStatus: string, expenses: Expense[], onSuccess: () => void) => {
@@ -69,14 +71,9 @@ export function useExpenseKanbanStatusChange(options: UseExpenseKanbanStatusChan
             return;
           }
         }
-        toast.error(
-          getApiErrorMessage(
-            caught,
-            'Expense status could not be updated. Open the card or try again.',
-          ),
-        );
+        toast.error(getApiErrorMessage(caught, t('errors.statusUpdateKanban')));
       }
     },
-    [options, router],
+    [options, router, t],
   );
 }

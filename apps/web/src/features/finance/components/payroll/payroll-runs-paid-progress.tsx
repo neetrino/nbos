@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 const PAYROLL_PAID_PROGRESS_MIN_PCT = 0;
@@ -20,6 +21,7 @@ export function PayrollRunsPaidProgressBar({
   payable: number;
   className?: string;
 }) {
+  const t = useTranslations('payroll');
   const pct = payrollPaidProgressPercent(paid, payable);
 
   return (
@@ -29,7 +31,7 @@ export function PayrollRunsPaidProgressBar({
       aria-valuenow={pct}
       aria-valuemin={PAYROLL_PAID_PROGRESS_MIN_PCT}
       aria-valuemax={PAYROLL_PAID_PROGRESS_MAX_PCT}
-      aria-label={`${pct}% paid`}
+      aria-label={t('progress.paidAria', { pct })}
     >
       <div
         className="bg-primary h-full rounded-full transition-[width]"

@@ -1,12 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { firstReleaseFormErrorCopy, localizeCaughtApiError } from '@/i18n/localize-api-error';
 import { employeesApi, type Employee } from '@/lib/api/employees';
 import { tasksApi, type Task } from '@/lib/api/tasks';
 import type { MeResponse } from '@/lib/permissions/types';
+import {
+  applyLateIdentityArrival,
+  canSubmitQuickCreateTask,
+  displayNameFromMe,
+  isOpenRisingEdge,
+  isQuickCreateCreatorBlocked,
+} from './quick-create-task-draft';
 import { resolveQuickCreateTaskLinks } from './resolve-quick-create-task-links';
 
 export interface QuickCreateTaskDialogProps {
@@ -23,11 +30,8 @@ export interface QuickCreateTaskDialogProps {
   onOpenFull?: () => void;
   /** Dimmed backdrop when opened inside a parent sheet/dialog (e.g. Deal card). */
   forceNestedBackdrop?: boolean;
-}
-
-function displayNameFromMe(me: MeResponse): string {
-  const full = `${me.firstName} ${me.lastName}`.trim();
-  return full || me.email;
+  onSubmitStart?: () => void;
+  onSubmitSettled?: (result: 'success' | 'failure') => void;
 }
 
 export function useQuickCreateTaskForm({
@@ -41,6 +45,8 @@ export function useQuickCreateTaskForm({
   defaultWorkspaceId,
   defaultPlanningStatus,
   onCreated,
+  onSubmitStart,
+  onSubmitSettled,
   me,
 }: QuickCreateTaskDialogProps & { me: MeResponse | null | undefined }) {
   const t = useTranslations('forms');
@@ -53,8 +59,11 @@ export function useQuickCreateTaskForm({
   const [isHighPriority, setIsHighPriority] = useState(false);
   const [dueDate, setDueDate] = useState('');
   const [saving, setSaving] = useState(false);
+  const wasOpenRef = useRef(false);
+  const assigneeTouchedRef = useRef(false);
 
   const applyDefaults = useCallback(() => {
+    assigneeTouchedRef.current = false;
     setTitle('');
     setDescription('');
     setIsHighPriority(false);
@@ -71,8 +80,35 @@ export function useQuickCreateTaskForm({
   }, [creatorId, defaultDueDate, me]);
 
   useEffect(() => {
-    if (open) applyDefaults();
+    if (isOpenRisingEdge(wasOpenRef.current, open)) {
+      applyDefaults();
+    }
+    wasOpenRef.current = open;
   }, [open, applyDefaults]);
+
+  useEffect(() => {
+    if (!open || !me) {
+      return;
+    }
+    const decision = applyLateIdentityArrival(
+      {
+        title: '',
+        description: '',
+        assigneeId: '',
+        assigneeTouched: assigneeTouchedRef.current,
+      },
+      true,
+      true,
+      creatorId,
+      me,
+    );
+    if (decision.resetDraft || !decision.assigneeId) {
+      return;
+    }
+    setAssigneeId(decision.assigneeId);
+    setAssigneeLabel(displayNameFromMe(me));
+    setAssigneeAvatar(me.avatar?.trim() || undefined);
+  }, [open, creatorId, me]);
 
   const searchEmployees = useCallback(async (query: string) => {
     const data = await employeesApi.getAll({ pageSize: 20, search: query || undefined });
@@ -85,13 +121,17 @@ export function useQuickCreateTaskForm({
   }, []);
 
   const selectAssignee = useCallback((id: string, label: string, avatar?: string) => {
+    assigneeTouchedRef.current = true;
     setAssigneeId(id);
     setAssigneeLabel(label);
     setAssigneeAvatar(avatar);
   }, []);
 
   const handleCreate = async () => {
-    if (!title.trim() || !creatorId) return;
+    if (!canSubmitQuickCreateTask(title, creatorId)) {
+      return;
+    }
+    onSubmitStart?.();
     setSaving(true);
     try {
       const task = await tasksApi.create({
@@ -108,7 +148,9 @@ export function useQuickCreateTaskForm({
       onCreated?.(task);
       applyDefaults();
       onOpenChange(false);
+      onSubmitSettled?.('success');
     } catch (caught: unknown) {
+      onSubmitSettled?.('failure');
       toast.error(
         localizeCaughtApiError(
           caught,
@@ -126,8 +168,6 @@ export function useQuickCreateTaskForm({
     }
   };
 
-  const canCreate = Boolean(title.trim()) && !(creatorReady && !creatorId);
-
   return {
     title,
     setTitle,
@@ -144,7 +184,7 @@ export function useQuickCreateTaskForm({
     setDueDate,
     saving,
     handleCreate,
-    canCreate,
-    creatorBlocked: creatorReady && !creatorId,
+    canCreate: canSubmitQuickCreateTask(title, creatorId),
+    creatorBlocked: isQuickCreateCreatorBlocked(creatorReady, creatorId),
   };
 }

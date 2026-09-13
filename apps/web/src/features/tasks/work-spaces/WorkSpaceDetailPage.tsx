@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { ArrowUpRight, Plus } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
@@ -13,7 +14,7 @@ import {
   PageHero,
   ViewModeSwitch,
 } from '@/components/shared';
-import { WORKSPACE_BOARD_VIEW_OPTIONS } from '@/features/tasks/tasks-board-view-segments';
+import { useWorkspaceBoardViewOptions } from '@/features/tasks/tasks-board-view-segments';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { EditWorkSpaceDialog } from './EditWorkSpaceDialog';
@@ -29,15 +30,20 @@ import { WorkSpaceDriveSheet } from './WorkSpaceDriveSheet';
 import { WorkSpaceDiscussionSheet, WorkSpaceDiscussionTrigger } from './WorkSpaceDiscussionSheet';
 import {
   useWorkspaceRuntimeTaskFilters,
-  WORKSPACE_TASK_FILTER_CONFIGS,
+  useWorkspaceTaskFilterConfigs,
 } from './workspace-runtime-task-filters';
 import { useWorkSpaceDetailHeader } from './use-work-space-detail-header';
 import { useWorkSpaceDetail } from './use-work-space-detail';
 import { SEARCH_FILTER_PAGE_ID } from '@/lib/persisted-client-state';
 
 export function WorkSpaceDetailPage() {
+  const t = useTranslations('workSpaces');
+  const tTasks = useTranslations('tasks');
+  const tNav = useTranslations('navigation');
   const params = useParams<{ id: string }>();
   const { creatorId, creatorReady } = useTaskCreatorId();
+  const taskFilterConfigs = useWorkspaceTaskFilterConfigs();
+  const boardViewOptions = useWorkspaceBoardViewOptions();
   const taskViewFilters = useWorkspaceRuntimeTaskFilters(
     SEARCH_FILTER_PAGE_ID.tasksWorkspaceRuntime,
   );
@@ -98,8 +104,8 @@ export function WorkSpaceDetailPage() {
           <IntegratedSearchFilters
             search={taskViewFilters.search}
             onSearchChange={taskViewFilters.onSearchChange}
-            searchPlaceholder="Search by task, project, product, workspace…"
-            filters={showDesktopBoardChrome ? WORKSPACE_TASK_FILTER_CONFIGS : undefined}
+            searchPlaceholder={tTasks('searchPlaceholder')}
+            filters={showDesktopBoardChrome ? taskFilterConfigs : undefined}
             filterValues={showDesktopBoardChrome ? taskViewFilters.heroFilterValues : undefined}
             onFilterChange={showDesktopBoardChrome ? taskViewFilters.onFilterChange : undefined}
             onClearAll={showDesktopBoardChrome ? taskViewFilters.onClearFilters : undefined}
@@ -110,7 +116,7 @@ export function WorkSpaceDetailPage() {
             <ViewModeSwitch
               value={boardView}
               onChange={handleBoardViewChange}
-              options={WORKSPACE_BOARD_VIEW_OPTIONS}
+              options={boardViewOptions}
             />
           ) : undefined
         }
@@ -118,14 +124,17 @@ export function WorkSpaceDetailPage() {
           <>
             {contextHref ? (
               <Link href={contextHref} className={buttonVariants({ variant: 'outline' })}>
-                Context <ArrowUpRight size={14} aria-hidden />
+                {t('context')} <ArrowUpRight size={14} aria-hidden />
               </Link>
             ) : null}
             {isPlanningArea ? (
               <WorkSpaceScrumPlanningEnable workspace={workspace} onUpdated={onWorkspaceUpdate} />
             ) : null}
             <WorkSpaceDiscussionTrigger onClick={() => setDiscussionOpen(true)} />
-            <EntityDriveNavAction onClick={() => setDriveOpen(true)} />
+            <EntityDriveNavAction
+              label={tNav('modules.drive')}
+              onClick={() => setDriveOpen(true)}
+            />
             <WorkSpaceDetailSettingsSheet
               workspaceId={workspace.id}
               workspaceName={workspace.name}
@@ -136,10 +145,10 @@ export function WorkSpaceDetailPage() {
               <Button
                 onClick={() => openQuickCreateRef.current?.()}
                 disabled={newTaskDisabled}
-                title={newTaskDisabled ? 'Employee profile required' : undefined}
+                title={newTaskDisabled ? tTasks('employeeProfileRequired') : undefined}
               >
                 <Plus size={16} aria-hidden />
-                New Task
+                {tTasks('newTask')}
               </Button>
             ) : null}
           </>

@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { SEARCH_DEBOUNCE_MS } from '@/components/shared/constants/search-debounce';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { getApiErrorMessage, isPermissionDeniedApiError } from '@/lib/api-errors';
 import { searchApi, type GlobalSearchResponse, type SearchQueryGroup } from '@/lib/api/search';
 import { GLOBAL_SEARCH_MIN_QUERY_LENGTH } from './global-search-constants';
 
@@ -29,6 +30,8 @@ export function useGlobalSearchQuery({
   query,
   group,
 }: UseGlobalSearchQueryOptions): UseGlobalSearchQueryResult {
+  const t = useTranslations('search');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<GlobalSearchResponse | null>(null);
@@ -54,7 +57,11 @@ export function useGlobalSearchQuery({
         .catch((caught: unknown) => {
           if (requestIdRef.current !== requestId) return;
           if (caught instanceof DOMException && caught.name === 'AbortError') return;
-          setError(getApiErrorMessage(caught, 'Search failed. Try again.'));
+          setError(
+            isPermissionDeniedApiError(caught)
+              ? tCommon('permissionDenied')
+              : getApiErrorMessage(caught, t('failed')),
+          );
         })
         .finally(() => {
           if (requestIdRef.current === requestId && shouldSearch) {
@@ -73,7 +80,7 @@ export function useGlobalSearchQuery({
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [group, open, query]);
+  }, [group, open, query, t, tCommon]);
 
   if (!open) {
     return IDLE_SEARCH_STATE;

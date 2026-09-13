@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { SUBSCRIPTION_TERM_MONTHS_MAX, SUBSCRIPTION_TERM_MONTHS_MIN } from '@nbos/shared';
 import { InlineField } from '@/components/shared';
 import {
@@ -37,6 +38,7 @@ export function DealSubscriptionTermField({
   disabled = false,
   gateRequiredFields = new Set(),
 }: DealSubscriptionTermFieldProps) {
+  const t = useTranslations('crm');
   const gateClass = dealStageGateFieldClass(gateRequiredFields, 'subscriptionTermMonths');
   const isAnnual = draft.subscriptionTermMonths === DEAL_SUBSCRIPTION_TERM_ANNUAL_MONTHS;
   const contractTotal = deriveDealSubscriptionContractTotal(
@@ -65,16 +67,16 @@ export function DealSubscriptionTermField({
                 disabled && 'pointer-events-none opacity-60',
               )}
             >
-              Annual
+              {t('dealSheet.annual')}
             </button>
           </div>
         </div>
         <InlineField
           variant="controlled"
-          label="Month"
+          label={t('dealSheet.month')}
           type="text"
           value={draft.subscriptionTermMonths ?? ''}
-          placeholder="e.g. 12"
+          placeholder={t('dealSheet.monthPlaceholder')}
           disabled={disabled}
           className="min-w-0 flex-1"
           onValueChange={(value) =>
@@ -84,7 +86,9 @@ export function DealSubscriptionTermField({
       </div>
       {contractTotal != null ? (
         <div className="text-sm">
-          <div className="text-foreground/85 mb-1.5 font-medium">Contract total</div>
+          <div className="text-foreground/85 mb-1.5 font-medium">
+            {t('dealSheet.contractTotal')}
+          </div>
           <div className="text-muted-foreground bg-muted/30 border-border rounded-md border px-3 py-2 tabular-nums">
             {formatAmount(contractTotal)}
           </div>

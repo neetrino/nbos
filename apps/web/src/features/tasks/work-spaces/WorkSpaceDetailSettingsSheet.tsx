@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Download, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
@@ -32,6 +33,7 @@ export function WorkSpaceDetailSettingsSheet({
   tasks,
   onEditWorkSpace,
 }: WorkSpaceDetailSettingsSheetProps) {
+  const t = useTranslations('workSpaces');
   const [open, setOpen] = useState(false);
 
   const exportTasks = () => {
@@ -43,9 +45,9 @@ export function WorkSpaceDetailSettingsSheet({
 
   return (
     <PageSettingsSheet
-      title="Work space — settings"
-      description="Edit this space, manage AI Access, or export the tasks currently loaded on this page as CSV."
-      triggerAriaLabel="Work space settings"
+      title={t('detailSettings.title')}
+      description={t('detailSettings.description')}
+      triggerAriaLabel={t('detailSettings.triggerAria')}
       open={open}
       onOpenChange={setOpen}
     >
@@ -59,7 +61,7 @@ export function WorkSpaceDetailSettingsSheet({
         }}
       >
         <Pencil className="size-4 shrink-0" aria-hidden />
-        Edit work space
+        {t('detailSettings.edit')}
       </Button>
       <Button
         type="button"
@@ -69,7 +71,7 @@ export function WorkSpaceDetailSettingsSheet({
         onClick={() => exportTasks()}
       >
         <Download className="size-4 shrink-0" aria-hidden />
-        Export tasks (CSV)
+        {t('detailSettings.exportTasks')}
       </Button>
       <PermissionGate module="COMPANY" action="EDIT">
         <WorkspaceAiAccessPanel workspaceId={workspaceId} />

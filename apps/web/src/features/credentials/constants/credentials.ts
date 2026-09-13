@@ -53,3 +53,21 @@ export function formatCredentialAccessLabel(accessLevel: string): string {
 export function getCredentialCriticality(value: string) {
   return CREDENTIAL_CRITICALITIES.find((item) => item.value === value);
 }
+
+export function credentialCategoryMessageKey(value: string): `categories.${string}` | null {
+  return CREDENTIAL_CATEGORIES.some((item) => item.value === value) ? `categories.${value}` : null;
+}
+
+export function credentialTypeMessageKey(value: string): `types.${string}` | null {
+  return CREDENTIAL_TYPES.some((item) => item.value === value) ? `types.${value}` : null;
+}
+
+export function credentialCriticalityMessageKey(value: string): `criticality.${string}` | null {
+  return CREDENTIAL_CRITICALITIES.some((item) => item.value === value)
+    ? `criticality.${value}`
+    : null;
+}
+
+export function credentialAccessMessageKey(value: string): `access.${string}` | null {
+  return ACCESS_LEVELS.some((item) => item.value === value) ? `access.${value}` : null;
+}

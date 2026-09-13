@@ -15,11 +15,27 @@ import {
 import { authApi, type AuthSessionRow } from '@/lib/api/auth';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
-  AUTH_SESSION_CLIENT_LABELS,
-  formatSessionActivity,
+  AUTH_SESSION_CLIENT_MESSAGE_KEYS,
+  resolveSessionActivity,
+  type SessionActivity,
 } from '@/features/account/constants/auth-session-labels';
+import { useTranslations } from 'next-intl';
+
+function sessionActivityLabel(
+  activity: SessionActivity,
+  t: ReturnType<typeof useTranslations<'account.sessions'>>,
+): string {
+  if (activity.kind === 'thisDevice') return t('thisDevice');
+  if (activity.kind === 'unknown') return t('unknown');
+  if (activity.kind === 'activeNow') return t('activeNow');
+  if (activity.kind === 'minutesAgo') return t('minutesAgo', { count: activity.count });
+  if (activity.kind === 'hoursAgo') return t('hoursAgo', { count: activity.count });
+  return t('daysAgo', { count: activity.count });
+}
 
 export function ActiveSessionsPanel() {
+  const t = useTranslations('account.sessions');
+  const tCommon = useTranslations('common');
   const [sessions, setSessions] = useState<AuthSessionRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -33,9 +49,9 @@ export function ActiveSessionsPanel() {
       setSessions(await authApi.listSessions());
     } catch (caught) {
       setSessions([]);
-      setLoadError(getApiErrorMessage(caught, 'Could not load sessions.'));
+      setLoadError(getApiErrorMessage(caught, t('loadFailed')));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void refresh();
@@ -47,14 +63,14 @@ export function ActiveSessionsPanel() {
     try {
       await authApi.revokeSession(row.id);
       if (row.current) {
-        toast.success('Signed out this device.');
+        toast.success(t('signedOutThis'));
         await signOutClient();
         return;
       }
-      toast.success('Device signed out.');
+      toast.success(t('signedOutDevice'));
       await refresh();
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not sign out that device.'));
+      toast.error(getApiErrorMessage(caught, t('revokeFailed')));
     } finally {
       setBusy(false);
       setPendingId(null);
@@ -66,13 +82,11 @@ export function ActiveSessionsPanel() {
     setBusy(true);
     try {
       const result = await authApi.logoutOthers();
-      toast.success(
-        result.revoked === 0 ? 'No other devices were signed in.' : 'Other devices signed out.',
-      );
+      toast.success(result.revoked === 0 ? t('othersNone') : t('othersDone'));
       setConfirmOthers(false);
       await refresh();
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not sign out other devices.'));
+      toast.error(getApiErrorMessage(caught, t('othersFailed')));
     } finally {
       setBusy(false);
     }
@@ -88,21 +102,15 @@ export function ActiveSessionsPanel() {
           <MonitorSmartphone className="size-4" aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-semibold tracking-tight">Active sessions</h3>
-          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-            Devices signed in with your NBOS account. Available after the new sign-in is enabled.
-          </p>
+          <h3 className="text-sm font-semibold tracking-tight">{t('title')}</h3>
+          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{t('description')}</p>
         </div>
       </div>
 
-      {sessions === null ? (
-        <p className="text-muted-foreground text-xs">Loading sessions…</p>
-      ) : null}
+      {sessions === null ? <p className="text-muted-foreground text-xs">{t('loading')}</p> : null}
       {loadError ? <p className="text-destructive text-xs">{loadError}</p> : null}
       {sessions && rows.length === 0 && !loadError ? (
-        <p className="text-muted-foreground text-xs">
-          Session list is available after the new sign-in is enabled.
-        </p>
+        <p className="text-muted-foreground text-xs">{t('empty')}</p>
       ) : null}
 
       <ul className="space-y-2">
@@ -113,11 +121,11 @@ export function ActiveSessionsPanel() {
           >
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">
-                {AUTH_SESSION_CLIENT_LABELS[row.clientKind]}
+                {t(AUTH_SESSION_CLIENT_MESSAGE_KEYS[row.clientKind])}
                 {row.deviceLabel ? ` · ${row.deviceLabel}` : ''}
               </p>
               <p className="text-muted-foreground text-xs">
-                {formatSessionActivity(row.lastUsedAt, row.current)}
+                {sessionActivityLabel(resolveSessionActivity(row.lastUsedAt, row.current), t)}
               </p>
             </div>
             <Button
@@ -127,7 +135,7 @@ export function ActiveSessionsPanel() {
               disabled={busy && pendingId === row.id}
               onClick={() => (row.current ? setConfirmCurrent(row) : void revoke(row))}
             >
-              Sign out
+              {t('signOut')}
             </Button>
           </li>
         ))}
@@ -141,24 +149,22 @@ export function ActiveSessionsPanel() {
           disabled={busy}
           onClick={() => setConfirmOthers(true)}
         >
-          Sign out other devices
+          {t('signOutOthers')}
         </Button>
       ) : null}
 
       <Dialog open={confirmOthers} onOpenChange={setConfirmOthers}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Sign out other devices?</DialogTitle>
-            <DialogDescription>
-              This device stays signed in. Every other web or mobile session will end.
-            </DialogDescription>
+            <DialogTitle>{t('confirmOthersTitle')}</DialogTitle>
+            <DialogDescription>{t('confirmOthersDescription')}</DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setConfirmOthers(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="button" disabled={busy} onClick={() => void revokeOthers()}>
-              Sign out others
+              {t('confirmOthersAction')}
             </Button>
           </div>
         </DialogContent>
@@ -170,19 +176,19 @@ export function ActiveSessionsPanel() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Sign out this device?</DialogTitle>
-            <DialogDescription>You will need to sign in again to use NBOS here.</DialogDescription>
+            <DialogTitle>{t('confirmCurrentTitle')}</DialogTitle>
+            <DialogDescription>{t('confirmCurrentDescription')}</DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setConfirmCurrent(null)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button
               type="button"
               disabled={busy}
               onClick={() => confirmCurrent && void revoke(confirmCurrent)}
             >
-              Sign out
+              {t('signOut')}
             </Button>
           </div>
         </DialogContent>

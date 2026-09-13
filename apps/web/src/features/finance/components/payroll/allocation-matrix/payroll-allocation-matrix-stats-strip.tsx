@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { PayrollRunsPaidProgressBar } from '@/features/finance/components/payroll/payroll-runs-paid-progress';
 import type { PayrollAllocationMatrix } from '@/lib/api/payroll-allocation-matrix';
@@ -57,6 +58,7 @@ export function PayrollAllocationMatrixStatsStrip({
   bonusReleaseCount: number;
   totals: MatrixTotals;
 }) {
+  const t = useTranslations('payroll');
   const payable = parseMoney(totals.totalPayable);
   const paid = parseMoney(totals.totalPaid);
   const remaining = parseMoney(totals.totalRemaining);
@@ -64,12 +66,16 @@ export function PayrollAllocationMatrixStatsStrip({
   return (
     <div className="bg-border overflow-hidden rounded-lg">
       <div className="grid w-full grid-cols-2 gap-px sm:grid-cols-3 lg:grid-cols-6">
-        <SummaryCell label="Lines" value={String(lineCount)} />
-        <SummaryCell label="Expenses" value={String(expenseCount)} />
-        <SummaryCell label="Bonus releases" value={String(bonusReleaseCount)} />
-        <SummaryCell label="Payable" value={formatAmount(payable)} />
-        <SummaryCell label="Paid" value={formatAmount(paid)} accent="paid" />
-        <SummaryCell label="Remaining" value={formatAmount(remaining)} accent="remaining" />
+        <SummaryCell label={t('matrix.lines')} value={String(lineCount)} />
+        <SummaryCell label={t('matrix.expenses')} value={String(expenseCount)} />
+        <SummaryCell label={t('matrix.bonusReleases')} value={String(bonusReleaseCount)} />
+        <SummaryCell label={t('matrix.payable')} value={formatAmount(payable)} />
+        <SummaryCell label={t('matrix.paid')} value={formatAmount(paid)} accent="paid" />
+        <SummaryCell
+          label={t('matrix.remaining')}
+          value={formatAmount(remaining)}
+          accent="remaining"
+        />
       </div>
       <div className="bg-background px-3 py-1.5">
         <PayrollRunsPaidProgressBar paid={paid} payable={payable} className="h-1" />

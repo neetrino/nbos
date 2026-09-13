@@ -1,0 +1,244 @@
+{
+  "nav": {
+    "payNow": "Pay Now",
+    "scopeAria": "Expense pay-now scope",
+    "active": "Active",
+    "backlog": "Backlog",
+    "closed": "Closed"
+  },
+  "title": {
+    "payNow": "Pay now",
+    "payNowProject": "Pay now · project filter",
+    "backlog": "Expense backlog",
+    "backlogProject": "Expense backlog · project filter",
+    "closed": "Closed expenses",
+    "closedProject": "Closed expenses · project filter"
+  },
+  "stage": {
+    "PLANNED": "Planned",
+    "DUE_SOON": "Due Soon",
+    "DUE_NOW": "Due Now",
+    "OVERDUE": "Overdue",
+    "ON_HOLD": "On Hold",
+    "BACKLOG": "Backlog",
+    "PAID": "Paid",
+    "CANCELLED": "Cancelled"
+  },
+  "stageShort": {
+    "PLANNED": "Planned",
+    "DUE_SOON": "Soon",
+    "DUE_NOW": "Now",
+    "OVERDUE": "Overdue",
+    "ON_HOLD": "Hold",
+    "PAID": "Paid",
+    "CANCELLED": "Cancel"
+  },
+  "category": {
+    "DOMAIN": "Domain & Hosting",
+    "TOOLS": "Tools & services",
+    "MARKETING": "Marketing",
+    "OFFICE": "Office",
+    "TAXES": "Taxes & fees",
+    "PARTNER_PAYOUT": "Partner Payout",
+    "OTHER": "Other",
+    "SALARY": "Salary",
+    "BONUS": "Bonus"
+  },
+  "type": {
+    "PLANNED": "Planned",
+    "UNPLANNED": "Unplanned",
+    "manual": "Manual"
+  },
+  "frequency": {
+    "ONE_TIME": "One-time",
+    "WEEKLY": "Weekly",
+    "MONTHLY": "Monthly",
+    "QUARTERLY": "Quarterly",
+    "YEARLY": "Yearly",
+    "MULTI_YEAR": "Multi-year"
+  },
+  "tax": {
+    "TAX": "Tax",
+    "TAX_FREE": "Free"
+  },
+  "backlogReason": {
+    "none": "None",
+    "DEBT_PAY_LATER": "Debt to pay later",
+    "WAITING_DECISION": "Waiting for decision",
+    "WAITING_CLIENT": "Waiting for client",
+    "WAITING_PROVIDER": "Waiting for provider",
+    "OTHER": "Other"
+  },
+  "paymentStatus": {
+    "PAID": "Paid",
+    "PARTIAL": "Partially paid",
+    "UNPAID": "Unpaid"
+  },
+  "period": {
+    "month": "Month",
+    "quarter": "Quarter",
+    "year": "Year",
+    "all": "All"
+  },
+  "scope": {
+    "active": "Pay now",
+    "backlog": "Backlog",
+    "closed": "Closed"
+  },
+  "filters": {
+    "scope": "Scope",
+    "period": "Period",
+    "category": "Category",
+    "status": "Status",
+    "project": "Project",
+    "source": "Source",
+    "sourceAll": "All expenses",
+    "sourcePayroll": "Payroll salary",
+    "payrollMonth": "Payroll month",
+    "employee": "Employee",
+    "sortBy": "Sort by",
+    "order": "Order"
+  },
+  "sort": {
+    "createdAt": "Created",
+    "dueDate": "Due date",
+    "amount": "Amount",
+    "name": "Name",
+    "status": "Status",
+    "desc": "Descending",
+    "asc": "Ascending"
+  },
+  "view": {
+    "kanban": "Board",
+    "kanbanAria": "Kanban board view",
+    "list": "List",
+    "listAria": "List view"
+  },
+  "searchPlaceholder": "Search by name, notes, project, plan…",
+  "actions": {
+    "newExpense": "New Expense",
+    "addFirst": "Add First Expense",
+    "quickExpense": "Quick Expense",
+    "addPayment": "Add payment",
+    "recordPayment": "Record payment",
+    "deleteExpense": "Delete expense",
+    "cancelExpense": "Cancel expense",
+    "clearFilter": "Clear filter",
+    "exportStats": "Export scope stats (CSV)",
+    "exportCsv": "Export expenses (CSV)"
+  },
+  "empty": {
+    "title": "No expenses yet",
+    "description": "Track company expenses here",
+    "backlogTitle": "No deferred expenses",
+    "backlogDescription": "Nothing matches this backlog scope for the selected period."
+  },
+  "card": {
+    "paid": "Paid",
+    "due": "Due",
+    "noDate": "No date",
+    "payrollMark": " · Payroll"
+  },
+  "table": {
+    "expense": "Expense",
+    "amount": "Amount",
+    "dueDate": "Due Date",
+    "category": "Category",
+    "paid": "Paid",
+    "status": "Status",
+    "project": "Project",
+    "payroll": "Payroll",
+    "run": "Run"
+  },
+  "sheet": {
+    "loading": "Loading…",
+    "tabs": {
+      "general": "General",
+      "payments": "Payments"
+    },
+    "sections": {
+      "general": "General",
+      "proofs": "Proofs",
+      "paymentHistory": "Payment history"
+    }
+  },
+  "fields": {
+    "name": "Name",
+    "namePlaceholder": "Expense name…",
+    "amount": "Amount",
+    "dueDate": "Due date",
+    "type": "Type",
+    "category": "Category",
+    "frequency": "Frequency",
+    "backlogReason": "Backlog reason",
+    "taxStatus": "Tax status",
+    "passThrough": "Pass-through",
+    "notes": "Description",
+    "notesPlaceholder": "Add notes about this expense…"
+  },
+  "payments": {
+    "empty": "No payments recorded yet.",
+    "date": "Date",
+    "amount": "Amount",
+    "notes": "Notes",
+    "actions": "Actions",
+    "removeAria": "Remove payment {amount}",
+    "amountRequired": "Amount *",
+    "dateRequired": "Payment date *",
+    "dateAria": "Payment date",
+    "notesOptional": "Optional"
+  },
+  "dialogs": {
+    "addPaymentTitle": "Add payment",
+    "deleteTitle": "Delete expense?",
+    "deleteDescription": "This draft expense will be removed. Use only for mistaken PLANNED cards.",
+    "deleteConfirm": "Delete",
+    "cancelTitle": "Cancel expense?",
+    "cancelDescription": "The expense will move to Cancelled and stay in history. Payments and journal lines are preserved.",
+    "cancelConfirm": "Cancel expense",
+    "removePaymentTitle": "Remove payment?",
+    "removePaymentDescription": "This payment line will be removed from the expense. You can record it again later.",
+    "removePaymentConfirm": "Remove"
+  },
+  "banners": {
+    "projectFilter": "Showing expenses for this project (server filter).",
+    "projectFilterNamed": "Showing expenses for this project (server filter) — {label}.",
+    "planFilter": "Showing expense cards linked to this plan (server filter).",
+    "planFilterNamed": "Showing expense cards linked to this plan (server filter) — {label}.",
+    "projectLink": "Project",
+    "boardFiltered": "Board (filtered)",
+    "planDetail": "Plan detail",
+    "payrollLine": "Payroll · {label}",
+    "payrollRunFallback": "Payroll run",
+    "month": "Month",
+    "run": "Run",
+    "plans": "Plans"
+  },
+  "settings": {
+    "title": "Pay now — settings",
+    "description": "Exports and scope statistics. Period and pay-now scope follow the filters in the search bar.",
+    "triggerAria": "Pay now settings"
+  },
+  "toasts": {
+    "updated": "Expense updated",
+    "deleted": "Expense deleted",
+    "cancelled": "Expense cancelled",
+    "statusUpdated": "Expense status updated"
+  },
+  "errors": {
+    "loadList": "Expenses could not be loaded. Check your connection and try again.",
+    "openLink": "Could not open expense from link.",
+    "save": "Could not save expense changes.",
+    "delete": "Expense could not be deleted. Check your connection and try again.",
+    "cancel": "Expense could not be cancelled. Check your connection and try again.",
+    "loadDetail": "Expense could not be loaded.",
+    "statusUpdate": "Expense status could not be updated. Try again.",
+    "statusUpdateKanban": "Expense status could not be updated. Open the card or try again.",
+    "recordPayment": "Payment could not be recorded. Check the amount and try again.",
+    "removePayment": "Payment could not be removed. Try again."
+  },
+  "gate": {
+    "completeBefore": "Complete before changing status",
+    "paidLocked": "Fully paid expenses stay in Paid until cancelled or adjusted via payments."
+  }
+}

@@ -58,11 +58,14 @@ export function getWorkSpaceGroupKey(workspace: WorkSpace): WorkSpaceGroupKey {
   return 'standalone';
 }
 
-export function getWorkSpaceContextLabel(workspace: WorkSpace): string {
+export function getWorkSpaceContextLabel(
+  workspace: WorkSpace,
+  standaloneFallback = 'Standalone operational space',
+): string {
   if (workspace.product) return workspace.product.name;
   if (workspace.extension) return workspace.extension.name;
   if (workspace.project) return workspace.project.name;
-  return 'Standalone operational space';
+  return standaloneFallback;
 }
 
 export function buildWorkSpaceContextHref(workspace: WorkSpace): string | null {

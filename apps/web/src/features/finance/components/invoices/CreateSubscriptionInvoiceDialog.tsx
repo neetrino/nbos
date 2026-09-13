@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -21,16 +22,16 @@ import {
 export type { CreateSubscriptionInvoiceDialogProps };
 
 export function CreateSubscriptionInvoiceDialog(props: CreateSubscriptionInvoiceDialogProps) {
+  const t = useTranslations('invoices');
+  const tCommon = useTranslations('common');
   const state = useCreateSubscriptionInvoiceDialog(props);
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent className="sm:max-w-[560px]" forceNestedBackdrop={props.forceNestedBackdrop}>
         <DialogHeader>
-          <DialogTitle>Create Subscription Invoice</DialogTitle>
-          <DialogDescription>
-            Select consecutive months. One invoice covers all selected months.
-          </DialogDescription>
+          <DialogTitle>{t('createSubscription.title')}</DialogTitle>
+          <DialogDescription>{t('createSubscription.description')}</DialogDescription>
         </DialogHeader>
         <form onSubmit={(event) => void state.handleSubmit(event)} className="space-y-4">
           <SubscriptionInvoiceContext
@@ -48,7 +49,9 @@ export function CreateSubscriptionInvoiceDialog(props: CreateSubscriptionInvoice
             onToggle={state.toggleCoverageMonth}
           />
           {state.coverageMonths.length > 1 && !state.isConsecutive ? (
-            <p className="text-muted-foreground text-sm">Select consecutive months.</p>
+            <p className="text-muted-foreground text-sm">
+              {t('createSubscription.selectConsecutive')}
+            </p>
           ) : null}
           {state.error ? (
             <p className="text-destructive text-sm" role="alert">
@@ -57,10 +60,10 @@ export function CreateSubscriptionInvoiceDialog(props: CreateSubscriptionInvoice
           ) : null}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => state.onOpenChange(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={!state.canSubmit || state.submitting}>
-              {state.submitting ? 'Creating...' : 'Create Invoice'}
+              {state.submitting ? tCommon('creating') : t('create.submit')}
             </Button>
           </DialogFooter>
         </form>
@@ -80,10 +83,11 @@ function SubscriptionInvoiceContext({
   subscription: Subscription | null;
   selectedCount: number;
 }) {
+  const t = useTranslations('invoices');
   if (loading) {
     return (
       <p className="text-muted-foreground text-sm" role="status">
-        Loading subscription…
+        {t('create.loadingSubscription')}
       </p>
     );
   }
@@ -101,7 +105,7 @@ function SubscriptionInvoiceContext({
     <div className="bg-muted/40 flex items-center justify-between gap-4 rounded-lg border px-4 py-3.5">
       <p className="text-xl leading-tight font-semibold">{displayTitle}</p>
       <p className="flex shrink-0 items-baseline gap-2">
-        <span className="text-muted-foreground text-sm">Total</span>
+        <span className="text-muted-foreground text-sm">{t('createSubscription.total')}</span>
         <span className="text-xl font-semibold tabular-nums">{formatAmount(totalAmount)}</span>
       </p>
     </div>

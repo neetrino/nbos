@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {
   Cable,
   ClipboardList,
+  Image as ImageIcon,
   ListChecks,
   ShieldCheck,
   SlidersHorizontal,
@@ -14,6 +15,12 @@ import {
 import { PageHero } from '@/components/shared';
 
 const SETTINGS_SECTIONS = [
+  {
+    title: 'Appearance',
+    href: '/settings/appearance',
+    description: 'Company wallpaper under every authenticated screen.',
+    icon: ImageIcon,
+  },
   {
     title: 'System Lists',
     href: '/settings/lists',

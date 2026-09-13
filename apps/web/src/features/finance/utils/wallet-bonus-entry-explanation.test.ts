@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { walletBonusEntryExplanation } from './wallet-bonus-entry-explanation';
+import { resolveWalletBonusEntryExplanation } from './wallet-bonus-entry-explanation';
 import type { EmployeeWalletBonusRow } from '@/lib/api/me';
 
 const base: EmployeeWalletBonusRow = {
@@ -25,29 +25,38 @@ const base: EmployeeWalletBonusRow = {
   createdAt: '',
 };
 
-describe('walletBonusEntryExplanation', () => {
+describe('resolveWalletBonusEntryExplanation', () => {
   it('explains clawback', () => {
     expect(
-      walletBonusEntryExplanation({ ...base, status: 'CLAWBACK', walletGroup: 'CORRECTIONS' }),
-    ).toContain('Clawback');
+      resolveWalletBonusEntryExplanation({
+        ...base,
+        status: 'CLAWBACK',
+        walletGroup: 'CORRECTIONS',
+      }),
+    ).toEqual({ source: 'message', key: 'clawback' });
   });
 
   it('explains partial pay', () => {
-    const text = walletBonusEntryExplanation({
-      ...base,
-      paidAmount: '200',
-      remainingAmount: '800',
-    });
-    expect(text).toContain('Partially paid');
+    expect(
+      resolveWalletBonusEntryExplanation({
+        ...base,
+        paidAmount: '200',
+        remainingAmount: '800',
+      }),
+    ).toEqual({ source: 'message', key: 'partial' });
   });
 
   it('uses persisted burned reason when present', () => {
-    const text = walletBonusEntryExplanation({
-      ...base,
-      type: 'SALES',
-      kpiBurnedAmount: '50.00',
-      kpiBurnedReason: 'Sales KPI: 60% of plan → 50% payout; 50.00 excluded',
+    expect(
+      resolveWalletBonusEntryExplanation({
+        ...base,
+        type: 'SALES',
+        kpiBurnedAmount: '50.00',
+        kpiBurnedReason: 'Sales KPI: 60% of plan → 50% payout; 50.00 excluded',
+      }),
+    ).toEqual({
+      source: 'raw',
+      text: 'Sales KPI: 60% of plan → 50% payout; 50.00 excluded',
     });
-    expect(text).toContain('60% of plan');
   });
 });

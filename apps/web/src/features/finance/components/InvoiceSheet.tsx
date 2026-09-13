@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
@@ -11,11 +11,6 @@ import {
   DetailSheetTabPanel,
   EntityDetailSheetContent,
 } from '@/components/shared';
-import {
-  DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
-  DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
-  DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
-} from '@/components/shared/detail-sheet-classes';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { InvoiceMoneyStagesBar } from '@/features/finance/components/invoices/InvoiceMoneyStagesBar';
 import { InvoiceSheetStageGateBlockers } from '@/features/finance/components/invoices/InvoiceSheetStageGateBlockers';
@@ -24,9 +19,10 @@ import { InvoicePaymentsTab } from '@/features/finance/components/invoices/Invoi
 import { InvoiceHistoryTab } from '@/features/finance/components/invoices/InvoiceHistoryTab';
 import { InvoiceLifecycleConfirmDialog } from '@/features/finance/components/invoices/InvoiceLifecycleConfirmDialog';
 import {
-  INVOICE_DETAIL_SHEET_TABS,
+  getInvoiceDetailSheetTabs,
   type InvoiceDetailSheetTab,
 } from '@/features/finance/components/invoices/invoice-detail-sheet-tabs';
+import { InvoiceSheetStatus } from '@/features/finance/components/invoices/InvoiceSheetStatus';
 import { type InvoiceSheetInvoice } from './invoices/InvoiceSheetSections';
 import { InvoiceSheetHeader } from './invoices/InvoiceSheetHeader';
 import { buildInvoiceGateRequiredFields } from '@/features/finance/constants/invoice-stage-gate-highlight';
@@ -43,7 +39,6 @@ import { invoiceLifecycleAction } from '@/features/finance/utils/invoice-lifecyc
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { usePermission } from '@/lib/permissions';
-import { cn } from '@/lib/utils';
 
 interface InvoiceSheetProps {
   invoice: InvoiceSheetInvoice | null;
@@ -78,6 +73,7 @@ export function InvoiceSheet({
   stageGateHighlight = null,
   forceNestedBackdrop,
 }: InvoiceSheetProps) {
+  const t = useTranslations('invoices');
   const { me } = usePermission();
   const { persistedValue: renderInvoice, onOpenChangeComplete } = useSheetPersistedValue(invoice);
   const hostMounted = useSheetHostMounted(open, renderInvoice);
@@ -148,16 +144,16 @@ export function InvoiceSheet({
         const updated = await invoicesApi.updateGeneral(invoice.id, patch);
         generalDirtyRef.current = false;
         handleInvoiceChange(updated);
-        toast.success('Invoice updated');
+        toast.success(t('sheet.updated'));
       } catch (caught) {
         setGeneralSnap(snapAtSave);
         setGeneralDraft(draftAtSave);
-        setGeneralError(getApiErrorMessage(caught, 'Could not save invoice changes.'));
+        setGeneralError(getApiErrorMessage(caught, t('sheet.saveFailed')));
       } finally {
         setSaving(false);
       }
     })();
-  }, [invoice, generalDraft, generalSnap, onInvoiceUpdated, handleInvoiceChange]);
+  }, [invoice, generalDraft, generalSnap, onInvoiceUpdated, handleInvoiceChange, t]);
 
   const handleGeneralCancel = useCallback(() => {
     setGeneralError(null);
@@ -173,43 +169,18 @@ export function InvoiceSheet({
 
   if (!renderInvoice) {
     return (
-      <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
-        <EntityDetailSheetContent
-          open={open}
-          layout="full"
-          width="compact"
-          forceNestedBackdrop={forceNestedBackdrop}
-        >
-          <div
-            className={cn(
-              isMobileViewport
-                ? DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS
-                : 'flex flex-1 items-center gap-2 px-5 py-8 text-sm',
-            )}
-          >
-            {isMobileViewport ? (
-              <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS} />
-            ) : null}
-            <div
-              className={cn(
-                'flex items-center gap-2 text-sm',
-                isMobileViewport && DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
-              )}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="text-muted-foreground size-4 animate-spin" aria-hidden />
-                  <span className="text-muted-foreground">Loading invoice…</span>
-                </>
-              ) : (
-                <span className="text-muted-foreground">Invoice unavailable.</span>
-              )}
-            </div>
-          </div>
-        </EntityDetailSheetContent>
-      </Sheet>
+      <InvoiceSheetStatus
+        open={open}
+        loading={loading}
+        isMobileViewport={isMobileViewport}
+        forceNestedBackdrop={forceNestedBackdrop}
+        onOpenChange={onOpenChange}
+        onOpenChangeComplete={onOpenChangeComplete}
+      />
     );
   }
+
+  const detailTabs = getInvoiceDetailSheetTabs((key) => t(key as never));
 
   const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(renderInvoice.id)}`;
   const lifecycleMode = onInvoiceUpdated
@@ -243,7 +214,7 @@ export function InvoiceSheet({
           ) : null}
 
           <DetailSheetTabBar
-            tabs={INVOICE_DETAIL_SHEET_TABS}
+            tabs={detailTabs}
             activeTab={activeTab}
             onTabChange={(value) => setActiveTab(value as InvoiceDetailSheetTab)}
             className="max-md:mt-3 max-md:px-4"

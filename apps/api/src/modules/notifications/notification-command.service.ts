@@ -1,5 +1,10 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
+import {
+  clampNotificationBody,
+  clampNotificationFields,
+  clampNotificationTitle,
+} from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import { NotificationRealtimePublisher } from '../realtime/notification-realtime.publisher';
 import { isNotificationInboxStateWriteEnabled } from './notification-inbox-state.flags';
@@ -82,6 +87,7 @@ export class NotificationCommandService {
 
   async createOne(params: CreateNotificationParams): Promise<NotificationRow> {
     const started = Date.now();
+    params = clampNotificationFields(params);
     const pref = await this.loadPreference(params.recipientId, params.type);
     if (!pref.enabled || !pref.channels.includes('IN_APP')) {
       recordNotificationMetric({
@@ -193,6 +199,7 @@ export class NotificationCommandService {
 
   async createMany(command: CreateManyNotificationCommand): Promise<CreateManyResult> {
     const started = Date.now();
+    command = clampNotificationFields(command);
     const uniqueRecipients = [...new Set(command.recipientIds.filter(Boolean))];
     if (uniqueRecipients.length === 0) {
       return emptyMany(0);
@@ -595,8 +602,8 @@ function toRow(row: InAppRow): NotificationRow {
     recipientId: row.recipientEmployeeId,
     category: row.category,
     priority: row.priority,
-    title: row.title,
-    body: row.body,
+    title: clampNotificationTitle(row.title),
+    body: clampNotificationBody(row.body),
     link: row.link,
     actionLabel: row.actionLabel,
     entityType: row.entityType,

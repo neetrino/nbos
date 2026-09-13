@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { PipelineStagesBar } from '@/components/shared';
 import { toSheetPipelineStages } from '@/components/shared/pipeline-stage-config';
 import { TASK_BOARD_STAGES } from '@/features/tasks/constants/task-board-lifecycle';
@@ -15,21 +16,12 @@ const STAGE_HEX: Record<string, string> = {
   COMPLETED: '#22c55e',
 };
 
-const STAGE_SHORT: Record<string, string> = {
-  OPEN: 'Open',
-  IN_PROGRESS: 'In progress',
-  REVIEW: 'Review',
-  ON_HOLD: 'Hold',
-  COMPLETED: 'Done',
-};
+const PIPELINE_KEYS = ['OPEN', 'IN_PROGRESS', 'REVIEW', 'ON_HOLD', 'COMPLETED'] as const;
+type PipelineKey = (typeof PIPELINE_KEYS)[number];
 
-const SHEET_STAGES = toSheetPipelineStages(
-  TASK_BOARD_STAGES.map((stage) => ({
-    key: stage.key,
-    label: STAGE_SHORT[stage.key] ?? stage.key,
-    shortLabel: STAGE_SHORT[stage.key] ?? stage.key,
-  })),
-);
+function isPipelineKey(value: string): value is PipelineKey {
+  return PIPELINE_KEYS.some((key) => key === value);
+}
 
 interface TaskPipelineStagesProps {
   currentStatus: string;
@@ -43,11 +35,18 @@ export function TaskPipelineStages({
   disabled = false,
   onStageClick,
 }: TaskPipelineStagesProps) {
+  const t = useTranslations('tasks');
   const normalized = normalizeTaskStatusForDraft(currentStatus);
+  const stages = toSheetPipelineStages(
+    TASK_BOARD_STAGES.map((stage) => {
+      const label = isPipelineKey(stage.key) ? t(`pipeline.${stage.key}`) : stage.key;
+      return { key: stage.key, label, shortLabel: label };
+    }),
+  );
 
   return (
     <PipelineStagesBar
-      stages={SHEET_STAGES}
+      stages={stages}
       stageColors={STAGE_HEX}
       currentStatus={normalized}
       fillToEndStatuses={['COMPLETED']}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { payrollRunActionOptions } from '@/features/finance/constants/payroll-run-ui';
 import type { PayrollRunDetail, PayrollRunStatus } from '@/lib/api/payroll-runs';
@@ -13,6 +14,7 @@ export function PayrollRunDetailStatusActions({
   statusBusy: boolean;
   onApplyStatus: (next: PayrollRunStatus) => void;
 }) {
+  const t = useTranslations('payroll');
   const actions = payrollRunActionOptions(run.status);
 
   if (actions.length === 0) {
@@ -29,7 +31,7 @@ export function PayrollRunDetailStatusActions({
           disabled={statusBusy}
           onClick={() => void onApplyStatus(action.to)}
         >
-          {action.label}
+          {t(action.labelKey)}
         </Button>
       ))}
     </>

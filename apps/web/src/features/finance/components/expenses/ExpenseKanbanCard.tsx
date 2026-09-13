@@ -2,18 +2,20 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { AppWindow, Calendar, ChevronRight } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { KanbanCardShell } from '@/components/shared';
-import {
-  getExpenseCategoryLabel,
-  getExpenseCategoryVisual,
-} from '@/features/finance/constants/expense-category-visual';
+import { getExpenseCategoryVisual } from '@/features/finance/constants/expense-category-visual';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { formatExpenseCardDueDate } from '@/features/finance/utils/expense-kanban-card-due';
+import {
+  EXPENSE_CARD_NO_DUE_DATE_LABEL,
+  formatExpenseCardDueDate,
+} from '@/features/finance/utils/expense-kanban-card-due';
 import { expenseOwnerLabel } from '@/features/finance/utils/expense-owner-label';
 import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payroll-expense-notes';
 import { parseMoneyAmount } from '@/lib/format/money';
 import type { Expense } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
+import { translateExpenseCategory } from './expense-i18n-labels';
 
 interface ExpenseKanbanCardProps {
   expense: Expense;
@@ -55,9 +57,10 @@ export function ExpenseKanbanCard({ expense, onOpen }: ExpenseKanbanCardProps) {
 }
 
 function ExpenseCardHeader({ expense }: { expense: Expense }) {
+  const t = useTranslations('expenses');
   const categoryVisual = getExpenseCategoryVisual(expense.category);
   const CategoryIcon = categoryVisual.icon;
-  const categoryLabel = getExpenseCategoryLabel(expense.category);
+  const categoryLabel = translateExpenseCategory(expense.category, t);
   const payrollLinked = Boolean(resolveExpensePayrollRunId(expense));
 
   return (
@@ -73,7 +76,7 @@ function ExpenseCardHeader({ expense }: { expense: Expense }) {
       <div className="min-w-0 flex-1">
         <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.14em] uppercase">
           {categoryLabel}
-          {payrollLinked ? ' · Payroll' : ''}
+          {payrollLinked ? t('card.payrollMark') : ''}
         </p>
         <p className="text-foreground truncate text-base leading-tight font-bold tracking-tight">
           {expense.name}
@@ -84,7 +87,11 @@ function ExpenseCardHeader({ expense }: { expense: Expense }) {
 }
 
 function ExpenseCardMetrics({ expense }: { expense: Expense }) {
+  const t = useTranslations('expenses');
+  const locale = useLocale();
   const paidAmount = parseMoneyAmount(expense.paidAmount ?? 0);
+  const dueValue = formatExpenseCardDueDate(expense.dueDate, new Date(), locale);
+  const dueLabel = dueValue === EXPENSE_CARD_NO_DUE_DATE_LABEL ? t('card.noDate') : dueValue;
 
   return (
     <div className="border-border/60 space-y-3 border-t pt-3">
@@ -95,14 +102,14 @@ function ExpenseCardMetrics({ expense }: { expense: Expense }) {
         <ExpenseMetric
           icon={AppWindow}
           iconShellClassName="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300"
-          label="Paid"
+          label={t('card.paid')}
           value={formatAmount(paidAmount)}
         />
         <ExpenseMetric
           icon={Calendar}
           iconShellClassName="bg-orange-100 text-orange-600 dark:bg-orange-950/40 dark:text-orange-300"
-          label="Due"
-          value={formatExpenseCardDueDate(expense.dueDate)}
+          label={t('card.due')}
+          value={dueLabel}
           bordered
         />
       </div>

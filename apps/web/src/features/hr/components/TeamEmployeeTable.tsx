@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Table,
   TableBody,
@@ -18,7 +19,12 @@ import {
   EntityListMutedDash,
   EntityListPrimaryCell,
 } from '@/components/shared/entity-list-table';
-import { getEmployeeLevel, getEmployeeStatus } from '@/features/hr/constants/hr';
+import {
+  getEmployeeLevel,
+  getEmployeeStatus,
+  isEmployeeLevelValue,
+  isEmployeeStatusValue,
+} from '@/features/hr/constants/hr';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import {
   employeeFullName,
@@ -33,18 +39,30 @@ interface TeamEmployeeTableProps {
 }
 
 export function TeamEmployeeTable({ employees, onOpen }: TeamEmployeeTableProps) {
+  const t = useTranslations('hr');
+
   return (
     <div className={ENTITY_LIST_SHELL_CLASS}>
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Employee</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Primary seat</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Level</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Department</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Status</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Tenure</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Email</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>
+              {t('directory.columns.employee')}
+            </TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>
+              {t('directory.columns.primarySeat')}
+            </TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('directory.columns.level')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>
+              {t('directory.columns.department')}
+            </TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>
+              {t('directory.columns.status')}
+            </TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>
+              {t('directory.columns.tenure')}
+            </TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('directory.columns.email')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -53,6 +71,12 @@ export function TeamEmployeeTable({ employees, onOpen }: TeamEmployeeTableProps)
             const st = getEmployeeStatus(emp.status);
             const seat = emp.position || emp.role?.name;
             const department = employeePrimaryDepartment(emp);
+            const statusLabel =
+              st && isEmployeeStatusValue(emp.status) ? t(`status.${emp.status}`) : st?.label;
+            const levelLabel =
+              lvl && emp.level && isEmployeeLevelValue(emp.level)
+                ? t(`level.${emp.level}`)
+                : lvl?.label;
             return (
               <TableRow
                 key={emp.id}
@@ -73,9 +97,9 @@ export function TeamEmployeeTable({ employees, onOpen }: TeamEmployeeTableProps)
                   {seat ? <span className="text-sm">{seat}</span> : <EntityListMutedDash />}
                 </TableCell>
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
-                  {lvl ? (
+                  {lvl && levelLabel ? (
                     <StatusBadge
-                      label={lvl.label}
+                      label={levelLabel}
                       variant={lvl.variant}
                       className={ENTITY_LIST_BADGE_CLASS}
                     />
@@ -89,16 +113,16 @@ export function TeamEmployeeTable({ employees, onOpen }: TeamEmployeeTableProps)
                   )}
                 </TableCell>
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
-                  {st ? (
+                  {st && statusLabel ? (
                     <StatusBadge
-                      label={st.label}
+                      label={statusLabel}
                       variant={st.variant}
                       className={ENTITY_LIST_BADGE_CLASS}
                     />
                   ) : null}
                 </TableCell>
                 <TableCell className={`${ENTITY_LIST_CELL_CLASS} text-muted-foreground text-xs`}>
-                  {employeeTenure(emp.hireDate)}
+                  {employeeTenure(emp.hireDate, t)}
                 </TableCell>
                 <TableCell className={`${ENTITY_LIST_CELL_CLASS} text-muted-foreground text-xs`}>
                   {emp.email}

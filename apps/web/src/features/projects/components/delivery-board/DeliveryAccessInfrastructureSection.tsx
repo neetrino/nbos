@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { KeyRound, Loader2 } from 'lucide-react';
 import { DetailSheetCollapsibleSection } from '@/components/shared';
 import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
@@ -24,6 +25,7 @@ export function DeliveryAccessInfrastructureSection({
   onRefreshDetail,
   setupPanel,
 }: DeliveryAccessInfrastructureSectionProps) {
+  const t = useTranslations('deliveryBoard');
   const [sectionOpen, setSectionOpen] = useState(true);
   const [slots, setSlots] = useState<ProductAccessSlotRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -71,16 +73,12 @@ export function DeliveryAccessInfrastructureSection({
       return (
         <div className="text-muted-foreground flex items-center gap-2 py-2 text-sm">
           <Loader2 className="size-4 animate-spin" aria-hidden />
-          Loading…
+          {t('access.loading')}
         </div>
       );
     }
     if (slots.length === 0) {
-      return (
-        <p className="text-muted-foreground text-sm">
-          No access slots are configured for this product profile.
-        </p>
-      );
+      return <p className="text-muted-foreground text-sm">{t('access.empty')}</p>;
     }
     return (
       <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2">
@@ -107,7 +105,7 @@ export function DeliveryAccessInfrastructureSection({
   return (
     <>
       <DetailSheetCollapsibleSection
-        title="Access & infrastructure"
+        title={t('access.title')}
         icon={<KeyRound size={12} />}
         open={sectionOpen}
         onOpenChange={setSectionOpen}

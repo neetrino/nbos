@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { DetailSheetOptionalDescription } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import type { LeadGeneralDraft } from './lead-general-form-state';
@@ -22,6 +23,7 @@ export function LeadNotesSection({
   disabled = false,
   gateRequiredFields = new Set(),
 }: LeadNotesSectionProps) {
+  const t = useTranslations('crm');
   return (
     <DetailSheetOptionalDescription
       id={id}
@@ -30,6 +32,7 @@ export function LeadNotesSection({
       value={draft.notes}
       onChange={(notes) => patchDraft({ notes })}
       disabled={disabled}
+      placeholder={t('leadSheet.notesPlaceholder')}
       shellClassName={cn(leadStageGateFieldClass(gateRequiredFields, 'notes', ''))}
     />
   );

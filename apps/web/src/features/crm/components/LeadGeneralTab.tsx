@@ -1,5 +1,6 @@
 'use client';
 
+import { useLocale, useTranslations } from 'next-intl';
 import type { Lead } from '@/lib/api/leads';
 import type { LeadMetaConversation } from '@/lib/api/leads';
 import type { LeadGeneralDraft } from './lead-general-form-state';
@@ -74,23 +75,27 @@ interface LeadEntityMetaLineProps {
 }
 
 function LeadEntityMetaLine({ createdAt, updatedAt }: LeadEntityMetaLineProps) {
+  const t = useTranslations('crm');
+  const locale = useLocale();
   return (
     <p className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-0.5 px-1 text-[11px] tabular-nums">
       <span>
-        <span className="font-medium">Created</span> {formatLeadMetaDate(createdAt)}
+        <span className="font-medium">{t('leadSheet.created')}</span>{' '}
+        {formatLeadMetaDate(createdAt, locale)}
       </span>
       <span aria-hidden className="text-muted-foreground/50">
         ·
       </span>
       <span>
-        <span className="font-medium">Last updated</span> {formatLeadMetaDate(updatedAt)}
+        <span className="font-medium">{t('leadSheet.lastUpdated')}</span>{' '}
+        {formatLeadMetaDate(updatedAt, locale)}
       </span>
     </p>
   );
 }
 
-function formatLeadMetaDate(value: string): string {
-  return new Date(value).toLocaleDateString(undefined, {
+function formatLeadMetaDate(value: string, locale: string): string {
+  return new Date(value).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -98,6 +103,7 @@ function formatLeadMetaDate(value: string): string {
 }
 
 function LeadInboundMetaSummary({ metaConversation }: { metaConversation: LeadMetaConversation }) {
+  const t = useTranslations('crm');
   const leadLike = { metaConversation, name: null, code: '', contactName: '' };
   const platform = getLeadMetaPlatformLabel(leadLike);
   const latestMessage = getLeadLatestMessagePreview(leadLike);
@@ -105,7 +111,7 @@ function LeadInboundMetaSummary({ metaConversation }: { metaConversation: LeadMe
   return (
     <div className="rounded-lg border border-dashed px-4 py-3">
       <p className="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
-        Inbound message
+        {t('leadSheet.inboundMessage')}
       </p>
       <p className="mt-1 text-sm font-semibold">{getLeadDisplayTitle(leadLike)}</p>
       {subtitle ? <p className="text-muted-foreground text-xs">{subtitle}</p> : null}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { TASK_SHEET_CARD_CLASS } from './task-sheet-classes';
 import { newEmptyChecklistId } from './task-checklist-helpers';
 import { TaskChecklistCard } from './TaskChecklistCard';
@@ -33,6 +34,7 @@ export function TaskChecklistSection({
   onRenameTitle,
   onRenameItem,
 }: TaskChecklistSectionProps) {
+  const t = useTranslations('tasks');
   const focusNewItemId = newEmptyChecklistId(task.checklists);
 
   return (
@@ -57,7 +59,9 @@ export function TaskChecklistSection({
           />
         </div>
       ))}
-      {disabled ? null : <TaskChecklistAddTrigger label="New checklist" onClick={onAddChecklist} />}
+      {disabled ? null : (
+        <TaskChecklistAddTrigger label={t('sheet.checklist.new')} onClick={onAddChecklist} />
+      )}
     </section>
   );
 }

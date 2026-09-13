@@ -1,6 +1,7 @@
 'use client';
 
 import { Plus, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,6 +18,7 @@ export function RecurringTaskChecklistFields({
   disabled,
   onPatch,
 }: RecurringTaskChecklistFieldsProps) {
+  const t = useTranslations('tasks');
   const updateItem = (index: number, value: string) => {
     onPatch({
       checklistItems: draft.checklistItems.map((item, itemIndex) =>
@@ -27,17 +29,15 @@ export function RecurringTaskChecklistFields({
 
   return (
     <div className="grid gap-2">
-      <Label>Default checklist</Label>
-      <p className="text-muted-foreground text-xs">
-        Copied onto each spawned task. Leave empty if the task does not need a checklist.
-      </p>
+      <Label>{t('recurring.defaultChecklist')}</Label>
+      <p className="text-muted-foreground text-xs">{t('recurring.defaultChecklistHint')}</p>
       <div className="grid gap-2">
         {draft.checklistItems.map((item, index) => (
           <div key={`checklist-${index}`} className="flex items-center gap-2">
             <Input
               value={item}
               disabled={disabled}
-              placeholder={`Item ${index + 1}`}
+              placeholder={t('recurring.itemPlaceholder', { n: index + 1 })}
               onChange={(event) => updateItem(index, event.target.value)}
             />
             <Button
@@ -45,7 +45,7 @@ export function RecurringTaskChecklistFields({
               variant="ghost"
               size="icon-sm"
               disabled={disabled}
-              aria-label="Remove checklist item"
+              aria-label={t('recurring.removeItemAria')}
               onClick={() =>
                 onPatch({
                   checklistItems: draft.checklistItems.filter(
@@ -67,7 +67,7 @@ export function RecurringTaskChecklistFields({
           onClick={() => onPatch({ checklistItems: [...draft.checklistItems, ''] })}
         >
           <Plus className="size-4" aria-hidden />
-          Add item
+          {t('recurring.addItem')}
         </Button>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Calendar, ClipboardList, Layers, Tag, Wallet } from 'lucide-react';
 import {
   DetailSheetCollapsibleSection,
@@ -40,6 +41,7 @@ export function ProductPlanningSection({
   /** Stage checklists trigger — sits beside Languages. */
   stageChecklist?: ReactNode;
 }) {
+  const t = useTranslations('deliveryBoard');
   const [sectionOpen, setSectionOpen] = useState(true);
   const typeOptions = useMemo(() => {
     const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
@@ -58,27 +60,27 @@ export function ProductPlanningSection({
 
   return (
     <DetailSheetCollapsibleSection
-      title="Delivery plan"
+      title={t('plan.deliveryTitle')}
       icon={<ClipboardList size={12} />}
       open={sectionOpen}
       onOpenChange={setSectionOpen}
       className="w-full max-w-full min-w-0 shadow-sm"
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-        <DetailSheetCollapsibleSubsection title="Project">
+        <DetailSheetCollapsibleSubsection title={t('plan.project')}>
           <InlineField
-            label="Payment"
+            label={t('plan.payment')}
             value={paymentLabel}
             icon={<Wallet size={12} />}
             editable={false}
           />
           <InlineField
             variant="controlled"
-            label="Deadline"
+            label={t('plan.deadline')}
             type="date"
             value={draft.deadline}
             icon={<Calendar size={12} />}
-            placeholder="Pick date…"
+            placeholder={t('plan.pickDate')}
             clearable
             disabled={disabled}
             className={deliveryStageGateFieldClass(gateRequiredFields, 'deadline')}
@@ -86,12 +88,12 @@ export function ProductPlanningSection({
           />
         </DetailSheetCollapsibleSubsection>
         <DetailSheetCollapsibleSubsection
-          title="Product"
+          title={t('plan.product')}
           className={cn('border-border border-t pt-4 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-5')}
         >
           <InlineField
             variant="controlled"
-            label="Product category"
+            label={t('plan.productCategory')}
             type="select"
             value={draft.productCategory}
             options={PRODUCT_CATEGORIES.map((c) => ({ value: c.value, label: c.label }))}
@@ -108,7 +110,7 @@ export function ProductPlanningSection({
           />
           <InlineField
             variant="controlled"
-            label="Product type"
+            label={t('plan.productType')}
             type="select"
             value={draft.productType}
             options={typeOptions}
@@ -129,7 +131,7 @@ export function ProductPlanningSection({
           entityId={entityId}
           value={draft.description}
           onChange={(description) => patchDraft({ description: description ?? '' })}
-          placeholder="Plan, milestones, client context…"
+          placeholder={t('plan.productNotesPlaceholder')}
           disabled={disabled}
         />
       </div>

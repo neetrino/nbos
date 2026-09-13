@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Building2, Plus, Users, ChevronDown, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Building2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { PageHero } from '@/components/shared';
 import {
   Dialog,
@@ -21,16 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { DepartmentAdminRow } from '@/features/hr/components/DepartmentAdminRow';
 import { departmentsApi } from '@/lib/api/employees';
 import type { DepartmentItem, DepartmentWithMembers } from '@/lib/api/employees';
 import { toast } from 'sonner';
 import { PermissionGate } from '@/lib/permissions';
-
-const DEPT_ROLE_LABELS: Record<string, string> = {
-  HEAD: 'Head',
-  DEPUTY: 'Deputy',
-  MEMBER: 'Member',
-};
 
 function slugFromName(name: string): string {
   return name
@@ -40,6 +35,8 @@ function slugFromName(name: string): string {
 }
 
 export default function DepartmentsPage() {
+  const t = useTranslations('hr');
+  const tCommon = useTranslations('common');
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -58,31 +55,34 @@ export default function DepartmentsPage() {
       const data = await departmentsApi.getAll();
       setDepartments(data ?? []);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to load departments';
+      const msg = err instanceof Error ? err.message : t('deptAdmin.loadFailed');
       toast.error(msg);
       setDepartments([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
-    fetchDepartments();
+    void fetchDepartments();
   }, [fetchDepartments]);
 
-  const fetchMembers = useCallback(async (id: string) => {
-    setLoadingMembers(true);
-    try {
-      const data = await departmentsApi.getById(id);
-      setExpandedMembers(data);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to load members';
-      toast.error(msg);
-      setExpandedMembers(null);
-    } finally {
-      setLoadingMembers(false);
-    }
-  }, []);
+  const fetchMembers = useCallback(
+    async (id: string) => {
+      setLoadingMembers(true);
+      try {
+        const data = await departmentsApi.getById(id);
+        setExpandedMembers(data);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : t('deptAdmin.membersLoadFailed');
+        toast.error(msg);
+        setExpandedMembers(null);
+      } finally {
+        setLoadingMembers(false);
+      }
+    },
+    [t],
+  );
 
   function toggleExpand(dept: DepartmentItem) {
     if (expandedId === dept.id) {
@@ -90,7 +90,7 @@ export default function DepartmentsPage() {
       setExpandedMembers(null);
     } else {
       setExpandedId(dept.id);
-      fetchMembers(dept.id);
+      void fetchMembers(dept.id);
     }
   }
 
@@ -109,7 +109,7 @@ export default function DepartmentsPage() {
 
   async function handleCreate() {
     if (!formName.trim() || !formSlug.trim()) {
-      toast.error('Name and slug are required');
+      toast.error(t('deptAdmin.nameSlugRequired'));
       return;
     }
     setSaving(true);
@@ -120,11 +120,11 @@ export default function DepartmentsPage() {
         description: formDescription.trim() || undefined,
         parentId: formParentId || undefined,
       });
-      toast.success('Department created');
+      toast.success(t('deptAdmin.created'));
       setDialogOpen(false);
-      fetchDepartments();
+      void fetchDepartments();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to create department';
+      const msg = err instanceof Error ? err.message : t('deptAdmin.createFailed');
       toast.error(msg);
     } finally {
       setSaving(false);
@@ -137,40 +137,39 @@ export default function DepartmentsPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHero
-        title="Departments"
+        title={t('deptAdmin.title')}
         trailing={
           <PermissionGate module="COMPANY" action="ADD">
             <Button type="button" onClick={openCreateDialog}>
               <Plus className="mr-2 size-4" aria-hidden />
-              Create Department
+              {t('deptAdmin.create')}
             </Button>
           </PermissionGate>
         }
       />
-      <p className="text-muted-foreground text-sm">Manage company departments and their members</p>
+      <p className="text-muted-foreground text-sm">{t('deptAdmin.subtitle')}</p>
 
       {loading ? (
         <div className="text-muted-foreground border-border rounded-lg border p-8 text-center">
-          Loading departments...
+          {t('deptAdmin.loading')}
         </div>
       ) : departments.length === 0 ? (
         <div className="text-muted-foreground border-border flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed p-12">
           <Building2 className="size-12" />
-          <p>No departments yet</p>
+          <p>{t('deptAdmin.empty')}</p>
           <PermissionGate module="COMPANY" action="ADD">
             <Button variant="outline" onClick={openCreateDialog}>
               <Plus className="mr-2 size-4" />
-              Create Department
+              {t('deptAdmin.create')}
             </Button>
           </PermissionGate>
         </div>
       ) : (
         <div className="border-border rounded-lg border">
           {rootDepts.map((dept) => (
-            <DepartmentRow
+            <DepartmentAdminRow
               key={dept.id}
               department={dept}
-              allDepartments={departments}
               getChildren={getChildren}
               expandedId={expandedId}
               expandedMembers={expandedMembers}
@@ -184,47 +183,47 @@ export default function DepartmentsPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Department</DialogTitle>
+            <DialogTitle>{t('deptAdmin.dialogTitle')}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4 py-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">{t('deptAdmin.name')}</Label>
               <Input
                 id="name"
                 value={formName}
                 onChange={(e) => handleNameChange(e.target.value)}
-                placeholder="e.g. Engineering"
+                placeholder={t('deptAdmin.namePlaceholder')}
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="slug">Slug</Label>
+              <Label htmlFor="slug">{t('deptAdmin.slug')}</Label>
               <Input
                 id="slug"
                 value={formSlug}
                 onChange={(e) => setFormSlug(e.target.value)}
-                placeholder="e.g. engineering"
+                placeholder={t('deptAdmin.slugPlaceholder')}
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="description">Description (optional)</Label>
+              <Label htmlFor="description">{t('deptAdmin.description')}</Label>
               <Input
                 id="description"
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
-                placeholder="Brief description"
+                placeholder={t('deptAdmin.descriptionPlaceholder')}
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="parent">Parent Department (optional)</Label>
+              <Label htmlFor="parent">{t('deptAdmin.parent')}</Label>
               <Select
                 value={formParentId || 'none'}
                 onValueChange={(v) => setFormParentId(v === 'none' || !v ? '' : v)}
               >
                 <SelectTrigger id="parent">
-                  <SelectValue placeholder="None" />
+                  <SelectValue placeholder={t('deptAdmin.none')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="none">{t('deptAdmin.none')}</SelectItem>
                   {departments.map((d) => (
                     <SelectItem key={d.id} value={d.id}>
                       {d.name}
@@ -236,123 +235,14 @@ export default function DepartmentsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
-            <Button onClick={handleCreate} disabled={saving}>
-              {saving ? 'Creating...' : 'Create'}
+            <Button onClick={() => void handleCreate()} disabled={saving}>
+              {saving ? tCommon('creating') : tCommon('create')}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-interface DepartmentRowProps {
-  department: DepartmentItem;
-  allDepartments: DepartmentItem[];
-  getChildren: (parentId: string) => DepartmentItem[];
-  expandedId: string | null;
-  expandedMembers: DepartmentWithMembers | null;
-  loadingMembers: boolean;
-  onToggleExpand: (dept: DepartmentItem) => void;
-  depth?: number;
-}
-
-function DepartmentRow({
-  department,
-  allDepartments,
-  getChildren,
-  expandedId,
-  expandedMembers,
-  loadingMembers,
-  onToggleExpand,
-  depth = 0,
-}: DepartmentRowProps) {
-  const children = getChildren(department.id);
-  const isExpanded = expandedId === department.id;
-  const memberCount = department._count?.members ?? 0;
-
-  return (
-    <div className="border-border border-b last:border-b-0">
-      <div
-        className="hover:bg-muted/50 flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors"
-        style={{ paddingLeft: `${16 + depth * 24}px` }}
-        onClick={() => onToggleExpand(department)}
-      >
-        <span className="text-muted-foreground shrink-0">
-          {children.length > 0 ? (
-            isExpanded ? (
-              <ChevronDown className="size-4" />
-            ) : (
-              <ChevronRight className="size-4" />
-            )
-          ) : (
-            <span className="inline-block w-4" />
-          )}
-        </span>
-        <Building2 className="text-muted-foreground size-4 shrink-0" />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{department.name}</span>
-            <span className="text-muted-foreground text-sm">{department.slug}</span>
-          </div>
-          <div className="text-muted-foreground flex items-center gap-2 text-xs">
-            {department.parent && <span>Parent: {department.parent.name}</span>}
-            <span>•</span>
-            <span>{memberCount} members</span>
-          </div>
-        </div>
-      </div>
-
-      {isExpanded && (
-        <div
-          className="bg-muted/30 border-border border-t"
-          style={{ paddingLeft: `${16 + (depth + 1) * 24}px` }}
-        >
-          {loadingMembers ? (
-            <div className="text-muted-foreground py-4 text-sm">Loading members...</div>
-          ) : expandedMembers?.members && expandedMembers.members.length > 0 ? (
-            <div className="flex flex-col gap-1 py-3 pr-4">
-              {expandedMembers.members.map((m) => (
-                <div
-                  key={m.id}
-                  className="hover:bg-muted/50 flex items-center gap-3 rounded-md px-3 py-2"
-                >
-                  <Users className="text-muted-foreground size-4 shrink-0" />
-                  <span className="min-w-0 flex-1 truncate">
-                    {m.employee.firstName} {m.employee.lastName}
-                  </span>
-                  <Badge variant="secondary" className="shrink-0">
-                    {DEPT_ROLE_LABELS[m.deptRole] ?? m.deptRole}
-                  </Badge>
-                  {m.isPrimary && (
-                    <Badge variant="outline" className="shrink-0">
-                      Primary
-                    </Badge>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-muted-foreground py-4 text-sm">No members in this department</div>
-          )}
-        </div>
-      )}
-
-      {children.map((child) => (
-        <DepartmentRow
-          key={child.id}
-          department={child}
-          allDepartments={allDepartments}
-          getChildren={getChildren}
-          expandedId={expandedId}
-          expandedMembers={expandedMembers}
-          loadingMembers={loadingMembers}
-          onToggleExpand={onToggleExpand}
-          depth={depth + 1}
-        />
-      ))}
     </div>
   );
 }

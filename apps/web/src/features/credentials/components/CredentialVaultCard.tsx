@@ -1,11 +1,17 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { KanbanCardShell } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { CredentialVaultPreviewStrip } from '@/features/credentials/components/credential-vault-preview-strip';
 import { CredentialVaultCardMetaRow } from '@/features/credentials/components/credential-vault-card-meta-row';
 import { CredentialVaultCardHoverActions } from '@/features/credentials/components/credential-vault-card-hover-actions';
-import { getCredentialCriticality } from '@/features/credentials/constants/credentials';
+import {
+  credentialAccessMessageKey,
+  credentialCategoryMessageKey,
+  credentialCriticalityMessageKey,
+  getCredentialCriticality,
+} from '@/features/credentials/constants/credentials';
 import { CredentialVaultSelectCheckbox } from '@/features/credentials/components/credential-vault-select-checkbox';
 import {
   credentialVaultCheckboxRevealClass,
@@ -27,6 +33,23 @@ import {
 } from '@/features/credentials/utils/credential-vault-drag';
 
 type CredentialVaultCardVariant = 'grid' | 'kanban';
+type CredentialsTranslate = (key: string) => string;
+
+function localizeVaultCardMetaLabel(
+  item: { key: string; label: string },
+  credential: CredentialListItem,
+  t: CredentialsTranslate,
+): string {
+  if (item.key === 'category') {
+    const key = credentialCategoryMessageKey(credential.category);
+    return key ? t(key) : item.label;
+  }
+  if (item.key === 'access') {
+    const key = credentialAccessMessageKey(credential.accessLevel);
+    return key ? t(key) : item.label;
+  }
+  return item.label;
+}
 
 const VAULT_CARD_WRAPPER_CLASS =
   'group/card relative z-0 hover:z-30 focus-within:z-30 has-[[data-credential-vault-action]:hover]:z-30';
@@ -66,11 +89,18 @@ export function CredentialVaultCard({
   canMoveToTrash = false,
   credentialDrag,
 }: CredentialVaultCardProps) {
+  const t = useTranslations('credentials');
+  const translate = t as unknown as CredentialsTranslate;
   const draggable = Boolean(credentialDrag);
   const criticalityMeta = getCredentialCriticality(credential.criticality);
+  const criticalityKey = credentialCriticalityMessageKey(credential.criticality);
+  const criticalityLabel = criticalityKey ? translate(criticalityKey) : criticalityMeta?.label;
   const metaItems = buildCredentialVaultCardMetaBadges(credential, {
     includeCriticality: false,
-  });
+  }).map((item) => ({
+    ...item,
+    label: localizeVaultCardMetaLabel(item, credential, translate),
+  }));
 
   return (
     <div className={VAULT_CARD_WRAPPER_CLASS}>
@@ -142,8 +172,12 @@ export function CredentialVaultCard({
             'absolute top-0 bottom-0 left-0 w-0.5',
             credentialCriticalityAccentBarClass(credential.criticality),
           )}
-          title={criticalityMeta?.label}
-          aria-label={criticalityMeta ? `Criticality: ${criticalityMeta.label}` : 'Criticality'}
+          title={criticalityLabel}
+          aria-label={
+            criticalityLabel
+              ? t('criticality.aria', { label: criticalityLabel })
+              : t('criticality.ariaUnknown')
+          }
         />
         {selectionEnabled && onToggleSelected ? (
           <div
@@ -160,7 +194,7 @@ export function CredentialVaultCard({
           >
             <CredentialVaultSelectCheckbox
               checked={selected}
-              ariaLabel={`Select ${credential.name}`}
+              ariaLabel={t('table.selectNamed', { name: credential.name })}
               onToggle={onToggleSelected}
             />
           </div>

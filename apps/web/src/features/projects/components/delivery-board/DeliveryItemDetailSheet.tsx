@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   DetailSheetFormFooter,
   DetailSheetTabPanel,
@@ -78,9 +79,9 @@ function isActivePipelineStage(key: DeliveryPipelineClickKey): key is DeliveryAc
   return (ACTIVE_DELIVERY_STAGES as readonly string[]).includes(key);
 }
 
-function planningSaveErrorMessage(err: unknown): string {
+function planningSaveErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof Error && err.message) return err.message;
-  return 'Could not save changes.';
+  return fallback;
 }
 
 export function DeliveryItemDetailSheet({
@@ -92,6 +93,7 @@ export function DeliveryItemDetailSheet({
   boardMutations,
   stageGateHighlight = null,
 }: DeliveryItemDetailSheetProps) {
+  const t = useTranslations('deliveryBoard');
   const { persistedValue: renderItem, onOpenChangeComplete } = useSheetPersistedValue(item);
   const hostMounted = useSheetHostMounted(open, renderItem);
 
@@ -332,7 +334,7 @@ export function DeliveryItemDetailSheet({
         await productsApi.update(product.id, patch);
         refreshDetailOnly();
       } catch (err) {
-        setPlanningError(planningSaveErrorMessage(err));
+        setPlanningError(planningSaveErrorMessage(err, t('sheet.saveFailed')));
       } finally {
         setPlanningSaving(false);
       }
@@ -346,7 +348,7 @@ export function DeliveryItemDetailSheet({
         await extensionsApi.update(extension.id, patch);
         refreshDetailOnly();
       } catch (err) {
-        setPlanningError(planningSaveErrorMessage(err));
+        setPlanningError(planningSaveErrorMessage(err, t('sheet.saveFailed')));
       } finally {
         setPlanningSaving(false);
       }
@@ -360,6 +362,7 @@ export function DeliveryItemDetailSheet({
     extensionSnap,
     extensionPlan,
     refreshDetailOnly,
+    t,
   ]);
 
   const handlePlanningCancel = useCallback(() => {
@@ -374,8 +377,16 @@ export function DeliveryItemDetailSheet({
       buildDeliveryDetailSheetTabs({
         canQuickCreateTask,
         onQuickCreateTask: () => setTaskCreateOpen(true),
+        labels: {
+          general: t('tabs.general'),
+          workspace: t('tabs.workspace'),
+          calls: t('tabs.calls'),
+          bonus: t('tabs.bonus'),
+          history: t('tabs.history'),
+          createTask: t('tabs.createTask'),
+        },
       }),
-    [canQuickCreateTask],
+    [canQuickCreateTask, t],
   );
 
   useEffect(() => {
@@ -411,15 +422,15 @@ export function DeliveryItemDetailSheet({
                 <div className="bg-muted/40 hidden shrink-0 px-7 py-2.5 sm:block">
                   <p className="text-muted-foreground text-sm">
                     {lifecycle.resolution === 'DONE'
-                      ? 'This delivery item is done. Details are read-only; use the board or product page for history.'
-                      : 'This delivery item is cancelled. Details are read-only; use the board for audit history.'}
+                      ? t('sheet.doneBanner')
+                      : t('sheet.cancelledBanner')}
                   </p>
                 </div>
               ) : null}
 
               {lifecycle?.workStatus === 'ON_HOLD' && boardMutations && !lifecycle?.isTerminal ? (
                 <div className="flex shrink-0 items-center justify-between gap-3 bg-amber-50/60 px-7 py-2.5 dark:bg-amber-950/20">
-                  <p className="text-muted-foreground text-sm">Delivery is paused.</p>
+                  <p className="text-muted-foreground text-sm">{t('sheet.paused')}</p>
                   <Button
                     type="button"
                     size="sm"
@@ -427,7 +438,7 @@ export function DeliveryItemDetailSheet({
                     disabled={busy}
                     onClick={() => void boardMutations.handleBoardAction(renderItem, 'RESUME')}
                   >
-                    Resume
+                    {t('sheet.resume')}
                   </Button>
                 </div>
               ) : null}
@@ -508,7 +519,7 @@ export function DeliveryItemDetailSheet({
                     />
                   ) : (
                     <p className="text-muted-foreground px-7 py-6 text-sm">
-                      Could not load details.
+                      {t('sheet.loadFailed')}
                     </p>
                   )}
                 </DetailSheetTabPanel>

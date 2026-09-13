@@ -2,6 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { LoadingState } from '@/components/shared';
 import { DeliveryBoardPageHero } from '@/features/projects/components/delivery-board/DeliveryBoardPageHero';
@@ -51,13 +52,14 @@ const DELIVERY_BOARD_PRODUCT_TAB: Record<ProductBoardTab, ProductDetailTab> = {
 };
 
 function DeliveryBoardPageContent() {
+  const t = useTranslations('deliveryBoard');
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectFilterId = searchParams.get('projectId');
 
   const [items, setItems] = useState<DeliveryBoardItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [pipelineTab, setPipelineTab] = useState<'active' | 'closed'>('active');
   const {
     kindFilter,
@@ -77,7 +79,7 @@ function DeliveryBoardPageContent() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    setLoadError(null);
+    setLoadFailed(false);
     try {
       const [products, extensions] = await Promise.all([
         fetchAllProductsList(),
@@ -85,7 +87,7 @@ function DeliveryBoardPageContent() {
       ]);
       setItems(mergeDeliveryBoardItems(products, extensions));
     } catch {
-      setLoadError('Could not load delivery board data.');
+      setLoadFailed(true);
     } finally {
       setLoading(false);
     }
@@ -209,13 +211,13 @@ function DeliveryBoardPageContent() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5 max-md:gap-3">
-      {loadError && (
+      {loadFailed && (
         <p className="text-destructive text-sm" role="alert">
-          {loadError}
+          {t('loadError')}
         </p>
       )}
       {loading ? (
-        <p className="text-muted-foreground text-sm">Loading board…</p>
+        <p className="text-muted-foreground text-sm">{t('loading')}</p>
       ) : (
         <>
           <DeliveryBoardPageHero

@@ -50,6 +50,7 @@ import { ChecklistTemplatesModule } from './modules/checklist-templates/checklis
 import { PlatformAccessModule } from './modules/platform-access/platform-access.module';
 import { PlatformOwnershipModule } from './modules/platform-ownership/platform-ownership.module';
 import { PlatformLifecycleModule } from './modules/platform-lifecycle/platform-lifecycle.module';
+import { PlatformAppearanceModule } from './modules/platform-appearance/platform-appearance.module';
 import { SearchModule } from './modules/search/search.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -116,6 +117,7 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     ChecklistTemplatesModule,
     PlatformAccessModule,
     PlatformLifecycleModule,
+    PlatformAppearanceModule,
     SearchModule,
     QueueWorkersModule.register(),
   ],

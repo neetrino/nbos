@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { DetailSheetSection } from '@/components/shared';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { InvoiceRecordedPaymentsList } from './InvoiceRecordedPaymentsList';
@@ -25,10 +26,11 @@ export function InvoicePaymentsTab({
   onPaymentRecorded,
   onInvoiceUpdated,
 }: InvoicePaymentsTabProps) {
+  const t = useTranslations('invoices');
   return (
     <div className="space-y-4">
       {invoice.paymentCoverage?.isFullyPaid ? (
-        <p className="text-sm font-medium text-green-600">Fully paid</p>
+        <p className="text-sm font-medium text-green-600">{t('sheet.fullyPaid')}</p>
       ) : null}
       <RecordPaymentForm
         invoice={invoice}
@@ -39,7 +41,7 @@ export function InvoicePaymentsTab({
       <InvoiceRecordedPaymentsList invoice={invoice} onInvoiceUpdated={onInvoiceUpdated} />
 
       {invoice.payments.length > 0 ? (
-        <DetailSheetSection title="Payment proofs">
+        <DetailSheetSection title={t('sheet.paymentProofs')}>
           <div className="space-y-4">
             {invoice.payments.map((payment) => (
               <FinanceProofAttachments

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { Deal } from '@/lib/api/deals';
 import { CRM_TASK_ENTITY_DEAL } from '../utils/crm-entity-task-links';
 import { EntityLinkedTasksTab } from './EntityLinkedTasksTab';
@@ -11,11 +12,12 @@ interface DealTasksTabProps {
 }
 
 export function DealTasksTab({ deal, onCreateOpenChange, tasksRefreshSignal }: DealTasksTabProps) {
+  const t = useTranslations('crm');
   return (
     <EntityLinkedTasksTab
       entityType={CRM_TASK_ENTITY_DEAL}
       entityId={deal.id}
-      emptyDescription="No tasks yet. Create one to track work for this deal."
+      emptyDescription={t('dealSheet.tasksEmptyDescription')}
       onCreateOpenChange={onCreateOpenChange}
       tasksRefreshSignal={tasksRefreshSignal}
     />

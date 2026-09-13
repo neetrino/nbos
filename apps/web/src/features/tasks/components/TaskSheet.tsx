@@ -2,6 +2,7 @@
 
 import { CheckSquare, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Sheet } from '@/components/ui/sheet';
 import {
   DeleteConfirmDialog,
@@ -61,6 +62,8 @@ export function TaskSheet({
   isTrashView = false,
   forceNestedBackdrop,
 }: TaskSheetProps) {
+  const t = useTranslations('tasks');
+  const tCommon = useTranslations('common');
   const isMobileViewport = useIsMobileViewport();
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(taskId);
   const hostMounted = useSheetHostMounted(open, sheetId);
@@ -156,7 +159,7 @@ export function TaskSheet({
 
             {hasExtras ? (
               <DetailSheetCollapsibleSection
-                title="Rules"
+                title={t('sheet.rules')}
                 icon={<CheckSquare size={12} />}
                 open={extrasOpen}
                 onOpenChange={setExtrasOpen}
@@ -204,7 +207,7 @@ export function TaskSheet({
       >
         {state.loading && !state.task ? (
           <div className="flex flex-1 flex-col items-center justify-center">
-            <span className="sr-only">Loading task</span>
+            <span className="sr-only">{t('sheet.loading')}</span>
             <Loader2 className="text-muted-foreground size-5 animate-spin" aria-hidden />
           </div>
         ) : state.task && state.generalDraft ? (
@@ -284,12 +287,12 @@ export function TaskSheet({
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         itemName={state.task?.title ?? ''}
-        title={canDeleteDraft ? 'Delete draft task?' : 'Move to Trash?'}
+        title={canDeleteDraft ? t('sheet.deleteDraftTitle') : t('sheet.trashTitle')}
         description={
-          canDeleteDraft
-            ? 'Only empty OPEN tasks can be deleted. This removes the task permanently.'
-            : 'The task will be removed from boards and lists. You can restore it from Trash later.'
+          canDeleteDraft ? t('sheet.deleteDraftDescription') : t('sheet.trashDescription')
         }
+        confirmLabel={canDeleteDraft ? t('sheet.deleteDraft') : t('sheet.moveToTrash')}
+        dismissLabel={tCommon('cancel')}
         forceNestedBackdrop
         onConfirm={async () => {
           setDeleteOpen(false);

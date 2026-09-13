@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ChevronDown, Zap, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,13 +22,14 @@ export function DealSheetActionsMenu({
     onClick?: () => void;
   }>;
 }) {
+  const t = useTranslations('crm');
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={(props) => (
           <Button {...props} type="button" variant="outline" size="sm" className="gap-1.5">
             <Zap size={14} aria-hidden />
-            Actions
+            {t('dealSheet.actions')}
             <ChevronDown size={14} className="opacity-60" aria-hidden />
           </Button>
         )}

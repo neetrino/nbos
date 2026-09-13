@@ -18,6 +18,7 @@ import {
   ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS,
 } from '@/components/shared/entity-sheet-floating-rail';
 import { SheetCenterShell } from '@/components/ui/sheet-center-shell';
+import { useSheetChromeCopy } from '@/components/shared/use-sheet-chrome-copy';
 
 /** Above sheet overlay/popup (z-50) so the viewport rail stays clickable. */
 const SHEET_FLOATING_RAIL_Z_INDEX = 60;
@@ -139,6 +140,7 @@ function SheetFloatingRailStack({
   className?: string;
 }) {
   const isMobileViewport = useIsMobileViewport();
+  const copy = useSheetChromeCopy();
 
   return (
     <div className={cn(ENTITY_SHEET_FLOATING_RAIL_STACK_CLASS, className)}>
@@ -152,14 +154,14 @@ function SheetFloatingRailStack({
                 variant="default"
                 size="icon"
                 className={cn(ENTITY_SHEET_FLOATING_RAIL_CLOSE_CLASS, floatingCloseClassName)}
-                aria-label="Back"
-                title="Back"
+                aria-label={copy.back}
+                title={copy.back}
               />
             }
           >
             <ChevronLeft className="size-4" aria-hidden />
-            <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Back</span>
-            <span className="sr-only">Back</span>
+            <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>{copy.back}</span>
+            <span className="sr-only">{copy.back}</span>
           </SheetPrimitive.Close>
         ) : (
           <SheetPrimitive.Close
@@ -170,14 +172,14 @@ function SheetFloatingRailStack({
                 variant="default"
                 size="icon"
                 className={ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS}
-                aria-label="Close panel"
-                title="Close"
+                aria-label={copy.closePanel}
+                title={copy.close}
               />
             }
           >
             <XIcon className="size-4" aria-hidden />
-            <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Close</span>
-            <span className="sr-only">Close</span>
+            <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>{copy.close}</span>
+            <span className="sr-only">{copy.close}</span>
           </SheetPrimitive.Close>
         )
       ) : null}
@@ -263,6 +265,7 @@ function SheetContent({
   /** Above nested entity sheets (contact portfolio quick actions). */
   stackAboveEntitySheet?: boolean;
 }) {
+  const copy = useSheetChromeCopy();
   const floatingRailEnabled = floatingClose && (side === 'right' || side === 'center');
   const centerFloatingRail = floatingClose && side === 'center';
   const rightFloatingRail = floatingClose && side === 'right';
@@ -313,13 +316,13 @@ function SheetContent({
               variant="ghost"
               className="absolute top-5 right-6"
               size="icon-sm"
-              title="Close"
-              aria-label="Close panel"
+              title={copy.close}
+              aria-label={copy.closePanel}
             />
           }
         >
           <XIcon />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">{copy.close}</span>
         </SheetPrimitive.Close>
       )}
     </>

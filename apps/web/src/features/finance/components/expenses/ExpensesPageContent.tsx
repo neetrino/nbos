@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   IntegratedSearchFilters,
@@ -81,6 +82,7 @@ import { useExpenseCsvExport } from './use-expense-csv-export';
 import { useExpensesScopeStatsCsvExport } from './use-expenses-scope-stats-csv-export';
 import { useExpenseProjectBannerLabel } from './use-expense-project-banner-label';
 import { useExpenseKanbanStatusChange } from './use-expense-kanban-status-change';
+import { localizeExpenseFilterConfigs } from './localize-expense-filters';
 
 interface ExpensesPageContentProps {
   /** Backlog: deferred (`BACKLOG`). Closed: paid (`PAID`) off active board. Default: active board scope. */
@@ -106,6 +108,7 @@ export function ExpensesPageContent({
   onSortByChange,
   onSortOrderChange,
 }: ExpensesPageContentProps) {
+  const t = useTranslations('expenses');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -282,16 +285,11 @@ export function ExpensesPageContent({
       setStats(expenseStats);
       setError(null);
     } catch (caught) {
-      setError(
-        getApiErrorMessage(
-          caught,
-          'Expenses could not be loaded. Check your connection and try again.',
-        ),
-      );
+      setError(getApiErrorMessage(caught, t('errors.loadList')));
     } finally {
       setLoading(false);
     }
-  }, [listApiParams]);
+  }, [listApiParams, t]);
 
   const handleExpenseKanbanMove = useExpenseKanbanStatusChange({
     listProjectId: effectiveProjectId ?? null,
@@ -326,14 +324,14 @@ export function ExpensesPageContent({
           setSheetOpen(true);
         }
       } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Could not open expense from link.'));
+        toast.error(getApiErrorMessage(caught, t('errors.openLink')));
         stripOpenExpenseFromUrl();
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [openExpenseIdFromUrl, expenses, stripOpenExpenseFromUrl]);
+  }, [openExpenseIdFromUrl, expenses, stripOpenExpenseFromUrl, t]);
 
   const onKanbanStatusMove = useCallback(
     async (expenseId: string, _from: string, toStatus: string) => {
@@ -359,11 +357,24 @@ export function ExpensesPageContent({
 
   const filterConfigs = useMemo(
     () =>
-      buildExpenseIntegratedFilterConfigs(projectFilterOptions, payrollEmployeeFilterOptions, {
-        omitStatus: pageVariant === 'backlog' || pageVariant === 'closed',
-        includePayrollFilters: pageVariant === 'default',
-      }),
-    [payrollEmployeeFilterOptions, projectFilterOptions, pageVariant],
+      localizeExpenseFilterConfigs(
+        buildExpenseIntegratedFilterConfigs(projectFilterOptions, payrollEmployeeFilterOptions, {
+          omitStatus: pageVariant === 'backlog' || pageVariant === 'closed',
+          includePayrollFilters: pageVariant === 'default',
+        }),
+        t,
+      ),
+    [payrollEmployeeFilterOptions, projectFilterOptions, pageVariant, t],
+  );
+
+  const viewOptions = useMemo(
+    () =>
+      EXPENSES_VIEW_OPTIONS.map((option) => ({
+        ...option,
+        label: t(`view.${option.value}`),
+        ariaLabel: t(`view.${option.value}Aria`),
+      })),
+    [t],
   );
 
   useEffect(() => {
@@ -445,7 +456,7 @@ export function ExpensesPageContent({
         <IntegratedSearchFilters
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search by name, notes, project, plan…"
+          searchPlaceholder={t('searchPlaceholder')}
           filters={filterConfigs}
           filterValues={integratedFilterValues}
           onFilterChange={handleIntegratedFilterChange}
@@ -454,11 +465,7 @@ export function ExpensesPageContent({
       ),
       viewMode:
         pageVariant === 'backlog' ? undefined : (
-          <ViewModeSwitch
-            value={view}
-            onChange={handleViewChange}
-            options={EXPENSES_VIEW_OPTIONS}
-          />
+          <ViewModeSwitch value={view} onChange={handleViewChange} options={viewOptions} />
         ),
       trailing: (
         <>
@@ -472,7 +479,7 @@ export function ExpensesPageContent({
           {pageVariant === 'closed' ? null : (
             <Button type="button" onClick={() => setCreateOpen(true)}>
               <Plus size={16} aria-hidden />
-              New Expense
+              {t('actions.newExpense')}
             </Button>
           )}
         </>
@@ -491,7 +498,9 @@ export function ExpensesPageContent({
       pageVariant,
       search,
       stats,
+      t,
       view,
+      viewOptions,
     ],
   );
 

@@ -11,9 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LEAD_SVYAZAT_LABELS } from './lead-svyazat-labels';
+import { useTranslations } from 'next-intl';
 import {
   LEAD_SVYAZAT_MENU_GROUPS,
+  SVYAZAT_GROUP_LABEL_KEYS,
+  SVYAZAT_ITEM_LABEL_KEYS,
   svyazatMenuItemDisabled,
   type SvyazatMenuMode,
 } from './lead-svyazat-menu-items';
@@ -31,6 +33,7 @@ interface LeadSvyazatDropdownProps {
 }
 
 export function LeadSvyazatDropdown(props: LeadSvyazatDropdownProps) {
+  const t = useTranslations('crm');
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -43,7 +46,7 @@ export function LeadSvyazatDropdown(props: LeadSvyazatDropdownProps) {
             className="gap-1 px-2"
           >
             <Link2 size={14} aria-hidden />
-            <span className="min-w-0">{LEAD_SVYAZAT_LABELS.button}</span>
+            <span className="min-w-0">{t('svyazat.button')}</span>
             <ChevronDown size={14} className="lucide-chevron-down opacity-60" aria-hidden />
           </Button>
         )}
@@ -69,10 +72,11 @@ function SvyazatMenuGroup(props: {
   hasContact: boolean;
   onSelect: (mode: SvyazatMenuMode) => void;
 }) {
+  const t = useTranslations('crm');
   return (
     <DropdownMenuGroup>
       {props.index > 0 ? <DropdownMenuSeparator /> : null}
-      <DropdownMenuLabel>{props.group.label}</DropdownMenuLabel>
+      <DropdownMenuLabel>{t(SVYAZAT_GROUP_LABEL_KEYS[props.group.id])}</DropdownMenuLabel>
       {props.group.items.map((item) => {
         const Icon = MENU_ITEM_ICONS[item.id];
         return (
@@ -82,7 +86,7 @@ function SvyazatMenuGroup(props: {
             onClick={() => props.onSelect(item.id)}
           >
             <Icon size={14} aria-hidden />
-            {item.label}
+            {t(SVYAZAT_ITEM_LABEL_KEYS[item.id])}
           </DropdownMenuItem>
         );
       })}

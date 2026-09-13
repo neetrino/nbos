@@ -1,10 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { PAYROLL_RUN_STATUS_MESSAGE_KEY } from '@/features/finance/constants/payroll-run-ui';
 import { PayrollRunBoardCard } from '@/features/finance/components/payroll/payroll-run-board-card';
 import {
-  PAYROLL_RUN_BOARD_LANE_LABEL,
   PAYROLL_RUN_BOARD_LANE_ORDER,
   groupPayrollRunsByBoardLane,
 } from '@/features/finance/utils/payroll-run-board-lane';
@@ -25,6 +26,7 @@ function parseAmount(value: string): number {
 }
 
 export function PayrollRunsBoardView({ items }: { items: PayrollRunListRow[] }) {
+  const t = useTranslations('payroll');
   const lanes = useMemo(() => groupPayrollRunsByBoardLane(items), [items]);
 
   return (
@@ -43,14 +45,19 @@ export function PayrollRunsBoardView({ items }: { items: PayrollRunListRow[] }) 
                 PAYROLL_RUN_BOARD_LANE_HEADER_CLASS[status],
               )}
             >
-              <p className="text-sm font-semibold">{PAYROLL_RUN_BOARD_LANE_LABEL[status]}</p>
+              <p className="text-sm font-semibold">{t(PAYROLL_RUN_STATUS_MESSAGE_KEY[status])}</p>
               <p className="text-muted-foreground text-xs tabular-nums">
-                {laneItems.length} · {formatAmount(lanePayable)} payable
+                {t('board.laneMeta', {
+                  count: laneItems.length,
+                  amount: formatAmount(lanePayable),
+                })}
               </p>
             </header>
             <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2">
               {laneItems.length === 0 ? (
-                <p className="text-muted-foreground px-1 py-4 text-center text-xs">No runs</p>
+                <p className="text-muted-foreground px-1 py-4 text-center text-xs">
+                  {t('board.noRuns')}
+                </p>
               ) : (
                 laneItems.map((run) => <PayrollRunBoardCard key={run.id} run={run} />)
               )}

@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
@@ -13,6 +14,7 @@ import { getDriveFileLinkEntityHref } from '@/features/drive/drive-file-link-ent
 import { productsApi } from '@/lib/api/products';
 import { tasksApi, type Task, type TaskLink } from '@/lib/api/tasks';
 import { cn } from '@/lib/utils';
+import { localizeTaskLinkEntityLabel } from '../constants/localize-task-link-entity';
 import {
   isTaskEditableLinkType,
   taskLinkEntityIcon,
@@ -24,11 +26,7 @@ import {
 } from '../utils/search-task-delivery-context';
 import { addTaskEntityLink, removeTaskEntityLink } from '../utils/sync-task-entity-links';
 import { TaskDeliveryContextSearch } from './TaskDeliveryContextSearch';
-import {
-  LinkedContextChip,
-  LinkedToNotchCaption,
-  TASK_LINKED_TO_PLACEHOLDER,
-} from './TaskLinkedContextChip';
+import { LinkedContextChip, LinkedToNotchCaption } from './TaskLinkedContextChip';
 import {
   TASK_SHEET_CARD_CLASS,
   TASK_SHEET_META_BLOCK_CLASS,
@@ -50,7 +48,10 @@ export function TaskLinkedEntitiesSection({
   onLinksChange,
   onTaskChange,
 }: TaskLinkedEntitiesSectionProps) {
+  const t = useTranslations('tasks');
   const router = useRouter();
+  const entityLabel = (entityType: string) =>
+    localizeTaskLinkEntityLabel(entityType, t, taskLinkEntityLabel(entityType));
   const [busy, setBusy] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   /** Product id → project name from the last picker selection (sheet session). */
@@ -87,18 +88,18 @@ export function TaskLinkedEntitiesSection({
           const product = await productsApi.getById(link.entityId);
           router.push(`/projects/${product.projectId}/products/${product.id}`);
         } catch (caught) {
-          toast.error(getApiErrorMessage(caught, 'Product could not be opened.'));
+          toast.error(getApiErrorMessage(caught, t('sheet.linked.productOpenFailed')));
         }
         return;
       }
       const href = getDriveFileLinkEntityHref(link, task.links);
       if (!href) {
-        toast.error('No page for this linked entity yet.');
+        toast.error(t('sheet.linked.noPage'));
         return;
       }
       router.push(href);
     },
-    [router, task.links],
+    [router, t, task.links],
   );
 
   const setWorkspace = useCallback(
@@ -108,12 +109,12 @@ export function TaskLinkedEntitiesSection({
         const updated = await tasksApi.update(task.id, { workspaceId });
         onTaskChange(updated);
       } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Could not update work space.'));
+        toast.error(getApiErrorMessage(caught, t('sheet.linked.workspaceUpdateFailed')));
       } finally {
         setBusy(false);
       }
     },
-    [onTaskChange, task.id],
+    [onTaskChange, t, task.id],
   );
 
   const handleSelect = useCallback(
@@ -140,12 +141,12 @@ export function TaskLinkedEntitiesSection({
           }),
         );
       } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Could not link entity.'));
+        toast.error(getApiErrorMessage(caught, t('sheet.linked.linkFailed')));
       } finally {
         setBusy(false);
       }
     },
-    [onLinksChange, setWorkspace, task.id, task.links],
+    [onLinksChange, setWorkspace, t, task.id, task.links],
   );
 
   const handleUnlink = useCallback(
@@ -154,18 +155,18 @@ export function TaskLinkedEntitiesSection({
       try {
         onLinksChange(await removeTaskEntityLink(task.id, task.links, linkId));
       } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Could not unlink entity.'));
+        toast.error(getApiErrorMessage(caught, t('sheet.linked.unlinkFailed')));
       } finally {
         setBusy(false);
       }
     },
-    [onLinksChange, task.id, task.links],
+    [onLinksChange, t, task.id, task.links],
   );
 
-  const workspaceLabel = task.workspace?.name?.trim() || taskLinkEntityLabel('WORK_SPACE');
+  const workspaceLabel = task.workspace?.name?.trim() || entityLabel('WORK_SPACE');
 
   return (
-    <section className={TASK_SHEET_CARD_CLASS} aria-label="Linked entities">
+    <section className={TASK_SHEET_CARD_CLASS} aria-label={t('sheet.linked.sectionAria')}>
       <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
         <LinkedToNotchCaption locked={locked} onAdd={() => setSearchOpen(true)} />
 
@@ -199,7 +200,7 @@ export function TaskLinkedEntitiesSection({
               <LinkedContextChip
                 key={link.id}
                 kind={link.entityType === 'PRODUCT' ? 'PRODUCT' : 'PROJECT'}
-                label={link.entityLabel?.trim() || taskLinkEntityLabel(link.entityType)}
+                label={link.entityLabel?.trim() || entityLabel(link.entityType)}
                 contextLabel={
                   link.entityType === 'PRODUCT' ? productProjectNames[link.entityId] || null : null
                 }
@@ -216,7 +217,7 @@ export function TaskLinkedEntitiesSection({
             onClick={() => setSearchOpen(true)}
             className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, 'italic')}
           >
-            {TASK_LINKED_TO_PLACEHOLDER}
+            {t('sheet.linked.placeholder')}
           </button>
         )}
       </div>
@@ -226,16 +227,16 @@ export function TaskLinkedEntitiesSection({
           {contextLinks.map((link) => {
             const LinkIcon = taskLinkEntityIcon(link.entityType);
             return (
-              <TaskSheetCompactRow key={link.id} label={taskLinkEntityLabel(link.entityType)}>
+              <TaskSheetCompactRow key={link.id} label={entityLabel(link.entityType)}>
                 <button
                   type="button"
                   className="hover:bg-muted/70 flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors"
                   onClick={() => void openLink(link)}
-                  title="Open linked entity"
+                  title={t('sheet.linked.openEntity')}
                 >
                   <LinkIcon size={13} className="text-muted-foreground shrink-0" aria-hidden />
                   <span className="truncate">
-                    {link.entityLabel?.trim() || taskLinkEntityLabel(link.entityType)}
+                    {link.entityLabel?.trim() || entityLabel(link.entityType)}
                   </span>
                 </button>
               </TaskSheetCompactRow>

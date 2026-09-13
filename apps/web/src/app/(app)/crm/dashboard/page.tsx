@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { useModuleHeroSlots } from '@/components/shared';
 import {
   UserPlus,
@@ -22,6 +23,11 @@ import { useCrmDashboardScopeStatsCsvExport } from '@/features/crm/hooks/use-crm
 import { CrmDashboardKpiCard } from '@/features/crm/components/CrmDashboardKpiCard';
 import { LEAD_SOURCES, getLeadStage } from '@/features/crm/constants/leadPipeline';
 import { formatAmount, DEAL_STAGES } from '@/features/crm/constants/dealPipeline';
+import {
+  translateDashboardDealStageLabel,
+  translateLeadSourceLabel,
+  translateLeadStageLabel,
+} from '@/features/crm/i18n/crm-copy';
 
 interface KpiData {
   label: string;
@@ -32,6 +38,7 @@ interface KpiData {
 }
 
 export default function CrmDashboardPage() {
+  const t = useTranslations('crm');
   const [leadStats, setLeadStats] = useState<LeadStats | null>(null);
   const [dealStats, setDealStats] = useState<DealStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -69,48 +76,52 @@ export default function CrmDashboardPage() {
           size="icon-sm"
           disabled={loading || !leadStats || !dealStats}
           onClick={() => handleExportScopeStatsCsv()}
-          aria-label="Export CRM dashboard scope statistics as CSV"
-          title="UTF-8 CSV from GET /api/crm/leads/stats and GET /api/crm/deals/stats (workspace-wide; see scope_note)"
+          aria-label={t('dashboard.exportCsvAria')}
+          title={t('dashboard.exportCsvTitle')}
         >
           <TableProperties size={16} aria-hidden />
         </Button>
       ),
     }),
-    [dealStats, handleExportScopeStatsCsv, leadStats, loading],
+    [dealStats, handleExportScopeStatsCsv, leadStats, loading, t],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
 
   const kpis: KpiData[] = [
     {
-      label: 'Total Leads',
+      label: t('dashboard.totalLeads'),
       value: leadStats?.total.toString() ?? '—',
-      change: `${leadStats?.byStatus.find((s) => s.status === 'NEW')?._count ?? 0} new`,
+      change: t('dashboard.newCount', {
+        count: leadStats?.byStatus.find((s) => s.status === 'NEW')?._count ?? 0,
+      }),
       icon: UserPlus,
       iconClass: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
     },
     {
-      label: 'SQL Converted',
+      label: t('dashboard.sqlConverted'),
       value: leadStats?.byStatus.find((s) => s.status === 'SQL')?._count.toString() ?? '0',
-      change: 'Qualified leads',
+      change: t('dashboard.qualifiedLeads'),
       icon: TrendingUp,
       iconClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
     },
     {
-      label: 'Active Deals',
+      label: t('dashboard.activeDeals'),
       value:
         dealStats?.byStatus
           ?.filter((s) => s.status !== 'FAILED' && s.status !== 'WON')
           .reduce((sum, s) => sum + s._count, 0)
           .toString() ?? '—',
-      change: `${dealStats?.byStatus.find((s) => s.status === 'WON')?._count ?? 0} won`,
+      change: t('dashboard.wonCount', {
+        count: dealStats?.byStatus.find((s) => s.status === 'WON')?._count ?? 0,
+      }),
       icon: Handshake,
       iconClass: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
     },
     {
-      label: 'Pipeline Value',
+      label: t('dashboard.pipelineValue'),
       value: formatAmount(dealPipelineAmount),
-      change: `${dealStats?.total ?? 0} total deals`,
+      change: t('dashboard.totalDealsCount', { count: dealStats?.total ?? 0 }),
       icon: DollarSign,
       iconClass: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400',
     },
@@ -135,7 +146,7 @@ export default function CrmDashboardPage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Leads by Source</CardTitle>
+                <CardTitle className="text-base">{t('dashboard.leadsBySource')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {leadStats?.bySource.length ? (
@@ -149,7 +160,8 @@ export default function CrmDashboardPage() {
                           <div key={item.source} className="space-y-1">
                             <div className="flex items-center justify-between text-sm">
                               <span className="font-medium">
-                                {source?.icon} {source?.label ?? item.source}
+                                {source?.icon}{' '}
+                                {source ? translateLeadSourceLabel(t, source.value) : item.source}
                               </span>
                               <span className="text-muted-foreground">
                                 {item._count} ({pct}%)
@@ -166,14 +178,14 @@ export default function CrmDashboardPage() {
                       })}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-sm">No lead data available</p>
+                  <p className="text-muted-foreground text-sm">{t('dashboard.noLeadData')}</p>
                 )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Deal Pipeline Funnel</CardTitle>
+                <CardTitle className="text-base">{t('dashboard.dealPipelineFunnel')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {dealStats?.byStatus.length ? (
@@ -187,7 +199,7 @@ export default function CrmDashboardPage() {
                       return (
                         <div key={stage.key} className="flex items-center gap-3">
                           <div className="text-foreground w-[140px] truncate text-xs font-medium">
-                            {stage.label}
+                            {translateDashboardDealStageLabel(t, stage.key)}
                           </div>
                           <div className="flex-1">
                             <div className="bg-secondary h-6 overflow-hidden rounded">
@@ -207,20 +219,24 @@ export default function CrmDashboardPage() {
                       <div className="flex items-center gap-2 text-sm">
                         <CheckCircle2 size={14} className="text-green-600" />
                         <span className="font-medium text-green-600">
-                          Won: {dealStats.byStatus.find((s) => s.status === 'WON')?._count ?? 0}
+                          {t('dashboard.wonLabel', {
+                            count: dealStats.byStatus.find((s) => s.status === 'WON')?._count ?? 0,
+                          })}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <ArrowUpRight size={14} className="text-destructive" />
                         <span className="text-destructive font-medium">
-                          Failed:{' '}
-                          {dealStats.byStatus.find((s) => s.status === 'FAILED')?._count ?? 0}
+                          {t('dashboard.failedLabel', {
+                            count:
+                              dealStats.byStatus.find((s) => s.status === 'FAILED')?._count ?? 0,
+                          })}
                         </span>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-sm">No deal data available</p>
+                  <p className="text-muted-foreground text-sm">{t('dashboard.noDealData')}</p>
                 )}
               </CardContent>
             </Card>
@@ -229,7 +245,7 @@ export default function CrmDashboardPage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Lead Stages</CardTitle>
+                <CardTitle className="text-base">{t('dashboard.leadStages')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -245,7 +261,7 @@ export default function CrmDashboardPage() {
                           <div className="flex items-center gap-2">
                             {stage && (
                               <StatusBadge
-                                label={stage.label}
+                                label={translateLeadStageLabel(t, stage.key)}
                                 variant={stage.variant}
                                 dot
                                 dotColor={stage.color}
@@ -264,18 +280,20 @@ export default function CrmDashboardPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Trophy size={16} className="text-accent" />
-                  Deal Summary
+                  {t('dashboard.dealSummary')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-secondary/50 rounded-lg p-4 text-center">
-                      <p className="text-muted-foreground text-xs">Total Deals</p>
+                      <p className="text-muted-foreground text-xs">{t('dashboard.totalDeals')}</p>
                       <p className="mt-1 text-2xl font-bold">{dealStats?.total ?? 0}</p>
                     </div>
                     <div className="bg-secondary/50 rounded-lg p-4 text-center">
-                      <p className="text-muted-foreground text-xs">Pipeline Value</p>
+                      <p className="text-muted-foreground text-xs">
+                        {t('dashboard.pipelineValue')}
+                      </p>
                       <p className="text-accent mt-1 text-lg font-bold">
                         {formatAmount(dealPipelineAmount)}
                       </p>
@@ -283,13 +301,13 @@ export default function CrmDashboardPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="rounded-lg bg-green-50 p-4 text-center dark:bg-green-900/20">
-                      <p className="text-xs text-green-600">Won</p>
+                      <p className="text-xs text-green-600">{t('dashboard.won')}</p>
                       <p className="mt-1 text-2xl font-bold text-green-600">
                         {dealStats?.byStatus.find((s) => s.status === 'WON')?._count ?? 0}
                       </p>
                     </div>
                     <div className="rounded-lg bg-red-50 p-4 text-center dark:bg-red-900/20">
-                      <p className="text-destructive text-xs">Failed</p>
+                      <p className="text-destructive text-xs">{t('dashboard.failed')}</p>
                       <p className="text-destructive mt-1 text-2xl font-bold">
                         {dealStats?.byStatus.find((s) => s.status === 'FAILED')?._count ?? 0}
                       </p>

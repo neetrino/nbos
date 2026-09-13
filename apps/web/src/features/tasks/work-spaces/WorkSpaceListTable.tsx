@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { ArrowUpRight, FolderKanban, Package } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import {
@@ -23,30 +24,31 @@ import {
 } from '@/components/shared/entity-list-table';
 import type { WorkSpace } from '@/lib/api/tasks';
 import { cn } from '@/lib/utils';
-import {
-  buildWorkSpaceContextHref,
-  getWorkSpaceContextLabel,
-  getWorkSpaceTypeLabel,
-} from './work-space-utils';
+import { buildWorkSpaceContextHref, getWorkSpaceContextLabel } from './work-space-utils';
 
 interface WorkSpaceListTableProps {
   workspaces: WorkSpace[];
 }
 
 export function WorkSpaceListTable({ workspaces }: WorkSpaceListTableProps) {
+  const t = useTranslations('workSpaces');
   return (
     <div className={ENTITY_LIST_SHELL_CLASS}>
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Work space</TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} hidden sm:table-cell`}>Type</TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} hidden md:table-cell`}>Mode</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.workSpace')}</TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} hidden sm:table-cell`}>
+              {t('table.type')}
+            </TableHead>
+            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} hidden md:table-cell`}>
+              {t('table.mode')}
+            </TableHead>
             <TableHead className={`${ENTITY_LIST_HEAD_CLASS} hidden lg:table-cell`}>
-              Context
+              {t('table.context')}
             </TableHead>
             <TableHead className={`${ENTITY_LIST_HEAD_CLASS} hidden text-center sm:table-cell`}>
-              Tasks
+              {t('table.tasks')}
             </TableHead>
             <TableHead className={`${ENTITY_LIST_HEAD_CLASS} w-[1%] text-right`}> </TableHead>
           </TableRow>
@@ -62,6 +64,7 @@ export function WorkSpaceListTable({ workspaces }: WorkSpaceListTableProps) {
 }
 
 function WorkSpaceListRow({ workspace }: { workspace: WorkSpace }) {
+  const t = useTranslations('workSpaces');
   const router = useRouter();
   const contextHref = buildWorkSpaceContextHref(workspace);
   const taskCount = workspace._count?.tasks ?? workspace.tasks?.length ?? 0;
@@ -70,7 +73,8 @@ function WorkSpaceListRow({ workspace }: { workspace: WorkSpace }) {
   const iconClassName = isProductDelivery
     ? 'bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400'
     : 'bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400';
-  const codeLabel = workspace.project?.code ?? (workspace.scrumEnabled ? 'Scrum' : 'Kanban');
+  const codeLabel =
+    workspace.project?.code ?? (workspace.scrumEnabled ? t('mode.scrum') : t('mode.kanban'));
 
   return (
     <TableRow
@@ -86,17 +90,17 @@ function WorkSpaceListRow({ workspace }: { workspace: WorkSpace }) {
       <TableCell
         className={`${ENTITY_LIST_CELL_CLASS} ${ENTITY_LIST_TYPE_CLASS} hidden sm:table-cell`}
       >
-        {getWorkSpaceTypeLabel(workspace.type)}
+        {t(`type.${workspace.type}`)}
       </TableCell>
       <TableCell
         className={`${ENTITY_LIST_CELL_CLASS} text-muted-foreground hidden text-sm md:table-cell`}
       >
-        {workspace.scrumEnabled ? 'Scrum' : 'Kanban'}
+        {workspace.scrumEnabled ? t('mode.scrum') : t('mode.kanban')}
       </TableCell>
       <TableCell
         className={`${ENTITY_LIST_CELL_CLASS} text-muted-foreground hidden max-w-xs truncate text-sm lg:table-cell`}
       >
-        {getWorkSpaceContextLabel(workspace)}
+        {getWorkSpaceContextLabel(workspace, t('standaloneContext'))}
       </TableCell>
       <TableCell
         className={`${ENTITY_LIST_CELL_CLASS} hidden text-center font-medium tabular-nums sm:table-cell`}
@@ -110,7 +114,7 @@ function WorkSpaceListRow({ workspace }: { workspace: WorkSpace }) {
             className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1')}
             onClick={(event) => event.stopPropagation()}
           >
-            <span className="hidden xl:inline">Context</span>
+            <span className="hidden xl:inline">{t('context')}</span>
             <ArrowUpRight size={14} className="xl:hidden" aria-hidden />
           </Link>
         ) : null}

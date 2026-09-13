@@ -10,6 +10,8 @@ import {
   NAVIGABLE_ENTITY_CARD_SOFT_ELEVATED_CLASS,
   StatusBadge,
 } from '@/components/shared';
+import { useLocale, useTranslations } from 'next-intl';
+import { resolveDatePickerLocale } from '@/components/shared/date-picker/date-picker-locale';
 import { formatEmployeeDisplayName } from '@/features/tasks/task-employee-labels';
 import { isTaskUrgentPriority } from '@/features/tasks/constants/tasks';
 import type { RecurringTaskTemplate } from '@/lib/api/recurring-tasks';
@@ -22,9 +24,11 @@ interface RecurringTaskCardProps {
 }
 
 export function RecurringTaskCard({ template, onOpen }: RecurringTaskCardProps) {
+  const t = useTranslations('tasks');
+  const dateLocale = resolveDatePickerLocale(useLocale());
   const assignee = template.assignee
     ? formatEmployeeDisplayName(template.assignee.firstName, template.assignee.lastName)
-    : 'Unassigned';
+    : t('recurring.unassigned');
 
   return (
     <div className={cn(PRODUCT_DETAIL_CARD_SHELL_CLASS, NAVIGABLE_ENTITY_CARD_SOFT_ELEVATED_CLASS)}>
@@ -41,11 +45,11 @@ export function RecurringTaskCard({ template, onOpen }: RecurringTaskCardProps) 
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-foreground truncate text-base font-semibold">{template.title}</h2>
               <StatusBadge
-                label={template.isActive ? 'Active' : 'Paused'}
+                label={template.isActive ? t('recurring.active') : t('recurring.paused')}
                 variant={template.isActive ? 'green' : 'gray'}
               />
               {isTaskUrgentPriority(template.priority) ? (
-                <StatusBadge label="Urgent" variant="orange" />
+                <StatusBadge label={t('priority.HIGH')} variant="orange" />
               ) : null}
             </div>
             {template.description ? (
@@ -59,7 +63,7 @@ export function RecurringTaskCard({ template, onOpen }: RecurringTaskCardProps) 
         <div className="text-muted-foreground mt-4 space-y-1.5 text-sm">
           <p className="flex items-center gap-2">
             <CalendarClock className="size-3.5 shrink-0" aria-hidden />
-            {formatRecurringSchedule(template)}
+            {formatRecurringSchedule(template, t)}
           </p>
           <p className="flex items-center gap-2">
             <UserRound className="size-3.5 shrink-0" aria-hidden />
@@ -72,19 +76,19 @@ export function RecurringTaskCard({ template, onOpen }: RecurringTaskCardProps) 
         <div className={PRODUCT_DETAIL_CARD_STATS_SHELL_CLASS}>
           <div className={PRODUCT_DETAIL_CARD_STAT_CELL_CLASS}>
             <p className="text-foreground text-sm font-medium">
-              {formatRecurringDateTime(template.nextCreateAt)}
+              {formatRecurringDateTime(template.nextCreateAt, dateLocale)}
             </p>
-            <p className="text-muted-foreground text-xs">Next</p>
+            <p className="text-muted-foreground text-xs">{t('recurring.next')}</p>
           </div>
           <div className={PRODUCT_DETAIL_CARD_STAT_CELL_CLASS}>
             <p className="text-foreground text-sm font-medium">
-              {formatRecurringDateTime(template.lastCreatedAt)}
+              {formatRecurringDateTime(template.lastCreatedAt, dateLocale)}
             </p>
-            <p className="text-muted-foreground text-xs">Last created</p>
+            <p className="text-muted-foreground text-xs">{t('recurring.lastCreated')}</p>
           </div>
           <div className={PRODUCT_DETAIL_CARD_STAT_CELL_CLASS}>
             <p className="text-foreground text-sm font-medium">{template.spawnedTaskCount}</p>
-            <p className="text-muted-foreground text-xs">Tasks</p>
+            <p className="text-muted-foreground text-xs">{t('recurring.tasksCount')}</p>
           </div>
         </div>
       </div>

@@ -9,8 +9,20 @@ export type InterfaceMessages = {
   account: AbstractIntlMessages;
   navigation: AbstractIntlMessages;
   dashboard: AbstractIntlMessages;
-  dashboardDeskLine: AbstractIntlMessages;
   forms: AbstractIntlMessages;
+  hr: AbstractIntlMessages;
+  tasks: AbstractIntlMessages;
+  search: AbstractIntlMessages;
+  notifications: AbstractIntlMessages;
+  workSpaces: AbstractIntlMessages;
+  crm: AbstractIntlMessages;
+  support: AbstractIntlMessages;
+  invoices: AbstractIntlMessages;
+  deliveryBoard: AbstractIntlMessages;
+  payroll: AbstractIntlMessages;
+  credentials: AbstractIntlMessages;
+  expenses: AbstractIntlMessages;
+  quick: AbstractIntlMessages;
 };
 
 async function loadMessagesUncached(locale: WritableInterfaceLocale): Promise<InterfaceMessages> {
@@ -25,8 +37,20 @@ async function loadMessagesUncached(locale: WritableInterfaceLocale): Promise<In
     account: mergeMessages(en.account, localized.account),
     navigation: mergeMessages(en.navigation, localized.navigation),
     dashboard: mergeMessages(en.dashboard, localized.dashboard),
-    dashboardDeskLine: mergeMessages(en.dashboardDeskLine, localized.dashboardDeskLine),
     forms: mergeMessages(en.forms, localized.forms),
+    hr: mergeMessages(en.hr, localized.hr),
+    tasks: mergeMessages(en.tasks, localized.tasks),
+    search: mergeMessages(en.search, localized.search),
+    notifications: mergeMessages(en.notifications, localized.notifications),
+    workSpaces: mergeMessages(en.workSpaces, localized.workSpaces),
+    crm: mergeMessages(en.crm, localized.crm),
+    support: mergeMessages(en.support, localized.support),
+    invoices: mergeMessages(en.invoices, localized.invoices),
+    deliveryBoard: mergeMessages(en.deliveryBoard, localized.deliveryBoard),
+    payroll: mergeMessages(en.payroll, localized.payroll),
+    credentials: mergeMessages(en.credentials, localized.credentials),
+    expenses: mergeMessages(en.expenses, localized.expenses),
+    quick: mergeMessages(en.quick, localized.quick),
   };
 }
 
@@ -41,20 +65,63 @@ async function loadLocaleMessages(locale: WritableInterfaceLocale): Promise<Inte
 }
 
 async function readLocaleCatalogs(locale: 'en' | 'ru'): Promise<InterfaceMessages> {
-  const [common, account, navigation, dashboard, dashboardDeskLine, forms] = await Promise.all([
+  const [
+    common,
+    account,
+    navigation,
+    dashboard,
+    forms,
+    hr,
+    tasks,
+    search,
+    notifications,
+    workSpaces,
+    crm,
+    support,
+    invoices,
+    deliveryBoard,
+    payroll,
+    credentials,
+    expenses,
+    quick,
+  ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/account.json`),
     import(`../messages/${locale}/navigation.json`),
     import(`../messages/${locale}/dashboard.json`),
-    import(`../messages/${locale}/dashboard-desk-line.json`),
     import(`../messages/${locale}/forms.json`),
+    import(`../messages/${locale}/hr.json`),
+    import(`../messages/${locale}/tasks.json`),
+    import(`../messages/${locale}/search.json`),
+    import(`../messages/${locale}/notifications.json`),
+    import(`../messages/${locale}/work-spaces.json`),
+    import(`../messages/${locale}/crm.json`),
+    import(`../messages/${locale}/support.json`),
+    import(`../messages/${locale}/invoices.json`),
+    import(`../messages/${locale}/delivery-board.json`),
+    import(`../messages/${locale}/payroll.json`),
+    import(`../messages/${locale}/credentials.json`),
+    import(`../messages/${locale}/expenses.json`),
+    import(`../messages/${locale}/quick.json`),
   ]);
   return {
     common: common.default,
     account: account.default,
     navigation: navigation.default,
     dashboard: dashboard.default,
-    dashboardDeskLine: dashboardDeskLine.default,
     forms: forms.default,
+    hr: hr.default,
+    tasks: tasks.default,
+    search: search.default,
+    notifications: notifications.default,
+    workSpaces: workSpaces.default,
+    crm: crm.default,
+    support: support.default,
+    invoices: invoices.default,
+    deliveryBoard: deliveryBoard.default,
+    payroll: payroll.default,
+    credentials: credentials.default,
+    expenses: expenses.default,
+    quick: quick.default,
   };
 }

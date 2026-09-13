@@ -24,7 +24,12 @@ import {
   TEAM_SHEET_HEADER_CLASS,
   TEAM_SHEET_WIDTH,
 } from '@/features/hr/constants/team-sheet-layout';
-import { getEmployeeLevel, getEmployeeStatus } from '@/features/hr/constants/hr';
+import {
+  getEmployeeLevel,
+  getEmployeeStatus,
+  isEmployeeLevelValue,
+  isEmployeeStatusValue,
+} from '@/features/hr/constants/hr';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { employeeFullName, employeePrimaryDepartment } from '@/features/hr/utils/employee-display';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
@@ -43,7 +48,7 @@ import {
   isEmployeeGeneralDirty,
   type EmployeeGeneralDraft,
 } from './employee-general-form-state';
-import { buildEmployeeSheetTabs } from './build-employee-sheet-tabs';
+import { buildEmployeeSheetTabValues } from './build-employee-sheet-tabs';
 import {
   canEditHrEmployeeFields,
   canEditOwnAccountFields,
@@ -62,6 +67,7 @@ import {
   filterRolesForAssignmentPicker,
 } from '@/features/hr/utils/role-assignment-picker';
 import { usePermission } from '@/lib/permissions';
+import { useTranslations } from 'next-intl';
 import { ChangePasswordPanel } from '@/features/account/components/change-password-panel';
 import { ActiveSessionsPanel } from '@/features/account/components/active-sessions-panel';
 import { EMPLOYEE_ONBOARDING_OWNER_TYPE } from '@nbos/shared';
@@ -84,9 +90,9 @@ interface EmployeeSheetProps {
   onRemoveParticipant?: () => void | Promise<void>;
 }
 
-function saveErrorMessage(err: unknown): string {
+function saveErrorMessage(err: unknown, fallback: string): string {
   if (err instanceof Error && err.message) return err.message;
-  return 'Could not save changes.';
+  return fallback;
 }
 
 export function EmployeeSheet({
@@ -100,6 +106,8 @@ export function EmployeeSheet({
   forceNestedBackdrop = false,
   onRemoveParticipant,
 }: EmployeeSheetProps) {
+  const t = useTranslations('hr');
+  const tCommon = useTranslations('common');
   const isMobileViewport = useIsMobileViewport();
   const { persistedValue: renderEmployee, onOpenChangeComplete } = useSheetPersistedValue(employee);
   const hostMounted = useSheetHostMounted(open, renderEmployee);
@@ -187,11 +195,11 @@ export function EmployeeSheet({
     if (!ownOk && !hrOk) return;
     setGeneralError(null);
     if (!draft.firstName.trim() || !draft.lastName.trim()) {
-      setGeneralError('First name and last name are required.');
+      setGeneralError(t('sheet.namesRequired'));
       return;
     }
     if (hrOk && !draft.email.trim()) {
-      setGeneralError('First name, last name, and email are required.');
+      setGeneralError(t('sheet.namesEmailRequired'));
       return;
     }
     setSaving(true);
@@ -207,14 +215,14 @@ export function EmployeeSheet({
       const next = createEmployeeGeneralDraft(fresh);
       setDraft(next);
       setSnap(next);
-      toast.success(selfProfile ? 'Account updated' : 'Employee updated');
+      toast.success(selfProfile ? t('sheet.accountUpdated') : t('sheet.employeeUpdated'));
       await onSaved?.();
     } catch (err) {
-      setGeneralError(saveErrorMessage(err));
+      setGeneralError(saveErrorMessage(err, t('sheet.saveFailed')));
     } finally {
       setSaving(false);
     }
-  }, [canEdit, current, draft, onSaved, selfProfile, snap]);
+  }, [canEdit, current, draft, onSaved, selfProfile, snap, t]);
 
   const handleCancel = useCallback(() => {
     setGeneralError(null);
@@ -271,7 +279,7 @@ export function EmployeeSheet({
           width={TEAM_SHEET_WIDTH}
           forceNestedBackdrop={forceNestedBackdrop}
         >
-          <p className="text-muted-foreground p-5 text-sm">Loading profile…</p>
+          <p className="text-muted-foreground p-5 text-sm">{t('sheet.loading')}</p>
         </EntityDetailSheetContent>
       </Sheet>
     );
@@ -285,11 +293,11 @@ export function EmployeeSheet({
   const canEditOwn = canEditOwnAccountFields(selfProfile, displayEmployee.status);
   const canEditHr = canEditHrEmployeeFields(canEdit, displayEmployee.status);
   const formDirty = canEditHr ? generalDirty : isEmployeeOwnProfileDirty(draft, snap);
-  const employeeTabs = buildEmployeeSheetTabs({
+  const employeeTabs = buildEmployeeSheetTabValues({
     selfProfile,
     status: displayEmployee.status,
     hasOnboardingChecklist,
-  });
+  }).map((value) => ({ value, label: t(`tabs.${value}`) }));
   const rolePickerRoles =
     roles.length > 0
       ? roles
@@ -332,7 +340,7 @@ export function EmployeeSheet({
                       onClick={() => setTerminateOpen(true)}
                     >
                       <UserX className="mr-2 size-4" />
-                      Offboard employee
+                      {t('sheet.offboard')}
                     </DropdownMenuItem>
                   </DetailSheetSettingsMenu>
                 ) : null}
@@ -340,7 +348,7 @@ export function EmployeeSheet({
                   <DetailSheetSettingsMenu>
                     <DropdownMenuItem onClick={() => setReactivateOpen(true)}>
                       <UserCheck className="mr-2 size-4" />
-                      Reactivate employee
+                      {t('sheet.reactivate')}
                     </DropdownMenuItem>
                   </DetailSheetSettingsMenu>
                 ) : null}
@@ -368,11 +376,25 @@ export function EmployeeSheet({
                 {(statusInfo || levelInfo) && (
                   <div className="flex shrink-0 flex-wrap items-center gap-1.5">
                     {statusInfo && (
-                      <StatusBadge label={statusInfo.label} variant={statusInfo.variant} />
+                      <StatusBadge
+                        label={
+                          isEmployeeStatusValue(displayEmployee.status)
+                            ? t(`status.${displayEmployee.status}`)
+                            : statusInfo.label
+                        }
+                        variant={statusInfo.variant}
+                      />
                     )}
-                    {levelInfo && (
-                      <StatusBadge label={levelInfo.label} variant={levelInfo.variant} />
-                    )}
+                    {levelInfo && displayEmployee.level ? (
+                      <StatusBadge
+                        label={
+                          isEmployeeLevelValue(displayEmployee.level)
+                            ? t(`level.${displayEmployee.level}`)
+                            : levelInfo.label
+                        }
+                        variant={levelInfo.variant}
+                      />
+                    ) : null}
                   </div>
                 )}
                 {onRemoveParticipant ? (
@@ -383,10 +405,10 @@ export function EmployeeSheet({
                     className="text-destructive hover:text-destructive ml-auto shrink-0"
                     disabled={removingParticipant || saving}
                     onClick={() => setRemoveParticipantOpen(true)}
-                    aria-label="Remove participant"
+                    aria-label={t('sheet.removeAria')}
                   >
                     <Trash2 className="size-4" />
-                    Remove
+                    {t('sheet.remove')}
                   </Button>
                 ) : null}
               </div>
@@ -400,7 +422,7 @@ export function EmployeeSheet({
                     onClick={() => setTerminateOpen(true)}
                   >
                     <UserX className="mr-2 size-4" />
-                    Offboard employee
+                    {t('sheet.offboard')}
                   </DropdownMenuItem>
                 </DetailSheetSettingsMenu>
               ) : null}
@@ -411,7 +433,7 @@ export function EmployeeSheet({
                 <DetailSheetSettingsMenu>
                   <DropdownMenuItem onClick={() => setReactivateOpen(true)}>
                     <UserCheck className="mr-2 size-4" />
-                    Reactivate employee
+                    {t('sheet.reactivate')}
                   </DropdownMenuItem>
                 </DetailSheetSettingsMenu>
               ) : null}
@@ -481,6 +503,8 @@ export function EmployeeSheet({
             errorMessage={generalError}
             onSave={() => void handleSave()}
             onCancel={handleCancel}
+            saveLabel={tCommon('save')}
+            cancelLabel={tCommon('cancel')}
             className={TEAM_SHEET_FOOTER_CLASS}
           />
         </div>
@@ -508,9 +532,9 @@ export function EmployeeSheet({
           onOpenChange={setRemoveParticipantOpen}
           level="simple"
           itemName={fullName}
-          title="Remove participant?"
-          description="They will lose project team access. You can add them again later."
-          confirmLabel="Remove"
+          title={t('sheet.removeTitle')}
+          description={t('sheet.removeDescription')}
+          confirmLabel={t('sheet.remove')}
           isSubmitting={removingParticipant}
           forceNestedBackdrop
           onConfirm={() => void handleRemoveParticipant()}

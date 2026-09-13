@@ -22,3 +22,15 @@ export function getEmployeeLevel(value: string) {
 export function getEmployeeStatus(value: string) {
   return EMPLOYEE_STATUSES.find((s) => s.value === value);
 }
+
+export function isEmployeeLevelValue(
+  value: string,
+): value is (typeof EMPLOYEE_LEVELS)[number]['value'] {
+  return EMPLOYEE_LEVELS.some((level) => level.value === value);
+}
+
+export function isEmployeeStatusValue(
+  value: string,
+): value is (typeof EMPLOYEE_STATUSES)[number]['value'] {
+  return EMPLOYEE_STATUSES.some((status) => status.value === value);
+}

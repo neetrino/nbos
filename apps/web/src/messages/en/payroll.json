@@ -1,0 +1,212 @@
+{
+  "list": {
+    "pageTitle": "Payroll",
+    "searchPlaceholder": "Filter payroll runs…",
+    "payNow": "Pay Now",
+    "newRun": "New run",
+    "loadError": "Payroll runs could not be loaded.",
+    "emptyTitle": "No payroll runs in this scope",
+    "emptyDescription": "Create a run for a calendar month. Salary lines can be seeded from employee base salaries.",
+    "emptyStatus": "No runs with status “{status}”. Try another filter or create a new run."
+  },
+  "view": {
+    "list": "List",
+    "board": "Board",
+    "calendar": "Calendar",
+    "listAria": "Payroll runs table list",
+    "boardAria": "Kanban board by run status",
+    "calendarAria": "Year by month calendar grid"
+  },
+  "filters": {
+    "status": "Status",
+    "monthFrom": "Month from",
+    "monthTo": "Month to",
+    "allStatus": "All statuses",
+    "allMonths": "All months"
+  },
+  "status": {
+    "DRAFT": "Draft",
+    "REVIEW": "Review",
+    "APPROVED": "Approved",
+    "PAYING": "Paying",
+    "CLOSED": "Closed"
+  },
+  "actions": {
+    "sendToReview": "Send to review",
+    "approve": "Approve",
+    "returnToDraft": "Return to draft",
+    "markPaying": "Mark paying",
+    "closeRun": "Close run"
+  },
+  "table": {
+    "month": "Month",
+    "status": "Status",
+    "progress": "Progress",
+    "lines": "Lines",
+    "expenseCards": "Expense cards",
+    "totalPayable": "Total payable",
+    "paid": "Paid",
+    "remaining": "Remaining",
+    "totalRuns": "Total ({count, plural, one {# run} other {# runs}})",
+    "openAria": "Open payroll for {month}"
+  },
+  "board": {
+    "payable": "{amount} payable",
+    "noRuns": "No runs",
+    "laneMeta": "{count} · {amount} payable",
+    "openAria": "Open payroll run {month}",
+    "cards": "Cards"
+  },
+  "calendar": {
+    "year": "Year",
+    "cellAria": "{status} payroll {amount}"
+  },
+  "progress": {
+    "paidAria": "{pct}% paid"
+  },
+  "create": {
+    "title": "New payroll run",
+    "monthLabel": "Payroll month (YYYY-MM)",
+    "monthAria": "Payroll month",
+    "seedLines": "Seed salary lines from active employees (uses current base salary)",
+    "createError": "Payroll run could not be created."
+  },
+  "settings": {
+    "title": "Payroll — settings",
+    "description": "Refresh list data and export CSV for the current filter scope.",
+    "aria": "Payroll settings",
+    "refresh": "Refresh runs",
+    "exportStats": "Export scope stats (CSV)",
+    "exportRuns": "Export payroll runs (CSV)"
+  },
+  "detail": {
+    "pageTitle": "Payroll run",
+    "pageTitleMonth": "Payroll · {month}",
+    "title": "Payroll",
+    "backAria": "Back to payroll list",
+    "back": "Back to payroll",
+    "loadError": "Payroll run could not be loaded.",
+    "invalid": "Invalid payroll run.",
+    "notFound": "Not found",
+    "statusUpdateError": "Status could not be updated.",
+    "searchSalaryLines": "Search employee…",
+    "searchBonusHistory": "Search project…",
+    "searchMatrix": "Search project, order, or employee…",
+    "viewAria": "Payroll run view",
+    "fullscreenAria": "Open allocation matrix full screen",
+    "exitFullscreenAria": "Exit full screen",
+    "expenseHint": "Expense cards materialize on approval.",
+    "payNowLink": "Pay now · payroll salary",
+    "settingsTitle": "Payroll run — settings",
+    "settingsDescription": "Refresh data, reset matrix layout, and export run artifacts.",
+    "settingsAria": "Payroll run settings",
+    "refresh": "Refresh run",
+    "resetLayout": "Reset allocation layout",
+    "exportLines": "Export salary lines (CSV)",
+    "exportJournal": "Export run journal (CSV)",
+    "exportAudit": "Export audit trail (CSV)"
+  },
+  "detailView": {
+    "salaryLines": "Salary lines",
+    "salaryLinesAria": "Employee salary lines for this payroll run",
+    "employeeMatrix": "Employee × Order",
+    "employeeMatrixAria": "Employees as rows, orders as columns",
+    "orderMatrix": "Order × Employees",
+    "orderMatrixAria": "Orders as rows, employees as columns",
+    "employeeHistory": "Employee history",
+    "employeeHistoryAria": "Employee projects across last twelve payroll months"
+  },
+  "salaryLines": {
+    "empty": "No salary lines in this payroll run.",
+    "noMatch": "No employees match this search.",
+    "employee": "Employee",
+    "status": "Status",
+    "baseSalary": "Base salary",
+    "bonuses": "Bonuses",
+    "totalPayable": "Total payable",
+    "paid": "Paid",
+    "remaining": "Remaining",
+    "totals": "Totals ({count})",
+    "openAria": "{name} · {status}"
+  },
+  "salary": {
+    "pageTitle": "Salary",
+    "searchPlaceholder": "Search employees…",
+    "payNow": "Pay Now",
+    "loadError": "Could not load salary board",
+    "emptyDataTitle": "No data",
+    "emptyDataDescription": "Salary data response was empty.",
+    "emptyEmployeesTitle": "No employees",
+    "emptyEmployeesDescription": "No non-terminated employees are available for the salary view.",
+    "emptyMatchTitle": "No matching lines",
+    "emptyMatchDescription": "Adjust search or filters to see salary lines.",
+    "settingsTitle": "Salary — settings",
+    "settingsDescription": "Export visible salary lines (current filters and month range).",
+    "settingsAria": "Salary settings",
+    "exportCsv": "Export visible lines (CSV)",
+    "listEmpty": "No salary lines match filters.",
+    "employee": "Employee",
+    "status": "Status",
+    "payable": "Payable",
+    "paid": "Paid",
+    "remaining": "Remaining",
+    "filtered": "Filtered ({count})",
+    "openAria": "{name} · {status}",
+    "boardEmpty": "No salary lines",
+    "left": "Left",
+    "calendarAria": "Salary calendar {year}",
+    "boardAria": "Salary board {year}",
+    "employeesCount": "{count, plural, one {# employee} other {# employees}}",
+    "monthTotals": "Month totals",
+    "monthTotal": "Month total",
+    "total": "Total",
+    "noRun": "No run",
+    "cellAria": "{status} · {amount}"
+  },
+  "salaryView": {
+    "calendar": "Calendar",
+    "calendarAria": "Employee salary calendar by month",
+    "list": "List",
+    "listAria": "Flat list view",
+    "board": "Board",
+    "boardAria": "Board by payout phase"
+  },
+  "salaryFilters": {
+    "department": "Department",
+    "employee": "Employee",
+    "lineStatus": "Line status",
+    "payoutPhase": "Payout phase",
+    "allDepartments": "All departments",
+    "allEmployees": "All employees",
+    "allLineStatuses": "All statuses",
+    "allPhases": "All phases"
+  },
+  "lineStatus": {
+    "PENDING": "Pending",
+    "APPROVED": "Approved",
+    "PARTIALLY_PAID": "Partial",
+    "PAID": "Paid",
+    "HELD": "Held"
+  },
+  "payoutPhase": {
+    "past_paid": "Fully paid",
+    "active_payout": "Active payout",
+    "accumulating": "Accumulating"
+  },
+  "matrix": {
+    "loadError": "Allocation matrix could not be loaded.",
+    "notFound": "Not found",
+    "layoutSaveError": "Layout could not be saved.",
+    "layoutReset": "Layout reset",
+    "layoutResetError": "Layout could not be reset.",
+    "emptySearch": "No rows match this search. Clear the search bar to see the full matrix.",
+    "validationTitle": "Resolve before review/approval",
+    "updating": "Updating…",
+    "lines": "Lines",
+    "expenses": "Expenses",
+    "bonusReleases": "Bonus releases",
+    "payable": "Payable",
+    "paid": "Paid",
+    "remaining": "Remaining"
+  }
+}

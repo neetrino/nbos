@@ -43,7 +43,7 @@ describe('visibleChecklistItems', () => {
 
 describe('checklistProgressLabel', () => {
   it('formats done over total', () => {
-    expect(checklistProgressLabel(0, 1)).toBe('0/1 done');
+    expect(checklistProgressLabel(0, 1)).toBe('0/1');
   });
 });
 

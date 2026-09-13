@@ -10,3 +10,12 @@ export const CREDENTIAL_VAULT_TAB_OPTIONS: PageHeroTabOption<CredentialVaultScop
   { value: 'project', label: 'Project', icon: FolderKanban },
   { value: 'secret', label: 'Secret', icon: Lock },
 ];
+
+export function localizeCredentialVaultTabOptions(
+  t: (key: string) => string,
+): PageHeroTabOption<CredentialVaultScope>[] {
+  return CREDENTIAL_VAULT_TAB_OPTIONS.map((tab) => ({
+    ...tab,
+    label: t(`scopes.${tab.value}`),
+  }));
+}

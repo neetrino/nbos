@@ -58,7 +58,11 @@ export function displayMergeField(lead: Lead, key: LeadMergeFieldKey): string {
   return value == null ? '' : String(value);
 }
 
-export function buildLeadMergeConflicts(survivor: Lead, absorbed: Lead): LeadMergeConflictRow[] {
+export function buildLeadMergeConflicts(
+  survivor: Lead,
+  absorbed: Lead,
+  fieldLabels: Record<LeadMergeFieldKey, string> = LEAD_MERGE_FIELD_LABELS,
+): LeadMergeConflictRow[] {
   const rows: LeadMergeConflictRow[] = [];
   for (const key of LEAD_MERGE_FIELD_KEYS) {
     const survivorValue = displayMergeField(survivor, key);
@@ -67,7 +71,7 @@ export function buildLeadMergeConflicts(survivor: Lead, absorbed: Lead): LeadMer
     if (survivorValue === absorbedValue) continue;
     rows.push({
       key,
-      label: LEAD_MERGE_FIELD_LABELS[key],
+      label: fieldLabels[key],
       survivorValue,
       absorbedValue,
     });
@@ -121,6 +125,7 @@ export function getLeadMergeCandidateSubtitle(
     LeadMergeSearchHit,
     'name' | 'contactName' | 'code' | 'phone' | 'email' | 'hasOpenDeal'
   >,
+  blockedLabel?: string,
 ): string {
   const title = getLeadMergeCandidateTitle(hit);
   const parts: string[] = [];
@@ -129,7 +134,7 @@ export function getLeadMergeCandidateSubtitle(
   if (contact && contact !== title) parts.push(contact);
   const channel = [hit.phone, hit.email].filter(Boolean).join(' · ');
   if (channel) parts.push(channel);
-  if (hit.hasOpenDeal) parts.push('has Deal (cannot merge)');
+  if (hit.hasOpenDeal) parts.push(blockedLabel ?? 'has Deal (cannot merge)');
   return parts.join(' · ');
 }
 

@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { buttonVariants } from '@/components/ui/button';
 import { ErrorState, LoadingState, PageHero, StatusBadge } from '@/components/shared';
 import { automationApi, type AutomationRulesCatalog } from '@/lib/api/automation';
 
 export default function TasksAutomationPage() {
+  const t = useTranslations('tasks');
   const [catalog, setCatalog] = useState<AutomationRulesCatalog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,11 +20,11 @@ export default function TasksAutomationPage() {
       setCatalog(data);
       setError(null);
     } catch {
-      setError('Automation catalog could not be loaded.');
+      setError(t('automation.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -31,16 +33,14 @@ export default function TasksAutomationPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHero
-        title="Automation & blueprints"
+        title={t('automation.title')}
         trailing={
           <Link href="/tasks" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-            Back to Tasks
+            {t('recurring.backToTasks')}
           </Link>
         }
       />
-      <p className="text-muted-foreground text-sm">
-        Event-triggered rules (code) vs product launch task packs (blueprints)
-      </p>
+      <p className="text-muted-foreground text-sm">{t('automation.intro')}</p>
 
       {loading ? (
         <LoadingState />
@@ -49,7 +49,9 @@ export default function TasksAutomationPage() {
       ) : catalog ? (
         <div className="grid gap-8 lg:grid-cols-2">
           <section>
-            <h2 className="mb-3 text-sm font-semibold tracking-wide uppercase">Automation rules</h2>
+            <h2 className="mb-3 text-sm font-semibold tracking-wide uppercase">
+              {t('automation.rules')}
+            </h2>
             <ul className="divide-border border-border divide-y rounded-lg border">
               {catalog.automationRules.map((rule) => (
                 <li key={rule.code} className="space-y-1 px-4 py-3">
@@ -65,7 +67,7 @@ export default function TasksAutomationPage() {
           </section>
           <section>
             <h2 className="mb-3 text-sm font-semibold tracking-wide uppercase">
-              Task blueprint product types
+              {t('automation.blueprints')}
             </h2>
             <ul className="border-border flex flex-wrap gap-2 rounded-lg border p-4">
               {catalog.blueprintProductTypes.map((type) => (

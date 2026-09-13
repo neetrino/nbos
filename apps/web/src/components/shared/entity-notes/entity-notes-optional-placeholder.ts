@@ -3,5 +3,6 @@ export const ENTITY_NOTES_OPTIONAL_PLACEHOLDER = 'Optional notes…';
 
 export function isOptionalEntityNotesPlaceholder(placeholder: string | undefined): boolean {
   if (!placeholder) return false;
-  return placeholder.toLowerCase().includes('optional');
+  const normalized = placeholder.toLowerCase();
+  return normalized.includes('optional') || normalized.includes('необязательн');
 }

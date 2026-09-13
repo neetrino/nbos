@@ -30,7 +30,7 @@ export function visibleChecklistItems<T extends { checked: boolean }>(
 }
 
 export function checklistProgressLabel(done: number, total: number): string {
-  return `${done}/${total} done`;
+  return `${done}/${total}`;
 }
 
 export type ChecklistTextCommitDecision =

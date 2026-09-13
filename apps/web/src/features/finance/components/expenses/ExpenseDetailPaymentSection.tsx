@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { DetailSheetSection, StatusBadge } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +22,7 @@ import {
   expenseStageGateSectionClass,
 } from '@/features/finance/constants/expense-stage-gate-highlight';
 import { DeleteExpensePaymentDialog } from './DeleteExpensePaymentDialog';
+import { translateExpensePaymentStatus } from './expense-i18n-labels';
 
 function formatPaymentDate(iso: string | null): string {
   if (!iso) return '—';
@@ -42,6 +44,7 @@ export function ExpenseDetailPaymentSection({
   onExpenseUpdated,
   gateRequiredFields = new Set(),
 }: ExpenseDetailPaymentSectionProps) {
+  const t = useTranslations('expenses');
   const [paymentToRemove, setPaymentToRemove] = useState<ExpensePaymentEntry | null>(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -65,7 +68,7 @@ export function ExpenseDetailPaymentSection({
       onExpenseUpdated(updated);
       setPaymentToRemove(null);
     } catch (caught) {
-      setDeleteError(getApiErrorMessage(caught, 'Payment could not be removed. Try again.'));
+      setDeleteError(getApiErrorMessage(caught, t('errors.removePayment')));
     } finally {
       setDeleteSubmitting(false);
     }
@@ -87,23 +90,26 @@ export function ExpenseDetailPaymentSection({
             {formatAmount(parseFloat(expense.paidAmount))} /{' '}
             {formatAmount(parseFloat(expense.remainingAmount!))}
           </span>
-          <StatusBadge label={ledgerPresentation.label} variant={ledgerPresentation.variant} />
+          <StatusBadge
+            label={translateExpensePaymentStatus(expense.paymentStatus!, t)}
+            variant={ledgerPresentation.variant}
+          />
         </p>
       ) : null}
 
       {expense.payments !== undefined ? (
-        <DetailSheetSection title="Payment history">
+        <DetailSheetSection title={t('sheet.sections.paymentHistory')}>
           {expense.payments.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No payments recorded yet.</p>
+            <p className="text-muted-foreground text-sm">{t('payments.empty')}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Notes</TableHead>
+                  <TableHead>{t('payments.date')}</TableHead>
+                  <TableHead className="text-right">{t('payments.amount')}</TableHead>
+                  <TableHead>{t('payments.notes')}</TableHead>
                   <TableHead className="w-[52px] text-right">
-                    <span className="sr-only">Actions</span>
+                    <span className="sr-only">{t('payments.actions')}</span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -123,7 +129,9 @@ export function ExpenseDetailPaymentSection({
                         variant="ghost"
                         size="icon-xs"
                         className="text-muted-foreground hover:text-destructive"
-                        aria-label={`Remove payment ${formatAmount(parseFloat(row.amount))}`}
+                        aria-label={t('payments.removeAria', {
+                          amount: formatAmount(parseFloat(row.amount)),
+                        })}
                         onClick={() => {
                           setDeleteError(null);
                           setPaymentToRemove(row);

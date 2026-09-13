@@ -1,5 +1,8 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Invoice, Order } from '@/lib/api/finance';
 import type { Subscription } from '@/lib/api/subscriptions';
 import { getInitialInvoiceForm, type CreateInvoiceFormState } from './create-invoice-dialog-utils';
@@ -47,6 +50,7 @@ export function useCreateInvoiceDialogState({
   submitOverride,
   defaultForm,
 }: CreateInvoiceDialogOuterProps): CreateInvoiceDialogState {
+  const t = useTranslations('invoices');
   const [form, setForm] = useState(() => getInitialInvoiceForm(order));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,8 +73,18 @@ export function useCreateInvoiceDialogState({
       setForm,
       setSubscriptionDetail,
       setSubscriptionLoading,
+      loadErrorFallback: t('create.loadSubscriptionError'),
     });
-  }, [open, order, subscriptionId, hiddenContextKey, hiddenContext, defaultFormKey, defaultForm]);
+  }, [
+    open,
+    order,
+    subscriptionId,
+    hiddenContextKey,
+    hiddenContext,
+    defaultFormKey,
+    defaultForm,
+    t,
+  ]);
 
   const handleSubmit = (event: FormEvent) =>
     runCreateInvoiceSubmit(event, {
@@ -83,6 +97,7 @@ export function useCreateInvoiceDialogState({
       setError,
       onCreated,
       onOpenChange,
+      createErrorFallback: t('create.createError'),
     });
 
   return {

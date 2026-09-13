@@ -1,4 +1,7 @@
+'use client';
+
 import { Plus, FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
@@ -90,15 +93,16 @@ export function InvoicesPageContent({
 }
 
 function InvoicesEmptyState() {
+  const t = useTranslations('invoices');
   return (
     <EmptyState
       icon={FileText}
-      title="No invoices yet"
-      description="Create your first invoice to start tracking payments"
+      title={t('empty.title')}
+      description={t('empty.description')}
       action={
         <Button>
           <Plus size={16} />
-          Create First Invoice
+          {t('empty.createFirst')}
         </Button>
       }
     />

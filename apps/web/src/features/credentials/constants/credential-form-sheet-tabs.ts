@@ -9,3 +9,10 @@ export const CREDENTIAL_FORM_SHEET_TABS = [
 ] as const satisfies readonly DetailSheetTabItem[];
 
 export type CredentialFormSheetTab = (typeof CREDENTIAL_FORM_SHEET_TABS)[number]['value'];
+
+export const CREDENTIAL_FORM_SHEET_TAB_MESSAGE_KEYS = {
+  general: 'form.tabs.general',
+  'manual-access': 'form.tabs.manualAccess',
+  activity: 'form.tabs.activity',
+  'secret-history': 'form.tabs.secretHistory',
+} as const;

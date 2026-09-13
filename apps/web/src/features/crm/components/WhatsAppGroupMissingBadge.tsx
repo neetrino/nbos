@@ -1,12 +1,13 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { IntegrationBrandIcon } from '@/features/integrations/components/IntegrationBrandIcon';
+import { isMissingActiveWhatsAppGroup } from '../deal-won-whatsapp-gate';
 import {
-  isMissingActiveWhatsAppGroup,
-  whatsappGroupMissingLabel,
-  whatsappGroupMissingShortLabel,
-} from '../deal-won-whatsapp-gate';
+  translateWhatsAppMissingLabel,
+  translateWhatsAppMissingShortLabel,
+} from '../i18n/crm-whatsapp-copy';
 
 interface WhatsAppGroupMissingBadgeProps {
   bindingStatus?: string | null;
@@ -17,6 +18,7 @@ export function WhatsAppGroupMissingBadge({
   bindingStatus,
   groupChatId,
 }: WhatsAppGroupMissingBadgeProps) {
+  const t = useTranslations('crm');
   if (!isMissingActiveWhatsAppGroup({ bindingStatus, groupChatId })) {
     return null;
   }
@@ -25,10 +27,10 @@ export function WhatsAppGroupMissingBadge({
   return (
     <Badge
       variant={failed ? 'destructive' : 'outline'}
-      title={whatsappGroupMissingLabel(bindingStatus)}
+      title={translateWhatsAppMissingLabel(t, bindingStatus)}
     >
       <IntegrationBrandIcon name="WhatsApp" className="size-3" />
-      {whatsappGroupMissingShortLabel(bindingStatus)}
+      {translateWhatsAppMissingShortLabel(t, bindingStatus)}
     </Badge>
   );
 }

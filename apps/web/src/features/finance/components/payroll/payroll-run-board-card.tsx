@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import type { KeyboardEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { PayrollRunsPaidProgressBar } from '@/features/finance/components/payroll/payroll-runs-paid-progress';
 import { formatPayrollMonthLabel } from '@/features/finance/utils/salary-board-month-utils';
@@ -29,6 +30,7 @@ function handleCardKeyDown(
 }
 
 export function PayrollRunBoardCard({ run }: { run: PayrollRunListRow }) {
+  const t = useTranslations('payroll');
   const router = useRouter();
   const payable = parseAmount(run.totalPayable);
   const paid = parseAmount(run.totalPaid);
@@ -50,22 +52,22 @@ export function PayrollRunBoardCard({ run }: { run: PayrollRunListRow }) {
       )}
       onClick={() => router.push(href)}
       onKeyDown={(event) => handleCardKeyDown(event, href, router.push)}
-      aria-label={`Open payroll run ${monthLabel}`}
+      aria-label={t('board.openAria', { month: monthLabel })}
     >
       <p className="text-base font-semibold tabular-nums">{monthLabel}</p>
       <div className="mt-2">
         <PayrollRunsPaidProgressBar paid={paid} payable={payable} />
       </div>
       <dl className="text-muted-foreground mt-2 grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs">
-        <dt>Payable</dt>
+        <dt>{t('table.totalPayable')}</dt>
         <dd className="text-foreground text-right font-medium tabular-nums">
           {formatAmount(payable)}
         </dd>
-        <dt>Remaining</dt>
+        <dt>{t('table.remaining')}</dt>
         <dd className="text-right font-medium tabular-nums">{formatAmount(remaining)}</dd>
-        <dt>Lines</dt>
+        <dt>{t('table.lines')}</dt>
         <dd className="text-right tabular-nums">{run._count.salaryLines}</dd>
-        <dt>Cards</dt>
+        <dt>{t('board.cards')}</dt>
         <dd className="text-right tabular-nums">{run.materializedExpenseLineCount}</dd>
       </dl>
     </KanbanCardShell>

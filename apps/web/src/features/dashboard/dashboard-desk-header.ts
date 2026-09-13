@@ -1,12 +1,7 @@
 import type { PriorityCard } from './dashboard-control-registry';
 import { DESK_LINE_NEUTRAL_FALLBACK } from './desk-line/desk-line.constants';
-import { fillDeskLineSlots } from './desk-line/desk-line-slots';
 import { resolveDeskLineDetails } from './desk-line/desk-line-resolve';
-import type {
-  DeskLinePerson,
-  DeskLineResolution,
-  DeskLineSlots,
-} from './desk-line/desk-line.types';
+import type { DeskLinePerson, DeskLineResolution } from './desk-line/desk-line.types';
 
 export const DASHBOARD_PRIORITY_CARD_CODES = {
   criticalSupportTicket: 'criticalSupportTicket',
@@ -39,38 +34,6 @@ export function deskHeading(person: DeskLinePerson | null, now?: Date): string {
 
 export function deskSubline(person: DeskLinePerson | null, now?: Date): string {
   return deskCopy(person, now).subline;
-}
-
-/** Read raw catalog strings. Do not pass these through next-intl `t()` — `{{slots}}` are not ICU. */
-export function readDeskLineCatalogTemplates(
-  catalog: unknown,
-  templateId: string,
-): { title?: string; subline?: string } {
-  if (!isRecord(catalog)) return {};
-  const templates = catalog.templates;
-  if (!isRecord(templates)) return {};
-  const entry = templates[templateId];
-  if (!isRecord(entry)) return {};
-  return {
-    title: typeof entry.title === 'string' ? entry.title : undefined,
-    subline: typeof entry.subline === 'string' ? entry.subline : undefined,
-  };
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-/** Fill localized desk-line templates after next-intl lookup by template id. */
-export function localizeDeskLineCopy(
-  resolution: DeskLineResolution,
-  templates: { title: string; subline: string },
-): Pick<DeskLineResolution, 'title' | 'subline'> {
-  const slots: DeskLineSlots = resolution.slots;
-  return {
-    title: fillDeskLineSlots(templates.title, slots),
-    subline: fillDeskLineSlots(templates.subline, slots),
-  };
 }
 
 /** Stable card code from API `code`, with source/severity fallback for older payloads. */

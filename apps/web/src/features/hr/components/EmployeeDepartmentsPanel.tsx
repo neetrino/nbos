@@ -12,13 +12,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DetailSheetSection } from '@/components/shared';
-import { TEAM_DEPT_ROLE_OPTIONS, getDeptRoleLabel } from '@/features/hr/constants/team-directory';
+import { TEAM_DEPT_ROLE_OPTIONS, isDeptRoleValue } from '@/features/hr/constants/team-directory';
 import {
   TEAM_SHEET_BODY_CLASS,
   TEAM_SHEET_SECTION_CLASS,
 } from '@/features/hr/constants/team-sheet-layout';
 import { employeesApi, type DepartmentItem, type Employee } from '@/lib/api/employees';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 export interface EmployeeDepartmentsPanelProps {
   employee: Employee;
@@ -33,6 +34,8 @@ export function EmployeeDepartmentsPanel({
   canEdit,
   onUpdated,
 }: EmployeeDepartmentsPanelProps) {
+  const t = useTranslations('hr');
+  const tCommon = useTranslations('common');
   const [adding, setAdding] = useState(false);
   const [saving, setSaving] = useState(false);
   const [newDeptId, setNewDeptId] = useState('');
@@ -61,9 +64,9 @@ export function EmployeeDepartmentsPanel({
       setNewDeptId('');
       setNewDeptRole('MEMBER');
       setNewPrimary(false);
-      toast.success('Department assignment added');
+      toast.success(t('departments.added'));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not add department');
+      toast.error(err instanceof Error ? err.message : t('departments.addFailed'));
     } finally {
       setSaving(false);
     }
@@ -74,9 +77,9 @@ export function EmployeeDepartmentsPanel({
     try {
       await employeesApi.removeDepartment(employee.id, departmentId);
       await refreshEmployee();
-      toast.success('Department assignment removed');
+      toast.success(t('departments.removed'));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not remove department');
+      toast.error(err instanceof Error ? err.message : t('departments.removeFailed'));
     } finally {
       setSaving(false);
     }
@@ -87,9 +90,9 @@ export function EmployeeDepartmentsPanel({
     try {
       await employeesApi.updateDepartment(employee.id, departmentId, { isPrimary: true });
       await refreshEmployee();
-      toast.success('Primary department updated');
+      toast.success(t('departments.primaryUpdated'));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not update department');
+      toast.error(err instanceof Error ? err.message : t('departments.updateFailed'));
     } finally {
       setSaving(false);
     }
@@ -98,14 +101,12 @@ export function EmployeeDepartmentsPanel({
   return (
     <div className={TEAM_SHEET_BODY_CLASS}>
       <DetailSheetSection
-        title="Department assignments"
+        title={t('departments.title')}
         icon={<Building2 size={12} />}
         className={TEAM_SHEET_SECTION_CLASS}
       >
         {employee.departments.length === 0 ? (
-          <p className="text-muted-foreground py-4 text-center text-sm">
-            No departments assigned yet
-          </p>
+          <p className="text-muted-foreground py-4 text-center text-sm">{t('departments.empty')}</p>
         ) : (
           <ul className="space-y-2">
             {employee.departments.map((ed) => (
@@ -119,11 +120,11 @@ export function EmployeeDepartmentsPanel({
                     <p className="font-medium">{ed.department.name}</p>
                     <div className="mt-1 flex flex-wrap items-center gap-2">
                       <Badge variant="outline" className="text-xs">
-                        {getDeptRoleLabel(ed.deptRole)}
+                        {isDeptRoleValue(ed.deptRole) ? t(`deptRole.${ed.deptRole}`) : ed.deptRole}
                       </Badge>
                       {ed.isPrimary && (
                         <Badge variant="secondary" className="text-xs">
-                          Primary
+                          {t('departments.primary')}
                         </Badge>
                       )}
                     </div>
@@ -138,7 +139,7 @@ export function EmployeeDepartmentsPanel({
                         variant="ghost"
                         className="size-8"
                         disabled={saving}
-                        aria-label="Set as primary"
+                        aria-label={t('departments.setPrimaryAria')}
                         onClick={() => void handleSetPrimary(ed.departmentId)}
                       >
                         <Star className="size-4" />
@@ -150,7 +151,7 @@ export function EmployeeDepartmentsPanel({
                       variant="ghost"
                       className="text-destructive size-8"
                       disabled={saving}
-                      aria-label="Remove assignment"
+                      aria-label={t('departments.removeAria')}
                       onClick={() => void handleRemove(ed.departmentId)}
                     >
                       <Trash2 className="size-4" />
@@ -174,13 +175,13 @@ export function EmployeeDepartmentsPanel({
               onClick={() => setAdding(true)}
             >
               <Plus className="mr-2 size-4" />
-              Add to department
+              {t('departments.add')}
             </Button>
           ) : (
             <div className="space-y-3">
               <Select value={newDeptId} onValueChange={(v) => setNewDeptId(v ?? '')}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select department" />
+                  <SelectValue placeholder={t('departments.selectDepartment')} />
                 </SelectTrigger>
                 <SelectContent>
                   {availableDepartments.map((dept) => (
@@ -192,12 +193,12 @@ export function EmployeeDepartmentsPanel({
               </Select>
               <Select value={newDeptRole} onValueChange={(v) => setNewDeptRole(v ?? 'MEMBER')}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Department role" />
+                  <SelectValue placeholder={t('departments.selectRole')} />
                 </SelectTrigger>
                 <SelectContent>
                   {TEAM_DEPT_ROLE_OPTIONS.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {t(`deptRole.${opt.value}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -209,7 +210,7 @@ export function EmployeeDepartmentsPanel({
                   onChange={(e) => setNewPrimary(e.target.checked)}
                   disabled={saving}
                 />
-                Primary department
+                {t('departments.primaryCheckbox')}
               </label>
               <div className="flex gap-2">
                 <Button
@@ -218,7 +219,7 @@ export function EmployeeDepartmentsPanel({
                   disabled={!newDeptId || saving}
                   onClick={() => void handleAdd()}
                 >
-                  {saving ? 'Adding…' : 'Add'}
+                  {saving ? t('departments.adding') : t('departments.addConfirm')}
                 </Button>
                 <Button
                   type="button"
@@ -227,7 +228,7 @@ export function EmployeeDepartmentsPanel({
                   disabled={saving}
                   onClick={() => setAdding(false)}
                 >
-                  Cancel
+                  {tCommon('cancel')}
                 </Button>
               </div>
             </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { InvoiceSheetInvoice } from './InvoiceSheetSections';
 import {
   InvoiceDescriptionSection,
@@ -31,6 +32,7 @@ export function InvoiceGeneralTab({
   formDisabled = false,
   onInvoiceUpdated,
 }: InvoiceGeneralTabProps) {
+  const t = useTranslations('invoices');
   const billingFields =
     draft && onInvoiceUpdated ? (
       <>
@@ -58,7 +60,7 @@ export function InvoiceGeneralTab({
       />
 
       {invoice.type === 'MANUAL' && draft && onInvoiceUpdated ? (
-        <DetailSheetSection title="Client context">
+        <DetailSheetSection title={t('sheet.clientContext')}>
           <InvoiceManualContextFields
             invoice={invoice}
             draft={draft}
@@ -79,7 +81,7 @@ export function InvoiceGeneralTab({
 
       <InvoiceDescriptionSection description={invoice.description} />
 
-      <DetailSheetSection title="Proofs">
+      <DetailSheetSection title={t('sheet.proofs')}>
         <FinanceProofAttachments
           entityType="INVOICE"
           entityId={invoice.id}

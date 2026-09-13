@@ -1,6 +1,7 @@
 'use client';
 
 import { Pause, RotateCcw, Settings, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -33,6 +34,7 @@ export function TaskSheetMoreActionsMenu({
   onMoveToTrash,
   disabled = false,
 }: TaskSheetMoreActionsMenuProps) {
+  const t = useTranslations('tasks');
   const canHold = ['IN_PROGRESS', 'REVIEW'].includes(taskStatus);
   const canReopen = ['COMPLETED', 'DONE', 'ON_HOLD'].includes(taskStatus);
   const canApproveReview = taskStatus === 'REVIEW';
@@ -49,8 +51,8 @@ export function TaskSheetMoreActionsMenu({
             variant="outline"
             size="icon-sm"
             disabled={busy}
-            aria-label="Task settings"
-            title="Task settings"
+            aria-label={t('sheet.settingsAria')}
+            title={t('sheet.settingsAria')}
             className={props.className}
           >
             <Settings className="size-4" aria-hidden />
@@ -62,25 +64,25 @@ export function TaskSheetMoreActionsMenu({
           disabled={!canApproveReview || busy}
           onClick={() => onTaskAction('approveReview')}
         >
-          Approve review
+          {t('sheet.approveReview')}
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={!canRequestReviewChanges || busy}
           onClick={() => onTaskAction('requestReviewChanges')}
         >
-          Request changes
+          {t('sheet.requestChanges')}
         </DropdownMenuItem>
         <DropdownMenuItem disabled={!canHold || busy} onClick={() => onTaskAction('hold')}>
-          <Pause size={14} aria-hidden /> Put On Hold
+          <Pause size={14} aria-hidden /> {t('sheet.putOnHold')}
         </DropdownMenuItem>
         <DropdownMenuItem disabled={!canReopen || busy} onClick={() => onTaskAction('reopen')}>
-          <RotateCcw size={14} aria-hidden /> Reopen
+          <RotateCcw size={14} aria-hidden /> {t('sheet.reopen')}
         </DropdownMenuItem>
         {canDeleteDraft ? (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" disabled={busy} onClick={onDelete}>
-              <Trash2 size={14} aria-hidden /> Delete draft
+              <Trash2 size={14} aria-hidden /> {t('sheet.deleteDraft')}
             </DropdownMenuItem>
           </>
         ) : null}
@@ -88,7 +90,7 @@ export function TaskSheetMoreActionsMenu({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" disabled={busy} onClick={onMoveToTrash}>
-              <Trash2 size={14} aria-hidden /> Move to Trash
+              <Trash2 size={14} aria-hidden /> {t('sheet.moveToTrash')}
             </DropdownMenuItem>
           </>
         ) : null}

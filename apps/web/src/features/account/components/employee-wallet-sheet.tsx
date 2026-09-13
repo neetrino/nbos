@@ -9,6 +9,7 @@ import { buildSalaryLineMonthDetailFromWalletRow } from '@/features/finance/util
 import { useEmployeeWalletCsvExport } from '@/features/finance/components/wallet/use-employee-wallet-csv-export';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { meApi, type EmployeeWalletNextPayroll, type EmployeeWalletSnapshot } from '@/lib/api/me';
+import { useTranslations } from 'next-intl';
 
 function walletNextPayrollAsSalaryRow(nextPayroll: EmployeeWalletNextPayroll) {
   return {
@@ -51,6 +52,8 @@ export function EmployeeWalletSheet({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openSalaryLineId, setOpenSalaryLineId] = useState<string | null>(null);
+  const t = useTranslations('account.wallet');
+  const tCommon = useTranslations('common');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -61,12 +64,12 @@ export function EmployeeWalletSheet({
       return snap;
     } catch (caught) {
       setData(null);
-      setError(getApiErrorMessage(caught, 'Wallet could not be loaded.'));
+      setError(getApiErrorMessage(caught, t('loadFailed')));
       return null;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!open) {
@@ -124,7 +127,10 @@ export function EmployeeWalletSheet({
             </div>
           ) : error || !data ? (
             <div className="p-6">
-              <ErrorState description={error ?? 'Unavailable'} onRetry={() => void load()} />
+              <ErrorState
+                description={error ?? tCommon('unavailable')}
+                onRetry={() => void load()}
+              />
             </div>
           ) : (
             <EmployeeWalletSheetBody

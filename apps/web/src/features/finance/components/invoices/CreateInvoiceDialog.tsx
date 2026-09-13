@@ -1,6 +1,7 @@
 'use client';
 
 import type { FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -28,11 +29,14 @@ import {
 export type CreateInvoiceDialogProps = CreateInvoiceDialogOuterProps;
 
 export function CreateInvoiceDialog(props: CreateInvoiceDialogProps) {
+  const t = useTranslations('invoices');
+  const tCommon = useTranslations('common');
   const state = useCreateInvoiceDialogState(props);
   const subscriptionBlocked = computeSubscriptionBlocked(props.subscriptionId, state);
   const canSubmit = canSubmitCreateInvoice(state.form) && !state.loading && !subscriptionBlocked;
 
   const description = dialogDescription(
+    t,
     props.order,
     props.subscriptionId,
     state.subscriptionDetail,
@@ -44,7 +48,7 @@ export function CreateInvoiceDialog(props: CreateInvoiceDialogProps) {
       <DialogContent className="sm:max-w-[420px]" forceNestedBackdrop={props.forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>
-            {dialogTitle(props.order, state.subscriptionDetail, props.clientServiceContext)}
+            {dialogTitle(t, props.order, state.subscriptionDetail, props.clientServiceContext)}
           </DialogTitle>
           {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
@@ -53,36 +57,47 @@ export function CreateInvoiceDialog(props: CreateInvoiceDialogProps) {
           order={props.order}
           clientServiceContext={props.clientServiceContext}
           canSubmit={canSubmit}
+          t={t}
+          tCommon={tCommon}
         />
       </DialogContent>
     </Dialog>
   );
 }
 
+type InvoiceCreateTranslator = ReturnType<typeof useTranslations<'invoices'>>;
+
 function dialogTitle(
+  t: InvoiceCreateTranslator,
   order: Order | null | undefined,
   subscriptionDetail: Subscription | null,
   clientServiceContext?: { name: string; projectLabel: string },
 ) {
-  if (order) return 'Create Order Invoice';
-  if (subscriptionDetail) return 'Create Subscription Invoice';
-  if (clientServiceContext) return 'Create invoice';
-  return 'New Invoice';
+  if (order) return t('create.titleOrder');
+  if (subscriptionDetail) return t('create.titleSubscription');
+  if (clientServiceContext) return t('create.titleGeneric');
+  return t('create.titleNew');
 }
 
 function dialogDescription(
+  t: InvoiceCreateTranslator,
   order: Order | null | undefined,
   subscriptionId: string | null | undefined,
   subscriptionDetail: Subscription | null,
   clientServiceContext?: { name: string; projectLabel: string },
 ) {
-  if (order) return `Generate an invoice for ${getOrderDisplayTitle(order)}.`;
+  if (order) return t('create.descriptionOrder', { title: getOrderDisplayTitle(order) });
   if (subscriptionDetail) {
-    return `Bill against subscription ${getSubscriptionDisplayTitle(subscriptionDetail)}.`;
+    return t('create.descriptionSubscription', {
+      title: getSubscriptionDisplayTitle(subscriptionDetail),
+    });
   }
-  if (subscriptionId) return 'Loading subscription context…';
+  if (subscriptionId) return t('create.loadingSubscriptionContext');
   if (clientServiceContext) {
-    return `Invoice for ${clientServiceContext.name} · ${clientServiceContext.projectLabel}`;
+    return t('create.descriptionClientService', {
+      name: clientServiceContext.name,
+      project: clientServiceContext.projectLabel,
+    });
   }
   return null;
 }
@@ -100,11 +115,15 @@ function InvoiceForm({
   order,
   clientServiceContext,
   canSubmit,
+  t,
+  tCommon,
 }: {
   state: CreateInvoiceDialogState;
   order?: Order | null;
   clientServiceContext?: { name: string; projectLabel: string };
   canSubmit: boolean;
+  t: InvoiceCreateTranslator;
+  tCommon: ReturnType<typeof useTranslations<'common'>>;
 }) {
   const handleSubmit = (event: FormEvent) => {
     void state.handleSubmit(event);
@@ -116,8 +135,9 @@ function InvoiceForm({
         state={state}
         order={order}
         clientServiceContext={clientServiceContext}
+        t={t}
       />
-      <InvoiceAmountFields form={state.form} setForm={state.setForm} />
+      <InvoiceAmountFields form={state.form} setForm={state.setForm} t={t} />
       {state.error ? (
         <p className="text-destructive text-sm" role="alert">
           {state.error}
@@ -125,10 +145,10 @@ function InvoiceForm({
       ) : null}
       <DialogFooter>
         <Button type="button" variant="outline" onClick={() => state.onOpenChange(false)}>
-          Cancel
+          {tCommon('cancel')}
         </Button>
         <Button type="submit" disabled={!canSubmit}>
-          {state.loading ? 'Creating...' : 'Create Invoice'}
+          {state.loading ? tCommon('creating') : t('create.submit')}
         </Button>
       </DialogFooter>
     </form>
@@ -139,13 +159,15 @@ function InvoiceContextSummary({
   state,
   order,
   clientServiceContext,
+  t,
 }: {
   state: CreateInvoiceDialogState;
   order?: Order | null;
   clientServiceContext?: { name: string; projectLabel: string };
+  t: InvoiceCreateTranslator;
 }) {
   if (order) {
-    return <OrderInvoiceContext order={order} />;
+    return <OrderInvoiceContext order={order} t={t} />;
   }
 
   if (clientServiceContext) {
@@ -160,7 +182,7 @@ function InvoiceContextSummary({
   if (state.subscriptionLoading) {
     return (
       <p className="text-muted-foreground text-sm" role="status">
-        Loading subscription…
+        {t('create.loadingSubscription')}
       </p>
     );
   }
@@ -174,27 +196,33 @@ function InvoiceContextSummary({
   }
 
   if (state.subscriptionDetail) {
-    return <SubscriptionInvoiceContext subscription={state.subscriptionDetail} />;
+    return <SubscriptionInvoiceContext subscription={state.subscriptionDetail} t={t} />;
   }
 
   return null;
 }
 
-function OrderInvoiceContext({ order }: { order: Order }) {
+function OrderInvoiceContext({ order, t }: { order: Order; t: InvoiceCreateTranslator }) {
   return (
     <div className="bg-muted/40 rounded-lg border p-3 text-sm">
       <p className="font-medium">{getOrderDisplayTitle(order)}</p>
       <p className="text-muted-foreground">
-        {order.project.name} · {order.company?.name ?? 'No company'}
+        {order.project.name} · {order.company?.name ?? t('create.noCompany')}
       </p>
       <p className="text-muted-foreground mt-1">
-        Order total: {formatAmount(Number(order.amount))}
+        {t('create.orderTotal', { amount: formatAmount(Number(order.amount)) })}
       </p>
     </div>
   );
 }
 
-function SubscriptionInvoiceContext({ subscription }: { subscription: Subscription }) {
+function SubscriptionInvoiceContext({
+  subscription,
+  t,
+}: {
+  subscription: Subscription;
+  t: InvoiceCreateTranslator;
+}) {
   const displayTitle = getSubscriptionDisplayTitle(subscription);
   const showCodeSubline = displayTitle !== subscription.code;
 
@@ -209,7 +237,7 @@ function SubscriptionInvoiceContext({ subscription }: { subscription: Subscripti
         {subscription.company?.name ? ` · ${subscription.company.name}` : ''}
       </p>
       <p className="text-muted-foreground mt-1">
-        Period amount: {formatAmount(parseFloat(subscription.amount))}
+        {t('create.periodAmount', { amount: formatAmount(parseFloat(subscription.amount)) })}
       </p>
     </div>
   );
@@ -218,30 +246,30 @@ function SubscriptionInvoiceContext({ subscription }: { subscription: Subscripti
 function InvoiceAmountFields({
   form,
   setForm,
+  t,
 }: {
   form: CreateInvoiceFormState;
   setForm: (form: CreateInvoiceFormState) => void;
+  t: InvoiceCreateTranslator;
 }) {
   return (
     <div className="space-y-3">
       <NbosMoneyInput
-        label="Amount *"
+        label={t('create.amount')}
         value={form.amount}
         onChange={(amount) => setForm({ ...form, amount })}
         wrapperClassName="gap-2"
         autoFocus
       />
       <div className="space-y-2">
-        <Label>Due date</Label>
+        <Label>{t('create.dueDate')}</Label>
         <NbosDatePicker
           value={form.dueDate}
           onChange={(dueDate) => setForm({ ...form, dueDate })}
           variant="extended"
-          aria-label="Due date"
+          aria-label={t('create.dueDateAria')}
         />
-        <p className="text-muted-foreground text-xs">
-          Defaults to 10 days from creation when left empty.
-        </p>
+        <p className="text-muted-foreground text-xs">{t('create.dueDateHint')}</p>
       </div>
     </div>
   );

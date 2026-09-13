@@ -1,7 +1,8 @@
 'use client';
 
 import { Clock, LayoutGrid, List, User } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 
 import type { ViewModeOption } from '@/components/shared';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
@@ -47,3 +48,21 @@ export const WORKSPACE_BOARD_VIEW_OPTIONS: ViewModeOption<WorkspaceBoardView>[] 
     icon: segment.icon,
     ariaLabel: segment.ariaLabel,
   }));
+
+export function useWorkspaceBoardViewOptions(): ViewModeOption<WorkspaceBoardView>[] {
+  const t = useTranslations('tasks');
+  return useMemo(
+    () => [
+      { value: 'deadline', label: t('views.deadline'), icon: <Clock size={14} /> },
+      {
+        value: 'my-plan',
+        label: t('views.workspacePlan'),
+        icon: <User size={14} />,
+        ariaLabel: t('views.workspacePlan'),
+      },
+      { value: 'kanban', label: t('views.board'), icon: <LayoutGrid size={14} /> },
+      { value: 'list', label: t('views.list'), icon: <List size={14} /> },
+    ],
+    [t],
+  );
+}

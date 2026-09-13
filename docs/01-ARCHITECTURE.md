@@ -94,7 +94,7 @@ NBOS объединяет все операционные процессы IT-к
 
 ### Локализация интерфейса — первый EN/RU срез реализован
 
-Решение от 2026-09-12, код в рабочем дереве: next-intl 4.14.4 без языковых префиксов URL, каталоги `common` / `account` / `navigation` / `dashboard` / `dashboardDeskLine` / `forms`. Язык хранится в `Employee.interfaceLocale` (`employees.interface_locale`, default `en`). Контракт: `GET|PATCH /api/v1/me/preferences` → `{ interfaceLocale }`. Cookie `nbos-interface-locale` (SameSite=Lax) вспомогательная; у вошедшего пользователя приоритет у БД, при недоступном API — EN без записи fallback. HY зарезервирован и отклоняется на записи. DashboardPreference остаётся раскладкой, не языком. Production rollout остаётся отдельным шагом.
+Решение от 2026-09-12, код в рабочем дереве: next-intl 4.14.4 без языковых префиксов URL, каталоги `common` / `account` / `navigation` / `dashboard` / `forms`. Язык хранится в `Employee.interfaceLocale` (`employees.interface_locale`, default `en`). Контракт: `GET|PATCH /api/v1/me/preferences` → `{ interfaceLocale }`. Cookie `nbos-interface-locale` (SameSite=Lax) вспомогательная; у вошедшего пользователя приоритет у БД, при недоступном API — EN без записи fallback. HY зарезервирован и отклоняется на записи. DashboardPreference остаётся раскладкой, не языком. Production rollout остаётся отдельным шагом.
 
 Полные правила, fallback, границы релиза и будущий HY: [канон локализации](NBOS/01-Platform-Overview/07-Interface-Localization.md). Журнал: [план реализации](implementation/I18N-IMPLEMENTATION-PLAN.md).
 

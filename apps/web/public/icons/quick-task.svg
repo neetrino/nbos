@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="NBOS Task">
+  <rect width="512" height="512" rx="96" fill="#2e3192"/>
+  <rect x="236" y="128" width="40" height="256" rx="12" fill="#ffffff"/>
+  <rect x="128" y="236" width="256" height="40" rx="12" fill="#ffffff"/>
+</svg>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { CalendarDays } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { buttonVariants } from '@/components/ui/button';
 import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
 import { cn } from '@/lib/utils';
@@ -13,6 +14,7 @@ export interface ExpensePlanLinkBannerProps {
 
 /** Compact plan link row for expense detail sheet (no prose block). */
 export function ExpensePlanLinkBanner({ planId, planName }: ExpensePlanLinkBannerProps) {
+  const t = useTranslations('expenses');
   return (
     <div className="border-border/80 bg-muted/25 flex items-center gap-2 rounded-lg border px-2 py-1.5 text-xs">
       <CalendarDays size={12} className="text-muted-foreground shrink-0" aria-hidden />
@@ -30,7 +32,7 @@ export function ExpensePlanLinkBanner({ planId, planName }: ExpensePlanLinkBanne
           'h-6 shrink-0 px-2 text-xs',
         )}
       >
-        Plans
+        {t('banners.plans')}
       </Link>
     </div>
   );

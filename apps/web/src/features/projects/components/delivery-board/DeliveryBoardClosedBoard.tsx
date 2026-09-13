@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { KANBAN_COLUMN_LEFT_RULE_CLASS } from '@/components/shared/kanban/kanban-column-surface';
 import { KanbanScrollEdgeControls } from '@/components/shared/kanban/KanbanScrollEdgeControls';
 import { useKanbanHorizontalScroll } from '@/components/shared/kanban/use-kanban-horizontal-scroll';
@@ -41,6 +42,7 @@ export function DeliveryBoardClosedBoard({
   onCancel: (item: DeliveryBoardItem) => void;
   onOpenDetails?: (item: DeliveryBoardItem) => void;
 }) {
+  const t = useTranslations('deliveryBoard');
   const doneItems = items.filter((item) => getItemLifecycle(item)?.resolution === 'DONE');
   const cancelledItems = items.filter((item) => getItemLifecycle(item)?.resolution === 'CANCELLED');
 
@@ -60,7 +62,7 @@ export function DeliveryBoardClosedBoard({
 
   if (doneItems.length === 0 && cancelledItems.length === 0) {
     return (
-      <p className="text-muted-foreground py-10 text-center text-sm">No closed delivery items.</p>
+      <p className="text-muted-foreground py-10 text-center text-sm">{t('empty.closedBoard')}</p>
     );
   }
 
@@ -81,7 +83,7 @@ export function DeliveryBoardClosedBoard({
           }}
         >
           <TerminalColumn
-            title="Cancelled"
+            title={t('resolution.cancelled')}
             hex={DELIVERY_TERMINAL_COLUMN_COLORS.CANCELLED}
             items={cancelledItems}
             showLeftRule={false}
@@ -94,7 +96,7 @@ export function DeliveryBoardClosedBoard({
             onOpenDetails={onOpenDetails}
           />
           <TerminalColumn
-            title="Done"
+            title={t('resolution.done')}
             hex={DELIVERY_TERMINAL_COLUMN_COLORS.DONE}
             items={doneItems}
             showLeftRule
@@ -137,6 +139,7 @@ function TerminalColumn({
   onCancel: (item: DeliveryBoardItem) => void;
   onOpenDetails?: (item: DeliveryBoardItem) => void;
 }) {
+  const t = useTranslations('deliveryBoard');
   const raw = hex.replace('#', '');
   const r = parseInt(raw.substring(0, 2), 16);
   const g = parseInt(raw.substring(2, 4), 16);
@@ -164,7 +167,7 @@ function TerminalColumn({
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex min-h-full min-w-0 flex-col space-y-3 pb-3">
             {items.length === 0 ? (
-              <p className="text-muted-foreground py-8 text-center text-xs">No cards</p>
+              <p className="text-muted-foreground py-8 text-center text-xs">{t('empty.noCards')}</p>
             ) : (
               items.map((item) => (
                 <ProjectDeliveryBoardCard

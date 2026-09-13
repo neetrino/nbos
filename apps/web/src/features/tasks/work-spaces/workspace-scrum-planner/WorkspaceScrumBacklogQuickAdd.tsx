@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState, type KeyboardEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -18,6 +19,7 @@ export function WorkspaceScrumBacklogQuickAdd({
   creatorReady: boolean;
   onCreated: (task: Task) => void;
 }) {
+  const t = useTranslations('workSpaces');
   const [title, setTitle] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -38,11 +40,11 @@ export function WorkspaceScrumBacklogQuickAdd({
       setTitle('');
       onCreated(task);
     } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Could not create task.'));
+      toast.error(getApiErrorMessage(caught, t('scrum.createTaskFailed')));
     } finally {
       setSaving(false);
     }
-  }, [title, creatorId, workspaceId, onCreated]);
+  }, [title, creatorId, workspaceId, onCreated, t]);
 
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key !== 'Enter' || event.shiftKey) return;
@@ -51,7 +53,7 @@ export function WorkspaceScrumBacklogQuickAdd({
   };
 
   const placeholder =
-    creatorReady && !creatorId ? 'Employee profile required' : 'Task name — press Enter to create';
+    creatorReady && !creatorId ? t('scrum.employeeRequired') : t('scrum.quickAddPlaceholder');
 
   return (
     <form
@@ -88,7 +90,7 @@ export function WorkspaceScrumBacklogQuickAdd({
           'placeholder:text-muted-foreground/80',
           'focus-visible:border-transparent focus-visible:ring-0',
         )}
-        aria-label="New backlog task title"
+        aria-label={t('scrum.quickAddAria')}
       />
     </form>
   );
