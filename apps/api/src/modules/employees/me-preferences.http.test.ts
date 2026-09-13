@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   HttpStatus,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
   ValidationPipe,
   type INestApplication,
@@ -130,6 +131,18 @@ describe('GET|PATCH /api/v1/me/preferences HTTP contract', () => {
     });
     expect(response.status).toBe(HttpStatus.BAD_REQUEST);
     expect(updatePreferences).not.toHaveBeenCalled();
+  });
+
+  it('returns 404 when the employee record is gone', async () => {
+    updatePreferences.mockRejectedValue(
+      new NotFoundException('Employee record not found for this user'),
+    );
+    const response = await fetch(new URL(PREFERENCES_URL, baseUrl), {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ interfaceLocale: 'ru' }),
+    });
+    expect(response.status).toBe(HttpStatus.NOT_FOUND);
   });
 });
 

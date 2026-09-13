@@ -5,7 +5,10 @@ import {
   type InterfaceLocalePreference,
   type WritableInterfaceLocale,
 } from '@nbos/shared';
+import { isPrismaRecordNotFound } from '../../common/prisma-record-not-found';
 import { PRISMA_TOKEN } from '../../database.module';
+
+const EMPLOYEE_NOT_FOUND = 'Employee record not found for this user';
 
 @Injectable()
 export class EmployeeInterfaceLocaleService {
@@ -17,7 +20,7 @@ export class EmployeeInterfaceLocaleService {
       select: { interfaceLocale: true },
     });
     if (!row) {
-      throw new NotFoundException('Employee record not found for this user');
+      throw new NotFoundException(EMPLOYEE_NOT_FOUND);
     }
     return { interfaceLocale: parseWritableInterfaceLocale(row.interfaceLocale) };
   }
@@ -26,11 +29,18 @@ export class EmployeeInterfaceLocaleService {
     employeeId: string,
     interfaceLocale: WritableInterfaceLocale,
   ): Promise<InterfaceLocalePreference> {
-    const row = await this.prisma.employee.update({
-      where: { id: employeeId },
-      data: { interfaceLocale },
-      select: { interfaceLocale: true },
-    });
-    return { interfaceLocale: parseWritableInterfaceLocale(row.interfaceLocale) };
+    try {
+      const row = await this.prisma.employee.update({
+        where: { id: employeeId },
+        data: { interfaceLocale },
+        select: { interfaceLocale: true },
+      });
+      return { interfaceLocale: parseWritableInterfaceLocale(row.interfaceLocale) };
+    } catch (error) {
+      if (isPrismaRecordNotFound(error)) {
+        throw new NotFoundException(EMPLOYEE_NOT_FOUND);
+      }
+      throw error;
+    }
   }
 }

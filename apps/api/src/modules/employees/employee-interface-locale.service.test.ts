@@ -47,4 +47,14 @@ describe('EmployeeInterfaceLocaleService', () => {
       select: { interfaceLocale: true },
     });
   });
+
+  it('throws when updating a missing employee', async () => {
+    prisma.employee.update.mockRejectedValue({ code: 'P2025' });
+    await expect(service.updatePreferences('missing', 'ru')).rejects.toThrow(NotFoundException);
+  });
+
+  it('rethrows unexpected update failures', async () => {
+    prisma.employee.update.mockRejectedValue(new Error('db down'));
+    await expect(service.updatePreferences('emp-1', 'ru')).rejects.toThrow('db down');
+  });
 });
