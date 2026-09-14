@@ -3,12 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import {
-  departmentsApi,
-  rolesApi,
-  type DepartmentItem,
-  type RoleItem,
-} from '@/lib/api/employees';
+import { departmentsApi, rolesApi, type DepartmentItem, type RoleItem } from '@/lib/api/employees';
 import {
   orgSeatsApi,
   type CreateOrgSeatPayload,
