@@ -11,6 +11,7 @@ export function useFocusElementWhenOpen(
   open: boolean,
   elementRef: RefObject<HTMLElement | null>,
   delayMs: number,
+  resetKey = 0,
 ): void {
   useEffect(() => {
     if (!open) return undefined;
@@ -33,5 +34,5 @@ export function useFocusElementWhenOpen(
       window.cancelAnimationFrame(frame);
       window.clearTimeout(timer);
     };
-  }, [open, elementRef, delayMs]);
+  }, [open, elementRef, delayMs, resetKey]);
 }

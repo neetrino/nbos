@@ -8,6 +8,11 @@ export function canSubmitQuickCreateTask(title: string, creatorId: string): bool
   return Boolean(title.trim()) && Boolean(creatorId);
 }
 
+/** Ordinary Tasks close after create; `/quick/task` keeps a blank form for the next task. */
+export function shouldCloseQuickCreateAfterSuccess(stayOpenOnCreate = false): boolean {
+  return !stayOpenOnCreate;
+}
+
 export function isQuickCreateCreatorBlocked(creatorReady: boolean, creatorId: string): boolean {
   return creatorReady && !creatorId;
 }
