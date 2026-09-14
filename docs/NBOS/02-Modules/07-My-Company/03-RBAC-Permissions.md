@@ -70,6 +70,24 @@ Employee -> Seat Assignments -> Business accountability
 Employee -> Permission Roles -> System access
 ```
 
+### Multi-role effective access
+
+Сотрудник может одновременно получить несколько Permission Roles из разных источников:
+
+- `LEGACY` — текущая основная роль из compatibility-поля `Employee.role_id`;
+- `MANUAL` — зарезервированный source для отдельного admin write path; в текущем foundation slice доступен только как storage/read contract;
+- `SEAT` — автоматически из конкретного `Seat Assignment`.
+
+Effective access — объединение всех активных назначений. `ALL` расширяет доступ до всех записей; `OWN` сохраняет доступ к своим; `DEPARTMENT` объединяет только department IDs, относящиеся к источнику этой роли. Scope одной роли нельзя ошибочно переносить на все отделы сотрудника.
+
+Для `SEAT` источником department scope является `scope_department_id` конкретного seat. Основная compatibility-роль `Employee.role_id` сохраняет прежний department scope по всем memberships сотрудника. Миграция не сужает его до primary department.
+
+Каждое назначение хранит provenance (`source`, `seat_assignment_id`, `scope_department_id`, период действия, кто выдал/отозвал). Завершение seat assignment отзывает только связанную строку `SEAT`; права из другого seat, основной или ручной роли сохраняются.
+
+Дополнительные permission roles расширяют только доступ к данным и действиям. Governance authority для назначения ролей, приглашения сотрудников и reactivation определяется исключительно основной ролью `Employee.role_id`; seat-sourced и другие дополнительные роли не дают делегирования полномочий CEO.
+
+`Role.level` не участвует в авторизации и остаётся legacy-порядком отображения до отдельной миграции на `sortOrder`. `Employee.level` — профессиональная квалификация и также не выдаёт права и не определяет место в оргструктуре.
+
 ---
 
 ## Три уровня контроля доступа

@@ -61,6 +61,26 @@ describe('CallAccessPolicyService', () => {
     );
   });
 
+  it('uses permission provenance instead of all employee departments', async () => {
+    const prisma = createMockPrisma();
+    prisma.employeeDepartment.findMany.mockResolvedValue([]);
+    const policy = new CallAccessPolicyService(prisma as never);
+    const actor = callActor({
+      departmentIds: [DEPT_SALES, DEPT_OTHER],
+      permissions: { CRM_LEADS_VIEW: 'DEPARTMENT', CRM_DEALS_VIEW: 'DEPARTMENT' },
+      permissionDepartmentIds: {
+        CRM_LEADS_VIEW: [DEPT_SALES],
+        CRM_DEALS_VIEW: [DEPT_SALES],
+      },
+    });
+
+    await policy.resolveAccessWhere(actor);
+
+    expect(prisma.employeeDepartment.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { departmentId: { in: [DEPT_SALES] } } }),
+    );
+  });
+
   it('does not treat DEPARTMENT as ALL when the actor has no matching department', async () => {
     const prisma = createMockPrisma();
     prisma.employeeDepartment.findMany.mockResolvedValue([]);

@@ -1,3 +1,4 @@
+import { seedPermissionRole } from './seed-permission-role';
 import { createPrismaClient } from '../src/client';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -174,7 +175,7 @@ async function main() {
       status: 'ACTIVE',
     },
   });
-  await prisma.employee.upsert({
+  const owner = await prisma.employee.upsert({
     where: { email: 'owner@neetrino.com' },
     update: { roleId: 'role-owner' },
     create: {
@@ -186,6 +187,9 @@ async function main() {
       status: 'ACTIVE',
     },
   });
+  for (const employee of [ceo, seller, seller2, pm, pm2, dev, designer, owner]) {
+    await seedPermissionRole(prisma, employee.id);
+  }
   console.log('  ✓ Employees (8)');
 
   await seedMessenger(prisma, { ceo, seller, pm, pm2, dev, designer });

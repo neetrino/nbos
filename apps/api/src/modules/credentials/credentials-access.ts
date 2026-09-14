@@ -36,7 +36,7 @@ export function credentialsAccessFromUser(user: CurrentUserPayload): Credentials
   const isFounder = user.isPlatformOwner === true;
   return {
     employeeId: user.id,
-    departmentIds: user.departmentIds ?? [],
+    departmentIds: user.departmentIds,
     viewScope: user.permissions['CREDENTIALS_VIEW'],
     editScope: user.permissions['CREDENTIALS_EDIT'],
     deleteScope: user.permissions['CREDENTIALS_DELETE'],

@@ -1,5 +1,28 @@
 // ─── RBAC: DEPARTMENTS, ROLES, PERMISSIONS ───────────────
 
+enum OrgSeatStatusEnum {
+  ACTIVE
+  ARCHIVED
+}
+
+enum OrgSeatKindEnum {
+  HEAD
+  DEPUTY
+  STANDARD
+}
+
+enum OrgSeatAssignmentStatusEnum {
+  ACTIVE
+  TEMPORARY
+  ENDED
+}
+
+enum PermissionRoleAssignmentSourceEnum {
+  LEGACY
+  MANUAL
+  SEAT
+}
+
 model Department {
   id          String       @id @default(uuid())
   name        String
@@ -8,11 +31,15 @@ model Department {
   parentId    String?      @map("parent_id")
   parent      Department?  @relation("DeptHierarchy", fields: [parentId], references: [id])
   children    Department[] @relation("DeptHierarchy")
+  headSeatId  String?      @unique @map("head_seat_id")
+  headSeat    OrgSeat?     @relation("DepartmentHeadSeat", fields: [headSeatId], references: [id], onDelete: SetNull)
   sortOrder   Int          @default(0) @map("sort_order")
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
 
   members                   EmployeeDepartment[]
+  seats                     OrgSeat[]                  @relation("DepartmentSeats")
+  scopedRoleAssignments     PermissionRoleAssignment[] @relation("PermissionRoleAssignmentDepartment")
   credentials               Credential[]
   invitations               Invitation[]
   operationalJournalEntries OperationalJournalEntry[]
@@ -35,6 +62,94 @@ model EmployeeDepartment {
   @@map("employee_departments")
 }
 
+model OrgSeat {
+  id                      String            @id @default(uuid())
+  departmentId            String            @map("department_id")
+  title                   String
+  description             String?
+  defaultPermissionRoleId String?           @map("default_permission_role_id")
+  kind                    OrgSeatKindEnum   @default(STANDARD)
+  status                  OrgSeatStatusEnum @default(ACTIVE)
+  sortOrder               Int               @default(0) @map("sort_order")
+  createdAt               DateTime          @default(now()) @map("created_at")
+  updatedAt               DateTime          @updatedAt @map("updated_at")
+
+  department            Department          @relation("DepartmentSeats", fields: [departmentId], references: [id], onDelete: Restrict)
+  defaultPermissionRole Role?               @relation("OrgSeatDefaultPermissionRole", fields: [defaultPermissionRoleId], references: [id], onDelete: Restrict)
+  assignments           OrgSeatAssignment[]
+  headForDepartment     Department?         @relation("DepartmentHeadSeat")
+
+  @@index([departmentId, status, sortOrder])
+  @@index([defaultPermissionRoleId])
+  @@map("org_seats")
+}
+
+model OrgSeatAssignment {
+  id                          String                      @id @default(uuid())
+  seatId                      String                      @map("seat_id")
+  employeeId                  String                      @map("employee_id")
+  status                      OrgSeatAssignmentStatusEnum @default(ACTIVE)
+  allocationPct               Int                         @default(100) @map("allocation_pct")
+  isPrimary                   Boolean                     @default(false) @map("is_primary")
+  startsAt                    DateTime                    @default(now()) @map("starts_at")
+  endsAt                      DateTime?                   @map("ends_at")
+  membershipProvisioned       Boolean                     @default(false) @map("membership_provisioned")
+  previousPrimaryDepartmentId String?                     @map("previous_primary_department_id")
+  assignedById                String?                     @map("assigned_by_id")
+  endedById                   String?                     @map("ended_by_id")
+  createdAt                   DateTime                    @default(now()) @map("created_at")
+  updatedAt                   DateTime                    @updatedAt @map("updated_at")
+
+  seat                     OrgSeat                   @relation(fields: [seatId], references: [id], onDelete: Restrict)
+  employee                 Employee                  @relation("OrgSeatAssignmentEmployee", fields: [employeeId], references: [id], onDelete: Restrict)
+  assignedBy               Employee?                 @relation("OrgSeatAssignmentAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+  endedBy                  Employee?                 @relation("OrgSeatAssignmentEndedBy", fields: [endedById], references: [id], onDelete: SetNull)
+  permissionRoleAssignment PermissionRoleAssignment?
+  /// Concurrency is additionally guarded by partial unique indexes that Prisma cannot express:
+  /// `org_seat_assignments_one_active_per_seat` and
+  /// `org_seat_assignments_one_open_primary_per_employee`.
+  /// They live in 20260914183000_org_seats_multi_role_access/migration.sql. Re-add them to any
+  /// generated migration that drops them; `prisma db push` does not create them at all.
+
+  @@index([seatId, status, endsAt])
+  @@index([employeeId, status, endsAt])
+  @@map("org_seat_assignments")
+}
+
+model PermissionRoleAssignment {
+  id                String                             @id @default(uuid())
+  employeeId        String                             @map("employee_id")
+  roleId            String                             @map("role_id")
+  source            PermissionRoleAssignmentSourceEnum
+  seatAssignmentId  String?                            @unique @map("seat_assignment_id")
+  scopeDepartmentId String?                            @map("scope_department_id")
+  isPrimary         Boolean                            @default(false) @map("is_primary")
+  effectiveFrom     DateTime                           @default(now()) @map("effective_from")
+  effectiveTo       DateTime?                          @map("effective_to")
+  revokedAt         DateTime?                          @map("revoked_at")
+  assignedById      String?                            @map("assigned_by_id")
+  revokedById       String?                            @map("revoked_by_id")
+  reason            String?
+  createdAt         DateTime                           @default(now()) @map("created_at")
+  updatedAt         DateTime                           @updatedAt @map("updated_at")
+
+  employee        Employee           @relation("PermissionRoleAssignmentEmployee", fields: [employeeId], references: [id], onDelete: Cascade)
+  role            Role               @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  seatAssignment  OrgSeatAssignment? @relation(fields: [seatAssignmentId], references: [id], onDelete: Restrict)
+  scopeDepartment Department?        @relation("PermissionRoleAssignmentDepartment", fields: [scopeDepartmentId], references: [id], onDelete: SetNull)
+  assignedBy      Employee?          @relation("PermissionRoleAssignmentAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+  revokedBy       Employee?          @relation("PermissionRoleAssignmentRevokedBy", fields: [revokedById], references: [id], onDelete: SetNull)
+  /// Partial unique indexes that Prisma cannot express:
+  /// `permission_role_assignments_one_active_legacy` and
+  /// `permission_role_assignments_one_active_manual_role`.
+  /// See the note on OrgSeatAssignment.
+
+  @@index([employeeId, revokedAt, effectiveFrom, effectiveTo], map: "permission_role_assignments_employee_active_idx")
+  @@index([roleId])
+  @@index([scopeDepartmentId])
+  @@map("permission_role_assignments")
+}
+
 model Role {
   id          String   @id @default(uuid())
   name        String
@@ -51,6 +166,8 @@ model Role {
   employees          Employee[]
   invitations        Invitation[]
   roleAccessPolicies RoleAccessPolicy[]
+  defaultForSeats    OrgSeat[]                  @relation("OrgSeatDefaultPermissionRole")
+  assignments        PermissionRoleAssignment[]
 
   @@map("roles")
 }

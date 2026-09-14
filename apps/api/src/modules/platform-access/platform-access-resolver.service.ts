@@ -2,6 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { PrismaClient, type PlatformResourceFamilyEnum } from '@nbos/database';
 import type { AccessScopeMode, PlatformResourceFamily } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
+import { activeAdditionalRoleAssignments } from '../../common/authorization/active-role-assignments';
 
 export interface PlatformTeamContext {
   projectIds: string[];
@@ -51,11 +52,19 @@ export class PlatformAccessResolverService {
     employeeId: string,
     family: PlatformResourceFamily,
   ): Promise<AccessScopeMode> {
+    const now = new Date();
     const employee = await this.prisma.employee.findUnique({
       where: { id: employeeId },
-      select: { roleId: true },
+      select: {
+        status: true,
+        roleId: true,
+        permissionRoleAssignments: {
+          where: activeAdditionalRoleAssignments(now),
+          select: { roleId: true },
+        },
+      },
     });
-    if (!employee) return 'NONE';
+    if (!employee || employee.status === 'TERMINATED') return 'NONE';
 
     const familyKey = family as PlatformResourceFamilyEnum;
     const override = await this.prisma.employeeAccessOverride.findUnique({
@@ -68,14 +77,19 @@ export class PlatformAccessResolverService {
       return (override.scopeMode as AccessScopeMode | null) ?? 'ASSIGNED';
     }
 
-    const rolePolicy = await this.prisma.roleAccessPolicy.findUnique({
-      where: {
-        roleId_resourceFamily: { roleId: employee.roleId, resourceFamily: familyKey },
-      },
+    const roleIds = [
+      ...new Set([
+        employee.roleId,
+        ...employee.permissionRoleAssignments.map((assignment) => assignment.roleId),
+      ]),
+    ];
+    const rolePolicies = await this.prisma.roleAccessPolicy.findMany({
+      where: { roleId: { in: roleIds }, resourceFamily: familyKey },
       select: { scopeMode: true },
     });
-    if (rolePolicy) return rolePolicy.scopeMode as AccessScopeMode;
-    return 'ASSIGNED';
+    const modes = rolePolicies.map((policy) => policy.scopeMode as AccessScopeMode);
+    if (rolePolicies.length < roleIds.length) modes.push('ASSIGNED');
+    return broadestScopeMode(modes);
   }
 
   private isOverrideActive(override: {
@@ -87,4 +101,10 @@ export class PlatformAccessResolverService {
     if (override.effectiveTo && override.effectiveTo.getTime() < now) return false;
     return true;
   }
+}
+
+function broadestScopeMode(modes: readonly AccessScopeMode[]): AccessScopeMode {
+  if (modes.includes('ALL')) return 'ALL';
+  if (modes.includes('ASSIGNED')) return 'ASSIGNED';
+  return modes.includes('NONE') ? 'NONE' : 'ASSIGNED';
 }

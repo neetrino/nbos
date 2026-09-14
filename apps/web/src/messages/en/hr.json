@@ -255,6 +255,32 @@
     "loadingMembers": "Loading members…",
     "emptyMembers": "No members in this department"
   },
+  "orgChart": {
+    "title": "Company structure",
+    "companyRoot": "Company",
+    "add": "Add",
+    "listView": "List view",
+    "chartView": "Chart view",
+    "search": "Search",
+    "searchPlaceholder": "Find a department or person",
+    "findMe": "Find me",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "yourDepartment": "Your department",
+    "subordinates": "Subordinates",
+    "deputies": "Deputies",
+    "members": "Employees",
+    "heads": "Heads {count}",
+    "subordinatesSection": "Subordinates {count}",
+    "noSubdepartments": "No subdepartments",
+    "childCount": "{count, plural, one {# department} other {# departments}}",
+    "employeesCount": "{count, plural, one {# employee} other {# employees}}",
+    "addChild": "Add subdepartment",
+    "membersSearch": "Search by name or position",
+    "totalEmployees": "All employees {count}",
+    "aboutEmployees": "About employees",
+    "closeDrawer": "Close department details"
+  },
   "companyNav": {
     "title": "My Company",
     "aria": "My Company sections",
@@ -265,7 +291,89 @@
   },
   "rolesSeats": {
     "title": "Roles & Seats",
-    "description": "Business seats, accountabilities, vacancies, assignments, and default permission role mapping."
+    "description": "Business seats, accountabilities, vacancies, assignments, and default permission role mapping.",
+    "createSeat": "Create seat",
+    "departments": "Departments",
+    "loading": "Loading seats…",
+    "loadFailed": "Roles and seats could not be loaded.",
+    "emptyTitle": "No seats in this department",
+    "emptyDescription": "Create explicit seats so the org structure and access do not depend on heuristics.",
+    "vacant": "Vacant seat",
+    "noPermissionRole": "No automatic permission role",
+    "created": "Seat created",
+    "updated": "Seat updated",
+    "assigned": "Employee assigned",
+    "ended": "Assignment ended",
+    "archived": "Seat archived",
+    "saveFailed": "The seat could not be saved.",
+    "assignFailed": "The employee could not be assigned.",
+    "endFailed": "The assignment could not be ended.",
+    "archiveFailed": "The seat could not be archived.",
+    "confirmEnd": "End this assignment and revoke the permission role sourced by the seat?",
+    "confirmArchive": "Archive the vacant seat “{seat}”?",
+    "kinds": {
+      "HEAD": "Head",
+      "DEPUTY": "Deputy",
+      "STANDARD": "Member"
+    },
+    "fields": {
+      "department": "Department",
+      "title": "Seat title",
+      "kind": "Org chart kind",
+      "permissionRole": "Automatic permission role",
+      "description": "Accountability"
+    },
+    "actions": {
+      "edit": "Edit",
+      "assign": "Assign",
+      "end": "End",
+      "archive": "Archive",
+      "access": "Access",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…"
+    },
+    "editor": {
+      "createTitle": "New seat",
+      "editTitle": "Edit seat",
+      "description": "A seat describes a business function. Its permission role is a separate technical mapping.",
+      "lockedWhileOccupied": "Cannot be changed while the seat is occupied. End the assignment first."
+    },
+    "assignment": {
+      "title": "Assign employee",
+      "description": "Seat: {seat}. Its mapped permission role will be granted automatically.",
+      "descriptionUnmapped": "Seat: {seat}. No automatic permission role is mapped to this seat.",
+      "employeePlaceholder": "Select an employee",
+      "confirmRole": "Permission role: {role}. Type the seat name “{seat}” to confirm.",
+      "endDescription": "End assignment on {seat}. Only access from this assignment is revoked.",
+      "employeeLabel": "Employee",
+      "currentHolder": "Current holder: {name}"
+    },
+    "access": {
+      "title": "Effective access",
+      "description": "The union of all active roles with source provenance.",
+      "loadFailed": "Effective access could not be loaded.",
+      "permissionCount": "Effective permissions: {count}",
+      "roleSources": "Role sources",
+      "companyWide": "Company-wide",
+      "previewDescription": "Module permissions before → after. Project memberships, personal overrides and resource sharing remain separate access rules.",
+      "noChanges": "No module permissions change.",
+      "seats": "Company positions",
+      "noSeats": "No active seats.",
+      "permissions": "System permissions",
+      "membershipScope": "Primary role / department memberships",
+      "previewFailedHint": "You can still continue — the server validates the operation."
+    },
+    "sources": {
+      "LEGACY": "Primary",
+      "MANUAL": "Manual",
+      "SEAT": "Seat"
+    },
+    "historyTitle": "Assignment history",
+    "historyShort": "History",
+    "historyDescription": "Latest 100 assignments. Ending an assignment preserves its history.",
+    "historyEmpty": "No assignments yet.",
+    "historyOngoing": "Ongoing"
   },
   "hub": {
     "intro": "Org Structure is the company control center for departments, seats, employees, KPI, compensation, and SOP.",
@@ -290,9 +398,9 @@
     "guardrails": {
       "title": "Foundation guardrails",
       "subtitle": "These are intentionally explicit so Finance, KPI and RBAC do not rely on incomplete data.",
-      "seats": "Seat assignments are not modelled separately from technical permission roles yet.",
+      "seats": "Business seats are separate from technical roles, with source-aware access grants.",
       "compensation": "Compensation, KPI and bonus policies are visible as module areas but not payroll sources yet.",
-      "orgChart": "The full org chart canvas with zoom, search and department drawers remains a dedicated follow-up."
+      "orgChart": "The Departments org chart uses explicit seat assignments with zoom, search, collapse, and a member drawer."
     },
     "recent": {
       "title": "Recent team context",

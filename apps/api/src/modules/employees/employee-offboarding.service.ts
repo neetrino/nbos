@@ -8,6 +8,9 @@ import {
 import { auditCredentialAccessRevokedOnOffboard } from '../credentials/credential-offboarding-audit';
 import { revokeCredentialAccessForOffboard } from '../credentials/credential-offboarding-revoke.ops';
 import { PRISMA_TOKEN } from '../../database.module';
+import { lockSeatEmployee } from '../org-seats/org-seat-locks';
+import { reconcileSeatDepartmentMembership } from '../org-seats/org-seat-membership.ops';
+import { ACTIVE_SEAT_ASSIGNMENT_WHERE } from '../org-seats/org-seat.select';
 import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
 import type {
@@ -54,12 +57,14 @@ export class EmployeeOffboardingService {
     ]);
 
     const result = await this.prisma.$transaction(async (tx) => {
+      await lockSeatEmployee(tx, employeeId);
       const credentialRevoke = await revokeCredentialAccessForOffboard(tx, employeeId, now);
       const { summary: revoked, auditedCredentialIds } = await this.revokeAccess(
         tx,
         employeeId,
         now,
         credentialRevoke,
+        actorId,
       );
       const templateIds = await this.ensureOffboardingTemplate(tx, actorId);
       const snapshot = buildEmployeeOffboardingSnapshotItems({ autoCompletedKeys });
@@ -80,6 +85,7 @@ export class EmployeeOffboardingService {
           status: 'TERMINATED',
           fireDate: now,
           authVersion: { increment: 1 },
+          accessVersion: { increment: 1 },
         },
       });
 
@@ -219,6 +225,7 @@ export class EmployeeOffboardingService {
     employeeId: string,
     now: Date,
     credentialRevoke: Awaited<ReturnType<typeof revokeCredentialAccessForOffboard>>,
+    actorId: string,
   ): Promise<{
     summary: EmployeeOffboardingRevokeSummary;
     auditedCredentialIds: string[];
@@ -241,6 +248,7 @@ export class EmployeeOffboardingService {
       where: { employeeId, effectiveTo: null },
       data: { effectiveTo: now },
     });
+    const orgAccess = await this.revokeOrgAccess(tx, employeeId, now, actorId);
 
     return {
       summary: {
@@ -252,8 +260,42 @@ export class EmployeeOffboardingService {
         credentialAllowedListEntriesCleared: credentialRevoke.allowedEmployeesEntriesCleared,
         credentialFavoritesRemoved: credentialRevoke.favoritesRemoved,
         accessOverridesClosed: accessOverridesClosed.count,
+        seatAssignmentsEnded: orgAccess.seatAssignmentsEnded,
+        permissionRolesRevoked: orgAccess.permissionRolesRevoked,
       },
       auditedCredentialIds: credentialRevoke.credentialIds,
+    };
+  }
+
+  private async revokeOrgAccess(
+    tx: TransactionClient,
+    employeeId: string,
+    now: Date,
+    actorId: string,
+  ): Promise<{ seatAssignmentsEnded: number; permissionRolesRevoked: number }> {
+    const openAssignments = await tx.orgSeatAssignment.findMany({
+      where: { employeeId, ...ACTIVE_SEAT_ASSIGNMENT_WHERE },
+      include: { seat: { select: { departmentId: true } } },
+    });
+    const seatAssignments = await tx.orgSeatAssignment.updateMany({
+      where: { employeeId, ...ACTIVE_SEAT_ASSIGNMENT_WHERE },
+      data: { status: 'ENDED', endsAt: now, endedById: actorId },
+    });
+    const roleAssignments = await tx.permissionRoleAssignment.updateMany({
+      where: { employeeId, revokedAt: null },
+      data: {
+        revokedAt: now,
+        effectiveTo: now,
+        revokedById: actorId,
+        reason: 'Employee offboarding',
+      },
+    });
+    for (const assignment of openAssignments) {
+      await reconcileSeatDepartmentMembership(tx, assignment);
+    }
+    return {
+      seatAssignmentsEnded: seatAssignments.count,
+      permissionRolesRevoked: roleAssignments.count,
     };
   }
 

@@ -8,9 +8,22 @@ describe('PermissionGuard', () => {
   const reflector = { getAllAndOverride: vi.fn() } as unknown as Reflector;
   const guard = new PermissionGuard(reflector);
 
-  function ctx(permissions?: Record<string, string>) {
-    const request: { user?: { permissions?: Record<string, string> }; permissionScope?: string } = {
-      user: permissions ? { permissions } : undefined,
+  function ctx(
+    permissions?: Record<string, string>,
+    permissionGrants?: Record<string, { departmentIds: string[] }>,
+  ) {
+    const request: {
+      user?: {
+        permissions?: Record<string, string>;
+        permissionGrants?: Record<string, { departmentIds: string[] }>;
+        departmentIds: string[];
+        requestPermissionDepartmentIds?: string[];
+      };
+      permissionScope?: string;
+    } = {
+      user: permissions
+        ? { permissions, permissionGrants, departmentIds: ['legacy-dept'] }
+        : undefined,
     };
     return {
       context: {
@@ -46,6 +59,28 @@ describe('PermissionGuard', () => {
 
     expect(guard.canActivate(context)).toBe(true);
     expect(request.permissionScope).toBe('DEPARTMENT');
+  });
+
+  it('unions granted departments with memberships for the matched permission', () => {
+    requires({ module: 'MARKETING', action: 'VIEW' });
+    const { context, request } = ctx(
+      { MARKETING_VIEW: 'DEPARTMENT' },
+      { MARKETING_VIEW: { departmentIds: ['marketing'] } },
+    );
+
+    expect(guard.canActivate(context)).toBe(true);
+    expect(request.user?.requestPermissionDepartmentIds).toEqual(['legacy-dept', 'marketing']);
+  });
+
+  it('falls back to memberships when the matched permission carries no departments', () => {
+    requires({ module: 'MARKETING', action: 'VIEW' });
+    const { context, request } = ctx(
+      { MARKETING_VIEW: 'ALL' },
+      { MARKETING_VIEW: { departmentIds: [] } },
+    );
+
+    expect(guard.canActivate(context)).toBe(true);
+    expect(request.user?.requestPermissionDepartmentIds).toEqual(['legacy-dept']);
   });
 
   it('treats a NONE scope as missing', () => {

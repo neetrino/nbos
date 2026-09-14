@@ -9,6 +9,7 @@ import {
   Query,
   Body,
   Inject,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PrismaClient } from '@nbos/database';
@@ -24,6 +25,15 @@ import { EmployeeOffboardingService } from './employee-offboarding.service';
 import { EmployeeReactivationService } from './employee-reactivation.service';
 import { EmployeeRoleAssignmentService } from './employee-role-assignment.service';
 import { PlatformOwnershipService } from '../platform-ownership/platform-ownership.service';
+import { roleAssignmentAuthority } from '../platform-ownership/role-assignment-authority';
+import { lockSeatEmployee } from '../org-seats/org-seat-locks';
+import { DEPARTMENT_ROLE_MEMBER } from '../departments/department-member.constants';
+import { isDepartmentLeadershipRole } from '../departments/department-seat-leadership';
+import {
+  AddEmployeeDepartmentDto,
+  UpdateEmployeeDepartmentDto,
+  type EmployeeDeptRole,
+} from './employee-department.dto';
 
 @ApiTags('Employees')
 @ApiBearerAuth()
@@ -97,7 +107,7 @@ export class EmployeesController {
     return this.employeeReactivationService.execute(
       id,
       user.id,
-      user.role,
+      roleAssignmentAuthority(user.role),
       { status },
       user.isPlatformOwner === true,
     );
@@ -214,17 +224,26 @@ export class EmployeesController {
   async addDepartment(
     @Param('id') id: string,
     @CurrentUser() user: CurrentUserPayload,
-    @Body() body: { departmentId: string; deptRole?: string; isPrimary?: boolean },
+    @Body() body: AddEmployeeDepartmentDto,
   ) {
     await this.ownership.assertFounderNotMutatedByOthers(user.id, id);
-    return this.prisma.employeeDepartment.create({
-      data: {
-        employeeId: id,
-        departmentId: body.departmentId,
-        deptRole: body.deptRole ?? 'MEMBER',
-        isPrimary: body.isPrimary ?? false,
-      },
-      include: { department: true },
+    await this.assertDeptRoleAllowed(body.departmentId, body.deptRole);
+    return this.prisma.$transaction(async (tx) => {
+      await lockSeatEmployee(tx, id);
+      const membership = await tx.employeeDepartment.create({
+        data: {
+          employeeId: id,
+          departmentId: body.departmentId,
+          deptRole: body.deptRole ?? DEPARTMENT_ROLE_MEMBER,
+          isPrimary: body.isPrimary ?? false,
+        },
+        include: { department: true },
+      });
+      await tx.employee.update({
+        where: { id },
+        data: { accessVersion: { increment: 1 } },
+      });
+      return membership;
     });
   }
 
@@ -235,9 +254,10 @@ export class EmployeesController {
     @Param('id') id: string,
     @Param('deptId') deptId: string,
     @CurrentUser() user: CurrentUserPayload,
-    @Body() body: { deptRole?: string; isPrimary?: boolean },
+    @Body() body: UpdateEmployeeDepartmentDto,
   ) {
     await this.ownership.assertFounderNotMutatedByOthers(user.id, id);
+    await this.assertDeptRoleAllowed(deptId, body.deptRole);
     const record = await this.prisma.employeeDepartment.findUnique({
       where: { employeeId_departmentId: { employeeId: id, departmentId: deptId } },
     });
@@ -245,10 +265,38 @@ export class EmployeesController {
       const { NotFoundException } = await import('@nestjs/common');
       throw new NotFoundException('Department assignment not found');
     }
-    return this.prisma.employeeDepartment.update({
-      where: { id: record.id },
-      data: body,
-      include: { department: true },
+    return this.prisma.$transaction(async (tx) => {
+      await lockSeatEmployee(tx, id);
+      if (
+        body.isPrimary !== undefined &&
+        (await tx.orgSeatAssignment.count({
+          where: { employeeId: id, status: { in: ['ACTIVE', 'TEMPORARY'] }, endsAt: null },
+        }))
+      ) {
+        throw new BadRequestException(
+          'Manage the primary assignment through Seats while active seats exist.',
+        );
+      }
+      const membership = await tx.employeeDepartment.update({
+        where: { id: record.id },
+        data: body,
+        include: { department: true },
+      });
+      // An explicit membership edit adopts the row as a manually managed membership.
+      await tx.orgSeatAssignment.updateMany({
+        where: {
+          employeeId: id,
+          seat: { departmentId: deptId },
+          status: { in: ['ACTIVE', 'TEMPORARY'] },
+          endsAt: null,
+        },
+        data: { membershipProvisioned: false },
+      });
+      await tx.employee.update({
+        where: { id },
+        data: { accessVersion: { increment: 1 } },
+      });
+      return membership;
     });
   }
 
@@ -268,6 +316,40 @@ export class EmployeesController {
       const { NotFoundException } = await import('@nestjs/common');
       throw new NotFoundException('Department assignment not found');
     }
-    return this.prisma.employeeDepartment.delete({ where: { id: record.id } });
+    return this.prisma.$transaction(async (tx) => {
+      await lockSeatEmployee(tx, id);
+      const activeSeats = await tx.orgSeatAssignment.count({
+        where: {
+          employeeId: id,
+          seat: { departmentId: deptId },
+          status: { in: ['ACTIVE', 'TEMPORARY'] },
+          endsAt: null,
+        },
+      });
+      if (activeSeats > 0)
+        throw new BadRequestException('End active seats before removing department membership.');
+      const membership = await tx.employeeDepartment.delete({ where: { id: record.id } });
+      await tx.employee.update({
+        where: { id },
+        data: { accessVersion: { increment: 1 } },
+      });
+      return membership;
+    });
+  }
+
+  /** Once a department has seats, `Department.headSeatId` is the only source of leadership. */
+  private async assertDeptRoleAllowed(
+    departmentId: string,
+    deptRole: EmployeeDeptRole | undefined,
+  ): Promise<void> {
+    if (!deptRole || !isDepartmentLeadershipRole(deptRole)) return;
+    const seats = await this.prisma.orgSeat.count({
+      where: { departmentId, status: 'ACTIVE' },
+    });
+    if (seats > 0) {
+      throw new BadRequestException(
+        'Department leadership is defined by its head or deputy seat, not by membership role.',
+      );
+    }
   }
 }

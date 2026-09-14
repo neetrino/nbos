@@ -55,6 +55,15 @@ export interface RoleItem {
   _count?: { employees: number };
 }
 
+export interface DepartmentMemberEmployee {
+  id: string;
+  firstName: string;
+  lastName: string;
+  avatar?: string | null;
+  position?: string | null;
+  role?: { id: string; name: string; slug: string; level: number };
+}
+
 export interface DepartmentItem {
   id: string;
   name: string;
@@ -64,6 +73,7 @@ export interface DepartmentItem {
   sortOrder: number;
   parent?: { id: string; name: string; slug: string } | null;
   _count?: { members: number };
+  members?: DepartmentMember[];
 }
 
 export interface DepartmentMember {
@@ -72,12 +82,7 @@ export interface DepartmentMember {
   departmentId: string;
   deptRole: string;
   isPrimary: boolean;
-  employee: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    role?: { id: string; name: string; slug: string; level: number };
-  };
+  employee: DepartmentMemberEmployee;
 }
 
 export interface DepartmentWithMembers extends DepartmentItem {
@@ -146,6 +151,8 @@ export interface EmployeeOffboardingResult {
     productTeamRemovals: number;
     credentialGrantsRevoked: number;
     accessOverridesClosed: number;
+    seatAssignmentsEnded: number;
+    permissionRolesRevoked: number;
   };
   financeNotificationsSent: number;
 }

@@ -9,6 +9,8 @@ import {
   type DepartmentWithMembers,
 } from '@/lib/api/employees';
 import { ORG_COMPANY_NODE_ID } from './org-chart-constants';
+import { orgSeatsApi } from '@/lib/api/org-seats';
+import { overlayOrgSeats } from './org-chart-seats';
 import { findLayoutNode, layoutOrgChart, type OrgChartLayout } from './org-chart-layout';
 import { firstMatchingDepartmentId } from './org-chart-members';
 import { stepZoomViewport } from './org-chart-pan-zoom';
@@ -211,10 +213,15 @@ function useSelectedDepartmentDrawer(
     }
     let cancelled = false;
     setDrawerLoading(true);
-    void departmentsApi
-      .getById(selectedId)
-      .then((data) => {
-        if (!cancelled) setDrawer(data);
+    void Promise.all([departmentsApi.getById(selectedId), orgSeatsApi.getAll(selectedId)])
+      .then(([data, seats]) => {
+        if (!cancelled) {
+          const overlaySeats = Array.isArray(seats) ? seats : [];
+          setDrawer({
+            ...data,
+            members: overlayOrgSeats([data], overlaySeats)[0]?.members ?? data.members ?? [],
+          });
+        }
       })
       .catch((err: unknown) => {
         toast.error(err instanceof Error ? err.message : t('deptAdmin.membersLoadFailed'));

@@ -213,6 +213,16 @@ Seat: Finance Director -> default Permission Role: Finance Admin
 - manual overrides;
 - итоговый effective access.
 
+Additive foundation contract, production rollout pending (2026-09-14):
+
+- `PermissionRoleAssignment` — source of truth для дополнительных ролей и provenance; `Employee.role_id` временно сохраняется как primary compatibility role.
+- `EmployeeGuard` объединяет permissions всех активных assignments и возвращает compatibility-проекцию scope плюс provenance-aware department grants.
+- изменение assignment или permission matrix увеличивает `Employee.access_version`; каждый API instance проверяет revision перед использованием кэша.
+- `GET /employees/:id/effective-access` закрыт `SETTINGS_RBAC VIEW` и показывает источники ролей, seats и итоговые permissions.
+- `POST /org-seats/:id/access-preview` показывает изменения модульных прав перед назначением/снятием; это предварительный расчёт, а не выдача полномочий. Фактическая запись заново проверяет право назначения. Entity-level policy и персональные overrides остаются отдельным слоем.
+- `GET /org-seats/:id/history` показывает последние 100 назначений, включая завершённые.
+- создание/изменение seat требует `COMPANY EDIT`; mapping seat → Permission Role дополнительно требует `SETTINGS_RBAC EDIT`; фактическое назначение роли проходит server-side owner/CEO assignment policy.
+
 Для project/product resources effective access должен включать:
 
 - Role Access Levels;

@@ -29,12 +29,15 @@ const EMPLOYEE_INCLUDE = {
   },
 } as const;
 
+const EMPLOYEE_PUBLIC_OMIT = { passwordHash: true } as const;
+
 @Injectable()
 export class EmployeesService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async findAll() {
     return this.prisma.employee.findMany({
+      omit: EMPLOYEE_PUBLIC_OMIT,
       include: EMPLOYEE_INCLUDE,
       orderBy: { createdAt: 'desc' },
     });
@@ -61,6 +64,7 @@ export class EmployeesService {
     const [items, total] = await Promise.all([
       this.prisma.employee.findMany({
         where,
+        omit: EMPLOYEE_PUBLIC_OMIT,
         include: EMPLOYEE_INCLUDE,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
@@ -78,6 +82,7 @@ export class EmployeesService {
   async findById(id: string) {
     const employee = await this.prisma.employee.findUnique({
       where: { id },
+      omit: EMPLOYEE_PUBLIC_OMIT,
       include: EMPLOYEE_INCLUDE,
     });
     if (!employee) {
@@ -89,6 +94,7 @@ export class EmployeesService {
   async findByEmail(email: string) {
     return this.prisma.employee.findUnique({
       where: { email },
+      omit: EMPLOYEE_PUBLIC_OMIT,
       include: EMPLOYEE_INCLUDE,
     });
   }

@@ -10,6 +10,9 @@ import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { IS_PUBLIC_KEY } from '../decorators';
 import { PlatformOwnershipService } from '../../modules/platform-ownership/platform-ownership.service';
+import { buildEmployeeAuthorizationContext } from '../authorization/employee-authorization-context';
+import type { EffectivePermissionGrant } from '../authorization/effective-permissions';
+import { activeAdditionalRoleAssignments } from '../authorization/active-role-assignments';
 
 interface CachedEmployee {
   id: string;
@@ -18,9 +21,13 @@ interface CachedEmployee {
   lastName: string;
   role: string;
   roleLevel: number;
+  roles: Array<{ id: string; name: string; slug: string; level: number }>;
   departmentIds: string[];
   permissions: Record<string, string>;
+  permissionGrants: Record<string, EffectivePermissionGrant>;
   isPlatformOwner: boolean;
+  accessVersion: number;
+  assignmentIds: string;
   meProfile: {
     id: string;
     firstName: string;
@@ -40,6 +47,7 @@ interface CachedEmployee {
       slug: string;
       level: number;
     };
+    permissionRoles: Array<{ id: string; name: string; slug: string; level: number }>;
     departments: Array<{
       id: string;
       departmentId: string;
@@ -99,7 +107,7 @@ export class EmployeeGuard implements CanActivate {
     }
 
     const cached = employeeGuardCache.get(employeeId);
-    if (cached && Date.now() - cached.cachedAt < CACHE_TTL_MS) {
+    if (cached && (await this.cacheIsCurrent(employeeId, cached))) {
       request.user = {
         ...request.user,
         ...(await this.withLiveOwnerFlag(employeeId, cached)),
@@ -128,6 +136,7 @@ export class EmployeeGuard implements CanActivate {
   }
 
   private async fetchAndCache(employeeId: string): Promise<CachedEmployee> {
+    const now = new Date();
     const employee = await this.prisma.employee.findUnique({
       where: { id: employeeId },
       include: {
@@ -140,6 +149,19 @@ export class EmployeeGuard implements CanActivate {
         },
         departments: {
           include: { department: { select: { id: true, name: true, slug: true } } },
+          orderBy: [{ isPrimary: 'desc' }, { joinedAt: 'asc' }],
+        },
+        permissionRoleAssignments: {
+          where: activeAdditionalRoleAssignments(now),
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: { permission: true },
+                },
+              },
+            },
+          },
         },
       },
     });
@@ -152,12 +174,12 @@ export class EmployeeGuard implements CanActivate {
       throw new UnauthorizedException('Account deactivated');
     }
 
-    const permissions: Record<string, string> = {};
-    for (const rp of employee.role.permissions) {
-      const key = `${rp.permission.module}_${rp.permission.action}`;
-      permissions[key] = rp.scope;
-    }
-
+    const departmentIds = employee.departments.map((item) => item.departmentId);
+    const authorization = buildEmployeeAuthorizationContext({
+      legacyRole: employee.role,
+      assignments: employee.permissionRoleAssignments ?? [],
+      departmentIds,
+    });
     const isPlatformOwner = await this.platformOwnership.isPlatformOwner(employeeId);
 
     const enriched: CachedEmployee = {
@@ -167,9 +189,16 @@ export class EmployeeGuard implements CanActivate {
       lastName: employee.lastName,
       role: employee.role.slug,
       roleLevel: employee.role.level,
-      departmentIds: employee.departments.map((d) => d.departmentId),
-      permissions,
+      roles: authorization.roles,
+      departmentIds,
+      permissions: authorization.permissions,
+      permissionGrants: authorization.grants,
       isPlatformOwner,
+      accessVersion: employee.accessVersion,
+      assignmentIds: (employee.permissionRoleAssignments ?? [])
+        .map((item) => item.id)
+        .sort()
+        .join(','),
       meProfile: {
         id: employee.id,
         firstName: employee.firstName,
@@ -189,6 +218,7 @@ export class EmployeeGuard implements CanActivate {
           slug: employee.role.slug,
           level: employee.role.level,
         },
+        permissionRoles: authorization.roles,
         departments: employee.departments.map((departmentLink) => ({
           id: departmentLink.id,
           departmentId: departmentLink.departmentId,
@@ -206,6 +236,31 @@ export class EmployeeGuard implements CanActivate {
 
     employeeGuardCache.set(employeeId, enriched);
     return enriched;
+  }
+
+  private async cacheIsCurrent(employeeId: string, cached: CachedEmployee): Promise<boolean> {
+    if (Date.now() - cached.cachedAt >= CACHE_TTL_MS) return false;
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: employeeId },
+      select: {
+        accessVersion: true,
+        status: true,
+        permissionRoleAssignments: {
+          where: activeAdditionalRoleAssignments(new Date()),
+          select: { id: true },
+        },
+      },
+    });
+    if (!employee || employee.status === 'TERMINATED') {
+      throw new UnauthorizedException('Account deactivated');
+    }
+    return (
+      employee.accessVersion === cached.accessVersion &&
+      (employee.permissionRoleAssignments ?? [])
+        .map((item) => item.id)
+        .sort()
+        .join(',') === cached.assignmentIds
+    );
   }
 
   private async withLiveOwnerFlag(

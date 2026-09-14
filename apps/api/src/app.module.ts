@@ -45,6 +45,7 @@ import { SystemListsModule } from './modules/system-lists/system-lists.module';
 import { TechnicalModule } from './modules/technical/technical.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
+import { OrgSeatsModule } from './modules/org-seats/org-seats.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { ChecklistTemplatesModule } from './modules/checklist-templates/checklist-templates.module';
 import { PlatformAccessModule } from './modules/platform-access/platform-access.module';
@@ -113,6 +114,7 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     SystemListsModule,
     RolesModule,
     DepartmentsModule,
+    OrgSeatsModule,
     InvitationsModule,
     ChecklistTemplatesModule,
     PlatformAccessModule,

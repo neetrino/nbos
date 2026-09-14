@@ -32,15 +32,21 @@ export class CallAccessPolicyService {
     const dealsScope = normalizeCallRbacScope(actor.permissions[`CRM_DEALS_${action}`]);
     if (leadsScope === 'NONE' && dealsScope === 'NONE') return CALL_ACCESS_DENIED_WHERE;
 
-    const needsDepartment = leadsScope === 'DEPARTMENT' || dealsScope === 'DEPARTMENT';
-    const departmentEmployeeIds = needsDepartment
-      ? await this.loadDepartmentEmployeeIds(actor.departmentIds)
-      : [];
+    const [leadDepartmentEmployeeIds, dealDepartmentEmployeeIds] = await Promise.all([
+      leadsScope === 'DEPARTMENT'
+        ? this.loadDepartmentEmployeeIds(callDepartmentIds(actor, `CRM_LEADS_${action}`))
+        : [],
+      dealsScope === 'DEPARTMENT'
+        ? this.loadDepartmentEmployeeIds(callDepartmentIds(actor, `CRM_DEALS_${action}`))
+        : [],
+    ]);
     return buildCallAccessWhere({
       leadsScope,
       dealsScope,
       actorId: actor.employeeId,
-      departmentEmployeeIds,
+      departmentEmployeeIds: [],
+      leadDepartmentEmployeeIds,
+      dealDepartmentEmployeeIds,
     });
   }
 
@@ -94,4 +100,9 @@ export class CallAccessPolicyService {
     });
     return rows.map((row) => row.employeeId);
   }
+}
+
+function callDepartmentIds(actor: CallAccessActor, permission: string): string[] {
+  if (!actor.permissionDepartmentIds) return actor.departmentIds;
+  return actor.permissionDepartmentIds[permission] ?? [];
 }

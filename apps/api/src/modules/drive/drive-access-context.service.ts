@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { currentRoutePermissionDepartmentIds } from '../../common/authorization/permission-department-scope';
 import { buildDocumentsReadAccess } from '../documents/documents-read-access.dto';
 import { PlatformAccessResolverService } from '../platform-access/platform-access-resolver.service';
 import type { DriveEntityAccess, DriveEntityContextAccess } from './drive-access.types';
@@ -16,7 +17,7 @@ export class DriveAccessContextService {
     const policyMode = await this.platformAccess.resolveScopeModeForFamily(user.id, 'DRIVE');
     return {
       employeeId: user.id,
-      departmentIds: user.departmentIds ?? [],
+      departmentIds: currentRoutePermissionDepartmentIds(user),
       driveScope: mergeDriveEffectiveScope(rbacScope, policyMode, {
         globalOwnerRole: isGlobalDriveOwnerRole(user.role, user.isPlatformOwner === true),
       }),

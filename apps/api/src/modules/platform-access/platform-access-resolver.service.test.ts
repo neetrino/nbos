@@ -7,7 +7,7 @@ describe('PlatformAccessResolverService', () => {
     productTeamMember: { findMany: vi.fn() },
     employee: { findUnique: vi.fn() },
     employeeAccessOverride: { findUnique: vi.fn() },
-    roleAccessPolicy: { findUnique: vi.fn() },
+    roleAccessPolicy: { findMany: vi.fn() },
   };
 
   const service = new PlatformAccessResolverService(prisma as never);
@@ -35,11 +35,30 @@ describe('PlatformAccessResolverService', () => {
   });
 
   it('resolveScopeModeForFamily returns role policy scope', async () => {
-    prisma.employee.findUnique.mockResolvedValue({ roleId: 'role-1' });
+    prisma.employee.findUnique.mockResolvedValue({
+      roleId: 'role-1',
+      permissionRoleAssignments: [{ roleId: 'role-2' }],
+    });
     prisma.employeeAccessOverride.findUnique.mockResolvedValue(null);
-    prisma.roleAccessPolicy.findUnique.mockResolvedValue({ scopeMode: 'ALL' });
+    prisma.roleAccessPolicy.findMany.mockResolvedValue([
+      { scopeMode: 'ASSIGNED' },
+      { scopeMode: 'ALL' },
+    ]);
 
     const mode = await service.resolveScopeModeForFamily('emp-1', 'CREDENTIALS');
     expect(mode).toBe('ALL');
+  });
+
+  it('keeps the implicit ASSIGNED default when another role explicitly denies access', async () => {
+    prisma.employee.findUnique.mockResolvedValue({
+      roleId: 'role-with-default',
+      permissionRoleAssignments: [{ roleId: 'role-with-policy' }],
+    });
+    prisma.employeeAccessOverride.findUnique.mockResolvedValue(null);
+    prisma.roleAccessPolicy.findMany.mockResolvedValue([{ scopeMode: 'NONE' }]);
+
+    const mode = await service.resolveScopeModeForFamily('emp-1', 'DRIVE');
+
+    expect(mode).toBe('ASSIGNED');
   });
 });

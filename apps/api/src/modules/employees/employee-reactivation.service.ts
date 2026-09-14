@@ -13,6 +13,7 @@ import {
   EMPLOYEE_ONBOARDING_TEMPLATE_NAME,
 } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
+import { lockSeatEmployee } from '../org-seats/org-seat-locks';
 import { AuditService } from '../audit/audit.service';
 import type {
   EmployeeReactivationResult,
@@ -43,6 +44,7 @@ export class EmployeeReactivationService {
         lastName: true,
         status: true,
         fireDate: true,
+        roleId: true,
       },
     });
     if (!employee) throw new NotFoundException(`Employee ${employeeId} not found`);
@@ -54,6 +56,14 @@ export class EmployeeReactivationService {
     const previousFireDate = employee.fireDate?.toISOString() ?? null;
 
     const result = await this.prisma.$transaction(async (tx) => {
+      await lockSeatEmployee(tx, employeeId);
+      const current = await tx.employee.findUnique({
+        where: { id: employeeId },
+        select: { status: true },
+      });
+      if (current?.status !== 'TERMINATED') {
+        throw new BadRequestException('Only terminated employees can be reactivated');
+      }
       const templateIds = await this.ensureOnboardingTemplate(tx, actorId);
       const snapshot = buildEmployeeOnboardingSnapshotItems({ autoCompletedKeys });
 
@@ -72,6 +82,21 @@ export class EmployeeReactivationService {
         data: {
           status: input.status,
           fireDate: null,
+          accessVersion: { increment: 1 },
+        },
+      });
+      await tx.permissionRoleAssignment.updateMany({
+        where: { employeeId, source: 'LEGACY', revokedAt: null },
+        data: { revokedAt: new Date(), effectiveTo: new Date(), revokedById: actorId },
+      });
+      await tx.permissionRoleAssignment.create({
+        data: {
+          employeeId,
+          roleId: employee.roleId,
+          source: 'LEGACY',
+          isPrimary: true,
+          assignedById: actorId,
+          reason: 'Restored primary role on employee reactivation',
         },
       });
 

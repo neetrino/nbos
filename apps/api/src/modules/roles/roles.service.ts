@@ -4,6 +4,11 @@ import { PLATFORM_OWNER_ROLE_SLUG } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 
+interface RoleEmployeeCount {
+  roleId: string;
+  employeeCount: number;
+}
+
 @Injectable()
 export class RolesService {
   constructor(
@@ -12,12 +17,29 @@ export class RolesService {
   ) {}
 
   async findAll() {
-    return this.prisma.role.findMany({
-      orderBy: { level: 'asc' },
-      include: {
-        _count: { select: { employees: true } },
-      },
-    });
+    const now = new Date();
+    const [roles, counts] = await Promise.all([
+      this.prisma.role.findMany({ orderBy: { level: 'asc' } }),
+      this.prisma.$queryRaw<RoleEmployeeCount[]>`
+        SELECT grants."roleId", COUNT(DISTINCT grants."employeeId")::int AS "employeeCount"
+        FROM (
+          SELECT "id" AS "employeeId", "role_id" AS "roleId"
+          FROM "employees"
+          UNION ALL
+          SELECT "employee_id" AS "employeeId", "role_id" AS "roleId"
+          FROM "permission_role_assignments"
+          WHERE "revoked_at" IS NULL
+            AND "effective_from" <= ${now}
+            AND ("effective_to" IS NULL OR "effective_to" > ${now})
+        ) grants
+        GROUP BY grants."roleId"
+      `,
+    ]);
+    const countByRoleId = new Map(counts.map((row) => [row.roleId, row.employeeCount]));
+    return roles.map((role) => ({
+      ...role,
+      _count: { employees: countByRoleId.get(role.id) ?? 0 },
+    }));
   }
 
   async findById(id: string) {
@@ -100,6 +122,12 @@ export class RolesService {
           scope: p.scope,
         })),
       }),
+      this.prisma.employee.updateMany({
+        where: {
+          OR: [{ roleId }, { permissionRoleAssignments: { some: { roleId } } }],
+        },
+        data: { accessVersion: { increment: 1 } },
+      }),
     ]);
 
     const after = await this.findById(roleId);
@@ -113,7 +141,9 @@ export class RolesService {
   async remove(id: string, actorId: string) {
     const role = await this.prisma.role.findUnique({
       where: { id },
-      include: { _count: { select: { employees: true } } },
+      include: {
+        _count: { select: { employees: true, assignments: true, defaultForSeats: true } },
+      },
     });
     if (!role) {
       throw new NotFoundException(`Role ${id} not found`);
@@ -123,6 +153,12 @@ export class RolesService {
     }
     if (role._count.employees > 0) {
       throw new BadRequestException('Cannot delete role with assigned employees');
+    }
+    if (role._count.assignments > 0) {
+      throw new BadRequestException('Cannot delete role with authorization assignment history');
+    }
+    if (role._count.defaultForSeats > 0) {
+      throw new BadRequestException('Cannot delete role mapped to organization seats');
     }
     const deleted = await this.prisma.role.delete({ where: { id } });
     await this.logRoleChange('ROLE_DELETED', id, actorId, {

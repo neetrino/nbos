@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@nbos/database';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { permissionDepartmentIds } from '../../common/authorization/permission-department-scope';
 import { financeUsesDealScopedParticipation } from './finance-seller-role';
 
 /** Caller identity + RBAC VIEW scope for finance list/stats row filters. */
@@ -23,7 +24,7 @@ export function financeScopedAccessFromUser(
 ): FinanceScopedAccessContext {
   return {
     employeeId: user.id,
-    departmentIds: user.departmentIds ?? [],
+    departmentIds: permissionDepartmentIds(user, viewPermissionKey),
     viewScope: user.permissions[viewPermissionKey],
     dealScopedParticipation: financeUsesDealScopedParticipation(user.role),
   };

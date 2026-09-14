@@ -14,6 +14,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
 import { AuthSessionService } from '../auth/auth-session.service';
+import { activeAdditionalRoleAssignments } from '../../common/authorization/active-role-assignments';
 
 const ACTIVE_CEO_STATUSES = ['ACTIVE', 'PROBATION'] as const;
 
@@ -183,11 +184,22 @@ export class PlatformOwnershipService implements OnModuleInit {
     targetRoleSlug: string,
   ): Promise<boolean> {
     if (targetRoleSlug.trim().toLowerCase() !== CEO_ROLE_SLUG) return false;
+    const now = new Date();
     const existing = await this.prisma.employee.findFirst({
       where: {
-        role: { slug: CEO_ROLE_SLUG },
         status: { in: [...ACTIVE_CEO_STATUSES] },
         ...(targetEmployeeId ? { id: { not: targetEmployeeId } } : {}),
+        OR: [
+          { role: { slug: CEO_ROLE_SLUG } },
+          {
+            permissionRoleAssignments: {
+              some: {
+                ...activeAdditionalRoleAssignments(now),
+                role: { slug: CEO_ROLE_SLUG },
+              },
+            },
+          },
+        ],
       },
       select: { id: true },
     });

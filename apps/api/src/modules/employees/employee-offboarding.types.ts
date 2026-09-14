@@ -19,6 +19,8 @@ export interface EmployeeOffboardingRevokeSummary {
   credentialAllowedListEntriesCleared: number;
   credentialFavoritesRemoved: number;
   accessOverridesClosed: number;
+  seatAssignmentsEnded: number;
+  permissionRolesRevoked: number;
 }
 
 export interface EmployeeOffboardingPreview {

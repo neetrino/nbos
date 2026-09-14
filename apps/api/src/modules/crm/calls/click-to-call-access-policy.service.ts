@@ -18,7 +18,7 @@ export class ClickToCallAccessPolicyService {
     return buildLeadClickToCallWhere(
       scope,
       actor.employeeId,
-      await this.departmentEmployeeIds(actor, [scope]),
+      await this.departmentEmployeeIds(actor, scope, 'CRM_LEADS_EDIT'),
     );
   }
 
@@ -27,7 +27,7 @@ export class ClickToCallAccessPolicyService {
     return buildDealClickToCallWhere(
       scope,
       actor.employeeId,
-      await this.departmentEmployeeIds(actor, [scope]),
+      await this.departmentEmployeeIds(actor, scope, 'CRM_DEALS_EDIT'),
     );
   }
 
@@ -38,17 +38,31 @@ export class ClickToCallAccessPolicyService {
       leadsScope,
       dealsScope,
       actorId: actor.employeeId,
-      departmentEmployeeIds: await this.departmentEmployeeIds(actor, [leadsScope, dealsScope]),
+      departmentEmployeeIds: [],
+      leadDepartmentEmployeeIds: await this.departmentEmployeeIds(
+        actor,
+        leadsScope,
+        'CRM_LEADS_EDIT',
+      ),
+      dealDepartmentEmployeeIds: await this.departmentEmployeeIds(
+        actor,
+        dealsScope,
+        'CRM_DEALS_EDIT',
+      ),
     });
   }
 
   private async departmentEmployeeIds(
     actor: CallAccessActor,
-    scopes: CallRbacScope[],
+    scope: CallRbacScope,
+    permission: string,
   ): Promise<string[]> {
-    if (!scopes.includes('DEPARTMENT') || actor.departmentIds.length === 0) return [];
+    const departmentIds = actor.permissionDepartmentIds
+      ? (actor.permissionDepartmentIds[permission] ?? [])
+      : actor.departmentIds;
+    if (scope !== 'DEPARTMENT' || departmentIds.length === 0) return [];
     const rows = await this.prisma.employeeDepartment.findMany({
-      where: { departmentId: { in: actor.departmentIds } },
+      where: { departmentId: { in: departmentIds } },
       select: { employeeId: true },
       distinct: ['employeeId'],
     });

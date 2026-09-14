@@ -32,6 +32,12 @@ model Employee {
   roleId       String               @map("role_id")
   role         Role                 @relation(fields: [roleId], references: [id])
   departments  EmployeeDepartment[]
+  seatAssignments           OrgSeatAssignment[]        @relation("OrgSeatAssignmentEmployee")
+  seatAssignmentsCreated    OrgSeatAssignment[]        @relation("OrgSeatAssignmentAssignedBy")
+  seatAssignmentsEnded      OrgSeatAssignment[]        @relation("OrgSeatAssignmentEndedBy")
+  permissionRoleAssignments PermissionRoleAssignment[] @relation("PermissionRoleAssignmentEmployee")
+  permissionRolesAssigned   PermissionRoleAssignment[] @relation("PermissionRoleAssignmentAssignedBy")
+  permissionRolesRevoked    PermissionRoleAssignment[] @relation("PermissionRoleAssignmentRevokedBy")
   level        EmployeeLevelEnum?
   baseSalary   Decimal?             @map("base_salary") @db.Decimal(12, 2)
   workSchedule Json?                @map("work_schedule")
@@ -40,6 +46,8 @@ model Employee {
   status       EmployeeStatusEnum   @default(PROBATION)
   /** Bumped on password reset / disable so refresh rejects stale access claims. */
   authVersion  Int                  @default(1) @map("auth_version")
+  /** Bumped on authorization changes so every API instance invalidates cached RBAC. */
+  accessVersion Int                 @default(1) @map("access_version")
   /** Personal UI locale. Writable allowlist is application-level (`en` | `ru`). */
   interfaceLocale String            @default("en") @map("interface_locale")
   createdAt    DateTime             @default(now()) @map("created_at")

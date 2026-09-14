@@ -141,7 +141,7 @@ export function departmentsNeedCardHydration(departments: DepartmentItem[]): boo
     const preview = department.members?.length ?? 0;
     if (department.parentId === null && preview === 0) return true;
     const count = department._count?.members ?? 0;
-    return count > 0 && preview === 0;
+    return count > preview;
   });
 }
 

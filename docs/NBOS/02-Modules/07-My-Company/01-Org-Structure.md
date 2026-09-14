@@ -112,6 +112,17 @@ Assignments:
 
 Так система честно показывает текущую реальность компании, но структура всё равно проектируется под целевое состояние.
 
+### Additive foundation — implementation, rollout pending (2026-09-14)
+
+- `OrgSeat` — явная бизнес-функция внутри `Department`; `kind = HEAD | DEPUTY | STANDARD`.
+- `OrgSeatAssignment` хранит текущего сотрудника и историю назначения. Один сотрудник может иметь несколько активных назначений; один seat имеет не более одного текущего владельца.
+- `Department.head_seat_id` указывает единственный руководящий seat отдела. Руководитель определяется только этим seat и его assignment, а не `Role.level`, `Employee.level`, названием должности или `isPrimary`.
+- `default_permission_role_id` — только mapping на техническую Permission Role. Назначение сотрудника на seat создаёт source-aware role assignment; завершение назначения отзывает только доступ, выданный этим seat.
+- `EmployeeDepartment` и `Employee.role_id` остаются compatibility-полями на expand-фазе. Новые экраны и org chart читают явные seats, если они заведены.
+- Целевой верхний узел — корневой `Department` компании (`Neetrino`). Миграция сохраняет существующие корни и связи отделов; любое изменение структуры требует явного бизнес-решения. UI не добавляет отдельную виртуальную карточку `Company`, когда корень один.
+- Миграция создаёт только схему и историю основной Permission Role. Seats, назначения и руководители создаются явно через API/UI; `position`, глобальная роль, `MEMBER` и Platform Owner не служат основанием для backfill.
+- `TEMPORARY` зарезервирован в storage contract, но write API создаёт только `ACTIVE` assignments до реализации обязательной даты окончания и expiration worker.
+
 ---
 
 ## Текущая реальность vs Целевая структура
@@ -327,7 +338,9 @@ Assignments:
 
 ### Визуализация оргструктуры
 
-Основной экран `Org Structure` должен быть визуальным canvas, похожим по удобству на Bitrix24:
+Основной экран `Org Structure` должен быть визуальным canvas, похожим по удобству на Bitrix24.
+
+Runtime (2026-09-14): `/my-company/departments` — canvas с department cards, явными Seat Assignments, orthogonal connectors, zoom, search, collapse/expand и member drawer. `/my-company/roles-seats` управляет seats, вакансиями, назначениями и mapping на Permission Role. KPI-поля карточки остаются следующим слоем.
 
 - большое рабочее полотно;
 - карточки отделов;
