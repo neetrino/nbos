@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import {
   getMarketingChannelAccentClass,
   MARKETING_SETTINGS_CARD_SURFACE_CLASS,
+  MARKETING_SETTINGS_MAP_CATALOG_ACCENT_CLASS,
 } from '@/features/marketing/constants/marketing-settings-surface';
 
 interface MarketingSettingsMapRowProps {
@@ -28,12 +29,15 @@ export function MarketingSettingsMapRow({
       onClick={onOpen}
       className={cn(MARKETING_SETTINGS_CARD_SURFACE_CLASS, 'flex w-full items-center gap-3')}
     >
-      {channel ? (
-        <span
-          className={cn('h-8 w-1 shrink-0 rounded-full', getMarketingChannelAccentClass(channel))}
-          aria-hidden
-        />
-      ) : null}
+      <span
+        className={cn(
+          'h-8 w-1 shrink-0 rounded-full',
+          channel
+            ? getMarketingChannelAccentClass(channel)
+            : MARKETING_SETTINGS_MAP_CATALOG_ACCENT_CLASS,
+        )}
+        aria-hidden
+      />
       <div className="min-w-0 flex-1 text-left">
         <p className="text-foreground truncate text-sm font-semibold">{title}</p>
         {description ? (

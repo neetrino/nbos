@@ -12,6 +12,9 @@ export const MARKETING_SETTINGS_MAP_STACK_CLASS = 'space-y-2';
 
 export const MARKETING_CHANNEL_ACCENT_FALLBACK_CLASS = 'bg-amber-500';
 
+/** Catalog map row (CRM Where) — not a single channel. */
+export const MARKETING_SETTINGS_MAP_CATALOG_ACCENT_CLASS = 'bg-violet-500';
+
 const MARKETING_CHANNEL_ACCENT_CLASS: Record<string, string> = {
   LIST_AM: 'bg-amber-500',
   META_ADS: 'bg-sky-500',
