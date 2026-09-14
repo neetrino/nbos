@@ -6,6 +6,7 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  NAVIGABLE_ENTITY_CARD_GRID_PRODUCTS_CLASS,
   NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS,
   ProductNavigableCard,
   ProjectNavigableCard,
@@ -104,7 +105,7 @@ export function ProductsHubDirectoryPanel({
   }
   if (view === 'grid') {
     return (
-      <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
+      <div className={NAVIGABLE_ENTITY_CARD_GRID_PRODUCTS_CLASS}>
         {products.map((product) => (
           <ProductNavigableCard
             key={product.id}
