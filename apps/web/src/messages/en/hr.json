@@ -53,7 +53,12 @@
     "remove": "Remove",
     "removeAria": "Remove participant",
     "removeTitle": "Remove participant?",
-    "removeDescription": "This person will lose access to the project team from this card."
+    "removeDescription": "This person will lose access to the project team from this card.",
+    "changePhotoAria": "Change profile photo",
+    "removePhotoAria": "Remove profile photo",
+    "photoUpdated": "Profile photo updated",
+    "photoFailed": "Could not update the profile photo.",
+    "photoTooLarge": "Photo must be at most 2 MB."
   },
   "securityAdmin": {
     "resetLinkTitle": "Password reset link",

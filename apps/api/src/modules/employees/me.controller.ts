@@ -8,15 +8,25 @@ import {
   Body,
   Param,
   NotFoundException,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { EmployeeWalletService } from './employee-wallet.service';
 import { EmployeesService } from './employees.service';
+import { EmployeeAvatarService } from './employee-avatar.service';
 import { DashboardService } from '../dashboard/dashboard.service';
 import { UpdateNavigationPreferenceDto } from '../dashboard/dto/update-navigation-preference.dto';
 import { CreatePersonalLinkDto } from '../dashboard/dto/create-personal-link.dto';
 import { UpdateOwnProfileDto } from './dto/update-own-profile.dto';
+import {
+  EMPLOYEE_AVATAR_FILE_INTERCEPTOR_OPTIONS,
+  requireEmployeeAvatarUpload,
+  requireEmployeeId,
+  type EmployeeAvatarMemoryUpload,
+} from './employee-avatar-http';
 
 @ApiTags('Me')
 @ApiBearerAuth()
@@ -25,6 +35,7 @@ export class MeController {
   constructor(
     private readonly employeeWalletService: EmployeeWalletService,
     private readonly employeesService: EmployeesService,
+    private readonly employeeAvatarService: EmployeeAvatarService,
     private readonly dashboardService: DashboardService,
   ) {}
 
@@ -127,13 +138,30 @@ export class MeController {
 
   @Put('profile')
   @ApiOperation({
-    summary: 'Update own personal profile (name, phone, telegram, sipId, avatar, birthday)',
+    summary: 'Update own personal profile (name, phone, telegram, sipId, birthday)',
   })
   @ApiBody({ type: UpdateOwnProfileDto })
   async updateProfile(@CurrentUser() user: CurrentUserPayload, @Body() body: UpdateOwnProfileDto) {
-    if (!user?.id) {
-      throw new NotFoundException('Employee record not found for this user');
-    }
-    return this.employeesService.updateOwnProfile(user.id, body);
+    return this.employeesService.updateOwnProfile(requireEmployeeId(user.id), body);
+  }
+
+  @Post('profile/avatar')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file', EMPLOYEE_AVATAR_FILE_INTERCEPTOR_OPTIONS))
+  @ApiOperation({ summary: 'Upload own profile photo' })
+  uploadAvatar(
+    @CurrentUser() user: CurrentUserPayload,
+    @UploadedFile() file: EmployeeAvatarMemoryUpload | undefined,
+  ) {
+    return this.employeeAvatarService.uploadOwn(
+      requireEmployeeId(user.id),
+      requireEmployeeAvatarUpload(file),
+    );
+  }
+
+  @Delete('profile/avatar')
+  @ApiOperation({ summary: 'Remove own profile photo' })
+  removeAvatar(@CurrentUser() user: CurrentUserPayload) {
+    return this.employeeAvatarService.removeOwn(requireEmployeeId(user.id));
   }
 }

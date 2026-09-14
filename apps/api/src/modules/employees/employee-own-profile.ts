@@ -14,7 +14,6 @@ export function buildOwnProfileUpdateData(body: UpdateOwnProfileDto): Prisma.Emp
   if (body.phone !== undefined) data.phone = optionalTrimmedOrNull(body.phone);
   if (body.telegram !== undefined) data.telegram = optionalTrimmedOrNull(body.telegram);
   if (body.sipId !== undefined) data.sipId = optionalTrimmedOrNull(body.sipId);
-  if (body.avatar !== undefined) data.avatar = optionalTrimmedOrNull(body.avatar);
   if (body.birthday !== undefined) {
     data.birthday = body.birthday ? new Date(body.birthday) : null;
   }

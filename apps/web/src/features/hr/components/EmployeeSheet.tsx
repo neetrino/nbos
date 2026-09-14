@@ -30,7 +30,7 @@ import {
   isEmployeeLevelValue,
   isEmployeeStatusValue,
 } from '@/features/hr/constants/hr';
-import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
+import { EmployeeProfileAvatarControl } from './EmployeeProfileAvatarControl';
 import { employeeFullName, employeePrimaryDepartment } from '@/features/hr/utils/employee-display';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
@@ -128,7 +128,7 @@ export function EmployeeSheet({
   const [hasOnboardingChecklist, setHasOnboardingChecklist] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const canReactivate = useCanReactivateEmployee();
-  const { me } = usePermission();
+  const { me, reloadMe } = usePermission();
 
   useLayoutEffect(() => {
     if (!employee) {
@@ -268,6 +268,15 @@ export function EmployeeSheet({
     }
   }, [onOpenChange, onRemoveParticipant]);
 
+  const handleAvatarUpdated = useCallback(
+    async (next: Employee) => {
+      setCurrent(next);
+      await onSaved?.();
+      if (selfProfile) reloadMe();
+    },
+    [onSaved, reloadMe, selfProfile],
+  );
+
   if (!hostMounted) return null;
 
   const displayEmployee = current ?? renderEmployee;
@@ -370,10 +379,11 @@ export function EmployeeSheet({
                 isMobileViewport && DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
               )}
             >
-              <EmployeePersonAvatar
-                label={fullName}
-                imageUrl={displayEmployee.avatar}
-                className="size-11 text-base"
+              <EmployeeProfileAvatarControl
+                employee={displayEmployee}
+                canEdit={canEditOwn || canEditHr}
+                selfProfile={selfProfile}
+                onUpdated={handleAvatarUpdated}
               />
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="min-w-0">

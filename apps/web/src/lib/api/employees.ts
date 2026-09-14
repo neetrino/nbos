@@ -1,4 +1,5 @@
 import { api } from '../api';
+import { postEmployeeAvatarFile } from './post-employee-avatar';
 
 export interface EmployeeDepartment {
   id: string;
@@ -245,6 +246,13 @@ export const employeesApi = {
     const resp = await api.post<EmployeeSessionRevokeResult>(
       `/api/employees/${id}/security/revoke-sessions`,
     );
+    return resp.data;
+  },
+  async uploadAvatar(id: string, file: File): Promise<Employee> {
+    return postEmployeeAvatarFile(`/api/employees/${id}/avatar`, file);
+  },
+  async removeAvatar(id: string): Promise<Employee> {
+    const resp = await api.delete<Employee>(`/api/employees/${id}/avatar`);
     return resp.data;
   },
 };

@@ -84,6 +84,7 @@ async function assertEntityExistsByType(
     COMPANY: () => prisma.company.findUnique({ where: { id: entityId } }),
     CONTACT: () => prisma.contact.findUnique({ where: { id: entityId } }),
     DOCUMENT: () => prisma.document.findUnique({ where: { id: entityId } }),
+    EMPLOYEE: () => prisma.employee.findUnique({ where: { id: entityId } }),
     EXPENSE: () => prisma.expense.findUnique({ where: { id: entityId } }),
     INVOICE: () => prisma.invoice.findUnique({ where: { id: entityId } }),
     LEAD: () => prisma.lead.findUnique({ where: { id: entityId } }),
@@ -402,6 +403,23 @@ async function assertExpenseScopedAccessible(
   await assertProjectScopedAccessible(prisma, projectId, access);
 }
 
+async function assertEmployeeAvatarContextAccessible(
+  prisma: InstanceType<typeof PrismaClient>,
+  entityId: string,
+  access: DriveEntityContextAccess,
+) {
+  const row = await prisma.employee.findUnique({
+    where: { id: entityId },
+    select: { id: true },
+  });
+  if (!row) {
+    throw new NotFoundException('Drive context not found.');
+  }
+  if (access.employeeId === entityId) return;
+  if (normalizeDriveScope(access.driveScope) === SCOPE_ALL) return;
+  throw new NotFoundException('Drive context not found.');
+}
+
 /**
  * Phase-1 hardening helper:
  * - uses existing explicit read rules where they exist (`DOCUMENT`);
@@ -471,6 +489,11 @@ export async function assertDriveEntityContextAccessible(
 
   if (entityType === 'CONTACT') {
     await assertContactScopedAccessible(prisma, entityId, access);
+    return;
+  }
+
+  if (entityType === 'EMPLOYEE') {
+    await assertEmployeeAvatarContextAccessible(prisma, entityId, access);
     return;
   }
 
