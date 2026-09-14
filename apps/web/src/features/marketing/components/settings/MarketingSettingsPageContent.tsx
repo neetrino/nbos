@@ -12,7 +12,6 @@ import { useMarketingSettingsData } from '@/features/marketing/hooks/use-marketi
 import { CreateMarketingAccountDialog } from './CreateMarketingAccountDialog';
 import { MarketingAccountsSection } from './MarketingAccountsSection';
 import { MarketingCrmWhereSection } from './MarketingCrmWhereSection';
-import { MarketingSettingsOwnershipStrip } from './MarketingSettingsOwnershipStrip';
 
 export function MarketingSettingsPageContent() {
   const t = useTranslations('marketing');
@@ -56,7 +55,6 @@ export function MarketingSettingsPageContent() {
 
   return (
     <div className="space-y-8">
-      <MarketingSettingsOwnershipStrip />
       {!loading ? (
         <MarketingCrmWhereSection rows={crmWhereRows} canEdit={canEdit} onSaved={reload} />
       ) : null}

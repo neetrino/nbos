@@ -14,7 +14,6 @@ import {
 import { MarketingAccountSheet } from './MarketingAccountSheet';
 import { MarketingAccountsChannelRows } from './MarketingAccountsChannelRows';
 import { MarketingChannelAccountsSheet } from './MarketingChannelAccountsSheet';
-import { MarketingSettingsSectionHeader } from './MarketingSettingsOwnershipStrip';
 
 interface MarketingAccountsSectionProps {
   accounts: MarketingAccount[];
@@ -42,11 +41,10 @@ export function MarketingAccountsSection(props: MarketingAccountsSectionProps) {
 
   return (
     <section className="space-y-4">
-      <MarketingSettingsSectionHeader
-        title={t('settings.accounts.title')}
-        description={t('settings.accounts.description')}
-        action={addButton}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-foreground text-base font-semibold">{t('settings.accounts.title')}</h2>
+        {addButton}
+      </div>
       <MarketingAccountsMapBody {...props} />
     </section>
   );
