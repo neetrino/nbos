@@ -38,7 +38,7 @@ export function MailSheetPanelHeader({ title, description, trailing }: MailSheet
             : 'px-5 py-4',
         )}
       >
-        <SheetTitle>{title}</SheetTitle>
+        <SheetTitle className="tracking-tight">{title}</SheetTitle>
         {description ? <SheetDescription>{description}</SheetDescription> : null}
       </SheetHeader>
     </div>

@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { InlineField } from '@/components/shared';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
+  DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE,
+  DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS,
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { mailApi, type MailSecureMode } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
@@ -20,6 +20,7 @@ import {
   MAIL_SECURE_MODES,
   type CorporateMailboxFormState,
 } from './corporate-mailbox-form-state';
+import { MAIL_FIELD_GRID_CLASS } from './mail-ui-classes';
 
 interface CorporateMailboxFormProps {
   onCancel: () => void;
@@ -30,6 +31,8 @@ interface CorporateMailboxFormProps {
   hasStoredPassword?: boolean;
   lastError?: string | null;
 }
+
+const SECURE_MODE_OPTIONS = MAIL_SECURE_MODES.map((mode) => ({ value: mode, label: mode }));
 
 export function CorporateMailboxForm({
   onCancel,
@@ -86,15 +89,27 @@ export function CorporateMailboxForm({
       <CorporateSettingsFields
         state={state}
         set={set}
+        disabled={submitting}
         passwordPlaceholder={
           reconnect && hasStoredPassword ? 'Leave blank to keep saved password' : undefined
         }
       />
       <div className="flex justify-end gap-2 pt-2">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
+        <Button
+          type="button"
+          variant="outline"
+          size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+          onClick={onCancel}
+          disabled={submitting}
+        >
           Back
         </Button>
-        <Button type="button" onClick={() => void submit()} disabled={submitting}>
+        <Button
+          type="button"
+          size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+          onClick={() => void submit()}
+          disabled={submitting}
+        >
           {submitting ? 'Validating…' : reconnect ? 'Reconnect mailbox' : 'Connect mailbox'}
         </Button>
       </div>
@@ -105,6 +120,7 @@ export function CorporateMailboxForm({
 function CorporateSettingsFields({
   state,
   set,
+  disabled,
   passwordPlaceholder,
 }: {
   state: CorporateMailboxFormState;
@@ -112,136 +128,122 @@ function CorporateSettingsFields({
     key: K,
     value: CorporateMailboxFormState[K],
   ) => void;
+  disabled: boolean;
   passwordPlaceholder?: string;
 }) {
   return (
-    <>
-      <div className="grid gap-2">
-        <Label htmlFor="mb-email">Email</Label>
-        <Input
-          id="mb-email"
-          type="email"
-          value={state.email}
-          onChange={(event) => set('email', event.target.value)}
-          placeholder="user@company.com"
+    <div className="flex flex-col gap-3">
+      <InlineField
+        variant="controlled"
+        label="Email"
+        type="email"
+        value={state.email}
+        onValueChange={(value) => set('email', value)}
+        placeholder="user@company.com"
+        disabled={disabled}
+      />
+      <div className={MAIL_FIELD_GRID_CLASS}>
+        <InlineField
+          variant="controlled"
+          label="IMAP host"
+          type="text"
+          value={state.imapHost}
+          onValueChange={(value) => set('imapHost', value)}
+          placeholder="imap.company.com"
+          disabled={disabled}
+        />
+        <InlineField
+          variant="controlled"
+          label="IMAP port"
+          type="text"
+          value={state.imapPort}
+          onValueChange={(value) => set('imapPort', value)}
+          disabled={disabled}
         />
       </div>
-      <HostPortRow
-        hostId="mb-imap-host"
-        portId="mb-imap-port"
-        hostLabel="IMAP host"
-        portLabel="IMAP port"
-        host={state.imapHost}
-        port={state.imapPort}
-        hostPlaceholder="imap.company.com"
-        onHost={(value) => set('imapHost', value)}
-        onPort={(value) => set('imapPort', value)}
-      />
-      <SecureModeField
+      <InlineField
+        variant="controlled"
         label="IMAP secure mode"
+        type="select"
         value={state.imapSecure}
-        onChange={(value) => set('imapSecure', value)}
+        options={SECURE_MODE_OPTIONS}
+        onValueChange={(value) => set('imapSecure', value as MailSecureMode)}
+        disabled={disabled}
       />
-      <HostPortRow
-        hostId="mb-smtp-host"
-        portId="mb-smtp-port"
-        hostLabel="SMTP host"
-        portLabel="SMTP port"
-        host={state.smtpHost}
-        port={state.smtpPort}
-        hostPlaceholder="smtp.company.com"
-        onHost={(value) => set('smtpHost', value)}
-        onPort={(value) => set('smtpPort', value)}
-      />
-      <SecureModeField
-        label="SMTP secure mode"
-        value={state.smtpSecure}
-        onChange={(value) => set('smtpSecure', value)}
-      />
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="mb-login">Login</Label>
-          <Input
-            id="mb-login"
-            value={state.login}
-            onChange={(event) => set('login', event.target.value)}
-            autoComplete="off"
-          />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="mb-password">Password</Label>
-          <Input
-            id="mb-password"
-            type="password"
-            value={state.password}
-            onChange={(event) => set('password', event.target.value)}
-            autoComplete="new-password"
-            placeholder={passwordPlaceholder}
-          />
-        </div>
-      </div>
-    </>
-  );
-}
-
-function HostPortRow(props: {
-  hostId: string;
-  portId: string;
-  hostLabel: string;
-  portLabel: string;
-  host: string;
-  port: string;
-  hostPlaceholder: string;
-  onHost: (value: string) => void;
-  onPort: (value: string) => void;
-}) {
-  return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-      <div className="grid gap-2 sm:col-span-2">
-        <Label htmlFor={props.hostId}>{props.hostLabel}</Label>
-        <Input
-          id={props.hostId}
-          value={props.host}
-          onChange={(event) => props.onHost(event.target.value)}
-          placeholder={props.hostPlaceholder}
+      <div className={MAIL_FIELD_GRID_CLASS}>
+        <InlineField
+          variant="controlled"
+          label="SMTP host"
+          type="text"
+          value={state.smtpHost}
+          onValueChange={(value) => set('smtpHost', value)}
+          placeholder="smtp.company.com"
+          disabled={disabled}
+        />
+        <InlineField
+          variant="controlled"
+          label="SMTP port"
+          type="text"
+          value={state.smtpPort}
+          onValueChange={(value) => set('smtpPort', value)}
+          disabled={disabled}
         />
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor={props.portId}>{props.portLabel}</Label>
-        <Input
-          id={props.portId}
-          inputMode="numeric"
-          value={props.port}
-          onChange={(event) => props.onPort(event.target.value)}
+      <InlineField
+        variant="controlled"
+        label="SMTP secure mode"
+        type="select"
+        value={state.smtpSecure}
+        options={SECURE_MODE_OPTIONS}
+        onValueChange={(value) => set('smtpSecure', value as MailSecureMode)}
+        disabled={disabled}
+      />
+      <div className={MAIL_FIELD_GRID_CLASS}>
+        <InlineField
+          variant="controlled"
+          label="Login"
+          type="text"
+          value={state.login}
+          onValueChange={(value) => set('login', value)}
+          disabled={disabled}
+        />
+        <CorporatePasswordField
+          value={state.password}
+          onChange={(value) => set('password', value)}
+          placeholder={passwordPlaceholder}
+          disabled={disabled}
         />
       </div>
     </div>
   );
 }
 
-function SecureModeField(props: {
-  label: string;
-  value: MailSecureMode;
-  onChange: (value: MailSecureMode) => void;
+function CorporatePasswordField({
+  value,
+  onChange,
+  placeholder,
+  disabled,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  disabled: boolean;
 }) {
   return (
-    <div className="grid gap-2">
-      <Label>{props.label}</Label>
-      <Select
-        value={props.value}
-        onValueChange={(value) => props.onChange(value as MailSecureMode)}
-      >
-        <SelectTrigger>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {MAIL_SECURE_MODES.map((mode) => (
-            <SelectItem key={mode} value={mode}>
-              {mode}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
+      <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>Password</span>
+      <div className={DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS}>
+        <Input
+          id="mb-password"
+          type="password"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          autoComplete="new-password"
+          placeholder={placeholder}
+          disabled={disabled}
+          className={DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS}
+        />
+      </div>
     </div>
   );
 }
@@ -261,7 +263,7 @@ function buildConnectPayload(state: CorporateMailboxFormState) {
 }
 
 function buildReconnectPayload(state: CorporateMailboxFormState) {
-  const payload = {
+  return {
     email: state.email.trim(),
     imapHost: state.imapHost.trim(),
     imapPort: Number(state.imapPort),
@@ -272,5 +274,4 @@ function buildReconnectPayload(state: CorporateMailboxFormState) {
     login: state.login.trim(),
     ...(state.password ? { password: state.password } : {}),
   };
-  return payload;
 }

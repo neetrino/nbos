@@ -207,7 +207,11 @@ export function MailThreadDetailContent({
           )}
         >
           <h2
-            className={compact ? 'text-base leading-snug font-semibold' : 'text-2xl font-semibold'}
+            className={
+              compact
+                ? 'text-foreground text-lg leading-snug font-semibold tracking-tight'
+                : 'text-2xl font-semibold tracking-tight'
+            }
           >
             {title}
           </h2>

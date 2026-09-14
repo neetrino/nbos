@@ -9,13 +9,13 @@ import {
   resolveMailFolderCount,
   type MailFolderKey,
 } from '@/features/mail/mail-folder-config';
-
-const FOLDER_BUTTON_CLASS =
-  'text-foreground focus-visible:ring-ring flex w-full items-center justify-between gap-2 rounded-md px-2.5 py-2 text-left text-sm transition-colors outline-none focus-visible:ring-2';
-
-function folderButtonClass(active: boolean): string {
-  return cn(FOLDER_BUTTON_CLASS, active ? 'bg-muted font-medium' : 'hover:bg-muted/60');
-}
+import { MAIL_FOLDER_ICONS } from '@/features/mail/mail-folder-icons';
+import {
+  MAIL_FOLDER_ASIDE_CLASS,
+  MAIL_FOLDER_NAV_BUTTON_ACTIVE_CLASS,
+  MAIL_FOLDER_NAV_BUTTON_CLASS,
+  MAIL_FOLDER_NAV_BUTTON_IDLE_CLASS,
+} from '@/features/mail/mail-ui-classes';
 
 export interface MailFolderSidebarProps {
   accounts: MailAccountHealthSummaryRow[];
@@ -33,28 +33,31 @@ export function MailFolderSidebar({
   className,
 }: MailFolderSidebarProps) {
   return (
-    <aside
-      className={cn(
-        'border-border hidden w-44 shrink-0 flex-col border-r md:flex lg:w-48',
-        className,
-      )}
-      aria-label="Mail folders"
-    >
+    <aside className={cn(MAIL_FOLDER_ASIDE_CLASS, className)} aria-label="Mail folders">
       <ScrollArea className="min-h-0 flex-1">
-        <nav className="flex flex-col gap-0.5 p-2">
+        <nav className="flex flex-col gap-0.5 p-3">
           {MAIL_FOLDERS.map((folder) => {
             const count = resolveMailFolderCount(folder.key, accounts, filterAccountId);
+            const Icon = MAIL_FOLDER_ICONS[folder.key];
+            const active = activeFolder === folder.key;
             return (
               <button
                 key={folder.key}
                 type="button"
                 onClick={() => onSelectFolder(folder.key)}
-                className={folderButtonClass(activeFolder === folder.key)}
-                aria-current={activeFolder === folder.key ? 'page' : undefined}
+                className={cn(
+                  MAIL_FOLDER_NAV_BUTTON_CLASS,
+                  active ? MAIL_FOLDER_NAV_BUTTON_ACTIVE_CLASS : MAIL_FOLDER_NAV_BUTTON_IDLE_CLASS,
+                )}
+                aria-current={active ? 'page' : undefined}
               >
-                <span>{folder.label}</span>
+                <Icon className="size-4 shrink-0" aria-hidden />
+                <span className="min-w-0 flex-1 truncate">{folder.label}</span>
                 {count !== null ? (
-                  <Badge variant="secondary" className="shrink-0 tabular-nums">
+                  <Badge
+                    variant={active ? 'default' : 'secondary'}
+                    className="shrink-0 tabular-nums"
+                  >
                     {count}
                   </Badge>
                 ) : null}

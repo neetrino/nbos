@@ -31,9 +31,11 @@ export interface MailComposeMessageEditorProps {
   disabled?: boolean;
   placeholder?: string;
   id?: string;
+  fillHeight?: boolean;
 }
 
-const COMPOSE_EDITOR_MIN_HEIGHT_CLASS = 'min-h-[260px]';
+const COMPOSE_EDITOR_MIN_HEIGHT_CLASS = 'min-h-[220px]';
+const COMPOSE_EDITOR_FILL_HEIGHT_CLASS = 'min-h-[220px] flex-1';
 const COMPOSE_EDITOR_FULLSCREEN_MIN_HEIGHT_CLASS = 'min-h-[calc(100vh-11rem)]';
 
 function MailComposeHtmlPreview({ html }: { html: string }) {
@@ -56,6 +58,7 @@ export function MailComposeMessageEditor({
   disabled = false,
   placeholder = 'Write your message…',
   id,
+  fillHeight = false,
 }: MailComposeMessageEditorProps) {
   const skipEmitRef = useRef(false);
   const lastExternalRef = useRef(value);
@@ -86,7 +89,9 @@ export function MailComposeMessageEditor({
             'mail-compose-prosemirror entity-notes-prosemirror max-w-none px-3 py-2 text-sm focus:outline-none',
             fullscreen
               ? COMPOSE_EDITOR_FULLSCREEN_MIN_HEIGHT_CLASS
-              : COMPOSE_EDITOR_MIN_HEIGHT_CLASS,
+              : fillHeight
+                ? COMPOSE_EDITOR_FILL_HEIGHT_CLASS
+                : COMPOSE_EDITOR_MIN_HEIGHT_CLASS,
           ),
         },
       },
@@ -176,6 +181,7 @@ export function MailComposeMessageEditor({
   return (
     <div
       className={cn(
+        fillHeight && 'flex h-full min-h-0 flex-col',
         fullscreen &&
           'bg-background fixed inset-0 z-[220] flex flex-col overflow-hidden p-3 sm:p-4',
       )}
@@ -194,7 +200,7 @@ export function MailComposeMessageEditor({
           ENTITY_NOTES_SHELL_EDITING_SURFACE_CLASS,
           'nbos-mail-compose-editor flex min-h-0 flex-1 flex-col',
           disabled && 'pointer-events-none opacity-60',
-          fullscreen && 'min-h-0 flex-1',
+          (fullscreen || fillHeight) && 'min-h-0 flex-1',
         )}
         data-entity-notes-active="true"
         data-entity-notes-empty={value ? 'false' : 'true'}
@@ -212,7 +218,7 @@ export function MailComposeMessageEditor({
           {mode === 'visual' ? <EditorContent editor={editor} className="h-full" /> : null}
 
           {mode === 'html' ? (
-            <div className="flex h-full min-h-[260px] flex-col gap-2 p-3">
+            <div className={cn('flex h-full flex-col gap-2 p-3', COMPOSE_EDITOR_MIN_HEIGHT_CLASS)}>
               <p className="text-muted-foreground text-xs">
                 Unsafe HTML will be sanitized before sending.
               </p>
