@@ -12,6 +12,7 @@ import {
   MailComposeEditorToolbar,
   type MailComposeEditorMode,
 } from './mail-compose-editor-toolbar';
+import { shouldReplaceComposeEditorContent } from './mail-compose-editor-sync';
 import {
   composeEditorHtmlToValue,
   composeValueToEditorHtml,
@@ -66,6 +67,7 @@ export function MailComposeMessageEditor({
     (rawHtml: string) => {
       const bodyHtml = composeEditorHtmlToValue(rawHtml);
       const bodyText = bodyHtml ? htmlToPlainTextFallback(bodyHtml) : '';
+      lastExternalRef.current = bodyHtml;
       onChange({ bodyHtml, bodyText });
     },
     [onChange],
@@ -106,16 +108,22 @@ export function MailComposeMessageEditor({
   }, [disabled, editor, mode]);
 
   useEffect(() => {
-    if (!editor || value === lastExternalRef.current) {
+    if (!editor) {
+      return;
+    }
+    if (
+      !shouldReplaceComposeEditorContent({
+        incomingValue: value,
+        lastEmittedValue: lastExternalRef.current,
+        currentEditorHtml: editor.getHTML(),
+      })
+    ) {
+      lastExternalRef.current = value;
       return;
     }
     lastExternalRef.current = value;
-    const html = composeValueToEditorHtml(value);
-    if (editor.getHTML() === html) {
-      return;
-    }
     skipEmitRef.current = true;
-    editor.commands.setContent(html, { emitUpdate: false });
+    editor.commands.setContent(composeValueToEditorHtml(value), { emitUpdate: false });
     skipEmitRef.current = false;
   }, [editor, value]);
 
