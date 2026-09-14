@@ -58,14 +58,26 @@ export function buildContactClickToCallWhere(params: {
   dealsScope: CallRbacScope;
   actorId: string;
   departmentEmployeeIds: string[];
+  leadDepartmentEmployeeIds?: string[];
+  dealDepartmentEmployeeIds?: string[];
 }): Prisma.ContactWhereInput {
   if (params.leadsScope === 'NONE' && params.dealsScope === 'NONE') {
     return CLICK_TO_CALL_DENIED_WHERE;
   }
   if (params.leadsScope === 'ALL' || params.dealsScope === 'ALL') return {};
   const ors: Prisma.ContactWhereInput[] = [];
-  appendLeadContactGrant(ors, params.leadsScope, params.actorId, params.departmentEmployeeIds);
-  appendDealContactGrant(ors, params.dealsScope, params.actorId, params.departmentEmployeeIds);
+  appendLeadContactGrant(
+    ors,
+    params.leadsScope,
+    params.actorId,
+    params.leadDepartmentEmployeeIds ?? params.departmentEmployeeIds,
+  );
+  appendDealContactGrant(
+    ors,
+    params.dealsScope,
+    params.actorId,
+    params.dealDepartmentEmployeeIds ?? params.departmentEmployeeIds,
+  );
   return ors.length > 0 ? { OR: ors } : CLICK_TO_CALL_DENIED_WHERE;
 }
 

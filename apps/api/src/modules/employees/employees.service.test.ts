@@ -12,6 +12,17 @@ describe('EmployeesService', () => {
     service = new EmployeesService(prisma as never);
   });
 
+  describe('findAllWithFilters', () => {
+    it('omits password hashes from list queries', async () => {
+      prisma.employee.findMany.mockResolvedValue([]);
+      prisma.employee.count.mockResolvedValue(0);
+      await service.findAllWithFilters({ page: 1, pageSize: 50 });
+      expect(prisma.employee.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ omit: { passwordHash: true } }),
+      );
+    });
+  });
+
   describe('findAll', () => {
     it('returns all employees', async () => {
       prisma.employee.findMany.mockResolvedValue([{ id: '1', firstName: 'John' }]);

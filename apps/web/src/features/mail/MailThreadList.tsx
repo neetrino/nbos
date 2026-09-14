@@ -3,23 +3,17 @@
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import type { MailThreadListRow } from '@/lib/api/mail';
-
-const SENDER_COLUMN_CLASS = 'w-[7.5rem] shrink-0 truncate sm:w-36';
-const DATE_COLUMN_CLASS = 'w-14 shrink-0 text-right tabular-nums sm:w-16';
+import { formatMailListDate, mailInitialsFromLabel } from './mail-format';
+import {
+  MAIL_AVATAR_CLASS,
+  MAIL_THREAD_ROW_ACTIVE_CLASS,
+  MAIL_THREAD_ROW_CLASS,
+  MAIL_THREAD_ROW_UNREAD_CLASS,
+} from './mail-ui-classes';
 
 function formatThreadTitle(subjectNormalized: string): string {
   const trimmed = subjectNormalized.trim();
   return trimmed.length === 0 ? '(No subject)' : trimmed;
-}
-
-function formatMailListDate(iso: string): string {
-  const date = new Date(iso);
-  const now = new Date();
-  const sameDay = date.toDateString() === now.toDateString();
-  if (sameDay) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
-  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
 function threadSenderLabel(thread: MailThreadListRow, accountEmail: string | undefined): string {
@@ -73,12 +67,12 @@ export function MailThreadList({
           <li
             key={thread.id}
             className={cn(
-              'group flex items-center',
-              isActive && 'bg-muted',
-              thread.hasUnread && !isActive && 'bg-muted/30',
+              MAIL_THREAD_ROW_CLASS,
+              isActive && MAIL_THREAD_ROW_ACTIVE_CLASS,
+              thread.hasUnread && !isActive && MAIL_THREAD_ROW_UNREAD_CLASS,
             )}
           >
-            <div className="flex shrink-0 items-center pl-2">
+            <div className="flex shrink-0 items-center pl-3">
               <Checkbox
                 checked={isSelected}
                 onCheckedChange={(checked) => onToggleThreadSelected(thread.id, checked === true)}
@@ -89,29 +83,34 @@ export function MailThreadList({
               type="button"
               onClick={() => onOpenThread(thread.id)}
               aria-current={isActive ? 'true' : undefined}
-              className="hover:bg-muted/40 focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-2 px-2 py-2 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-inset sm:gap-3 sm:py-2.5"
+              className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 px-3 py-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset"
             >
-              {thread.hasUnread ? (
-                <span className="bg-primary size-2 shrink-0 rounded-full" aria-label="Unread" />
-              ) : (
-                <span className="size-2 shrink-0" aria-hidden />
-              )}
-              <span
-                className={cn(
-                  SENDER_COLUMN_CLASS,
-                  thread.hasUnread ? 'text-foreground font-semibold' : 'text-muted-foreground',
-                )}
-              >
-                {senderLabel}
+              <span className={cn(MAIL_AVATAR_CLASS, thread.hasUnread && 'ring-primary ring-2')}>
+                {mailInitialsFromLabel(senderLabel)}
               </span>
-              <span className="min-w-0 flex-1 truncate">
-                <span className={cn(thread.hasUnread ? 'font-semibold' : 'font-normal')}>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      'min-w-0 truncate text-sm',
+                      thread.hasUnread ? 'text-foreground font-semibold' : 'text-foreground/80',
+                    )}
+                  >
+                    {senderLabel}
+                  </span>
+                  <span className="text-muted-foreground ml-auto shrink-0 text-xs tabular-nums">
+                    {formatMailListDate(thread.lastMessageAt)}
+                  </span>
+                </span>
+                <span
+                  className={cn(
+                    'block truncate text-sm',
+                    thread.hasUnread ? 'font-medium' : 'font-normal',
+                  )}
+                >
                   {subject}
                 </span>
-                <span className="text-muted-foreground hidden sm:inline"> — {preview}</span>
-              </span>
-              <span className={cn(DATE_COLUMN_CLASS, 'text-muted-foreground text-xs')}>
-                {formatMailListDate(thread.lastMessageAt)}
+                <span className="text-muted-foreground block truncate text-xs">{preview}</span>
               </span>
             </button>
           </li>

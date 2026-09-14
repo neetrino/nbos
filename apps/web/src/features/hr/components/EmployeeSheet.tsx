@@ -69,6 +69,7 @@ import {
   filterRolesForAssignmentPicker,
 } from '@/features/hr/utils/role-assignment-picker';
 import { usePermission } from '@/lib/permissions';
+import { EmployeeEffectiveAccessDialog } from './roles-seats/EmployeeEffectiveAccessDialog';
 import { useTranslations } from 'next-intl';
 import { ChangePasswordPanel } from '@/features/account/components/change-password-panel';
 import { ActiveSessionsPanel } from '@/features/account/components/active-sessions-panel';
@@ -128,7 +129,8 @@ export function EmployeeSheet({
   const [hasOnboardingChecklist, setHasOnboardingChecklist] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const canReactivate = useCanReactivateEmployee();
-  const { me, reloadMe } = usePermission();
+  const { me, reloadMe, can } = usePermission();
+  const [accessOpen, setAccessOpen] = useState(false);
 
   useLayoutEffect(() => {
     if (!employee) {
@@ -388,6 +390,11 @@ export function EmployeeSheet({
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="min-w-0">
                   <h2 className="text-base font-semibold">{fullName}</h2>
+                  {can('VIEW', 'SETTINGS_RBAC') ? (
+                    <Button variant="link" size="sm" onClick={() => setAccessOpen(true)}>
+                      {t('rolesSeats.access.title')}
+                    </Button>
+                  ) : null}
                   <p className="text-muted-foreground text-xs">
                     {displayEmployee.position || displayEmployee.role.name}
                     {dept ? ` · ${dept}` : ''}
@@ -543,6 +550,10 @@ export function EmployeeSheet({
         open={terminateOpen}
         onOpenChange={setTerminateOpen}
         onTerminated={handleOffboardComplete}
+      />
+      <EmployeeEffectiveAccessDialog
+        employeeId={accessOpen ? displayEmployee.id : null}
+        onOpenChange={setAccessOpen}
       />
 
       <ReactivateEmployeeDialog

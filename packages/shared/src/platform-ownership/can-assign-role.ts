@@ -5,6 +5,8 @@ export interface CanAssignRoleInput {
   actorRoleSlug: string;
   targetRoleSlug: string;
   targetRoleAssignable: boolean;
+  /** Archived roles keep existing grants but cannot back any new assignment. */
+  targetRoleArchived?: boolean;
   /** True when another employee already holds CEO (not the assignment target). */
   ceoHeldByOtherEmployee: boolean;
 }
@@ -18,6 +20,9 @@ export function canAssignRole(input: CanAssignRoleInput): CanAssignRoleResult {
   const target = input.targetRoleSlug.trim().toLowerCase();
   if (!input.targetRoleAssignable || target === PLATFORM_OWNER_ROLE_SLUG) {
     return { allowed: false, reason: 'Platform Owner is not an assignable role.' };
+  }
+  if (input.targetRoleArchived) {
+    return { allowed: false, reason: 'Archived roles cannot be assigned. Restore the role first.' };
   }
   if (input.actorIsPlatformOwner) {
     if (target === CEO_ROLE_SLUG && input.ceoHeldByOtherEmployee) {

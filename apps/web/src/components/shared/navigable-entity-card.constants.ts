@@ -57,6 +57,15 @@ export const PROJECT_HUB_CARD_META_ROW_CLASS =
 /** Same responsive behavior as {@link NAVIGABLE_ENTITY_CARD_GRID_CLASS}. */
 export const NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS = NAVIGABLE_ENTITY_CARD_GRID_CLASS;
 
+/**
+ * Product Hub directory — same ~280px track as project-detail product cards.
+ * Full-width hub fits ~5 columns on a 24" (1920) layout with the sidebar open.
+ */
+export const NAVIGABLE_ENTITY_CARD_PRODUCTS_MIN_TRACK = '17.5rem';
+
+export const NAVIGABLE_ENTITY_CARD_GRID_PRODUCTS_CLASS =
+  'grid w-full min-w-0 gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,17.5rem),1fr))]';
+
 /** Work Spaces product tab — slightly wider cards than default hub grid. */
 export const WORK_SPACE_PRODUCT_CARD_GRID_CLASS =
   'grid w-full min-w-0 gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,32rem),1fr))]';

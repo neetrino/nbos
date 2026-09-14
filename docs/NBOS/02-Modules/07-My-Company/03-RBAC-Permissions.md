@@ -70,6 +70,30 @@ Employee -> Seat Assignments -> Business accountability
 Employee -> Permission Roles -> System access
 ```
 
+### Multi-role effective access
+
+Сотрудник может одновременно получить несколько Permission Roles из разных источников:
+
+- `LEGACY` — текущая основная роль из compatibility-поля `Employee.role_id`;
+- `MANUAL` — зарезервированный source для отдельного admin write path; в текущем foundation slice доступен только как storage/read contract;
+- `SEAT` — автоматически из конкретного `Seat Assignment`.
+
+Effective access — объединение всех активных назначений. `ALL` расширяет доступ до всех записей; `OWN` сохраняет доступ к своим; `DEPARTMENT` объединяет только department IDs, относящиеся к источнику этой роли. Scope одной роли нельзя ошибочно переносить на все отделы сотрудника.
+
+Для `SEAT` источником department scope является `scope_department_id` конкретного seat. Основная compatibility-роль `Employee.role_id` сохраняет прежний department scope по всем memberships сотрудника. Миграция не сужает его до primary department.
+
+Дополнительное назначение без `scope_department_id` не даёт department scope вообще — это fail-closed по построению. Так удаление отдела (`onDelete: SetNull`) не может молча расширить уже выданную роль с одного отдела до всех memberships сотрудника. Расширение «по всем memberships» остаётся исключительной привилегией `LEGACY`-роли.
+
+Отдельно от этого guard сохраняет для маршрута объединение department scope найденного permission с memberships сотрудника. Это нужно потребителям вроде Drive, где доступ к ресурсу шарится по отделу независимо от RBAC scope. Изоляцию scope между ролями обеспечивает `permissionDepartmentIds`, и именно он используется в CRM и shared credentials.
+
+Каждое назначение хранит provenance (`source`, `seat_assignment_id`, `scope_department_id`, период действия, кто выдал/отозвал). Завершение seat assignment отзывает только связанную строку `SEAT`; права из другого seat, основной или ручной роли сохраняются.
+
+Дополнительные permission roles расширяют только доступ к данным и действиям. Governance authority для назначения ролей, приглашения сотрудников и reactivation определяется исключительно основной ролью `Employee.role_id`; seat-sourced и другие дополнительные роли не дают делегирования полномочий CEO.
+
+`Role.level` не участвует в авторизации и остаётся legacy-порядком отображения до отдельной миграции на `sortOrder`. `Employee.level` — профессиональная квалификация и также не выдаёт права и не определяет место в оргструктуре.
+
+Поскольку `PermissionRoleAssignment` хранит историю навсегда, роль после первого назначения нельзя удалить. Вывод роли из обращения — архивация (`Role.archivedAt`); правила описаны в [Settings → Permissions / RBAC](../16-Settings-Admin/02-Permissions-RBAC.md).
+
 ---
 
 ## Три уровня контроля доступа

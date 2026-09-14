@@ -122,7 +122,7 @@ function DepartmentAdminMembers({
             >
               <Users className="text-muted-foreground size-4 shrink-0" />
               <span className="min-w-0 flex-1 truncate">
-                {m.employee.firstName} {m.employee.lastName}
+                {m.employee?.firstName} {m.employee?.lastName}
               </span>
               <Badge variant="secondary" className="shrink-0">
                 {isDeptRoleValue(m.deptRole) ? t(`deptRole.${m.deptRole}`) : m.deptRole}

@@ -185,10 +185,9 @@
     "namePlaceholder": "List.am Account 1",
     "identifier": "Identifier",
     "identifierPlaceholder": "@page or account id",
-    "identifierValue": "Identifier: {value}",
     "phone": "Phone",
     "phonePlaceholder": "+374...",
-    "phoneValue": "Phone: {value}",
+    "status": "Status",
     "add": "Add account",
     "adding": "Adding…",
     "emptyTitle": "No marketing accounts yet",
@@ -196,13 +195,36 @@
     "noMatchTitle": "No matching accounts",
     "noMatchDescription": "Try a different search term.",
     "noFinanceLinkHint": "Attribution works without a Finance link; spend analytics stay incomplete.",
+    "accounts": {
+      "title": "Marketing accounts",
+      "sheetHint": "Open a card to edit fields, status, and the Finance plan link.",
+      "planLinked": "Expense plan linked",
+      "planMissing": "Spend not linked",
+      "groupCount": "{count, plural, one {# account} other {# accounts}}",
+      "unlinkedCount": "{count, plural, one {# without a plan} other {# without a plan}}"
+    },
+    "create": {
+      "title": "Add marketing account",
+      "description": "Channel and name first. Phone or identifier depends on the channel. Link Finance later from the account sheet.",
+      "created": "Account added"
+    },
+    "sheet": {
+      "updated": "Saved",
+      "notes": "Notes",
+      "financeSection": "Finance"
+    },
     "crmWhere": {
-      "title": "CRM Where (Marketing)",
-      "description": "Labels and order for the Marketing \"Where\" field on leads and deals. Codes match marketing accounts; disabling hides a channel from new picks only.",
+      "title": "Channels for CRM Where",
+      "description": "Labels CRM uses when From is Marketing.",
+      "listDescription": "Open a channel to change the label, order, or visibility.",
+      "channelCount": "{count, plural, one {# channel} other {# channels}}",
+      "activeCount": "{count, plural, one {# active} other {# active}}",
       "label": "Label",
       "sortOrder": "Sort order",
+      "sortValue": "Order {value}",
       "activeInCrm": "Active in CRM",
-      "saveRow": "Save row"
+      "inactive": "Hidden from new picks",
+      "sheetHint": "Turning a channel off hides it from new CRM picks only. Existing leads and deals keep their value."
     },
     "expensePlan": {
       "title": "Finance expense plan",
@@ -213,7 +235,6 @@
       "choosePlan": "Choose a plan",
       "noPlanLinked": "No plan linked",
       "linkedMissingFromList": "Linked plan (not in Marketing list)",
-      "saveLink": "Save link",
       "missingPlanWarning": "This account points to a plan that is missing or inaccessible. Pick a current plan or clear the link."
     }
   },

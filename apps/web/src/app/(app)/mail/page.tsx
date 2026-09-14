@@ -48,6 +48,7 @@ import {
 import { MailBulkActionBar } from '@/features/mail/MailBulkActionBar';
 
 import { MailFolderSidebar } from '@/features/mail/MailFolderSidebar';
+import { MAIL_INBOX_CANVAS_CLASS } from '@/features/mail/mail-ui-classes';
 
 import { MailThreadList } from '@/features/mail/MailThreadList';
 
@@ -776,7 +777,7 @@ export default function MailInboxPage() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-5">
+    <div className="flex h-full min-h-0 flex-col gap-4">
       <MailToolbarRow
         accounts={accountHealth}
         filterAccountId={filterAccountId}
@@ -812,7 +813,7 @@ export default function MailInboxPage() {
         }
       />
 
-      <div className="flex min-h-0 flex-1">
+      <div className={MAIL_INBOX_CANVAS_CLASS}>
         <MailFolderSidebar
           accounts={accountHealth}
           filterAccountId={filterAccountId}
@@ -836,7 +837,7 @@ export default function MailInboxPage() {
                 onMarkRead={() => void runBulkMarkRead()}
                 onMarkUnread={() => void runBulkMarkUnread()}
                 onClearSelection={() => clearThreadSelection(setSelectedThreadIds)}
-                className="border-border rounded-none border-x-0 border-t-0 bg-transparent px-3 py-2"
+                className="border-border rounded-none border-x-0 border-t-0 bg-transparent px-4 py-2.5"
               />
 
               {threads.length === 0 ? (
@@ -864,7 +865,7 @@ export default function MailInboxPage() {
 
               {threadListMeta && threadListMeta.totalCount > 0 ? (
                 <ListPagination
-                  className="border-border shrink-0 border-t px-3 py-2"
+                  className="border-border shrink-0 border-t px-4 py-2"
                   meta={{
                     total: threadListMeta.totalCount,
 

@@ -2,6 +2,34 @@ import { Injectable, Inject, NotFoundException, BadRequestException } from '@nes
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import {
+  DEPARTMENT_LEADERSHIP_ROLES,
+  DEPARTMENT_MEMBER_EMPLOYEE_SELECT,
+  sortDepartmentLeadership,
+} from './department-member.constants';
+import {
+  applySeatLeadership,
+  buildSeatLeadershipIndex,
+  isDepartmentLeadershipRole,
+  type SeatLeadershipIndex,
+} from './department-seat-leadership';
+import { ACTIVE_SEAT_ASSIGNMENT_WHERE } from '../org-seats/org-seat.select';
+
+const SEAT_LEADERSHIP_SELECT = {
+  id: true,
+  departmentId: true,
+  kind: true,
+  department: { select: { headSeatId: true } },
+  assignments: { where: ACTIVE_SEAT_ASSIGNMENT_WHERE, select: { employeeId: true } },
+} as const;
+
+const DEPARTMENT_DETAIL_INCLUDE = {
+  parent: { select: { id: true, name: true, slug: true } },
+  members: {
+    include: { employee: { select: DEPARTMENT_MEMBER_EMPLOYEE_SELECT } },
+  },
+  _count: { select: { members: true } },
+} as const;
 
 @Injectable()
 export class DepartmentsService {
@@ -11,35 +39,58 @@ export class DepartmentsService {
   ) {}
 
   async findAll() {
-    return this.prisma.department.findMany({
+    const leadership = await this.loadSeatLeadership();
+    const seatLeaderIds = [
+      ...new Set([...leadership.values()].flatMap((byEmployee) => [...byEmployee.keys()])),
+    ];
+    const departments = await this.prisma.department.findMany({
       orderBy: { sortOrder: 'asc' },
       include: {
         parent: { select: { id: true, name: true, slug: true } },
         _count: { select: { members: true } },
+        members: {
+          where: {
+            OR: [
+              { deptRole: { in: Array.from(DEPARTMENT_LEADERSHIP_ROLES) } },
+              { employeeId: { in: seatLeaderIds } },
+            ],
+          },
+          include: { employee: { select: DEPARTMENT_MEMBER_EMPLOYEE_SELECT } },
+        },
       },
     });
+    return departments.map((department) => ({
+      ...department,
+      members: sortDepartmentLeadership(
+        applySeatLeadership(department.members, leadership.get(department.id)).filter((member) =>
+          isDepartmentLeadershipRole(member.deptRole),
+        ),
+      ),
+    }));
   }
 
   async findById(id: string) {
     const department = await this.prisma.department.findUnique({
       where: { id },
-      include: {
-        parent: { select: { id: true, name: true, slug: true } },
-        members: {
-          include: {
-            employee: {
-              include: {
-                role: { select: { id: true, name: true, slug: true, level: true } },
-              },
-            },
-          },
-        },
-      },
+      include: DEPARTMENT_DETAIL_INCLUDE,
     });
     if (!department) {
       throw new NotFoundException(`Department ${id} not found`);
     }
-    return department;
+    const leadership = await this.loadSeatLeadership(id);
+    return {
+      ...department,
+      members: applySeatLeadership(department.members, leadership.get(id)),
+    };
+  }
+
+  /** Departments absent from the index have no seats and keep their legacy `deptRole`. */
+  private async loadSeatLeadership(departmentId?: string): Promise<SeatLeadershipIndex> {
+    const seats = await this.prisma.orgSeat.findMany({
+      where: { status: 'ACTIVE', ...(departmentId ? { departmentId } : {}) },
+      select: SEAT_LEADERSHIP_SELECT,
+    });
+    return buildSeatLeadershipIndex(seats);
   }
 
   async create(
@@ -92,13 +143,16 @@ export class DepartmentsService {
   async remove(id: string, actorId: string) {
     const department = await this.prisma.department.findUnique({
       where: { id },
-      include: { _count: { select: { members: true } } },
+      include: { _count: { select: { members: true, seats: true } } },
     });
     if (!department) {
       throw new NotFoundException(`Department ${id} not found`);
     }
     if (department._count.members > 0) {
       throw new BadRequestException('Cannot delete department with members');
+    }
+    if (department._count.seats > 0) {
+      throw new BadRequestException('Cannot delete department with seat history');
     }
     const deleted = await this.prisma.department.delete({ where: { id } });
     await this.logDepartmentChange('DEPARTMENT_DELETED', id, actorId, {

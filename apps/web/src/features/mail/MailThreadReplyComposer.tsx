@@ -1,15 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE } from '@/components/shared/detail-sheet-classes';
 import { mailApi, type MailMessageRow, type MailThreadDetailDto } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { MAIL_QUEUED_TOAST } from './mail-outbound-copy';
+import { MailComposeIdentityFields, MailOutlinedMessageField } from './MailComposeFormFields';
+import { MailComposeMessageEditor } from './MailComposeMessageEditor';
 import {
   defaultReplySubjectFromMessages,
   defaultReplyToFromMessages,
@@ -36,13 +36,14 @@ export function MailThreadReplyComposer({
   const [to, setTo] = useState('');
   const [cc, setCc] = useState('');
   const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
+  const [bodyHtml, setBodyHtml] = useState<string | null>(null);
+  const [bodyText, setBodyText] = useState('');
   const [sending, setSending] = useState(false);
   const defaultsKey = useRef<string>('');
   const draftIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const key = `${threadId}:${messages.map((m) => m.id).join(',')}`;
+    const key = `${threadId}:${messages.map((message) => message.id).join(',')}`;
     if (defaultsKey.current === key) {
       return;
     }
@@ -53,14 +54,16 @@ export function MailThreadReplyComposer({
       setTo(emailsForRecipientKind(draft, 'TO'));
       setCc(emailsForRecipientKind(draft, 'CC'));
       setSubject(draft.subject);
-      setBody(draft.bodyText ?? '');
+      setBodyHtml(draft.bodyHtmlSanitized);
+      setBodyText(draft.bodyText ?? '');
       return;
     }
     draftIdRef.current = null;
     setTo(defaultReplyToFromMessages(messages));
     setCc('');
     setSubject(defaultReplySubjectFromMessages(messages));
-    setBody('');
+    setBodyHtml(null);
+    setBodyText('');
   }, [threadId, messages]);
 
   const persistDraft = useCallback(async (): Promise<string | null> => {
@@ -70,7 +73,8 @@ export function MailThreadReplyComposer({
       to: toList,
       ...(ccList.length > 0 ? { cc: ccList } : {}),
       subject: subject.trim(),
-      bodyText: body,
+      bodyText,
+      ...(bodyHtml ? { bodyHtml } : {}),
     };
     const draftId = draftIdRef.current;
     const detail = draftId
@@ -82,11 +86,10 @@ export function MailThreadReplyComposer({
     }
     onThreadUpdated(detail);
     return saved?.id ?? draftId;
-  }, [body, cc, onThreadUpdated, subject, threadId, to]);
+  }, [bodyHtml, bodyText, cc, onThreadUpdated, subject, threadId, to]);
 
   const send = useCallback(async () => {
-    const toList = splitEmailList(to);
-    if (toList.length === 0) {
+    if (splitEmailList(to).length === 0) {
       toast.error('Enter at least one To address.');
       return;
     }
@@ -100,14 +103,15 @@ export function MailThreadReplyComposer({
       if (!draftId) {
         return;
       }
-      const d = await mailApi.queueOutboundDraft(threadId, draftId);
-      onThreadUpdated(d);
-      setBody('');
+      const detail = await mailApi.queueOutboundDraft(threadId, draftId);
+      onThreadUpdated(detail);
+      setBodyHtml(null);
+      setBodyText('');
       draftIdRef.current = null;
       toast.success(MAIL_QUEUED_TOAST);
       onSent?.();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, 'Reply could not be sent.'));
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Reply could not be sent.'));
     } finally {
       setSending(false);
     }
@@ -118,78 +122,74 @@ export function MailThreadReplyComposer({
     try {
       await persistDraft();
       toast.success('Draft saved.');
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, 'Draft could not be saved.'));
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Draft could not be saved.'));
     } finally {
       setSending(false);
     }
   }, [persistDraft]);
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">Reply</CardTitle>
+    <section className="border-border bg-card rounded-2xl border p-4 shadow-sm shadow-black/[0.03]">
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold">Reply</h3>
         <p className="text-muted-foreground text-xs">
           Saved as a draft until you send. Sends through the connected mailbox.
         </p>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="mail-reply-to">To (comma-separated)</Label>
-          <Input
-            id="mail-reply-to"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-            autoComplete="off"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="mail-reply-cc">Cc (optional)</Label>
-          <Input
-            id="mail-reply-cc"
-            value={cc}
-            onChange={(e) => setCc(e.target.value)}
-            autoComplete="off"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="mail-reply-subject">Subject</Label>
-          <Input
-            id="mail-reply-subject"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            autoComplete="off"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="mail-reply-body">Body</Label>
-          <Textarea
+      </div>
+      <div className="flex flex-col gap-3">
+        <MailComposeIdentityFields
+          to={to}
+          cc={cc}
+          subject={subject}
+          onToChange={setTo}
+          onCcChange={setCc}
+          onSubjectChange={setSubject}
+          disabled={sending}
+        />
+        <MailOutlinedMessageField className="min-h-[16rem]">
+          <MailComposeMessageEditor
             id="mail-reply-body"
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            rows={6}
-            className="min-h-24 resize-y"
+            value={bodyHtml}
+            disabled={sending}
+            onChange={({ bodyHtml: html, bodyText: text }) => {
+              setBodyHtml(html);
+              setBodyText(text);
+            }}
           />
-        </div>
-        <div className="flex flex-wrap gap-2">
+        </MailOutlinedMessageField>
+        <div className="flex flex-wrap justify-end gap-2">
           {onDismiss ? (
-            <Button type="button" variant="outline" disabled={sending} onClick={onDismiss}>
+            <Button
+              type="button"
+              variant="outline"
+              size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+              disabled={sending}
+              onClick={onDismiss}
+            >
               Cancel
             </Button>
           ) : null}
           <Button
             type="button"
             variant="outline"
+            size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
             disabled={sending}
             onClick={() => void saveDraft()}
           >
             Save draft
           </Button>
-          <Button type="button" disabled={sending} onClick={() => void send()}>
+          <Button
+            type="button"
+            size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+            disabled={sending}
+            onClick={() => void send()}
+          >
+            <Send size={16} aria-hidden />
             {sending ? 'Sending…' : 'Send reply'}
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }

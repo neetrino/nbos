@@ -239,30 +239,41 @@ export class AuthService {
 
     const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
 
-    const employee = await this.prisma.employee.create({
-      data: {
-        email: invitation.email,
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        passwordHash,
-        roleId: invitation.roleId,
-      },
-    });
-
-    await this.prisma.invitation.update({
-      where: { id: invitation.id },
-      data: { status: 'ACCEPTED', employeeId: employee.id },
-    });
-
-    if (invitation.departmentId) {
-      await this.prisma.employeeDepartment.create({
+    const employee = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.employee.create({
         data: {
-          employeeId: employee.id,
-          departmentId: invitation.departmentId,
-          isPrimary: true,
+          email: invitation.email,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          passwordHash,
+          roleId: invitation.roleId,
         },
       });
-    }
+      await tx.permissionRoleAssignment.create({
+        data: {
+          employeeId: created.id,
+          roleId: invitation.roleId,
+          source: 'LEGACY',
+          isPrimary: true,
+          assignedById: invitation.invitedById,
+          reason: 'Initial role from accepted invitation',
+        },
+      });
+      await tx.invitation.update({
+        where: { id: invitation.id },
+        data: { status: 'ACCEPTED', employeeId: created.id },
+      });
+      if (invitation.departmentId) {
+        await tx.employeeDepartment.create({
+          data: {
+            employeeId: created.id,
+            departmentId: invitation.departmentId,
+            isPrimary: true,
+          },
+        });
+      }
+      return created;
+    });
 
     this.logger.log(`Employee ${employee.id} registered via invitation (${employee.email})`);
 

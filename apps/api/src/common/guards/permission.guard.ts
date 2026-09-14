@@ -5,6 +5,7 @@ import {
   type RequiredPermission,
 } from '../decorators/require-permission.decorator';
 import type { CurrentUserPayload } from '../decorators';
+import { routePermissionDepartmentIds } from '../authorization/permission-department-scope';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -32,10 +33,12 @@ export class PermissionGuard implements CanActivate {
     }
 
     for (const candidate of candidates) {
-      const scope = user.permissions[`${candidate.module}_${candidate.action}`];
+      const permissionKey = `${candidate.module}_${candidate.action}`;
+      const scope = user.permissions[permissionKey];
 
       if (scope && scope !== 'NONE') {
         request.permissionScope = scope;
+        user.requestPermissionDepartmentIds = routePermissionDepartmentIds(user, permissionKey);
         return true;
       }
     }

@@ -69,16 +69,20 @@ export function buildCallAccessWhere(params: {
   dealsScope: CallRbacScope;
   actorId: string;
   departmentEmployeeIds: string[];
+  leadDepartmentEmployeeIds?: string[];
+  dealDepartmentEmployeeIds?: string[];
 }): Prisma.AtsCallEventWhereInput {
   if (params.leadsScope === 'ALL' && params.dealsScope === 'ALL') return {};
   const ors: Prisma.AtsCallEventWhereInput[] = [];
-  appendModuleGrant(ors, 'lead', params.leadsScope, params.actorId, params.departmentEmployeeIds);
-  appendModuleGrant(ors, 'deal', params.dealsScope, params.actorId, params.departmentEmployeeIds);
+  const leadIds = params.leadDepartmentEmployeeIds ?? params.departmentEmployeeIds;
+  const dealIds = params.dealDepartmentEmployeeIds ?? params.departmentEmployeeIds;
+  appendModuleGrant(ors, 'lead', params.leadsScope, params.actorId, leadIds);
+  appendModuleGrant(ors, 'deal', params.dealsScope, params.actorId, dealIds);
   appendContactOnlyGrant(ors, params.leadsScope, params.dealsScope);
   const employeeOr = buildCallEmployeeWhere(
     uniqueIds([
-      ...callEmployeeIdsForScope(params.leadsScope, params.actorId, params.departmentEmployeeIds),
-      ...callEmployeeIdsForScope(params.dealsScope, params.actorId, params.departmentEmployeeIds),
+      ...callEmployeeIdsForScope(params.leadsScope, params.actorId, leadIds),
+      ...callEmployeeIdsForScope(params.dealsScope, params.actorId, dealIds),
     ]),
   )?.OR;
   if (Array.isArray(employeeOr)) ors.push(...employeeOr);

@@ -8,6 +8,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { CorporateMailboxForm } from './CorporateMailboxForm';
 import { corporateFormStateFromAccount } from './corporate-mailbox-form-state';
 import { MailSheetPanelHeader } from './MailSheetPanelHeader';
+import { MAIL_PROVIDER_TILE_CLASS } from './mail-ui-classes';
 
 export interface ConnectMailboxSheetProps {
   enabled: boolean;
@@ -17,9 +18,6 @@ export interface ConnectMailboxSheetProps {
 }
 
 type ConnectStep = 'choose' | 'corporate';
-
-const PROVIDER_TILE_CLASS =
-  'border-border bg-card hover:bg-muted/60 focus-visible:ring-ring flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-colors outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60';
 
 export function ConnectMailboxSheet({
   enabled,
@@ -71,22 +69,22 @@ export function ConnectMailboxSheet({
               type="button"
               onClick={() => void startGmail()}
               disabled={gmailLoading}
-              className={PROVIDER_TILE_CLASS}
+              className={MAIL_PROVIDER_TILE_CLASS}
             >
               <Mail size={20} className="text-foreground" aria-hidden />
               <span className="text-foreground font-medium">Gmail</span>
-              <span className="text-muted-foreground text-xs">
+              <span className="text-muted-foreground text-xs leading-relaxed">
                 Connect with Google (OAuth). Read &amp; send via Gmail API.
               </span>
             </button>
             <button
               type="button"
               onClick={() => setConnectStep('corporate')}
-              className={PROVIDER_TILE_CLASS}
+              className={MAIL_PROVIDER_TILE_CLASS}
             >
               <ServerCog size={20} className="text-foreground" aria-hidden />
               <span className="text-foreground font-medium">Corporate mail</span>
-              <span className="text-muted-foreground text-xs">
+              <span className="text-muted-foreground text-xs leading-relaxed">
                 Connect with IMAP + SMTP credentials.
               </span>
             </button>

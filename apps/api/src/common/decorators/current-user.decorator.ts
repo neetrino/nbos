@@ -1,15 +1,20 @@
 import { createParamDecorator, type ExecutionContext } from '@nestjs/common';
 import type { Request } from 'express';
+import type { EffectivePermissionGrant } from '../authorization/effective-permissions';
 
 export interface CurrentUserPayload {
   id: string;
   email: string;
   role: string;
   roleLevel: number;
+  roles?: Array<{ id: string; name: string; slug: string; level: number }>;
   departmentIds: string[];
   firstName: string;
   lastName: string;
   permissions: Record<string, string>;
+  permissionGrants?: Record<string, EffectivePermissionGrant>;
+  /** Request-local department scope selected by PermissionGuard for the matched permission. */
+  requestPermissionDepartmentIds?: string[];
   /** Set by AuthGuard from the access token; used for logout/revocation. */
   jti?: string;
   /** Access-token expiry (epoch seconds), set by AuthGuard. */
@@ -40,6 +45,7 @@ export interface CurrentUserPayload {
       slug: string;
       level: number;
     };
+    permissionRoles?: Array<{ id: string; name: string; slug: string; level: number }>;
     departments: Array<{
       id: string;
       departmentId: string;

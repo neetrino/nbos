@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, ChevronDown } from 'lucide-react';
+import { Check, ChevronDown, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
@@ -74,6 +74,7 @@ export function MailAccountSwitcher({
         )}
         aria-label="Switch mailbox"
       >
+        <Mail className="text-muted-foreground size-4 shrink-0" aria-hidden />
         <span className="truncate">{label}</span>
         <ChevronDown className="text-muted-foreground size-4 shrink-0" aria-hidden />
       </DropdownMenuTrigger>

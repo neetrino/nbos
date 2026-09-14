@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { InvitationsService } from './invitations.service';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { RequirePermission } from '../../common/decorators';
+import { roleAssignmentAuthority } from '../platform-ownership/role-assignment-authority';
 
 @ApiTags('Invitations')
 @ApiBearerAuth()
@@ -20,7 +21,7 @@ export class InvitationsController {
     return this.invitationsService.create({
       ...body,
       invitedById: user.id,
-      invitedByRoleSlug: user.role,
+      invitedByRoleSlug: roleAssignmentAuthority(user.role),
     });
   }
 

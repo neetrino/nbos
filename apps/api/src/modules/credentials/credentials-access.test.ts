@@ -52,6 +52,7 @@ describe('credentialsAccessFromUser', () => {
     });
     expect(ctx.bypassRowVisibility).toBe(false);
     expect(ctx.executiveProjectAccess).toBe(false);
+    expect(ctx.departmentIds).toEqual(['dept-1']);
   });
 
   it('enables bypass only for Platform Owner identity', () => {

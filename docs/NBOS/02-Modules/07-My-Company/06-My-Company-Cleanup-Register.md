@@ -69,7 +69,7 @@ Future implementation:
 - implement org chart canvas with department cards, lines, zoom, search, collapse/expand and detail drawer;
 - hide items by RBAC.
 
-Runtime now has `My Company` top-level sidebar navigation and `Team` lives under it. Org chart, seats, compensation, KPI and SOP remain dedicated follow-up slices.
+Runtime now has `My Company` top-level sidebar navigation and `Team` lives under it. Departments renders a Bitrix-style org chart canvas (zoom, search, collapse, explicit seat assignments, member drawer) on `/my-company/departments`; `/my-company/roles-seats` manages seats and assignments. Compensation, KPI and SOP remain dedicated follow-up slices.
 
 ### B2. My Account currently appears inside Settings
 
@@ -175,11 +175,11 @@ Future implementation must separate:
 - `Seat / Position` in My Company;
 - `Permission Role` in Settings / RBAC.
 
-Phase 1 runtime now makes this boundary explicit in the My Company foundation dashboard and Settings/RBAC navigation. The actual `Seat` / `Seat Assignment` persistence model remains a later My Company implementation slice.
+Runtime now enforces this boundary with `OrgSeat`, `OrgSeatAssignment` and source-aware `PermissionRoleAssignment`. Legacy `Employee.role_id` remains only as an expand-phase compatibility role.
 
-### C5. Department / Seat / Assignment runtime model is missing
+### C5. Department / Seat / Assignment runtime model
 
-Статус: `FOUNDATION VISIBLE / MISSING SEAT MODEL`
+Статус: `ADDITIVE FOUNDATION IMPLEMENTED / PRODUCTION ROLLOUT PENDING`
 
 New canon requires:
 
@@ -193,9 +193,7 @@ New canon requires:
 - temporary assignments;
 - assignment history.
 
-Current runtime/UI may still treat `role` and `department` as simple employee fields. This must be refactored so employee profile derives primary role/department from seat assignments.
-
-Phase 1 runtime now surfaces current departments, assignment coverage and permission roles from existing data so missing seat data is visible instead of hidden behind a placeholder.
+Implementation stores seats, vacancies, assignment history, multi-seat employees and automatic permission-role grants. Org chart uses explicit seats for leadership while preserving seat-less members. Employee profiles expose positions and effective permission roles separately. Remaining contract work: production rollout, business-confirmed seat setup, full employee profile cutover from compatibility fields, temporary assignments and eventual removal of legacy fields. No automatic seat or hierarchy backfill is included.
 
 ### C6. Compensation UI is missing
 

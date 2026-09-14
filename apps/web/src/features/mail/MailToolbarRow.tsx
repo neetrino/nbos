@@ -18,6 +18,7 @@ import {
   resolveMailFolderCount,
   type MailFolderKey,
 } from '@/features/mail/mail-folder-config';
+import { MAIL_FOLDER_ICONS } from '@/features/mail/mail-folder-icons';
 
 export interface MailToolbarRowProps {
   accounts: MailAccountHealthSummaryRow[];
@@ -104,13 +105,17 @@ export function MailToolbarRow({
         <DropdownMenuContent align="start" className="w-52 md:hidden">
           {MAIL_FOLDERS.map((folder) => {
             const count = resolveMailFolderCount(folder.key, accounts, filterAccountId);
+            const Icon = MAIL_FOLDER_ICONS[folder.key];
             return (
               <DropdownMenuItem
                 key={folder.key}
                 className="cursor-pointer justify-between"
                 onClick={() => onSelectFolder(folder.key)}
               >
-                <span>{folder.label}</span>
+                <span className="flex min-w-0 items-center gap-2">
+                  <Icon className="size-4 shrink-0" aria-hidden />
+                  <span className="truncate">{folder.label}</span>
+                </span>
                 {count !== null ? (
                   <Badge variant="secondary" className="tabular-nums">
                     {count}

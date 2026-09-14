@@ -42,6 +42,7 @@ describe('EmployeeReactivationService', () => {
       lastName: 'Lee',
       status: 'TERMINATED',
       fireDate: new Date('2026-05-01'),
+      roleId: 'role-developer',
     });
     prisma.checklistTemplate.findFirst.mockResolvedValue({
       id: 'tpl-1',
@@ -58,9 +59,20 @@ describe('EmployeeReactivationService', () => {
     expect(result.checklistInstanceId).toBe('chk-1');
     expect(prisma.employee.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: { status: 'PROBATION', fireDate: null },
+        data: {
+          status: 'PROBATION',
+          fireDate: null,
+          accessVersion: { increment: 1 },
+        },
       }),
     );
+    expect(prisma.permissionRoleAssignment.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        employeeId: 'e1',
+        roleId: 'role-developer',
+        source: 'LEGACY',
+      }),
+    });
     expect(audit.log).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'employee.reactivate' }),
     );

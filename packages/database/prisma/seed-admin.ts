@@ -1,3 +1,4 @@
+import { seedPermissionRole } from './seed-permission-role';
 /**
  * Bootstrap script: creates the first admin (CEO) employee with a hashed password.
  * Run once after initial migration on a fresh database.
@@ -41,6 +42,7 @@ async function main() {
       status: 'ACTIVE',
     },
   });
+  await seedPermissionRole(prisma, admin.id);
 
   console.log(`✓ Admin created: ${admin.firstName} ${admin.lastName} <${admin.email}>`);
 

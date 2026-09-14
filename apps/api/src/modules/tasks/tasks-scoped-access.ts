@@ -1,5 +1,6 @@
 import type { TasksDbClient } from './tasks-db-client';
 import type { CurrentUserPayload } from '../../common/decorators';
+import { permissionDepartmentIds } from '../../common/authorization/permission-department-scope';
 
 const SCOPE_DEPARTMENT = 'DEPARTMENT';
 
@@ -18,7 +19,7 @@ export function tasksViewBypassesRowFilter(scope: string | undefined): boolean {
 export function tasksAccessFromUser(user: CurrentUserPayload): TasksAccessContext {
   return {
     employeeId: user.id,
-    departmentIds: user.departmentIds ?? [],
+    departmentIds: permissionDepartmentIds(user, 'TASKS_VIEW'),
     viewScope: user.permissions.TASKS_VIEW,
   };
 }

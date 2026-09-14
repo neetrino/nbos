@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { LoadingState, RelationPickerField } from '@/components/shared';
+import { LoadingState, InlineField, RelationPickerField } from '@/components/shared';
+import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { useEmployeeRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
 import { mailApi, type MailAccountAccessListDto, type MailAccountAccessRole } from '@/lib/api/mail';
@@ -119,10 +120,15 @@ export function ShareMailboxSheet({ enabled, accountId, accountEmail }: ShareMai
         ) : (
           <div className="flex flex-col gap-4">
             {access.owner ? (
-              <div className="border-border flex items-center justify-between rounded-md border px-3 py-2 text-sm">
-                <div>
-                  <div className="font-medium">{access.owner.employeeName}</div>
-                  <div className="text-muted-foreground text-xs">{access.owner.employeeEmail}</div>
+              <div className="border-border flex items-center justify-between gap-3 rounded-2xl border px-3 py-3 text-sm">
+                <div className="flex min-w-0 items-center gap-3">
+                  <EmployeePersonAvatar label={access.owner.employeeName} />
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{access.owner.employeeName}</div>
+                    <div className="text-muted-foreground truncate text-xs">
+                      {access.owner.employeeEmail}
+                    </div>
+                  </div>
                 </div>
                 <span className="text-muted-foreground text-xs">Owner</span>
               </div>
@@ -131,12 +137,15 @@ export function ShareMailboxSheet({ enabled, accountId, accountEmail }: ShareMai
             {access.entries.map((entry) => (
               <div
                 key={entry.id}
-                className="border-border flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm"
+                className="border-border flex items-center justify-between gap-2 rounded-2xl border px-3 py-3 text-sm"
               >
-                <div className="min-w-0">
-                  <div className="truncate font-medium">{entry.employeeName}</div>
-                  <div className="text-muted-foreground truncate text-xs">
-                    {entry.employeeEmail}
+                <div className="flex min-w-0 items-center gap-3">
+                  <EmployeePersonAvatar label={entry.employeeName} />
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{entry.employeeName}</div>
+                    <div className="text-muted-foreground truncate text-xs">
+                      {entry.employeeEmail}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -197,22 +206,16 @@ export function ShareMailboxSheet({ enabled, accountId, accountEmail }: ShareMai
                   maxResults={12}
                   {...employeePicker}
                 />
-                <div className="flex items-center gap-2">
-                  <Select
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                  <InlineField
+                    variant="controlled"
+                    label="Role"
+                    type="select"
                     value={grantRole}
+                    options={ROLES.map((role) => ({ value: role, label: role }))}
                     onValueChange={(value) => setGrantRole(value as MailAccountAccessRole)}
-                  >
-                    <SelectTrigger size="sm" className="w-28">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ROLES.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {role}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    disabled={busy}
+                  />
                   <Button type="button" onClick={() => void grant()} disabled={busy}>
                     Add
                   </Button>
