@@ -15,6 +15,7 @@ Tracks **shipped runtime** vs `01-Credentials-Vault.md` and UX canon. Full clean
 ## Shipped (security — partial)
 
 - Tiered reveal/copy, vault session, export step-up, RBAC visibility — see Cleanup Register §Runtime.
+- **Vault session bound to `authVersion`:** the unlock record carries the employee's `authVersion` (`credential-vault-session.constants.ts`), and `getSession` treats a mismatch as locked. Logout-all, password change/reset, terminate and owner-initiated sign-out end the vault session without relying on the Redis `lock()` write. Pre-existing records are invalid — one extra unlock after deploy.
 - **Offboarding access revoke:** on `POST /employees/:id/offboard` — revokes credential `ResourceAccessGrant`, clears `allowedEmployees` (SECRET), removes vault favorites; audit `credential.access_revoked` per affected credential (`credential-offboarding-revoke.ops.ts`).
 
 ## Intentional placeholders / next slices

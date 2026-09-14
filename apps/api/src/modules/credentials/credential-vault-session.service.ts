@@ -1,5 +1,13 @@
-import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  type OnModuleDestroy,
+  type OnModuleInit,
+} from '@nestjs/common';
 import type Redis from 'ioredis';
+import { PrismaClient } from '@nbos/database';
+import { PRISMA_TOKEN } from '../../database.module';
 import {
   closeRedisConnection,
   createStateRedisConnection,
@@ -8,6 +16,9 @@ import {
 import {
   CREDENTIAL_VAULT_UNLOCK_TTL_MS,
   credentialVaultUnlockRedisKey,
+  parseVaultUnlockEntry,
+  serializeVaultUnlockEntry,
+  type CredentialVaultUnlockEntry,
 } from './credential-vault-session.constants';
 import { ttlSecondsUntil } from '../../common/security/jwt-denylist-redis';
 
@@ -16,11 +27,20 @@ export interface CredentialVaultSessionState {
   expiresAt: string | null;
 }
 
+const LOCKED: CredentialVaultSessionState = { unlocked: false, expiresAt: null };
+
+/**
+ * Daily vault unlock (24h) for HIGH/CRITICAL secret reveal/copy. The record carries the employee's
+ * `authVersion`, so any auth-invalidating event ends the vault session even if the explicit `lock()`
+ * write never reached Redis.
+ */
 @Injectable()
 export class CredentialVaultSessionService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(CredentialVaultSessionService.name);
-  private readonly memory = new Map<string, number>();
+  private readonly memory = new Map<string, CredentialVaultUnlockEntry>();
   private redis: Redis | null = null;
+
+  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   onModuleInit(): void {
     const url = getRedisStateUrl();
@@ -41,11 +61,16 @@ export class CredentialVaultSessionService implements OnModuleInit, OnModuleDest
   }
 
   async getSession(employeeId: string): Promise<CredentialVaultSessionState> {
-    const expiresAtMs = await this.readExpiryMs(employeeId);
-    if (expiresAtMs === null || expiresAtMs <= Date.now()) {
-      return { unlocked: false, expiresAt: null };
+    const entry = await this.readEntry(employeeId);
+    if (entry === null) return LOCKED;
+
+    const authVersion = await this.currentAuthVersion(employeeId);
+    if (authVersion === null || authVersion !== entry.authVersion) {
+      await this.lock(employeeId);
+      return LOCKED;
     }
-    return { unlocked: true, expiresAt: new Date(expiresAtMs).toISOString() };
+
+    return { unlocked: true, expiresAt: new Date(entry.expiresAtMs).toISOString() };
   }
 
   async isUnlocked(employeeId: string): Promise<boolean> {
@@ -54,17 +79,26 @@ export class CredentialVaultSessionService implements OnModuleInit, OnModuleDest
   }
 
   async unlock(employeeId: string): Promise<CredentialVaultSessionState> {
-    const expiresAtMs = Date.now() + CREDENTIAL_VAULT_UNLOCK_TTL_MS;
-    this.memory.set(employeeId, expiresAtMs);
+    const authVersion = await this.currentAuthVersion(employeeId);
+    if (authVersion === null) {
+      this.logger.warn(`Vault unlock skipped: employee ${employeeId} no longer exists`);
+      return LOCKED;
+    }
+
+    const entry: CredentialVaultUnlockEntry = {
+      expiresAtMs: Date.now() + CREDENTIAL_VAULT_UNLOCK_TTL_MS,
+      authVersion,
+    };
+    this.memory.set(employeeId, entry);
 
     if (this.redis) {
-      const ttlSeconds = ttlSecondsUntil(expiresAtMs);
+      const ttlSeconds = ttlSecondsUntil(entry.expiresAtMs);
       if (ttlSeconds > 0) {
         try {
           await this.redis.setex(
             credentialVaultUnlockRedisKey(employeeId),
             ttlSeconds,
-            String(expiresAtMs),
+            serializeVaultUnlockEntry(entry),
           );
         } catch (err) {
           this.logger.error(`Failed to persist vault unlock to Redis: ${String(err)}`);
@@ -72,12 +106,12 @@ export class CredentialVaultSessionService implements OnModuleInit, OnModuleDest
       }
     }
 
-    return { unlocked: true, expiresAt: new Date(expiresAtMs).toISOString() };
+    return { unlocked: true, expiresAt: new Date(entry.expiresAtMs).toISOString() };
   }
 
   /**
-   * Clears the unlock. Returns `false` when the Redis copy survived, so security-sensitive callers
-   * can report the real outcome instead of assuming the vault is locked.
+   * Clears the unlock. Returns `false` when the Redis copy survived; the `authVersion` binding is
+   * the durable guarantee, this result only tells callers whether the fast path succeeded.
    */
   async lock(employeeId: string): Promise<boolean> {
     this.memory.delete(employeeId);
@@ -91,14 +125,27 @@ export class CredentialVaultSessionService implements OnModuleInit, OnModuleDest
     }
   }
 
-  private async readExpiryMs(employeeId: string): Promise<number | null> {
-    const memoryExpiry = this.memory.get(employeeId);
-    if (memoryExpiry !== undefined) {
-      if (memoryExpiry <= Date.now()) {
+  private async currentAuthVersion(employeeId: string): Promise<number | null> {
+    try {
+      const employee = await this.prisma.employee.findUnique({
+        where: { id: employeeId },
+        select: { authVersion: true },
+      });
+      return employee?.authVersion ?? null;
+    } catch (err) {
+      this.logger.error(`Failed to read authVersion for vault unlock: ${String(err)}`);
+      return null;
+    }
+  }
+
+  private async readEntry(employeeId: string): Promise<CredentialVaultUnlockEntry | null> {
+    const cached = this.memory.get(employeeId);
+    if (cached !== undefined) {
+      if (cached.expiresAtMs <= Date.now()) {
         this.memory.delete(employeeId);
         return null;
       }
-      return memoryExpiry;
+      return cached;
     }
 
     if (!this.redis) return null;
@@ -106,13 +153,13 @@ export class CredentialVaultSessionService implements OnModuleInit, OnModuleDest
     try {
       const raw = await this.redis.get(credentialVaultUnlockRedisKey(employeeId));
       if (!raw) return null;
-      const parsed = Number.parseInt(raw, 10);
-      if (!Number.isFinite(parsed) || parsed <= Date.now()) {
+      const entry = parseVaultUnlockEntry(raw);
+      if (!entry || entry.expiresAtMs <= Date.now()) {
         await this.redis.del(credentialVaultUnlockRedisKey(employeeId));
         return null;
       }
-      this.memory.set(employeeId, parsed);
-      return parsed;
+      this.memory.set(employeeId, entry);
+      return entry;
     } catch (err) {
       this.logger.error(`Failed to read vault unlock from Redis: ${String(err)}`);
       return null;

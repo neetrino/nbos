@@ -234,7 +234,7 @@ Rules:
 - The owner cannot target their own record here (own Security tab covers it), and founder-protected identities are refused.
 - The target employee gets an in-app notification for both actions.
 - **Reset link** refuses terminated employees and accounts without a password hash (invite instead), and returns **503** when the provider did not accept the email — an undelivered link must not report success. Unlike the public flow, these errors are explicit because the caller is an authenticated owner.
-- **Sign out all devices** stays available regardless of status so access can always be cut defensively; it never changes the password. The audit row records the real `vaultLocked` outcome, because a Redis failure can leave the vault unlock in place.
+- **Sign out all devices** stays available regardless of status so access can always be cut defensively; it never changes the password. The audit row records the real `vaultLocked` outcome of the explicit lock write; the durable guarantee is the `authVersion` binding of the vault session (§ 12).
 
 ---
 
@@ -252,6 +252,8 @@ Required for:
 - owner-initiated employee recovery (§ 11.1).
 
 Credentials **vault unlock** is a **separate** 24h server session. Login V2 does not replace it. Canon: [`../02-Modules/12-Credentials/03-Credentials-Security.md`](../02-Modules/12-Credentials/03-Credentials-Security.md).
+
+The unlock record stores the employee's `authVersion` and is valid only while it still matches. Every `authVersion` bump — logout-all, password change/reset, terminate, owner-initiated sign-out — therefore ends the vault session by itself, so a lost `lock()` write cannot leave a usable unlock behind.
 
 ---
 
