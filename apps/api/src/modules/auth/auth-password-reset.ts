@@ -1,19 +1,33 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { BadRequestException, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Logger,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import * as argon2 from 'argon2';
 import type { PrismaClient } from '@nbos/database';
 import {
   FORGOT_PASSWORD_GENERIC_MESSAGE,
   PASSWORD_RESET_TTL_MS,
   PASSWORD_RESET_TOKEN_BYTES,
+  RESET_EMAIL_NOT_DELIVERED_MESSAGE,
   RESET_LINK_INVALID_MESSAGE,
+  RESET_TARGET_TERMINATED_MESSAGE,
+  RESET_TARGET_WITHOUT_PASSWORD_MESSAGE,
 } from './auth-password-reset.constants';
-import { sendPasswordResetEmail } from './auth-password-reset.email';
+import {
+  sendPasswordResetEmail,
+  type PasswordResetEmailDelivery,
+} from './auth-password-reset.email';
 
 type Prisma = InstanceType<typeof PrismaClient>;
 
+type ResetTargetEmployee = { id: string; email: string; interfaceLocale: unknown };
+
 type VaultSession = {
-  lock: (employeeId: string) => Promise<void>;
+  /** Result intentionally ignored here: the reset already invalidated every session. */
+  lock: (employeeId: string) => Promise<unknown>;
 };
 
 export function hashPasswordResetToken(token: string): string {
@@ -41,32 +55,86 @@ export async function requestPasswordReset(params: {
     return { message: FORGOT_PASSWORD_GENERIC_MESSAGE };
   }
 
+  await issueResetToken({ prisma: params.prisma, logger: params.logger, employee });
+  return { message: FORGOT_PASSWORD_GENERIC_MESSAGE };
+}
+
+/**
+ * Owner-initiated reset for another employee. Unlike the public flow it reports real errors to the
+ * authenticated caller, and it never returns the raw token or the reset URL — only the employee can
+ * complete the reset from their mailbox.
+ */
+export async function issuePasswordResetForEmployee(params: {
+  prisma: Prisma;
+  logger: Logger;
+  employeeId: string;
+  issuedByEmployeeId: string;
+}): Promise<{ email: string; expiresAt: Date }> {
+  const employee = await params.prisma.employee.findUnique({
+    where: { id: params.employeeId },
+    select: { id: true, email: true, passwordHash: true, status: true, interfaceLocale: true },
+  });
+
+  if (!employee) throw new NotFoundException(`Employee ${params.employeeId} not found`);
+  if (employee.status === 'TERMINATED') {
+    throw new BadRequestException(RESET_TARGET_TERMINATED_MESSAGE);
+  }
+  if (!employee.passwordHash) {
+    throw new BadRequestException(RESET_TARGET_WITHOUT_PASSWORD_MESSAGE);
+  }
+
+  const { expiresAt, delivery } = await issueResetToken({
+    prisma: params.prisma,
+    logger: params.logger,
+    employee,
+    issuedByEmployeeId: params.issuedByEmployeeId,
+  });
+
+  // The owner acts on someone else's behalf, so an undelivered link must not look like success.
+  if (!delivery?.delivered) {
+    throw new ServiceUnavailableException(RESET_EMAIL_NOT_DELIVERED_MESSAGE);
+  }
+
+  return { email: employee.email, expiresAt };
+}
+
+/**
+ * Replaces any pending token and mails the link. The stored value is a hash; the raw token leaves
+ * the process only inside the email body, or in a dev-only warning when no provider is configured.
+ */
+async function issueResetToken(params: {
+  prisma: Prisma;
+  logger: Logger;
+  employee: ResetTargetEmployee;
+  issuedByEmployeeId?: string;
+}): Promise<{ expiresAt: Date; delivery: PasswordResetEmailDelivery }> {
   const { token, tokenHash } = createPasswordResetSecret();
   const expiresAt = new Date(Date.now() + PASSWORD_RESET_TTL_MS);
+  const employeeId = params.employee.id;
 
   await params.prisma.$transaction(async (tx) => {
-    await tx.passwordResetToken.deleteMany({
-      where: { employeeId: employee.id, usedAt: null },
-    });
-    await tx.passwordResetToken.create({
-      data: { employeeId: employee.id, tokenHash, expiresAt },
-    });
+    await tx.passwordResetToken.deleteMany({ where: { employeeId, usedAt: null } });
+    await tx.passwordResetToken.create({ data: { employeeId, tokenHash, expiresAt } });
   });
 
   const appUrl = (process.env.APP_URL ?? 'http://localhost:3000').replace(/\/$/, '');
-  const resetUrl = `${appUrl}/reset-password?token=${encodeURIComponent(token)}`;
-  await sendPasswordResetEmail({
-    email: employee.email,
-    resetUrl,
+  const delivery = await sendPasswordResetEmail({
+    email: params.employee.email,
+    resetUrl: `${appUrl}/reset-password?token=${encodeURIComponent(token)}`,
     expiresAt,
     logger: params.logger,
-    locale: employee.interfaceLocale,
+    locale: params.employee.interfaceLocale,
   });
 
   params.logger.log(
-    JSON.stringify({ event: 'auth.password_reset_issued', employeeId: employee.id }),
+    JSON.stringify({
+      event: 'auth.password_reset_issued',
+      employeeId,
+      delivered: delivery?.delivered === true,
+      ...(params.issuedByEmployeeId ? { issuedByEmployeeId: params.issuedByEmployeeId } : {}),
+    }),
   );
-  return { message: FORGOT_PASSWORD_GENERIC_MESSAGE };
+  return { expiresAt, delivery };
 }
 
 export async function getPasswordResetInfo(params: {

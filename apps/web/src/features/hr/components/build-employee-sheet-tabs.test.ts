@@ -11,4 +11,26 @@ describe('buildEmployeeSheetTabValues', () => {
       }),
     ).toEqual(['general', 'departments', 'security']);
   });
+
+  it('adds Security for a platform owner viewing another employee', () => {
+    expect(
+      buildEmployeeSheetTabValues({
+        selfProfile: false,
+        status: 'ACTIVE',
+        hasOnboardingChecklist: false,
+        canManageEmployeeSecurity: true,
+      }),
+    ).toEqual(['general', 'departments', 'security']);
+  });
+
+  it('keeps Security hidden for a non-owner viewing another employee', () => {
+    expect(
+      buildEmployeeSheetTabValues({
+        selfProfile: false,
+        status: 'ACTIVE',
+        hasOnboardingChecklist: false,
+        canManageEmployeeSecurity: false,
+      }),
+    ).toEqual(['general', 'departments']);
+  });
 });

@@ -373,16 +373,17 @@ export class AuthSessionService {
     return updated.count;
   }
 
+  /** Returns how many `ACTIVE` sessions were revoked in the same transaction as the bump. */
   async bumpAuthVersionAndRevokeAll(
     employeeId: string,
     reason: SessionRevokeReason,
-  ): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
+  ): Promise<number> {
+    const revoked = await this.prisma.$transaction(async (tx) => {
       await tx.employee.update({
         where: { id: employeeId },
         data: { authVersion: { increment: 1 } },
       });
-      await tx.authSession.updateMany({
+      const updated = await tx.authSession.updateMany({
         where: { employeeId, status: 'ACTIVE' },
         data: {
           status: 'REVOKED',
@@ -390,6 +391,7 @@ export class AuthSessionService {
           revokeReason: reason,
         },
       });
+      return updated.count;
     });
     this.logger.log(
       JSON.stringify({
@@ -399,8 +401,10 @@ export class AuthSessionService {
             : 'auth.sessions_revoked',
         employeeId,
         reason,
+        count: revoked,
       }),
     );
+    return revoked;
   }
 
   async listSessionsForEmployee(employeeId: string, currentSessionId?: string) {

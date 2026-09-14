@@ -159,6 +159,18 @@ export interface EmployeeReactivationResult {
   previousFireDate: string | null;
 }
 
+/** Owner-initiated reset: the response never carries a token or a reset URL. */
+export interface EmployeePasswordResetLinkResult {
+  employeeId: string;
+  sentToEmail: string;
+  expiresAt: string;
+}
+
+export interface EmployeeSessionRevokeResult {
+  employeeId: string;
+  sessionsRevoked: number;
+}
+
 export const employeesApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData<Employee>> {
     const resp = await api.get<ListData<Employee>>('/api/employees', { params });
@@ -220,6 +232,18 @@ export const employeesApi = {
     const resp = await api.post<EmployeeReactivationResult>(
       `/api/employees/${id}/reactivate`,
       body,
+    );
+    return resp.data;
+  },
+  async sendPasswordResetLink(id: string): Promise<EmployeePasswordResetLinkResult> {
+    const resp = await api.post<EmployeePasswordResetLinkResult>(
+      `/api/employees/${id}/security/password-reset-link`,
+    );
+    return resp.data;
+  },
+  async revokeSessions(id: string): Promise<EmployeeSessionRevokeResult> {
+    const resp = await api.post<EmployeeSessionRevokeResult>(
+      `/api/employees/${id}/security/revoke-sessions`,
     );
     return resp.data;
   },

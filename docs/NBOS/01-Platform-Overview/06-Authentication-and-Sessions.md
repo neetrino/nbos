@@ -217,6 +217,25 @@ Do not leave a terminated employee able to refresh.
 - **Change:** verify current password → new hash → bump `authVersion` → revoke all sessions → caller signs in again.
 - **Reset:** hashed one-time token by email → new password → revoke all sessions. Responses to “forgot password” stay generic (no email enumeration).
 
+### 11.1 Owner-initiated recovery (My Company → Team → Security)
+
+The **platform owner** can recover another employee's account without ever learning a password:
+
+| Action                   | Route                                                  | Effect                                                                               |
+| ------------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| Send password reset link | `POST /api/employees/:id/security/password-reset-link` | Issues the same hashed one-time token as § 11 Reset and mails it to the employee     |
+| Sign out all devices     | `POST /api/employees/:id/security/revoke-sessions`     | Revokes all `ACTIVE` sessions (`admin_revoke`), bumps `authVersion`, locks the vault |
+
+Rules:
+
+- **No admin-set password.** There is no route that sets, generates, or reveals another employee's password; only the employee completes the reset from their mailbox.
+- The response never carries the token or the reset URL.
+- Guarded by `COMPANY` `EDIT` **plus** `PlatformOwnershipService.assertPlatformOwner`, `@RequireActiveSession`, and the same 5 / 10 min throttle as public forgot-password.
+- The owner cannot target their own record here (own Security tab covers it), and founder-protected identities are refused.
+- The target employee gets an in-app notification for both actions.
+- **Reset link** refuses terminated employees and accounts without a password hash (invite instead), and returns **503** when the provider did not accept the email — an undelivered link must not report success. Unlike the public flow, these errors are explicit because the caller is an authenticated owner.
+- **Sign out all devices** stays available regardless of status so access can always be cut defensively; it never changes the password. The audit row records the real `vaultLocked` outcome, because a Redis failure can leave the vault unlock in place.
+
 ---
 
 ## 12. High-risk actions
@@ -229,7 +248,8 @@ Required for:
 - employee terminate / offboarding;
 - Credentials reveal / copy / export (in addition to vault step-up);
 - security settings that change auth policy;
-- logout-all from another device (already authenticated; still V2 session).
+- logout-all from another device (already authenticated; still V2 session);
+- owner-initiated employee recovery (§ 11.1).
 
 Credentials **vault unlock** is a **separate** 24h server session. Login V2 does not replace it. Canon: [`../02-Modules/12-Credentials/03-Credentials-Security.md`](../02-Modules/12-Credentials/03-Credentials-Security.md).
 
@@ -298,6 +318,8 @@ Record security events (no secrets, no raw refresh, no password, no token):
 | `auth.password_changed`                     | Change password        |
 | `auth.password_reset_issued` / `_completed` | Reset                  |
 | `auth.refresh_reuse_detected`               | Stolen refresh replay  |
+
+Owner-initiated recovery (§ 11.1) additionally writes `AuditLog` rows against the target employee — `employee.password_reset_link_sent` and `employee.sessions_revoked` — with the acting owner as `userId`.
 
 Login failures stay metrics + generic 401 (no “user exists” audit line).
 
