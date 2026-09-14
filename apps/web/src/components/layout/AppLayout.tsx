@@ -12,6 +12,7 @@ import { MobileModuleDockProvider } from './MobileModuleDockProvider';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { APP_MAIN_CONTENT_INSET } from './app-layout-constants';
+import { ORG_CHART_PAGE_HREF } from '@/features/hr/components/org-chart/org-chart-constants';
 import { MobileBottomNav } from './MobileBottomNav';
 import { SIDEBAR_WIDTH_COLLAPSED_PX, SIDEBAR_WIDTH_EXPANDED_PX } from './sidebar-layout-constants';
 import { AppEntityRelationProvider } from '@/components/shared/relation-picker/AppEntityRelationProvider';
@@ -44,6 +45,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   const autoCollapsedRef = useRef(false);
   const isDocumentsRoute = pathname.startsWith('/documents');
   const isMessengerRoute = pathname.startsWith('/messenger');
+  const isDepartmentsOrgChartRoute = pathname === ORG_CHART_PAGE_HREF;
+  const isCanvasRoute = isMessengerRoute || isDepartmentsOrgChartRoute;
 
   useEffect(() => {
     if (isMobileViewport) return;
@@ -99,7 +102,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                           <main
                             className={cn(
                               'flex min-h-0 min-w-0 flex-1 flex-col overscroll-contain bg-transparent',
-                              isMessengerRoute
+                              isCanvasRoute
                                 ? 'overflow-hidden'
                                 : 'overflow-y-auto [scrollbar-gutter:stable] max-md:overflow-x-hidden max-md:[scrollbar-gutter:auto]',
                               APP_MAIN_CONTENT_INSET,
