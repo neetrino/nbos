@@ -14,6 +14,19 @@ describe('canAssignRole', () => {
     ).toBe(false);
   });
 
+  it('never assigns an archived role, even for the platform owner', () => {
+    const result = canAssignRole({
+      actorIsPlatformOwner: true,
+      actorRoleSlug: 'ceo',
+      targetRoleSlug: 'regional-head',
+      targetRoleAssignable: true,
+      targetRoleArchived: true,
+      ceoHeldByOtherEmployee: false,
+    });
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toContain('Archived');
+  });
+
   it('blocks Finance from assigning Founder or CEO', () => {
     expect(
       canAssignRole({

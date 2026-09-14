@@ -1,24 +1,16 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronRight, Plus, Shield, Users } from 'lucide-react';
+import { Plus, Shield } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { EmptyState, ErrorState, LoadingState, PageHero } from '@/components/shared';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from '@/components/ui/table';
 import { toast } from 'sonner';
 import { SETTINGS_RBAC_MODULE } from '@nbos/shared/constants';
 import { PermissionGate } from '@/lib/permissions';
 import { CreateRoleDialog } from '@/features/settings/components/CreateRoleDialog';
 import { RolePermissionsSheet } from '@/features/settings/components/RolePermissionsSheet';
+import { RolesTable } from '@/features/settings/components/RolesTable';
 import {
   buildRoleMatrixScopes,
   rolePermissionScopeKey,
@@ -44,11 +36,14 @@ export default function RolesPage() {
   const [createSlug, setCreateSlug] = useState('');
   const [createLevel, setCreateLevel] = useState(10);
   const [createSaving, setCreateSaving] = useState(false);
+  const [retiringRoleId, setRetiringRoleId] = useState<string | null>(null);
 
   const fetchRoles = useCallback(async () => {
     setLoadingRoles(true);
     try {
-      const data = await api.get<RoleListItem[]>('/api/roles').then((r) => r.data);
+      const data = await api
+        .get<RoleListItem[]>('/api/roles', { params: { includeArchived: 'true' } })
+        .then((r) => r.data);
       setRoles(Array.isArray(data) ? data : []);
       setLoadError(null);
     } catch (err) {
@@ -148,6 +143,19 @@ export default function RolesPage() {
     }
   };
 
+  const handleRetirement = async (role: RoleListItem, action: 'archive' | 'restore') => {
+    setRetiringRoleId(role.id);
+    try {
+      await api.post(`/api/roles/${role.id}/${action}`);
+      toast.success(action === 'archive' ? 'Role archived' : 'Role restored');
+      await fetchRoles();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : `Failed to ${action} role`);
+    } finally {
+      setRetiringRoleId(null);
+    }
+  };
+
   const handleCreateRole = async () => {
     const name = createName.trim();
     const slug = createSlug.trim().toLowerCase().replace(/\s+/g, '-');
@@ -210,45 +218,13 @@ export default function RolesPage() {
             description="Create a role before editing permissions."
           />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead className="w-20">Level</TableHead>
-                <TableHead className="w-24">System</TableHead>
-                <TableHead className="w-24">Employees</TableHead>
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {roles.map((role) => (
-                <TableRow
-                  key={role.id}
-                  className="hover:bg-muted/50 cursor-pointer"
-                  onClick={() => handleSelectRole(role)}
-                >
-                  <TableCell className="font-medium">{role.name}</TableCell>
-                  <TableCell>{role.level}</TableCell>
-                  <TableCell>
-                    {role.isSystem ? (
-                      <Badge variant="secondary">System</Badge>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <span className="flex items-center gap-1 text-sm">
-                      <Users size={14} />
-                      {role._count?.employees ?? 0}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    <ChevronRight size={16} aria-hidden />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <RolesTable
+            roles={roles}
+            busyRoleId={retiringRoleId}
+            onSelect={handleSelectRole}
+            onArchive={(role) => void handleRetirement(role, 'archive')}
+            onRestore={(role) => void handleRetirement(role, 'restore')}
+          />
         )}
       </div>
 

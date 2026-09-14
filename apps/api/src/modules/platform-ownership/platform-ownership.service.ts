@@ -99,7 +99,7 @@ export class PlatformOwnershipService implements OnModuleInit {
   }): Promise<void> {
     const targetRole = await this.prisma.role.findUnique({
       where: { id: params.targetRoleId },
-      select: { slug: true, assignable: true },
+      select: { slug: true, assignable: true, archivedAt: true },
     });
     if (!targetRole) throw new ForbiddenException('Unknown role.');
     const actorIsPlatformOwner = await this.isPlatformOwner(params.actorId);
@@ -112,6 +112,7 @@ export class PlatformOwnershipService implements OnModuleInit {
       actorRoleSlug: params.actorRoleSlug,
       targetRoleSlug: targetRole.slug,
       targetRoleAssignable: targetRole.assignable,
+      targetRoleArchived: targetRole.archivedAt !== null,
       ceoHeldByOtherEmployee,
     });
     if (decision.allowed) return;

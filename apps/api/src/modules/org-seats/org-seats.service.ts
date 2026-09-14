@@ -168,9 +168,10 @@ export class OrgSeatsService {
     if (roleId === null) return;
     const role = await this.prisma.role.findUnique({
       where: { id: roleId },
-      select: { assignable: true },
+      select: { assignable: true, archivedAt: true },
     });
     if (!role?.assignable) throw new BadRequestException('Permission role is not assignable.');
+    if (role.archivedAt) throw new BadRequestException('Permission role is archived.');
   }
 
   private async assertDepartmentExists(tx: TransactionClient, departmentId: string): Promise<void> {

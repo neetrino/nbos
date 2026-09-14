@@ -159,6 +159,9 @@ model Role {
   isSystem    Boolean  @default(false) @map("is_system")
   /// Legacy `owner` role is not assignable; Founder is PlatformOwnership identity.
   assignable  Boolean  @default(true)
+  /// Retirement path for roles that assignment history keeps referenced forever.
+  /// An archived role grants nothing new and is hidden from every assignment surface.
+  archivedAt  DateTime? @map("archived_at")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
@@ -169,6 +172,7 @@ model Role {
   defaultForSeats    OrgSeat[]                  @relation("OrgSeatDefaultPermissionRole")
   assignments        PermissionRoleAssignment[]
 
+  @@index([archivedAt])
   @@map("roles")
 }
 

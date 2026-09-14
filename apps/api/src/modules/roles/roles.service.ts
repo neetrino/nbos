@@ -16,10 +16,13 @@ export class RolesService {
     private readonly auditService: AuditService,
   ) {}
 
-  async findAll() {
+  async findAll(includeArchived = false) {
     const now = new Date();
     const [roles, counts] = await Promise.all([
-      this.prisma.role.findMany({ orderBy: { level: 'asc' } }),
+      this.prisma.role.findMany({
+        where: includeArchived ? {} : { archivedAt: null },
+        orderBy: { level: 'asc' },
+      }),
       this.prisma.$queryRaw<RoleEmployeeCount[]>`
         SELECT grants."roleId", COUNT(DISTINCT grants."employeeId")::int AS "employeeCount"
         FROM (
@@ -88,6 +91,9 @@ export class RolesService {
     if (role.isSystem) {
       throw new BadRequestException('Cannot update system role');
     }
+    if (role.archivedAt) {
+      throw new BadRequestException('Cannot update archived role. Restore it first.');
+    }
     if (data.slug?.trim().toLowerCase() === PLATFORM_OWNER_ROLE_SLUG) {
       throw new BadRequestException('Platform Owner is not a creatable role.');
     }
@@ -110,6 +116,9 @@ export class RolesService {
     const role = await this.prisma.role.findUnique({ where: { id: roleId } });
     if (!role) {
       throw new NotFoundException(`Role ${roleId} not found`);
+    }
+    if (role.archivedAt) {
+      throw new BadRequestException('Cannot change permissions of an archived role.');
     }
 
     const before = await this.findById(roleId);
@@ -155,7 +164,9 @@ export class RolesService {
       throw new BadRequestException('Cannot delete role with assigned employees');
     }
     if (role._count.assignments > 0) {
-      throw new BadRequestException('Cannot delete role with authorization assignment history');
+      throw new BadRequestException(
+        'Cannot delete role with authorization assignment history. Archive it instead.',
+      );
     }
     if (role._count.defaultForSeats > 0) {
       throw new BadRequestException('Cannot delete role mapped to organization seats');
@@ -165,6 +176,57 @@ export class RolesService {
       before: this.toRoleAuditSnapshot(role),
     });
     return deleted;
+  }
+
+  /**
+   * Retires a role that history keeps referenced. Refuses while anyone still holds it,
+   * so archiving can never silently revoke live access.
+   */
+  async archive(id: string, actorId: string) {
+    const role = await this.prisma.role.findUnique({ where: { id } });
+    if (!role) throw new NotFoundException(`Role ${id} not found`);
+    if (role.isSystem) throw new BadRequestException('Cannot archive system role');
+    if (role.archivedAt) throw new BadRequestException('Role is already archived');
+    await this.assertRoleUnused(id);
+    const archived = await this.prisma.role.update({
+      where: { id, archivedAt: null },
+      data: { archivedAt: new Date() },
+    });
+    await this.logRoleChange('ROLE_ARCHIVED', id, actorId, {
+      before: this.toRoleAuditSnapshot(role),
+    });
+    return archived;
+  }
+
+  async restore(id: string, actorId: string) {
+    const role = await this.prisma.role.findUnique({ where: { id } });
+    if (!role) throw new NotFoundException(`Role ${id} not found`);
+    if (!role.archivedAt) throw new BadRequestException('Role is not archived');
+    const restored = await this.prisma.role.update({
+      where: { id },
+      data: { archivedAt: null },
+    });
+    await this.logRoleChange('ROLE_RESTORED', id, actorId, {
+      after: this.toRoleAuditSnapshot(restored),
+    });
+    return restored;
+  }
+
+  private async assertRoleUnused(roleId: string): Promise<void> {
+    const [primaryHolders, activeGrants, activeSeats] = await Promise.all([
+      this.prisma.employee.count({ where: { roleId } }),
+      this.prisma.permissionRoleAssignment.count({ where: { roleId, revokedAt: null } }),
+      this.prisma.orgSeat.count({ where: { defaultPermissionRoleId: roleId, status: 'ACTIVE' } }),
+    ]);
+    if (primaryHolders > 0) {
+      throw new BadRequestException('Cannot archive a role that employees still hold');
+    }
+    if (activeGrants > 0) {
+      throw new BadRequestException('Cannot archive a role with active authorization grants');
+    }
+    if (activeSeats > 0) {
+      throw new BadRequestException('Cannot archive a role mapped to an active organization seat');
+    }
   }
 
   async findAllPermissions() {

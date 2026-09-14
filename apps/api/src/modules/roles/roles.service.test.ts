@@ -17,7 +17,9 @@ describe('RolesService', () => {
   const prisma = {
     role: { findUnique: vi.fn(), update: vi.fn(), delete: vi.fn() },
     rolePermission: { deleteMany: vi.fn(), createMany: vi.fn() },
-    employee: { updateMany: vi.fn() },
+    employee: { updateMany: vi.fn(), count: vi.fn() },
+    permissionRoleAssignment: { count: vi.fn() },
+    orgSeat: { count: vi.fn() },
     $transaction: vi.fn(async (ops: Promise<unknown>[]) => Promise.all(ops)),
   };
   let service: RolesService;
@@ -71,5 +73,75 @@ describe('RolesService', () => {
     await expect(service.updatePermissions('missing', [], 'actor-1')).rejects.toThrow(
       NotFoundException,
     );
+  });
+
+  describe('archival', () => {
+    const CUSTOM_ROLE = { ...SYSTEM_ROLE, id: 'role-regional', isSystem: false, archivedAt: null };
+
+    function unused() {
+      prisma.employee.count.mockResolvedValue(0);
+      prisma.permissionRoleAssignment.count.mockResolvedValue(0);
+      prisma.orgSeat.count.mockResolvedValue(0);
+    }
+
+    it('archives a role that history keeps referenced', async () => {
+      prisma.role.findUnique.mockResolvedValue(CUSTOM_ROLE);
+      unused();
+      prisma.role.update.mockResolvedValue({ ...CUSTOM_ROLE, archivedAt: new Date() });
+
+      await service.archive(CUSTOM_ROLE.id, 'actor-1');
+
+      expect(prisma.role.update).toHaveBeenCalledWith({
+        where: { id: CUSTOM_ROLE.id, archivedAt: null },
+        data: { archivedAt: expect.any(Date) },
+      });
+      expect(audit.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'ROLE_ARCHIVED' }));
+    });
+
+    it('refuses to archive while an active grant still exists', async () => {
+      prisma.role.findUnique.mockResolvedValue(CUSTOM_ROLE);
+      unused();
+      prisma.permissionRoleAssignment.count.mockResolvedValue(1);
+
+      await expect(service.archive(CUSTOM_ROLE.id, 'actor-1')).rejects.toThrow(BadRequestException);
+      expect(prisma.role.update).not.toHaveBeenCalled();
+    });
+
+    it('refuses to archive a role an employee still holds', async () => {
+      prisma.role.findUnique.mockResolvedValue(CUSTOM_ROLE);
+      unused();
+      prisma.employee.count.mockResolvedValue(1);
+
+      await expect(service.archive(CUSTOM_ROLE.id, 'actor-1')).rejects.toThrow(BadRequestException);
+    });
+
+    it('refuses to archive a role mapped to an active seat', async () => {
+      prisma.role.findUnique.mockResolvedValue(CUSTOM_ROLE);
+      unused();
+      prisma.orgSeat.count.mockResolvedValue(1);
+
+      await expect(service.archive(CUSTOM_ROLE.id, 'actor-1')).rejects.toThrow(BadRequestException);
+    });
+
+    it('refuses to edit permissions of an archived role', async () => {
+      prisma.role.findUnique.mockResolvedValue({ ...CUSTOM_ROLE, archivedAt: new Date() });
+
+      await expect(service.updatePermissions(CUSTOM_ROLE.id, [], 'actor-1')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('restores an archived role', async () => {
+      prisma.role.findUnique.mockResolvedValue({ ...CUSTOM_ROLE, archivedAt: new Date() });
+      prisma.role.update.mockResolvedValue(CUSTOM_ROLE);
+
+      await service.restore(CUSTOM_ROLE.id, 'actor-1');
+
+      expect(prisma.role.update).toHaveBeenCalledWith({
+        where: { id: CUSTOM_ROLE.id },
+        data: { archivedAt: null },
+      });
+      expect(audit.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'ROLE_RESTORED' }));
+    });
   });
 });

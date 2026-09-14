@@ -10,6 +10,8 @@ export interface RoleListItem {
   slug: string;
   level: number;
   isSystem: boolean;
+  /** Set when the role is retired: kept for history, hidden from assignment surfaces. */
+  archivedAt?: string | null;
   _count?: { employees: number };
 }
 

@@ -162,6 +162,23 @@ Owner может видеть все Deals.
 - сохранение system-роли — strong confirm (copy / paste имени роли); кастомной роли — simple Yes;
 - изменение пишется в audit log.
 
+## Жизненный цикл роли
+
+Назначение роли — основной или дополнительной — создаёт запись `PermissionRoleAssignment`. Эта запись **никогда не удаляется**: при смене роли, offboarding или завершении seat она получает `revokedAt`, чтобы аудит мог ответить, кто какой доступ имел и когда. Поэтому роль, которую хоть раз кому-то назначили, физически удалить нельзя.
+
+Штатный способ вывести роль из обращения — **архивация**:
+
+- `POST /api/roles/:id/archive` (`SETTINGS_RBAC.DELETE`) ставит `Role.archivedAt`;
+- `POST /api/roles/:id/restore` (`SETTINGS_RBAC.EDIT`) снимает его обратно;
+- архивировать можно только роль, которую **никто не держит**: нет сотрудников с ней как основной, нет активных (не отозванных) grants, нет активных seats с этим mapping. Архивация не отбирает доступ молча;
+- архивную роль нельзя назначить ни через один путь — проверка живёт в `canAssignRole`, то есть покрывает смену основной роли, приглашения, приём приглашения и mapping seat;
+- архивной роли нельзя менять поля и матрицу permissions; сначала restore;
+- системные роли не архивируются.
+
+`GET /api/roles` по умолчанию возвращает только активные роли; `?includeArchived=true` нужен экрану администрирования, чтобы показать архив и дать restore.
+
+`DELETE /api/roles/:id` остаётся только для роли, которую никогда не назначали и которая не привязана ни к одному seat.
+
 ## Role editing UX
 
 Экран `Permissions / RBAC`:
@@ -171,7 +188,7 @@ Owner может видеть все Deals.
 - фильтр по модулю;
 - actions: view/add/edit/delete/approve/export;
 - scope selector на каждое право;
-- system role badge;
+- system role badge, archived role badge, archive / restore action;
 - affected users preview;
 - audit tab;
 - change reason для рискованных изменений.
