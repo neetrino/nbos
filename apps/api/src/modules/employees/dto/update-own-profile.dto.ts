@@ -8,7 +8,6 @@ import {
   ValidateIf,
 } from 'class-validator';
 import {
-  EMPLOYEE_OWN_AVATAR_MAX_LENGTH,
   EMPLOYEE_OWN_NAME_MAX_LENGTH,
   EMPLOYEE_OWN_PHONE_MAX_LENGTH,
   EMPLOYEE_OWN_SIP_ID_MAX_LENGTH,
@@ -54,13 +53,6 @@ export class UpdateOwnProfileDto {
   @IsString()
   @MaxLength(EMPLOYEE_OWN_SIP_ID_MAX_LENGTH)
   sipId?: string | null;
-
-  @ApiPropertyOptional({ nullable: true })
-  @IsOptional()
-  @ValidateIf((_object, value) => value !== null)
-  @IsString()
-  @MaxLength(EMPLOYEE_OWN_AVATAR_MAX_LENGTH)
-  avatar?: string | null;
 
   @ApiPropertyOptional({ nullable: true, format: 'date-time' })
   @IsOptional()

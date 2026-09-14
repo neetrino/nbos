@@ -10,6 +10,7 @@ import {
 import { MailDeliveryLogKind, PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import type { ComposeMailDto, ReplyMailDto } from './dto/compose-mail.dto';
+import type { CreateMailComposeDraftDto } from './dto/create-mail-compose-draft.dto';
 import { mailRoleCanSend } from './mail-access.policy';
 import { loadMailAccountWithViewerRole } from './mail-account-role.ops';
 import { appendMailDeliveryLog } from './mail-delivery-log-append.ops';
@@ -50,8 +51,39 @@ export class MailComposeService {
     if (!mailRoleCanSend(loaded.role)) {
       throw new ForbiddenException('You cannot send from this mailbox');
     }
-    const thread = await this.persistComposeThread(dto, employeeId, loaded.account);
+    const thread = await this.persistComposeDraftThread(dto, employeeId, loaded.account);
+    await queueOutboundDraftMessage(this.prisma, {
+      threadId: thread.id,
+      messageId: thread.messageId,
+    });
+    await appendMailDeliveryLog(this.prisma, {
+      emailMessageId: thread.messageId,
+      mailAccountId: dto.mailAccountId,
+      actorEmployeeId: employeeId,
+      kind: MailDeliveryLogKind.OUTBOUND_QUEUED,
+    });
     await this.dispatch(thread.id, thread.messageId, dto.mailAccountId, employeeId);
+    return requireMailThreadDetailDto(this.prisma, { employeeId, viewScope, threadId: thread.id });
+  }
+
+  /** Persist a new thread + DRAFT message without queueing send. */
+  async composeDraft(
+    employeeId: string,
+    viewScope: string,
+    dto: CreateMailComposeDraftDto,
+  ): Promise<MailThreadDetailDto> {
+    const loaded = await loadMailAccountWithViewerRole(this.prisma, {
+      mailAccountId: dto.mailAccountId,
+      employeeId,
+      viewScope,
+    });
+    if (!loaded) {
+      throw new NotFoundException('Mail account not found');
+    }
+    if (!mailRoleCanSend(loaded.role)) {
+      throw new ForbiddenException('You cannot send from this mailbox');
+    }
+    const thread = await this.persistComposeDraftThread(dto, employeeId, loaded.account);
     return requireMailThreadDetailDto(this.prisma, { employeeId, viewScope, threadId: thread.id });
   }
 
@@ -84,8 +116,8 @@ export class MailComposeService {
     return requireMailThreadDetailDto(this.prisma, { employeeId, viewScope, threadId });
   }
 
-  private async persistComposeThread(
-    dto: ComposeMailDto,
+  private async persistComposeDraftThread(
+    dto: CreateMailComposeDraftDto | ComposeMailDto,
     employeeId: string,
     account: { id: string; emailAddress: string; displayName: string | null },
   ): Promise<{ id: string; messageId: string }> {
@@ -93,7 +125,7 @@ export class MailComposeService {
       const thread = await this.prisma.emailThread.create({
         data: {
           mailAccountId: dto.mailAccountId,
-          subjectNormalized: normalizeEmailSubject(dto.subject) || '(no subject)',
+          subjectNormalized: normalizeEmailSubject(dto.subject ?? '') || '(no subject)',
           lastMessageAt: new Date(),
           hasUnread: false,
         },
@@ -103,13 +135,6 @@ export class MailComposeService {
         actorEmployeeId: employeeId,
         account,
         dto,
-      });
-      await queueOutboundDraftMessage(this.prisma, { threadId: thread.id, messageId });
-      await appendMailDeliveryLog(this.prisma, {
-        emailMessageId: messageId,
-        mailAccountId: dto.mailAccountId,
-        actorEmployeeId: employeeId,
-        kind: MailDeliveryLogKind.OUTBOUND_QUEUED,
       });
       return { id: thread.id, messageId };
     } catch (error) {

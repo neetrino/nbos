@@ -1,14 +1,5 @@
 import { Transform } from 'class-transformer';
-import {
-  ArrayMaxSize,
-  ArrayMinSize,
-  IsArray,
-  IsEmail,
-  IsOptional,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { ArrayMaxSize, IsArray, IsEmail, IsOptional, IsString, MaxLength } from 'class-validator';
 import {
   MAIL_OUTBOUND_DRAFT_BODY_MAX_LENGTH,
   MAIL_OUTBOUND_DRAFT_MAX_ATTACHMENTS,
@@ -25,12 +16,12 @@ function trimStringArray(value: unknown): string[] {
 }
 
 export class CreateMailOutboundDraftDto {
+  @IsOptional()
   @Transform(({ value }) => trimStringArray(value))
   @IsArray()
-  @ArrayMinSize(1)
   @ArrayMaxSize(MAIL_OUTBOUND_DRAFT_MAX_TO_RECIPIENTS)
   @IsEmail({}, { each: true })
-  to!: string[];
+  to?: string[];
 
   @IsOptional()
   @Transform(({ value }) => trimStringArray(value))
@@ -39,16 +30,17 @@ export class CreateMailOutboundDraftDto {
   @IsEmail({}, { each: true })
   cc?: string[];
 
+  @IsOptional()
   @Transform(({ value }) => String(value ?? '').trim())
   @IsString()
-  @MinLength(1)
   @MaxLength(MAIL_OUTBOUND_DRAFT_SUBJECT_MAX_LENGTH)
-  subject!: string;
+  subject?: string;
 
+  @IsOptional()
   @Transform(({ value }) => String(value ?? ''))
   @IsString()
   @MaxLength(MAIL_OUTBOUND_DRAFT_BODY_MAX_LENGTH)
-  bodyText!: string;
+  bodyText?: string;
 
   @IsOptional()
   @Transform(({ value }) => {

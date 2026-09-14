@@ -48,7 +48,7 @@ export async function persistOutboundDraftMessage(
   },
 ): Promise<{ messageId: string }> {
   const { threadId, account, dto, actorEmployeeId } = params;
-  const toList = dedupeEmailsCaseInsensitive(dto.to);
+  const toList = dedupeEmailsCaseInsensitive(dto.to ?? []);
   const ccList = dedupeEmailsCaseInsensitive(dto.cc ?? []);
   const fileAssetIds = uniqueFileAssetIds(dto);
   const now = new Date();
@@ -58,8 +58,8 @@ export async function persistOutboundDraftMessage(
         threadId,
         mailAccountId: account.id,
         direction: 'OUTBOUND',
-        subject: dto.subject,
-        bodyText: dto.bodyText,
+        subject: dto.subject?.trim() ?? '',
+        bodyText: dto.bodyText ?? '',
         bodyHtmlSanitized: sanitizeEmailHtml(dto.bodyHtml ?? null),
         readState: 'READ',
         deliveryStatus: 'DRAFT',
@@ -73,7 +73,6 @@ export async function persistOutboundDraftMessage(
       where: { id: threadId },
       data: {
         lastMessageAt: now,
-        lastOutboundAt: now,
         hasUnread: false,
       },
     });

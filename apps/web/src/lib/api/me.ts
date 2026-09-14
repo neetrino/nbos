@@ -1,5 +1,6 @@
 import { api } from '../api';
 import type { Employee } from './employees';
+import { postEmployeeAvatarFile } from './post-employee-avatar';
 import type { SalaryLineMonthDetail } from './payroll-runs';
 import type { CompensationPayoutPhase } from './payroll-runs';
 
@@ -118,7 +119,6 @@ export interface UpdateOwnProfilePayload {
   phone?: string | null;
   telegram?: string | null;
   sipId?: string | null;
-  avatar?: string | null;
   birthday?: string | null;
 }
 
@@ -130,6 +130,15 @@ export const meApi = {
 
   async updateProfile(data: UpdateOwnProfilePayload): Promise<Employee> {
     const resp = await api.put<Employee>('/api/me/profile', data);
+    return resp.data;
+  },
+
+  async uploadAvatar(file: File): Promise<Employee> {
+    return postEmployeeAvatarFile('/api/me/profile/avatar', file);
+  },
+
+  async removeAvatar(): Promise<Employee> {
+    const resp = await api.delete<Employee>('/api/me/profile/avatar');
     return resp.data;
   },
 

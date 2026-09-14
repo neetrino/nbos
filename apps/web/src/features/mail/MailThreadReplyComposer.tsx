@@ -13,6 +13,8 @@ import { MAIL_QUEUED_TOAST } from './mail-outbound-copy';
 import {
   defaultReplySubjectFromMessages,
   defaultReplyToFromMessages,
+  emailsForRecipientKind,
+  latestOutboundDraftMessage,
   splitEmailList,
 } from './mail-thread-helpers';
 
@@ -37,6 +39,7 @@ export function MailThreadReplyComposer({
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const defaultsKey = useRef<string>('');
+  const draftIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const key = `${threadId}:${messages.map((m) => m.id).join(',')}`;
@@ -44,11 +47,42 @@ export function MailThreadReplyComposer({
       return;
     }
     defaultsKey.current = key;
+    const draft = latestOutboundDraftMessage(messages);
+    if (draft) {
+      draftIdRef.current = draft.id;
+      setTo(emailsForRecipientKind(draft, 'TO'));
+      setCc(emailsForRecipientKind(draft, 'CC'));
+      setSubject(draft.subject);
+      setBody(draft.bodyText ?? '');
+      return;
+    }
+    draftIdRef.current = null;
     setTo(defaultReplyToFromMessages(messages));
     setCc('');
     setSubject(defaultReplySubjectFromMessages(messages));
     setBody('');
   }, [threadId, messages]);
+
+  const persistDraft = useCallback(async (): Promise<string | null> => {
+    const toList = splitEmailList(to);
+    const ccList = splitEmailList(cc);
+    const payload = {
+      to: toList,
+      ...(ccList.length > 0 ? { cc: ccList } : {}),
+      subject: subject.trim(),
+      bodyText: body,
+    };
+    const draftId = draftIdRef.current;
+    const detail = draftId
+      ? await mailApi.updateOutboundDraft(threadId, draftId, payload)
+      : await mailApi.createOutboundDraft(threadId, payload);
+    const saved = latestOutboundDraftMessage(detail.messages);
+    if (saved) {
+      draftIdRef.current = saved.id;
+    }
+    onThreadUpdated(detail);
+    return saved?.id ?? draftId;
+  }, [body, cc, onThreadUpdated, subject, threadId, to]);
 
   const send = useCallback(async () => {
     const toList = splitEmailList(to);
@@ -56,17 +90,20 @@ export function MailThreadReplyComposer({
       toast.error('Enter at least one To address.');
       return;
     }
+    if (subject.trim() === '') {
+      toast.error('Add a subject before sending.');
+      return;
+    }
     setSending(true);
     try {
-      const ccList = splitEmailList(cc);
-      const d = await mailApi.reply(threadId, {
-        to: toList,
-        ...(ccList.length > 0 ? { cc: ccList } : {}),
-        subject: subject.trim() || undefined,
-        bodyText: body,
-      });
+      const draftId = await persistDraft();
+      if (!draftId) {
+        return;
+      }
+      const d = await mailApi.queueOutboundDraft(threadId, draftId);
       onThreadUpdated(d);
       setBody('');
+      draftIdRef.current = null;
       toast.success(MAIL_QUEUED_TOAST);
       onSent?.();
     } catch (e) {
@@ -74,14 +111,26 @@ export function MailThreadReplyComposer({
     } finally {
       setSending(false);
     }
-  }, [threadId, to, cc, subject, body, onThreadUpdated, onSent]);
+  }, [onSent, onThreadUpdated, persistDraft, subject, threadId, to]);
+
+  const saveDraft = useCallback(async () => {
+    setSending(true);
+    try {
+      await persistDraft();
+      toast.success('Draft saved.');
+    } catch (e) {
+      toast.error(getApiErrorMessage(e, 'Draft could not be saved.'));
+    } finally {
+      setSending(false);
+    }
+  }, [persistDraft]);
 
   return (
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base">Reply</CardTitle>
         <p className="text-muted-foreground text-xs">
-          Sends through the connected mailbox provider.
+          Saved as a draft until you send. Sends through the connected mailbox.
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -128,6 +177,14 @@ export function MailThreadReplyComposer({
               Cancel
             </Button>
           ) : null}
+          <Button
+            type="button"
+            variant="outline"
+            disabled={sending}
+            onClick={() => void saveDraft()}
+          >
+            Save draft
+          </Button>
           <Button type="button" disabled={sending} onClick={() => void send()}>
             {sending ? 'Sending…' : 'Send reply'}
           </Button>

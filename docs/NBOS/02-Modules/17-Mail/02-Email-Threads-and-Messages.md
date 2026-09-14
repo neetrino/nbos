@@ -126,9 +126,9 @@ User opens thread
 User creates new email
   -> selects from mailbox
   -> adds recipients / subject / body / attachments
-  -> NBOS validates permission and attachment access
-  -> sends via provider adapter
-  -> creates EmailThread and outbound EmailMessage
+  -> NBOS saves outbound EmailMessage as DRAFT (autosave / explicit save)
+  -> Send queues DRAFT → QUEUED (Mail Send Job)
+  -> Close keeps the draft (Drafts folder); Discard cancels it
 ```
 
 ## Delivery statuses

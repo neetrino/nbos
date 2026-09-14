@@ -1,6 +1,14 @@
 import type { MailAccountHealthSummaryRow } from '@/lib/api/mail';
 
-export type MailFolderKey = 'all' | 'unread' | 'mine' | 'sent' | 'needsLink' | 'spam' | 'trash';
+export type MailFolderKey =
+  | 'all'
+  | 'unread'
+  | 'mine'
+  | 'sent'
+  | 'drafts'
+  | 'needsLink'
+  | 'spam'
+  | 'trash';
 
 export interface MailFolderDefinition {
   key: MailFolderKey;
@@ -13,6 +21,7 @@ export const MAIL_FOLDERS: MailFolderDefinition[] = [
   { key: 'unread', label: 'Unread' },
   { key: 'mine', label: 'Mine' },
   { key: 'sent', label: 'Sent' },
+  { key: 'drafts', label: 'Drafts' },
   { key: 'needsLink', label: 'Needs link' },
   { key: 'spam', label: 'Spam' },
   { key: 'trash', label: 'Trash' },
@@ -22,6 +31,7 @@ export function mailFolderListParams(folder: MailFolderKey): {
   unreadOnly?: boolean;
   assignedToMe?: boolean;
   sentOnly?: boolean;
+  draftsOnly?: boolean;
   needsLinkOnly?: boolean;
   spamOnly?: boolean;
   scope?: 'active' | 'trash';
@@ -33,6 +43,8 @@ export function mailFolderListParams(folder: MailFolderKey): {
       return { assignedToMe: true };
     case 'sent':
       return { sentOnly: true };
+    case 'drafts':
+      return { draftsOnly: true };
     case 'needsLink':
       return { needsLinkOnly: true };
     case 'spam':

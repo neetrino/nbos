@@ -1,6 +1,7 @@
 import type { PrismaClient } from '@nbos/database';
 import { resolveMailIdleStatus, resolveMailWatchStatus } from './mail-health-watch';
 import { listMailAccountsForViewer } from './mail-inbox-query.ops';
+import { mailInboxThreadCountWhere } from './mail-thread-list-where';
 import type { MailAccountHealthSummaryRow } from './mail.types';
 
 function countsByAccountId(
@@ -38,7 +39,7 @@ export async function listMailAccountHealthSummariesForViewer(
     prisma.emailThread.groupBy({
       by: ['mailAccountId'],
       orderBy: { mailAccountId: 'asc' },
-      where: { mailAccountId: { in: ids }, isSpam: false, trashedAt: null },
+      where: mailInboxThreadCountWhere(ids),
       _count: { _all: true },
     }),
     prisma.emailThread.groupBy({

@@ -3,7 +3,6 @@ import {
   type CanActivate,
   type ExecutionContext,
   Inject,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -58,6 +57,13 @@ interface CachedEmployee {
 
 const CACHE_TTL_MS = 60_000;
 
+const employeeGuardCache = new Map<string, CachedEmployee>();
+
+/** Drops the in-process `/api/me` cache after profile fields such as avatar change. */
+export function invalidateEmployeeGuardCache(employeeId: string): void {
+  employeeGuardCache.delete(employeeId);
+}
+
 /**
  * Loads full Employee data (role, departments, permissions) into request.user
  * after AuthGuard has already verified the JWT and set employeeId.
@@ -65,9 +71,7 @@ const CACHE_TTL_MS = 60_000;
  */
 @Injectable()
 export class EmployeeGuard implements CanActivate {
-  private cache = new Map<string, CachedEmployee>();
   private inflight = new Map<string, Promise<CachedEmployee>>();
-  private readonly logger = new Logger(EmployeeGuard.name);
 
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
@@ -94,7 +98,7 @@ export class EmployeeGuard implements CanActivate {
       return true;
     }
 
-    const cached = this.cache.get(employeeId);
+    const cached = employeeGuardCache.get(employeeId);
     if (cached && Date.now() - cached.cachedAt < CACHE_TTL_MS) {
       request.user = {
         ...request.user,
@@ -200,7 +204,7 @@ export class EmployeeGuard implements CanActivate {
       cachedAt: Date.now(),
     };
 
-    this.cache.set(employeeId, enriched);
+    employeeGuardCache.set(employeeId, enriched);
     return enriched;
   }
 

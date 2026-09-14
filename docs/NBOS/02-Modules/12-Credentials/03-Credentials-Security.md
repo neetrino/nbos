@@ -47,6 +47,8 @@ Reveal/copy должны требовать:
 
 Для reveal/copy **critical** live secrets и historical versions — **daily vault unlock** (24h), не пароль на каждый клик.
 
+**Инвариант vault session:** запись unlock хранит `authVersion` сотрудника и считается действительной только пока он совпадает с текущим. Поэтому logout-all, смена/сброс пароля, terminate и owner-initiated sign-out (`06-Authentication-and-Sessions.md` § 11.1) завершают vault session даже если явная запись `lock()` не дошла до Redis. Явный `lock()` остаётся быстрым путём, а не единственной гарантией. Записи, созданные до этого правила, считаются недействительными — потребуется один повторный unlock.
+
 Step-up может быть:
 
 - повторный пароль;

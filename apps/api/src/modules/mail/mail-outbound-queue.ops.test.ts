@@ -7,12 +7,16 @@ describe('queueOutboundDraftMessage', () => {
       emailMessage: {
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       },
+      emailThread: {
+        update: vi.fn().mockResolvedValue({}),
+      },
     } as never;
     const ok = await queueOutboundDraftMessage(prisma, {
       threadId: 't1',
       messageId: 'm1',
     });
     expect(ok).toBe(true);
+    expect(prisma.emailThread.update).toHaveBeenCalled();
   });
 
   it('returns false when no row matches', async () => {

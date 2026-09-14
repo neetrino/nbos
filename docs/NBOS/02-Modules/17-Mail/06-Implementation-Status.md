@@ -2,6 +2,12 @@
 
 Tracks **shipped runtime** vs `00-Mail-Overview.md`. Provider/sync gaps: `99-Mail-Cleanup-Register.md`.
 
+## Shipped — outbound drafts (compose)
+
+- New compose autosaves `EmailMessage` `DRAFT` (`POST /mail/drafts`, `PATCH …/messages/:id`). Send is `POST …/queue` (`DRAFT → QUEUED`). Discard cancels the draft.
+- Inbox/Sent hide compose-only drafts (`lastInboundAt` and `lastOutboundAt` both null until queue). **Drafts** folder: `?draftsOnly=true`.
+- Reply composer reuses a thread draft (create/patch + queue). Shared draft collaboration remains out of MVP.
+
 ## Shipped (web + API) — Trash (Phase 7.1)
 
 - **Schema:** `email_threads.trashed_at`, `trashed_by_employee_id` (`20260612190000`).

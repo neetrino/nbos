@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   isMailAccountListedInDailySwitcher,
   mailAccountsForDailySwitcher,
+  mailFolderListParams,
 } from './mail-folder-config';
 
 describe('mail daily switcher visibility', () => {
@@ -20,5 +21,11 @@ describe('mail daily switcher visibility', () => {
       'live',
       'selected-off',
     ]);
+  });
+});
+
+describe('mailFolderListParams', () => {
+  it('maps Drafts to draftsOnly', () => {
+    expect(mailFolderListParams('drafts')).toEqual({ draftsOnly: true });
   });
 });

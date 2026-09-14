@@ -17,6 +17,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
+import { UpdateMailOutboundDraftDto } from './dto/update-mail-outbound-draft.dto';
 import { PatchMailThreadDto } from './dto/patch-mail-thread.dto';
 import { MailOutboundMutationService } from './mail-outbound-mutation.service';
 import { MailOutboundSendMutationService } from './mail-outbound-send-mutation.service';
@@ -114,6 +115,7 @@ export class MailController {
     @Query('scope') scope?: string,
     @Query('assignedToMe') assignedToMe?: string,
     @Query('sentOnly') sentOnly?: string,
+    @Query('draftsOnly') draftsOnly?: string,
     @Query('q') q?: string,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -126,6 +128,7 @@ export class MailController {
       scope: parseEntityLifecycleScope(scope),
       assignedToMe: isQueryFlagTrue(assignedToMe),
       sentOnly: isQueryFlagTrue(sentOnly),
+      draftsOnly: isQueryFlagTrue(draftsOnly),
       search: q,
       page: parseMailThreadListIntQuery(page),
       pageSize: parseMailThreadListIntQuery(pageSize),
@@ -277,6 +280,26 @@ export class MailController {
       user.id,
       req.permissionScope ?? 'OWN',
       threadId,
+      body,
+    );
+  }
+
+  @Patch('threads/:threadId/messages/:messageId')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({ summary: 'Update an outbound DRAFT (recipients, subject, body)' })
+  async updateOutboundDraft(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('threadId') threadId: string,
+    @Param('messageId') messageId: string,
+    @Body() body: UpdateMailOutboundDraftDto,
+  ) {
+    return this.mailOutboundMutationService.updateOutboundDraft(
+      user.id,
+      req.permissionScope ?? 'OWN',
+      threadId,
+      messageId,
       body,
     );
   }

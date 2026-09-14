@@ -18,6 +18,7 @@ import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../c
 import { AssignThreadDto } from './dto/assign-thread.dto';
 import { BulkThreadActionDto } from './dto/bulk-thread-action.dto';
 import { ComposeMailDto, ReplyMailDto } from './dto/compose-mail.dto';
+import { CreateMailComposeDraftDto } from './dto/create-mail-compose-draft.dto';
 import { ShareMailAccountDto, UpdateMailAccountAccessDto } from './dto/share-mail-account.dto';
 import { MailAccountAccessService } from './mail-account-access.service';
 import { MailComposeService } from './mail-compose.service';
@@ -210,6 +211,19 @@ export class MailCollabController {
     @Body() body: ComposeMailDto,
   ) {
     return this.composeService.composeNew(user.id, req.permissionScope ?? 'OWN', body);
+  }
+
+  @Post('drafts')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @RequirePermission('MAIL', 'EDIT')
+  @ApiOperation({ summary: 'Create a new-compose outbound draft (thread + DRAFT, no send)' })
+  composeDraft(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Body() body: CreateMailComposeDraftDto,
+  ) {
+    return this.composeService.composeDraft(user.id, req.permissionScope ?? 'OWN', body);
   }
 
   @Post('threads/:threadId/reply')

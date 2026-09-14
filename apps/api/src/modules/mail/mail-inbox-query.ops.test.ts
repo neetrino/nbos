@@ -31,6 +31,18 @@ describe('listMailThreadsForViewer', () => {
     }
   });
 
+  it('filters threads that have an outbound DRAFT', async () => {
+    const { prisma, emailThreadFindMany } = mockPrismaForThreads();
+    await listMailThreadsForViewer(prisma, 'emp-1', 'OWN', { draftsOnly: true });
+    expect(emailThreadFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          messages: { some: { direction: 'OUTBOUND', deliveryStatus: 'DRAFT' } },
+        }),
+      }),
+    );
+  });
+
   it('includes hasUnread when unreadOnly is true', async () => {
     const { prisma, emailThreadFindMany } = mockPrismaForThreads();
     await listMailThreadsForViewer(prisma, 'emp-1', 'OWN', { unreadOnly: true });
@@ -46,7 +58,10 @@ describe('listMailThreadsForViewer', () => {
     await listMailThreadsForViewer(prisma, 'emp-1', 'OWN', {});
     expect(emailThreadFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ trashedAt: null }),
+        where: expect.objectContaining({
+          trashedAt: null,
+          OR: [{ lastInboundAt: { not: null } }, { lastOutboundAt: { not: null } }],
+        }),
       }),
     );
   });

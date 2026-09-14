@@ -28,6 +28,7 @@ export interface MailActivePanelHostProps {
   onThreadMarkedSpam?: (threadId: string, mailAccountId: string) => void;
   onMailboxConnected: () => void;
   onComposeSent: (threadId: string) => void;
+  onComposeClosed?: () => void;
   onThreadDeleted?: (threadId: string) => void;
   onThreadRestored?: (threadId: string) => void;
   trashView?: boolean;
@@ -43,6 +44,7 @@ export function MailActivePanelHost({
   onThreadMarkedSpam,
   onMailboxConnected,
   onComposeSent,
+  onComposeClosed,
   onThreadDeleted,
   onThreadRestored,
   trashView = false,
@@ -62,11 +64,17 @@ export function MailActivePanelHost({
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       onActivePanelChange(null);
+      if (activePanel?.type === 'compose') {
+        onComposeClosed?.();
+      }
     }
   };
 
   const closePanel = () => {
     onActivePanelChange(null);
+    if (activePanel?.type === 'compose') {
+      onComposeClosed?.();
+    }
   };
 
   const sourcePageHref = threadId ? `/mail/threads/${threadId}` : '#';
@@ -110,6 +118,7 @@ export function MailActivePanelHost({
               defaultAccountId={activePanel.defaultAccountId}
               mode={activePanel.mode ?? 'new'}
               defaultSubject={activePanel.defaultSubject ?? ''}
+              resumeThreadId={activePanel.resumeThreadId ?? null}
               onSent={onComposeSent}
               onClose={closePanel}
             />

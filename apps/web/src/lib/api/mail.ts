@@ -104,11 +104,16 @@ export interface MailAttachmentRow {
 }
 
 export interface CreateMailOutboundDraftPayload {
-  to: string[];
+  to?: string[];
   cc?: string[];
-  subject: string;
-  bodyText: string;
+  subject?: string;
+  bodyText?: string;
+  bodyHtml?: string;
   fileAssetIds?: string[];
+}
+
+export interface CreateMailComposeDraftPayload extends CreateMailOutboundDraftPayload {
+  mailAccountId: string;
 }
 
 export interface MailThreadDetailDto {
@@ -220,6 +225,7 @@ export interface ListMailThreadsOptions {
   needsLinkOnly?: boolean;
   assignedToMe?: boolean;
   sentOnly?: boolean;
+  draftsOnly?: boolean;
   spamOnly?: boolean;
   scope?: 'active' | 'trash';
   search?: string;
@@ -254,6 +260,9 @@ export const mailApi = {
     }
     if (options.sentOnly) {
       params.sentOnly = 'true';
+    }
+    if (options.draftsOnly) {
+      params.draftsOnly = 'true';
     }
     if (options.spamOnly) {
       params.spamOnly = 'true';
@@ -332,11 +341,28 @@ export const mailApi = {
     await api.delete(`/api/mail/threads/${threadId}/permanent`);
   },
 
+  async createComposeDraft(body: CreateMailComposeDraftPayload): Promise<MailThreadDetailDto> {
+    const resp = await api.post<MailThreadDetailDto>('/api/mail/drafts', body);
+    return resp.data;
+  },
+
   async createOutboundDraft(
     threadId: string,
     body: CreateMailOutboundDraftPayload,
   ): Promise<MailThreadDetailDto> {
     const resp = await api.post<MailThreadDetailDto>(`/api/mail/threads/${threadId}/drafts`, body);
+    return resp.data;
+  },
+
+  async updateOutboundDraft(
+    threadId: string,
+    messageId: string,
+    body: CreateMailOutboundDraftPayload,
+  ): Promise<MailThreadDetailDto> {
+    const resp = await api.patch<MailThreadDetailDto>(
+      `/api/mail/threads/${threadId}/messages/${messageId}`,
+      body,
+    );
     return resp.data;
   },
 
