@@ -1,6 +1,9 @@
 /** Shown after compose/reply/queue when the send job was accepted. */
 export const MAIL_QUEUED_TOAST = 'Email queued.';
 
+/** Shown after discarding an unsent outbound draft. */
+export const MAIL_DRAFT_DISCARDED_TOAST = 'Draft discarded.';
+
 /** Shown after FAILED → QUEUED retry. */
 export const MAIL_RETRY_QUEUED_TOAST = 'Retry queued.';
 

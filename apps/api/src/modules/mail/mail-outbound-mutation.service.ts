@@ -10,6 +10,7 @@ import {
 import { publishMailOutboundDraftCreatedNotifications } from './mail-outbound-draft-created-notify.ops';
 import { dedupeEmailsCaseInsensitive } from './mail-outbound-draft.helpers';
 import { persistOutboundDraftMessage } from './mail-outbound-draft.ops';
+import { updateOutboundDraftMessage } from './mail-outbound-draft-update.ops';
 import type { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
 import { requireMailAccountSendRole } from './mail-send-access.ops';
 import { assertMailThreadIsActive } from './mail-thread-active-guard.ops';
@@ -46,10 +47,7 @@ export class MailOutboundMutationService {
       viewScope: accessScope,
     });
     const account = thread.mailAccount;
-    const toList = dedupeEmailsCaseInsensitive(dto.to);
-    if (toList.length === 0) {
-      throw new BadRequestException('At least one valid To address is required');
-    }
+    const toList = dedupeEmailsCaseInsensitive(dto.to ?? []);
     const ccList = dedupeEmailsCaseInsensitive(dto.cc ?? []);
     const { messageId } = await persistOutboundDraftMessage(this.prisma, {
       threadId,
@@ -62,7 +60,7 @@ export class MailOutboundMutationService {
       toCount: toList.length,
       ccCount: ccList.length,
       attachmentCount: dto.fileAssetIds?.length ?? 0,
-      subjectPrefix: dto.subject.slice(0, 120),
+      subjectPrefix: (dto.subject ?? '').slice(0, 120),
     };
     await this.auditService.log({
       entityType: MAIL_AUDIT_ENTITY_MESSAGE,
@@ -75,10 +73,47 @@ export class MailOutboundMutationService {
       actorEmployeeId: employeeId,
       threadId,
       messageId,
-      subject: dto.subject,
+      subject: dto.subject ?? '',
       emailAddress: account.emailAddress,
       ownerEmployeeId: account.ownerEmployeeId,
     });
+    return requireMailThreadDetailDto(this.prisma, {
+      employeeId,
+      viewScope: accessScope,
+      threadId,
+    });
+  }
+
+  async updateOutboundDraft(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+    messageId: string,
+    dto: CreateMailOutboundDraftDto,
+  ): Promise<MailThreadDetailDto> {
+    const thread = await getMailThreadWithMailboxAccess(this.prisma, {
+      threadId,
+      employeeId,
+      accessScope,
+    });
+    if (!thread) {
+      throw new NotFoundException('Thread not found');
+    }
+    assertMailThreadIsActive(thread);
+    await requireMailAccountSendRole(this.prisma, {
+      mailAccountId: thread.mailAccountId,
+      employeeId,
+      viewScope: accessScope,
+    });
+    const updated = await updateOutboundDraftMessage(this.prisma, {
+      threadId,
+      messageId,
+      account: thread.mailAccount,
+      dto,
+    });
+    if (!updated) {
+      throw new BadRequestException('Only outbound drafts can be updated');
+    }
     return requireMailThreadDetailDto(this.prisma, {
       employeeId,
       viewScope: accessScope,

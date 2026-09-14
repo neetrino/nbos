@@ -59,6 +59,7 @@ import {
   mailAccountsForDailySwitcher,
   type MailFolderKey,
 } from '@/features/mail/mail-folder-config';
+import { isMailComposeOnlyDraftThread } from '@/features/mail/mail-thread-helpers';
 import { resolveMailModuleAccessPhase } from '@/features/mail/mail-module-access';
 import {
   buildMailSearchFilterConfigs,
@@ -418,6 +419,17 @@ export default function MailInboxPage() {
   };
 
   const openThread = (threadId: string) => {
+    if (activeFolder === 'drafts') {
+      const thread = threads.find((row) => row.id === threadId);
+      if (thread && isMailComposeOnlyDraftThread(thread)) {
+        handleActivePanelChange({
+          type: 'compose',
+          defaultAccountId: thread.mailAccountId,
+          resumeThreadId: threadId,
+        });
+        return;
+      }
+    }
     handleActivePanelChange({ type: 'thread', threadId });
   };
 
@@ -887,6 +899,7 @@ export default function MailInboxPage() {
           handleActivePanelChange({ type: 'thread', threadId });
           void load();
         }}
+        onComposeClosed={() => void load()}
         trashView={activeFolder === 'trash'}
         onThreadDeleted={(threadId) => {
           handleActivePanelChange(null);

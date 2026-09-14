@@ -1,5 +1,26 @@
 import type { MailMessageRow } from '@/lib/api/mail';
 
+export function latestOutboundDraftMessage(messages: MailMessageRow[]): MailMessageRow | null {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const message = messages[i];
+    if (message?.direction === 'OUTBOUND' && message.deliveryStatus === 'DRAFT') {
+      return message;
+    }
+  }
+  return null;
+}
+
+export function emailsForRecipientKind(message: MailMessageRow, kind: string): string {
+  return message.recipients
+    .filter((row) => row.kind === kind)
+    .map((row) => row.email)
+    .join(', ');
+}
+
+export function isMailComposeOnlyDraftThread(thread: { lastInboundAt: string | null }): boolean {
+  return thread.lastInboundAt === null;
+}
+
 export function splitEmailList(raw: string): string[] {
   return raw
     .split(/[,;\s]+/)

@@ -19,6 +19,7 @@ import { queueOutboundDraftMessage } from './mail-outbound-queue.ops';
 import { publishMailOutboundFailedResetToDraftNotifications } from './mail-outbound-reset-failed-notify.ops';
 import { applyFailedOutboundResetToDraft } from './mail-outbound-retry-failed.ops';
 import { queueFailedOutboundForRetry } from './mail-outbound-retry-send.ops';
+import { outboundDraftSendBlocker } from './mail-outbound-draft-ready';
 import { MailQueueService } from './mail-queue.service';
 import { MailSendService } from './mail-send.service';
 import { requireMailAccountSendRole } from './mail-send-access.ops';
@@ -48,6 +49,14 @@ export class MailOutboundSendMutationService {
     const { message: msg } = access;
     if (msg.direction !== 'OUTBOUND' || msg.deliveryStatus !== 'DRAFT') {
       throw new BadRequestException('Only outbound drafts can be queued for send');
+    }
+    const recipients = await this.prisma.emailRecipient.findMany({
+      where: { messageId },
+      select: { kind: true },
+    });
+    const sendBlocker = outboundDraftSendBlocker({ subject: msg.subject, recipients });
+    if (sendBlocker) {
+      throw new BadRequestException(sendBlocker);
     }
     await requireMailAccountSendRole(this.prisma, {
       mailAccountId: access.thread.mailAccountId,

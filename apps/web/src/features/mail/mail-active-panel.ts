@@ -14,6 +14,7 @@ export type ActiveMailPanel =
       defaultAccountId?: string | null;
       mode?: MailComposePanelMode;
       defaultSubject?: string;
+      resumeThreadId?: string;
     }
   | { type: 'connect'; accountId?: string }
   | { type: 'share'; accountId: string; accountEmail: string }

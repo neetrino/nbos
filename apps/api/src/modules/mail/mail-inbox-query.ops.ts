@@ -10,6 +10,7 @@ import {
   buildMailThreadListPageMeta,
   normalizeMailThreadListPagination,
 } from './mail-thread-list-pagination.ops';
+import { mailThreadListActivityWhere } from './mail-thread-list-where';
 
 export interface ListMailThreadsOptions {
   mailAccountId?: string;
@@ -20,6 +21,8 @@ export interface ListMailThreadsOptions {
   assignedToMe?: boolean;
   /** When true, only threads with outbound activity (Sent). */
   sentOnly?: boolean;
+  /** When true, only threads with an outbound DRAFT message. */
+  draftsOnly?: boolean;
   /** When true, only threads flagged as spam. Default lists exclude spam. */
   spamOnly?: boolean;
   /** Active (default) or trash list scope. */
@@ -89,7 +92,8 @@ export async function listMailThreadsForViewer(
   viewScope: string,
   options: ListMailThreadsOptions = {},
 ): Promise<ListMailThreadsQueryResult> {
-  const { mailAccountId, unreadOnly, needsLinkOnly, assignedToMe, sentOnly, spamOnly } = options;
+  const { mailAccountId, unreadOnly, needsLinkOnly, assignedToMe, sentOnly, spamOnly, draftsOnly } =
+    options;
   const scope = options.scope ?? 'active';
   const searchTerm = normalizeMailThreadSearchQuery(options.search);
   const accountWhere = mailAccountWhereForViewer(employeeId, viewScope);
@@ -111,7 +115,7 @@ export async function listMailThreadsForViewer(
     ...(unreadOnly ? { hasUnread: true } : {}),
     ...(needsLinkOnly ? { needsBusinessLink: true } : {}),
     ...(assignedToMe ? { assignedToEmployeeId: employeeId } : {}),
-    ...(sentOnly ? { lastOutboundAt: { not: null } } : {}),
+    ...mailThreadListActivityWhere({ draftsOnly, sentOnly, spamOnly, scope }),
     ...(scope === 'active' ? (spamOnly ? { isSpam: true } : { isSpam: false }) : {}),
     ...(searchTerm
       ? {

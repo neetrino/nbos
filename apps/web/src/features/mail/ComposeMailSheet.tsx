@@ -16,9 +16,9 @@ import { mailApi, type MailAccountRow } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { MailComposeMessageEditor } from './MailComposeMessageEditor';
 import { MailSheetPanelHeader } from './MailSheetPanelHeader';
-import { MAIL_QUEUED_TOAST } from './mail-outbound-copy';
-import { isMailAccountSendable } from './mail-sendable-account';
-import { splitEmailList } from './mail-thread-helpers';
+import { isMailAccountSendable, preferredSendableAccountId } from './mail-sendable-account';
+import { useMailComposeDraft } from './use-mail-compose-draft';
+import { emailsForRecipientKind, latestOutboundDraftMessage } from './mail-thread-helpers';
 
 export interface ComposeMailSheetProps {
   enabled: boolean;
@@ -26,6 +26,7 @@ export interface ComposeMailSheetProps {
   defaultAccountId?: string | null;
   mode?: 'new' | 'forward';
   defaultSubject?: string;
+  resumeThreadId?: string | null;
   onSent: (threadId: string) => void;
   onClose: () => void;
 }
@@ -36,69 +37,79 @@ export function ComposeMailSheet({
   defaultAccountId,
   mode = 'new',
   defaultSubject = '',
+  resumeThreadId = null,
   onSent,
   onClose,
 }: ComposeMailSheetProps) {
-  const [mailAccountId, setMailAccountId] = useState('');
+  const [mailAccountId, setMailAccountId] = useState(() =>
+    preferredSendableAccountId(accounts, defaultAccountId),
+  );
   const [to, setTo] = useState('');
   const [cc, setCc] = useState('');
-  const [subject, setSubject] = useState('');
+  const [subject, setSubject] = useState(defaultSubject);
   const [bodyHtml, setBodyHtml] = useState<string | null>(null);
   const [bodyText, setBodyText] = useState('');
-  const [sending, setSending] = useState(false);
+  const [resumeReady, setResumeReady] = useState(!resumeThreadId);
+
+  const { status, busy, hydrate, send, discard } = useMailComposeDraft({
+    enabled: enabled && resumeReady,
+    mailAccountId,
+    to,
+    cc,
+    subject,
+    bodyText,
+    bodyHtml,
+    onSent,
+  });
 
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || !resumeThreadId) {
       return;
     }
-    const sendable = accounts.filter((account) => isMailAccountSendable(account.status));
-    const preferred =
-      defaultAccountId && sendable.some((account) => account.id === defaultAccountId)
-        ? defaultAccountId
-        : sendable[0]?.id;
-    setMailAccountId(preferred ?? '');
-    setTo('');
-    setCc('');
-    setSubject(defaultSubject);
-    setBodyHtml(null);
-    setBodyText('');
-  }, [enabled, defaultAccountId, defaultSubject, accounts, mode]);
-
-  const send = async () => {
-    const toList = splitEmailList(to);
-    if (!mailAccountId || toList.length === 0 || subject.trim() === '') {
-      toast.error('Choose a mailbox and fill in recipient and subject.');
-      return;
-    }
-    setSending(true);
-    try {
-      const detail = await mailApi.compose({
-        mailAccountId,
-        to: toList,
-        cc: splitEmailList(cc),
-        subject: subject.trim(),
-        bodyText,
-        ...(bodyHtml ? { bodyHtml } : {}),
+    let cancelled = false;
+    void mailApi
+      .getThread(resumeThreadId)
+      .then((detail) => {
+        if (cancelled) {
+          return;
+        }
+        const draft = latestOutboundDraftMessage(detail.messages);
+        if (!draft) {
+          setResumeReady(true);
+          return;
+        }
+        setMailAccountId(detail.thread.mailAccountId);
+        setTo(emailsForRecipientKind(draft, 'TO'));
+        setCc(emailsForRecipientKind(draft, 'CC'));
+        setSubject(draft.subject);
+        setBodyHtml(draft.bodyHtmlSanitized);
+        setBodyText(draft.bodyText ?? '');
+        hydrate(detail.thread.id, draft.id);
+        setResumeReady(true);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          toast.error(getApiErrorMessage(error, 'Draft could not be opened.'));
+          setResumeReady(true);
+        }
       });
-      toast.success(MAIL_QUEUED_TOAST);
-      onSent(detail.thread.id);
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, 'Email could not be sent.'));
-    } finally {
-      setSending(false);
-    }
-  };
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, hydrate, resumeThreadId]);
 
   const isForward = mode === 'forward';
+  const draftLabel =
+    status === 'saving' ? 'Saving draft…' : status === 'saved' ? 'Draft saved' : null;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <MailSheetPanelHeader
-        title={isForward ? 'Forward email' : 'New email'}
+        title={isForward ? 'Forward email' : resumeThreadId ? 'Draft' : 'New email'}
         description={
           isForward
             ? 'Forward this message from a connected mailbox.'
-            : 'Compose and send from a connected mailbox.'
+            : 'Saved as a draft until you send. Close keeps the draft.'
         }
       />
 
@@ -153,7 +164,7 @@ export function ComposeMailSheet({
           <MailComposeMessageEditor
             id="compose-body"
             value={bodyHtml}
-            disabled={sending}
+            disabled={busy}
             onChange={({ bodyHtml: html, bodyText: text }) => {
               setBodyHtml(html);
               setBodyText(text);
@@ -162,13 +173,24 @@ export function ComposeMailSheet({
         </div>
       </div>
 
-      <div className="border-border flex shrink-0 justify-end gap-2 border-t px-5 py-4">
-        <Button type="button" variant="outline" onClick={onClose} disabled={sending}>
-          Cancel
-        </Button>
-        <Button type="button" onClick={() => void send()} disabled={sending}>
-          {sending ? 'Sending…' : 'Send'}
-        </Button>
+      <div className="border-border flex shrink-0 items-center justify-between gap-2 border-t px-5 py-4">
+        <p className="text-muted-foreground text-xs">{draftLabel}</p>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void discard(onClose)}
+            disabled={busy}
+          >
+            Discard
+          </Button>
+          <Button type="button" variant="ghost" onClick={onClose} disabled={busy}>
+            Close
+          </Button>
+          <Button type="button" onClick={() => void send()} disabled={busy}>
+            {busy ? 'Sending…' : 'Send'}
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -26,6 +26,7 @@ Mail
 | `Mine`           | Письма из личных mailbox или назначенные пользователю |
 | `Needs Link`     | Письма без business context                           |
 | `Sent`           | Исходящие из доступных mailbox                        |
+| `Drafts`         | Исходящие `DRAFT` (не отправленные)                   |
 | `Account Health` | Для admin/owner: состояние подключений                |
 
 ## Thread detail
@@ -157,7 +158,7 @@ Admin/owner view:
 
 ## MVP decisions
 
-- `All Inboxes`, `Unread`, `Mine`, `Needs Link`, `Sent` достаточно для первого UI.
+- `All Inboxes`, `Unread`, `Mine`, `Needs Link`, `Sent`, `Drafts` достаточно для первого UI.
 - Folder/label UX не является MVP.
 - Shared mailbox read state хранится per user.
 - Send permission отделён от read permission.

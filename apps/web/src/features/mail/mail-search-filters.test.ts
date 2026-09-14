@@ -72,4 +72,8 @@ describe('mail search filters', () => {
       mailAccountId: 'mb-1',
     });
   });
+
+  it('maps the Drafts folder to draftsOnly', () => {
+    expect(mergeMailInboxListParams('drafts', {}, null)).toEqual({ draftsOnly: true });
+  });
 });
