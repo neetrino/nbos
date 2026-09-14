@@ -75,13 +75,19 @@ export class CredentialVaultSessionService implements OnModuleInit, OnModuleDest
     return { unlocked: true, expiresAt: new Date(expiresAtMs).toISOString() };
   }
 
-  async lock(employeeId: string): Promise<void> {
+  /**
+   * Clears the unlock. Returns `false` when the Redis copy survived, so security-sensitive callers
+   * can report the real outcome instead of assuming the vault is locked.
+   */
+  async lock(employeeId: string): Promise<boolean> {
     this.memory.delete(employeeId);
-    if (!this.redis) return;
+    if (!this.redis) return true;
     try {
       await this.redis.del(credentialVaultUnlockRedisKey(employeeId));
+      return true;
     } catch (err) {
       this.logger.error(`Failed to clear vault unlock in Redis: ${String(err)}`);
+      return false;
     }
   }
 

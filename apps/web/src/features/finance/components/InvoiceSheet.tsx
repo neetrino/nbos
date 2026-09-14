@@ -167,25 +167,14 @@ export function InvoiceSheet({
 
   if (!hostMounted) return null;
 
-  if (!renderInvoice) {
-    return (
-      <InvoiceSheetStatus
-        open={open}
-        loading={loading}
-        isMobileViewport={isMobileViewport}
-        forceNestedBackdrop={forceNestedBackdrop}
-        onOpenChange={onOpenChange}
-        onOpenChangeComplete={onOpenChangeComplete}
-      />
-    );
-  }
-
   const detailTabs = getInvoiceDetailSheetTabs((key) => t(key as never));
-
-  const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(renderInvoice.id)}`;
-  const lifecycleMode = onInvoiceUpdated
-    ? invoiceLifecycleAction(renderInvoice, isPlatformOwner)
-    : null;
+  const sourcePageHref = renderInvoice
+    ? `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(renderInvoice.id)}`
+    : undefined;
+  const lifecycleMode =
+    renderInvoice && onInvoiceUpdated
+      ? invoiceLifecycleAction(renderInvoice, isPlatformOwner)
+      : null;
 
   return (
     <>
@@ -197,69 +186,75 @@ export function InvoiceSheet({
           sourcePageHref={sourcePageHref}
           forceNestedBackdrop={forceNestedBackdrop}
         >
-          <InvoiceSheetHeader
-            invoice={renderInvoice}
-            lifecycleMode={lifecycleMode}
-            saving={saving}
-            onLifecycleOpen={() => setLifecycleOpen(true)}
-          />
-
-          {onMoneyStatusChange ? (
-            <div className="shrink-0 pb-3 max-md:px-4">
-              <InvoiceMoneyStagesBar
-                currentStatus={renderInvoice.moneyStatus}
-                onStageClick={(status) => void onMoneyStatusChange(renderInvoice.id, status)}
+          {!renderInvoice ? (
+            <InvoiceSheetStatus loading={loading} isMobileViewport={isMobileViewport} />
+          ) : (
+            <>
+              <InvoiceSheetHeader
+                invoice={renderInvoice}
+                lifecycleMode={lifecycleMode}
+                saving={saving}
+                onLifecycleOpen={() => setLifecycleOpen(true)}
               />
-            </div>
-          ) : null}
 
-          <DetailSheetTabBar
-            tabs={detailTabs}
-            activeTab={activeTab}
-            onTabChange={(value) => setActiveTab(value as InvoiceDetailSheetTab)}
-            className="max-md:mt-3 max-md:px-4"
-          />
-
-          <ScrollArea className="min-h-0 flex-1">
-            <div className="px-7 py-5 max-md:px-4">
-              <InvoiceSheetStageGateBlockers highlight={stageGateHighlight} />
-
-              <DetailSheetTabPanel tabKey={activeTab}>
-                {activeTab === 'general' ? (
-                  <InvoiceGeneralTab
-                    invoice={renderInvoice}
-                    gateRequiredFields={gateRequiredFields}
-                    draft={onInvoiceUpdated ? generalDraft : null}
-                    patchDraft={patchGeneralDraft}
-                    formDisabled={saving}
-                    onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
+              {onMoneyStatusChange ? (
+                <div className="shrink-0 pb-3 max-md:px-4">
+                  <InvoiceMoneyStagesBar
+                    currentStatus={renderInvoice.moneyStatus}
+                    onStageClick={(status) => void onMoneyStatusChange(renderInvoice.id, status)}
                   />
-                ) : null}
-                {activeTab === 'payments' ? (
-                  <InvoicePaymentsTab
-                    invoice={renderInvoice}
-                    gateRequiredFields={gateRequiredFields}
-                    onPaymentRecorded={onPaymentRecorded}
-                    onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
-                  />
-                ) : null}
-                {activeTab === 'history' ? <InvoiceHistoryTab /> : null}
-              </DetailSheetTabPanel>
-            </div>
-          </ScrollArea>
+                </div>
+              ) : null}
 
-          <DetailSheetFormFooter
-            visible={activeTab === 'general' && Boolean(onInvoiceUpdated && renderInvoice)}
-            dirty={generalDirty}
-            saving={saving}
-            errorMessage={generalError}
-            onSave={handleGeneralSave}
-            onCancel={handleGeneralCancel}
-          />
+              <DetailSheetTabBar
+                tabs={detailTabs}
+                activeTab={activeTab}
+                onTabChange={(value) => setActiveTab(value as InvoiceDetailSheetTab)}
+                className="max-md:mt-3 max-md:px-4"
+              />
+
+              <ScrollArea className="min-h-0 flex-1">
+                <div className="px-7 py-5 max-md:px-4">
+                  <InvoiceSheetStageGateBlockers highlight={stageGateHighlight} />
+
+                  <DetailSheetTabPanel tabKey={activeTab}>
+                    {activeTab === 'general' ? (
+                      <InvoiceGeneralTab
+                        invoice={renderInvoice}
+                        gateRequiredFields={gateRequiredFields}
+                        draft={onInvoiceUpdated ? generalDraft : null}
+                        patchDraft={patchGeneralDraft}
+                        formDisabled={saving}
+                        onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
+                      />
+                    ) : null}
+                    {activeTab === 'payments' ? (
+                      <InvoicePaymentsTab
+                        invoice={renderInvoice}
+                        gateRequiredFields={gateRequiredFields}
+                        onPaymentRecorded={onPaymentRecorded}
+                        onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
+                      />
+                    ) : null}
+                    {activeTab === 'history' ? <InvoiceHistoryTab /> : null}
+                  </DetailSheetTabPanel>
+                </div>
+              </ScrollArea>
+
+              <DetailSheetFormFooter
+                visible={activeTab === 'general' && Boolean(onInvoiceUpdated)}
+                dirty={generalDirty}
+                saving={saving}
+                errorMessage={generalError}
+                onSave={handleGeneralSave}
+                onCancel={handleGeneralCancel}
+              />
+            </>
+          )}
         </EntityDetailSheetContent>
       </Sheet>
 
-      {lifecycleMode && onInvoiceUpdated ? (
+      {lifecycleMode && renderInvoice && onInvoiceUpdated ? (
         <InvoiceLifecycleConfirmDialog
           invoice={renderInvoice}
           isPlatformOwner={isPlatformOwner}

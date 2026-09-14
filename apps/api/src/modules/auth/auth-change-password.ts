@@ -6,7 +6,8 @@ import { recordAuthMetric } from './auth-session.metrics';
 type Prisma = InstanceType<typeof PrismaClient>;
 
 type VaultSession = {
-  lock: (employeeId: string) => Promise<void>;
+  /** Result intentionally ignored here: the password change already invalidated every session. */
+  lock: (employeeId: string) => Promise<unknown>;
 };
 
 /**

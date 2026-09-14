@@ -58,6 +58,8 @@ import { persistEmployeeGeneral } from './persist-employee-general';
 import { EmployeeDepartmentsPanel } from './EmployeeDepartmentsPanel';
 import { EmployeeOffboardingPanel } from './EmployeeOffboardingPanel';
 import { EmployeeOnboardingPanel } from './EmployeeOnboardingPanel';
+import { canManageEmployeeSecurity } from './employee-security-admin-access';
+import { EmployeeSecurityAdminPanel } from './EmployeeSecurityAdminPanel';
 import { EmployeeSheetScrollBody } from './EmployeeSheetScrollBody';
 import { ReactivateEmployeeDialog } from './ReactivateEmployeeDialog';
 import { TerminateEmployeeDialog } from './TerminateEmployeeDialog';
@@ -293,10 +295,18 @@ export function EmployeeSheet({
   const canEditOwn = canEditOwnAccountFields(selfProfile, displayEmployee.status);
   const canEditHr = canEditHrEmployeeFields(canEdit, displayEmployee.status);
   const formDirty = canEditHr ? generalDirty : isEmployeeOwnProfileDirty(draft, snap);
+  const canManageSecurity = canManageEmployeeSecurity({
+    selfProfile,
+    actorId: me?.id,
+    actorIsPlatformOwner: me?.isPlatformOwner,
+    employeeId: displayEmployee.id,
+    employeeStatus: displayEmployee.status,
+  });
   const employeeTabs = buildEmployeeSheetTabValues({
     selfProfile,
     status: displayEmployee.status,
     hasOnboardingChecklist,
+    canManageEmployeeSecurity: canManageSecurity,
   }).map((value) => ({ value, label: t(`tabs.${value}`) }));
   const rolePickerRoles =
     roles.length > 0
@@ -484,6 +494,13 @@ export function EmployeeSheet({
                   <ChangePasswordPanel accountEmail={displayEmployee.email} />
                   <ActiveSessionsPanel />
                 </>
+              ) : null}
+              {activeTab === 'security' && canManageSecurity ? (
+                <EmployeeSecurityAdminPanel
+                  employeeId={displayEmployee.id}
+                  employeeName={fullName}
+                  employeeEmail={displayEmployee.email}
+                />
               ) : null}
               {activeTab === 'offboarding' && displayEmployee.status === 'TERMINATED' ? (
                 <EmployeeOffboardingPanel employeeId={displayEmployee.id} canEdit={canEdit} />

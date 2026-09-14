@@ -1,11 +1,13 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslations } from 'next-intl';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { AuthScene } from '@/components/auth/AuthScene';
 import { cn } from '@/lib/utils';
@@ -26,6 +28,7 @@ export default function SignInPage() {
 }
 
 function SignInForm() {
+  const t = useTranslations('account.password');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -95,9 +98,17 @@ function SignInForm() {
         </div>
 
         <div>
-          <label htmlFor="password" className="text-foreground mb-1.5 block text-sm font-medium">
-            Password
-          </label>
+          <div className="mb-1.5 flex items-center justify-between gap-3">
+            <label htmlFor="password" className="text-foreground text-sm font-medium">
+              Password
+            </label>
+            <Link
+              href="/forgot-password"
+              className="text-muted-foreground hover:text-foreground text-sm font-medium underline-offset-4 hover:underline"
+            >
+              {t('forgot')}
+            </Link>
+          </div>
           <div className="relative">
             <input
               id="password"

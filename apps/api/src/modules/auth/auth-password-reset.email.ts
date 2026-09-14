@@ -3,6 +3,15 @@ import { interpolateSystemCopy, passwordResetEmailCopy } from '@nbos/shared';
 
 const RESEND_API_URL = 'https://api.resend.com/emails';
 
+/**
+ * Outcome of the provider call. The public forgot-password flow ignores it (its response must stay
+ * generic), while owner-initiated resets report a failed hand-off to the caller.
+ */
+export interface PasswordResetEmailDelivery {
+  delivered: boolean;
+  reason?: 'provider_unset' | 'provider_rejected' | 'request_failed';
+}
+
 export function buildPasswordResetEmail(params: {
   locale: unknown;
   resetUrl: string;
@@ -28,7 +37,7 @@ export async function sendPasswordResetEmail(params: {
   expiresAt: Date;
   logger: Logger;
   locale?: unknown;
-}): Promise<void> {
+}): Promise<PasswordResetEmailDelivery> {
   const apiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.RESEND_FROM_EMAIL;
   const { email, resetUrl, expiresAt, logger, locale } = params;
@@ -39,7 +48,7 @@ export async function sendPasswordResetEmail(params: {
     } else {
       logger.warn('Password reset email skipped: RESEND_API_KEY or RESEND_FROM_EMAIL is unset');
     }
-    return;
+    return { delivered: false, reason: 'provider_unset' };
   }
 
   const replyTo = process.env.RESEND_ADMIN_EMAIL;
@@ -64,10 +73,13 @@ export async function sendPasswordResetEmail(params: {
     if (!response.ok) {
       const errorText = await response.text();
       logger.warn(`Failed to send password reset email: ${errorText}`);
+      return { delivered: false, reason: 'provider_rejected' };
     }
+    return { delivered: true };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     logger.warn(`Resend request failed for password reset: ${message}`);
+    return { delivered: false, reason: 'request_failed' };
   }
 }
 

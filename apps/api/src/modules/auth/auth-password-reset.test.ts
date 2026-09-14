@@ -91,6 +91,28 @@ describe('password reset', () => {
     );
   });
 
+  it('keeps the generic message when the provider rejects the email', async () => {
+    employeeFindUnique.mockResolvedValue({
+      id: 'e1',
+      email: 'owner@company.com',
+      passwordHash: 'hash',
+      status: 'ACTIVE',
+      interfaceLocale: 'en',
+    });
+    vi.mocked(sendPasswordResetEmail).mockResolvedValueOnce({
+      delivered: false,
+      reason: 'provider_rejected',
+    });
+
+    const result = await requestPasswordReset({
+      prisma: prisma as never,
+      logger,
+      email: 'owner@company.com',
+    });
+
+    expect(result.message).toBe(FORGOT_PASSWORD_GENERIC_MESSAGE);
+  });
+
   it('rejects an expired or used token', async () => {
     passwordResetToken.findUnique.mockResolvedValue(null);
     await expect(

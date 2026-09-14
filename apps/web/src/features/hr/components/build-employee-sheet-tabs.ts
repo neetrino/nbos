@@ -9,9 +9,11 @@ export function buildEmployeeSheetTabValues(input: {
   selfProfile: boolean;
   status: string;
   hasOnboardingChecklist: boolean;
+  /** Platform owner viewing someone else: owner-initiated password reset / session sign-out. */
+  canManageEmployeeSecurity?: boolean;
 }): EmployeeSheetTabValue[] {
   const tabs: EmployeeSheetTabValue[] = ['general', 'departments'];
-  if (input.selfProfile) {
+  if (input.selfProfile || input.canManageEmployeeSecurity) {
     tabs.push('security');
   }
   if (input.status === 'TERMINATED') {
