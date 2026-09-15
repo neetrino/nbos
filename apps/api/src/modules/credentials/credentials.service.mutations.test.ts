@@ -64,6 +64,18 @@ describe('CredentialsService mutations', () => {
     });
     await service.create({ name: 'Simple Cred', category: 'ADMIN' }, accessUser1);
     expect(crypto.encrypt).not.toHaveBeenCalledWith(null, expect.anything());
+    expect(prisma.credential.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ category: 'ADMIN', credentialType: 'LOGIN_PASSWORD' }),
+      }),
+    );
+  });
+
+  it('should reject create without a catalog category', async () => {
+    await expect(
+      service.create({ name: 'No Category', category: '' }, accessUser1),
+    ).rejects.toThrow('Category is required');
+    expect(prisma.credential.create).not.toHaveBeenCalled();
   });
 
   it('should encrypt changed fields and log audit on update', async () => {

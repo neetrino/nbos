@@ -256,8 +256,8 @@ Inherited access можно показывать как короткий summary
 1. Открывает Project/Product.
 2. Переходит во вкладку Credentials.
 3. Создаёт новый credential.
-4. Проверяет category, preset-нутую из Project/Product/slot context, или выбирает category в компактном control.
-5. Выбирает credential type как `What is stored?`.
+4. Проверяет Category, preset-нутую из Project/Product/slot context, или выбирает её в combobox (поиск по списку).
+5. Тип формы и секретные поля появляются из каталога после выбора Category. Recovery-коды пишет в комментарий той же записи.
 6. Указывает provider (если нужен типу).
 7. Заполняет secret fields.
 8. Назначает owner/custodian.

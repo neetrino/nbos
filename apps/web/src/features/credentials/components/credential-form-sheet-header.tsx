@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { RotateCcw, Star, Trash2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
@@ -22,16 +20,9 @@ import {
 } from '@/features/credentials/components/credential-meta-icon';
 import { cn } from '@/lib/utils';
 import { CredentialBrandMark } from '@/features/credentials/components/credential-brand-mark';
+import { CredentialFormSheetNameField } from '@/features/credentials/components/credential-form-sheet-name-field';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 
-const SHEET_TITLE_CLASS = 'text-xl font-semibold leading-tight tracking-tight';
-const SHEET_TITLE_FIELD_CLASS = cn(SHEET_TITLE_CLASS, 'min-h-7 max-w-full truncate');
-const SHEET_TITLE_INPUT_CLASS = cn(
-  SHEET_TITLE_CLASS,
-  'h-7 min-w-[12ch] max-w-full flex-1 rounded-none border-0 bg-transparent p-0 shadow-none',
-  'text-xl md:text-xl',
-  'focus-visible:border-0 focus-visible:ring-0',
-);
 const TITLE_CLUSTER_MAX_CLASS = 'max-w-[calc(100%-5.5rem)]';
 const ACCESS_SCOPE_BADGE_CLASS = 'h-5 shrink-0 self-center px-1.5 py-0 text-[10px] leading-none';
 
@@ -80,32 +71,8 @@ export function CredentialFormSheetHeader({
 }: CredentialFormSheetHeaderProps) {
   const t = useTranslations('credentials');
   const isMobileViewport = useIsMobileViewport();
-  const [editingName, setEditingName] = useState(false);
-  const [nameDraft, setNameDraft] = useState(name);
-  const nameInputRef = useRef<HTMLInputElement>(null);
-  const [trackedResetKey, setTrackedResetKey] = useState(resetKey);
-
-  if (trackedResetKey !== resetKey) {
-    setTrackedResetKey(resetKey);
-    setEditingName(false);
-    setNameDraft(name);
-  }
-
-  useEffect(() => {
-    if (editingName) {
-      nameInputRef.current?.focus();
-      nameInputRef.current?.select();
-    }
-  }, [editingName]);
-
   const accessMeta = getAccessLevel(accessLevel);
   const critMeta = getCredentialCriticality(criticality);
-
-  const commitName = () => {
-    const trimmed = nameDraft.trim();
-    onNameChange(trimmed);
-    setEditingName(false);
-  };
 
   const favoriteButton =
     !isCreate && onToggleFavorite ? (
@@ -154,7 +121,7 @@ export function CredentialFormSheetHeader({
       className={cn(
         'inline-flex min-w-0 items-center gap-1.5',
         !isMobileViewport && TITLE_CLUSTER_MAX_CLASS,
-        editingName && 'min-w-0 flex-1',
+        'min-w-0 flex-1',
       )}
     >
       <CredentialBrandMark
@@ -166,44 +133,12 @@ export function CredentialFormSheetHeader({
         credentialType={credentialType}
         className="size-5 shrink-0"
       />
-      {editingName ? (
-        <Input
-          ref={nameInputRef}
-          value={nameDraft}
-          onChange={(e) => setNameDraft(e.target.value)}
-          onBlur={commitName}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') commitName();
-            if (e.key === 'Escape') {
-              setNameDraft(name);
-              setEditingName(false);
-            }
-          }}
-          className={SHEET_TITLE_INPUT_CLASS}
-          placeholder="Credential name"
-          aria-label="Name"
-          autoComplete="off"
-          autoCorrect="off"
-          spellCheck={false}
-          data-1p-ignore
-          data-lpignore="true"
-        />
-      ) : (
-        <button
-          type="button"
-          className={cn(
-            SHEET_TITLE_FIELD_CLASS,
-            'text-left outline-none',
-            name.trim() ? 'text-foreground' : 'text-muted-foreground',
-          )}
-          onClick={() => {
-            setNameDraft(name);
-            setEditingName(true);
-          }}
-        >
-          {name.trim() || 'Credential name'}
-        </button>
-      )}
+      <CredentialFormSheetNameField
+        isCreate={isCreate}
+        name={name}
+        onNameChange={onNameChange}
+        resetKey={resetKey}
+      />
 
       {accessMeta ? (
         <StatusBadge

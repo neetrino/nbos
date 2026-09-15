@@ -11,7 +11,7 @@
 | Basic credential CRUD         | PARTIAL | Создание, список, edit, архив, restore, permanent только для archived + подтверждение имени                                                                                                   | Item types, secret fields, версии, TTL / step-up по политике                                                       |
 | Encryption                    | PARTIAL | Шифруются `password`, `apiKey`, `envData`                                                                                                                                                     | Шифровать все secret fields и secure notes; перейти к гибкой модели                                                |
 | Notes                         | PARTIAL | `publicNotes` + `secureNotes`; reveal/copy для secure                                                                                                                                         | **Решено:** одно поле Comment, always encrypted; visible in Sheet without step-up (5-A); убрать public notes из UI |
-| Create/Edit UI                | PARTIAL | Modal dialog, все поля сразу, Category + Type дубль                                                                                                                                           | **Решено:** Sheet; dynamic fields; Settings для criticality/rotation; **Category/Type — C-hybrid accepted**        |
+| Create/Edit UI                | PARTIAL | Sheet; одно поле Category (каталог 10) пишет и category, и credentialType                                                                                                                     | Settings/rotation later; Recovery только в comment                                                                 |
 | Access model                  | PARTIAL | Есть enum accessLevel и allowedEmployees                                                                                                                                                      | Добавить Access Grants, temporary access, requests, expiry                                                         |
 | Permission check              | DONE    | List/get/reveal/mutation use the same row visibility OR; vault-wide bypass is only `isPlatformOwner` (not `CREDENTIALS_VIEW=ALL`, not a transferable RBAC permission)                         | Grants, temporary access, requests, expiry по канону                                                               |
 | Reveal/copy audit             | DONE    | Tiered unlock: LOW/MEDIUM без step-up (login 7d); HIGH/CRITICAL — daily vault session; export/delete/emergency — fresh password; audit `secret_revealed` / `secret_copied` / `vault_unlocked` | UX auto-hide / таймаут раскрытия позже                                                                             |
@@ -35,7 +35,7 @@
 
 ## Documentation: Mail module
 
-| Область            | Статус | Примечание                                                                                              |
-| ------------------ | ------ | ------------------------------------------------------------------------------------------------------- |
-| Cross-link to Mail | `OK`   | **2026-04-30:** `05-Credentials-Integrations.md` — секция **Mail** (OAuth/IMAP/SMTP secrets)            |
-| UX decisions       | `OK`   | **2026-06-02:** `06-Credentials-UX-Decisions.md` — Sheet, Comment, ENV; Category/Type C-hybrid accepted |
+| Область            | Статус | Примечание                                                                                   |
+| ------------------ | ------ | -------------------------------------------------------------------------------------------- |
+| Cross-link to Mail | `OK`   | **2026-04-30:** `05-Credentials-Integrations.md` — секция **Mail** (OAuth/IMAP/SMTP secrets) |
+| UX decisions       | `OK`   | **2026-09-15:** одно Category combobox; ENV/SSH категории; Other→Service; Recovery в comment |

@@ -1,14 +1,15 @@
+import { CATALOG_CATEGORY_CODES, FALLBACK_CREDENTIAL_CATEGORY } from '@nbos/shared';
 import { CREDENTIAL_CATEGORIES } from '@/features/credentials/constants/credentials';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import type { CredentialVaultScope } from '@/features/credentials/vault-scope';
 
 /** DB enum values allowed per vault scope (not one global list in UI). */
 export const VAULT_CATEGORY_VALUES_BY_SCOPE = {
-  my: ['MAIL', 'SERVICE', 'APP', 'OTHER'],
-  team: ['SERVICE', 'MAIL', 'APP', 'OTHER'],
-  company: ['SERVICE', 'MAIL', 'APP', 'OTHER'],
-  project: ['ADMIN', 'DOMAIN', 'HOSTING', 'DATABASE', 'API_KEY', 'APP', 'MAIL', 'SERVICE', 'OTHER'],
-  secret: ['ADMIN', 'API_KEY', 'DATABASE', 'HOSTING', 'DOMAIN', 'OTHER'],
+  my: ['MAIL', 'SERVICE', 'APP', 'ENV', 'SSH'],
+  team: ['SERVICE', 'MAIL', 'APP', 'ENV'],
+  company: ['SERVICE', 'MAIL', 'APP', 'ENV'],
+  project: [...CATALOG_CATEGORY_CODES],
+  secret: ['ADMIN', 'API_KEY', 'DATABASE', 'HOSTING', 'DOMAIN', 'SERVICE', 'ENV', 'SSH'],
 } as const satisfies Record<Exclude<CredentialVaultScope, 'all'>, readonly string[]>;
 
 export interface CredentialCategoryOption {
@@ -26,18 +27,16 @@ function labelsForValues(values: readonly string[]): CredentialCategoryOption[] 
   }));
 }
 
-/** Category options for vault scope; `all` uses full enum. */
+/** Category options for vault scope; `all` uses the unified catalog. */
 export function categoriesForVaultScope(
   scope: CredentialVaultScope,
   extraValue?: string | null,
 ): CredentialCategoryOption[] {
   const values =
-    scope === 'all'
-      ? CREDENTIAL_CATEGORIES.map((c) => c.value)
-      : [...VAULT_CATEGORY_VALUES_BY_SCOPE[scope]];
+    scope === 'all' ? [...CATALOG_CATEGORY_CODES] : [...VAULT_CATEGORY_VALUES_BY_SCOPE[scope]];
 
   const unique = new Set<string>(values);
-  if (extraValue && !unique.has(extraValue)) {
+  if (extraValue && extraValue !== 'OTHER' && !unique.has(extraValue)) {
     unique.add(extraValue);
   }
 
@@ -51,13 +50,13 @@ export function quickCategoryChipsForVaultScope(
   return categoriesForVaultScope(scope);
 }
 
-/** Maps a credential category to a visible board column (unknown → OTHER). */
+/** Maps a credential category to a visible board column (unknown → Service). */
 export function resolveCredentialCategoryBucket(
   category: string,
   categoryColumns: readonly CredentialCategoryOption[],
 ): string {
   const allowed = new Set(categoryColumns.map((column) => column.value));
-  return allowed.has(category) ? category : 'OTHER';
+  return allowed.has(category) ? category : FALLBACK_CREDENTIAL_CATEGORY;
 }
 
 /** Category board columns: all scope chips, or a single chip when a quick filter is active. */
@@ -83,7 +82,8 @@ export function filterCredentialsByQuickCategory(
   );
 }
 
-export function defaultCategoryForVaultScope(
+/** Preset category on create: context/slot/single option, otherwise empty. */
+export function presetCategoryForCreate(
   scope: CredentialVaultScope,
   preset?: string,
   allowedOverride?: string[],
@@ -91,7 +91,7 @@ export function defaultCategoryForVaultScope(
   const options = allowedOverride?.length
     ? labelsForValues(allowedOverride)
     : categoriesForVaultScope(scope);
-  if (options.length === 1) return options[0]?.value ?? 'OTHER';
-  if (preset && options.some((o) => o.value === preset)) return preset;
-  return options[0]?.value ?? 'OTHER';
+  if (preset && options.some((option) => option.value === preset)) return preset;
+  if (options.length === 1) return options[0]?.value ?? '';
+  return '';
 }

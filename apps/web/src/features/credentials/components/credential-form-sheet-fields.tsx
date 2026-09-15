@@ -2,38 +2,23 @@
 
 import { useTranslations } from 'next-intl';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  CREDENTIAL_TYPES,
-  credentialCategoryMessageKey,
-  credentialTypeMessageKey,
-} from '@/features/credentials/constants/credentials';
+import { credentialCategoryMessageKey } from '@/features/credentials/constants/credentials';
 import { CredentialFormFieldLabel } from '@/features/credentials/components/credential-form-field-label';
-import { CredentialFormSelectOption } from '@/features/credentials/components/credential-form-select-option';
 import {
   CREDENTIAL_COMMENT_ICON,
   CREDENTIAL_FOLDER_ICON,
-  credentialTypeIcon,
 } from '@/features/credentials/utils/credential-vault-card-meta';
 import {
-  CREDENTIAL_TYPES_FOR_CREATE,
   commentLabelMessageKey,
   showsProviderPicker,
 } from '@/features/credentials/credential-field-config';
-import { formatCredentialTypeLabel } from '@/features/credentials/utils/credential-type-display';
 import { CredentialFormDynamicFields } from './credential-form-dynamic-fields';
 import { CredentialFormContextLinks } from './credential-form-context-links';
 import { CredentialFormSettingsPanel } from './credential-form-settings-panel';
 import { CredentialProviderPicker } from './credential-provider-picker';
 import { CredentialAppStoreFields } from './credential-app-store-fields';
 import { CredentialFolderTreePicker } from '@/features/credentials/components/credential-folder-tree-picker';
-import { CredentialFormCategoryMenu } from '@/features/credentials/components/credential-form-category-menu';
+import { CredentialFormCategoryCombobox } from '@/features/credentials/components/credential-form-category-combobox';
 import type { useCredentialFormSheet } from '@/features/credentials/hooks/use-credential-form-sheet';
 
 type FormState = ReturnType<typeof useCredentialFormSheet>;
@@ -42,62 +27,11 @@ export interface CredentialFormSheetFieldsProps {
   form: FormState;
 }
 
-function TypeSelect({
-  credentialType,
-  onTypeChange,
-  isCreate,
-}: {
-  credentialType: string;
-  onTypeChange: (value: string) => void;
-  isCreate: boolean;
-}) {
-  const t = useTranslations('credentials');
-  const types = isCreate ? CREDENTIAL_TYPES_FOR_CREATE : CREDENTIAL_TYPES;
-  const TypeIcon = credentialTypeIcon(credentialType);
-  const typeLabel = (value: string, fallback: string) => {
-    const key = credentialTypeMessageKey(value);
-    return key ? t(key as never) : fallback;
-  };
-
-  return (
-    <div className="grid gap-2">
-      <CredentialFormFieldLabel label={t('form.whatIsStored')} icon={TypeIcon} />
-      <Select value={credentialType} onValueChange={(v) => onTypeChange(v ?? credentialType)}>
-        <SelectTrigger>
-          <SelectValue placeholder={t('form.selectType')}>
-            {(value: string | null) =>
-              value ? (
-                <CredentialFormSelectOption
-                  kind="type"
-                  value={value}
-                  label={typeLabel(value, formatCredentialTypeLabel(value))}
-                />
-              ) : null
-            }
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {types.map((type) => (
-            <SelectItem key={type.value} value={type.value}>
-              <CredentialFormSelectOption
-                kind="type"
-                value={type.value}
-                label={typeLabel(type.value, type.label)}
-              />
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-}
-
 export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsProps) {
   const {
     isCreate,
     credentialId,
     credentialType,
-    requestCredentialTypeChange,
     providerId,
     providerName,
     setProviderSelection,
@@ -134,7 +68,7 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     setFolderId,
     folderOptions,
     category,
-    setCategory,
+    requestCategoryChange,
     categoryOptions,
     categoryLocked,
     categoryLabel,
@@ -145,58 +79,34 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
     const key = credentialCategoryMessageKey(option.value);
     return { ...option, label: key ? t(key as never) : option.label };
   });
-  const translatedCategoryKey = credentialCategoryMessageKey(category);
+  const translatedCategoryKey = credentialCategoryMessageKey(
+    category === 'OTHER' ? 'SERVICE' : category,
+  );
   const translatedCategoryLabel = translatedCategoryKey
     ? t(translatedCategoryKey as never)
     : categoryLabel;
   const commentKey = commentLabelMessageKey(credentialType);
-
-  const providerBlock = showsProviderPicker(credentialType) ? (
-    <CredentialProviderPicker
-      credentialType={credentialType}
-      providerId={providerId}
-      providerName={providerName}
-      onChange={setProviderSelection}
-    />
-  ) : null;
-
-  const typeBlock = (
-    <TypeSelect
-      credentialType={credentialType}
-      onTypeChange={requestCredentialTypeChange}
-      isCreate={isCreate}
-    />
-  );
-
-  const appStoreBlock =
-    credentialType === 'APP_STORE_ACCOUNT' ? (
-      <CredentialAppStoreFields
-        platform={appStorePlatform}
-        onPlatformChange={setAppStorePlatform}
-        url={url}
-        onUrlChange={setUrl}
-        phones={phones}
-        onPhonesChange={setPhones}
-      />
-    ) : null;
-
-  const categoryBlock = (
-    <CredentialFormCategoryMenu
-      category={category}
-      categoryLabel={translatedCategoryLabel}
-      categoryOptions={translatedCategoryOptions}
-      categoryLocked={categoryLocked}
-      onCategoryChange={setCategory}
-    />
-  );
+  const hasCategory = category.length > 0;
+  const commentPlaceholder =
+    credentialType === 'RECOVERY_CODES'
+      ? t('form.recoveryPlaceholder')
+      : t('form.commentPlaceholder');
+  const commentClass =
+    credentialType === 'RECOVERY_CODES'
+      ? 'min-h-[120px] font-mono text-sm'
+      : 'min-h-[80px] text-sm';
 
   return (
     <form className="space-y-6" autoComplete="off" onSubmit={(e) => e.preventDefault()} noValidate>
       <div className="space-y-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {typeBlock}
-          {categoryBlock}
-        </div>
+        <CredentialFormCategoryCombobox
+          category={category}
+          categoryLabel={translatedCategoryLabel}
+          categoryOptions={translatedCategoryOptions}
+          categoryLocked={categoryLocked}
+          invalid={isCreate && !hasCategory}
+          onCategoryChange={requestCategoryChange}
+        />
         {folderOptions.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
@@ -210,33 +120,51 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
           </div>
         ) : null}
       </div>
-      {providerBlock}
-      {appStoreBlock}
+      {hasCategory && showsProviderPicker(credentialType) ? (
+        <CredentialProviderPicker
+          credentialType={credentialType}
+          providerId={providerId}
+          providerName={providerName}
+          onChange={setProviderSelection}
+        />
+      ) : null}
+      {hasCategory && credentialType === 'APP_STORE_ACCOUNT' ? (
+        <CredentialAppStoreFields
+          platform={appStorePlatform}
+          onPlatformChange={setAppStorePlatform}
+          url={url}
+          onUrlChange={setUrl}
+          phones={phones}
+          onPhonesChange={setPhones}
+        />
+      ) : null}
 
-      <CredentialFormDynamicFields
-        credentialType={credentialType}
-        credentialId={credentialId}
-        login={login}
-        onLoginChange={setLogin}
-        password={password}
-        onPasswordChange={setPassword}
-        apiKey={apiKey}
-        onApiKeyChange={setApiKey}
-        passphrase={passphrase}
-        onPassphraseChange={setPassphrase}
-        url={url}
-        onUrlChange={setUrl}
-        envData={envData}
-        onEnvDataChange={setEnvData}
-        envSnap={envSnap}
-        secretsPresent={detail?.secretsPresent}
-        revealed={revealed}
-        onReveal={(field) => requestSecretAction(field, 'reveal')}
-        onCopy={(field) => copySecretField(field)}
-        onDownloadEnvBundle={downloadEnvBundle}
-      />
+      {hasCategory ? (
+        <CredentialFormDynamicFields
+          credentialType={credentialType}
+          credentialId={credentialId}
+          login={login}
+          onLoginChange={setLogin}
+          password={password}
+          onPasswordChange={setPassword}
+          apiKey={apiKey}
+          onApiKeyChange={setApiKey}
+          passphrase={passphrase}
+          onPassphraseChange={setPassphrase}
+          url={url}
+          onUrlChange={setUrl}
+          envData={envData}
+          onEnvDataChange={setEnvData}
+          envSnap={envSnap}
+          secretsPresent={detail?.secretsPresent}
+          revealed={revealed}
+          onReveal={(field) => requestSecretAction(field, 'reveal')}
+          onCopy={(field) => copySecretField(field)}
+          onDownloadEnvBundle={downloadEnvBundle}
+        />
+      ) : null}
 
-      {credentialType === 'RECOVERY_CODES' ? (
+      {hasCategory ? (
         <div className="grid gap-2">
           <CredentialFormFieldLabel
             htmlFor="cred-comment"
@@ -247,26 +175,11 @@ export function CredentialFormSheetFields({ form }: CredentialFormSheetFieldsPro
             id="cred-comment"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className="min-h-[120px] font-mono text-sm"
-            placeholder={t('form.recoveryPlaceholder')}
+            className={commentClass}
+            placeholder={commentPlaceholder}
           />
         </div>
-      ) : (
-        <div className="grid gap-2">
-          <CredentialFormFieldLabel
-            htmlFor="cred-comment"
-            label={t(commentKey)}
-            icon={CREDENTIAL_COMMENT_ICON}
-          />
-          <Textarea
-            id="cred-comment"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            className="min-h-[80px] text-sm"
-            placeholder={t('form.commentPlaceholder')}
-          />
-        </div>
-      )}
+      ) : null}
 
       {!isCreate && showSettings && (
         <CredentialFormSettingsPanel

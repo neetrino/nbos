@@ -175,28 +175,28 @@ Access grant может быть выдан:
 
 Category нужна для группировки и фильтрации, но не должна заменять Credential Type.
 
-**Decision 2026-06-02:** Credentials используют C-hybrid model.
+**Decision 2026-09-15:** в UI одно поле **Category**. В БД остаются оба поля.
 
-- `category` отвечает за группировку: Category Board columns, quick filters, Delivery slots, Finance/product handoff grouping.
-- `credentialType` отвечает за формат секрета: dynamic fields, ENV editor, reveal/copy/export behavior, validation.
-- Глобального `type -> category` или `category -> type` auto-map нет.
-- `ENV`, `SSH`, `RECOVERY_CODES` не добавляются в category; это `credentialType` formats.
-- Delivery/Product slots могут передавать explicit `defaultCredentialType`, но это preset из контекста, не скрытая магия.
+- `category` — группировка: Category Board, фильтры, Delivery slots, Finance/product handoff.
+- `credentialType` — формат секрета: dynamic fields, ENV editor, SSH, validation.
+- Пользователь выбирает только Category. Тип формы берётся из каталога `packages/shared/src/credentials/credential-category-catalog.ts`.
+- Каталог (10): Admin, API Key, Database, Domain, Hosting, SSH, App Store, Mail, Service, ENV.
+- `ENV` и `SSH` — полноценные категории. Legacy `OTHER` в UI нет; записи Other → Service.
+- Recovery / 2FA backup-коды **не** отдельный тип create: только зашифрованный комментарий (`secureNotes`) той же записи.
+- Delivery UNIVERSAL («Other / not listed») пишет категорию **Service**.
 
-| Category      | Примеры                                         |
-| ------------- | ----------------------------------------------- |
-| `Admin`       | main company admin accounts, super admin panels |
-| `Domain`      | registrars, DNS providers                       |
-| `Hosting`     | VPS, hosting panels, cloud providers            |
-| `Service`     | SaaS tools, analytics, support tools            |
-| `App`         | Apple Developer, Google Play Console            |
-| `Mail`        | mailbox, SMTP, Google Workspace                 |
-| `API Key`     | OpenAI, Stripe, Telegram Bot, payment APIs      |
-| `Database`    | Neon, PostgreSQL, MySQL, Redis                  |
-| `Development` | GitHub, GitLab, CI/CD, deployment               |
-| `Marketing`   | ad accounts, analytics, social tools            |
-| `Finance`     | payment services, accounting portals            |
-| `Other`       | нестандартные доступы                           |
+| Category    | Примеры                                         |
+| ----------- | ----------------------------------------------- |
+| `Admin`     | main company admin accounts, super admin panels |
+| `API Key`   | OpenAI, Stripe, Telegram Bot, payment APIs      |
+| `Database`  | Neon, PostgreSQL, MySQL, Redis                  |
+| `Domain`    | registrars, DNS providers                       |
+| `Hosting`   | VPS, hosting panels, cloud providers            |
+| `SSH`       | deploy keys, server private keys                |
+| `App Store` | Apple Developer, Google Play Console            |
+| `Mail`      | mailbox, SMTP, Google Workspace                 |
+| `Service`   | SaaS tools, analytics, support tools            |
+| `ENV`       | `.env` bundles for an environment               |
 
 ### 5. Credential Favorite / Credential Folder (v1)
 

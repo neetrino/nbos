@@ -158,14 +158,13 @@ Access model должен быть платформенным, а не толь�
 
 ## Decision Record — пункт 3: Category vs Credential Type
 
-**Решение:** принять **C-hybrid**.
-
-DB сохраняет оба поля:
+**Решение (2026-09-15):** одно поле **Category** в Sheet. DB сохраняет оба поля.
 
 - `category` — source of truth for grouping, Category Board columns, quick filters, Delivery slots, Finance/product handoff grouping.
 - `credentialType` — source of truth for secret format, dynamic fields, ENV editor, reveal/copy/export behavior and validation.
-
-Эти поля не конкурируют и не заменяют друг друга. Глобального `type -> category` или `category -> type` auto-map не делаем.
+- Пара задаётся каталогом `credential-category-catalog.ts`. Пользователь не выбирает type отдельно.
+- Recovery codes не пункт create: только encrypted comment той же записи.
+- Other слит в Service. ENV и SSH — категории.
 
 ### Проблема
 
@@ -186,41 +185,35 @@ DB сохраняет оба поля:
 
 **C — двухшаговый wizard в Sheet** (не два dropdown на одном экране): «Where used?» → «What stored?» → поля. В DB оба поля; UX не показывает параллельные selects.
 
-Принято не чистое C, а **C-hybrid**:
+Принято **одно Category combobox** (не два sibling Select):
 
 - scope выбран через vault tab: `My`, `Team`, `Company`, `Project`, `Secret`;
-- category задается/preset-ится контекстом: Category Board column, Delivery slot, Product/Project context или поле **Category** в форме;
-- credentialType выбирается как `What is stored?` / secret format;
-- если category уже задана контекстом, поле **Category** показывается read-only (один допустимый вариант), а не скрывается;
-- **Category** и `What is stored?` — sibling поля в первой строке формы (два labeled Select рядом); это осознанное решение: category = vault column, type = secret format.
+- create без контекста: Category пустой и обязательный; клик открывает список, поле сразу поиск;
+- category preset-ится из Board column / Delivery slot / единственного allowed значения;
+- если allowed ровно один вариант, поле locked (выбранное, не пустое);
+- `credentialType` пишется с каталога при выборе Category.
 
 ### UI rules
 
 1. `Create` возможен только из конкретного scope, не из `All`.
 2. `Category Board` column `+` открывает Sheet с preset category.
-3. Delivery slot открывает Sheet с slot category, optional `defaultCredentialType`, и title = имя родительского Product (в т.ч. с карточки Extension; не имя доработки и не label слота). UNIVERSAL / Other / not listed slot presets category **Other** (полный allowed list остаётся редактируемым в поле **Category**, если не locked одним вариантом).
+3. Delivery slot открывает Sheet с slot category (UNIVERSAL presets **Service**). Title = имя родительского Product. Поле Category остаётся редактируемым, если allowed больше одного.
 4. Product/Project context передается в Sheet и может preset-ить category.
-5. `credentialType` управляет dynamic fields:
-   - `LOGIN_PASSWORD` → login/password/url;
-   - `API_KEY` → api key/token fields;
-   - `ENV_BUNDLE` → `.env` paste + preview + export/copy;
-   - `SSH_PRIVATE_KEY` → key/passphrase/host-like fields;
-   - `RECOVERY_CODES` → encrypted codes/secure field UX;
-   - etc.
-6. **Category** — labeled form field (`Category` + icon + full-width Select) в первой строке формы, справа от `What is stored?`; не header chip. Folder — отдельное поле на следующей строке, когда доступен folder picker. Category можно менять в Sheet, когда не locked контекстом; UNIVERSAL slot по-прежнему preset **Other**, поле остаётся editable.
+5. `credentialType` (из каталога) управляет dynamic fields. Пока Category пустая, secret fields скрыты.
+6. **Category** — единственный labeled combobox в шапке формы. Folder — следующее поле, когда доступен folder picker. На create имя карточки сразу с красной нижней линией, пока пустое.
 
 ### Vault scope category sets (2026-06-02)
 
-One DB enum (`ADMIN`, `DOMAIN`, `HOSTING`, `SERVICE`, `APP`, `MAIL`, `API_KEY`, `DATABASE`, `OTHER`), but **UI category options depend on vault scope** — not one global dropdown list.
+DB enum adds `ENV` and `SSH`; keeps legacy `OTHER` (not shown in UI). **UI options depend on vault scope.**
 
-| Vault scope | Allowed categories in Sheet / Board columns / quick chips            |
-| ----------- | -------------------------------------------------------------------- |
-| `My`        | MAIL, SERVICE, APP, OTHER                                            |
-| `Team`      | SERVICE, MAIL, APP, OTHER                                            |
-| `Company`   | SERVICE, MAIL, APP, OTHER                                            |
-| `Project`   | ADMIN, DOMAIN, HOSTING, DATABASE, API_KEY, APP, MAIL, SERVICE, OTHER |
-| `Secret`    | ADMIN, API_KEY, DATABASE, HOSTING, DOMAIN, OTHER                     |
-| `All`       | full enum (search across all accessible credentials)                 |
+| Vault scope | Allowed categories in Sheet / Board columns / quick chips    |
+| ----------- | ------------------------------------------------------------ |
+| `My`        | MAIL, SERVICE, APP, ENV, SSH                                 |
+| `Team`      | SERVICE, MAIL, APP, ENV                                      |
+| `Company`   | SERVICE, MAIL, APP, ENV                                      |
+| `Project`   | catalog of 10                                                |
+| `Secret`    | ADMIN, API_KEY, DATABASE, HOSTING, DOMAIN, SERVICE, ENV, SSH |
+| `All`       | catalog of 10                                                |
 
 Implementation: `apps/web/src/features/credentials/constants/credential-vault-categories.ts`. Delivery slot `allowedCategories` intersects with the active scope set.
 
@@ -228,12 +221,12 @@ Implementation: `apps/web/src/features/credentials/constants/credential-vault-ca
 
 ### Enum / migration rules
 
-- Do **not** add `ENV`, `SSH`, `RECOVERY_CODES` to `CredentialCategoryEnum`; those are secret formats, not categories.
-- Keep existing `CredentialTypeEnum` values for ENV/SSH/recovery.
-- Keep Delivery slots category-based.
-- Keep `defaultCredentialType` on slots as explicit preset, not hidden magic.
-- Seed/import/Bitrix migration must map both fields explicitly.
-- No global recomputation of one field from the other.
+- `ENV` and `SSH` are categories. Do **not** add Recovery as a category.
+- Keep `CredentialTypeEnum` values including legacy `RECOVERY_CODES` for existing rows.
+- Keep Delivery slots category-based. UNIVERSAL create writes Service.
+- Create/update writes `credentialType` from the catalog when Category is chosen/changed.
+- Seed/import maps both fields through the catalog. Backfill: ENV_BUNDLE→ENV, SSH_PRIVATE_KEY→SSH, leftover OTHER→SERVICE.
+- Do not remap an existing mismatched pair on save unless the user changes Category.
 
 ### Dependencies
 

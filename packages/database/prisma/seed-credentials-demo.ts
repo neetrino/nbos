@@ -1,5 +1,6 @@
 import { createCipheriv, randomBytes, scryptSync } from 'crypto';
 import type { PrismaClient } from '../src/generated/prisma/client';
+import { CREDENTIAL_CATEGORY_CATALOG } from '@nbos/shared';
 import { resolveCredentialProviderId, seedCredentialProviders } from './seed-credential-providers';
 import type {
   CredentialAccessLevelEnum,
@@ -232,7 +233,7 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
     },
     {
       name: 'ACME — GitHub — CI Deploy Key',
-      category: 'SERVICE',
+      category: 'SSH',
       credentialType: 'SSH_PRIVATE_KEY',
       criticality: 'HIGH',
       accessLevel: 'PROJECT_TEAM',
@@ -246,7 +247,7 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
     },
     {
       name: 'ACME — Frontend — Production — .env',
-      category: 'OTHER',
+      category: 'ENV',
       credentialType: 'ENV_BUNDLE',
       criticality: 'MEDIUM',
       accessLevel: 'PROJECT_TEAM',
@@ -367,9 +368,9 @@ function buildShowcaseRows(ctx: SeedCredentialsDemoContext, now: Date): Credenti
       nextRotationAt: healthy,
     } as CredentialSeedRow,
     {
-      name: 'Internal — 2FA Recovery Codes — CEO',
-      category: 'OTHER',
-      credentialType: 'RECOVERY_CODES',
+      name: 'Internal — Google Workspace — 2FA',
+      category: 'SERVICE',
+      credentialType: 'LOGIN_PASSWORD',
       criticality: 'CRITICAL',
       accessLevel: 'PERSONAL',
       ownerId: ceo.id,
@@ -461,26 +462,7 @@ function buildGeneratedRows(
   now: Date,
 ): CredentialSeedRow[] {
   const providers = ['Cloudflare', 'Beget', 'DigitalOcean', 'AWS', 'GitLab', 'Telegram', 'Slack'];
-  const categories: CredentialCategoryEnum[] = [
-    'ADMIN',
-    'DOMAIN',
-    'HOSTING',
-    'SERVICE',
-    'APP',
-    'MAIL',
-    'API_KEY',
-    'DATABASE',
-    'OTHER',
-  ];
-  const types: CredentialTypeEnum[] = [
-    'LOGIN_PASSWORD',
-    'API_KEY',
-    'DATABASE',
-    'HOSTING_SERVER',
-    'DOMAIN_REGISTRAR',
-    'MAIL_SMTP',
-    'RECOVERY_CODES',
-  ];
+  const catalog = CREDENTIAL_CATEGORY_CATALOG;
   const accessLevels: CredentialAccessLevelEnum[] = [
     'PROJECT_TEAM',
     'SECRET',
@@ -495,8 +477,9 @@ function buildGeneratedRows(
     const project = projects[i]!;
     for (let j = 0; j < 4; j += 1) {
       const idx = i * 4 + j;
-      const category = categories[idx % categories.length]!;
-      const credentialType = types[idx % types.length]!;
+      const catalogEntry = catalog[idx % catalog.length]!;
+      const category = catalogEntry.category as CredentialCategoryEnum;
+      const credentialType = catalogEntry.credentialType as CredentialTypeEnum;
       const accessLevel = accessLevels[idx % accessLevels.length]!;
       const criticality = criticalities[idx % criticalities.length]!;
       const provider = providers[idx % providers.length]!;

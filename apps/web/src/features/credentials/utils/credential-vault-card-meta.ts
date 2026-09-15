@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   AtSign,
   Boxes,
+  Braces,
   Building2,
   Database,
   Folder,
@@ -18,6 +19,7 @@ import {
   Server,
   Settings,
   Shield,
+  SquareTerminal,
   Signal,
   Smartphone,
   Tag,
@@ -61,6 +63,8 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   MAIL: Mail,
   API_KEY: KeyRound,
   DATABASE: Database,
+  ENV: Braces,
+  SSH: SquareTerminal,
   OTHER: Tag,
 };
 
@@ -90,8 +94,8 @@ export const CREDENTIAL_VAULT_CARD_BADGE_CLASS =
   'h-4 shrink-0 gap-0.5 px-1.5 py-0 text-[10px] leading-none';
 
 export function credentialCategoryIcon(category: string): LucideIcon {
-  const key = category in CATEGORY_ICONS ? category : 'OTHER';
-  return CATEGORY_ICONS[key] ?? Tag;
+  const key = category in CATEGORY_ICONS ? category : 'SERVICE';
+  return CATEGORY_ICONS[key] ?? Boxes;
 }
 
 export function credentialAccessIcon(accessLevel: string): LucideIcon {

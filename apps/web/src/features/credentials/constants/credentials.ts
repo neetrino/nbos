@@ -1,16 +1,15 @@
+import { CREDENTIAL_CATEGORY_CATALOG } from '@nbos/shared';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 
-export const CREDENTIAL_CATEGORIES = [
-  { value: 'ADMIN', label: 'Admin' },
-  { value: 'DOMAIN', label: 'Domain' },
-  { value: 'HOSTING', label: 'Hosting' },
-  { value: 'SERVICE', label: 'Service' },
-  { value: 'APP', label: 'App Store' },
-  { value: 'MAIL', label: 'Mail' },
-  { value: 'API_KEY', label: 'API Key' },
-  { value: 'DATABASE', label: 'Database' },
-  { value: 'OTHER', label: 'Other' },
-] as const;
+export const CREDENTIAL_CATEGORIES = CREDENTIAL_CATEGORY_CATALOG.map((entry) => ({
+  value: entry.category,
+  label: entry.label,
+}));
+
+const CATEGORY_MESSAGE_VALUES = new Set<string>([
+  ...CREDENTIAL_CATEGORIES.map((item) => item.value),
+  'OTHER',
+]);
 
 export const CREDENTIAL_TYPES = [
   { value: 'LOGIN_PASSWORD', label: 'Login / Password' },
@@ -55,7 +54,7 @@ export function getCredentialCriticality(value: string) {
 }
 
 export function credentialCategoryMessageKey(value: string): `categories.${string}` | null {
-  return CREDENTIAL_CATEGORIES.some((item) => item.value === value) ? `categories.${value}` : null;
+  return CATEGORY_MESSAGE_VALUES.has(value) ? `categories.${value}` : null;
 }
 
 export function credentialTypeMessageKey(value: string): `types.${string}` | null {
