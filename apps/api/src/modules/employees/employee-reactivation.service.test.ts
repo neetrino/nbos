@@ -12,7 +12,7 @@ describe('EmployeeReactivationService', () => {
     prisma = createMockPrisma();
     service = new EmployeeReactivationService(prisma as never, audit as never);
     vi.clearAllMocks();
-    prisma.employeeDepartment.findMany.mockResolvedValue([]);
+    prisma.permissionRoleAssignment.findMany.mockResolvedValue([]);
   });
 
   it('rejects actors without CEO, Founder, or HR access', async () => {
@@ -78,8 +78,8 @@ describe('EmployeeReactivationService', () => {
     );
   });
 
-  it('allows hr department members', async () => {
-    prisma.employeeDepartment.findMany.mockResolvedValue([{ department: { slug: 'hr' } }]);
+  it('allows HR Manager held as an additional role', async () => {
+    prisma.permissionRoleAssignment.findMany.mockResolvedValue([{ role: { slug: 'hr-manager' } }]);
     prisma.employee.findUnique.mockResolvedValue({
       id: 'e1',
       firstName: 'Ann',

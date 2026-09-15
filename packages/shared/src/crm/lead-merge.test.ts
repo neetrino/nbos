@@ -101,10 +101,9 @@ describe('canAttachLeadToContact', () => {
     );
     expect(canOfferLeadAttach('marketing')).toBe(false);
     expect(canOfferLeadAttach('seller')).toBe(true);
-    expect(canOfferLeadAttach('seller-assistant')).toBe(true);
     expect(
       canAttachLeadToContact({
-        roleSlug: 'seller-assistant',
+        roleSlug: 'seller',
         actorId: 'a1',
         assignedTo: 'a1',
       }),

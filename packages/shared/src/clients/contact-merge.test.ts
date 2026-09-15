@@ -11,7 +11,6 @@ describe('canMergeContacts', () => {
 
   it('blocks Seller and Marketing', () => {
     expect(canMergeContacts('seller')).toBe(false);
-    expect(canMergeContacts('seller-assistant')).toBe(false);
     expect(canMergeContacts('marketing')).toBe(false);
     expect(canMergeContacts('head-marketing')).toBe(false);
   });

@@ -4,10 +4,8 @@ export const LEAD_MERGE_UNRESTRICTED_ROLE_SLUGS = ['ceo', 'head-sales'] as const
 /** Seller may merge only when both Leads are assigned to them. */
 export const LEAD_MERGE_SELLER_ROLE_SLUG = 'seller';
 
-export const LEAD_MERGE_SELLER_ROLE_SLUGS = ['seller', 'seller-assistant'] as const;
-
 function isLeadMergeSellerRole(roleSlug: string): boolean {
-  return (LEAD_MERGE_SELLER_ROLE_SLUGS as readonly string[]).includes(roleSlug);
+  return roleSlug === LEAD_MERGE_SELLER_ROLE_SLUG;
 }
 
 export const LEAD_MERGE_BLOCKED_ROLE_SLUGS = ['marketing', 'head-marketing'] as const;

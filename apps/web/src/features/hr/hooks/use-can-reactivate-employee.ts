@@ -11,6 +11,6 @@ export function useCanReactivateEmployee(): boolean {
   return canEmployeeReactivate({
     roleSlug: me.role.slug,
     isPlatformOwner: me.isPlatformOwner === true,
-    departmentSlugs: me.departments.map((row) => row.department.slug),
+    roleSlugs: (me.permissionRoles ?? [me.role]).map((role) => role.slug),
   });
 }

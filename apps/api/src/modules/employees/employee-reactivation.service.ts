@@ -13,6 +13,7 @@ import {
   EMPLOYEE_ONBOARDING_TEMPLATE_NAME,
 } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
+import { activeAdditionalRoleAssignments } from '../../common/authorization/active-role-assignments';
 import { lockSeatEmployee } from '../org-seats/org-seat-locks';
 import { AuditService } from '../audit/audit.service';
 import type {
@@ -129,24 +130,28 @@ export class EmployeeReactivationService {
     actorRoleSlug: string,
     actorIsPlatformOwner: boolean,
   ): Promise<void> {
-    const departmentSlugs = await this.loadActorDepartmentSlugs(actorId);
+    const roleSlugs = await this.loadActorRoleSlugs(actorId, actorRoleSlug);
     if (
       !canEmployeeReactivate({
         roleSlug: actorRoleSlug,
         isPlatformOwner: actorIsPlatformOwner,
-        departmentSlugs,
+        roleSlugs,
       })
     ) {
       throw new ForbiddenException('Only the CEO, platform owner, or HR can reactivate employees');
     }
   }
 
-  private async loadActorDepartmentSlugs(actorId: string): Promise<string[]> {
-    const rows = await this.prisma.employeeDepartment.findMany({
-      where: { employeeId: actorId },
-      select: { department: { select: { slug: true } } },
+  /** Primary role plus every active additional role, so HR granted through a seat also counts. */
+  private async loadActorRoleSlugs(actorId: string, actorRoleSlug: string): Promise<string[]> {
+    const rows = await this.prisma.permissionRoleAssignment.findMany({
+      where: {
+        employeeId: actorId,
+        ...activeAdditionalRoleAssignments(new Date()),
+      },
+      select: { role: { select: { slug: true } } },
     });
-    return rows.map((row) => row.department.slug);
+    return [...new Set([actorRoleSlug, ...rows.map((row) => row.role.slug)])];
   }
 
   private async ensureOnboardingTemplate(

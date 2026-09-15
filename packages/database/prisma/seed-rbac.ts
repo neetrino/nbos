@@ -18,6 +18,8 @@ import {
 import type { PlatformResourceFamilyEnum } from '@nbos/database';
 import dotenv from 'dotenv';
 import path from 'path';
+import { OPERATIONS_ROLE_MATRIX } from './rbac-role-matrix-operations';
+import { D, F, L, LA, MatrixEntry, N, R, VA, VA_OWN } from './rbac-scopes';
 
 const GLOBAL_OPERATIONAL_ROLE_IDS = ['role-owner', 'role-ceo'] as const;
 
@@ -60,29 +62,6 @@ const MODULES = [
 ] as const;
 
 const ACTIONS = ['VIEW', 'EDIT', 'ADD', 'DELETE'] as const;
-
-type Scope = 'NONE' | 'OWN' | 'DEPARTMENT' | 'ALL';
-
-/**
- * Maps the access matrix from docs/NBOS/04-Roles-and-Access/02-Access-Matrix.md
- * ✅ Full   -> VIEW:ALL, EDIT:ALL, ADD:ALL, DELETE:ALL
- * 👁 Read   -> VIEW:ALL
- * 🔶 Limited -> VIEW:OWN, EDIT:OWN (no create)
- * 🔶 Limited + create (Seller invoices) -> VIEW:OWN, EDIT:OWN, ADD:OWN
- * ❌ None   -> all NONE
- */
-type MatrixEntry = Record<string, [Scope, Scope, Scope, Scope]>; // [VIEW, EDIT, ADD, DELETE]
-
-const F: [Scope, Scope, Scope, Scope] = ['ALL', 'ALL', 'ALL', 'ALL'];
-const R: [Scope, Scope, Scope, Scope] = ['ALL', 'NONE', 'NONE', 'NONE'];
-const L: [Scope, Scope, Scope, Scope] = ['OWN', 'OWN', 'NONE', 'NONE'];
-const LA: [Scope, Scope, Scope, Scope] = ['OWN', 'OWN', 'OWN', 'NONE'];
-const D: [Scope, Scope, Scope, Scope] = ['DEPARTMENT', 'DEPARTMENT', 'DEPARTMENT', 'NONE'];
-const N: [Scope, Scope, Scope, Scope] = ['NONE', 'NONE', 'NONE', 'NONE'];
-/** View all + create, no edit/delete — Seller / Head of Sales on Clients. */
-const VA: [Scope, Scope, Scope, Scope] = ['ALL', 'NONE', 'ALL', 'NONE'];
-/** View own + create own, no edit/delete — Head of Marketing invoices. */
-const VA_OWN: [Scope, Scope, Scope, Scope] = ['OWN', 'NONE', 'OWN', 'NONE'];
 
 const DEVELOPER_ROLE_MATRIX: MatrixEntry = {
   CRM_LEADS: N,
@@ -139,6 +118,7 @@ const SELLER_ROLE_MATRIX: MatrixEntry = {
 };
 
 const ROLE_MATRIX: Record<string, MatrixEntry> = {
+  ...OPERATIONS_ROLE_MATRIX,
   'role-owner': Object.fromEntries(MODULES.map((m) => [m, F])),
   'role-ceo': Object.fromEntries(MODULES.map((m) => [m, F])),
   [ROLE_SELLER_ID]: SELLER_ROLE_MATRIX,
@@ -433,10 +413,41 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
   },
 };
 
+/**
+ * `--roles=role-a,role-b` limits the run to those roles.
+ *
+ * Without it the seed resets and rewrites the grants of every role it owns, which silently
+ * discards matrix edits an admin made in Settings -> Permissions / RBAC. Scoping the run is the
+ * safe way to publish a newly added role against a database that has been tuned by hand.
+ */
+function parseRoleFilter(argv: readonly string[]): ReadonlySet<string> | null {
+  const flag = argv.find((arg) => arg.startsWith('--roles='));
+  if (!flag) return null;
+  const ids = flag
+    .slice('--roles='.length)
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
+  if (ids.length === 0) throw new Error('--roles was passed without any role id');
+  const unknown = ids.filter((id) => !(id in ROLE_MATRIX));
+  if (unknown.length > 0) throw new Error(`Unknown role ids: ${unknown.join(', ')}`);
+  return new Set(ids);
+}
+
 async function main() {
   const prisma = createPrismaClient({ skipBudgetAssert: true, role: 'api' });
 
-  console.log('Seeding RBAC permissions...');
+  const roleFilter = parseRoleFilter(process.argv.slice(2));
+  const includeRole = (roleId: string): boolean => roleFilter === null || roleFilter.has(roleId);
+  const roleMatrix: Record<string, MatrixEntry> = roleFilter
+    ? Object.fromEntries(Object.entries(ROLE_MATRIX).filter(([roleId]) => includeRole(roleId)))
+    : ROLE_MATRIX;
+
+  console.log(
+    roleFilter
+      ? `Seeding RBAC permissions for ${[...roleFilter].join(', ')}...`
+      : 'Seeding RBAC permissions...',
+  );
 
   const permissionRecords: Array<{ id: string; module: string; action: string }> = [];
   for (const module of MODULES) {
@@ -498,7 +509,7 @@ async function main() {
     scope: string;
   }> = [];
 
-  for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
+  for (const [roleId, moduleMap] of Object.entries(roleMatrix)) {
     for (const [module, scopes] of Object.entries(moduleMap)) {
       ACTIONS.forEach((action, idx) => {
         const scope = scopes[idx] ?? 'NONE';
@@ -509,7 +520,7 @@ async function main() {
     }
   }
 
-  for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
+  for (const [roleId, moduleMap] of Object.entries(roleMatrix)) {
     const docsScopes = moduleMap.DOCUMENTS;
     if (!docsScopes) continue;
     const viewScope = docsScopes[0];
@@ -521,7 +532,7 @@ async function main() {
     });
   }
 
-  for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
+  for (const [roleId, moduleMap] of Object.entries(roleMatrix)) {
     const docsScopes = moduleMap.DOCUMENTS;
     if (!docsScopes) continue;
     const editScope = docsScopes[1];
@@ -533,7 +544,7 @@ async function main() {
     });
   }
 
-  for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
+  for (const [roleId, moduleMap] of Object.entries(roleMatrix)) {
     const docsScopes = moduleMap.DOCUMENTS;
     if (!docsScopes) continue;
     const editScope = docsScopes[1];
@@ -545,7 +556,7 @@ async function main() {
     });
   }
 
-  for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
+  for (const [roleId, moduleMap] of Object.entries(roleMatrix)) {
     const company = moduleMap.COMPANY;
     const checklistScopes = moduleMap.CHECKLIST_TEMPLATES;
     if (!company) continue;
@@ -579,7 +590,7 @@ async function main() {
     }
   }
 
-  for (const roleId of CRM_CALL_RECORDINGS_PLAY_DEFAULT_ROLE_IDS) {
+  for (const roleId of CRM_CALL_RECORDINGS_PLAY_DEFAULT_ROLE_IDS.filter(includeRole)) {
     rolePermissionData.push({
       roleId,
       permissionId: CRM_CALL_RECORDINGS_PLAY_PERMISSION_ID,
@@ -587,7 +598,7 @@ async function main() {
     });
   }
 
-  for (const roleId of MESSENGER_CLIENT_CAPABILITY_ALL_ROLE_IDS) {
+  for (const roleId of MESSENGER_CLIENT_CAPABILITY_ALL_ROLE_IDS.filter(includeRole)) {
     rolePermissionData.push({
       roleId,
       permissionId: MESSENGER_CLIENT_READ_PERMISSION_ID,
@@ -600,7 +611,7 @@ async function main() {
     });
   }
 
-  for (const roleId of MESSENGER_CLIENT_CAPABILITY_OWN_ROLE_IDS) {
+  for (const roleId of MESSENGER_CLIENT_CAPABILITY_OWN_ROLE_IDS.filter(includeRole)) {
     rolePermissionData.push({
       roleId,
       permissionId: MESSENGER_CLIENT_READ_PERMISSION_ID,
@@ -623,18 +634,21 @@ async function main() {
   });
   console.log(`  ✓ RolePermissions (${rolePermissionData.length})`);
 
-  await prisma.rolePermission.deleteMany({
-    where: { permissionId: 'perm-credentials-bypass-row-visibility' },
-  });
-  await prisma.permission.deleteMany({
-    where: { id: 'perm-credentials-bypass-row-visibility' },
-  });
-  await prisma.role.updateMany({
-    where: { OR: [{ slug: 'owner' }, { id: 'role-owner' }] },
-    data: { assignable: false },
-  });
+  // Global cleanup, not tied to any single role, so a scoped run leaves it alone.
+  if (roleFilter === null) {
+    await prisma.rolePermission.deleteMany({
+      where: { permissionId: 'perm-credentials-bypass-row-visibility' },
+    });
+    await prisma.permission.deleteMany({
+      where: { id: 'perm-credentials-bypass-row-visibility' },
+    });
+    await prisma.role.updateMany({
+      where: { OR: [{ slug: 'owner' }, { id: 'role-owner' }] },
+      data: { assignable: false },
+    });
+  }
 
-  for (const roleId of GLOBAL_OPERATIONAL_ROLE_IDS) {
+  for (const roleId of GLOBAL_OPERATIONAL_ROLE_IDS.filter(includeRole)) {
     for (const family of PLATFORM_RESOURCE_FAMILIES) {
       const scopeMode = family === 'CREDENTIALS' ? 'ASSIGNED' : 'ALL';
       await prisma.roleAccessPolicy.upsert({
@@ -656,9 +670,11 @@ async function main() {
       });
     }
   }
-  console.log(
-    `  ✓ RoleAccessPolicy (ceo/legacy-owner operational ALL, credentials ASSIGNED × ${PLATFORM_RESOURCE_FAMILIES.length} families)`,
-  );
+  if (GLOBAL_OPERATIONAL_ROLE_IDS.some(includeRole)) {
+    console.log(
+      `  ✓ RoleAccessPolicy (ceo/legacy-owner operational ALL, credentials ASSIGNED × ${PLATFORM_RESOURCE_FAMILIES.length} families)`,
+    );
+  }
 
   console.log('\n✅ RBAC seed completed!');
   await prisma.$disconnect();
