@@ -1,22 +1,25 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { NbosDatePicker } from '@/components/shared/date-picker';
+import { InlineField } from '@/components/shared';
 import type { CreateExpenseFormState } from '@/features/finance/utils/expense-create-defaults';
+import {
+  EXPENSE_SHEET_FIELD_CELL_CLASS,
+  EXPENSE_SHEET_FIELD_ROW_2_CLASS,
+} from './edit-expense-dialog-constants';
 
 interface CreateExpenseDialogFormProps {
   form: CreateExpenseFormState;
   setForm: React.Dispatch<React.SetStateAction<CreateExpenseFormState>>;
-  parsedAmount: number;
   formError: string | null;
   loading: boolean;
   canSubmit: boolean;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
+  planField?: ReactNode;
   submitIdleLabel?: string;
   submitLoadingLabel?: string;
 }
@@ -24,12 +27,12 @@ interface CreateExpenseDialogFormProps {
 export function CreateExpenseDialogForm({
   form,
   setForm,
-  parsedAmount,
   formError,
   loading,
   canSubmit,
   onSubmit,
   onCancel,
+  planField,
   submitIdleLabel,
   submitLoadingLabel,
 }: CreateExpenseDialogFormProps) {
@@ -46,34 +49,38 @@ export function CreateExpenseDialogForm({
         </p>
       ) : null}
 
-      <div className="space-y-2">
-        <Label>{t('expense.fields.name')}</Label>
-        <Input
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          placeholder={t('expense.fields.namePlaceholder')}
-          autoFocus
-        />
-      </div>
+      <InlineField
+        variant="controlled"
+        label={t('expense.fields.name')}
+        type="text"
+        value={form.name}
+        placeholder={t('expense.fields.namePlaceholder')}
+        disabled={loading}
+        onValueChange={(name) => setForm({ ...form, name })}
+      />
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label>{t('expense.fields.amount')}</Label>
-          <Input
-            inputMode="decimal"
-            value={form.amount}
-            onChange={(e) => setForm({ ...form, amount: e.target.value })}
-            aria-invalid={form.amount.trim() !== '' && !Number.isFinite(parsedAmount)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>{t('expense.fields.dueDate')}</Label>
-          <NbosDatePicker
-            value={form.dueDate}
-            onChange={(dueDate) => setForm({ ...form, dueDate })}
-            aria-label={t('expense.fields.dueDateAria')}
-          />
-        </div>
+      {planField}
+
+      <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
+        <InlineField
+          variant="controlled"
+          label={t('expense.fields.amount')}
+          type="money"
+          value={form.amount}
+          placeholder="0"
+          disabled={loading}
+          className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+          onValueChange={(amount) => setForm({ ...form, amount })}
+        />
+        <InlineField
+          variant="controlled"
+          label={t('expense.fields.dueDate')}
+          type="date"
+          value={form.dueDate}
+          disabled={loading}
+          className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+          onValueChange={(dueDate) => setForm({ ...form, dueDate })}
+        />
       </div>
 
       <DialogFooter>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { firstReleaseFormErrorCopy, localizeCaughtApiError } from '@/i18n/localize-api-error';
@@ -9,11 +9,16 @@ import { getNextBusinessDay } from '@/lib/date/business-days';
 import { formatIsoDateValue } from '@/components/shared/date-picker/date-picker-format';
 import { SCHEMA_EXPENSE_STATUSES } from './edit-expense-dialog-constants';
 import {
+  applyExpensePlanToCreateForm,
   buildCreateExpensePayload,
   type CreateExpenseFormState,
+  type ExpenseCreateLinkedPlan,
 } from '@/features/finance/utils/expense-create-defaults';
 import { CreateExpenseDialogForm } from './CreateExpenseDialogForm';
+import { CreateExpenseDialogPlanField } from './CreateExpenseDialogPlanField';
 import { parseExpenseDraftAmount } from '@/features/finance/utils/expense-general-form-state';
+import { useActiveExpensePlans } from '@/features/finance/hooks/use-active-expense-plans';
+import type { ExpensePlan } from '@/lib/api/expense-plans';
 
 interface CreateExpenseDialogProps {
   open: boolean;
@@ -28,6 +33,20 @@ interface CreateExpenseDialogProps {
   /** Custom submit instead of default `expensesApi.create`. */
   submitOverride?: (form: CreateExpenseFormState) => Promise<Expense>;
   forceNestedBackdrop?: boolean;
+  /** When set, the card is always linked to this plan and the picker is hidden. */
+  lockedExpensePlan?: ExpensePlan | null;
+  /** Hide the plan picker (client-service create keeps its own source). */
+  showPlanPicker?: boolean;
+}
+
+function toLinkedPlan(plan: ExpensePlan): ExpenseCreateLinkedPlan {
+  return {
+    id: plan.id,
+    name: plan.name,
+    category: plan.category,
+    productId: plan.productId,
+    credentialId: plan.credentialId,
+  };
 }
 
 function createEmptyForm(): CreateExpenseFormState {
@@ -35,6 +54,7 @@ function createEmptyForm(): CreateExpenseFormState {
     name: '',
     amount: '',
     dueDate: formatIsoDateValue(getNextBusinessDay()),
+    expensePlanId: '',
   };
 }
 
@@ -51,6 +71,8 @@ export function CreateExpenseDialog({
   initialForm,
   submitOverride,
   forceNestedBackdrop = false,
+  lockedExpensePlan = null,
+  showPlanPicker = true,
 }: CreateExpenseDialogProps) {
   const t = useTranslations('forms');
   const tCommon = useTranslations('common');
@@ -58,15 +80,38 @@ export function CreateExpenseDialog({
   const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState<CreateExpenseFormState>(createEmptyForm);
   const initialFormKey = JSON.stringify(initialForm ?? {});
+  const pickerEnabled = open && showPlanPicker && !lockedExpensePlan;
+  const plans = useActiveExpensePlans(pickerEnabled);
 
   useEffect(() => {
     if (!open) return;
-    setForm(mergeInitialForm(initialForm));
+    const merged = mergeInitialForm(initialForm);
+    if (lockedExpensePlan) {
+      setForm({
+        ...merged,
+        expensePlanId: lockedExpensePlan.id,
+        name: merged.name.trim() ? merged.name : lockedExpensePlan.name,
+      });
+    } else {
+      setForm(merged);
+    }
     setFormError(null);
-  }, [open, initialFormKey, initialForm]);
+  }, [open, initialFormKey, initialForm, lockedExpensePlan]);
 
-  const parsedAmount = parseExpenseDraftAmount(form.amount) ?? Number.NaN;
   const canSubmit = Boolean(form.name.trim()) && parseExpenseDraftAmount(form.amount) != null;
+  const linkedPlan = useMemo(() => {
+    if (lockedExpensePlan) return toLinkedPlan(lockedExpensePlan);
+    const match = plans.find((plan) => plan.id === form.expensePlanId);
+    return match ? toLinkedPlan(match) : null;
+  }, [form.expensePlanId, lockedExpensePlan, plans]);
+
+  const handlePlanChange = (planId: string) => {
+    const previous = linkedPlan;
+    const nextPlan = plans.find((plan) => plan.id === planId);
+    setForm((current) =>
+      applyExpensePlanToCreateForm(current, previous, nextPlan ? toLinkedPlan(nextPlan) : null),
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +125,7 @@ export function CreateExpenseDialog({
         : await expensesApi.create(
             buildCreateExpensePayload(form, {
               defaultProductId,
+              linkedPlan,
               defaultStatus:
                 defaultStatus && SCHEMA_EXPENSE_STATUSES.has(defaultStatus)
                   ? defaultStatus
@@ -108,7 +154,7 @@ export function CreateExpenseDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]" forceNestedBackdrop={forceNestedBackdrop}>
+      <DialogContent className="bg-card sm:max-w-[480px]" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>{t('expense.title')}</DialogTitle>
         </DialogHeader>
@@ -116,12 +162,21 @@ export function CreateExpenseDialog({
         <CreateExpenseDialogForm
           form={form}
           setForm={setForm}
-          parsedAmount={parsedAmount}
           formError={formError}
           loading={loading}
           canSubmit={canSubmit}
           onSubmit={handleSubmit}
           onCancel={() => onOpenChange(false)}
+          planField={
+            pickerEnabled ? (
+              <CreateExpenseDialogPlanField
+                plans={plans}
+                value={form.expensePlanId}
+                disabled={loading}
+                onChange={handlePlanChange}
+              />
+            ) : null
+          }
         />
       </DialogContent>
     </Dialog>

@@ -25,7 +25,7 @@ describe('buildClientServiceExpensePayload', () => {
     } as ClientServiceRecord;
 
     const payload = buildClientServiceExpensePayload(
-      { name: 'VPS', amount: '99', dueDate: '2026-09-04' },
+      { name: 'VPS', amount: '99', dueDate: '2026-09-04', expensePlanId: '' },
       service,
     );
 
