@@ -44,6 +44,10 @@ import type {
 import type { RelationCreatedEvent } from './relation-created-event';
 import { applyCreatedRelationSheet } from './apply-created-relation-sheet';
 import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
+import {
+  RelationEntitySheetStackProvider,
+  useHasNestedEntitySheet,
+} from '../nested-entity-sheet-stack';
 
 type CreateKind = 'contact' | 'company' | 'project' | 'partner' | 'product';
 
@@ -66,6 +70,7 @@ export function EntityRelationHost({
   nested = true,
 }: EntityRelationHostProps) {
   const router = useRouter();
+  const nestedItemSheetOpen = useHasNestedEntitySheet();
   const [contactOpenId, setContactOpenId] = useState<string | null>(null);
   const [contactSheet, setContactSheet] = useState<Contact | null>(null);
   const [companyOpenId, setCompanyOpenId] = useState<string | null>(null);
@@ -303,137 +308,139 @@ export function EntityRelationHost({
     <EntityRelationsProvider value={api}>
       {children}
 
-      <ContactSheet
-        contact={contactSheet}
-        open={contactOpenId !== null}
-        forceNestedBackdrop={nested}
-        onRemoveParticipant={entityOpenOptions?.onRemoveParticipant}
-        onOpenChange={(next) => {
-          if (!next) {
-            setContactOpenId(null);
-            setContactSheet(null);
-            setEntityOpenOptions(null);
-          }
-        }}
-        onUpdate={async (id, data) => {
-          const updated = await contactsApi.update(id, data);
-          setContactSheet(updated);
-          onEntityChanged?.();
-        }}
-        onContactPatched={(updated) => {
-          setContactSheet(updated);
-          onEntityChanged?.();
-        }}
-        onMerged={(survivor) => {
-          setContactSheet(survivor);
-          onEntityChanged?.();
-        }}
-      />
+      <RelationEntitySheetStackProvider stackAbove={nested && nestedItemSheetOpen}>
+        <ContactSheet
+          contact={contactSheet}
+          open={contactOpenId !== null}
+          forceNestedBackdrop={nested}
+          onRemoveParticipant={entityOpenOptions?.onRemoveParticipant}
+          onOpenChange={(next) => {
+            if (!next) {
+              setContactOpenId(null);
+              setContactSheet(null);
+              setEntityOpenOptions(null);
+            }
+          }}
+          onUpdate={async (id, data) => {
+            const updated = await contactsApi.update(id, data);
+            setContactSheet(updated);
+            onEntityChanged?.();
+          }}
+          onContactPatched={(updated) => {
+            setContactSheet(updated);
+            onEntityChanged?.();
+          }}
+          onMerged={(survivor) => {
+            setContactSheet(survivor);
+            onEntityChanged?.();
+          }}
+        />
 
-      <CompanySheet
-        company={companySheet}
-        open={companyOpenId !== null}
-        forceNestedBackdrop={nested}
-        onRemoveParticipant={entityOpenOptions?.onRemoveParticipant}
-        onOpenChange={(next) => {
-          if (!next) {
-            setCompanyOpenId(null);
-            setCompanySheet(null);
-            setEntityOpenOptions(null);
-          }
-        }}
-        onUpdate={async (id, data) => {
-          const updated = await companiesApi.update(id, data);
-          setCompanySheet(updated);
-          onEntityChanged?.();
-        }}
-      />
+        <CompanySheet
+          company={companySheet}
+          open={companyOpenId !== null}
+          forceNestedBackdrop={nested}
+          onRemoveParticipant={entityOpenOptions?.onRemoveParticipant}
+          onOpenChange={(next) => {
+            if (!next) {
+              setCompanyOpenId(null);
+              setCompanySheet(null);
+              setEntityOpenOptions(null);
+            }
+          }}
+          onUpdate={async (id, data) => {
+            const updated = await companiesApi.update(id, data);
+            setCompanySheet(updated);
+            onEntityChanged?.();
+          }}
+        />
 
-      <PartnerDetailSheet
-        partnerId={partnerId}
-        open={Boolean(partnerId)}
-        forceNestedBackdrop={nested}
-        onOpenChange={(next) => {
-          if (!next) setPartnerId(null);
-        }}
-        onPartnerUpdated={() => onEntityChanged?.()}
-      />
+        <PartnerDetailSheet
+          partnerId={partnerId}
+          open={Boolean(partnerId)}
+          forceNestedBackdrop={nested}
+          onOpenChange={(next) => {
+            if (!next) setPartnerId(null);
+          }}
+          onPartnerUpdated={() => onEntityChanged?.()}
+        />
 
-      <CredentialFormSheet
-        open={credentialOpenId !== null}
-        credentialId={credentialOpenId}
-        forceNestedBackdrop={nested}
-        onOpenChange={(next) => {
-          if (!next) setCredentialOpenId(null);
-        }}
-      />
+        <CredentialFormSheet
+          open={credentialOpenId !== null}
+          credentialId={credentialOpenId}
+          forceNestedBackdrop={nested}
+          onOpenChange={(next) => {
+            if (!next) setCredentialOpenId(null);
+          }}
+        />
 
-      <EmployeeSheet
-        employee={employeeSheet}
-        open={employeeOpenId !== null}
-        forceNestedBackdrop={nested}
-        onRemoveParticipant={entityOpenOptions?.onRemoveParticipant}
-        onOpenChange={(next) => {
-          if (!next) {
-            setEmployeeOpenId(null);
-            setEmployeeSheet(null);
-            setEntityOpenOptions(null);
-          }
-        }}
-      />
+        <EmployeeSheet
+          employee={employeeSheet}
+          open={employeeOpenId !== null}
+          forceNestedBackdrop={nested}
+          onRemoveParticipant={entityOpenOptions?.onRemoveParticipant}
+          onOpenChange={(next) => {
+            if (!next) {
+              setEmployeeOpenId(null);
+              setEmployeeSheet(null);
+              setEntityOpenOptions(null);
+            }
+          }}
+        />
 
-      <CreateContactDialog
-        open={createKind === 'contact'}
-        prefill={createPrefill}
-        forceNestedBackdrop={nested}
-        onOpenChange={(next) => {
-          if (!next) closeCreate();
-        }}
-        onCreated={handleContactCreated}
-      />
-
-      <CreateCompanyDialog
-        open={createKind === 'company'}
-        defaultName={createPrefill?.name}
-        forceNestedBackdrop={nested}
-        onOpenChange={(next) => {
-          if (!next) closeCreate();
-        }}
-        onCreated={handleCompanyCreated}
-      />
-
-      <CreateProjectHubDialog
-        open={createKind === 'project'}
-        defaultName={createPrefill?.name}
-        forceNestedBackdrop={nested}
-        onOpenChange={(next) => {
-          if (!next) closeCreate();
-        }}
-        onCreated={handleProjectCreated}
-      />
-
-      <CreatePartnerDialog
-        open={createKind === 'partner'}
-        defaultName={createPrefill?.name}
-        forceNestedBackdrop={nested}
-        onOpenChange={(next) => {
-          if (!next) closeCreate();
-        }}
-        onCreated={handlePartnerCreated}
-      />
-
-      {createPrefill?.projectId ? (
-        <CreateProductDialog
-          open={createKind === 'product'}
-          projectId={createPrefill.projectId}
-          defaultName={createPrefill.name}
+        <CreateContactDialog
+          open={createKind === 'contact'}
+          prefill={createPrefill}
           forceNestedBackdrop={nested}
           onOpenChange={(next) => {
             if (!next) closeCreate();
           }}
-          onCreated={handleProductCreated}
+          onCreated={handleContactCreated}
         />
-      ) : null}
+
+        <CreateCompanyDialog
+          open={createKind === 'company'}
+          defaultName={createPrefill?.name}
+          forceNestedBackdrop={nested}
+          onOpenChange={(next) => {
+            if (!next) closeCreate();
+          }}
+          onCreated={handleCompanyCreated}
+        />
+
+        <CreateProjectHubDialog
+          open={createKind === 'project'}
+          defaultName={createPrefill?.name}
+          forceNestedBackdrop={nested}
+          onOpenChange={(next) => {
+            if (!next) closeCreate();
+          }}
+          onCreated={handleProjectCreated}
+        />
+
+        <CreatePartnerDialog
+          open={createKind === 'partner'}
+          defaultName={createPrefill?.name}
+          forceNestedBackdrop={nested}
+          onOpenChange={(next) => {
+            if (!next) closeCreate();
+          }}
+          onCreated={handlePartnerCreated}
+        />
+
+        {createPrefill?.projectId ? (
+          <CreateProductDialog
+            open={createKind === 'product'}
+            projectId={createPrefill.projectId}
+            defaultName={createPrefill.name}
+            forceNestedBackdrop={nested}
+            onOpenChange={(next) => {
+              if (!next) closeCreate();
+            }}
+            onCreated={handleProductCreated}
+          />
+        ) : null}
+      </RelationEntitySheetStackProvider>
     </EntityRelationsProvider>
   );
 }

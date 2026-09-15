@@ -15,6 +15,8 @@ import {
   DETAIL_SHEET_FLOATING_RAIL_ANCHOR_COMPACT_CLASS,
   DETAIL_SHEET_FLOATING_RAIL_ANCHOR_MEDIUM_CLASS,
 } from './detail-sheet-classes';
+import { useRelationEntitySheetStackAbove } from './nested-entity-sheet-stack';
+import { resolveEntitySheetStack } from './resolve-entity-sheet-stack';
 
 /**
  * Product layout mode for right sheets.
@@ -105,6 +107,35 @@ export type EntityDetailSheetContentProps = Omit<
   children: ReactNode;
 };
 
+function resolveEntityDetailFloatingRail({
+  isMobileViewport,
+  showRailActions,
+  defaultShowRailActions,
+  floatingRailContent,
+  sourcePageHref,
+  workspaceHref,
+  trailingRail,
+}: {
+  isMobileViewport: boolean;
+  showRailActions: boolean | undefined;
+  defaultShowRailActions: boolean;
+  floatingRailContent: ReactNode | undefined;
+  sourcePageHref: string;
+  workspaceHref: string | null | undefined;
+  trailingRail: ReactNode | undefined;
+}): ReactNode {
+  if (isMobileViewport) return undefined;
+  if (floatingRailContent) return floatingRailContent;
+  if (!(showRailActions ?? defaultShowRailActions)) return undefined;
+  return (
+    <EntitySheetFloatingRail
+      sourcePageHref={sourcePageHref}
+      workspaceHref={workspaceHref}
+      trailing={trailingRail}
+    />
+  );
+}
+
 /**
  * NBOS standard shell for right sheets opened from boards/lists.
  *
@@ -126,23 +157,29 @@ export function EntityDetailSheetContent({
   trailingRail,
   floatingRailContent,
   showRailActions,
+  forceNestedBackdrop = false,
+  stackAboveEntitySheet = false,
   className,
   children,
   ...props
 }: EntityDetailSheetContentProps) {
   const isMobileViewport = useIsMobileViewport();
+  const stackAboveNestedItem = useRelationEntitySheetStackAbove();
+  const stack = resolveEntitySheetStack({
+    forceNestedBackdrop,
+    stackAboveEntitySheet,
+    stackAboveNestedItem,
+  });
   const preset = resolveShellPreset(layout, width);
-  const railActionsVisible =
-    !isMobileViewport && (showRailActions ?? preset.defaultShowRailActions);
-  const defaultRail =
-    railActionsVisible && !floatingRailContent ? (
-      <EntitySheetFloatingRail
-        sourcePageHref={sourcePageHref}
-        workspaceHref={workspaceHref}
-        trailing={trailingRail}
-      />
-    ) : undefined;
-  const floatingRail = isMobileViewport ? undefined : (floatingRailContent ?? defaultRail);
+  const floatingRail = resolveEntityDetailFloatingRail({
+    isMobileViewport,
+    showRailActions,
+    defaultShowRailActions: preset.defaultShowRailActions,
+    floatingRailContent,
+    sourcePageHref,
+    workspaceHref,
+    trailingRail,
+  });
 
   return (
     <SheetContent
@@ -154,6 +191,7 @@ export function EntityDetailSheetContent({
       floatingRail={floatingRail}
       className={cn(contentClassName ?? preset.contentClass, className)}
       {...props}
+      {...stack}
     >
       <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">{children}</div>
     </SheetContent>

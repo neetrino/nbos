@@ -54,6 +54,7 @@ Expected: no matches.
 | `trailingRail`                             | Extra buttons under standard rail (`layout="full"`)      |
 | `floatingRailContent`                      | Fully custom rail (workspace drive)                      |
 | `forceNestedBackdrop`                      | Nested sheet over parent sheet (see entity-item-surface) |
+| `stackAboveEntitySheet`                    | Third-level sheet over an already-nested child (relation/company over invoice); overlay covers the nested rail |
 
 ## Related items in tabs
 

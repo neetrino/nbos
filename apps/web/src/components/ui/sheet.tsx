@@ -26,7 +26,7 @@ const SHEET_FLOATING_RAIL_Z_INDEX = 60;
 /** Nested child sheet stacks above parent floating rail ({@link SHEET_FLOATING_RAIL_Z_INDEX}). */
 const SHEET_NESTED_ABOVE_PARENT_RAIL_Z_CLASS = 'z-[70]';
 
-/** Sheet opened above a nested entity sheet (e.g. contact portfolio at z-70). */
+/** Sheet opened above a nested entity sheet (portfolio, or company over a nested invoice). */
 const SHEET_ABOVE_ENTITY_SHEET_Z_CLASS = 'z-[80]';
 
 /** Nested sheet popup uses z-70; viewport rail sits above the panel seam when nested. */
