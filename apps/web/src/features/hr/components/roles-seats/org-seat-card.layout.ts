@@ -1,6 +1,6 @@
 /** One full-width card when only one seat is visible; extra columns as space allows. */
 export const ORG_SEAT_GRID_CLASS =
-  'grid w-full gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr))]';
+  'grid w-full content-start gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr))]';
 
 export const ORG_SEAT_CARD_CONTAINER_CLASS = '@container/org-seat w-full';
 

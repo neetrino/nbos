@@ -137,6 +137,7 @@ export function RolesSeatsWorkspace() {
       <OrgSeatEditorDialog
         open={editor.open}
         seat={editor.seat}
+        seats={data.seats}
         defaultDepartmentId={selectedDepartmentId}
         departments={data.departments}
         roles={data.roles}

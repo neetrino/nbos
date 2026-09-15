@@ -12,12 +12,18 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import type { DepartmentItem, RoleItem } from '@/lib/api/employees';
-import type { CreateOrgSeatPayload, OrgSeat, UpdateOrgSeatPayload } from '@/lib/api/org-seats';
+import type {
+  CreateOrgSeatPayload,
+  OrgSeat,
+  OrgSeatKind,
+  UpdateOrgSeatPayload,
+} from '@/lib/api/org-seats';
 import { NO_PERMISSION_ROLE, OrgSeatEditorFields, type OrgSeatForm } from './OrgSeatEditorFields';
 
 export function OrgSeatEditorDialog({
   open,
   seat,
+  seats,
   defaultDepartmentId,
   departments,
   roles,
@@ -27,6 +33,7 @@ export function OrgSeatEditorDialog({
 }: {
   open: boolean;
   seat: OrgSeat | null;
+  seats: OrgSeat[];
   defaultDepartmentId: string;
   departments: DepartmentItem[];
   roles: RoleItem[];
@@ -44,10 +51,10 @@ export function OrgSeatEditorDialog({
 
   async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
-    if (!form.title.trim()) return;
+    if (!form.title.trim() || !form.kind) return;
     setSaving(true);
     try {
-      await onSave(toPayload(form, Boolean(seat), canMapRole));
+      await onSave(toPayload({ ...form, kind: form.kind }, Boolean(seat), canMapRole));
       onOpenChange(false);
     } finally {
       setSaving(false);
@@ -66,6 +73,7 @@ export function OrgSeatEditorDialog({
             form={form}
             setForm={setForm}
             seat={seat}
+            seats={seats}
             departments={departments}
             roles={roles}
             canMapRole={canMapRole}
@@ -74,7 +82,7 @@ export function OrgSeatEditorDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t('actions.cancel')}
             </Button>
-            <Button type="submit" disabled={saving || !form.title.trim()}>
+            <Button type="submit" disabled={saving || !form.title.trim() || !form.kind}>
               {saving ? t('actions.saving') : t('actions.save')}
             </Button>
           </DialogFooter>
@@ -89,13 +97,13 @@ function initialForm(seat: OrgSeat | null, departmentId: string): OrgSeatForm {
     departmentId: seat?.departmentId ?? departmentId,
     title: seat?.title ?? '',
     description: seat?.description ?? '',
-    kind: seat?.kind ?? 'STANDARD',
+    kind: seat?.kind ?? '',
     roleId: seat?.defaultPermissionRoleId ?? NO_PERMISSION_ROLE,
   };
 }
 
 function toPayload(
-  form: OrgSeatForm,
+  form: Omit<OrgSeatForm, 'kind'> & { kind: OrgSeatKind },
   editing: boolean,
   canMapRole: boolean,
 ): CreateOrgSeatPayload | UpdateOrgSeatPayload {

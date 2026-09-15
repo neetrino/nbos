@@ -13,20 +13,15 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import type { DepartmentItem, RoleItem } from '@/lib/api/employees';
 import type { OrgSeat, OrgSeatKind } from '@/lib/api/org-seats';
+import { isOrgSeatKind, seatKindOptions, type SeatKindOptions } from './org-seat-kind-options';
 
 export const NO_PERMISSION_ROLE = 'none';
-
-const ORG_SEAT_KINDS: readonly OrgSeatKind[] = ['HEAD', 'DEPUTY', 'STANDARD'];
-
-function isOrgSeatKind(value: string): value is OrgSeatKind {
-  return (ORG_SEAT_KINDS as readonly string[]).includes(value);
-}
 
 export type OrgSeatForm = {
   departmentId: string;
   title: string;
   description: string;
-  kind: OrgSeatKind;
+  kind: OrgSeatKind | '';
   roleId: string;
 };
 
@@ -39,22 +34,31 @@ export function OrgSeatEditorFields({
   form,
   setForm,
   seat,
+  seats,
   departments,
   roles,
   canMapRole,
 }: FieldProps & {
   seat: OrgSeat | null;
+  seats: OrgSeat[];
   departments: DepartmentItem[];
   roles: RoleItem[];
   canMapRole: boolean;
 }) {
   // The API rejects kind and permission-role changes while a seat is occupied.
   const occupied = (seat?.assignments.length ?? 0) > 0;
+  const kindOptions = seatKindOptions(seats, form.departmentId, seat?.id);
   return (
     <>
-      <DepartmentField form={form} setForm={setForm} seat={seat} departments={departments} />
+      <DepartmentField
+        form={form}
+        setForm={setForm}
+        seat={seat}
+        seats={seats}
+        departments={departments}
+      />
       <TitleField form={form} setForm={setForm} />
-      <KindField form={form} setForm={setForm} locked={occupied} />
+      <KindField form={form} setForm={setForm} locked={occupied} options={kindOptions} />
       <PermissionRoleField
         form={form}
         setForm={setForm}
@@ -77,8 +81,9 @@ function DepartmentField({
   form,
   setForm,
   seat,
+  seats,
   departments,
-}: FieldProps & { seat: OrgSeat | null; departments: DepartmentItem[] }) {
+}: FieldProps & { seat: OrgSeat | null; seats: OrgSeat[]; departments: DepartmentItem[] }) {
   const t = useTranslations('hr.rolesSeats');
   return (
     <div className="space-y-2">
@@ -87,7 +92,10 @@ function DepartmentField({
         value={form.departmentId}
         disabled={Boolean(seat)}
         onValueChange={(departmentId) => {
-          if (departmentId) setForm({ ...form, departmentId });
+          if (!departmentId) return;
+          const next = seatKindOptions(seats, departmentId, seat?.id);
+          const kindAllowed = form.kind !== '' && next.kinds.includes(form.kind);
+          setForm({ ...form, departmentId, kind: kindAllowed ? form.kind : '' });
         }}
       >
         <SelectTrigger id="seat-department">
@@ -124,7 +132,12 @@ function TitleField({ form, setForm }: FieldProps) {
   );
 }
 
-function KindField({ form, setForm, locked }: FieldProps & { locked: boolean }) {
+function KindField({
+  form,
+  setForm,
+  locked,
+  options,
+}: FieldProps & { locked: boolean; options: SeatKindOptions }) {
   const t = useTranslations('hr.rolesSeats');
   return (
     <div className="space-y-2">
@@ -137,17 +150,23 @@ function KindField({ form, setForm, locked }: FieldProps & { locked: boolean }) 
         }}
       >
         <SelectTrigger id="seat-kind">
-          <ClosedSelectLabel label={t(`kinds.${form.kind}`)} />
+          <SelectValue placeholder={t('editor.kindPlaceholder')}>
+            {form.kind ? () => t(`kinds.${form.kind}`) : undefined}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {ORG_SEAT_KINDS.map((kind) => (
+          {options.kinds.map((kind) => (
             <SelectItem key={kind} value={kind}>
               {t(`kinds.${kind}`)}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      <OccupiedHint locked={locked} />
+      {options.headTaken && !locked ? (
+        <p className="text-muted-foreground text-xs">{t('editor.headTaken')}</p>
+      ) : (
+        <OccupiedHint locked={locked} />
+      )}
     </div>
   );
 }

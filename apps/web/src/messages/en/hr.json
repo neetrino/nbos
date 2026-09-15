@@ -337,7 +337,9 @@
       "createTitle": "New seat",
       "editTitle": "Edit seat",
       "description": "A seat describes a business function. Its permission role is a separate technical mapping.",
-      "lockedWhileOccupied": "Cannot be changed while the seat is occupied. End the assignment first."
+      "lockedWhileOccupied": "Cannot be changed while the seat is occupied. End the assignment first.",
+      "kindPlaceholder": "Select the org-chart kind",
+      "headTaken": "This department already has a head. Choose Deputy or Member."
     },
     "assignment": {
       "title": "Assign employee",
