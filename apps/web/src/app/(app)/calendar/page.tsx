@@ -228,27 +228,34 @@ export default function CalendarPage() {
 
         <div
           className={cn(
-            'border-border bg-card relative flex flex-col rounded-2xl border p-5',
+            'border-border bg-card relative flex flex-col rounded-2xl border px-5 pt-5 pb-3',
             CALENDAR_DAY_PANEL_HEIGHT_CLASS,
           )}
         >
-          <div className="flex shrink-0 items-center gap-2">
-            <CalendarDays size={18} className="text-accent" />
-            <h2 className="text-foreground text-lg font-semibold">
-              {selectedDate.toLocaleDateString('en-US', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-              })}
-            </h2>
+          <div className="flex shrink-0 items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <CalendarDays size={18} className="text-accent" />
+              <h2 className="text-foreground text-lg font-semibold">
+                {selectedDate.toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </h2>
+            </div>
+            {!loading && selectedEvents.length > 0 ? (
+              <span className="text-foreground text-2xl leading-none font-semibold tabular-nums">
+                {selectedEvents.length}
+              </span>
+            ) : null}
           </div>
-          <div className="mt-4 min-h-0 flex-1 overflow-y-auto pb-10">
+          <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-2.5">
             {loading ? (
-              <p className="text-muted-foreground mt-8 text-center text-sm">
+              <p className="text-muted-foreground py-6 text-center text-sm">
                 Loading calendar events...
               </p>
             ) : selectedEvents.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-2 pr-1.5 pb-3">
                 {selectedEvents.map((event) => (
                   <EventCard
                     key={event.id}
@@ -258,7 +265,9 @@ export default function CalendarPage() {
                 ))}
               </div>
             ) : (
-              <CalendarEmptyState />
+              <div className="pb-3">
+                <CalendarEmptyState />
+              </div>
             )}
           </div>
           <div className="absolute bottom-0 left-1/2 z-20 -translate-x-1/2 translate-y-1/2">

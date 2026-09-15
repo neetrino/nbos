@@ -206,8 +206,8 @@ function EventCardInner({
 
 export function CalendarEmptyState() {
   return (
-    <div className="flex h-full min-h-[8rem] flex-col items-center justify-center text-center">
-      <CalendarDays size={32} className="text-muted-foreground/40" />
+    <div className="flex flex-col items-center justify-center py-6 text-center">
+      <CalendarDays size={28} className="text-muted-foreground/40" />
       <p className="text-muted-foreground mt-2 text-sm">No events for this day</p>
     </div>
   );
