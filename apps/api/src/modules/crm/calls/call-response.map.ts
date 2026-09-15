@@ -28,6 +28,7 @@ export interface CallResponse {
   leadName: string | null;
   dealName: string | null;
   employeeName: string | null;
+  note: string | null;
   recordingStatus: CallRecordingStatus | null;
   createdAt: Date;
   updatedAt: Date;
@@ -48,6 +49,7 @@ export interface CallRecord {
   dealId: string | null;
   responsibleEmployeeId: string | null;
   answeredEmployeeId: string | null;
+  note?: string | null;
   recordingStatus: CallRecordingStatus | null;
   createdAt: Date;
   updatedAt: Date;
@@ -56,6 +58,7 @@ export interface CallRecord {
   deal?: { name: string | null; code: string } | null;
   responsibleEmployee?: PersonName | null;
   answeredEmployee?: PersonName | null;
+  initiatedByEmployee?: PersonName | null;
 }
 
 export function mapCallResponse(row: CallRecord): CallResponse {
@@ -78,7 +81,10 @@ export function mapCallResponse(row: CallRecord): CallResponse {
     leadName: row.lead?.name?.trim() || row.lead?.contactName?.trim() || null,
     dealName: row.deal?.name?.trim() || row.deal?.code?.trim() || null,
     employeeName:
-      formatPersonName(row.answeredEmployee) ?? formatPersonName(row.responsibleEmployee),
+      formatPersonName(row.answeredEmployee) ??
+      formatPersonName(row.initiatedByEmployee) ??
+      formatPersonName(row.responsibleEmployee),
+    note: row.note?.trim() || null,
     recordingStatus: row.recordingStatus,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,

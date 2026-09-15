@@ -63,6 +63,7 @@ export interface CallActivity {
   leadName: string | null;
   dealName: string | null;
   employeeName: string | null;
+  note: string | null;
   recordingStatus: CallRecordingStatus | null;
   createdAt: string;
   updatedAt: string;
@@ -86,6 +87,10 @@ export type CallActivityListQuery =
 export type ClickToCallTargetType = 'LEAD' | 'CONTACT' | 'DEAL';
 
 export const callsApi = {
+  async listJournal(query?: { page?: number; pageSize?: number }): Promise<CallActivityListData> {
+    const resp = await api.get<CallActivityListData>('/api/calls', { params: query });
+    return resp.data;
+  },
   async list(query: CallActivityListQuery): Promise<CallActivityListData> {
     const resp = await api.get<CallActivityListData>('/api/crm/calls', { params: query });
     return resp.data;

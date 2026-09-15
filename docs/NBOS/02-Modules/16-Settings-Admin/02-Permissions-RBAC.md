@@ -150,7 +150,7 @@ Head of Sales может видеть Deals отдела.
 Owner может видеть все Deals.
 ```
 
-`CRM_CALL_RECORDINGS_PLAY` — extra CRM capability (module `CRM_CALL_RECORDINGS`, action `PLAY`). Runtime key `CRM_CALL_RECORDINGS_PLAY`. Default: Owner / CEO / Seller / Seller Assistant / Head of Sales. Marketing is deny. Playback additionally requires object-level Call access and Drive FileAsset policy for `visibility=RESTRICTED` / `confidentiality=CONFIDENTIAL`. Call metadata stays on ordinary CRM VIEW. Call **note** mutation uses `CRM_LEADS_EDIT` / `CRM_DEALS_EDIT` (same object-level predicates as Call VIEW, not a separate permission) and is denied for VIEW-only. Note text in Audit Log is readable only through existing `GET /audit` and `GET /audit/user/:userId` with `AUDIT_LOGS.VIEW`.
+`CALLS` — platform journal (`/calls`), not a CRM pipeline permission. `CALLS_VIEW` (`OWN` / `DEPARTMENT` / `ALL`) lists calls without requiring `CRM_LEADS` / `CRM_DEALS`. Default: Owner / CEO / Head of Sales `ALL`; Seller `OWN`; Delivery / Marketing / HR none until granted in Settings → Roles. `CALLS_PLAY` — extra capability (module `CALLS`, action `PLAY`). Runtime also accepts legacy `CRM_CALL_RECORDINGS_PLAY`. Default PLAY: Owner / CEO / Seller / Seller Assistant / Head of Sales. Marketing is deny. Playback additionally requires object-level Call access (CALLS and/or CRM predicates) and Drive FileAsset policy for `visibility=RESTRICTED` / `confidentiality=CONFIDENTIAL`. Call **note** mutation uses `CRM_LEADS_EDIT` / `CRM_DEALS_EDIT` (same object-level predicates as Call VIEW, not a separate permission) and is denied for VIEW-only. Note text in Audit Log is readable only through existing `GET /audit` and `GET /audit/user/:userId` with `AUDIT_LOGS.VIEW`.
 
 ## System roles
 

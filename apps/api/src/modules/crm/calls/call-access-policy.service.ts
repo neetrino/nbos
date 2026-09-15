@@ -1,5 +1,6 @@
 import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
+import { CALLS_VIEW_PERMISSION } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../../database.module';
 import {
   callAccessPermissionAction,
@@ -11,6 +12,10 @@ import {
   CALL_ACCESS_DENIED_WHERE,
   normalizeCallRbacScope,
 } from './call-access.where';
+import {
+  buildCallJournalAccessWhere,
+  buildJournalCrmAssignmentWhere,
+} from './call-journal-access.where';
 import { CALL_NOTE_EDIT_FORBIDDEN_MESSAGE, CALL_VIEW_FORBIDDEN_MESSAGE } from './calls.constants';
 
 const CALL_ID_SELECT = { id: true } as const;
@@ -89,6 +94,42 @@ export class CallAccessPolicyService {
     });
     if (!allowed) throw new ForbiddenException(message);
     return accessWhere;
+  }
+
+  /** Company journal: CALLS scope, plus OWN CRM assignment when the actor has CRM VIEW. */
+  async resolveJournalAccessWhere(actor: CallAccessActor): Promise<Prisma.AtsCallEventWhereInput> {
+    const callsScope = normalizeCallRbacScope(actor.permissions[CALLS_VIEW_PERMISSION]);
+    if (callsScope === 'ALL') return {};
+    const departmentEmployeeIds =
+      callsScope === 'DEPARTMENT'
+        ? await this.loadDepartmentEmployeeIds(callDepartmentIds(actor, CALLS_VIEW_PERMISSION))
+        : [];
+    return buildCallJournalAccessWhere({
+      callsScope,
+      actorId: actor.employeeId,
+      departmentEmployeeIds,
+      crmWhere: buildJournalCrmAssignmentWhere({
+        leadsScope: normalizeCallRbacScope(actor.permissions.CRM_LEADS_VIEW),
+        dealsScope: normalizeCallRbacScope(actor.permissions.CRM_DEALS_VIEW),
+        actorId: actor.employeeId,
+      }),
+    });
+  }
+
+  /** Playback / journal detail: CALLS journal predicate or existing CRM Call VIEW. */
+  async assertCanViewCallForJournalOrCrm(actor: CallAccessActor, callId: string): Promise<void> {
+    const existing = await this.prisma.atsCallEvent.findUnique({
+      where: { id: callId },
+      select: CALL_ID_SELECT,
+    });
+    if (!existing) throw new NotFoundException(`Call ${callId} not found`);
+
+    const accessWhere = await this.resolveJournalAccessWhere(actor);
+    const allowed = await this.prisma.atsCallEvent.findFirst({
+      where: { id: callId, AND: [accessWhere] },
+      select: CALL_ID_SELECT,
+    });
+    if (!allowed) throw new ForbiddenException(CALL_VIEW_FORBIDDEN_MESSAGE);
   }
 
   private async loadDepartmentEmployeeIds(departmentIds: string[]): Promise<string[]> {

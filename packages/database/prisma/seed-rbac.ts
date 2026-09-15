@@ -1,5 +1,10 @@
 import { createPrismaClient } from '../src/client';
 import {
+  CALLS_MODULE,
+  CALLS_PLAY_ACTION,
+  CALLS_PLAY_DEFAULT_ROLE_IDS,
+  CALLS_PLAY_DEFAULT_SCOPE,
+  CALLS_PLAY_PERMISSION_ID,
   CRM_CALL_RECORDINGS_MODULE,
   CRM_CALL_RECORDINGS_PLAY_ACTION,
   CRM_CALL_RECORDINGS_PLAY_DEFAULT_ROLE_IDS,
@@ -19,7 +24,7 @@ import type { PlatformResourceFamilyEnum } from '@nbos/database';
 import dotenv from 'dotenv';
 import path from 'path';
 import { OPERATIONS_ROLE_MATRIX } from './rbac-role-matrix-operations';
-import { D, F, L, LA, MatrixEntry, N, R, VA, VA_OWN } from './rbac-scopes';
+import { D, F, L, LA, MatrixEntry, N, R, VA, VA_OWN, VO } from './rbac-scopes';
 
 const GLOBAL_OPERATIONAL_ROLE_IDS = ['role-owner', 'role-ceo'] as const;
 
@@ -44,6 +49,7 @@ const MODULES = [
   'MESSENGER',
   'MAIL',
   'CALENDAR',
+  'CALLS',
   'COMPANY',
   // Settings / Admin is deliberately separate from COMPANY (My Company).
   // Only role-owner and role-ceo receive these below; every other role stays NONE.
@@ -109,6 +115,7 @@ const SELLER_ROLE_MATRIX: MatrixEntry = {
   MESSENGER: L,
   MAIL: L,
   CALENDAR: F,
+  CALLS: VO,
   COMPANY: R,
   PARTNERS: L,
   DASHBOARDS: L,
@@ -325,6 +332,7 @@ const ROLE_MATRIX: Record<string, MatrixEntry> = {
     MESSENGER: F,
     MAIL: F,
     CALENDAR: F,
+    CALLS: R,
     COMPANY: R,
     PARTNERS: F,
     DASHBOARDS: D,
@@ -487,6 +495,11 @@ async function main() {
     action: CRM_CALL_RECORDINGS_PLAY_ACTION,
   });
   permissionRecords.push({
+    id: CALLS_PLAY_PERMISSION_ID,
+    module: CALLS_MODULE,
+    action: CALLS_PLAY_ACTION,
+  });
+  permissionRecords.push({
     id: MESSENGER_CLIENT_READ_PERMISSION_ID,
     module: MESSENGER_MODULE,
     action: MESSENGER_CLIENT_READ_ACTION,
@@ -595,6 +608,14 @@ async function main() {
       roleId,
       permissionId: CRM_CALL_RECORDINGS_PLAY_PERMISSION_ID,
       scope: CRM_CALL_RECORDINGS_PLAY_DEFAULT_SCOPE,
+    });
+  }
+
+  for (const roleId of CALLS_PLAY_DEFAULT_ROLE_IDS.filter(includeRole)) {
+    rolePermissionData.push({
+      roleId,
+      permissionId: CALLS_PLAY_PERMISSION_ID,
+      scope: CALLS_PLAY_DEFAULT_SCOPE,
     });
   }
 

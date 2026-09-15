@@ -28,10 +28,9 @@ export function callAccessActorFromUser(user: CurrentUserPayload): CallAccessAct
     departmentIds: user.departmentIds ?? [],
     permissions: user.permissions ?? {},
     permissionDepartmentIds: Object.fromEntries(
-      ['CRM_LEADS_VIEW', 'CRM_DEALS_VIEW', 'CRM_LEADS_EDIT', 'CRM_DEALS_EDIT'].map((key) => [
-        key,
-        permissionDepartmentIds(user, key),
-      ]),
+      ['CRM_LEADS_VIEW', 'CRM_DEALS_VIEW', 'CRM_LEADS_EDIT', 'CRM_DEALS_EDIT', 'CALLS_VIEW'].map(
+        (key) => [key, permissionDepartmentIds(user, key)],
+      ),
     ),
   };
 }

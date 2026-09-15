@@ -75,4 +75,10 @@ describe('operations role matrices', () => {
       expect(scopes(roleId, 'CRM_DEALS')).toEqual(NONE_ROW);
     }
   });
+
+  it('keeps the Calls journal closed until granted in Settings', () => {
+    for (const roleId of Object.keys(OPERATIONS_ROLE_MATRIX)) {
+      expect(scopes(roleId, 'CALLS')).toEqual(NONE_ROW);
+    }
+  });
 });

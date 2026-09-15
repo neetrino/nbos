@@ -58,6 +58,7 @@ describe('hasCrmCallRecordingsPlay', () => {
   it('throws ForbiddenException without role comparisons', () => {
     expect(() => assertCanPlayCallRecording({})).toThrow(ForbiddenException);
     expect(() => assertCanPlayCallRecording({ CRM_CALL_RECORDINGS_PLAY: 'ALL' })).not.toThrow();
+    expect(() => assertCanPlayCallRecording({ CALLS_PLAY: 'OWN' })).not.toThrow();
   });
 });
 

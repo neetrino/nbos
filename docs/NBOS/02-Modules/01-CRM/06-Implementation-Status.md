@@ -18,7 +18,7 @@ Tracks **shipped runtime** vs canon in `01-CRM-Overview.md`, pipelines, and stag
 
 - **Kanban trash column** — list-only trash view today; board trash tab optional later.
 - Stage-gate / Won / Offers gaps — see Cleanup Register §B–C.
-- **Calls / telephony (Phase 6 Active Call Screen):** `08-Calls-and-Telephony.md`. Runtime: ATS webhook → CRM Call + SSE `call.started`/`answered`/`finished` + centered modal Active Call Screen + CALL activities + Drive recording playback + click-to-call. Pending click-to-call may close from ATS `history` while the screen is open. Not shipped: scheduler history reconcile.
+- **Calls / telephony (Phase 6 Active Call Screen + Call Center):** `08-Calls-and-Telephony.md`, UI `05-UI-Specifications/14-Calls-Center.md`. Runtime: ATS webhook → CRM Call + SSE + Active Call Screen + CALL activities + Drive recording playback + click-to-call + top-level `/calls` journal (`CALLS_VIEW` / `CALLS_PLAY`). Pending click-to-call may close from ATS `history` while the screen is open. Not shipped: scheduler history reconcile.
 
 ## Shipped — Lead intake attach and Lead merge
 
@@ -54,6 +54,7 @@ Runtime notes (canon silent → safer):
 ## API routes (lifecycle + merge)
 
 - `crm/leads`, `crm/deals` — list + `scope`; `DELETE` → Trash; `POST :id/restore`; `DELETE :id/permanent`.
+- `GET /calls` — company Call Center journal. Gate `CALLS_VIEW`. Newest first. Row filter: CALLS `OWN`/`DEPARTMENT`/`ALL` on responsible/initiated/answered, plus CRM Lead/Deal assignment when the actor also has CRM VIEW.
 - `GET /crm/calls`, `GET /crm/calls/:id` — Call activities by `leadId` / `contactId` / `dealId`; Call by id. List requires exactly one parent id. Visibility follows CRM_LEADS / CRM_DEALS VIEW.
 - `POST /crm/calls/click-to-call` — `{ targetType: LEAD|CONTACT|DEAL, targetId }` + required header `Idempotency-Key` (UUID). Requires CALL_CREATE (CRM EDIT on the parent) + object-level CRM access. Contact uses Lead/Deal primary and additional relations (`OWN` / `DEPARTMENT`); unowned Contact only with `ALL`. Authorization finishes before intent and ATS callback. Same key is scoped to the actor; other target → 409; in-progress → 202; ATS is at-most-once per key. Empty SIP → 4xx. Browser never calls ATS.
 - `GET /crm/calls/:id/recording` — authenticated stream of the Drive recording when the viewer can see the Call. No public storage URL.

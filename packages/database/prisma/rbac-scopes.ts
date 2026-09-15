@@ -15,6 +15,8 @@ export type MatrixEntry = Record<string, MatrixRow>;
 export const F: MatrixRow = ['ALL', 'ALL', 'ALL', 'ALL'];
 /** 👁 Read — see everything, change nothing. */
 export const R: MatrixRow = ['ALL', 'NONE', 'NONE', 'NONE'];
+/** 👁 Own — see own records only, change nothing. */
+export const VO: MatrixRow = ['OWN', 'NONE', 'NONE', 'NONE'];
 /** 🔶 Limited — own records only, no create. */
 export const L: MatrixRow = ['OWN', 'OWN', 'NONE', 'NONE'];
 /** 🔶 Limited + create — own records, may add (Seller invoices). */

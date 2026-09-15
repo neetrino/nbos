@@ -29,6 +29,7 @@ const SAMPLE: CallActivity = {
   leadName: 'Website project',
   dealName: null,
   employeeName: 'Edgar',
+  note: null,
   recordingStatus: null,
   createdAt: '2026-08-21T10:00:00.000Z',
   updatedAt: '2026-08-21T10:03:20.000Z',

@@ -54,7 +54,7 @@ export class CallsRecordingService {
     rangeHeader?: string,
   ): Promise<RecordingPlaybackResult> {
     const actor = callAccessActorFromUser(user);
-    await this.access.assertCanAccessCall(actor, callId);
+    await this.access.assertCanViewCallForJournalOrCrm(actor, callId);
     assertCanPlayCallRecording(user.permissions);
     const recording = await this.loadReadyRecording(callId);
     return this.streamAuthorizedRecording(recording.recordingFileAssetId, user, rangeHeader);

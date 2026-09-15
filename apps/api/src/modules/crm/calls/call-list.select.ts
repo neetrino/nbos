@@ -13,6 +13,7 @@ export const CALL_LIST_SELECT = {
   dealId: true,
   responsibleEmployeeId: true,
   answeredEmployeeId: true,
+  note: true,
   recordingStatus: true,
   createdAt: true,
   updatedAt: true,
@@ -21,4 +22,5 @@ export const CALL_LIST_SELECT = {
   deal: { select: { name: true, code: true } },
   responsibleEmployee: { select: { firstName: true, lastName: true } },
   answeredEmployee: { select: { firstName: true, lastName: true } },
+  initiatedByEmployee: { select: { firstName: true, lastName: true } },
 } as const;
