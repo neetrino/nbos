@@ -22,6 +22,7 @@ const CARD_BADGE_CLASS = 'rounded-full px-2.5 text-[10px] font-semibold tracking
 const CARD_SOURCE_LABEL_CLASS =
   'max-w-[42%] shrink-0 truncate text-[10px] font-semibold leading-none';
 const CARD_ACCENT_BAR_CLASS = 'h-3.5 w-1 shrink-0 rounded-full';
+const CARD_HEADER_BAND_CLASS = '-mx-3 -mt-3 rounded-t-xl px-3 pt-3 pb-2';
 const COVERAGE_FULL_PERCENT = 100;
 const COVERAGE_TONE_CLASS = {
   blue: 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-400',
@@ -104,6 +105,7 @@ function InvoiceKanbanCardBody({
       <InvoiceCardHeader
         title={title}
         sourceLabel={sourceLabel}
+        bandClassName={chrome.headerBandClassName}
         accentBarClassName={chrome.accentBarClassName}
         sourceLabelClassName={chrome.sourceLabelClassName}
       />
@@ -130,20 +132,24 @@ function InvoiceKanbanCardBody({
 function InvoiceCardHeader({
   title,
   sourceLabel,
+  bandClassName,
   accentBarClassName,
   sourceLabelClassName,
 }: {
   title: string;
   sourceLabel: string;
+  bandClassName: string;
   accentBarClassName: string;
   sourceLabelClassName: string;
 }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <span className={cn(CARD_ACCENT_BAR_CLASS, accentBarClassName)} aria-hidden />
-      <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-        <p className="text-foreground truncate text-sm leading-none font-bold">{title}</p>
-        <span className={cn(CARD_SOURCE_LABEL_CLASS, sourceLabelClassName)}>{sourceLabel}</span>
+    <div className={cn(CARD_HEADER_BAND_CLASS, bandClassName)}>
+      <div className="flex items-center gap-2.5">
+        <span className={cn(CARD_ACCENT_BAR_CLASS, accentBarClassName)} aria-hidden />
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+          <p className="text-foreground truncate text-sm leading-none font-bold">{title}</p>
+          <span className={cn(CARD_SOURCE_LABEL_CLASS, sourceLabelClassName)}>{sourceLabel}</span>
+        </div>
       </div>
     </div>
   );

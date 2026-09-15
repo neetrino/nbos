@@ -20,4 +20,11 @@ describe('getInvoiceSourceCardChrome', () => {
     expect(order).toEqual(manual);
     expect(order.cardShellClassName).not.toBe(deal.cardShellClassName);
   });
+
+  it('uses opaque fills so origin color reads on the board', () => {
+    const subscription = getInvoiceSourceCardChrome('subscription');
+    expect(subscription.cardShellClassName).toContain('bg-sky-100');
+    expect(subscription.cardShellClassName).not.toMatch(/bg-\S+\/\d+/);
+    expect(subscription.headerBandClassName).toContain('bg-sky-200');
+  });
 });
