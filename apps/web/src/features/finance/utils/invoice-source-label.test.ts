@@ -5,6 +5,7 @@ import {
   INVOICE_SOURCE_MANUAL_LABEL,
   INVOICE_SOURCE_ORDER_LABEL,
   INVOICE_SOURCE_SUBSCRIPTION_LABEL,
+  resolveInvoiceSourceFamily,
 } from './invoice-source-label';
 
 describe('getInvoiceSourceLabel', () => {
@@ -69,5 +70,27 @@ describe('getInvoiceSourceLabel', () => {
 
   it('uses Manual when nothing is linked', () => {
     expect(getInvoiceSourceLabel({ type: 'DEVELOPMENT' })).toBe(INVOICE_SOURCE_MANUAL_LABEL);
+  });
+});
+
+describe('resolveInvoiceSourceFamily', () => {
+  it('maps linked origins to families used for board chrome', () => {
+    expect(
+      resolveInvoiceSourceFamily({
+        orderId: 'ord-1',
+        order: { deal: { id: 'deal-1' } },
+        subscriptionId: 'sub-1',
+        clientServiceRecordId: 'csr-1',
+      }),
+    ).toBe('deal');
+    expect(resolveInvoiceSourceFamily({ orderId: 'ord-1', order: { deal: null } })).toBe('order');
+    expect(resolveInvoiceSourceFamily({ subscriptionId: 'sub-1' })).toBe('subscription');
+    expect(
+      resolveInvoiceSourceFamily({
+        clientServiceRecordId: 'csr-1',
+        clientServiceRecord: { type: 'DOMAIN' },
+      }),
+    ).toBe('client_service');
+    expect(resolveInvoiceSourceFamily({ type: 'DEVELOPMENT' })).toBe('manual');
   });
 });

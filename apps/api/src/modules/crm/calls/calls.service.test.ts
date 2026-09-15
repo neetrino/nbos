@@ -32,6 +32,8 @@ const CALL_ROW = {
   deal: { name: 'Corporate website', code: 'D-1' },
   responsibleEmployee: { firstName: 'Edgar', lastName: 'Sargsyan' },
   answeredEmployee: { firstName: 'Edgar', lastName: 'Sargsyan' },
+  initiatedByEmployee: null,
+  note: 'Asked about the proposal',
   recordingStatus: null,
 };
 
@@ -86,8 +88,25 @@ describe('CallsService', () => {
       contactName: 'John Smith',
       leadName: 'Website project',
       employeeName: 'Edgar Sargsyan',
+      note: 'Asked about the proposal',
       recordingStatus: null,
     });
+  });
+
+  it('lists the company journal without a parent filter', async () => {
+    const { prisma, service } = createService();
+    prisma.atsCallEvent.findMany.mockResolvedValue([CALL_ROW]);
+    prisma.atsCallEvent.count.mockResolvedValue(1);
+    const actor = {
+      ...OWN_ACTOR,
+      permissions: { ...OWN_ACTOR.permissions, CALLS_VIEW: 'OWN' },
+    };
+
+    const result = await service.findJournal({ page: 1, pageSize: 20 }, actor);
+    expect(result.items[0]?.note).toBe('Asked about the proposal');
+    expect(prisma.atsCallEvent.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ orderBy: { createdAt: 'desc' }, skip: 0, take: 20 }),
+    );
   });
 
   it('lists CALL activities for a Contact through authorized relations', async () => {

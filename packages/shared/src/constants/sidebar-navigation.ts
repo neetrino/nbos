@@ -14,6 +14,7 @@ export const SIDEBAR_MODULE_KEYS = [
   'my-company',
   'messenger',
   'client-messenger',
+  'calls',
   'calendar',
   'drive',
   'documents',

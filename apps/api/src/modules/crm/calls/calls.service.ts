@@ -24,6 +24,28 @@ export class CallsService {
     private readonly access: CallAccessPolicyService,
   ) {}
 
+  async findJournal(query: ListCallsQuery, actor: CallAccessActor) {
+    const page = query.page && query.page > 0 ? query.page : 1;
+    const pageSize = clampPageSize(query.pageSize);
+    const where = await this.access.resolveJournalAccessWhere(actor);
+
+    const [rows, total] = await Promise.all([
+      this.prisma.atsCallEvent.findMany({
+        where,
+        select: CALL_LIST_SELECT,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.atsCallEvent.count({ where }),
+    ]);
+
+    return {
+      items: rows.map(mapCallResponse),
+      meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+    };
+  }
+
   async findAll(query: ListCallsQuery, actor: CallAccessActor) {
     const parent = resolveCallListParent(query);
     assertCanListCalls(actor.permissions, parent);

@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { formatPlaybackSpeedLabel } from './call-recording-playback';
 import {
   CALL_RECORDING_PLAYER_CLASS,
+  CALL_RECORDING_PLAYER_COMPACT_CLASS,
   CALL_RECORDING_SEEKER_CLASS,
   CALL_RECORDING_SEEK_STEP,
 } from './call-recording-player.constants';
@@ -18,9 +19,10 @@ export function CallRecordingPlayer(props: {
   callId: string;
   durationSec?: number | null;
   preload?: 'none' | 'metadata';
+  compact?: boolean;
 }) {
   const t = useTranslations('crm');
-  const { callId, durationSec, preload = 'none' } = props;
+  const { callId, durationSec, preload = 'none', compact = false } = props;
   const {
     audioRef,
     playing,
@@ -37,7 +39,7 @@ export function CallRecordingPlayer(props: {
   } = useCallRecordingPlayer(callId, durationSec ?? null);
 
   return (
-    <div className={CALL_RECORDING_PLAYER_CLASS}>
+    <div className={compact ? CALL_RECORDING_PLAYER_COMPACT_CLASS : CALL_RECORDING_PLAYER_CLASS}>
       <audio
         ref={audioRef}
         src={callRecordingSrc(callId)}

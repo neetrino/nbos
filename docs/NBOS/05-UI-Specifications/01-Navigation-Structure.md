@@ -75,6 +75,7 @@ Support
 Clients
 Partners
 Messenger
+Calls
 Calendar
 Drive
 Credentials
@@ -274,6 +275,16 @@ Messenger
 ```
 
 Internal и External нельзя смешивать в одном рабочем списке без явного visual boundary.
+
+### Calls
+
+Общий журнал телефонии. Не воронка CRM.
+
+```text
+Calls
+```
+
+Один список входящих и исходящих, новые сверху. Вкладки Calls на Lead / Deal / Contact остаются. UI: `14-Calls-Center.md`.
 
 ### Calendar
 

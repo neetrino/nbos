@@ -4,6 +4,7 @@ import { DriveModule } from '../../drive/drive.module';
 import { AtsModule } from '../../integrations/ats/ats.module';
 import { CallAccessPolicyService } from './call-access-policy.service';
 import { CallsController } from './calls.controller';
+import { CallsJournalController } from './calls-journal.controller';
 import { CallsRecordingService } from './calls-recording.service';
 import { CallsService } from './calls.service';
 import { ClickToCallAccessPolicyService } from './click-to-call-access-policy.service';
@@ -14,7 +15,7 @@ import { CallNoteService } from './call-note.service';
 
 @Module({
   imports: [AuditModule, AtsModule, DriveModule],
-  controllers: [CallsController],
+  controllers: [CallsController, CallsJournalController],
   providers: [
     CallAccessPolicyService,
     CallsService,

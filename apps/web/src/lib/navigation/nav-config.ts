@@ -186,6 +186,12 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     ],
   },
   {
+    key: 'calls',
+    label: 'modules.calls',
+    href: '/calls',
+    permission: { module: 'CALLS', action: 'VIEW' },
+  },
+  {
     key: 'calendar',
     label: 'modules.calendar',
     href: '/calendar',

@@ -372,7 +372,14 @@
     "missed": "Missed",
     "note": "Note",
     "noCallsYet": "No calls yet",
-    "noCallsDescription": "Phone calls with this contact will appear here, organized by date."
+    "noCallsDescription": "Phone calls with this contact will appear here, organized by date.",
+    "centerTitle": "Calls",
+    "centerDescription": "All inbound and outbound calls, newest first.",
+    "centerEmptyTitle": "No calls yet",
+    "centerEmptyDescription": "Incoming and outgoing calls appear here in one list. Open a row to listen.",
+    "centerNoPermission": "You do not have permission to view the call journal.",
+    "employee": "Employee",
+    "loadingMore": "Loading more calls…"
   },
   "dashboard": {
     "exportCsvAria": "Export CRM dashboard scope statistics as CSV",

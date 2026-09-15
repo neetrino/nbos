@@ -16,4 +16,13 @@ describe('nav quick actions', () => {
     expect(settings?.sidebarSlot).toBe('footer');
     expect(NAV_MODULE_DEFINITIONS.filter((item) => item.sidebarSlot === 'footer')).toHaveLength(1);
   });
+
+  it('exposes Calls as a top-level journal gated by CALLS VIEW', () => {
+    expect(NAV_MODULE_DEFINITIONS.find((item) => item.key === 'calls')).toEqual(
+      expect.objectContaining({
+        href: '/calls',
+        permission: { module: 'CALLS', action: 'VIEW' },
+      }),
+    );
+  });
 });

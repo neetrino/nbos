@@ -15,6 +15,7 @@ import {
   ListTodo,
   Mail,
   Megaphone,
+  Phone,
   MessageCircle,
   MessagesSquare,
   Settings,
@@ -87,6 +88,10 @@ export const SIDEBAR_MODULE_VISUALS: Record<SidebarModuleKey, SidebarModuleVisua
   'client-messenger': {
     Icon: MessageCircle,
     iconClass: 'text-teal-800 dark:text-teal-300',
+  },
+  calls: {
+    Icon: Phone,
+    iconClass: 'text-emerald-600 dark:text-emerald-400',
   },
   calendar: {
     Icon: CalendarDays,

@@ -206,4 +206,55 @@ describe('CallAccessPolicyService editNote', () => {
     expect(JSON.stringify(where)).not.toContain(COLLEAGUE_ID);
     expect(JSON.stringify(where)).not.toEqual(JSON.stringify({}));
   });
+
+  it('keeps Seller CALLS OWN scoped when CRM VIEW is ALL', async () => {
+    const prisma = createMockPrisma();
+    const policy = new CallAccessPolicyService(prisma as never);
+    const actor = callActor({
+      permissions: { CRM_LEADS_VIEW: 'ALL', CRM_DEALS_VIEW: 'ALL', CALLS_VIEW: 'OWN' },
+    });
+
+    const where = await policy.resolveJournalAccessWhere(actor);
+    expect(where).not.toEqual({});
+    expect(JSON.stringify(where)).toContain(ACTOR_ID);
+    expect(JSON.stringify(where)).not.toMatch(/"OR":\[.*,\{\}\]/);
+    expect(prisma.employeeDepartment.findMany).not.toHaveBeenCalled();
+  });
+
+  it('journal ALL sees every call without loading departments', async () => {
+    const prisma = createMockPrisma();
+    const policy = new CallAccessPolicyService(prisma as never);
+    const actor = callActor({
+      permissions: { CRM_LEADS_VIEW: 'NONE', CRM_DEALS_VIEW: 'NONE', CALLS_VIEW: 'ALL' },
+    });
+
+    await expect(policy.resolveJournalAccessWhere(actor)).resolves.toEqual({});
+    expect(prisma.employeeDepartment.findMany).not.toHaveBeenCalled();
+  });
+
+  it('allows journal-or-CRM view when the journal predicate matches', async () => {
+    const prisma = createMockPrisma();
+    prisma.atsCallEvent.findUnique.mockResolvedValue({ id: 'call-1' });
+    prisma.atsCallEvent.findFirst.mockResolvedValue({ id: 'call-1' });
+    const policy = new CallAccessPolicyService(prisma as never);
+    const actor = callActor({
+      permissions: { CRM_LEADS_VIEW: 'NONE', CRM_DEALS_VIEW: 'NONE', CALLS_VIEW: 'OWN' },
+    });
+
+    await expect(policy.assertCanViewCallForJournalOrCrm(actor, 'call-1')).resolves.toBeUndefined();
+  });
+
+  it('denies journal-or-CRM view when the call is outside CALLS and CRM', async () => {
+    const prisma = createMockPrisma();
+    prisma.atsCallEvent.findUnique.mockResolvedValue({ id: 'call-1' });
+    prisma.atsCallEvent.findFirst.mockResolvedValue(null);
+    const policy = new CallAccessPolicyService(prisma as never);
+    const actor = callActor({
+      permissions: { CRM_LEADS_VIEW: 'NONE', CRM_DEALS_VIEW: 'NONE', CALLS_VIEW: 'OWN' },
+    });
+
+    await expect(policy.assertCanViewCallForJournalOrCrm(actor, 'call-1')).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+  });
 });

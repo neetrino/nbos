@@ -10,7 +10,11 @@ import {
   StatusBadge,
 } from '@/components/shared';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
-import { getInvoiceSourceLabel } from '@/features/finance/utils/invoice-source-label';
+import { getInvoiceSourceCardChrome } from '@/features/finance/utils/invoice-source-card-chrome';
+import {
+  getInvoiceSourceLabel,
+  resolveInvoiceSourceFamily,
+} from '@/features/finance/utils/invoice-source-label';
 import { formatInvoiceSheetDate } from './format-invoice-sheet-date';
 import { invoiceSourceMessageKey, officialInvoiceRequestStatusKey } from './invoice-message-keys';
 import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
@@ -18,6 +22,7 @@ import { subscriptionsListWithOpenSubscriptionHref } from '@/features/finance/co
 import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
 import { useCanViewDeal } from '@/features/crm/hooks/use-can-view-deal';
 import type { Invoice } from '@/lib/api/finance';
+import { cn } from '@/lib/utils';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
 import { getInvoiceDealTitle, getOrderDisplayTitle } from '@/features/finance/utils/order-display';
@@ -31,11 +36,12 @@ export type InvoiceSheetInvoice = Invoice;
 export function InvoiceSheetBadge({ invoice }: { invoice: InvoiceSheetInvoice }) {
   const t = useTranslations('invoices');
   const sourceKey = invoiceSourceMessageKey(invoice);
+  const chrome = getInvoiceSourceCardChrome(resolveInvoiceSourceFamily(invoice));
   return (
     <StatusBadge
       label={sourceKey ? t(sourceKey) : getInvoiceSourceLabel(invoice)}
       variant="blue"
-      className="self-center"
+      className={cn('self-center border', chrome.badgeClassName)}
     />
   );
 }

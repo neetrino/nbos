@@ -253,6 +253,7 @@ export * from './auth-session-client';
 export * from './sidebar-navigation';
 export * from './crm-attribution';
 export * from './crm-call-recordings-play';
+export * from './calls-play';
 export * from './crm-permissions';
 export * from './settings-permissions';
 export * from './marketing-permissions';

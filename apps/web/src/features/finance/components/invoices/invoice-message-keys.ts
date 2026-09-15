@@ -4,7 +4,10 @@ import {
   INVOICE_TAX_STATUS_OPTIONS,
   INVOICE_TYPES,
 } from '@/features/finance/constants/finance';
-import type { InvoiceSourceLabelInput } from '@/features/finance/utils/invoice-source-label';
+import {
+  resolveInvoiceSourceFamily,
+  type InvoiceSourceLabelInput,
+} from '@/features/finance/utils/invoice-source-label';
 import type { OverdueReminderSkipReason } from '@/lib/api/finance';
 
 export const INVOICE_STAGE_MESSAGE_KEYS = {
@@ -117,11 +120,9 @@ export type InvoiceSourceMessageKey =
 export function invoiceSourceMessageKey(
   invoice: InvoiceSourceLabelInput,
 ): InvoiceSourceMessageKey | null {
-  if (invoice.order?.deal?.id) return 'source.deal';
-  if (invoice.orderId || invoice.order) return 'source.order';
-  if (invoice.subscriptionId) return 'source.subscription';
-  if (invoice.clientServiceRecordId || invoice.clientServiceRecord) return null;
-  return 'source.manual';
+  const family = resolveInvoiceSourceFamily(invoice);
+  if (family === 'client_service') return null;
+  return `source.${family}`;
 }
 
 export const INVOICE_CATALOG_VALUE_SETS = {

@@ -289,9 +289,14 @@ function FilePreviewPane({ file }: { file: FileAsset }) {
 
   useEffect(() => {
     let cancelled = false;
-    driveApi.getFileAssetPreviewUrl(file.id).then((result) => {
-      if (!cancelled) setPreview({ fileId: file.id, ...result });
-    });
+    driveApi
+      .getFileAssetPreviewUrl(file.id)
+      .then((result) => {
+        if (!cancelled) setPreview({ fileId: file.id, ...result });
+      })
+      .catch(() => {
+        if (!cancelled) setPreview({ fileId: file.id, url: '', mimeType: null });
+      });
     return () => {
       cancelled = true;
     };

@@ -11,5 +11,8 @@ export const CALL_RECORDING_PLAY_EVENT = 'nbos:call-recording-play';
 export const CALL_RECORDING_PLAYER_CLASS =
   'border-border bg-muted/20 flex min-w-0 flex-wrap items-center gap-2 rounded-xl border px-2.5 py-2';
 
+export const CALL_RECORDING_PLAYER_COMPACT_CLASS =
+  'border-border bg-muted/20 flex min-w-0 max-w-md flex-1 items-center gap-1.5 rounded-lg border px-2 py-1';
+
 export const CALL_RECORDING_SEEKER_CLASS =
   'accent-primary h-1.5 min-w-0 flex-1 cursor-pointer align-middle';

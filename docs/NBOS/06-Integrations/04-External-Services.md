@@ -260,7 +260,7 @@ Instagram OAuth connection uses dedicated Instagram app credentials. Instagram w
 | Context         | Attach existing Contact / open Lead / open Deal when found                                                      |
 | `redirect_call` | Inbound `start` + известный Contact/Lead с `Employee.sipId`                                                     |
 | Idempotency     | Unique `uid` + P2002 recovery; sparse patch; monotonic start→status→finish/end; click-to-call `Idempotency-Key` |
-| Read API        | `GET /api/crm/calls`, `GET /api/crm/calls/:id`, `GET /api/crm/calls/:id/screen`                                 |
+| Read API        | `GET /api/calls` (journal), `GET /api/crm/calls`, `GET /api/crm/calls/:id`, `GET /api/crm/calls/:id/screen`     |
 | Recording       | Worker queue `ats-call-recording` downloads `call-record` into Drive FileAsset                                  |
 | Playback        | `GET /api/crm/calls/:id/recording` — authenticated stream, no public URL                                        |
 | Note            | `PATCH /api/crm/calls/:id/note` after the call ends                                                             |
@@ -273,7 +273,7 @@ Instagram OAuth connection uses dedicated Instagram app credentials. Instagram w
 | Capability             | Canon                                                              |
 | ---------------------- | ------------------------------------------------------------------ |
 | Окно ответственного    | App-shell realtime, не Messenger                                   |
-| История                | Вкладка Calls на Lead / Deal / Contact                             |
+| История                | `/calls` journal + вкладка Calls на Lead / Deal / Contact          |
 | Запись                 | Runtime: worker → R2 `CALL_RECORDING` + FileLink LEAD/CONTACT/CALL |
 | Исходящий              | Runtime: `POST /crm/calls/click-to-call` → ATS `callback`          |
 | Сверка                 | Scheduler `ats-call-history-reconcile`                             |

@@ -21,10 +21,17 @@ import {
 } from './call-activity-status';
 import { localizeCallMessageKey } from './active-call-hero';
 import { CallActivityRecording } from './CallActivityRecording';
+import { CallActivityNote } from './CallActivityNote';
 import { canPlayCallRecording } from './call-recording-status';
 import { callActivityTitleKey } from './group-call-activities';
 
-export function CallActivityItem({ call }: { call: CallActivity }) {
+export function CallActivityItem({
+  call,
+  variant = 'entity',
+}: {
+  call: CallActivity;
+  variant?: 'entity' | 'center';
+}) {
   const t = useTranslations('crm');
   const missed = isMissedCall(call);
   const Icon = call.direction === 'OUTBOUND' ? PhoneOutgoing : PhoneIncoming;
@@ -37,8 +44,9 @@ export function CallActivityItem({ call }: { call: CallActivity }) {
       <div className="mt-3 flex items-start gap-3">
         <CallActivityThumb missed={missed} ready={canPlayCallRecording(call.recordingStatus)} />
         <div className="min-w-0 flex-1">
-          <CallActivityParty call={call} partyName={partyName} />
+          <CallActivityParty call={call} partyName={partyName} variant={variant} />
           <CallActivityRecording call={call} />
+          <CallActivityNote note={call.note} />
         </div>
       </div>
     </article>
@@ -98,11 +106,24 @@ function CallActivityThumb(props: { missed: boolean; ready: boolean }) {
   );
 }
 
-function CallActivityParty(props: { call: CallActivity; partyName: string }) {
+function CallActivityParty(props: {
+  call: CallActivity;
+  partyName: string;
+  variant: 'entity' | 'center';
+}) {
   const t = useTranslations('crm');
+  const employee = props.call.employeeName?.trim();
   return (
     <p className="min-w-0 text-sm leading-snug">
-      <span className="text-muted-foreground">{t('calls.client')} </span>
+      {props.variant === 'center' && employee ? (
+        <>
+          <span className="text-muted-foreground">{t('calls.employee')} </span>
+          <span className="text-foreground font-medium">{employee}</span>
+          <span className="text-muted-foreground"> → </span>
+        </>
+      ) : (
+        <span className="text-muted-foreground">{t('calls.client')} </span>
+      )}
       <span className="text-primary font-medium">{props.partyName}</span>
       {props.call.phone ? <span className="text-primary"> {props.call.phone}</span> : null}
     </p>
