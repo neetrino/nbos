@@ -1,4 +1,9 @@
 import type { TransactionClient } from '@nbos/database';
+import {
+  DEPARTMENT_ROLE_MEMBER,
+  departmentLeadershipRank,
+} from '../departments/department-member.constants';
+import { seatDepartmentRole } from '../departments/department-seat-leadership';
 
 export interface SeatMembershipContext {
   id: string;
@@ -15,7 +20,7 @@ export interface SeatMembershipAssignment {
   seat: { departmentId: string };
 }
 
-interface OpenSeatProjection {
+export interface OpenSeatProjection {
   id: string;
   isPrimary: boolean;
   seat: {
@@ -31,7 +36,7 @@ export async function ensureSeatDepartmentMembership(
   input: { employeeId: string; isPrimary?: boolean },
 ): Promise<{ provisioned: boolean; previousPrimaryDepartmentId: string | null }> {
   const membershipKey = { employeeId: input.employeeId, departmentId: seat.departmentId };
-  const [membership, previousPrimary] = await Promise.all([
+  const [membership, previousPrimary, alreadyHeld] = await Promise.all([
     tx.employeeDepartment.findUnique({
       where: { employeeId_departmentId: membershipKey },
       select: { id: true },
@@ -42,18 +47,18 @@ export async function ensureSeatDepartmentMembership(
           select: { departmentId: true },
         })
       : null,
+    openSeatAssignmentsInDepartment(tx, input.employeeId, seat.departmentId),
   ]);
+  // One employee may hold several seats in a department, so a new standard seat must not
+  // demote someone who also holds the head seat.
+  const deptRole = departmentRoleForRemainingSeats([...alreadyHeld, { seat }]);
   if (input.isPrimary) await clearPrimaryAssignment(tx, input.employeeId);
   await tx.employeeDepartment.upsert({
     where: { employeeId_departmentId: membershipKey },
-    create: {
-      ...membershipKey,
-      deptRole: departmentRoleForSeat(seat),
-      isPrimary: input.isPrimary ?? false,
-    },
-    update: {
-      ...(input.isPrimary ? { isPrimary: true } : {}),
-    },
+    create: { ...membershipKey, deptRole, isPrimary: input.isPrimary ?? false },
+    // A membership that predates seats carries its own `deptRole`, which then contradicts the
+    // seats now backing it. Seats are the only source of leadership, so they win here too.
+    update: { deptRole, ...(input.isPrimary ? { isPrimary: true } : {}) },
   });
   const previousDepartmentId = previousPrimary?.departmentId ?? null;
   return {
@@ -66,7 +71,11 @@ export async function reconcileSeatDepartmentMembership(
   tx: TransactionClient,
   assignment: SeatMembershipAssignment,
 ): Promise<void> {
-  const remaining = await openSeatAssignmentsInDepartment(tx, assignment);
+  const remaining = await openSeatAssignmentsInDepartment(
+    tx,
+    assignment.employeeId,
+    assignment.seat.departmentId,
+  );
   if (assignment.membershipProvisioned) {
     // B -> C primary handovers must still restore A when B is ended before C.
     await tx.orgSeatAssignment.updateMany({
@@ -100,6 +109,8 @@ export async function reconcileSeatDepartmentMembership(
         departmentId: assignment.seat.departmentId,
       },
       data: {
+        // Ending the head seat must not leave the membership claiming leadership.
+        deptRole: departmentRoleForRemainingSeats(remaining),
         ...(assignment.isPrimary && !remaining.some((item) => item.isPrimary)
           ? { isPrimary: false }
           : {}),
@@ -127,14 +138,15 @@ async function clearPrimaryAssignment(tx: TransactionClient, employeeId: string)
 
 function openSeatAssignmentsInDepartment(
   tx: TransactionClient,
-  assignment: SeatMembershipAssignment,
+  employeeId: string,
+  departmentId: string,
 ): Promise<OpenSeatProjection[]> {
   return tx.orgSeatAssignment.findMany({
     where: {
-      employeeId: assignment.employeeId,
+      employeeId,
       status: { in: ['ACTIVE', 'TEMPORARY'] },
       endsAt: null,
-      seat: { departmentId: assignment.seat.departmentId },
+      seat: { departmentId },
     },
     select: {
       id: true,
@@ -185,8 +197,17 @@ async function restorePreviousPrimary(
   });
 }
 
-function departmentRoleForSeat(seat: SeatMembershipContext): string {
-  if (seat.department.headSeatId === seat.id) return 'HEAD';
-  if (seat.kind === 'DEPUTY') return 'DEPUTY';
-  return 'MEMBER';
+/**
+ * Highest-ranking role among the seats the employee still holds in the department.
+ * No seat left means plain membership, never leadership.
+ */
+export function departmentRoleForRemainingSeats(
+  remaining: readonly Pick<OpenSeatProjection, 'seat'>[],
+): string {
+  let role = DEPARTMENT_ROLE_MEMBER;
+  for (const item of remaining) {
+    const candidate = seatDepartmentRole(item.seat);
+    if (departmentLeadershipRank(candidate) < departmentLeadershipRank(role)) role = candidate;
+  }
+  return role;
 }

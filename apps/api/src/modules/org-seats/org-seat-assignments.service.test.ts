@@ -18,7 +18,7 @@ describe('OrgSeatAssignmentsService', () => {
     expect(ownership.assertCanAssignRole).toHaveBeenCalled();
     expect(prisma.employeeDepartment.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        update: { isPrimary: true },
+        update: { deptRole: 'MEMBER', isPrimary: true },
       }),
     );
     expect(prisma.orgSeatAssignment.create).toHaveBeenCalledWith(
@@ -41,6 +41,24 @@ describe('OrgSeatAssignmentsService', () => {
       where: { id: 'employee-1' },
       data: { accessVersion: { increment: 1 } },
     });
+  });
+
+  it('rewrites a membership that predates the seat, so a head is never recorded as MEMBER', async () => {
+    const { service, prisma } = harness();
+    const seat = seatFixture();
+    seat.kind = 'HEAD';
+    seat.department.headSeatId = seat.id;
+    prisma.orgSeat.findUnique.mockResolvedValue(seat);
+    prisma.employee.findUnique.mockResolvedValue({ status: 'ACTIVE' });
+
+    await service.assign('seat-1', { employeeId: 'employee-1' }, actorFixture());
+
+    expect(prisma.employeeDepartment.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ deptRole: 'HEAD' }),
+        update: { deptRole: 'HEAD' },
+      }),
+    );
   });
 
   it('revokes only the permission assignment sourced by the ended seat', async () => {
