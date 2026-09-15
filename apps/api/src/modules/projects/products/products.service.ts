@@ -70,6 +70,7 @@ import {
   resolveProjectContactIdForNewProduct,
   syncProductContactLinks,
 } from './product-contacts.ops';
+import { loadMissingRequiredAccessSlotKeys } from './product-done-access-slots';
 
 const productContactSummarySelect = {
   id: true,
@@ -551,7 +552,7 @@ export class ProductsService {
     }
 
     validateProductTransition(current, target);
-    validateProductStageGate(product, target);
+    await this.validateProductStageGateForTarget(product, target);
     if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(product);
 
     const updatedProduct = await this.prisma.product.update({
@@ -589,7 +590,7 @@ export class ProductsService {
     const target = productLegacyStatusForStage(stage) as ProductStatusEnum;
 
     validateProductTransition(product.status as ProductStatusEnum, target);
-    validateProductStageGate(product, target);
+    await this.validateProductStageGateForTarget(product, target);
     if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(product);
 
     const updatedProduct = await this.prisma.product.update({
@@ -677,7 +678,7 @@ export class ProductsService {
     const target = 'DONE' as ProductStatusEnum;
 
     validateProductTransition(product.status as ProductStatusEnum, target);
-    validateProductStageGate(product, target);
+    await this.validateProductStageGateForTarget(product, target);
 
     const closedAt = new Date();
     const updatedProduct = await this.prisma.product.update({
@@ -809,6 +810,19 @@ export class ProductsService {
       orderBy: { createdAt: 'desc' },
     });
     return order?.deal?.sellerId ?? null;
+  }
+
+  private async validateProductStageGateForTarget(
+    product: Parameters<typeof validateProductStageGate>[0] & {
+      id: string;
+      productCategory: string;
+      productType: string;
+    },
+    target: ProductStatusEnum,
+  ) {
+    const missingRequiredAccessSlotKeys =
+      target === 'DONE' ? await loadMissingRequiredAccessSlotKeys(this.prisma, product) : undefined;
+    validateProductStageGate({ ...product, missingRequiredAccessSlotKeys }, target);
   }
 
   private async validateDevelopmentGate(product: { id: string; deadline?: Date | string | null }) {

@@ -6,6 +6,8 @@ import { credentialsApi } from '@/lib/api/credentials';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import {
   collectBoundCredentialIds,
+  findBoundCredential,
+  mapBoundSlotCredentialToListItem,
   mapCredentialDetailToListItem,
 } from '@/features/projects/utils/product-credential-mappers';
 
@@ -30,15 +32,7 @@ export function useProductCredentialsTab(
     setLoading(true);
     setError(null);
     try {
-      const slots = await productsApi.getAccessSlots(productId);
-      const boundIds = collectBoundCredentialIds(slots);
-      const list = await credentialsApi.getAll({ projectId, pageSize: 200 });
-      const boundSet = new Set(boundIds);
-      setCredentials(
-        list.items
-          .filter((item) => boundSet.has(item.id) || item.productId === productId)
-          .map(mapCredentialDetailToListItem),
-      );
+      setCredentials(await loadProductCredentials(productId, projectId));
     } catch {
       setError('Could not load product credentials.');
       setCredentials([]);
@@ -54,4 +48,32 @@ export function useProductCredentialsTab(
   }, [enabled, refetch]);
 
   return { credentials, loading, error, refetch };
+}
+
+async function loadProductCredentials(
+  productId: string,
+  projectId: string,
+): Promise<CredentialListItem[]> {
+  const slots = await productsApi.getAccessSlots(productId);
+  const boundIds = collectBoundCredentialIds(slots);
+  const list = await credentialsApi.getAll({ projectId, pageSize: 200 });
+  const byId = new Map<string, CredentialListItem>();
+  for (const item of list.items) {
+    if (boundIds.includes(item.id) || item.productId === productId) {
+      byId.set(item.id, mapCredentialDetailToListItem(item));
+    }
+  }
+  const missing = boundIds.filter((id) => !byId.has(id));
+  await Promise.all(
+    missing.map(async (id) => {
+      try {
+        const detail = await credentialsApi.getById(id);
+        byId.set(id, mapCredentialDetailToListItem(detail));
+      } catch {
+        const bound = findBoundCredential(slots, id);
+        if (bound) byId.set(id, mapBoundSlotCredentialToListItem(bound));
+      }
+    }),
+  );
+  return [...byId.values()];
 }

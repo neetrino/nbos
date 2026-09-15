@@ -1,18 +1,19 @@
 'use client';
 
+import { useState } from 'react';
 import { Asterisk, ChevronRight, Plus, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
   DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS,
   DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS,
   DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
-  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
   RELATION_PICKER_CHIP_SHELL_CLASS,
   RELATION_PICKER_CHIP_STACK_CLASS,
-  RELATION_PICKER_EMPTY_TRIGGER_CLASS,
   RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS,
   RELATION_PICKER_SHEET_TARGET_LABEL_CLASS,
 } from '@/components/shared/detail-sheet-classes';
+import { RelationPickerField, useAccessSlotCredentialSearch } from '@/components/shared';
 import { CredentialVaultMetaBadge } from '@/features/credentials/components/credential-vault-card-meta-row';
 import { getCredentialCategoryMeta } from '@/features/credentials/constants/credential-category-meta';
 import { credentialCategoryIcon } from '@/features/credentials/utils/credential-vault-card-meta';
@@ -22,25 +23,41 @@ import { cn } from '@/lib/utils';
 import { formatDeliveryAccessSlotLabel } from './delivery-access-slot-label';
 
 export interface DeliveryAccessSlotFieldProps {
+  productId: string;
   slot: ProductAccessSlotRow;
   onOpenCredential: (credentialId: string) => void;
   onCreate: () => void;
+  onBind: (credentialId: string) => void;
   onUnbind: (bindingId: string) => void;
 }
 
 export function DeliveryAccessSlotField({
+  productId,
   slot,
   onOpenCredential,
   onCreate,
+  onBind,
   onUnbind,
 }: DeliveryAccessSlotFieldProps) {
+  const t = useTranslations('deliveryBoard');
+  const { can } = usePermission();
+  const [pickerOpen, setPickerOpen] = useState(false);
   const label = formatDeliveryAccessSlotLabel(slot.label);
+  const boundIds = slot.bindings
+    .map((binding) => binding.boundCredential?.id)
+    .filter((id): id is string => Boolean(id));
+  const search = useAccessSlotCredentialSearch(productId, slot.slotKey);
+  const hasBindings = slot.bindings.length > 0;
 
   return (
     <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
-      <AccessSlotNotchCaption label={label} required={slot.required} onCreate={onCreate} />
+      <AccessSlotNotchCaption
+        label={label}
+        required={slot.required}
+        onOpenPicker={() => setPickerOpen(true)}
+      />
 
-      {slot.bindings.length > 0 ? (
+      {hasBindings ? (
         <ul className={RELATION_PICKER_CHIP_STACK_CLASS}>
           {slot.bindings.map((binding) => (
             <AccessSlotBindingRow
@@ -51,16 +68,39 @@ export function DeliveryAccessSlotField({
             />
           ))}
         </ul>
-      ) : (
-        <div
-          className={cn(
-            RELATION_PICKER_EMPTY_TRIGGER_CLASS,
-            'pointer-events-none border-dashed italic',
-          )}
-        >
-          Not linked
-        </div>
-      )}
+      ) : null}
+
+      {!hasBindings || pickerOpen ? (
+        <RelationPickerField
+          label=""
+          entityKind="credential"
+          multiple
+          value={boundIds}
+          selectionLabels={{}}
+          selectionDisplay="none"
+          placeholder={t('access.notLinked')}
+          createLabel={t('access.create')}
+          createPlacement="top"
+          className="pt-0"
+          open={pickerOpen}
+          onOpenChange={setPickerOpen}
+          onSearch={search}
+          onCreate={
+            can('ADD', 'CREDENTIALS')
+              ? () => {
+                  setPickerOpen(false);
+                  onCreate();
+                }
+              : undefined
+          }
+          onChange={(ids) => {
+            const nextId = ids.find((id) => !boundIds.includes(id));
+            if (!nextId) return;
+            onBind(nextId);
+            setPickerOpen(false);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -68,13 +108,13 @@ export function DeliveryAccessSlotField({
 function AccessSlotNotchCaption({
   label,
   required,
-  onCreate,
+  onOpenPicker,
 }: {
   label: string;
   required: boolean;
-  onCreate: () => void;
+  onOpenPicker: () => void;
 }) {
-  const { can, isLoading } = usePermission();
+  const t = useTranslations('deliveryBoard');
   const caption = (
     <span className="inline-flex max-w-[12rem] items-center gap-0.5 truncate">
       {label}
@@ -82,17 +122,13 @@ function AccessSlotNotchCaption({
     </span>
   );
 
-  if (isLoading || !can('ADD', 'CREDENTIALS')) {
-    return <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{caption}</span>;
-  }
-
   return (
     <button
       type="button"
-      onClick={onCreate}
+      onClick={onOpenPicker}
       className={DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS}
-      title="New credential"
-      aria-label={`New credential for ${label}`}
+      title={t('access.linkExisting')}
+      aria-label={t('access.openPicker', { label })}
     >
       <Plus size={12} aria-hidden className={DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS} />
       {caption}
@@ -101,11 +137,9 @@ function AccessSlotNotchCaption({
 }
 
 function RequiredAsterisk() {
+  const t = useTranslations('deliveryBoard');
   return (
-    <span
-      title="At least one credential required for this slot"
-      className="shrink-0 text-amber-600"
-    >
+    <span title={t('access.requiredHint')} className="shrink-0 text-amber-600">
       <Asterisk size={10} strokeWidth={2.5} aria-hidden />
     </span>
   );
@@ -120,11 +154,12 @@ function AccessSlotBindingRow({
   onOpenCredential: (credentialId: string) => void;
   onUnbind: () => void;
 }) {
+  const t = useTranslations('deliveryBoard');
   if (!binding.boundCredential) {
     return (
       <li className={RELATION_PICKER_CHIP_SHELL_CLASS}>
         <span className="text-muted-foreground flex-1 truncate text-sm italic">
-          Archived credential
+          {t('access.archived')}
         </span>
         <AccessSlotUnlinkButton onUnbind={onUnbind} />
       </li>
@@ -132,6 +167,7 @@ function AccessSlotBindingRow({
   }
 
   const name = binding.boundCredential.name;
+  const canReveal = binding.boundCredential.canReveal !== false;
   return (
     <li className={RELATION_PICKER_CHIP_SHELL_CLASS}>
       <button
@@ -141,7 +177,7 @@ function AccessSlotBindingRow({
           RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS,
           'flex min-w-0 flex-1 items-center gap-1.5 text-left',
         )}
-        aria-label={`Open ${name}`}
+        aria-label={canReveal ? t('access.open', { name }) : t('access.requestAccess', { name })}
       >
         <span
           className={cn(
@@ -178,13 +214,14 @@ function AccessSlotCategoryBadge({ category }: { category: string }) {
 }
 
 function AccessSlotUnlinkButton({ onUnbind }: { onUnbind: () => void }) {
+  const t = useTranslations('deliveryBoard');
   return (
     <button
       type="button"
       onClick={onUnbind}
       className={cn(DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS, 'shrink-0')}
-      title="Unlink"
-      aria-label="Unlink"
+      title={t('access.unlink')}
+      aria-label={t('access.unlink')}
     >
       <X size={14} />
     </button>

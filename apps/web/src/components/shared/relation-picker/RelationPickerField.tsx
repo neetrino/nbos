@@ -44,6 +44,9 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     maxResults: maxResultsProp,
     onOpenSelected,
     onCreate,
+    createPlacement = 'bottom',
+    open: openProp,
+    onOpenChange,
   } = props;
   const maxResults = resolveRelationPickerMaxResults(entityKind, maxResultsProp);
   const searchDebounceMs = resolveRelationPickerSearchDebounceMs(entityKind);
@@ -52,7 +55,15 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
   const multiple = isMultiProps(props);
   const selectionAvatars = multiple ? props.selectionAvatars : undefined;
 
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = openProp ?? uncontrolledOpen;
+  const setOpen = useCallback(
+    (next: boolean) => {
+      onOpenChange?.(next);
+      if (openProp === undefined) setUncontrolledOpen(next);
+    },
+    [onOpenChange, openProp],
+  );
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<RelationPickerOption[]>([]);
   const [loading, setLoading] = useState(false);
@@ -225,6 +236,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
           kindLabel={resolvedKindLabel}
           createLabel={createLabel}
           createEnabled={Boolean(onCreate)}
+          createPlacement={createPlacement}
           onCreateClick={handleCreate}
           onSelect={handleSelect}
           onKeyDown={handleKeyDown}

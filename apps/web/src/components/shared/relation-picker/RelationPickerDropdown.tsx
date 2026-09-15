@@ -3,11 +3,12 @@
 import { useRef, type CSSProperties, type KeyboardEvent, type RefObject } from 'react';
 import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
-import { Check, Loader2, Plus, Search, X } from 'lucide-react';
+import { Check, Loader2, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
 import type { RelationEntityKind, RelationPickerOption } from './relation-picker.types';
+import { RelationPickerCreateBar } from './RelationPickerCreateBar';
 import { relationPickerOptionLeading } from './relation-picker-entity-icon';
 import {
   useRelationPickerDropdownBox,
@@ -18,9 +19,6 @@ const DROPDOWN_PANEL_CLASS = [
   'fixed flex flex-col overflow-hidden rounded-xl border border-border bg-popover shadow-lg',
   PORTAL_DROPDOWN_Z_CLASS,
 ].join(' ');
-
-const CREATE_BAR_CLASS =
-  'flex w-full shrink-0 items-center gap-2 border-t border-sky-100 bg-sky-50/90 px-3 py-2.5 text-left text-sm font-medium text-sky-700 transition-colors hover:bg-sky-100/90 dark:border-sky-900/50 dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-950/60';
 
 type RelationPickerDropdownProps = {
   query: string;
@@ -36,6 +34,7 @@ type RelationPickerDropdownProps = {
   kindLabel: string;
   createLabel: string;
   createEnabled: boolean;
+  createPlacement?: 'bottom' | 'top';
   onCreateClick: () => void;
   onSelect: (value: string, label: string, avatar?: string) => void;
   onKeyDown: (event: KeyboardEvent) => void;
@@ -57,6 +56,7 @@ export function RelationPickerDropdown({
   kindLabel,
   createLabel,
   createEnabled,
+  createPlacement = 'bottom',
   onCreateClick,
   onSelect,
   onKeyDown,
@@ -79,6 +79,7 @@ export function RelationPickerDropdown({
             kindLabel={kindLabel}
             createLabel={createLabel}
             createEnabled={createEnabled}
+            createPlacement={createPlacement}
             query={query}
             multiple={multiple}
             onCreateClick={onCreateClick}
@@ -166,6 +167,7 @@ function RelationPickerResultsPanel({
   kindLabel,
   createLabel,
   createEnabled,
+  createPlacement = 'bottom',
   query,
   multiple,
   onCreateClick,
@@ -181,6 +183,7 @@ function RelationPickerResultsPanel({
   kindLabel: string;
   createLabel: string;
   createEnabled: boolean;
+  createPlacement?: 'bottom' | 'top';
   query: string;
   multiple: boolean;
   onCreateClick: () => void;
@@ -193,9 +196,17 @@ function RelationPickerResultsPanel({
     width: box.width,
     maxHeight: box.maxHeight,
   };
-
   return (
     <div ref={panelRef} className={DROPDOWN_PANEL_CLASS} style={boxStyle}>
+      {createEnabled && createPlacement === 'top' ? (
+        <RelationPickerCreateBar
+          label={createLabel}
+          query={query}
+          multiple={multiple}
+          position="top"
+          onCreateClick={onCreateClick}
+        />
+      ) : null}
       <div className="min-h-0 flex-1 overflow-y-auto">
         {loading ? (
           <div className="text-muted-foreground flex items-center gap-2 px-3 py-2.5 text-xs">
@@ -223,19 +234,14 @@ function RelationPickerResultsPanel({
             />
           ))}
       </div>
-
-      {createEnabled ? (
-        <button type="button" onClick={onCreateClick} className={CREATE_BAR_CLASS}>
-          <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-sky-600 text-white">
-            <Plus size={14} />
-          </span>
-          {createLabel}
-          {query.trim() && !multiple ? (
-            <span className="truncate font-normal text-sky-600/80 dark:text-sky-400/80">
-              — “{query.trim()}”
-            </span>
-          ) : null}
-        </button>
+      {createEnabled && createPlacement === 'bottom' ? (
+        <RelationPickerCreateBar
+          label={createLabel}
+          query={query}
+          multiple={multiple}
+          position="bottom"
+          onCreateClick={onCreateClick}
+        />
       ) : null}
     </div>
   );

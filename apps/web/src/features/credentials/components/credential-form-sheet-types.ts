@@ -14,7 +14,6 @@ export interface CredentialFormSheetProps {
   vaultScope?: CredentialVaultScope;
   projectId?: string;
   productId?: string;
-  title?: string;
   initialName?: string;
   initialCategory?: string;
   allowedCategories?: string[];

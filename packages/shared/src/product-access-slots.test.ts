@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   getAccessSlotsForProduct,
+  getMissingRequiredAccessSlotsForDone,
   getTypedAccessSlotsForProduct,
+  isCredentialBindableToProductProject,
+  isProductDoneRequiredAccessSlot,
   resolveEffectiveAccessSlotKey,
   resolveSlotCreateCategory,
+  shouldWriteCredentialProductIdOnBind,
   UNIVERSAL_ACCESS_SLOT_KEY,
   UNIVERSAL_DEFAULT_CATEGORY,
 } from './product-access-slots';
@@ -78,6 +82,68 @@ describe('resolveEffectiveAccessSlotKey', () => {
     expect(
       resolveEffectiveAccessSlotKey('CODE', 'COMPANY_WEBSITE', UNIVERSAL_ACCESS_SLOT_KEY, 'SSH'),
     ).toBe(UNIVERSAL_ACCESS_SLOT_KEY);
+  });
+});
+
+describe('shared infra bind rules', () => {
+  it('allows same-project and project-less credentials', () => {
+    expect(isCredentialBindableToProductProject('proj-a', 'proj-a')).toBe(true);
+    expect(isCredentialBindableToProductProject(null, 'proj-a')).toBe(true);
+    expect(isCredentialBindableToProductProject('proj-b', 'proj-a')).toBe(false);
+  });
+
+  it('writes productId only when the project-scoped credential has none', () => {
+    expect(
+      shouldWriteCredentialProductIdOnBind({
+        credentialProjectId: 'proj-a',
+        credentialProductId: null,
+      }),
+    ).toBe(true);
+    expect(
+      shouldWriteCredentialProductIdOnBind({
+        credentialProjectId: 'proj-a',
+        credentialProductId: 'prod-1',
+      }),
+    ).toBe(false);
+    expect(
+      shouldWriteCredentialProductIdOnBind({
+        credentialProjectId: null,
+        credentialProductId: null,
+      }),
+    ).toBe(false);
+  });
+});
+
+describe('getMissingRequiredAccessSlotsForDone', () => {
+  it('requires Domain and Hosting on website profiles when empty', () => {
+    expect(isProductDoneRequiredAccessSlot('DOMAIN')).toBe(true);
+    expect(
+      getMissingRequiredAccessSlotsForDone({
+        productCategory: 'CODE',
+        productType: 'COMPANY_WEBSITE',
+        boundSlotKeys: [],
+      }),
+    ).toEqual(['DOMAIN', 'HOSTING']);
+  });
+
+  it('skips Domain and Hosting when the profile has no those slots', () => {
+    expect(
+      getMissingRequiredAccessSlotsForDone({
+        productCategory: 'MARKETING',
+        productType: 'OTHER',
+        boundSlotKeys: [],
+      }),
+    ).toEqual([]);
+  });
+
+  it('returns only the empty required slots', () => {
+    expect(
+      getMissingRequiredAccessSlotsForDone({
+        productCategory: 'WORDPRESS',
+        productType: 'COMPANY_WEBSITE',
+        boundSlotKeys: ['DOMAIN'],
+      }),
+    ).toEqual(['HOSTING']);
   });
 });
 

@@ -145,6 +145,7 @@ export {
   useCompanyRelationSearch,
   useProjectRelationSearch,
   useProductRelationSearch,
+  useAccessSlotCredentialSearch,
 } from './relation-picker';
 export { ListMutationErrorBanner } from './ListMutationErrorBanner';
 export { DetailSheetFormFooter, type DetailSheetFormFooterProps } from './DetailSheetFormFooter';

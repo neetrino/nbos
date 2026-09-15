@@ -20,13 +20,11 @@ function toastCreateAndBindSuccess(meta: ProductAccessSlotBindMeta | undefined) 
 
 export interface UseProductCredentialsCreateOptions {
   productId: string;
-  productName: string;
   refetch: () => Promise<void>;
 }
 
 export function useProductCredentialsCreate({
   productId,
-  productName,
   refetch,
 }: UseProductCredentialsCreateOptions) {
   const [createOpen, setCreateOpen] = useState(false);
@@ -63,12 +61,9 @@ export function useProductCredentialsCreate({
     [productId, refetch],
   );
 
-  const credentialName = productName.trim() || 'Credential';
-
   return {
     createOpen,
     initialCategory,
-    credentialName,
     openCreate,
     openCreateInCategory,
     closeCreate,

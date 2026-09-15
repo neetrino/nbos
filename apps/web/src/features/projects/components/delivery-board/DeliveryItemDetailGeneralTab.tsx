@@ -126,7 +126,13 @@ export function DeliveryItemDetailGeneralTab({
           <DeliveryAccessInfrastructureSection
             projectId={projectId}
             productId={productId}
+            productName={
+              product?.name ??
+              extension?.product.name ??
+              (item.kind === 'PRODUCT' ? item.product.name : item.extension.product.name)
+            }
             onRefreshDetail={onRefreshDetail}
+            gateRequiredFields={gateRequiredFields}
           />
 
           <DeliveryItemTeamSection

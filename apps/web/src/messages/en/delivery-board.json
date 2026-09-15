@@ -216,7 +216,22 @@
   "access": {
     "title": "Access & infrastructure",
     "loading": "Loading…",
-    "empty": "No access slots are configured for this product profile."
+    "empty": "No access slots are configured for this product profile.",
+    "notLinked": "Not linked",
+    "linkExisting": "Link existing",
+    "openPicker": "Link or create {label}",
+    "create": "Create credential",
+    "unlink": "Unlink",
+    "unlinkConfirm": "Remove this link? The credential stays in the vault.",
+    "linkSaved": "Linked to this product",
+    "linkRemoved": "Link removed",
+    "linkFailed": "Could not link this credential.",
+    "unlinkFailed": "Could not remove link.",
+    "loadFailed": "Could not load access slots.",
+    "requiredHint": "At least one credential required for this slot",
+    "archived": "Archived credential",
+    "open": "Open {name}",
+    "requestAccess": "Request access to {name}"
   },
   "checklist": {
     "title": "Stage checklists",

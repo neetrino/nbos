@@ -27,6 +27,12 @@ export const UNIVERSAL_ACCESS_SLOT_KEY = 'UNIVERSAL';
 /** Create from UNIVERSAL writes Service, not legacy Other. */
 export const UNIVERSAL_DEFAULT_CATEGORY = 'SERVICE';
 
+/** Domain and Hosting must be linked before Product Done. Admin stays optional. */
+export const PRODUCT_DONE_REQUIRED_ACCESS_SLOT_KEYS = ['DOMAIN', 'HOSTING'] as const;
+
+export type ProductDoneRequiredAccessSlotKey =
+  (typeof PRODUCT_DONE_REQUIRED_ACCESS_SLOT_KEYS)[number];
+
 export type AccessSlotDefinition = {
   slotKey: string;
   label: string;
@@ -212,6 +218,47 @@ export function isCategoryAllowedForSlot(
   category: string,
 ): category is CredentialCategoryCode {
   return (slot.allowedCategories as readonly string[]).includes(category);
+}
+
+export function isProductDoneRequiredAccessSlot(
+  slotKey: string,
+): slotKey is ProductDoneRequiredAccessSlotKey {
+  return (PRODUCT_DONE_REQUIRED_ACCESS_SLOT_KEYS as readonly string[]).includes(slotKey);
+}
+
+/** Shared infra (`projectId` null) may bind across projects; client rows stay same-project. */
+export function isCredentialBindableToProductProject(
+  credentialProjectId: string | null | undefined,
+  productProjectId: string,
+): boolean {
+  if (!credentialProjectId) return true;
+  return credentialProjectId === productProjectId;
+}
+
+/** Fill empty `productId` only for project-scoped rows. Shared infra stays unowned. */
+export function shouldWriteCredentialProductIdOnBind(input: {
+  credentialProjectId: string | null | undefined;
+  credentialProductId: string | null | undefined;
+}): boolean {
+  if (!input.credentialProjectId) return false;
+  return !input.credentialProductId;
+}
+
+/**
+ * Required Done slots that exist on this profile and have no binding yet.
+ */
+export function getMissingRequiredAccessSlotsForDone(input: {
+  productCategory: string;
+  productType: string;
+  boundSlotKeys: readonly string[];
+}): string[] {
+  const profileKeys = new Set(
+    getAccessSlotsForProduct(input.productCategory, input.productType).map((slot) => slot.slotKey),
+  );
+  const bound = new Set(input.boundSlotKeys);
+  return PRODUCT_DONE_REQUIRED_ACCESS_SLOT_KEYS.filter(
+    (slotKey) => profileKeys.has(slotKey) && !bound.has(slotKey),
+  );
 }
 
 /** Preset Category when creating from a Delivery slot. Field stays editable if allowed > 1. */
