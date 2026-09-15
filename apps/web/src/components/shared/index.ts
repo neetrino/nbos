@@ -79,6 +79,7 @@ export {
 } from './action-tile-button-classes';
 export { EmptyState } from './EmptyState';
 export { AccessDeniedScreen } from './AccessDeniedScreen';
+export { QueryLoadError } from './QueryLoadError';
 export { EntityNavPillLink } from './EntityNavPillLink';
 export { DetailSheetEntityLinkCard } from './DetailSheetEntityLinkCard';
 export { DetailSheetEntityLinkGrid } from './DetailSheetEntityLinkGrid';

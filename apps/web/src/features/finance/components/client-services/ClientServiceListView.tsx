@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { EmptyState, LoadingState, QueryLoadError } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import {
   CLIENT_SERVICE_BILLING_MODELS,
@@ -66,7 +66,7 @@ export function ClientServiceListView({
   const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null);
 
   if (loading) return <LoadingState />;
-  if (error) return <ErrorState title={t('empty.unavailable')} description={error} />;
+  if (error) return <QueryLoadError description={error} />;
   if (items.length === 0) {
     return (
       <EmptyState

@@ -1,6 +1,11 @@
 import { Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
+import {
+  EmptyState,
+  ListMutationErrorBanner,
+  LoadingState,
+  QueryLoadError,
+} from '@/components/shared';
 import type { Subscription, SubscriptionGridPayload } from '@/lib/api/finance';
 import { SubscriptionCoverageGrid } from './SubscriptionCoverageGrid';
 
@@ -37,7 +42,7 @@ export function SubscriptionsPageContent({
   onOpenSubscription,
   onOpenMonthCell,
 }: SubscriptionsPageContentProps) {
-  if (listError) return <ErrorState description={listError} onRetry={onListRetry} />;
+  if (listError) return <QueryLoadError description={listError} onRetry={onListRetry} />;
 
   const showEmpty =
     !listLoading &&

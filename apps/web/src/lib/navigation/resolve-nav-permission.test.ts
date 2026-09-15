@@ -69,4 +69,27 @@ describe('resolveNavPermission', () => {
   it('returns undefined for routes without nav permission', () => {
     expect(resolveNavPermission('/my-account')).toBeUndefined();
   });
+
+  it('gates Finance sections by their own module, not only invoices VIEW', () => {
+    expect(resolveNavPermission('/finance/invoices')).toEqual({
+      module: 'FINANCE_INVOICES',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/finance/payments')).toEqual({
+      module: 'FINANCE_PAYMENTS',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/finance/subscriptions')).toEqual({
+      module: 'FINANCE_SUBSCRIPTIONS',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/finance/expenses')).toEqual({
+      module: 'FINANCE_EXPENSES',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/finance/expenses/plans')).toEqual({
+      module: 'FINANCE_EXPENSES',
+      action: 'VIEW',
+    });
+  });
 });

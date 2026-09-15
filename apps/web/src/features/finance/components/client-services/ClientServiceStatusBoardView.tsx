@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { ErrorState, LoadingState } from '@/components/shared';
+import { LoadingState, QueryLoadError } from '@/components/shared';
 import {
   CLIENT_SERVICE_STAGE_ORDER,
   clientServiceStageHex,
@@ -48,7 +48,7 @@ export function ClientServiceStatusBoardView({
   }, [baseParams, board, t]);
 
   if (loading) return <LoadingState />;
-  if (error) return <ErrorState description={error} />;
+  if (error) return <QueryLoadError description={error} />;
 
   return <ClientServiceBoardScroll columns={columns} reloadToken={reloadToken} onOpen={onOpen} />;
 }

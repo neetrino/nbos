@@ -3,7 +3,7 @@
 import type { LucideIcon } from 'lucide-react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { EmptyState, LoadingState, QueryLoadError } from '@/components/shared';
 import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { SupportTicketsKanbanView } from '@/features/support/components/SupportTicketsKanbanView';
 import { SupportTicketsListView } from '@/features/support/components/SupportTicketsListView';
@@ -61,7 +61,7 @@ export function SupportTicketsPageBody({
     return <LoadingState />;
   }
   if (error) {
-    return <ErrorState description={error} onRetry={onRetry} />;
+    return <QueryLoadError description={error} onRetry={onRetry} />;
   }
   if (tickets.length === 0) {
     return (

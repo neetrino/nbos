@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { KANBAN_COLUMN_PAGE_SIZE } from '@/features/shared/kanban/kanban-column-page';
+import { getApiErrorMessage } from '@/lib/api-errors';
 
 export interface StageColumnPageMeta {
   total: number;
@@ -123,9 +124,9 @@ export function useStageColumnBoard<T extends { id: string }>(options: {
         };
       }
       setBuckets(next);
-    } catch {
+    } catch (caught) {
       if (generation !== fetchGenerationRef.current) return;
-      setError(loadErrorMessage);
+      setError(getApiErrorMessage(caught, loadErrorMessage));
       setBuckets({});
     } finally {
       if (generation === fetchGenerationRef.current) {

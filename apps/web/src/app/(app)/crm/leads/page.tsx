@@ -11,7 +11,7 @@ import {
   IntegratedSearchFilters,
   KanbanBoard,
   EmptyState,
-  ErrorState,
+  QueryLoadError,
   LoadingState,
   DeleteConfirmDialog,
   ProfileAPermanentDeleteDialog,
@@ -622,7 +622,7 @@ function LeadsPipelinePageContent() {
       {loading ? (
         <LoadingState variant="cards" count={3} />
       ) : error ? (
-        <ErrorState description={error} onRetry={fetchLeads} />
+        <QueryLoadError description={error} onRetry={fetchLeads} />
       ) : leads.length === 0 ? (
         <EmptyState
           icon={Users}

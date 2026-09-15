@@ -6,9 +6,9 @@ import { CalendarDays, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   EmptyState,
-  ErrorState,
   IntegratedSearchFilters,
   LoadingState,
+  QueryLoadError,
   useDebouncedValue,
   useModuleHeroSlots,
   ViewModeSwitch,
@@ -528,7 +528,7 @@ export function ExpensePlansPageContent() {
         loading ? (
           <LoadingState count={3} />
         ) : error ? (
-          <ErrorState description={error} onRetry={() => void fetchPlans()} />
+          <QueryLoadError description={error} onRetry={() => void fetchPlans()} />
         ) : plans.length === 0 ? (
           <EmptyState
             icon={CalendarDays}

@@ -3,7 +3,12 @@
 import { Plus, FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
+import {
+  EmptyState,
+  ListMutationErrorBanner,
+  LoadingState,
+  QueryLoadError,
+} from '@/components/shared';
 import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import type { Invoice } from '@/lib/api/finance';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
@@ -48,14 +53,14 @@ export function InvoicesPageContent({
   onLoadMoreAll,
 }: InvoicesPageContentProps) {
   if (loading) return <LoadingState />;
-  if (error) return <ErrorState description={error} onRetry={onRetry} />;
+  if (error) return <QueryLoadError description={error} onRetry={onRetry} />;
   if (invoices.length === 0) {
     return (
       <div className="flex flex-col gap-4">
         {mutationError ? (
           <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
         ) : null}
-        <InvoicesEmptyState />
+        <InvoicesEmptyState onCreate={onOpenQuickCreate} />
       </div>
     );
   }
@@ -92,7 +97,7 @@ export function InvoicesPageContent({
   );
 }
 
-function InvoicesEmptyState() {
+function InvoicesEmptyState({ onCreate }: { onCreate?: () => void }) {
   const t = useTranslations('invoices');
   return (
     <EmptyState
@@ -100,10 +105,12 @@ function InvoicesEmptyState() {
       title={t('empty.title')}
       description={t('empty.description')}
       action={
-        <Button>
-          <Plus size={16} />
-          {t('empty.createFirst')}
-        </Button>
+        onCreate ? (
+          <Button type="button" onClick={onCreate}>
+            <Plus size={16} />
+            {t('empty.createFirst')}
+          </Button>
+        ) : undefined
       }
     />
   );
