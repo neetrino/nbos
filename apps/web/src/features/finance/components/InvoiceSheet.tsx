@@ -25,6 +25,8 @@ import {
 import { InvoiceSheetStatus } from '@/features/finance/components/invoices/InvoiceSheetStatus';
 import { type InvoiceSheetInvoice } from './invoices/InvoiceSheetSections';
 import { InvoiceSheetHeader } from './invoices/InvoiceSheetHeader';
+import { getInvoiceSourceCardChrome } from '@/features/finance/utils/invoice-source-card-chrome';
+import { resolveInvoiceSourceFamily } from '@/features/finance/utils/invoice-source-label';
 import { buildInvoiceGateRequiredFields } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import type { InvoiceSheetStageGateHighlight } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import {
@@ -39,6 +41,8 @@ import { invoiceLifecycleAction } from '@/features/finance/utils/invoice-lifecyc
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { usePermission } from '@/lib/permissions';
+
+const INVOICE_SHEET_TINT_FOOTER_CLASS = 'bg-transparent supports-[backdrop-filter]:bg-transparent';
 
 interface InvoiceSheetProps {
   invoice: InvoiceSheetInvoice | null;
@@ -167,6 +171,10 @@ export function InvoiceSheet({
 
   if (!hostMounted) return null;
 
+  const chrome = renderInvoice
+    ? getInvoiceSourceCardChrome(resolveInvoiceSourceFamily(renderInvoice))
+    : null;
+
   const detailTabs = getInvoiceDetailSheetTabs((key) => t(key as never));
   const sourcePageHref = renderInvoice
     ? `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(renderInvoice.id)}`
@@ -185,6 +193,7 @@ export function InvoiceSheet({
           width="compact"
           sourcePageHref={sourcePageHref}
           forceNestedBackdrop={forceNestedBackdrop}
+          className={chrome?.sheetShellClassName}
         >
           {!renderInvoice ? (
             <InvoiceSheetStatus loading={loading} isMobileViewport={isMobileViewport} />
@@ -248,6 +257,7 @@ export function InvoiceSheet({
                 errorMessage={generalError}
                 onSave={handleGeneralSave}
                 onCancel={handleGeneralCancel}
+                className={INVOICE_SHEET_TINT_FOOTER_CLASS}
               />
             </>
           )}

@@ -26,5 +26,8 @@ describe('getInvoiceSourceCardChrome', () => {
     expect(subscription.cardShellClassName).toContain('bg-sky-100');
     expect(subscription.cardShellClassName).not.toMatch(/bg-\S+\/\d+/);
     expect(subscription.headerBandClassName).toContain('bg-sky-200');
+    expect(subscription.sheetShellClassName).toContain('bg-sky-100');
+    expect(subscription.badgeClassName).toContain('bg-sky-50');
+    expect(getInvoiceSourceCardChrome('deal').badgeClassName).toContain('violet');
   });
 });
