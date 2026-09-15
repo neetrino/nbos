@@ -53,6 +53,7 @@ export function createMockPrisma() {
     resourceAccessGrant: createModelMock(),
     payment: createModelMock(),
     product: createModelMock(),
+    productAccessSlotBinding: createModelMock(),
     extension: createModelMock(),
     checklistTemplate: createModelMock(),
     checklistTemplateVersion: createModelMock(),

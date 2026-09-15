@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   calendarApi,
@@ -8,25 +8,16 @@ import {
   type CalendarMeetingConflictPayload,
 } from '@/lib/api/calendar';
 import { firstReleaseFormErrorCopy, localizeCaughtApiError } from '@/i18n/localize-api-error';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { DetailSheetFieldSegmented, InlineField } from '@/components/shared';
-import { MeetingCreateConflicts } from './MeetingCreateConflicts';
+import { CreateFormDialog } from '@/components/shared';
+import { CreateMeetingCalendarDialogFields } from './CreateMeetingCalendarDialogFields';
 import {
   DEFAULT_MEETING_DURATION_HOURS,
   endsAtIsoFromStartAndDuration,
-  isLocationTypeValue,
-  isMeetingTypeValue,
   LOCATION_TYPE_VALUES,
   MEETING_TYPE_VALUES,
   meetingDefaults,
   parseDurationHours,
+  type MeetingCreateForm,
 } from './meeting-create-form';
 
 export interface CreateMeetingCalendarDialogProps {
@@ -36,7 +27,12 @@ export interface CreateMeetingCalendarDialogProps {
   onCreated: () => void;
 }
 
-export function CreateMeetingCalendarDialog({
+export function CreateMeetingCalendarDialog(props: CreateMeetingCalendarDialogProps) {
+  const sessionKey = props.open ? props.selectedDate.toISOString() : 'closed';
+  return <CreateMeetingCalendarDialogSession key={sessionKey} {...props} />;
+}
+
+function CreateMeetingCalendarDialogSession({
   open,
   onOpenChange,
   selectedDate,
@@ -50,205 +46,141 @@ export function CreateMeetingCalendarDialog({
   const [overrideReason, setOverrideReason] = useState('');
   const [form, setForm] = useState(() => meetingDefaults(selectedDate));
   const [durationInput, setDurationInput] = useState(String(DEFAULT_MEETING_DURATION_HOURS));
-
-  useEffect(() => {
-    if (!open) return;
-    const defaults = meetingDefaults(selectedDate);
-    setForm(defaults);
-    setDurationInput(String(defaults.durationHours));
-    setFormError(null);
-    setConflicts(null);
-    setOverrideReason('');
-  }, [open, selectedDate]);
-
-  useEffect(() => {
-    setConflicts(null);
-    setOverrideReason('');
-  }, [form.startsLocal, form.durationHours]);
-
   const meetingTypeOptions = useMemo(
     () => MEETING_TYPE_VALUES.map((value) => ({ value, label: t(`meeting.types.${value}`) })),
     [t],
   );
-
   const locationOptions = useMemo(
     () =>
       LOCATION_TYPE_VALUES.map((value) => ({ value, label: t(`meeting.locationTypes.${value}`) })),
     [t],
   );
-
-  const submit = useCallback(async () => {
-    const title = form.title.trim();
-    if (!title) {
-      setFormError(t('meeting.validation.titleRequired'));
-      return;
-    }
-    const durationHours = parseDurationHours(durationInput);
-    if (durationHours === null) {
-      setFormError(t('meeting.validation.durationRequired'));
-      return;
-    }
-    const startsAt = new Date(form.startsLocal).toISOString();
-    const endsAt = endsAtIsoFromStartAndDuration(form.startsLocal, durationHours);
-    setLoading(true);
-    setFormError(null);
-    try {
-      await calendarApi.createMeeting({
-        title,
-        startsAt,
-        endsAt,
-        meetingType: form.meetingType,
-        locationType: form.locationType,
-        locationOrLink: form.locationOrLink.trim() || null,
-        agenda: form.agenda.trim() || null,
-        ...(conflicts?.length && overrideReason.trim()
-          ? { conflictOverrideReason: overrideReason.trim() }
-          : {}),
-      });
-      onOpenChange(false);
-      onCreated();
-    } catch (err) {
-      const parsed = parseCalendarMeetingConflicts(err);
-      if (parsed?.length) {
-        setConflicts(parsed);
-        setFormError(t('meeting.validation.overlapReason'));
-        return;
-      }
-      setFormError(
-        localizeCaughtApiError(
-          err,
-          firstReleaseFormErrorCopy(
-            tCommon('permissionDenied'),
-            t('meeting.createError'),
-            t('errors.validation'),
-            t('meeting.validation.overlapReason'),
-            t('errors.network'),
-          ),
-        ),
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [conflicts, durationInput, form, onCreated, onOpenChange, overrideReason, t, tCommon]);
+  const canSubmit =
+    Boolean(form.title.trim()) && !(conflicts?.length && !overrideReason.trim()) && !loading;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card sm:max-w-[520px]">
-        <DialogHeader>
-          <DialogTitle>{t('meeting.title')}</DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          {formError ? (
-            <p className="text-destructive text-sm" role="alert">
-              {formError}
-            </p>
-          ) : null}
-
-          {conflicts?.length ? (
-            <MeetingCreateConflicts
-              conflicts={conflicts}
-              overrideReason={overrideReason}
-              onOverrideReasonChange={setOverrideReason}
-            />
-          ) : null}
-
-          <InlineField
-            variant="controlled"
-            label={t('meeting.fields.title')}
-            value={form.title}
-            placeholder={t('meeting.fields.titlePlaceholder')}
-            onValueChange={(title) => setForm((p) => ({ ...p, title }))}
-          />
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-            <InlineField
-              variant="controlled"
-              label={t('meeting.fields.start')}
-              type="date"
-              datePickerMode="datetime"
-              datePickerVariant="extended"
-              className="min-w-0 flex-1"
-              value={form.startsLocal}
-              onValueChange={(startsLocal) => setForm((p) => ({ ...p, startsLocal }))}
-            />
-            <InlineField
-              variant="controlled"
-              label={t('meeting.fields.duration')}
-              type="text"
-              className="w-24 shrink-0 [&_input]:text-center"
-              value={durationInput}
-              onValueChange={(raw) => {
-                const next = raw.replace(/\D/g, '').slice(0, 1);
-                setDurationInput(next);
-                const parsed = parseDurationHours(next);
-                if (parsed !== null) setForm((p) => ({ ...p, durationHours: parsed }));
-              }}
-            />
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-            <InlineField
-              variant="controlled"
-              label={t('meeting.fields.meetingType')}
-              type="select"
-              options={meetingTypeOptions}
-              className="min-w-0 flex-1"
-              value={form.meetingType}
-              onValueChange={(v) => {
-                if (isMeetingTypeValue(v)) setForm((p) => ({ ...p, meetingType: v }));
-              }}
-            />
-            <DetailSheetFieldSegmented
-              label={t('meeting.fields.location')}
-              className="w-full shrink-0 sm:w-[11.5rem]"
-              value={form.locationType}
-              options={locationOptions}
-              onValueChange={(locationType) => {
-                if (isLocationTypeValue(locationType)) {
-                  setForm((p) => ({ ...p, locationType }));
-                }
-              }}
-            />
-          </div>
-
-          <InlineField
-            variant="controlled"
-            label={t('meeting.fields.linkOrAddress')}
-            value={form.locationOrLink}
-            placeholder={t('meeting.fields.linkPlaceholder')}
-            onValueChange={(locationOrLink) => setForm((p) => ({ ...p, locationOrLink }))}
-          />
-
-          <InlineField
-            variant="controlled"
-            label={t('meeting.fields.agenda')}
-            type="textarea"
-            value={form.agenda}
-            placeholder={t('meeting.fields.agendaPlaceholder')}
-            onValueChange={(agenda) => setForm((p) => ({ ...p, agenda }))}
-          />
-        </div>
-
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            {tCommon('cancel')}
-          </Button>
-          <Button
-            type="button"
-            onClick={() => void submit()}
-            disabled={
-              loading || Boolean(conflicts?.length && !overrideReason.trim()) || !form.title.trim()
-            }
-          >
-            {loading
-              ? tCommon('saving')
-              : conflicts?.length
-                ? t('meeting.submit.scheduleAnyway')
-                : tCommon('create')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('meeting.title')}
+      error={formError}
+      submitting={loading}
+      canSubmit={canSubmit}
+      submitLabel={conflicts?.length ? t('meeting.submit.scheduleAnyway') : tCommon('create')}
+      submittingLabel={tCommon('saving')}
+      cancelLabel={tCommon('cancel')}
+      onSubmit={(event) =>
+        void submitMeeting({
+          event,
+          form,
+          durationInput,
+          conflicts,
+          overrideReason,
+          setLoading,
+          setFormError,
+          setConflicts,
+          onOpenChange,
+          onCreated,
+          t,
+          tCommon,
+        })
+      }
+    >
+      <CreateMeetingCalendarDialogFields
+        form={form}
+        durationInput={durationInput}
+        conflicts={conflicts}
+        overrideReason={overrideReason}
+        meetingTypeOptions={meetingTypeOptions}
+        locationOptions={locationOptions}
+        onTitleChange={(title) => setForm((prev) => ({ ...prev, title }))}
+        onStartsChange={(startsLocal) => {
+          setConflicts(null);
+          setOverrideReason('');
+          setForm((prev) => ({ ...prev, startsLocal }));
+        }}
+        onDurationChange={(raw) => {
+          const next = raw.replace(/\D/g, '').slice(0, 1);
+          setDurationInput(next);
+          setConflicts(null);
+          setOverrideReason('');
+          const parsed = parseDurationHours(next);
+          if (parsed !== null) setForm((prev) => ({ ...prev, durationHours: parsed }));
+        }}
+        onMeetingTypeChange={(meetingType) => setForm((prev) => ({ ...prev, meetingType }))}
+        onLocationTypeChange={(locationType) => setForm((prev) => ({ ...prev, locationType }))}
+        onLocationOrLinkChange={(locationOrLink) =>
+          setForm((prev) => ({ ...prev, locationOrLink }))
+        }
+        onAgendaChange={(agenda) => setForm((prev) => ({ ...prev, agenda }))}
+        onOverrideReasonChange={setOverrideReason}
+      />
+    </CreateFormDialog>
   );
+}
+
+async function submitMeeting(options: {
+  event: FormEvent;
+  form: MeetingCreateForm;
+  durationInput: string;
+  conflicts: CalendarMeetingConflictPayload[] | null;
+  overrideReason: string;
+  setLoading: (loading: boolean) => void;
+  setFormError: (error: string | null) => void;
+  setConflicts: (conflicts: CalendarMeetingConflictPayload[] | null) => void;
+  onOpenChange: (open: boolean) => void;
+  onCreated: () => void;
+  t: ReturnType<typeof useTranslations>;
+  tCommon: ReturnType<typeof useTranslations>;
+}): Promise<void> {
+  options.event.preventDefault();
+  const title = options.form.title.trim();
+  if (!title) {
+    options.setFormError(options.t('meeting.validation.titleRequired'));
+    return;
+  }
+  const durationHours = parseDurationHours(options.durationInput);
+  if (durationHours === null) {
+    options.setFormError(options.t('meeting.validation.durationRequired'));
+    return;
+  }
+  options.setLoading(true);
+  options.setFormError(null);
+  try {
+    await calendarApi.createMeeting({
+      title,
+      startsAt: new Date(options.form.startsLocal).toISOString(),
+      endsAt: endsAtIsoFromStartAndDuration(options.form.startsLocal, durationHours),
+      meetingType: options.form.meetingType,
+      locationType: options.form.locationType,
+      locationOrLink: options.form.locationOrLink.trim() || null,
+      agenda: options.form.agenda.trim() || null,
+      ...(options.conflicts?.length && options.overrideReason.trim()
+        ? { conflictOverrideReason: options.overrideReason.trim() }
+        : {}),
+    });
+    options.onOpenChange(false);
+    options.onCreated();
+  } catch (err) {
+    const parsed = parseCalendarMeetingConflicts(err);
+    if (parsed?.length) {
+      options.setConflicts(parsed);
+      options.setFormError(options.t('meeting.validation.overlapReason'));
+      return;
+    }
+    options.setFormError(
+      localizeCaughtApiError(
+        err,
+        firstReleaseFormErrorCopy(
+          options.tCommon('permissionDenied'),
+          options.t('meeting.createError'),
+          options.t('errors.validation'),
+          options.t('meeting.validation.overlapReason'),
+          options.t('errors.network'),
+        ),
+      ),
+    );
+  } finally {
+    options.setLoading(false);
+  }
 }

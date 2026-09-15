@@ -33,8 +33,16 @@ export function ProductFinanceExpensesPanel({
 }: ProductFinanceExpensesPanelProps) {
   const expenseSheet = useProductEntityDetailSheet<Expense>();
   const [createOpen, setCreateOpen] = useState(false);
-  const { expenses, loading, error, refetch, pageVariant, kanbanScope, fromBacklog } =
-    useProductFinanceExpenses(productId, search, filters);
+  const {
+    expenses,
+    loading,
+    error,
+    refetch,
+    pageVariant,
+    kanbanScope,
+    fromBacklog,
+    fromAllHistory,
+  } = useProductFinanceExpenses(productId, search, filters);
 
   const listSort = {
     sortBy: EXPENSE_LIST_DEFAULT_SORT_BY,
@@ -79,7 +87,7 @@ export function ProductFinanceExpensesPanel({
         error={error}
         onRetry={() => void refetch()}
         expenses={expenses}
-        view={fromBacklog ? 'list' : view}
+        view={fromBacklog || fromAllHistory ? 'list' : view}
         kanbanScope={kanbanScope}
         fromBacklog={fromBacklog}
         onOpenExpense={handleOpenExpense}

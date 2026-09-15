@@ -1,26 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { CreateFormDialog, InlineField } from '@/components/shared';
 import { toastApiError } from '@/lib/permissions';
 import { marketingApi } from '@/lib/api/marketing';
 import { MARKETING_CHANNELS, getMarketingLabel } from '@/features/marketing/constants';
@@ -52,7 +35,12 @@ function createEmptyForm(channel?: string): CreateAccountForm {
   };
 }
 
-export function CreateMarketingAccountDialog({
+export function CreateMarketingAccountDialog(props: CreateMarketingAccountDialogProps) {
+  const sessionKey = props.open ? `open:${props.initialChannel ?? ''}` : 'closed';
+  return <CreateMarketingAccountDialogSession key={sessionKey} {...props} />;
+}
+
+function CreateMarketingAccountDialogSession({
   open,
   initialChannel,
   onOpenChange,
@@ -63,105 +51,73 @@ export function CreateMarketingAccountDialog({
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(() => createEmptyForm(initialChannel));
   const usesPhone = marketingAccountUsesPhone(form.channel);
+  const channelOptions = MARKETING_CHANNELS.map((channel) => ({
+    value: channel.value,
+    label: getMarketingLabel('channels', channel.value, t),
+  }));
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <form
-          className="space-y-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void submitCreateAccount({
-              form,
-              usesPhone,
-              setSaving,
-              onCreated,
-              onOpenChange,
-              successMessage: t('settings.create.created'),
-              fallbackError: t('settings.loadError'),
-            });
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>{t('settings.create.title')}</DialogTitle>
-            <DialogDescription>{t('settings.create.description')}</DialogDescription>
-          </DialogHeader>
-          <CreateMarketingAccountFields form={form} usesPhone={usesPhone} onChange={setForm} />
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              {tCommon('cancel')}
-            </Button>
-            <Button type="submit" disabled={saving || !form.name.trim()}>
-              {saving ? t('settings.adding') : t('settings.add')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function CreateMarketingAccountFields({
-  form,
-  usesPhone,
-  onChange,
-}: {
-  form: CreateAccountForm;
-  usesPhone: boolean;
-  onChange: (form: CreateAccountForm) => void;
-}) {
-  const t = useTranslations('marketing');
-  return (
-    <>
-      <div className="space-y-1.5">
-        <Label>{t('settings.channel')}</Label>
-        <Select
-          value={form.channel}
-          onValueChange={(channel) =>
-            onChange({ ...form, channel: channel ?? form.channel, identifier: '', phone: '' })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue>{getMarketingLabel('channels', form.channel, t)}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {MARKETING_CHANNELS.map((channel) => (
-              <SelectItem key={channel.value} value={channel.value}>
-                {getMarketingLabel('channels', channel.value, t)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="space-y-1.5">
-        <Label>{t('settings.name')}</Label>
-        <Input
-          value={form.name}
-          onChange={(event) => onChange({ ...form, name: event.target.value })}
-          placeholder={t('settings.namePlaceholder')}
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label>{usesPhone ? t('settings.phone') : t('settings.identifier')}</Label>
-        <Input
-          value={usesPhone ? form.phone : form.identifier}
-          onChange={(event) =>
-            onChange(
-              usesPhone
-                ? { ...form, phone: event.target.value }
-                : { ...form, identifier: event.target.value },
-            )
-          }
-          placeholder={
-            usesPhone ? t('settings.phonePlaceholder') : t('settings.identifierPlaceholder')
-          }
-        />
-      </div>
-    </>
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('settings.create.title')}
+      description={t('settings.create.description')}
+      submitting={saving}
+      canSubmit={Boolean(form.name.trim()) && !saving}
+      submitLabel={t('settings.add')}
+      submittingLabel={t('settings.adding')}
+      cancelLabel={tCommon('cancel')}
+      onSubmit={(event) =>
+        void submitCreateAccount({
+          event,
+          form,
+          usesPhone,
+          setSaving,
+          onCreated,
+          onOpenChange,
+          successMessage: t('settings.create.created'),
+          fallbackError: t('settings.loadError'),
+        })
+      }
+    >
+      <InlineField
+        variant="controlled"
+        label={t('settings.channel')}
+        type="select"
+        value={form.channel}
+        options={channelOptions}
+        onValueChange={(channel) =>
+          channel && setForm((prev) => ({ ...prev, channel, identifier: '', phone: '' }))
+        }
+      />
+      <InlineField
+        variant="controlled"
+        label={t('settings.name')}
+        type="text"
+        value={form.name}
+        placeholder={t('settings.namePlaceholder')}
+        onValueChange={(name) => setForm((prev) => ({ ...prev, name }))}
+      />
+      <InlineField
+        variant="controlled"
+        label={usesPhone ? t('settings.phone') : t('settings.identifier')}
+        type={usesPhone ? 'phone' : 'text'}
+        value={usesPhone ? form.phone : form.identifier}
+        placeholder={
+          usesPhone ? t('settings.phonePlaceholder') : t('settings.identifierPlaceholder')
+        }
+        onValueChange={(value) =>
+          setForm((prev) =>
+            usesPhone ? { ...prev, phone: value } : { ...prev, identifier: value },
+          )
+        }
+      />
+    </CreateFormDialog>
   );
 }
 
 async function submitCreateAccount(params: {
+  event: FormEvent;
   form: CreateAccountForm;
   usesPhone: boolean;
   setSaving: (value: boolean) => void;
@@ -170,6 +126,7 @@ async function submitCreateAccount(params: {
   successMessage: string;
   fallbackError: string;
 }): Promise<void> {
+  params.event.preventDefault();
   if (!params.form.name.trim()) return;
   params.setSaving(true);
   try {

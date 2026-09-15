@@ -1,25 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { TEAM_SHEET_FIELD_CLASS } from '@/features/hr/constants/team-sheet-layout';
+import { CreateFormDialog } from '@/components/shared';
 import {
   departmentsApi,
   invitationsApi,
@@ -33,6 +16,7 @@ import {
   assignmentPickerActor,
   filterRolesForAssignmentPicker,
 } from '@/features/hr/utils/role-assignment-picker';
+import { InviteEmployeeDialogFields } from './InviteEmployeeDialogFields';
 
 interface InviteEmployeeDialogProps {
   open: boolean;
@@ -51,167 +35,129 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
   const [departmentsError, setDepartmentsError] = useState<string | null>(null);
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
-  const [form, setForm] = useState({
-    email: '',
-    roleId: '',
-    departmentId: '',
-  });
+  const [form, setForm] = useState({ email: '', roleId: '', departmentId: '' });
+  const assignableRoles = filterRolesForAssignmentPicker(roles, assignmentPickerActor(me));
+  const canSubmit = Boolean(
+    form.email.trim() && form.roleId && !rolesLoading && !departmentsLoading && !rolesError,
+  );
 
   useEffect(() => {
     if (!open) return;
-
-    const loadRoles = async () => {
-      setRolesLoading(true);
-      setRolesError(null);
-      try {
-        const data = await rolesApi.getAll();
-        setRoles(Array.isArray(data) ? data : []);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : t('invite.rolesFailed');
-        setRolesError(msg);
-        toast.error(msg);
-      } finally {
-        setRolesLoading(false);
-      }
-    };
-
-    const loadDepartments = async () => {
-      setDepartmentsLoading(true);
-      setDepartmentsError(null);
-      try {
-        const data = await departmentsApi.getAll();
-        setDepartments(Array.isArray(data) ? data : []);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : t('invite.departmentsFailed');
-        setDepartmentsError(msg);
-        toast.error(msg);
-      } finally {
-        setDepartmentsLoading(false);
-      }
-    };
-
-    void loadRoles();
-    void loadDepartments();
+    void loadInviteOptions({
+      setRoles,
+      setDepartments,
+      setRolesLoading,
+      setDepartmentsLoading,
+      setRolesError,
+      setDepartmentsError,
+      rolesFailed: t('invite.rolesFailed'),
+      departmentsFailed: t('invite.departmentsFailed'),
+    });
   }, [open, t]);
 
-  const reset = () => {
-    setForm({ email: '', roleId: '', departmentId: '' });
-  };
-
-  const canSubmit =
-    form.email.trim() && form.roleId && !rolesLoading && !departmentsLoading && !rolesError;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canSubmit) return;
-    setLoading(true);
-    try {
-      await invitationsApi.create({
-        email: form.email.trim(),
-        roleId: form.roleId,
-        departmentId: form.departmentId || undefined,
-      });
-      toast.success(t('invite.sent'));
-      onSuccess();
-      onOpenChange(false);
-      reset();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : t('invite.failed');
-      toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[420px]">
-        <DialogHeader>
-          <DialogTitle>{t('invite.title')}</DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className={TEAM_SHEET_FIELD_CLASS}>
-            <Label htmlFor="invite-email">{t('form.email')} *</Label>
-            <Input
-              id="invite-email"
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder={t('invite.emailPlaceholder')}
-              autoFocus
-              disabled={loading}
-            />
-          </div>
-
-          <div className={TEAM_SHEET_FIELD_CLASS}>
-            <Label>{t('invite.role')} *</Label>
-            <Select
-              value={form.roleId}
-              onValueChange={(v) => setForm({ ...form, roleId: v ?? '' })}
-              disabled={rolesLoading || loading}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue
-                  placeholder={rolesLoading ? t('invite.loadingRoles') : t('invite.selectRole')}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {filterRolesForAssignmentPicker(roles, assignmentPickerActor(me)).map((role) => (
-                  <SelectItem key={role.id} value={role.id}>
-                    {role.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {rolesError && <p className="text-destructive mt-1 text-xs">{rolesError}</p>}
-          </div>
-
-          <div className={TEAM_SHEET_FIELD_CLASS}>
-            <Label>{t('invite.departmentOptional')}</Label>
-            <Select
-              value={form.departmentId || 'none'}
-              onValueChange={(v) => setForm({ ...form, departmentId: v === 'none' || !v ? '' : v })}
-              disabled={departmentsLoading || loading}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue
-                  placeholder={
-                    departmentsLoading
-                      ? t('invite.loadingDepartments')
-                      : t('invite.selectDepartment')
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t('invite.none')}</SelectItem>
-                {departments.map((dept) => (
-                  <SelectItem key={dept.id} value={dept.id}>
-                    {dept.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {departmentsError && (
-              <p className="text-destructive mt-1 text-xs">{departmentsError}</p>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={loading}
-            >
-              {tCommon('cancel')}
-            </Button>
-            <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? t('invite.sending') : t('invite.send')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('invite.title')}
+      submitting={loading}
+      canSubmit={canSubmit}
+      submitLabel={t('invite.send')}
+      submittingLabel={t('invite.sending')}
+      cancelLabel={tCommon('cancel')}
+      onSubmit={(event) =>
+        void submitInvite({
+          event,
+          canSubmit,
+          form,
+          setLoading,
+          onSuccess,
+          onOpenChange,
+          sent: t('invite.sent'),
+          failed: t('invite.failed'),
+        })
+      }
+    >
+      <InviteEmployeeDialogFields
+        email={form.email}
+        roleId={form.roleId}
+        departmentId={form.departmentId}
+        roles={assignableRoles}
+        departments={departments}
+        rolesLoading={rolesLoading}
+        departmentsLoading={departmentsLoading}
+        rolesError={rolesError}
+        departmentsError={departmentsError}
+        loading={loading}
+        onEmailChange={(email) => setForm((prev) => ({ ...prev, email }))}
+        onRoleChange={(roleId) => setForm((prev) => ({ ...prev, roleId }))}
+        onDepartmentChange={(departmentId) => setForm((prev) => ({ ...prev, departmentId }))}
+      />
+    </CreateFormDialog>
   );
+}
+
+async function loadInviteOptions(options: {
+  setRoles: (roles: RoleItem[]) => void;
+  setDepartments: (departments: DepartmentItem[]) => void;
+  setRolesLoading: (loading: boolean) => void;
+  setDepartmentsLoading: (loading: boolean) => void;
+  setRolesError: (error: string | null) => void;
+  setDepartmentsError: (error: string | null) => void;
+  rolesFailed: string;
+  departmentsFailed: string;
+}): Promise<void> {
+  options.setRolesLoading(true);
+  options.setDepartmentsLoading(true);
+  options.setRolesError(null);
+  options.setDepartmentsError(null);
+  try {
+    const data = await rolesApi.getAll();
+    options.setRoles(Array.isArray(data) ? data : []);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : options.rolesFailed;
+    options.setRolesError(msg);
+    toast.error(msg);
+  } finally {
+    options.setRolesLoading(false);
+  }
+  try {
+    const data = await departmentsApi.getAll();
+    options.setDepartments(Array.isArray(data) ? data : []);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : options.departmentsFailed;
+    options.setDepartmentsError(msg);
+    toast.error(msg);
+  } finally {
+    options.setDepartmentsLoading(false);
+  }
+}
+
+async function submitInvite(options: {
+  event: FormEvent;
+  canSubmit: boolean;
+  form: { email: string; roleId: string; departmentId: string };
+  setLoading: (loading: boolean) => void;
+  onSuccess: () => void;
+  onOpenChange: (open: boolean) => void;
+  sent: string;
+  failed: string;
+}): Promise<void> {
+  options.event.preventDefault();
+  if (!options.canSubmit) return;
+  options.setLoading(true);
+  try {
+    await invitationsApi.create({
+      email: options.form.email.trim(),
+      roleId: options.form.roleId,
+      departmentId: options.form.departmentId || undefined,
+    });
+    toast.success(options.sent);
+    options.onSuccess();
+    options.onOpenChange(false);
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : options.failed);
+  } finally {
+    options.setLoading(false);
+  }
 }

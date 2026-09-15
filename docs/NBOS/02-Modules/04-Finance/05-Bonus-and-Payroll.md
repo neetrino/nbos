@@ -238,7 +238,7 @@ Product Done
 
 По умолчанию частичный auto-release распределяется пропорционально между оставшимися плановыми бонусами сотрудников.
 
-**Delivery developer pool (Backend + Frontend):** доля бонуса роли Developer по Product / Extension делится **70%** Backend (`developerId`) / **30%** Frontend (`frontendDeveloperId`). Если Frontend не назначен — Backend **100%**. Правило не распространяется на PM, Designer, Seller и прочие роли product pool.
+**Delivery developer pool (Backend + Frontend):** доля бонуса роли Developer по Product / Extension делится **70%** Backend (`developerId`) / **30%** Frontend (`frontendDeveloperId`) только когда это **разные** сотрудники. Если Frontend не назначен или совпадает с Backend — Backend **100%**; отдельная строка Frontend не создаётся. Frontend без Backend запрещён. Правило не распространяется на PM, Designer, Seller и прочие роли product pool.
 
 Пример:
 

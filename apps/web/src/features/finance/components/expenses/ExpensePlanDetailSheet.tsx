@@ -7,6 +7,7 @@ import {
   DetailSheetTabBar,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
+  EntityItemHost,
   ErrorState,
   LoadingState,
 } from '@/components/shared';
@@ -19,6 +20,7 @@ import { ExpensePlanDetailSheetLifecycle } from '@/features/finance/components/e
 import { ExpensePlanGeneralTab } from '@/features/finance/components/expenses/ExpensePlanGeneralTab';
 import { ExpensePlanHistoryTab } from '@/features/finance/components/expenses/ExpensePlanHistoryTab';
 import type { ExpensePlanDetailSheetTab } from '@/features/finance/components/expenses/expense-plan-detail-sheet-tabs';
+import { CreateExpenseDialog } from '@/features/finance/components/expenses/CreateExpenseDialog';
 import { GenerateExpenseCardFromPlanDialog } from '@/features/finance/components/expenses/GenerateExpenseCardFromPlanDialog';
 import { useExpensePlanDetail } from '@/features/finance/hooks/use-expense-plan-detail';
 import {
@@ -65,11 +67,16 @@ export function ExpensePlanDetailSheet({
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [cardsRefreshNonce, setCardsRefreshNonce] = useState(0);
   const generalDirtyRef = useRef(false);
+
+  const bumpCards = useCallback(() => setCardsRefreshNonce((n) => n + 1), []);
 
   useEffect(() => {
     if (!open) {
       setGenerateOpen(false);
+      setCreateOpen(false);
       setActiveTab('general');
     }
   }, [open]);
@@ -157,16 +164,18 @@ export function ExpensePlanDetailSheet({
   }, [generalSnap]);
 
   const openGenerate = useCallback(() => setGenerateOpen(true), []);
+  const openCreate = useCallback(() => setCreateOpen(true), []);
+  const canMutateCards = plan != null && !saving && plan.status === 'ACTIVE';
 
   const detailSheetTabs = useMemo(
     () =>
       buildExpensePlanDetailSheetTabs({
-        canGenerateCard: plan != null && !saving && plan.status === 'ACTIVE',
-        onGenerateCard: openGenerate,
+        canCreateCard: canMutateCards,
+        onCreateCard: openCreate,
         tabLabel: (value) => t(`sheet.tabs.${value}`),
-        generateAriaLabel: t('sheet.generateAria'),
+        createAriaLabel: t('sheet.createCardAria'),
       }),
-    [openGenerate, plan, saving, t],
+    [canMutateCards, openCreate, t],
   );
 
   if (!hostMounted) return null;
@@ -175,7 +184,13 @@ export function ExpensePlanDetailSheet({
   const displayName = generalDraft?.name.trim() || plan?.name || '';
 
   return (
-    <>
+    <EntityItemHost
+      nested
+      onEntityChanged={() => {
+        bumpCards();
+        void fetchPlan();
+      }}
+    >
       <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
         <EntityDetailSheetContent
           open={open}
@@ -226,8 +241,11 @@ export function ExpensePlanDetailSheet({
                   {activeTab === 'cards' ? (
                     <ExpensePlanCardsTab
                       plan={plan}
+                      refreshNonce={cardsRefreshNonce}
                       onGenerateClick={openGenerate}
-                      generateDisabled={saving || plan.status === 'CANCELLED'}
+                      onCreateClick={openCreate}
+                      generateDisabled={!canMutateCards}
+                      createDisabled={!canMutateCards}
                     />
                   ) : null}
                   {activeTab === 'history' ? <ExpensePlanHistoryTab /> : null}
@@ -252,9 +270,25 @@ export function ExpensePlanDetailSheet({
           plan={plan}
           open={generateOpen}
           onOpenChange={setGenerateOpen}
-          onGenerated={() => void fetchPlan()}
+          onGenerated={() => {
+            bumpCards();
+            void fetchPlan();
+          }}
         />
       ) : null}
-    </>
+
+      {plan ? (
+        <CreateExpenseDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          lockedExpensePlan={plan}
+          forceNestedBackdrop
+          onCreated={() => {
+            bumpCards();
+            void fetchPlan();
+          }}
+        />
+      ) : null}
+    </EntityItemHost>
   );
 }

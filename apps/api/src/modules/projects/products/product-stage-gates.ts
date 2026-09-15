@@ -34,6 +34,7 @@ interface ProductForStageGate {
   extensions?: Array<{ status: string }>;
   tasks?: Array<{ status: string }>;
   tickets?: Array<{ status: string }>;
+  missingRequiredAccessSlotKeys?: string[];
 }
 
 export function validateProductTransition(current: ProductStatusEnum, target: ProductStatusEnum) {

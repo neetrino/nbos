@@ -1,18 +1,8 @@
 'use client';
 
-import { type FormEvent, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { NbosDatePicker } from '@/components/shared/date-picker';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { type FormEvent, useState } from 'react';
+import { CreateFormDialog, FormFieldRow, InlineField } from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { useTranslations } from 'next-intl';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensesApi, type AddExpensePaymentPayload, type Expense } from '@/lib/api/finance';
@@ -25,11 +15,16 @@ interface AddExpensePaymentDialogProps {
   expenseId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Full expense from API (includes ledger fields and synced workflow status). */
   onRecorded: (expense: Expense) => void;
 }
 
-export function AddExpensePaymentDialog({
+export function AddExpensePaymentDialog(props: AddExpensePaymentDialogProps) {
+  return (
+    <AddExpensePaymentDialogSession key={props.open ? props.expenseId : 'closed'} {...props} />
+  );
+}
+
+function AddExpensePaymentDialogSession({
   expenseId,
   open,
   onOpenChange,
@@ -42,91 +37,96 @@ export function AddExpensePaymentDialog({
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    setAmount('');
-    setPaymentDate(todayDateInputValue());
-    setNotes('');
-    setError(null);
-  }, [open]);
-
   const parsed = parseFloat(amount.replace(/\s/g, ''));
   const canSubmit = Boolean(Number.isFinite(parsed) && parsed > 0 && paymentDate.trim());
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!canSubmit) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const when = new Date(`${paymentDate.trim()}T12:00:00.000Z`);
-      const payload: AddExpensePaymentPayload = {
-        amount: parsed,
-        paymentDate: when.toISOString(),
-        notes: notes.trim() ? notes.trim() : undefined,
-      };
-      const updated = await expensesApi.addPayment(expenseId, payload);
-      onRecorded(updated);
-      onOpenChange(false);
-    } catch (caught) {
-      setError(getApiErrorMessage(caught, t('errors.recordPayment')));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[440px]" forceNestedBackdrop>
-        <DialogHeader>
-          <DialogTitle>{t('dialogs.addPaymentTitle')}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error ? (
-            <p className="text-destructive text-sm" role="alert">
-              {error}
-            </p>
-          ) : null}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>{t('payments.amountRequired')}</Label>
-              <Input
-                inputMode="decimal"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-                autoFocus
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{t('payments.dateRequired')}</Label>
-              <NbosDatePicker
-                value={paymentDate}
-                onChange={setPaymentDate}
-                aria-label={t('payments.dateAria')}
-              />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>{t('payments.notes')}</Label>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              placeholder={t('payments.notesOptional')}
-            />
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              {tCommon('cancel')}
-            </Button>
-            <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? tCommon('saving') : t('actions.recordPayment')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('dialogs.addPaymentTitle')}
+      error={error}
+      submitting={loading}
+      canSubmit={canSubmit}
+      submitLabel={t('actions.recordPayment')}
+      submittingLabel={tCommon('saving')}
+      cancelLabel={tCommon('cancel')}
+      forceNestedBackdrop
+      onSubmit={(event) =>
+        void submitExpensePayment({
+          event,
+          canSubmit,
+          parsed,
+          paymentDate,
+          notes,
+          expenseId,
+          setLoading,
+          setError,
+          onRecorded,
+          onOpenChange,
+          fallbackError: t('errors.recordPayment'),
+        })
+      }
+    >
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
+          label={t('payments.amountRequired')}
+          type="money"
+          value={amount}
+          placeholder="0.00"
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={setAmount}
+        />
+        <InlineField
+          variant="controlled"
+          label={t('payments.dateRequired')}
+          type="date"
+          value={paymentDate}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={setPaymentDate}
+        />
+      </FormFieldRow>
+      <InlineField
+        variant="controlled"
+        label={t('payments.notes')}
+        type="textarea"
+        value={notes}
+        placeholder={t('payments.notesOptional')}
+        onValueChange={setNotes}
+      />
+    </CreateFormDialog>
   );
+}
+
+async function submitExpensePayment(options: {
+  event: FormEvent;
+  canSubmit: boolean;
+  parsed: number;
+  paymentDate: string;
+  notes: string;
+  expenseId: string;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  onRecorded: (expense: Expense) => void;
+  onOpenChange: (open: boolean) => void;
+  fallbackError: string;
+}): Promise<void> {
+  options.event.preventDefault();
+  if (!options.canSubmit) return;
+  options.setLoading(true);
+  options.setError(null);
+  try {
+    const payload: AddExpensePaymentPayload = {
+      amount: options.parsed,
+      paymentDate: new Date(`${options.paymentDate.trim()}T12:00:00.000Z`).toISOString(),
+      notes: options.notes.trim() ? options.notes.trim() : undefined,
+    };
+    options.onRecorded(await expensesApi.addPayment(options.expenseId, payload));
+    options.onOpenChange(false);
+  } catch (caught) {
+    options.setError(getApiErrorMessage(caught, options.fallbackError));
+  } finally {
+    options.setLoading(false);
+  }
 }

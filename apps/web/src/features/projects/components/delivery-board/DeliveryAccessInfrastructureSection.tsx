@@ -5,16 +5,20 @@ import { useTranslations } from 'next-intl';
 import { KeyRound, Loader2 } from 'lucide-react';
 import { DetailSheetCollapsibleSection } from '@/components/shared';
 import { CredentialFormSheet } from '@/features/credentials/components/credential-form-sheet';
-import { UNIVERSAL_ACCESS_SLOT_KEY } from '@nbos/shared';
+import { PRODUCT_DONE_REQUIRED_ACCESS_SLOT_KEYS, UNIVERSAL_ACCESS_SLOT_KEY } from '@nbos/shared';
 import { productsApi, type ProductAccessSlotRow } from '@/lib/api/products';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { CreateAccessSlotCredentialDialog } from './delivery-access-slot-dialogs';
 import { DeliveryAccessSlotField } from './DeliveryAccessSlotField';
+import { deliveryStageGateSectionClass } from './delivery-stage-gate-highlight';
 
 interface DeliveryAccessInfrastructureSectionProps {
   projectId: string;
   productId: string;
+  productName: string;
   onRefreshDetail: () => void;
+  gateRequiredFields?: ReadonlySet<string>;
   /** Optional right column (languages, payment summary, etc.) inside the same card. */
   setupPanel?: ReactNode;
 }
@@ -22,7 +26,9 @@ interface DeliveryAccessInfrastructureSectionProps {
 export function DeliveryAccessInfrastructureSection({
   projectId,
   productId,
+  productName,
   onRefreshDetail,
+  gateRequiredFields = new Set(),
   setupPanel,
 }: DeliveryAccessInfrastructureSectionProps) {
   const t = useTranslations('deliveryBoard');
@@ -43,28 +49,39 @@ export function DeliveryAccessInfrastructureSection({
       const res = await productsApi.getAccessSlots(productId);
       setSlots(res.slots);
     } catch {
-      toast.error('Could not load access slots.');
+      toast.error(t('access.loadFailed'));
       setSlots([]);
     } finally {
       setLoading(false);
     }
-  }, [productId]);
+  }, [productId, t]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
   async function handleUnbind(bindingId: string) {
-    if (!window.confirm('Remove this link? The credential stays in the vault.')) {
+    if (!window.confirm(t('access.unlinkConfirm'))) {
       return;
     }
     try {
       await productsApi.unbindAccessSlotBinding(productId, bindingId);
-      toast.success('Link removed');
+      toast.success(t('access.linkRemoved'));
       await load();
       onRefreshDetail();
     } catch {
-      toast.error('Could not remove link.');
+      toast.error(t('access.unlinkFailed'));
+    }
+  }
+
+  async function handleBind(slotKey: string, credentialId: string) {
+    try {
+      await productsApi.bindAccessSlot(productId, { slotKey, credentialId });
+      toast.success(t('access.linkSaved'));
+      await load();
+      onRefreshDetail();
+    } catch {
+      toast.error(t('access.linkFailed'));
     }
   }
 
@@ -90,7 +107,9 @@ export function DeliveryAccessInfrastructureSection({
               setSheetCredentialId(id);
               setSheetOpen(true);
             }}
+            productId={productId}
             onCreate={() => setCreateSlot(slot)}
+            onBind={(credentialId) => void handleBind(slot.slotKey, credentialId)}
             onUnbind={(bindingId) => void handleUnbind(bindingId)}
           />
         ))}
@@ -109,7 +128,7 @@ export function DeliveryAccessInfrastructureSection({
         icon={<KeyRound size={12} />}
         open={sectionOpen}
         onOpenChange={setSectionOpen}
-        className="shadow-sm"
+        className={cn('shadow-sm', deliveryStageGateSectionClass(gateRequiredFields, 'access'))}
       >
         {setupPanel ? (
           <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
@@ -148,6 +167,7 @@ export function DeliveryAccessInfrastructureSection({
           }}
           projectId={projectId}
           productId={productId}
+          productName={productName}
           slot={createSlot}
           onBound={() => {
             setCreateSlot(null);
@@ -167,7 +187,7 @@ const DELIVERY_ACCESS_SLOT_KEYS = [
   UNIVERSAL_ACCESS_SLOT_KEY,
 ] as const;
 const DELIVERY_ACCESS_SLOT_KEY_SET = new Set<string>(DELIVERY_ACCESS_SLOT_KEYS);
-const DELIVERY_REQUIRED_SLOT_KEYS = new Set(['DOMAIN', 'HOSTING']);
+const DELIVERY_REQUIRED_SLOT_KEYS = new Set<string>(PRODUCT_DONE_REQUIRED_ACCESS_SLOT_KEYS);
 
 function visibleDeliveryAccessSlots(slots: ProductAccessSlotRow[]): ProductAccessSlotRow[] {
   const byKey = new Map(slots.map((slot) => [slot.slotKey, slot]));

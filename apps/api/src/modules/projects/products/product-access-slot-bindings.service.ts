@@ -7,266 +7,134 @@ import {
 } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import {
-  CREDENTIAL_CATEGORY_CODES,
   findAccessSlotDefinition,
-  getAccessSlotsForProduct,
   isCategoryAllowedForSlot,
+  isCredentialBindableToProductProject,
   resolveEffectiveAccessSlotKey,
-  UNIVERSAL_ACCESS_SLOT_KEY,
-  type AccessSlotDefinition,
+  shouldWriteCredentialProductIdOnBind,
 } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../../database.module';
+import type { CredentialsAccessContext } from '../../credentials/credentials-access';
+import { PlatformAccessResolverService } from '../../platform-access/platform-access-resolver.service';
+import {
+  BINDING_CREDENTIAL_SELECT,
+  buildAccessSlotRows,
+  type ProductAccessSlotRowDto,
+} from './product-access-slot-rows';
+import {
+  ACCESS_SLOT_CANDIDATE_PAGE_SIZE,
+  buildAccessSlotCandidateWhere,
+  pageAccessSlotCandidates,
+} from './product-access-slot-candidates';
+import {
+  buildAccessSlotVisibilityWhere,
+  loadRevealableCredentialIds,
+} from './product-access-slot-revealable';
 
-const KNOWN_ORPHAN_SLOT_LABELS: Record<string, string> = {
-  DOMAIN: 'Domain account',
-  HOSTING: 'Hosting account',
-  ADMIN: 'Admin / CMS access',
-  MAIL: 'Mail account',
-  SERVICE: 'Service account',
-  API_INTEGRATION: 'API / integration',
-  APP_STORE: 'App store account',
-  DATABASE: 'Database access',
-  [UNIVERSAL_ACCESS_SLOT_KEY]: 'Other / not listed',
-};
+export type { AccessSlotBindingEntry, ProductAccessSlotRowDto } from './product-access-slot-rows';
 
-export type AccessSlotBindingEntry = {
-  bindingId: string;
-  boundCredential: {
-    id: string;
-    name: string;
-    category: string;
-    credentialType: string;
-    login: string | null;
-    url: string | null;
-  } | null;
-};
-
-export type ProductAccessSlotRowDto = {
-  slotKey: string;
-  label: string;
-  required: boolean;
-  kind: 'credential';
-  allowedCategories: string[];
-  defaultCredentialType: string | null;
-  bindings: AccessSlotBindingEntry[];
+export type AccessSlotCandidateDto = {
+  id: string;
+  name: string;
+  category: string;
+  login: string | null;
+  provider: string | null;
 };
 
 @Injectable()
 export class ProductAccessSlotBindingsService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly platformAccessResolver: PlatformAccessResolverService,
+  ) {}
 
-  async getProductAccessSlots(productId: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
-      select: {
-        id: true,
-        projectId: true,
-        productCategory: true,
-        productType: true,
-      },
-    });
-    if (!product) throw new NotFoundException('Product not found');
-
-    const definitions = getAccessSlotsForProduct(product.productCategory, product.productType);
-    const definitionKeys = new Set(definitions.map((d) => d.slotKey));
-
-    const bindings = await this.prisma.productAccessSlotBinding.findMany({
-      where: { productId },
-      orderBy: [{ slotKey: 'asc' }, { createdAt: 'asc' }],
-      include: {
-        credential: {
-          select: {
-            id: true,
-            name: true,
-            category: true,
-            credentialType: true,
-            login: true,
-            url: true,
-            trashedAt: true,
-          },
-        },
-      },
-    });
-
-    const bySlot = new Map<string, typeof bindings>();
-    for (const b of bindings) {
-      const list = bySlot.get(b.slotKey) ?? [];
-      list.push(b);
-      bySlot.set(b.slotKey, list);
-    }
-
-    const rows: ProductAccessSlotRowDto[] = definitions.map((def) =>
-      this.mapDefinitionToRow(def, bySlot.get(def.slotKey) ?? []),
-    );
-
-    const orphanKeys = [...bySlot.keys()].filter((k) => !definitionKeys.has(k));
-    for (const slotKey of orphanKeys.sort()) {
-      rows.push(this.orphanRow(slotKey, bySlot.get(slotKey) ?? []));
-    }
-
-    return {
-      productId: product.id,
-      slots: rows,
-    };
+  async getProductAccessSlots(productId: string, access: CredentialsAccessContext) {
+    const { product, rows } = await this.loadSlotRows(productId, access);
+    return { productId: product.id, slots: rows };
   }
 
-  private mapDefinitionToRow(
-    def: AccessSlotDefinition,
-    slotBindings: Array<{
-      id: string;
-      credential: {
-        id: string;
-        name: string;
-        category: string;
-        credentialType: string;
-        login: string | null;
-        url: string | null;
-        trashedAt: Date | null;
-      };
-    }>,
-  ): ProductAccessSlotRowDto {
-    return {
-      slotKey: def.slotKey,
-      label: def.label,
-      required: def.required,
-      kind: def.kind,
-      allowedCategories: [...def.allowedCategories],
-      defaultCredentialType: def.defaultCredentialType ?? null,
-      bindings: slotBindings.map((b) => ({
-        bindingId: b.id,
-        boundCredential: this.toSummary(b.credential),
-      })),
-    };
-  }
-
-  private orphanRow(
+  async listAccessSlotCandidates(
+    productId: string,
     slotKey: string,
-    slotBindings: Array<{
-      id: string;
-      credential: {
-        id: string;
-        name: string;
-        category: string;
-        credentialType: string;
-        login: string | null;
-        url: string | null;
-        trashedAt: Date | null;
-      };
-    }>,
-  ): ProductAccessSlotRowDto {
-    return {
-      slotKey,
-      label: KNOWN_ORPHAN_SLOT_LABELS[slotKey] ?? slotKey,
-      required: false,
-      kind: 'credential',
-      allowedCategories: [...CREDENTIAL_CATEGORY_CODES],
-      defaultCredentialType: null,
-      bindings: slotBindings.map((b) => ({
-        bindingId: b.id,
-        boundCredential: this.toSummary(b.credential),
-      })),
-    };
-  }
-
-  private toSummary(cred: {
-    trashedAt: Date | null;
-    id: string;
-    name: string;
-    category: string;
-    credentialType: string;
-    login: string | null;
-    url: string | null;
-  }): AccessSlotBindingEntry['boundCredential'] {
-    if (cred.trashedAt) return null;
-    return {
-      id: cred.id,
-      name: cred.name,
-      category: cred.category,
-      credentialType: cred.credentialType,
-      login: cred.login,
-      url: cred.url,
-    };
-  }
-
-  async bindProductAccessSlot(productId: string, requestedSlotKey: string, credentialId: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
-      select: {
-        id: true,
-        projectId: true,
-        productCategory: true,
-        productType: true,
-      },
-    });
-    if (!product) throw new NotFoundException('Product not found');
-
+    search: string | undefined,
+    access: CredentialsAccessContext,
+  ): Promise<{ items: AccessSlotCandidateDto[]; hasMore: boolean }> {
+    if (!slotKey?.trim()) {
+      throw new BadRequestException('slotKey is required');
+    }
+    const product = await this.requireProduct(productId);
     const requestedDef = findAccessSlotDefinition(
       product.productCategory,
       product.productType,
-      requestedSlotKey,
+      slotKey,
     );
     if (!requestedDef) {
-      throw new BadRequestException(`Unknown access slot for this product: ${requestedSlotKey}`);
+      throw new BadRequestException(`Unknown access slot for this product: ${slotKey}`);
     }
 
-    const credential = await this.prisma.credential.findUnique({
-      where: { id: credentialId },
+    const bound = await this.prisma.productAccessSlotBinding.findMany({
+      where: { productId },
+      select: { credentialId: true },
     });
-    if (!credential || credential.trashedAt) {
-      throw new NotFoundException('Credential not found');
-    }
-    if (!credential.projectId || credential.projectId !== product.projectId) {
-      throw new ForbiddenException('Credential must belong to this product project');
-    }
-    if (!isCategoryAllowedForSlot(requestedDef, credential.category)) {
-      throw new BadRequestException(
-        `Credential category ${credential.category} is not allowed for requested slot ${requestedSlotKey}`,
-      );
-    }
+    const visibility = await buildAccessSlotVisibilityWhere(
+      this.prisma,
+      this.platformAccessResolver,
+      access,
+    );
+    const rows = await this.prisma.credential.findMany({
+      where: buildAccessSlotCandidateWhere({
+        productProjectId: product.projectId,
+        allowedCategories: requestedDef.allowedCategories,
+        excludeCredentialIds: bound.map((row) => row.credentialId),
+        visibility,
+        search,
+      }),
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        login: true,
+        provider: { select: { name: true } },
+      },
+      orderBy: { name: 'asc' },
+      take: ACCESS_SLOT_CANDIDATE_PAGE_SIZE + 1,
+    });
+    return pageAccessSlotCandidates(
+      rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        category: row.category,
+        login: row.login,
+        provider: row.provider?.name ?? null,
+      })),
+    );
+  }
 
-    const effectiveSlotKey = resolveEffectiveAccessSlotKey(
-      product.productCategory,
-      product.productType,
+  async bindProductAccessSlot(
+    productId: string,
+    requestedSlotKey: string,
+    credentialId: string,
+    access: CredentialsAccessContext,
+  ) {
+    const product = await this.requireProduct(productId);
+    const { credential, effectiveDef, effectiveSlotKey } = await this.assertBindable(
+      product,
       requestedSlotKey,
-      credential.category,
+      credentialId,
     );
-
-    const effectiveDef = findAccessSlotDefinition(
-      product.productCategory,
-      product.productType,
-      effectiveSlotKey,
-    );
-    if (!effectiveDef) {
-      throw new BadRequestException(
-        `Resolved slot is not valid for this product: ${effectiveSlotKey}`,
-      );
-    }
-    if (!isCategoryAllowedForSlot(effectiveDef, credential.category)) {
-      throw new BadRequestException(
-        `Credential category ${credential.category} is not allowed for slot ${effectiveSlotKey}`,
-      );
-    }
-
-    const existingForCredential = await this.prisma.productAccessSlotBinding.findFirst({
-      where: { productId, credentialId },
+    const writeProductId = shouldWriteCredentialProductIdOnBind({
+      credentialProjectId: credential.projectId,
+      credentialProductId: credential.productId,
     });
-    if (existingForCredential) {
-      throw new BadRequestException(
-        'This credential is already linked to an access slot for this product. Unlink it first.',
-      );
-    }
-
     await this.prisma.$transaction(async (tx) => {
       await tx.productAccessSlotBinding.create({
         data: { productId, slotKey: effectiveSlotKey, credentialId },
       });
-      await tx.credential.update({
-        where: { id: credentialId },
-        data: { productId },
-      });
+      if (writeProductId) {
+        await tx.credential.update({ where: { id: credentialId }, data: { productId } });
+      }
     });
-
-    const slotsPayload = await this.getProductAccessSlots(productId);
+    const slotsPayload = await this.getProductAccessSlots(productId, access);
     return {
       ...slotsPayload,
       bindMeta: {
@@ -277,13 +145,99 @@ export class ProductAccessSlotBindingsService {
     };
   }
 
-  async unbindProductAccessSlotBinding(productId: string, bindingId: string) {
+  async unbindProductAccessSlotBinding(
+    productId: string,
+    bindingId: string,
+    access: CredentialsAccessContext,
+  ) {
     const row = await this.prisma.productAccessSlotBinding.findFirst({
       where: { id: bindingId, productId },
     });
     if (!row) throw new NotFoundException('Binding not found');
-
     await this.prisma.productAccessSlotBinding.delete({ where: { id: bindingId } });
-    return this.getProductAccessSlots(productId);
+    return this.getProductAccessSlots(productId, access);
+  }
+
+  private async assertBindable(
+    product: { id: string; projectId: string; productCategory: string; productType: string },
+    requestedSlotKey: string,
+    credentialId: string,
+  ) {
+    const requestedDef = findAccessSlotDefinition(
+      product.productCategory,
+      product.productType,
+      requestedSlotKey,
+    );
+    if (!requestedDef) {
+      throw new BadRequestException(`Unknown access slot for this product: ${requestedSlotKey}`);
+    }
+    const credential = await this.prisma.credential.findUnique({ where: { id: credentialId } });
+    if (!credential || credential.trashedAt) {
+      throw new NotFoundException('Credential not found');
+    }
+    if (!isCredentialBindableToProductProject(credential.projectId, product.projectId)) {
+      throw new ForbiddenException('Credential must belong to this product project');
+    }
+    if (!isCategoryAllowedForSlot(requestedDef, credential.category)) {
+      throw new BadRequestException(
+        `Credential category ${credential.category} is not allowed for requested slot ${requestedSlotKey}`,
+      );
+    }
+    const existingForCredential = await this.prisma.productAccessSlotBinding.findFirst({
+      where: { productId: product.id, credentialId },
+    });
+    if (existingForCredential) {
+      throw new BadRequestException(
+        'This credential is already linked to an access slot for this product. Unlink it first.',
+      );
+    }
+    const effectiveSlotKey = resolveEffectiveAccessSlotKey(
+      product.productCategory,
+      product.productType,
+      requestedSlotKey,
+      credential.category,
+    );
+    const effectiveDef = findAccessSlotDefinition(
+      product.productCategory,
+      product.productType,
+      effectiveSlotKey,
+    );
+    if (!effectiveDef || !isCategoryAllowedForSlot(effectiveDef, credential.category)) {
+      throw new BadRequestException(
+        `Credential category ${credential.category} is not allowed for slot ${effectiveSlotKey}`,
+      );
+    }
+    return { credential, effectiveDef, effectiveSlotKey };
+  }
+
+  private async requireProduct(productId: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true, projectId: true, productCategory: true, productType: true },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+    return product;
+  }
+
+  private async loadSlotRows(productId: string, access: CredentialsAccessContext) {
+    const product = await this.requireProduct(productId);
+    const bindings = await this.prisma.productAccessSlotBinding.findMany({
+      where: { productId },
+      orderBy: [{ slotKey: 'asc' }, { createdAt: 'asc' }],
+      include: { credential: { select: BINDING_CREDENTIAL_SELECT } },
+    });
+    const revealable = await loadRevealableCredentialIds(
+      this.prisma,
+      this.platformAccessResolver,
+      access,
+      bindings.map((row) => row.credential.id),
+    );
+    const rows: ProductAccessSlotRowDto[] = buildAccessSlotRows(
+      product.productCategory,
+      product.productType,
+      bindings,
+      revealable,
+    );
+    return { product, rows };
   }
 }

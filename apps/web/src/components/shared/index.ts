@@ -145,6 +145,7 @@ export {
   useCompanyRelationSearch,
   useProjectRelationSearch,
   useProductRelationSearch,
+  useAccessSlotCredentialSearch,
 } from './relation-picker';
 export { ListMutationErrorBanner } from './ListMutationErrorBanner';
 export { DetailSheetFormFooter, type DetailSheetFormFooterProps } from './DetailSheetFormFooter';
@@ -252,6 +253,18 @@ export {
   QuickCreateTaskDialog,
   type QuickCreateTaskDialogProps,
 } from './quick-create-task/QuickCreateTaskDialog';
+export {
+  CreateFormDialog,
+  CreateFormSwitchField,
+  FormFieldRow,
+  CREATE_FORM_BODY_CLASS,
+  CREATE_FORM_DIALOG_CONTENT_CLASS,
+  FORM_FIELD_CELL_CLASS,
+  FORM_FIELD_ROW_2_CLASS,
+  FORM_FIELD_ROW_3_CLASS,
+  type CreateFormDialogProps,
+  type CreateFormDialogSecondaryAction,
+} from './create-form';
 export {
   EntityNotesField,
   EntityNotesSection,

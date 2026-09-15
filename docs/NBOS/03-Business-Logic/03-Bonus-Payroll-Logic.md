@@ -150,7 +150,7 @@ Designer:   50,000
 Total:     300,000
 ```
 
-Если Frontend не назначен, Backend получает всю delivery developer pool (здесь 120,000).
+Если Frontend не назначен или совпадает с Backend, Backend получает всю delivery developer pool (здесь 120,000).
 
 ### До сдачи продукта
 
@@ -232,12 +232,12 @@ New client payment
 
 Правило относится **только** к доле бонуса роли Developer по Product / Extension (не к PM, Designer и не ко всему product bonus pool):
 
-| Назначение на Product                                 | Backend                 | Frontend               |
-| ----------------------------------------------------- | ----------------------- | ---------------------- |
-| Оба назначены (`developerId` + `frontendDeveloperId`) | **70%** developer pool  | **30%** developer pool |
-| Только Backend (`developerId`)                        | **100%** developer pool | —                      |
+| Назначение на Product                                         | Backend                 | Frontend               |
+| ------------------------------------------------------------- | ----------------------- | ---------------------- |
+| Два разных сотрудника (`developerId` ≠ `frontendDeveloperId`) | **70%** developer pool  | **30%** developer pool |
+| Только Backend, или один человек в обоих слотах               | **100%** developer pool | —                      |
 
-Если Frontend не назначен, Backend получает **100%** delivery developer pool; отдельная строка Frontend не создаётся.
+Если Frontend не назначен или совпадает с Backend, Backend получает **100%** delivery developer pool; отдельная строка Frontend не создаётся. Frontend без Backend запрещён.
 
 ### Триггер начисления
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Subscription } from '@/lib/api/finance';
 import {
+  buildCreateSubscriptionFormDefaults,
   buildSubscriptionCreatePayload,
   buildSubscriptionUpdatePayload,
   EMPTY_SUBSCRIPTION_FORM,
@@ -33,6 +34,22 @@ const baseSubscription: Subscription = {
   project: { id: 'proj-1', code: 'P1', name: 'Project One' },
   invoices: [],
 };
+
+describe('buildCreateSubscriptionFormDefaults', () => {
+  it('locks product and project ids when provided', () => {
+    expect(
+      buildCreateSubscriptionFormDefaults({ productId: ' prod-1 ', projectId: ' proj-1 ' }),
+    ).toMatchObject({
+      ...EMPTY_SUBSCRIPTION_FORM,
+      productId: 'prod-1',
+      projectId: 'proj-1',
+    });
+  });
+
+  it('keeps empty ownership when omitted', () => {
+    expect(buildCreateSubscriptionFormDefaults()).toEqual(EMPTY_SUBSCRIPTION_FORM);
+  });
+});
 
 describe('getSubscriptionPeriodAmountLabel', () => {
   it('reflects the selected billing period', () => {

@@ -35,6 +35,7 @@ export function getClientServiceExpenseFormDefaults(
     name: service.name,
     amount: formatMoneyDefault(service.ourCost),
     dueDate: clientServiceTaskDefaultDueDate(service.renewalDate) ?? '',
+    expensePlanId: '',
   };
 }
 

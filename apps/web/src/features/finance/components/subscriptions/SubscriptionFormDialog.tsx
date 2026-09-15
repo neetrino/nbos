@@ -1,37 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Handshake, Layers, Receipt } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { DetailSheetFieldSegmented, RelationPickerField } from '@/components/shared';
+import { useEffect, useRef, useState } from 'react';
+import { CreateFormDialog, InlineField } from '@/components/shared';
 import {
   usePartnerRelationSearch,
   useProductRelationSearch,
   useRelationPickerActions,
 } from '@/components/shared/relation-picker';
-import { Label } from '@/components/ui/label';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { SUBSCRIPTION_TYPES } from '@/features/finance/constants/finance';
-import { TAX_STATUSES } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
-import {
-  EMPTY_SUBSCRIPTION_FORM,
+  buildCreateSubscriptionFormDefaults,
   subscriptionToFormState,
   type SubscriptionFormState,
 } from '@/features/finance/utils/subscription-form-state';
+import { SubscriptionFormDialogProductField } from '@/features/finance/components/subscriptions/subscription-form-dialog-product-field';
 import { buildBillingPeriodChangeConfirmDescription } from '@/features/finance/utils/subscription-billing-period-change';
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import { SubscriptionBillingPeriodConfirmDialog } from '@/features/finance/components/subscriptions/SubscriptionBillingPeriodConfirmDialog';
@@ -41,16 +22,16 @@ import { useSubscriptionFormDialogActions } from '@/features/finance/components/
 import type { Subscription } from '@/lib/api/finance';
 import { productsApi } from '@/lib/api/products';
 
-function normalizeSelectValue(value: string | null): string {
-  return value ?? '';
-}
-
 interface SubscriptionFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mode: 'create' | 'edit';
   subscription?: Subscription | null;
   onSaved: (subscription: Subscription) => void;
+  /** Create from Product Finance: product is locked to this id. */
+  defaultProductId?: string | null;
+  defaultProjectId?: string | null;
+  defaultProductLabel?: string | null;
 }
 
 export function SubscriptionFormDialog({
@@ -59,8 +40,13 @@ export function SubscriptionFormDialog({
   mode,
   subscription = null,
   onSaved,
+  defaultProductId = null,
+  defaultProjectId = null,
+  defaultProductLabel = null,
 }: SubscriptionFormDialogProps) {
-  const [form, setForm] = useState<SubscriptionFormState>({ ...EMPTY_SUBSCRIPTION_FORM });
+  const [form, setForm] = useState<SubscriptionFormState>(() =>
+    buildCreateSubscriptionFormDefaults(),
+  );
   const [editSnap, setEditSnap] = useState<SubscriptionFormState | null>(null);
   const [productLabel, setProductLabel] = useState<string | null>(null);
   const [partnerLabel, setPartnerLabel] = useState<string | null>(null);
@@ -93,27 +79,29 @@ export function SubscriptionFormDialog({
     onOpenChange,
   });
 
-  const handleOpenChange = (next: boolean) => {
-    if (next) {
-      if (mode === 'edit' && subscription) {
-        const state = subscriptionToFormState(subscription);
-        setForm(state);
-        setEditSnap(state);
-        setProductLabel(subscription.product?.name ?? null);
-        setPartnerLabel(subscription.partner?.name ?? null);
-      } else {
-        setForm({ ...EMPTY_SUBSCRIPTION_FORM });
-        setEditSnap(null);
-        setProductLabel(null);
-        setPartnerLabel(null);
-      }
-    }
-    onOpenChange(next);
-  };
+  const productLocked = mode === 'create' && Boolean(defaultProductId?.trim());
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
-    if (!open) setProductResolving(false);
-  }, [open]);
+    const justOpened = open && !wasOpenRef.current;
+    wasOpenRef.current = open;
+    if (!open) {
+      setProductResolving(false);
+      return;
+    }
+    if (!justOpened) return;
+    resetFormForOpen({
+      mode,
+      subscription,
+      defaultProductId,
+      defaultProjectId,
+      defaultProductLabel,
+      setForm,
+      setEditSnap,
+      setProductLabel,
+      setPartnerLabel,
+    });
+  }, [open, mode, subscription, defaultProductId, defaultProjectId, defaultProductLabel]);
 
   const handleProductSelect = async (productId: string, label: string) => {
     setProductLabel(label);
@@ -132,120 +120,73 @@ export function SubscriptionFormDialog({
     }
   };
 
+  const patchForm = (partial: Partial<SubscriptionFormState>) => {
+    setForm((prev) => ({ ...prev, ...partial }));
+  };
+
   return (
     <>
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{mode === 'edit' ? 'Edit subscription' : 'New subscription'}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
-            {formError ? <p className="text-destructive text-sm">{formError}</p> : null}
+      <CreateFormDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        title={mode === 'edit' ? 'Edit subscription' : 'New subscription'}
+        error={formError}
+        submitting={loading}
+        canSubmit={canSubmit && !productResolving}
+        submitLabel={mode === 'edit' ? 'Save changes' : 'Create subscription'}
+        submittingLabel="Saving…"
+        cancelLabel="Cancel"
+        onSubmit={(event) => void handleSubmit(event)}
+      >
+        <InlineField
+          variant="controlled"
+          label="Name"
+          type="text"
+          value={form.name}
+          placeholder="Commercial subscription name"
+          onValueChange={(name) => patchForm({ name })}
+        />
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="sub-name">Name</Label>
-              <Input
-                id="sub-name"
-                value={form.name}
-                onChange={(event) => setForm({ ...form, name: event.target.value })}
-                placeholder="Commercial subscription name"
-                autoComplete="off"
-                required
-              />
-            </div>
+        <SubscriptionFormDialogProductField
+          mode={mode}
+          productLocked={productLocked}
+          productId={form.productId}
+          productLabel={productLabel}
+          productResolving={productResolving}
+          subscription={subscription}
+          searchProducts={searchProducts}
+          productPicker={productPicker}
+          onProductSelect={(id, label) => {
+            void handleProductSelect(id, label);
+          }}
+        />
 
-            {mode === 'create' ? (
-              <RelationPickerField
-                label="Product"
-                entityKind="product"
-                value={form.productId || null}
-                selectionLabel={productLabel}
-                placeholder={productResolving ? 'Resolving product…' : 'Search products…'}
-                icon={<Layers size={12} />}
-                disabled={productResolving}
-                onSearch={searchProducts}
-                onSelect={(id, label) => {
-                  void handleProductSelect(id, label);
-                }}
-                {...productPicker}
-              />
-            ) : (
-              <div className="text-muted-foreground text-sm">
-                Product: {subscription?.product?.name ?? productLabel ?? form.productId}
-                {subscription?.project ? ` · Project ${subscription.project.name}` : null}
-              </div>
-            )}
+        <SubscriptionFormDialogBillingFields
+          form={form}
+          billingValidationError={billingValidationError}
+          onAmountChange={(amount) => patchForm({ amount })}
+          onBillingDayChange={(billingDay) => patchForm({ billingDay })}
+          onTaxStatusChange={(taxStatus) => patchForm({ taxStatus })}
+          onTypeChange={(type) => patchForm({ type })}
+          onPeriodChange={applyPeriodChange}
+        />
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="sub-type">Type</Label>
-              <Select
-                value={form.type}
-                onValueChange={(v) => setForm({ ...form, type: normalizeSelectValue(v) })}
-              >
-                <SelectTrigger id="sub-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SUBSCRIPTION_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <SubscriptionFormDialogBillingFields
-              form={form}
-              billingValidationError={billingValidationError}
-              onAmountChange={(amount) => setForm({ ...form, amount })}
-              onBillingDayChange={(billingDay) => setForm({ ...form, billingDay })}
-              onPeriodChange={applyPeriodChange}
-            />
-
-            <DetailSheetFieldSegmented
-              label="Tax status"
-              icon={<Receipt size={12} />}
-              value={form.taxStatus}
-              options={TAX_STATUSES}
-              onValueChange={(taxStatus) => setForm({ ...form, taxStatus })}
-            />
-
-            <RelationPickerField
-              label="Partner (optional)"
-              entityKind="partner"
-              value={form.partnerId || null}
-              selectionLabel={partnerLabel}
-              placeholder="Search partners…"
-              icon={<Handshake size={12} />}
-              onSearch={searchPartners}
-              onSelect={(id, label) => {
-                setForm((prev) => ({ ...prev, partnerId: id }));
-                setPartnerLabel(label);
-              }}
-              onClear={() => {
-                setForm((prev) => ({ ...prev, partnerId: '' }));
-                setPartnerLabel(null);
-              }}
-              {...partnerPicker}
-            />
-
-            <SubscriptionFormDialogMetaFields
-              form={form}
-              onFormChange={(partial) => setForm({ ...form, ...partial })}
-            />
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading || !canSubmit || productResolving}>
-                {loading ? 'Saving…' : mode === 'edit' ? 'Save changes' : 'Create subscription'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+        <SubscriptionFormDialogMetaFields
+          form={form}
+          partnerLabel={partnerLabel}
+          searchPartners={searchPartners}
+          partnerPicker={partnerPicker}
+          onFormChange={patchForm}
+          onPartnerSelect={(id, label) => {
+            patchForm({ partnerId: id });
+            setPartnerLabel(label);
+          }}
+          onPartnerClear={() => {
+            patchForm({ partnerId: '' });
+            setPartnerLabel(null);
+          }}
+        />
+      </CreateFormDialog>
       {mode === 'edit' && editSnap && subscription ? (
         <SubscriptionBillingPeriodConfirmDialog
           open={saveConfirmOpen}
@@ -260,8 +201,8 @@ export function SubscriptionFormDialog({
             )
           }
           isSubmitting={loading}
-          onOpenChange={(open) => {
-            if (!open) closeSaveConfirm();
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen) closeSaveConfirm();
           }}
           onConfirm={() => void submitForm().finally(() => closeSaveConfirm())}
           forceNestedBackdrop
@@ -269,4 +210,34 @@ export function SubscriptionFormDialog({
       ) : null}
     </>
   );
+}
+
+function resetFormForOpen(options: {
+  mode: 'create' | 'edit';
+  subscription: Subscription | null;
+  defaultProductId: string | null;
+  defaultProjectId: string | null;
+  defaultProductLabel: string | null;
+  setForm: (state: SubscriptionFormState) => void;
+  setEditSnap: (state: SubscriptionFormState | null) => void;
+  setProductLabel: (label: string | null) => void;
+  setPartnerLabel: (label: string | null) => void;
+}): void {
+  if (options.mode === 'edit' && options.subscription) {
+    const state = subscriptionToFormState(options.subscription);
+    options.setForm(state);
+    options.setEditSnap(state);
+    options.setProductLabel(options.subscription.product?.name ?? null);
+    options.setPartnerLabel(options.subscription.partner?.name ?? null);
+    return;
+  }
+  options.setForm(
+    buildCreateSubscriptionFormDefaults({
+      productId: options.defaultProductId,
+      projectId: options.defaultProjectId,
+    }),
+  );
+  options.setEditSnap(null);
+  options.setProductLabel(options.defaultProductLabel?.trim() || null);
+  options.setPartnerLabel(null);
 }

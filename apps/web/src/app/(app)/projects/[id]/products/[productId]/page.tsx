@@ -212,12 +212,7 @@ function ProductDetailPageContent() {
         </TabsContent>
 
         <TabsContent value="credentials" className="mt-5 flex min-h-0 flex-1 flex-col">
-          <ProductCredentialsTab
-            {...credentialsTab}
-            productId={product.id}
-            projectId={params.id}
-            productName={product.name}
-          />
+          <ProductCredentialsTab {...credentialsTab} productId={product.id} projectId={params.id} />
         </TabsContent>
 
         <TabsContent value="finance" className="mt-5 flex min-h-0 flex-1 flex-col">
@@ -225,6 +220,7 @@ function ProductDetailPageContent() {
             <FinanceTab
               projectId={params.id}
               productId={product.id}
+              productName={product.name}
               project={{
                 id: product.project.id,
                 code: product.project.code,
@@ -234,6 +230,9 @@ function ProductDetailPageContent() {
               productOrderId={product.order?.id ?? null}
               orders={projectData.orders as never[]}
               subscriptions={projectData.subscriptions as never[]}
+              onSubscriptionsRefresh={() => {
+                void fetchProjectData();
+              }}
             />
           ) : (
             <div className="text-muted-foreground py-8 text-center text-sm">Loading...</div>

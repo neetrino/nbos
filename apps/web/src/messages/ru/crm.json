@@ -375,6 +375,7 @@
     "noCallsDescription": "Звонки с этим контактом появятся здесь, по датам.",
     "centerTitle": "Звонки",
     "centerDescription": "Все входящие и исходящие, сверху новые.",
+    "centerCount": "{count, plural, one {# звонок} few {# звонка} many {# звонков} other {# звонка}}, сверху новые.",
     "centerEmptyTitle": "Пока нет звонков",
     "centerEmptyDescription": "Входящие и исходящие звонки появятся здесь одним списком. Нажмите, чтобы прослушать.",
     "centerNoPermission": "Нет права смотреть журнал звонков.",

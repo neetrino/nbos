@@ -2,16 +2,8 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { CreateFormDialog, FormFieldRow, InlineField } from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { leadsApi, type Lead } from '@/lib/api/leads';
 import { toast } from 'sonner';
 import { firstReleaseFormErrorCopy, localizeCaughtApiError } from '@/i18n/localize-api-error';
@@ -22,11 +14,17 @@ interface CreateLeadDialogProps {
   onCreated: (lead: Lead, options?: { openFull?: boolean }) => Promise<void> | void;
 }
 
-export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDialogProps) {
+const EMPTY_LEAD_FORM = { name: '', phone: '', email: '' };
+
+export function CreateLeadDialog(props: CreateLeadDialogProps) {
+  return <CreateLeadDialogSession key={props.open ? 'open' : 'closed'} {...props} />;
+}
+
+function CreateLeadDialogSession({ open, onOpenChange, onCreated }: CreateLeadDialogProps) {
   const t = useTranslations('forms');
   const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name: '', phone: '', email: '' });
+  const [form, setForm] = useState(EMPTY_LEAD_FORM);
   const canSubmit = form.name.trim().length > 0;
 
   const createLead = async (openFull: boolean) => {
@@ -40,7 +38,6 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
       });
       await onCreated(lead, { openFull });
       onOpenChange(false);
-      setForm({ name: '', phone: '', email: '' });
     } catch (err) {
       toast.error(
         localizeCaughtApiError(
@@ -60,94 +57,50 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
-        <DialogHeader>
-          <DialogTitle>{t('lead.title')}</DialogTitle>
-        </DialogHeader>
-        <LeadCreateFormFields
-          form={form}
-          loading={loading}
-          canSubmit={canSubmit}
-          onChange={setForm}
-          onCancel={() => onOpenChange(false)}
-          onCreate={createLead}
-        />
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function LeadCreateFormFields({
-  form,
-  loading,
-  canSubmit,
-  onChange,
-  onCancel,
-  onCreate,
-}: {
-  form: { name: string; phone: string; email: string };
-  loading: boolean;
-  canSubmit: boolean;
-  onChange: (form: { name: string; phone: string; email: string }) => void;
-  onCancel: () => void;
-  onCreate: (openFull: boolean) => Promise<void>;
-}) {
-  const t = useTranslations('forms');
-  const tCommon = useTranslations('common');
-
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        void onCreate(false);
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('lead.title')}
+      submitting={loading}
+      canSubmit={canSubmit}
+      submitLabel={t('lead.createLead')}
+      submittingLabel={tCommon('creating')}
+      cancelLabel={tCommon('cancel')}
+      secondaryAction={{
+        label: t('lead.full'),
+        onClick: () => void createLead(true),
+        disabled: !canSubmit,
       }}
-      className="space-y-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void createLead(false);
+      }}
     >
-      <div className="space-y-1.5">
-        <Label htmlFor="create-lead-title">{t('lead.fields.title')}</Label>
-        <Input
-          id="create-lead-title"
-          value={form.name}
-          onChange={(e) => onChange({ ...form, name: e.target.value })}
-          autoFocus
+      <InlineField
+        variant="controlled"
+        label={t('lead.fields.title')}
+        type="text"
+        value={form.name}
+        onValueChange={(name) => setForm((prev) => ({ ...prev, name }))}
+      />
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
+          label={t('lead.fields.phone')}
+          type="phone"
+          value={form.phone}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={(phone) => setForm((prev) => ({ ...prev, phone }))}
         />
-      </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="create-lead-phone">{t('lead.fields.phone')}</Label>
-          <Input
-            id="create-lead-phone"
-            value={form.phone}
-            onChange={(e) => onChange({ ...form, phone: e.target.value })}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="create-lead-email">{t('lead.fields.email')}</Label>
-          <Input
-            id="create-lead-email"
-            type="email"
-            value={form.email}
-            onChange={(e) => onChange({ ...form, email: e.target.value })}
-          />
-        </div>
-      </div>
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          {tCommon('cancel')}
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={loading || !canSubmit}
-          onClick={() => void onCreate(true)}
-        >
-          {t('lead.full')}
-        </Button>
-        <Button type="submit" disabled={loading || !canSubmit}>
-          {loading ? tCommon('creating') : t('lead.createLead')}
-        </Button>
-      </DialogFooter>
-    </form>
+        <InlineField
+          variant="controlled"
+          label={t('lead.fields.email')}
+          type="text"
+          value={form.email}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={(email) => setForm((prev) => ({ ...prev, email }))}
+        />
+      </FormFieldRow>
+    </CreateFormDialog>
   );
 }

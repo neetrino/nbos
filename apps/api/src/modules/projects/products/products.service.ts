@@ -70,6 +70,9 @@ import {
   resolveProjectContactIdForNewProduct,
   syncProductContactLinks,
 } from './product-contacts.ops';
+import { lockProductDeveloperSlots } from './product-developer-slot-lock';
+import { assertProductDeveloperSlotsForUpdate } from './product-developer-slots';
+import { loadMissingRequiredAccessSlotKeys } from './product-done-access-slots';
 
 const productContactSummarySelect = {
   id: true,
@@ -176,18 +179,6 @@ type ProductSlotSyncRow = {
   technicalSpecialistId: string | null;
   qaLeadId: string | null;
 };
-
-const SAME_DEVELOPER_BOTH_SLOTS_MESSAGE =
-  'Backend and Frontend developers must be different employees';
-
-function assertDistinctProductDevelopers(
-  developerId: string | null | undefined,
-  frontendDeveloperId: string | null | undefined,
-): void {
-  if (developerId && frontendDeveloperId && developerId === frontendDeveloperId) {
-    throw new BadRequestException(SAME_DEVELOPER_BOTH_SLOTS_MESSAGE);
-  }
-}
 
 function buildProductUpdateData(data: UpdateProductDto): Prisma.ProductUpdateInput {
   return {
@@ -508,36 +499,11 @@ export class ProductsService {
 
   async update(id: string, data: UpdateProductDto) {
     const previous = await this.findById(id);
-    assertDistinctProductDevelopers(
-      data.developerId !== undefined ? data.developerId : previous.developerId,
-      data.frontendDeveloperId !== undefined
-        ? data.frontendDeveloperId
-        : previous.frontendDeveloperId,
-    );
-
-    let primaryContactId: string | undefined;
-    if (data.contactIds !== undefined) {
-      const synced = await syncProductContactLinks(this.prisma, id, data.contactIds);
-      primaryContactId = synced.primaryContactId;
-    }
-
-    await this.prisma.product.update({
-      where: { id },
-      data: {
-        ...buildProductUpdateData(data),
-        ...(primaryContactId ? { contact: { connect: { id: primaryContactId } } } : {}),
-      },
-    });
+    const primaryContactId = await this.syncProductContactsIfPatched(id, data.contactIds);
+    await this.writeProductUpdate(id, data, primaryContactId);
     const product = await this.findById(id);
     await this.syncProductTeamAccess(product);
-    if (
-      data.technicalSpecialistId !== undefined &&
-      data.technicalSpecialistId !== previous.technicalSpecialistId &&
-      product.status === 'DEVELOPMENT' &&
-      data.technicalSpecialistId
-    ) {
-      await this.enqueueTechnicalSpecialist(product.id);
-    }
+    await this.enqueueTechnicalSpecialistIfSlotChanged(previous, product, data);
     return product;
   }
 
@@ -551,7 +517,7 @@ export class ProductsService {
     }
 
     validateProductTransition(current, target);
-    validateProductStageGate(product, target);
+    await this.validateProductStageGateForTarget(product, target);
     if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(product);
 
     const updatedProduct = await this.prisma.product.update({
@@ -589,7 +555,7 @@ export class ProductsService {
     const target = productLegacyStatusForStage(stage) as ProductStatusEnum;
 
     validateProductTransition(product.status as ProductStatusEnum, target);
-    validateProductStageGate(product, target);
+    await this.validateProductStageGateForTarget(product, target);
     if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(product);
 
     const updatedProduct = await this.prisma.product.update({
@@ -677,7 +643,7 @@ export class ProductsService {
     const target = 'DONE' as ProductStatusEnum;
 
     validateProductTransition(product.status as ProductStatusEnum, target);
-    validateProductStageGate(product, target);
+    await this.validateProductStageGateForTarget(product, target);
 
     const closedAt = new Date();
     const updatedProduct = await this.prisma.product.update({
@@ -740,6 +706,44 @@ export class ProductsService {
     ]);
 
     return { total, byStatus, byType };
+  }
+
+  private async syncProductContactsIfPatched(
+    productId: string,
+    contactIds: string[] | undefined,
+  ): Promise<string | undefined> {
+    if (contactIds === undefined) return undefined;
+    const synced = await syncProductContactLinks(this.prisma, productId, contactIds);
+    return synced.primaryContactId;
+  }
+
+  private async writeProductUpdate(
+    id: string,
+    data: UpdateProductDto,
+    primaryContactId?: string,
+  ): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const current = await lockProductDeveloperSlots(tx, id);
+      assertProductDeveloperSlotsForUpdate(current, data);
+      await tx.product.update({
+        where: { id },
+        data: {
+          ...buildProductUpdateData(data),
+          ...(primaryContactId ? { contact: { connect: { id: primaryContactId } } } : {}),
+        },
+      });
+    });
+  }
+
+  private async enqueueTechnicalSpecialistIfSlotChanged(
+    previous: { technicalSpecialistId?: string | null },
+    product: { id: string; status?: string },
+    data: UpdateProductDto,
+  ): Promise<void> {
+    if (data.technicalSpecialistId === undefined) return;
+    if (data.technicalSpecialistId === previous.technicalSpecialistId) return;
+    if (product.status !== 'DEVELOPMENT' || !data.technicalSpecialistId) return;
+    await this.enqueueTechnicalSpecialist(product.id);
   }
 
   private async syncProductTeamAccess(product: ProductSlotSyncRow): Promise<void> {
@@ -809,6 +813,19 @@ export class ProductsService {
       orderBy: { createdAt: 'desc' },
     });
     return order?.deal?.sellerId ?? null;
+  }
+
+  private async validateProductStageGateForTarget(
+    product: Parameters<typeof validateProductStageGate>[0] & {
+      id: string;
+      productCategory: string;
+      productType: string;
+    },
+    target: ProductStatusEnum,
+  ) {
+    const missingRequiredAccessSlotKeys =
+      target === 'DONE' ? await loadMissingRequiredAccessSlotKeys(this.prisma, product) : undefined;
+    validateProductStageGate({ ...product, missingRequiredAccessSlotKeys }, target);
   }
 
   private async validateDevelopmentGate(product: { id: string; deadline?: Date | string | null }) {

@@ -9,6 +9,7 @@ export function useWorkspaceCallActivities() {
   const [items, setItems] = useState<CallActivity[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [errorKey, setErrorKey] = useState<string | null>(null);
@@ -22,6 +23,7 @@ export function useWorkspaceCallActivities() {
         if (cancelled) return;
         setItems(data.items);
         setPage(1);
+        setTotal(data.meta.total);
         setHasMore(journalHasMorePages(data.meta));
         setErrorKey(null);
       })
@@ -29,6 +31,7 @@ export function useWorkspaceCallActivities() {
         if (cancelled) return;
         setItems([]);
         setHasMore(false);
+        setTotal(null);
         setErrorKey(CALL_ACTIVITIES_LOAD_FAILED_KEY);
       })
       .finally(() => {
@@ -59,5 +62,5 @@ export function useWorkspaceCallActivities() {
       });
   }, [hasMore, page]);
 
-  return { items, loading, errorKey, hasMore, loadMore, loadingMore };
+  return { items, total, loading, errorKey, hasMore, loadMore, loadingMore };
 }

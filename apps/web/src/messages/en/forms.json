@@ -98,7 +98,12 @@
       "amount": "Amount *",
       "dueDate": "Due date",
       "dueDateAria": "Due date",
-      "namePlaceholder": "Expense name"
+      "namePlaceholder": "Expense name",
+      "plan": "Expense plan",
+      "planNone": "No plan",
+      "planAria": "Link to expense plan",
+      "planSearch": "Search plans…",
+      "planNoResults": "No plans found"
     },
     "createError": "Expense could not be created. Check your connection and try again."
   },

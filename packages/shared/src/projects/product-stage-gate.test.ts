@@ -79,6 +79,29 @@ describe('getProductStageGateErrors', () => {
     expect(errors).toEqual([{ field: 'finance', message: expect.stringContaining('invoices') }]);
   });
 
+  it('blocks TRANSFER → DONE when required access slots are empty', () => {
+    const errors = getProductStageGateErrors(
+      {
+        status: 'TRANSFER',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
+        extensions: [],
+        tasks: [],
+        tickets: [],
+        order: {
+          id: 'ord-1',
+          status: 'FULLY_PAID',
+          paymentType: 'CLASSIC',
+          invoices: [{ moneyStatus: 'PAID' }],
+        },
+        missingRequiredAccessSlotKeys: ['DOMAIN', 'HOSTING'],
+      },
+      'DONE',
+    );
+    expect(errors).toEqual([
+      { field: 'access', message: expect.stringContaining('DOMAIN, HOSTING') },
+    ]);
+  });
+
   it('allows TRANSFER → DONE when CLASSIC order is FULLY_PAID', () => {
     const errors = getProductStageGateErrors(
       {

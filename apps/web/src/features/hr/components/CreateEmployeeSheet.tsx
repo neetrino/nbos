@@ -4,24 +4,13 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { Sheet } from '@/components/ui/sheet';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { DetailSheetFormFooter, EntityDetailSheetContent } from '@/components/shared';
-import { EMPLOYEE_LEVELS } from '@/features/hr/constants/hr';
 import {
-  TEAM_SHEET_FIELD_CLASS,
-  TEAM_SHEET_FIELD_GRID_CLASS,
   TEAM_SHEET_FOOTER_CLASS,
   TEAM_SHEET_HEADER_CLASS,
   TEAM_SHEET_WIDTH,
 } from '@/features/hr/constants/team-sheet-layout';
+import { CreateEmployeeSheetFields } from './CreateEmployeeSheetFields';
 import {
   departmentsApi,
   employeesApi,
@@ -145,128 +134,13 @@ export function CreateEmployeeSheet({ open, onOpenChange, onCreated }: CreateEmp
             </div>
           ) : (
             <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">
-              <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
-                <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label htmlFor="emp-first">{t('form.firstName')} *</Label>
-                  <Input
-                    id="emp-first"
-                    value={form.firstName}
-                    onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))}
-                    disabled={saving}
-                  />
-                </div>
-                <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label htmlFor="emp-last">{t('form.lastName')} *</Label>
-                  <Input
-                    id="emp-last"
-                    value={form.lastName}
-                    onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))}
-                    disabled={saving}
-                  />
-                </div>
-              </div>
-              <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
-                <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label htmlFor="emp-email">{t('create.workEmail')} *</Label>
-                  <Input
-                    id="emp-email"
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                    disabled={saving}
-                  />
-                </div>
-                <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label htmlFor="emp-phone">{t('form.phone')}</Label>
-                  <Input
-                    id="emp-phone"
-                    value={form.phone}
-                    onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-                    disabled={saving}
-                  />
-                </div>
-              </div>
-              <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
-                <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label>{t('employment.platformRole')} *</Label>
-                  <Select
-                    value={form.roleId}
-                    onValueChange={(v) => setForm((p) => ({ ...p, roleId: v ?? '' }))}
-                    disabled={saving}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t('create.selectRole')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filterRolesForAssignmentPicker(roles, assignmentPickerActor(me)).map(
-                        (role) => (
-                          <SelectItem key={role.id} value={role.id}>
-                            {role.name}
-                          </SelectItem>
-                        ),
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label>{t('form.level')}</Label>
-                  <Select
-                    value={form.level || 'none'}
-                    onValueChange={(v) =>
-                      setForm((p) => ({ ...p, level: v === 'none' || !v ? '' : v }))
-                    }
-                    disabled={saving}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t('form.selectLevel')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">{t('create.notSet')}</SelectItem>
-                      {EMPLOYEE_LEVELS.map((lvl) => (
-                        <SelectItem key={lvl.value} value={lvl.value}>
-                          {t(`level.${lvl.value}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
-                <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label>{t('departments.primaryCheckbox')}</Label>
-                  <Select
-                    value={form.departmentId || 'none'}
-                    onValueChange={(v) =>
-                      setForm((p) => ({
-                        ...p,
-                        departmentId: v === 'none' || !v ? '' : v,
-                      }))
-                    }
-                    disabled={saving}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t('create.optional')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">{t('create.none')}</SelectItem>
-                      {departments.map((dept) => (
-                        <SelectItem key={dept.id} value={dept.id}>
-                          {dept.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className={TEAM_SHEET_FIELD_CLASS}>
-                  <Label htmlFor="emp-position">{t('create.positionSeat')}</Label>
-                  <Input
-                    id="emp-position"
-                    value={form.position}
-                    onChange={(e) => setForm((p) => ({ ...p, position: e.target.value }))}
-                    disabled={saving}
-                  />
-                </div>
-              </div>
+              <CreateEmployeeSheetFields
+                form={form}
+                roles={filterRolesForAssignmentPicker(roles, assignmentPickerActor(me))}
+                departments={departments}
+                saving={saving}
+                onChange={(partial) => setForm((prev) => ({ ...prev, ...partial }))}
+              />
             </div>
           )}
 

@@ -1,19 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { CreateFormDialog } from '@/components/shared';
 import { projectsApi, type Project } from '@/lib/api/projects';
 import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
 import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
-
 import { CreateProjectHubDialogFields } from './create-project-hub-dialog-fields';
 import { applyProjectHubRelationCreated } from './apply-project-hub-relation-created';
 
@@ -22,25 +14,15 @@ export type CreateProjectHubDialogProps = {
   onOpenChange: (open: boolean) => void;
   onCreated: (project: Project) => void;
   defaultName?: string;
-  /** When opened above an entity sheet floating rail. */
   forceNestedBackdrop?: boolean;
 };
 
-async function createProjectRecord(input: {
-  name: string;
-  contactId: string;
-  description: string;
-  companyId: string;
-}): Promise<Project> {
-  return projectsApi.create({
-    name: input.name,
-    contactId: input.contactId,
-    description: input.description || undefined,
-    ...(input.companyId ? { companyId: input.companyId } : {}),
-  });
+export function CreateProjectHubDialog(props: CreateProjectHubDialogProps) {
+  const sessionKey = props.open ? `open:${props.defaultName ?? ''}` : 'closed';
+  return <CreateProjectHubDialogSession key={sessionKey} {...props} />;
 }
 
-export function CreateProjectHubDialog({
+function CreateProjectHubDialogSession({
   open,
   onOpenChange,
   onCreated,
@@ -49,7 +31,7 @@ export function CreateProjectHubDialog({
 }: CreateProjectHubDialogProps) {
   const t = useTranslations('forms');
   const tCommon = useTranslations('common');
-  const [name, setName] = useState('');
+  const [name, setName] = useState(defaultName.trim());
   const [description, setDescription] = useState('');
   const [contactId, setContactId] = useState('');
   const [contactLabel, setContactLabel] = useState('');
@@ -57,21 +39,7 @@ export function CreateProjectHubDialog({
   const [companyLabel, setCompanyLabel] = useState('');
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const reset = useCallback(() => {
-    setName('');
-    setDescription('');
-    setContactId('');
-    setContactLabel('');
-    setCompanyId('');
-    setCompanyLabel('');
-    setSubmitError(null);
-  }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    setName(defaultName.trim());
-  }, [open, defaultName]);
+  const canSubmit = name.trim().length > 0 && contactId.length > 0 && !saving;
 
   const handleRelationCreated = useCallback(
     (event: RelationCreatedEvent) => {
@@ -86,81 +54,91 @@ export function CreateProjectHubDialog({
     },
     [contactId, contactLabel, companyId, companyLabel],
   );
-
   useRegisterRelationCreated(open ? handleRelationCreated : null);
 
-  const handleOpenChange = useCallback(
-    (next: boolean) => {
-      onOpenChange(next);
-      if (!next) reset();
-    },
-    [onOpenChange, reset],
-  );
-
-  const submit = async () => {
-    const trimmed = name.trim();
-    if (!trimmed || !contactId) return;
-    setSaving(true);
-    setSubmitError(null);
-    try {
-      const project = await createProjectRecord({
-        name: trimmed,
-        contactId,
-        description: description.trim(),
-        companyId,
-      });
-      onCreated(project);
-      handleOpenChange(false);
-    } catch {
-      setSubmitError(t('project.createError'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const canSubmit = name.trim().length > 0 && contactId.length > 0 && !saving;
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg" forceNestedBackdrop={forceNestedBackdrop}>
-        <DialogHeader>
-          <DialogTitle>{t('project.title')}</DialogTitle>
-        </DialogHeader>
-
-        <CreateProjectHubDialogFields
-          name={name}
-          onNameChange={setName}
-          description={description}
-          onDescriptionChange={setDescription}
-          contactId={contactId}
-          contactLabel={contactLabel}
-          onContactChange={(id, label) => {
-            setContactId(id);
-            setContactLabel(label);
-          }}
-          companyId={companyId}
-          companyLabel={companyLabel}
-          onCompanyChange={(id, label) => {
-            setCompanyId(id);
-            setCompanyLabel(label);
-          }}
-          onCompanyClear={() => {
-            setCompanyId('');
-            setCompanyLabel('');
-          }}
-          saving={saving}
-          error={submitError}
-        />
-
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-            {tCommon('cancel')}
-          </Button>
-          <Button type="button" onClick={() => void submit()} disabled={!canSubmit}>
-            {saving ? tCommon('creating') : tCommon('create')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('project.title')}
+      error={submitError}
+      submitting={saving}
+      canSubmit={canSubmit}
+      submitLabel={tCommon('create')}
+      submittingLabel={tCommon('creating')}
+      cancelLabel={tCommon('cancel')}
+      forceNestedBackdrop={forceNestedBackdrop}
+      onSubmit={(event) =>
+        void submitProjectHub({
+          event,
+          name,
+          contactId,
+          description,
+          companyId,
+          setSaving,
+          setSubmitError,
+          onCreated,
+          onOpenChange,
+          fallbackError: t('project.createError'),
+        })
+      }
+    >
+      <CreateProjectHubDialogFields
+        name={name}
+        onNameChange={setName}
+        description={description}
+        onDescriptionChange={setDescription}
+        contactId={contactId}
+        contactLabel={contactLabel}
+        onContactChange={(id, label) => {
+          setContactId(id);
+          setContactLabel(label);
+        }}
+        companyId={companyId}
+        companyLabel={companyLabel}
+        onCompanyChange={(id, label) => {
+          setCompanyId(id);
+          setCompanyLabel(label);
+        }}
+        onCompanyClear={() => {
+          setCompanyId('');
+          setCompanyLabel('');
+        }}
+        saving={saving}
+      />
+    </CreateFormDialog>
   );
+}
+
+async function submitProjectHub(options: {
+  event: FormEvent;
+  name: string;
+  contactId: string;
+  description: string;
+  companyId: string;
+  setSaving: (saving: boolean) => void;
+  setSubmitError: (error: string | null) => void;
+  onCreated: (project: Project) => void;
+  onOpenChange: (open: boolean) => void;
+  fallbackError: string;
+}): Promise<void> {
+  options.event.preventDefault();
+  const trimmed = options.name.trim();
+  if (!trimmed || !options.contactId) return;
+  options.setSaving(true);
+  options.setSubmitError(null);
+  try {
+    const project = await projectsApi.create({
+      name: trimmed,
+      contactId: options.contactId,
+      description: options.description.trim() || undefined,
+      ...(options.companyId ? { companyId: options.companyId } : {}),
+    });
+    options.onCreated(project);
+    options.onOpenChange(false);
+  } catch {
+    options.setSubmitError(options.fallbackError);
+  } finally {
+    options.setSaving(false);
+  }
 }

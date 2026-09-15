@@ -1,6 +1,6 @@
-/** Share of the existing developer/DELIVERY pool assigned to Backend when Frontend is set. */
+/** Share of the existing developer/DELIVERY pool assigned to Backend when Frontend is a different employee. */
 export const DEVELOPER_POOL_BACKEND_PERCENT = 70;
-/** Share of the existing developer/DELIVERY pool assigned to Frontend when assigned. */
+/** Share of the existing developer/DELIVERY pool assigned to Frontend when a distinct assignee is set. */
 export const DEVELOPER_POOL_FRONTEND_PERCENT = 30;
 
 const MONEY_CENTS_SCALE = 100;
@@ -9,6 +9,16 @@ const PERCENT_BASE = 100;
 export interface DeveloperPoolSplit {
   backendAmount: string;
   frontendAmount: string;
+}
+
+export type ProductDeveloperSlotId = string | null | undefined;
+
+/** True when Frontend is set and is a different employee from Backend. */
+export function hasDistinctFrontendAssignee(
+  developerId: ProductDeveloperSlotId,
+  frontendDeveloperId: ProductDeveloperSlotId,
+): boolean {
+  return Boolean(frontendDeveloperId && frontendDeveloperId !== developerId);
 }
 
 function amountToCents(total: string | number): number {
@@ -24,15 +34,17 @@ function centsToAmount(cents: number): string {
 }
 
 /**
- * Splits the existing developer/DELIVERY pool. Frontend unset → Backend 100%.
- * Remainder cents after the Backend share go to Frontend so parts sum to total.
+ * Splits the existing developer/DELIVERY pool.
+ * Same person on both slots, or Frontend unset → Backend 100%.
+ * Distinct Frontend assignee → 70/30. Remainder cents after Backend go to Frontend.
  */
 export function splitDeveloperPoolAmount(
   total: string | number,
-  hasFrontend: boolean,
+  developerId: ProductDeveloperSlotId,
+  frontendDeveloperId: ProductDeveloperSlotId,
 ): DeveloperPoolSplit {
   const totalCents = amountToCents(total);
-  if (!hasFrontend) {
+  if (!hasDistinctFrontendAssignee(developerId, frontendDeveloperId)) {
     return { backendAmount: centsToAmount(totalCents), frontendAmount: centsToAmount(0) };
   }
 

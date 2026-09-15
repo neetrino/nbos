@@ -2,6 +2,9 @@
 
 import { useCallback, useState } from 'react';
 import { Server } from 'lucide-react';
+import { useCredentialProviderSearch } from '@/features/credentials/hooks/use-credential-provider-search';
+import type { SearchOption } from '@/components/shared/search-field-option';
+import { credentialsApi, type CredentialProviderOption } from '@/lib/api/credentials';
 import {
   Dialog,
   DialogContent,
@@ -15,8 +18,8 @@ import { Label } from '@/components/ui/label';
 import { SearchField } from '@/components/shared/SearchField';
 import { ItBrandMarkIcon } from '@/components/shared/it-brand-mark/ItBrandMarkIcon';
 import { resolveItBrandMarkFromHints } from '@/lib/it-brand-marks/resolve-it-brand-mark';
-import { credentialsApi } from '@/lib/api/credentials';
 import { isProviderRequiredForType } from '@/features/credentials/credential-field-config';
+import { CREDENTIAL_PROVIDER_SEARCH_LIMIT } from '@/features/credentials/constants/credential-provider-search';
 
 export interface CredentialProviderPickerProps {
   credentialType?: string;
@@ -41,19 +44,12 @@ export function CredentialProviderPicker({
 
   const required = credentialType ? isProviderRequiredForType(credentialType) : false;
   const brand = resolveItBrandMarkFromHints(providerName);
+  const { loadProviders, invalidateProviders } = useCredentialProviderSearch();
 
-  const onSearch = useCallback(async (query: string) => {
-    const items = await credentialsApi.searchProviders(query);
-    return items.map((p) => {
-      const mark = resolveItBrandMarkFromHints(p.name, p.slug);
-      return {
-        value: p.id,
-        label: p.name,
-        subtitle: p.slug,
-        leading: mark ? <ItBrandMarkIcon mark={mark} className="size-3.5" /> : undefined,
-      };
-    });
-  }, []);
+  const onSearch = useCallback(
+    async (query: string) => toProviderSearchOptions(await loadProviders(query)),
+    [loadProviders],
+  );
 
   const openCreate = () => {
     setCreateName('');
@@ -66,6 +62,7 @@ export function CredentialProviderPicker({
     setCreating(true);
     try {
       const created = await credentialsApi.createProvider({ name });
+      invalidateProviders();
       onChange(created.id, created.name);
       setCreateOpen(false);
     } finally {
@@ -95,7 +92,7 @@ export function CredentialProviderPicker({
         onNew={openCreate}
         newLabel="Create provider"
         disabled={disabled}
-        maxResults={12}
+        maxResults={CREDENTIAL_PROVIDER_SEARCH_LIMIT}
       />
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
@@ -132,4 +129,16 @@ export function CredentialProviderPicker({
       </Dialog>
     </>
   );
+}
+
+function toProviderSearchOptions(items: CredentialProviderOption[]): SearchOption[] {
+  return items.map((provider) => {
+    const mark = resolveItBrandMarkFromHints(provider.name, provider.slug);
+    return {
+      value: provider.id,
+      label: provider.name,
+      subtitle: provider.slug,
+      leading: mark ? <ItBrandMarkIcon mark={mark} className="size-3.5" /> : undefined,
+    };
+  });
 }

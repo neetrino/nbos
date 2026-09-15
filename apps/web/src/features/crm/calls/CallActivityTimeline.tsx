@@ -35,6 +35,7 @@ export function CallActivityFeed(props: {
   hasMore?: boolean;
   onLoadMore?: () => void;
   loadingMore?: boolean;
+  scrollRoot?: HTMLElement | null;
 }) {
   const t = useTranslations('crm');
 
@@ -87,7 +88,11 @@ export function CallActivityFeed(props: {
         </section>
       ))}
       {props.onLoadMore ? (
-        <InfiniteScrollSentinel onReach={props.onLoadMore} disabled={!props.hasMore} />
+        <InfiniteScrollSentinel
+          onReach={props.onLoadMore}
+          disabled={!props.hasMore || props.loadingMore}
+          root={props.scrollRoot}
+        />
       ) : null}
       {props.loadingMore ? (
         <p className="text-muted-foreground py-4 text-center text-sm">{t('calls.loadingMore')}</p>

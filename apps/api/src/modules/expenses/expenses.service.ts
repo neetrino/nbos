@@ -59,6 +59,7 @@ import { assertExpenseAccessible } from './expense-access.op';
 import { resolveExpenseListParticipationWhere } from './expense-list-participation.op';
 import { buildExpenseSearchAnd } from './expense-search.where';
 import { expenseOwnershipWrite, resolveExpenseLinks } from './expense-link-resolve';
+import { assertExpensePlanLinkable } from './expense-plan-link-guard';
 import { EXPENSE_OWNER_INCLUDE } from './expense-relation-include';
 import type {
   CreateExpenseDto,
@@ -242,6 +243,7 @@ export class ExpensesService {
   }
 
   async create(data: CreateExpenseDto, access?: ExpenseQueryParams['access']) {
+    await assertExpensePlanLinkable(this.prisma, data.expensePlanId);
     const links = await resolveExpenseLinks(this.prisma, {
       productId: data.productId,
       credentialId: data.credentialId,

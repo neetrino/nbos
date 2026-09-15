@@ -29,6 +29,7 @@ export interface ProductStageGateInput {
   extensions?: Array<{ status: string }>;
   tasks?: Array<{ status: string }>;
   tickets?: Array<{ status: string }>;
+  missingRequiredAccessSlotKeys?: string[];
 }
 
 export function getProductAllowedTransitions(current: string): string[] {
@@ -84,6 +85,7 @@ function getProductCreatingGateErrors(product: ProductStageGateInput): StageGate
 
 function getProductDoneGateErrors(product: ProductStageGateInput): StageGateError[] {
   return [
+    ...buildMissingAccessSlotErrors(product.missingRequiredAccessSlotKeys ?? []),
     ...buildOpenItemErrors(
       'extensions',
       product.extensions ?? [],
@@ -105,6 +107,16 @@ function getProductDoneGateErrors(product: ProductStageGateInput): StageGateErro
     ...buildClientAcceptanceErrors(product),
     ...buildOpenOrderErrors(product.order),
     ...buildUnpaidInvoiceErrors(product.order?.invoices ?? []),
+  ];
+}
+
+function buildMissingAccessSlotErrors(slotKeys: readonly string[]): StageGateError[] {
+  if (slotKeys.length === 0) return [];
+  return [
+    {
+      field: 'access',
+      message: `Access slots still require a link before Product Done: ${slotKeys.join(', ')}.`,
+    },
   ];
 }
 

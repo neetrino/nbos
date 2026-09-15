@@ -19,28 +19,14 @@ export interface CredentialFormCategoryComboboxProps {
   onCategoryChange: (value: string) => void;
 }
 
-export function CredentialFormCategoryCombobox({
-  category,
-  categoryLabel,
-  categoryOptions,
-  categoryLocked,
-  invalid = false,
-  onCategoryChange,
-}: CredentialFormCategoryComboboxProps) {
-  const t = useTranslations('credentials');
+function useCategoryComboboxOpen(
+  categoryLocked: boolean,
+  onCategoryChange: (value: string) => void,
+) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const CategoryIcon = credentialCategoryIcon(category || 'SERVICE');
-  const selectedLabel = category
-    ? (categoryOptions.find((option) => option.value === category)?.label ?? categoryLabel)
-    : '';
-  const filtered = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    if (!needle) return categoryOptions;
-    return categoryOptions.filter((option) => option.label.toLowerCase().includes(needle));
-  }, [categoryOptions, query]);
 
   useEffect(() => {
     if (!open) return;
@@ -53,6 +39,43 @@ export function CredentialFormCategoryCombobox({
     document.addEventListener('mousedown', onPointerDown);
     return () => document.removeEventListener('mousedown', onPointerDown);
   }, [open]);
+
+  const openSearch = () => {
+    if (categoryLocked || open) return;
+    setQuery('');
+    setOpen(true);
+  };
+
+  const selectCategory = (value: string) => {
+    onCategoryChange(value);
+    setOpen(false);
+    setQuery('');
+    inputRef.current?.blur();
+  };
+
+  return { open, query, setQuery, setOpen, containerRef, inputRef, openSearch, selectCategory };
+}
+
+export function CredentialFormCategoryCombobox({
+  category,
+  categoryLabel,
+  categoryOptions,
+  categoryLocked,
+  invalid = false,
+  onCategoryChange,
+}: CredentialFormCategoryComboboxProps) {
+  const t = useTranslations('credentials');
+  const { open, query, setQuery, setOpen, containerRef, inputRef, openSearch, selectCategory } =
+    useCategoryComboboxOpen(categoryLocked, onCategoryChange);
+  const CategoryIcon = credentialCategoryIcon(category || 'SERVICE');
+  const selectedLabel = category
+    ? (categoryOptions.find((option) => option.value === category)?.label ?? categoryLabel)
+    : '';
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return categoryOptions;
+    return categoryOptions.filter((option) => option.label.toLowerCase().includes(needle));
+  }, [categoryOptions, query]);
 
   return (
     <div className="grid gap-2" ref={containerRef}>
@@ -68,10 +91,8 @@ export function CredentialFormCategoryCombobox({
           aria-expanded={open}
           placeholder={t('form.selectCategory')}
           autoComplete="off"
-          onFocus={() => {
-            if (categoryLocked) return;
-            setOpen(true);
-          }}
+          onMouseDown={openSearch}
+          onFocus={openSearch}
           onChange={(event) => {
             setQuery(event.target.value);
             setOpen(true);
@@ -83,34 +104,38 @@ export function CredentialFormCategoryCombobox({
           aria-hidden
         />
         {open && !categoryLocked ? (
-          <ul
-            className={cn(
-              'border-border bg-popover absolute inset-x-0 top-full z-50 mt-1 max-h-72 overflow-y-auto rounded-xl border p-1 shadow-lg',
-            )}
-          >
-            {filtered.map((option) => (
-              <li key={option.value}>
-                <button
-                  type="button"
-                  className="hover:bg-muted/60 flex w-full items-center rounded-lg px-2 py-1.5 text-left"
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => {
-                    onCategoryChange(option.value);
-                    setOpen(false);
-                    setQuery('');
-                  }}
-                >
-                  <CredentialFormSelectOption
-                    kind="category"
-                    value={option.value}
-                    label={option.label}
-                  />
-                </button>
-              </li>
-            ))}
-          </ul>
+          <CategoryOptionsList options={filtered} onSelect={selectCategory} />
         ) : null}
       </div>
     </div>
+  );
+}
+
+function CategoryOptionsList({
+  options,
+  onSelect,
+}: {
+  options: readonly CredentialCategoryOption[];
+  onSelect: (value: string) => void;
+}) {
+  return (
+    <ul
+      className={cn(
+        'border-border bg-popover absolute inset-x-0 top-full z-50 mt-1 max-h-72 overflow-y-auto rounded-xl border p-1 shadow-lg',
+      )}
+    >
+      {options.map((option) => (
+        <li key={option.value}>
+          <button
+            type="button"
+            className="hover:bg-muted/60 flex w-full items-center rounded-lg px-2 py-1.5 text-left"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => onSelect(option.value)}
+          >
+            <CredentialFormSelectOption kind="category" value={option.value} label={option.label} />
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }

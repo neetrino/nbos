@@ -94,6 +94,7 @@
       "history": "History"
     },
     "generateAria": "Generate expense card",
+    "createCardAria": "Create expense card",
     "sectionPlan": "Plan",
     "amount": "Expected amount",
     "category": "Category",
@@ -109,9 +110,14 @@
   },
   "cardsTab": {
     "title": "Expense cards",
+    "create": "Create card",
     "generate": "Generate card",
-    "stopped": "This plan is stopped. Existing cards stay on the pay now board; resume the plan to generate new ones.",
-    "empty": "No cards generated yet. Use Generate to create an expense card from this plan.",
+    "viewAria": "Expense card list view",
+    "loadError": "Linked expense cards could not be loaded.",
+    "emptyTitle": "No cards yet",
+    "openBoard": "Open all on pay now",
+    "stopped": "This plan is stopped. Existing cards stay on the pay now board; resume the plan to add new ones.",
+    "empty": "Create a card with a free amount and date, or generate one from the plan amount.",
     "linked": "{count, plural, one {# card linked to this plan. Open the pay now board to review or pay it.} other {# cards linked to this plan. Open the pay now board to review or pay them.}}"
   },
   "history": {

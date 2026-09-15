@@ -1,31 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { CreateFormDialog, FormFieldRow, InlineField } from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { aiAdminApi, type AiModelView } from '@/lib/api/ai-admin';
 import { AI_ADMIN_POLICY_MODES, type AiAdminPolicyMode } from '../constants';
-import { applySelectValue } from '../select-value';
 import { ModelSelect } from './PolicyModelSelect';
 
+const POLICY_MODE_LABELS: Record<AiAdminPolicyMode, string> = {
+  FIXED: 'Fixed',
+  PRIMARY_FALLBACK: 'Primary + fallback',
+};
+
 export function PolicyCreateDialog(props: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  eligible: AiModelView[];
+  onCreated: () => void;
+}) {
+  return <PolicyCreateDialogSession key={props.open ? 'open' : 'closed'} {...props} />;
+}
+
+function PolicyCreateDialogSession({
+  open,
+  onOpenChange,
+  eligible,
+  onCreated,
+}: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   eligible: AiModelView[];
@@ -36,114 +38,109 @@ export function PolicyCreateDialog(props: {
   const [primaryId, setPrimaryId] = useState('');
   const [fallbackId, setFallbackId] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  const reset = () => {
-    setName('');
-    setMode('FIXED');
-    setPrimaryId('');
-    setFallbackId('');
-  };
-
-  const submit = async () => {
-    const candidates =
-      mode === 'FIXED'
-        ? [{ modelId: primaryId, role: 'PRIMARY' as const, priority: 0 }]
-        : [
-            { modelId: primaryId, role: 'PRIMARY' as const, priority: 0 },
-            { modelId: fallbackId, role: 'FALLBACK' as const, priority: 10 },
-          ];
-    setSubmitting(true);
-    try {
-      await aiAdminApi.createPolicy({ name: name.trim(), mode, candidates });
-      reset();
-      props.onCreated();
-      props.onOpenChange(false);
-    } catch {
-      toast.error('Policy create failed. Use only ACTIVE models.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const canSubmit =
+    Boolean(name.trim()) &&
+    Boolean(primaryId) &&
+    (mode !== 'PRIMARY_FALLBACK' || Boolean(fallbackId)) &&
+    !submitting;
+  const modeOptions = AI_ADMIN_POLICY_MODES.map((item) => ({
+    value: item,
+    label: POLICY_MODE_LABELS[item],
+  }));
 
   return (
-    <Dialog
-      open={props.open}
-      onOpenChange={(open) => {
-        if (!open) reset();
-        props.onOpenChange(open);
-      }}
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Create policy"
+      description="Fixed uses one model. Primary + fallback tries a fallback when the primary is unavailable."
+      submitting={submitting}
+      canSubmit={canSubmit}
+      submitLabel="Create"
+      submittingLabel="Creating..."
+      cancelLabel="Cancel"
+      onSubmit={(event) =>
+        void submitPolicy({
+          event,
+          name,
+          mode,
+          primaryId,
+          fallbackId,
+          setSubmitting,
+          onCreated,
+          onOpenChange,
+        })
+      }
     >
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Create policy</DialogTitle>
-          <DialogDescription>
-            FIXED uses one model. PRIMARY_FALLBACK tries a fallback when the primary is unavailable.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="policy-name">Name</Label>
-              <Input
-                id="policy-name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Mode</Label>
-              <Select
-                value={mode}
-                onValueChange={(value) =>
-                  applySelectValue(value, (next) => setMode(next as AiAdminPolicyMode))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {AI_ADMIN_POLICY_MODES.map((item) => (
-                    <SelectItem key={item} value={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <ModelSelect
-              label="Primary model"
-              value={primaryId}
-              onChange={setPrimaryId}
-              models={props.eligible}
-            />
-            {mode === 'PRIMARY_FALLBACK' ? (
-              <ModelSelect
-                label="Fallback model"
-                value={fallbackId}
-                onChange={setFallbackId}
-                models={props.eligible}
-              />
-            ) : null}
-          </div>
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
+          label="Name"
+          type="text"
+          value={name}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={setName}
+        />
+        <InlineField
+          variant="controlled"
+          label="Mode"
+          type="select"
+          value={mode}
+          options={modeOptions}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={(value) => value && setMode(value as AiAdminPolicyMode)}
+        />
+      </FormFieldRow>
+      <FormFieldRow>
+        <div className={FORM_FIELD_CELL_CLASS}>
+          <ModelSelect
+            label="Primary model"
+            value={primaryId}
+            onChange={setPrimaryId}
+            models={eligible}
+          />
         </div>
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => props.onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            disabled={
-              !name.trim() ||
-              !primaryId ||
-              (mode === 'PRIMARY_FALLBACK' && !fallbackId) ||
-              submitting
-            }
-            onClick={() => void submit()}
-          >
-            Create
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        {mode === 'PRIMARY_FALLBACK' ? (
+          <div className={FORM_FIELD_CELL_CLASS}>
+            <ModelSelect
+              label="Fallback model"
+              value={fallbackId}
+              onChange={setFallbackId}
+              models={eligible}
+            />
+          </div>
+        ) : null}
+      </FormFieldRow>
+    </CreateFormDialog>
   );
+}
+
+async function submitPolicy(options: {
+  event: FormEvent;
+  name: string;
+  mode: AiAdminPolicyMode;
+  primaryId: string;
+  fallbackId: string;
+  setSubmitting: (submitting: boolean) => void;
+  onCreated: () => void;
+  onOpenChange: (open: boolean) => void;
+}): Promise<void> {
+  options.event.preventDefault();
+  const candidates =
+    options.mode === 'FIXED'
+      ? [{ modelId: options.primaryId, role: 'PRIMARY' as const, priority: 0 }]
+      : [
+          { modelId: options.primaryId, role: 'PRIMARY' as const, priority: 0 },
+          { modelId: options.fallbackId, role: 'FALLBACK' as const, priority: 10 },
+        ];
+  options.setSubmitting(true);
+  try {
+    await aiAdminApi.createPolicy({ name: options.name.trim(), mode: options.mode, candidates });
+    options.onCreated();
+    options.onOpenChange(false);
+  } catch {
+    toast.error('Policy create failed. Use only ACTIVE models.');
+  } finally {
+    options.setSubmitting(false);
+  }
 }

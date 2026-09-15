@@ -1,24 +1,7 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { CreateFormDialog, InlineField } from '@/components/shared';
 import type { DepartmentItem } from '@/lib/api/employees';
 
 export function slugFromDepartmentName(name: string): string {
@@ -59,74 +42,58 @@ export function DepartmentCreateDialog({
 }) {
   const t = useTranslations('hr');
   const tCommon = useTranslations('common');
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t('deptAdmin.dialogTitle')}</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-4 py-4">
-          <DialogField id="name" label={t('deptAdmin.name')}>
-            <Input
-              id="name"
-              value={formName}
-              onChange={(event) => onNameChange(event.target.value)}
-              placeholder={t('deptAdmin.namePlaceholder')}
-            />
-          </DialogField>
-          <DialogField id="slug" label={t('deptAdmin.slug')}>
-            <Input
-              id="slug"
-              value={formSlug}
-              onChange={(event) => onSlugChange(event.target.value)}
-              placeholder={t('deptAdmin.slugPlaceholder')}
-            />
-          </DialogField>
-          <DialogField id="description" label={t('deptAdmin.description')}>
-            <Input
-              id="description"
-              value={formDescription}
-              onChange={(event) => onDescriptionChange(event.target.value)}
-              placeholder={t('deptAdmin.descriptionPlaceholder')}
-            />
-          </DialogField>
-          <DialogField id="parent" label={t('deptAdmin.parent')}>
-            <Select
-              value={formParentId || 'none'}
-              onValueChange={(value) => onParentIdChange(value === 'none' || !value ? '' : value)}
-            >
-              <SelectTrigger id="parent">
-                <SelectValue placeholder={t('deptAdmin.none')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t('deptAdmin.none')}</SelectItem>
-                {departments.map((department) => (
-                  <SelectItem key={department.id} value={department.id}>
-                    {department.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </DialogField>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {tCommon('cancel')}
-          </Button>
-          <Button onClick={onCreate} disabled={saving}>
-            {saving ? tCommon('creating') : tCommon('create')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
+  const parentOptions = [
+    { value: 'none', label: t('deptAdmin.none') },
+    ...departments.map((department) => ({ value: department.id, label: department.name })),
+  ];
 
-function DialogField({ id, label, children }: { id: string; label: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor={id}>{label}</Label>
-      {children}
-    </div>
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('deptAdmin.dialogTitle')}
+      submitting={saving}
+      canSubmit={Boolean(formName.trim()) && !saving}
+      submitLabel={tCommon('create')}
+      submittingLabel={tCommon('creating')}
+      cancelLabel={tCommon('cancel')}
+      onSubmit={(event) => {
+        event.preventDefault();
+        onCreate();
+      }}
+    >
+      <InlineField
+        variant="controlled"
+        label={t('deptAdmin.name')}
+        type="text"
+        value={formName}
+        placeholder={t('deptAdmin.namePlaceholder')}
+        onValueChange={onNameChange}
+      />
+      <InlineField
+        variant="controlled"
+        label={t('deptAdmin.slug')}
+        type="text"
+        value={formSlug}
+        placeholder={t('deptAdmin.slugPlaceholder')}
+        onValueChange={onSlugChange}
+      />
+      <InlineField
+        variant="controlled"
+        label={t('deptAdmin.description')}
+        type="text"
+        value={formDescription}
+        placeholder={t('deptAdmin.descriptionPlaceholder')}
+        onValueChange={onDescriptionChange}
+      />
+      <InlineField
+        variant="controlled"
+        label={t('deptAdmin.parent')}
+        type="select"
+        value={formParentId || 'none'}
+        options={parentOptions}
+        onValueChange={(value) => onParentIdChange(value === 'none' || !value ? '' : value)}
+      />
+    </CreateFormDialog>
   );
 }

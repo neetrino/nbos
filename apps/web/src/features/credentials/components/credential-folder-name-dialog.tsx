@@ -1,15 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import { useState, type FormEvent } from 'react';
+import { CreateFormDialog, InlineField } from '@/components/shared';
 
 interface CredentialFolderNameDialogProps {
   open: boolean;
@@ -20,7 +12,12 @@ interface CredentialFolderNameDialogProps {
   onSubmit: (name: string) => void | Promise<void>;
 }
 
-export function CredentialFolderNameDialog({
+export function CredentialFolderNameDialog(props: CredentialFolderNameDialogProps) {
+  const sessionKey = props.open ? `open:${props.initialName}` : 'closed';
+  return <CredentialFolderNameDialogSession key={sessionKey} {...props} />;
+}
+
+function CredentialFolderNameDialogSession({
   open,
   title,
   initialName = '',
@@ -29,50 +26,31 @@ export function CredentialFolderNameDialog({
   onSubmit,
 }: CredentialFolderNameDialogProps) {
   const [name, setName] = useState(initialName);
-  const [wasOpen, setWasOpen] = useState(open);
-
-  if (open !== wasOpen) {
-    setWasOpen(open);
-    if (open) setName(initialName);
-  }
-
-  const handleSubmit = () => {
-    void onSubmit(name.trim());
-  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        <Input
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="Folder name"
-          autoFocus
-          disabled={busy}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault();
-              handleSubmit();
-            }
-          }}
-        />
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={busy}
-          >
-            Cancel
-          </Button>
-          <Button type="button" onClick={handleSubmit} disabled={busy}>
-            Save
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      submitting={busy}
+      canSubmit={Boolean(name.trim()) && !busy}
+      submitLabel="Save"
+      submittingLabel="Saving..."
+      cancelLabel="Cancel"
+      onSubmit={(event: FormEvent) => {
+        event.preventDefault();
+        void onSubmit(name.trim());
+      }}
+    >
+      <InlineField
+        variant="controlled"
+        label="Name"
+        type="text"
+        value={name}
+        placeholder="Folder name"
+        disabled={busy}
+        onValueChange={setName}
+      />
+    </CreateFormDialog>
   );
 }

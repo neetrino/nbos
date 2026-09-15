@@ -94,6 +94,7 @@ export function ClientServiceCreateDialogs({
         onOpenChange={onExpenseOpenChange}
         initialForm={expenseDefaultForm}
         submitOverride={submitExpense}
+        showPlanPicker={false}
         forceNestedBackdrop
         onCreated={handleExpenseCreated}
       />

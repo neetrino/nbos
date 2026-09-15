@@ -5,19 +5,19 @@ import {
   CLIENT_SERVICE_FILTER_STATUS_KEY,
   CLIENT_SERVICE_FILTER_TYPE_KEY,
 } from '@/features/finance/components/client-services/build-client-service-integrated-filter-configs';
-import {
-  DEFAULT_BOARD_LIFECYCLE_SCOPE,
-  matchesBoardLifecycleScope,
-  resolveBoardLifecycleScope,
-  type BoardLifecycleScope,
-} from '@/features/shared/board-lifecycle';
+import { matchesBoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
 import type { Invoice, Order } from '@/lib/api/finance';
 import type { ProjectSubscription } from '@/lib/api/projects';
 import type { ProductFinanceSection } from '@/features/projects/constants/product-finance-section';
+import {
+  PRODUCT_FINANCE_DEFAULT_BOARD_SCOPE,
+  PRODUCT_FINANCE_DEFAULT_EXPENSE_SCOPE,
+  resolveProductFinanceBoardScope,
+} from '@/features/projects/utils/resolve-product-finance-scope';
 
-function matchesFilterValue(filterValue: string | undefined, rowValue: string): boolean {
-  return Boolean(filterValue) && filterValue !== 'all' && rowValue === filterValue;
+function rowMatchesOptionalFilter(filterValue: string | undefined, rowValue: string): boolean {
+  return !filterValue || filterValue === 'all' || rowValue === filterValue;
 }
 
 export function filterProductFinanceOrders(
@@ -26,7 +26,7 @@ export function filterProductFinanceOrders(
   filters: Record<string, string>,
 ): Order[] {
   const needle = search.trim().toLowerCase();
-  const boardScope = resolveBoardLifecycleScope(filters.boardScope) as BoardLifecycleScope;
+  const boardScope = resolveProductFinanceBoardScope(filters.boardScope);
   const hasStatusFilter = Boolean(filters.status) && filters.status !== 'all';
 
   let rows = orders;
@@ -52,7 +52,7 @@ export function filterProductFinanceInvoices(
   filters: Record<string, string>,
 ): Invoice[] {
   const needle = search.trim().toLowerCase();
-  const boardScope = resolveBoardLifecycleScope(filters.boardScope) as BoardLifecycleScope;
+  const boardScope = resolveProductFinanceBoardScope(filters.boardScope);
   const hasStatusFilter = Boolean(filters.moneyStatus) && filters.moneyStatus !== 'all';
 
   let rows = invoices;
@@ -70,6 +70,13 @@ export function filterProductFinanceInvoices(
   );
 }
 
+export function scopeProductFinanceSubscriptions(
+  subscriptions: ProjectSubscription[],
+  productId: string,
+): ProjectSubscription[] {
+  return subscriptions.filter((subscription) => subscription.productId === productId);
+}
+
 export function filterProductFinanceSubscriptions(
   subscriptions: ProjectSubscription[],
   search: string,
@@ -81,8 +88,8 @@ export function filterProductFinanceSubscriptions(
       const haystack = `${sub.name} ${sub.code} ${sub.type}`.toLowerCase();
       if (!haystack.includes(needle)) return false;
     }
-    if (matchesFilterValue(filters.type, sub.type)) return false;
-    if (matchesFilterValue(filters.status, sub.status)) return false;
+    if (!rowMatchesOptionalFilter(filters.type, sub.type)) return false;
+    if (!rowMatchesOptionalFilter(filters.status, sub.status)) return false;
     return true;
   });
 }
@@ -93,13 +100,21 @@ export function productFinanceFilterValuesForUi(
 ): Record<string, string> {
   if (section === 'orders' || section === 'invoices') {
     return {
-      boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+      boardScope: filters.boardScope ?? PRODUCT_FINANCE_DEFAULT_BOARD_SCOPE,
       ...filters,
     };
   }
   if (section === 'expenses') {
     return {
-      [EXPENSE_BOARD_SCOPE_FILTER_KEY]: filters[EXPENSE_BOARD_SCOPE_FILTER_KEY] ?? 'active',
+      [EXPENSE_BOARD_SCOPE_FILTER_KEY]:
+        filters[EXPENSE_BOARD_SCOPE_FILTER_KEY] ?? PRODUCT_FINANCE_DEFAULT_EXPENSE_SCOPE,
+      ...filters,
+    };
+  }
+  if (section === 'subscriptions') {
+    return {
+      type: filters.type ?? 'all',
+      status: filters.status ?? 'all',
       ...filters,
     };
   }

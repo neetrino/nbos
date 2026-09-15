@@ -127,6 +127,30 @@ export function usePartnerRelationSearch(pageSize = DEFAULT_PAGE_SIZE): Relation
   );
 }
 
+/** Search credentials allowed for a product access slot (project + shared infra). */
+export function useAccessSlotCredentialSearch(
+  productId: string,
+  slotKey: string,
+): RelationPickerSearchFn {
+  return useCallback(
+    async (query: string) => {
+      if (!productId || !slotKey) return [];
+      const page = await productsApi.listAccessSlotCandidates(productId, {
+        slotKey,
+        search: query.trim() || undefined,
+      });
+      return page.items.map((credential) => ({
+        value: credential.id,
+        label: credential.name,
+        subtitle:
+          [credential.provider, credential.login].filter(Boolean).join(' · ') ||
+          credential.category,
+      }));
+    },
+    [productId, slotKey],
+  );
+}
+
 /** Search vault credentials for {@link RelationPickerField}. */
 export function useCredentialRelationSearch(
   productId: string | null,

@@ -865,6 +865,7 @@ describe('ProductsService', () => {
       const result = await service.updateStatus('p1', 'DONE', 'emp-audit');
 
       expect(result.status).toBe('DONE');
+      expect(prisma.productAccessSlotBinding.findMany).toHaveBeenCalled();
       expect(auditService.log).toHaveBeenCalledWith(
         expect.objectContaining({
           action: DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
@@ -878,6 +879,37 @@ describe('ProductsService', () => {
           }),
         }),
       );
+    });
+
+    it('blocks TRANSFER → DONE when required access slots are empty', async () => {
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        projectId: 'proj-1',
+        status: 'TRANSFER',
+        productCategory: 'CODE',
+        productType: 'COMPANY_WEBSITE',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
+        extensions: [{ status: 'DONE' }],
+        tasks: [{ status: 'DONE' }],
+        tickets: [{ status: 'RESOLVED' }],
+        order: {
+          id: 'ord-1',
+          status: 'FULLY_PAID',
+          paymentType: 'CLASSIC',
+          invoices: [{ moneyStatus: 'PAID' }],
+        },
+      });
+
+      const error = await service
+        .updateStatus('p1', 'DONE', 'emp-audit')
+        .catch((caught: unknown) => caught);
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(readExceptionResponse(error)).toMatchObject({
+        code: 'STAGE_GATE_VALIDATION',
+        errors: [{ field: 'access', message: expect.any(String) }],
+      });
+      expect(prisma.product.update).not.toHaveBeenCalled();
     });
 
     it('releases held accruals when product reaches DONE through updateStatus, not complete', async () => {

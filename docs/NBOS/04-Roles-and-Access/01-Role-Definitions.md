@@ -112,7 +112,7 @@ Legacy role slug `owner` может остаться у Founder для совм�
 **Бонусная система:**
 
 - Процент по Product / Extension зависит от Product/Extension bonus policy: category/type, complexity, role и configured rate
-- Доля **delivery developer pool** (только PM/Designer/прочие роли вне этого пула): **70%** Backend; если Frontend не назначен — **100%** Backend
+- Доля **delivery developer pool** (только PM/Designer/прочие роли вне этого пула): **70%** Backend, если Frontend — **другой** сотрудник; если Frontend не назначен или совпадает с Backend — **100%** Backend. Frontend без Backend запрещён.
 - Выпускается через Product Bonus Pool (Classic — по оплате Product / Extension, Subscription — по доступному funding первого/следующих платежей)
 
 ---
@@ -134,7 +134,7 @@ Legacy role slug `owner` может остаться у Founder для совм�
 **Бонусная система:**
 
 - Та же Product/Extension bonus policy по роли Developer
-- Доля **delivery developer pool**: **30%** Frontend; если Frontend не назначен — его доля не создаётся, Backend получает **100%** developer pool
+- Доля **delivery developer pool**: **30%** Frontend только если это **другой** сотрудник; если Frontend не назначен или совпадает с Backend — отдельная строка Frontend не создаётся, Backend получает **100%** developer pool. Frontend без Backend запрещён.
 
 **Отличие от Junior Developer:** полный доступ Developer (Scrum-доска, проектный контекст), а не только явно назначенные задачи.
 

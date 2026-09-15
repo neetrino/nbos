@@ -1,24 +1,14 @@
 'use client';
 
-import Link from 'next/link';
-import { useMemo } from 'react';
-import {
-  DollarSign,
-  ExternalLink,
-  HardDrive,
-  TrendingDown,
-  TrendingUp,
-  CreditCard,
-} from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { DollarSign, TrendingDown, TrendingUp, CreditCard } from 'lucide-react';
 import {
   IntegratedSearchFilters,
   PageHero,
   PageHeroTabs,
   ViewModeSwitch,
 } from '@/components/shared';
-import { EXPENSE_BOARD_SCOPE_FILTER_KEY } from '@/features/finance/components/expenses/expense-board-scope';
-import { buildDriveHrefWithFinanceProject } from '@/features/drive/drive-deep-link';
-import { cn } from '@/lib/utils';
+import { productFinanceExpenseAllowsKanban } from '@/features/projects/utils/resolve-product-finance-scope';
 import { ORDER_VIEW_OPTIONS } from '@/features/finance/components/orders/order-view-options';
 import { EXPENSES_VIEW_OPTIONS } from '@/features/finance/components/expenses/expenses-view-options';
 import { CLIENT_SERVICES_VIEW_OPTIONS } from '@/features/finance/components/client-services/client-services-view-options';
@@ -31,15 +21,17 @@ import { useInvoicesBoardViewMode } from '@/features/finance/constants/invoices-
 import { INVOICE_VIEW_OPTIONS } from '@/features/finance/components/invoices/invoice-view-options';
 import { projectOrderToFinanceOrder } from '@/features/projects/utils/project-order-finance-adapter';
 import { ProductFinanceSectionContent } from '@/features/projects/components/tabs/product-finance-section-content';
+import { ProductFinanceHeroTrailing } from '@/features/projects/components/tabs/product-finance-hero-trailing';
 import { useProductFinanceExpenseTotal } from '@/features/projects/hooks/use-product-finance-expense-total';
 import { PRODUCT_FINANCE_SECTION_OPTIONS } from '@/features/projects/constants/product-finance-section';
 import { useProductFinanceSection } from '@/features/projects/hooks/use-product-finance-section';
 import type { ProjectOrder, ProjectSubscription } from '@/lib/api/projects';
-import { buttonVariants } from '@/components/ui/button';
+import { usePermission } from '@/lib/permissions';
 import {
   formatProjectFinanceAmount,
   projectSubscriptionMonthlyAmount,
 } from '@/features/projects/utils/project-finance-amount';
+import { scopeProductFinanceSubscriptions } from '@/features/projects/utils/filter-product-finance-data';
 
 interface FinanceTabProps {
   orders: ProjectOrder[];
@@ -47,8 +39,10 @@ interface FinanceTabProps {
   projectId: string;
   project: { id: string; name: string; code: string };
   productId: string;
+  productName: string;
   companyId?: string | null;
   productOrderId?: string | null;
+  onSubscriptionsRefresh: () => void;
 }
 
 export function FinanceTab({
@@ -57,10 +51,15 @@ export function FinanceTab({
   projectId,
   project,
   productId,
+  productName,
   companyId,
   productOrderId,
+  onSubscriptionsRefresh,
 }: FinanceTabProps) {
+  const { can } = usePermission();
   const financeSection = useProductFinanceSection();
+  const [createSubscriptionOpen, setCreateSubscriptionOpen] = useState(false);
+  const canCreateSubscription = can('ADD', 'FINANCE_SUBSCRIPTIONS');
   const [ordersView, setOrdersView] = useOrdersBoardViewMode();
   const [invoicesView, setInvoicesView] = useInvoicesBoardViewMode();
   const [expensesView, setExpensesView] = useExpensesBoardViewMode();
@@ -86,7 +85,11 @@ export function FinanceTab({
     .filter((i) => i.moneyStatus === 'PAID');
   const totalPaid = paidInvoices.reduce((s, i) => s + Number(i.amount), 0);
   const totalExpenses = useProductFinanceExpenseTotal(productId);
-  const monthlyMRR = subscriptions
+  const productSubscriptions = useMemo(
+    () => scopeProductFinanceSubscriptions(subscriptions, productId),
+    [productId, subscriptions],
+  );
+  const monthlyMRR = productSubscriptions
     .filter((s) => s.status === 'ACTIVE')
     .reduce((sum, sub) => sum + projectSubscriptionMonthlyAmount(sub), 0);
 
@@ -134,10 +137,18 @@ export function FinanceTab({
         title="Product finance"
         syncModuleTitle={false}
         className="mt-0"
+        create={
+          financeSection.activeSection === 'subscriptions' && canCreateSubscription
+            ? { onSelect: () => setCreateSubscriptionOpen(true) }
+            : undefined
+        }
         tabs={
           <PageHeroTabs
             value={financeSection.activeSection}
-            onChange={financeSection.setActiveSection}
+            onChange={(section) => {
+              if (section !== 'subscriptions') setCreateSubscriptionOpen(false);
+              financeSection.setActiveSection(section);
+            }}
             options={PRODUCT_FINANCE_SECTION_OPTIONS}
             ariaLabel="Product finance section"
           />
@@ -167,7 +178,7 @@ export function FinanceTab({
               options={INVOICE_VIEW_OPTIONS}
             />
           ) : financeSection.activeSection === 'expenses' &&
-            financeSection.filters[EXPENSE_BOARD_SCOPE_FILTER_KEY] !== 'backlog' ? (
+            productFinanceExpenseAllowsKanban(financeSection.filters) ? (
             <ViewModeSwitch
               value={expensesView}
               onChange={setExpensesView}
@@ -183,22 +194,14 @@ export function FinanceTab({
           ) : undefined
         }
         trailing={
-          <>
-            <Link
-              href={buildDriveHrefWithFinanceProject(projectId)}
-              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
-            >
-              <HardDrive size={14} aria-hidden />
-              Drive
-            </Link>
-            <Link
-              href={openFinanceHref}
-              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
-            >
-              Finance
-              <ExternalLink size={12} className="opacity-70" aria-hidden />
-            </Link>
-          </>
+          <ProductFinanceHeroTrailing
+            projectId={projectId}
+            openFinanceHref={openFinanceHref}
+            showCreateSubscription={
+              financeSection.activeSection === 'subscriptions' && canCreateSubscription
+            }
+            onCreateSubscription={() => setCreateSubscriptionOpen(true)}
+          />
         }
       />
 
@@ -223,10 +226,15 @@ export function FinanceTab({
           expensesView={displayExpensesView}
           clientServicesView={displayClientServicesView}
           financeOrders={financeOrders}
-          subscriptions={subscriptions}
+          subscriptions={productSubscriptions}
           projectId={projectId}
           productId={productId}
+          productName={productName}
           companyId={companyId}
+          canCreateSubscription={canCreateSubscription}
+          createSubscriptionOpen={createSubscriptionOpen}
+          onCreateSubscriptionOpenChange={setCreateSubscriptionOpen}
+          onSubscriptionsRefresh={onSubscriptionsRefresh}
         />
       </div>
     </div>

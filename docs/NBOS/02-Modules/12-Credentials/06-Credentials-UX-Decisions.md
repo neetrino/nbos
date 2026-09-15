@@ -63,16 +63,18 @@ Step-up для copy/reveal секретов **зависит от criticality**,
 
 ### Vault scopes
 
-| Scope      | Смысл                                                           | Access intent / DB                                                            |
-| ---------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `My`       | личные рабочие credentials сотрудника                           | owner + global vault owners                                                   |
-| `Team`     | low-risk shared credentials **отдела / seat** (не вся компания) | `accessLevel = DEPARTMENT`; role/seat policy; interns/juniors can be excluded |
-| `Company`  | low-risk shared credentials **на всю компанию**                 | `accessLevel = ALL`; все сотрудники с Credentials permission                  |
-| `Project`  | credentials клиентов, проектов и продуктов                      | project/product team access + role/personal levels                            |
-| `Secret`   | чувствительные company/client credentials                       | manual selected people + global vault owners                                  |
-| `Archived` | archived credentials                                            | no create                                                                     |
+| Scope      | Смысл                                                               | Access intent / DB                                                            |
+| ---------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `My`       | личные рабочие credentials сотрудника                               | owner + global vault owners                                                   |
+| `Team`     | low-risk shared credentials **отдела / seat** (не вся компания)     | `accessLevel = DEPARTMENT`; role/seat policy; interns/juniors can be excluded |
+| `Company`  | low-risk shared credentials **на всю компанию**                     | `accessLevel = ALL`; все сотрудники с Credentials permission                  |
+| `Project`  | credentials клиентов, проектов и продуктов                          | project/product team access + role/personal levels                            |
+| `Secret`   | чувствительные company/client credentials **и company-owned infra** | manual selected people + global vault owners                                  |
+| `Archived` | archived credentials                                                | no create                                                                     |
 
 **Team ≠ Company:** `Team` — department/seat scope (`DEPARTMENT`); `Company` — company-wide low-risk pool (`ALL`). Использовать редко; не смешивать с critical secrets.
+
+`Secret` — дом для **company-owned infra accounts** (наш hosting / registrar / cloud), которые используются несколькими projects. Такие записи имеют `projectId = null` и линкуются в Delivery-слоты продуктов через `product_access_slot_bindings`. `Team` / `Company` для них по-прежнему **не** используются: это critical secrets. Привязка не выдаёт доступ: reveal идёт через allowlist записи.
 
 `Department` как **отдельный UX-tab** не использовать (путает с org department): department-level записи живут во вкладке `Team`. Рабочие клиентские credentials — в `Project`.
 

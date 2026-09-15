@@ -48,6 +48,11 @@ type RelationPickerBaseProps = {
   onOpenSelected?: (id: string) => void;
   /** Opens create flow; `searchQuery` is set when user typed in the search box. */
   onCreate?: (searchQuery: string) => void;
+  /** Default `bottom`. Use `top` to pin Create above the list. */
+  createPlacement?: 'bottom' | 'top';
+  /** Controlled open state. When omitted, the picker manages open internally. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   /**
    * When `none`, selected chips/company row are not rendered (host shows custom cards).
    * Search still tracks current selection ids.

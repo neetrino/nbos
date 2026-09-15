@@ -139,6 +139,81 @@ describe('buildExpensePlanGridPayload', () => {
     expect(payload.rows[0].months[4].amount).toBe(50);
   });
 
+  it('sums multiple cards in the same month and clears expenseId', () => {
+    const payload = buildExpensePlanGridPayload(
+      [
+        {
+          id: 'plan-water',
+          name: 'Water',
+          amount: 150,
+          frequency: 'MONTHLY',
+          nextDueDate: new Date('2026-04-01T00:00:00.000Z'),
+          project: null,
+          expenses: [
+            {
+              id: 'exp-a',
+              amount: new Decimal(8000),
+              dueDate: new Date('2026-04-03T00:00:00.000Z'),
+              status: 'PAID',
+              expensePayments: [{ amount: new Decimal(8000) }],
+            },
+            {
+              id: 'exp-b',
+              amount: new Decimal(12000),
+              dueDate: new Date('2026-04-12T00:00:00.000Z'),
+              status: 'PLANNED',
+              expensePayments: [],
+            },
+          ],
+        },
+      ],
+      2026,
+      NOW,
+    );
+
+    expect(payload.rows[0].months[3].kind).toBe('OPEN');
+    expect(payload.rows[0].months[3].amount).toBe(20000);
+    expect(payload.rows[0].months[3].expenseId).toBeNull();
+    expect(payload.monthTotals[3]).toBe(20000);
+  });
+
+  it('marks a multi-card month OVERDUE when any card is overdue', () => {
+    const payload = buildExpensePlanGridPayload(
+      [
+        {
+          id: 'plan-1',
+          name: 'Cursor',
+          amount: 50,
+          frequency: 'MONTHLY',
+          nextDueDate: new Date('2026-04-01T00:00:00.000Z'),
+          project: null,
+          expenses: [
+            {
+              id: 'exp-paid',
+              amount: 20,
+              dueDate: new Date('2026-04-05T00:00:00.000Z'),
+              status: 'PAID',
+              expensePayments: [{ amount: 20 }],
+            },
+            {
+              id: 'exp-late',
+              amount: 30,
+              dueDate: new Date('2026-04-20T00:00:00.000Z'),
+              status: 'OVERDUE',
+              expensePayments: [],
+            },
+          ],
+        },
+      ],
+      2026,
+      NOW,
+    );
+
+    expect(payload.rows[0].months[3].kind).toBe('OVERDUE');
+    expect(payload.rows[0].months[3].amount).toBe(50);
+    expect(payload.rows[0].months[3].expenseId).toBeNull();
+  });
+
   it('does not forecast months after a plan is cancelled', () => {
     const payload = buildExpensePlanGridPayload(
       [

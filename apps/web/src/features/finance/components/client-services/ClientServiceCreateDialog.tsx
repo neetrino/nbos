@@ -1,13 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { useState, type Dispatch, type FormEvent, type SetStateAction } from 'react';
+import { CreateFormDialog } from '@/components/shared';
 import {
   applyProductToClientServiceForm,
   canSubmitClientServiceCreate,
@@ -22,8 +16,8 @@ import { productsApi } from '@/lib/api/products';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { projectDisplayName } from '@/lib/format/project-product-display';
 import { ClientServiceCreateDialogFields } from './ClientServiceCreateDialogFields';
-import { ClientServiceFormFooter } from './client-service-form-controls';
 import { useClientServicesT } from './client-service-message-keys';
+import { useTranslations } from 'next-intl';
 
 interface ClientServiceCreateDialogProps {
   open: boolean;
@@ -31,12 +25,17 @@ interface ClientServiceCreateDialogProps {
   onSaved: (service: ClientServiceRecord) => void;
 }
 
-export function ClientServiceCreateDialog({
+export function ClientServiceCreateDialog(props: ClientServiceCreateDialogProps) {
+  return <ClientServiceCreateDialogSession key={props.open ? 'open' : 'closed'} {...props} />;
+}
+
+function ClientServiceCreateDialogSession({
   open,
   onOpenChange,
   onSaved,
 }: ClientServiceCreateDialogProps) {
   const t = useClientServicesT();
+  const tCommon = useTranslations('common');
   const [form, setForm] = useState<ClientServiceFormState>({ ...EMPTY_CLIENT_SERVICE_FORM });
   const [productLabel, setProductLabel] = useState<string | null>(null);
   const [projectLabel, setProjectLabel] = useState<string | null>(null);
@@ -44,92 +43,112 @@ export function ClientServiceCreateDialog({
   const [productResolving, setProductResolving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  useEffect(() => {
-    if (!open) return;
-    setFormError(null);
-    setProductLabel(null);
-    setProjectLabel(null);
-    setCredentialLabel(null);
-    setProductResolving(false);
-    setForm({ ...EMPTY_CLIENT_SERVICE_FORM });
-  }, [open]);
 
   const canSubmit = canSubmitClientServiceCreate(form) && !productResolving;
 
-  const handleProductSelect = async (productId: string, label: string) => {
-    setProductLabel(label);
-    setProductResolving(true);
-    setFormError(null);
-    try {
-      const product = await productsApi.getById(productId);
-      setForm((prev) => applyProductToClientServiceForm(prev, product));
-      setProjectLabel(projectDisplayName(product.project) ?? product.project.name);
-    } catch {
-      setForm((prev) => ({ ...prev, productId, projectId: '' }));
-      setProjectLabel(null);
-      setFormError(t('errors.productProject'));
-    } finally {
-      setProductResolving(false);
-    }
-  };
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!canSubmit) return;
-    setSubmitting(true);
-    setFormError(null);
-    try {
-      const saved = await clientServicesApi.create(clientServiceFormToPayload(form));
-      onSaved(saved);
-      onOpenChange(false);
-    } catch (caught) {
-      setFormError(getApiErrorMessage(caught, t('errors.create')));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{t('create.title')}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-4">
-          {formError ? (
-            <p className="text-destructive text-sm" role="alert">
-              {formError}
-            </p>
-          ) : null}
-          <ClientServiceCreateDialogFields
-            form={form}
-            productLabel={productLabel}
-            projectLabel={projectLabel}
-            credentialLabel={credentialLabel}
-            productResolving={productResolving}
-            onProductSelect={(id, label) => {
-              void handleProductSelect(id, label);
-            }}
-            onCredentialSelect={(id, label) => {
-              setForm((prev) => ({ ...prev, providerAccountId: id }));
-              setCredentialLabel(label);
-            }}
-            onCredentialClear={() => {
-              setForm((prev) => ({ ...prev, providerAccountId: '' }));
-              setCredentialLabel(null);
-            }}
-            onFormChange={(partial) => setForm((prev) => ({ ...prev, ...partial }))}
-          />
-          <DialogFooter className="gap-0 sm:justify-end">
-            <ClientServiceFormFooter
-              onCancel={() => onOpenChange(false)}
-              submitting={submitting}
-              canSubmit={canSubmit}
-              submitLabel={t('create.submit')}
-            />
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('create.title')}
+      error={formError}
+      submitting={submitting}
+      canSubmit={canSubmit}
+      submitLabel={t('create.submit')}
+      submittingLabel={tCommon('saving')}
+      cancelLabel={tCommon('cancel')}
+      onSubmit={(event) =>
+        void submitClientService({
+          event,
+          canSubmit,
+          form,
+          onSaved,
+          onOpenChange,
+          setSubmitting,
+          setFormError,
+          createError: t('errors.create'),
+        })
+      }
+    >
+      <ClientServiceCreateDialogFields
+        form={form}
+        productLabel={productLabel}
+        projectLabel={projectLabel}
+        credentialLabel={credentialLabel}
+        productResolving={productResolving}
+        onProductSelect={(id, label) => {
+          void handleProductSelect({
+            productId: id,
+            label,
+            setProductLabel,
+            setProjectLabel,
+            setProductResolving,
+            setFormError,
+            setForm,
+            productProjectError: t('errors.productProject'),
+          });
+        }}
+        onCredentialSelect={(id, label) => {
+          setForm((prev) => ({ ...prev, providerAccountId: id }));
+          setCredentialLabel(label);
+        }}
+        onCredentialClear={() => {
+          setForm((prev) => ({ ...prev, providerAccountId: '' }));
+          setCredentialLabel(null);
+        }}
+        onFormChange={(partial) => setForm((prev) => ({ ...prev, ...partial }))}
+      />
+    </CreateFormDialog>
   );
+}
+
+async function handleProductSelect(options: {
+  productId: string;
+  label: string;
+  setProductLabel: (label: string | null) => void;
+  setProjectLabel: (label: string | null) => void;
+  setProductResolving: (resolving: boolean) => void;
+  setFormError: (error: string | null) => void;
+  setForm: Dispatch<SetStateAction<ClientServiceFormState>>;
+  productProjectError: string;
+}): Promise<void> {
+  options.setProductLabel(options.label);
+  options.setProductResolving(true);
+  options.setFormError(null);
+  try {
+    const product = await productsApi.getById(options.productId);
+    options.setForm((prev) => applyProductToClientServiceForm(prev, product));
+    options.setProjectLabel(projectDisplayName(product.project) ?? product.project.name);
+  } catch {
+    options.setForm((prev) => ({ ...prev, productId: options.productId, projectId: '' }));
+    options.setProjectLabel(null);
+    options.setFormError(options.productProjectError);
+  } finally {
+    options.setProductResolving(false);
+  }
+}
+
+async function submitClientService(options: {
+  event: FormEvent;
+  canSubmit: boolean;
+  form: ClientServiceFormState;
+  onSaved: (service: ClientServiceRecord) => void;
+  onOpenChange: (open: boolean) => void;
+  setSubmitting: (submitting: boolean) => void;
+  setFormError: (error: string | null) => void;
+  createError: string;
+}): Promise<void> {
+  options.event.preventDefault();
+  if (!options.canSubmit) return;
+  options.setSubmitting(true);
+  options.setFormError(null);
+  try {
+    const saved = await clientServicesApi.create(clientServiceFormToPayload(options.form));
+    options.onSaved(saved);
+    options.onOpenChange(false);
+  } catch (caught) {
+    options.setFormError(getApiErrorMessage(caught, options.createError));
+  } finally {
+    options.setSubmitting(false);
+  }
 }

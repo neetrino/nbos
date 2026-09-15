@@ -28,6 +28,14 @@ describe('productSlotBindingsFromRow', () => {
       { field: 'frontendDeveloperId', slot: 'DEVELOPER_FRONTEND', employeeId: 'fe-1' },
     ]);
   });
+
+  it('skips Frontend binding when the same person occupies both developer slots', () => {
+    const bindings = productSlotBindingsFromRow({
+      developerId: 'dev-1',
+      frontendDeveloperId: 'dev-1',
+    });
+    expect(bindings).toEqual([{ field: 'developerId', slot: 'DEVELOPER', employeeId: 'dev-1' }]);
+  });
 });
 
 describe('isPrimaryProductSlot', () => {

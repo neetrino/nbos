@@ -1,3 +1,4 @@
+import { hasDistinctFrontendAssignee } from '../constants/developer-pool-split';
 import {
   PRODUCT_SLOT_FIELD_MAP,
   type ProductSlotFieldName,
@@ -25,6 +26,12 @@ export function productSlotBindingsFromRow(row: ProductSlotSourceRow): ProductSl
   for (const field of Object.keys(PRODUCT_SLOT_FIELD_MAP) as ProductSlotFieldName[]) {
     const employeeId = row[field];
     if (!employeeId) continue;
+    if (
+      field === 'frontendDeveloperId' &&
+      !hasDistinctFrontendAssignee(row.developerId, employeeId)
+    ) {
+      continue;
+    }
     bindings.push({
       field,
       slot: PRODUCT_SLOT_FIELD_MAP[field],

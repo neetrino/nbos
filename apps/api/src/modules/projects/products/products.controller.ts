@@ -21,6 +21,7 @@ import {
   GENERIC_STATUS_DEPRECATION_HEADER,
 } from '../delivery-status-deprecation';
 import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
+import { credentialsAccessFromUser } from '../../credentials/credentials-access';
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -97,10 +98,31 @@ export class ProductsController {
     return this.productsService.getStats(projectId);
   }
 
+  @Get(':id/access-slot-candidates')
+  @ApiOperation({ summary: 'Credentials that can be linked to this product access slot' })
+  @ApiQuery({ name: 'slotKey', required: true })
+  @ApiQuery({ name: 'search', required: false })
+  async listAccessSlotCandidates(
+    @Param('id') id: string,
+    @Query('slotKey') slotKey: string,
+    @Query('search') search: string | undefined,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.productAccessSlotBindings.listAccessSlotCandidates(
+      id,
+      slotKey,
+      search,
+      credentialsAccessFromUser(user),
+    );
+  }
+
   @Get(':id/access-slots')
   @ApiOperation({ summary: 'Access & infrastructure slots with credential bindings' })
-  async getAccessSlots(@Param('id') id: string) {
-    return this.productAccessSlotBindings.getProductAccessSlots(id);
+  async getAccessSlots(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.productAccessSlotBindings.getProductAccessSlots(
+      id,
+      credentialsAccessFromUser(user),
+    );
   }
 
   @Put(':id/access-slots')
@@ -108,19 +130,29 @@ export class ProductsController {
   async bindAccessSlot(
     @Param('id') id: string,
     @Body() body: { slotKey: string; credentialId: string },
+    @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.productAccessSlotBindings.bindProductAccessSlot(
       id,
       body.slotKey,
       body.credentialId,
+      credentialsAccessFromUser(user),
     );
   }
 
   @Delete(':id/access-slots/bindings/:bindingId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Remove a single access-slot binding (credential stays in vault)' })
-  async unbindAccessSlotBinding(@Param('id') id: string, @Param('bindingId') bindingId: string) {
-    return this.productAccessSlotBindings.unbindProductAccessSlotBinding(id, bindingId);
+  async unbindAccessSlotBinding(
+    @Param('id') id: string,
+    @Param('bindingId') bindingId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.productAccessSlotBindings.unbindProductAccessSlotBinding(
+      id,
+      bindingId,
+      credentialsAccessFromUser(user),
+    );
   }
 
   @Get(':id/team')

@@ -555,6 +555,36 @@ describe('ExpensesService', () => {
       expect(prisma.clientServiceRecord.findUnique).not.toHaveBeenCalled();
     });
 
+    it('rejects a cancelled expense plan link', async () => {
+      prisma.expensePlan.findUnique.mockResolvedValue({ status: 'CANCELLED' });
+
+      await expect(
+        service.create({
+          name: 'Water',
+          type: 'PLANNED',
+          category: 'OFFICE',
+          amount: 8000,
+          expensePlanId: 'plan-stopped',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.expense.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects a missing expense plan link', async () => {
+      prisma.expensePlan.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.create({
+          name: 'Water',
+          type: 'PLANNED',
+          category: 'OFFICE',
+          amount: 8000,
+          expensePlanId: 'plan-missing',
+        }),
+      ).rejects.toThrow(NotFoundException);
+      expect(prisma.expense.create).not.toHaveBeenCalled();
+    });
+
     it('rejects invalid type', async () => {
       await expect(
         service.create({

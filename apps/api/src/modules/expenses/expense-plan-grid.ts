@@ -93,44 +93,55 @@ function resolveExpenseCellKind(expense: ExpensePlanGridExpenseInput): ExpensePl
   return 'OPEN';
 }
 
-function expensesByMonth(
+function expensesGroupedByMonth(
   expenses: ExpensePlanGridExpenseInput[],
   year: number,
-): Map<number, ExpensePlanGridExpenseInput> {
-  const map = new Map<number, ExpensePlanGridExpenseInput>();
+): Map<number, ExpensePlanGridExpenseInput[]> {
+  const map = new Map<number, ExpensePlanGridExpenseInput[]>();
   for (const exp of expenses) {
     if (!exp.dueDate || exp.dueDate.getUTCFullYear() !== year) {
       continue;
     }
     const month = utcMonthIndexFromDate(exp.dueDate);
-    const existing = map.get(month);
-    if (!existing?.dueDate || exp.dueDate > existing.dueDate) {
-      map.set(month, exp);
-    }
+    const bucket = map.get(month);
+    if (bucket) bucket.push(exp);
+    else map.set(month, [exp]);
   }
   return map;
+}
+
+function resolveExpensesCellKind(expenses: ExpensePlanGridExpenseInput[]): ExpensePlanGridCellKind {
+  const kinds = expenses.map(resolveExpenseCellKind);
+  if (kinds.every((kind) => kind === 'PAID')) return 'PAID';
+  if (kinds.some((kind) => kind === 'OVERDUE')) return 'OVERDUE';
+  if (kinds.some((kind) => kind === 'PARTIAL')) return 'PARTIAL';
+  return 'OPEN';
+}
+
+function buildIssuedMonthCell(expenses: ExpensePlanGridExpenseInput[]): ExpensePlanGridCell {
+  const amount = expenses.reduce((sum, exp) => sum + numericAmount(exp.amount), 0);
+  return {
+    kind: resolveExpensesCellKind(expenses),
+    amount,
+    expenseId: expenses.length === 1 ? (expenses[0]?.id ?? null) : null,
+  };
 }
 
 function buildMonthCell(
   plan: ExpensePlanGridRowInput,
   monthIndex: number,
   scheduled: boolean,
-  expense: ExpensePlanGridExpenseInput | undefined,
+  expenses: ExpensePlanGridExpenseInput[] | undefined,
   now: Date,
   year: number,
 ): ExpensePlanGridCell {
-  const planAmount = numericAmount(plan.amount);
-  if (expense) {
-    return {
-      kind: resolveExpenseCellKind(expense),
-      amount: numericAmount(expense.amount),
-      expenseId: expense.id,
-    };
+  if (expenses && expenses.length > 0) {
+    return buildIssuedMonthCell(expenses);
   }
   if (!scheduled || isPastCalendarMonth(year, monthIndex, now)) {
     return { kind: 'NA', amount: 0, expenseId: null };
   }
-  return { kind: 'FORECAST', amount: planAmount, expenseId: null };
+  return { kind: 'FORECAST', amount: numericAmount(plan.amount), expenseId: null };
 }
 
 export function buildExpensePlanGridPayload(
@@ -147,7 +158,7 @@ export function buildExpensePlanGridPayload(
     const scheduledMonths = allowForecast
       ? collectPlanMonthIndexesInYear(year, plan.frequency, plan.nextDueDate)
       : new Set<number>();
-    const byMonth = expensesByMonth(plan.expenses, year);
+    const byMonth = expensesGroupedByMonth(plan.expenses, year);
     const months: ExpensePlanGridCell[] = [];
     let annualTotal = 0;
 

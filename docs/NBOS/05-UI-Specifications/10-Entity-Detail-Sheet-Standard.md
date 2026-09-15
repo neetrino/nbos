@@ -238,6 +238,7 @@ Rules:
 - Group edit controls near the data they change.
 - Keep lifecycle actions (activate, cancel, status moves) in a side panel or status bar, separate from Save/Cancel.
 - Use a quick dialog only for short create flows or confirmations.
+- Create dialogs use the shared **`CreateFormDialog`** kit (`apps/web/src/components/shared/create-form/`): outlined `InlineField` / `RelationPickerField` (label on the contour), `FormFieldRow` for 2-col density, human select labels — not stacked `Label` + `Input` + raw enum `Select`. Sheets already use the same `InlineField` primitive.
 - Use stage-gate field highlights in the real sheet, not in a duplicate modal.
 - For workflow entities without a full update API (e.g. invoice money status), use an immediate-action status bar (like pipeline stages) instead of a draft footer.
 
@@ -276,6 +277,7 @@ Do **not** hand-wire `floatingClose` / `floatingRail`. Use raw `SheetContent` on
 | Entity detail sheet shell                   | `apps/web/src/components/shared/EntityDetailSheetContent.tsx`                                        |
 | Floating rail actions                       | `apps/web/src/components/shared/entity-sheet-floating-rail.tsx`                                      |
 | Quick create (compact dialog)               | `apps/web/src/components/shared/quick-create-task/QuickCreateTaskDialog.tsx`                         |
+| Create form kit (outlined fields)           | `apps/web/src/components/shared/create-form/` — `CreateFormDialog` + `InlineField`                   |
 | Task detail sheet (wide operational layout) | `apps/web/src/features/tasks/components/TaskSheet.tsx`                                               |
 | Compact finance detail sheet                | `apps/web/src/features/finance/components/InvoiceSheet.tsx`, `SubscriptionDetailSheet.tsx`           |
 | Related items in entity tabs (preview list) | `apps/web/src/components/shared/entity-item/` — see `docs/reference/patterns/entity-item-surface.md` |

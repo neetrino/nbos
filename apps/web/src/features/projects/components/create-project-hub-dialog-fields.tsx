@@ -1,11 +1,8 @@
 'use client';
 
-import { User, Building2 } from 'lucide-react';
+import { Building2, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { RelationPickerField } from '@/components/shared';
+import { InlineField, RelationPickerField } from '@/components/shared';
 import {
   useCompanyRelationSearch,
   useContactRelationSearch,
@@ -25,7 +22,6 @@ export type CreateProjectHubDialogFieldsProps = {
   onCompanyChange: (id: string, label: string) => void;
   onCompanyClear: () => void;
   saving: boolean;
-  error: string | null;
 };
 
 export function CreateProjectHubDialogFields({
@@ -41,7 +37,6 @@ export function CreateProjectHubDialogFields({
   onCompanyChange,
   onCompanyClear,
   saving,
-  error,
 }: CreateProjectHubDialogFieldsProps) {
   const t = useTranslations('forms');
   const searchContacts = useContactRelationSearch(25);
@@ -50,28 +45,25 @@ export function CreateProjectHubDialogFields({
   const companyPicker = useRelationPickerActions('company', 'project-hub-create');
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="project-hub-name">{t('project.fields.name')}</Label>
-        <Input
-          id="project-hub-name"
-          value={name}
-          onChange={(e) => onNameChange(e.target.value)}
-          placeholder={t('project.placeholders.name')}
-          disabled={saving}
-        />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="project-hub-description">{t('project.fields.description')}</Label>
-        <Textarea
-          id="project-hub-description"
-          value={description}
-          onChange={(e) => onDescriptionChange(e.target.value)}
-          placeholder={t('project.placeholders.description')}
-          rows={3}
-          disabled={saving}
-        />
-      </div>
+    <>
+      <InlineField
+        variant="controlled"
+        label={t('project.fields.name')}
+        type="text"
+        value={name}
+        placeholder={t('project.placeholders.name')}
+        disabled={saving}
+        onValueChange={onNameChange}
+      />
+      <InlineField
+        variant="controlled"
+        label={t('project.fields.description')}
+        type="textarea"
+        value={description}
+        placeholder={t('project.placeholders.description')}
+        disabled={saving}
+        onValueChange={onDescriptionChange}
+      />
       <RelationPickerField
         label={t('project.fields.clientContact')}
         entityKind="contact"
@@ -99,7 +91,6 @@ export function CreateProjectHubDialogFields({
         maxResults={25}
         {...companyPicker}
       />
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-    </div>
+    </>
   );
 }

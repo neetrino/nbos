@@ -1,83 +1,81 @@
 'use client';
 
-import { NbosDatePicker } from '@/components/shared/date-picker';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar, Handshake } from 'lucide-react';
+import { InlineField, RelationPickerField } from '@/components/shared';
+import type { RelationPickerSearchFn } from '@/components/shared/relation-picker';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { SUBSCRIPTION_REMINDER_LANGUAGES } from '@/features/finance/constants/finance';
+  EXPENSE_SHEET_FIELD_CELL_CLASS,
+  EXPENSE_SHEET_FIELD_ROW_2_CLASS,
+} from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import type { SubscriptionFormState } from '@/features/finance/utils/subscription-form-state';
+import { SubscriptionNotificationSettingsRow } from './SubscriptionNotificationSettingsRow';
 
 interface SubscriptionFormDialogMetaFieldsProps {
   form: SubscriptionFormState;
+  partnerLabel: string | null;
+  searchPartners: RelationPickerSearchFn;
+  partnerPicker: {
+    onCreate?: (searchQuery: string) => void;
+    onOpenSelected: (id: string) => void;
+  };
   onFormChange: (partial: Partial<SubscriptionFormState>) => void;
-}
-
-function normalizeSelectValue(value: string | null): string {
-  return value ?? '';
+  onPartnerSelect: (id: string, label: string) => void;
+  onPartnerClear: () => void;
 }
 
 export function SubscriptionFormDialogMetaFields({
   form,
+  partnerLabel,
+  searchPartners,
+  partnerPicker,
   onFormChange,
+  onPartnerSelect,
+  onPartnerClear,
 }: SubscriptionFormDialogMetaFieldsProps) {
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="sub-start">Billing start date</Label>
-          <NbosDatePicker
-            id="sub-start"
-            value={form.billingStartDate}
-            onChange={(billingStartDate) => onFormChange({ billingStartDate })}
-            aria-label="Billing start date"
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="sub-end">End date (optional)</Label>
-          <NbosDatePicker
-            id="sub-end"
-            value={form.endDate}
-            onChange={(endDate) => onFormChange({ endDate })}
-            clearable
-            aria-label="End date"
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="sub-reminder-language">Payment reminder language</Label>
-        <Select
-          value={form.reminderLanguage}
-          onValueChange={(v) => onFormChange({ reminderLanguage: normalizeSelectValue(v) })}
-        >
-          <SelectTrigger id="sub-reminder-language">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SUBSCRIPTION_REMINDER_LANGUAGES.map((lang) => (
-              <SelectItem key={lang.value} value={lang.value}>
-                {lang.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Checkbox
-          id="sub-notifications"
-          checked={form.notificationsEnabled}
-          onCheckedChange={(checked) => onFormChange({ notificationsEnabled: checked === true })}
+      <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
+        <InlineField
+          variant="controlled"
+          label="Started"
+          type="date"
+          value={form.billingStartDate}
+          icon={<Calendar size={12} />}
+          className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+          onValueChange={(billingStartDate) => onFormChange({ billingStartDate })}
         />
-        <Label htmlFor="sub-notifications" className="font-normal">
-          Enable billing notifications for this subscription
-        </Label>
+        <InlineField
+          variant="controlled"
+          label="End"
+          type="date"
+          value={form.endDate}
+          clearable
+          icon={<Calendar size={12} />}
+          className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+          onValueChange={(endDate) => onFormChange({ endDate })}
+        />
+      </div>
+      <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
+        <SubscriptionNotificationSettingsRow
+          notificationsEnabled={form.notificationsEnabled}
+          reminderLanguage={form.reminderLanguage}
+          className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+          onNotificationsChange={(notificationsEnabled) => onFormChange({ notificationsEnabled })}
+          onReminderLanguageChange={(reminderLanguage) => onFormChange({ reminderLanguage })}
+        />
+        <RelationPickerField
+          label="Partner"
+          entityKind="partner"
+          value={form.partnerId || null}
+          selectionLabel={partnerLabel}
+          placeholder="Search partners…"
+          icon={<Handshake size={12} />}
+          className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+          onSearch={searchPartners}
+          onSelect={onPartnerSelect}
+          onClear={onPartnerClear}
+          {...partnerPicker}
+        />
       </div>
     </>
   );

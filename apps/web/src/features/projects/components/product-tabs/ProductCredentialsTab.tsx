@@ -34,7 +34,6 @@ import { toast } from 'sonner';
 type ProductCredentialsTabProps = UseProductCredentialsTabResult & {
   productId: string;
   projectId: string;
-  productName: string;
 };
 
 export function ProductCredentialsTab({
@@ -44,7 +43,6 @@ export function ProductCredentialsTab({
   refetch,
   productId,
   projectId,
-  productName,
 }: ProductCredentialsTabProps) {
   return (
     <CredentialVaultSessionProvider>
@@ -55,7 +53,6 @@ export function ProductCredentialsTab({
         refetch={refetch}
         productId={productId}
         projectId={projectId}
-        productName={productName}
       />
     </CredentialVaultSessionProvider>
   );
@@ -68,13 +65,12 @@ function ProductCredentialsTabContent({
   refetch,
   productId,
   projectId,
-  productName,
 }: ProductCredentialsTabProps) {
   const [viewMode, setViewMode] = useProductCredentialsViewMode();
   const [secretFlashCredentialId, setSecretFlashCredentialId] = useState<string | null>(null);
   const [sheetInitialItem, setSheetInitialItem] = useState<CredentialListItem | null>(null);
   const credentialSheet = useProductEntityDetailSheet();
-  const create = useProductCredentialsCreate({ productId, productName, refetch });
+  const create = useProductCredentialsCreate({ productId, refetch });
   const filter = useProductCredentialsFilter(credentials);
 
   const handleSecretCopied = useCallback((flashId: string) => {
@@ -276,8 +272,6 @@ function ProductCredentialsTabContent({
         vaultScope="project"
         projectId={projectId}
         productId={productId}
-        title={isCreating ? 'New credential' : undefined}
-        initialName={isCreating ? create.credentialName : undefined}
         initialCategory={isCreating ? create.initialCategory : undefined}
         successToast={isCreating ? false : undefined}
         presetKey={

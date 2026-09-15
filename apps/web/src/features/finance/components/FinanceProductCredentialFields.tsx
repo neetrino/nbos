@@ -1,7 +1,8 @@
 'use client';
 
 import { KeyRound, Layers } from 'lucide-react';
-import { RelationPickerField } from '@/components/shared';
+import { FormFieldRow, RelationPickerField } from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import {
   useCredentialRelationSearch,
   useProductRelationSearch,
@@ -40,7 +41,7 @@ export function FinanceProductCredentialFields({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid gap-2 sm:grid-cols-2">
+      <FormFieldRow>
         <RelationPickerField
           label="Product"
           entityKind="product"
@@ -49,6 +50,7 @@ export function FinanceProductCredentialFields({
           placeholder="Connect product"
           icon={<Layers size={12} />}
           disabled={disabled}
+          className={FORM_FIELD_CELL_CLASS}
           onSearch={searchProducts}
           onSelect={onProductSelect}
           onClear={onProductClear}
@@ -62,12 +64,13 @@ export function FinanceProductCredentialFields({
           placeholder="Connect credentials"
           icon={<KeyRound size={12} />}
           disabled={disabled}
+          className={FORM_FIELD_CELL_CLASS}
           onSearch={searchCredentials}
           onSelect={onCredentialSelect}
           onClear={onCredentialClear}
           {...credentialPicker}
         />
-      </div>
+      </FormFieldRow>
       {!productId && projectHint ? (
         <p className="text-muted-foreground text-xs">Project · {projectHint}</p>
       ) : null}

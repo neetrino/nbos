@@ -1,4 +1,5 @@
 import { api } from '../api';
+import { normalizeAccessSlotCandidatePage } from './product-access-slot-candidates';
 import type { ChecklistStageProgress, DeliveryLifecycleProjection } from './projects';
 
 export interface ProductEmployee {
@@ -269,6 +270,15 @@ export interface ProductAccessSlotBoundCredential {
   credentialType: string;
   login: string | null;
   url: string | null;
+  canReveal?: boolean;
+}
+
+export interface ProductAccessSlotCandidate {
+  id: string;
+  name: string;
+  category: string;
+  login: string | null;
+  provider: string | null;
 }
 
 export interface ProductAccessSlotBindingItem {
@@ -362,6 +372,17 @@ export const productsApi = {
       params: projectId ? { projectId } : undefined,
     });
     return resp.data;
+  },
+
+  async listAccessSlotCandidates(
+    productId: string,
+    params: { slotKey: string; search?: string },
+  ): Promise<{ items: ProductAccessSlotCandidate[]; hasMore: boolean }> {
+    const resp = await api.get<unknown>(
+      `/api/projects/products/${productId}/access-slot-candidates`,
+      { params },
+    );
+    return normalizeAccessSlotCandidatePage(resp.data);
   },
 
   async getAccessSlots(productId: string): Promise<ProductAccessSlotsResponse> {

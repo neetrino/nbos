@@ -17,6 +17,7 @@ interface SubscriptionNotificationSettingsRowProps {
   notificationsEnabled: boolean;
   reminderLanguage: string;
   disabled?: boolean;
+  className?: string;
   onNotificationsChange: (enabled: boolean) => void;
   onReminderLanguageChange: (language: string) => void;
 }
@@ -25,6 +26,7 @@ export function SubscriptionNotificationSettingsRow({
   notificationsEnabled,
   reminderLanguage,
   disabled = false,
+  className,
   onNotificationsChange,
   onReminderLanguageChange,
 }: SubscriptionNotificationSettingsRowProps) {
@@ -39,6 +41,7 @@ export function SubscriptionNotificationSettingsRow({
       className={cn(
         DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
         disabled && 'pointer-events-none opacity-60',
+        className,
       )}
     >
       <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>Notification</span>
@@ -50,17 +53,19 @@ export function SubscriptionNotificationSettingsRow({
           aria-label="Notification"
           onCheckedChange={(checked) => onNotificationsChange(Boolean(checked))}
         />
-        <div className={cn('ml-auto', !notificationsEnabled && 'invisible')}>
-          <SegmentedTabs
-            value={languageValue}
-            options={SUBSCRIPTION_REMINDER_LANGUAGE_SHORT_OPTIONS}
-            ariaLabel="Language"
-            listClassName="bg-background rounded-full p-0.5"
-            pillClassName="rounded-full"
-            buttonClassName="min-w-[2.25rem] rounded-full px-2.5 py-1 text-xs font-semibold lowercase tracking-wide"
-            onChange={onReminderLanguageChange}
-          />
-        </div>
+        {notificationsEnabled ? (
+          <div className="ml-auto">
+            <SegmentedTabs
+              value={languageValue}
+              options={SUBSCRIPTION_REMINDER_LANGUAGE_SHORT_OPTIONS}
+              ariaLabel="Language"
+              listClassName="bg-background rounded-full p-0.5"
+              pillClassName="rounded-full"
+              buttonClassName="min-w-[2.25rem] rounded-full px-2.5 py-1 text-xs font-semibold lowercase tracking-wide"
+              onChange={onReminderLanguageChange}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   );
