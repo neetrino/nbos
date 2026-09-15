@@ -139,6 +139,8 @@ function KindField({
   options,
 }: FieldProps & { locked: boolean; options: SeatKindOptions }) {
   const t = useTranslations('hr.rolesSeats');
+  const selectedKind = form.kind;
+  const selectedKindLabel = isOrgSeatKind(selectedKind) ? t(`kinds.${selectedKind}`) : undefined;
   return (
     <div className="space-y-2">
       <Label htmlFor="seat-kind">{t('fields.kind')}</Label>
@@ -151,7 +153,7 @@ function KindField({
       >
         <SelectTrigger id="seat-kind">
           <SelectValue placeholder={t('editor.kindPlaceholder')}>
-            {form.kind ? () => t(`kinds.${form.kind}`) : undefined}
+            {selectedKindLabel ? () => selectedKindLabel : undefined}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
