@@ -54,7 +54,7 @@
 - seller;
 - PM;
 - `developerId` — Developer Backend (primary, accountable);
-- `frontendDeveloperId` — Developer Frontend (assisting, seat `DEVELOPER_FRONTEND`; optional);
+- `frontendDeveloperId` — Developer Frontend (assisting, seat `DEVELOPER_FRONTEND`; optional only if Backend is set; same employee as Backend is allowed and counts as one assignee);
 - linked order;
 - company через project;
 - client contacts: `Product.contactId` + `ProductAdditionalContact` (канон `../03-Clients/07-Contact-and-Product.md`). Новый Product копирует только `Project.contactId`; additional Project не копируются. Extension контактов не имеет.

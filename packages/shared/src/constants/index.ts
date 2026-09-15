@@ -116,9 +116,10 @@ export const EMPLOYEE_ROLES = [
 export {
   DEVELOPER_POOL_BACKEND_PERCENT,
   DEVELOPER_POOL_FRONTEND_PERCENT,
+  hasDistinctFrontendAssignee,
   splitDeveloperPoolAmount,
 } from './developer-pool-split';
-export type { DeveloperPoolSplit } from './developer-pool-split';
+export type { DeveloperPoolSplit, ProductDeveloperSlotId } from './developer-pool-split';
 
 export const EMPLOYEE_LEVELS = ['JUNIOR', 'MIDDLE', 'SENIOR', 'LEAD', 'HEAD'] as const;
 
