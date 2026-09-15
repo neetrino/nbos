@@ -6,13 +6,14 @@
 
 ## Какие встречи входят
 
-| Type                            | Примеры                                         |
-| ------------------------------- | ----------------------------------------------- |
-| `Sales Call`                    | первичная встреча, discovery, qualification     |
-| `Offer Presentation`            | презентация предложения / цены / scope          |
-| `Demo`                          | демонстрация продукта клиенту                   |
-| `Kickoff / Handoff with Client` | старт проекта с клиентом                        |
-| `Support / Maintenance Call`    | звонок с клиентом по поддержке или обслуживанию |
+| Type          | Примеры                                                 |
+| ------------- | ------------------------------------------------------- |
+| `Sales`       | продажи, discovery, презентация предложения, demo       |
+| `HR`          | клиентские встречи по HR / people-направлениям          |
+| `Development` | kickoff, handoff, инженерные / delivery sync с клиентом |
+| `Other`       | всё остальное                                           |
+
+Legacy detailed kinds (`Sales Call`, `Demo`, `Kickoff`, …) may still exist on older rows; the create form uses direction-style types above.
 
 ## Что не входит
 
@@ -30,23 +31,23 @@
 
 Минимальные поля:
 
-| Field                          | Required | Description                                 |
-| ------------------------------ | -------- | ------------------------------------------- |
-| `title`                        | Yes      | Название встречи                            |
-| `starts_at`                    | Yes      | Дата и время начала                         |
-| `ends_at` / `duration_minutes` | Yes      | Длительность                                |
-| `meeting_type`                 | Yes      | Sales, Demo, Kickoff, Support, Maintenance  |
-| `internal_participants`        | Yes      | Сотрудники Neetrino                         |
-| `external_participants`        | Optional | Contacts/clients                            |
-| `project_id`                   | Optional | Связанный Project                           |
-| `product_id`                   | Optional | Связанный Product                           |
-| `deal_id`                      | Optional | Связанный Deal                              |
-| `contact_id`                   | Optional | Главный Contact                             |
-| `location_type`                | Yes      | Online / Offline                            |
-| `location_or_link`             | Optional | Адрес или ссылка                            |
-| `agenda`                       | Optional | Повестка                                    |
-| `outcome_notes`                | Optional | Итоги после встречи                         |
-| `status`                       | Yes      | Scheduled / Completed / Cancelled / No Show |
+| Field                        | Required | Description                                                                 |
+| ---------------------------- | -------- | --------------------------------------------------------------------------- |
+| `title`                      | Yes      | Название встречи                                                            |
+| `starts_at`                  | Yes      | Дата и время начала                                                         |
+| `ends_at` / `duration_hours` | Yes      | Длительность; в create UI — часы (1 = 1 час), `ends_at` считается от начала |
+| `meeting_type`               | Yes      | Direction: Sales, HR, Development, Other                                    |
+| `internal_participants`      | Yes      | Сотрудники Neetrino                                                         |
+| `external_participants`      | Optional | Contacts/clients                                                            |
+| `project_id`                 | Optional | Связанный Project                                                           |
+| `product_id`                 | Optional | Связанный Product                                                           |
+| `deal_id`                    | Optional | Связанный Deal                                                              |
+| `contact_id`                 | Optional | Главный Contact                                                             |
+| `location_type`              | Yes      | Online / Offline                                                            |
+| `location_or_link`           | Optional | Адрес или ссылка                                                            |
+| `agenda`                     | Optional | Повестка                                                                    |
+| `outcome_notes`              | Optional | Итоги после встречи                                                         |
+| `status`                     | Yes      | Scheduled / Completed / Cancelled / No Show                                 |
 
 ## Где можно создать встречу
 

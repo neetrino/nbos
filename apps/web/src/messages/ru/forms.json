@@ -27,6 +27,8 @@
       "startAria": "Начало встречи",
       "end": "Окончание *",
       "endAria": "Окончание встречи",
+      "duration": "Длительность",
+      "durationAria": "Длительность в часах (1 = 1 час)",
       "meetingType": "Тип встречи",
       "location": "Место",
       "linkOrAddress": "Ссылка или адрес",
@@ -35,12 +37,14 @@
       "agendaPlaceholder": "Необязательно"
     },
     "types": {
-      "SALES_CALL": "Звонок по продажам",
+      "SALES_CALL": "Sales",
       "OFFER_PRESENTATION": "Презентация предложения",
       "DEMO": "Демо",
       "KICKOFF": "Kickoff / передача",
       "SUPPORT_CALL": "Звонок поддержки",
       "MAINTENANCE_CALL": "Звонок по сопровождению",
+      "HR": "HR",
+      "DEVELOPMENT": "Development",
       "OTHER": "Другое"
     },
     "locationTypes": {
@@ -50,6 +54,7 @@
     "validation": {
       "titleRequired": "Укажите название.",
       "endAfterStart": "Время окончания должно быть позже начала.",
+      "durationRequired": "Укажите длительность больше нуля (1 = 1 час).",
       "overlapReason": "Этот интервал пересекается с другой встречей. Укажите причину, чтобы всё равно запланировать."
     },
     "conflicts": {

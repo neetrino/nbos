@@ -1983,7 +1983,7 @@ async function main() {
       title: 'ACME handoff call',
       startsAt: new Date('2026-04-28T11:00:00.000Z'),
       endsAt: new Date('2026-04-28T12:00:00.000Z'),
-      meetingType: 'KICKOFF',
+      meetingType: 'DEVELOPMENT',
       locationType: 'ONLINE',
       locationOrLink: 'https://meet.example.com/acme-handoff',
       agenda: 'Confirm delivery checklist and support handover.',

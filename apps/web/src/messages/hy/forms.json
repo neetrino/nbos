@@ -27,6 +27,8 @@
       "startAria": "Meeting start",
       "end": "End *",
       "endAria": "Meeting end",
+      "duration": "Տևողություն",
+      "durationAria": "Տևողություն ժամերով (1 = 1 ժամ)",
       "meetingType": "Meeting type",
       "location": "Տեղ",
       "linkOrAddress": "հղում կամ հասցե",
@@ -35,12 +37,14 @@
       "agendaPlaceholder": "Optional"
     },
     "types": {
-      "SALES_CALL": "Որագրի զանգ",
+      "SALES_CALL": "Sales",
       "OFFER_PRESENTATION": "Արաջարկի ներկայացում",
       "DEMO": "Demo",
       "KICKOFF": "Kickoff / հանդանդանակ",
       "SUPPORT_CALL": "Աջակածության զանգ",
       "MAINTENANCE_CALL": "Սպասարկային զանգ",
+      "HR": "HR",
+      "DEVELOPMENT": "Development",
       "OTHER": "Other"
     },
     "locationTypes": {
@@ -50,6 +54,7 @@
     "validation": {
       "titleRequired": "Ովերնագիրը պարտադիր է։",
       "endAfterStart": "Ավարտի զամանակը պետք է լինել նախագիցի զամանակը։",
+      "durationRequired": "Նշեք տևողություն մեծ զրոյից (1 = 1 ժամ)։",
       "overlapReason": "Այս զամանակը գերակում այլ հանդիպման հետ։ Ավելացրեք պատչար նախագիցակ պլանավորելության։"
     },
     "conflicts": {

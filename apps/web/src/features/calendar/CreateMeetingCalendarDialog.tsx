@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { NbosDatePicker } from '@/components/shared/date-picker';
+import { DetailSheetFieldSegmented } from '@/components/shared';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -27,52 +28,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { toDatetimeLocalValue } from './calendar-datetime-helpers';
-
-const MEETING_TYPE_VALUES = [
-  'SALES_CALL',
-  'OFFER_PRESENTATION',
-  'DEMO',
-  'KICKOFF',
-  'SUPPORT_CALL',
-  'MAINTENANCE_CALL',
-  'OTHER',
-] as const;
-
-const LOCATION_TYPE_VALUES = ['ONLINE', 'OFFLINE'] as const;
-
-type MeetingTypeValue = (typeof MEETING_TYPE_VALUES)[number];
-type LocationTypeValue = (typeof LOCATION_TYPE_VALUES)[number];
-
-type MeetingCreateForm = {
-  title: string;
-  startsLocal: string;
-  endsLocal: string;
-  meetingType: MeetingTypeValue;
-  locationType: LocationTypeValue;
-  locationOrLink: string;
-  agenda: string;
-};
-
-function isMeetingTypeValue(value: string | null): value is MeetingTypeValue {
-  return value !== null && (MEETING_TYPE_VALUES as readonly string[]).includes(value);
-}
-
-function isLocationTypeValue(value: string | null): value is LocationTypeValue {
-  return value !== null && (LOCATION_TYPE_VALUES as readonly string[]).includes(value);
-}
-
-function meetingDefaults(selectedDate: Date): MeetingCreateForm {
-  return {
-    title: '',
-    startsLocal: toDatetimeLocalValue(selectedDate, 9, 0),
-    endsLocal: toDatetimeLocalValue(selectedDate, 10, 0),
-    meetingType: 'SALES_CALL',
-    locationType: 'ONLINE',
-    locationOrLink: '',
-    agenda: '',
-  };
-}
+import { MeetingCreateConflicts } from './MeetingCreateConflicts';
+import {
+  DEFAULT_MEETING_DURATION_HOURS,
+  endsAtIsoFromStartAndDuration,
+  isLocationTypeValue,
+  isMeetingTypeValue,
+  LOCATION_TYPE_VALUES,
+  MEETING_TYPE_VALUES,
+  meetingDefaults,
+  parseDurationHours,
+} from './meeting-create-form';
 
 export interface CreateMeetingCalendarDialogProps {
   open: boolean;
@@ -94,10 +60,13 @@ export function CreateMeetingCalendarDialog({
   const [conflicts, setConflicts] = useState<CalendarMeetingConflictPayload[] | null>(null);
   const [overrideReason, setOverrideReason] = useState('');
   const [form, setForm] = useState(() => meetingDefaults(selectedDate));
+  const [durationInput, setDurationInput] = useState(String(DEFAULT_MEETING_DURATION_HOURS));
 
   useEffect(() => {
     if (!open) return;
-    setForm(meetingDefaults(selectedDate));
+    const defaults = meetingDefaults(selectedDate);
+    setForm(defaults);
+    setDurationInput(String(defaults.durationHours));
     setFormError(null);
     setConflicts(null);
     setOverrideReason('');
@@ -106,7 +75,7 @@ export function CreateMeetingCalendarDialog({
   useEffect(() => {
     setConflicts(null);
     setOverrideReason('');
-  }, [form.startsLocal, form.endsLocal]);
+  }, [form.startsLocal, form.durationHours]);
 
   const submit = useCallback(async () => {
     const title = form.title.trim();
@@ -114,12 +83,13 @@ export function CreateMeetingCalendarDialog({
       setFormError(t('meeting.validation.titleRequired'));
       return;
     }
-    const startsAt = new Date(form.startsLocal).toISOString();
-    const endsAt = new Date(form.endsLocal).toISOString();
-    if (new Date(endsAt) <= new Date(startsAt)) {
-      setFormError(t('meeting.validation.endAfterStart'));
+    const durationHours = parseDurationHours(durationInput);
+    if (durationHours === null) {
+      setFormError(t('meeting.validation.durationRequired'));
       return;
     }
+    const startsAt = new Date(form.startsLocal).toISOString();
+    const endsAt = endsAtIsoFromStartAndDuration(form.startsLocal, durationHours);
     setLoading(true);
     setFormError(null);
     try {
@@ -159,7 +129,12 @@ export function CreateMeetingCalendarDialog({
     } finally {
       setLoading(false);
     }
-  }, [conflicts, form, onCreated, onOpenChange, overrideReason, t, tCommon]);
+  }, [conflicts, durationInput, form, onCreated, onOpenChange, overrideReason, t, tCommon]);
+
+  const locationOptions = LOCATION_TYPE_VALUES.map((value) => ({
+    value,
+    label: t(`meeting.locationTypes.${value}`),
+  }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -176,27 +151,11 @@ export function CreateMeetingCalendarDialog({
           ) : null}
 
           {conflicts?.length ? (
-            <div className="bg-secondary/60 space-y-2 rounded-xl border p-3 text-sm">
-              <p className="text-foreground font-medium">{t('meeting.conflicts.title')}</p>
-              <ul className="text-muted-foreground list-inside list-disc space-y-1">
-                {conflicts.map((c) => (
-                  <li key={`${c.code}-${c.meetingId}`}>
-                    <span className="text-foreground">{c.meetingTitle}</span>
-                  </li>
-                ))}
-              </ul>
-              <div>
-                <Label htmlFor="cal-meet-override">{t('meeting.conflicts.overrideReason')}</Label>
-                <Textarea
-                  id="cal-meet-override"
-                  className="mt-1.5"
-                  rows={2}
-                  value={overrideReason}
-                  onChange={(e) => setOverrideReason(e.target.value)}
-                  placeholder={t('meeting.conflicts.overridePlaceholder')}
-                />
-              </div>
-            </div>
+            <MeetingCreateConflicts
+              conflicts={conflicts}
+              overrideReason={overrideReason}
+              onOverrideReasonChange={setOverrideReason}
+            />
           ) : null}
 
           <div>
@@ -210,8 +169,8 @@ export function CreateMeetingCalendarDialog({
             />
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="min-w-0 flex-1">
               <Label htmlFor="cal-meet-start">{t('meeting.fields.start')}</Label>
               <NbosDatePicker
                 id="cal-meet-start"
@@ -223,61 +182,64 @@ export function CreateMeetingCalendarDialog({
                 aria-label={t('meeting.fields.startAria')}
               />
             </div>
-            <div>
-              <Label htmlFor="cal-meet-end">{t('meeting.fields.end')}</Label>
-              <NbosDatePicker
-                id="cal-meet-end"
-                mode="datetime"
-                variant="extended"
+            <div className="w-full shrink-0 sm:w-24">
+              <Label htmlFor="cal-meet-duration">{t('meeting.fields.duration')}</Label>
+              <Input
+                id="cal-meet-duration"
+                type="number"
+                inputMode="decimal"
+                min={0}
+                step="any"
                 className="mt-1.5"
-                value={form.endsLocal}
-                onChange={(endsLocal) => setForm((p) => ({ ...p, endsLocal }))}
-                aria-label={t('meeting.fields.endAria')}
+                value={durationInput}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  setDurationInput(raw);
+                  const parsed = parseDurationHours(raw);
+                  if (parsed !== null) {
+                    setForm((p) => ({ ...p, durationHours: parsed }));
+                  }
+                }}
+                aria-label={t('meeting.fields.durationAria')}
               />
+            </div>
+            <div className="w-full shrink-0 sm:w-[11.5rem]">
+              <Label>{t('meeting.fields.location')}</Label>
+              <div className="mt-1.5">
+                <DetailSheetFieldSegmented
+                  label={t('meeting.fields.location')}
+                  hideLabel
+                  value={form.locationType}
+                  options={locationOptions}
+                  onValueChange={(locationType) => {
+                    if (isLocationTypeValue(locationType)) {
+                      setForm((p) => ({ ...p, locationType }));
+                    }
+                  }}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <Label>{t('meeting.fields.meetingType')}</Label>
-              <Select
-                value={form.meetingType}
-                onValueChange={(v) => {
-                  if (isMeetingTypeValue(v)) setForm((p) => ({ ...p, meetingType: v }));
-                }}
-              >
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue>{t(`meeting.types.${form.meetingType}`)}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {MEETING_TYPE_VALUES.map((value) => (
-                    <SelectItem key={value} value={value}>
-                      {t(`meeting.types.${value}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>{t('meeting.fields.location')}</Label>
-              <Select
-                value={form.locationType}
-                onValueChange={(v) => {
-                  if (isLocationTypeValue(v)) setForm((p) => ({ ...p, locationType: v }));
-                }}
-              >
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue>{t(`meeting.locationTypes.${form.locationType}`)}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {LOCATION_TYPE_VALUES.map((value) => (
-                    <SelectItem key={value} value={value}>
-                      {t(`meeting.locationTypes.${value}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label>{t('meeting.fields.meetingType')}</Label>
+            <Select
+              value={form.meetingType}
+              onValueChange={(v) => {
+                if (isMeetingTypeValue(v)) setForm((p) => ({ ...p, meetingType: v }));
+              }}
+            >
+              <SelectTrigger className="mt-1.5">
+                <SelectValue>{t(`meeting.types.${form.meetingType}`)}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {MEETING_TYPE_VALUES.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {t(`meeting.types.${value}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

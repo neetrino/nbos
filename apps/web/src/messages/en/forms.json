@@ -27,6 +27,8 @@
       "startAria": "Meeting start",
       "end": "End *",
       "endAria": "Meeting end",
+      "duration": "Duration",
+      "durationAria": "Duration in hours (1 = 1 hour)",
       "meetingType": "Meeting type",
       "location": "Location",
       "linkOrAddress": "Link or address",
@@ -35,12 +37,14 @@
       "agendaPlaceholder": "Optional"
     },
     "types": {
-      "SALES_CALL": "Sales call",
+      "SALES_CALL": "Sales",
       "OFFER_PRESENTATION": "Offer presentation",
       "DEMO": "Demo",
       "KICKOFF": "Kickoff / handoff",
       "SUPPORT_CALL": "Support call",
       "MAINTENANCE_CALL": "Maintenance call",
+      "HR": "HR",
+      "DEVELOPMENT": "Development",
       "OTHER": "Other"
     },
     "locationTypes": {
@@ -50,6 +54,7 @@
     "validation": {
       "titleRequired": "Title is required.",
       "endAfterStart": "End time must be after start time.",
+      "durationRequired": "Enter a duration greater than zero (1 = 1 hour).",
       "overlapReason": "This slot overlaps another meeting. Add a reason to schedule anyway."
     },
     "conflicts": {
