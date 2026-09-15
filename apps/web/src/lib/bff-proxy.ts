@@ -7,6 +7,7 @@ import {
 } from './auth/authjs-session-token';
 import { refreshBackendSession } from './auth/refresh-backend-session';
 import { runSingleFlightRefresh } from './auth/refresh-registry';
+import { appendClearedAuthJsSessionCookie } from './auth/clear-authjs-session-cookie';
 import { SESSION_INVALID_HEADER, SESSION_INVALID_VALUE } from './auth/session-state';
 import {
   copyBackendResponseHeaders,
@@ -125,6 +126,7 @@ function toNextResponse(
   const headers = copyBackendResponseHeaders(backendResponse, setCookie);
   if (sessionInvalid) {
     headers.set(SESSION_INVALID_HEADER, SESSION_INVALID_VALUE);
+    appendClearedAuthJsSessionCookie(headers);
   }
   return new NextResponse(backendResponse.body, {
     status: backendResponse.status,

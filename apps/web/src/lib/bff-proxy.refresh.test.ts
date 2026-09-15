@@ -121,6 +121,7 @@ describe('proxyToBackend concurrent refresh', () => {
 
     expect(response.status).toBe(401);
     expect(response.headers.get('x-nbos-session-invalid')).toBe('1');
+    expect(response.headers.get('set-cookie')).toContain('Max-Age=0');
   });
 
   it('returns refresh rate limiting without invalidating the session', async () => {

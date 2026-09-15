@@ -45,6 +45,13 @@
     "checkEmail": "Check your email",
     "backToSignIn": "Back to sign in"
   },
+  "signIn": {
+    "invalidCredentials": "Invalid email or password",
+    "tooManyAttempts": "Too many sign-in attempts. Wait a minute and try again.",
+    "serviceUnavailable": "Sign-in is temporarily unavailable. Try again shortly.",
+    "sessionEnded": "This session was signed out. Sign in again.",
+    "accountDeactivated": "This account is no longer active."
+  },
   "sessions": {
     "title": "Active sessions",
     "description": "Devices signed in with your NBOS account. Available after the new sign-in is enabled.",

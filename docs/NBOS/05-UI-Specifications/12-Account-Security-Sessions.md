@@ -21,12 +21,12 @@ Not Settings. Settings → Security is platform defaults (TTL, future 2FA). Pers
 
 Each row:
 
-| Show     | Source                                                 |
-| -------- | ------------------------------------------------------ |
-| Client   | `clientKind` → Web / Work app / Messenger / Vault      |
-| Device   | `deviceLabel` (e.g. “Chrome · macOS”, “iPhone”)        |
-| Activity | “This device” if `current`; else relative `lastUsedAt` |
-| Started  | `createdAt`                                            |
+| Show     | Source                                                                                                                                          |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Client   | `clientKind` → Web / Work app / Messenger / Vault                                                                                               |
+| Device   | `deviceLabel` (e.g. “Chrome · macOS”, “iPhone”). Web login must forward the browser User-Agent; a Node default must not be stored as the label. |
+| Activity | “This device” if `current`; else relative `lastUsedAt`                                                                                          |
+| Started  | `createdAt`                                                                                                                                     |
 
 Do not show raw IP, hashes, refresh material, or `tokenFamilyId`.
 
