@@ -12,6 +12,8 @@ import { getApiErrorMessage, isStageGateApiError } from '@/lib/api-errors';
 import { invoicesApi, paymentsApi, type Expense, type Invoice } from '@/lib/api/finance';
 import { bonusesApi, type BonusEntryListRow } from '@/lib/api/bonus';
 import type { Task } from '@/lib/api/tasks';
+import { useRegisterNestedEntitySheet } from '../nested-entity-sheet-stack';
+import { isNestedItemSheetActive } from '../resolve-entity-sheet-stack';
 import { EntityItemHostProvider } from './entity-item-context';
 import type { EntityItemOpenTarget } from './entity-item.types';
 
@@ -200,6 +202,14 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
 
   const invoiceLoading = invoiceSheetOpen && !invoice && invoiceLoadId != null;
   const bonusLoading = bonusEntrySheetOpen && !bonusEntry && bonusEntryLoadId != null;
+  useRegisterNestedEntitySheet(
+    isNestedItemSheetActive(nested, [
+      taskSheetOpen,
+      invoiceSheetOpen,
+      bonusEntrySheetOpen,
+      expenseSheetOpen,
+    ]),
+  );
 
   return (
     <EntityItemHostProvider value={api}>

@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ErrorState, LoadingState } from '@/components/shared';
+import { LoadingState, QueryLoadError } from '@/components/shared';
 import { resolveKanbanStageHex } from '@/components/shared/kanban/kanban-stage-hex';
 import { clientServiceStageHex } from '@/features/finance/constants/client-service-payment-stage';
 import type { ClientServiceRecord, ClientServiceRecordListParams } from '@/lib/api/client-services';
@@ -96,7 +96,7 @@ export function ClientServiceMonthsBoardView({
       {loading ? (
         <LoadingState />
       ) : error ? (
-        <ErrorState description={error} />
+        <QueryLoadError description={error} />
       ) : (
         <ClientServiceBoardScroll columns={columns} reloadToken={reloadToken} onOpen={onOpen} />
       )}

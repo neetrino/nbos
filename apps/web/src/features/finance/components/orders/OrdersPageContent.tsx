@@ -1,6 +1,11 @@
 import { Plus, ShoppingCart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
+import {
+  EmptyState,
+  ListMutationErrorBanner,
+  LoadingState,
+  QueryLoadError,
+} from '@/components/shared';
 import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import type { OrderReconciliationGap } from '@/features/finance/constants/order-reconciliation-drilldown';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
@@ -60,7 +65,7 @@ export function OrdersPageContent({
       {loading ? (
         <LoadingState />
       ) : error ? (
-        <ErrorState description={error} onRetry={onRetry} />
+        <QueryLoadError description={error} onRetry={onRetry} />
       ) : (
         <>
           {mutationError ? (

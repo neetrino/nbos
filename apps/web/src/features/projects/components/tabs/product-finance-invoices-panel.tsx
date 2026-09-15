@@ -6,7 +6,7 @@ import { InvoiceKanban } from '@/features/finance/components/invoices/InvoiceKan
 import { InvoicesTable } from '@/features/finance/components/invoices/InvoicesTable';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
 import type { InvoiceViewMode } from '@/features/finance/components/invoices/invoice-page-types';
-import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { EmptyState, LoadingState, QueryLoadError } from '@/components/shared';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { FileText, Plus } from 'lucide-react';
 import Link from 'next/link';
@@ -42,7 +42,7 @@ export function ProductFinanceInvoicesPanel({
   const { invoices, truncated, loading, error, refetch, setInvoices } =
     useProductFinanceInvoices(productId);
   const [createOpen, setCreateOpen] = useState(false);
-  const canCreate = can('FINANCE_INVOICES', 'ADD');
+  const canCreate = can('ADD', 'FINANCE_INVOICES');
 
   const boardScope = resolveBoardLifecycleScope(filters.boardScope) as BoardLifecycleScope;
   const displayInvoices = useMemo(
@@ -90,7 +90,7 @@ export function ProductFinanceInvoicesPanel({
   );
 
   if (loading) return <LoadingState />;
-  if (error) return <ErrorState description={error} onRetry={() => void refetch()} />;
+  if (error) return <QueryLoadError description={error} onRetry={() => void refetch()} />;
 
   return (
     <>

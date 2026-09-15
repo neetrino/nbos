@@ -12,7 +12,7 @@ import {
   KanbanBoard,
   KanbanColumnMoneyTotal,
   EmptyState,
-  ErrorState,
+  QueryLoadError,
   LoadingState,
   DeleteConfirmDialog,
   ProfileAPermanentDeleteDialog,
@@ -718,7 +718,7 @@ function DealsPipelinePageContent() {
       {loading ? (
         <LoadingState variant="cards" count={3} />
       ) : error ? (
-        <ErrorState description={error} onRetry={fetchDeals} />
+        <QueryLoadError description={error} onRetry={fetchDeals} />
       ) : deals.length === 0 ? (
         <EmptyState
           icon={Handshake}

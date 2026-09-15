@@ -6,10 +6,10 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   EmptyState,
-  ErrorState,
   KanbanBoard,
   KanbanColumnMoneyTotal,
   LoadingState,
+  QueryLoadError,
 } from '@/components/shared';
 import { buildTerminalDropZones } from '@/features/shared/kanban-terminal-drop';
 import { EXPENSE_ACTIVE_TERMINAL_DROP_STAGES } from '@/features/finance/constants/expense-board';
@@ -88,7 +88,7 @@ export function ExpensesPageMainPanel({
     return <LoadingState />;
   }
   if (error) {
-    return <ErrorState description={error} onRetry={onRetry} />;
+    return <QueryLoadError description={error} onRetry={onRetry} />;
   }
   if (expenses.length === 0) {
     return (

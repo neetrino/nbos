@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { PageHeroNavLinkItem } from '@/components/shared/page-hero/PageHeroNavLinks';
 import { resolveFinanceSectionId } from '@/lib/navigation/module-last-visit';
+import { resolveNavPermission } from '@/lib/navigation/resolve-nav-permission';
 
 const FINANCE_EXPENSE_PLANS_PREFIX = '/finance/expenses/plans';
 const FINANCE_EXPENSES_PREFIX = '/finance/expenses';
@@ -68,6 +69,20 @@ export function resolveFinanceZoneNav(pathname: string): PageHeroNavLinkItem[] |
     return null;
   }
   return nav;
+}
+
+/** Drops zone pills the current user cannot VIEW, so they do not land on a 403 ErrorState. */
+export function permittedFinanceZoneNav(
+  items: PageHeroNavLinkItem[] | null,
+  can: (action: string, module: string) => boolean,
+): PageHeroNavLinkItem[] | null {
+  if (!items) return null;
+  const next = items.filter((item) => {
+    const href = item.href.split('?')[0] ?? item.href;
+    const required = resolveNavPermission(href);
+    return !required || can(required.action, required.module);
+  });
+  return next.length > 1 ? next : null;
 }
 
 function resolveFinanceZoneNavItems(pathname: string): PageHeroNavLinkItem[] | null {

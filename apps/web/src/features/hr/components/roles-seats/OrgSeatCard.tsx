@@ -12,6 +12,7 @@ import type { OrgSeat } from '@/lib/api/org-seats';
 import { OrgSeatHistory } from './OrgSeatHistory';
 import {
   ORG_SEAT_ACTION_LABEL_CLASS,
+  ORG_SEAT_ACTIONS_CLASS,
   ORG_SEAT_ASSIGNEE_ROW_CLASS,
   ORG_SEAT_CARD_CONTAINER_CLASS,
 } from './org-seat-card.layout';
@@ -148,7 +149,7 @@ function VacantSeat({
       )}
     >
       <p className="text-muted-foreground text-sm">{t('vacant')}</p>
-      <div className="flex shrink-0 flex-nowrap items-center gap-1">
+      <div className={ORG_SEAT_ACTIONS_CLASS}>
         <OrgSeatHistory seatId={seatId} />
         {canEdit ? (
           <>
@@ -185,7 +186,7 @@ function SeatCardActions({
 }) {
   const t = useTranslations('hr.rolesSeats');
   return (
-    <div className="flex shrink-0 flex-nowrap items-center gap-1">
+    <div className={ORG_SEAT_ACTIONS_CLASS}>
       <OrgSeatHistory seatId={seatId} />
       {canViewAccess ? (
         <SeatActionButton

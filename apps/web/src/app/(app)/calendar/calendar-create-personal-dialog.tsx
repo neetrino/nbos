@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { calendarApi } from '@/lib/api/calendar';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { Button } from '@/components/ui/button';
@@ -11,17 +12,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { NbosDatePicker } from '@/components/shared/date-picker';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { InlineField } from '@/components/shared';
+import {
+  DEFAULT_MEETING_DURATION_HOURS,
+  endsAtIsoFromStartAndDuration,
+  parseDurationHours,
+} from '@/features/calendar/meeting-create-form';
 import { toDatetimeLocalValue } from '@/features/calendar/calendar-datetime-helpers';
 
-function personalDefaults(selectedDate: Date) {
+type PersonalCreateForm = {
+  title: string;
+  startsLocal: string;
+  durationHours: number;
+  notes: string;
+};
+
+function personalDefaults(selectedDate: Date): PersonalCreateForm {
   return {
     title: '',
     startsLocal: toDatetimeLocalValue(selectedDate, 9, 0),
-    endsLocal: toDatetimeLocalValue(selectedDate, 10, 0),
+    durationHours: DEFAULT_MEETING_DURATION_HOURS,
     notes: '',
   };
 }
@@ -39,26 +49,30 @@ export function CreatePersonalCalendarDialog({
   selectedDate,
   onCreated,
 }: CreatePersonalCalendarDialogProps) {
+  const t = useTranslations('forms');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState(() => personalDefaults(selectedDate));
+  const [durationInput, setDurationInput] = useState(String(DEFAULT_MEETING_DURATION_HOURS));
 
   useEffect(() => {
     if (!open) return;
-    setForm(personalDefaults(selectedDate));
+    const defaults = personalDefaults(selectedDate);
+    setForm(defaults);
+    setDurationInput(String(defaults.durationHours));
     setFormError(null);
   }, [open, selectedDate]);
 
   const submit = useCallback(async () => {
     const title = form.title.trim();
     if (!title) {
-      setFormError('Title is required.');
+      setFormError(t('personal.validation.titleRequired'));
       return;
     }
-    const startsAt = new Date(form.startsLocal).toISOString();
-    const endsAt = new Date(form.endsLocal).toISOString();
-    if (new Date(endsAt) <= new Date(startsAt)) {
-      setFormError('End time must be after start time.');
+    const durationHours = parseDurationHours(durationInput);
+    if (durationHours === null) {
+      setFormError(t('meeting.validation.durationRequired'));
       return;
     }
     setLoading(true);
@@ -66,24 +80,24 @@ export function CreatePersonalCalendarDialog({
     try {
       await calendarApi.createPersonalEvent({
         title,
-        startsAt,
-        endsAt,
+        startsAt: new Date(form.startsLocal).toISOString(),
+        endsAt: endsAtIsoFromStartAndDuration(form.startsLocal, durationHours),
         notes: form.notes.trim() || null,
       });
       onOpenChange(false);
       onCreated();
     } catch (err) {
-      setFormError(getApiErrorMessage(err, 'Could not create personal event'));
+      setFormError(getApiErrorMessage(err, t('personal.createError')));
     } finally {
       setLoading(false);
     }
-  }, [form, onOpenChange, onCreated]);
+  }, [durationInput, form, onCreated, onOpenChange, t]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="bg-card sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle>Personal reminder</DialogTitle>
+          <DialogTitle>{t('personal.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -93,67 +107,60 @@ export function CreatePersonalCalendarDialog({
             </p>
           ) : null}
 
-          <div>
-            <Label htmlFor="cal-per-title">Title *</Label>
-            <Input
-              id="cal-per-title"
-              className="mt-1.5"
-              value={form.title}
-              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-              placeholder="e.g. Focus block"
+          <InlineField
+            variant="controlled"
+            label={t('personal.fields.title')}
+            value={form.title}
+            placeholder={t('personal.fields.titlePlaceholder')}
+            onValueChange={(title) => setForm((p) => ({ ...p, title }))}
+          />
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <InlineField
+              variant="controlled"
+              label={t('meeting.fields.start')}
+              type="date"
+              datePickerMode="datetime"
+              datePickerVariant="extended"
+              className="min-w-0 flex-1"
+              value={form.startsLocal}
+              onValueChange={(startsLocal) => setForm((p) => ({ ...p, startsLocal }))}
+            />
+            <InlineField
+              variant="controlled"
+              label={t('meeting.fields.duration')}
+              type="text"
+              className="w-24 shrink-0 [&_input]:text-center"
+              value={durationInput}
+              onValueChange={(raw) => {
+                const next = raw.replace(/\D/g, '').slice(0, 1);
+                setDurationInput(next);
+                const parsed = parseDurationHours(next);
+                if (parsed !== null) setForm((p) => ({ ...p, durationHours: parsed }));
+              }}
             />
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="cal-per-start">Start *</Label>
-              <NbosDatePicker
-                id="cal-per-start"
-                mode="datetime"
-                variant="extended"
-                className="mt-1.5"
-                value={form.startsLocal}
-                onChange={(startsLocal) => setForm((p) => ({ ...p, startsLocal }))}
-                aria-label="Reminder start"
-              />
-            </div>
-            <div>
-              <Label htmlFor="cal-per-end">End *</Label>
-              <NbosDatePicker
-                id="cal-per-end"
-                mode="datetime"
-                variant="extended"
-                className="mt-1.5"
-                value={form.endsLocal}
-                onChange={(endsLocal) => setForm((p) => ({ ...p, endsLocal }))}
-                aria-label="Reminder end"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="cal-per-notes">Notes</Label>
-            <Textarea
-              id="cal-per-notes"
-              className="mt-1.5"
-              rows={2}
-              value={form.notes}
-              onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
-              placeholder="Optional"
-            />
-          </div>
+          <InlineField
+            variant="controlled"
+            label={t('personal.fields.notes')}
+            type="textarea"
+            value={form.notes}
+            placeholder={t('personal.fields.notesPlaceholder')}
+            onValueChange={(notes) => setForm((p) => ({ ...p, notes }))}
+          />
         </div>
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
             onClick={() => void submit()}
             disabled={loading || !form.title.trim()}
           >
-            {loading ? 'Saving…' : 'Create'}
+            {loading ? tCommon('saving') : tCommon('create')}
           </Button>
         </DialogFooter>
       </DialogContent>

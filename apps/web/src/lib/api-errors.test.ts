@@ -4,6 +4,7 @@ import {
   getApiErrorMessage,
   isBusinessTransitionApiError,
   isPermissionDeniedApiError,
+  isPermissionDeniedMessage,
   isStageGateApiError,
   PERMISSION_DENIED_MESSAGE,
   toApiError,
@@ -103,5 +104,7 @@ describe('api error helpers', () => {
     );
     expect(isPermissionDeniedApiError(error)).toBe(true);
     expect(getApiErrorMessage(error, 'fallback')).toBe(PERMISSION_DENIED_MESSAGE);
+    expect(isPermissionDeniedMessage(PERMISSION_DENIED_MESSAGE)).toBe(true);
+    expect(isPermissionDeniedMessage('Invoices could not be loaded.')).toBe(false);
   });
 });

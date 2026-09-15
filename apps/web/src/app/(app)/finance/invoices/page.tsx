@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Plus } from 'lucide-react';
@@ -40,7 +40,12 @@ import {
 } from '@/features/finance/constants/finance-period-filter';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
-import { beginPermittedCreate, PermissionGate, usePermission } from '@/lib/permissions';
+import {
+  beginPermittedCreate,
+  notifyPermissionDenied,
+  PermissionGate,
+  usePermission,
+} from '@/lib/permissions';
 
 function InvoicesPageInner() {
   const t = useTranslations('invoices');
@@ -48,7 +53,8 @@ function InvoicesPageInner() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { can } = usePermission();
+  const { can, isLoading: permissionsLoading } = usePermission();
+  const canAddInvoice = can('ADD', 'FINANCE_INVOICES');
   const subscriptionIdFromUrl = searchParams.get(SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY);
   const openInvoiceIdFromUrl = searchParams.get(OPEN_INVOICE_QUERY);
   const portfolioCreateInvoiceFromUrl = searchParams.get(PORTFOLIO_DEEP_LINK.createInvoice) === '1';
@@ -62,8 +68,17 @@ function InvoicesPageInner() {
     portfolioProjectIdFromUrl,
   });
   const displayView = useMobilePreferredView(state.view, 'kanban');
-  const openCreateInvoice = () =>
-    beginPermittedCreate(can('ADD', 'FINANCE_INVOICES'), () => state.setCreateOpen(true));
+  const closeCreateDialog = state.handleCreateDialogOpenChange;
+  const openCreateInvoice = useCallback(() => {
+    beginPermittedCreate(canAddInvoice, () => state.setCreateOpen(true));
+  }, [canAddInvoice, state]);
+
+  useEffect(() => {
+    if (!portfolioCreateInvoiceFromUrl || permissionsLoading || canAddInvoice) return;
+    notifyPermissionDenied();
+    closeCreateDialog(false);
+  }, [canAddInvoice, closeCreateDialog, permissionsLoading, portfolioCreateInvoiceFromUrl]);
+
   const { exportCsvSubmitting, handleExportCsv } = useInvoicesCsvExport(
     state.invoiceListExportParams,
   );
@@ -160,10 +175,12 @@ function InvoicesPageInner() {
           <PermissionGate module="FINANCE_INVOICES" action="EDIT">
             <OverdueRemindersButton onClick={openOverdueReminders} />
           </PermissionGate>
-          <Button type="button" onClick={openCreateInvoice}>
-            <Plus size={16} aria-hidden />
-            {t('page.newInvoice')}
-          </Button>
+          <PermissionGate module="FINANCE_INVOICES" action="ADD">
+            <Button type="button" onClick={openCreateInvoice}>
+              <Plus size={16} aria-hidden />
+              {t('page.newInvoice')}
+            </Button>
+          </PermissionGate>
         </>
       ),
     }),
@@ -207,7 +224,7 @@ function InvoicesPageInner() {
           onRetry={state.fetchInvoices}
           onInvoiceClick={state.handleInvoiceClick}
           onMove={(itemId, _from, toColumn) => state.handleMoneyStatusChange(itemId, toColumn)}
-          onOpenQuickCreate={openCreateInvoice}
+          onOpenQuickCreate={canAddInvoice ? openCreateInvoice : undefined}
           columnMeta={state.columnMeta}
           hasMoreAny={state.hasMoreAny}
           onColumnLoadMore={state.loadMoreColumn}
@@ -226,14 +243,14 @@ function InvoicesPageInner() {
       />
       {subscriptionIdFromUrl ? (
         <CreateSubscriptionInvoiceDialog
-          open={state.createDialogOpen}
+          open={canAddInvoice && state.createDialogOpen}
           onOpenChange={state.handleCreateDialogOpenChange}
           onCreated={state.handleInvoiceCreated}
           subscriptionId={subscriptionIdFromUrl}
         />
       ) : (
         <CreateInvoiceDialog
-          open={state.createDialogOpen}
+          open={canAddInvoice && state.createDialogOpen}
           onOpenChange={state.handleCreateDialogOpenChange}
           onCreated={state.handleInvoiceCreated}
         />

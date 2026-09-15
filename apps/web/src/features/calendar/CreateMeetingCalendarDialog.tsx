@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   calendarApi,
@@ -16,63 +16,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { NbosDatePicker } from '@/components/shared/date-picker';
-import { Label } from '@/components/ui/label';
+import { DetailSheetFieldSegmented, InlineField } from '@/components/shared';
+import { MeetingCreateConflicts } from './MeetingCreateConflicts';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { toDatetimeLocalValue } from './calendar-datetime-helpers';
-
-const MEETING_TYPE_VALUES = [
-  'SALES_CALL',
-  'OFFER_PRESENTATION',
-  'DEMO',
-  'KICKOFF',
-  'SUPPORT_CALL',
-  'MAINTENANCE_CALL',
-  'OTHER',
-] as const;
-
-const LOCATION_TYPE_VALUES = ['ONLINE', 'OFFLINE'] as const;
-
-type MeetingTypeValue = (typeof MEETING_TYPE_VALUES)[number];
-type LocationTypeValue = (typeof LOCATION_TYPE_VALUES)[number];
-
-type MeetingCreateForm = {
-  title: string;
-  startsLocal: string;
-  endsLocal: string;
-  meetingType: MeetingTypeValue;
-  locationType: LocationTypeValue;
-  locationOrLink: string;
-  agenda: string;
-};
-
-function isMeetingTypeValue(value: string | null): value is MeetingTypeValue {
-  return value !== null && (MEETING_TYPE_VALUES as readonly string[]).includes(value);
-}
-
-function isLocationTypeValue(value: string | null): value is LocationTypeValue {
-  return value !== null && (LOCATION_TYPE_VALUES as readonly string[]).includes(value);
-}
-
-function meetingDefaults(selectedDate: Date): MeetingCreateForm {
-  return {
-    title: '',
-    startsLocal: toDatetimeLocalValue(selectedDate, 9, 0),
-    endsLocal: toDatetimeLocalValue(selectedDate, 10, 0),
-    meetingType: 'SALES_CALL',
-    locationType: 'ONLINE',
-    locationOrLink: '',
-    agenda: '',
-  };
-}
+  DEFAULT_MEETING_DURATION_HOURS,
+  endsAtIsoFromStartAndDuration,
+  isLocationTypeValue,
+  isMeetingTypeValue,
+  LOCATION_TYPE_VALUES,
+  MEETING_TYPE_VALUES,
+  meetingDefaults,
+  parseDurationHours,
+} from './meeting-create-form';
 
 export interface CreateMeetingCalendarDialogProps {
   open: boolean;
@@ -94,10 +49,13 @@ export function CreateMeetingCalendarDialog({
   const [conflicts, setConflicts] = useState<CalendarMeetingConflictPayload[] | null>(null);
   const [overrideReason, setOverrideReason] = useState('');
   const [form, setForm] = useState(() => meetingDefaults(selectedDate));
+  const [durationInput, setDurationInput] = useState(String(DEFAULT_MEETING_DURATION_HOURS));
 
   useEffect(() => {
     if (!open) return;
-    setForm(meetingDefaults(selectedDate));
+    const defaults = meetingDefaults(selectedDate);
+    setForm(defaults);
+    setDurationInput(String(defaults.durationHours));
     setFormError(null);
     setConflicts(null);
     setOverrideReason('');
@@ -106,7 +64,18 @@ export function CreateMeetingCalendarDialog({
   useEffect(() => {
     setConflicts(null);
     setOverrideReason('');
-  }, [form.startsLocal, form.endsLocal]);
+  }, [form.startsLocal, form.durationHours]);
+
+  const meetingTypeOptions = useMemo(
+    () => MEETING_TYPE_VALUES.map((value) => ({ value, label: t(`meeting.types.${value}`) })),
+    [t],
+  );
+
+  const locationOptions = useMemo(
+    () =>
+      LOCATION_TYPE_VALUES.map((value) => ({ value, label: t(`meeting.locationTypes.${value}`) })),
+    [t],
+  );
 
   const submit = useCallback(async () => {
     const title = form.title.trim();
@@ -114,12 +83,13 @@ export function CreateMeetingCalendarDialog({
       setFormError(t('meeting.validation.titleRequired'));
       return;
     }
-    const startsAt = new Date(form.startsLocal).toISOString();
-    const endsAt = new Date(form.endsLocal).toISOString();
-    if (new Date(endsAt) <= new Date(startsAt)) {
-      setFormError(t('meeting.validation.endAfterStart'));
+    const durationHours = parseDurationHours(durationInput);
+    if (durationHours === null) {
+      setFormError(t('meeting.validation.durationRequired'));
       return;
     }
+    const startsAt = new Date(form.startsLocal).toISOString();
+    const endsAt = endsAtIsoFromStartAndDuration(form.startsLocal, durationHours);
     setLoading(true);
     setFormError(null);
     try {
@@ -159,11 +129,11 @@ export function CreateMeetingCalendarDialog({
     } finally {
       setLoading(false);
     }
-  }, [conflicts, form, onCreated, onOpenChange, overrideReason, t, tCommon]);
+  }, [conflicts, durationInput, form, onCreated, onOpenChange, overrideReason, t, tCommon]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="bg-card sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>{t('meeting.title')}</DialogTitle>
         </DialogHeader>
@@ -176,132 +146,88 @@ export function CreateMeetingCalendarDialog({
           ) : null}
 
           {conflicts?.length ? (
-            <div className="bg-secondary/60 space-y-2 rounded-xl border p-3 text-sm">
-              <p className="text-foreground font-medium">{t('meeting.conflicts.title')}</p>
-              <ul className="text-muted-foreground list-inside list-disc space-y-1">
-                {conflicts.map((c) => (
-                  <li key={`${c.code}-${c.meetingId}`}>
-                    <span className="text-foreground">{c.meetingTitle}</span>
-                  </li>
-                ))}
-              </ul>
-              <div>
-                <Label htmlFor="cal-meet-override">{t('meeting.conflicts.overrideReason')}</Label>
-                <Textarea
-                  id="cal-meet-override"
-                  className="mt-1.5"
-                  rows={2}
-                  value={overrideReason}
-                  onChange={(e) => setOverrideReason(e.target.value)}
-                  placeholder={t('meeting.conflicts.overridePlaceholder')}
-                />
-              </div>
-            </div>
+            <MeetingCreateConflicts
+              conflicts={conflicts}
+              overrideReason={overrideReason}
+              onOverrideReasonChange={setOverrideReason}
+            />
           ) : null}
 
-          <div>
-            <Label htmlFor="cal-meet-title">{t('meeting.fields.title')}</Label>
-            <Input
-              id="cal-meet-title"
-              className="mt-1.5"
-              value={form.title}
-              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-              placeholder={t('meeting.fields.titlePlaceholder')}
+          <InlineField
+            variant="controlled"
+            label={t('meeting.fields.title')}
+            value={form.title}
+            placeholder={t('meeting.fields.titlePlaceholder')}
+            onValueChange={(title) => setForm((p) => ({ ...p, title }))}
+          />
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <InlineField
+              variant="controlled"
+              label={t('meeting.fields.start')}
+              type="date"
+              datePickerMode="datetime"
+              datePickerVariant="extended"
+              className="min-w-0 flex-1"
+              value={form.startsLocal}
+              onValueChange={(startsLocal) => setForm((p) => ({ ...p, startsLocal }))}
+            />
+            <InlineField
+              variant="controlled"
+              label={t('meeting.fields.duration')}
+              type="text"
+              className="w-24 shrink-0 [&_input]:text-center"
+              value={durationInput}
+              onValueChange={(raw) => {
+                const next = raw.replace(/\D/g, '').slice(0, 1);
+                setDurationInput(next);
+                const parsed = parseDurationHours(next);
+                if (parsed !== null) setForm((p) => ({ ...p, durationHours: parsed }));
+              }}
             />
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="cal-meet-start">{t('meeting.fields.start')}</Label>
-              <NbosDatePicker
-                id="cal-meet-start"
-                mode="datetime"
-                variant="extended"
-                className="mt-1.5"
-                value={form.startsLocal}
-                onChange={(startsLocal) => setForm((p) => ({ ...p, startsLocal }))}
-                aria-label={t('meeting.fields.startAria')}
-              />
-            </div>
-            <div>
-              <Label htmlFor="cal-meet-end">{t('meeting.fields.end')}</Label>
-              <NbosDatePicker
-                id="cal-meet-end"
-                mode="datetime"
-                variant="extended"
-                className="mt-1.5"
-                value={form.endsLocal}
-                onChange={(endsLocal) => setForm((p) => ({ ...p, endsLocal }))}
-                aria-label={t('meeting.fields.endAria')}
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <Label>{t('meeting.fields.meetingType')}</Label>
-              <Select
-                value={form.meetingType}
-                onValueChange={(v) => {
-                  if (isMeetingTypeValue(v)) setForm((p) => ({ ...p, meetingType: v }));
-                }}
-              >
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue>{t(`meeting.types.${form.meetingType}`)}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {MEETING_TYPE_VALUES.map((value) => (
-                    <SelectItem key={value} value={value}>
-                      {t(`meeting.types.${value}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>{t('meeting.fields.location')}</Label>
-              <Select
-                value={form.locationType}
-                onValueChange={(v) => {
-                  if (isLocationTypeValue(v)) setForm((p) => ({ ...p, locationType: v }));
-                }}
-              >
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue>{t(`meeting.locationTypes.${form.locationType}`)}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {LOCATION_TYPE_VALUES.map((value) => (
-                    <SelectItem key={value} value={value}>
-                      {t(`meeting.locationTypes.${value}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="cal-meet-link">{t('meeting.fields.linkOrAddress')}</Label>
-            <Input
-              id="cal-meet-link"
-              className="mt-1.5"
-              value={form.locationOrLink}
-              onChange={(e) => setForm((p) => ({ ...p, locationOrLink: e.target.value }))}
-              placeholder={t('meeting.fields.linkPlaceholder')}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <InlineField
+              variant="controlled"
+              label={t('meeting.fields.meetingType')}
+              type="select"
+              options={meetingTypeOptions}
+              className="min-w-0 flex-1"
+              value={form.meetingType}
+              onValueChange={(v) => {
+                if (isMeetingTypeValue(v)) setForm((p) => ({ ...p, meetingType: v }));
+              }}
+            />
+            <DetailSheetFieldSegmented
+              label={t('meeting.fields.location')}
+              className="w-full shrink-0 sm:w-[11.5rem]"
+              value={form.locationType}
+              options={locationOptions}
+              onValueChange={(locationType) => {
+                if (isLocationTypeValue(locationType)) {
+                  setForm((p) => ({ ...p, locationType }));
+                }
+              }}
             />
           </div>
 
-          <div>
-            <Label htmlFor="cal-meet-agenda">{t('meeting.fields.agenda')}</Label>
-            <Textarea
-              id="cal-meet-agenda"
-              className="mt-1.5"
-              rows={2}
-              value={form.agenda}
-              onChange={(e) => setForm((p) => ({ ...p, agenda: e.target.value }))}
-              placeholder={t('meeting.fields.agendaPlaceholder')}
-            />
-          </div>
+          <InlineField
+            variant="controlled"
+            label={t('meeting.fields.linkOrAddress')}
+            value={form.locationOrLink}
+            placeholder={t('meeting.fields.linkPlaceholder')}
+            onValueChange={(locationOrLink) => setForm((p) => ({ ...p, locationOrLink }))}
+          />
+
+          <InlineField
+            variant="controlled"
+            label={t('meeting.fields.agenda')}
+            type="textarea"
+            value={form.agenda}
+            placeholder={t('meeting.fields.agendaPlaceholder')}
+            onValueChange={(agenda) => setForm((p) => ({ ...p, agenda }))}
+          />
         </div>
 
         <DialogFooter>

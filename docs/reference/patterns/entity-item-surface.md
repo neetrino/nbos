@@ -76,7 +76,7 @@ Wrap the **parent entity sheet** in `EntityItemHost`. Tab content calls `openEnt
 </EntityItemHost>
 ```
 
-Child sheets opened by the host pass `forceNestedBackdrop` so overlay and rail sit above the parent panel. See [`entity-detail-sheet-shell.md`](./entity-detail-sheet-shell.md).
+Child sheets opened by the host pass `forceNestedBackdrop` so overlay and rail sit above the parent panel. A further relation sheet (company, contact) opened from that child uses `stackAboveEntitySheet` so the nested child’s floating rail does not paint through the wider panel. See [`entity-detail-sheet-shell.md`](./entity-detail-sheet-shell.md).
 
 ## Adding a new entity kind
 

@@ -67,6 +67,11 @@ export function isPermissionDeniedApiError(error: unknown): error is ApiError {
   return error instanceof ApiError && error.statusCode === 403;
 }
 
+/** List/page load errors that should render Access Denied instead of a retry frame. */
+export function isPermissionDeniedMessage(message: string | null | undefined): boolean {
+  return message === PERMISSION_DENIED_MESSAGE;
+}
+
 /** User-visible message from axios-wrapped `ApiError`; otherwise `fallback` (e.g. generic connection copy). */
 export function getApiErrorMessage(caught: unknown, fallback: string): string {
   if (isPermissionDeniedApiError(caught)) return PERMISSION_DENIED_MESSAGE;

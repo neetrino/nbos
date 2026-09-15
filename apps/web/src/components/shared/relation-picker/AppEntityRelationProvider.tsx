@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { NestedEntitySheetPresenceProvider } from '../nested-entity-sheet-stack';
 import { EntityRelationHost } from './EntityRelationHost';
 import { emitRelationCreatedHandlers } from './relation-created-registry';
 import type { RelationCreatedEvent } from './relation-created-event';
@@ -16,6 +17,8 @@ export function AppEntityRelationProvider({ children }: AppEntityRelationProvide
   };
 
   return (
-    <EntityRelationHost onRelationCreated={handleRelationCreated}>{children}</EntityRelationHost>
+    <NestedEntitySheetPresenceProvider>
+      <EntityRelationHost onRelationCreated={handleRelationCreated}>{children}</EntityRelationHost>
+    </NestedEntitySheetPresenceProvider>
   );
 }

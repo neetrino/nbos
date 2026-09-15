@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { PRODUCT_FINANCE_INVOICE_PAGE_SIZE } from '@/features/projects/constants/product-finance.constants';
 import { invoicesApi, type Invoice } from '@/lib/api/finance';
+import { getApiErrorMessage } from '@/lib/api-errors';
 
 export function useProductFinanceInvoices(productId: string) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -21,8 +22,8 @@ export function useProductFinanceInvoices(productId: string) {
       setInvoices(items);
       setTruncated(meta.total > items.length);
       setError(null);
-    } catch {
-      setError('Invoices could not be loaded.');
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Invoices could not be loaded.'));
       setInvoices([]);
       setTruncated(false);
     } finally {

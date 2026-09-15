@@ -21,12 +21,14 @@
   "meeting": {
     "title": "Новая встреча с клиентом",
     "fields": {
-      "title": "Название *",
+      "title": "Название",
       "titlePlaceholder": "например, Discovery с Acme",
-      "start": "Начало *",
+      "start": "Начало",
       "startAria": "Начало встречи",
-      "end": "Окончание *",
+      "end": "Окончание",
       "endAria": "Окончание встречи",
+      "duration": "Длительность",
+      "durationAria": "Длительность в часах (1–3)",
       "meetingType": "Тип встречи",
       "location": "Место",
       "linkOrAddress": "Ссылка или адрес",
@@ -35,12 +37,14 @@
       "agendaPlaceholder": "Необязательно"
     },
     "types": {
-      "SALES_CALL": "Звонок по продажам",
+      "SALES_CALL": "Sales",
       "OFFER_PRESENTATION": "Презентация предложения",
       "DEMO": "Демо",
       "KICKOFF": "Kickoff / передача",
       "SUPPORT_CALL": "Звонок поддержки",
       "MAINTENANCE_CALL": "Звонок по сопровождению",
+      "HR": "HR",
+      "DEVELOPMENT": "Development",
       "OTHER": "Другое"
     },
     "locationTypes": {
@@ -50,6 +54,7 @@
     "validation": {
       "titleRequired": "Укажите название.",
       "endAfterStart": "Время окончания должно быть позже начала.",
+      "durationRequired": "Укажите длительность от 1 до 3 часов.",
       "overlapReason": "Этот интервал пересекается с другой встречей. Укажите причину, чтобы всё равно запланировать."
     },
     "conflicts": {
@@ -61,6 +66,19 @@
       "scheduleAnyway": "Запланировать всё равно"
     },
     "createError": "Не удалось создать встречу"
+  },
+  "personal": {
+    "title": "Личное событие",
+    "fields": {
+      "title": "Название",
+      "titlePlaceholder": "например, Фокус-блок",
+      "notes": "Заметки",
+      "notesPlaceholder": "Необязательно"
+    },
+    "validation": {
+      "titleRequired": "Укажите название."
+    },
+    "createError": "Не удалось создать личное событие"
   },
   "lead": {
     "title": "Новый лид",
