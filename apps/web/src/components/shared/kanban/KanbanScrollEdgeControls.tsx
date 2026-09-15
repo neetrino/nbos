@@ -9,6 +9,8 @@ interface KanbanScrollEdgeControlsProps {
   canScrollRight: boolean;
   /** Mobile uses swipe/snap; desktop keeps hover auto-scroll zones. */
   isMobile: boolean;
+  /** False while a card is dragging so the overlay cannot swallow HTML5 drops. */
+  pointerEnabled?: boolean;
   onHoverStart: (side: 'left' | 'right') => void;
   onHoverEnd: () => void;
 }
@@ -21,6 +23,7 @@ export function KanbanScrollEdgeControls({
   canScrollLeft,
   canScrollRight,
   isMobile,
+  pointerEnabled = true,
   onHoverStart,
   onHoverEnd,
 }: KanbanScrollEdgeControlsProps) {
@@ -30,13 +33,13 @@ export function KanbanScrollEdgeControls({
     <>
       <DesktopEdgeZone
         side="left"
-        canScroll={canScrollLeft}
+        canScroll={canScrollLeft && pointerEnabled}
         onHoverStart={onHoverStart}
         onHoverEnd={onHoverEnd}
       />
       <DesktopEdgeZone
         side="right"
-        canScroll={canScrollRight}
+        canScroll={canScrollRight && pointerEnabled}
         onHoverStart={onHoverStart}
         onHoverEnd={onHoverEnd}
       />
