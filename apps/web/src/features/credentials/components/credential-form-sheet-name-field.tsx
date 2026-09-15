@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { useTranslations } from 'next-intl';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useTypedPlaceholder } from '@/features/credentials/hooks/use-typed-placeholder';
 
@@ -10,9 +9,7 @@ const SHEET_TITLE_CLASS = 'text-xl font-semibold leading-tight tracking-tight';
 const SHEET_TITLE_FIELD_CLASS = cn(SHEET_TITLE_CLASS, 'min-h-7 max-w-full truncate');
 const SHEET_TITLE_INPUT_CLASS = cn(
   SHEET_TITLE_CLASS,
-  'h-7 min-w-[12ch] max-w-full flex-1 rounded-none bg-transparent p-0 shadow-none',
-  'text-xl md:text-xl',
-  'focus-visible:ring-0',
+  'min-w-[12ch] max-w-full flex-1 border-0 border-b-2 bg-transparent p-0 outline-none',
 );
 const NAME_EXAMPLES = ['Beget — Production', 'OpenAI — Client'] as const;
 
@@ -153,7 +150,7 @@ function CredentialNameEditingInput({
   };
 
   return (
-    <Input
+    <input
       ref={inputRef}
       data-credential-name-field
       value={nameDraft}
@@ -163,8 +160,8 @@ function CredentialNameEditingInput({
       className={cn(
         SHEET_TITLE_INPUT_CLASS,
         emptyCreate
-          ? 'border-destructive placeholder:text-destructive text-destructive focus-visible:border-destructive border-0 border-b-2 focus-visible:border-b-2'
-          : 'border-0 focus-visible:border-0',
+          ? 'border-destructive placeholder:text-destructive text-destructive'
+          : 'border-primary text-foreground placeholder:text-muted-foreground/70',
       )}
       placeholder={placeholder}
       aria-label={ariaLabel}
