@@ -5,6 +5,8 @@
  */
 import { getAuthenticatedRootRedirect } from '@/lib/auth/authenticated-root-redirect';
 import { readAuthJsSessionToken } from '@/lib/auth/authjs-session-token';
+import { buildClearAuthJsSessionCookie } from '@/lib/auth/clear-authjs-session-cookie';
+import { SIGN_IN_SESSION_ENDED_REASON } from '@/lib/auth/sign-in-errors';
 import { persistRotatedAccessCookie } from '@/lib/auth/persist-rotated-access-cookie';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
@@ -53,8 +55,20 @@ export async function proxy(req: NextRequest): Promise<NextResponse> {
   }
 
   const response = NextResponse.next();
-  await persistRotatedAccessCookie(req, sessionToken, response);
+  const persistResult = await persistRotatedAccessCookie(req, sessionToken, response);
+  if (persistResult === 'session-invalid') {
+    return redirectToEndedSignIn(req, pathname);
+  }
   return response;
+}
+
+function redirectToEndedSignIn(req: NextRequest, pathname: string): NextResponse {
+  const signInUrl = new URL('/sign-in', req.nextUrl.origin);
+  signInUrl.searchParams.set('callbackUrl', pathname);
+  signInUrl.searchParams.set('reason', SIGN_IN_SESSION_ENDED_REASON);
+  const redirect = NextResponse.redirect(signInUrl);
+  redirect.headers.append('Set-Cookie', buildClearAuthJsSessionCookie());
+  return redirect;
 }
 
 export const config = {

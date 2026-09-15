@@ -49,4 +49,9 @@ describe('auth-session.client', () => {
       ),
     ).toBe('Chrome · macOS');
   });
+
+  it('does not label Node fetch as a device', () => {
+    expect(deviceLabelFromUserAgent('node')).toBeUndefined();
+    expect(deviceLabelFromUserAgent('node/22.11.0')).toBeUndefined();
+  });
 });

@@ -264,7 +264,9 @@ Browser → Next.js BFF → Nest
 ```
 
 - Access JWT lives in the encrypted Auth.js cookie (not `localStorage`, not `session()`).
+- Web login is Next → Nest. The authorize hop must forward the browser `User-Agent` (and `X-Nbos-Bff: 1`) so `deviceLabel` is `Chrome · macOS`, not the Node fetch default.
 - Refresh: Nest `Set-Cookie` (`HttpOnly`, `Secure` in prod, `SameSite=Lax`, path-scoped) and/or BFF `POST /api/v1/auth/refresh` with `X-Nbos-Bff: 1` + body token.
+- Refresh **401** expires the Auth.js cookie and sends the browser to `/sign-in?reason=session_ended`. Do not leave a live cookie after Nest has revoked the session.
 - Cookie refresh requires `Origin` / `Referer` in `CORS_ORIGIN`.
 - Public Nest JSON never includes `refreshToken`.
 
@@ -275,6 +277,7 @@ and turn a normal rotation into a `reuse_detected` kill:
 
 - `src/proxy.ts` reads the token with `getToken`; it must not use the `auth()` middleware wrapper.
 - `SessionProvider` gets its session from the server, so the client never calls `/api/auth/session`.
+- Expiring that cookie after refresh 401 is an allowed BFF write. It must not re-sign the incoming token.
 
 ---
 

@@ -1,8 +1,9 @@
-import NextAuth from 'next-auth';
+import NextAuth, { CredentialsSignin } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import type { DefaultSession, User } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
-import { parseRefreshTokenFromResponse } from './lib/auth/parse-nest-refresh-cookie';
+import { authorizeBackendLogin } from './lib/auth/login-backend';
+import { BackendLoginError } from './lib/auth/sign-in-errors';
 import { resolveWebSessionMaxAgeSeconds } from './lib/auth/session-lifetime';
 
 declare module 'next-auth' {
@@ -44,49 +45,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
+      authorize: async (credentials, request) => {
         try {
-          const res = await fetch(`${BACKEND_URL}/api/v1/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
-          });
-
-          if (!res.ok) {
-            return null;
+          return await authorizeBackendLogin(credentials ?? {}, request);
+        } catch (error) {
+          if (error instanceof BackendLoginError) {
+            const signInError = new CredentialsSignin();
+            signInError.code = error.code;
+            throw signInError;
           }
-
-          const body = (await res.json()) as {
-            data: {
-              accessToken: string;
-              sessionId?: string;
-              user: { id: string; email: string; firstName: string; lastName: string };
-            };
-          };
-
-          const { accessToken, sessionId, user } = body.data;
-          // Refresh is HttpOnly Set-Cookie only — never expected in JSON.
-          const refreshToken = parseRefreshTokenFromResponse(res);
-
-          return {
-            id: user.id,
-            email: user.email,
-            name: `${user.firstName} ${user.lastName}`,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            accessToken,
-            refreshToken,
-            sessionId,
-          };
-        } catch {
-          return null;
+          throw error;
         }
       },
     }),

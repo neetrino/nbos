@@ -92,7 +92,9 @@ export function deviceLabelFromUserAgent(userAgent: string | undefined): string 
           : /Linux/.test(ua)
             ? 'Linux'
             : undefined;
-  if (!browser && !os) return sanitizeDeviceLabel(ua);
+  if (!browser && !os) {
+    return isServerRuntimeUserAgent(ua) ? undefined : sanitizeDeviceLabel(ua);
+  }
   return sanitizeDeviceLabel([browser, os].filter(Boolean).join(' · '));
 }
 
@@ -101,6 +103,11 @@ export function resolveSessionDeviceLabel(input: {
   userAgent?: string;
 }): string | undefined {
   return sanitizeDeviceLabel(input.deviceLabel) ?? deviceLabelFromUserAgent(input.userAgent);
+}
+
+function isServerRuntimeUserAgent(userAgent: string): boolean {
+  const ua = userAgent.trim();
+  return ua === 'undici' || /^node(?:\/|\s|$)/i.test(ua);
 }
 
 function isBrowserOrBffRequest(input: {

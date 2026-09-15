@@ -68,9 +68,24 @@ describe('proxy', () => {
 
   it('reuses the existing BFF persist helper on an authenticated document request', async () => {
     vi.mocked(getToken).mockResolvedValue({ sessionId: 'session-a', accessToken: 'expired' });
+    vi.mocked(persistRotatedAccessCookie).mockResolvedValue('ok');
 
     await proxy(request('/dashboard'));
 
     expect(persistRotatedAccessCookie).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends a revoked refresh to sign-in and expires the Auth.js cookie', async () => {
+    vi.mocked(getToken).mockResolvedValue({ sessionId: 'session-a', accessToken: 'expired' });
+    vi.mocked(persistRotatedAccessCookie).mockResolvedValue('session-invalid');
+
+    const response = await proxy(request('/projects'));
+
+    expect(response.status).toBe(307);
+    const location = new URL(response.headers.get('location') ?? '');
+    expect(location.pathname).toBe('/sign-in');
+    expect(location.searchParams.get('reason')).toBe('session_ended');
+    expect(location.searchParams.get('callbackUrl')).toBe('/projects');
+    expect(response.headers.get('set-cookie')).toContain('Max-Age=0');
   });
 });

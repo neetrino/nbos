@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { useTranslations } from 'next-intl';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { AuthScene } from '@/components/auth/AuthScene';
+import { resolveSignInErrorKey, type SignInErrorKey } from '@/lib/auth/resolve-sign-in-error';
 import { cn } from '@/lib/utils';
 
 const schema = z.object({
@@ -29,13 +30,20 @@ export default function SignInPage() {
 
 function SignInForm() {
   const t = useTranslations('account.password');
+  const tSignIn = useTranslations('account.signIn');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') ?? '/dashboard';
 
   const [showPassword, setShowPassword] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
+  const [authErrorKey, setAuthErrorKey] = useState<SignInErrorKey | null>(() =>
+    resolveSignInErrorKey({
+      reason: searchParams.get('reason'),
+      code: searchParams.get('code'),
+      error: searchParams.get('error'),
+    }),
+  );
 
   const {
     register,
@@ -55,7 +63,7 @@ function SignInForm() {
   }, [pathname, router, searchParams]);
 
   async function onSubmit(values: FormValues) {
-    setAuthError(null);
+    setAuthErrorKey(null);
 
     const result = await signIn('credentials', {
       email: values.email,
@@ -64,7 +72,12 @@ function SignInForm() {
     });
 
     if (result?.error) {
-      setAuthError('Invalid email or password');
+      setAuthErrorKey(
+        resolveSignInErrorKey({
+          code: result.code,
+          error: result.error,
+        }) ?? 'invalidCredentials',
+      );
       return;
     }
 
@@ -135,9 +148,9 @@ function SignInForm() {
           )}
         </div>
 
-        {authError && (
+        {authErrorKey && (
           <div className="bg-destructive/10 text-destructive rounded-lg px-3 py-2.5 text-sm">
-            {authError}
+            {tSignIn(authErrorKey)}
           </div>
         )}
 

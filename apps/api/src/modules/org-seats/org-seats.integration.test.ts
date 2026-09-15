@@ -114,6 +114,23 @@ describe.skipIf(!databaseUrl)('Seats foundation on isolated PostgreSQL', () => {
     return { role, employee, department, actor, makeSeat };
   }
 
+  async function makeHeadSeat(f: Awaited<ReturnType<typeof fixture>>) {
+    const seat = await seats.create(
+      {
+        departmentId: f.department.id,
+        title: 'Head of function',
+        kind: 'HEAD',
+        defaultPermissionRoleId: f.role.id,
+      },
+      f.actor,
+    );
+    return seat!;
+  }
+
+  function readMembership(employeeId: string) {
+    return prisma.employeeDepartment.findFirstOrThrow({ where: { employeeId } });
+  }
+
   async function readUser(employeeId: string) {
     const guard = new EmployeeGuard(
       prisma,
@@ -284,8 +301,10 @@ describe.skipIf(!databaseUrl)('Seats foundation on isolated PostgreSQL', () => {
     },
   );
 
-  it('preserves an existing membership, deptRole and primary flag', async () => {
+  it('keeps an existing membership and its primary flag, but takes deptRole from the seats', async () => {
     const f = await fixture();
+    // A legacy membership claiming leadership: once the department has seats, `headSeatId`
+    // decides, so this stale HEAD must not survive as stored truth.
     await prisma.employeeDepartment.create({
       data: {
         employeeId: f.employee.id,
@@ -303,7 +322,28 @@ describe.skipIf(!databaseUrl)('Seats foundation on isolated PostgreSQL', () => {
     const member = await prisma.employeeDepartment.findFirstOrThrow({
       where: { employeeId: f.employee.id },
     });
-    expect(member).toMatchObject({ deptRole: 'HEAD', isPrimary: true });
+    expect(member).toMatchObject({ deptRole: 'MEMBER', isPrimary: true });
+  });
+
+  it('promotes a membership that predates the head seat and demotes it again on end', async () => {
+    const f = await fixture();
+    await prisma.employeeDepartment.create({
+      data: { employeeId: f.employee.id, departmentId: f.department.id, deptRole: 'MEMBER' },
+    });
+    const head = await makeHeadSeat(f);
+    const assignment = await assignments.assign(head.id, { employeeId: f.employee.id }, f.actor);
+    expect(await readMembership(f.employee.id)).toMatchObject({ deptRole: 'HEAD' });
+
+    await assignments.end(assignment.id, f.actor);
+    expect(await readMembership(f.employee.id)).toMatchObject({ deptRole: 'MEMBER' });
+  });
+
+  it('does not demote a head who also takes a standard seat in the same department', async () => {
+    const f = await fixture();
+    const head = await makeHeadSeat(f);
+    await assignments.assign(head.id, { employeeId: f.employee.id }, f.actor);
+    await assignments.assign((await f.makeSeat())!.id, { employeeId: f.employee.id }, f.actor);
+    expect(await readMembership(f.employee.id)).toMatchObject({ deptRole: 'HEAD' });
   });
 
   it('allows only one winner for concurrent assignments to one seat', async () => {

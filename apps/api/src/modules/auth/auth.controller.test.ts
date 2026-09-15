@@ -120,6 +120,36 @@ describe('AuthController public responses', () => {
     expect(setHeader).not.toHaveBeenCalled();
   });
 
+  it('passes browser User-Agent through as the session device label', async () => {
+    vi.mocked(authService.login).mockResolvedValue({
+      accessToken: 'access',
+      refreshToken: 'sid.secret',
+      sessionId: 'sid',
+      tokenVersion: 2,
+      user: { id: '1', email: 'a@b.c', firstName: 'A', lastName: 'B' },
+    });
+
+    await controller.login(
+      { email: 'a@b.c', password: 'x' },
+      {
+        headers: {
+          'user-agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0',
+        },
+      },
+      res,
+    );
+
+    expect(authService.login).toHaveBeenCalledWith(
+      'a@b.c',
+      'x',
+      expect.objectContaining({
+        userAgent: expect.stringContaining('Chrome/120'),
+        deviceLabel: 'Chrome · macOS',
+      }),
+    );
+  });
+
   it('returns refreshToken in JSON for native clientKind without browser Origin', async () => {
     vi.mocked(authService.login).mockResolvedValue({
       accessToken: 'access',

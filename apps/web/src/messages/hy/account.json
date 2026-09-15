@@ -45,6 +45,13 @@
     "checkEmail": "Check your email",
     "backToSignIn": "Back to sign in"
   },
+  "signIn": {
+    "invalidCredentials": "Սխալ էլփոստ կամ գաղտնաբառ",
+    "tooManyAttempts": "Չափից շատ մուտքի փորձեր։ Սպասեք մեկ րոպե և նորից փորձեք։",
+    "serviceUnavailable": "Մուտքը ժամանակավորապես անհասանելի է։ Փորձեք մի փոքր ուշ։",
+    "sessionEnded": "Այս աշխատաշրջանն ավարտվել է։ Մուտք գործեք կրկին։",
+    "accountDeactivated": "Այս հաշիվն այլևս ակտիվ չէ։"
+  },
   "sessions": {
     "title": "Ակտիվ նիստեր",
     "description": "Սարքեր, որոնք մուտք են գործել ձեր NBOS հաշիվը: Հասանելի է նոր մուտքի միացումից հետո:",
