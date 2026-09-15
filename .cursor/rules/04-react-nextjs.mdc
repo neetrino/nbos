@@ -13,6 +13,7 @@ alwaysApply: false
 - **`next/image`** for images; **`next/link`** for navigation.
 - **Metadata** (`generateMetadata` / static) for SEO where applicable.
 - **Loading / error / not-found** UI for route segments.
+- **Never blank loaded content on refresh** — render data surfaces through `DataView`; see `16-state-management.mdc` and [`docs/architecture/data-loading-and-refresh.md`](../../docs/architecture/data-loading-and-refresh.md).
 
 ## UI craft (cards, drawers, dense screens)
 
@@ -22,3 +23,4 @@ Ship **professional, product-grade** layouts — not “works is enough.” For 
 
 - Fetching secrets or DB in client components.
 - Huge client bundles — move data fetching and heavy logic server-side when possible.
+- `{loading ? <LoadingState /> : content}` / `if (loading) return <LoadingState />` over content that may already be on screen — it re-mounts the whole surface on every refetch and reads as a page reload. Use `DataView`.
