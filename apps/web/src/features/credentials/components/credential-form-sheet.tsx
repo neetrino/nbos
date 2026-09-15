@@ -73,7 +73,7 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
     criticality,
     credentialType,
     pendingTypeChange,
-    setPendingTypeChange,
+    cancelPendingTypeChange,
     confirmPendingTypeChange,
     showSettings,
     setShowSettings,
@@ -100,7 +100,7 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
     Boolean(credentialId) &&
     canRequestCredentialEmergencyAccess(accessDenied, me?.isPlatformOwner === true);
 
-  const headerResetKey = `${open}|${credentialId ?? 'create'}`;
+  const headerResetKey = `${open}|${credentialId ?? 'create'}|${props.initialName ?? ''}|${props.presetKey ?? ''}`;
   const sourcePageHref = credentialId ? buildCredentialVaultHref(credentialId) : '/credentials';
   const [activeTab, setActiveTab] = useState<CredentialFormSheetTab>('general');
   const [trackedHeaderResetKey, setTrackedHeaderResetKey] = useState(headerResetKey);
@@ -212,7 +212,7 @@ function CredentialFormSheetInner(props: CredentialFormSheetProps) {
       <CredentialTypeChangeDialog
         open={pendingTypeChange !== null}
         onOpenChange={(open) => {
-          if (!open) setPendingTypeChange(null);
+          if (!open) cancelPendingTypeChange();
         }}
         fromLabel={
           fromTypeKey

@@ -3,6 +3,8 @@
  * Slot keys are persisted in `product_access_slot_bindings.slot_key`.
  */
 
+import { credentialTypeForCategory } from './credentials/credential-category-catalog';
+
 export const CREDENTIAL_CATEGORY_CODES = [
   'ADMIN',
   'DOMAIN',
@@ -12,6 +14,8 @@ export const CREDENTIAL_CATEGORY_CODES = [
   'MAIL',
   'API_KEY',
   'DATABASE',
+  'ENV',
+  'SSH',
   'OTHER',
 ] as const;
 
@@ -19,6 +23,9 @@ export type CredentialCategoryCode = (typeof CREDENTIAL_CATEGORY_CODES)[number];
 
 /** Catch-all slot; bindings requested here may route to a typed slot by credential category. */
 export const UNIVERSAL_ACCESS_SLOT_KEY = 'UNIVERSAL';
+
+/** Create from UNIVERSAL writes Service, not legacy Other. */
+export const UNIVERSAL_DEFAULT_CATEGORY = 'SERVICE';
 
 export type AccessSlotDefinition = {
   slotKey: string;
@@ -205,4 +212,20 @@ export function isCategoryAllowedForSlot(
   category: string,
 ): category is CredentialCategoryCode {
   return (slot.allowedCategories as readonly string[]).includes(category);
+}
+
+/** Preset Category when creating from a Delivery slot. Field stays editable if allowed > 1. */
+export function resolveSlotCreateCategory(slot: {
+  slotKey: string;
+  allowedCategories: readonly string[];
+  defaultCredentialType?: string | null;
+}): string {
+  if (slot.slotKey === UNIVERSAL_ACCESS_SLOT_KEY) return UNIVERSAL_DEFAULT_CATEGORY;
+  const allowed = slot.allowedCategories.filter((value) => value !== 'OTHER');
+  const defaultType = slot.defaultCredentialType;
+  if (defaultType) {
+    const match = allowed.find((category) => credentialTypeForCategory(category) === defaultType);
+    if (match) return match;
+  }
+  return allowed[0] ?? '';
 }

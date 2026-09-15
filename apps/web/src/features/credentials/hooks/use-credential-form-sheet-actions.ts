@@ -143,6 +143,12 @@ export function useCredentialFormSheetActions(
   const handleSave = useCallback(async () => {
     if (!state.name.trim()) {
       toast.error('Name is required');
+      document.querySelector<HTMLInputElement>('[data-credential-name-field]')?.focus();
+      return;
+    }
+    if (state.isCreate && !state.category.trim()) {
+      toast.error('Category is required');
+      document.querySelector<HTMLInputElement>('[data-credential-category-field]')?.focus();
       return;
     }
 

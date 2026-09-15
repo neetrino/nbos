@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { credentialTypeForCategory } from '@nbos/shared';
 import { CREDENTIAL_CATEGORIES } from '@/features/credentials/constants/credentials';
 import {
   inferAppStorePlatformFromUrl,
@@ -15,7 +16,7 @@ import { showsProviderPicker } from '@/features/credentials/credential-field-con
 import { phonesFromCredentialDetail } from '@/features/credentials/utils/credential-phones-normalize';
 import {
   categoriesForVaultScope,
-  defaultCategoryForVaultScope,
+  presetCategoryForCreate,
 } from '@/features/credentials/constants/credential-vault-categories';
 import { accessLevelForVaultScope } from '@/features/credentials/vault-scope';
 import { credentialDetailPlaceholderFromListItem } from '@/features/credentials/utils/credential-detail-placeholder';
@@ -51,8 +52,8 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [loading, setLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [name, setName] = useState('');
-  const [category, setCategory] = useState('SERVICE');
-  const [credentialType, setCredentialType] = useState('LOGIN_PASSWORD');
+  const [category, setCategory] = useState('');
+  const [credentialType, setCredentialType] = useState('');
   const [criticality, setCriticality] = useState('MEDIUM');
   const [providerId, setProviderId] = useState<string | null>(null);
   const [providerName, setProviderName] = useState('');
@@ -79,6 +80,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   const [snap, setSnap] = useState('');
   const [appStorePlatform, setAppStorePlatform] = useState<AppStorePlatform>('APPLE');
   const [pendingTypeChange, setPendingTypeChange] = useState<string | null>(null);
+  const [pendingCategoryChange, setPendingCategoryChange] = useState<string | null>(null);
   const [orphanedSecretsAcknowledged, setOrphanedSecretsAcknowledged] = useState(false);
   /** True after full `getById` apply — avoids ENV auto-reveal racing placeholder/background load. */
   const [detailHydrated, setDetailHydrated] = useState(false);
@@ -94,7 +96,9 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   }, [allowedCategories, vaultScope, isCreate, category, initialCategory]);
 
   const categoryLocked = categoryOptions.length === 1;
-  const categoryLabel = CREDENTIAL_CATEGORIES.find((c) => c.value === category)?.label ?? category;
+  const categoryLabel =
+    CREDENTIAL_CATEGORIES.find((c) => c.value === (category === 'OTHER' ? 'SERVICE' : category))
+      ?.label ?? category;
 
   const scopedFolderOptions = useMemo(
     () =>
@@ -149,8 +153,11 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
 
   const resetCreate = useCallback(() => {
     setName(initialName ?? '');
-    setCategory(defaultCategoryForVaultScope(vaultScope, initialCategory, allowedCategories));
-    setCredentialType(initialCredentialType ?? 'LOGIN_PASSWORD');
+    const nextCategory = presetCategoryForCreate(vaultScope, initialCategory, allowedCategories);
+    setCategory(nextCategory);
+    setCredentialType(
+      (nextCategory && credentialTypeForCategory(nextCategory)) || initialCredentialType || '',
+    );
     setCriticality('MEDIUM');
     setProviderId(null);
     setProviderName('');
@@ -172,6 +179,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setRevealed({});
     setAppStorePlatform('APPLE');
     setPendingTypeChange(null);
+    setPendingCategoryChange(null);
     setOrphanedSecretsAcknowledged(false);
     setDetailHydrated(false);
     setSnap('');
@@ -234,12 +242,45 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     [applyCredentialType, credentialType, detail?.secretsPresent, draftClearHandlers, isCreate],
   );
 
+  const requestCategoryChange = useCallback(
+    (nextCategory: string) => {
+      if (nextCategory === category) return;
+      const nextType = credentialTypeForCategory(nextCategory);
+      if (!nextType) {
+        setCategory(nextCategory);
+        return;
+      }
+      if (isCreate) {
+        setCategory(nextCategory);
+        requestCredentialTypeChange(nextType);
+        return;
+      }
+      const level = classifyCredentialTypeChange(credentialType, nextType, detail?.secretsPresent);
+      if (level === 'green') {
+        setCategory(nextCategory);
+        requestCredentialTypeChange(nextType);
+        return;
+      }
+      setPendingCategoryChange(nextCategory);
+      setOrphanedSecretsAcknowledged(false);
+      setPendingTypeChange(nextType);
+    },
+    [category, credentialType, detail?.secretsPresent, isCreate, requestCredentialTypeChange],
+  );
+
   const confirmPendingTypeChange = useCallback(() => {
     if (!pendingTypeChange) return;
+    if (pendingCategoryChange) setCategory(pendingCategoryChange);
+    setPendingCategoryChange(null);
     setOrphanedSecretsAcknowledged(true);
     applyCredentialType(pendingTypeChange);
     setPendingTypeChange(null);
-  }, [applyCredentialType, pendingTypeChange]);
+  }, [applyCredentialType, pendingCategoryChange, pendingTypeChange]);
+
+  const cancelPendingTypeChange = useCallback(() => {
+    setPendingCategoryChange(null);
+    setPendingTypeChange(null);
+  }, []);
 
   const clearOrphanedSecretsAcknowledged = useCallback(() => {
     setOrphanedSecretsAcknowledged(false);
@@ -534,7 +575,7 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
   ]);
 
   const dirty = isCreate
-    ? name.trim().length > 0 || manualGrants.length > 0
+    ? name.trim().length > 0 || category.length > 0 || manualGrants.length > 0
     : snap === ''
       ? false
       : buildCredentialFormSnap({
@@ -583,10 +624,12 @@ export function useCredentialFormSheetState(props: CredentialFormSheetProps) {
     setName,
     category,
     setCategory,
+    requestCategoryChange,
     credentialType,
     requestCredentialTypeChange,
     pendingTypeChange,
     setPendingTypeChange,
+    cancelPendingTypeChange,
     confirmPendingTypeChange,
     appStorePlatform,
     setAppStorePlatform,

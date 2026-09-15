@@ -9,6 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { dashboardApi } from '@/lib/api/dashboard';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
+import {
+  NOTE_STICKY_SURFACE_CLASS,
+  NOTE_STICKY_TEXTAREA_CLASS,
+} from '@/features/dashboard/constants/dashboard-note-sticky-styles';
 import { prependDashboardControlCacheNote } from '@/features/dashboard/dashboard-control-cache';
 import { dispatchDashboardNoteCreated } from '@/features/dashboard/dashboard-note-sync';
 import {
@@ -160,7 +164,9 @@ function QuickNoteComposer({
   return (
     <div
       className={cn(
-        'absolute top-0 right-0 overflow-hidden rounded-2xl border border-amber-300 bg-amber-200 shadow-sm transition-[width,box-shadow] duration-200 ease-out',
+        'absolute top-0 right-0 overflow-hidden rounded-2xl shadow-sm transition-[width,box-shadow,background-color] duration-200 ease-out',
+        NOTE_STICKY_SURFACE_CLASS,
+        'focus-within:bg-amber-300',
         expanded && 'shadow-lg ring-1 ring-amber-300/80',
       )}
       style={{
@@ -185,7 +191,8 @@ function QuickNoteComposer({
         rows={expanded ? 5 : 1}
         style={expanded ? { minHeight: HEADER_QUICK_NOTE_EXPANDED_MIN_HEIGHT_PX } : undefined}
         className={cn(
-          'resize-none border-0 bg-transparent px-3.5 py-2 text-sm leading-6 shadow-none',
+          NOTE_STICKY_TEXTAREA_CLASS,
+          'resize-none px-3.5 py-2 text-sm leading-6',
           'placeholder:text-amber-900/40 focus-visible:ring-0',
           expanded ? 'min-h-[140px] pb-12' : 'max-h-9 min-h-9 overflow-hidden',
         )}

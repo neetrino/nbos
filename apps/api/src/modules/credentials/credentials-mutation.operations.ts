@@ -3,6 +3,10 @@ import type { Prisma } from '@nbos/database';
 import { resolveCredentialCreateDefaults } from '@nbos/shared';
 import type { CredentialsAccessContext } from './credentials-access';
 import type { CreateCredentialDto, UpdateCredentialDto } from './credential-domain.types';
+import {
+  applyCatalogTypeOnCategoryChange,
+  requireCatalogCredentialPair,
+} from './credential-catalog-pair';
 import { assertCredentialTypeChangeAllowed } from './credential-type-change-guard';
 import { nullableDate } from './credential-date.utils';
 import { encryptSensitiveFields, decryptFieldIfEncrypted } from './credential-crypto.mapper';
@@ -135,10 +139,9 @@ export async function createCredential(
   const userId = access.employeeId;
   const confidentiality = resolveCreateConfidentiality(access, data.confidentiality);
   const encrypted = encryptSensitiveFields(data, runtime.encryptionKey);
-  const credentialType =
-    (data.credentialType as Prisma.CredentialCreateInput['credentialType']) ?? 'LOGIN_PASSWORD';
-  const accessLevel =
-    (data.accessLevel as Prisma.CredentialCreateInput['accessLevel']) ?? 'PROJECT_TEAM';
+  const catalogPair = requireCatalogCredentialPair(data.category);
+  const credentialType = catalogPair.credentialType;
+  const accessLevel = data.accessLevel ?? 'PROJECT_TEAM';
   const autoDefaults = resolveCredentialCreateDefaults({ credentialType, accessLevel });
 
   const credential = await runtime.prisma.credential.create({
@@ -149,8 +152,8 @@ export async function createCredential(
       clientServiceRecordId: data.clientServiceRecordId,
       departmentId: data.departmentId,
       ownerId: data.ownerId ?? (accessLevel === 'PERSONAL' ? userId : undefined),
-      category: data.category as Prisma.CredentialCreateInput['category'],
-      credentialType,
+      category: catalogPair.category as Prisma.CredentialCreateInput['category'],
+      credentialType: credentialType as Prisma.CredentialCreateInput['credentialType'],
       criticality:
         (data.criticality as Prisma.CredentialCreateInput['criticality']) ??
         (autoDefaults.criticality as Prisma.CredentialCreateInput['criticality']),
@@ -171,7 +174,7 @@ export async function createCredential(
       lastRotatedAt: nullableDate(data.lastRotatedAt),
       nextRotationAt: nullableDate(data.nextRotationAt) ?? new Date(autoDefaults.nextRotationAt),
       rotationOwnerId: data.rotationOwnerId,
-      accessLevel,
+      accessLevel: accessLevel as Prisma.CredentialCreateInput['accessLevel'],
       confidentiality,
       allowedEmployees: data.allowedEmployees ?? [],
     },
@@ -230,24 +233,25 @@ export async function updateCredential(
     assertCanSetConfidentiality(access, data.confidentiality);
   }
 
-  assertCredentialTypeChangeAllowed(existing, data);
+  const catalogData = applyCatalogTypeOnCategoryChange(existing.category, data);
+  assertCredentialTypeChangeAllowed(existing, catalogData);
 
-  const encrypted = encryptSensitiveFields(data, runtime.encryptionKey);
-  const changedFields = detectChangedCredentialFields(data, existing);
+  const encrypted = encryptSensitiveFields(catalogData, runtime.encryptionKey);
+  const changedFields = detectChangedCredentialFields(catalogData, existing);
 
   await archiveCredentialSecretVersions(
     runtime.prisma,
     id,
     existing,
-    data,
+    catalogData,
     encrypted,
     access.employeeId,
-    resolveSecretRotationSource(data),
+    resolveSecretRotationSource(catalogData),
   );
 
   const credential = await runtime.prisma.credential.update({
     where: { id },
-    data: buildCredentialUpdateData(data, encrypted),
+    data: buildCredentialUpdateData(catalogData, encrypted),
     include: CREDENTIAL_DETAIL_INCLUDE,
   });
 

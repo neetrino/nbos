@@ -6,7 +6,7 @@ import {
   type ProductAccessSlotBindMeta,
   type ProductAccessSlotRow,
 } from '@/lib/api/products';
-import { UNIVERSAL_ACCESS_SLOT_KEY } from '@nbos/shared';
+import { resolveSlotCreateCategory, UNIVERSAL_ACCESS_SLOT_KEY } from '@nbos/shared';
 import { toast } from 'sonner';
 import { formatDeliveryAccessSlotLabel } from './delivery-access-slot-label';
 
@@ -52,7 +52,7 @@ export function CreateAccessSlotCredentialDialog({
       title={`New credential — ${formatDeliveryAccessSlotLabel(slot.label)}`}
       initialName={formatDeliveryAccessSlotLabel(slot.label)}
       allowedCategories={slot.allowedCategories}
-      initialCategory={slot.slotKey === UNIVERSAL_ACCESS_SLOT_KEY ? 'OTHER' : undefined}
+      initialCategory={resolveSlotCreateCategory(slot)}
       initialCredentialType={slot.defaultCredentialType ?? 'LOGIN_PASSWORD'}
       submitLabel="Save & link"
       successToast={false}

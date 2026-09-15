@@ -24,6 +24,10 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import {
+  NOTE_STICKY_SURFACE_CLASS,
+  NOTE_STICKY_TEXTAREA_CLASS,
+} from '../constants/dashboard-note-sticky-styles';
 import type { DashboardNote } from '../dashboard-control-registry';
 
 /** Stacking: editing card must sit above neighbors when lifted / overlapping hover. */
@@ -32,13 +36,6 @@ const NOTE_CARD_Z_INDEX_DRAGGING = 20;
 
 /** Very subtle tilt (degrees), direction still flips by id — barely visible “pile”. */
 const NOTE_TILT_MAGNITUDES = [0.7, 0.9, 1.1, 1.3, 1.5, 1.8] as const;
-
-/** Sticky-note paper: rest amber-200, hover/focus the same bright amber-300. */
-const NOTE_STICKY_SURFACE_CLASS = 'border border-amber-300 bg-amber-200 hover:bg-amber-300';
-
-/** Kill shared Textarea wash (`bg-muted`, `dark:bg-input`) on yellow paper. */
-const NOTE_STICKY_TEXTAREA_CLASS =
-  'border-0 bg-transparent shadow-none hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent';
 
 /** Corner controls on sticky-note cards (composer + saved notes). */
 const NOTE_CORNER_PILL_CLASS =

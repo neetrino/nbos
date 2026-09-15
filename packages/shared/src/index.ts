@@ -31,6 +31,7 @@ export * from './platform-ownership';
 export * from './credentials/parse-env-bundle';
 export * from './credentials/credential-type-change-lanes';
 export * from './credentials/credential-create-defaults';
+export * from './credentials/credential-category-catalog';
 export * from './credentials/credential-provider-slug';
 export * from './employees/employee-offboarding.constants';
 export * from './employees/employee-onboarding.constants';

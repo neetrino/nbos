@@ -10,15 +10,12 @@ import {
   KanbanInsertPlaceholderAfterList,
   KanbanInsertPlaceholderBeforeItem,
 } from './kanban/KanbanColumnInsertPlaceholder';
-import { measureKanbanCardRowHeight } from './kanban/kanban-drag-metrics';
 import {
-  findKanbanColumnList,
   KANBAN_CARD_ROW_DATA_ATTR,
   KANBAN_COLUMN_DROP_ZONE_DATA_ATTR,
   KANBAN_COLUMN_LIST_DATA_ATTR,
-  resolveKanbanInsertIndex,
 } from './kanban/kanban-insert-index';
-import { isReorderNoop, mapFilteredInsertToFullIndex } from './kanban/kanban-reorder';
+import { KANBAN_HTML5_DRAG_IGNORE_POINTER_CLASS } from './kanban/kanban-html5-drag';
 import { KANBAN_COLUMN_LEFT_RULE_CLASS } from './kanban/kanban-column-surface';
 import { KanbanTerminalDropBar } from './kanban/KanbanTerminalDropBar';
 import { KanbanColumnQuickCreate } from './kanban/KanbanColumnQuickCreate';
@@ -26,7 +23,9 @@ import { KanbanColumnLoadMore } from './kanban/KanbanColumnLoadMore';
 import { KanbanScrollEdgeControls } from './kanban/KanbanScrollEdgeControls';
 import { KANBAN_BOARD_SCROLL_CLASS } from './kanban/kanban-scroll-classes';
 import { useKanbanHorizontalScroll } from './kanban/use-kanban-horizontal-scroll';
+import { useKanbanHtml5Drag } from './kanban/use-kanban-html5-drag';
 import {
+  EDGE_ZONE_WIDTH,
   KANBAN_CARD_MOVED_HIGHLIGHT_MS,
   KANBAN_COLUMN_X_MARGIN_TOTAL_PX,
   COLOR_PALETTE,
@@ -66,11 +65,6 @@ export function KanbanBoard<T>({
         }
       : undefined);
 
-  const [dragItem, setDragItem] = useState<{ id: string; fromColumn: string } | null>(null);
-  const [dragCardHeightPx, setDragCardHeightPx] = useState<number | null>(null);
-  const [dropTarget, setDropTarget] = useState<string | null>(null);
-  const [dropInsert, setDropInsert] = useState<{ columnKey: string; index: number } | null>(null);
-  const [terminalDropTarget, setTerminalDropTarget] = useState<string | null>(null);
   const [recentlyMoved, setRecentlyMoved] = useState<Set<string>>(new Set());
   const prevItemsRef = useRef<Map<string, string>>(new Map());
 
@@ -85,6 +79,48 @@ export function KanbanBoard<T>({
   } = useKanbanHorizontalScroll({
     columnWidth,
     layoutKey: columns.length,
+  });
+
+  const handleDragAutoScroll = useCallback(
+    (clientX: number) => {
+      const el = scrollRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      if (clientX < rect.left + EDGE_ZONE_WIDTH) {
+        startAutoScroll('left');
+        return;
+      }
+      if (clientX > rect.right - EDGE_ZONE_WIDTH) {
+        startAutoScroll('right');
+        return;
+      }
+      stopAutoScroll();
+    },
+    [scrollRef, startAutoScroll, stopAutoScroll],
+  );
+
+  const {
+    dragItem,
+    dragCardHeightPx,
+    dropTarget,
+    dropInsert,
+    terminalDropTarget,
+    handleDragStart,
+    handleColumnDragOver,
+    handleColumnDrop,
+    handleTerminalDragOver,
+    handleTerminalDragLeave,
+    handleTerminalDrop,
+    handleDragEnd,
+    handleBoardDragOver,
+    handleBoardDrop,
+  } = useKanbanHtml5Drag({
+    columns,
+    getItemId,
+    onMove,
+    onReorderWithinColumn,
+    onDragAutoScroll: handleDragAutoScroll,
+    stopAutoScroll,
   });
 
   const [addingAfter, setAddingAfter] = useState<string | null>(null);
@@ -118,90 +154,6 @@ export function KanbanBoard<T>({
     }
   }, [columns, getItemId]);
 
-  /* ── Drag handlers ── */
-  const handleDragStart = useCallback(
-    (id: string, col: string, event: React.DragEvent<HTMLDivElement>) => {
-      setDragCardHeightPx(measureKanbanCardRowHeight(event.currentTarget));
-      setDragItem({ id, fromColumn: col });
-      setTerminalDropTarget(null);
-    },
-    [],
-  );
-
-  const clearDragState = useCallback(() => {
-    setDragItem(null);
-    setDragCardHeightPx(null);
-    setDropTarget(null);
-    setDropInsert(null);
-    setTerminalDropTarget(null);
-  }, []);
-
-  const handleColumnDragOver = useCallback(
-    (event: React.DragEvent<HTMLDivElement>, col: string) => {
-      event.preventDefault();
-      if (!dragItem) {
-        setDropTarget(null);
-        setDropInsert(null);
-        return;
-      }
-      const list = findKanbanColumnList(event.currentTarget);
-      if (!list) return;
-
-      setDropTarget(col);
-      const excludeId = dragItem.fromColumn === col ? dragItem.id : undefined;
-      const index = resolveKanbanInsertIndex(list, event.clientY, excludeId);
-      setDropInsert({ columnKey: col, index });
-    },
-    [dragItem],
-  );
-
-  const resolveColumnDropIndex = useCallback(
-    (col: string, columnItems: T[]): number => {
-      if (dropInsert?.columnKey === col) return dropInsert.index;
-      return columnItems.length;
-    },
-    [dropInsert],
-  );
-
-  const handleDrop = useCallback(
-    (col: string, columnItems: T[]) => {
-      if (!dragItem) {
-        clearDragState();
-        return;
-      }
-
-      const filteredInsert = resolveColumnDropIndex(col, columnItems);
-
-      if (dragItem.fromColumn === col) {
-        if (filteredInsert !== undefined && onReorderWithinColumn) {
-          const fromIndex = columnItems.findIndex((item) => getItemId(item) === dragItem.id);
-          if (fromIndex >= 0) {
-            const toIndex = mapFilteredInsertToFullIndex(fromIndex, filteredInsert);
-            if (!isReorderNoop(fromIndex, toIndex)) {
-              onReorderWithinColumn(dragItem.id, col, toIndex);
-            }
-          }
-        }
-        clearDragState();
-        return;
-      }
-
-      onMove?.(dragItem.id, dragItem.fromColumn, col, filteredInsert);
-      clearDragState();
-    },
-    [dragItem, onMove, onReorderWithinColumn, getItemId, clearDragState, resolveColumnDropIndex],
-  );
-
-  const handleTerminalDrop = useCallback(
-    (zoneKey: string) => {
-      if (dragItem && dragItem.fromColumn !== zoneKey) {
-        onMove?.(dragItem.id, dragItem.fromColumn, zoneKey);
-      }
-      clearDragState();
-    },
-    [dragItem, onMove, clearDragState],
-  );
-
   /* ── Add column ── */
   const startAdd = (afterKey: string) => {
     setAddingAfter(afterKey);
@@ -225,7 +177,12 @@ export function KanbanBoard<T>({
   /* ── "+" button between columns ── */
   const addBetweenBtn = (afterKey: string) =>
     editable && onAddColumn && addingAfter === null ? (
-      <div className="group/add flex h-full flex-shrink-0 items-start pt-1">
+      <div
+        className={cn(
+          'group/add flex h-full flex-shrink-0 items-start pt-1',
+          dragItem && KANBAN_HTML5_DRAG_IGNORE_POINTER_CLASS,
+        )}
+      >
         <button
           onClick={() => startAdd(afterKey)}
           className="border-primary/0 bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-full opacity-0 shadow-sm transition-all group-hover/add:opacity-100"
@@ -287,11 +244,16 @@ export function KanbanBoard<T>({
   );
 
   return (
-    <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col">
+    <div
+      className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col"
+      onDragOver={handleBoardDragOver}
+      onDrop={handleBoardDrop}
+    >
       <KanbanScrollEdgeControls
         canScrollLeft={canScrollLeft}
         canScrollRight={canScrollRight}
         isMobile={isMobileViewport}
+        pointerEnabled={!dragItem}
         onHoverStart={startAutoScroll}
         onHoverEnd={stopAutoScroll}
       />
@@ -330,9 +292,17 @@ export function KanbanBoard<T>({
                 <div
                   className="relative mx-2 flex h-full flex-shrink-0 flex-col"
                   style={{ width: resolvedColumnWidth }}
+                  {...{ [KANBAN_COLUMN_DROP_ZONE_DATA_ATTR]: column.key }}
+                  onDragOver={(event) => handleColumnDragOver(event, column.key)}
+                  onDrop={(event) => handleColumnDrop(event, column.key)}
                 >
                   {idx > 0 ? <div className={KANBAN_COLUMN_LEFT_RULE_CLASS} aria-hidden /> : null}
-                  <div className="group/header mb-3 shrink-0 space-y-2">
+                  <div
+                    className={cn(
+                      'group/header mb-3 shrink-0 space-y-2',
+                      dragItem && KANBAN_HTML5_DRAG_IGNORE_POINTER_CLASS,
+                    )}
+                  >
                     <KanbanColumnHeader
                       column={column}
                       editable={editable}
@@ -345,12 +315,7 @@ export function KanbanBoard<T>({
                     ) : null}
                   </div>
 
-                  <div
-                    className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                    {...{ [KANBAN_COLUMN_DROP_ZONE_DATA_ATTR]: column.key }}
-                    onDragOver={(event) => handleColumnDragOver(event, column.key)}
-                    onDrop={() => handleDrop(column.key, column.items)}
-                  >
+                  <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <div
                       className="flex min-h-full min-w-0 flex-col space-y-3 pb-3"
                       {...{ [KANBAN_COLUMN_LIST_DATA_ATTR]: column.key }}
@@ -378,7 +343,7 @@ export function KanbanBoard<T>({
                                   ? undefined
                                   : (event) => handleDragStart(id, column.key, event)
                               }
-                              onDragEnd={isMobileViewport ? undefined : clearDragState}
+                              onDragEnd={isMobileViewport ? undefined : handleDragEnd}
                               {...{ [KANBAN_CARD_ROW_DATA_ATTR]: true }}
                               data-item-id={id}
                               className={cn(
@@ -387,6 +352,9 @@ export function KanbanBoard<T>({
                                   ? 'cursor-pointer'
                                   : 'cursor-grab active:cursor-grabbing',
                                 dragItem?.id === id && 'scale-[0.97] opacity-50',
+                                dragItem &&
+                                  dragItem.id !== id &&
+                                  KANBAN_HTML5_DRAG_IGNORE_POINTER_CLASS,
                                 recentlyMoved.has(id) && 'animate-in fade-in duration-150',
                               )}
                             >
@@ -451,8 +419,8 @@ export function KanbanBoard<T>({
         <KanbanTerminalDropBar
           zones={terminalDropZones}
           activeZoneKey={terminalDropTarget}
-          onDragOver={setTerminalDropTarget}
-          onDragLeave={() => setTerminalDropTarget(null)}
+          onDragOver={handleTerminalDragOver}
+          onDragLeave={handleTerminalDragLeave}
           onDrop={handleTerminalDrop}
         />
       ) : null}
