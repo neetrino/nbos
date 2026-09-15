@@ -29,6 +29,10 @@ import {
   parseDurationHours,
 } from './meeting-create-form';
 
+const MEETING_CREATE_FIELD_ROW_CLASS = 'flex items-start gap-3';
+const MEETING_CREATE_LOCATION_FIELD_CLASS =
+  'w-[11.5rem] shrink-0 max-md:min-w-0 max-md:w-auto max-md:flex-1';
+
 export interface CreateMeetingCalendarDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -161,7 +165,7 @@ export function CreateMeetingCalendarDialog({
             onValueChange={(title) => setForm((p) => ({ ...p, title }))}
           />
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+          <div className={MEETING_CREATE_FIELD_ROW_CLASS}>
             <InlineField
               variant="controlled"
               label={t('meeting.fields.start')}
@@ -187,7 +191,7 @@ export function CreateMeetingCalendarDialog({
             />
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+          <div className={MEETING_CREATE_FIELD_ROW_CLASS}>
             <InlineField
               variant="controlled"
               label={t('meeting.fields.meetingType')}
@@ -201,7 +205,7 @@ export function CreateMeetingCalendarDialog({
             />
             <DetailSheetFieldSegmented
               label={t('meeting.fields.location')}
-              className="w-full shrink-0 sm:w-[11.5rem]"
+              className={MEETING_CREATE_LOCATION_FIELD_CLASS}
               value={form.locationType}
               options={locationOptions}
               onValueChange={(locationType) => {
