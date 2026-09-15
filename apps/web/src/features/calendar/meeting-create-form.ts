@@ -37,7 +37,7 @@ export function meetingDefaults(selectedDate: Date): MeetingCreateForm {
     startsLocal: toDatetimeLocalValue(selectedDate, 9, 0),
     durationHours: DEFAULT_MEETING_DURATION_HOURS,
     meetingType: 'SALES_CALL',
-    locationType: 'ONLINE',
+    locationType: 'OFFLINE',
     locationOrLink: '',
     agenda: '',
   };
