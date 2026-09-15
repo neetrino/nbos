@@ -140,10 +140,8 @@ export async function createCredential(
   const confidentiality = resolveCreateConfidentiality(access, data.confidentiality);
   const encrypted = encryptSensitiveFields(data, runtime.encryptionKey);
   const catalogPair = requireCatalogCredentialPair(data.category);
-  const credentialType =
-    catalogPair.credentialType as Prisma.CredentialCreateInput['credentialType'];
-  const accessLevel =
-    (data.accessLevel as Prisma.CredentialCreateInput['accessLevel']) ?? 'PROJECT_TEAM';
+  const credentialType = catalogPair.credentialType;
+  const accessLevel = data.accessLevel ?? 'PROJECT_TEAM';
   const autoDefaults = resolveCredentialCreateDefaults({ credentialType, accessLevel });
 
   const credential = await runtime.prisma.credential.create({
@@ -155,7 +153,7 @@ export async function createCredential(
       departmentId: data.departmentId,
       ownerId: data.ownerId ?? (accessLevel === 'PERSONAL' ? userId : undefined),
       category: catalogPair.category as Prisma.CredentialCreateInput['category'],
-      credentialType,
+      credentialType: credentialType as Prisma.CredentialCreateInput['credentialType'],
       criticality:
         (data.criticality as Prisma.CredentialCreateInput['criticality']) ??
         (autoDefaults.criticality as Prisma.CredentialCreateInput['criticality']),
@@ -176,7 +174,7 @@ export async function createCredential(
       lastRotatedAt: nullableDate(data.lastRotatedAt),
       nextRotationAt: nullableDate(data.nextRotationAt) ?? new Date(autoDefaults.nextRotationAt),
       rotationOwnerId: data.rotationOwnerId,
-      accessLevel,
+      accessLevel: accessLevel as Prisma.CredentialCreateInput['accessLevel'],
       confidentiality,
       allowedEmployees: data.allowedEmployees ?? [],
     },
