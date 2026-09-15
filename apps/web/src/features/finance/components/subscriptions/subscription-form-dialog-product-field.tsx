@@ -1,7 +1,7 @@
 'use client';
 
 import { Layers } from 'lucide-react';
-import { RelationPickerField } from '@/components/shared';
+import { InlineField, RelationPickerField } from '@/components/shared';
 import type { RelationPickerSearchFn } from '@/components/shared/relation-picker';
 import type { Subscription } from '@/lib/api/finance';
 
@@ -50,10 +50,27 @@ export function SubscriptionFormDialogProductField({
     );
   }
 
+  const lockedValue = buildLockedProductLabel(subscription, productLabel, productId);
+
   return (
-    <div className="text-muted-foreground text-sm">
-      Product: {subscription?.product?.name ?? productLabel ?? productId}
-      {subscription?.project ? ` · Project ${subscription.project.name}` : null}
-    </div>
+    <InlineField
+      variant="controlled"
+      label="Product"
+      type="text"
+      value={lockedValue}
+      icon={<Layers size={12} />}
+      disabled
+      onValueChange={() => undefined}
+    />
   );
+}
+
+function buildLockedProductLabel(
+  subscription: Subscription | null | undefined,
+  productLabel: string | null,
+  productId: string,
+): string {
+  const name = subscription?.product?.name ?? productLabel ?? productId;
+  const projectName = subscription?.project?.name?.trim();
+  return projectName ? `${name} · ${projectName}` : name;
 }

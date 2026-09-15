@@ -17,6 +17,7 @@ interface SubscriptionAmountTaxFieldProps {
   amount: string;
   taxStatus: string;
   disabled?: boolean;
+  className?: string;
   onAmountChange: (amount: string) => void;
   onTaxStatusChange: (taxStatus: string) => void;
 }
@@ -26,6 +27,7 @@ export function SubscriptionAmountTaxField({
   amount,
   taxStatus,
   disabled = false,
+  className,
   onAmountChange,
   onTaxStatusChange,
 }: SubscriptionAmountTaxFieldProps) {
@@ -36,6 +38,7 @@ export function SubscriptionAmountTaxField({
       className={cn(
         DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
         disabled && 'pointer-events-none opacity-60',
+        className,
       )}
     >
       <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{amountLabel}</span>
