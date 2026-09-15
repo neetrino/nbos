@@ -7,6 +7,7 @@ import { SheetFileAttachments } from '@/components/shared/SheetFileAttachments';
 import { driveApi, type FileAsset } from '@/lib/api/drive';
 import { DRIVE_LIBRARIES } from '@/features/drive/drive-options';
 import type { DriveFileCardMenuHandlers } from '@/features/drive/DriveFileCard';
+import { EntityDriveFilePreviewSheet } from '@/features/drive/EntityDriveFilePreviewSheet';
 import {
   moveToTrashAndUnlinkFileFromEntityRecord,
   unlinkFileFromEntityRecord,
@@ -32,6 +33,7 @@ interface TaskFilesBlockProps {
 export function TaskFilesBlock({ taskId }: TaskFilesBlockProps) {
   const t = useTranslations('tasks');
   const [busyFileId, setBusyFileId] = useState<string | null>(null);
+  const [previewFile, setPreviewFile] = useState<FileAsset | null>(null);
 
   const listFiles = useCallback(async () => {
     return driveApi.listFileAssets({
@@ -76,28 +78,31 @@ export function TaskFilesBlock({ taskId }: TaskFilesBlockProps) {
 
   const fileMenu = (file: FileAsset): DriveFileCardMenuHandlers => ({
     busy: busyFileId === file.id,
-    onOpenDetails: () => {
-      const url = file.externalUrl;
-      if (url) window.open(url, '_blank', 'noopener,noreferrer');
-    },
+    onOpenDetails: () => setPreviewFile(file),
     onUnlinkFromRecord: () => void runUnlink(file),
     onMoveToTrash: (target) => void runMoveToTrash(target),
     onRestore: () => undefined,
   });
 
   return (
-    <SheetFileAttachments
-      files={files}
-      pendingUploads={pending}
-      loading={loading}
-      denseTiles
-      emptyHint={t('sheet.files.emptyHint')}
-      onUpload={uploadFiles}
-      onOpenFile={(file) => {
-        const url = file.externalUrl;
-        if (url) window.open(url, '_blank', 'noopener,noreferrer');
-      }}
-      fileMenu={fileMenu}
-    />
+    <>
+      <SheetFileAttachments
+        files={files}
+        pendingUploads={pending}
+        loading={loading}
+        denseTiles
+        emptyHint={t('sheet.files.emptyHint')}
+        onUpload={uploadFiles}
+        onOpenFile={setPreviewFile}
+        fileMenu={fileMenu}
+      />
+      <EntityDriveFilePreviewSheet
+        file={previewFile}
+        open={Boolean(previewFile)}
+        onOpenChange={(open) => {
+          if (!open) setPreviewFile(null);
+        }}
+      />
+    </>
   );
 }

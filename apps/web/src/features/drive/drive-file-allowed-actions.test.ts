@@ -3,6 +3,7 @@ import type { FileAsset } from '@/lib/api/drive';
 import {
   applyServerFileActionGates,
   buildDriveFileActionGates,
+  DRIVE_FILE_PREVIEW_ONLY_GATES,
 } from './drive-file-allowed-actions';
 import type { DriveActionCapabilities } from './drive-action-capabilities';
 
@@ -36,6 +37,12 @@ describe('applyServerFileActionGates', () => {
 });
 
 describe('buildDriveFileActionGates', () => {
+  it('returns preview-only gates when no file is selected', () => {
+    expect(buildDriveFileActionGates(layoutCaps, null, ['SHARE', 'TRASH'])).toEqual(
+      DRIVE_FILE_PREVIEW_ONLY_GATES,
+    );
+  });
+
   it('enables move to trash for active files when server allows trash actions', () => {
     const gates = buildDriveFileActionGates(layoutCaps, activeFile, ['TRASH', 'SHARE']);
     expect(gates.canMoveToTrash).toBe(true);

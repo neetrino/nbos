@@ -33,6 +33,18 @@ export type DriveFileActionGates = {
   canMoveToTrash: boolean;
 };
 
+/** Preview overlay from an entity sheet: view the file, no Drive mutations. */
+export const DRIVE_FILE_PREVIEW_ONLY_GATES: DriveFileActionGates = {
+  canShare: false,
+  canCopy: false,
+  canMove: false,
+  canRemovePlacement: false,
+  canUnlink: false,
+  canUploadVersion: false,
+  canRestore: false,
+  canMoveToTrash: false,
+};
+
 function serverAllows(
   serverActions: readonly string[] | null,
   action: DriveFileActionKey,
@@ -66,16 +78,7 @@ export function buildDriveFileActionGates(
   serverActions: readonly string[] | null,
 ): DriveFileActionGates {
   if (!file) {
-    return {
-      canShare: false,
-      canCopy: false,
-      canMove: false,
-      canRemovePlacement: false,
-      canUnlink: false,
-      canUploadVersion: false,
-      canRestore: false,
-      canMoveToTrash: false,
-    };
+    return DRIVE_FILE_PREVIEW_ONLY_GATES;
   }
   const inTrash = isDriveFileInTrash(file);
   const deleteFamily =
