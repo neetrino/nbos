@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { KANBAN_COLUMN_PAGE_SIZE } from '@/features/shared/kanban/kanban-column-page';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
 export interface StageColumnPageMeta {
@@ -50,11 +51,26 @@ function parseStageKeys(signature: string): string[] {
 }
 
 /**
+ * True when the visible stage keys already hold rows, meaning a reload is a revalidation
+ * of on-screen content rather than a first load.
+ */
+export function hasRenderableItems(
+  buckets: Readonly<Record<string, { items: readonly unknown[] } | undefined>>,
+  keys: readonly string[],
+): boolean {
+  return keys.some((key) => (buckets[key]?.items.length ?? 0) > 0);
+}
+
+/**
  * Per-stage kanban loader: Active/Closed enforced via server `status` (or equivalent),
  * initial page = {@link KANBAN_COLUMN_PAGE_SIZE}, more via {@link loadMoreColumn}.
  *
  * `fetchPage` must be referentially stable (`useCallback`). A new function each render
  * retriggers a full-board reload and can trip API 429s.
+ *
+ * `reload` revalidates in place: while columns already hold rows it reports `refreshing`
+ * instead of `loading` and keeps those rows mounted, so refreshing the board after a save
+ * never blanks it. `loading` stays reserved for the first load of a stage key set.
  */
 export function useStageColumnBoard<T extends { id: string }>(options: {
   stageKeys: readonly string[];
@@ -76,7 +92,7 @@ export function useStageColumnBoard<T extends { id: string }>(options: {
   } = options;
 
   const [buckets, setBuckets] = useState<Record<string, StageBucket<T>>>({});
-  const [loading, setLoading] = useState(true);
+  const { loading, refreshing, begin, end } = useRevalidationState();
   const [error, setError] = useState<string | null>(null);
   const fetchGenerationRef = useRef(0);
   const bucketsRef = useRef(buckets);
@@ -89,17 +105,19 @@ export function useStageColumnBoard<T extends { id: string }>(options: {
   const reload = useCallback(async () => {
     if (!enabled) {
       setBuckets({});
-      setLoading(false);
+      end();
       setError(null);
       return;
     }
 
+    const keys = parseStageKeys(stageKeySignature);
+    const revalidating = hasRenderableItems(bucketsRef.current, keys);
+
     const generation = ++fetchGenerationRef.current;
-    setLoading(true);
+    begin(revalidating);
     setError(null);
 
     try {
-      const keys = parseStageKeys(stageKeySignature);
       const pages = await Promise.all(
         keys.map(async (status) => {
           const data = await fetchPage({
@@ -127,13 +145,12 @@ export function useStageColumnBoard<T extends { id: string }>(options: {
     } catch (caught) {
       if (generation !== fetchGenerationRef.current) return;
       setError(getApiErrorMessage(caught, loadErrorMessage));
-      setBuckets({});
+      // A failed revalidation keeps the rows that are already on screen.
+      if (!revalidating) setBuckets({});
     } finally {
-      if (generation === fetchGenerationRef.current) {
-        setLoading(false);
-      }
+      if (generation === fetchGenerationRef.current) end();
     }
-  }, [enabled, fetchPage, loadErrorMessage, stageKeySignature]);
+  }, [begin, enabled, end, fetchPage, loadErrorMessage, stageKeySignature]);
 
   useEffect(() => {
     void reload();
@@ -294,6 +311,7 @@ export function useStageColumnBoard<T extends { id: string }>(options: {
     columnMeta,
     hasMoreAny,
     loading,
+    refreshing,
     error,
     reload,
     loadMoreColumn,
