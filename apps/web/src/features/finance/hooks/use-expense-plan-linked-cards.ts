@@ -5,6 +5,12 @@ import { expensesApi, type Expense } from '@/lib/api/finance';
 
 const LINKED_CARDS_PAGE_SIZE = 100;
 
+type LinkedCardsState = {
+  items: Expense[];
+  error: boolean;
+  loadedKey: string | null;
+};
+
 export function useExpensePlanLinkedCards(
   planId: string,
   refreshNonce: number,
@@ -14,18 +20,20 @@ export function useExpensePlanLinkedCards(
   error: boolean;
   reload: () => void;
 } {
-  const [items, setItems] = useState<Expense[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
   const [reloadToken, setReloadToken] = useState(0);
+  const [state, setState] = useState<LinkedCardsState>({
+    items: [],
+    error: false,
+    loadedKey: null,
+  });
 
   const reload = useCallback(() => setReloadToken((n) => n + 1), []);
+  const requestKey = `${planId}:${refreshNonce}:${reloadToken}`;
+  const loading = Boolean(planId) && state.loadedKey !== requestKey;
 
   useEffect(() => {
     if (!planId) return;
     let cancelled = false;
-    setLoading(true);
-    setError(false);
     void expensesApi
       .getAll({
         expensePlanId: planId,
@@ -34,21 +42,20 @@ export function useExpensePlanLinkedCards(
         pageSize: LINKED_CARDS_PAGE_SIZE,
       })
       .then((res) => {
-        if (!cancelled) setItems(res.items);
+        if (!cancelled) setState({ items: res.items, error: false, loadedKey: requestKey });
       })
       .catch(() => {
-        if (!cancelled) {
-          setItems([]);
-          setError(true);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setState({ items: [], error: true, loadedKey: requestKey });
       });
     return () => {
       cancelled = true;
     };
-  }, [planId, refreshNonce, reloadToken]);
+  }, [planId, requestKey]);
 
-  return { items, loading, error, reload };
+  return {
+    items: state.items,
+    loading,
+    error: state.loadedKey === requestKey && state.error,
+    reload,
+  };
 }

@@ -65,36 +65,37 @@ export function CredentialFormCategoryCombobox({
   onCategoryChange,
 }: CredentialFormCategoryComboboxProps) {
   const t = useTranslations('credentials');
-  const box = useCategoryComboboxOpen(categoryLocked, onCategoryChange);
+  const { open, query, setQuery, setOpen, containerRef, inputRef, openSearch, selectCategory } =
+    useCategoryComboboxOpen(categoryLocked, onCategoryChange);
   const CategoryIcon = credentialCategoryIcon(category || 'SERVICE');
   const selectedLabel = category
     ? (categoryOptions.find((option) => option.value === category)?.label ?? categoryLabel)
     : '';
   const filtered = useMemo(() => {
-    const needle = box.query.trim().toLowerCase();
+    const needle = query.trim().toLowerCase();
     if (!needle) return categoryOptions;
     return categoryOptions.filter((option) => option.label.toLowerCase().includes(needle));
-  }, [categoryOptions, box.query]);
+  }, [categoryOptions, query]);
 
   return (
-    <div className="grid gap-2" ref={box.containerRef}>
+    <div className="grid gap-2" ref={containerRef}>
       <CredentialFormFieldLabel label={t('form.category')} icon={CategoryIcon} />
       <div className="relative">
         <Input
-          ref={box.inputRef}
+          ref={inputRef}
           data-credential-category-field
-          value={box.open ? box.query : selectedLabel}
+          value={open ? query : selectedLabel}
           disabled={categoryLocked}
           aria-invalid={invalid || undefined}
           aria-required
-          aria-expanded={box.open}
+          aria-expanded={open}
           placeholder={t('form.selectCategory')}
           autoComplete="off"
-          onMouseDown={box.openSearch}
-          onFocus={box.openSearch}
+          onMouseDown={openSearch}
+          onFocus={openSearch}
           onChange={(event) => {
-            box.setQuery(event.target.value);
-            box.setOpen(true);
+            setQuery(event.target.value);
+            setOpen(true);
           }}
           className="pr-9"
         />
@@ -102,8 +103,8 @@ export function CredentialFormCategoryCombobox({
           className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 opacity-80"
           aria-hidden
         />
-        {box.open && !categoryLocked ? (
-          <CategoryOptionsList options={filtered} onSelect={box.selectCategory} />
+        {open && !categoryLocked ? (
+          <CategoryOptionsList options={filtered} onSelect={selectCategory} />
         ) : null}
       </div>
     </div>
