@@ -6,7 +6,7 @@
 
 > **Developer Frontend (2026-08):** роль `developer-frontend` использует **ту же** permission matrix, что и Developer Backend (`developer` / Delivery User). В таблицах ниже колонка **Dev** = Backend; Frontend наследует те же уровни. **Junior Developer** — отдельная более узкая роль; не объединять с Frontend.
 
-> **Seller Assistant (2026-09):** роль `seller-assistant` / `role-seller-assistant` использует **ту же** permission matrix, что и Seller. Колонка **Seller** ниже покрывает обоих. Назначение `Deal.sellerAssistantId` без этой роли прав не даёт.
+> **Ассистент на сделке (2026-09):** отдельной роли нет. Помощь на сделке — это `Deal.sellerAssistantId`, а оба участника держат роль `seller`, поэтому колонка **Seller** покрывает и основного продавца, и ассистента. Подробнее — `01-Role-Definitions.md` §2b.
 
 ## Обзор
 
@@ -124,6 +124,45 @@ Credentials rows below are a high-level role reference. Exact access is resolved
 - **Marketing (2026-09)** — модуль `MARKETING`: борд, активности, аккаунты, attribution review, дашборд. Отдельно от `CRM_LEADS`, потому что запуск активности предлагает расход в финансах: на `CRM_LEADS EDIT` бюджеты получил бы каждый Seller, а Marketing Specialist остался бы read-only. По умолчанию полный доступ у Platform Owner / Founder, CEO и Head of Marketing (в таблице колонка Marketing = Marketing Specialist, у него ❌ до явной выдачи). Справочники `Where` и `Which one` остаются на `CRM_LEADS VIEW`, их читают формы лидов и сделок. Канон: `../02-Modules/18-Marketing/00-Marketing-Overview.md`.
 - **Settings (2026-09)** — платформенная админка использует `SETTINGS`, `SETTINGS_RBAC` и `SETTINGS_SCHEDULER`, а не `COMPANY`. По умолчанию доступ есть только у Platform Owner / Founder и CEO; остальные роли получают его явно через Settings → Permissions / RBAC. Finance Director сохраняет `COMPANY` Full для `My Company`, но админку платформы больше не открывает. Канон: `../02-Modules/16-Settings-Admin/02-Permissions-RBAC.md`.
 - **My Company vs Settings** — `COMPANY` = оргструктура, сотрудники, seats, KPI/bonus/compensation. `SETTINGS*` = конфигурация платформы, технические права, интеграции, cron jobs.
+
+---
+
+## Support, HR, Operations и Accountant
+
+Роли добавлены 2026-09 и вынесены в отдельную таблицу, чтобы не расширять основную матрицу до нечитаемой ширины. Департаменты Support, HR и Operations существовали с самого начала, но их работу мог делать только CEO.
+
+| Модуль              | Head Support | HR Manager    | Operations    | Accountant |
+| ------------------- | ------------ | ------------- | ------------- | ---------- |
+| CRM (Leads / Deals) | ❌           | ❌            | ❌            | ❌         |
+| Orders              | 👁           | ❌            | ❌            | 👁         |
+| Invoices            | ❌           | ❌            | ❌            | ✅         |
+| Payments            | ❌           | ❌            | ❌            | ✅         |
+| Subscriptions       | 👁           | ❌            | 👁            | 👁         |
+| Expenses            | ❌           | ❌            | 🔶            | ✅         |
+| Bonuses             | 👁           | ❌            | ❌            | 👁         |
+| Salary              | ❌           | ❌            | ❌            | 👁         |
+| Projects            | 👁           | ❌            | 👁            | ❌         |
+| Tasks               | ✅           | ✅            | ✅            | 🔶         |
+| Support Tickets     | ✅           | ❌            | ❌            | ❌         |
+| Credentials         | 🔶           | 🔶            | 🔶            | 🔶         |
+| Drive               | ✅           | 🔶 dept       | ✅            | 🔶         |
+| Documents           | ✅           | ✅            | ✅            | 👁         |
+| Messenger / Mail    | ✅           | ✅            | ✅            | ❌ / 🔶    |
+| Calendar            | ✅           | ✅            | ✅            | 🔶         |
+| My Company          | 👁           | ✅ без DELETE | ✅ без DELETE | 👁         |
+| Checklist / SOP     | 👁           | ✅            | ✅            | 👁         |
+| Partners            | ❌           | ❌            | ❌            | 👁         |
+| Dashboards (dept)   | 🔶           | 🔶            | 🔶            | ❌         |
+| Clients (directory) | 🔶           | ❌            | ❌            | 👁         |
+| Audit Logs          | ❌           | ❌            | ❌            | ❌         |
+| Settings (platform) | ❌           | ❌            | ❌            | ❌         |
+
+**Пояснения:**
+
+- **Head of Support** — тикеты полностью, проекты только на чтение: Delivery владеет проектом, Support его обслуживает. Подписки видны, потому что обслуживание продаётся как подписка. Credentials по модели Head of Delivery: править и добавлять клиентские, но не читать все секреты подряд.
+- **HR Manager** — payroll принадлежит Finance, поэтому зарплаты и бонусы закрыты полностью. `COMPANY` без DELETE: сотрудника проводят через офбординг, а не удаляют. Реактивация уволенного привязана к роли `hr-manager` (в том числе дополнительной), а не к слагу департамента — последний уже один раз разъехался и право потерялось молча.
+- **Operations Manager** — владеет SOP и чеклистами, поэтому `CHECKLIST_TEMPLATES` объявлен явно и не наследуется из `COMPANY`. `SETTINGS*` закрыт: администрирование платформы остаётся у CEO / Platform Owner.
+- **Accountant** — исполняет то, что решает Finance Director. Инвойсы, платежи и расходы полные; зарплаты и бонусы только на чтение; бюджетирование, `COMPANY` на изменение и audit logs не передаются.
 
 ---
 

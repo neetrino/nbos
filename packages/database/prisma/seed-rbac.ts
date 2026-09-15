@@ -18,6 +18,8 @@ import {
 import type { PlatformResourceFamilyEnum } from '@nbos/database';
 import dotenv from 'dotenv';
 import path from 'path';
+import { OPERATIONS_ROLE_MATRIX } from './rbac-role-matrix-operations';
+import { D, F, L, LA, MatrixEntry, N, R, VA, VA_OWN } from './rbac-scopes';
 
 const GLOBAL_OPERATIONAL_ROLE_IDS = ['role-owner', 'role-ceo'] as const;
 
@@ -60,29 +62,6 @@ const MODULES = [
 ] as const;
 
 const ACTIONS = ['VIEW', 'EDIT', 'ADD', 'DELETE'] as const;
-
-type Scope = 'NONE' | 'OWN' | 'DEPARTMENT' | 'ALL';
-
-/**
- * Maps the access matrix from docs/NBOS/04-Roles-and-Access/02-Access-Matrix.md
- * ✅ Full   -> VIEW:ALL, EDIT:ALL, ADD:ALL, DELETE:ALL
- * 👁 Read   -> VIEW:ALL
- * 🔶 Limited -> VIEW:OWN, EDIT:OWN (no create)
- * 🔶 Limited + create (Seller invoices) -> VIEW:OWN, EDIT:OWN, ADD:OWN
- * ❌ None   -> all NONE
- */
-type MatrixEntry = Record<string, [Scope, Scope, Scope, Scope]>; // [VIEW, EDIT, ADD, DELETE]
-
-const F: [Scope, Scope, Scope, Scope] = ['ALL', 'ALL', 'ALL', 'ALL'];
-const R: [Scope, Scope, Scope, Scope] = ['ALL', 'NONE', 'NONE', 'NONE'];
-const L: [Scope, Scope, Scope, Scope] = ['OWN', 'OWN', 'NONE', 'NONE'];
-const LA: [Scope, Scope, Scope, Scope] = ['OWN', 'OWN', 'OWN', 'NONE'];
-const D: [Scope, Scope, Scope, Scope] = ['DEPARTMENT', 'DEPARTMENT', 'DEPARTMENT', 'NONE'];
-const N: [Scope, Scope, Scope, Scope] = ['NONE', 'NONE', 'NONE', 'NONE'];
-/** View all + create, no edit/delete — Seller / Head of Sales on Clients. */
-const VA: [Scope, Scope, Scope, Scope] = ['ALL', 'NONE', 'ALL', 'NONE'];
-/** View own + create own, no edit/delete — Head of Marketing invoices. */
-const VA_OWN: [Scope, Scope, Scope, Scope] = ['OWN', 'NONE', 'OWN', 'NONE'];
 
 const DEVELOPER_ROLE_MATRIX: MatrixEntry = {
   CRM_LEADS: N,
@@ -139,6 +118,7 @@ const SELLER_ROLE_MATRIX: MatrixEntry = {
 };
 
 const ROLE_MATRIX: Record<string, MatrixEntry> = {
+  ...OPERATIONS_ROLE_MATRIX,
   'role-owner': Object.fromEntries(MODULES.map((m) => [m, F])),
   'role-ceo': Object.fromEntries(MODULES.map((m) => [m, F])),
   [ROLE_SELLER_ID]: SELLER_ROLE_MATRIX,

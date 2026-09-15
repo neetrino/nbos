@@ -24,6 +24,13 @@ export interface MeResponse {
     slug: string;
     level: number;
   };
+  /** Every effective role, primary and additional. `role` above is only the primary one. */
+  permissionRoles?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    level: number;
+  }>;
   departments: Array<{
     id: string;
     departmentId: string;
