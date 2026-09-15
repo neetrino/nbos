@@ -194,7 +194,8 @@ Important rules:
 ### Route C: Finance manual create
 
 - DTO requires `productId` and **`name`** (non-empty);
-- `projectId` is taken from Product, or must match `Product.projectId` if also sent.
+- `projectId` is taken from Product, or must match `Product.projectId` if also sent;
+- the same form is available from Product → Finance → Subscriptions, with `productId` locked to that Product.
 
 ### Route D: Partner Service (outbound)
 

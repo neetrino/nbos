@@ -16,10 +16,7 @@ import { invoicesApi, paymentsApi, type Invoice } from '@/lib/api/finance';
 import { useProductEntityDetailSheet } from '@/features/projects/hooks/use-product-entity-detail-sheet';
 import { useProductFinanceInvoices } from '@/features/projects/hooks/use-product-finance-invoices';
 import { filterProductFinanceInvoices } from '@/features/projects/utils/filter-product-finance-data';
-import {
-  resolveBoardLifecycleScope,
-  type BoardLifecycleScope,
-} from '@/features/shared/board-lifecycle';
+import { resolveProductFinanceBoardScope } from '@/features/projects/utils/resolve-product-finance-scope';
 import { usePermission } from '@/lib/permissions';
 
 interface ProductFinanceInvoicesPanelProps {
@@ -44,7 +41,7 @@ export function ProductFinanceInvoicesPanel({
   const [createOpen, setCreateOpen] = useState(false);
   const canCreate = can('ADD', 'FINANCE_INVOICES');
 
-  const boardScope = resolveBoardLifecycleScope(filters.boardScope) as BoardLifecycleScope;
+  const boardScope = resolveProductFinanceBoardScope(filters.boardScope);
   const displayInvoices = useMemo(
     () => filterProductFinanceInvoices(invoices, search, filters),
     [invoices, search, filters],

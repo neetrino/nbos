@@ -41,6 +41,20 @@ describe('buildExpenseListApiParams', () => {
     expect(params.activeBoard).toBe(true);
   });
 
+  it('does not set activeBoard or closedBoard on all variant', () => {
+    const params = buildExpenseListApiParams({
+      search: '',
+      filters: { category: 'all', status: 'all' },
+      period: 'all',
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+      pageVariant: 'all',
+    });
+    expect(params.activeBoard).toBeUndefined();
+    expect(params.closedBoard).toBeUndefined();
+    expect(params.status).toBeUndefined();
+  });
+
   it('does not set activeBoard on backlog variant', () => {
     const params = buildExpenseListApiParams({
       search: '',

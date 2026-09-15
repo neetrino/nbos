@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Handshake, Layers, Receipt } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Handshake, Receipt } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -28,10 +28,11 @@ import {
 import { SUBSCRIPTION_TYPES } from '@/features/finance/constants/finance';
 import { TAX_STATUSES } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import {
-  EMPTY_SUBSCRIPTION_FORM,
+  buildCreateSubscriptionFormDefaults,
   subscriptionToFormState,
   type SubscriptionFormState,
 } from '@/features/finance/utils/subscription-form-state';
+import { SubscriptionFormDialogProductField } from '@/features/finance/components/subscriptions/subscription-form-dialog-product-field';
 import { buildBillingPeriodChangeConfirmDescription } from '@/features/finance/utils/subscription-billing-period-change';
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import { SubscriptionBillingPeriodConfirmDialog } from '@/features/finance/components/subscriptions/SubscriptionBillingPeriodConfirmDialog';
@@ -51,6 +52,10 @@ interface SubscriptionFormDialogProps {
   mode: 'create' | 'edit';
   subscription?: Subscription | null;
   onSaved: (subscription: Subscription) => void;
+  /** Create from Product Finance: product is locked to this id. */
+  defaultProductId?: string | null;
+  defaultProjectId?: string | null;
+  defaultProductLabel?: string | null;
 }
 
 export function SubscriptionFormDialog({
@@ -59,8 +64,13 @@ export function SubscriptionFormDialog({
   mode,
   subscription = null,
   onSaved,
+  defaultProductId = null,
+  defaultProjectId = null,
+  defaultProductLabel = null,
 }: SubscriptionFormDialogProps) {
-  const [form, setForm] = useState<SubscriptionFormState>({ ...EMPTY_SUBSCRIPTION_FORM });
+  const [form, setForm] = useState<SubscriptionFormState>(() =>
+    buildCreateSubscriptionFormDefaults(),
+  );
   const [editSnap, setEditSnap] = useState<SubscriptionFormState | null>(null);
   const [productLabel, setProductLabel] = useState<string | null>(null);
   const [partnerLabel, setPartnerLabel] = useState<string | null>(null);
@@ -93,27 +103,35 @@ export function SubscriptionFormDialog({
     onOpenChange,
   });
 
-  const handleOpenChange = (next: boolean) => {
-    if (next) {
-      if (mode === 'edit' && subscription) {
-        const state = subscriptionToFormState(subscription);
-        setForm(state);
-        setEditSnap(state);
-        setProductLabel(subscription.product?.name ?? null);
-        setPartnerLabel(subscription.partner?.name ?? null);
-      } else {
-        setForm({ ...EMPTY_SUBSCRIPTION_FORM });
-        setEditSnap(null);
-        setProductLabel(null);
-        setPartnerLabel(null);
-      }
-    }
-    onOpenChange(next);
-  };
+  const productLocked = mode === 'create' && Boolean(defaultProductId?.trim());
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
-    if (!open) setProductResolving(false);
-  }, [open]);
+    const justOpened = open && !wasOpenRef.current;
+    wasOpenRef.current = open;
+    if (!open) {
+      setProductResolving(false);
+      return;
+    }
+    if (!justOpened) return;
+    if (mode === 'edit' && subscription) {
+      const state = subscriptionToFormState(subscription);
+      setForm(state);
+      setEditSnap(state);
+      setProductLabel(subscription.product?.name ?? null);
+      setPartnerLabel(subscription.partner?.name ?? null);
+      return;
+    }
+    setForm(
+      buildCreateSubscriptionFormDefaults({
+        productId: defaultProductId,
+        projectId: defaultProjectId,
+      }),
+    );
+    setEditSnap(null);
+    setProductLabel(defaultProductLabel?.trim() || null);
+    setPartnerLabel(null);
+  }, [open, mode, subscription, defaultProductId, defaultProjectId, defaultProductLabel]);
 
   const handleProductSelect = async (productId: string, label: string) => {
     setProductLabel(label);
@@ -134,7 +152,7 @@ export function SubscriptionFormDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={handleOpenChange}>
+      <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{mode === 'edit' ? 'Edit subscription' : 'New subscription'}</DialogTitle>
@@ -154,27 +172,19 @@ export function SubscriptionFormDialog({
               />
             </div>
 
-            {mode === 'create' ? (
-              <RelationPickerField
-                label="Product"
-                entityKind="product"
-                value={form.productId || null}
-                selectionLabel={productLabel}
-                placeholder={productResolving ? 'Resolving product…' : 'Search products…'}
-                icon={<Layers size={12} />}
-                disabled={productResolving}
-                onSearch={searchProducts}
-                onSelect={(id, label) => {
-                  void handleProductSelect(id, label);
-                }}
-                {...productPicker}
-              />
-            ) : (
-              <div className="text-muted-foreground text-sm">
-                Product: {subscription?.product?.name ?? productLabel ?? form.productId}
-                {subscription?.project ? ` · Project ${subscription.project.name}` : null}
-              </div>
-            )}
+            <SubscriptionFormDialogProductField
+              mode={mode}
+              productLocked={productLocked}
+              productId={form.productId}
+              productLabel={productLabel}
+              productResolving={productResolving}
+              subscription={subscription}
+              searchProducts={searchProducts}
+              productPicker={productPicker}
+              onProductSelect={(id, label) => {
+                void handleProductSelect(id, label);
+              }}
+            />
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="sub-type">Type</Label>
@@ -236,7 +246,7 @@ export function SubscriptionFormDialog({
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={loading || !canSubmit || productResolving}>

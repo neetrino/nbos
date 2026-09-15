@@ -2,34 +2,26 @@
 
 import { useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { ExternalLink, RefreshCw, ShoppingCart } from 'lucide-react';
+import { ExternalLink, ShoppingCart } from 'lucide-react';
 import { EmptyState } from '@/components/shared';
 import { buttonVariants } from '@/components/ui/button';
 import { OrderDetailSheet } from '@/features/finance/components/orders/OrderDetailSheet';
-import { SubscriptionDetailSheet } from '@/features/finance/components/subscriptions/SubscriptionDetailSheet';
 import { OrdersBoardView } from '@/features/finance/components/orders/OrdersBoardView';
 import { OrdersTable } from '@/features/finance/components/orders/OrdersTable';
-import {
-  resolveBoardLifecycleScope,
-  type BoardLifecycleScope,
-} from '@/features/shared/board-lifecycle';
+import { resolveProductFinanceBoardScope } from '@/features/projects/utils/resolve-product-finance-scope';
 import type { ExpensesViewMode } from '@/features/finance/components/expenses/ExpensesPageMainPanel';
 import type { ClientServicesViewMode } from '@/features/finance/constants/client-services-view';
-import { FinanceSubscriptionsSection } from '@/features/projects/components/tabs/finance-tab-sections';
 import { ProductFinanceClientServicesPanel } from '@/features/projects/components/tabs/product-finance-client-services-panel';
 import { ProductFinanceExpensesPanel } from '@/features/projects/components/tabs/product-finance-expenses-panel';
 import { ProductFinanceInvoicesPanel } from '@/features/projects/components/tabs/product-finance-invoices-panel';
+import { ProductFinanceSubscriptionsPanel } from '@/features/projects/components/tabs/product-finance-subscriptions-panel';
 import type { ProductFinanceSection } from '@/features/projects/constants/product-finance-section';
 import type { InvoiceViewMode } from '@/features/finance/components/invoices/invoice-page-types';
-import {
-  filterProductFinanceOrders,
-  filterProductFinanceSubscriptions,
-} from '@/features/projects/utils/filter-product-finance-data';
+import { filterProductFinanceOrders } from '@/features/projects/utils/filter-product-finance-data';
 import type { OrderViewMode } from '@/features/finance/components/orders/order-page-types';
 import type { Order } from '@/lib/api/finance';
 import type { ProjectSubscription } from '@/lib/api/projects';
 import { useProductEntityDetailSheet } from '@/features/projects/hooks/use-product-entity-detail-sheet';
-import { buildProjectSubscriptionSeed } from '@/features/projects/utils/project-subscription-detail-seed';
 import { cn } from '@/lib/utils';
 
 interface ProductFinanceSectionContentProps {
@@ -45,7 +37,12 @@ interface ProductFinanceSectionContentProps {
   subscriptions: ProjectSubscription[];
   projectId: string;
   productId: string;
+  productName: string;
   companyId?: string | null;
+  canCreateSubscription: boolean;
+  createSubscriptionOpen: boolean;
+  onCreateSubscriptionOpenChange: (open: boolean) => void;
+  onSubscriptionsRefresh: () => void;
 }
 
 export function ProductFinanceSectionContent({
@@ -61,10 +58,14 @@ export function ProductFinanceSectionContent({
   subscriptions,
   projectId,
   productId,
+  productName,
   companyId,
+  canCreateSubscription,
+  createSubscriptionOpen,
+  onCreateSubscriptionOpenChange,
+  onSubscriptionsRefresh,
 }: ProductFinanceSectionContentProps) {
   const orderSheet = useProductEntityDetailSheet();
-  const subscriptionSheet = useProductEntityDetailSheet();
 
   const handleOpenOrder = useCallback(
     (order: Order) => {
@@ -73,29 +74,14 @@ export function ProductFinanceSectionContent({
     [orderSheet],
   );
 
-  const handleOpenSubscription = useCallback(
-    (subscription: ProjectSubscription) => {
-      subscriptionSheet.openEntity(subscription.id);
-    },
-    [subscriptionSheet],
-  );
-
   const initialOrder = useMemo(
     () => financeOrders.find((order) => order.id === orderSheet.entityId) ?? null,
     [financeOrders, orderSheet.entityId],
   );
 
-  const initialSubscription = useMemo(() => {
-    if (!subscriptionSheet.entityId) return null;
-    const row = subscriptions.find(
-      (subscription) => subscription.id === subscriptionSheet.entityId,
-    );
-    return row ? buildProjectSubscriptionSeed(row, projectId) : null;
-  }, [projectId, subscriptionSheet.entityId, subscriptions]);
-
   if (section === 'orders') {
     const displayOrders = filterProductFinanceOrders(financeOrders, search, filters);
-    const boardScope = resolveBoardLifecycleScope(filters.boardScope) as BoardLifecycleScope;
+    const boardScope = resolveProductFinanceBoardScope(filters.boardScope);
 
     if (displayOrders.length === 0) {
       return (
@@ -150,31 +136,19 @@ export function ProductFinanceSectionContent({
   }
 
   if (section === 'subscriptions') {
-    const rows = filterProductFinanceSubscriptions(subscriptions, search, filters);
-    if (rows.length === 0) {
-      return (
-        <FinanceSectionEmpty
-          icon={RefreshCw}
-          title="No subscriptions"
-          description="No subscriptions match your filters for this project."
-          href="/finance/subscriptions"
-          linkLabel="Open Subscriptions in Finance"
-        />
-      );
-    }
     return (
-      <>
-        <FinanceSubscriptionsSection
-          subscriptions={rows}
-          onOpenSubscription={handleOpenSubscription}
-        />
-        <SubscriptionDetailSheet
-          subscriptionId={subscriptionSheet.entityId}
-          initialSubscription={initialSubscription}
-          open={subscriptionSheet.isOpen}
-          onOpenChange={subscriptionSheet.handleOpenChange}
-        />
-      </>
+      <ProductFinanceSubscriptionsPanel
+        productId={productId}
+        productName={productName}
+        projectId={projectId}
+        subscriptions={subscriptions}
+        search={search}
+        filters={filters}
+        canCreate={canCreateSubscription}
+        createOpen={createSubscriptionOpen}
+        onCreateOpenChange={onCreateSubscriptionOpenChange}
+        onSubscriptionsRefresh={onSubscriptionsRefresh}
+      />
     );
   }
 

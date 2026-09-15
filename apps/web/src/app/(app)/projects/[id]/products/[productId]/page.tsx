@@ -225,6 +225,7 @@ function ProductDetailPageContent() {
             <FinanceTab
               projectId={params.id}
               productId={product.id}
+              productName={product.name}
               project={{
                 id: product.project.id,
                 code: product.project.code,
@@ -234,6 +235,9 @@ function ProductDetailPageContent() {
               productOrderId={product.order?.id ?? null}
               orders={projectData.orders as never[]}
               subscriptions={projectData.subscriptions as never[]}
+              onSubscriptionsRefresh={() => {
+                void fetchProjectData();
+              }}
             />
           ) : (
             <div className="text-muted-foreground py-8 text-center text-sm">Loading...</div>

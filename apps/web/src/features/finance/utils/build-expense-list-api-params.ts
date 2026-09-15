@@ -18,7 +18,7 @@ export function buildExpenseListApiParams(input: {
   sortBy: ExpenseListSortField;
   sortOrder: 'asc' | 'desc';
   /** Main board omits paid + backlog statuses unless a specific status filter is set (NBOS Expense Board). */
-  pageVariant?: 'default' | 'backlog' | 'closed';
+  pageVariant?: 'default' | 'backlog' | 'closed' | 'all';
   /** URL drill-down: all statuses for cards linked to this plan (do not apply default active-board scope). */
   expensePlanIdFromUrl?: string | null;
 }): Omit<ExpenseListParams, 'page' | 'pageSize'> {

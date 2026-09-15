@@ -14,13 +14,10 @@ import {
   EXPENSE_LIST_UI_PAGE_SIZE,
 } from '@/features/finance/utils/build-expense-list-api-params';
 import { expensesApi, type Expense } from '@/lib/api/finance';
-
-function resolveExpensePageVariant(filters: Record<string, string>): ExpensesPageVariant {
-  const scope = filters[EXPENSE_BOARD_SCOPE_FILTER_KEY] ?? 'active';
-  if (scope === 'backlog') return 'backlog';
-  if (scope === 'closed') return 'closed';
-  return 'default';
-}
+import {
+  productFinanceExpenseListPageVariant,
+  resolveProductFinanceExpenseScope,
+} from '@/features/projects/utils/resolve-product-finance-scope';
 
 export function useProductFinanceExpenses(
   productId: string,
@@ -31,9 +28,16 @@ export function useProductFinanceExpenses(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const pageVariant = useMemo(() => resolveExpensePageVariant(filters), [filters]);
-  const kanbanScope: ExpensesKanbanScope = pageVariant === 'closed' ? 'closed' : 'active';
-  const fromBacklog = pageVariant === 'backlog';
+  const expenseScope = useMemo(
+    () => resolveProductFinanceExpenseScope(filters[EXPENSE_BOARD_SCOPE_FILTER_KEY]),
+    [filters],
+  );
+  const listPageVariant = productFinanceExpenseListPageVariant(expenseScope);
+  const pageVariant: ExpensesPageVariant =
+    expenseScope === 'closed' ? 'closed' : expenseScope === 'backlog' ? 'backlog' : 'default';
+  const kanbanScope: ExpensesKanbanScope = expenseScope === 'closed' ? 'closed' : 'active';
+  const fromBacklog = expenseScope === 'backlog';
+  const fromAllHistory = expenseScope === 'all';
 
   const listApiParams = useMemo(
     () =>
@@ -44,9 +48,9 @@ export function useProductFinanceExpenses(
         effectiveProductId: productId,
         sortBy: EXPENSE_LIST_DEFAULT_SORT_BY,
         sortOrder: EXPENSE_LIST_DEFAULT_SORT_ORDER,
-        pageVariant,
+        pageVariant: listPageVariant,
       }),
-    [search, filters, productId, pageVariant],
+    [search, filters, productId, listPageVariant],
   );
 
   const fetchExpenses = useCallback(async () => {
@@ -79,5 +83,6 @@ export function useProductFinanceExpenses(
     pageVariant,
     kanbanScope,
     fromBacklog,
+    fromAllHistory,
   };
 }

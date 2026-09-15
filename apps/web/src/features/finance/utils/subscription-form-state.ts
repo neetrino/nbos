@@ -39,6 +39,18 @@ export const EMPTY_SUBSCRIPTION_FORM: SubscriptionFormState = {
   partnerId: '',
 };
 
+/** Create-mode draft, optionally locked to a product (Product Finance hub). */
+export function buildCreateSubscriptionFormDefaults(options?: {
+  productId?: string | null;
+  projectId?: string | null;
+}): SubscriptionFormState {
+  return {
+    ...EMPTY_SUBSCRIPTION_FORM,
+    productId: options?.productId?.trim() ?? '',
+    projectId: options?.projectId?.trim() ?? '',
+  };
+}
+
 /** Label for the human-entered amount field based on selected billing period. */
 export function getSubscriptionPeriodAmountLabel(billingFrequency: string): string {
   if (billingFrequency === 'YEARLY') return 'Amount / year';
