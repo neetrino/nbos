@@ -176,7 +176,7 @@ export function CreateMeetingCalendarDialog({
               variant="controlled"
               label={t('meeting.fields.duration')}
               type="text"
-              className="w-16 shrink-0"
+              className="w-24 shrink-0 [&_input]:text-center"
               value={durationInput}
               onValueChange={(raw) => {
                 const next = raw.replace(/\D/g, '').slice(0, 1);
