@@ -1,19 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { NbosDatePicker } from '@/components/shared/date-picker';
-import { Label } from '@/components/ui/label';
+import { CreateFormDialog, FormFieldRow, InlineField } from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 
@@ -36,94 +27,111 @@ export function CreateWorkSpaceSprintDialog({
   const [endDate, setEndDate] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const handleCreate = async () => {
-    if (!name.trim()) return;
-    setSaving(true);
-    try {
-      const sprint = await workSpaceSprintsApi.create(workspaceId, {
-        name: name.trim(),
-        goal: goal.trim() || undefined,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined,
-      });
-      onCreated(sprint);
-      setName('');
-      setGoal('');
-      setStartDate('');
-      setEndDate('');
-      onOpenChange(false);
-      toast.success(t('scrum.created'));
-    } catch (caught) {
-      toast.error(getApiErrorMessage(caught, t('scrum.createFailed')));
-    } finally {
-      setSaving(false);
-    }
-  };
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t('scrum.createTitle')}</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-3 py-2">
-          <div className="grid gap-2">
-            <Label htmlFor="sprint-name">{t('scrum.name')}</Label>
-            <Input
-              id="sprint-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t('scrum.namePlaceholder')}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="sprint-goal">{t('scrum.goal')}</Label>
-            <Input
-              id="sprint-goal"
-              value={goal}
-              onChange={(e) => setGoal(e.target.value)}
-              placeholder={t('scrum.goalPlaceholder')}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2">
-              <Label htmlFor="sprint-start">{t('scrum.startDate')}</Label>
-              <NbosDatePicker
-                id="sprint-start"
-                value={startDate}
-                onChange={setStartDate}
-                aria-label={t('scrum.startDateAria')}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="sprint-end">{t('scrum.endDate')}</Label>
-              <NbosDatePicker
-                id="sprint-end"
-                value={endDate}
-                onChange={setEndDate}
-                aria-label={t('scrum.endDateAria')}
-              />
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={saving}
-          >
-            {tCommon('cancel')}
-          </Button>
-          <Button
-            type="button"
-            onClick={() => void handleCreate()}
-            disabled={saving || !name.trim()}
-          >
-            {saving ? tCommon('creating') : tCommon('create')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('scrum.createTitle')}
+      submitting={saving}
+      canSubmit={Boolean(name.trim()) && !saving}
+      submitLabel={tCommon('create')}
+      submittingLabel={tCommon('creating')}
+      cancelLabel={tCommon('cancel')}
+      onSubmit={(event) =>
+        void submitSprint({
+          event,
+          workspaceId,
+          name,
+          goal,
+          startDate,
+          endDate,
+          setSaving,
+          setName,
+          setGoal,
+          setStartDate,
+          setEndDate,
+          onCreated,
+          onOpenChange,
+          created: t('scrum.created'),
+          failed: t('scrum.createFailed'),
+        })
+      }
+    >
+      <InlineField
+        variant="controlled"
+        label={t('scrum.name')}
+        type="text"
+        value={name}
+        placeholder={t('scrum.namePlaceholder')}
+        onValueChange={setName}
+      />
+      <InlineField
+        variant="controlled"
+        label={t('scrum.goal')}
+        type="text"
+        value={goal}
+        placeholder={t('scrum.goalPlaceholder')}
+        onValueChange={setGoal}
+      />
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
+          label={t('scrum.startDate')}
+          type="date"
+          value={startDate}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={setStartDate}
+        />
+        <InlineField
+          variant="controlled"
+          label={t('scrum.endDate')}
+          type="date"
+          value={endDate}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={setEndDate}
+        />
+      </FormFieldRow>
+    </CreateFormDialog>
   );
+}
+
+async function submitSprint(options: {
+  event: FormEvent;
+  workspaceId: string;
+  name: string;
+  goal: string;
+  startDate: string;
+  endDate: string;
+  setSaving: (saving: boolean) => void;
+  setName: (name: string) => void;
+  setGoal: (goal: string) => void;
+  setStartDate: (value: string) => void;
+  setEndDate: (value: string) => void;
+  onCreated: (sprint: WorkSpaceSprint) => void;
+  onOpenChange: (open: boolean) => void;
+  created: string;
+  failed: string;
+}): Promise<void> {
+  options.event.preventDefault();
+  if (!options.name.trim()) return;
+  options.setSaving(true);
+  try {
+    const sprint = await workSpaceSprintsApi.create(options.workspaceId, {
+      name: options.name.trim(),
+      goal: options.goal.trim() || undefined,
+      startDate: options.startDate || undefined,
+      endDate: options.endDate || undefined,
+    });
+    options.onCreated(sprint);
+    options.setName('');
+    options.setGoal('');
+    options.setStartDate('');
+    options.setEndDate('');
+    options.onOpenChange(false);
+    toast.success(options.created);
+  } catch (caught) {
+    toast.error(getApiErrorMessage(caught, options.failed));
+  } finally {
+    options.setSaving(false);
+  }
 }

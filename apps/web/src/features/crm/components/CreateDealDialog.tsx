@@ -1,17 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { CreateFormDialog, InlineField } from '@/components/shared';
 import { dealsApi, type Deal } from '@/lib/api/deals';
 import { toast } from 'sonner';
 import { firstReleaseFormErrorCopy, localizeCaughtApiError } from '@/i18n/localize-api-error';
@@ -28,7 +19,14 @@ interface CreateDealDialogProps {
   forceNestedBackdrop?: boolean;
 }
 
-export function CreateDealDialog({
+export function CreateDealDialog(props: CreateDealDialogProps) {
+  const sessionKey = props.open
+    ? `${props.prefill?.leadId ?? ''}:${props.prefill?.contactId ?? ''}`
+    : 'closed';
+  return <CreateDealDialogSession key={sessionKey} {...props} />;
+}
+
+function CreateDealDialogSession({
   open,
   onOpenChange,
   onCreated,
@@ -43,11 +41,6 @@ export function CreateDealDialog({
   const canSubmit = name.trim().length > 0;
   const title = prefill?.leadId ? t('createDeal.convertTitle') : t('createDeal.title');
 
-  useEffect(() => {
-    if (!open) return;
-    setName('');
-  }, [open, prefill?.contactId, prefill?.leadId]);
-
   const createDeal = async (openFull: boolean) => {
     if (!canSubmit) return;
     setLoading(true);
@@ -59,7 +52,6 @@ export function CreateDealDialog({
       });
       await onCreated(deal, { openFull });
       onOpenChange(false);
-      setName('');
     } catch (err) {
       toast.error(
         localizeCaughtApiError(
@@ -79,80 +71,40 @@ export function CreateDealDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]" forceNestedBackdrop={forceNestedBackdrop}>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        {prefill?.contactName ? (
-          <p className="text-muted-foreground text-sm">
-            {t('createDeal.leadPrefix')}{' '}
-            <span className="text-foreground font-medium">{prefill.contactName}</span>
-          </p>
-        ) : null}
-        <DealCreateForm
-          name={name}
-          loading={loading}
-          canSubmit={canSubmit}
-          onNameChange={setName}
-          onCancel={() => onOpenChange(false)}
-          onCreate={createDeal}
-        />
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function DealCreateForm({
-  name,
-  loading,
-  canSubmit,
-  onNameChange,
-  onCancel,
-  onCreate,
-}: {
-  name: string;
-  loading: boolean;
-  canSubmit: boolean;
-  onNameChange: (name: string) => void;
-  onCancel: () => void;
-  onCreate: (openFull: boolean) => Promise<void>;
-}) {
-  const t = useTranslations('crm');
-  const tCommon = useTranslations('common');
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        void onCreate(false);
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      description={
+        prefill?.contactName ? (
+          <>
+            {t('createDeal.leadPrefix')} {prefill.contactName}
+          </>
+        ) : undefined
+      }
+      submitting={loading}
+      canSubmit={canSubmit}
+      submitLabel={t('createDeal.createDeal')}
+      submittingLabel={tCommon('creating')}
+      cancelLabel={tCommon('cancel')}
+      forceNestedBackdrop={forceNestedBackdrop}
+      secondaryAction={{
+        label: t('createDeal.full'),
+        onClick: () => void createDeal(true),
+        disabled: !canSubmit,
       }}
-      className="space-y-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void createDeal(false);
+      }}
     >
-      <div className="space-y-2.5">
-        <Label htmlFor="create-deal-title">{t('createDeal.titleLabel')}</Label>
-        <Input
-          id="create-deal-title"
-          value={name}
-          onChange={(e) => onNameChange(e.target.value)}
-          autoFocus
-        />
-      </div>
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          {tCommon('cancel')}
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={loading || !canSubmit}
-          onClick={() => void onCreate(true)}
-        >
-          {t('createDeal.full')}
-        </Button>
-        <Button type="submit" disabled={loading || !canSubmit}>
-          {loading ? tCommon('creating') : t('createDeal.createDeal')}
-        </Button>
-      </DialogFooter>
-    </form>
+      <InlineField
+        variant="controlled"
+        label={t('createDeal.titleLabel')}
+        type="text"
+        value={name}
+        onValueChange={setName}
+      />
+    </CreateFormDialog>
   );
 }

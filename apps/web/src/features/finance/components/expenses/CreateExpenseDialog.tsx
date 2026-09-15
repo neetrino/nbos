@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CreateFormDialog } from '@/components/shared';
 import { firstReleaseFormErrorCopy, localizeCaughtApiError } from '@/i18n/localize-api-error';
 import { expensesApi, type Expense } from '@/lib/api/finance';
 import { getNextBusinessDay } from '@/lib/date/business-days';
@@ -153,32 +153,34 @@ export function CreateExpenseDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card sm:max-w-[480px]" forceNestedBackdrop={forceNestedBackdrop}>
-        <DialogHeader>
-          <DialogTitle>{t('expense.title')}</DialogTitle>
-        </DialogHeader>
-
-        <CreateExpenseDialogForm
-          form={form}
-          setForm={setForm}
-          formError={formError}
-          loading={loading}
-          canSubmit={canSubmit}
-          onSubmit={handleSubmit}
-          onCancel={() => onOpenChange(false)}
-          planField={
-            pickerEnabled ? (
-              <CreateExpenseDialogPlanField
-                plans={plans}
-                value={form.expensePlanId}
-                disabled={loading}
-                onChange={handlePlanChange}
-              />
-            ) : null
-          }
-        />
-      </DialogContent>
-    </Dialog>
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('expense.title')}
+      error={formError}
+      submitting={loading}
+      canSubmit={canSubmit}
+      submitLabel={tCommon('create')}
+      submittingLabel={tCommon('creating')}
+      cancelLabel={tCommon('cancel')}
+      forceNestedBackdrop={forceNestedBackdrop}
+      onSubmit={(event) => void handleSubmit(event)}
+    >
+      <CreateExpenseDialogForm
+        form={form}
+        setForm={setForm}
+        loading={loading}
+        planField={
+          pickerEnabled ? (
+            <CreateExpenseDialogPlanField
+              plans={plans}
+              value={form.expensePlanId}
+              disabled={loading}
+              onChange={handlePlanChange}
+            />
+          ) : null
+        }
+      />
+    </CreateFormDialog>
   );
 }

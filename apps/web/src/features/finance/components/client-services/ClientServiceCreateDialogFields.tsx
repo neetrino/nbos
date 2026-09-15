@@ -1,27 +1,21 @@
 'use client';
 
 import { CalendarDays } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { DetailSheetFieldSegmented } from '@/components/shared';
+import { DetailSheetFieldSegmented, FormFieldRow, InlineField } from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import {
   CLIENT_SERVICE_BILLING_MODEL_SEGMENTED_OPTIONS,
-  CLIENT_SERVICE_FREQUENCY_SEGMENTED_OPTIONS,
+  CLIENT_SERVICE_FREQUENCIES,
   CLIENT_SERVICE_TYPES,
 } from '@/features/finance/constants/client-services';
+import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
 import {
   CLIENT_SERVICE_BILLING_SHORT_MESSAGE_KEYS,
-  CLIENT_SERVICE_FREQUENCY_SHORT_MESSAGE_KEYS,
+  CLIENT_SERVICE_FREQUENCY_MESSAGE_KEYS,
   CLIENT_SERVICE_TYPE_MESSAGE_KEYS,
   localizeOptionLabels,
   useClientServicesT,
 } from './client-service-message-keys';
-import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
-import {
-  ClientServiceDateInput,
-  ClientServiceMoneyInput,
-  ClientServiceSelectField,
-} from './client-service-form-controls';
 import { ClientServiceCredentialField } from './ClientServiceCredentialField';
 import { ClientServiceProductField } from './ClientServiceProductField';
 import { ClientServiceProviderField } from './ClientServiceProviderField';
@@ -55,8 +49,9 @@ export function ClientServiceCreateDialogFields({
     form.type in CLIENT_SERVICE_TYPE_MESSAGE_KEYS
       ? t(namePlaceholderKey as never)
       : t('create.namePlaceholder.default');
+
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <ClientServiceProductField
         productId={form.productId}
         productLabel={productLabel}
@@ -65,25 +60,15 @@ export function ClientServiceCreateDialogFields({
         required
         onSelect={onProductSelect}
       />
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="client-service-name">{t('create.name')}</Label>
-        <Input
-          id="client-service-name"
-          value={form.name}
-          placeholder={namePlaceholder}
-          autoComplete="off"
-          onChange={(event) => onFormChange({ name: event.target.value })}
-        />
-      </div>
-
-      <ClientServiceSelectField
-        label={t('create.type')}
-        value={form.type}
-        options={localizeOptionLabels(CLIENT_SERVICE_TYPES, t, CLIENT_SERVICE_TYPE_MESSAGE_KEYS)}
-        onChange={(type) => type && onFormChange({ type })}
+      <InlineField
+        variant="controlled"
+        label={t('create.name')}
+        type="text"
+        value={form.name}
+        placeholder={namePlaceholder}
+        onValueChange={(name) => onFormChange({ name })}
       />
-
+      <TypeAndFrequencyRow form={form} onFormChange={onFormChange} />
       <DetailSheetFieldSegmented
         label={t('create.billing')}
         value={form.billingModel}
@@ -94,50 +79,110 @@ export function ClientServiceCreateDialogFields({
         )}
         onValueChange={(billingModel) => onFormChange({ billingModel })}
       />
+      <CostAndRenewalRows
+        form={form}
+        credentialLabel={credentialLabel}
+        onFormChange={onFormChange}
+        onCredentialSelect={onCredentialSelect}
+        onCredentialClear={onCredentialClear}
+      />
+    </>
+  );
+}
 
-      <DetailSheetFieldSegmented
+function TypeAndFrequencyRow({
+  form,
+  onFormChange,
+}: {
+  form: ClientServiceFormState;
+  onFormChange: (partial: Partial<ClientServiceFormState>) => void;
+}) {
+  const t = useClientServicesT();
+  return (
+    <FormFieldRow>
+      <InlineField
+        variant="controlled"
+        label={t('create.type')}
+        type="select"
+        value={form.type}
+        options={localizeOptionLabels(CLIENT_SERVICE_TYPES, t, CLIENT_SERVICE_TYPE_MESSAGE_KEYS)}
+        className={FORM_FIELD_CELL_CLASS}
+        onValueChange={(type) => type && onFormChange({ type })}
+      />
+      <InlineField
+        variant="controlled"
         label={t('create.frequency')}
-        icon={<CalendarDays size={12} />}
+        type="select"
         value={form.frequency}
         options={localizeOptionLabels(
-          CLIENT_SERVICE_FREQUENCY_SEGMENTED_OPTIONS,
+          CLIENT_SERVICE_FREQUENCIES,
           t,
-          CLIENT_SERVICE_FREQUENCY_SHORT_MESSAGE_KEYS,
+          CLIENT_SERVICE_FREQUENCY_MESSAGE_KEYS,
         )}
-        onValueChange={(frequency) => onFormChange({ frequency })}
+        icon={<CalendarDays size={12} />}
+        className={FORM_FIELD_CELL_CLASS}
+        onValueChange={(frequency) => frequency && onFormChange({ frequency })}
       />
+    </FormFieldRow>
+  );
+}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <ClientServiceMoneyInput
+function CostAndRenewalRows({
+  form,
+  credentialLabel,
+  onFormChange,
+  onCredentialSelect,
+  onCredentialClear,
+}: {
+  form: ClientServiceFormState;
+  credentialLabel: string | null;
+  onFormChange: (partial: Partial<ClientServiceFormState>) => void;
+  onCredentialSelect: (credentialId: string, label: string) => void;
+  onCredentialClear: () => void;
+}) {
+  const t = useClientServicesT();
+  return (
+    <>
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
           label={t('create.ourCost')}
+          type="money"
           value={form.ourCost}
-          onChange={(ourCost) => onFormChange({ ourCost })}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={(ourCost) => onFormChange({ ourCost })}
         />
-        <ClientServiceMoneyInput
+        <InlineField
+          variant="controlled"
           label={t('create.clientCharge')}
+          type="money"
           value={form.clientCharge}
-          onChange={(clientCharge) => onFormChange({ clientCharge })}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={(clientCharge) => onFormChange({ clientCharge })}
         />
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <ClientServiceDateInput
+      </FormFieldRow>
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
           label={t('create.renewalDue')}
+          type="date"
           value={form.renewalDate}
-          onChange={(renewalDate) => onFormChange({ renewalDate })}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={(renewalDate) => onFormChange({ renewalDate })}
         />
-        <ClientServiceProviderField
-          providerName={form.provider}
-          onProviderChange={(provider) => onFormChange({ provider })}
-        />
-      </div>
-
+        <div className={FORM_FIELD_CELL_CLASS}>
+          <ClientServiceProviderField
+            providerName={form.provider}
+            onProviderChange={(provider) => onFormChange({ provider })}
+          />
+        </div>
+      </FormFieldRow>
       <ClientServiceCredentialField
         credentialId={form.providerAccountId}
         credentialLabel={credentialLabel}
         onSelect={onCredentialSelect}
         onClear={onCredentialClear}
       />
-    </div>
+    </>
   );
 }

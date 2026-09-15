@@ -2,8 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import type { CalendarMeetingConflictPayload } from '@/lib/api/calendar';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { InlineField } from '@/components/shared';
 
 export interface MeetingCreateConflictsProps {
   conflicts: CalendarMeetingConflictPayload[];
@@ -28,17 +27,14 @@ export function MeetingCreateConflicts({
           </li>
         ))}
       </ul>
-      <div>
-        <Label htmlFor="cal-meet-override">{t('meeting.conflicts.overrideReason')}</Label>
-        <Textarea
-          id="cal-meet-override"
-          className="mt-1.5"
-          rows={2}
-          value={overrideReason}
-          onChange={(e) => onOverrideReasonChange(e.target.value)}
-          placeholder={t('meeting.conflicts.overridePlaceholder')}
-        />
-      </div>
+      <InlineField
+        variant="controlled"
+        label={t('meeting.conflicts.overrideReason')}
+        type="textarea"
+        value={overrideReason}
+        placeholder={t('meeting.conflicts.overridePlaceholder')}
+        onValueChange={onOverrideReasonChange}
+      />
     </div>
   );
 }

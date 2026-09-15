@@ -1,27 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { FolderKanban, Layers } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { RelationPickerField } from '@/components/shared';
+  CreateFormDialog,
+  FormFieldRow,
+  InlineField,
+  RelationPickerField,
+} from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import {
   useProductRelationSearch,
   useProjectRelationSearch,
@@ -81,16 +69,18 @@ export function SupportCreateTicketDialog({
   const tCommon = useTranslations('common');
   const [projectLabel, setProjectLabel] = useState('');
   const [productLabel, setProductLabel] = useState('');
-  const resolvedTitle = dialogTitle ?? t('create.title');
-  const resolvedSubmit = submitLabel ?? tCommon('create');
-
   const searchProjects = useProjectRelationSearch();
   const searchProducts = useProductRelationSearch(projectId || null);
   const projectPicker = useRelationPickerActions('project');
   const productPicker = useRelationPickerActions('product');
-
-  const projectSelectionLabel = projectId ? projectLabel || null : null;
-  const productSelectionLabel = productId ? productLabel || null : null;
+  const categoryOptions = TICKET_CATEGORIES.map((item) => ({
+    value: item.value,
+    label: translateSupportCategory(t, item.value, item.label),
+  }));
+  const priorityOptions = TICKET_PRIORITIES.map((item) => ({
+    value: item.value,
+    label: translateSupportPriority(t, item.value, item.label),
+  }));
   const canSubmit = title.trim().length > 0 && !submitting;
 
   const clearProjectSelection = () => {
@@ -101,123 +91,95 @@ export function SupportCreateTicketDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" forceNestedBackdrop={forceNestedBackdrop}>
-        <DialogHeader>
-          <DialogTitle>{resolvedTitle}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="support-new-title">{t('create.titleLabel')}</Label>
-            <Input
-              id="support-new-title"
-              value={title}
-              onChange={(event) => onTitleChange(event.target.value)}
-              placeholder={t('create.titlePlaceholder')}
-              autoFocus
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="support-new-category">{t('filters.category')}</Label>
-              <Select
-                value={category}
-                onValueChange={(v) => {
-                  if (v) onCategoryChange(v);
-                }}
-              >
-                <SelectTrigger id="support-new-category" className="w-full">
-                  <SelectValue placeholder={t('filters.category')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {TICKET_CATEGORIES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {translateSupportCategory(t, item.value, item.label)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="support-new-priority">{t('filters.priority')}</Label>
-              <Select
-                value={priority}
-                onValueChange={(v) => {
-                  if (v) onPriorityChange(v);
-                }}
-              >
-                <SelectTrigger id="support-new-priority" className="w-full">
-                  <SelectValue placeholder={t('filters.priority')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {TICKET_PRIORITIES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {translateSupportPriority(t, item.value, item.label)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <RelationPickerField
-            label={t('create.project')}
-            entityKind="project"
-            value={projectId || null}
-            selectionLabel={projectSelectionLabel}
-            placeholder={t('create.projectPlaceholder')}
-            icon={<FolderKanban size={12} />}
-            onSearch={searchProjects}
-            onSelect={(id, label) => {
-              if (!id) {
-                clearProjectSelection();
-                return;
-              }
-              onProjectIdChange(id);
-              setProjectLabel(label);
-            }}
-            onClear={clearProjectSelection}
-            {...projectPicker}
-          />
-          {projectId ? (
-            <RelationPickerField
-              label={t('create.product')}
-              entityKind="product"
-              value={productId || null}
-              selectionLabel={productSelectionLabel}
-              placeholder={t('create.productPlaceholder')}
-              icon={<Layers size={12} />}
-              onSearch={searchProducts}
-              onSelect={(id, label) => {
-                onProductIdChange(id);
-                setProductLabel(label);
-              }}
-              onClear={() => {
-                onProductIdChange('');
-                setProductLabel('');
-              }}
-              {...productPicker}
-            />
-          ) : null}
-          <div className="space-y-1.5">
-            <Label htmlFor="support-new-desc">{t('create.description')}</Label>
-            <Textarea
-              id="support-new-desc"
-              value={description}
-              onChange={(event) => onDescriptionChange(event.target.value)}
-              rows={3}
-              className="resize-y"
-            />
-          </div>
-        </div>
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            {tCommon('cancel')}
-          </Button>
-          <Button type="button" disabled={!canSubmit} onClick={() => void onSubmit()}>
-            {submitting ? tCommon('creating') : resolvedSubmit}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={dialogTitle ?? t('create.title')}
+      submitting={submitting}
+      canSubmit={canSubmit}
+      submitLabel={submitLabel ?? tCommon('create')}
+      submittingLabel={tCommon('creating')}
+      cancelLabel={tCommon('cancel')}
+      forceNestedBackdrop={forceNestedBackdrop}
+      onSubmit={(event: FormEvent) => {
+        event.preventDefault();
+        if (canSubmit) onSubmit();
+      }}
+    >
+      <InlineField
+        variant="controlled"
+        label={t('create.titleLabel')}
+        type="text"
+        value={title}
+        placeholder={t('create.titlePlaceholder')}
+        onValueChange={onTitleChange}
+      />
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
+          label={t('filters.category')}
+          type="select"
+          value={category}
+          options={categoryOptions}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={(value) => value && onCategoryChange(value)}
+        />
+        <InlineField
+          variant="controlled"
+          label={t('filters.priority')}
+          type="select"
+          value={priority}
+          options={priorityOptions}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={(value) => value && onPriorityChange(value)}
+        />
+      </FormFieldRow>
+      <RelationPickerField
+        label={t('create.project')}
+        entityKind="project"
+        value={projectId || null}
+        selectionLabel={projectId ? projectLabel || null : null}
+        placeholder={t('create.projectPlaceholder')}
+        icon={<FolderKanban size={12} />}
+        onSearch={searchProjects}
+        onSelect={(id, label) => {
+          if (!id) {
+            clearProjectSelection();
+            return;
+          }
+          onProjectIdChange(id);
+          setProjectLabel(label);
+        }}
+        onClear={clearProjectSelection}
+        {...projectPicker}
+      />
+      {projectId ? (
+        <RelationPickerField
+          label={t('create.product')}
+          entityKind="product"
+          value={productId || null}
+          selectionLabel={productId ? productLabel || null : null}
+          placeholder={t('create.productPlaceholder')}
+          icon={<Layers size={12} />}
+          onSearch={searchProducts}
+          onSelect={(id, label) => {
+            onProductIdChange(id);
+            setProductLabel(label);
+          }}
+          onClear={() => {
+            onProductIdChange('');
+            setProductLabel('');
+          }}
+          {...productPicker}
+        />
+      ) : null}
+      <InlineField
+        variant="controlled"
+        label={t('create.description')}
+        type="textarea"
+        value={description}
+        onValueChange={onDescriptionChange}
+      />
+    </CreateFormDialog>
   );
 }

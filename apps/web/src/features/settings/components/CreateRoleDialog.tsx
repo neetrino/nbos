@@ -1,15 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { CreateFormDialog, InlineField } from '@/components/shared';
 
 export function CreateRoleDialog(props: {
   open: boolean;
@@ -24,49 +15,43 @@ export function CreateRoleDialog(props: {
   onCreate: () => void;
 }) {
   return (
-    <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create Role</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="create-name">Name</Label>
-            <Input
-              id="create-name"
-              value={props.name}
-              onChange={(event) => props.onNameChange(event.target.value)}
-              placeholder="e.g. Custom Manager"
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="create-slug">Slug</Label>
-            <Input
-              id="create-slug"
-              value={props.slug}
-              onChange={(event) => props.onSlugChange(event.target.value)}
-              placeholder="e.g. custom-manager"
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="create-level">Level</Label>
-            <Input
-              id="create-level"
-              type="number"
-              value={props.level}
-              onChange={(event) => props.onLevelChange(parseInt(event.target.value, 10) || 0)}
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => props.onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={props.onCreate} disabled={props.saving}>
-            {props.saving ? 'Creating...' : 'Create'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <CreateFormDialog
+      open={props.open}
+      onOpenChange={props.onOpenChange}
+      title="Create Role"
+      submitting={props.saving}
+      canSubmit={Boolean(props.name.trim()) && !props.saving}
+      submitLabel="Create"
+      submittingLabel="Creating..."
+      cancelLabel="Cancel"
+      onSubmit={(event) => {
+        event.preventDefault();
+        props.onCreate();
+      }}
+    >
+      <InlineField
+        variant="controlled"
+        label="Name"
+        type="text"
+        value={props.name}
+        placeholder="e.g. Custom Manager"
+        onValueChange={props.onNameChange}
+      />
+      <InlineField
+        variant="controlled"
+        label="Slug"
+        type="text"
+        value={props.slug}
+        placeholder="e.g. custom-manager"
+        onValueChange={props.onSlugChange}
+      />
+      <InlineField
+        variant="controlled"
+        label="Level"
+        type="number"
+        value={String(props.level)}
+        onValueChange={(value) => props.onLevelChange(parseInt(value, 10) || 0)}
+      />
+    </CreateFormDialog>
   );
 }

@@ -1,15 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState, type FormEvent } from 'react';
+import { CreateFormDialog, CreateFormSwitchField } from '@/components/shared';
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+  DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS,
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { NbosMonthPicker } from '@/components/shared/date-picker';
 import { useTranslations } from 'next-intl';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -22,7 +19,12 @@ export interface PayrollRunsCreateRunDialogProps {
   onCreated: () => void | Promise<void>;
 }
 
-export function PayrollRunsCreateRunDialog({
+export function PayrollRunsCreateRunDialog(props: PayrollRunsCreateRunDialogProps) {
+  const sessionKey = props.open ? props.defaultMonth : 'closed';
+  return <PayrollRunsCreateRunDialogSession key={sessionKey} {...props} />;
+}
+
+function PayrollRunsCreateRunDialogSession({
   open,
   onOpenChange,
   defaultMonth,
@@ -35,63 +37,70 @@ export function PayrollRunsCreateRunDialog({
   const [createError, setCreateError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    if (!open) return;
-    setMonth(defaultMonth);
-    setSeedLines(true);
-    setCreateError(null);
-  }, [open, defaultMonth]);
-
-  const submitCreate = useCallback(async () => {
-    setCreating(true);
-    setCreateError(null);
-    try {
-      await payrollRunsApi.create({ payrollMonth: month, seedLines });
-      onOpenChange(false);
-      await onCreated();
-    } catch (caught) {
-      setCreateError(getApiErrorMessage(caught, t('create.createError')));
-    } finally {
-      setCreating(false);
-    }
-  }, [month, seedLines, onCreated, onOpenChange, t]);
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t('create.title')}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label htmlFor="payroll-month">{t('create.monthLabel')}</Label>
-            <NbosMonthPicker
-              id="payroll-month"
-              value={month}
-              onChange={setMonth}
-              aria-label={t('create.monthAria')}
-            />
-          </div>
-          <label className="flex cursor-pointer items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={seedLines}
-              onChange={(e) => setSeedLines(e.target.checked)}
-              className="border-input size-4 rounded border"
-            />
-            {t('create.seedLines')}
-          </label>
-          {createError ? <p className="text-destructive text-sm">{createError}</p> : null}
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('create.title')}
+      error={createError}
+      submitting={creating}
+      canSubmit={Boolean(month) && !creating}
+      submitLabel={tCommon('create')}
+      submittingLabel={tCommon('creating')}
+      cancelLabel={tCommon('cancel')}
+      onSubmit={(event) =>
+        void submitPayrollRun({
+          event,
+          month,
+          seedLines,
+          setCreating,
+          setCreateError,
+          onOpenChange,
+          onCreated,
+          fallbackError: t('create.createError'),
+        })
+      }
+    >
+      <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
+        <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{t('create.monthLabel')}</span>
+        <div className={DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS}>
+          <NbosMonthPicker
+            id="payroll-month"
+            value={month}
+            onChange={setMonth}
+            aria-label={t('create.monthAria')}
+          />
         </div>
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            {tCommon('cancel')}
-          </Button>
-          <Button type="button" disabled={creating} onClick={() => void submitCreate()}>
-            {creating ? tCommon('creating') : tCommon('create')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+      <CreateFormSwitchField
+        label={t('create.seedLines')}
+        checked={seedLines}
+        onCheckedChange={setSeedLines}
+      />
+    </CreateFormDialog>
   );
+}
+
+async function submitPayrollRun(options: {
+  event: FormEvent;
+  month: string;
+  seedLines: boolean;
+  setCreating: (creating: boolean) => void;
+  setCreateError: (error: string | null) => void;
+  onOpenChange: (open: boolean) => void;
+  onCreated: () => void | Promise<void>;
+  fallbackError: string;
+}): Promise<void> {
+  options.event.preventDefault();
+  options.setCreating(true);
+  options.setCreateError(null);
+  try {
+    await payrollRunsApi.create({ payrollMonth: options.month, seedLines: options.seedLines });
+    options.onOpenChange(false);
+    await options.onCreated();
+  } catch (caught) {
+    options.setCreateError(getApiErrorMessage(caught, options.fallbackError));
+  } finally {
+    options.setCreating(false);
+  }
 }

@@ -1,19 +1,8 @@
 'use client';
 
-import type { FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { NbosDatePicker } from '@/components/shared/date-picker';
-import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
-import { Label } from '@/components/ui/label';
+import { CreateFormDialog, FormFieldRow, InlineField } from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
@@ -34,7 +23,6 @@ export function CreateInvoiceDialog(props: CreateInvoiceDialogProps) {
   const state = useCreateInvoiceDialogState(props);
   const subscriptionBlocked = computeSubscriptionBlocked(props.subscriptionId, state);
   const canSubmit = canSubmitCreateInvoice(state.form) && !state.loading && !subscriptionBlocked;
-
   const description = dialogDescription(
     t,
     props.order,
@@ -44,24 +32,28 @@ export function CreateInvoiceDialog(props: CreateInvoiceDialogProps) {
   );
 
   return (
-    <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent className="sm:max-w-[420px]" forceNestedBackdrop={props.forceNestedBackdrop}>
-        <DialogHeader>
-          <DialogTitle>
-            {dialogTitle(t, props.order, state.subscriptionDetail, props.clientServiceContext)}
-          </DialogTitle>
-          {description ? <DialogDescription>{description}</DialogDescription> : null}
-        </DialogHeader>
-        <InvoiceForm
-          state={state}
-          order={props.order}
-          clientServiceContext={props.clientServiceContext}
-          canSubmit={canSubmit}
-          t={t}
-          tCommon={tCommon}
-        />
-      </DialogContent>
-    </Dialog>
+    <CreateFormDialog
+      open={props.open}
+      onOpenChange={props.onOpenChange}
+      title={dialogTitle(t, props.order, state.subscriptionDetail, props.clientServiceContext)}
+      description={description}
+      error={state.error}
+      submitting={state.loading}
+      canSubmit={canSubmit}
+      submitLabel={t('create.submit')}
+      submittingLabel={tCommon('creating')}
+      cancelLabel={tCommon('cancel')}
+      forceNestedBackdrop={props.forceNestedBackdrop}
+      onSubmit={(event) => void state.handleSubmit(event)}
+    >
+      <InvoiceContextSummary
+        state={state}
+        order={props.order}
+        clientServiceContext={props.clientServiceContext}
+        t={t}
+      />
+      <InvoiceAmountFields form={state.form} setForm={state.setForm} t={t} />
+    </CreateFormDialog>
   );
 }
 
@@ -110,51 +102,6 @@ function computeSubscriptionBlocked(
   return state.subscriptionLoading || state.loadError !== null || !state.subscriptionDetail;
 }
 
-function InvoiceForm({
-  state,
-  order,
-  clientServiceContext,
-  canSubmit,
-  t,
-  tCommon,
-}: {
-  state: CreateInvoiceDialogState;
-  order?: Order | null;
-  clientServiceContext?: { name: string; projectLabel: string };
-  canSubmit: boolean;
-  t: InvoiceCreateTranslator;
-  tCommon: ReturnType<typeof useTranslations<'common'>>;
-}) {
-  const handleSubmit = (event: FormEvent) => {
-    void state.handleSubmit(event);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <InvoiceContextSummary
-        state={state}
-        order={order}
-        clientServiceContext={clientServiceContext}
-        t={t}
-      />
-      <InvoiceAmountFields form={state.form} setForm={state.setForm} t={t} />
-      {state.error ? (
-        <p className="text-destructive text-sm" role="alert">
-          {state.error}
-        </p>
-      ) : null}
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={() => state.onOpenChange(false)}>
-          {tCommon('cancel')}
-        </Button>
-        <Button type="submit" disabled={!canSubmit}>
-          {state.loading ? tCommon('creating') : t('create.submit')}
-        </Button>
-      </DialogFooter>
-    </form>
-  );
-}
-
 function InvoiceContextSummary({
   state,
   order,
@@ -166,10 +113,7 @@ function InvoiceContextSummary({
   clientServiceContext?: { name: string; projectLabel: string };
   t: InvoiceCreateTranslator;
 }) {
-  if (order) {
-    return <OrderInvoiceContext order={order} t={t} />;
-  }
-
+  if (order) return <OrderInvoiceContext order={order} t={t} />;
   if (clientServiceContext) {
     return (
       <div className="bg-muted/40 rounded-lg border p-3 text-sm">
@@ -178,7 +122,6 @@ function InvoiceContextSummary({
       </div>
     );
   }
-
   if (state.subscriptionLoading) {
     return (
       <p className="text-muted-foreground text-sm" role="status">
@@ -186,7 +129,6 @@ function InvoiceContextSummary({
       </p>
     );
   }
-
   if (state.loadError) {
     return (
       <p className="text-destructive text-sm" role="alert">
@@ -194,11 +136,9 @@ function InvoiceContextSummary({
       </p>
     );
   }
-
   if (state.subscriptionDetail) {
     return <SubscriptionInvoiceContext subscription={state.subscriptionDetail} t={t} />;
   }
-
   return null;
 }
 
@@ -253,24 +193,27 @@ function InvoiceAmountFields({
   t: InvoiceCreateTranslator;
 }) {
   return (
-    <div className="space-y-3">
-      <NbosMoneyInput
-        label={t('create.amount')}
-        value={form.amount}
-        onChange={(amount) => setForm({ ...form, amount })}
-        wrapperClassName="gap-2"
-        autoFocus
-      />
-      <div className="space-y-2">
-        <Label>{t('create.dueDate')}</Label>
-        <NbosDatePicker
-          value={form.dueDate}
-          onChange={(dueDate) => setForm({ ...form, dueDate })}
-          variant="extended"
-          aria-label={t('create.dueDateAria')}
+    <div className="flex flex-col gap-1.5">
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
+          label={t('create.amount')}
+          type="money"
+          value={form.amount}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={(amount) => setForm({ ...form, amount })}
         />
-        <p className="text-muted-foreground text-xs">{t('create.dueDateHint')}</p>
-      </div>
+        <InlineField
+          variant="controlled"
+          label={t('create.dueDate')}
+          type="date"
+          value={form.dueDate}
+          datePickerVariant="extended"
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={(dueDate) => setForm({ ...form, dueDate })}
+        />
+      </FormFieldRow>
+      <p className="text-muted-foreground text-xs">{t('create.dueDateHint')}</p>
     </div>
   );
 }

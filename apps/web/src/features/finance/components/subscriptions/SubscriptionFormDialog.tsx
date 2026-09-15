@@ -1,15 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { InlineField } from '@/components/shared';
+import { CreateFormDialog, InlineField } from '@/components/shared';
 import {
   usePartnerRelationSearch,
   useProductRelationSearch,
@@ -29,9 +21,6 @@ import { SubscriptionFormDialogMetaFields } from '@/features/finance/components/
 import { useSubscriptionFormDialogActions } from '@/features/finance/components/subscriptions/use-subscription-form-dialog-actions';
 import type { Subscription } from '@/lib/api/finance';
 import { productsApi } from '@/lib/api/products';
-
-const SUBSCRIPTION_FORM_DIALOG_CONTENT_CLASS =
-  'bg-card max-h-[90vh] overflow-y-auto sm:max-w-[36rem]';
 
 interface SubscriptionFormDialogProps {
   open: boolean;
@@ -137,74 +126,67 @@ export function SubscriptionFormDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className={SUBSCRIPTION_FORM_DIALOG_CONTENT_CLASS}>
-          <DialogHeader>
-            <DialogTitle>{mode === 'edit' ? 'Edit subscription' : 'New subscription'}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={(event) => void handleSubmit(event)} className="flex flex-col gap-3">
-            {formError ? <p className="text-destructive text-sm">{formError}</p> : null}
+      <CreateFormDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        title={mode === 'edit' ? 'Edit subscription' : 'New subscription'}
+        error={formError}
+        submitting={loading}
+        canSubmit={canSubmit && !productResolving}
+        submitLabel={mode === 'edit' ? 'Save changes' : 'Create subscription'}
+        submittingLabel="Saving…"
+        cancelLabel="Cancel"
+        onSubmit={(event) => void handleSubmit(event)}
+      >
+        <InlineField
+          variant="controlled"
+          label="Name"
+          type="text"
+          value={form.name}
+          placeholder="Commercial subscription name"
+          onValueChange={(name) => patchForm({ name })}
+        />
 
-            <InlineField
-              variant="controlled"
-              label="Name"
-              type="text"
-              value={form.name}
-              placeholder="Commercial subscription name"
-              onValueChange={(name) => patchForm({ name })}
-            />
+        <SubscriptionFormDialogProductField
+          mode={mode}
+          productLocked={productLocked}
+          productId={form.productId}
+          productLabel={productLabel}
+          productResolving={productResolving}
+          subscription={subscription}
+          searchProducts={searchProducts}
+          productPicker={productPicker}
+          onProductSelect={(id, label) => {
+            void handleProductSelect(id, label);
+          }}
+        />
 
-            <SubscriptionFormDialogProductField
-              mode={mode}
-              productLocked={productLocked}
-              productId={form.productId}
-              productLabel={productLabel}
-              productResolving={productResolving}
-              subscription={subscription}
-              searchProducts={searchProducts}
-              productPicker={productPicker}
-              onProductSelect={(id, label) => {
-                void handleProductSelect(id, label);
-              }}
-            />
+        <SubscriptionFormDialogBillingFields
+          form={form}
+          billingValidationError={billingValidationError}
+          onAmountChange={(amount) => patchForm({ amount })}
+          onBillingDayChange={(billingDay) => patchForm({ billingDay })}
+          onTaxStatusChange={(taxStatus) => patchForm({ taxStatus })}
+          onTypeChange={(type) => patchForm({ type })}
+          onPeriodChange={applyPeriodChange}
+        />
 
-            <SubscriptionFormDialogBillingFields
-              form={form}
-              billingValidationError={billingValidationError}
-              onAmountChange={(amount) => patchForm({ amount })}
-              onBillingDayChange={(billingDay) => patchForm({ billingDay })}
-              onTaxStatusChange={(taxStatus) => patchForm({ taxStatus })}
-              onTypeChange={(type) => patchForm({ type })}
-              onPeriodChange={applyPeriodChange}
-            />
-
-            <SubscriptionFormDialogMetaFields
-              form={form}
-              partnerLabel={partnerLabel}
-              searchPartners={searchPartners}
-              partnerPicker={partnerPicker}
-              onFormChange={patchForm}
-              onPartnerSelect={(id, label) => {
-                patchForm({ partnerId: id });
-                setPartnerLabel(label);
-              }}
-              onPartnerClear={() => {
-                patchForm({ partnerId: '' });
-                setPartnerLabel(null);
-              }}
-            />
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading || !canSubmit || productResolving}>
-                {loading ? 'Saving…' : mode === 'edit' ? 'Save changes' : 'Create subscription'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+        <SubscriptionFormDialogMetaFields
+          form={form}
+          partnerLabel={partnerLabel}
+          searchPartners={searchPartners}
+          partnerPicker={partnerPicker}
+          onFormChange={patchForm}
+          onPartnerSelect={(id, label) => {
+            patchForm({ partnerId: id });
+            setPartnerLabel(label);
+          }}
+          onPartnerClear={() => {
+            patchForm({ partnerId: '' });
+            setPartnerLabel(null);
+          }}
+        />
+      </CreateFormDialog>
       {mode === 'edit' && editSnap && subscription ? (
         <SubscriptionBillingPeriodConfirmDialog
           open={saveConfirmOpen}

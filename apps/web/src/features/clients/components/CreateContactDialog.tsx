@@ -1,17 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import type { RelationCreatePrefill } from '@/components/shared/relation-picker';
-import { DetailSheetFieldSegmented, InlineField } from '@/components/shared';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+  CreateFormDialog,
+  DetailSheetFieldSegmented,
+  FormFieldRow,
+  InlineField,
+} from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { CONTACT_ROLES } from '../constants/clients';
 import { contactsApi, type Contact } from '@/lib/api/clients';
 import { toastApiError } from '@/lib/permissions';
@@ -21,7 +19,6 @@ interface CreateContactDialogProps {
   onOpenChange: (open: boolean) => void;
   onCreated?: (contact?: Contact) => void;
   prefill?: RelationCreatePrefill | null;
-  /** When opened above an entity sheet floating rail. */
   forceNestedBackdrop?: boolean;
 }
 
@@ -32,7 +29,14 @@ const EMPTY_FORM = {
   role: 'CLIENT',
 };
 
-export function CreateContactDialog({
+export function CreateContactDialog(props: CreateContactDialogProps) {
+  const sessionKey = props.open
+    ? `open:${props.prefill?.firstName ?? ''}:${props.prefill?.lastName ?? ''}`
+    : 'closed';
+  return <CreateContactDialogSession key={sessionKey} {...props} />;
+}
+
+function CreateContactDialogSession({
   open,
   onOpenChange,
   onCreated,
@@ -42,7 +46,11 @@ export function CreateContactDialog({
   const t = useTranslations('forms');
   const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm] = useState({
+    ...EMPTY_FORM,
+    firstName: prefill?.firstName ?? '',
+    lastName: prefill?.lastName ?? '',
+  });
 
   const contactRoleOptions = useMemo(
     () =>
@@ -53,104 +61,98 @@ export function CreateContactDialog({
     [t],
   );
 
-  useEffect(() => {
-    if (!open) return;
-    if (!prefill) {
-      setForm(EMPTY_FORM);
-      return;
-    }
-    setForm({
-      ...EMPTY_FORM,
-      firstName: prefill.firstName ?? '',
-      lastName: prefill.lastName ?? '',
-    });
-  }, [open, prefill]);
-
-  const canSubmit = form.firstName && form.lastName && form.phone && form.role;
-
-  const reset = () => {
-    setForm(EMPTY_FORM);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canSubmit) return;
-    setLoading(true);
-    try {
-      const created = await contactsApi.create({
-        firstName: form.firstName,
-        lastName: form.lastName,
-        phone: form.phone,
-        role: form.role,
-      });
-      onCreated?.(created);
-      onOpenChange(false);
-      reset();
-    } catch (caught: unknown) {
-      toastApiError(caught, t('contact.createError'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const canSubmit = Boolean(form.firstName && form.lastName && form.phone && form.role);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card sm:max-w-[540px]" forceNestedBackdrop={forceNestedBackdrop}>
-        <DialogHeader>
-          <DialogTitle>{t('contact.title')}</DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <InlineField
-              variant="controlled"
-              label={t('contact.fields.firstName')}
-              type="text"
-              value={form.firstName}
-              placeholder={t('contact.placeholders.firstName')}
-              disabled={loading}
-              onValueChange={(firstName) => setForm((prev) => ({ ...prev, firstName }))}
-            />
-            <InlineField
-              variant="controlled"
-              label={t('contact.fields.lastName')}
-              type="text"
-              value={form.lastName}
-              placeholder={t('contact.placeholders.lastName')}
-              disabled={loading}
-              onValueChange={(lastName) => setForm((prev) => ({ ...prev, lastName }))}
-            />
-          </div>
-
-          <InlineField
-            variant="controlled"
-            label={t('contact.fields.phone')}
-            type="phone"
-            value={form.phone}
-            placeholder={t('contact.placeholders.phone')}
-            disabled={loading}
-            onValueChange={(phone) => setForm((prev) => ({ ...prev, phone }))}
-          />
-
-          <DetailSheetFieldSegmented
-            label={t('contact.fields.contactType')}
-            value={form.role}
-            options={contactRoleOptions}
-            onValueChange={(role) => setForm((prev) => ({ ...prev, role }))}
-            disabled={loading}
-            ariaLabel={t('contact.fields.contactTypeAria')}
-          />
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              {tCommon('cancel')}
-            </Button>
-            <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? tCommon('creating') : tCommon('create')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('contact.title')}
+      submitting={loading}
+      canSubmit={canSubmit}
+      submitLabel={tCommon('create')}
+      submittingLabel={tCommon('creating')}
+      cancelLabel={tCommon('cancel')}
+      forceNestedBackdrop={forceNestedBackdrop}
+      onSubmit={(event) =>
+        void submitContact({
+          event,
+          canSubmit,
+          form,
+          setLoading,
+          onCreated,
+          onOpenChange,
+          error: t('contact.createError'),
+        })
+      }
+    >
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
+          label={t('contact.fields.firstName')}
+          type="text"
+          value={form.firstName}
+          placeholder={t('contact.placeholders.firstName')}
+          disabled={loading}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={(firstName) => setForm((prev) => ({ ...prev, firstName }))}
+        />
+        <InlineField
+          variant="controlled"
+          label={t('contact.fields.lastName')}
+          type="text"
+          value={form.lastName}
+          placeholder={t('contact.placeholders.lastName')}
+          disabled={loading}
+          className={FORM_FIELD_CELL_CLASS}
+          onValueChange={(lastName) => setForm((prev) => ({ ...prev, lastName }))}
+        />
+      </FormFieldRow>
+      <InlineField
+        variant="controlled"
+        label={t('contact.fields.phone')}
+        type="phone"
+        value={form.phone}
+        placeholder={t('contact.placeholders.phone')}
+        disabled={loading}
+        onValueChange={(phone) => setForm((prev) => ({ ...prev, phone }))}
+      />
+      <DetailSheetFieldSegmented
+        label={t('contact.fields.contactType')}
+        value={form.role}
+        options={contactRoleOptions}
+        onValueChange={(role) => setForm((prev) => ({ ...prev, role }))}
+        disabled={loading}
+        ariaLabel={t('contact.fields.contactTypeAria')}
+      />
+    </CreateFormDialog>
   );
+}
+
+async function submitContact(options: {
+  event: FormEvent;
+  canSubmit: boolean;
+  form: typeof EMPTY_FORM;
+  setLoading: (loading: boolean) => void;
+  onCreated?: (contact?: Contact) => void;
+  onOpenChange: (open: boolean) => void;
+  error: string;
+}): Promise<void> {
+  options.event.preventDefault();
+  if (!options.canSubmit) return;
+  options.setLoading(true);
+  try {
+    const created = await contactsApi.create({
+      firstName: options.form.firstName,
+      lastName: options.form.lastName,
+      phone: options.form.phone,
+      role: options.form.role,
+    });
+    options.onCreated?.(created);
+    options.onOpenChange(false);
+  } catch (caught: unknown) {
+    toastApiError(caught, options.error);
+  } finally {
+    options.setLoading(false);
+  }
 }

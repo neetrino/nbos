@@ -1,18 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { CreateFormDialog, InlineField } from '@/components/shared';
 import { tasksApi, type WorkSpace } from '@/lib/api/tasks';
 
 interface EditWorkSpaceDialogProps {
@@ -22,7 +12,12 @@ interface EditWorkSpaceDialogProps {
   onUpdated: (workspace: WorkSpace) => void;
 }
 
-export function EditWorkSpaceDialog({
+export function EditWorkSpaceDialog(props: EditWorkSpaceDialogProps) {
+  const sessionKey = props.open ? props.workspace.id : 'closed';
+  return <EditWorkSpaceDialogSession key={sessionKey} {...props} />;
+}
+
+function EditWorkSpaceDialogSession({
   workspace,
   open,
   onOpenChange,
@@ -35,66 +30,74 @@ export function EditWorkSpaceDialog({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    setName(workspace.name);
-    setDescription(workspace.description ?? '');
-    setError(null);
-  }, [open, workspace]);
-
-  const handleUpdate = async () => {
-    if (!name.trim()) return;
-    setSaving(true);
-    setError(null);
-    try {
-      const updated = await tasksApi.updateWorkSpace(workspace.id, {
-        name: name.trim(),
-        description: description.trim() || null,
-      });
-      onUpdated(updated);
-      onOpenChange(false);
-    } catch {
-      setError(t('edit.failed'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{t('edit.title')}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="edit-workspace-name">{t('edit.name')}</Label>
-            <Input
-              id="edit-workspace-name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-            />
-          </div>
-          <div>
-            <Label htmlFor="edit-workspace-description">{t('edit.description')}</Label>
-            <Textarea
-              id="edit-workspace-description"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              rows={3}
-            />
-          </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {tCommon('cancel')}
-          </Button>
-          <Button onClick={handleUpdate} disabled={saving || !name.trim()}>
-            {saving ? tCommon('saving') : t('edit.save')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <CreateFormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('edit.title')}
+      error={error}
+      submitting={saving}
+      canSubmit={Boolean(name.trim()) && !saving}
+      submitLabel={t('edit.save')}
+      submittingLabel={tCommon('saving')}
+      cancelLabel={tCommon('cancel')}
+      onSubmit={(event) =>
+        void submitWorkSpaceEdit({
+          event,
+          workspaceId: workspace.id,
+          name,
+          description,
+          setSaving,
+          setError,
+          onUpdated,
+          onOpenChange,
+          failed: t('edit.failed'),
+        })
+      }
+    >
+      <InlineField
+        variant="controlled"
+        label={t('edit.name')}
+        type="text"
+        value={name}
+        onValueChange={setName}
+      />
+      <InlineField
+        variant="controlled"
+        label={t('edit.description')}
+        type="textarea"
+        value={description}
+        onValueChange={setDescription}
+      />
+    </CreateFormDialog>
   );
+}
+
+async function submitWorkSpaceEdit(options: {
+  event: FormEvent;
+  workspaceId: string;
+  name: string;
+  description: string;
+  setSaving: (saving: boolean) => void;
+  setError: (error: string | null) => void;
+  onUpdated: (workspace: WorkSpace) => void;
+  onOpenChange: (open: boolean) => void;
+  failed: string;
+}): Promise<void> {
+  options.event.preventDefault();
+  if (!options.name.trim()) return;
+  options.setSaving(true);
+  options.setError(null);
+  try {
+    const updated = await tasksApi.updateWorkSpace(options.workspaceId, {
+      name: options.name.trim(),
+      description: options.description.trim() || null,
+    });
+    options.onUpdated(updated);
+    options.onOpenChange(false);
+  } catch {
+    options.setError(options.failed);
+  } finally {
+    options.setSaving(false);
+  }
 }
