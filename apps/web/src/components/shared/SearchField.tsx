@@ -1,14 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
-import { Search, X, Plus, Loader2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { useState, useRef, useEffect, type KeyboardEvent, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import {
-  SearchFieldClosedValue,
-  SearchFieldOptionButton,
-  type SearchOption,
-} from './search-field-option';
+import { SEARCH_FIELD_FOCUS_DELAY_MS } from '@/components/shared/search-field-query';
+import { SearchFieldOpenPanel } from '@/components/shared/search-field-open-panel';
+import { useSearchFieldQuery } from '@/components/shared/use-search-field-query';
+import { SearchFieldClosedValue, type SearchOption } from './search-field-option';
 
 const DEFAULT_MAX_RESULTS = 5;
 
@@ -76,40 +73,24 @@ export function SearchField(props: SearchFieldProps) {
   const onStageSelect = isStageProps(props) ? props.onStageSelect : undefined;
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchOption[]>([]);
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [highlightIdx, setHighlightIdx] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  const doSearch = useCallback(
-    (q: string) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(async () => {
-        setLoading(true);
-        try {
-          const items = await onSearch(q);
-          setResults(items.slice(0, maxResults));
-          setHighlightIdx(-1);
-        } finally {
-          setLoading(false);
-        }
-      }, 150);
-    },
-    [onSearch, maxResults],
-  );
+  const { results, loading, highlightIdx, setHighlightIdx, runSearch, cancelPending } =
+    useSearchFieldQuery(onSearch, maxResults);
 
   useEffect(() => {
-    if (open && !disabled) {
-      doSearch('');
-      setTimeout(() => inputRef.current?.focus(), 50);
-    }
+    if (!open || disabled) return;
+    runSearch('');
+    const focusTimer = window.setTimeout(
+      () => inputRef.current?.focus(),
+      SEARCH_FIELD_FOCUS_DELAY_MS,
+    );
     return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      cancelPending();
+      window.clearTimeout(focusTimer);
     };
-  }, [open, disabled, doSearch]);
+  }, [open, disabled, runSearch, cancelPending]);
 
   useEffect(() => {
     if (disabled) setOpen(false);
@@ -117,8 +98,8 @@ export function SearchField(props: SearchFieldProps) {
 
   useEffect(() => {
     if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+    const handler = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setOpen(false);
       }
     };
@@ -161,18 +142,18 @@ export function SearchField(props: SearchFieldProps) {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (event: KeyboardEvent) => {
     if (disabled) return;
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setHighlightIdx((i) => Math.min(i + 1, results.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setHighlightIdx((i) => Math.max(i - 1, 0));
-    } else if (e.key === 'Enter' && highlightIdx >= 0 && results[highlightIdx]) {
-      e.preventDefault();
-      handleSelect(results[highlightIdx].value, results[highlightIdx].label);
-    } else if (e.key === 'Escape') {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setHighlightIdx((index) => Math.min(index + 1, results.length - 1));
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setHighlightIdx((index) => Math.max(index - 1, 0));
+    } else if (event.key === 'Enter' && highlightIdx >= 0 && results[highlightIdx]) {
+      event.preventDefault();
+      void handleSelect(results[highlightIdx].value, results[highlightIdx].label);
+    } else if (event.key === 'Escape') {
       setOpen(false);
     }
   };
@@ -190,81 +171,33 @@ export function SearchField(props: SearchFieldProps) {
       </div>
 
       {open ? (
-        <div className="relative">
-          <div className="relative">
-            <Search
-              size={14}
-              className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
-            />
-            <Input
-              ref={inputRef}
-              value={query}
-              disabled={disabled}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                doSearch(e.target.value);
-              }}
-              onKeyDown={handleKeyDown}
-              placeholder={placeholder ?? 'Type to search...'}
-              className="pr-9 pl-9 text-sm"
-            />
-            {query && (
-              <button
-                type="button"
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                }}
-                onClick={() => {
-                  setQuery('');
-                  doSearch('');
-                  inputRef.current?.focus();
-                }}
-                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-md"
-              >
-                <X size={16} />
-              </button>
-            )}
-          </div>
-
-          <div className="border-border bg-popover absolute inset-x-0 top-full z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border shadow-lg">
-            {loading && (
-              <div className="text-muted-foreground flex items-center gap-2 px-3 py-2.5 text-xs">
-                <Loader2 size={13} className="animate-spin" />
-                Searching...
-              </div>
-            )}
-
-            {!loading && results.length === 0 && query && (
-              <div className="text-muted-foreground px-3 py-2.5 text-xs">No results found</div>
-            )}
-
-            {!loading &&
-              results.map((opt, i) => (
-                <SearchFieldOptionButton
-                  key={opt.value}
-                  option={opt}
-                  highlighted={i === highlightIdx}
-                  saving={saving}
-                  onSelect={handleSelect}
-                />
-              ))}
-
-            {onNew && (
-              <button
-                onClick={() => {
-                  onNew();
-                  setOpen(false);
-                  setQuery('');
-                }}
-                className="border-border flex w-full items-center gap-2 border-t px-3 py-2 text-left text-sm font-medium text-amber-600 transition-colors hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/20"
-              >
-                <Plus size={14} />
-                {newLabel}
-              </button>
-            )}
-          </div>
-        </div>
+        <SearchFieldOpenPanel
+          query={query}
+          placeholder={placeholder}
+          disabled={disabled}
+          loading={loading}
+          results={results}
+          highlightIdx={highlightIdx}
+          saving={saving}
+          newLabel={newLabel}
+          onNew={onNew}
+          inputRef={inputRef}
+          onQueryChange={(next) => {
+            setQuery(next);
+            runSearch(next);
+          }}
+          onClearQuery={() => {
+            setQuery('');
+            runSearch('');
+            inputRef.current?.focus();
+          }}
+          onKeyDown={handleKeyDown}
+          onSelect={handleSelect}
+          onClose={() => {
+            setOpen(false);
+            setQuery('');
+          }}
+        />
       ) : (
         <SearchFieldClosedValue
           label={label}
