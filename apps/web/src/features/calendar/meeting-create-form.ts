@@ -6,6 +6,7 @@ export const MEETING_TYPE_VALUES = ['SALES_CALL', 'HR', 'DEVELOPMENT', 'OTHER'] 
 export const LOCATION_TYPE_VALUES = ['ONLINE', 'OFFLINE'] as const;
 
 export const DEFAULT_MEETING_DURATION_HOURS = 1;
+export const MAX_MEETING_DURATION_HOURS = 3;
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 
@@ -46,7 +47,9 @@ export function parseDurationHours(raw: string): number | null {
   const trimmed = raw.trim();
   if (!trimmed) return null;
   const parsed = Number(trimmed);
-  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  if (!Number.isInteger(parsed) || parsed < 1 || parsed > MAX_MEETING_DURATION_HOURS) {
+    return null;
+  }
   return parsed;
 }
 

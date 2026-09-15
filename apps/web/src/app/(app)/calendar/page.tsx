@@ -4,16 +4,18 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'reac
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PageHero, PageHeroTabs, type PageHeroTabOption } from '@/components/shared';
 import { calendarApi, type CalendarEventProjection, type CalendarLayer } from '@/lib/api/calendar';
-import { CalendarCreateHeroButton } from './calendar-create-options';
 import { CreateMeetingCalendarDialog } from '@/features/calendar/CreateMeetingCalendarDialog';
 import { CreatePersonalCalendarDialog } from './calendar-create-personal-dialog';
+import { CalendarDayCreateMenu } from './calendar-day-create-menu';
 import { CalendarEventDetailSheet } from './calendar-event-detail-sheet';
 import {
+  CALENDAR_DAY_PANEL_HEIGHT_CLASS,
   CALENDAR_DEFAULT_LAYER_STORAGE_KEY,
   parseStoredCalendarLayer,
   type CalendarCreateKind,
 } from './calendar-ui-constants';
 import { CalendarEmptyState, DayCell, EventCard, WEEKDAYS } from './calendar-view-parts';
+import { cn } from '@/lib/utils';
 
 const CALENDAR_LAYER_OPTIONS: PageHeroTabOption<CalendarLayer>[] = [
   { value: 'ALL', label: 'All' },
@@ -167,12 +169,6 @@ export default function CalendarPage() {
             registerMobileDock={false}
           />
         }
-        trailing={
-          <div className="flex flex-wrap items-center gap-2">
-            <CalendarCreateHeroButton kind="meeting" onClick={() => setMeetingOpen(true)} />
-            <CalendarCreateHeroButton kind="personal" onClick={() => setPersonalOpen(true)} />
-          </div>
-        }
       />
       <p className="text-muted-foreground text-sm">
         Meetings, delivery deadlines and personal events only.
@@ -230,8 +226,13 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        <div className="border-border bg-card rounded-2xl border p-5">
-          <div className="flex items-center gap-2">
+        <div
+          className={cn(
+            'border-border bg-card relative flex flex-col rounded-2xl border p-5',
+            CALENDAR_DAY_PANEL_HEIGHT_CLASS,
+          )}
+        >
+          <div className="flex shrink-0 items-center gap-2">
             <CalendarDays size={18} className="text-accent" />
             <h2 className="text-foreground text-lg font-semibold">
               {selectedDate.toLocaleDateString('en-US', {
@@ -241,19 +242,33 @@ export default function CalendarPage() {
               })}
             </h2>
           </div>
-          {loading ? (
-            <p className="text-muted-foreground mt-8 text-center text-sm">
-              Loading calendar events...
-            </p>
-          ) : selectedEvents.length > 0 ? (
-            <div className="mt-4 space-y-3">
-              {selectedEvents.map((event) => (
-                <EventCard key={event.id} event={event} onMeetingOrPersonalClick={openEventSheet} />
-              ))}
-            </div>
-          ) : (
-            <CalendarEmptyState />
-          )}
+          <div className="mt-4 min-h-0 flex-1 overflow-y-auto pb-10">
+            {loading ? (
+              <p className="text-muted-foreground mt-8 text-center text-sm">
+                Loading calendar events...
+              </p>
+            ) : selectedEvents.length > 0 ? (
+              <div className="space-y-2">
+                {selectedEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    onMeetingOrPersonalClick={openEventSheet}
+                  />
+                ))}
+              </div>
+            ) : (
+              <CalendarEmptyState />
+            )}
+          </div>
+          <div className="absolute bottom-0 left-1/2 z-20 -translate-x-1/2 translate-y-1/2">
+            <CalendarDayCreateMenu
+              date={selectedDate}
+              variant="panel"
+              onSelectDate={setSelectedDate}
+              onCreate={openCreateForDate}
+            />
+          </div>
         </div>
       </div>
 

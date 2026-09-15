@@ -10,19 +10,27 @@ export const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as con
 
 export const LAYER_STYLES: Record<
   CalendarEventProjection['layer'],
-  { dot: string; bg: string; text: string; label: string }
+  { dot: string; bg: string; text: string; badge: string; label: string }
 > = {
-  MEETINGS: { dot: 'bg-blue-500', bg: 'bg-blue-50', text: 'text-blue-700', label: 'Meeting' },
+  MEETINGS: {
+    dot: 'bg-blue-500',
+    bg: 'bg-blue-500/10 border-blue-500/20',
+    text: 'text-blue-700 dark:text-blue-300',
+    badge: 'bg-blue-500/15 text-blue-700 dark:text-blue-300',
+    label: 'Meeting',
+  },
   DELIVERY_DEADLINES: {
     dot: 'bg-red-500',
-    bg: 'bg-red-50',
-    text: 'text-red-700',
+    bg: 'bg-red-500/10 border-red-500/20',
+    text: 'text-red-700 dark:text-red-300',
+    badge: 'bg-red-500/15 text-red-700 dark:text-red-300',
     label: 'Delivery',
   },
   PERSONAL: {
     dot: 'bg-violet-500',
-    bg: 'bg-violet-50',
-    text: 'text-violet-700',
+    bg: 'bg-violet-500/10 border-violet-500/20',
+    text: 'text-violet-700 dark:text-violet-300',
+    badge: 'bg-violet-500/15 text-violet-700 dark:text-violet-300',
     label: 'Personal',
   },
 };
@@ -108,13 +116,11 @@ export function EventCard({
   onMeetingOrPersonalClick?: (event: CalendarEventProjection) => void;
 }) {
   const style = LAYER_STYLES[event.layer];
+  const surfaceClass = `border block w-full rounded-xl px-2.5 py-2 text-left ${style.bg}`;
 
   if (event.layer === 'DELIVERY_DEADLINES' && event.sourceHref) {
     return (
-      <a
-        href={event.sourceHref}
-        className={`border-border block rounded-xl border p-3 ${style.bg}`}
-      >
+      <a href={event.sourceHref} className={surfaceClass}>
         <EventCardInner event={event} style={style} />
       </a>
     );
@@ -128,7 +134,7 @@ export function EventCard({
       <button
         type="button"
         onClick={() => onMeetingOrPersonalClick(event)}
-        className={`border-border block w-full cursor-pointer rounded-xl border p-3 text-left ${style.bg} hover:opacity-95`}
+        className={`${surfaceClass} cursor-pointer hover:brightness-110`}
       >
         <EventCardInner event={event} style={style} />
       </button>
@@ -136,10 +142,22 @@ export function EventCard({
   }
 
   return (
-    <div className={`border-border rounded-xl border p-3 ${style.bg}`}>
+    <div className={surfaceClass}>
       <EventCardInner event={event} style={style} />
     </div>
   );
+}
+
+function eventCardSubtitle(event: CalendarEventProjection): string | null {
+  const candidates = [event.description, event.projectName].filter((value): value is string =>
+    Boolean(value?.trim()),
+  );
+  for (const candidate of candidates) {
+    if (candidate.trim().toLowerCase() === event.badge.trim().toLowerCase()) continue;
+    if (candidate.trim().toLowerCase() === event.title.trim().toLowerCase()) continue;
+    return candidate;
+  }
+  return null;
 }
 
 function EventCardInner({
@@ -149,40 +167,47 @@ function EventCardInner({
   event: CalendarEventProjection;
   style: (typeof LAYER_STYLES)[CalendarEventProjection['layer']];
 }) {
+  const subtitle = eventCardSubtitle(event);
+  const timeLabel = event.isAllDay
+    ? 'All day'
+    : new Date(event.startsAt).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+
   return (
     <>
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <p className={`text-sm font-medium ${style.text}`}>{event.title}</p>
-          <p className="text-muted-foreground mt-0.5 text-xs">
-            {event.description ?? event.projectName ?? event.badge}
-          </p>
-        </div>
-        <span className={`shrink-0 rounded-lg px-2 py-0.5 text-xs font-medium ${style.text}`}>
-          {event.badge}
+      <div className="flex items-center justify-between gap-2">
+        <p className={`min-w-0 truncate text-sm font-medium ${style.text}`}>{event.title}</p>
+        <span
+          className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium ${style.badge}`}
+        >
+          {event.badge.replaceAll('_', ' ')}
         </span>
       </div>
-      <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-        <span className="flex items-center gap-1">
-          <Clock size={12} />
-          {event.isAllDay
-            ? 'All day'
-            : new Date(event.startsAt).toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+      <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
+        <span className="text-foreground flex items-center gap-1.5 text-sm font-semibold tabular-nums">
+          <Clock size={14} className="text-foreground/70" aria-hidden />
+          {timeLabel}
         </span>
-        <span>{event.status.replaceAll('_', ' ')}</span>
-        {event.ownerName && <span>{event.ownerName}</span>}
+        <span className="text-muted-foreground text-xs capitalize">
+          {event.status.replaceAll('_', ' ').toLowerCase()}
+        </span>
+        {event.ownerName ? (
+          <span className="text-muted-foreground truncate text-xs">{event.ownerName}</span>
+        ) : null}
       </div>
+      {subtitle ? (
+        <p className="text-muted-foreground mt-0.5 truncate text-xs">{subtitle}</p>
+      ) : null}
     </>
   );
 }
 
 export function CalendarEmptyState() {
   return (
-    <div className="mt-8 text-center">
-      <CalendarDays size={32} className="text-muted-foreground/40 mx-auto" />
+    <div className="flex h-full min-h-[8rem] flex-col items-center justify-center text-center">
+      <CalendarDays size={32} className="text-muted-foreground/40" />
       <p className="text-muted-foreground mt-2 text-sm">No events for this day</p>
     </div>
   );

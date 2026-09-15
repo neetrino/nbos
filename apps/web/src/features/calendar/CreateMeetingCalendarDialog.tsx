@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   calendarApi,
@@ -16,18 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { NbosDatePicker } from '@/components/shared/date-picker';
-import { DetailSheetFieldSegmented } from '@/components/shared';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { DetailSheetFieldSegmented, InlineField } from '@/components/shared';
 import { MeetingCreateConflicts } from './MeetingCreateConflicts';
 import {
   DEFAULT_MEETING_DURATION_HOURS,
@@ -76,6 +65,17 @@ export function CreateMeetingCalendarDialog({
     setConflicts(null);
     setOverrideReason('');
   }, [form.startsLocal, form.durationHours]);
+
+  const meetingTypeOptions = useMemo(
+    () => MEETING_TYPE_VALUES.map((value) => ({ value, label: t(`meeting.types.${value}`) })),
+    [t],
+  );
+
+  const locationOptions = useMemo(
+    () =>
+      LOCATION_TYPE_VALUES.map((value) => ({ value, label: t(`meeting.locationTypes.${value}`) })),
+    [t],
+  );
 
   const submit = useCallback(async () => {
     const title = form.title.trim();
@@ -131,14 +131,9 @@ export function CreateMeetingCalendarDialog({
     }
   }, [conflicts, durationInput, form, onCreated, onOpenChange, overrideReason, t, tCommon]);
 
-  const locationOptions = LOCATION_TYPE_VALUES.map((value) => ({
-    value,
-    label: t(`meeting.locationTypes.${value}`),
-  }));
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="bg-card sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>{t('meeting.title')}</DialogTitle>
         </DialogHeader>
@@ -158,112 +153,81 @@ export function CreateMeetingCalendarDialog({
             />
           ) : null}
 
-          <div>
-            <Label htmlFor="cal-meet-title">{t('meeting.fields.title')}</Label>
-            <Input
-              id="cal-meet-title"
-              className="mt-1.5"
-              value={form.title}
-              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-              placeholder={t('meeting.fields.titlePlaceholder')}
+          <InlineField
+            variant="controlled"
+            label={t('meeting.fields.title')}
+            value={form.title}
+            placeholder={t('meeting.fields.titlePlaceholder')}
+            onValueChange={(title) => setForm((p) => ({ ...p, title }))}
+          />
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <InlineField
+              variant="controlled"
+              label={t('meeting.fields.start')}
+              type="date"
+              datePickerMode="datetime"
+              datePickerVariant="extended"
+              className="min-w-0 flex-1"
+              value={form.startsLocal}
+              onValueChange={(startsLocal) => setForm((p) => ({ ...p, startsLocal }))}
+            />
+            <InlineField
+              variant="controlled"
+              label={t('meeting.fields.duration')}
+              type="text"
+              className="w-16 shrink-0"
+              value={durationInput}
+              onValueChange={(raw) => {
+                const next = raw.replace(/\D/g, '').slice(0, 1);
+                setDurationInput(next);
+                const parsed = parseDurationHours(next);
+                if (parsed !== null) setForm((p) => ({ ...p, durationHours: parsed }));
+              }}
             />
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <div className="min-w-0 flex-1">
-              <Label htmlFor="cal-meet-start">{t('meeting.fields.start')}</Label>
-              <NbosDatePicker
-                id="cal-meet-start"
-                mode="datetime"
-                variant="extended"
-                className="mt-1.5"
-                value={form.startsLocal}
-                onChange={(startsLocal) => setForm((p) => ({ ...p, startsLocal }))}
-                aria-label={t('meeting.fields.startAria')}
-              />
-            </div>
-            <div className="w-full shrink-0 sm:w-24">
-              <Label htmlFor="cal-meet-duration">{t('meeting.fields.duration')}</Label>
-              <Input
-                id="cal-meet-duration"
-                type="number"
-                inputMode="decimal"
-                min={0}
-                step="any"
-                className="mt-1.5"
-                value={durationInput}
-                onChange={(e) => {
-                  const raw = e.target.value;
-                  setDurationInput(raw);
-                  const parsed = parseDurationHours(raw);
-                  if (parsed !== null) {
-                    setForm((p) => ({ ...p, durationHours: parsed }));
-                  }
-                }}
-                aria-label={t('meeting.fields.durationAria')}
-              />
-            </div>
-            <div className="w-full shrink-0 sm:w-[11.5rem]">
-              <Label>{t('meeting.fields.location')}</Label>
-              <div className="mt-1.5">
-                <DetailSheetFieldSegmented
-                  label={t('meeting.fields.location')}
-                  hideLabel
-                  value={form.locationType}
-                  options={locationOptions}
-                  onValueChange={(locationType) => {
-                    if (isLocationTypeValue(locationType)) {
-                      setForm((p) => ({ ...p, locationType }));
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <Label>{t('meeting.fields.meetingType')}</Label>
-            <Select
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <InlineField
+              variant="controlled"
+              label={t('meeting.fields.meetingType')}
+              type="select"
+              options={meetingTypeOptions}
+              className="min-w-0 flex-1"
               value={form.meetingType}
               onValueChange={(v) => {
                 if (isMeetingTypeValue(v)) setForm((p) => ({ ...p, meetingType: v }));
               }}
-            >
-              <SelectTrigger className="mt-1.5">
-                <SelectValue>{t(`meeting.types.${form.meetingType}`)}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {MEETING_TYPE_VALUES.map((value) => (
-                  <SelectItem key={value} value={value}>
-                    {t(`meeting.types.${value}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="cal-meet-link">{t('meeting.fields.linkOrAddress')}</Label>
-            <Input
-              id="cal-meet-link"
-              className="mt-1.5"
-              value={form.locationOrLink}
-              onChange={(e) => setForm((p) => ({ ...p, locationOrLink: e.target.value }))}
-              placeholder={t('meeting.fields.linkPlaceholder')}
+            />
+            <DetailSheetFieldSegmented
+              label={t('meeting.fields.location')}
+              className="w-full shrink-0 sm:w-[11.5rem]"
+              value={form.locationType}
+              options={locationOptions}
+              onValueChange={(locationType) => {
+                if (isLocationTypeValue(locationType)) {
+                  setForm((p) => ({ ...p, locationType }));
+                }
+              }}
             />
           </div>
 
-          <div>
-            <Label htmlFor="cal-meet-agenda">{t('meeting.fields.agenda')}</Label>
-            <Textarea
-              id="cal-meet-agenda"
-              className="mt-1.5"
-              rows={2}
-              value={form.agenda}
-              onChange={(e) => setForm((p) => ({ ...p, agenda: e.target.value }))}
-              placeholder={t('meeting.fields.agendaPlaceholder')}
-            />
-          </div>
+          <InlineField
+            variant="controlled"
+            label={t('meeting.fields.linkOrAddress')}
+            value={form.locationOrLink}
+            placeholder={t('meeting.fields.linkPlaceholder')}
+            onValueChange={(locationOrLink) => setForm((p) => ({ ...p, locationOrLink }))}
+          />
+
+          <InlineField
+            variant="controlled"
+            label={t('meeting.fields.agenda')}
+            type="textarea"
+            value={form.agenda}
+            placeholder={t('meeting.fields.agendaPlaceholder')}
+            onValueChange={(agenda) => setForm((p) => ({ ...p, agenda }))}
+          />
         </div>
 
         <DialogFooter>

@@ -5,6 +5,8 @@ export const CALENDAR_DEFAULT_LAYER_STORAGE_KEY = 'nbos.calendar.defaultLayer';
 export type CalendarCreateKind = 'meeting' | 'personal';
 
 export const CALENDAR_DAY_CELL_MIN_HEIGHT_CLASS = 'min-h-[4.5rem]';
+/** Fixed day-detail panel height (~4–5 compact cards); overflow scrolls inside. */
+export const CALENDAR_DAY_PANEL_HEIGHT_CLASS = 'h-[28rem]';
 export const CALENDAR_CREATE_MENU_WIDTH_CLASS = 'w-56';
 
 /** Matches `apps/web/src/app/(app)/clients/contacts/page.tsx` open-sheet query. */
