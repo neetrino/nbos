@@ -23,6 +23,7 @@ export interface UseProductSupportTabResult {
   kanbanColumns: SupportKanbanColumn[];
   boardScope: BoardLifecycleScope;
   loading: boolean;
+  refreshing: boolean;
   error: string | null;
   search: string;
   setSearch: (value: string) => void;
@@ -83,6 +84,7 @@ export function useProductSupportTab(
     columnMeta,
     hasMoreAny,
     loading,
+    refreshing,
     error: boardError,
     reload,
     loadMoreColumn,
@@ -145,6 +147,7 @@ export function useProductSupportTab(
     kanbanColumns,
     boardScope: boardScope as BoardLifecycleScope,
     loading,
+    refreshing,
     error: errorOverride ?? boardError,
     search,
     setSearch,

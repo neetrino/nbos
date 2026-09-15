@@ -11,3 +11,23 @@ alwaysApply: false
 - **Forms** — React Hook Form + Zod (or project standard).
 - **URL state** — `useSearchParams` / `nuqs` for shareable filters.
 - **Do not** duplicate server data in global stores; **selectors** for derived data.
+
+## Loading vs revalidating (NBOS standard)
+
+Canon: [`docs/architecture/data-loading-and-refresh.md`](../../docs/architecture/data-loading-and-refresh.md). Read it before writing a new data surface.
+
+A data hook owns **two** booleans, never one:
+
+- `loading` — first load, no renderable data yet.
+- `refreshing` — fetch in flight over data that is already on screen.
+
+Rules:
+
+- A surface that already holds data **never returns to `loading`**. Refetch runs under `refreshing`; content stays mounted (stale-while-revalidate).
+- A **failed revalidation keeps the previous data** in state and reports the error separately — never clear data you already had.
+- Render through **`DataView`** from `@/components/shared`. Do not hand-roll `{loading ? <LoadingState /> : content}`.
+- A failed refresh over existing data → `ListMutationErrorBanner`. `QueryLoadError` is only for a failed **first** load.
+
+After a write, pick the cheapest correct option: **merge** the response when it matches the rendered shape; **refetch** only when the response is thinner than a list row, the list carries computed fields the response omits, or the write has server-side side effects on other records; **push (SSE)** only for genuinely concurrent surfaces.
+
+Reference hooks: `apps/web/src/hooks/use-entity-detail-hydration.ts`, `apps/web/src/features/shared/kanban/use-stage-column-board.ts`.
