@@ -95,8 +95,29 @@ used to accompany it: a refetch must run under **Revalidating**, never under **L
 **Push (SSE).** Only where another user's action must reach this screen without an interaction from
 its owner. Push is not a substitute for the two rules above; it is what tells a screen that a
 refetch is now worth doing. Add a push channel only when staleness is user-visible and the surface
-is genuinely concurrent, and route the resulting refresh through the debounced registry in
-`apps/web/src/lib/realtime/notification-refetch-registry.ts` so bursts collapse into one fetch.
+is genuinely concurrent.
+
+A push event carries an invalidation signal, never business data. The client reacts by refetching
+through the REST endpoints it already uses, so authorization stays on those endpoints and the stream
+itself cannot leak anything. Keep the payload to an entity type, an entity id, a schema version and
+a timestamp. Publish after the write and its side effects have all committed, so a client that
+refetches immediately reads a settled state, and make a publish failure log and return rather than
+fail the user's write.
+
+Coalesce on the client: a burst of events must collapse into one fetch, and a hidden tab should
+defer its refresh until it is looked at again.
+
+Existing channels, each with its own Redis-backed bus so it works across API instances:
+
+- `apps/api/src/modules/realtime/notification-*` — per-employee, drives the notification badge.
+- `apps/api/src/modules/realtime/call-*` — per-employee, drives the active-call overlay.
+- `apps/api/src/modules/realtime/delivery-*` — broadcast, invalidates the company-wide Delivery
+  Board. Client side: `apps/web/src/lib/realtime/connect-delivery-sse.ts` and
+  `delivery-board-refetch-scheduler.ts`.
+
+Choose per-employee fan-out when the event concerns one person, and broadcast when the surface is
+company-wide — but only when the underlying reads are open to every authenticated employee, as
+product reads are. Never broaden who receives an event beyond who may already read the data.
 
 ## Checklist for a new screen
 
