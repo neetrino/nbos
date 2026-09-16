@@ -8,6 +8,7 @@ const TASK_LINK_ENTITY_KEYS = [
   'INVOICE',
   'SUPPORT_TICKET',
   'WORK_SPACE',
+  'ClientServiceRecord',
 ] as const;
 
 export type TaskLinkEntityMessageKey = (typeof TASK_LINK_ENTITY_KEYS)[number];

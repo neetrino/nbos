@@ -1015,3 +1015,13 @@ Dashboard widgets могут вести в filtered board:
 | Project-level PM Intake / kickoff panel is removed from canon        | Accepted |
 | Stage gate checks checklist instance completion, not checklist items | Accepted |
 | Future Project page delivery block must reuse core                   | Accepted |
+
+## Доменный вход и требование переноса — решение 2026-09-17
+
+**Утверждено, реализация ожидается.** [Канон](../04-Finance/08-Domain-Purchase-and-Connection.md), [план](../../../implementation/CLIENT-SERVICES-IMPLEMENTATION-PLAN.md).
+
+Доменный action находится в шапке открытого Product sheet, не на малой карточке доски. Доступен с начала разработки. Sales наследуется из Deal, Tech назначается PM на Starting; недостающие назначения заполняются в sheet и должны быть готовы к завершению Starting.
+
+Перед завершением переноса для купленного/предоставленного аккаунта проверяются сохранённый реальный Credential и подтверждение подключения (для покупки также регистрация). Для «Через DNS клиента» достаточно зафиксировать способ и переданные инструкции: **подтверждение фактического подключения не требуется**. Общий Credential «DNS» заменяется явным способом после безопасной сверки legacy-связей.
+
+Использовать существующие stage requirements. Доменное требование относится к необходимым для переноса доменам; дополнительная покупка не блокирует основной сайт автоматически. Работа разработки не блокируется нерешённым вопросом до соответствующего этапа.

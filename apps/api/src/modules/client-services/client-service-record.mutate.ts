@@ -14,6 +14,11 @@ import type {
   ClientServiceRecordBody,
   UpdateClientServiceRecordBody,
 } from './client-services.types';
+import {
+  assertClientDnsHasNoCredential,
+  clientServicePatchForConnectionMode,
+  requireDomainConnectionMode,
+} from './domain-purchase/domain-connection-mode';
 
 type PrismaDb = InstanceType<typeof PrismaClient>;
 
@@ -23,6 +28,7 @@ export async function buildClientServiceCreateData(
 ): Promise<Prisma.ClientServiceRecordCreateInput> {
   const name = body.name?.trim();
   if (!name) throw new BadRequestException('Name is required');
+  assertClientDnsHasNoCredential(body.connectionMode, body.providerAccountId);
   const project = await resolveClientServiceProjectOrThrow(prisma, body.projectId);
   await ensureClientServiceProductMatchesProject(prisma, body.productId, project.id);
   await ensureClientServiceCredentialExists(prisma, body.providerAccountId);
@@ -48,6 +54,10 @@ export async function buildClientServiceCreateData(
     startDate: parseOptionalDate(body.startDate, 'startDate'),
     renewalDate: parseOptionalDate(body.renewalDate, 'renewalDate'),
     notes: body.notes?.trim() || null,
+    ...(body.connectionMode?.trim()
+      ? { connectionMode: requireDomainConnectionMode(body.connectionMode) }
+      : {}),
+    dnsInstructions: body.dnsInstructions?.trim() || null,
   };
 }
 
@@ -107,6 +117,22 @@ function applyClientServiceUpdateScalars(
     data.renewalDate = parseOptionalDate(body.renewalDate, 'renewalDate');
   }
   if (body.notes !== undefined) data.notes = body.notes?.trim() || null;
+  if (body.connectionMode !== undefined) {
+    if (!body.connectionMode?.trim()) {
+      data.connectionMode = null;
+    } else {
+      const mode = requireDomainConnectionMode(body.connectionMode);
+      const modePatch = clientServicePatchForConnectionMode(mode);
+      data.connectionMode = modePatch.connectionMode;
+      if (modePatch.billingModel) data.billingModel = modePatch.billingModel;
+      if (modePatch.providerAccountId === null) {
+        data.providerAccount = { disconnect: true };
+      }
+    }
+  }
+  if (body.dnsInstructions !== undefined) {
+    data.dnsInstructions = body.dnsInstructions?.trim() || null;
+  }
 }
 
 function requireNonEmptyClientServiceName(name: string): string {
@@ -172,4 +198,27 @@ export async function assertClientServiceActiveForMutation(
   if (row.status === 'CANCELLED') {
     throw new BadRequestException('Cancelled client service records cannot be modified');
   }
+}
+
+export async function assertClientServiceDnsCredentialRules(
+  prisma: PrismaDb,
+  id: string,
+  body: UpdateClientServiceRecordBody,
+): Promise<void> {
+  const current = await prisma.clientServiceRecord.findUnique({
+    where: { id },
+    select: { connectionMode: true, providerAccountId: true },
+  });
+  if (!current) throw new NotFoundException('Client service record not found');
+  const mode =
+    body.connectionMode !== undefined
+      ? body.connectionMode?.trim() || null
+      : current.connectionMode;
+  const credentialId =
+    body.providerAccountId !== undefined
+      ? body.providerAccountId?.trim() || null
+      : mode === 'CLIENT_DNS' && body.connectionMode !== undefined
+        ? null
+        : current.providerAccountId;
+  assertClientDnsHasNoCredential(mode, credentialId);
 }

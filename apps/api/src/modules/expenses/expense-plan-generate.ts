@@ -20,6 +20,15 @@ export async function generateExpenseCardFromPlan(
   if (plan.status === 'CANCELLED') {
     throw new BadRequestException('Resume the expense plan before generating a card.');
   }
+  if (plan.clientServiceRecordId) {
+    const service = await prisma.clientServiceRecord.findUnique({
+      where: { id: plan.clientServiceRecordId },
+      select: { status: true },
+    });
+    if (service?.status === 'CANCELLED') {
+      throw new BadRequestException('Cancelled client services cannot generate expense cards.');
+    }
+  }
 
   const fromBody = body?.dueDate?.trim() ? new Date(body.dueDate) : null;
   const occurrence = fromBody ?? plan.nextDueDate;

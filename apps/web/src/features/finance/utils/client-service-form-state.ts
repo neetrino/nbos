@@ -20,6 +20,8 @@ export interface ClientServiceFormState {
   startDate: string;
   renewalDate: string;
   notes: string;
+  connectionMode: string;
+  dnsInstructions: string;
 }
 
 export const EMPTY_CLIENT_SERVICE_FORM: ClientServiceFormState = {
@@ -41,6 +43,8 @@ export const EMPTY_CLIENT_SERVICE_FORM: ClientServiceFormState = {
   startDate: '',
   renewalDate: '',
   notes: '',
+  connectionMode: '',
+  dnsInstructions: '',
 };
 
 function toDateInputValue(value: string | null): string {
@@ -67,21 +71,24 @@ export function clientServiceToFormState(row: ClientServiceRecord): ClientServic
     startDate: toDateInputValue(row.startDate),
     renewalDate: toDateInputValue(row.renewalDate),
     notes: row.notes ?? '',
+    connectionMode: row.connectionMode ?? '',
+    dnsInstructions: row.dnsInstructions ?? '',
   };
 }
 
 export function clientServiceFormToPayload(
   form: ClientServiceFormState,
 ): ClientServiceRecordPayload {
+  const isDns = form.connectionMode === 'CLIENT_DNS';
   return {
     projectId: form.projectId,
     productId: form.productId.trim() || null,
     type: form.type,
     name: form.name.trim(),
     provider: form.provider.trim() || null,
-    providerAccountId: form.providerAccountId.trim() || null,
+    providerAccountId: isDns ? null : form.providerAccountId.trim() || null,
     status: form.status,
-    billingModel: form.billingModel,
+    billingModel: isDns ? 'REMINDER_ONLY' : form.billingModel,
     pricingModel: form.pricingModel,
     frequency: form.frequency,
     ourCost: parseOptionalAmount(form.ourCost),
@@ -92,6 +99,12 @@ export function clientServiceFormToPayload(
     startDate: form.startDate || null,
     renewalDate: form.renewalDate || null,
     notes: form.notes.trim() || null,
+    ...(form.type === 'DOMAIN'
+      ? {
+          ...(form.connectionMode.trim() ? { connectionMode: form.connectionMode.trim() } : {}),
+          dnsInstructions: form.dnsInstructions.trim() || null,
+        }
+      : {}),
   };
 }
 

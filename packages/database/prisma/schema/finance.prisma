@@ -141,6 +141,7 @@ model Invoice {
   payments            Payment[]
   partnerAccruals     PartnerAccrual[]
   partnerServiceTerms PartnerServiceTerm[]
+  sourceExpenses      Expense[]            @relation("ExpenseSourceInvoice")
 
   @@index([clientServiceRecordId])
   @@index([productId])
@@ -420,6 +421,7 @@ model Expense {
   credentialId          String?                   @map("credential_id")
   expensePlanId         String?                   @map("expense_plan_id")
   clientServiceRecordId String?                   @map("client_service_record_id")
+  sourceInvoiceId       String?                   @unique @map("source_invoice_id")
   isPassThrough         Boolean                   @default(false) @map("is_pass_through")
   taxStatus             TaxStatus                 @default(TAX) @map("tax_status")
   backlogReason         ExpenseBacklogReasonEnum? @map("backlog_reason")
@@ -432,6 +434,7 @@ model Expense {
   credential          Credential?          @relation(fields: [credentialId], references: [id], onDelete: SetNull)
   expensePlan         ExpensePlan?         @relation(fields: [expensePlanId], references: [id], onDelete: SetNull)
   clientServiceRecord ClientServiceRecord? @relation(fields: [clientServiceRecordId], references: [id], onDelete: SetNull)
+  sourceInvoice       Invoice?             @relation("ExpenseSourceInvoice", fields: [sourceInvoiceId], references: [id], onDelete: SetNull)
   expensePayments     ExpensePayment[]
   salaryLine          SalaryLine?
   partnerPayoutBatch  PartnerPayoutBatch?

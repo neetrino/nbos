@@ -216,6 +216,10 @@ describe('ClientServicesService', () => {
         data: { status: 'CANCELLED' },
       }),
     );
+    expect(prisma.expensePlan.updateMany).toHaveBeenCalledWith({
+      where: { clientServiceRecordId: 'svc-1', status: 'ACTIVE', autoGenerate: true },
+      data: { autoGenerate: false },
+    });
     expect(result.status).toBe('CANCELLED');
   });
 

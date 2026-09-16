@@ -14,6 +14,8 @@ export interface CreateExpenseDto {
   expensePlanId?: string;
   /** When set, links the expense to a `ClientServiceRecord` source. */
   clientServiceRecordId?: string;
+  /** Paid client invoice that materialized this card (unique cycle key). */
+  sourceInvoiceId?: string;
   isPassThrough?: boolean;
   taxStatus?: string;
   backlogReason?: string | null;

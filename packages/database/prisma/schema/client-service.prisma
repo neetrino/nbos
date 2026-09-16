@@ -39,6 +39,13 @@ enum ClientServiceRegistryLookupSourceEnum {
   RDAP
 }
 
+/// How this domain is connected. Null on non-domain services and legacy rows.
+enum ClientServiceConnectionMode {
+  PURCHASE
+  EXISTING_ACCESS
+  CLIENT_DNS
+}
+
 model ClientServiceRecord {
   id                   String                    @id @default(uuid())
   projectId            String                    @map("project_id")
@@ -64,6 +71,13 @@ model ClientServiceRecord {
   registryCheckedAt    DateTime?                 @map("registry_checked_at")
   registryLookupSource ClientServiceRegistryLookupSourceEnum? @map("registry_lookup_source")
   notes                String?
+  connectionMode          ClientServiceConnectionMode? @map("connection_mode")
+  connectionVerifiedAt    DateTime?                  @map("connection_verified_at")
+  registrationConfirmedAt DateTime?                  @map("registration_confirmed_at")
+  dnsInstructions         String?                    @map("dns_instructions") @db.Text
+  /// AES-256-GCM v2 blob. Never returned on list/search; decrypt only for EDIT.
+  encryptedRegistrantData String?                    @map("encrypted_registrant_data") @db.Text
+  registrantDataUpdatedAt DateTime?                  @map("registrant_data_updated_at")
   createdAt            DateTime                  @default(now()) @map("created_at")
   updatedAt            DateTime                  @updatedAt @map("updated_at")
 
@@ -83,5 +97,6 @@ model ClientServiceRecord {
   @@index([billingModel])
   @@index([renewalDate])
   @@index([type, registryCheckedAt])
+  @@index([connectionMode])
   @@map("client_service_records")
 }

@@ -84,4 +84,11 @@ describe('isolated finance grants', () => {
     expectHandlerAllowed(InvoicesController, 'findAll', INVOICES_VIEW);
     expectHandlerDenied(ClientServicesController, 'findAll', INVOICES_VIEW);
   });
+
+  it('rejects invoices VIEW on mark-paid money status and allows EDIT', () => {
+    expectHandlerDenied(InvoicesController, 'updateMoneyStatus', INVOICES_VIEW);
+    expectHandlerAllowed(InvoicesController, 'updateMoneyStatus', {
+      FINANCE_INVOICES_EDIT: 'ALL',
+    });
+  });
 });

@@ -41,14 +41,16 @@ export function parseOptionalDate(value: string | null | undefined, field: strin
   return date;
 }
 
-export function serializeClientServiceRow<T extends { ourCost?: unknown; clientCharge?: unknown }>(
-  row: T,
-) {
+export function serializeClientServiceRow<
+  T extends { ourCost?: unknown; clientCharge?: unknown; encryptedRegistrantData?: unknown },
+>(row: T) {
+  const { encryptedRegistrantData, ...rest } = row;
   return {
-    ...row,
+    ...rest,
     ourCost: row.ourCost === null || row.ourCost === undefined ? null : String(row.ourCost),
     clientCharge:
       row.clientCharge === null || row.clientCharge === undefined ? null : String(row.clientCharge),
+    hasRegistrantData: Boolean(encryptedRegistrantData),
   };
 }
 

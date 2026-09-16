@@ -180,6 +180,7 @@ function CostAndRenewalRows({
       <ClientServiceCredentialField
         credentialId={form.providerAccountId}
         credentialLabel={credentialLabel}
+        projectId={form.projectId}
         onSelect={onCredentialSelect}
         onClear={onCredentialClear}
       />

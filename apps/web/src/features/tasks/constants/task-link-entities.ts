@@ -1,6 +1,7 @@
 import {
   FileText,
   FolderKanban,
+  Globe,
   Handshake,
   Headphones,
   Layers,
@@ -25,6 +26,7 @@ export const TASK_LINK_ENTITY_LABELS: Record<string, string> = {
   SUPPORT_TICKET: 'Ticket',
   WORK_SPACE: 'Work Space',
   WORKSPACE: 'Work Space',
+  ClientServiceRecord: 'Client Service',
 };
 
 /** Only these can be connected/disconnected from the task sheet. */
@@ -60,6 +62,8 @@ export function taskLinkEntityIcon(entityType: string): LucideIcon {
       return FileText;
     case 'INVOICE':
       return Receipt;
+    case 'ClientServiceRecord':
+      return Globe;
     case 'SUPPORT_TICKET':
       return Headphones;
     default:

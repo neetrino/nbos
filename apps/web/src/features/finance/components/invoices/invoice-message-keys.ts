@@ -102,6 +102,8 @@ export const INVOICE_REMINDER_SKIP_MESSAGE_KEYS = {
   max_wave: 'reminders.skip.max_wave',
   no_product_link: 'reminders.skip.no_product_link',
   already_sent: 'reminders.skip.already_sent',
+  domain_not_found: 'reminders.skip.domain_not_found',
+  service_cancelled: 'reminders.skip.service_cancelled',
 } as const satisfies Record<
   OverdueReminderSkipReason,
   `reminders.skip.${OverdueReminderSkipReason}`

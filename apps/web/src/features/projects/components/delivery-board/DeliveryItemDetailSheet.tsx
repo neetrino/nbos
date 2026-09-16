@@ -415,6 +415,7 @@ export function DeliveryItemDetailSheet({
                 entityKind={headerProps?.entityKind ?? 'PRODUCT'}
                 workspaceHref={headerProps?.workSpaceHref ?? '#'}
                 loading={detailHydrating}
+                productId={headerProps?.entityKind === 'PRODUCT' ? headerProps.productId : null}
                 onCommitTitle={handleCommitTitle}
               />
 

@@ -359,6 +359,27 @@ describe('InvoicesService', () => {
       expect(prisma.invoice.update).not.toHaveBeenCalled();
     });
 
+    it('passes the marking employee as payment confirmedBy so prep Task can be created', async () => {
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: 'manual-inv',
+          orderId: null,
+          amount: 100000,
+          dueDate: new Date('2026-04-20'),
+          payments: [],
+        })
+        .mockResolvedValueOnce(mockInvoiceFindByIdRow('manual-inv'));
+
+      await service.updateMoneyStatus('manual-inv', 'PAID', 'emp-actor');
+
+      expect(paymentsService.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          invoiceId: 'manual-inv',
+          confirmedBy: 'emp-actor',
+        }),
+      );
+    });
+
     it('does not create payment when PAID and already fully covered', async () => {
       const paidDate = new Date('2026-04-12T00:00:00.000Z');
       const fullPayments = [

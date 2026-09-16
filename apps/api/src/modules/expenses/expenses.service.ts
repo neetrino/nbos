@@ -270,6 +270,7 @@ export class ExpensesService {
       ...expenseOwnershipWrite(links),
       ...(data.expensePlanId ? { expensePlanId: data.expensePlanId } : {}),
       ...(data.clientServiceRecordId ? { clientServiceRecordId: data.clientServiceRecordId } : {}),
+      ...(data.sourceInvoiceId ? { sourceInvoiceId: data.sourceInvoiceId } : {}),
       isPassThrough: data.isPassThrough ?? false,
       taxStatus: resolveExpenseTaxStatus(
         data.taxStatus,

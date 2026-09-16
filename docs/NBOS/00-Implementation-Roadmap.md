@@ -1,5 +1,7 @@
 # NBOS Implementation Roadmap
 
+**Client Services / Domains, 2026-09-17:** канон утверждён. Код в рабочей ветке частичный — [факт](../implementation/CLIENT-SERVICES-IMPLEMENTATION-PLAN.md#9-фактический-статус-кода-2026-09-17); канон не считать готовым продуктом. RBAC Client Services / Expense Plans не дублировать.
+
 > Developer roadmap for implementing the NBOS canon module by module without breaking already working areas.
 
 ## Purpose

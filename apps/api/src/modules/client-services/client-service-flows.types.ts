@@ -15,6 +15,7 @@ export interface CreateClientServiceExpenseBody {
   dueDate?: string | null;
   status?: string;
   notes?: string;
+  sourceInvoiceId?: string | null;
 }
 
 export interface CreateClientServiceTaskBody {

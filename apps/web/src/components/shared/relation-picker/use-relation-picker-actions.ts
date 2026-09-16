@@ -6,7 +6,7 @@ import { useEntityRelations } from './entity-relations-context';
 import type { RelationCreateContext, RelationEntityKind } from './relation-picker.types';
 import { buildRelationCreateIntent } from './parse-relation-create-intent';
 
-const CREATE_DISABLED_KINDS = new Set<RelationEntityKind>(['employee', 'order', 'credential']);
+const CREATE_DISABLED_KINDS = new Set<RelationEntityKind>(['employee', 'order']);
 
 const RELATION_CREATE_PERMISSION: Partial<
   Record<RelationEntityKind, { module: string; action: string }>
@@ -16,6 +16,7 @@ const RELATION_CREATE_PERMISSION: Partial<
   partner: { module: 'PARTNERS', action: 'ADD' },
   project: { module: 'PROJECTS', action: 'ADD' },
   product: { module: 'PROJECTS', action: 'ADD' },
+  credential: { module: 'CREDENTIALS', action: 'ADD' },
 };
 
 function canCreateEntity(kind: RelationEntityKind, context?: RelationCreateContext): boolean {

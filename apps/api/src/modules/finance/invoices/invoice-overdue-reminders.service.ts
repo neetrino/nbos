@@ -29,6 +29,7 @@ type OverdueCandidate = {
   notificationsEnabled: boolean;
   company: { name: string } | null;
   clientServiceRecord: {
+    status: string;
     notificationsEnabled: boolean;
     reminderLanguage: SubscriptionReminderLanguage;
     productId: string | null;
@@ -188,6 +189,7 @@ export class InvoiceOverdueRemindersService {
       hasProductLink: invoice.subscription != null || invoice.clientServiceRecord != null,
       notificationsEnabled: isOverdueNotificationsEnabled(invoice),
       domainRegistryDead: isDomainRegistryDead(invoice),
+      serviceCancelled: invoice.clientServiceRecord?.status === 'CANCELLED',
       taxBlocked: isOfficialRequestBlockingTaxReminders(invoice),
       hasWhatsAppGroup: Boolean(productWhatsApp?.groupChatId),
       wave1ScheduledFor: jobs?.wave1ScheduledFor ?? null,

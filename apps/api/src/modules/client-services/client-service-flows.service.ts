@@ -126,6 +126,7 @@ export class ClientServiceFlowsService {
       productId: service.productId,
       credentialId: service.providerAccountId,
       clientServiceRecordId: service.id,
+      sourceInvoiceId: body.sourceInvoiceId?.trim() || undefined,
       isPassThrough: service.billingModel === 'WE_PAY',
       taxStatus: service.taxStatus,
       notes,

@@ -14,12 +14,14 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { cn } from '@/lib/utils';
+import { ProductDomainEntry } from '@/features/finance/components/domain-purchase/ProductDomainEntry';
 
 interface DeliveryItemDetailHeaderProps {
   title: string;
   entityKind: 'PRODUCT' | 'EXTENSION';
   workspaceHref: string;
   loading: boolean;
+  productId?: string | null;
   onCommitTitle: (trimmed: string) => Promise<void>;
 }
 
@@ -28,6 +30,7 @@ export function DeliveryItemDetailHeader({
   entityKind,
   workspaceHref,
   loading,
+  productId = null,
   onCommitTitle,
 }: DeliveryItemDetailHeaderProps) {
   const t = useTranslations('deliveryBoard');
@@ -109,6 +112,11 @@ export function DeliveryItemDetailHeader({
       </DetailSheetSettingsMenu>
     ) : null;
 
+  const domainChip =
+    entityKind === 'PRODUCT' && productId ? (
+      <ProductDomainEntry productId={productId} className="shrink-0" />
+    ) : null;
+
   const entityBadge = (
     <span
       className={cn(
@@ -183,6 +191,7 @@ export function DeliveryItemDetailHeader({
           <div className="min-w-0 flex-1">{titleRow}</div>
           <span className="mt-1">{entityBadge}</span>
         </div>
+        {domainChip ? <div className="px-5 pb-2">{domainChip}</div> : null}
       </div>
     );
   }
@@ -235,6 +244,7 @@ export function DeliveryItemDetailHeader({
           </h2>
         )}
         {entityBadge}
+        {domainChip}
       </div>
       <div className="flex shrink-0 items-center gap-0.5 self-start">{settingsMenu}</div>
     </div>

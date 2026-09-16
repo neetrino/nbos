@@ -186,7 +186,8 @@
       "LEAD": "Лид",
       "INVOICE": "Счёт",
       "SUPPORT_TICKET": "Тикет",
-      "WORK_SPACE": "Пространство"
+      "WORK_SPACE": "Пространство",
+      "ClientServiceRecord": "Клиентская услуга"
     },
     "files": {
       "emptyHint": "Перетащите файл сюда или нажмите +, чтобы выбрать",
