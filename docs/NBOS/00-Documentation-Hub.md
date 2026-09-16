@@ -1,5 +1,7 @@
 # Центральный указатель документации NBOS
 
+**Домены / Client Services (2026-09-17, утверждено, реализация ожидается):** [канон процесса](02-Modules/04-Finance/08-Domain-Purchase-and-Connection.md), [план](../implementation/CLIENT-SERVICES-IMPLEMENTATION-PLAN.md), [промпт Cursor](../implementation/CLIENT-SERVICES-CURSOR-HANDOFF.md).
+
 **Локализация интерфейса (решение 2026-09-12, реализация ожидается):** [канон EN/RU → HY](01-Platform-Overview/07-Interface-Localization.md), [план реализации](../implementation/I18N-IMPLEMENTATION-PLAN.md).
 
 **Назначение:** одна страница, с которой можно продолжить работу в любой день: что канонично, где лежит архив, как связаны требования и код.

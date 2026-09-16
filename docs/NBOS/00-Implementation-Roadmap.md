@@ -1,5 +1,7 @@
 # NBOS Implementation Roadmap
 
+**Client Services / Domains, 2026-09-17:** утверждён [процесс покупки и подключения](02-Modules/04-Finance/08-Domain-Purchase-and-Connection.md). Реализация планируется по [этапам 0–5](../implementation/CLIENT-SERVICES-IMPLEMENTATION-PLAN.md); это не отметка выполненной работы. Отдельную RBAC-реализацию использовать как зависимость, не дублировать.
+
 > Developer roadmap for implementing the NBOS canon module by module without breaking already working areas.
 
 ## Purpose

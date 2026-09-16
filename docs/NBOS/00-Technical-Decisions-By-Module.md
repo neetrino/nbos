@@ -1,5 +1,7 @@
 # NBOS Technical Decisions By Module
 
+**Client Services / Domains, 2026-09-17:** [обязательное целевое решение](02-Modules/04-Finance/08-Domain-Purchase-and-Connection.md). Один Product-контекст, один Invoice на домен, существующие Vault/Tasks/RDAP, идемпотентный Expense после Payment с разрешённым manual-first flow. Новые workflow engine, RegistrantProfile и many-to-many Invoice–Service не входят в объём. [Техническая сверка перед реализацией](../implementation/CLIENT-SERVICES-IMPLEMENTATION-PLAN.md#2-этап-0--техническая-сверка).
+
 **Cross-module i18n, 2026-09-12:** утверждён next-intl без изменения URL, персональная Employee.interfaceLocale и поэтапный EN/RU → HY. Реализация ещё не начата. Обязательный [канон локализации](01-Platform-Overview/07-Interface-Localization.md).
 
 > Mandatory technical decision index for implementing NBOS modules.
