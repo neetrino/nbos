@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { DataView, LoadingState } from '@/components/shared';
 import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { isAccessRevokedApiError } from '@/lib/api-errors';
 import { DeliveryBoardPageHero } from '@/features/projects/components/delivery-board/DeliveryBoardPageHero';
 import { DeliveryBoardView } from '@/features/projects/components/delivery-board/DeliveryBoardView';
 import { DeliveryBoardClosedBoard } from '@/features/projects/components/delivery-board/DeliveryBoardClosedBoard';
@@ -90,8 +91,10 @@ function DeliveryBoardPageContent() {
         fetchAllExtensionsList(),
       ]);
       setItems(mergeDeliveryBoardItems(products, extensions));
-    } catch {
-      // A failed refresh keeps the board that is already on screen.
+    } catch (caught) {
+      // A failed refresh keeps the board already on screen, unless the server withdrew read
+      // access: those items must not survive a denial.
+      if (isAccessRevokedApiError(caught)) setItems([]);
       setLoadFailed(true);
     } finally {
       endLoad();

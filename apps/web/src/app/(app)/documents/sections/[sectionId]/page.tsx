@@ -25,7 +25,7 @@ import {
   useDebouncedValue,
 } from '@/components/shared';
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import { DOCUMENTS_SEARCH_DEBOUNCE_MS } from '@/features/documents/documents.constants';
 import { CreateDocumentDialog } from '@/features/documents/CreateDocumentDialog';
@@ -44,6 +44,7 @@ export default function DocumentSectionPage() {
   const { can } = usePermission();
   const [sections, setSections] = useState<DocumentSection[]>([]);
   const [rows, setRows] = useState<DocumentListItem[]>([]);
+  const [rowsSectionId, setRowsSectionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -80,7 +81,11 @@ export default function DocumentSectionPage() {
       ]);
       setSections(sec);
       setRows(docs);
+      setRowsSectionId(sectionId);
     } catch (e) {
+      // A failed refresh keeps the rows already on screen, unless the server withdrew read
+      // access: those rows must not survive a denial.
+      if (isAccessRevokedApiError(e)) setRowsSectionId(null);
       setError(getApiErrorMessage(e, 'Could not load section documents.'));
     } finally {
       setLoading(false);
@@ -90,6 +95,10 @@ export default function DocumentSectionPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Revalidating in place keeps rows mounted, but only while they belong to this route:
+  // `sections` holds every section, so `section` resolves to the new id before its rows arrive.
+  const showsLoadedRows = section != null && rowsSectionId === sectionId;
 
   const canAdd = can('ADD', 'DOCUMENTS');
 
@@ -188,13 +197,13 @@ export default function DocumentSectionPage() {
         />
       </div>
 
-      {error && section ? (
+      {error && showsLoadedRows ? (
         <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
       ) : null}
       <DataView
         loading={loading}
         error={error}
-        hasData={section != null}
+        hasData={showsLoadedRows}
         loadingFallback={<LoadingState variant="list" />}
         errorFallback={<ErrorState description={error ?? ''} onRetry={load} />}
         emptyFallback={
@@ -206,7 +215,7 @@ export default function DocumentSectionPage() {
           ) : null
         }
       >
-        {section ? (
+        {showsLoadedRows ? (
           rows.length === 0 ? (
             <EmptyState
               icon={FileText}

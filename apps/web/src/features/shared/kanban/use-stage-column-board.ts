@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { KANBAN_COLUMN_PAGE_SIZE } from '@/features/shared/kanban/kanban-column-page';
 import { useRevalidationState } from '@/hooks/use-revalidation-state';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 
 export interface StageColumnPageMeta {
   total: number;
@@ -71,6 +71,14 @@ export function hasRenderableItems(
  * `reload` revalidates in place: while columns already hold rows it reports `refreshing`
  * instead of `loading` and keeps those rows mounted, so refreshing the board after a save
  * never blanks it. `loading` stays reserved for the first load of a stage key set.
+ *
+ * A failed revalidation sets `error` while the rows stay on screen, so callers must surface it
+ * as a banner and clear it through `clearError`. The exception is a server-side access denial,
+ * which drops the rows and falls back to the error branch.
+ *
+ * Pass `subjectKey` when the board belongs to one parent entity (a product, a project). Changing
+ * it makes the next load a first load, so one entity's rows are never shown under another.
+ * Filters and search do not belong in it: narrowing a result set is a revalidation.
  */
 export function useStageColumnBoard<T extends { id: string }>(options: {
   stageKeys: readonly string[];
@@ -82,6 +90,7 @@ export function useStageColumnBoard<T extends { id: string }>(options: {
     status: string;
   }) => Promise<StageColumnFetchResult<T>>;
   loadErrorMessage?: string;
+  subjectKey?: string;
 }) {
   const {
     stageKeys,
@@ -89,6 +98,7 @@ export function useStageColumnBoard<T extends { id: string }>(options: {
     getStageKey,
     fetchPage,
     loadErrorMessage = 'Could not load board columns. Check your connection and try again.',
+    subjectKey = '',
   } = options;
 
   const [buckets, setBuckets] = useState<Record<string, StageBucket<T>>>({});
@@ -99,8 +109,12 @@ export function useStageColumnBoard<T extends { id: string }>(options: {
   bucketsRef.current = buckets;
   const getStageKeyRef = useRef(getStageKey);
   getStageKeyRef.current = getStageKey;
+  const subjectKeyRef = useRef(subjectKey);
 
   const stageKeySignature = stageKeys.join('|');
+
+  /** Dismisses a failed-revalidation notice without discarding the rows on screen. */
+  const clearError = useCallback(() => setError(null), []);
 
   const reload = useCallback(async () => {
     if (!enabled) {
@@ -111,7 +125,12 @@ export function useStageColumnBoard<T extends { id: string }>(options: {
     }
 
     const keys = parseStageKeys(stageKeySignature);
-    const revalidating = hasRenderableItems(bucketsRef.current, keys);
+    // Rows loaded for another subject are not this board's content, so a changed `subjectKey`
+    // makes the next load a first load: the previous entity's rows must not stand in for it.
+    const subjectChanged = subjectKeyRef.current !== subjectKey;
+    subjectKeyRef.current = subjectKey;
+    const revalidating = !subjectChanged && hasRenderableItems(bucketsRef.current, keys);
+    if (subjectChanged) setBuckets({});
 
     const generation = ++fetchGenerationRef.current;
     begin(revalidating);
@@ -145,12 +164,13 @@ export function useStageColumnBoard<T extends { id: string }>(options: {
     } catch (caught) {
       if (generation !== fetchGenerationRef.current) return;
       setError(getApiErrorMessage(caught, loadErrorMessage));
-      // A failed revalidation keeps the rows that are already on screen.
-      if (!revalidating) setBuckets({});
+      // A failed revalidation keeps the rows already on screen, unless the server withdrew
+      // read access: those rows must not survive a denial.
+      if (!revalidating || isAccessRevokedApiError(caught)) setBuckets({});
     } finally {
       if (generation === fetchGenerationRef.current) end();
     }
-  }, [begin, enabled, end, fetchPage, loadErrorMessage, stageKeySignature]);
+  }, [begin, enabled, end, fetchPage, loadErrorMessage, stageKeySignature, subjectKey]);
 
   useEffect(() => {
     void reload();
@@ -313,6 +333,7 @@ export function useStageColumnBoard<T extends { id: string }>(options: {
     loading,
     refreshing,
     error,
+    clearError,
     reload,
     loadMoreColumn,
     loadMoreAll,

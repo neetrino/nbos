@@ -31,7 +31,27 @@ fresh copy arrives.
 
 The same rule covers failures. If a refresh fails while data is on screen, keep the data and show a
 dismissible `ListMutationErrorBanner`. The full-screen `QueryLoadError` is only for a first load
-that failed, when there is genuinely nothing to show.
+that failed, when there is genuinely nothing to show. Because `DataView` will not render the error
+screen over existing content, a surface that omits the banner reports nothing at all — the rule is
+not optional.
+
+### Keeping data is not the same as keeping the right data
+
+Two situations look like a refresh but must clear what is on screen.
+
+**The identity changed.** On a detail route, `hasData` means "the loaded record is the one this URL
+asks for", not "some record is loaded". Comparing against the route parameter — `doc?.id === id` —
+is what makes the difference; a bare null check leaves the previous document rendered under the new
+address while the new one loads. The same applies to any surface keyed by a selection: keep the id
+the rows were loaded for and compare it, because a parent list can resolve the new key long before
+its children arrive. `useStageColumnBoard` takes a `subjectKey` for this. Filters and search are not
+identity — narrowing a result set is an ordinary revalidation and should keep the rows on screen.
+
+**The server withdrew access.** Permissions can be revoked, or a record deleted, between the first
+load and the refresh. A refresh rejected with 401, 403 or 404 means the caller may no longer read
+what is on screen, so the surface drops it and falls back to its error branch. Only transient
+failures — network, timeout, 5xx — keep stale content. Branch on `isAccessRevokedApiError` from
+`@/lib/api-errors`; never treat every rejection as transient.
 
 ## Rendering rule
 
@@ -60,8 +80,11 @@ A data hook owns two booleans, not one.
 - `refreshing` — a fetch is in flight over data that is already on screen.
 
 A reload decides between them by asking whether it currently has renderable data. A failed
-revalidation keeps the previous data in state and only reports the error; it must not clear the
-data it already had.
+revalidation keeps the previous data in state and only reports the error, except when the server
+withdrew access, as described above.
+
+A hook that can report an error over existing data also exposes a way to clear it, so its consumer
+can render a dismissible banner. `useStageColumnBoard` returns `clearError` for this.
 
 Reference implementations:
 
@@ -123,9 +146,12 @@ product reads are. Never broaden who receives an event beyond who may already re
 
 1. The data hook exposes `loading` and `refreshing` separately.
 2. Content is rendered through `DataView`.
-3. A failed refresh over existing data shows a banner, not an error screen.
-4. After a write, the response is merged unless one of the refetch conditions above applies.
-5. If a refetch is needed, it runs silently — nothing on screen unmounts.
+3. `hasData` compares the loaded data against the route parameter or selection key it belongs to.
+4. A failed refresh over existing data shows a banner, not an error screen — and the banner is
+   actually rendered, with a dismiss handler wired to the hook.
+5. A refresh rejected with 401, 403 or 404 clears the data instead of keeping it.
+6. After a write, the response is merged unless one of the refetch conditions above applies.
+7. If a refetch is needed, it runs silently — nothing on screen unmounts.
 
 ## Direction of travel
 

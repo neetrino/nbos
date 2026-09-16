@@ -23,7 +23,7 @@ import { NativeDocumentEditor } from '@/features/documents/NativeDocumentEditor'
 import { DocumentStatusBadge } from '@/features/documents/DocumentStatusBadge';
 import { formatDocumentRelativeTime } from '@/features/documents/format-relative-time';
 import { documentsApi, type DocumentActivityItem, type DocumentDetail } from '@/lib/api/documents';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 
 const DOCUMENTS_EDIT_KEY = 'DOCUMENTS_EDIT';
@@ -89,7 +89,9 @@ export default function DocumentDetailPage() {
       const canEditDoc = hasDocumentsEditPermission(permissions);
       setContentTab(next.status === 'DRAFT' && canEditDoc ? 'edit' : 'view');
     } catch (e) {
-      // A failed refresh keeps the document that is already on screen.
+      // A failed refresh keeps the document already on screen, unless the server withdrew read
+      // access: a denied or deleted document must not survive as stale content.
+      if (isAccessRevokedApiError(e)) setDoc(null);
       setError(getApiErrorMessage(e, 'Document could not be loaded.'));
     } finally {
       setLoading(false);
@@ -145,6 +147,10 @@ export default function DocumentDetailPage() {
   const visibleActivity =
     doc && doc.activityRevealed !== false ? [...doc.activityEvents, ...olderActivity] : [];
 
+  // Revalidating in place keeps content mounted, but only while it belongs to this route:
+  // after navigating to another document the previous one must not stand in for the new id.
+  const showsLoadedDoc = doc?.id === id;
+
   const canDelete = can('DELETE', 'DOCUMENTS');
   const canEdit = can('EDIT', 'DOCUMENTS');
   const canUseDrive = hasActivePermission(permissions, DRIVE_ADD_KEY);
@@ -160,13 +166,13 @@ export default function DocumentDetailPage() {
         <ArrowLeft size={14} /> Documents
       </Link>
 
-      {error && doc ? (
+      {error && showsLoadedDoc ? (
         <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
       ) : null}
       <DataView
         loading={loading}
         error={error}
-        hasData={doc !== null}
+        hasData={showsLoadedDoc}
         loadingFallback={<LoadingState variant="list" count={3} />}
         errorFallback={<ErrorState description={error ?? ''} onRetry={load} />}
       >

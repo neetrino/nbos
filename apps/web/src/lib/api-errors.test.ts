@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ApiError,
   getApiErrorMessage,
+  isAccessRevokedApiError,
   isBusinessTransitionApiError,
   isPermissionDeniedApiError,
   isPermissionDeniedMessage,
@@ -106,5 +107,25 @@ describe('api error helpers', () => {
     expect(getApiErrorMessage(error, 'fallback')).toBe(PERMISSION_DENIED_MESSAGE);
     expect(isPermissionDeniedMessage(PERMISSION_DENIED_MESSAGE)).toBe(true);
     expect(isPermissionDeniedMessage('Invoices could not be loaded.')).toBe(false);
+  });
+});
+
+describe('isAccessRevokedApiError', () => {
+  it.each([401, 403, 404])('treats %i as the server withdrawing read access', (statusCode) => {
+    expect(isAccessRevokedApiError(toApiError({ statusCode }, 'Request failed'))).toBe(true);
+  });
+
+  it.each([408, 429, 500, 503])('treats %i as a transient failure', (statusCode) => {
+    expect(isAccessRevokedApiError(toApiError({ statusCode }, 'Request failed'))).toBe(false);
+  });
+
+  it('treats a response with no status as transient', () => {
+    expect(isAccessRevokedApiError(toApiError({ message: 'Network Error' }, 'fallback'))).toBe(
+      false,
+    );
+  });
+
+  it('ignores errors that never reached the API layer', () => {
+    expect(isAccessRevokedApiError(new Error('boom'))).toBe(false);
   });
 });

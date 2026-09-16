@@ -25,7 +25,7 @@ import {
 } from '@/features/finance/constants/payroll-runs-list-url';
 import { PAYROLL_RUN_STATUS_MESSAGE_KEY } from '@/features/finance/constants/payroll-run-ui';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import {
   payrollRunsApi,
@@ -124,7 +124,12 @@ export function PayrollRunsListPageContent() {
       setItems(data.items);
       setStats(statsData);
     } catch (caught) {
-      // A failed refresh keeps the runs that are already on screen.
+      // A failed refresh keeps the runs already on screen, unless the server withdrew read
+      // access: those runs must not survive a denial.
+      if (isAccessRevokedApiError(caught)) {
+        setItems([]);
+        setStats(null);
+      }
       setError(getApiErrorMessage(caught, t('list.loadError')));
     } finally {
       setLoading(false);

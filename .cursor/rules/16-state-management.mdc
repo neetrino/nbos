@@ -25,8 +25,10 @@ Rules:
 
 - A surface that already holds data **never returns to `loading`**. Refetch runs under `refreshing`; content stays mounted (stale-while-revalidate).
 - A **failed revalidation keeps the previous data** in state and reports the error separately — never clear data you already had.
+- **Except** when the server withdrew access: a refresh rejected with 401/403/404 **clears** the data (`isAccessRevokedApiError` from `@/lib/api-errors`). Only transient failures keep stale content.
 - Render through **`DataView`** from `@/components/shared`. Do not hand-roll `{loading ? <LoadingState /> : content}`.
-- A failed refresh over existing data → `ListMutationErrorBanner`. `QueryLoadError` is only for a failed **first** load.
+- `hasData` means **"the loaded data belongs to this route or selection"** — compare against the key (`doc?.id === id`), not a bare null check, or the previous record renders under the new id.
+- A failed refresh over existing data → `ListMutationErrorBanner`, actually rendered and wired to a `clearError`. `DataView` suppresses the error branch once data exists, so an omitted banner reports **nothing**. `QueryLoadError` is only for a failed **first** load.
 
 After a write, pick the cheapest correct option: **merge** the response when it matches the rendered shape; **refetch** only when the response is thinner than a list row, the list carries computed fields the response omits, or the write has server-side side effects on other records; **push (SSE)** only for genuinely concurrent surfaces.
 

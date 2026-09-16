@@ -67,6 +67,25 @@ export function isPermissionDeniedApiError(error: unknown): error is ApiError {
   return error instanceof ApiError && error.statusCode === 403;
 }
 
+/** Statuses where the server refuses to hand the data back: no session, revoked permission, or a row the caller may no longer read. */
+const ACCESS_REVOKED_STATUS_CODES = new Set([401, 403, 404]);
+
+/**
+ * True when a failed load means the caller is no longer allowed to see the data.
+ *
+ * Stale-while-revalidate keeps loaded content on screen when a refresh fails, which is right
+ * for transient faults but wrong here: permissions can be revoked, or a record deleted, between
+ * the first load and the refresh. Callers must drop the data they hold when this returns true,
+ * so the surface falls back to its error branch instead of serving a denied read from memory.
+ */
+export function isAccessRevokedApiError(error: unknown): boolean {
+  return (
+    error instanceof ApiError &&
+    error.statusCode !== undefined &&
+    ACCESS_REVOKED_STATUS_CODES.has(error.statusCode)
+  );
+}
+
 /** List/page load errors that should render Access Denied instead of a retry frame. */
 export function isPermissionDeniedMessage(message: string | null | undefined): boolean {
   return message === PERMISSION_DENIED_MESSAGE;
