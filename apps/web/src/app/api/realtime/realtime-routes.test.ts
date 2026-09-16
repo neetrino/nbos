@@ -7,6 +7,7 @@ vi.mock('@/lib/bff-proxy', () => ({
 
 import { proxyToBackend } from '@/lib/bff-proxy';
 import { GET as getCalls } from './calls/route';
+import { GET as getDelivery } from './delivery/route';
 import { GET as getNotifications } from './notifications/route';
 
 describe('realtime SSE routes', () => {
@@ -16,6 +17,7 @@ describe('realtime SSE routes', () => {
 
   it.each([
     ['calls', getCalls, ['realtime', 'calls']],
+    ['delivery', getDelivery, ['realtime', 'delivery']],
     ['notifications', getNotifications, ['realtime', 'notifications']],
   ] as const)('uses the refresh-capable BFF for %s', async (_name, handler, path) => {
     const request = new NextRequest(`http://localhost:3000/api/realtime/${path[1]}`);

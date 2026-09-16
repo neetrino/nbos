@@ -40,6 +40,7 @@ import type { ProductBoardTab } from '@/features/projects/components/delivery-bo
 import type { DeliverySheetStageGateHighlight } from '@/features/projects/components/delivery-board/delivery-stage-gate-highlight';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useDeliveryBoardMutations } from '@/features/projects/components/delivery-board/use-delivery-board-mutations';
+import { useDeliveryBoardRealtime } from '@/features/projects/components/delivery-board/use-delivery-board-realtime';
 import {
   buildProductDetailPageHref,
   PRODUCT_DETAIL_TAB,
@@ -106,6 +107,8 @@ function DeliveryBoardPageContent() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useDeliveryBoardRealtime(load);
 
   const scopedItems = useMemo(() => {
     if (!projectFilterId) return items;

@@ -66,6 +66,7 @@ describe('ExtensionsService', () => {
       deliveryStageChecklistSync as never,
       checklistTemplates as never,
       productTeamSync as never,
+      { publishItemChanged: vi.fn().mockResolvedValue(undefined) } as never,
     );
   });
 
