@@ -1,10 +1,11 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { LoadingState } from '@/components/shared';
+import { DataView, LoadingState } from '@/components/shared';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
 import { DeliveryBoardPageHero } from '@/features/projects/components/delivery-board/DeliveryBoardPageHero';
 import { DeliveryBoardView } from '@/features/projects/components/delivery-board/DeliveryBoardView';
 import { DeliveryBoardClosedBoard } from '@/features/projects/components/delivery-board/DeliveryBoardClosedBoard';
@@ -58,7 +59,9 @@ function DeliveryBoardPageContent() {
   const projectFilterId = searchParams.get('projectId');
 
   const [items, setItems] = useState<DeliveryBoardItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
   const [loadFailed, setLoadFailed] = useState(false);
   const [pipelineTab, setPipelineTab] = useState<'active' | 'closed'>('active');
   const {
@@ -78,7 +81,7 @@ function DeliveryBoardPageContent() {
   const displayClosedViewMode = isMobileViewport ? 'BOARD' : closedViewMode;
 
   const load = useCallback(async () => {
-    setLoading(true);
+    beginLoad(itemsRef.current.length > 0);
     setLoadFailed(false);
     try {
       const [products, extensions] = await Promise.all([
@@ -87,11 +90,12 @@ function DeliveryBoardPageContent() {
       ]);
       setItems(mergeDeliveryBoardItems(products, extensions));
     } catch {
+      // A failed refresh keeps the board that is already on screen.
       setLoadFailed(true);
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, []);
+  }, [beginLoad, endLoad]);
 
   const handleDetailItemRenamed = useCallback((updatedItem: DeliveryBoardItem) => {
     setItems((current) =>
@@ -209,95 +213,106 @@ function DeliveryBoardPageContent() {
     [router, scopedItems, projectFilterId],
   );
 
+  const boardContent = (
+    <>
+      <DeliveryBoardPageHero
+        pipelineTab={pipelineTab}
+        onPipelineTabChange={setPipelineTab}
+        kindFilter={kindFilter}
+        onKindFilterChange={setKindFilter}
+        activeFilters={activePipelineFilters}
+        onActiveFiltersChange={setActivePipelineFilters}
+        activeFilterOptions={activeFilterOptions}
+        activeFilteredCount={activeFilteredCount}
+        activeTotalCount={activeItemsBase.length}
+        closedFilteredCount={closedFilteredItems.length}
+        closedTotalCount={closedBaseItems.length}
+        closedFilters={closedFilters}
+        onClosedFiltersChange={setClosedFilters}
+        closedFilterOptions={closedFilterOptions}
+        activeViewMode={activeViewMode}
+        onActiveViewModeChange={setActiveViewMode}
+        closedViewMode={closedViewMode}
+        onClosedViewModeChange={setClosedViewMode}
+        projectFilterId={projectFilterId}
+        onClearProjectFilter={() => router.push('/delivery-board')}
+      />
+      <Tabs
+        value={pipelineTab}
+        onValueChange={(value) => setPipelineTab(value as 'active' | 'closed')}
+        className="flex min-h-0 w-full flex-1 basis-0 flex-col"
+      >
+        <TabsContent
+          value="active"
+          className="mt-4 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden max-md:mt-0"
+        >
+          {displayActiveViewMode === 'LIST' ? (
+            <DeliveryBoardItemsTable
+              mode="active"
+              items={activeFilteredItems}
+              onOpenDetails={openDeliveryItemSheet}
+            />
+          ) : (
+            <DeliveryBoardView
+              items={scopedItems}
+              mutations={deliveryMutations}
+              onOpenProduct={openProduct}
+              onOpenProductTab={openProductTab}
+              lockedStatusFilter="ACTIVE"
+              summaryCounts={summaryCounts}
+              onOpenDetails={openDeliveryItemSheet}
+              showBoardHeader={false}
+              kindFilter={kindFilter}
+              onKindFilterChange={setKindFilter}
+              activePipelineFilters={activePipelineFilters}
+            />
+          )}
+        </TabsContent>
+        <TabsContent
+          value="closed"
+          className="mt-4 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden max-md:mt-0"
+        >
+          {displayClosedViewMode === 'LIST' ? (
+            <DeliveryBoardItemsTable
+              mode="closed"
+              items={closedFilteredItems}
+              onOpenDetails={openDeliveryItemSheet}
+            />
+          ) : (
+            <DeliveryBoardClosedBoard
+              items={closedFilteredItems}
+              busyItemId={deliveryMutations.busyItemId}
+              onOpenProduct={openProduct}
+              onOpenProductTab={openProductTab}
+              onBoardAction={deliveryMutations.handleBoardAction}
+              onCancel={deliveryMutations.requestCancel}
+              onOpenDetails={openDeliveryItemSheet}
+            />
+          )}
+        </TabsContent>
+      </Tabs>
+    </>
+  );
+
+  const loadErrorNotice = (
+    <p className="text-destructive text-sm" role="alert">
+      {t('loadError')}
+    </p>
+  );
+
   return (
     <div className="flex h-full min-h-0 flex-col gap-5 max-md:gap-3">
-      {loadFailed && (
-        <p className="text-destructive text-sm" role="alert">
-          {t('loadError')}
-        </p>
-      )}
-      {loading ? (
-        <p className="text-muted-foreground text-sm">{t('loading')}</p>
-      ) : (
-        <>
-          <DeliveryBoardPageHero
-            pipelineTab={pipelineTab}
-            onPipelineTabChange={setPipelineTab}
-            kindFilter={kindFilter}
-            onKindFilterChange={setKindFilter}
-            activeFilters={activePipelineFilters}
-            onActiveFiltersChange={setActivePipelineFilters}
-            activeFilterOptions={activeFilterOptions}
-            activeFilteredCount={activeFilteredCount}
-            activeTotalCount={activeItemsBase.length}
-            closedFilteredCount={closedFilteredItems.length}
-            closedTotalCount={closedBaseItems.length}
-            closedFilters={closedFilters}
-            onClosedFiltersChange={setClosedFilters}
-            closedFilterOptions={closedFilterOptions}
-            activeViewMode={activeViewMode}
-            onActiveViewModeChange={setActiveViewMode}
-            closedViewMode={closedViewMode}
-            onClosedViewModeChange={setClosedViewMode}
-            projectFilterId={projectFilterId}
-            onClearProjectFilter={() => router.push('/delivery-board')}
-          />
-          <Tabs
-            value={pipelineTab}
-            onValueChange={(value) => setPipelineTab(value as 'active' | 'closed')}
-            className="flex min-h-0 w-full flex-1 basis-0 flex-col"
-          >
-            <TabsContent
-              value="active"
-              className="mt-4 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden max-md:mt-0"
-            >
-              {displayActiveViewMode === 'LIST' ? (
-                <DeliveryBoardItemsTable
-                  mode="active"
-                  items={activeFilteredItems}
-                  onOpenDetails={openDeliveryItemSheet}
-                />
-              ) : (
-                <DeliveryBoardView
-                  items={scopedItems}
-                  mutations={deliveryMutations}
-                  onOpenProduct={openProduct}
-                  onOpenProductTab={openProductTab}
-                  lockedStatusFilter="ACTIVE"
-                  summaryCounts={summaryCounts}
-                  onOpenDetails={openDeliveryItemSheet}
-                  showBoardHeader={false}
-                  kindFilter={kindFilter}
-                  onKindFilterChange={setKindFilter}
-                  activePipelineFilters={activePipelineFilters}
-                />
-              )}
-            </TabsContent>
-            <TabsContent
-              value="closed"
-              className="mt-4 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden max-md:mt-0"
-            >
-              {displayClosedViewMode === 'LIST' ? (
-                <DeliveryBoardItemsTable
-                  mode="closed"
-                  items={closedFilteredItems}
-                  onOpenDetails={openDeliveryItemSheet}
-                />
-              ) : (
-                <DeliveryBoardClosedBoard
-                  items={closedFilteredItems}
-                  busyItemId={deliveryMutations.busyItemId}
-                  onOpenProduct={openProduct}
-                  onOpenProductTab={openProductTab}
-                  onBoardAction={deliveryMutations.handleBoardAction}
-                  onCancel={deliveryMutations.requestCancel}
-                  onOpenDetails={openDeliveryItemSheet}
-                />
-              )}
-            </TabsContent>
-          </Tabs>
-        </>
-      )}
+      {loadFailed && items.length > 0 && loadErrorNotice}
+      <DataView
+        loading={loading}
+        error={loadFailed ? t('loadError') : null}
+        hasData={items.length > 0}
+        loadingFallback={<p className="text-muted-foreground text-sm">{t('loading')}</p>}
+        errorFallback={loadErrorNotice}
+        emptyFallback={boardContent}
+      >
+        {boardContent}
+      </DataView>
 
       <DeliveryItemDetailSheet
         item={detailItem}
