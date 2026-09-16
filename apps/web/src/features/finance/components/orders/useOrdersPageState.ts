@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { SEARCH_DEBOUNCE_MS, useDebouncedValue } from '@/components/shared';
@@ -17,6 +17,7 @@ import { buildOrderListApiParams } from '@/features/finance/utils/build-order-li
 import { useOrdersBoardViewMode } from '@/features/finance/constants/orders-board-view';
 import { getBoardStageKeys, resolveBoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { useStageColumnBoard } from '@/features/shared/kanban/use-stage-column-board';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   SEARCH_FILTER_PAGE_ID,
@@ -47,7 +48,14 @@ export function useOrdersPageState({
   const searchParams = useSearchParams();
 
   const [gapOrders, setGapOrders] = useState<Order[]>([]);
-  const [gapLoading, setGapLoading] = useState(false);
+  const gapOrdersRef = useRef(gapOrders);
+  gapOrdersRef.current = gapOrders;
+  const {
+    loading: gapLoading,
+    refreshing: gapRefreshing,
+    begin: beginGapLoad,
+    end: endGapLoad,
+  } = useRevalidationState(false);
   const [gapError, setGapError] = useState<string | null>(null);
   const [stats, setStats] = useState<OrderStats | null>(null);
   const [search, setSearch] = useState('');
@@ -109,7 +117,9 @@ export function useOrdersPageState({
     columnMeta,
     hasMoreAny,
     loading: boardLoading,
+    refreshing: boardRefreshing,
     error: boardError,
+    clearError: clearBoardError,
     reload: reloadBoard,
     loadMoreColumn,
     loadMoreAll,
@@ -167,7 +177,7 @@ export function useOrdersPageState({
 
   const fetchGapOrders = useCallback(async () => {
     if (!gap) return;
-    setGapLoading(true);
+    beginGapLoad(gapOrdersRef.current.length > 0);
     try {
       const listParams: OrderListParams = {
         ...buildOrderListApiParams({
@@ -195,9 +205,18 @@ export function useOrdersPageState({
         ),
       );
     } finally {
-      setGapLoading(false);
+      endGapLoad();
     }
-  }, [debouncedSearch, filters, period, gap, partnerIdFromUrl, orderStatsQueryParams]);
+  }, [
+    beginGapLoad,
+    debouncedSearch,
+    endGapLoad,
+    filters,
+    period,
+    gap,
+    partnerIdFromUrl,
+    orderStatsQueryParams,
+  ]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -234,7 +253,13 @@ export function useOrdersPageState({
 
   const orders = gap ? gapOrders : boardItems;
   const loading = gap ? gapLoading : boardLoading;
+  const refreshing = gap ? gapRefreshing : boardRefreshing;
   const error = gap ? gapError : boardError;
+
+  const dismissError = useCallback(() => {
+    if (gap) setGapError(null);
+    else clearBoardError();
+  }, [gap, clearBoardError]);
 
   const fetchOrders = useCallback(async () => {
     if (gap) {
@@ -323,7 +348,9 @@ export function useOrdersPageState({
     loadMoreAll,
     stats,
     loading,
+    refreshing,
     error,
+    dismissError,
     mutationError,
     clearMutationError,
     search,

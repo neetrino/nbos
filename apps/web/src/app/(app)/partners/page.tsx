@@ -8,8 +8,10 @@ import {
   PageHero,
   IntegratedSearchFilters,
   ViewModeSwitch,
+  DataView,
   EmptyState,
   ErrorState,
+  ListMutationErrorBanner,
   LoadingState,
   ListPagination,
   ProfileAPermanentDeleteDialog,
@@ -292,45 +294,56 @@ function PartnersPageContent() {
         </div>
       </div>
 
-      {loading ? (
-        <LoadingState
-          variant={displayView === 'grid' ? 'cards' : 'list'}
-          count={displayView === 'grid' ? 6 : 5}
-        />
-      ) : error ? (
-        <ErrorState description={error} onRetry={fetchPartners} />
-      ) : partners.length === 0 ? (
-        <EmptyState
-          icon={Handshake}
-          title={isTrashView ? 'Trash is empty' : 'No partners yet'}
-          description={
-            isTrashView
-              ? 'Removed partners will appear here until restored or purged.'
-              : 'Start building your partner network'
-          }
-          action={
-            isTrashView ? undefined : (
-              <Button type="button" onClick={() => setCreateOpen(true)}>
-                <Plus size={16} /> Add First Partner
-              </Button>
-            )
-          }
-        />
-      ) : displayView === 'grid' ? (
-        <div className={`${partnersDirectoryCardGridClass(sidebarCollapsed)} pb-6`}>
-          {partners.map((partner) => (
-            <PartnerCard key={partner.id} partner={partner} onOpen={openPartnerSheet} />
-          ))}
-        </div>
-      ) : (
-        <div className="pb-6">
-          <PartnersTable partners={partners} onOpen={openPartnerSheet} />
-        </div>
-      )}
-
-      {!loading && !error && partners.length > 0 && listMeta.totalPages > 1 ? (
-        <ListPagination meta={listMeta} onPageChange={setPage} className="pb-6" />
+      {error && partners.length > 0 ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
       ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={partners.length > 0}
+        loadingFallback={
+          <LoadingState
+            variant={displayView === 'grid' ? 'cards' : 'list'}
+            count={displayView === 'grid' ? 6 : 5}
+          />
+        }
+        errorFallback={<ErrorState description={error ?? ''} onRetry={fetchPartners} />}
+        emptyFallback={
+          <EmptyState
+            icon={Handshake}
+            title={isTrashView ? 'Trash is empty' : 'No partners yet'}
+            description={
+              isTrashView
+                ? 'Removed partners will appear here until restored or purged.'
+                : 'Start building your partner network'
+            }
+            action={
+              isTrashView ? undefined : (
+                <Button type="button" onClick={() => setCreateOpen(true)}>
+                  <Plus size={16} /> Add First Partner
+                </Button>
+              )
+            }
+          />
+        }
+      >
+        <>
+          {displayView === 'grid' ? (
+            <div className={`${partnersDirectoryCardGridClass(sidebarCollapsed)} pb-6`}>
+              {partners.map((partner) => (
+                <PartnerCard key={partner.id} partner={partner} onOpen={openPartnerSheet} />
+              ))}
+            </div>
+          ) : (
+            <div className="pb-6">
+              <PartnersTable partners={partners} onOpen={openPartnerSheet} />
+            </div>
+          )}
+          {listMeta.totalPages > 1 ? (
+            <ListPagination meta={listMeta} onPageChange={setPage} className="pb-6" />
+          ) : null}
+        </>
+      </DataView>
 
       <PartnerDetailSheet
         partnerId={openPartnerId}

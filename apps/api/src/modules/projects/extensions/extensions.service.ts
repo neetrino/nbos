@@ -52,6 +52,7 @@ import {
 import { DeliveryStageChecklistSyncService } from '../../checklist-templates/delivery-stage-checklist-sync.service';
 import { ChecklistTemplatesService } from '../../checklist-templates/checklist-templates.service';
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
+import { DeliveryRealtimePublisher } from '../../realtime/delivery-realtime.publisher';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -112,6 +113,7 @@ export class ExtensionsService {
     private readonly deliveryStageChecklistSync: DeliveryStageChecklistSyncService,
     private readonly checklistTemplates: ChecklistTemplatesService,
     private readonly productTeamSync: ProductTeamSyncService,
+    private readonly deliveryRealtime: DeliveryRealtimePublisher,
   ) {}
 
   async findAll(params: ExtensionQueryParams) {
@@ -431,6 +433,7 @@ export class ExtensionsService {
     });
     await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
     await this.applyDeliveryOutcomeSideEffects(id, target);
+    await this.publishExtensionChanged(updated.id);
     return attachExtensionReadiness(updated);
   }
 
@@ -448,6 +451,7 @@ export class ExtensionsService {
         order: { select: { id: true, code: true, status: true } },
       },
     });
+    await this.publishExtensionChanged(updated.id);
     return attachExtensionReadiness(updated);
   }
 
@@ -468,6 +472,7 @@ export class ExtensionsService {
       },
     });
     await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
+    await this.publishExtensionChanged(updated.id);
     return attachExtensionReadiness(updated);
   }
 
@@ -501,6 +506,7 @@ export class ExtensionsService {
       projectId: extension.projectId,
       changes: { reason } as InputJsonValue,
     });
+    await this.publishExtensionChanged(updated.id);
     return attachExtensionReadiness(updated);
   }
 
@@ -539,6 +545,7 @@ export class ExtensionsService {
       projectId: extension.projectId,
       changes: { deliveryResolution: 'DONE' } as InputJsonValue,
     });
+    await this.publishExtensionChanged(updated.id);
     return attachExtensionReadiness(updated);
   }
 
@@ -621,6 +628,10 @@ export class ExtensionsService {
     if (product.projectId !== projectId) {
       throw new BadRequestException('Extension product must belong to the same project');
     }
+  }
+
+  private async publishExtensionChanged(entityId: string): Promise<void> {
+    await this.deliveryRealtime.publishItemChanged('extension', entityId);
   }
 }
 

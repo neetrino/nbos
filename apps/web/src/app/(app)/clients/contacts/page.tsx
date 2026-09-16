@@ -8,8 +8,10 @@ import {
   useModuleHeroSlots,
   IntegratedSearchFilters,
   ViewModeSwitch,
+  DataView,
   EmptyState,
   ErrorState,
+  ListMutationErrorBanner,
   LoadingState,
   ListPagination,
   DeleteConfirmDialog,
@@ -283,46 +285,55 @@ function ContactsPageContent() {
           onBackToActive={() => setScope('active')}
         />
       ) : null}
-      {loading ? (
-        <LoadingState
-          variant={displayView === 'grid' ? 'cards' : 'list'}
-          count={displayView === 'grid' ? 6 : 5}
-        />
-      ) : error ? (
-        <ErrorState description={error} onRetry={fetchContacts} />
-      ) : contacts.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title={isTrashView ? 'Trash is empty' : 'No contacts yet'}
-          description={
-            isTrashView
-              ? 'Removed contacts will appear here until restored or purged.'
-              : 'Add your first contact to get started'
-          }
-          action={
-            isTrashView ? undefined : (
-              <Button onClick={openCreateContact}>
-                <Plus size={16} />
-                Create First Contact
-              </Button>
-            )
-          }
-        />
-      ) : displayView === 'grid' ? (
-        <div className="min-h-0 flex-1 overflow-auto">
-          <div className={clientsDirectoryCardGridClass(sidebarCollapsed)}>
-            {contacts.map((contact) => (
-              <ContactCard key={contact.id} contact={contact} onOpen={openContactSheet} />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <ContactsTable contacts={contacts} onOpen={openContactSheet} />
-      )}
-
-      {!loading && !error && contacts.length > 0 ? (
-        <ListPagination meta={listMeta} onPageChange={setPage} />
+      {error && contacts.length > 0 ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
       ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={contacts.length > 0}
+        loadingFallback={
+          <LoadingState
+            variant={displayView === 'grid' ? 'cards' : 'list'}
+            count={displayView === 'grid' ? 6 : 5}
+          />
+        }
+        errorFallback={<ErrorState description={error ?? ''} onRetry={fetchContacts} />}
+        emptyFallback={
+          <EmptyState
+            icon={Users}
+            title={isTrashView ? 'Trash is empty' : 'No contacts yet'}
+            description={
+              isTrashView
+                ? 'Removed contacts will appear here until restored or purged.'
+                : 'Add your first contact to get started'
+            }
+            action={
+              isTrashView ? undefined : (
+                <Button onClick={openCreateContact}>
+                  <Plus size={16} />
+                  Create First Contact
+                </Button>
+              )
+            }
+          />
+        }
+      >
+        <>
+          {displayView === 'grid' ? (
+            <div className="min-h-0 flex-1 overflow-auto">
+              <div className={clientsDirectoryCardGridClass(sidebarCollapsed)}>
+                {contacts.map((contact) => (
+                  <ContactCard key={contact.id} contact={contact} onOpen={openContactSheet} />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <ContactsTable contacts={contacts} onOpen={openContactSheet} />
+          )}
+          <ListPagination meta={listMeta} onPageChange={setPage} />
+        </>
+      </DataView>
 
       <CreateContactDialog
         open={showCreate}

@@ -7,9 +7,11 @@ import { Banknote, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
+  DataView,
   EmptyState,
   ErrorState,
   IntegratedSearchFilters,
+  ListMutationErrorBanner,
   LoadingState,
   useModuleHeroSlots,
   ViewModeSwitch,
@@ -23,7 +25,7 @@ import {
 } from '@/features/finance/constants/payroll-runs-list-url';
 import { PAYROLL_RUN_STATUS_MESSAGE_KEY } from '@/features/finance/constants/payroll-run-ui';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import {
   payrollRunsApi,
@@ -122,8 +124,12 @@ export function PayrollRunsListPageContent() {
       setItems(data.items);
       setStats(statsData);
     } catch (caught) {
-      setStats(null);
-      setItems([]);
+      // A failed refresh keeps the runs already on screen, unless the server withdrew read
+      // access: those runs must not survive a denial.
+      if (isAccessRevokedApiError(caught)) {
+        setItems([]);
+        setStats(null);
+      }
       setError(getApiErrorMessage(caught, t('list.loadError')));
     } finally {
       setLoading(false);
@@ -322,42 +328,44 @@ export function PayrollRunsListPageContent() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      {loading ? (
-        <LoadingState />
-      ) : error ? (
-        <ErrorState description={error} onRetry={() => void load()} />
-      ) : (
-        <>
-          {items.length === 0 ? (
-            <EmptyState
-              icon={Plus}
-              title={t('list.emptyTitle')}
-              description={
-                statusFilter === 'ALL'
-                  ? t('list.emptyDescription')
-                  : t('list.emptyStatus', {
-                      status: t(PAYROLL_RUN_STATUS_MESSAGE_KEY[statusFilter]),
-                    })
-              }
-              action={
-                <Button type="button" onClick={openDialog}>
-                  {t('list.newRun')}
-                </Button>
-              }
-            />
+      {error && items.length > 0 ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={items.length > 0}
+        loadingFallback={<LoadingState />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+        emptyFallback={
+          <EmptyState
+            icon={Plus}
+            title={t('list.emptyTitle')}
+            description={
+              statusFilter === 'ALL'
+                ? t('list.emptyDescription')
+                : t('list.emptyStatus', {
+                    status: t(PAYROLL_RUN_STATUS_MESSAGE_KEY[statusFilter]),
+                  })
+            }
+            action={
+              <Button type="button" onClick={openDialog}>
+                {t('list.newRun')}
+              </Button>
+            }
+          />
+        }
+      >
+        <div className="flex min-h-0 flex-1 flex-col gap-4">
+          {displayView === 'calendar' ? (
+            <PayrollRunsCalendarView items={items} />
+          ) : displayView === 'board' ? (
+            <PayrollRunsBoardView items={items} />
           ) : (
-            <div className="flex min-h-0 flex-1 flex-col gap-4">
-              {displayView === 'calendar' ? (
-                <PayrollRunsCalendarView items={items} />
-              ) : displayView === 'board' ? (
-                <PayrollRunsBoardView items={items} />
-              ) : (
-                <PayrollRunsListTable items={items} pageTotals={pageTotals} />
-              )}
-            </div>
+            <PayrollRunsListTable items={items} pageTotals={pageTotals} />
           )}
-        </>
-      )}
+        </div>
+      </DataView>
 
       <PayrollRunsCreateRunDialog
         open={dialogOpen}

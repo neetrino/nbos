@@ -12,7 +12,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ErrorState, LoadingState, PageHero } from '@/components/shared';
+import {
+  DataView,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+  PageHero,
+} from '@/components/shared';
 import { bonusesApi, type SalesBonusPaymentModel, type SalesBonusPolicyRow } from '@/lib/api/bonus';
 
 const PAYMENT_MODEL_LABEL: Record<SalesBonusPaymentModel, string> = {
@@ -71,6 +77,34 @@ export default function SalesBonusPoliciesPage() {
     }
   };
 
+  const hasData = rows.length > 0;
+  const content = (
+    <div className="border-border bg-card overflow-x-auto rounded-2xl border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>From (category)</TableHead>
+            <TableHead>Payment model</TableHead>
+            <TableHead className="w-28">Seller %</TableHead>
+            <TableHead className="w-28">Assistant %</TableHead>
+            <TableHead className="w-24">Active</TableHead>
+            <TableHead className="w-32 text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <PolicyRowEditor
+              key={row.id}
+              row={row}
+              saving={savingId === row.id}
+              onSave={(draft) => void saveRow(row, draft)}
+            />
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <PageHero
@@ -93,36 +127,19 @@ export default function SalesBonusPoliciesPage() {
         are set).
       </p>
 
-      {loading ? (
-        <LoadingState variant="cards" count={2} />
-      ) : error ? (
-        <ErrorState description={error} onRetry={() => void load()} />
-      ) : (
-        <div className="border-border bg-card overflow-x-auto rounded-2xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>From (category)</TableHead>
-                <TableHead>Payment model</TableHead>
-                <TableHead className="w-28">Seller %</TableHead>
-                <TableHead className="w-28">Assistant %</TableHead>
-                <TableHead className="w-24">Active</TableHead>
-                <TableHead className="w-32 text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <PolicyRowEditor
-                  key={row.id}
-                  row={row}
-                  saving={savingId === row.id}
-                  onSave={(draft) => void saveRow(row, draft)}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      {error && hasData ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={hasData}
+        loadingFallback={<LoadingState variant="cards" count={2} />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+        emptyFallback={content}
+      >
+        {content}
+      </DataView>
     </div>
   );
 }

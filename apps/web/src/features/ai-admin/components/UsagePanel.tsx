@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Gauge, Wallet } from 'lucide-react';
-import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import {
+  DataView,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import {
   aiAdminUsageApi,
   type AiBudgetLimitView,
@@ -43,10 +49,8 @@ export function UsagePanel() {
     void load();
   }, [load]);
 
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState description={error} onRetry={() => void load()} />;
-
-  return (
+  const hasData = executions.length > 0 || budgets.length > 0;
+  const content = (
     <div className={AI_ADMIN_PAGE_STACK_CLASS}>
       <AiAdminSection
         icon={Wallet}
@@ -89,6 +93,24 @@ export function UsagePanel() {
         )}
       </AiAdminSection>
     </div>
+  );
+
+  return (
+    <>
+      {error && hasData ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={hasData}
+        loadingFallback={<LoadingState />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+        emptyFallback={content}
+      >
+        {content}
+      </DataView>
+    </>
   );
 }
 

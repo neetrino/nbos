@@ -6,7 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
 import { Label } from '@/components/ui/label';
-import { IntegratedSearchFilters, NbosDatePicker, useModuleHeroSlots } from '@/components/shared';
+import {
+  DataView,
+  ErrorState,
+  IntegratedSearchFilters,
+  ListMutationErrorBanner,
+  LoadingState,
+  NbosDatePicker,
+  useModuleHeroSlots,
+} from '@/components/shared';
 import { FinanceOverviewPageSettingsSheet } from '@/features/finance/components/overview/FinanceOverviewPageSettingsSheet';
 import {
   FinanceJournalEntriesTable,
@@ -21,7 +29,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ErrorState, LoadingState } from '@/components/shared';
 import {
   financeJournalApi,
   type FinancePostingPeriod,
@@ -187,10 +194,8 @@ export default function FinanceJournalPage() {
     }
   };
 
-  if (loading) return <LoadingState count={4} />;
-  if (error) return <ErrorState description={error} onRetry={() => void load()} />;
-
-  return (
+  const hasData = periods.length > 0 || entries.length > 0;
+  const journalContent = (
     <div className="flex h-full min-h-0 flex-col gap-5">
       <FinanceJournalPeriodsTable
         periods={periods}
@@ -241,5 +246,23 @@ export default function FinanceJournalPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+
+  return (
+    <>
+      {error && hasData ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={hasData}
+        loadingFallback={<LoadingState count={4} />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+        emptyFallback={journalContent}
+      >
+        {journalContent}
+      </DataView>
+    </>
   );
 }

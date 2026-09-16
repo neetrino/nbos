@@ -73,6 +73,7 @@ import {
 import { lockProductDeveloperSlots } from './product-developer-slot-lock';
 import { assertProductDeveloperSlotsForUpdate } from './product-developer-slots';
 import { loadMissingRequiredAccessSlotKeys } from './product-done-access-slots';
+import { DeliveryRealtimePublisher } from '../../realtime/delivery-realtime.publisher';
 
 const productContactSummarySelect = {
   id: true,
@@ -227,6 +228,7 @@ export class ProductsService {
     private readonly checklistTemplates: ChecklistTemplatesService,
     private readonly productTeamSync: ProductTeamSyncService,
     private readonly productWhatsApp: ProductWhatsAppGroupService,
+    private readonly deliveryRealtime: DeliveryRealtimePublisher,
   ) {}
 
   async findAll(params: ProductQueryParams) {
@@ -566,6 +568,7 @@ export class ProductsService {
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
     await this.applyDeliveryOutcomeSideEffects(id, target);
     await this.maybeEnqueueTechnicalSpecialist(updatedProduct, target, undefined);
+    await this.publishProductChanged(updatedProduct.id);
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
@@ -582,6 +585,7 @@ export class ProductsService {
       },
       include: { project: { select: { id: true, code: true, name: true } } },
     });
+    await this.publishProductChanged(updatedProduct.id);
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
@@ -603,6 +607,7 @@ export class ProductsService {
       nextStatus as ProductStatusEnum,
       undefined,
     );
+    await this.publishProductChanged(updatedProduct.id);
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
@@ -634,6 +639,7 @@ export class ProductsService {
       projectId: product.projectId,
       changes: { reason } as InputJsonValue,
     });
+    await this.publishProductChanged(updatedProduct.id);
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
@@ -668,6 +674,7 @@ export class ProductsService {
       projectId: product.projectId,
       changes: { deliveryResolution: 'DONE' } as InputJsonValue,
     });
+    await this.publishProductChanged(updatedProduct.id);
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
@@ -864,6 +871,10 @@ export class ProductsService {
     } catch {
       throw new BadRequestException(`Invalid delivery stage: ${stage}`);
     }
+  }
+
+  private async publishProductChanged(entityId: string): Promise<void> {
+    await this.deliveryRealtime.publishItemChanged('product', entityId);
   }
 }
 

@@ -87,6 +87,15 @@ export { ErrorState } from './ErrorState';
 export { PersonSoftAvatar } from './PersonSoftAvatar';
 export { PersonContactRow, type PersonContactRowProps } from './PersonContactRow';
 export { LoadingState } from './LoadingState';
+export {
+  DataView,
+  isRevalidating,
+  resolveDataViewState,
+  type DataViewProps,
+  type DataViewRenderContext,
+  type DataViewState,
+  type DataViewStateInput,
+} from './data-view';
 export { ModulePlaceholder } from './ModulePlaceholder';
 export { FilterBar, type FilterBarProps, type FilterConfig, type FilterOption } from './FilterBar';
 export { SegmentedTabs, type SegmentedTabOption, type SegmentedTabsProps } from './SegmentedTabs';

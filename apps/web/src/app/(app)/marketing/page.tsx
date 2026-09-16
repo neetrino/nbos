@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { Megaphone, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
+  DataView,
   EmptyState,
   ErrorState,
+  ListMutationErrorBanner,
   LoadingState,
   StatusBadge,
   useModuleHeroSlots,
@@ -221,115 +223,123 @@ export default function MarketingPage() {
         </form>
       </PermissionGate>
 
-      {loading ? (
-        <LoadingState variant="cards" count={4} />
-      ) : error ? (
-        <ErrorState description={error} onRetry={fetchActivities} />
-      ) : activities.length === 0 ? (
-        <EmptyState
-          icon={Megaphone}
-          title={t('board.emptyTitle')}
-          description={t('board.emptyDescription')}
-        />
-      ) : filteredActivities.length === 0 ? (
-        <EmptyState
-          icon={Megaphone}
-          title={t('board.noMatchTitle')}
-          description={t('board.noMatchDescription')}
-        />
-      ) : (
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          {columns.map((column) => (
-            <section
-              key={column.status}
-              className="border-border bg-muted/30 flex min-w-[min(100%,320px)] flex-1 flex-col rounded-2xl border"
-            >
-              <div className="border-border flex items-center justify-between border-b px-3 py-2">
-                <h2 className="text-sm font-semibold">{column.label}</h2>
-                <span className="text-muted-foreground text-xs">{column.items.length}</span>
-              </div>
-              <div className="flex flex-col gap-3 p-3">
-                {column.items.length === 0 ? (
-                  <p className="text-muted-foreground px-1 text-xs">{t('board.emptyColumn')}</p>
-                ) : (
-                  column.items.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className="border-border bg-card rounded-xl border p-4 shadow-sm"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-semibold">{activity.title}</p>
-                          <p className="text-muted-foreground text-sm">
-                            {getMarketingLabel('channels', activity.channel, t)}
-                          </p>
-                        </div>
-                        <StatusBadge
-                          label={getMarketingLabel('activityStatus', activity.status, t)}
-                          variant={activity.status === 'LAUNCHED' ? 'green' : 'blue'}
-                        />
-                      </div>
-                      <p className="text-muted-foreground mt-3 line-clamp-3 text-sm">
-                        {activity.description ?? t('board.noDescription')}
-                      </p>
-                      <div className="text-muted-foreground mt-4 grid grid-cols-2 gap-2 text-xs">
-                        <span>
-                          {t('board.typeLabel', {
-                            type: getMarketingLabel('activityType', activity.type, t),
-                          })}
-                        </span>
-                        <span>
-                          {t('board.budgetLabel', {
-                            amount: activity.budget
-                              ? `${activity.budget} ${activity.currency}`
-                              : '—',
-                          })}
-                        </span>
-                        <span>
-                          {t('board.accountLabel', {
-                            name: activity.account?.name ?? t('board.notLinked'),
-                          })}
-                        </span>
-                        <span>
-                          {t('board.expense', {
-                            status: activity.expenseCardId
-                              ? t('board.expenseLinked')
-                              : t('board.expenseMissing'),
-                          })}
-                        </span>
-                        <span>
-                          {t('board.start', {
-                            date: activity.startDate?.slice(0, 10) ?? t('board.notScheduled'),
-                          })}
-                        </span>
-                        <span>
-                          {t('board.payBy', {
-                            date: activity.expectedPayAt?.slice(0, 10) ?? t('board.notSet'),
-                          })}
-                        </span>
-                      </div>
-                      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="text-muted-foreground text-xs">
-                          {activity.expenseCardId
-                            ? t('board.financeProposed')
-                            : t('board.financeMissing')}
-                        </p>
-                        <PermissionGate module={MARKETING_MODULE} action="EDIT">
-                          <MarketingLaunchDialog
-                            activity={activity}
-                            accounts={accounts}
-                            onLaunched={fetchActivities}
+      {error && activities.length > 0 ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={activities.length > 0}
+        loadingFallback={<LoadingState variant="cards" count={4} />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={fetchActivities} />}
+        emptyFallback={
+          <EmptyState
+            icon={Megaphone}
+            title={t('board.emptyTitle')}
+            description={t('board.emptyDescription')}
+          />
+        }
+      >
+        {filteredActivities.length === 0 ? (
+          <EmptyState
+            icon={Megaphone}
+            title={t('board.noMatchTitle')}
+            description={t('board.noMatchDescription')}
+          />
+        ) : (
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {columns.map((column) => (
+              <section
+                key={column.status}
+                className="border-border bg-muted/30 flex min-w-[min(100%,320px)] flex-1 flex-col rounded-2xl border"
+              >
+                <div className="border-border flex items-center justify-between border-b px-3 py-2">
+                  <h2 className="text-sm font-semibold">{column.label}</h2>
+                  <span className="text-muted-foreground text-xs">{column.items.length}</span>
+                </div>
+                <div className="flex flex-col gap-3 p-3">
+                  {column.items.length === 0 ? (
+                    <p className="text-muted-foreground px-1 text-xs">{t('board.emptyColumn')}</p>
+                  ) : (
+                    column.items.map((activity) => (
+                      <div
+                        key={activity.id}
+                        className="border-border bg-card rounded-xl border p-4 shadow-sm"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold">{activity.title}</p>
+                            <p className="text-muted-foreground text-sm">
+                              {getMarketingLabel('channels', activity.channel, t)}
+                            </p>
+                          </div>
+                          <StatusBadge
+                            label={getMarketingLabel('activityStatus', activity.status, t)}
+                            variant={activity.status === 'LAUNCHED' ? 'green' : 'blue'}
                           />
-                        </PermissionGate>
+                        </div>
+                        <p className="text-muted-foreground mt-3 line-clamp-3 text-sm">
+                          {activity.description ?? t('board.noDescription')}
+                        </p>
+                        <div className="text-muted-foreground mt-4 grid grid-cols-2 gap-2 text-xs">
+                          <span>
+                            {t('board.typeLabel', {
+                              type: getMarketingLabel('activityType', activity.type, t),
+                            })}
+                          </span>
+                          <span>
+                            {t('board.budgetLabel', {
+                              amount: activity.budget
+                                ? `${activity.budget} ${activity.currency}`
+                                : '—',
+                            })}
+                          </span>
+                          <span>
+                            {t('board.accountLabel', {
+                              name: activity.account?.name ?? t('board.notLinked'),
+                            })}
+                          </span>
+                          <span>
+                            {t('board.expense', {
+                              status: activity.expenseCardId
+                                ? t('board.expenseLinked')
+                                : t('board.expenseMissing'),
+                            })}
+                          </span>
+                          <span>
+                            {t('board.start', {
+                              date: activity.startDate?.slice(0, 10) ?? t('board.notScheduled'),
+                            })}
+                          </span>
+                          <span>
+                            {t('board.payBy', {
+                              date: activity.expectedPayAt?.slice(0, 10) ?? t('board.notSet'),
+                            })}
+                          </span>
+                        </div>
+                        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <p className="text-muted-foreground text-xs">
+                            {activity.expenseCardId
+                              ? t('board.financeProposed')
+                              : t('board.financeMissing')}
+                          </p>
+                          <PermissionGate module={MARKETING_MODULE} action="EDIT">
+                            <MarketingLaunchDialog
+                              activity={activity}
+                              accounts={accounts}
+                              onLaunched={fetchActivities}
+                            />
+                          </PermissionGate>
+                        </div>
                       </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
+                    ))
+                  )}
+                </div>
+              </section>
+            ))}
+          </div>
+        )}
+      </DataView>
     </div>
   );
 }

@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ErrorState, LoadingState } from '@/components/shared';
+import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import { aiAdminApi, type ExternalAgentBundle, type WorkspaceAccessRow } from '@/lib/api/ai-admin';
 import { AI_ADMIN_BASE_PATH } from '../constants';
 import { grantableExternalAgents } from '../grantable-agents';
@@ -51,15 +51,12 @@ export function WorkspaceAiAccessPanel({ workspaceId }: { workspaceId: string })
     void load();
   }, [load]);
 
-  if (loading) return <LoadingState count={2} />;
-  if (error) return <ErrorState description={error} onRetry={() => void load()} />;
-
   const grantedIds = new Set(
     rows.map((row) => row.agent?.id).filter((id): id is string => Boolean(id)),
   );
   const available = grantableExternalAgents(agents, grantedIds);
-
-  return (
+  const hasData = rows.length > 0;
+  const content = (
     <section className="space-y-3">
       <AiAdminPageToolbar icon={BotMessageSquare} description={t('aiAccess.description')} />
       {rows.length === 0 ? (
@@ -144,5 +141,23 @@ export function WorkspaceAiAccessPanel({ workspaceId }: { workspaceId: string })
         </Button>
       </div>
     </section>
+  );
+
+  return (
+    <>
+      {error && hasData ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={hasData}
+        loadingFallback={<LoadingState count={2} />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+        emptyFallback={content}
+      >
+        {content}
+      </DataView>
+    </>
   );
 }

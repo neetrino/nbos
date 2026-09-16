@@ -65,6 +65,7 @@ export function SupportPageView() {
         emptyDescription={t('empty.noTicketsDescription')}
         emptyActionLabel={t('empty.createFirst')}
         onRetry={() => void query.fetchTickets()}
+        onDismissError={query.dismissError}
         onCreateFirst={handleNewTicket}
         onKanbanMove={actions.handleKanbanMove}
         onOpenDetail={page.openSupportDetail}

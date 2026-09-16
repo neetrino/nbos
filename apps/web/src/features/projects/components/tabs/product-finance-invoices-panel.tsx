@@ -6,7 +6,7 @@ import { InvoiceKanban } from '@/features/finance/components/invoices/InvoiceKan
 import { InvoicesTable } from '@/features/finance/components/invoices/InvoicesTable';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
 import type { InvoiceViewMode } from '@/features/finance/components/invoices/invoice-page-types';
-import { EmptyState, LoadingState, QueryLoadError } from '@/components/shared';
+import { DataView, EmptyState, LoadingState, QueryLoadError } from '@/components/shared';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { FileText, Plus } from 'lucide-react';
 import Link from 'next/link';
@@ -86,10 +86,7 @@ export function ProductFinanceInvoicesPanel({
     [setInvoices],
   );
 
-  if (loading) return <LoadingState />;
-  if (error) return <QueryLoadError description={error} onRetry={() => void refetch()} />;
-
-  return (
+  const invoicesSurface = (
     <>
       {truncated ? (
         <p className="text-muted-foreground mb-3 text-sm">
@@ -156,5 +153,18 @@ export function ProductFinanceInvoicesPanel({
         />
       ) : null}
     </>
+  );
+
+  return (
+    <DataView
+      loading={loading}
+      error={error}
+      hasData={invoices.length > 0}
+      loadingFallback={<LoadingState />}
+      errorFallback={<QueryLoadError description={error ?? ''} onRetry={() => void refetch()} />}
+      emptyFallback={invoicesSurface}
+    >
+      {invoicesSurface}
+    </DataView>
   );
 }

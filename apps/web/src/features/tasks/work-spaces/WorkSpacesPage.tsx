@@ -10,6 +10,7 @@ import {
   PageHeroTabs,
   ViewModeSwitch,
   IntegratedSearchFilters,
+  DataView,
   EmptyState,
   ErrorState,
   type FilterConfig,
@@ -192,52 +193,56 @@ export function WorkSpacesPage() {
         }
       />
 
-      {loading ? (
-        <LoadingState variant="cards" count={6} />
-      ) : error ? (
-        <ErrorState description={error} onRetry={() => void refetch()} />
-      ) : items.length === 0 ? (
-        <EmptyState
-          icon={FolderKanban}
-          title={t('emptyTitle')}
-          description={tab === 'standalone' ? t('emptyStandalone') : t('emptyProduct')}
-          action={
-            tab === 'standalone' ? (
-              <Button
-                type="button"
-                aria-label={t('createAria')}
-                onClick={() => setCreateOpen(true)}
-              >
-                <Plus size={16} aria-hidden />
-                {t('createShort')}
-              </Button>
-            ) : undefined
-          }
-        />
-      ) : directoryView === 'grid' ? (
-        <div
-          className={
-            tab === 'product'
-              ? WORK_SPACE_PRODUCT_CARD_GRID_CLASS
-              : NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS
-          }
-        >
-          {items.map((workspace) => (
-            <WorkSpaceNavigableCard
-              key={workspace.id}
-              workspace={workspace}
-              onOpenProductDelivery={handleOpenProductDelivery}
-              onOpenProductDeal={handleOpenProductDeal}
-            />
-          ))}
-        </div>
-      ) : (
-        <WorkSpaceListTable workspaces={items} />
-      )}
-
-      {!loading && !error && items.length > 0 ? (
-        <ListPagination meta={meta} onPageChange={setPage} />
-      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={items.length > 0}
+        loadingFallback={<LoadingState variant="cards" count={6} />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void refetch()} />}
+        emptyFallback={
+          <EmptyState
+            icon={FolderKanban}
+            title={t('emptyTitle')}
+            description={tab === 'standalone' ? t('emptyStandalone') : t('emptyProduct')}
+            action={
+              tab === 'standalone' ? (
+                <Button
+                  type="button"
+                  aria-label={t('createAria')}
+                  onClick={() => setCreateOpen(true)}
+                >
+                  <Plus size={16} aria-hidden />
+                  {t('createShort')}
+                </Button>
+              ) : undefined
+            }
+          />
+        }
+      >
+        <>
+          {directoryView === 'grid' ? (
+            <div
+              className={
+                tab === 'product'
+                  ? WORK_SPACE_PRODUCT_CARD_GRID_CLASS
+                  : NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS
+              }
+            >
+              {items.map((workspace) => (
+                <WorkSpaceNavigableCard
+                  key={workspace.id}
+                  workspace={workspace}
+                  onOpenProductDelivery={handleOpenProductDelivery}
+                  onOpenProductDeal={handleOpenProductDeal}
+                />
+              ))}
+            </div>
+          ) : (
+            <WorkSpaceListTable workspaces={items} />
+          )}
+          <ListPagination meta={meta} onPageChange={setPage} />
+        </>
+      </DataView>
 
       <CreateStandaloneWorkSpaceDialog
         open={createOpen}

@@ -93,6 +93,7 @@ describe('ProductsService.update developer slots', () => {
       checklistTemplates as never,
       productTeamSync as never,
       productWhatsApp as never,
+      { publishItemChanged: vi.fn().mockResolvedValue(undefined) } as never,
     );
   });
 

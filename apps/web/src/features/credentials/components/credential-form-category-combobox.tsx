@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { CredentialFormFieldLabel } from '@/features/credentials/components/credential-form-field-label';
 import { CredentialFormSelectOption } from '@/features/credentials/components/credential-form-select-option';
 import type { CredentialCategoryOption } from '@/features/credentials/constants/credential-vault-categories';
+import { filterAndRankCredentialCategoryOptions } from '@/features/credentials/utils/filter-credential-category-options';
 import { credentialCategoryIcon } from '@/features/credentials/utils/credential-vault-card-meta';
 
 export interface CredentialFormCategoryComboboxProps {
@@ -71,11 +72,10 @@ export function CredentialFormCategoryCombobox({
   const selectedLabel = category
     ? (categoryOptions.find((option) => option.value === category)?.label ?? categoryLabel)
     : '';
-  const filtered = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    if (!needle) return categoryOptions;
-    return categoryOptions.filter((option) => option.label.toLowerCase().includes(needle));
-  }, [categoryOptions, query]);
+  const filtered = useMemo(
+    () => filterAndRankCredentialCategoryOptions(categoryOptions, query),
+    [categoryOptions, query],
+  );
 
   return (
     <div className="grid gap-2" ref={containerRef}>
