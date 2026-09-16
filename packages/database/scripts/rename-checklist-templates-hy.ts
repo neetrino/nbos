@@ -256,7 +256,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function patchItemsJson(items: unknown, map: Record<string, ItemPatch>): { next: unknown; changed: number } {
+function patchItemsJson(
+  items: unknown,
+  map: Record<string, ItemPatch>,
+): { next: unknown; changed: number } {
   if (!Array.isArray(items)) return { next: items, changed: 0 };
   let changed = 0;
   const next = items.map((row) => {
