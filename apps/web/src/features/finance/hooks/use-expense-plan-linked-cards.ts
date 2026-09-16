@@ -45,7 +45,8 @@ export function useExpensePlanLinkedCards(
         if (!cancelled) setState({ items: res.items, error: false, loadedKey: requestKey });
       })
       .catch(() => {
-        if (!cancelled) setState({ items: [], error: true, loadedKey: requestKey });
+        // A failed refresh keeps the cards that are already on screen.
+        if (!cancelled) setState((prev) => ({ ...prev, error: true, loadedKey: requestKey }));
       });
     return () => {
       cancelled = true;

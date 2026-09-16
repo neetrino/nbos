@@ -60,7 +60,7 @@ export function useClientServiceBoard({
       })
       .catch((caught) => {
         if (requestId !== requestIdRef.current) return;
-        setBoard(null);
+        // A failed refresh keeps the board that is already on screen.
         setError(getApiErrorMessage(caught, t('errors.loadBoard')));
       })
       .finally(() => {

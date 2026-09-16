@@ -23,9 +23,8 @@ export function useProductFinanceInvoices(productId: string) {
       setTruncated(meta.total > items.length);
       setError(null);
     } catch (caught) {
+      // A failed refresh keeps the invoices that are already on screen.
       setError(getApiErrorMessage(caught, 'Invoices could not be loaded.'));
-      setInvoices([]);
-      setTruncated(false);
     } finally {
       setLoading(false);
     }
