@@ -26,6 +26,7 @@ interface OrdersPageContentProps {
   error: string | null;
   mutationError: string | null;
   onDismissMutationError: () => void;
+  onDismissError: () => void;
   onRetry: () => void;
   gap: OrderReconciliationGap | null;
   partnerIdFromUrl: string | null;
@@ -47,6 +48,7 @@ export function OrdersPageContent({
   error,
   mutationError,
   onDismissMutationError,
+  onDismissError,
   onRetry,
   gap,
   partnerIdFromUrl,
@@ -84,6 +86,9 @@ export function OrdersPageContent({
         }
       >
         <>
+          {error && orders.length > 0 ? (
+            <ListMutationErrorBanner message={error} onDismiss={onDismissError} />
+          ) : null}
           {mutationError ? (
             <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
           ) : null}

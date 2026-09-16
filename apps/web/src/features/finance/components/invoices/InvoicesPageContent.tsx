@@ -25,6 +25,7 @@ interface InvoicesPageContentProps {
   error: string | null;
   mutationError: string | null;
   onDismissMutationError: () => void;
+  onDismissError: () => void;
   view: InvoiceViewMode;
   onRetry: () => void;
   onInvoiceClick: (invoice: Invoice) => void;
@@ -43,6 +44,7 @@ export function InvoicesPageContent({
   error,
   mutationError,
   onDismissMutationError,
+  onDismissError,
   view,
   onRetry,
   onInvoiceClick,
@@ -70,6 +72,9 @@ export function InvoicesPageContent({
       }
     >
       <div className="flex min-h-0 flex-1 flex-col gap-4">
+        {error && invoices.length > 0 ? (
+          <ListMutationErrorBanner message={error} onDismiss={onDismissError} />
+        ) : null}
         {mutationError ? (
           <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
         ) : null}

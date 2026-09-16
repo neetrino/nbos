@@ -6,9 +6,11 @@ import { useCallback, useMemo, useState } from 'react';
 import { ExternalLink, Headphones, Plus } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
+  DataView,
   EmptyState,
   ErrorState,
   IntegratedSearchFilters,
+  ListMutationErrorBanner,
   LoadingState,
   PageHero,
   ViewModeSwitch,
@@ -40,6 +42,7 @@ export function ProductSupportTab({
   boardScope,
   loading,
   error,
+  dismissError,
   search,
   setSearch,
   filters,
@@ -76,14 +79,6 @@ export function ProductSupportTab({
     () => tickets.find((ticket) => ticket.id === ticketSheet.entityId) ?? null,
     [ticketSheet.entityId, tickets],
   );
-
-  if (loading && displayTickets.length === 0) {
-    return <LoadingState count={3} />;
-  }
-
-  if (error) {
-    return <ErrorState description={error} onRetry={() => void refetch()} />;
-  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5">
@@ -130,36 +125,49 @@ export function ProductSupportTab({
 
       <SupportWorkflowScopeBanner scope={boardScope} />
 
-      {displayTickets.length === 0 ? (
-        <EmptyState
-          icon={Headphones}
-          title="No support tickets"
-          description="Support tickets linked to this product will appear here."
-        />
-      ) : displayView === 'list' ? (
-        <div className="flex min-h-0 flex-1 flex-col gap-2">
-          <SupportTicketsListView
-            tickets={displayTickets}
-            actionId={actions.actionId}
-            onOpenDetail={handleOpenDetail}
-            onStatusSelect={actions.handleStatusSelect}
-            onReopen={(ticket) => void actions.handleReopenTicket(ticket)}
+      {error && displayTickets.length > 0 ? (
+        <ListMutationErrorBanner message={error} onDismiss={dismissError} />
+      ) : null}
+
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={displayTickets.length > 0}
+        loadingFallback={<LoadingState count={3} />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void refetch()} />}
+        emptyFallback={
+          <EmptyState
+            icon={Headphones}
+            title="No support tickets"
+            description="Support tickets linked to this product will appear here."
           />
-          {hasMoreAny ? (
-            <InfiniteScrollSentinel disabled={loading} onReach={loadMoreAll} rootMargin="240px" />
-          ) : null}
-        </div>
-      ) : (
-        <SupportTicketsKanbanView
-          columns={kanbanColumns}
-          boardScope={boardScope}
-          actionId={actions.actionId}
-          onMove={actions.handleKanbanMove}
-          onOpenDetail={handleOpenDetail}
-          onReopen={(ticket) => void actions.handleReopenTicket(ticket)}
-          onColumnLoadMore={loadMoreColumn}
-        />
-      )}
+        }
+      >
+        {displayView === 'list' ? (
+          <div className="flex min-h-0 flex-1 flex-col gap-2">
+            <SupportTicketsListView
+              tickets={displayTickets}
+              actionId={actions.actionId}
+              onOpenDetail={handleOpenDetail}
+              onStatusSelect={actions.handleStatusSelect}
+              onReopen={(ticket) => void actions.handleReopenTicket(ticket)}
+            />
+            {hasMoreAny ? (
+              <InfiniteScrollSentinel disabled={loading} onReach={loadMoreAll} rootMargin="240px" />
+            ) : null}
+          </div>
+        ) : (
+          <SupportTicketsKanbanView
+            columns={kanbanColumns}
+            boardScope={boardScope}
+            actionId={actions.actionId}
+            onMove={actions.handleKanbanMove}
+            onOpenDetail={handleOpenDetail}
+            onReopen={(ticket) => void actions.handleReopenTicket(ticket)}
+            onColumnLoadMore={loadMoreColumn}
+          />
+        )}
+      </DataView>
 
       <SupportTicketActionOverlays
         ticketId={ticketSheet.entityId}

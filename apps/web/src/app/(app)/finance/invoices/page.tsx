@@ -220,6 +220,7 @@ function InvoicesPageInner() {
           error={state.error}
           mutationError={state.mutationError}
           onDismissMutationError={state.clearMutationError}
+          onDismissError={state.dismissError}
           view={displayView}
           onRetry={state.fetchInvoices}
           onInvoiceClick={state.handleInvoiceClick}

@@ -13,6 +13,7 @@ import {
   KanbanColumnMoneyTotal,
   DataView,
   EmptyState,
+  ListMutationErrorBanner,
   QueryLoadError,
   LoadingState,
   DeleteConfirmDialog,
@@ -232,6 +233,7 @@ function DealsPipelinePageContent() {
     hasMoreAny,
     loading: boardLoading,
     error: boardError,
+    clearError: clearBoardError,
     reload: reloadBoard,
     loadMoreColumn,
     loadMoreAll,
@@ -269,6 +271,11 @@ function DealsPipelinePageContent() {
   const deals = isTrashView ? trashDeals : boardItems;
   const loading = isTrashView ? trashLoading : boardLoading;
   const error = isTrashView ? trashError : boardError;
+
+  const dismissError = useCallback(() => {
+    if (isTrashView) setTrashError(null);
+    else clearBoardError();
+  }, [clearBoardError, isTrashView]);
 
   const setDeals = useCallback(
     (updater: (prev: Deal[]) => Deal[]) => {
@@ -715,6 +722,9 @@ function DealsPipelinePageContent() {
           backLabel={t('deals.backToActive')}
           onBackToActive={() => setScope('active')}
         />
+      ) : null}
+      {error && deals.length > 0 ? (
+        <ListMutationErrorBanner message={error} onDismiss={dismissError} />
       ) : null}
       <DataView
         loading={loading}

@@ -181,6 +181,7 @@ function OrdersPageInner() {
           error={state.error}
           mutationError={state.mutationError}
           onDismissMutationError={state.clearMutationError}
+          onDismissError={state.dismissError}
           onRetry={state.fetchOrders}
           gap={gap}
           partnerIdFromUrl={partnerIdFromUrl}

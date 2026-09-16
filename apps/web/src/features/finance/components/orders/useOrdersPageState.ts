@@ -119,6 +119,7 @@ export function useOrdersPageState({
     loading: boardLoading,
     refreshing: boardRefreshing,
     error: boardError,
+    clearError: clearBoardError,
     reload: reloadBoard,
     loadMoreColumn,
     loadMoreAll,
@@ -255,6 +256,11 @@ export function useOrdersPageState({
   const refreshing = gap ? gapRefreshing : boardRefreshing;
   const error = gap ? gapError : boardError;
 
+  const dismissError = useCallback(() => {
+    if (gap) setGapError(null);
+    else clearBoardError();
+  }, [gap, clearBoardError]);
+
   const fetchOrders = useCallback(async () => {
     if (gap) {
       await fetchGapOrders();
@@ -344,6 +350,7 @@ export function useOrdersPageState({
     loading,
     refreshing,
     error,
+    dismissError,
     mutationError,
     clearMutationError,
     search,

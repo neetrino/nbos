@@ -12,6 +12,7 @@ import {
   KanbanBoard,
   DataView,
   EmptyState,
+  ListMutationErrorBanner,
   QueryLoadError,
   LoadingState,
   DeleteConfirmDialog,
@@ -204,6 +205,7 @@ function LeadsPipelinePageContent() {
     hasMoreAny,
     loading: boardLoading,
     error: boardError,
+    clearError: clearBoardError,
     reload: reloadBoard,
     loadMoreColumn,
     loadMoreAll,
@@ -239,6 +241,11 @@ function LeadsPipelinePageContent() {
   const leads = isTrashView ? trashLeads : boardItems;
   const loading = isTrashView ? trashLoading : boardLoading;
   const error = isTrashView ? trashError : boardError;
+
+  const dismissError = useCallback(() => {
+    if (isTrashView) setTrashError(null);
+    else clearBoardError();
+  }, [clearBoardError, isTrashView]);
 
   const setLeads = useCallback(
     (updater: (prev: Lead[]) => Lead[]) => {
@@ -619,6 +626,9 @@ function LeadsPipelinePageContent() {
           backLabel={t('leads.backToActive')}
           onBackToActive={() => setScope('active')}
         />
+      ) : null}
+      {error && leads.length > 0 ? (
+        <ListMutationErrorBanner message={error} onDismiss={dismissError} />
       ) : null}
       <DataView
         loading={loading}
