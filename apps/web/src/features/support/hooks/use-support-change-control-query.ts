@@ -60,7 +60,9 @@ export function useSupportChangeControlQuery() {
     columnMeta,
     hasMoreAny,
     loading,
+    refreshing,
     error: boardError,
+    clearError: clearBoardError,
     reload,
     loadMoreColumn,
     loadMoreAll,
@@ -110,6 +112,12 @@ export function useSupportChangeControlQuery() {
     setErrorOverride(message);
   }, []);
 
+  const dismissError = useCallback(() => {
+    // Visible message is errorOverride ?? boardError; the user cannot tell which source produced it.
+    setErrorOverride(null);
+    clearBoardError();
+  }, [clearBoardError]);
+
   return {
     tickets,
     columnMeta,
@@ -118,7 +126,9 @@ export function useSupportChangeControlQuery() {
     loadMoreAll,
     boardScope,
     loading,
+    refreshing,
     error: errorOverride ?? boardError,
+    dismissError,
     setError,
     search,
     setSearch,

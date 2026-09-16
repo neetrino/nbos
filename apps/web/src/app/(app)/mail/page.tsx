@@ -12,9 +12,11 @@ import { Button } from '@/components/ui/button';
 import { useHeaderContext, useHeaderModuleTitle } from '@/components/layout/header-context';
 
 import {
+  DataView,
   DeleteConfirmDialog,
   EmptyState,
   ErrorState,
+  ListMutationErrorBanner,
   LoadingState,
   ListPagination,
   SEARCH_DEBOUNCE_MS,
@@ -822,11 +824,57 @@ export default function MailInboxPage() {
         />
 
         <section className="flex min-h-0 min-w-0 flex-1 flex-col">
-          {loading ? <LoadingState /> : null}
+          {error && threads.length > 0 ? (
+            <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+          ) : null}
+          <DataView
+            loading={loading}
+            error={error}
+            hasData={threads.length > 0}
+            loadingFallback={<LoadingState />}
+            errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+            emptyFallback={
+              <>
+                <MailBulkActionBar
+                  visibleThreadCount={threads.length}
+                  selectedCount={selectedCount}
+                  allVisibleSelected={allVisibleSelected}
+                  canMarkUnread={canEdit}
+                  onToggleSelectAll={toggleSelectAllVisible}
+                  onMarkRead={() => void runBulkMarkRead()}
+                  onMarkUnread={() => void runBulkMarkUnread()}
+                  onClearSelection={() => clearThreadSelection(setSelectedThreadIds)}
+                  className="border-border rounded-none border-x-0 border-t-0 bg-transparent px-4 py-2.5"
+                />
 
-          {error ? <ErrorState description={error} onRetry={() => void load()} /> : null}
+                <EmptyState
+                  icon={Mail}
+                  title="No threads"
+                  description={
+                    threadSearchQuery || hasActiveMailSearchFilters(searchFilters)
+                      ? 'No threads match this search.'
+                      : 'Connect a mailbox or wait for the next sync.'
+                  }
+                />
 
-          {!loading && !error ? (
+                {threadListMeta && threadListMeta.totalCount > 0 ? (
+                  <ListPagination
+                    className="border-border shrink-0 border-t px-4 py-2"
+                    meta={{
+                      total: threadListMeta.totalCount,
+
+                      page: threadListMeta.page,
+
+                      pageSize: threadListMeta.pageSize,
+
+                      totalPages: threadListMeta.totalPages,
+                    }}
+                    onPageChange={setThreadPage}
+                  />
+                ) : null}
+              </>
+            }
+          >
             <>
               <MailBulkActionBar
                 visibleThreadCount={threads.length}
@@ -840,28 +888,16 @@ export default function MailInboxPage() {
                 className="border-border rounded-none border-x-0 border-t-0 bg-transparent px-4 py-2.5"
               />
 
-              {threads.length === 0 ? (
-                <EmptyState
-                  icon={Mail}
-                  title="No threads"
-                  description={
-                    threadSearchQuery || hasActiveMailSearchFilters(searchFilters)
-                      ? 'No threads match this search.'
-                      : 'Connect a mailbox or wait for the next sync.'
-                  }
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <MailThreadList
+                  threads={threads}
+                  accountEmailById={accountEmailById}
+                  selectedThreadId={selectedThreadId}
+                  selectedThreadIds={selectedThreadIds}
+                  onOpenThread={openThread}
+                  onToggleThreadSelected={toggleThreadSelected}
                 />
-              ) : (
-                <div className="min-h-0 flex-1 overflow-y-auto">
-                  <MailThreadList
-                    threads={threads}
-                    accountEmailById={accountEmailById}
-                    selectedThreadId={selectedThreadId}
-                    selectedThreadIds={selectedThreadIds}
-                    onOpenThread={openThread}
-                    onToggleThreadSelected={toggleThreadSelected}
-                  />
-                </div>
-              )}
+              </div>
 
               {threadListMeta && threadListMeta.totalCount > 0 ? (
                 <ListPagination
@@ -879,7 +915,7 @@ export default function MailInboxPage() {
                 />
               ) : null}
             </>
-          ) : null}
+          </DataView>
         </section>
       </div>
 

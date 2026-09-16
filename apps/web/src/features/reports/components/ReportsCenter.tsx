@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { CRM_DEALS_MODULE, CRM_LEADS_MODULE } from '@nbos/shared';
-import { ErrorState, LoadingState } from '@/components/shared';
+import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import { usePermission } from '@/lib/permissions';
 import { useModuleHeroSlots } from '@/components/shared/page-hero';
 import {
@@ -258,10 +258,14 @@ export function ReportsCenter() {
 
   if (!parsedPath) return <LoadingState variant="cards" count={6} />;
 
-  if (loading) return <LoadingState variant="cards" count={6} />;
-  if (error) return <ErrorState title="Reports unavailable" description={error} onRetry={load} />;
+  const hasData =
+    definitions.length > 0 ||
+    exportJobs.length > 0 ||
+    schedules.length > 0 ||
+    savedViews.length > 0 ||
+    warnings.length > 0;
 
-  return (
+  const reportsContent = (
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
       {view === 'SCHEDULED' ? (
         <ReportsSchedulePanel
@@ -294,5 +298,25 @@ export function ReportsCenter() {
         <SpecialistsReportsTab state={specialists} />
       )}
     </div>
+  );
+
+  return (
+    <>
+      {error && hasData ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={hasData}
+        loadingFallback={<LoadingState variant="cards" count={6} />}
+        errorFallback={
+          <ErrorState title="Reports unavailable" description={error ?? ''} onRetry={load} />
+        }
+        emptyFallback={reportsContent}
+      >
+        {reportsContent}
+      </DataView>
+    </>
   );
 }

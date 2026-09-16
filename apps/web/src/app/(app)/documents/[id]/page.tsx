@@ -7,7 +7,13 @@ import { ArrowLeft, Archive, Loader2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PageHero, ErrorState, LoadingState } from '@/components/shared';
+import {
+  PageHero,
+  DataView,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+} from '@/components/shared';
 import { PAGE_TAB_BAR_WRAPPER_CLASS } from '@/components/shared/detail-sheet-classes';
 import { formatDocumentActivityDetail } from '@/features/documents/document-activity-format';
 import { DocumentAttachmentsPanel } from '@/features/documents/document-attachments-panel';
@@ -17,7 +23,7 @@ import { NativeDocumentEditor } from '@/features/documents/NativeDocumentEditor'
 import { DocumentStatusBadge } from '@/features/documents/DocumentStatusBadge';
 import { formatDocumentRelativeTime } from '@/features/documents/format-relative-time';
 import { documentsApi, type DocumentActivityItem, type DocumentDetail } from '@/lib/api/documents';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 
 const DOCUMENTS_EDIT_KEY = 'DOCUMENTS_EDIT';
@@ -83,8 +89,10 @@ export default function DocumentDetailPage() {
       const canEditDoc = hasDocumentsEditPermission(permissions);
       setContentTab(next.status === 'DRAFT' && canEditDoc ? 'edit' : 'view');
     } catch (e) {
+      // A failed refresh keeps the document already on screen, unless the server withdrew read
+      // access: a denied or deleted document must not survive as stale content.
+      if (isAccessRevokedApiError(e)) setDoc(null);
       setError(getApiErrorMessage(e, 'Document could not be loaded.'));
-      setDoc(null);
     } finally {
       setLoading(false);
     }
@@ -139,6 +147,10 @@ export default function DocumentDetailPage() {
   const visibleActivity =
     doc && doc.activityRevealed !== false ? [...doc.activityEvents, ...olderActivity] : [];
 
+  // Revalidating in place keeps content mounted, but only while it belongs to this route:
+  // after navigating to another document the previous one must not stand in for the new id.
+  const showsLoadedDoc = doc?.id === id;
+
   const canDelete = can('DELETE', 'DOCUMENTS');
   const canEdit = can('EDIT', 'DOCUMENTS');
   const canUseDrive = hasActivePermission(permissions, DRIVE_ADD_KEY);
@@ -154,220 +166,228 @@ export default function DocumentDetailPage() {
         <ArrowLeft size={14} /> Documents
       </Link>
 
-      {loading ? <LoadingState variant="list" count={3} /> : null}
-      {error && !doc ? <ErrorState description={error} onRetry={load} /> : null}
-
-      {doc ? (
-        <>
-          <PageHero
-            title={doc.title}
-            trailing={
-              <div className="flex items-center gap-2">
-                {doc.status !== 'ARCHIVED' ? (
-                  <DocumentFavoriteButton
-                    documentId={doc.id}
-                    isFavorite={isFavorite}
-                    onToggled={setIsFavorite}
-                  />
-                ) : null}
-                {canDelete && doc.status === 'ARCHIVED' ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="gap-1"
-                    onClick={() => void handleRestore()}
-                    disabled={restoring}
-                  >
-                    {restoring ? (
-                      <Loader2 size={14} className="animate-spin" aria-hidden />
-                    ) : (
-                      <RotateCcw size={14} aria-hidden />
-                    )}
-                    Restore
-                  </Button>
-                ) : canDelete && doc.status !== 'ARCHIVED' ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="gap-1"
-                    onClick={handleArchive}
-                    disabled={archiving}
-                  >
-                    {archiving ? (
-                      <Loader2 size={14} className="animate-spin" aria-hidden />
-                    ) : (
-                      <Archive size={14} aria-hidden />
-                    )}
-                    Archive
-                  </Button>
-                ) : null}
-              </div>
-            }
-          />
-          {doc.description ? (
-            <p className="text-muted-foreground text-sm">{doc.description}</p>
-          ) : null}
-
-          <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
-            <DocumentStatusBadge status={doc.status} />
-            {doc.section ? (
-              <span>
-                Section:{' '}
-                <Link
-                  href={`/documents/sections/${doc.section.id}`}
-                  className="text-primary font-medium hover:underline"
-                >
-                  {doc.section.name}
-                </Link>
-              </span>
-            ) : null}
-            <span>Updated {formatDocumentRelativeTime(doc.updatedAt)}</span>
-            {doc.publishedAt ? (
-              <span>Published {formatDocumentRelativeTime(doc.publishedAt)}</span>
-            ) : null}
-            {doc.ownerId ? (
-              <span title={doc.ownerId}>
-                Owner {doc.ownerId.length > 12 ? `${doc.ownerId.slice(0, 8)}…` : doc.ownerId}
-              </span>
-            ) : null}
-            {doc.updatedById ? (
-              <span title={doc.updatedById}>
-                Last edited by{' '}
-                {doc.updatedById.length > 12 ? `${doc.updatedById.slice(0, 8)}…` : doc.updatedById}
-              </span>
-            ) : null}
-          </div>
-
-          {error ? <ErrorState description={error} onRetry={load} /> : null}
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Content</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {!isNative ? (
-                <p className="text-muted-foreground text-sm">
-                  The rich editor is available for native documents only. This document uses another
-                  type.
-                </p>
-              ) : showEditorTabs ? (
-                <Tabs
-                  value={contentTab}
-                  onValueChange={(v) => setContentTab(v as ContentTab)}
-                  className="w-full"
-                >
-                  <div className={PAGE_TAB_BAR_WRAPPER_CLASS}>
-                    <TabsList className="w-full justify-start">
-                      <TabsTrigger value="view">Read</TabsTrigger>
-                      <TabsTrigger value="edit">Edit</TabsTrigger>
-                    </TabsList>
-                  </div>
-                  <TabsContent value="view" className="mt-4">
-                    <DocumentHtmlViewer documentId={doc.id} html={doc.contentHtml} />
-                  </TabsContent>
-                  <TabsContent value="edit" className="mt-4">
-                    <NativeDocumentEditor
-                      key={doc.id}
+      {error && showsLoadedDoc ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={showsLoadedDoc}
+        loadingFallback={<LoadingState variant="list" count={3} />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={load} />}
+      >
+        {doc ? (
+          <>
+            <PageHero
+              title={doc.title}
+              trailing={
+                <div className="flex items-center gap-2">
+                  {doc.status !== 'ARCHIVED' ? (
+                    <DocumentFavoriteButton
                       documentId={doc.id}
-                      documentStatus={doc.status}
-                      initialContentJson={doc.contentJson}
-                      canUseDrive={canUseDrive}
-                      onDocumentUpdated={setDoc}
+                      isFavorite={isFavorite}
+                      onToggled={setIsFavorite}
                     />
-                  </TabsContent>
-                </Tabs>
-              ) : (
-                <DocumentHtmlViewer documentId={doc.id} html={doc.contentHtml} />
-              )}
-            </CardContent>
-          </Card>
-
-          {isNative ? (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Files</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <DocumentAttachmentsPanel
-                  documentId={doc.id}
-                  attachments={doc.attachments ?? []}
-                  canEdit={canEdit && doc.status !== 'ARCHIVED'}
-                  canUseDrive={canUseDrive}
-                  onChanged={load}
-                />
-                {!canUseDrive ? (
-                  <p className="text-muted-foreground mt-2 text-xs">
-                    Drive upload (ADD) permission is required to attach files or insert images.
-                  </p>
-                ) : null}
-              </CardContent>
-            </Card>
-          ) : null}
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {doc.activityRevealed === false ? (
-                <p className="text-muted-foreground text-sm">
-                  Activity history is hidden for your role.
-                </p>
-              ) : visibleActivity.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No activity yet.</p>
-              ) : (
-                <div className="space-y-3">
-                  <ul className="divide-border divide-y text-sm">
-                    {visibleActivity.map((ev) => {
-                      const detail = formatDocumentActivityDetail(ev.action, ev.metadata);
-                      return (
-                        <li
-                          key={ev.id}
-                          className="flex flex-col gap-0.5 py-2 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-2"
-                        >
-                          <div className="min-w-0">
-                            <span className="font-medium capitalize">
-                              {ev.action.replace(/_/g, ' ')}
-                            </span>
-                            {detail ? (
-                              <span className="text-muted-foreground ml-0 block text-xs sm:ml-2 sm:inline">
-                                {detail}
-                              </span>
-                            ) : null}
-                          </div>
-                          <span className="text-muted-foreground shrink-0 text-xs sm:text-sm">
-                            {formatDocumentRelativeTime(ev.createdAt)}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  {activityPagingCursor ? (
+                  ) : null}
+                  {canDelete && doc.status === 'ARCHIVED' ? (
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="w-full sm:w-auto"
-                      disabled={activityLoadingMore}
-                      onClick={() => void loadMoreActivity()}
+                      className="gap-1"
+                      onClick={() => void handleRestore()}
+                      disabled={restoring}
                     >
-                      {activityLoadingMore ? (
-                        <span className="inline-flex items-center gap-2">
-                          <Loader2 size={14} className="animate-spin" /> Loading…
-                        </span>
+                      {restoring ? (
+                        <Loader2 size={14} className="animate-spin" aria-hidden />
                       ) : (
-                        'Load older activity'
+                        <RotateCcw size={14} aria-hidden />
                       )}
+                      Restore
+                    </Button>
+                  ) : canDelete && doc.status !== 'ARCHIVED' ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1"
+                      onClick={handleArchive}
+                      disabled={archiving}
+                    >
+                      {archiving ? (
+                        <Loader2 size={14} className="animate-spin" aria-hidden />
+                      ) : (
+                        <Archive size={14} aria-hidden />
+                      )}
+                      Archive
                     </Button>
                   ) : null}
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </>
-      ) : null}
+              }
+            />
+            {doc.description ? (
+              <p className="text-muted-foreground text-sm">{doc.description}</p>
+            ) : null}
+
+            <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
+              <DocumentStatusBadge status={doc.status} />
+              {doc.section ? (
+                <span>
+                  Section:{' '}
+                  <Link
+                    href={`/documents/sections/${doc.section.id}`}
+                    className="text-primary font-medium hover:underline"
+                  >
+                    {doc.section.name}
+                  </Link>
+                </span>
+              ) : null}
+              <span>Updated {formatDocumentRelativeTime(doc.updatedAt)}</span>
+              {doc.publishedAt ? (
+                <span>Published {formatDocumentRelativeTime(doc.publishedAt)}</span>
+              ) : null}
+              {doc.ownerId ? (
+                <span title={doc.ownerId}>
+                  Owner {doc.ownerId.length > 12 ? `${doc.ownerId.slice(0, 8)}…` : doc.ownerId}
+                </span>
+              ) : null}
+              {doc.updatedById ? (
+                <span title={doc.updatedById}>
+                  Last edited by{' '}
+                  {doc.updatedById.length > 12
+                    ? `${doc.updatedById.slice(0, 8)}…`
+                    : doc.updatedById}
+                </span>
+              ) : null}
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Content</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {!isNative ? (
+                  <p className="text-muted-foreground text-sm">
+                    The rich editor is available for native documents only. This document uses
+                    another type.
+                  </p>
+                ) : showEditorTabs ? (
+                  <Tabs
+                    value={contentTab}
+                    onValueChange={(v) => setContentTab(v as ContentTab)}
+                    className="w-full"
+                  >
+                    <div className={PAGE_TAB_BAR_WRAPPER_CLASS}>
+                      <TabsList className="w-full justify-start">
+                        <TabsTrigger value="view">Read</TabsTrigger>
+                        <TabsTrigger value="edit">Edit</TabsTrigger>
+                      </TabsList>
+                    </div>
+                    <TabsContent value="view" className="mt-4">
+                      <DocumentHtmlViewer documentId={doc.id} html={doc.contentHtml} />
+                    </TabsContent>
+                    <TabsContent value="edit" className="mt-4">
+                      <NativeDocumentEditor
+                        key={doc.id}
+                        documentId={doc.id}
+                        documentStatus={doc.status}
+                        initialContentJson={doc.contentJson}
+                        canUseDrive={canUseDrive}
+                        onDocumentUpdated={setDoc}
+                      />
+                    </TabsContent>
+                  </Tabs>
+                ) : (
+                  <DocumentHtmlViewer documentId={doc.id} html={doc.contentHtml} />
+                )}
+              </CardContent>
+            </Card>
+
+            {isNative ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Files</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DocumentAttachmentsPanel
+                    documentId={doc.id}
+                    attachments={doc.attachments ?? []}
+                    canEdit={canEdit && doc.status !== 'ARCHIVED'}
+                    canUseDrive={canUseDrive}
+                    onChanged={load}
+                  />
+                  {!canUseDrive ? (
+                    <p className="text-muted-foreground mt-2 text-xs">
+                      Drive upload (ADD) permission is required to attach files or insert images.
+                    </p>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ) : null}
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {doc.activityRevealed === false ? (
+                  <p className="text-muted-foreground text-sm">
+                    Activity history is hidden for your role.
+                  </p>
+                ) : visibleActivity.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">No activity yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    <ul className="divide-border divide-y text-sm">
+                      {visibleActivity.map((ev) => {
+                        const detail = formatDocumentActivityDetail(ev.action, ev.metadata);
+                        return (
+                          <li
+                            key={ev.id}
+                            className="flex flex-col gap-0.5 py-2 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-2"
+                          >
+                            <div className="min-w-0">
+                              <span className="font-medium capitalize">
+                                {ev.action.replace(/_/g, ' ')}
+                              </span>
+                              {detail ? (
+                                <span className="text-muted-foreground ml-0 block text-xs sm:ml-2 sm:inline">
+                                  {detail}
+                                </span>
+                              ) : null}
+                            </div>
+                            <span className="text-muted-foreground shrink-0 text-xs sm:text-sm">
+                              {formatDocumentRelativeTime(ev.createdAt)}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    {activityPagingCursor ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        disabled={activityLoadingMore}
+                        onClick={() => void loadMoreActivity()}
+                      >
+                        {activityLoadingMore ? (
+                          <span className="inline-flex items-center gap-2">
+                            <Loader2 size={14} className="animate-spin" /> Loading…
+                          </span>
+                        ) : (
+                          'Load older activity'
+                        )}
+                      </Button>
+                    ) : null}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        ) : null}
+      </DataView>
     </div>
   );
 }

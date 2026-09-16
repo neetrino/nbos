@@ -8,9 +8,11 @@ import {
   DeleteConfirmDialog,
   ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
+  DataView,
   EmptyState,
   ErrorState,
   IntegratedSearchFilters,
+  ListMutationErrorBanner,
   ListPagination,
   LoadingState,
   useModuleHeroSlots,
@@ -282,44 +284,53 @@ function CompaniesPageContent() {
           onBackToActive={() => setScope('active')}
         />
       ) : null}
-      {loading ? (
-        <LoadingState
-          variant={displayView === 'grid' ? 'cards' : 'list'}
-          count={displayView === 'grid' ? 6 : 5}
-        />
-      ) : error ? (
-        <ErrorState description={error} onRetry={fetchCompanies} />
-      ) : companies.length === 0 ? (
-        <EmptyState
-          icon={Building2}
-          title={isTrashView ? 'Trash is empty' : 'No companies yet'}
-          description={
-            isTrashView
-              ? 'Removed companies will appear here until restored or purged.'
-              : 'Add your first company to get started'
-          }
-          action={
-            isTrashView ? undefined : (
-              <Button onClick={openCreateCompany}>
-                <Plus size={16} />
-                Create First Company
-              </Button>
-            )
-          }
-        />
-      ) : displayView === 'grid' ? (
-        <div className={clientsDirectoryCardGridClass(sidebarCollapsed)}>
-          {companies.map((company) => (
-            <CompanyCard key={company.id} company={company} onOpen={handleRowClick} />
-          ))}
-        </div>
-      ) : (
-        <CompaniesTable companies={companies} onOpen={handleRowClick} />
-      )}
-
-      {!loading && !error && companies.length > 0 ? (
-        <ListPagination meta={listMeta} onPageChange={setPage} />
+      {error && companies.length > 0 ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
       ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={companies.length > 0}
+        loadingFallback={
+          <LoadingState
+            variant={displayView === 'grid' ? 'cards' : 'list'}
+            count={displayView === 'grid' ? 6 : 5}
+          />
+        }
+        errorFallback={<ErrorState description={error ?? ''} onRetry={fetchCompanies} />}
+        emptyFallback={
+          <EmptyState
+            icon={Building2}
+            title={isTrashView ? 'Trash is empty' : 'No companies yet'}
+            description={
+              isTrashView
+                ? 'Removed companies will appear here until restored or purged.'
+                : 'Add your first company to get started'
+            }
+            action={
+              isTrashView ? undefined : (
+                <Button onClick={openCreateCompany}>
+                  <Plus size={16} />
+                  Create First Company
+                </Button>
+              )
+            }
+          />
+        }
+      >
+        <>
+          {displayView === 'grid' ? (
+            <div className={clientsDirectoryCardGridClass(sidebarCollapsed)}>
+              {companies.map((company) => (
+                <CompanyCard key={company.id} company={company} onOpen={handleRowClick} />
+              ))}
+            </div>
+          ) : (
+            <CompaniesTable companies={companies} onOpen={handleRowClick} />
+          )}
+          <ListPagination meta={listMeta} onPageChange={setPage} />
+        </>
+      </DataView>
 
       <CreateCompanyDialog
         open={showCreate}

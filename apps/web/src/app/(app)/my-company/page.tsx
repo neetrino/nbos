@@ -4,7 +4,13 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Network } from 'lucide-react';
-import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import {
+  DataView,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import {
   DepartmentFoundationCard,
   FoundationMetric,
@@ -70,25 +76,35 @@ export default function MyCompanyPage() {
     (section) =>
       permsLoading || !section.require || can(section.require.action, section.require.module),
   );
+  const hasData = employees.length > 0 || departments.length > 0 || roles.length > 0;
+  const hub = (
+    <MyCompanyHubLoaded
+      employees={employees}
+      departments={departments}
+      activeEmployees={activeEmployees}
+      assignedEmployees={assignedEmployees}
+      rolesCount={roles.length}
+      systemRoles={systemRoles}
+      visibleHubSections={visibleHubSections}
+    />
+  );
 
   return (
     <div className="flex flex-col gap-6">
       <p className="text-muted-foreground text-sm">{t('hub.intro')}</p>
-      {loading ? (
-        <LoadingState variant="cards" count={6} />
-      ) : error ? (
-        <ErrorState description={error} onRetry={fetchFoundation} />
-      ) : (
-        <MyCompanyHubLoaded
-          employees={employees}
-          departments={departments}
-          activeEmployees={activeEmployees}
-          assignedEmployees={assignedEmployees}
-          rolesCount={roles.length}
-          systemRoles={systemRoles}
-          visibleHubSections={visibleHubSections}
-        />
-      )}
+      {error && hasData ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={hasData}
+        loadingFallback={<LoadingState variant="cards" count={6} />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={fetchFoundation} />}
+        emptyFallback={hub}
+      >
+        {hub}
+      </DataView>
     </div>
   );
 }

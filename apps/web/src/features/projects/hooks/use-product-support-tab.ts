@@ -23,7 +23,9 @@ export interface UseProductSupportTabResult {
   kanbanColumns: SupportKanbanColumn[];
   boardScope: BoardLifecycleScope;
   loading: boolean;
+  refreshing: boolean;
   error: string | null;
+  dismissError: () => void;
   search: string;
   setSearch: (value: string) => void;
   filters: Record<string, string>;
@@ -76,6 +78,7 @@ export function useProductSupportTab(
     getStageKey: (ticket) => ticket.status,
     fetchPage,
     loadErrorMessage: 'Support tickets could not be loaded.',
+    subjectKey: productId,
   });
 
   const {
@@ -83,7 +86,9 @@ export function useProductSupportTab(
     columnMeta,
     hasMoreAny,
     loading,
+    refreshing,
     error: boardError,
+    clearError: clearBoardError,
     reload,
     loadMoreColumn,
     loadMoreAll,
@@ -94,6 +99,12 @@ export function useProductSupportTab(
     await reload();
     setErrorOverride(null);
   }, [productId, reload]);
+
+  const dismissError = useCallback(() => {
+    // Visible message is errorOverride ?? boardError; the user cannot tell which source produced it.
+    setErrorOverride(null);
+    clearBoardError();
+  }, [clearBoardError]);
 
   const refreshSupportViews = useCallback(async () => {
     await fetchTickets();
@@ -145,7 +156,9 @@ export function useProductSupportTab(
     kanbanColumns,
     boardScope: boardScope as BoardLifecycleScope,
     loading,
+    refreshing,
     error: errorOverride ?? boardError,
+    dismissError,
     search,
     setSearch,
     filters,

@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { CreditCard } from 'lucide-react';
 import {
+  DataView,
   EmptyState,
   ErrorState,
   IntegratedSearchFilters,
+  ListMutationErrorBanner,
   LoadingState,
   useModuleHeroSlots,
 } from '@/components/shared';
@@ -157,19 +159,25 @@ export default function PaymentsPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      {loading ? (
-        <LoadingState />
-      ) : error ? (
-        <ErrorState description={error} onRetry={fetchPayments} />
-      ) : payments.length === 0 ? (
-        <EmptyState
-          icon={CreditCard}
-          title="No payments yet"
-          description="Payments appear when invoices are marked as paid"
-        />
-      ) : (
+      {error && payments.length > 0 ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={payments.length > 0}
+        loadingFallback={<LoadingState />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={fetchPayments} />}
+        emptyFallback={
+          <EmptyState
+            icon={CreditCard}
+            title="No payments yet"
+            description="Payments appear when invoices are marked as paid"
+          />
+        }
+      >
         <PaymentsListTable payments={payments} />
-      )}
+      </DataView>
     </div>
   );
 }

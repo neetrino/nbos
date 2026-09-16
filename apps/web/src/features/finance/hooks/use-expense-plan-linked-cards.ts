@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { isAccessRevokedApiError } from '@/lib/api-errors';
 import { expensesApi, type Expense } from '@/lib/api/finance';
 
 const LINKED_CARDS_PAGE_SIZE = 100;
@@ -44,8 +45,15 @@ export function useExpensePlanLinkedCards(
       .then((res) => {
         if (!cancelled) setState({ items: res.items, error: false, loadedKey: requestKey });
       })
-      .catch(() => {
-        if (!cancelled) setState({ items: [], error: true, loadedKey: requestKey });
+      .catch((caught: unknown) => {
+        if (cancelled) return;
+        // A failed refresh keeps the cards already on screen, unless the server withdrew read
+        // access: those cards must not survive a denial.
+        setState((prev) => ({
+          items: isAccessRevokedApiError(caught) ? [] : prev.items,
+          error: true,
+          loadedKey: requestKey,
+        }));
       });
     return () => {
       cancelled = true;

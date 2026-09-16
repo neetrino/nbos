@@ -4,6 +4,7 @@ import { Plus, FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
+  DataView,
   EmptyState,
   ListMutationErrorBanner,
   LoadingState,
@@ -24,6 +25,7 @@ interface InvoicesPageContentProps {
   error: string | null;
   mutationError: string | null;
   onDismissMutationError: () => void;
+  onDismissError: () => void;
   view: InvoiceViewMode;
   onRetry: () => void;
   onInvoiceClick: (invoice: Invoice) => void;
@@ -42,6 +44,7 @@ export function InvoicesPageContent({
   error,
   mutationError,
   onDismissMutationError,
+  onDismissError,
   view,
   onRetry,
   onInvoiceClick,
@@ -52,48 +55,59 @@ export function InvoicesPageContent({
   onColumnLoadMore,
   onLoadMoreAll,
 }: InvoicesPageContentProps) {
-  if (loading) return <LoadingState />;
-  if (error) return <QueryLoadError description={error} onRetry={onRetry} />;
-  if (invoices.length === 0) {
-    return (
-      <div className="flex flex-col gap-4">
+  return (
+    <DataView
+      loading={loading}
+      error={error}
+      hasData={invoices.length > 0}
+      loadingFallback={<LoadingState />}
+      errorFallback={<QueryLoadError description={error ?? ''} onRetry={onRetry} />}
+      emptyFallback={
+        <div className="flex flex-col gap-4">
+          {mutationError ? (
+            <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
+          ) : null}
+          <InvoicesEmptyState onCreate={onOpenQuickCreate} />
+        </div>
+      }
+    >
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
+        {error && invoices.length > 0 ? (
+          <ListMutationErrorBanner message={error} onDismiss={onDismissError} />
+        ) : null}
         {mutationError ? (
           <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
         ) : null}
-        <InvoicesEmptyState onCreate={onOpenQuickCreate} />
+        {view === 'kanban' ? (
+          <div className="min-h-0 flex-1">
+            <InvoiceKanban
+              invoices={invoices}
+              boardScope={boardScope}
+              columnMeta={columnMeta}
+              onColumnLoadMore={onColumnLoadMore}
+              onInvoiceClick={onInvoiceClick}
+              onMove={onMove}
+              onOpenQuickCreate={onOpenQuickCreate}
+            />
+          </div>
+        ) : (
+          <div className="flex min-h-0 flex-1 flex-col gap-2">
+            <InvoicesTable
+              invoices={invoices}
+              boardScope={boardScope}
+              onInvoiceClick={onInvoiceClick}
+            />
+            {hasMoreAny && onLoadMoreAll ? (
+              <InfiniteScrollSentinel
+                disabled={loading}
+                onReach={onLoadMoreAll}
+                rootMargin="240px"
+              />
+            ) : null}
+          </div>
+        )}
       </div>
-    );
-  }
-  return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
-      {mutationError ? (
-        <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
-      ) : null}
-      {view === 'kanban' ? (
-        <div className="min-h-0 flex-1">
-          <InvoiceKanban
-            invoices={invoices}
-            boardScope={boardScope}
-            columnMeta={columnMeta}
-            onColumnLoadMore={onColumnLoadMore}
-            onInvoiceClick={onInvoiceClick}
-            onMove={onMove}
-            onOpenQuickCreate={onOpenQuickCreate}
-          />
-        </div>
-      ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-2">
-          <InvoicesTable
-            invoices={invoices}
-            boardScope={boardScope}
-            onInvoiceClick={onInvoiceClick}
-          />
-          {hasMoreAny && onLoadMoreAll ? (
-            <InfiniteScrollSentinel disabled={loading} onReach={onLoadMoreAll} rootMargin="240px" />
-          ) : null}
-        </div>
-      )}
-    </div>
+    </DataView>
   );
 }
 

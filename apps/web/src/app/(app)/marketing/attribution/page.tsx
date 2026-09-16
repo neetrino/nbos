@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { GitBranch, Handshake, Megaphone } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
+  DataView,
   EmptyState,
   ErrorState,
+  ListMutationErrorBanner,
   LoadingState,
   PageHeroTabs,
   useModuleHeroSlots,
@@ -187,43 +189,53 @@ export default function AttributionReviewPage() {
 
   return (
     <div className="space-y-6">
-      {loading ? (
-        <LoadingState variant="list" count={5} />
-      ) : error ? (
-        <ErrorState description={error} onRetry={fetchReview} />
-      ) : totalIssues === 0 ? (
-        <EmptyState
-          icon={GitBranch}
-          title={t('attribution.cleanTitle')}
-          description={t('attribution.cleanDescription')}
-        />
-      ) : activeTotal === 0 ? (
-        <EmptyState
-          icon={activeTab === 'leads' ? Megaphone : Handshake}
-          title={
-            activeTab === 'leads'
-              ? t('attribution.noLeadIssuesTitle')
-              : t('attribution.noDealIssuesTitle')
-          }
-          description={
-            activeTab === 'leads' ? t('attribution.checkDealsTab') : t('attribution.checkLeadsTab')
-          }
-        />
-      ) : activeItems.length === 0 ? (
-        <EmptyState
-          icon={GitBranch}
-          title={t('attribution.noMatchTitle')}
-          description={t('attribution.noMatchDescription')}
-        />
-      ) : (
-        <ReviewList
-          items={activeItems}
-          kind={activeTab === 'leads' ? 'Lead' : 'Deal'}
-          cardsPerRow={2}
-          onOpenItem={handleOpenItem}
-          describeIssue={describeIssue}
-        />
-      )}
+      {error && totalIssues > 0 ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={totalIssues > 0}
+        loadingFallback={<LoadingState variant="list" count={5} />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={fetchReview} />}
+        emptyFallback={
+          <EmptyState
+            icon={GitBranch}
+            title={t('attribution.cleanTitle')}
+            description={t('attribution.cleanDescription')}
+          />
+        }
+      >
+        {activeTotal === 0 ? (
+          <EmptyState
+            icon={activeTab === 'leads' ? Megaphone : Handshake}
+            title={
+              activeTab === 'leads'
+                ? t('attribution.noLeadIssuesTitle')
+                : t('attribution.noDealIssuesTitle')
+            }
+            description={
+              activeTab === 'leads'
+                ? t('attribution.checkDealsTab')
+                : t('attribution.checkLeadsTab')
+            }
+          />
+        ) : activeItems.length === 0 ? (
+          <EmptyState
+            icon={GitBranch}
+            title={t('attribution.noMatchTitle')}
+            description={t('attribution.noMatchDescription')}
+          />
+        ) : (
+          <ReviewList
+            items={activeItems}
+            kind={activeTab === 'leads' ? 'Lead' : 'Deal'}
+            cardsPerRow={2}
+            onOpenItem={handleOpenItem}
+            describeIssue={describeIssue}
+          />
+        )}
+      </DataView>
 
       <EntityLeadSheetDeepLink
         leadId={openLead?.id ?? null}

@@ -7,7 +7,7 @@ import {
   type ClientServiceBoardView,
   type ClientServiceRecordListParams,
 } from '@/lib/api/client-services';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { useClientServicesT } from './client-service-message-keys';
 
 const BOARD_PAGE_SIZE = 20;
@@ -60,7 +60,9 @@ export function useClientServiceBoard({
       })
       .catch((caught) => {
         if (requestId !== requestIdRef.current) return;
-        setBoard(null);
+        // A failed refresh keeps the board already on screen, unless the server withdrew read
+        // access: that board must not survive a denial.
+        if (isAccessRevokedApiError(caught)) setBoard(null);
         setError(getApiErrorMessage(caught, t('errors.loadBoard')));
       })
       .finally(() => {

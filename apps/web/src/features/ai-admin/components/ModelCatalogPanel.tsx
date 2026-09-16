@@ -4,7 +4,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { Cpu } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import {
+  DataView,
+  EmptyState,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+} from '@/components/shared';
 import {
   Select,
   SelectContent,
@@ -64,12 +70,10 @@ export function ModelCatalogPanel() {
     }
   };
 
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState description={error} onRetry={() => void load()} />;
-
   const groups = groupModelsForAdmin(models, sort);
   const activeConnections = connections.filter((item) => item.status === 'ACTIVE');
-  return (
+  const hasData = models.length > 0;
+  const content = (
     <div className={AI_ADMIN_PAGE_STACK_CLASS}>
       <AiAdminPageToolbar
         icon={Cpu}
@@ -133,6 +137,24 @@ export function ModelCatalogPanel() {
         </>
       )}
     </div>
+  );
+
+  return (
+    <>
+      {error && hasData ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={hasData}
+        loadingFallback={<LoadingState />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+        emptyFallback={content}
+      >
+        {content}
+      </DataView>
+    </>
   );
 }
 

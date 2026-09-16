@@ -63,6 +63,7 @@ export function SupportChangeControlView() {
         emptyDescription={t('changeControl.emptyDescription')}
         emptyActionLabel={t('changeControl.newRequest')}
         onRetry={() => void query.fetchTickets()}
+        onDismissError={query.dismissError}
         onCreateFirst={handleNewChangeRequest}
         onKanbanMove={actions.handleKanbanMove}
         onOpenDetail={page.openSupportDetail}
