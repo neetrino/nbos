@@ -1,6 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import { Decimal, PrismaClient, type Prisma } from '@nbos/database';
 import { CLIENT_SERVICE_TASK_ENTITY_TYPE } from './client-service-flow-helpers';
+import {
+  CLIENT_SERVICE_NESTED_NONE,
+  type ClientServiceNestedVisibility,
+} from './client-service-nested-visibility';
 import { computeClientServicePaymentStage } from './client-service-payment-stage';
 
 const CLIENT_SERVICE_PAGE_SIZE_DEFAULT = 50;
@@ -154,33 +158,40 @@ export async function fetchLinkedTasksForClientService(
 export function serializeClientServiceDetail(
   row: ClientServiceDetailRow,
   linkedTasks: ClientServiceLinkedTask[],
+  nested: ClientServiceNestedVisibility = CLIENT_SERVICE_NESTED_NONE,
 ) {
   const { invoices, expensePlans, expenses, ...rest } = row;
   return {
     ...serializeClientServiceRow(rest),
     financeLinks: {
-      invoices: invoices.map((inv) => ({
-        id: inv.id,
-        code: inv.code,
-        moneyStatus: inv.moneyStatus,
-        amount: String(inv.amount),
-        type: inv.type,
-      })),
-      expensePlans: expensePlans.map((plan) => ({
-        id: plan.id,
-        name: plan.name,
-        category: plan.category,
-        amount: String(plan.amount),
-      })),
-      expenses: expenses.map((exp) => ({
-        id: exp.id,
-        name: exp.name,
-        status: exp.status,
-        amount: String(exp.amount),
-        type: exp.type,
-        category: exp.category,
-      })),
-      tasks: linkedTasks,
+      invoices: nested.invoices
+        ? invoices.map((inv) => ({
+            id: inv.id,
+            code: inv.code,
+            moneyStatus: inv.moneyStatus,
+            amount: String(inv.amount),
+            type: inv.type,
+          }))
+        : [],
+      expensePlans: nested.expensePlans
+        ? expensePlans.map((plan) => ({
+            id: plan.id,
+            name: plan.name,
+            category: plan.category,
+            amount: String(plan.amount),
+          }))
+        : [],
+      expenses: nested.expenses
+        ? expenses.map((exp) => ({
+            id: exp.id,
+            name: exp.name,
+            status: exp.status,
+            amount: String(exp.amount),
+            type: exp.type,
+            category: exp.category,
+          }))
+        : [],
+      tasks: nested.tasks ? linkedTasks : [],
     },
   };
 }

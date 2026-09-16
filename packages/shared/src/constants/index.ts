@@ -258,6 +258,7 @@ export * from './calls-play';
 export * from './crm-permissions';
 export * from './settings-permissions';
 export * from './marketing-permissions';
+export * from './finance-permissions';
 export * from './messenger-client-permissions';
 export * from './messenger-ws';
 export * from './checklist-template-item-evidence';

@@ -1,3 +1,6 @@
+import type { FinanceScopedAccessContext } from '../finance/finance-scoped-access';
+import type { ClientServiceNestedVisibility } from './client-service-nested-visibility';
+
 export interface ClientServiceRecordQueryParams {
   page?: number;
   pageSize?: number;
@@ -13,6 +16,12 @@ export interface ClientServiceRecordQueryParams {
   year?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  access?: FinanceScopedAccessContext;
+}
+
+export interface ClientServiceWriteOptions {
+  access?: FinanceScopedAccessContext;
+  nested?: ClientServiceNestedVisibility;
 }
 
 export interface ClientServiceRecordBody {

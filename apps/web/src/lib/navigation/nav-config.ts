@@ -5,12 +5,11 @@ import {
   SETTINGS_SCHEDULER_MODULE,
   type SidebarModuleKey,
 } from '@nbos/shared/constants';
+import { FINANCE_MODULE_VIEW_REQUIREMENT } from './finance-nav-permissions';
 import type { NavigationMessageKey } from './nav-message-keys';
+import type { PermissionRequirement } from './permission-requirement';
 
-export interface PermissionRequirement {
-  module: string;
-  action: string;
-}
+export type { PermissionClause, PermissionRequirement } from './permission-requirement';
 
 /** Non-clickable section label inside a module submenu (e.g. Revenue under Finance). */
 export type NavChildGroupDefinition = {
@@ -109,7 +108,7 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     key: 'finance',
     label: 'modules.finance',
     href: '/finance',
-    permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+    permission: FINANCE_MODULE_VIEW_REQUIREMENT,
   },
   {
     key: 'support',

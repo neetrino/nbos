@@ -26,12 +26,14 @@ interface ClientServiceBoardScrollProps {
   columns: ClientServiceBoardColumnDef[];
   reloadToken: number;
   onOpen: (service: ClientServiceRecord) => void;
+  canRunRegistryCheck?: boolean;
 }
 
 export function ClientServiceBoardScroll({
   columns,
   reloadToken,
   onOpen,
+  canRunRegistryCheck = false,
 }: ClientServiceBoardScrollProps) {
   const { scrollRef, resolvedColumnWidth } = useKanbanHorizontalScroll({
     columnWidth: CLIENT_SERVICE_BOARD_COLUMN_WIDTH,
@@ -61,6 +63,7 @@ export function ClientServiceBoardScroll({
             reloadToken={reloadToken}
             seed={column.seed}
             onOpen={onOpen}
+            canRunRegistryCheck={canRunRegistryCheck}
             showLeftRule={index > 0}
             columnWidth={resolvedColumnWidth}
           />

@@ -106,6 +106,35 @@ Scope определяет границу доступа:
 
 Весь контроллер WhatsApp-шлюза (`GET` / `PUT` / `POST test` / `DELETE`, а также `GET /chats` и `GET /groups`) требует `SETTINGS EDIT`. `chats` / `groups` отдают company-wide directory, включая личные чаты, и используются только листалкой в Settings → Integrations. Привязка чата к сделке и к продукту идёт через собственные scoped-эндпоинты (`/crm/deals/:id/whatsapp-group/available-groups`, `/projects/products/:productId/whatsapp/available-groups`), поэтому расширять эти два на CRM-роли нельзя.
 
+## Finance modules (2026-09-16)
+
+Две Finance-поверхности, ранее наследовавшие чужие ключи, получили собственные permission modules, чтобы Settings → Roles мог выдавать их независимо:
+
+| Модуль                    | Покрывает                                                                                        |
+| ------------------------- | ------------------------------------------------------------------------------------------------ |
+| `FINANCE_EXPENSE_PLANS`   | Планирование расходов: `/finance/expenses/plans`, auto-generate, CRUD планов                     |
+| `FINANCE_CLIENT_SERVICES` | Реестр client services: `/finance/client-services`, domain registry check, renewal invoice из UI |
+
+Actions — VIEW / EDIT / ADD / DELETE; scopes — NONE / OWN / DEPARTMENT / ALL (без изменений).
+
+**Default grants** (seed + migration `20260916180000_finance_expense_plans_client_services_permissions`; `ON CONFLICT DO NOTHING` — повторный прогон миграции **никогда** не перезаписывает scope, уже настроенный администратором):
+
+- **`FINANCE_EXPENSE_PLANS`** — зеркало `FINANCE_EXPENSES` у каждой роли (split ключа не меняет effective access):
+  - Owner / CEO / Finance Director / Accountant — VIEW/EDIT/ADD/DELETE ALL;
+  - Tech Specialist / Operations Manager — VIEW/EDIT OWN;
+  - все остальные роли — NONE.
+- **`FINANCE_CLIENT_SERVICES`** — сознательное сужение, **не** копия `FINANCE_INVOICES`:
+  - Owner / CEO / Finance Director — VIEW/EDIT/ADD/DELETE ALL;
+  - все остальные роли, включая Head of Sales — NONE до явной выдачи в Settings → Roles.
+
+**Scopes.** У `ExpensePlan` и `ClientServiceRecord` нет owner-колонки. OWN и DEPARTMENT считаются через существующий project-participation graph (как у `Expense`); DEPARTMENT расширяется на коллег отдела. Строки без `projectId` видны только при scope ALL — caller с не-ALL scope не видит unassigned expense plan. Seller-роли остаются deal-scoped.
+
+**Enforcement.** `ClientServicesController` и `ExpensePlansController` ранее не имели permission decorators — любой аутентифицированный сотрудник мог читать и мутировать; теперь полностью закрыты. Действия, создающие связанный объект, дополнительно требуют прав целевого модуля (invoice → `FINANCE_INVOICES` ADD, expense → `FINANCE_EXPENSES` EDIT, expense plan → `FINANCE_EXPENSE_PLANS` ADD, task → `TASKS` ADD). Привязка к Vault credential не даёт права раскрыть секрет.
+
+**Navigation.** `/finance` больше не требует `FINANCE_INVOICES`; вход открывается при VIEW на любой reachable Finance module. Каждая Finance-страница gated своим ключом, включая direct URL; stale last-visited Finance page fallback — на permitted page.
+
+Матрица: `../../04-Roles-and-Access/02-Access-Matrix.md`.
+
 ### Route-level enforcement
 
 Скрытие пункта в сайдбаре не является защитой. Каждый маршрут `/settings/*` перечислен в web route registry (`apps/web/src/lib/navigation/route-permissions.ts`) и проверяется `ModuleAccessGate` по URL, включая страницы без ссылки в меню (`access-policies`, `trash-inventory`). Неперечисленный подпуть наследует гейт `/settings` (`SETTINGS VIEW`) через prefix-матч, то есть новая страница по умолчанию закрыта, а не открыта. Плитки на хабе фильтруются тем же реестром, поэтому карточка не показывается, если страница откажет в доступе.

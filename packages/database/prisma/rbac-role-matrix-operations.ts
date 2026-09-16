@@ -9,6 +9,15 @@
 import { D, F, L, M, MatrixEntry, N, R, VA } from './rbac-scopes';
 
 /**
+ * FINANCE_EXPENSE_PLANS mirrors each role's FINANCE_EXPENSES level: plans were previously
+ * reachable only behind that module, so splitting the key must not change effective access.
+ *
+ * FINANCE_CLIENT_SERVICES is a deliberate narrowing from FINANCE_INVOICES: Owner / CEO /
+ * Finance Director keep full access; these four operational roles stay NONE until granted
+ * in Settings → Roles. Do not copy FINANCE_INVOICES here.
+ */
+
+/**
  * Head of Support owns maintenance of delivered work, so tickets are full and projects are
  * read-only: Delivery still owns the project itself. Mirrors Head of Delivery elsewhere.
  */
@@ -21,6 +30,8 @@ const HEAD_SUPPORT_ROLE_MATRIX: MatrixEntry = {
   // Maintenance is sold as a subscription, so the head needs to see what is covered.
   FINANCE_SUBSCRIPTIONS: R,
   FINANCE_EXPENSES: N,
+  FINANCE_EXPENSE_PLANS: N,
+  FINANCE_CLIENT_SERVICES: N,
   FINANCE_BONUSES: R,
   FINANCE_SALARY: N,
   PROJECTS: R,
@@ -53,6 +64,8 @@ const HR_MANAGER_ROLE_MATRIX: MatrixEntry = {
   FINANCE_PAYMENTS: N,
   FINANCE_SUBSCRIPTIONS: N,
   FINANCE_EXPENSES: N,
+  FINANCE_EXPENSE_PLANS: N,
+  FINANCE_CLIENT_SERVICES: N,
   FINANCE_BONUSES: N,
   FINANCE_SALARY: N,
   PROJECTS: N,
@@ -87,6 +100,8 @@ const OPERATIONS_MANAGER_ROLE_MATRIX: MatrixEntry = {
   // Internal tooling is bought as subscriptions; operations needs to see them, not change them.
   FINANCE_SUBSCRIPTIONS: R,
   FINANCE_EXPENSES: L,
+  FINANCE_EXPENSE_PLANS: L,
+  FINANCE_CLIENT_SERVICES: N,
   FINANCE_BONUSES: N,
   FINANCE_SALARY: N,
   PROJECTS: R,
@@ -120,6 +135,8 @@ const ACCOUNTANT_ROLE_MATRIX: MatrixEntry = {
   FINANCE_PAYMENTS: F,
   FINANCE_SUBSCRIPTIONS: R,
   FINANCE_EXPENSES: F,
+  FINANCE_EXPENSE_PLANS: F,
+  FINANCE_CLIENT_SERVICES: N,
   FINANCE_BONUSES: R,
   FINANCE_SALARY: R,
   PROJECTS: N,

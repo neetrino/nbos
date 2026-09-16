@@ -1,4 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import {
+  FINANCE_CLIENT_SERVICES_MODULE,
+  FINANCE_EXPENSE_PLANS_MODULE,
+} from '@nbos/shared/constants';
+import { FINANCE_MODULE_VIEW_REQUIREMENT } from './finance-nav-permissions';
+import { getPermissionClauses } from './permission-requirement';
 import { resolveNavPermission } from './resolve-nav-permission';
 import { EXPLICIT_ROUTE_PERMISSIONS } from './route-permissions';
 
@@ -43,7 +49,9 @@ describe('resolveNavPermission', () => {
   });
 
   it('keeps every gated Settings route off the My Company COMPANY key', () => {
-    const modules = EXPLICIT_ROUTE_PERMISSIONS.map((route) => route.permission.module);
+    const modules = EXPLICIT_ROUTE_PERMISSIONS.flatMap((route) =>
+      getPermissionClauses(route.permission).map((clause) => clause.module),
+    );
 
     expect(modules).not.toContain('COMPANY');
   });
@@ -71,6 +79,7 @@ describe('resolveNavPermission', () => {
   });
 
   it('gates Finance sections by their own module, not only invoices VIEW', () => {
+    expect(resolveNavPermission('/finance')).toEqual(FINANCE_MODULE_VIEW_REQUIREMENT);
     expect(resolveNavPermission('/finance/invoices')).toEqual({
       module: 'FINANCE_INVOICES',
       action: 'VIEW',
@@ -88,8 +97,57 @@ describe('resolveNavPermission', () => {
       action: 'VIEW',
     });
     expect(resolveNavPermission('/finance/expenses/plans')).toEqual({
+      module: FINANCE_EXPENSE_PLANS_MODULE,
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/finance/client-services')).toEqual({
+      module: FINANCE_CLIENT_SERVICES_MODULE,
+      action: 'VIEW',
+    });
+  });
+
+  it('keeps nested expense journal routes on FINANCE_EXPENSES, not plans', () => {
+    expect(resolveNavPermission('/finance/expenses/closed')).toEqual({
       module: 'FINANCE_EXPENSES',
       action: 'VIEW',
     });
+    expect(resolveNavPermission('/finance/expenses/pay')).toEqual({
+      module: 'FINANCE_EXPENSES',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/finance/expenses/backlog')).toEqual({
+      module: 'FINANCE_EXPENSES',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/finance/expenses/expense-1')).toEqual({
+      module: 'FINANCE_EXPENSES',
+      action: 'VIEW',
+    });
+  });
+
+  it('lets expense-plan detail win over the expenses journal prefix', () => {
+    expect(resolveNavPermission('/finance/expenses/plans/plan-1')).toEqual({
+      module: FINANCE_EXPENSE_PLANS_MODULE,
+      action: 'VIEW',
+    });
+  });
+
+  it('keeps overview, revenue, and payroll pages on FINANCE_INVOICES', () => {
+    expect(resolveNavPermission('/finance/dashboard')).toEqual({
+      module: 'FINANCE_INVOICES',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/finance/orders')).toEqual({
+      module: 'FINANCE_INVOICES',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/finance/payroll')).toEqual({
+      module: 'FINANCE_INVOICES',
+      action: 'VIEW',
+    });
+  });
+
+  it('inherits the Finance anyOf gate for unlisted finance subpaths', () => {
+    expect(resolveNavPermission('/finance/something-new')).toEqual(FINANCE_MODULE_VIEW_REQUIREMENT);
   });
 });

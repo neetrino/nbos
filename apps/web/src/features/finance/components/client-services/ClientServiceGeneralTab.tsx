@@ -22,6 +22,7 @@ interface ClientServiceGeneralTabProps {
   draft: ClientServiceFormState;
   patchDraft: (partial: Partial<ClientServiceFormState>) => void;
   formDisabled?: boolean;
+  canRunRegistryCheck?: boolean;
   onRegistryChecked?: (result: ClientServiceRegistryCheckResult) => void;
 }
 
@@ -31,6 +32,7 @@ export function ClientServiceGeneralTab({
   draft,
   patchDraft,
   formDisabled = false,
+  canRunRegistryCheck = false,
   onRegistryChecked,
 }: ClientServiceGeneralTabProps) {
   const t = useClientServicesT();
@@ -54,6 +56,7 @@ export function ClientServiceGeneralTab({
         draft={draft}
         patchDraft={patchDraft}
         formDisabled={formDisabled}
+        canRunRegistryCheck={canRunRegistryCheck}
         onRegistryChecked={onRegistryChecked}
       />
       <DetailSheetSection title={t('sheet.proofs')}>

@@ -6,41 +6,64 @@ This guide wires **production-style** automation: an external scheduler calls th
 
 The API sets a global prefix `api` on the Nest app (`apps/api/src/main.ts`). Full URLs are therefore **`{origin}/api/...`** — for example `https://api.example.com/api/scheduler/expense-plan-auto-due`. Set **`NBOS_API_BASE`** to the **origin only** (scheme + host, optional port), **without** a trailing `/api` segment, so the curl examples below stay correct.
 
-| Purpose                          | Method + path                                       |
-| -------------------------------- | --------------------------------------------------- |
-| Scheduler (external cron)        | `POST /api/scheduler/expense-plan-auto-due`         |
-| Finance action (optional `asOf`) | `POST /api/expense-plans/actions/auto-generate-due` |
+| Purpose                          | Method + path                                       | Auth                                                                 |
+| -------------------------------- | --------------------------------------------------- | -------------------------------------------------------------------- |
+| Scheduler (external cron)        | `POST /api/scheduler/expense-plan-auto-due`         | `SCHEDULER_API_KEY` via `x-scheduler-key` or `Authorization: Bearer` |
+| Finance action (optional `asOf`) | `POST /api/expense-plans/actions/auto-generate-due` | User JWT + RBAC (see below)                                          |
 
 Controllers: `apps/api/src/modules/scheduler/scheduler.controller.ts` (`@Controller('scheduler')`), `apps/api/src/modules/expenses/expense-plans.controller.ts` (`@Controller('expense-plans')`).
 
 ## What gets executed
 
-- **Scheduler entrypoint (recommended for ops naming):** `POST /api/scheduler/expense-plan-auto-due`  
+- **Scheduler entrypoint (recommended for ops / cron):** `POST /api/scheduler/expense-plan-auto-due`  
   Same service call as the Finance action below; no request body; HTTP 200 on success (see Swagger for response shape).
 
-- **Finance action (equivalent logic, optional `asOf`):** `POST /api/expense-plans/actions/auto-generate-due`  
+- **Finance action (human operator, optional `asOf`):** `POST /api/expense-plans/actions/auto-generate-due`  
   Optional query: `asOf` — ISO-8601 instant; eligibility uses **end of that UTC calendar day**. The scheduler route calls the service with `{}` (current instant).
 
 ## Authentication
 
-The API uses global JWT authentication (`Authorization: Bearer <access_token>`). Obtain a token the same way as a normal NBOS session (login flow). For automation, prefer a **dedicated user** with least privilege once your team defines a service-account pattern; until then, use credentials and rotation practices from your security baseline.
+### Scheduler route (machine / external cron)
+
+`POST /api/scheduler/expense-plan-auto-due` is `@Public()` and protected by `ServiceApiKeyGuard` (`apps/api/src/common/guards/service-api-key.guard.ts`), not a user JWT.
+
+Send the shared **`SCHEDULER_API_KEY`** (deployment env) using either:
+
+- header **`x-scheduler-key: <SCHEDULER_API_KEY>`**, or
+- **`Authorization: Bearer <SCHEDULER_API_KEY>`**
+
+Production requires `SCHEDULER_API_KEY` to be configured; missing or wrong key → 401. Non-production may allow calls when the key is unset (local testing only — see guard).
+
+### Finance route (human operator)
+
+`POST /api/expense-plans/actions/auto-generate-due` is a normal authenticated Finance endpoint. It requires **`FINANCE_EXPENSE_PLANS` EDIT** and **`FINANCE_EXPENSES` EDIT** (both enforced on the controller). An operator who previously called it with a user JWT but lacks those grants will get **403** and should use the scheduler route with the API key instead.
 
 ## Examples
 
 Replace placeholders:
 
 - `NBOS_API_BASE` — origin only, e.g. `https://api.example.com` (no trailing slash).
-- `NBOS_ACCESS_TOKEN` — JWT access token.
+- `SCHEDULER_API_KEY` — value of the `SCHEDULER_API_KEY` env var on the API deployment (not a user access token).
 
-### curl (daily, e.g. 02:15 UTC)
+### curl (daily, e.g. 02:15 UTC) — scheduler route
 
 ```bash
 curl -sS -X POST "${NBOS_API_BASE}/api/scheduler/expense-plan-auto-due" \
-  -H "Authorization: Bearer ${NBOS_ACCESS_TOKEN}" \
+  -H "x-scheduler-key: ${SCHEDULER_API_KEY}" \
   -H "Accept: application/json"
 ```
 
-### Optional `asOf` (Finance route)
+Alternative header form:
+
+```bash
+curl -sS -X POST "${NBOS_API_BASE}/api/scheduler/expense-plan-auto-due" \
+  -H "Authorization: Bearer ${SCHEDULER_API_KEY}" \
+  -H "Accept: application/json"
+```
+
+### Optional `asOf` (Finance route — human JWT)
+
+Requires `FINANCE_EXPENSE_PLANS` EDIT and `FINANCE_EXPENSES` EDIT on the caller.
 
 ```bash
 curl -sS -X POST "${NBOS_API_BASE}/api/expense-plans/actions/auto-generate-due?asOf=2026-04-29T12:00:00.000Z" \
@@ -50,10 +73,10 @@ curl -sS -X POST "${NBOS_API_BASE}/api/expense-plans/actions/auto-generate-due?a
 
 ### crontab (UTC)
 
-Run at 02:30 UTC daily; load secrets from env files readable only by the cron user (do not commit tokens).
+Run at 02:30 UTC daily; load secrets from env files readable only by the cron user (do not commit keys).
 
 ```cron
-30 2 * * * . /path/to/nbos-cron.env && curl -sS -X POST "${NBOS_API_BASE}/api/scheduler/expense-plan-auto-due" -H "Authorization: Bearer ${NBOS_ACCESS_TOKEN}" -H "Accept: application/json" >>/var/log/nbos-expense-plan-auto-due.log 2>&1
+30 2 * * * . /path/to/nbos-cron.env && curl -sS -X POST "${NBOS_API_BASE}/api/scheduler/expense-plan-auto-due" -H "x-scheduler-key: ${SCHEDULER_API_KEY}" -H "Accept: application/json" >>/var/log/nbos-expense-plan-auto-due.log 2>&1
 ```
 
 ## In-process alternative (Nest)
@@ -69,5 +92,5 @@ Default is **off**. The cron expression is interpreted in the **Node process tim
 
 - **Idempotency:** The batch processes eligible plans for the UTC window; safe to retry after failures (per-plan errors are isolated in the service result).
 - **Observability:** Log HTTP status and response body (or summary) from your worker; correlate with NBOS audit/expense records as needed.
-- **Secrets:** Do not commit tokens or paste JWTs into shared logs; rotate automation credentials if a bearer token leaks.
-- **Docs:** OpenAPI is served at `/api/docs` when enabled on your deployment.
+- **Secrets:** Do not commit `SCHEDULER_API_KEY` or paste it into shared logs; rotate if the key leaks. User JWTs are not used for the scheduler route.
+- **Docs:** OpenAPI is served at `/api/docs` when enabled on your deployment. Scheduler routes document `@ApiSecurity('scheduler-key')`.

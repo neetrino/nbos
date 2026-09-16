@@ -60,6 +60,13 @@ describe('operations role matrices', () => {
     expect(scopes('role-accountant', 'COMPANY')).toEqual(['ALL', 'NONE', 'NONE', 'NONE']);
   });
 
+  it('mirrors FINANCE_EXPENSES onto FINANCE_EXPENSE_PLANS and keeps client services closed', () => {
+    for (const roleId of Object.keys(OPERATIONS_ROLE_MATRIX)) {
+      expect(scopes(roleId, 'FINANCE_EXPENSE_PLANS')).toEqual(scopes(roleId, 'FINANCE_EXPENSES'));
+      expect(scopes(roleId, 'FINANCE_CLIENT_SERVICES')).toEqual(NONE_ROW);
+    }
+  });
+
   it('keeps SOP authoring explicit for Operations instead of inheriting it', () => {
     expect(scopes('role-operations-manager', 'CHECKLIST_TEMPLATES')).toEqual([
       'ALL',

@@ -51,10 +51,12 @@ export function ClientServiceTasksTab({
   return (
     <DetailSheetSection title={t('tasksTab.title')} icon={<CheckSquare size={12} />}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <Button type="button" size="sm" disabled={!canCreateTask} onClick={onCreateTask}>
-          <Plus size={14} aria-hidden />
-          {t('tasksTab.create')}
-        </Button>
+        {canCreateTask ? (
+          <Button type="button" size="sm" onClick={onCreateTask}>
+            <Plus size={14} aria-hidden />
+            {t('tasksTab.create')}
+          </Button>
+        ) : null}
         <ViewModeSwitch
           value={viewVariant}
           onChange={setViewVariant}

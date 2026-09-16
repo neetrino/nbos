@@ -46,6 +46,7 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
+import { useClientServicePermissions } from './use-client-service-permissions';
 
 const CLIENT_SERVICE_FILTER_DEFAULTS: Record<string, string> = {
   [CLIENT_SERVICE_FILTER_TYPE_KEY]: 'all',
@@ -63,6 +64,7 @@ export function ClientServicesPageContent() {
 
 function ClientServicesPageInner() {
   const t = useClientServicesT();
+  const { canAdd, canEdit } = useClientServicePermissions();
   useFinanceDocumentTitle(t('page.title'));
   const router = useRouter();
   const pathname = usePathname();
@@ -214,10 +216,12 @@ function ClientServicesPageInner() {
       trailing: (
         <>
           <ClientServicesPageSettingsSheet refreshDisabled={false} onRefresh={refreshAll} />
-          <Button type="button" onClick={openCreate}>
-            <Plus className="mr-2 h-4 w-4" aria-hidden />
-            {t('page.newService')}
-          </Button>
+          {canAdd ? (
+            <Button type="button" onClick={openCreate}>
+              <Plus className="mr-2 h-4 w-4" aria-hidden />
+              {t('page.newService')}
+            </Button>
+          ) : null}
         </>
       ),
     }),
@@ -227,6 +231,7 @@ function ClientServicesPageInner() {
       handleClearClientServiceFilters,
       handleClientServiceFilterChange,
       handleViewChange,
+      canAdd,
       openCreate,
       refreshAll,
       search,
@@ -245,6 +250,7 @@ function ClientServicesPageInner() {
             baseParams={baseParams}
             reloadToken={reloadToken}
             onOpen={openServiceDetail}
+            canRunRegistryCheck={canEdit}
           />
         ) : displayView === 'months' ? (
           <ClientServiceMonthsBoardView
@@ -253,13 +259,15 @@ function ClientServicesPageInner() {
             onYearChange={setYear}
             reloadToken={reloadToken}
             onOpen={openServiceDetail}
+            canRunRegistryCheck={canEdit}
           />
         ) : (
           <ClientServiceListView
             baseParams={baseParams}
             reloadToken={reloadToken}
             onOpen={openServiceDetail}
-            onCreate={openCreate}
+            onCreate={canAdd ? openCreate : undefined}
+            canRunRegistryCheck={canEdit}
           />
         )}
       </div>
@@ -276,7 +284,7 @@ function ClientServicesPageInner() {
         open={Boolean(openServiceIdFromUrl)}
         onOpenChange={handleServiceSheetOpenChange}
         onSaved={refreshAll}
-        onRequestCancel={(target) => deleteConfirm.request(target)}
+        onRequestCancel={canEdit ? (target) => deleteConfirm.request(target) : undefined}
       />
 
       <DeleteConfirmDialog

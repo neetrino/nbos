@@ -49,14 +49,16 @@
 
 ### Финансы
 
-| Модуль        | CEO | Seller | PM  | Dev | Jr Dev | Designer | QA  | Tech Ops | Finance | Marketing | Head Sales | Head Delivery |
-| ------------- | --- | ------ | --- | --- | ------ | -------- | --- | -------- | ------- | --------- | ---------- | ------------- |
-| Invoices      | ✅  | 🔶     | 👁  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | ❌        | 🔶         | 👁            |
-| Payments      | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | ❌        | 👁         | ❌            |
-| Subscriptions | ✅  | 🔶     | 👁  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | ❌        | 🔶         | 👁            |
-| Expenses      | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | 🔶       | ✅      | ❌        | ❌         | ❌            |
-| Bonus Ledger  | ✅  | 🔶     | 🔶  | 🔶  | 🔶     | 🔶       | 🔶  | ❌       | ✅      | ❌        | 👁         | 👁            |
-| Salary Board  | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | ❌        | ❌         | ❌            |
+| Модуль          | CEO | Seller | PM  | Dev | Jr Dev | Designer | QA  | Tech Ops | Finance | Marketing | Head Sales | Head Delivery |
+| --------------- | --- | ------ | --- | --- | ------ | -------- | --- | -------- | ------- | --------- | ---------- | ------------- |
+| Invoices        | ✅  | 🔶     | 👁  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | ❌        | 🔶         | 👁            |
+| Payments        | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | ❌        | 👁         | ❌            |
+| Subscriptions   | ✅  | 🔶     | 👁  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | ❌        | 🔶         | 👁            |
+| Expenses        | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | 🔶       | ✅      | ❌        | ❌         | ❌            |
+| Expense Plans   | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | 🔶       | ✅      | ❌        | ❌         | ❌            |
+| Client Services | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | ❌        | ❌         | ❌            |
+| Bonus Ledger    | ✅  | 🔶     | 🔶  | 🔶  | 🔶     | 🔶       | 🔶  | ❌       | ✅      | ❌        | 👁         | 👁            |
+| Salary Board    | ✅  | ❌     | ❌  | ❌  | ❌     | ❌       | ❌  | ❌       | ✅      | ❌        | ❌         | ❌            |
 
 **Пояснения:**
 
@@ -66,6 +68,9 @@
 - **Tech Ops** — видит только инфраструктурные расходы (домены, хостинг, сервисы)
 - **Bonus Ledger (🔶)** — каждый сотрудник видит только свои бонусы (Incoming, Active, Paid)
 - **Expenses** — полный доступ только у CEO и Finance Director
+- **Expense Plans (`FINANCE_EXPENSE_PLANS`)** — по умолчанию повторяет уровень `FINANCE_EXPENSES` у каждой роли: Owner / CEO / Finance Director / Accountant — ✅; Tech Specialist / Operations Manager — 🔶 (VIEW/EDIT OWN); остальные — ❌. У `ExpensePlan` нет owner-колонки: OWN и DEPARTMENT считаются через project-participation graph, как у `Expense`; строки без `projectId` видны только при scope ALL.
+- **Client Services (`FINANCE_CLIENT_SERVICES`)** — сознательное сужение, не копия `FINANCE_INVOICES`: Owner / CEO / Finance Director — ✅; все остальные роли, включая Head of Sales — ❌ до явной выдачи в Settings → Roles. OWN/DEPARTMENT — через project-participation graph; строки без `projectId` — только scope ALL.
+- **Enforcement (2026-09-16)** — эндпоинты `ClientServicesController` и `ExpensePlansController` требуют `FINANCE_CLIENT_SERVICES` / `FINANCE_EXPENSE_PLANS`; до этого контроллеры не проверяли права вообще — любой аутентифицированный сотрудник мог читать и мутировать. Чтение — VIEW, создание — ADD, update / cancel / status / registry check / generate card — EDIT, удаление — DELETE. Действия, создающие связанный объект, дополнительно требуют прав целевого модуля (invoice → `FINANCE_INVOICES` ADD, expense → `FINANCE_EXPENSES` EDIT, expense plan → `FINANCE_EXPENSE_PLANS` ADD, task → `TASKS` ADD). Привязка к Vault credential не даёт права раскрыть секрет. `/finance` больше не требует `FINANCE_INVOICES`: вход открывается при VIEW на любой Finance-модуль; stale last-visited fallback — на разрешённую страницу, а не 403. Канон: `02-Modules/16-Settings-Admin/02-Permissions-RBAC.md`.
 
 ### Проекты и задачи
 
@@ -141,6 +146,8 @@ Credentials rows below are a high-level role reference. Exact access is resolved
 | Payments            | ❌           | ❌            | ❌            | ✅         |
 | Subscriptions       | 👁           | ❌            | 👁            | 👁         |
 | Expenses            | ❌           | ❌            | 🔶            | ✅         |
+| Expense Plans       | ❌           | ❌            | 🔶            | ✅         |
+| Client Services     | ❌           | ❌            | ❌            | ❌         |
 | Bonuses             | 👁           | ❌            | ❌            | 👁         |
 | Salary              | ❌           | ❌            | ❌            | 👁         |
 | Projects            | 👁           | ❌            | 👁            | ❌         |

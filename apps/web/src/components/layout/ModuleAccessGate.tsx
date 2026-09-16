@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { AccessDeniedScreen } from '@/components/shared/AccessDeniedScreen';
 import { ErrorState } from '@/components/shared/ErrorState';
 import { LoadingState } from '@/components/shared/LoadingState';
+import { hasNavPermission } from '@/lib/navigation/nav-visibility';
 import { resolveNavPermission } from '@/lib/navigation/resolve-nav-permission';
 import { usePermission } from '@/lib/permissions';
 import { resolveModuleAccessDecision } from './module-access-decision';
@@ -22,7 +23,7 @@ export function ModuleAccessGate({ children }: ModuleAccessGateProps) {
     hasRequirement: Boolean(required),
     isLoading,
     meLoadError,
-    isPermitted: required ? can(required.action, required.module) : false,
+    isPermitted: hasNavPermission(required, can),
   });
 
   if (decision === 'LOADING') {

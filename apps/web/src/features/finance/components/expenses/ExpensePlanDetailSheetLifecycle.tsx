@@ -13,6 +13,8 @@ interface ExpensePlanDetailSheetLifecycleProps {
   plan: ExpensePlan;
   displayName: string;
   actionsDisabled?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
   onPlanUpdated?: (plan: ExpensePlan) => void;
   onPlanDeleted?: (planId: string) => void;
   onClose: () => void;
@@ -22,6 +24,8 @@ export function ExpensePlanDetailSheetLifecycle({
   plan,
   displayName,
   actionsDisabled = false,
+  canEdit = false,
+  canDelete = false,
   onPlanUpdated,
   onPlanDeleted,
   onClose,
@@ -76,6 +80,8 @@ export function ExpensePlanDetailSheetLifecycle({
         plan={plan}
         displayName={displayName}
         actionsDisabled={busy}
+        canEdit={canEdit}
+        canDelete={canDelete}
         onCancelClick={() => setCancelOpen(true)}
         onResumeClick={() => void handleResumePlan()}
         onDeleteClick={() => setDeleteOpen(true)}

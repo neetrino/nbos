@@ -7,10 +7,12 @@ import {
   type TaxStatus,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import type { FinanceScopedAccessContext } from '../finance/finance-scoped-access';
 import { InvoicesService } from '../finance/invoices/invoices.service';
 import { ExpensePlansService } from '../expenses/expense-plans.service';
 import { ExpensesService } from '../expenses/expenses.service';
 import { TasksService } from '../tasks/tasks.service';
+import { assertClientServiceAccessible } from './client-service-access.op';
 import {
   CLIENT_SERVICE_TASK_ENTITY_TYPE,
   clientServiceExpenseCategory,
@@ -24,6 +26,7 @@ import type {
   CreateClientServiceInvoiceBody,
   CreateClientServiceTaskBody,
 } from './client-service-flows.types';
+import type { ClientServiceWriteOptions } from './client-services.types';
 
 interface ClientServiceRecordRow {
   id: string;
@@ -51,8 +54,12 @@ export class ClientServiceFlowsService {
     private readonly tasksService: TasksService,
   ) {}
 
-  async createInvoice(serviceId: string, body: CreateClientServiceInvoiceBody = {}) {
-    const service = await this.loadService(serviceId);
+  async createInvoice(
+    serviceId: string,
+    body: CreateClientServiceInvoiceBody = {},
+    options: ClientServiceWriteOptions = {},
+  ) {
+    const service = await this.loadService(serviceId, options.access);
     if (service.billingModel !== 'WE_PAY') {
       throw new BadRequestException('Only we-pay services can create client invoices');
     }
@@ -72,8 +79,12 @@ export class ClientServiceFlowsService {
     });
   }
 
-  async createExpensePlan(serviceId: string, body: CreateClientServiceExpensePlanBody = {}) {
-    const service = await this.loadService(serviceId);
+  async createExpensePlan(
+    serviceId: string,
+    body: CreateClientServiceExpensePlanBody = {},
+    options: ClientServiceWriteOptions = {},
+  ) {
+    const service = await this.loadService(serviceId, options.access);
     if (service.billingModel === 'REMINDER_ONLY') {
       throw new BadRequestException('Reminder-only services cannot create expense plans');
     }
@@ -92,8 +103,12 @@ export class ClientServiceFlowsService {
     });
   }
 
-  async createExpense(serviceId: string, body: CreateClientServiceExpenseBody = {}) {
-    const service = await this.loadService(serviceId);
+  async createExpense(
+    serviceId: string,
+    body: CreateClientServiceExpenseBody = {},
+    options: ClientServiceWriteOptions = {},
+  ) {
+    const service = await this.loadService(serviceId, options.access);
     if (service.billingModel === 'REMINDER_ONLY') {
       throw new BadRequestException('Reminder-only services cannot create expenses');
     }
@@ -117,8 +132,12 @@ export class ClientServiceFlowsService {
     });
   }
 
-  async createTask(serviceId: string, body: CreateClientServiceTaskBody) {
-    const service = await this.loadService(serviceId);
+  async createTask(
+    serviceId: string,
+    body: CreateClientServiceTaskBody,
+    options: ClientServiceWriteOptions = {},
+  ) {
+    const service = await this.loadService(serviceId, options.access);
     const creatorId = body.creatorId?.trim();
     if (!creatorId) throw new BadRequestException('creatorId is required');
     return this.tasksService.create({
@@ -131,7 +150,11 @@ export class ClientServiceFlowsService {
     });
   }
 
-  private async loadService(id: string): Promise<ClientServiceRecordRow> {
+  private async loadService(
+    id: string,
+    access?: FinanceScopedAccessContext,
+  ): Promise<ClientServiceRecordRow> {
+    await assertClientServiceAccessible(this.prisma, id, access);
     const service = await this.prisma.clientServiceRecord.findUnique({ where: { id } });
     if (!service) throw new NotFoundException('Client service record not found');
     if (service.status === 'CANCELLED') {

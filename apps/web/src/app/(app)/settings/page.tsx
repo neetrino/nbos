@@ -13,6 +13,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { PageHero } from '@/components/shared';
+import { hasNavPermission } from '@/lib/navigation/nav-visibility';
 import { resolveNavPermission } from '@/lib/navigation/resolve-nav-permission';
 import { usePermission } from '@/lib/permissions';
 
@@ -88,10 +89,9 @@ const SETTINGS_SECTIONS = [
 export default function SettingsPage() {
   const { can } = usePermission();
   // Tiles reuse the route gates, so a card is never shown for a page that would deny access.
-  const visibleSections = SETTINGS_SECTIONS.filter((section) => {
-    const required = resolveNavPermission(section.href);
-    return !required || can(required.action, required.module);
-  });
+  const visibleSections = SETTINGS_SECTIONS.filter((section) =>
+    hasNavPermission(resolveNavPermission(section.href), can),
+  );
 
   return (
     <div className="space-y-6">

@@ -33,6 +33,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensePlansApi, type ExpensePlan } from '@/lib/api/expense-plans';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { useExpensePlansT } from './expense-plan-message-keys';
+import { useExpensePlanPermissions } from './use-expense-plan-permissions';
 
 export interface ExpensePlanDetailSheetProps {
   planId: string | null;
@@ -52,6 +53,7 @@ export function ExpensePlanDetailSheet({
   onPlanDeleted,
 }: ExpensePlanDetailSheetProps) {
   const t = useExpensePlansT();
+  const { canEdit, canDelete, canCreateExpenseCard } = useExpensePlanPermissions();
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(planId);
   const hostMounted = useSheetHostMounted(open, sheetId);
   const activePlanId = open && sheetId ? sheetId : '';
@@ -165,7 +167,8 @@ export function ExpensePlanDetailSheet({
 
   const openGenerate = useCallback(() => setGenerateOpen(true), []);
   const openCreate = useCallback(() => setCreateOpen(true), []);
-  const canMutateCards = plan != null && !saving && plan.status === 'ACTIVE';
+  const canMutateCards =
+    canCreateExpenseCard && plan != null && !saving && plan.status === 'ACTIVE';
 
   const detailSheetTabs = useMemo(
     () =>
@@ -206,6 +209,8 @@ export function ExpensePlanDetailSheet({
                 plan={plan}
                 displayName={displayName}
                 actionsDisabled={saving}
+                canEdit={canEdit}
+                canDelete={canDelete}
                 onPlanUpdated={(updated) => {
                   handlePlanChange(updated);
                   void fetchPlan();
@@ -235,7 +240,7 @@ export function ExpensePlanDetailSheet({
                       plan={plan}
                       draft={generalDraft}
                       patchDraft={patchGeneralDraft}
-                      formDisabled={saving || plan.status === 'CANCELLED'}
+                      formDisabled={saving || plan.status === 'CANCELLED' || !canEdit}
                     />
                   ) : null}
                   {activeTab === 'cards' ? (
@@ -244,8 +249,8 @@ export function ExpensePlanDetailSheet({
                       refreshNonce={cardsRefreshNonce}
                       onGenerateClick={openGenerate}
                       onCreateClick={openCreate}
-                      generateDisabled={!canMutateCards}
-                      createDisabled={!canMutateCards}
+                      canGenerateCard={canMutateCards}
+                      canCreateCard={canMutateCards}
                     />
                   ) : null}
                   {activeTab === 'history' ? <ExpensePlanHistoryTab /> : null}
@@ -255,7 +260,7 @@ export function ExpensePlanDetailSheet({
           </ScrollArea>
 
           <DetailSheetFormFooter
-            visible={activeTab === 'general' && Boolean(plan && generalDraft)}
+            visible={activeTab === 'general' && Boolean(plan && generalDraft) && canEdit}
             dirty={generalDirty}
             saving={saving}
             errorMessage={generalError}
