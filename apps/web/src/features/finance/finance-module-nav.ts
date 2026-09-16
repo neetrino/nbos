@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { PageHeroNavLinkItem } from '@/components/shared/page-hero/PageHeroNavLinks';
 import { resolveFinanceSectionId } from '@/lib/navigation/module-last-visit';
+import { hasNavPermission } from '@/lib/navigation/nav-visibility';
 import { resolveNavPermission } from '@/lib/navigation/resolve-nav-permission';
 
 const FINANCE_EXPENSE_PLANS_PREFIX = '/finance/expenses/plans';
@@ -79,8 +80,7 @@ export function permittedFinanceZoneNav(
   if (!items) return null;
   const next = items.filter((item) => {
     const href = item.href.split('?')[0] ?? item.href;
-    const required = resolveNavPermission(href);
-    return !required || can(required.action, required.module);
+    return hasNavPermission(resolveNavPermission(href), can);
   });
   return next.length > 1 ? next : null;
 }

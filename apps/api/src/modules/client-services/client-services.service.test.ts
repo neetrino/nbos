@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, NotFoundException } from '@nest
 import { Decimal } from '@nbos/database';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
+import { CLIENT_SERVICE_NESTED_ALL } from './client-service-nested-visibility';
 import { ClientServicesService } from './client-services.service';
 
 describe('ClientServicesService', () => {
@@ -155,7 +156,7 @@ describe('ClientServicesService', () => {
       _count: { invoices: 1, expensePlans: 1, expenses: 1 },
     });
 
-    const result = await service.findById('svc-1');
+    const result = await service.findById('svc-1', { nested: CLIENT_SERVICE_NESTED_ALL });
 
     expect(result.financeLinks.invoices[0]?.code).toBe('INV-1');
     expect(result.financeLinks.expensePlans[0]?.name).toBe('Renewal plan');

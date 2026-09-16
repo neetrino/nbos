@@ -22,3 +22,8 @@ export {
   MODULE_VISIT_REGISTRY,
   resolveRegisteredModuleFromPathname,
 } from './module-visit-registry';
+export {
+  resolvePermittedFinanceSectionHref,
+  resolvePermittedModuleEntryHref,
+  resolvePermittedModuleSectionHref,
+} from './resolve-permitted-module-href';

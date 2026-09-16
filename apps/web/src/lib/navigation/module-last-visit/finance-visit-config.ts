@@ -9,6 +9,28 @@ export const FINANCE_SECTION_DEFAULTS: Record<FinanceSectionId, string> = {
   payroll: '/finance/payroll',
 };
 
+/** Zone landings to try when the stored/default path is forbidden. */
+export const FINANCE_SECTION_ENTRY_CANDIDATES: Record<FinanceSectionId, readonly string[]> = {
+  overview: [
+    FINANCE_SECTION_DEFAULTS.overview,
+    '/finance/unit-economics',
+    '/finance/reports',
+    '/finance/journal',
+  ],
+  revenue: [
+    FINANCE_SECTION_DEFAULTS.revenue,
+    '/finance/invoices',
+    '/finance/payments',
+    '/finance/subscriptions',
+  ],
+  expenses: [
+    FINANCE_SECTION_DEFAULTS.expenses,
+    '/finance/expenses/plans',
+    '/finance/client-services',
+  ],
+  payroll: [FINANCE_SECTION_DEFAULTS.payroll, '/finance/salary', '/finance/bonuses'],
+};
+
 const EXPENSES_PREFIX = '/finance/expenses';
 const PAYROLL_RUN_DETAIL_PATTERN = /^\/finance\/payroll\/[^/]+$/;
 

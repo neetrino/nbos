@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { NavModuleDefinition } from './nav-config';
+import { FINANCE_CLIENT_SERVICES_MODULE } from '@nbos/shared/constants';
+import { NAV_MODULE_DEFINITIONS, type NavModuleDefinition } from './nav-config';
 import { getVisibleNavModules, hasNavPermission } from './nav-visibility';
 
 const canNone = () => false;
@@ -13,6 +14,38 @@ describe('hasNavPermission', () => {
   it('delegates to can when permission is set', () => {
     expect(hasNavPermission({ module: 'CLIENTS', action: 'VIEW' }, canAll)).toBe(true);
     expect(hasNavPermission({ module: 'CLIENTS', action: 'VIEW' }, canNone)).toBe(false);
+  });
+
+  it('grants anyOf when any clause matches', () => {
+    const canClientServices = (action: string, module: string) =>
+      action === 'VIEW' && module === FINANCE_CLIENT_SERVICES_MODULE;
+
+    expect(
+      hasNavPermission(
+        {
+          anyOf: [
+            { module: 'FINANCE_INVOICES', action: 'VIEW' },
+            { module: FINANCE_CLIENT_SERVICES_MODULE, action: 'VIEW' },
+          ],
+        },
+        canClientServices,
+      ),
+    ).toBe(true);
+    expect(
+      hasNavPermission(
+        {
+          anyOf: [
+            { module: 'FINANCE_INVOICES', action: 'VIEW' },
+            { module: 'FINANCE_EXPENSES', action: 'VIEW' },
+          ],
+        },
+        canClientServices,
+      ),
+    ).toBe(false);
+  });
+
+  it('denies an empty anyOf even when can() would grant everything', () => {
+    expect(hasNavPermission({ anyOf: [] }, canAll)).toBe(false);
   });
 });
 
@@ -60,5 +93,24 @@ describe('getVisibleNavModules', () => {
       },
     ];
     expect(getVisibleNavModules(canNone, false, definitions)).toEqual([]);
+  });
+
+  it('shows Finance when only client-services VIEW is granted', () => {
+    const can = (action: string, module: string) =>
+      action === 'VIEW' && module === FINANCE_CLIENT_SERVICES_MODULE;
+
+    expect(
+      getVisibleNavModules(can, false, NAV_MODULE_DEFINITIONS).some(
+        (item) => item.key === 'finance',
+      ),
+    ).toBe(true);
+  });
+
+  it('hides Finance when no reachable Finance VIEW is granted', () => {
+    expect(
+      getVisibleNavModules(canNone, false, NAV_MODULE_DEFINITIONS).some(
+        (item) => item.key === 'finance',
+      ),
+    ).toBe(false);
   });
 });

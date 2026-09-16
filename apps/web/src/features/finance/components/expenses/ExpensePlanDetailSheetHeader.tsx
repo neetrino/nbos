@@ -26,6 +26,8 @@ interface ExpensePlanDetailSheetHeaderProps {
   plan: ExpensePlan;
   displayName: string;
   actionsDisabled?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
   onCancelClick: () => void;
   onResumeClick: () => void;
   onDeleteClick: () => void;
@@ -49,6 +51,8 @@ export function ExpensePlanDetailSheetHeader({
   plan,
   displayName,
   actionsDisabled = false,
+  canEdit = false,
+  canDelete = false,
   onCancelClick,
   onResumeClick,
   onDeleteClick,
@@ -93,24 +97,32 @@ export function ExpensePlanDetailSheetHeader({
         </div>
         {subline ? <p className="text-muted-foreground mt-0.5 text-sm">{subline}</p> : null}
       </div>
-      <DetailSheetSettingsMenu>
-        {expensePlanCanCancel(plan) ? (
-          <DropdownMenuItem disabled={actionsDisabled} onClick={onCancelClick}>
-            <Ban />
-            {t('sheet.stopPlan')}
-          </DropdownMenuItem>
-        ) : null}
-        {expensePlanCanResume(plan) ? (
-          <DropdownMenuItem disabled={actionsDisabled} onClick={onResumeClick}>
-            <RotateCcw />
-            {t('sheet.resumePlan')}
-          </DropdownMenuItem>
-        ) : null}
-        <DropdownMenuItem variant="destructive" disabled={actionsDisabled} onClick={onDeleteClick}>
-          <Trash2 />
-          {t('sheet.deletePlan')}
-        </DropdownMenuItem>
-      </DetailSheetSettingsMenu>
+      {canEdit || canDelete ? (
+        <DetailSheetSettingsMenu>
+          {canEdit && expensePlanCanCancel(plan) ? (
+            <DropdownMenuItem disabled={actionsDisabled} onClick={onCancelClick}>
+              <Ban />
+              {t('sheet.stopPlan')}
+            </DropdownMenuItem>
+          ) : null}
+          {canEdit && expensePlanCanResume(plan) ? (
+            <DropdownMenuItem disabled={actionsDisabled} onClick={onResumeClick}>
+              <RotateCcw />
+              {t('sheet.resumePlan')}
+            </DropdownMenuItem>
+          ) : null}
+          {canDelete ? (
+            <DropdownMenuItem
+              variant="destructive"
+              disabled={actionsDisabled}
+              onClick={onDeleteClick}
+            >
+              <Trash2 />
+              {t('sheet.deletePlan')}
+            </DropdownMenuItem>
+          ) : null}
+        </DetailSheetSettingsMenu>
+      ) : null}
     </div>
   );
 }

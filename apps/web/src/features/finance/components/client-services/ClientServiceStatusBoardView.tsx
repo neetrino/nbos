@@ -15,12 +15,14 @@ interface ClientServiceStatusBoardViewProps {
   baseParams: ClientServiceRecordListParams;
   reloadToken: number;
   onOpen: (service: ClientServiceRecord) => void;
+  canRunRegistryCheck?: boolean;
 }
 
 export function ClientServiceStatusBoardView({
   baseParams,
   reloadToken,
   onOpen,
+  canRunRegistryCheck = false,
 }: ClientServiceStatusBoardViewProps) {
   const t = useClientServicesT();
   const year = new Date().getUTCFullYear();
@@ -55,10 +57,20 @@ export function ClientServiceStatusBoardView({
       loadingFallback={<LoadingState />}
       errorFallback={<QueryLoadError description={error ?? ''} />}
       emptyFallback={
-        <ClientServiceBoardScroll columns={columns} reloadToken={reloadToken} onOpen={onOpen} />
+        <ClientServiceBoardScroll
+          columns={columns}
+          reloadToken={reloadToken}
+          onOpen={onOpen}
+          canRunRegistryCheck={canRunRegistryCheck}
+        />
       }
     >
-      <ClientServiceBoardScroll columns={columns} reloadToken={reloadToken} onOpen={onOpen} />
+      <ClientServiceBoardScroll
+        columns={columns}
+        reloadToken={reloadToken}
+        onOpen={onOpen}
+        canRunRegistryCheck={canRunRegistryCheck}
+      />
     </DataView>
   );
 }

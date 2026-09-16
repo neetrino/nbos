@@ -21,6 +21,7 @@ import { useLocale } from 'next-intl';
 interface ClientServiceCardProps {
   service: ClientServiceRecord;
   onOpen: (service: ClientServiceRecord) => void;
+  canRunRegistryCheck?: boolean;
 }
 
 function formatShortDate(value: string | null, locale: string, emptyLabel: string): string {
@@ -33,7 +34,11 @@ function formatShortDate(value: string | null, locale: string, emptyLabel: strin
 }
 
 /** Kanban card — invoice/orders shell; original client-service fields preserved. */
-export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
+export function ClientServiceCard({
+  service,
+  onOpen,
+  canRunRegistryCheck = false,
+}: ClientServiceCardProps) {
   const t = useClientServicesT();
   const locale = useLocale();
   const billingLabel = translateClientServiceBilling(
@@ -97,7 +102,7 @@ export function ClientServiceCard({ service, onOpen }: ClientServiceCardProps) {
             }
             label={formatShortDate(service.renewalDate, locale, t('card.noRenewal'))}
             trailing={
-              isClientServiceDomain(service) ? (
+              isClientServiceDomain(service) && canRunRegistryCheck ? (
                 <ClientServiceRegistryCheckButton serviceId={service.id} compact />
               ) : null
             }

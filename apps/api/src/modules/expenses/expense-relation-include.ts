@@ -9,10 +9,17 @@ export const EXPENSE_CREDENTIAL_SELECT = {
   url: true,
 } as const;
 
+/** Plan responses must not reveal vault login; secret material stays in Credentials. */
+export const EXPENSE_PLAN_CREDENTIAL_SELECT = {
+  id: true,
+  name: true,
+  url: true,
+} as const;
+
 export const EXPENSE_PLAN_DETAIL_INCLUDE = {
   project: { select: EXPENSE_PROJECT_SELECT },
   product: { select: EXPENSE_PRODUCT_SELECT },
-  credential: { select: EXPENSE_CREDENTIAL_SELECT },
+  credential: { select: EXPENSE_PLAN_CREDENTIAL_SELECT },
   _count: { select: { expenses: true } },
 } as const;
 

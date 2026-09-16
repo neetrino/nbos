@@ -19,6 +19,9 @@ interface ClientServiceDetailSheetBodyProps {
   patchDraft: (partial: Partial<ClientServiceFormState>) => void;
   saving: boolean;
   readOnly?: boolean;
+  canRunRegistryCheck?: boolean;
+  canCreateInvoice: boolean;
+  canCreateExpense: boolean;
   canCreateTask: boolean;
   onCreateInvoice: () => void;
   onCreateExpense: () => void;
@@ -34,6 +37,9 @@ export function ClientServiceDetailSheetBody({
   patchDraft,
   saving,
   readOnly = false,
+  canRunRegistryCheck = false,
+  canCreateInvoice,
+  canCreateExpense,
   canCreateTask,
   onCreateInvoice,
   onCreateExpense,
@@ -48,6 +54,7 @@ export function ClientServiceDetailSheetBody({
         draft={draft}
         patchDraft={patchDraft}
         formDisabled={saving || readOnly}
+        canRunRegistryCheck={canRunRegistryCheck}
         onRegistryChecked={onRegistryChecked}
       />
     );
@@ -57,7 +64,8 @@ export function ClientServiceDetailSheetBody({
     return (
       <ClientServiceInvoicesTab
         links={service.financeLinks}
-        canCreateInvoice={!readOnly && service.billingModel === 'WE_PAY'}
+        canCreateInvoice={canCreateInvoice}
+        showWePayOnly={service.billingModel !== 'WE_PAY'}
         onCreate={onCreateInvoice}
       />
     );
@@ -67,7 +75,8 @@ export function ClientServiceDetailSheetBody({
     return (
       <ClientServiceExpensesTab
         links={service.financeLinks}
-        canCreate={!readOnly && service.billingModel === 'WE_PAY'}
+        canCreate={canCreateExpense}
+        showReminderOnly={service.billingModel !== 'WE_PAY'}
         onCreateExpense={onCreateExpense}
       />
     );

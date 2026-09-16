@@ -5,14 +5,19 @@ import {
   type NavModuleDefinition,
   type PermissionRequirement,
 } from './nav-config';
+import { getPermissionClauses } from './permission-requirement';
 import { pruneNavChildGroups } from './prune-nav-child-groups';
+
+export type NavPermissionCan = (action: string, module: string) => boolean;
 
 export function hasNavPermission(
   permission: PermissionRequirement | undefined,
-  can: (action: string, module: string) => boolean,
+  can: NavPermissionCan,
 ): boolean {
   if (!permission) return true;
-  return can(permission.action, permission.module);
+  const clauses = getPermissionClauses(permission);
+  if (clauses.length === 0) return false;
+  return clauses.some((clause) => can(clause.action, clause.module));
 }
 
 function resolveChildPermission(
@@ -26,14 +31,14 @@ function resolveChildPermission(
 function isChildVisible(
   child: NavChildDefinition,
   parentPermission: PermissionRequirement | undefined,
-  can: (action: string, module: string) => boolean,
+  can: NavPermissionCan,
 ): boolean {
   if (isNavChildGroup(child)) return true;
   return hasNavPermission(resolveChildPermission(child, parentPermission), can);
 }
 
 export function getVisibleNavModules(
-  can: (action: string, module: string) => boolean,
+  can: NavPermissionCan,
   isLoading: boolean,
   definitions: NavModuleDefinition[],
 ): NavModuleDefinition[] {

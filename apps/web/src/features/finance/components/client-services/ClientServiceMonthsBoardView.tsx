@@ -18,6 +18,7 @@ interface ClientServiceMonthsBoardViewProps {
   onYearChange: (year: number) => void;
   reloadToken: number;
   onOpen: (service: ClientServiceRecord) => void;
+  canRunRegistryCheck?: boolean;
 }
 
 const MONTH_HEX = resolveKanbanStageHex('bg-cyan-600') ?? '#0891B2';
@@ -40,6 +41,7 @@ export function ClientServiceMonthsBoardView({
   onYearChange,
   reloadToken,
   onOpen,
+  canRunRegistryCheck = false,
 }: ClientServiceMonthsBoardViewProps) {
   const t = useClientServicesT();
   const locale = useLocale();
@@ -100,10 +102,20 @@ export function ClientServiceMonthsBoardView({
         loadingFallback={<LoadingState />}
         errorFallback={<QueryLoadError description={error ?? ''} />}
         emptyFallback={
-          <ClientServiceBoardScroll columns={columns} reloadToken={reloadToken} onOpen={onOpen} />
+          <ClientServiceBoardScroll
+            columns={columns}
+            reloadToken={reloadToken}
+            onOpen={onOpen}
+            canRunRegistryCheck={canRunRegistryCheck}
+          />
         }
       >
-        <ClientServiceBoardScroll columns={columns} reloadToken={reloadToken} onOpen={onOpen} />
+        <ClientServiceBoardScroll
+          columns={columns}
+          reloadToken={reloadToken}
+          onOpen={onOpen}
+          canRunRegistryCheck={canRunRegistryCheck}
+        />
       </DataView>
     </div>
   );

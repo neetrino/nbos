@@ -22,12 +22,14 @@ import { useClientServicesT } from './client-service-message-keys';
 interface ClientServiceExpensesTabProps {
   links: ClientServiceFinanceLinks | undefined;
   canCreate?: boolean;
+  showReminderOnly?: boolean;
   onCreateExpense: () => void;
 }
 
 export function ClientServiceExpensesTab({
   links,
-  canCreate = true,
+  canCreate = false,
+  showReminderOnly = false,
   onCreateExpense,
 }: ClientServiceExpensesTabProps) {
   const t = useClientServicesT();
@@ -49,9 +51,9 @@ export function ClientServiceExpensesTab({
             <Plus size={14} aria-hidden />
             {t('expensesTab.create')}
           </Button>
-        ) : (
+        ) : showReminderOnly ? (
           <p className="text-muted-foreground text-sm">{t('expensesTab.reminderOnly')}</p>
-        )}
+        ) : null}
         <ViewModeSwitch
           value={viewVariant}
           onChange={setViewVariant}

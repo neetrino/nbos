@@ -22,12 +22,14 @@ import { useClientServicesT } from './client-service-message-keys';
 interface ClientServiceInvoicesTabProps {
   links: ClientServiceFinanceLinks | undefined;
   canCreateInvoice: boolean;
+  showWePayOnly?: boolean;
   onCreate: () => void;
 }
 
 export function ClientServiceInvoicesTab({
   links,
   canCreateInvoice,
+  showWePayOnly = false,
   onCreate,
 }: ClientServiceInvoicesTabProps) {
   const t = useClientServicesT();
@@ -46,13 +48,13 @@ export function ClientServiceInvoicesTab({
     <DetailSheetSection title={t('invoicesTab.title')} icon={<FileText size={12} />}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         {canCreateInvoice ? (
-          <Button type="button" size="sm" disabled={!canCreateInvoice} onClick={onCreate}>
+          <Button type="button" size="sm" onClick={onCreate}>
             <Plus size={14} aria-hidden />
             {t('invoicesTab.create')}
           </Button>
-        ) : (
+        ) : showWePayOnly ? (
           <p className="text-muted-foreground text-sm">{t('invoicesTab.wePayOnly')}</p>
-        )}
+        ) : null}
         <ViewModeSwitch
           value={viewVariant}
           onChange={setViewVariant}

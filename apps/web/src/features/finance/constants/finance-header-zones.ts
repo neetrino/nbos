@@ -1,3 +1,4 @@
+import { FINANCE_EXPENSES_ZONE_VIEW_REQUIREMENT } from '@/lib/navigation/finance-nav-permissions';
 import type { PermissionRequirement } from '@/lib/navigation/nav-config';
 import type { FinanceSectionId } from '@/lib/navigation/module-last-visit';
 
@@ -18,7 +19,7 @@ export const FINANCE_HEADER_ZONES: FinanceHeaderZoneDefinition[] = [
   {
     zone: 'expenses',
     label: 'Expenses',
-    permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
+    permission: FINANCE_EXPENSES_ZONE_VIEW_REQUIREMENT,
   },
   {
     zone: 'payroll',

@@ -31,6 +31,7 @@ export function ClientServiceGeneralDatesSection(props: {
   draft: ClientServiceFormState;
   patchDraft: (partial: Partial<ClientServiceFormState>) => void;
   formDisabled: boolean;
+  canRunRegistryCheck?: boolean;
   onRegistryChecked?: (result: ClientServiceRegistryCheckResult) => void;
 }) {
   const t = useClientServicesT();
@@ -54,6 +55,7 @@ export function ClientServiceGeneralDatesSection(props: {
           formDisabled={formDisabled}
           isDomain={isDomain}
           serviceId={service.id}
+          canRunRegistryCheck={props.canRunRegistryCheck}
           onRegistryChecked={props.onRegistryChecked}
         />
         {isDomain ? (
@@ -91,6 +93,7 @@ function ClientServiceDateFieldsRow(props: {
   formDisabled: boolean;
   isDomain: boolean;
   serviceId: string;
+  canRunRegistryCheck?: boolean;
   onRegistryChecked?: (result: ClientServiceRegistryCheckResult) => void;
 }) {
   const t = useClientServicesT();
@@ -117,7 +120,7 @@ function ClientServiceDateFieldsRow(props: {
         className={EXPENSE_SHEET_FIELD_CELL_CLASS}
         onValueChange={(renewalDate) => props.patchDraft({ renewalDate })}
       />
-      {props.isDomain ? (
+      {props.isDomain && props.canRunRegistryCheck ? (
         <ClientServiceRegistryCheckButton
           serviceId={props.serviceId}
           matchFieldHeight

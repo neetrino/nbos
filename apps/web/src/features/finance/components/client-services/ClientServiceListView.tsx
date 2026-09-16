@@ -48,7 +48,8 @@ interface ClientServiceListViewProps {
   baseParams: ClientServiceRecordListParams;
   reloadToken: number;
   onOpen: (service: ClientServiceRecord) => void;
-  onCreate: () => void;
+  onCreate?: () => void;
+  canRunRegistryCheck?: boolean;
 }
 
 export function ClientServiceListView({
@@ -56,6 +57,7 @@ export function ClientServiceListView({
   reloadToken,
   onOpen,
   onCreate,
+  canRunRegistryCheck = false,
 }: ClientServiceListViewProps) {
   const t = useClientServicesT();
   const { items, loading, loadingMore, error, hasMore, loadMore } = useClientServiceList(
@@ -77,7 +79,9 @@ export function ClientServiceListView({
           icon={ServerCog}
           title={t('empty.listTitle')}
           description={t('empty.listDescription')}
-          action={<Button onClick={onCreate}>{t('page.createService')}</Button>}
+          action={
+            onCreate ? <Button onClick={onCreate}>{t('page.createService')}</Button> : undefined
+          }
         />
       }
     >
@@ -157,7 +161,7 @@ export function ClientServiceListView({
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
                   <div className="flex items-center gap-1">
                     <EntityListDate value={service.renewalDate} />
-                    {isClientServiceDomain(service) ? (
+                    {isClientServiceDomain(service) && canRunRegistryCheck ? (
                       <ClientServiceRegistryCheckButton serviceId={service.id} compact />
                     ) : null}
                   </div>

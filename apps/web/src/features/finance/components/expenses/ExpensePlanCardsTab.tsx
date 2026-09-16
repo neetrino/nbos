@@ -28,8 +28,8 @@ interface ExpensePlanCardsTabProps {
   refreshNonce: number;
   onGenerateClick: () => void;
   onCreateClick: () => void;
-  generateDisabled?: boolean;
-  createDisabled?: boolean;
+  canGenerateCard?: boolean;
+  canCreateCard?: boolean;
 }
 
 export function ExpensePlanCardsTab({
@@ -37,8 +37,8 @@ export function ExpensePlanCardsTab({
   refreshNonce,
   onGenerateClick,
   onCreateClick,
-  generateDisabled = false,
-  createDisabled = false,
+  canGenerateCard = false,
+  canCreateCard = false,
 }: ExpensePlanCardsTabProps) {
   const t = useExpensePlansT();
   const onOpenItem = useOpenEntityItemFromSummary();
@@ -69,19 +69,17 @@ export function ExpensePlanCardsTab({
       icon={<Receipt size={12} />}
       titleTrailing={
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-          <Button type="button" size="sm" onClick={onCreateClick} disabled={createDisabled}>
-            <Plus size={14} aria-hidden />
-            {t('cardsTab.create')}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={onGenerateClick}
-            disabled={generateDisabled}
-          >
-            {t('cardsTab.generate')}
-          </Button>
+          {canCreateCard ? (
+            <Button type="button" size="sm" onClick={onCreateClick}>
+              <Plus size={14} aria-hidden />
+              {t('cardsTab.create')}
+            </Button>
+          ) : null}
+          {canGenerateCard ? (
+            <Button type="button" size="sm" variant="outline" onClick={onGenerateClick}>
+              {t('cardsTab.generate')}
+            </Button>
+          ) : null}
           <ViewModeSwitch
             value={viewVariant}
             onChange={setViewVariant}

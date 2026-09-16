@@ -19,6 +19,7 @@ interface ClientServiceBoardColumnProps {
   params: ClientServiceRecordListParams;
   reloadToken: number;
   onOpen: (service: ClientServiceRecord) => void;
+  canRunRegistryCheck?: boolean;
   showLeftRule?: boolean;
   seed?: ClientServiceListSeed | null;
   /** Desktop fixed width or mobile full-bleed width from board scroller. */
@@ -63,6 +64,7 @@ export function ClientServiceBoardColumn({
   params,
   reloadToken,
   onOpen,
+  canRunRegistryCheck = false,
   showLeftRule = false,
   seed,
   columnWidth = CLIENT_SERVICE_BOARD_COLUMN_WIDTH,
@@ -90,7 +92,12 @@ export function ClientServiceBoardColumn({
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">
         <div className="flex min-h-full min-w-0 flex-col space-y-3 pb-3">
           {items.map((service) => (
-            <ClientServiceCard key={service.id} service={service} onOpen={onOpen} />
+            <ClientServiceCard
+              key={service.id}
+              service={service}
+              onOpen={onOpen}
+              canRunRegistryCheck={canRunRegistryCheck}
+            />
           ))}
 
           {error ? <p className="px-1 py-2 text-xs text-red-600">{error}</p> : null}

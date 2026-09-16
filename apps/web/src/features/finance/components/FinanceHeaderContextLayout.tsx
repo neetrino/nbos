@@ -12,9 +12,10 @@ import { FINANCE_HEADER_ZONES } from '@/features/finance/constants/finance-heade
 import {
   isFinanceHeaderContextPath,
   isFinanceSectionPath,
-  readFinanceSectionHref,
+  resolvePermittedFinanceSectionHref,
   writeModuleLastVisitFromPathname,
 } from '@/lib/navigation/module-last-visit';
+import { hasNavPermission } from '@/lib/navigation/nav-visibility';
 import { usePermission } from '@/lib/permissions';
 
 export function FinanceHeaderContextLayout() {
@@ -30,11 +31,11 @@ export function FinanceHeaderContextLayout() {
       return null;
     }
 
-    const items: HeaderNavItem[] = FINANCE_HEADER_ZONES.filter(
-      (zone) => !zone.permission || can(zone.permission.action, zone.permission.module),
+    const items: HeaderNavItem[] = FINANCE_HEADER_ZONES.filter((zone) =>
+      hasNavPermission(zone.permission, can),
     ).map((zone) => ({
       label: zone.label,
-      href: readFinanceSectionHref(zone.zone),
+      href: resolvePermittedFinanceSectionHref(zone.zone, can),
       isActive: (path) => isFinanceSectionPath(path, zone.zone),
       accent: FINANCE_HEADER_ZONE_ACCENTS[zone.zone],
     }));

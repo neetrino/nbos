@@ -2,11 +2,16 @@
 
 import { useSyncExternalStore } from 'react';
 import type { SidebarModuleKey } from '@nbos/shared/constants';
-import { isRegisteredModuleKey, readModuleEntryHref } from '@/lib/navigation/module-last-visit';
+import {
+  isRegisteredModuleKey,
+  resolvePermittedModuleEntryHref,
+} from '@/lib/navigation/module-last-visit';
 import { subscribeModuleVisitStore } from '@/lib/navigation/module-last-visit/module-visit-store-subscribe';
+import { usePermission } from '@/lib/permissions';
 
 /**
  * Sidebar parent module href with last-visit restore when a registry entry exists.
+ * Falls back to a permitted page when the stored path is now forbidden.
  */
 export function useModuleEntryHref(
   moduleKey: SidebarModuleKey,
@@ -14,9 +19,13 @@ export function useModuleEntryHref(
   pathname: string,
 ): string {
   void pathname;
+  const { can, isLoading } = usePermission();
   return useSyncExternalStore(
     subscribeModuleVisitStore,
-    () => (isRegisteredModuleKey(moduleKey) ? readModuleEntryHref(moduleKey) : fallbackHref),
+    () => {
+      if (!isRegisteredModuleKey(moduleKey) || isLoading) return fallbackHref;
+      return resolvePermittedModuleEntryHref(moduleKey, can);
+    },
     () => fallbackHref,
   );
 }

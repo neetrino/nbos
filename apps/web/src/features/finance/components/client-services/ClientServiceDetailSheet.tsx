@@ -57,6 +57,7 @@ import {
   translateClientServiceType,
   useClientServicesT,
 } from './client-service-message-keys';
+import { useClientServicePermissions } from './use-client-service-permissions';
 
 interface ClientServiceDetailSheetProps {
   serviceId: string | null;
@@ -96,6 +97,12 @@ export function ClientServiceDetailSheet({
   onRequestCancel,
 }: ClientServiceDetailSheetProps) {
   const t = useClientServicesT();
+  const {
+    canEdit,
+    canCreateInvoice: canCreateInvoicePermission,
+    canCreateExpense: canCreateExpensePermission,
+    canCreateTask: canCreateTaskPermission,
+  } = useClientServicePermissions();
   const isMobileViewport = useIsMobileViewport();
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(serviceId);
   const hostMounted = useSheetHostMounted(open, sheetId);
@@ -146,7 +153,7 @@ export function ClientServiceDetailSheet({
     [service],
   );
 
-  const canCreateTask = creatorReady && Boolean(creatorId);
+  const canCreateTask = canCreateTaskPermission && creatorReady && Boolean(creatorId);
 
   const refreshAfterLinkCreated = useCallback(() => {
     void fetchService();
@@ -242,14 +249,13 @@ export function ClientServiceDetailSheet({
   }, [snap]);
 
   const isCancelled = service?.status === 'CANCELLED';
-  const canCreateWePayFinance = Boolean(
-    service && !isCancelled && service.billingModel === 'WE_PAY',
-  );
+  const readOnly = isCancelled || !canEdit;
+  const canCreateWePayFinance = Boolean(service && !readOnly && service.billingModel === 'WE_PAY');
   const detailSheetTabs = useMemo(
     () =>
       buildClientServiceDetailSheetTabs({
-        canCreateInvoice: canCreateWePayFinance,
-        canCreateExpense: canCreateWePayFinance,
+        canCreateInvoice: canCreateWePayFinance && canCreateInvoicePermission,
+        canCreateExpense: canCreateWePayFinance && canCreateExpensePermission,
         canCreateTask: canCreateTask && !isCancelled,
         onCreateInvoice: () => setInvoiceOpen(true),
         onCreateExpense: () => setExpenseOpen(true),
@@ -259,7 +265,14 @@ export function ClientServiceDetailSheet({
         createExpenseAria: t('sheet.createExpenseAria'),
         createTaskAria: t('sheet.createTaskAria'),
       }),
-    [canCreateTask, canCreateWePayFinance, isCancelled, t],
+    [
+      canCreateExpensePermission,
+      canCreateInvoicePermission,
+      canCreateTask,
+      canCreateWePayFinance,
+      isCancelled,
+      t,
+    ],
   );
 
   if (!hostMounted) return null;
@@ -404,7 +417,10 @@ export function ClientServiceDetailSheet({
                     draft={draft}
                     patchDraft={patchDraft}
                     saving={saving}
-                    readOnly={isCancelled}
+                    readOnly={readOnly}
+                    canRunRegistryCheck={canEdit}
+                    canCreateInvoice={canCreateWePayFinance && canCreateInvoicePermission}
+                    canCreateExpense={canCreateWePayFinance && canCreateExpensePermission}
                     canCreateTask={canCreateTask && !isCancelled}
                     onCreateInvoice={() => setInvoiceOpen(true)}
                     onCreateExpense={() => setExpenseOpen(true)}
@@ -417,7 +433,9 @@ export function ClientServiceDetailSheet({
           </ScrollArea>
 
           <DetailSheetFormFooter
-            visible={activeTab === 'general' && Boolean(service && draft) && !isCancelled}
+            visible={
+              activeTab === 'general' && Boolean(service && draft) && canEdit && !isCancelled
+            }
             dirty={dirty && (draft ? canSaveClientServiceForm(draft) : false)}
             saving={saving}
             errorMessage={formError}
