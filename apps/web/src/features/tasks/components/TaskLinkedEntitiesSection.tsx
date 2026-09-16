@@ -11,6 +11,8 @@ import {
 } from '@/components/shared/detail-sheet-classes';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { getDriveFileLinkEntityHref } from '@/features/drive/drive-file-link-entity-href';
+import { ClientServiceDetailSheet } from '@/features/finance/components/client-services/ClientServiceDetailSheet';
+import { CLIENT_SERVICE_TASK_ENTITY_TYPE } from '@/features/finance/constants/client-service-task-links';
 import { productsApi } from '@/lib/api/products';
 import { tasksApi, type Task, type TaskLink } from '@/lib/api/tasks';
 import { cn } from '@/lib/utils';
@@ -54,6 +56,7 @@ export function TaskLinkedEntitiesSection({
     localizeTaskLinkEntityLabel(entityType, t, taskLinkEntityLabel(entityType));
   const [busy, setBusy] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [clientServiceId, setClientServiceId] = useState<string | null>(null);
   /** Product id → project name from the last picker selection (sheet session). */
   const [productProjectNames, setProductProjectNames] = useState<Record<string, string>>({});
 
@@ -90,6 +93,10 @@ export function TaskLinkedEntitiesSection({
         } catch (caught) {
           toast.error(getApiErrorMessage(caught, t('sheet.linked.productOpenFailed')));
         }
+        return;
+      }
+      if (link.entityType === CLIENT_SERVICE_TASK_ENTITY_TYPE) {
+        setClientServiceId(link.entityId);
         return;
       }
       const href = getDriveFileLinkEntityHref(link, task.links);
@@ -166,84 +173,96 @@ export function TaskLinkedEntitiesSection({
   const workspaceLabel = task.workspace?.name?.trim() || entityLabel('WORK_SPACE');
 
   return (
-    <section className={TASK_SHEET_CARD_CLASS} aria-label={t('sheet.linked.sectionAria')}>
-      <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
-        <LinkedToNotchCaption locked={locked} onAdd={() => setSearchOpen(true)} />
+    <>
+      <section className={TASK_SHEET_CARD_CLASS} aria-label={t('sheet.linked.sectionAria')}>
+        <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
+          <LinkedToNotchCaption locked={locked} onAdd={() => setSearchOpen(true)} />
 
-        {searchOpen ? (
-          <TaskDeliveryContextSearch
-            trigger="none"
-            open={searchOpen}
-            onOpenChange={setSearchOpen}
-            disabled={locked}
-            linkedValues={linkedValues}
-            onSelect={(option) => void handleSelect(option)}
-          />
-        ) : hasEditableLinks ? (
-          <ul className={RELATION_PICKER_CHIP_STACK_CLASS}>
-            {task.workspaceId && workspaceLabel ? (
-              <LinkedContextChip
-                kind="WORK_SPACE"
-                label={workspaceLabel}
-                contextLabel={
-                  task.workspace?.product?.name?.trim() ||
-                  task.workspace?.extension?.product?.name?.trim() ||
-                  null
-                }
-                locked={locked}
-                onOpen={() => router.push(`/work-spaces/${task.workspaceId}`)}
-                onUnlink={() => void setWorkspace(null)}
-              />
-            ) : null}
+          {searchOpen ? (
+            <TaskDeliveryContextSearch
+              trigger="none"
+              open={searchOpen}
+              onOpenChange={setSearchOpen}
+              disabled={locked}
+              linkedValues={linkedValues}
+              onSelect={(option) => void handleSelect(option)}
+            />
+          ) : hasEditableLinks ? (
+            <ul className={RELATION_PICKER_CHIP_STACK_CLASS}>
+              {task.workspaceId && workspaceLabel ? (
+                <LinkedContextChip
+                  kind="WORK_SPACE"
+                  label={workspaceLabel}
+                  contextLabel={
+                    task.workspace?.product?.name?.trim() ||
+                    task.workspace?.extension?.product?.name?.trim() ||
+                    null
+                  }
+                  locked={locked}
+                  onOpen={() => router.push(`/work-spaces/${task.workspaceId}`)}
+                  onUnlink={() => void setWorkspace(null)}
+                />
+              ) : null}
 
-            {editableLinks.map((link) => (
-              <LinkedContextChip
-                key={link.id}
-                kind={link.entityType === 'PRODUCT' ? 'PRODUCT' : 'PROJECT'}
-                label={link.entityLabel?.trim() || entityLabel(link.entityType)}
-                contextLabel={
-                  link.entityType === 'PRODUCT' ? productProjectNames[link.entityId] || null : null
-                }
-                locked={locked}
-                onOpen={() => void openLink(link)}
-                onUnlink={() => void handleUnlink(link.id)}
-              />
-            ))}
-          </ul>
-        ) : (
-          <button
-            type="button"
-            disabled={locked}
-            onClick={() => setSearchOpen(true)}
-            className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, 'italic')}
-          >
-            {t('sheet.linked.placeholder')}
-          </button>
-        )}
-      </div>
-
-      {contextLinks.length > 0 ? (
-        <div className={cn(TASK_SHEET_META_BLOCK_CLASS, TASK_SHEET_TEAM_META_GRID_CLASS, 'mt-3')}>
-          {contextLinks.map((link) => {
-            const LinkIcon = taskLinkEntityIcon(link.entityType);
-            return (
-              <TaskSheetCompactRow key={link.id} label={entityLabel(link.entityType)}>
-                <button
-                  type="button"
-                  className="hover:bg-muted/70 flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors"
-                  onClick={() => void openLink(link)}
-                  title={t('sheet.linked.openEntity')}
-                >
-                  <LinkIcon size={13} className="text-muted-foreground shrink-0" aria-hidden />
-                  <span className="truncate">
-                    {link.entityLabel?.trim() || entityLabel(link.entityType)}
-                  </span>
-                </button>
-              </TaskSheetCompactRow>
-            );
-          })}
+              {editableLinks.map((link) => (
+                <LinkedContextChip
+                  key={link.id}
+                  kind={link.entityType === 'PRODUCT' ? 'PRODUCT' : 'PROJECT'}
+                  label={link.entityLabel?.trim() || entityLabel(link.entityType)}
+                  contextLabel={
+                    link.entityType === 'PRODUCT'
+                      ? productProjectNames[link.entityId] || null
+                      : null
+                  }
+                  locked={locked}
+                  onOpen={() => void openLink(link)}
+                  onUnlink={() => void handleUnlink(link.id)}
+                />
+              ))}
+            </ul>
+          ) : (
+            <button
+              type="button"
+              disabled={locked}
+              onClick={() => setSearchOpen(true)}
+              className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, 'italic')}
+            >
+              {t('sheet.linked.placeholder')}
+            </button>
+          )}
         </div>
-      ) : null}
-    </section>
+
+        {contextLinks.length > 0 ? (
+          <div className={cn(TASK_SHEET_META_BLOCK_CLASS, TASK_SHEET_TEAM_META_GRID_CLASS, 'mt-3')}>
+            {contextLinks.map((link) => {
+              const LinkIcon = taskLinkEntityIcon(link.entityType);
+              return (
+                <TaskSheetCompactRow key={link.id} label={entityLabel(link.entityType)}>
+                  <button
+                    type="button"
+                    className="hover:bg-muted/70 flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors"
+                    onClick={() => void openLink(link)}
+                    title={t('sheet.linked.openEntity')}
+                  >
+                    <LinkIcon size={13} className="text-muted-foreground shrink-0" aria-hidden />
+                    <span className="truncate">
+                      {link.entityLabel?.trim() || entityLabel(link.entityType)}
+                    </span>
+                  </button>
+                </TaskSheetCompactRow>
+              );
+            })}
+          </div>
+        ) : null}
+      </section>
+      <ClientServiceDetailSheet
+        serviceId={clientServiceId}
+        open={Boolean(clientServiceId)}
+        onOpenChange={(next) => {
+          if (!next) setClientServiceId(null);
+        }}
+        onSaved={() => undefined}
+      />
+    </>
   );
 }

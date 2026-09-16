@@ -4,6 +4,7 @@ import {
 } from '@/features/crm/constants/crm-list-sheet-url';
 import { OPEN_EXPENSE_QUERY } from '@/features/finance/constants/expense-deep-link';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
+import { clientServicesListWithOpenServiceHref } from '@/features/finance/constants/client-service-deep-link';
 import { DELIVERY_BOARD_OPEN_ITEM_QUERY } from '@/features/projects/constants/delivery-board-open-query';
 import { SUPPORT_TICKET_OPEN_QUERY } from '@/features/support/constants/support-ticket-open-query';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
@@ -106,6 +107,9 @@ export function getDriveFileLinkEntityHref(
       const q = new URLSearchParams({ [OPEN_EXPENSE_QUERY]: id });
       return `/finance/expenses?${q.toString()}`;
     }
+    case 'ClientServiceRecord':
+    case 'CLIENT_SERVICE_RECORD':
+      return clientServicesListWithOpenServiceHref(id);
     case 'PAYMENT':
       return `/finance/payments`;
     case 'REPORT':

@@ -101,19 +101,22 @@ export function ClientServiceGeneralBasicsSection({
           disabled={formDisabled}
           onProviderChange={(provider) => patchDraft({ provider })}
         />
-        <ClientServiceCredentialField
-          credentialId={draft.providerAccountId}
-          credentialLabel={credentialLabel}
-          disabled={formDisabled}
-          onSelect={(id, label) => {
-            patchDraft({ providerAccountId: id });
-            setCredentialLabel(label);
-          }}
-          onClear={() => {
-            patchDraft({ providerAccountId: '' });
-            setCredentialLabel(null);
-          }}
-        />
+        {draft.connectionMode === 'CLIENT_DNS' ? null : (
+          <ClientServiceCredentialField
+            credentialId={draft.providerAccountId}
+            credentialLabel={credentialLabel}
+            projectId={draft.projectId}
+            disabled={formDisabled}
+            onSelect={(id, label) => {
+              patchDraft({ providerAccountId: id });
+              setCredentialLabel(label);
+            }}
+            onClear={() => {
+              patchDraft({ providerAccountId: '' });
+              setCredentialLabel(null);
+            }}
+          />
+        )}
       </div>
     </DetailSheetCollapsibleSection>
   );

@@ -54,3 +54,31 @@ export async function assertClientServiceAccessible(
     throw new NotFoundException('Client service record not found');
   }
 }
+
+/** Same project/deal graph as client-service rows; 404 when the product is out of scope. */
+export async function assertProductAccessibleForClientService(
+  prisma: InstanceType<typeof PrismaClient>,
+  productId: string,
+  access: FinanceScopedAccessContext | undefined,
+): Promise<{ id: string; projectId: string }> {
+  if (!access || financeScopedBypassRowFilter(access.viewScope)) {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true, projectId: true },
+    });
+    if (!product) throw new NotFoundException('Product was not found');
+    return product;
+  }
+
+  const scopedIds = await loadFinanceScopedEmployeeIds(prisma, access);
+  const participation = buildClientServiceParticipationWhere(
+    scopedIds,
+    Boolean(access.dealScopedParticipation),
+  );
+  const product = await prisma.product.findFirst({
+    where: { id: productId, project: participation.project },
+    select: { id: true, projectId: true },
+  });
+  if (!product) throw new NotFoundException('Product was not found');
+  return product;
+}

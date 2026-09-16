@@ -17,6 +17,7 @@ export interface MarkPaidPaymentsPort {
     paymentDate: string;
     paymentMethod?: string;
     notes?: string;
+    confirmedBy?: string;
   }): Promise<unknown>;
 }
 

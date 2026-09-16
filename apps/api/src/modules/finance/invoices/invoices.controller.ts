@@ -135,9 +135,14 @@ export class InvoicesController {
   }
 
   @Patch(':id/money-status')
+  @RequirePermission('FINANCE_INVOICES', 'EDIT')
   @ApiOperation({ summary: 'Update invoice money status (canonical card layer)' })
-  async updateMoneyStatus(@Param('id') id: string, @Body() body: { moneyStatus: string }) {
-    return this.invoicesService.updateMoneyStatus(id, body.moneyStatus);
+  async updateMoneyStatus(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { moneyStatus: string },
+  ) {
+    return this.invoicesService.updateMoneyStatus(id, body.moneyStatus, user.id);
   }
 
   @Post(':id/official-request/send')

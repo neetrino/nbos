@@ -27,6 +27,7 @@ interface ClientServiceDetailSheetBodyProps {
   onCreateExpense: () => void;
   onCreateTask: () => void;
   onRegistryChecked?: (result: ClientServiceRegistryCheckResult) => void;
+  onServiceUpdated?: (service: ClientServiceRecord) => void;
 }
 
 export function ClientServiceDetailSheetBody({
@@ -45,6 +46,7 @@ export function ClientServiceDetailSheetBody({
   onCreateExpense,
   onCreateTask,
   onRegistryChecked,
+  onServiceUpdated,
 }: ClientServiceDetailSheetBodyProps) {
   if (activeTab === 'general') {
     return (
@@ -56,6 +58,7 @@ export function ClientServiceDetailSheetBody({
         formDisabled={saving || readOnly}
         canRunRegistryCheck={canRunRegistryCheck}
         onRegistryChecked={onRegistryChecked}
+        onServiceUpdated={onServiceUpdated}
       />
     );
   }

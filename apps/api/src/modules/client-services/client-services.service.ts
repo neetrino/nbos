@@ -9,6 +9,7 @@ import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { mergeFinanceWhere } from '../finance/finance-scoped-access';
 import { fillCredentialContextIfEmpty } from '../expenses/expense-credential-link';
+import { syncOpenExpenseCredentialFromService } from './domain-purchase/late-credential-sync';
 import {
   assertClientServiceAccessible,
   resolveClientServiceParticipationWhere,
@@ -21,6 +22,7 @@ import {
 import { CLIENT_SERVICE_NESTED_NONE } from './client-service-nested-visibility';
 import {
   assertClientServiceActiveForMutation,
+  assertClientServiceDnsCredentialRules,
   assertClientServiceExists,
   buildClientServiceCreateData,
   buildClientServiceUpdateData,
@@ -145,6 +147,7 @@ export class ClientServicesService {
   ) {
     await assertClientServiceAccessible(this.prisma, id, options.access);
     await assertClientServiceActiveForMutation(this.prisma, id);
+    await assertClientServiceDnsCredentialRules(this.prisma, id, body);
     const data = await buildClientServiceUpdateData(this.prisma, body);
     const row = await this.prisma.clientServiceRecord.update({
       where: { id },
@@ -152,6 +155,7 @@ export class ClientServicesService {
       include: buildClientServiceDetailInclude(),
     });
     await this.syncLinkedCredentialContext(row);
+    await syncOpenExpenseCredentialFromService(this.prisma, row.id, row.providerAccountId);
     return this.toDetailResponse(row, options.nested);
   }
 
@@ -162,6 +166,10 @@ export class ClientServicesService {
       where: { id },
       data: { status: 'CANCELLED' },
       include: buildClientServiceDetailInclude(),
+    });
+    await this.prisma.expensePlan.updateMany({
+      where: { clientServiceRecordId: id, status: 'ACTIVE', autoGenerate: true },
+      data: { autoGenerate: false },
     });
     return this.toDetailResponse(row, options.nested);
   }

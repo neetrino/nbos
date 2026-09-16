@@ -200,7 +200,12 @@
     "dueDateHint": "Դատարկ թողնելու դեպքում լռելյայն՝ ստեղծումից 10 օր հետո։",
     "submit": "Ստեղծել հաշիվ",
     "createError": "Հաշիվը չհաջողվեց ստեղծել։",
-    "loadSubscriptionError": "Բաժանորդագրությունը չհաջողվեց բեռնել։"
+    "loadSubscriptionError": "Բաժանորդագրությունը չհաջողվեց բեռնել։",
+    "modeFree": "Ազատ հաշիվ",
+    "modeDomain": "Դոմենի գնում",
+    "domainProduct": "Ապրանք",
+    "domainNames": "Դոմենների անուններ",
+    "domainAmount": "Հաճախորդի գումար (AMD)"
   },
   "createSubscription": {
     "title": "Ստեղծել բաժանորդագրության հաշիվ",
@@ -243,7 +248,9 @@
       "too_soon": "Wave 2-ը միայն 2 օրացույցային օր հետո",
       "max_wave": "Երկու wave-ն էլ արդեն ուղարկվել են",
       "no_product_link": "Բաժանորդագրություն կամ client service չկա",
-      "already_sent": "Այս wave-ը արդեն ուղարկվել է"
+      "already_sent": "Այս wave-ը արդեն ուղարկվել է",
+      "domain_not_found": "Դոմենը չի գտնվել գրանցամատյանում",
+      "service_cancelled": "Հաճախորդային ծառայությունն չեղարկված է"
     }
   }
 }

@@ -71,6 +71,7 @@ export class PaymentsController {
   @Post()
   @ApiOperation({ summary: 'Create payment' })
   async create(
+    @CurrentUser() user: CurrentUserPayload,
     @Body()
     body: {
       invoiceId: string;
@@ -81,7 +82,10 @@ export class PaymentsController {
       notes?: string;
     },
   ) {
-    return this.paymentsService.create(body);
+    return this.paymentsService.create({
+      ...body,
+      confirmedBy: body.confirmedBy?.trim() || user.id,
+    });
   }
 
   @Delete(':id')

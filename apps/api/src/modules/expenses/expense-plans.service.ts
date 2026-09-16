@@ -223,6 +223,10 @@ export class ExpensePlansService {
       autoGenerate: true,
       status: 'ACTIVE',
       nextDueDate: { not: null, lte: cutoff },
+      OR: [
+        { clientServiceRecordId: null },
+        { clientServiceRecord: { is: { status: { not: 'CANCELLED' } } } },
+      ],
     };
     const plans = await this.prisma.expensePlan.findMany({
       where: mergeFinanceWhere(dueWhere, participation),

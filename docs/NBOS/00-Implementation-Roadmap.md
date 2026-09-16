@@ -1,6 +1,6 @@
 # NBOS Implementation Roadmap
 
-**Client Services / Domains, 2026-09-17:** утверждён [процесс покупки и подключения](02-Modules/04-Finance/08-Domain-Purchase-and-Connection.md). Реализация планируется по [этапам 0–5](../implementation/CLIENT-SERVICES-IMPLEMENTATION-PLAN.md); это не отметка выполненной работы. Отдельную RBAC-реализацию использовать как зависимость, не дублировать.
+**Client Services / Domains, 2026-09-17:** канон утверждён. Код в рабочей ветке частичный — [факт](../implementation/CLIENT-SERVICES-IMPLEMENTATION-PLAN.md#9-фактический-статус-кода-2026-09-17); канон не считать готовым продуктом. RBAC Client Services / Expense Plans не дублировать.
 
 > Developer roadmap for implementing the NBOS canon module by module without breaking already working areas.
 

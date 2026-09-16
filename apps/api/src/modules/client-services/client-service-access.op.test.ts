@@ -4,6 +4,7 @@ import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma'
 import type { FinanceScopedAccessContext } from '../finance/finance-scoped-access';
 import {
   assertClientServiceAccessible,
+  assertProductAccessibleForClientService,
   buildClientServiceParticipationWhere,
 } from './client-service-access.op';
 
@@ -68,6 +69,20 @@ describe('client-service access', () => {
       where?: unknown;
     };
     expect(JSON.stringify(call?.where)).toContain('colleague-1');
+  });
+
+  it('hides a guessed product from an OWN caller', async () => {
+    prisma.product.findFirst.mockResolvedValue(null);
+    await expect(
+      assertProductAccessibleForClientService(prisma as never, 'guessed-product-id', OWN),
+    ).rejects.toThrow(NotFoundException);
+  });
+
+  it('returns the product when OWN participation matches', async () => {
+    prisma.product.findFirst.mockResolvedValue({ id: 'prod-1', projectId: 'proj-1' });
+    await expect(
+      assertProductAccessibleForClientService(prisma as never, 'prod-1', OWN),
+    ).resolves.toEqual({ id: 'prod-1', projectId: 'proj-1' });
   });
 
   it('requires project participation and excludes unassigned rows', () => {

@@ -43,6 +43,9 @@ export interface ClientServiceRecordBody {
   startDate?: string | null;
   renewalDate?: string | null;
   notes?: string | null;
+  connectionMode?: string | null;
+  dnsInstructions?: string | null;
+  connectionVerifiedAt?: string | null;
 }
 
 export type UpdateClientServiceRecordBody = Partial<ClientServiceRecordBody>;

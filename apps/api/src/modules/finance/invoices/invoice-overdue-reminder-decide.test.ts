@@ -7,6 +7,7 @@ const BASE = {
   notificationsEnabled: true,
   taxBlocked: false,
   domainRegistryDead: false,
+  serviceCancelled: false,
   hasWhatsAppGroup: true,
   wave1ScheduledFor: null as Date | null,
   hasWave2: false,
@@ -86,6 +87,10 @@ describe('decideOverdueReminderAction', () => {
     expect(decideOverdueReminderAction({ ...BASE, domainRegistryDead: true })).toEqual({
       kind: 'skip',
       reason: 'domain_not_found',
+    });
+    expect(decideOverdueReminderAction({ ...BASE, serviceCancelled: true })).toEqual({
+      kind: 'skip',
+      reason: 'service_cancelled',
     });
   });
 });

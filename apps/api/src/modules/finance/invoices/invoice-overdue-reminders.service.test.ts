@@ -211,6 +211,7 @@ describe('InvoiceOverdueRemindersService', () => {
         subscription: null,
         officialInvoiceRequestSent: true,
         clientServiceRecord: {
+          status: 'ACTIVE',
           notificationsEnabled: true,
           reminderLanguage: 'RU',
           productId: 'prod-1',
@@ -235,6 +236,34 @@ describe('InvoiceOverdueRemindersService', () => {
         }),
       }),
     );
+  });
+
+  it('skips cancelled client services even when notifications stay on', async () => {
+    prisma.invoice.findMany.mockResolvedValue([
+      {
+        ...overdueCandidate({ id: 'inv-cs-arch', code: 'INV-ARCH', taxStatus: 'TAX' }),
+        subscription: null,
+        officialInvoiceRequestSent: true,
+        clientServiceRecord: {
+          status: 'CANCELLED',
+          notificationsEnabled: true,
+          reminderLanguage: 'RU',
+          productId: 'prod-1',
+          name: 'old.com',
+          type: 'DOMAIN',
+          registryLookupStatus: 'OBSERVED',
+          product: { id: 'prod-1', name: 'Example' },
+        },
+      },
+    ]);
+
+    const result = await service.run({ asOf: new Date('2026-08-08T12:00:00+04:00') });
+
+    expect(result.sent).toEqual([]);
+    expect(result.skipped).toEqual([
+      { invoiceId: 'inv-cs-arch', code: 'INV-ARCH', reason: 'service_cancelled' },
+    ]);
+    expect(deliverReminder).not.toHaveBeenCalled();
   });
 });
 

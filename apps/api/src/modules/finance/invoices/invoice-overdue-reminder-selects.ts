@@ -12,6 +12,7 @@ export const overdueReminderSelect = {
   company: { select: { name: true } },
   clientServiceRecord: {
     select: {
+      status: true,
       notificationsEnabled: true,
       reminderLanguage: true,
       productId: true,

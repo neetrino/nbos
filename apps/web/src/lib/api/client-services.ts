@@ -80,6 +80,11 @@ export interface ClientServiceRecord {
   registryCheckedAt?: string | null;
   registryLookupSource?: 'WHOIS' | 'RDAP' | null;
   notes: string | null;
+  connectionMode?: string | null;
+  connectionVerifiedAt?: string | null;
+  registrationConfirmedAt?: string | null;
+  dnsInstructions?: string | null;
+  hasRegistrantData?: boolean;
   createdAt: string;
   updatedAt: string;
   project: { id: string; code: string; name: string };
@@ -112,6 +117,8 @@ export interface ClientServiceRecordPayload {
   startDate?: string | null;
   renewalDate?: string | null;
   notes?: string | null;
+  connectionMode?: string | null;
+  dnsInstructions?: string | null;
 }
 
 export interface ClientServiceRecordListParams {
@@ -180,6 +187,39 @@ export interface ClientServiceBoardPayload {
   view: ClientServiceBoardView;
   year: number;
   columns: ClientServiceBoardColumnPayload[];
+}
+
+export type DomainConnectionMode = 'PURCHASE' | 'EXISTING_ACCESS' | 'CLIENT_DNS';
+
+export interface DomainOperationDomainInput {
+  domainName: string;
+  provider?: string | null;
+  ourCost?: number | null;
+  clientCharge?: number | null;
+  providerAccountId?: string | null;
+}
+
+export interface DomainOperationStartPayload {
+  productId: string;
+  connectionMode: DomainConnectionMode;
+  domains: DomainOperationDomainInput[];
+  registrantData?: string | null;
+  dnsInstructions?: string | null;
+  issueInvoices?: boolean;
+}
+
+export interface DomainOperationItemResult {
+  domainName: string;
+  status: 'created' | 'reused' | 'failed';
+  serviceId?: string;
+  invoiceId?: string | null;
+  message?: string;
+}
+
+export interface DomainOperationStartResult {
+  productId: string;
+  connectionMode: DomainConnectionMode;
+  items: DomainOperationItemResult[];
 }
 
 export const clientServicesApi = {
@@ -271,6 +311,41 @@ export const clientServicesApi = {
   async checkRegistry(id: string): Promise<ClientServiceRegistryCheckResult> {
     const resp = await api.post<ClientServiceRegistryCheckResult>(
       `/api/client-services/${id}/actions/check-registry`,
+    );
+    return resp.data;
+  },
+
+  async startDomainOperation(
+    data: DomainOperationStartPayload,
+  ): Promise<DomainOperationStartResult> {
+    const resp = await api.post<DomainOperationStartResult>(
+      '/api/client-services/domain-operations',
+      data,
+    );
+    return resp.data;
+  },
+
+  async getRegistrantData(id: string): Promise<{ registrantData: string | null }> {
+    const resp = await api.get<{ registrantData: string | null }>(
+      `/api/client-services/${id}/registrant-data`,
+    );
+    return resp.data;
+  },
+
+  async putRegistrantData(id: string, registrantData: string): Promise<void> {
+    await api.put(`/api/client-services/${id}/registrant-data`, { registrantData });
+  },
+
+  async confirmRegistration(id: string): Promise<ClientServiceRecord> {
+    const resp = await api.post<ClientServiceRecord>(
+      `/api/client-services/${id}/actions/confirm-registration`,
+    );
+    return resp.data;
+  },
+
+  async confirmConnection(id: string): Promise<ClientServiceRecord> {
+    const resp = await api.post<ClientServiceRecord>(
+      `/api/client-services/${id}/actions/confirm-connection`,
     );
     return resp.data;
   },

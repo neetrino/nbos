@@ -94,5 +94,19 @@ describe('clientServiceFormToPayload', () => {
     expect(
       clientServiceFormToPayload({ ...withProduct, providerAccountId: 'cred-1' }).providerAccountId,
     ).toBe('cred-1');
+    expect(
+      clientServiceFormToPayload({
+        ...withProduct,
+        connectionMode: 'CLIENT_DNS',
+        providerAccountId: 'cred-1',
+      }).providerAccountId,
+    ).toBeNull();
+    expect(
+      clientServiceFormToPayload({
+        ...withProduct,
+        connectionMode: 'CLIENT_DNS',
+        billingModel: 'WE_PAY',
+      }).billingModel,
+    ).toBe('REMINDER_ONLY');
   });
 });

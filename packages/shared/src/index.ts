@@ -23,6 +23,7 @@ export * from './finance/invoice-tax-readiness';
 export * from './finance/invoice-product-ownership-gate';
 export * from './finance/invoice-display-title';
 export * from './finance/invoice-order-comment';
+export * from './finance/domain-connection';
 export * from './finance-drive-upload';
 export * from './platform-access/constants';
 export * from './platform-access/project-team-management';

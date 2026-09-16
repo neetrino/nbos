@@ -36,6 +36,7 @@ export function createMockPrisma() {
     company: createModelMock(),
     order: createModelMock(),
     invoice: createModelMock(),
+    domain: createModelMock(),
     employee: createModelMock(),
     authSession: createModelMock(),
     passwordResetToken: createModelMock(),

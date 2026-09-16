@@ -32,7 +32,9 @@ export interface CreateInvoiceDialogState {
   form: CreateInvoiceFormState;
   setForm: (form: CreateInvoiceFormState) => void;
   loading: boolean;
+  setLoading: (loading: boolean) => void;
   error: string | null;
+  setError: (error: string | null) => void;
   loadError: string | null;
   subscriptionDetail: Subscription | null;
   subscriptionLoading: boolean;
@@ -104,7 +106,9 @@ export function useCreateInvoiceDialogState({
     form,
     setForm,
     loading,
+    setLoading,
     error,
+    setError,
     loadError,
     subscriptionDetail,
     subscriptionLoading,

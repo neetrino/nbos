@@ -7,6 +7,9 @@ describe('localizeTaskLinkEntityLabel', () => {
     expect(localizeTaskLinkEntityLabel('WORKSPACE', (key) => key, 'Work Space')).toBe(
       'sheet.entity.WORK_SPACE',
     );
+    expect(localizeTaskLinkEntityLabel('ClientServiceRecord', (key) => key, 'Client Service')).toBe(
+      'sheet.entity.ClientServiceRecord',
+    );
   });
 
   it('keeps unknown stored codes', () => {

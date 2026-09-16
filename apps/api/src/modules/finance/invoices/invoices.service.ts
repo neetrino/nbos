@@ -316,7 +316,7 @@ export class InvoicesService {
   /**
    * Sets the canonical Invoice Card money status (`Invoice.moneyStatus`).
    */
-  async updateMoneyStatus(id: string, moneyStatusRaw: string) {
+  async updateMoneyStatus(id: string, moneyStatusRaw: string, actorEmployeeId?: string) {
     const moneyStatus = parseInvoiceMoneyStatus(moneyStatusRaw);
     if (!moneyStatus) {
       throw new BadRequestException(`Unknown invoice moneyStatus: ${moneyStatusRaw}`);
@@ -346,6 +346,7 @@ export class InvoicesService {
         paymentDate: markPaidPaymentDateIso(now),
         paymentMethod: MARK_PAID_AUTO_PAYMENT_METHOD,
         notes: MARK_PAID_AUTO_PAYMENT_NOTE,
+        confirmedBy: actorEmployeeId,
       });
       if (invoice.orderId) {
         await this.checkAndPromoteDeal(invoice.orderId);

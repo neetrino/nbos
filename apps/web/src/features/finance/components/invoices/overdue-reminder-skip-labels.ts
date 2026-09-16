@@ -10,6 +10,8 @@ const SKIP_LABELS: Record<OverdueReminderSkipReason, string> = {
   max_wave: 'Both waves already sent',
   no_product_link: 'No subscription or client service',
   already_sent: 'Already sent this wave',
+  domain_not_found: 'Domain not found in registry',
+  service_cancelled: 'Client service cancelled',
 };
 
 export function overdueReminderSkipLabel(reason: OverdueReminderSkipReason): string {

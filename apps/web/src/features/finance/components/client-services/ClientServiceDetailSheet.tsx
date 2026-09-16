@@ -426,6 +426,10 @@ export function ClientServiceDetailSheet({
                     onCreateExpense={() => setExpenseOpen(true)}
                     onCreateTask={() => setQuickCreateTaskOpen(true)}
                     onRegistryChecked={handleRegistryChecked}
+                    onServiceUpdated={(updated) => {
+                      setService(updated);
+                      onSaved();
+                    }}
                   />
                 </DetailSheetTabPanel>
               ) : null}

@@ -186,7 +186,8 @@
       "LEAD": "Lead",
       "INVOICE": "Invoice",
       "SUPPORT_TICKET": "Ticket",
-      "WORK_SPACE": "Work Space"
+      "WORK_SPACE": "Work Space",
+      "ClientServiceRecord": "Client Service"
     },
     "files": {
       "emptyHint": "You can drag a file here or click + to browse",

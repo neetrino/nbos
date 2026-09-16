@@ -1,6 +1,6 @@
 # Client Services: план реализации согласованного доменного процесса
 
-**Дата:** 2026-09-17. **Статус:** план, реализация этих этапов не заявлена завершённой.
+**Дата:** 2026-09-17. **План:** этапы 0–5. **Код:** частичная реализация в рабочей ветке; канон не считать готовым продуктом. Факт по коду — [§ 9](#9-фактический-статус-кода-2026-09-17).
 **Источник:** [утверждённый канон](../NBOS/02-Modules/04-Finance/08-Domain-Purchase-and-Connection.md).
 
 ## 1. Исходное состояние и ограничения
@@ -120,3 +120,18 @@ Finance фиксирует ExpensePayment и отдельно подтвержд
 Порядок внедрения: additive изменения и defaults → совместимые API → UI → управляемое включение автоматизации после сверки существующих открытых записей. Не запускать массовую генерацию по историческим Invoice без dry-run. План отката отключает новую автоматику, сохраняя созданные финансовые факты.
 
 Обновлять статусы реализации только после фактической проверки. Финальная передача: список изменённых файлов, реальные результаты checks, необходимые локальные миграции/операторские действия, оставшиеся ограничения. Production действия выполняет владелец отдельно.
+
+## 9. Фактический статус кода (2026-09-17)
+
+Это статус **кода в рабочей ветке**, не замена канона. Production migrate/deploy этой схемы не выполнялись.
+
+| Этап                                     | Код                                                                                                                                                                                             | Проверено                       |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| 0 сверка                                 | цикл = `Expense.sourceInvoiceId`; DNS = `CLIENT_DNS`; PII = encrypted text; без Case/RegistrantProfile                                                                                          | по чтению кода                  |
+| 1 данные/DNS/PII                         | миграция `20260917010000_domain_purchase_connection_process`; API domain-operations; decrypt только EDIT; in-place Credential                                                                   | unit tests                      |
+| 2 Product/Delivery UI                    | chip в шапке Product и Delivery (не kanban); один диалог без Next; три сценария                                                                                                                 | typecheck/lint; **не** browser  |
+| 3 Invoice Board                          | режим «Покупка домена»: Product + имена + сумма; отдельные Invoice                                                                                                                              | typecheck/lint; **не** browser  |
+| 4 оплата/Expense/Task/поздний Credential | `sourceInvoiceId` + reuse окна; prep Task без DNS и без уже сохранённого Credential; late credential на открытые Expense; Task открывает Client Service sheet; Mark paid передаёт `confirmedBy` | unit tests                      |
+| 5 gates/renewal/архив                    | DOMAIN slot: DNS по инструкциям, доступ по Credential+verify; cancel стопит autoGenerate; overdue WhatsApp skip `CANCELLED`; renewal invoices без Tech Task                                     | unit tests + чтение генераторов |
+
+Не проверено в браузере: desktop/mobile шапки, три сценария глазами, Invoice path, Task→Client Service sheet, негативные permissions UI. Локальная миграция не применялась в этой сессии. Legacy DNS — только dry-run отчёт, без автоматической миграции. Production migrate/deploy этого среза не выполнялись.

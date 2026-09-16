@@ -44,7 +44,9 @@ export type OverdueReminderSkipReason =
   | 'too_soon'
   | 'max_wave'
   | 'no_product_link'
-  | 'already_sent';
+  | 'already_sent'
+  | 'domain_not_found'
+  | 'service_cancelled';
 
 export interface OverdueReminderItem {
   invoiceId: string;

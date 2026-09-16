@@ -11,6 +11,7 @@ export interface OverdueReminderDecideInput {
   notificationsEnabled: boolean;
   taxBlocked: boolean;
   domainRegistryDead: boolean;
+  serviceCancelled: boolean;
   hasWhatsAppGroup: boolean;
   wave1ScheduledFor: Date | null;
   hasWave2: boolean;
@@ -26,6 +27,7 @@ export function decideOverdueReminderAction(
 ): OverdueReminderDecision {
   if (input.moneyStatus !== 'OVERDUE') return { kind: 'skip', reason: 'not_overdue' };
   if (!input.hasProductLink) return { kind: 'skip', reason: 'no_product_link' };
+  if (input.serviceCancelled) return { kind: 'skip', reason: 'service_cancelled' };
   if (input.domainRegistryDead) return { kind: 'skip', reason: 'domain_not_found' };
   if (!input.notificationsEnabled) return { kind: 'skip', reason: 'notifications_off' };
   if (input.taxBlocked) return { kind: 'skip', reason: 'tax_gate' };

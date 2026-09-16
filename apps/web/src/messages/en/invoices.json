@@ -200,7 +200,12 @@
     "dueDateHint": "Defaults to 10 days from creation when left empty.",
     "submit": "Create Invoice",
     "createError": "Invoice could not be created.",
-    "loadSubscriptionError": "Subscription could not be loaded."
+    "loadSubscriptionError": "Subscription could not be loaded.",
+    "modeFree": "Free invoice",
+    "modeDomain": "Domain purchase",
+    "domainProduct": "Product",
+    "domainNames": "Domain names",
+    "domainAmount": "Client amount (AMD)"
   },
   "createSubscription": {
     "title": "Create Subscription Invoice",
@@ -243,7 +248,9 @@
       "too_soon": "Wave 2 is only after 2 calendar days",
       "max_wave": "Both waves already sent",
       "no_product_link": "No subscription or client service",
-      "already_sent": "Already sent this wave"
+      "already_sent": "Already sent this wave",
+      "domain_not_found": "Domain not found in registry",
+      "service_cancelled": "Client service cancelled"
     }
   }
 }

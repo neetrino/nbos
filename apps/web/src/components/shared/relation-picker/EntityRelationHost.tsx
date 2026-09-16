@@ -49,7 +49,7 @@ import {
   useHasNestedEntitySheet,
 } from '../nested-entity-sheet-stack';
 
-type CreateKind = 'contact' | 'company' | 'project' | 'partner' | 'product';
+type CreateKind = 'contact' | 'company' | 'project' | 'partner' | 'product' | 'credential';
 
 function relationCreateFieldIntent(intent?: string): string | undefined {
   return parseRelationCreateIntent(intent).fieldIntent;
@@ -200,7 +200,13 @@ export function EntityRelationHost({
     ) => {
       if (kind === 'employee') return;
       if (kind === 'order') return;
-      if (kind === 'credential') return;
+      if (kind === 'credential') {
+        const prefill = buildRelationCreatePrefill(kind, searchQuery, context, intent);
+        setCreatePrefill(prefill);
+        setCreateIntent(intent);
+        setCreateKind('credential');
+        return;
+      }
       if (kind === 'product') {
         const prefill = buildRelationCreatePrefill(kind, searchQuery, context, intent);
         if (!prefill.projectId) return;
@@ -304,6 +310,17 @@ export function EntityRelationHost({
     }
   };
 
+  const handleCredentialCreated = (credential: { id: string; name: string }) => {
+    const intent = createIntent;
+    closeCreate();
+    emitCreated({
+      kind: 'credential',
+      id: credential.id,
+      label: credential.name,
+      intent: relationCreateFieldIntent(intent),
+    });
+  };
+
   return (
     <EntityRelationsProvider value={api}>
       {children}
@@ -372,6 +389,19 @@ export function EntityRelationHost({
           onOpenChange={(next) => {
             if (!next) setCredentialOpenId(null);
           }}
+        />
+
+        <CredentialFormSheet
+          open={createKind === 'credential'}
+          credentialId={null}
+          initialName={createPrefill?.name}
+          projectId={createPrefill?.projectId}
+          forceNestedBackdrop={nested}
+          continueAfterCreate={false}
+          onOpenChange={(next) => {
+            if (!next) closeCreate();
+          }}
+          onCreated={handleCredentialCreated}
         />
 
         <EmployeeSheet

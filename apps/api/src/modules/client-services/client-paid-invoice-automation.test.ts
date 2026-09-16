@@ -22,6 +22,7 @@ describe('runClientPaidInvoicePaidAutomation', () => {
   it('skips when invoice is not linked to a client service', async () => {
     prisma.invoice.findUnique.mockResolvedValue({
       id: 'inv-1',
+      amount: new Decimal('10'),
       moneyStatus: 'PAID',
       clientServiceRecordId: null,
       paidDate: new Date(),
@@ -37,15 +38,10 @@ describe('runClientPaidInvoicePaidAutomation', () => {
     expect(flows.createExpense).not.toHaveBeenCalled();
   });
 
-  it('creates expense and task for paid client-paid invoice', async () => {
-    prisma.invoice.findUnique.mockResolvedValue({
-      id: 'inv-1',
-      moneyStatus: 'PAID',
-      clientServiceRecordId: 'svc-1',
-      paidDate: new Date('2026-05-01'),
-    });
+  it('creates expense and task for paid purchase without credential', async () => {
+    prisma.invoice.findUnique.mockResolvedValue(paidInvoice());
     prisma.clientServiceRecord.findUnique.mockResolvedValue(buildService());
-    prisma.expense.findFirst.mockResolvedValue(null);
+    prisma.expense.findMany.mockResolvedValue([]);
     prisma.task.findFirst.mockResolvedValue(null);
 
     const result = await runClientPaidInvoicePaidAutomation(
@@ -59,24 +55,25 @@ describe('runClientPaidInvoicePaidAutomation', () => {
       'svc-1',
       expect.objectContaining({
         status: 'DUE_NOW',
-        notes: expect.stringContaining('NBOS invoiceId=inv-1'),
+        sourceInvoiceId: 'inv-1',
+        amount: 12,
       }),
     );
-    expect(flows.createTask).toHaveBeenCalledWith(
-      'svc-1',
-      expect.objectContaining({ creatorId: 'emp-1', priority: 'HIGH' }),
-    );
+    expect(flows.createTask).toHaveBeenCalled();
   });
 
-  it('is idempotent for expense and open task', async () => {
-    prisma.invoice.findUnique.mockResolvedValue({
-      id: 'inv-1',
-      moneyStatus: 'PAID',
-      clientServiceRecordId: 'svc-1',
-      paidDate: new Date(),
-    });
+  it('reuses the expense linked by sourceInvoiceId and skips a second task', async () => {
+    prisma.invoice.findUnique.mockResolvedValue(paidInvoice());
     prisma.clientServiceRecord.findUnique.mockResolvedValue(buildService());
-    prisma.expense.findFirst.mockResolvedValue({ id: 'exp-existing' });
+    prisma.expense.findMany.mockResolvedValue([
+      {
+        id: 'exp-existing',
+        sourceInvoiceId: 'inv-1',
+        dueDate: new Date(),
+        status: 'DUE_NOW',
+        notes: null,
+      },
+    ]);
     prisma.task.findFirst.mockResolvedValue({ id: 'task-existing' });
 
     const result = await runClientPaidInvoicePaidAutomation(
@@ -85,21 +82,32 @@ describe('runClientPaidInvoicePaidAutomation', () => {
       { invoiceId: 'inv-1', actorEmployeeId: 'emp-1' },
     );
 
-    expect(result).toEqual({ taskId: null, expenseId: null });
+    expect(result).toEqual({ taskId: null, expenseId: 'exp-existing' });
     expect(flows.createExpense).not.toHaveBeenCalled();
     expect(flows.createTask).not.toHaveBeenCalled();
   });
 
+  it('skips domain prep task when the registrar credential already exists', async () => {
+    prisma.invoice.findUnique.mockResolvedValue(paidInvoice());
+    prisma.clientServiceRecord.findUnique.mockResolvedValue(
+      buildService({ providerAccountId: 'cred-1', connectionMode: 'PURCHASE' }),
+    );
+    prisma.expense.findMany.mockResolvedValue([]);
+
+    const result = await runClientPaidInvoicePaidAutomation(
+      prisma as never,
+      flows as never as ClientServiceFlowsService,
+      { invoiceId: 'inv-1', actorEmployeeId: 'emp-1' },
+    );
+
+    expect(result.expenseId).toBe('exp-new');
+    expect(flows.createTask).not.toHaveBeenCalled();
+  });
+
   it('creates expense but skips task without actor', async () => {
-    prisma.invoice.findUnique.mockResolvedValue({
-      id: 'inv-1',
-      moneyStatus: 'PAID',
-      clientServiceRecordId: 'svc-1',
-      paidDate: new Date(),
-    });
+    prisma.invoice.findUnique.mockResolvedValue(paidInvoice());
     prisma.clientServiceRecord.findUnique.mockResolvedValue(buildService());
-    prisma.expense.findFirst.mockResolvedValue(null);
-    prisma.task.findFirst.mockResolvedValue(null);
+    prisma.expense.findMany.mockResolvedValue([]);
 
     const result = await runClientPaidInvoicePaidAutomation(
       prisma as never,
@@ -112,7 +120,17 @@ describe('runClientPaidInvoicePaidAutomation', () => {
   });
 });
 
-function buildService() {
+function paidInvoice() {
+  return {
+    id: 'inv-1',
+    amount: new Decimal('40'),
+    moneyStatus: 'PAID',
+    clientServiceRecordId: 'svc-1',
+    paidDate: new Date('2026-05-01'),
+  };
+}
+
+function buildService(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     id: 'svc-1',
     projectId: 'project-1',
@@ -122,5 +140,8 @@ function buildService() {
     billingModel: 'WE_PAY',
     ourCost: new Decimal('12'),
     renewalDate: new Date('2026-06-01'),
+    connectionMode: 'PURCHASE',
+    providerAccountId: null,
+    ...overrides,
   };
 }
