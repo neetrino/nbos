@@ -87,6 +87,7 @@ const STAGE_KEYS = {
 
 const REGISTRY_TOAST_KEYS = {
   updated: 'registry.toast.updated',
+  corrected: 'registry.toast.corrected',
   unchanged: 'registry.toast.unchanged',
   not_found: 'registry.toast.not_found',
   no_expiry: 'registry.toast.no_expiry',

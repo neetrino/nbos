@@ -38,6 +38,7 @@ export type ClientServiceRegistryLookupStatus = 'OBSERVED' | 'NOT_FOUND' | 'NO_E
 
 export type ClientServiceRegistryCheckOutcome =
   | 'updated'
+  | 'corrected'
   | 'unchanged'
   | 'not_found'
   | 'no_expiry'

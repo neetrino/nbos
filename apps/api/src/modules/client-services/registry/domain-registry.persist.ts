@@ -1,6 +1,7 @@
 import type { Prisma, PrismaClient, TransactionClient } from '@nbos/database';
 import type { ActorContext } from '@nbos/shared';
 import type { AuditService } from '../../audit/audit.service';
+import { isRegistryRenewalWrite } from './domain-registry.apply';
 import type { DomainRegistryApplyDecision } from './domain-registry.types';
 
 type DbClient = Pick<PrismaClient, 'clientServiceRecord' | 'domain'> | TransactionClient;
@@ -15,22 +16,20 @@ export async function persistRegistryDecision(args: {
   actor: ActorContext;
   checkedAt: Date;
 }): Promise<{ renewalDate: Date | null }> {
-  const nextRenewalDate =
-    args.decision.outcome === 'updated' ? args.decision.nextRenewalDate : args.previousRenewalDate;
+  const writeRenewal = isRegistryRenewalWrite(args.decision.outcome);
+  const nextRenewalDate = writeRenewal ? args.decision.nextRenewalDate : args.previousRenewalDate;
 
   const data: Prisma.ClientServiceRecordUpdateInput = {
     registryLookupStatus: args.decision.persistStatus,
     registryExpiryDate: args.decision.persistExpiry,
     registryLookupSource: args.decision.persistSource,
     registryCheckedAt: args.checkedAt,
-    ...(args.decision.outcome === 'updated' && nextRenewalDate
-      ? { renewalDate: nextRenewalDate }
-      : {}),
+    ...(writeRenewal && nextRenewalDate ? { renewalDate: nextRenewalDate } : {}),
   };
 
   await args.prisma.clientServiceRecord.update({ where: { id: args.serviceId }, data });
 
-  if (args.decision.outcome === 'updated' && nextRenewalDate) {
+  if (writeRenewal && nextRenewalDate) {
     await args.prisma.domain.updateMany({
       where: { clientServiceRecordId: args.serviceId },
       data: { expiryDate: nextRenewalDate },

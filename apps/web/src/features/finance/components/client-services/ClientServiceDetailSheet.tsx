@@ -37,7 +37,11 @@ import {
   parseOptionalAmount,
   type ClientServiceFormState,
 } from '@/features/finance/utils/client-service-form-state';
-import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
+import {
+  clientServicesApi,
+  type ClientServiceRecord,
+  type ClientServiceRegistryCheckResult,
+} from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { useEntityDetailHydration } from '@/hooks/use-entity-detail-hydration';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
@@ -148,6 +152,14 @@ export function ClientServiceDetailSheet({
     void fetchService();
     onSaved();
   }, [fetchService, onSaved]);
+
+  const handleRegistryChecked = useCallback(
+    (result: ClientServiceRegistryCheckResult) => {
+      if (result.renewalUpdated) dirtyRef.current = false;
+      refreshAfterLinkCreated();
+    },
+    [refreshAfterLinkCreated],
+  );
 
   const handleInvoiceCreated = useCallback(() => {
     setActiveTab('invoices');
@@ -397,7 +409,7 @@ export function ClientServiceDetailSheet({
                     onCreateInvoice={() => setInvoiceOpen(true)}
                     onCreateExpense={() => setExpenseOpen(true)}
                     onCreateTask={() => setQuickCreateTaskOpen(true)}
-                    onRegistryChecked={refreshAfterLinkCreated}
+                    onRegistryChecked={handleRegistryChecked}
                   />
                 </DetailSheetTabPanel>
               ) : null}

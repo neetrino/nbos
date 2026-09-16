@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  isRegistryExpiryEarlier,
   isRegistryExpiryLater,
   isWhoisNotFound,
   parseRdapExpiry,
@@ -46,6 +47,17 @@ describe('isRegistryExpiryLater', () => {
     ).toBe(true);
     expect(
       isRegistryExpiryLater(new Date('2026-02-03T23:00:00Z'), new Date('2026-02-03T00:00:00Z')),
+    ).toBe(false);
+  });
+});
+
+describe('isRegistryExpiryEarlier', () => {
+  it('detects an earlier registry calendar day', () => {
+    expect(
+      isRegistryExpiryEarlier(new Date('2026-07-10T00:00:00Z'), new Date('2027-07-10T00:00:00Z')),
+    ).toBe(true);
+    expect(
+      isRegistryExpiryEarlier(new Date('2026-07-10T23:00:00Z'), new Date('2026-07-10T00:00:00Z')),
     ).toBe(false);
   });
 });

@@ -219,6 +219,7 @@
     "lastCheckedSource": "Last checked {date} · {source}",
     "toast": {
       "updated": "Registry expiry found. Renewal date updated.",
+      "corrected": "Registry expiry is earlier. Renewal date corrected.",
       "unchanged": "Registry date matches the current renewal date.",
       "not_found": "Domain is not in the registry (dead / not found).",
       "no_expiry": "Domain is registered, but the registry hid the expiry.",

@@ -16,6 +16,8 @@ const INACTIVE_EXPENSE_STATUSES = ['PAID', 'CANCELLED'] as const;
 
 export interface ClientServicesRenewalInvoiceParams {
   asOf?: string;
+  /** Limit the pass to one card (manual Check correction). */
+  serviceId?: string;
 }
 
 export interface ClientServicesRenewalInvoiceResult {
@@ -63,9 +65,11 @@ function parseAsOfOptional(asOf?: string): Date {
 /** Prisma filter for WE_PAY services approaching `renewal_date` (EXP-04 / Finance canon). */
 export function buildRenewalInvoiceEligibleWhere(
   now: Date = new Date(),
+  serviceId?: string,
 ): Prisma.ClientServiceRecordWhereInput {
   const invoiceWindowEnd = addDays(now, CLIENT_SERVICE_RENEWAL_INVOICE_WINDOW_DAYS);
   return {
+    ...(serviceId ? { id: serviceId } : {}),
     billingModel: 'WE_PAY',
     status: { not: 'CANCELLED' },
     renewalDate: { not: null, lte: invoiceWindowEnd },
@@ -112,7 +116,7 @@ export async function runClientServicesRenewalInvoices(
   registry?: DomainRegistryInvoiceGate,
 ): Promise<ClientServicesRenewalInvoiceResult> {
   const asOf = parseAsOfOptional(params.asOf);
-  const where = buildRenewalInvoiceEligibleWhere(asOf);
+  const where = buildRenewalInvoiceEligibleWhere(asOf, params.serviceId);
 
   const services = await prisma.clientServiceRecord.findMany({
     where,

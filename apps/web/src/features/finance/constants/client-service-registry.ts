@@ -23,6 +23,9 @@ export function clientServiceRegistryToast(outcome: ClientServiceRegistryCheckOu
   if (outcome === 'updated') {
     return { kind: 'success', message: 'Registry expiry found. Renewal date updated.' };
   }
+  if (outcome === 'corrected') {
+    return { kind: 'success', message: 'Registry expiry is earlier. Renewal date corrected.' };
+  }
   if (outcome === 'unchanged') {
     return { kind: 'success', message: 'Registry date matches the current renewal date.' };
   }
