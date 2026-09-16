@@ -14,6 +14,18 @@ import { createPrismaClient } from '../src/client';
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 
+function resolveDatabaseUrl(): { url: string; target: 'local' | 'prod' } {
+  const useProd = process.argv.includes('--prod');
+  if (!useProd) {
+    const url = process.env.DATABASE_URL;
+    if (!url) throw new Error('DATABASE_URL is required');
+    return { url, target: 'local' };
+  }
+  const url = process.env.DIRECT_URL_PROD;
+  if (!url) throw new Error('DIRECT_URL_PROD is required in .env.local');
+  return { url, target: 'prod' };
+}
+
 type ItemPatch = { title: string; instruction?: string };
 
 type TemplatePatch = {
@@ -277,14 +289,44 @@ function patchItemsJson(
 }
 
 async function main(): Promise<void> {
-  const prisma = createPrismaClient({ skipBudgetAssert: true, role: 'api' });
+  const { url, target } = resolveDatabaseUrl();
+  const prisma = createPrismaClient({
+    skipBudgetAssert: true,
+    role: 'api',
+    databaseUrl: url,
+    skipUrlRewrite: target === 'prod',
+  });
+  console.log(`target=${target}`);
   try {
+    const inspectOnly = process.argv.includes('--inspect');
     const templates = await prisma.checklistTemplate.findMany({
       include: {
         versions: true,
         instances: { select: { id: true, snapshotItems: true } },
       },
     });
+
+    if (inspectOnly) {
+      for (const template of templates) {
+        const titles = Array.isArray(template.versions[0]?.items)
+          ? (template.versions[0].items as Array<{ title?: string }>).map((i) => i.title ?? null)
+          : [];
+        console.log(
+          JSON.stringify(
+            {
+              name: template.name,
+              instanceCount: template.instances.length,
+              hasPatch: Boolean(PATCHES[template.name]),
+              itemTitles: titles,
+            },
+            null,
+            2,
+          ),
+        );
+      }
+      console.log(`TOTAL=${templates.length}`);
+      return;
+    }
 
     let templatesUpdated = 0;
     let versionsUpdated = 0;
