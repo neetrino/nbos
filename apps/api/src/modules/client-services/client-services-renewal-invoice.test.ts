@@ -175,6 +175,27 @@ describe('runClientServicesRenewalInvoices', () => {
     expect(dead.skippedRegistry).toBe(1);
   });
 
+  it('does not skip DOMAIN invoice when manual Check only corrected the date', async () => {
+    prisma.clientServiceRecord.findMany.mockResolvedValue([
+      buildEligibleService({ id: 'dom-1', type: 'DOMAIN', invoices: [] }),
+    ]);
+    const registry = { ensureFresh: vi.fn().mockResolvedValue({ outcome: 'corrected' }) };
+
+    const result = await runClientServicesRenewalInvoices(
+      prisma as never,
+      flows as never as ClientServiceFlowsService,
+      { asOf: AS_OF.toISOString(), serviceId: 'dom-1' },
+      registry,
+    );
+    expect(prisma.clientServiceRecord.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ id: 'dom-1' }),
+      }),
+    );
+    expect(result.skippedRegistry).toBe(0);
+    expect(result.created).toEqual([{ serviceId: 'dom-1', invoiceId: 'inv-new' }]);
+  });
+
   it('does not skip DOMAIN invoice when registry lookup failed', async () => {
     prisma.clientServiceRecord.findMany.mockResolvedValue([
       buildEligibleService({ id: 'dom-1', type: 'DOMAIN', invoices: [] }),

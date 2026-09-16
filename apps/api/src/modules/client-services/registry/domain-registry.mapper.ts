@@ -1,3 +1,4 @@
+import { isRegistryRenewalWrite } from './domain-registry.apply';
 import type { DomainRegistryCheckResult } from './domain-registry.types';
 import type { DomainRegistryApplyDecision } from './domain-registry.types';
 import type { RegistryLookupRaw } from './domain-registry.types';
@@ -14,7 +15,7 @@ export function toRegistryCheckResult(input: {
     serviceId: input.serviceId,
     domainName: input.domainName,
     outcome: input.decision.outcome,
-    renewalUpdated: input.decision.outcome === 'updated',
+    renewalUpdated: isRegistryRenewalWrite(input.decision.outcome),
     registryLookupStatus: input.decision.persistStatus,
     registryExpiryDate:
       (input.decision.persistExpiry ?? input.lookup.expiryDate)?.toISOString() ?? null,

@@ -41,6 +41,10 @@ export function isRegistryExpiryLater(registryExpiry: Date, storedRenewal: Date)
   return utcCalendarDayMs(registryExpiry) > utcCalendarDayMs(storedRenewal);
 }
 
+export function isRegistryExpiryEarlier(registryExpiry: Date, storedRenewal: Date): boolean {
+  return utcCalendarDayMs(registryExpiry) < utcCalendarDayMs(storedRenewal);
+}
+
 export interface RdapEventLike {
   eventAction?: string;
   eventDate?: string;

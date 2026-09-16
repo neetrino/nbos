@@ -1,8 +1,13 @@
-import { isRegistryExpiryLater } from './expiry-parse';
+import { isRegistryExpiryEarlier, isRegistryExpiryLater } from './expiry-parse';
 import type {
   DomainRegistryApplyDecision,
   DomainRegistryApplyInput,
+  DomainRegistryCheckOutcome,
 } from './domain-registry.types';
+
+export function isRegistryRenewalWrite(outcome: DomainRegistryCheckOutcome): boolean {
+  return outcome === 'updated' || outcome === 'corrected';
+}
 
 export function decideRegistryApply(input: DomainRegistryApplyInput): DomainRegistryApplyDecision {
   const { storedRenewalDate, lookup } = input;
@@ -16,13 +21,10 @@ export function decideRegistryApply(input: DomainRegistryApplyInput): DomainRegi
     return buildDecision('no_expiry', 'NO_EXPIRY', storedRenewalDate, null, lookup.source);
   }
   if (!storedRenewalDate || isRegistryExpiryLater(lookup.expiryDate, storedRenewalDate)) {
-    return {
-      outcome: 'updated',
-      nextRenewalDate: lookup.expiryDate,
-      persistStatus: 'OBSERVED',
-      persistExpiry: lookup.expiryDate,
-      persistSource: lookup.source,
-    };
+    return observedWrite('updated', lookup.expiryDate, lookup.source);
+  }
+  if (input.allowEarlier && isRegistryExpiryEarlier(lookup.expiryDate, storedRenewalDate)) {
+    return observedWrite('corrected', lookup.expiryDate, lookup.source);
   }
   return buildDecision(
     'unchanged',
@@ -31,6 +33,20 @@ export function decideRegistryApply(input: DomainRegistryApplyInput): DomainRegi
     lookup.expiryDate,
     lookup.source,
   );
+}
+
+function observedWrite(
+  outcome: 'updated' | 'corrected',
+  expiryDate: Date,
+  persistSource: DomainRegistryApplyDecision['persistSource'],
+): DomainRegistryApplyDecision {
+  return {
+    outcome,
+    nextRenewalDate: expiryDate,
+    persistStatus: 'OBSERVED',
+    persistExpiry: expiryDate,
+    persistSource,
+  };
 }
 
 function buildDecision(

@@ -15,6 +15,7 @@ import { actorContextFromUserId } from '@nbos/shared';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { ClientServiceFlowsService } from './client-service-flows.service';
 import { ClientServicesService } from './client-services.service';
+import { ClientServicesRenewalInvoiceService } from './client-services-renewal-invoice.service';
 import { DomainRegistryService } from './registry/domain-registry.service';
 import type {
   CreateClientServiceExpenseBody,
@@ -35,6 +36,7 @@ export class ClientServicesController {
     private readonly clientServicesService: ClientServicesService,
     private readonly clientServiceFlowsService: ClientServiceFlowsService,
     private readonly domainRegistryService: DomainRegistryService,
+    private readonly renewalInvoiceService: ClientServicesRenewalInvoiceService,
   ) {}
 
   @Get()
@@ -164,9 +166,15 @@ export class ClientServicesController {
   @Post(':id/actions/check-registry')
   @ApiOperation({ summary: 'Look up domain expiry via WHOIS/RDAP and refresh renewal date' })
   async checkRegistry(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    return this.domainRegistryService.checkService(id, actorContextFromUserId(user.id), {
-      force: true,
-    });
+    const result = await this.domainRegistryService.checkService(
+      id,
+      actorContextFromUserId(user.id),
+      { force: true, allowEarlier: true },
+    );
+    if (result.outcome === 'corrected') {
+      await this.renewalInvoiceService.runDueRenewalInvoices({ serviceId: id });
+    }
+    return result;
   }
 
   @Post()

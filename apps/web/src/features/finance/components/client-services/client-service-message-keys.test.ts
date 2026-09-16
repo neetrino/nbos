@@ -48,6 +48,7 @@ describe('client-service message catalogs', () => {
     ]);
     expect(Object.keys(CLIENT_SERVICE_REGISTRY_TOAST_MESSAGE_KEYS)).toEqual([
       'updated',
+      'corrected',
       'unchanged',
       'not_found',
       'no_expiry',
