@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ErrorState, LoadingState, PageHero } from '@/components/shared';
+import {
+  DataView,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+  PageHero,
+} from '@/components/shared';
 import { KpiPolicyEditorCard } from '@/features/my-company/kpi-policies/kpi-policy-editor-card';
 import {
   DEFAULT_GATE_BAND_DRAFTS,
@@ -108,6 +114,54 @@ export default function KpiPoliciesPage() {
     }
   };
 
+  const hasData = items.length > 0;
+  const content = (
+    <>
+      <div className="border-border bg-card rounded-2xl border p-4">
+        <h2 className="text-foreground mb-3 text-sm font-semibold">New policy</h2>
+        <label className="mb-3 block space-y-1 text-sm">
+          <span className="text-muted-foreground">Name</span>
+          <Input
+            value={newName}
+            disabled={creating}
+            placeholder="e.g. Seller KPI gate Q2"
+            onChange={(e) => setNewName(e.target.value)}
+          />
+        </label>
+        <div className="mb-4 max-w-xs">
+          <KpiPolicyCapField
+            value={newCapMultiplier}
+            disabled={creating}
+            onChange={setNewCapMultiplier}
+          />
+        </div>
+        <div className="mb-4 max-w-xs">
+          <KpiPolicyTargetField
+            value={newTargetAmount}
+            disabled={creating}
+            onChange={setNewTargetAmount}
+          />
+        </div>
+        <KpiGateBandEditor bands={newBands} onChange={setNewBands} disabled={creating} />
+        <div className="mt-4 flex justify-end">
+          <Button type="button" size="sm" disabled={creating} onClick={() => void handleCreate()}>
+            {creating ? 'Creating…' : 'Create policy'}
+          </Button>
+        </div>
+      </div>
+      <div className="space-y-4">
+        {items.map((policy) => (
+          <KpiPolicyEditorCard
+            key={policy.id}
+            policy={policy}
+            saving={savingId === policy.id}
+            onSave={handleSave}
+          />
+        ))}
+      </div>
+    </>
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <PageHero
@@ -129,62 +183,19 @@ export default function KpiPoliciesPage() {
         each compensation profile; payroll attach applies both for SALES releases and carry-over.
       </p>
 
-      {loading ? (
-        <LoadingState variant="cards" count={2} />
-      ) : error && items.length === 0 ? (
-        <ErrorState description={error} onRetry={() => void load()} />
-      ) : (
-        <>
-          {error ? <p className="text-destructive text-sm">{error}</p> : null}
-          <div className="border-border bg-card rounded-2xl border p-4">
-            <h2 className="text-foreground mb-3 text-sm font-semibold">New policy</h2>
-            <label className="mb-3 block space-y-1 text-sm">
-              <span className="text-muted-foreground">Name</span>
-              <Input
-                value={newName}
-                disabled={creating}
-                placeholder="e.g. Seller KPI gate Q2"
-                onChange={(e) => setNewName(e.target.value)}
-              />
-            </label>
-            <div className="mb-4 max-w-xs">
-              <KpiPolicyCapField
-                value={newCapMultiplier}
-                disabled={creating}
-                onChange={setNewCapMultiplier}
-              />
-            </div>
-            <div className="mb-4 max-w-xs">
-              <KpiPolicyTargetField
-                value={newTargetAmount}
-                disabled={creating}
-                onChange={setNewTargetAmount}
-              />
-            </div>
-            <KpiGateBandEditor bands={newBands} onChange={setNewBands} disabled={creating} />
-            <div className="mt-4 flex justify-end">
-              <Button
-                type="button"
-                size="sm"
-                disabled={creating}
-                onClick={() => void handleCreate()}
-              >
-                {creating ? 'Creating…' : 'Create policy'}
-              </Button>
-            </div>
-          </div>
-          <div className="space-y-4">
-            {items.map((policy) => (
-              <KpiPolicyEditorCard
-                key={policy.id}
-                policy={policy}
-                saving={savingId === policy.id}
-                onSave={handleSave}
-              />
-            ))}
-          </div>
-        </>
-      )}
+      {error && hasData ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={hasData}
+        loadingFallback={<LoadingState variant="cards" count={2} />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+        emptyFallback={content}
+      >
+        {content}
+      </DataView>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   PageHero,
   ViewModeSwitch,
   IntegratedSearchFilters,
+  DataView,
   EmptyState,
   ErrorState,
   LoadingState,
@@ -166,26 +167,31 @@ export function TasksSurface({
         <TasksWorkflowScopeBanner scope={boardScope} />
       )}
 
-      {loading ? (
-        <LoadingState />
-      ) : error ? (
-        <ErrorState description={error} onRetry={fetchTasks} />
-      ) : creatorReady && !creatorId ? (
-        <EmptyState
-          icon={CheckSquare}
-          title={t('empty.profileTitle')}
-          description={t('empty.profileDescription')}
-          action={<OpenMyAccountButton>{t('empty.openMyAccount')}</OpenMyAccountButton>}
-        />
-      ) : displayTasks.length === 0 ? (
-        <EmptyState
-          icon={CheckSquare}
-          title={isTrashView ? t('empty.trashEmpty') : t('empty.noTasks')}
-          description={
-            isTrashView ? t('empty.trashEmptyDescription') : t('empty.noTasksDescription')
-          }
-        />
-      ) : (
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={displayTasks.length > 0}
+        loadingFallback={<LoadingState />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={fetchTasks} />}
+        emptyFallback={
+          creatorReady && !creatorId ? (
+            <EmptyState
+              icon={CheckSquare}
+              title={t('empty.profileTitle')}
+              description={t('empty.profileDescription')}
+              action={<OpenMyAccountButton>{t('empty.openMyAccount')}</OpenMyAccountButton>}
+            />
+          ) : (
+            <EmptyState
+              icon={CheckSquare}
+              title={isTrashView ? t('empty.trashEmpty') : t('empty.noTasks')}
+              description={
+                isTrashView ? t('empty.trashEmptyDescription') : t('empty.noTasksDescription')
+              }
+            />
+          )
+        }
+      >
         <div className="flex min-h-0 flex-1 flex-col gap-1">
           {renderBoard(displayBoardView)}
           {taskMeta ? (
@@ -198,7 +204,7 @@ export function TasksSurface({
             />
           ) : null}
         </div>
-      )}
+      </DataView>
 
       <TaskSheet
         taskId={selectedTaskId}

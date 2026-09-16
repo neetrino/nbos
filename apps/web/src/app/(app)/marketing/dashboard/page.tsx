@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AreaChart, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
+import {
+  DataView,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+  useModuleHeroSlots,
+} from '@/components/shared';
 import { marketingApi, type MarketingDashboardSummary } from '@/lib/api/marketing';
 import { MarketingDashboardHeroSearch } from '@/features/marketing/components/MarketingDashboardHeroSearch';
 import {
@@ -75,15 +81,26 @@ export default function MarketingDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {loading ? (
-        <LoadingState variant="cards" count={3} />
-      ) : error ? (
-        <ErrorState description={error} onRetry={() => void fetchDashboard()} />
-      ) : summary ? (
-        <MarketingDashboardContent summary={summary} search={search} t={t} />
-      ) : (
-        <ErrorState description={t('dashboard.noSummary')} onRetry={() => void fetchDashboard()} />
-      )}
+      {error && summary ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={summary !== null}
+        loadingFallback={<LoadingState variant="cards" count={3} />}
+        errorFallback={
+          <ErrorState description={error ?? ''} onRetry={() => void fetchDashboard()} />
+        }
+        emptyFallback={
+          <ErrorState
+            description={t('dashboard.noSummary')}
+            onRetry={() => void fetchDashboard()}
+          />
+        }
+      >
+        {summary ? <MarketingDashboardContent summary={summary} search={search} t={t} /> : null}
+      </DataView>
     </div>
   );
 }

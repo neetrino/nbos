@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ExternalLink, Plus, Receipt } from 'lucide-react';
 import {
+  DataView,
   DetailSheetSection,
   EntityItemList,
   ErrorState,
@@ -94,29 +95,42 @@ export function ExpensePlanCardsTab({
       {stopped ? (
         <p className="text-muted-foreground mb-4 text-sm">{t('cardsTab.stopped')}</p>
       ) : null}
-      {loading ? <LoadingState count={3} /> : null}
-      {error ? <ErrorState description={t('cardsTab.loadError')} onRetry={reload} /> : null}
-      {!loading && !error ? (
-        <EntityItemList
-          items={itemSummaries}
-          variant={displayVariant}
-          onOpen={onOpenItem}
-          emptyIcon={Receipt}
-          emptyTitle={t('cardsTab.emptyTitle')}
-          emptyDescription={t('cardsTab.empty')}
-        />
-      ) : null}
-
-      {items.length > 0 ? (
-        <Link
-          href={planExpensesDrilldownHref(plan.id)}
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'mt-4 gap-1.5')}
-        >
-          <Receipt size={14} aria-hidden />
-          {t('cardsTab.openBoard')}
-          <ExternalLink size={12} className="opacity-70" aria-hidden />
-        </Link>
-      ) : null}
+      <DataView
+        loading={loading}
+        error={error ? t('cardsTab.loadError') : null}
+        hasData={items.length > 0}
+        loadingFallback={<LoadingState count={3} />}
+        errorFallback={<ErrorState description={t('cardsTab.loadError')} onRetry={reload} />}
+        emptyFallback={
+          <EntityItemList
+            items={itemSummaries}
+            variant={displayVariant}
+            onOpen={onOpenItem}
+            emptyIcon={Receipt}
+            emptyTitle={t('cardsTab.emptyTitle')}
+            emptyDescription={t('cardsTab.empty')}
+          />
+        }
+      >
+        <>
+          <EntityItemList
+            items={itemSummaries}
+            variant={displayVariant}
+            onOpen={onOpenItem}
+            emptyIcon={Receipt}
+            emptyTitle={t('cardsTab.emptyTitle')}
+            emptyDescription={t('cardsTab.empty')}
+          />
+          <Link
+            href={planExpensesDrilldownHref(plan.id)}
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'mt-4 gap-1.5')}
+          >
+            <Receipt size={14} aria-hidden />
+            {t('cardsTab.openBoard')}
+            <ExternalLink size={12} className="opacity-70" aria-hidden />
+          </Link>
+        </>
+      </DataView>
     </DetailSheetSection>
   );
 }

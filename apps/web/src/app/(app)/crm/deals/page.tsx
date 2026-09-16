@@ -11,6 +11,7 @@ import {
   IntegratedSearchFilters,
   KanbanBoard,
   KanbanColumnMoneyTotal,
+  DataView,
   EmptyState,
   QueryLoadError,
   LoadingState,
@@ -715,69 +716,76 @@ function DealsPipelinePageContent() {
           onBackToActive={() => setScope('active')}
         />
       ) : null}
-      {loading ? (
-        <LoadingState variant="cards" count={3} />
-      ) : error ? (
-        <QueryLoadError description={error} onRetry={fetchDeals} />
-      ) : deals.length === 0 ? (
-        <EmptyState
-          icon={Handshake}
-          title={isTrashView ? t('deals.emptyTrashTitle') : t('deals.emptyTitle')}
-          description={isTrashView ? t('deals.emptyTrashDescription') : t('deals.emptyDescription')}
-          action={
-            isTrashView ? undefined : (
-              <Button onClick={() => setShowCreate(true)}>
-                <Plus size={16} />
-                {t('deals.createFirstDeal')}
-              </Button>
-            )
-          }
-        />
-      ) : !isTrashView && effectiveView === 'kanban' ? (
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
-          <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="deal" />
-          <KanbanBoard
-            columns={kanbanColumns}
-            renderCard={(deal) => (
-              <DealCard
-                deal={deal}
-                onClick={handleCardClick}
-                onStatusChange={requestStatusChange}
-                onCreateTask={handleCreateDealTask}
-              />
-            )}
-            getItemId={(deal) => deal.id}
-            onMove={handleMove}
-            onReorderWithinColumn={handleReorder}
-            onColumnLoadMore={loadMoreColumn}
-            columnWidth={270}
-            emptyMessage={t('deals.emptyColumn')}
-            terminalDropZones={
-              shouldShowTerminalDropBar(boardScope) ? dealTerminalZones : undefined
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={deals.length > 0}
+        loadingFallback={<LoadingState variant="cards" count={3} />}
+        errorFallback={<QueryLoadError description={error ?? ''} onRetry={fetchDeals} />}
+        emptyFallback={
+          <EmptyState
+            icon={Handshake}
+            title={isTrashView ? t('deals.emptyTrashTitle') : t('deals.emptyTitle')}
+            description={
+              isTrashView ? t('deals.emptyTrashDescription') : t('deals.emptyDescription')
             }
-            columnQuickCreate={dealKanbanQuickCreate}
-            renderColumnHeader={(column) => (
-              <KanbanColumnMoneyTotal column={column} getAmount={(deal) => deal.amount} />
-            )}
+            action={
+              isTrashView ? undefined : (
+                <Button onClick={() => setShowCreate(true)}>
+                  <Plus size={16} />
+                  {t('deals.createFirstDeal')}
+                </Button>
+              )
+            }
           />
-        </div>
-      ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-2">
-          <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="deal" />
-          <DealsListTable
-            deals={deals}
-            boardScope={boardScope as BoardLifecycleScope}
-            onDealClick={handleCardClick}
-          />
-          {!isTrashView && hasMoreAny ? (
-            <InfiniteScrollSentinel
-              disabled={boardLoading}
-              onReach={loadMoreAll}
-              rootMargin="240px"
+        }
+      >
+        {!isTrashView && effectiveView === 'kanban' ? (
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
+            <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="deal" />
+            <KanbanBoard
+              columns={kanbanColumns}
+              renderCard={(deal) => (
+                <DealCard
+                  deal={deal}
+                  onClick={handleCardClick}
+                  onStatusChange={requestStatusChange}
+                  onCreateTask={handleCreateDealTask}
+                />
+              )}
+              getItemId={(deal) => deal.id}
+              onMove={handleMove}
+              onReorderWithinColumn={handleReorder}
+              onColumnLoadMore={loadMoreColumn}
+              columnWidth={270}
+              emptyMessage={t('deals.emptyColumn')}
+              terminalDropZones={
+                shouldShowTerminalDropBar(boardScope) ? dealTerminalZones : undefined
+              }
+              columnQuickCreate={dealKanbanQuickCreate}
+              renderColumnHeader={(column) => (
+                <KanbanColumnMoneyTotal column={column} getAmount={(deal) => deal.amount} />
+              )}
             />
-          ) : null}
-        </div>
-      )}
+          </div>
+        ) : (
+          <div className="flex min-h-0 flex-1 flex-col gap-2">
+            <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="deal" />
+            <DealsListTable
+              deals={deals}
+              boardScope={boardScope as BoardLifecycleScope}
+              onDealClick={handleCardClick}
+            />
+            {!isTrashView && hasMoreAny ? (
+              <InfiniteScrollSentinel
+                disabled={boardLoading}
+                onReach={loadMoreAll}
+                rootMargin="240px"
+              />
+            ) : null}
+          </div>
+        )}
+      </DataView>
 
       <CreateDealDialog
         open={showCreate}

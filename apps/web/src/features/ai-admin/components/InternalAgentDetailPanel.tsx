@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ErrorState, LoadingState } from '@/components/shared';
+import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { aiAdminApi, type AiModelPolicyView, type InternalAiAgentView } from '@/lib/api/ai-admin';
 import { AI_ADMIN_BASE_PATH } from '../constants';
@@ -56,53 +56,72 @@ export function InternalAgentDetailPanel({ agentId }: { agentId: string }) {
     void load();
   }, [load]);
 
-  if (loading) return <LoadingState />;
-  if (error || !agent) {
-    return <ErrorState description={error ?? 'Not found'} onRetry={() => void load()} />;
-  }
-
-  const archived = agent.status === 'ARCHIVED';
-  return (
-    <div className={AI_ADMIN_PAGE_STACK_CLASS}>
-      <div className={AI_ADMIN_DETAIL_PAIR_CLASS}>
-        <AiAdminDetailHeader
-          backHref={`${AI_ADMIN_BASE_PATH}/internal-agents`}
-          backLabel="Internal Agents"
-          icon={BrainCircuit}
-          name={agent.name}
-          purpose={agent.description ?? ''}
-          statusLabel={agent.status}
-          statusVariant={agentStateVariant(agent.status)}
-          readOnly
-          actions={
-            archived ? (
-              <p className="text-muted-foreground text-xs">Archived agents stay for Audit names.</p>
-            ) : (
-              <InternalAgentLifecycleButtons status={agent.status} onConfirm={setConfirm} />
-            )
-          }
-        />
-        <InternalAgentPolicySection
-          agent={agent}
-          policies={policies}
-          archived={archived}
-          onReload={load}
+  const loadErrorFallback = (
+    <ErrorState description={error ?? 'Not found'} onRetry={() => void load()} />
+  );
+  const archived = agent?.status === 'ARCHIVED';
+  const content =
+    agent === null ? null : (
+      <div className={AI_ADMIN_PAGE_STACK_CLASS}>
+        <div className={AI_ADMIN_DETAIL_PAIR_CLASS}>
+          <AiAdminDetailHeader
+            backHref={`${AI_ADMIN_BASE_PATH}/internal-agents`}
+            backLabel="Internal Agents"
+            icon={BrainCircuit}
+            name={agent.name}
+            purpose={agent.description ?? ''}
+            statusLabel={agent.status}
+            statusVariant={agentStateVariant(agent.status)}
+            readOnly
+            actions={
+              archived ? (
+                <p className="text-muted-foreground text-xs">
+                  Archived agents stay for Audit names.
+                </p>
+              ) : (
+                <InternalAgentLifecycleButtons status={agent.status} onConfirm={setConfirm} />
+              )
+            }
+          />
+          <InternalAgentPolicySection
+            agent={agent}
+            policies={policies}
+            archived={archived}
+            onReload={load}
+          />
+        </div>
+        <InternalAgentAccessSection agentId={agent.id} canGrant={!archived} />
+        <AiAdminConfirmDialog
+          open={confirm !== null}
+          title={lifecycleTitle(confirm)}
+          description={lifecycleDescription(confirm)}
+          confirmLabel="Confirm"
+          destructive={confirm === 'archive' || confirm === 'disable'}
+          isSubmitting={busy}
+          onOpenChange={(open) => {
+            if (!open) setConfirm(null);
+          }}
+          onConfirm={() => void runInternalLifecycle(confirm, agent.id, setBusy, setConfirm, load)}
         />
       </div>
-      <InternalAgentAccessSection agentId={agent.id} canGrant={!archived} />
-      <AiAdminConfirmDialog
-        open={confirm !== null}
-        title={lifecycleTitle(confirm)}
-        description={lifecycleDescription(confirm)}
-        confirmLabel="Confirm"
-        destructive={confirm === 'archive' || confirm === 'disable'}
-        isSubmitting={busy}
-        onOpenChange={(open) => {
-          if (!open) setConfirm(null);
-        }}
-        onConfirm={() => void runInternalLifecycle(confirm, agent.id, setBusy, setConfirm, load)}
-      />
-    </div>
+    );
+
+  return (
+    <>
+      {error && agent !== null ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={agent !== null}
+        loadingFallback={<LoadingState />}
+        errorFallback={loadErrorFallback}
+        emptyFallback={loadErrorFallback}
+      >
+        {content}
+      </DataView>
+    </>
   );
 }
 

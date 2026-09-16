@@ -16,8 +16,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  DataView,
   EmptyState,
   ErrorState,
+  ListMutationErrorBanner,
   LoadingState,
   PageHero,
   useDebouncedValue,
@@ -132,7 +134,7 @@ export default function DocumentSectionPage() {
         </p>
       </div>
 
-      {!loading && !error && section && canManageSections ? (
+      {section && canManageSections ? (
         <Card className="max-w-xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Section visibility</CardTitle>
@@ -186,19 +188,26 @@ export default function DocumentSectionPage() {
         />
       </div>
 
-      {loading ? <LoadingState variant="list" /> : null}
-      {error ? <ErrorState description={error} onRetry={load} /> : null}
-
-      {!loading && !error && sectionId && !section ? (
-        <ErrorState
-          title="Section not found"
-          description="This section id is not in the library. Return to Documents home."
-        />
+      {error && section ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
       ) : null}
-
-      {!loading && !error && section ? (
-        <>
-          {rows.length === 0 ? (
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={section != null}
+        loadingFallback={<LoadingState variant="list" />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={load} />}
+        emptyFallback={
+          sectionId && !section ? (
+            <ErrorState
+              title="Section not found"
+              description="This section id is not in the library. Return to Documents home."
+            />
+          ) : null
+        }
+      >
+        {section ? (
+          rows.length === 0 ? (
             <EmptyState
               icon={FileText}
               title="No documents in this section"
@@ -206,9 +215,9 @@ export default function DocumentSectionPage() {
             />
           ) : (
             <DocumentsTable rows={rows} />
-          )}
-        </>
-      ) : null}
+          )
+        ) : null}
+      </DataView>
 
       <CreateDocumentDialog
         open={createOpen}

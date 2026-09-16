@@ -1,6 +1,7 @@
 import { Plus, ShoppingCart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
+  DataView,
   EmptyState,
   ListMutationErrorBanner,
   LoadingState,
@@ -62,38 +63,44 @@ export function OrdersPageContent({
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       {gap ? <ReconciliationGapBanner gap={gap} onClear={onClearReconciliationGap} /> : null}
       {partnerIdFromUrl ? <PartnerOrdersDrilldownBanner onClear={onClearPartnerDrilldown} /> : null}
-      {loading ? (
-        <LoadingState />
-      ) : error ? (
-        <QueryLoadError description={error} onRetry={onRetry} />
-      ) : (
-        <>
-          {mutationError ? (
-            <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
-          ) : null}
-          {orders.length === 0 ? (
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={orders.length > 0}
+        loadingFallback={<LoadingState />}
+        errorFallback={<QueryLoadError description={error ?? ''} onRetry={onRetry} />}
+        emptyFallback={
+          <>
+            {mutationError ? (
+              <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
+            ) : null}
             <OrdersEmptyState
               partnerIdFromUrl={partnerIdFromUrl}
               gap={gap}
               onClearPartnerDrilldown={onClearPartnerDrilldown}
               onClearReconciliationGap={onClearReconciliationGap}
             />
-          ) : (
-            <OrdersListOrBoard
-              view={view}
-              boardScope={boardScope}
-              orders={orders}
-              columnMeta={gap ? undefined : columnMeta}
-              onColumnLoadMore={gap ? undefined : onColumnLoadMore}
-              hasMoreAny={!gap && hasMoreAny}
-              onLoadMoreAll={gap ? undefined : onLoadMoreAll}
-              loading={loading}
-              onOrderClick={onOrderClick}
-              onCreateInvoice={onCreateInvoice}
-            />
-          )}
+          </>
+        }
+      >
+        <>
+          {mutationError ? (
+            <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
+          ) : null}
+          <OrdersListOrBoard
+            view={view}
+            boardScope={boardScope}
+            orders={orders}
+            columnMeta={gap ? undefined : columnMeta}
+            onColumnLoadMore={gap ? undefined : onColumnLoadMore}
+            hasMoreAny={!gap && hasMoreAny}
+            onLoadMoreAll={gap ? undefined : onLoadMoreAll}
+            loading={loading}
+            onOrderClick={onOrderClick}
+            onCreateInvoice={onCreateInvoice}
+          />
         </>
-      )}
+      </DataView>
     </div>
   );
 }

@@ -12,7 +12,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ErrorState, LoadingState, PageHero } from '@/components/shared';
+import {
+  DataView,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+  PageHero,
+} from '@/components/shared';
 import { BonusPolicyEditorCard } from '@/features/my-company/bonus-policies/bonus-policy-editor-card';
 import { BONUS_POLICY_TEMPLATE_OPTIONS } from '@/features/my-company/bonus-policies/bonus-policy-template-options';
 import { BONUS_POLICY_TEMPLATE_MANUAL_ONLY } from '@/features/my-company/compensation/bonus-policy-template-codes';
@@ -96,6 +102,82 @@ export default function BonusPoliciesPage() {
   };
 
   const selectedTemplate = BONUS_POLICY_TEMPLATE_OPTIONS.find((o) => o.value === newTemplate);
+  const hasData = items.length > 0;
+  const content = (
+    <>
+      <div className="border-border bg-card rounded-2xl border p-4">
+        <h2 className="text-foreground mb-3 text-sm font-semibold">New policy</h2>
+        <div className="grid gap-3 md:grid-cols-2">
+          <label className="space-y-1 text-sm">
+            <span className="text-muted-foreground">Name</span>
+            <Input
+              value={newName}
+              disabled={creating}
+              placeholder="e.g. Delivery manual Q2"
+              onChange={(e) => setNewName(e.target.value)}
+            />
+          </label>
+          <label className="space-y-1 text-sm">
+            <span className="text-muted-foreground">Template</span>
+            <Select
+              value={newTemplate}
+              disabled={creating}
+              onValueChange={(v) => {
+                if (v) setNewTemplate(v);
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {BONUS_POLICY_TEMPLATE_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </label>
+          <label className="space-y-1 text-sm md:col-span-2">
+            <span className="text-muted-foreground">Scope (optional)</span>
+            <Input
+              value={newScope}
+              disabled={creating}
+              onChange={(e) => setNewScope(e.target.value)}
+            />
+          </label>
+          <label className="space-y-1 text-sm md:col-span-2">
+            <span className="text-muted-foreground">Notes (optional)</span>
+            <Textarea
+              value={newNotes}
+              disabled={creating}
+              rows={2}
+              className="resize-y"
+              onChange={(e) => setNewNotes(e.target.value)}
+            />
+          </label>
+        </div>
+        {selectedTemplate ? (
+          <p className="text-muted-foreground mt-2 text-xs">{selectedTemplate.hint}</p>
+        ) : null}
+        <div className="mt-4 flex justify-end">
+          <Button type="button" size="sm" disabled={creating} onClick={() => void handleCreate()}>
+            {creating ? 'Creating…' : 'Create policy'}
+          </Button>
+        </div>
+      </div>
+      <div className="space-y-4">
+        {items.map((policy) => (
+          <BonusPolicyEditorCard
+            key={policy.id}
+            policy={policy}
+            saving={savingId === policy.id}
+            onSave={handleSave}
+          />
+        ))}
+      </div>
+    </>
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -125,91 +207,19 @@ export default function BonusPoliciesPage() {
         apply when template is Sales — company rate grid.
       </p>
 
-      {loading ? (
-        <LoadingState variant="cards" count={2} />
-      ) : error && items.length === 0 ? (
-        <ErrorState description={error} onRetry={() => void load()} />
-      ) : (
-        <>
-          {error ? <p className="text-destructive text-sm">{error}</p> : null}
-          <div className="border-border bg-card rounded-2xl border p-4">
-            <h2 className="text-foreground mb-3 text-sm font-semibold">New policy</h2>
-            <div className="grid gap-3 md:grid-cols-2">
-              <label className="space-y-1 text-sm">
-                <span className="text-muted-foreground">Name</span>
-                <Input
-                  value={newName}
-                  disabled={creating}
-                  placeholder="e.g. Delivery manual Q2"
-                  onChange={(e) => setNewName(e.target.value)}
-                />
-              </label>
-              <label className="space-y-1 text-sm">
-                <span className="text-muted-foreground">Template</span>
-                <Select
-                  value={newTemplate}
-                  disabled={creating}
-                  onValueChange={(v) => {
-                    if (v) setNewTemplate(v);
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BONUS_POLICY_TEMPLATE_OPTIONS.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </label>
-              <label className="space-y-1 text-sm md:col-span-2">
-                <span className="text-muted-foreground">Scope (optional)</span>
-                <Input
-                  value={newScope}
-                  disabled={creating}
-                  onChange={(e) => setNewScope(e.target.value)}
-                />
-              </label>
-              <label className="space-y-1 text-sm md:col-span-2">
-                <span className="text-muted-foreground">Notes (optional)</span>
-                <Textarea
-                  value={newNotes}
-                  disabled={creating}
-                  rows={2}
-                  className="resize-y"
-                  onChange={(e) => setNewNotes(e.target.value)}
-                />
-              </label>
-            </div>
-            {selectedTemplate ? (
-              <p className="text-muted-foreground mt-2 text-xs">{selectedTemplate.hint}</p>
-            ) : null}
-            <div className="mt-4 flex justify-end">
-              <Button
-                type="button"
-                size="sm"
-                disabled={creating}
-                onClick={() => void handleCreate()}
-              >
-                {creating ? 'Creating…' : 'Create policy'}
-              </Button>
-            </div>
-          </div>
-          <div className="space-y-4">
-            {items.map((policy) => (
-              <BonusPolicyEditorCard
-                key={policy.id}
-                policy={policy}
-                saving={savingId === policy.id}
-                onSave={handleSave}
-              />
-            ))}
-          </div>
-        </>
-      )}
+      {error && hasData ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={hasData}
+        loadingFallback={<LoadingState variant="cards" count={2} />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+        emptyFallback={content}
+      >
+        {content}
+      </DataView>
     </div>
   );
 }

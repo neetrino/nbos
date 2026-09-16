@@ -4,7 +4,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { Cable, Plus, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import {
+  DataView,
+  EmptyState,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+} from '@/components/shared';
 import { aiAdminApi, type AiProviderConnectionView } from '@/lib/api/ai-admin';
 import { AI_ADMIN_CARD_GRID_CLASS, AI_ADMIN_PAGE_STACK_CLASS } from '../ai-admin-ui.constants';
 import { iconForProvider } from '../ai-admin-icons';
@@ -64,10 +70,8 @@ export function ProviderListPanel() {
     }
   };
 
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState description={error} onRetry={() => void load()} />;
-
-  return (
+  const hasData = rows.length > 0;
+  const content = (
     <div className={AI_ADMIN_PAGE_STACK_CLASS}>
       <AiAdminPageToolbar
         icon={Cable}
@@ -135,6 +139,24 @@ export function ProviderListPanel() {
         }}
       />
     </div>
+  );
+
+  return (
+    <>
+      {error && hasData ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={hasData}
+        loadingFallback={<LoadingState />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+        emptyFallback={content}
+      >
+        {content}
+      </DataView>
+    </>
   );
 }
 

@@ -3,6 +3,7 @@
 import { FolderKanban, Package, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
+  DataView,
   EmptyState,
   ErrorState,
   LoadingState,
@@ -46,36 +47,43 @@ export function ProjectsHubDirectoryPanel({
   onCreate: () => void;
   onProjectClick: (project: Project) => void;
 }) {
-  if (loading) return <LoadingState variant="cards" count={6} />;
-  if (error) return <ErrorState description={error} onRetry={onRetry} />;
-  if (projects.length === 0) {
-    return (
-      <EmptyState
-        icon={FolderKanban}
-        title={emptyTitle}
-        description={emptyDescription}
-        action={
-          showCreate ? (
-            <Button type="button" aria-label="Create new project" onClick={onCreate}>
-              <Plus size={16} aria-hidden />
-              Project
-            </Button>
-          ) : undefined
-        }
-      />
-    );
-  }
-  if (view === 'grid') {
-    return (
-      <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
-        {projects.map((project) => (
-          <ProjectNavigableCard key={project.id} project={project} tabHint={activeTab} />
-        ))}
-      </div>
-    );
-  }
   return (
-    <ProjectsListTable projects={projects} onProjectClick={onProjectClick} tabHint={activeTab} />
+    <DataView
+      loading={loading}
+      error={error}
+      hasData={projects.length > 0}
+      loadingFallback={<LoadingState variant="cards" count={6} />}
+      errorFallback={<ErrorState description={error ?? ''} onRetry={onRetry} />}
+      emptyFallback={
+        <EmptyState
+          icon={FolderKanban}
+          title={emptyTitle}
+          description={emptyDescription}
+          action={
+            showCreate ? (
+              <Button type="button" aria-label="Create new project" onClick={onCreate}>
+                <Plus size={16} aria-hidden />
+                Project
+              </Button>
+            ) : undefined
+          }
+        />
+      }
+    >
+      {view === 'grid' ? (
+        <div className={NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS}>
+          {projects.map((project) => (
+            <ProjectNavigableCard key={project.id} project={project} tabHint={activeTab} />
+          ))}
+        </div>
+      ) : (
+        <ProjectsListTable
+          projects={projects}
+          onProjectClick={onProjectClick}
+          tabHint={activeTab}
+        />
+      )}
+    </DataView>
   );
 }
 
@@ -98,24 +106,31 @@ export function ProductsHubDirectoryPanel({
   onRetry: () => void;
   onProductClick: (product: Product) => void;
 }) {
-  if (loading) return <LoadingState variant="cards" count={6} />;
-  if (error) return <ErrorState description={error} onRetry={onRetry} />;
-  if (products.length === 0) {
-    return <EmptyState icon={Package} title={emptyTitle} description={emptyDescription} />;
-  }
-  if (view === 'grid') {
-    return (
-      <div className={NAVIGABLE_ENTITY_CARD_GRID_PRODUCTS_CLASS}>
-        {products.map((product) => (
-          <ProductNavigableCard
-            key={product.id}
-            projectId={product.projectId}
-            product={product}
-            showProjectContext
-          />
-        ))}
-      </div>
-    );
-  }
-  return <ProductsHubListTable products={products} onProductClick={onProductClick} />;
+  return (
+    <DataView
+      loading={loading}
+      error={error}
+      hasData={products.length > 0}
+      loadingFallback={<LoadingState variant="cards" count={6} />}
+      errorFallback={<ErrorState description={error ?? ''} onRetry={onRetry} />}
+      emptyFallback={
+        <EmptyState icon={Package} title={emptyTitle} description={emptyDescription} />
+      }
+    >
+      {view === 'grid' ? (
+        <div className={NAVIGABLE_ENTITY_CARD_GRID_PRODUCTS_CLASS}>
+          {products.map((product) => (
+            <ProductNavigableCard
+              key={product.id}
+              projectId={product.projectId}
+              product={product}
+              showProjectContext
+            />
+          ))}
+        </div>
+      ) : (
+        <ProductsHubListTable products={products} onProductClick={onProductClick} />
+      )}
+    </DataView>
+  );
 }

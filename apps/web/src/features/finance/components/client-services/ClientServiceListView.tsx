@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { EmptyState, LoadingState, QueryLoadError } from '@/components/shared';
+import { EmptyState, DataView, LoadingState, QueryLoadError } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import {
   CLIENT_SERVICE_BILLING_MODELS,
@@ -65,134 +65,140 @@ export function ClientServiceListView({
   );
   const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null);
 
-  if (loading) return <LoadingState />;
-  if (error) return <QueryLoadError description={error} />;
-  if (items.length === 0) {
-    return (
-      <EmptyState
-        icon={ServerCog}
-        title={t('empty.listTitle')}
-        description={t('empty.listDescription')}
-        action={<Button onClick={onCreate}>{t('page.createService')}</Button>}
-      />
-    );
-  }
-
   return (
-    <div ref={setScrollEl} className={ENTITY_LIST_SCROLL_SHELL_CLASS}>
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[180px]`}>
-              {t('table.service')}
-            </TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>
-              {t('table.kind')}
-            </TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[120px]`}>
-              {t('table.project')}
-            </TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>
-              {t('table.renewal')}
-            </TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>
-              {t('table.cost')}
-            </TableHead>
-            <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[88px]`}>
-              {t('table.stage')}
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.map((service) => (
-            <TableRow
-              key={service.id}
-              className={cn(
-                ENTITY_LIST_ROW_HOVER_CLASS,
-                'cursor-pointer',
-                service.overdue && 'bg-red-50/40 dark:bg-red-950/10',
-              )}
-              onClick={() => onOpen(service)}
-            >
-              <TableCell className={`${ENTITY_LIST_CELL_CLASS} max-w-[240px]`}>
-                <div className="flex min-w-0 items-center gap-2">
-                  <EntityListPrimaryCell title={service.name} subtitle={service.provider ?? null} />
-                  {isClientServiceDomain(service) ? (
-                    <ClientServiceRegistryBadge status={service.registryLookupStatus} />
-                  ) : null}
-                </div>
-              </TableCell>
-
-              <TableCell className={`${ENTITY_LIST_CELL_CLASS} max-w-[140px]`}>
-                <p className="truncate text-sm font-bold">
-                  {translateClientServiceType(
-                    t,
-                    service.type,
-                    clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type),
-                  )}
-                </p>
-                <p className={`${ENTITY_LIST_TYPE_CLASS} mt-1 normal-case`}>
-                  {translateClientServiceBilling(
-                    t,
-                    service.billingModel,
-                    clientServiceOptionLabel(CLIENT_SERVICE_BILLING_MODELS, service.billingModel),
-                  )}
-                </p>
-              </TableCell>
-
-              <TableCell className={`${ENTITY_LIST_CELL_CLASS} max-w-[160px]`}>
-                <EntityListIconLabel
-                  icon={FolderKanban}
-                  iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
-                  label={service.project.name}
-                  labelClassName="font-bold"
-                />
-              </TableCell>
-
-              <TableCell className={ENTITY_LIST_CELL_CLASS}>
-                <div className="flex items-center gap-1">
-                  <EntityListDate value={service.renewalDate} />
-                  {isClientServiceDomain(service) ? (
-                    <ClientServiceRegistryCheckButton serviceId={service.id} compact />
-                  ) : null}
-                </div>
-              </TableCell>
-
-              <TableCell className={ENTITY_LIST_CELL_CLASS}>
-                {service.ourCost ? (
-                  <div className="space-y-1">
-                    <EntityListAmount amount={service.ourCost} />
-                    {service.clientCharge ? (
-                      <p className="text-muted-foreground text-xs tabular-nums">
-                        {t('table.charge', {
-                          amount: formatGroupedNumber(parseMoneyAmount(service.clientCharge)),
-                        })}
-                      </p>
+    <DataView
+      loading={loading}
+      error={error}
+      hasData={items.length > 0}
+      loadingFallback={<LoadingState />}
+      errorFallback={<QueryLoadError description={error ?? ''} />}
+      emptyFallback={
+        <EmptyState
+          icon={ServerCog}
+          title={t('empty.listTitle')}
+          description={t('empty.listDescription')}
+          action={<Button onClick={onCreate}>{t('page.createService')}</Button>}
+        />
+      }
+    >
+      <div ref={setScrollEl} className={ENTITY_LIST_SCROLL_SHELL_CLASS}>
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[180px]`}>
+                {t('table.service')}
+              </TableHead>
+              <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>
+                {t('table.kind')}
+              </TableHead>
+              <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[120px]`}>
+                {t('table.project')}
+              </TableHead>
+              <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>
+                {t('table.renewal')}
+              </TableHead>
+              <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[100px]`}>
+                {t('table.cost')}
+              </TableHead>
+              <TableHead className={`${ENTITY_LIST_HEAD_CLASS} min-w-[88px]`}>
+                {t('table.stage')}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {items.map((service) => (
+              <TableRow
+                key={service.id}
+                className={cn(
+                  ENTITY_LIST_ROW_HOVER_CLASS,
+                  'cursor-pointer',
+                  service.overdue && 'bg-red-50/40 dark:bg-red-950/10',
+                )}
+                onClick={() => onOpen(service)}
+              >
+                <TableCell className={`${ENTITY_LIST_CELL_CLASS} max-w-[240px]`}>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <EntityListPrimaryCell
+                      title={service.name}
+                      subtitle={service.provider ?? null}
+                    />
+                    {isClientServiceDomain(service) ? (
+                      <ClientServiceRegistryBadge status={service.registryLookupStatus} />
                     ) : null}
                   </div>
-                ) : (
-                  <EntityListMutedDash />
-                )}
-              </TableCell>
+                </TableCell>
 
-              <TableCell className={ENTITY_LIST_CELL_CLASS}>
-                <ClientServiceStageBadge service={service} emptyLabel="—" />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                <TableCell className={`${ENTITY_LIST_CELL_CLASS} max-w-[140px]`}>
+                  <p className="truncate text-sm font-bold">
+                    {translateClientServiceType(
+                      t,
+                      service.type,
+                      clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type),
+                    )}
+                  </p>
+                  <p className={`${ENTITY_LIST_TYPE_CLASS} mt-1 normal-case`}>
+                    {translateClientServiceBilling(
+                      t,
+                      service.billingModel,
+                      clientServiceOptionLabel(CLIENT_SERVICE_BILLING_MODELS, service.billingModel),
+                    )}
+                  </p>
+                </TableCell>
 
-      {loadingMore ? (
-        <div className="text-muted-foreground flex items-center justify-center py-3">
-          <Loader2 className="size-4 animate-spin" aria-hidden />
-        </div>
-      ) : null}
-      <InfiniteScrollSentinel
-        onReach={loadMore}
-        disabled={loading || loadingMore || !hasMore}
-        root={scrollEl}
-      />
-    </div>
+                <TableCell className={`${ENTITY_LIST_CELL_CLASS} max-w-[160px]`}>
+                  <EntityListIconLabel
+                    icon={FolderKanban}
+                    iconClassName="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400"
+                    label={service.project.name}
+                    labelClassName="font-bold"
+                  />
+                </TableCell>
+
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  <div className="flex items-center gap-1">
+                    <EntityListDate value={service.renewalDate} />
+                    {isClientServiceDomain(service) ? (
+                      <ClientServiceRegistryCheckButton serviceId={service.id} compact />
+                    ) : null}
+                  </div>
+                </TableCell>
+
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  {service.ourCost ? (
+                    <div className="space-y-1">
+                      <EntityListAmount amount={service.ourCost} />
+                      {service.clientCharge ? (
+                        <p className="text-muted-foreground text-xs tabular-nums">
+                          {t('table.charge', {
+                            amount: formatGroupedNumber(parseMoneyAmount(service.clientCharge)),
+                          })}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <EntityListMutedDash />
+                  )}
+                </TableCell>
+
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  <ClientServiceStageBadge service={service} emptyLabel="—" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        {loadingMore ? (
+          <div className="text-muted-foreground flex items-center justify-center py-3">
+            <Loader2 className="size-4 animate-spin" aria-hidden />
+          </div>
+        ) : null}
+        <InfiniteScrollSentinel
+          onReach={loadMore}
+          disabled={loading || loadingMore || !hasMore}
+          root={scrollEl}
+        />
+      </div>
+    </DataView>
   );
 }

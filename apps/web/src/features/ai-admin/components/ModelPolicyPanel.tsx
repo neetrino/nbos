@@ -4,7 +4,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { ArrowRight, Plus, Route } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import {
+  DataView,
+  EmptyState,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import { cn } from '@/lib/utils';
 import {
   aiAdminApi,
@@ -58,11 +65,9 @@ export function ModelPolicyPanel() {
     void load();
   }, [load]);
 
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState description={error} onRetry={() => void load()} />;
-
   const eligible = productionEligibleModels(models, connections);
-  return (
+  const hasData = policies.length > 0;
+  const content = (
     <div className={AI_ADMIN_PAGE_STACK_CLASS}>
       <AiAdminPageToolbar
         icon={Route}
@@ -173,6 +178,24 @@ export function ModelPolicyPanel() {
         }}
       />
     </div>
+  );
+
+  return (
+    <>
+      {error && hasData ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={hasData}
+        loadingFallback={<LoadingState />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+        emptyFallback={content}
+      >
+        {content}
+      </DataView>
+    </>
   );
 }
 

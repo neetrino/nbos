@@ -8,6 +8,7 @@ import { ArrowUpRight, Plus } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import {
+  DataView,
   ErrorState,
   IntegratedSearchFilters,
   LoadingState,
@@ -91,110 +92,119 @@ export function WorkSpaceDetailPage() {
 
   useWorkSpaceDetailHeader(workspace);
 
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState description={error} onRetry={() => void refetch()} />;
-  if (!workspace) return null;
-
   return (
-    <div className="flex h-full min-h-0 flex-col gap-5">
-      <PageHero
-        title={workspace.name}
-        tabs={<WorkSpaceAreaSegmented value={workspaceArea} onValueChange={setWorkspaceArea} />}
-        search={
-          <IntegratedSearchFilters
-            search={taskViewFilters.search}
-            onSearchChange={taskViewFilters.onSearchChange}
-            searchPlaceholder={tTasks('searchPlaceholder')}
-            filters={showDesktopBoardChrome ? taskFilterConfigs : undefined}
-            filterValues={showDesktopBoardChrome ? taskViewFilters.heroFilterValues : undefined}
-            onFilterChange={showDesktopBoardChrome ? taskViewFilters.onFilterChange : undefined}
-            onClearAll={showDesktopBoardChrome ? taskViewFilters.onClearFilters : undefined}
+    <DataView
+      loading={loading}
+      error={error}
+      hasData={workspace !== null}
+      loadingFallback={<LoadingState />}
+      errorFallback={<ErrorState description={error ?? ''} onRetry={() => void refetch()} />}
+    >
+      {workspace ? (
+        <div className="flex h-full min-h-0 flex-col gap-5">
+          <PageHero
+            title={workspace.name}
+            tabs={<WorkSpaceAreaSegmented value={workspaceArea} onValueChange={setWorkspaceArea} />}
+            search={
+              <IntegratedSearchFilters
+                search={taskViewFilters.search}
+                onSearchChange={taskViewFilters.onSearchChange}
+                searchPlaceholder={tTasks('searchPlaceholder')}
+                filters={showDesktopBoardChrome ? taskFilterConfigs : undefined}
+                filterValues={showDesktopBoardChrome ? taskViewFilters.heroFilterValues : undefined}
+                onFilterChange={showDesktopBoardChrome ? taskViewFilters.onFilterChange : undefined}
+                onClearAll={showDesktopBoardChrome ? taskViewFilters.onClearFilters : undefined}
+              />
+            }
+            viewMode={
+              showDesktopBoardChrome ? (
+                <ViewModeSwitch
+                  value={boardView}
+                  onChange={handleBoardViewChange}
+                  options={boardViewOptions}
+                />
+              ) : undefined
+            }
+            trailing={
+              <>
+                {contextHref ? (
+                  <Link href={contextHref} className={buttonVariants({ variant: 'outline' })}>
+                    {t('context')} <ArrowUpRight size={14} aria-hidden />
+                  </Link>
+                ) : null}
+                {isPlanningArea ? (
+                  <WorkSpaceScrumPlanningEnable
+                    workspace={workspace}
+                    onUpdated={onWorkspaceUpdate}
+                  />
+                ) : null}
+                <WorkSpaceDiscussionTrigger onClick={() => setDiscussionOpen(true)} />
+                <EntityDriveNavAction
+                  label={tNav('modules.drive')}
+                  onClick={() => setDriveOpen(true)}
+                />
+                <WorkSpaceDetailSettingsSheet
+                  workspaceId={workspace.id}
+                  workspaceName={workspace.name}
+                  tasks={tasks}
+                  onEditWorkSpace={() => setEditOpen(true)}
+                />
+                {!isPlanningArea ? (
+                  <Button
+                    onClick={() => openQuickCreateRef.current?.()}
+                    disabled={newTaskDisabled}
+                    title={newTaskDisabled ? tTasks('employeeProfileRequired') : undefined}
+                  >
+                    <Plus size={16} aria-hidden />
+                    {tTasks('newTask')}
+                  </Button>
+                ) : null}
+              </>
+            }
           />
-        }
-        viewMode={
-          showDesktopBoardChrome ? (
-            <ViewModeSwitch
-              value={boardView}
-              onChange={handleBoardViewChange}
-              options={boardViewOptions}
-            />
-          ) : undefined
-        }
-        trailing={
-          <>
-            {contextHref ? (
-              <Link href={contextHref} className={buttonVariants({ variant: 'outline' })}>
-                {t('context')} <ArrowUpRight size={14} aria-hidden />
-              </Link>
-            ) : null}
-            {isPlanningArea ? (
-              <WorkSpaceScrumPlanningEnable workspace={workspace} onUpdated={onWorkspaceUpdate} />
-            ) : null}
-            <WorkSpaceDiscussionTrigger onClick={() => setDiscussionOpen(true)} />
-            <EntityDriveNavAction
-              label={tNav('modules.drive')}
-              onClick={() => setDriveOpen(true)}
-            />
-            <WorkSpaceDetailSettingsSheet
-              workspaceId={workspace.id}
-              workspaceName={workspace.name}
-              tasks={tasks}
-              onEditWorkSpace={() => setEditOpen(true)}
-            />
-            {!isPlanningArea ? (
-              <Button
-                onClick={() => openQuickCreateRef.current?.()}
-                disabled={newTaskDisabled}
-                title={newTaskDisabled ? tTasks('employeeProfileRequired') : undefined}
-              >
-                <Plus size={16} aria-hidden />
-                {tTasks('newTask')}
-              </Button>
-            ) : null}
-          </>
-        }
-      />
 
-      <WorkSpaceRuntime
-        workspace={workspace}
-        tasks={tasks}
-        setTasks={setTasks}
-        sprints={sprints}
-        setSprints={setSprints}
-        mode="standalone"
-        defaultTaskLink={defaultLink ?? undefined}
-        taskViewFilters={taskViewFilters}
-        boardView={effectiveBoardView}
-        setBoardView={handleBoardViewChange}
-        workspaceArea={workspaceArea}
-        quickCreateRef={openQuickCreateRef}
-        syncTaskSheetToUrl
-        refreshTasksFromServer={refreshTasksFromServer}
-        taskListTotal={taskMeta?.total}
-        taskListHasMorePages={Boolean(taskMeta && taskMeta.page < taskMeta.totalPages)}
-        onLoadMoreTasks={() => void loadMoreTasks()}
-        loadingMoreTasks={loadingMoreTasks}
-      />
+          <WorkSpaceRuntime
+            workspace={workspace}
+            tasks={tasks}
+            setTasks={setTasks}
+            sprints={sprints}
+            setSprints={setSprints}
+            mode="standalone"
+            defaultTaskLink={defaultLink ?? undefined}
+            taskViewFilters={taskViewFilters}
+            boardView={effectiveBoardView}
+            setBoardView={handleBoardViewChange}
+            workspaceArea={workspaceArea}
+            quickCreateRef={openQuickCreateRef}
+            syncTaskSheetToUrl
+            refreshTasksFromServer={refreshTasksFromServer}
+            taskListTotal={taskMeta?.total}
+            taskListHasMorePages={Boolean(taskMeta && taskMeta.page < taskMeta.totalPages)}
+            onLoadMoreTasks={() => void loadMoreTasks()}
+            loadingMoreTasks={loadingMoreTasks}
+          />
 
-      <EditWorkSpaceDialog
-        workspace={workspace}
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        onUpdated={onWorkspaceUpdate}
-      />
+          <EditWorkSpaceDialog
+            workspace={workspace}
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            onUpdated={onWorkspaceUpdate}
+          />
 
-      <WorkSpaceDriveSheet
-        open={driveOpen}
-        onOpenChange={setDriveOpen}
-        workSpaceId={workspace.id}
-        workSpaceName={workspace.name}
-      />
-      <WorkSpaceDiscussionSheet
-        open={discussionOpen}
-        onOpenChange={setDiscussionOpen}
-        workspaceId={workspace.id}
-        workspaceName={workspace.name}
-      />
-    </div>
+          <WorkSpaceDriveSheet
+            open={driveOpen}
+            onOpenChange={setDriveOpen}
+            workSpaceId={workspace.id}
+            workSpaceName={workspace.name}
+          />
+          <WorkSpaceDiscussionSheet
+            open={discussionOpen}
+            onOpenChange={setDiscussionOpen}
+            workspaceId={workspace.id}
+            workspaceName={workspace.name}
+          />
+        </div>
+      ) : null}
+    </DataView>
   );
 }

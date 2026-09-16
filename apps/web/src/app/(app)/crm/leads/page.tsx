@@ -10,6 +10,7 @@ import {
   ViewModeSwitch,
   IntegratedSearchFilters,
   KanbanBoard,
+  DataView,
   EmptyState,
   QueryLoadError,
   LoadingState,
@@ -619,68 +620,79 @@ function LeadsPipelinePageContent() {
           onBackToActive={() => setScope('active')}
         />
       ) : null}
-      {loading ? (
-        <LoadingState variant="cards" count={3} />
-      ) : error ? (
-        <QueryLoadError description={error} onRetry={fetchLeads} />
-      ) : leads.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title={isTrashView ? t('leads.emptyTrashTitle') : t('leads.emptyTitle')}
-          description={isTrashView ? t('leads.emptyTrashDescription') : t('leads.emptyDescription')}
-          action={
-            isTrashView ? undefined : (
-              <Button onClick={() => setShowCreate(true)}>
-                <Plus size={16} />
-                {t('leads.createFirstLead')}
-              </Button>
-            )
-          }
-        />
-      ) : !isTrashView && effectiveView === 'kanban' ? (
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
-          <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="lead" />
-          <KanbanBoard
-            columns={kanbanColumns}
-            renderCard={(lead) => (
-              <LeadCard lead={lead} onClick={handleCardClick} onCreateTask={handleCreateLeadTask} />
-            )}
-            getItemId={(lead) => lead.id}
-            onMove={handleMove}
-            onReorderWithinColumn={handleReorder}
-            onColumnLoadMore={loadMoreColumn}
-            columnWidth={270}
-            emptyMessage={t('leads.emptyColumn')}
-            columnQuickCreate={createLeadKanbanQuickCreateConfig(
-              (lead) => handleLeadCreated(lead),
-              {
-                buttonLabel: t('leads.quickCreateButton'),
-                titlePlaceholder: t('leads.quickCreatePlaceholder'),
-                titleAriaLabel: t('leads.quickCreateAria'),
-              },
-            )}
-            terminalDropZones={
-              shouldShowTerminalDropBar(boardScope) ? leadTerminalZones : undefined
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={leads.length > 0}
+        loadingFallback={<LoadingState variant="cards" count={3} />}
+        errorFallback={<QueryLoadError description={error ?? ''} onRetry={fetchLeads} />}
+        emptyFallback={
+          <EmptyState
+            icon={Users}
+            title={isTrashView ? t('leads.emptyTrashTitle') : t('leads.emptyTitle')}
+            description={
+              isTrashView ? t('leads.emptyTrashDescription') : t('leads.emptyDescription')
+            }
+            action={
+              isTrashView ? undefined : (
+                <Button onClick={() => setShowCreate(true)}>
+                  <Plus size={16} />
+                  {t('leads.createFirstLead')}
+                </Button>
+              )
             }
           />
-        </div>
-      ) : (
-        <div className="flex min-h-0 flex-1 flex-col gap-2">
-          <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="lead" />
-          <LeadsListTable
-            leads={leads}
-            boardScope={boardScope as BoardLifecycleScope}
-            onLeadClick={handleCardClick}
-          />
-          {!isTrashView && hasMoreAny ? (
-            <InfiniteScrollSentinel
-              disabled={boardLoading}
-              onReach={loadMoreAll}
-              rootMargin="240px"
+        }
+      >
+        {!isTrashView && effectiveView === 'kanban' ? (
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
+            <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="lead" />
+            <KanbanBoard
+              columns={kanbanColumns}
+              renderCard={(lead) => (
+                <LeadCard
+                  lead={lead}
+                  onClick={handleCardClick}
+                  onCreateTask={handleCreateLeadTask}
+                />
+              )}
+              getItemId={(lead) => lead.id}
+              onMove={handleMove}
+              onReorderWithinColumn={handleReorder}
+              onColumnLoadMore={loadMoreColumn}
+              columnWidth={270}
+              emptyMessage={t('leads.emptyColumn')}
+              columnQuickCreate={createLeadKanbanQuickCreateConfig(
+                (lead) => handleLeadCreated(lead),
+                {
+                  buttonLabel: t('leads.quickCreateButton'),
+                  titlePlaceholder: t('leads.quickCreatePlaceholder'),
+                  titleAriaLabel: t('leads.quickCreateAria'),
+                },
+              )}
+              terminalDropZones={
+                shouldShowTerminalDropBar(boardScope) ? leadTerminalZones : undefined
+              }
             />
-          ) : null}
-        </div>
-      )}
+          </div>
+        ) : (
+          <div className="flex min-h-0 flex-1 flex-col gap-2">
+            <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="lead" />
+            <LeadsListTable
+              leads={leads}
+              boardScope={boardScope as BoardLifecycleScope}
+              onLeadClick={handleCardClick}
+            />
+            {!isTrashView && hasMoreAny ? (
+              <InfiniteScrollSentinel
+                disabled={boardLoading}
+                onReach={loadMoreAll}
+                rootMargin="240px"
+              />
+            ) : null}
+          </div>
+        )}
+      </DataView>
 
       <CreateLeadDialog
         open={showCreate}
