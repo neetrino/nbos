@@ -88,7 +88,10 @@ describe('InvoicesService create', () => {
       payments: [],
       _count: { payments: 0 },
     };
-    prisma.product.findUnique.mockResolvedValue({ projectId: 'proj-owned' });
+    prisma.product.findUnique.mockResolvedValue({
+      projectId: 'proj-owned',
+      project: { companyId: 'co-owned' },
+    });
     prisma.invoice.create.mockResolvedValue(createdInvoice);
     prisma.invoice.findUnique.mockResolvedValue(createdInvoice);
 
@@ -99,6 +102,7 @@ describe('InvoicesService create', () => {
         data: expect.objectContaining({
           productId: 'prod-1',
           projectId: 'proj-owned',
+          companyId: 'co-owned',
         }),
       }),
     );
@@ -106,6 +110,40 @@ describe('InvoicesService create', () => {
       expect.objectContaining({
         productId: 'prod-1',
         projectId: 'proj-owned',
+        companyId: 'co-owned',
+      }),
+    );
+  });
+
+  it('keeps an explicit company when the product project also has one', async () => {
+    const createdInvoice = {
+      id: 'owned-2',
+      code: 'INV-2026-0101',
+      amount: 50000,
+      type: 'DOMAIN',
+      payments: [],
+      _count: { payments: 0 },
+    };
+    prisma.product.findUnique.mockResolvedValue({
+      projectId: 'proj-owned',
+      project: { companyId: 'co-project' },
+    });
+    prisma.invoice.create.mockResolvedValue(createdInvoice);
+    prisma.invoice.findUnique.mockResolvedValue(createdInvoice);
+
+    await service.create({
+      amount: 50000,
+      productId: 'prod-1',
+      companyId: 'co-explicit',
+      clientServiceRecordId: 'csr-1',
+    });
+
+    expect(prisma.invoice.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          companyId: 'co-explicit',
+          clientServiceRecordId: 'csr-1',
+        }),
       }),
     );
   });

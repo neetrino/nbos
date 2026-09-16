@@ -66,7 +66,10 @@ import {
   resolveInvoiceParticipationWhere,
 } from './finance-invoice-participation.where';
 import { buildInvoiceSearchOr } from './invoice-search.where';
-import { resolveInvoiceProductOwnership } from './invoice-product-ownership';
+import {
+  resolveInvoiceCreateCompanyId,
+  resolveInvoiceProductOwnership,
+} from './invoice-product-ownership';
 import { allocateInvoiceCode } from '../../../common/utils/entity-code-series';
 import {
   assertInvoiceCancellable,
@@ -263,6 +266,7 @@ export class InvoicesService {
       subscriptionId: data.subscriptionId,
       clientServiceRecordId: data.clientServiceRecordId,
     });
+    const companyId = resolveInvoiceCreateCompanyId(data.companyId, ownership.companyId);
 
     const invoice = await persistInvoiceCreate(
       this.prisma,
@@ -272,7 +276,7 @@ export class InvoicesService {
         subscriptionId: data.subscriptionId,
         productId: ownership.productId,
         projectId: ownership.projectId,
-        companyId: data.companyId,
+        companyId,
         clientServiceRecordId: data.clientServiceRecordId,
         amount: data.amount,
         taxStatus,
@@ -293,7 +297,7 @@ export class InvoicesService {
       invoiceCode: invoice.code,
       amount: data.amount,
       bookedAt,
-      companyId: data.companyId ?? null,
+      companyId: companyId ?? null,
       projectId: ownership.projectId,
       productId: ownership.productId,
       orderId: data.orderId ?? null,

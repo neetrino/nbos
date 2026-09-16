@@ -74,4 +74,48 @@ describe('applyInvoiceGeneralUpdate', () => {
       },
     });
   });
+
+  it('allows company on a domain invoice', async () => {
+    const prisma = {
+      invoice: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'inv-domain',
+          type: 'DOMAIN',
+          orderId: null,
+          amount: 1000,
+          taxStatus: 'TAX',
+          payments: [],
+        }),
+        update: vi.fn().mockResolvedValue({}),
+      },
+    };
+
+    await applyInvoiceGeneralUpdate(prisma as never, 'inv-domain', { companyId: 'co-1' });
+
+    expect(prisma.invoice.update).toHaveBeenCalledWith({
+      where: { id: 'inv-domain' },
+      data: { company: { connect: { id: 'co-1' } } },
+    });
+  });
+
+  it('rejects product changes on a domain invoice', async () => {
+    const prisma = {
+      invoice: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'inv-domain',
+          type: 'DOMAIN',
+          orderId: null,
+          amount: 1000,
+          taxStatus: 'TAX',
+          payments: [],
+        }),
+        update: vi.fn(),
+      },
+    };
+
+    await expect(
+      applyInvoiceGeneralUpdate(prisma as never, 'inv-domain', { productId: 'prod-2' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.invoice.update).not.toHaveBeenCalled();
+  });
 });

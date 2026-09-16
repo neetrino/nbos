@@ -10,14 +10,18 @@ export type InvoiceOwnershipInput = {
 export type InvoiceOwnership = {
   productId: string | null;
   projectId: string | null;
+  companyId: string | null;
 };
 
 type InvoiceOwnershipDb = {
   product: {
     findUnique: (args: {
       where: { id: string };
-      select: { projectId: true };
-    }) => Promise<{ projectId: string } | null>;
+      select: { projectId: true; project: { select: { companyId: true } } };
+    }) => Promise<{
+      projectId: string;
+      project: { companyId: string | null };
+    } | null>;
   };
   order: {
     findUnique: (args: {
@@ -100,17 +104,31 @@ export async function resolveInvoiceProductOwnership(
   }
 
   const productId = candidates[0] ?? null;
-  if (!productId) return { productId: null, projectId: null };
+  if (!productId) return { productId: null, projectId: null, companyId: null };
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
-    select: { projectId: true },
+    select: { projectId: true, project: { select: { companyId: true } } },
   });
   if (!product) {
     throw new BadRequestException('Product not found');
   }
 
-  return { productId, projectId: product.projectId };
+  return {
+    productId,
+    projectId: product.projectId,
+    companyId: product.project?.companyId ?? null,
+  };
+}
+
+/** Explicit payer wins; otherwise inherit Project.company from the product. */
+export function resolveInvoiceCreateCompanyId(
+  explicitCompanyId: string | undefined,
+  ownershipCompanyId: string | null,
+): string | undefined {
+  const explicit = explicitCompanyId?.trim();
+  if (explicit) return explicit;
+  return ownershipCompanyId ?? undefined;
 }
 
 export function requireInvoiceProductId(productId: string | null): string {

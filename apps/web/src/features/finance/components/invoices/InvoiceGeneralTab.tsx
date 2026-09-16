@@ -59,7 +59,7 @@ export function InvoiceGeneralTab({
         billingFields={billingFields}
       />
 
-      {invoice.type === 'MANUAL' && draft && onInvoiceUpdated ? (
+      {draft && onInvoiceUpdated ? (
         <DetailSheetSection title={t('sheet.clientContext')}>
           <InvoiceManualContextFields
             invoice={invoice}
