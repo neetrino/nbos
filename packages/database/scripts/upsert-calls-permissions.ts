@@ -1,5 +1,9 @@
 /**
  * Additive RBAC upsert for the CALLS journal module.
+ * Prefer migration `20260916120000_calls_permissions` (`pnpm db:migrate:deploy` /
+ * `pnpm db:migrate:prod`). This script is only for a DB that already applied later
+ * migrations and still lacks CALLS rows.
+ *
  * Does not delete existing role_permissions — safe for dev DBs with custom grants.
  *
  * Run: pnpm --filter @nbos/database exec tsx scripts/upsert-calls-permissions.ts
