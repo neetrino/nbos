@@ -84,11 +84,8 @@ export async function applyInvoiceGeneralUpdate(
     throw new NotFoundException(`Invoice ${id} not found`);
   }
 
-  if (
-    (input.companyId !== undefined || input.productId !== undefined) &&
-    invoice.type !== 'MANUAL'
-  ) {
-    throw new BadRequestException('Company and product can only be linked on manual invoices');
+  if (input.productId !== undefined && invoice.type !== 'MANUAL') {
+    throw new BadRequestException('Product can only be linked on manual invoices');
   }
 
   const paid = sumAmounts(invoice.payments);

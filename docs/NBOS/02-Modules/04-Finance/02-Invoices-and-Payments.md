@@ -110,7 +110,7 @@ Payment confirmed
 
 - из `Subscription` приходит `tax_status`, `notifications_enabled`, `billing day`;
 - из CRM / Order чаще всего `notifications_enabled = Off` по умолчанию;
-- из `Domain / Service` подтягиваются правила сервиса и проекта.
+- из `Domain / Service` подтягиваются правила сервиса и проекта, включая `Project.company` как плательщика, если `companyId` не передан явно.
 
 ---
 

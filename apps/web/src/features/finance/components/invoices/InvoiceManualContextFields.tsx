@@ -46,11 +46,10 @@ export function InvoiceManualContextFields({
   const searchProducts = useProductRelationSearch(null);
   const companyPicker = useRelationPickerActions('company');
   const productPicker = useRelationPickerActions('product');
-
-  if (invoice.type !== 'MANUAL') return null;
+  const showProductPicker = invoice.type === 'MANUAL';
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className={showProductPicker ? 'grid gap-3 sm:grid-cols-2' : 'grid gap-3'}>
       <RelationPickerField
         label="Company"
         entityKind="company"
@@ -71,26 +70,28 @@ export function InvoiceManualContextFields({
         className={invoiceStageGateFieldClass(gateRequiredFields, INVOICE_GATE_FIELD_COMPANY)}
         {...companyPicker}
       />
-      <RelationPickerField
-        label="Product"
-        entityKind="product"
-        value={draft.productId}
-        selectionLabel={productLabel}
-        placeholder="Search products…"
-        icon={<Layers size={12} />}
-        onSearch={searchProducts}
-        onSelect={(id, label) => {
-          patchDraft({ productId: id });
-          setProductLabel(label);
-        }}
-        onClear={() => {
-          patchDraft({ productId: null });
-          setProductLabel(null);
-        }}
-        disabled={disabled}
-        className={invoiceStageGateFieldClass(gateRequiredFields, INVOICE_GATE_FIELD_PRODUCT)}
-        {...productPicker}
-      />
+      {showProductPicker ? (
+        <RelationPickerField
+          label="Product"
+          entityKind="product"
+          value={draft.productId}
+          selectionLabel={productLabel}
+          placeholder="Search products…"
+          icon={<Layers size={12} />}
+          onSearch={searchProducts}
+          onSelect={(id, label) => {
+            patchDraft({ productId: id });
+            setProductLabel(label);
+          }}
+          onClear={() => {
+            patchDraft({ productId: null });
+            setProductLabel(null);
+          }}
+          disabled={disabled}
+          className={invoiceStageGateFieldClass(gateRequiredFields, INVOICE_GATE_FIELD_PRODUCT)}
+          {...productPicker}
+        />
+      ) : null}
     </div>
   );
 }
