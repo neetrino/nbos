@@ -40,6 +40,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     disabled = false,
     readOnly = false,
     className,
+    chipStackClassName,
     onSearch,
     maxResults: maxResultsProp,
     onOpenSelected,
@@ -255,6 +256,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
           entityKind={entityKind}
           selectionDisplay={selectionDisplay}
           chipAvatars={knownAvatars}
+          chipStackClassName={chipStackClassName}
           onRemoveChip={handleRemoveChip}
         />
       )}
