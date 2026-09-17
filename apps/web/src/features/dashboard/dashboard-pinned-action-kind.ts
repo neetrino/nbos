@@ -22,5 +22,10 @@ export function partitionPinnedActionsByKind(actions: readonly PinnedAction[]): 
     if (action.kind === 'create') create.push(action);
     else open.push(action);
   }
+  const invoiceIndex = create.findIndex((action) => action.key === 'new-invoice');
+  if (invoiceIndex > 0) {
+    const [invoice] = create.splice(invoiceIndex, 1);
+    create.unshift(invoice);
+  }
   return { create, open };
 }

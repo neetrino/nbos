@@ -12,14 +12,24 @@ describe('pinned action kinds', () => {
     expect(create.every(isPinnedCreateAction)).toBe(true);
     expect(open.every(isPinnedOpenAction)).toBe(true);
     expect(create.map((action) => action.key)).toEqual([
+      'new-invoice',
       'new-task',
       'new-meeting',
-      'new-lead',
       'new-expense',
     ]);
     expect([...create, ...open].map((action) => action.key)).toEqual(
       PINNED_ACTIONS.map((action) => action.key),
     );
+  });
+
+  it('keeps invoice first in create even when preference order is different', () => {
+    const reversed = [...PINNED_ACTIONS].reverse();
+    expect(partitionPinnedActionsByKind(reversed).create.map((action) => action.key)).toEqual([
+      'new-invoice',
+      'new-expense',
+      'new-meeting',
+      'new-task',
+    ]);
   });
 
   it('requires href only on open actions', () => {

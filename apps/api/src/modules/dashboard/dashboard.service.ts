@@ -432,7 +432,14 @@ function sanitizeDashboardNoteContent(value: string): string {
 function getDefaultPinnedActions(role: string | null): DashboardPinnedActionKey[] {
   const normalized = (role ?? '').toUpperCase();
   if (normalized.includes('FINANCE')) {
-    return ['open-install', 'open-invoices', 'open-expenses', 'open-payroll', 'new-expense'];
+    return [
+      'open-install',
+      'open-invoices',
+      'open-expenses',
+      'open-payroll',
+      'new-invoice',
+      'new-expense',
+    ];
   }
   if (normalized.includes('PM') || normalized.includes('PROJECT')) {
     return ['open-install', 'open-products', 'new-task', 'new-meeting', 'open-credentials'];
@@ -444,7 +451,7 @@ function getDefaultPinnedActions(role: string | null): DashboardPinnedActionKey[
     return ['open-install', 'open-support', 'new-task', 'new-meeting', 'open-deals'];
   }
   if (normalized.includes('SELLER') || normalized.includes('SALES')) {
-    return ['open-install', 'new-lead', 'open-deals', 'new-meeting', 'new-expense'];
+    return ['open-install', 'open-deals', 'new-invoice', 'new-meeting', 'new-expense'];
   }
   return ['open-install', 'open-invoices', 'open-products', 'open-support', 'open-credentials'];
 }

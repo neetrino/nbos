@@ -2,10 +2,10 @@ import type { ActionTileTone } from '@/components/shared';
 import type { DashboardPinnedActionKey } from './dashboard-control-registry';
 
 const PINNED_ACTION_TONE_BY_KEY: Record<DashboardPinnedActionKey, ActionTileTone> = {
-  'new-lead': 'emerald',
   'new-task': 'sky',
   'new-meeting': 'primary',
-  'new-expense': 'emerald',
+  'new-expense': 'amber',
+  'new-invoice': 'emerald',
   'open-install': 'primary',
   'open-deals': 'violet',
   'open-products': 'amber',

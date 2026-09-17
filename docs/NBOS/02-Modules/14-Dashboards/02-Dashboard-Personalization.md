@@ -29,9 +29,9 @@ Pinned actions split into two visible groups:
 
 ```text
 Create
+  New Invoice
   New Task
   New Meeting
-  New Lead
   New Expense
 Open
   Open Deals

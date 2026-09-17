@@ -5,10 +5,10 @@
     "newTaskError": "Не удалось открыть новую задачу. Попробуйте ещё раз.",
     "newMeeting": "Встреча",
     "newMeetingDescription": "Назначить встречу с клиентом, не уходя со стола.",
-    "newLead": "Лид",
-    "newLeadDescription": "Зафиксировать входящую возможность.",
     "newExpense": "Расход",
     "newExpenseDescription": "Записать расход со стола.",
+    "newInvoice": "Счёт",
+    "newInvoiceDescription": "Создать счёт, не уходя со стола.",
     "openDeals": "Сделки",
     "openDealsDescription": "Просмотреть активную воронку продаж.",
     "openProducts": "Доска поставки",
@@ -28,8 +28,8 @@
   },
   "create": {
     "meetingCreated": "Встреча создана",
-    "leadCreated": "Лид создан",
-    "expenseCreated": "Расход создан"
+    "expenseCreated": "Расход создан",
+    "invoiceCreated": "Счёт создан"
   },
   "pinned": {
     "editing": "Редактирование",

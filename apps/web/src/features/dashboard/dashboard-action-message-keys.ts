@@ -1,8 +1,8 @@
 export const DASHBOARD_ACTION_MESSAGE_KEYS = {
   'new-task': { label: 'actions.newTask', description: 'actions.newTaskDescription' },
   'new-meeting': { label: 'actions.newMeeting', description: 'actions.newMeetingDescription' },
-  'new-lead': { label: 'actions.newLead', description: 'actions.newLeadDescription' },
   'new-expense': { label: 'actions.newExpense', description: 'actions.newExpenseDescription' },
+  'new-invoice': { label: 'actions.newInvoice', description: 'actions.newInvoiceDescription' },
   'open-install': {
     label: 'actions.installApps',
     description: 'actions.installAppsDescription',
