@@ -51,28 +51,25 @@ function InvoiceAmountFields({
   t: InvoiceCreateTranslator;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <FormFieldRow>
-        <InlineField
-          variant="controlled"
-          label={t('create.amount')}
-          type="money"
-          value={form.amount}
-          className={FORM_FIELD_CELL_CLASS}
-          icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
-          onValueChange={(amount) => setForm({ ...form, amount })}
-        />
-        <InlineField
-          variant="controlled"
-          label={t('create.dueDate')}
-          type="date"
-          value={form.dueDate}
-          datePickerVariant="extended"
-          className={FORM_FIELD_CELL_CLASS}
-          onValueChange={(dueDate) => setForm({ ...form, dueDate })}
-        />
-      </FormFieldRow>
-      <p className="text-muted-foreground text-xs">{t('create.dueDateHint')}</p>
-    </div>
+    <FormFieldRow>
+      <InlineField
+        variant="controlled"
+        label={t('create.amount')}
+        type="money"
+        value={form.amount}
+        className={FORM_FIELD_CELL_CLASS}
+        icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
+        onValueChange={(amount) => setForm({ ...form, amount })}
+      />
+      <InlineField
+        variant="controlled"
+        label={t('create.dueDate')}
+        type="date"
+        value={form.dueDate}
+        datePickerVariant="extended"
+        className={FORM_FIELD_CELL_CLASS}
+        onValueChange={(dueDate) => setForm({ ...form, dueDate })}
+      />
+    </FormFieldRow>
   );
 }

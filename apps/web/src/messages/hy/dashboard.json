@@ -3,12 +3,10 @@
     "newTask": "Առաջադրանք",
     "newTaskDescription": "Ստեղծել աշխատանք ինքան կամ գորցունկերի համար։",
     "newTaskError": "Նոր արաջադրանք բացել չի հաջոխվել։ Նորից փորձեք։",
-    "newMeeting": "Հանդիպում",
-    "newMeetingDescription": "Պլանավորել հաճախորդի հանդիպումը ակնարկից չդեգել։",
-    "newLead": "Լիդ",
-    "newLeadDescription": "Գրանցել ներդարի ականւները։",
     "newExpense": "ծախս",
     "newExpenseDescription": "Գրանցել ծախս ակնարկից։",
+    "newInvoice": "Հաշիվ",
+    "newInvoiceDescription": "Ստեղծել հաշիվ ակնարկից չհեռանալով։",
     "openDeals": "գորցարքներ",
     "openDealsDescription": "Դիտել ակտիվ ութումբերի ծոխը։",
     "openProducts": "Մատակարարման տախտակ",
@@ -27,9 +25,8 @@
     "installAppsDescription": "Ավելացնել NBOS-ը և փոքր հավելվածները գլխավոր էկրանին։"
   },
   "create": {
-    "meetingCreated": "Հանդիպումը ստեղծվել է",
-    "leadCreated": "Լիդը ստեղծվել է",
-    "expenseCreated": "ծախսը ստեղծվել է"
+    "expenseCreated": "ծախսը ստեղծվել է",
+    "invoiceCreated": "Հաշիվը ստեղծվել է"
   },
   "pinned": {
     "editing": "Խմբագրում",

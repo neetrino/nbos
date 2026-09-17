@@ -197,7 +197,6 @@
     "amount": "Amount *",
     "dueDate": "Due date",
     "dueDateAria": "Due date",
-    "dueDateHint": "Defaults to 10 days from creation when left empty.",
     "submit": "Create Invoice",
     "createError": "Invoice could not be created.",
     "loadSubscriptionError": "Subscription could not be loaded.",

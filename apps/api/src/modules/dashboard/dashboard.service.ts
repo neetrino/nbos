@@ -432,19 +432,26 @@ function sanitizeDashboardNoteContent(value: string): string {
 function getDefaultPinnedActions(role: string | null): DashboardPinnedActionKey[] {
   const normalized = (role ?? '').toUpperCase();
   if (normalized.includes('FINANCE')) {
-    return ['open-install', 'open-invoices', 'open-expenses', 'open-payroll', 'new-expense'];
+    return [
+      'open-install',
+      'open-invoices',
+      'open-expenses',
+      'open-payroll',
+      'new-invoice',
+      'new-expense',
+    ];
   }
   if (normalized.includes('PM') || normalized.includes('PROJECT')) {
-    return ['open-install', 'open-products', 'new-task', 'new-meeting', 'open-credentials'];
+    return ['open-install', 'open-products', 'new-task', 'open-credentials'];
   }
   if (normalized.includes('DEVELOPER')) {
-    return ['open-install', 'new-task', 'new-meeting', 'open-credentials', 'open-deals'];
+    return ['open-install', 'new-task', 'open-credentials', 'open-deals'];
   }
   if (normalized.includes('SUPPORT')) {
-    return ['open-install', 'open-support', 'new-task', 'new-meeting', 'open-deals'];
+    return ['open-install', 'open-support', 'new-task', 'open-deals'];
   }
   if (normalized.includes('SELLER') || normalized.includes('SALES')) {
-    return ['open-install', 'new-lead', 'open-deals', 'new-meeting', 'new-expense'];
+    return ['open-install', 'open-deals', 'new-invoice', 'new-expense'];
   }
   return ['open-install', 'open-invoices', 'open-products', 'open-support', 'open-credentials'];
 }

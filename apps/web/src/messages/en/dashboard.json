@@ -3,12 +3,10 @@
     "newTask": "Task",
     "newTaskDescription": "Create work for yourself or a teammate.",
     "newTaskError": "Could not open a new task. Try again.",
-    "newMeeting": "Meeting",
-    "newMeetingDescription": "Schedule a client meeting without leaving the desk.",
-    "newLead": "Lead",
-    "newLeadDescription": "Capture an incoming opportunity.",
     "newExpense": "Expense",
     "newExpenseDescription": "Log an expense from the desk.",
+    "newInvoice": "Invoice",
+    "newInvoiceDescription": "Create an invoice from the desk.",
     "openDeals": "Deals",
     "openDealsDescription": "Review active sales pipeline.",
     "openProducts": "Delivery Board",
@@ -27,9 +25,8 @@
     "installAppsDescription": "Add NBOS and mini apps to the home screen."
   },
   "create": {
-    "meetingCreated": "Meeting created",
-    "leadCreated": "Lead created",
-    "expenseCreated": "Expense created"
+    "expenseCreated": "Expense created",
+    "invoiceCreated": "Invoice created"
   },
   "pinned": {
     "editing": "Editing",

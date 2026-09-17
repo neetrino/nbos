@@ -3,9 +3,8 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { CreateMeetingCalendarDialog } from '@/features/calendar/CreateMeetingCalendarDialog';
-import { CreateLeadDialog } from '@/features/crm/components/CreateLeadDialog';
 import { CreateExpenseDialog } from '@/features/finance/components/expenses/CreateExpenseDialog';
+import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { useUnsortedTaskCreate } from '@/features/tasks/components/UnsortedTaskCreateProvider';
 import type { DashboardPinnedActionKey } from '../dashboard-control-registry';
 
@@ -22,12 +21,22 @@ export function useDashboardCreateAction(): OpenDashboardCreateAction {
 }
 
 export function DashboardCreateActionsProvider({ children }: { children: ReactNode }) {
+  const { openCreateAction, dialogs } = useDashboardCreateDialogState();
+  const value = useMemo(() => openCreateAction, [openCreateAction]);
+
+  return (
+    <DashboardCreateActionCtx.Provider value={value}>
+      {children}
+      <DashboardCreateActionDialogs {...dialogs} />
+    </DashboardCreateActionCtx.Provider>
+  );
+}
+
+function useDashboardCreateDialogState() {
   const t = useTranslations('dashboard');
   const { openUnsortedTaskCreate } = useUnsortedTaskCreate();
-  const [meetingOpen, setMeetingOpen] = useState(false);
-  const [meetingDate, setMeetingDate] = useState(() => new Date());
-  const [leadOpen, setLeadOpen] = useState(false);
   const [expenseOpen, setExpenseOpen] = useState(false);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
 
   const openCreateAction = useCallback<OpenDashboardCreateAction>(
     (key) => {
@@ -39,80 +48,51 @@ export function DashboardCreateActionsProvider({ children }: { children: ReactNo
         }
         return;
       }
-      if (key === 'new-meeting') {
-        setMeetingDate(new Date());
-        setMeetingOpen(true);
-        return;
-      }
-      if (key === 'new-lead') {
-        setLeadOpen(true);
-        return;
-      }
-      if (key === 'new-expense') {
-        setExpenseOpen(true);
-      }
+      if (key === 'new-expense') setExpenseOpen(true);
+      else if (key === 'new-invoice') setInvoiceOpen(true);
     },
     [openUnsortedTaskCreate, t],
   );
 
-  const value = useMemo(() => openCreateAction, [openCreateAction]);
+  return {
+    openCreateAction,
+    dialogs: {
+      expenseOpen,
+      invoiceOpen,
+      onExpenseOpenChange: setExpenseOpen,
+      onInvoiceOpenChange: setInvoiceOpen,
+    },
+  };
+}
 
-  return (
-    <DashboardCreateActionCtx.Provider value={value}>
-      {children}
-      <DashboardCreateActionDialogs
-        expenseOpen={expenseOpen}
-        leadOpen={leadOpen}
-        meetingDate={meetingDate}
-        meetingOpen={meetingOpen}
-        onExpenseOpenChange={setExpenseOpen}
-        onLeadOpenChange={setLeadOpen}
-        onMeetingOpenChange={setMeetingOpen}
-      />
-    </DashboardCreateActionCtx.Provider>
-  );
+interface DashboardCreateActionDialogsProps {
+  expenseOpen: boolean;
+  invoiceOpen: boolean;
+  onExpenseOpenChange: (open: boolean) => void;
+  onInvoiceOpenChange: (open: boolean) => void;
 }
 
 function DashboardCreateActionDialogs({
   expenseOpen,
-  leadOpen,
-  meetingDate,
-  meetingOpen,
+  invoiceOpen,
   onExpenseOpenChange,
-  onLeadOpenChange,
-  onMeetingOpenChange,
-}: {
-  expenseOpen: boolean;
-  leadOpen: boolean;
-  meetingDate: Date;
-  meetingOpen: boolean;
-  onExpenseOpenChange: (open: boolean) => void;
-  onLeadOpenChange: (open: boolean) => void;
-  onMeetingOpenChange: (open: boolean) => void;
-}) {
+  onInvoiceOpenChange,
+}: DashboardCreateActionDialogsProps) {
   const t = useTranslations('dashboard');
   return (
     <>
-      <CreateMeetingCalendarDialog
-        open={meetingOpen}
-        onOpenChange={onMeetingOpenChange}
-        selectedDate={meetingDate}
-        onCreated={() => {
-          toast.success(t('create.meetingCreated'));
-        }}
-      />
-      <CreateLeadDialog
-        open={leadOpen}
-        onOpenChange={onLeadOpenChange}
-        onCreated={() => {
-          toast.success(t('create.leadCreated'));
-        }}
-      />
       <CreateExpenseDialog
         open={expenseOpen}
         onOpenChange={onExpenseOpenChange}
         onCreated={() => {
           toast.success(t('create.expenseCreated'));
+        }}
+      />
+      <CreateInvoiceDialog
+        open={invoiceOpen}
+        onOpenChange={onInvoiceOpenChange}
+        onCreated={() => {
+          toast.success(t('create.invoiceCreated'));
         }}
       />
     </>

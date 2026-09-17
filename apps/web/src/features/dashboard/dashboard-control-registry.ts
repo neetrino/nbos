@@ -1,5 +1,4 @@
 import {
-  CalendarPlus,
   CheckSquare,
   FileText,
   FolderKanban,
@@ -8,9 +7,9 @@ import {
   KeyRound,
   ListPlus,
   Plus,
+  Receipt,
   ReceiptText,
   Smartphone,
-  UserPlus,
 } from 'lucide-react';
 import type {
   DashboardMetricProjection,
@@ -40,10 +39,9 @@ export type DashboardNote = ApiDashboardNote;
 export type DashboardData = DashboardMetricProjection;
 export type DashboardPreference = DashboardPreferenceProjection;
 export type DashboardPinnedActionKey =
-  | 'new-lead'
   | 'new-task'
-  | 'new-meeting'
   | 'new-expense'
+  | 'new-invoice'
   | 'open-deals'
   | 'open-products'
   | 'open-invoices'
@@ -57,6 +55,15 @@ export type PriorityCard = DashboardPriorityProjection;
 
 export const PINNED_ACTIONS: PinnedAction[] = [
   {
+    key: 'new-invoice',
+    kind: 'create',
+    label: 'New invoice',
+    icon: FileText,
+    module: 'FINANCE_INVOICES',
+    action: 'ADD',
+    description: 'Create an invoice from the desk.',
+  },
+  {
     key: 'new-task',
     kind: 'create',
     label: 'New task',
@@ -66,28 +73,10 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     description: 'Create work for yourself or a teammate.',
   },
   {
-    key: 'new-meeting',
-    kind: 'create',
-    label: 'New meeting',
-    icon: CalendarPlus,
-    module: 'CALENDAR',
-    action: 'ADD',
-    description: 'Schedule a client meeting without leaving the desk.',
-  },
-  {
-    key: 'new-lead',
-    kind: 'create',
-    label: 'New lead',
-    icon: UserPlus,
-    module: 'CRM_LEADS',
-    action: 'ADD',
-    description: 'Capture an incoming opportunity.',
-  },
-  {
     key: 'new-expense',
     kind: 'create',
     label: 'New expense',
-    icon: ReceiptText,
+    icon: Receipt,
     module: 'FINANCE_EXPENSES',
     action: 'ADD',
     description: 'Log an expense from the desk.',
