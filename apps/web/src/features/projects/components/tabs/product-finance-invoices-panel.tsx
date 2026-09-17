@@ -21,6 +21,7 @@ import { usePermission } from '@/lib/permissions';
 
 interface ProductFinanceInvoicesPanelProps {
   productId: string;
+  productName?: string;
   companyId?: string | null;
   search: string;
   filters: Record<string, string>;
@@ -29,6 +30,7 @@ interface ProductFinanceInvoicesPanelProps {
 
 export function ProductFinanceInvoicesPanel({
   productId,
+  productName,
   companyId,
   search,
   filters,
@@ -149,7 +151,7 @@ export function ProductFinanceInvoicesPanel({
           open={createOpen}
           onOpenChange={setCreateOpen}
           onCreated={() => void refetch()}
-          hiddenContext={{ productId, companyId }}
+          hiddenContext={{ productId, productLabel: productName, companyId }}
         />
       ) : null}
     </>

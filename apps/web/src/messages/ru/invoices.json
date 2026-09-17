@@ -203,6 +203,7 @@
     "loadSubscriptionError": "Не удалось загрузить подписку.",
     "modeFree": "Стандарт",
     "modeDomain": "Домен",
+    "product": "Продукт",
     "domainProduct": "Продукт",
     "domainNames": "Доменные имена",
     "domainAmount": "Сумма"

@@ -3,14 +3,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { FINANCE_CLIENT_SERVICES_MODULE } from '@nbos/shared';
-import {
-  AmdCurrencyIcon,
-  CreateFormDialog,
-  DetailSheetFieldSegmented,
-  FormFieldRow,
-  InlineField,
-} from '@/components/shared';
-import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
+import { CreateFormDialog, DetailSheetFieldSegmented } from '@/components/shared';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import {
@@ -23,8 +16,12 @@ import { usePermission } from '@/lib/permissions';
 import { toDomainOperationPayload } from '@/features/finance/components/domain-purchase/domain-purchase-form';
 import type { Invoice, Order } from '@/lib/api/finance';
 import type { Subscription } from '@/lib/api/subscriptions';
-import { canSubmitCreateInvoice, type CreateInvoiceFormState } from './create-invoice-dialog-utils';
+import {
+  canSubmitCreateInvoice,
+  shouldShowStandardInvoiceProductField,
+} from './create-invoice-dialog-utils';
 import { CreateInvoiceDomainFields } from './CreateInvoiceDomainFields';
+import { CreateInvoiceStandardFields } from './CreateInvoiceStandardFields';
 import { InvoiceContextSummary } from './InvoiceContextSummary';
 import {
   domainInvoiceSubmitErrorMessage,
@@ -62,12 +59,14 @@ function CreateInvoiceDialogSession(props: CreateInvoiceDialogProps) {
     (props.allowDomainPath || (!props.order && !props.submitOverride));
 
   const domainMode = showDomainPath && mode === 'domain';
+  const showStandardProduct = shouldShowStandardInvoiceProductField(props);
+  const productLocked = Boolean(props.hiddenContext?.productId);
+
+  const canPreviewDomain =
+    domainMode && Boolean(domainProductId) && Boolean(domainDraft.domains[0]?.domainName.trim());
 
   useEffect(() => {
-    if (!domainMode || !domainProductId || !domainDraft.domains[0]?.domainName.trim()) {
-      setPreviewKind(null);
-      return;
-    }
+    if (!canPreviewDomain || !domainProductId) return;
     let cancelled = false;
     void clientServicesApi
       .previewDomainOperation(toDomainOperationPayload(domainProductId, domainDraft, true))
@@ -80,7 +79,7 @@ function CreateInvoiceDialogSession(props: CreateInvoiceDialogProps) {
     return () => {
       cancelled = true;
     };
-  }, [domainMode, domainProductId, domainDraft]);
+  }, [canPreviewDomain, domainProductId, domainDraft]);
   const subscriptionBlocked = computeSubscriptionBlocked(props.subscriptionId, state);
   const canSubmit = domainMode
     ? Boolean(domainProductId) && canSubmitDomainPurchase(domainDraft, true) && !state.loading
@@ -143,11 +142,11 @@ function CreateInvoiceDialogSession(props: CreateInvoiceDialogProps) {
           productId={domainProductId}
           productLabel={domainProductLabel}
           draft={domainDraft}
-          productLabelText={t('create.domainProduct')}
-          productSearchText={t('create.domainProduct')}
+          productLabelText={t('create.product')}
+          productSearchText={t('create.product')}
           amountLabel={t('create.amount')}
           productLocked={Boolean(props.presetDomainProduct?.id)}
-          previewKind={previewKind}
+          previewKind={canPreviewDomain ? previewKind : null}
           onProductSelect={(id, label) => {
             setDomainProductId(id);
             setDomainProductLabel(label);
@@ -162,7 +161,13 @@ function CreateInvoiceDialogSession(props: CreateInvoiceDialogProps) {
             clientServiceContext={props.clientServiceContext}
             t={t}
           />
-          <InvoiceAmountFields form={state.form} setForm={state.setForm} t={t} />
+          <CreateInvoiceStandardFields
+            form={state.form}
+            setForm={state.setForm}
+            t={t}
+            showProduct={showStandardProduct}
+            productLocked={productLocked}
+          />
         </>
       )}
     </CreateFormDialog>
@@ -248,40 +253,4 @@ function computeSubscriptionBlocked(
 ) {
   if (!subscriptionId?.trim()) return false;
   return state.subscriptionLoading || state.loadError !== null || !state.subscriptionDetail;
-}
-
-function InvoiceAmountFields({
-  form,
-  setForm,
-  t,
-}: {
-  form: CreateInvoiceFormState;
-  setForm: (form: CreateInvoiceFormState) => void;
-  t: InvoiceCreateTranslator;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <FormFieldRow>
-        <InlineField
-          variant="controlled"
-          label={t('create.amount')}
-          type="money"
-          value={form.amount}
-          className={FORM_FIELD_CELL_CLASS}
-          icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
-          onValueChange={(amount) => setForm({ ...form, amount })}
-        />
-        <InlineField
-          variant="controlled"
-          label={t('create.dueDate')}
-          type="date"
-          value={form.dueDate}
-          datePickerVariant="extended"
-          className={FORM_FIELD_CELL_CLASS}
-          onValueChange={(dueDate) => setForm({ ...form, dueDate })}
-        />
-      </FormFieldRow>
-      <p className="text-muted-foreground text-xs">{t('create.dueDateHint')}</p>
-    </div>
-  );
 }

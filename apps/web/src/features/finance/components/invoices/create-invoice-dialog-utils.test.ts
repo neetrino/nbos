@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest';
 import type { Order } from '@/lib/api/finance';
 import type { Subscription } from '@/lib/api/subscriptions';
 import {
+  applyHiddenProductToInvoiceForm,
   buildCreateInvoicePayload,
   canSubmitCreateInvoice,
   getInitialInvoiceForm,
   getInitialInvoiceFormFromSubscription,
   getOrderOutstandingAmount,
+  shouldShowStandardInvoiceProductField,
 } from './create-invoice-dialog-utils';
 
 const order: Order = {
@@ -116,6 +118,62 @@ describe('create invoice dialog utils', () => {
         productId: 'prod-1',
       }),
     ).not.toHaveProperty('projectId');
+  });
+
+  it('sends selected product on a manual standard invoice', () => {
+    expect(
+      buildCreateInvoicePayload({
+        amount: '15000',
+        dueDate: '2026-06-01',
+        productId: 'prod-picked',
+        productLabel: 'Shop',
+      }),
+    ).toEqual({
+      productId: 'prod-picked',
+      amount: 15000,
+      dueDate: '2026-06-01',
+    });
+  });
+
+  it('prefers form product over hidden product', () => {
+    expect(
+      buildCreateInvoicePayload(
+        { amount: '12000', dueDate: '', productId: 'prod-form' },
+        undefined,
+        undefined,
+        { productId: 'prod-hidden' },
+      ),
+    ).toEqual({
+      productId: 'prod-form',
+      amount: 12000,
+      dueDate: undefined,
+    });
+  });
+
+  it('applies hidden product onto an empty standard form', () => {
+    expect(
+      applyHiddenProductToInvoiceForm(
+        { amount: '1', dueDate: '' },
+        { productId: 'prod-1', productLabel: 'Site' },
+      ),
+    ).toEqual({
+      amount: '1',
+      dueDate: '',
+      productId: 'prod-1',
+      productLabel: 'Site',
+    });
+  });
+
+  it('shows product only on free standard create', () => {
+    expect(shouldShowStandardInvoiceProductField({})).toBe(true);
+    expect(shouldShowStandardInvoiceProductField({ order })).toBe(false);
+    expect(shouldShowStandardInvoiceProductField({ subscriptionId: 'sub-1' })).toBe(false);
+    expect(
+      shouldShowStandardInvoiceProductField({
+        clientServiceContext: { name: 'Domain', projectLabel: 'Site' },
+      }),
+    ).toBe(false);
+    expect(shouldShowStandardInvoiceProductField({ submitOverride: () => undefined })).toBe(false);
   });
 
   it('requires positive amount before submit', () => {

@@ -1,19 +1,10 @@
 'use client';
 
-import { Layers } from 'lucide-react';
-import {
-  AmdCurrencyIcon,
-  FormFieldRow,
-  InlineField,
-  RelationPickerField,
-} from '@/components/shared';
+import { AmdCurrencyIcon, FormFieldRow, InlineField } from '@/components/shared';
 import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
-import {
-  useProductRelationSearch,
-  useRelationPickerActions,
-} from '@/components/shared/relation-picker';
 import { useClientServicesT } from '@/features/finance/components/client-services/client-service-message-keys';
 import type { DomainPurchaseDraft } from '@/features/finance/components/domain-purchase/domain-purchase-form';
+import { InvoiceCreateProductField } from './InvoiceCreateProductField';
 
 interface CreateInvoiceDomainFieldsProps {
   productId: string;
@@ -41,23 +32,17 @@ export function CreateInvoiceDomainFields({
   onDraftChange,
 }: CreateInvoiceDomainFieldsProps) {
   const tCs = useClientServicesT();
-  const searchProducts = useProductRelationSearch(null);
-  const productPicker = useRelationPickerActions('product');
   const row = draft.domains[0];
 
   return (
     <div className="flex flex-col gap-3">
-      <RelationPickerField
+      <InvoiceCreateProductField
+        productId={productId}
+        productLabel={productLabel}
         label={productLabelText}
-        entityKind="product"
-        value={productId || null}
-        selectionLabel={productLabel}
         placeholder={productSearchText}
-        icon={<Layers size={12} />}
-        disabled={productLocked}
-        onSearch={searchProducts}
+        locked={productLocked}
         onSelect={onProductSelect}
-        {...productPicker}
       />
       <FormFieldRow layout="wideStart">
         <InlineField

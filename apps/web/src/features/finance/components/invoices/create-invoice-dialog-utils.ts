@@ -5,13 +5,43 @@ import { defaultCreateInvoiceDueDateIso } from './create-invoice-dialog.constant
 export interface CreateInvoiceFormState {
   amount: string;
   dueDate: string;
+  productId?: string;
+  productLabel?: string | null;
 }
 
 export interface CreateInvoiceHiddenContext {
   productId?: string | null;
+  productLabel?: string | null;
   companyId?: string | null;
   orderId?: string | null;
   subscriptionId?: string | null;
+}
+
+export function applyHiddenProductToInvoiceForm(
+  form: CreateInvoiceFormState,
+  hidden?: CreateInvoiceHiddenContext,
+): CreateInvoiceFormState {
+  const productId = form.productId?.trim() || hidden?.productId?.trim() || '';
+  if (!productId) return form;
+  return {
+    ...form,
+    productId,
+    productLabel: form.productLabel ?? hidden?.productLabel ?? null,
+  };
+}
+
+export function shouldShowStandardInvoiceProductField(input: {
+  order?: unknown;
+  subscriptionId?: string | null;
+  clientServiceContext?: unknown;
+  submitOverride?: unknown;
+}): boolean {
+  return (
+    !input.order &&
+    !input.subscriptionId?.trim() &&
+    !input.clientServiceContext &&
+    !input.submitOverride
+  );
 }
 
 export function getOrderOutstandingAmount(order: Order): number {
@@ -74,8 +104,10 @@ export function buildCreateInvoicePayload(
     };
   }
 
+  const productId = form.productId?.trim() || hidden?.productId?.trim() || undefined;
+
   return {
-    ...(hidden?.productId ? { productId: hidden.productId } : {}),
+    ...(productId ? { productId } : {}),
     ...(hidden?.companyId ? { companyId: hidden.companyId } : {}),
     ...(hidden?.orderId ? { orderId: hidden.orderId } : {}),
     ...(hidden?.subscriptionId ? { subscriptionId: hidden.subscriptionId } : {}),

@@ -203,6 +203,7 @@
     "loadSubscriptionError": "Subscription could not be loaded.",
     "modeFree": "Standard",
     "modeDomain": "Domain",
+    "product": "Product",
     "domainProduct": "Product",
     "domainNames": "Domain names",
     "domainAmount": "Amount"

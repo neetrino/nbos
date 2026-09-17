@@ -127,6 +127,7 @@ export function ProductFinanceSectionContent({
     return (
       <ProductFinanceInvoicesPanel
         productId={productId}
+        productName={productName}
         companyId={companyId}
         search={search}
         filters={filters}

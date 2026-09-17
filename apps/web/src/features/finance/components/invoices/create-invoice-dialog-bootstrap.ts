@@ -2,6 +2,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { subscriptionsApi, type Order } from '@/lib/api/finance';
 import type { Subscription } from '@/lib/api/subscriptions';
 import {
+  applyHiddenProductToInvoiceForm,
   getInitialInvoiceForm,
   getInitialInvoiceFormFromSubscription,
   type CreateInvoiceFormState,
@@ -49,7 +50,9 @@ export function bootstrapCreateInvoiceDialog(ctx: BootstrapCtx): void {
   }
 
   ctx.setSubscriptionDetail(null);
-  ctx.setForm(ctx.defaultForm ?? getInitialInvoiceForm());
+  ctx.setForm(
+    applyHiddenProductToInvoiceForm(ctx.defaultForm ?? getInitialInvoiceForm(), ctx.hiddenContext),
+  );
 }
 
 async function loadSubscriptionById(
